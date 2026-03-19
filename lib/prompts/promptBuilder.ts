@@ -67,9 +67,10 @@ ARCHITECTURAL FIDELITY (STRICT):
 - Do NOT upgrade, beautify, or idealize the building
 
 LANDSCAPING (SOURCE-FAITHFUL):
-- Only include landscaping elements visible in the source photograph
+- Only include landscaping elements EXPLICITLY visible in the source photograph
+- Do NOT add water features, ponds, streams, puddles, or reflective surfaces unless clearly present in source
 - Do NOT add gardens, pathways, fences, flower beds, or shrubs not present in source
-- If yard is plain grass, keep it plain grass
+- If yard is plain grass, keep it plain grass — do not beautify or add elements
 - Trees: only include if visible in original, placed in same relative positions
 - Tree height must remain below roofline
 - All vegetation rendered as miniature model foliage, not photographic plants
@@ -172,8 +173,9 @@ function getEnvironmentBlock(config: MiniramaConfig, imageDescription: string): 
   return `
 BASE:
 Place the entire scene on a ${base} with clean rounded edges.
-Maintain ${margin}% margin between the base edge and the image frame.
-The full base must be completely visible — do not crop the base.
+Maintain ${margin}% margin between the base edge and the image frame on ALL sides including the bottom.
+The full circular base including its bottom edge must be completely visible — do not crop the base at any edge.
+Pull the camera back slightly if needed to ensure the entire base fits within the frame.
 
 MATERIALS:
 Use ${material} materials with realistic physical surface qualities and premium collectible craftsmanship.
