@@ -304,67 +304,98 @@ export function buildFinalPrompt(
 
 function getKeychainFigurineBlock(imageDescription: string): string {
   return `
-FACE IDENTITY LOCK (HIGHEST PRIORITY — OVERRIDES ALL STYLE DECISIONS):
+IDENTITY-PRESERVED STYLIZED MINIATURE — NOT A CHIBI
 
-The subject's facial structure must be preserved exactly from the source image.
-This is an identity-preserved miniature, not a stylized character.
+This is a premium collectible figurine that preserves the subject's exact identity.
+The style is Pixar-adjacent realism — subtle stylization only. Identity always wins.
+
+═══════════════════════════════════════════════════════
+FACE IDENTITY LOCK (HIGHEST PRIORITY — OVERRIDES EVERYTHING)
+═══════════════════════════════════════════════════════
+
+CRANIAL SCALING RULE:
+- Increase overall head size by scaling the full SKULL VOLUME uniformly
+- Do NOT alter internal facial proportions when scaling
+- The head grows larger — but the face geometry inside it does NOT change shape
+- Think of it as zooming in on the face, not reshaping it
+
+FACE GEOMETRY LOCK (CRITICAL):
+- Preserve vertical face length exactly — do NOT compress face height under any condition
+- Preserve jaw taper and chin length exactly
+- Preserve cheekbone width exactly
+- Preserve temple width exactly
+- If stylization conflicts with geometry → GEOMETRY WINS
+
+EYE SCALING LOCK:
+- Eye size increase capped at 10% relative to original face — no more
+- Maintain original eye shape — do NOT round or circularize
+- Maintain eyelid structure and lid fold exactly
+- Maintain eye spacing exactly as in source
+- FORBIDDEN: anime-style enlargement, circularization, cartoon eye templates
 
 STRICT FACE REQUIREMENTS:
-- Preserve exact face shape (oval, narrow, long — do NOT round or soften)
-- Preserve jaw width and length exactly — do not shorten, widen, or baby-ify
-- Preserve eye size relative to face — do NOT enlarge beyond natural proportion
-- Preserve eye spacing and placement exactly as in source
-- Preserve nose shape and proportion
+- Preserve exact face shape — do NOT round, soften, or widen
+- Preserve jaw length — do NOT shorten or baby-ify
+- Preserve nose shape and proportion exactly
 - Preserve mouth width and tooth visibility
-- Preserve ear size and position
+- Preserve ear size relative to face — do NOT enlarge ears
 - Preserve age appearance exactly — do NOT make subject look younger
-- Preserve skin texture details: freckles, dirt, marks, imperfections
+- Preserve skin texture: freckles, dirt, marks, imperfections
 - Preserve subtle facial asymmetry — real faces are not symmetrical
-- Expression must match the source photo exactly
+- Expression must match source photo exactly
 
-FORBIDDEN FACE TREATMENTS:
-- No baby-like proportions or rounding
-- No oversized anime or chibi eyes
-- No generic "cute template" face applied over the real face
-- No smoothing or simplification of facial geometry
-- No age regression
+FORBIDDEN:
+- Baby-like proportions or facial rounding
+- Oversized ears relative to face
+- Eye enlargement beyond 10% cap
+- Jaw shortening or chin reduction
+- Face height compression
+- Generic cute template applied over the real face
+- Age regression of any kind
 
 RULE: A parent must look at this figurine and immediately recognize their child.
 
-PROPORTION SYSTEM (CONTROLLED SCALE — NOT FULL CHIBI):
-- Head-to-body ratio: 1:2.5 to 1:3 — head slightly enlarged, NOT dominant
-- Body remains anatomically believable with natural limb proportions
-- Limbs slightly simplified but not stubby or exaggerated
-- This is NOT a Funko Pop, NOT an anime chibi, NOT a toddler doll
-- Style target: premium collectible figurine — Pixar-adjacent realism
+═══════════════════════════════════════════════════════
+PROPORTION SYSTEM
+═══════════════════════════════════════════════════════
 
-FACIAL DETAIL AMPLIFICATION:
-As the head scales slightly larger, facial detail must INCREASE proportionally.
-- More head area = more room for accurate facial features, not less
-- Skin texture, freckles, dirt, and marks must remain visible
+HEAD-TO-BODY RATIO:
+- Target: 1:2.7
+- Maximum allowable: 1:2.5
+- Never exceed this range — it causes the baby/toddler effect
+- Body remains anatomically believable
+- Limbs slightly simplified but not stubby
+
+This is NOT: Funko Pop, anime chibi, toddler doll, cartoon character
+This IS: premium identity-preserved collectible — subtle stylization only
+
+═══════════════════════════════════════════════════════
+FACIAL DETAIL AMPLIFICATION
+═══════════════════════════════════════════════════════
+
+As the head scales slightly larger, facial detail must INCREASE proportionally:
+- More skull area = more canvas for accurate facial detail, not simplification
+- Skin texture, freckles, dirt, marks must remain fully visible
 - Subtle asymmetry must be preserved
 - Eye reflections must enhance realism, not stylization
-- Expression must be captured with precision
+- Expression captured with precision
 
-STYLE BALANCE DIRECTIVE:
-This is a high-end identity-preserved collectible figurine.
-Style sits between: realistic portrait miniature ↔ subtle collectible stylization.
+═══════════════════════════════════════════════════════
+MATERIALS AND FINISH
+═══════════════════════════════════════════════════════
 
-NOT: anime, cartoon, toy-like exaggeration, baby proportions, Funko Pop
-YES: premium collectible, Pixar-adjacent realism, identity-first
-
-If forced to choose → ALWAYS prioritize identity over stylization.
-
-MATERIALS (FINISH):
-- Full high-gloss lacquer finish across the entire figurine — skin, hair, clothing, props
-- Strong specular highlights on all surfaces — premium shiny collectible finish
+- Full high-gloss lacquer finish — skin, hair, clothing, and props
+- Strong specular highlights on all surfaces — premium shiny collectible
 - Eyes: strong glassy reflections and deep gloss
-- Clothing and props: consistent high gloss across the whole figure
-- Base rim: polished gloss dark walnut wood finish
-- Overall look: premium glossy resin collectible from a high-end collectible store
+- Clothing and props: consistent high gloss throughout
+- Base rim: polished gloss dark walnut wood
+- Overall: premium glossy resin collectible from a high-end collectible store
 
-BASE:
-- Simple round display base, thick and substantial (approximately 1cm perceived height)
+═══════════════════════════════════════════════════════
+BASE
+═══════════════════════════════════════════════════════
+
+- Simple round display base, thick and substantial (~1cm perceived height)
 - Outer rim: warm polished gloss dark walnut wood, clean rounded edge
 - Base floor surface must match the floor/ground visible in the source photo:
   - Carpet → textured fabric-like miniature surface in matching color
@@ -373,27 +404,32 @@ BASE:
   - Tile/hardwood floor → smooth painted miniature floor in matching color
   - Sand → fine terrain sand texture
 - No surrounding scene elements beyond the base floor texture
-- Figurine must be anchored naturally and grounded to the base floor
+- Figurine must be naturally anchored and grounded to the base floor
 
-COMPOSITION:
-- Camera positioned 35–40 degrees above, angled downward
-- Must feel like a miniature object being photographed, not a portrait
-- Figurine fully visible head to toe including the complete base
-- Horizontal margins: 20% on each side
+═══════════════════════════════════════════════════════
+COMPOSITION
+═══════════════════════════════════════════════════════
+
+- Camera 35–40 degrees above, angled downward — miniature object, not portrait
+- Figurine fully visible head to toe including complete base
+- Horizontal margins: 20% each side
 - Vertical margins: 12% top and bottom
-- Pull camera back to show the full figurine and base within these margins
-- Do not crop any part of the figurine or base
-- Warm bokeh background — soft interior feel, softly blurred
+- Pull camera back to show full figurine and base within margins
+- Do not crop any part of figurine or base
+- Warm bokeh background — soft interior, blurred
 - Macro product photography of a real glossy collectible on a wooden surface
 
-STRICT CONSTRAINTS:
+═══════════════════════════════════════════════════════
+STRICT CONSTRAINTS
+═══════════════════════════════════════════════════════
+
 - No keyring, no chain, no attachment hardware
-- No surrounding scenery or environmental elements beyond the base floor texture
-- No other people or objects — single figurine only
-- Glossy finish is mandatory throughout
-- Do not make the subject look younger than in the source photo
-- Do not invent or add elements not present in the source photo
-- Clothing, accessories, props must be reproduced exactly as worn/held in source
+- No surrounding scenery or props beyond base floor texture
+- Single figurine only — no other people or objects
+- Glossy finish mandatory throughout
+- Do not make subject look younger than source photo
+- Do not invent elements not present in source photo
+- Clothing, accessories, props reproduced exactly as in source
 
 SCENE TO TRANSFORM:
 ${imageDescription}

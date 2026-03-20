@@ -162,22 +162,28 @@ Return ONLY valid JSON, no other text:
 
 SCORING GUIDE:
 - face_geometry_match (max 40): jaw shape preserved, face length preserved, no rounding
-- eye_accuracy (max 15): eye size relative to face, spacing, shape
+- eye_accuracy (max 15): eye size relative to face (max 10% enlargement), spacing, shape
 - age_accuracy (max 15): does not look younger, no baby-like features
-- feature_accuracy (max 15): nose, mouth, ear shape match
-- texture_detail (max 10): freckles/dirt/marks preserved
-- expression_match (max 5): same emotional expression
+- feature_accuracy (max 10): nose, mouth, ear shape match
+- distortion_detection (max 10): face height preserved, jaw not shortened, no cheek widening, no eye overscaling
+- texture_detail (max 7): freckles/dirt/marks preserved
+- expression_match (max 3): same emotional expression
 
 HARD FAIL (set fail: true if ANY apply):
 - Baby face detected (rounder/younger than source)
-- Eyes enlarged excessively
+- Eyes enlarged more than 10% beyond natural proportion
 - Jaw shortened or widened from original
 - Face rounded from original non-round shape
+- Face height reduced or compressed
+- Facial geometry changed in any measurable way
 - Subject looks 2+ years younger
+- Ears enlarged beyond natural proportion
 
 For corrections_required, be specific:
+e.g. "restore original face height — current face is vertically compressed"
+e.g. "reduce eye size — eyes exceed 10% enlargement cap"
 e.g. "restore narrow elongated jaw — current jaw is too short and round"
-e.g. "reduce eye size by 15% to match natural proportion in source"`
+e.g. "reduce ear size — ears are disproportionately large relative to face"`
 
   try {
     const response = await openai.chat.completions.create({
@@ -214,11 +220,20 @@ e.g. "reduce eye size by 15% to match natural proportion in source"`
 function buildCorrectionPatch(score: IdentityScore): string {
   if (!score.corrections_required?.length) return ''
   return `
-CORRECTION DIRECTIVE (OVERRIDE — APPLY THESE FIXES):
+IDENTITY CORRECTION DIRECTIVE (OVERRIDE — APPLY ALL OF THESE):
 ${score.corrections_required.map(c => `- ${c}`).join('\n')}
 
-These corrections override any stylization decisions.
-Identity accuracy takes absolute priority.
+SKULL-SCALING REMINDER:
+- Scale the skull volume uniformly — do NOT reshape the face geometry
+- Restore original face height and vertical proportions
+- Restore jaw length and taper exactly
+- Reduce eye size to match original proportions (max 10% enlargement)
+- Remove any facial widening, rounding, or compression
+- Remove any ear enlargement
+- Restore subject's actual age appearance
+
+These corrections override ALL stylization decisions.
+Identity accuracy takes absolute priority over aesthetic choices.
 `
 }
 

@@ -32,26 +32,28 @@ async function generateMiniature(
 // ─── LOADING SCREEN ──────────────────────────────────────────────────────────
 
 function LoadingScreen({ isPeopleMode }: { isPeopleMode: boolean }) {
-  const totalDuration = isPeopleMode ? 90 : 30
-
-  const stages = isPeopleMode ? [
-    { label: 'Analysing photo',       icon: '📷', duration: 8  },
-    { label: 'Extracting identity',   icon: '🔍', duration: 6  },
-    { label: 'Building prompt',       icon: '🏗️', duration: 2  },
-    { label: 'Rendering pass 1 of 3', icon: '🎨', duration: 22 },
-    { label: 'Scoring identity',      icon: '🧪', duration: 8  },
-    { label: 'Rendering pass 2 of 3', icon: '🎨', duration: 22 },
-    { label: 'Scoring identity',      icon: '🧪', duration: 8  },
-    { label: 'Rendering pass 3 of 3', icon: '🎨', duration: 18 },
-    { label: 'Finalising',            icon: '✨', duration: 4  },
+  const messages = isPeopleMode ? [
+    { icon: '📷', text: 'Analysing your photo...' },
+    { icon: '🔍', text: 'Extracting identity features...' },
+    { icon: '🏗️', text: 'Building your figurine...' },
+    { icon: '🎨', text: 'Rendering pass 1 of 3...' },
+    { icon: '🧪', text: 'Scoring identity fidelity...' },
+    { icon: '🎨', text: 'Rendering pass 2 of 3...' },
+    { icon: '🧪', text: 'Checking likeness...' },
+    { icon: '🎨', text: 'Rendering pass 3 of 3...' },
+    { icon: '✨', text: 'Putting on the finishing touches...' },
   ] : [
-    { label: 'Analysing photo',     icon: '📷', duration: 5  },
-    { label: 'Building scene',      icon: '🏗️', duration: 2  },
-    { label: 'Rendering miniature', icon: '🎨', duration: 20 },
-    { label: 'Finalising',          icon: '✨', duration: 3  },
+    { icon: '📷', text: 'Analysing your photo...' },
+    { icon: '🏗️', text: 'Building your scene...' },
+    { icon: '🎨', text: 'Rendering your miniature...' },
+    { icon: '✨', text: 'Putting on the finishing touches...' },
   ]
 
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const durations = isPeopleMode
+    ? [8, 6, 2, 22, 8, 22, 8, 18, 10]
+    : [5, 2, 18, 5]
+
+  const [messageIndex, setMessageIndex] = useState(0)
   const [treesVisible, setTreesVisible] = useState(false)
   const [houseVisible, setHouseVisible] = useState(false)
   const [pathVisible, setPathVisible] = useState(false)
@@ -64,28 +66,17 @@ function LoadingScreen({ isPeopleMode }: { isPeopleMode: boolean }) {
   }, [])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setElapsedSeconds(s => Math.min(s + 1, totalDuration - 1))
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [totalDuration])
+    let elapsed = 0
+    const timers: ReturnType<typeof setTimeout>[] = []
+    durations.forEach((dur, i) => {
+      const t = setTimeout(() => setMessageIndex(i), elapsed * 1000)
+      timers.push(t)
+      elapsed += dur
+    })
+    return () => timers.forEach(clearTimeout)
+  }, [isPeopleMode])
 
-  // Derive current stage from elapsed time
-  let currentStageIndex = 0
-  let accumulated = 0
-  for (let i = 0; i < stages.length; i++) {
-    accumulated += stages[i].duration
-    if (elapsedSeconds < accumulated) { currentStageIndex = i; break }
-    currentStageIndex = i
-  }
-
-  const pct = Math.round((elapsedSeconds / totalDuration) * 100)
-  const remainingSeconds = Math.max(0, totalDuration - elapsedSeconds)
-  const remainingMins = Math.floor(remainingSeconds / 60)
-  const remainingSecs = remainingSeconds % 60
-  const timeLabel = remainingMins > 0
-    ? `${remainingMins}m ${remainingSecs}s remaining`
-    : `${remainingSecs}s remaining`
+  const current = messages[messageIndex]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 1rem', textAlign: 'center' }}>
@@ -104,106 +95,133 @@ function LoadingScreen({ isPeopleMode }: { isPeopleMode: boolean }) {
           0%, 100% { opacity: 0.2; transform: scale(0.7); }
           50% { opacity: 1; transform: scale(1); }
         }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeMsg {
+          0% { opacity: 0; transform: translateY(5px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulseRing {
+          0%, 100% { transform: scale(0.95); opacity: 0.7; }
+          50% { transform: scale(1.05); opacity: 1; }
+        }
       `}</style>
 
       {/* DIORAMA SCENE */}
-      <div style={{ position: 'relative', width: '220px', height: '210px', marginBottom: '2rem' }}>
+      <div style={{ position: 'relative', width: '220px', height: '210px', marginBottom: '2.5rem' }}>
         {[
-          { top: '10%', left: '15%', color: '#00C9C8', delay: '0s'   },
-          { top: '6%',  left: '70%', color: '#FFD60A', delay: '0.4s' },
-          { top: '20%', left: '88%', color: '#7B5EA7', delay: '0.8s' },
-          { top: '55%', left: '6%',  color: '#00C9C8', delay: '0.2s' },
-          { top: '35%', left: '94%', color: '#FFD60A', delay: '1.1s' },
-          { top: '65%', left: '22%', color: '#7B5EA7', delay: '0.6s' },
-          { top: '12%', left: '48%', color: '#00C9C8', delay: '1.4s' },
-          { top: '58%', left: '78%', color: '#FFD60A', delay: '0.9s' },
+          { top: '10%', left: '15%', color: '#00C9C8', delay: '0s',   size: '9px' },
+          { top: '6%',  left: '70%', color: '#FFD60A', delay: '0.4s', size: '7px' },
+          { top: '20%', left: '88%', color: '#7B5EA7', delay: '0.8s', size: '8px' },
+          { top: '55%', left: '6%',  color: '#00C9C8', delay: '0.2s', size: '7px' },
+          { top: '35%', left: '94%', color: '#FFD60A', delay: '1.1s', size: '9px' },
+          { top: '65%', left: '22%', color: '#7B5EA7', delay: '0.6s', size: '7px' },
+          { top: '12%', left: '48%', color: '#00C9C8', delay: '1.4s', size: '8px' },
+          { top: '58%', left: '78%', color: '#FFD60A', delay: '0.9s', size: '7px' },
         ].map((s, i) => (
-          <div key={i} style={{ position: 'absolute', top: s.top, left: s.left, width: '6px', height: '6px', borderRadius: '50%', background: s.color, animation: 'sparkleFloat 1.8s ease-in-out infinite', animationDelay: s.delay }} />
+          <div key={i} style={{ position: 'absolute', top: s.top, left: s.left, width: s.size, height: s.size, borderRadius: '50%', background: s.color, animation: 'sparkleFloat 1.8s ease-in-out infinite', animationDelay: s.delay }} />
         ))}
 
         {treesVisible && (
           <div style={{ position: 'absolute', bottom: '30px', left: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards' }}>
-            <div style={{ width: 0, height: 0, borderLeft: '14px solid transparent', borderRight: '14px solid transparent', borderBottom: '24px solid #1e7a3a' }} />
-            <div style={{ width: '6px', height: '9px', background: '#5C3D1E' }} />
+            <div style={{ width: 0, height: 0, borderLeft: '18px solid transparent', borderRight: '18px solid transparent', borderBottom: '30px solid #1e7a3a' }} />
+            <div style={{ width: '7px', height: '11px', background: '#5C3D1E' }} />
           </div>
         )}
         {treesVisible && (
           <div style={{ position: 'absolute', bottom: '30px', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards', animationDelay: '0.15s', opacity: 0 }}>
-            <div style={{ width: 0, height: 0, borderLeft: '12px solid transparent', borderRight: '12px solid transparent', borderBottom: '20px solid #166832' }} />
-            <div style={{ width: '5px', height: '8px', background: '#5C3D1E' }} />
+            <div style={{ width: 0, height: 0, borderLeft: '15px solid transparent', borderRight: '15px solid transparent', borderBottom: '25px solid #166832' }} />
+            <div style={{ width: '6px', height: '9px', background: '#5C3D1E' }} />
           </div>
         )}
         {houseVisible && (
           <div style={{ position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards' }}>
-            <div style={{ width: 0, height: 0, borderLeft: '36px solid transparent', borderRight: '36px solid transparent', borderBottom: '30px solid #7B5EA7' }} />
-            <div style={{ position: 'relative', width: '56px', height: '38px', background: '#a0bfd8' }}>
-              <div style={{ position: 'absolute', top: '7px', left: '5px', width: '11px', height: '11px', background: '#FFD60A', borderRadius: '1px', animation: 'shimmerWin 1.8s ease-in-out infinite', animationDelay: '0.3s' }} />
-              <div style={{ position: 'absolute', top: '7px', right: '5px', width: '11px', height: '11px', background: '#FFD60A', borderRadius: '1px', animation: 'shimmerWin 1.8s ease-in-out infinite' }} />
-              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '13px', height: '19px', background: '#5C3D1E', borderRadius: '3px 3px 0 0' }} />
+            <div style={{ width: 0, height: 0, borderLeft: '40px solid transparent', borderRight: '40px solid transparent', borderBottom: '34px solid #7B5EA7' }} />
+            <div style={{ position: 'relative', width: '62px', height: '42px', background: '#a0bfd8' }}>
+              <div style={{ position: 'absolute', top: '8px', left: '6px', width: '14px', height: '14px', background: '#FFD60A', borderRadius: '1px', animation: 'shimmerWin 1.8s ease-in-out infinite', animationDelay: '0.3s' }} />
+              <div style={{ position: 'absolute', top: '8px', right: '6px', width: '14px', height: '14px', background: '#FFD60A', borderRadius: '1px', animation: 'shimmerWin 1.8s ease-in-out infinite' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '15px', height: '22px', background: '#5C3D1E', borderRadius: '3px 3px 0 0' }} />
             </div>
           </div>
         )}
         {pathVisible && (
-          <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', width: '11px', height: '13px', background: '#b0a080', borderRadius: '1px', animation: 'popIn 0.3s ease forwards' }} />
+          <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', width: '12px', height: '14px', background: '#b0a080', borderRadius: '1px', animation: 'popIn 0.3s ease forwards' }} />
         )}
-        <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', width: '150px', height: '13px', background: '#2d6a1f', borderRadius: '50% 50% 0 0 / 60% 60% 0 0', animation: 'popIn 0.4s ease forwards', animationDelay: '0.15s', opacity: 0 }} />
-        <div style={{ position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '170px', height: '20px', background: '#5C3D1E', borderRadius: '4px', boxShadow: '0 5px 0 #3a2410' }} />
+        <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', width: '160px', height: '14px', background: '#2d6a1f', borderRadius: '50% 50% 0 0 / 60% 60% 0 0', animation: 'popIn 0.4s ease forwards', animationDelay: '0.15s', opacity: 0 }} />
+        <div style={{ position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '180px', height: '22px', background: '#5C3D1E', borderRadius: '4px', boxShadow: '0 5px 0 #3a2410' }} />
       </div>
 
       {/* TITLE */}
-      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '1.25rem', fontWeight: 900, color: 'white', marginBottom: '0.3rem' }}>
+      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '1.3rem', fontWeight: 900, color: 'white', marginBottom: '0.25rem' }}>
         Crafting your diorama...
       </div>
-      <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' as const, color: '#00C9C8', marginBottom: isPeopleMode ? '0.6rem' : '1.25rem' }}>
+      <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' as const, color: '#00C9C8', marginBottom: isPeopleMode ? '0.6rem' : '1.75rem' }}>
         HoneScale AI
       </div>
 
       {isPeopleMode && (
-        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', marginBottom: '1.25rem', maxWidth: '260px', lineHeight: 1.5 }}>
+        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', marginBottom: '1.75rem', maxWidth: '260px', lineHeight: 1.5 }}>
           Identity-preserved figurines run up to 3 scoring passes — usually 60–90 seconds.
         </div>
       )}
 
-      {/* CURRENT STAGE */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem' }}>
-        <span style={{ fontSize: '16px' }}>{stages[currentStageIndex].icon}</span>
-        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>{stages[currentStageIndex].label}</span>
+      {/* SPINNER + MESSAGE */}
+      <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: '1.1rem', marginBottom: '2rem' }}>
+        <div style={{ position: 'relative', width: '80px', height: '80px' }}>
+          {/* Spinning ring */}
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            border: '3px solid transparent',
+            borderTopColor: '#00C9C8',
+            borderRightColor: '#7B5EA7',
+            animation: 'spin 1.4s linear infinite',
+          }} />
+          {/* Inner circle with icon */}
+          <div style={{
+            position: 'absolute', inset: '9px', borderRadius: '50%',
+            background: 'rgba(123,94,167,0.15)',
+            border: '1px solid rgba(0,201,200,0.25)',
+            animation: 'pulseRing 2s ease-in-out infinite',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '28px',
+          }}>
+            {current.icon}
+          </div>
+        </div>
+
+        {/* Status message — fades on change */}
+        <div key={messageIndex} style={{
+          fontSize: '0.88rem', fontWeight: 700,
+          color: 'rgba(255,255,255,0.85)',
+          animation: 'fadeMsg 0.35s ease forwards',
+          minHeight: '1.3em',
+        }}>
+          {current.text}
+        </div>
       </div>
 
-      {/* PROGRESS BAR */}
-      <div style={{ width: '260px', height: '8px', background: 'rgba(0,201,200,0.1)', borderRadius: '10px', overflow: 'hidden', marginBottom: '0.5rem' }}>
-        <div style={{ height: '100%', background: 'linear-gradient(90deg, #7B5EA7, #00C9C8)', borderRadius: '10px', width: `${pct}%`, transition: 'width 1s linear' }} />
-      </div>
-
-      {/* PCT + TIME */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '260px', marginBottom: '1.75rem' }}>
-        <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{pct}%</span>
-        <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{timeLabel}</span>
-      </div>
-
-      {/* STAGE INDICATORS — only completed + active */}
-      <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' as const, justifyContent: 'center', maxWidth: '320px' }}>
-        {stages.map((s, i) => {
-          const isCompleted = i < currentStageIndex
-          const isCurrent = i === currentStageIndex
-          if (!isCompleted && !isCurrent) return null
-          return (
-            <div key={i} style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: '5px', opacity: isCurrent ? 1 : 0.45, transition: 'opacity 0.4s ease' }}>
-              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: isCompleted ? '#00C9C8' : 'linear-gradient(135deg, #7B5EA7, #00C9C8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
-                {isCompleted ? '✓' : s.icon}
-              </div>
-              <div style={{ fontSize: '0.56rem', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', color: isCurrent ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.35)', textAlign: 'center' as const, maxWidth: '52px' }}>
-                {s.label}
-              </div>
+      {/* COMPLETED STAGE TICKS */}
+      {messageIndex > 0 && (
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' as const, justifyContent: 'center', maxWidth: '280px', marginBottom: '1.5rem' }}>
+          {messages.slice(0, messageIndex).map((s, i) => (
+            <div key={i} title={s.text} style={{
+              width: '38px', height: '38px', borderRadius: '50%',
+              background: '#00C9C8',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '16px', opacity: 0.65,
+            }}>
+              ✓
             </div>
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* DOTS */}
-      <div style={{ display: 'flex', gap: '6px', marginTop: '1.75rem' }}>
+      <div style={{ display: 'flex', gap: '8px' }}>
         {[{ color: '#00C9C8', delay: '0s' }, { color: '#7B5EA7', delay: '0.2s' }, { color: '#FFD60A', delay: '0.4s' }].map((d, i) => (
-          <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: d.color, animation: 'dotPulse 1.4s ease-in-out infinite', animationDelay: d.delay }} />
+          <div key={i} style={{ width: '9px', height: '9px', borderRadius: '50%', background: d.color, animation: 'dotPulse 1.4s ease-in-out infinite', animationDelay: d.delay }} />
         ))}
       </div>
     </div>
