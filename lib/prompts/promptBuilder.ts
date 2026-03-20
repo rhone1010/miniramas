@@ -275,7 +275,7 @@ export function buildFinalPrompt(
 ): string {
   // Keychain mode is self-contained — skip environment and style lock blocks
   if (mode === 'keychain') {
-    return getKeychainFigurineBlock(imageDescription).trim()
+    return honePeople(imageDescription).trim()
   }
 
   // Route subject block — sports/activity override subject type routing
@@ -300,138 +300,158 @@ export function buildFinalPrompt(
     .trim()
 }
 
-// ─── IDENTITY-PRESERVED MINIATURE FIGURINE BLOCK ─────────────────────────────
+// ─── HONE PEOPLE — IDENTITY-PRESERVED MINIATURE (v2) ─────────────────────────
 
-function getKeychainFigurineBlock(imageDescription: string): string {
+function honePeople(imageDescription: string): string {
   return `
-IDENTITY-PRESERVED STYLIZED MINIATURE — NOT A CHIBI
+IDENTITY-PRESERVED STYLIZED MINIATURE — HONESCALE PEOPLE ENGINE v2
 
-This is a premium collectible figurine that preserves the subject's exact identity.
-The style is Pixar-adjacent realism — subtle stylization only. Identity always wins.
+This is a premium collectible figurine. Identity always overrides stylization.
+Target aesthetic: Pixar-adjacent realism. Not chibi. Not Funko Pop. Not anime.
 
-═══════════════════════════════════════════════════════
-FACE IDENTITY LOCK (HIGHEST PRIORITY — OVERRIDES EVERYTHING)
-═══════════════════════════════════════════════════════
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. FACE GEOMETRY LOCK (HIGHEST PRIORITY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-CRANIAL SCALING RULE:
-- Increase overall head size by scaling the full SKULL VOLUME uniformly
+Preserve exact facial structure from source image.
+- Maintain face height and vertical length exactly
+- Maintain jaw shape and taper exactly
+- Maintain cheekbone position exactly
+- Maintain temple width exactly
+- Do not round, compress, widen, or narrow the face
+- Geometry overrides all stylization decisions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. FACIAL WIDTH LOCK (CRITICAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve facial width exactly.
+- No cheek compression or inward tapering
+- No V-shaped narrowing toward chin
+- Maintain distance between eyes and outer cheeks exactly
+- Maintain mid-face width (nose-to-cheek span) exactly
+- Face must remain a natural oval — not pinched, not heart-shaped
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. AGE LOCK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve apparent age exactly as in source photo.
+- Do NOT add wrinkles, sagging, or under-eye shadows
+- Do NOT increase perceived age through texture or lighting
+- Do NOT make subject look younger — preserve exact age
+- Detail must not age or de-age the subject in any direction
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. EXPRESSION LOCK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve exact expression from source photo.
+- Match smile shape and asymmetry precisely
+- Maintain eye liveliness and eyelid tension
+- Preserve cheek lift from smiling if present
+- Do NOT replace expression with a generic or neutral face
+- Do NOT create a tired, sad, or blank expression
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. EYE CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Eyes must remain proportional to face.
+- Maximum scale increase: +10% — no more
+- Preserve original eye shape — no rounding or circularizing
+- Preserve eyelid thickness, fold structure, and spacing exactly
+- Enhance iris clarity only — NOT overall eye size
+- FORBIDDEN: anime enlargement, cartoon eye templates, circularization
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. MOUTH DETAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve mouth exactly.
+- Maintain exact mouth width
+- Maintain tooth visibility if present in source
+- Maintain lip curvature and natural asymmetry
+- Do not simplify or symmetrize the mouth
+- The smile must match the source expression precisely
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. SKULL SCALING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Slightly increase overall head size by scaling skull volume uniformly.
 - Do NOT alter internal facial proportions when scaling
-- The head grows larger — but the face geometry inside it does NOT change shape
-- Think of it as zooming in on the face, not reshaping it
+- Head-to-body ratio: 1:2.6 to 1:2.8 (never exceed 1:2.5)
+- The face inside the skull remains geometrically unchanged
+- More skull area = more canvas for facial detail — use it
 
-FACE GEOMETRY LOCK (CRITICAL):
-- Preserve vertical face length exactly — do NOT compress face height under any condition
-- Preserve jaw taper and chin length exactly
-- Preserve cheekbone width exactly
-- Preserve temple width exactly
-- If stylization conflicts with geometry → GEOMETRY WINS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. MATERIAL STYLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-EYE SCALING LOCK:
-- Eye size increase capped at 10% relative to original face — no more
-- Maintain original eye shape — do NOT round or circularize
-- Maintain eyelid structure and lid fold exactly
-- Maintain eye spacing exactly as in source
-- FORBIDDEN: anime-style enlargement, circularization, cartoon eye templates
+Render as high-end collectible figurine.
+- Full glossy resin finish across all surfaces — skin, hair, clothing, props
+- Clean, slightly rounded edges throughout
+- Subtle specular highlights — strong but not plastic-looking
+- Smooth but detailed textures
+- Eyes: deep glassy reflections
+- Base rim: polished dark walnut wood finish
+- Overall: premium collectible sold in a high-end toy or gift store
 
-STRICT FACE REQUIREMENTS:
-- Preserve exact face shape — do NOT round, soften, or widen
-- Preserve jaw length — do NOT shorten or baby-ify
-- Preserve nose shape and proportion exactly
-- Preserve mouth width and tooth visibility
-- Preserve ear size relative to face — do NOT enlarge ears
-- Preserve age appearance exactly — do NOT make subject look younger
-- Preserve skin texture: freckles, dirt, marks, imperfections
-- Preserve subtle facial asymmetry — real faces are not symmetrical
-- Expression must match source photo exactly
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. LIGHTING CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-FORBIDDEN:
-- Baby-like proportions or facial rounding
-- Oversized ears relative to face
-- Eye enlargement beyond 10% cap
-- Jaw shortening or chin reduction
-- Face height compression
-- Generic cute template applied over the real face
-- Age regression of any kind
+Use soft, frontal, warm studio lighting.
+- Even facial illumination — no harsh directional contrast
+- Minimize under-eye shadow — do NOT create tired or sunken eyes
+- Warm light temperature flatters all skin tones
+- Lighting must make the subject look alive and present, not tired or flat
 
-RULE: A parent must look at this figurine and immediately recognize their child.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. COMPOSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-═══════════════════════════════════════════════════════
-PROPORTION SYSTEM
-═══════════════════════════════════════════════════════
+- Camera: 35 degrees above, angled downward — feels like a miniature, not a portrait
+- Full figure visible head to toe
+- Full base visible with clean edges
+- Horizontal margins: 20% each side
+- Vertical margins: 12% top and bottom
+- Shallow depth of field — macro product photography
+- Warm bokeh background — soft interior, blurred
 
-HEAD-TO-BODY RATIO:
-- Target: 1:2.7
-- Maximum allowable: 1:2.5
-- Never exceed this range — it causes the baby/toddler effect
-- Body remains anatomically believable
-- Limbs slightly simplified but not stubby
-
-This is NOT: Funko Pop, anime chibi, toddler doll, cartoon character
-This IS: premium identity-preserved collectible — subtle stylization only
-
-═══════════════════════════════════════════════════════
-FACIAL DETAIL AMPLIFICATION
-═══════════════════════════════════════════════════════
-
-As the head scales slightly larger, facial detail must INCREASE proportionally:
-- More skull area = more canvas for accurate facial detail, not simplification
-- Skin texture, freckles, dirt, marks must remain fully visible
-- Subtle asymmetry must be preserved
-- Eye reflections must enhance realism, not stylization
-- Expression captured with precision
-
-═══════════════════════════════════════════════════════
-MATERIALS AND FINISH
-═══════════════════════════════════════════════════════
-
-- Full high-gloss lacquer finish — skin, hair, clothing, and props
-- Strong specular highlights on all surfaces — premium shiny collectible
-- Eyes: strong glassy reflections and deep gloss
-- Clothing and props: consistent high gloss throughout
-- Base rim: polished gloss dark walnut wood
-- Overall: premium glossy resin collectible from a high-end collectible store
-
-═══════════════════════════════════════════════════════
-BASE
-═══════════════════════════════════════════════════════
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. BASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 - Simple round display base, thick and substantial (~1cm perceived height)
 - Outer rim: warm polished gloss dark walnut wood, clean rounded edge
-- Base floor surface must match the floor/ground visible in the source photo:
+- Base floor surface must match the ground visible in the source photo:
   - Carpet → textured fabric-like miniature surface in matching color
-  - Grass → fine static grass or green flocking material
-  - Dirt/soil → textured brown terrain material
-  - Tile/hardwood floor → smooth painted miniature floor in matching color
+  - Grass → fine static grass or green flocking
+  - Dirt/soil → textured brown terrain
+  - Tile/hardwood → smooth painted miniature floor in matching color
   - Sand → fine terrain sand texture
-- No surrounding scene elements beyond the base floor texture
-- Figurine must be naturally anchored and grounded to the base floor
+- No surrounding scenery beyond base floor texture
+- Figurine naturally anchored to the base floor
 
-═══════════════════════════════════════════════════════
-COMPOSITION
-═══════════════════════════════════════════════════════
-
-- Camera 35–40 degrees above, angled downward — miniature object, not portrait
-- Figurine fully visible head to toe including complete base
-- Horizontal margins: 20% each side
-- Vertical margins: 12% top and bottom
-- Pull camera back to show full figurine and base within margins
-- Do not crop any part of figurine or base
-- Warm bokeh background — soft interior, blurred
-- Macro product photography of a real glossy collectible on a wooden surface
-
-═══════════════════════════════════════════════════════
-STRICT CONSTRAINTS
-═══════════════════════════════════════════════════════
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. STRICT CONSTRAINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 - No keyring, no chain, no attachment hardware
 - No surrounding scenery or props beyond base floor texture
 - Single figurine only — no other people or objects
-- Glossy finish mandatory throughout
-- Do not make subject look younger than source photo
+- Clothing, accessories, and props reproduced exactly as in source
 - Do not invent elements not present in source photo
-- Clothing, accessories, props reproduced exactly as in source
+- Glossy finish mandatory throughout
 
+MASTER RULE: A parent must look at this figurine and immediately recognize their child.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SCENE TO TRANSFORM:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ${imageDescription}
 `
 }

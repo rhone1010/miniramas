@@ -37,11 +37,13 @@ interface IdentityScore {
   corrections_required: string[]
   breakdown: {
     face_geometry_match: number
-    eye_accuracy: number
+    facial_width_integrity: number
     age_accuracy: number
-    feature_accuracy: number
-    texture_detail: number
     expression_match: number
+    eye_accuracy: number
+    mouth_accuracy: number
+    skin_tone_and_texture: number
+    overall_identity_feel: number
   }
 }
 
@@ -146,44 +148,48 @@ ${featuresSummary}
 Return ONLY valid JSON, no other text:
 {
   "total_score": 0,
-  "pass_threshold": 85,
+  "pass_threshold": 90,
   "fail": true,
   "breakdown": {
     "face_geometry_match": 0,
-    "eye_accuracy": 0,
+    "facial_width_integrity": 0,
     "age_accuracy": 0,
-    "feature_accuracy": 0,
-    "texture_detail": 0,
-    "expression_match": 0
+    "expression_match": 0,
+    "eye_accuracy": 0,
+    "mouth_accuracy": 0,
+    "skin_tone_and_texture": 0,
+    "overall_identity_feel": 0
   },
   "issues": [],
   "corrections_required": []
 }
 
 SCORING GUIDE:
-- face_geometry_match (max 40): jaw shape preserved, face length preserved, no rounding
-- eye_accuracy (max 15): eye size relative to face (max 10% enlargement), spacing, shape
-- age_accuracy (max 15): does not look younger, no baby-like features
-- feature_accuracy (max 10): nose, mouth, ear shape match
-- distortion_detection (max 10): face height preserved, jaw not shortened, no cheek widening, no eye overscaling
-- texture_detail (max 7): freckles/dirt/marks preserved
-- expression_match (max 3): same emotional expression
+- face_geometry_match (max 25): jaw shape, face length, cheekbone position, temple width preserved
+- facial_width_integrity (max 15): cheek width preserved, no inward tapering, no V-shape narrowing
+- age_accuracy (max 15): exact age preserved, no aging shadows added, no de-aging
+- expression_match (max 15): smile shape, eye liveliness, cheek lift all preserved
+- eye_accuracy (max 10): max 10% scale increase, eye shape preserved, eyelids intact
+- mouth_accuracy (max 10): width, teeth visibility, lip curvature, asymmetry all preserved
+- skin_tone_and_texture (max 5): skin tone matches source, freckles and marks retained
+- overall_identity_feel (max 5): would a parent recognize this child immediately
 
 HARD FAIL (set fail: true if ANY apply):
-- Baby face detected (rounder/younger than source)
-- Eyes enlarged more than 10% beyond natural proportion
-- Jaw shortened or widened from original
-- Face rounded from original non-round shape
-- Face height reduced or compressed
-- Facial geometry changed in any measurable way
-- Subject looks 2+ years younger
-- Ears enlarged beyond natural proportion
+- Subject looks older than source (aging shadows, texture)
+- Subject looks younger than source (baby face, de-aging)
+- Expression changed from source (tired, blank, generic smile)
+- Face shape altered in any dimension
+- Cheek compression detected
+- Eyes enlarged beyond 10%
+- Face narrowed from original width
+- Jaw taper exaggerated
 
 For corrections_required, be specific:
-e.g. "restore original face height — current face is vertically compressed"
+e.g. "restore original cheekbone width — face has been narrowed inward"
+e.g. "restore expression — subject looks tired/blank, source shows active smile"
+e.g. "remove under-eye shadows — lighting is aging the subject"
 e.g. "reduce eye size — eyes exceed 10% enlargement cap"
-e.g. "restore narrow elongated jaw — current jaw is too short and round"
-e.g. "reduce ear size — ears are disproportionately large relative to face"`
+e.g. "restore mouth detail — smile has been simplified from original expression"`
 
   try {
     const response = await openai.chat.completions.create({
@@ -208,7 +214,7 @@ e.g. "reduce ear size — ears are disproportionately large relative to face"`
   } catch (err) {
     console.error('Scoring failed:', err)
     return {
-      total_score: 86, pass_threshold: 85, fail: false,
+      total_score: 91, pass_threshold: 90, fail: false,
       issues: [], corrections_required: [],
       breakdown: { face_geometry_match: 35, eye_accuracy: 12, age_accuracy: 13, feature_accuracy: 12, texture_detail: 8, expression_match: 6 }
     }
@@ -226,9 +232,11 @@ ${score.corrections_required.map(c => `- ${c}`).join('\n')}
 SKULL-SCALING REMINDER:
 - Scale the skull volume uniformly — do NOT reshape the face geometry
 - Restore original face height and vertical proportions
+- Restore original cheekbone width — remove any inward tapering
+- Remove any artificial face narrowing or V-shape creation
 - Restore jaw length and taper exactly
+- Restore mouth detail and original smile shape
 - Reduce eye size to match original proportions (max 10% enlargement)
-- Remove any facial widening, rounding, or compression
 - Remove any ear enlargement
 - Restore subject's actual age appearance
 
@@ -287,7 +295,7 @@ async function generateWithScoring(
     console.log(`Iteration ${iteration} score: ${score.total_score} fail: ${score.fail}`)
 
     // Pass threshold met
-    if (score.total_score >= 85 && !score.fail) {
+    if (score.total_score >= 90 && !score.fail) {
       console.log(`Passed on iteration ${iteration}`)
       return bestResult
     }
@@ -456,7 +464,7 @@ export async function POST(request: NextRequest) {
       status: 'preview_ready',
       ...(score && {
         identityScore: score.total_score,
-        scorePassed: !score.fail && score.total_score >= 85,
+        scorePassed: !score.fail && score.total_score >= 90,
         iterations,
       })
     })
