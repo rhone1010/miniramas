@@ -300,44 +300,68 @@ export function buildFinalPrompt(
     .trim()
 }
 
-// ─── CHIBI KEYCHAIN FIGURINE BLOCK ───────────────────────────────────────────
+// ─── IDENTITY-PRESERVED MINIATURE FIGURINE BLOCK ─────────────────────────────
 
 function getKeychainFigurineBlock(imageDescription: string): string {
   return `
-TRANSFORM THE SUBJECT INTO A CHIBI COLLECTIBLE FIGURINE.
+FACE IDENTITY LOCK (HIGHEST PRIORITY — OVERRIDES ALL STYLE DECISIONS):
 
-FIGURINE STYLE:
-- Enlarged head relative to body (head approximately 1/2 of total body height) for collectible appeal
-- Eyes enlarged but must retain the exact shape, color, and character of the subject's real eyes
-- Body simplified and rounded but proportionally believable
-- Maintain the subject's real clothing, colors, patches, and accessories exactly
-- Preserve pose and energy from the source photo
+The subject's facial structure must be preserved exactly from the source image.
+This is an identity-preserved miniature, not a stylized character.
 
-FACE (OVERRIDE — HIGHEST PRIORITY):
-- Do NOT apply a generic chibi face template
-- The enlarged head is a canvas — use it to render MORE facial detail, not less
-- Preserve the subject's exact face geometry: jaw shape, face length, nose shape, brow position
-- A child with a narrow jaw must have a narrow jaw in the figurine
-- A child with a longer face must have a longer face — do not make it rounder or shorter
-- Match exact hair color, texture, and cut — do not smooth or helmet the hair
-- Match eye color, eye shape, and eye spacing precisely
-- Match skin tone exactly
-- Capture the specific expression from the source photo
-- The parent must look at this figurine and immediately recognize their child
+STRICT FACE REQUIREMENTS:
+- Preserve exact face shape (oval, narrow, long — do NOT round or soften)
+- Preserve jaw width and length exactly — do not shorten, widen, or baby-ify
+- Preserve eye size relative to face — do NOT enlarge beyond natural proportion
+- Preserve eye spacing and placement exactly as in source
+- Preserve nose shape and proportion
+- Preserve mouth width and tooth visibility
+- Preserve ear size and position
+- Preserve age appearance exactly — do NOT make subject look younger
+- Preserve skin texture details: freckles, dirt, marks, imperfections
+- Preserve subtle facial asymmetry — real faces are not symmetrical
+- Expression must match the source photo exactly
+
+FORBIDDEN FACE TREATMENTS:
+- No baby-like proportions or rounding
+- No oversized anime or chibi eyes
+- No generic "cute template" face applied over the real face
+- No smoothing or simplification of facial geometry
+- No age regression
+
+RULE: A parent must look at this figurine and immediately recognize their child.
+
+PROPORTION SYSTEM (CONTROLLED SCALE — NOT FULL CHIBI):
+- Head-to-body ratio: 1:2.5 to 1:3 — head slightly enlarged, NOT dominant
+- Body remains anatomically believable with natural limb proportions
+- Limbs slightly simplified but not stubby or exaggerated
+- This is NOT a Funko Pop, NOT an anime chibi, NOT a toddler doll
+- Style target: premium collectible figurine — Pixar-adjacent realism
+
+FACIAL DETAIL AMPLIFICATION:
+As the head scales slightly larger, facial detail must INCREASE proportionally.
+- More head area = more room for accurate facial features, not less
+- Skin texture, freckles, dirt, and marks must remain visible
+- Subtle asymmetry must be preserved
+- Eye reflections must enhance realism, not stylization
+- Expression must be captured with precision
+
+STYLE BALANCE DIRECTIVE:
+This is a high-end identity-preserved collectible figurine.
+Style sits between: realistic portrait miniature ↔ subtle collectible stylization.
+
+NOT: anime, cartoon, toy-like exaggeration, baby proportions, Funko Pop
+YES: premium collectible, Pixar-adjacent realism, identity-first
+
+If forced to choose → ALWAYS prioritize identity over stylization.
 
 MATERIALS (FINISH):
-- Full high-gloss lacquer finish across the entire figurine — skin, hair, clothing, and props
-- Strong specular highlights on all surfaces — this is a shiny collectible, not matte or satin
-- Eyes must have strong glassy reflections and deep gloss
-- Clothing and props must also be glossy — consistent sheen across the whole figure
+- Full high-gloss lacquer finish across the entire figurine — skin, hair, clothing, props
+- Strong specular highlights on all surfaces — premium shiny collectible finish
+- Eyes: strong glassy reflections and deep gloss
+- Clothing and props: consistent high gloss across the whole figure
 - Base rim: polished gloss dark walnut wood finish
-- Overall look: premium glossy resin collectible as sold in high-end toy and collectible stores
-
-AGE ACCURACY:
-- Render the subject at their exact apparent age from the source photo
-- Do not make the subject look younger or more baby-faced than they appear
-- A 7-8 year old must look 7-8 — preserve face length, jaw definition, and maturity level
-- Chibi proportions must not regress the apparent age of the subject
+- Overall look: premium glossy resin collectible from a high-end collectible store
 
 BASE:
 - Simple round display base, thick and substantial (approximately 1cm perceived height)
@@ -352,22 +376,24 @@ BASE:
 - Figurine must be anchored naturally and grounded to the base floor
 
 COMPOSITION:
-- Camera positioned 35–40 degrees above, angled downward — must feel like a miniature object photographed from above, not a portrait
+- Camera positioned 35–40 degrees above, angled downward
+- Must feel like a miniature object being photographed, not a portrait
 - Figurine fully visible head to toe including the complete base
-- Horizontal margins: 20% on each side of the figurine
+- Horizontal margins: 20% on each side
 - Vertical margins: 12% top and bottom
-- Pull camera back enough so the entire figurine and base sit comfortably within these margins
+- Pull camera back to show the full figurine and base within these margins
 - Do not crop any part of the figurine or base
-- Warm bokeh background — soft interior feel, blurred
-- Macro product photography of a real glossy collectible figurine on a wooden surface
+- Warm bokeh background — soft interior feel, softly blurred
+- Macro product photography of a real glossy collectible on a wooden surface
 
 STRICT CONSTRAINTS:
 - No keyring, no chain, no attachment hardware
-- No surrounding scenery, props, or environmental elements beyond the base floor texture
+- No surrounding scenery or environmental elements beyond the base floor texture
 - No other people or objects — single figurine only
-- Glossy finish is mandatory — do not render matte or flat surfaces
-- Do not make the subject look younger than they appear in the source photo
+- Glossy finish is mandatory throughout
+- Do not make the subject look younger than in the source photo
 - Do not invent or add elements not present in the source photo
+- Clothing, accessories, props must be reproduced exactly as worn/held in source
 
 SCENE TO TRANSFORM:
 ${imageDescription}
