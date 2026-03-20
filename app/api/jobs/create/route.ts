@@ -46,6 +46,8 @@ export async function POST(request: NextRequest) {
     try {
       const visionPrompt = style === 'architecture'
         ? 'Describe this building photograph for miniature diorama conversion. Include: exact roof shape and style, siding color and material, window count and positions, porch or entry details, trim colors, any unique architectural features. Also describe: what vegetation or landscaping is actually visible (do not invent any). Keep under 200 words. Be precise and literal — do not interpret or embellish.'
+        : style === 'people_miniature'
+        ? 'Describe this person precisely for chibi figurine creation. Include: exact hair color and cut (e.g. short strawberry blonde, side parted), eye color (e.g. blue-grey), skin tone, face shape (round, oval, etc), approximate age, exact clothing description including colors, patterns, logos or patches, and any props they are holding. Also describe the floor or ground surface they are standing on (carpet color, grass, tile, dirt etc). Be hyper-specific about the face. Keep under 200 words.'
         : 'Describe this image in detail for miniature diorama generation. Include: main subjects, their poses and positions, the environment and setting, colors, lighting, and any important details that must be preserved. Be specific and visual. Keep under 200 words.'
 
       const visionResponse = await openai.chat.completions.create({
@@ -96,7 +98,7 @@ export async function POST(request: NextRequest) {
     const config = validateConfig(rawConfig)
 
     // ─── 4. Build final prompt ───────────────────────────────────────────────
-    const mode = style === 'sports' ? 'sports' : style === 'activity' ? 'activity' : undefined
+    const mode = style === 'sports' ? 'sports' : style === 'activity' ? 'activity' : style === 'people_miniature' ? 'keychain' : undefined
     const prompt = buildFinalPrompt(config, imageDescription, mode)
     console.log('Final prompt:', prompt)
 

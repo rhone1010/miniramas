@@ -271,8 +271,13 @@ function getSubjectBlock(subjectType: MiniramaConfig['subject']['type']): string
 export function buildFinalPrompt(
   config: MiniramaConfig,
   imageDescription: string,
-  mode?: 'sports' | 'activity'
+  mode?: 'sports' | 'activity' | 'keychain'
 ): string {
+  // Keychain mode is self-contained — skip environment and style lock blocks
+  if (mode === 'keychain') {
+    return getKeychainFigurineBlock(imageDescription).trim()
+  }
+
   // Route subject block — sports/activity override subject type routing
   const subjectBlock = mode === 'sports'
     ? getSportsBlock()
@@ -293,4 +298,74 @@ export function buildFinalPrompt(
     .filter(Boolean)
     .join('\n')
     .trim()
+}
+
+// ─── CHIBI KEYCHAIN FIGURINE BLOCK ───────────────────────────────────────────
+
+function getKeychainFigurineBlock(imageDescription: string): string {
+  return `
+TRANSFORM THE SUBJECT INTO A CHIBI COLLECTIBLE FIGURINE.
+
+FIGURINE STYLE:
+- Chibi proportions: oversized head (approximately 1/2 to 1/3 of total body height)
+- Large expressive eyes that carry the subject's real eye color and shape
+- Simplified but recognizable body with soft rounded forms
+- Maintain the subject's real clothing, colors, patches, and accessories exactly
+- Preserve pose and energy from the source photo
+
+FACE (HIGHEST PRIORITY):
+- The face must be recognizable as the specific person in the source photo
+- Match exact hair color, cut, and style
+- Match eye color precisely
+- Match skin tone
+- Capture the expression from the source photo
+- Use the enlarged chibi face canvas to ADD identity detail — more face area means more room for accurate features, not less
+
+MATERIALS (FINISH):
+- Full high-gloss lacquer finish across the entire figurine — skin, hair, clothing, and props
+- Strong specular highlights on all surfaces — this is a shiny collectible, not matte or satin
+- Eyes must have strong glassy reflections and deep gloss
+- Clothing and props must also be glossy — consistent sheen across the whole figure
+- Base rim: polished gloss dark walnut wood finish
+- Overall look: premium glossy resin collectible as sold in high-end toy and collectible stores
+
+AGE ACCURACY:
+- Render the subject at their exact apparent age from the source photo
+- Do not make the subject look younger or more baby-faced than they appear
+- A 7-8 year old must look 7-8 — preserve face length, jaw definition, and maturity level
+- Chibi proportions must not regress the apparent age of the subject
+
+BASE:
+- Simple round display base, thick and substantial (approximately 1cm perceived height)
+- Outer rim: warm polished gloss dark walnut wood, clean rounded edge
+- Base floor surface must match the floor/ground visible in the source photo:
+  - Carpet → textured fabric-like miniature surface in matching color
+  - Grass → fine static grass or green flocking material
+  - Dirt/soil → textured brown terrain material
+  - Tile/hardwood floor → smooth painted miniature floor in matching color
+  - Sand → fine terrain sand texture
+- No surrounding scene elements beyond the base floor texture
+- Figurine must be anchored naturally and grounded to the base floor
+
+COMPOSITION:
+- Camera positioned 35–40 degrees above, angled downward — must feel like a miniature object photographed from above, not a portrait
+- Figurine fully visible head to toe including the complete base
+- Horizontal margins: 20% on each side of the figurine
+- Vertical margins: 12% top and bottom
+- Pull camera back enough so the entire figurine and base sit comfortably within these margins
+- Do not crop any part of the figurine or base
+- Warm bokeh background — soft interior feel, blurred
+- Macro product photography of a real glossy collectible figurine on a wooden surface
+
+STRICT CONSTRAINTS:
+- No keyring, no chain, no attachment hardware
+- No surrounding scenery, props, or environmental elements beyond the base floor texture
+- No other people or objects — single figurine only
+- Glossy finish is mandatory — do not render matte or flat surfaces
+- Do not make the subject look younger than they appear in the source photo
+- Do not invent or add elements not present in the source photo
+
+SCENE TO TRANSFORM:
+${imageDescription}
+`
 }
