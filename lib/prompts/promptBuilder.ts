@@ -307,19 +307,23 @@ function getKeychainFigurineBlock(imageDescription: string): string {
 TRANSFORM THE SUBJECT INTO A CHIBI COLLECTIBLE FIGURINE.
 
 FIGURINE STYLE:
-- Chibi proportions: oversized head (approximately 1/2 to 1/3 of total body height)
-- Large expressive eyes that carry the subject's real eye color and shape
-- Simplified but recognizable body with soft rounded forms
+- Enlarged head relative to body (head approximately 1/2 of total body height) for collectible appeal
+- Eyes enlarged but must retain the exact shape, color, and character of the subject's real eyes
+- Body simplified and rounded but proportionally believable
 - Maintain the subject's real clothing, colors, patches, and accessories exactly
 - Preserve pose and energy from the source photo
 
-FACE (HIGHEST PRIORITY):
-- The face must be recognizable as the specific person in the source photo
-- Match exact hair color, cut, and style
-- Match eye color precisely
-- Match skin tone
-- Capture the expression from the source photo
-- Use the enlarged chibi face canvas to ADD identity detail — more face area means more room for accurate features, not less
+FACE (OVERRIDE — HIGHEST PRIORITY):
+- Do NOT apply a generic chibi face template
+- The enlarged head is a canvas — use it to render MORE facial detail, not less
+- Preserve the subject's exact face geometry: jaw shape, face length, nose shape, brow position
+- A child with a narrow jaw must have a narrow jaw in the figurine
+- A child with a longer face must have a longer face — do not make it rounder or shorter
+- Match exact hair color, texture, and cut — do not smooth or helmet the hair
+- Match eye color, eye shape, and eye spacing precisely
+- Match skin tone exactly
+- Capture the specific expression from the source photo
+- The parent must look at this figurine and immediately recognize their child
 
 MATERIALS (FINISH):
 - Full high-gloss lacquer finish across the entire figurine — skin, hair, clothing, and props
