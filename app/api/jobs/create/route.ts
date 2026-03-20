@@ -364,9 +364,9 @@ export async function POST(request: NextRequest) {
           model: 'gpt-4o',
           messages: [{ role: 'user', content: [
             { type: 'image_url', image_url: { url: publicUrl } },
-            { type: 'text', text: 'Describe this building for miniature diorama conversion. Include exact roof shape, siding color, window positions, porch details, trim colors, and only vegetation actually visible. Keep under 200 words. Be literal — do not embellish.' }
+            { type: 'text', text: 'Describe the BUILDING STRUCTURE ONLY for miniature scale model conversion. Focus exclusively on: exact roof shape and style (mansard, gabled, flat etc), siding color and material, number and position of windows and their trim, porch or entry structure and columns, trim colors, any unique architectural features like bay windows or dormers. Do NOT describe the surroundings, street, neighbors, cars, or yard. Keep under 120 words. Be precise and literal.' }
           ]}],
-          max_tokens: 300
+          max_tokens: 200
         })
         imageDescription = r.choices[0]?.message?.content || ''
       } else {

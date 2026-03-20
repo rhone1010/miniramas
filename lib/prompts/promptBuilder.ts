@@ -56,32 +56,40 @@ IDENTITY RULES (STRICT):
 function getArchitectureBlock(): string {
   return `
 SUBJECT TRANSFORMATION (ARCHITECTURE):
-Convert the building into a photorealistic handcrafted scale model.
-This is a physical transformation of the original structure — NOT a reinterpretation.
+Convert the building into a photorealistic handcrafted scale model collectible.
+This is a physical transformation — structurally faithful but presented as a premium display piece.
 
-ARCHITECTURAL FIDELITY (STRICT):
+ARCHITECTURAL FIDELITY (STRICT — STRUCTURE ONLY):
 - Retain exact roof shape, pitch, and roofline from source image
 - Retain window positions, sizes, and trim details exactly
 - Retain porch structure, columns, railings exactly as photographed
 - Retain siding color, trim color, and surface material language
 - Retain bay windows, dormers, or any unique features present in source
-- Do NOT add floors, windows, dormers, or features not in the original
-- Do NOT upgrade, beautify, or idealize the building
+- Do NOT add floors, windows, dormers, or structural features not in the original
+- Do NOT change the building's shape, massing, or proportions
 
-LANDSCAPING (SOURCE-FAITHFUL):
-- Only include landscaping elements EXPLICITLY visible in the source photograph
-- Do NOT add water features, ponds, streams, puddles, or reflective surfaces unless clearly present in source
-- Do NOT add gardens, pathways, fences, flower beds, or shrubs not present in source
-- If yard is plain grass, keep it plain grass — do not beautify or add elements
-- Trees: only include if visible in original, placed in same relative positions
+LANDSCAPING (ENHANCED — THIS IS A COLLECTIBLE, NOT A SURVEY MODEL):
+The landscaping should be beautiful, lush, and inviting — like a premium gift shop miniature.
+- Add rich green grass, neatly trimmed, covering the base
+- Add tasteful garden beds with small flowers and shrubs around the building foundation
+- Add miniature model trees in contextually appropriate positions
+- Add a stone or brick pathway from the porch steps to the base edge
+- Keep all landscaping in miniature model scale — flocking, static grass, model foliage
 - Tree height must remain below roofline
-- All vegetation rendered as miniature model foliage, not photographic plants
+- Landscaping must feel designed and curated, not sparse or accidental
+
+PRESENTATION QUALITY:
+- The miniature must look like it belongs in a high-end gift shop or collectible store
+- Rich, warm colors throughout — no grey or dull tones
+- Every surface should have texture and life
+- The base should feel full and complete, not empty
 
 FORBIDDEN:
-- Warping, stretching, or proportional changes
+- Warping, stretching, or proportional changes to the building
 - Cartoonization of any architectural element
-- Invented elements not present in source photo
 - Flat printed backgrounds or sky planes
+- Grey, dull, or lifeless color palette
+- Sparse or empty base — the landscaping must be full and rich
 `
 }
 
