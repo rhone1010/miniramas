@@ -16,7 +16,9 @@ STYLE LOCK (MANDATORY — APPLY TO ALL OUTPUTS):
 - The display base must be fully visible in frame with clean edges
 - Maintain approximately 10–20% breathing room between base edge and image frame
 - Camera must be positioned 25–45 degrees above the subject, looking down
-- Depth of field must simulate real macro product photography
+- The entire miniature must be in sharp focus — every detail crisp and clear
+- Background blur applies ONLY to the scene behind the base — never to the miniature itself
+- No tilt-shift blur on the miniature — it must look like a real physical object
 - No flat backgrounds, no 2D scenery, no sky cards, no printed backdrops
 - All elements must be grounded and physically connected to the base
 - Use only plausible physical miniature materials
@@ -182,10 +184,12 @@ Use ${material} materials with realistic physical surface qualities and premium 
 All elements must share a consistent material language.
 
 CAMERA:
-Macro product photography of a real physical miniature.
+Macro product photography of a real physical miniature sitting on a wooden surface.
 Camera positioned approximately ${angle} degrees above, angled downward toward the scene.
-${dof} depth of field. Keep primary subjects sharp and readable.
-Slight tilt-shift effect to reinforce miniature scale.
+CRITICAL — FOCUS: The entire diorama must be in sharp focus — every surface, detail, and texture on the miniature must be crisp and clear.
+Depth of field applies ONLY to the background scene behind the base — everything beyond the base edge is softly blurred.
+Do NOT apply tilt-shift blur. Do NOT selectively blur any part of the miniature itself.
+The miniature must look like a real physical collectible object you could pick up — not a photograph with lens blur.
 
 LIGHTING:
 ${lighting} lighting with coherent shadow logic, soft highlights, and realistic reflections.
@@ -417,8 +421,9 @@ Use soft, frontal, warm studio lighting.
 - Full base visible with clean edges
 - Horizontal margins: 20% each side
 - Vertical margins: 12% top and bottom
-- Shallow depth of field — macro product photography
-- Warm bokeh background — soft interior, blurred
+- The entire figurine must be in sharp focus — every surface and detail crisp and clear
+- Background blur applies ONLY behind the base — nothing on the figurine or base is blurred
+- Macro product photography of a real physical collectible object on a wooden surface
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 11. BASE
