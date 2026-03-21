@@ -35,7 +35,8 @@ function getPeopleBlock(): string {
 SUBJECT TRANSFORMATION (PEOPLE):
 Convert all people into collectible miniature figurines while preserving exact facial identity, proportions, and expression.
 Faces must remain highly recognizable with accurate structure, asymmetry, and natural features.
-Slight stylization allowed only in softening edges — avoid cartoon, chibi, or exaggerated proportions.
+Slight stylization allowed ONLY in surface material and edge softening.
+NO stylization allowed in facial geometry, proportions, or expression.
 
 MATERIAL (FIGURES):
 Render as high-quality molded collectible figures with satin-to-semi-gloss resin finish.
@@ -50,6 +51,7 @@ IDENTITY RULES (STRICT):
 - Match hair color, length, and style exactly
 - Match clothing colors and style exactly
 - No stylization, cartooning, or idealization of faces
+- Avoid hyper-real skin texture that adds perceived age
 `
 }
 
@@ -259,6 +261,45 @@ function buildTuningBlock(promptTuning: Record<string, boolean | number> = {}): 
     : ''
 }
 
+// ─── PRE-CONSTRAINT BLOCK (preventative — applied before any stylization) ─────
+
+function buildPreConstraintBlock(): string {
+  return `
+PRE-GENERATION CONSTRAINTS (APPLY BEFORE ANY STYLIZATION):
+- Do not alter facial proportions in any way
+- Do not add aging through lighting, texture, or shadow
+- Do not compress, widen, or narrow the face
+- Do not exaggerate eyes beyond natural proportions
+- Expression must match source exactly
+- Avoid hyper-real skin texture or micro-detail that increases perceived age
+
+These constraints apply before any artistic or stylistic interpretation.
+`
+}
+
+// ─── IDENTITY INJECTION (structured features from vision extraction) ──────────
+
+function buildIdentityInjection(features: Record<string, any>): string {
+  if (!features?.face_shape) return ''
+  return `
+IDENTITY PROFILE (MANDATORY — DO NOT ALTER):
+
+Age: ${features.age_range}
+Face shape: ${features.face_shape}
+Jaw profile: ${features.jaw_profile}
+Eye shape: ${features.eye_shape}, ${features.eye_size_ratio}, ${features.eye_spacing} spacing
+Nose: ${features.nose_shape}
+Mouth: ${features.mouth_shape}
+Hair: ${features.hair_color}, ${features.hair_style}
+Skin tone: ${features.skin_tone}
+Distinct features: ${features.distinct_features?.join(', ') || 'none'}
+Expression: ${features.expression}
+Clothing: ${features.clothing?.join(', ')}
+
+These features MUST be preserved exactly in the output.
+`
+}
+
 // ─── SUBJECT BLOCK ROUTER ─────────────────────────────────────────────────────
 
 function getSubjectBlock(subjectType: MiniramaConfig['subject']['type']): string {
@@ -283,14 +324,24 @@ function getSubjectBlock(subjectType: MiniramaConfig['subject']['type']): string
 export function buildFinalPrompt(
   config: MiniramaConfig,
   imageDescription: string,
-  mode?: 'sports' | 'activity' | 'keychain'
+  mode?: 'sports' | 'activity' | 'keychain',
+  identityFeatures?: Record<string, any>
 ): string {
-  // Keychain mode is self-contained — skip environment and style lock blocks
+  // Keychain/people mode — use honePeople with full preventative stack
   if (mode === 'keychain') {
-    return honePeople(imageDescription).trim()
+    const styleLock = getStyleLockBlock()
+    const preConstraints = buildPreConstraintBlock()
+    const identityBlock = identityFeatures ? buildIdentityInjection(identityFeatures) : ''
+    const people = honePeople(imageDescription)
+    return [
+      styleLock,
+      preConstraints,
+      identityBlock,
+      people,
+    ].filter(Boolean).join('\n').trim()
   }
 
-  // Route subject block — sports/activity override subject type routing
+  // Route subject block
   const subjectBlock = mode === 'sports'
     ? getSportsBlock()
     : mode === 'activity'
@@ -301,10 +352,11 @@ export function buildFinalPrompt(
   const styleLock = getStyleLockBlock()
   const tuningBlock = buildTuningBlock(config.prompt_tuning)
 
+  // Style lock FIRST — non-negotiable rules read before any other decisions
   return [
+    styleLock,
     subjectBlock,
     environmentBlock,
-    styleLock,
     tuningBlock,
   ]
     .filter(Boolean)

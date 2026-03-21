@@ -396,12 +396,12 @@ export async function POST(request: NextRequest) {
         background_style: 'blurred_home',
       },
       composition: { camera_angle: style === 'architecture' ? 35 : 40, margin_ratio: 0.15, depth_of_field: 'shallow' },
-      detail: { level: 'high' },
+      detail: { level: 'balanced' },
     }
 
     const config = validateConfig(rawConfig)
     const mode = style === 'sports' ? 'sports' : style === 'activity' ? 'activity' : isPeopleMode ? 'keychain' : undefined
-    const prompt = buildFinalPrompt(config, imageDescription, mode)
+    const prompt = buildFinalPrompt(config, imageDescription, mode, isPeopleMode ? identityFeatures : undefined)
 
     // ─── 4. Create job record ─────────────────────────────────────────────
     const { data: job, error: jobError } = await supabaseAdmin

@@ -73,7 +73,7 @@ export function validateConfig(config: Partial<MiniramaConfig>): MiniramaConfig 
 
   // Detail level
   if (!next.detail.level) {
-    next.detail.level = 'high'
+    next.detail.level = 'balanced'
   }
 
   // Identity defaults
