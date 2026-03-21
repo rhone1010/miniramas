@@ -1,6 +1,6 @@
-// lib/prompts/promptBuilder.ts — HONESCALE v4.1
-// Adds: base theme system, expression lock as top-tier rule,
-// frame fit guarantee, base physicality enforcement
+// lib/prompts/promptBuilder.ts — HONESCALE v4.2
+// Primary objective block at top, base dominance, base separation,
+// base thickness, camera/framing fix, environmental context restored
 
 import { MiniramaConfig, BaseTheme } from './validateConfig'
 
@@ -17,15 +17,35 @@ function humanize(value: string): string {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// PRIMARY OBJECTIVE — MUST BE FIRST, OVERRIDES ALL
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function getPrimaryObjectiveBlock(): string {
+  return `
+PRIMARY OBJECTIVE (OVERRIDES ALL OTHER INSTRUCTIONS):
+
+The result must look like a PHYSICAL COLLECTIBLE MINIATURE OBJECT sitting on a table.
+
+If any instruction conflicts with this goal:
+→ prioritize physical miniature realism over identity, stylization, or composition.
+
+The viewer must immediately perceive:
+"This is a real object placed on a surface"
+NOT:
+"This is a small person in a room"
+`
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // PERCEPTION BLOCKS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function getStyleLockBlock(): string {
   return `
 STYLE LOCK (MANDATORY):
-- Entire scene must be a physical 3D miniature
-- Display base fully visible — no cropping, no touching frame edge on any side
-- Camera 30-45 degrees above, looking down — never eye-level
+- Entire scene must be a physical 3D miniature object sitting on a table
+- Display base fully visible — no cropping on any side including bottom
+- Camera far enough back to show full base with clear margins — this is product photography, not a portrait
 - Entire miniature in sharp focus — every detail crisp
 - Background blur ONLY behind the base — never on the miniature
 - No tilt-shift blur, no flat backdrops, no 2D scenery, no sky cards
@@ -53,53 +73,75 @@ If the scene reads as life-size → it is incorrect
 `
 }
 
+// ─── CAMERA & FRAMING (FIXED) ─────────────────────────────────────────────────
+
 function getCameraScaleBlock(angle: number): string {
   return `
-CAMERA & SCALE PERCEPTION:
-Macro product photography of a small physical collectible on a tabletop.
-- Camera angle: ${angle} degrees above, angled downward
-- Mimic macro lens: slight perspective compression, natural depth falloff
-- Do NOT simulate full-scale or wide-angle photography
-- Object must read as small and tangible
+CAMERA & FRAMING (STRICT — THIS IS PRODUCT PHOTOGRAPHY, NOT A PORTRAIT):
 
-FOCUS ENFORCEMENT (STRICT):
+The camera must be positioned far enough away to fully capture:
+- The entire base with clear visible margins on all sides including bottom
+- The full subject with breathing room above
+- The base must appear as a substantial object — not just a platform under feet
+
+Subject must NOT dominate the frame. The base must be visually prominent.
+
+IF NEEDED TO FIT BASE IN FRAME:
+- Move camera further back
+- Reduce subject size within the frame
+- Increase field of view slightly
+Cropping the base = incorrect. Shrinking the subject is always preferred.
+
+LENS BEHAVIOR:
+- Camera angle: ${angle} degrees above, angled downward — never eye-level
+- Mimic macro photography: slight perspective compression, natural depth falloff
+- Do NOT simulate full-scale or wide-angle photography
+
+FOCUS ENFORCEMENT:
 - Entire miniature in complete sharp focus — every surface, every edge
-- No blur on any part of the miniature for any reason
-- No tilt-shift effect allowed
+- No blur anywhere on the miniature for any reason
 - Background blur begins ONLY beyond the base edge
 
-PHYSICAL CONTACT RULE:
+PHYSICAL CONTACT:
 - Base sits naturally on visible wooden tabletop
 - Clear soft contact shadow under base — grounded, not floating
-- Table surface texture visible and believable (wood grain preferred)
+- Table surface texture visible (wood grain preferred)
 `
 }
 
-// ─── FRAME FIT GUARANTEE ──────────────────────────────────────────────────────
-// Fix 3: Explicit permission to shrink subject / pull camera back
+// ─── BASE DOMINANCE & SEPARATION ─────────────────────────────────────────────
 
-function getFrameFitBlock(marginPct: number): string {
+function getBaseDominanceBlock(): string {
   return `
-FRAME FIT GUARANTEE (STRICT — NON-NEGOTIABLE):
-The entire display base MUST be fully visible within the frame.
-- No part of the base may touch or cross the image edge
-- Maintain at least ${marginPct}% visible margin on ALL sides including bottom
+BASE DOMINANCE (CRITICAL):
+The base must be visually prominent and clearly larger than the subject's footprint.
+- Base must extend beyond the subject on all sides
+- Subject must not fill or dominate the base — the subject sits ON it
+- The base must feel like the PRIMARY OBJECT — not a platform that blends away
 
-TO ACHIEVE THIS (USE THESE IN ORDER):
-1. Move camera further back to include full base
-2. Reduce subject scale if needed
-3. Increase field of view slightly if needed
+BASE SEPARATION (CRITICAL):
+The base must be visually distinct from the table surface it rests on.
+- Add a visible edge highlight or shadow line separating base from table
+- Base must appear as a separate object placed on the table
+- Do NOT allow base surface to visually merge with table surface material
+- The walnut wood rim must read as a distinct defined edge
 
-Cropping the base = incorrect result. Shrinking the subject is preferred over cropping.
+BASE THICKNESS ENFORCEMENT:
+The base must clearly show visible vertical thickness from camera angle.
+- Minimum 3/4 inch perceived visual thickness
+- Routed or beveled edge profile clearly visible
+- Specular highlight along edge to emphasize depth and form
+- Thin or flat bases are NOT acceptable — must feel weighty and substantial
 `
 }
 
 function getFailureConditions(): string {
   return `
 FAILURE CONDITIONS (OUTPUT IS INCORRECT IF ANY OCCUR):
-IDENTITY: Face symmetrized · Expression generic/softened · Cheeks inflated · Jaw shape changed · Skin tone shifted · Eyes >18%
-BASE: Missing walnut plinth · Missing brass band · Missing brass plaque · Wrong ground texture · Room interior on base · Base cropped at any edge
-PERCEPTION: Scene reads life-size · Camera eye-level · Any miniature blur · Base floating
+PRODUCT: Scene reads as life-size · Base cropped at any edge · Base blends into table · Base appears thin or flat · Subject dominates frame · Camera eye-level
+IDENTITY: Face symmetrized · Expression generic · Cheeks inflated · Jaw shape changed · Skin tone shifted · Eyes >18%
+BASE: Missing walnut plinth · Missing brass band · Missing brass plaque · Wrong ground texture · Room interior on base
+PERCEPTION: Any miniature blur · Base floating · No contact shadow
 `
 }
 
@@ -129,47 +171,47 @@ function getBaseThemeInstructions(theme: BaseTheme, groundSurface: string): stri
   switch (theme) {
     case 'match_environment':
       return `
-BASE SURFACE (MATCH ENVIRONMENT):
-Replicate the source floor exactly: ${ground}
-- Increase texture clarity and edge polish — make it feel curated, not accidental
-- No added objects or props
-- Clean, faithful, premium version of the original floor
+ENVIRONMENTAL CONTEXT (SOURCE-LOCKED):
+Base surface replicates source floor: ${ground}
+- Enhance for presentation: cleaner, more intentional, slightly stylized — not generic flat wood
+- Increase texture clarity and edge crispness
+- Must feel curated, not accidental
+- Do NOT replace with generic surface unless no source context exists
 `
     case 'enhanced_environment':
       return `
-BASE SURFACE (ENHANCED ENVIRONMENT):
-Start with source floor: ${ground}
-- Increase texture clarity and edge crispness
-- Add subtle raised texture variation and clean edge transitions
-- May include 1-2 contextually appropriate small objects placed intentionally at base edge
+ENVIRONMENTAL CONTEXT (ENHANCED):
+Base surface: ${ground}
+- Increase texture clarity and add subtle raised variation
+- Add 1-2 contextually appropriate small objects placed intentionally at base edge
 - Objects must feel like they belong — not random decoration
+- Slightly more polished than real — premium miniature quality
 `
     case 'play_scene':
       return `
-BASE SURFACE (PLAY SCENE — STORYTELLING):
-Start with source floor: ${ground}
-- Add a small number of contextually appropriate props arranged with intention
-  (e.g. toy truck, ball, book — whatever fits the subject's context from source image)
-- Props must tell a story about the subject — not clutter the scene
-- Maximum 2-3 props, all miniature scale, all purposefully positioned
-- This base must feel like a curated memory snapshot, not a generic display
+ENVIRONMENTAL CONTEXT (PLAY SCENE — STORYTELLING):
+Base surface: ${ground}
+- Add small contextually appropriate props arranged with intention
+  (e.g. toy truck, ball — matching subject's context from source image)
+- Maximum 2-3 props, all miniature scale, purposefully positioned
+- Must feel like a curated memory snapshot — not clutter
 `
     case 'memory_scene':
       return `
-BASE SURFACE (MEMORY SCENE):
-Start with source floor: ${ground}
+ENVIRONMENTAL CONTEXT (MEMORY SCENE):
+Base surface: ${ground}
 - Slightly staged and curated — cleaner than reality, warmer than minimal
-- May include subtle contextual detail (e.g. soft rug edge, a single meaningful object)
-- Composition must feel like a preserved moment — thoughtful, not cluttered
+- May include subtle contextual detail (soft rug edge, single meaningful object)
+- Feels like a preserved moment — thoughtful, not cluttered
 `
     case 'minimal_premium':
       return `
-BASE SURFACE (MINIMAL PREMIUM):
-Simple, clean floor surface: ${ground}
+ENVIRONMENTAL CONTEXT (MINIMAL PREMIUM):
+Base surface: ${ground} — clean and polished
 - No additional objects or props
-- Maximum texture clarity and edge polish
+- Maximum texture clarity
 - Let the plaque and figurine carry all attention
-- Premium, gallery-quality restraint
+- Gallery-quality restraint
 `
     default:
       return `BASE SURFACE: ${ground} — clean, polished, curated.`
@@ -184,31 +226,22 @@ function getBaseBlock(
   const plaqueText = plaque?.mode === 'user' && plaque.text
     ? plaque.text
     : `Generate ${plaque?.tone || 'appropriate'} text appropriate to the scene`
-  const themeInstructions = getBaseThemeInstructions(baseTheme, groundSurface)
 
   return `
-DISPLAY BASE (NON-NEGOTIABLE — MISSING BASE = FAILURE):
+DISPLAY BASE (NON-NEGOTIABLE — MISSING OR CROPPED BASE = FAILURE):
 
-BASE PHYSICALITY (CRITICAL):
-- Thick, substantial circular display plinth — minimum 3/4 inch visual thickness
-- Must feel weighty and premium — not a thin platform
-- Material: polished dark walnut wood, high-gloss lacquer
-- Edge: routed profile (rounded or beveled) — visible from camera angle
-- Add subtle highlight along edge to emphasize form and thickness
-- Thin brass accent band around the outer perimeter, flush and clean
+PLINTH:
+- Thick circular walnut wood plinth — minimum 3/4 inch visual thickness, must feel weighty
+- High-gloss lacquer finish
+- Routed edge profile clearly visible from camera angle
+- Specular highlight along edge emphasizes depth — base must feel like a premium object
+- Thin brass accent band around outer perimeter, flush and clean
 
-BRASS PLAQUE (MANDATORY — missing = failure):
+BRASS PLAQUE (MANDATORY):
 - Brushed brass engraved plate centered on front face of base
 - Text clean, centered, legible: ${plaqueText}
-- Feels like a premium collectible label, not decorative fluff
 
-${themeInstructions}
-
-FORBIDDEN ON BASE:
-- Room interiors (no walls, furniture, ceiling)
-- Generic or invented textures that don't match source
-- Thin, flat, or weightless appearance
-- Any part of base cropped by image edge
+${getBaseThemeInstructions(baseTheme, groundSurface)}
 `
 }
 
@@ -221,7 +254,7 @@ function getSkinIdentityBlock(): string {
 SKIN TONE & SURFACE (IDENTITY-CRITICAL):
 - Match skin tone exactly — do NOT shift lighter or darker
 - Preserve undertones (warm/cool/neutral) exactly
-- Preserve natural variation: freckles, redness, marks, dirt — do NOT remove
+- Preserve natural variation: freckles, redness, marks — do NOT remove
 - Glossy resin finish OVER correct skin tone — skin retains correct color beneath
 `
 }
@@ -232,17 +265,17 @@ FACE VOLUME CONTROL (ANTI-BALLOON):
 - Do NOT increase cheek volume or inflate mid-face
 - Preserve natural bone structure and angularity exactly
 - Cheekbone width, jaw length, face height: all unchanged from source
-- Stylization NEVER reshapes geometry — structure always wins
+- Structure always wins over stylization
 `
 }
 
 function getEyeControlBlock(): string {
   return `
-EYE CONTROL (STYLIZED BUT CONTROLLED):
+EYE CONTROL:
 - Enlarge 10-18% max for collectible appeal — preserve original eye SHAPE
 - No circularization, no anime enlargement, no button eyes
 - Preserve eyelid structure, fold, thickness, and spacing exactly
-- Forbidden: >18% enlargement · eye shape change · eyelid loss
+- Forbidden: >18% · eye shape change · eyelid loss
 `
 }
 
@@ -250,46 +283,24 @@ function getImperfectionBlock(): string {
   return `
 HUMAN IMPERFECTION PRESERVATION (LIKENESS UNLOCK):
 - Preserve natural asymmetry — do NOT symmetrize the face
-- Do NOT average or perfect the face
 - Maintain natural irregularities: smile shape, eye alignment, cheek structure, jaw contour
 - Must feel like a SPECIFIC real person — not an idealized version
-- If face looks cleaner or more symmetrical than source → it is WRONG
+- Cleaner or more symmetrical than source → WRONG
 `
 }
 
-// Fix 2: Expression is now a TOP-TIER standalone block, not buried in identity
 function getExpressionLockBlock(): string {
   return `
-EXPRESSION PRESERVATION (TOP-TIER — HIGH PRIORITY):
-
+EXPRESSION PRESERVATION (HIGH PRIORITY):
 The subject's exact emotional expression MUST be preserved from the source image.
-This is separate from identity — expression is not "pleasant" by default, it is THIS person at THIS moment.
-
-- Match the exact smile shape including any asymmetry
+This is not "a nice expression" — this is THIS person at THIS exact moment.
+- Match exact smile shape including any asymmetry
 - Preserve subtle smirk, hesitation, playfulness, shyness, confidence — whatever is present
-- Maintain eye expression: confidence, curiosity, mischief, joy — match exactly
+- Maintain eye expression exactly
 - Preserve cheek tension and mouth curvature precisely
 
-FORBIDDEN:
-- Replacing expression with a generic pleasant smile
-- Neutralizing or softening emotional intensity
-- Over-smoothing any expressive features
-- Averaging expression toward "nice looking"
-
-The goal is not "a nice expression"
-The goal is "this exact moment captured in the original photo"
-
+FORBIDDEN: generic pleasant smile · neutralized expression · averaged expression
 If expression is more generic than source → it is incorrect
-`
-}
-
-function getExpressionIntensityBlock(): string {
-  return `
-EXPRESSION INTENSITY LOCK:
-- Capture exact emotional intensity — not a softened version
-- Preserve: cheek lift height, eye squint degree, mouth tension/corner pull/asymmetry, brow tension
-- Do NOT replace with generic smile. Do NOT soften or neutralize.
-- More generic than source → incorrect
 `
 }
 
@@ -300,10 +311,11 @@ EXPRESSION INTENSITY LOCK:
 function getPeopleBlock(): string {
   return `
 SUBJECT TRANSFORMATION (PEOPLE):
-Convert people into collectible miniature figurines preserving exact facial identity, proportions, and expression.
+Convert person into a collectible miniature figurine.
+Preserve exact facial identity, proportions, and expression.
 NO stylization in facial geometry, proportions, or expression.
-MATERIAL: Satin-to-semi-gloss resin. Skin tone must match source exactly. No flat matte, no plastic toy appearance.
-IDENTITY: Preserve exact features, proportions, expression, hair, clothing colors exactly.
+MATERIAL: Satin-to-semi-gloss resin. Skin tone matches source exactly.
+IDENTITY: Exact features, proportions, expression, hair color, clothing reproduced exactly.
 `
 }
 
@@ -323,7 +335,6 @@ SUBJECT TRANSFORMATION (LANDSCAPE):
 Physically constructed round miniature diorama.
 CONVERSION: Water→resin · Sand→terrain · Vegetation→model foliage · Sky→neutral background
 SOURCE FIDELITY: Only elements visible in source. No invented terrain.
-CONSTRAINTS: Nothing outside the round base. Neutral minimal sky.
 `
 }
 
@@ -342,7 +353,7 @@ function getActivityBlock(): string {
 SUBJECT TRANSFORMATION (ACTIVITY/EVENT):
 Convert people into collectible figurines preserving identity, structure, expression, and pose relationships.
 ENVIRONMENT: Reconstruct compelling contextually appropriate setting. Must be physically buildable as miniature.
-MATERIAL: All elements fully 3D miniature objects. No flat backgrounds or photographic textures.
+MATERIAL: All elements fully 3D miniature objects. No flat backgrounds.
 `
 }
 
@@ -380,8 +391,7 @@ MATERIALS: ${material} — realistic physical surface qualities, premium collect
 ${getCameraScaleBlock(angle)}
 
 LIGHTING: ${lighting} — coherent shadow logic, soft highlights, realistic reflections.
-Highlights: roof/top surfaces, windows, glossy surfaces, foreground elements.
-BACKGROUND: ${background} — softly blurred medium bokeh. Warm interior: side table, soft furnishings, neutral walls.
+BACKGROUND: ${background} — softly blurred medium bokeh. Warm interior: side table, furnishings, neutral walls.
 DETAIL: ${detail} — physically believable miniature scale. Photorealistic premium collectible product photography.
 
 SCENE TO TRANSFORM:
@@ -416,9 +426,9 @@ PRE-GENERATION CONSTRAINTS (APPLY BEFORE ANY STYLIZATION):
 - Do not compress, widen, or narrow the face
 - Do not symmetrize the face — preserve natural asymmetry
 - Do not exaggerate eyes beyond 18%
-- Expression must match source exactly — preserve intensity, asymmetry, and emotional specificity
+- Expression must match source exactly — preserve intensity, asymmetry, emotional specificity
 - Do NOT increase cheek volume or inflate the mid-face
-- Skin tone must match source exactly — no lightening, darkening, or homogenizing
+- Skin tone must match source exactly
 These constraints apply before any artistic or stylistic interpretation.
 `
 }
@@ -464,9 +474,10 @@ export function buildFinalPrompt(
 
   if (mode === 'keychain') {
     return [
+      getPrimaryObjectiveBlock(),
       getStyleLockBlock(),
       getMiniaturePerceptionLock(),
-      getFrameFitBlock(marginPct),
+      getBaseDominanceBlock(),
       buildPreConstraintBlock(),
       identityFeatures ? buildIdentityInjection(identityFeatures) : '',
       honePeople(imageDescription, groundSurface, plaque, baseTheme),
@@ -480,9 +491,10 @@ export function buildFinalPrompt(
     : getSubjectBlock(config.subject.type)
 
   return [
+    getPrimaryObjectiveBlock(),
     getStyleLockBlock(),
     getMiniaturePerceptionLock(),
-    getFrameFitBlock(marginPct),
+    getBaseDominanceBlock(),
     subjectBlock,
     isPeopleSubject ? getExpressionLockBlock() : '',
     isPeopleSubject ? getSkinIdentityBlock() : '',
@@ -497,7 +509,7 @@ export function buildFinalPrompt(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// HONE PEOPLE v4.1
+// HONE PEOPLE v4.2
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function honePeople(
@@ -507,8 +519,17 @@ function honePeople(
   baseTheme: BaseTheme = 'match_environment'
 ): string {
   return `
-IDENTITY-PRESERVED STYLIZED MINIATURE — HONESCALE PEOPLE ENGINE v4.1
+PHYSICAL COLLECTIBLE MINIATURE — HONESCALE PEOPLE ENGINE v4.2
+The result must read as a REAL PHYSICAL OBJECT on a table — not a person in a room.
 Identity always overrides stylization. Target: Pixar-adjacent realism. Not chibi. Not Funko Pop. Not anime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+0. PRIMARY OBJECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This is a PHYSICAL COLLECTIBLE MINIATURE OBJECT sitting on a table.
+The base is the primary object. The figurine sits on it.
+Camera must be far enough back to show the full base with clear margins.
+Subject must NOT dominate the frame.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. FACE GEOMETRY LOCK (HIGHEST PRIORITY)
@@ -520,114 +541,100 @@ Do not round, compress, widen, or narrow the face. Geometry overrides all styliz
 2. FACIAL WIDTH LOCK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 No cheek compression, inward tapering, or V-shape narrowing.
-Maintain eye-to-cheek distance and mid-face width exactly. Natural oval — not pinched.
+Maintain eye-to-cheek distance and mid-face width exactly. Natural oval — not pinched, not rounded.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 3. AGE LOCK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Preserve apparent age exactly. No wrinkles, sagging, under-eye shadows added.
+Preserve apparent age exactly. No wrinkles, sagging, under-eye shadows.
 No aging through texture or lighting. No de-aging. Exact age only.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-4. EXPRESSION PRESERVATION (TOP-TIER — HIGH PRIORITY)
+4. EXPRESSION PRESERVATION (HIGH PRIORITY)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Preserve the subject's exact emotional expression from source — this is not "a nice expression".
-This is THIS person at THIS exact moment.
+This is not "a nice expression" — this is THIS person at THIS exact moment.
 - Match exact smile shape including asymmetry
-- Preserve subtle smirk, hesitation, playfulness, shyness — whatever is present
-- Maintain eye expression exactly: confidence, curiosity, mischief, joy
+- Preserve subtle smirk, hesitation, playfulness, shyness, confidence exactly
+- Maintain eye expression: squint level, openness, emotional tone
 - Preserve cheek tension and mouth curvature precisely
-
-FORBIDDEN: generic smile · neutralized expression · smoothed emotional features · averaged expression
-If expression is more generic than source → incorrect
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-5. EXPRESSION INTENSITY LOCK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Exact emotional intensity — not softened. Preserve: cheek lift, eye squint, mouth corner pull/asymmetry, brow tension.
-More generic than source → incorrect.
+- Preserve micro-details: cheek lift, brow tension, corner pull
+FORBIDDEN: generic smile · neutralized expression · smoothed features
+More generic than source → incorrect
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-6. HUMAN IMPERFECTION PRESERVATION (LIKENESS UNLOCK)
+5. HUMAN IMPERFECTION PRESERVATION (LIKENESS UNLOCK)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Do NOT symmetrize. Do NOT average or perfect the face.
-Maintain: smile shape asymmetry, eye alignment variation, cheek structure, jaw contour.
+Maintain: smile asymmetry, eye alignment variation, cheek structure, jaw contour.
 Must feel like a SPECIFIC real person. Cleaner/more symmetrical than source → WRONG.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-7. EYE CONTROL
+6. EYE CONTROL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Enlarge 10-18% max. Preserve original shape — no circularization.
 Preserve eyelid structure, fold, thickness, spacing. Forbidden: anime eyes · button eyes · >18%.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-8. MOUTH DETAIL
+7. MOUTH DETAIL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Exact mouth width, tooth visibility, lip curvature, natural asymmetry. No simplification or symmetrizing.
+Exact mouth width, tooth visibility, lip curvature, natural asymmetry. No simplification.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-9. SKULL SCALING
+8. SKULL SCALING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Scale skull volume uniformly. Do NOT alter internal facial proportions.
 Head-to-body ratio: 1:2.6 to 1:2.8 (never exceed 1:2.5).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-10. FACE VOLUME CONTROL (ANTI-BALLOON)
+9. FACE VOLUME CONTROL (ANTI-BALLOON)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 No cheek volume increase. No mid-face inflation. Preserve bone structure and angularity.
 Cheekbone width, jaw length, face height: all unchanged. Structure always wins.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-11. SKIN TONE & SURFACE
+10. SKIN TONE & SURFACE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Match skin tone exactly. Preserve undertones and natural variation (freckles, marks, redness).
 Glossy resin OVER correct skin tone. Not plastic, not flat, not generic.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-12. MATERIAL STYLE
+11. MATERIAL STYLE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Full glossy resin: skin, hair, clothing, props. Clean rounded edges. Subtle specular highlights.
 Eyes: deep glassy reflections. Premium collectible quality throughout.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-13. LIGHTING
+12. LIGHTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Soft, frontal, warm studio. Even facial illumination. No harsh contrast.
-Minimize under-eye shadow. Subject looks alive and present — not tired or flat.
+Minimize under-eye shadow. Subject looks alive and present.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-14. MINIATURE PERCEPTION & COMPOSITION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Camera 35 degrees above, angled down — never eye-level.
-Full figure head to toe. Full base visible with 18% margins all sides including bottom.
-Entire figurine in sharp focus — no blur on miniature or base.
-Background blur begins ONLY beyond base edge.
-Macro product photography of a real physical collectible on a wooden surface.
-Clear contact shadow under base — grounded, not floating.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-15. FRAME FIT (NON-NEGOTIABLE)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Entire base must be fully visible — no edge touching or crossing frame on any side.
-If needed: pull camera back · reduce subject scale · increase field of view.
-Cropping the base = incorrect. Shrinking the subject is preferred.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-16. BASE (NON-NEGOTIABLE)
+13. BASE (NON-NEGOTIABLE — PRIMARY OBJECT)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${getBaseBlock(groundSurface, plaque, baseTheme)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-17. STRICT CONSTRAINTS
+14. BASE DOMINANCE & SEPARATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-No keyring, chain, or attachment hardware. No scenery beyond base floor texture.
+${getBaseDominanceBlock()}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. CAMERA & FRAMING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${getCameraScaleBlock(35)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. STRICT CONSTRAINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+No keyring, chain, or attachment hardware. No scenery beyond base floor.
 Clothing, accessories, props reproduced exactly as in source. Glossy finish mandatory.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MASTER RULE: Identity immediately recognizable. Stylization enhances — NEVER alters structure.
 A parent must recognize their child instantly.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FAILURE CONDITIONS: Face symmetrized · Expression generic · Cheeks inflated · Base/plaque missing · Base cropped · Scene life-size · Any miniature blur
+FAILURE CONDITIONS: Face symmetrized · Expression generic · Cheeks inflated · Base cropped · Base blends into table · Base thin/flat · Subject dominates frame · Scene reads life-size · Any miniature blur
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 SCENE TO TRANSFORM:
