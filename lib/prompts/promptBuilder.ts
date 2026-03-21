@@ -1,6 +1,6 @@
-// lib/prompts/promptBuilder.ts — HONESCALE v4.2
-// Primary objective block at top, base dominance, base separation,
-// base thickness, camera/framing fix, environmental context restored
+// lib/prompts/promptBuilder.ts — HONESCALE v4.2 FINAL
+// Primary objective, base dominance/separation/thickness, camera framing,
+// environmental context, expression intensity restored, marginPct wired
 
 import { MiniramaConfig, BaseTheme } from './validateConfig'
 
@@ -73,14 +73,12 @@ If the scene reads as life-size → it is incorrect
 `
 }
 
-// ─── CAMERA & FRAMING (FIXED) ─────────────────────────────────────────────────
-
-function getCameraScaleBlock(angle: number): string {
+function getCameraScaleBlock(angle: number, marginPct: number): string {
   return `
 CAMERA & FRAMING (STRICT — THIS IS PRODUCT PHOTOGRAPHY, NOT A PORTRAIT):
 
 The camera must be positioned far enough away to fully capture:
-- The entire base with clear visible margins on all sides including bottom
+- The entire base with at least ${marginPct}% visible margin on ALL sides including bottom
 - The full subject with breathing room above
 - The base must appear as a substantial object — not just a platform under feet
 
@@ -230,18 +228,24 @@ function getBaseBlock(
   return `
 DISPLAY BASE (NON-NEGOTIABLE — MISSING OR CROPPED BASE = FAILURE):
 
-PLINTH:
+BASE PHYSICALITY (CRITICAL):
 - Thick circular walnut wood plinth — minimum 3/4 inch visual thickness, must feel weighty
 - High-gloss lacquer finish
 - Routed edge profile clearly visible from camera angle
 - Specular highlight along edge emphasizes depth — base must feel like a premium object
 - Thin brass accent band around outer perimeter, flush and clean
 
-BRASS PLAQUE (MANDATORY):
+BRASS PLAQUE (MANDATORY — missing = failure):
 - Brushed brass engraved plate centered on front face of base
 - Text clean, centered, legible: ${plaqueText}
 
 ${getBaseThemeInstructions(baseTheme, groundSurface)}
+
+FORBIDDEN ON BASE:
+- Room interiors (no walls, furniture, ceiling)
+- Generic or invented textures that don't match source
+- Thin, flat, or weightless appearance
+- Any part of base cropped by image edge
 `
 }
 
@@ -254,53 +258,81 @@ function getSkinIdentityBlock(): string {
 SKIN TONE & SURFACE (IDENTITY-CRITICAL):
 - Match skin tone exactly — do NOT shift lighter or darker
 - Preserve undertones (warm/cool/neutral) exactly
-- Preserve natural variation: freckles, redness, marks — do NOT remove
-- Glossy resin finish OVER correct skin tone — skin retains correct color beneath
+- Preserve natural variation: freckles, redness, birthmarks, dirt, marks — do NOT remove
+- Do NOT homogenize or "perfect" the skin
+- Glossy resin finish applied OVER correct skin tone — skin retains correct color beneath finish
+- Not plastic, not flat — recognizably this person's skin
 `
 }
 
 function getFaceVolumeBlock(): string {
   return `
-FACE VOLUME CONTROL (ANTI-BALLOON):
-- Do NOT increase cheek volume or inflate mid-face
-- Preserve natural bone structure and angularity exactly
-- Cheekbone width, jaw length, face height: all unchanged from source
-- Structure always wins over stylization
+FACE VOLUME CONTROL (ANTI-BALLOON — MANDATORY):
+- Do NOT increase cheek volume or inflate the mid-face
+- Preserve natural bone structure and subtle angularity exactly
+- Cheekbone width: unchanged · Jaw length: unchanged · Face height: unchanged
+- Mid-face volume: unchanged — no inflation allowed
+- If ANY stylization conflicts with facial structure → structure wins, always
 `
 }
 
 function getEyeControlBlock(): string {
   return `
-EYE CONTROL:
-- Enlarge 10-18% max for collectible appeal — preserve original eye SHAPE
-- No circularization, no anime enlargement, no button eyes
-- Preserve eyelid structure, fold, thickness, and spacing exactly
-- Forbidden: >18% · eye shape change · eyelid loss
+EYE CONTROL (STYLIZED BUT CONTROLLED):
+- Eyes may be slightly enlarged for collectible appeal — 10–18% maximum only
+- Enlargement must preserve original eye SHAPE exactly — no circularization
+- Preserve eyelid structure, fold, and thickness exactly
+- Maintain original eye spacing — do not widen or narrow
+- Iris clarity may be enhanced, iris size must remain proportional
+
+FORBIDDEN: anime enlargement · round button eyes · eyelid loss · spacing changes · >18% enlargement
 `
 }
 
 function getImperfectionBlock(): string {
   return `
-HUMAN IMPERFECTION PRESERVATION (LIKENESS UNLOCK):
-- Preserve natural asymmetry — do NOT symmetrize the face
-- Maintain natural irregularities: smile shape, eye alignment, cheek structure, jaw contour
-- Must feel like a SPECIFIC real person — not an idealized version
-- Cleaner or more symmetrical than source → WRONG
+HUMAN IMPERFECTION PRESERVATION (LIKENESS UNLOCK — CRITICAL):
+- Preserve natural asymmetry in the face — do NOT symmetrize
+- Do NOT average or "perfect" the face in any way
+- Maintain subtle irregularities in:
+  - smile shape (one side may pull higher — preserve it)
+  - eye alignment (slight height difference — preserve it)
+  - cheek structure (natural side-to-side variation — preserve it)
+  - jaw contour (natural taper or asymmetry — preserve it)
+- The subject must feel like a SPECIFIC real person, not an idealized version
+- If the face looks cleaner or more symmetrical than the source → it is WRONG
 `
 }
 
 function getExpressionLockBlock(): string {
   return `
-EXPRESSION PRESERVATION (HIGH PRIORITY):
+EXPRESSION PRESERVATION (HIGH PRIORITY — TOP-TIER RULE):
 The subject's exact emotional expression MUST be preserved from the source image.
 This is not "a nice expression" — this is THIS person at THIS exact moment.
+
 - Match exact smile shape including any asymmetry
 - Preserve subtle smirk, hesitation, playfulness, shyness, confidence — whatever is present
-- Maintain eye expression exactly
+- Maintain eye expression exactly: confidence, curiosity, mischief, joy
 - Preserve cheek tension and mouth curvature precisely
 
-FORBIDDEN: generic pleasant smile · neutralized expression · averaged expression
+FORBIDDEN: generic pleasant smile · neutralized expression · smoothed emotional features · averaged expression
 If expression is more generic than source → it is incorrect
+`
+}
+
+function getExpressionIntensityBlock(): string {
+  return `
+EXPRESSION INTENSITY LOCK:
+- Capture the exact emotional intensity of the original expression — not a softened version
+- Preserve micro-expression details:
+  - cheek lift height and asymmetry
+  - degree of eye squint or openness
+  - mouth tension, corner pull, and asymmetry
+  - brow position and tension
+- Do NOT replace with a generic smile
+- Do NOT soften, neutralize, or average the expression
+- Do NOT smooth away the energy of the face
+- If expression becomes more generic than source → it is incorrect
 `
 }
 
@@ -314,7 +346,7 @@ SUBJECT TRANSFORMATION (PEOPLE):
 Convert person into a collectible miniature figurine.
 Preserve exact facial identity, proportions, and expression.
 NO stylization in facial geometry, proportions, or expression.
-MATERIAL: Satin-to-semi-gloss resin. Skin tone matches source exactly.
+MATERIAL: Satin-to-semi-gloss resin. Skin tone matches source exactly. No flat matte, no plastic toy appearance.
 IDENTITY: Exact features, proportions, expression, hair color, clothing reproduced exactly.
 `
 }
@@ -335,6 +367,7 @@ SUBJECT TRANSFORMATION (LANDSCAPE):
 Physically constructed round miniature diorama.
 CONVERSION: Water→resin · Sand→terrain · Vegetation→model foliage · Sky→neutral background
 SOURCE FIDELITY: Only elements visible in source. No invented terrain.
+CONSTRAINTS: Nothing outside the round base. Neutral minimal sky.
 `
 }
 
@@ -353,7 +386,7 @@ function getActivityBlock(): string {
 SUBJECT TRANSFORMATION (ACTIVITY/EVENT):
 Convert people into collectible figurines preserving identity, structure, expression, and pose relationships.
 ENVIRONMENT: Reconstruct compelling contextually appropriate setting. Must be physically buildable as miniature.
-MATERIAL: All elements fully 3D miniature objects. No flat backgrounds.
+MATERIAL: All elements fully 3D miniature objects. No flat backgrounds or photographic textures.
 `
 }
 
@@ -380,6 +413,7 @@ function getSubjectBlock(subjectType: MiniramaConfig['subject']['type']): string
 
 function getEnvironmentBlock(config: MiniramaConfig, imageDescription: string): string {
   const angle = config.composition.camera_angle || 35
+  const marginPct = Math.round((config.composition?.margin_ratio || 0.18) * 100)
   const material = humanize(config.style.material_style || 'painted_resin')
   const lighting = humanize(config.style.lighting_style || 'warm_studio')
   const background = humanize(config.style.background_style || 'blurred_home')
@@ -388,10 +422,11 @@ function getEnvironmentBlock(config: MiniramaConfig, imageDescription: string): 
   return `
 MATERIALS: ${material} — realistic physical surface qualities, premium collectible craftsmanship.
 
-${getCameraScaleBlock(angle)}
+${getCameraScaleBlock(angle, marginPct)}
 
 LIGHTING: ${lighting} — coherent shadow logic, soft highlights, realistic reflections.
-BACKGROUND: ${background} — softly blurred medium bokeh. Warm interior: side table, furnishings, neutral walls.
+Highlight targets: roof/top surfaces, windows, glossy surfaces, foreground elements.
+BACKGROUND: ${background} — softly blurred medium bokeh. Warm interior: side table, soft furnishings, neutral walls.
 DETAIL: ${detail} — physically believable miniature scale. Photorealistic premium collectible product photography.
 
 SCENE TO TRANSFORM:
@@ -426,9 +461,9 @@ PRE-GENERATION CONSTRAINTS (APPLY BEFORE ANY STYLIZATION):
 - Do not compress, widen, or narrow the face
 - Do not symmetrize the face — preserve natural asymmetry
 - Do not exaggerate eyes beyond 18%
-- Expression must match source exactly — preserve intensity, asymmetry, emotional specificity
+- Expression must match source exactly — preserve intensity, asymmetry, and emotional specificity
 - Do NOT increase cheek volume or inflate the mid-face
-- Skin tone must match source exactly
+- Skin tone must match source exactly — no lightening, darkening, or homogenizing
 These constraints apply before any artistic or stylistic interpretation.
 `
 }
@@ -480,7 +515,7 @@ export function buildFinalPrompt(
       getBaseDominanceBlock(),
       buildPreConstraintBlock(),
       identityFeatures ? buildIdentityInjection(identityFeatures) : '',
-      honePeople(imageDescription, groundSurface, plaque, baseTheme),
+      honePeople(imageDescription, groundSurface, plaque, baseTheme, marginPct),
       getMasterRule(),
       getFailureConditions(),
     ].filter(Boolean).join('\n').trim()
@@ -497,6 +532,7 @@ export function buildFinalPrompt(
     getBaseDominanceBlock(),
     subjectBlock,
     isPeopleSubject ? getExpressionLockBlock() : '',
+    isPeopleSubject ? getExpressionIntensityBlock() : '',
     isPeopleSubject ? getSkinIdentityBlock() : '',
     isPeopleSubject ? getFaceVolumeBlock() : '',
     isPeopleSubject ? getEyeControlBlock() : '',
@@ -509,14 +545,15 @@ export function buildFinalPrompt(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// HONE PEOPLE v4.2
+// HONE PEOPLE v4.2 FINAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function honePeople(
   imageDescription: string,
   groundSurface: string = '',
   plaque?: PlaqueConfig,
-  baseTheme: BaseTheme = 'match_environment'
+  baseTheme: BaseTheme = 'match_environment',
+  marginPct: number = 18
 ): string {
   return `
 PHYSICAL COLLECTIBLE MINIATURE — HONESCALE PEOPLE ENGINE v4.2
@@ -528,7 +565,7 @@ Identity always overrides stylization. Target: Pixar-adjacent realism. Not chibi
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 This is a PHYSICAL COLLECTIBLE MINIATURE OBJECT sitting on a table.
 The base is the primary object. The figurine sits on it.
-Camera must be far enough back to show the full base with clear margins.
+Camera must be far enough back to show the full base with ${marginPct}% clear margins on all sides.
 Subject must NOT dominate the frame.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -546,68 +583,82 @@ Maintain eye-to-cheek distance and mid-face width exactly. Natural oval — not 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 3. AGE LOCK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Preserve apparent age exactly. No wrinkles, sagging, under-eye shadows.
+Preserve apparent age exactly. No wrinkles, sagging, under-eye shadows added.
 No aging through texture or lighting. No de-aging. Exact age only.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 4. EXPRESSION PRESERVATION (HIGH PRIORITY)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 This is not "a nice expression" — this is THIS person at THIS exact moment.
-- Match exact smile shape including asymmetry
-- Preserve subtle smirk, hesitation, playfulness, shyness, confidence exactly
+- Match exact smile shape including any asymmetry
+- Preserve subtle smirk, hesitation, playfulness, shyness, confidence — whatever is present
 - Maintain eye expression: squint level, openness, emotional tone
 - Preserve cheek tension and mouth curvature precisely
-- Preserve micro-details: cheek lift, brow tension, corner pull
-FORBIDDEN: generic smile · neutralized expression · smoothed features
+
+EXPRESSION INTENSITY:
+- Capture exact emotional intensity — not a softened version
+- Preserve micro-details: cheek lift height, eye squint degree, mouth corner pull and asymmetry, brow tension
+- Do NOT soften, neutralize, or average the expression
+- Do NOT smooth away the energy of the face
+
+FORBIDDEN: generic smile · neutralized expression · smoothed features · averaged expression
 More generic than source → incorrect
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 5. HUMAN IMPERFECTION PRESERVATION (LIKENESS UNLOCK)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Do NOT symmetrize. Do NOT average or perfect the face.
-Maintain: smile asymmetry, eye alignment variation, cheek structure, jaw contour.
+Maintain natural irregularities: smile shape, eye alignment, cheek structure, jaw contour.
 Must feel like a SPECIFIC real person. Cleaner/more symmetrical than source → WRONG.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-6. EYE CONTROL
+6. EYE CONTROL (CONTROLLED STYLIZATION)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Enlarge 10-18% max. Preserve original shape — no circularization.
-Preserve eyelid structure, fold, thickness, spacing. Forbidden: anime eyes · button eyes · >18%.
+Enlarge 10-18% max for collectible appeal. Preserve original eye SHAPE — no circularization.
+Preserve eyelid structure, fold, thickness, and spacing exactly.
+Iris clarity may be enhanced — size must remain proportional.
+FORBIDDEN: anime enlargement · round button eyes · eyelid loss · spacing changes · >18%
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 7. MOUTH DETAIL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Exact mouth width, tooth visibility, lip curvature, natural asymmetry. No simplification.
+Maintain exact mouth width, tooth visibility, lip curvature, and natural asymmetry.
+Do not simplify or symmetrize. Smile must match source precisely.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 8. SKULL SCALING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Scale skull volume uniformly. Do NOT alter internal facial proportions.
+Scale skull volume uniformly — do NOT alter internal facial proportions.
 Head-to-body ratio: 1:2.6 to 1:2.8 (never exceed 1:2.5).
+More skull area = more canvas for facial detail — use it.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 9. FACE VOLUME CONTROL (ANTI-BALLOON)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 No cheek volume increase. No mid-face inflation. Preserve bone structure and angularity.
-Cheekbone width, jaw length, face height: all unchanged. Structure always wins.
+Cheekbone width, jaw length, face height: all unchanged from source. Structure always wins.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 10. SKIN TONE & SURFACE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Match skin tone exactly. Preserve undertones and natural variation (freckles, marks, redness).
-Glossy resin OVER correct skin tone. Not plastic, not flat, not generic.
+Match skin tone exactly from source. Preserve undertones (warm/cool/neutral).
+Preserve natural variation: freckles, redness, marks, dirt — do NOT remove or homogenize.
+Glossy resin finish OVER correct skin tone — skin retains correct color beneath.
+Not plastic, not flat, not generic — recognizably this person's skin.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 11. MATERIAL STYLE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Full glossy resin: skin, hair, clothing, props. Clean rounded edges. Subtle specular highlights.
+Full glossy resin: skin, hair, clothing, props. Clean slightly rounded edges.
+Subtle specular highlights — strong but not plastic-looking.
 Eyes: deep glassy reflections. Premium collectible quality throughout.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 12. LIGHTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Soft, frontal, warm studio. Even facial illumination. No harsh contrast.
-Minimize under-eye shadow. Subject looks alive and present.
+Soft, frontal, warm studio lighting. Even facial illumination — no harsh directional contrast.
+Minimize under-eye shadow — do NOT create tired or sunken eyes.
+Lighting makes the subject look alive and present, not tired or flat.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 13. BASE (NON-NEGOTIABLE — PRIMARY OBJECT)
@@ -622,7 +673,7 @@ ${getBaseDominanceBlock()}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 15. CAMERA & FRAMING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${getCameraScaleBlock(35)}
+${getCameraScaleBlock(35, marginPct)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 16. STRICT CONSTRAINTS
