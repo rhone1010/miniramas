@@ -1,0 +1,47 @@
+Subject transformation:
+Convert all people into collectible figurines while preserving identity and interaction.
+
+Stylization:
+• slight edge rounding
+• minimal simplification
+• no cartoon distortion
+
+Material:
+Satin-to-semi-gloss resin finish
+• skin: soft sheen
+• gear/props: slightly higher gloss
+• maintain facial readability
+
+Scene:
+Place subjects into an activity-based environment (e.g., laser tag arena)
+
+Environment enhancement:
+If original setting is weak:
+• upgrade to immersive scene
+• add terrain, barriers, lighting elements
+• maintain realism and physical buildability
+
+Material conversion:
+Everything must be 3D:
+• structures
+• terrain
+• props
+• lighting elements
+
+Diorama:
+• contained base
+• 10–20% outer margins
+• 10–15% internal spacing
+
+Camera:
+~40–50° downward
+macro depth but subjects sharp
+
+Lighting:
+Studio + optional colored accents (laser glow, etc.)
+
+Integration:
+Subjects must feel grounded and interacting naturally.
+
+Quality:
+Dynamic, playful, premium collectible scene—not flat, not staged, not cartoon.

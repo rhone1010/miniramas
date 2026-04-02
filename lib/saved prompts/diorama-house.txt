@@ -1,0 +1,55 @@
+Transform the provided image into a highly detailed miniature architectural diorama.
+
+CORE RULE:
+This is a physical miniature model of a real structure, not a stylized illustration.
+
+SUBJECT:
+- Preserve the exact architectural identity of the house
+- Maintain rooflines, window placement, porch structure, and proportions
+- Do not redesign or simplify key architectural features
+
+MATERIALS:
+- painted wood siding with fine grain texture
+- realistic shingles with subtle variation
+- miniature glass windows with reflections
+- detailed trim, railings, and columns
+- landscaped base with grass, shrubs, flowers, and stone paths
+- all materials should resemble handcrafted architectural scale models
+
+ENVIRONMENT:
+- place the house on a circular wooden diorama base
+- include full yard layout: walkway, garden beds, small trees, ground cover
+- maintain realistic spatial relationships from the original image
+- do not invent major new structures
+
+HONE SCALE RULES:
+- entire scene exists within the round base
+- include ~10–20% margin between base and image edge
+- all elements must be fully 3D (no flat backgrounds)
+- background environment should be softly blurred or removed
+
+CAMERA:
+- ~35–45 degree elevated angle looking down
+- centered composition showing full structure and yard
+- macro photography style
+
+LIGHTING:
+- warm, soft indoor lighting
+- subtle shadows to enhance depth
+- no dramatic or cinematic lighting
+
+DEPTH OF FIELD:
+- shallow depth of field to emphasize miniature scale
+- foreground sharp, background softly blurred
+
+STRICT CONSTRAINTS:
+- no cartoon or stylized rendering
+- no exaggerated proportions
+- no missing architectural details
+- no environment hallucination
+
+ANCHORING RULE:
+Use the uploaded image as the exact structural reference.
+Do not reinterpret the building — only convert it into a physical miniature model.
+
+If any detail is unclear, preserve the original structure rather than inventing new elements.

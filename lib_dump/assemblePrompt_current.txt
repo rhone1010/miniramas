@@ -1,0 +1,311 @@
+// lib/structure/assemblePrompt.ts
+// REFACTOR: Universal Constraint Layer v2
+// All legacy diorama aesthetics removed.
+// Prompt = physical object constraints only.
+
+import { AnchorBlueprint } from './extractBlueprint'
+
+export interface AssembleOptions {
+  blueprint:       AnchorBlueprint
+  patch?:          string
+  styleReference?: string
+  model:           'gpt-image-1' | 'dall-e-3'
+}
+
+// ── UNIVERSAL CONSTRAINT LAYER v2 ─────────────────────────────────────────────
+// Applied to ALL outputs regardless of scene type.
+// No interpretation. No aesthetics. Physical object rules only.
+
+function getUniversalConstraints(): string {
+  return `The output is a photograph of a real, physical miniature object.
+
+This object is a handcrafted scene mounted within a solid display base.
+
+The base is a physical container of the scene, not a platform.
+
+All elements must exist strictly within the boundaries of the base.
+
+No elements may exist outside the base.`
+}
+
+// ── STRUCTURE RULES ───────────────────────────────────────────────────────────
+
+function getStructureRules(): string {
+  return `STRUCTURE RULES:
+
+The source image defines absolute structural truth.
+
+Do not reinterpret, rebalance, or improve the scene.
+
+Preserve:
+- spatial relationships
+- asymmetry
+- subject position
+- depth relationships
+
+If something is unclear:
+→ omit it
+→ do not invent or complete it`
+}
+
+// ── SCENE CONTAINMENT ─────────────────────────────────────────────────────────
+
+function getSceneContainment(): string {
+  return `SCENE CONTAINMENT:
+
+The scene must be embedded within the base volume.
+
+The scene must not appear placed on top of the base.
+
+Terrain must have depth, layering, and variation.
+
+Flat ground planes are not allowed unless clearly present in the source.`
+}
+
+// ── COMPOSITION ───────────────────────────────────────────────────────────────
+
+function getComposition(): string {
+  return `COMPOSITION — NON-NEGOTIABLE:
+
+- The base must occupy 65–75% of the image width
+- A margin of 15–25% must exist between the base and ALL edges
+- The base must be fully visible
+
+Internal:
+- The subject must occupy 60–75% of the base area
+- Empty space must exist around the subject
+- The scene must not fill the entire base
+
+If conflict occurs:
+→ preserve base size and margins over subject size`
+}
+
+// ── ANTI-NORMALIZATION ────────────────────────────────────────────────────────
+
+function getAntiNormalization(): string {
+  return `ANTI-NORMALIZATION:
+
+Do not center or rebalance the subject.
+
+Preserve original asymmetry exactly.`
+}
+
+// ── NO COMPLETION ─────────────────────────────────────────────────────────────
+
+function getNoCompletion(): string {
+  return `NO COMPLETION RULE:
+
+Do not add elements that are not clearly visible.
+
+This includes:
+- stairs
+- pathways
+- extensions
+- landscaping features`
+}
+
+// ── FULL 3D ───────────────────────────────────────────────────────────────────
+
+function getFull3D(): string {
+  return `FULL 3D RULE:
+
+All elements must be physically three-dimensional.
+
+No flat backgrounds.
+No sky cards.`
+}
+
+// ── LIGHTING ──────────────────────────────────────────────────────────────────
+
+function getLighting(): string {
+  return `LIGHTING:
+
+Use neutral product photography lighting only:
+- soft directional key light
+- subtle fill light
+- gentle edge highlights
+
+No cinematic lighting.
+No dramatic shadows.`
+}
+
+// ── CAMERA ────────────────────────────────────────────────────────────────────
+
+function getCamera(): string {
+  return `CAMERA:
+
+- 35–45 degree downward angle
+- natural macro perspective
+- no distortion`
+}
+
+// ── SURFACE ───────────────────────────────────────────────────────────────────
+
+function getSurface(): string {
+  return `SURFACE:
+
+The object must sit on a real surface with visible contact shadows.`
+}
+
+// ── RENDER RESTRICTION ────────────────────────────────────────────────────────
+
+function getRenderRestriction(): string {
+  return `RENDER RESTRICTION:
+
+Do not interpret what a diorama should look like.
+
+Do not improve composition.
+
+Do not enhance aesthetics beyond physical realism.
+
+Only convert the provided scene into a physical miniature object.`
+}
+
+// ── MULTI-IMAGE CONTROL ───────────────────────────────────────────────────────
+
+function getMultiImageControl(blueprint: AnchorBlueprint): string {
+  if (!blueprint.source_image_count || blueprint.source_image_count <= 1) return ''
+
+  return `MULTI-IMAGE STRUCTURE:
+
+${blueprint.source_image_count} source images have been provided.
+
+The FIRST image defines the composition and layout. All other images provide structural confirmation only.
+
+Use additional images only to:
+- verify depth and side volumes
+- confirm ambiguous elements
+
+Do NOT:
+- blend images into a new composition
+- average layouts between images
+- reposition the structure based on other views
+- merge perspectives
+
+The output must match the viewpoint and layout of the first image only.`
+}
+
+// ── GEOMETRY LOCK ─────────────────────────────────────────────────────────────
+// Derived from blueprint geometry — structure only, no aesthetics.
+
+function getGeometryLock(blueprint: AnchorBlueprint): string {
+  const geo = blueprint.geometry
+  if (!geo) return ''
+
+  const lines: string[] = ['GEOMETRY LOCK (derived from source image):']
+
+  if (geo.main_mass) {
+    const dirs = geo.main_mass.extends_toward?.join(' and ') || geo.main_mass.position
+    lines.push(`- Building mass: ${geo.main_mass.symmetry}, extends toward ${dirs}`)
+    lines.push(`- Mass depth: ${geo.main_mass.depth}`)
+  }
+
+  if (geo.porch?.present) {
+    if (geo.porch.footprint_type === 'L_wrap') {
+      lines.push(`- Porch: L-shaped wrap toward ${geo.porch.wrap_direction} — NOT rectangular`)
+      lines.push(`- Porch side run must be clearly visible along ${geo.porch.wrap_direction} wall`)
+    } else {
+      lines.push(`- Porch: ${geo.porch.front_span} front span, ${geo.porch.footprint_type}`)
+    }
+    if (!geo.porch.stairs_visible) {
+      lines.push(`- Stairs: NOT visible in source — do NOT add stairs`)
+    }
+    if (geo.porch.confidence < 0.7) {
+      lines.push(`- Porch geometry has low confidence (${geo.porch.confidence}) — preserve what is visible, do not invent`)
+    }
+  }
+
+  for (const ext of (geo.extensions || [])) {
+    if (ext.visible) {
+      lines.push(`- Side extension: visible on ${ext.direction}, ${ext.relative_depth} depth`)
+    }
+  }
+
+  if (geo.roof) {
+    lines.push(`- Roof: ridge runs ${geo.roof.primary_orientation}, higher on ${geo.roof.higher_side}`)
+    if (geo.roof.asymmetry) lines.push(`- Roof is asymmetrical — do NOT normalize`)
+  }
+
+  if (geo.complexity_flags?.length > 0) {
+    lines.push(`- Complexity flags: ${geo.complexity_flags.join(', ')}`)
+    if (geo.complexity_flags.includes('porch_wrap_ambiguous')) {
+      lines.push(`- Porch wrap direction is ambiguous — preserve what is visible, do not complete or guess`)
+    }
+    if (geo.complexity_flags.includes('stairs_uncertain')) {
+      lines.push(`- Stairs visibility is uncertain — omit stairs`)
+    }
+  }
+
+  return lines.join('\n')
+}
+
+// ── ANCHOR LOCK ───────────────────────────────────────────────────────────────
+
+function getAnchorLock(blueprint: AnchorBlueprint): string {
+  const locked = blueprint.anchors
+    .filter(a => a.type === 'structure' && a.importance >= 7.0)
+    .sort((a, b) => b.importance - a.importance)
+
+  if (locked.length === 0) return ''
+
+  const lines = locked.map(a => {
+    const multiConfirmed = a.confirmed_by?.length > 1 ? ' [confirmed by multiple views]' : ''
+    return `- ${a.description} [importance: ${a.importance.toFixed(1)}]${multiConfirmed}`
+  })
+
+  return `STRUCTURAL ANCHORS — MUST PRESERVE:
+
+These elements were detected in the source image and must be present in the output.
+Do not remove, simplify, or reorient any of these elements.
+
+${lines.join('\n')}
+
+If any of these elements are missing or incorrect, that is the primary failure.`
+}
+
+// ── PATCH ENFORCEMENT ─────────────────────────────────────────────────────────
+
+function wrapPatch(patch: string): string {
+  return `PATCH CORRECTIONS — APPLY EXACTLY AS SPECIFIED:
+
+Each instruction below is a required geometric correction.
+Do NOT partially apply any correction.
+Do NOT skip any instruction.
+Do NOT introduce new elements not present in the source image.
+Each correction must be clearly visible in the output.
+
+${patch}`
+}
+
+// ── MAIN EXPORT ───────────────────────────────────────────────────────────────
+
+export function assemblePrompt(options: AssembleOptions): string {
+  const blocks: string[] = [
+    getUniversalConstraints(),
+    getStructureRules(),
+    getSceneContainment(),
+    getComposition(),
+    getAntiNormalization(),
+    getNoCompletion(),
+    getFull3D(),
+    getLighting(),
+    getCamera(),
+    getSurface(),
+    getRenderRestriction(),
+    getMultiImageControl(options.blueprint),
+    getGeometryLock(options.blueprint),
+    getAnchorLock(options.blueprint),
+  ]
+
+  if (options.styleReference) {
+    blocks.push(`STYLE REFERENCE (presentation only — do not alter structure):\n${options.styleReference}`)
+  }
+
+  if (options.patch) {
+    blocks.push(wrapPatch(options.patch))
+  }
+
+  return blocks
+    .filter(Boolean)
+    .join('\n\n' + '─'.repeat(40) + '\n\n')
+}

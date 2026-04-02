@@ -1,0 +1,34 @@
+Subject transformation:
+Preserve exact facial structure, proportions, and asymmetry from the original subjects with high fidelity. 
+Do not stylize or exaggerate features. Avoid chibi or cartoon proportions.
+
+Material:
+Render subjects as hand-painted miniature figures using matte-to-satin resin materials.
+Apply subtle specular highlights only where natural (eyes, slight skin sheen).
+Maintain skin texture and facial detail.
+
+Scene transformation:
+Place subjects into a live sports stadium environment as if physically present.
+
+Reconstruct posture:
+Complete partially visible bodies naturally while preserving pose and interaction.
+
+Environment:
+Include stadium seating, crowd depth, and layered background.
+Subjects must remain the focal point.
+
+Branding:
+Mode A (personal): allow real team logos and names
+Mode B (commercial-safe): use colors and implied identity only
+
+Integration:
+Match lighting, perspective, and depth of field across subjects and environment.
+
+Diorama (optional upgrade):
+Place entire scene on a physical base with 15–20% outer margins and ~10–15% internal spacing.
+
+Camera:
+35–45° downward angle, slightly pulled back for full scene context.
+
+Quality:
+Feels like a real memory turned into a high-fidelity miniature collectible.

@@ -1,0 +1,49 @@
+Transform the provided image into a realistic miniature figurine diorama of a single person.
+
+CRITICAL — IDENTITY PRESERVATION:
+- Preserve the exact facial features, proportions, and identity of the person
+- Maintain their pose, posture, and body proportions
+- Do not stylize into cartoon or exaggerated toy form
+- The person must clearly look like the original individual
+
+FIGURINE TRANSFORMATION:
+- Convert the person into a high-quality physical miniature figurine
+- Use realistic proportions (not chibi or caricature)
+- Maintain clothing details, folds, and colors
+- Ensure the figurine has subtle handcrafted realism, not plastic toy exaggeration
+
+POSE & PRESENCE:
+- The figure must be standing or grounded naturally (no floating)
+- Maintain original stance and orientation
+- Ensure weight and balance feel physically correct
+
+BASE + ENVIRONMENT:
+- Place the figurine on a visible physical display base (wood, terrain, or contextual surface)
+- The base should reflect the original setting in simplified miniature form
+- Include minimal but meaningful environmental context (ground, texture, small props if relevant)
+- Ensure visible margins around the base
+
+SIMPLIFICATION RULES:
+- Remove unnecessary background clutter
+- Keep only essential environmental cues
+- Focus on the subject as the primary element
+
+MATERIALS:
+- Use realistic miniature materials (matte resin, subtle paint texture)
+- Skin should have natural tone with slight material softness
+- Clothing should show texture and small-scale detail
+- Avoid glossy toy-like plastic unless explicitly intended
+
+CAMERA:
+- Slightly elevated angle (~30–40 degrees)
+- Close framing on the figurine and base
+- Macro depth of field
+- Soft studio lighting
+
+BACKGROUND:
+- Neutral, minimal, or softly blurred studio background
+- No flat artificial gradients that distract from the subject
+
+COMPLETION:
+- The figurine and base must feel like a finished physical collectible object
+- No missing areas, no floating elements, no partial scene

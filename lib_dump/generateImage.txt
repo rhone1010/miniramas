@@ -1,0 +1,81 @@
+// lib/structure/generateImage.ts
+// UPDATE: Multi-image support. source_images[] replaces single sourceImageB64.
+// Image array order: primary → secondary → tertiary → previous_image
+// Primary defines composition. Secondary/tertiary validate structure only.
+
+import OpenAI from 'openai'
+import { toFile } from 'openai'
+
+export type GenerationModel = 'gpt-image-1' | 'dall-e-3'
+
+export interface GenerationResult {
+  image_b64:  string
+  model_used: GenerationModel
+  mode:       'image-to-image'
+  image_count: number
+}
+
+export interface GenerationInput {
+  prompt:           string
+  model:            GenerationModel
+  sourceImages:     string[]   // [primary(required), secondary?, tertiary?] — max 3
+  previousImageB64?: string    // last pass output — draft only
+  openaiApiKey:     string
+}
+
+export async function generateImage(input: GenerationInput): Promise<GenerationResult> {
+  if (!input.sourceImages?.length) {
+    throw new Error('At least one source image is required')
+  }
+
+  // Enforce max 3 source images
+  const sources = input.sourceImages.slice(0, 3)
+
+  return generateWithImageEdit(input, sources)
+}
+
+async function generateWithImageEdit(
+  input: GenerationInput,
+  sources: string[]
+): Promise<GenerationResult> {
+  const openai = new OpenAI({ apiKey: input.openaiApiKey })
+
+  // Build image array in priority order:
+  // 1. primary source  — composition + layout anchor (ALWAYS first)
+  // 2. secondary source — structural validation (side/depth)
+  // 3. tertiary source  — additional detail
+  // 4. previous_image   — editable draft (ALWAYS last)
+  const imageFiles = await Promise.all(
+    sources.map((b64, i) =>
+      toFile(Buffer.from(b64, 'base64'), `source_${i}.png`, { type: 'image/png' })
+    )
+  )
+
+  if (input.previousImageB64) {
+    imageFiles.push(
+      await toFile(Buffer.from(input.previousImageB64, 'base64'), 'previous.png', { type: 'image/png' })
+    )
+  }
+
+  // Single image: pass directly. Multiple: pass array.
+  const imageParam = imageFiles.length === 1 ? imageFiles[0] : imageFiles
+
+  const response = await openai.images.edit({
+    model:   'gpt-image-1',
+    image:   imageParam as any,
+    prompt:  input.prompt,
+    n:       1,
+    size:    '1024x1024',
+    quality: 'high',
+  })
+
+  const b64 = response.data?.[0]?.b64_json
+  if (!b64) throw new Error('gpt-image-1 image edit returned no image data')
+
+  return {
+    image_b64:   b64,
+    model_used:  'gpt-image-1',
+    mode:        'image-to-image',
+    image_count: imageFiles.length,
+  }
+}

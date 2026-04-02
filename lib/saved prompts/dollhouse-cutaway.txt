@@ -1,0 +1,33 @@
+Master constraints:
+Scene must appear as a handcrafted miniature dollhouse interior on a visible base.
+~10% margin around base.
+Camera ~35–45° downward.
+
+Scene transformation:
+Convert interior into a cutaway dollhouse:
+• 2–3 visible walls
+• ceiling removed or partially open
+• full layout preserved
+
+Simplification:
+• keep cabinets, sink, window, backsplash
+• reduce clutter
+• remove non-essential construction noise
+
+Material conversion:
+• cabinets → painted miniature wood
+• sink → glossy ceramic miniature
+• counters → resin/stone miniature
+• tile → individually defined miniature tiles
+• window → framed miniature opening
+
+All elements must be 3D physical objects.
+
+Lighting:
+Soft studio lighting + internal cabinet glow
+
+Background:
+Neutral studio environment only (no real room continuation)
+
+Quality:
+Feels like a handcrafted dollhouse photographed on a table.

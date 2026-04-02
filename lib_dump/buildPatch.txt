@@ -1,0 +1,182 @@
+// lib/structure/buildPatch.ts
+// UPDATE: Geometric patch generation.
+// Each instruction describes a visible outcome, not a vague direction.
+// Instructions must be strong enough that partial compliance is clearly insufficient.
+
+import { AnchorBlueprint }  from './extractBlueprint'
+import { AnchorScorecard }  from './scoreImage'
+
+// ── GEOMETRIC INSTRUCTION BUILDER ─────────────────────────────────────────────
+// Converts an anchor description + score notes into a specific geometric target.
+// Uses GPT-4o-style prompting patterns: describe the END STATE, not the action.
+
+function buildGeometricInstruction(
+  anchorDescription: string,
+  scoreNote: string,
+  importance: number
+): string {
+  const desc  = anchorDescription.toLowerCase()
+  const issue = scoreNote ? ` Current problem: ${scoreNote}.` : ''
+
+  // ── PORCH / WRAP ──────────────────────────────────────────────────────────
+  if (desc.includes('porch') && (desc.includes('wrap') || desc.includes('turn'))) {
+    const direction = desc.includes('image-left')  ? 'image-left'
+                    : desc.includes('image-right') ? 'image-right'
+                    : 'the side'
+    return `The porch must clearly wrap around the corner and extend along the ${direction} wall — ` +
+      `not just reach the edge. A full section of roofed porch with visible columns must be seen ` +
+      `running along the side facade, parallel to the building wall. ` +
+      `If the porch only covers the front face or barely turns the corner, that is incorrect.` +
+      issue
+  }
+
+  // ── PORCH / GENERAL ───────────────────────────────────────────────────────
+  if (desc.includes('porch')) {
+    const direction = desc.includes('image-left')  ? 'image-left'
+                    : desc.includes('image-right') ? 'image-right'
+                    : 'front'
+    return `A covered porch structure with visible columns and railing must occupy the ${direction} ` +
+      `portion of the building — spanning from one side edge to the other of the front face, ` +
+      `set clearly forward of the main facade. The porch roof must connect visibly to the main structure.` +
+      issue
+  }
+
+  // ── SIDE MASS / SECONDARY VOLUME ─────────────────────────────────────────
+  if (desc.includes('secondary') || desc.includes('side') && desc.includes('volume') ||
+      desc.includes('side') && desc.includes('mass')) {
+    const direction = desc.includes('image-left')  ? 'image-left'
+                    : desc.includes('image-right') ? 'image-right'
+                    : 'the side'
+    return `A distinct vertical building mass must be clearly visible on the ${direction} side — ` +
+      `set behind the porch or front facade, with its own wall plane, roofline, and depth. ` +
+      `This volume must extend far enough behind the front face that it reads as a separate ` +
+      `structural section, not a thin edge or shadow. Its depth must be at least 40% of the ` +
+      `main facade width.` +
+      issue
+  }
+
+  // ── DEPTH / FOOTPRINT ─────────────────────────────────────────────────────
+  if (desc.includes('depth') || desc.includes('footprint') || desc.includes('extends back')) {
+    return `The building must have clearly visible depth — the structure must read as a three-dimensional ` +
+      `volume extending back from the front facade. Side walls must be visible, not just the front face. ` +
+      `The building must not appear flat or front-only. Side wall depth must be proportional to height.` +
+      issue
+  }
+
+  // ── WINDOWS ───────────────────────────────────────────────────────────────
+  if (desc.includes('window')) {
+    const match  = desc.match(/(\w+)\s+window/)
+    const count  = desc.match(/(\d+|two|three|four|five|six)/)?.[1] || 'multiple'
+    const zone   = desc.includes('upper') ? 'upper story'
+                 : desc.includes('lower') ? 'lower story'
+                 : 'visible'
+    const side   = desc.includes('image-left')  ? ' on the image-left side'
+                 : desc.includes('image-right') ? ' on the image-right side'
+                 : desc.includes('center')      ? ' centered'
+                 : ''
+    return `Exactly ${count} window opening(s) must be clearly visible on the ${zone}${side}. ` +
+      `Each window must be a distinct rectangular opening with frame — not suggested or implied. ` +
+      `Window positions must match the source image layout, not be evenly distributed for symmetry.` +
+      issue
+  }
+
+  // ── ROOF ──────────────────────────────────────────────────────────────────
+  if (desc.includes('roof')) {
+    const side = desc.includes('image-left')  ? 'higher on image-left'
+               : desc.includes('image-right') ? 'higher on image-right'
+               : 'asymmetric'
+    return `The roofline must be ${side} — matching the exact ridge height and slope direction ` +
+      `of the source image. Do not normalize or center the roof peak. ` +
+      `Dormers or upper roof openings, if present, must appear in their exact source positions.` +
+      issue
+  }
+
+  // ── PROJECTING BAY / VOLUME ───────────────────────────────────────────────
+  if (desc.includes('project') || desc.includes('bay') || desc.includes('extends forward')) {
+    const side = desc.includes('image-left')  ? 'image-left'
+               : desc.includes('image-right') ? 'image-right'
+               : 'front'
+    return `A projecting volume must clearly extend forward of the main facade plane on the ${side} side — ` +
+      `visibly protruding, with its own front face and side walls. ` +
+      `It must not be flush with the main wall or implied by shadow alone.` +
+      issue
+  }
+
+  // ── COLUMNS ───────────────────────────────────────────────────────────────
+  if (desc.includes('column')) {
+    const count = desc.match(/(\d+|two|three|four|five|six)/)?.[1] || 'multiple'
+    return `Exactly ${count} vertical columns must be clearly visible on the porch — ` +
+      `each as a distinct structural element, evenly spaced, running from porch floor to roof. ` +
+      `Columns must not be merged, obscured, or reduced in count.` +
+      issue
+  }
+
+  // ── GENERIC FALLBACK — still geometric, not vague ─────────────────────────
+  const priority = importance >= 9 ? 'CRITICAL' : importance >= 7 ? 'REQUIRED' : 'NEEDED'
+  return `[${priority}] The following element must be clearly and unambiguously present: ` +
+    `${anchorDescription}. ` +
+    `This element must be visible enough that a viewer unfamiliar with the source image ` +
+    `would immediately identify it. Partial presence is not acceptable.` +
+    issue
+}
+
+// ── MAIN EXPORT ───────────────────────────────────────────────────────────────
+
+export function buildPatch(
+  scorecard: AnchorScorecard,
+  blueprint: AnchorBlueprint
+): string[] {
+  const patches: string[] = []
+
+  const failedAnchors = scorecard.failed_anchors
+    .filter(a => a.importance >= 5.0)
+    .sort((a, b) => b.importance - a.importance)
+
+  if (failedAnchors.length === 0) return patches
+
+  for (const failed of failedAnchors) {
+    const anchor     = blueprint.anchors.find(a => a.id === failed.id)
+    if (!anchor) continue
+
+    const anchorScore = scorecard.anchor_scores.find(s => s.anchor_id === failed.id)
+    const scoreNote   = anchorScore?.notes || ''
+
+    patches.push(buildGeometricInstruction(anchor.description, scoreNote, anchor.importance))
+  }
+
+  // Secondary quality patches — only when no structural failures dominating
+  if (failedAnchors.length === 0) {
+    if ((scorecard.diorama_quality?.base || 0) < 3) {
+      patches.push(
+        'The full circular base must be visible with clear space between the base edge ' +
+        'and the image frame on all four sides — including the bottom edge.'
+      )
+    }
+    if ((scorecard.diorama_quality?.three_d || 0) < 3) {
+      patches.push(
+        'Every element in the scene must have physical depth and volume — ' +
+        'no flat printed planes, no 2D background cards, no painted sky surfaces.'
+      )
+    }
+    if ((scorecard.composition?.framing || 0) < 3) {
+      patches.push(
+        'Pull the camera back until the entire diorama — base bottom included — ' +
+        'is visible with at least 15% clear margin on all sides.'
+      )
+    }
+  }
+
+  return patches
+}
+
+export function formatPatchBlock(patches: string[]): string {
+  if (patches.length === 0) return ''
+
+  return `PATCH:
+
+${patches.map((p, i) => `${i + 1}. ${p}`).join('\n\n')}
+
+Each correction above describes a required visual outcome.
+Partial compliance is not acceptable — each item must be fully and clearly present.
+Do not change anything that is already correct.`
+}

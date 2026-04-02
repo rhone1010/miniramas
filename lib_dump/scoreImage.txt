@@ -1,0 +1,349 @@
+// lib/structure/scoreImage.ts
+// UPDATE: max_tokens 4000, identity pass floor, cap at 60, stairs = penalty,
+// evidence required, window errors capped at -15 max, layout never triggers failure.
+
+import { AnchorBlueprint } from './extractBlueprint'
+
+export interface AnchorScore {
+  anchor_id:  string
+  type:       'structure' | 'layout' | 'composition'
+  identity:   boolean
+  importance: number
+  preserved:  boolean
+  score:      number
+  reason:     string
+  evidence:   string
+}
+
+export interface StructuralValidation {
+  main_mass_correct:             boolean
+  porch_type_correct:            boolean | null
+  porch_wrap_direction_correct:  boolean | null
+  side_extension_present:        boolean | null
+  roof_orientation_correct:      boolean
+  stairs_invented:               boolean
+  hard_structural_failure:       boolean
+}
+
+export interface AnchorScorecard {
+  anchor_scores:          AnchorScore[]
+  failed_anchors:         Array<{ id: string; importance: number; description: string; type: string; identity: boolean }>
+  structural_validation:  StructuralValidation
+  structure_score:        number   // /45
+  layout_score:           number   // /20
+  miniature_score:        number   // /20
+  aesthetic_score:        number   // /15
+  diorama_quality: {
+    base: number; three_d: number; materials: number; landscaping: number
+    subtotal: number; notes: string
+  }
+  composition: { camera_angle: number; framing: number; subtotal: number; notes: string }
+  finish: { quality: number; subtotal: number }
+  raw_total:               number
+  hard_cap_applied:        boolean
+  hard_cap_reason:         string | null
+  final_score:             number
+  hard_structural_failure: boolean
+  identity_pass:           boolean
+  status:                  'complete' | 'needs_improvement'
+  primary_failure:         string
+}
+
+// ── SCORING PROMPT ────────────────────────────────────────────────────────────
+
+function buildScoringPrompt(blueprint: AnchorBlueprint): string {
+  const anchors = blueprint.anchors
+
+  const anchorList = anchors.map(a =>
+    `{ "id": "${a.id}", "type": "${(a as any).type || 'structure'}", ` +
+    `"identity": ${(a as any).identity === true}, ` +
+    `"importance": ${a.importance}, "description": "${a.description}" }`
+  ).join(',\n    ')
+
+  const hasPorch   = anchors.some(a => a.description.toLowerCase().includes('porch'))
+  const hasSideVol = anchors.some(a =>
+    a.description.toLowerCase().includes('secondary') ||
+    a.description.toLowerCase().includes('extension') ||
+    a.description.toLowerCase().includes('side volume'))
+
+  return `You are a structural fidelity scoring system for a miniature diorama engine.
+
+Score this generated miniature against the source building anchors below.
+
+ANCHORS:
+[
+  ${anchorList}
+]
+
+ANCHOR TYPE RULES:
+- structure + identity=true: identity-defining (mass, porch wrap, roof, footprint) — may trigger structural failure if evidence is clear
+- structure + identity=false: structural but not identity-breaking
+- layout: windows, doors, columns — NEVER triggers structural failure or caps
+- composition: camera, centering, framing — NEVER triggers failure or caps
+
+Return ONLY this JSON. No prose, no markdown, no truncation — complete the full JSON:
+
+{
+  "anchor_scores": [
+    {
+      "anchor_id": "<id>",
+      "type": "<structure|layout|composition>",
+      "identity": <true|false>,
+      "importance": <number>,
+      "preserved": <true|false>,
+      "score": <0.0-1.0>,
+      "reason": "<brief>",
+      "evidence": "<explicit visual description proving score>"
+    }
+  ],
+  "structural_validation": {
+    "main_mass_correct": <true|false>,
+    "porch_type_correct": ${hasPorch ? '<true|false>' : 'null'},
+    "porch_wrap_direction_correct": ${hasPorch ? '<true|false>' : 'null'},
+    "side_extension_present": ${hasSideVol ? '<true|false>' : 'null'},
+    "roof_orientation_correct": <true|false>,
+    "stairs_invented": <true|false>
+  },
+  "layout_score": <0-20>,
+  "miniature_score": <0-20>,
+  "diorama_quality": {
+    "base": <0-5>, "three_d": <0-5>, "materials": <0-5>, "landscaping": <0-5>,
+    "subtotal": <0-20>, "notes": "<brief>"
+  },
+  "composition": {
+    "camera_angle": <0-5>, "framing": <0-5>, "subtotal": <0-10>, "notes": "<brief>"
+  },
+  "finish": { "quality": <0-5>, "subtotal": <0-5> },
+  "primary_failure": "<most critical issue or none>"
+}
+
+SCORING SCALE:
+0.8-1.0 = clearly present and correctly oriented
+0.5-0.7 = present but partially wrong
+0.2-0.4 = barely present or significantly wrong
+0.0-0.1 = missing entirely
+preserved = true when score >= 0.6
+
+EVIDENCE RULE (CRITICAL):
+Every failure must cite specific visual evidence describing what you see.
+If you cannot describe explicit visual proof: set preserved = true.
+"unclear" or "hard to tell" must NOT mark preserved = false.
+
+COMPOSITION RULE:
+Camera angle differences between source photo and miniature are EXPECTED and NORMAL.
+Composition anchors describe the source angle — do NOT penalize for this.
+Set all composition anchor scores to 0.8+ unless framing is severely wrong.
+
+WINDOW/LAYOUT RULE:
+Window errors affect layout_score ONLY.
+Layout errors must NEVER cause structural failure or cap the total score.
+Maximum combined window/layout penalty = 15 points.
+
+PORCH RULE:
+porch_type_correct = is the porch footprint shape correct (L-wrap vs rectangular)?
+porch_wrap_direction_correct = does the porch wrap toward the correct side?
+Evaluate geometry only — not aesthetics.
+
+STAIRS RULE:
+stairs_invented = true means stairs appear that were NOT visible in source.
+This is a PENALTY ONLY (not a structural failure).
+
+MATERIAL/RENDER RULE:
+miniature_score should reflect physical realism and material quality.
+Do not penalize for professional lighting or refined presentation.`
+}
+
+// ── STRUCTURE SCORE FROM VALIDATION ──────────────────────────────────────────
+
+function computeStructureScore(v: StructuralValidation): number {
+  let score = 45
+  if (!v.main_mass_correct)                    score -= 20
+  if (v.porch_type_correct === false)           score -= 10
+  if (v.porch_wrap_direction_correct === false) score -= 8
+  if (v.side_extension_present === false)       score -= 7
+  if (!v.roof_orientation_correct)              score -= 5
+  return Math.max(0, score)
+}
+
+// ── CAP + FLOOR LOGIC ─────────────────────────────────────────────────────────
+
+function applyScoreRules(
+  rawTotal:              number,
+  hardStructuralFailure: boolean,
+  identityPass:          boolean,
+  stairsInvented:        boolean
+): { finalScore: number; capApplied: boolean; capReason: string | null } {
+  let finalScore = rawTotal
+  let capReason: string | null = null
+
+  // Identity pass floor — all identity anchors preserved → minimum 70
+  if (identityPass && finalScore < 70) {
+    finalScore = 70
+  }
+
+  // Structural failure cap — max 60
+  if (hardStructuralFailure && finalScore > 60) {
+    finalScore = 60
+    capReason  = 'Structural identity failure — porch geometry, mass, or roof incorrect'
+  }
+
+  // Stairs penalty — applied after cap
+  if (stairsInvented) {
+    finalScore = Math.max(0, finalScore - 8)
+    if (!capReason) capReason = 'Stairs invented (−8 penalty)'
+  }
+
+  return {
+    finalScore,
+    capApplied: capReason !== null || (identityPass && rawTotal < 70),
+    capReason,
+  }
+}
+
+// ── MAIN EXPORT ───────────────────────────────────────────────────────────────
+
+export async function scoreImage(
+  imageBase64:  string,
+  blueprint:    AnchorBlueprint,
+  openaiApiKey: string
+): Promise<AnchorScorecard> {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${openaiApiKey}`,
+    },
+    body: JSON.stringify({
+      model:      'gpt-4o',
+      max_tokens: 4000,   // increased — truncation was causing parse failures
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}`, detail: 'high' } },
+          { type: 'text', text: buildScoringPrompt(blueprint) },
+        ],
+      }],
+    }),
+  })
+
+  if (!response.ok) {
+    const err = await response.text()
+    throw new Error(`Scoring failed: ${response.status} ${err}`)
+  }
+
+  const data    = await response.json()
+  const raw     = data.choices?.[0]?.message?.content || ''
+  const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim()
+
+  // Attempt to recover truncated JSON by closing open structures
+  let jsonStr = cleaned
+  if (!jsonStr.endsWith('}')) {
+    // Count unclosed braces/brackets and close them
+    const opens = (jsonStr.match(/[{[]/g) || []).length
+    const closes = (jsonStr.match(/[}\]]/g) || []).length
+    const diff = opens - closes
+    for (let i = 0; i < diff; i++) {
+      jsonStr += jsonStr.includes('[') && !jsonStr.includes(']') ? ']' : '}'
+    }
+    console.warn('[scoreImage] Truncated JSON detected — attempted recovery')
+  }
+
+  let result: any
+  try {
+    result = JSON.parse(jsonStr)
+  } catch {
+    // Last resort: extract what we can
+    console.error('[scoreImage] Parse failed. Raw length:', raw.length)
+    throw new Error(`Scorecard parse failed. Raw (first 600): ${raw.slice(0, 600)}`)
+  }
+
+  const anchorScores: AnchorScore[] = result.anchor_scores || []
+
+  // Build validation
+  const rv = result.structural_validation || {}
+  const validation: StructuralValidation = {
+    main_mass_correct:             rv.main_mass_correct ?? true,
+    porch_type_correct:            rv.porch_type_correct ?? null,
+    porch_wrap_direction_correct:  rv.porch_wrap_direction_correct ?? null,
+    side_extension_present:        rv.side_extension_present ?? null,
+    roof_orientation_correct:      rv.roof_orientation_correct ?? true,
+    stairs_invented:               rv.stairs_invented ?? false,
+    hard_structural_failure:       false,
+  }
+
+  validation.hard_structural_failure =
+    !validation.main_mass_correct ||
+    validation.porch_type_correct === false ||
+    validation.porch_wrap_direction_correct === false ||
+    validation.side_extension_present === false ||
+    !validation.roof_orientation_correct
+
+  // Identity pass check
+  const identityAnchors      = blueprint.anchors.filter(a => (a as any).identity === true && a.type === 'structure')
+  const identityAnchorScores = anchorScores.filter(as => as.identity === true && as.type === 'structure')
+  const identityPass         = identityAnchors.length === 0
+    ? true
+    : identityAnchorScores.length > 0 && identityAnchorScores.every(as => as.preserved)
+
+  // Failed anchors — structure and layout only
+  const failedAnchors = anchorScores
+    .filter(as => !as.preserved && as.type !== 'composition')
+    .map(as => ({
+      id:          as.anchor_id,
+      importance:  as.importance,
+      description: blueprint.anchors.find(a => a.id === as.anchor_id)?.description || '',
+      type:        as.type || 'structure',
+      identity:    as.identity || false,
+      evidence:    as.evidence || '',
+    }))
+    .sort((a, b) => b.importance - a.importance)
+
+  // Component scores
+  const structureScore = computeStructureScore(validation)
+  const layoutScore    = Math.min(20, Math.max(0, result.layout_score || 10))
+  const miniatureScore = Math.min(20, Math.max(0, result.miniature_score || 10))
+
+  const dq   = result.diorama_quality || { base:3, three_d:3, materials:3, landscaping:3, subtotal:12, notes:'' }
+  const comp = result.composition     || { camera_angle:3, framing:3, subtotal:6, notes:'' }
+  const fin  = result.finish          || { quality:3, subtotal:3 }
+  dq.subtotal   = (dq.base||0)+(dq.three_d||0)+(dq.materials||0)+(dq.landscaping||0)
+  comp.subtotal = (comp.camera_angle||0)+(comp.framing||0)
+  fin.subtotal  = fin.quality||0
+
+  const aestheticScore = Math.min(15, Math.round(
+    ((dq.subtotal/20)*8) + ((comp.subtotal/10)*4) + ((fin.subtotal/5)*3)
+  ))
+
+  const rawTotal = structureScore + layoutScore + miniatureScore + aestheticScore
+
+  const { finalScore, capApplied, capReason } = applyScoreRules(
+    rawTotal,
+    validation.hard_structural_failure,
+    identityPass,
+    validation.stairs_invented
+  )
+
+  const status: 'complete' | 'needs_improvement' =
+    finalScore >= 85 && !validation.hard_structural_failure ? 'complete' : 'needs_improvement'
+
+  return {
+    anchor_scores:           anchorScores,
+    failed_anchors:          failedAnchors,
+    structural_validation:   validation,
+    structure_score:         structureScore,
+    layout_score:            layoutScore,
+    miniature_score:         miniatureScore,
+    aesthetic_score:         aestheticScore,
+    diorama_quality:         dq,
+    composition:             comp,
+    finish:                  fin,
+    raw_total:               rawTotal,
+    hard_cap_applied:        capApplied,
+    hard_cap_reason:         capReason,
+    final_score:             finalScore,
+    hard_structural_failure: validation.hard_structural_failure,
+    identity_pass:           identityPass,
+    status,
+    primary_failure:         result.primary_failure || (failedAnchors[0]?.id ?? 'none'),
+  }
+}
