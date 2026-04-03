@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Minirama · Debug Lab</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
+:root{
+  --bg:#F4F4F2;--surface:#FFF;--surface2:#F0EFE9;--border:#E0DDD5;--border2:#CCCAC0;
+  --text:#1A1A18;--muted:#888880;--dim:#C8C6BE;
+  --accent:#C47E00;--green:#1E8C4A;--red:#C0392B;--orange:#C0622B;--blue:#2176AE;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;display:flex;flex-direction:column}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOPBAR */
+.topbar{height:48px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:.6rem;flex-shrink:0}
+.logo{font-family:var(--mono);font-size:.75rem;font-weight:700;color:var(--accent);letter-spacing:.05em}
+.logo span{color:var(--muted);font-weight:400}
+.tb-div{width:1px;height:16px;background:var(--border2);flex-shrink:0}
+.upload-label{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--border2);border-radius:5px;cursor:pointer;font-size:.68rem;color:var(--muted);font-family:var(--mono);transition:all .15s}
+.upload-label:hover{border-color:var(--accent);color:var(--text)}
+.upload-label.has-file{border-color:var(--green);color:var(--green)}
+.upload-label input{display:none}
+.run-all-btn{padding:6px 14px;background:var(--accent);color:#000;border:none;border-radius:5px;font-family:var(--mono);font-size:.68rem;font-weight:700;cursor:pointer;letter-spacing:.04em}
+.run-all-btn:hover:not(:disabled){filter:brightness(1.1)}
+.run-all-btn:disabled{opacity:.35;cursor:not-allowed}
+.status-wrap{margin-left:auto;display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.65rem;color:var(--muted)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--dim);flex-shrink:0}
+.status-dot.running{background:var(--accent);animation:pulse 1s infinite}
+.status-dot.done{background:var(--green)}
+.status-dot.error{background:var(--red)}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:290px 1fr 300px;flex:1;overflow:hidden;min-height:0}
+
+/* LEFT */
+.left{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.panel-hdr{padding:.55rem .85rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-title{font-family:var(--mono);font-size:.58rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.add-btn{padding:3px 10px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.62rem;cursor:pointer;transition:all .15s}
+.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+.cases-list{flex:1;overflow-y:auto;padding:.5rem}
+
+/* CASE CARD */
+.case-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;overflow:hidden}
+.case-hdr{display:flex;align-items:center;gap:6px;padding:6px 8px;cursor:pointer;user-select:none}
+.case-hdr:hover{background:rgba(0,0,0,.02)}
+.cdot{width:6px;height:6px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .2s}
+.cdot.running{background:var(--accent);animation:pulse 1s infinite}
+.cdot.done{background:var(--green)}
+.cdot.error{background:var(--red)}
+.cname{font-family:var(--mono);font-size:.65rem;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctags{display:flex;gap:2px;flex-shrink:0}
+.tag{font-size:.48rem;padding:1px 4px;border-radius:3px;background:var(--border);color:var(--muted);font-family:var(--mono);white-space:nowrap}
+.tag.on{background:#d1fae5;color:var(--green)}
+.tag.warn{background:#fff7ed;color:var(--orange)}
+.arrow{font-size:.6rem;color:var(--muted);transition:transform .15s;flex-shrink:0}
+.case-card.open .arrow{transform:rotate(90deg)}
+.cbody{display:none;padding:8px;border-top:1px solid var(--border)}
+.case-card.open .cbody{display:block}
+
+/* FIELDS */
+.field{margin-bottom:6px}
+.field label{display:block;font-size:.57rem;font-weight:700;color:var(--muted);margin-bottom:2px;letter-spacing:.05em;text-transform:uppercase}
+.field select,.field input[type=text],.field input[type=number],.field textarea{
+  width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:4px;
+  color:var(--text);font-family:var(--mono);font-size:.63rem;padding:3px 6px;outline:none;transition:border-color .15s}
+.field select:focus,.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:42px;line-height:1.5}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+
+/* PIPELINE PRESETS */
+.section-label{font-size:.57rem;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px}
+.pre-btn{padding:5px 3px;border:1.5px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;font-weight:600;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s}
+.pre-btn:hover{border-color:var(--accent);color:var(--accent)}
+.pre-btn.active{border-color:var(--accent);background:rgba(196,126,0,.1);color:var(--accent)}
+.pre-sub{font-weight:400;font-size:.5rem;display:block;margin-top:1px}
+
+/* EXPAND STRENGTH */
+.exp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px}
+.exp-btn{padding:4px 3px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s}
+.exp-btn:hover{border-color:var(--accent);color:var(--accent)}
+.exp-btn.active{border-color:var(--accent);background:rgba(196,126,0,.08);color:var(--accent);font-weight:700}
+.exp-sub{font-size:.5rem;font-weight:400;display:block}
+
+/* CASE ACTIONS */
+.cactions{display:flex;gap:4px;margin-top:7px;padding-top:7px;border-top:1px solid var(--border)}
+.run-btn-case{flex:1;padding:5px;background:var(--accent);color:#000;border:none;border-radius:4px;font-family:var(--mono);font-size:.62rem;font-weight:700;cursor:pointer}
+.run-btn-case:hover{filter:brightness(1.1)}
+.del-btn{padding:5px 8px;background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-family:var(--mono);font-size:.62rem;cursor:pointer}
+.del-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* CENTER */
+.center{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.center-hdr{padding:.55rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;background:var(--surface);flex-shrink:0}
+.results-grid{flex:1;overflow-y:auto;padding:.65rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:9px;align-content:start}
+
+/* RESULT CARD */
+.rc{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .2s}
+.rc.stable{border-color:#6fcf97}
+.rc.warn{border-color:var(--orange)}
+.rc.error{border-color:var(--red)}
+
+/* clickable image */
+.rc-img{aspect-ratio:3/2;background:#E8E6E0;position:relative;overflow:hidden;cursor:zoom-in;display:flex;align-items:center;justify-content:center}
+.rc-img img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.rc-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .18s}
+.rc-img:hover .rc-overlay{background:rgba(0,0,0,.4)}
+.rc-overlay-label{font-family:var(--mono);font-size:.68rem;color:#fff;background:rgba(0,0,0,.55);padding:4px 10px;border-radius:4px;opacity:0;transition:opacity .18s}
+.rc-img:hover .rc-overlay-label{opacity:1}
+.rc-spinner{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-family:var(--mono);font-size:.6rem}
+.spin{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.fatal-banner{position:absolute;inset:0;background:rgba(192,57,43,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.fatal-icon{font-size:1.4rem;color:var(--red)}
+.fatal-msg{font-family:var(--mono);font-size:.6rem;font-weight:700;color:var(--red);text-align:center;padding:0 .5rem}
+
+.rc-body{padding:8px}
+
+/* STATUS LINE — derived from render_log */
+.rc-status{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:4px}
+.rc-status.stable{background:#d1fae5;color:var(--green)}
+.rc-status.warn{background:#fff7ed;color:var(--orange)}
+.rc-status.error{background:#fee2e2;color:var(--red)}
+
+.rc-name{font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-bottom:4px}
+.rc-btns{display:flex;gap:3px;margin-bottom:5px;flex-wrap:wrap}
+.rc-btn{padding:3px 7px;border:1px solid var(--border2);border-radius:3px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;cursor:pointer;transition:all .15s}
+.rc-btn:hover{border-color:var(--accent);color:var(--accent)}
+.rc-btn.rerun{border-color:var(--blue);color:var(--blue)}
+.rc-btn.rerun:hover{background:var(--blue);color:#fff}
+
+/* PINNED LOG ON CARD */
+.rc-log{font-family:var(--mono);font-size:.56rem;line-height:1.6}
+.rl-ok{color:var(--green)}
+.rl-fail{color:var(--orange)}
+.sl-divider{height:1px;background:var(--border);margin:3px 0}
+.sl-i{font-size:.53rem;color:var(--dim);line-height:1.6}
+.sl-200{color:#2a8a4a}.sl-500{color:var(--red)}.sl-0{color:var(--dim)}
+
+/* RIGHT */
+.right{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.log-scroll{flex:1;overflow-y:auto;padding:.5rem .75rem}
+.log-sec{margin-bottom:.65rem;border-left:2px solid var(--border2);padding-left:.6rem}
+.log-sec.stable{border-left-color:var(--green)}
+.log-sec.warn{border-left-color:var(--orange)}
+.log-sec.error{border-left-color:var(--red)}
+.log-sec-hdr{font-family:var(--mono);font-size:.6rem;font-weight:700;color:var(--accent);margin-bottom:3px}
+.ll{font-family:var(--mono);font-size:.6rem;line-height:1.7;color:var(--muted);white-space:pre-wrap;word-break:break-all}
+.ll.ok{color:var(--green)}.ll.err{color:var(--red)}.ll.warn{color:var(--orange)}
+.ll.accent{color:var(--accent)}.ll.info{color:var(--blue)}.ll.dim{color:var(--dim)}
+.clear-btn{padding:2px 8px;border:1px solid var(--border2);border-radius:3px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;cursor:pointer}
+.clear-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;width:920px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.35)}
+.modal-hdr{padding:.6rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.6rem;flex-shrink:0;background:var(--surface)}
+.modal-title{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--accent)}
+.modal-status-badge{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:3px}
+.modal-status-badge.stable{background:#d1fae5;color:var(--green)}
+.modal-status-badge.warn{background:#fff7ed;color:var(--orange)}
+.modal-status-badge.error{background:#fee2e2;color:var(--red)}
+.modal-act{padding:3px 10px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.62rem;cursor:pointer;transition:all .15s}
+.modal-act:hover{border-color:var(--accent);color:var(--accent)}
+.modal-close{margin-left:auto;padding:3px 10px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.62rem;cursor:pointer}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+.modal-scroll{flex:1;overflow-y:auto;background:var(--bg)}
+
+/* IMAGE ZONE */
+.mi-img-zone{background:#111;display:flex;align-items:center;justify-content:center;min-height:260px;max-height:56vh}
+.mi-img-zone img{max-width:100%;max-height:56vh;object-fit:contain;display:block}
+
+/* DATA BELOW */
+.mi-data{padding:1.1rem}
+.mi-sec{margin-bottom:1.1rem}
+.mi-sec-hdr{font-family:var(--mono);font-size:.58rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;padding-bottom:3px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:6px}
+.hbadge{font-size:.52rem;padding:1px 6px;border-radius:3px;font-weight:700}
+.hbadge-ok{background:#d1fae5;color:var(--green)}
+.hbadge-fail{background:#fee2e2;color:var(--red)}
+.mi-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
+.mi-row{display:flex;align-items:baseline;gap:6px;padding:3px 0;border-bottom:1px solid var(--border)}
+.mi-k{font-family:var(--mono);font-size:.58rem;font-weight:700;color:var(--muted);width:108px;flex-shrink:0}
+.mi-v{font-family:var(--mono);font-size:.62rem;color:var(--text);word-break:break-word}
+.mi-v.on{color:var(--green)}.mi-v.off{color:var(--red)}.mi-v.hi{color:var(--accent)}
+.mi-rl{display:flex;gap:6px;font-family:var(--mono);font-size:.63rem;line-height:1.6;padding:4px 8px;border-radius:4px;margin-bottom:3px}
+.mi-rl.ok{background:#f0fdf4;color:var(--green)}
+.mi-rl.fail{background:#fff7ed;color:var(--orange)}
+.mi-sl{font-family:var(--mono);font-size:.6rem;line-height:1.8;color:var(--muted)}
+.mi-sl.s200{color:#2a8a4a}.mi-sl.s500{color:var(--red)}.mi-sl.s0{color:var(--dim)}
+.mi-prompt{font-family:var(--mono);font-size:.62rem;line-height:1.75;color:var(--text);white-space:pre-wrap;word-break:break-word;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.8rem;max-height:360px;overflow-y:auto}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">minirama <span>/ debug lab</span></div>
+  <div class="tb-div"></div>
+  <label class="upload-label" id="uploadLabel">
+    <span>📁</span><span id="uploadText">Upload source photo</span>
+    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
+  </label>
+  <div class="tb-div"></div>
+  <button class="run-all-btn" id="runAllBtn" disabled onclick="runCases(getAllIds())">▶ Run All Cases</button>
+  <div class="status-wrap">
+    <div class="status-dot" id="gDot"></div>
+    <span id="gStatus">idle</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <div class="left">
+    <div class="panel-hdr">
+      <span class="panel-title">Cases</span>
+      <button class="add-btn" onclick="addCase()">+ Add</button>
+    </div>
+    <div class="cases-list" id="casesList"></div>
+  </div>
+
+  <div class="center">
+    <div class="center-hdr">
+      <span class="panel-title">Results</span>
+      <span id="centerMeta" style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-left:auto"></span>
+    </div>
+    <div class="results-grid" id="resultsGrid">
+      <div id="emptyState" style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;color:var(--dim);font-family:var(--mono);font-size:.65rem;gap:.5rem">
+        <div style="font-size:2rem">⬡</div><div>add cases and run</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="panel-hdr">
+      <span class="panel-title">Live Log</span>
+      <button class="clear-btn" onclick="clearLog()">Clear</button>
+    </div>
+    <div class="log-scroll" id="logPanel"><div class="ll dim">[ waiting ]</div></div>
+  </div>
+
+</div>
+
+<!-- DETAIL MODAL: image full-width top, all data scrollable below -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modalTitle">—</div>
+      <div class="modal-status-badge" id="modalBadge"></div>
+      <button class="modal-act" id="modalFullBtn" onclick="openFull(currentModal)">⛶ Full Size</button>
+      <button class="modal-act" id="modalDlBtn" onclick="dl(currentModal)">↓ Save</button>
+      <button class="modal-close" onclick="closeModal()">✕ Close</button>
+    </div>
+    <div class="modal-scroll" id="modalScroll">
+      <div class="mi-img-zone" id="miImgZone"><img id="modalImg" alt=""></div>
+      <div class="mi-data" id="miData"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API      = '/api/v1/generate'
+let fileB64    = null
+let caseN      = 0
+let running    = false
+let imgStore   = {}   // name → b64
+let resStore   = {}   // name → full result
+let currentModal = ''
+
+// ── STATUS DERIVATION ─────────────────────────────────────────
+function deriveStatus(r){
+  if(!r || r.fatal_error) return {cls:'error', text:'❌ generation failed'}
+  const fails = (r.render_log||[]).filter(l=>!l.ok)
+  if(!fails.length) return {cls:'stable', text:'✅ stable'}
+  const expLt = fails.some(l=> l.msg.includes('expand') && l.msg.includes('light'))
+  if(expLt) return {cls:'warn', text:'⚠ expand affecting lighting'}
+  if(fails.length===1) return {cls:'warn', text:'⚠ '+fails[0].msg.slice(0,44)}
+  return {cls:'warn', text:'⚠ '+fails.length+' issues detected'}
+}
+
+// ── FILE UPLOAD ───────────────────────────────────────────────
+document.getElementById('fileInput').addEventListener('change', function(){
+  const f=this.files?.[0]; if(!f) return
+  const r=new FileReader()
+  r.onload=e=>{
+    fileB64=e.target.result.split(',')[1]
+    document.getElementById('uploadLabel').classList.add('has-file')
+    document.getElementById('uploadText').textContent='✓ '+f.name
+    document.getElementById('runAllBtn').disabled=false
+    gLog('Photo loaded — '+f.name,'ok')
+  }
+  r.readAsDataURL(f)
+})
+
+// ── ADD CASE ──────────────────────────────────────────────────
+function addCase(cfg={}){
+  caseN++
+  const id='c'+caseN
+  const defaultName=cfg.name||'case-'+caseN
+  const div=document.createElement('div')
+  div.className='case-card open'
+  div.dataset.id=id
+  div.dataset.preset='full'
+  div.dataset.expStr='medium'
+
+  div.innerHTML=`
+    <div class="case-hdr" onclick="toggleCase('${id}')">
+      <div class="cdot" id="dot-${id}"></div>
+      <div class="cname" id="nd-${id}">${esc(defaultName)}</div>
+      <div class="ctags" id="tags-${id}"></div>
+      <span class="arrow">›</span>
+    </div>
+    <div class="cbody">
+
+      <div class="field" style="margin-bottom:6px">
+        <label>Name</label>
+        <input type="text" id="nm-${id}" value="${esc(defaultName)}" oninput="syncName('${id}')">
+      </div>
+
+      <div class="section-label">Pipeline Preset</div>
+      <div class="presets">
+        <button class="pre-btn" id="pre-go-${id}" onclick="setPreset('${id}','gen_only')">
+          Gen Only<span class="pre-sub">no post</span>
+        </button>
+        <button class="pre-btn" id="pre-gh-${id}" onclick="setPreset('${id}','gen_hl')">
+          Gen + HL<span class="pre-sub">→ highlight</span>
+        </button>
+        <button class="pre-btn active" id="pre-fu-${id}" onclick="setPreset('${id}','full')">
+          Full<span class="pre-sub">→ exp → hl</span>
+        </button>
+      </div>
+
+      <div id="expBlock-${id}">
+        <div class="section-label">Expand Strength</div>
+        <div class="exp-row" style="margin-bottom:8px">
+          <button class="exp-btn" id="exs-sm-${id}" onclick="setExpStr('${id}','small')">Small<span class="exp-sub">5%</span></button>
+          <button class="exp-btn active" id="exs-md-${id}" onclick="setExpStr('${id}','medium')">Medium<span class="exp-sub">10%</span></button>
+          <button class="exp-btn" id="exs-lg-${id}" onclick="setExpStr('${id}','large')">Large<span class="exp-sub">18%</span></button>
+        </div>
+      </div>
+
+      <div class="f2">
+        <div class="field"><label>Landscaping</label>
+          <select id="land-${id}" onchange="syncTags('${id}')">
+            <option value="moderate_landscape">moderate</option>
+            <option value="sparse_landscape">sparse</option>
+            <option value="lush_landscape">lush</option>
+            <option value="overgrown_landscape">overgrown</option>
+          </select>
+        </div>
+        <div class="field"><label>Lighting</label>
+          <select id="light-${id}" onchange="syncTags('${id}')">
+            <option value="high_pop_light">high pop</option>
+            <option value="clean_daylight">clean day</option>
+            <option value="flat_light">flat</option>
+          </select>
+        </div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Color</label>
+          <select id="color-${id}" onchange="syncTags('${id}')">
+            <option value="strict_color">strict</option>
+            <option value="enhanced_color">enhanced</option>
+            <option value="loose_color">loose</option>
+          </select>
+        </div>
+        <div class="field"><label>Detail</label>
+          <select id="detail-${id}" onchange="syncTags('${id}')">
+            <option value="high_detail">high</option>
+            <option value="standard_detail">standard</option>
+            <option value="hyper_detail">hyper</option>
+          </select>
+        </div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Background</label>
+          <select id="bg-${id}" onchange="syncTags('${id}')">
+            <option value="rich_interior_bg">interior</option>
+            <option value="matched_bg">matched</option>
+            <option value="neutral_bg">neutral</option>
+          </select>
+        </div>
+        <div class="field"><label>Foreground</label>
+          <select id="fg-${id}" onchange="syncTags('${id}')">
+            <option value="light_foreground">light</option>
+            <option value="no_foreground">none</option>
+            <option value="strong_foreground">strong</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field" id="brBlock-${id}">
+        <label>Highlight Brightness (post-process only)</label>
+        <input type="number" id="br-${id}" value="1.18" min="1.0" max="1.6" step="0.02">
+      </div>
+
+      <div class="field">
+        <label>Structure Block (injected verbatim)</label>
+        <textarea id="sb-${id}" placeholder="Optional — e.g. Victorian, asymmetric roofline..."></textarea>
+      </div>
+      <div class="field">
+        <label>Custom Prompt (replaces all blocks)</label>
+        <textarea id="cp-${id}" placeholder="Leave empty to use modular prompt..."></textarea>
+      </div>
+
+      <div class="cactions">
+        <button class="run-btn-case" onclick="runCases(['${id}'])">▶ Run</button>
+        <button class="del-btn" onclick="delCase('${id}')">✕</button>
+      </div>
+    </div>`
+
+  document.getElementById('casesList').appendChild(div)
+
+  // Apply any config
+  if(cfg.preset)      setPreset(id, cfg.preset)
+  if(cfg.lighting)    { document.getElementById('light-'+id).value=cfg.lighting }
+  if(cfg.landscaping) { document.getElementById('land-'+id).value=cfg.landscaping }
+  if(cfg.color)       { document.getElementById('color-'+id).value=cfg.color }
+  syncTags(id)
+}
+
+function toggleCase(id){
+  document.querySelector(`.case-card[data-id="${id}"]`).classList.toggle('open')
+}
+function syncName(id){
+  document.getElementById('nd-'+id).textContent=document.getElementById('nm-'+id).value
+}
+function delCase(id){
+  document.querySelector(`.case-card[data-id="${id}"]`)?.remove()
+}
+
+// Pipeline preset wires expand + highlight order, shows/hides controls
+function setPreset(id, preset){
+  const card=document.querySelector(`.case-card[data-id="${id}"]`)
+  if(card) card.dataset.preset=preset
+  ;['go','gh','fu'].forEach(k=>{
+    const m={go:'gen_only',gh:'gen_hl',fu:'full'}
+    document.getElementById('pre-'+k+'-'+id)?.classList.toggle('active',m[k]===preset)
+  })
+  const showExp = preset==='full'
+  const showBr  = preset!=='gen_only'
+  document.getElementById('expBlock-'+id).style.display = showExp?'':'none'
+  document.getElementById('brBlock-'+id).style.display  = showBr?'':'none'
+  syncTags(id)
+}
+
+function setExpStr(id, size){
+  const card=document.querySelector(`.case-card[data-id="${id}"]`)
+  if(card) card.dataset.expStr=size
+  ;['sm','md','lg'].forEach(k=>{
+    const m={sm:'small',md:'medium',lg:'large'}
+    document.getElementById('exs-'+k+'-'+id)?.classList.toggle('active',m[k]===size)
+  })
+}
+
+function syncTags(id){
+  const box=document.getElementById('tags-'+id); if(!box) return
+  const card=document.querySelector(`.case-card[data-id="${id}"]`)
+  const preset=card?.dataset.preset||'full'
+  const lt=document.getElementById('light-'+id)?.value||''
+  const la=document.getElementById('land-'+id)?.value||''
+  const cl=document.getElementById('color-'+id)?.value||''
+  const dt=document.getElementById('detail-'+id)?.value||''
+  const bg=document.getElementById('bg-'+id)?.value||''
+  const abbr=v=>v.split('_')[0]
+  box.innerHTML=[
+    preset!=='full'?`<span class="tag warn">${preset==='gen_only'?'gen-only':'gen+hl'}</span>`:`<span class="tag on">full</span>`,
+    lt!=='high_pop_light'     ?`<span class="tag">${abbr(lt)}</span>`:'',
+    la!=='moderate_landscape' ?`<span class="tag">${abbr(la)}</span>`:'',
+    cl!=='strict_color'       ?`<span class="tag">${abbr(cl)}</span>`:'',
+    dt!=='high_detail'        ?`<span class="tag">${abbr(dt)}</span>`:'',
+    bg!=='rich_interior_bg'   ?`<span class="tag">${abbr(bg)}</span>`:'',
+  ].join('')
+}
+
+function collect(id){
+  const card=document.querySelector(`.case-card[data-id="${id}"]`)
+  const preset=card?.dataset.preset||'full'
+  const expStr=card?.dataset.expStr||'medium'
+  const padMap={small:0.05,medium:0.10,large:0.18}
+  return {
+    name:          document.getElementById('nm-'+id)?.value||id,
+    landscaping:   document.getElementById('land-'+id)?.value,
+    lighting:      document.getElementById('light-'+id)?.value,
+    color:         document.getElementById('color-'+id)?.value,
+    background:    document.getElementById('bg-'+id)?.value,
+    foreground:    document.getElementById('fg-'+id)?.value,
+    detail:        document.getElementById('detail-'+id)?.value,
+    brightness:    parseFloat(document.getElementById('br-'+id)?.value||'1.18'),
+    expand:        preset==='full',
+    highlightAfter:preset==='full'||preset==='gen_hl',
+    expandPadding: padMap[expStr]||0.10,
+    structureBlock:document.getElementById('sb-'+id)?.value?.trim()||undefined,
+    customPrompt:  document.getElementById('cp-'+id)?.value?.trim()||undefined,
+    _preset:preset,_expStr:expStr,
+  }
+}
+
+function getAllIds(){
+  return [...document.querySelectorAll('.case-card')].map(c=>c.dataset.id)
+}
+
+// ── RUN ───────────────────────────────────────────────────────
+async function runCases(ids){
+  if(running){alert('Already running');return}
+  if(!fileB64){alert('Upload a photo first');return}
+  running=true; setG('running','running…'); clearLog()
+  document.getElementById('emptyState')?.remove()
+  ids.forEach(id=>{const p=collect(id);mkLoading(p.name);setDot(id,'running');syncTags(id)})
+  const BATCH=5
+  gLog('━━ '+ids.length+' case(s) — up to '+BATCH+' parallel','accent')
+  let ok=0,fail=0
+  for(let i=0;i<ids.length;i+=BATCH){
+    const batch=ids.slice(i,i+BATCH)
+    await Promise.allSettled(batch.map(async id=>{
+      const p=collect(id)
+      gLog('▶ '+p.name,'accent'); setG('running',(ok+fail)+'/'+ids.length)
+      try{
+        const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({source_image_b64:fileB64,variants:[p]})})
+        if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||'HTTP '+res.status)}
+        const data=await res.json()
+        const r=data.results?.[0]; if(!r) throw new Error('No result')
+        logResult(r)
+        if(r.fatal_error){mkFatal(r.name,r.fatal_error,r.system_log);setDot(id,'error');fail++}
+        else{resStore[r.name]=r;imgStore[r.name]=r.image_b64;mkResult(r);setDot(id,'done');ok++}
+        gLog('  ✓ '+p.name+' done','ok')
+      }catch(e){
+        gLog('  ✗ '+p.name+': '+e.message,'err')
+        mkFatal(p.name,e.message,[]);setDot(id,'error');fail++
+      }
+    }))
+  }
+  const sum=ids.length+' cases — '+ok+' ok, '+fail+' failed'
+  gLog('\n'+sum,fail?'warn':'ok'); setG(fail?'error':'done',sum)
+  document.getElementById('centerMeta').textContent=sum
+  running=false
+}
+
+// ── CARDS ─────────────────────────────────────────────────────
+function mkLoading(name){
+  let c=document.getElementById('rc-'+name)
+  if(!c){c=document.createElement('div');c.id='rc-'+name;c.className='rc';document.getElementById('resultsGrid').appendChild(c)}
+  c.innerHTML=`<div class="rc-img"><div class="rc-spinner"><div class="spin"></div><div>${esc(name)}</div></div></div>
+  <div class="rc-body"><div class="rc-name">${esc(name)}</div><div class="ll dim" style="font-size:.6rem">generating…</div></div>`
+}
+
+function mkFatal(name, err, slog){
+  let c=document.getElementById('rc-'+name); if(!c) return
+  c.className='rc error'
+  const nj=`"${esc(name)}"`
+  c.innerHTML=`
+    <div class="rc-img" onclick='openDetail(${nj})'>
+      <div class="fatal-banner"><div class="fatal-icon">✗</div><div class="fatal-msg">FATAL<br>${esc(err)}</div></div>
+      <div class="rc-overlay"><span class="rc-overlay-label">🔍 details</span></div>
+    </div>
+    <div class="rc-body">
+      <div class="rc-status error">❌ fatal error</div>
+      <div class="rc-name">${esc(name)}</div>
+      <div class="rc-btns"><button class="rc-btn" onclick='openDetail(${nj})'>🔍 Details</button></div>
+      <div class="rc-log">${(slog||[]).map(l=>`<div class="sl-i sl-${l.code===200?'200':l.code===0?'0':'500'}">[${l.code||'--'}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`).join('')}</div>
+    </div>`
+}
+
+function mkResult(r){
+  let c=document.getElementById('rc-'+r.name); if(!c) return
+  const st=deriveStatus(r)
+  c.className='rc '+st.cls
+  const nj=`"${esc(r.name)}"`
+  const rl=(r.render_log||[]).map(l=>`<div class="rc-log"><span class="${l.ok?'rl-ok':'rl-fail'}">${l.ok?'✓':'●'}</span> <span style="color:var(--text)">${esc(l.msg)}</span></div>`).join('')
+  const sl=(r.system_log||[]).map(l=>`<div class="sl-i sl-${l.code===200?'200':l.code===0?'0':'500'}">[${l.code===0?'--':l.code}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`).join('')
+
+  c.innerHTML=`
+    <div class="rc-img" onclick='openDetail(${nj})'>
+      ${r.image_b64?`<img src="data:image/jpeg;base64,${r.image_b64}" style="pointer-events:none">`:`<div class="rc-spinner"><div>no image</div></div>`}
+      <div class="rc-overlay"><span class="rc-overlay-label">🔍 inspect</span></div>
+    </div>
+    <div class="rc-body">
+      <div class="rc-status ${st.cls}">${esc(st.text)}</div>
+      <div class="rc-name">${esc(r.name)}</div>
+      <div class="rc-btns">
+        ${r.image_b64?`<button class="rc-btn" onclick="event.stopPropagation();dl(${nj})">↓ Save</button>`:''}
+        <button class="rc-btn" onclick='openDetail(${nj})'>🔍 Inspect</button>
+        <button class="rc-btn rerun" onclick="rerun(${nj})">↺ Re-run</button>
+      </div>
+      <div style="font-family:var(--mono);font-size:.56rem;line-height:1.6">${rl}${sl?`<div class="sl-divider"></div>${sl}`:''}</div>
+    </div>`
+}
+
+// ── RE-RUN ────────────────────────────────────────────────────
+async function rerun(name){
+  const r=resStore[name]; if(!r||!fileB64) return
+  const p=r.params||r; if(!p.name) return
+  running=true; setG('running','re-running '+name+'…'); mkLoading(name)
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({source_image_b64:fileB64,variants:[p]})})
+    if(!res.ok) throw new Error('HTTP '+res.status)
+    const data=await res.json()
+    const nr=data.results?.[0]; if(!nr) throw new Error('No result')
+    logResult(nr)
+    resStore[nr.name]=nr; imgStore[nr.name]=nr.image_b64
+    if(nr.fatal_error) mkFatal(nr.name,nr.fatal_error,nr.system_log)
+    else mkResult(nr)
+    gLog('↺ Re-run '+name+' done','ok')
+  }catch(e){ gLog('Re-run error: '+e.message,'err'); mkFatal(name,e.message,[]) }
+  running=false; setG('done','idle')
+}
+
+// ── OPEN DETAIL MODAL ─────────────────────────────────────────
+function openDetail(name){
+  const r=resStore[name]
+  const b=imgStore[name]
+  currentModal=name
+  document.getElementById('modalScroll').scrollTop=0
+  document.getElementById('modalTitle').textContent=name
+
+  // Status badge
+  const st=r?deriveStatus(r):{cls:'error',text:'No data'}
+  const badge=document.getElementById('modalBadge')
+  badge.className='modal-status-badge '+st.cls
+  badge.textContent=st.text
+
+  // Image
+  const iz=document.getElementById('miImgZone')
+  const img=document.getElementById('modalImg')
+  if(b){ img.src='data:image/jpeg;base64,'+b; iz.style.display='flex'; document.getElementById('modalFullBtn').style.display=''; document.getElementById('modalDlBtn').style.display='' }
+  else  { iz.style.display='none'; document.getElementById('modalFullBtn').style.display='none'; document.getElementById('modalDlBtn').style.display='none' }
+
+  // Data
+  let html=''
+  const p=r?.params||r
+
+  // SETTINGS
+  if(p&&p.name){
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Settings Used</div><div class="mi-grid">`
+    const pairs=[
+      ['Pipeline',p._preset||'—'],['Expand Str',p._expStr||'—'],
+      ['Landscaping',p.landscaping],['Lighting',p.lighting],
+      ['Color',p.color],['Detail',p.detail],
+      ['Background',p.background],['Foreground',p.foreground],
+      ['Brightness',p.brightness],['Expand',p.expand?'yes':'no'],
+      ['HL After',p.highlightAfter?'yes':'no'],['Custom',p.customPrompt?'yes':'no'],
+    ]
+    pairs.forEach(([k,v])=>{
+      const cls=v==='yes'?'on':v==='no'?'off':''
+      html+=`<div class="mi-row"><div class="mi-k">${esc(k)}</div><div class="mi-v ${cls}">${esc(String(v??'—'))}</div></div>`
+    })
+    if(p.structureBlock) html+=`<div class="mi-row" style="grid-column:1/-1"><div class="mi-k">Structure</div><div class="mi-v hi">${esc(p.structureBlock)}</div></div>`
+    html+=`</div></div>`
+  }
+
+  // DIAGNOSTICS
+  if(r?.render_log?.length){
+    const fails=r.render_log.filter(l=>!l.ok)
+    const passes=r.render_log.filter(l=>l.ok)
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Render Diagnostics
+      ${fails.length?`<span class="hbadge hbadge-fail">${fails.length} failing</span>`:''}
+      ${passes.length?`<span class="hbadge hbadge-ok">${passes.length} passing</span>`:''}
+    </div>`
+    fails.forEach(l=>{ html+=`<div class="mi-rl fail"><span>●</span><span>${esc(l.msg)}</span></div>` })
+    passes.forEach(l=>{ html+=`<div class="mi-rl ok"><span>✓</span><span>${esc(l.msg)}</span></div>` })
+    html+=`</div>`
+  }
+
+  // SYSTEM LOG
+  if(r?.system_log?.length){
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr">System Log</div>`
+    r.system_log.forEach(l=>{
+      const cls=l.code===200?'s200':l.code===0?'s0':'s500'
+      html+=`<div class="mi-sl ${cls}">[${l.code===0?'--':l.code}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`
+    })
+    html+=`</div>`
+  }
+
+  // FATAL
+  if(r?.fatal_error){
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr" style="color:var(--red)">Fatal Error</div>
+    <div style="font-family:var(--mono);font-size:.65rem;color:var(--red)">${esc(r.fatal_error)}</div></div>`
+  }
+
+  // PROMPT
+  if(r?.prompt_used){
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Prompt Sent to Model</div>
+    <div class="mi-prompt">${esc(r.prompt_used)}</div></div>`
+  }
+
+  document.getElementById('miData').innerHTML=html||'<div style="font-family:var(--mono);font-size:.65rem;color:var(--muted);padding:.5rem 0">No data</div>'
+  document.getElementById('modal').classList.add('open')
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open') }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal() })
+
+// ── LOG PANEL ─────────────────────────────────────────────────
+function logResult(r){
+  const panel=document.getElementById('logPanel')
+  const sec=document.createElement('div')
+  const st=deriveStatus(r)
+  sec.className='log-sec '+st.cls
+  let h=`<div class="log-sec-hdr">${esc(r.name)} — ${esc(st.text)}</div>`
+  if(r.fatal_error) h+=`<div class="ll err">✗ FATAL: ${esc(r.fatal_error)}</div>`
+  ;(r.render_log||[]).forEach(l=>{ h+=`<div class="ll ${l.ok?'ok':'warn'}">  ${l.ok?'✓':'●'} ${esc(l.msg)}</div>` })
+  ;(r.system_log||[]).forEach(l=>{ h+=`<div class="ll ${l.code===200?'ok':l.code===0?'dim':'err'}">  [${l.code===0?'--':l.code}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>` })
+  sec.innerHTML=h; panel.appendChild(sec); panel.scrollTop=panel.scrollHeight
+}
+function gLog(msg,type=''){
+  const p=document.getElementById('logPanel'),el=document.createElement('div')
+  el.className='ll '+(type); el.textContent=msg; p.appendChild(el); p.scrollTop=p.scrollHeight
+}
+function clearLog(){ document.getElementById('logPanel').innerHTML='' }
+
+// ── UTILS ─────────────────────────────────────────────────────
+function setG(state,text){ document.getElementById('gDot').className='status-dot '+state; document.getElementById('gStatus').textContent=text }
+function setDot(id,state){ const d=document.getElementById('dot-'+id); if(d) d.className='cdot '+state }
+function dl(name){ const b=imgStore[name]; if(!b) return; const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+b; a.download='minirama-'+name.replace(/\s+/g,'-')+'-'+Date.now()+'.jpg'; a.click() }
+function openFull(name){ const b=imgStore[name]; if(!b) return; const w=window.open(); w.document.write('<html><head><title>'+esc(name)+'</title><style>*{margin:0;padding:0;background:#111}img{max-width:100vw;max-height:100vh;object-fit:contain;display:block}</style></head><body><img src="data:image/jpeg;base64,'+b+'"></body></html>'); w.document.close() }
+function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+// ── SEED 3 DEFAULT CASES ──────────────────────────────────────
+addCase({name:'gen-only',    preset:'gen_only', lighting:'clean_daylight'})
+addCase({name:'full-default',preset:'full'})
+addCase({name:'full-lush',   preset:'full', landscaping:'lush_landscape'})
+</script>
+</body>
+</html>

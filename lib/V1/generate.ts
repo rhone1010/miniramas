@@ -1,98 +1,106 @@
-// ─────────────────────────────────────────────────────────────
-// MODULE 1 — GENERATION
-// lib/v1/generate.ts
-//
-// ONE JOB: Send source image to gpt-image-1, get diorama back.
-//
-// Responsibilities:
-//   - Build the prompt (short and clear)
-//   - Call the API
-//   - Return raw transparent PNG as b64
-//
-// Does NOT handle:
-//   - Canvas placement
-//   - Shadows
-//   - Backgrounds
-//   - Scoring
-//   - Iteration
-// ─────────────────────────────────────────────────────────────
-
 import OpenAI, { toFile } from 'openai'
 
-// ── PROMPT ────────────────────────────────────────────────────
-// Short. Clear. Single subject. No contradictions.
-// The AI's only job is to produce the diorama object cleanly.
+type Params = {
+  landscaping?: string
+  lighting?: string
+  color?: string
+  background?: string
+  foreground?: string
+  detail?: string
+  structureBlock?: string
+  customPrompt?: string
+  // pipeline params used by route.ts
+  brightness?: number
+  expand?: boolean
+  highlightAfter?: boolean
+  expandPadding?: number
+  name?: string
+  _preset?: string
+  _expStr?: string
+}
 
-const GENERATION_PROMPT = `
-Create a highly realistic handcrafted miniature architectural diorama of the house in the provided photo.
+const MODIFIERS: Record<string, string> = {
+  sparse_landscape:    `Landscaping is minimal and restrained with sparse plant placement, visible soil, and open ground.`,
+  moderate_landscape:  `Landscaping is balanced with shrubs, flowers, and some open space.`,
+  lush_landscape:      `Landscaping is dense, layered, and full with abundant flowers, shrubs, and ground cover.`,
+  overgrown_landscape: `Landscaping is heavily overgrown with dense vegetation and a wild appearance.`,
+  flat_light:          `Lighting is soft and even with minimal contrast.`,
+  clean_daylight:      `Lighting is bright neutral daylight with clear highlights and natural contrast.`,
+  high_pop_light:      `Lighting has strong highlights, crisp contrast, and bright edge reflections.`,
+  strict_color:        `Preserve all facade color sections exactly with no blending.`,
+  enhanced_color:      `Enhance color separation while preserving original tones.`,
+  loose_color:         `Allow slight color interpretation while keeping palette consistent.`,
+  neutral_bg:          `Background is a soft neutral studio environment.`,
+  matched_bg:          `Background subtly reflects the colors and tones of the house.`,
+  rich_interior_bg:    `Background is a softly blurred interior environment.`,
+  no_foreground:       `No foreground objects are present.`,
+  light_foreground:    `Include subtle foreground elements with soft blur.`,
+  strong_foreground:   `Include clear foreground objects that frame the scene.`,
+  standard_detail:     `Maintain clean readable detail.`,
+  high_detail:         `Include high material fidelity and texture.`,
+  hyper_detail:        `Extremely high detail with micro-texture and sharp definition.`,
+}
+
+function buildPrompt(params: Params): string {
+  if (params.customPrompt) return params.customPrompt
+
+  return `
+Create a realistic miniature diorama of the provided house.
 
 STRUCTURE:
-- Preserve the exact architecture, proportions, and layout of the source house
-- Do not alter, simplify, or redesign any structural element
-- Straight vertical lines only — no warping or distortion
+Preserve exact architecture, proportions, and silhouette.
+${params.structureBlock ? `Use this structure analysis:\n${params.structureBlock}` : ''}
 
-DIORAMA:
-- The house sits on a circular dark walnut wooden base
-- The full base must be visible — do not crop it at any edge
-- Simple landscaping around the house: grass, small shrubs, a stone or brick path to the entrance
-- The house occupies 55–65% of the base diameter, surrounded by visible land on all sides
-
-MATERIALS:
-- Painted resin and wood — handcrafted miniature quality
-- Semi-gloss finish: edges catch light, visible specular highlights on trim and base rim
-- Not smooth CGI — surfaces have texture and material detail
+LANDSCAPING:
+${MODIFIERS[params.landscaping || 'moderate_landscape']}
 
 LIGHTING:
-- Warm directional light from the upper-left
-- Clear highlights on left-facing surfaces, shadows on right-facing surfaces
-- Strong contrast — not flat
+${MODIFIERS[params.lighting || 'clean_daylight']}
 
-CAMERA:
-- 35° downward angle
-- No lens distortion
-- Entire base visible with breathing room around it
+COLOR:
+${MODIFIERS[params.color || 'strict_color']}
 
 BACKGROUND:
-- Solid flat hot pink #FF69B4 — nothing else
-- No table, no floor, no room, no shadow beyond the base
-- Clean edges — no halo or fringe
+${MODIFIERS[params.background || 'neutral_bg']}
+
+FOREGROUND:
+${MODIFIERS[params.foreground || 'light_foreground']}
+
+DETAIL:
+${MODIFIERS[params.detail || 'high_detail']}
+
+BASE:
+Circular wooden base with visible thickness.
+
+CAMERA:
+~40 degree elevated angle, macro depth of field.
 `.trim()
+}
 
-// ── TYPES ─────────────────────────────────────────────────────
-
-export interface GenerateInput {
-  sourceImageB64: string    // JPEG or PNG, base64
+export async function generateDiorama(input: {
+  sourceImageB64: string
   openaiApiKey:   string
-}
+  params?:        Params
+}): Promise<{ imageB64: string; promptUsed: string }> {
+  const openai  = new OpenAI({ apiKey: input.openaiApiKey })
+  const prompt  = buildPrompt(input.params || {})
 
-export interface GenerateResult {
-  imagePngB64: string       // Transparent RGBA PNG, 1024x1024
-}
-
-// ── MAIN ──────────────────────────────────────────────────────
-
-export async function generateDiorama(input: GenerateInput): Promise<GenerateResult> {
-  const openai = new OpenAI({ apiKey: input.openaiApiKey })
-
-  const sourceFile = await toFile(
+  const file = await toFile(
     Buffer.from(input.sourceImageB64, 'base64'),
     'source.png',
     { type: 'image/png' }
   )
 
-  const response = await openai.images.edit({
-    model:      'gpt-image-1',
-    image:      sourceFile,
-    prompt:     GENERATION_PROMPT,
-    n:          1,
-    size:       '1024x1024',
-    quality:    'high',
-    background: 'transparent',   // RGBA output — no chroma key needed
+  const res = await openai.images.edit({
+    model: 'gpt-image-1',
+    image: file,
+    prompt,
+    size:  '1536x1024',
   })
 
-  const b64 = response.data?.[0]?.b64_json
-  if (!b64) throw new Error('[generate] gpt-image-1 returned no image data')
+  const b64 = res.data?.[0]?.b64_json
+  if (!b64) throw new Error('generate_failed')
 
-  console.log('[generate] Done — transparent 1024x1024 PNG')
-  return { imagePngB64: b64 }
+  console.log('[generate] Done — 1536x1024')
+  return { imageB64: b64, promptUsed: prompt }
 }
