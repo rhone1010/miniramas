@@ -36,7 +36,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .status-dot.error{background:var(--red)}
 
 /* LAYOUT */
-.layout{display:grid;grid-template-columns:290px 1fr 300px;flex:1;overflow:hidden;min-height:0}
+.layout{display:grid;grid-template-columns:300px 1fr 300px;flex:1;overflow:hidden;min-height:0}
 
 /* LEFT */
 .left{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
@@ -71,11 +71,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
   width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:4px;
   color:var(--text);font-family:var(--mono);font-size:.63rem;padding:3px 6px;outline:none;transition:border-color .15s}
 .field select:focus,.field input:focus,.field textarea:focus{border-color:var(--accent)}
-.field textarea{resize:vertical;min-height:42px;line-height:1.5}
+.field textarea{resize:vertical;min-height:46px;line-height:1.5}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 
+/* SECTION DIVIDER IN CASE BODY */
+.sec-div{font-size:.55rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:6px 0 3px;border-bottom:1px solid var(--border);margin-bottom:6px}
+
 /* PIPELINE PRESETS */
-.section-label{font-size:.57rem;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
 .presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px}
 .pre-btn{padding:5px 3px;border:1.5px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;font-weight:600;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s}
 .pre-btn:hover{border-color:var(--accent);color:var(--accent)}
@@ -102,14 +104,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .results-grid{flex:1;overflow-y:auto;padding:.65rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:9px;align-content:start}
 
 /* RESULT CARD */
-.rc{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .2s}
+.rc{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
 .rc.stable{border-color:#6fcf97}
 .rc.warn{border-color:var(--orange)}
 .rc.error{border-color:var(--red)}
-
-/* clickable image */
-.rc-img{aspect-ratio:3/2;background:#E8E6E0;position:relative;overflow:hidden;cursor:zoom-in;display:flex;align-items:center;justify-content:center}
-.rc-img img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.rc-img{aspect-ratio:1/1;background:#E8E6E0;position:relative;overflow:hidden;cursor:zoom-in;display:flex;align-items:center;justify-content:center}
+.rc-img img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
 .rc-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .18s}
 .rc-img:hover .rc-overlay{background:rgba(0,0,0,.4)}
 .rc-overlay-label{font-family:var(--mono);font-size:.68rem;color:#fff;background:rgba(0,0,0,.55);padding:4px 10px;border-radius:4px;opacity:0;transition:opacity .18s}
@@ -119,29 +119,32 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .fatal-banner{position:absolute;inset:0;background:rgba(192,57,43,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .fatal-icon{font-size:1.4rem;color:var(--red)}
 .fatal-msg{font-family:var(--mono);font-size:.6rem;font-weight:700;color:var(--red);text-align:center;padding:0 .5rem}
-
 .rc-body{padding:8px}
-
-/* STATUS LINE — derived from render_log */
 .rc-status{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:4px}
 .rc-status.stable{background:#d1fae5;color:var(--green)}
 .rc-status.warn{background:#fff7ed;color:var(--orange)}
 .rc-status.error{background:#fee2e2;color:var(--red)}
-
 .rc-name{font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-bottom:4px}
 .rc-btns{display:flex;gap:3px;margin-bottom:5px;flex-wrap:wrap}
 .rc-btn{padding:3px 7px;border:1px solid var(--border2);border-radius:3px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;cursor:pointer;transition:all .15s}
 .rc-btn:hover{border-color:var(--accent);color:var(--accent)}
 .rc-btn.rerun{border-color:var(--blue);color:var(--blue)}
 .rc-btn.rerun:hover{background:var(--blue);color:#fff}
-
-/* PINNED LOG ON CARD */
 .rc-log{font-family:var(--mono);font-size:.56rem;line-height:1.6}
-.rl-ok{color:var(--green)}
-.rl-fail{color:var(--orange)}
+.rl-ok{color:var(--green)}.rl-fail{color:var(--orange)}
 .sl-divider{height:1px;background:var(--border);margin:3px 0}
 .sl-i{font-size:.53rem;color:var(--dim);line-height:1.6}
 .sl-200{color:#2a8a4a}.sl-500{color:var(--red)}.sl-0{color:var(--dim)}
+
+/* COLLAPSIBLE PROMPT/PARAMS ON CARD */
+.rc-collapse{margin-top:5px;border-top:1px solid var(--border);padding-top:5px}
+.rc-collapse-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:var(--mono);font-size:.56rem;color:var(--muted);padding:2px 0;user-select:none}
+.rc-collapse-hdr:hover{color:var(--accent)}
+.rc-collapse-body{display:none;margin-top:4px}
+.rc-collapse.open .rc-collapse-body{display:block}
+.rc-prompt-text{font-family:var(--mono);font-size:.54rem;line-height:1.65;color:var(--text);white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:5px 7px;max-height:140px;overflow-y:auto}
+.rc-manual-text{font-family:var(--mono);font-size:.54rem;line-height:1.65;color:var(--accent);white-space:pre-wrap;word-break:break-word;background:rgba(196,126,0,.05);border:1px solid rgba(196,126,0,.2);border-radius:4px;padding:5px 7px;max-height:80px;overflow-y:auto;margin-top:3px}
+.rc-params-text{font-family:var(--mono);font-size:.53rem;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:5px 7px;max-height:120px;overflow-y:auto}
 
 /* RIGHT */
 .right{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
@@ -172,12 +175,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .modal-close{margin-left:auto;padding:3px 10px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.62rem;cursor:pointer}
 .modal-close:hover{border-color:var(--red);color:var(--red)}
 .modal-scroll{flex:1;overflow-y:auto;background:var(--bg)}
-
-/* IMAGE ZONE */
-.mi-img-zone{background:#111;display:flex;align-items:center;justify-content:center;min-height:260px;max-height:56vh}
-.mi-img-zone img{max-width:100%;max-height:56vh;object-fit:contain;display:block}
-
-/* DATA BELOW */
+.mi-img-zone{background:#111;display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;max-height:60vh;max-width:100%}
+.mi-img-zone img{width:100%;height:100%;object-fit:contain;display:block}
 .mi-data{padding:1.1rem}
 .mi-sec{margin-bottom:1.1rem}
 .mi-sec-hdr{font-family:var(--mono);font-size:.58rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;padding-bottom:3px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:6px}
@@ -186,7 +185,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .hbadge-fail{background:#fee2e2;color:var(--red)}
 .mi-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
 .mi-row{display:flex;align-items:baseline;gap:6px;padding:3px 0;border-bottom:1px solid var(--border)}
-.mi-k{font-family:var(--mono);font-size:.58rem;font-weight:700;color:var(--muted);width:108px;flex-shrink:0}
+.mi-k{font-family:var(--mono);font-size:.58rem;font-weight:700;color:var(--muted);width:140px;flex-shrink:0}
 .mi-v{font-family:var(--mono);font-size:.62rem;color:var(--text);word-break:break-word}
 .mi-v.on{color:var(--green)}.mi-v.off{color:var(--red)}.mi-v.hi{color:var(--accent)}
 .mi-rl{display:flex;gap:6px;font-family:var(--mono);font-size:.63rem;line-height:1.6;padding:4px 8px;border-radius:4px;margin-bottom:3px}
@@ -194,7 +193,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .mi-rl.fail{background:#fff7ed;color:var(--orange)}
 .mi-sl{font-family:var(--mono);font-size:.6rem;line-height:1.8;color:var(--muted)}
 .mi-sl.s200{color:#2a8a4a}.mi-sl.s500{color:var(--red)}.mi-sl.s0{color:var(--dim)}
-.mi-prompt{font-family:var(--mono);font-size:.62rem;line-height:1.75;color:var(--text);white-space:pre-wrap;word-break:break-word;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.8rem;max-height:360px;overflow-y:auto}
+.mi-prompt{font-family:var(--mono);font-size:.62rem;line-height:1.75;color:var(--text);white-space:pre-wrap;word-break:break-word;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.8rem;max-height:300px;overflow-y:auto}
+.mi-manual{font-family:var(--mono);font-size:.62rem;line-height:1.75;color:var(--accent);white-space:pre-wrap;word-break:break-word;background:rgba(196,126,0,.05);border:1px solid rgba(196,126,0,.25);border-radius:5px;padding:.8rem;max-height:160px;overflow-y:auto}
+.mi-params{font-family:var(--mono);font-size:.6rem;line-height:1.7;color:var(--text);white-space:pre;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.8rem;max-height:220px;overflow:auto}
 
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
@@ -218,7 +219,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 </div>
 
 <div class="layout">
-
   <div class="left">
     <div class="panel-hdr">
       <span class="panel-title">Cases</span>
@@ -246,10 +246,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
     </div>
     <div class="log-scroll" id="logPanel"><div class="ll dim">[ waiting ]</div></div>
   </div>
-
 </div>
 
-<!-- DETAIL MODAL: image full-width top, all data scrollable below -->
+<!-- DETAIL MODAL -->
 <div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-hdr">
@@ -271,23 +270,23 @@ const API      = '/api/v1/generate'
 let fileB64    = null
 let caseN      = 0
 let running    = false
-let imgStore   = {}   // name → b64
-let resStore   = {}   // name → full result
+let imgStore   = {}
+let resStore   = {}
 let currentModal = ''
 
-// ── STATUS DERIVATION ─────────────────────────────────────────
+// ── STATUS ────────────────────────────────────────────────────
 function deriveStatus(r){
-  if(!r || r.fatal_error) return {cls:'error', text:'❌ generation failed'}
-  const fails = (r.render_log||[]).filter(l=>!l.ok)
+  if(!r||r.fatal_error) return {cls:'error', text:'❌ generation failed'}
+  const fails=(r.render_log||[]).filter(l=>!l.ok)
   if(!fails.length) return {cls:'stable', text:'✅ stable'}
-  const expLt = fails.some(l=> l.msg.includes('expand') && l.msg.includes('light'))
+  const expLt=fails.some(l=>l.msg.includes('expand')&&l.msg.includes('light'))
   if(expLt) return {cls:'warn', text:'⚠ expand affecting lighting'}
   if(fails.length===1) return {cls:'warn', text:'⚠ '+fails[0].msg.slice(0,44)}
-  return {cls:'warn', text:'⚠ '+fails.length+' issues detected'}
+  return {cls:'warn', text:'⚠ '+fails.length+' issues'}
 }
 
 // ── FILE UPLOAD ───────────────────────────────────────────────
-document.getElementById('fileInput').addEventListener('change', function(){
+document.getElementById('fileInput').addEventListener('change',function(){
   const f=this.files?.[0]; if(!f) return
   const r=new FileReader()
   r.onload=e=>{
@@ -325,42 +324,35 @@ function addCase(cfg={}){
         <input type="text" id="nm-${id}" value="${esc(defaultName)}" oninput="syncName('${id}')">
       </div>
 
-      <div class="section-label">Pipeline Preset</div>
+      <!-- PIPELINE -->
+      <div class="sec-div">Pipeline</div>
       <div class="presets">
-        <button class="pre-btn" id="pre-go-${id}" onclick="setPreset('${id}','gen_only')">
-          Gen Only<span class="pre-sub">no post</span>
-        </button>
-        <button class="pre-btn" id="pre-gh-${id}" onclick="setPreset('${id}','gen_hl')">
-          Gen + HL<span class="pre-sub">→ highlight</span>
-        </button>
-        <button class="pre-btn active" id="pre-fu-${id}" onclick="setPreset('${id}','full')">
-          Full<span class="pre-sub">→ exp → hl</span>
-        </button>
+        <button class="pre-btn" id="pre-go-${id}" onclick="setPreset('${id}','gen_only')">Gen Only<span class="pre-sub">no post</span></button>
+        <button class="pre-btn" id="pre-gh-${id}" onclick="setPreset('${id}','gen_hl')">Gen + HL<span class="pre-sub">→ highlight</span></button>
+        <button class="pre-btn active" id="pre-fu-${id}" onclick="setPreset('${id}','full')">Full<span class="pre-sub">→ exp → hl</span></button>
       </div>
-
       <div id="expBlock-${id}">
-        <div class="section-label">Expand Strength</div>
-        <div class="exp-row" style="margin-bottom:8px">
+        <div class="exp-row">
           <button class="exp-btn" id="exs-sm-${id}" onclick="setExpStr('${id}','small')">Small<span class="exp-sub">5%</span></button>
           <button class="exp-btn active" id="exs-md-${id}" onclick="setExpStr('${id}','medium')">Medium<span class="exp-sub">10%</span></button>
           <button class="exp-btn" id="exs-lg-${id}" onclick="setExpStr('${id}','large')">Large<span class="exp-sub">18%</span></button>
         </div>
       </div>
 
+      <!-- GENERATION MODIFIERS -->
+      <div class="sec-div">Generation</div>
       <div class="f2">
         <div class="field"><label>Landscaping</label>
           <select id="land-${id}" onchange="syncTags('${id}')">
             <option value="moderate_landscape">moderate</option>
             <option value="sparse_landscape">sparse</option>
             <option value="lush_landscape">lush</option>
-            <option value="overgrown_landscape">overgrown</option>
           </select>
         </div>
         <div class="field"><label>Lighting</label>
           <select id="light-${id}" onchange="syncTags('${id}')">
+            <option value="clean_daylight">clean daylight</option>
             <option value="high_pop_light">high pop</option>
-            <option value="clean_daylight">clean day</option>
-            <option value="flat_light">flat</option>
           </select>
         </div>
       </div>
@@ -369,45 +361,75 @@ function addCase(cfg={}){
           <select id="color-${id}" onchange="syncTags('${id}')">
             <option value="strict_color">strict</option>
             <option value="enhanced_color">enhanced</option>
-            <option value="loose_color">loose</option>
-          </select>
-        </div>
-        <div class="field"><label>Detail</label>
-          <select id="detail-${id}" onchange="syncTags('${id}')">
-            <option value="high_detail">high</option>
-            <option value="standard_detail">standard</option>
-            <option value="hyper_detail">hyper</option>
-          </select>
-        </div>
-      </div>
-      <div class="f2">
-        <div class="field"><label>Background</label>
-          <select id="bg-${id}" onchange="syncTags('${id}')">
-            <option value="rich_interior_bg">interior</option>
-            <option value="matched_bg">matched</option>
-            <option value="neutral_bg">neutral</option>
           </select>
         </div>
         <div class="field"><label>Foreground</label>
           <select id="fg-${id}" onchange="syncTags('${id}')">
             <option value="light_foreground">light</option>
             <option value="no_foreground">none</option>
-            <option value="strong_foreground">strong</option>
+          </select>
+        </div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Detail</label>
+          <select id="detail-${id}" onchange="syncTags('${id}')">
+            <option value="high_detail">high</option>
+            <option value="standard_detail">standard</option>
+          </select>
+        </div>
+        <div class="field"><label>Highlight Brightness</label>
+          <input type="number" id="br-${id}" value="1.18" min="1.0" max="1.6" step="0.02">
+        </div>
+      </div>
+
+      <!-- ENVIRONMENT CONTROLS -->
+      <div class="sec-div">Environment</div>
+      <div class="f2">
+        <div class="field"><label>Environment Style</label>
+          <select id="env-${id}" onchange="syncTags('${id}')">
+            <option value="styled_desk">styled desk</option>
+            <option value="clean_product">clean product</option>
+            <option value="interior_room">interior room</option>
+          </select>
+        </div>
+        <div class="field"><label>Prop Density</label>
+          <select id="props-${id}" onchange="syncTags('${id}')">
+            <option value="balanced_props">balanced</option>
+            <option value="minimal_props">minimal</option>
+            <option value="styled_props">styled</option>
+          </select>
+        </div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Background Structure</label>
+          <select id="bgstr-${id}" onchange="syncTags('${id}')">
+            <option value="windowed_room">windowed room</option>
+            <option value="soft_depth">soft depth</option>
+            <option value="decorated_room">decorated room</option>
+          </select>
+        </div>
+        <div class="field"><label>Interior Lighting</label>
+          <select id="intlight-${id}" onchange="syncTags('${id}')">
+            <option value="soft_window_glow">soft glow</option>
+            <option value="warm_window_glow">warm glow</option>
+            <option value="bright_window_glow">bright glow</option>
+            <option value="no_interior_light">none</option>
           </select>
         </div>
       </div>
 
-      <div class="field" id="brBlock-${id}">
-        <label>Highlight Brightness (post-process only)</label>
-        <input type="number" id="br-${id}" value="1.18" min="1.0" max="1.6" step="0.02">
-      </div>
-
+      <!-- OVERRIDES -->
+      <div class="sec-div">Overrides</div>
       <div class="field">
         <label>Structure Block (injected verbatim)</label>
         <textarea id="sb-${id}" placeholder="Optional — e.g. Victorian, asymmetric roofline..."></textarea>
       </div>
       <div class="field">
-        <label>Custom Prompt (replaces all blocks)</label>
+        <label>Manual Prompt (appended to system prompt)</label>
+        <textarea id="mp-${id}" placeholder="Added after system prompt. Does not replace structured controls..."></textarea>
+      </div>
+      <div class="field">
+        <label>Custom Prompt (replaces ALL blocks — use sparingly)</label>
         <textarea id="cp-${id}" placeholder="Leave empty to use modular prompt..."></textarea>
       </div>
 
@@ -418,41 +440,29 @@ function addCase(cfg={}){
     </div>`
 
   document.getElementById('casesList').appendChild(div)
-
-  // Apply any config
   if(cfg.preset)      setPreset(id, cfg.preset)
-  if(cfg.lighting)    { document.getElementById('light-'+id).value=cfg.lighting }
-  if(cfg.landscaping) { document.getElementById('land-'+id).value=cfg.landscaping }
-  if(cfg.color)       { document.getElementById('color-'+id).value=cfg.color }
+  if(cfg.lighting)    document.getElementById('light-'+id).value=cfg.lighting
+  if(cfg.landscaping) document.getElementById('land-'+id).value=cfg.landscaping
+  if(cfg.color)       document.getElementById('color-'+id).value=cfg.color
   syncTags(id)
 }
 
-function toggleCase(id){
-  document.querySelector(`.case-card[data-id="${id}"]`).classList.toggle('open')
-}
-function syncName(id){
-  document.getElementById('nd-'+id).textContent=document.getElementById('nm-'+id).value
-}
-function delCase(id){
-  document.querySelector(`.case-card[data-id="${id}"]`)?.remove()
-}
+function toggleCase(id){ document.querySelector(`.case-card[data-id="${id}"]`).classList.toggle('open') }
+function syncName(id){ document.getElementById('nd-'+id).textContent=document.getElementById('nm-'+id).value }
+function delCase(id){ document.querySelector(`.case-card[data-id="${id}"]`)?.remove() }
 
-// Pipeline preset wires expand + highlight order, shows/hides controls
-function setPreset(id, preset){
+function setPreset(id,preset){
   const card=document.querySelector(`.case-card[data-id="${id}"]`)
   if(card) card.dataset.preset=preset
   ;['go','gh','fu'].forEach(k=>{
     const m={go:'gen_only',gh:'gen_hl',fu:'full'}
     document.getElementById('pre-'+k+'-'+id)?.classList.toggle('active',m[k]===preset)
   })
-  const showExp = preset==='full'
-  const showBr  = preset!=='gen_only'
-  document.getElementById('expBlock-'+id).style.display = showExp?'':'none'
-  document.getElementById('brBlock-'+id).style.display  = showBr?'':'none'
+  document.getElementById('expBlock-'+id).style.display=preset==='full'?'':'none'
   syncTags(id)
 }
 
-function setExpStr(id, size){
+function setExpStr(id,size){
   const card=document.querySelector(`.case-card[data-id="${id}"]`)
   if(card) card.dataset.expStr=size
   ;['sm','md','lg'].forEach(k=>{
@@ -467,17 +477,15 @@ function syncTags(id){
   const preset=card?.dataset.preset||'full'
   const lt=document.getElementById('light-'+id)?.value||''
   const la=document.getElementById('land-'+id)?.value||''
-  const cl=document.getElementById('color-'+id)?.value||''
-  const dt=document.getElementById('detail-'+id)?.value||''
-  const bg=document.getElementById('bg-'+id)?.value||''
+  const en=document.getElementById('env-'+id)?.value||''
+  const il=document.getElementById('intlight-'+id)?.value||''
   const abbr=v=>v.split('_')[0]
   box.innerHTML=[
     preset!=='full'?`<span class="tag warn">${preset==='gen_only'?'gen-only':'gen+hl'}</span>`:`<span class="tag on">full</span>`,
-    lt!=='high_pop_light'     ?`<span class="tag">${abbr(lt)}</span>`:'',
-    la!=='moderate_landscape' ?`<span class="tag">${abbr(la)}</span>`:'',
-    cl!=='strict_color'       ?`<span class="tag">${abbr(cl)}</span>`:'',
-    dt!=='high_detail'        ?`<span class="tag">${abbr(dt)}</span>`:'',
-    bg!=='rich_interior_bg'   ?`<span class="tag">${abbr(bg)}</span>`:'',
+    lt!=='clean_daylight'   ?`<span class="tag">${abbr(lt)}</span>`:'',
+    la!=='moderate_landscape'?`<span class="tag">${abbr(la)}</span>`:'',
+    en!=='styled_desk'      ?`<span class="tag">${abbr(en)}</span>`:'',
+    il!=='soft_window_glow' ?`<span class="tag">${abbr(il)}</span>`:'',
   ].join('')
 }
 
@@ -486,27 +494,31 @@ function collect(id){
   const preset=card?.dataset.preset||'full'
   const expStr=card?.dataset.expStr||'medium'
   const padMap={small:0.05,medium:0.10,large:0.18}
+  const mp=document.getElementById('mp-'+id)?.value?.trim()
+  const cp=document.getElementById('cp-'+id)?.value?.trim()
   return {
-    name:          document.getElementById('nm-'+id)?.value||id,
-    landscaping:   document.getElementById('land-'+id)?.value,
-    lighting:      document.getElementById('light-'+id)?.value,
-    color:         document.getElementById('color-'+id)?.value,
-    background:    document.getElementById('bg-'+id)?.value,
-    foreground:    document.getElementById('fg-'+id)?.value,
-    detail:        document.getElementById('detail-'+id)?.value,
-    brightness:    parseFloat(document.getElementById('br-'+id)?.value||'1.18'),
-    expand:        preset==='full',
-    highlightAfter:preset==='full'||preset==='gen_hl',
-    expandPadding: padMap[expStr]||0.10,
-    structureBlock:document.getElementById('sb-'+id)?.value?.trim()||undefined,
-    customPrompt:  document.getElementById('cp-'+id)?.value?.trim()||undefined,
-    _preset:preset,_expStr:expStr,
+    name:                 document.getElementById('nm-'+id)?.value||id,
+    landscaping:          document.getElementById('land-'+id)?.value,
+    lighting:             document.getElementById('light-'+id)?.value,
+    color:                document.getElementById('color-'+id)?.value,
+    foreground:           document.getElementById('fg-'+id)?.value,
+    detail:               document.getElementById('detail-'+id)?.value,
+    environment_style:    document.getElementById('env-'+id)?.value,
+    prop_density:         document.getElementById('props-'+id)?.value,
+    background_structure: document.getElementById('bgstr-'+id)?.value,
+    interior_lighting:    document.getElementById('intlight-'+id)?.value,
+    brightness:           parseFloat(document.getElementById('br-'+id)?.value||'1.18'),
+    expand:               preset==='full',
+    highlightAfter:       preset==='full'||preset==='gen_hl',
+    expandPadding:        padMap[expStr]||0.10,
+    structureBlock:       document.getElementById('sb-'+id)?.value?.trim()||undefined,
+    manual_prompt:        mp||undefined,
+    customPrompt:         cp||undefined,
+    _preset:preset, _expStr:expStr,
   }
 }
 
-function getAllIds(){
-  return [...document.querySelectorAll('.case-card')].map(c=>c.dataset.id)
-}
+function getAllIds(){ return [...document.querySelectorAll('.case-card')].map(c=>c.dataset.id) }
 
 // ── RUN ───────────────────────────────────────────────────────
 async function runCases(ids){
@@ -532,7 +544,7 @@ async function runCases(ids){
         logResult(r)
         if(r.fatal_error){mkFatal(r.name,r.fatal_error,r.system_log);setDot(id,'error');fail++}
         else{resStore[r.name]=r;imgStore[r.name]=r.image_b64;mkResult(r);setDot(id,'done');ok++}
-        gLog('  ✓ '+p.name+' done','ok')
+        gLog('  ✓ '+p.name,'ok')
       }catch(e){
         gLog('  ✗ '+p.name+': '+e.message,'err')
         mkFatal(p.name,e.message,[]);setDot(id,'error');fail++
@@ -553,7 +565,7 @@ function mkLoading(name){
   <div class="rc-body"><div class="rc-name">${esc(name)}</div><div class="ll dim" style="font-size:.6rem">generating…</div></div>`
 }
 
-function mkFatal(name, err, slog){
+function mkFatal(name,err,slog){
   let c=document.getElementById('rc-'+name); if(!c) return
   c.className='rc error'
   const nj=`"${esc(name)}"`
@@ -575,8 +587,33 @@ function mkResult(r){
   const st=deriveStatus(r)
   c.className='rc '+st.cls
   const nj=`"${esc(r.name)}"`
-  const rl=(r.render_log||[]).map(l=>`<div class="rc-log"><span class="${l.ok?'rl-ok':'rl-fail'}">${l.ok?'✓':'●'}</span> <span style="color:var(--text)">${esc(l.msg)}</span></div>`).join('')
+  const rl=(r.render_log||[]).map(l=>`<div class="rc-log"><span class="${l.ok?'rl-ok':'rl-fail'}">${l.ok?'✓':'●'}</span> <span>${esc(l.msg)}</span></div>`).join('')
   const sl=(r.system_log||[]).map(l=>`<div class="sl-i sl-${l.code===200?'200':l.code===0?'0':'500'}">[${l.code===0?'--':l.code}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`).join('')
+
+  // Collapsible prompt section
+  const hasManual = !!r.manual_prompt_used
+  const promptCollapse = r.prompt_used ? `
+    <div class="rc-collapse" id="pc-${esc(r.name)}">
+      <div class="rc-collapse-hdr" onclick="toggleCollapse('pc-${esc(r.name)}')">
+        <span>📋 Prompt Used${hasManual?' + manual override':''}</span><span>›</span>
+      </div>
+      <div class="rc-collapse-body">
+        <div class="rc-prompt-text">${esc(r.prompt_used)}</div>
+        ${hasManual?`<div class="rc-manual-text">MANUAL: ${esc(r.manual_prompt_used)}</div>`:''}
+      </div>
+    </div>` : ''
+
+  // Collapsible params section
+  const paramsStr = r.params_used ? JSON.stringify(filterDisplayParams(r.params_used), null, 2) : ''
+  const paramsCollapse = paramsStr ? `
+    <div class="rc-collapse" id="prc-${esc(r.name)}">
+      <div class="rc-collapse-hdr" onclick="toggleCollapse('prc-${esc(r.name)}')">
+        <span>⚙ Params Used</span><span>›</span>
+      </div>
+      <div class="rc-collapse-body">
+        <div class="rc-params-text">${esc(paramsStr)}</div>
+      </div>
+    </div>` : ''
 
   c.innerHTML=`
     <div class="rc-img" onclick='openDetail(${nj})'>
@@ -592,13 +629,30 @@ function mkResult(r){
         <button class="rc-btn rerun" onclick="rerun(${nj})">↺ Re-run</button>
       </div>
       <div style="font-family:var(--mono);font-size:.56rem;line-height:1.6">${rl}${sl?`<div class="sl-divider"></div>${sl}`:''}</div>
+      ${promptCollapse}
+      ${paramsCollapse}
     </div>`
+}
+
+// Filter params to useful display keys only
+function filterDisplayParams(p){
+  const keys=['landscaping','lighting','color','foreground','detail',
+    'environment_style','prop_density','background_structure','interior_lighting',
+    'brightness','expand','highlightAfter','_preset','_expStr',
+    'structureBlock','manual_prompt','customPrompt']
+  const out={}
+  keys.forEach(k=>{ if(p[k]!==undefined) out[k]=p[k] })
+  return out
+}
+
+function toggleCollapse(id){
+  document.getElementById(id)?.classList.toggle('open')
 }
 
 // ── RE-RUN ────────────────────────────────────────────────────
 async function rerun(name){
   const r=resStore[name]; if(!r||!fileB64) return
-  const p=r.params||r; if(!p.name) return
+  const p=r.params_used||r.params; if(!p) return
   running=true; setG('running','re-running '+name+'…'); mkLoading(name)
   try{
     const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -610,12 +664,12 @@ async function rerun(name){
     resStore[nr.name]=nr; imgStore[nr.name]=nr.image_b64
     if(nr.fatal_error) mkFatal(nr.name,nr.fatal_error,nr.system_log)
     else mkResult(nr)
-    gLog('↺ Re-run '+name+' done','ok')
+    gLog('↺ '+name+' done','ok')
   }catch(e){ gLog('Re-run error: '+e.message,'err'); mkFatal(name,e.message,[]) }
   running=false; setG('done','idle')
 }
 
-// ── OPEN DETAIL MODAL ─────────────────────────────────────────
+// ── DETAIL MODAL ──────────────────────────────────────────────
 function openDetail(name){
   const r=resStore[name]
   const b=imgStore[name]
@@ -623,38 +677,44 @@ function openDetail(name){
   document.getElementById('modalScroll').scrollTop=0
   document.getElementById('modalTitle').textContent=name
 
-  // Status badge
   const st=r?deriveStatus(r):{cls:'error',text:'No data'}
   const badge=document.getElementById('modalBadge')
   badge.className='modal-status-badge '+st.cls
   badge.textContent=st.text
 
-  // Image
   const iz=document.getElementById('miImgZone')
   const img=document.getElementById('modalImg')
-  if(b){ img.src='data:image/jpeg;base64,'+b; iz.style.display='flex'; document.getElementById('modalFullBtn').style.display=''; document.getElementById('modalDlBtn').style.display='' }
-  else  { iz.style.display='none'; document.getElementById('modalFullBtn').style.display='none'; document.getElementById('modalDlBtn').style.display='none' }
+  if(b){img.src='data:image/jpeg;base64,'+b;iz.style.display='flex';document.getElementById('modalFullBtn').style.display='';document.getElementById('modalDlBtn').style.display=''}
+  else {iz.style.display='none';document.getElementById('modalFullBtn').style.display='none';document.getElementById('modalDlBtn').style.display='none'}
 
-  // Data
   let html=''
-  const p=r?.params||r
+  const p=r?.params_used||r?.params
 
   // SETTINGS
-  if(p&&p.name){
+  if(p){
     html+=`<div class="mi-sec"><div class="mi-sec-hdr">Settings Used</div><div class="mi-grid">`
     const pairs=[
-      ['Pipeline',p._preset||'—'],['Expand Str',p._expStr||'—'],
+      ['Pipeline',p._preset],['Expand Str',p._expStr],
       ['Landscaping',p.landscaping],['Lighting',p.lighting],
       ['Color',p.color],['Detail',p.detail],
-      ['Background',p.background],['Foreground',p.foreground],
-      ['Brightness',p.brightness],['Expand',p.expand?'yes':'no'],
-      ['HL After',p.highlightAfter?'yes':'no'],['Custom',p.customPrompt?'yes':'no'],
+      ['Foreground',p.foreground],['Brightness',p.brightness],
+      ['Expand',p.expand?'yes':'no'],['HL After',p.highlightAfter?'yes':'no'],
     ]
     pairs.forEach(([k,v])=>{
       const cls=v==='yes'?'on':v==='no'?'off':''
       html+=`<div class="mi-row"><div class="mi-k">${esc(k)}</div><div class="mi-v ${cls}">${esc(String(v??'—'))}</div></div>`
     })
-    if(p.structureBlock) html+=`<div class="mi-row" style="grid-column:1/-1"><div class="mi-k">Structure</div><div class="mi-v hi">${esc(p.structureBlock)}</div></div>`
+    html+=`</div></div>`
+
+    // ENVIRONMENT SETTINGS
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Environment</div><div class="mi-grid">`
+    const envPairs=[
+      ['Style',p.environment_style],['Props',p.prop_density],
+      ['Background',p.background_structure],['Interior Light',p.interior_lighting],
+    ]
+    envPairs.forEach(([k,v])=>{
+      html+=`<div class="mi-row"><div class="mi-k">${esc(k)}</div><div class="mi-v">${esc(String(v??'—'))}</div></div>`
+    })
     html+=`</div></div>`
   }
 
@@ -666,8 +726,8 @@ function openDetail(name){
       ${fails.length?`<span class="hbadge hbadge-fail">${fails.length} failing</span>`:''}
       ${passes.length?`<span class="hbadge hbadge-ok">${passes.length} passing</span>`:''}
     </div>`
-    fails.forEach(l=>{ html+=`<div class="mi-rl fail"><span>●</span><span>${esc(l.msg)}</span></div>` })
-    passes.forEach(l=>{ html+=`<div class="mi-rl ok"><span>✓</span><span>${esc(l.msg)}</span></div>` })
+    fails.forEach(l=>{html+=`<div class="mi-rl fail"><span>●</span><span>${esc(l.msg)}</span></div>`})
+    passes.forEach(l=>{html+=`<div class="mi-rl ok"><span>✓</span><span>${esc(l.msg)}</span></div>`})
     html+=`</div>`
   }
 
@@ -681,21 +741,33 @@ function openDetail(name){
     html+=`</div>`
   }
 
-  // FATAL
+  // MANUAL PROMPT (if present)
+  if(r?.manual_prompt_used){
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Manual Prompt Appended</div>
+    <div class="mi-manual">${esc(r.manual_prompt_used)}</div></div>`
+  }
+
+  // FULL PROMPT
+  if(r?.prompt_used){
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Full Prompt Sent to Model</div>
+    <div class="mi-prompt">${esc(r.prompt_used)}</div></div>`
+  }
+
+  // PARAMS JSON
+  if(p){
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Params Used (JSON)</div>
+    <div class="mi-params">${esc(JSON.stringify(filterDisplayParams(p),null,2))}</div></div>`
+  }
+
   if(r?.fatal_error){
     html+=`<div class="mi-sec"><div class="mi-sec-hdr" style="color:var(--red)">Fatal Error</div>
     <div style="font-family:var(--mono);font-size:.65rem;color:var(--red)">${esc(r.fatal_error)}</div></div>`
   }
 
-  // PROMPT
-  if(r?.prompt_used){
-    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Prompt Sent to Model</div>
-    <div class="mi-prompt">${esc(r.prompt_used)}</div></div>`
-  }
-
   document.getElementById('miData').innerHTML=html||'<div style="font-family:var(--mono);font-size:.65rem;color:var(--muted);padding:.5rem 0">No data</div>'
   document.getElementById('modal').classList.add('open')
 }
+
 function closeModal(){ document.getElementById('modal').classList.remove('open') }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal() })
 
@@ -707,13 +779,14 @@ function logResult(r){
   sec.className='log-sec '+st.cls
   let h=`<div class="log-sec-hdr">${esc(r.name)} — ${esc(st.text)}</div>`
   if(r.fatal_error) h+=`<div class="ll err">✗ FATAL: ${esc(r.fatal_error)}</div>`
-  ;(r.render_log||[]).forEach(l=>{ h+=`<div class="ll ${l.ok?'ok':'warn'}">  ${l.ok?'✓':'●'} ${esc(l.msg)}</div>` })
-  ;(r.system_log||[]).forEach(l=>{ h+=`<div class="ll ${l.code===200?'ok':l.code===0?'dim':'err'}">  [${l.code===0?'--':l.code}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>` })
+  if(r.manual_prompt_used) h+=`<div class="ll accent">  ↳ manual prompt appended</div>`
+  ;(r.render_log||[]).forEach(l=>{h+=`<div class="ll ${l.ok?'ok':'warn'}">  ${l.ok?'✓':'●'} ${esc(l.msg)}</div>`})
+  ;(r.system_log||[]).forEach(l=>{h+=`<div class="ll ${l.code===200?'ok':l.code===0?'dim':'err'}">  [${l.code===0?'--':l.code}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`})
   sec.innerHTML=h; panel.appendChild(sec); panel.scrollTop=panel.scrollHeight
 }
 function gLog(msg,type=''){
   const p=document.getElementById('logPanel'),el=document.createElement('div')
-  el.className='ll '+(type); el.textContent=msg; p.appendChild(el); p.scrollTop=p.scrollHeight
+  el.className='ll '+type; el.textContent=msg; p.appendChild(el); p.scrollTop=p.scrollHeight
 }
 function clearLog(){ document.getElementById('logPanel').innerHTML='' }
 
@@ -724,10 +797,10 @@ function dl(name){ const b=imgStore[name]; if(!b) return; const a=document.creat
 function openFull(name){ const b=imgStore[name]; if(!b) return; const w=window.open(); w.document.write('<html><head><title>'+esc(name)+'</title><style>*{margin:0;padding:0;background:#111}img{max-width:100vw;max-height:100vh;object-fit:contain;display:block}</style></head><body><img src="data:image/jpeg;base64,'+b+'"></body></html>'); w.document.close() }
 function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
-// ── SEED 3 DEFAULT CASES ──────────────────────────────────────
-addCase({name:'gen-only',    preset:'gen_only', lighting:'clean_daylight'})
-addCase({name:'full-default',preset:'full'})
-addCase({name:'full-lush',   preset:'full', landscaping:'lush_landscape'})
+// ── SEED CASES ────────────────────────────────────────────────
+addCase({name:'baseline',   preset:'gen_only', lighting:'clean_daylight'})
+addCase({name:'full-styled',preset:'full'})
+addCase({name:'high-pop',   preset:'full', lighting:'high_pop_light', landscaping:'lush_landscape'})
 </script>
 </body>
 </html>
