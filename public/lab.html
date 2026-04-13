@@ -212,8 +212,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
   </label>
   <div class="tb-div"></div>
   <button class="run-all-btn" id="runAllBtn" disabled onclick="runCases(getAllIds())">▶ Run All Cases</button>
-  <button class="run-all-btn" id="exportPptBtn" onclick="exportPPT()" style="background:#2176AE;margin-left:4px" disabled>📊 Export PPT</button>
-  <input type="text" id="exportTitle" placeholder="Session name…" style="padding:5px 10px;border:1px solid #ccc;border-radius:5px;font-family:monospace;font-size:.68rem;width:160px">
   <div class="status-wrap">
     <div class="status-dot" id="gDot"></div>
     <span id="gStatus">idle</span>
@@ -341,26 +339,83 @@ function addCase(cfg={}){
         </div>
       </div>
 
-      <!-- GENERATION CONTROLS -->
+      <!-- GENERATION MODIFIERS -->
       <div class="sec-div">Generation</div>
       <div class="f2">
+        <div class="field"><label>Landscaping</label>
+          <select id="land-${id}" onchange="syncTags('${id}')">
+            <option value="moderate_landscape">moderate</option>
+            <option value="sparse_landscape">sparse</option>
+            <option value="lush_landscape">lush</option>
+          </select>
+        </div>
         <div class="field"><label>Lighting</label>
           <select id="light-${id}" onchange="syncTags('${id}')">
-            <option value="midday_summer">Midday Summer Sun</option>
-            <option value="soft_spring">Soft Spring Afternoon</option>
-            <option value="dusk_evening">Evening (Dusk)</option>
-            <option value="night">Nighttime Scene</option>
+            <option value="clean_daylight">clean daylight</option>
+            <option value="high_pop_light">high pop</option>
+          </select>
+        </div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Color</label>
+          <select id="color-${id}" onchange="syncTags('${id}')">
+            <option value="strict_color">strict</option>
+            <option value="enhanced_color">enhanced</option>
+          </select>
+        </div>
+        <div class="field"><label>Foreground</label>
+          <select id="fg-${id}" onchange="syncTags('${id}')">
+            <option value="light_foreground">light</option>
+            <option value="no_foreground">none</option>
+          </select>
+        </div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Detail</label>
+          <select id="detail-${id}" onchange="syncTags('${id}')">
+            <option value="high_detail">high</option>
+            <option value="standard_detail">standard</option>
           </select>
         </div>
         <div class="field"><label>Highlight Brightness</label>
-          <input type="number" id="br-${id}" value="1.18" min="1.0" max="1.8" step="0.02">
+          <input type="number" id="br-${id}" value="1.18" min="1.0" max="1.6" step="0.02">
         </div>
       </div>
-      <div class="field">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <input type="checkbox" id="intlit-${id}" style="width:14px;height:14px">
-          Interior lights on (daytime only — subtle, does not affect exterior)
-        </label>
+
+      <!-- ENVIRONMENT CONTROLS -->
+      <div class="sec-div">Environment</div>
+      <div class="f2">
+        <div class="field"><label>Environment Style</label>
+          <select id="env-${id}" onchange="syncTags('${id}')">
+            <option value="styled_desk">styled desk</option>
+            <option value="clean_product">clean product</option>
+            <option value="interior_room">interior room</option>
+          </select>
+        </div>
+        <div class="field"><label>Prop Density</label>
+          <select id="props-${id}" onchange="syncTags('${id}')">
+            <option value="balanced_props">balanced</option>
+            <option value="minimal_props">minimal</option>
+            <option value="styled_props">styled</option>
+          </select>
+        </div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Background Structure</label>
+          <select id="bgstr-${id}" onchange="syncTags('${id}')">
+            <option value="windowed_room">windowed room</option>
+            <option value="soft_depth">soft depth</option>
+            <option value="decorated_room">decorated room</option>
+          </select>
+        </div>
+        <div class="field"><label>Interior Lighting</label>
+          <select id="intlight-${id}" onchange="syncTags('${id}')">
+            <option value="soft_window_glow">soft glow</option>
+            <option value="warm_window_glow">warm glow</option>
+            <option value="bright_window_glow">bright glow</option>
+            <option value="no_interior_light">none</option>
+          </select>
+        </div>
       </div>
 
       <!-- OVERRIDES -->
@@ -421,12 +476,16 @@ function syncTags(id){
   const card=document.querySelector(`.case-card[data-id="${id}"]`)
   const preset=card?.dataset.preset||'full'
   const lt=document.getElementById('light-'+id)?.value||''
-  const il=document.getElementById('intlit-'+id)?.checked
+  const la=document.getElementById('land-'+id)?.value||''
+  const en=document.getElementById('env-'+id)?.value||''
+  const il=document.getElementById('intlight-'+id)?.value||''
   const abbr=v=>v.split('_')[0]
   box.innerHTML=[
     preset!=='full'?`<span class="tag warn">${preset==='gen_only'?'gen-only':'gen+hl'}</span>`:`<span class="tag on">full</span>`,
-    lt!=='midday_summer'?`<span class="tag">${abbr(lt)}</span>`:'',
-    il?`<span class="tag on">int.lit</span>`:'',
+    lt!=='clean_daylight'   ?`<span class="tag">${abbr(lt)}</span>`:'',
+    la!=='moderate_landscape'?`<span class="tag">${abbr(la)}</span>`:'',
+    en!=='styled_desk'      ?`<span class="tag">${abbr(en)}</span>`:'',
+    il!=='soft_window_glow' ?`<span class="tag">${abbr(il)}</span>`:'',
   ].join('')
 }
 
@@ -439,8 +498,15 @@ function collect(id){
   const cp=document.getElementById('cp-'+id)?.value?.trim()
   return {
     name:                 document.getElementById('nm-'+id)?.value||id,
-    lighting_preset:      document.getElementById('light-'+id)?.value,
-    interior_lights:      document.getElementById('intlit-'+id)?.checked || false,
+    landscaping:          document.getElementById('land-'+id)?.value,
+    lighting:             document.getElementById('light-'+id)?.value,
+    color:                document.getElementById('color-'+id)?.value,
+    foreground:           document.getElementById('fg-'+id)?.value,
+    detail:               document.getElementById('detail-'+id)?.value,
+    environment_style:    document.getElementById('env-'+id)?.value,
+    prop_density:         document.getElementById('props-'+id)?.value,
+    background_structure: document.getElementById('bgstr-'+id)?.value,
+    interior_lighting:    document.getElementById('intlight-'+id)?.value,
     brightness:           parseFloat(document.getElementById('br-'+id)?.value||'1.18'),
     expand:               preset==='full',
     highlightAfter:       preset==='full'||preset==='gen_hl',
@@ -477,7 +543,7 @@ async function runCases(ids){
         const r=data.results?.[0]; if(!r) throw new Error('No result')
         logResult(r)
         if(r.fatal_error){mkFatal(r.name,r.fatal_error,r.system_log);setDot(id,'error');fail++}
-        else{resStore[r.name]=r;imgStore[r.name]=r.image_b64;mkResult(r);setDot(id,'done');ok++;document.getElementById('exportPptBtn').disabled=false}
+        else{resStore[r.name]=r;imgStore[r.name]=r.image_b64;mkResult(r);setDot(id,'done');ok++}
         gLog('  ✓ '+p.name,'ok')
       }catch(e){
         gLog('  ✗ '+p.name+': '+e.message,'err')
@@ -740,44 +806,10 @@ function exportResult(name){
   a.download='minirama-export-'+name.replace(/\s+/g,'-')+'-'+Date.now()+'.json'
   a.click()
   URL.revokeObjectURL(url)
-  gLog('Exported: '+name,'info')
+  gLog('⬇ Exported: '+name,'info')
 }
 function openFull(name){ const b=imgStore[name]; if(!b) return; const w=window.open(); w.document.write('<html><head><title>'+esc(name)+'</title><style>*{margin:0;padding:0;background:#111}img{max-width:100vw;max-height:100vh;object-fit:contain;display:block}</style></head><body><img src="data:image/jpeg;base64,'+b+'"></body></html>'); w.document.close() }
 function esc(s){ return String(s??'').replace(/&/g,'\x26amp;').replace(/</g,'\x26lt;').replace(/>/g,'\x26gt;').replace(/"/g,'\x26quot;') }
-
-// ── EXPORT PPT ───────────────────────────────────────────────
-async function exportPPT(){
-  const keys=Object.keys(resStore)
-  if(!keys.length){alert('No results to export');return}
-  const title=document.getElementById('exportTitle').value||'Minirama-Session'
-  gLog('📊 Building PPT — '+keys.length+' slides…','accent')
-  document.getElementById('exportPptBtn').disabled=true
-  document.getElementById('exportPptBtn').textContent='Building…'
-  try{
-    const results=keys.map(k=>resStore[k])
-    const res=await fetch('/api/v1/export',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({results,title})
-    })
-    if(!res.ok){const e=await res.json();throw new Error(e.error||'Export failed')}
-    const blob=await res.blob()
-    const url=URL.createObjectURL(blob)
-    const a=document.createElement('a')
-    a.href=url
-    a.download=title.replace(/\s+/g,'-')+'-'+Date.now()+'.pptx'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    gLog('✓ PPT downloaded — '+keys.length+' slides','ok')
-  }catch(e){
-    gLog('✗ Export failed: '+e.message,'err')
-  }finally{
-    document.getElementById('exportPptBtn').disabled=false
-    document.getElementById('exportPptBtn').textContent='📊 Export PPT'
-  }
-}
 
 // ── SEED CASES ────────────────────────────────────────────────
 addCase({name:'baseline',   preset:'gen_only', lighting:'clean_daylight'})
