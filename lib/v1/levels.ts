@@ -13,13 +13,22 @@ const CENTER     = CANVAS / 2   // 512
 const FEATHER    = 50
 const BRIGHTNESS = 1.29
 
+// Mode-aware boost — dark modes need more lift since they generate darker
+const MODE_BOOST: Record<string, number> = {
+  night:         1.65,
+  dusk_evening:  1.45,
+  midday_summer: 1.25,
+  soft_spring:   1.20,
+}
+
 export async function applyLevels(input: {
-  imageB64:   string
-  brightness?: number   // optional UI override
+  imageB64:         string
+  brightness?:      number   // UI override — takes precedence
+  lighting_preset?: string   // used for mode-aware boost
 }): Promise<{ imageB64: string; success: boolean; errors?: string[] }> {
   try {
     const buf        = Buffer.from(input.imageB64, 'base64')
-    const brightness = input.brightness ?? BRIGHTNESS
+    const brightness = input.brightness ?? MODE_BOOST[input.lighting_preset || ''] ?? BRIGHTNESS
 
     // ── STEP 1: Feathered circular mask ──────────────────────
     // White = apply boost, Black = keep original

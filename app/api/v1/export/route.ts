@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       const paramText = [
         'Pipeline:     ' + (p._preset || '-'),
         'Landscaping:  ' + (p.landscaping || '-'),
-        'Lighting:     ' + (p.lighting || '-'),
+        'Lighting:     ' + (p.lighting_preset || p.lighting || '-'),
         'Color:        ' + (p.color || '-'),
         'Detail:       ' + (p.detail || '-'),
         'Brightness:   ' + (p.brightness ?? '-'),
@@ -143,12 +143,13 @@ export async function POST(req: NextRequest) {
       addSlide(makeSlideXml(s1content), imgRel)
 
       if (r.image_b64) {
-        zip.file(`ppt/media/img_${ri + 1}.jpg`, r.image_b64, { base64: true })
+        zip.file(`ppt/media/img_${ri + 1}.jpg`,
+          r.image_b64.replace(/^data:image\/\w+;base64,/, ''),
+          { base64: true })
       }
 
       // Slide 2: Prompts
-      const modSummary = [p.landscaping, p.lighting, p.color, p.foreground, p.detail,
-        p.environment_style, p.prop_density, p.background_structure, p.interior_lighting
+      const modSummary = [p.lighting_preset||p.lighting, p.landscaping, p.interior_lights?'interior-lights':null, p.color, p.detail
       ].filter(Boolean).join(' | ')
 
       const layers = [

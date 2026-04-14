@@ -1,107 +1,136 @@
 import sharp from 'sharp'
+import OpenAI, { toFile } from 'openai'
 
 // ── SHARED TYPES ──────────────────────────────────────────────
+export type LightingPreset = 'midday_summer' | 'soft_spring' | 'dusk_evening' | 'night'
+
 export type BaseParams = {
-  lighting_preset?:   string
-  interior_lights?:   boolean   // daytime only — subtle warm glow
-  customPrompt?:      string    // replaces entire prompt
-  brightness?:        number    // levels circular boost override
-  expand?:            boolean
-  name?:              string
-  _preset?:           string
-  _expStr?:           string
+  lighting_preset?:  LightingPreset | string
+  landscaping?:      'sparse' | 'moderate' | 'lush' | string
+  interior_lights?:  boolean
+  customPrompt?:     string
+  manual_prompt?:    string
+  structureBlock?:   string
+  // pipeline params — not injected into prompt
+  brightness?:       number
+  expand?:           boolean
+  name?:             string
+  _preset?:          string
+  _expStr?:          string
+  // legacy UI compat
+  lighting?:         string
+  color?:            string
+  detail?:           string
+  environment_style?: string
+  prop_density?:     string
+  background_structure?: string
+  interior_lighting?: string
 }
 
 export type GenerateResult = {
-  imageB64:    string
-  promptUsed:  string
+  imageB64:         string
+  promptUsed:       string
+  manualPromptUsed: string | null
 }
 
-// ── SHARED PROMPT BLOCKS ──────────────────────────────────────
+// ── STRUCTURE BLOCK ───────────────────────────────────────────
+// Source image is ground truth for architecture only.
+// Everything else — lighting, landscaping, camera — is overridden.
 
 export const STRUCTURE_BLOCK = `
 SOURCE IMAGE IS THE GROUND TRUTH FOR ARCHITECTURE ONLY:
 - Exact structure geometry, proportions, layout, and architectural identity
-- All structural elements preserved with high fidelity: rooflines, windows, trim, materials, porch, chimney
+- All structural elements preserved: rooflines, windows, trim, materials, porch, chimney
 - Geographic location determines plant species only
+
 DO NOT alter structure design in any way.
-DO NOT use source image for lighting, landscaping, camera angle, or scene mood.
+
+IGNORE FROM SOURCE — DO NOT DERIVE THESE FROM THE SOURCE IMAGE:
+- Landscaping style, layout, or any implied design
+- Time of day, lighting, exposure, or scene mood
+- Camera angle or position
 `.trim()
+
+// ── CAMERA BLOCK ──────────────────────────────────────────────
+// Consistent across all four lighting modes.
 
 export const CAMERA_BLOCK = `
-CAMERA (MANDATORY — IGNORE SOURCE CAMERA ANGLE):
+CAMERA (MANDATORY — IGNORE SOURCE CAMERA ANGLE COMPLETELY):
 The source photo camera angle is irrelevant — do not reproduce it.
-Camera is elevated 24-30 inches above desk, tilted downward at 55 degrees toward the diorama.
-Light source is positioned above and behind the camera — front facade receives direct illumination.
-Shadows fall behind and to the sides of architectural features (trim, moldings, railings, eaves).
-Shadow edges define and enhance every architectural detail.
+Camera is elevated 24-30 inches above the desk, tilted downward at 55 degrees toward the diorama.
 Camera physically pulled back so subject occupies ~60-65% of frame width.
-MARGINS (CRITICAL): The full circular base must be completely visible on all four sides.
-Clear desk surface must be visible surrounding the base — minimum 15% of frame width on each side.
-Do not crop the base, do not fill the frame edge to edge.
+Full base and desk surface visible as natural margin on all sides — minimum 15% each side.
 The diorama is a small object on a large desk — frame it as such.
+Do not use any street-level, eye-level, or facade-facing angle from the source photo.
 `.trim()
 
-export const LANDSCAPING_BLOCK = `
-LANDSCAPING (NATURALISTIC):
-Organic, asymmetrical layout — no patterns, no symmetry.
-Natural clustering of plants with varied heights and density.
-Soft transitions between lawn, beds, and hardscape.
-Regionally appropriate plant species based on source location.
-Preserve walkway/sidewalk placement from source if present.
-Must feel like a professionally designed real yard at miniature scale.
-`.trim()
+// ── SCALE BLOCK ───────────────────────────────────────────────
+// House-to-base ratio and tree framing rules.
 
-export const STYLE_BLOCK = `
-STYLE:
-Museum-quality architectural scale model — not a toy.
-Full structural fidelity with realistic materials: wood, resin, glass, foliage.
-The house is shiny and hand-crafted on a round wooden diorama base.
-Diorama sits on a highly detailed dark walnut desk with visible grain and soft reflection.
-Trees frame the sides and back of the house.
-Everything on the diorama is sharp and in focus. Room has strong depth of field.
-The room feel, colors, trim, and windows complement the model architecture.
+export const SCALE_BLOCK = `
+SCALE AND SPACING (CRITICAL):
+The house occupies NO MORE than 60-70% of the diorama base diameter.
+Visible landscaped ground surrounds the house on all sides of the base.
+The full circular base perimeter must always be visible — never cropped.
+Trees ALWAYS frame the left, right, and rear of the base — mandatory, never optional.
 `.trim()
 
 // ── SOURCE PRE-PROCESSING ─────────────────────────────────────
-const CANVAS_SIZE  = 1024
-const SUBJECT_SIZE = Math.round(CANVAS_SIZE * 0.60)
+// Brightness pre-lift for daylight modes so model doesn't anchor
+// to overcast source and generate dim output.
+// Dark modes (dusk/night) skip lift — model generates its own mood.
 
 export async function prepareSourceImage(
-  sourceB64:      string,
-  targetBrightness: number  // 0 = skip lift
+  sourceB64: string,
+  lightingPreset?: string
 ): Promise<Buffer> {
   const sourceBuf = Buffer.from(sourceB64, 'base64')
+  const darkMode  = lightingPreset === 'night' || lightingPreset === 'dusk_evening'
 
-  const stats     = await sharp(sourceBuf).greyscale().stats()
-  const srcBright = stats.channels[0].mean
-
-  let processed: Buffer = sourceBuf
-  if (targetBrightness > 0 && srcBright < targetBrightness) {
-    const mult = Math.min(targetBrightness / srcBright, 3.0)
-    console.log(`[generate] Source: ${Math.round(srcBright)} → target: ${targetBrightness} — lift: ${mult.toFixed(2)}`)
-    processed = await sharp(sourceBuf).modulate({ brightness: mult }).png().toBuffer()
-  } else {
-    console.log(`[generate] Source: ${Math.round(srcBright)} — no lift`)
+  if (darkMode) {
+    console.log(`[generate] Dark mode (${lightingPreset}) — no pre-lift`)
+    return sourceBuf
   }
 
-  const resized = await sharp(processed)
-    .resize(SUBJECT_SIZE, SUBJECT_SIZE, { fit: 'inside', withoutEnlargement: false })
-    .png()
-    .toBuffer()
+  // Brightness pre-lift for daylight modes only.
+  // Color is preserved — model needs it for accurate material rendering.
+  const stats     = await sharp(sourceBuf).greyscale().stats()
+  const srcBright = stats.channels[0].mean
+  const target    = lightingPreset === 'soft_spring' ? 150 : 165
+  const preLift   = srcBright < target ? Math.min(target / srcBright, 2.5) : 1.0
 
-  const meta = await sharp(resized).metadata()
-  const left = Math.round((CANVAS_SIZE - meta.width!)  / 2)
-  const top  = Math.round((CANVAS_SIZE - meta.height!) / 2)
+  console.log(`[generate] Source brightness: ${Math.round(srcBright)} — target: ${target} — lift: ${preLift.toFixed(2)} — mode: ${lightingPreset || 'default'}`)
 
-  return sharp({
-    create: {
-      width: CANVAS_SIZE, height: CANVAS_SIZE,
-      channels: 3,
-      background: { r: 160, g: 155, b: 148 },
-    },
+  if (preLift > 1.0) {
+    return sharp(sourceBuf).modulate({ brightness: preLift }).png().toBuffer()
+  }
+  return sourceBuf
+}
+
+// ── API CALL ──────────────────────────────────────────────────
+// Shared image generation call used by all lighting generators.
+
+export async function callGenerateAPI(
+  sourceB64:    string,
+  prompt:       string,
+  openaiApiKey: string
+): Promise<string> {
+  const openai = new OpenAI({ apiKey: openaiApiKey })
+
+  const file = await toFile(
+    Buffer.from(sourceB64, 'base64'),
+    'source.png',
+    { type: 'image/png' }
+  )
+
+  const res = await openai.images.edit({
+    model:  'gpt-image-1',
+    image:  file,
+    prompt,
+    size:   '1024x1024',
   })
-    .composite([{ input: resized, left, top }])
-    .png()
-    .toBuffer()
+
+  const b64 = res.data?.[0]?.b64_json
+  if (!b64) throw new Error('generate_failed')
+  return b64
 }
