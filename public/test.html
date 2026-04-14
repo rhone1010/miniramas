@@ -16,8 +16,6 @@ html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;display:flex;flex-direction:column}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* TOPBAR */
 .topbar{height:48px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:.6rem;flex-shrink:0}
 .logo{font-family:var(--mono);font-size:.75rem;font-weight:700;color:var(--accent);letter-spacing:.05em}
 .logo span{color:var(--muted);font-weight:400}
@@ -29,24 +27,21 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .run-all-btn{padding:6px 14px;background:var(--accent);color:#000;border:none;border-radius:5px;font-family:var(--mono);font-size:.68rem;font-weight:700;cursor:pointer;letter-spacing:.04em}
 .run-all-btn:hover:not(:disabled){filter:brightness(1.1)}
 .run-all-btn:disabled{opacity:.35;cursor:not-allowed}
+.export-btn{padding:6px 14px;background:var(--surface);color:var(--blue);border:1px solid var(--blue);border-radius:5px;font-family:var(--mono);font-size:.68rem;font-weight:700;cursor:pointer}
+.export-btn:hover{background:var(--blue);color:#fff}
+.session-input{padding:5px 10px;border:1px solid var(--border2);border-radius:5px;font-family:var(--mono);font-size:.65rem;color:var(--text);background:var(--bg);width:180px;outline:none}
 .status-wrap{margin-left:auto;display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.65rem;color:var(--muted)}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--dim);flex-shrink:0}
 .status-dot.running{background:var(--accent);animation:pulse 1s infinite}
 .status-dot.done{background:var(--green)}
 .status-dot.error{background:var(--red)}
-
-/* LAYOUT */
 .layout{display:grid;grid-template-columns:300px 1fr 300px;flex:1;overflow:hidden;min-height:0}
-
-/* LEFT */
 .left{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .panel-hdr{padding:.55rem .85rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .panel-title{font-family:var(--mono);font-size:.58rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .add-btn{padding:3px 10px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.62rem;cursor:pointer;transition:all .15s}
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
 .cases-list{flex:1;overflow-y:auto;padding:.5rem}
-
-/* CASE CARD */
 .case-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;overflow:hidden}
 .case-hdr{display:flex;align-items:center;gap:6px;padding:6px 8px;cursor:pointer;user-select:none}
 .case-hdr:hover{background:rgba(0,0,0,.02)}
@@ -58,58 +53,49 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .ctags{display:flex;gap:2px;flex-shrink:0}
 .tag{font-size:.48rem;padding:1px 4px;border-radius:3px;background:var(--border);color:var(--muted);font-family:var(--mono);white-space:nowrap}
 .tag.on{background:#d1fae5;color:var(--green)}
-.tag.warn{background:#fff7ed;color:var(--orange)}
+.tag.season{background:#e0f0ff;color:var(--blue)}
+.tag.disaster{background:#ffe0e0;color:var(--red)}
 .arrow{font-size:.6rem;color:var(--muted);transition:transform .15s;flex-shrink:0}
 .case-card.open .arrow{transform:rotate(90deg)}
 .cbody{display:none;padding:8px;border-top:1px solid var(--border)}
 .case-card.open .cbody{display:block}
-
-/* FIELDS */
 .field{margin-bottom:6px}
 .field label{display:block;font-size:.57rem;font-weight:700;color:var(--muted);margin-bottom:2px;letter-spacing:.05em;text-transform:uppercase}
-.field select,.field input[type=text],.field input[type=number],.field textarea{
-  width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:4px;
-  color:var(--text);font-family:var(--mono);font-size:.63rem;padding:3px 6px;outline:none;transition:border-color .15s}
-.field select:focus,.field input:focus,.field textarea:focus{border-color:var(--accent)}
-.field textarea{resize:vertical;min-height:46px;line-height:1.5}
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-
-/* SECTION DIVIDER IN CASE BODY */
+.field textarea{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:.63rem;padding:3px 6px;outline:none;transition:border-color .15s;resize:vertical;min-height:46px;line-height:1.5}
+.field textarea:focus{border-color:var(--accent)}
 .sec-div{font-size:.55rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:6px 0 3px;border-bottom:1px solid var(--border);margin-bottom:6px}
-
-/* PIPELINE PRESETS */
+/* Preset button grid */
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px}
+.preset-btn{padding:7px 4px;border:1.5px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.62rem;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
+.preset-btn:hover{border-color:var(--accent);color:var(--accent)}
+.preset-btn.active.season{border-color:var(--blue);background:rgba(33,118,174,.1);color:var(--blue)}
+.preset-btn.active.disaster{border-color:var(--red);background:rgba(192,57,43,.1);color:var(--red)}
+.preset-divider{font-size:.52rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:6px 0 4px;text-align:center;border-top:1px dashed var(--border);border-bottom:1px dashed var(--border);margin:4px 0}
+/* Pipeline */
 .presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px}
 .pre-btn{padding:5px 3px;border:1.5px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;font-weight:600;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s}
 .pre-btn:hover{border-color:var(--accent);color:var(--accent)}
 .pre-btn.active{border-color:var(--accent);background:rgba(196,126,0,.1);color:var(--accent)}
 .pre-sub{font-weight:400;font-size:.5rem;display:block;margin-top:1px}
-
-/* EXPAND STRENGTH */
 .exp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px}
-.exp-btn{padding:4px 3px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s}
+.exp-btn{padding:4px 3px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;cursor:pointer;text-align:center;transition:all .15s}
 .exp-btn:hover{border-color:var(--accent);color:var(--accent)}
 .exp-btn.active{border-color:var(--accent);background:rgba(196,126,0,.08);color:var(--accent);font-weight:700}
 .exp-sub{font-size:.5rem;font-weight:400;display:block}
-
-/* CASE ACTIONS */
 .cactions{display:flex;gap:4px;margin-top:7px;padding-top:7px;border-top:1px solid var(--border)}
 .run-btn-case{flex:1;padding:5px;background:var(--accent);color:#000;border:none;border-radius:4px;font-family:var(--mono);font-size:.62rem;font-weight:700;cursor:pointer}
 .run-btn-case:hover{filter:brightness(1.1)}
 .del-btn{padding:5px 8px;background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-family:var(--mono);font-size:.62rem;cursor:pointer}
 .del-btn:hover{border-color:var(--red);color:var(--red)}
-
-/* CENTER */
 .center{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
 .center-hdr{padding:.55rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;background:var(--surface);flex-shrink:0}
 .results-grid{flex:1;overflow-y:auto;padding:.65rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:9px;align-content:start}
-
-/* RESULT CARD */
 .rc{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
 .rc.stable{border-color:#6fcf97}
 .rc.warn{border-color:var(--orange)}
 .rc.error{border-color:var(--red)}
-.rc-img{aspect-ratio:1/1;background:#E8E6E0;position:relative;overflow:hidden;cursor:zoom-in;display:flex;align-items:center;justify-content:center}
-.rc-img img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+.rc-img{aspect-ratio:3/2;background:#E8E6E0;position:relative;overflow:hidden;cursor:zoom-in;display:flex;align-items:center;justify-content:center}
+.rc-img img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .rc-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .18s}
 .rc-img:hover .rc-overlay{background:rgba(0,0,0,.4)}
 .rc-overlay-label{font-family:var(--mono);font-size:.68rem;color:#fff;background:rgba(0,0,0,.55);padding:4px 10px;border-radius:4px;opacity:0;transition:opacity .18s}
@@ -135,18 +121,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .sl-divider{height:1px;background:var(--border);margin:3px 0}
 .sl-i{font-size:.53rem;color:var(--dim);line-height:1.6}
 .sl-200{color:#2a8a4a}.sl-500{color:var(--red)}.sl-0{color:var(--dim)}
-
-/* COLLAPSIBLE PROMPT/PARAMS ON CARD */
 .rc-collapse{margin-top:5px;border-top:1px solid var(--border);padding-top:5px}
 .rc-collapse-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:var(--mono);font-size:.56rem;color:var(--muted);padding:2px 0;user-select:none}
 .rc-collapse-hdr:hover{color:var(--accent)}
 .rc-collapse-body{display:none;margin-top:4px}
 .rc-collapse.open .rc-collapse-body{display:block}
 .rc-prompt-text{font-family:var(--mono);font-size:.54rem;line-height:1.65;color:var(--text);white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:5px 7px;max-height:140px;overflow-y:auto}
-.rc-manual-text{font-family:var(--mono);font-size:.54rem;line-height:1.65;color:var(--accent);white-space:pre-wrap;word-break:break-word;background:rgba(196,126,0,.05);border:1px solid rgba(196,126,0,.2);border-radius:4px;padding:5px 7px;max-height:80px;overflow-y:auto;margin-top:3px}
 .rc-params-text{font-family:var(--mono);font-size:.53rem;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:5px 7px;max-height:120px;overflow-y:auto}
-
-/* RIGHT */
 .right{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .log-scroll{flex:1;overflow-y:auto;padding:.5rem .75rem}
 .log-sec{margin-bottom:.65rem;border-left:2px solid var(--border2);padding-left:.6rem}
@@ -156,53 +137,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .log-sec-hdr{font-family:var(--mono);font-size:.6rem;font-weight:700;color:var(--accent);margin-bottom:3px}
 .ll{font-family:var(--mono);font-size:.6rem;line-height:1.7;color:var(--muted);white-space:pre-wrap;word-break:break-all}
 .ll.ok{color:var(--green)}.ll.err{color:var(--red)}.ll.warn{color:var(--orange)}
-.ll.accent{color:var(--accent)}.ll.info{color:var(--blue)}.ll.dim{color:var(--dim)}
+.ll.accent{color:var(--accent)}.ll.dim{color:var(--dim)}
 .clear-btn{padding:2px 8px;border:1px solid var(--border2);border-radius:3px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.58rem;cursor:pointer}
 .clear-btn:hover{border-color:var(--red);color:var(--red)}
-
-/* MODAL */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
 .modal{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;width:920px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.35)}
 .modal-hdr{padding:.6rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.6rem;flex-shrink:0;background:var(--surface)}
 .modal-title{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--accent)}
-.modal-status-badge{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:3px}
-.modal-status-badge.stable{background:#d1fae5;color:var(--green)}
-.modal-status-badge.warn{background:#fff7ed;color:var(--orange)}
-.modal-status-badge.error{background:#fee2e2;color:var(--red)}
 .modal-act{padding:3px 10px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.62rem;cursor:pointer;transition:all .15s}
 .modal-act:hover{border-color:var(--accent);color:var(--accent)}
 .modal-close{margin-left:auto;padding:3px 10px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.62rem;cursor:pointer}
 .modal-close:hover{border-color:var(--red);color:var(--red)}
 .modal-scroll{flex:1;overflow-y:auto;background:var(--bg)}
-.mi-img-zone{background:#111;display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;max-height:60vh;max-width:100%}
-.mi-img-zone img{width:100%;height:100%;object-fit:contain;display:block}
+.mi-img-zone{background:#111;display:flex;align-items:center;justify-content:center;min-height:260px;max-height:56vh}
+.mi-img-zone img{max-width:100%;max-height:56vh;object-fit:contain;display:block}
 .mi-data{padding:1.1rem}
 .mi-sec{margin-bottom:1.1rem}
-.mi-sec-hdr{font-family:var(--mono);font-size:.58rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;padding-bottom:3px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:6px}
-.hbadge{font-size:.52rem;padding:1px 6px;border-radius:3px;font-weight:700}
-.hbadge-ok{background:#d1fae5;color:var(--green)}
-.hbadge-fail{background:#fee2e2;color:var(--red)}
-.mi-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
-.mi-row{display:flex;align-items:baseline;gap:6px;padding:3px 0;border-bottom:1px solid var(--border)}
-.mi-k{font-family:var(--mono);font-size:.58rem;font-weight:700;color:var(--muted);width:140px;flex-shrink:0}
-.mi-v{font-family:var(--mono);font-size:.62rem;color:var(--text);word-break:break-word}
-.mi-v.on{color:var(--green)}.mi-v.off{color:var(--red)}.mi-v.hi{color:var(--accent)}
-.mi-rl{display:flex;gap:6px;font-family:var(--mono);font-size:.63rem;line-height:1.6;padding:4px 8px;border-radius:4px;margin-bottom:3px}
-.mi-rl.ok{background:#f0fdf4;color:var(--green)}
-.mi-rl.fail{background:#fff7ed;color:var(--orange)}
-.mi-sl{font-family:var(--mono);font-size:.6rem;line-height:1.8;color:var(--muted)}
-.mi-sl.s200{color:#2a8a4a}.mi-sl.s500{color:var(--red)}.mi-sl.s0{color:var(--dim)}
+.mi-sec-hdr{font-family:var(--mono);font-size:.58rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;padding-bottom:3px;border-bottom:2px solid var(--border)}
 .mi-prompt{font-family:var(--mono);font-size:.62rem;line-height:1.75;color:var(--text);white-space:pre-wrap;word-break:break-word;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.8rem;max-height:300px;overflow-y:auto}
-.mi-manual{font-family:var(--mono);font-size:.62rem;line-height:1.75;color:var(--accent);white-space:pre-wrap;word-break:break-word;background:rgba(196,126,0,.05);border:1px solid rgba(196,126,0,.25);border-radius:5px;padding:.8rem;max-height:160px;overflow-y:auto}
-.mi-params{font-family:var(--mono);font-size:.6rem;line-height:1.7;color:var(--text);white-space:pre;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.8rem;max-height:220px;overflow:auto}
-
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <div class="logo">minirama <span>/ debug lab</span></div>
   <div class="tb-div"></div>
@@ -212,8 +170,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
   </label>
   <div class="tb-div"></div>
   <button class="run-all-btn" id="runAllBtn" disabled onclick="runCases(getAllIds())">▶ Run All Cases</button>
-  <button class="run-all-btn" id="exportPptBtn" onclick="exportPPT()" style="background:#2176AE;margin-left:4px" disabled>📊 Export PPT</button>
-  <input type="text" id="exportTitle" placeholder="Session name…" style="padding:5px 10px;border:1px solid #ccc;border-radius:5px;font-family:monospace;font-size:.68rem;width:160px">
+  <button class="export-btn" onclick="exportPPT()">📊 Export PPT</button>
+  <input class="session-input" id="sessionName" placeholder="Session name…">
   <div class="status-wrap">
     <div class="status-dot" id="gDot"></div>
     <span id="gStatus">idle</span>
@@ -250,12 +208,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
   </div>
 </div>
 
-<!-- DETAIL MODAL -->
 <div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-hdr">
       <div class="modal-title" id="modalTitle">—</div>
-      <div class="modal-status-badge" id="modalBadge"></div>
       <button class="modal-act" id="modalFullBtn" onclick="openFull(currentModal)">⛶ Full Size</button>
       <button class="modal-act" id="modalDlBtn" onclick="dl(currentModal)">↓ Save</button>
       <button class="modal-close" onclick="closeModal()">✕ Close</button>
@@ -268,51 +224,42 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 </div>
 
 <script>
-const API      = '/api/v1/generate'
-let fileB64    = null
-let caseN      = 0
-let running    = false
-let imgStore   = {}
-let resStore   = {}
-let currentModal = ''
+const API    = '/api/v1/generate'
+const EXPAPI = '/api/v1/export'
+const SEASONS   = ['summer','spring','fall','winter']
+const DISASTERS = ['flood','fire','abandoned','explosion']
+const ALL_PRESETS = [...SEASONS, ...DISASTERS]
 
-// ── STATUS ────────────────────────────────────────────────────
-function deriveStatus(r){
-  if(!r||r.fatal_error) return {cls:'error', text:'❌ generation failed'}
-  const fails=(r.render_log||[]).filter(l=>!l.ok)
-  if(!fails.length) return {cls:'stable', text:'✅ stable'}
-  const expLt=fails.some(l=>l.msg.includes('expand')&&l.msg.includes('light'))
-  if(expLt) return {cls:'warn', text:'⚠ expand affecting lighting'}
-  if(fails.length===1) return {cls:'warn', text:'⚠ '+fails[0].msg.slice(0,44)}
-  return {cls:'warn', text:'⚠ '+fails.length+' issues'}
-}
+let fileB64 = null, caseN = 0, running = false
+let imgStore = {}, resStore = {}, currentModal = ''
 
-// ── FILE UPLOAD ───────────────────────────────────────────────
-document.getElementById('fileInput').addEventListener('change',function(){
-  const f=this.files?.[0]; if(!f) return
-  const r=new FileReader()
-  r.onload=e=>{
-    fileB64=e.target.result.split(',')[1]
+document.getElementById('fileInput').addEventListener('change', function(){
+  const f = this.files?.[0]; if(!f) return
+  const r = new FileReader()
+  r.onload = e => {
+    fileB64 = e.target.result.split(',')[1]
     document.getElementById('uploadLabel').classList.add('has-file')
-    document.getElementById('uploadText').textContent='✓ '+f.name
-    document.getElementById('runAllBtn').disabled=false
-    gLog('Photo loaded — '+f.name,'ok')
+    document.getElementById('uploadText').textContent = '✓ ' + f.name
+    document.getElementById('runAllBtn').disabled = false
+    gLog('Photo loaded — ' + f.name, 'ok')
   }
   r.readAsDataURL(f)
 })
 
-// ── ADD CASE ──────────────────────────────────────────────────
-function addCase(cfg={}){
+function addCase(cfg={}) {
   caseN++
-  const id='c'+caseN
-  const defaultName=cfg.name||'case-'+caseN
-  const div=document.createElement('div')
-  div.className='case-card open'
-  div.dataset.id=id
-  div.dataset.preset='full'
-  div.dataset.expStr='medium'
+  const id = 'c' + caseN
+  const defaultName = cfg.name || 'case-' + caseN
+  const defaultPreset = cfg.preset || 'summer'
 
-  div.innerHTML=`
+  const div = document.createElement('div')
+  div.className = 'case-card open'
+  div.dataset.id = id
+  div.dataset.preset = 'full'
+  div.dataset.expStr = 'medium'
+  div.dataset.scenePrset = defaultPreset
+
+  div.innerHTML = `
     <div class="case-hdr" onclick="toggleCase('${id}')">
       <div class="cdot" id="dot-${id}"></div>
       <div class="cname" id="nd-${id}">${esc(defaultName)}</div>
@@ -320,18 +267,27 @@ function addCase(cfg={}){
       <span class="arrow">›</span>
     </div>
     <div class="cbody">
-
-      <div class="field" style="margin-bottom:6px">
+      <div class="field" style="margin-bottom:8px">
         <label>Name</label>
-        <input type="text" id="nm-${id}" value="${esc(defaultName)}" oninput="syncName('${id}')">
+        <input type="text" id="nm-${id}" value="${esc(defaultName)}" oninput="syncName('${id}')"
+          style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:.63rem;padding:3px 6px;outline:none">
       </div>
 
-      <!-- PIPELINE -->
-      <div class="sec-div">Pipeline</div>
+      <div class="sec-div">Season</div>
+      <div class="preset-grid">
+        ${SEASONS.map(s => `<button class="preset-btn season ${s===defaultPreset?'active':''}" id="ps-${id}-${s}" onclick="selectPreset('${id}','${s}')">${s.charAt(0).toUpperCase()+s.slice(1)}</button>`).join('')}
+      </div>
+
+      <div class="preset-divider">— or disaster —</div>
+      <div class="preset-grid">
+        ${DISASTERS.map(s => `<button class="preset-btn disaster ${s===defaultPreset?'active':''}" id="ps-${id}-${s}" onclick="selectPreset('${id}','${s}')">${s.charAt(0).toUpperCase()+s.slice(1)}</button>`).join('')}
+      </div>
+
+      <div class="sec-div" style="margin-top:8px">Pipeline</div>
       <div class="presets">
-        <button class="pre-btn" id="pre-go-${id}" onclick="setPreset('${id}','gen_only')">Gen Only<span class="pre-sub">no post</span></button>
-        <button class="pre-btn" id="pre-gh-${id}" onclick="setPreset('${id}','gen_hl')">Gen + HL<span class="pre-sub">→ highlight</span></button>
-        <button class="pre-btn active" id="pre-fu-${id}" onclick="setPreset('${id}','full')">Full<span class="pre-sub">→ exp → hl</span></button>
+        <button class="pre-btn" id="pre-go-${id}" onclick="setPipeline('${id}','gen_only')">Gen Only<span class="pre-sub">no post</span></button>
+        <button class="pre-btn" id="pre-gh-${id}" onclick="setPipeline('${id}','gen_hl')">Gen + HL<span class="pre-sub">→ highlight</span></button>
+        <button class="pre-btn active" id="pre-fu-${id}" onclick="setPipeline('${id}','full')">Full<span class="pre-sub">→ exp → hl</span></button>
       </div>
       <div id="expBlock-${id}">
         <div class="exp-row">
@@ -341,41 +297,10 @@ function addCase(cfg={}){
         </div>
       </div>
 
-      <!-- GENERATION CONTROLS -->
-      <div class="sec-div">Generation</div>
-      <div class="f2">
-        <div class="field"><label>Lighting</label>
-          <select id="light-${id}" onchange="syncTags('${id}')">
-            <option value="midday_summer">Midday Summer Sun</option>
-            <option value="soft_spring">Soft Spring Afternoon</option>
-            <option value="dusk_evening">Evening (Dusk)</option>
-            <option value="night">Nighttime Scene</option>
-          </select>
-        </div>
-        <div class="field"><label>Highlight Brightness</label>
-          <input type="number" id="br-${id}" value="1.18" min="1.0" max="1.8" step="0.02">
-        </div>
-      </div>
+      <div class="sec-div">Override</div>
       <div class="field">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <input type="checkbox" id="intlit-${id}" style="width:14px;height:14px">
-          Interior lights on (daytime only — subtle, does not affect exterior)
-        </label>
-      </div>
-
-      <!-- OVERRIDES -->
-      <div class="sec-div">Overrides</div>
-      <div class="field">
-        <label>Structure Block (injected verbatim)</label>
-        <textarea id="sb-${id}" placeholder="Optional — e.g. Victorian, asymmetric roofline..."></textarea>
-      </div>
-      <div class="field">
-        <label>Manual Prompt (appended to system prompt)</label>
-        <textarea id="mp-${id}" placeholder="Added after system prompt. Does not replace structured controls..."></textarea>
-      </div>
-      <div class="field">
-        <label>Custom Prompt (replaces ALL blocks — use sparingly)</label>
-        <textarea id="cp-${id}" placeholder="Leave empty to use modular prompt..."></textarea>
+        <label>Custom Prompt (replaces all blocks)</label>
+        <textarea id="cp-${id}" placeholder="Leave empty to use structured prompt…"></textarea>
       </div>
 
       <div class="cactions">
@@ -385,170 +310,152 @@ function addCase(cfg={}){
     </div>`
 
   document.getElementById('casesList').appendChild(div)
-  if(cfg.preset)      setPreset(id, cfg.preset)
-  if(cfg.lighting)    document.getElementById('light-'+id).value=cfg.lighting
-  if(cfg.landscaping) document.getElementById('land-'+id).value=cfg.landscaping
-  if(cfg.color)       document.getElementById('color-'+id).value=cfg.color
   syncTags(id)
 }
 
-function toggleCase(id){ document.querySelector(`.case-card[data-id="${id}"]`).classList.toggle('open') }
-function syncName(id){ document.getElementById('nd-'+id).textContent=document.getElementById('nm-'+id).value }
-function delCase(id){ document.querySelector(`.case-card[data-id="${id}"]`)?.remove() }
-
-function setPreset(id,preset){
-  const card=document.querySelector(`.case-card[data-id="${id}"]`)
-  if(card) card.dataset.preset=preset
-  ;['go','gh','fu'].forEach(k=>{
-    const m={go:'gen_only',gh:'gen_hl',fu:'full'}
-    document.getElementById('pre-'+k+'-'+id)?.classList.toggle('active',m[k]===preset)
+function selectPreset(id, preset) {
+  document.querySelector(`.case-card[data-id="${id}"]`).dataset.scenePrset = preset
+  ALL_PRESETS.forEach(p => {
+    const btn = document.getElementById(`ps-${id}-${p}`)
+    if(btn) btn.classList.toggle('active', p === preset)
   })
-  document.getElementById('expBlock-'+id).style.display=preset==='full'?'':'none'
   syncTags(id)
 }
 
-function setExpStr(id,size){
-  const card=document.querySelector(`.case-card[data-id="${id}"]`)
-  if(card) card.dataset.expStr=size
-  ;['sm','md','lg'].forEach(k=>{
-    const m={sm:'small',md:'medium',lg:'large'}
-    document.getElementById('exs-'+k+'-'+id)?.classList.toggle('active',m[k]===size)
+function setPipeline(id, preset) {
+  const card = document.querySelector(`.case-card[data-id="${id}"]`)
+  if(card) card.dataset.preset = preset
+  ;['go','gh','fu'].forEach(k => {
+    const m = {go:'gen_only',gh:'gen_hl',fu:'full'}
+    document.getElementById('pre-'+k+'-'+id)?.classList.toggle('active', m[k]===preset)
+  })
+  document.getElementById('expBlock-'+id).style.display = preset==='full' ? '' : 'none'
+  syncTags(id)
+}
+
+function setExpStr(id, size) {
+  const card = document.querySelector(`.case-card[data-id="${id}"]`)
+  if(card) card.dataset.expStr = size
+  ;['sm','md','lg'].forEach(k => {
+    const m = {sm:'small',md:'medium',lg:'large'}
+    document.getElementById('exs-'+k+'-'+id)?.classList.toggle('active', m[k]===size)
   })
 }
 
-function syncTags(id){
-  const box=document.getElementById('tags-'+id); if(!box) return
-  const card=document.querySelector(`.case-card[data-id="${id}"]`)
-  const preset=card?.dataset.preset||'full'
-  const lt=document.getElementById('light-'+id)?.value||''
-  const il=document.getElementById('intlit-'+id)?.checked
-  const abbr=v=>v.split('_')[0]
-  box.innerHTML=[
-    preset!=='full'?`<span class="tag warn">${preset==='gen_only'?'gen-only':'gen+hl'}</span>`:`<span class="tag on">full</span>`,
-    lt!=='midday_summer'?`<span class="tag">${abbr(lt)}</span>`:'',
-    il?`<span class="tag on">int.lit</span>`:'',
+function syncTags(id) {
+  const box = document.getElementById('tags-'+id); if(!box) return
+  const card = document.querySelector(`.case-card[data-id="${id}"]`)
+  const pipeline = card?.dataset.preset || 'full'
+  const preset   = card?.dataset.scenePrset || 'summer'
+  const isDisaster = DISASTERS.includes(preset)
+  box.innerHTML = [
+    pipeline!=='full' ? `<span class="tag warn">${pipeline==='gen_only'?'gen-only':'gen+hl'}</span>` : `<span class="tag on">full</span>`,
+    `<span class="tag ${isDisaster?'disaster':'season'}">${preset}</span>`,
   ].join('')
 }
 
-function collect(id){
-  const card=document.querySelector(`.case-card[data-id="${id}"]`)
-  const preset=card?.dataset.preset||'full'
-  const expStr=card?.dataset.expStr||'medium'
-  const padMap={small:0.05,medium:0.10,large:0.18}
-  const mp=document.getElementById('mp-'+id)?.value?.trim()
-  const cp=document.getElementById('cp-'+id)?.value?.trim()
+function syncName(id) { document.getElementById('nd-'+id).textContent = document.getElementById('nm-'+id).value }
+function toggleCase(id) { document.querySelector(`.case-card[data-id="${id}"]`).classList.toggle('open') }
+function delCase(id) { document.querySelector(`.case-card[data-id="${id}"]`)?.remove() }
+
+function collect(id) {
+  const card    = document.querySelector(`.case-card[data-id="${id}"]`)
+  const pipeline = card?.dataset.preset || 'full'
+  const expStr  = card?.dataset.expStr || 'medium'
+  const preset  = card?.dataset.scenePrset || 'summer'
+  const padMap  = {small:0.05, medium:0.10, large:0.18}
+  const cp      = document.getElementById('cp-'+id)?.value?.trim()
   return {
-    name:                 document.getElementById('nm-'+id)?.value||id,
-    lighting_preset:      document.getElementById('light-'+id)?.value,
-    interior_lights:      document.getElementById('intlit-'+id)?.checked || false,
-    brightness:           parseFloat(document.getElementById('br-'+id)?.value||'1.18'),
-    expand:               preset==='full',
-    highlightAfter:       preset==='full'||preset==='gen_hl',
-    expandPadding:        padMap[expStr]||0.10,
-    structureBlock:       document.getElementById('sb-'+id)?.value?.trim()||undefined,
-    manual_prompt:        mp||undefined,
-    customPrompt:         cp||undefined,
-    _preset:preset, _expStr:expStr,
+    name:         document.getElementById('nm-'+id)?.value || id,
+    preset,
+    expand:       pipeline === 'full',
+    highlightAfter: pipeline === 'full' || pipeline === 'gen_hl',
+    expandPadding: padMap[expStr] || 0.10,
+    customPrompt: cp || undefined,
+    _preset: pipeline, _expStr: expStr,
   }
 }
 
-function getAllIds(){ return [...document.querySelectorAll('.case-card')].map(c=>c.dataset.id) }
+function getAllIds() { return [...document.querySelectorAll('.case-card')].map(c => c.dataset.id) }
 
-// ── RUN ───────────────────────────────────────────────────────
-async function runCases(ids){
+function deriveStatus(r) {
+  if(!r || r.fatal_error) return {cls:'error', text:'❌ generation failed'}
+  const fails = (r.render_log||[]).filter(l => !l.ok)
+  if(!fails.length) return {cls:'stable', text:'✅ stable'}
+  if(fails.length===1) return {cls:'warn', text:'⚠ '+fails[0].msg.slice(0,44)}
+  return {cls:'warn', text:'⚠ '+fails.length+' issues'}
+}
+
+async function runCases(ids) {
   if(running){alert('Already running');return}
   if(!fileB64){alert('Upload a photo first');return}
-  running=true; setG('running','running…'); clearLog()
+  running = true; setG('running','running…'); clearLog()
   document.getElementById('emptyState')?.remove()
-  ids.forEach(id=>{const p=collect(id);mkLoading(p.name);setDot(id,'running');syncTags(id)})
-  const BATCH=5
+  ids.forEach(id => { const p=collect(id); mkLoading(p.name); setDot(id,'running') })
+  const BATCH = 5
   gLog('━━ '+ids.length+' case(s) — up to '+BATCH+' parallel','accent')
-  let ok=0,fail=0
-  for(let i=0;i<ids.length;i+=BATCH){
-    const batch=ids.slice(i,i+BATCH)
-    await Promise.allSettled(batch.map(async id=>{
-      const p=collect(id)
-      gLog('▶ '+p.name,'accent'); setG('running',(ok+fail)+'/'+ids.length)
-      try{
-        const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({source_image_b64:fileB64,variants:[p]})})
+  let ok=0, fail=0
+  for(let i=0; i<ids.length; i+=BATCH) {
+    const batch = ids.slice(i, i+BATCH)
+    await Promise.allSettled(batch.map(async id => {
+      const p = collect(id)
+      gLog('▶ '+p.name,'accent')
+      try {
+        const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({source_image_b64: fileB64, variants:[p]})})
         if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||'HTTP '+res.status)}
-        const data=await res.json()
-        const r=data.results?.[0]; if(!r) throw new Error('No result')
+        const data = await res.json()
+        const r = data.results?.[0]; if(!r) throw new Error('No result')
         logResult(r)
         if(r.fatal_error){mkFatal(r.name,r.fatal_error,r.system_log);setDot(id,'error');fail++}
-        else{resStore[r.name]=r;imgStore[r.name]=r.image_b64;mkResult(r);setDot(id,'done');ok++;document.getElementById('exportPptBtn').disabled=false}
+        else{resStore[r.name]=r;imgStore[r.name]=r.image_b64;mkResult(r);setDot(id,'done');ok++}
         gLog('  ✓ '+p.name,'ok')
-      }catch(e){
+      } catch(e) {
         gLog('  ✗ '+p.name+': '+e.message,'err')
         mkFatal(p.name,e.message,[]);setDot(id,'error');fail++
       }
     }))
   }
-  const sum=ids.length+' cases — '+ok+' ok, '+fail+' failed'
-  gLog('\n'+sum,fail?'warn':'ok'); setG(fail?'error':'done',sum)
-  document.getElementById('centerMeta').textContent=sum
-  running=false
+  const sum = ids.length+' cases — '+ok+' ok, '+fail+' failed'
+  gLog('\n'+sum, fail?'warn':'ok'); setG(fail?'error':'done',sum)
+  document.getElementById('centerMeta').textContent = sum
+  running = false
 }
 
-// ── CARDS ─────────────────────────────────────────────────────
-function mkLoading(name){
-  let c=document.getElementById('rc-'+name)
+function mkLoading(name) {
+  let c = document.getElementById('rc-'+name)
   if(!c){c=document.createElement('div');c.id='rc-'+name;c.className='rc';document.getElementById('resultsGrid').appendChild(c)}
   c.innerHTML=`<div class="rc-img"><div class="rc-spinner"><div class="spin"></div><div>${esc(name)}</div></div></div>
   <div class="rc-body"><div class="rc-name">${esc(name)}</div><div class="ll dim" style="font-size:.6rem">generating…</div></div>`
 }
 
-function mkFatal(name,err,slog){
+function mkFatal(name,err,slog) {
   let c=document.getElementById('rc-'+name); if(!c) return
   c.className='rc error'
   const nj=`"${esc(name)}"`
-  c.innerHTML=`
-    <div class="rc-img" onclick='openDetail(${nj})'>
-      <div class="fatal-banner"><div class="fatal-icon">✗</div><div class="fatal-msg">FATAL<br>${esc(err)}</div></div>
-      <div class="rc-overlay"><span class="rc-overlay-label">🔍 details</span></div>
-    </div>
-    <div class="rc-body">
-      <div class="rc-status error">❌ fatal error</div>
-      <div class="rc-name">${esc(name)}</div>
-      <div class="rc-btns"><button class="rc-btn" onclick='openDetail(${nj})'>🔍 Details</button></div>
-      <div class="rc-log">${(slog||[]).map(l=>`<div class="sl-i sl-${l.code===200?'200':l.code===0?'0':'500'}">[${l.code||'--'}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`).join('')}</div>
-    </div>`
+  c.innerHTML=`<div class="rc-img" onclick='openDetail(${nj})'><div class="fatal-banner"><div class="fatal-icon">✗</div><div class="fatal-msg">FATAL<br>${esc(err)}</div></div></div>
+  <div class="rc-body"><div class="rc-status error">❌ fatal error</div><div class="rc-name">${esc(name)}</div>
+  <div class="rc-btns"><button class="rc-btn" onclick='openDetail(${nj})'>🔍 Details</button></div>
+  <div class="rc-log">${(slog||[]).map(l=>`<div class="sl-i sl-${l.code===200?'200':l.code===0?'0':'500'}">[${l.code||'--'}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`).join('')}</div></div>`
 }
 
-function mkResult(r){
+function mkResult(r) {
   let c=document.getElementById('rc-'+r.name); if(!c) return
-  const st=deriveStatus(r)
-  c.className='rc '+st.cls
+  const st=deriveStatus(r); c.className='rc '+st.cls
   const nj=`"${esc(r.name)}"`
   const rl=(r.render_log||[]).map(l=>`<div class="rc-log"><span class="${l.ok?'rl-ok':'rl-fail'}">${l.ok?'✓':'●'}</span> <span>${esc(l.msg)}</span></div>`).join('')
   const sl=(r.system_log||[]).map(l=>`<div class="sl-i sl-${l.code===200?'200':l.code===0?'0':'500'}">[${l.code===0?'--':l.code}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`).join('')
-
-  // Collapsible prompt section
-  const hasManual = !!r.manual_prompt_used
   const promptCollapse = r.prompt_used ? `
     <div class="rc-collapse" id="pc-${esc(r.name)}">
-      <div class="rc-collapse-hdr" onclick="toggleCollapse('pc-${esc(r.name)}')">
-        <span>📋 Prompt Used${hasManual?' + manual override':''}</span><span>›</span>
-      </div>
-      <div class="rc-collapse-body">
-        <div class="rc-prompt-text">${esc(r.prompt_used)}</div>
-        ${hasManual?`<div class="rc-manual-text">MANUAL: ${esc(r.manual_prompt_used)}</div>`:''}
-      </div>
+      <div class="rc-collapse-hdr" onclick="toggleCollapse('pc-${esc(r.name)}')"><span>📋 Prompt Used</span><span>›</span></div>
+      <div class="rc-collapse-body"><div class="rc-prompt-text">${esc(r.prompt_used)}</div></div>
     </div>` : ''
-
-  // Collapsible params section
-  const paramsStr = r.params_used ? JSON.stringify(filterDisplayParams(r.params_used), null, 2) : ''
+  const paramsStr = r.params_used ? JSON.stringify({preset:r.params_used.preset, pipeline:r.params_used._preset}, null, 2) : ''
   const paramsCollapse = paramsStr ? `
     <div class="rc-collapse" id="prc-${esc(r.name)}">
-      <div class="rc-collapse-hdr" onclick="toggleCollapse('prc-${esc(r.name)}')">
-        <span>⚙ Params Used</span><span>›</span>
-      </div>
-      <div class="rc-collapse-body">
-        <div class="rc-params-text">${esc(paramsStr)}</div>
-      </div>
+      <div class="rc-collapse-hdr" onclick="toggleCollapse('prc-${esc(r.name)}')"><span>⚙ Params</span><span>›</span></div>
+      <div class="rc-collapse-body"><div class="rc-params-text">${esc(paramsStr)}</div></div>
     </div>` : ''
-
   c.innerHTML=`
     <div class="rc-img" onclick='openDetail(${nj})'>
       ${r.image_b64?`<img src="data:image/jpeg;base64,${r.image_b64}" style="pointer-events:none">`:`<div class="rc-spinner"><div>no image</div></div>`}
@@ -560,229 +467,96 @@ function mkResult(r){
       <div class="rc-btns">
         ${r.image_b64?`<button class="rc-btn" onclick="event.stopPropagation();dl(${nj})">↓ Save</button>`:''}
         <button class="rc-btn" onclick='openDetail(${nj})'>🔍 Inspect</button>
-        <button class="rc-btn" onclick="event.stopPropagation();exportResult(${nj})" style="border-color:var(--blue);color:var(--blue)">⬇ Export</button>
         <button class="rc-btn rerun" onclick="rerun(${nj})">↺ Re-run</button>
       </div>
       <div style="font-family:var(--mono);font-size:.56rem;line-height:1.6">${rl}${sl?`<div class="sl-divider"></div>${sl}`:''}</div>
-      ${promptCollapse}
-      ${paramsCollapse}
+      ${promptCollapse}${paramsCollapse}
     </div>`
 }
 
-// Filter params to useful display keys only
-function filterDisplayParams(p){
-  const keys=['landscaping','lighting','color','foreground','detail',
-    'environment_style','prop_density','background_structure','interior_lighting',
-    'brightness','expand','highlightAfter','_preset','_expStr',
-    'structureBlock','manual_prompt','customPrompt']
-  const out={}
-  keys.forEach(k=>{ if(p[k]!==undefined) out[k]=p[k] })
-  return out
-}
+function toggleCollapse(id) { document.getElementById(id)?.classList.toggle('open') }
 
-function toggleCollapse(id){
-  document.getElementById(id)?.classList.toggle('open')
-}
-
-// ── RE-RUN ────────────────────────────────────────────────────
-async function rerun(name){
+async function rerun(name) {
   const r=resStore[name]; if(!r||!fileB64) return
   const p=r.params_used||r.params; if(!p) return
   running=true; setG('running','re-running '+name+'…'); mkLoading(name)
-  try{
+  try {
     const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({source_image_b64:fileB64,variants:[p]})})
     if(!res.ok) throw new Error('HTTP '+res.status)
     const data=await res.json()
     const nr=data.results?.[0]; if(!nr) throw new Error('No result')
-    logResult(nr)
-    resStore[nr.name]=nr; imgStore[nr.name]=nr.image_b64
+    logResult(nr); resStore[nr.name]=nr; imgStore[nr.name]=nr.image_b64
     if(nr.fatal_error) mkFatal(nr.name,nr.fatal_error,nr.system_log)
     else mkResult(nr)
     gLog('↺ '+name+' done','ok')
-  }catch(e){ gLog('Re-run error: '+e.message,'err'); mkFatal(name,e.message,[]) }
+  } catch(e){ gLog('Re-run error: '+e.message,'err'); mkFatal(name,e.message,[]) }
   running=false; setG('done','idle')
 }
 
-// ── DETAIL MODAL ──────────────────────────────────────────────
-function openDetail(name){
-  const r=resStore[name]
-  const b=imgStore[name]
+function openDetail(name) {
+  const r=resStore[name], b=imgStore[name]
   currentModal=name
   document.getElementById('modalScroll').scrollTop=0
   document.getElementById('modalTitle').textContent=name
-
-  const st=r?deriveStatus(r):{cls:'error',text:'No data'}
-  const badge=document.getElementById('modalBadge')
-  badge.className='modal-status-badge '+st.cls
-  badge.textContent=st.text
-
-  const iz=document.getElementById('miImgZone')
-  const img=document.getElementById('modalImg')
-  if(b){img.src='data:image/jpeg;base64,'+b;iz.style.display='flex';document.getElementById('modalFullBtn').style.display='';document.getElementById('modalDlBtn').style.display=''}
-  else {iz.style.display='none';document.getElementById('modalFullBtn').style.display='none';document.getElementById('modalDlBtn').style.display='none'}
-
+  const iz=document.getElementById('miImgZone'), img=document.getElementById('modalImg')
+  if(b){img.src='data:image/jpeg;base64,'+b;iz.style.display='flex'}
+  else iz.style.display='none'
   let html=''
-  const p=r?.params_used||r?.params
-
-  // SETTINGS
-  if(p){
-    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Settings Used</div><div class="mi-grid">`
-    const pairs=[
-      ['Pipeline',p._preset],['Expand Str',p._expStr],
-      ['Landscaping',p.landscaping],['Lighting',p.lighting],
-      ['Color',p.color],['Detail',p.detail],
-      ['Foreground',p.foreground],['Brightness',p.brightness],
-      ['Expand',p.expand?'yes':'no'],['HL After',p.highlightAfter?'yes':'no'],
-    ]
-    pairs.forEach(([k,v])=>{
-      const cls=v==='yes'?'on':v==='no'?'off':''
-      html+=`<div class="mi-row"><div class="mi-k">${esc(k)}</div><div class="mi-v ${cls}">${esc(String(v??'—'))}</div></div>`
-    })
-    html+=`</div></div>`
-
-    // ENVIRONMENT SETTINGS
-    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Environment</div><div class="mi-grid">`
-    const envPairs=[
-      ['Style',p.environment_style],['Props',p.prop_density],
-      ['Background',p.background_structure],['Interior Light',p.interior_lighting],
-    ]
-    envPairs.forEach(([k,v])=>{
-      html+=`<div class="mi-row"><div class="mi-k">${esc(k)}</div><div class="mi-v">${esc(String(v??'—'))}</div></div>`
-    })
-    html+=`</div></div>`
-  }
-
-  // DIAGNOSTICS
-  if(r?.render_log?.length){
-    const fails=r.render_log.filter(l=>!l.ok)
-    const passes=r.render_log.filter(l=>l.ok)
-    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Render Diagnostics
-      ${fails.length?`<span class="hbadge hbadge-fail">${fails.length} failing</span>`:''}
-      ${passes.length?`<span class="hbadge hbadge-ok">${passes.length} passing</span>`:''}
-    </div>`
-    fails.forEach(l=>{html+=`<div class="mi-rl fail"><span>●</span><span>${esc(l.msg)}</span></div>`})
-    passes.forEach(l=>{html+=`<div class="mi-rl ok"><span>✓</span><span>${esc(l.msg)}</span></div>`})
-    html+=`</div>`
-  }
-
-  // SYSTEM LOG
-  if(r?.system_log?.length){
-    html+=`<div class="mi-sec"><div class="mi-sec-hdr">System Log</div>`
-    r.system_log.forEach(l=>{
-      const cls=l.code===200?'s200':l.code===0?'s0':'s500'
-      html+=`<div class="mi-sl ${cls}">[${l.code===0?'--':l.code}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`
-    })
-    html+=`</div>`
-  }
-
-  // MANUAL PROMPT (if present)
-  if(r?.manual_prompt_used){
-    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Manual Prompt Appended</div>
-    <div class="mi-manual">${esc(r.manual_prompt_used)}</div></div>`
-  }
-
-  // FULL PROMPT
   if(r?.prompt_used){
-    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Full Prompt Sent to Model</div>
-    <div class="mi-prompt">${esc(r.prompt_used)}</div></div>`
+    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Full Prompt</div><div class="mi-prompt">${esc(r.prompt_used)}</div></div>`
   }
-
-  // PARAMS JSON
-  if(p){
-    html+=`<div class="mi-sec"><div class="mi-sec-hdr">Params Used (JSON)</div>
-    <div class="mi-params">${esc(JSON.stringify(filterDisplayParams(p),null,2))}</div></div>`
-  }
-
-  if(r?.fatal_error){
-    html+=`<div class="mi-sec"><div class="mi-sec-hdr" style="color:var(--red)">Fatal Error</div>
-    <div style="font-family:var(--mono);font-size:.65rem;color:var(--red)">${esc(r.fatal_error)}</div></div>`
-  }
-
-  document.getElementById('miData').innerHTML=html||'<div style="font-family:var(--mono);font-size:.65rem;color:var(--muted);padding:.5rem 0">No data</div>'
+  document.getElementById('miData').innerHTML = html||'<div style="font-family:var(--mono);font-size:.65rem;color:var(--muted);padding:.5rem 0">No data</div>'
   document.getElementById('modal').classList.add('open')
 }
 
-function closeModal(){ document.getElementById('modal').classList.remove('open') }
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal() })
+function closeModal() { document.getElementById('modal').classList.remove('open') }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal() })
 
-// ── LOG PANEL ─────────────────────────────────────────────────
-function logResult(r){
+async function exportPPT() {
+  const results = Object.values(resStore)
+  if(!results.length){alert('No results to export');return}
+  const sessionName = document.getElementById('sessionName').value || 'Minirama-Session'
+  gLog('📊 Building PPT…','accent')
+  try {
+    const res = await fetch(EXPAPI, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({results, session_name: sessionName})})
+    if(!res.ok) throw new Error('HTTP '+res.status)
+    const data = await res.json()
+    if(data.pptx_b64){
+      const a=document.createElement('a')
+      a.href='data:application/vnd.openxmlformats-officedocument.presentationml.presentation;base64,'+data.pptx_b64
+      a.download=sessionName.replace(/\s+/g,'-')+'-'+Date.now()+'.pptx'
+      a.click()
+      gLog('✓ PPT exported','ok')
+    }
+  } catch(e){ gLog('✗ Export failed: '+e.message,'err') }
+}
+
+function logResult(r) {
   const panel=document.getElementById('logPanel')
   const sec=document.createElement('div')
-  const st=deriveStatus(r)
-  sec.className='log-sec '+st.cls
+  const st=deriveStatus(r); sec.className='log-sec '+st.cls
   let h=`<div class="log-sec-hdr">${esc(r.name)} — ${esc(st.text)}</div>`
   if(r.fatal_error) h+=`<div class="ll err">✗ FATAL: ${esc(r.fatal_error)}</div>`
-  if(r.manual_prompt_used) h+=`<div class="ll accent">  ↳ manual prompt appended</div>`
   ;(r.render_log||[]).forEach(l=>{h+=`<div class="ll ${l.ok?'ok':'warn'}">  ${l.ok?'✓':'●'} ${esc(l.msg)}</div>`})
   ;(r.system_log||[]).forEach(l=>{h+=`<div class="ll ${l.code===200?'ok':l.code===0?'dim':'err'}">  [${l.code===0?'--':l.code}] ${esc(l.stage)}${l.err?': '+esc(String(l.err)):''}</div>`})
   sec.innerHTML=h; panel.appendChild(sec); panel.scrollTop=panel.scrollHeight
 }
-function gLog(msg,type=''){
-  const p=document.getElementById('logPanel'),el=document.createElement('div')
-  el.className='ll '+type; el.textContent=msg; p.appendChild(el); p.scrollTop=p.scrollHeight
-}
-function clearLog(){ document.getElementById('logPanel').innerHTML='' }
+function gLog(msg,type=''){const p=document.getElementById('logPanel'),el=document.createElement('div');el.className='ll '+type;el.textContent=msg;p.appendChild(el);p.scrollTop=p.scrollHeight}
+function clearLog(){document.getElementById('logPanel').innerHTML=''}
+function setG(state,text){document.getElementById('gDot').className='status-dot '+state;document.getElementById('gStatus').textContent=text}
+function setDot(id,state){const d=document.getElementById('dot-'+id);if(d)d.className='cdot '+state}
+function dl(name){const b=imgStore[name];if(!b)return;const a=document.createElement('a');a.href='data:image/jpeg;base64,'+b;a.download='minirama-'+name.replace(/\s+/g,'-')+'-'+Date.now()+'.jpg';a.click()}
+function openFull(name){const b=imgStore[name];if(!b)return;const w=window.open();w.document.write('<html><head><title>'+esc(name)+'</title><style>*{margin:0;padding:0;background:#111}img{max-width:100vw;max-height:100vh;object-fit:contain;display:block}</style></head><body><img src="data:image/jpeg;base64,'+b+'"></body></html>');w.document.close()}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-// ── UTILS ─────────────────────────────────────────────────────
-function setG(state,text){ document.getElementById('gDot').className='status-dot '+state; document.getElementById('gStatus').textContent=text }
-function setDot(id,state){ const d=document.getElementById('dot-'+id); if(d) d.className='cdot '+state }
-function dl(name){ const b=imgStore[name]; if(!b) return; const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+b; a.download='minirama-'+name.replace(/\s+/g,'-')+'-'+Date.now()+'.jpg'; a.click() }
-
-function exportResult(name){
-  const r=resStore[name]; if(!r) return
-  const p={exported_at:new Date().toISOString(),name:r.name,prompt_used:r.prompt_used,manual_prompt_used:r.manual_prompt_used||null,params_used:r.params_used||null,render_log:r.render_log||[],system_log:r.system_log||[],fatal_error:r.fatal_error||null,image_b64:r.image_b64||null}
-  const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'})
-  const url=URL.createObjectURL(blob)
-  const a=document.createElement('a')
-  a.href=url
-  a.download='minirama-export-'+name.replace(/\s+/g,'-')+'-'+Date.now()+'.json'
-  a.click()
-  URL.revokeObjectURL(url)
-  gLog('Exported: '+name,'info')
-}
-function openFull(name){ const b=imgStore[name]; if(!b) return; const w=window.open(); w.document.write('<html><head><title>'+esc(name)+'</title><style>*{margin:0;padding:0;background:#111}img{max-width:100vw;max-height:100vh;object-fit:contain;display:block}</style></head><body><img src="data:image/jpeg;base64,'+b+'"></body></html>'); w.document.close() }
-function esc(s){ return String(s??'').replace(/&/g,'\x26amp;').replace(/</g,'\x26lt;').replace(/>/g,'\x26gt;').replace(/"/g,'\x26quot;') }
-
-// ── EXPORT PPT ───────────────────────────────────────────────
-async function exportPPT(){
-  const keys=Object.keys(resStore)
-  if(!keys.length){alert('No results to export');return}
-  const title=document.getElementById('exportTitle').value||'Minirama-Session'
-  gLog('📊 Building PPT — '+keys.length+' slides…','accent')
-  document.getElementById('exportPptBtn').disabled=true
-  document.getElementById('exportPptBtn').textContent='Building…'
-  try{
-    const results=keys.map(k=>resStore[k])
-    const res=await fetch('/api/v1/export',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({results,title})
-    })
-    if(!res.ok){const e=await res.json();throw new Error(e.error||'Export failed')}
-    const blob=await res.blob()
-    const url=URL.createObjectURL(blob)
-    const a=document.createElement('a')
-    a.href=url
-    a.download=title.replace(/\s+/g,'-')+'-'+Date.now()+'.pptx'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    gLog('✓ PPT downloaded — '+keys.length+' slides','ok')
-  }catch(e){
-    gLog('✗ Export failed: '+e.message,'err')
-  }finally{
-    document.getElementById('exportPptBtn').disabled=false
-    document.getElementById('exportPptBtn').textContent='📊 Export PPT'
-  }
-}
-
-// ── SEED CASES ────────────────────────────────────────────────
-addCase({name:'baseline',   preset:'gen_only', lighting:'clean_daylight'})
-addCase({name:'full-styled',preset:'full'})
-addCase({name:'high-pop',   preset:'full', lighting:'high_pop_light', landscaping:'lush_landscape'})
+// Seed cases
+addCase({name:'case-1', preset:'summer'})
+addCase({name:'case-2', preset:'spring'})
+addCase({name:'case-3', preset:'fire'})
+addCase({name:'case-4', preset:'abandoned'})
+addCase({name:'case-5', preset:'flood'})
 </script>
 </body>
 </html>

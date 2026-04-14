@@ -1,12 +1,13 @@
 // lib/v1/generate.ts — router only
-// Dispatches to the correct lighting generator based on lighting_preset.
-// All prompt assembly, pre-processing, and generation logic lives in generators/.
-
 import { BaseParams, GenerateResult } from './generators/base'
-import { generateMidday } from './generators/midday'
-import { generateSpring } from './generators/spring'
-import { generateDusk }   from './generators/dusk'
-import { generateNight }  from './generators/night'
+import { generateSummer }    from './generators/summer'
+import { generateSpring }    from './generators/spring'
+import { generateFall }      from './generators/fall'
+import { generateWinter }    from './generators/winter'
+import { generateFlood }     from './generators/flood'
+import { generateFire }      from './generators/fire'
+import { generateAbandoned } from './generators/abandoned'
+import { generateExplosion } from './generators/explosion'
 
 export type Params = BaseParams
 
@@ -15,10 +16,14 @@ const GENERATORS: Record<string, (input: {
   openaiApiKey:   string
   params:         BaseParams
 }) => Promise<GenerateResult>> = {
-  midday_summer: generateMidday,
-  soft_spring:   generateSpring,
-  dusk_evening:  generateDusk,
-  night:         generateNight,
+  summer:    generateSummer,
+  spring:    generateSpring,
+  fall:      generateFall,
+  winter:    generateWinter,
+  flood:     generateFlood,
+  fire:      generateFire,
+  abandoned: generateAbandoned,
+  explosion: generateExplosion,
 }
 
 export async function generateDiorama(input: {
@@ -26,17 +31,15 @@ export async function generateDiorama(input: {
   openaiApiKey:   string
   params?:        Params
 }): Promise<{ imageB64: string; promptUsed: string; manualPromptUsed: string | null }> {
-  const params  = input.params || {}
+  const params    = input.params || {}
+  const preset    = params.preset || 'summer'
+  const generator = GENERATORS[preset] || generateSummer
 
-  // Support both lighting_preset (new) and lighting (legacy UI key)
-  const preset  = params.lighting_preset || params.lighting || 'midday_summer'
-  const generator = GENERATORS[preset] || generateMidday
-
-  console.log(`[generate] Mode: ${preset}`)
+  console.log(`[generate] Preset: ${preset}`)
 
   return generator({
     sourceImageB64: input.sourceImageB64,
     openaiApiKey:   input.openaiApiKey,
-    params:         { ...params, lighting_preset: preset },
+    params:         { ...params, preset },
   })
 }

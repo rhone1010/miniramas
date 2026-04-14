@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       let current: string | null = null
       let promptUsed       = ''
       let manualPromptUsed: string | null = null
-      const lightingPreset = (v.lighting_preset || v.lighting || 'midday_summer') as string
+      const lightingPreset = (v.preset || 'summer') as string
 
       // ── STAGE 1: GENERATE ─────────────────────────────────────
       try {
@@ -38,22 +38,6 @@ export async function POST(req: NextRequest) {
         manualPromptUsed = generated.manualPromptUsed ?? null
         system_log.push({ code: 200, stage: 'generate' })
 
-        // ── AUTO-RETRY FOR DARK MODES ────────────────────────────
-        // Night/dusk occasionally generate near-black. Retry once here
-        // where analyzeImage is already imported and working.
-        if (lightingPreset === 'night' || lightingPreset === 'dusk_evening') {
-          const checkRaw = await analyzeImage(current!)
-          if (checkRaw.brightness < 25) {
-            console.log(`[route] ${lightingPreset} retry — too dark (${Math.round(checkRaw.brightness)})`)
-            const retried = await generateDiorama({ sourceImageB64, openaiApiKey, params: v })
-            if (retried.imageB64) {
-              current          = retried.imageB64
-              promptUsed       = retried.promptUsed
-              manualPromptUsed = retried.manualPromptUsed ?? null
-              system_log.push({ code: 200, stage: 'generate_retry' })
-            }
-          }
-        }
       } catch (e: any) {
         system_log.push({ code: 500, stage: 'generate', err: e.message })
         results.push({
@@ -121,13 +105,10 @@ export async function POST(req: NextRequest) {
       if (analysis) {
         const b        = Math.round(analysis.brightness)
         const c        = Math.round(analysis.contrast)
-        const darkMode = lightingPreset === 'night' || lightingPreset === 'dusk_evening'
-        const dimFloor = darkMode ? 20 : 80
+        const dimFloor = 80
 
         if (analysis.brightness < dimFloor) {
           render_log.push({ ok: false, msg: `image too dim — brightness ${b} (check generation)` })
-        } else if (darkMode) {
-          render_log.push({ ok: true, msg: `brightness ${b} — dark mode, check image visually` })
         } else if (analysis.brightness > 210) {
           render_log.push({ ok: false, msg: `image overexposed — brightness ${b}` })
         } else {

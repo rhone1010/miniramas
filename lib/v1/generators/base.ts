@@ -2,29 +2,21 @@ import sharp from 'sharp'
 import OpenAI, { toFile } from 'openai'
 
 // ── SHARED TYPES ──────────────────────────────────────────────
-export type LightingPreset = 'midday_summer' | 'soft_spring' | 'dusk_evening' | 'night'
+export type Preset =
+  | 'summer' | 'spring' | 'fall' | 'winter'
+  | 'flood'  | 'fire'   | 'abandoned' | 'explosion'
 
 export type BaseParams = {
-  lighting_preset?:  LightingPreset | string
-  landscaping?:      'sparse' | 'moderate' | 'lush' | string
-  interior_lights?:  boolean
-  customPrompt?:     string
-  manual_prompt?:    string
-  structureBlock?:   string
+  preset?:        Preset | string
+  customPrompt?:  string
+  manual_prompt?: string
+  structureBlock?: string
   // pipeline params — not injected into prompt
-  brightness?:       number
-  expand?:           boolean
-  name?:             string
-  _preset?:          string
-  _expStr?:          string
-  // legacy UI compat
-  lighting?:         string
-  color?:            string
-  detail?:           string
-  environment_style?: string
-  prop_density?:     string
-  background_structure?: string
-  interior_lighting?: string
+  brightness?:    number
+  expand?:        boolean
+  name?:          string
+  _preset?:       string
+  _expStr?:       string
 }
 
 export type GenerateResult = {
@@ -34,9 +26,6 @@ export type GenerateResult = {
 }
 
 // ── STRUCTURE BLOCK ───────────────────────────────────────────
-// Source image is ground truth for architecture only.
-// Everything else — lighting, landscaping, camera — is overridden.
-
 export const STRUCTURE_BLOCK = `
 SOURCE IMAGE IS THE GROUND TRUTH FOR ARCHITECTURE ONLY:
 - Exact structure geometry, proportions, layout, and architectural identity
@@ -52,8 +41,6 @@ IGNORE FROM SOURCE — DO NOT DERIVE THESE FROM THE SOURCE IMAGE:
 `.trim()
 
 // ── CAMERA BLOCK ──────────────────────────────────────────────
-// Consistent across all four lighting modes.
-
 export const CAMERA_BLOCK = `
 CAMERA (MANDATORY — IGNORE SOURCE CAMERA ANGLE COMPLETELY):
 The source photo camera angle is irrelevant — do not reproduce it.
@@ -65,41 +52,42 @@ Do not use any street-level, eye-level, or facade-facing angle from the source p
 `.trim()
 
 // ── SCALE BLOCK ───────────────────────────────────────────────
-// House-to-base ratio and tree framing rules.
-
 export const SCALE_BLOCK = `
 SCALE AND SPACING (CRITICAL):
 The house occupies NO MORE than 60-70% of the diorama base diameter.
 Visible landscaped ground surrounds the house on all sides of the base.
 The full circular base perimeter must always be visible — never cropped.
-Trees ALWAYS frame the left, right, and rear of the base — mandatory, never optional.
+Trees always frame the left, right, and rear of the base — mandatory.
+`.trim()
+
+// ── LIGHTING BLOCK (locked to midday for all presets) ─────────
+export const LIGHTING_BLOCK = `
+LIGHTING: BRIGHT NATURAL DAYLIGHT
+Light source positioned above and behind camera — front facade fully and directly illuminated.
+Strong directional sunlight with crisp shadow edges on trim, moldings, railings, and eaves.
+High contrast, bright clean exposure, neutral-warm color temperature.
+Strong specular highlights on glass, polished wood, and resin surfaces.
+The diorama is the brightest, most defined element in the frame.
+`.trim()
+
+// ── STYLE BLOCK ───────────────────────────────────────────────
+export const STYLE_BLOCK = `
+STYLE:
+Museum-quality architectural scale model — not a toy.
+Full structural fidelity with realistic materials: wood, resin, glass, foliage.
+The house is shiny and handcrafted — premium collectible quality.
 `.trim()
 
 // ── SOURCE PRE-PROCESSING ─────────────────────────────────────
-// Brightness pre-lift for daylight modes so model doesn't anchor
-// to overcast source and generate dim output.
-// Dark modes (dusk/night) skip lift — model generates its own mood.
-
-export async function prepareSourceImage(
-  sourceB64: string,
-  lightingPreset?: string
-): Promise<Buffer> {
+export async function prepareSourceImage(sourceB64: string): Promise<Buffer> {
   const sourceBuf = Buffer.from(sourceB64, 'base64')
-  const darkMode  = lightingPreset === 'night' || lightingPreset === 'dusk_evening'
 
-  if (darkMode) {
-    console.log(`[generate] Dark mode (${lightingPreset}) — no pre-lift`)
-    return sourceBuf
-  }
-
-  // Brightness pre-lift for daylight modes only.
-  // Color is preserved — model needs it for accurate material rendering.
   const stats     = await sharp(sourceBuf).greyscale().stats()
   const srcBright = stats.channels[0].mean
-  const target    = lightingPreset === 'soft_spring' ? 150 : 165
+  const target    = 165
   const preLift   = srcBright < target ? Math.min(target / srcBright, 2.5) : 1.0
 
-  console.log(`[generate] Source brightness: ${Math.round(srcBright)} — target: ${target} — lift: ${preLift.toFixed(2)} — mode: ${lightingPreset || 'default'}`)
+  console.log(`[generate] Source brightness: ${Math.round(srcBright)} — lift: ${preLift.toFixed(2)}`)
 
   if (preLift > 1.0) {
     return sharp(sourceBuf).modulate({ brightness: preLift }).png().toBuffer()
@@ -108,28 +96,23 @@ export async function prepareSourceImage(
 }
 
 // ── API CALL ──────────────────────────────────────────────────
-// Shared image generation call used by all lighting generators.
-
 export async function callGenerateAPI(
   sourceB64:    string,
   prompt:       string,
   openaiApiKey: string
 ): Promise<string> {
   const openai = new OpenAI({ apiKey: openaiApiKey })
-
-  const file = await toFile(
+  const file   = await toFile(
     Buffer.from(sourceB64, 'base64'),
     'source.png',
     { type: 'image/png' }
   )
-
   const res = await openai.images.edit({
     model:  'gpt-image-1',
     image:  file,
     prompt,
     size:   '1024x1024',
   })
-
   const b64 = res.data?.[0]?.b64_json
   if (!b64) throw new Error('generate_failed')
   return b64
