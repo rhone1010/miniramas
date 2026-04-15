@@ -521,15 +521,19 @@ async function exportPPT() {
   try {
     const res = await fetch(EXPAPI, {method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({results, session_name: sessionName})})
-    if(!res.ok) throw new Error('HTTP '+res.status)
-    const data = await res.json()
-    if(data.pptx_b64){
-      const a=document.createElement('a')
-      a.href='data:application/vnd.openxmlformats-officedocument.presentationml.presentation;base64,'+data.pptx_b64
-      a.download=sessionName.replace(/\s+/g,'-')+'-'+Date.now()+'.pptx'
-      a.click()
-      gLog('✓ PPT exported','ok')
+    if(!res.ok) {
+      const errText = await res.text().catch(()=>'unknown error')
+      throw new Error('HTTP '+res.status+' — '+errText.slice(0,100))
     }
+    // Always treat as binary — export route returns raw PPTX
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = sessionName.replace(/\s+/g,'-')+'-'+Date.now()+'.pptx'
+    a.click()
+    setTimeout(()=>URL.revokeObjectURL(url), 1000)
+    gLog('✓ PPT exported','ok')
   } catch(e){ gLog('✗ Export failed: '+e.message,'err') }
 }
 

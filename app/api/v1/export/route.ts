@@ -107,10 +107,10 @@ export async function POST(req: NextRequest) {
       const paramText = [
         'Pipeline:     ' + (p._preset || '-'),
         'Landscaping:  ' + (p.landscaping || '-'),
-        'Lighting:     ' + (p.lighting_preset || p.lighting || '-'),
+        'Lighting:     ' + (p.preset || p.lighting_preset || p.lighting || '-'),
         'Color:        ' + (p.color || '-'),
         'Detail:       ' + (p.detail || '-'),
-        'Brightness:   ' + (p.brightness ?? '-'),
+        'Brightness:   ' + (p.brightness ?? 'auto'),
         'Expand:       ' + (p.expand ? 'yes' : 'no'),
         'Env Style:    ' + (p.environment_style || '-'),
         'Background:   ' + (p.background_structure || '-'),
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Slide 2: Prompts
-      const modSummary = [p.lighting_preset||p.lighting, p.landscaping, p.interior_lights?'interior-lights':null, p.color, p.detail
+      const modSummary = [p.preset||p.lighting_preset||p.lighting, p.landscaping, p.interior_lights?'interior-lights':null, p.color, p.detail
       ].filter(Boolean).join(' | ')
 
       const layers = [

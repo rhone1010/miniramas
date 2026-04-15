@@ -15,10 +15,21 @@ const BRIGHTNESS = 1.29
 
 // Mode-aware boost — dark modes need more lift since they generate darker
 const MODE_BOOST: Record<string, number> = {
+  // legacy lighting presets
   night:         1.65,
   dusk_evening:  1.45,
   midday_summer: 1.25,
   soft_spring:   1.20,
+  // season presets
+  summer:        1.25,
+  spring:        1.20,
+  fall:          1.22,
+  winter:        1.20,
+  // disaster presets — spotlight style, lift subject only
+  fire:          1.45,
+  abandoned:     1.40,
+  flood:         1.35,
+  explosion:     1.45,
 }
 
 export async function applyLevels(input: {

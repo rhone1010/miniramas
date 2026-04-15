@@ -1,12 +1,22 @@
-import { BaseParams, GenerateResult, STRUCTURE_BLOCK, CAMERA_BLOCK, SCALE_BLOCK, LIGHTING_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI } from './base'
+import { BaseParams, GenerateResult, STRUCTURE_BLOCK, CAMERA_BLOCK, SCALE_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI } from './base'
 
 const LIGHTING_OVERRIDE = `
-LIGHTING: DRAMATIC SPOTLIGHT — NOT BRIGHT DAYLIGHT
-This is NOT a sunny daytime scene. Use a single dramatic spotlight source from above.
-Strong directional light illuminates key areas — bright lit zones fade into deep shadow.
-Unlit areas fall into near-darkness. High contrast between highlights and shadow.
-The overall image reads as dark and moody — light reveals selectively, not universally.
-Glowing embers and small residual fires provide warm orange accent light from within.
+LIGHTING — IGNORE ALL SOURCE IMAGE LIGHTING COMPLETELY:
+A single overhead spotlight of extreme intensity — as bright as direct sunlight — illuminates the diorama from above.
+The spotlight bleaches the highest surfaces near-white and casts hard crisp shadows straight down.
+The falloff is dramatic but gradual — bright top, strong shadow at sides, soft ambient at the base.
+The overall diorama reads like an overcast bright day — fully readable in all detail, not dim, not nighttime.
+The room ambient is warm smoky amber — like looking through haze at a fire in the distance.
+The diorama is the brightest element in the frame — lit like a stage set, the rest of the room in shadow.
+`.trim()
+
+const ROOM = `
+ROOM AND ENVIRONMENT — THE ROOM IS THE INSIDE OF THE BURNT HOUSE:
+The room the diorama sits in has itself been damaged by the same fire — charring on walls, burnt window frames, smoke haze.
+Strong directional shadows from the overhead spotlight fall across the room walls — dramatic but fully readable.
+The desk surface is charred like a burnt log — black, deeply textured with fire damage, grain still visible in places like islands.
+A large puddle of water covers part of the charred desk — perfectly reflecting the burnt diorama above, fragmented and beautiful.
+The room is warm amber and smoky — same fire-damaged environment as the model, just larger and more ruined.
 `.trim()
 
 const DISASTER = `
@@ -14,21 +24,10 @@ DISASTER: FIRE — AFTERMATH
 The fire raged hours ago. The building is partially destroyed, still smoldering.
 Small fires still burning in sections — orange embers glowing through collapsed walls.
 The roof has partially collapsed — exposed charred timber beams, black and skeletal.
-Some walls have burnt through entirely — open holes revealing dark interior beyond.
-Remaining walls are deeply charred, blackened, with soot streaking upward from every opening.
-Windows are all blown out — dark void frames with melted and shattered glass remnants.
-Twisted metal, collapsed sections, and structural failure visible throughout.
-The landscaping is completely scorched — black ash covering everything, charred stumps.
-A sense of violent recent destruction — raw, devastating, still hot.
-`.trim()
-
-const ROOM = `
-ROOM AND ENVIRONMENT:
-The room itself has suffered fire damage — smoke-blackened walls, ash on every surface.
-Ember-orange light spills through the windows from the still-burning sections of the house.
-The desk surface is coated in fine ash. Burnt furniture fragments visible in background.
-The room is dim and smoky — dramatic spotlight catches the diorama from above.
-Deep shadows surround the scene. The room feels like it belongs to the same destroyed house.
+Some walls have burnt through entirely — large gaping holes revealing charred timbers at skewed angles.
+Remaining walls deeply charred, blackened, soot streaking upward from every opening.
+Windows all blown out — dark void frames with melted and shattered glass remnants.
+Landscaping completely scorched — black ash covering everything, charred stumps where trees stood.
 `.trim()
 
 function buildPrompt(params: BaseParams): string {

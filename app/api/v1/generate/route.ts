@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       let current: string | null = null
       let promptUsed       = ''
       let manualPromptUsed: string | null = null
-      const lightingPreset = (v.preset || 'summer') as string
+      const lightingPreset = (v.preset || v.lighting_preset || 'summer') as string
 
       // ── STAGE 1: GENERATE ─────────────────────────────────────
       try {
