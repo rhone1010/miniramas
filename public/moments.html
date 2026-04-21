@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miniscape · Moments</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Jost:wght@200;300;400;500&family=JetBrains+Mono:wght@400&display=swap');
+:root{--ink:#12100E;--cream:#F5F0E8;--gold:#B8924A;--gold-light:#D4AC6E;--teal:#1D9E75;--teal-dark:#0F6E56;--muted:#7A6F5E;--dim:#B0A898;--border:rgba(245,240,232,0.12);--surface:rgba(245,240,232,0.06);--serif:'Cormorant Garamond',serif;--sans:'Jost',sans-serif;--mono:'JetBrains Mono',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:flex;flex-direction:column}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.topbar{height:52px;background:rgba(18,16,14,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.25rem;gap:.75rem;flex-shrink:0}
+.home-link{padding:4px 10px;border:1px solid var(--border);border-radius:4px;color:var(--dim);font-size:.68rem;font-family:var(--mono);text-decoration:none;transition:all .15s}
+.home-link:hover{border-color:var(--gold);color:var(--gold-light)}
+.logo{font-family:var(--serif);font-size:1.1rem;color:var(--cream)}
+.logo span{color:var(--gold);font-style:italic}
+.logo-badge{font-size:.55rem;background:rgba(184,146,74,.15);color:var(--gold);border:1px solid rgba(184,146,74,.25);padding:2px 7px;border-radius:10px;font-family:var(--sans);font-weight:500;margin-left:6px;vertical-align:middle}
+.tb-div{width:1px;height:18px;background:var(--border);flex-shrink:0}
+.upload-slot{display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.72rem;color:var(--dim);font-family:var(--sans);transition:all .15s}
+.upload-slot:hover{border-color:var(--gold-light);color:var(--cream)}
+.upload-slot.has-file{border-color:var(--teal);color:var(--teal);background:rgba(29,158,117,.1)}
+.upload-slot input{display:none}
+.status-wrap{margin-left:auto;display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.65rem;color:var(--dim)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15);flex-shrink:0}
+.status-dot.running{background:var(--gold-light);animation:pulse 1s infinite}
+.status-dot.done{background:var(--teal)}
+.layout{display:grid;grid-template-columns:480px 1fr;flex:1;overflow:hidden;min-height:0}
+.left{background:rgba(18,16,14,.6);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.panel-hdr{padding:.6rem .9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;flex-shrink:0}
+.panel-title{font-size:.62rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.scenes-list{flex:1;overflow-y:auto;padding:.75rem}
+.scene-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:1rem}
+.scene-btn{padding:20px 10px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:5px}
+.scene-btn:hover{border-color:var(--gold-light);background:rgba(184,146,74,.06);transform:translateY(-1px)}
+.scene-btn.active{border-color:var(--teal);background:rgba(29,158,117,.12)}
+.sb-icon{font-size:2rem}.sb-label{font-size:.85rem;font-weight:500;color:var(--cream)}.sb-sub{font-size:.6rem;color:var(--muted);font-family:var(--mono)}
+.scene-btn.active .sb-label{color:var(--teal)}
+.notes-area{padding:.75rem;border-top:1px solid var(--border);flex-shrink:0}
+.notes-label{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;display:block}
+.notes-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;color:var(--cream);font-family:var(--mono);font-size:.63rem;padding:6px 8px;outline:none;resize:none;min-height:52px;line-height:1.5;transition:border-color .15s}
+.notes-input:focus{border-color:var(--teal)}
+.gen-btn{width:100%;margin-top:.5rem;padding:8px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-family:var(--sans);font-size:.8rem;font-weight:500;cursor:pointer;transition:background .2s}
+.gen-btn:hover{background:var(--teal-dark)}
+.gen-btn:disabled{opacity:.35;cursor:not-allowed}
+.center{display:flex;flex-direction:column;overflow:hidden;background:var(--ink)}
+.center-hdr{padding:.6rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;background:rgba(18,16,14,.8);flex-shrink:0}
+.results-grid{flex:1;overflow-y:auto;padding:.75rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;align-content:start}
+.rc{background:rgba(245,240,232,.04);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeIn .3s ease}
+.rc.done{border-color:var(--teal)}.rc.error{border-color:#E24B4A}
+.rc-img{aspect-ratio:1;background:rgba(245,240,232,.03);position:relative;overflow:hidden;cursor:zoom-in;display:flex;align-items:center;justify-content:center}
+.rc-img img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.rc-spinner{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);font-size:.72rem}
+.spin{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
+.rc-body{padding:10px 12px}
+.rc-name{font-size:.82rem;font-weight:400;color:var(--cream);margin-bottom:6px}
+.rc-btns{display:flex;gap:4px}
+.rc-btn{padding:4px 9px;border:1.5px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-family:var(--sans);font-size:.65rem;cursor:pointer;transition:all .15s}
+.rc-btn:hover{border-color:var(--teal);color:var(--teal)}
+.rc-btn.save{background:var(--teal);border-color:var(--teal);color:#fff}
+.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:1rem;text-align:center}
+.empty-icon{font-size:3rem;opacity:.25}.empty-title{font-family:var(--serif);font-size:1.3rem;font-weight:300;color:var(--muted)}
+.empty-sub{font-size:.78rem;color:var(--dim);max-width:300px;line-height:1.7}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="home-link" href="index.html">← Home</a>
+  <div class="tb-div"></div>
+  <div class="logo">mini<span>scape</span> <span class="logo-badge">MOMENTS</span></div>
+  <div class="tb-div"></div>
+  <label class="upload-slot" id="slot1"><span>👤</span><span id="st1">Upload a photo</span><input type="file" id="file1" accept="image/*" onchange="slotChange(this)"></label>
+  <div class="status-wrap"><div class="status-dot" id="gDot"></div><span id="gStatus">ready</span></div>
+</div>
+<div class="layout">
+  <div class="left">
+    <div class="panel-hdr"><span class="panel-title">Scene Type</span></div>
+    <div class="scenes-list">
+      <div class="scene-grid">
+        <button class="scene-btn active" onclick="selectScene('wedding')" id="sc-wedding"><span class="sb-icon">💒</span><span class="sb-label">Wedding</span><span class="sb-sub">ceremony · flowers</span></button>
+        <button class="scene-btn" onclick="selectScene('family')" id="sc-family"><span class="sb-icon">👨‍👩‍👧</span><span class="sb-label">Family</span><span class="sb-sub">portrait · home</span></button>
+        <button class="scene-btn" onclick="selectScene('graduation')" id="sc-graduation"><span class="sb-icon">🎓</span><span class="sb-label">Graduation</span><span class="sb-sub">ceremony · campus</span></button>
+        <button class="scene-btn" onclick="selectScene('birthday')" id="sc-birthday"><span class="sb-icon">🎂</span><span class="sb-label">Birthday</span><span class="sb-sub">celebration · joy</span></button>
+        <button class="scene-btn" onclick="selectScene('sports')" id="sc-sports"><span class="sb-icon">⚽</span><span class="sb-label">Sports</span><span class="sb-sub">action · team</span></button>
+        <button class="scene-btn" onclick="selectScene('memorial')" id="sc-memorial"><span class="sb-icon">🕊️</span><span class="sb-label">Memorial</span><span class="sb-sub">quiet · dignified</span></button>
+      </div>
+    </div>
+    <div class="notes-area">
+      <span class="notes-label">Notes (optional)</span>
+      <textarea class="notes-input" id="notes" placeholder="Describe specific details, mood, or special requirements…"></textarea>
+      <button class="gen-btn" id="genBtn" disabled onclick="generate()">Generate Moments</button>
+    </div>
+  </div>
+  <div class="center">
+    <div class="center-hdr"><span class="panel-title">Results</span><span id="centerMeta" style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-left:auto"></span></div>
+    <div class="results-grid" id="resultsGrid">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">👤</div>
+        <div class="empty-title">Upload a photo of a person, couple, family, or group</div>
+        <div class="empty-sub">Choose your scene setting and we'll place your people in a miniature world</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const API     = '/api/v1/moments/generate'
+const ANALYZE = '/api/v1/moments/analyze'
+let fileB64 = null, running = false, imgStore = {}, resN = 0, currentScene = null
+let detectedPeople = null, detectedGroup = null, detectedTone = null, detectedSetting = null
+
+function slotChange(input){
+  const f = input.files?.[0]; if(!f) return
+  const r = new FileReader()
+  r.onload = async e => {
+    fileB64 = e.target.result.split(',')[1]
+    document.getElementById('genBtn').disabled = false
+    document.getElementById('slot1').classList.add('has-file')
+    document.getElementById('st1').textContent = '✓ ' + (f.name.length > 14 ? f.name.slice(0,12)+'…' : f.name)
+    await analyzePeople(fileB64)
+  }
+  r.readAsDataURL(f)
+}
+
+async function analyzePeople(b64){
+  setG('running', 'analyzing people…')
+  try {
+    const res = await fetch(ANALYZE, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ image_b64: b64 })
+    })
+    const data = await res.json()
+    detectedPeople  = data.people || []
+    detectedGroup   = data.group_description || ''
+    detectedTone    = data.emotional_tone || ''
+    detectedSetting = data.setting_hint || ''
+    const count = data.people_count ?? detectedPeople.length
+    setG('done', `${count} ${count === 1 ? 'person' : 'people'} detected`)
+    document.getElementById('centerMeta').textContent = detectedGroup
+  } catch(e) {
+    setG('done', 'ready')
+  }
+}
+
+function selectScene(id){
+  currentScene = id
+  document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'))
+  document.getElementById('sc-'+id)?.classList.add('active')
+}
+
+async function generate(){
+  if(running || !fileB64) return
+  running = true
+  setG('running','generating…')
+  document.getElementById('emptyState')?.remove()
+  resN++
+  const name = (currentScene || 'scene') + '-' + resN
+  mkLoading(name)
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        source_image_b64:  fileB64,
+        scene:             currentScene,
+        notes:             document.getElementById('notes').value.trim() || undefined,
+        group_description: detectedGroup || undefined,
+        people:            detectedPeople || undefined,
+        emotional_tone:    detectedTone || undefined,
+        setting_hint:      detectedSetting || undefined,
+      })
+    })
+    if(!res.ok) throw new Error('HTTP ' + res.status)
+    const data = await res.json()
+    const r = data.result
+    if(!r?.image_b64) throw new Error('No image')
+    imgStore[name] = r.image_b64
+    mkResult(name, r.image_b64)
+    setG('done','generated')
+  } catch(e) {
+    mkError(name, e.message)
+    setG('error', e.message)
+  }
+  running = false
+}
+function mkLoading(name){const c=document.createElement('div');c.className='rc';c.id='rc-'+name;c.innerHTML=`<div class="rc-img"><div class="rc-spinner"><div class="spin"></div><div>Creating your miniscape…</div></div></div><div class="rc-body"><div class="rc-name">${name}</div></div>`;document.getElementById('resultsGrid').appendChild(c)}
+function mkResult(name,b64){const c=document.getElementById('rc-'+name);if(!c)return;c.className='rc done';c.innerHTML=`<div class="rc-img"><img src="data:image/jpeg;base64,${b64}"></div><div class="rc-body"><div class="rc-name">${name}</div><div class="rc-btns"><button class="rc-btn save" onclick="dl('${name}')">↓ Save</button></div></div>`}
+function mkError(name,err){const c=document.getElementById('rc-'+name);if(!c)return;c.className='rc error';c.innerHTML=`<div class="rc-img" style="align-items:center;justify-content:center;display:flex"><span style="color:#E24B4A;font-size:.75rem">✗ ${err}</span></div><div class="rc-body"><div class="rc-name">${name}</div></div>`}
+function setG(state,text){document.getElementById('gDot').className='status-dot '+state;document.getElementById('gStatus').textContent=text}
+function dl(name){const b=imgStore[name];if(!b)return;const a=document.createElement('a');a.href='data:image/jpeg;base64,'+b;a.download='miniscape-'+name+'.jpg';a.click()}
+</script>
+</body>
+</html>

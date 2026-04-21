@@ -1,11 +1,12 @@
-import { BaseParams, GenerateResult, STRUCTURE_BLOCK, CAMERA_BLOCK, SCALE_BLOCK, LIGHTING_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI } from './base'
+import { BaseParams, GenerateResult, STRUCTURE_BLOCK, COMPOSITION_BLOCK, SCALE_BLOCK, LIGHTING_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI , buildArchitectureBlock } from './base'
 
 const LIGHTING_OVERRIDE = `
-LIGHTING: DRAMATIC SPOTLIGHT — NOT BRIGHT DAYLIGHT
-Overcast sky with a single dramatic spotlight cutting through cloud cover from above.
-The diorama is lit with strong directional light — surrounding area falls into grey shadow.
-Water surfaces catch the light and reflect it — glinting highlights on the flood water.
-The overall image is dark and heavy — oppressive grey atmosphere with spotlight focus.
+LIGHTING: OVERCAST FLOOD LIGHT — MUTED AND STILL
+Soft overcast light — muted and heavy, filtering through grey clouds. Slightly warm undertone despite the gloom.
+The water surface reflects the grey sky — dull silver-grey, catching any light that exists.
+The ceiling light above glows dimly — its reflection visible in the still water below.
+The model on the desk is the highest point of brightness — cool grey light falls on it from above.
+Cold, still, silent — the light itself feels waterlogged.
 `.trim()
 
 const DISASTER = `
@@ -19,12 +20,15 @@ The scene feels like the water has just begun to recede — eerie, still, devast
 `.trim()
 
 const ROOM = `
-ROOM AND ENVIRONMENT:
-The desk surface has a thin film of water — reflective, slightly murky, with waterline stains on the desk legs.
-The room itself shows flood damage: damp walls with water stain marks, a grey overcast light through foggy streaked windows.
-Waterlogged floorboards or damp carpet visible. The room smells of must and river silt.
-Furniture is displaced or damaged. The atmosphere is heavy, grey, and deeply unsettling.
-The room feels like it belongs to the same flooded house — same damage, same devastation.
+ROOM AND ENVIRONMENT — THE ROOM IS SUBMERGED:
+The flood has entered the room entirely — water fills the room right up to the bottom edge of the desktop surface.
+The desk legs stand in flood water — murky brown-grey, opaque with silt, perfectly still.
+Floating on the water surface around the desk: debris drifting slowly — a waterlogged book, a wooden chair leg, dead leaves, a child's toy, a picture frame face-down.
+The water catches the grey overcast light and reflects it in dull, cold ripples.
+The room walls show waterline stains climbing several feet — tide marks recording how much higher the water was.
+Waterlogged curtains hang limp and heavy. Furniture is submerged or floating. A ceiling light still on — its reflection shimmering in the water below.
+The model sits on the desk ABOVE the water line — the diorama is the only thing not submerged, making it even more poignant.
+The room is silent, cold, and devastated — nature has claimed this space completely.
 `.trim()
 
 function buildPrompt(params: BaseParams): string {
@@ -46,11 +50,19 @@ ${SCALE_BLOCK}
 
 ${STYLE_BLOCK}
 
-${CAMERA_BLOCK}
+${COMPOSITION_BLOCK}
 `.trim()
-  return params.manual_prompt?.trim()
-    ? `${prompt}\n\nMANUAL OVERRIDE:\n${params.manual_prompt.trim()}`
+  // Inject architecture description if available
+  const archBlock = params.architectureDescription?.trim()
+    ? buildArchitectureBlock(params.architectureDescription)
+    : null
+  const finalPrompt = archBlock
+    ? prompt.replace(STRUCTURE_BLOCK, STRUCTURE_BLOCK + '\n\n' + archBlock)
     : prompt
+
+  return params.manual_prompt?.trim()
+    ? `${finalPrompt}\n\nMANUAL OVERRIDE:\n${params.manual_prompt.trim()}`
+    : finalPrompt
 }
 
 export async function generateFlood(input: {

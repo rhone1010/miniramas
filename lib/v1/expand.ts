@@ -1,95 +1,57 @@
-import OpenAI, { toFile } from 'openai'
 import sharp from 'sharp'
 
-// ── GEOMETRY ─────────────────────────────────────────────────
-// Expand 1024→1200 (+88px each side)
-// Protection zone: 975×975 centered (offset 112px each side)
-// 24px bleed gives fill real scene reference at boundary
-// RGBA mask with feathered edge
+// ── STABILITY AI OUTPAINT ─────────────────────────────────────
+// Uses stability.ai/v2beta/stable-image/edit/outpaint
+// Dedicated outpaint endpoint — expands canvas in all directions
+// while preserving the original image exactly.
+// Docs: https://platform.stability.ai/docs/api-reference#tag/Edit/paths/~1v2beta~1stable-image~1edit~1outpaint/post
 
-const ORIG_SIZE      = 1024
-const EXPANDED_SIZE  = 1200
-const PAD            = (EXPANDED_SIZE - ORIG_SIZE) / 2  // 88
-const PROTECT_SIZE   = 975
-const PROTECT_OFFSET = (EXPANDED_SIZE - PROTECT_SIZE) / 2  // 112
-const FEATHER        = 24
+const PAD_PX = 150   // pixels to add each side (~15% on 1024)
 
 export async function expandScene(input: {
   imageB64:     string
   openaiApiKey: string
   expand?:      boolean
 }): Promise<{ imageB64: string; warnings?: string[] }> {
-  if (!input.expand) {
-    return { imageB64: input.imageB64 }
-  }
+  if (!input.expand) return { imageB64: input.imageB64 }
 
-  const openai = new OpenAI({ apiKey: input.openaiApiKey })
-  const warnings: string[] = []
+  const apiKey = process.env.STABILITY_API_KEY
+  if (!apiKey) throw new Error('Missing STABILITY_API_KEY in env')
 
   const original = Buffer.from(input.imageB64, 'base64')
-  const meta     = await sharp(original).metadata()
 
-  if (meta.width !== ORIG_SIZE || meta.height !== ORIG_SIZE) {
-    warnings.push(`Source is ${meta.width}×${meta.height}, expected ${ORIG_SIZE}×${ORIG_SIZE}`)
-  }
+  // Stability outpaint requires multipart/form-data
+  const form = new FormData()
+  form.append('image',       new Blob([original], { type: 'image/jpeg' }), 'image.jpg')
+  form.append('left',        String(PAD_PX))
+  form.append('right',       String(PAD_PX))
+  form.append('up',          String(PAD_PX))
+  form.append('down',        String(PAD_PX))
+  form.append('creativity',  '0.5')   // 0=faithful to edges, 1=more creative
+  form.append('output_format', 'jpeg')
 
-  // ── STEP 1: Pad canvas to 1200×1200 ─────────────────────────
-  const padded = await sharp({
-    create: {
-      width:    EXPANDED_SIZE,
-      height:   EXPANDED_SIZE,
-      channels: 3,
-      background: { r: 128, g: 128, b: 128 },
-    },
-  })
-    .composite([{ input: original, left: PAD, top: PAD }])
-    .png()
-    .toBuffer()
-
-  // ── STEP 2: RGBA mask — white=fill, black=protect ─────────────
-  // Protection zone with 24px bleed into original for natural boundary
-  const maskSvg = Buffer.from(
-    `<svg width="${EXPANDED_SIZE}" height="${EXPANDED_SIZE}" xmlns="http://www.w3.org/2000/svg">` +
-    `<rect width="${EXPANDED_SIZE}" height="${EXPANDED_SIZE}" fill="white"/>` +
-    `<rect x="${PROTECT_OFFSET}" y="${PROTECT_OFFSET}" ` +
-    `width="${PROTECT_SIZE}" height="${PROTECT_SIZE}" fill="black"/>` +
-    `</svg>`
+  const res = await fetch(
+    'https://api.stability.ai/v2beta/stable-image/edit/outpaint',
+    {
+      method:  'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Accept':        'image/*',
+      },
+      body: form,
+    }
   )
 
-  const mask = await sharp(maskSvg)
-    .blur(FEATHER)
-    .greyscale()
-    .png()
-    .toBuffer()
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Stability outpaint failed (${res.status}): ${err.slice(0, 200)}`)
+  }
 
-  // ── STEP 3: Call gpt-image-1 for outpainting ─────────────────
-  const prompt = `
-Extend the image outward only.
+  const buf = Buffer.from(await res.arrayBuffer())
+  const b64 = buf.toString('base64')
 
-Preserve the existing image EXACTLY:
-- do not modify the diorama
-- do not change lighting
-- do not change brightness or contrast
-- do not alter colors or materials
+  const meta = await sharp(buf).metadata()
+  console.log(`[expand] Stability outpaint done — output: ${meta.width}×${meta.height} (+${PAD_PX}px each side)`)
 
-Only generate new outer areas:
-- extend the tabletop
-- extend the blurred background
-
-The original subject must remain pixel-identical.
-`.trim()
-
-  const res = await openai.images.edit({
-    model:  'gpt-image-1',
-    image:  await toFile(padded, 'expanded.png', { type: 'image/png' }),
-    mask:   await toFile(mask,   'mask.png',     { type: 'image/png' }),
-    prompt,
-    size:   '1024x1024',
-  })
-
-  const b64 = res.data?.[0]?.b64_json
-  if (!b64) throw new Error('expand_failed')
-
-  console.log(`[expand] Done — ${ORIG_SIZE}→${EXPANDED_SIZE}px`)
-  return { imageB64: b64, warnings }
+  return { imageB64: b64 }
 }

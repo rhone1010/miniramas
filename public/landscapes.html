@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miniscape · Landscapes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@200;300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+:root{
+  --ink:#12100E;--cream:#F5F0E8;--gold:#B8924A;--gold-light:#D4AC6E;
+  --teal:#1D9E75;--teal-dark:#0F6E56;--teal-light:#5DCAA5;--muted:#7A6F5E;--dim:#B0A898;
+  --border:rgba(245,240,232,0.12);--border2:rgba(245,240,232,0.2);
+  --surface:rgba(245,240,232,0.05);--surface2:rgba(245,240,232,0.09);
+  --serif:'Cormorant Garamond',serif;--sans:'Jost',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:flex;flex-direction:column;
+  background-image:radial-gradient(ellipse 70% 40% at 50% 0%, rgba(29,158,117,.05) 0%, transparent 60%)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes detecting{0%{width:0%}100%{width:100%}}
+
+/* TOPBAR */
+.topbar{height:52px;background:rgba(18,16,14,.95);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 1.25rem;gap:.75rem;flex-shrink:0}
+.home-link{padding:4px 10px;border:1px solid var(--border);border-radius:4px;color:var(--dim);
+  font-size:.68rem;font-family:var(--mono);text-decoration:none;transition:all .15s}
+.home-link:hover{border-color:var(--gold);color:var(--gold-light)}
+.logo{font-family:var(--serif);font-size:1.1rem;color:var(--cream)}
+.logo span{color:var(--gold);font-style:italic}
+.logo-badge{font-size:.55rem;background:rgba(29,158,117,.15);color:var(--teal);
+  border:1px solid rgba(29,158,117,.25);padding:2px 7px;border-radius:10px;
+  font-family:var(--sans);font-weight:500;margin-left:6px;vertical-align:middle}
+.tb-div{width:1px;height:18px;background:var(--border);flex-shrink:0}
+
+.upload-area{display:flex;align-items:center;gap:6px}
+.upload-slot{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface);
+  border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.74rem;
+  color:var(--dim);font-family:var(--sans);transition:all .15s}
+.upload-slot:hover{border-color:var(--gold-light);color:var(--cream)}
+.upload-slot.has-file{border-color:var(--teal);color:var(--teal);background:rgba(29,158,117,.08)}
+.upload-slot input{display:none}
+
+.run-all-btn{padding:7px 16px;background:var(--teal);color:#fff;border:none;border-radius:6px;
+  font-family:var(--sans);font-size:.78rem;font-weight:500;cursor:pointer;transition:background .2s;flex-shrink:0}
+.run-all-btn:hover:not(:disabled){background:var(--teal-dark)}
+.run-all-btn:disabled{opacity:.35;cursor:not-allowed}
+
+.status-wrap{margin-left:auto;display:flex;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:.65rem;color:var(--dim)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15);flex-shrink:0}
+.status-dot.running{background:var(--gold-light);animation:pulse 1s infinite}
+.status-dot.done{background:var(--teal)}
+.status-dot.error{background:#E24B4A}
+.status-dot.detecting{background:var(--gold-light);animation:pulse .6s infinite}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:510px 1fr;flex:1;overflow:hidden;min-height:0}
+.left{background:rgba(18,16,14,.5);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden}
+.panel-hdr{padding:.6rem .9rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-title{font-size:.6rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.add-btn{padding:3px 10px;border:1px solid var(--border2);border-radius:4px;
+  background:transparent;color:var(--dim);font-family:var(--sans);font-size:.68rem;cursor:pointer;transition:all .15s}
+.add-btn:hover{border-color:var(--teal);color:var(--teal-light)}
+
+/* SCENE DETECT CARD */
+.detect-card{margin:.75rem;padding:.8rem;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;flex-shrink:0}
+.detect-status{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem}
+.detect-icon{font-size:1.05rem}
+.detect-label{font-size:.7rem;color:var(--dim);font-weight:300}
+.detect-result{font-family:var(--serif);font-size:1rem;color:var(--cream);font-weight:300;margin-bottom:.2rem}
+.detect-sub{font-size:.6rem;color:var(--muted);font-family:var(--mono);line-height:1.5}
+.detect-bar{height:2px;background:var(--border);border-radius:1px;margin-top:.55rem;overflow:hidden}
+.detect-bar-fill{height:100%;background:var(--teal);border-radius:1px;width:0;transition:width .1s linear}
+.detect-bar-fill.running{animation:detecting 3s ease-in-out forwards}
+
+/* VARIANT LIST */
+.variants-list{flex:1;overflow-y:auto;padding:0 .75rem .75rem}
+
+.var-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;
+  margin-bottom:7px;overflow:hidden;transition:border-color .15s}
+.var-card.running{border-color:var(--gold-light)}
+.var-card.done{border-color:var(--teal)}
+.var-card.error{border-color:#E24B4A}
+
+.var-hdr{display:flex;align-items:center;gap:7px;padding:8px 10px;cursor:pointer;user-select:none}
+.vdot{width:7px;height:7px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .2s}
+.vdot.running{background:var(--gold-light);animation:pulse 1s infinite}
+.vdot.done{background:var(--teal)}
+.vdot.error{background:#E24B4A}
+.vname{font-size:.78rem;font-weight:400;flex:1;color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vchips{display:flex;gap:3px;flex-shrink:0}
+.vchip{font-size:.54rem;padding:2px 6px;border-radius:4px;font-weight:500;white-space:nowrap;
+  background:rgba(29,158,117,.12);color:var(--teal-light);border:1px solid rgba(29,158,117,.2)}
+.vchip.pres{background:rgba(184,146,74,.12);color:var(--gold-light);border-color:rgba(184,146,74,.2)}
+.varrow{font-size:.65rem;color:var(--dim);transition:transform .15s;flex-shrink:0;margin-left:2px}
+.var-card.open .varrow{transform:rotate(90deg)}
+.vbody{display:none;padding:14px;border-top:1px solid var(--border);background:rgba(18,16,14,.3)}
+.var-card.open .vbody{display:block}
+
+.name-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
+  color:var(--cream);font-family:var(--sans);font-size:.82rem;padding:7px 10px;outline:none;
+  transition:border-color .15s;margin-bottom:12px}
+.name-input:focus{border-color:var(--teal)}
+
+/* MOOD STACK — horizontal cards, selected on top, click non-top to peel to front */
+.mood-stack{
+  position:relative;
+  height:170px;
+  margin-bottom:14px;
+  perspective:800px;
+}
+.mcard{
+  position:absolute;
+  top:0;
+  width:65%;
+  height:100%;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  background:var(--surface);
+  cursor:pointer;
+  overflow:hidden;
+  padding:0;
+  transition:transform .35s cubic-bezier(.2,.7,.3,1), border-color .25s, box-shadow .25s, filter .25s;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);
+}
+/* Stack positioning — each card slides further right and scales down */
+.mcard[data-pos="0"]{transform:translateX(0) scale(1);   left:0;   filter:brightness(1.00)}
+.mcard[data-pos="1"]{transform:translateX(0) scale(.96); left:11%; filter:brightness(.80)}
+.mcard[data-pos="2"]{transform:translateX(0) scale(.92); left:22%; filter:brightness(.62)}
+.mcard[data-pos="3"]{transform:translateX(0) scale(.88); left:33%; filter:brightness(.48)}
+.mcard.top{border-color:var(--teal);border-width:2px;box-shadow:0 4px 14px rgba(29,158,117,.25)}
+.mcard:hover{filter:brightness(1.08) !important}
+.mcard.confirmed{animation:confirmPulse .45s ease}
+@keyframes confirmPulse{
+  0%  {box-shadow:0 0 0 0 rgba(29,158,117,.55)}
+  60% {box-shadow:0 0 0 12px rgba(29,158,117,0)}
+  100%{box-shadow:0 4px 14px rgba(29,158,117,.25)}
+}
+.mcard-label{
+  position:absolute;left:10px;bottom:8px;right:10px;
+  font-size:.88rem;font-weight:500;color:var(--cream);
+  z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.75);letter-spacing:.01em;
+}
+
+/* TILE PICKER (presentation only now) */
+.tile-grid{display:grid;gap:7px;margin-bottom:10px}
+.tile-grid.cols-2{grid-template-columns:1fr 1fr}
+.tile-grid.cols-3{grid-template-columns:1fr 1fr 1fr}
+.tile-grid.cols-4{grid-template-columns:1fr 1fr 1fr 1fr;gap:5px}
+
+.tile{position:relative;border:1.5px solid var(--border);border-radius:8px;
+  background:var(--surface);cursor:pointer;overflow:hidden;padding:0;transition:transform .15s, border-color .15s, box-shadow .15s}
+.tile.mood{aspect-ratio:3/2}
+.tile.pres{aspect-ratio:3/2}
+/* Compact presentation row — single horizontal row of four */
+.pres-row .tile.pres{aspect-ratio:1/1}
+.pres-row .tile-label{font-size:.64rem;letter-spacing:.005em;line-height:1.15;left:5px;right:5px;bottom:4px}
+.pres-row .tile-check{width:14px;height:14px;font-size:.56rem;top:4px;right:4px}
+.tile:hover{border-color:var(--gold-light);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.tile.active{border-color:var(--teal);border-width:2px}
+.tile-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.9;transition:opacity .2s}
+.tile:hover .tile-bg{opacity:1}
+.tile-overlay{position:absolute;inset:0;
+  background:linear-gradient(to top, rgba(18,16,14,.82) 0%, rgba(18,16,14,.18) 55%, transparent 100%)}
+.tile-label{position:absolute;left:9px;right:9px;bottom:7px;
+  font-size:.82rem;font-weight:500;color:var(--cream);z-index:2;text-align:left;letter-spacing:.01em;
+  text-shadow:0 1px 3px rgba(0,0,0,.75)}
+.tile.active .tile-label{color:var(--teal-light)}
+.tile-check{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;
+  background:var(--teal);color:#fff;font-size:.72rem;display:none;align-items:center;justify-content:center;
+  z-index:3;box-shadow:0 2px 5px rgba(0,0,0,.5)}
+.tile.active .tile-check{display:flex}
+
+/* PLAQUE INPUT + SHAPE SELECTOR */
+.plaque-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
+  color:var(--cream);font-family:var(--sans);font-size:.78rem;padding:7px 10px;outline:none;
+  transition:border-color .15s;margin-bottom:8px}
+.plaque-input:focus{border-color:var(--gold)}
+.plaque-input::placeholder{color:var(--dim);font-style:italic}
+
+.plaque-shapes{display:flex;gap:6px}
+.pshape{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
+  padding:6px 4px;cursor:pointer;color:var(--dim);transition:all .15s;
+  display:flex;align-items:center;justify-content:center;height:32px}
+.pshape svg{width:30px;height:18px;display:block}
+.pshape:hover{border-color:var(--gold-light);color:var(--cream)}
+.pshape.active{border-color:var(--gold);color:var(--gold-light);
+  background:linear-gradient(145deg, rgba(184,146,74,.18), rgba(184,146,74,.06))}
+
+/* TILE BACKGROUNDS — drop real images at /previews/ to override */
+.bg-mood-golden{background-image:url('/previews/mood-golden.jpg'),
+  radial-gradient(ellipse at 55% 45%, #E4B878 0%, #B07838 35%, #4A2814 75%, #1A0E06 100%)}
+.bg-mood-dramatic{background-image:url('/previews/mood-dramatic.jpg'),
+  linear-gradient(155deg, #2A3448 0%, #14192A 55%, #080A14 100%)}
+.bg-mood-peaceful{background-image:url('/previews/mood-peaceful.jpg'),
+  linear-gradient(180deg, #E8DCC8 0%, #C4BFA8 40%, #8A9680 75%, #4E5A48 100%)}
+.bg-mood-vivid{background-image:url('/previews/mood-vivid.jpg'),
+  linear-gradient(175deg, #9ED8EC 0%, #5AA8D4 45%, #2A6894 80%, #0F2E4C 100%)}
+.bg-pres-insitu{background-image:url('/previews/pres-insitu.jpg'),
+  linear-gradient(160deg, #8B5A2A 0%, #D4AC6E 45%, #A0B8B0 75%, #5A7890 100%)}
+.bg-pres-collectable_card{background-image:url('/previews/pres-collectable-card.jpg'),
+  linear-gradient(145deg, #3A2818 0%, #6B4828 35%, #B8924A 75%, #E8D4A8 100%)}
+.bg-pres-cinematic{background-image:url('/previews/pres-cinematic.jpg'),
+  radial-gradient(ellipse at 50% 45%, #5A4268 0%, #241A2E 45%, #0A0810 100%)}
+.bg-pres-museum{background-image:url('/previews/pres-museum.jpg'),
+  linear-gradient(180deg, #F5F0E8 0%, #DED4BE 55%, #A8A090 100%)}
+.tile-bg{background-size:cover;background-position:center}
+
+/* NOTES */
+.vfield{margin-top:6px}
+.vfield label{display:block;font-size:.55rem;font-weight:500;color:var(--muted);margin-bottom:3px;letter-spacing:.08em;text-transform:uppercase}
+.vfield textarea{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
+  color:var(--cream);font-family:var(--mono);font-size:.62rem;padding:5px 7px;outline:none;
+  resize:vertical;min-height:40px;line-height:1.5;transition:border-color .15s}
+.vfield textarea:focus{border-color:var(--teal)}
+
+.vactions{display:flex;gap:5px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
+.run-one{flex:1;padding:7px;background:var(--teal);color:#fff;border:none;border-radius:6px;
+  font-family:var(--sans);font-size:.73rem;font-weight:500;cursor:pointer;transition:background .2s}
+.run-one:hover:not(:disabled){background:var(--teal-dark)}
+.run-one:disabled{opacity:.35;cursor:not-allowed}
+.del-btn{padding:6px 10px;background:transparent;border:1.5px solid var(--border);border-radius:6px;
+  color:var(--muted);font-family:var(--sans);font-size:.7rem;cursor:pointer;transition:all .15s}
+.del-btn:hover{border-color:#E24B4A;color:#E24B4A}
+
+/* CENTER */
+.center{display:flex;flex-direction:column;overflow:hidden}
+.center-hdr{padding:.6rem 1rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;background:rgba(18,16,14,.6);flex-shrink:0}
+.results-grid{flex:1;overflow-y:auto;padding:.75rem;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;align-content:start}
+
+/* RESULT CARDS */
+.rc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeIn .35s ease}
+.rc.done{border-color:var(--teal)}.rc.error{border-color:#E24B4A}
+.rc-img{aspect-ratio:1;background:rgba(245,240,232,.03);position:relative;overflow:hidden;
+  cursor:zoom-in;display:flex;align-items:center;justify-content:center}
+.rc-img img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+
+/* Collectable card variant — playing card aspect ratio (5:7) */
+.rc-card .rc-img.rc-card-img{aspect-ratio:5/7}
+.rc-card .rc-img.rc-card-img img{object-fit:contain;background:#1A1510}
+/* 3D product shot variant — looser 2:3 aspect since the render includes desk context */
+.rc-card-3d .rc-img.rc-card-3d-img{aspect-ratio:2/3}
+.rc-card-3d .rc-img.rc-card-3d-img img{object-fit:contain;background:#1A1510}
+.rc-card-tag{position:absolute;top:8px;left:8px;z-index:3;
+  font-family:var(--mono);font-size:.55rem;font-weight:500;letter-spacing:.2em;
+  padding:3px 8px;border-radius:3px;
+  background:rgba(184,146,74,.9);color:#1A1510;
+  box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.rc-card-3d .rc-card-tag{background:rgba(29,158,117,.9);color:#081510}
+.rc-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;
+  justify-content:center;transition:background .18s;pointer-events:none}
+.rc-img:hover .rc-overlay{background:rgba(0,0,0,.3)}
+.rc-ol{font-size:.72rem;color:#fff;background:rgba(0,0,0,.5);padding:5px 14px;
+  border-radius:20px;opacity:0;transition:opacity .18s}
+.rc-img:hover .rc-ol{opacity:1}
+.rc-spinner{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--dim);font-size:.72rem}
+.spin{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--teal);
+  border-radius:50%;animation:spin .7s linear infinite}
+.rc-body{padding:10px 12px}
+.rc-name{font-family:var(--serif);font-size:.95rem;font-weight:300;color:var(--cream);margin-bottom:2px}
+.rc-meta{font-size:.62rem;color:var(--muted);font-family:var(--mono);margin-bottom:7px}
+.rc-btns{display:flex;gap:4px}
+.rc-btn{padding:4px 9px;border:1.5px solid var(--border);border-radius:6px;
+  background:transparent;color:var(--muted);font-family:var(--sans);font-size:.65rem;cursor:pointer;transition:all .15s}
+.rc-btn:hover{border-color:var(--teal);color:var(--teal)}
+.rc-btn.save{background:var(--teal);border-color:var(--teal);color:#fff}
+.rc-btn.save:hover{background:var(--teal-dark)}
+
+/* EMPTY STATE */
+.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:300px;gap:1rem;text-align:center}
+.empty-icon{font-size:3rem;opacity:.2}
+.empty-title{font-family:var(--serif);font-size:1.4rem;font-weight:300;color:var(--muted)}
+.empty-sub{font-size:.78rem;color:var(--dim);max-width:320px;line-height:1.8}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(8,6,4,.96);display:flex;align-items:center;
+  justify-content:center;z-index:1000;cursor:zoom-out;padding:2rem;animation:fadeIn .2s ease}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6);border-radius:6px}
+.lightbox-hint{position:absolute;bottom:1.25rem;left:0;right:0;text-align:center;
+  font-family:var(--mono);font-size:.65rem;color:rgba(245,240,232,.4);letter-spacing:.1em;text-transform:uppercase}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="home-link" href="index.html">← Home</a>
+  <div class="tb-div"></div>
+  <div class="logo">mini<span>scape</span> <span class="logo-badge">LANDSCAPES</span></div>
+  <div class="tb-div"></div>
+  <div class="upload-area">
+    <label class="upload-slot" id="slot1">
+      <span>📷</span><span id="st1">Upload your place</span>
+      <input type="file" id="file1" accept="image/*" onchange="slotChange(1,this)">
+    </label>
+    <label class="upload-slot" id="slot2">
+      <span>📷</span><span id="st2">2nd angle</span>
+      <input type="file" id="file2" accept="image/*" onchange="slotChange(2,this)">
+    </label>
+  </div>
+  <div class="tb-div"></div>
+  <button class="run-all-btn" id="runAllBtn" disabled onclick="runAll()">▶ Run All</button>
+  <div class="status-wrap">
+    <div class="status-dot" id="gDot"></div>
+    <span id="gStatus">ready</span>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="left">
+    <div class="panel-hdr">
+      <span class="panel-title">Variants</span>
+      <button class="add-btn" onclick="addVariant()">+ Add</button>
+    </div>
+
+    <div class="detect-card" id="detectCard">
+      <div class="detect-status">
+        <span class="detect-icon">🔍</span>
+        <span class="detect-label" id="detectLabel">Upload a photo to auto-detect scene</span>
+      </div>
+      <div class="detect-result" id="detectResult" style="display:none"></div>
+      <div class="detect-sub" id="detectSub" style="display:none"></div>
+      <div class="detect-bar"><div class="detect-bar-fill" id="detectBar"></div></div>
+    </div>
+
+    <div class="variants-list" id="variantsList"></div>
+  </div>
+
+  <div class="center">
+    <div class="center-hdr">
+      <span class="panel-title">Results</span>
+      <span id="centerMeta" style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-left:auto"></span>
+    </div>
+    <div class="results-grid" id="resultsGrid">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🌿</div>
+        <div class="empty-title">Your landscape awaits</div>
+        <div class="empty-sub">Upload a photo of your favourite place — configure each variant with its own mood and presentation, then Run All</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API     = '/api/v1/landscapes/generate'
+const ANALYZE = '/api/v1/landscapes/analyze'
+
+const MOODS = [
+  { k:'golden',   label:'Golden Memory' },
+  { k:'dramatic', label:'Dramatic' },
+  { k:'peaceful', label:'Peaceful' },
+  { k:'vivid',    label:'Vivid' },
+]
+const PRES = [
+  { k:'insitu',           label:'In Situ' },
+  { k:'collectable_card', label:'Collectable Card' },
+  { k:'cinematic',        label:'Cinematic' },
+  { k:'museum',           label:'Museum' },
+]
+const MOOD_LABEL = Object.fromEntries(MOODS.map(m => [m.k, m.label]))
+const PRES_LABEL = Object.fromEntries(PRES.map(p => [p.k, p.label]))
+
+let fileB64 = null, extraB64 = null, running = false
+let imgStore = {}, resStore = {}, variantN = 0
+let detectedScene = null, detectedMemory = null, detectedSurface = null, detectedAtmosphere = null, detectedName = null, detectedCharacter = null
+
+// ── UPLOAD ───────────────────────────────────────────────────
+function slotChange(n, input) {
+  const f = input.files?.[0]; if(!f) return
+  const r = new FileReader()
+  r.onload = async e => {
+    const b64   = e.target.result.split(',')[1]
+    const short = f.name.length > 16 ? f.name.slice(0,14)+'…' : f.name
+    if(n === 1) {
+      fileB64 = b64
+      document.getElementById('runAllBtn').disabled = false
+      document.getElementById('slot1').classList.add('has-file')
+      document.getElementById('st1').textContent = '✓ ' + short
+      await analyzeScene(b64)
+    } else {
+      extraB64 = b64
+      document.getElementById('slot2').classList.add('has-file')
+      document.getElementById('st2').textContent = '✓ ' + short
+    }
+  }
+  r.readAsDataURL(f)
+}
+
+// ── AUTO-DETECT ───────────────────────────────────────────────
+async function analyzeScene(b64) {
+  setG('detecting', 'analyzing scene…')
+  document.getElementById('detectLabel').textContent = 'Identifying your place…'
+  document.getElementById('detectBar').classList.add('running')
+  document.getElementById('detectResult').style.display = 'none'
+  document.getElementById('detectSub').style.display = 'none'
+
+  try {
+    const res = await fetch(ANALYZE, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ image_b64: b64 })
+    })
+    const data = await res.json()
+    detectedScene      = data.scene_description
+    detectedMemory     = data.memory_text
+    detectedSurface    = data.environment_surface
+    detectedAtmosphere = data.environment_atmosphere
+    detectedName       = data.display_name
+    detectedCharacter  = data.character_source
+    const charBadge = detectedCharacter === 'atmosphere' ? ' · atmosphere-forward' : ' · object-forward'
+    document.getElementById('detectResult').textContent = (data.display_name || 'Scene detected') + charBadge
+    document.getElementById('detectSub').textContent = data.scene_description || ''
+    document.getElementById('detectResult').style.display = 'block'
+    document.getElementById('detectSub').style.display = 'block'
+    document.getElementById('detectLabel').textContent = 'Scene detected'
+    document.getElementById('detectBar').classList.remove('running')
+    document.getElementById('detectBar').style.width = '100%'
+    setG('done', 'scene detected')
+  } catch(e) {
+    document.getElementById('detectLabel').textContent = 'Detection failed — will auto-detect during generation'
+    document.getElementById('detectBar').classList.remove('running')
+    setG('done', 'ready')
+  }
+}
+
+// ── VARIANT CARDS ────────────────────────────────────────────
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+
+function addVariant(cfg = {}) {
+  variantN++
+  const vid  = 'v' + variantN
+  const name = cfg.name || ('Variant ' + variantN)
+  const mood = cfg.mood || 'golden'
+  const pres = cfg.pres || 'insitu'
+
+  const card = document.createElement('div')
+  card.className = 'var-card open'
+  card.dataset.id   = vid
+  card.dataset.mood = mood
+  card.dataset.pres = pres
+  card.dataset.plaqueShape = cfg.plaqueShape || 'rectangular'
+  card.dataset.render3d = cfg.render3d ? 'true' : 'false'
+
+  // Build mood cards in stack order — selected mood goes to TOP of stack
+  const moodOrder = [mood, ...MOODS.map(m => m.k).filter(k => k !== mood)]
+  const moodTiles = moodOrder.map((k, i) => {
+    const m = MOODS.find(mm => mm.k === k)
+    return `
+    <button class="mcard ${i === 0 ? 'top' : ''}" data-k="${k}" data-pos="${i}" id="m-${vid}-${k}"
+            style="z-index:${MOODS.length - i};"
+            onclick="event.stopPropagation();tapMood('${vid}','${k}')">
+      <div class="tile-bg bg-mood-${m.k}"></div>
+      <div class="tile-overlay"></div>
+      <div class="mcard-label">${m.label}</div>
+    </button>`
+  }).join('')
+
+  const presTiles = PRES.map(p => `
+    <button class="tile pres ${p.k===pres?'active':''}" id="p-${vid}-${p.k}" onclick="event.stopPropagation();selectPres('${vid}','${p.k}')">
+      <div class="tile-bg bg-pres-${p.k}"></div>
+      <div class="tile-overlay"></div>
+      <div class="tile-check">✓</div>
+      <div class="tile-label">${p.label}</div>
+    </button>`).join('')
+
+  card.innerHTML = `
+    <div class="var-hdr" onclick="toggleVariant('${vid}')">
+      <div class="vdot" id="vdot-${vid}"></div>
+      <div class="vname" id="vnd-${vid}">${esc(name)}</div>
+      <div class="vchips" id="vchips-${vid}"></div>
+      <span class="varrow">›</span>
+    </div>
+    <div class="vbody">
+      <input type="text" class="name-input" id="vnm-${vid}" value="${esc(name)}" oninput="syncName('${vid}')" placeholder="Name this variant…">
+      <div class="mood-stack" id="mstack-${vid}">${moodTiles}</div>
+      <div class="tile-grid cols-4 pres-row">${presTiles}</div>
+      <div class="vfield card-only" id="v3d-row-${vid}">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500">
+          <input type="checkbox" id="v3d-${vid}" onchange="toggle3d('${vid}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal)">
+          <span>Also render 3D product shots</span>
+        </label>
+        <div style="font-size:.7rem;color:var(--dim);margin-top:4px;margin-left:26px;line-height:1.4">
+          Photorealistic tilted card shots on a walnut desk — adds ~15-30s and uses 2 extra generations.
+        </div>
+      </div>
+      <div class="vfield">
+        <label>Decorative Plate (optional)</label>
+        <input type="text" class="plaque-input" id="vpt-${vid}" maxlength="40" placeholder="Add A Decorative Name Plate (optional)">
+        <div class="plaque-shapes" id="vps-${vid}">
+          <button class="pshape active" data-shape="rectangular" onclick="selectPlaqueShape('${vid}','rectangular')" title="Rectangular">
+            <svg viewBox="0 0 32 20"><rect x="2" y="3" width="28" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+          </button>
+          <button class="pshape" data-shape="curved" onclick="selectPlaqueShape('${vid}','curved')" title="Curved">
+            <svg viewBox="0 0 32 20"><path d="M 2 10 Q 2 4 8 4 L 24 4 Q 30 4 30 10 L 30 16 Q 30 17 29 17 L 3 17 Q 2 17 2 16 Z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+          </button>
+          <button class="pshape" data-shape="victorian" onclick="selectPlaqueShape('${vid}','victorian')" title="Victorian">
+            <svg viewBox="0 0 32 20"><path d="M 4 6 Q 4 3 7 3 Q 9 3 10 5 Q 12 3 16 3 Q 20 3 22 5 Q 23 3 25 3 Q 28 3 28 6 L 28 14 Q 28 17 25 17 Q 23 17 22 15 Q 20 17 16 17 Q 12 17 10 15 Q 9 17 7 17 Q 4 17 4 14 Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="vfield">
+        <label>Notes (optional)</label>
+        <textarea id="vnt-${vid}" placeholder="Time of year, special details…"></textarea>
+      </div>
+      <div class="vactions">
+        <button class="run-one" id="vrun-${vid}" onclick="runOne('${vid}')">▶ Generate</button>
+        <button class="del-btn" onclick="delVariant('${vid}')">✕</button>
+      </div>
+    </div>`
+
+  document.getElementById('variantsList').appendChild(card)
+  syncChips(vid)
+  // Initialize 3D-row visibility based on starting preset
+  const initRow = document.getElementById('v3d-row-' + vid)
+  if (initRow) initRow.style.display = (pres === 'collectable_card') ? '' : 'none'
+  if (cfg.render3d) {
+    const cb = document.getElementById('v3d-' + vid)
+    if (cb) cb.checked = true
+  }
+}
+
+// Mood stack behavior:
+//   Click a card that is NOT on top → bring it to the top (peel animation)
+//   Click the card that IS on top (already selected) → confirm selection (briefly highlight)
+function tapMood(vid, mood) {
+  const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
+  const stack = document.getElementById('mstack-' + vid); if(!stack) return
+  const clicked = document.getElementById(`m-${vid}-${mood}`)
+
+  if (card.dataset.mood === mood) {
+    // Already selected — flash confirm state
+    clicked?.classList.add('confirmed')
+    setTimeout(() => clicked?.classList.remove('confirmed'), 450)
+    return
+  }
+
+  // Re-stack: clicked card to top, others reorder behind
+  card.dataset.mood = mood
+  const others = MOODS.map(m => m.k).filter(k => k !== mood)
+  const newOrder = [mood, ...others]
+  newOrder.forEach((k, i) => {
+    const el = document.getElementById(`m-${vid}-${k}`)
+    if (!el) return
+    el.style.zIndex = String(MOODS.length - i)
+    el.dataset.pos = String(i)
+    el.classList.toggle('top', i === 0)
+  })
+  syncChips(vid)
+}
+
+function selectPres(vid, pres) {
+  const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
+  card.dataset.pres = pres
+  PRES.forEach(p => {
+    const el = document.getElementById(`p-${vid}-${p.k}`)
+    if (el) el.classList.toggle('active', p.k === pres)
+  })
+  // 3D toggle is only relevant for collectable_card
+  const row = document.getElementById('v3d-row-' + vid)
+  if (row) row.style.display = (pres === 'collectable_card') ? '' : 'none'
+  syncChips(vid)
+}
+function toggle3d(vid) {
+  const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
+  const cb = document.getElementById('v3d-' + vid)
+  card.dataset.render3d = cb?.checked ? 'true' : 'false'
+}
+function selectPlaqueShape(vid, shape) {
+  const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
+  card.dataset.plaqueShape = shape
+  document.querySelectorAll(`#vps-${vid} .pshape`).forEach(b => {
+    b.classList.toggle('active', b.dataset.shape === shape)
+  })
+}
+function syncChips(vid) {
+  const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
+  const box = document.getElementById('vchips-' + vid); if(!box) return
+  box.innerHTML = `
+    <span class="vchip">${MOOD_LABEL[card.dataset.mood] || card.dataset.mood}</span>
+    <span class="vchip pres">${PRES_LABEL[card.dataset.pres] || card.dataset.pres}</span>`
+}
+function syncName(vid) {
+  const input = document.getElementById('vnm-' + vid)
+  const label = document.getElementById('vnd-' + vid)
+  if (input && label) label.textContent = input.value || ('Variant ' + vid.replace('v',''))
+}
+function toggleVariant(vid) {
+  document.querySelector(`.var-card[data-id="${vid}"]`)?.classList.toggle('open')
+}
+function delVariant(vid) {
+  document.querySelector(`.var-card[data-id="${vid}"]`)?.remove()
+}
+function setVdot(vid, state) {
+  const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
+  card.classList.remove('running','done','error')
+  if (state) card.classList.add(state)
+  const dot = document.getElementById('vdot-' + vid); if(!dot) return
+  dot.className = 'vdot' + (state ? ' ' + state : '')
+}
+function getAllVids() {
+  return [...document.querySelectorAll('.var-card')].map(c => c.dataset.id)
+}
+function collect(vid) {
+  const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return null
+  const plaqueText = document.getElementById('vpt-' + vid)?.value?.trim() || ''
+  return {
+    vid,
+    name:         document.getElementById('vnm-' + vid)?.value || vid,
+    mood:         card.dataset.mood || 'golden',
+    pres:         card.dataset.pres || 'insitu',
+    notes:        document.getElementById('vnt-' + vid)?.value?.trim() || undefined,
+    plaqueText:   plaqueText || undefined,
+    plaqueShape:  card.dataset.plaqueShape || 'rectangular',
+    render3d:     card.dataset.render3d === 'true',
+  }
+}
+
+// ── GENERATE ─────────────────────────────────────────────────
+async function runOne(vid) {
+  if (running) return
+  if (!fileB64) { alert('Upload a photo first'); return }
+  running = true
+  setG('running', 'generating…')
+  document.getElementById('emptyState')?.remove()
+  await runVariants([vid])
+  running = false
+}
+
+async function runAll() {
+  if (running) return
+  if (!fileB64) { alert('Upload a photo first'); return }
+  const ids = getAllVids()
+  if (!ids.length) { alert('Add at least one variant'); return }
+  running = true
+  setG('running', `running ${ids.length} variants…`)
+  document.getElementById('emptyState')?.remove()
+  await runVariants(ids)
+  running = false
+}
+
+async function runVariants(ids) {
+  ids.forEach(vid => {
+    const p = collect(vid); if(!p) return
+    setVdot(vid, 'running')
+    mkLoading(p.name)
+  })
+
+  const first = collect(ids[0])
+  if (first) document.getElementById('rc-' + first.name)?.scrollIntoView({ behavior:'smooth', block:'nearest' })
+
+  let ok = 0, fail = 0
+  // Batches of 3 — mirrors structures pacing
+  for (let i = 0; i < ids.length; i += 3) {
+    const batch = ids.slice(i, i + 3)
+    await Promise.allSettled(batch.map(async vid => {
+      const p = collect(vid); if(!p) return
+      try {
+        const r = await generateOne(p)
+        resStore[p.name] = r
+        imgStore[p.name] = r.image_b64
+        setVdot(vid, 'done')
+        ok++
+      } catch(e) {
+        setVdot(vid, 'error')
+        fail++
+      }
+    }))
+  }
+
+  const summary = ok + ' done' + (fail ? ' · ' + fail + ' failed' : '')
+  setG(fail && !ok ? 'error' : 'done', summary)
+  document.getElementById('centerMeta').textContent = summary
+}
+
+async function generateOne(p) {
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        source_image_b64:  fileB64,
+        extra_images:      extraB64 ? [extraB64] : [],
+        scene_description:      detectedScene,
+        memory_text:            detectedMemory,
+        environment_surface:    detectedSurface,
+        environment_atmosphere: detectedAtmosphere,
+        character_source:       detectedCharacter,
+        display_name:           detectedName,
+        mood:              p.mood,
+        presentation:      p.pres,
+        notes:             p.notes,
+        plaque_text:       p.plaqueText,
+        plaque_shape:      p.plaqueShape,
+        render_3d:         p.render3d,
+      })
+    })
+    if(!res.ok) {
+      const e = await res.json().catch(()=>({}))
+      throw new Error(e.error || 'HTTP '+res.status)
+    }
+    const data = await res.json()
+    const r    = data.result
+    if (r?.front_b64 && r?.back_b64) {
+      // Collectable card — two separate result cards (front + back)
+      mkCardPairResult(p.name, r, p)
+    } else if (r?.image_b64) {
+      mkResult(p.name, r, p)
+    } else {
+      throw new Error('No image returned')
+    }
+    return r
+  } catch(e) {
+    mkError(p.name, e.message)
+    throw e
+  }
+}
+
+// ── RESULT CARDS ──────────────────────────────────────────────
+function mkLoading(name) {
+  let c = document.getElementById('rc-' + name)
+  if (!c) {
+    c = document.createElement('div')
+    c.className = 'rc'
+    c.id = 'rc-' + name
+    document.getElementById('resultsGrid').appendChild(c)
+  }
+  c.className = 'rc'
+  c.innerHTML = `<div class="rc-img"><div class="rc-spinner"><div class="spin"></div><div>Sculpting your world…</div></div></div>
+    <div class="rc-body"><div class="rc-name">${esc(name)}</div></div>`
+}
+function mkResult(name, r, p) {
+  const c = document.getElementById('rc-' + name); if(!c) return
+  c.className = 'rc done'
+  const meta = [MOOD_LABEL[p.mood], PRES_LABEL[p.pres]].filter(Boolean).join(' · ')
+  const safe = name.replace(/'/g, "\\'")
+  c.innerHTML = `
+    <div class="rc-img" onclick="openFull('${safe}')">
+      <img src="data:image/jpeg;base64,${r.image_b64}">
+      <div class="rc-overlay"><span class="rc-ol">View full size</span></div>
+    </div>
+    <div class="rc-body">
+      <div class="rc-name">${esc(name)}</div>
+      <div class="rc-meta">${esc(meta)}</div>
+      <div class="rc-btns">
+        <button class="rc-btn save" onclick="dl('${safe}')">↓ Save</button>
+        <button class="rc-btn" onclick="openFull('${safe}')">⛶ Full</button>
+      </div>
+    </div>`
+}
+
+// Collectable card — replace the single loading card with separate result cards
+// (flat front, flat back, plus optional 3D front and 3D back)
+function mkCardPairResult(name, r, p) {
+  const loader = document.getElementById('rc-' + name)
+  if (loader) loader.remove()
+
+  const meta = [MOOD_LABEL[p.mood], PRES_LABEL[p.pres]].filter(Boolean).join(' · ')
+  const grid = document.getElementById('resultsGrid')
+
+  // Helper to build one result card with a given image, label tag, and key
+  const mkOne = (b64, tag, cardClass, keyName) => {
+    const safe = keyName.replace(/'/g, "\\'")
+    imgStore[keyName] = b64
+    const el = document.createElement('div')
+    el.className = 'rc done ' + cardClass
+    el.id = 'rc-' + keyName
+    const imgClass = cardClass === 'rc-card' ? 'rc-img rc-card-img' : 'rc-img rc-card-3d-img'
+    el.innerHTML = `
+      <div class="${imgClass}" onclick="openFull('${safe}')">
+        <img src="data:image/png;base64,${b64}">
+        <div class="rc-overlay"><span class="rc-ol">View full size</span></div>
+        <span class="rc-card-tag">${tag}</span>
+      </div>
+      <div class="rc-body">
+        <div class="rc-name">${esc(name)}</div>
+        <div class="rc-meta">${esc(meta)}</div>
+        <div class="rc-btns">
+          <button class="rc-btn save" onclick="dl('${safe}')">↓ Save</button>
+          <button class="rc-btn" onclick="openFull('${safe}')">⛶ Full</button>
+        </div>
+      </div>`
+    return el
+  }
+
+  grid.appendChild(mkOne(r.front_b64, 'FRONT', 'rc-card', name + ' · Front'))
+  grid.appendChild(mkOne(r.back_b64,  'BACK',  'rc-card', name + ' · Back'))
+  if (r.front_3d_b64) grid.appendChild(mkOne(r.front_3d_b64, 'FRONT · 3D', 'rc-card-3d', name + ' · Front 3D'))
+  if (r.back_3d_b64)  grid.appendChild(mkOne(r.back_3d_b64,  'BACK · 3D',  'rc-card-3d', name + ' · Back 3D'))
+}
+function mkError(name, err) {
+  const c = document.getElementById('rc-' + name); if(!c) return
+  c.className = 'rc error'
+  c.innerHTML = `<div class="rc-img" style="display:flex;align-items:center;justify-content:center;background:rgba(226,75,74,.05)">
+    <span style="color:#E24B4A;font-size:.75rem;padding:1rem;text-align:center">✗ ${esc(err)}</span></div>
+    <div class="rc-body"><div class="rc-name">${esc(name)}</div></div>`
+}
+
+function setG(state, text) {
+  document.getElementById('gDot').className = 'status-dot ' + state
+  document.getElementById('gStatus').textContent = text
+}
+function dl(name) {
+  const b = imgStore[name]; if(!b) return
+  const a = document.createElement('a')
+  a.href = 'data:image/jpeg;base64,' + b
+  a.download = 'miniscape-' + name + '-' + Date.now() + '.jpg'
+  a.click()
+}
+
+// ── LIGHTBOX ──────────────────────────────────────────────────
+function openFull(name) {
+  const b = imgStore[name]; if(!b) return
+  const overlay = document.createElement('div')
+  overlay.className = 'lightbox'
+  overlay.innerHTML = `
+    <img src="data:image/jpeg;base64,${b}" alt="${esc(name)}">
+    <div class="lightbox-hint">click anywhere to close · esc</div>`
+  overlay.addEventListener('click', () => overlay.remove())
+  document.body.appendChild(overlay)
+  const onKey = (e) => {
+    if (e.key === 'Escape') {
+      overlay.remove()
+      document.removeEventListener('keydown', onKey)
+    }
+  }
+  document.addEventListener('keydown', onKey)
+}
+
+// ── SEED DEFAULT VARIANTS ─────────────────────────────────────
+addVariant({ name:'Golden · In Situ',           mood:'golden',   pres:'insitu'           })
+addVariant({ name:'Peaceful · Collectable Card', mood:'peaceful', pres:'collectable_card' })
+addVariant({ name:'Dramatic · Cinematic',       mood:'dramatic', pres:'cinematic'        })
+addVariant({ name:'Vivid · Museum',              mood:'vivid',    pres:'museum'           })
+
+// Collapse all but the first so the list fits
+document.querySelectorAll('.var-card').forEach((c, i) => {
+  if (i > 0) c.classList.remove('open')
+})
+</script>
+</body>
+</html>

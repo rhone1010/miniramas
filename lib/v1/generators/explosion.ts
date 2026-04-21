@@ -1,11 +1,12 @@
-import { BaseParams, GenerateResult, STRUCTURE_BLOCK, CAMERA_BLOCK, SCALE_BLOCK, LIGHTING_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI } from './base'
+import { BaseParams, GenerateResult, STRUCTURE_BLOCK, COMPOSITION_BLOCK, SCALE_BLOCK, LIGHTING_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI , buildArchitectureBlock } from './base'
 
 const LIGHTING_OVERRIDE = `
-LIGHTING: DRAMATIC SPOTLIGHT — NOT BRIGHT DAYLIGHT
-A single harsh spotlight from above illuminates the destruction — no ambient fill.
-Harsh directional light creates extreme contrast — bright on rubble surfaces, deep black in shadow.
-Dust particles catch the light dramatically. Collapsed sections fade into darkness.
-The overall image is dark and shocking — light reveals destruction selectively and brutally.
+LIGHTING: DUAL SOURCE — NIGHT BLAST SCENE
+PRIMARY: A harsh work-light or bare bulb within the room throws stark directional light across the model and rubble — deep hard shadows.
+SECONDARY: Cold blue-white moonlight and smoke-filtered starlight pour through the blown-out wall hole behind — backlighting the debris silhouettes.
+The model itself is sharply lit by the work-light — every surface of the damage readable and textured.
+Dust particles catch both light sources and glow in the beams.
+The night sky through the hole is deep and real — stars visible through drifting smoke.
 `.trim()
 
 const DISASTER = `
@@ -20,12 +21,15 @@ The scene is frozen in the immediate aftermath — dramatic, violent, shocking.
 `.trim()
 
 const ROOM = `
-ROOM AND ENVIRONMENT:
-The room shows blast damage — cracked walls, plaster fallen from the ceiling, dust cloud settling.
-The desk is partially covered in debris and dust. Pictures knocked from walls. Furniture overturned.
-Harsh directional light through blown-out windows — rubble visible on the floor.
-A sense of violent sudden destruction — everything frozen in the moment after impact.
-The room belongs to the same destroyed house — same blast, same chaos, same raw devastation.
+ROOM AND ENVIRONMENT — BLOWN OPEN TO THE OUTSIDE:
+The explosion has torn a massive hole — approximately 10 feet wide — through one of the room walls behind the diorama.
+The hole punches through the wall AND through the ceiling above it — jagged edges of splintered timber, torn plaster, and bent rebar frame the opening.
+Through this gaping hole: the night sky is visible — deep blue-black with stars, smoke drifting across the opening.
+Silhouettes of surviving trees visible through the hole — branches against the dark sky.
+The desk sits in the foreground of this destroyed room — rubble, plaster chunks, and dust covering its surface.
+Everything in the room is in violent disarray — overturned furniture, cracked walls, pictures blown off. Plaster dust still settling.
+A single emergency light or bare bulb swings from exposed wiring — casting harsh swinging shadows.
+The room IS the disaster — as destroyed as the model sitting within it.
 `.trim()
 
 function buildPrompt(params: BaseParams): string {
@@ -47,11 +51,19 @@ ${SCALE_BLOCK}
 
 ${STYLE_BLOCK}
 
-${CAMERA_BLOCK}
+${COMPOSITION_BLOCK}
 `.trim()
-  return params.manual_prompt?.trim()
-    ? `${prompt}\n\nMANUAL OVERRIDE:\n${params.manual_prompt.trim()}`
+  // Inject architecture description if available
+  const archBlock = params.architectureDescription?.trim()
+    ? buildArchitectureBlock(params.architectureDescription)
+    : null
+  const finalPrompt = archBlock
+    ? prompt.replace(STRUCTURE_BLOCK, STRUCTURE_BLOCK + '\n\n' + archBlock)
     : prompt
+
+  return params.manual_prompt?.trim()
+    ? `${finalPrompt}\n\nMANUAL OVERRIDE:\n${params.manual_prompt.trim()}`
+    : finalPrompt
 }
 
 export async function generateExplosion(input: {

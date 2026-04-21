@@ -1,12 +1,12 @@
-import { BaseParams, GenerateResult, STRUCTURE_BLOCK, CAMERA_BLOCK, SCALE_BLOCK, LIGHTING_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI } from './base'
+import { BaseParams, GenerateResult, STRUCTURE_BLOCK, COMPOSITION_BLOCK, SCALE_BLOCK, LIGHTING_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI , buildArchitectureBlock } from './base'
 
 const LIGHTING_OVERRIDE = `
-LIGHTING: DRAMATIC SPOTLIGHT — NOT BRIGHT DAYLIGHT
-This is NOT a sunny scene. A single dramatic spotlight from above illuminates the diorama.
-Strong light hits key structural elements — the rest falls into deep moody shadow.
-Shafts of light catch dust particles. Deep shadow fills corners and unlit sections.
-Overgrown areas catch dappled light through broken canopy — uneven, atmospheric, haunting.
-The overall image is dark, with the spotlight revealing selective detail only.
+LIGHTING: WARM DRAMATIC SPOTLIGHT
+A single warm amber spotlight from above — the color of an old sodium lamp or a dying bulb — illuminates the diorama from above.
+Strong directional light hits the roof and upper walls with warm golden-amber tone. Deep cool shadows pool in the recesses and doorways.
+The contrast between warm spotlight and cool shadow gives the abandoned scene weight and melancholy.
+Dust particles catch the warm light visibly in the beam above the model.
+The diorama is the only warmth in an otherwise dark and neglected scene.
 `.trim()
 
 const DISASTER = `
@@ -51,11 +51,19 @@ ${SCALE_BLOCK}
 
 ${STYLE_BLOCK}
 
-${CAMERA_BLOCK}
+${COMPOSITION_BLOCK}
 `.trim()
-  return params.manual_prompt?.trim()
-    ? `${prompt}\n\nMANUAL OVERRIDE:\n${params.manual_prompt.trim()}`
+  // Inject architecture description if available
+  const archBlock = params.architectureDescription?.trim()
+    ? buildArchitectureBlock(params.architectureDescription)
+    : null
+  const finalPrompt = archBlock
+    ? prompt.replace(STRUCTURE_BLOCK, STRUCTURE_BLOCK + '\n\n' + archBlock)
     : prompt
+
+  return params.manual_prompt?.trim()
+    ? `${finalPrompt}\n\nMANUAL OVERRIDE:\n${params.manual_prompt.trim()}`
+    : finalPrompt
 }
 
 export async function generateAbandoned(input: {

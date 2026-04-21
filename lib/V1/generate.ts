@@ -8,6 +8,8 @@ import { generateFlood }     from './generators/flood'
 import { generateFire }      from './generators/fire'
 import { generateAbandoned } from './generators/abandoned'
 import { generateExplosion } from './generators/explosion'
+import { generateHaunted }   from './generators/haunted'
+import { generateAlien }     from './generators/alien'
 
 export type Params = BaseParams
 
@@ -24,6 +26,8 @@ const GENERATORS: Record<string, (input: {
   fire:      generateFire,
   abandoned: generateAbandoned,
   explosion: generateExplosion,
+  haunted:   generateHaunted,
+  alien:     generateAlien,
 }
 
 export async function generateDiorama(input: {

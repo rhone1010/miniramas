@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minirama · Early Access</title>
+<title>Miniscape · Structures</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 :root{
@@ -55,8 +55,8 @@ body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size
 .status-dot.error{background:#F09595}
 .log-toggle{padding:4px 10px;background:transparent;border:1px solid rgba(245,239,228,.4);border-radius:4px;color:rgba(245,239,228,.8);font-family:var(--mono);font-size:.62rem;cursor:pointer;transition:all .15s}
 .log-toggle:hover{border-color:rgba(245,239,228,.3);color:rgba(245,239,228,.7)}
-.layout{display:grid;grid-template-columns:290px 1fr;flex:1;overflow:hidden;min-height:0}
-.layout.log-open{grid-template-columns:290px 1fr 260px}
+.layout{display:grid;grid-template-columns:490px 1fr;flex:1;overflow:hidden;min-height:0}
+.layout.log-open{grid-template-columns:490px 1fr 260px}
 .left{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .panel-hdr{padding:.6rem .9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .panel-title{font-size:.68rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -79,26 +79,26 @@ body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size
 .tag.warn{background:#FFF7ED;color:#854F0B}
 .arrow{font-size:.65rem;color:var(--dim);transition:transform .15s;flex-shrink:0}
 .case-card.open .arrow{transform:rotate(90deg)}
-.cbody{display:none;padding:10px;border-top:1px solid var(--border);background:var(--surface2)}
+.cbody{display:none;padding:14px;border-top:1px solid var(--border);background:var(--surface2)}
 .case-card.open .cbody{display:block}
-.sec-div{font-size:.6rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 0 5px;border-bottom:1px solid var(--border);margin-bottom:6px}
-.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px}
-.preset-btn{padding:8px 5px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer;text-align:center;transition:all .15s}
-.preset-btn:hover{border-color:var(--teal);background:rgba(29,158,117,.04)}
+.sec-div{font-size:.68rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 0 7px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.preset-btn{padding:14px 8px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;text-align:center;transition:all .15s}
+.preset-btn:hover{border-color:var(--teal);background:rgba(29,158,117,.04);transform:translateY(-1px)}
 .preset-btn.active.season{border-color:var(--teal);background:rgba(29,158,117,.1)}
 .preset-btn.active.disaster{border-color:#E24B4A;background:rgba(226,75,74,.08)}
 .preset-btn.active.special{border-color:#7F77DD;background:rgba(127,119,221,.08)}
-.pb-icon{font-size:.95rem;display:block;margin-bottom:2px}
-.pb-label{font-size:.68rem;font-weight:500;color:var(--text);display:block}
+.pb-icon{font-size:1.55rem;display:block;margin-bottom:4px}
+.pb-label{font-size:.82rem;font-weight:500;color:var(--text);display:block}
 .preset-btn.active.season .pb-label{color:var(--teal-dark)}
 .preset-btn.active.disaster .pb-label{color:#A32D2D}
 .preset-btn.active.special .pb-label{color:#3C3489}
 .preset-divider{font-size:.58rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:6px 0 4px;text-align:center;border-top:1px dashed var(--border);border-bottom:1px dashed var(--border);margin:5px 0}
-.presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px}
-.pre-btn{padding:6px 3px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface);color:var(--muted);font-family:var(--sans);font-size:.63rem;font-weight:500;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s}
+.presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.pre-btn{padding:10px 6px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--muted);font-family:var(--sans);font-size:.75rem;font-weight:500;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s}
 .pre-btn:hover{border-color:var(--teal);color:var(--teal)}
 .pre-btn.active{border-color:var(--teal);background:rgba(29,158,117,.1);color:var(--teal-dark)}
-.pre-sub{font-weight:400;font-size:.53rem;display:block;margin-top:1px;color:var(--dim)}
+.pre-sub{font-weight:400;font-size:.62rem;display:block;margin-top:2px;color:var(--dim)}
 .pre-btn.active .pre-sub{color:var(--teal)}
 .name-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--sans);font-size:.78rem;padding:6px 8px;outline:none;transition:border-color .15s;margin-bottom:8px}
 .name-input:focus{border-color:var(--teal)}
@@ -202,7 +202,7 @@ body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size
 </head>
 <body>
 <div class="topbar">
-  <div class="logo">mini<span>rama</span> <span class="logo-badge">EARLY ACCESS</span></div>
+  <a href="index.html" style="color:var(--cream-mid);font-size:.7rem;font-family:var(--mono);text-decoration:none;padding:4px 10px;border:1px solid rgba(245,239,228,.2);border-radius:4px;margin-right:.5rem;transition:all .2s" onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='rgba(245,239,228,.2)'">← Home</a><div class="logo">mini<span>scape</span> <span class="logo-badge">STRUCTURES</span></div>
   <div class="tb-div"></div>
   <div class="upload-area">
     <div class="upload-slots">
@@ -278,7 +278,7 @@ body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size
   </div>
 </div>
 <script>
-const API='/api/v1/generate',EXPAPI='/api/v1/export'
+const API='/api/v1/structures/generate',EXPAPI='/api/v1/export'
 const SEASONS=['summer','spring','fall','winter']
 const DISASTERS=['flood','fire','abandoned','explosion']
 const SPECIAL=['haunted','alien']

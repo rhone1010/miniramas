@@ -1,33 +1,45 @@
-import { BaseParams, GenerateResult, STRUCTURE_BLOCK, CAMERA_BLOCK, SCALE_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI } from './base'
+import { BaseParams, GenerateResult, STRUCTURE_BLOCK, COMPOSITION_BLOCK, SCALE_BLOCK, STYLE_BLOCK, prepareSourceImage, callGenerateAPI , buildArchitectureBlock } from './base'
 
 const LIGHTING_OVERRIDE = `
-LIGHTING — IGNORE ALL SOURCE IMAGE LIGHTING COMPLETELY:
-A single overhead spotlight of extreme intensity — as bright as direct sunlight — illuminates the diorama from above.
-The spotlight bleaches the highest surfaces near-white and casts hard crisp shadows straight down.
-The falloff is dramatic but gradual — bright top, strong shadow at sides, soft ambient at the base.
-The overall diorama reads like an overcast bright day — fully readable in all detail, not dim, not nighttime.
-The room ambient is warm smoky amber — like looking through haze at a fire in the distance.
-The diorama is the brightest element in the frame — lit like a stage set, the rest of the room in shadow.
-`.trim()
-
-const ROOM = `
-ROOM AND ENVIRONMENT — THE ROOM IS THE INSIDE OF THE BURNT HOUSE:
-The room the diorama sits in has itself been damaged by the same fire — charring on walls, burnt window frames, smoke haze.
-Strong directional shadows from the overhead spotlight fall across the room walls — dramatic but fully readable.
-The desk surface is charred like a burnt log — black, deeply textured with fire damage, grain still visible in places like islands.
-A large puddle of water covers part of the charred desk — perfectly reflecting the burnt diorama above, fragmented and beautiful.
-The room is warm amber and smoky — same fire-damaged environment as the model, just larger and more ruined.
+LIGHTING: WIDE OVERHEAD WORK-LIGHT + FIRELIGHT
+PRIMARY: A single broad overhead work-light — wide beam, warm amber-toned — floods the entire model from above and slightly to the left.
+This work-light illuminates ALL surfaces of the model: every charred wall, every burnt timber, every broken window frame is clearly readable and textured.
+The beam is wide enough to cover the entire structure — no part of the model is in darkness from lack of light.
+SECONDARY: Warm orange-red fire glow emanates from within the structure — pulsing through windows, doorways, and gaps in the walls.
+The fire glow adds deep amber warmth in harmony with the warm work-light — both orange-warm, creating a unified infernal glow.
+Embers and sparks catch the work-light and glow visibly in the beams above the structure.
+The model is the BRIGHTEST element in the frame — every surface fully lit and readable.
 `.trim()
 
 const DISASTER = `
 DISASTER: FIRE — AFTERMATH
 The fire raged hours ago. The building is partially destroyed, still smoldering.
-Small fires still burning in sections — orange embers glowing through collapsed walls.
-The roof has partially collapsed — exposed charred timber beams, black and skeletal.
-Some walls have burnt through entirely — large gaping holes revealing charred timbers at skewed angles.
-Remaining walls deeply charred, blackened, soot streaking upward from every opening.
-Windows all blown out — dark void frames with melted and shattered glass remnants.
-Landscaping completely scorched — black ash covering everything, charred stumps where trees stood.
+
+CRITICAL — CHARRED SURFACES ARE DARK BROWN AND GREY, NOT BLACK:
+Fire damage reads as rich dark brown, deep charcoal grey, and ash white under daylight — not flat black.
+Every surface has visible texture and detail: wood grain readable in the charred siding, brick still showing coursework under soot, shingle texture visible on collapsed roof sections.
+This is a detailed scale model — every material is visible and textured in the bright window light.
+The model is NOT a silhouette. It reads clearly and with full surface detail.
+
+DAMAGE DETAILS:
+The roof has partially collapsed — exposed charred timber beams, skeletal and textured.
+Some walls have burnt through entirely — large gaping holes revealing interior framing.
+Remaining walls are deeply scorched — soot streaks upward from every opening, paint blistered and peeling.
+Windows all blown out — frames warped, glass melted and shattered.
+Small embers still glowing in the debris — tiny points of orange-red light visible in the wreckage.
+Landscaping completely scorched — ash-grey ground, charred stumps where trees stood, black debris scattered across the base.
+`.trim()
+
+const ROOM = `
+ROOM AND ENVIRONMENT — THE ROOM IS BURNING:
+The room the diorama sits in has been consumed by the same fire — this is not a safe observer's room, this IS the fire scene.
+One wall of the room has partially burnt through — a jagged hole reveals the night sky and silhouettes of scorched trees outside.
+Orange-red firelight pulses from within the hole and from the smoldering wreckage around the model.
+The ceiling above shows charred beams — blackened timber exposed where the plaster has fallen.
+The desk itself is charred and blackened — fire-scorched wood grain, ash and embers on its surface.
+A large pool of water from firefighting efforts covers part of the charred desk — perfectly still, reflecting the burning model above it, the reflection fragmented and beautiful.
+Smoke drifts upward. Hot orange light from the fire illuminates everything from below and through the wall opening.
+The room and the model exist in the same catastrophe — unified, total, devastating.
 `.trim()
 
 function buildPrompt(params: BaseParams): string {
@@ -49,11 +61,19 @@ ${SCALE_BLOCK}
 
 ${STYLE_BLOCK}
 
-${CAMERA_BLOCK}
+${COMPOSITION_BLOCK}
 `.trim()
-  return params.manual_prompt?.trim()
-    ? `${prompt}\n\nMANUAL OVERRIDE:\n${params.manual_prompt.trim()}`
+  // Inject architecture description if available
+  const archBlock = params.architectureDescription?.trim()
+    ? buildArchitectureBlock(params.architectureDescription)
+    : null
+  const finalPrompt = archBlock
+    ? prompt.replace(STRUCTURE_BLOCK, STRUCTURE_BLOCK + '\n\n' + archBlock)
     : prompt
+
+  return params.manual_prompt?.trim()
+    ? `${finalPrompt}\n\nMANUAL OVERRIDE:\n${params.manual_prompt.trim()}`
+    : finalPrompt
 }
 
 export async function generateFire(input: {
