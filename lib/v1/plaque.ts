@@ -163,3 +163,90 @@ export async function compositePlaque(input: {
 
   return out.toString('base64')
 }
+
+// ── AI HARMONIZATION PASS ─────────────────────────────────────
+// Takes an image that already has a code-composited plaque on it and runs one
+// gpt-image-1 edit call to integrate the plaque with the scene's lighting and
+// depth. The prompt explicitly forbids rewriting the plaque text — only soft
+// blending of edges, shadow matching, and light-direction alignment.
+
+import OpenAI, { toFile } from 'openai'
+
+export async function integratePlaque(input: {
+  compositedImageB64: string
+  openaiApiKey:       string
+}): Promise<string> {
+  const openai = new OpenAI({ apiKey: input.openaiApiKey })
+
+  const prompt = [
+    `PHOTOREALISTIC PLAQUE INTEGRATION PASS.`,
+
+    `The provided image is a miniature diorama photograph. A decorative bronze plaque has been placed on the lower portion of the image where it attaches to the diorama base. The plaque is a real physical object mounted to the base.`,
+
+    `YOUR ONLY JOB:
+Integrate the plaque into the scene so it reads as a physical mounted object that belongs in this photograph. Match the scene's lighting, perspective, and depth.
+
+Specifically:
+- Match the plaque's lighting direction to the scene's existing light — the same face should be brighter, the opposite face should fall into shadow
+- Add a subtle realistic cast shadow from the plaque onto the base surface beneath it, consistent with the scene's shadow angle
+- Add gentle edge softening where the plaque meets the base — a tiny shadow seam, the barest suggestion of hardware or mounting
+- Adjust the plaque's bronze tone subtly to pick up color bounce from the scene (warmer if scene is warm, cooler if scene is cool)
+- If appropriate, add a very faint specular highlight on the plaque's top edge catching the scene's key light
+- Adjust the plaque's perspective VERY subtly to match the diorama base's perspective if needed`,
+
+    `ABSOLUTE CONSTRAINTS — DO NOT VIOLATE:
+1. DO NOT REWRITE, RESTYLE, OR MODIFY THE PLAQUE TEXT. Every letter must remain exactly as shown, in the same font, same size, same position. The engraved text is correct and final — you are harmonizing lighting around it, not changing it.
+2. DO NOT CHANGE THE PLAQUE SHAPE. If the plaque is rectangular, keep it rectangular. If curved-top, keep curved-top. If victorian-scalloped, keep the exact scallop pattern. Do not redesign the plaque.
+3. DO NOT REDESIGN OR REPOSITION THE PLAQUE. It stays in the same location, same size, same shape, same text. Your work is LIGHTING ONLY.
+4. DO NOT ALTER ANY OTHER PART OF THE IMAGE. The diorama, the base, the background — all must remain identical. Only the plaque region and its immediate shadow zone on the base beneath it may change.
+
+This is a lighting and shadow harmonization pass, not a creative pass. Treat the plaque as a real printed bronze object you are re-photographing with the correct light. Anything else is a failure.`,
+  ].join('\n\n')
+
+  const imgBuf = Buffer.from(input.compositedImageB64, 'base64')
+  const file = await toFile(imgBuf, 'plaqued.png', { type: 'image/png' })
+  const res = await openai.images.edit({
+    model: 'gpt-image-1',
+    image: file,
+    prompt,
+    size:  '1024x1024',
+  })
+  const b64 = res.data?.[0]?.b64_json
+  if (!b64) throw new Error('plaque_integration_failed')
+  return b64
+}
+
+// ── UNIFIED PLAQUE APPLICATION ────────────────────────────────
+// Composites the plaque and optionally runs the AI integration pass.
+// If integration fails, falls back gracefully to the code-composited version.
+
+export async function applyPlaque(input: {
+  imageB64:     string
+  text:         string
+  shape?:       PlaqueShape
+  integrate?:   boolean          // run AI harmonization pass after composite
+  openaiApiKey?: string
+}): Promise<string> {
+  const text = (input.text || '').trim()
+  if (!text) return input.imageB64
+
+  // Step 1 — code composite (always)
+  const composited = await compositePlaque({
+    imageB64: input.imageB64,
+    text,
+    shape:    input.shape,
+  })
+
+  // Step 2 — optional AI integration
+  if (!input.integrate || !input.openaiApiKey) return composited
+
+  try {
+    return await integratePlaque({
+      compositedImageB64: composited,
+      openaiApiKey:       input.openaiApiKey,
+    })
+  } catch (e: any) {
+    console.warn('[plaque] integration pass failed, using composited fallback:', e.message)
+    return composited
+  }
+}

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateLandscape, generateCollectableCard } from '@/lib/v1/landscape-generator'
 import { applyLevels }        from '@/lib/v1/levels'
 import { expandScene }        from '@/lib/v1/expand'
-import { compositePlaque }    from '@/lib/v1/plaque'
+import { applyPlaque }    from '@/lib/v1/plaque'
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,10 +14,12 @@ export async function POST(req: NextRequest) {
       source_image_b64,
       extra_images          = [],
       scene_description,                 // free-form description from analyze
+      viewing_direction,                 // which side of subject; camera orientation
       memory_text,                       // short keepsake caption from analyze
       environment_surface,               // just ground material
       environment_atmosphere,            // just sky/weather/light
       character_source,                  // 'object' | 'atmosphere'
+      distinctive_features,              // comma-separated specific features to preserve
       display_name,
       mood              = 'golden',
       presentation      = 'insitu',
@@ -25,7 +27,7 @@ export async function POST(req: NextRequest) {
       notes,
       plaque_text,                       // optional decorative plate text (≤40 chars)
       plaque_shape      = 'rectangular', // 'rectangular' | 'curved' | 'victorian'
-      render_3d         = false,         // collectable_card only — produce 3D product shots
+      artwork_style     = 'artwork',     // collectable_card only — 'artwork' | 'miniature'
     } = body
 
     if (!source_image_b64) {
@@ -39,25 +41,26 @@ export async function POST(req: NextRequest) {
 
     // ── COLLECTABLE CARD — dedicated two-image path (no levels/expand) ──
     if (presentation === 'collectable_card') {
-      const { frontB64, backB64, front3dB64, back3dB64 } = await generateCollectableCard({
-        sourceImageB64: source_image_b64,
-        sceneDesc:      scene_description || '',
-        memoryText:     memory_text || '',
-        displayName:    display_name || 'Untitled',
+      const { frontB64, backB64 } = await generateCollectableCard({
+        sourceImageB64:       source_image_b64,
+        sceneDesc:            scene_description || '',
+        viewingDirection:     viewing_direction || '',
+        distinctiveFeatures:  distinctive_features || '',
+        memoryText:           memory_text || '',
+        displayName:          display_name || 'Untitled',
         mood,
         plaqueText:     plaque_text || '',
-        render3d:       !!render_3d,
+        artworkStyle:   artwork_style === 'miniature' ? 'miniature' : 'artwork',
         openaiApiKey,
       })
       return NextResponse.json({
         result: {
           front_b64:     frontB64,
           back_b64:      backB64,
-          front_3d_b64:  front3dB64 || null,
-          back_3d_b64:   back3dB64  || null,
           scene:         display_name,
           mood,
           presentation:  'collectable_card',
+          artwork_style,
           memory_text,
         }
       })
@@ -68,9 +71,11 @@ export async function POST(req: NextRequest) {
       sourceImageB64:        source_image_b64,
       extraImages:           extra_images,
       sceneDescription:      scene_description,
+      viewingDirection:      viewing_direction,
       environmentSurface:    environment_surface,
       environmentAtmosphere: environment_atmosphere,
       characterSource:       character_source,
+      distinctiveFeatures:   distinctive_features,
       displayName:           display_name,
       mood,
       presentation,
@@ -106,13 +111,15 @@ export async function POST(req: NextRequest) {
     // ── PLAQUE (optional) ─────────────────────────────────────
     if (plaque_text && plaque_text.trim()) {
       try {
-        current = await compositePlaque({
-          imageB64: current,
-          text:     plaque_text,
-          shape:    plaque_shape,
+        current = await applyPlaque({
+          imageB64:     current,
+          text:         plaque_text,
+          shape:        plaque_shape,
+          integrate:    true,
+          openaiApiKey,
         })
       } catch (e: any) {
-        console.warn('[landscape-route] plaque composite failed:', e.message)
+        console.warn('[landscape-route] plaque pipeline failed:', e.message)
       }
     }
 

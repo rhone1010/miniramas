@@ -15,24 +15,57 @@ const MOODS: Record<string, string> = {
 // ── PRESENTATION STYLES ───────────────────────────────────────
 const PRESENTATIONS: Record<string, string> = {
   insitu:     '', // environment description from analyze handles this
-  museum:     `PRESENTATION: Museum product photograph — the diorama presented on a large walnut desk in a warm study.
+  museum:     `PRESENTATION: Museum product photograph — the diorama sits OPEN on a walnut desk, with a physically separate display sign staked into the ground behind it. NO ENCLOSURE, NO DOME, NO CIRCULAR BACKDROP.
+
+CRITICAL — THE ENTIRE DIORAMA IS 3D SCULPTED MINIATURE, NOT A FLAT PICTURE:
+The diorama is a fully THREE-DIMENSIONAL sculpted miniature from front to back — real tactile depth, real volume, real objects that cast real shadows.
+The scene recedes into true physical depth via actual 3D elements — sculpted terrain, standing posts, carved pilings, formed water. Not a painting, not a print, not a photograph, not a flat image.
+
+ABSOLUTELY NO:
+- Flat photo panel, printed image, or 2D backdrop standing vertically on or behind the base
+- A picture, card, or print propped up as the "scene" with a small 3D skirt in front
+- Any vertical rectangular or flat surface with the scene rendered ON IT instead of sculpted AS it
+- Any suggestion that the distant part of the scene is a painting or image while only the foreground is 3D
+
+Every part of the scene — near and far, foreground and distant — must be fully sculpted 3D miniature. The distant hills are small sculpted hills. The distant sky is open air above the scene (or room bokeh beyond). If there's a horizon, it's the meeting of a real 3D ground surface with the ambient space above it, not a printed line on a panel.
+
+CRITICAL — OPEN PRESENTATION, NO ENCLOSING SHAPE:
+The diorama is an open physical miniature sitting flat on the desk surface with EMPTY AIR around it on all sides. The sky extends freely upward from the scene into the room's bokeh.
+ABSOLUTELY NO:
+- Glass dome, snowglobe, or hemispheric enclosure around the scene
+- Circular or oval backdrop framing the scene
+- Curved boundary cropping the scene's silhouette
+- Any background shape that cuts into, hides, or frames the diorama
+- Any implied half-circle or arch behind the diorama
+
+The only circular element permitted is the wooden plinth base itself (viewed from above at an angle). Everything else is open, rectangular, or shapeless ambient room.
+The sky and background behind the diorama is soft warm room bokeh — bookshelves and warm ambient light. Rectangular or amorphous, never circular, never domed, never enclosing.
 
 ROOM AND ENVIRONMENT:
 The diorama sits on a large dark walnut desk — book-matched grain, rich chocolate-brown with flowing figured streaks, deep satin finish. The grain is clearly visible and beautiful.
 The desk surface has a strong mirror-like reflection of the diorama base — the walnut base and the lower part of the diorama reflect downward into the polished surface, doubled and slightly diffused.
 
+PHYSICALLY SEPARATE DISPLAY SIGN — BEHIND THE DIORAMA:
+A small, physically separate decorative display marker is staked or planted into the desk surface a few inches behind the diorama base — clearly a distinct physical object.
+The sign is one of: a small circular brass plaque on a vertical rod, a small oval wooden placard on a wire stand, a miniature folded museum card on a tiny easel.
+The sign is a RESPECTFUL accent — small, tasteful, clearly subordinate to the diorama. It does NOT dominate, overlap, or frame the diorama.
+
+CRITICAL — THE DIORAMA IS NEVER CLIPPED OR OVERLAPPED BY THE SIGN OR ANY OTHER BACKGROUND ELEMENT:
+Every part of the diorama is fully visible, no part cropped, hidden, or cut off by any background shape, frame, sign, or object.
+The sign sits strictly BEHIND the diorama in depth, not overlapping it visually, and NEVER cuts into the diorama's silhouette.
+
 LIGHTING:
-A large window to one side fills the room with warm afternoon light — this is the primary light source. Soft directional key light rakes across the diorama, catching textures and casting gentle shadows to the opposite side. Warm neutral color temperature.
+A large window to one side fills the room with warm afternoon light — primary light source. Soft directional key light rakes across the diorama, catching textures and casting gentle shadows to the opposite side. Warm neutral color temperature.
 In the far corner of the room, a small antique brass lamp with a silk shade glows warmly — accent only, does not light the diorama directly.
 
 ROOM BACKDROP:
-The room beyond is a warm study — bookshelves softly out of focus, framed paintings on the wall, the edge of a chair visible. Everything behind the desk is in soft warm bokeh, clearly a real room but subordinate to the diorama.
+The room beyond is a warm study — bookshelves softly out of focus, framed paintings on the wall, the edge of a chair visible. Everything behind the desk is in soft warm bokeh, clearly a real room but subordinate to the diorama. Rectangular room features only, no circular or domed suggestion of any kind.
 
 DESK PROPS (SUBTLE):
 A hardcover book lies open to the left of the diorama. Reading glasses rest to the right on the desk surface. Both are slightly out of focus — they frame the diorama as a cherished object on a well-used desk.
 
 FEEL:
-The diorama as a prized possession in a warm, personal study — not a sterile studio. Lived-in, treasured, beautifully lit.`,
+An open, clean display of a prized miniature on a collector's desk, labeled with a small physical display marker. Lived-in, treasured, museum-quality. Like a curator's reference specimen sitting on a working desk — never encapsulated, never enclosed.`,
   collectable_card: '', // handled by generateCollectableCard() — not a normal prompt preset
   cinematic:  `PRESENTATION: Cinematic hero shot — the diorama staged as a richly lit dramatic movie-poster subject.
 
@@ -42,6 +75,14 @@ A rich MID-TONE atmospheric gradient — deeper tones at the edges, lifting to a
 LIGHTING — BRIGHT DRAMATIC, NOT DIM DRAMATIC:
 Strong directional key light from above or side creates pronounced highlights and sculptural shadows on the diorama. Ambient fill is LIFTED — shadows read as dimensional and detailed, never crushed to black. The diorama itself is brightly and richly lit; the lighting is dramatic through contrast and direction, not through dimness. High dynamic range with full detail visible in both highlights and shadows.
 
+SHARPNESS — NON-NEGOTIABLE:
+Every element of the diorama must be rendered with CRISP, PHOTOGRAPHIC SHARPNESS — not painterly, not soft, not atmospheric-blurred.
+- Individual pier pilings, lamp posts, pebbles, blades of grass, water ripples all have hard crisp edges
+- Material textures (wood grain, stone, sand, water) are sharp enough to read at close inspection
+- NO painterly brush-feel, NO impressionistic softening, NO watercolor atmosphere
+- The dramatic mood comes from LIGHT and SHADOW only — NEVER from blur or soft focus
+- Hyperreal, detailed, photographically sharp — a cinematic hero shot of a physical object
+
 SURFACE AROUND BASE:
 Darker tonal surface — deep warm bronze, rich dark stone, or moody textured fabric — but clearly visible and lit by spill from the key light. Reads as substantial material surface, not absent void.
 
@@ -50,16 +91,18 @@ The base rim remains a sharp visual break. On the base: richly lit, high saturat
 The base casts a long dramatic shadow on the surface beneath it.
 
 FEEL:
-Heroic theatrical presentation — the diorama is the star under full stage lighting. Dramatic and luminous, not dim or shadowy.`,
+Heroic theatrical presentation — the diorama is the star under full stage lighting. Dramatic and luminous, sharp and detailed throughout.`,
 }
 
 export async function generateLandscape(input: {
   sourceImageB64:         string
   extraImages?:           string[]
   sceneDescription?:      string   // free-form GPT-4o description of the place
+  viewingDirection?:      string   // which side of the subject the viewer is on
   environmentSurface?:    string   // just the ground material
   environmentAtmosphere?: string   // just sky/weather/light
   characterSource?:       'object' | 'atmosphere'
+  distinctiveFeatures?:   string   // comma-separated specific features to preserve
   displayName?:           string
   mood?:                  string
   presentation?:          string
@@ -85,7 +128,13 @@ export async function generateLandscape(input: {
 GROUND ZONE (the entire lower portion of the frame — from foreground up to the horizon line):
 The diorama sits on a continuous extended surface made of the SAME material as its terrain — if the base shows sand, the surround IS sand; if grass, grass; if forest floor, the same forest floor continues outward; if stone, the same stone; if shoreline, matching wet sand or pebbles.
 Tactile physical dimension across the full ground zone — individual grains, blades, pebbles, tufts, ripples, crumbs. The material should read as sinkable and touchable anywhere you look, not just near the base.
-Photographic depth of field is the only softening — material near the base is razor-sharp; toward the horizon it softens progressively from camera blur, NOT from material simplification. The material keeps its identity throughout.
+
+SHARPNESS DISTINCTION — CRITICAL:
+THE DIORAMA ITSELF (the scene on the base, including front edge, back edge, and everything in between) IS RAZOR SHARP FROM EDGE TO EDGE. Every pier piling, every lamp post, every blade of grass, every pebble on the diorama — front and back — is fully in focus.
+ONLY the ground stage AROUND and BEYOND the base (the matching ground material extending outside the base rim into the surrounding frame) softens with distance via photographic depth of field.
+DoF applies to: the extended ground surround, the sky gradient, the horizon.
+DoF does NOT apply to: anything on the diorama itself. The back edge of the base, the far end of a receding pier, the rear of the scene — all razor sharp.
+
 The ground zone reaches naturally to a soft distant horizon line roughly 40-45% up the frame.
 
 SKY ZONE (everything above the horizon line — the upper portion of the frame):
@@ -94,7 +143,9 @@ NO defined clouds, NO mountains, NO trees, NO distant buildings, NO horizon feat
 The sky is blurred and slightly desaturated compared to the diorama, subordinate but present.
 
 HIERARCHY:
-The diorama is the fully-rendered, sharp, saturated subject. The matching ground stage is tactilely 3D but softer with distance from depth of field. The sky gradient is the softest element.
+The diorama itself: fully sharp, fully saturated, fully rendered, edge to edge.
+The ground stage around and beyond the base: tactilely 3D but softer with distance from DoF.
+The sky gradient: softest element.
 
 BOUNDARY:
 The base rim is a sharp visual break. On the base: crisp, miniature, fully saturated. Off the base: same material extended with photographic softness, meeting a gradient sky above.
@@ -104,20 +155,51 @@ NO PHOTO CARDS OR BACKDROP PLANES:
 No rectangular card edges, no printed backdrop planes, no scene duplicates, nothing vertical behind the diorama except the atmospheric sky gradient.`
     : pres
 
-  // Camera block — default is standard product shot; cinematic overrides with foreshortened wide-angle
+  // Camera block — per-preset foreshortening behavior
   const cameraBlock = input.presentation === 'cinematic'
-    ? `CAMERA — CINEMATIC FORESHORTENING:
-Camera 35-45 degrees elevated, angled down at the diorama — the same look-down angle, NOT a low-angle shot.
-WIDE-ANGLE lens perspective applied to the entire frame, creating STRONG FORESHORTENING:
-- The nearest edge of the base and the nearest environmental elements loom LARGE, thrust forward toward the viewer
-- Far elements of the base and anything behind compress and recede rapidly into the distance
-- Near-far scale contrast is exaggerated — the closest sand, rocks, or surface appears visibly larger than equivalent elements on the far side of the base
-- Depth feels deep even though the physical object is small
-Hero shot framing. The diorama fills the frame with maximum presence under dramatic perspective.`
-    : `CAMERA:
-35-45 degrees elevated, angled down at the diorama.
-Pulled back far enough to show the full base with surrounding space.
-Macro product photography — a precious small object in space.`
+    ? `CAMERA — CINEMATIC FORESHORTENING (STRONG):
+Camera 35-45 degrees elevated, angled down at the diorama — look-down angle, NOT low-angle.
+WIDE-ANGLE lens perspective creates STRONG FORESHORTENING throughout the frame:
+- The nearest edge of the base and near elements loom LARGE, thrust forward toward the viewer
+- Far elements compress and recede rapidly into the distance
+- Near-far scale contrast is exaggerated — closest sand, rocks, or surfaces appear visibly larger than equivalent far-side elements
+- Linear subjects (piers, paths, bridges) benefit strongly — they race into the distance and feel epic in scale
+Hero shot framing. Maximum dramatic depth from the lens, not from physical truncation.`
+    : input.presentation === 'museum'
+    ? `CAMERA — STANDARD MUSEUM PRODUCT SHOT:
+Camera 30-40 degrees elevated, angled down at the diorama.
+Medium-format macro lens equivalent. Natural perspective — minimal foreshortening distortion.
+Pulled back far enough to show the full base with generous surrounding space.
+Straightforward, refined, editorial product photography — the diorama is presented cleanly.`
+    : `CAMERA — IN-SITU WITH MILD FORCED PERSPECTIVE:
+Camera 35-45 degrees elevated, angled down at the diorama.
+Standard focal length with a SUBTLE wide-angle feel — just enough perspective to give linear subjects (piers, paths, bridges, coastlines) a convincing sense of extending into the distance via forced perspective.
+The foreshortening is MILD, not dramatic — think "natural documentary photography" rather than "cinematic hero shot." Linear features recede gracefully.
+Pulled back far enough to show the full base with surrounding space.`
+
+  // Scale + distance tuning — how to fit content-rich scenes without cropping
+  const scaleTuningBlock = `SCALE & DISTANCE TUNING — FIT ALL CONTENT WITHOUT CROPPING:
+
+If the scene is content-rich (many distinctive features, extended linear elements, or multiple zones of interest), do NOT crop content or violate margin rules to fit it. Instead, use the macro-photographer's technique:
+
+1. SHRINK THE ENTIRE MINIATURE physically smaller on its base — the whole scene scales down proportionally so every feature fits within the base perimeter with comfortable spacing. A pier that would otherwise overflow the base becomes a smaller-scale pier; a field with distant hills becomes a smaller field with smaller hills.
+
+2. MOVE THE CAMERA CLOSER to the miniature and use a WIDER ANGLE LENS (think 24-35mm equivalent rather than 85mm). The close-in wide-angle camera compensates for the smaller subject — the foreground still looms large and feels immediate, while the wider field of view captures all the background features at once.
+
+Net effect: all scene content visible, foreground feels close and prominent, no cropping, margins still respected.
+
+WHEN TO APPLY:
+- Scene has 3+ distinct zones (foreground + midground + distant features)
+- Distinctive features list contains multiple items that all need to appear
+- Scene has a long linear element PLUS additional features (e.g. a path AND a pond AND distant hills)
+- Any time you would otherwise have to crop content or shrink margins to fit everything
+
+WHEN NOT TO APPLY:
+- Single-subject scenes with minimal background (pier alone at sea, single rock formation, solo tree)
+- Scenes where the subject is meant to dominate dramatically
+
+CRITICAL — THIS IS ONLY A CAMERA-AND-SCALE TECHNIQUE, NOT A STYLIZATION:
+The miniature is still fully 3D sculpted throughout. The diorama is still razor-sharp edge to edge. The base still has full margins. The only thing changing is the physical scale of the miniature contents and the camera's lens choice and distance. Everything else about the presentation stays identical.`
 
   const prompt = [
     `Transform the provided image into a physically realistic miniature diorama presented as a professional product photograph.`,
@@ -130,6 +212,22 @@ Maintain major lines, horizon placement, and object relationships from the sourc
 Preserve repeating elements and spacing patterns exactly.
 Keep perspective, orientation, and the unique character of this specific place.`,
     `THIS SPECIFIC PLACE IS:\n${sceneDesc}`,
+    input.distinctiveFeatures ? `DISTINCTIVE FEATURES — MUST BE PRESERVED (NON-NEGOTIABLE):
+The following specific features are present in the source photograph and define what makes this place that place. Each one MUST appear in the final miniature — do not drop, simplify, or omit any of them:
+
+${input.distinctiveFeatures}
+
+If a feature is listed here, it exists in the source and must be rendered as a clearly visible 3D miniature element. Missing even one of these features makes the diorama feel wrong — it becomes a generic version of the place rather than THIS specific place.
+
+Common failure mode to avoid: dropping secondary features (ponds, outbuildings, specific tree clusters, distant landmarks, signs, benches) in favor of rendering only the "obvious" main subject. The secondary features are what make the place personal and specific. Keep all of them.` : '',
+    input.viewingDirection ? `VIEWING DIRECTION — CRITICAL CAMERA ORIENTATION:
+The viewer is positioned relative to the subject exactly as described below. This defines which side of the subject faces the camera, where the light source is positioned relative to the viewer, and the orientation of the scene in frame. Do NOT flip, mirror, or rotate the viewing angle. Match the source photograph's camera position.
+
+${input.viewingDirection}
+
+If the source shows the sun behind the subject (silhouette), the sun stays behind the subject in the miniature rendering.
+If the source shows the subject from its left side, render the miniature from its left side.
+Orientation fidelity is mandatory.` : '',
     `MATERIAL CONVERSION — convert all elements into physical miniature materials:
 - Rock, stone, cave walls, architecture → sculpted and painted resin with authentic texture
 - Ground, sand, soil, floor → textured terrain materials at correct scale
@@ -148,25 +246,93 @@ Every surface material ON the diorama (the miniature world on top of the base) h
 The viewer should feel they could press a thumb into any material on the diorama and leave an imprint.`,
     mood,
     input.notes ? `ADDITIONAL NOTES FROM THE PERSON WHO LOVES THIS PLACE:\n${input.notes}` : '',
-    `DIORAMA BASE — CONTAINMENT IS A HARD RULE:
+    `DIORAMA BASE — CONTAINMENT WITH FORCED PERSPECTIVE ALLOWED:
 Circular dark walnut display plinth with a thick, heavy, turned-wood rim clearly visible on all sides.
-The miniature is a discrete physical object sitting ON TOP of this base — it MUST terminate at the base perimeter on every side.
-All scene elements (rocks, water, cliffs, terrain, vegetation, structures, horizon) are contained within the circular footprint of the base.
-If the source scene is too wide or expansive to fit naturally, COMPRESS or CURVE it to fit within the circle — do NOT extend the miniature past the rim into the surrounding environment.
-The coastline, ridgeline, or linear features of the source must bend to follow the base perimeter rather than continuing off into the frame.
-Nothing in the miniature crosses the base edge. The base rim is a hard visual boundary.
+The miniature is a discrete physical object sitting ON TOP of this base — all physical miniature elements terminate at the base perimeter.
+
+TWO KINDS OF LINEAR SUBJECTS — HANDLE DIFFERENTLY:
+
+WRAPPING SUBJECTS (bend to fit the base perimeter):
+- Coastlines, ridgelines, riverbanks, treelines, low walls that run parallel to the viewer
+- These features curve naturally to follow the round base edge
+- Nothing crosses the base rim
+
+RECEDING SUBJECTS (use forced perspective, preserve full linear extent visually):
+- Piers, bridges, boardwalks, paths, roads, jetties, alleyways extending AWAY from the viewer into the distance
+- These features use FORCED PERSPECTIVE (camera angle creating visual foreshortening) rather than physical compression
+- The subject should LOOK like it extends far into the distance even though it must terminate at the base edge
+- Its endpoint at the far rim should recede into the distance via perspective, getting smaller as it goes — not be chopped off short
+- A pier going out to sea must APPEAR to extend a long way out via camera foreshortening; it should NOT look truncated or stubby
+- Preserve the full visual sense of linear extent even though the physical endpoint sits at the base rim
+
+The base rim is a physical boundary for the miniature's materials, not a visual truncation of the scene's apparent depth.
 The base casts a clear shadow on the surface beneath it, reinforcing that it is a self-contained object placed on a larger world.`,
-    `COMPOSITION — MARGINS ARE MANDATORY (APPLIES TO ALL PRESENTATIONS EXCEPT SCENE CARD):
-The base occupies approximately 65% of the image width — NOT more.
-The image frame shows 15-20% clear breathing room on the LEFT side of the base, and 15-20% clear breathing room on the RIGHT side of the base. The base does NOT touch, kiss, or extend to the left or right image edges under any circumstances.
-The image frame also shows 10-15% clear space above and below the base.
-The entire base including its full rim profile is visible with generous space around it. Pull the camera back if needed to satisfy these margins — the diorama should feel like a small precious object in surrounding space, not a cropped subject pressing against the frame.`,
+    `COMPOSITION — MARGINS ARE MANDATORY AND NON-NEGOTIABLE:
+
+ABSOLUTE RULE (do not violate under any circumstances):
+The base NEVER touches the left, right, top, or bottom edge of the image frame.
+Minimum 15% clear breathing room on EVERY SIDE — left, right, top, bottom. The entire base rim is fully visible with empty surround on all four sides.
+If the diorama's scene has receding elements (pier, path, bridge) going into the distance, those elements recede via CAMERA PERSPECTIVE only — the physical base still terminates well within the frame with full margin visible on all sides.
+The base occupies approximately 60-65% of the image width — NOT more. NEVER more than 70%.
+
+If you cannot fit the scene while respecting these margins, pull the camera back further. Pull back as much as needed. The margins override any sense of "filling the frame."
+
+Failure mode to avoid:
+- Base touching or exceeding the right/left/top/bottom frame edge
+- Water, sand, or terrain extending off-frame past where the base ends
+- Any portion of the base rim being clipped by the frame`,
     cameraBlock,
+    scaleTuningBlock,
     envBlock,
-    `QUALITY:
-Must look like a genuinely handcrafted physical miniature — tactile, three-dimensional, real.
-Every surface has physical texture and material weight. No flat planes. No stylization or cartoon effects.
-Museum-quality miniature craftsmanship — the kind someone would display with pride.`,
+    `PHOTOGRAPHIC REALISM — THIS IS A PHOTOGRAPH OF A REAL OBJECT, NOT A RENDER:
+
+LIGHTING (photographic, not studio-render):
+Single softbox key light from upper-left at approximately 45 degrees above horizontal. Fill ratio 1:4 — shadow side clearly darker but detail preserved.
+Subtle warm rim light catches the right edge and top of the subject, separating it from background.
+Noticeable light falloff into shadow — not flat even illumination. Slight color temperature drift across the frame (warmer toward key, cooler toward shadow).
+Shadows are soft-edged but present and directional — never absent, never sharp.
+Small specular hits on glossy materials where light catches micro-geometry — these hits are imperfect and uneven, catching some details and missing others.
+
+MATERIAL MICRO-DETAIL (handmade, not CGI-perfect):
+This miniature has subtle handmade imperfections that signal its handcrafted nature:
+- Micro paint pooling in recessed corners where a painter's brush lingered
+- Irregular gloss patches — some surfaces slightly glossier than adjacent ones in a non-systematic way
+- Occasional tiny dust specks in deep crevices
+- Hand-applied tool marks visible on resin and wood surfaces under raking light
+- Fine brush strokes visible on painted areas at close inspection
+- One or two micro chips or edge wear points on rim or high-traffic edges
+NEVER perfectly uniform. The imperfections are small and premium — this is master craftsmanship, not sloppy work. But the surface tells you a human made it.
+
+ENVIRONMENTAL GROUNDING (real space, not backdrop):
+The desk surface has fine grain, visible wood pores, and occasional tiny dust motes catching the raking light near the base.
+Warm ambient color bounce from out-of-frame objects tints the shadow side of the subject subtly — this is reflected light from a real room, not a neutral studio infinity.
+Faint airborne dust or soft particles may be visible in the lit atmosphere, very subtle.
+A suggestion of out-of-focus environment behind (soft shapes, gentle color fields) implies the diorama exists in a real room with depth, not floating in a void.
+
+LENS AND FOCUS (real camera, not perfect CG):
+Shot on medium-format digital with an 85-110mm macro equivalent.
+CRITICAL — THE ENTIRE DIORAMA IS RAZOR SHARP FROM EDGE TO EDGE: the front of the base, the middle of the scene, and the back of the base are ALL in crisp focus. Every detail on the physical miniature — front, back, left, right — is clearly readable and sharp. The diorama is a three-dimensional physical object and every surface of that object must be fully in focus.
+Depth of field applies ONLY to the scene BEYOND the diorama — the room, the desk, the surrounding ambient space behind and around the base softens with distance. Not the diorama itself, never the diorama itself.
+
+FAILURE MODE TO AVOID (this is what I keep seeing and it is WRONG):
+The far end of the pier fading into soft blur. The back lamp posts going fuzzy. Sky haze creeping onto the diorama sky. The back rim of the base going soft. ANY portion of the physical miniature rendered with reduced sharpness.
+EVERY element physically attached to the base — including the far-most lamp post, the furthest piling, the back rim of the base, the far water edge on the base — must be rendered at the SAME sharpness as the nearest front element. No falloff. No gradient of focus. No "atmospheric softening" on the diorama itself.
+
+The only things allowed to blur are: the room behind the diorama, the desk surface extending behind the base, ambient air/light behind the scene, a sky gradient that is clearly SKY (not part of the miniature).
+
+Background blur follows optical physics with hexagonal bokeh shapes on any specular highlights in the room behind.
+Very slight chromatic aberration on the brightest specular highlights (thin color fringe, barely perceptible) — the tell of a real lens.
+No digital perfection — the image has the subtle imperfections of real photography, but the diorama itself is always in full sharp focus.
+
+COLOR SCIENCE (film-adjacent, not digital-vivid):
+Subdued natural color palette with rich shadow detail. Lifted blacks rather than crushed shadows.
+Natural contrast curve — skin tones of any figures warm and believable, no digital neon in highlights.
+Slight film-adjacent color grading: warmer shadows, slightly cooler highlights, overall midtone warmth.
+NEVER oversaturated. NEVER clinical-clean. This reads as a capture of the physical world.
+
+OVERALL:
+Must look like a genuinely handcrafted physical miniature photographed by a master product photographer — not a CG render of a miniature.
+Museum-quality craftsmanship, premium editorial photography. The viewer should momentarily wonder if this is a real miniature.`,
   ].filter(Boolean).join('\n\n')
 
   // Prepare source image with brightness normalization
@@ -220,44 +386,117 @@ function escapeSvgText(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
 }
 
+type CardArtworkStyle = 'artwork' | 'miniature'
+
 async function buildCardFront(input: {
-  sourceImageB64: string
-  sceneDesc:      string
-  displayName:    string
-  mood:           string
-  openaiApiKey:   string
+  sourceImageB64:       string
+  sceneDesc:            string
+  viewingDirection?:    string
+  distinctiveFeatures?: string
+  displayName:          string
+  mood:                 string
+  artworkStyle:         CardArtworkStyle
+  openaiApiKey:         string
 }): Promise<string> {
   const openai = new OpenAI({ apiKey: input.openaiApiKey })
   const moodHint = MOODS[input.mood] || MOODS.golden
 
+  // Scene block varies by artwork style — "artwork" is painted illustration,
+  // "miniature" is hyperrealistic photograph of the SCENE ITSELF (no plinth inside the card).
+  const sceneBlock = input.artworkStyle === 'miniature'
+    ? `SCENE ON THE CARD — HYPERREALISTIC PHOTOGRAPH OF THE SCENE ITSELF, ELEVATED WITH EDITORIAL STYLIZATION:
+
+CRITICAL — READ CAREFULLY:
+The image on this card is a HYPERREALISTIC PHOTOGRAPH of this specific place: ${input.sceneDesc}
+The aesthetic is photorealistic BUT stylized — "hyperreal" in the sense of heightened, cinematically elevated reality. Think the cinematic polish of a collectable art card from a premium trading card set: real-looking enough to step into, but more dramatic, more saturated, more composed than a snapshot.
+
+DO NOT INCLUDE A DIORAMA PLINTH OR BASE INSIDE THE CARD:
+This card artwork is the SCENE itself — not a miniature-on-a-plinth product shot. There is no turned-wood base, no circular platform, no diorama-on-display visible inside the card frame. The scene fills the card frame naturally as though photographed in the real world.
+The foil border is the only frame. The artwork inside is a pure photographic scene, not a product photo of a miniature.
+
+AESTHETIC — HYPERREAL BUT ELEVATED:
+- Razor-sharp detail throughout — every pier piling, every lamp post, every ripple on the water, every grain of sand reads as a real photograph
+- Saturated but natural color with strong cinematic color grading — elevated reality, rich blacks, lifted warmth, luminous highlights
+- Bold dramatic lighting — strong directional light with pronounced rim light, backlight, or atmospheric glow
+- Light catches subjects in a way that feels cinematic — sun flares, god rays, wet surface reflections, atmospheric haze
+- Depth and dimension via real atmospheric perspective plus slightly heightened contrast between near and far
+- NO brushstrokes, NO painterly softening, NO illustrated quality — but YES to dramatic editorial polish
+- The scene should feel like a film still from a Malick or Deakins-shot movie: photographic, elevated, emotionally weighted
+
+EXAMPLES OF THE RIGHT AESTHETIC:
+- A National Geographic cover photograph with the drama turned up
+- A cinematic film still (Roger Deakins, Emmanuel Lubezki)
+- A premium collectable trading card's photorealistic art (Topps Chrome, Panini Spectra nature/travel series)
+- A high-end travel ad where the photo looks almost too good to be real
+
+EXAMPLES OF WHAT TO AVOID:
+- Any painterly, illustrated, or drawn quality
+- Soft-focus atmospheric painting
+- Cartoon or stylized-as-in-simplified artwork (we want stylized-as-in-cinematically-heightened)
+- Product photography of a physical miniature (the miniature-with-plinth aesthetic — that belongs in In Situ, NOT here)
+- A flat documentary snapshot — too ordinary, needs drama`
+
+    : `SCENE ON THE CARD — PAINTED ARTWORK:
+A richly painted illustration of this specific place: ${input.sceneDesc}
+Painterly quality — think high-end art card illustration or classical landscape painting. Rich brushwork, expressive color, artistic interpretation. Full saturation, strong light, the scene is the subject.
+This is artwork, not a photograph — stylized but rooted in the specific character of this place.`
+
   const prompt = [
-    `COLLECTABLE CARD FRONT — PREMIUM TRADING-CARD ARTWORK, PORTRAIT ORIENTATION.`,
+    `COLLECTABLE CARD FRONT — PREMIUM TRADING-CARD, PORTRAIT ORIENTATION.`,
 
-    `This is the front face of a high-end collectable card, like a limited-edition art card from a premium set. Fill the entire image frame with the card front — NO desk, NO background beyond the card itself, NO shadows of the card on a surface. The image IS the card face, edge to edge.`,
+    `This is the front face of a high-end collectable card, like a limited-edition art card from a premium set. Fill the entire image frame with the card front — NO desk, NO background beyond the card itself, NO shadows of the card on a surface. The image IS the card face, edge to edge. The card itself is flat and printable.`,
 
-    `SCENE ON THE CARD:
-A richly illustrated miniature diorama of this specific place: ${input.sceneDesc}
-Full saturation, strong light, the scene is the subject. Premium handcrafted miniature aesthetic with tactile material depth.`,
+    sceneBlock,
+
+    input.distinctiveFeatures ? `DISTINCTIVE FEATURES — MUST APPEAR (NON-NEGOTIABLE):
+The following specific features from the source photograph define this place. Each one must be clearly visible in the card artwork:
+
+${input.distinctiveFeatures}
+
+Do not simplify to a generic version of the place type. The listed features are what makes this place personal and specific — keep all of them visible.` : '',
+
+    input.viewingDirection ? `VIEWING DIRECTION — CRITICAL CAMERA ORIENTATION:
+The scene is captured from this exact viewpoint: ${input.viewingDirection}
+Do NOT flip, mirror, or rotate the viewing angle. Match the source photograph's orientation.` : '',
 
     moodHint,
 
-    `BORDER-BREAKING ILLUSTRATION (key feature):
-A thin elegant foil-style border (metallic gold or soft silver, 20-30 pixels wide) frames the card illustration — but the illustration INTENTIONALLY BREAKS the border at 2-3 points:
-- A tree branch, rocky outcrop, or foliage element extends past the TOP edge of the border
-- Grass, terrain, or plant life crosses past the BOTTOM edge of the border
-- Optional: a stone, wave, or vegetation element pokes past the LEFT or RIGHT border edge
-Border-breaks are dramatic and deliberate, giving the card a 3D poppable feel. The illustration rules the card; the border is a supporting frame.`,
+    `FRAME-BREAKING & PROJECTION (KEY STYLIZATION — MANDATORY):
+
+Popular collectable cards (Pokémon holographic, Magic the Gathering mythic rare, Panini Spectra, premium tarot art cards) use dramatic FRAME-BREAKING to create a "projecting into the viewer's space" effect. Art elements punch past the foil border at specific points, sometimes continuing off the card edge entirely as if thrust forward.
+
+REQUIRED: At least TWO of the following frame-breaking elements must appear, chosen based on subject:
+- A foreground element (wave crest, sand spray, foliage, rock) extends OVER the bottom foil border and may even run off the bottom edge of the card entirely — as if splashing out of the card toward the viewer
+- A vertical structural element (lamp post, pier piling, tree, column) extends UP over the top foil border into the sky zone, projecting past the frame
+- A side element (branch, structure, bird, wave) extends past the LEFT or RIGHT foil border
+- An element may PROJECT AND CUT OFF — extending past the foil border AND off the card edge, creating the sense of dimensional projection out of the card plane
+
+The foil border is partially OBSCURED by the projecting elements — the element crosses OVER the foil gold, not behind it. The foil appears interrupted at those points, sometimes with small shadow underneath suggesting the element is physically above the frame plane.
+
+STYLE INTENSITY:
+Not subtle. Not timid. This is the main visual hook of the card. Dramatic, confident projection. If a pier is the subject, make a lamp post arc past the top frame AND let wet sand or wave foam spill past the bottom. If a forest, let a branch sweep past the top AND roots or ferns project past the bottom. Every subject has at least two projection opportunities — find them and commit.
+
+EXAMPLES FOR COMMON SUBJECTS:
+- Pier/boardwalk: lamp post breaks top, wave foam or pier piling breaks bottom, railing may extend past side
+- Beach/coast: a cresting wave breaks bottom, a gull silhouette or driftwood breaks top
+- Forest: a branch breaks top, fern fronds or exposed roots break bottom
+- Mountain: a cloud wisp breaks top, a boulder breaks bottom
+- Urban: a lamp post or sign post breaks top, a curb or figure breaks bottom
+- Architecture: a spire or weathervane breaks top, garden hedge or walkway breaks bottom
+
+FAILURE MODE TO AVOID:
+A clean rectangular card with a clean foil border and the art neatly contained inside is WRONG. That reads as a poster, not a collectable card. Frame-breaking is the single most important style element.`,
 
     `TITLE TREATMENT:
 Near the bottom of the card (in the lower 15% of the frame), display the place name in a clean elegant serif typeface, centered or slightly left-aligned: "${input.displayName}"
 The title is small and refined — about 40-55 pixels tall — not dominant. It sits within a small clean typographic block or plate that the border-breaking elements do not overlap.`,
 
     `CARD MATERIAL FEEL:
-Satin-finish card stock with subtle sheen. The illustration has premium print quality — crisp edges, rich color. No visible physical card thickness or shadow (this is a straight-on frontal view of the card face, not a product shot of a card on a desk).`,
+Satin-finish card stock with subtle sheen. Premium print quality — crisp edges, rich color. No visible physical card thickness or shadow (this is a straight-on frontal view of the card face, not a product shot of a card on a desk).`,
 
     `COMPOSITION:
-Portrait orientation. The illustration fills the card. Margins inside the foil border: roughly 8-12%. Do not show any surface or environment outside the card — the image is the card, nothing else.`,
-  ].join('\n\n')
+Portrait orientation. The artwork fills the card. Margins inside the foil border: roughly 8-12%. Do not show any surface or environment outside the card — the image is the card, nothing else.`,
+  ].filter(Boolean).join('\n\n')
 
   const srcBuf = Buffer.from(input.sourceImageB64, 'base64')
   const bright = (await sharp(srcBuf).greyscale().stats()).channels[0].mean
@@ -287,54 +526,61 @@ async function buildCardBack(input: {
   // ── Layout constants ──
   const pad         = 70       // outer padding from card edge to foil border
   const borderW     = 4        // foil border stroke width
-  const thumbTop    = 180      // y-position of thumbnail top
-  const thumbSize   = 760      // thumbnail is square, ~50% of card height
-  const thumbLeft   = Math.round((CARD_W - thumbSize) / 2)
-  const titleY      = thumbTop + thumbSize + 90  // title baseline
-  const textTop     = titleY + 60                // memory text block top
 
-  // ── Prepare thumbnail from front image (square crop + resize) ──
+  // Thumbnail — portrait rectangle mirroring the unbordered front artwork aspect
+  const thumbTop    = 140
+  const thumbW      = Math.round(CARD_W * 0.72)    // ~737 px
+  const thumbH      = Math.round(thumbW * 1.33)    // portrait 3:4 — ~980 px
+  const thumbLeft   = Math.round((CARD_W - thumbW) / 2)
+
+  const titleY      = thumbTop + thumbH + 80       // title baseline below thumb
+  const textTop     = titleY + 55                  // memory text block top
+
+  // ── Prepare thumbnail from front image — trim the foil border margin ──
+  // The front was generated with ~8% border on each side; trimming that yields the unbordered scene.
   const frontBuf = Buffer.from(input.frontImageB64, 'base64')
   const frontMeta = await sharp(frontBuf).metadata()
   const fw = frontMeta.width  ?? CARD_W
   const fh = frontMeta.height ?? CARD_H
-  const squareSide = Math.min(fw, fh)
-  const cropLeft   = Math.round((fw - squareSide) / 2)
-  const cropTop    = Math.round((fh - squareSide) / 2)
+  const trimRatio = 0.085  // matches "Margins inside the foil border: roughly 8-12%" in front prompt
+  const cropX = Math.round(fw * trimRatio)
+  const cropY = Math.round(fh * trimRatio)
+  const cropW = fw - cropX * 2
+  const cropH = fh - cropY * 2
   const thumbBuf = await sharp(frontBuf)
-    .extract({ left: cropLeft, top: cropTop, width: squareSide, height: squareSide })
-    .resize({ width: thumbSize, height: thumbSize, fit: 'cover' })
+    .extract({ left: cropX, top: cropY, width: cropW, height: cropH })
+    .resize({ width: thumbW, height: thumbH, fit: 'cover' })
     .png()
     .toBuffer()
 
-  // ── Thumbnail border overlay (thin hairline frame) ──
+  // ── Thumbnail hairline frame ──
   const thumbBorderSvg = Buffer.from(`
-    <svg width="${thumbSize}" height="${thumbSize}" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="1" width="${thumbSize - 2}" height="${thumbSize - 2}"
+    <svg width="${thumbW}" height="${thumbH}" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="${thumbW - 2}" height="${thumbH - 2}"
             fill="none" stroke="#8B6F3F" stroke-width="2" opacity="0.6"/>
     </svg>
   `)
 
   // ── Word-wrap memory text, build SVG ──
-  const textLines   = wrapText(input.memoryText || '', 38) // ~38 chars per line at this font size
-  const lineHeight  = 58
+  const textLines   = wrapText(input.memoryText || '', 38)
+  const lineHeight  = 54
   const titleText   = escapeSvgText(input.displayName || '')
   const bodyLinesSvg = textLines.map((ln, i) => `
     <text x="${CARD_W / 2}" y="${textTop + i * lineHeight}"
           text-anchor="middle"
           font-family="Georgia, 'Times New Roman', serif"
-          font-size="42" font-style="italic" fill="#3A2818">${escapeSvgText(ln)}</text>
+          font-size="38" font-style="italic" fill="#3A2818">${escapeSvgText(ln)}</text>
   `).join('')
 
   // ── Plaque block (optional) — sits above the MINISCAPE footer ──
   const plaqueText = (input.plaqueText || '').trim().slice(0, 40)
   const plaqueSvg  = plaqueText ? (() => {
-    const pW = 560
-    const pH = 90
+    const pW = 520
+    const pH = 78
     const pX = Math.round((CARD_W - pW) / 2)
-    const pY = CARD_H - pad - 140  // above the monogram
-    const pr = 8
-    const fs = Math.max(22, Math.min(40, Math.floor((pW * 0.92) / (plaqueText.length * 0.55))))
+    const pY = CARD_H - pad - 120
+    const pr = 7
+    const fs = Math.max(20, Math.min(34, Math.floor((pW * 0.92) / (plaqueText.length * 0.55))))
     return `
       <g transform="translate(${pX},${pY})">
         <defs>
@@ -359,7 +605,7 @@ async function buildCardBack(input: {
     `
   })() : ''
 
-  // ── Full back card SVG: cream background + foil border + title + body text + plaque + monogram ──
+  // ── Full back card SVG: cream background + foil border + thumbnail slot + title + body + plaque + monogram ──
   const backSvg = Buffer.from(`
     <svg width="${CARD_W}" height="${CARD_H}" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -391,12 +637,12 @@ async function buildCardBack(input: {
       <text x="${CARD_W / 2}" y="${titleY}"
             text-anchor="middle"
             font-family="Georgia, 'Times New Roman', serif"
-            font-size="68" font-weight="400" fill="#2A1E10"
+            font-size="56" font-weight="400" fill="#2A1E10"
             letter-spacing="2">${titleText}</text>
 
       <!-- Thin rule under title -->
-      <line x1="${CARD_W / 2 - 120}" y1="${titleY + 20}"
-            x2="${CARD_W / 2 + 120}" y2="${titleY + 20}"
+      <line x1="${CARD_W / 2 - 110}" y1="${titleY + 18}"
+            x2="${CARD_W / 2 + 110}" y2="${titleY + 18}"
             stroke="url(#foil)" stroke-width="1.5"/>
 
       <!-- Memory body text -->
@@ -406,18 +652,18 @@ async function buildCardBack(input: {
       ${plaqueSvg}
 
       <!-- Bottom monogram/mark -->
-      <text x="${CARD_W / 2}" y="${CARD_H - pad - 40}"
+      <text x="${CARD_W / 2}" y="${CARD_H - pad - 36}"
             text-anchor="middle"
             font-family="Georgia, 'Times New Roman', serif"
-            font-size="22" letter-spacing="6" fill="#8B6F3F" opacity="0.7">MINISCAPE</text>
+            font-size="20" letter-spacing="6" fill="#8B6F3F" opacity="0.7">MINISCAPE</text>
     </svg>
   `)
 
   // ── Composite: SVG background + thumbnail + thumbnail border ──
   const composed = await sharp(backSvg)
     .composite([
-      { input: thumbBuf,          left: thumbLeft, top: thumbTop },
-      { input: thumbBorderSvg,    left: thumbLeft, top: thumbTop },
+      { input: thumbBuf,       left: thumbLeft, top: thumbTop },
+      { input: thumbBorderSvg, left: thumbLeft, top: thumbTop },
     ])
     .png({ quality: 95 })
     .toBuffer()
@@ -425,88 +671,30 @@ async function buildCardBack(input: {
   return composed.toString('base64')
 }
 
-// ── 3D PRODUCT SHOT ───────────────────────────────────────────
-// Takes a flat card image and renders it as a tilted product shot on a walnut desk.
-// One gpt-image-1 edit call per face when enabled.
-async function buildCardProductShot(input: {
-  flatCardB64:  string
-  face:         'front' | 'back'
-  displayName:  string
-  openaiApiKey: string
-}): Promise<string> {
-  const openai = new OpenAI({ apiKey: input.openaiApiKey })
-
-  const prompt = [
-    `CARD PRODUCT PHOTOGRAPH — PREMIUM COLLECTABLE SHOWCASE.`,
-
-    `The provided image IS a flat collectable card (${input.face} face). Recreate this EXACT card as a tactile physical object photographed at a 3/4 angle on a premium display surface.`,
-
-    `CARD FIDELITY — ABSOLUTELY PRESERVE:
-The entire artwork, text, colors, borders, typography, and composition of the source card must remain exactly as shown. Do NOT redesign, stylize, or reinterpret the card's artwork. Treat the source as a printed reference to be photographed as-is.
-Every visual element on the card face in the source must appear on the card face in the output, in the same positions, at the same sizes, with the same colors.`,
-
-    `CAMERA & POSITIONING:
-Camera positioned at approximately 30-40 degrees above the card, angled downward.
-The card is tilted slightly toward the viewer with a soft rotation (roughly 8-12 degrees off-vertical from the camera's perspective) — enough to reveal the card's edge thickness without distorting the artwork.
-The full card is visible in frame with generous margin on all sides (roughly 15-20%).
-Portrait orientation of the card is preserved — the card is taller than wide in the frame.`,
-
-    `CARD PHYSICALITY:
-The card is clearly a real physical object with tactile card stock:
-- Visible edge thickness along the exposed edges (approximately 1-2mm), revealing the layered card material
-- Subtle specular sheen on the card surface suggesting a satin or soft-gloss finish
-- The foil border element on the card catches the light with a subtle metallic highlight
-- The card sits flat on the surface with its full weight grounded
-- Gentle, realistic drop shadow cast onto the desk beneath the card — soft-edged, appropriate to the lighting`,
-
-    `DISPLAY SURFACE:
-A warm dark walnut desk surface with visible book-matched grain and deep satin-polished finish — the same premium display surface used in our other product photography.
-The surface extends across the full frame behind and beside the card, softly out of focus toward the edges.
-A subtle mirror-quality reflection of the card's lower edge is visible in the polished surface directly beneath it.`,
-
-    `LIGHTING:
-Warm directional studio light from one side — the quality of afternoon light through a window. The key light rakes gently across the card, catching the foil border and creating a soft highlight on the card's lit face while the opposite edge falls into gentle shadow.
-The walnut surface picks up warm ambient bounce. No harsh shadows, no clinical fluorescence — this is premium editorial product photography.`,
-
-    `COMPOSITION:
-Single hero card, centered or slightly offset. No other cards in frame. No hands, no additional props, no clutter.
-Shallow depth of field — the card is razor sharp, the desk surface softens gently into the background.
-Treat this as a high-end product beauty shot for a premium collectables retailer.`,
-
-    `ABSOLUTE CONSTRAINT:
-Do not modify, redesign, or reinvent the card artwork in any way. The card you are photographing is the source image. Your only job is to photograph it as a physical object on a walnut desk, from a tilted angle, with the artwork preserved exactly.`,
-  ].join('\n\n')
-
-  const flatBuf = Buffer.from(input.flatCardB64, 'base64')
-  const file = await toFile(flatBuf, 'card.png', { type: 'image/png' })
-  const res = await openai.images.edit({
-    model: 'gpt-image-1',
-    image: file,
-    prompt,
-    size:  '1024x1536',
-  })
-  const b64 = res.data?.[0]?.b64_json
-  if (!b64) throw new Error(`card_${input.face}_3d_generation_failed`)
-  return b64
-}
-
 export async function generateCollectableCard(input: {
-  sourceImageB64: string
-  sceneDesc:      string
-  memoryText:     string
-  displayName:    string
-  mood:           string
-  plaqueText?:    string
-  render3d?:      boolean
-  openaiApiKey:   string
-}): Promise<{ frontB64: string; backB64: string; front3dB64?: string; back3dB64?: string }> {
+  sourceImageB64:       string
+  sceneDesc:            string
+  viewingDirection?:    string
+  distinctiveFeatures?: string
+  memoryText:           string
+  displayName:          string
+  mood:                 string
+  plaqueText?:          string
+  artworkStyle?:        CardArtworkStyle   // 'artwork' (painted) | 'miniature' (3D render)
+  openaiApiKey:         string
+}): Promise<{ frontB64: string; backB64: string }> {
+  const style: CardArtworkStyle = input.artworkStyle || 'artwork'
+
   // Front (AI) first since back needs thumbnail from it
   const frontB64 = await buildCardFront({
-    sourceImageB64: input.sourceImageB64,
-    sceneDesc:      input.sceneDesc,
-    displayName:    input.displayName,
-    mood:           input.mood,
-    openaiApiKey:   input.openaiApiKey,
+    sourceImageB64:      input.sourceImageB64,
+    sceneDesc:           input.sceneDesc,
+    viewingDirection:    input.viewingDirection,
+    distinctiveFeatures: input.distinctiveFeatures,
+    displayName:         input.displayName,
+    mood:                input.mood,
+    artworkStyle:        style,
+    openaiApiKey:        input.openaiApiKey,
   })
 
   const backB64 = await buildCardBack({
@@ -516,30 +704,7 @@ export async function generateCollectableCard(input: {
     plaqueText:    input.plaqueText,
   })
 
-  // Optional 3D product shots — fire front and back in parallel
-  let front3dB64: string | undefined
-  let back3dB64:  string | undefined
-  if (input.render3d) {
-    const [f3, b3] = await Promise.all([
-      buildCardProductShot({
-        flatCardB64:  frontB64,
-        face:         'front',
-        displayName:  input.displayName,
-        openaiApiKey: input.openaiApiKey,
-      }).catch(e => { console.warn('[landscape] 3d front failed:', e.message); return null }),
-      buildCardProductShot({
-        flatCardB64:  backB64,
-        face:         'back',
-        displayName:  input.displayName,
-        openaiApiKey: input.openaiApiKey,
-      }).catch(e => { console.warn('[landscape] 3d back failed:', e.message); return null }),
-    ])
-    if (f3) front3dB64 = f3
-    if (b3) back3dB64  = b3
-  }
-
-  const suffix = input.render3d ? ' + 3D renders' : ''
-  console.log(`[landscape] collectable_card ${input.displayName} — front + back${suffix} done`)
-  return { frontB64, backB64, front3dB64, back3dB64 }
+  console.log(`[landscape] collectable_card ${input.displayName} / ${style} — front + back done`)
+  return { frontB64, backB64 }
 }
 

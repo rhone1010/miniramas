@@ -176,8 +176,42 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
   z-index:3;box-shadow:0 2px 5px rgba(0,0,0,.5)}
 .tile.active .tile-check{display:flex}
 
-/* PLAQUE INPUT + SHAPE SELECTOR */
-.plaque-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
+/* COLLECTABLE CARD RENDER MODE — prominent segmented control */
+.card-mode-row{
+  margin:14px 0;
+  padding:10px 12px;
+  border-radius:10px;
+  background:linear-gradient(145deg, rgba(29,158,117,.08), rgba(184,146,74,.06));
+  border:1.5px solid rgba(29,158,117,.25);
+}
+.card-mode-label{
+  font-size:.62rem;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--teal-light);
+  margin-bottom:8px;
+}
+.seg-control{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
+}
+.seg-opt{
+  background:var(--surface);border:1.5px solid var(--border);border-radius:7px;
+  padding:10px 8px;cursor:pointer;color:var(--cream);text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  transition:all .18s;
+  font-family:var(--sans);
+}
+.seg-icon{font-size:1.1rem;line-height:1;color:var(--dim);transition:color .18s;margin-bottom:2px}
+.seg-text{font-size:.82rem;font-weight:600;letter-spacing:.01em}
+.seg-sub{font-size:.62rem;color:var(--muted);letter-spacing:.02em}
+.seg-opt:hover{border-color:var(--gold-light);background:rgba(245,240,232,.04)}
+.seg-opt.active{
+  border-color:var(--teal);
+  background:linear-gradient(145deg, rgba(29,158,117,.18), rgba(29,158,117,.06));
+  box-shadow:0 0 0 1px var(--teal) inset, 0 2px 8px rgba(29,158,117,.2);
+}
+.seg-opt.active .seg-icon{color:var(--teal-light)}
+.seg-opt.active .seg-sub{color:var(--teal-light)}
+
+/* PLAQUE INPUT + SHAPE SELECTOR */.plaque-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
   color:var(--cream);font-family:var(--sans);font-size:.78rem;padding:7px 10px;outline:none;
   transition:border-color .15s;margin-bottom:8px}
 .plaque-input:focus{border-color:var(--gold)}
@@ -232,22 +266,80 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
 .center{display:flex;flex-direction:column;overflow:hidden}
 .center-hdr{padding:.6rem 1rem;border-bottom:1px solid var(--border);
   display:flex;align-items:center;background:rgba(18,16,14,.6);flex-shrink:0}
-.results-grid{flex:1;overflow-y:auto;padding:.75rem;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;align-content:start}
+/* RESULTS STACK — staggered horizontal card stack, click non-top to peel forward */
+.results-grid{flex:1;overflow:hidden;padding:2rem 1.5rem;
+  position:relative;min-height:520px}
 
-/* RESULT CARDS */
-.rc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeIn .35s ease}
-.rc.done{border-color:var(--teal)}.rc.error{border-color:#E24B4A}
-.rc-img{aspect-ratio:1;background:rgba(245,240,232,.03);position:relative;overflow:hidden;
-  cursor:zoom-in;display:flex;align-items:center;justify-content:center}
+.results-stack-inner{
+  position:relative;width:100%;height:100%;
+  max-width:820px;margin:0 auto;
+  display:flex;align-items:center;justify-content:flex-start;
+}
+
+/* RESULT CARDS — stacked positioning */
+.rc{
+  position:absolute;
+  top:0;left:0;
+  width:52%;
+  height:100%;
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .4s cubic-bezier(.2,.7,.3,1),
+             left .4s cubic-bezier(.2,.7,.3,1),
+             border-color .25s,
+             box-shadow .25s,
+             filter .25s;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+  animation:fadeIn .35s ease;
+  display:flex;flex-direction:column;
+}
+.rc.done{border-color:var(--teal)}
+.rc.error{border-color:#E24B4A}
+
+/* Stack position staggering — each card peeks further right, scaled + darkened */
+.rc[data-pos="0"]{left:0;   transform:scale(1);    filter:brightness(1.00);z-index:10}
+.rc[data-pos="1"]{left:14%; transform:scale(.94);  filter:brightness(.72);z-index:9}
+.rc[data-pos="2"]{left:25%; transform:scale(.88);  filter:brightness(.56);z-index:8}
+.rc[data-pos="3"]{left:34%; transform:scale(.82);  filter:brightness(.42);z-index:7}
+.rc[data-pos="4"]{left:41%; transform:scale(.76);  filter:brightness(.32);z-index:6}
+.rc[data-pos="5"]{left:46%; transform:scale(.71);  filter:brightness(.24);z-index:5}
+.rc[data-pos="6"]{left:49%; transform:scale(.67);  filter:brightness(.18);z-index:4}
+.rc[data-pos="7"]{left:51%; transform:scale(.64);  filter:brightness(.14);z-index:3}
+/* Any beyond pos 7 collapse to stacked rear */
+.rc[data-pos^="8"],.rc[data-pos^="9"]{left:51%;transform:scale(.62);filter:brightness(.1);z-index:2}
+
+.rc.top{box-shadow:0 12px 36px rgba(0,0,0,.6),0 0 0 1px var(--teal)}
+.rc:not(.top):hover{filter:brightness(1.08) !important}
+
+.rc-img{
+  flex:1;
+  background:rgba(245,240,232,.03);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  min-height:0;
+}
 .rc-img img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.rc:not(.top) .rc-img{cursor:default}
+.rc.top .rc-img{cursor:zoom-in}
 
 /* Collectable card variant — playing card aspect ratio (5:7) */
-.rc-card .rc-img.rc-card-img{aspect-ratio:5/7}
+.rc-card .rc-img.rc-card-img{aspect-ratio:unset}
 .rc-card .rc-img.rc-card-img img{object-fit:contain;background:#1A1510}
-/* 3D product shot variant — looser 2:3 aspect since the render includes desk context */
-.rc-card-3d .rc-img.rc-card-3d-img{aspect-ratio:2/3}
-.rc-card-3d .rc-img.rc-card-3d-img img{object-fit:contain;background:#1A1510}
+.rc-card-tag{position:absolute;top:10px;left:10px;z-index:3;
+  font-family:var(--mono);font-size:.58rem;font-weight:500;letter-spacing:.2em;
+  padding:4px 10px;border-radius:3px;
+  background:rgba(184,146,74,.92);color:#1A1510;
+  box-shadow:0 1px 3px rgba(0,0,0,.4)}
+
+/* Stack counter + navigation hints */
+.stack-meta{position:absolute;top:12px;right:16px;z-index:100;
+  font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.1em;
+  pointer-events:none;display:flex;align-items:center;gap:8px}
+.stack-counter{color:var(--cream)}
+.stack-hint{opacity:.6}
 .rc-card-tag{position:absolute;top:8px;left:8px;z-index:3;
   font-family:var(--mono);font-size:.55rem;font-weight:500;letter-spacing:.2em;
   padding:3px 8px;border-radius:3px;
@@ -341,10 +433,13 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
       <span id="centerMeta" style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-left:auto"></span>
     </div>
     <div class="results-grid" id="resultsGrid">
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon">🌿</div>
-        <div class="empty-title">Your landscape awaits</div>
-        <div class="empty-sub">Upload a photo of your favourite place — configure each variant with its own mood and presentation, then Run All</div>
+      <div class="stack-meta" id="stackMeta"></div>
+      <div class="results-stack-inner" id="resultsStackInner">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">🌿</div>
+          <div class="empty-title">Your landscape awaits</div>
+          <div class="empty-sub">Upload a photo of your favourite place — configure each variant with its own mood and presentation, then Run All</div>
+        </div>
       </div>
     </div>
   </div>
@@ -371,7 +466,8 @@ const PRES_LABEL = Object.fromEntries(PRES.map(p => [p.k, p.label]))
 
 let fileB64 = null, extraB64 = null, running = false
 let imgStore = {}, resStore = {}, variantN = 0
-let detectedScene = null, detectedMemory = null, detectedSurface = null, detectedAtmosphere = null, detectedName = null, detectedCharacter = null
+let detectedScene = null, detectedMemory = null, detectedDirection = null, detectedSurface = null, detectedAtmosphere = null, detectedName = null, detectedCharacter = null, detectedFeatures = null
+let analyzePromise = null   // resolves when analyzeScene completes; Run All awaits this
 
 // ── UPLOAD ───────────────────────────────────────────────────
 function slotChange(n, input) {
@@ -385,7 +481,8 @@ function slotChange(n, input) {
       document.getElementById('runAllBtn').disabled = false
       document.getElementById('slot1').classList.add('has-file')
       document.getElementById('st1').textContent = '✓ ' + short
-      await analyzeScene(b64)
+      analyzePromise = analyzeScene(b64)   // track the promise; Run All awaits this
+      await analyzePromise
     } else {
       extraB64 = b64
       document.getElementById('slot2').classList.add('has-file')
@@ -411,14 +508,18 @@ async function analyzeScene(b64) {
     })
     const data = await res.json()
     detectedScene      = data.scene_description
+    detectedDirection  = data.viewing_direction
     detectedMemory     = data.memory_text
     detectedSurface    = data.environment_surface
     detectedAtmosphere = data.environment_atmosphere
     detectedName       = data.display_name
     detectedCharacter  = data.character_source
+    detectedFeatures   = data.distinctive_features
     const charBadge = detectedCharacter === 'atmosphere' ? ' · atmosphere-forward' : ' · object-forward'
     document.getElementById('detectResult').textContent = (data.display_name || 'Scene detected') + charBadge
-    document.getElementById('detectSub').textContent = data.scene_description || ''
+    const descText = data.scene_description || ''
+    const featText = data.distinctive_features ? `\n\nKey features: ${data.distinctive_features}` : ''
+    document.getElementById('detectSub').textContent = descText + featText
     document.getElementById('detectResult').style.display = 'block'
     document.getElementById('detectSub').style.display = 'block'
     document.getElementById('detectLabel').textContent = 'Scene detected'
@@ -448,7 +549,7 @@ function addVariant(cfg = {}) {
   card.dataset.mood = mood
   card.dataset.pres = pres
   card.dataset.plaqueShape = cfg.plaqueShape || 'rectangular'
-  card.dataset.render3d = cfg.render3d ? 'true' : 'false'
+  card.dataset.artworkStyle = cfg.artworkStyle || 'artwork'
 
   // Build mood cards in stack order — selected mood goes to TOP of stack
   const moodOrder = [mood, ...MOODS.map(m => m.k).filter(k => k !== mood)]
@@ -483,13 +584,19 @@ function addVariant(cfg = {}) {
       <input type="text" class="name-input" id="vnm-${vid}" value="${esc(name)}" oninput="syncName('${vid}')" placeholder="Name this variant…">
       <div class="mood-stack" id="mstack-${vid}">${moodTiles}</div>
       <div class="tile-grid cols-4 pres-row">${presTiles}</div>
-      <div class="vfield card-only" id="v3d-row-${vid}">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500">
-          <input type="checkbox" id="v3d-${vid}" onchange="toggle3d('${vid}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal)">
-          <span>Also render 3D product shots</span>
-        </label>
-        <div style="font-size:.7rem;color:var(--dim);margin-top:4px;margin-left:26px;line-height:1.4">
-          Photorealistic tilted card shots on a walnut desk — adds ~15-30s and uses 2 extra generations.
+      <div class="card-mode-row" id="v3d-row-${vid}" style="display:none">
+        <div class="card-mode-label">Artwork Style</div>
+        <div class="seg-control">
+          <button class="seg-opt active" data-mode="artwork" onclick="setCardMode('${vid}','artwork')">
+            <span class="seg-icon">🎨</span>
+            <span class="seg-text">Artwork</span>
+            <span class="seg-sub">Painted illustration</span>
+          </button>
+          <button class="seg-opt" data-mode="miniature" onclick="setCardMode('${vid}','miniature')">
+            <span class="seg-icon">🏔</span>
+            <span class="seg-text">Miniature</span>
+            <span class="seg-sub">Photoreal 3D render</span>
+          </button>
         </div>
       </div>
       <div class="vfield">
@@ -522,10 +629,7 @@ function addVariant(cfg = {}) {
   // Initialize 3D-row visibility based on starting preset
   const initRow = document.getElementById('v3d-row-' + vid)
   if (initRow) initRow.style.display = (pres === 'collectable_card') ? '' : 'none'
-  if (cfg.render3d) {
-    const cb = document.getElementById('v3d-' + vid)
-    if (cb) cb.checked = true
-  }
+  if (cfg.artworkStyle === 'miniature') setCardMode(vid, 'miniature')
 }
 
 // Mood stack behavior:
@@ -569,10 +673,12 @@ function selectPres(vid, pres) {
   if (row) row.style.display = (pres === 'collectable_card') ? '' : 'none'
   syncChips(vid)
 }
-function toggle3d(vid) {
+function setCardMode(vid, mode) {
   const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
-  const cb = document.getElementById('v3d-' + vid)
-  card.dataset.render3d = cb?.checked ? 'true' : 'false'
+  card.dataset.artworkStyle = (mode === 'miniature') ? 'miniature' : 'artwork'
+  document.querySelectorAll(`#v3d-row-${vid} .seg-opt`).forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode)
+  })
 }
 function selectPlaqueShape(vid, shape) {
   const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
@@ -620,7 +726,7 @@ function collect(vid) {
     notes:        document.getElementById('vnt-' + vid)?.value?.trim() || undefined,
     plaqueText:   plaqueText || undefined,
     plaqueShape:  card.dataset.plaqueShape || 'rectangular',
-    render3d:     card.dataset.render3d === 'true',
+    artworkStyle: card.dataset.artworkStyle || 'artwork',
   }
 }
 
@@ -631,6 +737,7 @@ async function runOne(vid) {
   running = true
   setG('running', 'generating…')
   document.getElementById('emptyState')?.remove()
+  if (analyzePromise) { try { await analyzePromise } catch(e){} }   // wait for analyze before generating
   await runVariants([vid])
   running = false
 }
@@ -643,6 +750,7 @@ async function runAll() {
   running = true
   setG('running', `running ${ids.length} variants…`)
   document.getElementById('emptyState')?.remove()
+  if (analyzePromise) { try { await analyzePromise } catch(e){} }   // wait for analyze before generating
   await runVariants(ids)
   running = false
 }
@@ -653,9 +761,6 @@ async function runVariants(ids) {
     setVdot(vid, 'running')
     mkLoading(p.name)
   })
-
-  const first = collect(ids[0])
-  if (first) document.getElementById('rc-' + first.name)?.scrollIntoView({ behavior:'smooth', block:'nearest' })
 
   let ok = 0, fail = 0
   // Batches of 3 — mirrors structures pacing
@@ -690,17 +795,19 @@ async function generateOne(p) {
         source_image_b64:  fileB64,
         extra_images:      extraB64 ? [extraB64] : [],
         scene_description:      detectedScene,
+        viewing_direction:      detectedDirection,
         memory_text:            detectedMemory,
         environment_surface:    detectedSurface,
         environment_atmosphere: detectedAtmosphere,
         character_source:       detectedCharacter,
+        distinctive_features:   detectedFeatures,
         display_name:           detectedName,
         mood:              p.mood,
         presentation:      p.pres,
         notes:             p.notes,
         plaque_text:       p.plaqueText,
         plaque_shape:      p.plaqueShape,
-        render_3d:         p.render3d,
+        artwork_style:     p.artworkStyle,
       })
     })
     if(!res.ok) {
@@ -724,26 +831,79 @@ async function generateOne(p) {
   }
 }
 
-// ── RESULT CARDS ──────────────────────────────────────────────
+// ── RESULTS STACK ─────────────────────────────────────────────
+// Results render as a staggered card stack. The top card is fully visible.
+// Behind it, other cards peek out progressively to the right at smaller scale.
+// Clicking a non-top card brings it to the top (like the mood picker).
+// Clicking the top card's image opens the lightbox.
+//
+// Order is maintained as an array; data-pos reflects stack position.
+
+const stackOrder = []  // array of result names in current stack order (0 = top)
+
+function restackResults() {
+  const inner = document.getElementById('resultsStackInner')
+  if (!inner) return
+  stackOrder.forEach((name, i) => {
+    const el = document.getElementById('rc-' + name)
+    if (!el) return
+    el.dataset.pos = String(i)
+    el.classList.toggle('top', i === 0)
+  })
+  const meta = document.getElementById('stackMeta')
+  if (meta) {
+    if (stackOrder.length === 0) {
+      meta.innerHTML = ''
+    } else {
+      const topName = stackOrder[0]
+      meta.innerHTML = `
+        <span class="stack-counter">1 / ${stackOrder.length}</span>
+        <span class="stack-hint">${stackOrder.length > 1 ? '· tap a card to peel forward' : ''}</span>`
+    }
+  }
+}
+
+function tapResult(name) {
+  const idx = stackOrder.indexOf(name)
+  if (idx <= 0) return  // already on top or not found
+  stackOrder.splice(idx, 1)
+  stackOrder.unshift(name)
+  restackResults()
+}
+
+function addToStack(el, name) {
+  const inner = document.getElementById('resultsStackInner')
+  // Clear empty-state on first real content
+  document.getElementById('emptyState')?.remove()
+  if (!document.getElementById('rc-' + name)) {
+    inner.appendChild(el)
+    stackOrder.unshift(name)  // new card goes to top
+  }
+  restackResults()
+}
+
 function mkLoading(name) {
   let c = document.getElementById('rc-' + name)
   if (!c) {
     c = document.createElement('div')
     c.className = 'rc'
     c.id = 'rc-' + name
-    document.getElementById('resultsGrid').appendChild(c)
+    c.onclick = () => tapResult(name)
+    addToStack(c, name)
   }
   c.className = 'rc'
   c.innerHTML = `<div class="rc-img"><div class="rc-spinner"><div class="spin"></div><div>Sculpting your world…</div></div></div>
     <div class="rc-body"><div class="rc-name">${esc(name)}</div></div>`
+  restackResults()
 }
 function mkResult(name, r, p) {
   const c = document.getElementById('rc-' + name); if(!c) return
   c.className = 'rc done'
+  c.onclick = () => tapResult(name)
   const meta = [MOOD_LABEL[p.mood], PRES_LABEL[p.pres]].filter(Boolean).join(' · ')
   const safe = name.replace(/'/g, "\\'")
   c.innerHTML = `
-    <div class="rc-img" onclick="openFull('${safe}')">
+    <div class="rc-img" onclick="event.stopPropagation();if(stackOrder[0]==='${safe}')openFull('${safe}');else tapResult('${safe}')">
       <img src="data:image/jpeg;base64,${r.image_b64}">
       <div class="rc-overlay"><span class="rc-ol">View full size</span></div>
     </div>
@@ -751,31 +911,32 @@ function mkResult(name, r, p) {
       <div class="rc-name">${esc(name)}</div>
       <div class="rc-meta">${esc(meta)}</div>
       <div class="rc-btns">
-        <button class="rc-btn save" onclick="dl('${safe}')">↓ Save</button>
-        <button class="rc-btn" onclick="openFull('${safe}')">⛶ Full</button>
+        <button class="rc-btn save" onclick="event.stopPropagation();dl('${safe}')">↓ Save</button>
+        <button class="rc-btn" onclick="event.stopPropagation();openFull('${safe}')">⛶ Full</button>
       </div>
     </div>`
+  restackResults()
 }
 
-// Collectable card — replace the single loading card with separate result cards
-// (flat front, flat back, plus optional 3D front and 3D back)
+// Collectable card — produces two stack cards (flat front + flat back)
 function mkCardPairResult(name, r, p) {
+  // Remove loader and its entry in stack order
   const loader = document.getElementById('rc-' + name)
   if (loader) loader.remove()
+  const loaderIdx = stackOrder.indexOf(name)
+  if (loaderIdx !== -1) stackOrder.splice(loaderIdx, 1)
 
   const meta = [MOOD_LABEL[p.mood], PRES_LABEL[p.pres]].filter(Boolean).join(' · ')
-  const grid = document.getElementById('resultsGrid')
 
-  // Helper to build one result card with a given image, label tag, and key
-  const mkOne = (b64, tag, cardClass, keyName) => {
+  const mkOne = (b64, tag, keyName) => {
     const safe = keyName.replace(/'/g, "\\'")
     imgStore[keyName] = b64
     const el = document.createElement('div')
-    el.className = 'rc done ' + cardClass
+    el.className = 'rc done rc-card'
     el.id = 'rc-' + keyName
-    const imgClass = cardClass === 'rc-card' ? 'rc-img rc-card-img' : 'rc-img rc-card-3d-img'
+    el.onclick = () => tapResult(keyName)
     el.innerHTML = `
-      <div class="${imgClass}" onclick="openFull('${safe}')">
+      <div class="rc-img rc-card-img" onclick="event.stopPropagation();if(stackOrder[0]==='${safe}')openFull('${safe}');else tapResult('${safe}')">
         <img src="data:image/png;base64,${b64}">
         <div class="rc-overlay"><span class="rc-ol">View full size</span></div>
         <span class="rc-card-tag">${tag}</span>
@@ -784,24 +945,27 @@ function mkCardPairResult(name, r, p) {
         <div class="rc-name">${esc(name)}</div>
         <div class="rc-meta">${esc(meta)}</div>
         <div class="rc-btns">
-          <button class="rc-btn save" onclick="dl('${safe}')">↓ Save</button>
-          <button class="rc-btn" onclick="openFull('${safe}')">⛶ Full</button>
+          <button class="rc-btn save" onclick="event.stopPropagation();dl('${safe}')">↓ Save</button>
+          <button class="rc-btn" onclick="event.stopPropagation();openFull('${safe}')">⛶ Full</button>
         </div>
       </div>`
     return el
   }
 
-  grid.appendChild(mkOne(r.front_b64, 'FRONT', 'rc-card', name + ' · Front'))
-  grid.appendChild(mkOne(r.back_b64,  'BACK',  'rc-card', name + ' · Back'))
-  if (r.front_3d_b64) grid.appendChild(mkOne(r.front_3d_b64, 'FRONT · 3D', 'rc-card-3d', name + ' · Front 3D'))
-  if (r.back_3d_b64)  grid.appendChild(mkOne(r.back_3d_b64,  'BACK · 3D',  'rc-card-3d', name + ' · Back 3D'))
+  const frontKey = name + ' · Front'
+  const backKey  = name + ' · Back'
+  addToStack(mkOne(r.front_b64, 'FRONT', frontKey), frontKey)
+  addToStack(mkOne(r.back_b64,  'BACK',  backKey),  backKey)
 }
+
 function mkError(name, err) {
   const c = document.getElementById('rc-' + name); if(!c) return
   c.className = 'rc error'
+  c.onclick = () => tapResult(name)
   c.innerHTML = `<div class="rc-img" style="display:flex;align-items:center;justify-content:center;background:rgba(226,75,74,.05)">
     <span style="color:#E24B4A;font-size:.75rem;padding:1rem;text-align:center">✗ ${esc(err)}</span></div>
     <div class="rc-body"><div class="rc-name">${esc(name)}</div></div>`
+  restackResults()
 }
 
 function setG(state, text) {
