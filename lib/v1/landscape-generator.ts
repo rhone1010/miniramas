@@ -177,40 +177,12 @@ Standard focal length with a SUBTLE wide-angle feel — just enough perspective 
 The foreshortening is MILD, not dramatic — think "natural documentary photography" rather than "cinematic hero shot." Linear features recede gracefully.
 Pulled back far enough to show the full base with surrounding space.`
 
-  // Scale + distance tuning — how to fit content-rich scenes without cropping
-  const scaleTuningBlock = `SCALE & DISTANCE TUNING — FIT ALL CONTENT WITHOUT CROPPING:
-
-If the scene is content-rich (many distinctive features, extended linear elements, or multiple zones of interest), do NOT crop content or violate margin rules to fit it. Instead, use the macro-photographer's technique:
-
-1. SHRINK THE ENTIRE MINIATURE physically smaller on its base — the whole scene scales down proportionally so every feature fits within the base perimeter with comfortable spacing. A pier that would otherwise overflow the base becomes a smaller-scale pier; a field with distant hills becomes a smaller field with smaller hills.
-
-2. MOVE THE CAMERA CLOSER to the miniature and use a WIDER ANGLE LENS (think 24-35mm equivalent rather than 85mm). The close-in wide-angle camera compensates for the smaller subject — the foreground still looms large and feels immediate, while the wider field of view captures all the background features at once.
-
-Net effect: all scene content visible, foreground feels close and prominent, no cropping, margins still respected.
-
-WHEN TO APPLY:
-- Scene has 3+ distinct zones (foreground + midground + distant features)
-- Distinctive features list contains multiple items that all need to appear
-- Scene has a long linear element PLUS additional features (e.g. a path AND a pond AND distant hills)
-- Any time you would otherwise have to crop content or shrink margins to fit everything
-
-WHEN NOT TO APPLY:
-- Single-subject scenes with minimal background (pier alone at sea, single rock formation, solo tree)
-- Scenes where the subject is meant to dominate dramatically
-
-CRITICAL — THIS IS ONLY A CAMERA-AND-SCALE TECHNIQUE, NOT A STYLIZATION:
-The miniature is still fully 3D sculpted throughout. The diorama is still razor-sharp edge to edge. The base still has full margins. The only thing changing is the physical scale of the miniature contents and the camera's lens choice and distance. Everything else about the presentation stays identical.`
-
   const prompt = [
     `Transform the provided image into a physically realistic miniature diorama presented as a professional product photograph.`,
     `CORE:
 Reconstruct the scene as a handcrafted physical miniature.
 Preserve the spatial layout, proportions, atmosphere, and defining features of this specific place exactly.
 Do not reinterpret or redesign the scene. Capture what makes this place unique.`,
-    `STRUCTURE PRESERVATION:
-Maintain major lines, horizon placement, and object relationships from the source.
-Preserve repeating elements and spacing patterns exactly.
-Keep perspective, orientation, and the unique character of this specific place.`,
     `THIS SPECIFIC PLACE IS:\n${sceneDesc}`,
     input.distinctiveFeatures ? `DISTINCTIVE FEATURES — MUST BE PRESERVED (NON-NEGOTIABLE):
 The following specific features are present in the source photograph and define what makes this place that place. Each one MUST appear in the final miniature — do not drop, simplify, or omit any of them:
@@ -229,110 +201,47 @@ If the source shows the sun behind the subject (silhouette), the sun stays behin
 If the source shows the subject from its left side, render the miniature from its left side.
 Orientation fidelity is mandatory.` : '',
     `MATERIAL CONVERSION — convert all elements into physical miniature materials:
-- Rock, stone, cave walls, architecture → sculpted and painted resin with authentic texture
-- Ground, sand, soil, floor → textured terrain materials at correct scale
-- Water, pools, sea → translucent resin with realistic surface detail, depth, and light interaction
+- Rock, stone, architecture → sculpted and painted resin with authentic texture
+- Ground, sand, soil → textured terrain materials at correct scale
+- Water, pools, sea → translucent resin with realistic surface depth and light interaction
 - Vegetation → precision miniature foliage, moss, plants at correct scale
-- Structural elements, furniture, fixtures → painted wood and resin at scale
-- Atmospheric light (shafts, glows, reflections) → recreated as physical miniature lighting effects`,
-    `MATERIAL DEPTH — TACTILE THICKNESS OF THE MINIATURE TERRAIN:
-Every surface material ON the diorama (the miniature world on top of the base) has visible physical THICKNESS and tactile depth. Materials must never read as a flat painted-on layer or a surface decal.
-- Sand: a deep sandy layer with visible grain, soft drifts, subtle ripples — the kind you could sink your toes into
-- Water: true translucent depth with visible bottom shading, partially submerged rocks or debris, meniscus at edges — not a painted-on surface
-- Grass / moss: individual blade or tuft height, layered density, clearly 3D at edges where it meets other materials
-- Soil / dirt: crumbly texture with small pebbles, twigs, subtle undulation and small mounds
-- Snow: fresh-fallen softness with drifts and depth, not a white coating on a flat surface
-- Stone / rock: chunky irregular volumes with visible crevices, chips, and moss tucked into cracks
-The viewer should feel they could press a thumb into any material on the diorama and leave an imprint.`,
+- Structural elements, furniture → painted wood and resin at scale
+- Atmospheric light (shafts, glows, reflections) → recreated as physical miniature lighting effects
+
+Every material has visible physical THICKNESS, not flat painted layers. Sand has grain depth, grass has blade height, water has translucent depth, stone has chunky irregular volume.`,
     mood,
     input.notes ? `ADDITIONAL NOTES FROM THE PERSON WHO LOVES THIS PLACE:\n${input.notes}` : '',
-    `DIORAMA BASE — CONTAINMENT WITH FORCED PERSPECTIVE ALLOWED:
+    `DIORAMA BASE:
 Circular dark walnut display plinth with a thick, heavy, turned-wood rim clearly visible on all sides.
-The miniature is a discrete physical object sitting ON TOP of this base — all physical miniature elements terminate at the base perimeter.
+All physical miniature elements terminate at the base perimeter.
 
-TWO KINDS OF LINEAR SUBJECTS — HANDLE DIFFERENTLY:
+LINEAR SUBJECTS — two kinds:
+- WRAPPING subjects (coastlines, ridgelines, treelines parallel to the viewer): curve naturally to follow the round base edge.
+- RECEDING subjects (piers, paths, bridges extending away from the viewer): use FORCED PERSPECTIVE — the subject appears to extend far into the distance via camera foreshortening, even though its physical endpoint sits at the base rim. It should LOOK like it extends into the distance, not appear truncated or stubby.
 
-WRAPPING SUBJECTS (bend to fit the base perimeter):
-- Coastlines, ridgelines, riverbanks, treelines, low walls that run parallel to the viewer
-- These features curve naturally to follow the round base edge
-- Nothing crosses the base rim
-
-RECEDING SUBJECTS (use forced perspective, preserve full linear extent visually):
-- Piers, bridges, boardwalks, paths, roads, jetties, alleyways extending AWAY from the viewer into the distance
-- These features use FORCED PERSPECTIVE (camera angle creating visual foreshortening) rather than physical compression
-- The subject should LOOK like it extends far into the distance even though it must terminate at the base edge
-- Its endpoint at the far rim should recede into the distance via perspective, getting smaller as it goes — not be chopped off short
-- A pier going out to sea must APPEAR to extend a long way out via camera foreshortening; it should NOT look truncated or stubby
-- Preserve the full visual sense of linear extent even though the physical endpoint sits at the base rim
-
-The base rim is a physical boundary for the miniature's materials, not a visual truncation of the scene's apparent depth.
-The base casts a clear shadow on the surface beneath it, reinforcing that it is a self-contained object placed on a larger world.`,
-    `COMPOSITION — MARGINS ARE MANDATORY AND NON-NEGOTIABLE:
-
-ABSOLUTE RULE (do not violate under any circumstances):
-The base NEVER touches the left, right, top, or bottom edge of the image frame.
-Minimum 15% clear breathing room on EVERY SIDE — left, right, top, bottom. The entire base rim is fully visible with empty surround on all four sides.
-If the diorama's scene has receding elements (pier, path, bridge) going into the distance, those elements recede via CAMERA PERSPECTIVE only — the physical base still terminates well within the frame with full margin visible on all sides.
-The base occupies approximately 60-65% of the image width — NOT more. NEVER more than 70%.
-
-If you cannot fit the scene while respecting these margins, pull the camera back further. Pull back as much as needed. The margins override any sense of "filling the frame."
-
-Failure mode to avoid:
-- Base touching or exceeding the right/left/top/bottom frame edge
-- Water, sand, or terrain extending off-frame past where the base ends
-- Any portion of the base rim being clipped by the frame`,
+The base casts a clear shadow on the surface beneath it.`,
+    `COMPOSITION — MARGINS:
+The base never touches any edge of the image frame. Minimum 15% clear space on every side — left, right, top, bottom. The full base rim is visible with surrounding room on all four sides.
+The base occupies approximately 60-65% of the image width, never more than 70%.
+If the scene cannot fit within these margins, pull the camera back further. Margins override frame-filling.`,
     cameraBlock,
-    scaleTuningBlock,
     envBlock,
-    `PHOTOGRAPHIC REALISM — THIS IS A PHOTOGRAPH OF A REAL OBJECT, NOT A RENDER:
+    `PHOTOGRAPHIC REALISM — PHOTOGRAPH OF A REAL OBJECT, NOT A RENDER:
 
-LIGHTING (photographic, not studio-render):
-Single softbox key light from upper-left at approximately 45 degrees above horizontal. Fill ratio 1:4 — shadow side clearly darker but detail preserved.
-Subtle warm rim light catches the right edge and top of the subject, separating it from background.
-Noticeable light falloff into shadow — not flat even illumination. Slight color temperature drift across the frame (warmer toward key, cooler toward shadow).
-Shadows are soft-edged but present and directional — never absent, never sharp.
-Small specular hits on glossy materials where light catches micro-geometry — these hits are imperfect and uneven, catching some details and missing others.
+LIGHTING:
+Soft directional key from upper-left around 45 degrees, 1:4 fill ratio — shadow side darker but detail preserved. Subtle warm rim on the right edge. Shadows soft-edged, directional, present. Small uneven specular hits on glossy surfaces.
 
-MATERIAL MICRO-DETAIL (handmade, not CGI-perfect):
-This miniature has subtle handmade imperfections that signal its handcrafted nature:
-- Micro paint pooling in recessed corners where a painter's brush lingered
-- Irregular gloss patches — some surfaces slightly glossier than adjacent ones in a non-systematic way
-- Occasional tiny dust specks in deep crevices
-- Hand-applied tool marks visible on resin and wood surfaces under raking light
-- Fine brush strokes visible on painted areas at close inspection
-- One or two micro chips or edge wear points on rim or high-traffic edges
-NEVER perfectly uniform. The imperfections are small and premium — this is master craftsmanship, not sloppy work. But the surface tells you a human made it.
+MATERIAL FEEL:
+Subtle handmade imperfections — minor paint pooling in recesses, slight gloss variation between adjacent surfaces, fine brush strokes on painted areas. Never CGI-uniform. This is premium craftsmanship with a human's hand visible.
 
-ENVIRONMENTAL GROUNDING (real space, not backdrop):
-The desk surface has fine grain, visible wood pores, and occasional tiny dust motes catching the raking light near the base.
-Warm ambient color bounce from out-of-frame objects tints the shadow side of the subject subtly — this is reflected light from a real room, not a neutral studio infinity.
-Faint airborne dust or soft particles may be visible in the lit atmosphere, very subtle.
-A suggestion of out-of-focus environment behind (soft shapes, gentle color fields) implies the diorama exists in a real room with depth, not floating in a void.
+LENS:
+Medium-format macro equivalent. The diorama is fully in focus edge to edge — front, middle, and back all sharp. Background softens naturally behind the base (room, ambient air, sky) — never the diorama itself.
+Subtle chromatic aberration on brightest speculars. Bokeh hexagonal where it appears.
 
-LENS AND FOCUS (real camera, not perfect CG):
-Shot on medium-format digital with an 85-110mm macro equivalent.
-CRITICAL — THE ENTIRE DIORAMA IS RAZOR SHARP FROM EDGE TO EDGE: the front of the base, the middle of the scene, and the back of the base are ALL in crisp focus. Every detail on the physical miniature — front, back, left, right — is clearly readable and sharp. The diorama is a three-dimensional physical object and every surface of that object must be fully in focus.
-Depth of field applies ONLY to the scene BEYOND the diorama — the room, the desk, the surrounding ambient space behind and around the base softens with distance. Not the diorama itself, never the diorama itself.
+COLOR:
+Film-adjacent grading — lifted blacks, warm midtones, subdued natural palette. Never oversaturated, never clinical.
 
-FAILURE MODE TO AVOID (this is what I keep seeing and it is WRONG):
-The far end of the pier fading into soft blur. The back lamp posts going fuzzy. Sky haze creeping onto the diorama sky. The back rim of the base going soft. ANY portion of the physical miniature rendered with reduced sharpness.
-EVERY element physically attached to the base — including the far-most lamp post, the furthest piling, the back rim of the base, the far water edge on the base — must be rendered at the SAME sharpness as the nearest front element. No falloff. No gradient of focus. No "atmospheric softening" on the diorama itself.
-
-The only things allowed to blur are: the room behind the diorama, the desk surface extending behind the base, ambient air/light behind the scene, a sky gradient that is clearly SKY (not part of the miniature).
-
-Background blur follows optical physics with hexagonal bokeh shapes on any specular highlights in the room behind.
-Very slight chromatic aberration on the brightest specular highlights (thin color fringe, barely perceptible) — the tell of a real lens.
-No digital perfection — the image has the subtle imperfections of real photography, but the diorama itself is always in full sharp focus.
-
-COLOR SCIENCE (film-adjacent, not digital-vivid):
-Subdued natural color palette with rich shadow detail. Lifted blacks rather than crushed shadows.
-Natural contrast curve — skin tones of any figures warm and believable, no digital neon in highlights.
-Slight film-adjacent color grading: warmer shadows, slightly cooler highlights, overall midtone warmth.
-NEVER oversaturated. NEVER clinical-clean. This reads as a capture of the physical world.
-
-OVERALL:
-Must look like a genuinely handcrafted physical miniature photographed by a master product photographer — not a CG render of a miniature.
-Museum-quality craftsmanship, premium editorial photography. The viewer should momentarily wonder if this is a real miniature.`,
+Overall: handcrafted miniature photographed by a master product photographer. The viewer should momentarily wonder if it's a real physical object.`,
   ].filter(Boolean).join('\n\n')
 
   // Prepare source image with brightness normalization
