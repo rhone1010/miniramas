@@ -1,21 +1,30 @@
 // actionmini-card.ts
 // lib/v1/actionmini-card.ts
 //
-// Premium Collector Card preset — diorama presented as the centerpiece "art"
-// of a high-end collector card (think Pokemon ultra-rare, sports rookie card
-// art series, premium gaming cards).
+// Action Mini Card — mirrors the Landscapes Card pattern exactly.
+// Two-image preset: AI-generated hero front (gpt-image-1) + code-built info back (SVG composite).
+// Returns both as base64; the route forwards both to frontend.
 //
-// Composition: rectangular framed card, vertical orientation, minimal foil-edge
-// border, large diorama art zone in the center, stylized environmental
-// backdrop behind the diorama (softer/more graphic than In-Situ's editorial
-// surround), blank name plate at bottom.
+// Pattern reference: lib/v1/landscape-generator.ts → generateCollectableCard()
 //
-// Text on card: NOT rendered into image. UI caption handles it.
-//
-// Pipeline: same as In-Situ — generate → applyLevels → expandScene.
+// Key inversions vs In-Situ:
+//   - NO plinth, NO walnut base — card frame is the only frame
+//   - Scene fills card edge-to-edge (no diorama-on-display)
+//   - artwork_style: '3d' (photorealistic) | 'impressionist' (painterly)
+//   - Frame-breaking required (action elements project past foil border)
+//   - All text is post-processed SVG on back, never AI-rendered
+//   - Bypasses normal pipeline (no levels, no expand)
+
+import OpenAI, { toFile } from 'openai'
+import sharp from 'sharp'
+
+// ── CARD CANVAS ───────────────────────────────────────────────
+const CARD_W = 1024
+const CARD_H = 1536  // 2:3 portrait — closest gpt-image-1 size to 5:7 playing card
+
+export type CardArtworkStyle = '3d' | 'impressionist'
 
 export interface ActionMiniCardHero {
-  position_in_frame?:    string
   age_range?:            string
   gender_presentation?:  string
   ethnicity_apparent?:   string
@@ -46,385 +55,456 @@ export interface ActionMiniCardSecondaryFigures {
   description?:  string
 }
 
-export interface ActionMiniCardInput {
+// ── MOOD MODIFIERS (CARD-TUNED) ───────────────────────────────
+const MOODS: Record<string, string> = {
+  golden:   'MOOD: Warm golden light — late afternoon sun, honey highlights, long warm shadows, nostalgic atmosphere.',
+  dramatic: 'MOOD: Dramatic — charged weather, intense directional light, emotionally weighted atmosphere. The hero is fully lit and sharp; weather and mood live in the surrounding world.',
+  peaceful: 'MOOD: Peaceful — soft diffused light, low contrast, contemplative.',
+  vivid:    'MOOD: Bright and vivid — peak clarity, saturated color, the action at its most alive.',
+}
+
+// ── SVG HELPERS (FROM LANDSCAPES PATTERN) ─────────────────────
+function wrapText(text: string, maxCharsPerLine: number): string[] {
+  const words = text.trim().split(/\s+/)
+  const lines: string[] = []
+  let line = ''
+  for (const w of words) {
+    if ((line + ' ' + w).trim().length > maxCharsPerLine) {
+      if (line) lines.push(line)
+      line = w
+    } else {
+      line = (line ? line + ' ' : '') + w
+    }
+  }
+  if (line) lines.push(line)
+  return lines
+}
+
+function escapeSvgText(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
+}
+
+// ── HERO IDENTITY (TIGHT) ─────────────────────────────────────
+function describeHero(hero: ActionMiniCardHero | null | undefined): string {
+  if (!hero) return ''
+  const parts: string[] = []
+  if (hero.age_range)            parts.push(hero.age_range)
+  if (hero.gender_presentation)  parts.push(hero.gender_presentation)
+  if (hero.ethnicity_apparent)   parts.push(`apparent ${hero.ethnicity_apparent}`)
+  if (hero.hair?.color || hero.hair?.length) {
+    const h = hero.hair
+    parts.push(`${[h.color, h.length, h.style].filter(Boolean).join(' ')} hair`)
+  }
+  if (hero.expression)           parts.push(`${hero.expression} expression`)
+  const gear = [hero.gear_top, hero.gear_head, hero.gear_hands].filter(Boolean).join(', ')
+  if (gear) parts.push(`wearing ${gear}`)
+  if (hero.body_position) parts.push(`pose: ${hero.body_position}`)
+  return parts.join(', ')
+}
+
+// ── FRAME-BREAKING SUGGESTIONS BY MEDIUM ──────────────────────
+const FRAME_BREAKING_BY_MEDIUM: Record<string, string> = {
+  whitewater: '- A paddle blade or spray plume extends past the TOP foil border\n- Foam or churning water spills past the BOTTOM foil border, optionally running off the bottom edge as if splashing toward viewer\n- A secondary kayaker or rock element may project past the LEFT or RIGHT border',
+  surf:       '- The wave crest or spray extends past the TOP foil border\n- Foam wash spills past the BOTTOM foil border\n- Board nose or rail may project past a SIDE border',
+  snow:       '- Powder plume or ski tip extends past the TOP foil border\n- Snow spray spills past the BOTTOM foil border\n- A pole or trailing snow may project past a SIDE border',
+  skate:      '- A grabbed board edge or raised hand extends past the TOP foil border\n- Wheel spray, dust, or sparks spill past the BOTTOM foil border\n- A ramp lip or trick element may project past a SIDE border',
+  bike:       '- Front wheel, fork, or rider arm extends past the TOP foil border\n- Dirt spray, dust, or rear-tire chunks spill past the BOTTOM foil border\n- A handlebar end or trailing dust may project past a SIDE border',
+  climb:      '- A reaching hand or chalk puff extends past the TOP foil border\n- A hanging foot, rope, or rock spall spills past the BOTTOM foil border\n- A rock formation or harness loop may project past a SIDE border',
+  run:        '- A raised arm, knee, or hair extends past the TOP foil border\n- Heel-strike dust spills past the BOTTOM foil border\n- A trailing leg or stride debris may project past a SIDE border',
+  dance:      '- An extended hand, hair, or fabric extends past the TOP foil border\n- Skirt or fabric flow spills past the BOTTOM foil border\n- An outstretched leg or sleeve may project past a SIDE border',
+  combat:     '- A reaching arm, fist, or extended leg projects past the TOP or SIDE foil border\n- A pinned figure\'s outstretched limb extends past the BOTTOM foil border\n- The dominant figure\'s shoulder or hair may project past a SIDE border with implied weight and motion',
+  other:      '- A high-energy element extends past the TOP foil border\n- A foreground motion element spills past the BOTTOM foil border\n- A side element may project past LEFT or RIGHT border',
+}
+
+// ── BUILD FRONT (AI) ──────────────────────────────────────────
+async function buildCardFront(input: {
+  sourceImageB64:        string
   kineticMedium:         string
   actionDescription:     string
   freezeMomentQuality?:  string
   hero:                  ActionMiniCardHero | null
   secondaryFigures?:     ActionMiniCardSecondaryFigures
-  environment:           string
   distinctiveFeatures?:  string
-  sourceLighting?:       string
-  displayName?:          string
+  environment:           string
+  mood:                  string
+  artworkStyle:          CardArtworkStyle
+  openaiApiKey:          string
+}): Promise<string> {
+  const openai = new OpenAI({ apiKey: input.openaiApiKey })
+  const moodHint = MOODS[input.mood] || MOODS.golden
+  const heroDesc = describeHero(input.hero)
+  const frameBreakingHints = FRAME_BREAKING_BY_MEDIUM[input.kineticMedium] || FRAME_BREAKING_BY_MEDIUM.other
+
+  // Scene block varies by artwork style.
+  // '3d'           — photorealistic cinematic rendering, stylized atmospheric environment, NO plinth.
+  // 'impressionist' — DIMENSIONAL PAINTERLY: photoreal dimensional form with painterly surface,
+  //                   stylized atmospheric environment, NO plinth.
+  // In BOTH cases the card frame IS the bounding container, and the environment is STYLIZED
+  // ATMOSPHERIC — not a literal photographic backdrop.
+  const sceneBlock = input.artworkStyle === '3d'
+    ? `SCENE ON THE CARD — CINEMATIC ACTION CARD ART (PHOTOREAL, ELEVATED):
+
+The image is the front face of a premium collector card — like a Topps Chrome rookie, Panini Spectra mythic, or a high-end sports art card. Photorealistic at its core, but cinematically elevated and graphically composed. NOT a documentary photograph. NOT a stock action shot. This is a CARD — the action treated as premium card art.
+
+ACTION:
+${input.actionDescription || 'A dynamic action moment.'}
+${input.freezeMomentQuality ? `Freeze instant: ${input.freezeMomentQuality}` : ''}
+
+HERO:
+${heroDesc || 'The hero figure from the source photograph.'}
+
+ENVIRONMENT — STYLIZED ATMOSPHERIC, NOT LITERAL:
+The hero performs in an environment SUGGESTED by the action's setting (${input.environment}) but rendered as a STYLIZED ATMOSPHERIC backdrop — not a literal photograph of that place.
+- Recognizable color and mood of the setting (track-orange and stadium-blue for hurdling; deep ocean and crashing wave-blues for surf; saturated forest greens with sun shafts for trail bike; mountain alpine blue and snow-glare for ski; sun-bleached concrete for skate; alpine rock orange for climb)
+- Volumetric atmospheric haze with visible god-rays, light shafts, or stadium-tunnel light
+- Soft bokeh glints and atmospheric particulate suggesting the setting without resolving into a literal scene
+- Color graded as a unified tonal mood — deep saturated background, hero pops in clean light
+- NO literal stadium photo, NO documentary forest backdrop, NO recognizable specific location — this is a STYLIZED MOOD ENVIRONMENT in the action's color palette
+
+CRITICAL — THE CARD IS THE ONLY FRAME:
+NO turned-wood plinth inside the card. NO circular base. NO miniature-on-a-plinth product shot. NO diorama visible. NO walnut rim. NO pedestal. NO real-world desk surround beyond the frame edges.
+The foil card border IS the bounding container. The action fills the entire artwork zone naturally, edge to edge, at full real-world scale.
+
+AESTHETIC — CINEMATIC SPORTS CARD ART:
+- Razor-sharp detail on the hero — every gear texture, muscle definition, expression, fabric
+- Heightened cinematic color grading — deep blacks, luminous highlights, rich saturated mid-tones
+- DRAMATIC directional light — strong rim light, backlit hero against atmospheric environment, light shafts cutting through air
+- Atmospheric volume visible — the air between hero and backdrop has texture, haze, light interaction
+- Slight wide-lens dynamic feel — hero pose intensified, action emphasized, hero appears to project toward viewer
+- Hero is the BRIGHTEST, sharpest element — environment recedes into mood
+- NOT documentary photography. NOT a stock photo. THIS IS PREMIUM SPORTS CARD ART rendered photoreal
+
+EXAMPLES OF THE RIGHT AESTHETIC:
+- Topps Chrome rookie card photographed straight-on
+- Panini Spectra mythic insert
+- A Red Bull Photography editorial image color-graded for a card series
+- Cinematic film still pushed for poster art (Deakins / Lubezki)
+- A high-end fight/sports promo poster — hero rim-lit against atmospheric backdrop`
+
+    : `SCENE ON THE CARD — DIMENSIONAL PAINTED CARD ART (3D RENDER WITH PAINTED FINISH):
+
+REFERENCE THE FOLLOWING SPECIFIC AESTHETIC FIRST:
+- A Magic the Gathering MYTHIC RARE card by Greg Manchess, Donato Giancola, or Chase Stone
+- A HEARTHSTONE hero portrait with dimensional sculpted form
+- A premium FANTASY TRADING CARD with painted finish but real 3D depth
+- A PIXAR character rendered with a painted texture pass
+- A digital painted character render where the character pops in 3D and the surface reads as paint
+
+THIS IS NOT:
+- A flat oil painting like Monet, Renoir, Sorolla, or any Impressionist
+- A canvas painting, watercolor, or 2D illustration
+- A children's book painting
+- A photograph with a painterly filter
+- A flat brushwork field with no dimensional lighting
+
+PROCESS — DIMENSIONAL RENDER FIRST, PAINTED FINISH SECOND:
+Step 1: Render the figure with FULL PHOTOREAL THREE-DIMENSIONAL LIGHTING — rim light, key light, fill light, dimensional shadows, real form, real volume. The figure has photoreal sculptural depth.
+Step 2: Apply a PAINTED SURFACE FINISH on top of the dimensional form — visible brushwork in skin, hair, fabric, gear surfaces. The brushwork is the topcoat over real 3D form.
+
+THE RESULT: The figure FEELS sculpted and dimensionally lit. The SURFACE feels hand-painted. Both qualities are present simultaneously — not one or the other.
+
+ACTION:
+${input.actionDescription || 'A dynamic action moment.'}
+${input.freezeMomentQuality ? `Freeze instant: ${input.freezeMomentQuality}` : ''}
+
+HERO:
+${heroDesc || 'The hero figure from the source photograph.'}
+
+ENVIRONMENT — PAINTED ATMOSPHERIC, NOT LITERAL:
+The hero performs in an environment SUGGESTED by the setting (${input.environment}) but rendered as a STYLIZED PAINTED ATMOSPHERIC backdrop — paint-textured color field in the setting's palette with painterly light effects. NO literal photograph backdrop. NO specific recognizable location.
+
+The background recedes with looser brushwork while the hero is more crisply rendered with full dimensional lighting. Background painted with broader strokes; hero painted with finer detail and sharper dimensional form.
+
+CRITICAL — THE CARD IS THE ONLY FRAME:
+NO turned-wood plinth inside the card. NO circular base. NO miniature-on-display product shot. NO diorama visible. NO walnut rim. NO pedestal. The foil card border IS the bounding container.
+
+REQUIRED VISUAL CHARACTERISTICS:
+- Hero figure has CLEAR THREE-DIMENSIONAL FORM with rim light separating it from the backdrop
+- Visible BRUSHWORK on hero's skin, fabric, hair, gear — but not at the expense of dimensional structure
+- DEEP shadows on the hero's form (under chin, behind near-side limbs, under clothing) showing real volumetric lighting
+- HIGHLIGHTS catch on the hero's most lit surfaces with painted specular detail
+- Hero's edges have CONFIDENT defined silhouette against the painted backdrop — not blurred into the background
+- COLOR is heightened/saturated but applied as paint, not as color filter
+
+REPEAT — IF THE OUTPUT LOOKS LIKE A FLAT IMPRESSIONIST CANVAS WHERE THE FIGURE BLENDS INTO THE BACKGROUND, THE OUTPUT IS WRONG. The figure must POP dimensionally with real lighting and form, painted surface notwithstanding.
+
+THE FRAME-BREAKING ELEMENTS HAVE REAL DIMENSIONAL PROJECTION:
+When painted elements cross the foil border, they project DIMENSIONALLY — a hand reaching past the frame casts a soft shadow on the foil; hair flowing past the top has volumetric depth crossing the border; a foot punching through the bottom has real form projecting toward viewer. The painted surface continues across the frame line, but the DIMENSIONAL STRUCTURE is felt and the foil shows shadow under the projecting element.`
+
+  const prompt = [
+    `COLLECTABLE CARD FRONT — PREMIUM TRADING-CARD, PORTRAIT ORIENTATION.`,
+
+    `This is the front face of a high-end collectable card, like a limited-edition art card from a premium set. Fill the entire image frame with the card front — NO desk, NO background beyond the card itself, NO shadows of the card on a surface. The image IS the card face, edge to edge. The card itself is flat and printable.`,
+
+    sceneBlock,
+
+    input.distinctiveFeatures ? `DISTINCTIVE FEATURES — MUST APPEAR (NON-NEGOTIABLE):
+The following specific gear and details from the source photograph define this hero's identity. Each must be clearly visible:
+
+${input.distinctiveFeatures}
+
+Gear colors are non-negotiable. Match the source exactly.` : '',
+
+    input.secondaryFigures && input.secondaryFigures.count && input.secondaryFigures.count > 0 ? `SECONDARY FIGURES:
+${input.secondaryFigures.count} additional figure(s) in the scene: ${input.secondaryFigures.description || ''}
+Distributed naturally in the action — softer detail, supporting cast, do not compete with hero.` : '',
+
+    moodHint,
+
+    `KINETIC INTENSITY (CRITICAL — SCALES WITH PHYSICAL CONTACT):
+
+The action shows real kinetic energy — but the AMOUNT of kinetic chaos must MATCH the moment.
+
+INTENSITY SCALES WITH CONTACT:
+- HEAVY contact moments (wheels gouging dirt, board carving snow, paddle slamming water, grinding rail, sprint footstrike): FULL chaos — large plumes, thick spray, deep impact zones, dense particulate scatter, heavy debris
+- AIRBORNE or LIGHT contact moments (mid-jump, mid-air trick, hurdle apex, peak of bound, gliding stride): RESTRAINED — only the small residue of recent contact (a thin dust trail, a dissipating puff, a faint mark on the takeoff point, a few suspended particles)
+
+Match the intensity to the pose. A hurdler at jump apex shows minimal dust because feet aren't touching ground. A kayaker plowing into a wave shows full water chaos. A bike rider mid-corner with rear tire grounded shows full dust plume.`,
+
+    `FRAME-BREAKING & DIMENSIONAL PROJECTION (KEY STYLIZATION — MANDATORY):
+
+Popular collectable cards (Pokémon holographic, Magic the Gathering mythic rare, Panini Spectra, premium sports cards) use dramatic FRAME-BREAKING to create a "projecting into the viewer's space" effect. Action elements punch past the foil border at specific points, sometimes continuing off the card edge entirely as if thrust forward.
+
+REQUIRED: At least TWO frame-breaking elements must appear, chosen based on the action:
+${frameBreakingHints}
+
+THE PROJECTION HAS REAL DIMENSION (KEY DETAIL):
+When an element crosses the foil border, it does so DIMENSIONALLY — the element has volume, depth, and form crossing the frame line. Specifically:
+- The element crosses OVER the foil gold (not behind it). The foil is OBSCURED at those points.
+- A SMALL SOFT SHADOW falls on the foil border directly beneath the projecting element — confirming the element has physical thickness above the frame plane.
+- The element retains its full rendering style (cinematic 3D for the 3D card, dimensional painterly for the painterly card) as it crosses the border.
+- Edge of the projecting element where it leaves the card is sharp and confident — never fading or feathered.
+
+STYLE INTENSITY:
+Not subtle. Not timid. This is the main visual hook of the card. Dramatic, confident dimensional projection. Every action has at least two projection opportunities — find them and commit.
+
+FAILURE MODE TO AVOID:
+A clean rectangular card with a clean foil border and the art neatly contained inside is WRONG. That reads as a poster, not a collectable card. Frame-breaking with dimensional projection is the single most important style element.`,
+
+    `NO TITLE, NO TEXT, NO PLAQUE, NO NAMEPLATE — ABSOLUTE RULE:
+
+Do NOT render any title, name, text, letter, word, plaque, signboard, nameplate, caption, label, banner, scroll, cartouche, inscription, or typographic element anywhere on this card.
+The artwork zone is pure imagery only. Zero text of any kind.
+
+SPECIFIC FAILURE MODES TO AVOID:
+- A rectangular or oval brass/bronze plaque with the athlete's name, positioned at the bottom of the artwork or along the bottom foil border — FORBIDDEN
+- A scrolled banner or ribbon with text draped across the artwork — FORBIDDEN
+- Any decorative frame element that carries type of any kind — FORBIDDEN
+- Text painted on jersey, helmet, bib number, or surface within the scene — RENDER AS BLANK or ABSTRACTED, never readable characters
+- Any lettering treated as part of the artwork composition — FORBIDDEN
+
+The title is added in post-processing as a separate element outside the AI artwork. Do NOT attempt to render it yourself. If you render ANY text element on this card, the output is rejected.
+If the real-world subject naturally contains signage (jersey numbers, sponsor logos, race bibs), render those surfaces blank, weathered-illegible, or abstracted — no readable characters.`,
+
+    `CARD MATERIAL FEEL:
+Satin-finish card stock with subtle sheen. Premium print quality — crisp edges, rich color. No visible physical card thickness or shadow (this is a straight-on frontal view of the card face, not a product shot of a card on a desk).`,
+
+    `COMPOSITION:
+Portrait orientation. The artwork fills the card. Margins inside the foil border: roughly 8-12%. Do not show any surface or environment outside the card — the image is the card, nothing else.`,
+  ].filter(Boolean).join('\n\n')
+
+  // Source prep — same brightness lift pattern as Landscapes
+  const srcBuf = Buffer.from(input.sourceImageB64, 'base64')
+  const bright = (await sharp(srcBuf).greyscale().stats()).channels[0].mean
+  const lift   = bright < 165 ? Math.min(165 / bright, 2.0) : 1.0
+  const prepared = lift > 1.0
+    ? await sharp(srcBuf).modulate({ brightness: lift }).png().toBuffer()
+    : srcBuf
+
+  const file = await toFile(prepared, 'source.png', { type: 'image/png' })
+  const res = await openai.images.edit({
+    model: 'gpt-image-1',
+    image: file,
+    prompt,
+    size:  '1024x1536',
+  })
+  const b64 = res.data?.[0]?.b64_json
+  if (!b64) throw new Error('actionmini_card_front_generation_failed')
+  return b64
+}
+
+// ── BUILD BACK (CODE) ─────────────────────────────────────────
+async function buildCardBack(input: {
+  frontImageB64: string
+  displayName:   string
+  memoryText:    string
+  plaqueText?:   string
+}): Promise<string> {
+  // Layout constants — mirror Landscapes Card back layout
+  const pad         = 70
+  const borderW     = 4
+
+  const thumbTop    = 140
+  const thumbW      = Math.round(CARD_W * 0.72)
+  const thumbH      = Math.round(thumbW * 1.33)
+  const thumbLeft   = Math.round((CARD_W - thumbW) / 2)
+
+  const titleY      = thumbTop + thumbH + 80
+  const textTop     = titleY + 55
+
+  // Trim foil border off front to use as thumbnail
+  const frontBuf = Buffer.from(input.frontImageB64, 'base64')
+  const frontMeta = await sharp(frontBuf).metadata()
+  const fw = frontMeta.width  ?? CARD_W
+  const fh = frontMeta.height ?? CARD_H
+  const trimRatio = 0.085
+  const cropX = Math.round(fw * trimRatio)
+  const cropY = Math.round(fh * trimRatio)
+  const cropW = fw - cropX * 2
+  const cropH = fh - cropY * 2
+  const thumbBuf = await sharp(frontBuf)
+    .extract({ left: cropX, top: cropY, width: cropW, height: cropH })
+    .resize({ width: thumbW, height: thumbH, fit: 'cover' })
+    .png()
+    .toBuffer()
+
+  const thumbBorderSvg = Buffer.from(`
+    <svg width="${thumbW}" height="${thumbH}" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="${thumbW - 2}" height="${thumbH - 2}"
+            fill="none" stroke="#8B6F3F" stroke-width="2" opacity="0.6"/>
+    </svg>
+  `)
+
+  const textLines   = wrapText(input.memoryText || '', 38)
+  const lineHeight  = 54
+  const titleText   = escapeSvgText(input.displayName || '')
+  const bodyLinesSvg = textLines.map((ln, i) => `
+    <text x="${CARD_W / 2}" y="${textTop + i * lineHeight}"
+          text-anchor="middle"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="38" font-style="italic" fill="#3A2818">${escapeSvgText(ln)}</text>
+  `).join('')
+
+  const plaqueText = (input.plaqueText || '').trim().slice(0, 40)
+  const plaqueSvg  = plaqueText ? (() => {
+    const pW = 520
+    const pH = 78
+    const pX = Math.round((CARD_W - pW) / 2)
+    const pY = CARD_H - pad - 120
+    const pr = 7
+    const fs = Math.max(20, Math.min(34, Math.floor((pW * 0.92) / (plaqueText.length * 0.55))))
+    return `
+      <g transform="translate(${pX},${pY})">
+        <defs>
+          <linearGradient id="plaqueBronze" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#8A6A3A"/>
+            <stop offset="30%"  stop-color="#C49A5A"/>
+            <stop offset="55%"  stop-color="#E4C48A"/>
+            <stop offset="80%"  stop-color="#A07838"/>
+            <stop offset="100%" stop-color="#5A3E1E"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="${pW}" height="${pH}" rx="${pr}"
+              fill="url(#plaqueBronze)" stroke="#3E2A12" stroke-width="1.2"/>
+        <rect x="3" y="3" width="${pW - 6}" height="${pH - 6}" rx="${pr - 2}"
+              fill="none" stroke="#FFF3C8" stroke-width="0.7" opacity="0.35"/>
+        <text x="${pW / 2}" y="${pH / 2 + fs * 0.35}"
+              text-anchor="middle"
+              font-family="Georgia, 'Times New Roman', serif"
+              font-size="${fs}" font-weight="500" fill="#2A1A0A"
+              letter-spacing="1.5">${escapeSvgText(plaqueText)}</text>
+      </g>
+    `
+  })() : ''
+
+  const backSvg = Buffer.from(`
+    <svg width="${CARD_W}" height="${CARD_H}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="cream" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stop-color="#F5EEDE"/>
+          <stop offset="100%" stop-color="#EBE1CC"/>
+        </linearGradient>
+        <linearGradient id="foil" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#C9A45A"/>
+          <stop offset="50%"  stop-color="#E8CC84"/>
+          <stop offset="100%" stop-color="#9E7E3E"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="${CARD_W}" height="${CARD_H}" fill="url(#cream)"/>
+
+      <rect x="${pad}" y="${pad}"
+            width="${CARD_W - pad * 2}" height="${CARD_H - pad * 2}"
+            fill="none" stroke="url(#foil)" stroke-width="${borderW}"/>
+
+      <rect x="${pad + 18}" y="${pad + 18}"
+            width="${CARD_W - (pad + 18) * 2}" height="${CARD_H - (pad + 18) * 2}"
+            fill="none" stroke="#8B6F3F" stroke-width="1" opacity="0.35"/>
+
+      <text x="${CARD_W / 2}" y="${titleY}"
+            text-anchor="middle"
+            font-family="Georgia, 'Times New Roman', serif"
+            font-size="56" font-weight="400" fill="#2A1E10"
+            letter-spacing="2">${titleText}</text>
+
+      <line x1="${CARD_W / 2 - 110}" y1="${titleY + 18}"
+            x2="${CARD_W / 2 + 110}" y2="${titleY + 18}"
+            stroke="url(#foil)" stroke-width="1.5"/>
+
+      ${bodyLinesSvg}
+
+      ${plaqueSvg}
+
+      <text x="${CARD_W / 2}" y="${CARD_H - pad - 36}"
+            text-anchor="middle"
+            font-family="Georgia, 'Times New Roman', serif"
+            font-size="20" letter-spacing="6" fill="#8B6F3F" opacity="0.7">MINISCAPE</text>
+    </svg>
+  `)
+
+  const composed = await sharp(backSvg)
+    .composite([
+      { input: thumbBuf,       left: thumbLeft, top: thumbTop },
+      { input: thumbBorderSvg, left: thumbLeft, top: thumbTop },
+    ])
+    .png({ quality: 95 })
+    .toBuffer()
+
+  return composed.toString('base64')
+}
+
+// ── PUBLIC ENTRY POINT ────────────────────────────────────────
+export async function generateActionMiniCard(input: {
+  sourceImageB64:        string
+  kineticMedium:         string
+  actionDescription:     string
+  freezeMomentQuality?:  string
+  hero:                  ActionMiniCardHero | null
+  secondaryFigures?:     ActionMiniCardSecondaryFigures
+  distinctiveFeatures?:  string
+  environment:           string
+  displayName:           string
+  memoryText:            string
   mood:                  string
   plaqueText?:           string
-  notes?:                string
-}
-
-// ── MOOD — TUNED FOR CARD AESTHETIC ────────────────────────────
-// Card mood is more graphic and less editorial than In-Situ. Lighting
-// supports the diorama as art, not as found object.
-const MOODS: Record<string, string> = {
-  golden: `MOOD: Warm golden card aesthetic — honey light raking the diorama from upper-left, rich amber tones in the backdrop, warm cinematic glow throughout. Premium collector card energy — like a foil-stamped rare card under display lighting.
-
-LIGHTING:
-Strong directional key from upper-left at 30-40°. Warm amber rim-light separates diorama from backdrop. Subtle internal glow on translucent effects (water, spray). Specular highlights on glossy resin surfaces.`,
-
-  dramatic: `MOOD: Dramatic card aesthetic — deep moody backdrop, theatrical key light striking the diorama, high contrast, premium foil-edge collector card feel. Like a holographic rare against a black-velvet display.
-
-LIGHTING:
-Strong dramatic key light spotlighting the diorama from upper angle. Deep shadow falloff. Cool atmospheric backdrop with warm focused subject. Strong rim separation.`,
-
-  peaceful: `MOOD: Peaceful card aesthetic — soft diffused light, low contrast, contemplative collector card feel. Like a watercolor-art-series card.
-
-LIGHTING:
-Soft diffused key from upper portion. Low contrast. Even illumination across diorama. Atmospheric soft backdrop with gentle glow.`,
-
-  vivid: `MOOD: Bright vivid card aesthetic — saturated color, clean directional light, high-energy collector card feel. Like a peak-tier sports card under bright store lighting.
-
-LIGHTING:
-Clean bright directional key. Saturated colors. Crisp shadows on diorama with clean fill. Bright clean backdrop.`,
-}
-
-// ── KINETIC INTENSITY (SAME AS IN-SITU — TRANSFERABLE) ─────────
-const KINETIC_INTENSITY_BLOCK = `KINETIC INTENSITY (CRITICAL — APPLIES TO ALL EFFECTS):
-
-The kinetic action is INTENSE and MESSY. The sculpt should show three universal layers of kinetic detail beyond the main effect mass:
-
-1. SURFACE TRAIL — visible marks on the sculpted base behind the figure showing where the action came from: tire ruts, ski tracks, foam wake, scuff marks, footprint trails.
-
-2. PARTICULATE SCATTER — fine secondary debris in a HALO around the main kinetic point — droplets, dust motes, dirt chunks, snow crystals, chalk specks, sparks.
-
-3. IMPACT ZONES — visible physics evidence where the action hits the terrain — splash zones, gouge marks, divots, churn patches, displacement craters.
-
-These three layers turn a clean kinetic snapshot into a chaotic intense moment.`
-
-// ── EFFECTS BY MEDIUM (CARRIED FROM IN-SITU) ───────────────────
-const MEDIUM_EFFECTS: Record<string, string> = {
-  whitewater: `EFFECTS — WHITEWATER KINETIC SCENE:
-
-Sculpted water across the plate top with vertical kinetic energy — foam, wave forms, rocks, spray rising off paddle and bow contact points.
-
-KINETIC INTENSITY APPLICATIONS:
-- TRAIL: Foam wake behind the kayak across the plate
-- SCATTER: Droplets and water specks in a halo around the kayak and paddle
-- IMPACT: Deep churn at bow contact, gouge in wave face, displaced water around cockpit
-
-Hero kayaker is 20-25% of object height. Containment at plinth rim.`,
-
-  surf: `EFFECTS — WAVE KINETIC SCENE:
-
-Sculpted wave across plinth with breaking crest, curling face, spray rising, foam trailing.
-
-KINETIC INTENSITY APPLICATIONS:
-- TRAIL: Foam wake behind the board's path
-- SCATTER: Droplets and spray specks halo around board and figure
-- IMPACT: Aerated foam at rail engagement, gouge in wave face, rooster-tail behind
-
-Surfer is 20-25% of object height. Containment at plinth rim.`,
-
-  snow: `EFFECTS — SNOW KINETIC SCENE:
-
-Powder plume rising, spray arcing, carving lines across plinth.
-
-KINETIC INTENSITY APPLICATIONS:
-- TRAIL: Sculpted ski/board tracks behind the rider
-- SCATTER: Snow crystals halo around the rider
-- IMPACT: Gouged carving lines, displaced snow chunks at edges
-
-Rider is 20-25% of object height. Containment at plinth rim.`,
-
-  skate: `EFFECTS — SKATE KINETIC SCENE:
-
-Dust plume rising, sparks arcing across sculpted ramp/street section.
-
-KINETIC INTENSITY APPLICATIONS:
-- TRAIL: Wheel marks and scuff trails
-- SCATTER: Dust motes, concrete chips, sparks halo
-- IMPACT: Scuff scoring, dust at wheel contact, debris fragments
-
-Skater is 20-25% of object height. Containment at plinth rim.`,
-
-  bike: `EFFECTS — BIKE KINETIC SCENE:
-
-Sculpted trail with dust plume rising, dirt chunks arcing across plinth.
-
-KINETIC INTENSITY APPLICATIONS:
-- TRAIL: Deep tire ruts behind the bike
-- SCATTER: Dirt chunks, pebbles, dust motes halo around rear tire
-- IMPACT: Displacement crater at tire contact, churned dirt with torn edges
-
-Rider is 20-25% of object height. Containment at plinth rim.`,
-
-  climb: `EFFECTS — ROCK KINETIC SCENE:
-
-Sculpted rock face with chalk puffs at engagement points, multiple features across plinth.
-
-KINETIC INTENSITY APPLICATIONS:
-- TRAIL: Chalk smudges on previous holds
-- SCATTER: Chalk dust specks halo around hands
-- IMPACT: Deeper chalk patches at grip zones, rock dust at smears
-
-Climber is 20-25% of object height. Containment at plinth rim.`,
-
-  run: `EFFECTS — TRAIL KINETIC SCENE:
-
-Sculpted trail with dust rising, terrain variation across plinth.
-
-KINETIC INTENSITY APPLICATIONS:
-- TRAIL: Footprints and stride marks behind the runner
-- SCATTER: Dirt specks, pebbles, dust motes halo around heels
-- IMPACT: Heel-strike divots, displaced dirt at toe-off
-
-Runner is 20-25% of object height. Containment at plinth rim.`,
-
-  dance: `EFFECTS — STAGE KINETIC SCENE:
-
-Sculpted stage with fabric and hair arcing up.
-
-KINETIC INTENSITY APPLICATIONS:
-- TRAIL: Scuff arcs and shoe marks behind dancer
-- SCATTER: Glitter, fabric particles, atmospheric motes halo
-- IMPACT: Sheen and pressure marks at planted foot
-
-Dancer is 20-25% of object height. Containment at plinth rim.`,
-
-  other: `EFFECTS — KINETIC SCENE:
-
-Whatever kinetic elements sprawl horizontally with vertical energy preserved.
-
-KINETIC INTENSITY APPLICATIONS:
-- TRAIL: Marks the action would naturally leave behind
-- SCATTER: Secondary particles halo around kinetic point
-- IMPACT: Visible physics evidence on terrain
-
-Figure is 20-25% of object height. Containment at plinth rim.`,
-}
-
-// ── IDENTITY LOCK — SAME AS IN-SITU, GESTALT-LEVEL ─────────────
-function buildIdentityLock(hero: ActionMiniCardHero | null): string {
-  if (!hero) {
-    return `HERO — PAINTED RESIN MINIATURE FIGURE:
-Render as a museum-quality painted resin miniature appropriate to the source photograph. Gestalt-level likeness — recognizable by general features, age, skin tone, hair, gear — not photographic identity.`
-  }
-
-  const lines: string[] = []
-
-  const coreParts = [
-    hero.age_range && `age: ${hero.age_range}`,
-    hero.gender_presentation && `gender presentation: ${hero.gender_presentation}`,
-    hero.ethnicity_apparent && `apparent ethnicity: ${hero.ethnicity_apparent}`,
-    hero.skin_tone && `skin tone (paint base): ${hero.skin_tone}`,
-  ].filter(Boolean)
-  if (coreParts.length) lines.push(`APPEARANCE: ${coreParts.join(' — ')}`)
-
-  if (hero.hair) {
-    const h = hero.hair
-    const hairParts = [h.color, h.length, h.style, h.distinct_features && `(${h.distinct_features})`]
-      .filter(Boolean).join(', ')
-    if (hairParts) lines.push(`HAIR (sculpted): ${hairParts}`)
-  }
-
-  if (hero.face) {
-    const faceParts = [
-      hero.face.shape && `${hero.face.shape} face shape`,
-      hero.face.notable_features,
-    ].filter(Boolean).join(', ')
-    if (faceParts) lines.push(`FACE (general features): ${faceParts}`)
-  }
-
-  if (hero.glasses && hero.glasses_description) lines.push(`EYEWEAR: ${hero.glasses_description}`)
-  if (hero.facial_hair) lines.push(`FACIAL HAIR: ${hero.facial_hair}`)
-  if (hero.expression) lines.push(`EXPRESSION: ${hero.expression}`)
-
-  const gearParts = [
-    hero.gear_top && `top/torso: ${hero.gear_top}`,
-    hero.gear_head && `head: ${hero.gear_head}`,
-    hero.gear_hands && `hands: ${hero.gear_hands}`,
-  ].filter(Boolean)
-  if (gearParts.length) lines.push(`GEAR (painted resin, colors exact — PRIMARY IDENTITY ANCHOR):\n  - ${gearParts.join('\n  - ')}`)
-
-  if (hero.body_position) lines.push(`BODY POSITION (PRESERVE EXACTLY): ${hero.body_position}`)
-
-  return `HERO — PAINTED RESIN MINIATURE FIGURE (GESTALT-LEVEL LIKENESS):
-
-${lines.join('\n\n')}
-
-IDENTITY DISCIPLINE:
-- GEAR COLORS are the primary identity anchor
-- POSE is the secondary anchor — preserved exactly from source
-- Age, skin tone, hair color preserved as paint base
-- Face reads as competent painted miniature
-
-MATERIAL LANGUAGE (RESIN, NOT TOY):
-- Matte-to-satin painted resin on skin
-- Eyes glossy with small catchlights
-- Premium miniature quality, not plastic toy`
-}
-
-function buildPoseBlock(actionDescription: string, freezeMomentQuality?: string): string {
-  return `POSE — DYNAMIC ACTION:
-
-${actionDescription || 'The hero is captured in a dynamic action pose from the source photograph.'}
-${freezeMomentQuality ? `FREEZE INSTANT: ${freezeMomentQuality}` : ''}
-
-POSE REINFORCEMENT:
-- Pose reads clearly from silhouette
-- Every limb angle, rotation, grip preserved from source
-- Gear positioned exactly as source
-- Balance: figure stable, supported by sculpted effects`
-}
-
-function buildSecondaryBlock(sec?: ActionMiniCardSecondaryFigures): string {
-  if (!sec || !sec.count || sec.count === 0) return ''
-  return `SECONDARY FIGURES — DISTRIBUTED ACROSS THE PLATE:
-
-There ${sec.count === 1 ? 'is' : 'are'} ${sec.count} additional painted resin figure${sec.count === 1 ? '' : 's'}:
-${sec.description || ''}
-
-Same miniature scale, lower visual prominence, contained within plinth boundary.`
-}
-
-// ── CARD CORE BLOCK ────────────────────────────────────────────
-const CARD_CORE_BLOCK = `CORE — PREMIUM COLLECTOR CARD AESTHETIC:
-
-This is a museum-quality painted resin action diorama presented as the CENTERPIECE ART of a premium collector card. Think Pokemon ultra-rare, sports rookie card art series, gaming card master tier — the diorama IS the artwork inside an elegant minimal frame.
-
-OVERALL COMPOSITION:
-The image is rendered AS A COLLECTOR CARD — vertical/portrait-oriented rectangular frame fills most of the image. The card itself is the product. Inside the card frame:
-- The diorama is the hero subject in the upper 65-70% of the card area
-- A clean blank name plate area in the lower 15-20% of the card area (intentionally blank — text added separately)
-- Background behind the diorama is stylized contextual environment, softer than editorial photography
-
-CARD FRAME:
-- Minimal premium frame around the entire card edge — ~3-4% of image width
-- Frame style: brushed metal or subtle dark border with FOIL-EDGE accent (a thin metallic line just inside the outer frame edge)
-- Frame is elegant and understated — NOT ornate, NOT gilded heavily, NOT vintage
-- Premium modern collector aesthetic — the kind of frame on a Pokemon ultra-rare or a Topps Chrome rookie
-
-BACKGROUND BEHIND THE DIORAMA:
-- Stylized contextual environment — recognizable as the action setting (forest for whitewater, ocean for surf, mountain for snow, etc.) but rendered with a more graphic, atmospheric, painterly quality than In-Situ's editorial photography
-- Soft gradient or atmospheric haze
-- Subtle radiating glow or halo effect emanating from behind the diorama — like the card is highlighting the action
-- NOT a literal forest photograph — a STYLIZED environmental backdrop befitting a premium collector card
-
-NAME PLATE AREA:
-- Lower 15-20% of card area — clean horizontal band, slightly inset from card edges
-- Brushed metal or dark glossy surface
-- INTENTIONALLY BLANK — no engraved text, no decorative letters, no specific characters
-- May have a subtle separator line or minimal flourish but no text content
-- Text will be added separately in post-processing or as UI caption`
-
-const CARD_DIORAMA_BLOCK = `THE DIORAMA WITHIN THE CARD:
-
-OBJECT SHAPE:
-- Walnut plinth: WIDE OVAL PLATE — landscape-oriented, substantial, wider than tall
-- Sculpted scene on top: sprawls horizontally with vertical kinetic energy
-
-SIZING WITHIN THE CARD:
-The diorama is sized to be the clear centerpiece art of the card. It occupies approximately 60-70% of the card's INNER ART AREA (the zone above the name plate, inside the frame). The action is legible and impactful — this is the card's hero artwork.
-
-WITHIN THE SCULPTED OBJECT:
-- FIGURE: 20-25% of object height, embedded in the kinetic scene
-- SCULPTED SCENE + KINETIC INTENSITY: dominates the object, sprawling horizontally with vertical energy
-- All effects contained within plinth rim
-
-POSITIONING:
-- Diorama in the center-to-upper-center of the card art zone
-- Slight downward bias so the name plate has clean separation below
-- Backlit slightly by the radiating glow behind it`
-
-const CARD_CAMERA_BLOCK = `CAMERA — CARD ART PRESENTATION:
-
-The shot frames the diorama as it would appear ON a collector card. Slightly elevated angle (20-30°), looking at the diorama from a hero perspective. Pulled back enough that the diorama sits comfortably within the card art area with substantial backdrop visible behind it.
-
-The camera is presenting THE CARD — meaning the rectangular card frame is the outer boundary of the image, and the diorama is centered within that frame as the card's artwork.
-
-FOCUS:
-- Diorama: razor sharp throughout
-- Backdrop: softer, more atmospheric, slightly out of focus to keep diorama as the focal point
-- Card frame: sharp and present at the outer edges`
-
-const CARD_COMPOSITION_BLOCK = `COMPOSITION:
-
-LAYERS:
-1. Card frame at outer edges (sharp, present)
-2. Diorama (sharp, centerpiece, ~60-70% of inner art zone)
-3. Stylized environmental backdrop behind diorama (softer focus, atmospheric)
-4. Subtle glow halo behind diorama (radiating outward)
-5. Blank name plate at lower 15-20% of card area
-
-RATIO TARGETS:
-- Card frame: surrounds the entire image edge, ~3-4% of image width
-- Inner art zone: ~92-94% of card interior
-- Diorama within art zone: ~60-70% of art zone
-- Name plate area: lower 15-20% of card interior
-
-DO NOT:
-- Render specific text on the name plate (it must be BLANK)
-- Make the frame ornate, gilded, or vintage
-- Use a literal photographic environment behind the diorama (use stylized graphic backdrop)
-- Crop the card frame at any edge
-- Skip the kinetic intensity layers
-- Make the figure dominate the sculpted object`
-
-const CARD_MATERIAL_FRAME = `PHOTOGRAPHIC STYLE — PREMIUM COLLECTOR CARD AESTHETIC:
-
-OVERALL FEEL:
-The image reads as a high-end collector card photograph — like product photography of a premium foil card. Clean, graphic, slightly stylized, premium quality.
-
-CARD FRAME MATERIAL:
-Brushed metal or dark glossy edge with thin foil-line accent. Modern collector aesthetic. Subtle premium without being flashy.
-
-DIORAMA MATERIAL READ:
-Matte-to-satin painted resin (same as In-Situ). Brushwork, layered highlights, glossy eyes with catchlights, premium miniature quality.
-
-BACKDROP STYLE:
-Stylized environmental haze — atmospheric, painterly, recognizable as the action's setting but rendered as a graphic backdrop rather than a literal photograph. Soft gradients, subtle color, premium illustrative quality.
-
-GLOW HALO:
-Subtle radiating glow behind the diorama — like the card is highlighting the action. Soft warm light fading outward into the backdrop. Not a hard ring — a smooth atmospheric emanation.
-
-WHERE LIGHT HITS THE DIORAMA:
-Spray droplets and particulate scatter glow luminous. Plinth walnut rim catches rim-light. Wet sculpted surfaces gleam with specular highlights.
-
-COLOR:
-Premium graded — saturated but not garish. Mood-keyed (warm/cool/dramatic/clean depending on selected mood).
-
-QUALITY:
-Premium collector card art — the kind of image that belongs on the front of a foil-stamped rare card.`
-
-// ── MAIN BUILDER ────────────────────────────────────────────────
-export function buildCardPrompt(input: ActionMiniCardInput): string {
-  const mood      = MOODS[input.mood] || MOODS.golden
-  const effects   = MEDIUM_EFFECTS[input.kineticMedium] || MEDIUM_EFFECTS.other
-  const identity  = buildIdentityLock(input.hero)
-  const pose      = buildPoseBlock(input.actionDescription, input.freezeMomentQuality)
-  const secondary = buildSecondaryBlock(input.secondaryFigures)
-
-  const featuresBlock = input.distinctiveFeatures
-    ? `DISTINCTIVE FEATURES — PAINT INTO SCULPT:
-${input.distinctiveFeatures}`
-    : ''
-
-  const notesBlock = input.notes
-    ? `NOTES FROM THE PERSON:\n${input.notes}`
-    : ''
-
-  return [
-    'Transform the provided image into a PREMIUM COLLECTOR CARD featuring a museum-quality resin action diorama as its centerpiece artwork. The output should look like a high-end collector card photograph — minimal foil-edged frame, stylized atmospheric backdrop, blank name plate at the bottom, intense kinetic detail in the sculpted diorama.',
-    CARD_CORE_BLOCK,
-    identity,
-    pose,
-    KINETIC_INTENSITY_BLOCK,
-    effects,
-    secondary,
-    featuresBlock,
-    CARD_DIORAMA_BLOCK,
-    CARD_COMPOSITION_BLOCK,
-    CARD_CAMERA_BLOCK,
-    mood,
-    CARD_MATERIAL_FRAME,
-    notesBlock,
-  ].filter(Boolean).join('\n\n')
+  artworkStyle?:         CardArtworkStyle
+  openaiApiKey:          string
+}): Promise<{ frontB64: string; backB64: string }> {
+
+  const style: CardArtworkStyle = input.artworkStyle || '3d'
+
+  // Front first — back uses thumbnail extracted from front
+  const frontB64 = await buildCardFront({
+    sourceImageB64:       input.sourceImageB64,
+    kineticMedium:        input.kineticMedium,
+    actionDescription:    input.actionDescription,
+    freezeMomentQuality:  input.freezeMomentQuality,
+    hero:                 input.hero,
+    secondaryFigures:     input.secondaryFigures,
+    distinctiveFeatures:  input.distinctiveFeatures,
+    environment:          input.environment,
+    mood:                 input.mood,
+    artworkStyle:         style,
+    openaiApiKey:         input.openaiApiKey,
+  })
+
+  const backB64 = await buildCardBack({
+    frontImageB64: frontB64,
+    displayName:   input.displayName,
+    memoryText:    input.memoryText,
+    plaqueText:    input.plaqueText,
+  })
+
+  console.log(`[actionmini] collectable_card ${input.displayName} / ${style} — front + back done`)
+  return { frontB64, backB64 }
 }

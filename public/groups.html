@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Miniscape · Action Minis</title>
+<title>Miniscape · Group Minis</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@200;300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 :root{
@@ -43,6 +43,7 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
 @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 @keyframes detecting{0%{width:0%}100%{width:100%}}
 
+/* TOPBAR */
 .topbar{height:52px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;padding:0 1.25rem;gap:.75rem;flex-shrink:0}
 .home-link{padding:4px 10px;border:1px solid var(--border);border-radius:4px;color:var(--dim);
@@ -50,8 +51,8 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
 .home-link:hover{border-color:var(--gold);color:var(--gold-light)}
 .logo{font-family:var(--serif);font-size:1.1rem;color:var(--cream)}
 .logo span{color:var(--gold);font-style:italic}
-.logo-badge{font-size:.55rem;background:rgba(242,160,74,.15);color:#D67B2A;
-  border:1px solid rgba(242,160,74,.3);padding:2px 7px;border-radius:10px;
+.logo-badge{font-size:.55rem;background:rgba(29,158,117,.15);color:var(--teal);
+  border:1px solid rgba(29,158,117,.25);padding:2px 7px;border-radius:10px;
   font-family:var(--sans);font-weight:500;margin-left:6px;vertical-align:middle}
 .tb-div{width:1px;height:18px;background:var(--border);flex-shrink:0}
 
@@ -76,6 +77,7 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
 .status-dot.error{background:#E24B4A}
 .status-dot.detecting{background:var(--gold-light);animation:pulse .6s infinite}
 
+/* LAYOUT */
 .layout{display:grid;grid-template-columns:510px 1fr;flex:1;overflow:hidden;min-height:0}
 .left{border-right:1px solid var(--border);
   display:flex;flex-direction:column;overflow:hidden}
@@ -86,28 +88,32 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
   background:transparent;color:var(--dim);font-family:var(--sans);font-size:.68rem;cursor:pointer;transition:all .15s}
 .add-btn:hover{border-color:var(--teal);color:var(--teal-light)}
 
+/* DETECT CARD — IDENTITY ANALYSIS */
 .detect-card{margin:.75rem;padding:.8rem;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;flex-shrink:0}
+.detect-status{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem}
+.detect-icon{font-size:1.05rem}
+.detect-label{font-size:.7rem;color:var(--dim);font-weight:300}
+.detect-result{font-family:var(--serif);font-size:1rem;color:var(--cream);font-weight:300;margin-bottom:.2rem}
+.detect-sub{font-size:.6rem;color:var(--muted);font-family:var(--mono);line-height:1.5;white-space:pre-wrap}
+.detect-bar{height:2px;background:var(--border);border-radius:1px;margin-top:.55rem;overflow:hidden}
+.detect-bar-fill{height:100%;background:var(--teal);border-radius:1px;width:0;transition:width .1s linear}
+.detect-bar-fill.running{animation:detecting 6s ease-in-out forwards}
+
+/* PEOPLE CHIPS */
+.people-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)}
+.pchip{font-size:.55rem;padding:3px 7px;border-radius:10px;font-family:var(--mono);
+  background:var(--surface2);color:var(--cream);border:1px solid var(--border)}
+.pchip strong{color:var(--teal-light);font-weight:500;letter-spacing:.04em}
+
+/* SUITABILITY WARNING */
 .suit-warn{margin:.75rem;padding:.95rem 1rem .85rem;background:linear-gradient(180deg,#4a3320 0%,#3d2a18 100%);border:1.5px solid #c48540;border-left:5px solid #f2a04a;border-radius:8px;flex-shrink:0;box-shadow:0 2px 12px rgba(242,160,74,.15);animation:suitWarnIn .45s ease-out}
 @keyframes suitWarnIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .suit-warn-hdr{display:flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#ffb766;margin-bottom:.5rem}
 .suit-warn-icon{display:inline-flex;align-items:center;justify-content:center;width:1.1rem;height:1.1rem;border-radius:50%;background:#f2a04a;color:#2a1a08;font-size:.7rem;font-weight:900;font-family:var(--mono)}
 .suit-warn-body{font-family:var(--serif);font-size:.92rem;color:#faf0dc;line-height:1.5;font-weight:400}
 .suit-warn-hint{font-family:var(--mono);font-size:.62rem;color:#d4a574;margin-top:.55rem;letter-spacing:.03em;padding-top:.5rem;border-top:1px solid rgba(242,160,74,.22)}
-.detect-status{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem}
-.detect-icon{font-size:1.05rem}
-.detect-label{font-size:.7rem;color:var(--dim);font-weight:300}
-.detect-result{font-family:var(--serif);font-size:1rem;color:var(--cream);font-weight:300;margin-bottom:.2rem}
-.detect-sub{font-size:.62rem;color:var(--muted);font-family:var(--mono);line-height:1.55;white-space:pre-wrap}
-.detect-bar{height:2px;background:var(--border);border-radius:1px;margin-top:.55rem;overflow:hidden}
-.detect-bar-fill{height:100%;background:var(--teal);border-radius:1px;width:0;transition:width .1s linear}
-.detect-bar-fill.running{animation:detecting 3s ease-in-out forwards}
 
-.detect-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
-.detect-badge{font-size:.55rem;padding:2px 7px;border-radius:4px;font-family:var(--mono);font-weight:500;letter-spacing:.02em;
-  background:rgba(29,158,117,.12);color:var(--teal-light);border:1px solid rgba(29,158,117,.2)}
-.detect-badge.medium{background:rgba(242,160,74,.14);color:#E8B878;border-color:rgba(242,160,74,.26)}
-.detect-badge.hero{background:rgba(93,202,165,.12);color:var(--teal-light);border-color:rgba(93,202,165,.25)}
-
+/* VARIANT LIST */
 .variants-list{flex:1;overflow-y:auto;padding:0 .75rem .75rem}
 
 .var-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;
@@ -136,12 +142,12 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
   transition:border-color .15s;margin-bottom:12px}
 .name-input:focus{border-color:var(--teal)}
 
-.mood-stack{
-  position:relative;height:170px;margin-bottom:14px;perspective:800px;
-}
+/* MOOD STACK */
+.mood-stack{position:relative;height:170px;margin-bottom:14px;perspective:800px}
 .mcard{
   position:absolute;top:0;width:65%;height:100%;
-  border:1.5px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;overflow:hidden;padding:0;
+  border:1.5px solid var(--border);border-radius:10px;background:var(--surface);
+  cursor:pointer;overflow:hidden;padding:0;
   transition:transform .35s cubic-bezier(.2,.7,.3,1), border-color .25s, box-shadow .25s, filter .25s;
   box-shadow:0 2px 8px rgba(0,0,0,.35);
 }
@@ -163,22 +169,23 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
   z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.75);letter-spacing:.01em;
 }
 
+/* TILE PICKER */
 .tile-grid{display:grid;gap:7px;margin-bottom:10px}
 .tile-grid.cols-2{grid-template-columns:1fr 1fr}
 .tile-grid.cols-3{grid-template-columns:1fr 1fr 1fr}
 .tile-grid.cols-4{grid-template-columns:1fr 1fr 1fr 1fr;gap:5px}
+
 .tile{position:relative;border:1.5px solid var(--border);border-radius:8px;
   background:var(--surface);cursor:pointer;overflow:hidden;padding:0;transition:transform .15s, border-color .15s, box-shadow .15s}
+.tile.mood{aspect-ratio:3/2}
 .tile.pres{aspect-ratio:3/2}
 .pres-row .tile.pres{aspect-ratio:1/1}
 .pres-row .tile-label{font-size:.62rem;letter-spacing:.005em;line-height:1.15;left:5px;right:5px;bottom:4px}
 .pres-row .tile-check{width:14px;height:14px;font-size:.56rem;top:4px;right:4px}
-.tile:hover:not(.disabled){border-color:var(--gold-light);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.tile:hover{border-color:var(--gold-light);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
 .tile.active{border-color:var(--teal);border-width:2px}
-.tile.disabled{opacity:.5;cursor:not-allowed}
-.tile.disabled:hover{border-color:var(--border);transform:none;box-shadow:none}
 .tile-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.9;transition:opacity .2s}
-.tile:hover:not(.disabled) .tile-bg{opacity:1}
+.tile:hover .tile-bg{opacity:1}
 .tile-overlay{position:absolute;inset:0;
   background:linear-gradient(to top, rgba(18,16,14,.82) 0%, rgba(18,16,14,.18) 55%, transparent 100%)}
 .tile-label{position:absolute;left:9px;right:9px;bottom:7px;
@@ -189,34 +196,45 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
   background:var(--teal);color:#fff;font-size:.72rem;display:none;align-items:center;justify-content:center;
   z-index:3;box-shadow:0 2px 5px rgba(0,0,0,.5)}
 .tile.active .tile-check{display:flex}
-.tile-soon{position:absolute;top:5px;right:5px;z-index:3;
-  font-size:.5rem;padding:2px 6px;border-radius:3px;
-  background:rgba(18,16,14,.72);color:var(--dim);
-  font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}
 
+/* MOOD GRADIENTS — drop /previews/group-mood-*.jpg to override */
+.bg-mood-warm{background-image:url('/previews/group-mood-warm.jpg'),
+  radial-gradient(ellipse at 55% 45%, #E8B878 0%, #B07838 35%, #4A2814 75%, #1A0E06 100%)}
+.bg-mood-studio{background-image:url('/previews/group-mood-studio.jpg'),
+  linear-gradient(160deg, #D8D5CE 0%, #98948D 50%, #4A4842 100%)}
+.bg-mood-cinematic{background-image:url('/previews/group-mood-cinematic.jpg'),
+  linear-gradient(170deg, #F0A04A 0%, #C46818 40%, #5A2810 80%, #1A0A04 100%)}
+.bg-mood-soft{background-image:url('/previews/group-mood-soft.jpg'),
+  linear-gradient(180deg, #E8DFD0 0%, #B8C4C0 45%, #6E807E 80%, #2E3A38 100%)}
+
+/* PRESENTATION GRADIENTS */
+.bg-pres-insitu{background-image:url('/previews/group-pres-insitu.jpg'),
+  linear-gradient(160deg, #8B5A2A 0%, #D4AC6E 45%, #A0908A 75%, #5A4838 100%)}
+.bg-pres-mantel{background-image:url('/previews/group-pres-mantel.jpg'),
+  linear-gradient(165deg, #4A2618 0%, #8B4A28 35%, #B8744A 70%, #E8C898 100%)}
+.bg-pres-studio{background-image:url('/previews/group-pres-studio.jpg'),
+  linear-gradient(180deg, #F5F0E8 0%, #DED4BE 55%, #A8A090 100%)}
+.bg-pres-shelf{background-image:url('/previews/group-pres-shelf.jpg'),
+  linear-gradient(170deg, #2E1F12 0%, #6B4828 35%, #B8924A 70%, #E8D4A8 100%)}
+.tile-bg{background-size:cover;background-position:center}
+
+/* PLAQUE */
 .plaque-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
   color:var(--cream);font-family:var(--sans);font-size:.78rem;padding:7px 10px;outline:none;
   transition:border-color .15s;margin-bottom:8px}
 .plaque-input:focus{border-color:var(--gold)}
 .plaque-input::placeholder{color:var(--dim);font-style:italic}
 
-.bg-mood-golden{background-image:url('/previews/mood-golden.jpg'),
-  radial-gradient(ellipse at 55% 45%, #E4B878 0%, #B07838 35%, #4A2814 75%, #1A0E06 100%)}
-.bg-mood-dramatic{background-image:url('/previews/mood-dramatic.jpg'),
-  linear-gradient(155deg, #2A3448 0%, #14192A 55%, #080A14 100%)}
-.bg-mood-peaceful{background-image:url('/previews/mood-peaceful.jpg'),
-  linear-gradient(180deg, #E8DCC8 0%, #C4BFA8 40%, #8A9680 75%, #4E5A48 100%)}
-.bg-mood-vivid{background-image:url('/previews/mood-vivid.jpg'),
-  linear-gradient(175deg, #9ED8EC 0%, #5AA8D4 45%, #2A6894 80%, #0F2E4C 100%)}
+.plaque-shapes{display:flex;gap:6px}
+.pshape{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
+  padding:6px 4px;cursor:pointer;color:var(--dim);transition:all .15s;
+  display:flex;align-items:center;justify-content:center;height:32px}
+.pshape svg{width:30px;height:18px;display:block}
+.pshape:hover{border-color:var(--gold-light);color:var(--cream)}
+.pshape.active{border-color:var(--gold);color:var(--gold-light);
+  background:linear-gradient(145deg, rgba(184,146,74,.18), rgba(184,146,74,.06))}
 
-.bg-pres-insitu{background-image:url('/previews/pres-insitu.jpg'),
-  linear-gradient(160deg, #8B5A2A 0%, #D4AC6E 45%, #A0B8B0 75%, #5A7890 100%)}
-.bg-pres-collectable_card{background-image:url('/previews/pres-collectable-card.jpg'),
-  linear-gradient(145deg, #3A2818 0%, #6B4828 35%, #B8924A 75%, #E8D4A8 100%)}
-.bg-pres-museum{background-image:url('/previews/pres-museum.jpg'),
-  linear-gradient(180deg, #F5F0E8 0%, #DED4BE 55%, #A8A090 100%)}
-.tile-bg{background-size:cover;background-position:center}
-
+/* NOTES */
 .vfield{margin-top:6px}
 .vfield label{display:block;font-size:.55rem;font-weight:500;color:var(--muted);margin-bottom:3px;letter-spacing:.08em;text-transform:uppercase}
 .vfield textarea{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
@@ -233,19 +251,24 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
   color:var(--muted);font-family:var(--sans);font-size:.7rem;cursor:pointer;transition:all .15s}
 .del-btn:hover{border-color:#E24B4A;color:#E24B4A}
 
+/* CENTER */
 .center{display:flex;flex-direction:column;overflow:hidden}
 .center-hdr{padding:.6rem 1rem;border-bottom:1px solid var(--border);
   display:flex;align-items:center;background:rgba(0,0,0,.18);flex-shrink:0}
 .results-grid{flex:1;overflow:hidden;padding:2rem 1.5rem;
   position:relative;min-height:520px}
+
 .results-stack-inner{
   position:relative;width:100%;height:100%;
   max-width:820px;margin:0 auto;
   display:flex;align-items:center;justify-content:flex-start;
 }
+
+/* RESULT CARDS */
 .rc{
   position:absolute;top:0;left:0;width:52%;height:100%;
-  background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:14px;
+  overflow:hidden;cursor:pointer;
   transition:transform .4s cubic-bezier(.2,.7,.3,1),
              left .4s cubic-bezier(.2,.7,.3,1),
              border-color .25s, box-shadow .25s, filter .25s;
@@ -254,7 +277,9 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
   display:flex;flex-direction:column;
 }
 .rc.done{border-color:var(--teal)}
+.rc.fallback{border-color:var(--gold)}
 .rc.error{border-color:#E24B4A}
+
 .rc[data-pos="0"]{left:0;   transform:scale(1);    filter:brightness(1.00);z-index:10}
 .rc[data-pos="1"]{left:14%; transform:scale(.94);  filter:brightness(.72);z-index:9}
 .rc[data-pos="2"]{left:25%; transform:scale(.88);  filter:brightness(.56);z-index:8}
@@ -264,24 +289,29 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
 .rc[data-pos="6"]{left:49%; transform:scale(.67);  filter:brightness(.18);z-index:4}
 .rc[data-pos="7"]{left:51%; transform:scale(.64);  filter:brightness(.14);z-index:3}
 .rc[data-pos^="8"],.rc[data-pos^="9"]{left:51%;transform:scale(.62);filter:brightness(.1);z-index:2}
+
 .rc.top{box-shadow:0 12px 36px rgba(0,0,0,.6),0 0 0 1px var(--teal)}
+.rc.fallback.top{box-shadow:0 12px 36px rgba(0,0,0,.6),0 0 0 1px var(--gold)}
 .rc:not(.top):hover{filter:brightness(1.08) !important}
 
 .rc-img{
   flex:1;background:rgba(245,240,232,.03);
   position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-  min-height:0;
+  display:flex;align-items:center;justify-content:center;min-height:0;
 }
 .rc-img img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .rc:not(.top) .rc-img{cursor:default}
 .rc.top .rc-img{cursor:zoom-in}
 
-.stack-meta{position:absolute;top:12px;right:16px;z-index:100;
-  font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.1em;
-  pointer-events:none;display:flex;align-items:center;gap:8px}
-.stack-counter{color:var(--cream)}
-.stack-hint{opacity:.6}
+/* SCORE CHIP */
+.rc-score{position:absolute;top:10px;right:10px;z-index:3;
+  font-family:var(--mono);font-size:.62rem;font-weight:500;letter-spacing:.05em;
+  padding:4px 10px;border-radius:14px;
+  background:rgba(29,158,117,.92);color:#0a1f17;
+  box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.rc-score.fallback{background:rgba(184,146,74,.92);color:#1a1510}
+.rc-score.fail{background:rgba(226,75,74,.92);color:#fff}
+.rc-score-dot{display:inline-block;margin-left:4px;font-size:.7rem;line-height:1}
 
 .rc-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;
   justify-content:center;transition:background .18s;pointer-events:none}
@@ -289,7 +319,8 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
 .rc-ol{font-size:.72rem;color:#fff;background:rgba(0,0,0,.5);padding:5px 14px;
   border-radius:20px;opacity:0;transition:opacity .18s}
 .rc-img:hover .rc-ol{opacity:1}
-.rc-spinner{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--dim);font-size:.72rem}
+.rc-spinner{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--dim);font-size:.72rem;text-align:center;padding:1rem}
+.rc-spinner-sub{font-size:.6rem;color:var(--muted);font-family:var(--mono);letter-spacing:.05em}
 .spin{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--teal);
   border-radius:50%;animation:spin .7s linear infinite}
 .rc-body{padding:10px 12px}
@@ -302,17 +333,31 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
 .rc-btn.save{background:var(--teal);border-color:var(--teal);color:#fff}
 .rc-btn.save:hover{background:var(--teal-dark)}
 
+.stack-meta{position:absolute;top:12px;right:16px;z-index:100;
+  font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.1em;
+  pointer-events:none;display:flex;align-items:center;gap:8px}
+.stack-counter{color:var(--cream)}
+.stack-hint{opacity:.6}
+
+/* EMPTY STATE */
 .empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
   justify-content:center;min-height:300px;gap:1rem;text-align:center}
 .empty-icon{font-size:3rem;opacity:.2}
 .empty-title{font-family:var(--serif);font-size:1.4rem;font-weight:300;color:var(--muted)}
 .empty-sub{font-size:.78rem;color:var(--dim);max-width:340px;line-height:1.8}
 
+/* LIGHTBOX */
 .lightbox{position:fixed;inset:0;background:rgba(8,6,4,.96);display:flex;align-items:center;
-  justify-content:center;z-index:1000;cursor:zoom-out;padding:2rem;animation:fadeIn .2s ease}
-.lightbox img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6);border-radius:6px}
-.lightbox-hint{position:absolute;bottom:1.25rem;left:0;right:0;text-align:center;
-  font-family:var(--mono);font-size:.65rem;color:rgba(245,240,232,.4);letter-spacing:.1em;text-transform:uppercase}
+  justify-content:center;z-index:1000;cursor:zoom-out;padding:2rem;animation:fadeIn .2s ease;
+  flex-direction:column;gap:1.2rem}
+.lightbox img{max-width:100%;max-height:78vh;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6);border-radius:6px}
+.lightbox-meta{display:flex;gap:2rem;align-items:center;color:var(--cream);font-family:var(--mono);font-size:.7rem;letter-spacing:.05em;cursor:default}
+.lightbox-meta-block{display:flex;flex-direction:column;gap:3px;align-items:center}
+.lightbox-meta-block .lbl{color:var(--muted);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase}
+.lightbox-meta-block .val{color:var(--cream)}
+.lightbox-meta-block .val.pass{color:var(--teal-light)}
+.lightbox-meta-block .val.fb{color:var(--gold-light)}
+.lightbox-hint{font-family:var(--mono);font-size:.6rem;color:rgba(245,240,232,.4);letter-spacing:.1em;text-transform:uppercase}
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
@@ -322,12 +367,16 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
 <div class="topbar">
   <a class="home-link" href="index.html">← Home</a>
   <div class="tb-div"></div>
-  <div class="logo">mini<span>scape</span> <span class="logo-badge">ACTION MINIS</span></div>
+  <div class="logo">mini<span>scape</span> <span class="logo-badge">GROUP MINIS</span></div>
   <div class="tb-div"></div>
   <div class="upload-area">
     <label class="upload-slot" id="slot1">
-      <span>📷</span><span id="st1">Upload your action shot</span>
-      <input type="file" id="file1" accept="image/*" onchange="slotChange(this)">
+      <span>👥</span><span id="st1">Upload group photo</span>
+      <input type="file" id="file1" accept="image/*" onchange="slotChange(1,this)">
+    </label>
+    <label class="upload-slot" id="slot2">
+      <span>📷</span><span id="st2">2nd angle</span>
+      <input type="file" id="file2" accept="image/*" onchange="slotChange(2,this)">
     </label>
   </div>
   <div class="tb-div"></div>
@@ -347,19 +396,19 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
 
     <div class="detect-card" id="detectCard">
       <div class="detect-status">
-        <span class="detect-icon">🔍</span>
-        <span class="detect-label" id="detectLabel">Upload a photo to auto-detect the action</span>
+        <span class="detect-icon">👁</span>
+        <span class="detect-label" id="detectLabel">Upload a photo to detect identities</span>
       </div>
       <div class="detect-result" id="detectResult" style="display:none"></div>
-      <div class="detect-badges" id="detectBadges" style="display:none"></div>
       <div class="detect-sub" id="detectSub" style="display:none"></div>
+      <div class="people-chips" id="peopleChips" style="display:none"></div>
       <div class="detect-bar"><div class="detect-bar-fill" id="detectBar"></div></div>
     </div>
 
     <div class="suit-warn" id="suitWarn" style="display:none">
-      <div class="suit-warn-hdr"><span class="suit-warn-icon">!</span>Heads up — action fit</div>
+      <div class="suit-warn-hdr"><span class="suit-warn-icon">!</span>Heads up — likeness fit</div>
       <div class="suit-warn-body" id="suitWarnBody"></div>
-      <div class="suit-warn-hint">Action Minis work best when the hero is caught mid-motion. Posed or static shots may not feel as kinetic.</div>
+      <div class="suit-warn-hint">You can still generate, but identity preservation may be weaker for this photo.</div>
     </div>
 
     <div class="variants-list" id="variantsList"></div>
@@ -374,9 +423,9 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
       <div class="stack-meta" id="stackMeta"></div>
       <div class="results-stack-inner" id="resultsStackInner">
         <div class="empty-state" id="emptyState">
-          <div class="empty-icon">🌊</div>
-          <div class="empty-title">Your action awaits</div>
-          <div class="empty-sub">Upload a mid-motion shot — a kayaker, a skater, a surfer, anyone caught in the moment — and we'll sculpt the action around them.</div>
+          <div class="empty-icon">👨‍👩‍👧</div>
+          <div class="empty-title">Your people, in miniature</div>
+          <div class="empty-sub">Upload a group photo — every face is identified individually. Configure each variant with its own lighting and presentation, then Run All.</div>
         </div>
       </div>
     </div>
@@ -384,75 +433,80 @@ body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);displ
 </div>
 
 <script>
-const API     = '/api/v1/actionmini/generate'
-const ANALYZE = '/api/v1/actionmini/analyze'
+const ANALYZE  = '/api/v1/groups/analyze'
+const GENERATE = '/api/v1/groups/generate'
 
 const MOODS = [
-  { k:'golden',   label:'Golden Memory' },
-  { k:'dramatic', label:'Dramatic' },
-  { k:'peaceful', label:'Peaceful' },
-  { k:'vivid',    label:'Vivid' },
+  { k:'warm',      label:'Warm Hearth' },
+  { k:'studio',    label:'Studio Formal' },
+  { k:'cinematic', label:'Cinematic Golden' },
+  { k:'soft',      label:'Soft Daylight' },
 ]
-
-// Single live preset: In-Situ. The others remain disabled tiles (Soon) until built.
 const PRES = [
-  { k:'insitu',           label:'In Situ',          disabled:false },
-  { k:'collectable_card', label:'Collectable Card', disabled:false  },
-  { k:'museum',           label:'Museum',           disabled:true  },
+  { k:'insitu', label:'Desk Display' },
+  { k:'mantel', label:'Mantel' },
+  { k:'studio', label:'Studio Plinth' },
+  { k:'shelf',  label:'Bookshelf' },
 ]
 const MOOD_LABEL = Object.fromEntries(MOODS.map(m => [m.k, m.label]))
 const PRES_LABEL = Object.fromEntries(PRES.map(p => [p.k, p.label]))
 
-const MEDIUM_EMOJI = {
-  whitewater:'🌊', surf:'🏄', snow:'⛷️', skate:'🛹',
-  bike:'🚵', climb:'🧗', run:'🏃', dance:'💃', other:'✨',
+// Mood and presentation guidance — appended into `notes` so the existing backend
+// can pass it through the generator prompt without modifying the API contract.
+const MOOD_GUIDANCE = {
+  warm:      'Lighting mood: WARM HEARTH. Warm fireside-glow lighting — amber and rich, intimate, the feeling of family gathered around a hearth. Soft directional warm key from upper-left, golden ambient fill.',
+  studio:    'Lighting mood: STUDIO FORMAL. Clean professional studio lighting — neutral white key, soft fill, even illumination across all faces. The kind of light used for formal family portraits.',
+  cinematic: 'Lighting mood: CINEMATIC GOLDEN. Strong golden-hour key light from low upper-left, dramatic warm rim light, deep but luminous shadows. Magazine-cover quality.',
+  soft:      'Lighting mood: SOFT DAYLIGHT. Gentle window daylight from one side — soft, peaceful, the quality of a quiet morning. Cool-neutral but flattering, low contrast.',
+}
+const PRES_GUIDANCE = {
+  insitu: 'Presentation: DESK DISPLAY. The miniature sits on a polished dark walnut desk in a warm interior. Background warmly out of focus.',
+  mantel: 'Presentation: MANTEL. The miniature sits on a fireplace mantel made of warm wood or stone, with the soft suggestion of family photos in frames softly out of focus behind.',
+  studio: 'Presentation: STUDIO PLINTH. The miniature sits on a clean neutral studio surface — soft warm-grey, gradient background, no environmental context. Pure museum-product photography.',
+  shelf:  'Presentation: BOOKSHELF. The miniature sits on a wooden bookshelf, softly out of focus rows of books and small framed photos in warm tones behind.',
+}
+const PLAQUE_SHAPE_LABEL = {
+  rectangular: 'rectangular brass plaque',
+  curved:      'curved-top brass plaque',
+  victorian:   'ornate Victorian-edge brass plaque',
 }
 
-let fileB64 = null, running = false
-let imgStore = {}, resStore = {}, cardBackStore = {}, variantN = 0
-
-let detected = {
-  display_name: null,
-  kinetic_medium: null,
-  medium_confidence: null,
-  action_description: null,
-  freeze_moment_quality: null,
-  hero: null,
-  secondary_figures: null,
-  environment: null,
-  distinctive_features: null,
-  source_lighting: null,
-  memory_text: null,
-  default_plaque_text: null,
-  action_suitability: null,
-  recommendation: null,
-  alternatives: null,
-}
+let fileB64 = null, extraB64 = null, running = false
+let imgStore = {}, resStore = {}, variantN = 0
+let detectedAnalysis = null
 let analyzePromise = null
 
-function slotChange(input) {
+// ── UPLOAD ───────────────────────────────────────────────────
+function slotChange(n, input) {
   const f = input.files?.[0]; if(!f) return
   const r = new FileReader()
   r.onload = async e => {
     const b64   = e.target.result.split(',')[1]
     const short = f.name.length > 16 ? f.name.slice(0,14)+'…' : f.name
-    fileB64 = b64
-    document.getElementById('runAllBtn').disabled = false
-    document.getElementById('slot1').classList.add('has-file')
-    document.getElementById('st1').textContent = '✓ ' + short
-    analyzePromise = analyzeScene(b64)
-    await analyzePromise
+    if(n === 1) {
+      fileB64 = b64
+      document.getElementById('runAllBtn').disabled = false
+      document.getElementById('slot1').classList.add('has-file')
+      document.getElementById('st1').textContent = '✓ ' + short
+      analyzePromise = analyzeGroup(b64)
+      await analyzePromise
+    } else {
+      extraB64 = b64
+      document.getElementById('slot2').classList.add('has-file')
+      document.getElementById('st2').textContent = '✓ ' + short
+    }
   }
   r.readAsDataURL(f)
 }
 
-async function analyzeScene(b64) {
-  setG('detecting', 'analyzing action…')
-  document.getElementById('detectLabel').textContent = 'Reading the moment…'
+// ── IDENTITY DETECTION ───────────────────────────────────────
+async function analyzeGroup(b64) {
+  setG('detecting', 'reading the room…')
+  document.getElementById('detectLabel').textContent = 'Reading the room…'
   document.getElementById('detectBar').classList.add('running')
   document.getElementById('detectResult').style.display = 'none'
-  document.getElementById('detectBadges').style.display = 'none'
   document.getElementById('detectSub').style.display = 'none'
+  document.getElementById('peopleChips').style.display = 'none'
   document.getElementById('suitWarn').style.display = 'none'
 
   try {
@@ -462,92 +516,66 @@ async function analyzeScene(b64) {
       body: JSON.stringify({ image_b64: b64 })
     })
     const data = await res.json()
+    if (!res.ok || !data.analysis) throw new Error(data.error || 'analyze failed')
+    detectedAnalysis = data.analysis
+    const a = detectedAnalysis
 
-    detected.display_name           = data.display_name
-    detected.kinetic_medium         = data.kinetic_medium
-    detected.medium_confidence      = data.medium_confidence
-    detected.action_description     = data.action_description
-    detected.freeze_moment_quality  = data.freeze_moment_quality
-    detected.hero                   = data.hero
-    detected.secondary_figures      = data.secondary_figures
-    detected.environment            = data.environment
-    detected.distinctive_features   = data.distinctive_features
-    detected.source_lighting        = data.source_lighting
-    detected.memory_text            = data.memory_text
-    detected.default_plaque_text    = data.default_plaque_text
-    detected.action_suitability     = data.action_suitability || null
-    detected.recommendation         = data.recommendation || null
-    detected.alternatives           = data.alternatives || []
+    document.getElementById('detectResult').textContent =
+      `${a.num_people} ${a.num_people === 1 ? 'person' : 'people'} · ${a.group_arrangement}`
+    document.getElementById('detectSub').textContent =
+      `${a.interaction}\n${a.scene_context}`
 
-    const suit = detected.action_suitability
-    if (suit && suit.verdict === 'poorly_suited' && suit.reason) {
-      document.getElementById('suitWarnBody').textContent = suit.reason
+    // Per-person chips
+    const chips = document.getElementById('peopleChips')
+    chips.innerHTML = a.people.map((p, i) => {
+      const distinct = (p.distinct_features?.length ? ' · ' + p.distinct_features.slice(0,2).join(', ') : '')
+      return `<span class="pchip"><strong>${i+1}</strong> ${esc(p.age_range)} ${esc(p.gender_presentation)}${esc(distinct)}</span>`
+    }).join('')
+
+    document.getElementById('detectResult').style.display = 'block'
+    document.getElementById('detectSub').style.display = 'block'
+    chips.style.display = 'flex'
+    document.getElementById('detectLabel').textContent = `Identity profiles captured · ${a.people.length}`
+    document.getElementById('detectBar').classList.remove('running')
+    document.getElementById('detectBar').style.width = '100%'
+
+    // Suitability heuristic — flag rough cases
+    const suit = checkSuitability(a)
+    if (suit) {
+      document.getElementById('suitWarnBody').textContent = suit
       document.getElementById('suitWarn').style.display = 'block'
     }
 
-    document.getElementById('detectResult').textContent = data.display_name || 'Action detected'
-    document.getElementById('detectResult').style.display = 'block'
-
-    const badges = []
-    if (data.kinetic_medium) {
-      const emoji = MEDIUM_EMOJI[data.kinetic_medium] || '✨'
-      const confClass = data.medium_confidence === 'low' ? 'medium' : ''
-      badges.push(`<span class="detect-badge ${confClass}">${emoji} ${data.kinetic_medium}${data.medium_confidence ? ' · ' + data.medium_confidence : ''}</span>`)
-    }
-    if (data.hero) {
-      const h = data.hero
-      const heroBits = [h.age_range, h.gender_presentation].filter(Boolean).join(' · ')
-      if (heroBits) badges.push(`<span class="detect-badge hero">👤 ${esc(heroBits)}</span>`)
-    }
-    if (data.secondary_figures && data.secondary_figures.count > 0) {
-      badges.push(`<span class="detect-badge">+${data.secondary_figures.count} secondary</span>`)
-    }
-    if (badges.length) {
-      document.getElementById('detectBadges').innerHTML = badges.join('')
-      document.getElementById('detectBadges').style.display = 'flex'
-    }
-
-    const sub = []
-    if (data.action_description) sub.push(data.action_description)
-    if (data.freeze_moment_quality) sub.push(`\nFreeze moment: ${data.freeze_moment_quality}`)
-    if (data.distinctive_features) sub.push(`\nKey features: ${data.distinctive_features}`)
-    document.getElementById('detectSub').textContent = sub.join('')
-    document.getElementById('detectSub').style.display = 'block'
-
-    document.getElementById('detectLabel').textContent = 'Action detected'
-    document.getElementById('detectBar').classList.remove('running')
-    document.getElementById('detectBar').style.width = '100%'
-    setG('done', 'action detected')
-
-    if (data.default_plaque_text) {
-      document.querySelectorAll('[id^="vpt-"]').forEach(input => {
-        if (!input.value) input.placeholder = data.default_plaque_text
-      })
-    }
+    setG('done', 'identities locked')
   } catch(e) {
-    console.error('[analyze]', e)
-    document.getElementById('detectLabel').textContent = 'Detection failed — will still attempt generation'
+    document.getElementById('detectLabel').textContent = 'Detection failed — will retry during generation'
     document.getElementById('detectBar').classList.remove('running')
     setG('done', 'ready')
   }
 }
 
-function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+function checkSuitability(a) {
+  if (a.num_people === 0) return 'No faces detected. Generation will likely fail — try a clearer photo.'
+  if (a.num_people > 8)   return `${a.num_people} people in one photo is a lot for the identity model. Smaller groups (2–6) preserve likeness much better.`
+  return null
+}
+
+// ── VARIANT CARDS ────────────────────────────────────────────
+function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
 
 function addVariant(cfg = {}) {
   variantN++
   const vid  = 'v' + variantN
   const name = cfg.name || ('Variant ' + variantN)
-  const mood = cfg.mood || 'golden'
+  const mood = cfg.mood || 'warm'
   const pres = cfg.pres || 'insitu'
-  const artStyle = cfg.artStyle || '3d'
 
   const card = document.createElement('div')
   card.className = 'var-card open'
-  card.dataset.id       = vid
-  card.dataset.mood     = mood
-  card.dataset.pres     = pres
-  card.dataset.artStyle = artStyle
+  card.dataset.id   = vid
+  card.dataset.mood = mood
+  card.dataset.pres = pres
+  card.dataset.plaqueShape = cfg.plaqueShape || 'rectangular'
 
   const moodOrder = [mood, ...MOODS.map(m => m.k).filter(k => k !== mood)]
   const moodTiles = moodOrder.map((k, i) => {
@@ -563,16 +591,12 @@ function addVariant(cfg = {}) {
   }).join('')
 
   const presTiles = PRES.map(p => `
-    <button class="tile pres ${p.k===pres?'active':''} ${p.disabled?'disabled':''}" id="p-${vid}-${p.k}"
-            onclick="event.stopPropagation();${p.disabled?'':`selectPres('${vid}','${p.k}')`}">
+    <button class="tile pres ${p.k===pres?'active':''}" id="p-${vid}-${p.k}" onclick="event.stopPropagation();selectPres('${vid}','${p.k}')">
       <div class="tile-bg bg-pres-${p.k}"></div>
       <div class="tile-overlay"></div>
       <div class="tile-check">✓</div>
       <div class="tile-label">${p.label}</div>
-      ${p.disabled ? '<span class="tile-soon">Soon</span>' : ''}
     </button>`).join('')
-
-  const plaquePlaceholder = detected.default_plaque_text || 'Add a plaque line (optional)'
 
   card.innerHTML = `
     <div class="var-hdr" onclick="toggleVariant('${vid}')">
@@ -584,29 +608,25 @@ function addVariant(cfg = {}) {
     <div class="vbody">
       <input type="text" class="name-input" id="vnm-${vid}" value="${esc(name)}" oninput="syncName('${vid}')" placeholder="Name this variant…">
       <div class="mood-stack" id="mstack-${vid}">${moodTiles}</div>
-      <div class="tile-grid cols-3 pres-row">${presTiles}</div>
-      <div class="vfield card-only" id="vcard-fields-${vid}" style="display:none">
-        <label>Memory (back of card)</label>
-        <textarea id="vmem-${vid}" placeholder="A short note about this moment — appears on the back of the card." maxlength="180"></textarea>
-        <label style="margin-top:0.6rem">Artwork Style</label>
-        <div class="tile-grid cols-2" id="vart-${vid}">
-          <button type="button" class="tile pres active" data-style="3d"
-                  onclick="event.stopPropagation();selectArtStyle('${vid}','3d')">
-            <div class="tile-label">3D Photoreal</div>
+      <div class="tile-grid cols-4 pres-row">${presTiles}</div>
+      <div class="vfield">
+        <label>Decorative Plate (optional)</label>
+        <input type="text" class="plaque-input" id="vpt-${vid}" maxlength="40" placeholder='e.g. "The Smiths · Christmas 2024"'>
+        <div class="plaque-shapes" id="vps-${vid}">
+          <button class="pshape active" data-shape="rectangular" onclick="selectPlaqueShape('${vid}','rectangular')" title="Rectangular">
+            <svg viewBox="0 0 32 20"><rect x="2" y="3" width="28" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
           </button>
-          <button type="button" class="tile pres" data-style="impressionist"
-                  onclick="event.stopPropagation();selectArtStyle('${vid}','impressionist')">
-            <div class="tile-label">Impressionist</div>
+          <button class="pshape" data-shape="curved" onclick="selectPlaqueShape('${vid}','curved')" title="Curved">
+            <svg viewBox="0 0 32 20"><path d="M 2 10 Q 2 4 8 4 L 24 4 Q 30 4 30 10 L 30 16 Q 30 17 29 17 L 3 17 Q 2 17 2 16 Z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+          </button>
+          <button class="pshape" data-shape="victorian" onclick="selectPlaqueShape('${vid}','victorian')" title="Victorian">
+            <svg viewBox="0 0 32 20"><path d="M 4 6 Q 4 3 7 3 Q 9 3 10 5 Q 12 3 16 3 Q 20 3 22 5 Q 23 3 25 3 Q 28 3 28 6 L 28 14 Q 28 17 25 17 Q 23 17 22 15 Q 20 17 16 17 Q 12 17 10 15 Q 9 17 7 17 Q 4 17 4 14 Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
           </button>
         </div>
       </div>
       <div class="vfield">
-        <label>Plaque Line (optional)</label>
-        <input type="text" class="plaque-input" id="vpt-${vid}" maxlength="40" placeholder="${esc(plaquePlaceholder)}">
-      </div>
-      <div class="vfield">
         <label>Notes (optional)</label>
-        <textarea id="vnt-${vid}" placeholder="Where it happened, who's in it, what the moment meant…"></textarea>
+        <textarea id="vnt-${vid}" placeholder="Names, occasion, anything to emphasize…"></textarea>
       </div>
       <div class="vactions">
         <button class="run-one" id="vrun-${vid}" onclick="runOne('${vid}')">▶ Generate</button>
@@ -640,27 +660,23 @@ function tapMood(vid, mood) {
 }
 
 function selectPres(vid, pres) {
-  const p = PRES.find(x => x.k === pres)
-  if (p?.disabled) return
   const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
   card.dataset.pres = pres
   PRES.forEach(p => {
     const el = document.getElementById(`p-${vid}-${p.k}`)
     if (el) el.classList.toggle('active', p.k === pres)
   })
-  // Toggle card-only fields
-  const cardFields = document.getElementById('vcard-fields-' + vid)
-  if (cardFields) cardFields.style.display = pres === 'collectable_card' ? '' : 'none'
   syncChips(vid)
 }
-function selectArtStyle(vid, style) {
+
+function selectPlaqueShape(vid, shape) {
   const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
-  card.dataset.artStyle = style
-  const wrap = document.getElementById('vart-' + vid)
-  if (wrap) wrap.querySelectorAll('button').forEach(b => {
-    b.classList.toggle('active', b.dataset.style === style)
+  card.dataset.plaqueShape = shape
+  document.querySelectorAll(`#vps-${vid} .pshape`).forEach(b => {
+    b.classList.toggle('active', b.dataset.shape === shape)
   })
 }
+
 function syncChips(vid) {
   const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
   const box = document.getElementById('vchips-' + vid); if(!box) return
@@ -692,22 +708,35 @@ function getAllVids() {
 function collect(vid) {
   const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return null
   const plaqueText = document.getElementById('vpt-' + vid)?.value?.trim() || ''
-  const memoryText = document.getElementById('vmem-' + vid)?.value?.trim() || ''
   return {
     vid,
-    name:         document.getElementById('vnm-' + vid)?.value || vid,
-    mood:         card.dataset.mood || 'golden',
-    pres:         card.dataset.pres || 'insitu',
-    notes:        document.getElementById('vnt-' + vid)?.value?.trim() || undefined,
-    plaqueText:   plaqueText || undefined,
-    memoryText:   memoryText || undefined,
-    artworkStyle: card.dataset.artStyle || '3d',
+    name:        document.getElementById('vnm-' + vid)?.value || vid,
+    mood:        card.dataset.mood || 'warm',
+    pres:        card.dataset.pres || 'insitu',
+    notes:       document.getElementById('vnt-' + vid)?.value?.trim() || '',
+    plaqueText:  plaqueText,
+    plaqueShape: card.dataset.plaqueShape || 'rectangular',
   }
 }
 
+// Compose the notes blob the backend will receive — stitches mood/pres/plaque
+// guidance with user notes so it all flows into the existing prompt.
+function composeNotes(p) {
+  const lines = []
+  if (MOOD_GUIDANCE[p.mood]) lines.push(MOOD_GUIDANCE[p.mood])
+  if (PRES_GUIDANCE[p.pres]) lines.push(PRES_GUIDANCE[p.pres])
+  if (p.plaqueText) {
+    const shape = PLAQUE_SHAPE_LABEL[p.plaqueShape] || 'brass plaque'
+    lines.push(`Plaque: a ${shape} on the front of the base, engraved with "${p.plaqueText}".`)
+  }
+  if (p.notes) lines.push(`User notes: ${p.notes}`)
+  return lines.join('\n\n')
+}
+
+// ── GENERATE ─────────────────────────────────────────────────
 async function runOne(vid) {
   if (running) return
-  if (!fileB64) { alert('Upload a photo first'); return }
+  if (!fileB64) { alert('Upload a group photo first'); return }
   running = true
   setG('running', 'generating…')
   document.getElementById('emptyState')?.remove()
@@ -718,7 +747,7 @@ async function runOne(vid) {
 
 async function runAll() {
   if (running) return
-  if (!fileB64) { alert('Upload a photo first'); return }
+  if (!fileB64) { alert('Upload a group photo first'); return }
   const ids = getAllVids()
   if (!ids.length) { alert('Add at least one variant'); return }
   running = true
@@ -737,20 +766,15 @@ async function runVariants(ids) {
   })
 
   let ok = 0, fail = 0
-  for (let i = 0; i < ids.length; i += 3) {
-    const batch = ids.slice(i, i + 3)
+  // Group generation includes up to 3 internal retries each — keep batch size at 2 to be gentle on the API.
+  for (let i = 0; i < ids.length; i += 2) {
+    const batch = ids.slice(i, i + 2)
     await Promise.allSettled(batch.map(async vid => {
       const p = collect(vid); if(!p) return
       try {
         const r = await generateOne(p)
         resStore[p.name] = r
-        // Card preset returns front_b64/back_b64; non-card returns image_b64
-        if (r.front_b64) {
-          imgStore[p.name] = r.front_b64
-          cardBackStore[p.name] = r.back_b64
-        } else {
-          imgStore[p.name] = r.image_b64
-        }
+        imgStore[p.name] = r.image_b64
         setVdot(vid, 'done')
         ok++
       } catch(e) {
@@ -767,27 +791,14 @@ async function runVariants(ids) {
 
 async function generateOne(p) {
   try {
-    const res = await fetch(API, {
+    const composedNotes = composeNotes(p)
+    const res = await fetch(GENERATE, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        source_image_b64:        fileB64,
-        kinetic_medium:          detected.kinetic_medium || 'other',
-        action_description:      detected.action_description || '',
-        freeze_moment_quality:   detected.freeze_moment_quality || undefined,
-        hero:                    detected.hero || null,
-        secondary_figures:       detected.secondary_figures || { count: 0, description: 'empty' },
-        environment:             detected.environment || 'The diorama sits on neutral textured ground. Background is blurred natural environment with soft atmospheric light.',
-        distinctive_features:    detected.distinctive_features || undefined,
-        source_lighting:         detected.source_lighting || undefined,
-        display_name:            detected.display_name || p.name,
-        preset:                  p.pres,
-        mood:                    p.mood,
-        plaque_text:             p.plaqueText,
-        notes:                   p.notes,
-        // Card-only fields — sent always but only consumed when preset === 'collectable_card'
-        memory_text:             p.memoryText || detected.memory_text || '',
-        artwork_style:           p.artworkStyle || '3d',
+        source_image_b64: fileB64,
+        analysis:         detectedAnalysis,   // skip re-analyze on retries
+        notes:            composedNotes,
       })
     })
     if(!res.ok) {
@@ -795,12 +806,8 @@ async function generateOne(p) {
       throw new Error(e.error || 'HTTP '+res.status)
     }
     const data = await res.json()
-    const r    = data.result
-    if (r?.front_b64 && r?.back_b64) {
-      // Card preset — front + back response
-      mkResult(p.name, r, p)
-    } else if (r?.image_b64) {
-      // In-Situ / Museum — single image response
+    const r = data.result
+    if (r?.image_b64) {
       mkResult(p.name, r, p)
     } else {
       throw new Error('No image returned')
@@ -812,6 +819,7 @@ async function generateOne(p) {
   }
 }
 
+// ── RESULTS STACK ─────────────────────────────────────────────
 const stackOrder = []
 
 function restackResults() {
@@ -863,55 +871,53 @@ function mkLoading(name) {
     addToStack(c, name)
   }
   c.className = 'rc'
-  c.innerHTML = `<div class="rc-img"><div class="rc-spinner"><div class="spin"></div><div>Sculpting the moment…</div></div></div>
+  c.innerHTML = `<div class="rc-img">
+      <div class="rc-spinner">
+        <div class="spin"></div>
+        <div>Sculpting your miniature…</div>
+        <div class="rc-spinner-sub">identity lock active · up to 3 attempts</div>
+      </div>
+    </div>
     <div class="rc-body"><div class="rc-name">${esc(name)}</div></div>`
   restackResults()
 }
+
 function mkResult(name, r, p) {
   const c = document.getElementById('rc-' + name); if(!c) return
-  c.className = 'rc done'
+  const passed = r.passed === true
+  const score  = r.score?.total ?? null
+  const likeness = r.score?.likeness_0_100 ?? null
+
+  c.className = 'rc ' + (passed ? 'done' : 'fallback')
   c.onclick = () => tapResult(name)
   const meta = [MOOD_LABEL[p.mood], PRES_LABEL[p.pres]].filter(Boolean).join(' · ')
   const safe = name.replace(/'/g, "\\'")
-  const isCard = !!(r.front_b64 && r.back_b64)
-  const primaryB64 = isCard ? r.front_b64 : r.image_b64
-  const flipBtn = isCard
-    ? `<button class="rc-btn" onclick="event.stopPropagation();flipCard('${safe}')">↻ Flip</button>`
-    : ''
+
+  // Score chip
+  let scoreChip = ''
+  if (score != null) {
+    const cls   = passed ? 'fallback'.replace('fallback','') /* teal default */ : 'fallback'
+    const mark  = passed ? '✓' : '◇'
+    scoreChip = `<span class="rc-score ${passed ? '' : 'fallback'}">${score}<span class="rc-score-dot">${mark}</span></span>`
+  }
+
   c.innerHTML = `
-    <div class="rc-img" id="rci-${safe}" data-side="front" onclick="event.stopPropagation();if(stackOrder[0]==='${safe}')openFull('${safe}');else tapResult('${safe}')">
-      <img id="rcimg-${safe}" src="data:image/png;base64,${primaryB64}">
+    <div class="rc-img" onclick="event.stopPropagation();if(stackOrder[0]==='${safe}')openFull('${safe}');else tapResult('${safe}')">
+      <img src="data:image/png;base64,${r.image_b64}">
+      ${scoreChip}
       <div class="rc-overlay"><span class="rc-ol">View full size</span></div>
     </div>
     <div class="rc-body">
-      <div class="rc-name">${esc(name)}${isCard ? ' <span class="vchip pres" style="margin-left:.4rem">Card</span>' : ''}</div>
-      <div class="rc-meta">${esc(meta)}</div>
+      <div class="rc-name">${esc(name)}</div>
+      <div class="rc-meta">${esc(meta)}${likeness != null ? ' · likeness ' + likeness : ''}${r.attempts > 1 ? ' · ' + r.attempts + ' attempts' : ''}</div>
       <div class="rc-btns">
         <button class="rc-btn save" onclick="event.stopPropagation();dl('${safe}')">↓ Save</button>
-        ${flipBtn}
         <button class="rc-btn" onclick="event.stopPropagation();openFull('${safe}')">⛶ Full</button>
       </div>
     </div>`
   restackResults()
 }
 
-// Toggle front/back image on a card-preset result tile
-function flipCard(name) {
-  const wrap = document.getElementById('rci-' + name)
-  const img  = document.getElementById('rcimg-' + name)
-  if (!wrap || !img) return
-  const isFront = wrap.dataset.side !== 'back'
-  const back  = cardBackStore[name]
-  const front = imgStore[name]
-  if (!back || !front) return
-  if (isFront) {
-    img.src = 'data:image/png;base64,' + back
-    wrap.dataset.side = 'back'
-  } else {
-    img.src = 'data:image/png;base64,' + front
-    wrap.dataset.side = 'front'
-  }
-}
 function mkError(name, err) {
   const c = document.getElementById('rc-' + name); if(!c) return
   c.className = 'rc error'
@@ -926,35 +932,42 @@ function setG(state, text) {
   document.getElementById('gDot').className = 'status-dot ' + state
   document.getElementById('gStatus').textContent = text
 }
+
 function dl(name) {
-  const front = imgStore[name]; if(!front) return
-  const back  = cardBackStore[name]
-  const stamp = Date.now()
-  const dlOne = (b64, suffix) => {
-    const a = document.createElement('a')
-    a.href = 'data:image/png;base64,' + b64
-    a.download = 'miniscape-action-' + name + suffix + '-' + stamp + '.png'
-    a.click()
-  }
-  if (back) {
-    dlOne(front, '-front')
-    setTimeout(() => dlOne(back, '-back'), 100)
-  } else {
-    dlOne(front, '')
-  }
+  const b = imgStore[name]; if(!b) return
+  const a = document.createElement('a')
+  a.href = 'data:image/png;base64,' + b
+  a.download = 'miniscape-group-' + name + '-' + Date.now() + '.png'
+  a.click()
 }
 
+// ── LIGHTBOX with score breakdown ─────────────────────────────
 function openFull(name) {
-  const front = imgStore[name]; if(!front) return
-  const back  = cardBackStore[name]
-  // Respect current face if user has flipped the stack tile
-  const wrap = document.getElementById('rci-' + name)
-  const showingBack = back && wrap?.dataset.side === 'back'
-  const b = showingBack ? back : front
+  const b = imgStore[name]; if(!b) return
+  const r = resStore[name]
   const overlay = document.createElement('div')
   overlay.className = 'lightbox'
+
+  let metaHtml = ''
+  if (r?.score) {
+    const verdict = r.passed
+      ? `<span class="val pass">✓ Passed</span>`
+      : `<span class="val fb">◇ Fallback</span>`
+    metaHtml = `
+      <div class="lightbox-meta" onclick="event.stopPropagation()">
+        <div class="lightbox-meta-block"><span class="lbl">Verdict</span>${verdict}</div>
+        <div class="lightbox-meta-block"><span class="lbl">Total</span><span class="val">${r.score.total}/100</span></div>
+        <div class="lightbox-meta-block"><span class="lbl">Likeness</span><span class="val">${r.score.likeness_0_100}/100</span></div>
+        <div class="lightbox-meta-block"><span class="lbl">Attempts</span><span class="val">${r.attempts}</span></div>
+        ${r.score.notes && r.score.notes !== 'none'
+          ? `<div class="lightbox-meta-block"><span class="lbl">Reviewer</span><span class="val" style="max-width:280px;text-align:center;font-style:italic">${esc(r.score.notes)}</span></div>`
+          : ''}
+      </div>`
+  }
+
   overlay.innerHTML = `
     <img src="data:image/png;base64,${b}" alt="${esc(name)}">
+    ${metaHtml}
     <div class="lightbox-hint">click anywhere to close · esc</div>`
   overlay.addEventListener('click', () => overlay.remove())
   document.body.appendChild(overlay)
@@ -968,12 +981,12 @@ function openFull(name) {
 }
 
 // ── SEED DEFAULT VARIANTS ─────────────────────────────────────
-// In-Situ across the four moods — compare mood variation on a single preset.
-addVariant({ name:'Golden',   mood:'golden',   pres:'insitu' })
-addVariant({ name:'Dramatic', mood:'dramatic', pres:'insitu' })
-addVariant({ name:'Peaceful', mood:'peaceful', pres:'insitu' })
-addVariant({ name:'Vivid',    mood:'vivid',    pres:'insitu' })
+addVariant({ name:'Warm · Desk Display',     mood:'warm',      pres:'insitu' })
+addVariant({ name:'Cinematic · Mantel',      mood:'cinematic', pres:'mantel' })
+addVariant({ name:'Studio · Plinth',         mood:'studio',    pres:'studio' })
+addVariant({ name:'Soft · Bookshelf',        mood:'soft',      pres:'shelf'  })
 
+// Collapse all but the first
 document.querySelectorAll('.var-card').forEach((c, i) => {
   if (i > 0) c.classList.remove('open')
 })

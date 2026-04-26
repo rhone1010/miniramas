@@ -3,7 +3,7 @@
 //
 // Action Minis analyze endpoint.
 // Feeds actionmini-generator.ts with:
-//   - Kinetic medium detection (whitewater / surf / snow / skate / bike / climb / run / dance / other)
+//   - Kinetic medium detection (whitewater / surf / snow / skate / bike / climb / run / dance / combat / other)
 //   - Single hero identity profile (hard face-lock depth — per SportsMemories pattern)
 //   - Secondary figure count + short description (for blur/dim treatment, not identity preservation)
 //   - Action character: what the body is doing, kinetic energy cues, freeze-moment qualities
@@ -26,7 +26,7 @@ const ANALYZE_PROMPT = `You are analyzing a photograph for Action Minis — a co
 Return a valid JSON object with exactly these fields. No markdown, no explanation, just JSON.
 
 {
-  "kinetic_medium": "whitewater" | "surf" | "snow" | "skate" | "bike" | "climb" | "run" | "dance" | "other",
+  "kinetic_medium": "whitewater" | "surf" | "snow" | "skate" | "bike" | "climb" | "run" | "dance" | "combat" | "other",
   "medium_confidence": "high" | "medium" | "low",
   "medium_cues": "brief description of what indicates the medium (gear, terrain, visible elements)",
 
@@ -127,7 +127,8 @@ CRITICAL INSTRUCTIONS:
    - climb: rock face, rope, chalk
    - run: trail, track, road
    - dance: stage, studio floor
-   - other: anything kinetic that doesn't fit above (parkour, martial arts, dog mid-fetch, etc.)
+   - combat: wrestling, boxing, MMA, judo, BJJ, taekwondo, karate — any mat-based or ring-based combat sport
+   - other: anything kinetic that doesn't fit above (parkour, dog mid-fetch, etc.)
 
 6. SUITABILITY — this module is about KINETIC ACTION:
    - well_suited: clear athletic action frozen mid-motion (paddle stroke, carve, leap, crux move)

@@ -2,20 +2,23 @@
 // app/api/v1/actionmini/generate/route.ts
 //
 // Pipeline:
-//   1. generate     — gpt-image-1 edit produces the diorama scene
-//   2. applyLevels  — Landscapes-style mood-keyed global brightness lift
-//   3. expandScene  — Stability outpaint for margins
+//   COLLECTABLE CARD path  — generateActionMiniCard → returns {front, back}, bypasses levels/expand
+//   NORMAL path (insitu)   — generate → applyLevels → expandScene
 //
-// Mood-keyed lighting (bumped — closer to Landscapes summer 1.60×):
-//   golden:   1.55× — warm afternoon abundance, was 1.35
-//   dramatic: 1.30× — preserves moodiness but lifts subject, was 1.15
-//   peaceful: 1.40× — gentle but visible lift, was 1.25
-//   vivid:    1.65× — peak midday brightness, was 1.45
+// Mood-keyed lighting (v11 — bumped from v9):
+//   golden:   1.55× — warm afternoon abundance
+//   dramatic: 1.30× — preserves moodiness but lifts subject
+//   peaceful: 1.40× — gentle but visible lift
+//   vivid:    1.65× — peak midday brightness
 
 import { NextRequest, NextResponse } from 'next/server'
-import { generateActionMini, ActionMiniPreset } from '@/lib/v1/actionmini-generator'
-import { applyLevels } from '@/lib/v1/levels'
-import { expandScene } from '@/lib/v1/expand'
+import {
+  generateActionMini,
+  ActionMiniPreset,
+} from '@/lib/v1/actionmini-generator'
+import { generateActionMiniCard } from '@/lib/v1/actionmini-card'
+import { applyLevels }   from '@/lib/v1/levels'
+import { expandScene }   from '@/lib/v1/expand'
 
 const VALID_PRESETS: ActionMiniPreset[] = ['insitu', 'museum', 'collectable_card']
 
@@ -36,13 +39,15 @@ export async function POST(req: NextRequest) {
       freeze_moment_quality,
       hero                   = null,
       secondary_figures      = { count: 0, description: 'empty' },
-      environment            = 'The diorama sits on neutral textured ground. Background is blurred natural environment with soft atmospheric light.',
+      environment            = 'The action takes place in a natural outdoor setting with soft atmospheric light.',
       distinctive_features,
       source_lighting,
       display_name,
       preset                 = 'insitu',
       mood                   = 'golden',
       plaque_text,
+      memory_text,                          // collectable_card only
+      artwork_style          = '3d',        // collectable_card only — '3d' | 'impressionist'
       notes,
     } = body
 
@@ -66,7 +71,39 @@ export async function POST(req: NextRequest) {
         : 'empty',
     }
 
-    // ── STAGE 1: GENERATE ────────────────────────────────────────
+    // ── COLLECTABLE CARD — dedicated two-image path (bypasses levels/expand) ──
+    if (normalizedPreset === 'collectable_card') {
+      const { frontB64, backB64 } = await generateActionMiniCard({
+        sourceImageB64:       source_image_b64,
+        kineticMedium:        kinetic_medium,
+        actionDescription:    action_description,
+        freezeMomentQuality:  freeze_moment_quality,
+        hero,
+        secondaryFigures:     clampedSec,
+        distinctiveFeatures:  distinctive_features,
+        environment,
+        displayName:          display_name || 'Untitled',
+        memoryText:           memory_text || '',
+        mood,
+        plaqueText:           plaque_text || '',
+        artworkStyle:         artwork_style === 'impressionist' ? 'impressionist' : '3d',
+        openaiApiKey,
+      })
+      return NextResponse.json({
+        result: {
+          front_b64:     frontB64,
+          back_b64:      backB64,
+          scene:         display_name,
+          mood,
+          preset:        'collectable_card',
+          artwork_style,
+          memory_text,
+          kinetic_medium,
+        }
+      })
+    }
+
+    // ── NORMAL PATH (insitu / museum) ───────────────────────────
     const generated = await generateActionMini({
       sourceImageB64:       source_image_b64,
       preset:               normalizedPreset,

@@ -1,10 +1,12 @@
 // actionmini-generator.ts
 // lib/v1/actionmini-generator.ts
 //
-// Routes preset to the correct prompt builder. Two live presets:
-//   - insitu           — outdoor editorial diorama (default, locked at v11)
-//   - collectable_card — premium collector card centerpiece (new)
-// Museum still stubs to In-Situ with warning until built.
+// Routes preset to the correct prompt builder. Two non-card presets:
+//   - insitu  — outdoor editorial diorama (default, locked at v11)
+//   - museum  — stubbed to In-Situ until built
+//
+// NOTE: collectable_card has its own dedicated path in the route — it does NOT
+// flow through this generator. See actionmini-route.ts and actionmini-card.ts.
 
 import OpenAI, { toFile } from 'openai'
 import sharp from 'sharp'
@@ -14,10 +16,6 @@ import {
   ActionMiniHero,
   ActionMiniSecondaryFigures,
 } from './actionmini-insitu'
-import {
-  buildCardPrompt,
-  ActionMiniCardInput,
-} from './actionmini-card'
 
 export type ActionMiniPreset = 'insitu' | 'museum' | 'collectable_card'
 
@@ -44,13 +42,15 @@ export async function generateActionMini(
 ): Promise<{ imageB64: string; promptUsed: string; preset: ActionMiniPreset }> {
 
   let preset: ActionMiniPreset = input.preset || 'insitu'
+  if (preset === 'collectable_card') {
+    throw new Error('[actionmini-generator] collectable_card is handled by route directly — do not call generateActionMini for it')
+  }
   if (preset === 'museum') {
     console.warn(`[actionmini] preset 'museum' not yet implemented — falling through to In-Situ`)
     preset = 'insitu'
   }
 
-  // Shared input shape — both prompt builders accept the same fields
-  const sharedInput: ActionMiniInSituInput | ActionMiniCardInput = {
+  const sharedInput: ActionMiniInSituInput = {
     kineticMedium:        input.kineticMedium,
     actionDescription:    input.actionDescription,
     freezeMomentQuality:  input.freezeMomentQuality,
@@ -65,9 +65,7 @@ export async function generateActionMini(
     notes:                input.notes,
   }
 
-  const prompt = preset === 'collectable_card'
-    ? buildCardPrompt(sharedInput as ActionMiniCardInput)
-    : buildInSituPrompt(sharedInput as ActionMiniInSituInput)
+  const prompt = buildInSituPrompt(sharedInput)
 
   // ── SOURCE PREP ──────────────────────────────────────────────
   const srcBuf = Buffer.from(input.sourceImageB64, 'base64')
@@ -103,5 +101,5 @@ export async function generateActionMini(
   if (!b64) throw new Error('actionmini_generation_failed')
 
   console.log(`[actionmini] ${preset} — done`)
-  return { imageB64: b64, promptUsed: prompt, preset }
+  return { imageB64: b64, promptUsed: prompt }
 }

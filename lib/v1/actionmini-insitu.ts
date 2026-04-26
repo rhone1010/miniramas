@@ -89,7 +89,19 @@ Where sunlight hits sculpted spray or particulate, droplets and motes gleam shar
 // ── KINETIC INTENSITY BLOCK (SHARED ACROSS ALL MEDIUMS) ────────
 const KINETIC_INTENSITY_BLOCK = `KINETIC INTENSITY (CRITICAL — APPLIES TO ALL EFFECTS):
 
-The kinetic action is INTENSE and MESSY. The sculpt should show three universal layers of kinetic detail beyond the main effect mass:
+INTENSITY SCALES WITH PHYSICAL CONTACT (READ FIRST):
+The amount of kinetic chaos must MATCH THE MOMENT in the source pose:
+
+- HEAVY contact moments (wheels gouging dirt, board carving snow, paddle slamming water, grinding rail, sprint footstrike, hard pivot): FULL chaos — large plumes, thick spray, deep impact zones, dense particulate scatter, heavy debris.
+- AIRBORNE or LIGHT contact moments (mid-jump, hurdle apex, mid-air trick, peak of bound, gliding stride, body extended in flight): RESTRAINED — show only the residue of recent contact (a thin trail, a dissipating puff, a faint mark on the takeoff point, a few suspended particles in air). The action is mostly clean — gravity, not chaos, defines the moment.
+
+A hurdler at jump apex shows MINIMAL dust because feet aren't touching ground. A kayaker plowing into a wave shows FULL water chaos. A bike rider mid-corner with rear tire grounded shows FULL dust plume. A skater at the peak of a kickflip shows MINIMAL effect, while landing the same trick shows FULL effect.
+
+When in doubt, look at where the figure is in CONTACT with the terrain in the source pose, and how hard. Match intensity to that contact.
+
+THE THREE LAYERS BELOW APPLY AT WHATEVER INTENSITY THE MOMENT WARRANTS:
+
+The sculpt should show three universal layers of kinetic detail beyond the main effect mass:
 
 1. SURFACE TRAIL — the action has been MOVING through the scene, not just frozen at one point. Visible marks on the sculpted base behind the figure showing where the action came FROM: tire ruts, ski tracks, foam wake, scuff marks, footprint trails, displacement furrows. The trail extends across a significant portion of the plate top behind the figure.
 
@@ -97,7 +109,7 @@ The kinetic action is INTENSE and MESSY. The sculpt should show three universal 
 
 3. IMPACT ZONES — places on the sculpt where the kinetic action is hitting the terrain HARDER. Splash zones with deep churn, gouge marks where wheels dig in, divots from heel strikes, churn patches where spray hits surface, displacement craters. The terrain shows real evidence of being acted upon.
 
-These three layers turn a clean kinetic snapshot into a chaotic intense moment. The effect should read MESSIER and more dynamic than a tidy diorama — like the action is genuinely happening, not posed.`
+These three layers turn a clean kinetic snapshot into a real moment. Their volume MATCHES THE CONTACT — heavy where contact is heavy, restrained where the figure is airborne or in light contact.`
 
 // ── EFFECTS BY MEDIUM — WITH TRAIL/SCATTER/IMPACT APPLIED ─────
 const MEDIUM_EFFECTS: Record<string, string> = {
@@ -224,6 +236,24 @@ KINETIC INTENSITY APPLICATIONS:
 
 Dancer is 20-25% of object height. Containment at plinth rim.`,
 
+  combat: `EFFECTS — COMBAT / GRAPPLING KINETIC SCENE ON THE PLATE:
+
+Sculpted mat surface across the plate top — wrestling mat, boxing canvas, judo tatami, or MMA cage floor depending on context. The kinetic energy here is GRIP, WEIGHT, and CONTACT — not airborne plumes or trails.
+
+KINETIC VERTICALITY:
+Combat scenes are LOW and HORIZONTAL. Kinetic energy radiates outward from grip points and impact zones rather than rising vertically. Sweat may catch light at engagement points.
+
+HORIZONTAL SPRAWL:
+The sculpted mat extends across the full plinth width. Mat surface texture (foam wrestling mat, taut canvas, tatami pattern) clearly visible. Mat lines or circle markings preserved if visible in source.
+
+KINETIC INTENSITY APPLICATIONS:
+- TRAIL: Sweat smears and grip-drag marks on the mat where bodies have moved across it — the contact has left a visible trail across the sculpted surface
+- SCATTER: Sweat droplets in a HALO around the engagement point, fine spray when impact is heavy; mouthguard/headgear strap motion suggesting movement
+- IMPACT: Compressed mat indentations under bodies, weight-shift creasing in the mat surface, displacement at planted limbs and pinned points
+
+NO AIRBORNE DUST. NO DIRT PLUMES. The action is human-on-human contact on a mat — the kinetic detail is sweat, mat creasing, grip pressure, and weight transfer. NOT particle effects.
+
+Figures are typically 25-35% of object height (combat figures are larger relative to plate than running/biking because the action is compact). Containment at plinth rim.`,
   other: `EFFECTS — KINETIC SCENE ON THE PLATE:
 
 Whatever kinetic elements sprawl horizontally with vertical kinetic energy preserved.
@@ -356,20 +386,100 @@ OBJECT BOUNDARY:
 All sculpted scene elements terminate at the plinth rim.`
 
 // ── ENVIRONMENT BLOCK ──────────────────────────────────────────
-function buildEnvBlock(environment: string): string {
-  return `ENVIRONMENT — SUBSTANTIAL ATMOSPHERIC SURROUND:
+// Medium-keyed atmospheric surround. Each medium gets near/mid/far/above zones
+// that match the natural environment of that action. Same structural rules
+// apply across all (substantial co-subject, depth zones, plinth-as-discrete-object).
 
+interface MediumEnv {
+  setting: string         // 1-line setting context for "real outdoor setting"
+  near:    string         // immediately around the plinth — real-world scale anchors
+  mid:     string         // mid-distance environmental features in soft focus
+  far:     string         // far depth and what fills above the diorama
+}
+
+const MEDIUM_ENVIRONMENTS: Record<string, MediumEnv> = {
+  whitewater: {
+    setting: 'a real river bank or whitewater run with rocks, eddies, mossy stones, and the sound of moving water nearby',
+    near:    'real-world material at REAL-WORLD scale — large wet river rocks, mossy stones, river silt, scattered driftwood twigs, water-rounded pebbles. These dwarf the miniature by size contrast.',
+    mid:     'mossy boulders, the suggestion of riverbank vegetation, a glimpse of moving water in soft focus',
+    far:     'tall riverbank trees or canyon walls with atmospheric depth above; volumetric mist or sun shafts catching off the water filling the upper frame',
+  },
+  surf: {
+    setting: 'a real beach or coastal break with wet sand, foam-edged tide line, and ocean spray in the air',
+    near:    'real-world material at REAL-WORLD scale — wet packed sand with footprints, scattered shells, kelp strands, dark wave-polished pebbles. These dwarf the miniature by size contrast.',
+    mid:     'foam wash on the sand, a hint of incoming waves, salt spray haze in soft focus',
+    far:     'open ocean horizon with atmospheric depth, soft cloud banks above, sunlight catching on water filling the upper frame',
+  },
+  snow: {
+    setting: 'a real alpine slope with packed snow, scattered pines, and crisp mountain light',
+    near:    'real-world material at REAL-WORLD scale — packed crystalline snow with ski-track impressions, scattered pine needles, small ice chunks, exposed rocks at edges. These dwarf the miniature by size contrast.',
+    mid:     'powder drifts, snow-laden pine boughs, the suggestion of slope contour in soft focus',
+    far:     'tall snow-dusted conifers or alpine ridgeline with atmospheric depth, soft mountain mist or volumetric sunlight filling the upper frame',
+  },
+  skate: {
+    setting: 'a real skatepark or urban concrete environment with worn surfaces, graffiti hints, and golden-hour street light',
+    near:    'real-world material at REAL-WORLD scale — weathered concrete with cracks, scattered grip-tape flakes, a discarded skate hardware piece, gum spots, leaves blown against curb edges. These dwarf the miniature by size contrast.',
+    mid:     'a ramp transition, painted curb edge, or graffiti wall in soft focus',
+    far:     'urban silhouettes — buildings, fences, light poles — with atmospheric depth, late-day sunlight or street-lamp glow filling the upper frame',
+  },
+  bike: {
+    setting: 'a real forest singletrack or mountain trail with packed dirt, exposed roots, mossy banks, and dappled forest light',
+    near:    'real-world material at REAL-WORLD scale — packed trail dirt with tire-rut impressions, mossy stones, fallen leaves, exposed root sections, scattered pebbles. These dwarf the miniature by size contrast.',
+    mid:     'forest understory — ferns, undergrowth, mossy logs — in soft focus',
+    far:     'tall conifer or hardwood canopy with atmospheric depth, dappled volumetric sunbeams filling the upper frame',
+  },
+  climb: {
+    setting: 'a real rock face or alpine bouldering site with weathered stone, lichen, and crisp directional light',
+    near:    'real-world material at REAL-WORLD scale — weathered rock surface with chalk smudges, scattered chalk dust, small pebbles, a coiled rope edge or harness piece, lichen patches. These dwarf the miniature by size contrast.',
+    mid:     'rock features — cracks, ledges, lichen growth — in soft focus',
+    far:     'cliff face rising away or sky beyond the wall edge, atmospheric depth and volumetric directional light filling the upper frame',
+  },
+  run: {
+    setting: 'a real running setting — track edge, sunlit grass infield, or stadium-adjacent space with track-and-field atmosphere',
+    near:    'real-world material at REAL-WORLD scale — track surface texture or sunlit grass blades, scattered grit, a discarded bib pin, chalk-line edges. These dwarf the miniature by size contrast.',
+    mid:     'track lane lines, infield grass, or stadium railing in soft focus',
+    far:     'stadium tier silhouettes or open sky with atmospheric depth; volumetric sunlight or stadium light haze filling the upper frame',
+  },
+  dance: {
+    setting: 'a real stage edge or studio floor with polished wood, soft theatrical lighting, and atmospheric haze',
+    near:    'real-world material at REAL-WORLD scale — polished wood stage floor with scuff marks, scattered fabric threads, a discarded ribbon, marking-tape edges. These dwarf the miniature by size contrast.',
+    mid:     'stage curtain edge, light cue at floor, or studio mirror in soft focus',
+    far:     'theatrical haze with volumetric stage lighting or studio ambient depth filling the upper frame',
+  },
+  combat: {
+    setting: 'a real wrestling room, dojo, or combat training facility with mat flooring, padded walls, and indoor athletic lighting — NOT an outdoor forest or natural setting',
+    near:    'real-world material at REAL-WORLD scale — adjacent matted floor in matching color, scattered grip-tape ends, a fallen mouthguard, scuff marks on mat surface, a stray water bottle cap. These dwarf the miniature by size contrast.',
+    mid:     'edge of mat boundary, padded wall corner, or training equipment in soft focus',
+    far:     'wrestling room walls with banners, ring of an arena edge, or gym ceiling with overhead athletic lighting filling the upper frame; warm indoor atmospheric depth',
+  },
+  other: {
+    setting: 'a real outdoor or environmental setting natural to the action',
+    near:    'real-world material at REAL-WORLD scale appropriate to the setting — ground texture, scattered organic debris, environmental anchors. These dwarf the miniature by size contrast.',
+    mid:     'environmental features in soft focus matching the setting',
+    far:     'atmospheric depth with volumetric light filling the upper frame',
+  },
+}
+
+function buildEnvBlock(environment: string, kineticMedium: string): string {
+  const env = MEDIUM_ENVIRONMENTS[kineticMedium] || MEDIUM_ENVIRONMENTS.other
+
+  return `ENVIRONMENT — SUBSTANTIAL ATMOSPHERIC SURROUND (MATCHED TO ACTION SETTING):
+
+ANALYZED CONTEXT:
 ${environment}
 
-THE RELATIONSHIP:
-The diorama sits on the ground in a real outdoor setting with environment rising tall ABOVE and extending wide AROUND. The environment is a substantial co-subject — atmospheric depth, tall canopy, layered ground detail.
+NATURAL SETTING:
+The diorama sits on ${env.setting}. The environment around the diorama matches the natural setting of this action — NOT a forest by default, NOT a generic outdoor backdrop, but the actual setting where this action belongs.
 
-The environment surrounds the diorama on all sides without crowding it. Trees and atmospheric depth fill significant frame area above the diorama; ground detail extends to the sides; the diorama is the focal point but not the only thing in the shot.
+THE RELATIONSHIP:
+The diorama sits on the ground in this real setting, with environment rising tall ABOVE and extending wide AROUND. The environment is a substantial co-subject — atmospheric depth, layered features, real ground detail at the diorama's level.
+
+The environment surrounds the diorama on all sides without crowding it. Atmospheric depth fills significant frame area above; ground detail extends to the sides; the diorama is the focal point but not the only thing in the shot.
 
 THE SURROUND:
-Near surround: real-world material in moderate focus at REAL-WORLD scale — moss, pebbles, ferns, leaf-litter, pine needles. These dwarf the miniature by size contrast.
-Mid distance: environmental features in soft focus — trunks, rocks, terrain.
-Far distance and ABOVE: tall atmospheric depth — canopy, sky layers, the volumetric sunbeam filling the upper frame.
+Near surround (immediately around the plinth): ${env.near}
+Mid distance: ${env.mid}
+Far distance and ABOVE: ${env.far}
 
 THE PLATE:
 Dark walnut wood, wide oval profile, thick and substantial.
@@ -400,9 +510,9 @@ OBJECT POSITION:
 LAYERS FROM NEAR TO FAR:
 1. Diorama front (razor sharp — figure, front kinetic effects)
 2. Diorama back edge (very slight soft focus)
-3. Near forest floor around the plinth (moderate focus)
-4. Mid forest (soft focus)
-5. Far atmospheric depth (canopy, sunbeam — softest)
+3. Near surround at the plinth's level (moderate focus — ground material, real-world anchors)
+4. Mid surround (soft focus — environmental features matching the setting)
+5. Far atmospheric depth (softest — sky, volumetric light, canopy/horizon)
 
 Post-generation outpainting adds further context — render as if ~15% more border is already present.
 
@@ -424,7 +534,7 @@ Soft directional key consistent with the mood's volumetric beam. Painted resin o
 
 PAINT AND MATERIAL READ:
 Diorama: matte-to-satin painted resin. Brushwork at close inspection. Layered highlights.
-Forest floor: moss textures, leaf-litter, real-world organic detail.
+Surround: real-world material textures appropriate to the setting (snow grain, sand grain, wet rock, weathered concrete, packed dirt, polished wood, etc.) — organic, real, photographic.
 
 WHERE VOLUMETRIC LIGHT HITS:
 Spray droplets and particulate scatter glow luminous in the beam. Plinth walnut rim catches rim-light.
@@ -445,7 +555,7 @@ export function buildInSituPrompt(input: ActionMiniInSituInput): string {
   const identity  = buildIdentityLock(input.hero)
   const pose      = buildPoseBlock(input.actionDescription, input.freezeMomentQuality)
   const secondary = buildSecondaryBlock(input.secondaryFigures)
-  const envBlock  = buildEnvBlock(input.environment)
+  const envBlock  = buildEnvBlock(input.environment, input.kineticMedium)
 
   const featuresBlock = input.distinctiveFeatures
     ? `DISTINCTIVE FEATURES — PAINT THESE INTO THE SCULPT:
