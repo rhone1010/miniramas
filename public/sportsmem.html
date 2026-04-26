@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sports Memorabilia — Stadium Tableau Test</title>
+<style>
+  :root {
+    --cream: #F7F2EA;
+    --surface: #2F3236;
+    --surface-2: #3A3D42;
+    --border: #4A4E54;
+    --dim: #8A8F96;
+    --muted: #B8BCC2;
+    --stage: #2A2D30;
+    --accent: #D4A05A;
+    --accent-bright: #F2A04A;
+    --mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    --serif: 'Newsreader', Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; background: var(--stage); color: var(--cream); font-family: var(--mono); font-size: 14px; }
+  body { display: flex; flex-direction: column; }
+
+  header { padding: 1rem 1.5rem; background: var(--cream); color: #1a1a1a; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #d4cfc4; }
+  header h1 { margin: 0; font-family: var(--serif); font-size: 1.4rem; font-weight: 500; letter-spacing: -0.01em; }
+  header .badge { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #6a6356; padding: 0.25rem 0.6rem; background: rgba(0,0,0,0.04); border-radius: 3px; }
+
+  .layout { flex: 1; display: grid; grid-template-columns: 360px 1fr; min-height: 0; }
+
+  .panel { background: var(--cream); color: #1a1a1a; padding: 1rem 1.25rem; overflow-y: auto; border-right: 1px solid #d4cfc4; display: flex; flex-direction: column; gap: 1rem; }
+
+  .stage { padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; align-items: center; }
+
+  label { display: block; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #6a6356; margin-bottom: 0.35rem; }
+
+  input[type="file"], input[type="text"], select, textarea {
+    width: 100%; padding: 0.55rem 0.7rem; border: 1.5px solid #d4cfc4; border-radius: 6px;
+    background: #fff; color: #1a1a1a; font-family: var(--mono); font-size: 0.8rem; outline: none;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 60px; font-family: var(--serif); font-size: 0.85rem; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+
+  .btn { padding: 0.7rem 1rem; border: none; border-radius: 6px; font-family: var(--mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
+  .btn-primary { background: #1a1a1a; color: var(--cream); }
+  .btn-primary:hover:not(:disabled) { background: #2d2d2d; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .preview-thumb { max-width: 100%; border-radius: 6px; border: 1px solid #d4cfc4; }
+
+  .status { font-family: var(--mono); font-size: 0.68rem; color: #6a6356; padding: 0.5rem 0.7rem; background: rgba(0,0,0,0.03); border-radius: 4px; min-height: 1.8rem; }
+  .status.running { color: var(--accent-bright); background: rgba(242,160,74,0.08); }
+  .status.error { color: #c44; background: rgba(200,60,60,0.08); }
+  .status.done { color: #3a7a3a; background: rgba(60,160,80,0.08); }
+
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; max-width: 900px; width: 100%; }
+  .result-img { width: 100%; border-radius: 4px; display: block; }
+  .result-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--dim); margin-top: 0.75rem; line-height: 1.7; }
+  .result-meta strong { color: var(--muted); font-weight: 600; }
+
+  .prompt-box { font-family: var(--mono); font-size: 0.62rem; color: var(--dim); margin-top: 0.75rem; padding: 0.75rem; background: #1f2125; border: 1px solid var(--border); border-radius: 4px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
+
+  .empty { color: var(--dim); font-family: var(--serif); font-size: 1rem; font-style: italic; padding: 3rem; text-align: center; }
+
+  .hint { font-family: var(--serif); font-size: 0.75rem; color: #8a8170; font-style: italic; margin-top: -0.3rem; }
+
+  /* ── PROGRESS FEEDBACK ── */
+  .progress-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 1.5rem; max-width: 900px; width: 100%;
+    display: flex; flex-direction: column; gap: 1rem; align-items: center;
+  }
+  .progress-skeleton {
+    width: 100%; aspect-ratio: 1 / 1; max-width: 700px;
+    border-radius: 6px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #2f3236 0%, #3a3d42 50%, #2f3236 100%);
+    background-size: 400% 400%;
+    animation: shimmerBg 3.2s ease-in-out infinite;
+  }
+  .progress-skeleton::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(212,160,90,0.08) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmerSweep 2.1s ease-in-out infinite;
+  }
+  @keyframes shimmerBg {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  @keyframes shimmerSweep {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+  .progress-meta {
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    text-align: center;
+  }
+  .progress-stage {
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-bright);
+  }
+  .progress-timer {
+    font-family: var(--mono); font-size: 1.8rem; font-weight: 300;
+    color: var(--cream); letter-spacing: 0.05em; font-variant-numeric: tabular-nums;
+  }
+  .progress-hint {
+    font-family: var(--serif); font-size: 0.82rem; font-style: italic;
+    color: var(--dim); margin-top: 0.25rem;
+  }
+  .progress-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent-bright); margin-right: 0.4rem;
+    animation: dotPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes dotPulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.85); }
+    50%      { opacity: 1;   transform: scale(1.15); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Sports Memorabilia — Stadium Tableau</h1>
+  <span class="badge">test harness · phase 2</span>
+</header>
+
+<div class="layout">
+  <div class="panel">
+
+    <div>
+      <label>Source Image</label>
+      <input type="file" id="fileInput" accept="image/*">
+      <img id="previewThumb" class="preview-thumb" style="display:none; margin-top:0.5rem">
+    </div>
+
+    <div>
+      <label>Sport</label>
+      <select id="sport">
+        <option value="baseball">Baseball</option>
+        <option value="basketball">Basketball</option>
+        <option value="football">Football</option>
+        <option value="soccer">Soccer</option>
+        <option value="hockey">Hockey</option>
+        <option value="tennis">Tennis</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Mood</label>
+      <select id="mood">
+        <option value="game_day">Game Day · bright midday</option>
+        <option value="under_the_lights">Under the Lights · night</option>
+        <option value="golden_hour">Golden Hour · late rake</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Subjects</label>
+        <select id="subjectCount">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+      <div>
+        <label>Plaque Text</label>
+        <input type="text" id="plaqueText" placeholder="Go Giants!" maxlength="40">
+      </div>
+    </div>
+
+    <div>
+      <label>Scene Description (optional)</label>
+      <textarea id="sceneDescription" placeholder="Couple at a Giants game, upper deck on a warm afternoon..."></textarea>
+      <div class="hint">Will later come from analyze route. Leave blank to test without.</div>
+    </div>
+
+    <div>
+      <label>Notes (optional)</label>
+      <textarea id="notes" placeholder="First game we went to together..."></textarea>
+    </div>
+
+    <button id="generateBtn" class="btn btn-primary" disabled>▶ Generate</button>
+
+    <div id="status" class="status">Upload a photo to begin</div>
+
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="empty">Result will appear here after generation.</div>
+  </div>
+</div>
+
+<script>
+  const ENDPOINT = '/api/v1/sportsmem/generate'
+  let fileB64 = null
+
+  const fileInput       = document.getElementById('fileInput')
+  const previewThumb    = document.getElementById('previewThumb')
+  const generateBtn     = document.getElementById('generateBtn')
+  const statusEl        = document.getElementById('status')
+  const stage           = document.getElementById('stage')
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (evt) => {
+      const dataUrl = evt.target.result
+      fileB64 = dataUrl.split(',')[1]
+      previewThumb.src = dataUrl
+      previewThumb.style.display = 'block'
+      generateBtn.disabled = false
+      setStatus('', 'Ready to generate')
+    }
+    reader.readAsDataURL(file)
+  })
+
+  generateBtn.addEventListener('click', async () => {
+    if (!fileB64) return
+    generateBtn.disabled = true
+    setStatus('running', 'Generating…')
+
+    const progressEl = showProgress()
+
+    const payload = {
+      source_image_b64:  fileB64,
+      sport:             document.getElementById('sport').value,
+      mood:              document.getElementById('mood').value,
+      plaque_text:       document.getElementById('plaqueText').value.trim(),
+      subject_count:     parseInt(document.getElementById('subjectCount').value, 10),
+      scene_description: document.getElementById('sceneDescription').value.trim() || undefined,
+      notes:             document.getElementById('notes').value.trim() || undefined,
+    }
+
+    try {
+      const res = await fetch(ENDPOINT, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `HTTP ${res.status}`)
+      }
+
+      const data = await res.json()
+      const r = data.result
+      if (!r?.image_b64) throw new Error('No image returned')
+
+      removeProgress(progressEl)
+      renderResult(r)
+      setStatus('done', 'Done')
+    } catch (err) {
+      removeProgress(progressEl)
+      setStatus('error', `Error: ${err.message}`)
+      console.error(err)
+    } finally {
+      generateBtn.disabled = false
+    }
+  })
+
+  // ── PROGRESS FEEDBACK ─────────────────────────────────────
+
+  function showProgress() {
+    // Remove any prior empty state
+    const empty = stage.querySelector('.empty')
+    if (empty) empty.remove()
+
+    const card = document.createElement('div')
+    card.className = 'progress-card'
+    card.innerHTML = `
+      <div class="progress-skeleton"></div>
+      <div class="progress-meta">
+        <div class="progress-stage"><span class="progress-dot"></span><span class="progress-stage-text">Preparing source</span></div>
+        <div class="progress-timer">0:00</div>
+        <div class="progress-hint">gpt-image-1 · high quality + input fidelity · typical 70–100s</div>
+      </div>
+    `
+    stage.insertBefore(card, stage.firstChild)
+
+    const timerEl = card.querySelector('.progress-timer')
+    const stageEl = card.querySelector('.progress-stage-text')
+    const startedAt = Date.now()
+
+    // Stage progression — gpt-image-1 with input_fidelity:high + quality:high is slower (~70-90s)
+    const stageTimers = [
+      setTimeout(() => { if (stageEl) stageEl.textContent = 'Generating tableau' }, 1500),
+      setTimeout(() => { if (stageEl) stageEl.textContent = 'Preserving faces at high fidelity' }, 20000),
+      setTimeout(() => { if (stageEl) stageEl.textContent = 'Rendering crowd & stadium' }, 50000),
+      setTimeout(() => { if (stageEl) stageEl.textContent = 'Finalizing' }, 80000),
+    ]
+
+    // Elapsed-time timer — ticks every second
+    const intervalId = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000)
+      const m = Math.floor(elapsed / 60)
+      const s = elapsed % 60
+      if (timerEl) timerEl.textContent = `${m}:${String(s).padStart(2, '0')}`
+    }, 1000)
+
+    // Store refs on the element for teardown
+    card._intervalId  = intervalId
+    card._stageTimers = stageTimers
+
+    return card
+  }
+
+  function removeProgress(card) {
+    if (!card) return
+    if (card._intervalId)  clearInterval(card._intervalId)
+    if (card._stageTimers) card._stageTimers.forEach(t => clearTimeout(t))
+    card.remove()
+  }
+
+  function setStatus(kind, msg) {
+    statusEl.className = 'status' + (kind ? ' ' + kind : '')
+    statusEl.textContent = msg
+  }
+
+  function renderResult(r) {
+    const card = document.createElement('div')
+    card.className = 'result-card'
+
+    const img = document.createElement('img')
+    img.className = 'result-img'
+    img.src = 'data:image/png;base64,' + r.image_b64
+    card.appendChild(img)
+
+    const meta = document.createElement('div')
+    meta.className = 'result-meta'
+    meta.innerHTML = `
+      <div><strong>Preset:</strong> ${r.preset || 'stadium_tableau'}</div>
+      <div><strong>Sport:</strong> ${r.sport} · <strong>Mood:</strong> ${r.mood}</div>
+      <div><strong>Subjects:</strong> ${r.subject_count} · <strong>Plaque:</strong> "${r.plaque_text || '(default)'}"</div>
+      <div><strong>Timestamp:</strong> ${new Date().toLocaleString()}</div>
+    `
+    card.appendChild(meta)
+
+    if (r.prompt_used) {
+      const toggle = document.createElement('button')
+      toggle.className = 'btn btn-primary'
+      toggle.style.cssText = 'margin-top:0.75rem;padding:0.4rem 0.7rem;font-size:0.62rem'
+      toggle.textContent = 'Show prompt used'
+      const promptBox = document.createElement('div')
+      promptBox.className = 'prompt-box'
+      promptBox.style.display = 'none'
+      promptBox.textContent = r.prompt_used
+      toggle.addEventListener('click', () => {
+        const shown = promptBox.style.display !== 'none'
+        promptBox.style.display = shown ? 'none' : 'block'
+        toggle.textContent = shown ? 'Show prompt used' : 'Hide prompt'
+      })
+      card.appendChild(toggle)
+      card.appendChild(promptBox)
+    }
+
+    // Prepend so newest result is on top
+    const empty = stage.querySelector('.empty')
+    if (empty) empty.remove()
+    stage.insertBefore(card, stage.firstChild)
+  }
+</script>
+
+</body>
+</html>

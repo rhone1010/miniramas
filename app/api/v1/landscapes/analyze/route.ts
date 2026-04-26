@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
-      max_tokens: 300,
+      max_tokens: 400,
       messages: [{
         role: 'user',
         content: [
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
           },
           {
             type: 'text',
-            text: `Analyze this place photograph and respond with a JSON object containing exactly these seven fields:
+            text: `Analyze this place photograph and respond with a JSON object containing exactly these eight fields:
 
 "scene_description": A vivid, specific 40-60 word description of what this place IS — its physical character, atmosphere, light quality, and defining features. Be specific and sensory. Examples: "A sea grotto with turquoise water, dramatic shafts of light breaking through a rock opening above, cave walls of warm amber limestone, mysterious and luminous" or "An outdoor beach bar under a palm-thatched awning, worn wooden bar top, tropical afternoon light filtering through the leaves, warm and relaxed atmosphere".
 
@@ -41,11 +41,26 @@ export async function POST(req: NextRequest) {
 - "atmosphere" — if the character comes from WEATHER, LIGHT, MOOD, OR DIFFUSE LANDSCAPE rather than discrete features. Examples: foggy mountain path, misty meadow, snow-covered field, overcast wetland, atmospheric desert dune, featureless stretch of prairie, low cloud over rolling hills.
 If the image has both strong features AND strong atmosphere, prefer "object". Only return "atmosphere" when the features are minimal and mood carries the scene.
 
-"environment_surface": Describe ONLY the ground the diorama base sits on — ONE specific tangible material with a simple descriptor (e.g. "warm pale sand", "damp mossy forest floor", "wet dark stone", "still shallow water", "weathered hardwood"). Do NOT describe sky, backdrop, distant features, or atmosphere. Just the surface. Keep to one short phrase.
-
-"environment_atmosphere": Describe ONLY the sky, weather, and light quality of the place — what the air and sky are doing. Examples: "low grey fog bank across distant mountains, overcast sky, cool damp light", "warm amber sunset sky with peach clouds", "clear midday blue with scattered white cumulus", "stormy dark sky with shafts of light breaking through". Do NOT describe ground features, trees, or objects. Keep to one short sentence.
+"environment": Describe the environment the diorama exists in — formatted as TWO sentences: the surface it sits on, and the blurred background behind it. Match this pattern exactly: "The diorama sits on [immediate surround material — what the base rests on and what continues out from it, one specific tangible material]. Background is blurred [far environment with specific character — soft atmospheric zone behind, with mood and defining features]." Examples: "The diorama sits on warm sandy surface with small pebbles. Background is blurred tropical beach setting, soft ocean in the far distance." or "The diorama sits on dark wet rock with water pooling around the base. Background is blurred cave walls with a shaft of ethereal light from an unseen opening above." or "The diorama sits on damp mossy forest floor scattered with leaves. Background is blurred pine trees fading into morning fog."
 
 "distinctive_features": List 2-5 SPECIFIC features present in the source image that MUST be preserved in any rendering. These are the things that make THIS place that place. Be concrete and identifiable. Format as a short comma-separated phrase. Include proper nouns if visible (signs, buildings, landmarks). Examples: "marsh pond on left side of path, oak-dotted rolling hills in distance, tall dry grass edges", "weathered pier with peeling white paint, cluster of brown pelicans on railings, fishermen on the far end", "twin birch trees flanking the trail, granite outcrop on the right, moss-covered log across the path". These features will be explicitly preserved in the generated diorama — do not list generic features (sky, ground) but SPECIFIC memorable content.
+
+"primary_subject": Return a 1-3 word phrase naming the single most important subject of the scene — the visual hero. This is the element that the composition must anchor on, that light should peak on, that the camera should focus on. Examples: "pier", "gravel path", "sea grotto", "white farmhouse", "twin oak trees", "waterfall". If the scene is genuinely atmosphere-forward with no clear hero (overcast open marsh, featureless dune field, diffuse forest), return "the landscape itself". Keep it short — one concrete noun phrase.
+
+"diorama_suitability": Decide whether this scene can be meaningfully rendered as a physical miniature diorama on a plinth. A diorama works when there is FIGURE-GROUND SEPARATION — a sculptable subject that can be lifted out from its surroundings, while the background recedes as atmospheric context. A diorama FAILS when the subject is inseparable from the scene — when the "subject" IS the whole landscape, with nothing to pull out and nothing meaningful left behind. Return an object with exactly these three fields:
+- "verdict": EXACTLY one of "well_suited" or "poorly_suited"
+- "subject": the named subject (1-4 words, lowercase phrase with article — e.g. "the bridge", "the lighthouse", "the river", "the meadow", "the open sky")
+- "reason": ONE sentence max 30 words, only populated when verdict is "poorly_suited", written directly to the user. Use this framing: "This image may not work well as a diorama — [subject] is part of the entire scene, with no clear element to pull out from the background." Vary the second half naturally to fit the specific image. When verdict is "well_suited", return an empty string "".
+CALIBRATION EXAMPLES:
+- Stone bridge over forest stream → well_suited (bridge is a crisp sculptable object, forest recedes)
+- Lighthouse on cliff → well_suited (lighthouse is the figure, sea+sky the ground)
+- Covered market stall → well_suited (architectural subject, street recedes)
+- Wide river curving through valley at sunset → poorly_suited ("the river is part of the entire landscape — there's no clear element to pull out from the background")
+- Open meadow at dawn with soft hills → poorly_suited ("the meadow is inseparable from the hills around it — the whole scene is the subject")
+- Foggy forest path with no focal point → poorly_suited ("the fog and trees dissolve together — there's nothing distinct to sculpt apart from its surroundings")
+- Ocean horizon at sunset → poorly_suited ("the scene is pure atmosphere — there's no physical element to render as a miniature")
+- Snow-covered field with lone tree → well_suited (the tree is the figure)
+BIAS: When uncertain, lean well_suited. Only flag poorly_suited when the image genuinely has no figure-ground separation.
 
 Respond ONLY with valid JSON. No markdown, no explanation.`,
           },
@@ -64,40 +79,51 @@ Respond ONLY with valid JSON. No markdown, no explanation.`,
     } catch {
       // Fallback if JSON parse fails
       parsed = {
-        scene_description:      'A beautiful natural place with unique character and atmosphere.',
-        viewing_direction:      'Standard frontal view of the subject at eye level.',
-        memory_text:            'A quiet place that stays with you long after you leave.',
-        display_name:           'Natural Scene',
-        character_source:       'object',
-        environment_surface:    'neutral natural ground appropriate to the scene',
-        environment_atmosphere: 'softly diffused sky with gentle ambient light',
-        distinctive_features:   '',
+        scene_description:    'A beautiful natural place with unique character and atmosphere.',
+        viewing_direction:    'Standard frontal view of the subject at eye level.',
+        memory_text:          'A quiet place that stays with you long after you leave.',
+        display_name:         'Natural Scene',
+        character_source:     'object',
+        environment:          'The diorama sits on neutral natural ground appropriate to the scene. Background is blurred natural environment with soft atmospheric light.',
+        distinctive_features: '',
+        primary_subject:      'the landscape itself',
+        diorama_suitability:  { verdict: 'well_suited', subject: '', reason: '' },
       }
     }
 
-    console.log(`[landscape-analyze] Detected: ${parsed.display_name} (${parsed.character_source}) — features: ${parsed.distinctive_features || '(none)'}`)
+    // Normalize suitability (defensive — LLM may omit fields or return malformed object)
+    const suitRaw = parsed.diorama_suitability || {}
+    const suitability = {
+      verdict: suitRaw.verdict === 'poorly_suited' ? 'poorly_suited' : 'well_suited',
+      subject: typeof suitRaw.subject === 'string' ? suitRaw.subject : '',
+      reason:  typeof suitRaw.reason  === 'string' ? suitRaw.reason  : '',
+    }
+
+    console.log(`[landscape-analyze] Detected: ${parsed.display_name} (${parsed.character_source}) — hero: ${parsed.primary_subject || '(none)'} — suitability: ${suitability.verdict} — features: ${parsed.distinctive_features || '(none)'}`)
     return NextResponse.json({
-      display_name:           parsed.display_name || 'Natural Scene',
-      scene_description:      parsed.scene_description || '',
-      viewing_direction:      parsed.viewing_direction || '',
-      memory_text:            parsed.memory_text || '',
-      character_source:       parsed.character_source === 'atmosphere' ? 'atmosphere' : 'object',
-      environment_surface:    parsed.environment_surface || '',
-      environment_atmosphere: parsed.environment_atmosphere || '',
-      distinctive_features:   parsed.distinctive_features || '',
+      display_name:         parsed.display_name || 'Natural Scene',
+      scene_description:    parsed.scene_description || '',
+      viewing_direction:    parsed.viewing_direction || '',
+      memory_text:          parsed.memory_text || '',
+      character_source:     parsed.character_source === 'atmosphere' ? 'atmosphere' : 'object',
+      environment:          parsed.environment || '',
+      distinctive_features: parsed.distinctive_features || '',
+      primary_subject:      parsed.primary_subject || 'the landscape itself',
+      diorama_suitability:  suitability,
     })
 
   } catch (err: any) {
     console.error('[landscape-analyze]', err.message)
     return NextResponse.json({
-      display_name:           'Natural Scene',
-      scene_description:      'A beautiful natural place.',
-      viewing_direction:      'Standard frontal view of the subject at eye level.',
-      memory_text:            'A quiet place that stays with you long after you leave.',
-      character_source:       'object',
-      environment_surface:    'neutral natural ground appropriate to the scene',
-      environment_atmosphere: 'softly diffused sky with gentle ambient light',
-      distinctive_features:   '',
+      display_name:         'Natural Scene',
+      scene_description:    'A beautiful natural place.',
+      viewing_direction:    'Standard frontal view of the subject at eye level.',
+      memory_text:          'A quiet place that stays with you long after you leave.',
+      character_source:     'object',
+      environment:          'The diorama sits on neutral natural ground appropriate to the scene. Background is blurred natural environment with soft atmospheric light.',
+      distinctive_features: '',
+      primary_subject:      'the landscape itself',
+      diorama_suitability:  { verdict: 'well_suited', subject: '', reason: '' },
     })
   }
 }

@@ -7,7 +7,21 @@ import sharp from 'sharp'
 // ── MOOD MODIFIERS ────────────────────────────────────────────
 const MOODS: Record<string, string> = {
   golden:   'MOOD: Warm golden light — the color of late afternoon sun, nostalgic and soft. Everything glows with warmth and memory.',
-  dramatic: 'MOOD: Wild and dramatic — stormy sky, moody atmosphere, weather and raw natural power. Deep contrast, rich shadow, rolling clouds or shafts of storm light. The scene has weight and intensity.',
+  dramatic: `MOOD: Dramatic — charged weather, intense directional light, emotionally weighted atmosphere. The diorama remains the hero; the drama lives in the world around it.
+
+KEY LIGHT (ON THE DIORAMA):
+One dominant light source — a sun shaft breaking through heavy cloud, a low golden rake, stormy backlight — falls directly on the primary subject. The subject is the BRIGHTEST, most fully lit element. Every detail of the diorama stays sharp and readable.
+
+WEATHER + ATMOSPHERE (IN THE SURROUND, NEVER IN THE DIORAMA ITSELF):
+Weather and atmospheric mood live BEYOND the diorama's base — in the softly-blurred world around and above the plinth or desk. Stormy cloud banks, moody haze, shafts of sun cutting through cloud, atmospheric light. These effects belong to the surround, not to the sculpted scene on the plinth.
+Do NOT invade the diorama with weather. No storm clouds inside the miniature scene, no fog layered across the base, no atmospheric particulate on the sculpted elements themselves.
+
+COLOR PALETTE:
+Deep, saturated, weathered. Rich blues, purples, warm ambers, burnt siennas. High contrast with full tonal range preserved.
+
+PLINTH CONTAINMENT (NON-NEGOTIABLE):
+Dramatic mood is LIGHTING + SURROUND, not scene expansion. The diorama stays the same precious contained object it would be in Golden mood — same plinth prominence, same footprint, same compactness. Only the key light and the surrounding atmosphere change.
+Do NOT pull the camera back for a vista. Do NOT expand the scene to fill more of the frame. Do NOT blur the plinth rim to hide it in atmosphere. The plinth stays a sharp discrete object; weather stays outside of it.`,
   peaceful: 'MOOD: Peaceful dawn — first light just breaking, mist still present, the world quiet and still. Contemplative and serene.',
   vivid:    'MOOD: Bright and vivid — peak midday clarity, saturated colors, joyful and energetic. The scene at its most alive.',
 }
@@ -15,7 +29,7 @@ const MOODS: Record<string, string> = {
 // ── PRESENTATION STYLES ───────────────────────────────────────
 const PRESENTATIONS: Record<string, string> = {
   insitu:     '', // environment description from analyze handles this
-  museum:     `PRESENTATION: Museum product photograph — the diorama sits OPEN on a walnut desk, with a physically separate display sign staked into the ground behind it. NO ENCLOSURE, NO DOME, NO CIRCULAR BACKDROP.
+  museum:     `PRESENTATION: Museum product photograph — the diorama sits OPEN on a walnut desk, with nothing propped up behind it. NO ENCLOSURE, NO DOME, NO CIRCULAR BACKDROP, NO SIGNBOARD.
 
 CRITICAL — THE ENTIRE DIORAMA IS 3D SCULPTED MINIATURE, NOT A FLAT PICTURE:
 The diorama is a fully THREE-DIMENSIONAL sculpted miniature from front to back — real tactile depth, real volume, real objects that cast real shadows.
@@ -27,32 +41,41 @@ ABSOLUTELY NO:
 - Any vertical rectangular or flat surface with the scene rendered ON IT instead of sculpted AS it
 - Any suggestion that the distant part of the scene is a painting or image while only the foreground is 3D
 
-Every part of the scene — near and far, foreground and distant — must be fully sculpted 3D miniature. The distant hills are small sculpted hills. The distant sky is open air above the scene (or room bokeh beyond). If there's a horizon, it's the meeting of a real 3D ground surface with the ambient space above it, not a printed line on a panel.
+Every part of the scene — near and far, foreground and distant — must be fully sculpted 3D miniature. The distant hills are small sculpted hills. If there's a horizon, it's the meeting of a real 3D ground surface with ambient space above it, not a printed line on a panel.
 
 CRITICAL — OPEN PRESENTATION, NO ENCLOSING SHAPE:
-The diorama is an open physical miniature sitting flat on the desk surface with EMPTY AIR around it on all sides. The sky extends freely upward from the scene into the room's bokeh.
+The diorama is an open physical miniature sitting flat on the desk surface with EMPTY AIR around it on all sides.
 ABSOLUTELY NO:
 - Glass dome, snowglobe, or hemispheric enclosure around the scene
 - Circular or oval backdrop framing the scene
 - Curved boundary cropping the scene's silhouette
 - Any background shape that cuts into, hides, or frames the diorama
 - Any implied half-circle or arch behind the diorama
+- Any signboard, plaque, placard, easel, or display marker on or near the diorama
+- A vertical disc, plate, or round panel standing upright with the scene rendered on its face — FORBIDDEN
+
+THE DIORAMA IS TOP-DOWN-VIEWABLE:
+The sculpted scene sits HORIZONTALLY on top of a horizontal plinth. The camera looks DOWN onto the scene from above and slightly in front. The diorama is a 3D object you could walk around and see from any angle — NOT a disc standing upright with the scene painted on its visible face. NOT a round display plate tilted toward the camera. The scene is horizontal, the plinth is horizontal, the camera looks down onto the scene.
 
 The only circular element permitted is the wooden plinth base itself (viewed from above at an angle). Everything else is open, rectangular, or shapeless ambient room.
-The sky and background behind the diorama is soft warm room bokeh — bookshelves and warm ambient light. Rectangular or amorphous, never circular, never domed, never enclosing.
+The background behind the diorama is soft warm room bokeh — bookshelves and warm ambient light. Rectangular or amorphous, never circular, never domed, never enclosing. Never a painted panel standing up.
+
+HANDLING UNBOUNDED SKY — FLOATING 3D ATMOSPHERIC ELEMENTS:
+If the scene naturally has an open sky with nothing to terminate it against (coastal vista, mountain overlook, open plain, beach, cityscape), DO NOT render a flat sky backdrop, painted sky panel, or curved vertical canvas to fill the space above the diorama. These are forbidden.
+
+Instead, above the diorama's highest point, introduce ONE floating 3D atmospheric element that reads as physically present in the air above the scene — a miniature object suspended in space, not a painted image:
+- A small sculpted cloud with real volume, shadows, and thickness, hovering softly over the scene
+- A wisp of low-hanging mist or fog with three-dimensional shape and soft edges
+- A drifting band of cotton-wool cloud with visible depth and underside shadow
+- A single hovering bird or gull if contextually appropriate
+
+This element is a PHYSICAL miniature atmospheric sculpture in space — it has dimensional volume, catches the room's lighting, casts a soft shadow on the diorama or desk beneath it, and reads as a hovering miniature, not a 2D shape stuck to a backdrop.
+The element is tastefully small — it supports the scene, it does not overwhelm it. Positioned above and slightly to one side of the diorama, with clear air between it and the diorama below.
+If the scene already has its own natural sky-terminator (tree canopy, rocky walls, dense buildings, overhanging foliage), no floating element is needed — the scene closes itself.
 
 ROOM AND ENVIRONMENT:
 The diorama sits on a large dark walnut desk — book-matched grain, rich chocolate-brown with flowing figured streaks, deep satin finish. The grain is clearly visible and beautiful.
 The desk surface has a strong mirror-like reflection of the diorama base — the walnut base and the lower part of the diorama reflect downward into the polished surface, doubled and slightly diffused.
-
-PHYSICALLY SEPARATE DISPLAY SIGN — BEHIND THE DIORAMA:
-A small, physically separate decorative display marker is staked or planted into the desk surface a few inches behind the diorama base — clearly a distinct physical object.
-The sign is one of: a small circular brass plaque on a vertical rod, a small oval wooden placard on a wire stand, a miniature folded museum card on a tiny easel.
-The sign is a RESPECTFUL accent — small, tasteful, clearly subordinate to the diorama. It does NOT dominate, overlap, or frame the diorama.
-
-CRITICAL — THE DIORAMA IS NEVER CLIPPED OR OVERLAPPED BY THE SIGN OR ANY OTHER BACKGROUND ELEMENT:
-Every part of the diorama is fully visible, no part cropped, hidden, or cut off by any background shape, frame, sign, or object.
-The sign sits strictly BEHIND the diorama in depth, not overlapping it visually, and NEVER cuts into the diorama's silhouette.
 
 LIGHTING:
 A large window to one side fills the room with warm afternoon light — primary light source. Soft directional key light rakes across the diorama, catching textures and casting gentle shadows to the opposite side. Warm neutral color temperature.
@@ -65,33 +88,8 @@ DESK PROPS (SUBTLE):
 A hardcover book lies open to the left of the diorama. Reading glasses rest to the right on the desk surface. Both are slightly out of focus — they frame the diorama as a cherished object on a well-used desk.
 
 FEEL:
-An open, clean display of a prized miniature on a collector's desk, labeled with a small physical display marker. Lived-in, treasured, museum-quality. Like a curator's reference specimen sitting on a working desk — never encapsulated, never enclosed.`,
+An open, clean display of a prized miniature on a collector's desk. Lived-in, treasured, museum-quality. Like a curator's reference specimen sitting on a working desk — never encapsulated, never enclosed, never labeled with a prop sign.`,
   collectable_card: '', // handled by generateCollectableCard() — not a normal prompt preset
-  cinematic:  `PRESENTATION: Cinematic hero shot — the diorama staged as a richly lit dramatic movie-poster subject.
-
-BACKDROP:
-A rich MID-TONE atmospheric gradient — deeper tones at the edges, lifting to a soft warm glow directly behind the diorama. The backdrop is moody but NOT dark, NOT underexposed, NOT crushed. Think "theatrical stage with full stage lighting" rather than "shadowy void" — midtone warm greys, soft purples, amber, or deep earth tones, clearly readable throughout.
-
-LIGHTING — BRIGHT DRAMATIC, NOT DIM DRAMATIC:
-Strong directional key light from above or side creates pronounced highlights and sculptural shadows on the diorama. Ambient fill is LIFTED — shadows read as dimensional and detailed, never crushed to black. The diorama itself is brightly and richly lit; the lighting is dramatic through contrast and direction, not through dimness. High dynamic range with full detail visible in both highlights and shadows.
-
-SHARPNESS — NON-NEGOTIABLE:
-Every element of the diorama must be rendered with CRISP, PHOTOGRAPHIC SHARPNESS — not painterly, not soft, not atmospheric-blurred.
-- Individual pier pilings, lamp posts, pebbles, blades of grass, water ripples all have hard crisp edges
-- Material textures (wood grain, stone, sand, water) are sharp enough to read at close inspection
-- NO painterly brush-feel, NO impressionistic softening, NO watercolor atmosphere
-- The dramatic mood comes from LIGHT and SHADOW only — NEVER from blur or soft focus
-- Hyperreal, detailed, photographically sharp — a cinematic hero shot of a physical object
-
-SURFACE AROUND BASE:
-Darker tonal surface — deep warm bronze, rich dark stone, or moody textured fabric — but clearly visible and lit by spill from the key light. Reads as substantial material surface, not absent void.
-
-BOUNDARY:
-The base rim remains a sharp visual break. On the base: richly lit, high saturation, dramatic highlight/shadow sculpting. Off the base: mid-tone moody surround, still clearly visible and lit.
-The base casts a long dramatic shadow on the surface beneath it.
-
-FEEL:
-Heroic theatrical presentation — the diorama is the star under full stage lighting. Dramatic and luminous, sharp and detailed throughout.`,
 }
 
 export async function generateLandscape(input: {
@@ -99,10 +97,10 @@ export async function generateLandscape(input: {
   extraImages?:           string[]
   sceneDescription?:      string   // free-form GPT-4o description of the place
   viewingDirection?:      string   // which side of the subject the viewer is on
-  environmentSurface?:    string   // just the ground material
-  environmentAtmosphere?: string   // just sky/weather/light
+  environment?:           string   // "diorama sits on X. Background is blurred Y."
   characterSource?:       'object' | 'atmosphere'
   distinctiveFeatures?:   string   // comma-separated specific features to preserve
+  primarySubject?:        string   // 1-3 word hero of the scene
   displayName?:           string
   mood?:                  string
   presentation?:          string
@@ -116,66 +114,55 @@ export async function generateLandscape(input: {
   const mood      = MOODS[input.mood || 'golden'] || MOODS.golden
   const presRaw   = PRESENTATIONS[input.presentation || 'insitu'] || ''
   const sceneDesc = input.sceneDescription || 'A beautiful natural place with unique character and atmosphere.'
-  const surface   = input.environmentSurface    || 'neutral natural ground appropriate to the scene'
-  const sky       = input.environmentAtmosphere || 'softly diffused sky with gentle ambient light'
+  const environment = input.environment || 'The diorama sits on neutral natural ground appropriate to the scene. Background is blurred natural environment with soft atmospheric light.'
   const atmosphereForward = input.characterSource === 'atmosphere'
   const pres      = presRaw.replace('__SCENE_DESCRIPTION__', sceneDesc)
 
-  // Environment block — in-situ is: diorama on extended matching-material ground, with a soft gradient sky above.
+  // In-Situ: diorama as a small precious object sitting in a larger real environment.
   const envBlock = (!input.presentation || input.presentation === 'insitu')
-    ? `ENVIRONMENT — DIORAMA ON A GROUND STAGE OF MATCHING MATERIAL, BENEATH A SOFT GRADIENT SKY:
+    ? `ENVIRONMENT — DIORAMA AS A SMALL PRECIOUS OBJECT IN A LARGER REAL WORLD:
 
-GROUND ZONE (the entire lower portion of the frame — from foreground up to the horizon line):
-The diorama sits on a continuous extended surface made of the SAME material as its terrain — if the base shows sand, the surround IS sand; if grass, grass; if forest floor, the same forest floor continues outward; if stone, the same stone; if shoreline, matching wet sand or pebbles.
-Tactile physical dimension across the full ground zone — individual grains, blades, pebbles, tufts, ripples, crumbs. The material should read as sinkable and touchable anywhere you look, not just near the base.
+${environment}
 
-SHARPNESS DISTINCTION — CRITICAL:
-THE DIORAMA ITSELF (the scene on the base, including front edge, back edge, and everything in between) IS RAZOR SHARP FROM EDGE TO EDGE. Every pier piling, every lamp post, every blade of grass, every pebble on the diorama — front and back — is fully in focus.
-ONLY the ground stage AROUND and BEYOND the base (the matching ground material extending outside the base rim into the surrounding frame) softens with distance via photographic depth of field.
-DoF applies to: the extended ground surround, the sky gradient, the horizon.
-DoF does NOT apply to: anything on the diorama itself. The back edge of the base, the far end of a receding pier, the rear of the scene — all razor sharp.
+THE RELATIONSHIP:
+The diorama is a jewel-like miniature sitting IN a larger real environment — like a handcrafted curio discovered on a beach, in a forest, in a wetland, wherever this place is. The environment continues beyond the turned-wood plinth in every direction as soft atmospheric depth.
 
-The ground zone reaches naturally to a soft distant horizon line roughly 40-45% up the frame.
+THE SURROUND — ZONES OF SOFT:
+Near surround (immediately around the plinth): the same material the diorama sits on, in slightly soft focus. Continues naturally outward from the base with real physical texture — grains, pebbles, blades, tufts — at the correct scale for a full-size world, NOT at miniature scale.
+Mid distance: environmental features of the same place type fade into softer focus — suggestions of trees, dunes, grass, water, rocks appropriate to the scene.
+Far distance: dissolves to atmospheric gradient — color and light, no defined features.
 
-SKY ZONE (everything above the horizon line — the upper portion of the frame):
-A soft atmospheric gradient — gentle color transition from horizon upward, matching the tonal mood of the scene (warm amber-to-peach for golden mood, cool grey-to-blue for peaceful, moody greyish-purple for dramatic, clear bright blue fade for vivid).
-NO defined clouds, NO mountains, NO trees, NO distant buildings, NO horizon features, NO scene duplicates — only soft gradient color and atmospheric tone.
-The sky is blurred and slightly desaturated compared to the diorama, subordinate but present.
+REAL-WORLD SCALE DETAILS IN THE SURROUND (reinforce the miniature's smallness):
+Scatter a few real-world-scale elements in the near surround around the plinth — things like a few pebbles, a scattered leaf, a footprint, a twig, a puddle, tufts of real grass. These are SIZED TO THE REAL WORLD, meaning they dwarf the miniature scene on the plinth by size contrast. A single real-world pebble near the plinth is as tall as a miniature tree on the plinth. This size contrast sells the miniature's scale.
 
-HIERARCHY:
-The diorama itself: fully sharp, fully saturated, fully rendered, edge to edge.
-The ground stage around and beyond the base: tactilely 3D but softer with distance from DoF.
-The sky gradient: softest element.
+THE PLINTH:
+Turned dark walnut wood plinth, thick and decorative, clearly visible as a discrete object with its full circular rim showing. The plinth is proud and beautiful — it does NOT blend into the surround. The rim is a sharp visual seam between the sculpted miniature world on top and the raw real-world material around the base.
 
-BOUNDARY:
-The base rim is a sharp visual break. On the base: crisp, miniature, fully saturated. Off the base: same material extended with photographic softness, meeting a gradient sky above.
-The base casts a clear shadow on the surface beneath it.
+SHARPNESS:
+The diorama itself is razor sharp edge to edge — front, middle, and back of the scene. The surround softens progressively with distance via depth of field. Only the immediate surround (right around the base) has moderate sharpness; mid and far surround get softer.
 
-NO PHOTO CARDS OR BACKDROP PLANES:
-No rectangular card edges, no printed backdrop planes, no scene duplicates, nothing vertical behind the diorama except the atmospheric sky gradient.`
+NO BACKDROP, NO PANEL, NO HORIZON LINE:
+No flat card, no printed sheet, no rectangular back plane, no vertical backdrop of any kind behind the diorama. The background is atmospheric continuation of the environment into softness — not a defined horizon, not a drawn landscape, not a specific far-distance painting. Just progressive soft fade to color-and-light.`
     : pres
 
-  // Camera block — per-preset foreshortening behavior
-  const cameraBlock = input.presentation === 'cinematic'
-    ? `CAMERA — CINEMATIC FORESHORTENING (STRONG):
-Camera 35-45 degrees elevated, angled down at the diorama — look-down angle, NOT low-angle.
-WIDE-ANGLE lens perspective creates STRONG FORESHORTENING throughout the frame:
-- The nearest edge of the base and near elements loom LARGE, thrust forward toward the viewer
-- Far elements compress and recede rapidly into the distance
-- Near-far scale contrast is exaggerated — closest sand, rocks, or surfaces appear visibly larger than equivalent far-side elements
-- Linear subjects (piers, paths, bridges) benefit strongly — they race into the distance and feel epic in scale
-Hero shot framing. Maximum dramatic depth from the lens, not from physical truncation.`
-    : input.presentation === 'museum'
+  // Camera block — per-preset framing
+  const cameraBlock = input.presentation === 'museum'
     ? `CAMERA — STANDARD MUSEUM PRODUCT SHOT:
 Camera 30-40 degrees elevated, angled down at the diorama.
 Medium-format macro lens equivalent. Natural perspective — minimal foreshortening distortion.
 Pulled back far enough to show the full base with generous surrounding space.
-Straightforward, refined, editorial product photography — the diorama is presented cleanly.`
-    : `CAMERA — IN-SITU WITH MILD FORCED PERSPECTIVE:
-Camera 35-45 degrees elevated, angled down at the diorama.
-Standard focal length with a SUBTLE wide-angle feel — just enough perspective to give linear subjects (piers, paths, bridges, coastlines) a convincing sense of extending into the distance via forced perspective.
-The foreshortening is MILD, not dramatic — think "natural documentary photography" rather than "cinematic hero shot." Linear features recede gracefully.
-Pulled back far enough to show the full base with surrounding space.`
+Straightforward, refined, editorial product photography — the diorama is presented cleanly.
+The base occupies roughly 55-65% of the image width.`
+    : `CAMERA — IN-SITU, LOW ANGLE, FOUND-OBJECT FRAMING:
+Camera LOW — roughly eye level with the diorama or only slightly above (10-20 degrees above horizontal). NOT a look-down product shot. This is the angle you'd shoot a precious small object you came across on the ground.
+Standard focal length with a subtle wide-angle feel — enough to give linear subjects (piers, paths, bridges, coastlines) a sense of extending into the distance.
+The diorama sits in the LOWER HALF of the frame — the environment continues above and around it. The base occupies roughly 50-60% of the image width, NEVER more than 65%. Generous breathing room on all sides — especially above, where the atmospheric surround fades to color and light.
+Framing feels like editorial miniature photography — the diorama captured as a found object in a real environment, not a clinical product shot.
+
+THE LOW ANGLE DOES NOT MEAN SOFT FOCUS OR FLAT COMPOSITION:
+The low angle is a framing choice, not a focus falloff choice. The diorama itself remains razor sharp edge to edge — every element on the base, front to back, fully in focus.
+The low angle INTENSIFIES forced perspective on receding linear subjects (pier, path, bridge, road): the subject races into the distance MORE dramatically at low angle, not less. Use strong near-far scale contrast — near pilings large, far pilings small.
+If the subject recedes, it recedes with force. If the subject wraps the base perimeter, it curves with clean sharpness. Never flatten, never let the subject run parallel to the frame edge.`
 
   const prompt = [
     `Transform the provided image into a physically realistic miniature diorama presented as a professional product photograph.`,
@@ -183,6 +170,28 @@ Pulled back far enough to show the full base with surrounding space.`
 Reconstruct the scene as a handcrafted physical miniature.
 Preserve the spatial layout, proportions, atmosphere, and defining features of this specific place exactly.
 Do not reinterpret or redesign the scene. Capture what makes this place unique.`,
+    `SCALE COMPRESSION — MANDATORY (READ BEFORE ANYTHING ELSE):
+
+This is a MINIATURE. Everything in the source photograph must be compressed and sculpted to fit entirely on the walnut plinth — a physical base roughly the size of a dinner plate.
+
+The source may show a vast scene (valley, coastline, mountain range, cityscape, open plain, rolling hills). Regardless of the source's real-world scale, the entire sculpted diorama is a small handheld object sitting on a plinth.
+
+HOW TO COMPRESS THE SOURCE:
+
+- Vistas (coastline, valley, open plain, rolling hills, river): select a COMPACT REPRESENTATIVE SEGMENT — a curve of the river, a section of coastline, a bend of valley, a clump of hills. Sculpt THAT SEGMENT at miniature scale. The rest of the vista is implied only by the soft atmospheric surround BEYOND the plinth.
+- Grand scale (mountain range, entire city, wide forest): render the entire feature as a tiny sculpted 3D form that fits on the plinth — like a tabletop architectural model. Mountains become small sculpted peaks. A city becomes a cluster of miniature buildings.
+- Compact subjects (bridge, waterfall, building, pier, single landmark): these already fit naturally — sculpt at miniature scale as-is, no further compression needed.
+
+HARD EDGE RULE:
+
+The sculpted miniature has DEFINED BOUNDARIES that correspond to the plinth rim. The scene does NOT extend past the plinth. The scene does NOT continue onto the surround. The scene stops where the plinth stops. The plinth rim is a visible seam between the sculpted world on top and the real world around it.
+
+FORBIDDEN:
+- The source scene bleeding outside the plinth onto the surround
+- The plinth functioning as a decorative underline beneath a full-frame painted scene
+- The sculpted scene flattening onto a disc or painted face
+- The source scene preserved in full without compression — "it's too big to fit" is NEVER an excuse; crop and compress aggressively
+- The diorama becoming the entire image with the plinth as a decorative addition`,
     `THIS SPECIFIC PLACE IS:\n${sceneDesc}`,
     input.distinctiveFeatures ? `DISTINCTIVE FEATURES — MUST BE PRESERVED (NON-NEGOTIABLE):
 The following specific features are present in the source photograph and define what makes this place that place. Each one MUST appear in the final miniature — do not drop, simplify, or omit any of them:
@@ -192,6 +201,24 @@ ${input.distinctiveFeatures}
 If a feature is listed here, it exists in the source and must be rendered as a clearly visible 3D miniature element. Missing even one of these features makes the diorama feel wrong — it becomes a generic version of the place rather than THIS specific place.
 
 Common failure mode to avoid: dropping secondary features (ponds, outbuildings, specific tree clusters, distant landmarks, signs, benches) in favor of rendering only the "obvious" main subject. The secondary features are what make the place personal and specific. Keep all of them.` : '',
+    input.primarySubject ? `SUBJECT PROMINENCE — THE SCENE HAS A HERO:
+
+Primary subject: ${input.primarySubject}
+
+The ${input.primarySubject} is the visual anchor of the diorama. Everything else — surround, sky, secondary features — supports it without competing.
+
+COMPOSITION:
+The ${input.primarySubject} occupies the visual center of the diorama — centered on the base, or anchored along a clean one-third/two-thirds split if linear. The foreground does not dominate; empty base surface does not push the ${input.primarySubject} to a back corner.
+
+LIGHTING HIERARCHY:
+The brightest, most dramatic tonal point in the entire image falls on or near the ${input.primarySubject}. If there is a sun, a glow, a reflection hotspot, a light source — place it on the ${input.primarySubject}. The sky and surround are paler and more muted than the ${input.primarySubject}'s brightest point. A surround that competes for attention flattens the composition.
+
+FOCUS:
+The ${input.primarySubject} is razor sharp — every part of it, front to back. Softening begins only in the surround beyond the base rim.
+
+MATERIAL DEPTH:
+If the ${input.primarySubject} involves water (pier in surf, waterfall, pond), render water with real translucent depth — submerged structure visible beneath the surface, meniscus at shore and around pilings, layered clarity showing bottom rocks or sand underneath the surface. Not a glossy skin.
+If the ${input.primarySubject} is a linear receding subject (pier, path, bridge, road), it MUST recede into the distance via camera perspective — the far end clearly smaller than the near end. Do not render it flat, horizontal, or parallel to the frame.` : '',
     input.viewingDirection ? `VIEWING DIRECTION — CRITICAL CAMERA ORIENTATION:
 The viewer is positioned relative to the subject exactly as described below. This defines which side of the subject faces the camera, where the light source is positioned relative to the viewer, and the orientation of the scene in frame. Do NOT flip, mirror, or rotate the viewing angle. Match the source photograph's camera position.
 
@@ -222,7 +249,6 @@ LINEAR SUBJECTS — two kinds:
 The base casts a clear shadow on the surface beneath it.`,
     `COMPOSITION — MARGINS:
 The base never touches any edge of the image frame. Minimum 15% clear space on every side — left, right, top, bottom. The full base rim is visible with surrounding room on all four sides.
-The base occupies approximately 60-65% of the image width, never more than 70%.
 If the scene cannot fit within these margins, pull the camera back further. Margins override frame-filling.`,
     cameraBlock,
     envBlock,
@@ -295,14 +321,14 @@ function escapeSvgText(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
 }
 
-type CardArtworkStyle = 'artwork' | 'miniature'
+type CardArtworkStyle = '3d' | 'impressionist'
 
 async function buildCardFront(input: {
   sourceImageB64:       string
   sceneDesc:            string
   viewingDirection?:    string
   distinctiveFeatures?: string
-  displayName:          string
+  primarySubject?:      string
   mood:                 string
   artworkStyle:         CardArtworkStyle
   openaiApiKey:         string
@@ -310,45 +336,54 @@ async function buildCardFront(input: {
   const openai = new OpenAI({ apiKey: input.openaiApiKey })
   const moodHint = MOODS[input.mood] || MOODS.golden
 
-  // Scene block varies by artwork style — "artwork" is painted illustration,
-  // "miniature" is hyperrealistic photograph of the SCENE ITSELF (no plinth inside the card).
-  const sceneBlock = input.artworkStyle === 'miniature'
-    ? `SCENE ON THE CARD — HYPERREALISTIC PHOTOGRAPH OF THE SCENE ITSELF, ELEVATED WITH EDITORIAL STYLIZATION:
+  // Scene block varies by artwork style.
+  // "3d" — photorealistic 3D-rendered scene filling the card frame, NO plinth, NO base.
+  // "impressionist" — painterly illustration, NO plinth, NO base.
+  // In BOTH cases the card frame IS the bounding container. No diorama-on-display.
+  const sceneBlock = input.artworkStyle === '3d'
+    ? `SCENE ON THE CARD — PHOTOREALISTIC 3D RENDERING OF THE SCENE ITSELF:
 
-CRITICAL — READ CAREFULLY:
-The image on this card is a HYPERREALISTIC PHOTOGRAPH of this specific place: ${input.sceneDesc}
-The aesthetic is photorealistic BUT stylized — "hyperreal" in the sense of heightened, cinematically elevated reality. Think the cinematic polish of a collectable art card from a premium trading card set: real-looking enough to step into, but more dramatic, more saturated, more composed than a snapshot.
+The image on this card is a hyperrealistic photographic rendering of this specific place: ${input.sceneDesc}
 
-DO NOT INCLUDE A DIORAMA PLINTH OR BASE INSIDE THE CARD:
-This card artwork is the SCENE itself — not a miniature-on-a-plinth product shot. There is no turned-wood base, no circular platform, no diorama-on-display visible inside the card frame. The scene fills the card frame naturally as though photographed in the real world.
-The foil border is the only frame. The artwork inside is a pure photographic scene, not a product photo of a miniature.
+The aesthetic is photorealistic but heightened — the polish of a cinematic film still, a premium nature photograph, or the cover of a high-end travel publication. Real-looking enough to step into, but more saturated, more luminous, more composed than a casual snapshot.
+
+CRITICAL — THE CARD IS THE ONLY FRAME:
+There is NO turned-wood plinth inside the card. NO circular base. NO miniature-on-a-plinth product shot. NO diorama-on-display visible anywhere. NO walnut rim. NO pedestal. NO real-world surround beyond the frame.
+The foil card border IS the bounding container. The scene fills the entire artwork zone naturally, edge to edge, as though photographed in the real world at real scale.
+Do not imply this is a miniature, a model, or a collectable object inside the card. It is the PLACE itself, photographed.
 
 AESTHETIC — HYPERREAL BUT ELEVATED:
-- Razor-sharp detail throughout — every pier piling, every lamp post, every ripple on the water, every grain of sand reads as a real photograph
-- Saturated but natural color with strong cinematic color grading — elevated reality, rich blacks, lifted warmth, luminous highlights
-- Bold dramatic lighting — strong directional light with pronounced rim light, backlight, or atmospheric glow
-- Light catches subjects in a way that feels cinematic — sun flares, god rays, wet surface reflections, atmospheric haze
-- Depth and dimension via real atmospheric perspective plus slightly heightened contrast between near and far
-- NO brushstrokes, NO painterly softening, NO illustrated quality — but YES to dramatic editorial polish
-- The scene should feel like a film still from a Malick or Deakins-shot movie: photographic, elevated, emotionally weighted
+- Razor-sharp detail throughout — every element reads as a true photograph
+- Saturated but natural color with rich cinematic color grading — elevated reality, deep blacks, luminous highlights, warm mid-tones
+- Bold directional light — pronounced rim light, backlight, or atmospheric glow on the primary subject
+- Light catches in cinematic ways: sun flares, god rays, wet reflections, atmospheric haze, mist with volume
+- Real atmospheric perspective — near elements crisp, far elements slightly softer
+- NO brushstrokes, NO painterly softening, NO illustrated quality — this is photographic
+- Emotionally weighted — the kind of photograph that makes you stop and look
 
 EXAMPLES OF THE RIGHT AESTHETIC:
-- A National Geographic cover photograph with the drama turned up
+- A National Geographic cover photograph with the drama pushed
 - A cinematic film still (Roger Deakins, Emmanuel Lubezki)
-- A premium collectable trading card's photorealistic art (Topps Chrome, Panini Spectra nature/travel series)
-- A high-end travel ad where the photo looks almost too good to be real
+- A premium travel publication's lead image
+- A high-end editorial nature photograph`
 
-EXAMPLES OF WHAT TO AVOID:
-- Any painterly, illustrated, or drawn quality
-- Soft-focus atmospheric painting
-- Cartoon or stylized-as-in-simplified artwork (we want stylized-as-in-cinematically-heightened)
-- Product photography of a physical miniature (the miniature-with-plinth aesthetic — that belongs in In Situ, NOT here)
-- A flat documentary snapshot — too ordinary, needs drama`
+    : `SCENE ON THE CARD — IMPRESSIONIST PAINTED ARTWORK:
 
-    : `SCENE ON THE CARD — PAINTED ARTWORK:
-A richly painted illustration of this specific place: ${input.sceneDesc}
-Painterly quality — think high-end art card illustration or classical landscape painting. Rich brushwork, expressive color, artistic interpretation. Full saturation, strong light, the scene is the subject.
-This is artwork, not a photograph — stylized but rooted in the specific character of this place.`
+A richly painted impressionist illustration of this specific place: ${input.sceneDesc}
+
+Painterly quality — think high-end art card illustration or classical impressionist landscape painting (Monet, Pissarro, Sorolla). Visible brushwork, expressive color, atmospheric light, oil-on-canvas texture. Full saturation. Strong luminous light. The scene is the subject, lovingly rendered.
+
+CRITICAL — THE CARD IS THE ONLY FRAME:
+There is NO turned-wood plinth inside the card. NO circular base. NO miniature-on-display product shot. NO diorama visible anywhere. NO walnut rim. NO pedestal.
+The foil card border IS the bounding container. The painted scene fills the entire artwork zone naturally, edge to edge — the painting is OF the place, not of a miniature of the place.
+
+AESTHETIC:
+- Visible brushwork — the texture of paint on canvas
+- Expressive, confident color — saturated, luminous, emotionally charged
+- Atmospheric impressionist light — dappled sunlight, soft glow, shimmering reflections
+- Composition rooted in the source photograph's specific character — this is impressionist treatment of a REAL place, not a generic landscape
+- No hard edges — everything softened by brushstroke
+- Feel: a hundred-year-old oil painting that still feels luminous and alive`
 
   const prompt = [
     `COLLECTABLE CARD FRONT — PREMIUM TRADING-CARD, PORTRAIT ORIENTATION.`,
@@ -363,6 +398,9 @@ The following specific features from the source photograph define this place. Ea
 ${input.distinctiveFeatures}
 
 Do not simplify to a generic version of the place type. The listed features are what makes this place personal and specific — keep all of them visible.` : '',
+
+    input.primarySubject ? `SUBJECT PROMINENCE:
+The ${input.primarySubject} is the hero of this card — the visual anchor. Compose around it, light peaks on it, focus locks on it. The sky and surround support without competing.` : '',
 
     input.viewingDirection ? `VIEWING DIRECTION — CRITICAL CAMERA ORIENTATION:
 The scene is captured from this exact viewpoint: ${input.viewingDirection}
@@ -396,9 +434,21 @@ EXAMPLES FOR COMMON SUBJECTS:
 FAILURE MODE TO AVOID:
 A clean rectangular card with a clean foil border and the art neatly contained inside is WRONG. That reads as a poster, not a collectable card. Frame-breaking is the single most important style element.`,
 
-    `TITLE TREATMENT:
-Near the bottom of the card (in the lower 15% of the frame), display the place name in a clean elegant serif typeface, centered or slightly left-aligned: "${input.displayName}"
-The title is small and refined — about 40-55 pixels tall — not dominant. It sits within a small clean typographic block or plate that the border-breaking elements do not overlap.`,
+    `NO TITLE, NO TEXT, NO PLAQUE, NO NAMEPLATE — ABSOLUTE RULE:
+
+Do NOT render any title, name, text, letter, word, plaque, signboard, nameplate, caption, label, banner, scroll, cartouche, inscription, or typographic element anywhere on this card.
+The artwork zone is pure imagery only. Zero text of any kind.
+
+SPECIFIC FAILURE MODES TO AVOID (these keep happening and must be prevented):
+- A rectangular or oval brass/bronze plaque with the place name inscribed on it, positioned at the bottom of the artwork or along the bottom foil border — FORBIDDEN
+- A scrolled banner or ribbon with text draped across the artwork — FORBIDDEN
+- A carved wooden sign or placard inside the scene with the place name — FORBIDDEN
+- Any decorative frame element that carries type of any kind — FORBIDDEN
+- Text painted directly onto a rock, sign, or surface within the scene — FORBIDDEN
+- Any lettering treated as part of the artwork composition — FORBIDDEN
+
+The title is added in post-processing as a separate element outside the AI artwork. Do NOT attempt to render it yourself. If you render ANY text element on this card, the output is rejected.
+If the real-world subject naturally contains signage (shop names, street signs, plaques), render those surfaces blank, weathered-illegible, or abstracted — no readable characters.`,
 
     `CARD MATERIAL FEEL:
 Satin-finish card stock with subtle sheen. Premium print quality — crisp edges, rich color. No visible physical card thickness or shadow (this is a straight-on frontal view of the card face, not a product shot of a card on a desk).`,
@@ -585,14 +635,15 @@ export async function generateCollectableCard(input: {
   sceneDesc:            string
   viewingDirection?:    string
   distinctiveFeatures?: string
+  primarySubject?:      string
   memoryText:           string
   displayName:          string
   mood:                 string
   plaqueText?:          string
-  artworkStyle?:        CardArtworkStyle   // 'artwork' (painted) | 'miniature' (3D render)
+  artworkStyle?:        CardArtworkStyle   // '3d' (photorealistic render) | 'impressionist' (painterly)
   openaiApiKey:         string
 }): Promise<{ frontB64: string; backB64: string }> {
-  const style: CardArtworkStyle = input.artworkStyle || 'artwork'
+  const style: CardArtworkStyle = input.artworkStyle || '3d'
 
   // Front (AI) first since back needs thumbnail from it
   const frontB64 = await buildCardFront({
@@ -600,7 +651,7 @@ export async function generateCollectableCard(input: {
     sceneDesc:           input.sceneDesc,
     viewingDirection:    input.viewingDirection,
     distinctiveFeatures: input.distinctiveFeatures,
-    displayName:         input.displayName,
+    primarySubject:      input.primarySubject,
     mood:                input.mood,
     artworkStyle:        style,
     openaiApiKey:        input.openaiApiKey,

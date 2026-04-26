@@ -11,19 +11,41 @@
   --teal:#1D9E75;--teal-dark:#0F6E56;--teal-light:#5DCAA5;--muted:#7A6F5E;--dim:#B0A898;
   --border:rgba(245,240,232,0.12);--border2:rgba(245,240,232,0.2);
   --surface:rgba(245,240,232,0.05);--surface2:rgba(245,240,232,0.09);
+  --stage-bg:#2A2D30;                    /* cool dark gray — the stage */
+  --panel-bg:#F7F2EA;                    /* soft warm white — topbar + left panel */
+  --panel-ink:#2B2520;                   /* dark warm text on panel bg */
+  --panel-muted:#6D635A;                 /* muted text on panel */
+  --panel-dim:#9A9087;                   /* dim text on panel */
+  --panel-border:rgba(43,37,32,0.14);
+  --panel-border2:rgba(43,37,32,0.24);
+  --panel-surface:rgba(43,37,32,0.04);
+  --panel-surface2:rgba(43,37,32,0.08);
   --serif:'Cormorant Garamond',serif;--sans:'Jost',sans-serif;--mono:'JetBrains Mono',monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:flex;flex-direction:column;
-  background-image:radial-gradient(ellipse 70% 40% at 50% 0%, rgba(29,158,117,.05) 0%, transparent 60%)}
+body{background:var(--stage-bg);color:var(--cream);font-family:var(--sans);display:flex;flex-direction:column}
+
+/* Scope: topbar + left panel use light palette. Any var(--ink/cream/border/surface/muted/dim) inside them resolves to the panel equivalents. */
+.topbar, .left{
+  --ink:var(--panel-bg);
+  --cream:var(--panel-ink);
+  --border:var(--panel-border);
+  --border2:var(--panel-border2);
+  --surface:var(--panel-surface);
+  --surface2:var(--panel-surface2);
+  --muted:var(--panel-muted);
+  --dim:var(--panel-dim);
+  background:var(--panel-bg);
+  color:var(--panel-ink);
+}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 @keyframes detecting{0%{width:0%}100%{width:100%}}
 
 /* TOPBAR */
-.topbar{height:52px;background:rgba(18,16,14,.95);border-bottom:1px solid var(--border);
+.topbar{height:52px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;padding:0 1.25rem;gap:.75rem;flex-shrink:0}
 .home-link{padding:4px 10px;border:1px solid var(--border);border-radius:4px;color:var(--dim);
   font-size:.68rem;font-family:var(--mono);text-decoration:none;transition:all .15s}
@@ -58,7 +80,7 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
 
 /* LAYOUT */
 .layout{display:grid;grid-template-columns:510px 1fr;flex:1;overflow:hidden;min-height:0}
-.left{background:rgba(18,16,14,.5);border-right:1px solid var(--border);
+.left{border-right:1px solid var(--border);
   display:flex;flex-direction:column;overflow:hidden}
 .panel-hdr{padding:.6rem .9rem;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -69,6 +91,12 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
 
 /* SCENE DETECT CARD */
 .detect-card{margin:.75rem;padding:.8rem;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;flex-shrink:0}
+.suit-warn{margin:.75rem;padding:.95rem 1rem .85rem;background:linear-gradient(180deg,#4a3320 0%,#3d2a18 100%);border:1.5px solid #c48540;border-left:5px solid #f2a04a;border-radius:8px;flex-shrink:0;box-shadow:0 2px 12px rgba(242,160,74,.15);animation:suitWarnIn .45s ease-out}
+@keyframes suitWarnIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.suit-warn-hdr{display:flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#ffb766;margin-bottom:.5rem}
+.suit-warn-icon{display:inline-flex;align-items:center;justify-content:center;width:1.1rem;height:1.1rem;border-radius:50%;background:#f2a04a;color:#2a1a08;font-size:.7rem;font-weight:900;font-family:var(--mono)}
+.suit-warn-body{font-family:var(--serif);font-size:.92rem;color:#faf0dc;line-height:1.5;font-weight:400}
+.suit-warn-hint{font-family:var(--mono);font-size:.62rem;color:#d4a574;margin-top:.55rem;letter-spacing:.03em;padding-top:.5rem;border-top:1px solid rgba(242,160,74,.22)}
 .detect-status{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem}
 .detect-icon{font-size:1.05rem}
 .detect-label{font-size:.7rem;color:var(--dim);font-weight:300}
@@ -99,7 +127,7 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
 .vchip.pres{background:rgba(184,146,74,.12);color:var(--gold-light);border-color:rgba(184,146,74,.2)}
 .varrow{font-size:.65rem;color:var(--dim);transition:transform .15s;flex-shrink:0;margin-left:2px}
 .var-card.open .varrow{transform:rotate(90deg)}
-.vbody{display:none;padding:14px;border-top:1px solid var(--border);background:rgba(18,16,14,.3)}
+.vbody{display:none;padding:14px;border-top:1px solid var(--border);background:var(--surface)}
 .var-card.open .vbody{display:block}
 
 .name-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;
@@ -168,7 +196,7 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
 .tile-overlay{position:absolute;inset:0;
   background:linear-gradient(to top, rgba(18,16,14,.82) 0%, rgba(18,16,14,.18) 55%, transparent 100%)}
 .tile-label{position:absolute;left:9px;right:9px;bottom:7px;
-  font-size:.82rem;font-weight:500;color:var(--cream);z-index:2;text-align:left;letter-spacing:.01em;
+  font-size:.82rem;font-weight:500;color:#F5F0E8;z-index:2;text-align:left;letter-spacing:.01em;
   text-shadow:0 1px 3px rgba(0,0,0,.75)}
 .tile.active .tile-label{color:var(--teal-light)}
 .tile-check{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;
@@ -239,8 +267,6 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
   linear-gradient(160deg, #8B5A2A 0%, #D4AC6E 45%, #A0B8B0 75%, #5A7890 100%)}
 .bg-pres-collectable_card{background-image:url('/previews/pres-collectable-card.jpg'),
   linear-gradient(145deg, #3A2818 0%, #6B4828 35%, #B8924A 75%, #E8D4A8 100%)}
-.bg-pres-cinematic{background-image:url('/previews/pres-cinematic.jpg'),
-  radial-gradient(ellipse at 50% 45%, #5A4268 0%, #241A2E 45%, #0A0810 100%)}
 .bg-pres-museum{background-image:url('/previews/pres-museum.jpg'),
   linear-gradient(180deg, #F5F0E8 0%, #DED4BE 55%, #A8A090 100%)}
 .tile-bg{background-size:cover;background-position:center}
@@ -265,7 +291,7 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
 /* CENTER */
 .center{display:flex;flex-direction:column;overflow:hidden}
 .center-hdr{padding:.6rem 1rem;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;background:rgba(18,16,14,.6);flex-shrink:0}
+  display:flex;align-items:center;background:rgba(0,0,0,.18);flex-shrink:0}
 /* RESULTS STACK — staggered horizontal card stack, click non-top to peel forward */
 .results-grid{flex:1;overflow:hidden;padding:2rem 1.5rem;
   position:relative;min-height:520px}
@@ -424,6 +450,12 @@ body{background:var(--ink);color:var(--cream);font-family:var(--sans);display:fl
       <div class="detect-bar"><div class="detect-bar-fill" id="detectBar"></div></div>
     </div>
 
+    <div class="suit-warn" id="suitWarn" style="display:none">
+      <div class="suit-warn-hdr"><span class="suit-warn-icon">!</span>Heads up — diorama fit</div>
+      <div class="suit-warn-body" id="suitWarnBody"></div>
+      <div class="suit-warn-hint">You can still generate, but Collectable Card tends to work best for scenes like this.</div>
+    </div>
+
     <div class="variants-list" id="variantsList"></div>
   </div>
 
@@ -458,7 +490,6 @@ const MOODS = [
 const PRES = [
   { k:'insitu',           label:'In Situ' },
   { k:'collectable_card', label:'Collectable Card' },
-  { k:'cinematic',        label:'Cinematic' },
   { k:'museum',           label:'Museum' },
 ]
 const MOOD_LABEL = Object.fromEntries(MOODS.map(m => [m.k, m.label]))
@@ -466,7 +497,7 @@ const PRES_LABEL = Object.fromEntries(PRES.map(p => [p.k, p.label]))
 
 let fileB64 = null, extraB64 = null, running = false
 let imgStore = {}, resStore = {}, variantN = 0
-let detectedScene = null, detectedMemory = null, detectedDirection = null, detectedSurface = null, detectedAtmosphere = null, detectedName = null, detectedCharacter = null, detectedFeatures = null
+let detectedScene = null, detectedMemory = null, detectedDirection = null, detectedEnvironment = null, detectedName = null, detectedCharacter = null, detectedFeatures = null, detectedPrimarySubject = null, detectedSuitability = null
 let analyzePromise = null   // resolves when analyzeScene completes; Run All awaits this
 
 // ── UPLOAD ───────────────────────────────────────────────────
@@ -499,6 +530,7 @@ async function analyzeScene(b64) {
   document.getElementById('detectBar').classList.add('running')
   document.getElementById('detectResult').style.display = 'none'
   document.getElementById('detectSub').style.display = 'none'
+  document.getElementById('suitWarn').style.display = 'none'
 
   try {
     const res = await fetch(ANALYZE, {
@@ -508,18 +540,31 @@ async function analyzeScene(b64) {
     })
     const data = await res.json()
     detectedScene      = data.scene_description
-    detectedDirection  = data.viewing_direction
-    detectedMemory     = data.memory_text
-    detectedSurface    = data.environment_surface
-    detectedAtmosphere = data.environment_atmosphere
-    detectedName       = data.display_name
-    detectedCharacter  = data.character_source
-    detectedFeatures   = data.distinctive_features
+    detectedDirection   = data.viewing_direction
+    detectedMemory      = data.memory_text
+    detectedEnvironment = data.environment
+    detectedName        = data.display_name
+    detectedCharacter   = data.character_source
+    detectedFeatures    = data.distinctive_features
+    detectedPrimarySubject = data.primary_subject
+    detectedSuitability = data.diorama_suitability || null
+
+    // Show suitability warning if scene is poorly suited for diorama
+    const suitWarn = document.getElementById('suitWarn')
+    const suitBody = document.getElementById('suitWarnBody')
+    if (detectedSuitability && detectedSuitability.verdict === 'poorly_suited' && detectedSuitability.reason) {
+      suitBody.textContent = detectedSuitability.reason
+      suitWarn.style.display = 'block'
+    } else {
+      suitWarn.style.display = 'none'
+    }
+
     const charBadge = detectedCharacter === 'atmosphere' ? ' · atmosphere-forward' : ' · object-forward'
     document.getElementById('detectResult').textContent = (data.display_name || 'Scene detected') + charBadge
     const descText = data.scene_description || ''
+    const heroText = data.primary_subject ? `\n\nHero: ${data.primary_subject}` : ''
     const featText = data.distinctive_features ? `\n\nKey features: ${data.distinctive_features}` : ''
-    document.getElementById('detectSub').textContent = descText + featText
+    document.getElementById('detectSub').textContent = descText + heroText + featText
     document.getElementById('detectResult').style.display = 'block'
     document.getElementById('detectSub').style.display = 'block'
     document.getElementById('detectLabel').textContent = 'Scene detected'
@@ -549,7 +594,7 @@ function addVariant(cfg = {}) {
   card.dataset.mood = mood
   card.dataset.pres = pres
   card.dataset.plaqueShape = cfg.plaqueShape || 'rectangular'
-  card.dataset.artworkStyle = cfg.artworkStyle || 'artwork'
+  card.dataset.artworkStyle = cfg.artworkStyle || '3d'
 
   // Build mood cards in stack order — selected mood goes to TOP of stack
   const moodOrder = [mood, ...MOODS.map(m => m.k).filter(k => k !== mood)]
@@ -587,15 +632,15 @@ function addVariant(cfg = {}) {
       <div class="card-mode-row" id="v3d-row-${vid}" style="display:none">
         <div class="card-mode-label">Artwork Style</div>
         <div class="seg-control">
-          <button class="seg-opt active" data-mode="artwork" onclick="setCardMode('${vid}','artwork')">
-            <span class="seg-icon">🎨</span>
-            <span class="seg-text">Artwork</span>
-            <span class="seg-sub">Painted illustration</span>
-          </button>
-          <button class="seg-opt" data-mode="miniature" onclick="setCardMode('${vid}','miniature')">
+          <button class="seg-opt active" data-mode="3d" onclick="setCardMode('${vid}','3d')">
             <span class="seg-icon">🏔</span>
-            <span class="seg-text">Miniature</span>
-            <span class="seg-sub">Photoreal 3D render</span>
+            <span class="seg-text">3D</span>
+            <span class="seg-sub">Photoreal scene</span>
+          </button>
+          <button class="seg-opt" data-mode="impressionist" onclick="setCardMode('${vid}','impressionist')">
+            <span class="seg-icon">🎨</span>
+            <span class="seg-text">Impressionist</span>
+            <span class="seg-sub">Painted illustration</span>
           </button>
         </div>
       </div>
@@ -629,7 +674,6 @@ function addVariant(cfg = {}) {
   // Initialize 3D-row visibility based on starting preset
   const initRow = document.getElementById('v3d-row-' + vid)
   if (initRow) initRow.style.display = (pres === 'collectable_card') ? '' : 'none'
-  if (cfg.artworkStyle === 'miniature') setCardMode(vid, 'miniature')
 }
 
 // Mood stack behavior:
@@ -675,7 +719,7 @@ function selectPres(vid, pres) {
 }
 function setCardMode(vid, mode) {
   const card = document.querySelector(`.var-card[data-id="${vid}"]`); if(!card) return
-  card.dataset.artworkStyle = (mode === 'miniature') ? 'miniature' : 'artwork'
+  card.dataset.artworkStyle = (mode === 'impressionist') ? 'impressionist' : '3d'
   document.querySelectorAll(`#v3d-row-${vid} .seg-opt`).forEach(b => {
     b.classList.toggle('active', b.dataset.mode === mode)
   })
@@ -726,7 +770,7 @@ function collect(vid) {
     notes:        document.getElementById('vnt-' + vid)?.value?.trim() || undefined,
     plaqueText:   plaqueText || undefined,
     plaqueShape:  card.dataset.plaqueShape || 'rectangular',
-    artworkStyle: card.dataset.artworkStyle || 'artwork',
+    artworkStyle: card.dataset.artworkStyle || '3d',
   }
 }
 
@@ -797,10 +841,10 @@ async function generateOne(p) {
         scene_description:      detectedScene,
         viewing_direction:      detectedDirection,
         memory_text:            detectedMemory,
-        environment_surface:    detectedSurface,
-        environment_atmosphere: detectedAtmosphere,
+        environment:            detectedEnvironment,
         character_source:       detectedCharacter,
         distinctive_features:   detectedFeatures,
+        primary_subject:        detectedPrimarySubject,
         display_name:           detectedName,
         mood:              p.mood,
         presentation:      p.pres,
@@ -1001,8 +1045,8 @@ function openFull(name) {
 
 // ── SEED DEFAULT VARIANTS ─────────────────────────────────────
 addVariant({ name:'Golden · In Situ',           mood:'golden',   pres:'insitu'           })
+addVariant({ name:'Dramatic · In Situ',         mood:'dramatic', pres:'insitu'           })
 addVariant({ name:'Peaceful · Collectable Card', mood:'peaceful', pres:'collectable_card' })
-addVariant({ name:'Dramatic · Cinematic',       mood:'dramatic', pres:'cinematic'        })
 addVariant({ name:'Vivid · Museum',              mood:'vivid',    pres:'museum'           })
 
 // Collapse all but the first so the list fits

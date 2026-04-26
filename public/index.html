@@ -104,7 +104,7 @@ nav{
 .categories{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  grid-template-rows:auto auto;
+  grid-template-rows:auto auto auto;
   gap:1px;background:rgba(184,146,74,.12);
   margin:0 3rem 1px;
 }
@@ -118,8 +118,10 @@ nav{
   opacity:0;transition:opacity .6s, transform .6s;transform:translateY(16px);
 }
 .cat-card.visible{opacity:1;transform:none}
+/* Spans — Structures hero (row 1), Sports Memorabilia (row 2), Action Minis (row 3) */
 .cat-card:nth-child(1){grid-column:1/3;min-height:420px}
 .cat-card:nth-child(4){grid-column:2/4;min-height:380px}
+.cat-card:nth-child(6){grid-column:1/3;min-height:380px}
 
 .cat-bg{
   position:absolute;inset:0;
@@ -164,12 +166,18 @@ nav{
 }
 .cat-card:hover .cat-arrow{opacity:1;transform:none}
 
-/* ── COMING SOON BADGE ── */
+/* ── STATUS BADGES ── */
 .cat-badge{
   position:absolute;top:1.5rem;right:1.5rem;z-index:3;
   font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;
   padding:.3rem .8rem;border:1px solid rgba(184,146,74,.35);
   color:var(--gold);font-weight:400;background:rgba(18,16,14,.6);
+}
+/* Preview badge — bright amber, signals "live but in development" */
+.cat-badge.preview{
+  border-color:rgba(242,160,74,.55);
+  color:#F2A04A;
+  background:rgba(242,160,74,.12);
 }
 
 /* ── BOTTOM BAR ── */
@@ -185,7 +193,6 @@ nav{
 .bottom-links a:hover{color:var(--dim)}
 
 /* ── CATEGORY BACKGROUNDS ── */
-/* Using gradient placeholders — swap src for real diorama photos */
 .bg-structures{
   background:
     linear-gradient(135deg, rgba(120,80,40,.3) 0%, rgba(60,30,10,.6) 100%),
@@ -216,6 +223,14 @@ nav{
     radial-gradient(ellipse at 60% 40%, rgba(160,100,40,.2) 0%, transparent 60%);
   background-color:#1E100A;
 }
+/* Action Minis — kinetic amber-crimson with a diagonal sweep implying motion */
+.bg-actionminis{
+  background:
+    linear-gradient(115deg, rgba(200,60,40,.38) 0%, rgba(120,30,20,.55) 45%, rgba(40,10,5,.7) 100%),
+    radial-gradient(ellipse at 25% 70%, rgba(242,160,74,.3) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 30%, rgba(220,90,60,.22) 0%, transparent 60%);
+  background-color:#1E0A08;
+}
 
 @keyframes fadeUp{
   from{opacity:0;transform:translateY(20px)}
@@ -235,8 +250,8 @@ nav{
   <a class="nav-logo" href="/">mini<em>scape</em></a>
   <ul class="nav-links">
     <li><a href="structures.html">Structures</a></li>
-    <li><a href="#">Landscapes</a></li>
-    <li><a href="#">Moments</a></li>
+    <li><a href="landscapes.html">Landscapes</a></li>
+    <li><a href="actionmini.html">Action Minis</a></li>
     <li><a href="#">About</a></li>
   </ul>
 </nav>
@@ -261,7 +276,7 @@ nav{
 
   <div class="categories">
 
-    <!-- STRUCTURES — hero card, spans 2 columns -->
+    <!-- 1 · STRUCTURES — hero card, spans 2 cols row 1 -->
     <a class="cat-card" href="structures.html" data-reveal data-delay="0">
       <div class="cat-bg bg-structures"></div>
       <div class="cat-overlay"></div>
@@ -273,7 +288,7 @@ nav{
       </div>
     </a>
 
-    <!-- LANDSCAPES -->
+    <!-- 2 · LANDSCAPES — row 1 -->
     <a class="cat-card" href="landscapes.html" data-reveal data-delay="100">
       <div class="cat-bg bg-landscapes"></div>
       <div class="cat-overlay"></div>
@@ -286,7 +301,7 @@ nav{
       </div>
     </a>
 
-    <!-- MOMENTS -->
+    <!-- 3 · MOMENTS — row 2 -->
     <a class="cat-card" href="moments.html" data-reveal data-delay="150">
       <div class="cat-bg bg-moments"></div>
       <div class="cat-overlay"></div>
@@ -299,20 +314,20 @@ nav{
       </div>
     </a>
 
-    <!-- STADIUMS — spans 2 columns -->
-    <a class="cat-card" href="stadiums.html" data-reveal data-delay="200">
+    <!-- 4 · SPORTS MEMORABILIA — spans 2 cols row 2 -->
+    <a class="cat-card" href="sportsmem.html" data-reveal data-delay="200">
       <div class="cat-bg bg-stadiums"></div>
       <div class="cat-overlay"></div>
       <span class="cat-badge">Coming Soon</span>
       <div class="cat-content">
         <span class="cat-tag">Sports & Venues</span>
-        <h3 class="cat-name">Stadiums</h3>
-        <p class="cat-desc">The stadium where it happened. The court, the field, the arena — scaled down to sit on your desk and relive forever.</p>
+        <h3 class="cat-name">Sports Memorabilia</h3>
+        <p class="cat-desc">The game you'll never forget. Family, friends, and the moment — preserved as a museum-quality tableau on a polished walnut plinth.</p>
         <span class="cat-arrow">Explore ↗</span>
       </div>
     </a>
 
-    <!-- INTERIORS -->
+    <!-- 5 · INTERIORS — row 3 -->
     <a class="cat-card" href="interiors.html" data-reveal data-delay="250">
       <div class="cat-bg bg-interiors"></div>
       <div class="cat-overlay"></div>
@@ -322,6 +337,19 @@ nav{
         <h3 class="cat-name">Interiors</h3>
         <p class="cat-desc">A cutaway view of a beloved room — your childhood bedroom, a favourite café, a place that still lives in your mind.</p>
         <span class="cat-arrow">Explore ↗</span>
+      </div>
+    </a>
+
+    <!-- 6 · ACTION MINIS — spans 2 cols row 3 -->
+    <a class="cat-card" href="actionmini.html" data-reveal data-delay="300">
+      <div class="cat-bg bg-actionminis"></div>
+      <div class="cat-overlay"></div>
+      <span class="cat-badge preview">Preview</span>
+      <div class="cat-content">
+        <span class="cat-tag">Kinetic Moments</span>
+        <h3 class="cat-name">Action Minis</h3>
+        <p class="cat-desc">A paddle stroke through whitewater, a line down the slope, a crux move on the rock — the moment you were fully in it, sculpted as a kinetic collectible.</p>
+        <span class="cat-arrow">Create ↗</span>
       </div>
     </a>
 

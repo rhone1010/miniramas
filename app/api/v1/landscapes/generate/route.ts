@@ -16,10 +16,10 @@ export async function POST(req: NextRequest) {
       scene_description,                 // free-form description from analyze
       viewing_direction,                 // which side of subject; camera orientation
       memory_text,                       // short keepsake caption from analyze
-      environment_surface,               // just ground material
-      environment_atmosphere,            // just sky/weather/light
+      environment,                       // "diorama sits on X. Background is blurred Y."
       character_source,                  // 'object' | 'atmosphere'
       distinctive_features,              // comma-separated specific features to preserve
+      primary_subject,                   // 1-3 word hero of the scene
       display_name,
       mood              = 'golden',
       presentation      = 'insitu',
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       notes,
       plaque_text,                       // optional decorative plate text (≤40 chars)
       plaque_shape      = 'rectangular', // 'rectangular' | 'curved' | 'victorian'
-      artwork_style     = 'artwork',     // collectable_card only — 'artwork' | 'miniature'
+      artwork_style     = '3d',          // collectable_card only — '3d' | 'impressionist'
     } = body
 
     if (!source_image_b64) {
@@ -46,11 +46,12 @@ export async function POST(req: NextRequest) {
         sceneDesc:            scene_description || '',
         viewingDirection:     viewing_direction || '',
         distinctiveFeatures:  distinctive_features || '',
+        primarySubject:       primary_subject || '',
         memoryText:           memory_text || '',
         displayName:          display_name || 'Untitled',
         mood,
         plaqueText:     plaque_text || '',
-        artworkStyle:   artwork_style === 'miniature' ? 'miniature' : 'artwork',
+        artworkStyle:   artwork_style === 'impressionist' ? 'impressionist' : '3d',
         openaiApiKey,
       })
       return NextResponse.json({
@@ -66,16 +67,16 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // ── NORMAL PATH: in-situ / cinematic / museum ──
+    // ── NORMAL PATH: in-situ / museum ──
     const generated = await generateLandscape({
       sourceImageB64:        source_image_b64,
       extraImages:           extra_images,
       sceneDescription:      scene_description,
       viewingDirection:      viewing_direction,
-      environmentSurface:    environment_surface,
-      environmentAtmosphere: environment_atmosphere,
+      environment:           environment,
       characterSource:       character_source,
       distinctiveFeatures:   distinctive_features,
+      primarySubject:        primary_subject,
       displayName:           display_name,
       mood,
       presentation,
