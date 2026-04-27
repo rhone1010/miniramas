@@ -307,7 +307,7 @@ Portrait orientation. The artwork fills the card. Margins inside the foil border
     model: 'gpt-image-1',
     image: file,
     prompt,
-    size:  '1024x1536',
+    size:  '1024x1024',
   })
   const b64 = res.data?.[0]?.b64_json
   if (!b64) throw new Error('actionmini_card_front_generation_failed')

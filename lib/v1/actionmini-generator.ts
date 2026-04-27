@@ -120,5 +120,5 @@ export async function generateActionMini(
   if (!b64) throw new Error('actionmini_generation_failed')
 
   console.log(`[actionmini] ${preset} — done`)
-  return { imageB64: b64, promptUsed: prompt }
+  return { imageB64: b64, promptUsed: prompt, preset }
 }

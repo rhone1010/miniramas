@@ -276,7 +276,7 @@ export async function POST(req: NextRequest) {
     const buf = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
     const filename = title.replace(/\s+/g, '-') + '-' + Date.now() + '.pptx'
 
-    return new NextResponse(buf, {
+    return new NextResponse(new Uint8Array(buf), {
       status: 200,
       headers: {
         'Content-Type':        'application/vnd.openxmlformats-officedocument.presentationml.presentation',

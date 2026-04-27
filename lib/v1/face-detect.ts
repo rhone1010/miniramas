@@ -140,7 +140,7 @@ function parseDetections(output: any, W: number, H: number): RawDetection[] {
   }
   // Shape 3: bare array of detections
   if (Array.isArray(payload)) {
-    return payload.map((d: any) => normalizeBox(d, W, H)).filter(Boolean)
+    return payload.map((d: any) => normalizeBox(d, W, H)).filter((d): d is RawDetection => d !== null)
   }
   return []
 }
