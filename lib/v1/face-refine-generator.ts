@@ -1,23 +1,14 @@
 // face-refine-generator.ts
 // lib/v1/face-refine-generator.ts
 //
-// Per-face hero refinement. Takes a SINGLE face crop from the source photo
-// plus that person's identity profile from the analyzer, and generates a
-// hero-scale resin sculpt of just that person — head and shoulders, face
-// filling 50-70% of frame.
+// Per-face hero refinement on gpt-image-1.
 //
-// The output is a 1024x1024 single-figure portrait. The face-blend module
-// then locates the face in this output and composites it back into the
-// group image at the matched location.
+// Stylization MUST match the group-generator stylization (~12%, Pixar-adjacent
+// realism, premium figurine idealization). If stylization levels differ
+// between the body (group-generator output) and the refined face, the
+// composite reads as a Photoshopped mismatch — uncanny.
 //
-// Why gpt-image-1 instead of FLUX.2 [max] for this step:
-//   - Single-face hero shots are exactly the case where Action Minis VIVID
-//     ships at high quality. Same model, same per-face pixel budget.
-//   - FLUX.2 [max] is calibrated for editing, not stylistic transformation
-//     from a single reference. We confirmed that's wrong for this use case.
-//
-// Cost per call: ~$0.04 (gpt-image-1, 1024x1024)
-// Latency: ~10-15s per face
+// Cost per call: ~$0.04. Latency: ~10-15s per face.
 
 import OpenAI                     from 'openai'
 import sharp                      from 'sharp'
@@ -33,15 +24,13 @@ export async function refineFace(input: {
   faceCropB64:  string                // tight crop of one person's face from source
   identity:     PersonIdentity | null  // analysis entry for this person
   openaiApiKey: string
-  /** Higher seed → different result on retry. */
   attempt?:     number
 }): Promise<RefineFaceResult> {
   const openai = new OpenAI({ apiKey: input.openaiApiKey })
 
   const prompt = buildPrompt(input.identity, input.attempt ?? 1)
 
-  // Light brightness lift on the crop — face crops from group photos are
-  // often underexposed and gpt-image-1 reproduces dark crops as dark sculpts.
+  // Light brightness lift on dark face crops
   const buf    = Buffer.from(input.faceCropB64, 'base64')
   const stats  = await sharp(buf).greyscale().stats()
   const bright = stats.channels[0].mean
@@ -57,7 +46,7 @@ export async function refineFace(input: {
     image:   file as any,
     prompt,
     size:    '1024x1024',
-    quality: 'high' as any,  // hero face deserves hero quality
+    quality: 'high' as any,
     n:       1,
   })
 
@@ -75,8 +64,8 @@ function buildPrompt(p: PersonIdentity | null, attempt: number): string {
     : `(No structured identity profile available. Use the source crop as the absolute reference. Match age, hair, expression, and every facial feature exactly.)`
 
   const retryReinforcement = attempt > 1
-    ? `\nRETRY ATTEMPT ${attempt} — PRIORITIZE LIKENESS OVER STYLIZATION:
-Previous attempts didn't match closely enough. Treat this face as a portrait sculpture commission. Match every feature directly from the source crop.\n`
+    ? `\nRETRY ATTEMPT ${attempt} — PRIORITIZE LIKENESS:
+Previous attempts didn't match closely enough. Treat this face as a portrait sculpture commission. Match every feature directly from the source crop. Reduce stylization further.\n`
     : ''
 
   return [
@@ -90,17 +79,18 @@ Previous attempts didn't match closely enough. Treat this face as a portrait scu
 - Tight cropped composition — bust and a hint of upper chest`,
 
     `LIKENESS — ABSOLUTE PRIORITY:
-This is a portrait sculpture of a real, specific person. Every feature carries through from the source crop. The sculpt must be unmistakably them.`,
+This is a portrait sculpture of a real, specific person. Every identity-critical feature carries through from the source crop. The sculpt must be unmistakably them.`,
 
     identityBlock,
 
-    `IDENTITY DISCIPLINE — NON-NEGOTIABLE:
+    `IDENTITY DISCIPLINE — NON-NEGOTIABLE (STYLIZATION MUST NOT TOUCH THESE):
 
 AGE PRESERVATION:
 - Render this person at their EXACT age in the source crop
 - If hair is grey or salt-and-pepper, hair stays grey or salt-and-pepper
-- If smile lines, weathered skin, age signals are present, they remain
-- Do not de-age, do not idealize, do not beautify
+- If smile lines, weathered skin, age signals are present, they remain — these are identity, not blemishes
+- Do not de-age, do not idealize age away
+- Stylization smooths surface texture, NEVER reduces apparent age
 
 FACE GEOMETRY:
 - Same face shape (round, oval, square, heart-shaped) as source
@@ -112,36 +102,50 @@ HAIR:
 - Exact color, exact style, exact part
 - If grey, paint it grey. If brown, paint brown. Never substitute.
 
-DISTINGUISHING FEATURES (keep all of them):
+DISTINGUISHING FEATURES (preserve all):
 - Glasses: present iff present in source
 - Facial hair: exact shape, density, color
 - Visible moles, freckles, scars: preserve
-- Ear shape and size: preserve`,
+- Ear shape and size: preserve
+- Body weight indicators (face fullness, jawline): preserve`,
 
     retryReinforcement,
+
+    `STYLIZATION — PREMIUM MINIATURE COLLECTIBLE TREATMENT (~12%):
+
+Apply the gentle stylization of premium hand-painted resin collectibles.
+Aesthetic target: Pixar-adjacent realism — slightly idealized but unmistakably this person.
+
+SOFTEN (these are stylization moves):
+- Skin texture: smooth, subtly painterly — no skin pores, no harsh wrinkle detail (unless they're identity-critical age signals)
+- Edges and contours: cleaner and slightly rounded compared to a scan
+- Fine surface noise: removed — surfaces read as hand-painted resin
+- Eyes: slightly more luminous, catchlights pronounced for life
+- Skin tone: unified with subtle warmth, painterly quality
+
+PRESERVE (never stylize away — see Identity Discipline above):
+- Age, hair color, face geometry, expression, glasses, distinguishing features
+
+Result: "premium handcrafted figurine portrait" — recognizable as this exact person, presented with the warmth of a master sculptor.
+
+NOT chibi, NOT Funko Pop, NOT anime, NOT cartoon. Sideshow / Hot Toys / Iron Studios premium territory.`,
 
     `MATERIAL — PREMIUM PAINTED RESIN COLLECTIBLE:
 - Matte-to-satin painted resin on skin with subtle highlights on cheekbones, brow, nose bridge, chin
 - Hair sculpted with strand definition, painted with color variation (never a flat block)
-- Eyes glossy with sharp catchlights — most identity-critical feature, keep alive
+- Eyes glossy with sharp catchlights — most identity-critical feature
 - Eyebrows and lashes sculpted and painted with detail
-- Skin shows fine painted brushwork at close inspection — hand-finished statue, not photograph
+- Skin shows fine painted brushwork at close inspection`,
 
-Avoid: plastic toy sheen, vinyl PVC look, uniform matte chalkiness, clay texture, 3D-print layer lines.`,
-
-    `STYLIZATION — MINIMAL (5-8%):
-- Slight edge softening
-- Minor simplification of very fine surface detail
-- NOT chibi, NOT cartoon, NOT idealized — premium portrait statue territory
-- Stylization is a light touch — fidelity is the product`,
-
-    `LIGHTING:
+    `LIGHTING — CLEAN STUDIO PORTRAIT:
 - Warm key light from upper-left, ~45° above horizon, soft and broad
 - Face cleanly and flatteringly lit — no harsh shadows across nose, eyes, jaw
 - Sharp catchlights in eyes
 - Soft fill from right
 - Subtle warm rim from behind for separation
-- Shadows soft-edged, slightly to lower-right`,
+- Shadows soft-edged
+
+Lighting is clean and even — no atmospheric mood, no dramatic shadows. The bust must read clearly so it composites cleanly into the surrounding group image.`,
 
     `OUTPUT:
 - Square 1024x1024
@@ -154,9 +158,11 @@ Avoid: plastic toy sheen, vinyl PVC look, uniform matte chalkiness, clay texture
 - Drop or add facial hair vs source
 - Drop glasses present in source
 - Change face shape, nose, or expression
-- Replace with an idealized or generic face`,
+- Replace with an idealized or generic face
+- Slim body weight (preserve face fullness from source)
+- Apply chibi, Funko, or cartoon stylization`,
 
-    'A family member should look at this bust and immediately recognize this exact person at their actual age.',
+    'A family member should look at this bust and immediately recognize this exact person at their actual age — softened by tasteful sculptor\'s warmth, but unmistakably them.',
   ].filter(Boolean).join('\n\n')
 }
 

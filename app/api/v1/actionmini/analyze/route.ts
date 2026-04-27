@@ -18,6 +18,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { moderateUploadedImage } from '@/lib/v1/moderation'
+import { logRejection, deriveUserId } from '@/lib/v1/rejection-log'
+import { checkRateLimit } from '@/lib/v1/rate-limit'
 
 // ── ANALYZE PROMPT ────────────────────────────────────────────
 
@@ -172,6 +175,41 @@ export async function POST(req: NextRequest) {
     const openaiApiKey = process.env.OPENAI_API_KEY
     if (!openaiApiKey) {
       return NextResponse.json({ error: 'OPENAI_API_KEY not set' }, { status: 500 })
+    }
+
+    const userId = deriveUserId(req)
+
+    // ── PRE-FLIGHT MODERATION ────────────────────────────────
+    const mod = await moderateUploadedImage({ imageB64: image_b64, openaiApiKey })
+    if (!mod.allowed) {
+      logRejection({
+        userId,
+        category:  mod.category,
+        verdict:   mod.verdict,
+        imageHash: mod.imageHash,
+        reason:    mod.reason,
+        route:     'actionmini',
+      })
+      const rate = checkRateLimit(userId)
+      return NextResponse.json({
+        error:           mod.reason,
+        category:        mod.category,
+        verdict:         mod.verdict,
+        retryable:       mod.verdict === 'soft',
+        delayMs:         rate.delayMs,
+        rateLimitTier:   rate.tier,
+      }, { status: 422 })
+    }
+
+    // ── RATE LIMIT (image was allowed but user may still have a cooldown) ─
+    const rate = checkRateLimit(userId)
+    if (rate.delayMs > 0) {
+      return NextResponse.json({
+        error:         rate.message || 'Please wait before trying again.',
+        delayMs:       rate.delayMs,
+        rateLimitTier: rate.tier,
+        cooldown:      true,
+      }, { status: 429 })
     }
 
     const openai = new OpenAI({ apiKey: openaiApiKey })

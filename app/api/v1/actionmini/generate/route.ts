@@ -174,6 +174,71 @@ export async function POST(req: NextRequest) {
 
   } catch (err: any) {
     console.error('[actionmini-route] Fatal:', err.message)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    const userMessage = translateGenerationError(err)
+    return NextResponse.json({
+      error:           userMessage.error,
+      hint:            userMessage.hint,
+      retryable:       userMessage.retryable,
+      errorCategory:   userMessage.category,
+    }, { status: 500 })
+  }
+}
+
+// ── ERROR TRANSLATION ─────────────────────────────────────────
+// Convert raw OpenAI / network / pipeline errors into a polished message
+// the user can read. Never leak provider internals (request IDs, model
+// names, raw safety wording).
+function translateGenerationError(err: any): {
+  error:     string
+  hint:      string
+  retryable: boolean
+  category:  'safety' | 'timeout' | 'rate_limit' | 'unknown'
+} {
+  const msg = String(err?.message || err || '').toLowerCase()
+
+  // Safety system rejection — most common when prompts trigger OpenAI's
+  // content classifier on top of the source image
+  if (
+    msg.includes('safety system')      ||
+    msg.includes('safety_violation')   ||
+    msg.includes('content_policy')     ||
+    msg.includes('content policy')     ||
+    msg.includes('rejected by the safety') ||
+    msg.includes('moderation_blocked')
+  ) {
+    return {
+      error:    'This variant couldn\'t be rendered.',
+      hint:     'The combination of mood and style hit a content filter. Try a different mood for this variant, or run a different variant from the same source.',
+      retryable: true,
+      category:  'safety',
+    }
+  }
+
+  // Timeout / network
+  if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('econnreset') || msg.includes('etimedout')) {
+    return {
+      error:    'This variant timed out.',
+      hint:     'The render service was slow to respond. Try running this variant again.',
+      retryable: true,
+      category:  'timeout',
+    }
+  }
+
+  // Rate limit on the upstream model
+  if (msg.includes('rate limit') || msg.includes('rate_limit') || msg.includes('429')) {
+    return {
+      error:    'Too many renders right now.',
+      hint:     'Wait a moment, then try again.',
+      retryable: true,
+      category:  'rate_limit',
+    }
+  }
+
+  // Default — don't leak whatever it actually was
+  return {
+    error:    'This variant couldn\'t be rendered.',
+    hint:     'Try running it again, or try a different variant.',
+    retryable: true,
+    category:  'unknown',
   }
 }

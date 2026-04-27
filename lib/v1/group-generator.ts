@@ -1,315 +1,257 @@
 // group-generator.ts
 // lib/v1/group-generator.ts
 //
-// Group composition generator on gpt-image-1.
+// Generates a group figurine image using Google's Nano Banana
+// (Gemini 2.5 Flash Image) on Replicate.
 //
-// Path A architecture: this pass focuses on COMPOSITION — bodies, poses,
-// gear, base, arrangement, relative scale, lighting unity. Faces will be
-// refined per-face downstream by face-refine, where each face gets full
-// hero pixel budget instead of the 150-200px it gets here in a group of 3-4.
+// PROMPT PHILOSOPHY: very short. Six-word prompts produced the validated
+// outputs ("isometric resin figurine family"). Long prompts with material
+// language and subject-isolation negatives actually HURT output quality —
+// Nano Banana over-honors literal description and loses the transform.
 //
-// The identity prompt blocks are preserved because they still help with:
-//   - Age signals visible in body proportion (kid vs adult)
-//   - Clothing colors and patterns (must match source exactly)
-//   - Hair color (visible from a distance even if face detail is soft)
-//   - Glasses presence (silhouette feature)
-//   - Overall posture and expression (shapes the body language)
-//
-// Cost: ~$0.04/call. With retries up to 3, worst case ~$0.12 for composition
-// before face refinement adds another ~$0.04 × num_people.
+// Each (style, variant) pair maps to a tested prompt template. The user
+// picks a Style (one of four) and a Variant within that style (one of
+// 2-3). Internally, that selects a one-line prompt template into which
+// the analyzer's short scene summary is substituted.
 
-import OpenAI                       from 'openai'
-import sharp                        from 'sharp'
-import { toFile }                   from 'openai/uploads'
-import { GroupAnalysis, PersonIdentity } from './group-analyzer'
+import Replicate from 'replicate'
 
-// ── CORE / HIERARCHY ────────────────────────────────────────────
+const NANO_BANANA_MODEL = 'google/nano-banana-2' as const
 
-const CORE_HIERARCHY_BLOCK = `CORE:
-This is a HERO COLLECTIBLE GROUP FIGURINE — a premium painted resin statue of multiple real people, captured as a product photograph. Not a miniature diorama, not a toy, not a dollhouse scene. A premium statue you'd see on a collector's shelf.
+// ── PUBLIC TYPES ─────────────────────────────────────────────────
 
-SCALE (CRITICAL — NON-NEGOTIABLE):
-The figures must dominate the composition. The group + base occupies 75-85% of the frame area. The tallest figure occupies 75-85% of the frame HEIGHT. This is a hero statue product shot — faces should be large enough to read facial features clearly. Do not shrink the figures to fit a scene — scale the scene to the figures.
+export type SceneStyle = 'figurine' | 'plushy' | 'stop_motion' | 'designer'
 
-ENVIRONMENT (SECONDARY):
-The environment supports the figures and never competes for attention. No wide rooms, no full furniture, no busy desk surfaces. The base is compact and subtle.`
+export type SceneVariant =
+  | 'standard'
+  | 'action_scene'
+  | 'portrait'
+  | 'library_edition'
 
-// ── LIKENESS HEADER ─────────────────────────────────────────────
-
-const LIKENESS_HEADER = `LIKENESS — KEEP EACH PERSON RECOGNIZABLE FROM THE SOURCE:
-
-The source photograph is the absolute primary reference. Sculpt each person so they look clearly like the same person in the photo — same age, same hair, same face shape, same expression, same clothing.`
-
-// ── PER-PERSON BLOCK ────────────────────────────────────────────
-
-function formatPerson(p: PersonIdentity, totalPeople: number): string {
-  const lines = [
-    `PERSON ${p.index + 1} of ${totalPeople} (${p.position}):`,
-    `  Age: ${p.approximate_age}`,
-    `  Age signals (preserve exactly): ${p.age_indicators}`,
-    `  Presentation: ${p.presentation}`,
-    `  Face: ${p.face_shape}, ${p.notable_features}`,
-    `  Hair color (paint exactly): ${p.hair_color}`,
-    `  Hair style: ${p.hair_style}`,
-    `  Facial hair: ${p.facial_hair}`,
-    `  Skin tone: ${p.skin_tone}`,
-    `  Glasses: ${p.glasses}`,
-    `  Clothing (colors and garment exact): ${p.clothing}`,
-    `  Expression (sculpt exactly): ${p.expression}`,
-    `  Pose: ${p.pose}`,
-  ]
-  if (p.notable) lines.push(`  Notable detail: ${p.notable}`)
-  return lines.join('\n')
+export interface GroupGenerateOptions {
+  /** Short scene summary from the analyzer. REQUIRED. ~5-12 words. */
+  description:    string
+  /** User-supplied plaque title. Appended only if present. */
+  plaqueTitle?:   string
+  /** Suppress plaque text. */
+  noPlaque?:      boolean
+  /** Style selection. */
+  sceneStyle:     SceneStyle
+  /** Variant within the style. Default 'standard'. */
+  sceneVariant?:  SceneVariant
+  /** Free-text user notes appended to the prompt */
+  notes?:         string
+  /** Aspect ratio. Default '1:1'. */
+  aspectRatio?:   '1:1' | '4:3' | '3:4' | '16:9' | '9:16'
+  /** Resolution. Default '1K'. */
+  resolution?:    '1K' | '2K' | '4K'
 }
 
-// ── IDENTITY DISCIPLINE ─────────────────────────────────────────
-
-const IDENTITY_DISCIPLINE_BLOCK = `IDENTITY DISCIPLINE (NON-NEGOTIABLE):
-
-AGE PRESERVATION — MOST IMPORTANT:
-- Render each person at their EXACT age in the source photograph
-- DO NOT render older adults as middle-aged
-- DO NOT render middle-aged adults as young adults
-- DO NOT render adults as children, or children as older
-- If hair is grey or salt-and-pepper in the source, hair is grey or salt-and-pepper in the output
-- If smile lines, weathered skin, or other age signals are present in the source, they are present in the output
-
-LIKENESS:
-- Every facial feature carries through: nose, eyes, mouth, jaw shape, cheekbones, distinguishing marks
-- Expression is sculpted and painted exactly as in source
-- Hair color and style match source exactly — never substitute
-- Glasses present if present in source, absent if absent
-- Facial hair (or absence) preserved exactly
-
-CLOTHING:
-- Colors and garment types match source exactly
-- Patterns (stripes, stars, prints) preserved
-- Layering and fit preserved
-
-CONTROLLED STYLIZATION ONLY:
-- Slight edge softening, minor simplification of very fine detail
-- NO cartooning, NO chibi proportions, NO idealization, NO beautifying
-- The product is recognition by family — every concession to style is a concession to fidelity`
-
-// ── STYLIZATION ─────────────────────────────────────────────────
-
-const STYLIZATION_BLOCK_DEFAULT = `STYLIZATION — LIGHT TOUCH (5-10%):
-- Heads slightly larger (~5%) for clarity at small scale
-- Bodies slightly slimmer (~10%) for clean silhouette
-- Edges and forms slightly cleaner than reality
-- Faces remain photoreal-faithful — stylization affects body silhouette, not face geometry
-
-NOT chibi, NOT Funko, NOT anime, NOT cartoon. Premium statue territory.`
-
-const STYLIZATION_BLOCK_REINFORCED = `STYLIZATION — MINIMAL (RETRY: PRIORITIZE LIKENESS):
-Previous attempts drifted from the source. Reduce stylization to almost nothing:
-- Heads only ~2% larger
-- Bodies only ~5% slimmer
-- Treat each face as a portrait sculpture — match the source as closely as possible`
-
-// ── MATERIAL ────────────────────────────────────────────────────
-
-const MATERIAL_BLOCK = `MATERIAL LANGUAGE — PREMIUM PAINTED RESIN COLLECTIBLE (NOT A TOY):
-
-- Matte-to-satin painted resin on skin — subtle highlights on cheekbones, nose bridge, brow, chin
-- Hair sculpted with strand detail and painted with color variation — never a flat block of color
-- Eyes: glossy resin with sharp catchlights — sharp and alive
-- Eyebrows and eyelashes: sculpted and painted with detail
-- Clothing: simplified sculpted fabric forms with painted seams, prints, and texture
-- Hard accessories (glasses, jewelry, buttons): semi-gloss to gloss
-- Skin shows painted brushwork at close inspection — not a photograph, a hand-finished statue
-
-Avoid:
-- Plastic toy sheen, vinyl PVC look
-- Uniform matte chalkiness
-- Clay or polymer-clay texture
-- 3D-print layer lines`
-
-// ── BASE ────────────────────────────────────────────────────────
-
-const BASE_BLOCK = `BASE — COMPACT AND SUBTLE:
-- Polished dark walnut plinth, oval or rounded-rectangular shape
-- Thin profile (~1cm at scale) — visible but not dominant
-- Figured wood grain, satin finish
-- Subtle terrain on top: a hint of texture matching the implied ground in source — minimal
-- All figures grounded firmly on the base, no floating, no warping at contact`
-
-// ── COMPOSITION ─────────────────────────────────────────────────
-
-const COMPOSITION_BLOCK = `COMPOSITION AND FRAMING:
-
-SCALE:
-- Figures + base occupy 75-85% of the frame area
-- Tallest figure occupies 75-85% of frame HEIGHT
-- Faces sized so features (eyes, nose, mouth, expression) read clearly
-
-MARGIN — TIGHT BUT NOT CLIPPING:
-- 8-12% room around the figures on all sides
-- The base is fully visible — bottom edge of base above the bottom edge of frame
-- Top of tallest figure has 8-12% headroom above
-
-ARRANGEMENT:
-- Match the source group arrangement exactly — same left-to-right order, same physical contact, same relative spacing
-- Children stay shorter than adults (preserve relative scale from source)
-- Bodies and gear positioned as in source
-
-FOCUS:
-- Razor-sharp across all figures and the base — every face crisp and clear
-- Background softens beyond the figures only — never on the figures or base`
-
-// ── CAMERA ──────────────────────────────────────────────────────
-
-const CAMERA_BLOCK = `CAMERA — HERO STATUE PRODUCT SHOT:
-
-20-30° above horizontal — slightly elevated, looking nearly LEVEL at the figures with a soft downward tilt. Classic hero angle for premium collectible figures (Sideshow, Hot Toys, Prime 1) — gives figures presence and lets faces face the camera at full readability.
-
-NOT top-down. NOT a diorama overview. NOT a 45° looking-down shot.
-
-Expected view:
-- Faces clearly visible and readable
-- Full bodies head-to-toe
-- Compact base visible at the bottom`
-
-// ── LIGHTING ────────────────────────────────────────────────────
-
-const LIGHTING_BLOCK = `LIGHTING — PREMIUM PRODUCT PHOTOGRAPHY (FACE-PRIORITY):
-
-KEY LIGHT: Warm directional from upper-left, ~45° above horizon. Strong but soft.
-
-FACE LIGHTING (CRITICAL):
-Every face cleanly and flatteringly lit. NO harsh shadows across identity features (nose bridge, under-eye, jaw line). Catchlights in the eyes for life and presence.
-
-FILL: Soft ambient bounce from the right.
-RIM: Subtle warm rim light from behind/above to separate figures from background.
-SHADOWS: Cast slightly to lower-right of figures and base — natural, warm, soft-edged.`
-
-// ── BACKGROUND ──────────────────────────────────────────────────
-
-const BACKGROUND_BLOCK = `BACKGROUND — DARK NEUTRAL STUDIO BACKDROP:
-
-Clean dark or warm-neutral studio backdrop behind the figures. Soft gradient — slightly darker at the edges, slightly lighter behind the subject for rim-light separation.
-
-The backdrop is OUT OF FOCUS with gentle falloff. No horizon, no texture, no objects, no furniture.
-
-NO miniature scene feel. NO real-world environment continuation.`
-
-// ── FORBIDDEN ───────────────────────────────────────────────────
-
-const FORBIDDEN_BLOCK = `DO NOT:
-- Render anyone older or younger than they appear in the source
-- Substitute hair color (grey to brown, blonde to black, etc.)
-- Drop facial hair that's present in source, or add facial hair that isn't
-- Drop glasses that are present in source
-- Replace anyone with a generic, idealized, or "average" face
-- Beautify, slim, or de-age anyone
-- Shrink the figures to fit a scene — scale the scene to the figures
-- Use cartoon, anime, chibi, or Funko proportions
-- Use a top-down or steep-down camera angle
-- Build a wide diorama scene around the figures
-- Add or remove people from the source group
-- Reorder the group
-- Change clothing colors, patterns, or garment types
-- Reinterpret toys or props as real weapons or real military gear`
-
-// ── PUBLIC API ──────────────────────────────────────────────────
-
-export interface RetryHint {
-  attempt:           number
-  reinforceLikeness: boolean
-  reduceStylization: boolean
-}
-
-export interface GenerateGroupResult {
+export interface GroupGenerateResult {
   imageB64:   string
   promptUsed: string
 }
 
-export async function generateGroup(input: {
-  sourceImageB64: string
-  analysis:       GroupAnalysis | null
-  notes?:         string
-  retryHint?:     RetryHint
-  openaiApiKey:   string
-}): Promise<GenerateGroupResult> {
-  const openai = new OpenAI({ apiKey: input.openaiApiKey })
+// ── VARIANT METADATA ─────────────────────────────────────────────
+// Exposed for UI consumption. The frontend reads VARIANTS_BY_STYLE
+// to render the variant picker per card.
 
-  // Build per-person blocks
-  let peopleBlocks: string
-  let sceneBlock:   string
-  if (input.analysis && input.analysis.people.length > 0) {
-    const total = input.analysis.num_people
-    peopleBlocks = input.analysis.people
-      .map(p => formatPerson(p, total))
-      .join('\n\n')
-    sceneBlock = `SCENE NOTES (FROM SOURCE):
-- People: ${input.analysis.num_people}
-- Arrangement: ${input.analysis.arrangement}
-- Mood: ${input.analysis.mood}
-- Setting: ${input.analysis.setting}
+export interface VariantInfo {
+  key:   SceneVariant
+  label: string
+}
 
-Reproduce the exact arrangement, spacing, and physical contact between people from the source photograph.`
-  } else {
-    peopleBlocks = `(Reference notes unavailable — work directly from the source photograph. Sculpt every person visible, in the order they appear left to right, with their exact age, hair, clothing, and expression.)`
-    sceneBlock = `SCENE NOTES:
-Use the source photograph as the sole reference for arrangement, spacing, age, and likeness.`
+export const VARIANTS_BY_STYLE: Record<SceneStyle, VariantInfo[]> = {
+  figurine: [
+    { key: 'standard',     label: 'Standard'     },
+    { key: 'action_scene', label: 'Action Scene' },
+    { key: 'portrait',     label: 'Portrait'     },
+  ],
+  plushy: [
+    { key: 'standard',     label: 'Standard'     },
+    { key: 'action_scene', label: 'Action Scene' },
+  ],
+  stop_motion: [
+    { key: 'standard',     label: 'Standard'     },
+    { key: 'action_scene', label: 'Action Scene' },
+  ],
+  designer: [
+    { key: 'standard',        label: 'Standard'        },
+    { key: 'library_edition', label: 'Library Edition' },
+  ],
+}
+
+// ── PROMPT TEMPLATES ─────────────────────────────────────────────
+// Each template is a function that takes the scene summary and returns
+// the full opener. Tested empirically — these phrasings produce the
+// validated outputs. Don't add "premium collectible quality" or
+// "displayed on a plinth" or "highly detailed and accurate" generically;
+// where templates already include qualifier language, that's intentional.
+
+type PromptTemplate = (scene: string) => string
+
+const PROMPT_TEMPLATES: Record<SceneStyle, Partial<Record<SceneVariant, PromptTemplate>>> = {
+  figurine: {
+    standard:     (s) => `An isometric resin figurine of ${s}. Highly detailed and accurate.`,
+    action_scene: (s) => `An isometric resin figurine of ${s}. Make it an action shot. Highly detailed and accurate.`,
+    portrait:     (s) => `Resin figurine of ${s}. Highly detailed and accurate.`,
+  },
+  plushy: {
+    standard:     (s) => `Puffy plushie figurines of ${s}, surrounded by other plushies on a toy store shelf.`,
+    action_scene: (s) => `Puffy plushie figurines of ${s}. Make it an action shot.`,
+  },
+  stop_motion: {
+    standard:     (s) => `1960s stop motion puppets from a television show, of ${s}. Visible jointed articulation at knees, elbows, and shoulders. Fabric clothing and pants stitched onto segmented puppet bodies. Set on a 1960s sci-fi television production set with painted backdrop panels and practical stage lighting.`,
+    action_scene: (s) => `1960s stop motion puppets from a television show, of ${s}. Visible jointed articulation at knees, elbows, and shoulders. Make it an action shot on a 1960s sci-fi television production set.`,
+  },
+  designer: {
+    standard:
+      (s) => `Expensive designer figurines made from high quality porcelain, of ${s}. Detail level high. Displayed inside an open red velvet presentation case with custom-fit velvet cutouts cradling each figure. Soft museum lighting.`,
+    library_edition:
+      (s) => `Expensive designer figurines made from high quality porcelain, of ${s}. Collector's edition setting in a library with god-rays and warm lamps in the distance. Detail level high. Expensive base with gold trim and engraved title plate.`,
+  },
+}
+
+function resolveTemplate(style: SceneStyle, variant: SceneVariant): PromptTemplate {
+  const styleTemplates = PROMPT_TEMPLATES[style]
+  return styleTemplates[variant] ?? styleTemplates.standard!
+}
+
+// ── PROMPT ASSEMBLY ──────────────────────────────────────────────
+
+function buildPrompt(opts: GroupGenerateOptions): string {
+  const variant = opts.sceneVariant ?? 'standard'
+  const template = resolveTemplate(opts.sceneStyle, variant)
+  const parts: string[] = [template(opts.description)]
+
+  // Plaque — only mention explicitly if user has an opinion.
+  // If neither set: let Nano Banana auto-decide.
+  const userPlaque = (opts.plaqueTitle ?? '').replace(/["']/g, '').trim()
+  if (opts.noPlaque) {
+    parts.push('No plaque or text.')
+  } else if (userPlaque) {
+    parts.push(`Brass plaque reading "${userPlaque}".`)
   }
 
-  const stylizationBlock = input.retryHint?.reduceStylization
-    ? STYLIZATION_BLOCK_REINFORCED
-    : STYLIZATION_BLOCK_DEFAULT
+  if (opts.notes) {
+    parts.push(opts.notes.trim())
+  }
 
-  const retryReinforcement = input.retryHint?.reinforceLikeness
-    ? `RETRY — PRIORITIZE LIKENESS (ATTEMPT ${input.retryHint.attempt}):
-Previous attempts didn't match the source closely enough. Treat the source photograph as the absolute reference. Pay special attention to AGE — if anyone in the previous attempt looked younger or older than the source, fix that first.`
-    : ''
+  return parts.join(' ')
+}
 
-  const prompt = [
-    'Transform the provided source photograph into a museum-quality painted resin group collectible figurine — a premium statue of these real people, photographed as a product shot.',
-    CORE_HIERARCHY_BLOCK,
-    LIKENESS_HEADER,
-    peopleBlocks,
-    sceneBlock,
-    IDENTITY_DISCIPLINE_BLOCK,
-    retryReinforcement,
-    stylizationBlock,
-    MATERIAL_BLOCK,
-    BASE_BLOCK,
-    COMPOSITION_BLOCK,
-    CAMERA_BLOCK,
-    LIGHTING_BLOCK,
-    BACKGROUND_BLOCK,
-    input.notes ? `ADDITIONAL NOTES:\n${input.notes}` : '',
-    FORBIDDEN_BLOCK,
-    'A family member should look at this miniature and recognize every person at their actual age. Toy props remain toys (preserve their plastic look, colors, LEDs); never reinterpret toys as real weapons.',
-  ].filter(Boolean).join('\n\n')
+// ── REPLICATE CALL ───────────────────────────────────────────────
 
-  // Brightness normalization — same as before
-  const srcBuf = Buffer.from(input.sourceImageB64, 'base64')
-  const stats  = await sharp(srcBuf).greyscale().stats()
-  const bright = stats.channels[0].mean
-  const lift   = bright < 165 ? Math.min(165 / bright, 2.0) : 1.0
-  const prepared = lift > 1.0
-    ? await sharp(srcBuf).modulate({ brightness: lift }).png().toBuffer()
-    : await sharp(srcBuf).png().toBuffer()
+async function callNanoBanana(input: {
+  prompt:            string
+  sourceImageB64:    string
+  replicateApiToken: string
+  aspectRatio:       string
+  resolution:        string
+}): Promise<string> {
+  const replicate = new Replicate({ auth: input.replicateApiToken })
+  const sourceDataUrl = `data:image/jpeg;base64,${input.sourceImageB64}`
 
-  const file = await toFile(prepared, 'source.png', { type: 'image/png' })
-
-  const result = await openai.images.edit({
-    model:   'gpt-image-1',
-    image:   file as any,
-    prompt,
-    size:    '1024x1024',
-    quality: 'high' as any,
-    n:       1,
+  const output: any = await replicate.run(NANO_BANANA_MODEL, {
+    input: {
+      prompt:        input.prompt,
+      image_input:   [sourceDataUrl],
+      aspect_ratio:  input.aspectRatio,
+      resolution:    input.resolution,
+      output_format: 'jpg',
+    },
   })
 
-  const b64 = result.data?.[0]?.b64_json
-  if (!b64) throw new Error('group_generate_no_image_returned')
+  return await extractImageB64(output)
+}
 
-  const peopleCount = input.analysis?.num_people ?? '?'
-  console.log(
-    `[group-generator] gpt-image-1 group of ${peopleCount}` +
-    (input.retryHint ? ` (attempt ${input.retryHint.attempt})` : '')
-  )
-  return { imageB64: b64, promptUsed: prompt }
+// ── MAIN EXPORT ──────────────────────────────────────────────────
+
+export async function generateGroup(input: {
+  sourceImageB64:    string
+  replicateApiToken: string
+  options:           GroupGenerateOptions
+}): Promise<GroupGenerateResult> {
+  const opts = input.options
+  const variant = opts.sceneVariant ?? 'standard'
+  const prompt = buildPrompt(opts)
+  console.log(`[group-generator] style=${opts.sceneStyle} variant=${variant} prompt: ${prompt}`)
+
+  const imageB64 = await callNanoBanana({
+    prompt,
+    sourceImageB64:    input.sourceImageB64,
+    replicateApiToken: input.replicateApiToken,
+    aspectRatio:       opts.aspectRatio ?? '1:1',
+    resolution:        opts.resolution  ?? '1K',
+  })
+
+  return { imageB64, promptUsed: prompt }
+}
+
+// ── OUTPUT EXTRACTION (Replicate SDK varies; handle all known shapes) ──
+
+async function extractImageB64(output: any): Promise<string> {
+  if (typeof output === 'string') {
+    return await fetchToB64(output)
+  }
+  if (Array.isArray(output)) {
+    if (output.length === 0) throw new Error('nano_banana_empty_array')
+    return await extractImageB64(output[0])
+  }
+  if (output && typeof output === 'object') {
+    if (typeof output.url === 'function') {
+      const url = output.url()
+      const urlStr = typeof url === 'string' ? url : (url instanceof URL ? url.toString() : null)
+      if (urlStr) return await fetchToB64(urlStr)
+    }
+    if (typeof output.url === 'string') {
+      return await fetchToB64(output.url)
+    }
+    if (typeof output.getReader === 'function' || typeof output[Symbol.asyncIterator] === 'function') {
+      const buf = await streamToBuffer(output)
+      return buf.toString('base64')
+    }
+    if (output instanceof ArrayBuffer || ArrayBuffer.isView(output)) {
+      return Buffer.from(output as any).toString('base64')
+    }
+    for (const key of ['image', 'output', 'image_url', 'data']) {
+      if (typeof output[key] === 'string') {
+        return await fetchToB64(output[key])
+      }
+    }
+  }
+
+  const typeInfo = {
+    typeof:      typeof output,
+    isArray:     Array.isArray(output),
+    constructor: output?.constructor?.name,
+    keys:        output && typeof output === 'object' ? Object.keys(output) : null,
+    proto:       output && typeof output === 'object' ? Object.getOwnPropertyNames(Object.getPrototypeOf(output) || {}) : null,
+  }
+  console.error('[group-generator] unrecognized output shape:', typeInfo)
+  throw new Error(`nano_banana_unexpected_output: ${JSON.stringify(typeInfo)}`)
+}
+
+async function fetchToB64(url: string): Promise<string> {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`nano_banana_fetch_failed: ${res.status} ${res.statusText}`)
+  const buf = Buffer.from(await res.arrayBuffer())
+  return buf.toString('base64')
+}
+
+async function streamToBuffer(stream: any): Promise<Buffer> {
+  const chunks: Buffer[] = []
+  if (typeof stream.getReader === 'function') {
+    const reader = stream.getReader()
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      chunks.push(Buffer.from(value))
+    }
+  } else {
+    for await (const chunk of stream) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+    }
+  }
+  return Buffer.concat(chunks)
 }

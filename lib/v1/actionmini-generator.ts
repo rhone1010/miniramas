@@ -2,8 +2,8 @@
 // lib/v1/actionmini-generator.ts
 //
 // Routes preset to the correct prompt builder. Two non-card presets:
-//   - insitu  — outdoor editorial diorama (default, locked at v11)
-//   - museum  — stubbed to In-Situ until built
+//   - insitu  — outdoor editorial diorama (locked at v11)
+//   - museum  — desk presentation in curator's study
 //
 // NOTE: collectable_card has its own dedicated path in the route — it does NOT
 // flow through this generator. See actionmini-route.ts and actionmini-card.ts.
@@ -16,6 +16,10 @@ import {
   ActionMiniHero,
   ActionMiniSecondaryFigures,
 } from './actionmini-insitu'
+import {
+  buildMuseumPrompt,
+  ActionMiniMuseumInput,
+} from './actionmini-museum'
 
 export type ActionMiniPreset = 'insitu' | 'museum' | 'collectable_card'
 
@@ -41,31 +45,46 @@ export async function generateActionMini(
   input: ActionMiniGenerateInput
 ): Promise<{ imageB64: string; promptUsed: string; preset: ActionMiniPreset }> {
 
-  let preset: ActionMiniPreset = input.preset || 'insitu'
+  const preset: ActionMiniPreset = input.preset || 'insitu'
   if (preset === 'collectable_card') {
     throw new Error('[actionmini-generator] collectable_card is handled by route directly — do not call generateActionMini for it')
   }
+
+  // Build the correct prompt for the preset
+  let prompt: string
   if (preset === 'museum') {
-    console.warn(`[actionmini] preset 'museum' not yet implemented — falling through to In-Situ`)
-    preset = 'insitu'
+    const museumInput: ActionMiniMuseumInput = {
+      kineticMedium:        input.kineticMedium,
+      actionDescription:    input.actionDescription,
+      freezeMomentQuality:  input.freezeMomentQuality,
+      hero:                 input.hero,
+      secondaryFigures:     input.secondaryFigures,
+      distinctiveFeatures:  input.distinctiveFeatures,
+      sourceLighting:       input.sourceLighting,
+      displayName:          input.displayName,
+      mood:                 input.mood,
+      plaqueText:           input.plaqueText,
+      notes:                input.notes,
+    }
+    prompt = buildMuseumPrompt(museumInput)
+  } else {
+    // 'insitu' (default)
+    const insituInput: ActionMiniInSituInput = {
+      kineticMedium:        input.kineticMedium,
+      actionDescription:    input.actionDescription,
+      freezeMomentQuality:  input.freezeMomentQuality,
+      hero:                 input.hero,
+      secondaryFigures:     input.secondaryFigures,
+      environment:          input.environment,
+      distinctiveFeatures:  input.distinctiveFeatures,
+      sourceLighting:       input.sourceLighting,
+      displayName:          input.displayName,
+      mood:                 input.mood,
+      plaqueText:           input.plaqueText,
+      notes:                input.notes,
+    }
+    prompt = buildInSituPrompt(insituInput)
   }
-
-  const sharedInput: ActionMiniInSituInput = {
-    kineticMedium:        input.kineticMedium,
-    actionDescription:    input.actionDescription,
-    freezeMomentQuality:  input.freezeMomentQuality,
-    hero:                 input.hero,
-    secondaryFigures:     input.secondaryFigures,
-    environment:          input.environment,
-    distinctiveFeatures:  input.distinctiveFeatures,
-    sourceLighting:       input.sourceLighting,
-    displayName:          input.displayName,
-    mood:                 input.mood,
-    plaqueText:           input.plaqueText,
-    notes:                input.notes,
-  }
-
-  const prompt = buildInSituPrompt(sharedInput)
 
   // ── SOURCE PREP ──────────────────────────────────────────────
   const srcBuf = Buffer.from(input.sourceImageB64, 'base64')

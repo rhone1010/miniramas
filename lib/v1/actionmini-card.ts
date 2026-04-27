@@ -10,7 +10,8 @@
 // Key inversions vs In-Situ:
 //   - NO plinth, NO walnut base — card frame is the only frame
 //   - Scene fills card edge-to-edge (no diorama-on-display)
-//   - artwork_style: '3d' (photorealistic) | 'impressionist' (painterly)
+//   - Painterly only — Action Mini cards are always rendered as dimensional painted
+//     card art (MTG mythic / Hearthstone hero / premium fantasy trading card aesthetic)
 //   - Frame-breaking required (action elements project past foil border)
 //   - All text is post-processed SVG on back, never AI-rendered
 //   - Bypasses normal pipeline (no levels, no expand)
@@ -22,7 +23,9 @@ import sharp from 'sharp'
 const CARD_W = 1024
 const CARD_H = 1536  // 2:3 portrait — closest gpt-image-1 size to 5:7 playing card
 
-export type CardArtworkStyle = '3d' | 'impressionist'
+// artwork_style is preserved as a typed field for backward compat, but Action Mini
+// cards are always rendered Painterly. The field is accepted and ignored.
+export type CardArtworkStyle = 'painterly' | 'impressionist' | '3d'
 
 export interface ActionMiniCardHero {
   age_range?:            string
@@ -59,7 +62,6 @@ export interface ActionMiniCardSecondaryFigures {
 const MOODS: Record<string, string> = {
   golden:   'MOOD: Warm golden light — late afternoon sun, honey highlights, long warm shadows, nostalgic atmosphere.',
   dramatic: 'MOOD: Dramatic — charged weather, intense directional light, emotionally weighted atmosphere. The hero is fully lit and sharp; weather and mood live in the surrounding world.',
-  peaceful: 'MOOD: Peaceful — soft diffused light, low contrast, contemplative.',
   vivid:    'MOOD: Bright and vivid — peak clarity, saturated color, the action at its most alive.',
 }
 
@@ -110,7 +112,7 @@ const FRAME_BREAKING_BY_MEDIUM: Record<string, string> = {
   skate:      '- A grabbed board edge or raised hand extends past the TOP foil border\n- Wheel spray, dust, or sparks spill past the BOTTOM foil border\n- A ramp lip or trick element may project past a SIDE border',
   bike:       '- Front wheel, fork, or rider arm extends past the TOP foil border\n- Dirt spray, dust, or rear-tire chunks spill past the BOTTOM foil border\n- A handlebar end or trailing dust may project past a SIDE border',
   climb:      '- A reaching hand or chalk puff extends past the TOP foil border\n- A hanging foot, rope, or rock spall spills past the BOTTOM foil border\n- A rock formation or harness loop may project past a SIDE border',
-  run:        '- A raised arm, knee, or hair extends past the TOP foil border\n- Heel-strike dust spills past the BOTTOM foil border\n- A trailing leg or stride debris may project past a SIDE border',
+  run:        '- A raised arm, knee, or hair extends past the TOP foil border\n- Heel-strike dust spills past the BOTTOM foil border\n- A trailing leg or stride particles may project past a SIDE border',
   dance:      '- An extended hand, hair, or fabric extends past the TOP foil border\n- Skirt or fabric flow spills past the BOTTOM foil border\n- An outstretched leg or sleeve may project past a SIDE border',
   combat:     '- A reaching arm, fist, or extended leg projects past the TOP or SIDE foil border\n- A pinned figure\'s outstretched limb extends past the BOTTOM foil border\n- The dominant figure\'s shoulder or hair may project past a SIDE border with implied weight and motion',
   other:      '- A high-energy element extends past the TOP foil border\n- A foreground motion element spills past the BOTTOM foil border\n- A side element may project past LEFT or RIGHT border',
@@ -137,58 +139,17 @@ async function buildCardFront(input: {
 
   // Scene block varies by artwork style.
   // '3d'           — photorealistic cinematic rendering, stylized atmospheric environment, NO plinth.
-  // 'impressionist' — DIMENSIONAL PAINTERLY: photoreal dimensional form with painterly surface,
-  //                   stylized atmospheric environment, NO plinth.
-  // In BOTH cases the card frame IS the bounding container, and the environment is STYLIZED
-  // ATMOSPHERIC — not a literal photographic backdrop.
-  const sceneBlock = input.artworkStyle === '3d'
-    ? `SCENE ON THE CARD — CINEMATIC ACTION CARD ART (PHOTOREAL, ELEVATED):
-
-The image is the front face of a premium collector card — like a Topps Chrome rookie, Panini Spectra mythic, or a high-end sports art card. Photorealistic at its core, but cinematically elevated and graphically composed. NOT a documentary photograph. NOT a stock action shot. This is a CARD — the action treated as premium card art.
-
-ACTION:
-${input.actionDescription || 'A dynamic action moment.'}
-${input.freezeMomentQuality ? `Freeze instant: ${input.freezeMomentQuality}` : ''}
-
-HERO:
-${heroDesc || 'The hero figure from the source photograph.'}
-
-ENVIRONMENT — STYLIZED ATMOSPHERIC, NOT LITERAL:
-The hero performs in an environment SUGGESTED by the action's setting (${input.environment}) but rendered as a STYLIZED ATMOSPHERIC backdrop — not a literal photograph of that place.
-- Recognizable color and mood of the setting (track-orange and stadium-blue for hurdling; deep ocean and crashing wave-blues for surf; saturated forest greens with sun shafts for trail bike; mountain alpine blue and snow-glare for ski; sun-bleached concrete for skate; alpine rock orange for climb)
-- Volumetric atmospheric haze with visible god-rays, light shafts, or stadium-tunnel light
-- Soft bokeh glints and atmospheric particulate suggesting the setting without resolving into a literal scene
-- Color graded as a unified tonal mood — deep saturated background, hero pops in clean light
-- NO literal stadium photo, NO documentary forest backdrop, NO recognizable specific location — this is a STYLIZED MOOD ENVIRONMENT in the action's color palette
-
-CRITICAL — THE CARD IS THE ONLY FRAME:
-NO turned-wood plinth inside the card. NO circular base. NO miniature-on-a-plinth product shot. NO diorama visible. NO walnut rim. NO pedestal. NO real-world desk surround beyond the frame edges.
-The foil card border IS the bounding container. The action fills the entire artwork zone naturally, edge to edge, at full real-world scale.
-
-AESTHETIC — CINEMATIC SPORTS CARD ART:
-- Razor-sharp detail on the hero — every gear texture, muscle definition, expression, fabric
-- Heightened cinematic color grading — deep blacks, luminous highlights, rich saturated mid-tones
-- DRAMATIC directional light — strong rim light, backlit hero against atmospheric environment, light shafts cutting through air
-- Atmospheric volume visible — the air between hero and backdrop has texture, haze, light interaction
-- Slight wide-lens dynamic feel — hero pose intensified, action emphasized, hero appears to project toward viewer
-- Hero is the BRIGHTEST, sharpest element — environment recedes into mood
-- NOT documentary photography. NOT a stock photo. THIS IS PREMIUM SPORTS CARD ART rendered photoreal
-
-EXAMPLES OF THE RIGHT AESTHETIC:
-- Topps Chrome rookie card photographed straight-on
-- Panini Spectra mythic insert
-- A Red Bull Photography editorial image color-graded for a card series
-- Cinematic film still pushed for poster art (Deakins / Lubezki)
-- A high-end fight/sports promo poster — hero rim-lit against atmospheric backdrop`
-
-    : `SCENE ON THE CARD — DIMENSIONAL PAINTED CARD ART (3D RENDER WITH PAINTED FINISH):
+  // PAINTERLY ONLY — Action Mini cards are always rendered as dimensional painted card art.
+  // Reference: MTG mythic rare (Manchess/Giancola), Hearthstone hero portrait, premium fantasy
+  // trading card with painted finish and real 3D depth.
+  const sceneBlock = `SCENE ON THE CARD — DIMENSIONAL PAINTED CARD ART (PAINTERLY HERO ART):
 
 REFERENCE THE FOLLOWING SPECIFIC AESTHETIC FIRST:
 - A Magic the Gathering MYTHIC RARE card by Greg Manchess, Donato Giancola, or Chase Stone
 - A HEARTHSTONE hero portrait with dimensional sculpted form
 - A premium FANTASY TRADING CARD with painted finish but real 3D depth
-- A PIXAR character rendered with a painted texture pass
-- A digital painted character render where the character pops in 3D and the surface reads as paint
+- A digital painted character render where the figure pops in 3D and the surface reads as paint
+- An exceedingly beautiful, expensive, highly-illustrated action art card
 
 THIS IS NOT:
 - A flat oil painting like Monet, Renoir, Sorolla, or any Impressionist
@@ -207,24 +168,54 @@ ACTION:
 ${input.actionDescription || 'A dynamic action moment.'}
 ${input.freezeMomentQuality ? `Freeze instant: ${input.freezeMomentQuality}` : ''}
 
-HERO:
+HERO — IDENTITY MUST MATCH THE SOURCE PHOTOGRAPH EXACTLY:
 ${heroDesc || 'The hero figure from the source photograph.'}
 
-ENVIRONMENT — PAINTED ATMOSPHERIC, NOT LITERAL:
-The hero performs in an environment SUGGESTED by the setting (${input.environment}) but rendered as a STYLIZED PAINTED ATMOSPHERIC backdrop — paint-textured color field in the setting's palette with painterly light effects. NO literal photograph backdrop. NO specific recognizable location.
+HERO FIDELITY (CRITICAL — NON-NEGOTIABLE):
+The painted figure on this card must be UNMISTAKABLY THE SAME PERSON shown in the source photograph. This is a portrait of a specific real person, painted in a premium illustrated style — not a generic athlete in their general look.
 
-The background recedes with looser brushwork while the hero is more crisply rendered with full dimensional lighting. Background painted with broader strokes; hero painted with finer detail and sharper dimensional form.
+- FACE: Render the hero's actual facial structure as painted — same face shape, same features, same expression. Painted style does NOT mean generalized face.
+- GEAR COLORS: Every named color in the source photo carries through exactly. Jersey color, helmet color, gloves color, shoe color, accessory color — all painted at full saturation, exact match to source. Gear is the primary identity anchor.
+- HAIR: Same color, same length, same style as the source. If a ponytail is in the source, paint a ponytail. If short hair, paint short hair.
+- BODY POSITION: The pose from the source photograph preserved exactly — every limb angle, lean, grip, balance.
+- AGE AND BUILD: The hero reads as the same age and build as the source. Painted style is the topcoat — the figure underneath is THIS SPECIFIC PERSON.
+
+The painted treatment is on the SURFACE. The IDENTITY underneath is photographically faithful to the source.
+
+ENVIRONMENT — BLURRY, ATMOSPHERIC, OR SWIRLING PAINTED BACKDROP:
+The hero performs against a stylized painted backdrop — NOT a literal photograph of the action's setting, NOT a recognizable specific location. The background is loose, atmospheric, and painterly:
+- Painted color field in the action's natural palette (track-orange and stadium-blue for hurdling; deep ocean and crashing wave-blues for surf; saturated forest greens with sun shafts for trail bike; mountain alpine blue and snow-glare for ski; dirt-track ochre and sky for moto)
+- Swirling brushstrokes, soft bokeh, painted atmospheric haze allowed and encouraged
+- Loose painterly suggestion of place — color and mood only, never literal architecture or landscape
+- Background recedes; hero is the sharp dimensional focus
+
+KINETIC ENERGY — RENDERED PAINTERLY BUT FULLY PRESENT (CRITICAL):
+The kinetic energy of the action MUST be present and visible — but rendered in the painted style. This is non-negotiable. A static painted portrait without kinetic energy is a FAILURE.
+
+REQUIRED KINETIC ELEMENTS — ALL RENDERED AS PAINTED EFFECTS:
+- DUST, SPRAY, OR PARTICULATE: kicked up from the action point, painted with real volume and brushwork — visible plumes, individual painted droplets or specks, painted scatter around the figure
+- MOTION TRAIL: behind the figure showing where the action came from — painted scuff arcs, tire tracks, foam wakes, footstrike ruts, all rendered as painted marks
+- CONTACT AREA: where the action meets the surface — painted marks, splash zones, displacement, foam — all rendered with painterly texture
+- LIGHT EFFECTS: rim light separating the figure from the backdrop, painted speculars on metal/wet surfaces/skin highlights, painted god-rays or light shafts where atmospherically appropriate, the hero clearly LIT against the surrounding world
+- Any natural ambient effect of the action (sweat, splash, breath in cold air, sun glare on visor) painted in with confidence
+
+INTENSITY SCALES WITH CONTACT (read from source pose):
+- HIGH-CONTACT in source (wheels in dirt, board carving, paddle in water): full painted expression — large painted plumes, thick painted spray, dense painted scatter
+- AIRBORNE in source (mid-jump, hurdle apex, mid-air trick): restrained — minimal painted residue (a thin painted dust trail, a faint painted mark at takeoff, a few suspended painted particles). The figure is clean and gravity-defined, not particle-buried.
+
+The kinetic energy is what makes this an ACTION ART card and not a portrait. It must be visible. Render it painterly.
 
 CRITICAL — THE CARD IS THE ONLY FRAME:
 NO turned-wood plinth inside the card. NO circular base. NO miniature-on-display product shot. NO diorama visible. NO walnut rim. NO pedestal. The foil card border IS the bounding container.
 
 REQUIRED VISUAL CHARACTERISTICS:
 - Hero figure has CLEAR THREE-DIMENSIONAL FORM with rim light separating it from the backdrop
-- Visible BRUSHWORK on hero's skin, fabric, hair, gear — but not at the expense of dimensional structure
+- Visible BRUSHWORK on hero's skin, fabric, hair, gear — but not at the expense of dimensional structure or identity
 - DEEP shadows on the hero's form (under chin, behind near-side limbs, under clothing) showing real volumetric lighting
 - HIGHLIGHTS catch on the hero's most lit surfaces with painted specular detail
 - Hero's edges have CONFIDENT defined silhouette against the painted backdrop — not blurred into the background
 - COLOR is heightened/saturated but applied as paint, not as color filter
+- The hero's face is RECOGNIZABLY the source person's face, painted
 
 REPEAT — IF THE OUTPUT LOOKS LIKE A FLAT IMPRESSIONIST CANVAS WHERE THE FIGURE BLENDS INTO THE BACKGROUND, THE OUTPUT IS WRONG. The figure must POP dimensionally with real lighting and form, painted surface notwithstanding.
 
@@ -253,13 +244,13 @@ Distributed naturally in the action — softer detail, supporting cast, do not c
 
     `KINETIC INTENSITY (CRITICAL — SCALES WITH PHYSICAL CONTACT):
 
-The action shows real kinetic energy — but the AMOUNT of kinetic chaos must MATCH the moment.
+The action shows real kinetic energy — but the amount of kinetic detail must match the moment.
 
 INTENSITY SCALES WITH CONTACT:
-- HEAVY contact moments (wheels gouging dirt, board carving snow, paddle slamming water, grinding rail, sprint footstrike): FULL chaos — large plumes, thick spray, deep impact zones, dense particulate scatter, heavy debris
-- AIRBORNE or LIGHT contact moments (mid-jump, mid-air trick, hurdle apex, peak of bound, gliding stride): RESTRAINED — only the small residue of recent contact (a thin dust trail, a dissipating puff, a faint mark on the takeoff point, a few suspended particles)
+- HIGH-CONTACT moments (wheels in dirt, board carving snow, paddle in water, grinding rail, sprint footstrike): full kinetic expression — large plumes, thick spray, rich contact areas, dense particulate scatter, abundant terrain detail
+- AIRBORNE or LIGHT-CONTACT moments (mid-jump, mid-air trick, hurdle apex, peak of bound, gliding stride): RESTRAINED — only the small residue of recent contact (a thin dust trail, a dissipating puff, a faint mark on the takeoff point, a few suspended particles)
 
-Match the intensity to the pose. A hurdler at jump apex shows minimal dust because feet aren't touching ground. A kayaker plowing into a wave shows full water chaos. A bike rider mid-corner with rear tire grounded shows full dust plume.`,
+Match the intensity to the pose. A hurdler at jump apex shows minimal dust because feet aren't touching ground. A kayaker driving into a wave shows full water chaos. A bike rider mid-corner with rear tire grounded shows full dust plume.`,
 
     `FRAME-BREAKING & DIMENSIONAL PROJECTION (KEY STYLIZATION — MANDATORY):
 
@@ -481,7 +472,8 @@ export async function generateActionMiniCard(input: {
   openaiApiKey:          string
 }): Promise<{ frontB64: string; backB64: string }> {
 
-  const style: CardArtworkStyle = input.artworkStyle || '3d'
+  // Painterly is the only path — artworkStyle field is accepted for compat but ignored
+  const style: CardArtworkStyle = 'painterly'
 
   // Front first — back uses thumbnail extracted from front
   const frontB64 = await buildCardFront({

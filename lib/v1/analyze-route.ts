@@ -1,14 +1,14 @@
 // app/api/v1/groups/analyze/route.ts
 //
-// FULLY BYPASSED — TEMPORARY.
+// Pre-flight tier check. Called by the UI on upload to decide whether
+// the photo can proceed to generation. Does NOT run any generation.
 //
-// Returns proceedable=true for any uploaded image. No face detection,
-// no tier classification, no rejection logic. Lets the user proceed
-// straight to generation regardless of photo content.
-//
-// Re-enable real gatekeeping by restoring the analyzeTier() call below.
+// Returns:
+//   { tier, message, warnings, subjects: [...] }   on success
+//   { error: '...' }                                 on bad input
 
 import { NextRequest, NextResponse } from 'next/server'
+import { analyzeTier } from '@/lib/v1/face-tier'
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,18 +22,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // ── BYPASS: always proceed ─────────────────────────────────
-    return NextResponse.json({
-      tier:             'figurine',
-      proceedable:      true,
-      message:          'Photo accepted. Pick a style to begin.',
-      warnings:         [],
-      subject_count:    1,    // unknown — UI just uses this for display
-      background_faces: 0,
-    })
-
-    // ── ORIGINAL GATEKEEPER (restore by removing the bypass above) ──
-    /*
     const replicateApiKey = process.env.REPLICATE_API_TOKEN
     if (!replicateApiKey) {
       return NextResponse.json(
@@ -41,11 +29,12 @@ export async function POST(req: NextRequest) {
         { status: 500 },
       )
     }
-    const { analyzeTier } = await import('@/lib/v1/face-tier')
+
     const tier = await analyzeTier({
       imageB64:        sourceImageB64,
       replicateApiKey,
     })
+
     return NextResponse.json({
       tier:             tier.tier,
       proceedable:      tier.tier === 'figurine',
@@ -54,7 +43,6 @@ export async function POST(req: NextRequest) {
       subject_count:    tier.subjects.length,
       background_faces: tier.backgroundFaces,
     })
-    */
 
   } catch (err: any) {
     console.error('[groups/analyze]', err.message)
