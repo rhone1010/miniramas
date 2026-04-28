@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import type { Bundle, BundleItem, ChooseOption } from '@/lib/bundles/types'
 import type { SceneStyle, SceneVariant } from '@/lib/v1/group-generator'
+import HighDemandError from '@/components/HighDemandError'
+import GenericError    from '@/components/GenericError'
 
 // ── TYPES ────────────────────────────────────────────────────────
 
@@ -65,6 +67,11 @@ export default function GroupsPage() {
 
   const [stack,    setStack]    = useState<ResultCard[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
+
+  type ErrorOverlay =
+    | { kind: 'high_demand'; requestBody: object; cardId: string }
+    | { kind: 'generic';     message: string }
+  const [errorOverlay, setErrorOverlay] = useState<ErrorOverlay | null>(null)
 
   // Lazy-load bundles when the user reaches a state that needs them.
   useEffect(() => {
@@ -218,13 +225,28 @@ export default function GroupsPage() {
         body:    JSON.stringify(body),
       })
       const data = await res.json()
+
+      // Standardized error envelope from new classifier — open overlay
+      // for the first occurrence and let other concurrent failures fall
+      // through to inline card errors.
+      if (!res.ok) {
+        const code: string | undefined = data.code
+        const msg: string = data.error || `HTTP ${res.status}`
+        setStack((prev) => prev.map((c) =>
+          c.id === card.id ? { ...c, state: 'error', error: msg } : c,
+        ))
+        if (code === 'upstream_overload') {
+          setErrorOverlay((cur) => cur ?? { kind: 'high_demand', requestBody: body, cardId: card.id })
+        } else if (code === 'upstream_error' || code === 'our_error') {
+          setErrorOverlay((cur) => cur ?? { kind: 'generic', message: msg })
+        }
+        return
+      }
+
       setStack((prev) => prev.map((c) => {
         if (c.id !== card.id) return c
         if (data.rejected) {
           return { ...c, state: 'error', error: data.message || "This photo couldn't be used." }
-        }
-        if (data.error) {
-          return { ...c, state: 'error', error: data.error }
         }
         if (!data.result) {
           return { ...c, state: 'error', error: 'No result returned.' }
@@ -279,12 +301,33 @@ export default function GroupsPage() {
 
   const showSidebarContent = phase !== 'idle'
 
+  function retryOverlayCard() {
+    if (!errorOverlay || errorOverlay.kind !== 'high_demand') return
+    const cardId = errorOverlay.cardId
+    setErrorOverlay(null)
+    retryCard(cardId)
+  }
+
   return (
     <>
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap"
       />
+      {errorOverlay?.kind === 'high_demand' && (
+        <HighDemandError
+          product="groups"
+          requestBody={errorOverlay.requestBody}
+          onRetry={retryOverlayCard}
+          onDismiss={() => setErrorOverlay(null)}
+        />
+      )}
+      {errorOverlay?.kind === 'generic' && (
+        <GenericError
+          message={errorOverlay.message}
+          onDismiss={() => setErrorOverlay(null)}
+        />
+      )}
       <div className="g-shell">
         <header className="g-topbar">
           <a className="g-home" href="/index.html">← Home</a>
