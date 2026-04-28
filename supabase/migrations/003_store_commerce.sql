@@ -25,7 +25,9 @@ create table if not exists skus (
 -- user_id references auth.users(id); guest singles use guest_email.
 create table if not exists purchases (
   id                 uuid primary key default gen_random_uuid(),
-  user_id            uuid references auth.users(id),
+  -- Keep the row when an auth user is deleted so accounting history
+  -- survives. user_id becomes null; guest_email (if originally set) stays.
+  user_id            uuid references auth.users(id) on delete set null,
   guest_email        text,
   sku_id             text references skus(id) not null,
   stripe_session_id  text unique not null,
@@ -51,7 +53,9 @@ create index if not exists idx_purchases_session on purchases (stripe_session_id
 create table if not exists entitlements (
   id                    uuid primary key default gen_random_uuid(),
   purchase_id           uuid references purchases(id) not null,
-  user_id               uuid references auth.users(id),
+  -- Forfeit on account delete — the brief's documented default. Logged
+  -- by the /api/v1/account DELETE handler before the cascade fires.
+  user_id               uuid references auth.users(id) on delete cascade,
   guest_email           text,
   locked_style          text,
   locked_variant        text,
@@ -72,7 +76,8 @@ create index if not exists idx_entitlements_job         on entitlements (job_id)
 -- ─── Refund cap (abuse prevention) ─────────────────────────────────
 create table if not exists refund_log (
   id             uuid primary key default gen_random_uuid(),
-  user_id        uuid references auth.users(id),
+  -- Keep audit record after user delete; null out the link.
+  user_id        uuid references auth.users(id) on delete set null,
   guest_email    text,
   entitlement_id uuid references entitlements(id) not null,
   reason         text not null,
