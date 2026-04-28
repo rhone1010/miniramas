@@ -1,8 +1,31 @@
 @import "tailwindcss";
 
+/* miniRama design system — matches public/groups.html and public/index.html */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --bg:            #FAFAF7;
+  --surface:       #FFFFFF;
+  --surface-2:     #F4F2EC;
+  --border:        #E8E4DA;
+  --border-strong: #D4CEC0;
+  --ink:           #1A1814;
+  --ink-2:         #5C564E;
+  --ink-3:         #8E877C;
+  --accent:        #6B5BA8;
+  --accent-hover:  #5A4D90;
+  --accent-soft:   #EFEBF7;
+  --success:       #4A8A6E;
+  --success-soft:  #E8F0EB;
+  --danger:        #A85050;
+  --danger-soft:   #F5EAEA;
+  --warn:          #B8893A;
+  --warn-soft:     #F5EFE5;
+
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, -apple-system, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
 }
 
 @theme inline {
@@ -10,13 +33,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
