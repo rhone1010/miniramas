@@ -96,7 +96,13 @@ create index if not exists idx_refund_log_email_day on refund_log (guest_email, 
 -- The caller decides whether the missing row means 'already_consumed'
 -- (a row exists with status='consumed' for this id) or 'not_found' /
 -- 'wrong_owner' (no row matches the identity guard).
-create or replace function consume_entitlement_atomic(
+-- SETOF return so no-match is an empty array end-to-end. PostgREST
+-- serializes a PL/pgSQL composite NULL as `{ id: null, ... }` rather
+-- than SQL null, which breaks the caller's truthiness check; SETOF
+-- avoids the ambiguity entirely.
+drop function if exists consume_entitlement_atomic(uuid, uuid, text, text, uuid, text);
+
+create function consume_entitlement_atomic(
   p_entitlement_id uuid,
   p_job_id         uuid,
   p_style          text,
@@ -104,12 +110,11 @@ create or replace function consume_entitlement_atomic(
   p_user_id        uuid,
   p_guest_email    text
 )
-returns entitlements
+returns setof entitlements
 language plpgsql
 as $$
-declare
-  updated entitlements;
 begin
+  return query
   update entitlements
      set status         = 'consumed',
          locked_style   = coalesce(locked_style,   p_style),
@@ -124,8 +129,7 @@ begin
      -- must match it. Bundle credits have nulls, so this passes through.
      and (locked_style   is null or locked_style   = p_style)
      and (locked_variant is null or locked_variant = p_variant)
-   returning * into updated;
-  return updated;
+   returning *;
 end;
 $$;
 

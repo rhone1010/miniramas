@@ -143,10 +143,10 @@ export async function consumeEntitlement(args: {
   })
   if (error) throw new Error(`entitlement_consume_failed: ${error.message}`)
 
-  // The SQL function returns the updated row, or zero rows if the guard
-  // failed. supabase-js returns the row object directly (not an array)
-  // for a function returning a single row.
-  if (data) return { ok: true }
+  // The SQL function is RETURNS SETOF entitlements — supabase-js returns
+  // an array. Empty array = guard failed (concurrent winner already
+  // consumed, or owner mismatch, or wrong style/variant on a locked row).
+  if (Array.isArray(data) && data.length > 0) return { ok: true }
 
   // Disambiguate: was the row already consumed, or does it not match the
   // caller's identity / not exist?
