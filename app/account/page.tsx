@@ -64,7 +64,7 @@ export default function AccountPage() {
   }
 
   async function handleDeleteAccount() {
-    if (!confirm('Delete your account? Your remaining credits will be forfeited.')) return
+    if (!confirm('Delete your account? Your remaining generations will be forfeited.')) return
     try {
       const res = await fetch('/api/v1/account', { method: 'DELETE' })
       if (!res.ok) {
@@ -114,14 +114,14 @@ export default function AccountPage() {
           </div>
 
           <div className="acc-section">
-            <div className="acc-section-label">Credits</div>
+            <div className="acc-section-label">Generations</div>
             <div className="acc-credit-stat">
               <span className="acc-credit-num">{credits.length}</span>
-              <span className="acc-credit-text">credit{credits.length === 1 ? '' : 's'} ready to use</span>
+              <span className="acc-credit-text">generation{credits.length === 1 ? '' : 's'} remaining</span>
             </div>
             {credits.length === 0 && (
               <div className="acc-empty-mini">
-                No credits. <a href="/store">Pick up a pack</a> to get started.
+                None remaining. <a href="/store">Pick up a pack</a> to get started.
               </div>
             )}
           </div>
@@ -161,7 +161,7 @@ export default function AccountPage() {
           <div className="acc-section">
             <button className="acc-btn-danger" onClick={handleDeleteAccount}>Delete account</button>
             <div className="acc-hint">
-              This permanently deletes your account. Any unused credits are forfeited.
+              This permanently deletes your account. Any unused generations are forfeited.
             </div>
           </div>
         </main>

@@ -118,7 +118,7 @@ export default function StorePage() {
         <main className="store-main">
           <h1 className="store-title">Buy a generation</h1>
           <p className="store-sub">
-            One generation, or a pack of credits to use across the catalog.
+            One generation, or a pack to use across the catalog.
           </p>
 
           {skusErr && <div className="banner-error">{skusErr}</div>}
@@ -167,7 +167,7 @@ function SkuCard({ sku, signedIn, onBuy }: { sku: Sku; signedIn: boolean; onBuy:
   const dollars = (sku.priceCents / 100).toFixed(2)
   const isBundle = sku.kind === 'bundle'
   const subtitle = isBundle
-    ? `${sku.count} credits — pick a style each time you generate`
+    ? `${sku.count} generations — pick a style each time`
     : 'One image, locked to your chosen style'
   return (
     <div className="sku-card">
@@ -176,10 +176,10 @@ function SkuCard({ sku, signedIn, onBuy }: { sku: Sku; signedIn: boolean; onBuy:
       <div className="sku-sub">{subtitle}</div>
       <div className="sku-price">${dollars}</div>
       {isBundle && !signedIn && (
-        <div className="sku-hint">Sign in required for credit packs.</div>
+        <div className="sku-hint">Sign in required for packs.</div>
       )}
       <button className="sku-buy" onClick={onBuy}>
-        {isBundle ? `Buy ${sku.count} credits` : 'Buy & generate'}
+        {isBundle ? `Buy ${sku.count} generations` : 'Buy & generate'}
       </button>
     </div>
   )

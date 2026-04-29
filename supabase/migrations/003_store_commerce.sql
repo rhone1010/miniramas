@@ -5,8 +5,10 @@
 -- a *different* product — admin-curated style packs the /groups page consumes
 -- directly. This migration introduces a generic SKU/entitlement model that
 -- coexists with that, used by /store, /create, and /account. They share zero
--- table names; user-facing copy for this layer should say "packs" / "credits"
--- and reserve "bundle" for the curated-style-pack product.
+-- table names; user-facing copy for this layer should say "packs" /
+-- "generations" and reserve "bundle" for the curated-style-pack product.
+-- Avoid "credits" in copy — it implies an abstract balance the customer
+-- has to spend; "generations" names the actual thing they're buying.
 
 -- ─── SKUs (admin catalog of purchasable products) ──────────────────
 create table if not exists skus (
