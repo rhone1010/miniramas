@@ -17,15 +17,19 @@ import type { GenerationKickoff } from './types'
 
 export const defaultGenerationKickoff: GenerationKickoff = {
   async start(args) {
+    const refDisplay =
+      args.sourceImageRef === null
+        ? '<none>'
+        : args.sourceImageRef.length > 64
+          ? args.sourceImageRef.slice(0, 64) + '…'
+          : args.sourceImageRef
     console.log(
       '[generation-kickoff:STUB] would start generation',
       `jobId=${args.jobId}`,
       `entitlementId=${args.entitlementId}`,
       `style=${args.style}`,
       `variant=${args.variant}`,
-      `sourceImageRef=${args.sourceImageRef.length > 64
-        ? args.sourceImageRef.slice(0, 64) + '…'
-        : args.sourceImageRef}`,
+      `sourceImageRef=${refDisplay}`,
     )
     // Application chat replaces this with the real pipeline call.
   },

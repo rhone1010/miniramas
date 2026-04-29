@@ -59,8 +59,8 @@ export type EntitlementCheck =
  * for the given style+variant?
  *
  * Match precedence: a single locked to (style, variant) wins over a
- * generic credit (locked_*=null). This way users don't burn a generic
- * credit when they have a single sitting in the same style.
+ * generic generation (locked_*=null). This way users don't burn a
+ * generic generation when they have a single sitting in the same style.
  */
 export async function checkEntitlement(args: {
   userId?:     string
@@ -90,7 +90,7 @@ export async function checkEntitlement(args: {
     return { available: true, entitlementId: locked[0].id }
   }
 
-  // Second pass: generic credit (locked_style is null).
+  // Second pass: generic generation (locked_style is null).
   let genericQuery = supabaseAdmin
     .from('entitlements')
     .select('id')
@@ -171,7 +171,7 @@ export async function consumeEntitlement(args: {
 /**
  * Mark 'available' → 'pending' and stamp job_id + generation_started_at.
  * Used by the optimistic flow when generation starts before payment
- * confirms. Bundle credits stay at locked_*=null until the eventual
+ * confirms. Bundle generations stay at locked_*=null until the eventual
  * consumeEntitlement call locks them.
  */
 export async function reserveEntitlement(args: {
@@ -227,10 +227,12 @@ export async function restoreEntitlement(args: {
     throw new Error('entitlement_restore_cap_exceeded')
   }
 
-  // Verify ownership and fetch the row.
+  // One read covering both the ownership check and the columns we'll need
+  // to clone into the replacement entitlement. Saves a round-trip and
+  // keeps the "row I saw" consistent with the row I'm about to replace.
   const { data: ent, error: readErr } = await supabaseAdmin
     .from('entitlements')
-    .select('id, user_id, guest_email, status')
+    .select('id, user_id, guest_email, status, purchase_id, locked_style, locked_variant')
     .eq('id', args.entitlementId)
     .maybeSingle()
   if (readErr) throw new Error(`entitlement_restore_read_failed: ${readErr.message}`)
@@ -239,10 +241,13 @@ export async function restoreEntitlement(args: {
     (args.userId     && ent.user_id     === args.userId) ||
     (args.guestEmail && ent.guest_email === args.guestEmail)
   if (!ownerMatches) throw new Error('entitlement_restore_wrong_owner')
-  if (ent.status === 'restored') return // idempotent — already restored
 
-  // Flip back to available, drop the job binding.
-  const { error: updErr } = await supabaseAdmin
+  // Guarded flip: only the caller that actually transitions the row from
+  // a non-restored state to 'restored' proceeds with the replacement
+  // insert + refund log. Two concurrent callers race on this UPDATE; the
+  // loser's WHERE clause filters out the now-'restored' row and .select()
+  // returns 0 rows. Idempotent and concurrency-safe.
+  const { data: flipped, error: updErr } = await supabaseAdmin
     .from('entitlements')
     .update({
       status:      'restored',
@@ -250,25 +255,24 @@ export async function restoreEntitlement(args: {
       restored_at: new Date().toISOString(),
     })
     .eq('id', args.entitlementId)
+    .neq('status', 'restored')
+    .select('id')
   if (updErr) throw new Error(`entitlement_restore_update_failed: ${updErr.message}`)
+  if (!flipped || flipped.length === 0) {
+    // Concurrent winner already restored — nothing more to do.
+    return
+  }
 
   // Re-create as a fresh available entitlement attached to the same purchase
-  // so the user's "credits remaining" count stays right.
-  const { data: src, error: srcErr } = await supabaseAdmin
-    .from('entitlements')
-    .select('purchase_id, user_id, guest_email, locked_style, locked_variant')
-    .eq('id', args.entitlementId)
-    .single()
-  if (srcErr) throw new Error(`entitlement_restore_resrc_failed: ${srcErr.message}`)
-
+  // so the user's "generations remaining" count stays right.
   const { error: insErr } = await supabaseAdmin
     .from('entitlements')
     .insert({
-      purchase_id:    src.purchase_id,
-      user_id:        src.user_id,
-      guest_email:    src.guest_email,
-      locked_style:   src.locked_style,
-      locked_variant: src.locked_variant,
+      purchase_id:    ent.purchase_id,
+      user_id:        ent.user_id,
+      guest_email:    ent.guest_email,
+      locked_style:   ent.locked_style,
+      locked_variant: ent.locked_variant,
       status:         'available',
     })
   if (insErr) throw new Error(`entitlement_restore_insert_failed: ${insErr.message}`)

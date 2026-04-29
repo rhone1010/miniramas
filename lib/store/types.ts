@@ -53,12 +53,16 @@ export interface Entitlement {
 // Stub interface — application chat replaces the implementation when it
 // wires in lib/v1/* generation pipelines. The store layer only knows how
 // to call .start(); it doesn't know what generation actually does.
+//
+// sourceImageRef is nullable to support no-photo modes (e.g. /build,
+// where the customer composes a scene from text without uploading).
+// Implementations must handle null explicitly.
 export interface GenerationKickoff {
   start(args: {
     jobId:          string
     entitlementId:  string
     style:          string
     variant:        string
-    sourceImageRef: string
+    sourceImageRef: string | null
   }): Promise<void>
 }
