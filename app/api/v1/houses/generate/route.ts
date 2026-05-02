@@ -13,7 +13,7 @@ import { generateHouse } from '@/lib/v1/houses-generator'
 import type { GenerateRequest } from '@/lib/v1/houses-shared'
 
 export const runtime     = 'nodejs'
-export const maxDuration = 90  // NB2 typically 25-40s, leaves headroom
+export const maxDuration = 120  // NB2 25-40s + outpaint 8-12s + headroom
 
 export async function POST(req: NextRequest) {
   try {

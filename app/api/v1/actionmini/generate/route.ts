@@ -1,244 +1,161 @@
-// actionmini-route.ts
 // app/api/v1/actionmini/generate/route.ts
-//
-// Pipeline:
-//   COLLECTABLE CARD path  — generateActionMiniCard → returns {front, back}, bypasses levels/expand
-//   NORMAL path (insitu)   — generate → applyLevels → expandScene
-//
-// Mood-keyed lighting (v11 — bumped from v9):
-//   golden:   1.55× — warm afternoon abundance
-//   dramatic: 1.30× — preserves moodiness but lifts subject
-//   peaceful: 1.40× — gentle but visible lift
-//   vivid:    1.65× — peak midday brightness
-
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  generateActionMini,
-  ActionMiniPreset,
-} from '@/lib/v1/actionmini-generator'
-import { generateActionMiniCard } from '@/lib/v1/actionmini-card'
-import { applyLevels }   from '@/lib/v1/levels'
-import { expandScene }   from '@/lib/v1/expand'
+import { generateActionMini, ActionMiniPresetId, LocationId } from '@/lib/v1/actionmini-generator'
+import { ACTION_MINI_PRESETS } from '@/lib/v1/actionmini-presets'
+import type { KineticMedium } from '@/lib/v1/actionmini-shared'
+import { sanitizeTweak } from '@/lib/v1/actionmini-refine'
 
-const VALID_PRESETS: ActionMiniPreset[] = ['insitu', 'museum', 'collectable_card']
+// ── PRESET VALIDATION ────────────────────────────────────────
+const VALID_PRESET_IDS = new Set(ACTION_MINI_PRESETS.map(p => p.id))
 
-const ACTIONMINI_BRIGHTNESS_BY_MOOD: Record<string, number> = {
-  golden:   1.55,
-  dramatic: 1.30,
-  peaceful: 1.40,
-  vivid:    1.65,
+// Legacy aliases — old clients sending obsolete preset names get remapped
+// silently to the closest current equivalent.
+const LEGACY_PRESET_ALIASES: Record<string, ActionMiniPresetId> = {
+  'insitu':  'resin',
+  'museum':  'resin',
 }
 
+function normalizePresetId(raw: unknown): ActionMiniPresetId {
+  const s = String(raw || '').trim()
+  if (LEGACY_PRESET_ALIASES[s]) return LEGACY_PRESET_ALIASES[s]
+  if (VALID_PRESET_IDS.has(s as ActionMiniPresetId)) return s as ActionMiniPresetId
+  return 'resin' // default fallback
+}
+
+// ── KINETIC MEDIUM VALIDATION ────────────────────────────────
+const VALID_MEDIUMS: KineticMedium[] = [
+  'whitewater','surf','snow','skate','bike','climb','run','dance','combat','other'
+]
+function normalizeMedium(raw: unknown): KineticMedium {
+  const s = String(raw || '').trim() as KineticMedium
+  return VALID_MEDIUMS.includes(s) ? s : 'other'
+}
+
+// ── LOCATION VALIDATION ──────────────────────────────────────
+const VALID_LOCATIONS: LocationId[] = ['in_context', 'on_a_desk', 'on_a_shelf']
+function normalizeLocation(raw: unknown): LocationId {
+  const s = String(raw || '').trim() as LocationId
+  return VALID_LOCATIONS.includes(s) ? s : 'on_a_desk'  // default fallback
+}
+
+// ── ERROR TRANSLATION ────────────────────────────────────────
+function translateError(msg: string): { code: string; userMessage: string; retryable: boolean } {
+  const m = msg.toLowerCase()
+  if (m.includes('safety') || m.includes('moderation') || m.includes('content_policy')) {
+    return { code: 'safety', userMessage: 'Content policy declined this image. Try a different photo.', retryable: false }
+  }
+  if (m.includes('timeout') || m.includes('timed out')) {
+    return { code: 'timeout', userMessage: 'Generation took too long. Try again.', retryable: true }
+  }
+  if (m.includes('rate') || m.includes('429')) {
+    return { code: 'rate_limit', userMessage: 'Rate limit reached. Wait a moment and try again.', retryable: true }
+  }
+  return { code: 'unknown', userMessage: 'Generation failed. Try again.', retryable: true }
+}
+
+// ── HANDLER ──────────────────────────────────────────────────
+// Single-stage pipeline: generate via nano banana → return.
+// No post-processing — nano banana output is final.
 export async function POST(req: NextRequest) {
+  const t0 = Date.now()
   try {
     const body = await req.json()
-    const {
-      source_image_b64,
-      kinetic_medium         = 'whitewater',
-      action_description     = '',
-      freeze_moment_quality,
-      hero                   = null,
-      secondary_figures      = { count: 0, description: 'empty' },
-      environment            = 'The action takes place in a natural outdoor setting with soft atmospheric light.',
-      distinctive_features,
-      source_lighting,
-      display_name,
-      preset                 = 'insitu',
-      mood                   = 'golden',
-      plaque_text,
-      memory_text,                          // collectable_card only
-      artwork_style          = '3d',        // collectable_card only — '3d' | 'impressionist'
-      notes,
-    } = body
 
-    if (!source_image_b64) {
+    const sourceImageB64 = body.source_image_b64
+    if (!sourceImageB64) {
       return NextResponse.json({ error: 'source_image_b64 required' }, { status: 400 })
     }
 
-    const openaiApiKey = process.env.OPENAI_API_KEY
-    if (!openaiApiKey) {
-      return NextResponse.json({ error: 'OPENAI_API_KEY not set' }, { status: 500 })
+    const presetId        = normalizePresetId(body.preset || body.preset_id)
+    const kineticMedium   = normalizeMedium(body.kinetic_medium)
+    const locationId      = normalizeLocation(body.location)
+    const notes           = typeof body.notes === 'string' ? body.notes : undefined
+    const displayName     = String(body.display_name || presetId)
+    const refinementTweak = sanitizeTweak(body.refinement_tweak)   // ≤150 chars, single-line, sanitized
+
+    // Refinements — six toggleable blocks. Default all-on.
+    // Body shape: { refinements: { craftDetail, sceneDetail, kineticEffects, sceneEnvironment, dramaticLighting, margins } }
+    // Backwards-compat: old clients may still send sceneComplement; map it to sceneEnvironment.
+    const r = (body.refinements && typeof body.refinements === 'object') ? body.refinements : {}
+    const sceneEnvironmentRaw = r.sceneEnvironment !== undefined ? r.sceneEnvironment : r.sceneComplement
+    const refinements = {
+      craftDetail:       r.craftDetail       !== false,
+      sceneDetail:       r.sceneDetail       !== false,
+      kineticEffects:    r.kineticEffects    !== false,
+      sceneEnvironment:  sceneEnvironmentRaw !== false,
+      dramaticLighting:  r.dramaticLighting  !== false,
+      margins:           r.margins           !== false,
     }
 
-    const normalizedPreset: ActionMiniPreset = VALID_PRESETS.includes(preset as ActionMiniPreset)
-      ? (preset as ActionMiniPreset)
-      : 'insitu'
-
-    const clampedSec = {
-      count: Math.max(0, Math.min(4, Number(secondary_figures?.count) || 0)),
-      description: typeof secondary_figures?.description === 'string'
-        ? secondary_figures.description
-        : 'empty',
+    const replicateToken = process.env.REPLICATE_API_TOKEN
+    if (!replicateToken) {
+      return NextResponse.json({ error: 'REPLICATE_API_TOKEN not set' }, { status: 500 })
     }
 
-    // ── COLLECTABLE CARD — dedicated two-image path (bypasses levels/expand) ──
-    if (normalizedPreset === 'collectable_card') {
-      const { frontB64, backB64 } = await generateActionMiniCard({
-        sourceImageB64:       source_image_b64,
-        kineticMedium:        kinetic_medium,
-        actionDescription:    action_description,
-        freezeMomentQuality:  freeze_moment_quality,
-        hero,
-        secondaryFigures:     clampedSec,
-        distinctiveFeatures:  distinctive_features,
-        environment,
-        displayName:          display_name || 'Untitled',
-        memoryText:           memory_text || '',
-        mood,
-        plaqueText:           plaque_text || '',
-        artworkStyle:         artwork_style === 'impressionist' ? 'impressionist' : '3d',
-        openaiApiKey,
+    const system_log: any[] = []
+    const render_log: any[] = []
+    const timings: { generate_ms?: number; total_ms?: number } = {}
+
+    // ── GENERATE ───────────────────────────────────────────────
+    const tGen = Date.now()
+    try {
+      const result = await generateActionMini({
+        sourceImageB64,
+        presetId,
+        kineticMedium,
+        locationId,
+        refinements,
+        notes,
+        refinementTweak,
+        replicateApiToken: replicateToken,
       })
+      timings.generate_ms = Date.now() - tGen
+      timings.total_ms    = Date.now() - t0
+      const stageLabel = refinementTweak ? 'generate-refined' : 'generate'
+      system_log.push({ code: 200, stage: stageLabel, ms: timings.generate_ms })
+      render_log.push({ ok: true, msg: refinementTweak ? 'refined render complete' : 'render complete' })
+
       return NextResponse.json({
         result: {
-          front_b64:     frontB64,
-          back_b64:      backB64,
-          scene:         display_name,
-          mood,
-          preset:        'collectable_card',
-          artwork_style,
-          memory_text,
-          kinetic_medium,
-        }
+          image_b64:        result.imageB64,
+          prompt_used:      result.promptUsed,
+          preset:           presetId,
+          location:         locationId,
+          name:             displayName,
+          refinement_tweak: refinementTweak || null,
+          render_log,
+          system_log,
+          fatal_error:      null,
+          timings,
+          duration_ms:      timings.total_ms,
+        },
       })
-    }
 
-    // ── NORMAL PATH (insitu / museum) ───────────────────────────
-    const generated = await generateActionMini({
-      sourceImageB64:       source_image_b64,
-      preset:               normalizedPreset,
-      kineticMedium:        kinetic_medium,
-      actionDescription:    action_description,
-      freezeMomentQuality:  freeze_moment_quality,
-      hero,
-      secondaryFigures:     clampedSec,
-      environment,
-      distinctiveFeatures:  distinctive_features,
-      sourceLighting:       source_lighting,
-      displayName:          display_name,
-      mood,
-      plaqueText:           plaque_text,
-      notes,
-      openaiApiKey,
-    })
-
-    let current = generated.imageB64
-    const appliedStages: string[] = ['generate']
-
-    // ── STAGE 2: APPLY LEVELS ────────────────────────────────────
-    try {
-      const moodBrightness = ACTIONMINI_BRIGHTNESS_BY_MOOD[mood] ?? 1.50
-      const leveled = await applyLevels({
-        imageB64:        current,
-        brightness:      moodBrightness,
-        lighting_preset: 'actionmini',
-      })
-      if (leveled.success && leveled.imageB64) {
-        current = leveled.imageB64
-        appliedStages.push(`levels(${moodBrightness}×)`)
-      }
     } catch (e: any) {
-      console.warn('[actionmini-route] levels failed (non-fatal):', e.message)
-    }
-
-    // ── STAGE 3: EXPAND ──────────────────────────────────────────
-    try {
-      const expanded = await expandScene({
-        imageB64:     current,
-        openaiApiKey,
-        expand:       true,
+      timings.generate_ms = Date.now() - tGen
+      timings.total_ms    = Date.now() - t0
+      const tr = translateError(e.message)
+      console.error(`[actionmini] ${presetId} FAILED — ${e.message}`)
+      system_log.push({ code: 500, stage: 'generate', err: e.message, ms: timings.generate_ms })
+      return NextResponse.json({
+        result: {
+          image_b64:    null,
+          prompt_used:  '',
+          preset:       presetId,
+          name:         displayName,
+          fatal_error:  tr.userMessage,
+          error_code:   tr.code,
+          raw_error:    e.message,         // unfiltered upstream error for diagnostics
+          retryable:    tr.retryable,
+          render_log:   [{ ok: false, msg: tr.userMessage }],
+          system_log,
+          timings,
+          duration_ms:  timings.total_ms,
+        },
       })
-      if (expanded.imageB64) {
-        current = expanded.imageB64
-        appliedStages.push('expand')
-      }
-      if (expanded.warnings?.length) {
-        expanded.warnings.forEach((w: string) => console.warn('[actionmini-route] expand warn:', w))
-      }
-    } catch (e: any) {
-      console.warn('[actionmini-route] expand failed (non-fatal):', e.message)
     }
-
-    return NextResponse.json({
-      result: {
-        image_b64:       current,
-        prompt_used:     generated.promptUsed,
-        preset:          generated.preset,
-        kinetic_medium,
-        mood,
-        display_name,
-        plaque_text,
-        applied_stages:  appliedStages,
-      }
-    })
 
   } catch (err: any) {
-    console.error('[actionmini-route] Fatal:', err.message)
-    const userMessage = translateGenerationError(err)
-    return NextResponse.json({
-      error:           userMessage.error,
-      hint:            userMessage.hint,
-      retryable:       userMessage.retryable,
-      errorCategory:   userMessage.category,
-    }, { status: 500 })
-  }
-}
-
-// ── ERROR TRANSLATION ─────────────────────────────────────────
-// Convert raw OpenAI / network / pipeline errors into a polished message
-// the user can read. Never leak provider internals (request IDs, model
-// names, raw safety wording).
-function translateGenerationError(err: any): {
-  error:     string
-  hint:      string
-  retryable: boolean
-  category:  'safety' | 'timeout' | 'rate_limit' | 'unknown'
-} {
-  const msg = String(err?.message || err || '').toLowerCase()
-
-  // Safety system rejection — most common when prompts trigger OpenAI's
-  // content classifier on top of the source image
-  if (
-    msg.includes('safety system')      ||
-    msg.includes('safety_violation')   ||
-    msg.includes('content_policy')     ||
-    msg.includes('content policy')     ||
-    msg.includes('rejected by the safety') ||
-    msg.includes('moderation_blocked')
-  ) {
-    return {
-      error:    'This variant couldn\'t be rendered.',
-      hint:     'The combination of mood and style hit a content filter. Try a different mood for this variant, or run a different variant from the same source.',
-      retryable: true,
-      category:  'safety',
-    }
-  }
-
-  // Timeout / network
-  if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('econnreset') || msg.includes('etimedout')) {
-    return {
-      error:    'This variant timed out.',
-      hint:     'The render service was slow to respond. Try running this variant again.',
-      retryable: true,
-      category:  'timeout',
-    }
-  }
-
-  // Rate limit on the upstream model
-  if (msg.includes('rate limit') || msg.includes('rate_limit') || msg.includes('429')) {
-    return {
-      error:    'Too many renders right now.',
-      hint:     'Wait a moment, then try again.',
-      retryable: true,
-      category:  'rate_limit',
-    }
-  }
-
-  // Default — don't leak whatever it actually was
-  return {
-    error:    'This variant couldn\'t be rendered.',
-    hint:     'Try running it again, or try a different variant.',
-    retryable: true,
-    category:  'unknown',
+    return NextResponse.json({ error: err.message, fatal_error: true, duration_ms: Date.now() - t0 }, { status: 500 })
   }
 }

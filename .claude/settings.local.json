@@ -2,7 +2,32 @@
   "permissions": {
     "allow": [
       "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(git -C d:/minramas status --short)",
+      "Bash(git -C d:/minramas branch --show-current)",
+      "Bash(git -C d:/minramas checkout -b feature/high-demand-error)",
+      "Bash(git -C d:/minramas add lib/v1/error-classification.ts lib/v1/api-response.ts lib/queue/ lib/email/ supabase/migrations/002_queued_jobs.sql)",
+      "Bash(git -C d:/minramas ls-files lib/)",
+      "Bash(git -C d:/minramas commit -m ' *)",
+      "Bash(git -C d:/minramas add lib/v1/runners/ app/api/v1/groups/generate/route.ts app/api/v1/structures/generate/route.ts app/api/v1/landscapes/generate/route.ts app/api/v1/interior/generate/route.ts app/api/v1/stadium/generate/route.ts app/api/v1/actionmini/generate/route.ts app/api/v1/sportsmem/generate/route.ts app/api/v1/moments/generate/route.ts)",
+      "Bash(git -C d:/minramas add app/api/v1/queue/ vercel.json)",
+      "Bash(git -C d:/minramas add components/ app/groups/page.tsx)",
+      "Bash(git -C d:/minramas add public/interiors.html)",
+      "Bash(git -C d:/minramas log --oneline main..HEAD)",
+      "Bash(git -C d:/minramas remote -v)",
+      "Bash(git -C d:/minramas push -u origin feature/high-demand-error)",
+      "Bash(git -C d:/minramas checkout main)",
+      "Bash(git -C d:/minramas checkout -b feature/store-commerce)",
+      "Bash(git -C d:/minramas log --oneline -3)",
+      "Bash(npm install *)",
+      "Bash(git -C d:/minramas add lib/store/ supabase/migrations/003_store_commerce.sql supabase/migrations/004_skus_seed.sql app/api/v1/webhooks/ app/api/v1/checkout/ app/api/v1/skus/ app/auth/ package.json package-lock.json)",
+      "Bash(git -C d:/minramas add app/store/ app/account/ app/result/ app/api/v1/account/ app/api/v1/auth/ app/api/v1/entitlements/ app/api/v1/checkout/[sessionId]/cancel/ components/SigninModal.tsx supabase/migrations/003_store_commerce.sql app/api/v1/checkout/[sessionId]/route.ts)",
+      "Bash(git -C d:/minramas push -u origin feature/store-commerce)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(git -C d:/minramas status)",
+      "Bash(npm test *)",
+      "Bash(awk -F= '{ *)"
     ]
   }
 }

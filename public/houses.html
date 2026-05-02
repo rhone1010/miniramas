@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Houses — Liten &amp; Co</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Surfaces */
+  --bg:           #FAFAF7;
+  --surface:      #FFFFFF;
+  --surface-2:    #F4F2EC;
+  --border:       #E8E4DA;
+  --border-strong:#D4CEC0;
+
+  /* Text */
+  --ink:    #1A1814;
+  --ink-2:  #5C564E;
+  --ink-3:  #8E877C;
+
+  /* Accent + state */
+  --accent:      #6B5BA8;
+  --accent-hover:#5A4D90;
+  --accent-soft: #EFEBF7;
+  --success:     #4A8A6E;
+  --danger:      #A85050;
+  --danger-soft: #F5EAEA;
+
+  /* Type */
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, -apple-system, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:13px;
+  line-height:1.5;
+  display:flex;
+  flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes progressSlide{
+  0%   {transform:translateX(-100%) scaleX(.4)}
+  50%  {transform:translateX(0%)    scaleX(.6)}
+  100% {transform:translateX(100%)  scaleX(.4)}
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:44px;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 24px;
+  gap:16px;
+  flex-shrink:0;
+}
+.home-link{
+  font-size:11px;color:var(--ink-2);text-decoration:none;
+  letter-spacing:.02em;transition:color .15s;
+}
+.home-link:hover{color:var(--ink)}
+.logo{font-family:var(--serif);font-size:18px;font-weight:500;color:var(--ink);letter-spacing:-.01em}
+.logo em{font-style:italic;color:var(--accent)}
+.logo-suffix{
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;padding-top:2px;
+}
+.tb-spacer{flex:1}
+.run-all-btn{
+  height:32px;
+  padding:0 18px;
+  background:var(--accent);color:white;
+  border:none;border-radius:6px;
+  font:500 12px var(--sans);letter-spacing:.02em;
+  cursor:pointer;transition:background .15s,opacity .15s;
+}
+.run-all-btn:hover:not(:disabled){background:var(--accent-hover)}
+.run-all-btn:disabled{opacity:.4;cursor:not-allowed}
+.status-meta{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:10px;color:var(--ink-3);
+  letter-spacing:.02em;
+}
+.status-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--ink-3);
+}
+.status-dot.busy{background:var(--accent);animation:spin 1s linear infinite}
+.status-dot.ok{background:var(--success)}
+.status-dot.err{background:var(--danger)}
+
+/* ── LAYOUT ── */
+.layout{
+  display:grid;
+  grid-template-columns:420px 1fr;
+  flex:1;
+  overflow:hidden;
+  min-height:0;
+}
+
+/* ── SIDEBAR ── */
+.left{
+  background:var(--bg);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.left-inner{
+  padding:32px 32px 48px;
+  overflow-y:auto;
+  flex:1;
+  display:flex;flex-direction:column;gap:32px;
+}
+.left-inner::-webkit-scrollbar{width:6px}
+.left-inner::-webkit-scrollbar-track{background:transparent}
+.left-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.section{display:flex;flex-direction:column;gap:12px}
+.section-label{
+  font-size:11px;font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+.section-hdr{
+  display:flex;align-items:baseline;justify-content:space-between;
+}
+.section-hint{
+  font-size:11px;color:var(--ink-3);font-style:italic;
+}
+
+/* ── SOURCE THUMB STRIP ── */
+.thumb-strip{
+  display:flex;flex-wrap:wrap;gap:8px;
+  min-height:80px;align-items:center;
+}
+.thumb-strip:empty::before{
+  content:'No source images yet';
+  color:var(--ink-3);font-size:12px;font-style:italic;
+}
+.thumb{
+  position:relative;
+  width:80px;height:80px;border-radius:6px;
+  border:1px solid var(--border);
+  background:var(--surface-2) center/cover no-repeat;
+  flex-shrink:0;
+  transition:border-color .15s;
+}
+.thumb-primary{border-width:2px;border-color:var(--accent)}
+.thumb-label{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(26,24,20,.75);color:white;
+  font-size:9px;font-weight:500;letter-spacing:.05em;
+  text-align:center;padding:2px 0;
+  border-radius:0 0 4px 4px;
+}
+.thumb-remove{
+  position:absolute;top:-6px;right:-6px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--ink);color:white;border:none;
+  font-size:11px;line-height:1;cursor:pointer;
+  padding:0;display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.thumb-remove:hover{background:var(--danger)}
+
+.upload-row{
+  display:flex;align-items:center;gap:10px;margin-top:4px;
+}
+.upload-row input[type="file"]{
+  flex:1;font-size:11px;color:var(--ink-2);
+}
+.tiny-btn{
+  height:28px;padding:0 12px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:5px;
+  font:400 11px var(--sans);color:var(--ink-2);
+  cursor:pointer;transition:border-color .15s,color .15s;
+}
+.tiny-btn:hover{border-color:var(--ink-3);color:var(--ink)}
+
+/* ── BUTTON BARS (pills/cells) ── */
+.btn-bar{
+  display:grid;
+  gap:6px;
+}
+.btn-bar.cols-2{grid-template-columns:repeat(2,1fr)}
+.btn-bar.cols-3{grid-template-columns:repeat(3,1fr)}
+.btn-bar.cols-6{grid-template-columns:repeat(6,1fr);gap:4px}
+
+.type-btn{
+  height:34px;padding:0 8px;
+  background:var(--surface);
+  border:1px solid var(--border);border-radius:5px;
+  font:400 12px var(--sans);color:var(--ink-2);
+  cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;
+}
+.type-btn:hover:not(:disabled){border-color:var(--ink-3);color:var(--ink)}
+.type-btn.active{
+  background:var(--accent);color:white;border-color:var(--accent);
+}
+.type-btn:disabled{opacity:.4;cursor:not-allowed}
+.type-btn.tier-signature{
+  border-color:var(--accent-soft);
+  border-width:1.5px;
+}
+.type-btn.tier-signature:not(.active){
+  background:var(--accent-soft);
+  color:var(--accent-hover);
+}
+
+.btn-bar.cols-6 .type-btn{font-size:10px;height:28px;padding:0 4px}
+
+/* ── PRESET COUNT ── */
+.materials-hdr{
+  display:flex;align-items:baseline;justify-content:space-between;
+}
+.materials-count{
+  font-family:var(--mono);font-size:10px;color:var(--ink-3);
+}
+
+/* ── STAGE ── */
+.center{
+  display:flex;flex-direction:column;
+  overflow:hidden;min-height:0;
+  background:var(--bg);position:relative;
+}
+.center-hdr{
+  height:44px;padding:0 32px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;flex-shrink:0;
+}
+.stage-title{
+  font-size:11px;font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+.stage-meta{
+  margin-left:auto;
+  font-family:var(--mono);font-size:11px;color:var(--ink-3);
+}
+
+/* Top progress bar */
+.stage-progress{
+  position:absolute;top:44px;left:0;right:0;
+  height:2px;background:transparent;
+  z-index:50;overflow:hidden;pointer-events:none;
+  display:none;
+}
+.stage-progress.active{display:block}
+.stage-progress-fill{
+  height:100%;background:var(--accent);
+  transform-origin:left;
+  animation:progressSlide 1.6s ease-in-out infinite;
+}
+
+.stage{
+  flex:1;overflow-y:auto;padding:48px;
+  display:flex;flex-direction:column;
+}
+
+/* Empty state */
+.stage-empty{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:48px;
+}
+.stage-empty-title{
+  font-family:var(--serif);font-size:32px;font-weight:400;
+  color:var(--ink);margin-bottom:12px;letter-spacing:-.01em;
+}
+.stage-empty-title em{color:var(--accent);font-style:italic}
+.stage-empty-sub{
+  font-size:13px;color:var(--ink-2);line-height:1.6;max-width:460px;
+}
+
+/* Results stack — same cascade as Action Minis */
+.results-grid{
+  flex:1;overflow:hidden;
+  display:flex;flex-direction:column;
+  position:relative;
+}
+.stack-meta-display{
+  position:absolute;top:16px;right:24px;z-index:100;
+  font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  letter-spacing:.02em;pointer-events:none;
+  display:flex;align-items:center;gap:8px;
+}
+.stack-counter{color:var(--ink)}
+.stack-hint{color:var(--ink-3)}
+
+.results-stack-inner{
+  flex:1;position:relative;width:100%;
+  max-width:920px;margin:0 auto;
+  display:flex;align-items:center;justify-content:flex-start;
+  min-height:560px;padding:32px;
+}
+.rc{
+  position:absolute;top:32px;left:0;
+  width:54%;height:calc(100% - 64px);
+  background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;cursor:pointer;
+  transition:transform .4s cubic-bezier(.2,.7,.3,1),
+             left .4s cubic-bezier(.2,.7,.3,1),
+             border-color .25s,
+             box-shadow .25s,
+             filter .25s;
+  animation:fadeIn .35s ease;
+  display:flex;flex-direction:column;
+}
+.rc.done{border-color:var(--border-strong)}
+.rc.error{border-color:var(--danger)}
+.rc.top{
+  border-color:var(--ink-3);
+  box-shadow:0 4px 16px rgba(26,24,20,.06), 0 1px 2px rgba(26,24,20,.04);
+}
+
+.rc[data-pos="0"]{left:0;   transform:scale(1);    filter:brightness(1.00) saturate(1);  z-index:10}
+.rc[data-pos="1"]{left:14%; transform:scale(.96);  filter:brightness(.98) saturate(.85); z-index:9}
+.rc[data-pos="2"]{left:25%; transform:scale(.92);  filter:brightness(.96) saturate(.7);  z-index:8}
+.rc[data-pos="3"]{left:34%; transform:scale(.88);  filter:brightness(.94) saturate(.55); z-index:7}
+.rc[data-pos="4"]{left:41%; transform:scale(.84);  filter:brightness(.92) saturate(.4);  z-index:6}
+.rc[data-pos="5"]{left:46%; transform:scale(.80);  filter:brightness(.90) saturate(.3);  z-index:5}
+.rc[data-pos="6"]{left:49%; transform:scale(.77);  filter:brightness(.88) saturate(.2);  z-index:4}
+.rc[data-pos="7"]{left:51%; transform:scale(.74);  filter:brightness(.86) saturate(.15); z-index:3}
+.rc[data-pos^="8"],.rc[data-pos^="9"]{left:51%;transform:scale(.72);filter:brightness(.85) saturate(.1);z-index:2}
+
+.rc:not(.top):hover{filter:brightness(1.03) !important}
+
+.rc-img{
+  flex:1;background:var(--surface-2);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  min-height:0;
+}
+.rc-img img{
+  width:100%;height:100%;object-fit:cover;
+  display:block;pointer-events:none;
+}
+.rc:not(.top) .rc-img{cursor:default}
+.rc.top .rc-img{cursor:zoom-in}
+
+.rc-spinner-area{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  color:var(--ink-3);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+}
+.spin{
+  width:24px;height:24px;border-radius:50%;
+  border:2px solid var(--border);
+  border-top-color:var(--accent);
+  animation:spin .8s linear infinite;
+}
+
+.rc-overlay{
+  position:absolute;inset:0;
+  background:rgba(26,24,20,.0);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:all .2s;
+  pointer-events:none;
+}
+.rc.top .rc-img:hover .rc-overlay{
+  opacity:1;background:rgba(26,24,20,.4);
+}
+.rc-ol{
+  color:white;font-size:12px;font-weight:500;
+  letter-spacing:.05em;text-transform:uppercase;
+}
+.rc-duration{
+  position:absolute;top:8px;right:8px;
+  background:rgba(26,24,20,.6);color:white;
+  font-family:var(--mono);font-size:10px;
+  padding:3px 7px;border-radius:3px;
+}
+
+.rc-body{
+  padding:14px 16px 12px;
+  display:flex;flex-direction:column;gap:6px;
+  border-top:1px solid var(--border);
+}
+.rc-name{font-size:13px;font-weight:500;color:var(--ink)}
+.rc-meta{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.02em}
+
+.rc-btns{
+  display:flex;gap:6px;margin-top:6px;
+}
+.rc-btn{
+  flex:1;height:28px;
+  background:var(--surface);
+  border:1px solid var(--border);border-radius:5px;
+  font:500 11px var(--sans);color:var(--ink-2);
+  cursor:pointer;transition:all .15s;
+}
+.rc-btn:hover{border-color:var(--ink);color:var(--ink)}
+.rc-btn.save{
+  background:var(--accent);color:white;border-color:var(--accent);
+}
+.rc-btn.save:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:white}
+
+.rc-error-body{
+  padding:16px;
+  display:flex;flex-direction:column;gap:8px;
+  background:var(--danger-soft);
+}
+.rc-error-headline{font-size:12px;font-weight:500;color:var(--danger)}
+.rc-error-detail{font-family:var(--mono);font-size:10px;color:var(--ink-2);line-height:1.5}
+
+/* Lightbox */
+.lightbox{
+  position:fixed;inset:0;
+  background:rgba(26,24,20,.92);
+  display:none;align-items:center;justify-content:center;
+  z-index:1000;padding:32px;cursor:zoom-out;
+}
+.lightbox.active{display:flex}
+.lightbox img{
+  max-width:100%;max-height:100%;
+  display:block;border-radius:6px;
+  box-shadow:0 8px 40px rgba(0,0,0,.4);
+}
+
+/* Settings sub-rows in sidebar */
+.subrow{display:flex;align-items:center;gap:8px}
+.subrow .section-label{flex:1}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="home-link" href="/index.html">← Home</a>
+  <span class="logo">liten<em>&amp;co</em></span>
+  <span class="logo-suffix">Houses</span>
+  <div class="tb-spacer"></div>
+  <button class="run-all-btn" id="runAllBtn" disabled onclick="runAll()">Run</button>
+  <div class="status-meta">
+    <div class="status-dot" id="gDot"></div>
+    <span id="gStatus">ready</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="left">
+    <div class="left-inner">
+
+      <!-- Source images -->
+      <div class="section">
+        <div class="section-hdr">
+          <span class="section-label">Source images</span>
+          <span class="section-hint" id="sourceCount">0 / 4</span>
+        </div>
+        <div class="thumb-strip" id="thumbStrip"></div>
+        <div class="upload-row">
+          <input type="file" id="file" accept="image/jpeg,image/png" multiple>
+          <button class="tiny-btn" id="clearSources" type="button">Clear</button>
+        </div>
+        <span class="section-hint">Front + back + sides give NB2 better architecture.</span>
+      </div>
+
+      <!-- Mode -->
+      <div class="section">
+        <span class="section-label">Mode</span>
+        <div class="btn-bar cols-3" id="modeBar">
+          <button class="type-btn active" data-mode="materials" onclick="selectMode('materials')">Materials</button>
+          <button class="type-btn" data-mode="seasons" onclick="selectMode('seasons')">Seasons</button>
+          <button class="type-btn" data-mode="events" onclick="selectMode('events')">Events</button>
+        </div>
+      </div>
+
+      <!-- Presets -->
+      <div class="section">
+        <div class="materials-hdr">
+          <span class="section-label" id="presetLabel">Materials</span>
+          <span class="materials-count" id="presetCount">0 selected</span>
+        </div>
+        <div class="btn-bar cols-3" id="presetBar"></div>
+        <span class="section-hint">Pick one or more — each becomes a render.</span>
+      </div>
+
+      <!-- Environment -->
+      <div class="section" id="envSection">
+        <div class="materials-hdr">
+          <span class="section-label">Environment</span>
+          <span class="materials-count" id="envCurrent">Desk</span>
+        </div>
+        <div class="btn-bar cols-3" id="envBar">
+          <button class="type-btn" data-env="in_situ" onclick="selectEnv('in_situ')">In situ</button>
+          <button class="type-btn active" data-env="desk" onclick="selectEnv('desk')">Desk</button>
+          <button class="type-btn" data-env="room_in_house" onclick="selectEnv('room_in_house')">Room in house</button>
+        </div>
+      </div>
+
+      <!-- Time of day -->
+      <div class="section" id="todSection">
+        <div class="materials-hdr">
+          <span class="section-label">Time of day</span>
+          <span class="materials-count" id="todCurrent">Day</span>
+        </div>
+        <div class="btn-bar cols-2" id="todBar">
+          <button class="type-btn active" data-tod="day" onclick="selectTod('day')">Day</button>
+          <button class="type-btn" data-tod="night" onclick="selectTod('night')">Night</button>
+        </div>
+      </div>
+
+      <!-- Lighting variant (only shown when applicable) -->
+      <div class="section" id="variantSection" style="display:none">
+        <span class="section-label">Lighting variant</span>
+        <div class="btn-bar cols-2" id="variantBar"></div>
+      </div>
+
+      <!-- Aspect ratio -->
+      <div class="section">
+        <div class="materials-hdr">
+          <span class="section-label">Aspect ratio</span>
+          <span class="materials-count" id="aspectCurrent">1:1</span>
+        </div>
+        <div class="btn-bar cols-6" id="aspectBar">
+          <button class="type-btn active" data-aspect="1:1" onclick="selectAspect('1:1')">1:1</button>
+          <button class="type-btn" data-aspect="4:3" onclick="selectAspect('4:3')">4:3</button>
+          <button class="type-btn" data-aspect="3:2" onclick="selectAspect('3:2')">3:2</button>
+          <button class="type-btn" data-aspect="16:9" onclick="selectAspect('16:9')">16:9</button>
+          <button class="type-btn" data-aspect="21:9" onclick="selectAspect('21:9')">21:9</button>
+          <button class="type-btn" data-aspect="5:4" onclick="selectAspect('5:4')">5:4</button>
+          <button class="type-btn" data-aspect="2:3" onclick="selectAspect('2:3')">2:3</button>
+          <button class="type-btn" data-aspect="3:4" onclick="selectAspect('3:4')">3:4</button>
+          <button class="type-btn" data-aspect="4:5" onclick="selectAspect('4:5')">4:5</button>
+          <button class="type-btn" data-aspect="9:16" onclick="selectAspect('9:16')">9:16</button>
+        </div>
+      </div>
+
+      <!-- Outpaint (dev) -->
+      <div class="section">
+        <div class="materials-hdr">
+          <span class="section-label">Outpaint <span style="color:var(--ink-3);font-size:9px;font-weight:400">(dev)</span></span>
+          <span class="materials-count" id="expandCurrent">On</span>
+        </div>
+        <div class="btn-bar cols-2" id="expandBar">
+          <button class="type-btn active" data-expand="on" onclick="selectExpand('on')">On</button>
+          <button class="type-btn" data-expand="off" onclick="selectExpand('off')">Off</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── STAGE ── -->
+  <div class="center">
+    <div class="center-hdr">
+      <span class="stage-title" id="stageTitle">Stage</span>
+      <span class="stage-meta" id="centerMeta"></span>
+    </div>
+    <div class="stage-progress" id="stageProgress"><div class="stage-progress-fill"></div></div>
+
+    <div class="stage" id="stage">
+
+      <div class="stage-empty" id="stageEmpty">
+        <div class="stage-empty-title">A house, <em>imagined</em></div>
+        <div class="stage-empty-sub">Upload one or more photographs of a building — front, back, sides — choose materials, seasons, or events, and we'll sculpt your home into a museum-quality scale model.</div>
+      </div>
+
+      <div class="results-grid" id="resultsGrid" style="display:none">
+        <div class="stack-meta-display" id="stackMeta"></div>
+        <div class="results-stack-inner" id="resultsStackInner"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" alt="Full size render">
+</div>
+
+<script>
+const API = '/api/v1/houses/generate'
+
+// Full preset registry — mirrors houses-presets.ts
+const ALL_PRESETS = {
+  materials: [
+    { id: 'bronze',               label: 'Bronze',           tier: 'signature',
+      variants_by_env: {
+        in_situ: [
+          { id: 'flare', label: 'Flare (no orb)' },
+          { id: 'rays',  label: 'Visible rays'   }
+        ]
+      } },
+    { id: 'scaled_architectural', label: 'Museum',           tier: 'signature' },
+    { id: 'snow_globe',           label: 'Snow Globe',       tier: 'signature', forced_tod: 'night' },
+    { id: 'alabaster',            label: 'Alabaster',        tier: 'premium' },
+    { id: 'glass',                label: 'Glass',            tier: 'premium' },
+    { id: 'carved_wood',          label: 'Carved Wood',      tier: 'premium' },
+    { id: 'wax',                  label: 'Wax',              tier: 'base' },
+    { id: 'gingerbread',          label: 'Gingerbread',      tier: 'base' },
+    { id: 'watercolor_wood',      label: 'Watercolor',       tier: 'base' },
+    { id: 'dollhouse',            label: 'Dollhouse',        tier: 'base' }
+  ],
+  seasons: [
+    { id: 'spring', label: 'Spring', tier: 'base' },
+    { id: 'summer', label: 'Summer', tier: 'base' },
+    { id: 'fall',   label: 'Fall',   tier: 'base' },
+    { id: 'winter', label: 'Winter', tier: 'premium' }
+  ],
+  events: [
+    { id: 'haunted',   label: 'Haunted',   tier: 'signature', forced_env: 'room_in_house', forced_tod: 'night' },
+    { id: 'fire',      label: 'Fire',      tier: 'signature', forced_env: 'room_in_house', forced_tod: 'night' },
+    { id: 'alien',     label: 'Alien',     tier: 'signature', forced_env: 'room_in_house', forced_tod: 'night' },
+    { id: 'explosion', label: 'Explosion', tier: 'premium',   forced_env: 'room_in_house' },
+    { id: 'abandoned', label: 'Abandoned', tier: 'premium',   forced_env: 'room_in_house' }
+  ]
+}
+
+const MODE_LABELS = { materials: 'Materials', seasons: 'Seasons', events: 'Events' }
+const ENV_LABELS  = { in_situ: 'In situ', desk: 'Desk', room_in_house: 'Room in house' }
+const MAX_SOURCES = 4
+
+// ── State ──
+let sources = []  // [{ b64, dataUri }]
+const state = {
+  mode:           'materials',
+  selected:       new Set(),  // Set<preset_id>
+  env_id:         'desk',
+  time_of_day:    'day',
+  aspect_ratio:   '1:1',
+  expand:         true,
+  variant_id:     null  // active lighting variant if applicable
+}
+
+// Stack of result tiles
+const stackOrder = []  // tile names ordered top→back
+const resStore   = {}  // name → result payload
+const imgStore   = {}  // name → b64
+
+// ── Source upload ──
+function readFileAsDataUri(f) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader()
+    r.onload = e => resolve(e.target.result)
+    r.onerror = reject
+    r.readAsDataURL(f)
+  })
+}
+
+document.getElementById('file').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files || [])
+  if (!files.length) return
+  const slots = MAX_SOURCES - sources.length
+  if (slots <= 0) { e.target.value = ''; return }
+  const toAdd = files.slice(0, slots)
+  const uris = await Promise.all(toAdd.map(readFileAsDataUri))
+  uris.forEach(uri => sources.push({ dataUri: uri, b64: uri.split(',')[1] }))
+  e.target.value = ''
+  renderThumbs()
+  updateRunAllBtn()
+})
+
+document.getElementById('clearSources').addEventListener('click', () => {
+  sources = []
+  renderThumbs()
+  updateRunAllBtn()
+})
+
+function renderThumbs() {
+  const host = document.getElementById('thumbStrip')
+  host.innerHTML = ''
+  sources.forEach((s, i) => {
+    const t = document.createElement('div')
+    t.className = 'thumb' + (i === 0 ? ' thumb-primary' : '')
+    t.style.backgroundImage = `url("${s.dataUri}")`
+
+    const lbl = document.createElement('div')
+    lbl.className = 'thumb-label'
+    lbl.textContent = i === 0 ? 'PRIMARY' : 'REF ' + i
+    t.appendChild(lbl)
+
+    const rm = document.createElement('button')
+    rm.className = 'thumb-remove'
+    rm.textContent = '×'
+    rm.title = 'Remove'
+    rm.addEventListener('click', () => {
+      sources.splice(i, 1)
+      renderThumbs()
+      updateRunAllBtn()
+    })
+    t.appendChild(rm)
+
+    host.appendChild(t)
+  })
+  document.getElementById('sourceCount').textContent = `${sources.length} / ${MAX_SOURCES}`
+}
+
+// ── Mode ──
+function selectMode(m) {
+  state.mode = m
+  state.selected.clear()
+  state.variant_id = null
+  document.querySelectorAll('[data-mode]').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === m)
+  })
+  document.getElementById('presetLabel').textContent = MODE_LABELS[m]
+  renderPresetBar()
+  updateEnvForcing()
+  updateTodForcing()
+  updateVariantSection()
+  updatePresetCount()
+  updateRunAllBtn()
+}
+
+// ── Preset multi-select ──
+function renderPresetBar() {
+  const host = document.getElementById('presetBar')
+  host.innerHTML = ''
+  ALL_PRESETS[state.mode].forEach(p => {
+    const b = document.createElement('button')
+    b.className = 'type-btn' + (p.tier ? ' tier-' + p.tier : '')
+    b.textContent = p.label
+    b.dataset.preset = p.id
+    b.addEventListener('click', () => togglePreset(p.id))
+    host.appendChild(b)
+  })
+}
+
+function togglePreset(id) {
+  if (state.selected.has(id)) {
+    state.selected.delete(id)
+  } else {
+    state.selected.add(id)
+  }
+  document.querySelectorAll('[data-preset]').forEach(b => {
+    b.classList.toggle('active', state.selected.has(b.dataset.preset))
+  })
+  updateEnvForcing()
+  updateTodForcing()
+  updateVariantSection()
+  updatePresetCount()
+  updateRunAllBtn()
+}
+
+function updatePresetCount() {
+  const n = state.selected.size
+  document.getElementById('presetCount').textContent =
+    n === 0 ? '0 selected' : `${n} selected`
+}
+
+// ── Environment with forcing ──
+function selectEnv(e) {
+  state.env_id = e
+  state.variant_id = null
+  document.querySelectorAll('[data-env]').forEach(b => {
+    b.classList.toggle('active', b.dataset.env === e)
+  })
+  document.getElementById('envCurrent').textContent = ENV_LABELS[e]
+  updateVariantSection()
+}
+
+function updateEnvForcing() {
+  // If any selected preset has forced_env, lock to it.
+  const presets = getSelectedPresetDefs()
+  const forced = presets.find(p => p.forced_env)
+  if (forced) {
+    state.env_id = forced.forced_env
+    document.querySelectorAll('[data-env]').forEach(b => {
+      b.classList.toggle('active', b.dataset.env === forced.forced_env)
+      b.disabled = true
+    })
+    document.getElementById('envCurrent').textContent = ENV_LABELS[forced.forced_env] + ' (locked)'
+  } else {
+    document.querySelectorAll('[data-env]').forEach(b => {
+      b.disabled = false
+      b.classList.toggle('active', b.dataset.env === state.env_id)
+    })
+    document.getElementById('envCurrent').textContent = ENV_LABELS[state.env_id]
+  }
+}
+
+// ── Time of day with forcing ──
+function selectTod(t) {
+  state.time_of_day = t
+  document.querySelectorAll('[data-tod]').forEach(b => {
+    b.classList.toggle('active', b.dataset.tod === t)
+  })
+  document.getElementById('todCurrent').textContent = t === 'day' ? 'Day' : 'Night'
+}
+
+function updateTodForcing() {
+  const presets = getSelectedPresetDefs()
+  const forced = presets.find(p => p.forced_tod)
+  if (forced) {
+    state.time_of_day = forced.forced_tod
+    document.querySelectorAll('[data-tod]').forEach(b => {
+      b.classList.toggle('active', b.dataset.tod === forced.forced_tod)
+      b.disabled = true
+    })
+    document.getElementById('todCurrent').textContent = (forced.forced_tod === 'day' ? 'Day' : 'Night') + ' (locked)'
+  } else {
+    document.querySelectorAll('[data-tod]').forEach(b => {
+      b.disabled = false
+      b.classList.toggle('active', b.dataset.tod === state.time_of_day)
+    })
+    document.getElementById('todCurrent').textContent = state.time_of_day === 'day' ? 'Day' : 'Night'
+  }
+}
+
+// ── Lighting variant (only when single preset has variants for the active env) ──
+function updateVariantSection() {
+  const sel = getSelectedPresetDefs()
+  // Only show variants when exactly one preset is selected and it has variants for the resolved env
+  let variants = null
+  if (sel.length === 1) {
+    const env = sel[0].forced_env || state.env_id
+    if (sel[0].variants_by_env && sel[0].variants_by_env[env]) {
+      variants = sel[0].variants_by_env[env]
+    }
+  }
+  const section = document.getElementById('variantSection')
+  const bar     = document.getElementById('variantBar')
+  if (!variants) {
+    section.style.display = 'none'
+    bar.innerHTML = ''
+    state.variant_id = null
+    return
+  }
+  section.style.display = ''
+  if (!state.variant_id) state.variant_id = variants[0].id
+  bar.innerHTML = ''
+  variants.forEach(v => {
+    const b = document.createElement('button')
+    b.className = 'type-btn' + (v.id === state.variant_id ? ' active' : '')
+    b.textContent = v.label
+    b.dataset.variant = v.id
+    b.addEventListener('click', () => {
+      state.variant_id = v.id
+      bar.querySelectorAll('.type-btn').forEach(x => {
+        x.classList.toggle('active', x.dataset.variant === v.id)
+      })
+    })
+    bar.appendChild(b)
+  })
+}
+
+// ── Aspect / Expand ──
+function selectAspect(a) {
+  state.aspect_ratio = a
+  document.querySelectorAll('[data-aspect]').forEach(b => {
+    b.classList.toggle('active', b.dataset.aspect === a)
+  })
+  document.getElementById('aspectCurrent').textContent = a
+}
+function selectExpand(v) {
+  state.expand = v === 'on'
+  document.querySelectorAll('[data-expand]').forEach(b => {
+    b.classList.toggle('active', b.dataset.expand === v)
+  })
+  document.getElementById('expandCurrent').textContent = v === 'on' ? 'On' : 'Off'
+}
+
+function getSelectedPresetDefs() {
+  return ALL_PRESETS[state.mode].filter(p => state.selected.has(p.id))
+}
+
+function updateRunAllBtn() {
+  document.getElementById('runAllBtn').disabled =
+    !(sources.length > 0 && state.selected.size > 0)
+}
+
+// ── Render orchestration ──
+async function runAll() {
+  const presetsToRun = getSelectedPresetDefs()
+  if (!presetsToRun.length || !sources.length) return
+
+  // Show stage results, hide empty
+  document.getElementById('stageEmpty').style.display = 'none'
+  document.getElementById('resultsGrid').style.display = ''
+  document.getElementById('stageProgress').classList.add('active')
+  setStatus('busy', `rendering ${presetsToRun.length}…`)
+  document.getElementById('runAllBtn').disabled = true
+
+  // Set up placeholders synchronously so all show "Sculpting" state
+  presetsToRun.forEach(p => setupPlaceholder(p))
+
+  // Fan out parallel requests
+  const results = await Promise.allSettled(presetsToRun.map(generateOne))
+
+  document.getElementById('stageProgress').classList.remove('active')
+  const failed = results.filter(r => r.status === 'rejected').length
+  if (failed === 0) setStatus('ok', 'done')
+  else if (failed === presetsToRun.length) setStatus('err', 'all failed')
+  else setStatus('ok', `${presetsToRun.length - failed} of ${presetsToRun.length} done`)
+
+  document.getElementById('runAllBtn').disabled = false
+}
+
+function setupPlaceholder(p) {
+  const name = p.label
+  let card = document.getElementById('rc-' + p.id)
+  if (!card) {
+    card = document.createElement('div')
+    card.id = 'rc-' + p.id
+    card.className = 'rc'
+    card.onclick = () => tapResult(p.id)
+    addToStack(card, p.id)
+  }
+  card.className = 'rc'
+  card.innerHTML =
+    `<div class="rc-img"><div class="rc-spinner-area"><div class="spin"></div><div>Sculpting</div></div></div>
+     <div class="rc-body"><div class="rc-name">${esc(name)}</div></div>`
+  restackResults()
+}
+
+async function generateOne(p) {
+  const env = p.forced_env || state.env_id
+  const tod = p.forced_tod || state.time_of_day
+  // variant only applies when this preset matches the variant section's preset
+  const sel = getSelectedPresetDefs()
+  const includeVariant =
+    sel.length === 1 && sel[0].id === p.id && state.variant_id
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source_image_b64:       sources[0].b64,
+        additional_images_b64:  sources.slice(1).map(s => s.b64),
+        preset_id:              p.id,
+        environment_id:         env,
+        time_of_day:            tod,
+        aspect_ratio:           state.aspect_ratio,
+        expand:                 state.expand,
+        lighting_variant_id:    includeVariant ? state.variant_id : undefined
+      })
+    })
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}))
+      throw new Error(errBody.error || `HTTP ${res.status}`)
+    }
+    const data = await res.json()
+    if (!data.image_b64) throw new Error('No image returned')
+    mkResult(p, data)
+  } catch (e) {
+    console.error('[generateOne]', p.id, e)
+    mkError(p, e.message || 'Render failed')
+  }
+}
+
+// ── Stack management (mirrors action-minis) ──
+function addToStack(el, id) {
+  const inner = document.getElementById('resultsStackInner')
+  if (!inner.contains(el)) {
+    inner.appendChild(el)
+    stackOrder.unshift(id)
+  }
+  restackResults()
+}
+
+function restackResults() {
+  stackOrder.forEach((id, i) => {
+    const el = document.getElementById('rc-' + id)
+    if (!el) return
+    el.dataset.pos = String(i)
+    el.classList.toggle('top', i === 0)
+  })
+  const meta = document.getElementById('stackMeta')
+  if (stackOrder.length === 0) {
+    meta.innerHTML = ''
+  } else {
+    meta.innerHTML =
+      `<span class="stack-counter">1 / ${stackOrder.length}</span>` +
+      (stackOrder.length > 1 ? '<span class="stack-hint">· tap a card to peel forward</span>' : '')
+  }
+}
+
+function tapResult(id) {
+  const idx = stackOrder.indexOf(id)
+  if (idx <= 0) return
+  stackOrder.splice(idx, 1)
+  stackOrder.unshift(id)
+  restackResults()
+}
+
+function mkResult(p, r) {
+  let card = document.getElementById('rc-' + p.id)
+  if (!card) {
+    card = document.createElement('div')
+    card.id = 'rc-' + p.id
+    card.onclick = () => tapResult(p.id)
+    addToStack(card, p.id)
+  }
+  card.className = 'rc done'
+  imgStore[p.id] = r.image_b64
+  resStore[p.id] = r
+
+  const seconds = Math.round((r.duration_ms || 0) / 1000)
+  const metaBits = []
+  metaBits.push(r.environment_used)
+  metaBits.push(r.time_of_day_used)
+  metaBits.push(r.aspect_ratio)
+  if (r.source_image_count > 1) metaBits.push(`${r.source_image_count} src`)
+  if (r.expanded) metaBits.push('outpainted')
+  const meta = metaBits.join(' · ')
+
+  card.innerHTML = `
+    <div class="rc-img" onclick="event.stopPropagation();if(stackOrder[0]==='${p.id}')openLightbox('${p.id}');else tapResult('${p.id}')">
+      <img src="data:image/jpeg;base64,${r.image_b64}">
+      <div class="rc-overlay"><span class="rc-ol">View full size</span></div>
+      <div class="rc-duration">${seconds}s</div>
+    </div>
+    <div class="rc-body">
+      <div class="rc-name">${esc(p.label)}</div>
+      <div class="rc-meta">${esc(meta)}</div>
+      <div class="rc-btns">
+        <button class="rc-btn save" onclick="event.stopPropagation();dl('${p.id}','${esc(p.label)}')">Save</button>
+        <button class="rc-btn" onclick="event.stopPropagation();openLightbox('${p.id}')">Full</button>
+      </div>
+    </div>`
+  restackResults()
+}
+
+function mkError(p, msg) {
+  let card = document.getElementById('rc-' + p.id)
+  if (!card) {
+    card = document.createElement('div')
+    card.id = 'rc-' + p.id
+    card.onclick = () => tapResult(p.id)
+    addToStack(card, p.id)
+  }
+  card.className = 'rc error'
+  card.innerHTML = `
+    <div class="rc-error-body">
+      <div class="rc-error-headline">${esc(p.label)} failed</div>
+      <div class="rc-error-detail">${esc(msg)}</div>
+    </div>
+    <div class="rc-body" style="border-top:0">
+      <div class="rc-btns">
+        <button class="rc-btn" onclick="event.stopPropagation();retryOne('${p.id}')">Retry</button>
+      </div>
+    </div>`
+  restackResults()
+}
+
+function retryOne(id) {
+  const p = ALL_PRESETS[state.mode].find(x => x.id === id)
+  if (!p) return
+  setupPlaceholder(p)
+  generateOne(p)
+}
+
+// ── Lightbox + Save ──
+function openLightbox(id) {
+  const b64 = imgStore[id]
+  if (!b64) return
+  document.getElementById('lightboxImg').src = 'data:image/jpeg;base64,' + b64
+  document.getElementById('lightbox').classList.add('active')
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active')
+}
+
+function dl(id, label) {
+  const b64 = imgStore[id]
+  if (!b64) return
+  const a = document.createElement('a')
+  a.href = 'data:image/jpeg;base64,' + b64
+  a.download = `houses-${id}-${Date.now()}.jpg`
+  document.body.appendChild(a); a.click(); a.remove()
+}
+
+// ── Status indicator ──
+function setStatus(kind, label) {
+  const dot = document.getElementById('gDot')
+  dot.classList.remove('busy','ok','err')
+  if (kind) dot.classList.add(kind)
+  document.getElementById('gStatus').textContent = label
+}
+
+// ── Helpers ──
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]))
+}
+
+// ── Init ──
+renderPresetBar()
+renderThumbs()
+updateEnvForcing()
+updateTodForcing()
+updateVariantSection()
+updatePresetCount()
+updateRunAllBtn()
+</script>
+
+</body>
+</html>

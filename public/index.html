@@ -12,7 +12,7 @@
   --muted:#7A6F5E;--dim:#B0A898;--surface:rgba(245,240,232,0.06);
   --serif:'Cormorant Garamond',Georgia,serif;--sans:'Jost',sans-serif;
   /* Module accent colors */
-  --acc-structures: #C97A3A;
+  --acc-houses:     #C97A3A;
   --acc-landscapes: #4A9B7E;
   --acc-groups:     #9A7BC2;
   --acc-sportsmem:  #5078C8;
@@ -126,7 +126,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .bottom-links a{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s}
 .bottom-links a:hover{color:var(--dim)}
 
-.bg-structures{background:linear-gradient(135deg, rgba(120,80,40,.3) 0%, rgba(60,30,10,.6) 100%),radial-gradient(ellipse at 30% 60%, rgba(180,120,60,.25) 0%, transparent 60%);background-color:#2A1A0A}
+.bg-houses{background:linear-gradient(135deg, rgba(120,80,40,.3) 0%, rgba(60,30,10,.6) 100%),radial-gradient(ellipse at 30% 60%, rgba(180,120,60,.25) 0%, transparent 60%);background-color:#2A1A0A}
 .bg-landscapes{background:linear-gradient(135deg, rgba(30,80,60,.4) 0%, rgba(10,40,30,.6) 100%),radial-gradient(ellipse at 70% 40%, rgba(60,140,100,.2) 0%, transparent 60%);background-color:#0A2018}
 .bg-moments{background:linear-gradient(135deg, rgba(60,50,80,.4) 0%, rgba(20,15,30,.6) 100%),radial-gradient(ellipse at 50% 50%, rgba(100,80,140,.2) 0%, transparent 60%);background-color:#100C1E}
 .bg-stadiums{background:linear-gradient(135deg, rgba(20,40,80,.4) 0%, rgba(10,20,50,.6) 100%),radial-gradient(ellipse at 30% 70%, rgba(40,80,160,.2) 0%, transparent 60%);background-color:#0A1428}
@@ -141,7 +141,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 <nav>
   <a class="nav-logo" href="/">mini<em>scape</em></a>
   <ul class="nav-links">
-    <li><a href="structures.html">Structures</a></li>
+    <li><a href="houses.html">Houses</a></li>
     <li><a href="landscapes.html">Landscapes</a></li>
     <li><a href="groups.html">Groups</a></li>
     <li><a href="actionmini.html">Action Minis</a></li>
@@ -204,9 +204,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
   </div>
 
   <div class="categories">
-    <a class="cat-card" href="structures.html" data-reveal data-delay="0" data-module="structures">
-      <div class="cat-bg bg-structures"></div><div class="cat-overlay"></div>
-      <div class="cat-content"><span class="cat-tag">Most Popular</span><h3 class="cat-name">Structures</h3><p class="cat-desc">Your home, a cherished building, a place that shaped you — recreated as a museum-quality architectural scale model.</p><span class="cat-arrow">Begin ↗</span></div>
+    <a class="cat-card" href="houses.html" data-reveal data-delay="0" data-module="houses">
+      <div class="cat-bg bg-houses"></div><div class="cat-overlay"></div>
+      <div class="cat-content"><span class="cat-tag">Most Popular</span><h3 class="cat-name">Houses</h3><p class="cat-desc">Your home, a cherished building, a place that shaped you — recreated as a museum-quality architectural scale model.</p><span class="cat-arrow">Begin ↗</span></div>
     </a>
 
     <a class="cat-card" href="landscapes.html" data-reveal data-delay="100" data-module="landscapes">
@@ -260,7 +260,7 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el))
 
 const MODULES = {
-  structures: { name: 'Structures',         accent: 'var(--acc-structures)', href: 'structures.html', preview: '/suggester/structures.jpg' },
+  houses:     { name: 'Houses',             accent: 'var(--acc-houses)',     href: 'houses.html',     preview: '/suggester/houses.jpg' },
   landscapes: { name: 'Landscapes',         accent: 'var(--acc-landscapes)', href: 'landscapes.html', preview: '/suggester/landscapes.jpg' },
   groups:     { name: 'Groups',             accent: 'var(--acc-groups)',     href: 'groups.html',     preview: '/suggester/groups.jpg' },
   sportsmem:  { name: 'Sports Memorabilia', accent: 'var(--acc-sportsmem)',  href: 'sportsmem.html',  preview: '/suggester/sportsmem.jpg' },

@@ -350,109 +350,180 @@ textarea.input-field{
   text-transform:uppercase;
 }
 
-/* Card-only fields wrapper */
-.card-only{display:none;flex-direction:column;gap:12px}
-.card-only.active{display:flex}
-.card-only-note{
-  font-size:11px;
-  color:var(--ink-3);
-  line-height:1.5;
-  padding:8px 12px;
-  background:var(--surface-2);
-  border-radius:6px;
+/* Compact cells for the type bar (10 presets in cols-3 = 4 rows) */
+.btn-bar.cols-3 .bbtn{
+  padding:9px 6px;
+  font-size:11.5px;
+  gap:6px;
+}
+.btn-bar.cols-3 .bbtn .bbtn-icon{
+  width:13px;height:13px;
+}
+.btn-bar.cols-3 .bbtn .bbtn-icon svg{
+  width:13px;height:13px;
 }
 
-/* Variant strips */
-.variants-hdr{
+/* Materials section header */
+.materials-hdr{
   display:flex;
   align-items:center;
   justify-content:space-between;
+  margin-bottom:8px;
 }
-.add-variant-btn{
-  background:transparent;
+
+/* Refinements section */
+.refinements{
   border:none;
-  color:var(--ink-3);
-  font-family:var(--sans);
-  font-size:11px;
-  cursor:pointer;
-  padding:0;
-  letter-spacing:.02em;
-  transition:color .15s;
 }
-.add-variant-btn:hover{color:var(--accent)}
-.var-strip{
+.refinements-summary{
   display:flex;
   align-items:center;
-  gap:12px;
-  padding:10px 14px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:6px;
+  justify-content:space-between;
   cursor:pointer;
-  transition:all .15s;
-  font-size:12px;
-  margin-bottom:4px;
+  list-style:none;
+  margin-bottom:8px;
+  user-select:none;
 }
-.var-strip:hover{border-color:var(--border-strong)}
-.var-strip.active{
+.refinements-summary::-webkit-details-marker{display:none}
+.refinements-summary::after{
+  content:'›';
+  margin-left:auto;
+  font-size:14px;
+  color:var(--ink-3);
+  transition:transform .2s;
+  display:inline-block;
+}
+.refinements[open] > .refinements-summary::after{
+  transform:rotate(90deg);
+}
+.refinements-count{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  margin-right:8px;
+  transition:color .15s;
+}
+.refinements-count.has-off{color:var(--ink-2)}
+
+.refinements-list{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  padding-bottom:4px;
+}
+.refinement-row{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:8px 4px;
+  cursor:pointer;
+  border-radius:4px;
+  transition:background .12s;
+}
+.refinement-row:hover{
+  background:var(--surface-2);
+}
+.refinement-toggle{
+  flex-shrink:0;
+  width:32px;
+  height:18px;
+  border-radius:9px;
+  background:var(--border);
+  position:relative;
+  transition:background .15s;
+  margin-top:1px;
+}
+.refinement-toggle::after{
+  content:'';
+  position:absolute;
+  top:2px;
+  left:2px;
+  width:14px;height:14px;
+  border-radius:50%;
+  background:#fff;
+  transition:transform .15s;
+}
+.refinement-row.on .refinement-toggle{background:var(--accent)}
+.refinement-row.on .refinement-toggle::after{transform:translateX(14px)}
+.refinement-text{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.refinement-name{
+  font-size:12px;
+  font-weight:500;
+  color:var(--ink);
+  letter-spacing:.005em;
+}
+.refinement-desc{
+  font-size:10.5px;
+  color:var(--ink-3);
+  line-height:1.4;
+}
+.materials-count{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  transition:color .15s;
+}
+.materials-count.has-selection{color:var(--accent)}
+.materials-hint{
+  font-size:11px;
+  color:var(--ink-3);
+  margin-top:8px;
+  letter-spacing:.01em;
+}
+
+/* Multi-select state for material grid — overrides single-select .active */
+.btn-bar.cols-3 .bbtn.selected{
   border-color:var(--accent);
   background:var(--accent-soft);
-}
-.var-strip.running{border-color:var(--accent)}
-.var-strip.done{border-color:var(--success)}
-.var-strip.error{border-color:var(--danger)}
-.vstrip-dot{
-  width:5px;height:5px;border-radius:50%;
-  background:var(--ink-3);
-  flex-shrink:0;
-}
-.vstrip-dot.running{background:var(--accent)}
-.vstrip-dot.done{background:var(--success)}
-.vstrip-dot.error{background:var(--danger)}
-.vstrip-name{
-  flex:1;
-  color:var(--ink);
-  font-weight:500;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.vstrip-chips{
-  display:flex;
-  gap:6px;
-  flex-shrink:0;
-}
-.vstrip-chip{
-  font-size:10px;
-  padding:2px 8px;
-  border:1px solid var(--border);
-  border-radius:3px;
-  color:var(--ink-2);
-  font-weight:500;
-  letter-spacing:.02em;
-  background:transparent;
-}
-.var-strip.active .vstrip-chip{
-  border-color:var(--border-strong);
-}
-.vstrip-run{
-  background:transparent;
-  border:1px solid var(--border);
-  color:var(--ink-2);
-  width:28px;height:28px;
-  border-radius:4px;
-  cursor:pointer;
-  flex-shrink:0;
-  font-size:11px;
-  transition:all .15s;
-  display:flex;align-items:center;justify-content:center;
-  padding:0;
-}
-.vstrip-run:hover:not(:disabled){
-  border-color:var(--accent);
   color:var(--accent);
+  position:relative;
 }
-.vstrip-run:disabled{opacity:.3;cursor:not-allowed}
+.btn-bar.cols-3 .bbtn.selected::before{
+  content:'';
+  position:absolute;
+  top:5px;right:5px;
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--accent);
+}
+/* Per-preset render status */
+.btn-bar.cols-3 .bbtn.running{border-color:var(--accent)}
+.btn-bar.cols-3 .bbtn.running::after{
+  content:'';
+  position:absolute;
+  bottom:4px;left:50%;
+  transform:translateX(-50%);
+  width:14px;height:1px;
+  background:var(--accent);
+  animation:progressSlide 1.2s linear infinite;
+}
+.btn-bar.cols-3 .bbtn.done{border-color:var(--success)}
+.btn-bar.cols-3 .bbtn.done::before{
+  content:'';
+  position:absolute;
+  top:5px;right:5px;
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--success);
+}
+.btn-bar.cols-3 .bbtn.error{border-color:var(--danger)}
+.btn-bar.cols-3 .bbtn.error::before{
+  content:'';
+  position:absolute;
+  top:5px;right:5px;
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--danger);
+}
 
 /* ── STAGE (the working surface — primary attention) ── */
 .center{
@@ -640,12 +711,14 @@ textarea.input-field{
   line-height:1.55;
 }
 
-/* Helpers grid */
-.helpers-hdr{
+/* Suggester CTA — directs user to side panel after analyze */
+.suggester-cta{
   text-align:center;
-  margin-bottom:24px;
+  padding:32px 16px 16px;
+  border-top:1px solid var(--border);
+  margin-top:24px;
 }
-.helpers-eyebrow{
+.suggester-cta-eyebrow{
   font-size:11px;
   font-weight:500;
   letter-spacing:.08em;
@@ -653,111 +726,23 @@ textarea.input-field{
   color:var(--ink-3);
   margin-bottom:8px;
 }
-.helpers-title{
+.suggester-cta-title{
   font-family:var(--serif);
   font-size:22px;
   font-weight:400;
   color:var(--ink);
   letter-spacing:-.005em;
+  margin-bottom:6px;
 }
-.helpers-title em{color:var(--accent);font-style:italic}
-.helpers-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
-  gap:16px;
-  margin-bottom:32px;
-}
-.helper-card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:8px;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  transition:border-color .15s;
-}
-.helper-card:hover{border-color:var(--border-strong)}
-.helper-card.running{border-color:var(--accent)}
-.helper-card.done{border-color:var(--success)}
-.helper-preview{
-  width:100%;
-  aspect-ratio:4/3;
-  background:var(--surface-2);
-  background-size:cover;
-  background-position:center;
-  position:relative;
-}
-.helper-preview-fallback{
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--serif);
-  font-size:14px;
-  color:var(--ink-3);
-  font-style:italic;
-  letter-spacing:.01em;
-}
-.helper-body{
-  padding:16px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.helper-name{
-  font-family:var(--serif);
-  font-size:16px;
-  font-weight:400;
-  color:var(--ink);
-  letter-spacing:-.005em;
-}
-.helper-chips{display:flex;gap:6px;flex-wrap:wrap}
-.helper-chip{
-  font-size:10px;
-  padding:2px 8px;
-  border:1px solid var(--border);
-  border-radius:3px;
-  color:var(--ink-2);
-  letter-spacing:.02em;
-}
-.helper-run{
-  margin-top:8px;
-  padding:8px 12px;
-  background:transparent;
-  border:1px solid var(--border);
-  border-radius:6px;
-  color:var(--ink);
-  font-family:var(--sans);
+.suggester-cta-title em{color:var(--accent);font-style:italic}
+.suggester-cta-sub{
   font-size:12px;
-  font-weight:500;
-  cursor:pointer;
-  transition:all .15s;
-  width:100%;
-}
-.helper-run:hover:not(:disabled){
-  border-color:var(--accent);
-  color:var(--accent);
-}
-.helper-run:disabled{opacity:.4;cursor:not-allowed}
-.helpers-runall-wrap{
-  display:flex;
-  justify-content:center;
-  padding:16px 0 8px;
-  border-top:1px solid var(--border);
-}
-.helpers-runall{
-  padding:10px 32px;
-  background:var(--accent);
-  color:#fff;
-  border:none;
-  border-radius:6px;
-  font-family:var(--sans);
-  font-size:13px;
-  font-weight:500;
-  cursor:pointer;
-  transition:background .15s;
+  color:var(--ink-2);
   letter-spacing:.01em;
+  max-width:380px;
+  margin:0 auto;
+  line-height:1.5;
 }
-.helpers-runall:hover:not(:disabled){background:var(--accent-hover)}
-.helpers-runall:disabled{opacity:.4;cursor:not-allowed}
 
 /* ── RESULTS STACK (Landscapes-style horizontal cascade) ── */
 .results-grid{
@@ -853,7 +838,6 @@ textarea.input-field{
 .rc.top .rc-img{cursor:zoom-in}
 
 /* Card-aspect variant */
-.rc-card .rc-img.rc-card-img img{object-fit:contain;background:var(--surface-2)}
 
 .rc-spinner-area{
   display:flex;
@@ -898,6 +882,34 @@ textarea.input-field{
 }
 .rc-img:hover .rc-ol{opacity:1}
 
+/* Duration badge — appears bottom-center of result image, auto-fades */
+.rc-duration{
+  position:absolute;
+  bottom:8px;
+  left:50%;
+  transform:translateX(-50%);
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:500;
+  color:#fff;
+  background:rgba(26,24,20,.78);
+  padding:4px 10px;
+  border-radius:4px;
+  letter-spacing:.04em;
+  pointer-events:none;
+  opacity:0;
+  animation:rcDurFade 3.6s ease-out forwards;
+  transition:opacity .18s;
+  z-index:2;
+}
+.rc-img:hover .rc-duration{opacity:.95;animation:none}
+@keyframes rcDurFade{
+  0%   { opacity:0 }
+  8%   { opacity:.95 }
+  72%  { opacity:.95 }
+  100% { opacity:0 }
+}
+
 .rc-body{padding:14px 16px}
 .rc-name{
   font-family:var(--serif);
@@ -936,6 +948,129 @@ textarea.input-field{
 }
 .rc-btn.save:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
 
+/* Refine panel — appears below tile when user clicks Refine button */
+.rc-refine{
+  margin-top:10px;
+  padding:10px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  font-size:11px;
+  line-height:1.5;
+  color:var(--text);
+}
+.rc-refine-status{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--muted);
+  margin-bottom:6px;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.rc-refine-spinner{
+  display:inline-block;
+  width:11px;
+  height:11px;
+  border:1.5px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 0.7s linear infinite;
+  flex-shrink:0;
+}
+.rc-refine-status.error{color:#ff6b6b}
+.rc-refine-status.error .rc-refine-spinner{display:none}
+.rc-refine-suggestion{
+  font-size:11px;
+  color:var(--muted);
+  margin-bottom:8px;
+  font-style:italic;
+}
+.rc-refine textarea{
+  width:100%;
+  min-height:50px;
+  padding:8px 10px;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:4px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.4;
+  resize:vertical;
+  box-sizing:border-box;
+}
+.rc-refine textarea:focus{
+  outline:none;
+  border-color:var(--accent);
+}
+.rc-refine-counter{
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--muted);
+  text-align:right;
+  margin:4px 0 6px;
+}
+.rc-refine-counter.over{color:#ff6b6b}
+.rc-refine-btns{
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+}
+.rc-refine-btns .rc-btn{flex:1}
+.rc-refine.busy{opacity:.6;pointer-events:none}
+
+/* Diagnostic surfaces on error tiles */
+.rc-log{
+  font-family:var(--mono);
+  font-size:10px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:8px 10px;
+  margin:8px 0;
+  line-height:1.55;
+  max-height:100px;
+  overflow:auto;
+}
+.rc-log-row{
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.rc-log-ok  { color:var(--ink-2) }
+.rc-log-err { color:var(--danger); font-weight:500 }
+
+.rc-raw{
+  margin:8px 0;
+  font-family:var(--mono);
+  font-size:10px;
+}
+.rc-raw summary{
+  cursor:pointer;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  padding:4px 0;
+  user-select:none;
+}
+.rc-raw summary:hover{color:var(--ink-2)}
+.rc-raw pre{
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:8px 10px;
+  margin:4px 0 0;
+  max-height:240px;
+  overflow:auto;
+  white-space:pre-wrap;
+  word-break:break-word;
+  color:var(--ink-2);
+  font-size:10px;
+  line-height:1.5;
+}
+
 /* Lightbox */
 .lightbox{
   position:fixed;inset:0;
@@ -972,10 +1107,20 @@ textarea.input-field{
     <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M19 18a4 4 0 0 0 0-8 6 6 0 0 0-11.5-2A4.5 4.5 0 0 0 7 18z"/><path d="M13 14l-2 4M9 14l-2 4"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></symbol>
     <symbol id="i-mountain" viewBox="0 0 24 24"><path d="M3 21l6-12 4 6 3-4 5 10z"/></symbol>
-    <symbol id="i-card" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></symbol>
-    <symbol id="i-museum" viewBox="0 0 24 24"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-7M15 21v-7"/></symbol>
     <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
+    <!-- Material preset icons -->
+    <symbol id="i-resin"      viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M9 9c1.5-1.5 4.5-1.5 6 0"/></symbol>
+    <symbol id="i-wood"       viewBox="0 0 24 24"><path d="M4 8c4 0 4 8 8 8s4-8 8-8M4 16c4 0 4-8 8-8s4 8 8 8"/></symbol>
+    <symbol id="i-wax"        viewBox="0 0 24 24"><path d="M12 3l5 7v8a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3v-8z"/><path d="M12 3v3"/></symbol>
+    <symbol id="i-bronze"     viewBox="0 0 24 24"><path d="M5 21h14M7 21V8l5-4 5 4v13M10 14h4"/></symbol>
+    <symbol id="i-plushy"     viewBox="0 0 24 24"><circle cx="9" cy="9" r="2"/><circle cx="15" cy="9" r="2"/><path d="M5 16c0-3 3-6 7-6s7 3 7 6v3a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-metals"     viewBox="0 0 24 24"><path d="M3 12l4-7 4 7M11 12l4-7 4 7M3 12h8M11 12h8M5 12v9M9 12v9M13 12v9M17 12v9"/></symbol>
+    <symbol id="i-terracotta" viewBox="0 0 24 24"><path d="M6 21V9l6-5 6 5v12M6 13l3 1M14 12l3 2M9 17l4 1"/></symbol>
+    <symbol id="i-ceramic"    viewBox="0 0 24 24"><path d="M5 21V11c0-3 3-5 7-5s7 2 7 5v10M3 21h18"/><path d="M8 15l2-1M14 13l2 1"/></symbol>
+    <symbol id="i-alabaster"  viewBox="0 0 24 24"><path d="M8 21V11c0-3 2-7 4-7s4 4 4 7v10M5 21h14"/><circle cx="12" cy="13" r="1.5"/></symbol>
+    <symbol id="i-window"     viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M12 4v16M4 12h16"/></symbol>
+    <symbol id="i-trophy"     viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M5 5h3M16 5h3M5 5v2a3 3 0 0 0 3 3M19 5v2a3 3 0 0 1-3 3M10 13v3M14 13v3M8 20h8"/></symbol>
   </defs>
 </svg>
 
@@ -1021,42 +1166,57 @@ textarea.input-field{
       </div>
 
       <div class="section">
-        <div class="section-label">Active variant</div>
-        <input class="input-field" id="activeName" placeholder="Variant name" value="Variant 1">
+        <details class="refinements" id="refinementsDetails" open>
+          <summary class="refinements-summary">
+            <span class="section-label">Refinements</span>
+            <span class="refinements-count" id="refinementsCount">6 of 6 on</span>
+          </summary>
+          <div class="refinements-list" id="refinementsList"></div>
+        </details>
       </div>
 
       <div class="section">
-        <div class="section-label">Mood</div>
-        <div class="btn-bar cols-3" id="moodBar"></div>
-      </div>
-
-      <div class="section">
-        <div class="section-label">Type</div>
-        <div class="btn-bar cols-3" id="typeBar"></div>
-      </div>
-
-      <div class="card-only" id="cardOnlyFields">
-        <div class="section-label">Memory (back of card)</div>
-        <textarea class="input-field" id="memoryText" placeholder="A short note about this moment — appears on the back of the card." maxlength="180"></textarea>
-        <div class="card-only-note">Card art is rendered as a premium illustrated painting.</div>
-      </div>
-
-      <div class="section">
-        <div class="section-label">Plaque line (optional)</div>
-        <input class="input-field" id="plaqueText" placeholder="Forever in motion." maxlength="40">
-      </div>
-
-      <div class="section">
-        <div class="section-label">Notes (optional)</div>
-        <textarea class="input-field" id="notesText" placeholder="Any specific direction…"></textarea>
-      </div>
-
-      <div class="section">
-        <div class="variants-hdr">
-          <div class="section-label">Variants</div>
-          <button class="add-variant-btn" onclick="addVariant()">+ Add</button>
+        <div class="materials-hdr">
+          <div class="section-label">Materials</div>
+          <div class="materials-count" id="materialsCount">0 selected</div>
         </div>
-        <div id="variantsList"></div>
+        <div class="btn-bar cols-3" id="typeBar"></div>
+        <div class="materials-hint" id="materialsHint">Pick one or more — each becomes a render.</div>
+      </div>
+
+      <div class="section">
+        <div class="materials-hdr">
+          <div class="section-label">Location</div>
+          <div class="materials-count" id="locationCurrent">On a desk</div>
+        </div>
+        <div class="btn-bar cols-3" id="locationBar">
+          <button class="type-btn" data-loc="in_context" onclick="selectLocation('in_context')">In context</button>
+          <button class="type-btn active" data-loc="on_a_desk" onclick="selectLocation('on_a_desk')">On a desk</button>
+          <button class="type-btn" data-loc="on_a_shelf" onclick="selectLocation('on_a_shelf')">On a shelf</button>
+        </div>
+        <div class="materials-hint">Where the sculpture is staged. Same setting for every material.</div>
+      </div>
+
+      <div class="section">
+        <div class="materials-hdr">
+          <div class="section-label">Aspect ratio</div>
+          <div class="materials-count" id="aspectCurrent">1:1</div>
+        </div>
+        <div class="btn-bar cols-6" id="aspectBar" style="gap:4px">
+          <button class="type-btn active" data-aspect="1:1" onclick="selectAspect('1:1')">1:1</button>
+          <button class="type-btn" data-aspect="4:3" onclick="selectAspect('4:3')">4:3</button>
+          <button class="type-btn" data-aspect="3:2" onclick="selectAspect('3:2')">3:2</button>
+          <button class="type-btn" data-aspect="16:9" onclick="selectAspect('16:9')">16:9</button>
+          <button class="type-btn" data-aspect="21:9" onclick="selectAspect('21:9')">21:9</button>
+          <button class="type-btn" data-aspect="5:4" onclick="selectAspect('5:4')">5:4</button>
+        </div>
+        <div class="btn-bar cols-6" style="gap:4px;margin-top:4px">
+          <button class="type-btn" data-aspect="2:3" onclick="selectAspect('2:3')">2:3</button>
+          <button class="type-btn" data-aspect="3:4" onclick="selectAspect('3:4')">3:4</button>
+          <button class="type-btn" data-aspect="4:5" onclick="selectAspect('4:5')">4:5</button>
+          <button class="type-btn" data-aspect="9:16" onclick="selectAspect('9:16')">9:16</button>
+        </div>
+        <div class="materials-hint">Output dimensions for the render.</div>
       </div>
 
     </div>
@@ -1098,13 +1258,10 @@ textarea.input-field{
 
           <div class="suit-warn" id="suitWarnStage" style="display:none"></div>
 
-          <div class="helpers-hdr">
-            <div class="helpers-eyebrow">Pick a variant or run them all</div>
-            <div class="helpers-title">Four <em>moods</em>, one moment</div>
-          </div>
-          <div class="helpers-grid" id="helpersGrid"></div>
-          <div class="helpers-runall-wrap">
-            <button class="helpers-runall" onclick="runAll()">Run All Variants</button>
+          <div class="suggester-cta">
+            <div class="suggester-cta-eyebrow">Next</div>
+            <div class="suggester-cta-title">Pick <em>materials</em> in the side panel</div>
+            <div class="suggester-cta-sub">Each material becomes one render. Choose as many as you want, then run.</div>
           </div>
         </div>
       </div>
@@ -1123,49 +1280,131 @@ textarea.input-field{
 const API     = '/api/v1/actionmini/generate'
 const ANALYZE = '/api/v1/actionmini/analyze'
 
-const MOODS = [
-  { k:'golden',   label:'Golden',   icon:'i-sun'   },
-  { k:'dramatic', label:'Dramatic', icon:'i-cloud' },
-  { k:'vivid',    label:'Vivid',    icon:'i-spark' },
-]
+// Mood removed — staging is locked into each preset prompt.
+
 const PRES = [
-  { k:'insitu',           label:'In Situ',  icon:'i-mountain', disabled:false },
-  { k:'collectable_card', label:'Card',     icon:'i-card',     disabled:false },
-  { k:'museum',           label:'Museum',   icon:'i-museum',   disabled:false },
+  // Row 1 — accessible / base
+  { k:'resin',                   label:'Resin',        icon:'i-resin',      disabled:false },
+  { k:'plushy',                  label:'Plushy',       icon:'i-plushy',     disabled:false },
+  { k:'carved_wood',             label:'Wood',         icon:'i-wood',       disabled:false },
+  // Row 2 — premium materials
+  { k:'wax_bronze',              label:'Wax',          icon:'i-wax',        disabled:false },
+  { k:'painted_ceramic_cracked', label:'Ceramic',      icon:'i-ceramic',    disabled:false },
+  { k:'terracotta_cracked',      label:'Terracotta',   icon:'i-terracotta', disabled:false },
+  // Row 3 — signature materials
+  { k:'bronze_bronze',           label:'Bronze',       icon:'i-bronze',     disabled:false },
+  { k:'mixed_metals',            label:'Metals',       icon:'i-metals',     disabled:false },
+  { k:'alabaster',               label:'Alabaster',    icon:'i-alabaster',  disabled:false },
+  // Row 4 — staging-led presets
+  { k:'window_sill',             label:'Window Sill',  icon:'i-window',     disabled:false },
+  { k:'trophy_shelf',            label:'Trophy Shelf', icon:'i-trophy',     disabled:false },
 ]
-const MOOD_LABEL = Object.fromEntries(MOODS.map(m => [m.k, m.label]))
 const PRES_LABEL = Object.fromEntries(PRES.map(p => [p.k, p.label]))
 
 let fileB64 = null, running = false
-let imgStore = {}, resStore = {}, cardBackStore = {}, variantN = 0
+let imgStore = {}, resStore = {}
 let analyzePromise = null
 
 let detected = {
   display_name:null, kinetic_medium:null, medium_confidence:null,
   action_description:null, freeze_moment_quality:null, hero:null,
   secondary_figures:null, environment:null, distinctive_features:null,
-  source_lighting:null, memory_text:null, default_plaque_text:null,
+  source_lighting:null,
   action_suitability:null, recommendation:null, alternatives:[],
 }
 
-const variants = {}
-let activeVariantId = null
+// Multi-select state — replaces variants{} + activeVariantId model
+const selectedPresets = new Set()
+const presetStatus = {}   // { [presetId]: 'running' | 'done' | 'error' }
+
+// Location — global staging selector. User picks one of three. Defaults to on_a_desk.
+const LOCATION_LABELS = {
+  in_context: 'In context',
+  on_a_desk:  'On a desk',
+  on_a_shelf: 'On a shelf',
+}
+let currentLocation = 'on_a_desk'
+
+function selectLocation(locId) {
+  if (!LOCATION_LABELS[locId]) return
+  currentLocation = locId
+  document.querySelectorAll('#locationBar .type-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.loc === locId)
+  })
+  const cur = document.getElementById('locationCurrent')
+  if (cur) cur.textContent = LOCATION_LABELS[locId]
+}
+
+// Aspect ratio — defaults to 1:1. Sent through to NB2 via the request body.
+// All ten NB2-supported ratios available in the sidebar.
+let currentAspect = '1:1'
+
+function selectAspect(ratio) {
+  currentAspect = ratio
+  document.querySelectorAll('[data-aspect]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.aspect === ratio)
+  })
+  const cur = document.getElementById('aspectCurrent')
+  if (cur) cur.textContent = ratio
+}
+
+// Refinements — six toggleable blocks. Defaults all on (matches wrestler-shot
+// quality bar). Each refinement adds a guidance block to the prompt.
+const REFINEMENT_DEFS = [
+  { k:'craftDetail',      name:'Craft detail',      desc:'Pushes finer surface texture, sub-features on the sculpture itself' },
+  { k:'sceneDetail',      name:'Scene detail',      desc:'Pushes density in the surrounding environment — props, peripheral elements' },
+  { k:'kineticEffects',   name:'Kinetic effects',   desc:'Frozen-motion particles around the figure — dust, spray, debris' },
+  { k:'sceneEnvironment', name:'Scene environment', desc:'Honor the global Location setting (in context / on a desk / on a shelf)' },
+  { k:'dramaticLighting', name:'Dramatic lighting', desc:'Per-material atmospheric haze — soft diffused glow, no hard shafts' },
+  { k:'margins',          name:'20% horizontal margins', desc:'Subject occupies ~60% of width with breathing room left and right' },
+]
+const refinements = Object.fromEntries(REFINEMENT_DEFS.map(d => [d.k, true]))
 
 let stageState = 'empty'
 
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
 
-function buildMoodBar() {
-  const bar = document.getElementById('moodBar')
-  bar.innerHTML = ''
-  MOODS.forEach(m => {
-    const b = document.createElement('button')
-    b.type = 'button'
-    b.className = 'bbtn' + (activeVariantGet().mood === m.k ? ' active' : '')
-    b.innerHTML = `<span class="bbtn-icon"><svg><use href="#${m.icon}"/></svg></span><span>${m.label}</span>`
-    b.onclick = () => selectMood(m.k)
-    bar.appendChild(b)
+function formatDuration(ms) {
+  if (typeof ms !== 'number' || !isFinite(ms) || ms <= 0) return ''
+  if (ms < 1000)   return ms + 'ms'
+  if (ms < 60000)  return (ms / 1000).toFixed(1) + 's'
+  const m = Math.floor(ms / 60000)
+  const s = Math.floor((ms % 60000) / 1000)
+  return `${m}m ${String(s).padStart(2, '0')}s`
+}
+
+function buildRefinementsList() {
+  const list = document.getElementById('refinementsList')
+  if (!list) return
+  list.innerHTML = ''
+  REFINEMENT_DEFS.forEach(def => {
+    const row = document.createElement('div')
+    row.className = 'refinement-row' + (refinements[def.k] ? ' on' : '')
+    row.onclick = (e) => { e.preventDefault(); toggleRefinement(def.k) }
+    row.innerHTML = `
+      <div class="refinement-toggle"></div>
+      <div class="refinement-text">
+        <div class="refinement-name">${def.name}</div>
+        <div class="refinement-desc">${def.desc}</div>
+      </div>
+    `
+    list.appendChild(row)
   })
+  updateRefinementsCount()
+}
+
+function toggleRefinement(k) {
+  refinements[k] = !refinements[k]
+  buildRefinementsList()
+}
+
+function updateRefinementsCount() {
+  const el = document.getElementById('refinementsCount')
+  if (!el) return
+  const total = REFINEMENT_DEFS.length
+  const on    = REFINEMENT_DEFS.filter(d => refinements[d.k]).length
+  el.textContent = `${on} of ${total} on`
+  el.classList.toggle('has-off', on < total)
 }
 
 function buildTypeBar() {
@@ -1174,94 +1413,63 @@ function buildTypeBar() {
   PRES.forEach(p => {
     const b = document.createElement('button')
     b.type = 'button'
-    b.className = 'bbtn' + (activeVariantGet().pres === p.k ? ' active' : '') + (p.disabled ? ' disabled' : '')
+    b.dataset.preset = p.k
+    const isSelected = selectedPresets.has(p.k)
+    const status = presetStatus[p.k]
+    // Status classes (running/done/error) take visual precedence over selected
+    // but selected stays in the class list so toggle behaviour is preserved.
+    const statusClass = status ? ' ' + status : ''
+    const selClass    = isSelected ? ' selected' : ''
+    const disClass    = p.disabled ? ' disabled' : ''
+    b.className = 'bbtn' + selClass + statusClass + disClass
     b.innerHTML = `<span class="bbtn-icon"><svg><use href="#${p.icon}"/></svg></span><span>${p.label}</span>` +
                   (p.disabled ? '<span class="bbtn-soon">Soon</span>' : '')
-    if (!p.disabled) b.onclick = () => selectPres(p.k)
+    if (!p.disabled) b.onclick = () => togglePreset(p.k)
     bar.appendChild(b)
   })
 }
 
-function addVariant(cfg = {}) {
-  variantN++
-  const vid = 'v' + variantN
-  variants[vid] = {
-    id: vid,
-    name: cfg.name || ('Variant ' + variantN),
-    mood: cfg.mood || 'golden',
-    pres: cfg.pres || 'insitu',
-    artStyle: cfg.artStyle || 'painterly',
-    status: 'idle',
+function togglePreset(id) {
+  if (running) return
+  if (selectedPresets.has(id)) {
+    selectedPresets.delete(id)
+    // Clear stale status when deselecting so it can be re-run cleanly later
+    delete presetStatus[id]
+  } else {
+    selectedPresets.add(id)
   }
-  if (!activeVariantId) activeVariantId = vid
-  renderVariantStrips()
-  renderHelpersGrid()
-  return vid
-}
-
-function activeVariantGet() {
-  return variants[activeVariantId] || { mood:'golden', pres:'insitu', artStyle:'painterly', name:'' }
-}
-
-function setActiveVariant(vid) {
-  if (!variants[vid]) return
-  activeVariantId = vid
-  document.getElementById('activeName').value = variants[vid].name
-  buildMoodBar()
   buildTypeBar()
-  syncCardOnlyFields()
-  renderVariantStrips()
+  updateMaterialsCount()
+  updateRunAllBtn()
 }
 
-function selectMood(mood) {
-  const v = activeVariantGet()
-  v.mood = mood
-  buildMoodBar()
-  renderVariantStrips()
-  renderHelpersGrid()
+function updateMaterialsCount() {
+  const el = document.getElementById('materialsCount')
+  const n  = selectedPresets.size
+  el.textContent = n === 0 ? '0 selected' : (n === 1 ? '1 selected' : n + ' selected')
+  el.classList.toggle('has-selection', n > 0)
 }
 
-function selectPres(pres) {
-  const v = activeVariantGet()
-  v.pres = pres
-  buildTypeBar()
-  syncCardOnlyFields()
-  renderVariantStrips()
-  renderHelpersGrid()
-}
-
-function syncCardOnlyFields() {
-  const v = activeVariantGet()
-  document.getElementById('cardOnlyFields').classList.toggle('active', v.pres === 'collectable_card')
-}
-
-document.addEventListener('input', (e) => {
-  if (e.target.id === 'activeName') {
-    const v = activeVariantGet()
-    v.name = e.target.value
-    renderVariantStrips()
-    renderHelpersGrid()
+function updateRunAllBtn() {
+  const btn = document.getElementById('runAllBtn')
+  const n   = selectedPresets.size
+  if (running) {
+    btn.disabled = true
+    btn.textContent = `Running ${n}…`
+    return
   }
-})
-
-function renderVariantStrips() {
-  const list = document.getElementById('variantsList')
-  list.innerHTML = ''
-  Object.values(variants).forEach(v => {
-    const strip = document.createElement('div')
-    strip.className = 'var-strip' + (v.id === activeVariantId ? ' active' : '') + (v.status && v.status !== 'idle' ? ' ' + v.status : '')
-    strip.innerHTML = `
-      <div class="vstrip-dot ${v.status && v.status !== 'idle' ? v.status : ''}"></div>
-      <div class="vstrip-name">${esc(v.name || v.id)}</div>
-      <div class="vstrip-chips">
-        <span class="vstrip-chip">${esc(MOOD_LABEL[v.mood] || v.mood)}</span>
-        <span class="vstrip-chip">${esc(PRES_LABEL[v.pres] || v.pres)}</span>
-      </div>
-      <button class="vstrip-run" onclick="event.stopPropagation();runOne('${v.id}')" ${running ? 'disabled' : ''} title="Run this variant">▶</button>
-    `
-    strip.onclick = () => setActiveVariant(v.id)
-    list.appendChild(strip)
-  })
+  if (!fileB64) {
+    btn.disabled = true
+    btn.textContent = 'Upload a photo'
+    return
+  }
+  if (n === 0) {
+    btn.disabled = true
+    btn.textContent = 'Pick at least one'
+    return
+  }
+  btn.disabled = false
+  btn.textContent = n === 1 ? 'Run selected' : `Run ${n} selected`
 }
 
 function setStageState(state) {
@@ -1270,37 +1478,12 @@ function setStageState(state) {
   document.getElementById('stageSuggester').style.display = state === 'suggester' ? 'block' : 'none'
   document.getElementById('resultsGrid').style.display    = state === 'results'   ? 'flex'  : 'none'
   document.getElementById('stageTitle').textContent = {
-    empty: 'Stage', suggester: 'Pick a variant', results: 'Results'
+    empty: 'Stage', suggester: 'Pick materials', results: 'Results'
   }[state] || 'Stage'
 }
 
 function setProgressBar(active) {
   document.getElementById('stageProgress').classList.toggle('active', !!active)
-}
-
-function renderHelpersGrid() {
-  const grid = document.getElementById('helpersGrid')
-  if (!grid) return
-  grid.innerHTML = ''
-  Object.values(variants).forEach(v => {
-    const card = document.createElement('div')
-    card.className = 'helper-card' + (v.status && v.status !== 'idle' ? ' ' + v.status : '')
-    const previewUrl = `/previews/action/${v.pres}-${v.mood}.jpg`
-    card.innerHTML = `
-      <div class="helper-preview" style="background-image:url('${previewUrl}')">
-        <div class="helper-preview-fallback">${esc(MOOD_LABEL[v.mood])} · ${esc(PRES_LABEL[v.pres])}</div>
-      </div>
-      <div class="helper-body">
-        <div class="helper-name">${esc(v.name || v.id)}</div>
-        <div class="helper-chips">
-          <span class="helper-chip">${esc(MOOD_LABEL[v.mood])}</span>
-          <span class="helper-chip">${esc(PRES_LABEL[v.pres])}</span>
-        </div>
-        <button class="helper-run" onclick="runOne('${v.id}')" ${running || !fileB64 ? 'disabled' : ''}>Run This Variant</button>
-      </div>
-    `
-    grid.appendChild(card)
-  })
 }
 
 function slotChange(input) {
@@ -1317,7 +1500,7 @@ function slotChange(input) {
 
 function handleUploadedImage(b64, displayShort, dataUrl, opts) {
   fileB64 = b64
-  document.getElementById('runAllBtn').disabled = false
+  updateRunAllBtn()
   document.getElementById('slot1').classList.add('has-file')
   document.getElementById('st1').textContent = '✓ ' + (displayShort || 'image')
 
@@ -1384,12 +1567,9 @@ function renderModerationRejection(data, status) {
   document.getElementById('suggesterBadges').innerHTML = ''
   document.getElementById('suitWarnStage').style.display = 'none'
 
-  const helpersGrid = document.getElementById('helpersGrid')
-  if (helpersGrid) helpersGrid.style.display = 'none'
-  const runAllWrap = document.querySelector('.helpers-runall-wrap')
-  if (runAllWrap) runAllWrap.style.display = 'none'
-  const helpersHdr = document.querySelector('.helpers-hdr')
-  if (helpersHdr) helpersHdr.style.display = 'none'
+  // Hide the "pick materials" CTA on rejection
+  const cta = document.querySelector('.suggester-cta')
+  if (cta) cta.style.display = 'none'
 }
 
 async function analyzeScene(b64) {
@@ -1427,8 +1607,6 @@ async function analyzeScene(b64) {
     detected.environment            = data.environment
     detected.distinctive_features   = data.distinctive_features
     detected.source_lighting        = data.source_lighting
-    detected.memory_text            = data.memory_text
-    detected.default_plaque_text    = data.default_plaque_text
     detected.action_suitability     = data.action_suitability || null
 
     miniLabel.textContent = data.display_name || 'Action detected'
@@ -1461,10 +1639,6 @@ async function analyzeScene(b64) {
       suitWarn.style.display = 'none'
     }
 
-    if (data.default_plaque_text && !document.getElementById('plaqueText').value) {
-      document.getElementById('plaqueText').value = data.default_plaque_text
-    }
-
     document.getElementById('suggesterStatus').style.display = 'none'
     document.getElementById('suggesterResult').style.display = 'block'
     setG('done', 'analysis complete')
@@ -1476,15 +1650,9 @@ async function analyzeScene(b64) {
     iconWrap.style.color = ''
     document.getElementById('suggesterName').style.color = ''
 
-    // Re-show helpers in case they were hidden by a prior rejection
-    const helpersGrid = document.getElementById('helpersGrid')
-    if (helpersGrid) helpersGrid.style.display = ''
-    const runAllWrap = document.querySelector('.helpers-runall-wrap')
-    if (runAllWrap) runAllWrap.style.display = ''
-    const helpersHdr = document.querySelector('.helpers-hdr')
-    if (helpersHdr) helpersHdr.style.display = ''
-
-    renderHelpersGrid()
+    // Re-show the "pick materials" CTA in case a prior rejection hid it
+    const cta = document.querySelector('.suggester-cta')
+    if (cta) cta.style.display = ''
 
   } catch (e) {
     console.error('[analyze] failed:', e.message)
@@ -1494,63 +1662,58 @@ async function analyzeScene(b64) {
     document.getElementById('suggesterStatus').style.display = 'none'
     document.getElementById('suggesterResult').style.display = 'block'
     document.getElementById('suggesterName').textContent = 'Could not auto-detect'
-    document.getElementById('suggesterSub').textContent  = 'Pick any variant manually to continue.'
+    document.getElementById('suggesterSub').textContent  = 'You can still pick materials manually and run.'
   }
 }
 
-function collect(vid) {
-  const v = variants[vid]; if (!v) return null
+function collect(presetId) {
+  const def = PRES.find(p => p.k === presetId)
+  if (!def) return null
   return {
-    vid,
-    name:        v.name,
-    mood:        v.mood,
-    pres:        v.pres,
-    artStyle:    v.artStyle,
-    plaqueText:  document.getElementById('plaqueText').value.trim() || undefined,
-    notes:       document.getElementById('notesText').value.trim() || undefined,
-    memoryText:  document.getElementById('memoryText').value.trim() || undefined,
+    presetId,           // canonical id used for state lookups + DOM id
+    name:     def.label,// display label, also used as DOM id suffix
+    pres:     presetId,
   }
 }
 
-async function runOne(vid) {
+async function runOne(presetId) {
   if (running) return
   if (!fileB64) { alert('Upload a photo first'); return }
+  if (!PRES.find(p => p.k === presetId)) return
   if (analyzePromise) { try { await analyzePromise } catch(e){} }
   setStageState('results')
-  await runVariants([vid])
+  await runPresets([presetId])
 }
 
 async function runAll() {
   if (running) return
   if (!fileB64) { alert('Upload a photo first'); return }
+  if (selectedPresets.size === 0) return
   if (analyzePromise) { try { await analyzePromise } catch(e){} }
   setStageState('results')
-  await runVariants(Object.keys(variants))
+  await runPresets(Array.from(selectedPresets))
 }
 
-async function runVariants(ids) {
+async function runPresets(ids) {
+  if (!ids.length) return
   running = true
   setG('running', `running ${ids.length}…`)
   setProgressBar(true)
-  document.getElementById('runAllBtn').disabled = true
-  renderVariantStrips()
-  renderHelpersGrid()
+  ids.forEach(id => { presetStatus[id] = 'running' })
+  buildTypeBar()
+  updateRunAllBtn()
 
-  const tasks = ids.map(vid => {
-    const v = variants[vid]; if (!v) return Promise.resolve()
-    v.status = 'running'
-    renderVariantStrips()
-    renderHelpersGrid()
-    const p = collect(vid)
+  const tasks = ids.map(presetId => {
+    const p = collect(presetId)
+    if (!p) return Promise.resolve()
     setupResultPlaceholder(p)
     return generateOne(p).then(() => {
-      v.status = 'done'
+      presetStatus[presetId] = 'done'
     }).catch(err => {
-      v.status = 'error'
-      mkError(p.name, err.message)
+      presetStatus[presetId] = 'error'
+      // mkError already invoked inside generateOne — no re-raise needed here
     }).finally(() => {
-      renderVariantStrips()
-      renderHelpersGrid()
+      buildTypeBar()
     })
   })
 
@@ -1558,9 +1721,8 @@ async function runVariants(ids) {
   running = false
   setG('done', 'done')
   setProgressBar(false)
-  document.getElementById('runAllBtn').disabled = !fileB64
-  renderVariantStrips()
-  renderHelpersGrid()
+  buildTypeBar()
+  updateRunAllBtn()
 }
 
 function setupResultPlaceholder(p) {
@@ -1583,41 +1745,39 @@ async function generateOne(p) {
     const res = await fetch(API, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        source_image_b64:        fileB64,
-        kinetic_medium:          detected.kinetic_medium || 'other',
-        action_description:      detected.action_description || '',
-        freeze_moment_quality:   detected.freeze_moment_quality || undefined,
-        hero:                    detected.hero || null,
-        secondary_figures:       detected.secondary_figures || { count: 0, description: 'empty' },
-        environment:             detected.environment || 'The diorama sits on neutral textured ground. Background is blurred natural environment with soft atmospheric light.',
-        distinctive_features:    detected.distinctive_features || undefined,
-        source_lighting:         detected.source_lighting || undefined,
-        display_name:            detected.display_name || p.name,
-        preset:                  p.pres,
-        mood:                    p.mood,
-        plaque_text:             p.plaqueText,
-        notes:                   p.notes,
-        memory_text:             p.memoryText || detected.memory_text || '',
-        artwork_style:           p.artStyle || 'painterly',
+        source_image_b64:  fileB64,
+        preset:            p.pres,
+        kinetic_medium:    detected.kinetic_medium || 'other',
+        location:          currentLocation,
+        aspect_ratio:      currentAspect,
+        display_name:      detected.display_name || p.name,
+        refinements:       { ...refinements },
       })
     })
     if(!res.ok) {
       const e = await res.json().catch(()=>({}))
       const err = new Error(e.error || 'HTTP '+res.status)
       err.detail = e   // attach full structured error for friendlier rendering
+      console.error('[generateOne] HTTP error:', { status: res.status, body: e, preset: p.pres })
       throw err
     }
     const data = await res.json()
     const r    = data.result
-    if (r?.front_b64 && r?.back_b64) {
-      mkResult(p.name, r, p)
-    } else if (r?.image_b64) {
+    // Always log the full result envelope so failures are diagnosable
+    if (!r?.image_b64) {
+      console.error('[generateOne] No image in response:', { preset: p.pres, result: r, raw: data })
+    }
+    if (r?.image_b64) {
       mkResult(p.name, r, p)
     } else {
-      throw new Error('No image returned')
+      // Route returned 200 but image is null — surface the structured error
+      const err = new Error(r?.fatal_error || r?.error_code || 'No image returned')
+      err.detail = r || data
+      throw err
     }
     return r
   } catch(e) {
+    console.error('[generateOne] Failed:', { preset: p.pres, message: e.message, detail: e.detail })
     mkError(p.name, e.message, e.detail, p)
     throw e
   }
@@ -1670,48 +1830,29 @@ function mkResult(name, r, p) {
     addToStack(card, name)
   }
   card.className = 'rc done'
-  const meta = [MOOD_LABEL[p.mood], PRES_LABEL[p.pres]].filter(Boolean).join(' · ')
+  const meta = PRES_LABEL[p.pres] || ''
   const safe = name.replace(/'/g, "\\'")
-  const isCard = !!(r.front_b64 && r.back_b64)
-  const primaryB64 = isCard ? r.front_b64 : r.image_b64
-  const flipBtn = isCard ? `<button class="rc-btn" onclick="event.stopPropagation();flipCard('${safe}')">Flip</button>` : ''
 
-  if (isCard) {
-    imgStore[name] = r.front_b64
-    cardBackStore[name] = r.back_b64
-    card.classList.add('rc-card')
-  } else {
-    imgStore[name] = r.image_b64
-  }
+  imgStore[name] = r.image_b64
   resStore[name] = r
 
   card.innerHTML = `
-    <div class="rc-img ${isCard ? 'rc-card-img' : ''}" id="rci-${safe}" data-side="front" onclick="event.stopPropagation();if(stackOrder[0]==='${safe}')openFull('${safe}');else tapResult('${safe}')">
-      <img id="rcimg-${safe}" src="data:image/png;base64,${primaryB64}">
+    <div class="rc-img" id="rci-${safe}" onclick="event.stopPropagation();if(stackOrder[0]==='${safe}')openFull('${safe}');else tapResult('${safe}')">
+      <img id="rcimg-${safe}" src="data:image/png;base64,${r.image_b64}">
       <div class="rc-overlay"><span class="rc-ol">View full size</span></div>
+      ${formatDuration(r.duration_ms) ? `<div class="rc-duration">${formatDuration(r.duration_ms)}</div>` : ''}
     </div>
     <div class="rc-body">
-      <div class="rc-name">${esc(name)}${isCard ? ' · Card' : ''}</div>
+      <div class="rc-name">${esc(name)}</div>
       <div class="rc-meta">${esc(meta)}</div>
       <div class="rc-btns">
         <button class="rc-btn save" onclick="event.stopPropagation();dl('${safe}')">Save</button>
-        ${flipBtn}
         <button class="rc-btn" onclick="event.stopPropagation();openFull('${safe}')">Full</button>
+        <button class="rc-btn" onclick="event.stopPropagation();openRefine('${safe}')">Refine</button>
       </div>
+      <div class="rc-refine" id="rcref-${safe}" style="display:none"></div>
     </div>`
   restackResults()
-}
-
-function flipCard(name) {
-  const wrap = document.getElementById('rci-' + name)
-  const img  = document.getElementById('rcimg-' + name)
-  if (!wrap || !img) return
-  const isFront = wrap.dataset.side !== 'back'
-  const back  = cardBackStore[name]
-  const front = imgStore[name]
-  if (!back || !front) return
-  if (isFront) { img.src = 'data:image/png;base64,' + back;  wrap.dataset.side = 'back' }
-  else         { img.src = 'data:image/png;base64,' + front; wrap.dataset.side = 'front' }
 }
 
 function mkError(name, errMsg, detail, p) {
@@ -1724,25 +1865,50 @@ function mkError(name, errMsg, detail, p) {
   }
   card.className = 'rc error'
 
-  // Use server-translated message if we have one — never the raw error string
-  const headline = detail?.error    || 'This variant couldn\'t be rendered.'
-  const hint     = detail?.hint     || 'Try running it again, or try a different variant.'
+  // Headline: route's fatal_error wins, otherwise the JS exception message,
+  // otherwise the generic fallback. NEVER swallow the actual reason.
+  const headline = detail?.fatal_error || errMsg || 'This variant couldn\'t be rendered.'
+  const rawErr   = detail?.raw_error && detail.raw_error !== headline ? detail.raw_error : null
+  const errCode  = detail?.error_code  || null
   const retryable = detail?.retryable !== false
-  const meta     = p ? [MOOD_LABEL[p.mood], PRES_LABEL[p.pres]].filter(Boolean).join(' · ') : ''
-  const safe     = name.replace(/'/g, "\\'")
+  const meta      = p ? (PRES_LABEL[p.pres] || '') : ''
+  const safe      = name.replace(/'/g, "\\'")
+  const dur       = formatDuration(detail?.duration_ms)
+
+  // Build a system_log summary — show every stage outcome with timing + error
+  let logSummary = ''
+  if (Array.isArray(detail?.system_log) && detail.system_log.length) {
+    const rows = detail.system_log.map(entry => {
+      const code = entry.code === 200 ? 'ok' : 'err'
+      const stage = entry.stage || '?'
+      const ms = entry.ms != null ? ' · ' + entry.ms + 'ms' : ''
+      const err = entry.err ? ' — ' + entry.err : ''
+      return `<div class="rc-log-row rc-log-${code}">[${stage}${ms}]${err}</div>`
+    }).join('')
+    logSummary = `<div class="rc-log">${rows}</div>`
+  }
+
+  // Collapsible raw-detail dump for the truly stuck moments
+  const rawDump = detail
+    ? `<details class="rc-raw"><summary>Raw response</summary><pre>${esc(JSON.stringify(detail, null, 2))}</pre></details>`
+    : ''
 
   card.innerHTML = `
     <div class="rc-img" style="background:var(--surface-2)">
       <div class="rc-spinner-area" style="color:var(--danger)">
         <div style="font-size:24px;line-height:1;color:var(--danger);font-weight:300">!</div>
-        <div style="color:var(--ink);font-size:12px;font-weight:500;max-width:80%">${esc(headline)}</div>
-        <div style="color:var(--ink-2);font-size:11px;line-height:1.5;max-width:80%">${esc(hint)}</div>
+        <div style="color:var(--ink);font-size:12px;font-weight:500;max-width:88%">${esc(headline)}</div>
+        ${rawErr ? `<div style="font-family:var(--mono);font-size:10px;color:var(--danger);max-width:90%;line-height:1.4;word-break:break-word">${esc(rawErr)}</div>` : ''}
+        ${errCode ? `<div style="font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em">code: ${esc(errCode)}</div>` : ''}
+        ${dur ? `<div style="font-family:var(--mono);font-size:10px;color:var(--ink-3)">failed after ${dur}</div>` : ''}
       </div>
     </div>
     <div class="rc-body">
       <div class="rc-name">${esc(name)}</div>
       ${meta ? `<div class="rc-meta">${esc(meta)}</div>` : ''}
-      ${retryable && p?.vid ? `<div class="rc-btns"><button class="rc-btn" onclick="event.stopPropagation();runOne('${p.vid}')">Try Again</button></div>` : ''}
+      ${logSummary}
+      ${rawDump}
+      ${retryable && p?.presetId ? `<div class="rc-btns"><button class="rc-btn" onclick="event.stopPropagation();runOne('${p.presetId}')">Try Again</button></div>` : ''}
     </div>`
   restackResults()
 }
@@ -1753,32 +1919,18 @@ function setG(state, text) {
 }
 
 function dl(name) {
-  const front = imgStore[name]; if(!front) return
-  const back  = cardBackStore[name]
-  const stamp = Date.now()
-  const dlOne = (b64, suffix) => {
-    const a = document.createElement('a')
-    a.href = 'data:image/png;base64,' + b64
-    a.download = 'miniscape-action-' + name + suffix + '-' + stamp + '.png'
-    a.click()
-  }
-  if (back) {
-    dlOne(front, '-front')
-    setTimeout(() => dlOne(back, '-back'), 100)
-  } else {
-    dlOne(front, '')
-  }
+  const img = imgStore[name]; if(!img) return
+  const a = document.createElement('a')
+  a.href = 'data:image/png;base64,' + img
+  a.download = 'miniscape-action-' + name + '-' + Date.now() + '.png'
+  a.click()
 }
 
 function openFull(name) {
-  const front = imgStore[name]; if(!front) return
-  const back  = cardBackStore[name]
-  const wrap = document.getElementById('rci-' + name)
-  const showingBack = back && wrap?.dataset.side === 'back'
-  const b = showingBack ? back : front
+  const img = imgStore[name]; if(!img) return
   const overlay = document.createElement('div')
   overlay.className = 'lightbox'
-  overlay.innerHTML = `<img src="data:image/png;base64,${b}" alt="${esc(name)}"><div class="lightbox-hint">click anywhere to close · esc</div>`
+  overlay.innerHTML = `<img src="data:image/png;base64,${img}" alt="${esc(name)}"><div class="lightbox-hint">click anywhere to close · esc</div>`
   overlay.addEventListener('click', () => overlay.remove())
   document.body.appendChild(overlay)
   const onKey = (e) => {
@@ -1787,13 +1939,174 @@ function openFull(name) {
   document.addEventListener('keydown', onKey)
 }
 
-// ── SEED DEFAULT VARIANTS ────────────────────────────────────
-addVariant({ name:'Golden Memory',   mood:'golden',   pres:'insitu' })
-addVariant({ name:'Dramatic Desk',   mood:'dramatic', pres:'museum' })
-addVariant({ name:'Vivid Card',      mood:'vivid',    pres:'collectable_card' })
-addVariant({ name:'Golden Card',     mood:'golden',   pres:'collectable_card' })
+// ── REFINE FLOW ──────────────────────────────────────────────
+// User clicks Refine on a tile. We:
+//   1. Reveal panel with "Analyzing..." status
+//   2. POST source + rendered to /api/v1/actionmini/analyze-render
+//   3. GPT-4o returns a 150-char adjustment suggestion
+//   4. Show suggestion in editable textarea with char counter
+//   5. User edits if needed, clicks Apply
+//   6. POST to /generate with refinement_tweak field set, full original config
+//   7. New render replaces the tile's image (same tile name, mkResult overwrites)
+const REFINE_API  = '/api/v1/actionmini/analyze-render'
+const TWEAK_LIMIT = 150
 
-setActiveVariant('v1')
+async function openRefine(name) {
+  const r = resStore[name]
+  if (!r || !r.image_b64) return
+  const panel = document.getElementById('rcref-' + name.replace(/'/g, "\\'"))
+  if (!panel) return
+
+  // Already open? close it (toggle)
+  if (panel.style.display !== 'none' && panel.dataset.state) {
+    closeRefine(name)
+    return
+  }
+
+  panel.style.display = 'block'
+  panel.dataset.state = 'analyzing'
+  panel.innerHTML = `<div class="rc-refine-status"><span class="rc-refine-spinner"></span><span>Analyzing render…</span></div>`
+
+  // Call analyze-render. Soft-fail: if it errors out, just open the input
+  // empty so the user can type their own tweak.
+  let suggestion = ''
+  try {
+    const res = await fetch(REFINE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source_image_b64:   fileB64,
+        rendered_image_b64: r.image_b64,
+      })
+    })
+    const data = await res.json()
+    if (data.needs_adjustment === false) {
+      // GPT-4o thinks it's fine — still show input, but with hint
+      suggestion = ''
+      panel.dataset.gptOpinion = 'fine'
+    } else {
+      suggestion = (data.suggestion || '').trim()
+    }
+  } catch (e) {
+    console.warn('[refine] analyze-render failed (non-fatal):', e.message)
+  }
+
+  if (panel.dataset.state !== 'analyzing') return  // user closed during analysis
+
+  panel.dataset.state = 'editing'
+  const safe = name.replace(/'/g, "\\'")
+  const opinion = panel.dataset.gptOpinion === 'fine'
+    ? '<div class="rc-refine-suggestion">Looks correct to GPT-4o — describe any adjustment you want anyway, or cancel.</div>'
+    : (suggestion ? `<div class="rc-refine-suggestion">Suggested: ${esc(suggestion)}</div>` : '')
+
+  panel.innerHTML = `
+    ${opinion}
+    <textarea id="rcref-input-${safe}" maxlength="${TWEAK_LIMIT}"
+      placeholder="Describe what to adjust (pose, expression, equipment only — max ${TWEAK_LIMIT} chars)"
+      oninput="updateTweakCounter('${safe}')">${esc(suggestion)}</textarea>
+    <div class="rc-refine-counter" id="rcref-counter-${safe}">${suggestion.length} / ${TWEAK_LIMIT}</div>
+    <div class="rc-refine-btns">
+      <button class="rc-btn" onclick="event.stopPropagation();closeRefine('${safe}')">Cancel</button>
+      <button class="rc-btn save" onclick="event.stopPropagation();applyRefine('${safe}')">Apply</button>
+    </div>`
+
+  // Auto-focus the textarea so user can start editing right away
+  const ta = document.getElementById('rcref-input-' + safe)
+  if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length) }
+}
+
+function updateTweakCounter(safeName) {
+  const ta = document.getElementById('rcref-input-' + safeName)
+  const c  = document.getElementById('rcref-counter-' + safeName)
+  if (!ta || !c) return
+  const len = ta.value.length
+  c.textContent = `${len} / ${TWEAK_LIMIT}`
+  c.classList.toggle('over', len >= TWEAK_LIMIT)
+}
+
+function closeRefine(name) {
+  const safe = name.replace(/'/g, "\\'")
+  const panel = document.getElementById('rcref-' + safe)
+  if (!panel) return
+  panel.style.display = 'none'
+  panel.innerHTML = ''
+  delete panel.dataset.state
+  delete panel.dataset.gptOpinion
+}
+
+async function applyRefine(name) {
+  const safe = name.replace(/'/g, "\\'")
+  const ta = document.getElementById('rcref-input-' + safe)
+  const panel = document.getElementById('rcref-' + safe)
+  if (!ta || !panel) return
+  const tweak = ta.value.trim()
+  if (!tweak) {
+    ta.focus()
+    return
+  }
+
+  const r = resStore[name]
+  if (!r) return
+
+  // Find the original preset config so we can preserve refinements + display name
+  // Tiles are keyed by display name; PRES_LABEL maps preset → display name
+  const presetId = r.preset
+  const p = { pres: presetId, name: name, presetId }
+
+  // Show busy state on panel + tile
+  panel.classList.add('busy')
+  panel.innerHTML = `<div class="rc-refine-status"><span class="rc-refine-spinner"></span><span>Re-rendering with adjustment…</span></div>`
+
+  const card = document.getElementById('rc-' + name)
+  if (card) card.classList.add('refining')
+
+  // Preserve the location from the original render — refines stay in same location
+  const originalLocation = (resStore[name] && resStore[name].location) || currentLocation
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source_image_b64:  fileB64,
+        preset:            presetId,
+        kinetic_medium:    detected.kinetic_medium || 'other',
+        location:          originalLocation,
+        display_name:      name,
+        refinements:       { ...refinements },
+        refinement_tweak:  tweak,
+      })
+    })
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}))
+      throw new Error(e.error || 'HTTP ' + res.status)
+    }
+    const data = await res.json()
+    const newR = data.result
+    if (newR?.image_b64) {
+      // Overwrite the tile with the refined render
+      mkResult(name, newR, p)
+    } else {
+      throw new Error(newR?.fatal_error || 'No image in refined response')
+    }
+  } catch (e) {
+    console.error('[applyRefine] Failed:', e.message)
+    panel.classList.remove('busy')
+    panel.innerHTML = `
+      <div class="rc-refine-status error">Refine failed: ${esc(e.message)}</div>
+      <div class="rc-refine-btns">
+        <button class="rc-btn" onclick="event.stopPropagation();closeRefine('${safe}')">Close</button>
+      </div>`
+  } finally {
+    if (card) card.classList.remove('refining')
+  }
+}
+
+// ── INITIAL UI STATE ─────────────────────────────────────────
+buildRefinementsList()
+buildTypeBar()
+updateMaterialsCount()
+updateRunAllBtn()
 
 ;(function receiveHandoff() {
   if (!window.MS_UPLOADER) return

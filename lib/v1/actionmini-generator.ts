@@ -1,124 +1,111 @@
-// actionmini-generator.ts
 // lib/v1/actionmini-generator.ts
-//
-// Routes preset to the correct prompt builder. Two non-card presets:
-//   - insitu  — outdoor editorial diorama (locked at v11)
-//   - museum  — desk presentation in curator's study
-//
-// NOTE: collectable_card has its own dedicated path in the route — it does NOT
-// flow through this generator. See actionmini-route.ts and actionmini-card.ts.
+// Dispatcher for Action Minis. Builds the prompt from the registry and calls
+// nano-banana-2 on Replicate. No source pre-processing — nano banana exposes
+// correctly on its own.
 
-import OpenAI, { toFile } from 'openai'
-import sharp from 'sharp'
-import {
-  buildInSituPrompt,
-  ActionMiniInSituInput,
-  ActionMiniHero,
-  ActionMiniSecondaryFigures,
-} from './actionmini-insitu'
-import {
-  buildMuseumPrompt,
-  ActionMiniMuseumInput,
-} from './actionmini-museum'
+import { ActionMiniPresetId, buildPresetPrompt, ActionMiniRefinements, LocationId } from './actionmini-presets'
+import type { KineticMedium } from './actionmini-shared'
 
-export type ActionMiniPreset = 'insitu' | 'museum' | 'collectable_card'
+export type { ActionMiniPresetId, ActionMiniRefinements, LocationId }
+export type { ActionMiniHero, SecondaryFigures, KineticMedium } from './actionmini-shared'
 
-export interface ActionMiniGenerateInput {
-  sourceImageB64:        string
-  preset:                ActionMiniPreset
-  kineticMedium:         string
-  actionDescription:     string
-  freezeMomentQuality?:  string
-  hero:                  ActionMiniHero | null
-  secondaryFigures?:     ActionMiniSecondaryFigures
-  environment:           string
-  distinctiveFeatures?:  string
-  sourceLighting?:       string
-  displayName?:          string
-  mood:                  string
-  plaqueText?:           string
-  notes?:                string
-  openaiApiKey:          string
+// ── INPUT ────────────────────────────────────────────────────
+export interface ActionMiniInput {
+  sourceImageB64:    string
+  presetId:          ActionMiniPresetId
+  kineticMedium?:    KineticMedium
+  locationId?:       LocationId         // user-picked staging; defaults to on_a_desk
+  refinements?:      ActionMiniRefinements
+  notes?:            string
+  refinementTweak?:  string
+  replicateApiToken: string
 }
 
-export async function generateActionMini(
-  input: ActionMiniGenerateInput
-): Promise<{ imageB64: string; promptUsed: string; preset: ActionMiniPreset }> {
+// ── OUTPUT ───────────────────────────────────────────────────
+export interface ActionMiniResult {
+  imageB64:    string
+  promptUsed:  string
+}
 
-  const preset: ActionMiniPreset = input.preset || 'insitu'
-  if (preset === 'collectable_card') {
-    throw new Error('[actionmini-generator] collectable_card is handled by route directly — do not call generateActionMini for it')
+// ── REPLICATE — NANO BANANA 2 ────────────────────────────────
+// Uses the synchronous prediction endpoint with `Prefer: wait` so the route
+// gets the URL back in one round-trip. Falls back to polling if the wait
+// times out (rare on short generations).
+async function callNanoBanana(input: {
+  prompt:    string
+  sourceB64: string
+  apiToken:  string
+}): Promise<string> {
+  const dataUri = `data:image/png;base64,${input.sourceB64}`
+
+  const res = await fetch('https://api.replicate.com/v1/models/google/nano-banana-2/predictions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${input.apiToken}`,
+      'Content-Type':  'application/json',
+      'Prefer':        'wait=60',
+    },
+    body: JSON.stringify({
+      input: {
+        prompt:        input.prompt,
+        image_input:   [dataUri],
+        output_format: 'png',
+      },
+    }),
+  })
+
+  if (!res.ok) {
+    const errBody = await res.text()
+    throw new Error(`replicate_failed: ${res.status} — ${errBody.slice(0, 300)}`)
   }
 
-  // Build the correct prompt for the preset
-  let prompt: string
-  if (preset === 'museum') {
-    const museumInput: ActionMiniMuseumInput = {
-      kineticMedium:        input.kineticMedium,
-      actionDescription:    input.actionDescription,
-      freezeMomentQuality:  input.freezeMomentQuality,
-      hero:                 input.hero,
-      secondaryFigures:     input.secondaryFigures,
-      distinctiveFeatures:  input.distinctiveFeatures,
-      sourceLighting:       input.sourceLighting,
-      displayName:          input.displayName,
-      mood:                 input.mood,
-      plaqueText:           input.plaqueText,
-      notes:                input.notes,
-    }
-    prompt = buildMuseumPrompt(museumInput)
-  } else {
-    // 'insitu' (default)
-    const insituInput: ActionMiniInSituInput = {
-      kineticMedium:        input.kineticMedium,
-      actionDescription:    input.actionDescription,
-      freezeMomentQuality:  input.freezeMomentQuality,
-      hero:                 input.hero,
-      secondaryFigures:     input.secondaryFigures,
-      environment:          input.environment,
-      distinctiveFeatures:  input.distinctiveFeatures,
-      sourceLighting:       input.sourceLighting,
-      displayName:          input.displayName,
-      mood:                 input.mood,
-      plaqueText:           input.plaqueText,
-      notes:                input.notes,
-    }
-    prompt = buildInSituPrompt(insituInput)
+  const prediction: any = await res.json()
+
+  // If still running, poll until terminal
+  let final = prediction
+  while (final.status === 'starting' || final.status === 'processing') {
+    await new Promise(r => setTimeout(r, 1500))
+    const pollRes = await fetch(final.urls.get, {
+      headers: { 'Authorization': `Bearer ${input.apiToken}` },
+    })
+    if (!pollRes.ok) throw new Error(`replicate_poll_failed: ${pollRes.status}`)
+    final = await pollRes.json()
   }
 
-  // ── SOURCE PREP ──────────────────────────────────────────────
-  const srcBuf = Buffer.from(input.sourceImageB64, 'base64')
-  const bright = (await sharp(srcBuf).rotate().greyscale().stats()).channels[0].mean
-  const lift   = bright < 165 ? Math.min(165 / bright, 2.0) : 1.0
+  if (final.status !== 'succeeded') {
+    const reason = final.error || final.status
+    throw new Error(`replicate_${final.status}: ${reason}`)
+  }
 
-  let pipeline = sharp(srcBuf)
-    .rotate()
-    .resize({ width: 2048, height: 2048, fit: 'inside', withoutEnlargement: true })
-  if (lift > 1.0) pipeline = pipeline.modulate({ brightness: lift })
-  const prepared = await pipeline.png().toBuffer()
+  // nano-banana-2 returns either a string URL or array — handle both
+  const outputUrl: string = Array.isArray(final.output) ? final.output[0] : final.output
+  if (!outputUrl) throw new Error('replicate_no_output')
 
-  console.log(
-    `[actionmini] ${input.displayName || 'action'} / ${input.kineticMedium} / ${input.mood} / ${preset} — ` +
-    `brightness ${Math.round(bright)} × ${lift.toFixed(2)} — prepared ${Math.round(prepared.length / 1024)} KB — ` +
-    `quality:high input_fidelity:high`
-  )
+  // Download the image and return as base64
+  const imgRes = await fetch(outputUrl)
+  if (!imgRes.ok) throw new Error(`output_fetch_failed: ${imgRes.status}`)
+  const imgBuf = Buffer.from(await imgRes.arrayBuffer())
+  return imgBuf.toString('base64')
+}
 
-  // ── gpt-image-1 EDIT CALL ────────────────────────────────────
-  const openai = new OpenAI({ apiKey: input.openaiApiKey })
-  const file   = await toFile(prepared, 'source.png', { type: 'image/png' })
+// ── MAIN ENTRY POINT ─────────────────────────────────────────
+export async function generateActionMini(input: ActionMiniInput): Promise<ActionMiniResult> {
+  const prompt = buildPresetPrompt({
+    presetId:        input.presetId,
+    kineticMedium:   input.kineticMedium,
+    locationId:      input.locationId,
+    refinements:     input.refinements,
+    notes:           input.notes,
+    refinementTweak: input.refinementTweak,
+  })
 
-  const res = await openai.images.edit({
-    model:          'gpt-image-1',
-    image:          file,
+  const imageB64 = await callNanoBanana({
     prompt,
-    size:           '1024x1024',
-    quality:        'high',
-    input_fidelity: 'high',
-  } as any)
+    sourceB64: input.sourceImageB64,
+    apiToken:  input.replicateApiToken,
+  })
 
-  const b64 = res.data?.[0]?.b64_json
-  if (!b64) throw new Error('actionmini_generation_failed')
-
-  console.log(`[actionmini] ${preset} — done`)
-  return { imageB64: b64, promptUsed: prompt, preset }
+  const tag = input.refinementTweak ? `${input.presetId} (refined)` : input.presetId
+  console.log(`[actionmini] ${tag} done — prompt ${prompt.length} chars`)
+  return { imageB64, promptUsed: prompt }
 }
