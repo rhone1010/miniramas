@@ -25,6 +25,7 @@ import {
   MATERIAL_GINGERBREAD,       LIGHTING_GINGERBREAD,
   MATERIAL_WATERCOLOR_WOOD,   LIGHTING_WATERCOLOR_WOOD,
   MATERIAL_CARVED_WOOD,       LIGHTING_CARVED_WOOD,
+  MATERIAL_CARVED_STONE,      LIGHTING_CARVED_STONE,
   MATERIAL_DOLLHOUSE,         LIGHTING_DOLLHOUSE,
   MATERIAL_MUSEUM_QUALITY,    LIGHTING_MUSEUM_QUALITY,
   MATERIAL_SNOW_GLOBE,        LIGHTING_SNOW_GLOBE, LAYER_SNOW_GLOBE,
@@ -147,6 +148,17 @@ export const PRESETS: Record<PresetId, Preset> = {
     styleClause:      'Single-block carving of the building from richly figured hardwood — natural finish, hand-carved facets.',
     materialRule:     MATERIAL_CARVED_WOOD,
     lighting:         LIGHTING_CARVED_WOOD,
+  },
+
+  carved_stone: {
+    id:               'carved_stone',
+    mode:             'materials',
+    label:            'Carved Stone',
+    tier:             'premium',
+    sculptureClause:  SCULPTURE_CLAUSE,
+    styleClause:      'Single-block limestone carving of the building — natural cream stone, classical-monument register.',
+    materialRule:     MATERIAL_CARVED_STONE,
+    lighting:         LIGHTING_CARVED_STONE,
   },
 
   dollhouse: {

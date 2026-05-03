@@ -110,7 +110,20 @@ export const ENVIRONMENT_BLOCKS: Record<EnvironmentId, string> = {
 
 // ── BRONZE (material) ─────────────────────────────────────────
 export const MATERIAL_BRONZE = `
-MATERIAL: Whole structure solid cast bronze — siding, shingles, trim, porch, foundation, all bronze. Verdigris green-blue patina pools in the recesses, around window frames, under cornices, in the porch shadows. No painted siding, no painted trim, no painted shingles. Source colors do NOT carry through — bronze is bronze regardless of the original house's color. Subtle highlights along edges where the bronze catches the light.
+MATERIAL: A SOLID CAST BRONZE SCULPTURE of the building — every surface is bronze metal. The entire structure has been recast as a single monolithic piece of cast bronze: siding, shingles, trim profiles, porch, columns, balustrades, foundation, doors, even window frames. There is NO paint, NO color, NO finish other than bronze metal anywhere on the structure.
+
+THE BRONZE BODY:
+- Walls, roof, every architectural plane: warm metallic bronze tone — rich brown-gold, with the slight reddish hue of cast bronze. The metal catches light along its lit faces with characteristic specular bronze highlights and falls into deeper bronze shadow on the away side.
+- The bronze surface has subtle micro-texture from the casting process — extremely faint patina-streaks, faint tonal variation between areas, but ALL within the bronze tonal range.
+- Glass windows are the ONE exception: the window panes themselves can read as dark transparent glass behind bronze frames. The frames are bronze; the panes are glass.
+
+VERDIGRIS PATINA (RECESSES ONLY):
+Verdigris green-blue patina appears EXCLUSIVELY in deep recesses and undercuts where moisture would naturally collect on aged bronze: under cornices, in the back corners of porch beams, behind shutters, where columns meet capitals, in deeply shaded crevices of decorative trim. Patina is a thin pooled accent in dark recesses, never a wall color, never a roof color, never on flat surfaces. The patina is a small percentage of the visible surface; the dominant reading is "bronze body with verdigris accents."
+
+CRITICAL — SOURCE COLORS DO NOT CARRY THROUGH:
+The building's original paint colors are completely irrelevant to the bronze rendering. If the source house has blue walls, the bronze house has bronze walls — not blue, not blue-tinted, not blue-grey. If the source house has a red roof, the bronze house has a bronze roof — not red, not painted. If the source house has green trim, the bronze trim is bronze — not green. The source colors guide ARCHITECTURAL FIDELITY (where windows are, where trim is, what shape the roof is) — they have ZERO influence on the surface treatment.
+
+The reference is a museum-quality cast bronze sculpture: think action figure bronze — entirely bronze body with verdigris accents in the recesses. No part of the building reads as painted or colored. This is metal, not painted material.
 `.trim()
 
 export const LIGHTING_BRONZE = `
@@ -268,8 +281,25 @@ LIGHTING: Cool gallery atmospheric haze with bright back-lighting that ignites t
 `.trim()
 
 // ── GINGERBREAD ──────────────────────────────────────────────
+// IMPORTANT: gingerbread tends to rewrite architecture — the material wants
+// to grow extra dormers, candy fences, candy trees, and decorative
+// extensions. The architecture is the product (people's actual homes).
+// Material is the costume. Structure-first discipline is mandatory.
 export const MATERIAL_GINGERBREAD = `
-MATERIAL: The entire structure is constructed of baked gingerbread — warm caramel-brown gingerbread walls (visible bake texture, very slightly uneven surface), royal icing trim and roof piping in white, candy detailing on the porch and chimney (gumdrops, peppermints, candy canes used as architectural trim), powdered-sugar dusting on the roof and yard. Source COLORS guide where icing-and-candy goes — the original house's color accents become candy color accents. The structure reads unmistakably as edible.
+MATERIAL: The exact source building, reconstructed from baked gingerbread — every wall, every plane, every architectural element rendered in gingerbread. The architecture is unchanged: same mass, same footprint, same number of dormers, same porch shape and extent, same window count and placement, same trim profiles. Decorative candy elements are applied AS A FINISH on top of the existing architecture, never as new architectural features.
+
+GINGERBREAD CONSTRUCTION:
+- Walls: warm caramel-brown gingerbread with visible bake texture and slightly uneven surface, in the architectural shape of the source building's siding/cladding.
+- Trim: royal icing piped along trim profiles that already exist on the source — door surrounds, window frames, eave brackets, porch balusters. Icing FOLLOWS the source trim, never invents new trim.
+- Roof: gingerbread shingles with white royal-icing piping along ridges and eaves. Snow-like powdered-sugar dusting on top.
+- Source colors guide which architectural elements receive accent candy detailing — for example a red door becomes a peppermint-detailed door — but the candy goes WHERE color is, not as additional decoration.
+
+CANDY DECORATION RULES (read carefully):
+- Candy details (gumdrops, peppermints, small candies) decorate trim and accent points that ALREADY EXIST in the source. They never add new bays, dormers, or architectural masses.
+- The garden may include modest candy details (a few candy bushes, a small candy-cane on the walkway) — but the yard remains primarily the same scale and density as the source. NO candy-cane fence wrapping the plinth. NO oversized candy trees. NO transforming the lawn into a candy yard.
+- The plinth-internal margin is preserved — house and decorative candy elements together still occupy 55-65% of the plinth, leaving the same breathing room around the architecture as bronze or any other material.
+
+These are people's actual homes rendered as gingerbread. Architecture is the unmovable foundation; gingerbread is the costume that fits it. Do NOT add architectural mass under guise of decoration. Do NOT let candy-pull rewrite the building.
 `.trim()
 
 export const LIGHTING_GINGERBREAD = `
@@ -292,6 +322,15 @@ MATERIAL: The whole structure is a single block of richly figured hardwood (waln
 
 export const LIGHTING_CARVED_WOOD = `
 LIGHTING: Warm gallery atmospheric haze — diffused luminous quality in the air around the model, slightly brighter toward the back-upper area. Light catches the wood grain along the lit faces — the figure of the wood reveals itself dramatically with directional light. Recessed details fall into deeper warm shadow.
+`.trim()
+
+// ── CARVED STONE (LIMESTONE) ─────────────────────────────────
+export const MATERIAL_CARVED_STONE = `
+MATERIAL: The whole structure is a single block of warm cream-colored limestone carved into the form of the building — every wall, every shingle, every detail hand-carved from one continuous piece of stone. Visible chisel marks and tool history remain in places, slight tonal variation in the natural stone color across the form. No paint, no color, no finish — natural limestone tone throughout, ranging from warm cream to soft buff to occasional pale grey-cream variation in the matrix. Soft matte surface with the very slightly chalky character of weathered limestone, never polished marble shine. The stone is opaque and weighty — not translucent like alabaster. Source colors do NOT carry through. The reference is classical-monument limestone — courthouse, library, civic-architecture register.
+`.trim()
+
+export const LIGHTING_CARVED_STONE = `
+LIGHTING: Warm gallery atmospheric haze — diffused luminous quality in the air around the model, slightly brighter toward the back-upper area. The limestone catches light cleanly along its lit faces with the soft-matte register of natural stone, falling into cool shadow on the away side. Recessed details register with strong tonal contrast as the pale stone reads bright in the highlights and surprisingly deep in the shadows. The lighting flatters the slight chisel texture and tonal variation of the stone.
 `.trim()
 
 // ── DOLLHOUSE ────────────────────────────────────────────────
@@ -319,16 +358,23 @@ LIGHTING: Warm museum-gallery atmospheric haze — diffused luminous quality in 
 export const MATERIAL_SNOW_GLOBE = `
 MATERIAL: A scale model home dusted thickly with snow. Snow piled on every roof plane, along every windowsill, drifted around the foundation and across the yard. Snow visible on the branches of any trees, on the porch railings, on the chimney top. Source materials and colors carry through faithfully beneath the snow layer — the home is recognizable, just deeply wintered. Soft satin sheen across both house and snow.
 
-THE GLASS DOME — REAL OPTICAL MASS, NOT A TRANSPARENT OVERLAY:
-The model and its plinth sit inside a transparent glass snow globe — a substantial, weighty glass sphere with real optical thickness. The glass distorts what is seen through it. Where the model is viewed through the curved glass, the architecture refracts visibly: the building's edges bend slightly along the glass's curvature, light pools differently where the glass is thickest, the foreground edge of the dome causes a subtle horizontal smear of the model behind it. Specular highlights catch the curved outer surface where light strikes it — soft caustic blooms along the dome's top and far rim. The viewer reads a substantial piece of optical glass, never a thin transparent shell or a flat overlay.
+THE GLASS DOME — A SPHERE, NOT A BELL JAR:
+The model and its plinth sit inside a transparent glass snow globe shaped as a TRUE SPHERE — round on all sides, narrowing meaningfully at BOTH top AND bottom. This is critical: it is a globe, not a bell jar, not a dome, not a cylinder with a domed cap.
+- The glass curves inward at the top of the dome (narrowing toward an apex).
+- The glass curves inward at the bottom too, narrowing to a distinct neck where the sphere meets the wooden plinth — a clear visible neck, like a snow globe sits on its base.
+- The widest point of the sphere is at its middle, not at the bottom. The glass walls are NOT vertical or near-vertical anywhere.
+- The model inside has clear breathing room on ALL sides — there is space between the building's roof and the inside top of the sphere, space between the building's walls and the inside sides of the sphere. The model never touches the glass, never pushes against the side walls, never crowds the dome.
+
+THE GLASS — REAL OPTICAL MASS, NOT A TRANSPARENT OVERLAY:
+The glass is substantial and weighty, with real optical thickness. The glass distorts what is seen through it. Where the model is viewed through the curved glass, the architecture refracts visibly: the building's edges bend slightly along the glass's curvature, light pools differently where the glass is thickest, the foreground edge of the dome causes a subtle horizontal smear of the model behind it. Specular highlights catch the curved outer surface where light strikes it — soft caustic blooms along the dome's top and far rim. The viewer reads a substantial piece of optical glass, never a thin transparent shell or a flat overlay.
 
 FROST ON THE GLASS — ON THE INNER SURFACE, GROWING INWARD FROM THE RIM:
-A dendritic ice frost pattern grows on the INNER surface of the glass dome itself — feathered, fern-like, fractal ice crystals, the kind that forms on a frozen window pane. The frost is densest at the very rim of the dome (the bottom edge where it meets the plinth, and around the dome's outer profile) and grows inward in branching feathered fingers, fading to clear glass over the upper-center of the dome where the model inside is razor sharp.
-Each frost crystal is delicate and hand-traced, with its own branching structure — feathered like a fern leaf, not a uniform haze, not a generic blur. Where the frost catches light, it refracts faint prismatic colors (subtle iridescence in pinks, blues, and golds along the crystal edges) like the second reference snow-globe ice patterns.
-The frost is a PROPERTY OF THE GLASS SURFACE, not an effect in the surrounding scene. There are NO icy branches, NO frosted plants, NO ice patterns ANYWHERE outside the dome — the frost lives only on the glass.
+A dendritic ice frost pattern grows on the INNER surface of the glass sphere itself — feathered, fern-like, fractal ice crystals, the kind that forms on a frozen window pane. The frost is densest at the very rim of the sphere (around its outer profile and where it meets the plinth) and grows inward in branching feathered fingers, fading to clear glass over the central area of the sphere where the model inside is razor sharp.
+Each frost crystal is delicate and hand-traced, with its own branching structure — feathered like a fern leaf, not a uniform haze, not a generic blur. Where the frost catches light, it refracts faint prismatic colors (subtle iridescence in pinks, blues, and golds along the crystal edges).
+The frost is a PROPERTY OF THE GLASS SURFACE, not an effect in the surrounding scene. There are NO icy branches, NO frosted plants, NO ice patterns ANYWHERE outside the sphere — the frost lives only on the glass.
 
-SNOW INSIDE THE DOME:
-Snowflakes drift slowly through the air inside the dome, suspended mid-fall. They are inside the glass, viewed through it — they too refract slightly through the curved surface.
+SNOW INSIDE THE SPHERE:
+Snowflakes drift slowly through the air inside the sphere, suspended mid-fall. They are inside the glass, viewed through it — they too refract slightly through the curved surface.
 `.trim()
 
 export const LIGHTING_SNOW_GLOBE = `

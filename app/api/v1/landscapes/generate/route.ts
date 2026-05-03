@@ -1,142 +1,168 @@
-// landscape-route.ts
 // app/api/v1/landscapes/generate/route.ts
+// Per-row tolerant batch endpoint.
+//
+// Behavior:
+//   - Validator only rejects structural failures. Editorial issues (e.g.
+//     material + in_situ) come through as warnings, not errors.
+//   - Promise.allSettled — one row's failure doesn't kill the batch.
+//   - Response shape:
+//       { status: 'ok',  results: [{ ok, row_index, image_b64?, error? }],
+//         warnings: [...], is_preview }
+//       { status: 'error', error, errors: [...] }     // request-level only
+//       { status: 'deferred', job_id, ... }           // capacity
+//
+// Imports point at ./landscapes-* sibling files; adjust paths if your
+// folder layout differs.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { generateLandscape, generateCollectableCard } from '@/lib/v1/landscape-generator'
-import { applyLevels }        from '@/lib/v1/levels'
-import { expandScene }        from '@/lib/v1/expand'
-import { applyPlaque }    from '@/lib/v1/plaque'
+import { validateRequest, rowLabel } from '@/lib/v1/landscapes-presets'
+import { buildLandscapePrompt }      from '@/lib/v1/landscapes-blocks'
+import { generateLandscape, StudioAtCapacityError } from '@/lib/v1/landscapes-generator'
+import { expandLandscape }           from '@/lib/v1/landscapes-expand'
+import {
+  GenerateRequest, GenerateResponse, RenderResult, LandscapeParams,
+} from '@/lib/v1/landscapes-shared'
 
 export async function POST(req: NextRequest) {
+  let body: GenerateRequest
   try {
-    const body = await req.json()
-    const {
-      source_image_b64,
-      extra_images          = [],
-      scene_description,                 // free-form description from analyze
-      viewing_direction,                 // which side of subject; camera orientation
-      memory_text,                       // short keepsake caption from analyze
-      environment,                       // "diorama sits on X. Background is blurred Y."
-      character_source,                  // 'object' | 'atmosphere'
-      distinctive_features,              // comma-separated specific features to preserve
-      primary_subject,                   // 1-3 word hero of the scene
-      display_name,
-      mood              = 'golden',
-      presentation      = 'insitu',
-      scale_feel        = 'intimate',
-      notes,
-      plaque_text,                       // optional decorative plate text (≤40 chars)
-      plaque_shape      = 'rectangular', // 'rectangular' | 'curved' | 'victorian'
-      artwork_style     = '3d',          // collectable_card only — '3d' | 'impressionist'
-    } = body
+    body = await req.json()
+  } catch {
+    return NextResponse.json<GenerateResponse>(
+      { status: 'error', error: 'invalid_json' },
+      { status: 400 },
+    )
+  }
 
-    if (!source_image_b64) {
-      return NextResponse.json({ error: 'source_image_b64 required' }, { status: 400 })
-    }
+  // ── STRUCTURAL VALIDATION ───────────────────────────────────
+  const validation = validateRequest(body)
+  if (!validation.ok) {
+    return NextResponse.json<GenerateResponse>(
+      { status: 'error', error: 'validation_failed', errors: validation.errors },
+      { status: 400 },
+    )
+  }
 
-    const openaiApiKey = process.env.OPENAI_API_KEY
-    if (!openaiApiKey) {
-      return NextResponse.json({ error: 'OPENAI_API_KEY not set' }, { status: 500 })
-    }
+  const { rows, warnings, editorial } = validation
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) {
+    return NextResponse.json<GenerateResponse>(
+      { status: 'error', error: 'OPENAI_API_KEY not set' },
+      { status: 500 },
+    )
+  }
 
-    // ── COLLECTABLE CARD — dedicated two-image path (no levels/expand) ──
-    if (presentation === 'collectable_card') {
-      const { frontB64, backB64 } = await generateCollectableCard({
-        sourceImageB64:       source_image_b64,
-        sceneDesc:            scene_description || '',
-        viewingDirection:     viewing_direction || '',
-        distinctiveFeatures:  distinctive_features || '',
-        primarySubject:       primary_subject || '',
-        memoryText:           memory_text || '',
-        displayName:          display_name || 'Untitled',
-        mood,
-        plaqueText:     plaque_text || '',
-        artworkStyle:   artwork_style === 'impressionist' ? 'impressionist' : '3d',
-        openaiApiKey,
-      })
-      return NextResponse.json({
-        result: {
-          front_b64:     frontB64,
-          back_b64:      backB64,
-          scene:         display_name,
-          mood,
-          presentation:  'collectable_card',
-          artwork_style,
-          memory_text,
-        }
+  // Convert editorial guidance to warnings for the response.
+  // If a row was overridden, the warning notes that explicitly.
+  for (const e of editorial) {
+    for (const note of e.notes) {
+      warnings.push({
+        row_index: e.row_index,
+        message:   e.overridden ? `${note} (overridden by user)` : note,
       })
     }
+  }
 
-    // ── NORMAL PATH: in-situ / museum ──
+  // ── PER-ROW DISPATCH (tolerant) ─────────────────────────────
+  const settled = await Promise.allSettled(
+    rows.map(row => renderOneRow(row, body.source_image_b64, body.extra_images || [], apiKey))
+  )
+
+  // Pack results in original row order (rows[].rowIndex preserved).
+  const results: RenderResult[] = settled.map((s, i) => {
+    const row = rows[i]
+    if (s.status === 'fulfilled') return s.value
+    return {
+      ok:        false,
+      row_index: row.rowIndex ?? i,
+      error:     errString(s.reason),
+    }
+  })
+
+  // Capacity check — if ANY row hit capacity, surface that as the response.
+  // Capacity always wins because it requires retry/queue handling on the UI side.
+  const capacity = settled.find(
+    s => s.status === 'rejected' && s.reason instanceof StudioAtCapacityError
+  )
+  if (capacity) {
+    const job_id = `defer_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
+    return NextResponse.json<GenerateResponse>(
+      { status: 'deferred', job_id, estimated_minutes: null, message: 'studio_at_capacity' },
+      { status: 202 },
+    )
+  }
+
+  return NextResponse.json<GenerateResponse>(
+    {
+      status:     'ok',
+      results,
+      warnings,
+      is_preview: body.is_preview === true,
+    },
+    { status: 200 },
+  )
+}
+
+// ── PER-ROW WORKER ────────────────────────────────────────────
+async function renderOneRow(
+  row:           LandscapeParams,
+  sourceB64:     string,
+  extraImages:   string[],
+  openaiApiKey:  string,
+): Promise<RenderResult> {
+  const rowIndex = row.rowIndex ?? 0
+  const label    = rowLabel(row)
+
+  try {
+    const prompt = buildLandscapePrompt(row)
+
+    console.log(
+      `[landscapes/generate] row=${rowIndex} ${label} prompt_chars=${prompt.length}`
+    )
+
+    // 1) Generate
     const generated = await generateLandscape({
-      sourceImageB64:        source_image_b64,
-      extraImages:           extra_images,
-      sceneDescription:      scene_description,
-      viewingDirection:      viewing_direction,
-      environment:           environment,
-      characterSource:       character_source,
-      distinctiveFeatures:   distinctive_features,
-      primarySubject:        primary_subject,
-      displayName:           display_name,
-      mood,
-      presentation,
-      scaleFeel:             scale_feel,
-      notes,
+      sourceImageB64: sourceB64,
+      extraImages,
+      prompt,
+      aspectRatio:    row.aspectRatio,
       openaiApiKey,
     })
-    let current = generated.imageB64
+    let imageB64 = generated.imageB64
 
-    // ── LEVELS ────────────────────────────────────────────────
-    try {
-      const leveled = await applyLevels({
-        imageB64:        current,
-        lighting_preset: 'landscape',
-      })
-      if (leveled.success && leveled.imageB64) current = leveled.imageB64
-    } catch (e: any) {
-      console.warn('[landscape-route] levels failed:', e.message)
-    }
-
-    // ── EXPAND (Stability outpaint) ───────────────────────────
-    try {
-      const expanded = await expandScene({
-        imageB64:     current,
-        openaiApiKey,
-        expand:       true,
-      })
-      if (expanded.imageB64) current = expanded.imageB64
-    } catch (e: any) {
-      console.warn('[landscape-route] expand failed:', e.message)
-    }
-
-    // ── PLAQUE (optional) ─────────────────────────────────────
-    if (plaque_text && plaque_text.trim()) {
+    // 2) Expand (non-fatal — if it fails we keep the unexpanded image)
+    if (row.expand !== false) {
       try {
-        current = await applyPlaque({
-          imageB64:     current,
-          text:         plaque_text,
-          shape:        plaque_shape,
-          integrate:    true,
-          openaiApiKey,
-        })
+        const expanded = await expandLandscape({ imageB64, openaiApiKey, expand: true })
+        if (expanded.imageB64) imageB64 = expanded.imageB64
       } catch (e: any) {
-        console.warn('[landscape-route] plaque pipeline failed:', e.message)
+        console.warn(`[landscapes/generate] row=${rowIndex} expand failed (non-fatal): ${e.message}`)
       }
     }
 
-    return NextResponse.json({
-      result: {
-        image_b64:        current,
-        prompt_used:      generated.promptUsed,
-        scene:            display_name,
-        character_source,
-        mood,
-        presentation,
-      }
-    })
+    return {
+      ok:          true,
+      row_index:   rowIndex,
+      image_b64:   imageB64,
+      prompt_used: prompt,
+    }
 
   } catch (err: any) {
-    console.error('[landscape-route] Fatal:', err.message)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    // StudioAtCapacityError bubbles up so the route can return 202.
+    if (err instanceof StudioAtCapacityError) throw err
+
+    console.error(`[landscapes/generate] row=${rowIndex} failed: ${err?.message || err}`)
+    return {
+      ok:        false,
+      row_index: rowIndex,
+      error:     errString(err),
+    }
   }
+}
+
+function errString(e: any): string {
+  if (!e) return 'unknown_error'
+  if (typeof e === 'string') return e
+  if (e.message) return String(e.message)
+  try { return JSON.stringify(e) } catch { return 'unknown_error' }
 }

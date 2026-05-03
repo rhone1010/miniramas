@@ -13,12 +13,11 @@ export type Mode = 'materials' | 'seasons' | 'events'
 export type EnvironmentId = 'in_situ' | 'desk' | 'room_in_house'
 
 // ── PRESET REGISTRY KEYS ──────────────────────────────────────
-// Full v1 catalog: 10 materials + 4 seasons + 5 events = 19 presets.
-// Slice ships 3 (bronze, summer, haunted) — the rest are reserved IDs.
+// Full v1 catalog: 11 materials + 4 seasons + 5 events = 20 presets.
 export type PresetId =
-  // materials (10)
+  // materials (11)
   | 'bronze' | 'wax' | 'alabaster' | 'glass'
-  | 'gingerbread' | 'watercolor_wood' | 'carved_wood'
+  | 'gingerbread' | 'watercolor_wood' | 'carved_wood' | 'carved_stone'
   | 'snow_globe' | 'dollhouse' | 'scaled_architectural'
   // seasons (4)
   | 'spring' | 'summer' | 'fall' | 'winter'

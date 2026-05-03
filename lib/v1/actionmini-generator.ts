@@ -9,12 +9,20 @@ import type { KineticMedium } from './actionmini-shared'
 export type { ActionMiniPresetId, ActionMiniRefinements, LocationId }
 export type { ActionMiniHero, SecondaryFigures, KineticMedium } from './actionmini-shared'
 
+// NB2-supported aspect ratios per Replicate model page.
+// Default is '1:1'. Without this NB2 image-to-image matches the source
+// image's aspect ratio, which produces inconsistent dimensions.
+export type AspectRatio =
+  | '1:1' | '2:3' | '3:2' | '3:4' | '4:3'
+  | '4:5' | '5:4' | '9:16' | '16:9' | '21:9'
+
 // ── INPUT ────────────────────────────────────────────────────
 export interface ActionMiniInput {
   sourceImageB64:    string
   presetId:          ActionMiniPresetId
   kineticMedium?:    KineticMedium
   locationId?:       LocationId         // user-picked staging; defaults to on_a_desk
+  aspectRatio?:      AspectRatio        // user-picked output ratio; defaults to '1:1'
   refinements?:      ActionMiniRefinements
   notes?:            string
   refinementTweak?:  string
@@ -32,9 +40,10 @@ export interface ActionMiniResult {
 // gets the URL back in one round-trip. Falls back to polling if the wait
 // times out (rare on short generations).
 async function callNanoBanana(input: {
-  prompt:    string
-  sourceB64: string
-  apiToken:  string
+  prompt:       string
+  sourceB64:    string
+  aspectRatio:  AspectRatio
+  apiToken:     string
 }): Promise<string> {
   const dataUri = `data:image/png;base64,${input.sourceB64}`
 
@@ -49,6 +58,7 @@ async function callNanoBanana(input: {
       input: {
         prompt:        input.prompt,
         image_input:   [dataUri],
+        aspect_ratio:  input.aspectRatio,
         output_format: 'png',
       },
     }),
@@ -99,13 +109,18 @@ export async function generateActionMini(input: ActionMiniInput): Promise<Action
     refinementTweak: input.refinementTweak,
   })
 
+  // Default aspect ratio: 1:1. Without this NB2 in image-to-image mode
+  // matches the source's aspect ratio, ignoring the user's pick.
+  const aspectRatio = input.aspectRatio || '1:1'
+
   const imageB64 = await callNanoBanana({
     prompt,
-    sourceB64: input.sourceImageB64,
-    apiToken:  input.replicateApiToken,
+    sourceB64:   input.sourceImageB64,
+    aspectRatio,
+    apiToken:    input.replicateApiToken,
   })
 
   const tag = input.refinementTweak ? `${input.presetId} (refined)` : input.presetId
-  console.log(`[actionmini] ${tag} done — prompt ${prompt.length} chars`)
+  console.log(`[actionmini] ${tag} done — prompt ${prompt.length} chars · aspect ${aspectRatio}`)
   return { imageB64, promptUsed: prompt }
 }
