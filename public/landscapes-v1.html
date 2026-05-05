@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landscape</title>
+<style>
+:root {
+  --bg: #0B1128;
+  --panel: #11183A;
+  --line: rgba(255,255,255,0.08);
+  --line-2: rgba(255,255,255,0.18);
+  --text: #ffffff;
+  --text-2: rgba(255,255,255,0.62);
+  --text-3: rgba(255,255,255,0.34);
+  --teal: #00C9C8;
+  --gold: #FFD60A;
+  --error: #ff7a7a;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.shell { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+header { margin-bottom: 2.5rem; }
+header h1 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 900;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+header p { margin: 0; color: var(--text-2); font-size: 14px; }
+
+.section { margin-bottom: 1.75rem; }
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-2); }
+.label-meta { font-size: 11px; color: var(--text-3); }
+
+/* dropzone */
+.dz {
+  background: var(--panel);
+  border: 1.5px dashed var(--line-2);
+  border-radius: 14px;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.dz:hover { border-color: var(--teal); }
+.dz.has-image {
+  padding: 0;
+  border-style: solid;
+  border-color: var(--line);
+  overflow: hidden;
+  cursor: default;
+}
+.dz-empty-1 { font-size: 14px; color: var(--text); margin-bottom: 0.25rem; }
+.dz-empty-2 { font-size: 12px; color: var(--text-3); }
+.dz img { display: block; width: 100%; height: auto; max-height: 360px; object-fit: cover; }
+.dz-clear {
+  position: absolute;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  margin: 8px 0 0 8px;
+}
+
+.refs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ref-slot {
+  aspect-ratio: 1;
+  background: var(--panel);
+  border: 1px dashed var(--line-2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-3);
+  font-size: 18px;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+.ref-slot:hover { border-color: var(--teal); color: var(--teal); }
+.ref-slot.filled { border-style: solid; border-color: var(--line); cursor: default; }
+.ref-slot img { width: 100%; height: 100%; object-fit: cover; }
+.ref-clear {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(0,0,0,0.7); color: white; border: none;
+  border-radius: 6px; padding: 3px 6px; font-size: 10px; cursor: pointer;
+}
+
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media (max-width: 540px) { .row-2 { grid-template-columns: 1fr; } }
+
+/* scale tiles */
+.tiles { display: flex; flex-direction: column; gap: 6px; }
+.tile {
+  display: block; width: 100%; text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.tile:hover { border-color: var(--line-2); }
+.tile.active { border-color: var(--teal); background: rgba(0,201,200,0.08); }
+.tile-name { font-size: 13px; font-weight: 700; margin-bottom: 1px; }
+.tile-sub { font-size: 11px; color: var(--text-2); }
+
+/* aspect grid */
+.aspects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.aspect-btn {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 0;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.aspect-btn:hover { border-color: var(--line-2); }
+.aspect-btn.active { border-color: var(--teal); background: rgba(0,201,200,0.08); }
+
+/* notes */
+textarea {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 60px;
+}
+textarea:focus { outline: none; border-color: var(--teal); }
+
+/* run bar */
+.run-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 1.25rem; margin-top: 0.5rem;
+  border-top: 1px solid var(--line);
+}
+.run-meta { font-size: 11px; color: var(--text-3); }
+.run-btn {
+  background: linear-gradient(135deg, #7B5EA7, #00C9C8);
+  border: none;
+  border-radius: 10px;
+  padding: 11px 28px;
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.run-btn:hover:not(:disabled) { opacity: 0.92; }
+.run-btn:active:not(:disabled) { transform: scale(0.98); }
+.run-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* status / result */
+.status {
+  margin: 1.5rem 0;
+  padding: 0.9rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.status.busy { border-color: rgba(0,201,200,0.4); }
+.status.error { border-color: rgba(255,122,122,0.4); color: var(--error); }
+.status.deferred { border-color: rgba(255,214,10,0.4); color: var(--gold); }
+
+.result {
+  margin-top: 2rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.result img { display: block; width: 100%; height: auto; }
+.result-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--line);
+}
+.result-meta { font-size: 11px; color: var(--text-3); }
+.result-dl {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.result-dl:hover { border-color: var(--teal); color: var(--teal); }
+
+input[type="file"] { display: none; }
+
+.spinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px; vertical-align: -2px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<header>
+  <h1>Landscape</h1>
+  <p>A captured moment of a real place, frozen as a precision miniature.</p>
+</header>
+
+<div class="section">
+  <div class="section-head">
+    <span class="label">Photograph</span>
+    <span class="label-meta">required</span>
+  </div>
+  <div class="dz" id="dropzone">
+    <div id="dz-empty">
+      <div class="dz-empty-1">Drop a photograph or click to choose</div>
+      <div class="dz-empty-2">JPG or PNG &middot; the place you want to keep</div>
+    </div>
+  </div>
+  <input type="file" id="file-primary" accept="image/jpeg,image/png">
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <span class="label">Reference photographs</span>
+    <span class="label-meta">optional &middot; up to 3</span>
+  </div>
+  <div class="refs" id="refs">
+    <div class="ref-slot" data-i="0">+</div>
+    <div class="ref-slot" data-i="1">+</div>
+    <div class="ref-slot" data-i="2">+</div>
+  </div>
+  <input type="file" id="file-ref" accept="image/jpeg,image/png">
+</div>
+
+<div class="row-2">
+
+  <div class="section">
+    <div class="section-head">
+      <span class="label">Scale</span>
+    </div>
+    <div class="tiles">
+      <button class="tile active" data-scale="close_up">
+        <div class="tile-name">Close up</div>
+        <div class="tile-sub">subject fills the frame</div>
+      </button>
+      <button class="tile" data-scale="zoom_out">
+        <div class="tile-name">Zoom out</div>
+        <div class="tile-sub">room around the subject</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="label">Aspect</span>
+    </div>
+    <div class="aspects" id="aspects">
+      <button class="aspect-btn active" data-aspect="1:1">1:1</button>
+      <button class="aspect-btn" data-aspect="3:2">3:2</button>
+      <button class="aspect-btn" data-aspect="2:3">2:3</button>
+      <button class="aspect-btn" data-aspect="4:3">4:3</button>
+      <button class="aspect-btn" data-aspect="3:4">3:4</button>
+      <button class="aspect-btn" data-aspect="16:9">16:9</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <span class="label">Notes</span>
+    <span class="label-meta">optional</span>
+  </div>
+  <textarea id="notes" placeholder="Anything specific about this place worth noting"></textarea>
+</div>
+
+<div class="run-bar">
+  <div class="run-meta">Golden hour &middot; on desk &middot; day</div>
+  <button class="run-btn" id="run-btn" disabled>Render</button>
+</div>
+
+<div id="status-area"></div>
+<div id="result-area"></div>
+
+</div>
+
+<script>
+'use strict';
+
+const state = {
+  primary: null,    // { b64, name }
+  refs: [null, null, null],
+  scale: 'close_up',
+  aspect: '1:1',
+  busy: false,
+  result: null,
+};
+
+// ── helpers ──
+function fileToB64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const s = String(r.result);
+      resolve(s.slice(s.indexOf(',') + 1));
+    };
+    r.onerror = () => reject(new Error('read_failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+function setStatus(msg, kind) {
+  const a = document.getElementById('status-area');
+  if (!msg) { a.innerHTML = ''; return; }
+  const cls = kind ? ('status ' + kind) : 'status';
+  const spinner = kind === 'busy' ? '<span class="spinner"></span>' : '';
+  a.innerHTML = '<div class="' + cls + '">' + spinner + msg + '</div>';
+}
+
+function updateRunBtn() {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = !state.primary || state.busy;
+  btn.textContent = state.busy ? 'Rendering…' : 'Render';
+}
+
+// ── primary image ──
+const dz = document.getElementById('dropzone');
+const filePrimary = document.getElementById('file-primary');
+
+dz.addEventListener('click', () => {
+  if (state.primary) return;
+  filePrimary.click();
+});
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--teal)'; });
+dz.addEventListener('dragleave', () => { dz.style.borderColor = ''; });
+dz.addEventListener('drop', async e => {
+  e.preventDefault();
+  dz.style.borderColor = '';
+  const f = e.dataTransfer.files[0];
+  if (f) await loadPrimary(f);
+});
+filePrimary.addEventListener('change', async e => {
+  const f = e.target.files[0];
+  if (f) await loadPrimary(f);
+  filePrimary.value = '';
+});
+
+async function loadPrimary(file) {
+  try {
+    const b64 = await fileToB64(file);
+    state.primary = { b64, name: file.name };
+    renderPrimary();
+    updateRunBtn();
+  } catch (e) {
+    setStatus('Could not read that file. Try another.', 'error');
+  }
+}
+
+function renderPrimary() {
+  if (!state.primary) {
+    dz.classList.remove('has-image');
+    dz.innerHTML = '<div id="dz-empty"><div class="dz-empty-1">Drop a photograph or click to choose</div><div class="dz-empty-2">JPG or PNG &middot; the place you want to keep</div></div>';
+    return;
+  }
+  dz.classList.add('has-image');
+  const mime = state.primary.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+  dz.innerHTML =
+    '<img src="data:' + mime + ';base64,' + state.primary.b64 + '">' +
+    '<button class="dz-clear" id="dz-clear">remove</button>';
+  document.getElementById('dz-clear').onclick = (e) => {
+    e.stopPropagation();
+    state.primary = null;
+    renderPrimary();
+    updateRunBtn();
+  };
+}
+
+// ── reference images ──
+const fileRef = document.getElementById('file-ref');
+let pendingRefSlot = null;
+
+document.querySelectorAll('.ref-slot').forEach(el => {
+  el.addEventListener('click', () => {
+    const i = Number(el.dataset.i);
+    if (state.refs[i]) return;
+    pendingRefSlot = i;
+    fileRef.click();
+  });
+});
+fileRef.addEventListener('change', async e => {
+  const f = e.target.files[0];
+  if (f && pendingRefSlot !== null) {
+    try {
+      const b64 = await fileToB64(f);
+      state.refs[pendingRefSlot] = { b64, name: f.name };
+      renderRefs();
+    } catch (err) {
+      setStatus('Could not read that reference image.', 'error');
+    }
+  }
+  fileRef.value = '';
+  pendingRefSlot = null;
+});
+
+function renderRefs() {
+  document.querySelectorAll('.ref-slot').forEach(el => {
+    const i = Number(el.dataset.i);
+    const ref = state.refs[i];
+    if (ref) {
+      const mime = ref.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+      el.classList.add('filled');
+      el.innerHTML =
+        '<img src="data:' + mime + ';base64,' + ref.b64 + '">' +
+        '<button class="ref-clear">×</button>';
+      el.querySelector('.ref-clear').onclick = (e) => {
+        e.stopPropagation();
+        state.refs[i] = null;
+        renderRefs();
+      };
+    } else {
+      el.classList.remove('filled');
+      el.innerHTML = '+';
+    }
+  });
+}
+
+// ── scale ──
+document.querySelectorAll('[data-scale]').forEach(b => {
+  b.addEventListener('click', () => {
+    state.scale = b.dataset.scale;
+    document.querySelectorAll('[data-scale]').forEach(x => x.classList.toggle('active', x === b));
+  });
+});
+
+// ── aspect ──
+document.querySelectorAll('[data-aspect]').forEach(b => {
+  b.addEventListener('click', () => {
+    state.aspect = b.dataset.aspect;
+    document.querySelectorAll('[data-aspect]').forEach(x => x.classList.toggle('active', x === b));
+  });
+});
+
+// ── render ──
+document.getElementById('run-btn').addEventListener('click', run);
+
+async function run() {
+  if (!state.primary || state.busy) return;
+  state.busy = true;
+  state.result = null;
+  document.getElementById('result-area').innerHTML = '';
+  setStatus('Rendering — this typically takes 30–60 seconds.', 'busy');
+  updateRunBtn();
+
+  const notesVal = document.getElementById('notes').value.trim();
+  const additional = state.refs.filter(Boolean).map(r => r.b64);
+
+  const body = {
+    source_image_b64: state.primary.b64,
+    additional_images_b64: additional.length ? additional : undefined,
+    renders: [{
+      preset_id:      'as_itself',
+      environment_id: 'desk',
+      atmosphere_id:  'golden',
+      scale_id:       state.scale,
+      tod:            'day',
+      aspect_ratio:   state.aspect,
+    }],
+    expand: true,
+    notes: notesVal || undefined,
+  };
+
+  try {
+    const res = await fetch('/api/v1/landscapes/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+
+    if (data.status === 'deferred') {
+      setStatus('The studio is at capacity right now (job ' + data.job_id + '). Try again in a few minutes.', 'deferred');
+      return;
+    }
+    if (data.status !== 'ok') {
+      const errMsg = data.error || (data.errors && data.errors.join('; ')) || 'render_failed';
+      throw new Error(errMsg);
+    }
+
+    const r0 = data.results && data.results[0];
+    if (!r0) throw new Error('empty_results');
+    if (!r0.ok) throw new Error(r0.error || 'render_failed');
+    if (!r0.image_b64) throw new Error('no_image_returned');
+
+    state.result = r0;
+    setStatus('', null);
+    renderResult();
+  } catch (err) {
+    console.error('[run]', err);
+    setStatus('Something went wrong: ' + err.message, 'error');
+  } finally {
+    state.busy = false;
+    updateRunBtn();
+  }
+}
+
+function renderResult() {
+  const r = state.result;
+  if (!r) return;
+  const a = document.getElementById('result-area');
+  const dur = r.duration_ms ? Math.round(r.duration_ms / 1000) + 's' : '';
+  const meta = [r.aspect_ratio, r.scale_used, dur].filter(Boolean).join(' · ');
+  a.innerHTML =
+    '<div class="result">' +
+    '<img id="result-img" src="data:image/jpeg;base64,' + r.image_b64 + '">' +
+    '<div class="result-foot">' +
+    '<div class="result-meta">' + meta + '</div>' +
+    '<button class="result-dl" id="result-dl">Download</button>' +
+    '</div>' +
+    '</div>';
+  document.getElementById('result-dl').onclick = () => {
+    const link = document.createElement('a');
+    link.href = 'data:image/jpeg;base64,' + r.image_b64;
+    const stem = (state.primary.name || 'landscape').replace(/\.[^.]+$/, '');
+    link.download = stem + '_miniature.jpg';
+    link.click();
+  };
+}
+
+renderRefs();
+updateRunBtn();
+</script>
+
+</body>
+</html>

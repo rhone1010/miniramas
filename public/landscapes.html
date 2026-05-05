@@ -1,35 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Liten & Co — Landscapes</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liten &amp; Co — Landscapes (multi-source test rig)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* ─────────────────────────────────────────────────────────────
-     LITEN & CO — LANDSCAPES
-     Light editorial register. Cream backgrounds, serif italic for
-     editorial voice, Inter for utility, JetBrains Mono for state pills.
-     No dark mode. No neon. Print-catalogue feel.
-     ─────────────────────────────────────────────────────────────  */
   :root {
-    --bg:           #F4F1EA;        /* warm cream */
-    --bg-soft:      #EDE8DD;        /* slightly deeper cream for cards */
-    --bg-deeper:    #E5DFD0;        /* deepest cream for hover/selected */
-    --ink:          #1F1B14;        /* near-black warm */
-    --ink-soft:     #5A5246;        /* secondary text */
-    --ink-faint:    #8E8676;        /* tertiary text */
-    --hairline:     #D7CFBE;        /* hairline borders */
-    --hairline-soft:#E5DFD0;        /* very faint borders */
-    --accent:       #3F4A2E;        /* deep moss — the brand's quiet accent */
-    --accent-soft:  #3F4A2E14;      /* 8% accent for soft fills */
-    --signature:    #8B6F3E;        /* warm bronze — signature tier marker */
-    --premium:      #5A5246;        /* warm grey — premium tier marker */
-    --base:         #8E8676;        /* light grey — base tier marker */
-    --error:        #8B3E3E;        /* muted brick */
-    --success:      #3F4A2E;        /* same as accent */
+    --bg:           #F4F1EA;
+    --bg-soft:      #EDE8DD;
+    --bg-deeper:    #E5DFD0;
+    --ink:          #1F1B14;
+    --ink-soft:     #5A5246;
+    --ink-faint:    #8E8676;
+    --hairline:     #D7CFBE;
+    --hairline-soft:#E5DFD0;
+    --accent:       #3F4A2E;
+    --accent-soft:  #3F4A2E14;
+    --signature:    #8B6F3E;
+    --premium:      #5A5246;
+    --base:         #8E8676;
+    --error:        #8B3E3E;
+    --error-soft:   #8B3E3E14;
+    --success:      #3F4A2E;
+    --warn:         #B07C2E;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--ink);
@@ -37,8 +33,9 @@
   ::selection { background: var(--accent); color: var(--bg); }
   button { font-family: inherit; cursor: pointer; }
   input, textarea { font-family: inherit; }
+  .hidden { display: none !important; }
 
-  /* ─── TOPBAR ──────────────────────────────────────────────── */
+  /* TOPBAR */
   .topbar {
     height: 48px; padding: 0 1.25rem;
     display: flex; align-items: center; gap: 1.25rem;
@@ -46,1657 +43,1401 @@
     background: var(--bg);
     position: sticky; top: 0; z-index: 50;
   }
-  .home-link {
-    font-family: 'Inter', sans-serif; font-size: 0.78rem; color: var(--ink-soft);
-    text-decoration: none; letter-spacing: 0.02em;
-  }
+  .home-link { font-family: 'Inter', sans-serif; font-size: 0.78rem; color: var(--ink-soft);
+    text-decoration: none; letter-spacing: 0.02em; }
   .home-link:hover { color: var(--ink); }
-  .brand-lockup {
-    font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
-    color: var(--ink); display: flex; align-items: baseline; gap: 0.5rem;
-  }
+  .brand-lockup { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+    color: var(--ink); display: flex; align-items: baseline; gap: 0.5rem; }
   .brand-name { font-style: italic; }
   .brand-name b { font-weight: 600; }
-  .silo-name {
-    font-family: 'Inter', sans-serif; font-size: 0.65rem;
+  .silo-name { font-family: 'Inter', sans-serif; font-size: 0.65rem;
     letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint);
-    border-left: 1px solid var(--hairline); padding-left: 0.75rem;
-  }
+    border-left: 1px solid var(--hairline); padding-left: 0.75rem; }
+  .test-tag { font-family: 'Cormorant Garamond', serif; font-style: italic;
+    color: var(--warn); font-size: 0.85rem; }
   .topbar-spacer { flex: 1; }
-  .status-pill {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
-    color: var(--ink-faint);
-  }
+  .status-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ink-faint); }
   .status-pill.busy { color: var(--accent); }
   .status-pill.error { color: var(--error); }
 
-  /* ─── LAYOUT ──────────────────────────────────────────────── */
+  /* LAYOUT */
   .layout {
-    display: grid; grid-template-columns: 440px 1fr;
-    height: calc(100vh - 48px); overflow: hidden;
+    display: grid; grid-template-columns: 460px 1fr;
+    height: calc(100vh - 48px - 56px); /* topbar + bottom action bar */
+    overflow: hidden;
   }
   .workspace {
-    overflow-y: auto; padding: 1.5rem 1.5rem 3rem;
+    overflow-y: auto; padding: 1.25rem 1.25rem 2rem;
     border-right: 1px solid var(--hairline); background: var(--bg);
   }
   .stage {
-    overflow: hidden; position: relative; background: var(--bg);
+    overflow-y: auto; padding: 1.25rem 1.5rem 3rem; background: var(--bg);
   }
 
-  /* ─── WORKSPACE SECTIONS ─────────────────────────────────── */
-  .sec { margin-bottom: 1.75rem; }
-  .sec-head {
+  /* WORKSPACE — SOURCE LIST */
+  .ws-head {
     display: flex; align-items: baseline; justify-content: space-between;
-    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem; margin-bottom: 0.875rem;
+    border-bottom: 1px solid var(--hairline-soft);
   }
-  .sec-title {
+  .ws-title {
     font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600;
     letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft);
   }
-  .sec-meta {
+  .ws-meta {
     font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.85rem;
     color: var(--ink-faint);
   }
-  .sec-hint {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.85rem;
-    color: var(--ink-faint); margin-top: 0.4rem;
-  }
 
-  /* ─── SOURCE IMAGE ───────────────────────────────────────── */
-  .source-block {
-    background: var(--bg-soft); border-radius: 4px; padding: 0.875rem;
-    border: 1px solid var(--hairline-soft);
-  }
-  .source-empty {
-    aspect-ratio: 4/3; border: 1px dashed var(--hairline);
-    display: flex; align-items: center; justify-content: center; flex-direction: column;
-    border-radius: 4px; cursor: pointer; gap: 0.5rem; padding: 1rem;
+  .source-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  /* Empty state */
+  .source-empty-rail {
+    border: 1px dashed var(--hairline); border-radius: 4px;
+    padding: 1.5rem 1rem; text-align: center; cursor: pointer;
     transition: all 0.2s;
   }
-  .source-empty:hover { border-color: var(--accent); background: var(--accent-soft); }
-  .source-empty .emp-h {
+  .source-empty-rail:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .source-empty-rail .h {
     font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.15rem;
-    color: var(--ink-soft);
+    color: var(--ink-soft); margin-bottom: 0.25rem;
   }
-  .source-empty .emp-sub {
-    font-size: 0.72rem; color: var(--ink-faint); letter-spacing: 0.05em;
-  }
-  .source-primary {
-    width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 3px;
-    background: var(--bg-deeper);
-  }
-  .source-caption {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem;
-    color: var(--ink-soft); margin-top: 0.5rem;
-  }
-  .source-caption-sub {
-    font-size: 0.75rem; color: var(--ink-faint); margin-top: 0.15rem;
-  }
-  .source-actions {
-    margin-top: 0.625rem; display: flex; align-items: center; gap: 0.875rem;
-  }
-  .text-link {
-    background: none; border: none; padding: 0; color: var(--ink-soft);
-    font-size: 0.75rem; letter-spacing: 0.04em; cursor: pointer;
-  }
-  .text-link:hover { color: var(--ink); }
-
-  /* References — small thumbnails below primary */
-  .refs {
-    margin-top: 0.625rem; display: flex; gap: 0.375rem; flex-wrap: wrap;
-  }
-  .ref-thumb {
-    position: relative; width: 56px; height: 56px;
-    border: 1px solid var(--hairline); border-radius: 3px; overflow: hidden;
-    background: var(--bg-deeper);
-  }
-  .ref-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .ref-thumb.add {
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--ink-faint); font-size: 1.1rem;
-    border-style: dashed;
-  }
-  .ref-thumb.add:hover { border-color: var(--accent); color: var(--accent); }
-  .ref-thumb .x {
-    position: absolute; top: 1px; right: 1px;
-    background: rgba(31, 27, 20, 0.7); color: white;
-    width: 14px; height: 14px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: none; font-size: 0.6rem; cursor: pointer;
+  .source-empty-rail .sub {
+    font-size: 0.72rem; color: var(--ink-faint); letter-spacing: 0.04em;
   }
 
-  /* ─── CURATOR CARD ───────────────────────────────────────── */
-  .curator {
-    background: var(--bg-soft);
-    border: 1px solid var(--hairline); border-radius: 4px;
-    padding: 1rem 1.125rem; position: relative;
+  /* Source card */
+  .source-card {
+    background: var(--bg-soft); border: 1px solid var(--hairline);
+    border-radius: 4px; overflow: hidden; transition: border-color 0.15s;
   }
-  .curator-label {
-    font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 600;
-    letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft);
-    margin-bottom: 0.625rem;
-  }
-  .curator-prose {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.08rem;
-    line-height: 1.5; color: var(--ink);
-  }
-  .curator-sig {
-    margin-top: 0.625rem;
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--ink-faint); font-size: 0.95rem;
-    text-align: right;
-  }
-  .curator-loading {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--ink-faint); font-size: 0.95rem;
-  }
-  .curator-loading::after {
-    content: '…'; animation: dots 1.4s infinite; color: var(--ink-faint);
-  }
-  @keyframes dots {
-    0%, 100% { opacity: 0.2; } 50% { opacity: 1; }
-  }
+  .source-card.expanded { background: var(--bg); border-color: var(--ink-soft); }
 
-  /* ─── PATH SELECTOR ──────────────────────────────────────── */
-  .path-toggle {
-    display: flex; gap: 0; border: 1px solid var(--hairline);
-    border-radius: 3px; overflow: hidden; background: var(--bg);
+  .source-card-head {
+    display: flex; align-items: center; gap: 0.625rem;
+    padding: 0.5rem 0.75rem; cursor: pointer;
   }
-  .path-btn {
-    flex: 1; padding: 0.65rem 0.875rem; background: var(--bg);
-    border: none; color: var(--ink-soft);
-    font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 500;
-    letter-spacing: 0.02em;
-  }
-  .path-btn + .path-btn { border-left: 1px solid var(--hairline); }
-  .path-btn:hover { color: var(--ink); background: var(--bg-soft); }
-  .path-btn.active { background: var(--ink); color: var(--bg); }
+  .source-card-head:hover { background: var(--bg-deeper); }
+  .source-card.expanded .source-card-head { background: transparent; cursor: default; }
 
-  /* ─── DIRECTION GRID (surfaces or materials) ─────────────── */
-  .dir-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
-  }
-  .dir-btn {
-    padding: 0.65rem 0.7rem; background: var(--bg);
-    border: 1px solid var(--hairline); border-radius: 3px;
-    color: var(--ink); text-align: left;
-    display: flex; flex-direction: column; gap: 0.125rem;
-    transition: all 0.15s; position: relative;
-  }
-  .dir-btn:hover:not(:disabled) { border-color: var(--ink); }
-  .dir-btn.active {
-    background: var(--ink); color: var(--bg); border-color: var(--ink);
-  }
-  .dir-btn.active .dir-sub { color: var(--bg-soft); }
-  .dir-btn:disabled {
-    opacity: 0.35; cursor: not-allowed;
-    background: var(--bg);
-  }
-  .dir-name {
-    font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 500;
-    display: flex; align-items: center; gap: 0.4rem;
-  }
-  .dir-sub {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem;
-    color: var(--ink-faint);
-  }
-  .tier-mark {
-    width: 5px; height: 5px; border-radius: 50%; display: inline-block;
-  }
-  .tier-mark.signature { background: var(--signature); }
-  .tier-mark.premium   { background: var(--premium); }
-  .tier-mark.base      { background: var(--base); }
-  .star { color: var(--signature); font-size: 0.7rem; line-height: 1; }
-  .alt-marker { color: var(--accent); font-size: 0.7rem; }
-
-  /* ✓ badge on direction tiles already added to the queue */
-  .dir-check {
-    position: absolute; top: 6px; right: 6px;
-    width: 16px; height: 16px; border-radius: 50%;
-    background: var(--accent); color: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 700;
-    line-height: 1;
-  }
-  .dir-check-multi {
-    width: auto; padding: 0 5px; height: 16px; border-radius: 8px;
-    font-size: 0.6rem; gap: 2px;
-  }
-  .dir-btn[disabled] .dir-check { display: none; }
-
-  /* S/M marker on queue rows so customer knows which path each row is */
-  .row-path-mark {
-    display: inline-block; width: 16px; height: 16px;
-    border-radius: 3px; margin-right: 0.45rem;
-    font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 700;
-    text-align: center; line-height: 16px; vertical-align: middle;
-  }
-  .row-path-mark.mat  { background: var(--ink);    color: var(--bg); }
-  .row-path-mark.surf { background: var(--accent); color: var(--bg); }
-
-  /* ─── SCALE ROW (its own section, below path) ────────────── */
-  .scale-row {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
-  }
-  .scale-btn {
-    padding: 0.65rem 0.7rem; background: var(--bg);
-    border: 1px solid var(--hairline); border-radius: 3px;
-    color: var(--ink); text-align: left;
-    display: flex; flex-direction: column; gap: 0.125rem;
-    transition: all 0.15s; position: relative;
-  }
-  .scale-btn:hover { border-color: var(--ink); }
-  .scale-btn.active {
-    background: var(--ink); color: var(--bg); border-color: var(--ink);
-  }
-  .scale-btn.active .scale-sub { color: var(--bg-soft); }
-  .scale-name {
-    font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 500;
-    display: flex; align-items: center; gap: 0.4rem;
-  }
-  .scale-sub {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem;
-    color: var(--ink-faint);
-  }
-
-  /* ─── DEFAULTS BLOCK (atmosphere + environment, top-level) ─ */
-  .defaults {
-    background: var(--bg-soft); border: 1px solid var(--hairline-soft);
-    border-radius: 4px; padding: 0.875rem; margin-top: 0.875rem;
-  }
-  .defaults-head {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 0.625rem;
-  }
-  .defaults-title {
-    font-family: 'Inter', sans-serif; font-size: 0.65rem; font-weight: 600;
-    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft);
-  }
-  .mode-toggle {
-    display: flex; gap: 0; border: 1px solid var(--hairline);
-    border-radius: 99px; overflow: hidden;
-  }
-  .mode-btn-sm {
-    background: var(--bg); border: none;
-    padding: 0.25rem 0.625rem; color: var(--ink-soft);
-    font-family: 'Inter', sans-serif; font-size: 0.7rem;
-    letter-spacing: 0.02em;
-  }
-  .mode-btn-sm.active { background: var(--ink); color: var(--bg); }
-
-  .pill-row { display: flex; flex-wrap: wrap; gap: 4px; }
-  .pill {
-    padding: 0.3rem 0.65rem; background: var(--bg);
-    border: 1px solid var(--hairline); border-radius: 99px;
-    color: var(--ink-soft);
-    font-family: 'Inter', sans-serif; font-size: 0.72rem; letter-spacing: 0.01em;
-  }
-  .pill:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
-  .pill.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  .pill-sub-label {
-    font-family: 'Inter', sans-serif; font-size: 0.65rem; font-weight: 500;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint);
-    margin-bottom: 0.375rem; margin-top: 0.5rem;
-  }
-  .pill-sub-label:first-child { margin-top: 0; }
-
-  /* ─── DIRECTIONS QUEUE ──────────────────────────────────── */
-  .queue { display: flex; flex-direction: column; gap: 0.5rem; }
-  .queue-empty {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--ink-faint); font-size: 0.95rem;
-    padding: 0.875rem 1rem; background: var(--bg-soft); border-radius: 4px;
+  .source-thumb {
+    width: 48px; height: 48px; border-radius: 3px;
+    background: var(--bg-deeper); object-fit: cover; flex-shrink: 0;
     border: 1px solid var(--hairline-soft);
   }
-  .queue-row {
-    background: var(--bg-soft); border: 1px solid var(--hairline);
-    border-radius: 4px; overflow: hidden; transition: all 0.15s;
+  .source-card-name {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 0.1rem;
   }
-  .queue-row.expanded { background: var(--bg); }
-  .queue-row-head {
-    display: flex; align-items: center; gap: 0.625rem;
-    padding: 0.625rem 0.875rem;
-  }
-  .queue-row-name {
+  .source-card-filename {
     font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500;
-    flex: 1; display: flex; flex-direction: column; gap: 0.1rem;
+    color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .queue-row-sub {
+  .source-card-summary {
+    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem;
+    color: var(--ink-faint);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .source-card-toggle {
+    background: none; border: none; padding: 0.25rem 0.4rem;
+    color: var(--ink-faint); font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .source-card-toggle:hover { color: var(--ink); }
+  .source-card-remove {
+    background: none; border: none; padding: 0.25rem 0.4rem;
+    color: var(--ink-faint); font-size: 0.95rem; line-height: 1;
+    flex-shrink: 0;
+  }
+  .source-card-remove:hover { color: var(--error); }
+
+  /* Expanded body */
+  .source-card-body {
+    padding: 0 0.875rem 0.875rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    border-top: 1px solid var(--hairline-soft);
+    padding-top: 0.875rem; margin-top: 0.25rem;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .field-label {
+    font-family: 'Inter', sans-serif; font-size: 0.66rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  .field-meta {
     font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem;
     color: var(--ink-faint);
   }
+
+  /* Profile select */
+  .profile-toggle {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    background: var(--bg-soft); border: 1px solid var(--hairline);
+    border-radius: 4px; padding: 3px;
+  }
+  .source-card.expanded .profile-toggle { background: var(--bg-deeper); }
+  .profile-btn {
+    background: transparent; border: none; padding: 0.5rem 0.5rem;
+    border-radius: 3px;
+    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500;
+    color: var(--ink-soft); letter-spacing: 0.02em;
+    transition: all 0.15s; line-height: 1.3;
+  }
+  .profile-btn .profile-italic {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-weight: 400; font-size: 0.85rem; margin-right: 0.2rem;
+  }
+  .profile-btn:hover:not(:disabled) { color: var(--ink); }
+  .profile-btn.active { background: var(--ink); color: var(--bg); }
+  .profile-hint {
+    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem;
+    color: var(--ink-faint); margin-top: 0.3rem;
+  }
+
+  /* Path toggle (Natural / Sculpted) */
+  .path-toggle {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    background: var(--bg-soft); border: 1px solid var(--hairline);
+    border-radius: 4px; padding: 3px;
+  }
+  .source-card.expanded .path-toggle { background: var(--bg-deeper); }
+  .path-btn {
+    background: transparent; border: none; padding: 0.5rem 0.5rem;
+    border-radius: 3px;
+    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500;
+    color: var(--ink-soft); letter-spacing: 0.02em;
+    transition: all 0.15s;
+  }
+  .path-btn .path-italic {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-weight: 400; font-size: 0.85rem; margin-right: 0.2rem;
+  }
+  .path-btn:hover:not(:disabled) { color: var(--ink); }
+  .path-btn.active { background: var(--ink); color: var(--bg); }
+  .path-btn:disabled { color: var(--ink-faint); cursor: not-allowed; opacity: 0.55; }
+
+  /* Atmosphere tiles */
+  .atm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.35rem; }
+  .atm-tile {
+    position: relative;
+    background: var(--bg-soft); border: 1px solid var(--hairline);
+    border-radius: 4px; padding: 0.5rem 0.625rem;
+    text-align: left; cursor: pointer; transition: all 0.15s;
+  }
+  .source-card.expanded .atm-tile { background: var(--bg-deeper); }
+  .atm-tile:hover:not(:disabled) { border-color: var(--ink-soft); background: var(--bg); }
+  .atm-tile:disabled { cursor: not-allowed; opacity: 0.45; }
+  .atm-name {
+    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500;
+    color: var(--ink); margin-bottom: 0.05rem;
+  }
+  .atm-tier {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  .atm-tier.tier-signature { color: var(--signature); }
+  .atm-tier.tier-premium { color: var(--premium); }
+  .atm-check {
+    position: absolute; top: 0.25rem; right: 0.4rem;
+    color: var(--accent); font-size: 0.78rem; font-weight: 600;
+  }
+  .atm-check-multi {
+    background: var(--accent); color: var(--bg);
+    border-radius: 99px; padding: 0.05rem 0.35rem;
+    font-size: 0.6rem; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    top: 0.25rem; right: 0.3rem;
+  }
+
+  /* Pill groups (env, aspect) */
+  .pill-group { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pill {
+    background: var(--bg-soft); border: 1px solid var(--hairline);
+    border-radius: 99px; padding: 0.28rem 0.65rem;
+    font-family: 'Inter', sans-serif; font-size: 0.72rem;
+    color: var(--ink-soft); letter-spacing: 0.01em;
+    transition: all 0.15s;
+  }
+  .source-card.expanded .pill { background: var(--bg-deeper); }
+  .pill:hover:not(:disabled) { border-color: var(--ink-soft); color: var(--ink); }
+  .pill.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .pill:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .scale-readout {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 0.78rem; color: var(--ink-faint);
+    padding: 0.2rem 0;
+  }
+  .scale-readout b {
+    font-style: normal; font-family: 'Inter', sans-serif;
+    font-size: 0.7rem; font-weight: 500; color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+  .scale-readout .lock-note {
+    color: var(--warn); font-style: italic;
+  }
+
+  /* Per-source queue */
+  .queue { display: flex; flex-direction: column; gap: 0.35rem; }
+  .queue-empty {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    color: var(--ink-faint); font-size: 0.85rem;
+    padding: 0.5rem 0; text-align: center;
+  }
+  .queue-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 0.625rem;
+    background: var(--bg-soft); border: 1px solid var(--hairline-soft);
+    border-radius: 3px;
+  }
+  .source-card.expanded .queue-row { background: var(--bg-deeper); }
+  .queue-row-name {
+    flex: 1; min-width: 0;
+    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .queue-row-state {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
     text-transform: uppercase; letter-spacing: 0.1em;
-    padding: 0.18rem 0.5rem; border-radius: 99px;
+    padding: 0.12rem 0.4rem; border-radius: 99px;
+    flex-shrink: 0;
   }
   .state-idle    { color: var(--ink-faint); border: 1px solid var(--hairline); }
   .state-render  { color: var(--accent); border: 1px solid var(--accent); }
   .state-ready   { color: var(--success); border: 1px solid var(--success); }
   .state-error   { color: var(--error); border: 1px solid var(--error); }
-  .queue-row-action {
-    background: none; border: none; padding: 0.125rem 0.25rem;
-    color: var(--ink-faint); font-size: 0.78rem;
+  .queue-row-x {
+    background: none; border: none; padding: 0.1rem 0.3rem;
+    color: var(--ink-faint); font-size: 0.85rem; line-height: 1;
+    flex-shrink: 0;
   }
-  .queue-row-action:hover { color: var(--ink); }
-  .queue-row-detail {
-    border-top: 1px solid var(--hairline-soft);
-    padding: 0.625rem 0.875rem 0.875rem;
-    background: var(--bg-soft);
-  }
-  .queue-row.expanded .queue-row-detail { background: var(--bg-deeper); }
+  .queue-row-x:hover { color: var(--error); }
 
-  /* ─── RUN BAR ───────────────────────────────────────────── */
-  .run-bar {
-    margin-top: 1.25rem;
-    padding: 0.875rem 1rem; background: var(--ink); color: var(--bg);
-    border-radius: 4px; border: none; width: 100%;
-    font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600;
-    letter-spacing: 0.02em; transition: all 0.15s;
-  }
-  .run-bar:hover:not(:disabled) { background: var(--accent); }
-  .run-bar:disabled { opacity: 0.35; cursor: not-allowed; }
-  .run-bar-italic {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-weight: 400;
-  }
-
-  /* ─── ASPECT + EXPAND mini row ──────────────────────────── */
-  .mini-row {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 0.625rem; flex-wrap: wrap; padding-top: 0.25rem;
-  }
-  .mini-aspects { display: flex; gap: 3px; flex-wrap: wrap; }
-  .mini-pill {
-    padding: 0.18rem 0.5rem; background: var(--bg);
-    border: 1px solid var(--hairline); border-radius: 99px;
-    color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
-  }
-  .mini-pill.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  .check-row {
-    font-size: 0.72rem; color: var(--ink-soft);
-    display: flex; align-items: center; gap: 0.4rem;
-  }
-
-  /* Soft editorial warning — not a red error, just a hint */
-  .soft-warn {
-    margin-top: 0.625rem;
-    padding: 0.625rem 0.75rem;
-    background: var(--bg-soft);
-    border-left: 2px solid var(--accent);
-    border-radius: 0 3px 3px 0;
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic; font-size: 0.85rem; line-height: 1.45;
-    color: var(--ink-soft);
-  }
-  .soft-warn strong {
-    font-style: normal; font-family: 'Inter', sans-serif;
-    font-weight: 600; font-size: 0.78rem;
-    letter-spacing: 0.04em; color: var(--ink);
-    margin-right: 0.3rem;
-  }
-  .soft-warn-actions {
-    margin-top: 0.4rem; display: flex; gap: 0.6rem;
-  }
-  .soft-warn-action {
-    background: none; border: none; padding: 0;
-    color: var(--accent); cursor: pointer;
-    font-family: 'Inter', sans-serif; font-size: 0.72rem;
-    letter-spacing: 0.04em; text-decoration: underline;
-  }
-  .soft-warn-action:hover { color: var(--ink); }
-
-  /* ─── STAGE — RENDERS DISPLAY ───────────────────────────── */
+  /* STAGE */
   .stage-empty {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    height: 100%; display: flex; align-items: center; justify-content: center;
     flex-direction: column; gap: 0.875rem; padding: 2rem;
   }
   .stage-empty-h {
     font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: 2.4rem; color: var(--ink-soft); text-align: center;
+    font-size: 2.2rem; color: var(--ink-soft); text-align: center;
   }
   .stage-empty-sub {
     font-family: 'Inter', sans-serif; font-size: 0.7rem;
     letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase;
   }
-  .stage-busy {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 1rem; padding: 2rem; max-width: 580px; margin: 0 auto;
+
+  .stage-section { margin-bottom: 2rem; }
+  .stage-section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding-bottom: 0.5rem; margin-bottom: 0.875rem;
+    border-bottom: 1px solid var(--hairline-soft);
   }
-  .stage-busy-h {
+  .stage-section-title {
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .stage-section-source-name {
     font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: 1.5rem; color: var(--ink); text-align: center; line-height: 1.4;
+    font-size: 1rem; color: var(--ink); text-transform: none; letter-spacing: 0;
+    font-weight: 400;
   }
-  .stage-busy-form {
-    display: flex; gap: 0.4rem; width: 100%; max-width: 380px;
-    margin-top: 0.625rem;
-  }
-  .stage-busy-form input {
-    flex: 1; padding: 0.625rem 0.75rem; border: 1px solid var(--hairline);
-    background: var(--bg); border-radius: 3px;
-    font-size: 0.85rem;
-  }
-  .stage-busy-form input:focus { outline: none; border-color: var(--accent); }
-  .stage-busy-form button {
-    padding: 0.625rem 1rem; background: var(--ink); color: var(--bg);
-    border: none; border-radius: 3px; font-size: 0.82rem; font-weight: 500;
-  }
-  .stage-busy-form button:hover { background: var(--accent); }
-  .stage-busy-confirmed {
-    color: var(--success); font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: 1rem;
+  .stage-section-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+    color: var(--ink-faint);
   }
 
   .renders-grid {
-    height: 100%; overflow-y: auto; padding: 1.5rem;
-    display: grid; gap: 1.25rem;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-    align-content: start;
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
   .render-card {
     background: var(--bg-soft); border: 1px solid var(--hairline);
-    border-radius: 4px; overflow: hidden; transition: all 0.2s;
+    border-radius: 4px; overflow: hidden;
+    display: flex; flex-direction: column;
+    transition: border-color 0.15s;
   }
   .render-card:hover { border-color: var(--ink-faint); }
   .render-card-img {
     width: 100%; aspect-ratio: 1; object-fit: cover; cursor: zoom-in;
-    background: var(--bg-deeper);
+    background: var(--bg-deeper); display: block;
   }
-  .render-card-meta {
-    padding: 0.75rem 0.875rem 0.875rem;
+  .render-card-pending {
+    width: 100%; aspect-ratio: 1; background: var(--bg-deeper);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    color: var(--ink-faint); font-size: 1rem;
   }
+  .render-card-meta { padding: 0.625rem 0.75rem 0.5rem; }
   .render-card-h {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.05rem;
-    color: var(--ink); margin: 0 0 0.15rem;
+    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem;
+    color: var(--ink); margin: 0 0 0.1rem;
   }
   .render-card-sub {
-    font-size: 0.72rem; color: var(--ink-faint); letter-spacing: 0.02em;
-  }
-  .render-card-preview-tag {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem;
-    color: var(--ink-faint); margin-left: 0.4rem;
+    font-size: 0.68rem; color: var(--ink-faint); letter-spacing: 0.02em;
+    font-family: 'JetBrains Mono', monospace;
   }
   .render-card-actions {
-    display: flex; gap: 0.625rem; padding: 0 0.875rem 0.875rem;
+    display: flex; gap: 0.4rem; padding: 0 0.75rem 0.75rem; margin-top: auto;
   }
-  .card-action-btn {
-    flex: 1; padding: 0.45rem 0.75rem;
+  .card-act {
+    flex: 1; padding: 0.4rem 0.5rem;
     background: var(--bg); border: 1px solid var(--hairline);
     border-radius: 3px; color: var(--ink-soft);
-    font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500;
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 500;
   }
-  .card-action-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .card-act:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
   .render-card.error { background: var(--bg); }
   .render-card-error {
-    padding: 1.5rem; text-align: center;
+    padding: 1.25rem; text-align: center;
     font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--error); font-size: 0.95rem;
+    color: var(--error); font-size: 0.9rem;
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    gap: 0.5rem;
   }
   .render-card-error-detail {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
-    color: var(--ink-faint); margin-top: 0.5rem; word-break: break-word;
-    font-style: normal;
-  }
-  .queue-row-state.state-error { cursor: pointer; }
-  .queue-row-state.state-error:hover { background: var(--error); color: var(--bg); }
-
-  /* ─── LOUD STAGE — RENDERING STATE ────────────────────────── */
-  .stage-rendering {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 1.25rem; padding: 2rem;
-    max-width: 600px; margin: 0 auto;
-  }
-  .stage-rendering-h {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: 2rem; color: var(--ink); text-align: center; line-height: 1.3;
-  }
-  .stage-rendering-sub {
-    font-family: 'Inter', sans-serif; font-size: 0.7rem;
-    letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase;
-  }
-  .stage-rendering-list {
-    margin-top: 1rem; width: 100%; max-width: 420px;
-    display: flex; flex-direction: column; gap: 0.4rem;
-  }
-  .stage-render-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.5rem 0.75rem; background: var(--bg-soft);
-    border: 1px solid var(--hairline); border-radius: 3px;
-    font-size: 0.85rem;
-  }
-  .stage-render-item-name {
-    font-family: 'Inter', sans-serif; color: var(--ink);
-  }
-  .stage-render-item-name em {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--ink-faint); font-size: 0.78rem; margin-left: 0.4rem;
-  }
-  .stage-render-item-state {
     font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    padding: 0.18rem 0.5rem; border-radius: 99px;
-  }
-  .stage-render-item-state.rendering {
-    color: var(--accent); border: 1px solid var(--accent);
-    animation: pulse 2s ease-in-out infinite;
-  }
-  .stage-render-item-state.ready {
-    color: var(--success); border: 1px solid var(--success);
-  }
-  .stage-render-item-state.error {
-    color: var(--error); border: 1px solid var(--error);
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.45; }
+    color: var(--ink-faint); word-break: break-word; font-style: normal;
+    max-width: 100%;
   }
 
-  /* ─── LIGHTBOX ──────────────────────────────────────────── */
+  /* Lightbox */
   .lightbox {
     position: fixed; inset: 0; background: rgba(31, 27, 20, 0.92);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000; cursor: zoom-out;
+    display: flex; align-items: center; justify-content: center; z-index: 200;
+    padding: 2rem; cursor: zoom-out;
   }
-  .lightbox img { max-width: 92vw; max-height: 92vh; object-fit: contain; }
+  .lightbox img { max-width: 100%; max-height: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
 
-  .hidden { display: none !important; }
+  /* BOTTOM ACTION BAR */
+  .actionbar {
+    height: 56px; padding: 0 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--bg); border-top: 1px solid var(--hairline);
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+  }
+  .render-all-btn {
+    padding: 0.625rem 1.5rem; background: var(--ink); color: var(--bg);
+    border: none; border-radius: 4px;
+    font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600;
+    letter-spacing: 0.02em; transition: all 0.15s;
+  }
+  .render-all-btn:hover:not(:disabled) { background: var(--accent); }
+  .render-all-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .render-all-italic {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-weight: 400;
+  }
+  .actionbar-meta {
+    flex: 1; font-family: 'Cormorant Garamond', serif; font-style: italic;
+    color: var(--ink-faint); font-size: 0.9rem;
+  }
+  .actionbar-meta b {
+    font-style: normal; font-family: 'JetBrains Mono', monospace;
+    color: var(--ink); font-weight: 500; font-size: 0.78rem;
+  }
+  .errlog-btn {
+    padding: 0.4rem 0.75rem; background: var(--bg-soft);
+    border: 1px solid var(--hairline); border-radius: 3px;
+    font-family: 'Inter', sans-serif; font-size: 0.75rem; color: var(--ink-soft);
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .errlog-btn:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .errlog-btn.has-errors { border-color: var(--error); color: var(--error); background: var(--error-soft); }
+  .errlog-btn-count {
+    background: var(--error); color: white;
+    border-radius: 99px; padding: 0.05rem 0.4rem;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600;
+    min-width: 18px; text-align: center;
+  }
 
-  /* ─── SCROLLBARS ────────────────────────────────────────── */
-  .workspace::-webkit-scrollbar, .renders-grid::-webkit-scrollbar { width: 6px; }
-  .workspace::-webkit-scrollbar-thumb, .renders-grid::-webkit-scrollbar-thumb {
-    background: var(--hairline); border-radius: 3px;
+  /* ERROR LOG PANEL */
+  .errlog-panel {
+    position: fixed; right: 1rem; bottom: 70px;
+    width: 520px; max-width: calc(100vw - 2rem);
+    max-height: 60vh;
+    background: var(--bg); border: 1px solid var(--hairline);
+    border-radius: 4px; box-shadow: 0 8px 32px rgba(31, 27, 20, 0.18);
+    z-index: 40;
+    display: flex; flex-direction: column;
+  }
+  .errlog-head {
+    padding: 0.75rem 0.875rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid var(--hairline-soft);
+    background: var(--bg-soft);
+    flex-shrink: 0;
+  }
+  .errlog-title {
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft);
+    flex: 1;
+  }
+  .errlog-action {
+    background: none; border: 1px solid var(--hairline);
+    border-radius: 3px; padding: 0.25rem 0.625rem;
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; color: var(--ink-soft);
+    transition: all 0.15s;
+  }
+  .errlog-action:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .errlog-action.copied {
+    background: var(--success); color: var(--bg); border-color: var(--success);
+  }
+  .errlog-body {
+    flex: 1; overflow-y: auto; padding: 0.75rem 0.875rem;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    color: var(--ink); line-height: 1.55;
+  }
+  .errlog-empty {
+    color: var(--ink-faint); font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 0.95rem; text-align: center;
+    padding: 2rem 1rem;
+  }
+  .errlog-entry {
+    padding: 0.5rem 0; border-bottom: 1px dashed var(--hairline-soft);
+  }
+  .errlog-entry:last-child { border-bottom: none; }
+  .errlog-entry-head {
+    color: var(--ink-faint); font-size: 0.65rem; margin-bottom: 0.2rem;
+  }
+  .errlog-entry-source {
+    color: var(--ink); font-weight: 500; margin-bottom: 0.2rem;
+  }
+  .errlog-entry-cfg {
+    color: var(--ink-soft); font-size: 0.68rem; margin-bottom: 0.25rem;
+  }
+  .errlog-entry-err {
+    color: var(--error); word-break: break-word;
+    background: var(--error-soft); padding: 0.25rem 0.4rem;
+    border-radius: 2px; border-left: 2px solid var(--error);
+  }
+
+  input[type="file"] { display: none; }
+
+  /* Drag overlay */
+  body.dragging::after {
+    content: "drop sources to add";
+    position: fixed; inset: 0; background: rgba(63, 74, 46, 0.92);
+    color: white; z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 3rem; pointer-events: none;
   }
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <a href="/" class="home-link">← Home</a>
+  <a href="/" class="home-link">← Liten &amp; Co</a>
   <div class="brand-lockup">
-    <span class="brand-name">liten<b>&co</b></span>
-    <span class="silo-name">Landscapes</span>
+    <span class="brand-name"><i>Liten</i> &amp; <b>Co</b></span>
   </div>
+  <span class="silo-name">Landscapes</span>
+  <span class="test-tag">multi-source test rig</span>
   <div class="topbar-spacer"></div>
-  <div class="status-pill" id="status">ready</div>
+  <span class="status-pill" id="status-pill">ready</span>
 </header>
 
 <div class="layout">
 
-<aside class="workspace">
-
-  <!-- ═══ SOURCE ════════════════════════════════════════════ -->
-  <section class="sec">
-    <div class="sec-head">
-      <span class="sec-title">Source Image</span>
+  <!-- WORKSPACE — SOURCE LIST -->
+  <aside class="workspace">
+    <div class="ws-head">
+      <span class="ws-title">Sources</span>
+      <span class="ws-meta" id="ws-meta">none yet</span>
     </div>
+    <div class="source-list" id="source-list"></div>
+    <input type="file" id="file-input" accept="image/jpeg,image/png" multiple>
+  </aside>
 
-    <div class="source-block">
-      <div id="sourceArea">
-        <div class="source-empty" id="sourceEmpty">
-          <div class="emp-h">A place, imagined.</div>
-          <div class="emp-sub">Choose a photograph to begin</div>
-        </div>
-      </div>
+  <!-- STAGE — RENDERS GROUPED BY SOURCE -->
+  <main class="stage" id="stage">
+    <div class="stage-empty" id="stage-empty">
+      <div class="stage-empty-h">Your renders will appear here</div>
+      <div class="stage-empty-sub">add sources · queue atmospheres · render</div>
     </div>
-
-    <input type="file" accept="image/*" class="hidden" id="fileInput">
-    <input type="file" accept="image/*" class="hidden" id="fileInputRef">
-  </section>
-
-  <!-- ═══ CURATOR ═════════════════════════════════════════════ -->
-  <section class="sec hidden" id="curatorSec">
-    <div class="curator">
-      <div class="curator-label">The Curator</div>
-      <div id="curatorBody">
-        <div class="curator-loading">Reviewing your photograph</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ PATH ════════════════════════════════════════════════ -->
-  <section class="sec hidden" id="pathSec">
-    <div class="sec-head">
-      <span class="sec-title">Treatment</span>
-      <span class="sec-meta" id="pathMeta">choose a path</span>
-    </div>
-    <div class="path-toggle">
-      <button class="path-btn active" data-path="material">As a sculpted object</button>
-      <button class="path-btn" data-path="surface">As itself, faithfully</button>
-    </div>
-    <div class="sec-hint" id="pathHint"></div>
-  </section>
-
-  <!-- ═══ SCALE ═══════════════════════════════════════════════ -->
-  <section class="sec hidden" id="scaleSec">
-    <div class="sec-head">
-      <span class="sec-title">Scale</span>
-      <span class="sec-meta" id="scaleMeta">how the scene fills the plinth</span>
-    </div>
-    <div class="scale-row" id="scaleRow"></div>
-    <div class="sec-hint" id="scaleHint">For wide vistas where the subject is distant, choose Edge to Edge.</div>
-  </section>
-
-  <!-- ═══ DIRECTIONS GRID ═════════════════════════════════════ -->
-  <section class="sec hidden" id="dirSec">
-    <div class="sec-head">
-      <span class="sec-title" id="dirTitle">Materials</span>
-      <span class="sec-meta" id="dirMeta">none chosen</span>
-    </div>
-    <div class="dir-grid" id="dirGrid"></div>
-    <div class="sec-hint" id="dirHint">Click to add — each click adds a render to the queue.</div>
-  </section>
-
-  <!-- ═══ DEFAULTS — atmosphere + environment ═════════════════ -->
-  <section class="sec hidden" id="defaultsSec">
-    <div class="defaults">
-      <div class="defaults-head">
-        <span class="defaults-title" id="defaultsLabel">Atmosphere & Setting</span>
-        <div class="mode-toggle" id="modeToggle">
-          <button class="mode-btn-sm active" data-mode="all">Apply to all</button>
-          <button class="mode-btn-sm" data-mode="individual">Adjust each</button>
-        </div>
-      </div>
-
-      <div class="pill-sub-label">Atmosphere</div>
-      <div class="pill-row" id="atmosphereRow"></div>
-
-      <div class="pill-sub-label">Setting</div>
-      <div class="pill-row" id="environmentRow"></div>
-
-      <div class="pill-sub-label">Time of day</div>
-      <div class="pill-row" id="todRow">
-        <button class="pill active" data-tod="day">Day</button>
-        <button class="pill" data-tod="night">Night</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ DIRECTIONS QUEUE ════════════════════════════════════ -->
-  <section class="sec hidden" id="queueSec">
-    <div class="sec-head">
-      <span class="sec-title">Directions</span>
-      <span class="sec-meta" id="queueMeta">none yet</span>
-    </div>
-    <div class="queue" id="queueList"></div>
-  </section>
-
-  <!-- ═══ ASPECT + EXPAND ═════════════════════════════════════ -->
-  <section class="sec hidden" id="metaSec">
-    <div class="mini-row">
-      <div class="mini-aspects" id="aspectRow">
-        <button class="mini-pill active" data-aspect="1:1">1:1</button>
-        <button class="mini-pill" data-aspect="4:3">4:3</button>
-        <button class="mini-pill" data-aspect="3:4">3:4</button>
-        <button class="mini-pill" data-aspect="16:9">16:9</button>
-        <button class="mini-pill" data-aspect="9:16">9:16</button>
-        <button class="mini-pill" data-aspect="3:2">3:2</button>
-        <button class="mini-pill" data-aspect="2:3">2:3</button>
-        <button class="mini-pill" data-aspect="5:4">5:4</button>
-        <button class="mini-pill" data-aspect="4:5">4:5</button>
-        <button class="mini-pill" data-aspect="21:9">21:9</button>
-      </div>
-      <label class="check-row">
-        <input type="checkbox" id="expandToggle" checked>
-        outpaint
-      </label>
-    </div>
-    <div class="soft-warn hidden" id="aspectWarn"></div>
-  </section>
-
-  <button class="run-bar" id="runBtn" disabled>
-    <span class="run-bar-italic">Render</span>
-  </button>
-
-</aside>
-
-<main class="stage" id="stage">
-  <div class="stage-empty">
-    <div class="stage-empty-h">A place, imagined.</div>
-    <div class="stage-empty-sub">Begin in the workspace</div>
-  </div>
-</main>
+    <div id="stage-sections"></div>
+  </main>
 
 </div>
+
+<!-- BOTTOM ACTION BAR -->
+<footer class="actionbar">
+  <button class="render-all-btn" id="render-all-btn" disabled>
+    <span class="render-all-italic">render</span> all queued
+  </button>
+  <div class="actionbar-meta" id="actionbar-meta">add a source to begin</div>
+  <button class="errlog-btn" id="errlog-btn">
+    error log
+    <span class="errlog-btn-count hidden" id="errlog-count">0</span>
+  </button>
+</footer>
+
+<!-- ERROR LOG PANEL -->
+<div class="errlog-panel hidden" id="errlog-panel">
+  <div class="errlog-head">
+    <span class="errlog-title">Error log</span>
+    <button class="errlog-action" id="errlog-copy">copy</button>
+    <button class="errlog-action" id="errlog-clear">clear</button>
+    <button class="errlog-action" id="errlog-close">close</button>
+  </div>
+  <div class="errlog-body" id="errlog-body"></div>
+</div>
+
+<div class="lightbox hidden" id="lightbox"></div>
 
 <script>
 'use strict';
 
-// ─── REGISTRIES ─────────────────────────────────────────────────
-const SURFACES = [
-  { id: 'wet_luminous',        label: 'Wet & Luminous',        sub: 'water, ice, wet stone',                tier: 'base' },
-  { id: 'soft_diffused',       label: 'Soft & Diffused',       sub: 'meadow, mist, sand',                   tier: 'base' },
-  { id: 'hard_raking',         label: 'Hard & Raking',         sub: 'cliff, canyon, weathered stone',       tier: 'base' },
-  { id: 'layered_atmospheric', label: 'Layered & Atmospheric', sub: 'distant peaks, hazy depth',            tier: 'base' },
-  { id: 'lush_saturated',      label: 'Lush & Saturated',      sub: 'jungle, rainforest, peak bloom',       tier: 'base' },
-];
+// ──────────────────────────────────────────────────────────────
+// CATALOG (wire-aligned with lib/v1/landscape-shared.ts)
+// ──────────────────────────────────────────────────────────────
 const ATMOSPHERES = [
-  { id: 'golden',         label: 'Golden Hour',     tier: 'base' },
-  { id: 'peaceful_dawn',  label: 'Dawn',            tier: 'base' },
-  { id: 'vivid_midday',   label: 'Midday',          tier: 'base' },
-  { id: 'dusk_blue_hour', label: 'Dusk',            tier: 'base' },
-  { id: 'dramatic_storm', label: 'Storm',           tier: 'premium' },
-  { id: 'deep_night',     label: 'Deep Night',      tier: 'premium' },
-  { id: 'fog_rolled_in',  label: 'Fog',             tier: 'premium' },
-  { id: 'after_rain',     label: 'After Rain',      tier: 'premium' },
-  { id: 'snow_falling',   label: 'Snow Falling',    tier: 'premium' },
-  { id: 'aurora_surreal', label: 'Aurora',          tier: 'signature' },
+  { id: 'golden',         label: 'Golden Hour',     tier: 'base',      enabled: true  },
+  { id: 'peaceful_dawn',  label: 'Peaceful Dawn',   tier: 'base',      enabled: false },
+  { id: 'vivid_midday',   label: 'Vivid Midday',    tier: 'base',      enabled: false },
+  { id: 'dusk_blue_hour', label: 'Dusk',            tier: 'base',      enabled: false },
+  { id: 'dramatic_storm', label: 'Dramatic Storm',  tier: 'premium',   enabled: false },
+  { id: 'fog_rolled_in',  label: 'Fog',             tier: 'premium',   enabled: false },
+  { id: 'after_rain',     label: 'After Rain',      tier: 'premium',   enabled: false },
+  { id: 'snow_falling',   label: 'Snow Falling',    tier: 'premium',   enabled: false },
+  { id: 'deep_night',     label: 'Deep Night',      tier: 'premium',   enabled: false },
+  { id: 'aurora_surreal', label: 'Aurora',          tier: 'signature', enabled: false },
 ];
-const MATERIALS = [
-  { id: 'bronze',          label: 'Bronze',          sub: 'cast metal, warm patina',          tier: 'signature' },
-  { id: 'museum_quality',  label: 'Museum Quality',  sub: 'apex realistic miniature',         tier: 'signature' },
-  { id: 'alabaster',       label: 'Alabaster',       sub: 'translucent stone, soft glow',     tier: 'premium' },
-  { id: 'glass',           label: 'Glass',           sub: 'blown, with optical mass',         tier: 'premium' },
-  { id: 'carved_stone',    label: 'Carved Stone',    sub: 'limestone, hand-carved',           tier: 'premium' },
-  { id: 'carved_wood',     label: 'Carved Wood',     sub: 'figured hardwood',                 tier: 'base' },
-  { id: 'watercolor_wood', label: 'Watercolor Wood', sub: 'painted folk-art carving',         tier: 'base' },
-];
+
 const ENVIRONMENTS = [
-  { id: 'in_situ', label: 'In situ' },
-  { id: 'desk',    label: 'On desk' },
-  { id: 'gallery', label: 'Gallery' },
+  { id: 'desk',    label: 'On Desk',  enabled: true  },
+  { id: 'in_situ', label: 'In Situ',  enabled: false },
+  { id: 'gallery', label: 'Gallery',  enabled: false },
 ];
-const SCALES = [
-  { id: 'composed',     label: 'Composed',     sub: 'set within the plinth' },
-  { id: 'generous',     label: 'Generous',     sub: 'fills the plinth'      },
-  { id: 'edge_to_edge', label: 'Edge to Edge', sub: 'fills nearly all of it' },
-];
-const FORCED_NIGHT_ATMOS = ['deep_night', 'aurora_surreal'];
 
-// Aspect categorization (mirrors landscapes-shared.aspectCategory).
-// Edge-to-edge scale only renders well on square-ish aspects — at wide/tall
-// the plinth occupies a small portion of the frame and "fill the plinth"
-// loses meaning. Soft warning, customer can override.
-const SQUARE_ISH_ASPECTS = ['1:1', '4:3', '3:4', '5:4', '4:5'];
-function isSquareIsh(aspect) { return SQUARE_ISH_ASPECTS.includes(aspect); }
+const ASPECTS = ['1:1', '3:2', '2:3', '4:3', '3:4', '16:9'];
 
-// ─── STATE ──────────────────────────────────────────────────────
-const state = {
-  source: null,                 // { b64, name }
-  refs: [],                     // { b64, name }[] up to 3
-  analyzer: null,               // AnalyzerResult
-  curator: null,                // CuratorResult
-  curatorPending: false,
-  path: 'material',             // 'material' | 'surface'
-  // Top-level defaults (apply-to-all values)
-  defaults: { atmosphere: 'golden', environment: 'in_situ', tod: 'day', scale: 'composed' },
-  applyMode: 'all',             // 'all' | 'individual'
-  // Queue: each item = { id, mainKind, main, atmosphere, environment, tod, individual: bool, state: 'idle'|'render'|'ready'|'error', result?, error? }
-  queue: [],
-  aspectRatio: '1:1',
-  expand: true,
-  pendingFile: null,
+// Scale resolution rules — auto-derived from path + profile.
+//   natural + standard      → zoom_out (65%)  [landscape feel]
+//   natural + low_profile   → close_up (80%)  [compensation: tight on foreground]
+//   sculpted + *            → close_up (80%)  [material detail]
+function resolveScale(path, profile) {
+  if (path === 'natural' && profile === 'low_profile') return 'close_up';
+  if (path === 'natural') return 'zoom_out';
+  return 'close_up';
+}
+const SCALE_LABELS = {
+  close_up: 'Close up · 80%',
+  zoom_out: 'Zoom out · 65%',
+  subject:  'Subject · 90%',
 };
 
-// ─── INIT ───────────────────────────────────────────────────────
-function init() {
-  bindSourceUpload();
-  bindPathToggle();
-  bindModeToggle();
-  bindAspectRow();
-  bindExpand();
-  bindRun();
-  bindTodRow(); // top-level TOD pills
-  renderAtmosphereDefault();
-  renderEnvironmentDefault();
-  renderScaleRow();
-}
+const PROFILES = [
+  { id: 'standard',    label: 'Standard',     hint: 'Source has vertical elements (trees, buildings, mountains).' },
+  { id: 'low_profile', label: 'Low-profile',  hint: 'Flat-horizon source (road, beach, field). Camera tilts steeper, scale locks to close-up.' },
+];
 
-// ─── SOURCE UPLOAD ──────────────────────────────────────────────
-function bindSourceUpload() {
-  document.getElementById('sourceEmpty').onclick = () => {
-    state.pendingFile = 'primary';
-    document.getElementById('fileInput').click();
-  };
-  document.getElementById('fileInput').onchange = handleFile;
-  document.getElementById('fileInputRef').onchange = handleFile;
-}
+const PATH_PRESET = {
+  natural: 'as_itself',
+};
 
-async function handleFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const b64 = await fileToB64(file);
+// ──────────────────────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────────────────────
+const state = {
+  sources:  [],   // [{ id, file: {b64, name}, profile, env, aspect, path, queue, expanded }]
+  errorLog: [],   // [{ ts, sourceName, config, error, durationMs }]
+  busy:     false,
+};
+let sourceIdSeq = 1;
+let rowIdSeq = 1;
 
-  if (state.pendingFile === 'primary') {
-    state.source = { b64, name: file.name };
-    state.refs = [];
-    state.analyzer = null;
-    state.curator = null;
-    state.queue = [];
-    renderSourceArea();
-    revealSections(false);  // hide downstream until analyzer lands
-    runAnalyzeAndCurate();
-  } else {
-    if (state.refs.length < 3) {
-      state.refs.push({ b64, name: file.name });
-      renderSourceArea();
-    }
-  }
-  e.target.value = '';
-  state.pendingFile = null;
-}
-
+// ──────────────────────────────────────────────────────────────
+// FILE I/O
+// ──────────────────────────────────────────────────────────────
 function fileToB64(file) {
-  return new Promise(res => {
+  return new Promise((resolve, reject) => {
     const r = new FileReader();
-    r.onload = () => res(r.result.split(',')[1]);
+    r.onload = () => {
+      const s = String(r.result);
+      resolve(s.slice(s.indexOf(',') + 1));
+    };
+    r.onerror = () => reject(new Error('read_failed'));
     r.readAsDataURL(file);
   });
 }
+function mimeOf(name) { return /\.png$/i.test(name || '') ? 'image/png' : 'image/jpeg'; }
 
-function renderSourceArea() {
-  const area = document.getElementById('sourceArea');
-  if (!state.source) {
-    area.innerHTML = `
-      <div class="source-empty" id="sourceEmpty">
-        <div class="emp-h">A place, imagined.</div>
-        <div class="emp-sub">Choose a photograph to begin</div>
-      </div>`;
-    document.getElementById('sourceEmpty').onclick = () => {
-      state.pendingFile = 'primary';
-      document.getElementById('fileInput').click();
-    };
-    return;
-  }
-
-  const caption = state.analyzer
-    ? `<div class="source-caption">${escapeHtml(state.analyzer.display_name)}</div>
-       <div class="source-caption-sub">${escapeHtml(state.analyzer.dominant_subject)}</div>`
-    : `<div class="source-caption-sub" style="font-style:italic;">Reading the photograph…</div>`;
-
-  let refsHtml = '<div class="refs">';
-  state.refs.forEach((r, i) => {
-    refsHtml += `<div class="ref-thumb">
-      <img src="data:image/jpeg;base64,${r.b64}">
-      <button class="x" onclick="removeRef(${i})">×</button>
-    </div>`;
-  });
-  if (state.refs.length < 3) {
-    refsHtml += `<div class="ref-thumb add" onclick="addRef()">+</div>`;
-  }
-  refsHtml += '</div>';
-
-  area.innerHTML = `
-    <img src="data:image/jpeg;base64,${state.source.b64}" class="source-primary">
-    ${caption}
-    <div class="source-actions">
-      <button class="text-link" onclick="resetSource()">← Choose a different photograph</button>
-    </div>
-    ${refsHtml}
-  `;
-}
-
-window.addRef = function() {
-  state.pendingFile = 'ref';
-  document.getElementById('fileInputRef').click();
-};
-window.removeRef = function(i) {
-  state.refs.splice(i, 1);
-  renderSourceArea();
-};
-window.resetSource = function() {
-  state.source = null;
-  state.refs = [];
-  state.analyzer = null;
-  state.curator = null;
-  state.queue = [];
-  renderSourceArea();
-  revealSections(false);
-  setStatus('ready');
-};
-
-// ─── ANALYZE + CURATE ──────────────────────────────────────────
-async function runAnalyzeAndCurate() {
-  if (!state.source) return;
-  document.getElementById('curatorSec').classList.remove('hidden');
-  document.getElementById('curatorBody').innerHTML =
-    `<div class="curator-loading">Reviewing your photograph</div>`;
-  setStatus('reading the photograph', 'busy');
-
-  try {
-    const res = await fetch('/api/v1/landscapes/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image_b64: state.source.b64 }),
-    });
-    const data = await res.json();
-    if (!res.ok || !data.analyzer) throw new Error(data.error || 'analyze_failed');
-
-    state.analyzer = data.analyzer;
-    state.curator = data.curator;
-    // Apply curator's scale recommendation as the default
-    if (data.curator?.recommended_scale) {
-      state.defaults.scale = data.curator.recommended_scale;
-      // Sync into any uncustomized queue rows
-      state.queue.forEach(r => { if (!r.individual) r.scale = data.curator.recommended_scale; });
+async function addFiles(fileList) {
+  const files = Array.from(fileList || []).filter(f => /^image\/(jpeg|png)$/.test(f.type));
+  if (!files.length) return;
+  for (const f of files) {
+    try {
+      const b64 = await fileToB64(f);
+      const newSource = {
+        id:       `s${sourceIdSeq++}`,
+        file:     { b64, name: f.name },
+        profile:  'standard',
+        env:      'desk',
+        aspect:   '1:1',
+        path:     'natural',
+        queue:    [],
+        expanded: state.sources.length === 0,  // first source expands automatically
+      };
+      // collapse others if this one is expanding
+      if (newSource.expanded) state.sources.forEach(s => { s.expanded = false; });
+      state.sources.push(newSource);
+    } catch (err) {
+      pushError({
+        sourceName: f.name,
+        config:     null,
+        error:      `could not read file: ${err.message || err}`,
+      });
     }
-    renderSourceArea();
-    renderCurator();
-    renderScaleRow();
-    revealSections(true);
-    evaluateConflicts();
-
-    // Auto-select primary recommendation if material path
-    if (state.path === 'material' && data.curator?.primary_recommendation) {
-      addToQueue('material', data.curator.primary_recommendation);
-    } else if (state.path === 'surface') {
-      addToQueue('surface', data.analyzer.primary_surface);
-    }
-    renderDirGrid();
-    setStatus('ready');
-  } catch (err) {
-    console.error(err);
-    document.getElementById('curatorBody').innerHTML =
-      `<div class="curator-prose" style="color:var(--error);">Something is amiss. Try a different photograph, or write us.</div>`;
-    setStatus('reading failed', 'error');
   }
+  renderAll();
 }
 
-function renderCurator() {
-  const body = document.getElementById('curatorBody');
-  if (!state.curator) return;
-  body.innerHTML = `
-    <div class="curator-prose">${escapeHtml(state.curator.prose)}</div>
-    <div class="curator-sig">— C.</div>
-  `;
+// ──────────────────────────────────────────────────────────────
+// SOURCE CARD MUTATIONS
+// ──────────────────────────────────────────────────────────────
+function expandSource(sourceId) {
+  state.sources.forEach(s => { s.expanded = (s.id === sourceId); });
+  renderSourceList();
 }
-
-// ─── REVEAL SECTIONS WHEN READY ────────────────────────────────
-function revealSections(show) {
-  ['pathSec', 'scaleSec', 'dirSec', 'defaultsSec', 'queueSec', 'metaSec'].forEach(id => {
-    const el = document.getElementById(id);
-    if (show) el.classList.remove('hidden');
-    else el.classList.add('hidden');
+function collapseSource(sourceId) {
+  const s = state.sources.find(s => s.id === sourceId);
+  if (s) s.expanded = false;
+  renderSourceList();
+}
+function removeSource(sourceId) {
+  if (state.busy) return;
+  state.sources = state.sources.filter(s => s.id !== sourceId);
+  renderAll();
+}
+function setSourceField(sourceId, field, value) {
+  const s = state.sources.find(s => s.id === sourceId);
+  if (!s) return;
+  s[field] = value;
+  renderAll();
+}
+function addQueueRow(sourceId, atmosphereId) {
+  const s = state.sources.find(s => s.id === sourceId);
+  if (!s) return;
+  s.queue.push({
+    id:           `r${rowIdSeq++}`,
+    atmosphereId: atmosphereId,
+    status:       'idle',
+    result:       null,
+    error:        null,
   });
-  if (!show) document.getElementById('curatorSec').classList.add('hidden');
-  updateRunButton();
+  renderAll();
+}
+function removeQueueRow(sourceId, rowId) {
+  if (state.busy) return;
+  const s = state.sources.find(s => s.id === sourceId);
+  if (!s) return;
+  s.queue = s.queue.filter(r => r.id !== rowId);
+  renderAll();
 }
 
-// ─── PATH TOGGLE ───────────────────────────────────────────────
-function bindPathToggle() {
-  document.querySelectorAll('.path-btn').forEach(b => {
-    b.onclick = () => {
-      const newPath = b.dataset.path;
-      if (newPath === state.path) return;
-      state.path = newPath;
-      document.querySelectorAll('.path-btn').forEach(x => x.classList.toggle('active', x === b));
-      // Path toggle no longer wipes the queue — the queue accumulates rows
-      // from both surface and material picks. Switching paths just changes
-      // which dictionary the directions grid is showing right now.
-      renderDirGrid();
-      renderQueue();
-      updatePathMeta();
-    };
+// ──────────────────────────────────────────────────────────────
+// ERROR LOG
+// ──────────────────────────────────────────────────────────────
+function pushError(entry) {
+  state.errorLog.push({
+    ts:         new Date().toISOString(),
+    sourceName: entry.sourceName,
+    config:     entry.config,
+    error:      String(entry.error || 'unknown error'),
+    durationMs: entry.durationMs || null,
   });
+  renderErrorLog();
+  renderActionbar();
 }
 
-function updatePathMeta() {
-  const hint = document.getElementById('pathHint');
-  if (state.path === 'material') {
-    hint.textContent = 'Rendered as a single material — bronze, alabaster, glass, and so on. Add as many as you like; switch paths to mix in surface directions too.';
-  } else {
-    hint.textContent = 'Rendered as itself, with the texture and light of this place. Add as many as you like; switch paths to mix in material directions too.';
+function formatErrorLogEntry(e) {
+  const ts = e.ts.replace('T', ' ').replace(/\.\d{3}Z$/, 'Z');
+  let cfgLine = '  config:    n/a';
+  if (e.config) {
+    const parts = [];
+    if (e.config.path)         parts.push(`path=${e.config.path}`);
+    if (e.config.profile)      parts.push(`profile=${e.config.profile}`);
+    if (e.config.atmosphere)   parts.push(`atmosphere=${e.config.atmosphere}`);
+    if (e.config.environment)  parts.push(`env=${e.config.environment}`);
+    if (e.config.scale)        parts.push(`scale=${e.config.scale}`);
+    if (e.config.aspect)       parts.push(`aspect=${e.config.aspect}`);
+    cfgLine = `  config:    ${parts.join(' · ')}`;
   }
-  document.getElementById('dirTitle').textContent = state.path === 'material' ? 'Materials' : 'Surfaces';
+  const dur = e.durationMs != null ? `\n  duration:  ${(e.durationMs / 1000).toFixed(1)}s` : '';
+  return [
+    `[${ts}] ${e.sourceName}`,
+    cfgLine,
+    `  error:     ${e.error}${dur}`,
+  ].join('\n');
 }
 
-// ─── DIRECTIONS GRID ───────────────────────────────────────────
-function renderDirGrid() {
-  updatePathMeta();
-  const grid = document.getElementById('dirGrid');
-  grid.innerHTML = '';
-
-  const pool = state.path === 'material' ? MATERIALS : SURFACES;
-  const compatible = state.path === 'material'
-    ? (state.analyzer?.compatible_materials || pool.map(p => p.id))
-    : pool.map(p => p.id);
-
-  pool.forEach(d => {
-    // Count how many queue rows match this direction (for the badge)
-    const queueCount = state.queue.filter(
-      r => r.main === d.id && r.mainKind === state.path
-    ).length;
-    const isCompat = compatible.includes(d.id);
-    const isPrimary = state.path === 'material'
-      ? state.curator?.primary_recommendation === d.id
-      : state.analyzer?.primary_surface === d.id;
-    const isAlternative = state.path === 'material'
-      ? state.curator?.alternative === d.id
-      : state.analyzer?.secondary_surface === d.id;
-
-    const btn = document.createElement('button');
-    btn.className = 'dir-btn';
-    btn.disabled = !isCompat;
-    btn.title = !isCompat
-      ? 'The Curator suggests another path for this place'
-      : queueCount > 0
-        ? `Already in queue (${queueCount}) — click to add another`
-        : 'Click to add to queue';
-
-    let nameRow = `<div class="dir-name">
-      <span class="tier-mark ${d.tier}"></span>
-      <span>${escapeHtml(d.label)}</span>`;
-    if (isPrimary) nameRow += ` <span class="star">★</span>`;
-    else if (isAlternative) nameRow += ` <span class="alt-marker">◐</span>`;
-    nameRow += `</div>`;
-    const subRow = d.sub
-      ? `<div class="dir-sub">${escapeHtml(d.sub)}</div>` : '';
-
-    // ✓ badge for tiles already in queue. Shows count when >1.
-    let badge = '';
-    if (queueCount > 0) {
-      badge = queueCount === 1
-        ? `<span class="dir-check" aria-label="in queue">✓</span>`
-        : `<span class="dir-check dir-check-multi" aria-label="in queue ${queueCount} times">✓ ${queueCount}</span>`;
-    }
-
-    btn.innerHTML = nameRow + subRow + badge;
-    btn.onclick = () => {
-      if (!isCompat) return;
-      // Always add — tile click is "add another", never toggle off.
-      // Removal happens via the queue row's × button.
-      addToQueue(state.path, d.id);
-      renderDirGrid();
-      renderQueue();
-      updateRunButton();
-    };
-    grid.appendChild(btn);
-  });
-
-  const meta = document.getElementById('dirMeta');
-  const qCount = state.queue.length;
-  meta.textContent = qCount === 0 ? 'none chosen' :
-                     qCount === 1 ? '1 selected' :
-                     `${qCount} selected`;
+function buildErrorLogText() {
+  if (!state.errorLog.length) return 'no errors logged';
+  const header = `LITEN & CO — LANDSCAPES — ERROR LOG\nexported ${new Date().toISOString()}\nentries: ${state.errorLog.length}\n`;
+  const sep = '─'.repeat(60);
+  return [header, sep, ...state.errorLog.map(formatErrorLogEntry)].join('\n');
 }
 
-// ─── DEFAULTS (atmosphere/environment/tod) ─────────────────────
-function renderAtmosphereDefault() {
-  const row = document.getElementById('atmosphereRow');
-  row.innerHTML = '';
-  ATMOSPHERES.forEach(a => {
-    const btn = document.createElement('button');
-    btn.className = 'pill' + (state.defaults.atmosphere === a.id ? ' active' : '');
-    btn.textContent = a.label;
-    btn.onclick = () => {
-      state.defaults.atmosphere = a.id;
-      // Sync into apply-to-all rows (rows that aren't individually customized)
-      if (state.applyMode === 'all') {
-        state.queue.forEach(r => { if (!r.individual) r.atmosphere = a.id; });
-      }
-      // Force-night atmospheres ripple into TOD too
-      if (FORCED_NIGHT_ATMOS.includes(a.id)) state.defaults.tod = 'night';
-      renderAtmosphereDefault();
-      renderTodRow();
-      renderQueue();
-    };
-    row.appendChild(btn);
-  });
-}
-function renderEnvironmentDefault() {
-  const row = document.getElementById('environmentRow');
-  row.innerHTML = '';
-  ENVIRONMENTS.forEach(e => {
-    const btn = document.createElement('button');
-    btn.className = 'pill' + (state.defaults.environment === e.id ? ' active' : '');
-    btn.textContent = e.label;
-    btn.onclick = () => {
-      state.defaults.environment = e.id;
-      if (state.applyMode === 'all') {
-        state.queue.forEach(r => { if (!r.individual) r.environment = e.id; });
-      }
-      renderEnvironmentDefault();
-      renderQueue();
-    };
-    row.appendChild(btn);
-  });
+// ──────────────────────────────────────────────────────────────
+// RENDER — workspace
+// ──────────────────────────────────────────────────────────────
+function renderAll() {
+  renderSourceList();
+  renderStage();
+  renderActionbar();
 }
 
-function renderScaleRow() {
-  const row = document.getElementById('scaleRow');
-  if (!row) return;
-  row.innerHTML = '';
-  SCALES.forEach(s => {
-    const btn = document.createElement('button');
-    btn.className = 'scale-btn' + (state.defaults.scale === s.id ? ' active' : '');
-    const isCuratorPick = state.curator?.recommended_scale === s.id;
-    let nameHtml = `<div class="scale-name">${escapeHtml(s.label)}`;
-    if (isCuratorPick) nameHtml += ` <span class="star">★</span>`;
-    nameHtml += `</div>`;
-    btn.innerHTML = nameHtml + `<div class="scale-sub">${escapeHtml(s.sub)}</div>`;
-    btn.onclick = () => {
-      state.defaults.scale = s.id;
-      if (state.applyMode === 'all') {
-        state.queue.forEach(r => { if (!r.individual) r.scale = s.id; });
-      }
-      renderScaleRow();
-      renderQueue();
-      evaluateConflicts();
-    };
-    row.appendChild(btn);
-  });
-
-  // Update meta line — show curator's pick if it differs from current default
-  const meta = document.getElementById('scaleMeta');
-  if (state.curator?.recommended_scale && meta) {
-    const recLabel = SCALES.find(s => s.id === state.curator.recommended_scale)?.label || '';
-    meta.textContent = state.curator.recommended_scale === state.defaults.scale
-      ? `★ ${recLabel.toLowerCase()} — The Curator's pick`
-      : `★ The Curator suggests ${recLabel.toLowerCase()}`;
-  }
-}
-function bindTodRow() {
-  document.querySelectorAll('#todRow .pill').forEach(b => {
-    b.onclick = () => {
-      state.defaults.tod = b.dataset.tod;
-      if (state.applyMode === 'all') {
-        state.queue.forEach(r => { if (!r.individual) r.tod = b.dataset.tod; });
-      }
-      renderTodRow();
-      renderQueue();
-    };
-  });
-}
-function renderTodRow() {
-  document.querySelectorAll('#todRow .pill').forEach(b => {
-    b.classList.toggle('active', b.dataset.tod === state.defaults.tod);
-  });
-}
-
-// ─── MODE TOGGLE (apply-to-all vs individual) ─────────────────
-function bindModeToggle() {
-  document.querySelectorAll('#modeToggle .mode-btn-sm').forEach(b => {
-    b.onclick = () => {
-      state.applyMode = b.dataset.mode;
-      document.querySelectorAll('#modeToggle .mode-btn-sm').forEach(x =>
-        x.classList.toggle('active', x === b));
-      // Update label per UI Claude's spec
-      document.getElementById('defaultsLabel').textContent =
-        state.applyMode === 'all' ? 'Atmosphere & Setting' : 'Default for new directions';
-      // When switching back to apply-to-all, flow defaults into uncustomized rows
-      if (state.applyMode === 'all') {
-        state.queue.forEach(r => {
-          if (!r.individual) {
-            r.atmosphere  = state.defaults.atmosphere;
-            r.environment = state.defaults.environment;
-            r.tod         = state.defaults.tod;
-            r.scale       = state.defaults.scale;
-          }
-        });
-      } else {
-        // When entering individual mode, every row becomes individually editable.
-        // Rows that haven't been touched still show the current defaults, just expanded.
-        state.queue.forEach(r => { /* their state is preserved either way */ });
-      }
-      renderQueue();
-    };
-  });
-}
-
-// ─── QUEUE (the multi-render directions list) ─────────────────
-function addToQueue(mainKind, mainId) {
-  // Same direction can repeat — each click adds a new row that can later be
-  // varied by atmosphere/setting/scale/TOD. Removal happens via the row's ×.
-  const row = {
-    id: 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-    mainKind,
-    main: mainId,
-    atmosphere: state.defaults.atmosphere,
-    environment: state.defaults.environment,
-    tod: state.defaults.tod,
-    scale: state.defaults.scale,
-    // Per UI Claude's spec: in individual mode, new additions land already-customized
-    // (they inherit current top-level defaults but are flagged as individual so future
-    // changes to defaults don't override them).
-    individual: state.applyMode === 'individual',
-    state: 'idle',
-  };
-  state.queue.push(row);
-  renderQueue();
-  updateRunButton();
-}
-
-// Unused now that the directions tile no longer toggles. Kept defined so any
-// stale references don't crash. Use removeRowById from queue rows instead.
-function removeFromQueue(mainId) {
-  state.queue = state.queue.filter(r => r.main !== mainId);
-  renderQueue();
-  updateRunButton();
-}
-
-function getDirLabel(mainKind, mainId) {
-  const pool = mainKind === 'material' ? MATERIALS : SURFACES;
-  return pool.find(p => p.id === mainId)?.label || mainId;
-}
-function getAtmosLabel(id) { return ATMOSPHERES.find(a => a.id === id)?.label || id; }
-function getEnvLabel(id) { return ENVIRONMENTS.find(e => e.id === id)?.label || id; }
-
-function renderQueue() {
-  const list = document.getElementById('queueList');
-  const meta = document.getElementById('queueMeta');
-
-  if (!state.queue.length) {
-    list.innerHTML = `<div class="queue-empty">Choose a direction above to begin.</div>`;
-    meta.textContent = 'none yet';
-    return;
-  }
-  meta.textContent = state.queue.length === 1 ? '1 of 1' : `${state.queue.length} directions`;
+function renderSourceList() {
+  const list = document.getElementById('source-list');
+  const meta = document.getElementById('ws-meta');
   list.innerHTML = '';
 
-  state.queue.forEach(row => {
-    const dirLabel = getDirLabel(row.mainKind, row.main);
-    const atmosLabel = getAtmosLabel(row.atmosphere);
-    const envLabel = getEnvLabel(row.environment);
-    const scaleLabel = SCALES.find(s => s.id === row.scale)?.label || row.scale || 'composed';
-    const todLabel = row.tod === 'night' ? 'night' : 'day';
-    const expanded = state.applyMode === 'individual';
-    const pathMark = row.mainKind === 'material'
-      ? `<span class="row-path-mark mat" title="Material">M</span>`
-      : `<span class="row-path-mark surf" title="Surface">S</span>`;
+  if (!state.sources.length) {
+    meta.textContent = 'none yet';
+    const empty = document.createElement('div');
+    empty.className = 'source-empty-rail';
+    empty.innerHTML = `
+      <div class="h">drop sources, or click to upload</div>
+      <div class="sub">JPG or PNG · multiple at once · drag-drop anywhere</div>
+    `;
+    empty.addEventListener('click', () => document.getElementById('file-input').click());
+    list.appendChild(empty);
+    return;
+  }
 
-    const stateClass = `state-${row.state === 'render' ? 'render' : row.state}`;
-    const stateText  = {
-      idle: 'idle', render: 'rendering', ready: 'ready', error: 'error'
-    }[row.state] || 'idle';
+  meta.textContent = state.sources.length === 1 ? '1 source' : `${state.sources.length} sources`;
 
-    const stateClickable = row.state === 'error'
-      ? `onclick="showRowError('${row.id}')" title="Click for details"`
-      : '';
-
-    const head = `
-      <div class="queue-row-head">
-        <div class="queue-row-name">
-          <span>${pathMark}${escapeHtml(dirLabel)}</span>
-          <span class="queue-row-sub">${atmosLabel.toLowerCase()} · ${envLabel.toLowerCase()} · ${scaleLabel.toLowerCase()} · ${todLabel}</span>
-        </div>
-        <span class="queue-row-state ${stateClass}" ${stateClickable}>${stateText}</span>
-        <button class="queue-row-action" onclick="removeRowById('${row.id}')" title="Remove">×</button>
-      </div>`;
-
-    let detail = '';
-    if (expanded) {
-      const atmosPills = ATMOSPHERES.map(a =>
-        `<button class="pill ${a.id === row.atmosphere ? 'active' : ''}"
-                  onclick="setRowField('${row.id}','atmosphere','${a.id}')">${escapeHtml(a.label)}</button>`
-      ).join('');
-      const envPills = ENVIRONMENTS.map(e =>
-        `<button class="pill ${e.id === row.environment ? 'active' : ''}"
-                  onclick="setRowField('${row.id}','environment','${e.id}')">${escapeHtml(e.label)}</button>`
-      ).join('');
-      const scalePills = SCALES.map(s =>
-        `<button class="pill ${s.id === row.scale ? 'active' : ''}"
-                  onclick="setRowField('${row.id}','scale','${s.id}')">${escapeHtml(s.label)}</button>`
-      ).join('');
-      const todPills = ['day', 'night'].map(t =>
-        `<button class="pill ${t === row.tod ? 'active' : ''}"
-                  onclick="setRowField('${row.id}','tod','${t}')">${t === 'night' ? 'Night' : 'Day'}</button>`
-      ).join('');
-      detail = `
-        <div class="queue-row-detail">
-          <div class="pill-sub-label">Atmosphere</div>
-          <div class="pill-row">${atmosPills}</div>
-          <div class="pill-sub-label">Setting</div>
-          <div class="pill-row">${envPills}</div>
-          <div class="pill-sub-label">Scale</div>
-          <div class="pill-row">${scalePills}</div>
-          <div class="pill-sub-label">Time of day</div>
-          <div class="pill-row">${todPills}</div>
-        </div>`;
+  state.sources.forEach(src => {
+    const card = document.createElement('div');
+    card.className = 'source-card' + (src.expanded ? ' expanded' : '');
+    if (src.expanded) {
+      card.appendChild(renderSourceHead(src));
+      card.appendChild(renderSourceBody(src));
+    } else {
+      card.appendChild(renderSourceHead(src));
     }
+    list.appendChild(card);
+  });
 
-    const div = document.createElement('div');
-    div.className = 'queue-row' + (expanded ? ' expanded' : '');
-    div.innerHTML = head + detail;
-    list.appendChild(div);
+  // Add-source button at bottom
+  const add = document.createElement('button');
+  add.className = 'source-empty-rail';
+  add.style.cssText = 'background: transparent; cursor: pointer; padding: 0.875rem 1rem; margin-top: 0.4rem;';
+  add.innerHTML = `
+    <div class="sub">+ ADD SOURCE</div>
+  `;
+  add.addEventListener('click', () => document.getElementById('file-input').click());
+  list.appendChild(add);
+}
+
+function renderSourceHead(src) {
+  const head = document.createElement('div');
+  head.className = 'source-card-head';
+
+  const stats = summaryFor(src);
+
+  head.innerHTML = `
+    <img class="source-thumb" src="data:${mimeOf(src.file.name)};base64,${src.file.b64}" alt="">
+    <div class="source-card-name">
+      <span class="source-card-filename">${escapeHtml(src.file.name)}</span>
+      <span class="source-card-summary">${stats}</span>
+    </div>
+    <button class="source-card-toggle" data-action="${src.expanded ? 'collapse' : 'expand'}" title="${src.expanded ? 'collapse' : 'expand'}">
+      ${src.expanded ? '▴' : '▾'}
+    </button>
+    <button class="source-card-remove" title="remove source">×</button>
+  `;
+
+  head.querySelector('.source-card-toggle').addEventListener('click', e => {
+    e.stopPropagation();
+    if (src.expanded) collapseSource(src.id); else expandSource(src.id);
+  });
+  head.querySelector('.source-card-remove').addEventListener('click', e => {
+    e.stopPropagation();
+    removeSource(src.id);
+  });
+  if (!src.expanded) {
+    head.addEventListener('click', () => expandSource(src.id));
+  }
+
+  return head;
+}
+
+function renderSourceBody(src) {
+  const body = document.createElement('div');
+  body.className = 'source-card-body';
+
+  const scale = resolveScale(src.path, src.profile);
+  const profileObj = PROFILES.find(p => p.id === src.profile);
+  const isLowProfile = src.profile === 'low_profile';
+
+  body.innerHTML = `
+    <!-- Source profile -->
+    <div class="field">
+      <span class="field-label">Source profile</span>
+      <div class="profile-toggle" data-field="profile">
+        ${PROFILES.map(p => `
+          <button class="profile-btn ${src.profile === p.id ? 'active' : ''}" data-id="${p.id}" ${state.busy ? 'disabled' : ''}>
+            <span class="profile-italic">${p.label}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="profile-hint">${profileObj?.hint || ''}</div>
+    </div>
+
+    <!-- Path -->
+    <div class="field">
+      <span class="field-label">Path</span>
+      <div class="path-toggle" data-field="path">
+        <button class="path-btn ${src.path === 'natural' ? 'active' : ''}" data-id="natural" ${state.busy ? 'disabled' : ''}>
+          <span class="path-italic">Natural</span>as itself
+        </button>
+        <button class="path-btn" data-id="sculpted" disabled>
+          <span class="path-italic">Sculpted</span>coming soon
+        </button>
+      </div>
+    </div>
+
+    <!-- Atmosphere -->
+    <div class="field">
+      <span class="field-label">Atmosphere <span class="field-meta">— click to queue a render</span></span>
+      <div class="atm-grid">
+        ${ATMOSPHERES.map(a => {
+          const count = src.queue.filter(r => r.atmosphereId === a.id).length;
+          let badge = '';
+          if (count === 1)      badge = `<span class="atm-check">✓</span>`;
+          else if (count > 1)   badge = `<span class="atm-check atm-check-multi">✓ ${count}</span>`;
+          const tierClass = a.tier === 'signature' ? 'tier-signature' : a.tier === 'premium' ? 'tier-premium' : '';
+          return `
+            <button class="atm-tile" data-id="${a.id}" ${(!a.enabled || state.busy) ? 'disabled' : ''}>
+              <div class="atm-name">${a.label}</div>
+              <div class="atm-tier ${tierClass}">${a.tier}${a.enabled ? '' : ' · soon'}</div>
+              ${badge}
+            </button>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Setting -->
+    <div class="field">
+      <span class="field-label">Setting</span>
+      <div class="pill-group" data-field="env">
+        ${ENVIRONMENTS.map(e => `
+          <button class="pill ${src.env === e.id ? 'active' : ''}" data-id="${e.id}" ${(!e.enabled || state.busy) ? 'disabled' : ''}>
+            ${e.label}${e.enabled ? '' : ' · soon'}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Aspect -->
+    <div class="field">
+      <span class="field-label">Aspect ratio</span>
+      <div class="pill-group" data-field="aspect">
+        ${ASPECTS.map(a => `
+          <button class="pill ${src.aspect === a ? 'active' : ''}" data-id="${a}" ${state.busy ? 'disabled' : ''}>
+            ${a}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Scale readout -->
+    <div class="scale-readout">
+      Scale: <b>${SCALE_LABELS[scale]}</b>
+      ${isLowProfile ? `<span class="lock-note"> — locked by low-profile compensation</span>` : ''}
+    </div>
+
+    <!-- Per-source queue -->
+    <div class="field">
+      <span class="field-label">Queue <span class="field-meta">— ${src.queue.length || 'none'} render${src.queue.length === 1 ? '' : 's'}</span></span>
+      <div class="queue">
+        ${src.queue.length === 0 ? `<div class="queue-empty">click an atmosphere above to queue a render</div>` : ''}
+        ${src.queue.map(r => {
+          const atm = ATMOSPHERES.find(a => a.id === r.atmosphereId);
+          const stateClass = `state-${r.status}`;
+          const stateText = r.status === 'render' ? 'rendering'
+                          : r.status === 'ready'  ? 'ready'
+                          : r.status === 'error'  ? 'error'
+                          : 'queued';
+          return `
+            <div class="queue-row">
+              <span class="queue-row-name">${atm?.label || r.atmosphereId}</span>
+              <span class="queue-row-state ${stateClass}">${stateText}</span>
+              <button class="queue-row-x" data-row="${r.id}" title="remove">×</button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  // Wire up handlers
+  body.querySelectorAll('.profile-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      setSourceField(src.id, 'profile', btn.dataset.id);
+    });
+  });
+  body.querySelectorAll('.path-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      setSourceField(src.id, 'path', btn.dataset.id);
+    });
+  });
+  body.querySelectorAll('.atm-tile').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      addQueueRow(src.id, btn.dataset.id);
+    });
+  });
+  body.querySelectorAll('[data-field="env"] .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      setSourceField(src.id, 'env', btn.dataset.id);
+    });
+  });
+  body.querySelectorAll('[data-field="aspect"] .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      setSourceField(src.id, 'aspect', btn.dataset.id);
+    });
+  });
+  body.querySelectorAll('.queue-row-x').forEach(btn => {
+    btn.addEventListener('click', () => removeQueueRow(src.id, btn.dataset.row));
+  });
+
+  return body;
+}
+
+function summaryFor(src) {
+  if (!src.queue.length) {
+    const profileSuffix = src.profile === 'low_profile' ? ' · low-profile' : '';
+    return `no renders queued${profileSuffix}`;
+  }
+  const counts = { idle: 0, render: 0, ready: 0, error: 0 };
+  src.queue.forEach(r => { counts[r.status]++; });
+  const parts = [];
+  if (counts.ready)  parts.push(`${counts.ready} ready`);
+  if (counts.render) parts.push(`${counts.render} rendering`);
+  if (counts.idle)   parts.push(`${counts.idle} queued`);
+  if (counts.error)  parts.push(`${counts.error} error`);
+  return parts.join(' · ');
+}
+
+// ──────────────────────────────────────────────────────────────
+// RENDER — stage
+// ──────────────────────────────────────────────────────────────
+function renderStage() {
+  const empty = document.getElementById('stage-empty');
+  const sections = document.getElementById('stage-sections');
+  sections.innerHTML = '';
+
+  // Show empty state if no source has any queued renders
+  const sourcesWithQueue = state.sources.filter(s => s.queue.length > 0);
+  if (!sourcesWithQueue.length) {
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  sourcesWithQueue.forEach(src => {
+    const sec = document.createElement('section');
+    sec.className = 'stage-section';
+
+    const counts = { idle: 0, render: 0, ready: 0, error: 0 };
+    src.queue.forEach(r => { counts[r.status]++; });
+    const metaParts = [];
+    if (counts.ready)  metaParts.push(`${counts.ready} ready`);
+    if (counts.render) metaParts.push(`${counts.render} rendering`);
+    if (counts.idle)   metaParts.push(`${counts.idle} queued`);
+    if (counts.error)  metaParts.push(`${counts.error} error`);
+
+    const scale = resolveScale(src.path, src.profile);
+    const profileTag = src.profile === 'low_profile' ? ' · low-profile' : '';
+
+    sec.innerHTML = `
+      <div class="stage-section-head">
+        <div class="stage-section-title">
+          Source:
+          <span class="stage-section-source-name">${escapeHtml(src.file.name)}</span>
+        </div>
+        <span class="stage-section-meta">${metaParts.join(' · ') || 'idle'}${profileTag}</span>
+      </div>
+      <div class="renders-grid"></div>
+    `;
+
+    const grid = sec.querySelector('.renders-grid');
+    src.queue.forEach(row => grid.appendChild(renderResultCard(src, row, scale)));
+    sections.appendChild(sec);
   });
 }
 
-window.removeRowById = function(rowId) {
-  state.queue = state.queue.filter(r => r.id !== rowId);
-  renderDirGrid();
-  renderQueue();
-  updateRunButton();
-};
+function renderResultCard(src, row, scale) {
+  const card = document.createElement('div');
+  card.className = 'render-card' + (row.status === 'error' ? ' error' : '');
+  const atm = ATMOSPHERES.find(a => a.id === row.atmosphereId);
+  const sub = `${ENVIRONMENTS.find(e => e.id === src.env)?.label || src.env} · ${src.aspect} · ${SCALE_LABELS[scale].split(' · ')[0]}${src.profile === 'low_profile' ? ' · low-profile' : ''}`;
 
-window.showRowError = function(rowId) {
-  const row = state.queue.find(r => r.id === rowId);
-  if (!row) return;
-  const dirLabel = getDirLabel(row.mainKind, row.main);
-  const stages = (row.system_log || [])
-    .map(s => `${s.stage} (${s.code})${s.err ? ': ' + s.err : ''}`)
-    .join('\n');
-  const msg = `Direction: ${dirLabel}\n\nError: ${row.error || 'unknown'}\n\nStages:\n${stages || '(none)'}`;
-  alert(msg);
-};
-
-window.setRowField = function(rowId, field, value) {
-  const row = state.queue.find(r => r.id === rowId);
-  if (!row) return;
-  row[field] = value;
-  row.individual = true; // Once a row is touched, it stops following apply-to-all
-  // Force-night atmospheres flip TOD on the row
-  if (field === 'atmosphere' && FORCED_NIGHT_ATMOS.includes(value)) row.tod = 'night';
-  renderQueue();
-};
-
-// ─── ASPECT + EXPAND ───────────────────────────────────────────
-function bindAspectRow() {
-  document.querySelectorAll('#aspectRow .mini-pill').forEach(b => {
-    b.onclick = () => {
-      state.aspectRatio = b.dataset.aspect;
-      document.querySelectorAll('#aspectRow .mini-pill').forEach(x =>
-        x.classList.toggle('active', x === b));
-      evaluateConflicts();
-    };
-  });
-}
-function bindExpand() {
-  document.getElementById('expandToggle').onchange = e => state.expand = e.target.checked;
-}
-
-// ─── CONFLICT WARNINGS ─────────────────────────────────────────
-// Soft editorial warning when current settings have a known mismatch.
-// The current case: edge-to-edge scale + wide/tall aspect = the plinth occupies
-// only a portion of a wide frame, and "fill the plinth" loses meaning.
-// Customer can override; we just surface the issue.
-function evaluateConflicts() {
-  const warn = document.getElementById('aspectWarn');
-  if (!warn) return;
-
-  const e2e = state.defaults.scale === 'edge_to_edge';
-  const wideOrTall = !isSquareIsh(state.aspectRatio);
-
-  if (e2e && wideOrTall) {
-    warn.classList.remove('hidden');
-    warn.innerHTML = `
-      <strong>NOTE</strong>Edge to Edge is best on closer-to-square frames.
-      At ${escapeHtml(state.aspectRatio)} the plinth sits in the middle of a wide frame, with environment context filling the rest.
-      <div class="soft-warn-actions">
-        <button class="soft-warn-action" onclick="setScaleDefault('generous')">Switch to Generous</button>
-        <button class="soft-warn-action" onclick="setAspectRatio('1:1')">Switch to 1:1</button>
+  if (row.status === 'ready' && row.result?.image_b64) {
+    card.innerHTML = `
+      <img class="render-card-img" src="data:image/jpeg;base64,${row.result.image_b64}" data-src="${src.id}" data-row="${row.id}">
+      <div class="render-card-meta">
+        <h3 class="render-card-h">${atm?.label || row.atmosphereId}</h3>
+        <div class="render-card-sub">${sub}</div>
+      </div>
+      <div class="render-card-actions">
+        <button class="card-act" data-act="download">download</button>
+        <button class="card-act" data-act="zoom">view full</button>
+      </div>
+    `;
+    card.querySelector('.render-card-img').addEventListener('click', e => {
+      openLightbox(e.target.src);
+    });
+    card.querySelectorAll('.card-act').forEach(b => {
+      b.addEventListener('click', () => {
+        if (b.dataset.act === 'download') downloadResult(src, row, atm);
+        else if (b.dataset.act === 'zoom') openLightbox(`data:image/jpeg;base64,${row.result.image_b64}`);
+      });
+    });
+  } else if (row.status === 'error') {
+    card.innerHTML = `
+      <div class="render-card-error">
+        something went wrong
+        <div class="render-card-error-detail">${escapeHtml(row.error || 'unknown error')}</div>
+      </div>
+      <div class="render-card-meta">
+        <h3 class="render-card-h">${atm?.label || row.atmosphereId}</h3>
+        <div class="render-card-sub">${sub}</div>
       </div>
     `;
   } else {
-    warn.classList.add('hidden');
-    warn.innerHTML = '';
+    const label = row.status === 'render' ? 'rendering…' : 'queued';
+    card.innerHTML = `
+      <div class="render-card-pending">${label}</div>
+      <div class="render-card-meta">
+        <h3 class="render-card-h">${atm?.label || row.atmosphereId}</h3>
+        <div class="render-card-sub">${sub}</div>
+      </div>
+    `;
   }
+  return card;
 }
 
-window.setScaleDefault = function(scaleId) {
-  state.defaults.scale = scaleId;
-  if (state.applyMode === 'all') {
-    state.queue.forEach(r => { if (!r.individual) r.scale = scaleId; });
+function downloadResult(src, row, atm) {
+  if (!row.result?.image_b64) return;
+  const link = document.createElement('a');
+  link.href = `data:image/jpeg;base64,${row.result.image_b64}`;
+  const stem = src.file.name.replace(/\.[^.]+$/, '');
+  const a = (atm?.id || 'render').replace(/_/g, '-');
+  link.download = `${stem}_${a}_${src.profile}.jpg`;
+  link.click();
+}
+
+// ──────────────────────────────────────────────────────────────
+// RENDER — actionbar + errlog
+// ──────────────────────────────────────────────────────────────
+function renderActionbar() {
+  const meta = document.getElementById('actionbar-meta');
+  const btn = document.getElementById('render-all-btn');
+
+  const totalSources = state.sources.length;
+  const totalQueued = state.sources.reduce((n, s) => n + s.queue.filter(r => r.status === 'idle').length, 0);
+  const totalReady = state.sources.reduce((n, s) => n + s.queue.filter(r => r.status === 'ready').length, 0);
+  const totalErr = state.sources.reduce((n, s) => n + s.queue.filter(r => r.status === 'error').length, 0);
+
+  if (!totalSources) {
+    meta.innerHTML = 'add a source to begin';
+  } else if (state.busy) {
+    meta.innerHTML = `rendering across <b>${totalSources}</b> source${totalSources === 1 ? '' : 's'}…`;
+  } else if (totalQueued === 0 && (totalReady > 0 || totalErr > 0)) {
+    meta.innerHTML = `<b>${totalSources}</b> source${totalSources === 1 ? '' : 's'} · <b>${totalReady}</b> ready${totalErr ? ` · <b>${totalErr}</b> error` : ''}`;
+  } else {
+    meta.innerHTML = `<b>${totalSources}</b> source${totalSources === 1 ? '' : 's'} · <b>${totalQueued}</b> queued`;
   }
-  renderScaleRow();
-  renderQueue();
-  evaluateConflicts();
-};
 
-window.setAspectRatio = function(ratio) {
-  state.aspectRatio = ratio;
-  document.querySelectorAll('#aspectRow .mini-pill').forEach(x =>
-    x.classList.toggle('active', x.dataset.aspect === ratio));
-  evaluateConflicts();
-};
+  btn.disabled = state.busy || totalQueued === 0;
 
-// ─── RUN ───────────────────────────────────────────────────────
-function updateRunButton() {
-  const btn = document.getElementById('runBtn');
-  const ok = state.source && state.analyzer && state.queue.length > 0;
-  btn.disabled = !ok;
-  btn.innerHTML = ok && state.queue.length > 1
-    ? `<span class="run-bar-italic">Render</span> ${state.queue.length} directions`
-    : `<span class="run-bar-italic">Render</span>`;
+  // status pill
+  const sp = document.getElementById('status-pill');
+  if (state.busy) { sp.textContent = 'rendering…'; sp.className = 'status-pill busy'; }
+  else if (totalErr) { sp.textContent = `${totalErr} error${totalErr === 1 ? '' : 's'}`; sp.className = 'status-pill error'; }
+  else { sp.textContent = 'ready'; sp.className = 'status-pill'; }
 }
 
-function bindRun() {
-  document.getElementById('runBtn').onclick = run;
+function renderErrorLog() {
+  const body = document.getElementById('errlog-body');
+  const count = document.getElementById('errlog-count');
+  const btn = document.getElementById('errlog-btn');
+
+  if (state.errorLog.length) {
+    count.textContent = String(state.errorLog.length);
+    count.classList.remove('hidden');
+    btn.classList.add('has-errors');
+  } else {
+    count.classList.add('hidden');
+    btn.classList.remove('has-errors');
+  }
+
+  body.innerHTML = '';
+  if (!state.errorLog.length) {
+    const empty = document.createElement('div');
+    empty.className = 'errlog-empty';
+    empty.textContent = 'no errors logged yet';
+    body.appendChild(empty);
+    return;
+  }
+
+  state.errorLog.forEach(e => {
+    const entry = document.createElement('div');
+    entry.className = 'errlog-entry';
+    const ts = e.ts.replace('T', ' ').replace(/\.\d{3}Z$/, 'Z');
+    let cfgStr = '';
+    if (e.config) {
+      const parts = [];
+      if (e.config.path)        parts.push(`path=${e.config.path}`);
+      if (e.config.profile)     parts.push(`profile=${e.config.profile}`);
+      if (e.config.atmosphere)  parts.push(`atm=${e.config.atmosphere}`);
+      if (e.config.environment) parts.push(`env=${e.config.environment}`);
+      if (e.config.scale)       parts.push(`scale=${e.config.scale}`);
+      if (e.config.aspect)      parts.push(`aspect=${e.config.aspect}`);
+      cfgStr = parts.join(' · ');
+    }
+    const dur = e.durationMs != null ? ` · ${(e.durationMs / 1000).toFixed(1)}s` : '';
+    entry.innerHTML = `
+      <div class="errlog-entry-head">${escapeHtml(ts)}${dur}</div>
+      <div class="errlog-entry-source">${escapeHtml(e.sourceName)}</div>
+      ${cfgStr ? `<div class="errlog-entry-cfg">${escapeHtml(cfgStr)}</div>` : ''}
+      <div class="errlog-entry-err">${escapeHtml(e.error)}</div>
+    `;
+    body.appendChild(entry);
+  });
 }
 
-async function run() {
-  if (!state.source || !state.analyzer || !state.queue.length) return;
-  setStatus('the model is being made', 'busy');
-  state.queue.forEach(r => { r.state = 'render'; r.error = null; });
-  renderQueue();
-  renderStageRendering();   // ← loud stage on render start
+// ──────────────────────────────────────────────────────────────
+// LIGHTBOX
+// ──────────────────────────────────────────────────────────────
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  lb.innerHTML = `<img src="${src}" alt="">`;
+  lb.classList.remove('hidden');
+  lb.onclick = () => lb.classList.add('hidden');
+}
 
-  const renders = state.queue.map(r => ({
-    main:     r.main,
-    mainKind: r.mainKind,
-    optionA:  r.atmosphere,
-    optionB:  r.environment,
-    tod:      r.tod,
-    scale:    r.scale,
+// ──────────────────────────────────────────────────────────────
+// RUN
+// ──────────────────────────────────────────────────────────────
+async function runAll() {
+  if (state.busy) return;
+  const sourcesToRun = state.sources.filter(s => s.queue.some(r => r.status === 'idle'));
+  if (!sourcesToRun.length) return;
+
+  state.busy = true;
+  renderAll();
+
+  // Mark all idle queue rows as 'render'
+  sourcesToRun.forEach(src => {
+    src.queue.forEach(r => { if (r.status === 'idle') r.status = 'render'; });
+  });
+  renderAll();
+
+  // Fire all sources in parallel — one request per source
+  await Promise.allSettled(sourcesToRun.map(runSource));
+
+  state.busy = false;
+  renderAll();
+}
+
+async function runSource(src) {
+  const startedAt = Date.now();
+  const renderingRows = src.queue.filter(r => r.status === 'render');
+  const scale = resolveScale(src.path, src.profile);
+
+  const renders = renderingRows.map(r => ({
+    preset_id:         PATH_PRESET[src.path] || 'as_itself',
+    environment_id:    src.env,
+    atmosphere_id:     r.atmosphereId,
+    scale_id:          scale,
+    tod:               'day',
+    aspect_ratio:      src.aspect,
+    source_profile_id: src.profile,
   }));
 
   const body = {
-    silo: 'landscapes',
-    source_image_b64:    state.source.b64,
-    extra_images:        state.refs.map(r => r.b64),
+    source_image_b64:      src.file.b64,
+    additional_images_b64: undefined,
     renders,
-    display_name:        state.analyzer.display_name,
-    primary_surface:     state.analyzer.primary_surface,
-    dominant_subject:    state.analyzer.dominant_subject,
-    has_water:           state.analyzer.has_water,
-    vegetation_density:  state.analyzer.vegetation_density,
-    has_sky_dominance:   state.analyzer.has_sky_dominance,
-    aspect_ratio:        state.aspectRatio,
-    expand:              state.expand,
+    expand:                true,
   };
 
   try {
     const res = await fetch('/api/v1/landscapes/generate', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body:    JSON.stringify(body),
     });
     const data = await res.json();
+    const dur = Date.now() - startedAt;
 
     if (data.status === 'deferred') {
-      showCapacityState(data.job_id, body);
-      state.queue.forEach(r => r.state = 'idle');
-      renderQueue();
-      setStatus('the studio is at capacity', 'busy');
-      return;
-    }
-    if (data.status !== 'ok') {
-      const errMsg = data.error || (data.errors && data.errors.join('; ')) || 'render_failed';
-      throw new Error(errMsg);
-    }
-
-    // Map results back onto queue rows by index
-    data.results.forEach((res, i) => {
-      const row = state.queue[i];
-      if (!row) return;
-      if (res.ok) {
-        row.state = 'ready';
-        row.result = res.result;
-        row.error = null;
-      } else {
-        row.state = 'error';
-        // Capture the real error message + the system_log for diagnosis
-        row.error = res.error || 'unknown error';
-        row.system_log = res.system_log || [];
-        console.error(`[render error] row "${row.main}":`, res.error, res.system_log);
-      }
-    });
-    renderQueue();
-    renderStage();
-
-    const anyReady = state.queue.some(r => r.state === 'ready');
-    const anyError = state.queue.some(r => r.state === 'error');
-    if (anyReady && anyError)      setStatus('partial — some directions failed', 'error');
-    else if (anyError)             setStatus('all directions failed', 'error');
-    else                           setStatus('ready');
-  } catch (err) {
-    console.error('[run] fatal:', err);
-    state.queue.forEach(r => {
-      r.state = 'error';
-      r.error = err.message;
-    });
-    renderQueue();
-    renderStage();
-    setStatus('something is amiss — see console', 'error');
-  }
-}
-
-// Loud stage during render — shows live per-row status
-function renderStageRendering() {
-  const stage = document.getElementById('stage');
-  const count = state.queue.length;
-  const headline = count === 1
-    ? 'Rendering your direction'
-    : `Rendering ${count} directions`;
-  const subhead = 'A minute or two — the model is being made';
-
-  let items = '';
-  state.queue.forEach(row => {
-    const dirLabel = getDirLabel(row.mainKind, row.main);
-    const atmosLabel = getAtmosLabel(row.atmosphere);
-    const envLabel = getEnvLabel(row.environment);
-    const scaleLabel = SCALES.find(s => s.id === row.scale)?.label || '';
-    const stateText = row.state === 'ready' ? 'ready'
-                    : row.state === 'error' ? 'error'
-                    : 'rendering';
-    items += `
-      <div class="stage-render-item" id="stage-item-${row.id}">
-        <span class="stage-render-item-name">
-          ${escapeHtml(dirLabel)}
-          <em>${atmosLabel.toLowerCase()} · ${envLabel.toLowerCase()} · ${scaleLabel.toLowerCase()}</em>
-        </span>
-        <span class="stage-render-item-state ${stateText}">${stateText}</span>
-      </div>`;
-  });
-
-  stage.innerHTML = `
-    <div class="stage-rendering">
-      <div class="stage-rendering-sub">In the studio</div>
-      <div class="stage-rendering-h">${headline}</div>
-      <div class="stage-rendering-list">${items}</div>
-      <div class="stage-rendering-sub" style="margin-top:1rem;opacity:0.6;">${escapeHtml(subhead)}</div>
-    </div>`;
-}
-
-// ─── STAGE — RENDER DISPLAY ────────────────────────────────────
-function renderStage() {
-  const stage = document.getElementById('stage');
-  const ready = state.queue.filter(r => r.state === 'ready' || r.state === 'error');
-
-  if (!ready.length) {
-    stage.innerHTML = `
-      <div class="stage-empty">
-        <div class="stage-empty-h">A place, imagined.</div>
-        <div class="stage-empty-sub">Begin in the workspace</div>
-      </div>`;
-    return;
-  }
-
-  let html = '<div class="renders-grid">';
-  ready.forEach(row => {
-    if (row.state === 'error') {
-      const dirLabel = getDirLabel(row.mainKind, row.main);
-      const errSafe = escapeHtml(row.error || 'unknown error');
-      html += `<div class="render-card error">
-        <div class="render-card-error">
-          <div>${escapeHtml(dirLabel)} — something is amiss.</div>
-          <div class="render-card-error-detail">${errSafe}</div>
-        </div>
-      </div>`;
-      return;
-    }
-    const dirLabel = getDirLabel(row.mainKind, row.main);
-    const atmosLabel = getAtmosLabel(row.atmosphere);
-    const envLabel = getEnvLabel(row.environment);
-    const scaleLabel = SCALES.find(s => s.id === row.scale)?.label || '';
-    const previewTag = row.result.is_preview
-      ? `<span class="render-card-preview-tag">(preview)</span>` : '';
-    html += `
-      <div class="render-card">
-        <img class="render-card-img" src="data:image/jpeg;base64,${row.result.image_b64}"
-             onclick="lightbox('${row.id}')">
-        <div class="render-card-meta">
-          <div class="render-card-h">${escapeHtml(dirLabel)}${previewTag}</div>
-          <div class="render-card-sub">${atmosLabel.toLowerCase()} · ${envLabel.toLowerCase()} · ${scaleLabel.toLowerCase()} · ${row.tod}</div>
-        </div>
-        <div class="render-card-actions">
-          <button class="card-action-btn" onclick="saveRender('${row.id}')">Save</button>
-          <button class="card-action-btn" onclick="lightbox('${row.id}')">View</button>
-        </div>
-      </div>`;
-  });
-  html += '</div>';
-  stage.innerHTML = html;
-}
-
-window.lightbox = function(rowId) {
-  const row = state.queue.find(r => r.id === rowId);
-  if (!row?.result) return;
-  const lb = document.createElement('div');
-  lb.className = 'lightbox';
-  lb.innerHTML = `<img src="data:image/jpeg;base64,${row.result.image_b64}">`;
-  lb.onclick = () => lb.remove();
-  document.body.appendChild(lb);
-};
-
-window.saveRender = function(rowId) {
-  const row = state.queue.find(r => r.id === rowId);
-  if (!row?.result) return;
-  const a = document.createElement('a');
-  a.href = `data:image/jpeg;base64,${row.result.image_b64}`;
-  a.download = `${state.analyzer?.display_name?.toLowerCase().replace(/\s+/g, '_') || 'landscape'}_${row.main}.jpg`;
-  a.click();
-};
-
-// ─── CAPACITY (deferred-render) STATE ──────────────────────────
-function showCapacityState(jobId, requestBody) {
-  const stage = document.getElementById('stage');
-  stage.innerHTML = `
-    <div class="stage-busy">
-      <div class="stage-busy-h">
-        The studio is at capacity — we're rendering for many clients tonight.
-        Rather than wait, we can send your finished pieces to your inbox the moment they're ready.
-      </div>
-      <form class="stage-busy-form" id="deferForm">
-        <input type="email" id="deferEmail" placeholder="your email" required>
-        <button type="submit">Send when ready</button>
-      </form>
-      <div class="stage-busy-confirmed hidden" id="deferConfirmed">
-        Thank you. We'll write to you shortly.
-      </div>
-    </div>`;
-
-  document.getElementById('deferForm').onsubmit = async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('deferEmail').value.trim();
-    if (!email) return;
-    try {
-      const res = await fetch('/api/v1/landscapes/defer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job_id: jobId, email, request: requestBody }),
+      // capacity — return rows to idle so user can retry
+      renderingRows.forEach(r => { r.status = 'idle'; });
+      pushError({
+        sourceName: src.file.name,
+        config:     null,
+        error:      `studio at capacity (deferred, job ${data.job_id || 'unknown'})`,
+        durationMs: dur,
       });
-      const data = await res.json();
-      if (data.status !== 'queued') throw new Error(data.error || 'defer_failed');
-      document.getElementById('deferForm').classList.add('hidden');
-      document.getElementById('deferConfirmed').classList.remove('hidden');
-    } catch (err) {
-      console.error(err);
-      alert('Something went wrong. Please try again.');
+    } else if (data.status !== 'ok') {
+      const errMsg = data.error || (data.errors || []).join('; ') || 'render_failed';
+      renderingRows.forEach(r => {
+        r.status = 'error';
+        r.error  = errMsg;
+        const atm = ATMOSPHERES.find(a => a.id === r.atmosphereId);
+        pushError({
+          sourceName: src.file.name,
+          config:     {
+            path:        src.path, profile: src.profile,
+            atmosphere:  atm?.label || r.atmosphereId,
+            environment: src.env, scale, aspect: src.aspect,
+          },
+          error:      errMsg,
+          durationMs: dur,
+        });
+      });
+    } else {
+      // map results back onto rendering rows in send order
+      data.results.forEach((res, i) => {
+        const row = renderingRows[i];
+        if (!row) return;
+        if (res.ok && res.image_b64) {
+          row.status = 'ready';
+          row.result = res;
+          row.error  = null;
+        } else {
+          row.status = 'error';
+          row.error  = res.error || 'unknown error';
+          const atm = ATMOSPHERES.find(a => a.id === row.atmosphereId);
+          pushError({
+            sourceName: src.file.name,
+            config:     {
+              path:        src.path, profile: src.profile,
+              atmosphere:  atm?.label || row.atmosphereId,
+              environment: src.env, scale, aspect: src.aspect,
+            },
+            error:      res.error || 'unknown error',
+            durationMs: dur,
+          });
+        }
+      });
     }
-  };
+  } catch (err) {
+    const dur = Date.now() - startedAt;
+    console.error('[runSource]', src.file.name, err);
+    renderingRows.forEach(r => {
+      r.status = 'error';
+      r.error  = err.message || String(err);
+    });
+    pushError({
+      sourceName: src.file.name,
+      config:     {
+        path: src.path, profile: src.profile,
+        environment: src.env, scale, aspect: src.aspect,
+      },
+      error:      `network error: ${err.message || err}`,
+      durationMs: dur,
+    });
+  }
 }
 
-// ─── UTILITIES ─────────────────────────────────────────────────
-function setStatus(text, cls = '') {
-  const el = document.getElementById('status');
-  el.textContent = text;
-  el.className = 'status-pill ' + cls;
-}
+// ──────────────────────────────────────────────────────────────
+// EVENTS
+// ──────────────────────────────────────────────────────────────
+const fileInput = document.getElementById('file-input');
+fileInput.addEventListener('change', async e => {
+  await addFiles(e.target.files);
+  fileInput.value = '';
+});
+
+document.getElementById('render-all-btn').addEventListener('click', runAll);
+
+// Drag-drop anywhere
+let dragDepth = 0;
+document.addEventListener('dragenter', e => {
+  if (!e.dataTransfer?.types?.includes('Files')) return;
+  e.preventDefault();
+  dragDepth++;
+  document.body.classList.add('dragging');
+});
+document.addEventListener('dragleave', e => {
+  if (!e.dataTransfer?.types?.includes('Files')) return;
+  dragDepth = Math.max(0, dragDepth - 1);
+  if (dragDepth === 0) document.body.classList.remove('dragging');
+});
+document.addEventListener('dragover', e => {
+  if (!e.dataTransfer?.types?.includes('Files')) return;
+  e.preventDefault();
+});
+document.addEventListener('drop', async e => {
+  if (!e.dataTransfer?.files?.length) return;
+  e.preventDefault();
+  dragDepth = 0;
+  document.body.classList.remove('dragging');
+  await addFiles(e.dataTransfer.files);
+});
+
+// Error log panel
+const errlogBtn = document.getElementById('errlog-btn');
+const errlogPanel = document.getElementById('errlog-panel');
+errlogBtn.addEventListener('click', () => {
+  errlogPanel.classList.toggle('hidden');
+});
+document.getElementById('errlog-close').addEventListener('click', () => {
+  errlogPanel.classList.add('hidden');
+});
+document.getElementById('errlog-copy').addEventListener('click', async () => {
+  const txt = buildErrorLogText();
+  try {
+    await navigator.clipboard.writeText(txt);
+    const btn = document.getElementById('errlog-copy');
+    btn.classList.add('copied');
+    btn.textContent = 'copied ✓';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.textContent = 'copy';
+    }, 1500);
+  } catch (err) {
+    // fallback: select & prompt
+    window.prompt('Copy error log:', txt);
+  }
+});
+document.getElementById('errlog-clear').addEventListener('click', () => {
+  if (!confirm('Clear all error log entries?')) return;
+  state.errorLog = [];
+  renderErrorLog();
+  renderActionbar();
+});
+
+// ──────────────────────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────────────────────
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+  );
 }
 
-init();
+// ──────────────────────────────────────────────────────────────
+// BOOT
+// ──────────────────────────────────────────────────────────────
+renderAll();
+renderErrorLog();
 </script>
 
 </body>
