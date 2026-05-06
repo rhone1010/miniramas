@@ -1,8 +1,8 @@
-// lib/v1/landscapes/landscapes-prompt.ts
+// lib/v1/landscapes/landscape-prompt.ts
 //
 // Pass 1 prompt assembler for the Landscapes silo (NB2 / google/nano-banana-2).
 // Owns: structure, composition, camera, containment, base logic, plaque text gen.
-// Pass 2 (gpt-image-1, see landscape-refine.ts) handles realism + texture
+// Pass 2 (gpt-image-1, see landscapes-refine.ts) handles realism + texture
 // + environment reinforcement.
 //
 // Spec source: LITENCO Production Prompt v1 + lighting subsystem v1
@@ -27,8 +27,8 @@ import type {
   AtmosphereID,
   ResolvedEnvironment,
   EnvironmentMode,
-} from './landscapes-shared'
-import { resolveEnvironment } from './landscapes-shared'
+} from './landscape-shared'
+import { resolveEnvironment } from './landscape-shared'
 import {
   ATMOSPHERE_EFFECTS,
   ENVIRONMENT_EFFECTS,
@@ -41,8 +41,8 @@ import {
   SUBJECT_PRIORITY_LIGHT_BLOCK,
   MICRO_CONTRAST_PRESERVATION_BLOCK,
   IN_SITU_GROUND_INTEGRATION_BLOCK,
-} from './landscapes-effects'
-import { buildPass1PlaqueBlock } from './landscapes-plaque'
+} from './landscape-effects'
+import { buildPass1PlaqueBlock } from './landscape-plaque'
 
 // ── FIXED BLOCKS ──────────────────────────────────────────────
 const CORE_BLOCK = `Create a gallery-quality photographic image of a handcrafted 3D miniature landscape diorama. Transform the input image into a museum-quality physical miniature diorama photographed as a real object. All elements must be fully 3D, handcrafted, and physically plausible.

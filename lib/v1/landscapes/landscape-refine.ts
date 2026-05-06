@@ -1,4 +1,4 @@
-// lib/v1/landscapes/landscapes-refine.ts
+// lib/v1/landscapes/landscape-refine.ts
 //
 // Pass 2 of the 2-pass Landscape pipeline.
 //
@@ -18,8 +18,8 @@
 // to the Pass 1 output if refine throws.
 
 import OpenAI, { toFile } from 'openai'
-import type { AspectRatio, PlaqueMode, ResolvedEnvironment } from './landscapes-shared'
-import { buildPass2PlaqueBlock } from './landscapes-plaque'
+import type { AspectRatio, PlaqueMode, ResolvedEnvironment } from './landscape-shared'
+import { buildPass2PlaqueBlock } from './landscape-plaque'
 
 // ── PASS 2 PROMPT — BASE ──────────────────────────────────────
 // Composition / structure / camera owned by Pass 1. Pass 2's job is
@@ -76,7 +76,7 @@ The setting beneath and around the plinth is natural ground only. If the source 
 }
 
 // ── PASS 2 PLAQUE INSTRUCTION ─────────────────────────────────
-// Mode-aware. Logic lives in landscape-plaque.ts so Pass 1 and Pass 2 align.
+// Mode-aware. Logic lives in landscapes-plaque.ts so Pass 1 and Pass 2 align.
 
 function buildPass2Prompt(opts: {
   plaqueMode:          PlaqueMode

@@ -1,20 +1,20 @@
-// lib/v1/landscapes/landscapes-generator.ts
+// lib/v1/landscapes/landscape-generator.ts
 //
 // Single-stage NB2 dispatcher for the Landscape silo. Calls Replicate's
 // google/nano-banana-2 model with image-to-image input.
 //
 // Updated to use the new substitution-based prompt builder
-// (landscape-prompt.ts) and the current schema field names from
-// landscape-shared.ts. The previous presetId / sourceProfileId / per-preset
+// (landscapes-prompt.ts) and the current schema field names from
+// landscapes-shared.ts. The previous presetId / sourceProfileId / per-preset
 // resolveEnvironment scaffolding is gone.
 //
 // Capacity errors from Replicate are surfaced as StudioAtCapacityError so the
 // route can map them to the 202 deferred-render response per the UI contract.
 
-import { buildLandscapePrompt } from './landscapes-prompt'
-import { rowLabel } from './landscapes-presets'
-import { MAX_SOURCE_IMAGES } from './landscapes-shared'
-import type { LandscapeParams } from './landscapes-shared'
+import { buildLandscapePrompt } from './landscape-prompt'
+import { rowLabel } from './landscape-presets'
+import { MAX_SOURCE_IMAGES } from './landscape-shared'
+import type { LandscapeParams } from './landscape-shared'
 
 const REPLICATE_URL =
   'https://api.replicate.com/v1/models/google/nano-banana-2/predictions'

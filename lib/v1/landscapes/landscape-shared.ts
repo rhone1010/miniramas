@@ -1,4 +1,4 @@
-// lib/v1/landscapes/landscapes-shared.ts
+// lib/v1/landscapes/landscape-shared.ts
 //
 // Singular naming. Schema source of truth for the Landscapes silo.
 //
@@ -173,7 +173,7 @@ export type EnvironmentID = EnvironmentMode
 export const ENVIRONMENT_LABELS = ENVIRONMENT_MODE_LABELS
 
 // ── CAMERA ANGLE ──────────────────────────────────────────────
-// Three forced viewpoints. Drives the Camera block in landscape-prompt.ts.
+// Three forced viewpoints. Drives the Camera block in landscapes-prompt.ts.
 // Default is 'hero' (the natural product 3/4 angle).
 export type CameraAngleID = 'low' | 'hero' | 'elevated'
 
@@ -256,7 +256,7 @@ export function migrateSceneFeelID(raw: string | null | undefined): SceneFeelID 
 //   off  → no plaque rendered
 //   user → render the user's exact text (sanitized first against metadata)
 //   ai   → NB2 composes a refined title at render time per the spec rules
-// Resolution + sanitization logic lives in landscape-plaque.ts.
+// Resolution + sanitization logic lives in landscapes-plaque.ts.
 export type PlaqueMode = 'off' | 'user' | 'ai'
 
 export const PLAQUE_MODE_LABELS: Record<PlaqueMode, string> = {
@@ -489,4 +489,4 @@ export type GenerateResponse =
 
 // NOTE: resolveTimeOfDay() and autoPlaqueText() were removed.
 // - TOD axis: atmospheres carry intrinsic TOD via their own lighting copy.
-// - Plaque text: resolved through three-mode system in landscape-plaque.ts.
+// - Plaque text: resolved through three-mode system in landscapes-plaque.ts.

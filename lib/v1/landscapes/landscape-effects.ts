@@ -1,7 +1,7 @@
-// lib/v1/landscapes/landscapes-effects.ts
+// lib/v1/landscapes/landscape-effects.ts
 //
 // All parameterized copy for the Pass 1 prompt builder.
-// Indexed by schema ID, consumed by landscape-prompt.ts.
+// Indexed by schema ID, consumed by landscapes-prompt.ts.
 //
 // Spec source: LITENCO Production Prompt v1 (May 2026)
 //   + In-Situ ground integration v2 ("OUTDOORS — full stop")
@@ -16,7 +16,7 @@
 
 import type {
   AtmosphereID, ResolvedEnvironment, ScaleID, CameraAngleID, SceneFeelID,
-} from './landscapes-shared'
+} from './landscape-shared'
 
 // ── ATMOSPHERE ────────────────────────────────────────────────
 // Single line each. Drives lighting type, color, contrast, mood.
