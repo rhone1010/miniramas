@@ -1,9 +1,9 @@
 // app/api/v1/groups/generate/route.ts
 
 import { NextRequest, NextResponse } from 'next/server'
-import { runGroupPipeline } from '@/lib/v1/group-orchestrator'
-import type { SceneStyle, SceneVariant } from '@/lib/v1/group-generator'
-import { VARIANTS_BY_STYLE } from '@/lib/v1/group-generator'
+import { runGroupPipeline } from '@/lib/v1/groups/group-orchestrator'
+import type { SceneStyle, SceneVariant } from '@/lib/v1/groups/group-generator'
+import { VARIANTS_BY_STYLE } from '@/lib/v1/groups/group-generator'
 
 const VALID_STYLES: SceneStyle[] = ['figurine', 'plushy', 'stop_motion', 'designer']
 

@@ -1,9 +1,9 @@
 // app/api/v1/actionmini/generate/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { generateActionMini, ActionMiniPresetId, LocationId } from '@/lib/v1/actionmini-generator'
-import { ACTION_MINI_PRESETS } from '@/lib/v1/actionmini-presets'
-import type { KineticMedium } from '@/lib/v1/actionmini-shared'
-import { sanitizeTweak } from '@/lib/v1/actionmini-refine'
+import { generateActionMini, ActionMiniPresetId, LocationId } from '@/lib/v1/action/actionmini-generator'
+import { ACTION_MINI_PRESETS } from '@/lib/v1/action/actionmini-presets'
+import type { KineticMedium } from '@/lib/v1/action/actionmini-shared'
+import { sanitizeTweak } from '@/lib/v1/action/actionmini-refine'
 
 // ── PRESET VALIDATION ────────────────────────────────────────
 const VALID_PRESET_IDS = new Set(ACTION_MINI_PRESETS.map(p => p.id))

@@ -2,9 +2,9 @@
 // app/api/v1/stadiums/generate/route.ts
 
 import { NextRequest, NextResponse } from 'next/server'
-import { generateStadium } from '@/lib/v1/stadium-generator'
-import { applyLevels }  from '@/lib/v1/levels'
-import { expandScene }  from '@/lib/v1/expand'
+import { generateStadium } from '@/lib/v1/stadium/stadium-generator'
+import { applyLevels }  from '@/lib/v1/_core/levels'
+import { expandScene }  from '@/lib/v1/_core/expand'
 
 export async function POST(req: NextRequest) {
   try {

@@ -17,7 +17,7 @@
 //   ?limit=50               — cap results
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getAllUserPatterns } from '@/lib/v1/rejection-log'
+import { getAllUserPatterns } from '@/lib/v1/_core/rejection-log'
 
 export async function GET(req: NextRequest) {
   const adminKey = process.env.ADMIN_API_KEY

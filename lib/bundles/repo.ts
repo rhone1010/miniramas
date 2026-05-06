@@ -6,8 +6,8 @@
 
 import { supabaseAdmin } from '@/lib/supabase'
 import type { Bundle, BundleInput, BundleItem } from './types'
-import type { SceneStyle, SceneVariant } from '@/lib/v1/group-generator'
-import { VARIANTS_BY_STYLE } from '@/lib/v1/group-generator'
+import type { SceneStyle, SceneVariant } from '@/lib/v1/groups/group-generator'
+import { VARIANTS_BY_STYLE } from '@/lib/v1/groups/group-generator'
 
 const VALID_STYLES = Object.keys(VARIANTS_BY_STYLE) as SceneStyle[]
 

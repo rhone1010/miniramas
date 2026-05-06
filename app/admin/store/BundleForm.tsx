@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import type { Bundle, BundleInput, BundleItemInput, ChooseOption } from '@/lib/bundles/types'
-import { VARIANTS_BY_STYLE } from '@/lib/v1/group-generator'
-import type { SceneStyle, SceneVariant } from '@/lib/v1/group-generator'
+import { VARIANTS_BY_STYLE } from '@/lib/v1/groups/group-generator'
+import type { SceneStyle, SceneVariant } from '@/lib/v1/groups/group-generator'
 
 const STYLES = Object.keys(VARIANTS_BY_STYLE) as SceneStyle[]
 const STYLE_LABELS: Record<SceneStyle, string> = {

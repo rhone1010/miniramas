@@ -15,9 +15,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { moderateUploadedImage } from '@/lib/v1/moderation'
-import { logRejection, deriveUserId } from '@/lib/v1/rejection-log'
-import { checkRateLimit } from '@/lib/v1/rate-limit'
+import { moderateUploadedImage } from '@/lib/v1/_core/moderation'
+import { logRejection, deriveUserId } from '@/lib/v1/_core/rejection-log'
+import { checkRateLimit } from '@/lib/v1/_core/rate-limit'
 
 interface ModuleSuitability {
   score:  number

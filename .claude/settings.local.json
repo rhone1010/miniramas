@@ -27,7 +27,13 @@
       "Skill(update-config:*)",
       "Bash(git -C d:/minramas status)",
       "Bash(npm test *)",
-      "Bash(awk -F= '{ *)"
+      "Bash(awk -F= '{ *)",
+      "Bash(bash scan-orphans.sh)",
+      "Bash(bash scripts/scan-orphans.sh)",
+      "Bash(grep -v '^\\\\./lib/v1/landscape-effects.ts$')",
+      "Bash(bash scripts/debug-one.sh lib/v1/landscape-effects.ts)",
+      "Bash(grep -rlE \"from\\\\s+['\\\\\"][^'\\\\\"]*/base['\\\\\"]\" --include='*.ts' --exclude-dir=node_modules --exclude-dir=.next .)",
+      "Bash(grep -rlE \"from\\\\s+['\\\\\"][^'\\\\\"]*generators/base['\\\\\"]\" --include='*.ts' --exclude-dir=node_modules --exclude-dir=.next .)"
     ]
   }
 }

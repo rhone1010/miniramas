@@ -13,7 +13,7 @@
 // with whatever queue/db the infra team wires up — Supabase row, SQS message, etc.).
 
 import { NextRequest, NextResponse } from 'next/server'
-import { GenerateRequest } from '@/lib/v1/landscapes-shared'
+import { GenerateRequest } from '@/lib/v1/landscapes/landscapes-shared'
 
 interface DeferRequest {
   job_id:   string

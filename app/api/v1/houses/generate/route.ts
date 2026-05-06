@@ -9,8 +9,8 @@
 // (refine flow), and lives at app/api/v1/houses/analyze-render/route.ts.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { generateHouse } from '@/lib/v1/houses-generator'
-import type { GenerateRequest } from '@/lib/v1/houses-shared'
+import { generateHouse } from '@/lib/v1/houses/houses-generator'
+import type { GenerateRequest } from '@/lib/v1/houses/houses-shared'
 
 export const runtime     = 'nodejs'
 export const maxDuration = 120  // NB2 25-40s + outpaint 8-12s + headroom

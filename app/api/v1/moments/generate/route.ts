@@ -5,7 +5,7 @@
 // Accepts source_image_b64 + optional notes, returns the generated diorama.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { generateMoments } from '@/lib/v1/moments-generator'
+import { generateMoments } from '@/lib/v1/moments/moments-generator'
 
 export async function POST(req: NextRequest) {
   try {

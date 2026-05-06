@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import type { Sku } from '@/lib/store/types'
-import { VARIANTS_BY_STYLE } from '@/lib/v1/group-generator'
-import type { SceneStyle, SceneVariant } from '@/lib/v1/group-generator'
+import { VARIANTS_BY_STYLE } from '@/lib/v1/groups/group-generator'
+import type { SceneStyle, SceneVariant } from '@/lib/v1/groups/group-generator'
 import SigninModal from '@/components/SigninModal'
 
 const STYLES = Object.keys(VARIANTS_BY_STYLE) as SceneStyle[]

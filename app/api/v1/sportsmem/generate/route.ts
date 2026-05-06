@@ -7,7 +7,7 @@
 // edges of a memory-mode image; pre-padding gives the model the breathing room up front.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { generateStadiumTableau } from '@/lib/v1/sportsmem-generator'
+import { generateStadiumTableau } from '@/lib/v1/sportsmem/sportsmem-generator'
 
 export async function POST(req: NextRequest) {
   try {

@@ -4,7 +4,7 @@
 // Shared bundle types. The DB stores snake_case; everything above the
 // fetch layer uses camelCase. See lib/bundles/repo.ts for the translation.
 
-import type { SceneStyle, SceneVariant } from '@/lib/v1/group-generator'
+import type { SceneStyle, SceneVariant } from '@/lib/v1/groups/group-generator'
 
 export type BundleItemMode = 'fixed' | 'choose'
 

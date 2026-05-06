@@ -3,580 +3,943 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Liten &amp; Co — Landscapes (multi-source test rig)</title>
+<title>Liten &amp; Co — Landscapes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:           #F4F1EA;
-    --bg-soft:      #EDE8DD;
-    --bg-deeper:    #E5DFD0;
-    --ink:          #1F1B14;
-    --ink-soft:     #5A5246;
-    --ink-faint:    #8E8676;
-    --hairline:     #D7CFBE;
-    --hairline-soft:#E5DFD0;
-    --accent:       #3F4A2E;
-    --accent-soft:  #3F4A2E14;
-    --signature:    #8B6F3E;
-    --premium:      #5A5246;
-    --base:         #8E8676;
-    --error:        #8B3E3E;
-    --error-soft:   #8B3E3E14;
-    --success:      #3F4A2E;
-    --warn:         #B07C2E;
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--ink);
-    font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
-  ::selection { background: var(--accent); color: var(--bg); }
-  button { font-family: inherit; cursor: pointer; }
-  input, textarea { font-family: inherit; }
-  .hidden { display: none !important; }
+:root {
+  /* Landscapes branding — warm beige + forest green */
+  --bg:           #F4F1EA;
+  --bg-soft:      #EDE8DD;
+  --bg-deeper:    #E5DFD0;
+  --ink:          #1F1B14;
+  --ink-soft:     #5A5246;
+  --ink-faint:    #8E8676;
+  --hairline:     #D7CFBE;
+  --hairline-soft:#E5DFD0;
+  --accent:       #3F4A2E;
+  --accent-hover: #2F3722;
+  --accent-soft:  #3F4A2E14;
+  --signature:    #8B6F3E;
+  --premium:      #5A5246;
+  --base:         #8E8676;
+  --error:        #8B3E3E;
+  --error-soft:   #8B3E3E14;
+  --success:      #3F4A2E;
+  --warn:         #B07C2E;
 
-  /* TOPBAR */
-  .topbar {
-    height: 48px; padding: 0 1.25rem;
-    display: flex; align-items: center; gap: 1.25rem;
-    border-bottom: 1px solid var(--hairline);
-    background: var(--bg);
-    position: sticky; top: 0; z-index: 50;
-  }
-  .home-link { font-family: 'Inter', sans-serif; font-size: 0.78rem; color: var(--ink-soft);
-    text-decoration: none; letter-spacing: 0.02em; }
-  .home-link:hover { color: var(--ink); }
-  .brand-lockup { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
-    color: var(--ink); display: flex; align-items: baseline; gap: 0.5rem; }
-  .brand-name { font-style: italic; }
-  .brand-name b { font-weight: 600; }
-  .silo-name { font-family: 'Inter', sans-serif; font-size: 0.65rem;
-    letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint);
-    border-left: 1px solid var(--hairline); padding-left: 0.75rem; }
-  .test-tag { font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--warn); font-size: 0.85rem; }
-  .topbar-spacer { flex: 1; }
-  .status-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ink-faint); }
-  .status-pill.busy { color: var(--accent); }
-  .status-pill.error { color: var(--error); }
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, -apple-system, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
+}
 
-  /* LAYOUT */
-  .layout {
-    display: grid; grid-template-columns: 460px 1fr;
-    height: calc(100vh - 48px - 56px); /* topbar + bottom action bar */
-    overflow: hidden;
-  }
-  .workspace {
-    overflow-y: auto; padding: 1.25rem 1.25rem 2rem;
-    border-right: 1px solid var(--hairline); background: var(--bg);
-  }
-  .stage {
-    overflow-y: auto; padding: 1.25rem 1.5rem 3rem; background: var(--bg);
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:13px;
+  line-height:1.5;
+  display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+::selection { background: var(--accent); color: var(--bg); }
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+.hidden { display: none !important; }
 
-  /* WORKSPACE — SOURCE LIST */
-  .ws-head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    padding-bottom: 0.5rem; margin-bottom: 0.875rem;
-    border-bottom: 1px solid var(--hairline-soft);
-  }
-  .ws-title {
-    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600;
-    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft);
-  }
-  .ws-meta {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.85rem;
-    color: var(--ink-faint);
-  }
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes progressSlide{
+  0%   {transform:translateX(-100%) scaleX(.4)}
+  50%  {transform:translateX(0%)    scaleX(.6)}
+  100% {transform:translateX(100%)  scaleX(.4)}
+}
 
-  .source-list { display: flex; flex-direction: column; gap: 0.5rem; }
+/* ── TOPBAR ── */
+.topbar{
+  height:48px;
+  background:var(--bg);
+  border-bottom:1px solid var(--hairline);
+  display:flex;align-items:center;
+  padding:0 1.25rem;gap:1rem;
+  flex-shrink:0;
+}
+.home-link{
+  font-family:var(--sans);font-size:11px;color:var(--ink-soft);
+  text-decoration:none;letter-spacing:.02em;transition:color .15s;
+}
+.home-link:hover{color:var(--ink)}
+.brand-lockup{
+  font-family:var(--serif);font-size:18px;font-weight:400;color:var(--ink);
+  display:flex;align-items:baseline;gap:.5rem;
+}
+.brand-name{font-style:italic}
+.brand-name b{font-weight:600}
+.silo-name{
+  font-family:var(--sans);font-size:11px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);
+  border-left:1px solid var(--hairline);padding-left:.75rem;font-weight:500;
+}
+.tb-spacer{flex:1}
+.run-btn{
+  height:32px;padding:0 1.25rem;
+  background:var(--accent);color:#fff;
+  border:none;border-radius:6px;
+  font-family:var(--sans);font-size:12px;font-weight:600;
+  letter-spacing:.02em;
+  cursor:pointer;transition:background .15s,opacity .15s;
+}
+.run-btn:hover:not(:disabled){background:var(--accent-hover)}
+.run-btn:disabled{opacity:.35;cursor:not-allowed}
 
-  /* Empty state */
-  .source-empty-rail {
-    border: 1px dashed var(--hairline); border-radius: 4px;
-    padding: 1.5rem 1rem; text-align: center; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .source-empty-rail:hover { border-color: var(--accent); background: var(--accent-soft); }
-  .source-empty-rail .h {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.15rem;
-    color: var(--ink-soft); margin-bottom: 0.25rem;
-  }
-  .source-empty-rail .sub {
-    font-size: 0.72rem; color: var(--ink-faint); letter-spacing: 0.04em;
-  }
+/* Run cluster — count + price + tier tag inside the button */
+.run-italic{font-family:var(--serif);font-style:italic;font-weight:400;}
+.run-divider{display:inline-block;width:1px;height:11px;background:rgba(255,255,255,.25);margin:0 .5rem;vertical-align:middle;}
+.run-price{font-family:var(--mono);font-size:11px;font-weight:500;color:rgba(255,255,255,.92);}
+.run-savings{
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  color:var(--brass);background:rgba(139,111,62,0.18);
+  padding:1px 6px;border-radius:3px;margin-left:.4rem;
+  letter-spacing:.04em;
+}
+.run-savings.studio{
+  color:#fff;background:rgba(139,111,62,0.55);
+}
 
-  /* Source card */
-  .source-card {
-    background: var(--bg-soft); border: 1px solid var(--hairline);
-    border-radius: 4px; overflow: hidden; transition: border-color 0.15s;
-  }
-  .source-card.expanded { background: var(--bg); border-color: var(--ink-soft); }
+/* Bundle section in left rail */
+.bundle{
+  border-top:1px solid var(--hairline-soft);
+  padding-top:1rem;margin-top:.25rem;
+  display:flex;flex-direction:column;gap:.7rem;
+}
+.bundle.empty{display:none;}
+.bundle-h{display:flex;flex-direction:column;gap:.2rem;}
+.bundle-h-title{
+  font-family:var(--sans);font-size:10px;font-weight:600;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--ink-soft);
+}
+.bundle-h-meta{
+  font-family:var(--serif);font-style:italic;font-size:.95rem;
+  color:var(--ink-soft);line-height:1.35;
+}
 
-  .source-card-head {
-    display: flex; align-items: center; gap: 0.625rem;
-    padding: 0.5rem 0.75rem; cursor: pointer;
-  }
-  .source-card-head:hover { background: var(--bg-deeper); }
-  .source-card.expanded .source-card-head { background: transparent; cursor: default; }
+.ladder-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem;}
+.ladder-rung{
+  position:relative;padding:.55rem .35rem .5rem;
+  background:var(--bg-soft);border:1px solid var(--hairline-soft);
+  border-radius:3px;text-align:center;transition:all .2s;
+}
+.ladder-rung.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.ladder-rung.next{background:var(--bg);border-color:var(--brass);border-style:dashed;}
+.ladder-rung.future{opacity:.55;}
+.ladder-rung.ghost{opacity:.35;}
+.rung-n{
+  font-family:var(--sans);font-size:11px;font-weight:600;
+  letter-spacing:.02em;line-height:1;margin-bottom:.3rem;color:var(--ink);
+}
+.ladder-rung.active .rung-n{color:#fff;}
+.rung-price{
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  color:var(--ink-soft);margin-bottom:.15rem;
+}
+.ladder-rung.active .rung-price{color:rgba(255,255,255,.95);}
+.rung-tier{
+  font-family:var(--mono);font-size:9px;font-weight:600;
+  letter-spacing:.04em;color:var(--brass);
+}
 
-  .source-thumb {
-    width: 48px; height: 48px; border-radius: 3px;
-    background: var(--bg-deeper); object-fit: cover; flex-shrink: 0;
-    border: 1px solid var(--hairline-soft);
-  }
-  .source-card-name {
-    flex: 1; min-width: 0;
-    display: flex; flex-direction: column; gap: 0.1rem;
-  }
-  .source-card-filename {
-    font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500;
-    color: var(--ink);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .source-card-summary {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem;
-    color: var(--ink-faint);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .source-card-toggle {
-    background: none; border: none; padding: 0.25rem 0.4rem;
-    color: var(--ink-faint); font-size: 0.85rem;
-    flex-shrink: 0;
-  }
-  .source-card-toggle:hover { color: var(--ink); }
-  .source-card-remove {
-    background: none; border: none; padding: 0.25rem 0.4rem;
-    color: var(--ink-faint); font-size: 0.95rem; line-height: 1;
-    flex-shrink: 0;
-  }
-  .source-card-remove:hover { color: var(--error); }
+/* Studio row — beneath the ladder, three states */
+.studio-row{
+  margin-top:.1rem;
+  padding:.7rem .85rem;
+  background:var(--bg-soft);
+  border:1px solid var(--brass);
+  border-radius:3px;
+  display:grid;
+  grid-template-columns:auto 1fr auto auto;
+  align-items:center;
+  gap:.85rem;
+  transition:all .2s;
+}
+.studio-row.future{opacity:.55;}
+.studio-row.next{
+  background:var(--bg);
+  border-style:dashed;
+}
+.studio-row.active{
+  background:var(--brass);
+  border-color:var(--brass);
+}
+.studio-row.active *{color:#fff !important;}
+.studio-label{
+  font-family:var(--sans);font-size:10px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--brass);
+}
+.studio-pieces{
+  font-family:var(--serif);font-style:italic;font-size:.95rem;color:var(--ink-soft);
+}
+.studio-price{font-family:var(--mono);font-size:11px;color:var(--ink);}
+.studio-tier{
+  font-family:var(--mono);font-size:10px;font-weight:600;
+  letter-spacing:.04em;color:var(--brass);
+}
 
-  /* Expanded body */
-  .source-card-body {
-    padding: 0 0.875rem 0.875rem;
-    display: flex; flex-direction: column; gap: 1rem;
-    border-top: 1px solid var(--hairline-soft);
-    padding-top: 0.875rem; margin-top: 0.25rem;
-  }
+/* Curator nudge — italic, signed */
+.curator{
+  border-top:1px solid var(--hairline-soft);
+  padding:1rem 0 .25rem;
+  display:flex;gap:.75rem;align-items:flex-start;
+}
+.curator.empty{display:none;}
+.curator-mark{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--brass);color:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-style:italic;font-size:.9rem;font-weight:500;
+  flex-shrink:0;
+}
+.curator-body{
+  font-family:var(--serif);font-style:italic;font-size:.98rem;
+  color:var(--ink-soft);line-height:1.45;padding-top:.1rem;
+}
+.curator-sig{
+  font-family:var(--serif);font-style:italic;font-size:.82rem;
+  color:var(--ink-faint);margin-top:.15rem;
+}
+.run-italic{font-family:var(--serif);font-style:italic;font-weight:400;margin-right:.15rem}
 
-  .field { display: flex; flex-direction: column; gap: 0.4rem; }
-  .field-label {
-    font-family: 'Inter', sans-serif; font-size: 0.66rem; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft);
-  }
-  .field-meta {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem;
-    color: var(--ink-faint);
-  }
+/* Retry-all button — only shown when error rows exist */
+.retry-btn{
+  height:32px;padding:0 1rem;
+  background:transparent;color:var(--error);
+  border:1px solid var(--error);border-radius:6px;
+  font-family:var(--sans);font-size:12px;font-weight:600;
+  letter-spacing:.02em;
+  cursor:pointer;transition:background .15s;
+}
+.retry-btn:hover:not(:disabled){background:var(--error-soft)}
+.retry-btn:disabled{opacity:.35;cursor:not-allowed}
+.retry-italic{font-family:var(--serif);font-style:italic;font-weight:400;margin-right:.15rem}
+.status-meta{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:10px;color:var(--ink-faint);
+  letter-spacing:.02em;
+}
+.status-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--ink-faint);transition:background .2s;
+}
+.status-dot.busy{background:var(--accent);animation:spin 1s linear infinite}
+.status-dot.ok{background:var(--success)}
+.status-dot.err{background:var(--error)}
 
-  /* Profile select */
-  .profile-toggle {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
-    background: var(--bg-soft); border: 1px solid var(--hairline);
-    border-radius: 4px; padding: 3px;
-  }
-  .source-card.expanded .profile-toggle { background: var(--bg-deeper); }
-  .profile-btn {
-    background: transparent; border: none; padding: 0.5rem 0.5rem;
-    border-radius: 3px;
-    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500;
-    color: var(--ink-soft); letter-spacing: 0.02em;
-    transition: all 0.15s; line-height: 1.3;
-  }
-  .profile-btn .profile-italic {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-weight: 400; font-size: 0.85rem; margin-right: 0.2rem;
-  }
-  .profile-btn:hover:not(:disabled) { color: var(--ink); }
-  .profile-btn.active { background: var(--ink); color: var(--bg); }
-  .profile-hint {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem;
-    color: var(--ink-faint); margin-top: 0.3rem;
-  }
+/* ── LAYOUT ── */
+.layout{
+  display:grid;
+  grid-template-columns:420px 1fr;
+  flex:1;
+  overflow:hidden;
+  min-height:0;
+}
 
-  /* Path toggle (Natural / Sculpted) */
-  .path-toggle {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
-    background: var(--bg-soft); border: 1px solid var(--hairline);
-    border-radius: 4px; padding: 3px;
-  }
-  .source-card.expanded .path-toggle { background: var(--bg-deeper); }
-  .path-btn {
-    background: transparent; border: none; padding: 0.5rem 0.5rem;
-    border-radius: 3px;
-    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500;
-    color: var(--ink-soft); letter-spacing: 0.02em;
-    transition: all 0.15s;
-  }
-  .path-btn .path-italic {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-weight: 400; font-size: 0.85rem; margin-right: 0.2rem;
-  }
-  .path-btn:hover:not(:disabled) { color: var(--ink); }
-  .path-btn.active { background: var(--ink); color: var(--bg); }
-  .path-btn:disabled { color: var(--ink-faint); cursor: not-allowed; opacity: 0.55; }
+/* ── SIDEBAR ── */
+.left{
+  background:var(--bg);
+  border-right:1px solid var(--hairline);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.left-inner{
+  padding:1.25rem 1.25rem 2rem;
+  overflow-y:auto;
+  flex:1;
+}
+.left-inner::-webkit-scrollbar{width:6px}
+.left-inner::-webkit-scrollbar-track{background:transparent}
+.left-inner::-webkit-scrollbar-thumb{background:var(--hairline);border-radius:3px}
+.left-inner::-webkit-scrollbar-thumb:hover{background:var(--hairline-soft)}
 
-  /* Atmosphere tiles */
-  .atm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.35rem; }
-  .atm-tile {
-    position: relative;
-    background: var(--bg-soft); border: 1px solid var(--hairline);
-    border-radius: 4px; padding: 0.5rem 0.625rem;
-    text-align: left; cursor: pointer; transition: all 0.15s;
-  }
-  .source-card.expanded .atm-tile { background: var(--bg-deeper); }
-  .atm-tile:hover:not(:disabled) { border-color: var(--ink-soft); background: var(--bg); }
-  .atm-tile:disabled { cursor: not-allowed; opacity: 0.45; }
-  .atm-name {
-    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500;
-    color: var(--ink); margin-bottom: 0.05rem;
-  }
-  .atm-tier {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint);
-  }
-  .atm-tier.tier-signature { color: var(--signature); }
-  .atm-tier.tier-premium { color: var(--premium); }
-  .atm-check {
-    position: absolute; top: 0.25rem; right: 0.4rem;
-    color: var(--accent); font-size: 0.78rem; font-weight: 600;
-  }
-  .atm-check-multi {
-    background: var(--accent); color: var(--bg);
-    border-radius: 99px; padding: 0.05rem 0.35rem;
-    font-size: 0.6rem; font-weight: 600;
-    font-family: 'JetBrains Mono', monospace;
-    top: 0.25rem; right: 0.3rem;
-  }
+.ws-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding-bottom:.5rem;margin-bottom:.875rem;
+  border-bottom:1px solid var(--hairline-soft);
+}
+.ws-title{
+  font-family:var(--sans);font-size:11px;font-weight:600;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--ink-soft);
+}
+.ws-meta{
+  font-family:var(--serif);font-style:italic;font-size:.85rem;
+  color:var(--ink-faint);
+}
 
-  /* Pill groups (env, aspect) */
-  .pill-group { display: flex; gap: 4px; flex-wrap: wrap; }
-  .pill {
-    background: var(--bg-soft); border: 1px solid var(--hairline);
-    border-radius: 99px; padding: 0.28rem 0.65rem;
-    font-family: 'Inter', sans-serif; font-size: 0.72rem;
-    color: var(--ink-soft); letter-spacing: 0.01em;
-    transition: all 0.15s;
-  }
-  .source-card.expanded .pill { background: var(--bg-deeper); }
-  .pill:hover:not(:disabled) { border-color: var(--ink-soft); color: var(--ink); }
-  .pill.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
-  .pill:disabled { opacity: 0.4; cursor: not-allowed; }
+.source-list{display:flex;flex-direction:column;gap:.5rem}
 
-  .scale-readout {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: 0.78rem; color: var(--ink-faint);
-    padding: 0.2rem 0;
-  }
-  .scale-readout b {
-    font-style: normal; font-family: 'Inter', sans-serif;
-    font-size: 0.7rem; font-weight: 500; color: var(--ink);
-    letter-spacing: 0.04em;
-  }
-  .scale-readout .lock-note {
-    color: var(--warn); font-style: italic;
-  }
+/* Empty state */
+.source-empty-rail{
+  border:1px dashed var(--hairline);border-radius:4px;
+  padding:1.5rem 1rem;text-align:center;cursor:pointer;
+  transition:all .2s;background:transparent;
+}
+.source-empty-rail:hover{border-color:var(--accent);background:var(--accent-soft)}
+.source-empty-rail .h{
+  font-family:var(--serif);font-style:italic;font-size:1.15rem;
+  color:var(--ink-soft);margin-bottom:.25rem;
+}
+.source-empty-rail .sub{
+  font-size:.72rem;color:var(--ink-faint);letter-spacing:.04em;
+}
 
-  /* Per-source queue */
-  .queue { display: flex; flex-direction: column; gap: 0.35rem; }
-  .queue-empty {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--ink-faint); font-size: 0.85rem;
-    padding: 0.5rem 0; text-align: center;
-  }
-  .queue-row {
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.4rem 0.625rem;
-    background: var(--bg-soft); border: 1px solid var(--hairline-soft);
-    border-radius: 3px;
-  }
-  .source-card.expanded .queue-row { background: var(--bg-deeper); }
-  .queue-row-name {
-    flex: 1; min-width: 0;
-    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .queue-row-state {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    padding: 0.12rem 0.4rem; border-radius: 99px;
-    flex-shrink: 0;
-  }
-  .state-idle    { color: var(--ink-faint); border: 1px solid var(--hairline); }
-  .state-render  { color: var(--accent); border: 1px solid var(--accent); }
-  .state-ready   { color: var(--success); border: 1px solid var(--success); }
-  .state-error   { color: var(--error); border: 1px solid var(--error); }
-  .queue-row-x {
-    background: none; border: none; padding: 0.1rem 0.3rem;
-    color: var(--ink-faint); font-size: 0.85rem; line-height: 1;
-    flex-shrink: 0;
-  }
-  .queue-row-x:hover { color: var(--error); }
+/* Add-another rail */
+.add-rail{
+  border:1px dashed var(--hairline);border-radius:4px;
+  padding:.875rem 1rem;text-align:center;cursor:pointer;
+  background:transparent;margin-top:.4rem;
+  transition:all .15s;
+}
+.add-rail:hover{border-color:var(--accent);background:var(--accent-soft)}
+.add-rail .sub{
+  font-size:.66rem;font-weight:600;color:var(--ink-faint);
+  letter-spacing:.12em;text-transform:uppercase;
+}
 
-  /* STAGE */
-  .stage-empty {
-    height: 100%; display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 0.875rem; padding: 2rem;
-  }
-  .stage-empty-h {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: 2.2rem; color: var(--ink-soft); text-align: center;
-  }
-  .stage-empty-sub {
-    font-family: 'Inter', sans-serif; font-size: 0.7rem;
-    letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase;
-  }
+/* Source card */
+.source-card{
+  background:var(--bg-soft);border:1px solid var(--hairline);
+  border-radius:4px;overflow:hidden;transition:border-color .15s;
+}
+.source-card.expanded{background:var(--bg);border-color:var(--ink-soft)}
 
-  .stage-section { margin-bottom: 2rem; }
-  .stage-section-head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    padding-bottom: 0.5rem; margin-bottom: 0.875rem;
-    border-bottom: 1px solid var(--hairline-soft);
-  }
-  .stage-section-title {
-    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600;
-    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft);
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .stage-section-source-name {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: 1rem; color: var(--ink); text-transform: none; letter-spacing: 0;
-    font-weight: 400;
-  }
-  .stage-section-meta {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
-    color: var(--ink-faint);
-  }
+.source-card-head{
+  display:flex;align-items:center;gap:.625rem;
+  padding:.5rem .75rem;cursor:pointer;
+  transition:background .15s;
+}
+.source-card-head:hover{background:var(--bg-deeper)}
+.source-card.expanded .source-card-head{background:transparent}
 
-  .renders-grid {
-    display: grid; gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  }
-  .render-card {
-    background: var(--bg-soft); border: 1px solid var(--hairline);
-    border-radius: 4px; overflow: hidden;
-    display: flex; flex-direction: column;
-    transition: border-color 0.15s;
-  }
-  .render-card:hover { border-color: var(--ink-faint); }
-  .render-card-img {
-    width: 100%; aspect-ratio: 1; object-fit: cover; cursor: zoom-in;
-    background: var(--bg-deeper); display: block;
-  }
-  .render-card-pending {
-    width: 100%; aspect-ratio: 1; background: var(--bg-deeper);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--ink-faint); font-size: 1rem;
-  }
-  .render-card-meta { padding: 0.625rem 0.75rem 0.5rem; }
-  .render-card-h {
-    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem;
-    color: var(--ink); margin: 0 0 0.1rem;
-  }
-  .render-card-sub {
-    font-size: 0.68rem; color: var(--ink-faint); letter-spacing: 0.02em;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .render-card-actions {
-    display: flex; gap: 0.4rem; padding: 0 0.75rem 0.75rem; margin-top: auto;
-  }
-  .card-act {
-    flex: 1; padding: 0.4rem 0.5rem;
-    background: var(--bg); border: 1px solid var(--hairline);
-    border-radius: 3px; color: var(--ink-soft);
-    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 500;
-  }
-  .card-act:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  .render-card.error { background: var(--bg); }
-  .render-card-error {
-    padding: 1.25rem; text-align: center;
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--error); font-size: 0.9rem;
-    aspect-ratio: 1;
-    display: flex; align-items: center; justify-content: center; flex-direction: column;
-    gap: 0.5rem;
-  }
-  .render-card-error-detail {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
-    color: var(--ink-faint); word-break: break-word; font-style: normal;
-    max-width: 100%;
-  }
+.source-thumb{
+  width:48px;height:48px;border-radius:3px;
+  background:var(--bg-deeper);object-fit:cover;flex-shrink:0;
+  border:1px solid var(--hairline-soft);
+}
+.source-card-name{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;gap:.1rem;
+}
+.source-card-filename{
+  font-family:var(--sans);font-size:.85rem;font-weight:500;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.source-card-summary{
+  font-family:var(--serif);font-style:italic;font-size:.78rem;
+  color:var(--ink-faint);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.source-card-toggle{
+  background:none;border:none;padding:.25rem .4rem;
+  color:var(--ink-faint);font-size:.85rem;flex-shrink:0;
+  transition:color .15s;
+}
+.source-card-toggle:hover{color:var(--ink)}
+.source-card-remove{
+  background:none;border:none;padding:.25rem .4rem;
+  color:var(--ink-faint);font-size:.95rem;line-height:1;
+  flex-shrink:0;transition:color .15s;
+}
+.source-card-remove:hover{color:var(--error)}
 
-  /* Lightbox */
-  .lightbox {
-    position: fixed; inset: 0; background: rgba(31, 27, 20, 0.92);
-    display: flex; align-items: center; justify-content: center; z-index: 200;
-    padding: 2rem; cursor: zoom-out;
-  }
-  .lightbox img { max-width: 100%; max-height: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+/* Expanded body */
+.source-card-body{
+  padding:0 .875rem .875rem;
+  display:flex;flex-direction:column;gap:1rem;
+  border-top:1px solid var(--hairline-soft);
+  padding-top:.875rem;margin-top:.25rem;
+}
 
-  /* BOTTOM ACTION BAR */
-  .actionbar {
-    height: 56px; padding: 0 1.25rem;
-    display: flex; align-items: center; gap: 1rem;
-    background: var(--bg); border-top: 1px solid var(--hairline);
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
-  }
-  .render-all-btn {
-    padding: 0.625rem 1.5rem; background: var(--ink); color: var(--bg);
-    border: none; border-radius: 4px;
-    font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600;
-    letter-spacing: 0.02em; transition: all 0.15s;
-  }
-  .render-all-btn:hover:not(:disabled) { background: var(--accent); }
-  .render-all-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .render-all-italic {
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-weight: 400;
-  }
-  .actionbar-meta {
-    flex: 1; font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--ink-faint); font-size: 0.9rem;
-  }
-  .actionbar-meta b {
-    font-style: normal; font-family: 'JetBrains Mono', monospace;
-    color: var(--ink); font-weight: 500; font-size: 0.78rem;
-  }
-  .errlog-btn {
-    padding: 0.4rem 0.75rem; background: var(--bg-soft);
-    border: 1px solid var(--hairline); border-radius: 3px;
-    font-family: 'Inter', sans-serif; font-size: 0.75rem; color: var(--ink-soft);
-    display: flex; align-items: center; gap: 0.4rem;
-  }
-  .errlog-btn:hover { border-color: var(--ink-soft); color: var(--ink); }
-  .errlog-btn.has-errors { border-color: var(--error); color: var(--error); background: var(--error-soft); }
-  .errlog-btn-count {
-    background: var(--error); color: white;
-    border-radius: 99px; padding: 0.05rem 0.4rem;
-    font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600;
-    min-width: 18px; text-align: center;
-  }
+.field{display:flex;flex-direction:column;gap:.4rem}
+.field-label{
+  font-family:var(--sans);font-size:.66rem;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);
+}
+.field-meta{
+  font-family:var(--serif);font-style:italic;font-size:.78rem;
+  color:var(--ink-faint);font-weight:400;text-transform:none;letter-spacing:0;
+  margin-left:.4rem;
+}
 
-  /* ERROR LOG PANEL */
-  .errlog-panel {
-    position: fixed; right: 1rem; bottom: 70px;
-    width: 520px; max-width: calc(100vw - 2rem);
-    max-height: 60vh;
-    background: var(--bg); border: 1px solid var(--hairline);
-    border-radius: 4px; box-shadow: 0 8px 32px rgba(31, 27, 20, 0.18);
-    z-index: 40;
-    display: flex; flex-direction: column;
-  }
-  .errlog-head {
-    padding: 0.75rem 0.875rem;
-    display: flex; align-items: center; gap: 0.5rem;
-    border-bottom: 1px solid var(--hairline-soft);
-    background: var(--bg-soft);
-    flex-shrink: 0;
-  }
-  .errlog-title {
-    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600;
-    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft);
-    flex: 1;
-  }
-  .errlog-action {
-    background: none; border: 1px solid var(--hairline);
-    border-radius: 3px; padding: 0.25rem 0.625rem;
-    font-family: 'Inter', sans-serif; font-size: 0.7rem; color: var(--ink-soft);
-    transition: all 0.15s;
-  }
-  .errlog-action:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  .errlog-action.copied {
-    background: var(--success); color: var(--bg); border-color: var(--success);
-  }
-  .errlog-body {
-    flex: 1; overflow-y: auto; padding: 0.75rem 0.875rem;
-    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
-    color: var(--ink); line-height: 1.55;
-  }
-  .errlog-empty {
-    color: var(--ink-faint); font-family: 'Cormorant Garamond', serif;
-    font-style: italic; font-size: 0.95rem; text-align: center;
-    padding: 2rem 1rem;
-  }
-  .errlog-entry {
-    padding: 0.5rem 0; border-bottom: 1px dashed var(--hairline-soft);
-  }
-  .errlog-entry:last-child { border-bottom: none; }
-  .errlog-entry-head {
-    color: var(--ink-faint); font-size: 0.65rem; margin-bottom: 0.2rem;
-  }
-  .errlog-entry-source {
-    color: var(--ink); font-weight: 500; margin-bottom: 0.2rem;
-  }
-  .errlog-entry-cfg {
-    color: var(--ink-soft); font-size: 0.68rem; margin-bottom: 0.25rem;
-  }
-  .errlog-entry-err {
-    color: var(--error); word-break: break-word;
-    background: var(--error-soft); padding: 0.25rem 0.4rem;
-    border-radius: 2px; border-left: 2px solid var(--error);
-  }
+/* Atmosphere tile grid */
+.atm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.35rem}
+.atm-tile{
+  position:relative;
+  background:var(--bg-soft);border:1px solid var(--hairline);
+  border-radius:4px;padding:.5rem .625rem;
+  text-align:left;cursor:pointer;transition:all .15s;
+}
+.source-card.expanded .atm-tile{background:var(--bg-deeper)}
+.atm-tile:hover:not(:disabled){border-color:var(--ink-soft);background:var(--bg)}
+.atm-tile:disabled{cursor:not-allowed;opacity:.45}
+.atm-name{
+  font-family:var(--sans);font-size:.78rem;font-weight:500;
+  color:var(--ink);margin-bottom:.05rem;
+}
+.atm-tier{
+  font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);
+}
+.atm-tier.tier-signature{color:var(--signature)}
+.atm-tier.tier-premium{color:var(--premium)}
+.atm-check{
+  position:absolute;top:.25rem;right:.4rem;
+  color:var(--accent);font-size:.78rem;font-weight:600;
+}
+.atm-check-multi{
+  background:var(--accent);color:var(--bg);
+  border-radius:99px;padding:.05rem .35rem;
+  font-size:.6rem;font-weight:600;
+  font-family:var(--mono);
+  top:.25rem;right:.3rem;
+}
 
-  input[type="file"] { display: none; }
+/* Pill groups (env, aspect, scale, camera, sceneFeel) */
+.pill-group{display:flex;gap:4px;flex-wrap:wrap}
+.pill{
+  background:var(--bg-soft);border:1px solid var(--hairline);
+  border-radius:99px;padding:.28rem .65rem;
+  font-family:var(--sans);font-size:.72rem;
+  color:var(--ink-soft);letter-spacing:.01em;
+  transition:all .15s;cursor:pointer;
+}
+.source-card.expanded .pill{background:var(--bg-deeper)}
+.pill:hover:not(:disabled){border-color:var(--ink-soft);color:var(--ink)}
+.pill.active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.pill:disabled{opacity:.4;cursor:not-allowed}
 
-  /* Drag overlay */
-  body.dragging::after {
-    content: "drop sources to add";
-    position: fixed; inset: 0; background: rgba(63, 74, 46, 0.92);
-    color: white; z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: 3rem; pointer-events: none;
-  }
+.scale-readout{
+  font-family:var(--serif);font-style:italic;font-size:.78rem;
+  color:var(--ink-faint);padding:.2rem 0;
+}
+.scale-readout b{
+  font-style:normal;font-family:var(--sans);font-size:.7rem;
+  font-weight:500;color:var(--ink);letter-spacing:.04em;
+}
+
+/* Plaque text input — appears under the pill row in Custom mode */
+.plaque-input{
+  margin-top:.4rem;
+  width:100%;
+  background:var(--bg);
+  border:1px solid var(--hairline);
+  border-radius:4px;
+  padding:.45rem .65rem;
+  font-family:var(--sans);font-size:.78rem;color:var(--ink);
+  transition:border-color .15s;
+}
+.source-card.expanded .plaque-input{background:var(--bg-deeper)}
+.plaque-input:focus{outline:none;border-color:var(--ink-soft)}
+.plaque-input::placeholder{color:var(--ink-faint);font-family:var(--serif);font-style:italic}
+.plaque-input:disabled{opacity:.5;cursor:not-allowed}
+
+.plaque-hint{
+  margin-top:.4rem;
+  font-family:var(--serif);font-style:italic;font-size:.78rem;
+  color:var(--ink-faint);
+  padding:.25rem 0;
+}
+
+/* Per-source queue list */
+.queue{display:flex;flex-direction:column;gap:.35rem}
+.queue-empty{
+  font-family:var(--serif);font-style:italic;
+  color:var(--ink-faint);font-size:.85rem;
+  padding:.5rem 0;text-align:center;
+}
+.queue-row{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.4rem .625rem;
+  background:var(--bg-soft);border:1px solid var(--hairline-soft);
+  border-radius:3px;
+}
+.source-card.expanded .queue-row{background:var(--bg-deeper)}
+.queue-row-name{
+  flex:1;min-width:0;
+  font-family:var(--sans);font-size:.78rem;font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.queue-row-state{
+  font-family:var(--mono);font-size:.6rem;
+  text-transform:uppercase;letter-spacing:.1em;
+  padding:.12rem .4rem;border-radius:99px;
+  flex-shrink:0;
+}
+.state-idle  {color:var(--ink-faint);border:1px solid var(--hairline)}
+.state-render{color:var(--accent);border:1px solid var(--accent)}
+.state-ready {color:var(--success);border:1px solid var(--success)}
+.state-error {color:var(--error);border:1px solid var(--error)}
+.queue-row-x{
+  background:none;border:none;padding:.1rem .3rem;
+  color:var(--ink-faint);font-size:.85rem;line-height:1;
+  flex-shrink:0;cursor:pointer;transition:color .15s;
+}
+.queue-row-x:hover{color:var(--error)}
+
+input[type="file"]{display:none}
+
+/* ── STAGE ── */
+.center{
+  display:flex;flex-direction:column;
+  overflow:hidden;min-height:0;
+  background:var(--bg);position:relative;
+}
+.center-hdr{
+  height:48px;padding:0 1.5rem;
+  border-bottom:1px solid var(--hairline);
+  display:flex;align-items:center;flex-shrink:0;
+  background:var(--bg);
+}
+.stage-title{
+  font-family:var(--sans);font-size:11px;font-weight:600;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--ink-soft);
+}
+.stage-meta{
+  margin-left:auto;
+  font-family:var(--mono);font-size:11px;color:var(--ink-faint);
+}
+
+.stage-progress{
+  position:absolute;top:48px;left:0;right:0;
+  height:2px;background:transparent;
+  z-index:50;overflow:hidden;pointer-events:none;
+  display:none;
+}
+.stage-progress.active{display:block}
+.stage-progress-fill{
+  height:100%;background:var(--accent);
+  transform-origin:left;
+  animation:progressSlide 1.6s ease-in-out infinite;
+}
+
+.stage{
+  flex:1;overflow-y:auto;
+  display:flex;flex-direction:column;
+  padding:2rem;
+}
+
+.stage-empty{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:3rem;
+  gap:.875rem;
+}
+.stage-empty-h{
+  font-family:var(--serif);font-style:italic;font-size:2.2rem;
+  color:var(--ink-soft);
+}
+.stage-empty-h em{color:var(--accent);font-style:italic}
+.stage-empty-sub{
+  font-family:var(--sans);font-size:.7rem;
+  letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase;
+}
+
+/* Stacked results — houses pattern */
+.results-grid{
+  flex:1;overflow:hidden;
+  display:flex;flex-direction:column;
+  position:relative;
+}
+.stack-meta-display{
+  position:absolute;top:0;right:8px;z-index:100;
+  font-family:var(--mono);font-size:11px;color:var(--ink-faint);
+  letter-spacing:.02em;pointer-events:none;
+  display:flex;align-items:center;gap:8px;
+}
+.stack-counter{color:var(--ink)}
+.stack-hint{
+  color:var(--ink-faint);
+  font-family:var(--serif);font-style:italic;
+}
+
+.results-stack-inner{
+  flex:1;position:relative;width:100%;
+  max-width:920px;margin:0 auto;
+  display:flex;align-items:center;justify-content:flex-start;
+  min-height:560px;padding:32px;
+}
+.rc{
+  position:absolute;top:32px;left:0;
+  width:54%;height:calc(100% - 64px);
+  background:var(--bg-soft);
+  border:1px solid var(--hairline);border-radius:6px;
+  overflow:hidden;cursor:pointer;
+  transition:transform .4s cubic-bezier(.2,.7,.3,1),
+             left .4s cubic-bezier(.2,.7,.3,1),
+             border-color .25s,
+             box-shadow .25s,
+             filter .25s;
+  animation:fadeIn .35s ease;
+  display:flex;flex-direction:column;
+}
+.rc.done{border-color:var(--ink-soft)}
+.rc.error{border-color:var(--error)}
+.rc.top{
+  border-color:var(--ink-soft);
+  box-shadow:0 4px 16px rgba(31,27,20,.08), 0 1px 2px rgba(31,27,20,.04);
+}
+
+.rc[data-pos="0"]{left:0;   transform:scale(1);    filter:brightness(1.00) saturate(1);  z-index:10}
+.rc[data-pos="1"]{left:14%; transform:scale(.96);  filter:brightness(.98) saturate(.85); z-index:9}
+.rc[data-pos="2"]{left:25%; transform:scale(.92);  filter:brightness(.96) saturate(.7);  z-index:8}
+.rc[data-pos="3"]{left:34%; transform:scale(.88);  filter:brightness(.94) saturate(.55); z-index:7}
+.rc[data-pos="4"]{left:41%; transform:scale(.84);  filter:brightness(.92) saturate(.4);  z-index:6}
+.rc[data-pos="5"]{left:46%; transform:scale(.80);  filter:brightness(.90) saturate(.3);  z-index:5}
+.rc[data-pos="6"]{left:49%; transform:scale(.77);  filter:brightness(.88) saturate(.2);  z-index:4}
+.rc[data-pos="7"]{left:51%; transform:scale(.74);  filter:brightness(.86) saturate(.15); z-index:3}
+.rc[data-pos^="8"],.rc[data-pos^="9"]{left:51%;transform:scale(.72);filter:brightness(.85) saturate(.1);z-index:2}
+
+/* Grid mode — kicks in at 5+ cards. All cards equal quality, parent scrolls. */
+.results-stack-inner.grid-mode{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+  gap:14px;
+  align-items:start;
+  align-content:start;
+  justify-content:stretch;
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:24px 32px;
+  min-height:auto;
+  overflow-y:auto;
+}
+.results-stack-inner.grid-mode .rc{
+  position:static;
+  width:100%;
+  height:300px;
+  left:auto;
+  transform:none !important;
+  filter:none !important;
+  z-index:auto;
+}
+.results-stack-inner.grid-mode .rc.top{
+  border-color:var(--ink-soft);
+  box-shadow:0 1px 3px rgba(31,27,20,.06);
+}
+
+.rc:not(.top):hover{filter:brightness(1.03) !important}
+
+.rc-img{
+  flex:1;background:var(--bg-deeper);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  min-height:0;
+}
+.rc-img img{
+  width:100%;height:100%;object-fit:cover;
+  display:block;pointer-events:none;
+}
+.rc:not(.top) .rc-img{cursor:default}
+.rc.top .rc-img{cursor:zoom-in}
+
+.rc-spinner-area{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  color:var(--ink-faint);
+  font-family:var(--serif);font-style:italic;font-size:1rem;
+}
+.spin{
+  width:24px;height:24px;border-radius:50%;
+  border:2px solid var(--hairline);
+  border-top-color:var(--accent);
+  animation:spin .8s linear infinite;
+}
+
+.rc-overlay{
+  position:absolute;inset:0;
+  background:rgba(31,27,20,0);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:all .2s;
+  pointer-events:none;
+}
+.rc.top .rc-img:hover .rc-overlay{
+  opacity:1;background:rgba(31,27,20,.4);
+}
+.rc-ol{
+  color:white;font-size:12px;font-weight:500;
+  letter-spacing:.05em;text-transform:uppercase;
+}
+.rc-duration{
+  position:absolute;top:8px;right:8px;
+  background:rgba(31,27,20,.6);color:white;
+  font-family:var(--mono);font-size:10px;
+  padding:3px 7px;border-radius:3px;
+}
+
+.rc-body{
+  padding:14px 16px 12px;
+  display:flex;flex-direction:column;gap:6px;
+  border-top:1px solid var(--hairline-soft);
+  background:var(--bg);
+}
+.rc-name{
+  font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--ink);
+}
+.rc-name-source{
+  color:var(--ink-faint);font-size:.78rem;
+  font-style:italic;
+}
+.rc-meta{
+  font-family:var(--mono);font-size:10px;color:var(--ink-faint);
+  letter-spacing:.02em;
+}
+
+.rc-btns{
+  display:flex;gap:6px;margin-top:6px;
+}
+.rc-btn{
+  flex:1;height:28px;
+  background:var(--bg-soft);
+  border:1px solid var(--hairline);border-radius:5px;
+  font-family:var(--sans);font-size:11px;font-weight:500;color:var(--ink-soft);
+  cursor:pointer;transition:all .15s;
+}
+.rc-btn:hover{border-color:var(--ink);color:var(--ink)}
+.rc-btn.save{
+  background:var(--accent);color:white;border-color:var(--accent);
+}
+.rc-btn.save:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:white}
+
+.rc-error-body{
+  padding:16px;
+  display:flex;flex-direction:column;gap:8px;
+  background:var(--error-soft);
+  flex:1;
+}
+.rc-error-headline{
+  font-family:var(--serif);font-style:italic;
+  font-size:.95rem;color:var(--error);
+}
+.rc-error-detail{
+  font-family:var(--mono);font-size:10px;color:var(--ink-soft);
+  line-height:1.5;word-break:break-word;
+}
+
+/* ── LIGHTBOX ── */
+.lightbox{
+  position:fixed;inset:0;
+  background:rgba(31,27,20,.92);
+  display:none;align-items:center;justify-content:center;
+  z-index:1000;padding:32px;cursor:zoom-out;
+}
+.lightbox.active{display:flex}
+.lightbox img{
+  max-width:100%;max-height:100%;
+  display:block;border-radius:6px;
+  box-shadow:0 8px 40px rgba(0,0,0,.4);
+}
+
+/* ── ERROR LOG ── */
+.errlog-toggle{
+  position:fixed;right:1rem;bottom:1rem;
+  height:32px;padding:0 .75rem;
+  background:var(--bg-soft);border:1px solid var(--hairline);
+  border-radius:6px;
+  font-family:var(--sans);font-size:.72rem;color:var(--ink-soft);
+  display:flex;align-items:center;gap:.4rem;
+  cursor:pointer;transition:all .15s;z-index:50;
+}
+.errlog-toggle:hover{border-color:var(--ink-soft);color:var(--ink)}
+.errlog-toggle.has-errors{
+  border-color:var(--error);color:var(--error);background:var(--error-soft);
+}
+.errlog-count{
+  background:var(--error);color:#fff;
+  border-radius:99px;padding:.05rem .4rem;
+  font-family:var(--mono);font-size:.62rem;font-weight:600;
+  min-width:18px;text-align:center;
+}
+.errlog-panel{
+  position:fixed;right:1rem;bottom:60px;
+  width:520px;max-width:calc(100vw - 2rem);max-height:60vh;
+  background:var(--bg);border:1px solid var(--hairline);
+  border-radius:6px;box-shadow:0 8px 32px rgba(31,27,20,.18);
+  z-index:60;
+  display:flex;flex-direction:column;
+}
+.errlog-head{
+  padding:.75rem .875rem;
+  display:flex;align-items:center;gap:.5rem;
+  border-bottom:1px solid var(--hairline-soft);
+  background:var(--bg-soft);
+  flex-shrink:0;
+}
+.errlog-title{
+  font-family:var(--sans);font-size:.7rem;font-weight:600;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--ink-soft);
+  flex:1;
+}
+.errlog-action{
+  background:none;border:1px solid var(--hairline);
+  border-radius:3px;padding:.25rem .625rem;
+  font-family:var(--sans);font-size:.7rem;color:var(--ink-soft);
+  cursor:pointer;transition:all .15s;
+}
+.errlog-action:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.errlog-action.copied{background:var(--success);color:var(--bg);border-color:var(--success)}
+.errlog-body{
+  flex:1;overflow-y:auto;padding:.75rem .875rem;
+  font-family:var(--mono);font-size:.72rem;color:var(--ink);line-height:1.55;
+}
+.errlog-empty{
+  color:var(--ink-faint);font-family:var(--serif);
+  font-style:italic;font-size:.95rem;text-align:center;
+  padding:2rem 1rem;
+}
+.errlog-entry{
+  padding:.5rem 0;border-bottom:1px dashed var(--hairline-soft);
+}
+.errlog-entry:last-child{border-bottom:none}
+.errlog-entry-head{color:var(--ink-faint);font-size:.65rem;margin-bottom:.2rem}
+.errlog-entry-source{color:var(--ink);font-weight:500;margin-bottom:.2rem}
+.errlog-entry-cfg{color:var(--ink-soft);font-size:.68rem;margin-bottom:.25rem}
+.errlog-entry-err{
+  color:var(--error);word-break:break-word;
+  background:var(--error-soft);padding:.25rem .4rem;
+  border-radius:2px;border-left:2px solid var(--error);
+}
+
+/* Drag overlay */
+body.dragging::after{
+  content:"drop sources to add";
+  position:fixed;inset:0;background:rgba(63,74,46,.92);
+  color:white;z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-style:italic;
+  font-size:3rem;pointer-events:none;
+}
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <a href="/" class="home-link">← Liten &amp; Co</a>
+  <a class="home-link" href="/">← Home</a>
   <div class="brand-lockup">
     <span class="brand-name"><i>Liten</i> &amp; <b>Co</b></span>
   </div>
   <span class="silo-name">Landscapes</span>
-  <span class="test-tag">multi-source test rig</span>
-  <div class="topbar-spacer"></div>
-  <span class="status-pill" id="status-pill">ready</span>
+  <div class="tb-spacer"></div>
+  <button class="retry-btn hidden" id="retry-btn" onclick="retryAllErrors()">
+    <span class="retry-italic">Retry</span>failed (<span id="retry-count">0</span>)
+  </button>
+  <button class="run-btn" id="run-btn" disabled>
+    <span id="run-label"><span class="run-italic">Render queue</span> empty</span>
+    <span class="run-divider" id="run-divider" style="display:none"></span>
+    <span class="run-price" id="run-price" style="display:none"></span>
+    <span class="run-savings" id="run-savings" style="display:none"></span>
+  </button>
+  <div class="status-meta">
+    <div class="status-dot" id="g-dot"></div>
+    <span id="g-status">ready</span>
+  </div>
 </header>
 
 <div class="layout">
 
-  <!-- WORKSPACE — SOURCE LIST -->
-  <aside class="workspace">
-    <div class="ws-head">
-      <span class="ws-title">Sources</span>
-      <span class="ws-meta" id="ws-meta">none yet</span>
+  <!-- ── SIDEBAR ── -->
+  <aside class="left">
+    <div class="left-inner">
+
+      <div class="ws-head">
+        <span class="ws-title">Sources</span>
+        <span class="ws-meta" id="ws-meta">none yet</span>
+      </div>
+
+      <div class="source-list" id="source-list"></div>
+
+      <!-- ── BUNDLE LADDER ── -->
+      <div class="bundle empty" id="bundle">
+        <div class="bundle-h">
+          <span class="bundle-h-title">The series</span>
+          <span class="bundle-h-meta" id="bundle-explainer">The more you queue, the less each costs.</span>
+        </div>
+        <div class="ladder-strip" id="ladder-strip">
+          <div class="ladder-rung future" data-rung="1">
+            <div class="rung-n">1 image</div>
+            <div class="rung-price">$4.99</div>
+            <div class="rung-tier">SINGLE</div>
+          </div>
+          <div class="ladder-rung future" data-rung="2">
+            <div class="rung-n">2 images</div>
+            <div class="rung-price">$8.98</div>
+            <div class="rung-tier">−10%</div>
+          </div>
+          <div class="ladder-rung future" data-rung="3">
+            <div class="rung-n">3 images</div>
+            <div class="rung-price">$12.72</div>
+            <div class="rung-tier">−15%</div>
+          </div>
+          <div class="ladder-rung future" data-rung="4">
+            <div class="rung-n">4+ images</div>
+            <div class="rung-price">$3.74 ea.</div>
+            <div class="rung-tier">−25%</div>
+          </div>
+        </div>
+        <div class="studio-row future" id="studio-row">
+          <div class="studio-label">The Studio</div>
+          <div class="studio-pieces" id="studio-pieces">10 pieces · $3.49 ea.</div>
+          <div class="studio-price" id="studio-price">$34.93</div>
+          <div class="studio-tier">−30%</div>
+        </div>
+        <div class="curator empty" id="curator">
+          <div class="curator-mark">C</div>
+          <div>
+            <div class="curator-body" id="curator-body"></div>
+            <div class="curator-sig">— C.</div>
+          </div>
+        </div>
+      </div>
+
+      <input type="file" id="file-input" accept="image/jpeg,image/png" multiple>
     </div>
-    <div class="source-list" id="source-list"></div>
-    <input type="file" id="file-input" accept="image/jpeg,image/png" multiple>
   </aside>
 
-  <!-- STAGE — RENDERS GROUPED BY SOURCE -->
-  <main class="stage" id="stage">
-    <div class="stage-empty" id="stage-empty">
-      <div class="stage-empty-h">Your renders will appear here</div>
-      <div class="stage-empty-sub">add sources · queue atmospheres · render</div>
+  <!-- ── STAGE ── -->
+  <section class="center">
+    <div class="center-hdr">
+      <span class="stage-title">Stage</span>
+      <span class="stage-meta" id="center-meta"></span>
     </div>
-    <div id="stage-sections"></div>
-  </main>
+    <div class="stage-progress" id="stage-progress"><div class="stage-progress-fill"></div></div>
 
+    <div class="stage" id="stage">
+
+      <div class="stage-empty" id="stage-empty">
+        <div class="stage-empty-h">A landscape, <em>imagined</em></div>
+        <div class="stage-empty-sub">add a source · queue atmospheres · render</div>
+      </div>
+
+      <div class="results-grid hidden" id="results-grid">
+        <div class="stack-meta-display" id="stack-meta"></div>
+        <div class="results-stack-inner" id="results-stack-inner"></div>
+      </div>
+
+    </div>
+  </section>
 </div>
 
-<!-- BOTTOM ACTION BAR -->
-<footer class="actionbar">
-  <button class="render-all-btn" id="render-all-btn" disabled>
-    <span class="render-all-italic">render</span> all queued
-  </button>
-  <div class="actionbar-meta" id="actionbar-meta">add a source to begin</div>
-  <button class="errlog-btn" id="errlog-btn">
-    error log
-    <span class="errlog-btn-count hidden" id="errlog-count">0</span>
-  </button>
-</footer>
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" alt="Full size render">
+</div>
 
-<!-- ERROR LOG PANEL -->
+<!-- Error log toggle (bottom right) -->
+<button class="errlog-toggle" id="errlog-toggle">
+  error log
+  <span class="errlog-count hidden" id="errlog-count">0</span>
+</button>
+
+<!-- Error log panel -->
 <div class="errlog-panel hidden" id="errlog-panel">
   <div class="errlog-head">
     <span class="errlog-title">Error log</span>
@@ -587,69 +950,192 @@
   <div class="errlog-body" id="errlog-body"></div>
 </div>
 
-<div class="lightbox hidden" id="lightbox"></div>
-
 <script>
 'use strict';
 
 // ──────────────────────────────────────────────────────────────
 // CATALOG (wire-aligned with lib/v1/landscape-shared.ts)
 // ──────────────────────────────────────────────────────────────
+
 const ATMOSPHERES = [
-  { id: 'golden',         label: 'Golden Hour',     tier: 'base',      enabled: true  },
-  { id: 'peaceful_dawn',  label: 'Peaceful Dawn',   tier: 'base',      enabled: false },
-  { id: 'vivid_midday',   label: 'Vivid Midday',    tier: 'base',      enabled: false },
-  { id: 'dusk_blue_hour', label: 'Dusk',            tier: 'base',      enabled: false },
-  { id: 'dramatic_storm', label: 'Dramatic Storm',  tier: 'premium',   enabled: false },
-  { id: 'fog_rolled_in',  label: 'Fog',             tier: 'premium',   enabled: false },
-  { id: 'after_rain',     label: 'After Rain',      tier: 'premium',   enabled: false },
-  { id: 'snow_falling',   label: 'Snow Falling',    tier: 'premium',   enabled: false },
-  { id: 'deep_night',     label: 'Deep Night',      tier: 'premium',   enabled: false },
-  { id: 'aurora_surreal', label: 'Aurora',          tier: 'signature', enabled: false },
+  { id: 'none',   label: 'Natural',     tier: 'base'    },
+  { id: 'golden', label: 'Golden Hour', tier: 'base'    },
+  { id: 'dusk',   label: 'Dusk',        tier: 'base'    },
+  { id: 'storm',  label: 'Storm',       tier: 'premium' },
+  { id: 'night',  label: 'Night',       tier: 'premium' },
 ];
 
+// Environment mode — auto resolves to controlled/in_situ before prompt assembly.
+// Storm and night atmospheres force in_situ regardless of mode (server-side).
 const ENVIRONMENTS = [
-  { id: 'desk',    label: 'On Desk',  enabled: true  },
-  { id: 'in_situ', label: 'In Situ',  enabled: false },
-  { id: 'gallery', label: 'Gallery',  enabled: false },
+  { id: 'auto',       label: 'Auto'       },
+  { id: 'controlled', label: 'Controlled' },
+  { id: 'in_situ',    label: 'In-Situ'    },
 ];
 
 const ASPECTS = ['1:1', '3:2', '2:3', '4:3', '3:4', '16:9'];
 
-// Scale resolution rules — auto-derived from path + profile.
-//   natural + standard      → zoom_out (65%)  [landscape feel]
-//   natural + low_profile   → close_up (80%)  [compensation: tight on foreground]
-//   sculpted + *            → close_up (80%)  [material detail]
-function resolveScale(path, profile) {
-  if (path === 'natural' && profile === 'low_profile') return 'close_up';
-  if (path === 'natural') return 'zoom_out';
-  return 'close_up';
-}
-const SCALE_LABELS = {
-  close_up: 'Close up · 80%',
-  zoom_out: 'Zoom out · 65%',
-  subject:  'Subject · 90%',
-};
-
-const PROFILES = [
-  { id: 'standard',    label: 'Standard',     hint: 'Source has vertical elements (trees, buildings, mountains).' },
-  { id: 'low_profile', label: 'Low-profile',  hint: 'Flat-horizon source (road, beach, field). Camera tilts steeper, scale locks to close-up.' },
+// Scale axis — three buttons aligned with engine schema (zoom_out/close_up/up_close).
+// Up Close at 90% reinstated after dropping subject scale earlier — same hero-emphasis
+// intent, tighter occupancy.
+const SCALES = [
+  { id: 'zoom_out', label: 'Zoom Out',  pct: 60 },
+  { id: 'close_up', label: 'Close Up',  pct: 75 },
+  { id: 'up_close', label: 'Up Close',  pct: 90 },
 ];
+const SCALE_BY_ID = Object.fromEntries(SCALES.map(s => [s.id, s]));
 
-const PATH_PRESET = {
-  natural: 'as_itself',
+// Camera angle axis — Ground / 45° / 60° (engine IDs: low / hero / elevated)
+const CAMERA_ANGLES = [
+  { id: 'low',      label: 'Ground'  },
+  { id: 'hero',     label: '45°'     },
+  { id: 'elevated', label: '60°'     },
+];
+const CAMERA_ANGLE_BY_ID = Object.fromEntries(CAMERA_ANGLES.map(c => [c.id, c]));
+
+// Scene Feel axis — render richness (object quality, NOT weather mood).
+// Default flipped to dramatic per LITENCO Production Prompt v1.
+const SCENE_FEELS = [
+  { id: 'as_is',     label: 'As Is'     },
+  { id: 'cinematic', label: 'Cinematic' },
+  { id: 'dramatic',  label: 'Dramatic'  },
+];
+const SCENE_FEEL_BY_ID = Object.fromEntries(SCENE_FEELS.map(f => [f.id, f]));
+
+// Plaque mode — three-way: no plaque / user-supplied text / NB2 composes title
+const PLAQUE_MODES = [
+  { id: 'off',  label: 'Off'    },
+  { id: 'user', label: 'Custom' },
+  { id: 'ai',   label: 'Auto'   },
+];
+const PLAQUE_MODE_BY_ID = Object.fromEntries(PLAQUE_MODES.map(m => [m.id, m]));
+
+// TOD axis removed — atmospheres carry intrinsic time of day
+
+// ──────────────────────────────────────────────────────────────
+// BUNDLE MATH + COPY STATE MACHINE
+// (inline port of lib/v1/bundle.ts — kept here so the HTML is standalone)
+// ──────────────────────────────────────────────────────────────
+
+const BUNDLE_BASE_PRICE = 4.99;        // Landscapes Base unit price
+const STUDIO_THRESHOLD  = 10;
+
+const BUNDLE_TIERS = {
+  single: { rate: 0,    label: 'SINGLE', isStudio: false },
+  d10:    { rate: 0.10, label: '−10%',   isStudio: false },
+  d15:    { rate: 0.15, label: '−15%',   isStudio: false },
+  d25:    { rate: 0.25, label: '−25%',   isStudio: false },
+  studio: { rate: 0.30, label: '−30%',   isStudio: true  },
 };
+
+function bundleTierForCount(c) {
+  if (c <= 1) return BUNDLE_TIERS.single;
+  if (c === 2) return BUNDLE_TIERS.d10;
+  if (c === 3) return BUNDLE_TIERS.d15;
+  if (c < STUDIO_THRESHOLD) return BUNDLE_TIERS.d25;
+  return BUNDLE_TIERS.studio;
+}
+
+const round2 = n => Math.round(n * 100) / 100;
+const fmt    = n => `$${n.toFixed(2)}`;
+
+function computeBundle(prices) {
+  const count            = prices.length;
+  const preDiscountTotal = round2(prices.reduce((s, p) => s + p, 0));
+  const tier             = bundleTierForCount(count);
+  const total            = round2(preDiscountTotal * (1 - tier.rate));
+  const avgPerPiece      = count > 0 ? round2(total / count) : 0;
+  const isUniformPricing = count > 0 && new Set(prices).size === 1;
+  const uniformUnitPrice = isUniformPricing ? prices[0] : null;
+  const postDiscountUnit = isUniformPricing
+    ? round2(uniformUnitPrice * (1 - tier.rate))
+    : null;
+
+  let studioState;
+  if (count >= STUDIO_THRESHOLD)        studioState = 'active';
+  else if (count >= 4)                  studioState = 'next';
+  else                                  studioState = 'future';
+
+  let rungActive;
+  if (count >= STUDIO_THRESHOLD) rungActive = null;
+  else if (count >= 4)           rungActive = 4;
+  else if (count === 3)          rungActive = 3;
+  else if (count === 2)          rungActive = 2;
+  else if (count === 1)          rungActive = 1;
+  else                           rungActive = null;
+
+  return {
+    count, preDiscountTotal, total, avgPerPiece,
+    isUniformPricing, uniformUnitPrice, postDiscountUnit,
+    tier, studioState, rungActive,
+  };
+}
+
+function bundleLadderExplainer(count) {
+  if (count === 0) return 'The more you queue, the less each costs.';
+  if (count === 1) return 'Add another image — each drops 10%.';
+  if (count === 2) return 'A third image drops the rate to 15%.';
+  if (count === 3) return 'The fourth image lands at half price.';
+  if (count === 4) return 'Complete. The studio rate begins at ten.';
+  if (count >= 5 && count < STUDIO_THRESHOLD) {
+    const remaining = STUDIO_THRESHOLD - count;
+    return `${remaining} more image${remaining === 1 ? '' : 's'} reach${remaining === 1 ? 'es' : ''} the studio rate — $3.49 each.`;
+  }
+  if (count === STUDIO_THRESHOLD) return 'The studio. Ten images at $3.49 each.';
+  return `${count} images at the studio rate.`;
+}
+
+function bundleCuratorLine(count, sourceCount) {
+  if (count === 0) return null;
+  if (count === 1) return 'A second image reads against the first.';
+  if (count === 2) return 'A third image completes the gesture — the work seen whole.';
+  if (count === 3) return 'A fourth makes it a set. The next image is nearly half price.';
+  if (count === 4) return 'The series is complete. A set of ten reaches further still.';
+  if (count === 5) return 'Past the gesture, into the body of work.';
+  if (count === 6) return 'Building. Four more reach the studio.';
+  if (count === 7) return 'Past the gesture, into the body of work. Three more reach the studio.';
+  if (count === 8) return 'Two more. The studio at ten.';
+  if (count === 9) return 'One more. The next image is the lightest of all.';
+  if (count === STUDIO_THRESHOLD) return 'The full series. Render when ready.';
+  return sourceCount > 1
+    ? `${sourceCount} places, ${count} images. The series in dialogue with itself.`
+    : `${count} images, the studio rate.`;
+}
+
+function bundleStudioPiecesLine(b, sourceCount) {
+  if (b.studioState !== 'active') {
+    return '10 pieces · $3.49 ea.';
+  }
+  if (b.isUniformPricing) {
+    return `${b.count} pieces · ${fmt(b.postDiscountUnit)} ea.`;
+  }
+  return sourceCount > 1
+    ? `${b.count} pieces across ${sourceCount} sources · ${fmt(b.total)} total · 30% off each`
+    : `${b.count} pieces · ${fmt(b.total)} total · 30% off each`;
+}
+
+// Default surface treatment for the natural path (UI doesn't expose surface picker yet).
+// The new engine schema's mainKind='surface' requires a SurfaceID.
+const DEFAULT_SURFACE = 'lush_saturated';
+
+const MAX_SOURCES = 8;
 
 // ──────────────────────────────────────────────────────────────
 // STATE
 // ──────────────────────────────────────────────────────────────
 const state = {
-  sources:  [],   // [{ id, file: {b64, name}, profile, env, aspect, path, queue, expanded }]
-  errorLog: [],   // [{ ts, sourceName, config, error, durationMs }]
+  sources:  [],   // [{ id, file: {b64, name}, env, aspect, scale, cameraAngle, sceneFeel, queue, expanded }]
+  errorLog: [],
   busy:     false,
 };
 let sourceIdSeq = 1;
-let rowIdSeq = 1;
+let rowIdSeq    = 1;
+
+// Stack of result tiles — global across all sources/queues. Each entry is a row id.
+const stackOrder = [];        // top → back, holds row ids (e.g. 'r3')
+const rowMeta    = {};        // row id → { sourceId, atmosphereId, env, aspect, scale, cameraAngle, sceneFeel, label, sourceName }
+const imgStore   = {};        // row id → b64
+const resStore   = {};        // row id → full result payload
 
 // ──────────────────────────────────────────────────────────────
 // FILE I/O
@@ -666,25 +1152,33 @@ function fileToB64(file) {
   });
 }
 function mimeOf(name) { return /\.png$/i.test(name || '') ? 'image/png' : 'image/jpeg'; }
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
 
 async function addFiles(fileList) {
   const files = Array.from(fileList || []).filter(f => /^image\/(jpeg|png)$/.test(f.type));
   if (!files.length) return;
   for (const f of files) {
+    if (state.sources.length >= MAX_SOURCES) break;
     try {
       const b64 = await fileToB64(f);
       const newSource = {
-        id:       `s${sourceIdSeq++}`,
-        file:     { b64, name: f.name },
-        profile:  'standard',
-        env:      'desk',
-        aspect:   '1:1',
-        path:     'natural',
-        queue:    [],
-        expanded: state.sources.length === 0,  // first source expands automatically
+        id:           `s${sourceIdSeq++}`,
+        file:         { b64, name: f.name },
+        env:          'auto',
+        aspect:       '1:1',
+        scale:        'close_up',
+        cameraAngle:  'hero',
+        sceneFeel:    'dramatic',
+        plaqueMode:   'off',
+        plaqueText:   '',
+        queue:        [],
+        expanded:     true,
       };
-      // collapse others if this one is expanding
-      if (newSource.expanded) state.sources.forEach(s => { s.expanded = false; });
+      // Adding a new source expands ONLY this one; collapse all others.
+      state.sources.forEach(s => { s.expanded = false; });
       state.sources.push(newSource);
     } catch (err) {
       pushError({
@@ -709,8 +1203,32 @@ function collapseSource(sourceId) {
   if (s) s.expanded = false;
   renderSourceList();
 }
+function toggleSource(sourceId) {
+  const s = state.sources.find(s => s.id === sourceId);
+  if (!s) return;
+  if (s.expanded) {
+    s.expanded = false;
+  } else {
+    state.sources.forEach(x => { x.expanded = (x.id === sourceId); });
+  }
+  renderSourceList();
+}
 function removeSource(sourceId) {
   if (state.busy) return;
+  // Remove any stack entries belonging to this source.
+  const remaining = stackOrder.filter(rid => rowMeta[rid]?.sourceId !== sourceId);
+  stackOrder.length = 0;
+  remaining.forEach(rid => stackOrder.push(rid));
+  // Drop row metadata for removed source.
+  Object.keys(rowMeta).forEach(rid => {
+    if (rowMeta[rid].sourceId === sourceId) {
+      delete rowMeta[rid];
+      delete imgStore[rid];
+      delete resStore[rid];
+      const el = document.getElementById('rc-' + rid);
+      if (el) el.remove();
+    }
+  });
   state.sources = state.sources.filter(s => s.id !== sourceId);
   renderAll();
 }
@@ -718,78 +1236,38 @@ function setSourceField(sourceId, field, value) {
   const s = state.sources.find(s => s.id === sourceId);
   if (!s) return;
   s[field] = value;
-  renderAll();
+  renderSourceList();
+  renderActionBar();
 }
 function addQueueRow(sourceId, atmosphereId) {
   const s = state.sources.find(s => s.id === sourceId);
   if (!s) return;
   s.queue.push({
     id:           `r${rowIdSeq++}`,
-    atmosphereId: atmosphereId,
+    atmosphereId,
     status:       'idle',
     result:       null,
     error:        null,
   });
-  renderAll();
+  renderSourceList();
+  renderActionBar();
 }
 function removeQueueRow(sourceId, rowId) {
   if (state.busy) return;
   const s = state.sources.find(s => s.id === sourceId);
   if (!s) return;
   s.queue = s.queue.filter(r => r.id !== rowId);
-  renderAll();
+  renderSourceList();
+  renderActionBar();
 }
 
 // ──────────────────────────────────────────────────────────────
-// ERROR LOG
-// ──────────────────────────────────────────────────────────────
-function pushError(entry) {
-  state.errorLog.push({
-    ts:         new Date().toISOString(),
-    sourceName: entry.sourceName,
-    config:     entry.config,
-    error:      String(entry.error || 'unknown error'),
-    durationMs: entry.durationMs || null,
-  });
-  renderErrorLog();
-  renderActionbar();
-}
-
-function formatErrorLogEntry(e) {
-  const ts = e.ts.replace('T', ' ').replace(/\.\d{3}Z$/, 'Z');
-  let cfgLine = '  config:    n/a';
-  if (e.config) {
-    const parts = [];
-    if (e.config.path)         parts.push(`path=${e.config.path}`);
-    if (e.config.profile)      parts.push(`profile=${e.config.profile}`);
-    if (e.config.atmosphere)   parts.push(`atmosphere=${e.config.atmosphere}`);
-    if (e.config.environment)  parts.push(`env=${e.config.environment}`);
-    if (e.config.scale)        parts.push(`scale=${e.config.scale}`);
-    if (e.config.aspect)       parts.push(`aspect=${e.config.aspect}`);
-    cfgLine = `  config:    ${parts.join(' · ')}`;
-  }
-  const dur = e.durationMs != null ? `\n  duration:  ${(e.durationMs / 1000).toFixed(1)}s` : '';
-  return [
-    `[${ts}] ${e.sourceName}`,
-    cfgLine,
-    `  error:     ${e.error}${dur}`,
-  ].join('\n');
-}
-
-function buildErrorLogText() {
-  if (!state.errorLog.length) return 'no errors logged';
-  const header = `LITEN & CO — LANDSCAPES — ERROR LOG\nexported ${new Date().toISOString()}\nentries: ${state.errorLog.length}\n`;
-  const sep = '─'.repeat(60);
-  return [header, sep, ...state.errorLog.map(formatErrorLogEntry)].join('\n');
-}
-
-// ──────────────────────────────────────────────────────────────
-// RENDER — workspace
+// RENDER — sidebar
 // ──────────────────────────────────────────────────────────────
 function renderAll() {
   renderSourceList();
+  renderActionBar();
   renderStage();
-  renderActionbar();
 }
 
 function renderSourceList() {
@@ -815,30 +1293,24 @@ function renderSourceList() {
   state.sources.forEach(src => {
     const card = document.createElement('div');
     card.className = 'source-card' + (src.expanded ? ' expanded' : '');
-    if (src.expanded) {
-      card.appendChild(renderSourceHead(src));
-      card.appendChild(renderSourceBody(src));
-    } else {
-      card.appendChild(renderSourceHead(src));
-    }
+    card.appendChild(renderSourceHead(src));
+    if (src.expanded) card.appendChild(renderSourceBody(src));
     list.appendChild(card);
   });
 
-  // Add-source button at bottom
-  const add = document.createElement('button');
-  add.className = 'source-empty-rail';
-  add.style.cssText = 'background: transparent; cursor: pointer; padding: 0.875rem 1rem; margin-top: 0.4rem;';
-  add.innerHTML = `
-    <div class="sub">+ ADD SOURCE</div>
-  `;
-  add.addEventListener('click', () => document.getElementById('file-input').click());
-  list.appendChild(add);
+  // Add-source rail at bottom
+  if (state.sources.length < MAX_SOURCES) {
+    const add = document.createElement('button');
+    add.className = 'add-rail';
+    add.innerHTML = `<div class="sub">+ Add source</div>`;
+    add.addEventListener('click', () => document.getElementById('file-input').click());
+    list.appendChild(add);
+  }
 }
 
 function renderSourceHead(src) {
   const head = document.createElement('div');
   head.className = 'source-card-head';
-
   const stats = summaryFor(src);
 
   head.innerHTML = `
@@ -847,23 +1319,20 @@ function renderSourceHead(src) {
       <span class="source-card-filename">${escapeHtml(src.file.name)}</span>
       <span class="source-card-summary">${stats}</span>
     </div>
-    <button class="source-card-toggle" data-action="${src.expanded ? 'collapse' : 'expand'}" title="${src.expanded ? 'collapse' : 'expand'}">
-      ${src.expanded ? '▴' : '▾'}
-    </button>
+    <button class="source-card-toggle" title="${src.expanded ? 'collapse' : 'expand'}">${src.expanded ? '▴' : '▾'}</button>
     <button class="source-card-remove" title="remove source">×</button>
   `;
 
+  // The whole head toggles. Inner buttons stop propagation.
+  head.addEventListener('click', () => toggleSource(src.id));
   head.querySelector('.source-card-toggle').addEventListener('click', e => {
     e.stopPropagation();
-    if (src.expanded) collapseSource(src.id); else expandSource(src.id);
+    toggleSource(src.id);
   });
   head.querySelector('.source-card-remove').addEventListener('click', e => {
     e.stopPropagation();
     removeSource(src.id);
   });
-  if (!src.expanded) {
-    head.addEventListener('click', () => expandSource(src.id));
-  }
 
   return head;
 }
@@ -872,51 +1341,24 @@ function renderSourceBody(src) {
   const body = document.createElement('div');
   body.className = 'source-card-body';
 
-  const scale = resolveScale(src.path, src.profile);
-  const profileObj = PROFILES.find(p => p.id === src.profile);
-  const isLowProfile = src.profile === 'low_profile';
+  const scaleObj = SCALE_BY_ID[src.scale];
+  const camObj   = CAMERA_ANGLE_BY_ID[src.cameraAngle];
 
   body.innerHTML = `
-    <!-- Source profile -->
-    <div class="field">
-      <span class="field-label">Source profile</span>
-      <div class="profile-toggle" data-field="profile">
-        ${PROFILES.map(p => `
-          <button class="profile-btn ${src.profile === p.id ? 'active' : ''}" data-id="${p.id}" ${state.busy ? 'disabled' : ''}>
-            <span class="profile-italic">${p.label}</span>
-          </button>
-        `).join('')}
-      </div>
-      <div class="profile-hint">${profileObj?.hint || ''}</div>
-    </div>
-
-    <!-- Path -->
-    <div class="field">
-      <span class="field-label">Path</span>
-      <div class="path-toggle" data-field="path">
-        <button class="path-btn ${src.path === 'natural' ? 'active' : ''}" data-id="natural" ${state.busy ? 'disabled' : ''}>
-          <span class="path-italic">Natural</span>as itself
-        </button>
-        <button class="path-btn" data-id="sculpted" disabled>
-          <span class="path-italic">Sculpted</span>coming soon
-        </button>
-      </div>
-    </div>
-
     <!-- Atmosphere -->
     <div class="field">
-      <span class="field-label">Atmosphere <span class="field-meta">— click to queue a render</span></span>
+      <span class="field-label">Atmosphere<span class="field-meta">click to queue a render</span></span>
       <div class="atm-grid">
         ${ATMOSPHERES.map(a => {
           const count = src.queue.filter(r => r.atmosphereId === a.id).length;
           let badge = '';
-          if (count === 1)      badge = `<span class="atm-check">✓</span>`;
-          else if (count > 1)   badge = `<span class="atm-check atm-check-multi">✓ ${count}</span>`;
+          if (count === 1)    badge = `<span class="atm-check">✓</span>`;
+          else if (count > 1) badge = `<span class="atm-check atm-check-multi">✓ ${count}</span>`;
           const tierClass = a.tier === 'signature' ? 'tier-signature' : a.tier === 'premium' ? 'tier-premium' : '';
           return `
-            <button class="atm-tile" data-id="${a.id}" ${(!a.enabled || state.busy) ? 'disabled' : ''}>
+            <button class="atm-tile" data-atm="${a.id}" ${state.busy ? 'disabled' : ''}>
               <div class="atm-name">${a.label}</div>
-              <div class="atm-tier ${tierClass}">${a.tier}${a.enabled ? '' : ' · soon'}</div>
+              <div class="atm-tier ${tierClass}">${a.tier}</div>
               ${badge}
             </button>
           `;
@@ -929,12 +1371,76 @@ function renderSourceBody(src) {
       <span class="field-label">Setting</span>
       <div class="pill-group" data-field="env">
         ${ENVIRONMENTS.map(e => `
-          <button class="pill ${src.env === e.id ? 'active' : ''}" data-id="${e.id}" ${(!e.enabled || state.busy) ? 'disabled' : ''}>
-            ${e.label}${e.enabled ? '' : ' · soon'}
+          <button class="pill ${src.env === e.id ? 'active' : ''}" data-id="${e.id}" ${state.busy ? 'disabled' : ''}>
+            ${e.label}
           </button>
         `).join('')}
       </div>
     </div>
+
+    <!-- Scale (Zoom Out / Close Up / Subject) -->
+    <div class="field">
+      <span class="field-label">Scale<span class="field-meta">canvas occupancy</span></span>
+      <div class="pill-group" data-field="scale">
+        ${SCALES.map(s => `
+          <button class="pill ${src.scale === s.id ? 'active' : ''}" data-id="${s.id}" ${state.busy ? 'disabled' : ''}>
+            ${s.label} · ${s.pct}%
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Camera angle (Ground / 45 / 60) -->
+    <div class="field">
+      <span class="field-label">Camera angle<span class="field-meta">view of the model</span></span>
+      <div class="pill-group" data-field="cameraAngle">
+        ${CAMERA_ANGLES.map(c => `
+          <button class="pill ${src.cameraAngle === c.id ? 'active' : ''}" data-id="${c.id}" ${state.busy ? 'disabled' : ''}>
+            ${c.label}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Scene Feel (As Is / Cinematic / Dramatic) -->
+    <div class="field">
+      <span class="field-label">Scene feel<span class="field-meta">how strongly the lighting is expressed</span></span>
+      <div class="pill-group" data-field="sceneFeel">
+        ${SCENE_FEELS.map(f => `
+          <button class="pill ${src.sceneFeel === f.id ? 'active' : ''}" data-id="${f.id}" ${state.busy ? 'disabled' : ''}>
+            ${f.label}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Plaque (Off / Custom / Auto) -->
+    <div class="field">
+      <span class="field-label">Plaque<span class="field-meta">brass plaque on the front of the plinth</span></span>
+      <div class="pill-group" data-field="plaqueMode">
+        ${PLAQUE_MODES.map(m => `
+          <button class="pill ${src.plaqueMode === m.id ? 'active' : ''}" data-id="${m.id}" ${state.busy ? 'disabled' : ''}>
+            ${m.label}
+          </button>
+        `).join('')}
+      </div>
+      ${src.plaqueMode === 'user' ? `
+        <input
+          type="text"
+          class="plaque-input"
+          data-field="plaqueText"
+          value="${escapeHtml(src.plaqueText || '')}"
+          placeholder="e.g. Misty Bridge — Spring"
+          maxlength="60"
+          ${state.busy ? 'disabled' : ''}
+        >
+      ` : ''}
+      ${src.plaqueMode === 'ai' ? `
+        <div class="plaque-hint">Liten &amp; Co will compose a refined title.</div>
+      ` : ''}
+    </div>
+
+
 
     <!-- Aspect -->
     <div class="field">
@@ -948,53 +1454,36 @@ function renderSourceBody(src) {
       </div>
     </div>
 
-    <!-- Scale readout -->
-    <div class="scale-readout">
-      Scale: <b>${SCALE_LABELS[scale]}</b>
-      ${isLowProfile ? `<span class="lock-note"> — locked by low-profile compensation</span>` : ''}
-    </div>
-
     <!-- Per-source queue -->
     <div class="field">
-      <span class="field-label">Queue <span class="field-meta">— ${src.queue.length || 'none'} render${src.queue.length === 1 ? '' : 's'}</span></span>
+      <span class="field-label">Queue<span class="field-meta">${src.queue.length || 'none'} render${src.queue.length === 1 ? '' : 's'}</span></span>
       <div class="queue">
-        ${src.queue.length === 0 ? `<div class="queue-empty">click an atmosphere above to queue a render</div>` : ''}
-        ${src.queue.map(r => {
-          const atm = ATMOSPHERES.find(a => a.id === r.atmosphereId);
-          const stateClass = `state-${r.status}`;
-          const stateText = r.status === 'render' ? 'rendering'
-                          : r.status === 'ready'  ? 'ready'
-                          : r.status === 'error'  ? 'error'
-                          : 'queued';
-          return `
-            <div class="queue-row">
-              <span class="queue-row-name">${atm?.label || r.atmosphereId}</span>
-              <span class="queue-row-state ${stateClass}">${stateText}</span>
-              <button class="queue-row-x" data-row="${r.id}" title="remove">×</button>
-            </div>
-          `;
-        }).join('')}
+        ${src.queue.length === 0
+          ? `<div class="queue-empty">click an atmosphere above to queue a render</div>`
+          : src.queue.map(r => {
+            const atm = ATMOSPHERES.find(a => a.id === r.atmosphereId);
+            const stateText = r.status === 'render' ? 'rendering'
+                            : r.status === 'ready'  ? 'ready'
+                            : r.status === 'error'  ? 'error'
+                            : 'queued';
+            return `
+              <div class="queue-row">
+                <span class="queue-row-name">${escapeHtml(atm?.label || r.atmosphereId)}</span>
+                <span class="queue-row-state state-${r.status}">${stateText}</span>
+                <button class="queue-row-x" data-row="${r.id}" title="remove">×</button>
+              </div>
+            `;
+          }).join('')
+        }
       </div>
     </div>
   `;
 
-  // Wire up handlers
-  body.querySelectorAll('.profile-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.disabled) return;
-      setSourceField(src.id, 'profile', btn.dataset.id);
-    });
-  });
-  body.querySelectorAll('.path-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.disabled) return;
-      setSourceField(src.id, 'path', btn.dataset.id);
-    });
-  });
+  // Wire handlers
   body.querySelectorAll('.atm-tile').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
-      addQueueRow(src.id, btn.dataset.id);
+      addQueueRow(src.id, btn.dataset.atm);
     });
   });
   body.querySelectorAll('[data-field="env"] .pill').forEach(btn => {
@@ -1003,6 +1492,38 @@ function renderSourceBody(src) {
       setSourceField(src.id, 'env', btn.dataset.id);
     });
   });
+  body.querySelectorAll('[data-field="scale"] .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      setSourceField(src.id, 'scale', btn.dataset.id);
+    });
+  });
+  body.querySelectorAll('[data-field="cameraAngle"] .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      setSourceField(src.id, 'cameraAngle', btn.dataset.id);
+    });
+  });
+  body.querySelectorAll('[data-field="sceneFeel"] .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      setSourceField(src.id, 'sceneFeel', btn.dataset.id);
+    });
+  });
+  body.querySelectorAll('[data-field="plaqueMode"] .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      setSourceField(src.id, 'plaqueMode', btn.dataset.id);
+    });
+  });
+  body.querySelectorAll('[data-field="plaqueText"]').forEach(input => {
+    input.addEventListener('input', e => {
+      // Don't re-render on every keystroke — just update state silently.
+      const s = state.sources.find(s => s.id === src.id);
+      if (s) s.plaqueText = e.target.value;
+    });
+  });
+
   body.querySelectorAll('[data-field="aspect"] .pill').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
@@ -1010,7 +1531,10 @@ function renderSourceBody(src) {
     });
   });
   body.querySelectorAll('.queue-row-x').forEach(btn => {
-    btn.addEventListener('click', () => removeQueueRow(src.id, btn.dataset.row));
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      removeQueueRow(src.id, btn.dataset.row);
+    });
   });
 
   return body;
@@ -1018,8 +1542,8 @@ function renderSourceBody(src) {
 
 function summaryFor(src) {
   if (!src.queue.length) {
-    const profileSuffix = src.profile === 'low_profile' ? ' · low-profile' : '';
-    return `no renders queued${profileSuffix}`;
+    const sc = SCALE_BY_ID[src.scale];
+    return `no renders queued · ${sc.label.toLowerCase()}`;
   }
   const counts = { idle: 0, render: 0, ready: 0, error: 0 };
   src.queue.forEach(r => { counts[r.status]++; });
@@ -1032,149 +1556,381 @@ function summaryFor(src) {
 }
 
 // ──────────────────────────────────────────────────────────────
-// RENDER — stage
+// RENDER — stage (stacked cards, houses pattern)
 // ──────────────────────────────────────────────────────────────
 function renderStage() {
-  const empty = document.getElementById('stage-empty');
-  const sections = document.getElementById('stage-sections');
-  sections.innerHTML = '';
+  const empty       = document.getElementById('stage-empty');
+  const grid        = document.getElementById('results-grid');
+  const hasAnyQueue = state.sources.some(s => s.queue.length > 0);
+  const hasAnyStack = stackOrder.length > 0;
 
-  // Show empty state if no source has any queued renders
-  const sourcesWithQueue = state.sources.filter(s => s.queue.length > 0);
-  if (!sourcesWithQueue.length) {
+  if (!hasAnyQueue && !hasAnyStack) {
     empty.classList.remove('hidden');
-    return;
+    grid.classList.add('hidden');
+  } else {
+    empty.classList.add('hidden');
+    grid.classList.remove('hidden');
   }
-  empty.classList.add('hidden');
+  // Cards live in stackOrder; we don't rebuild them here, just ensure the grid is visible.
+  restackResults();
+}
 
-  sourcesWithQueue.forEach(src => {
-    const sec = document.createElement('section');
-    sec.className = 'stage-section';
+// ── Stack management (mirrors houses) ──
+function addToStack(rowId) {
+  if (!stackOrder.includes(rowId)) stackOrder.unshift(rowId);
+}
 
-    const counts = { idle: 0, render: 0, ready: 0, error: 0 };
-    src.queue.forEach(r => { counts[r.status]++; });
-    const metaParts = [];
-    if (counts.ready)  metaParts.push(`${counts.ready} ready`);
-    if (counts.render) metaParts.push(`${counts.render} rendering`);
-    if (counts.idle)   metaParts.push(`${counts.idle} queued`);
-    if (counts.error)  metaParts.push(`${counts.error} error`);
+function restackResults() {
+  const inner = document.getElementById('results-stack-inner');
+  const isGridMode = stackOrder.length >= 5;
+  inner.classList.toggle('grid-mode', isGridMode);
 
-    const scale = resolveScale(src.path, src.profile);
-    const profileTag = src.profile === 'low_profile' ? ' · low-profile' : '';
-
-    sec.innerHTML = `
-      <div class="stage-section-head">
-        <div class="stage-section-title">
-          Source:
-          <span class="stage-section-source-name">${escapeHtml(src.file.name)}</span>
-        </div>
-        <span class="stage-section-meta">${metaParts.join(' · ') || 'idle'}${profileTag}</span>
-      </div>
-      <div class="renders-grid"></div>
-    `;
-
-    const grid = sec.querySelector('.renders-grid');
-    src.queue.forEach(row => grid.appendChild(renderResultCard(src, row, scale)));
-    sections.appendChild(sec);
+  // Ensure all stack cards are children of inner (they should be).
+  stackOrder.forEach((rid, i) => {
+    const el = document.getElementById('rc-' + rid);
+    if (!el) return;
+    if (el.parentElement !== inner) inner.appendChild(el);
+    el.dataset.pos = String(i);
+    el.classList.toggle('top', i === 0);
   });
+  const meta = document.getElementById('stack-meta');
+  if (stackOrder.length === 0) {
+    meta.innerHTML = '';
+  } else if (isGridMode) {
+    meta.innerHTML = `<span class="stack-counter">${stackOrder.length} renders</span>`;
+  } else {
+    meta.innerHTML =
+      `<span class="stack-counter">1 / ${stackOrder.length}</span>` +
+      (stackOrder.length > 1 ? '<span class="stack-hint">· tap a card to peel forward</span>' : '');
+  }
 }
 
-function renderResultCard(src, row, scale) {
-  const card = document.createElement('div');
-  card.className = 'render-card' + (row.status === 'error' ? ' error' : '');
+function tapResult(rowId) {
+  const idx = stackOrder.indexOf(rowId);
+  if (idx <= 0) return;
+  stackOrder.splice(idx, 1);
+  stackOrder.unshift(rowId);
+  restackResults();
+}
+
+function setupPlaceholder(src, row) {
+  const inner = document.getElementById('results-stack-inner');
+  let card = document.getElementById('rc-' + row.id);
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'rc-' + row.id;
+    card.className = 'rc';
+    card.onclick = () => tapResult(row.id);
+    inner.appendChild(card);
+    addToStack(row.id);
+  }
   const atm = ATMOSPHERES.find(a => a.id === row.atmosphereId);
-  const sub = `${ENVIRONMENTS.find(e => e.id === src.env)?.label || src.env} · ${src.aspect} · ${SCALE_LABELS[scale].split(' · ')[0]}${src.profile === 'low_profile' ? ' · low-profile' : ''}`;
-
-  if (row.status === 'ready' && row.result?.image_b64) {
-    card.innerHTML = `
-      <img class="render-card-img" src="data:image/jpeg;base64,${row.result.image_b64}" data-src="${src.id}" data-row="${row.id}">
-      <div class="render-card-meta">
-        <h3 class="render-card-h">${atm?.label || row.atmosphereId}</h3>
-        <div class="render-card-sub">${sub}</div>
+  rowMeta[row.id] = {
+    sourceId:    src.id,
+    sourceName:  src.file.name,
+    atmosphereId:row.atmosphereId,
+    label:       atm?.label || row.atmosphereId,
+    env:         src.env,
+    aspect:      src.aspect,
+    scale:       src.scale,
+    cameraAngle: src.cameraAngle,
+    sceneFeel:   src.sceneFeel,
+  };
+  card.className = 'rc';
+  card.innerHTML = `
+    <div class="rc-img">
+      <div class="rc-spinner-area"><div class="spin"></div><div>Sculpting</div></div>
+    </div>
+    <div class="rc-body">
+      <div class="rc-name">${escapeHtml(rowMeta[row.id].label)}
+        <span class="rc-name-source">— ${escapeHtml(stem(src.file.name))}</span>
       </div>
-      <div class="render-card-actions">
-        <button class="card-act" data-act="download">download</button>
-        <button class="card-act" data-act="zoom">view full</button>
-      </div>
-    `;
-    card.querySelector('.render-card-img').addEventListener('click', e => {
-      openLightbox(e.target.src);
-    });
-    card.querySelectorAll('.card-act').forEach(b => {
-      b.addEventListener('click', () => {
-        if (b.dataset.act === 'download') downloadResult(src, row, atm);
-        else if (b.dataset.act === 'zoom') openLightbox(`data:image/jpeg;base64,${row.result.image_b64}`);
-      });
-    });
-  } else if (row.status === 'error') {
-    card.innerHTML = `
-      <div class="render-card-error">
-        something went wrong
-        <div class="render-card-error-detail">${escapeHtml(row.error || 'unknown error')}</div>
-      </div>
-      <div class="render-card-meta">
-        <h3 class="render-card-h">${atm?.label || row.atmosphereId}</h3>
-        <div class="render-card-sub">${sub}</div>
-      </div>
-    `;
-  } else {
-    const label = row.status === 'render' ? 'rendering…' : 'queued';
-    card.innerHTML = `
-      <div class="render-card-pending">${label}</div>
-      <div class="render-card-meta">
-        <h3 class="render-card-h">${atm?.label || row.atmosphereId}</h3>
-        <div class="render-card-sub">${sub}</div>
-      </div>
-    `;
-  }
-  return card;
+    </div>`;
+  restackResults();
 }
 
-function downloadResult(src, row, atm) {
-  if (!row.result?.image_b64) return;
-  const link = document.createElement('a');
-  link.href = `data:image/jpeg;base64,${row.result.image_b64}`;
-  const stem = src.file.name.replace(/\.[^.]+$/, '');
-  const a = (atm?.id || 'render').replace(/_/g, '-');
-  link.download = `${stem}_${a}_${src.profile}.jpg`;
-  link.click();
+function mkResult(rowId, payload) {
+  const card = document.getElementById('rc-' + rowId);
+  const meta = rowMeta[rowId];
+  if (!card || !meta) return;
+  imgStore[rowId] = payload.image_b64;
+  resStore[rowId] = payload;
+
+  const seconds = Math.round((payload.duration_ms || 0) / 1000);
+  const metaBits = [];
+  metaBits.push(ENVIRONMENTS.find(e => e.id === meta.env)?.label || meta.env);
+  metaBits.push(SCALE_BY_ID[meta.scale]?.label || meta.scale);
+  metaBits.push(CAMERA_ANGLE_BY_ID[meta.cameraAngle]?.label || meta.cameraAngle);
+  metaBits.push(SCENE_FEEL_BY_ID[meta.sceneFeel]?.label || meta.sceneFeel);
+  metaBits.push(meta.aspect);
+  if (payload.refined) metaBits.push('refined');
+  if (payload.expanded) metaBits.push('outpainted');
+  const metaLine = metaBits.join(' · ');
+
+  card.className = 'rc done';
+  card.innerHTML = `
+    <div class="rc-img" onclick="event.stopPropagation();onCardImgClick('${rowId}')">
+      <img src="data:image/jpeg;base64,${payload.image_b64}">
+      <div class="rc-overlay"><span class="rc-ol">View full size</span></div>
+      <div class="rc-duration">${seconds}s</div>
+    </div>
+    <div class="rc-body">
+      <div class="rc-name">${escapeHtml(meta.label)}
+        <span class="rc-name-source">— ${escapeHtml(stem(meta.sourceName))}</span>
+      </div>
+      <div class="rc-meta">${escapeHtml(metaLine)}</div>
+      <div class="rc-btns">
+        <button class="rc-btn save" onclick="event.stopPropagation();dl('${rowId}')">Save</button>
+        <button class="rc-btn" onclick="event.stopPropagation();openLightbox('${rowId}')">Full</button>
+      </div>
+    </div>`;
+  restackResults();
+}
+
+function mkError(rowId, msg) {
+  const card = document.getElementById('rc-' + rowId);
+  const meta = rowMeta[rowId];
+  if (!card || !meta) return;
+  card.className = 'rc error';
+  card.innerHTML = `
+    <div class="rc-error-body">
+      <div class="rc-error-headline">${escapeHtml(meta.label)} failed</div>
+      <div class="rc-error-detail">${escapeHtml(msg)}</div>
+    </div>
+    <div class="rc-body">
+      <div class="rc-name">
+        <span class="rc-name-source">— ${escapeHtml(stem(meta.sourceName))}</span>
+      </div>
+      <div class="rc-btns">
+        <button class="rc-btn save" onclick="event.stopPropagation();retryRow('${rowId}')">Retry</button>
+      </div>
+    </div>`;
+  restackResults();
+}
+
+// Per-card retry: flip a single error row back to idle, kick off runAll().
+function retryRow(rowId) {
+  if (state.busy) return;
+  for (const src of state.sources) {
+    const row = src.queue.find(r => r.id === rowId);
+    if (row && row.status === 'error') {
+      row.status = 'idle';
+      row.error  = null;
+      // The card stays in the stack — setupPlaceholder() will rewrite it as a spinner.
+      runAll();
+      return;
+    }
+  }
+}
+
+// Batch retry: flip ALL error rows back to idle, kick off runAll().
+function retryAllErrors() {
+  if (state.busy) return;
+  let touched = 0;
+  state.sources.forEach(src => {
+    src.queue.forEach(r => {
+      if (r.status === 'error') {
+        r.status = 'idle';
+        r.error  = null;
+        touched++;
+      }
+    });
+  });
+  if (touched > 0) runAll();
+}
+
+function onCardImgClick(rowId) {
+  if (stackOrder[0] === rowId) openLightbox(rowId);
+  else tapResult(rowId);
+}
+
+function stem(name) {
+  return name.replace(/\.[^.]+$/, '');
 }
 
 // ──────────────────────────────────────────────────────────────
-// RENDER — actionbar + errlog
+// ACTION BAR / STATUS
 // ──────────────────────────────────────────────────────────────
-function renderActionbar() {
-  const meta = document.getElementById('actionbar-meta');
-  const btn = document.getElementById('render-all-btn');
+function renderActionBar() {
+  const btn  = document.getElementById('run-btn');
+  const meta = document.getElementById('center-meta');
+  const dot  = document.getElementById('g-dot');
+  const stat = document.getElementById('g-status');
 
-  const totalSources = state.sources.length;
-  const totalQueued = state.sources.reduce((n, s) => n + s.queue.filter(r => r.status === 'idle').length, 0);
-  const totalReady = state.sources.reduce((n, s) => n + s.queue.filter(r => r.status === 'ready').length, 0);
-  const totalErr = state.sources.reduce((n, s) => n + s.queue.filter(r => r.status === 'error').length, 0);
-
-  if (!totalSources) {
-    meta.innerHTML = 'add a source to begin';
-  } else if (state.busy) {
-    meta.innerHTML = `rendering across <b>${totalSources}</b> source${totalSources === 1 ? '' : 's'}…`;
-  } else if (totalQueued === 0 && (totalReady > 0 || totalErr > 0)) {
-    meta.innerHTML = `<b>${totalSources}</b> source${totalSources === 1 ? '' : 's'} · <b>${totalReady}</b> ready${totalErr ? ` · <b>${totalErr}</b> error` : ''}`;
-  } else {
-    meta.innerHTML = `<b>${totalSources}</b> source${totalSources === 1 ? '' : 's'} · <b>${totalQueued}</b> queued`;
-  }
+  const totalQueued = state.sources.reduce(
+    (n, s) => n + s.queue.filter(r => r.status === 'idle').length, 0);
+  const totalReady = state.sources.reduce(
+    (n, s) => n + s.queue.filter(r => r.status === 'ready').length, 0);
+  const totalErr = state.sources.reduce(
+    (n, s) => n + s.queue.filter(r => r.status === 'error').length, 0);
 
   btn.disabled = state.busy || totalQueued === 0;
 
-  // status pill
-  const sp = document.getElementById('status-pill');
-  if (state.busy) { sp.textContent = 'rendering…'; sp.className = 'status-pill busy'; }
-  else if (totalErr) { sp.textContent = `${totalErr} error${totalErr === 1 ? '' : 's'}`; sp.className = 'status-pill error'; }
-  else { sp.textContent = 'ready'; sp.className = 'status-pill'; }
+  // Run button label/price/tag — driven by bundle state.
+  // We compute the bundle once here and pass it to renderBundle() to avoid duplicate work.
+  const sourcesWithQueue = state.sources.filter(
+    s => s.queue.some(r => r.status === 'idle')
+  ).length;
+  const prices = new Array(totalQueued).fill(BUNDLE_BASE_PRICE);
+  const bundle = computeBundle(prices);
+
+  const runLabel   = document.getElementById('run-label');
+  const runDivider = document.getElementById('run-divider');
+  const runPrice   = document.getElementById('run-price');
+  const runSavings = document.getElementById('run-savings');
+
+  if (totalQueued === 0) {
+    runLabel.innerHTML   = '<span class="run-italic">Render queue</span> empty';
+    runDivider.style.display = 'none';
+    runPrice.style.display   = 'none';
+    runSavings.style.display = 'none';
+  } else {
+    const word = totalQueued === 1 ? 'image' : 'images';
+    runLabel.innerHTML       = `<span class="run-italic">Render</span> ${totalQueued} ${word}`;
+    runDivider.style.display = 'inline-block';
+    runPrice.style.display   = 'inline';
+    runPrice.textContent     = `$${bundle.total.toFixed(2)}`;
+
+    if (totalQueued === 1) {
+      runSavings.style.display = 'none';
+    } else {
+      runSavings.style.display = 'inline';
+      runSavings.textContent   = bundle.tier.label;
+      runSavings.classList.toggle('studio', bundle.tier.isStudio);
+    }
+  }
+
+  // Bundle ladder + studio + curator (left rail)
+  renderBundle(bundle, totalQueued, sourcesWithQueue);
+
+  // Retry-failed button — only shown when there are error rows.
+  const retryBtn   = document.getElementById('retry-btn');
+  const retryCount = document.getElementById('retry-count');
+  if (totalErr > 0 && !state.busy) {
+    retryBtn.classList.remove('hidden');
+    retryCount.textContent = String(totalErr);
+    retryBtn.disabled = false;
+  } else {
+    retryBtn.classList.add('hidden');
+    retryBtn.disabled = true;
+  }
+
+  // Stage meta line
+  if (!state.sources.length) {
+    meta.textContent = '';
+  } else if (state.busy) {
+    meta.textContent = `rendering ${totalQueued} across ${state.sources.length} source${state.sources.length === 1 ? '' : 's'}…`;
+  } else if (totalQueued === 0 && (totalReady > 0 || totalErr > 0)) {
+    meta.textContent = `${totalReady} ready${totalErr ? ` · ${totalErr} error` : ''}`;
+  } else if (totalQueued > 0) {
+    meta.textContent = `${totalQueued} queued · ${state.sources.length} source${state.sources.length === 1 ? '' : 's'}`;
+  } else {
+    meta.textContent = '';
+  }
+
+  // Status dot/text
+  dot.className = 'status-dot';
+  if (state.busy) {
+    dot.classList.add('busy'); stat.textContent = 'rendering…';
+  } else if (totalErr) {
+    dot.classList.add('err'); stat.textContent = `${totalErr} error${totalErr === 1 ? '' : 's'}`;
+  } else if (totalReady) {
+    dot.classList.add('ok'); stat.textContent = 'done';
+  } else {
+    stat.textContent = 'ready';
+  }
 }
 
+// ──────────────────────────────────────────────────────────────
+// BUNDLE UI — left rail ladder + studio row + curator
+// ──────────────────────────────────────────────────────────────
+function renderBundle(bundle, count, sourceCount) {
+  const root      = document.getElementById('bundle');
+  const explainer = document.getElementById('bundle-explainer');
+  const studioRow = document.getElementById('studio-row');
+  const studioPcs = document.getElementById('studio-pieces');
+  const studioPx  = document.getElementById('studio-price');
+  const curator   = document.getElementById('curator');
+  const curatorBd = document.getElementById('curator-body');
+
+  // Whole bundle hidden when nothing queued.
+  root.classList.toggle('empty', count === 0);
+
+  // Ladder explainer (italic line above rungs)
+  explainer.textContent = bundleLadderExplainer(count);
+
+  // Standard ladder rungs — active / next / future / ghost
+  const rungs = root.querySelectorAll('.ladder-rung');
+  rungs.forEach(el => {
+    const n = parseInt(el.dataset.rung, 10);
+    el.classList.remove('active', 'next', 'future', 'ghost');
+    if (bundle.studioState === 'active') {
+      // In Studio: standard ladder ghosted entirely.
+      el.classList.add('ghost');
+    } else if (n === bundle.rungActive) {
+      el.classList.add('active');
+    } else if (bundle.rungActive !== null && n === bundle.rungActive + 1) {
+      el.classList.add('next');
+    } else {
+      el.classList.add('future');
+    }
+  });
+
+  // Studio row state
+  studioRow.classList.remove('future', 'next', 'active');
+  studioRow.classList.add(bundle.studioState);
+  studioPcs.textContent = bundleStudioPiecesLine(bundle, sourceCount);
+  // Studio row price line — shows projected price in future/next states, actual in active.
+  if (bundle.studioState === 'active') {
+    studioPx.textContent = `$${bundle.total.toFixed(2)}`;
+  } else {
+    studioPx.textContent = '$34.93';  // projected at 10 uniform Base
+  }
+
+  // Curator nudge — copy state machine
+  const line = bundleCuratorLine(count, sourceCount);
+  if (line) {
+    curator.classList.remove('empty');
+    curatorBd.textContent = line;
+  } else {
+    curator.classList.add('empty');
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+// ERROR LOG
+// ──────────────────────────────────────────────────────────────
+function pushError(entry) {
+  state.errorLog.push({
+    ts:         new Date().toISOString(),
+    sourceName: entry.sourceName,
+    config:     entry.config,
+    error:      String(entry.error || 'unknown error'),
+    durationMs: entry.durationMs || null,
+  });
+  renderErrorLog();
+}
+function buildErrorLogText() {
+  if (!state.errorLog.length) return 'no errors logged';
+  const header = `LITEN & CO — LANDSCAPES — ERROR LOG\nexported ${new Date().toISOString()}\nentries: ${state.errorLog.length}\n`;
+  const sep = '─'.repeat(60);
+  const fmt = e => {
+    const ts = e.ts.replace('T', ' ').replace(/\.\d{3}Z$/, 'Z');
+    let cfgLine = '  config:    n/a';
+    if (e.config) {
+      const parts = [];
+      Object.keys(e.config).forEach(k => { if (e.config[k] != null) parts.push(`${k}=${e.config[k]}`); });
+      cfgLine = `  config:    ${parts.join(' · ')}`;
+    }
+    const dur = e.durationMs != null ? `\n  duration:  ${(e.durationMs / 1000).toFixed(1)}s` : '';
+    return [`[${ts}] ${e.sourceName}`, cfgLine, `  error:     ${e.error}${dur}`].join('\n');
+  };
+  return [header, sep, ...state.errorLog.map(fmt)].join('\n');
+}
 function renderErrorLog() {
   const body = document.getElementById('errlog-body');
   const count = document.getElementById('errlog-count');
-  const btn = document.getElementById('errlog-btn');
+  const btn = document.getElementById('errlog-toggle');
 
   if (state.errorLog.length) {
     count.textContent = String(state.errorLog.length);
@@ -1193,7 +1949,6 @@ function renderErrorLog() {
     body.appendChild(empty);
     return;
   }
-
   state.errorLog.forEach(e => {
     const entry = document.createElement('div');
     entry.className = 'errlog-entry';
@@ -1201,12 +1956,7 @@ function renderErrorLog() {
     let cfgStr = '';
     if (e.config) {
       const parts = [];
-      if (e.config.path)        parts.push(`path=${e.config.path}`);
-      if (e.config.profile)     parts.push(`profile=${e.config.profile}`);
-      if (e.config.atmosphere)  parts.push(`atm=${e.config.atmosphere}`);
-      if (e.config.environment) parts.push(`env=${e.config.environment}`);
-      if (e.config.scale)       parts.push(`scale=${e.config.scale}`);
-      if (e.config.aspect)      parts.push(`aspect=${e.config.aspect}`);
+      Object.keys(e.config).forEach(k => { if (e.config[k] != null) parts.push(`${k}=${e.config[k]}`); });
       cfgStr = parts.join(' · ');
     }
     const dur = e.durationMs != null ? ` · ${(e.durationMs / 1000).toFixed(1)}s` : '';
@@ -1223,11 +1973,24 @@ function renderErrorLog() {
 // ──────────────────────────────────────────────────────────────
 // LIGHTBOX
 // ──────────────────────────────────────────────────────────────
-function openLightbox(src) {
-  const lb = document.getElementById('lightbox');
-  lb.innerHTML = `<img src="${src}" alt="">`;
-  lb.classList.remove('hidden');
-  lb.onclick = () => lb.classList.add('hidden');
+function openLightbox(rowId) {
+  const b64 = imgStore[rowId];
+  if (!b64) return;
+  document.getElementById('lightbox-img').src = 'data:image/jpeg;base64,' + b64;
+  document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+}
+function dl(rowId) {
+  const b64 = imgStore[rowId];
+  const meta = rowMeta[rowId];
+  if (!b64 || !meta) return;
+  const a = document.createElement('a');
+  a.href = 'data:image/jpeg;base64,' + b64;
+  const stemName = stem(meta.sourceName);
+  a.download = `${stemName}_${meta.atmosphereId}_${meta.scale}.jpg`;
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -1239,41 +2002,53 @@ async function runAll() {
   if (!sourcesToRun.length) return;
 
   state.busy = true;
-  renderAll();
+  document.getElementById('stage-progress').classList.add('active');
 
-  // Mark all idle queue rows as 'render'
+  // Build placeholder cards on the stack synchronously, top-of-stack first.
+  // Reverse so the LAST queued atmosphere lands on top — matches user expectation.
   sourcesToRun.forEach(src => {
-    src.queue.forEach(r => { if (r.status === 'idle') r.status = 'render'; });
+    src.queue.forEach(r => {
+      if (r.status === 'idle') {
+        r.status = 'render';
+        setupPlaceholder(src, r);
+      }
+    });
   });
   renderAll();
 
-  // Fire all sources in parallel — one request per source
+  // Fan out one request per source — each carries its source's queued rows.
   await Promise.allSettled(sourcesToRun.map(runSource));
 
   state.busy = false;
+  document.getElementById('stage-progress').classList.remove('active');
   renderAll();
 }
 
 async function runSource(src) {
   const startedAt = Date.now();
   const renderingRows = src.queue.filter(r => r.status === 'render');
-  const scale = resolveScale(src.path, src.profile);
+  if (!renderingRows.length) return;
 
   const renders = renderingRows.map(r => ({
-    preset_id:         PATH_PRESET[src.path] || 'as_itself',
-    environment_id:    src.env,
-    atmosphere_id:     r.atmosphereId,
-    scale_id:          scale,
-    tod:               'day',
-    aspect_ratio:      src.aspect,
-    source_profile_id: src.profile,
+    main:        DEFAULT_SURFACE,
+    mainKind:    'surface',
+    optionA:     r.atmosphereId,
+    optionB:     src.env,
+    scale:       src.scale,
+    cameraAngle: src.cameraAngle,
+    sceneFeel:   src.sceneFeel,
   }));
 
   const body = {
-    source_image_b64:      src.file.b64,
-    additional_images_b64: undefined,
+    silo:             'landscapes',
+    source_image_b64: src.file.b64,
     renders,
-    expand:                true,
+    display_name:     stem(src.file.name),
+    aspect_ratio:     src.aspect,
+    expand:           true,
+    scene_feel:       src.sceneFeel,
+    plaque_mode:      src.plaqueMode,
+    plaque_text:      src.plaqueText,
   };
 
   try {
@@ -1286,8 +2061,14 @@ async function runSource(src) {
     const dur = Date.now() - startedAt;
 
     if (data.status === 'deferred') {
-      // capacity — return rows to idle so user can retry
-      renderingRows.forEach(r => { r.status = 'idle'; });
+      renderingRows.forEach(r => {
+        r.status = 'idle';
+        const el = document.getElementById('rc-' + r.id);
+        if (el) el.remove();
+        const idx = stackOrder.indexOf(r.id);
+        if (idx >= 0) stackOrder.splice(idx, 1);
+        delete rowMeta[r.id];
+      });
       pushError({
         sourceName: src.file.name,
         config:     null,
@@ -1299,20 +2080,24 @@ async function runSource(src) {
       renderingRows.forEach(r => {
         r.status = 'error';
         r.error  = errMsg;
+        mkError(r.id, errMsg);
         const atm = ATMOSPHERES.find(a => a.id === r.atmosphereId);
         pushError({
           sourceName: src.file.name,
-          config:     {
-            path:        src.path, profile: src.profile,
+          config: {
             atmosphere:  atm?.label || r.atmosphereId,
-            environment: src.env, scale, aspect: src.aspect,
+            environment: src.env,
+            scale:       src.scale,
+            cameraAngle: src.cameraAngle,
+            sceneFeel:   src.sceneFeel,
+            aspect:      src.aspect,
           },
           error:      errMsg,
           durationMs: dur,
         });
       });
     } else {
-      // map results back onto rendering rows in send order
+      // Map results onto rendering rows in send order.
       data.results.forEach((res, i) => {
         const row = renderingRows[i];
         if (!row) return;
@@ -1320,16 +2105,21 @@ async function runSource(src) {
           row.status = 'ready';
           row.result = res;
           row.error  = null;
+          mkResult(row.id, res);
         } else {
           row.status = 'error';
           row.error  = res.error || 'unknown error';
+          mkError(row.id, row.error);
           const atm = ATMOSPHERES.find(a => a.id === row.atmosphereId);
           pushError({
             sourceName: src.file.name,
-            config:     {
-              path:        src.path, profile: src.profile,
+            config: {
               atmosphere:  atm?.label || row.atmosphereId,
-              environment: src.env, scale, aspect: src.aspect,
+              environment: src.env,
+              scale:       src.scale,
+              cameraAngle: src.cameraAngle,
+              sceneFeel:   src.sceneFeel,
+              aspect:      src.aspect,
             },
             error:      res.error || 'unknown error',
             durationMs: dur,
@@ -1343,12 +2133,13 @@ async function runSource(src) {
     renderingRows.forEach(r => {
       r.status = 'error';
       r.error  = err.message || String(err);
+      mkError(r.id, r.error);
     });
     pushError({
       sourceName: src.file.name,
-      config:     {
-        path: src.path, profile: src.profile,
-        environment: src.env, scale, aspect: src.aspect,
+      config: {
+        environment: src.env, scale: src.scale,
+        cameraAngle: src.cameraAngle, sceneFeel: src.sceneFeel, aspect: src.aspect,
       },
       error:      `network error: ${err.message || err}`,
       durationMs: dur,
@@ -1365,7 +2156,7 @@ fileInput.addEventListener('change', async e => {
   fileInput.value = '';
 });
 
-document.getElementById('render-all-btn').addEventListener('click', runAll);
+document.getElementById('run-btn').addEventListener('click', runAll);
 
 // Drag-drop anywhere
 let dragDepth = 0;
@@ -1392,28 +2183,22 @@ document.addEventListener('drop', async e => {
   await addFiles(e.dataTransfer.files);
 });
 
-// Error log panel
-const errlogBtn = document.getElementById('errlog-btn');
-const errlogPanel = document.getElementById('errlog-panel');
-errlogBtn.addEventListener('click', () => {
-  errlogPanel.classList.toggle('hidden');
+// Error log toggle
+document.getElementById('errlog-toggle').addEventListener('click', () => {
+  document.getElementById('errlog-panel').classList.toggle('hidden');
 });
 document.getElementById('errlog-close').addEventListener('click', () => {
-  errlogPanel.classList.add('hidden');
+  document.getElementById('errlog-panel').classList.add('hidden');
 });
 document.getElementById('errlog-copy').addEventListener('click', async () => {
   const txt = buildErrorLogText();
+  const btn = document.getElementById('errlog-copy');
   try {
     await navigator.clipboard.writeText(txt);
-    const btn = document.getElementById('errlog-copy');
     btn.classList.add('copied');
     btn.textContent = 'copied ✓';
-    setTimeout(() => {
-      btn.classList.remove('copied');
-      btn.textContent = 'copy';
-    }, 1500);
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = 'copy'; }, 1500);
   } catch (err) {
-    // fallback: select & prompt
     window.prompt('Copy error log:', txt);
   }
 });
@@ -1421,17 +2206,7 @@ document.getElementById('errlog-clear').addEventListener('click', () => {
   if (!confirm('Clear all error log entries?')) return;
   state.errorLog = [];
   renderErrorLog();
-  renderActionbar();
 });
-
-// ──────────────────────────────────────────────────────────────
-// HELPERS
-// ──────────────────────────────────────────────────────────────
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"']/g, c =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
-  );
-}
 
 // ──────────────────────────────────────────────────────────────
 // BOOT

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { Bundle, BundleItem, ChooseOption } from '@/lib/bundles/types'
-import type { SceneStyle, SceneVariant } from '@/lib/v1/group-generator'
+import type { SceneStyle, SceneVariant } from '@/lib/v1/groups/group-generator'
 
 // ── TYPES ────────────────────────────────────────────────────────
 

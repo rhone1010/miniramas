@@ -2,9 +2,9 @@
 // app/api/v1/interiors/generate/route.ts
 
 import { NextRequest, NextResponse } from 'next/server'
-import { generateInterior } from '@/lib/v1/interior-generator'
-import { applyLevels }  from '@/lib/v1/levels'
-import { expandScene }  from '@/lib/v1/expand'
+import { generateInterior } from '@/lib/v1/interior/interior-generator'
+import { applyLevels }  from '@/lib/v1/_core/levels'
+import { expandScene }  from '@/lib/v1/_core/expand'
 
 export async function POST(req: NextRequest) {
   try {
