@@ -1,26 +1,26 @@
 // lib/v1/_core/bundle.ts
 //
-// Workspace-level bundle math + copy state machine.
+// PLACEHOLDER — TO BE REGENERATED FROM SPEC
 //
-// Pure functions only. No I/O, no side effects, no silo awareness. The
-// calculator takes a flat list of pre-discount unit prices and returns
-// tier + total + per-piece + state. Cross-silo aggregation works for free
-// — caller concatenates prices from multiple silos before calling.
+// This module is the workspace-level bundle math + Curator copy state machine
+// for Liten & Co. It is silo-agnostic: every silo's bundle UI imports from
+// here rather than recreating its own pricing logic.
 //
-// Copy state machine returns the labels for: Run button, ladder explainer,
-// Curator nudge, and Studio row state, derived from queued count and
-// distinct-source count.
+// CONTENTS WHEN REBUILT:
+//   • computeBundle(prices: number[])  — pricing ladder math
+//   • bundleCuratorLine(state)          — 11-state copy state machine
+//   • Pure functions only. No I/O.
 //
-// Plate handling lives in a separate module (TBD pending product call on
-// stack-vs-separate). This module is plate-agnostic.
+// SPEC SOURCES (canonical):
+//   • Carryover doc — pricing ladder (1/2/3/4-9/10+ image tiers)
+//   • Carryover doc — Curator copy state machine (11 locked states)
+//   • landscapes.html — inline JS port currently mirrors the intended math
 //
-// ─────────────────────────────────────────────────────────────────
-// TODO — REGENERATE FROM SPEC. Original implementation was untracked
-// (added by an external linter, never committed) and was deleted
-// during the lib/v1 reorganization pass. Only the header above
-// survived in chat transcript. The full implementation must be
-// re-derived from the workspace bundle math spec / chat history
-// before any caller starts importing from this path.
-// ─────────────────────────────────────────────────────────────────
+// HISTORY: original ~290-line implementation was deleted as untracked-orphan
+// during silo reorganization when no TS callers existed (Houses/Action
+// hadn't wired bundle UI yet — landscapes.html had an inline JS port).
+// Reconstitute when the next silo needs it. Do NOT reimplement per-silo.
+//
+// TODO: Regenerate from spec when Houses or Action wires up bundle UI.
 
 export {}

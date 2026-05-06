@@ -1,4 +1,4 @@
-// lib/v1/landscapes/landscape-plaque.ts
+// lib/v1/landscapes/landscapes-plaque.ts
 //
 // Plaque mode resolution + prompt-fragment assembly.
 //
@@ -16,8 +16,8 @@
 // not via a separate LLM call. The Pass 1 prompt block carries the rule set;
 // NB2 composes and renders the title in one shot.
 
-import type { AtmosphereID, PlaqueMode } from './landscape-shared'
-import { ATMOSPHERE_LABELS } from './landscape-shared'
+import type { AtmosphereID, PlaqueMode } from './landscapes-shared'
+import { ATMOSPHERE_LABELS } from './landscapes-shared'
 
 // ── METADATA DETECTION ────────────────────────────────────────
 // If user-supplied plaque text contains any of these patterns, the entire

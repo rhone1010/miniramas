@@ -1,4 +1,4 @@
-// lib/v1/landscapes/landscape-presets.ts
+// lib/v1/landscapes/landscapes-presets.ts
 //
 // Singular naming. Validators + registry helpers for the Landscapes silo.
 // Aligned with landscapes-shared.ts schema.
@@ -18,8 +18,8 @@ import {
   // New imports for the LITENCO Production Prompt v1 shim:
   EnvironmentMode, DEFAULT_ENVIRONMENT_MODE,
   migrateAtmosphereID, migrateScaleID, migrateEnvironment, migrateSceneFeelID,
-} from './landscape-shared'
-import { resolvePlaque } from './landscape-plaque'
+} from './landscapes-shared'
+import { resolvePlaque } from './landscapes-plaque'
 
 // ── REGISTRY ENTRIES ──────────────────────────────────────────
 export const SURFACES = (Object.keys(SURFACE_LABELS) as SurfaceID[]).map(id => ({

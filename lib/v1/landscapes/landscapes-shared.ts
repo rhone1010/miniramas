@@ -1,4 +1,4 @@
-// lib/v1/landscapes/landscape-shared.ts
+// lib/v1/landscapes/landscapes-shared.ts
 //
 // Singular naming. Schema source of truth for the Landscapes silo.
 //

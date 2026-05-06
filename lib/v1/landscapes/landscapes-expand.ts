@@ -1,4 +1,4 @@
-// lib/v1/landscapes/landscape-expand.ts
+// lib/v1/landscapes/landscapes-expand.ts
 //
 // Stability outpaint post-stage. Padding is scale-driven so each scale tier
 // produces a final image where the model occupies its target percentage of
@@ -15,8 +15,8 @@
 // Non-fatal on failure — caller continues with the unexpanded image.
 
 import sharp from 'sharp'
-import type { ScaleID } from './landscape-shared'
-import { SCALE_PAD_RATIO } from './landscape-effects'
+import type { ScaleID } from './landscapes-shared'
+import { SCALE_PAD_RATIO } from './landscapes-effects'
 
 const DEFAULT_PAD_RATIO = 0.15
 

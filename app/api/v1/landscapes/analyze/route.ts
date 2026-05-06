@@ -6,13 +6,13 @@
 // the previous stage's image and continues.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { validateRequest, rowLabel }                from '@/lib/v1/landscapes/landscape-presets'
-import { generateLandscape, StudioAtCapacityError } from '@/lib/v1/landscapes/landscape-generator'
-import { refineLandscape }                          from '@/lib/v1/landscapes/landscape-refine'
-import { expandLandscape }                          from '@/lib/v1/landscapes/landscape-expand'
+import { validateRequest, rowLabel }                from '@/lib/v1/landscapes/landscapes-presets'
+import { generateLandscape, StudioAtCapacityError } from '@/lib/v1/landscapes/landscapes-generator'
+import { refineLandscape }                          from '@/lib/v1/landscapes/landscapes-refine'
+import { expandLandscape }                          from '@/lib/v1/landscapes/landscapes-expand'
 import type {
   GenerateRequest, GenerateResponse, RenderResult, LandscapeParams,
-} from '@/lib/v1/landscapes/landscape-shared'
+} from '@/lib/v1/landscapes/landscapes-shared'
 
 export const runtime     = 'nodejs'
 export const maxDuration = 180   // raised: 2-pass pipeline (NB2 ~30-60s + GPT-image-1 ~15-30s + expand ~10s)
