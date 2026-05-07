@@ -19,9 +19,13 @@
 //         loophole closed
 //   • r4: CONTAINMENT extended to ban floating atmospheric phenomena
 //         (clouds/sun-discs/halos) hovering above the diorama as filler
-//   • r5 (this): in-situ env block header → "IN-ENVIRONMENT" matching
+//   • r5: in-situ env block header → "IN-ENVIRONMENT" matching
 //         user-facing label. Internal env ID stays 'in_situ' for code
 //         stability.
+//   • r6: CONTAINMENT extended with physical/atmospheric distinction +
+//         plinth geometry lock + offscreen handling. Closes wooden-arch
+//         loophole and the "decorative ring on real landscape" failure
+//         mode.
 //
 // Failure of this stage is non-fatal. The caller is expected to fall
 // back to the Pass 1 output if refine throws.
@@ -39,11 +43,11 @@ const PASS2_CORE = `Transform this miniature diorama into a gallery-quality phot
 
 // REALISM — material, texture, micro-detail, natural variation.
 const PASS2_REALISM = `REALISM:
-Each material reads at miniature scale with natural imperfection. Terrain: fine grit, irregular variation. Vegetation: organic density, randomized non-repeating branching, dense chaotic micro-structure. Water (when present): depth, reflection, transparency, surface variation. Stone, soil, bark, grass, foliage: distinct miniature-scale texture. Walnut plinth: low-profile turned disc, thin in proportion, with a single soft curved edge — never tiered moldings, never a stacked pedestal, never rectangular. Richly figured walnut or mahogany grain, deep polished sheen; visual interest comes from the wood figure, not from profile complexity. Front rim stays clean — no fallen branches, twigs, or debris at the front edge. Edges read as physically constructed, not digitally generated. Atmospheric effects (mist, fog, light rays) vary spatially — localized pockets influenced by terrain and water, never uniform. Edge transitions at the diorama boundary feel naturally broken via vegetation, soil variation, rocks, or erosion. Avoid smoothing, plastic finish, repeated patterns, symmetric arrangements, sparse uniformity.`
+Each material reads at miniature scale with natural imperfection. Terrain: fine grit, irregular variation. Vegetation: organic density, randomized non-repeating branching, dense chaotic micro-structure. Water (when present): depth, reflection, transparency, surface variation. Stone, soil, bark, grass, foliage: distinct miniature-scale texture. Walnut plinth: rich grain, polished, subtle wear, realistic reflections. Edges read as physically constructed, not digitally generated. Atmospheric effects (mist, fog, light rays) vary spatially — localized pockets influenced by terrain and water, never uniform. Edge transitions at the diorama boundary feel naturally broken via vegetation, soil variation, rocks, or erosion. Avoid smoothing, plastic finish, repeated patterns, symmetric arrangements, sparse uniformity.`
 
 // LIGHTING — physical believability, directional shadow, justified atmosphere.
 const PASS2_LIGHTING = `LIGHTING:
-The diorama renders brighter than its surroundings with directional shadow falloff. When the source atmosphere is golden, dusk, storm, or night, PRESERVE visible volumetric atmospheric light from Pass 1 — sun shafts, moonbeams, god-rays, defined light columns through fog or mist. Atmospheric effects are physical: dust catching light, haze, mist, beam interaction with airborne particles. Refine these into more believable depth — do not flatten, homogenize, or wash them out.`
+The diorama renders brighter than its surroundings with directional shadow falloff. Atmospheric effects appear only as physically justified — dust catching light, haze, mist, beam interaction with airborne particles.`
 
 // CONTAINMENT — physical-vs-atmospheric containment + plinth
 // geometry lock + offscreen handling + forced-perspective preservation.
