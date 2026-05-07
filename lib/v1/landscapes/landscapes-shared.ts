@@ -1,18 +1,34 @@
 // lib/v1/landscapes/landscapes-shared.ts
 //
-// Singular naming. Schema source of truth for the Landscapes silo.
+// Schema source of truth for the Landscapes silo.
 //
 // Universal { main, optionA, optionB } frame:
 //   main     → Surface (realistic path) OR Material (sculpted path)
 //   optionA  → Atmosphere
 //   optionB  → Environment
 //
-// Plus per-row: scale, cameraAngle, sceneFeel.
+// Plus per-row: scale, cameraAngle, addBeam.
+//
+// REVISION HISTORY:
+//   • Scene Feel axis REMOVED — quality always equivalent to "dramatic";
+//     bake into LIGHTING block as always-on.
+//   • Focal Lighting dial REMOVED — strong feature emphasis baked into
+//     LIGHTING block as always-on.
+//   • Environment "Auto" REMOVED — user picks Desk or In Environment
+//     directly. Analyzer still recommends one.
+//   • Scale 'zoom_out' (60%) REMOVED — two options now: close_up (75%),
+//     fill (90%).
+//   • CameraAngle 'low' (Ground) REMOVED — two options now: hero (45°),
+//     elevated (60°).
+//   • In-Situ label changed to "In Environment" — internal ID stays
+//     'in_situ' for code stability and model-facing prompt clarity.
 
 // ── SOURCE IMAGE CAP ──────────────────────────────────────────
 export const MAX_SOURCE_IMAGES = 4
 
 // ── SURFACES ──────────────────────────────────────────────────
+// Analyzer-internal taxonomy. Not in prompts, not user-pickable.
+// Drives Curator material recommendations + compatibility advisory.
 export type SurfaceID =
   | 'wet_luminous'
   | 'soft_diffused'
@@ -37,57 +53,53 @@ export const SURFACE_TIER: Record<SurfaceID, 'base'> = {
 }
 
 // ── ATMOSPHERES (option A) ────────────────────────────────────
-// New IDs per LITENCO Production Prompt v1. The 'none' atmosphere is not
-// "no light" — it means "no driven atmospheric mood; natural ambient,
-// scene-appropriate." It replaces the prior vivid_midday slot.
+// Five-ID schema. The 'natural' atmosphere (formerly 'none') means
+// "no driven atmospheric mood; natural ambient, scene-appropriate."
+// UI surfaces it as "As Is" — semantically: as shown in the source.
 export type AtmosphereID =
-  | 'none'
+  | 'natural'
   | 'golden'
   | 'dusk'
   | 'storm'
   | 'night'
 
 export const ATMOSPHERE_LABELS: Record<AtmosphereID, string> = {
-  none:   'Natural',
-  golden: 'Golden Hour',
-  dusk:   'Dusk',
-  storm:  'Storm',
-  night:  'Night',
+  natural: 'As Is',
+  golden:  'Golden Hour',
+  dusk:    'Dusk',
+  storm:   'Storm',
+  night:   'Night',
 }
 
 export const ATMOSPHERE_TIER: Record<AtmosphereID, 'base' | 'premium' | 'signature'> = {
-  none:   'base',
-  golden: 'base',
-  dusk:   'base',
-  storm:  'premium',
-  night:  'premium',
+  natural: 'base',
+  golden:  'base',
+  dusk:    'base',
+  storm:   'premium',
+  night:   'premium',
 }
 
-// Atmospheres that force in_situ environment mode (override controlled/auto).
+// Atmospheres that force in_situ environment mode (override desk).
 // Storm and night both imply a sky-driven world that reads dissonant on a desk.
 export const FORCED_IN_SITU_ATMOSPHERES: ReadonlySet<AtmosphereID> = new Set(['storm', 'night'])
 
-// Migration shim — accepts any prior atmosphere ID (the original 10, plus the
-// 5-ID intermediate) and maps to the current set. Unknown IDs fall back to 'none'.
 export function migrateAtmosphereID(raw: string | null | undefined): AtmosphereID {
-  if (!raw) return 'none'
+  if (!raw) return 'natural'
   const map: Record<string, AtmosphereID> = {
-    // Current IDs pass through.
-    none: 'none', golden: 'golden', dusk: 'dusk', storm: 'storm', night: 'night',
-    // Intermediate (5-axis) → new.
+    natural: 'natural', golden: 'golden', dusk: 'dusk', storm: 'storm', night: 'night',
+    none: 'natural',
     golden_hour: 'golden',
-    vivid_midday: 'none',
+    vivid_midday: 'natural',
     dusk_blue_hour: 'dusk',
     dramatic_storm: 'storm',
     deep_night: 'night',
-    // Original 10-axis cuts → closest match.
     peaceful_dawn: 'golden',
-    fog_rolled_in: 'none',
-    after_rain: 'none',
-    snow_falling: 'none',
+    fog_rolled_in: 'natural',
+    after_rain: 'natural',
+    snow_falling: 'natural',
     aurora_surreal: 'night',
   }
-  return map[raw] ?? 'none'
+  return map[raw] ?? 'natural'
 }
 
 // ── MATERIALS (alternative main) ──────────────────────────────
@@ -121,142 +133,97 @@ export const MATERIAL_TIER: Record<MaterialID, 'base' | 'premium' | 'signature'>
 }
 
 // ── ENVIRONMENT MODE ──────────────────────────────────────────
-// New axis per LITENCO Production Prompt v1. Replaces the old 3-way
-// in_situ/desk/gallery enum. The user picks a mode; auto resolves to
-// either 'controlled' or 'in_situ' before prompt assembly. Storm and
-// night atmospheres force in_situ regardless of mode.
-export type EnvironmentMode = 'auto' | 'controlled' | 'in_situ'
+// Two options now (Auto removed). Storm and night atmospheres still force
+// in_situ even when Desk is selected — engine resolves transparently.
+//
+// Internal ID 'in_situ' stays for code stability. User-facing label is
+// "In Environment" — never "In-Situ" or "In Situ" in UI copy.
+export type EnvironmentMode = 'controlled' | 'in_situ'
 
 export const ENVIRONMENT_MODE_LABELS: Record<EnvironmentMode, string> = {
-  auto:       'Auto',
-  controlled: 'Controlled',
-  in_situ:    'In-Situ',
+  controlled: 'Desk',
+  in_situ:    'In Environment',
 }
 
-export const DEFAULT_ENVIRONMENT_MODE: EnvironmentMode = 'auto'
+export const DEFAULT_ENVIRONMENT_MODE: EnvironmentMode = 'controlled'
 
-// Resolved environment after applying auto + forced-in-situ rules.
-// This is what the prompt builder actually consumes.
+// Resolved environment is now the same as EnvironmentMode (no auto step).
+// Kept as a separate type for forward compatibility and prompt clarity.
 export type ResolvedEnvironment = 'controlled' | 'in_situ'
 
 export function resolveEnvironment(
   mode:       EnvironmentMode,
   atmosphere: AtmosphereID,
 ): ResolvedEnvironment {
-  // Storm and night always force in_situ — desk/gallery would read dissonant.
+  // Storm and night always force in_situ — desk would read dissonant.
   if (FORCED_IN_SITU_ATMOSPHERES.has(atmosphere)) return 'in_situ'
-  // Auto resolves to controlled in the no-weather case.
-  if (mode === 'auto') return 'controlled'
-  return mode  // explicit 'controlled' or 'in_situ'
+  return mode
 }
 
-// Migration shim — old EnvironmentID ('in_situ' | 'desk' | 'gallery') maps
-// onto new EnvironmentMode. Desk and gallery both fold into controlled
-// (the controlled mode now subsumes both).
+// Migration shim — old values including 'auto', 'desk', 'gallery' map to
+// the current set. 'auto' folds to 'controlled' (the new default).
 export function migrateEnvironment(raw: string | null | undefined): EnvironmentMode {
-  if (!raw) return 'auto'
+  if (!raw) return DEFAULT_ENVIRONMENT_MODE
   const map: Record<string, EnvironmentMode> = {
-    auto:       'auto',
     controlled: 'controlled',
     in_situ:    'in_situ',
+    auto:       'controlled',
     desk:       'controlled',
     gallery:    'controlled',
   }
-  return map[raw] ?? 'auto'
+  return map[raw] ?? DEFAULT_ENVIRONMENT_MODE
 }
 
-// Legacy alias retained so call sites that import EnvironmentID compile during
-// the migration window. Resolves to EnvironmentMode going forward.
-// TODO(post-stabilization): remove and update all call sites.
+// Legacy alias retained so old call sites still compile.
+// TODO(post-stabilization): remove and update call sites.
 export type EnvironmentID = EnvironmentMode
-
 export const ENVIRONMENT_LABELS = ENVIRONMENT_MODE_LABELS
 
 // ── CAMERA ANGLE ──────────────────────────────────────────────
-// Three forced viewpoints. Drives the Camera block in landscapes-prompt.ts.
-// Default is 'hero' (the natural product 3/4 angle).
-export type CameraAngleID = 'low' | 'hero' | 'elevated'
+// Two options now. 'low' (Ground) removed — wasn't producing a
+// distinctive enough result to justify the option.
+export type CameraAngleID = 'hero' | 'elevated'
 
 export const CAMERA_ANGLE_LABELS: Record<CameraAngleID, string> = {
-  low:      'Ground',
   hero:     '45°',
   elevated: '60°',
 }
 
 export const DEFAULT_CAMERA_ANGLE: CameraAngleID = 'hero'
 
+export function migrateCameraAngleID(raw: string | null | undefined): CameraAngleID {
+  if (raw === 'hero' || raw === 'elevated') return raw
+  if (raw === 'low') return 'hero'   // legacy ground angle → 45° default
+  return DEFAULT_CAMERA_ANGLE
+}
+
 // ── SCALE (canvas occupancy) ──────────────────────────────────
-// Diorama occupancy of the frame. Plinth always fully visible.
-//   zoom_out → ~50–65% (generous margins)
-//   close_up → ~65–80% (default)
-//   up_close → ~85–95% (hero emphasis, minimal breathing room)
-// Reinstated as three-axis after LITENCO Production Prompt v1 dropped to two.
-// Up Close replaces the prior 'subject' scale at a tighter occupancy.
-export type ScaleID = 'zoom_out' | 'close_up' | 'up_close'
+// Two options now. 'zoom_out' (60%) removed — wasn't being used and the
+// LOW_VERTICAL_BLOCK now handles the open-frame compositions naturally.
+export type ScaleID = 'close_up' | 'fill'
 
 export const SCALE_LABELS: Record<ScaleID, string> = {
-  zoom_out: 'Zoom Out',
   close_up: 'Close Up',
-  up_close: 'Up Close',
+  fill:     'Fill',
 }
 
 export const SCALE_DESCRIPTIONS: Record<ScaleID, string> = {
-  zoom_out: '~50–65% canvas — generous margins around the plinth',
   close_up: '~65–80% canvas — tighter composition, base fully visible',
-  up_close: '~85–95% canvas — hero emphasis, plinth fully visible with minimal margin',
+  fill:     '~85–95% canvas — fills the frame, plinth fully visible with minimal margin',
 }
 
 export const DEFAULT_SCALE: ScaleID = 'close_up'
 
-// Migration shim — old 'subject' scale was hero-emphasis at ~75–85%; it maps
-// to the new 'up_close' (which is the closer relative). Anything unknown
-// falls back to the close_up default.
 export function migrateScaleID(raw: string | null | undefined): ScaleID {
-  if (raw === 'zoom_out') return 'zoom_out'
   if (raw === 'close_up') return 'close_up'
-  if (raw === 'up_close') return 'up_close'
-  if (raw === 'subject')  return 'up_close'  // legacy hero scale → new tightest
+  if (raw === 'fill')     return 'fill'
+  if (raw === 'up_close') return 'fill'      // 5-axis intermediate → fill
+  if (raw === 'subject')  return 'fill'      // legacy hero scale → fill
+  if (raw === 'zoom_out') return 'close_up'  // dropped 60% scale → close_up
   return DEFAULT_SCALE
 }
 
-// ── SCENE FEEL ────────────────────────────────────────────────
-// Lighting expression intensity. Amplifies atmosphere — does not replace it.
-//   as_is     → natural, balanced, restrained
-//   cinematic → shaped light, filmic contrast, controlled mood (kept; safe/flat)
-//   dramatic  → richer materials, stronger micro-contrast, sharper form definition,
-//               more dimensional lighting (default per LITENCO Production Prompt v1 —
-//               object-quality only, NOT weather mood)
-//   dramatic  → stronger contrast, deeper shadows, more directional lighting
-//
-// Replaced the prior Fidelity axis. Source-preservation philosophy now lives
-// permanently in the CORE block ("feels like the same place, elevated into
-// a cinematic miniature, rather than a literal copy") instead of being a
-// user-controllable knob.
-export type SceneFeelID = 'as_is' | 'cinematic' | 'dramatic'
-
-export const SCENE_FEEL_LABELS: Record<SceneFeelID, string> = {
-  as_is:     'As Is',
-  cinematic: 'Cinematic',
-  dramatic:  'Dramatic',
-}
-
-export const DEFAULT_SCENE_FEEL: SceneFeelID = 'dramatic'
-
-// Migration shim — pass valid IDs through, fall back to the new default
-// for unknown/missing values. This preserves Cinematic as a valid explicit
-// pick (per "Keep it, but don't default to it"). The default flip only
-// affects net-new state where no explicit pick was made.
-export function migrateSceneFeelID(raw: string | null | undefined): SceneFeelID {
-  if (raw === 'as_is' || raw === 'cinematic' || raw === 'dramatic') return raw
-  return DEFAULT_SCENE_FEEL
-}
-
 // ── PLAQUE MODE ───────────────────────────────────────────────
-// Three modes governing the small brass plaque on the front rim of the plinth.
-//   off  → no plaque rendered
-//   user → render the user's exact text (sanitized first against metadata)
-//   ai   → NB2 composes a refined title at render time per the spec rules
-// Resolution + sanitization logic lives in landscapes-plaque.ts.
 export type PlaqueMode = 'off' | 'user' | 'ai'
 
 export const PLAQUE_MODE_LABELS: Record<PlaqueMode, string> = {
@@ -266,6 +233,14 @@ export const PLAQUE_MODE_LABELS: Record<PlaqueMode, string> = {
 }
 
 export const DEFAULT_PLAQUE_MODE: PlaqueMode = 'off'
+
+// ── ADD BEAM TOGGLE ───────────────────────────────────────────
+// Single boolean. Applies to both Desk AND In-Environment renders.
+// false → 3-point lighting only (default)
+// true  → 3-point + accent volumetric beam from above
+// The 3-point base is the consistent lighting model for every render;
+// beam is the optional dramatic accent.
+export const DEFAULT_ADD_BEAM = false
 
 // ── COMPATIBILITY MATRIX (advisory only) ──────────────────────
 export const MATERIAL_COMPATIBILITY: Record<SurfaceID, MaterialID[]> = {
@@ -298,7 +273,7 @@ export const STATIC_EDITORIAL_GUIDANCE: EditorialGuidance = {
   not_recommended: [
     {
       when: { mainKind: 'material', environment: 'in_situ' },
-      reason: 'Material renders look better in a curated setting — Gallery or Desk.',
+      reason: 'Material renders look better in a curated setting — Desk environment recommended.',
     },
   ],
 }
@@ -369,9 +344,6 @@ export interface AnalyzeResponse {
   curator:  CuratorResult
 }
 
-// Note: TIME OF DAY axis was removed. Atmospheres now carry intrinsic TOD
-// (deep_night = night; others = day). No separate user-facing knob.
-
 // ── ASPECT RATIOS ─────────────────────────────────────────────
 export const ASPECT_RATIOS = [
   '1:1', '4:3', '3:4', '16:9', '9:16',
@@ -383,14 +355,14 @@ export type AspectRatio = typeof ASPECT_RATIOS[number]
 export type MainKind = 'surface' | 'material'
 
 export interface RenderRow {
-  main:         SurfaceID | MaterialID
-  mainKind:     MainKind
-  optionA:      AtmosphereID
-  optionB:      EnvironmentID
-  scale:        ScaleID
-  cameraAngle?: CameraAngleID    // optional in wire — defaults to DEFAULT_CAMERA_ANGLE
-  sceneFeel?:   SceneFeelID      // optional in wire — defaults to DEFAULT_SCENE_FEEL
-  refine?:      boolean          // per-row override; defaults to GenerateRequest.refine (true)
+  main:           SurfaceID | MaterialID
+  mainKind:       MainKind
+  optionA:        AtmosphereID
+  optionB:        EnvironmentID
+  scale:          ScaleID
+  cameraAngle?:   CameraAngleID
+  add_beam?:      boolean
+  refine?:        boolean
   override_curator?: boolean
 }
 
@@ -407,11 +379,11 @@ export interface GenerateRequest {
 
   aspect_ratio?:     AspectRatio
   expand?:           boolean
-  refine?:           boolean       // global Pass 2 toggle; default true. Per-row can override.
-  scene_feel?:       SceneFeelID   // global default; per-row can override
-  plaque_mode?:      PlaqueMode    // global default; default 'off'
+  refine?:           boolean
+  add_beam?:         boolean
+  plaque_mode?:      PlaqueMode
   notes?:            string
-  plaque_text?:      string        // only used when plaque_mode === 'user'
+  plaque_text?:      string
   is_preview?:       boolean
 }
 
@@ -421,11 +393,11 @@ export interface LandscapeParams {
   surface?:         SurfaceID
   material?:        MaterialID
   atmosphere:       AtmosphereID
-  environment:      EnvironmentID    // legacy alias of EnvironmentMode during shim phase
-  environmentMode?: EnvironmentMode  // new — preferred. Resolved at prompt-build time.
+  environment:      EnvironmentID
+  environmentMode?: EnvironmentMode
   scale:            ScaleID
   cameraAngle:      CameraAngleID
-  sceneFeel:        SceneFeelID
+  addBeam:          boolean
   aspectRatio:      AspectRatio
 
   displayName?:     string
@@ -451,20 +423,19 @@ export interface RenderResult {
   error?:           string
   warnings?:        string[]
 
-  // Echo-back context for UI / persistence
-  main_kind?:         MainKind
-  main_id?:           SurfaceID | MaterialID
-  atmosphere_used?:   AtmosphereID
-  environment_used?:  EnvironmentID
-  scale_used?:        ScaleID
-  camera_angle_used?: CameraAngleID
-  scene_feel_used?:   SceneFeelID
-  plaque_mode_used?:  PlaqueMode    // effective mode after sanitization (may differ from requested)
-  plaque_text_used?:  string         // resolved text for 'user' mode after sanitization
-  aspect_ratio?:      AspectRatio
-  refined?:           boolean   // true if Pass 2 (GPT-image-1) ran successfully
-  expanded?:          boolean
-  duration_ms?:       number
+  main_kind?:           MainKind
+  main_id?:             SurfaceID | MaterialID
+  atmosphere_used?:     AtmosphereID
+  environment_used?:    EnvironmentID
+  scale_used?:          ScaleID
+  camera_angle_used?:   CameraAngleID
+  add_beam_used?:       boolean
+  plaque_mode_used?:    PlaqueMode
+  plaque_text_used?:    string
+  aspect_ratio?:        AspectRatio
+  refined?:             boolean
+  expanded?:            boolean
+  duration_ms?:         number
 }
 
 // ── BATCH RESPONSE ────────────────────────────────────────────
@@ -486,7 +457,3 @@ export type GenerateResponse =
       error:  string
       errors?: string[]
     }
-
-// NOTE: resolveTimeOfDay() and autoPlaqueText() were removed.
-// - TOD axis: atmospheres carry intrinsic TOD via their own lighting copy.
-// - Plaque text: resolved through three-mode system in landscapes-plaque.ts.

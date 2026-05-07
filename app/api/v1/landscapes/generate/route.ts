@@ -135,8 +135,9 @@ async function renderOneRow(
       try {
         // Resolve environment the same way Pass 1 did so reinforcement
         // matches what Pass 1 actually rendered.
+        // Auto was removed from EnvironmentMode — default is 'controlled'.
         const resolvedEnv = resolveEnvironment(
-          row.environmentMode ?? 'auto',
+          row.environmentMode ?? 'controlled',
           row.atmosphere,
         )
         const r = await refineLandscape({
@@ -187,7 +188,7 @@ async function renderOneRow(
       environment_used:   row.environment,
       scale_used:         row.scale,
       camera_angle_used:  row.cameraAngle,
-      scene_feel_used:    row.sceneFeel,
+      add_beam_used:      row.addBeam,
       plaque_mode_used:   row.plaqueMode,
       plaque_text_used:   row.plaqueText,
       aspect_ratio:       row.aspectRatio,

@@ -404,7 +404,7 @@ input, textarea { font-family: inherit; }
   top:.25rem;right:.3rem;
 }
 
-/* Pill groups (env, aspect, scale, camera, sceneFeel) */
+/* Pill groups (env, aspect, scale, camera, addBeam, plaqueMode) */
 .pill-group{display:flex;gap:4px;flex-wrap:wrap}
 .pill{
   background:var(--bg-soft);border:1px solid var(--hairline);
@@ -413,9 +413,19 @@ input, textarea { font-family: inherit; }
   color:var(--ink-soft);letter-spacing:.01em;
   transition:all .15s;cursor:pointer;
 }
-.source-card.expanded .pill{background:var(--bg-deeper)}
+.source-card.expanded .pill:not(.active){background:var(--bg-deeper)}
 .pill:hover:not(:disabled){border-color:var(--ink-soft);color:var(--ink)}
-.pill.active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.pill.active{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+  font-weight:600;
+}
+.pill.active:hover:not(:disabled){
+  background:var(--accent-hover);
+  border-color:var(--accent-hover);
+  color:#fff;
+}
 .pill:disabled{opacity:.4;cursor:not-allowed}
 
 .scale-readout{
@@ -958,49 +968,38 @@ body.dragging::after{
 // ──────────────────────────────────────────────────────────────
 
 const ATMOSPHERES = [
-  { id: 'none',   label: 'Natural',     tier: 'base'    },
+  { id: 'natural', label: 'As Is',      tier: 'base'    },
   { id: 'golden', label: 'Golden Hour', tier: 'base'    },
   { id: 'dusk',   label: 'Dusk',        tier: 'base'    },
   { id: 'storm',  label: 'Storm',       tier: 'premium' },
   { id: 'night',  label: 'Night',       tier: 'premium' },
 ];
 
-// Environment mode — auto resolves to controlled/in_situ before prompt assembly.
-// Storm and night atmospheres force in_situ regardless of mode (server-side).
+// Environment mode — two options now (Auto removed). Storm and night
+// atmospheres still force in_situ regardless of selection (server-side).
+// Internal id 'in_situ' retained; user-facing label is "In Environment".
 const ENVIRONMENTS = [
-  { id: 'auto',       label: 'Auto'       },
-  { id: 'controlled', label: 'Controlled' },
-  { id: 'in_situ',    label: 'In-Situ'    },
+  { id: 'controlled', label: 'Desk'           },
+  { id: 'in_situ',    label: 'In Environment' },
 ];
 
 const ASPECTS = ['1:1', '3:2', '2:3', '4:3', '3:4', '16:9'];
 
-// Scale axis — three buttons aligned with engine schema (zoom_out/close_up/up_close).
-// Up Close at 90% reinstated after dropping subject scale earlier — same hero-emphasis
-// intent, tighter occupancy.
+// Scale axis — two buttons aligned with engine schema (close_up/fill).
+// Zoom Out (60%) was removed; LOW_VERTICAL_BLOCK now handles open-frame
+// compositions naturally for low-vertical sources.
 const SCALES = [
-  { id: 'zoom_out', label: 'Zoom Out',  pct: 60 },
-  { id: 'close_up', label: 'Close Up',  pct: 75 },
-  { id: 'up_close', label: 'Up Close',  pct: 90 },
+  { id: 'close_up', label: 'Close Up', pct: 75 },
+  { id: 'fill',     label: 'Fill',     pct: 90 },
 ];
 const SCALE_BY_ID = Object.fromEntries(SCALES.map(s => [s.id, s]));
 
 // Camera angle axis — Ground / 45° / 60° (engine IDs: low / hero / elevated)
 const CAMERA_ANGLES = [
-  { id: 'low',      label: 'Ground'  },
   { id: 'hero',     label: '45°'     },
   { id: 'elevated', label: '60°'     },
 ];
 const CAMERA_ANGLE_BY_ID = Object.fromEntries(CAMERA_ANGLES.map(c => [c.id, c]));
-
-// Scene Feel axis — render richness (object quality, NOT weather mood).
-// Default flipped to dramatic per LITENCO Production Prompt v1.
-const SCENE_FEELS = [
-  { id: 'as_is',     label: 'As Is'     },
-  { id: 'cinematic', label: 'Cinematic' },
-  { id: 'dramatic',  label: 'Dramatic'  },
-];
-const SCENE_FEEL_BY_ID = Object.fromEntries(SCENE_FEELS.map(f => [f.id, f]));
 
 // Plaque mode — three-way: no plaque / user-supplied text / NB2 composes title
 const PLAQUE_MODES = [
@@ -1124,7 +1123,7 @@ const MAX_SOURCES = 8;
 // STATE
 // ──────────────────────────────────────────────────────────────
 const state = {
-  sources:  [],   // [{ id, file: {b64, name}, env, aspect, scale, cameraAngle, sceneFeel, queue, expanded }]
+  sources:  [],   // [{ id, file: {b64, name}, env, aspect, scale, cameraAngle, addBeam, queue, expanded }]
   errorLog: [],
   busy:     false,
 };
@@ -1133,7 +1132,7 @@ let rowIdSeq    = 1;
 
 // Stack of result tiles — global across all sources/queues. Each entry is a row id.
 const stackOrder = [];        // top → back, holds row ids (e.g. 'r3')
-const rowMeta    = {};        // row id → { sourceId, atmosphereId, env, aspect, scale, cameraAngle, sceneFeel, label, sourceName }
+const rowMeta    = {};        // row id → { sourceId, atmosphereId, env, aspect, scale, cameraAngle, label, sourceName }
 const imgStore   = {};        // row id → b64
 const resStore   = {};        // row id → full result payload
 
@@ -1167,11 +1166,11 @@ async function addFiles(fileList) {
       const newSource = {
         id:           `s${sourceIdSeq++}`,
         file:         { b64, name: f.name },
-        env:          'auto',
+        env:          'controlled',
         aspect:       '1:1',
         scale:        'close_up',
         cameraAngle:  'hero',
-        sceneFeel:    'dramatic',
+        addBeam:      false,
         plaqueMode:   'off',
         plaqueText:   '',
         queue:        [],
@@ -1355,8 +1354,14 @@ function renderSourceBody(src) {
           if (count === 1)    badge = `<span class="atm-check">✓</span>`;
           else if (count > 1) badge = `<span class="atm-check atm-check-multi">✓ ${count}</span>`;
           const tierClass = a.tier === 'signature' ? 'tier-signature' : a.tier === 'premium' ? 'tier-premium' : '';
+          // Storm and Night force the in-environment setting — hard-disable
+          // when the source is set to Desk (internal id 'controlled').
+          const lockedByEnv = (a.id === 'storm' || a.id === 'night') && src.env === 'controlled';
+          const titleAttr   = lockedByEnv
+            ? `title="Storm and Night render in-environment — switch Setting to In Environment"`
+            : '';
           return `
-            <button class="atm-tile" data-atm="${a.id}" ${state.busy ? 'disabled' : ''}>
+            <button class="atm-tile" data-atm="${a.id}" ${state.busy || lockedByEnv ? 'disabled' : ''} ${titleAttr}>
               <div class="atm-name">${a.label}</div>
               <div class="atm-tier ${tierClass}">${a.tier}</div>
               ${badge}
@@ -1375,6 +1380,21 @@ function renderSourceBody(src) {
             ${e.label}
           </button>
         `).join('')}
+      </div>
+    </div>
+
+    <!-- Beam light toggle — always visible. 3-Point lighting is the base
+         model for all renders (both Desk and In Environment); Beam adds
+         an accent volumetric beam from above when enabled. -->
+    <div class="field">
+      <span class="field-label">Beam light<span class="field-meta">accent volumetric beam from above</span></span>
+      <div class="pill-group" data-field="addBeam">
+        <button class="pill ${!src.addBeam ? 'active' : ''}" data-id="false" ${state.busy ? 'disabled' : ''}>
+          Off
+        </button>
+        <button class="pill ${src.addBeam ? 'active' : ''}" data-id="true" ${state.busy ? 'disabled' : ''}>
+          On
+        </button>
       </div>
     </div>
 
@@ -1397,18 +1417,6 @@ function renderSourceBody(src) {
         ${CAMERA_ANGLES.map(c => `
           <button class="pill ${src.cameraAngle === c.id ? 'active' : ''}" data-id="${c.id}" ${state.busy ? 'disabled' : ''}>
             ${c.label}
-          </button>
-        `).join('')}
-      </div>
-    </div>
-
-    <!-- Scene Feel (As Is / Cinematic / Dramatic) -->
-    <div class="field">
-      <span class="field-label">Scene feel<span class="field-meta">how strongly the lighting is expressed</span></span>
-      <div class="pill-group" data-field="sceneFeel">
-        ${SCENE_FEELS.map(f => `
-          <button class="pill ${src.sceneFeel === f.id ? 'active' : ''}" data-id="${f.id}" ${state.busy ? 'disabled' : ''}>
-            ${f.label}
           </button>
         `).join('')}
       </div>
@@ -1504,10 +1512,11 @@ function renderSourceBody(src) {
       setSourceField(src.id, 'cameraAngle', btn.dataset.id);
     });
   });
-  body.querySelectorAll('[data-field="sceneFeel"] .pill').forEach(btn => {
+  body.querySelectorAll('[data-field="addBeam"] .pill').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
-      setSourceField(src.id, 'sceneFeel', btn.dataset.id);
+      // data-id is 'true'/'false' string — convert to boolean
+      setSourceField(src.id, 'addBeam', btn.dataset.id === 'true');
     });
   });
   body.querySelectorAll('[data-field="plaqueMode"] .pill').forEach(btn => {
@@ -1634,7 +1643,6 @@ function setupPlaceholder(src, row) {
     aspect:      src.aspect,
     scale:       src.scale,
     cameraAngle: src.cameraAngle,
-    sceneFeel:   src.sceneFeel,
   };
   card.className = 'rc';
   card.innerHTML = `
@@ -1661,7 +1669,6 @@ function mkResult(rowId, payload) {
   metaBits.push(ENVIRONMENTS.find(e => e.id === meta.env)?.label || meta.env);
   metaBits.push(SCALE_BY_ID[meta.scale]?.label || meta.scale);
   metaBits.push(CAMERA_ANGLE_BY_ID[meta.cameraAngle]?.label || meta.cameraAngle);
-  metaBits.push(SCENE_FEEL_BY_ID[meta.sceneFeel]?.label || meta.sceneFeel);
   metaBits.push(meta.aspect);
   if (payload.refined) metaBits.push('refined');
   if (payload.expanded) metaBits.push('outpainted');
@@ -2036,7 +2043,7 @@ async function runSource(src) {
     optionB:     src.env,
     scale:       src.scale,
     cameraAngle: src.cameraAngle,
-    sceneFeel:   src.sceneFeel,
+    add_beam:    src.addBeam,
   }));
 
   const body = {
@@ -2046,7 +2053,7 @@ async function runSource(src) {
     display_name:     stem(src.file.name),
     aspect_ratio:     src.aspect,
     expand:           true,
-    scene_feel:       src.sceneFeel,
+    add_beam:         src.addBeam,
     plaque_mode:      src.plaqueMode,
     plaque_text:      src.plaqueText,
   };
@@ -2089,7 +2096,7 @@ async function runSource(src) {
             environment: src.env,
             scale:       src.scale,
             cameraAngle: src.cameraAngle,
-            sceneFeel:   src.sceneFeel,
+
             aspect:      src.aspect,
           },
           error:      errMsg,
@@ -2118,7 +2125,7 @@ async function runSource(src) {
               environment: src.env,
               scale:       src.scale,
               cameraAngle: src.cameraAngle,
-              sceneFeel:   src.sceneFeel,
+
               aspect:      src.aspect,
             },
             error:      res.error || 'unknown error',
@@ -2139,7 +2146,7 @@ async function runSource(src) {
       sourceName: src.file.name,
       config: {
         environment: src.env, scale: src.scale,
-        cameraAngle: src.cameraAngle, sceneFeel: src.sceneFeel, aspect: src.aspect,
+        cameraAngle: src.cameraAngle, aspect: src.aspect,
       },
       error:      `network error: ${err.message || err}`,
       durationMs: dur,

@@ -1,23 +1,25 @@
 // lib/v1/landscapes/landscapes-presets.ts
 //
 // Singular naming. Validators + registry helpers for the Landscapes silo.
-// Aligned with landscapes-shared.ts schema.
+// Aligned with landscapes-shared.ts v5 schema:
+//   - SceneFeel and FocalLighting axes removed
+//   - addBeam toggle added
+//   - EnvironmentMode no longer has 'auto' (only 'controlled' / 'in_situ')
+//   - ScaleID = 'close_up' | 'fill'        (zoom_out removed)
+//   - CameraAngleID = 'hero' | 'elevated'  (low removed)
 
 import {
-  SurfaceID, AtmosphereID, MaterialID, EnvironmentID, MainKind, AspectRatio,
-  ScaleID, SCALE_LABELS, DEFAULT_SCALE,
+  SurfaceID, AtmosphereID, MaterialID, EnvironmentID, AspectRatio,
+  ScaleID, SCALE_LABELS,
   CameraAngleID, CAMERA_ANGLE_LABELS, DEFAULT_CAMERA_ANGLE,
-  SceneFeelID, SCENE_FEEL_LABELS, DEFAULT_SCENE_FEEL,
-  PlaqueMode, PLAQUE_MODE_LABELS, DEFAULT_PLAQUE_MODE,
   ASPECT_RATIOS,
   MATERIAL_COMPATIBILITY,
   SURFACE_LABELS, ATMOSPHERE_LABELS, MATERIAL_LABELS, ENVIRONMENT_LABELS,
   ATMOSPHERE_TIER, MATERIAL_TIER, SURFACE_TIER,
   GenerateRequest, RenderRow, LandscapeParams,
   rowEditorialNotes,
-  // New imports for the LITENCO Production Prompt v1 shim:
-  EnvironmentMode, DEFAULT_ENVIRONMENT_MODE,
-  migrateAtmosphereID, migrateScaleID, migrateEnvironment, migrateSceneFeelID,
+  DEFAULT_ADD_BEAM,
+  migrateAtmosphereID, migrateScaleID, migrateEnvironment, migrateCameraAngleID,
 } from './landscapes-shared'
 import { resolvePlaque } from './landscapes-plaque'
 
@@ -48,9 +50,7 @@ export const CAMERA_ANGLES = (Object.keys(CAMERA_ANGLE_LABELS) as CameraAngleID[
   id, label: CAMERA_ANGLE_LABELS[id],
 }))
 
-export const SCENE_FEELS = (Object.keys(SCENE_FEEL_LABELS) as SceneFeelID[]).map(id => ({
-  id, label: SCENE_FEEL_LABELS[id],
-}))
+// SCENE_FEELS export removed in v5 — Scene Feel axis dropped from schema.
 
 // ── VALIDATE ──────────────────────────────────────────────────
 export type ValidationResult =
@@ -108,13 +108,13 @@ export function validateRequest(body: GenerateRequest): ValidationResult {
       mainKind:        r.mainKind,
       surface:         r.mainKind === 'surface'  ? (r.main as SurfaceID)  : undefined,
       material:        r.mainKind === 'material' ? (r.main as MaterialID) : undefined,
-      // Shim boundary — silently rewrite legacy IDs to current schema:
+      // Shim boundary — silently rewrite legacy IDs to current v5 schema:
       atmosphere:      migrateAtmosphereID(r.optionA),
       environment:     migrateEnvironment(r.optionB) as EnvironmentID,
       environmentMode: migrateEnvironment(r.optionB),
       scale:           migrateScaleID(r.scale),
-      cameraAngle:     r.cameraAngle || DEFAULT_CAMERA_ANGLE,
-      sceneFeel:       migrateSceneFeelID(r.sceneFeel || body.scene_feel),
+      cameraAngle:     migrateCameraAngleID(r.cameraAngle || DEFAULT_CAMERA_ANGLE),
+      addBeam:         r.addBeam ?? DEFAULT_ADD_BEAM,
       aspectRatio,
       displayName:     body.display_name,
       primarySurface:  body.primary_surface,
@@ -156,15 +156,10 @@ function validateRowStructural(row: RenderRow): string[] {
   if (!row.optionA) errors.push('optionA (atmosphere) required')
   if (!row.optionB) errors.push('optionB (environment) required')
 
-  if (row.scale && !(Object.keys(SCALE_LABELS) as string[]).includes(row.scale)) {
-    errors.push(`scale "${row.scale}" is not valid`)
-  }
-  if (row.cameraAngle && !(Object.keys(CAMERA_ANGLE_LABELS) as string[]).includes(row.cameraAngle)) {
-    errors.push(`cameraAngle "${row.cameraAngle}" is not valid`)
-  }
-  if (row.sceneFeel && !(Object.keys(SCENE_FEEL_LABELS) as string[]).includes(row.sceneFeel)) {
-    errors.push(`sceneFeel "${row.sceneFeel}" is not valid`)
-  }
+  // scale and cameraAngle: structural checks dropped in v5.
+  // Migration shims (migrateScaleID, migrateCameraAngleID) silently convert
+  // legacy IDs (zoom_out → close_up, low → hero) to current schema. An
+  // unrecognised garbage value falls through to the default in shared.ts.
 
   if (row.mainKind === 'surface' && !(Object.keys(SURFACE_LABELS) as string[]).includes(row.main as string)) {
     errors.push(`main "${row.main}" is not a valid surface`)
@@ -195,6 +190,6 @@ export function rowLabel(params: LandscapeParams): string {
   parts.push(ENVIRONMENT_LABELS[params.environment])
   parts.push(SCALE_LABELS[params.scale])
   parts.push(CAMERA_ANGLE_LABELS[params.cameraAngle])
-  parts.push(SCENE_FEEL_LABELS[params.sceneFeel])
+  if (params.addBeam) parts.push('Beam')
   return parts.join(' / ')
 }

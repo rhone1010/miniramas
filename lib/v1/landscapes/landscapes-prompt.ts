@@ -1,26 +1,18 @@
 // lib/v1/landscapes/landscapes-prompt.ts
 //
 // Pass 1 prompt assembler for the Landscapes silo (NB2 / google/nano-banana-2).
-// Owns: structure, composition, camera, containment, base logic, plaque text gen.
-// Pass 2 (gpt-image-1, see landscapes-refine.ts) handles realism + texture
-// + environment reinforcement.
+// Owns: structure, composition, camera, containment, lighting style,
+// plaque text generation. Pass 2 (gpt-image-1, see landscapes-refine.ts)
+// handles realism + texture + environment reinforcement.
 //
-// Spec source: LITENCO Production Prompt v1 + lighting subsystem v1
-//   + ground integration v2 + cut pass (May 2026).
+// Block order:
+//   SUBJECT → CORE → PLACE? → OBJECT REALISM → LIGHTING (addBeam-driven)
+//   → ATMOSPHERE? → CAMERA → SCALE
+//   → ENVIRONMENT (resolved) → CONTROLLED ENV? / IN-ENVIRONMENT?
+//   → LOW VERTICAL → VEGETATION → SPATIAL RULES → PLAQUE? → NOTES? → OUTPUT
 //
-// Block order (post-cut):
-//   CORE → PLACE → OBJECT REALISM → LIGHTING → SUBJECT LIGHTING STYLE
-//   → SUBJECT PRIORITY LIGHT → MICRO-CONTRAST → ATMOSPHERE? → SCENE FEEL
-//   → CAMERA → SCALE → ENVIRONMENT (resolved) → IN-SITU GROUND?
-//   → PLAQUE → NOTES → SPATIAL RULES → OUTPUT
-//
-// Removed in this pass:
-//   • ENVIRONMENT_PHILOSOPHY_RULE — subsumed by the more specific
-//     controlled/in_situ environment blocks.
-//   • PERSPECTIVE_ENHANCEMENT_RULE — guidance with no specific failure mode.
-//   • VEGETATION_INTEGRITY_RULE — duplicated by Pass 2's natural-variation addon.
-//   • OUTPAINTING_BLOCK — outpainting is owned by the Stability stage.
-//   • SPATIAL_RULES_BLOCK trimmed to just the no-domes line.
+// Scene Feel block REMOVED in this revision — quality always equivalent
+// to "dramatic", baked into LIGHTING.
 
 import type {
   LandscapeParams,
@@ -34,50 +26,38 @@ import {
   ENVIRONMENT_EFFECTS,
   SCALE_EFFECTS,
   CAMERA_EFFECTS,
-  SCENE_FEEL_EFFECTS,
   OBJECT_REALISM_BLOCK,
-  LIGHTING_BLOCK,
-  SUBJECT_LIGHTING_STYLE_BLOCK,
-  SUBJECT_PRIORITY_LIGHT_BLOCK,
-  MICRO_CONTRAST_PRESERVATION_BLOCK,
-  IN_SITU_GROUND_INTEGRATION_BLOCK,
+  buildLightingBlock,
+  VEGETATION_BLOCK,
+  SPATIAL_RULES_BLOCK,
+  LOW_VERTICAL_BLOCK,
+  CONTROLLED_ENVIRONMENT_BLOCK,
+  IN_SITU_BLOCK,
 } from './landscapes-effects'
 import { buildPass1PlaqueBlock } from './landscapes-plaque'
 
 // ── FIXED BLOCKS ──────────────────────────────────────────────
-const CORE_BLOCK = `Create a gallery-quality photographic image of a handcrafted 3D miniature landscape diorama. Transform the input image into a museum-quality physical miniature diorama photographed as a real object. All elements must be fully 3D, handcrafted, and physically plausible.
 
-CORE:
-The diorama is the entire scene — a fully three-dimensional physical scale model contained within a circular walnut plinth. All terrain, vegetation, water, and structures exist as physical miniature materials. The scene is the diorama itself; there is no flat imagery, no background plate, no continuation beyond the base.
+const SUBJECT_BLOCK = `SUBJECT:
+"The subject" is the hero of the image.`
 
-The source defines identity, but the miniature is interpreted to feel cohesive within the circular form. The result should feel like the same place, elevated into a cinematic miniature — not a literal copy. The scene may compress and adapt to fit the base naturally, but feels complete, not cropped.
+const CORE_BLOCK = `CORE:
+Create a gallery-quality photographic image of a handcrafted physical miniature diorama. The scene is fully three-dimensional and contained within a circular walnut plinth. Terrain, vegetation, water, and structures exist as real miniature materials with tactile detail and visible craftsmanship. Preserve the identity and layout of the source while adapting it naturally to the circular composition. The scene feels complete, not cropped. Edges resolve organically using terrain, foliage, atmosphere, or natural falloff. The full plinth is always visible.`
 
-Edges resolve organically using terrain falloff, vegetation, rocks, soil, or atmosphere.
-
-The full plinth is always visible.`
-
-// Trimmed: just the no-domes sentence. Everything else this block used to
-// say is covered by CORE ("no flat imagery, no background plate, no
-// continuation beyond the base").
-const SPATIAL_RULES_BLOCK = `SPATIAL RULES:
-No domes, glass enclosures, arches, rings, or other artificial framing — unless explicitly present in the source image.`
+const OUTPUT_BLOCK = `OUTPUT:
+Photographed like a real collectible miniature with shallow depth-of-field, tactile realism, atmospheric depth, and strong subject emphasis.`
 
 // ── PARAMETERIZED BLOCK BUILDERS ──────────────────────────────
 
 function atmosphereBlock(atmosphere: AtmosphereID): string | null {
-  if (atmosphere === 'none') return null
+  if (atmosphere === 'natural') return null
   return `ATMOSPHERE — ${atmosphere}:
-Atmosphere is the primary lighting driver: ${ATMOSPHERE_EFFECTS[atmosphere]}. It shapes light direction, tonal structure, and atmospheric depth. Variation in falloff, haze, and shadow complexity is welcome where it enhances realism and cinematic quality.`
-}
-
-function sceneFeelBlock(params: LandscapeParams): string {
-  return `SCENE FEEL — ${params.sceneFeel}:
-${SCENE_FEEL_EFFECTS[params.sceneFeel]}. Scene feel describes object quality and render richness — it is independent of weather mood (which atmosphere drives).`
+Atmosphere is the primary lighting driver: ${ATMOSPHERE_EFFECTS[atmosphere]}. It shapes light direction, tonal structure, and atmospheric depth.`
 }
 
 function cameraBlock(params: LandscapeParams): string {
   return `CAMERA — ${params.cameraAngle}:
-${CAMERA_EFFECTS[params.cameraAngle]}. Choose composition based on what makes this scene read best.`
+${CAMERA_EFFECTS[params.cameraAngle]}.`
 }
 
 function scaleBlock(params: LandscapeParams): string {
@@ -86,13 +66,11 @@ ${SCALE_EFFECTS[params.scale]}. The full plinth remains visible.`
 }
 
 function environmentBlock(env: ResolvedEnvironment): string {
-  return `ENVIRONMENT — ${env}:
-${ENVIRONMENT_EFFECTS[env]}`
-}
-
-function outputBlock(params: LandscapeParams): string {
-  return `OUTPUT:
-${params.aspectRatio} aspect ratio. Photographed like a real collectible — shallow depth of field with the diorama sharp and the background softly blurred. No overlays or extra text.`
+  // Header label uses the user-facing terminology — 'desk' / 'in-environment'
+  // — for prompt-side consistency with UI.
+  const headerLabel = env === 'controlled' ? 'desk' : 'in-environment'
+  return `ENVIRONMENT — ${headerLabel}:
+${ENVIRONMENT_EFFECTS[env]}.`
 }
 
 function placeContextBlock(params: LandscapeParams): string | null {
@@ -121,6 +99,7 @@ ${text}`
 }
 
 // ── MAIN ENTRY POINT ──────────────────────────────────────────
+
 export interface BuildPromptOptions {
   _seed?: number
 }
@@ -133,8 +112,12 @@ export function buildLandscapePrompt(
   params: LandscapeParamsWithMode,
   _options: BuildPromptOptions = {},
 ): string {
-  const mode = params.environmentMode ?? 'auto'
+  const mode = params.environmentMode ?? 'controlled'
   const resolvedEnv = resolveEnvironment(mode, params.atmosphere)
+
+  // Lighting now takes only addBeam — Scene Feel and Focal Lighting
+  // dials were removed; their quality is baked into the block.
+  const lighting = buildLightingBlock({ addBeam: params.addBeam })
 
   const plaque = buildPass1PlaqueBlock({
     mode:        params.plaqueMode,
@@ -144,33 +127,30 @@ export function buildLandscapePrompt(
   })
 
   const blocks: (string | null)[] = [
+    SUBJECT_BLOCK,
     CORE_BLOCK,
     placeContextBlock(params),
 
-    // Always-on craft and lighting blocks come early — they set the
-    // expectation before any axis-driven content shapes the result.
     OBJECT_REALISM_BLOCK,
-    LIGHTING_BLOCK,
-    SUBJECT_LIGHTING_STYLE_BLOCK,
-    SUBJECT_PRIORITY_LIGHT_BLOCK,
-    MICRO_CONTRAST_PRESERVATION_BLOCK,
+    lighting,
 
     atmosphereBlock(params.atmosphere),
-    sceneFeelBlock(params),
 
     cameraBlock(params),
     scaleBlock(params),
 
     environmentBlock(resolvedEnv),
-    // Ground integration emits only when the resolver settled on in_situ —
-    // applies whether the user picked it or storm/night forced the override.
-    resolvedEnv === 'in_situ' ? IN_SITU_GROUND_INTEGRATION_BLOCK : null,
+    resolvedEnv === 'controlled' ? CONTROLLED_ENVIRONMENT_BLOCK : null,
+    resolvedEnv === 'in_situ'    ? IN_SITU_BLOCK                : null,
+
+    LOW_VERTICAL_BLOCK,
+    VEGETATION_BLOCK,
+    SPATIAL_RULES_BLOCK,
 
     plaque,
     notesBlock(params),
 
-    SPATIAL_RULES_BLOCK,
-    outputBlock(params),
+    OUTPUT_BLOCK,
   ]
 
   return blocks.filter(Boolean).join('\n\n').trim()

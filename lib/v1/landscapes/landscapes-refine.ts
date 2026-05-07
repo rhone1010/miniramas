@@ -6,77 +6,83 @@
 // camera, containment, circular-base logic, and environment selection.
 // Pass 2 (this module, gpt-image-1) takes Pass 1's output and refines
 // material realism, micro-texture, and lighting depth — without
-// overriding the environment Pass 1 established.
+// overriding the composition or environment Pass 1 established.
 //
-// New in this revision: Pass 2 is environment-aware. Pass 1's resolved
-// environment (controlled or in_situ) is passed in and used to emit
-// reinforcing language for that mode specifically. This was added because
-// Pass 2's product-photography prior was reintroducing wood tables under
-// dioramas that Pass 1 had correctly placed on outdoor terrain.
+// REVISION HISTORY:
+//   • r1: Pass 2 added (separate from Pass 1 NB2 generation)
+//   • r2: env-aware reinforcement (controlled vs in_situ) added because
+//         gpt-image-1's product-photo prior was reintroducing wood tables
+//         under outdoor in-situ dioramas
+//   • r3: compressed ~30% by deduping vs PASS2_ADDON, extracted
+//         CONTAINMENT as a named prominent block with explicit ban on
+//         glass dome / bell jar / cloche / display case, dome-canopy
+//         loophole closed
+//   • r4: CONTAINMENT extended to ban floating atmospheric phenomena
+//         (clouds/sun-discs/halos) hovering above the diorama as filler
+//   • r5 (this): in-situ env block header → "IN-ENVIRONMENT" matching
+//         user-facing label. Internal env ID stays 'in_situ' for code
+//         stability.
 //
-// Failure of this stage is non-fatal. The caller is expected to fall back
-// to the Pass 1 output if refine throws.
+// Failure of this stage is non-fatal. The caller is expected to fall
+// back to the Pass 1 output if refine throws.
 
 import OpenAI, { toFile } from 'openai'
 import type { AspectRatio, PlaqueMode, ResolvedEnvironment } from './landscapes-shared'
 import { buildPass2PlaqueBlock } from './landscapes-plaque'
 
-// ── PASS 2 PROMPT — BASE ──────────────────────────────────────
-// Composition / structure / camera owned by Pass 1. Pass 2's job is
-// realism and micro-texture. Crucial: tells Pass 2 NOT to redesign the
-// layout or the surrounding environment.
-const PASS2_BASE = `Transform this miniature diorama into a highly realistic, gallery-quality photographed scale model.
+// ──────────────────────────────────────────────────────────────
+// PASS 2 PROMPT BLOCKS — named, compressed, deduped
+// ──────────────────────────────────────────────────────────────
 
-Preserve the exact composition, camera angle, plinth shape, scene boundaries, and object placement from the source image. Do not redesign the layout. Do not change the environment, ground type, or surrounding setting from what is shown in the source image — refine its realism only.
+// CORE — composition lock + scope of work.
+const PASS2_CORE = `Transform this miniature diorama into a gallery-quality photograph of a real handcrafted scale model. Preserve the source image's composition, camera, plinth, ground, and scene boundaries exactly. Refine realism only — no layout changes, no environment substitution, no scene redesign.`
 
-Enhance material realism and craftsmanship:
-- terrain has fine variation, grit, irregularity, and natural imperfections
-- vegetation has organic density, randomness, layered branching, and non-repeating structure
-- water, if present, has depth, reflection, transparency, and surface variation
-- stone, soil, sand, bark, grass, and foliage each have distinct miniature-scale texture
-- the walnut plinth shows rich grain, polish, subtle wear, and realistic reflections
-- all edges feel physically constructed, not digitally generated
+// REALISM — material, texture, micro-detail, natural variation.
+const PASS2_REALISM = `REALISM:
+Each material reads at miniature scale with natural imperfection. Terrain: fine grit, irregular variation. Vegetation: organic density, randomized non-repeating branching, dense chaotic micro-structure. Water (when present): depth, reflection, transparency, surface variation. Stone, soil, bark, grass, foliage: distinct miniature-scale texture. Walnut plinth: turned-wood profile with a cove or ogee upper edge and beveled lip below, richly figured grain in walnut or mahogany, deep polished sheen — never a plain chunky disc. Plinth front rim stays clean — no fallen branches, twigs, or debris at the front edge. Edges read as physically constructed, not digitally generated. Atmospheric effects (mist, fog, light rays) vary spatially — localized pockets influenced by terrain and water, never uniform. Edge transitions at the diorama boundary feel naturally broken via vegetation, soil variation, rocks, or erosion. Avoid smoothing, plastic finish, repeated patterns, symmetric arrangements, sparse uniformity.`
 
-Lighting becomes physically believable:
-- the primary light source defines the diorama brightly relative to its surroundings
-- shadows are directional with realistic falloff
-- atmosphere appears only as subtle dust, haze, mist, or light interaction when physically justified
+// LIGHTING — physical believability, directional shadow, justified atmosphere.
+const PASS2_LIGHTING = `LIGHTING:
+The diorama renders brighter than its surroundings with directional shadow falloff. Atmospheric effects appear only as physically justified — dust catching light, haze, mist, beam interaction with airborne particles.`
 
-Increase micro-detail and tactile realism. Avoid smoothing, simplification, plastic texture, repeated patterns, or artificial symmetry.
+// CONTAINMENT — physical-vs-atmospheric containment + plinth
+// geometry lock + offscreen handling + forced-perspective preservation.
+// Handles four failure modes:
+//   1. Physical scene (path/meadow/water) extending past plinth into a
+//      forced-perspective horizon, treating the wooden ring as a
+//      decorative inset on a real landscape.
+//   2. Floating atmospheric phenomena (clouds/sun-discs/halos) hovering
+//      above the diorama as objects.
+//   3. Glass dome / canopy enclosures arching over the scene.
+//   4. Wooden arch growing FROM the plinth itself (canopy-as-dome
+//      loophole — the arch is technically continuous with the plinth's
+//      material, so it evaded the glass-dome ban).
+const PASS2_CONTAINMENT = `CONTAINMENT (CRITICAL):
+The diorama is always open-air. The plinth is the only structure beneath the diorama, and the plinth's edge is the absolute boundary of the physical scene.
 
-Do not add: domes, glass covers, background plates, printed scenery, sky panels, artificial arches, enclosing rings, or new scenery outside the plinth.
+PHYSICAL elements — terrain, water, vegetation, structures, paths, rocks, props, figures — sit on or inside the wooden plinth. Never let physical content extend past the wooden disc, even when forced perspective or elevated angles create the illusion of a vast landscape. The foreshortening lives INSIDE the plinth, not beyond it. The plinth is not a decorative ring inset on a larger real landscape; it is the entire stage.
 
-Final image should feel like a professional gallery-quality photograph of a handcrafted museum miniature: rich, tactile, detailed, physically real, and emotionally memorable.`
+ATMOSPHERIC phenomena (fog, mist, light shafts, distant blur, haze) may extend past the plinth as background ambience — never as solid floating objects. No floating clouds, sun discs, halos, or fog masses hovering above the scene as filler.
 
-// ── PASS 2 ADD-ON — NATURAL VARIATION & IMPERFECTION ──────────
-const PASS2_ADDON = `Increase realism through natural variation and handcrafted imperfection:
-- All organic elements (trees, branches, roots, grasses, terrain) must be non-uniform, asymmetrical, and non-repeating, with dense, chaotic micro-structure rather than sparse or patterned growth
-- Introduce subtle handcrafted imperfections: slight warping, irregular alignment, minor wear, and uneven construction across wood, stone, and terrain surfaces
-- Edge transitions at the diorama boundary should feel naturally broken and feathered using vegetation, soil variation, rocks, or erosion, avoiding clean or cut edges
-- Atmospheric effects (mist, fog, light rays) must vary spatially in density and placement, forming localized pockets influenced by terrain and water, never uniform or evenly distributed
+PLINTH GEOMETRY: the plinth is always a flat cylindrical disc — top, bottom, and curved side wall. It NEVER extends upward into a wall, arch, half-dome, canopy, or enclosure, even when the upward extension would be wood matching the plinth itself. A wooden arch growing from the plinth is forbidden. No glass dome, bell jar, cloche, display case, transparent cover, background plates, printed scenery, sky panels, or rings.
 
-Preserve composition exactly while increasing tactile realism, micro-detail, and physical believability.`
+If the source's composition forms an arch or converging shape (a road framed by tree canopies, a tunnel of branches, a corridor of rocks), reproduce that as TALL MINIATURE TREES or ROCKS standing as objects on the flat plinth — never as the diorama's enclosure. Tall elements are CROPPED BY THE IMAGE FRAME at the top if necessary, like a scale model photographed too close. Cropping is done by the camera, never by the plinth.`
 
-// ── PASS 2 ENVIRONMENT REINFORCEMENT ──────────────────────────
-// Mode-specific reinforcement. Without this, Pass 2's default product-
-// photography prior reintroduces wood tables under in-situ dioramas.
+// ENV REINFORCEMENT — mode-specific. Block header for in_situ reads
+// "IN-ENVIRONMENT" to match the user-facing UI label "In Environment".
 const PASS2_ENV_BLOCKS: Record<ResolvedEnvironment, string> = {
-  controlled: `ENVIRONMENT REINFORCEMENT (CONTROLLED):
-The diorama sits in a richly-appointed indoor setting — bookshelves, framed prints, layered props softly out of focus behind the model. The plinth rests on a polished wood desk, stone shelf, or similar refined surface consistent with an upscale study. Reinforce material realism for the diorama itself; keep the room secondary and softly blurred. Any visible light fixtures stay positioned out of frame so their light is felt but the source is not seen.`,
+  controlled: `ENVIRONMENT (DESK):
+Diorama sits on a polished wood desk, stone shelf, or refined surface in an upscale study — bookshelves, framed prints, layered props softly out of focus behind. The room is secondary; the diorama is the subject. Light fixtures stay positioned out of frame so their light is felt but the source is not seen.`,
 
-  in_situ: `ENVIRONMENT REINFORCEMENT (IN-SITU — OUTDOORS ONLY):
-The diorama is OUTDOORS, photographed in nature. The plinth sits directly on natural terrain (grass, dirt, sand, rock, moss, leaf litter) that continues the source environment. The background is a blurred continuation of the source scene — sky, foliage, terrain, weather.
+  in_situ: `ENVIRONMENT (IN-ENVIRONMENT — OUTDOORS):
+The diorama is outdoors, photographed in nature. The plinth sits directly on natural terrain (grass, dirt, sand, rock, moss, leaf litter) that continues the source environment. The background is a blurred continuation of the source scene — sky, foliage, terrain, weather.
 
-DO NOT add or reintroduce any of the following anywhere in frame, even partially:
-  • wood tables, desks, shelves, mantles, counters, or any constructed wood surface
-  • tile, polished stone, painted wood, or neutral interior floors
-  • room walls, ceilings, windows, doors, or any furniture
-  • indoor lighting fixtures, hanging bulbs, or visible lamps
-The setting beneath and around the plinth is natural ground only. If the source image shows the diorama on natural terrain, preserve that ground exactly — do not replace it with a desk or table surface.`,
+NEVER add wood tables, desks, shelves, mantles, counters, tile, painted wood, room walls, ceilings, windows, doors, furniture, indoor lighting, hanging bulbs, or lamps. Natural ground only beneath and around the plinth. If the source shows the diorama on natural terrain, preserve that ground exactly.`,
 }
 
-// ── PASS 2 PLAQUE INSTRUCTION ─────────────────────────────────
-// Mode-aware. Logic lives in landscapes-plaque.ts so Pass 1 and Pass 2 align.
+// ──────────────────────────────────────────────────────────────
+// PROMPT ASSEMBLER
+// ──────────────────────────────────────────────────────────────
 
 function buildPass2Prompt(opts: {
   plaqueMode:          PlaqueMode
@@ -84,9 +90,11 @@ function buildPass2Prompt(opts: {
   resolvedEnvironment: ResolvedEnvironment
 }): string {
   const blocks: string[] = [
-    PASS2_BASE,
+    PASS2_CORE,
+    PASS2_REALISM,
+    PASS2_LIGHTING,
+    PASS2_CONTAINMENT,
     PASS2_ENV_BLOCKS[opts.resolvedEnvironment],
-    PASS2_ADDON,
   ]
 
   if (opts.plaqueMode === 'user' && opts.plaqueText?.trim()) {
@@ -119,7 +127,7 @@ export interface RefineInput {
   aspectRatio?:         AspectRatio
   plaqueMode:           PlaqueMode
   plaqueText?:          string
-  resolvedEnvironment:  ResolvedEnvironment   // NEW — drives env reinforcement
+  resolvedEnvironment:  ResolvedEnvironment
   openaiApiKey:         string
 }
 
