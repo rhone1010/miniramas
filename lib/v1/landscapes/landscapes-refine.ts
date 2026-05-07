@@ -8,6 +8,14 @@
 // material realism, micro-texture, and lighting depth — without
 // overriding the composition or environment Pass 1 established.
 //
+// Pass 1 = structure. Pass 2 = paint. Lighting is shared across both:
+// Pass 1 establishes direction, atmosphere, and which features are
+// brightest; Pass 2 refines how convincingly that lighting renders.
+// If Pass 2's prompt contradicts Pass 1's lighting direction, Pass 2
+// (the painter) wins because it has the last word on the surface.
+// PASS2_LIGHTING is therefore phrased to PRESERVE Pass 1's atmospheric
+// phenomena, not constrain them.
+//
 // REVISION HISTORY:
 //   • r1: Pass 2 added (separate from Pass 1 NB2 generation)
 //   • r2: env-aware reinforcement (controlled vs in_situ) added because
@@ -22,10 +30,26 @@
 //   • r5: in-situ env block header → "IN-ENVIRONMENT" matching
 //         user-facing label. Internal env ID stays 'in_situ' for code
 //         stability.
-//   • r6: CONTAINMENT extended with physical/atmospheric distinction +
-//         plinth geometry lock + offscreen handling. Closes wooden-arch
-//         loophole and the "decorative ring on real landscape" failure
-//         mode.
+//   • r6 (this): two coordinated changes addressing the "muted beams
+//         + flat brightness" symptom in current renders.
+//
+//         (a) PASS2_LIGHTING flipped from constrain-down to preserve.
+//             Previous wording — "atmospheric effects appear only as
+//             physically justified" — was Pass 2 actively suppressing
+//             the volumetric drama Pass 1 established. New wording
+//             explicitly preserves Pass 1's god-rays, sun shafts,
+//             moonbeams, and beam-on-mist interaction; refines for
+//             miniature-scale credibility without muting. Adds
+//             localized luminance shaping language matching Pass 1's
+//             new focal directive ("brightest points in the frame").
+//
+//         (b) PASS2_REALISM plinth phrase rewritten in lockstep with
+//             effects.ts new PLINTH_BLOCK. Pass 1 says "low turned-wood
+//             disc with a single soft curved side wall, never tiered or
+//             stacked"; Pass 2 must say the same thing or gpt-image-1
+//             reverts the plinth shape. Lockstep is critical — if the
+//             two passes describe the plinth differently, Pass 2 wins
+//             and the regression returns.
 //
 // Failure of this stage is non-fatal. The caller is expected to fall
 // back to the Pass 1 output if refine throws.
@@ -42,12 +66,18 @@ import { buildPass2PlaqueBlock } from './landscapes-plaque'
 const PASS2_CORE = `Transform this miniature diorama into a gallery-quality photograph of a real handcrafted scale model. Preserve the source image's composition, camera, plinth, ground, and scene boundaries exactly. Refine realism only — no layout changes, no environment substitution, no scene redesign.`
 
 // REALISM — material, texture, micro-detail, natural variation.
+// Plinth language must match effects.ts PLINTH_BLOCK — any mismatch
+// lets gpt-image-1's product-base prior pull the plinth shape away
+// from Pass 1.
 const PASS2_REALISM = `REALISM:
-Each material reads at miniature scale with natural imperfection. Terrain: fine grit, irregular variation. Vegetation: organic density, randomized non-repeating branching, dense chaotic micro-structure. Water (when present): depth, reflection, transparency, surface variation. Stone, soil, bark, grass, foliage: distinct miniature-scale texture. Walnut plinth: rich grain, polished, subtle wear, realistic reflections. Edges read as physically constructed, not digitally generated. Atmospheric effects (mist, fog, light rays) vary spatially — localized pockets influenced by terrain and water, never uniform. Edge transitions at the diorama boundary feel naturally broken via vegetation, soil variation, rocks, or erosion. Avoid smoothing, plastic finish, repeated patterns, symmetric arrangements, sparse uniformity.`
+Each material reads at miniature scale with natural imperfection. Terrain: fine grit, irregular variation. Vegetation: organic density, randomized non-repeating branching, dense chaotic micro-structure. Water (when present): depth, reflection, transparency, surface variation. Stone, soil, bark, grass, foliage: distinct miniature-scale texture. Walnut plinth: low turned-wood disc with a single soft curved side wall — never tiered, stacked, slab-like, or chunky. Richly figured grain in walnut or mahogany, deep polished sheen. Visual interest from grain, not profile. Plinth front rim stays clean — no fallen branches, twigs, or debris at the front edge. Edges read as physically constructed, not digitally generated. Atmospheric effects (mist, fog, light rays) vary spatially — localized pockets influenced by terrain and water, never uniform. Edge transitions at the diorama boundary feel naturally broken via vegetation, soil variation, rocks, or erosion. Avoid smoothing, plastic finish, repeated patterns, symmetric arrangements, sparse uniformity.`
 
-// LIGHTING — physical believability, directional shadow, justified atmosphere.
+// LIGHTING — preserve Pass 1's atmospheric phenomena, refine for
+// miniature-scale credibility. Localized luminance shaping mirrors
+// Pass 1's focal directive so the painter actually paints the
+// hierarchy Pass 1 structured.
 const PASS2_LIGHTING = `LIGHTING:
-The diorama renders brighter than its surroundings with directional shadow falloff. Atmospheric effects appear only as physically justified — dust catching light, haze, mist, beam interaction with airborne particles.`
+The diorama renders brighter than its surroundings with directional shadow falloff. Localized luminance shaping: hero subject, plaque, and standout features are the brightest points in the frame; surroundings are deliberately underexposed by comparison. PRESERVE Pass 1's atmospheric phenomena — visible sun shafts, god-rays, moonbeams, beam-interaction with mist and particulate, the dramatic volumetric depth Pass 1 established. Refine these for physical believability and miniature-scale credibility; do not mute, soften, or remove them.`
 
 // CONTAINMENT — physical-vs-atmospheric containment + plinth
 // geometry lock + offscreen handling + forced-perspective preservation.
