@@ -68,7 +68,7 @@ export const CAMERA_EFFECTS: Record<CameraAngleID, string> = {
 export const OBJECT_REALISM_BLOCK = `OBJECT REALISM:
 Preserve structure, scale relationships, and material richness from the source. Use carved terrain, varied foliage, resin-like water, worn wood, rough stone, uneven vegetation, and natural imperfections. Avoid smoothing, beautification, tonal flattening, or repeated texture patterns. Preserve micro-contrast and tactile detail throughout the scene.
 
-PLINTH: The plinth is a turned-wood display base — moderate thickness, with a graceful lathe-turned profile (cove or ogee curve at the upper edge, beveled lip at the bottom). Material is richly figured walnut or mahogany with prominent grain, finished to a deep polished sheen. Never a plain chunky disc. The front rim stays clean — no fallen branches, twigs, or storm debris piled at the front edge.`
+PLINTH: low-profile turned-wood disc, thin in proportion, with a single soft curved edge — never tiered moldings, never a stacked pedestal, never rectangular. Richly figured walnut or mahogany; visual interest comes from the wood's grain and chatoyance, not from profile complexity. The front rim stays clean — no fallen branches, twigs, or storm debris piled at the front edge.`
 
 // B) Lighting — single function. Two modes from one boolean:
 //   addBeam=false → 3-Point gallery lighting only (default for all renders)
@@ -91,6 +91,8 @@ export function buildLightingBlock(input: { addBeam: boolean }): string {
 ${modeText}
 
 Apply strong focal light to the hero subject, the plaque on the front rim of the plinth (when present), and standout compositional features such as docks, walkways, foreground structures, and water reflections. These features render dramatically brighter than the surrounding environment with clear luminance hierarchy and crisp highlights.
+
+Atmospheric depth is rendered visible, not implied. When the atmosphere is golden, dusk, storm, or night, render visible VOLUMETRIC ATMOSPHERIC LIGHT — sun shafts breaking through cloud cover or tree canopy, moonbeams cutting fog or mist, god-rays through trees, defined columns of light passing through air. The mood comes from light cutting through air, not from a soft global wash.
 
 Lighting reads as radiant cinematic — elevated atmospheric glow, strong luminous separation between subject and environment, sharper form definition. Avoid evenly-lit scenes, flat ambient exposure, or globally balanced lighting. Darkness is intentional composition.`
 }
