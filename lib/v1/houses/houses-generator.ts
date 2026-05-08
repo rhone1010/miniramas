@@ -1,17 +1,32 @@
 // houses-generator.ts
 // lib/v1/houses-generator.ts
 //
-// Single-stage dispatcher for the Houses silo. Calls Replicate's
-// google/nano-banana-2 model with image-to-image input. NO post-processing —
-// no levels modulate, no Stability outpaint, no source brightness lift.
-// Whatever the model returns is what the user sees.
+// Two-stage dispatcher for the Houses silo.
 //
-// (All three were removed from action-minis for actively making output
-// worse with NB2. Don't bring them back without re-checking.)
+// Stage 1 — NB2 / google/nano-banana-2 via Replicate. Image-to-image,
+// produces a Pass 1 render with structure, composition, camera,
+// architectural fidelity, environment, and Pass 1 atmospheric/material
+// character.
+//
+// Stage 1.5 — Pass 2 refine (gpt-image-1) via houses-refine.ts. Opt-in
+// during pilot rollout (request.refine === true). Refines material
+// micro-texture, tiered luminance, plinth geometry, and miniature-scale
+// credibility — without overriding Pass 1's identity. Soft-fails to
+// the Pass 1 output if the refine call throws.
+//
+// Stage 2 — Stability AI outpaint via houses-expand.ts. Adds frame
+// margin around the rendered image. Default ON; pass expand:false to
+// skip. Soft-fails to the unexpanded image on Stability error.
+//
+// Pre-Pass-2 post-processing (levels modulate, source brightness lift)
+// from the legacy single-pass pipeline is intentionally absent — these
+// were removed from action-minis for actively making NB2 output worse.
+// Don't bring them back without re-checking against current outputs.
 
 import { buildPresetPrompt, getPreset } from './houses-presets'
 import { resolveEnvironment, resolveTimeOfDay, MAX_SOURCE_IMAGES } from './houses-shared'
 import { expandHouseImage } from './houses-expand'
+import { refineHouse } from './houses-refine'
 import type { GenerateRequest, GenerateResult } from './houses-shared'
 
 const REPLICATE_URL =
@@ -28,6 +43,7 @@ const POLL_DELAY_MS     = 2000
 export async function generateHouse(input: {
   request:           GenerateRequest
   replicateApiToken: string
+  openaiApiKey?:     string
 }): Promise<GenerateResult> {
 
   const t0 = Date.now()
@@ -122,6 +138,41 @@ export async function generateHouse(input: {
   const buf = Buffer.from(await imgRes.arrayBuffer())
   let b64 = buf.toString('base64')
 
+  // ── Stage 1.5: optional Pass 2 refine via gpt-image-1 ──
+  // Opt-in during pilot (request.refine === true). Requires openaiApiKey.
+  // Soft-fails to the Pass 1 output on any error — Pass 2 failure is
+  // never fatal to the render.
+  let refined = false
+  let refineDurationMs: number | undefined = undefined
+  let refinePromptUsed: string | undefined = undefined
+  const wantRefine = input.request.refine === true
+  if (wantRefine) {
+    if (!input.openaiApiKey) {
+      console.warn(
+        `[houses/generate] refine requested but OPENAI_API_KEY not provided ` +
+        `— skipping Pass 2, returning Pass 1 output`
+      )
+    } else {
+      try {
+        const refineRes = await refineHouse({
+          imageB64:            b64,
+          aspectRatio,
+          resolvedEnvironment: environment,
+          presetId:            input.request.preset_id,
+          timeOfDay,
+          openaiApiKey:        input.openaiApiKey,
+        })
+        b64               = refineRes.imageB64
+        refined           = true
+        refineDurationMs  = refineRes.durationMs
+        refinePromptUsed  = refineRes.promptUsed
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : 'unknown'
+        console.error(`[houses/generate] refine failed, returning Pass 1: ${msg}`)
+      }
+    }
+  }
+
   // ── Stage 2: optional outpaint for external (frame) margin ──
   // Defaults to ON; pass expand:false to skip. Soft-fails to the
   // un-expanded image if Stability returns an error.
@@ -149,6 +200,9 @@ export async function generateHouse(input: {
     source_image_count:  allSources.length,
     lighting_variant_id: input.request.lighting_variant_id,
     aspect_ratio:        aspectRatio,
+    refined,
+    refine_duration_ms:  refineDurationMs,
+    refine_prompt_used:  refinePromptUsed,
     expanded,
     expand_duration_ms:  expandDurationMs,
     duration_ms:         Date.now() - t0,
@@ -156,7 +210,7 @@ export async function generateHouse(input: {
 
   console.log(
     `[houses/generate] done preset=${preset.id} ` +
-    `expanded=${expanded} duration_ms=${result.duration_ms}`
+    `refined=${refined} expanded=${expanded} duration_ms=${result.duration_ms}`
   )
 
   return result

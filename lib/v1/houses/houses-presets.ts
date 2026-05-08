@@ -13,6 +13,7 @@ import {
   COMPOSITION_BLOCK,
   STRUCTURE_FIDELITY_BLOCK,
   ENVIRONMENT_BLOCKS,
+  INTERIOR_LIGHTS_BLOCK,
   NIGHT_OVERRIDE_BLOCK,
   REFINEMENT_GUARD_BLOCK,
 
@@ -52,7 +53,9 @@ const SCULPTURE_CLAUSE =
 // ── REGISTRY ──────────────────────────────────────────────────
 // All 19 presets registered. UI lists them grouped by mode.
 //
-// `forcedEnvironment` — events lock to room_in_house (their room IS the scene).
+// `forcedEnvironment` — retained on the type but unused as of r2 (events
+//                       no longer force a room). Reserved for future presets
+//                       that may need to lock an environment.
 // `forcedTimeOfDay`   — haunted/fire/alien/snow_globe always night.
 //                       Day/Night toggle is hidden for those in the UI.
 //
@@ -188,6 +191,9 @@ export const PRESETS: Record<PresetId, Preset> = {
     mode:              'materials',
     label:             'Snow Globe',
     tier:              'signature',
+    forcedEnvironment: 'desk',   // LAYER_SNOW_GLOBE is a curated winter-
+                                  // cottage-interior atmosphere that won't
+                                  // resolve cleanly outdoors. Lock to desk.
     forcedTimeOfDay:   'night',  // night-only by spec
     sculptureClause:   SCULPTURE_CLAUSE,
     styleClause:       'Snow-covered scale model inside a transparent snow globe with frosted-rim glass — wintered night scene.',
@@ -248,17 +254,18 @@ export const PRESETS: Record<PresetId, Preset> = {
   },
 
   // ───────────────────────────────────────────────────────
-  // EVENTS (5) — all forcedEnvironment: 'room_in_house'
+  // EVENTS (5) — environment is user-selectable (desk or in_situ).
+  // Default in UI should be 'desk'. forcedEnvironment retired with
+  // room_in_house. Some still force night via forcedTimeOfDay.
   // ───────────────────────────────────────────────────────
   haunted: {
     id:                'haunted',
     mode:              'events',
     label:             'Haunted',
     tier:              'signature',
-    forcedEnvironment: 'room_in_house',
     forcedTimeOfDay:   'night',
     sculptureClause:   SCULPTURE_CLAUSE,
-    styleClause:       'Hand-crafted scale model of a haunted version of the building, sitting in a haunted room of itself.',
+    styleClause:       'Hand-crafted scale model of a haunted version of the building.',
     materialRule:      MATERIAL_HAUNTED,
     lighting:          LIGHTING_HAUNTED,
     layer:             LAYER_HAUNTED,
@@ -269,10 +276,9 @@ export const PRESETS: Record<PresetId, Preset> = {
     mode:              'events',
     label:             'Fire',
     tier:              'signature',
-    forcedEnvironment: 'room_in_house',
     forcedTimeOfDay:   'night',
     sculptureClause:   SCULPTURE_CLAUSE,
-    styleClause:       'Hand-crafted scale model of the building consumed by fire, sitting in a room sharing the disaster.',
+    styleClause:       'Hand-crafted scale model of the building consumed by fire.',
     materialRule:      MATERIAL_FIRE,
     lighting:          LIGHTING_FIRE,
     layer:             LAYER_FIRE,
@@ -283,9 +289,8 @@ export const PRESETS: Record<PresetId, Preset> = {
     mode:              'events',
     label:             'Explosion',
     tier:              'premium',
-    forcedEnvironment: 'room_in_house',
     sculptureClause:   SCULPTURE_CLAUSE,
-    styleClause:       'Hand-crafted scale model of the building struck by an explosion, sitting in a room blown open by the same blast.',
+    styleClause:       'Hand-crafted scale model of the building struck by an explosion.',
     materialRule:      MATERIAL_EXPLOSION,
     lighting:          LIGHTING_EXPLOSION,
     layer:             LAYER_EXPLOSION,
@@ -296,10 +301,9 @@ export const PRESETS: Record<PresetId, Preset> = {
     mode:              'events',
     label:             'Alien',
     tier:              'signature',
-    forcedEnvironment: 'room_in_house',
     forcedTimeOfDay:   'night',
     sculptureClause:   SCULPTURE_CLAUSE,
-    styleClause:       'Hand-crafted scale model of the building transplanted to an alien world, sitting in an alien research facility.',
+    styleClause:       'Hand-crafted scale model of the building transplanted to an alien world.',
     materialRule:      MATERIAL_ALIEN,
     lighting:          LIGHTING_ALIEN,
     layer:             LAYER_ALIEN,
@@ -310,9 +314,8 @@ export const PRESETS: Record<PresetId, Preset> = {
     mode:              'events',
     label:             'Abandoned',
     tier:              'premium',
-    forcedEnvironment: 'room_in_house',
     sculptureClause:   SCULPTURE_CLAUSE,
-    styleClause:       'Hand-crafted scale model of the building abandoned for decades, sitting in a forgotten room sharing the decay.',
+    styleClause:       'Hand-crafted scale model of the building abandoned for decades.',
     materialRule:      MATERIAL_ABANDONED,
     lighting:          LIGHTING_ABANDONED,
     layer:             LAYER_ABANDONED,
@@ -341,6 +344,37 @@ const NIGHT_OVERRIDE_SKIP: ReadonlySet<PresetId> = new Set<PresetId>([
   'fire',        // fire IS the light source
   'alien',       // alien moons + bioluminescence purpose-built
   'snow_globe',  // self-contained two-lamp + moonlight recipe
+])
+
+// ── INTERIOR LIGHTS GATE ──────────────────────────────────────
+// Lights are always on inside the house — INTERIOR_LIGHTS_BLOCK is
+// universally injected EXCEPT for presets where lit windows would
+// contradict the material/event.
+//
+// Solid-material exclusions (no interior to light): bronze, wax, alabaster,
+// gingerbread, watercolor_wood, carved_wood, carved_stone.
+//
+// Event exclusions: fire (electricity is out, the fire IS the interior
+// light), explosion (electricity knocked out by the blast), abandoned
+// (no one home for decades, lights long dark).
+//
+// Snow_globe skips because LIGHTING_SNOW_GLOBE already describes the
+// interior glow inside the dome in purpose-built terms.
+const INTERIOR_LIGHTS_SKIP: ReadonlySet<PresetId> = new Set<PresetId>([
+  // solid-material presets (no interior)
+  'bronze',
+  'wax',
+  'alabaster',
+  'gingerbread',
+  'watercolor_wood',
+  'carved_wood',
+  'carved_stone',
+  // material with purpose-built interior glow language
+  'snow_globe',
+  // events that contradict lit windows
+  'fire',
+  'explosion',
+  'abandoned',
 ])
 
 // ── PROMPT BUILDER ────────────────────────────────────────────
@@ -386,6 +420,12 @@ export function buildPresetPrompt(input: {
     envBlock,
     lightingBlock,
   ]
+
+  // Interior lights — always-on for non-solid presets. Pulled out of
+  // NIGHT_OVERRIDE so warm window glow shows up in day mode too.
+  if (!INTERIOR_LIGHTS_SKIP.has(input.preset.id)) {
+    blocks.push(INTERIOR_LIGHTS_BLOCK)
+  }
 
   // Night override — added when tod resolves to 'night' AND the preset
   // doesn't carry its own night-specific lighting (skip set above).

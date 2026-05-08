@@ -12,8 +12,13 @@
 //   REQUIRED: atmospheric haze, luminous quality, diffused,
 //             "slightly brighter toward the back-upper area"
 //
-// Block lengths sized so a fully-assembled prompt sits at 2,800–3,300 chars,
-// the action-minis-tested figure-quality safe zone (max ~3,500 before drift).
+// PROMPT SIZE: Houses prompts run 6,000-8,000 chars in worst case (haunted/
+// alien with desk + INTERIOR_LIGHTS). The action-minis-tested 3,300-char
+// "drift threshold" was originally inherited from the smaller-figure silo;
+// in practice Houses has been operating well above it (5,500+ baseline)
+// without observable drift on architecturally complex sources. If drift
+// emerges, candidates to trim first: DESK_BLOCK prop detail, LAYER_*
+// mood-extensions, INTERIOR_LIGHTS_BLOCK length.
 
 import type { EnvironmentId } from './houses-shared'
 
@@ -82,26 +87,21 @@ Depth of field is strong: plinth and model razor sharp; everything beyond melts 
 
 const DESK_BLOCK = `
 ENVIRONMENT — DESK:
-The scale model on its circular wooden plinth sits on a large dark walnut desk — book-matched grain, deep satin finish, the desk surface extending well beyond the plinth in every direction.
-A hardcover book lies open to the left. Reading glasses rest folded to the right. A small ceramic mug sits nearby. The desk surface holds a soft reflection of the plinth and the lower part of the model.
-The room beyond is a warm study softly out of focus — bookshelves, framed paintings, the edge of a chair visible. Everything behind the desk is in soft warm bokeh — a real room subordinate to the artifact.
-Warm directional daylight wraps the model from one side. No visible light fixtures in frame.
-The diorama is a small precious object on a large desk — the camera pulls back to show the whole scene.
-`.trim()
+The miniature on its circular wooden plinth sits on a large rich walnut desk — book-matched grain richly figured with flowing chocolate-brown streaks and amber undertones, beautifully polished to a deep satin luster, the warm wood softly reflecting directional light along its surface. The desk extends generously beyond the plinth in every direction.
 
-const ROOM_IN_HOUSE_BLOCK = `
-ENVIRONMENT — ROOM IN THIS HOUSE:
-The plinth sits on a side table or pedestal inside an interior room of this very house — the room's character matches the building's architectural style and the mood of the preset (period parlor, vintage study, restored hall).
-The room is in soft focus around the plinth — period furniture, wallpaper or paneling, framed art, an architectural detail glimpsed beyond. The plinth and the model on it are razor sharp; the room recedes into atmospheric blur.
-The artifact is displayed inside the very space it depicts — a model of the house, sitting in the house.
-Soft directional natural light appropriate to the room's mood. No visible light fixtures in frame.
-The diorama is a small precious object inside a large room — the camera pulls back to show the whole scene.
+MINIATURE SCALE ANCHOR — NON-NEGOTIABLE:
+The plinth occupies less than a third of the desk's depth. Generous warm walnut surface is visible on all sides between the plinth's edge and the desk's edges. Read the diorama at the scale of a coffee table book or a serving platter — a small precious object resting on a large desk. NEVER read it as a full-size dollhouse, NEVER let it dominate the room as the room's main feature.
+
+A leather-bound hardcover book lies open to the left, pages catching warm light. Reading glasses rest folded to the right, lenses glinting softly. A small ceramic mug holds what reads as steaming tea or coffee. The desk surface holds a soft warm reflection of the plinth and the lower part of the model.
+
+The room beyond is a warm study softly out of focus — bookshelves, framed paintings, the edge of a chair. Everything behind the desk is in soft warm bokeh — a real room subordinate to the artifact.
+
+Warm directional light wraps the model from one side. No visible light fixtures in frame. The camera pulls back to show the whole scene.
 `.trim()
 
 export const ENVIRONMENT_BLOCKS: Record<EnvironmentId, string> = {
-  in_situ:       IN_SITU_BLOCK,
-  desk:          DESK_BLOCK,
-  room_in_house: ROOM_IN_HOUSE_BLOCK,
+  in_situ: IN_SITU_BLOCK,
+  desk:    DESK_BLOCK,
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -176,6 +176,10 @@ LIGHTING: Warm cinematic haze, slightly brighter toward the back-upper area — 
 export const LAYER_SUMMER = `
 SEASON LAYER — FULL SUMMER:
 Trees in deep rich green at peak canopy. Lawns lush and thick. Dense layered foundation plantings — cottage-style perennials in tidy drifts, clipped shrubs, neat front walk to the porch steps. The landscape at its most abundant — full canopy, vivid color throughout, freshly maintained.
+
+THE SUMMER EXTENDS TO THE SURROUNDING SCENE:
+On a desk: the room beyond carries warm summer afternoon light through the window, late-afternoon golden glow settling into the warm walnut study, the room feels comfortable and richly summer.
+In environment: the outdoor yard around the plinth shows the same full canopy and high-summer abundance, the actual full-size house in the background bathed in summer afternoon light.
 `.trim()
 
 // ── HAUNTED (event) ───────────────────────────────────────────
@@ -201,7 +205,11 @@ OVERALL: dual-tone palette — warm amber from the lamp meeting cold silver-blue
 
 export const LAYER_HAUNTED = `
 EVENT LAYER — HAUNTING:
-Years of supernatural neglect on the structure. Room around the plinth carries the same haunting — dark Victorian parlor, heavy paneling, leather-bound books in shadow, peeling wallpaper, cobwebs in corners.
+Years of supernatural neglect on the structure.
+
+THE DIORAMA'S WORLD EXTENDS TO THE SURROUNDING SCENE:
+On a desk: the room shares the haunting — dark Victorian parlor, heavy paneling, leather-bound books in shadow, peeling wallpaper, cobwebs in corners.
+In environment: the outdoor yard around the plinth carries the same haunted mood — dead leafless trees against a moonlit sky, low ground fog drifting across the lawn, the actual full-size house in the background also reading neglected and shadowed.
 
 REQUIRED YARD POPULATION (must appear):
 - A wrought-iron Victorian streetlamp prominent in the yard, glowing warm amber.
@@ -229,24 +237,43 @@ REFINEMENT GUARD: Material, staging, lighting, scene composition, and overall at
 `.trim()
 
 // ═══════════════════════════════════════════════════════════════
+// 4a. INTERIOR LIGHTS — always-on for non-solid presets
+// ═══════════════════════════════════════════════════════════════
+// Lights are always on inside the model, day or night. Pulled out of
+// NIGHT_OVERRIDE_BLOCK so the warm window glow shows up regardless of
+// time of day. Skipped for solid-material presets where windows aren't
+// lit by definition (bronze, wax, alabaster, gingerbread, watercolor,
+// carved wood, carved stone). The skip set lives in houses-presets.ts.
+
+export const INTERIOR_LIGHTS_BLOCK = `
+INTERIOR LIGHTS — ALWAYS PRESENT:
+Several windows on the model glow with warm amber interior light — never every window, but a realistic mix. Some windows show steady warm amber pooling at the lower portion of the pane where curtains or blinds end. Others reveal cooler indirect glow further back inside the room — dimmer, more diffuse. One or two suggest furniture in soft silhouette against the warm glow.
+
+Lit windows cast warm rectangles of light onto the porch, eaves, or ground below — broken by window mullions into bars of shadow. Unlit windows read as dark glass reflecting the exterior sky.
+
+The interior glow is present in day and night both — a real house with people inside, lived-in feel. The interior warmth never overpowers the model's exterior lighting; it is a contributing accent that adds life, never a dominant source.
+`.trim()
+
+// ═══════════════════════════════════════════════════════════════
 // 5. NIGHT-OVERRIDE BLOCK — composed in when time_of_day resolves to night
 // ═══════════════════════════════════════════════════════════════
 // Shared night atmosphere for every preset that supports day/night and
-// has resolved to night. Provides the lampost + interior glow + nearby
-// lamp + moonlight kit we proved on Haunted, generalized.
+// has resolved to night. Provides streetlamp + cool moonlight kit.
+// Interior glow is now owned by INTERIOR_LIGHTS_BLOCK (always-on) — this
+// block adds night-only sources and the cold rim. The original "warm
+// desk lamp casts soft amber ambient light from one side" line was
+// removed because DESK_BLOCK forbids visible light fixtures in frame.
 //
 // Preset-specific night moods (haunted dread, alien glow, abandoned
-// melancholy) keep their OWN lighting blocks too — this is added on top.
+// melancholy) keep their OWN lighting blocks — this is added on top.
 
 export const NIGHT_OVERRIDE_BLOCK = `
 TIME OF DAY — NIGHT:
-The scene is at night. Three additional light sources frame the model:
-- A wrought-iron streetlamp stands prominently in the model's yard, glowing warm amber, casting upward light onto the lower siding and porch — strong enough to act as a secondary key on the lower stories.
-- Faint warm interior lights are visible inside the model — partially obscured by curtains and furniture in soft silhouette, several windows showing a lived-in glow rather than blank dark panes.
-- In the room beyond the plinth, a warm desk lamp sits nearby, casting soft amber ambient light onto the model from one side.
-- Cool moonlight enters through a window in the room background, supplying a cold silver-blue rim along the away side of the model.
+The scene is at night. Two additional light sources frame the model:
+- A wrought-iron streetlamp stands prominently in the model's yard, glowing warm amber, casting upward warmth onto the lower siding and porch — strong enough to act as a secondary key on the lower stories.
+- Cool moonlight enters from above, supplying a cold silver-blue rim along the away side of the model.
 
-The dual-tone palette reads clearly: warm amber from the lamp and interior glow + cool silver-blue from the moonlight. Every architectural detail readable in the warm pools, falling to cool shadow on the moon side. Deep night atmosphere everywhere outside the lit pools.
+Dual-tone palette reads clearly: warm amber from the streetlamp meeting cool silver-blue from the moon. Every architectural detail readable in the warm pools, falling to cool shadow on the moon side. Deep night atmosphere everywhere outside the lit pools.
 `.trim()
 
 // ═══════════════════════════════════════════════════════════════
@@ -414,6 +441,10 @@ SEASON LAYER — SPRING:
 Fresh young foliage — bright lime and yellow-green, trees not yet at full canopy. Flowering shrubs and blooming perennials: cherry blossom, tulips, daffodils in bloom. New grass vivid and fresh. Petals scattered on the pathway and garden beds. Hopeful, fresh, full of color.
 
 Property layout: a mature shade tree to the right at scale, slightly larger flanking tree to the left. Naturalistic garden style — soft-edged beds, native perennials in layered drifts, stepping stones set into ground cover, a few small natural boulders. The lawn lush and green, edges soft but maintained. Walkway runs from the porch toward the plinth edge, ending in lawn before the rim.
+
+THE SPRING EXTENDS TO THE SURROUNDING SCENE:
+On a desk: the room beyond carries fresh bright spring light through the window, a faint floral airiness, warm but not summer-hot.
+In environment: the outdoor yard around the plinth shows the same fresh foliage, blooming perennials, and lush spring grass, the actual full-size house in the background rendered in spring light.
 `.trim()
 
 // ── FALL ─────────────────────────────────────────────────────
@@ -426,6 +457,10 @@ SEASON LAYER — FALL:
 Trees ablaze with amber, orange, and deep red foliage at peak color. Fallen leaves scattered naturally across the lawn, pathway, and base. Dried flower stalks, ornamental grasses, late-season mums in rust and gold. Peak autumn — rich, warm, deeply beautiful.
 
 Property layout: a mature shade tree to the right at scale, slightly larger flanking tree to the left, both in peak color. Classic American neighborhood garden — symmetrical foundation plantings, clipped boxwood spheres, neat seasonal annuals lining the walk. Walkway runs from the porch toward the plinth edge, ending in lawn before the rim.
+
+THE AUTUMN EXTENDS TO THE SURROUNDING SCENE:
+On a desk: the room beyond is bathed in warm golden afternoon light through the window, the late-October golden hour glowing across every surface.
+In environment: the outdoor yard around the plinth shows the same blazing autumn color, fallen leaves, and warm afternoon mood, the actual full-size house in the background flanked by autumn-colored trees.
 `.trim()
 
 // ── WINTER ───────────────────────────────────────────────────
@@ -438,6 +473,10 @@ SEASON LAYER — WINTER:
 Bare branched trees with stark elegant silhouettes. Light dusting of snow on the roof, base edge, and along the pathway. Frost on the ground, muted cool tones, minimal ground vegetation. Quiet, still, serene.
 
 Property layout: a well-shaped ornamental tree to the right at scale, matching slightly larger tree to the left, both bare-branched. Formal symmetrical garden style — clipped evergreen hedges defining bed edges with clean geometric lines, matching topiaries flanking the front walk. The walk runs centered toward the plinth edge, ending in snow-dusted lawn before the rim.
+
+THE WINTER EXTENDS TO THE SURROUNDING SCENE:
+On a desk: the room beyond carries pale cool winter light through the window with a faint chill in the air, snowfall possibly visible outside the window, the warm walnut study contrasting with the cold winter visible beyond.
+In environment: the outdoor yard around the plinth shows the same bare trees, snow-dusted lawn, and crisp winter stillness, the actual full-size house in the background under the same winter conditions — snow on its roof, bare flanking trees.
 `.trim()
 
 // ═══════════════════════════════════════════════════════════════
@@ -465,7 +504,11 @@ Secondary cool moonlight provides a faint silver-blue rim along the away side of
 
 export const LAYER_FIRE = `
 EVENT LAYER — FIRE AFTERMATH:
-The structure burns in real time — flames visible through window openings and roof breaches, smoke drifting upward into the night sky. The room around the plinth carries the scene: the room itself shows fire damage, one wall partially burnt through, charred ceiling beams above, a pool of firefighters' water on the desk reflecting the burning model. Embers and ash drift in the air.
+The structure burns in real time — flames visible through window openings and roof breaches, smoke drifting upward into the night sky. Embers and ash drift in the air. The yard around the structure is scorched — ash-grey ground, charred stumps where trees stood, blackened debris scattered across the plinth surface.
+
+THE FIRE EXTENDS TO THE SURROUNDING SCENE:
+On a desk: the room shares the disaster — fire-damaged walls, charred ceiling beams above, a pool of firefighters' water on the desk surface reflecting the burning model, embers landing on the desk surface.
+In environment: the outdoor yard around the plinth shows broader scorched ground, broken charred trees, ember-glow in the deep night, and the actual full-size house in the background also showing fire damage and smoke.
 `.trim()
 
 // ── EXPLOSION ─────────────────────────────────────────────────
@@ -482,7 +525,11 @@ LIGHTING: Harsh dramatic atmospheric haze — dust-thick air around the model wh
 
 export const LAYER_EXPLOSION = `
 EVENT LAYER — EXPLOSION AFTERMATH:
-The blast radius extends across the plinth — debris (bricks, timber, shattered glass, broken furniture fragments) scattered widely around the structure. The room around the plinth carries the same destruction: a massive jagged hole through one wall and ceiling, the hole revealing dust-thick night sky beyond. Plaster dust still settling, overturned furniture in violent disarray, a swinging emergency bulb casting hard moving shadows.
+The blast radius extends across the plinth — debris (bricks, timber, shattered glass, broken furniture fragments) scattered widely around the structure. Plaster and ash still settling. A scorched crater visible in the yard near the structure.
+
+THE DESTRUCTION EXTENDS TO THE SURROUNDING SCENE:
+On a desk: the room shares the same blast — a massive jagged hole through one wall and ceiling, plaster dust still settling, overturned furniture in violent disarray, debris on the desk surface.
+In environment: the outdoor yard around the plinth shows broader debris fields, knocked-over trees, scorched ground spreading outward from the impact, and the actual full-size house in the background also showing blast damage.
 `.trim()
 
 // ── ALIEN ─────────────────────────────────────────────────────
@@ -505,7 +552,9 @@ The diorama base is alien terrain — bioluminescent ground cover in electric te
 
 Alien creatures in the yard: 2-3 small insect-like creatures with translucent exoskeletons, a large long-necked creature peering over the roofline with curious enormous eyes, small frilled lizard-creatures clinging to walls, membrane-winged flyers circling above.
 
-The room beyond is an alien research facility — curved organic walls of bone-ceramic material, holographic display screens floating in the air, crystalline scientific instruments on articulated arms taking readings. Cold blue-white clinical lighting with teal and violet accents. The model is being studied and catalogued.
+THE ALIEN WORLD EXTENDS TO THE SURROUNDING SCENE:
+On a desk: the room beyond is an alien research facility — curved organic walls of bone-ceramic material, holographic display screens floating in the air, crystalline scientific instruments on articulated arms taking readings, alien specimen jars on curved shelves, cold blue-white clinical lighting with teal and violet accents. The model is being studied and catalogued.
+In environment: the outdoor yard around the plinth shows the wider alien landscape — more bioluminescent flora, more crystal formations, two moons low on the horizon (one large and close, one small and distant), the sky deep burnt orange fading to purple-black, and the actual full-size house in the background also recontextualized on this alien world.
 `.trim()
 
 // ── ABANDONED ─────────────────────────────────────────────────
@@ -522,5 +571,11 @@ LIGHTING: Warm melancholic atmospheric haze — dim diffused gold-amber luminous
 
 export const LAYER_ABANDONED = `
 EVENT LAYER — ABANDONED FOR DECADES:
-The landscaping completely consumed by nature — wild growth, dead trees, chest-high weeds. The pathway buried under vegetation. The yard a wilderness, the house being swallowed by the earth. Around the plinth, the room is forgotten too — thick dust on every surface, cobwebs across corners, peeling wallpaper hanging in strips, floorboards warped and buckled, broken furniture tipped over. A mirror cracked and clouded with age. Time stopped here decades ago. Eerie, deeply melancholic, beautiful in decay.
+The landscaping completely consumed by nature — wild growth, dead trees, chest-high weeds. The pathway buried under vegetation. The yard a wilderness, the house being swallowed by the earth.
+
+THE DECAY EXTENDS TO THE SURROUNDING SCENE:
+On a desk: the room is forgotten too — thick dust on every surface, cobwebs across corners, peeling wallpaper hanging in strips, floorboards warped and buckled, broken furniture tipped over, a mirror cracked and clouded with age.
+In environment: the outdoor yard around the plinth is overgrown wilderness — dead trees, decades-old neglect visible in every direction, the actual full-size house in the background also abandoned and overgrown, vines climbing its walls, windows broken.
+
+Time stopped here decades ago. Eerie, deeply melancholic, beautiful in decay.
 `.trim()
