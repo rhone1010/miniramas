@@ -100,7 +100,7 @@ export function buildPass1PlaqueBlock(input: {
   if (input.mode === 'user' && input.text) {
     const safe = input.text.replace(/"/g, '\\"')
     return `PLAQUE:
-A small brass plaque is mounted on the front rim of the walnut plinth. The plaque is brushed brass or aged bronze, physically embedded, properly scaled, and engraved (never printed or overlaid). The plaque reads exactly: "${safe}".
+A small brass plaque is mounted on the front rim of the walnut plinth — at most 3% of the image height, never the visual hero of the image. The plaque is brushed brass or aged bronze, physically embedded, properly scaled, and engraved (never printed or overlaid). The plaque reads exactly: "${safe}".
 
 Render the text clearly, legibly, and centered, in restrained engraved capitals. Do not modify, expand, paraphrase, or reinterpret the text. Do not add any other text on the plaque. Plaque text must never include timestamps, filenames, "Screenshot", system strings, or technical metadata — only the exact text given above.`
   }
@@ -117,7 +117,7 @@ Render the text clearly, legibly, and centered, in restrained engraved capitals.
           : 'Take inspiration from the scene itself.'
 
     return `PLAQUE:
-A small brass plaque is mounted on the front rim of the walnut plinth. The plaque is brushed brass or aged bronze, physically embedded, properly scaled, and engraved (never printed or overlaid).
+A small brass plaque is mounted on the front rim of the walnut plinth — at most 3% of the image height, never the visual hero of the image. The plaque is brushed brass or aged bronze, physically embedded, properly scaled, and engraved (never printed or overlaid).
 
 Compose a refined engraved title for the plaque following these rules exactly:
 - Title Case
@@ -147,5 +147,5 @@ There is no plaque on the plinth in this composition. Do not add a plaque, label
   }
   // user or ai — preserve whatever Pass 1 rendered.
   return `PLAQUE:
-A brass plaque is present on the front rim of the plinth. Preserve its text exactly as it appears in the source image — do not modify, replace, paraphrase, or invent new text. Render the existing text more clearly and legibly while keeping the content unchanged. If the plaque appears blank in the source, keep it blank — do not invent text. Plaque text must never include timestamps, filenames, "Screenshot", or technical metadata under any circumstance.`
+A brass plaque is present on the front rim of the plinth — at most 3% of the image height, never the visual hero. Preserve its text exactly as it appears in the source image — do not modify, replace, paraphrase, or invent new text. Render the existing text more clearly and legibly while keeping the content unchanged. If the plaque appears blank in the source, keep it blank — do not invent text. Plaque text must never include timestamps, filenames, "Screenshot", or technical metadata under any circumstance.`
 }

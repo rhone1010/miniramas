@@ -200,16 +200,28 @@ export function migrateCameraAngleID(raw: string | null | undefined): CameraAngl
 // ── SCALE (canvas occupancy) ──────────────────────────────────
 // Two options now. 'zoom_out' (60%) removed — wasn't being used and the
 // LOW_VERTICAL_BLOCK now handles the open-frame compositions naturally.
+//
+// HEADS UP — ID/LABEL SEMANTIC MISMATCH:
+//   Internal IDs and user-facing labels do not align by name. This is
+//   intentional — internal IDs stay stable for code stability; UI
+//   labels evolve as the product matures. Current mapping:
+//
+//     ID 'close_up' (75% canvas) → label "Staged"
+//     ID 'fill'     (90% canvas) → label "Close Up"
+//
+//   When reading code that references scale by ID, treat the ID as a
+//   stable identifier — not a description of the rendered output. The
+//   user-facing semantic is in SCALE_LABELS below.
 export type ScaleID = 'close_up' | 'fill'
 
 export const SCALE_LABELS: Record<ScaleID, string> = {
-  close_up: 'Close Up',
-  fill:     'Fill',
+  close_up: 'Staged',
+  fill:     'Close Up',
 }
 
 export const SCALE_DESCRIPTIONS: Record<ScaleID, string> = {
-  close_up: '~65–80% canvas — tighter composition, base fully visible',
-  fill:     '~85–95% canvas — fills the frame, plinth fully visible with minimal margin',
+  close_up: '~65–80% canvas — staged composition with environmental breathing room around the diorama',
+  fill:     '~85–95% canvas — diorama dominates the frame, plinth fully visible with minimal margin',
 }
 
 export const DEFAULT_SCALE: ScaleID = 'close_up'

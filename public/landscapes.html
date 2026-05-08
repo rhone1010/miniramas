@@ -986,11 +986,14 @@ const ENVIRONMENTS = [
 const ASPECTS = ['1:1', '3:2', '2:3', '4:3', '3:4', '16:9'];
 
 // Scale axis — two buttons aligned with engine schema (close_up/fill).
-// Zoom Out (60%) was removed; LOW_VERTICAL_BLOCK now handles open-frame
-// compositions naturally for low-vertical sources.
+// HEADS UP: ID/label semantic mismatch is intentional. ID 'close_up'
+// surfaces as "Staged" (75% — diorama with environmental staging);
+// ID 'fill' surfaces as "Close Up" (90% — diorama dominates frame).
+// Internal IDs stay stable for code stability; labels reflect current
+// product naming. See SCALE_LABELS in landscapes-shared.ts.
 const SCALES = [
-  { id: 'close_up', label: 'Close Up', pct: 75 },
-  { id: 'fill',     label: 'Fill',     pct: 90 },
+  { id: 'close_up', label: 'Staged',   pct: 75 },
+  { id: 'fill',     label: 'Close Up', pct: 90 },
 ];
 const SCALE_BY_ID = Object.fromEntries(SCALES.map(s => [s.id, s]));
 
@@ -1398,7 +1401,7 @@ function renderSourceBody(src) {
       </div>
     </div>
 
-    <!-- Scale (Zoom Out / Close Up / Subject) -->
+    <!-- Scale (Staged / Close Up) -->
     <div class="field">
       <span class="field-label">Scale<span class="field-meta">canvas occupancy</span></span>
       <div class="pill-group" data-field="scale">

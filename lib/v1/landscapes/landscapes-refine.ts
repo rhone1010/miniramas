@@ -18,38 +18,58 @@
 //
 // REVISION HISTORY:
 //   • r1: Pass 2 added (separate from Pass 1 NB2 generation)
-//   • r2: env-aware reinforcement (controlled vs in_situ) added because
-//         gpt-image-1's product-photo prior was reintroducing wood tables
-//         under outdoor in-situ dioramas
+//   • r2: env-aware reinforcement (controlled vs in_situ) added
 //   • r3: compressed ~30% by deduping vs PASS2_ADDON, extracted
-//         CONTAINMENT as a named prominent block with explicit ban on
-//         glass dome / bell jar / cloche / display case, dome-canopy
-//         loophole closed
+//         CONTAINMENT as a named prominent block
 //   • r4: CONTAINMENT extended to ban floating atmospheric phenomena
-//         (clouds/sun-discs/halos) hovering above the diorama as filler
-//   • r5: in-situ env block header → "IN-ENVIRONMENT" matching
-//         user-facing label. Internal env ID stays 'in_situ' for code
-//         stability.
-//   • r6 (this): two coordinated changes addressing the "muted beams
-//         + flat brightness" symptom in current renders.
+//   • r5: in-situ env block header → "IN-ENVIRONMENT"
+//   • r6: PASS2_LIGHTING flipped from constrain-down to preserve;
+//         PASS2_REALISM plinth phrase rewritten for consolidated
+//         PLINTH_BLOCK
+//   • r7: 1.45× exposure anchor + local-variance directive added;
+//         organic-overgrowth exception mirrored from SPATIAL_RULES;
+//         3-element plinth profile lockstep with new PLINTH_BLOCK
+//   • r8: tiered luminance (subject 1.45× + foreground 1.2× +
+//         baseline); PLINTH gained 4:1 scene-to-plinth ratio + "err
+//         thinner" hedge in lockstep with effects.ts
+//   • r9: PLINTH height anchor reworked. Three competing relative
+//         ratios (1/10 diameter + 4:1 scene-to-plinth + "err thinner")
+//         were diluting each other and not landing a specific
+//         thickness. Replaced with a single direct frame-relative
+//         ceiling: "no more than 5% of image height". Profile
+//         simplified from 3-element (bead / flat middle / base
+//         molding) to 2-element trim (subtle top chamfer + rolled
+//         bottom molding) with no minimum vertical extent on the
+//         cylindrical body. The "flat middle" was implicitly
+//         demanding vertical real estate. Lockstep with effects.ts
+//         PLINTH_BLOCK.
+//   • r10 (this): three coordinated changes after a Desk-environment
+//         render produced an arched-display-panel failure (curved
+//         flat panel with the scene printed on it, mounted on a
+//         correct plinth). Negative directives were not enough — no
+//         positive 3D-physical assertion was anywhere in the prompt.
 //
-//         (a) PASS2_LIGHTING flipped from constrain-down to preserve.
-//             Previous wording — "atmospheric effects appear only as
-//             physically justified" — was Pass 2 actively suppressing
-//             the volumetric drama Pass 1 established. New wording
-//             explicitly preserves Pass 1's god-rays, sun shafts,
-//             moonbeams, and beam-on-mist interaction; refines for
-//             miniature-scale credibility without muting. Adds
-//             localized luminance shaping language matching Pass 1's
-//             new focal directive ("brightest points in the frame").
+//         (a) PASS2_CONTAINMENT opens with a 3D-physical assertion:
+//             "real 3D physical content — actual miniature trees,
+//             dirt, stone, water — standing as solid objects on the
+//             plinth's flat top surface. Never a printed image,
+//             billboard, curved panel, framed picture, or display
+//             screen." Mirrors PLINTH_BLOCK opening in effects.ts.
 //
-//         (b) PASS2_REALISM plinth phrase rewritten in lockstep with
-//             effects.ts new PLINTH_BLOCK. Pass 1 says "low turned-wood
-//             disc with a single soft curved side wall, never tiered or
-//             stacked"; Pass 2 must say the same thing or gpt-image-1
-//             reverts the plinth shape. Lockstep is critical — if the
-//             two passes describe the plinth differently, Pass 2 wins
-//             and the regression returns.
+//         (b) PASS2_CONTAINMENT restructured to consolidate the
+//             organic boundary handling (ground encouraged + vertical
+//             canopy + 5% image width), the no-enclosure rule
+//             ("no vertical, curved, or round cropping line above
+//             the base"), and source-arch reinterpretation. Mirrors
+//             SPATIAL_RULES_BLOCK in effects.ts.
+//
+//         (c) Inline user-mode plaque block updated: plaque
+//             proportion switched from "≤ three-quarters the plinth's
+//             height" to "≤ 3% of image height". Frame-relative anchor
+//             matching the plinth's frame-relative 5% ceiling. With
+//             plinth at 5% and plaque at 3%, plaque reads as visually
+//             subordinate without depending on the model computing a
+//             ratio of one variable thing to another.
 //
 // Failure of this stage is non-fatal. The caller is expected to fall
 // back to the Pass 1 output if refine throws.
@@ -66,41 +86,53 @@ import { buildPass2PlaqueBlock } from './landscapes-plaque'
 const PASS2_CORE = `Transform this miniature diorama into a gallery-quality photograph of a real handcrafted scale model. Preserve the source image's composition, camera, plinth, ground, and scene boundaries exactly. Refine realism only — no layout changes, no environment substitution, no scene redesign.`
 
 // REALISM — material, texture, micro-detail, natural variation.
-// Plinth language must match effects.ts PLINTH_BLOCK — any mismatch
-// lets gpt-image-1's product-base prior pull the plinth shape away
-// from Pass 1.
+// Plinth language must match effects.ts PLINTH_BLOCK exactly. Single
+// frame-relative height ceiling (5% of image height); 2-element trim
+// (subtle top chamfer + rolled bottom molding); cylindrical body has
+// no minimum vertical extent.
 const PASS2_REALISM = `REALISM:
-Each material reads at miniature scale with natural imperfection. Terrain: fine grit, irregular variation. Vegetation: organic density, randomized non-repeating branching, dense chaotic micro-structure. Water (when present): depth, reflection, transparency, surface variation. Stone, soil, bark, grass, foliage: distinct miniature-scale texture. Walnut plinth: low turned-wood disc with a single soft curved side wall — never tiered, stacked, slab-like, or chunky. Richly figured grain in walnut or mahogany, deep polished sheen. Visual interest from grain, not profile. Plinth front rim stays clean — no fallen branches, twigs, or debris at the front edge. Edges read as physically constructed, not digitally generated. Atmospheric effects (mist, fog, light rays) vary spatially — localized pockets influenced by terrain and water, never uniform. Edge transitions at the diorama boundary feel naturally broken via vegetation, soil variation, rocks, or erosion. Avoid smoothing, plastic finish, repeated patterns, symmetric arrangements, sparse uniformity.`
+Each material reads at miniature scale with natural imperfection. Terrain: fine grit, irregular variation. Vegetation: organic density, randomized non-repeating branching, dense chaotic micro-structure. Water (when present): depth, reflection, transparency, surface variation. Stone, soil, bark, grass, foliage: distinct miniature-scale texture. Walnut plinth: thin turned-wood disc with two restrained trim elements — a subtle chamfer or small bullnose at the upper edge (barely a feature), and a slightly more prominent rolled base molding at the bottom that curves outward. The cylindrical body between has no minimum vertical extent. Plinth's total vertical thickness occupies no more than 5% of the image height — read it as a serving tray rim or watch case bottom, never a pedestal, drum, or tier. Err thinner, never thicker. Richly figured grain in walnut or mahogany, deep polished sheen. Visual interest from grain and the restrained trim, not from height. Plinth front rim stays clean — no fallen branches, twigs, or debris at the front edge. Edges read as physically constructed, not digitally generated. Atmospheric effects (mist, fog, light rays) vary spatially — localized pockets influenced by terrain and water, never uniform. Edge transitions at the diorama boundary feel naturally broken via vegetation, soil variation, rocks, or erosion. Avoid smoothing, plastic finish, repeated patterns, symmetric arrangements, sparse uniformity.`
 
 // LIGHTING — preserve Pass 1's atmospheric phenomena, refine for
-// miniature-scale credibility. Localized luminance shaping mirrors
-// Pass 1's focal directive so the painter actually paints the
-// hierarchy Pass 1 structured.
+// miniature-scale credibility. Tiered luminance:
+//   • Subject tier 1.45× — hero, plaque, standout features
+//   • Foreground tier 1.2× — front quarter of scene, depth separation
+//   • Background — baseline, deliberately darker
+// Local-variance directive prevents gpt-image-1 from rendering
+// brightened features as uniform wash.
 const PASS2_LIGHTING = `LIGHTING:
-The diorama renders brighter than its surroundings with directional shadow falloff. Localized luminance shaping: hero subject, plaque, and standout features are the brightest points in the frame; surroundings are deliberately underexposed by comparison. PRESERVE Pass 1's atmospheric phenomena — visible sun shafts, god-rays, moonbeams, beam-interaction with mist and particulate, the dramatic volumetric depth Pass 1 established. Refine these for physical believability and miniature-scale credibility; do not mute, soften, or remove them.`
+The diorama renders brighter than its surroundings with directional shadow falloff. Apply tiered localized luminance for depth:
+
+Subject tier (~1.45× exposure): hero subject, plaque, and standout compositional features (docks, walkways, structures, water reflections) — the brightest points in the frame.
+
+Foreground tier (~1.2× exposure): elements in the front quarter of the diorama scene (near-rim ground content, foreground grass, props closest to the viewer) that aren't already in the subject tier — softer lift establishing near-to-far depth separation.
+
+Background and surroundings remain at baseline, deliberately underexposed by comparison.
+
+Within the lifted tiers, lighting varies locally — facets, edges, and surfaces catch light at different intensities, never a uniform wash. PRESERVE Pass 1's atmospheric phenomena — visible sun shafts, god-rays, moonbeams, beam-interaction with mist and particulate, the dramatic volumetric depth Pass 1 established. Refine these for physical believability and miniature-scale credibility; do not mute, soften, or remove them.`
 
 // CONTAINMENT — physical-vs-atmospheric containment + plinth
-// geometry lock + offscreen handling + forced-perspective preservation.
-// Handles four failure modes:
-//   1. Physical scene (path/meadow/water) extending past plinth into a
-//      forced-perspective horizon, treating the wooden ring as a
-//      decorative inset on a real landscape.
-//   2. Floating atmospheric phenomena (clouds/sun-discs/halos) hovering
-//      above the diorama as objects.
-//   3. Glass dome / canopy enclosures arching over the scene.
-//   4. Wooden arch growing FROM the plinth itself (canopy-as-dome
-//      loophole — the arch is technically continuous with the plinth's
-//      material, so it evaded the glass-dome ban).
+// geometry lock + organic boundary handling + no-enclosure rule.
+// Mirrors SPATIAL_RULES_BLOCK in effects.ts. Carries a positive
+// 3D-physical assertion at the open since Pass 2 needs to defend
+// against any 2D-display-panel interpretation Pass 1 may have started.
 const PASS2_CONTAINMENT = `CONTAINMENT (CRITICAL):
-The diorama is always open-air. The plinth is the only structure beneath the diorama, and the plinth's edge is the absolute boundary of the physical scene.
+The diorama is always real 3D physical content — actual miniature trees, dirt, stone, water, structures — standing as solid objects on the plinth's flat top surface. Never a printed image, painted scene, billboard, curved display panel, framed picture, or display screen. The plinth's edge is the absolute boundary of the physical scene.
 
-PHYSICAL elements — terrain, water, vegetation, structures, paths, rocks, props, figures — sit on or inside the wooden plinth. Never let physical content extend past the wooden disc, even when forced perspective or elevated angles create the illusion of a vast landscape. The foreshortening lives INSIDE the plinth, not beyond it. The plinth is not a decorative ring inset on a larger real landscape; it is the entire stage.
+PHYSICAL elements — terrain, water, constructed structures, paths, rocks, props, figures — sit on or inside the wooden plinth. Constructed elements never overhang or extend past the plinth edge. The plinth is not a decorative ring inset on a larger landscape; it is the entire stage.
 
-ATMOSPHERIC phenomena (fog, mist, light shafts, distant blur, haze) may extend past the plinth as background ambience — never as solid floating objects. No floating clouds, sun discs, halos, or fog masses hovering above the scene as filler.
+ORGANIC BOUNDARY HANDLING:
+Ground-level organics (grass, moss, vines, ferns, low brush) — overhanging the camera-facing front and lateral rim is encouraged, not just allowed. The rear rim (away from camera) stays contained.
+Vertical organics (trees, tall plants) — terminate at the top as canopy or randomized organic growth (irregular branch ends, tapering foliage). Canopy may extend laterally up to ~5% of image width past the plinth edge. Trees that exceed the image frame are CROPPED BY THE IMAGE FRAME — like a scale model photographed too close — never by an enclosure.
 
-PLINTH GEOMETRY: the plinth is always a flat cylindrical disc — top, bottom, and curved side wall. It NEVER extends upward into a wall, arch, half-dome, canopy, or enclosure, even when the upward extension would be wood matching the plinth itself. A wooden arch growing from the plinth is forbidden. No glass dome, bell jar, cloche, display case, transparent cover, background plates, printed scenery, sky panels, or rings.
+NO ENCLOSURE ABOVE THE PLINTH:
+The space above the plinth top is open air. No vertical, curved, or round cropping line frames or terminates the scene anywhere above the base. No glass dome, bell jar, cloche, display case, transparent cover, curved panel, half-dome, arch, ring, or boundary line. No background plates, printed scenery, or sky panels.
 
-If the source's composition forms an arch or converging shape (a road framed by tree canopies, a tunnel of branches, a corridor of rocks), reproduce that as TALL MINIATURE TREES or ROCKS standing as objects on the flat plinth — never as the diorama's enclosure. Tall elements are CROPPED BY THE IMAGE FRAME at the top if necessary, like a scale model photographed too close. Cropping is done by the camera, never by the plinth.`
+PLINTH GEOMETRY: always a flat cylindrical disc — top, bottom, and curved side wall. NEVER extends upward into a wall, arch, half-dome, canopy, or enclosure, even when the upward extension would be wood matching the plinth itself.
+
+If the source's composition forms an arch or converging shape (a road framed by tree canopies, a tunnel of branches, a corridor of rocks), reproduce that as TALL MINIATURE TREES or ROCKS standing as 3D objects on the flat plinth — never as the diorama's enclosure.
+
+ATMOSPHERIC phenomena (fog, mist, light shafts, distant blur, haze) may extend past the plinth as background ambience — never as solid floating objects. No floating clouds, sun discs, halos, or fog masses hovering above the scene as filler.`
 
 // ENV REINFORCEMENT — mode-specific. Block header for in_situ reads
 // "IN-ENVIRONMENT" to match the user-facing UI label "In Environment".
@@ -134,7 +166,7 @@ function buildPass2Prompt(opts: {
   if (opts.plaqueMode === 'user' && opts.plaqueText?.trim()) {
     const safe = opts.plaqueText.trim().replace(/"/g, '\\"')
     blocks.push(`PLAQUE:
-A small brass plaque is mounted on the front rim of the walnut plinth. The plaque reads exactly: "${safe}". Render the text clearly and legibly in engraved capitals. Do not change, abbreviate, paraphrase, or invent any other text on the plaque. Plaque text must never include timestamps, filenames, "Screenshot", or technical metadata under any condition.`)
+A small brass plaque is mounted on the front rim of the walnut plinth — at most 3% of the image height, never the visual hero. The plaque reads exactly: "${safe}". Render the text clearly and legibly in engraved capitals. Do not change, abbreviate, paraphrase, or invent any other text on the plaque. Plaque text must never include timestamps, filenames, "Screenshot", or technical metadata under any condition.`)
   } else {
     blocks.push(buildPass2PlaqueBlock(opts.plaqueMode))
   }

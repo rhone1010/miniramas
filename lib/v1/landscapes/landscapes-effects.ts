@@ -3,61 +3,76 @@
 // All parameterized copy for the Pass 1 prompt builder.
 // Indexed by schema ID, consumed by landscapes-prompt.ts.
 //
-// Compressed per LITENCO Production Prompt v2 + decisions locked in
-// successive engine passes. Recent semantic-density rev:
-//   • PLINTH consolidated to a single dedicated block — shape, profile,
-//     material, finish, no-extension rules all in one place. Was
-//     previously split across OBJECT_REALISM (profile/material) and
-//     SPATIAL_RULES PLINTH GEOMETRY LOCK (shape rules). The split was
-//     letting the model partially comply with each facet while losing
-//     the gestalt — saddle/banked/stacked-pedestal failures.
-//   • OBJECT_REALISM stripped of PLINTH subsection.
-//   • SPATIAL_RULES PLINTH GEOMETRY LOCK removed (now in PLINTH).
-//     Atmospheric containment language absorbed into SPATIAL_RULES from
-//     LOW_VERTICAL where it was duplicated.
-//   • LOW_VERTICAL trimmed to its unique role — conditional camera/scale
-//     override for low-vertical sources. Atmospheric content rule
-//     consolidated upstream in SPATIAL_RULES.
-//   • SCALE_EFFECTS internal repetition fixed (was emitting "base fully
-//     visible" + "plinth remains visible" back-to-back).
-//   • CAMERA_EFFECTS.elevated stripped of forced-perspective recipe —
-//     recipe now lives only in SPATIAL_RULES FORCED PERSPECTIVE.
-//   • ATMOSPHERE_EFFECTS expanded per atmosphere with positioned,
-//     substantial, physical, interactive volumetric language. The bare
-//     palette-only lines (golden was 9 words) are what was producing
-//     muted/missing beams in current renders. The win-state had this
-//     density; v5 collapse stripped it; this restores it.
-//   • buildLightingBlock focal paragraph — restored quantitative anchor
-//     ("the brightest points in the frame, surroundings deliberately
-//     underexposed") that v5 collapse turned into "strong"/"dramatically
-//     brighter". Adds localized luminance shaping vocabulary (exposure
-//     lifts, atmospheric bounce, selective contrast). Anti-flatness
-//     directive tightened — three phrasings of the same idea collapsed
-//     into one weighted sentence.
+// Recent semantic-density rev (this pass) — boundary handling
+// consolidation + 3D-physical positive directive + plaque sizing:
+//
+//   • POSITIVE 3D-PHYSICAL DIRECTIVE added to PLINTH_BLOCK opening.
+//     The list of forbidden enclosures (glass dome, bell jar, cloche,
+//     etc.) wasn't preventing all failures — most recently a "curved
+//     display panel with the scene printed on it" snuck through
+//     because it wasn't on the explicit forbidden list. Negative
+//     directives anchor what's forbidden but don't assert what the
+//     scene IS. The new opening line tells NB2 the scene is real 3D
+//     physical objects (bark, leaves, dirt, water) standing on the
+//     plinth top — never a 2D image, billboard, or display screen.
+//
+//   • BOUNDARY HANDLING CONSOLIDATED into SPATIAL_RULES_BLOCK.
+//     Previous arrangement spread organic-overgrowth rules,
+//     no-enclosure rules, source-arch handling, offscreen handling,
+//     and forced perspective across two blocks (SPATIAL_RULES +
+//     PLINTH_BLOCK). New arrangement: SPATIAL_RULES owns ALL
+//     boundary behavior. PLINTH_BLOCK is plinth-only (shape, profile,
+//     material, plaque, "plinth never extends upward"). Rules that
+//     were duplicated removed.
+//
+//   • ORGANIC BOUNDARY HANDLING refined per user spec:
+//       - Ground-level organics (grass, moss, vines, ferns):
+//         overhang past front/lateral rim ENCOURAGED, not just
+//         allowed. Rear rim still contains.
+//       - Vertical organics (trees): terminate naturally at top as
+//         canopy or randomized organic growth. Canopy may extend
+//         laterally up to ~5% of image width past edge. Trees that
+//         exceed image frame are CROPPED BY THE IMAGE FRAME, never
+//         by an enclosure.
+//       - "No vertical or round cropping lines anywhere above the
+//         plinth base" — the explicit anti-rule that catches the
+//         arched-display-panel failure mode.
+//
+//   • PLAQUE PROPORTION switched from "≤ 3/4 plinth height" to
+//     "≤ 3% of image height". Frame-relative anchor matching the
+//     plinth's frame-relative ceiling (5%). With plinth at 5% and
+//     plaque at 3%, plaque reads as visually subordinate (60% of
+//     plinth height) without depending on the model computing a
+//     ratio of one variable thing to another.
 //
 // Earlier locked decisions still in force:
-//   • Lighting subsystem collapsed from 4 blocks → 1 (now parameterized)
-//   • Scene Feel axis REMOVED — quality always equivalent to "dramatic";
-//     baked into LIGHTING block as always-on
-//   • Focal Lighting dial REMOVED — emphasis baked into LIGHTING
-//   • Atmosphere ID 'none' → 'natural' (label "As Is")
-//   • Scale 'zoom_out' (60%) REMOVED — two options now: close_up, fill
-//   • CameraAngle 'low' (Ground) REMOVED — two options now: hero, elevated
-//   • CONTROLLED ENVIRONMENT split out as its own block
-//   • VEGETATION re-added
-//   • IN-SITU prompt block kept (model-facing); UI label is "In Environment"
+//   • TIERED LIGHTING — subject 1.45×, foreground 1.2×, baseline.
+//     Subject tier user-validated as "perfect, keep at all costs";
+//     foreground tier added for near-to-far depth separation.
+//   • PLINTH consolidated to dedicated block (was split across
+//     OBJECT_REALISM and SPATIAL_RULES PLINTH GEOMETRY)
+//   • Plaque proportion: ≤ 3/4 plinth height, never the visual hero
+//   • SPATIAL_RULES with organic-overgrowth exception (grass/vines/
+//     limbs/canopy may sparingly extend ~5% past plinth edge);
+//     constructed elements stay strictly contained
+//   • ATMOSPHERE_EFFECTS at action-minis directive density per
+//     atmosphere (positioned/substantial/physical/interactive)
+//   • Lighting subsystem collapsed to one parameterized function;
+//     atmosphere-specific volumetric phenomena live in
+//     ATMOSPHERE_EFFECTS not LIGHTING
+//   • CAMERA_EFFECTS.elevated stripped of forced-perspective recipe
+//     (lives only in SPATIAL_RULES)
+//   • SCALE_EFFECTS internal repetition fixed
+//   • OBJECT_REALISM stripped of PLINTH subsection
 
 import type {
   AtmosphereID, ResolvedEnvironment, ScaleID, CameraAngleID,
 } from './landscapes-shared'
 
 // ── ATMOSPHERE ────────────────────────────────────────────────
-// Each atmosphere now carries the visible volumetric phenomena that
-// atmosphere produces — positioned (where the beam is), substantial
-// (dominant feature of the shot), physical (visible in the air), and
-// interactive (where it meets surfaces, those surfaces respond).
-// This is where beam lighting lives in the prompt; LIGHTING handles
-// the rig and focal emphasis.
+// Each atmosphere carries the visible volumetric phenomena that
+// atmosphere produces — positioned, substantial, physical, interactive.
+// This is where beam lighting lives in the prompt.
 //
 // Lines do not end with a period — atmosphereBlock() in prompt.ts
 // adds the period after wrapping with the "primary lighting driver"
@@ -115,20 +130,33 @@ export const OBJECT_REALISM_BLOCK = `OBJECT REALISM:
 Preserve structure, scale relationships, and material richness from the source. Use carved terrain, varied foliage, resin-like water, worn wood, rough stone, uneven vegetation, and natural imperfections. Avoid smoothing, beautification, tonal flattening, or repeated texture patterns. Preserve micro-contrast and tactile detail throughout the scene.`
 
 // A2) Plinth — single source of truth for plinth shape, profile,
-// material, finish, no-extension rules, and source-arch handling.
-// Was previously split across OBJECT_REALISM (profile/material) and
-// SPATIAL_RULES PLINTH GEOMETRY LOCK (shape + extension rules).
+// material, finish, plaque proportion, no-extension rules, and
+// source-arch handling.
 //
-// Closes the canopy-as-dome / wooden-arch loophole that stacked-pedestal
-// and saddle/banked plinth failures kept hitting — keeps the explicit
-// "even when the upward extension would be wood matching the plinth
-// itself" carve-out intact.
+// 2-element trim (simplified from earlier 3-element):
+//   • TOP: subtle chamfer / small bullnose at upper edge — barely a
+//          feature, just edge softening
+//   • BOTTOM: slightly more prominent rolled base molding curving
+//             outward, the dominant trim feature
+//   • The cylindrical body between them has NO minimum vertical
+//     extent — it can be as short as needed.
+//
+// Height: single frame-relative ceiling (≤ 5% of image height).
+// Earlier passes used 1/10-of-diameter + 4:1 scene-to-plinth ratio;
+// having three competing height anchors was diluting the directive.
+// 5% of image height is directly verifiable.
 export const PLINTH_BLOCK = `PLINTH:
-The plinth is a single low turned-wood disc — flat top face, flat bottom face, a single soft curved side wall. Profile is restrained: presence and weight without becoming chunky, slab-like, tiered, or stacked. Material is richly figured walnut or mahogany; visual interest comes from grain and chatoyance, not profile detail. Finished to a deep polished sheen. The front rim stays clean — no fallen branches, twigs, or storm debris piled at the front edge.
+The diorama is real 3D physical content — actual miniature trees with bark and leaves, actual dirt and stone, actual water with depth and reflection — standing as solid objects ON the plinth's flat top surface. Never a printed image, painted scene, photograph, billboard, curved display panel, framed picture, or screen. The scene rises from the plinth as 3D objects, never wrapped onto a 2D backing.
 
-The plinth NEVER extends upward into a wall, arch, half-dome, canopy, or enclosure of any kind. This applies even when the upward extension would be wood matching the plinth itself — a wooden arch growing from the plinth is forbidden. No glass domes, bell jars, cloches, display cases, transparent covers, background plates, printed scenery, sky panels, artificial arches, or rings frame the diorama. The plinth is the only frame, and the plinth is a flat disc.
+The plinth itself is a thin turned-wood disc with two restrained trim elements: a subtle chamfer or small bullnose at the upper edge (barely a feature, just edge softening), and a slightly more prominent rolled base molding at the bottom that curves outward, making the base marginally broader than the body. The cylindrical body between these two trims has no minimum vertical extent — it can be as short as needed.
 
-If the source's composition forms an arch or converging shape (a road framed by tree canopies, a tunnel of branches, a corridor of rocks), the plinth still remains flat. The arch is reproduced as scene content — typically as tall miniature trees or rocks standing as objects on the flat plinth surface — never as the diorama's enclosure.`
+The plinth's total vertical thickness occupies no more than 5% of the total image height. Read it as a serving tray rim or a watch case bottom — never a pedestal, never a drum, never a tier. Err thinner, never thicker.
+
+Material is richly figured walnut or mahogany; visual interest comes from grain, chatoyance, and the restrained trim profile. Finished to a deep polished sheen.
+
+When a plaque is present it sits centered on the front face — at most 3% of the total image height, never the visual hero of the image. The front rim stays clean — no fallen branches, twigs, or storm debris piled at the front edge.
+
+The plinth is a flat horizontal disc and never extends upward into a wall, arch, half-dome, canopy, or enclosure of any kind — even a wooden arch matching the plinth's wood is forbidden.`
 
 // B) Lighting — single function. Two modes from one boolean:
 //   addBeam=false → 3-Point gallery lighting only (default for all renders)
@@ -140,15 +168,24 @@ If the source's composition forms an arch or converging shape (a road framed by 
 // moonbeams, raking beams) live in ATMOSPHERE_EFFECTS, not here.
 //
 // Always-on baked-in qualities:
-//   • Localized luminance shaping — features are the brightest points
-//     in the frame, surroundings deliberately underexposed. This is the
-//     restored Focal Lighting +30 quantitative anchor. v5 collapse had
-//     turned it into "strong"/"dramatically brighter" without an
-//     intensity reference; current renders show the loss.
+//   • TIERED LOCALIZED LUMINANCE SHAPING:
+//       - Subject tier ~1.45× exposure (hero, plaque, standout
+//         compositional features). User-validated as "perfect" —
+//         do not change this directive.
+//       - Foreground tier ~1.2× exposure (front quarter of the scene
+//         — near-rim ground content, foreground grass, props nearest
+//         viewer). Softer lift establishing near-to-far depth
+//         separation.
+//       - Background / surroundings at baseline — deliberately
+//         underexposed by comparison.
+//   • Local variance directive — within lifted tiers, lighting varies
+//     spatially (facets, edges, surfaces catch light at different
+//     intensities). Stops gpt-image-1 from rendering subject features
+//     as a uniform bright wash.
 //   • Radiant cinematic quality with strong luminous separation
 //     (was "Scene Feel: dramatic")
 //   • Anti-flatness directive — three phrasings of "no globally even
-//     exposure" collapsed into one weighted sentence. Same emphasis.
+//     exposure" collapsed into one weighted sentence.
 export function buildLightingBlock(input: { addBeam: boolean }): string {
   const modeText = input.addBeam
     ? `Use gallery three-point lighting (key from upper front-left, fill from front-right, rim from behind for separation) combined with an accent volumetric beam from above to highlight the hero. Maintain visible beam falloff and atmospheric contrast.`
@@ -157,7 +194,15 @@ export function buildLightingBlock(input: { addBeam: boolean }): string {
   return `LIGHTING:
 ${modeText}
 
-Apply localized luminance shaping: the hero subject, the plaque on the front rim of the plinth (when present), and standout compositional features (docks, walkways, foreground structures, water reflections) are the brightest points in the frame, with surroundings deliberately underexposed by comparison. Light accumulates around these areas of narrative importance — exposure lifts on the features themselves, atmospheric bounce illuminating them from within the scene, selective contrast separating them from the environment. Crisp highlights, clear luminance hierarchy, deep shadow retention elsewhere.
+Apply tiered localized luminance shaping for depth:
+
+Subject tier (~1.45× exposure): the hero subject, the plaque on the front rim of the plinth (when present), and standout compositional features (docks, walkways, structures, water reflections). These are the brightest points in the frame.
+
+Foreground tier (~1.2× exposure): elements in the front quarter of the diorama scene (near-rim ground content, foreground grass, props closest to the viewer) that aren't already in the subject tier — a softer lift establishing near-to-far depth separation.
+
+Background and surroundings remain at baseline, deliberately underexposed by comparison.
+
+Within the lifted tiers, lighting varies locally — facets, edges, and surfaces catch light at different intensities, never a uniform wash. Light accumulates around areas of narrative importance — exposure lifts on the features themselves, atmospheric bounce illuminating them from within the scene, selective contrast separating them from the environment. Crisp highlights, clear luminance hierarchy, deep shadow retention elsewhere.
 
 Lighting reads as radiant cinematic — elevated atmospheric glow, strong luminous separation between subject and environment, sharper form definition. Lighting must never be evenly distributed, flatly ambient, or globally normalized — those are failure modes. Darkness is intentional composition.`
 }
@@ -167,35 +212,36 @@ Lighting reads as radiant cinematic — elevated atmospheric glow, strong lumino
 export const VEGETATION_BLOCK = `VEGETATION:
 Vegetation must feel organic and naturally distributed. Avoid symmetry, decorative arrangements, repeated branching, or synthetic foliage patterns.`
 
-// D) Spatial Rules — physical-vs-atmospheric containment, offscreen
-// handling, and forced perspective.
+// D) Spatial Rules — physical-vs-atmospheric containment with organic-
+// overgrowth exception, offscreen handling, and forced perspective.
 //
 // Plinth shape rules are NOT here — they live in PLINTH_BLOCK to
 // consolidate plinth-truth into one place.
 //
-// Atmospheric containment language was previously split between this
-// block and LOW_VERTICAL paragraph 2 (the "no floating clouds, sun
-// discs, halos, fog masses" failure-mode list). Consolidated here so
-// the rule has one home.
+// Organic-overgrowth exception: grass, vines, tree limbs, and canopy
+// may sparingly extend slightly past the plinth edge for visual
+// interest. Constructed elements (houses, walls, paths, docks,
+// terrain) stay strictly contained — they are the failure mode this
+// rule defends against.
 //
-// Closes failure modes:
-//   1. Physical scene extending past plinth edge into a forced-
-//      perspective horizon (treating the wooden disc as a decorative
-//      ring on a real landscape).
-//   2. Atmospheric content becoming tangible scenic objects above the
-//      diorama — floating clouds, sun discs, halos, fog masses.
-//   3. Tall vertical elements being rendered as enclosures rather than
-//      as objects (forced perspective inside, not outside, the plinth).
+// Atmospheric containment: atmospheric phenomena may extend past the
+// plinth as ambience but never as solid objects. No floating clouds /
+// sun discs / halos / fog masses as filler.
 export const SPATIAL_RULES_BLOCK = `SPATIAL RULES — PHYSICAL VS ATMOSPHERIC:
-Every PHYSICAL element of the scene — terrain, water, vegetation, structures, paths, rocks, benches, props, figures — sits ON OR INSIDE the wooden plinth. The plinth's edge is the absolute boundary of the physical world. Nothing physical extends past the wooden disc. The plinth is not a decorative inset on a larger real landscape; it is the entire stage.
 
+Every PHYSICAL element of the scene — terrain, water, structures, paths, rocks, benches, props, figures — sits ON OR INSIDE the wooden plinth. Constructed elements (houses, walls, bridges, docks, fences, paths, terrain features) never overhang or extend past the plinth edge. The plinth is not a decorative inset on a larger landscape; it is the entire stage.
+
+ORGANIC BOUNDARY HANDLING (where vegetation transits the plinth edge):
+Ground-level organics (grass, moss, vines, ferns, low brush, fallen leaves) — overhanging the camera-facing front and lateral rim is encouraged. These elements draping naturally over the edge looks intentional. The rear rim (away from camera) keeps everything contained.
+Vertical organics (trees, tall plants) standing on the plinth — terminate naturally at the top as canopy or randomized organic growth (irregular branch ends, tapering foliage, scattered leaves). Their canopy may extend laterally up to ~5% of image width past the plinth edge for visual interest. Trees that exceed the image frame are CROPPED BY THE IMAGE FRAME — like a scale model photographed too close — never by an enclosure.
+
+CRITICAL — NO ENCLOSURE ABOVE THE PLINTH:
+The space above the plinth's top surface is OPEN AIR. No vertical, curved, or round cropping line frames or terminates the scene anywhere above the base. No glass dome, bell jar, cloche, display case, transparent cover, curved panel, flat panel, half-dome, arch, ring, canopy structure, or boundary line of any kind. No background plates, printed scenery, or sky panels. Trees rise from the plinth as 3D physical objects and either crop at the image frame or terminate as natural canopy — never inside an enclosure.
+
+If the source's composition forms an arch or converging shape (a road framed by tree canopies, a tunnel of branches, a corridor of rocks), reproduce that shape as TALL MINIATURE TREES or ROCKS standing as 3D objects on the flat plinth top — never as the diorama's enclosure. The plinth stays flat.
+
+ATMOSPHERIC CONTAINMENT:
 Atmospheric phenomena — fog, mist, low cloud, light shafts, golden haze, weather, distant blur — may extend past the plinth as background ambience, but never as solid floating objects. Do not reproduce sky as floating clouds, sun discs, halos, fog masses, or any object hovering above the scene as filler. The space above the diorama is filled by the room background (desk) or natural environment blur (in-environment) — never by invented physical phenomena.
-
-OFFSCREEN HANDLING:
-Tall source elements (trees, mountains, structures, branches) stand AS OBJECTS on the flat plinth top. They are handled in one of two ways:
-  (A) Stand at full plausible miniature height and be CROPPED BY THE IMAGE FRAME at the top — like a scale model photographed too close, the photograph's edge cuts the canopy naturally. This is the preferred handling for visually tall subjects.
-  (B) Be reduced to compact miniature scale that fits complete within the image frame.
-Either is acceptable. What is forbidden: the plinth itself extending upward to contain or frame the tall element. Cropping is done by the camera, never by the plinth.
 
 FORCED PERSPECTIVE INSIDE THE PLINTH:
 For tilted or elevated camera angles, use forced perspective WITHIN the plinth to create depth. A dramatically large foreground anchor (a bench, a rock, a tree branch, tall grass, the front edge of a path) sits at the near rim of the plinth, and the rest of the scene compresses backward, scale falling off toward the rear rim. The illusion is a vast landscape; the reality is a small wooden disc with everything on it. Foreshortening serves containment — it does not break it.`
@@ -220,8 +266,7 @@ The plinth rests directly on terrain matching the source environment: grass, dir
 
 // G) Low-Vertical Source Composition — conditional camera/scale
 // override for sources that primarily depict horizontal/ground-level
-// content. Atmospheric containment rules (no floating clouds/sun-discs/
-// halos) consolidated upstream into SPATIAL_RULES_BLOCK; this block
-// now carries only its unique role.
+// content. Atmospheric containment rules consolidated upstream into
+// SPATIAL_RULES_BLOCK; this block now carries only its unique role.
 export const LOW_VERTICAL_BLOCK = `LOW-VERTICAL SOURCE COMPOSITION:
 If the source primarily depicts horizontal or ground-level content (paths, roads, plains, flat terrain, calm water surfaces) with little vertical structure, the camera angle elevates to approximately 55-65 degrees downward and the diorama (plinth + scene) fills 60-70 percent of the frame, regardless of camera or scale settings.`
