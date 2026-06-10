@@ -5,8 +5,12 @@
 // pattern: minimal interfaces + enums, no logic beyond the environment resolver.
 
 // ── MODE AXIS ──────────────────────────────────────────────────
-// Three independent selectors, not a matrix. User picks ONE per render.
-export type Mode = 'materials' | 'seasons' | 'events'
+// Four independent selectors, not a matrix. User picks ONE per render.
+// 'artists' = Artists Gallery — interpretive-medium presets with full
+// custom prompts (see houses-artists.ts). They bypass environment /
+// time-of-day / lighting selection, the refine pass, AND the outpaint
+// stage — the prompt owns the whole scene.
+export type Mode = 'materials' | 'seasons' | 'events' | 'artists'
 
 // ── ENVIRONMENT (global selector) ─────────────────────────────
 // Two environments. Internal ID 'in_situ' is stable; UI label is
@@ -18,18 +22,17 @@ export type Mode = 'materials' | 'seasons' | 'events'
 // or limestone carving sitting on the real lawn with the real house in the
 // background reads beautifully.
 //
-// 'room_in_house' as a separate selector has been retired — but the
-// "diorama's world extends to the surrounding scene" pattern is preserved
-// in the per-preset LAYER blocks (the desk's room takes on the diorama's
-// mood, the outdoor yard takes on the diorama's mood — bleed-through
-// is what makes events feel like events).
+// 'room_in_house' — the model displayed inside an interior room of the
+// very house it depicts. Restored as a selector (r3, 2026-06-06) after a
+// brief retirement; the LAYER-block mood-bleed pattern is unchanged and
+// stacks with it.
 //
-// Events used to force room_in_house — they now default to whatever the
-// user picks. UI should default events to 'desk' (most common case).
-export type EnvironmentId = 'in_situ' | 'desk'
+// Events no longer force an environment — they default to whatever the
+// user picks. UI defaults to 'desk' (most common case).
+export type EnvironmentId = 'in_situ' | 'desk' | 'room_in_house'
 
 // ── PRESET REGISTRY KEYS ──────────────────────────────────────
-// Full v1 catalog: 11 materials + 4 seasons + 5 events = 20 presets.
+// Full catalog: 11 materials + 4 seasons + 5 events + 4 artists = 24 presets.
 export type PresetId =
   // materials (11)
   | 'bronze' | 'wax' | 'alabaster' | 'glass'
@@ -39,6 +42,8 @@ export type PresetId =
   | 'spring' | 'summer' | 'fall' | 'winter'
   // events (5)
   | 'haunted' | 'fire' | 'explosion' | 'alien' | 'abandoned'
+  // artists gallery (4) — full custom prompts, see houses-artists.ts
+  | 'impressionist_oil' | 'watercolor_study' | 'charcoal_chalk' | 'pen_ink'
 
 export type Tier = 'base' | 'premium' | 'signature'
 

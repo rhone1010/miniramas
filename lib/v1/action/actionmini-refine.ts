@@ -112,3 +112,132 @@ export function sanitizeTweak(raw: unknown): string | undefined {
   if (s.length > 150) s = s.slice(0, 150)
   return s || undefined
 }
+
+// ── FACE VISIBILITY DETECTION ────────────────────────────────
+// Preflight check on the source image: is there a recognizable human face
+// whose likeness will be scrutinized? Used by the route to auto-decide
+// whether Pass 2 (gpt-image-1) should run. If face visible → Pass 1 only
+// (gpt-image-1 drifts faces). If no clear face → Pass 2 polish is safe.
+//
+// Uses gpt-4o-mini at detail:'low' — cheap (~$0.001/render), fast (~1-2s),
+// fully sufficient for "is there a face here" yes/no.
+
+const FACE_DETECTION_PROMPT = `You are looking at a source photograph that will be used to generate a miniature sculpture of the subject(s).
+
+Determine: is there a clearly visible human face in this image whose likeness would be important to preserve in the sculpture?
+
+Respond with ONLY a JSON object:
+{
+  "face_visible": true | false,
+  "reason": "<one short sentence>"
+}
+
+face_visible TRUE when:
+- A subject's face is clearly identifiable (eyes, nose, mouth all readable)
+- The face is large enough in the frame that likeness will be scrutinized
+- A specific identifiable person is recognizable
+
+face_visible FALSE when:
+- Face is obscured by helmet, mask, full-face guard, or hood
+- Subject is too distant — face is just a few pixels
+- Subject is shot from behind or in profile with face hidden
+- Heavy motion blur or shadow makes features unreadable
+- Subject is depicted as a generic athlete/figure with no identifying features
+
+Respond with ONLY the JSON. No preamble.`
+
+export async function detectFaceVisibility(input: {
+  sourceImageB64: string
+  openaiApiKey:   string
+}): Promise<{ face_visible: boolean; reason: string }> {
+  const openai = new OpenAI({ apiKey: input.openaiApiKey })
+
+  const response = await openai.chat.completions.create({
+    model:       'gpt-4o-mini',
+    max_tokens:  80,
+    response_format: { type: 'json_object' },
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${input.sourceImageB64}`, detail: 'low' } },
+        { type: 'text', text: FACE_DETECTION_PROMPT },
+      ],
+    }],
+  })
+
+  const content = (response.choices[0]?.message?.content || '{}').trim()
+  try {
+    const parsed = JSON.parse(content)
+    return {
+      face_visible: Boolean(parsed.face_visible),
+      reason:       String(parsed.reason || 'no reason given').slice(0, 200),
+    }
+  } catch {
+    // Default to face-visible (safer: avoids Pass 2 drift on a face we couldn't classify)
+    return { face_visible: true, reason: 'detection parse failed, defaulting to face-visible' }
+  }
+}
+
+// ── FACE FIDELITY SCORING ────────────────────────────────────
+// Post-render quality gate. Compares the source photograph against the
+// final rendered miniature and rates likeness 1-10. Used by the
+// generator to decide whether to retry the pipeline. Cheap (~$0.001)
+// and fast (~1-2s) using gpt-4o-mini at detail:'low'.
+
+const FACE_FIDELITY_PROMPT = `You are scoring a miniature sculpture render against the source photograph it was based on.
+
+The miniature has been intentionally stylized as a sculpted figurine — the material register (alabaster, bronze, painted resin, ceramic, etc.) is correct and should NOT factor into your score. Score ONLY facial likeness preservation.
+
+Compare faces in the two images. For each subject in the source:
+- Is the corresponding figure in the render recognizable as the same person?
+- Are eye spacing, nose shape, mouth, jawline, hairline preserved?
+- Would someone who knows the source subject recognize them in the miniature?
+
+Respond with ONLY a JSON object:
+{
+  "score": <integer 1-10>,
+  "reason": "<one sentence — what's good or what drifted>"
+}
+
+Score scale:
+- 9-10: Excellent likeness, fully recognizable, commercial-grade
+- 7-8: Good likeness, recognizable, minor drift on details
+- 5-6: Close but noticeably off — feature shifts visible
+- 3-4: Significant drift, likeness compromised
+- 1-2: Generic face, no meaningful likeness preservation
+
+Respond with ONLY the JSON. No preamble.`
+
+export async function scoreFaceFidelity(input: {
+  sourceImageB64:    string
+  renderedImageB64:  string
+  openaiApiKey:      string
+}): Promise<{ score: number; reason: string }> {
+  const openai = new OpenAI({ apiKey: input.openaiApiKey })
+
+  const response = await openai.chat.completions.create({
+    model:       'gpt-4o-mini',
+    max_tokens:  100,
+    response_format: { type: 'json_object' },
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${input.sourceImageB64}`,  detail: 'low' } },
+        { type: 'image_url', image_url: { url: `data:image/png;base64,${input.renderedImageB64}`, detail: 'low' } },
+        { type: 'text', text: FACE_FIDELITY_PROMPT },
+      ],
+    }],
+  })
+
+  const content = (response.choices[0]?.message?.content || '{}').trim()
+  try {
+    const parsed = JSON.parse(content)
+    const score = Math.max(1, Math.min(10, Number(parsed.score) || 5))
+    return {
+      score,
+      reason: String(parsed.reason || 'no reason given').slice(0, 240),
+    }
+  } catch {
+    return { score: 5, reason: 'scoring parse failed, defaulting to neutral 5' }
+  }
+}

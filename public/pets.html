@@ -1,0 +1,5835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miniscape · Pet Minis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Liten & Co — Landscapes brand tokens */
+  --bg:           #F4F1EA;
+  --surface:      #FFFFFF;
+  --surface-2:    #EDE8DD;
+  --bg-soft:      #EDE8DD;
+  --bg-deeper:    #E5DFD0;
+  --border:       #D7CFBE;
+  --border-strong:#C8BFA8;
+  --hairline:     #D7CFBE;
+  --hairline-soft:#E5DFD0;
+
+  --ink:       #1F1B14;
+  --ink-2:     #5A5246;
+  --ink-3:     #8E8676;
+  --ink-soft:  #5A5246;
+  --ink-faint: #8E8676;
+
+  --accent:        #3F4A2E;
+  --accent-hover:  #2F3722;
+  --accent-soft:   #3F4A2E14;
+
+  --selected:        #8d997a;
+  --selected-hover:  #7d8b6c;
+  --selected-soft:   rgba(141, 153, 122, .20);
+
+  --brass:        #8B6F3E;
+  --signature:    #8B6F3E;
+  --premium:      #5A5246;
+  --base:         #8E8676;
+
+  --success:     #3F4A2E;
+  --success-soft:#E8F0EB;
+  --danger:      #8B3E3E;
+  --danger-soft: #8B3E3E14;
+  --warn:        #B07C2E;
+
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, -apple-system, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:13px;
+  line-height:1.5;
+  display:flex;
+  flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── KEYFRAMES ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes progressSlide{
+  0%   {transform:translateX(-100%) scaleX(.4)}
+  50%  {transform:translateX(0%)    scaleX(.6)}
+  100% {transform:translateX(100%)  scaleX(.4)}
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:44px;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 24px;
+  gap:16px;
+  flex-shrink:0;
+}
+.home-link{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink-2);
+  text-decoration:none;
+  padding:4px 0;
+  letter-spacing:.02em;
+  transition:color .15s;
+}
+.home-link:hover{color:var(--ink)}
+.logo{
+  font-family:var(--serif);
+  font-size:18px;
+  font-weight:400;
+  color:var(--ink);
+  letter-spacing:.01em;
+}
+.logo em{font-style:italic;color:var(--accent)}
+.logo-suffix{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink-3);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  border-left:1px solid var(--border);
+  padding-left:14px;
+  margin-left:2px;
+}
+.tb-spacer{flex:1}
+
+/* upload slots */
+.upload-slot{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  height:28px;
+  padding:0 10px;
+  font-size:11px;
+  font-family:var(--sans);
+  color:var(--ink-2);
+  background:var(--surface);
+  border:1px dashed var(--border-strong);
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.upload-slot:hover{border-color:var(--ink-3);color:var(--ink)}
+.upload-slot.has-file{
+  border-style:solid;
+  border-color:var(--selected);
+  color:var(--ink);
+  background:var(--selected-soft);
+}
+.upload-slot input{
+  position:absolute;inset:0;opacity:0;cursor:pointer;
+}
+
+/* run-all button */
+.run-all-btn{
+  height:28px;
+  padding:0 16px;
+  font-size:12px;
+  font-weight:500;
+  font-family:var(--sans);
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:3px;
+  cursor:pointer;
+  transition:background .15s;
+  letter-spacing:.02em;
+}
+.run-all-btn:hover:not(:disabled){background:var(--accent-hover)}
+.run-all-btn:disabled{
+  background:var(--bg-deeper);
+  color:var(--ink-3);
+  cursor:not-allowed;
+}
+
+/* raw-mode toggle — flips the app into direct Nano Banana 2 prompt mode */
+.raw-mode-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  height:28px;
+  padding:0 12px;
+  font-size:11px;
+  font-weight:500;
+  font-family:var(--sans);
+  background:transparent;
+  color:var(--ink-2);
+  border:1px dashed var(--border-strong);
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+  letter-spacing:.02em;
+}
+.raw-mode-toggle:hover{
+  background:var(--surface);
+  color:var(--ink);
+  border-color:var(--ink-3);
+}
+.raw-mode-toggle .raw-mode-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--ink-3);
+  transition:background .15s;
+}
+.raw-mode-toggle.active{
+  background:var(--ink);
+  color:#fff;
+  border-color:var(--ink);
+  border-style:solid;
+}
+.raw-mode-toggle.active .raw-mode-dot{
+  background:#7BCB52;
+  box-shadow:0 0 0 2px rgba(123,203,82,.18);
+}
+
+/* ── RAW MODE PANEL (sidebar) ─────────────────────────────────── */
+.raw-controls{
+  display:none;
+}
+body.raw-mode .raw-controls{ display:block; }
+body.raw-mode .preset-controls{ display:none; }
+
+.raw-ref-slot{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  aspect-ratio:1/1;
+  background:var(--surface);
+  border:1px dashed var(--border-strong);
+  border-radius:3px;
+  cursor:pointer;
+  overflow:hidden;
+  transition:border-color .15s;
+}
+.raw-ref-slot:hover{ border-color:var(--ink-3); }
+.raw-ref-slot.has-image{ border-style:solid; border-color:var(--border-strong); }
+.raw-ref-slot .raw-ref-empty{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  color:var(--ink-3);
+  font-size:11px;
+  font-family:var(--sans);
+  letter-spacing:.04em;
+}
+.raw-ref-slot .raw-ref-empty .raw-ref-plus{
+  font-size:22px;
+  line-height:1;
+  color:var(--ink-3);
+}
+.raw-ref-slot img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.raw-ref-slot input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+.raw-ref-clear{
+  position:absolute;
+  top:6px;
+  right:6px;
+  width:22px;
+  height:22px;
+  border:none;
+  border-radius:50%;
+  background:rgba(31,27,20,.78);
+  color:#fff;
+  font-size:14px;
+  line-height:22px;
+  text-align:center;
+  cursor:pointer;
+  display:none;
+  padding:0;
+}
+.raw-ref-slot.has-image .raw-ref-clear{ display:block; }
+
+.raw-prompt-textarea{
+  width:100%;
+  min-height:180px;
+  padding:10px 12px;
+  font-family:var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size:12px;
+  line-height:1.5;
+  color:var(--ink);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:3px;
+  resize:vertical;
+  box-sizing:border-box;
+  outline:none;
+  transition:border-color .15s;
+}
+.raw-prompt-textarea:focus{ border-color:var(--ink-3); }
+.raw-prompt-counter{
+  margin-top:4px;
+  font-size:10px;
+  font-family:var(--sans);
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-align:right;
+}
+.raw-prompt-counter.warn{ color:#B6722E; }
+.raw-prompt-counter.over{ color:#A33323; }
+
+.raw-panel-hint{
+  font-size:10px;
+  font-family:var(--sans);
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  line-height:1.5;
+  margin-top:6px;
+}
+
+/* queue-add button (secondary, lives next to run-all) */
+.queue-add-btn{
+  height:28px;
+  padding:0 12px;
+  font-size:11px;
+  font-weight:500;
+  font-family:var(--sans);
+  background:var(--surface);
+  color:var(--ink-2);
+  border:1px solid var(--border-strong);
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+  letter-spacing:.02em;
+}
+.queue-add-btn:hover:not(:disabled){
+  border-color:var(--selected);
+  color:var(--ink);
+  background:var(--selected-soft);
+}
+.queue-add-btn:disabled{
+  opacity:.4;cursor:not-allowed;
+}
+
+/* status */
+.status-meta{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  color:var(--ink-3);
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.status-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--ink-3);
+}
+.status-dot.busy{background:var(--warn);animation:pulse 1.5s ease-in-out infinite}
+.status-dot.ok{background:var(--success)}
+.status-dot.err{background:var(--danger)}
+@keyframes pulse{50%{opacity:.4}}
+
+/* ── LAYOUT ── */
+.layout{
+  flex:1;
+  display:grid;
+  grid-template-columns:340px 1fr;
+  min-height:0;
+}
+
+/* ── SIDEBAR ── */
+.left{
+  background:var(--bg);
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+.left-inner{
+  padding:18px 18px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.section{display:flex;flex-direction:column;gap:8px}
+.section-label{
+  font-family:var(--sans);
+  font-size:10px;
+  font-weight:500;
+  color:var(--ink-3);
+  text-transform:uppercase;
+  letter-spacing:.10em;
+}
+.section-hdr{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+}
+.section-readout{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-2);
+  letter-spacing:.04em;
+}
+
+/* Resolution warning surfaces — independent of Curator voice. */
+/* Yellow badge sits next to source count when at least one photo */
+/* is below the comfortable resolution threshold. */
+.res-badge{
+  display:inline-block;
+  margin-left:8px;
+  padding:2px 7px;
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  border-radius:3px;
+  background:rgba(184,134,11,.12);
+  color:#8b6914;
+  border:1px solid rgba(184,134,11,.3);
+}
+.res-badge[data-tier="red"]{
+  background:rgba(159,46,46,.12);
+  color:#8b2727;
+  border-color:rgba(159,46,46,.3);
+}
+/* Red banner sits below the source thumbnail when the primary photo */
+/* is below the hard threshold — loud enough to set expectations. */
+.res-banner{
+  margin-top:8px;
+  padding:9px 11px;
+  font-size:11px;
+  line-height:1.4;
+  color:#8b2727;
+  background:rgba(159,46,46,.07);
+  border:1px solid rgba(159,46,46,.25);
+  border-radius:4px;
+}
+.res-banner-title{
+  font-weight:600;
+  margin-bottom:2px;
+  letter-spacing:.01em;
+}
+.res-banner-sub{
+  color:#a14848;
+}
+
+/* source preview */
+.source-preview{
+  width:100%;
+  aspect-ratio:1/1;
+  background:var(--surface);
+  border:1px dashed var(--border-strong);
+  border-radius:4px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .15s;
+}
+.source-preview:hover{border-color:var(--ink-3)}
+.source-preview.has-image{border-style:solid;border-color:var(--border)}
+.source-empty{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:var(--ink-3);font-size:11px;
+}
+.source-empty-plus{
+  width:28px;height:28px;
+  border:1px solid var(--border-strong);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;line-height:1;
+  color:var(--ink-3);
+}
+.source-preview img{width:100%;height:100%;object-fit:cover}
+
+/* multi-source row */
+.source-row{
+  display:flex;gap:6px;margin-top:8px;
+}
+.source-aux{
+  flex:1;
+  aspect-ratio:1/1;
+  background:var(--surface);
+  border:1px dashed var(--border);
+  border-radius:3px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  font-size:14px;
+  color:var(--ink-3);
+}
+.source-aux:hover{border-color:var(--ink-3)}
+.source-aux.has-image{border-style:solid;border-color:var(--border)}
+.source-aux img{width:100%;height:100%;object-fit:cover}
+.source-aux input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* "Next pet" — clears the photo set without touching the queue. Sized
+   as a real control per the visual-substance rule: italic serif pill,
+   never a micro-link. */
+.next-pet-btn{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:1.05rem;
+  line-height:1;
+  padding:.45rem .8rem;
+  border:1.5px solid var(--accent);
+  border-radius:999px;
+  background:transparent;
+  color:var(--accent);
+  cursor:pointer;
+  transition:background .15s ease, color .15s ease;
+}
+.next-pet-btn:hover{ background:var(--accent); color:var(--bg) }
+
+/* detect card */
+.detect-card{
+  background:var(--surface);
+  border:1px solid var(--hairline-soft);
+  border-radius:4px;
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.detect-icon{
+  width:24px;height:24px;flex-shrink:0;
+  color:var(--ink-3);
+  display:flex;align-items:center;justify-content:center;
+}
+.detect-icon svg{width:18px;height:18px}
+.detect-info{flex:1;min-width:0}
+.detect-name{
+  font-family:var(--serif);
+  font-size:14px;
+  font-style:italic;
+  color:var(--ink);
+}
+.detect-sub{
+  font-size:10px;
+  color:var(--ink-3);
+  font-family:var(--mono);
+  letter-spacing:.04em;
+  margin-top:2px;
+}
+
+/* button bar (style, materials, location, arrangement, scale, aspect) */
+.btn-bar{
+  display:grid;
+  gap:5px;
+}
+.btn-bar.cols-2{grid-template-columns:repeat(2,1fr)}
+.btn-bar.cols-3{grid-template-columns:repeat(3,1fr)}
+.btn-bar.cols-4{grid-template-columns:repeat(4,1fr)}
+.btn-bar.cols-5{grid-template-columns:repeat(5,1fr)}
+.btn-bar.cols-6{grid-template-columns:repeat(6,1fr)}
+
+.type-btn{
+  height:30px;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-left:2px solid transparent;
+  border-radius:3px;
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink-2);
+  cursor:pointer;
+  transition:all .12s;
+  padding:0 6px;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  overflow:hidden;
+  letter-spacing:.01em;
+}
+.type-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+.type-btn.active{
+  border-color:var(--selected);
+  border-left-color:var(--selected);
+  background:var(--selected-soft);
+  color:var(--ink);
+  font-weight:500;
+}
+.type-btn[data-tier="base"]{border-left-color:var(--base)}
+.type-btn[data-tier="premium"]{border-left-color:var(--premium)}
+.type-btn[data-tier="signature"]{border-left-color:var(--signature)}
+.type-btn[data-tier="base"].active,
+.type-btn[data-tier="premium"].active,
+.type-btn[data-tier="signature"].active{
+  border-color:var(--selected);
+  border-left:3px solid var(--selected);
+}
+
+/* Aspect ratio recommendation: small dot on the suggested option, */
+/* dimmed treatment for the non-suggested options (unless active).  */
+.type-btn{position:relative}
+.type-btn[data-recommended="yes"]::after{
+  content:'';
+  position:absolute;
+  top:4px;
+  right:5px;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:var(--selected);
+  opacity:.7;
+}
+.type-btn[data-recommended="no"]:not(.active){
+  opacity:.45;
+}
+.type-btn[data-recommended="no"]:not(.active):hover{
+  opacity:.7;
+}
+
+/* Aspect hint — same register as materials-hint but it switches between */
+/* informational (recommended is current) and cautionary (overridden).   */
+.aspect-hint{
+  font-size:10px;
+  color:var(--ink-3);
+  margin-top:6px;
+  font-style:italic;
+  line-height:1.4;
+}
+.aspect-hint[data-state="warning"]{
+  color:#8b6914;
+}
+
+.materials-hint{
+  font-size:10px;
+  color:var(--ink-3);
+  font-style:italic;
+  margin-top:2px;
+}
+
+/* subject-count slider — Groups-specific */
+.subject-control{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:3px;
+  padding:8px 10px;
+}
+.subject-stepper{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;
+}
+.subject-btn{
+  width:24px;height:24px;
+  border:1px solid var(--hairline);
+  background:var(--bg);
+  color:var(--ink-2);
+  border-radius:3px;
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .12s;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1;
+}
+.subject-btn:hover:not(:disabled){border-color:var(--ink-3);color:var(--ink)}
+.subject-btn:disabled{opacity:.35;cursor:not-allowed}
+.subject-readout{
+  font-family:var(--serif);
+  font-size:18px;
+  font-style:italic;
+  color:var(--ink);
+  width:24px;
+  text-align:center;
+  font-weight:400;
+}
+.subject-meta{
+  font-size:10px;
+  color:var(--ink-3);
+  font-family:var(--mono);
+  letter-spacing:.04em;
+  flex:1;
+}
+.subject-meta strong{color:var(--ink-2);font-weight:500}
+
+/* refinement tweak */
+.tweak-input{
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:3px;
+  padding:8px 10px;
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--ink);
+  resize:vertical;
+  min-height:50px;
+  max-height:140px;
+}
+.tweak-input:focus{outline:none;border-color:var(--selected)}
+.tweak-input::placeholder{color:var(--ink-3);font-style:italic}
+.tweak-counter{
+  font-size:9px;color:var(--ink-3);font-family:var(--mono);
+  text-align:right;margin-top:2px;letter-spacing:.04em;
+}
+
+/* Plaque inscription input — single-line, italic placeholder, lives at */
+/* the bottom of the rail. Designed to be discoverable but not loud:    */
+/* the placeholder text shows the default brand stamp so an empty field */
+/* is self-documenting.                                                 */
+.plaque-input{
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:3px;
+  padding:7px 10px;
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--ink);
+}
+.plaque-input:focus{outline:none;border-color:var(--selected)}
+.plaque-input::placeholder{color:var(--ink-3);font-style:italic}
+.plaque-input:disabled{
+  background:var(--bg-soft);
+  color:var(--ink-3);
+  cursor:not-allowed;
+}
+.plaque-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:6px;
+  gap:10px;
+}
+.plaque-off{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-size:10px;
+  color:var(--ink-2);
+  font-family:var(--mono);
+  letter-spacing:.04em;
+  cursor:pointer;
+  user-select:none;
+}
+.plaque-off input[type="checkbox"]{
+  margin:0;
+  cursor:pointer;
+}
+.plaque-hint{
+  font-size:10px;
+  color:var(--ink-3);
+  font-style:italic;
+  text-align:right;
+  flex:1;
+}
+
+/* ── STAGE ── */
+.center{
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
+  min-width:0;
+  min-height:0;  /* allow .stage's overflow-y:auto to actually scroll —
+                    grid items default to min-height:auto which lets .center
+                    grow to fit content and defeats inner scroll */
+  position:relative;
+}
+.center-hdr{
+  height:44px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 24px;
+  gap:14px;
+  flex-shrink:0;
+}
+.stage-title{
+  font-family:var(--serif);
+  font-size:17px;
+  color:var(--ink-2);
+  font-style:italic;
+}
+.stage-meta{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+}
+
+.stage-progress{
+  height:2px;
+  background:transparent;
+  position:relative;
+  overflow:hidden;
+}
+.stage-progress.busy{background:var(--bg-deeper)}
+.stage-progress-fill{
+  position:absolute;
+  inset:0;
+  background:var(--accent);
+  transform:translateX(-100%);
+  display:none;
+}
+.stage-progress.busy .stage-progress-fill{
+  display:block;
+  animation:progressSlide 1.6s ease-in-out infinite;
+}
+
+.stage{
+  flex:1;
+  overflow-y:auto;
+  padding:24px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+
+/* empty state */
+.stage-empty{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:80px 24px;
+  max-width:520px;
+  margin:auto;
+}
+.stage-empty-title{
+  font-family:var(--serif);
+  font-size:34px;
+  color:var(--ink);
+  margin-bottom:12px;
+  letter-spacing:-.005em;
+  line-height:1.15;
+}
+.stage-empty-title em{font-style:italic;color:var(--accent)}
+.stage-empty-sub{
+  font-size:13px;
+  color:var(--ink-2);
+  line-height:1.55;
+  max-width:440px;
+}
+
+/* suggester (post-upload, pre-render) */
+.stage-suggester{
+  width:100%;
+  max-width:520px;
+  margin:48px auto 0;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  animation:fadeIn .3s ease;
+}
+.suggester-status{
+  background:var(--surface);
+  border:1px solid var(--hairline-soft);
+  border-radius:5px;
+  padding:18px 20px;
+  text-align:center;
+}
+.suggester-status-eyebrow{
+  font-family:var(--sans);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--ink-3);
+}
+.suggester-status-title{
+  font-family:var(--serif);
+  font-size:22px;
+  color:var(--ink);
+  margin:6px 0 10px;
+}
+.suggester-status-title em{font-style:italic;color:var(--accent)}
+.suggester-status-loading{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:11px;color:var(--ink-3);
+}
+.suggester-spin{
+  width:12px;height:12px;
+  border:2px solid var(--bg-deeper);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+.detected-banner{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  background:var(--surface);
+  border:1px solid var(--success-soft);
+  border-radius:5px;
+  padding:14px 18px;
+  border-left:3px solid var(--success);
+}
+.detected-icon-wrap{
+  width:36px;height:36px;
+  border-radius:50%;
+  background:var(--success-soft);
+  color:var(--success);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.detected-icon-wrap svg{width:18px;height:18px}
+.detected-info{flex:1;min-width:0}
+.detected-name{
+  font-family:var(--serif);
+  font-size:18px;
+  color:var(--ink);
+  font-style:italic;
+}
+.detected-sub{
+  font-size:11px;
+  color:var(--ink-2);
+  margin-top:2px;
+}
+.detected-badges{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;
+}
+.detected-badge{
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  background:var(--bg-soft);
+  color:var(--ink-2);
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline-soft);
+}
+.detected-badge[data-verdict="green"]{
+  background:rgba(52, 122, 84, 0.10);
+  color:#2c6a44;
+  border-color:rgba(52, 122, 84, 0.30);
+}
+.detected-badge[data-verdict="yellow"]{
+  background:rgba(170, 130, 40, 0.10);
+  color:#8a6a20;
+  border-color:rgba(170, 130, 40, 0.30);
+}
+.detected-badge[data-verdict="red"]{
+  background:rgba(168, 60, 60, 0.10);
+  color:#8a3838;
+  border-color:rgba(168, 60, 60, 0.30);
+}
+
+/* Source-quality recommendation hint (yellow / red verdict only). */
+.source-rec-hint{
+  font-size:12.5px;
+  line-height:1.5;
+  color:var(--ink-2);
+  padding:10px 14px;
+  border-radius:4px;
+  border:1px solid var(--hairline-soft);
+  background:var(--bg-soft);
+  margin-bottom:14px;
+}
+.source-rec-hint[data-verdict="yellow"]{
+  background:rgba(170, 130, 40, 0.06);
+  border-color:rgba(170, 130, 40, 0.25);
+  color:#6a5418;
+}
+.source-rec-hint[data-verdict="red"]{
+  background:rgba(168, 60, 60, 0.06);
+  border-color:rgba(168, 60, 60, 0.25);
+  color:#6e2e2e;
+}
+
+.suggester-cta{
+  background:var(--bg-soft);
+  border:1px dashed var(--border-strong);
+  border-radius:5px;
+  padding:18px 20px;
+  text-align:center;
+}
+.suggester-cta-eyebrow{
+  font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-3);
+}
+.suggester-cta-title{
+  font-family:var(--serif);
+  font-size:20px;
+  color:var(--ink);
+  margin:4px 0 8px;
+}
+.suggester-cta-title em{font-style:italic;color:var(--accent)}
+.suggester-cta-sub{font-size:11px;color:var(--ink-2)}
+
+/* ── RESULTS GRID ── */
+.results-grid{
+  width:100%;
+  max-width:1200px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.stack-meta-display{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.stack-meta-display .dot{
+  width:3px;height:3px;border-radius:50%;background:var(--ink-3);
+}
+.results-stack-inner{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
+  gap:18px;
+}
+.result-card{
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:5px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.result-card-img{
+  width:100%;
+  aspect-ratio:3/2;
+  background:var(--bg-deeper);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.result-card-img img{width:100%;height:100%;object-fit:cover;display:block}
+.result-card-empty{
+  color:var(--ink-3);font-size:11px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.result-card-spinner{
+  width:16px;height:16px;
+  border:2px solid var(--bg-soft);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+.result-card-error{
+  color:var(--danger);
+  font-size:11px;
+  text-align:center;
+  padding:0 20px;
+  line-height:1.4;
+}
+.result-card-meta{
+  padding:10px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.result-meta-top{
+  display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+}
+.result-meta-name{
+  font-family:var(--serif);
+  font-size:14px;
+  font-style:italic;
+  color:var(--ink);
+}
+.result-meta-time{
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+}
+.result-tier{
+  display:inline-flex;
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline);
+}
+.result-tier[data-tier="base"]{color:var(--base);border-color:var(--base)}
+.result-tier[data-tier="premium"]{color:var(--premium);border-color:var(--premium)}
+.result-tier[data-tier="signature"]{color:var(--signature);border-color:var(--signature)}
+
+/* per-figure scoring strip */
+.figure-scores{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin-top:4px;
+}
+.figure-score{
+  font-family:var(--mono);
+  font-size:10px;
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline);
+  color:var(--ink-2);
+  background:var(--bg-soft);
+}
+.figure-score[data-tier="top"]{
+  border-color:var(--success);
+  color:var(--success);
+  background:var(--success-soft);
+}
+.figure-score[data-tier="relaxed"]{
+  border-color:var(--warn);
+  color:var(--warn);
+  background:#FFF8EC;
+}
+.figure-score[data-tier="fail"]{
+  border-color:var(--danger);
+  color:var(--danger);
+  background:var(--danger-soft);
+}
+
+.pass-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:10px;
+  font-family:var(--mono);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+}
+.pass-row .pass-pill{
+  padding:2px 7px;
+  border-radius:2px;
+  font-weight:500;
+}
+.pass-row .pass-pill[data-pass="true"]{
+  background:var(--success-soft);color:var(--success);
+}
+.pass-row .pass-pill[data-pass="false"]{
+  background:var(--danger-soft);color:var(--danger);
+}
+.pass-attempts{color:var(--ink-3)}
+
+/* ── QA FAILURE GATE ─────────────────────────────────────────── */
+/* Triggered when scorePerFigureFidelity returns final_pass=false and the
+   user has not yet picked a decision (rerender / refund / accept).
+   The image gets a tiled angled "Liten & Co" watermark and the meta area
+   replaces scores/pass-row with the decision panel.
+   Removed once user_decision is set. */
+
+.queue-card.qa-fail .queue-card-img{
+  position:relative;
+}
+.queue-card.qa-fail .queue-card-img::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'><text x='55' y='60' text-anchor='middle' transform='rotate(-25 55 55)' fill='white' fill-opacity='0.62' stroke='rgba(0,0,0,0.32)' stroke-width='0.5' paint-order='stroke' font-family='Georgia, serif' font-style='italic' font-size='13' font-weight='500'>Liten %26 Co</text></svg>");
+  background-repeat:repeat;
+  background-size:110px 110px;
+  mix-blend-mode:normal;
+  z-index:2;
+}
+@media (max-width: 768px){
+  .queue-card.qa-fail .queue-card-img::after{
+    background-size:140px 140px;  /* 3 across × 3 down on typical mobile card */
+  }
+}
+
+.qa-fail-panel{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:10px 12px;
+  margin-top:4px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:3px;
+}
+.qa-fail-msg{
+  font-size:11px;
+  line-height:1.5;
+  font-family:var(--sans);
+  color:var(--ink-2);
+  letter-spacing:.01em;
+}
+.qa-fail-msg strong{
+  color:var(--ink);
+  font-weight:600;
+}
+.qa-fail-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:2px;
+}
+.qa-btn{
+  flex:1 1 auto;
+  min-width:90px;
+  height:30px;
+  padding:0 12px;
+  font-size:11px;
+  font-weight:500;
+  font-family:var(--sans);
+  letter-spacing:.02em;
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap;
+}
+.qa-btn-primary{
+  background:var(--accent);
+  color:#fff;
+  border:1px solid var(--accent);
+}
+.qa-btn-primary:hover{ background:var(--accent-hover); border-color:var(--accent-hover); }
+.qa-btn-neutral{
+  background:var(--surface);
+  color:var(--ink);
+  border:1px solid var(--border-strong);
+}
+.qa-btn-neutral:hover{ background:var(--surface-2); border-color:var(--ink-3); }
+.qa-btn-danger{
+  background:transparent;
+  color:var(--ink-2);
+  border:1px solid var(--border);
+}
+.qa-btn-danger:hover{ color:var(--ink); border-color:var(--border-strong); }
+
+.qa-decided{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  font-family:var(--mono);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  padding:4px 0;
+}
+.qa-decided[data-decision="accept"]{ color:var(--success); }
+.qa-decided[data-decision="refund"]{ color:var(--ink-3); }
+.qa-decided[data-decision="rerender"]{ color:var(--ink-2); }
+.qa-decided-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:currentColor;
+}
+
+/* Holistic caricature score (Tribal styles) */
+.caricature-scores{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin-top:4px;
+}
+.caricature-score{
+  font-family:var(--mono);
+  font-size:10px;
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline);
+  color:var(--ink-2);
+  background:var(--bg-soft);
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.caricature-score .label{
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:var(--ink-3);
+}
+.caricature-score[data-tier="pass"]{
+  border-color:var(--success);
+  color:var(--success);
+  background:var(--success-soft);
+}
+.caricature-score[data-tier="pass"] .label{color:var(--success)}
+.caricature-score[data-tier="fail"]{
+  border-color:var(--danger);
+  color:var(--danger);
+  background:var(--danger-soft);
+}
+.caricature-score[data-tier="fail"] .label{color:var(--danger)}
+.caricature-score[data-tier="composite"]{
+  border-color:var(--ink-2);
+  color:var(--ink);
+  background:var(--surface);
+  font-weight:600;
+}
+
+/* ── QUEUE GRID ── */
+.queue-grid{
+  width:100%;
+  max-width:1280px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.queue-grid-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.queue-grid-meta .dot{
+  width:3px;height:3px;border-radius:50%;background:var(--ink-3);
+}
+.queue-grid-meta .meta-strong{color:var(--ink-2)}
+.queue-grid-inner{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:16px;
+}
+.queue-card{
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:5px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  animation:fadeIn .25s ease;
+}
+.queue-card[data-status="failed"]{border-color:var(--danger)}
+.queue-card-img{
+  width:100%;
+  aspect-ratio:3/2;
+  background:var(--bg-deeper);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+.queue-card-img img.queue-card-render{width:100%;height:100%;object-fit:cover;display:block}
+.queue-card-empty{
+  color:var(--ink-3);font-size:11px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-family:var(--mono);letter-spacing:.04em;
+}
+.queue-card-spinner{
+  width:16px;height:16px;
+  border:2px solid var(--bg-soft);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+.queue-card-error{
+  color:var(--danger);
+  font-size:11px;
+  text-align:center;
+  padding:0 20px;
+  line-height:1.4;
+}
+/* source thumb tucked top-left of image area — sized to read faces, not just glyph */
+.queue-card-source-thumb{
+  position:absolute;
+  top:10px;left:10px;
+  width:80px;height:80px;
+  border-radius:4px;
+  border:2px solid #fff;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+  object-fit:cover;
+  background:var(--bg-deeper);
+  z-index:2;
+}
+/* status pill top-right */
+.queue-card-status-pill{
+  position:absolute;
+  top:8px;right:8px;
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:3px 7px;
+  border-radius:2px;
+  background:rgba(255,255,255,.95);
+  color:var(--ink-2);
+  border:1px solid var(--hairline);
+  z-index:2;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+}
+.queue-card-status-pill[data-status="pending"]{
+  color:var(--ink-3);
+  border-color:var(--hairline);
+}
+.queue-card-status-pill[data-status="running"]{
+  color:var(--warn);
+  border-color:var(--warn);
+  background:#FFF8EC;
+}
+.queue-card-status-pill[data-status="running"]::before{
+  content:'';
+  width:6px;height:6px;border-radius:50%;
+  background:var(--warn);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+.queue-card-status-pill[data-status="done"]{
+  color:var(--success);
+  border-color:var(--success);
+  background:var(--success-soft);
+}
+.queue-card-status-pill[data-status="failed"]{
+  color:var(--danger);
+  border-color:var(--danger);
+  background:var(--danger-soft);
+}
+.queue-card-meta{
+  padding:10px 12px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.queue-card-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  align-items:center;
+}
+.queue-badge{
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline);
+  color:var(--ink-2);
+  background:var(--bg-soft);
+}
+.queue-badge[data-tier="base"]{border-left:2px solid var(--base)}
+.queue-badge[data-tier="premium"]{border-left:2px solid var(--premium)}
+.queue-badge[data-tier="signature"]{border-left:2px solid var(--signature)}
+.queue-badge.style-badge{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:11px;
+  text-transform:none;
+  letter-spacing:0;
+  color:var(--ink);
+  background:var(--surface);
+  padding:1px 8px;
+}
+.queue-card-time{
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+}
+.queue-card-actions{
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+}
+.queue-action-btn{
+  font-family:var(--sans);
+  font-size:10px;
+  letter-spacing:.04em;
+  height:24px;
+  padding:0 10px;
+  border:1px solid var(--hairline);
+  background:var(--surface);
+  color:var(--ink-2);
+  border-radius:2px;
+  cursor:pointer;
+  transition:all .12s;
+}
+.queue-action-btn:hover{border-color:var(--ink-2);color:var(--ink)}
+.queue-action-btn.danger:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.queue-action-btn.retry:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+/* ── LIGHTBOX (click queue card image to enlarge) ── */
+.lightbox{
+  position:fixed;
+  inset:0;
+  background:rgba(31,27,20,.86);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  padding:24px;
+  cursor:zoom-out;
+  animation:fadeIn .15s ease;
+}
+.lightbox.open{display:flex}
+.lightbox img{
+  max-width:96vw;
+  max-height:92vh;
+  object-fit:contain;
+  box-shadow:0 12px 48px rgba(0,0,0,.4);
+  border-radius:4px;
+  cursor:default;
+}
+.lightbox-close{
+  position:absolute;
+  top:18px;right:24px;
+  width:32px;height:32px;
+  border:none;
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  font-size:22px;
+  border-radius:50%;
+  cursor:pointer;
+  line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s;
+}
+.lightbox-close:hover{background:rgba(255,255,255,.22)}
+/* Show pointer cursor on render images to telegraph clickability */
+.queue-card-img img.queue-card-render{cursor:zoom-in;transition:opacity .12s}
+.queue-card-img img.queue-card-render:hover{opacity:.92}
+
+/* lightbox source inset — persistent thumbnail in the corner, click to swap views */
+.lightbox img.lightbox-source-inset{
+  position:absolute;
+  top:20px;left:20px;
+  width:120px;
+  height:120px;
+  max-width:120px;
+  max-height:120px;
+  border-radius:4px;
+  border:2px solid #fff;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+  object-fit:cover;
+  background:var(--bg-deeper);
+  cursor:pointer;
+  z-index:1001;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.lightbox img.lightbox-source-inset:hover{
+  transform:scale(1.04);
+  box-shadow:0 6px 18px rgba(0,0,0,.6);
+}
+.lightbox img.lightbox-source-inset.hidden{display:none}
+@media (max-width:640px){
+  .lightbox img.lightbox-source-inset{
+    width:88px;height:88px;
+    max-width:88px;max-height:88px;
+    top:14px;left:14px;
+  }
+}
+
+/* Compact mini-stepper for subject count */
+.mini-stepper{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-family:var(--mono);
+}
+.mini-stepper button{
+  width:18px;
+  height:18px;
+  border:1px solid var(--hairline);
+  background:var(--surface);
+  border-radius:2px;
+  font-size:11px;
+  color:var(--ink-2);
+  cursor:pointer;
+  line-height:1;
+  padding:0;
+}
+.mini-stepper button:hover:not(:disabled){
+  border-color:var(--ink-2);
+  color:var(--ink);
+}
+.mini-stepper button:disabled{opacity:.4;cursor:not-allowed}
+.mini-stepper .val{
+  min-width:14px;
+  text-align:center;
+  font-size:11px;
+  color:var(--ink);
+}
+
+/* Subjects + scoring sub-line */
+.subject-meta-line{
+  font-size:10px;
+  color:var(--ink-3);
+  margin-top:6px;
+  font-family:var(--mono);
+  letter-spacing:.04em;
+}
+
+/* Style description hint paragraph (longer than .materials-hint) */
+.style-desc{
+  font-size:11px;
+  color:var(--ink-2);
+  line-height:1.5;
+  margin-top:8px;
+  font-style:italic;
+  font-family:var(--serif);
+}
+/* ═══════════════════════════════════════════════════════════════
+   STAGE TABS + ACTION BAR + COMPACT QUEUE + COUNT RIBBON + PACKS
+   The right-column now holds two mutually-exclusive views (Stage
+   Preview / Your Queue) and a fixed action bar pinned to the bottom
+   that follows the user wherever they scroll the inner stage view.
+═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   BOTTOMBAR TABS — navigation, brass scheme. Tabs live in the
+   unified bottom bar now (not the header). Brass-toned active
+   state visually distinct from the olive-toned action buttons.
+═══════════════════════════════════════════════════════════════ */
+.bottombar-tab{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 22px;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:5px;
+  font-family:var(--serif);
+  font-size:18px;
+  font-style:italic;
+  color:var(--ink-2);
+  cursor:pointer;
+  transition:background .12s, border-color .12s, color .12s;
+  line-height:1.15;
+}
+.bottombar-tab:hover:not(.active){
+  border-color:var(--border-strong);
+  color:var(--ink);
+}
+.bottombar-tab.active{
+  background:#796634;
+  border-color:#796634;
+  color:#f3f1ea;
+}
+.queue-count-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:26px;
+  height:22px;
+  padding:0 8px;
+  border-radius:11px;
+  background:var(--accent);
+  color:#fff;
+  font-family:var(--mono);
+  font-size:12px;
+  font-style:normal;
+  font-weight:600;
+  letter-spacing:.04em;
+}
+.queue-count-badge[data-zero="yes"]{
+  background:var(--hairline);
+  color:var(--ink-3);
+}
+.bottombar-tab.active .queue-count-badge{
+  background:rgba(243,241,234,.95);
+  color:#796634;
+}
+
+/* STAGE VIEWS — each tab maps to one .stage-view; only the active one shows */
+.stage-view{
+  display:none;
+  flex:1;
+  min-height:0;
+  flex-direction:column;
+  width:100%;
+}
+.stage-view.active{ display:flex }
+
+/* STAGE PREVIEW VIEW — the "config / source / what-you'll-get" surface */
+.stage-preview-container{
+  padding:24px 24px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  max-width:720px;
+  margin:0 auto;
+  width:100%;
+  transition:max-width .25s ease;
+}
+/* When the Curator panel is engaged, the stage uses substantially more
+   real estate — the Curator needs room for 3 torso cards or 5 effect
+   cards across, plus generous reading copy. The .curator-active class
+   is toggled from JS in curatorShowPanel()/curatorHidePanel(). */
+.stage-preview-container.curator-active{
+  max-width:1180px;
+}
+.stage-preview-source{
+  display:flex;
+  gap:18px;
+  align-items:flex-start;
+}
+.stage-preview-thumb{
+  width:160px;
+  height:160px;
+  border-radius:4px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  flex-shrink:0;
+  overflow:hidden;
+}
+.stage-preview-thumb img{ width:100%; height:100%; object-fit:cover; display:block }
+.stage-preview-config{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.stage-preview-config-title{
+  font-family:var(--serif);
+  font-size:18px;
+  color:var(--ink);
+  font-style:italic;
+}
+.stage-preview-config-title em{ font-style:italic; color:var(--accent) }
+.stage-preview-config-line{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--ink-2);
+  letter-spacing:.03em;
+  line-height:1.6;
+}
+.stage-preview-config-line .label{
+  color:var(--ink-3);
+  text-transform:uppercase;
+  display:inline-block;
+  min-width:80px;
+}
+.stage-preview-config-line .val{ color:var(--ink) }
+
+/* QUEUE VIEW — compact rows + ribbon + pack callouts.
+   All sections cap their width and center so content doesn't sprawl
+   edge-to-edge, matching the Landscapes prototype pattern. */
+.stage-queue-container{
+  padding:24px 32px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  width:100%;
+  align-items:center;
+}
+.queue-rows{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  width:100%;
+  max-width:1100px;
+}
+/* Even at count=1 we stay in 2-column so the single row reads as
+   "position 01 of an emerging set" — the empty right cell is visible
+   intent, not awkward truncation. */
+@media (max-width:900px){ .queue-rows{ grid-template-columns:1fr } }
+
+/* Compact queue row — taller card so the rendered thumb reads as a piece
+   you'd want to admire, and the View affordance becomes a real click target. */
+.queue-row{
+  display:grid;
+  grid-template-columns:32px 80px 1fr auto 24px;
+  gap:14px;
+  align-items:center;
+  padding:14px 18px;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:5px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.02em;
+  cursor:pointer;
+  transition:border-color .12s, background .12s, box-shadow .15s, transform .15s;
+  position:relative;
+}
+.queue-row:hover{ border-color:var(--border-strong) }
+.queue-row[data-status="running"]{ background:var(--bg-soft) }
+.queue-row[data-status="done"]{
+  border-color:#516e3a;
+  background:rgba(81,110,58,.06);
+  box-shadow:0 0 0 1px rgba(81,110,58,.18);
+}
+.queue-row[data-status="done"]:hover{
+  background:rgba(81,110,58,.10);
+  box-shadow:0 0 0 1px rgba(81,110,58,.35), 0 2px 8px rgba(81,110,58,.15);
+  transform:translateY(-1px);
+}
+.queue-row[data-status="failed"]{ border-color:var(--danger-border, #d4a8a8) }
+
+/* VIEW affordance — replaces the price block once a render is done.
+   Sized as a real click target so the rendered piece isn't hidden
+   behind a tiny unmarked area. Lifts and slides on hover. */
+.queue-row-view{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:11px 20px;
+  background:#516e3a;
+  color:#fff;
+  border-radius:4px;
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  font-weight:500;
+  white-space:nowrap;
+  transition:background .15s, gap .15s, box-shadow .15s;
+  box-shadow:0 1px 2px rgba(81,110,58,.25);
+}
+.queue-row-view .arrow{
+  font-family:var(--sans);
+  font-style:normal;
+  font-size:18px;
+  font-weight:600;
+  transition:transform .15s;
+}
+.queue-row:hover .queue-row-view{
+  background:#5e7e44;
+  box-shadow:0 3px 10px rgba(81,110,58,.35);
+}
+.queue-row:hover .queue-row-view .arrow{
+  transform:translateX(4px);
+}
+
+.queue-row-num{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--ink-3);
+  font-weight:500;
+  letter-spacing:.08em;
+  text-align:center;
+}
+.queue-row-thumb{
+  width:80px;
+  height:80px;
+  border-radius:4px;
+  border:1px solid var(--hairline);
+  overflow:hidden;
+  background:var(--bg-deeper);
+  position:relative;
+  flex-shrink:0;
+}
+.queue-row-thumb img{ width:100%; height:100%; object-fit:cover; display:block }
+.queue-row-thumb .status-dot{
+  position:absolute;
+  right:-3px;
+  bottom:-3px;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  border:2px solid var(--surface);
+  background:var(--hairline);
+}
+.queue-row-thumb .status-dot[data-status="running"]{ background:var(--accent); animation:pulseDot 1.2s ease-in-out infinite }
+.queue-row-thumb .status-dot[data-status="done"]{ background:#7c9c5e }
+.queue-row-thumb .status-dot[data-status="failed"]{ background:var(--danger) }
+@keyframes pulseDot{
+  0%,100%{ opacity:1 }
+  50%{ opacity:.4 }
+}
+.queue-row-meta{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.queue-row-title{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.15;
+}
+.queue-row-sub{
+  color:var(--ink-3);
+  font-size:11px;
+  letter-spacing:.04em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.35;
+}
+.queue-row-price{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:2px;
+  white-space:nowrap;
+  padding:0 8px;
+}
+.queue-row-price .was{
+  font-size:12px;
+  color:var(--ink-3);
+  text-decoration:line-through;
+}
+.queue-row-price .now{
+  font-size:16px;
+  color:var(--ink);
+  font-weight:500;
+}
+.queue-row-price .off{
+  font-size:10px;
+  color:#7c9c5e;
+  letter-spacing:.04em;
+}
+.queue-row-x{
+  width:28px;
+  height:28px;
+  border-radius:4px;
+  border:none;
+  background:transparent;
+  color:var(--ink-3);
+  font-size:20px;
+  cursor:pointer;
+  line-height:1;
+  padding:0;
+  transition:background .12s, color .12s;
+}
+.queue-row-x:hover{
+  background:rgba(159,46,46,.1);
+  color:var(--danger);
+}
+
+/* COUNT RIBBON — 10 dots, fill left-to-right as queue grows. */
+/* Capped width so it doesn't sprawl edge-to-edge on wide displays. */
+.queue-ribbon{
+  display:flex;
+  align-items:center;
+  gap:0;
+  padding:14px 18px;
+  background:var(--bg-soft);
+  border:1px solid var(--hairline);
+  border-radius:6px;
+  width:100%;
+  max-width:720px;
+}
+.ribbon-dot{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  border:1.5px solid var(--hairline);
+  background:var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:500;
+  color:var(--ink-3);
+  flex-shrink:0;
+  transition:all .15s;
+}
+.ribbon-dot[data-state="filled"]{
+  background:#516e3a;
+  border-color:#516e3a;
+  color:#fff;
+}
+.ribbon-dot[data-state="current"]{
+  background:#a5882f;
+  border-color:#a5882f;
+  color:#fff;
+}
+.ribbon-dot[data-pack="curators"]:not([data-state="filled"]):not([data-state="current"]){
+  border-color:#a5882f;
+}
+.ribbon-dot[data-pack="studio"]:not([data-state="filled"]):not([data-state="current"]){
+  border-color:#a5882f;
+  border-style:double;
+  border-width:3px;
+}
+.ribbon-connector{
+  flex:1;
+  height:1.5px;
+  background:var(--hairline);
+  margin:0 2px;
+  transition:background .15s;
+}
+.ribbon-connector[data-state="filled"]{ background:#516e3a }
+
+/* PACK TIERS — Curators (7) + Studio (10) callouts, Landscapes brass/tan
+   treatment: bigger numbers, distinct colors, more visual presence. */
+.queue-packs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  width:100%;
+  max-width:760px;
+}
+.pack-tier{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:16px;
+  padding:14px 20px 16px;
+  border-radius:7px;
+  border:none;
+  transition:transform .15s, box-shadow .15s, opacity .2s;
+}
+.pack-tier:hover:not([data-state="reached"]){
+  transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.08);
+}
+.pack-tier[data-tier="curators"]{
+  background:#796634;
+  color:#f3f1ea;
+}
+.pack-tier[data-tier="studio"]{
+  background:#d0c29d;
+  color:#564a29;
+}
+.pack-tier[data-state="reached"]{
+  background:rgba(81,110,58,.16);
+  color:var(--ink);
+  border:1px solid rgba(81,110,58,.4);
+}
+.pack-tier-info{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.pack-tier-name{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:18px;
+  font-weight:500;
+  letter-spacing:.005em;
+  line-height:1.1;
+}
+.pack-tier-sub{
+  font-family:var(--sans);
+  font-size:13px;
+  line-height:1.4;
+  opacity:.88;
+}
+.pack-tier-num{
+  font-family:var(--serif);
+  font-style:italic;
+  font-weight:500;
+  line-height:1;
+  font-feature-settings:"tnum" 1;
+  letter-spacing:-.01em;
+  flex-shrink:0;
+}
+.pack-tier[data-tier="curators"] .pack-tier-num{ font-size:32px; }
+.pack-tier[data-tier="studio"] .pack-tier-num{ font-size:44px; }
+.pack-tier[data-state="reached"] .pack-tier-num{ color:#516e3a }
+
+/* ═══════════════════════════════════════════════════════════════
+   BUNDLE AREA — persistent footer above the bottom bar. Holds the
+   count ribbon + pack tier callouts. Visible across both tabs when
+   the queue has items. "Information" half of the information→action
+   pairing per Rich's footer hierarchy.
+═══════════════════════════════════════════════════════════════ */
+.bundle-area{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  padding:16px 24px 18px;
+  border-top:1px solid var(--hairline);
+  background:var(--bg-soft);
+  flex-shrink:0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UNIFIED BOTTOM BAR — tabs left (navigation, brass), actions right
+   (CTAs, olive). Two color schemes so the user doesn't confuse
+   "switch view" with "do something." "Action" half of the pairing.
+═══════════════════════════════════════════════════════════════ */
+.stage-bottombar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding:14px 28px;
+  border-top:1px solid var(--border);
+  background:var(--bg);
+  flex-shrink:0;
+}
+.bottombar-tabs{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.bottombar-actions{
+  display:flex;
+  align-items:stretch;
+  gap:12px;
+}
+
+/* Action buttons — olive scheme, distinct from the brass tabs */
+.stage-action-btn{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:13px 22px;
+  border:1.5px solid var(--hairline);
+  border-radius:5px;
+  background:var(--surface);
+  cursor:pointer;
+  transition:border-color .12s, background .12s, box-shadow .15s;
+  font-family:var(--sans);
+}
+.stage-action-btn:hover:not(:disabled){
+  border-color:var(--border-strong);
+}
+.stage-action-btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+.stage-action-btn .btn-label{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:20px;
+  color:var(--ink);
+  line-height:1.15;
+  white-space:nowrap;
+}
+.stage-action-btn .btn-price{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--ink-3);
+  letter-spacing:.03em;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.stage-action-btn .btn-price .was{
+  text-decoration:line-through;
+  margin-right:6px;
+}
+.stage-action-btn .btn-price .now{
+  color:var(--ink);
+  font-weight:500;
+}
+.stage-action-btn.btn-add{
+  min-width:220px;
+}
+.stage-action-btn.btn-add[data-duplicate="yes"]:not(:disabled){
+  border-color:var(--accent);
+  background:rgba(165,136,47,.08);
+}
+.stage-action-btn.btn-render{
+  min-width:240px;
+  background:#3d5223;
+  border-color:#3d5223;
+  box-shadow:0 2px 6px rgba(61,82,35,.25);
+}
+.stage-action-btn.btn-render:hover:not(:disabled){
+  background:#4a6029;
+  border-color:#4a6029;
+  box-shadow:0 4px 12px rgba(61,82,35,.35);
+}
+.stage-action-btn.btn-render .btn-label,
+.stage-action-btn.btn-render .btn-price,
+.stage-action-btn.btn-render .btn-price .now{
+  color:#fff;
+}
+.stage-action-btn.btn-render .btn-price .was{ color:rgba(255,255,255,.5) }
+
+/* Inline "change a setting" hint sits under the Add button when duplicate */
+.duplicate-hint{
+  position:absolute;
+  bottom:calc(100% + 4px);
+  left:50%;
+  transform:translateX(-50%);
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--accent);
+  letter-spacing:.04em;
+  white-space:nowrap;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .15s;
+}
+.stage-action-btn.btn-add[data-duplicate="yes"] .duplicate-hint{
+  opacity:1;
+}
+.stage-action-btn.btn-add{ position:relative; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   CURATOR CHAT BLOCK + STEP-THROUGH PULSE
+   The Curator is the brand-voiced layer that surfaces observation +
+   suggestion + 'Apply my settings'. Sits at the top of the Stage
+   Preview. Step-pulse is a soft amber halo that draws the user's
+   eye to the next-needed action in the rail (upload → material →
+   location → scale → aspect → queue).
+═══════════════════════════════════════════════════════════════ */
+
+/* STEP-THROUGH INFO BOX — system guidance, not Curator voice. Plain
+   helpful copy that advances as the user touches material, location,
+   scale, aspect. Sits at the top of the Stage Preview as an unobtrusive
+   helper, not a chat avatar. */
+.info-box{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 18px;
+  background:var(--bg-soft);
+  border:1px solid var(--hairline);
+  border-left:3px solid var(--accent);
+  border-radius:4px;
+  margin-bottom:6px;
+}
+.info-step{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  padding:4px 10px;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:3px;
+  white-space:nowrap;
+  flex-shrink:0;
+  font-weight:500;
+}
+.info-text{
+  font-family:var(--sans);
+  font-size:15px;
+  color:var(--ink);
+  line-height:1.4;
+  flex:1;
+}
+.info-text em{
+  font-style:normal;
+  color:var(--accent);
+  font-weight:500;
+}
+.info-box[data-complete="yes"]{
+  border-left-color:#516e3a;
+  background:rgba(81,110,58,.06);
+}
+.info-box[data-complete="yes"] .info-step{
+  background:#516e3a;
+  border-color:#516e3a;
+  color:#fff;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   CURATOR PANEL — replaces the rail-driven wizard guidance.
+   When active, dominates the Stage area: a sage-tinted card with
+   the Curator's voice driving each step (analysis → torso → effects).
+   ──────────────────────────────────────────────────────────────── */
+.curator-panel{
+  margin:1.4rem 0;
+  padding:1.8rem 2.1rem 2rem;
+  background:linear-gradient(180deg, rgba(81,110,58,.05) 0%, rgba(81,110,58,.02) 100%);
+  border:1px solid rgba(81,110,58,.22);
+  border-radius:6px;
+  position:relative;
+}
+.curator-panel-eyebrow{
+  font-family:'JetBrains Mono', monospace;
+  font-size:.72rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#516e3a;
+  margin-bottom:.5rem;
+}
+.curator-panel-title{
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-size:1.65rem;
+  color:#2b2823;
+  margin-bottom:.4rem;
+  line-height:1.25;
+}
+.curator-panel-lead{
+  font-family:'Cormorant Garamond', serif;
+  font-size:1.15rem;
+  color:#5a544c;
+  margin-bottom:1.4rem;
+  line-height:1.55;
+  max-width:72ch;
+}
+.curator-loading{
+  display:flex;align-items:center;gap:.7rem;
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-size:1.08rem;
+  color:#5a544c;
+  padding:.5rem 0;
+}
+.curator-spin{
+  width:14px;height:14px;
+  border:2px solid rgba(81,110,58,.2);
+  border-top-color:#516e3a;
+  border-radius:50%;
+  animation:curSpin .9s linear infinite;
+}
+@keyframes curSpin{ to{ transform:rotate(360deg) } }
+
+/* Card grid — torso cards (3 across) */
+.curator-card-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:1rem;
+  margin-bottom:1.2rem;
+}
+@media (max-width: 820px){
+  .curator-card-grid{ grid-template-columns:1fr; }
+}
+
+/* Card grid — effects (5 across or 2 rows on narrow) */
+.curator-effect-grid{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:.9rem;
+  margin-bottom:1.3rem;
+}
+@media (max-width: 1100px){
+  .curator-effect-grid{ grid-template-columns:repeat(2, 1fr); }
+}
+
+.curator-card{
+  background:#fff;
+  border:1px solid rgba(43,40,35,.18);
+  border-radius:5px;
+  padding:1rem 1.1rem 1.15rem;
+  cursor:pointer;
+  transition:border-color .18s ease, transform .12s ease, box-shadow .18s ease;
+  display:flex;flex-direction:column;
+  gap:.55rem;
+  position:relative;
+  min-height:200px;
+}
+.curator-card:hover{
+  border-color:#516e3a;
+  transform:translateY(-1px);
+  box-shadow:0 4px 14px -8px rgba(81,110,58,.32);
+}
+.curator-card.selected{
+  border-color:#7a2820;
+  background:rgba(122,40,32,.04);
+  box-shadow:0 0 0 1px #7a2820 inset;
+}
+.curator-card-label{
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-weight:600;
+  font-size:1.18rem;
+  color:#2b2823;
+  line-height:1.2;
+}
+.curator-card-desc{
+  font-family:'Cormorant Garamond', serif;
+  font-size:1.02rem;
+  color:#5a544c;
+  line-height:1.45;
+  flex-grow:1;
+}
+.curator-card-reasoning{
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-size:1.0rem;
+  color:#5a544c;
+  line-height:1.45;
+  flex-grow:1;
+}
+.curator-card-series-tag{
+  display:inline-block;
+  font-family:'JetBrains Mono', monospace;
+  font-size:.62rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#516e3a;
+  background:rgba(81,110,58,.1);
+  padding:.2rem .45rem;
+  border-radius:3px;
+  align-self:flex-start;
+  margin-bottom:.1rem;
+  white-space:nowrap;
+}
+
+/* Quality-level badge — Excellent / Good / Limited */
+.curator-card-quality{
+  display:inline-block;
+  font-family:'JetBrains Mono', monospace;
+  font-size:.62rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:.2rem .45rem;
+  border-radius:3px;
+  white-space:nowrap;
+}
+.curator-card-quality[data-q="Excellent"]{
+  color:#fff;
+  background:#516e3a;
+}
+.curator-card-quality[data-q="Good"]{
+  color:#5a544c;
+  background:rgba(165,136,47,.18);
+}
+.curator-card-quality[data-q="Limited"]{
+  color:#7a2820;
+  background:rgba(122,40,32,.1);
+}
+.curator-card-tags{
+  display:flex;
+  gap:.4rem;
+  flex-wrap:wrap;
+  margin-bottom:.1rem;
+}
+.curator-card-pick-btn{
+  margin-top:.6rem;
+  padding:.55rem .9rem;
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-size:1.1rem;
+  color:#fff;
+  background:#7a2820;
+  border:1px solid #7a2820;
+  border-radius:4px;
+  cursor:pointer;
+  transition:background .15s ease;
+  text-align:center;
+  white-space:nowrap;
+}
+.curator-card-pick-btn:hover{
+  background:#621e18;
+}
+
+/* Curator action bar — Reroll / Override / Run All */
+.curator-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.7rem;
+  margin-top:.4rem;
+}
+.curator-action-btn{
+  padding:.55rem .9rem;
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-size:1.1rem;
+  color:#7a2820;
+  background:#fff;
+  border:1px solid #7a2820;
+  border-radius:4px;
+  cursor:pointer;
+  transition:background .15s ease, color .15s ease;
+}
+.curator-action-btn:hover{
+  background:#7a2820;
+  color:#fff;
+}
+.curator-action-btn.primary{
+  background:#516e3a;
+  color:#fff;
+  border-color:#516e3a;
+}
+.curator-action-btn.primary:hover{
+  background:#3f5a2c;
+  border-color:#3f5a2c;
+}
+.curator-action-btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.curator-fallback{
+  background:rgba(165, 136, 47, 0.08);
+  border:1px solid rgba(165, 136, 47, 0.35);
+  border-radius:5px;
+  padding:1.1rem 1.2rem;
+  margin-bottom:1rem;
+  font-family:'Cormorant Garamond', serif;
+  font-size:1.05rem;
+  color:#5a544c;
+  line-height:1.5;
+}
+.curator-quality-bad{
+  background:rgba(122,40,32,.06);
+  border:1px solid rgba(122,40,32,.3);
+  border-radius:5px;
+  padding:1.1rem 1.2rem;
+  font-family:'Cormorant Garamond', serif;
+  font-size:1.05rem;
+  color:#5a544c;
+  line-height:1.5;
+}
+.curator-skip-note{
+  margin-top:.6rem;
+  font-family:'JetBrains Mono', monospace;
+  font-size:.7rem;
+  letter-spacing:.06em;
+  color:#9a8f7e;
+}
+
+
+/* Step-through pulse — soft amber halo that tells the user "this is
+   the next thing to do." Applied to the rail section, the upload zone,
+   or the stage-bottom action button depending on current step. */
+@keyframes targetPulseHalo {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(165, 136, 47, 0.45),
+                0 0 0 0 rgba(165, 136, 47, 0.0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(165, 136, 47, 0.35),
+                0 0 10px 6px rgba(165, 136, 47, 0.12);
+  }
+}
+.step-target{
+  border-radius:5px;
+  animation: targetPulseHalo 2.2s ease-in-out infinite;
+  position:relative;
+}
+.step-target::after{
+  content:'';
+  position:absolute;
+  inset:-3px;
+  border:1.5px solid rgba(165,136,47,.55);
+  border-radius:6px;
+  pointer-events:none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TAP-TO-EXPAND CONTROLS — ported from UI Claude's three-rooms file.
+   Collapsed state shows only the active pill + chevron. Tapping the
+   active pill expands the section to show all options. Frees up the
+   sidebar massively vs. always-visible button grids.
+═══════════════════════════════════════════════════════════════ */
+
+/* Sage palette tokens added for this pattern */
+:root{
+  --sage: #7f8a6a;
+  --sage-tint: rgba(127,138,106,.14);
+  --sage-tint-hover: rgba(127,138,106,.22);
+  --sage-border: rgba(127,138,106,.40);
+  --ink-faint: #8a8175;
+  --ink-faintest: #aaa097;
+}
+
+.control{
+  padding:14px 0;
+  border-top:1px solid rgba(42,36,30,.04);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.control:first-of-type{ border-top:none }
+.control-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:14px;
+}
+.control-label{
+  font-family:var(--mono);
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--ink);
+}
+.control-hint{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:13px;
+  color:var(--ink-faint);
+  opacity:0;
+  transition:opacity .15s;
+}
+.control.expanded .control-hint{ opacity:1 }
+
+.control-pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+}
+
+.pill-lg{
+  background:transparent;
+  border:1px solid var(--hairline);
+  border-radius:6px;
+  padding:8px 16px 9px;
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  font-weight:500;
+  color:var(--ink-2);
+  letter-spacing:.005em;
+  cursor:pointer;
+  transition:all .15s;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  line-height:1.15;
+}
+.pill-lg:hover:not(.active){
+  border-color:var(--border-strong);
+  color:var(--ink);
+  background:rgba(42,36,30,.025);
+}
+.pill-lg.active{
+  background:var(--sage-tint);
+  border-color:var(--sage-border);
+  color:var(--ink);
+}
+.pill-lg.active:hover{ background:var(--sage-tint-hover) }
+.pill-lg .chev{
+  font-style:normal;
+  font-family:var(--sans);
+  font-weight:400;
+  color:var(--ink-faint);
+  font-size:14px;
+  transition:transform .2s;
+}
+.control.expanded .pill-lg.active .chev{
+  transform:rotate(90deg);
+  color:var(--ink-faintest);
+}
+/* Collapsed: hide non-active pills */
+.control:not(.expanded) .pill-lg:not(.active){ display:none }
+
+/* Material grid layout when expanded */
+.control.material.expanded .control-pills{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+}
+.control.material.expanded .pill-lg{
+  justify-content:center;
+  padding:8px 8px 9px;
+}
+/* Aspect grid layout when expanded */
+.control.aspect.expanded .control-pills{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+}
+.control.aspect.expanded .pill-lg{
+  justify-content:center;
+  padding:8px 6px 9px;
+}
+/* Recommended dot on aspect pills */
+.pill-lg[data-recommended="yes"]::after{
+  content:'';
+  position:absolute;
+  top:6px;
+  right:8px;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:var(--accent);
+}
+.pill-lg[data-recommended="yes"]{ position:relative }
+
+/* ═══════════════════════════════════════════════════════════════
+   ADVANCED OPTIONS POPOVER — overlays the sidebar in place.
+   Triggered by a button in the rail. Holds lighting controls
+   (beam, three-point, brightness, enhanced) so they don't clutter
+   the main rail. Closes on backdrop click or Esc.
+═══════════════════════════════════════════════════════════════ */
+.advanced-trigger{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  padding:12px 14px;
+  background:transparent;
+  border:1px dashed var(--border);
+  border-radius:5px;
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:14px;
+  color:var(--ink-2);
+  cursor:pointer;
+  transition:border-color .15s, color .15s, background .15s;
+  margin-top:8px;
+}
+.advanced-trigger:hover{
+  border-color:var(--border-strong);
+  color:var(--ink);
+  background:rgba(42,36,30,.025);
+  border-style:solid;
+}
+.advanced-trigger .advanced-icon{ font-size:16px; color:var(--ink-faint) }
+.advanced-trigger[data-active="yes"]{
+  border-color:var(--sage-border);
+  background:var(--sage-tint);
+  border-style:solid;
+  color:var(--ink);
+}
+
+.advanced-popover{
+  /* Anchor to the viewport bottom-left so the popover doesn't get cut off
+     by the sidebar's internal scroll — Reset/Done stay above the fold.
+     Stops short of covering the top of the sidebar so the source images
+     area remains visible behind it. */
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:340px;          /* matches .left grid column */
+  max-height:calc(100vh - 80px);  /* leave headroom so it doesn't reach the topbar */
+  background:var(--surface);
+  z-index:30;
+  display:none;
+  flex-direction:column;
+  border-right:1px solid var(--border);
+  border-top:1px solid var(--border);
+  box-shadow:0 -8px 24px rgba(0,0,0,.10);
+  border-top-right-radius:8px;
+  overflow:hidden;       /* contains the inner scroll */
+}
+.advanced-popover.open{ display:flex }
+.advanced-popover-hdr{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 20px 14px;
+  border-bottom:1px solid var(--hairline);
+}
+.advanced-popover-title{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:20px;
+  color:var(--ink);
+}
+.advanced-popover-close{
+  background:transparent;
+  border:none;
+  font-size:24px;
+  line-height:1;
+  color:var(--ink-3);
+  cursor:pointer;
+  padding:4px 8px;
+}
+.advanced-popover-close:hover{ color:var(--ink) }
+.advanced-popover-body{
+  padding:16px 20px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  overflow-y:auto;       /* scrolls inside the popover so footer stays pinned */
+  flex:1;
+  min-height:0;
+}
+.advanced-row{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.advanced-row-label{
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--ink);
+}
+.advanced-row-sub{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:12.5px;
+  color:var(--ink-faint);
+  line-height:1.4;
+}
+.advanced-row-pills{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.advanced-pill{
+  padding:7px 14px 8px;
+  background:transparent;
+  border:1px solid var(--hairline);
+  border-radius:5px;
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:14px;
+  color:var(--ink-2);
+  cursor:pointer;
+  transition:all .15s;
+}
+.advanced-pill:hover:not(.active){
+  border-color:var(--border-strong);
+  color:var(--ink);
+}
+.advanced-pill.active{
+  background:var(--sage-tint);
+  border-color:var(--sage-border);
+  color:var(--ink);
+}
+.advanced-toggle{
+  display:inline-flex;
+  background:rgba(42,36,30,.04);
+  border-radius:5px;
+  padding:2px;
+  gap:1px;
+}
+.advanced-toggle button{
+  background:transparent;
+  border:none;
+  padding:5px 14px 6px;
+  border-radius:3px;
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:14px;
+  color:var(--ink-faint);
+  cursor:pointer;
+}
+.advanced-toggle button.active{
+  background:var(--bg);
+  color:var(--ink);
+  box-shadow:0 1px 1px rgba(42,36,30,.06);
+}
+.advanced-popover-foot{
+  padding:14px 20px;
+  border-top:1px solid var(--hairline);
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-shrink:0;
+  background:var(--surface);
+}
+.advanced-foot-btn{
+  flex:1;
+  padding:10px 14px;
+  border-radius:5px;
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:15px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.advanced-foot-btn.reset{
+  background:transparent;
+  border:1px solid var(--hairline);
+  color:var(--ink-2);
+}
+.advanced-foot-btn.reset:hover{
+  border-color:var(--border-strong);
+  color:var(--ink);
+}
+.advanced-foot-btn.apply{
+  background:#3d5223;
+  border:1px solid #3d5223;
+  color:#fff;
+}
+.advanced-foot-btn.apply:hover{ background:#4a6029 }
+
+/* Sidebar needs position:relative to host the popover */
+.left{ position:relative }
+
+.queue-row[data-qa="needs_decide"]{
+  border-color:#9f2e2e;
+  background:rgba(159,46,46,.06);
+  box-shadow:0 0 0 1px rgba(159,46,46,.22);
+}
+.queue-row[data-qa="needs_decide"]:hover{
+  background:rgba(159,46,46,.10);
+  box-shadow:0 0 0 1px rgba(159,46,46,.42), 0 2px 8px rgba(159,46,46,.18);
+  transform:translateY(-1px);
+}
+.queue-row[data-qa="decided"]{
+  border-color:var(--hairline);
+  background:var(--surface);
+  opacity:.78;
+}
+
+/* Decide pill — replaces the View pill on failed-QA rows. Loud red to
+   signal "action required" instead of green "your render is ready". */
+.queue-row-decide{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:11px 20px;
+  background:#9f2e2e;
+  color:#fff;
+  border-radius:4px;
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  font-weight:500;
+  white-space:nowrap;
+  transition:background .15s, gap .15s, box-shadow .15s;
+  box-shadow:0 1px 2px rgba(159,46,46,.30);
+}
+.queue-row-decide .arrow{
+  font-family:var(--sans);
+  font-style:normal;
+  font-size:18px;
+  font-weight:700;
+  transition:transform .15s;
+}
+.queue-row:hover .queue-row-decide{
+  background:#b53636;
+  box-shadow:0 3px 10px rgba(159,46,46,.42);
+}
+.queue-row:hover .queue-row-decide .arrow{
+  transform:translateY(-2px);
+}
+
+/* Decided rows — quiet "View" pill plus a small decision tag */
+.queue-row-view[data-muted="yes"]{
+  background:var(--ink-3);
+  color:var(--surface);
+  box-shadow:none;
+}
+.queue-row-decision-tag{
+  font-family:var(--mono);
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--ink-3);
+  margin-left:8px;
+  white-space:nowrap;
+}
+
+/* Status-dot color on QA-failed thumbs */
+.queue-row-thumb .status-dot[data-qa="needs_decide"]{ background:#9f2e2e }
+
+/* ─── QA DECISION OVERLAY ─── */
+/* Modal-style overlay anchored to viewport center. Shows the rendered
+   piece with a QA watermark + the three decision buttons. Stays on top
+   of the popover so user must explicitly choose. */
+.qa-overlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.qa-overlay-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(20,15,10,.65);
+  backdrop-filter:blur(2px);
+}
+.qa-overlay-panel{
+  position:relative;
+  z-index:1;
+  width:min(90vw, 540px);
+  max-height:90vh;
+  background:var(--surface);
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 24px 80px rgba(0,0,0,.4);
+  display:flex;
+  flex-direction:column;
+}
+.qa-overlay-img{
+  position:relative;
+  background:var(--bg-deeper);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  max-height:60vh;
+}
+.qa-overlay-img img{
+  width:100%;
+  height:auto;
+  display:block;
+  max-height:60vh;
+  object-fit:contain;
+  filter:saturate(.6) brightness(.92);
+}
+.qa-overlay-watermark{
+  position:absolute;
+  top:14px;
+  left:14px;
+  padding:6px 12px;
+  background:rgba(159,46,46,.92);
+  color:#fff;
+  border-radius:3px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+.qa-overlay-body{
+  padding:20px 24px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.qa-overlay-body .qa-fail-msg{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:15px;
+  line-height:1.5;
+  color:var(--ink);
+}
+.qa-overlay-body .qa-fail-msg strong{
+  font-style:normal;
+  font-weight:600;
+}
+.qa-overlay-body .qa-fail-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.qa-overlay-body .qa-btn{
+  flex:1;
+  min-width:120px;
+  padding:11px 16px;
+  border-radius:4px;
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:15px;
+  cursor:pointer;
+  border:1px solid var(--hairline);
+  background:var(--surface);
+  color:var(--ink-2);
+  transition:all .15s;
+}
+.qa-overlay-body .qa-btn:hover{
+  border-color:var(--border-strong);
+  color:var(--ink);
+}
+.qa-overlay-body .qa-btn-primary{
+  background:#3d5223;
+  border-color:#3d5223;
+  color:#fff;
+}
+.qa-overlay-body .qa-btn-primary:hover{
+  background:#4a6029;
+  border-color:#4a6029;
+  color:#fff;
+}
+.qa-overlay-body .qa-btn-neutral{
+  background:var(--surface);
+}
+.qa-overlay-body .qa-btn-danger{
+  border-color:rgba(159,46,46,.4);
+  color:#9f2e2e;
+}
+.qa-overlay-body .qa-btn-danger:hover{
+  background:rgba(159,46,46,.08);
+  border-color:#9f2e2e;
+  color:#9f2e2e;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- inline icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M5 13l4 4L19 7"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="topbar">
+  <a class="home-link" href="/index.html">← Home</a>
+  <span class="logo">mini<em>scape</em></span>
+  <span class="logo-suffix">Pet Minis</span>
+  <div class="tb-spacer"></div>
+  <label class="upload-slot" id="slot1">
+    <span id="st1">Upload pet photo</span>
+    <input type="file" id="file1" accept="image/*" onchange="handlePrimaryUpload(this)">
+  </label>
+  <button class="raw-mode-toggle" id="rawModeToggle" onclick="toggleRawMode()" title="Toggle direct Nano Banana 2 prompt mode (bypasses all preset blocks)">
+    <span class="raw-mode-dot"></span>
+    <span class="raw-mode-label">Raw Mode</span>
+  </button>
+  <div class="status-meta">
+    <div class="status-dot" id="gDot"></div>
+    <span id="gStatus">ready</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="left">
+
+    <div class="left-inner">
+
+      <!-- Source image (primary + auxiliary) -->
+      <div class="section">
+        <div class="section-hdr">
+          <div class="section-label">Source images</div>
+          <div class="section-readout">
+            <span id="sourceCount">0 / 4</span>
+            <span class="res-badge" id="resBadge" style="display:none"></span>
+            <button class="next-pet-btn" id="nextPetBtn" style="display:none" onclick="clearSourcePhotos()" title="Clear all photos to set up the next pet — queued pieces keep their own photos">Next pet</button>
+          </div>
+        </div>
+        <div class="source-preview" id="sidebarSourcePreview" onclick="document.getElementById('file1').click()">
+          <div class="source-empty" id="sourceEmpty">
+            <div class="source-empty-plus">+</div>
+            <div>Pet photo</div>
+          </div>
+          <img id="sourceThumb" style="display:none">
+        </div>
+        <div class="res-banner" id="resBanner" style="display:none"></div>
+        <div class="source-row" id="auxSourceRow">
+          <label class="source-aux" data-aux="2">
+            <span>+</span>
+            <input type="file" accept="image/*" onchange="handleAuxUpload(this, 2)">
+          </label>
+          <label class="source-aux" data-aux="3">
+            <span>+</span>
+            <input type="file" accept="image/*" onchange="handleAuxUpload(this, 3)">
+          </label>
+          <label class="source-aux" data-aux="4">
+            <span>+</span>
+            <input type="file" accept="image/*" onchange="handleAuxUpload(this, 4)">
+          </label>
+        </div>
+        <div class="materials-hint">First photo defines the subject. Add up to 3 more for better likeness. Queued pieces keep their own photos — tap <em>Next pet</em> to load a different pet and keep queueing.</div>
+      </div>
+
+      <!-- ── PRESET CONTROLS (hidden when Raw Mode is on) ── -->
+      <div class="preset-controls" id="presetControls">
+
+      <!-- Series control retired for Pets — single 'realistic' style at
+           launch. onSeriesClick stays as a no-op stub in the JS. -->
+      <!-- Material — tap-to-expand. Starts EXPANDED on first load so all
+           options are visible — collapses on first user selection. After
+           that, tapping the active pill re-expands. -->
+      <div class="control material expanded" id="materialControl" data-section="material" data-pristine="yes">
+        <div class="control-head">
+          <div class="control-label">Material</div>
+          <div class="control-hint">tap to choose</div>
+        </div>
+        <div class="control-pills" id="materialPills"></div>
+      </div>
+
+      <!-- Action — pose re-staging, tap-to-expand. Optional control:
+           defaults to As Photographed and never gates the wizard. -->
+      <div class="control action" id="actionControl" data-section="action">
+        <div class="control-head">
+          <div class="control-label">Action</div>
+          <div class="control-hint">re-stage the pose</div>
+        </div>
+        <div class="control-pills" id="actionPills"></div>
+      </div>
+
+      <!-- Environment — same tap-to-expand pattern. Internal ids keep the
+           'location' naming so the shared wizard JS lifts unchanged; the
+           wire field is environment_id (see dispatch). -->
+      <div class="control location" id="locationControl" data-section="location">
+        <div class="control-head">
+          <div class="control-label">Environment</div>
+          <div class="control-hint">tap to choose</div>
+        </div>
+        <div class="control-pills" id="locationPills"></div>
+      </div>
+
+      <!-- Scale retired — the piece always occupies ~85% of the frame
+           width now. Backend prompt's scale block sends "auto_85". -->
+
+      </div><!-- /preset-controls -->
+
+      <!-- ── RAW CONTROLS (visible only when Raw Mode is on) ── -->
+      <div class="raw-controls" id="rawControls">
+
+        <!-- Reference image (pairs with source as additional input to Nano Banana 2) -->
+        <div class="section">
+          <div class="section-hdr">
+            <div class="section-label">Reference image</div>
+            <div class="section-readout" id="rawRefStatus">empty</div>
+          </div>
+          <label class="raw-ref-slot" id="rawRefSlot">
+            <div class="raw-ref-empty" id="rawRefEmpty">
+              <div class="raw-ref-plus">+</div>
+              <div>Add reference (optional)</div>
+            </div>
+            <img id="rawRefThumb" style="display:none">
+            <input type="file" accept="image/*" onchange="handleRawRefUpload(this)">
+            <button type="button" class="raw-ref-clear" onclick="clearRawRef(event)" title="Remove reference">×</button>
+          </label>
+          <div class="raw-panel-hint">Sent to Nano Banana 2 as an additional image alongside the source. Reference the second image directly in your prompt.</div>
+        </div>
+
+        <!-- Raw prompt textarea -->
+        <div class="section">
+          <div class="section-hdr">
+            <div class="section-label">Prompt</div>
+            <div class="section-readout"><span id="rawPromptCounter">0</span> / 4000</div>
+          </div>
+          <textarea class="raw-prompt-textarea" id="rawPromptText" maxlength="4000"
+            placeholder="Write any prompt you want sent directly to Nano Banana 2. The source image is image #1; if you uploaded a reference, it is image #2. No preset blocks are added. No Pass 2. No outpaint. No faceswap."
+            oninput="updateRawPromptCounter()"></textarea>
+          <div class="raw-prompt-counter" id="rawPromptCounterLine">0 / 4000</div>
+        </div>
+
+      </div><!-- /raw-controls -->
+
+      <!-- Aspect ratio (shared between preset and raw modes) -->
+      <div class="control aspect" id="aspectControl" data-section="aspect">
+        <div class="control-head">
+          <div class="control-label">Aspect ratio</div>
+          <div class="control-hint">tap to choose</div>
+        </div>
+        <div class="control-pills" id="aspectPills">
+          <button class="pill-lg" data-aspect="1:1"  onclick="onAspectPillClick('1:1')">1:1</button>
+          <button class="pill-lg active" data-aspect="3:2" onclick="onAspectPillClick('3:2')">3:2<span class="chev">›</span></button>
+          <button class="pill-lg" data-aspect="2:3"  onclick="onAspectPillClick('2:3')">2:3</button>
+          <button class="pill-lg" data-aspect="4:3"  onclick="onAspectPillClick('4:3')">4:3</button>
+          <button class="pill-lg" data-aspect="3:4"  onclick="onAspectPillClick('3:4')">3:4</button>
+          <button class="pill-lg" data-aspect="16:9" onclick="onAspectPillClick('16:9')">16:9</button>
+        </div>
+      </div>
+
+      <!-- Advanced Options trigger — opens a popover overlaying the sidebar
+           with lighting controls (beam, three-point, brightness, enhanced).
+           Keeps the main rail uncluttered. -->
+      <button class="advanced-trigger" id="advancedTrigger" data-active="no" onclick="openAdvanced()">
+        <span>Advanced lighting</span>
+        <span class="advanced-icon">›</span>
+      </button>
+
+      <!-- Inscription — text on the small plaque NB2 puts on the sculpture's -->
+      <!-- base. Empty input → DEFAULT_PLAQUE_TEXT brand stamp. Custom text -->
+      <!-- replaces it. Toggling off ('No plaque') suppresses entirely. -->
+      <div class="section">
+        <div class="section-hdr">
+          <div class="section-label">Inscription</div>
+          <div class="section-readout">
+            <span id="plaqueCharCount">0</span> / 40
+          </div>
+        </div>
+        <input type="text"
+          id="plaqueInput"
+          class="plaque-input"
+          placeholder="Liten & Co · 2025"
+          maxlength="40"
+          oninput="onPlaqueInput(this.value)"
+          autocomplete="off"
+          spellcheck="false">
+        <div class="plaque-row">
+          <label class="plaque-off">
+            <input type="checkbox" id="plaqueOff" onchange="onPlaqueOff(this.checked)">
+            <span>No plaque</span>
+          </label>
+          <span class="plaque-hint" id="plaqueHint">Leave blank for the default stamp.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── STAGE ── -->
+  <div class="center">
+    <div class="center-hdr">
+      <span class="stage-title" id="stageTitle">Stage</span>
+      <span class="stage-meta" id="centerMeta"></span>
+    </div>
+    <div class="stage-progress" id="stageProgress"><div class="stage-progress-fill"></div></div>
+
+    <div class="stage" id="stage">
+
+      <!-- ── VIEW 1: STAGE PREVIEW ── -->
+      <div class="stage-view active" id="stageViewPreview" data-tab="preview">
+
+        <!-- Empty state — no upload yet -->
+        <div class="stage-empty" id="stageEmpty">
+          <div class="stage-empty-title">Your <em>pet</em> awaits</div>
+          <div class="stage-empty-sub">Upload a photo of your pet to begin. We'll sculpt them as a gallery piece.</div>
+        </div>
+
+        <!-- Analyzing — visible briefly while runAnalyze fetches -->
+        <div class="stage-suggester" id="stageSuggester" style="display:none">
+          <div class="suggester-status" id="suggesterStatus">
+            <div class="suggester-status-eyebrow">Reading the photograph</div>
+            <div class="suggester-status-title">Just a <em>moment</em></div>
+            <div class="suggester-status-loading"><div class="suggester-spin"></div><span>Curator is taking a look</span></div>
+          </div>
+          <!-- Legacy result wrapper kept hidden as a compatibility no-op so any older runAnalyze paths that flip its display don't fail -->
+          <div class="suggester-result" id="suggesterResult" style="display:none">
+            <span id="suggesterName" style="display:none"></span>
+            <span id="suggesterSub" style="display:none"></span>
+            <span id="suggesterBadges" style="display:none"></span>
+            <span id="sourceRecHint" style="display:none"></span>
+          </div>
+        </div>
+
+        <!-- Main Stage Preview — visible once source is loaded -->
+        <div class="stage-preview-container" id="stagePreviewConfig" style="display:none">
+
+          <!-- Step-through info box — legacy wizard guidance. Hidden when
+               the Curator panel is active (state.curator.step !== 'idle'). -->
+          <div class="info-box" id="infoBox">
+            <div class="info-step" id="infoStep">Step 1 / 6</div>
+            <div class="info-text" id="infoText">Upload a photo of your pet to begin.</div>
+          </div>
+
+          <!-- ── CURATOR PANEL ────────────────────────────────────────
+               Pets flow: Analysis → (Photo Advisory if head-only) → wizard.
+               Sub-panels (#curStepAnalysis, #curStepQualityFail,
+               #curStepAdvisory) show one at a time per state.curator.step.
+               ─────────────────────────────────────────────────────── -->
+          <div class="curator-panel" id="curatorPanel" style="display:none">
+
+            <!-- Analysis status — visible during the initial photo read -->
+            <div class="curator-step" id="curStepAnalysis" style="display:none">
+              <div class="curator-panel-eyebrow">The Curator</div>
+              <div class="curator-panel-title">Reading your photograph</div>
+              <div class="curator-loading">
+                <div class="curator-spin"></div>
+                <span id="curAnalysisStatusText">Taking a look at the source...</span>
+              </div>
+              <div class="curator-skip-note" id="curAnalysisQualityNote" style="display:none"></div>
+            </div>
+
+            <!-- Quality failure — bad source photo -->
+            <div class="curator-step" id="curStepQualityFail" style="display:none">
+              <div class="curator-panel-eyebrow">The Curator</div>
+              <div class="curator-panel-title">This photograph won't render well</div>
+              <div class="curator-quality-bad" id="curQualityFailMsg">
+                The source photo has quality issues that will compromise the final piece.
+                Please upload a clearer, well-lit photograph.
+              </div>
+            </div>
+
+            <!-- Photo advisory — face-only source on body-dependent styles.
+                 NON-BLOCKING: user can upload more photos OR continue with
+                 the current one. Per the Curator Workflow spec (2026-06):
+                 "Never block the user from proceeding. Additional photos are
+                 recommendations, not requirements." -->
+            <div class="curator-step" id="curStepAdvisory" style="display:none">
+              <div class="curator-panel-eyebrow">The Curator</div>
+              <div class="curator-panel-title">More photos would help</div>
+              <div class="curator-panel-lead">
+                This photo shows your pet's face beautifully. For the truest
+                full-body sculpture, we recommend adding one or two photos that
+                show their whole body — proportions, markings, tail, and the way
+                they hold themselves all come from those shots.
+              </div>
+              <div class="curator-actions">
+                <button class="curator-action-btn primary" onclick="curatorAdvisoryUpload()">Upload Additional Photos</button>
+                <button class="curator-action-btn" onclick="curatorAdvisoryContinue()">Continue with Current Photo</button>
+              </div>
+            </div>
+
+            <!-- Effects step retired for Pets — analysis + photo advisory
+                 only; the wizard drives material/environment selection. -->
+          </div>
+
+          <!-- Source + settings -->
+          <div class="stage-preview-source">
+            <div class="stage-preview-thumb" id="stagePreviewThumb">
+              <img id="stagePreviewThumbImg" alt="source">
+            </div>
+            <div class="stage-preview-config">
+              <!-- Subject-Scene title (Curator-named, falls back to material+location) -->
+              <div class="stage-preview-config-title" id="stagePreviewTitle">A <em>bronze</em> in the <em>gallery</em></div>
+              <div class="stage-preview-config-line"><span class="label">Material</span><span class="val" id="stagePreviewMat">—</span></div>
+              <div class="stage-preview-config-line"><span class="label">Environment</span><span class="val" id="stagePreviewLoc">—</span></div>
+              <div class="stage-preview-config-line"><span class="label">Action</span><span class="val" id="stagePreviewAction">As Photographed</span></div>
+              <div class="stage-preview-config-line"><span class="label">Aspect</span><span class="val" id="stagePreviewAspect">—</span></div>
+              <div class="stage-preview-config-line"><span class="label">Inscription</span><span class="val" id="stagePreviewPlaque">—</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── VIEW 2: QUEUE — rows only; bundle area is persistent below ── -->
+      <div class="stage-view" id="stageViewQueue" data-tab="queue">
+        <div class="stage-queue-container">
+          <div class="queue-rows" id="queueRows" data-count="0"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── BUNDLE AREA — persistent above bottom bar, visible across both tabs
+         when the queue has at least one item. "Information" half of the
+         information→action footer pairing. ── -->
+    <div class="bundle-area" id="bundleArea" style="display:none">
+      <div class="queue-ribbon" id="queueRibbon"></div>
+      <div class="queue-packs" id="queuePacks"></div>
+    </div>
+
+    <!-- ── UNIFIED BOTTOM BAR — tabs left (navigation, brass scheme) +
+         action buttons right (CTA, olive scheme). "Action" half of the
+         information→action footer pairing. ── -->
+    <div class="stage-bottombar" id="stageBottombar">
+      <div class="bottombar-tabs">
+        <button class="bottombar-tab active" data-tab="preview" onclick="switchTab('preview')">Stage Preview</button>
+        <button class="bottombar-tab" data-tab="queue" onclick="switchTab('queue')">
+          Your Queue
+          <span class="queue-count-badge" id="queueCountBadge" data-zero="yes">0</span>
+        </button>
+      </div>
+      <div class="bottombar-actions">
+        <button class="stage-action-btn btn-add" id="queueAddBtn" disabled onclick="addToQueue()">
+          <span class="btn-label" id="addLabel">+ Add to queue</span>
+          <span class="btn-price" id="addPrice"><span class="was">$4.99</span><span class="now">$3.89</span></span>
+        </button>
+        <button class="stage-action-btn btn-render" id="runAllBtn" disabled onclick="runAll()">
+          <span class="btn-label">Render all <span id="renderCount">0</span></span>
+          <span class="btn-price"><span class="now" id="renderTotal">$0.00</span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API     = '/api/v1/pets/generate'
+const ANALYZE = '/api/v1/pets/analyze'
+
+// ── MATERIAL / LOCATION REGISTRIES ──────────────────────────
+// Style has been removed — Groups is now a flat Material × Location matrix.
+// Resolving moved to the Art Gallery silo with the Tribal styles.
+
+// Universe of all materials. Each material's available locations is encoded
+// in MATERIAL_LOCATIONS below.
+const PRES = [
+  { k:'ceramic',      label:'Ceramic',     tier:'base' },
+  { k:'plushy',       label:'Plushy',      tier:'base' },
+  { k:'felted_wool',  label:'Felted Wool', tier:'premium' },
+  { k:'walnut',       label:'Walnut',      tier:'premium' },
+  { k:'stone',        label:'Stone',      tier:'signature' },
+  { k:'bronze',       label:'Bronze',     tier:'signature' },
+  { k:'mixed_metals', label:'Metals',     tier:'signature' },
+  { k:'alabaster',    label:'Alabaster',  tier:'signature' },
+]
+
+// ── ARTISTS GALLERY — not ported to Pets ──────────────────────
+// The Portraits Artists Gallery prompts are structurally human (busts,
+// garments, hairstyles). The Series axis is retired in this UI; pet-
+// specific artistic treatments plug back in here when they exist.
+
+const MATERIAL_LOCATIONS = {
+  // Pets: every material is available in every environment. The four
+  // environments are Rich's 2026-06-05 spec — each bakes its own
+  // lighting on the backend (pets-prompt.ts ENVIRONMENT_PHRASE).
+  bronze:        ['gallery', 'natural', 'atmospheric', 'home'],
+  alabaster:     ['gallery', 'natural', 'atmospheric', 'home'],
+  mixed_metals:  ['gallery', 'natural', 'atmospheric', 'home'],
+  stone:         ['gallery', 'natural', 'atmospheric', 'home'],
+  felted_wool:   ['gallery', 'natural', 'atmospheric', 'home'],
+  walnut:        ['gallery', 'natural', 'atmospheric', 'home'],
+  ceramic:       ['gallery', 'natural', 'atmospheric', 'home'],
+  plushy:        ['gallery', 'natural', 'atmospheric', 'home'],
+}
+const LOCATION_LABELS = {
+  gallery:'Gallery', natural:'Natural', atmospheric:'Atmospheric', home:'Home',
+}
+
+// ── ACTIONS — pose re-staging (2026-06-06) ────────────────────
+// For people with one photo of one position. 'as_photographed'
+// (default) preserves the source pose — identical to prior behavior.
+// Any other action re-stages the pose on the backend; identity,
+// markings, coat, and age stay locked, and the QA scorer is told the
+// re-staging is deliberate.
+const ACTIONS = [
+  { k:'as_photographed', label:'As Photographed' },
+  { k:'sleeping',        label:'Sleeping' },
+  { k:'jumping',         label:'Jumping' },
+  { k:'running',         label:'Running' },
+  { k:'playing',         label:'Playing' },
+  { k:'sitting_proud',   label:'Sitting Proud' },
+  { k:'funny',           label:'Funny' },
+]
+const ACTION_LABELS = Object.fromEntries(ACTIONS.map(a => [a.k, a.label]))
+
+// All Groups renders use per-figure likeness scoring against the source.
+// (Holistic-caricature scoring moved to Art Gallery with the Tribal styles.)
+const SCORING_MODE = 'per_figure_likeness'
+
+// First material the picker should highlight when nothing is selected — pick
+// a Signature so the showcase feels premium.
+const DEFAULT_MATERIAL = 'bronze'
+
+// ═══════════════════════════════════════════════════════════════
+// PRICING TIERS
+// Per-piece price scales down as the queue grows. Crossing the 7th
+// item unlocks the Curators Pack; the 10th item unlocks the Studio
+// Pack. Bottom-bar "+ Add to queue" shows the price the NEXT item
+// will land at; the queue rows each show their own current price
+// (which can shift as the user adds more pieces).
+// ═══════════════════════════════════════════════════════════════
+const PRICING = {
+  basePrice: 4.99,
+  // tiers — ordered from smallest queue to largest. The active tier is
+  // the highest-minCount tier whose minCount <= currentCount.
+  tiers: [
+    { minCount: 1,  perPiece: 4.99, off: '0%'  },
+    { minCount: 2,  perPiece: 3.89, off: '-22%' },
+    { minCount: 7,  perPiece: 3.74, off: '-25%', packReached: 'curators' },
+    { minCount: 10, perPiece: 3.49, off: '-30%', packReached: 'studio'   },
+  ],
+  packs: [
+    { id: 'curators', threshold: 7,  name: 'Curators Pack' },
+    { id: 'studio',   threshold: 10, name: 'Studio Pack'   },
+  ],
+}
+
+function priceForCount(N){
+  let tier = PRICING.tiers[0]
+  for (const t of PRICING.tiers){
+    if (N >= t.minCount) tier = t
+  }
+  return tier
+}
+
+function formatUsd(n){
+  return '$' + n.toFixed(2)
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRAFT KEY + DUPLICATE DETECTION
+// Prevents the "user clicks Add to queue 5 times in a row" trap.
+// A draft key fingerprints the current configuration (source + every
+// setting that affects the render). If any pending item already has
+// the same key, Add to queue is disabled with a "change a setting"
+// hint. Changing literally any setting re-enables it.
+// ═══════════════════════════════════════════════════════════════
+function computeDraftKey(){
+  if (!state.primarySrc) return null
+  // First 40 chars of base64 are unique-enough per image without
+  // hashing the full payload. The same image with different aux
+  // sources is treated as a different draft (aux changes the result).
+  const srcFingerprint = state.primarySrc.slice(0, 40)
+    + '|aux:' + state.auxSrc.filter(Boolean).length
+  if (state.rawMode){
+    return `raw|${srcFingerprint}|${(state.rawPrompt || '').trim().slice(0, 80)}|${state.aspect}`
+  }
+  if (!state.selectedMat) return null
+  const plaqueKey = state.plaqueOff
+    ? 'off'
+    : (state.plaqueText.trim() || 'default')
+  return [
+    'preset',
+    srcFingerprint,
+    state.selectedMat,
+    state.location || '',
+    state.action || 'as_photographed',
+    state.scale,
+    state.aspect,
+    plaqueKey,
+  ].join('|')
+}
+
+function isDraftDuplicate(){
+  const key = computeDraftKey()
+  if (!key) return false
+  return state.queue.some(q =>
+    (q.status === 'pending' || q.status === 'running') &&
+    q.draft_key === key
+  )
+}
+
+// ── STATE ────────────────────────────────────────────────────
+const state = {
+  // ── Series / Style ──
+  // Pets ships a single style: 'realistic'. The axis is preserved so
+  // pet-specific artistic treatments can plug in later.
+  style:         'realistic',
+  primarySrc:    null,
+  primaryDims:   null,             // { w, h } in pixels (browser-side, from naturalWidth/Height)
+  auxSrc:        [null,null,null],
+  auxDims:       [null,null,null], // { w, h } per aux slot
+  selectedMat:   null,             // single material — Queue adds one item per click
+  location:      null,             // resolved on material change
+  action:        'as_photographed', // pose re-staging — default preserves source pose
+  scale:         'close_up',       // code value (Margins). 'fill' = Close Up.
+  aspect:        '3:4',            // Portraits skews vertical by default — wide aspects fight the bust framing
+  aspectAuto:    true,             // when true, aspect tracks recommendedAspect() — for Portraits always vertical
+  // subjectCount/subjectAuto/detectedCount intentionally absent — Portraits is
+  // single-subject. The backend's detect call still runs (informational) but
+  // its count never feeds back into UI state.
+  smallestFacePx: null,            // Tier 2 — set from analyzer response when available
+  busy:          false,
+  // Queue: each item is a frozen snapshot of the draft + a status + a result.
+  queue:         [],
+  queueIdSeq:    0,
+  // ── Raw mode (direct NB2 prompt, bypasses all preset blocks) ──
+  rawMode:       false,
+  rawReference:  null,             // base64 (without data: prefix)
+  rawPrompt:     '',
+  // ── Inscription / plaque text ──
+  //   plaqueText empty  + plaqueOff false → use DEFAULT_PLAQUE_TEXT
+  //   plaqueText filled + plaqueOff false → use the typed text
+  //   plaqueOff = true                    → send null (suppress plaque)
+  plaqueText:    '',
+  plaqueOff:     false,
+  // ── Stage tab ('preview' | 'queue') ──
+  activeTab:     'preview',
+  // ── Step-through pulse — track which steps the user has touched ──
+  // The pulse moves to the lowest unclicked step. Once any step is
+  // touched, its pulse retires permanently for the session.
+  locationTouched: false,
+  scaleTouched:    false,
+  aspectTouched:   false,
+  // ── Subject-Scene title + Curator suggestion ──
+  // subjectScene comes from the analyzer (when present); curatorSuggestion
+  // is the analyzer's recommended material/location/scale/aspect bundle.
+  // Both are null until the analyzer round-trip lands.
+  subjectScene:       null,
+  curatorSuggestion:  null,
+  // ── Advanced lighting (overlay popover) ──
+  // Sent to the backend in each queue item's payload as `advanced: {...}`
+  // Backend ignores keys it doesn't know about; safe to ship before backend lands.
+  advanced: {
+    beam:        'off',   // 'off' | 'on'
+    threePoint:  'off',   // 'off' | 'on'
+    brightness:  '0',     // '0' | '5' | '10' | '15'
+    enhanced:    'off',   // 'off' | 'on'
+  },
+
+  // ── CURATOR STATE MACHINE ───────────────────────────────────────
+  // Pets flow: Analysis → (Photo Advisory if head-only) → wizard.
+  // step values: 'idle' | 'analyzing' | 'quality_fail' |
+  //              'photo_advisory' | 'done'
+  curator: {
+    step:           'idle',
+    petCoverage:    null,    // 'head_only' | 'head_and_body_partial' | 'full_body'
+    qualityVerdict: null,    // 'green' | 'yellow' | 'red'
+  },
+}
+
+// ── RESOLUTION + CLARITY GATE — analyzer-driven, not dimension-driven ──
+// Original v1: pixel resolution was the gate. A photo under 480px wide
+// got a red banner; 480-719 got a yellow badge. Rich correctly pushed
+// back: a sharp 600px photo can render better than a blurry 2000px one,
+// so resolution alone is the wrong signal.
+//
+// v2 (current): the analyzer judges likeness_distinctness on the actual
+// source (high | medium | low). The frontend reads that field when
+// present and surfaces it as a soft advisory. Resolution is only used
+// as a forward-looking hint ("higher resolution photos improve odds").
+//
+// The hard banner is retired. The badge stays as an informational
+// dimensions readout (no severity color). When the backend analyzer
+// extension lands, applyDistinctnessAdvisory() consumes its verdict.
+function assessResolution(width, height){
+  const minDim = Math.min(width || 0, height || 0)
+  return { minDim }
+}
+
+function updateResolutionWarning(){
+  // Just display the source dimensions as an informational pill — no
+  // red/yellow severity colors based on pixel count alone. Distinctness
+  // judgement comes from the analyzer (see applyDistinctnessAdvisory).
+  const allDims = [state.primaryDims, ...state.auxDims].filter(Boolean)
+  const badge = document.getElementById('resBadge')
+  const banner = document.getElementById('resBanner')
+  if (!badge || !banner) return
+
+  if (allDims.length === 0){
+    badge.style.display = 'none'
+    banner.style.display = 'none'
+    return
+  }
+
+  // Find the smallest dimension across all uploads so the user can see
+  // their tightest constraint at a glance. No tier coloring — just info.
+  const minWorst = allDims.reduce((m, d) => Math.min(m, Math.min(d.w, d.h)), Infinity)
+  badge.style.display = 'none'     // hide by default; analyzer drives display
+  badge.dataset.tier = 'info'
+  badge.textContent = `${minWorst}px`
+  badge.title = `Smallest dimension across your photos: ${minWorst}px. Higher resolution improves likeness odds.`
+  banner.style.display = 'none'
+}
+
+// ── ANALYZER-DRIVEN DISTINCTNESS ADVISORY ───────────────────
+// Reads the analyzer's likeness_distinctness verdict (when the backend
+// returns it) and surfaces a soft, encouraging advisory rather than a
+// hard block. Three states:
+//   high   → no banner at all (silent green)
+//   medium → soft "results may vary; clearer photos help" note
+//   low    → stronger "this photo may not render distinct likenesses"
+//            advisory, with a forward-looking nudge about higher-res
+//
+// The advisory NEVER blocks generation — Rich's call is to let the user
+// proceed and learn from outcomes. Aggressive testing of borderline
+// inputs is how the quality index gets built (see Testing Claude doc).
+function applyDistinctnessAdvisory(verdict){
+  const banner = document.getElementById('resBanner')
+  const badge  = document.getElementById('resBadge')
+  if (!banner) return
+  // No verdict from analyzer → fall back to silent (analyzer extension pending)
+  if (!verdict){
+    banner.style.display = 'none'
+    if (badge) badge.style.display = 'none'
+    return
+  }
+  if (verdict === 'high'){
+    banner.style.display = 'none'
+    if (badge) badge.style.display = 'none'
+    return
+  }
+  if (verdict === 'medium'){
+    if (badge){
+      badge.style.display = ''
+      badge.dataset.tier = 'yellow'
+      badge.textContent = 'workable'
+      badge.title = 'Likeness should come through; clearer photos give more headroom.'
+    }
+    banner.style.display = 'none'
+    return
+  }
+  // low
+  if (badge){
+    badge.style.display = ''
+    badge.dataset.tier = 'amber'
+    badge.textContent = 'soft features'
+    badge.title = ''
+  }
+  banner.style.display = ''
+  banner.innerHTML = `
+    <div class="res-banner-title">Faces may render approximate.</div>
+    <div class="res-banner-sub">The renderer will still produce a piece. Higher-resolution photos with clearer features improve likeness odds for future renders.</div>
+  `
+}
+
+// ── TIER 2 — face-size warning (post-analysis) ──────────────
+// Tier 1 fires on upload from raw image dimensions and catches the
+// obvious "thumbnail" cases. Tier 2 fires after the analyzer returns
+// per-face data — it catches the case where the photo is high-res
+// overall but individual faces are tiny in frame (wide group shot,
+// figures far from camera). The two tiers complement; Tier 1 wins
+// when both fire red (resolution is the more fundamental ceiling).
+function applyFaceSizeWarning(smallestFacePx){
+  if (smallestFacePx == null) return    // analyzer didn't return face-size data
+  // Don't overwrite a Tier 1 red banner — resolution is the bigger issue
+  const banner = document.getElementById('resBanner')
+  const badge  = document.getElementById('resBadge')
+  if (badge.dataset.tier === 'red') return
+
+  if (smallestFacePx >= 80) return       // green, nothing to do
+
+  if (smallestFacePx < 50){
+    // Red — small face despite an otherwise-OK source
+    badge.style.display = ''
+    badge.dataset.tier = 'red'
+    badge.textContent  = '⚠ Small face'
+    badge.title = ''
+    banner.style.display = ''
+    banner.innerHTML = `
+      <div class="res-banner-title">The face in this photo is small (~${smallestFacePx}px).</div>
+      <div class="res-banner-sub">Likeness will soften — a closer photo where the face fills more of the frame gives the renderer more to work with.</div>
+    `
+    return
+  }
+
+  // Yellow — borderline face size
+  if (badge.dataset.tier !== 'yellow'){
+    badge.style.display = ''
+    badge.dataset.tier = 'yellow'
+    badge.textContent  = '⚠ Small face'
+    badge.title = `Detected face is ~${smallestFacePx}px. Likeness may soften.`
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+function init(){
+  renderMaterials()
+  renderLocations()
+  renderActions()
+  applyDefaultLocation()
+  updateScoreRule()
+  applyAspectRecommendation()
+  toggleLocationVisibility()
+  refreshStepPulse()
+  // Default material — pick a Signature one so the showcase feels premium.
+  state.selectedMat = DEFAULT_MATERIAL
+  requestAnimationFrame(() => {
+    const btn = document.querySelector(`.type-btn[data-mat="${DEFAULT_MATERIAL}"]`)
+    if (btn) btn.classList.add('active')
+    const def = PRES.find(p => p.k === DEFAULT_MATERIAL)
+    const ro = document.getElementById('materialReadout')
+    if (ro) ro.textContent = def?.label || '—'
+    // Default material may not allow all locations — re-render the picker
+    renderLocations()
+    applyDefaultLocation()
+  })
+}
+
+function renderMaterials(){
+  // The new pill-lg markup. Tap-to-expand pattern: when collapsed, only the
+  // active pill is visible (with chevron). When expanded, all pills in a
+  // 3-column grid. Active state styled with sage-tint per UI Claude's spec.
+  //
+  // Pets: single material list.
+  const pills = document.getElementById('materialPills')
+  if (!pills) return
+  const sourceList = PRES
+  pills.innerHTML = sourceList.map(p => {
+    const isActive = state.selectedMat === p.k
+    const chev = isActive ? '<span class="chev">›</span>' : ''
+    return `<button class="pill-lg${isActive ? ' active' : ''}" data-mat="${p.k}" data-tier="${p.tier}" onclick="onMaterialPillClick('${p.k}')">${p.label}${chev}</button>`
+  }).join('')
+}
+
+// ── Series switch — Realistic ↔ Artists Gallery ──────────────
+// Series is the top-level grouping. Each series exposes a different
+// material list and a different backend pipeline. Switching series:
+//   - flips state.style (the value sent as style_id to /generate)
+//   - clears the active material selection (lists don't overlap)
+//   - clears the active location (Artists Gallery prompts bake their own)
+//   - re-renders the Material picker against the new list
+//   - hides the Location control when Artists Gallery is active
+function onSeriesClick(_seriesId){
+  // No-op for Pets — single 'realistic' style at launch. Stub preserved
+  // so any stale inline handler is harmless.
+}
+
+// Artists Gallery prompts bake in their own location ("museum gallery,
+// center focused, on a base") so the Location picker is meaningless for
+// that series. Hide it (don't remove — user might flip back).
+function toggleLocationVisibility(){
+  // Pets: the Environment control is always visible — every material
+  // renders in every environment.
+  const ctrl = document.getElementById('locationControl')
+  if (!ctrl) return
+  ctrl.style.display = ''
+}
+
+// Locations available for the currently selected material.
+function availableLocationsForSelection(){
+  if (!state.selectedMat) return ['gallery','natural','atmospheric','home']
+  return MATERIAL_LOCATIONS[state.selectedMat] || ['gallery']
+}
+
+function renderLocations(){
+  const pills = document.getElementById('locationPills')
+  if (!pills) return
+  const allowed = availableLocationsForSelection()
+  pills.innerHTML = allowed.map(loc => {
+    const isActive = state.location === loc
+    const chev = isActive ? '<span class="chev">›</span>' : ''
+    return `<button class="pill-lg${isActive ? ' active' : ''}" data-loc="${loc}" onclick="onLocationPillClick('${loc}')">${LOCATION_LABELS[loc]}${chev}</button>`
+  }).join('')
+}
+
+function renderActions(){
+  const pills = document.getElementById('actionPills')
+  if (!pills) return
+  pills.innerHTML = ACTIONS.map(a => {
+    const isActive = state.action === a.k
+    const chev = isActive ? '<span class="chev">›</span>' : ''
+    return `<button class="pill-lg${isActive ? ' active' : ''}" data-action="${a.k}" onclick="onActionPillClick('${a.k}')">${a.label}${chev}</button>`
+  }).join('')
+}
+
+function onActionPillClick(k){
+  const ctrl = document.getElementById('actionControl')
+  if (k === state.action && ctrl.classList.contains('expanded')){
+    ctrl.classList.remove('expanded')
+    return
+  }
+  if (k === state.action){
+    ctrl.classList.add('expanded')
+    return
+  }
+  state.action = k
+  ctrl.classList.remove('expanded')
+  renderActions()
+  if (typeof updateStagePreview === 'function') updateStagePreview()
+  if (typeof updateActionBar    === 'function') updateActionBar()
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAP-TO-EXPAND BEHAVIOR
+// Tapping the active pill expands the section to show all options.
+// Tapping any other pill (in expanded state) selects it and collapses
+// the section. Tapping outside the section also collapses it.
+// ═══════════════════════════════════════════════════════════════
+function onMaterialPillClick(k){
+  const ctrl = document.getElementById('materialControl')
+  // First interaction clears the pristine flag — the section was expanded
+  // by default on page load; from here on it behaves like other controls.
+  ctrl.removeAttribute('data-pristine')
+
+  if (k === state.selectedMat && ctrl.classList.contains('expanded')){
+    ctrl.classList.remove('expanded')
+    return
+  }
+  if (k === state.selectedMat){
+    ctrl.classList.add('expanded')
+    return
+  }
+  // New selection — apply and collapse
+  selectMat(k)
+  ctrl.classList.remove('expanded')
+  // Material change can affect available locations, refresh
+  renderLocations()
+  // Update the chev on the new active pill
+  renderMaterials()
+}
+
+function onLocationPillClick(loc){
+  const ctrl = document.getElementById('locationControl')
+  if (loc === state.location && ctrl.classList.contains('expanded')){
+    ctrl.classList.remove('expanded')
+    return
+  }
+  if (loc === state.location){
+    ctrl.classList.add('expanded')
+    return
+  }
+  selectLocation(loc)
+  ctrl.classList.remove('expanded')
+  renderLocations()
+}
+
+function onAspectPillClick(a){
+  const ctrl = document.getElementById('aspectControl')
+  if (a === state.aspect && ctrl.classList.contains('expanded')){
+    ctrl.classList.remove('expanded')
+    return
+  }
+  if (a === state.aspect){
+    ctrl.classList.add('expanded')
+    return
+  }
+  selectAspect(a)
+  ctrl.classList.remove('expanded')
+  renderAspectActiveState()
+}
+
+// Refresh the active class on aspect pills (they're static markup, not regenerated)
+function renderAspectActiveState(){
+  document.querySelectorAll('#aspectPills .pill-lg').forEach(pill => {
+    const a = pill.dataset.aspect
+    const isActive = a === state.aspect
+    pill.classList.toggle('active', isActive)
+    // Manage the chevron span
+    const existingChev = pill.querySelector('.chev')
+    if (isActive && !existingChev){
+      pill.insertAdjacentHTML('beforeend', '<span class="chev">›</span>')
+    } else if (!isActive && existingChev){
+      existingChev.remove()
+    }
+  })
+}
+
+// Note: there is intentionally no document-level "click outside collapses
+// the control" handler. That pattern was hiding sections before the user
+// could pick. To collapse a section, tap its active pill (now showing
+// the chevron). To expand, tap the active pill again.
+
+// ═══════════════════════════════════════════════════════════════
+// ADVANCED OPTIONS POPOVER — lighting controls overlay the sidebar
+// instead of cluttering the main rail. State persists across opens
+// (closing doesn't reset values) and is included in each queue item's
+// payload so the backend can apply the chosen lighting per-render.
+// ═══════════════════════════════════════════════════════════════
+function openAdvanced(){
+  document.getElementById('advancedPopover').classList.add('open')
+}
+
+function closeAdvanced(){
+  document.getElementById('advancedPopover').classList.remove('open')
+}
+
+function setAdv(key, val){
+  if (!state.advanced.hasOwnProperty(key)) return
+  state.advanced[key] = val
+  // Update the active class on the relevant control's buttons.
+  // Toggles (off/on) live inside .advanced-toggle; pill groups inside .advanced-row-pills.
+  document.querySelectorAll(`[data-adv="${key}"]`).forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.val === val)
+  })
+  // Reflect "advanced is doing something" state on the trigger button so
+  // the user knows their settings are applied even with the popover closed.
+  updateAdvancedTrigger()
+}
+
+function resetAdvanced(){
+  state.advanced = { beam: 'off', threePoint: 'off', brightness: '0', enhanced: 'off' }
+  document.querySelectorAll('[data-adv]').forEach(btn => {
+    btn.classList.remove('active')
+    if (btn.dataset.val === 'off' || btn.dataset.val === '0'){
+      btn.classList.add('active')
+    }
+  })
+  updateAdvancedTrigger()
+}
+
+function isAdvancedNonDefault(){
+  return state.advanced.beam !== 'off'
+      || state.advanced.threePoint !== 'off'
+      || state.advanced.brightness !== '0'
+      || state.advanced.enhanced !== 'off'
+}
+
+function updateAdvancedTrigger(){
+  const trigger = document.getElementById('advancedTrigger')
+  if (!trigger) return
+  trigger.dataset.active = isAdvancedNonDefault() ? 'yes' : 'no'
+  // Update label to summarize which advanced options are on
+  const labelSpan = trigger.querySelector('span:first-child')
+  if (!labelSpan) return
+  const a = state.advanced
+  const parts = []
+  if (a.beam === 'on')       parts.push('Beam')
+  if (a.threePoint === 'on') parts.push('3-Point')
+  if (a.brightness !== '0')  parts.push(`+${a.brightness}`)
+  if (a.enhanced === 'on')   parts.push('Enhanced')
+  labelSpan.textContent = parts.length
+    ? `Advanced — ${parts.join(' · ')}`
+    : 'Advanced lighting'
+}
+
+// Esc closes the popover
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape'){
+    const pop = document.getElementById('advancedPopover')
+    if (pop && pop.classList.contains('open')){
+      closeAdvanced()
+    }
+  }
+})
+
+function applyDefaultLocation(){
+  const allowed = availableLocationsForSelection()
+  if (!state.location || !allowed.includes(state.location)){
+    state.location = allowed[0] || 'gallery'
+  }
+  const lc = document.getElementById('locationCurrent')
+  if (lc) lc.textContent = LOCATION_LABELS[state.location] || state.location
+  // Reflect active state — old btn-bar IDs retired; new pills are rendered fresh.
+  document.querySelectorAll('#locationBar .type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.loc === state.location)
+  })
+}
+
+init()
+
+// ── UPLOAD HANDLERS ──────────────────────────────────────────
+
+// Clear the whole photo set (primary + aux + analyzer surfaces) so the
+// next pet can be loaded. The QUEUE IS UNTOUCHED — every queued piece
+// froze its own photos at Add time. This is the multi-photo workflow:
+// load pet A, queue pieces, Next pet, load pet B, queue more, Render all.
+function clearSourcePhotos(){
+  state.primarySrc  = null
+  state.primaryDims = null
+  state.auxSrc      = [null, null, null]
+  state.auxDims     = [null, null, null]
+  state.smallestFacePx = null
+  // Primary surfaces
+  const thumb = document.getElementById('sourceThumb')
+  if (thumb){ thumb.src = ''; thumb.style.display = 'none' }
+  const empty = document.getElementById('sourceEmpty')
+  if (empty) empty.style.display = ''
+  document.getElementById('sidebarSourcePreview')?.classList.remove('has-image')
+  document.getElementById('slot1')?.classList.remove('has-file')
+  const st1 = document.getElementById('st1')
+  if (st1) st1.textContent = 'Upload pet photo'
+  const f1 = document.getElementById('file1')
+  if (f1) f1.value = ''
+  // Aux surfaces — rebuild each slot to its empty state
+  document.querySelectorAll('#auxSourceRow .source-aux').forEach(label => {
+    const aux = label.dataset.aux
+    label.classList.remove('has-image')
+    label.innerHTML = `<span>+</span><input type="file" accept="image/*" onchange="handleAuxUpload(this, ${aux})">`
+  })
+  // Analyzer / curator surfaces back to idle
+  if (state.curator) state.curator.step = 'idle'
+  if (typeof curatorHidePanel === 'function') curatorHidePanel()
+  const sStatus = document.getElementById('suggesterStatus')
+  const sResult = document.getElementById('suggesterResult')
+  if (sStatus) sStatus.style.display = 'none'
+  if (sResult) sResult.style.display = 'none'
+  const banner = document.getElementById('resBanner')
+  if (banner) banner.style.display = 'none'
+  const badge = document.getElementById('resBadge')
+  if (badge) badge.style.display = 'none'
+  const npb = document.getElementById('nextPetBtn')
+  if (npb) npb.style.display = 'none'
+  updateSourceCount()
+  updateRunGate()
+  switchTab('preview')
+}
+
+function handlePrimaryUpload(input){
+  const f = input.files[0]
+  if (!f) return
+  const r = new FileReader()
+  r.onload = () => {
+    state.primarySrc = String(r.result).split(',')[1]
+    document.getElementById('sourceThumb').src = r.result
+    document.getElementById('sourceThumb').style.display = ''
+    document.getElementById('sourceEmpty').style.display = 'none'
+    document.getElementById('sidebarSourcePreview').classList.add('has-image')
+    document.getElementById('slot1').classList.add('has-file')
+    document.getElementById('st1').textContent = f.name.length > 20 ? f.name.slice(0,18)+'…' : f.name
+    // Tier 1 resolution gate — probe the actual pixel dimensions.
+    const probe = new Image()
+    probe.onload = () => {
+      state.primaryDims = { w: probe.naturalWidth, h: probe.naturalHeight }
+      updateResolutionWarning()
+    }
+    probe.src = r.result
+    updateSourceCount()
+    updateRunGate()
+    // Surface the Next-pet control now that a photo set exists.
+    const npb = document.getElementById('nextPetBtn')
+    if (npb) npb.style.display = ''
+    // New upload always brings the user back to the Stage Preview tab —
+    // they need to see their photo settled in before configuring.
+    switchTab('preview')
+    // Skip face-count analysis in raw mode — no preset needs it there.
+    if (!state.rawMode) runAnalyze()
+  }
+  r.readAsDataURL(f)
+  // Reset so picking the SAME file again still fires onchange — without
+  // this, re-selecting an identical file silently does nothing.
+  input.value = ''
+}
+
+function handleAuxUpload(input, slot){
+  const f = input.files[0]
+  if (!f) return
+  const r = new FileReader()
+  // Same-file re-pick safety (see handlePrimaryUpload). The element is
+  // rebuilt on clearSourcePhotos anyway, but in-place swaps need this.
+  setTimeout(() => { try { input.value = '' } catch(e){} }, 0)
+  r.onload = () => {
+    state.auxSrc[slot-2] = String(r.result).split(',')[1]
+    const wrapper = input.closest('.source-aux')
+    wrapper.classList.add('has-image')
+    wrapper.querySelector('span').remove()
+    const img = document.createElement('img')
+    img.src = r.result
+    wrapper.insertBefore(img, input)
+    // Tier 1 resolution gate — probe the actual pixel dimensions.
+    const probe = new Image()
+    probe.onload = () => {
+      state.auxDims[slot-2] = { w: probe.naturalWidth, h: probe.naturalHeight }
+      updateResolutionWarning()
+    }
+    probe.src = r.result
+    updateSourceCount()
+    // Re-run analyze when an aux photo is added — the verdict and
+    // recommendation depend on the full source set, not just the primary.
+    if (state.primarySrc && !state.rawMode) runAnalyze()
+  }
+  r.readAsDataURL(f)
+}
+
+function updateSourceCount(){
+  const n = (state.primarySrc ? 1 : 0) + state.auxSrc.filter(Boolean).length
+  document.getElementById('sourceCount').textContent = `${n} / 4`
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABS — Stage Preview | Your Queue
+// ═══════════════════════════════════════════════════════════════
+function switchTab(tab){
+  state.activeTab = tab
+  document.querySelectorAll('.stage-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab)
+  })
+  document.querySelectorAll('.stage-view').forEach(v => {
+    v.classList.toggle('active', v.dataset.tab === tab)
+  })
+}
+
+function updateQueueCountBadge(){
+  const badge = document.getElementById('queueCountBadge')
+  const n = state.queue.length
+  badge.textContent = n
+  badge.dataset.zero = n === 0 ? 'yes' : 'no'
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STAGE PREVIEW — config summary visible once user has a buildable draft
+// ═══════════════════════════════════════════════════════════════
+function updateStagePreview(){
+  const hasSource = !!state.primarySrc
+  const hasMat    = !!state.selectedMat
+  const preview   = document.getElementById('stagePreviewConfig')
+  if (!preview) return
+
+  // Raw mode bypasses the preview entirely — the raw-prompt textarea is the truth.
+  if (state.rawMode){
+    preview.style.display = 'none'
+    return
+  }
+
+  // The Stage Preview surfaces as soon as a source is uploaded. Before
+  // a material is picked, the settings rows show placeholders. After
+  // material is picked, they fill in. The Curator line and step pulse
+  // guide the user through what's next.
+  if (!hasSource){
+    preview.style.display = 'none'
+    refreshStepPulse()
+    return
+  }
+
+  document.getElementById('stageEmpty').style.display = 'none'
+  preview.style.display = ''
+  document.getElementById('stagePreviewThumbImg').src = `data:image/jpeg;base64,${state.primarySrc}`
+
+  const matDef   = PRES.find(p => p.k === state.selectedMat)
+  const matLabel = matDef?.label || '—'
+  const locLabel = state.location ? (LOCATION_LABELS[state.location] || state.location) : '—'
+
+  // Subject–Scene title — the Curator names what the photograph is, in
+  // "Subject, Scene" format like "Summer Wedding, Shore Gathering 1970s".
+  // Until the analyzer returns this field, fall back to the material+location
+  // descriptor we had before.
+  const subjectScene = state.subjectScene || null
+  let title
+  if (subjectScene){
+    // Render the Curator's title as italic-serif with one subtle italic emphasis
+    title = subjectScene.split(',').map((part, i) => i === 0 ? `<em>${part.trim()}</em>` : part.trim()).join(', ')
+  } else if (hasMat){
+    title = `A <em>${matLabel.toLowerCase()}</em>${locLabel !== '—' ? ` in the <em>${locLabel.toLowerCase()}</em> environment` : ''}`
+  } else {
+    title = `Your <em>pet</em>`
+  }
+  document.getElementById('stagePreviewTitle').innerHTML = title
+
+  document.getElementById('stagePreviewMat').textContent    = hasMat ? matLabel : 'Pick one in the rail →'
+  document.getElementById('stagePreviewLoc').textContent    = hasMat ? locLabel : '—'
+  const apEl = document.getElementById('stagePreviewAction')
+  if (apEl) apEl.textContent = ACTION_LABELS[state.action] || 'As Photographed'
+  document.getElementById('stagePreviewAspect').textContent = state.aspect
+  const plaqueDesc = state.plaqueOff
+    ? 'Off — no plaque'
+    : (state.plaqueText.trim() || 'Liten & Co · 2025 (default)')
+  document.getElementById('stagePreviewPlaque').textContent = plaqueDesc
+
+  // Refresh the info box + step pulse to match new state
+  updateInfoBox()
+  refreshStepPulse()
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STEP-THROUGH INFO BOX — direct system guidance.
+// Advances as the user completes each step. Not Curator voice;
+// the Curator is a separate concept that will live elsewhere when
+// its analyzer endpoint is wired up.
+// ═══════════════════════════════════════════════════════════════
+function updateInfoBox(){
+  const box  = document.getElementById('infoBox')
+  const step = document.getElementById('infoStep')
+  const text = document.getElementById('infoText')
+  if (!box || !step || !text) return
+
+  const cur = currentStep()
+  step.textContent = `Step ${cur} / 5`
+
+  let copy
+  switch (cur){
+    case 1:
+      copy = 'Upload a photo of your pet to begin.'
+      break
+    case 2:
+      copy = 'Pick a <em>material</em> in the rail.'
+      break
+    case 3:
+      copy = 'Choose where to stage it — <em>Mantel</em>, <em>Tea House</em>, or <em>Pedestal</em>.'
+      break
+    case 4:
+      copy = 'Pick an <em>aspect ratio</em>. The recommended one is marked in the rail.'
+      break
+    case 5:
+      copy = 'Ready. Click <em>+ Add to queue</em> below to add this piece.'
+      break
+  }
+  text.innerHTML = copy
+  box.dataset.complete = cur === 5 ? 'yes' : 'no'
+}
+
+// Compatibility alias for any older code paths that still call by the old name
+function updateCuratorLine(){ updateInfoBox() }
+
+function applyCuratorSuggestion(){
+  // Retained for future wiring when the analyzer returns a Curator
+  // suggestion bundle. Currently a no-op since the info box doesn't
+  // show an Apply affordance.
+  if (!state.curatorSuggestion) return
+  const s = state.curatorSuggestion
+  if (s.material) selectMat(s.material)
+  if (s.location) selectLocation(s.location)
+  if (s.scale)    selectScale(s.scale)
+  if (s.aspect)   selectAspect(s.aspect)
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STEP-THROUGH PULSE — gentle visual halo on the next-needed action.
+// ═══════════════════════════════════════════════════════════════
+//   Step 1: Upload      → pulse the source thumbnail in the rail
+//   Step 2: Material    → pulse the material grid
+//   Step 3: Location    → pulse the location row
+//   Step 4: Scale       → pulse the scale row
+//   Step 5: Aspect      → pulse the aspect bar
+//   Step 6: Queue       → pulse the bottom "+ Add to queue" button
+//
+// Each step's "completion" is the simplest predicate that says "the
+// user has touched this step": source uploaded, material selected,
+// location explicitly chosen (touched, not just default), scale
+// touched, aspect touched, queue non-empty.
+function currentStep(){
+  if (!state.primarySrc) return 1
+  if (!state.selectedMat) return 2
+  if (!state.locationTouched) return 3
+  if (!state.aspectTouched) return 4
+  return 5
+}
+
+function refreshStepPulse(){
+  // Clear all existing pulses
+  document.querySelectorAll('.step-target').forEach(el => el.classList.remove('step-target'))
+
+  // Stop pulsing entirely once the user has added their first queue item.
+  // First-run guidance ends; experienced users don't need pulses anymore.
+  if (state.queue.length > 0) return
+  if (state.rawMode) return
+
+  const step = currentStep()
+  let target = null
+  switch (step){
+    case 1: target = document.getElementById('sidebarSourcePreview'); break
+    case 2: target = document.getElementById('materialControl'); break
+    case 3: target = document.getElementById('locationControl'); break
+    case 4: target = document.getElementById('aspectControl'); break
+    case 5: target = document.getElementById('queueAddBtn'); break
+  }
+  if (target) target.classList.add('step-target')
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUEUE VIEW — compact rows + count ribbon + pack tier callouts
+// ═══════════════════════════════════════════════════════════════
+function renderCountRibbon(){
+  const N = state.queue.length
+  const ribbon = document.getElementById('queueRibbon')
+  if (!ribbon) return
+  const max = 10
+  const parts = []
+  for (let i = 1; i <= max; i++){
+    let state_ = ''
+    if (i < N + 1) state_ = 'filled'
+    else if (i === N) state_ = 'current'
+    // Mark pack thresholds even when unfilled
+    let pack = ''
+    if (i === 7) pack = 'curators'
+    if (i === 10) pack = 'studio'
+    parts.push(`<div class="ribbon-dot" data-state="${state_}" data-pack="${pack}">${i}</div>`)
+    if (i < max){
+      const connState = i < N ? 'filled' : ''
+      parts.push(`<div class="ribbon-connector" data-state="${connState}"></div>`)
+    }
+  }
+  ribbon.innerHTML = parts.join('')
+}
+
+function renderPackTiers(){
+  const N = state.queue.length
+  const packsEl = document.getElementById('queuePacks')
+  if (!packsEl) return
+  packsEl.innerHTML = PRICING.packs.map(pack => {
+    const reached = N >= pack.threshold
+    const remaining = Math.max(0, pack.threshold - N)
+    const sub = reached
+      ? `Yours — pack pricing active.`
+      : `${remaining} more piece${remaining === 1 ? '' : 's'} and the ${pack.name} is yours.`
+    const state_ = reached
+      ? 'reached'
+      : (remaining <= 3 ? 'active' : 'idle')
+    return `
+      <div class="pack-tier" data-state="${state_}" data-tier="${pack.id}">
+        <div class="pack-tier-info">
+          <div class="pack-tier-name">${pack.name}</div>
+          <div class="pack-tier-sub">${sub}</div>
+        </div>
+        <div class="pack-tier-num">${pack.threshold}</div>
+      </div>
+    `
+  }).join('')
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FIXED ACTION BAR — Add to queue / Render all N, with live pricing
+// ═══════════════════════════════════════════════════════════════
+function updateActionBar(){
+  const N = state.queue.length
+
+  // Draftability — does the user have a buildable next item?
+  let draftOk
+  if (state.rawMode){
+    draftOk = !!state.primarySrc && (state.rawPrompt || '').trim().length > 0
+  } else {
+    draftOk = !!state.primarySrc && !!state.selectedMat
+  }
+
+  // Duplicate detection — already queued exactly this config?
+  const dup = isDraftDuplicate()
+
+  // Add to queue button — price reflects the tier the NEXT item would land in
+  const addBtn   = document.getElementById('queueAddBtn')
+  const addPrice = document.getElementById('addPrice')
+  const addLabel = document.getElementById('addLabel')
+  addBtn.disabled = state.busy || !draftOk || dup
+  addBtn.dataset.duplicate = dup ? 'yes' : 'no'
+
+  // Label flips to a clear "why disabled" cue when the draft is a duplicate
+  if (addLabel){
+    addLabel.textContent = dup ? 'Already in queue' : '+ Add to queue'
+  }
+
+  if (addPrice){
+    if (dup){
+      addPrice.innerHTML = `<span class="now" style="color:var(--accent)">change a setting to add another</span>`
+    } else {
+      const nextTier = priceForCount(N + 1)
+      addPrice.innerHTML = nextTier.off === '0%'
+        ? `<span class="now">${formatUsd(nextTier.perPiece)}</span>`
+        : `<span class="was">${formatUsd(PRICING.basePrice)}</span><span class="now">${formatUsd(nextTier.perPiece)}</span>`
+    }
+  }
+
+  // Render all — disabled if queue is empty or no items pending
+  const hasPending = state.queue.some(q => q.status === 'pending')
+  const canAuto    = draftOk && state.queue.length === 0 && !dup
+  const renderBtn  = document.getElementById('runAllBtn')
+  renderBtn.disabled = state.busy || (!hasPending && !canAuto)
+  document.getElementById('renderCount').textContent = N || ''
+
+  // Total = sum of per-item prices at the current tier
+  const currentTier = priceForCount(Math.max(N, 1))
+  const total = N * currentTier.perPiece
+  document.getElementById('renderTotal').textContent = total > 0 ? formatUsd(total) : '$0.00'
+
+  // Bundle area (ribbon + packs) visibility — visible across both tabs
+  // whenever the queue has at least one item.
+  const bundleArea = document.getElementById('bundleArea')
+  if (bundleArea){
+    bundleArea.style.display = N > 0 ? '' : 'none'
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPACT QUEUE ROW — replaces the old big-card layout. Rows hold
+// pending/running/done/failed states; clicking a done row opens the
+// existing lightbox; the × removes the item from the queue.
+// ═══════════════════════════════════════════════════════════════
+function renderQueueList(){
+  const rows = document.getElementById('queueRows')
+  if (!rows) return
+  rows.innerHTML = ''
+  rows.dataset.count = state.queue.length
+  const N = state.queue.length
+  const tier = priceForCount(N)
+
+  state.queue.forEach((item, idx) => {
+    const row = buildQueueRow(item, idx + 1, tier)
+    rows.appendChild(row)
+  })
+}
+
+function buildQueueRow(item, num, tier){
+  const row = document.createElement('div')
+  row.className = 'queue-row'
+  row.dataset.status = item.status
+  row.dataset.id     = item.id
+  row.id = `q-${item.id}`
+
+  // Title + subline depend on mode (raw vs preset)
+  let title, sub
+  if (item.mode === 'raw'){
+    const promptShort = (item.raw_prompt || '').replace(/\s+/g, ' ').slice(0, 40)
+    title = `Raw · ${escapeHtml(promptShort)}${(item.raw_prompt || '').length > 40 ? '…' : ''}`
+    sub   = `${item.aspect_ratio}`
+  } else {
+    const matDef = PRES.find(p => p.k === item.preset)
+    title = matDef?.label || item.preset
+    const locLabel = LOCATION_LABELS[item.location] || item.location
+    const actLabel = (item.action && item.action !== 'as_photographed')
+      ? ` · ${ACTION_LABELS[item.action] || item.action}`
+      : ''
+    sub = `${locLabel}${actLabel} · ${item.aspect_ratio}`
+  }
+
+  // Price block — strikethrough base, current tier price, percent off
+  const priceBlock = tier.off === '0%'
+    ? `<span class="now">${formatUsd(tier.perPiece)}</span>`
+    : `<span class="was">${formatUsd(PRICING.basePrice)}</span><span class="now">${formatUsd(tier.perPiece)}</span><span class="off">${tier.off}</span>`
+
+  // ── State detection ─────────────────────────────────────────
+  // A 'done' item can be in one of three sub-states:
+  //   1. Passed QA + no decision needed  → green "View" pill (success)
+  //   2. Failed QA + no user decision yet → red "Decide" pill (action required)
+  //   3. Failed QA + user decided        → muted "View" pill with decision tag
+  // We surface these distinctly so failed renders aren't disguised as
+  // successes — a regression from the original big-card layout.
+  const isDone     = item.status === 'done' && !!item.result?.image_b64
+  const qaFailed   = isDone && item.result.final_pass === false
+  const decided    = !!item.user_decision
+  const needsDecide = qaFailed && !decided
+
+  // Tag a sub-state attribute so CSS can color-code accordingly
+  if (needsDecide)       row.dataset.qa = 'needs_decide'
+  else if (qaFailed)     row.dataset.qa = 'decided'
+  else if (isDone)       row.dataset.qa = 'passed'
+
+  const thumbSrc = isDone
+    ? `data:image/jpeg;base64,${item.result.image_b64}`
+    : `data:image/jpeg;base64,${item.source_image_b64}`
+
+  // Trailing element — varies by state. The button on a failed-QA row
+  // is the loud one because action is required from the user.
+  let trailing
+  if (needsDecide){
+    trailing = `<div class="queue-row-decide">Decide<span class="arrow">!</span></div>`
+  } else if (qaFailed && decided){
+    // User already chose accept/refund/rerender — quiet "View" + decision tag
+    const label = item.user_decision === 'accept'   ? 'accepted'
+                : item.user_decision === 'refund'   ? 'refunded'
+                : item.user_decision === 'rerender' ? 'rerender requested'
+                : ''
+    trailing = `<div class="queue-row-view" data-muted="yes">View<span class="arrow">→</span></div>
+                <div class="queue-row-decision-tag">${label}</div>`
+  } else if (isDone){
+    trailing = `<div class="queue-row-view">View<span class="arrow">→</span></div>`
+  } else {
+    trailing = `<div class="queue-row-price">${priceBlock}</div>`
+  }
+
+  row.innerHTML = `
+    <div class="queue-row-num">${String(num).padStart(2, '0')}</div>
+    <div class="queue-row-thumb">
+      <img src="${thumbSrc}" alt="${isDone ? 'rendered piece' : 'source'}">
+      <div class="status-dot" data-status="${item.status}" data-qa="${row.dataset.qa || ''}"></div>
+    </div>
+    <div class="queue-row-meta">
+      <div class="queue-row-title">${title}</div>
+      <div class="queue-row-sub">${sub}</div>
+    </div>
+    ${trailing}
+    <button class="queue-row-x" onclick="event.stopPropagation(); removeQueueItem(${item.id})" title="Remove from queue">×</button>
+  `
+
+  // Click anywhere on the row → context-aware action
+  row.addEventListener('click', () => onQueueRowClick(item))
+
+  return row
+}
+
+// Open a small overlay panel anchored to a queue row, presenting the
+// three QA decisions (Rerender / Accept as-is / Refund). Used when the
+// user clicks a failed-QA row in the compact queue.
+function openQaPanel(item){
+  // If a panel already exists, close it first
+  document.querySelectorAll('.qa-overlay').forEach(el => el.remove())
+
+  const usedReroll = (item.rerender_count || 0) >= 1
+  const rerenderBtn = usedReroll
+    ? ''
+    : `<button class="qa-btn qa-btn-primary" onclick="qaRerender(${item.id}); closeQaPanel()">Rerender</button>`
+  const msg = usedReroll
+    ? `<strong>Quality check didn't pass.</strong> This was a rerender — choose how you'd like to proceed.`
+    : `<strong>Quality check didn't pass.</strong> The rendered piece may have extra figures or weak likeness. Choose how you'd like to proceed:`
+
+  const overlay = document.createElement('div')
+  overlay.className = 'qa-overlay'
+  overlay.innerHTML = `
+    <div class="qa-overlay-backdrop" onclick="closeQaPanel()"></div>
+    <div class="qa-overlay-panel">
+      <div class="qa-overlay-img">
+        <img src="data:image/jpeg;base64,${item.result.image_b64}" alt="rendered piece (failed QA)">
+        <div class="qa-overlay-watermark">QA · review</div>
+      </div>
+      <div class="qa-overlay-body">
+        <div class="qa-fail-msg">${msg}</div>
+        <div class="qa-fail-actions">
+          ${rerenderBtn}
+          <button class="qa-btn qa-btn-neutral" onclick="qaAccept(${item.id}); closeQaPanel()">Accept as is</button>
+          <button class="qa-btn qa-btn-danger"  onclick="qaRefund(${item.id}); closeQaPanel()">Refund</button>
+        </div>
+      </div>
+    </div>
+  `
+  document.body.appendChild(overlay)
+}
+
+function closeQaPanel(){
+  document.querySelectorAll('.qa-overlay').forEach(el => el.remove())
+}
+
+function onQueueRowClick(item){
+  // QA-failed render with no decision yet → open QA decision panel
+  if (item.status === 'done' && item.result?.final_pass === false && !item.user_decision){
+    openQaPanel(item)
+    return
+  }
+  // Otherwise: done items open the lightbox; pending/running/failed-with-decision
+  // are click-passthroughs for now (edit-on-click is still stubbed pending design).
+  if (item.status === 'done' && item.result?.image_b64){
+    openLightbox(`data:image/jpeg;base64,${item.result.image_b64}`, item)
+    return
+  }
+}
+
+function refreshQueueViews(){
+  renderQueueList()
+  renderCountRibbon()
+  renderPackTiers()
+  updateQueueCountBadge()
+  updateActionBar()
+}
+
+// ── ANALYZE — subject count detection ─────────────────────────
+async function runAnalyze(){
+  document.getElementById('stageEmpty').style.display = 'none'
+  document.getElementById('stageSuggester').style.display = ''
+  document.getElementById('suggesterStatus').style.display = ''
+  document.getElementById('suggesterResult').style.display = 'none'
+
+  // Mark curator as analyzing — the panel shows a spinner until we land.
+  state.curator.step = 'analyzing'
+
+  try{
+    const res = await fetch(ANALYZE, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        source_image_b64:      state.primarySrc,
+        additional_images_b64: state.auxSrc.filter(Boolean),
+      }),
+    })
+    if (!res.ok) throw new Error('analyze failed')
+    const data = await res.json()
+    const r = data?.result || {}
+
+    // Portraits backend returns subject_count_estimate / quality_verdict /
+    // recommendation. We don't drive UI from the count (Portraits is always
+    // single-subject) but we DO surface a soft advisory when the source has
+    // multiple hero subjects — NB2 will pick one, the user should know.
+    const count        = r.subject_count_estimate || 1
+    const recmsg       = r.recommendation || null
+    const _$ = (id) => document.getElementById(id)
+
+    // Multi-hero advisory: only surfaces when count ≥ 2 and the analyzer
+    // didn't already give a stronger recommendation.
+    if (_$('detectMiniLabel')){
+      if (count >= 2 && !recmsg){
+        _$('detectMiniLabel').textContent = count <= 5
+          ? `${count} pets detected — we'll sculpt them together as one piece`
+          : `${count} pets detected — that's above our 5-pet limit; we'll favor the most prominent`
+      } else {
+        _$('detectMiniLabel').textContent = recmsg || 'Photo received — pick a material to begin'
+      }
+    }
+    if (_$('detectMiniSub')){
+      _$('detectMiniSub').textContent = recmsg && count >= 2
+        ? `Tip: ${recmsg}`
+        : 'pick a material to begin'
+      _$('detectMiniSub').style.display = ''
+    }
+
+    // Aspect recommendation refresh — fires after detection lands. For
+    // Portraits this is N-independent, but the call still updates the
+    // recommended-pill dot.
+    applyAspectRecommendation()
+
+    // Quality-verdict hint surface retired — face-size and distinctness
+    // gates below cover the high-signal cases.
+    const recEl = document.getElementById('sourceRecHint')
+    if (recEl) recEl.style.display = 'none'
+
+    // Tier 2 — analyzer may also return the smallest detected face's
+    // pixel min-dimension. If it's below the comfortable threshold AND
+    // Tier 1 wasn't already firing red, we upgrade the resolution warning
+    // to call out the specific face-size problem.
+    const smallestFacePx = r.smallest_head_min_dim_px || r.smallest_face_min_dim_px || null
+    state.smallestFacePx = smallestFacePx
+    applyFaceSizeWarning(smallestFacePx)
+
+    // v2 — analyzer-driven distinctness advisory. Backend extension
+    // pending; this fires only when the field is present in the response.
+    if (r.likeness_distinctness){
+      state.likenessDistinctness = r.likeness_distinctness
+      applyDistinctnessAdvisory(r.likeness_distinctness)
+    }
+
+    document.getElementById('suggesterStatus').style.display = 'none'
+    document.getElementById('suggesterResult').style.display = ''
+    updateStepperBounds()
+    updateScoreRule()
+
+    // ── Curator handoff — analyze landed, decide what step to enter ──
+    // Pets analyzer returns pet_coverage: 'head_only' |
+    // 'head_and_body_partial' | 'full_body'.
+    state.curator.petCoverage    = r.pet_coverage    || 'head_only'
+    state.curator.qualityVerdict = r.quality_verdict || 'yellow'
+
+    if (state.curator.qualityVerdict === 'red'){
+      curatorEnterQualityFail(recmsg)
+      return
+    }
+
+    if (state.curator.petCoverage === 'head_only'){
+      // Head-only source → non-blocking advisory recommending a full-body
+      // photo (body proportions, markings, and tail aren't knowable from a
+      // head shot). Per the Curator rule: guide, not restrict.
+      curatorEnterPhotoAdvisory()
+    } else {
+      // Body is knowable — hand straight back to the wizard.
+      curatorFinishToWizard()
+    }
+
+  } catch (e){
+    // Soft fail — the subject count just stays at the manual default.
+    const _$ = (id) => document.getElementById(id)
+    if (_$('detectMiniLabel')) _$('detectMiniLabel').textContent = 'Adjust subject count manually'
+    if (_$('suggesterName'))   _$('suggesterName').textContent   = 'Photo received'
+    if (_$('suggesterSub'))    _$('suggesterSub').textContent    = 'Pick a material to begin.'
+    if (_$('suggesterStatus')) _$('suggesterStatus').style.display = 'none'
+    if (_$('suggesterResult')) _$('suggesterResult').style.display = ''
+    // Hide the curator panel — fall back to the legacy rail wizard.
+    state.curator.step = 'idle'
+    curatorHidePanel()
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CURATOR — torso assumptions + effect recommendations
+// ═══════════════════════════════════════════════════════════════
+//
+// Flow:
+//   runAnalyze() lands → if head-only → photo advisory (non-blocking)
+//   → curatorFinishToWizard() — the wizard drives from there.
+//
+// The curator panel lives inside #stagePreviewConfig. Sub-steps:
+// #curStepAnalysis, #curStepQualityFail, #curStepAdvisory — exactly one
+// shows at a time.
+
+function curatorShowPanel(){
+  const panel   = document.getElementById('curatorPanel')
+  const infoBox = document.getElementById('infoBox')
+  const stageCt = document.getElementById('stagePreviewConfig')
+  if (panel)   panel.style.display = ''
+  if (infoBox) infoBox.style.display = 'none'   // Curator drives, not the wizard
+  // Bump the stage container to its wider Curator-active max-width so the
+  // panel has room for 3 torso cards or 5 effect cards across.
+  if (stageCt) stageCt.classList.add('curator-active')
+}
+
+function curatorHidePanel(){
+  const panel   = document.getElementById('curatorPanel')
+  const infoBox = document.getElementById('infoBox')
+  const stageCt = document.getElementById('stagePreviewConfig')
+  if (panel)   panel.style.display = 'none'
+  if (infoBox) infoBox.style.display = ''
+  // Return the stage container to its standard 720px max-width.
+  if (stageCt) stageCt.classList.remove('curator-active')
+}
+
+function curatorShowStep(stepDivId){
+  // Show exactly one sub-step in the curator panel.
+  const ids = ['curStepAnalysis','curStepQualityFail','curStepAdvisory']
+  ids.forEach(id => {
+    const el = document.getElementById(id)
+    if (el) el.style.display = (id === stepDivId) ? '' : 'none'
+  })
+}
+
+function curatorEnterQualityFail(msg){
+  state.curator.step = 'quality_fail'
+  curatorShowPanel()
+  curatorShowStep('curStepQualityFail')
+  const msgEl = document.getElementById('curQualityFailMsg')
+  if (msgEl && msg && typeof msg === 'string'){
+    msgEl.textContent = msg
+  }
+}
+
+// ── PHOTO ADVISORY step ───────────────────────────────────────
+// Replaces the prior 3-torso-concept guess flow per the Curator Workflow
+// spec (2026-06): never block the user. Face-only sources see a
+// non-blocking advisory recommending more photos; the user can upload
+// additional source images OR continue with what they have.
+function curatorEnterPhotoAdvisory(){
+  state.curator.step = 'photo_advisory'
+  curatorShowPanel()
+  curatorShowStep('curStepAdvisory')
+}
+
+function curatorAdvisoryUpload(){
+  // User wants to upload more photos. Hide the curator panel so the
+  // sidebar source slots are visible, and pulse the source preview
+  // section as a visual hint. When additional photos land, the user
+  // can re-trigger analysis (or runAnalyze auto-fires on source change).
+  state.curator.step = 'idle'
+  curatorHidePanel()
+  const sidebar = document.getElementById('sidebarSourcePreview')
+  if (sidebar){
+    sidebar.classList.add('step-target')
+    // Scroll the source slots into view on smaller screens.
+    sidebar.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+}
+
+function curatorAdvisoryContinue(){
+  // User wants to proceed with the current head-only photo. Hand back to
+  // the wizard — NB2 will interpret the body from the head shot.
+  curatorFinishToWizard()
+}
+
+// Legacy reset — retained for any stray references; resets curator state
+// and hides the panel. No longer wired to a UI control.
+function curatorReset(){
+  state.curator = {
+    step:           'idle',
+    petCoverage:    null,
+    qualityVerdict: null,
+  }
+  curatorHidePanel()
+  const sidebar = document.getElementById('sidebarSourcePreview')
+  if (sidebar) sidebar.classList.add('step-target')
+}
+
+// ── WIZARD HANDOFF ────────────────────────────────────────────
+// Pets has no effect-curator step — after analysis (and the optional
+// photo advisory) the Curator hands straight back to the legacy wizard:
+// hide the panel, restore the info-box guidance, let the user drive
+// Material → Environment → render.
+function curatorFinishToWizard(){
+  state.curator.step = 'done'
+  curatorHidePanel()
+  if (typeof updateInfoBox    === 'function') updateInfoBox()
+  if (typeof refreshStepPulse === 'function') refreshStepPulse()
+}
+
+// HTML-safe text insertion for card labels/descriptions.
+function escapeHtml(s){
+  if (typeof s !== 'string') return ''
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+}
+
+// ── SUBJECT COUNT — retired for Portraits ────────────────────
+// adjustSubjects() and updateStepperBounds() existed in Groups for a UI
+// stepper that's been retired. Portraits has no stepper and no subjectCount
+// state. Stubs preserved so any stale inline handler in the HTML calling
+// these names is a no-op rather than a runtime error.
+function adjustSubjects(_delta){ /* no-op — Portraits is single-subject */ }
+function updateStepperBounds()  { /* no-op — no stepper to bound          */ }
+
+// ── SCORING RULE READOUT ─────────────────────────────────────
+// Portraits uses a flat single-face threshold (≥8/10) instead of the
+// size-tiered evaluator Groups needs.
+function updateScoreRule(){
+  const el = document.getElementById('scoreRule')
+  if (!el) return
+  el.textContent = '≥8/10 (single face)'
+}
+
+// ── SELECT HANDLERS ──────────────────────────────────────────
+function selectMat(k){
+  state.selectedMat = k
+  // Update active state in the picker — old btn-bar IDs retired; new pills
+  // are re-rendered fresh via renderMaterials() which manages active state.
+  document.querySelectorAll('#typeBar .type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mat === k)
+  })
+  const def = PRES.find(p => p.k === k)
+  const ro = document.getElementById('materialReadout')
+  if (ro) ro.textContent = def?.label || '—'
+  // Material selection changes which locations are available — re-render
+  renderLocations()
+  applyDefaultLocation()
+  updateRunGate()
+}
+
+function selectLocation(loc){
+  state.location = loc
+  state.locationTouched = true
+  // Old btn-bar IDs retired with the tap-to-expand restructure; the
+  // active state is now managed by renderLocations(). Defensive no-ops:
+  document.querySelectorAll('#locationBar .type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.loc === loc)
+  })
+  const _$ = (id) => document.getElementById(id)
+  if (_$('locationCurrent')) _$('locationCurrent').textContent = LOCATION_LABELS[loc] || loc
+  updateRunGate()
+}
+
+// Scale is retired — the piece always occupies ~85% of the frame width.
+// The function is preserved as a defensive no-op so any legacy caller
+// (back-compat) doesn't NPE. Backend payload sets scale='auto_85'.
+function selectScale(_s){
+  // No-op. Scale control was removed; backend handles width default.
+  state.scale = 'auto_85'
+  state.scaleTouched = true
+  updateRunGate()
+}
+
+function selectAspect(a){
+  state.aspect = a
+  state.aspectAuto = false   // user took manual control; stop tracking the recommendation
+  state.aspectTouched = true
+  // Old btn-bar IDs retired; new pill markup is in #aspectPills. Update both
+  // defensively so any other path that touched the old bar still works.
+  document.querySelectorAll('#aspectBar .type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.aspect === a)
+  })
+  // New pill markup: refresh active class + chevron
+  renderAspectActiveState()
+  const _$ = (id) => document.getElementById(id)
+  if (_$('aspectCurrent')) _$('aspectCurrent').textContent = a
+  applyAspectRecommendation()
+  updateRunGate()
+}
+
+// ── INSCRIPTION / PLAQUE ────────────────────────────────────
+// The backend always receives one of three plaque_text values:
+//   undefined → use the brand default (DEFAULT_PLAQUE_TEXT in shared)
+//   string    → inscribe the typed text
+//   null      → suppress (clean unmarked base)
+// We let the user discover this without burying them in radio buttons:
+// the input's placeholder shows what the default looks like, and a small
+// "No plaque" checkbox sits in the same row for the off case.
+function onPlaqueInput(value){
+  state.plaqueText = value || ''
+  document.getElementById('plaqueCharCount').textContent = state.plaqueText.length
+  updatePlaqueHint()
+  updateStagePreview()
+}
+
+function onPlaqueOff(checked){
+  state.plaqueOff = !!checked
+  const input  = document.getElementById('plaqueInput')
+  const counter = document.getElementById('plaqueCharCount')
+  input.disabled = state.plaqueOff
+  if (state.plaqueOff) {
+    counter.parentElement.style.opacity = '.4'
+  } else {
+    counter.parentElement.style.opacity = ''
+  }
+  updatePlaqueHint()
+  updateStagePreview()
+}
+
+function updatePlaqueHint(){
+  const hint = document.getElementById('plaqueHint')
+  if (!hint) return
+  if (state.plaqueOff) {
+    hint.textContent = 'Suppressed — the base will be unmarked.'
+  } else if (state.plaqueText && state.plaqueText.trim().length > 0){
+    hint.textContent = 'Custom inscription set.'
+  } else {
+    hint.textContent = 'Leave blank for the default stamp.'
+  }
+}
+
+// Resolve the value to send in the request body. Mirrors the three-state
+// contract on the backend: undefined → default, string → custom, null → off.
+function resolvePlaquePayload(){
+  if (state.plaqueOff) return null
+  const trimmed = (state.plaqueText || '').trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}
+
+// ── ASPECT RATIO RECOMMENDATION ──────────────────────────────
+// Portraits skews vertical regardless of source content. Wide aspects (3:2,
+// 16:9) make NB2 compose grand scenes around a single bust, which fights
+// the product. 3:4 keeps the focal subject filling the frame. Other aspects
+// stay selectable for users who want them — the hint surfaces below the bar
+// when overridden.
+function recommendedAspect(){
+  return '3:4'
+}
+
+// Refresh recommendation visuals + auto-fit aspect (if user hasn't manually
+// overridden). Unlike Groups, this is N-independent — fires only on first
+// load and on explicit user picks.
+function applyAspectRecommendation(){
+  const rec = recommendedAspect()
+
+  // Auto-fit: silently follow the recommendation while aspectAuto is on
+  if (state.aspectAuto && state.aspect !== rec){
+    state.aspect = rec
+    const ac = document.getElementById('aspectCurrent')
+    if (ac) ac.textContent = rec
+    // Refresh the new pill-lg active class + chevron
+    renderAspectActiveState()
+  }
+
+  // Mark the recommended pill with the dot. Old btn-bar selector kept
+  // defensively for back-compat; new pills also get the marker.
+  document.querySelectorAll('#aspectBar .type-btn, #aspectPills .pill-lg').forEach(b => {
+    const isRec = b.dataset.aspect === rec
+    b.dataset.recommended = isRec ? 'yes' : 'no'
+    b.classList.toggle('active', b.dataset.aspect === state.aspect)
+  })
+
+  // Hint copy. (Hint element retired with the tap-to-expand restructure; guard.)
+  const hint = document.getElementById('aspectHint')
+  if (!hint) return
+  if (state.aspect === rec){
+    hint.dataset.state = 'normal'
+    hint.textContent = `${rec} keeps the sculpture filling the frame — recommended.`
+  } else {
+    hint.dataset.state = 'warning'
+    hint.textContent = `${rec} is recommended for pet pieces. ${state.aspect} works but the sculpture will appear smaller against more background.`
+  }
+}
+
+// ── RUN GATE ─────────────────────────────────────────────────
+function updateRunGate(){
+  // Compatibility shim — the topbar Queue/Run buttons retired in favor of
+  // the stage-bottom action bar. All callers funnel into updateActionBar()
+  // and the new refreshQueueViews() pipeline.
+  updateActionBar()
+  updateStagePreview()
+}
+
+// ── QUEUE ────────────────────────────────────────────────────
+function addToQueue(){
+  // Hard-stop duplicate guard: a single click shouldn't be able to
+  // produce two identical pending items. Cheaper than disabling the
+  // button (which we also do via updateActionBar), this is the
+  // belt-and-suspenders check against double-clicks and race conditions.
+  if (isDraftDuplicate()){
+    // Silent no-op — the button should already be disabled in the UI.
+    return
+  }
+
+  // Soft cap at 5 items — warn but allow more.
+  if (state.queue.length >= 5){
+    const ok = confirm(`Queue already has ${state.queue.length} items. Continue adding?`)
+    if (!ok) return
+  }
+
+  // Snapshot the draft key BEFORE we mutate state, so the new item
+  // carries an immutable fingerprint of its source + config.
+  const draftKey = computeDraftKey()
+
+  if (state.rawMode){
+    // Validate raw mode inputs
+    if (!state.primarySrc) return
+    const prompt = state.rawPrompt.trim()
+    if (!prompt) return
+
+    const id = ++state.queueIdSeq
+    state.queue.push({
+      id,
+      mode:                  'raw',
+      draft_key:             draftKey,
+      // snapshot of source + reference
+      source_image_b64:      state.primarySrc,
+      additional_images_b64: state.rawReference ? [state.rawReference] : [],
+      // raw config
+      raw_prompt:            prompt,
+      aspect_ratio:          state.aspect,
+      // status
+      status:                'pending',
+      result:                null,
+      error:                 null,
+      duration_ms:           null,
+    })
+  } else {
+    // Preset mode: snapshot the current draft → one pending item per click
+    if (!state.primarySrc || !state.selectedMat) return
+
+    const matKey = state.selectedMat
+    const matLocs = MATERIAL_LOCATIONS[matKey] || ['gallery']
+    // Use the picked location if this material allows it; otherwise fall
+    // back to that material's first available location.
+    const locForMat = matLocs.includes(state.location) ? state.location : matLocs[0]
+
+    const id = ++state.queueIdSeq
+    state.queue.push({
+      id,
+      mode:                  'preset',
+      draft_key:             draftKey,
+      // snapshot of source images
+      source_image_b64:      state.primarySrc,
+      additional_images_b64: state.auxSrc.filter(Boolean),
+      // snapshot of config — style_id now reflects the active Series
+      // ('realistic' for regular materials, 'artists_gallery' for the
+      // Artists Gallery materials). The Series switch above the Material
+      // picker controls this.
+      style_id:              state.style,
+      preset:                matKey,
+      location:              locForMat,
+      action:                state.action || 'as_photographed',
+      // Scale is retired from the UI — every render uses ~85% frame width.
+      // Backend can read either this marker or fall back to a width default.
+      scale:                 'auto_85',
+      aspect_ratio:          state.aspect,
+      // subject_count omitted — Portraits is single-subject. Backend infers.
+      plaque_text:           resolvePlaquePayload(), // undefined | string | null
+      // Advanced lighting bundle — backend ignores keys it doesn't know.
+      advanced:              { ...state.advanced },
+      // status
+      status:                'pending',
+      result:                null,
+      error:                 null,
+      duration_ms:           null,
+      user_decision:         null,  // null | 'rerender' | 'refund' | 'accept'
+      rerender_count:        0,     // increments to 1 when this item is the clone of a Rerender click
+    })
+  }
+
+  renderQueueGrid()
+  updateQueueMeta()
+  updateRunGate()
+  // Switch the user to the Queue tab so they see the item they just added.
+  switchTab('queue')
+}
+
+function removeQueueItem(id){
+  const idx = state.queue.findIndex(q => q.id === id)
+  if (idx < 0) return
+  // Only allow remove for pending or failed
+  const item = state.queue[idx]
+  if (item.status === 'running') return
+  state.queue.splice(idx, 1)
+  renderQueueGrid()
+  updateQueueMeta()
+  updateRunGate()
+}
+
+// ── QA GATE HANDLERS (triggered when scorePerFigureFidelity fails) ──
+// A QA-failed item shows a watermarked image and three options:
+//   Rerender — clone the item into a fresh pending queue entry and run it.
+//   Refund   — flip user_decision='refund'. (No payment plumbing yet.)
+//   Accept   — flip user_decision='accept'. (No payment plumbing yet.)
+// Watermark + panel persist until user_decision is set.
+
+function qaRerender(id){
+  const original = state.queue.find(q => q.id === id)
+  if (!original) return
+  // Don't let an item that's already a rerender produce another rerender.
+  if ((original.rerender_count || 0) >= 1) return
+  original.user_decision = 'rerender'
+
+  // Clone the item config — fresh status, fresh ID, no result, no decision.
+  // Mark as a rerender so its own QA panel will hide the Rerender button.
+  const newId = ++state.queueIdSeq
+  const clone = {
+    ...original,
+    id:              newId,
+    status:          'pending',
+    result:          null,
+    error:           null,
+    duration_ms:     null,
+    user_decision:   null,
+    rerender_count:  (original.rerender_count || 0) + 1,
+  }
+  state.queue.push(clone)
+
+  renderQueueGrid()
+  updateQueueMeta()
+  updateRunGate()
+
+  // Kick off the new render immediately if we're not already in a Run All batch.
+  if (!state.busy){
+    runQueueItem(clone).then(() => updateQueueMeta())
+  }
+}
+
+function qaAccept(id){
+  const item = state.queue.find(q => q.id === id)
+  if (!item) return
+  item.user_decision = 'accept'
+  updateQueueCard(item)
+  updateQueueMeta()
+}
+
+function qaRefund(id){
+  const item = state.queue.find(q => q.id === id)
+  if (!item) return
+  item.user_decision = 'refund'
+  updateQueueCard(item)
+  updateQueueMeta()
+}
+
+async function retryQueueItem(id){
+  const item = state.queue.find(q => q.id === id)
+  if (!item || item.status === 'running') return
+  item.status = 'pending'
+  item.result = null
+  item.error  = null
+  updateQueueCard(item)
+  updateQueueMeta()
+  // Run just this item
+  state.busy = true
+  updateRunGate()
+  document.getElementById('gDot').classList.remove('ok','err')
+  document.getElementById('gDot').classList.add('busy')
+  document.getElementById('gStatus').textContent = 'retrying…'
+  document.getElementById('stageProgress').classList.add('busy')
+  await runQueueItem(item)
+  state.busy = false
+  finalizeRunStatus()
+  updateRunGate()
+}
+
+function renderQueueGrid(){
+  // Compatibility shim — funnels into the new compact-row queue render.
+  // The old big-card builder below (buildQueueCard / updateQueueCard) is
+  // retained as dead code in case a future "hero result" mode wants the
+  // larger card treatment per render. For now nothing calls them.
+  refreshQueueViews()
+}
+
+function _retired_renderQueueGrid_bigCards(){
+  const inner = document.getElementById('queueGridInner')
+  if (!inner) return
+  inner.innerHTML = ''
+  for (const item of state.queue){
+    inner.appendChild(buildQueueCard(item))
+    updateQueueCard(item)
+  }
+}
+
+function buildQueueCard(item){
+  const card = document.createElement('div')
+  card.className = 'queue-card'
+  card.dataset.status = item.status
+  card.id = `q-${item.id}`
+
+  // image area aspect-ratio matches the requested aspect (best-effort)
+  const aspectStyle = aspectToCss(item.aspect_ratio)
+
+  // Branch meta-badge rendering on mode
+  let badges
+  if (item.mode === 'raw'){
+    const promptShort = (item.raw_prompt || '').replace(/\s+/g, ' ').slice(0, 60)
+    const promptTail  = (item.raw_prompt || '').length > 60 ? '…' : ''
+    const refTag = (item.additional_images_b64 && item.additional_images_b64.length)
+      ? `<span class="queue-badge">+ ref</span>` : ''
+    badges = `
+      <span class="queue-badge style-badge" style="background:var(--ink);color:#fff;border-color:var(--ink)">RAW</span>
+      <span class="queue-badge" title="${escapeHtml(item.raw_prompt || '')}">${escapeHtml(promptShort)}${promptTail}</span>
+      ${refTag}
+      <span class="queue-badge">${item.aspect_ratio}</span>
+    `
+  } else {
+    const matDef = PRES.find(p => p.k === item.preset)
+    badges = `
+      <span class="queue-badge style-badge" data-tier="${matDef?.tier || 'base'}">${matDef?.label || item.preset}</span>
+      <span class="queue-badge">${LOCATION_LABELS[item.location] || item.location}</span>
+      <span class="queue-badge">${item.aspect_ratio}</span>
+    `
+  }
+
+  card.innerHTML = `
+    <div class="queue-card-img" id="qimg-${item.id}" style="${aspectStyle}">
+      <img class="queue-card-source-thumb" src="data:image/jpeg;base64,${item.source_image_b64}" alt="source">
+      <span class="queue-card-status-pill" id="qpill-${item.id}" data-status="${item.status}">${statusLabel(item.status)}</span>
+      <div class="queue-card-empty" id="qempty-${item.id}">
+        ${item.status === 'running'
+          ? `<div class="queue-card-spinner"></div><div>Generating…</div>`
+          : item.status === 'pending'
+            ? `<div>queued</div>`
+            : item.status === 'failed'
+              ? `<div class="queue-card-error">${escapeHtml(item.error || 'failed')}</div>`
+              : ''}
+      </div>
+    </div>
+    <div class="queue-card-meta">
+      <div class="queue-card-badges">
+        ${badges}
+      </div>
+      <div class="queue-card-time" id="qtime-${item.id}">${item.status === 'pending' ? '—' : ''}</div>
+      <div class="figure-scores" id="qscores-${item.id}"></div>
+      <div class="pass-row" id="qpass-${item.id}"></div>
+      <div class="queue-card-actions" id="qactions-${item.id}">
+        ${actionsForStatus(item)}
+      </div>
+    </div>
+  `
+  return card
+}
+
+function aspectToCss(a){
+  // accepts "3:2", "16:9", etc — outputs aspect-ratio CSS
+  if (!a || !a.includes(':')) return ''
+  const [w,h] = a.split(':')
+  return `aspect-ratio:${w}/${h}`
+}
+
+function statusLabel(s){
+  return { pending:'queued', running:'running', done:'done', failed:'failed' }[s] || s
+}
+
+function actionsForStatus(item){
+  if (item.status === 'pending'){
+    return `<button class="queue-action-btn danger" onclick="removeQueueItem(${item.id})">Remove</button>`
+  }
+  if (item.status === 'failed'){
+    return `
+      <button class="queue-action-btn retry" onclick="retryQueueItem(${item.id})">Retry</button>
+      <button class="queue-action-btn danger" onclick="removeQueueItem(${item.id})">Remove</button>
+    `
+  }
+  return ''
+}
+
+function updateQueueCard(item){
+  // The new compact rows (buildQueueRow) are stateless — they read item
+  // status fresh on each build and swap thumb/affordance accordingly.
+  // Rebuilding the whole list on each status change costs ~10 nodes,
+  // which is cheaper than threading a dozen sub-element ID updaters.
+  // The OLD per-element hydration code below is retained under _retired_
+  // for reference; it was tied to the big-card layout.
+  refreshQueueViews()
+}
+
+function _retired_updateQueueCard_bigCards(item){
+  const card = document.getElementById(`q-${item.id}`)
+  if (!card){
+    renderQueueGrid()
+    return
+  }
+  card.dataset.status = item.status
+
+  // Status pill
+  const pill = document.getElementById(`qpill-${item.id}`)
+  if (pill){
+    pill.dataset.status = item.status
+    pill.textContent = statusLabel(item.status)
+  }
+
+  // Image area content
+  const empty = document.getElementById(`qempty-${item.id}`)
+  const imgWrap = document.getElementById(`qimg-${item.id}`)
+  if (item.status === 'done' && item.result?.image_b64){
+    if (empty) empty.remove()
+    const existing = imgWrap.querySelector('img.queue-card-render')
+    if (existing) existing.remove()
+    const img = document.createElement('img')
+    img.className = 'queue-card-render'
+    img.src = `data:image/jpeg;base64,${item.result.image_b64}`
+    img.alt = item.mode === 'raw' ? 'raw render' : item.preset
+    img.addEventListener('click', () => openLightbox(img.src, item))
+    imgWrap.appendChild(img)
+  } else if (item.status === 'running'){
+    if (empty){
+      empty.innerHTML = `<div class="queue-card-spinner"></div><div>Generating…</div>`
+    }
+  } else if (item.status === 'pending'){
+    if (empty) empty.innerHTML = `<div>queued</div>`
+    const prior = imgWrap.querySelector('img.queue-card-render')
+    if (prior) prior.remove()
+  } else if (item.status === 'failed'){
+    if (empty){
+      empty.innerHTML = `<div class="queue-card-error">${escapeHtml(item.error || 'failed')}</div>`
+    } else {
+      const prior = imgWrap.querySelector('img.queue-card-render')
+      if (prior) prior.remove()
+      const e = document.createElement('div')
+      e.className = 'queue-card-empty'
+      e.id = `qempty-${item.id}`
+      e.innerHTML = `<div class="queue-card-error">${escapeHtml(item.error || 'failed')}</div>`
+      imgWrap.appendChild(e)
+    }
+  }
+
+  const timeEl = document.getElementById(`qtime-${item.id}`)
+  if (timeEl){
+    if (item.status === 'pending') timeEl.textContent = '—'
+    else if (item.status === 'running') timeEl.textContent = ''
+    else if (item.status === 'failed') timeEl.textContent = 'failed'
+    else if (item.status === 'done' && item.result){
+      const ms = item.result.duration_ms || item.duration_ms || 0
+      const att = item.result.attempts?.length || 1
+      timeEl.textContent = `${(ms/1000).toFixed(1)}s · ${att} attempt${att===1?'':'s'}`
+    }
+  }
+
+  const scoresEl = document.getElementById(`qscores-${item.id}`)
+  const passEl   = document.getElementById(`qpass-${item.id}`)
+  const isPresetDone = item.status === 'done' && item.result && item.mode !== 'raw'
+  const failed   = isPresetDone && item.result.final_pass === false
+  const decided  = !!item.user_decision
+  const qaFailPending = failed && !decided
+
+  if (isPresetDone && !qaFailPending){
+    renderScores(scoresEl, item.result, item.style_id)
+    renderPassRow(passEl, item.result)
+  } else {
+    if (scoresEl) scoresEl.innerHTML = ''
+    if (passEl)   passEl.innerHTML   = ''
+  }
+
+  const actionsEl = document.getElementById(`qactions-${item.id}`)
+  if (actionsEl) actionsEl.innerHTML = actionsForStatus(item)
+}
+
+function renderScores(scoresEl, r, _styleId){
+  if (!scoresEl) return
+  const lastAttempt = r.attempts?.[r.attempts.length - 1]
+  // Groups only uses per-figure likeness scoring now. Holistic caricature
+  // moved to Art Gallery with the Tribal styles.
+  scoresEl.classList.remove('caricature-scores')
+  scoresEl.classList.add('figure-scores')
+  const scores = lastAttempt?.per_figure_scores || []
+  const N = scores.length
+  const topCount = N <= 5 ? N : Math.ceil(N * 0.7)
+  const sorted = [...scores].sort((a,b) => b.score - a.score)
+  scoresEl.innerHTML = sorted.map((s, idx) => {
+    const tier = idx < topCount
+      ? (s.score >= 8 ? 'top' : 'fail')
+      : (s.score >= 7 ? 'relaxed' : 'fail')
+    return `<span class="figure-score" data-tier="${tier}" title="${(s.reason || '').replace(/"/g,'&quot;')}">${s.score}/10</span>`
+  }).join('')
+}
+
+function renderPassRow(passEl, r){
+  if (!passEl) return
+  const passed = r.final_pass
+  passEl.innerHTML = `
+    <span class="pass-pill" data-pass="${passed}">${passed ? 'pass' : 'fail'}</span>
+    <span class="pass-attempts">${escapeHtml(r.final_reason || '')}</span>
+  `
+}
+
+function updateQueueMeta(){
+  // Compatibility shim — the old #queueMeta header was retired with the
+  // queue restructure. Queue count now shows in the tab badge; per-status
+  // counts surface inline on each queue row via its status dot. Function
+  // kept as a no-op so the dozen existing callers don't NPE.
+  updateQueueCountBadge()
+}
+
+function _retired_updateQueueMeta(){
+  const meta = document.getElementById('queueMeta')
+  if (!meta) return
+  if (state.queue.length === 0){
+    meta.innerHTML = ''
+    return
+  }
+  const counts = state.queue.reduce((acc, q) => {
+    acc[q.status] = (acc[q.status] || 0) + 1
+    return acc
+  }, {})
+  const total   = state.queue.length
+  const pending = counts.pending || 0
+  const running = counts.running || 0
+  const done    = counts.done    || 0
+  const failed  = counts.failed  || 0
+
+  const parts = [`<span class="meta-strong">${total}</span> in queue`]
+  if (pending) parts.push(`${pending} pending`)
+  if (running) parts.push(`${running} running`)
+  if (done)    parts.push(`${done} done`)
+  if (failed)  parts.push(`${failed} failed`)
+  meta.innerHTML = parts.map((p,i) => i === 0 ? p : `<span class="dot"></span><span>${p}</span>`).join('')
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;',
+  })[c])
+}
+
+// ── LIGHTBOX ─────────────────────────────────────────────────
+function openLightbox(src, item){
+  const lb = document.getElementById('lightbox')
+  const img = document.getElementById('lightboxImg')
+  const inset = document.getElementById('lightboxSourceInset')
+
+  const sourceSrc = (item && item.source_image_b64)
+    ? `data:image/jpeg;base64,${item.source_image_b64}`
+    : ''
+
+  // Stash both URLs on the lightbox so the inset can toggle without re-opening
+  lb.dataset.renderSrc = src
+  lb.dataset.sourceSrc = sourceSrc
+  lb.dataset.showing   = 'render'
+
+  img.src = src
+  img.alt = item
+    ? (item.mode === 'raw'
+        ? `raw · ${(item.raw_prompt || '').slice(0, 60)}`
+        : `${item.style_id} · ${item.preset}`)
+    : ''
+
+  // Inset shows the OTHER image — start with source visible since main is render
+  if (sourceSrc){
+    inset.src = sourceSrc
+    inset.classList.remove('hidden')
+    inset.title = 'Compare to source'
+  } else {
+    inset.src = ''
+    inset.classList.add('hidden')
+  }
+
+  lb.classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function toggleLightboxView(){
+  const lb    = document.getElementById('lightbox')
+  const img   = document.getElementById('lightboxImg')
+  const inset = document.getElementById('lightboxSourceInset')
+  if (!lb.dataset.sourceSrc) return
+
+  if (lb.dataset.showing === 'render'){
+    // swap: main becomes source, inset becomes render
+    img.src   = lb.dataset.sourceSrc
+    inset.src = lb.dataset.renderSrc
+    inset.title = 'Back to render'
+    lb.dataset.showing = 'source'
+  } else {
+    img.src   = lb.dataset.renderSrc
+    inset.src = lb.dataset.sourceSrc
+    inset.title = 'Compare to source'
+    lb.dataset.showing = 'render'
+  }
+}
+
+function closeLightbox(e){
+  // Only close on backdrop or close-button. Image clicks (main + inset) are intercepted upstream.
+  if (e && e.target && e.target.tagName === 'IMG') return
+  const lb    = document.getElementById('lightbox')
+  const img   = document.getElementById('lightboxImg')
+  const inset = document.getElementById('lightboxSourceInset')
+  lb.classList.remove('open')
+  document.body.style.overflow = ''
+  // Free the data URLs from memory (large b64 strings)
+  img.src = ''
+  inset.src = ''
+  inset.classList.add('hidden')
+  delete lb.dataset.renderSrc
+  delete lb.dataset.sourceSrc
+  delete lb.dataset.showing
+}
+
+// Esc key closes the lightbox
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const lb = document.getElementById('lightbox')
+    if (lb && lb.classList.contains('open')) closeLightbox()
+  }
+})
+
+// ── RUN ALL ──────────────────────────────────────────────────
+async function runAll(){
+  if (state.busy) return
+
+  // If there are no pending items but the draft is buildable, auto-add it.
+  const hasPending = state.queue.some(q => q.status === 'pending')
+  if (!hasPending){
+    const draftOk = state.rawMode
+      ? (!!state.primarySrc && state.rawPrompt.trim().length > 0)
+      : (!!state.primarySrc && !!state.selectedMat)
+    if (draftOk){
+      addToQueue()
+    } else {
+      return
+    }
+  }
+
+  // Switch the user to the Queue tab so they watch their renders land
+  switchTab('queue')
+
+  state.busy = true
+  updateRunGate()
+
+  const pending = state.queue.filter(q => q.status === 'pending')
+  document.getElementById('gDot').classList.remove('ok','err')
+  document.getElementById('gDot').classList.add('busy')
+  document.getElementById('gStatus').textContent = `running ${pending.length}…`
+  document.getElementById('stageProgress').classList.add('busy')
+
+  // Stagger render starts to avoid burst rate-limiting on Replicate.
+  // Each render still runs in parallel after launch — we just don't fire
+  // them all at once. ~3.5s between starts spreads the API burst across
+  // the typical per-minute rate-limit window without losing parallelism.
+  const STAGGER_MS = 3500
+  const promises = []
+  for (let i = 0; i < pending.length; i++) {
+    const item = pending[i]
+    promises.push(runQueueItem(item))
+    if (i < pending.length - 1) {
+      console.log(`[pets/ui] staggered start ${i + 1}/${pending.length} — waiting ${STAGGER_MS}ms before next launch`)
+      await new Promise(r => setTimeout(r, STAGGER_MS))
+    }
+  }
+  await Promise.allSettled(promises)
+
+  state.busy = false
+  finalizeRunStatus()
+  updateRunGate()
+}
+
+function finalizeRunStatus(){
+  const anyFailed = state.queue.some(q => q.status === 'failed')
+  const anyRunning = state.queue.some(q => q.status === 'running')
+  const dot = document.getElementById('gDot')
+  dot.classList.remove('busy')
+  if (anyRunning) return // shouldn't happen, but guard
+  if (anyFailed){
+    dot.classList.add('err')
+    document.getElementById('gStatus').textContent = 'done with errors'
+  } else {
+    dot.classList.add('ok')
+    document.getElementById('gStatus').textContent = 'done'
+  }
+  document.getElementById('stageProgress').classList.remove('busy')
+}
+
+async function runQueueItem(item){
+  if (item.status === 'running' || item.status === 'done') return
+  const t0 = Date.now()
+  item.status = 'running'
+  updateQueueCard(item)
+  updateQueueMeta()
+
+  try{
+    if (item.mode === 'raw'){
+      // Raw mode → direct NB2 endpoint (google/nano-banana-2 via Replicate)
+      const body = {
+        source_image_b64:      item.source_image_b64,
+        additional_images_b64: item.additional_images_b64 || [],
+        prompt:                item.raw_prompt,
+        aspect_ratio:          item.aspect_ratio,
+      }
+      // Raw mode bypasses every silo prompt block — direct NB2 with the
+      // user's own prompt — so the Portraits raw route serves Pets
+      // identically. Repoint when a pets raw-pipeline route exists.
+      const res = await fetch('/api/v1/portraits/raw-pipeline', {
+        method: 'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body),
+      })
+      if (!res.ok){
+        let errMsg = `HTTP ${res.status}`
+        try { const err = await res.json(); if (err?.error) errMsg = err.error } catch {}
+        throw new Error(errMsg)
+      }
+      const data = await res.json()
+      if (!data.image_b64){
+        item.status = 'failed'
+        item.error  = 'no image returned'
+        item.duration_ms = Date.now() - t0
+      } else {
+        item.status = 'done'
+        item.result = {
+          image_b64:   data.image_b64,
+          duration_ms: data.duration_ms || (Date.now() - t0),
+          // Raw renders carry no scores or pass info — leave those off
+        }
+        item.duration_ms = data.duration_ms || (Date.now() - t0)
+      }
+    } else {
+      // Preset mode → full pipeline
+      // Wire names are the Pets engine schema (pets-shared.ts): preset_id +
+      // environment_id. Internal queue keys keep the legacy 'preset'/'location'
+      // names so the shared wizard JS lifts unchanged. Keep this mapping in
+      // sync with PetsGenerateRequest — silent drops here caused a multi-
+      // session debugging arc on Groups.
+      const body = {
+        source_image_b64:      item.source_image_b64,
+        additional_images_b64: item.additional_images_b64 || [],
+        style_id:              item.style_id,
+        preset_id:             item.preset,
+        environment_id:        item.location,
+        action_id:             item.action || 'as_photographed',
+        scale:                 item.scale,   // 'auto_85' → route maps to close_up
+        aspect_ratio:          item.aspect_ratio,
+      }
+      // Plaque text — only include the field when the user expressed an
+      // intent (custom string or explicit off). If undefined, omit the
+      // field so the backend falls through to DEFAULT_PLAQUE_TEXT.
+      if (item.plaque_text !== undefined) {
+        body.plaque_text = item.plaque_text
+      }
+      const res = await fetch(API, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      // Accept both response shapes: { ok, result: {...} } (canonical,
+      // matches Portraits) and a flat result object. The flat shape is
+      // what shipped in the first pets route and made successful renders
+      // invisible on the stage — never trust shape silently again.
+      const r = data.result || (data.image_b64 || data.fatal_error ? data : {})
+      if (!r.image_b64 && !r.fatal_error){
+        console.error('[pets/ui] generate response had no readable result — keys:', Object.keys(data), 'result keys:', data.result ? Object.keys(data.result) : '(no result field)')
+      }
+      if (r.fatal_error){
+        item.status = 'failed'
+        item.error  = r.fatal_error
+        item.duration_ms = Date.now() - t0
+      } else if (!r.image_b64){
+        item.status = 'failed'
+        item.error  = 'no image returned'
+        item.duration_ms = Date.now() - t0
+      } else {
+        item.status = 'done'
+        item.result = r
+        item.duration_ms = r.duration_ms || (Date.now() - t0)
+      }
+    }
+  } catch (e){
+    item.status = 'failed'
+    item.error  = e.message || String(e)
+    item.duration_ms = Date.now() - t0
+  }
+
+  updateQueueCard(item)
+  updateQueueMeta()
+}
+
+// ── RAW MODE — direct Nano Banana 2 prompt panel (no preset blocks) ──
+function toggleRawMode(){
+  state.rawMode = !state.rawMode
+  document.body.classList.toggle('raw-mode', state.rawMode)
+  document.getElementById('rawModeToggle').classList.toggle('active', state.rawMode)
+  // Hide aux source row when in raw mode — Reference slot replaces it
+  const auxRow = document.getElementById('auxSourceRow')
+  if (auxRow) auxRow.style.display = state.rawMode ? 'none' : ''
+  // Update tooltip labels for queue button to clarify intent in each mode
+  document.getElementById('queueAddBtn').title = state.rawMode
+    ? 'Add current raw prompt to queue'
+    : 'Add current draft (one material × one location) to queue'
+  updateRunGate()
+}
+
+function handleRawRefUpload(input){
+  const f = input.files[0]
+  if (!f) return
+  const r = new FileReader()
+  r.onload = () => {
+    state.rawReference = String(r.result).split(',')[1]
+    const slot   = document.getElementById('rawRefSlot')
+    const empty  = document.getElementById('rawRefEmpty')
+    const thumb  = document.getElementById('rawRefThumb')
+    thumb.src = r.result
+    thumb.style.display = ''
+    empty.style.display = 'none'
+    slot.classList.add('has-image')
+    document.getElementById('rawRefStatus').textContent = f.name.length > 20 ? f.name.slice(0,18)+'…' : f.name
+    updateRunGate()
+  }
+  r.readAsDataURL(f)
+}
+
+function clearRawRef(ev){
+  if (ev) { ev.preventDefault(); ev.stopPropagation() }
+  state.rawReference = null
+  const slot  = document.getElementById('rawRefSlot')
+  const empty = document.getElementById('rawRefEmpty')
+  const thumb = document.getElementById('rawRefThumb')
+  const input = slot.querySelector('input[type="file"]')
+  thumb.src = ''
+  thumb.style.display = 'none'
+  empty.style.display = ''
+  slot.classList.remove('has-image')
+  if (input) input.value = ''
+  document.getElementById('rawRefStatus').textContent = 'empty'
+  updateRunGate()
+}
+
+function updateRawPromptCounter(){
+  const ta  = document.getElementById('rawPromptText')
+  const v   = ta.value
+  state.rawPrompt = v
+  document.getElementById('rawPromptCounter').textContent = v.length
+  const line = document.getElementById('rawPromptCounterLine')
+  line.textContent = `${v.length} / 4000`
+  line.classList.toggle('warn', v.length >= 3600 && v.length < 4000)
+  line.classList.toggle('over', v.length >= 4000)
+  updateRunGate()
+}
+
+function selectRawQuality(){ /* no-op — NB2 has no quality tiers */ }
+</script>
+
+<!-- Lightbox for click-to-enlarge queue card renders -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox(event)" aria-label="Close">×</button>
+  <img id="lightboxSourceInset" class="lightbox-source-inset hidden" alt="source" onclick="event.stopPropagation(); toggleLightboxView()">
+  <img id="lightboxImg" alt="" onclick="event.stopPropagation()">
+</div>
+
+<!-- Advanced Options popover — direct child of body so position:fixed is
+     bullet-proof. Overlays the bottom of the sidebar without inheriting
+     any of .left's scroll container or stacking context behavior. -->
+<div class="advanced-popover" id="advancedPopover">
+  <div class="advanced-popover-hdr">
+    <div class="advanced-popover-title"><em>Advanced</em> lighting</div>
+    <button class="advanced-popover-close" onclick="closeAdvanced()" title="Close">×</button>
+  </div>
+  <div class="advanced-popover-body">
+
+    <div class="advanced-row">
+      <div class="advanced-row-label">Beam light</div>
+      <div class="advanced-row-sub">A directional shaft from above — adds drama, throws the figures into relief.</div>
+      <div class="advanced-toggle">
+        <button class="active" data-adv="beam" data-val="off" onclick="setAdv('beam','off')">Off</button>
+        <button data-adv="beam" data-val="on" onclick="setAdv('beam','on')">On</button>
+      </div>
+    </div>
+
+    <div class="advanced-row">
+      <div class="advanced-row-label">3-Point lighting</div>
+      <div class="advanced-row-sub">Classic studio setup — key, fill, and back lights. Balances shadows, lifts details.</div>
+      <div class="advanced-toggle">
+        <button class="active" data-adv="threePoint" data-val="off" onclick="setAdv('threePoint','off')">Off</button>
+        <button data-adv="threePoint" data-val="on" onclick="setAdv('threePoint','on')">On</button>
+      </div>
+    </div>
+
+    <div class="advanced-row">
+      <div class="advanced-row-label">Brightness boost</div>
+      <div class="advanced-row-sub">Lifts the whole scene. Useful when the source photo is dim or shadowy.</div>
+      <div class="advanced-row-pills">
+        <button class="advanced-pill active" data-adv="brightness" data-val="0"  onclick="setAdv('brightness','0')">None</button>
+        <button class="advanced-pill"        data-adv="brightness" data-val="5"  onclick="setAdv('brightness','5')">+5</button>
+        <button class="advanced-pill"        data-adv="brightness" data-val="10" onclick="setAdv('brightness','10')">+10</button>
+        <button class="advanced-pill"        data-adv="brightness" data-val="15" onclick="setAdv('brightness','15')">+15</button>
+      </div>
+    </div>
+
+    <div class="advanced-row">
+      <div class="advanced-row-label">Enhanced render</div>
+      <div class="advanced-row-sub">Tells the renderer to give the entire image a dramatic finish — richer color, deeper contrast, gallery-grade feel.</div>
+      <div class="advanced-toggle">
+        <button class="active" data-adv="enhanced" data-val="off" onclick="setAdv('enhanced','off')">Off</button>
+        <button data-adv="enhanced" data-val="on" onclick="setAdv('enhanced','on')">On</button>
+      </div>
+    </div>
+
+  </div>
+  <div class="advanced-popover-foot">
+    <button class="advanced-foot-btn reset" onclick="resetAdvanced()">Reset</button>
+    <button class="advanced-foot-btn apply" onclick="closeAdvanced()">Done</button>
+  </div>
+</div>
+
+</body>
+</html>

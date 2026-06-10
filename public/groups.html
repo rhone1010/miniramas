@@ -3,644 +3,2695 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>miniRama · Group Figurines</title>
+<title>Miniscape · Group Minis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#FAFAF7;--surface:#FFFFFF;--surface-2:#F4F2EC;
-  --border:#E8E4DA;--border-strong:#D4CEC0;
-  --ink:#1A1814;--ink-2:#5C564E;--ink-3:#8E877C;
-  --accent:#6B5BA8;--accent-hover:#5A4D90;--accent-soft:#EFEBF7;
-  --success:#4A8A6E;--success-soft:#E8F0EB;
-  --danger:#A85050;--danger-soft:#F5EAEA;
-  --warn:#B8893A;--warn-soft:#F5EFE5;
-  --serif:'Cormorant Garamond',Georgia,serif;
-  --sans:'Inter',system-ui,-apple-system,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,monospace;
+  /* Liten & Co — Landscapes brand tokens */
+  --bg:           #F4F1EA;
+  --surface:      #FFFFFF;
+  --surface-2:    #EDE8DD;
+  --bg-soft:      #EDE8DD;
+  --bg-deeper:    #E5DFD0;
+  --border:       #D7CFBE;
+  --border-strong:#C8BFA8;
+  --hairline:     #D7CFBE;
+  --hairline-soft:#E5DFD0;
+
+  --ink:       #1F1B14;
+  --ink-2:     #5A5246;
+  --ink-3:     #8E8676;
+  --ink-soft:  #5A5246;
+  --ink-faint: #8E8676;
+
+  --accent:        #3F4A2E;
+  --accent-hover:  #2F3722;
+  --accent-soft:   #3F4A2E14;
+
+  --selected:        #8d997a;
+  --selected-hover:  #7d8b6c;
+  --selected-soft:   rgba(141, 153, 122, .20);
+
+  --brass:        #8B6F3E;
+  --signature:    #8B6F3E;
+  --premium:      #5A5246;
+  --base:         #8E8676;
+
+  --success:     #3F4A2E;
+  --success-soft:#E8F0EB;
+  --danger:      #8B3E3E;
+  --danger-soft: #8B3E3E14;
+  --warn:        #B07C2E;
+
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, -apple-system, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
 }
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:13px;line-height:1.5;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:13px;
+  line-height:1.5;
+  display:flex;
+  flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
 
-.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:20px;flex-shrink:0}
-.home-link{color:var(--ink-2);text-decoration:none;font-size:12px}
-.home-link:hover{color:var(--ink)}
-.logo{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ink);letter-spacing:.01em}
-.logo em{font-style:italic;color:var(--accent)}
-.logo-suffix{font-size:11px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;padding-left:12px;border-left:1px solid var(--border)}
-
-.app{flex:1;display:grid;grid-template-columns:380px 1fr;overflow:hidden;min-height:0}
-.col-left{overflow-y:auto;background:var(--surface);height:100%;border-right:1px solid var(--border)}
-.center{padding:32px;background:var(--bg);overflow-y:auto;height:100%}
-
-.section{padding:18px 20px;border-bottom:1px solid var(--border)}
-.section:last-child{border-bottom:none}
-.section-label{font-size:10px;font-weight:600;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
-.input-field{width:100%;padding:9px 12px;background:var(--surface);border:1px solid var(--border-strong);border-radius:4px;color:var(--ink);font-size:13px;font-family:var(--sans);transition:border-color .15s}
-.input-field:focus{outline:none;border-color:var(--accent)}
-textarea.input-field{resize:vertical;min-height:62px;line-height:1.5;font-family:var(--sans)}
-
-.upload-zone{display:block;background:var(--surface-2);border:2px dashed var(--border-strong);border-radius:8px;padding:48px 16px;text-align:center;cursor:pointer;transition:all .15s;color:var(--ink-3)}
-.upload-zone:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
-.upload-zone input{display:none}
-.upload-zone-icon{font-size:28px;margin-bottom:8px;font-weight:300;color:var(--ink-3)}
-.upload-zone:hover .upload-zone-icon{color:var(--accent)}
-.upload-zone-text{font-size:13px;font-weight:500}
-.upload-zone-sub{font-size:11px;color:var(--ink-3);margin-top:4px}
-.upload-zone.has-image{padding:0;border-style:solid;border-color:var(--border);background:var(--surface);min-height:160px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.upload-zone.has-image img{display:block;max-width:100%;max-height:240px;width:auto;height:auto}
-
-.analysis-card{padding:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;transition:all .25s}
-.analysis-card.tier-figurine{background:var(--success-soft);border-color:var(--success)}
-.analysis-card.tier-bust,.analysis-card.tier-hard,.analysis-card.tier-reject{background:var(--danger-soft);border-color:var(--danger)}
-.analysis-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.analysis-title-icon{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.analysis-title-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.analysis-card.tier-figurine .analysis-title-icon{color:var(--success)}
-.analysis-card.tier-bust .analysis-title-icon,.analysis-card.tier-hard .analysis-title-icon,.analysis-card.tier-reject .analysis-title-icon{color:var(--danger)}
-.analysis-msg{font-size:11px;color:var(--ink-2);line-height:1.45}
-.analysis-warnings{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-strong)}
-.analysis-warning{font-size:11px;color:var(--warn);font-family:var(--mono);letter-spacing:.02em;line-height:1.5}
-.reject-actions{margin-top:10px;display:flex;gap:6px}
-.reject-btn{flex:1;padding:7px 10px;background:var(--surface);border:1px solid var(--border-strong);border-radius:4px;color:var(--ink-2);font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all .15s;text-decoration:none;text-align:center;display:inline-block}
-.reject-btn:hover{border-color:var(--ink-3);color:var(--ink)}
-
-.run-all-btn{width:100%;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.02em;transition:background .15s;font-family:var(--sans)}
-.run-all-btn:hover:not(:disabled){background:var(--ink-2)}
-.run-all-btn:disabled{background:var(--surface-2);color:var(--ink-3);cursor:not-allowed}
-
-/* 2x2 style grid */
-.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.style-card-wrap{position:relative}
-.style-card{position:relative;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:8px;overflow:hidden;cursor:pointer;transition:all .15s;aspect-ratio:1/1}
-.style-card:hover:not(.disabled){border-color:var(--accent);transform:translateY(-1px)}
-.style-card.disabled{opacity:.5;cursor:not-allowed}
-.style-card.running{border-color:var(--accent);background:var(--accent-soft)}
-.style-card-thumb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:var(--surface-2)}
-.style-card-thumb-img.hidden{display:none}
-.style-card-thumb-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:24px;color:var(--ink-3);background:var(--surface-2)}
-.style-card-overlay{position:absolute;inset:auto 0 0 0;padding:8px 10px 10px;background:linear-gradient(to top,rgba(26,24,20,.92) 0%,rgba(26,24,20,.6) 60%,transparent 100%);color:#fff;display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
-.style-card-name{font-size:13px;font-weight:600;letter-spacing:.01em}
-.style-card-chevron{background:rgba(255,255,255,.18);border:none;color:#fff;width:22px;height:22px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1;transition:all .15s;font-family:var(--sans);padding:0}
-.style-card-chevron:hover{background:rgba(255,255,255,.32)}
-.style-card-chevron.open{transform:rotate(180deg);background:var(--accent)}
-.style-card-running-pill{position:absolute;top:8px;right:8px;padding:4px 8px;background:var(--accent);color:#fff;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
-
-/* Variant flyout */
-.variant-flyout{margin-top:6px;padding:8px;background:var(--surface);border:1px solid var(--border-strong);border-radius:6px;box-shadow:0 2px 8px -2px rgba(26,24,20,.08);display:flex;flex-direction:column;gap:4px;animation:flyoutIn .15s ease-out}
-@keyframes flyoutIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.variant-btn{padding:8px 10px;background:var(--surface);border:1px solid transparent;border-radius:4px;color:var(--ink);font-size:12px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans);transition:all .12s;display:flex;justify-content:space-between;align-items:center}
-.variant-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
-.variant-btn-tag{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
-.variant-btn:hover .variant-btn-tag{color:var(--accent)}
-
-.check-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);cursor:pointer}
-.check-row input{width:14px;height:14px;cursor:pointer}
-
-/* Stage */
-.stage-empty{padding:80px 24px;text-align:center;color:var(--ink-3);background:var(--surface);border:1px solid var(--border);border-radius:8px;max-width:780px;margin:0 auto}
-.stage-empty-title{font-family:var(--serif);font-size:32px;color:var(--ink);margin-bottom:8px;line-height:1.2}
-.stage-empty-title em{font-style:italic;color:var(--accent)}
-.stage-empty-sub{font-size:13px;max-width:480px;margin:0 auto;line-height:1.6}
-
-.stack{display:flex;flex-direction:column;gap:14px;max-width:780px;margin:0 auto}
-.stack-actions{display:flex;justify-content:flex-end;margin-top:8px}
-.stack-actions-btn{padding:8px 16px;background:var(--ink);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:.02em;transition:background .15s}
-.stack-actions-btn:hover{background:var(--ink-2)}
-
-.result-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:box-shadow .15s,border-color .15s;cursor:pointer}
-.result-card.active{border-color:var(--accent);box-shadow:0 4px 14px -4px rgba(107,91,168,.25)}
-.result-card.loading{cursor:default}
-.result-img-wrap{position:relative;background:var(--surface-2);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
-.result-img{width:100%;height:100%;object-fit:contain;display:block}
-.result-loading{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--ink-3);font-size:12px}
-.result-spin{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+/* ── KEYFRAMES ── */
 @keyframes spin{to{transform:rotate(360deg)}}
-.result-error{padding:24px;text-align:center;color:var(--danger);font-size:12px}
-.result-meta{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;align-items:center}
-.result-meta-left{flex:1;min-width:0}
-.result-style-tag{font-size:10px;font-weight:600;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
-.result-mood{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.result-actions{display:flex;gap:6px;flex-shrink:0}
-.result-btn{padding:5px 10px;background:var(--surface);border:1px solid var(--border-strong);border-radius:4px;color:var(--ink-2);font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all .15s}
-.result-btn:hover{border-color:var(--ink-3);color:var(--ink)}
-.result-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.result-btn.primary:hover{background:var(--accent-hover)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes progressSlide{
+  0%   {transform:translateX(-100%) scaleX(.4)}
+  50%  {transform:translateX(0%)    scaleX(.6)}
+  100% {transform:translateX(100%)  scaleX(.4)}
+}
 
-.quality-warn{margin-top:8px;padding:10px 12px;background:var(--warn-soft);border:1px solid var(--warn);border-radius:6px;font-size:11px;color:var(--ink);line-height:1.5}
-.quality-warn-label{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);margin-bottom:3px}
+/* ── TOPBAR ── */
+.topbar{
+  height:44px;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 24px;
+  gap:16px;
+  flex-shrink:0;
+}
+.home-link{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink-2);
+  text-decoration:none;
+  padding:4px 0;
+  letter-spacing:.02em;
+  transition:color .15s;
+}
+.home-link:hover{color:var(--ink)}
+.logo{
+  font-family:var(--serif);
+  font-size:18px;
+  font-weight:400;
+  color:var(--ink);
+  letter-spacing:.01em;
+}
+.logo em{font-style:italic;color:var(--accent)}
+.logo-suffix{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink-3);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  border-left:1px solid var(--border);
+  padding-left:14px;
+  margin-left:2px;
+}
+.tb-spacer{flex:1}
 
-.lightbox{position:fixed;inset:0;background:rgba(26,24,20,.92);z-index:1000;display:flex;align-items:center;justify-content:center;padding:32px;cursor:pointer}
-.lightbox img{max-width:96%;max-height:96vh;object-fit:contain;border-radius:6px}
+/* upload slots */
+.upload-slot{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  height:28px;
+  padding:0 10px;
+  font-size:11px;
+  font-family:var(--sans);
+  color:var(--ink-2);
+  background:var(--surface);
+  border:1px dashed var(--border-strong);
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.upload-slot:hover{border-color:var(--ink-3);color:var(--ink)}
+.upload-slot.has-file{
+  border-style:solid;
+  border-color:var(--selected);
+  color:var(--ink);
+  background:var(--selected-soft);
+}
+.upload-slot input{
+  position:absolute;inset:0;opacity:0;cursor:pointer;
+}
+
+/* run-all button */
+.run-all-btn{
+  height:28px;
+  padding:0 16px;
+  font-size:12px;
+  font-weight:500;
+  font-family:var(--sans);
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:3px;
+  cursor:pointer;
+  transition:background .15s;
+  letter-spacing:.02em;
+}
+.run-all-btn:hover:not(:disabled){background:var(--accent-hover)}
+.run-all-btn:disabled{
+  background:var(--bg-deeper);
+  color:var(--ink-3);
+  cursor:not-allowed;
+}
+
+/* raw-mode toggle — flips the app into direct Nano Banana 2 prompt mode */
+.raw-mode-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  height:28px;
+  padding:0 12px;
+  font-size:11px;
+  font-weight:500;
+  font-family:var(--sans);
+  background:transparent;
+  color:var(--ink-2);
+  border:1px dashed var(--border-strong);
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+  letter-spacing:.02em;
+}
+.raw-mode-toggle:hover{
+  background:var(--surface);
+  color:var(--ink);
+  border-color:var(--ink-3);
+}
+.raw-mode-toggle .raw-mode-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--ink-3);
+  transition:background .15s;
+}
+.raw-mode-toggle.active{
+  background:var(--ink);
+  color:#fff;
+  border-color:var(--ink);
+  border-style:solid;
+}
+.raw-mode-toggle.active .raw-mode-dot{
+  background:#7BCB52;
+  box-shadow:0 0 0 2px rgba(123,203,82,.18);
+}
+
+/* ── RAW MODE PANEL (sidebar) ─────────────────────────────────── */
+.raw-controls{
+  display:none;
+}
+body.raw-mode .raw-controls{ display:block; }
+body.raw-mode .preset-controls{ display:none; }
+
+.raw-ref-slot{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  aspect-ratio:1/1;
+  background:var(--surface);
+  border:1px dashed var(--border-strong);
+  border-radius:3px;
+  cursor:pointer;
+  overflow:hidden;
+  transition:border-color .15s;
+}
+.raw-ref-slot:hover{ border-color:var(--ink-3); }
+.raw-ref-slot.has-image{ border-style:solid; border-color:var(--border-strong); }
+.raw-ref-slot .raw-ref-empty{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  color:var(--ink-3);
+  font-size:11px;
+  font-family:var(--sans);
+  letter-spacing:.04em;
+}
+.raw-ref-slot .raw-ref-empty .raw-ref-plus{
+  font-size:22px;
+  line-height:1;
+  color:var(--ink-3);
+}
+.raw-ref-slot img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.raw-ref-slot input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+.raw-ref-clear{
+  position:absolute;
+  top:6px;
+  right:6px;
+  width:22px;
+  height:22px;
+  border:none;
+  border-radius:50%;
+  background:rgba(31,27,20,.78);
+  color:#fff;
+  font-size:14px;
+  line-height:22px;
+  text-align:center;
+  cursor:pointer;
+  display:none;
+  padding:0;
+}
+.raw-ref-slot.has-image .raw-ref-clear{ display:block; }
+
+.raw-prompt-textarea{
+  width:100%;
+  min-height:180px;
+  padding:10px 12px;
+  font-family:var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size:12px;
+  line-height:1.5;
+  color:var(--ink);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:3px;
+  resize:vertical;
+  box-sizing:border-box;
+  outline:none;
+  transition:border-color .15s;
+}
+.raw-prompt-textarea:focus{ border-color:var(--ink-3); }
+.raw-prompt-counter{
+  margin-top:4px;
+  font-size:10px;
+  font-family:var(--sans);
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-align:right;
+}
+.raw-prompt-counter.warn{ color:#B6722E; }
+.raw-prompt-counter.over{ color:#A33323; }
+
+.raw-panel-hint{
+  font-size:10px;
+  font-family:var(--sans);
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  line-height:1.5;
+  margin-top:6px;
+}
+
+/* queue-add button (secondary, lives next to run-all) */
+.queue-add-btn{
+  height:28px;
+  padding:0 12px;
+  font-size:11px;
+  font-weight:500;
+  font-family:var(--sans);
+  background:var(--surface);
+  color:var(--ink-2);
+  border:1px solid var(--border-strong);
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+  letter-spacing:.02em;
+}
+.queue-add-btn:hover:not(:disabled){
+  border-color:var(--selected);
+  color:var(--ink);
+  background:var(--selected-soft);
+}
+.queue-add-btn:disabled{
+  opacity:.4;cursor:not-allowed;
+}
+
+/* status */
+.status-meta{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  color:var(--ink-3);
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.status-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--ink-3);
+}
+.status-dot.busy{background:var(--warn);animation:pulse 1.5s ease-in-out infinite}
+.status-dot.ok{background:var(--success)}
+.status-dot.err{background:var(--danger)}
+@keyframes pulse{50%{opacity:.4}}
+
+/* ── LAYOUT ── */
+.layout{
+  flex:1;
+  display:grid;
+  grid-template-columns:340px 1fr;
+  min-height:0;
+}
+
+/* ── SIDEBAR ── */
+.left{
+  background:var(--bg);
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+.left-inner{
+  padding:18px 18px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.section{display:flex;flex-direction:column;gap:8px}
+.section-label{
+  font-family:var(--sans);
+  font-size:10px;
+  font-weight:500;
+  color:var(--ink-3);
+  text-transform:uppercase;
+  letter-spacing:.10em;
+}
+.section-hdr{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+}
+.section-readout{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-2);
+  letter-spacing:.04em;
+}
+
+/* source preview */
+.source-preview{
+  width:100%;
+  aspect-ratio:1/1;
+  background:var(--surface);
+  border:1px dashed var(--border-strong);
+  border-radius:4px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .15s;
+}
+.source-preview:hover{border-color:var(--ink-3)}
+.source-preview.has-image{border-style:solid;border-color:var(--border)}
+.source-empty{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:var(--ink-3);font-size:11px;
+}
+.source-empty-plus{
+  width:28px;height:28px;
+  border:1px solid var(--border-strong);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;line-height:1;
+  color:var(--ink-3);
+}
+.source-preview img{width:100%;height:100%;object-fit:cover}
+
+/* multi-source row */
+.source-row{
+  display:flex;gap:6px;margin-top:8px;
+}
+.source-aux{
+  flex:1;
+  aspect-ratio:1/1;
+  background:var(--surface);
+  border:1px dashed var(--border);
+  border-radius:3px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  font-size:14px;
+  color:var(--ink-3);
+}
+.source-aux:hover{border-color:var(--ink-3)}
+.source-aux.has-image{border-style:solid;border-color:var(--border)}
+.source-aux img{width:100%;height:100%;object-fit:cover}
+.source-aux input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* detect card */
+.detect-card{
+  background:var(--surface);
+  border:1px solid var(--hairline-soft);
+  border-radius:4px;
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.detect-icon{
+  width:24px;height:24px;flex-shrink:0;
+  color:var(--ink-3);
+  display:flex;align-items:center;justify-content:center;
+}
+.detect-icon svg{width:18px;height:18px}
+.detect-info{flex:1;min-width:0}
+.detect-name{
+  font-family:var(--serif);
+  font-size:14px;
+  font-style:italic;
+  color:var(--ink);
+}
+.detect-sub{
+  font-size:10px;
+  color:var(--ink-3);
+  font-family:var(--mono);
+  letter-spacing:.04em;
+  margin-top:2px;
+}
+
+/* button bar (style, materials, location, arrangement, scale, aspect) */
+.btn-bar{
+  display:grid;
+  gap:5px;
+}
+.btn-bar.cols-2{grid-template-columns:repeat(2,1fr)}
+.btn-bar.cols-3{grid-template-columns:repeat(3,1fr)}
+.btn-bar.cols-4{grid-template-columns:repeat(4,1fr)}
+.btn-bar.cols-5{grid-template-columns:repeat(5,1fr)}
+.btn-bar.cols-6{grid-template-columns:repeat(6,1fr)}
+
+.type-btn{
+  height:30px;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-left:2px solid transparent;
+  border-radius:3px;
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink-2);
+  cursor:pointer;
+  transition:all .12s;
+  padding:0 6px;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  overflow:hidden;
+  letter-spacing:.01em;
+}
+.type-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+.type-btn.active{
+  border-color:var(--selected);
+  border-left-color:var(--selected);
+  background:var(--selected-soft);
+  color:var(--ink);
+  font-weight:500;
+}
+.type-btn[data-tier="base"]{border-left-color:var(--base)}
+.type-btn[data-tier="premium"]{border-left-color:var(--premium)}
+.type-btn[data-tier="signature"]{border-left-color:var(--signature)}
+.type-btn[data-tier="base"].active,
+.type-btn[data-tier="premium"].active,
+.type-btn[data-tier="signature"].active{
+  border-color:var(--selected);
+  border-left:3px solid var(--selected);
+}
+
+.materials-hint{
+  font-size:10px;
+  color:var(--ink-3);
+  font-style:italic;
+  margin-top:2px;
+}
+
+/* subject-count slider — Groups-specific */
+.subject-control{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:3px;
+  padding:8px 10px;
+}
+.subject-stepper{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;
+}
+.subject-btn{
+  width:24px;height:24px;
+  border:1px solid var(--hairline);
+  background:var(--bg);
+  color:var(--ink-2);
+  border-radius:3px;
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .12s;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1;
+}
+.subject-btn:hover:not(:disabled){border-color:var(--ink-3);color:var(--ink)}
+.subject-btn:disabled{opacity:.35;cursor:not-allowed}
+.subject-readout{
+  font-family:var(--serif);
+  font-size:18px;
+  font-style:italic;
+  color:var(--ink);
+  width:24px;
+  text-align:center;
+  font-weight:400;
+}
+.subject-meta{
+  font-size:10px;
+  color:var(--ink-3);
+  font-family:var(--mono);
+  letter-spacing:.04em;
+  flex:1;
+}
+.subject-meta strong{color:var(--ink-2);font-weight:500}
+
+/* refinement tweak */
+.tweak-input{
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:3px;
+  padding:8px 10px;
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--ink);
+  resize:vertical;
+  min-height:50px;
+  max-height:140px;
+}
+.tweak-input:focus{outline:none;border-color:var(--selected)}
+.tweak-input::placeholder{color:var(--ink-3);font-style:italic}
+.tweak-counter{
+  font-size:9px;color:var(--ink-3);font-family:var(--mono);
+  text-align:right;margin-top:2px;letter-spacing:.04em;
+}
+
+/* ── STAGE ── */
+.center{
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
+  min-width:0;
+  min-height:0;  /* allow .stage's overflow-y:auto to actually scroll —
+                    grid items default to min-height:auto which lets .center
+                    grow to fit content and defeats inner scroll */
+  position:relative;
+}
+.center-hdr{
+  height:36px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 24px;
+  gap:14px;
+  flex-shrink:0;
+}
+.stage-title{
+  font-family:var(--serif);
+  font-size:14px;
+  color:var(--ink);
+  font-style:italic;
+}
+.stage-meta{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+}
+
+.stage-progress{
+  height:2px;
+  background:transparent;
+  position:relative;
+  overflow:hidden;
+}
+.stage-progress.busy{background:var(--bg-deeper)}
+.stage-progress-fill{
+  position:absolute;
+  inset:0;
+  background:var(--accent);
+  transform:translateX(-100%);
+  display:none;
+}
+.stage-progress.busy .stage-progress-fill{
+  display:block;
+  animation:progressSlide 1.6s ease-in-out infinite;
+}
+
+.stage{
+  flex:1;
+  overflow-y:auto;
+  padding:24px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+
+/* empty state */
+.stage-empty{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:80px 24px;
+  max-width:520px;
+  margin:auto;
+}
+.stage-empty-title{
+  font-family:var(--serif);
+  font-size:34px;
+  color:var(--ink);
+  margin-bottom:12px;
+  letter-spacing:-.005em;
+  line-height:1.15;
+}
+.stage-empty-title em{font-style:italic;color:var(--accent)}
+.stage-empty-sub{
+  font-size:13px;
+  color:var(--ink-2);
+  line-height:1.55;
+  max-width:440px;
+}
+
+/* suggester (post-upload, pre-render) */
+.stage-suggester{
+  width:100%;
+  max-width:520px;
+  margin:48px auto 0;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  animation:fadeIn .3s ease;
+}
+.suggester-status{
+  background:var(--surface);
+  border:1px solid var(--hairline-soft);
+  border-radius:5px;
+  padding:18px 20px;
+  text-align:center;
+}
+.suggester-status-eyebrow{
+  font-family:var(--sans);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--ink-3);
+}
+.suggester-status-title{
+  font-family:var(--serif);
+  font-size:22px;
+  color:var(--ink);
+  margin:6px 0 10px;
+}
+.suggester-status-title em{font-style:italic;color:var(--accent)}
+.suggester-status-loading{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:11px;color:var(--ink-3);
+}
+.suggester-spin{
+  width:12px;height:12px;
+  border:2px solid var(--bg-deeper);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+.detected-banner{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  background:var(--surface);
+  border:1px solid var(--success-soft);
+  border-radius:5px;
+  padding:14px 18px;
+  border-left:3px solid var(--success);
+}
+.detected-icon-wrap{
+  width:36px;height:36px;
+  border-radius:50%;
+  background:var(--success-soft);
+  color:var(--success);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.detected-icon-wrap svg{width:18px;height:18px}
+.detected-info{flex:1;min-width:0}
+.detected-name{
+  font-family:var(--serif);
+  font-size:18px;
+  color:var(--ink);
+  font-style:italic;
+}
+.detected-sub{
+  font-size:11px;
+  color:var(--ink-2);
+  margin-top:2px;
+}
+.detected-badges{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;
+}
+.detected-badge{
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  background:var(--bg-soft);
+  color:var(--ink-2);
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline-soft);
+}
+.detected-badge[data-verdict="green"]{
+  background:rgba(52, 122, 84, 0.10);
+  color:#2c6a44;
+  border-color:rgba(52, 122, 84, 0.30);
+}
+.detected-badge[data-verdict="yellow"]{
+  background:rgba(170, 130, 40, 0.10);
+  color:#8a6a20;
+  border-color:rgba(170, 130, 40, 0.30);
+}
+.detected-badge[data-verdict="red"]{
+  background:rgba(168, 60, 60, 0.10);
+  color:#8a3838;
+  border-color:rgba(168, 60, 60, 0.30);
+}
+
+/* Source-quality recommendation hint (yellow / red verdict only). */
+.source-rec-hint{
+  font-size:12.5px;
+  line-height:1.5;
+  color:var(--ink-2);
+  padding:10px 14px;
+  border-radius:4px;
+  border:1px solid var(--hairline-soft);
+  background:var(--bg-soft);
+  margin-bottom:14px;
+}
+.source-rec-hint[data-verdict="yellow"]{
+  background:rgba(170, 130, 40, 0.06);
+  border-color:rgba(170, 130, 40, 0.25);
+  color:#6a5418;
+}
+.source-rec-hint[data-verdict="red"]{
+  background:rgba(168, 60, 60, 0.06);
+  border-color:rgba(168, 60, 60, 0.25);
+  color:#6e2e2e;
+}
+
+.suggester-cta{
+  background:var(--bg-soft);
+  border:1px dashed var(--border-strong);
+  border-radius:5px;
+  padding:18px 20px;
+  text-align:center;
+}
+.suggester-cta-eyebrow{
+  font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-3);
+}
+.suggester-cta-title{
+  font-family:var(--serif);
+  font-size:20px;
+  color:var(--ink);
+  margin:4px 0 8px;
+}
+.suggester-cta-title em{font-style:italic;color:var(--accent)}
+.suggester-cta-sub{font-size:11px;color:var(--ink-2)}
+
+/* ── RESULTS GRID ── */
+.results-grid{
+  width:100%;
+  max-width:1200px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.stack-meta-display{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.stack-meta-display .dot{
+  width:3px;height:3px;border-radius:50%;background:var(--ink-3);
+}
+.results-stack-inner{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
+  gap:18px;
+}
+.result-card{
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:5px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.result-card-img{
+  width:100%;
+  aspect-ratio:3/2;
+  background:var(--bg-deeper);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.result-card-img img{width:100%;height:100%;object-fit:cover;display:block}
+.result-card-empty{
+  color:var(--ink-3);font-size:11px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.result-card-spinner{
+  width:16px;height:16px;
+  border:2px solid var(--bg-soft);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+.result-card-error{
+  color:var(--danger);
+  font-size:11px;
+  text-align:center;
+  padding:0 20px;
+  line-height:1.4;
+}
+.result-card-meta{
+  padding:10px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.result-meta-top{
+  display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+}
+.result-meta-name{
+  font-family:var(--serif);
+  font-size:14px;
+  font-style:italic;
+  color:var(--ink);
+}
+.result-meta-time{
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+}
+.result-tier{
+  display:inline-flex;
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline);
+}
+.result-tier[data-tier="base"]{color:var(--base);border-color:var(--base)}
+.result-tier[data-tier="premium"]{color:var(--premium);border-color:var(--premium)}
+.result-tier[data-tier="signature"]{color:var(--signature);border-color:var(--signature)}
+
+/* per-figure scoring strip */
+.figure-scores{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin-top:4px;
+}
+.figure-score{
+  font-family:var(--mono);
+  font-size:10px;
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline);
+  color:var(--ink-2);
+  background:var(--bg-soft);
+}
+.figure-score[data-tier="top"]{
+  border-color:var(--success);
+  color:var(--success);
+  background:var(--success-soft);
+}
+.figure-score[data-tier="relaxed"]{
+  border-color:var(--warn);
+  color:var(--warn);
+  background:#FFF8EC;
+}
+.figure-score[data-tier="fail"]{
+  border-color:var(--danger);
+  color:var(--danger);
+  background:var(--danger-soft);
+}
+
+.pass-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:10px;
+  font-family:var(--mono);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+}
+.pass-row .pass-pill{
+  padding:2px 7px;
+  border-radius:2px;
+  font-weight:500;
+}
+.pass-row .pass-pill[data-pass="true"]{
+  background:var(--success-soft);color:var(--success);
+}
+.pass-row .pass-pill[data-pass="false"]{
+  background:var(--danger-soft);color:var(--danger);
+}
+.pass-attempts{color:var(--ink-3)}
+
+/* ── QA FAILURE GATE ─────────────────────────────────────────── */
+/* Triggered when scorePerFigureFidelity returns final_pass=false and the
+   user has not yet picked a decision (rerender / refund / accept).
+   The image gets a tiled angled "Liten & Co" watermark and the meta area
+   replaces scores/pass-row with the decision panel.
+   Removed once user_decision is set. */
+
+.queue-card.qa-fail .queue-card-img{
+  position:relative;
+}
+.queue-card.qa-fail .queue-card-img::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'><text x='55' y='60' text-anchor='middle' transform='rotate(-25 55 55)' fill='white' fill-opacity='0.62' stroke='rgba(0,0,0,0.32)' stroke-width='0.5' paint-order='stroke' font-family='Georgia, serif' font-style='italic' font-size='13' font-weight='500'>Liten %26 Co</text></svg>");
+  background-repeat:repeat;
+  background-size:110px 110px;
+  mix-blend-mode:normal;
+  z-index:2;
+}
+@media (max-width: 768px){
+  .queue-card.qa-fail .queue-card-img::after{
+    background-size:140px 140px;  /* 3 across × 3 down on typical mobile card */
+  }
+}
+
+.qa-fail-panel{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:10px 12px;
+  margin-top:4px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:3px;
+}
+.qa-fail-msg{
+  font-size:11px;
+  line-height:1.5;
+  font-family:var(--sans);
+  color:var(--ink-2);
+  letter-spacing:.01em;
+}
+.qa-fail-msg strong{
+  color:var(--ink);
+  font-weight:600;
+}
+.qa-fail-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:2px;
+}
+.qa-btn{
+  flex:1 1 auto;
+  min-width:90px;
+  height:30px;
+  padding:0 12px;
+  font-size:11px;
+  font-weight:500;
+  font-family:var(--sans);
+  letter-spacing:.02em;
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap;
+}
+.qa-btn-primary{
+  background:var(--accent);
+  color:#fff;
+  border:1px solid var(--accent);
+}
+.qa-btn-primary:hover{ background:var(--accent-hover); border-color:var(--accent-hover); }
+.qa-btn-neutral{
+  background:var(--surface);
+  color:var(--ink);
+  border:1px solid var(--border-strong);
+}
+.qa-btn-neutral:hover{ background:var(--surface-2); border-color:var(--ink-3); }
+.qa-btn-danger{
+  background:transparent;
+  color:var(--ink-2);
+  border:1px solid var(--border);
+}
+.qa-btn-danger:hover{ color:var(--ink); border-color:var(--border-strong); }
+
+.qa-decided{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  font-family:var(--mono);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  padding:4px 0;
+}
+.qa-decided[data-decision="accept"]{ color:var(--success); }
+.qa-decided[data-decision="refund"]{ color:var(--ink-3); }
+.qa-decided[data-decision="rerender"]{ color:var(--ink-2); }
+.qa-decided-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:currentColor;
+}
+
+/* Holistic caricature score (Tribal styles) */
+.caricature-scores{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin-top:4px;
+}
+.caricature-score{
+  font-family:var(--mono);
+  font-size:10px;
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline);
+  color:var(--ink-2);
+  background:var(--bg-soft);
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.caricature-score .label{
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:var(--ink-3);
+}
+.caricature-score[data-tier="pass"]{
+  border-color:var(--success);
+  color:var(--success);
+  background:var(--success-soft);
+}
+.caricature-score[data-tier="pass"] .label{color:var(--success)}
+.caricature-score[data-tier="fail"]{
+  border-color:var(--danger);
+  color:var(--danger);
+  background:var(--danger-soft);
+}
+.caricature-score[data-tier="fail"] .label{color:var(--danger)}
+.caricature-score[data-tier="composite"]{
+  border-color:var(--ink-2);
+  color:var(--ink);
+  background:var(--surface);
+  font-weight:600;
+}
+
+/* ── QUEUE GRID ── */
+.queue-grid{
+  width:100%;
+  max-width:1280px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.queue-grid-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.queue-grid-meta .dot{
+  width:3px;height:3px;border-radius:50%;background:var(--ink-3);
+}
+.queue-grid-meta .meta-strong{color:var(--ink-2)}
+.queue-grid-inner{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:16px;
+}
+.queue-card{
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:5px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  animation:fadeIn .25s ease;
+}
+.queue-card[data-status="failed"]{border-color:var(--danger)}
+.queue-card-img{
+  width:100%;
+  aspect-ratio:3/2;
+  background:var(--bg-deeper);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+.queue-card-img img.queue-card-render{width:100%;height:100%;object-fit:cover;display:block}
+.queue-card-empty{
+  color:var(--ink-3);font-size:11px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-family:var(--mono);letter-spacing:.04em;
+}
+.queue-card-spinner{
+  width:16px;height:16px;
+  border:2px solid var(--bg-soft);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+.queue-card-error{
+  color:var(--danger);
+  font-size:11px;
+  text-align:center;
+  padding:0 20px;
+  line-height:1.4;
+}
+/* small source thumb tucked top-left of image area */
+.queue-card-source-thumb{
+  position:absolute;
+  top:8px;left:8px;
+  width:42px;height:42px;
+  border-radius:3px;
+  border:1.5px solid #fff;
+  box-shadow:0 1px 4px rgba(0,0,0,.25);
+  object-fit:cover;
+  background:var(--bg-deeper);
+  z-index:2;
+}
+/* status pill top-right */
+.queue-card-status-pill{
+  position:absolute;
+  top:8px;right:8px;
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:3px 7px;
+  border-radius:2px;
+  background:rgba(255,255,255,.95);
+  color:var(--ink-2);
+  border:1px solid var(--hairline);
+  z-index:2;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+}
+.queue-card-status-pill[data-status="pending"]{
+  color:var(--ink-3);
+  border-color:var(--hairline);
+}
+.queue-card-status-pill[data-status="running"]{
+  color:var(--warn);
+  border-color:var(--warn);
+  background:#FFF8EC;
+}
+.queue-card-status-pill[data-status="running"]::before{
+  content:'';
+  width:6px;height:6px;border-radius:50%;
+  background:var(--warn);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+.queue-card-status-pill[data-status="done"]{
+  color:var(--success);
+  border-color:var(--success);
+  background:var(--success-soft);
+}
+.queue-card-status-pill[data-status="failed"]{
+  color:var(--danger);
+  border-color:var(--danger);
+  background:var(--danger-soft);
+}
+.queue-card-meta{
+  padding:10px 12px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.queue-card-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  align-items:center;
+}
+.queue-badge{
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:2px 6px;
+  border-radius:2px;
+  border:1px solid var(--hairline);
+  color:var(--ink-2);
+  background:var(--bg-soft);
+}
+.queue-badge[data-tier="base"]{border-left:2px solid var(--base)}
+.queue-badge[data-tier="premium"]{border-left:2px solid var(--premium)}
+.queue-badge[data-tier="signature"]{border-left:2px solid var(--signature)}
+.queue-badge.style-badge{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:11px;
+  text-transform:none;
+  letter-spacing:0;
+  color:var(--ink);
+  background:var(--surface);
+  padding:1px 8px;
+}
+.queue-card-time{
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+}
+.queue-card-actions{
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+}
+.queue-action-btn{
+  font-family:var(--sans);
+  font-size:10px;
+  letter-spacing:.04em;
+  height:24px;
+  padding:0 10px;
+  border:1px solid var(--hairline);
+  background:var(--surface);
+  color:var(--ink-2);
+  border-radius:2px;
+  cursor:pointer;
+  transition:all .12s;
+}
+.queue-action-btn:hover{border-color:var(--ink-2);color:var(--ink)}
+.queue-action-btn.danger:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.queue-action-btn.retry:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+/* ── LIGHTBOX (click queue card image to enlarge) ── */
+.lightbox{
+  position:fixed;
+  inset:0;
+  background:rgba(31,27,20,.86);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  padding:24px;
+  cursor:zoom-out;
+  animation:fadeIn .15s ease;
+}
+.lightbox.open{display:flex}
+.lightbox img{
+  max-width:96vw;
+  max-height:92vh;
+  object-fit:contain;
+  box-shadow:0 12px 48px rgba(0,0,0,.4);
+  border-radius:4px;
+  cursor:default;
+}
+.lightbox-close{
+  position:absolute;
+  top:18px;right:24px;
+  width:32px;height:32px;
+  border:none;
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  font-size:22px;
+  border-radius:50%;
+  cursor:pointer;
+  line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s;
+}
+.lightbox-close:hover{background:rgba(255,255,255,.22)}
+/* Show pointer cursor on render images to telegraph clickability */
+.queue-card-img img.queue-card-render{cursor:zoom-in;transition:opacity .12s}
+.queue-card-img img.queue-card-render:hover{opacity:.92}
+
+/* Compact mini-stepper for subject count */
+.mini-stepper{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-family:var(--mono);
+}
+.mini-stepper button{
+  width:18px;
+  height:18px;
+  border:1px solid var(--hairline);
+  background:var(--surface);
+  border-radius:2px;
+  font-size:11px;
+  color:var(--ink-2);
+  cursor:pointer;
+  line-height:1;
+  padding:0;
+}
+.mini-stepper button:hover:not(:disabled){
+  border-color:var(--ink-2);
+  color:var(--ink);
+}
+.mini-stepper button:disabled{opacity:.4;cursor:not-allowed}
+.mini-stepper .val{
+  min-width:14px;
+  text-align:center;
+  font-size:11px;
+  color:var(--ink);
+}
+
+/* Subjects + scoring sub-line */
+.subject-meta-line{
+  font-size:10px;
+  color:var(--ink-3);
+  margin-top:6px;
+  font-family:var(--mono);
+  letter-spacing:.04em;
+}
+
+/* Style description hint paragraph (longer than .materials-hint) */
+.style-desc{
+  font-size:11px;
+  color:var(--ink-2);
+  line-height:1.5;
+  margin-top:8px;
+  font-style:italic;
+  font-family:var(--serif);
+}
 </style>
 </head>
+
 <body>
 
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden">
+<!-- inline icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
-    <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zM12 9v5M12 17v.5"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M5 13l4 4L19 7"/>
+    </symbol>
   </defs>
 </svg>
 
 <div class="topbar">
   <a class="home-link" href="/index.html">← Home</a>
-  <span class="logo">mini<em>Rama</em></span>
-  <span class="logo-suffix">Group Figurines</span>
+  <span class="logo">mini<em>scape</em></span>
+  <span class="logo-suffix">Group Minis</span>
+  <div class="tb-spacer"></div>
+  <label class="upload-slot" id="slot1">
+    <span id="st1">Upload group photo</span>
+    <input type="file" id="file1" accept="image/*" onchange="handlePrimaryUpload(this)">
+  </label>
+  <button class="raw-mode-toggle" id="rawModeToggle" onclick="toggleRawMode()" title="Toggle direct Nano Banana 2 prompt mode (bypasses all preset blocks)">
+    <span class="raw-mode-dot"></span>
+    <span class="raw-mode-label">Raw Mode</span>
+  </button>
+  <button class="queue-add-btn" id="queueAddBtn" disabled onclick="addToQueue()" title="Add current draft to queue">+ Queue</button>
+  <button class="run-all-btn" id="runAllBtn" disabled onclick="runAll()">Run All</button>
+  <div class="status-meta">
+    <div class="status-dot" id="gDot"></div>
+    <span id="gStatus">ready</span>
+  </div>
 </div>
 
-<div class="app">
+<div class="layout">
 
-  <div class="col-left">
+  <!-- ── SIDEBAR ── -->
+  <div class="left">
+    <div class="left-inner">
 
-    <div class="section">
-      <label class="upload-zone" id="uploadZone">
-        <input type="file" id="fileInput" accept="image/*" onchange="onUpload(this)">
-        <div id="uploadInner">
-          <div class="upload-zone-icon">+</div>
-          <div class="upload-zone-text">Click to upload</div>
-          <div class="upload-zone-sub">JPG, PNG, HEIC</div>
+      <!-- Source image (primary + auxiliary) -->
+      <div class="section">
+        <div class="section-hdr">
+          <div class="section-label">Source images</div>
+          <div class="section-readout" id="sourceCount">0 / 4</div>
         </div>
-      </label>
-    </div>
-
-    <div class="section" id="analysisSection" style="display:none">
-      <div class="section-label">Photo analysis</div>
-      <div class="analysis-card" id="analysisCard">
-        <div class="analysis-title">
-          <span class="analysis-title-icon" id="analysisIcon"><svg><use href="#i-search"/></svg></span>
-          <span id="analysisName">Analyzing…</span>
+        <div class="source-preview" id="sidebarSourcePreview" onclick="document.getElementById('file1').click()">
+          <div class="source-empty" id="sourceEmpty">
+            <div class="source-empty-plus">+</div>
+            <div>Group photo</div>
+          </div>
+          <img id="sourceThumb" style="display:none">
         </div>
-        <div class="analysis-msg" id="analysisMsg"></div>
-        <div class="analysis-warnings" id="analysisWarnings" style="display:none"></div>
-        <div class="reject-actions" id="rejectActions" style="display:none">
-          <button class="reject-btn" onclick="resetUpload()">New upload</button>
-          <a class="reject-btn" href="/index.html">Back home</a>
+        <div class="source-row" id="auxSourceRow">
+          <label class="source-aux" data-aux="2">
+            <span>+</span>
+            <input type="file" accept="image/*" onchange="handleAuxUpload(this, 2)">
+          </label>
+          <label class="source-aux" data-aux="3">
+            <span>+</span>
+            <input type="file" accept="image/*" onchange="handleAuxUpload(this, 3)">
+          </label>
+          <label class="source-aux" data-aux="4">
+            <span>+</span>
+            <input type="file" accept="image/*" onchange="handleAuxUpload(this, 4)">
+          </label>
+        </div>
+        <div class="materials-hint">First photo defines the group. Add up to 3 more for better likeness.</div>
+      </div>
+
+      <!-- ── PRESET CONTROLS (hidden when Raw Mode is on) ── -->
+      <div class="preset-controls" id="presetControls">
+
+      <!-- Detect card (subject count) -->
+      <div class="section">
+        <div class="detect-card" id="detectCard">
+          <div class="detect-icon"><svg><use href="#i-search"/></svg></div>
+          <div class="detect-info">
+            <div class="detect-name" id="detectMiniLabel">Upload to detect group</div>
+            <div class="detect-sub" id="detectMiniSub" style="display:none"></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="section" id="runAllSection" style="display:none">
-      <button class="run-all-btn" id="runAllBtn" onclick="runAllStandard()" disabled>Run all four (Standard)</button>
-    </div>
+      <!-- Subject count (compact editable readout) -->
+      <div class="section">
+        <div class="section-hdr">
+          <div class="section-label">Subjects</div>
+          <div class="section-readout">
+            <span class="mini-stepper">
+              <button onclick="adjustSubjects(-1)" id="subjMinus" disabled>−</button>
+              <span class="val" id="subjValue">2</span>
+              <button onclick="adjustSubjects(1)" id="subjPlus">+</button>
+            </span>
+          </div>
+        </div>
+        <div class="subject-meta-line"><span id="subjectReadout">— detected auto</span> · scored at <strong id="scoreRule">9+/10</strong></div>
+      </div>
 
-    <div class="section" id="styleSection" style="display:none">
-      <div class="section-label">Pick a style</div>
-      <div class="style-grid" id="styleGrid"></div>
-    </div>
+      <!-- Material (single-select; each queue click renders one material × one location) -->
+      <div class="section">
+        <div class="section-hdr">
+          <div class="section-label">Material</div>
+          <div class="section-readout" id="materialReadout">—</div>
+        </div>
+        <div class="btn-bar cols-3" id="typeBar"></div>
+        <div class="materials-hint">Pick one material per render. Queue different combinations for variety.</div>
+      </div>
 
-    <div class="section" id="plaqueSection" style="display:none">
-      <div class="section-label">Plaque title (optional)</div>
-      <input class="input-field" id="plaqueText" placeholder="Leave blank — we'll suggest something" maxlength="60">
-      <label class="check-row" style="margin-top:10px">
-        <input type="checkbox" id="noPlaqueCheck"> No plaque or text
-      </label>
-    </div>
+      <!-- Location (filtered by selected material) -->
+      <div class="section">
+        <div class="section-hdr">
+          <div class="section-label">Location</div>
+          <div class="section-readout" id="locationCurrent">Mantel</div>
+        </div>
+        <div class="btn-bar cols-2" id="locationBar"></div>
+        <div class="materials-hint" id="locationHint">Where the sculpture is staged.</div>
+      </div>
 
-    <div class="section" id="notesSection" style="display:none">
-      <div class="section-label">Notes (optional)</div>
-      <textarea class="input-field" id="notesText" placeholder="Anything specific you'd like the sculptor to know…"></textarea>
-    </div>
+      </div><!-- /preset-controls -->
 
+      <!-- ── RAW CONTROLS (visible only when Raw Mode is on) ── -->
+      <div class="raw-controls" id="rawControls">
+
+        <!-- Reference image (pairs with source as additional input to Nano Banana 2) -->
+        <div class="section">
+          <div class="section-hdr">
+            <div class="section-label">Reference image</div>
+            <div class="section-readout" id="rawRefStatus">empty</div>
+          </div>
+          <label class="raw-ref-slot" id="rawRefSlot">
+            <div class="raw-ref-empty" id="rawRefEmpty">
+              <div class="raw-ref-plus">+</div>
+              <div>Add reference (optional)</div>
+            </div>
+            <img id="rawRefThumb" style="display:none">
+            <input type="file" accept="image/*" onchange="handleRawRefUpload(this)">
+            <button type="button" class="raw-ref-clear" onclick="clearRawRef(event)" title="Remove reference">×</button>
+          </label>
+          <div class="raw-panel-hint">Sent to Nano Banana 2 as an additional image alongside the source. Reference the second image directly in your prompt.</div>
+        </div>
+
+        <!-- Raw prompt textarea -->
+        <div class="section">
+          <div class="section-hdr">
+            <div class="section-label">Prompt</div>
+            <div class="section-readout"><span id="rawPromptCounter">0</span> / 4000</div>
+          </div>
+          <textarea class="raw-prompt-textarea" id="rawPromptText" maxlength="4000"
+            placeholder="Write any prompt you want sent directly to Nano Banana 2. The source image is image #1; if you uploaded a reference, it is image #2. No preset blocks are added. No Pass 2. No outpaint. No faceswap."
+            oninput="updateRawPromptCounter()"></textarea>
+          <div class="raw-prompt-counter" id="rawPromptCounterLine">0 / 4000</div>
+        </div>
+
+      </div><!-- /raw-controls -->
+
+      <!-- Aspect ratio (shared between preset and raw modes) -->
+      <div class="section">
+        <div class="section-hdr">
+          <div class="section-label">Aspect ratio</div>
+          <div class="section-readout" id="aspectCurrent">3:2</div>
+        </div>
+        <div class="btn-bar cols-6" id="aspectBar" style="gap:4px">
+          <button class="type-btn" data-aspect="1:1" onclick="selectAspect('1:1')">1:1</button>
+          <button class="type-btn active" data-aspect="3:2" onclick="selectAspect('3:2')">3:2</button>
+          <button class="type-btn" data-aspect="2:3" onclick="selectAspect('2:3')">2:3</button>
+          <button class="type-btn" data-aspect="4:3" onclick="selectAspect('4:3')">4:3</button>
+          <button class="type-btn" data-aspect="3:4" onclick="selectAspect('3:4')">3:4</button>
+          <button class="type-btn" data-aspect="16:9" onclick="selectAspect('16:9')">16:9</button>
+        </div>
+        <div class="materials-hint">3:2 default — wider for groups.</div>
+      </div>
+
+    </div>
   </div>
 
+  <!-- ── STAGE ── -->
   <div class="center">
-    <div id="stage">
-      <div class="stage-empty">
-        <div class="stage-empty-title">A figurine for the <em>family</em></div>
-        <div class="stage-empty-sub">Upload a photo of the people you'd like to sculpt — visible from at least the knees up. We'll handle the rest.</div>
+    <div class="center-hdr">
+      <span class="stage-title" id="stageTitle">Stage</span>
+      <span class="stage-meta" id="centerMeta"></span>
+    </div>
+    <div class="stage-progress" id="stageProgress"><div class="stage-progress-fill"></div></div>
+
+    <div class="stage" id="stage">
+
+      <div class="stage-empty" id="stageEmpty">
+        <div class="stage-empty-title">Your <em>group</em> awaits</div>
+        <div class="stage-empty-sub">Upload a family, team, or friends photo — we'll sculpt every subject as one piece, with the material emerging up around them and the figures merging together below the chest line.</div>
       </div>
+
+      <div class="stage-suggester" id="stageSuggester" style="display:none">
+        <div class="suggester-status" id="suggesterStatus">
+          <div class="suggester-status-eyebrow">Analyzing</div>
+          <div class="suggester-status-title">Reading the <em>group</em></div>
+          <div class="suggester-status-loading"><div class="suggester-spin"></div><span>This takes a few seconds</span></div>
+        </div>
+
+        <div class="suggester-result" id="suggesterResult" style="display:none">
+          <div class="detected-banner">
+            <div class="detected-icon-wrap"><svg><use href="#i-check"/></svg></div>
+            <div class="detected-info">
+              <div class="detected-name" id="suggesterName"></div>
+              <div class="detected-sub" id="suggesterSub"></div>
+              <div class="detected-badges" id="suggesterBadges"></div>
+            </div>
+          </div>
+
+          <div class="source-rec-hint" id="sourceRecHint" style="display:none"></div>
+
+          <div class="suggester-cta">
+            <div class="suggester-cta-eyebrow">Next</div>
+            <div class="suggester-cta-title">Pick a <em>material</em> in the side panel</div>
+            <div class="suggester-cta-sub">Each material you select becomes one render.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="queue-grid" id="queueGrid" style="display:none">
+        <div class="queue-grid-meta" id="queueMeta"></div>
+        <div class="queue-grid-inner" id="queueGridInner"></div>
+      </div>
+
     </div>
   </div>
-
 </div>
 
 <script>
-const ANALYZE_URL  = '/api/v1/groups/analyze'
-const GENERATE_URL = '/api/v1/groups/generate'
+const API     = '/api/v1/groups/generate'
+const ANALYZE = '/api/v1/groups/analyze'
 
-const STYLES = [
-  {
-    k:'figurine', label:'Figurine', thumb:'/previews/groups/figurine.jpg',
-    variants:[
-      { k:'standard',     label:'Standard'     },
-      { k:'action_scene', label:'Action Scene' },
-      { k:'portrait',     label:'Portrait'     },
-    ],
-  },
-  {
-    k:'plushy', label:'Plushy', thumb:'/previews/groups/plushy.jpg',
-    variants:[
-      { k:'standard',     label:'Standard'     },
-      { k:'action_scene', label:'Action Scene' },
-    ],
-  },
-  {
-    k:'stop_motion', label:'Stop Motion', thumb:'/previews/groups/stop_motion.jpg',
-    variants:[
-      { k:'standard',     label:'Standard'     },
-      { k:'action_scene', label:'Action Scene' },
-    ],
-  },
-  {
-    k:'designer', label:'Designer', thumb:'/previews/groups/designer.jpg',
-    variants:[
-      { k:'standard',        label:'Standard'        },
-      { k:'library_edition', label:'Library Edition' },
-    ],
-  },
+// ── MATERIAL / LOCATION REGISTRIES ──────────────────────────
+// Style has been removed — Groups is now a flat Material × Location matrix.
+// Resolving moved to the Art Gallery silo with the Tribal styles.
+
+// Universe of all materials. Each material's available locations is encoded
+// in MATERIAL_LOCATIONS below.
+const PRES = [
+  { k:'resin',        label:'Resin',      tier:'base' },
+  { k:'plushy',       label:'Plushy',     tier:'base' },
+  { k:'wax',          label:'Wax',        tier:'premium' },
+  { k:'wood',         label:'Wood',       tier:'premium' },
+  { k:'terracotta',   label:'Terracotta', tier:'signature' },
+  { k:'bronze',       label:'Bronze',     tier:'signature' },
+  { k:'iron',         label:'Iron',       tier:'signature' },
+  { k:'alabaster',    label:'Alabaster',  tier:'signature' },
+  { k:'marble',       label:'Marble',     tier:'signature' },
 ]
-const STYLE_LABEL = Object.fromEntries(STYLES.map(s => [s.k, s.label]))
 
+// Which locations work for which material. Plushy gets its own home (plushy_shelf)
+// because plushies in a private library or Zen garden read wrong. Resin and wax
+// skip the tea_house — neither carries the wabi-sabi register convincingly.
+const MATERIAL_LOCATIONS = {
+  bronze:       ['mantel', 'tea_house', 'pedestal'],
+  alabaster:    ['mantel', 'tea_house', 'pedestal'],
+  marble:       ['mantel', 'tea_house', 'pedestal'],
+  iron:         ['mantel', 'tea_house', 'pedestal'],
+  terracotta:   ['mantel', 'tea_house', 'pedestal'],
+  wood:         ['mantel', 'tea_house', 'pedestal'],
+  wax:          ['mantel', 'pedestal'],
+  resin:        ['mantel', 'pedestal'],
+  plushy:       ['plushy_shelf'],
+}
+
+const LOCATION_LABELS = {
+  mantel:'Mantel', tea_house:'Tea House', pedestal:'Pedestal',
+  wall_mount:'Wall Mount', plushy_shelf:'Plushy Shelf',
+}
+
+// All Groups renders use per-figure likeness scoring against the source.
+// (Holistic-caricature scoring moved to Art Gallery with the Tribal styles.)
+const SCORING_MODE = 'per_figure_likeness'
+
+// First material the picker should highlight when nothing is selected — pick
+// a Signature so the showcase feels premium.
+const DEFAULT_MATERIAL = 'bronze'
+
+// ── STATE ────────────────────────────────────────────────────
 const state = {
-  fileB64:    null,
-  proceedable:false,
-  running:    {},      // styleKey -> bool (any variant of style currently running)
-  openCard:   null,    // styleKey of card with variant flyout open, or null
-  stack:      [],
-  activeId:   null,
-  cardCounter:0,
+  primarySrc:    null,
+  auxSrc:        [null,null,null],
+  selectedMat:   null,             // single material — Queue adds one item per click
+  location:      null,             // resolved on material change
+  aspect:        '3:2',
+  subjectCount:  2,
+  subjectAuto:   true,
+  detectedCount: null,
+  busy:          false,
+  // Queue: each item is a frozen snapshot of the draft + a status + a result.
+  queue:         [],
+  queueIdSeq:    0,
+  // ── Raw mode (direct NB2 prompt, bypasses all preset blocks) ──
+  rawMode:       false,
+  rawReference:  null,             // base64 (without data: prefix)
+  rawPrompt:     '',
 }
 
-function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
-
-// ─── STYLE GRID ──────────────────────────────────────────────────
-
-function buildStyleGrid() {
-  const grid = document.getElementById('styleGrid')
-  grid.innerHTML = ''
-  STYLES.forEach(s => {
-    const isRunning = !!state.running[s.k]
-    const isOpen    = state.openCard === s.k
-    const wrap = document.createElement('div')
-    wrap.className = 'style-card-wrap'
-
-    const card = document.createElement('div')
-    card.className = 'style-card' + (isRunning ? ' running' : '') + (state.proceedable ? '' : ' disabled')
-
-    // Image with fallback. The img is on top; if it loads, it covers the
-    // fallback. If it 404s, .hidden via onerror reveals the fallback.
-    card.innerHTML =
-      `<div class="style-card-thumb-fallback">${esc(s.label)}</div>
-       <img class="style-card-thumb-img" src="${esc(s.thumb)}" alt="" onerror="this.classList.add('hidden')">
-       <div class="style-card-overlay">
-         <div class="style-card-name">${esc(s.label)}</div>
-         <button class="style-card-chevron${isOpen?' open':''}" type="button">▾</button>
-       </div>
-       ${isRunning ? '<div class="style-card-running-pill">Running…</div>' : ''}`
-
-    if (state.proceedable && !isRunning) {
-      // Click on the card body (not the chevron) → run Standard
-      card.onclick = (e) => {
-        if (e.target.closest('.style-card-chevron')) return
-        runStyle(s.k, 'standard')
-      }
-      // Chevron click → toggle variant flyout
-      card.querySelector('.style-card-chevron').onclick = (e) => {
-        e.stopPropagation()
-        state.openCard = (state.openCard === s.k) ? null : s.k
-        buildStyleGrid()
-      }
-    }
-
-    wrap.appendChild(card)
-
-    // Variant flyout (only when this card is open)
-    if (isOpen && state.proceedable && !isRunning) {
-      const flyout = document.createElement('div')
-      flyout.className = 'variant-flyout'
-      s.variants.forEach(v => {
-        const btn = document.createElement('button')
-        btn.type = 'button'
-        btn.className = 'variant-btn'
-        btn.innerHTML = `<span>${esc(v.label)}</span><span class="variant-btn-tag">Run</span>`
-        btn.onclick = () => {
-          state.openCard = null
-          runStyle(s.k, v.k)
-        }
-        flyout.appendChild(btn)
-      })
-      wrap.appendChild(flyout)
-    }
-
-    grid.appendChild(wrap)
+// ── INIT ─────────────────────────────────────────────────────
+function init(){
+  renderMaterials()
+  renderLocations()
+  applyDefaultLocation()
+  updateScoreRule()
+  // Default material — pick a Signature one so the showcase feels premium.
+  state.selectedMat = DEFAULT_MATERIAL
+  requestAnimationFrame(() => {
+    const btn = document.querySelector(`.type-btn[data-mat="${DEFAULT_MATERIAL}"]`)
+    if (btn) btn.classList.add('active')
+    const def = PRES.find(p => p.k === DEFAULT_MATERIAL)
+    document.getElementById('materialReadout').textContent = def?.label || '—'
+    // Default material may not allow all locations — re-render the picker
+    renderLocations()
+    applyDefaultLocation()
   })
 }
 
-// ─── UPLOAD ──────────────────────────────────────────────────────
+function renderMaterials(){
+  const bar = document.getElementById('typeBar')
+  // All materials are always offered in Groups now (no Style gating).
+  bar.innerHTML = PRES.map(p =>
+    `<button class="type-btn${state.selectedMat === p.k ? ' active' : ''}" data-tier="${p.tier}" data-mat="${p.k}" onclick="selectMat('${p.k}')">${p.label}</button>`
+  ).join('')
+}
 
-async function onUpload(inp) {
-  const file = inp.files[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = async () => {
-    const dataUrl = reader.result
-    state.fileB64 = dataUrl.split(',')[1]
-    showSourcePreview(dataUrl)
-    revealSidebar(false)
-    await runAnalyze()
+// Locations available for the currently selected material.
+function availableLocationsForSelection(){
+  if (!state.selectedMat) return ['mantel','tea_house','pedestal']
+  return MATERIAL_LOCATIONS[state.selectedMat] || ['pedestal']
+}
+
+function renderLocations(){
+  const bar = document.getElementById('locationBar')
+  const allowed = availableLocationsForSelection()
+
+  // Adjust column count to fit available locations
+  bar.classList.remove('cols-2','cols-3','cols-4')
+  if (allowed.length <= 2) bar.classList.add('cols-2')
+  else bar.classList.add('cols-3')
+
+  bar.innerHTML = allowed.map(loc => {
+    const active = state.location === loc ? ' active' : ''
+    return `<button class="type-btn${active}" data-loc="${loc}" onclick="selectLocation('${loc}')">${LOCATION_LABELS[loc]}</button>`
+  }).join('')
+
+  // Hint update
+  const hint = document.getElementById('locationHint')
+  if (hint){
+    if (state.selectedMat === 'plushy') {
+      hint.textContent = 'Plushy is staged on the Plushy Shelf — auto-locked.'
+    } else if (allowed.length === 1) {
+      hint.textContent = `${LOCATION_LABELS[allowed[0]]} only for this material.`
+    } else {
+      hint.textContent = 'Where the sculpture is staged.'
+    }
   }
-  reader.readAsDataURL(file)
 }
 
-function showSourcePreview(dataUrl) {
-  const zone = document.getElementById('uploadZone')
-  zone.classList.add('has-image')
-  document.getElementById('uploadInner').innerHTML = `<img src="${dataUrl}" alt="source photo">`
-}
-
-function resetUpload() {
-  state.fileB64 = null
-  state.proceedable = false
-  state.running = {}
-  state.openCard = null
-  state.stack = []
-  state.activeId = null
-  document.getElementById('fileInput').value = ''
-  const zone = document.getElementById('uploadZone')
-  zone.classList.remove('has-image')
-  document.getElementById('uploadInner').innerHTML =
-    `<div class="upload-zone-icon">+</div>
-     <div class="upload-zone-text">Click to upload</div>
-     <div class="upload-zone-sub">JPG, PNG, HEIC</div>`
-  ;['analysisSection','runAllSection','styleSection','plaqueSection','notesSection'].forEach(id => {
-    document.getElementById(id).style.display = 'none'
-  })
-  setStageEmpty()
-}
-
-function revealSidebar(showRunAndStyles) {
-  document.getElementById('analysisSection').style.display = 'block'
-  ;['runAllSection','styleSection','plaqueSection','notesSection'].forEach(id => {
-    document.getElementById(id).style.display = showRunAndStyles ? 'block' : 'none'
+function applyDefaultLocation(){
+  const allowed = availableLocationsForSelection()
+  if (!state.location || !allowed.includes(state.location)){
+    state.location = allowed[0] || 'pedestal'
+  }
+  document.getElementById('locationCurrent').textContent =
+    LOCATION_LABELS[state.location] || state.location
+  // Reflect active state
+  document.querySelectorAll('#locationBar .type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.loc === state.location)
   })
 }
 
-// ─── ANALYZE ─────────────────────────────────────────────────────
+init()
 
-async function runAnalyze() {
-  setAnalysisCard({ tierClass:'analyzing', icon:'i-search', name:'Analyzing your photo…', msg:'This takes a few seconds.', warnings:[] })
-  document.getElementById('runAllBtn').disabled = true
+// ── UPLOAD HANDLERS ──────────────────────────────────────────
+function handlePrimaryUpload(input){
+  const f = input.files[0]
+  if (!f) return
+  const r = new FileReader()
+  r.onload = () => {
+    state.primarySrc = String(r.result).split(',')[1]
+    document.getElementById('sourceThumb').src = r.result
+    document.getElementById('sourceThumb').style.display = ''
+    document.getElementById('sourceEmpty').style.display = 'none'
+    document.getElementById('sidebarSourcePreview').classList.add('has-image')
+    document.getElementById('slot1').classList.add('has-file')
+    document.getElementById('st1').textContent = f.name.length > 20 ? f.name.slice(0,18)+'…' : f.name
+    updateSourceCount()
+    updateRunGate()
+    // Skip face-count analysis in raw mode — no preset needs it there.
+    if (!state.rawMode) runAnalyze()
+  }
+  r.readAsDataURL(f)
+}
 
-  try {
-    const res = await fetch(ANALYZE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image_b64: state.fileB64 }),
+function handleAuxUpload(input, slot){
+  const f = input.files[0]
+  if (!f) return
+  const r = new FileReader()
+  r.onload = () => {
+    state.auxSrc[slot-2] = String(r.result).split(',')[1]
+    const wrapper = input.closest('.source-aux')
+    wrapper.classList.add('has-image')
+    wrapper.querySelector('span').remove()
+    const img = document.createElement('img')
+    img.src = r.result
+    wrapper.insertBefore(img, input)
+    updateSourceCount()
+    // Re-run analyze when an aux photo is added — the verdict and
+    // recommendation depend on the full source set, not just the primary.
+    if (state.primarySrc && !state.rawMode) runAnalyze()
+  }
+  r.readAsDataURL(f)
+}
+
+function updateSourceCount(){
+  const n = (state.primarySrc ? 1 : 0) + state.auxSrc.filter(Boolean).length
+  document.getElementById('sourceCount').textContent = `${n} / 4`
+}
+
+// ── ANALYZE — subject count detection ─────────────────────────
+async function runAnalyze(){
+  document.getElementById('stageEmpty').style.display = 'none'
+  document.getElementById('stageSuggester').style.display = ''
+  document.getElementById('suggesterStatus').style.display = ''
+  document.getElementById('suggesterResult').style.display = 'none'
+
+  try{
+    const res = await fetch(ANALYZE, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        source_image_b64:      state.primarySrc,
+        additional_images_b64: state.auxSrc.filter(Boolean),
+      }),
     })
+    if (!res.ok) throw new Error('analyze failed')
     const data = await res.json()
-    if (data.error) {
-      setAnalysisCard({ tierClass:'reject', icon:'i-warn', name:'Could not analyze', msg:data.error, warnings:[], showRejectActions:true })
+    const r = data?.result || {}
+    const count   = r.subject_count_estimate || 2
+    const verdict = r.quality_verdict || 'yellow'
+    const recmsg  = r.recommendation || null
+    const photoCount = r.photo_count || 1
+
+    state.detectedCount = count
+    if (state.subjectAuto){
+      state.subjectCount = count
+      document.getElementById('subjValue').textContent = count
+    }
+    document.getElementById('subjectReadout').textContent = `detected ${count}`
+    document.getElementById('detectMiniLabel').textContent = `${count} subject${count===1?'':'s'} detected`
+    document.getElementById('detectMiniSub').textContent = `pick a material to begin`
+    document.getElementById('detectMiniSub').style.display = ''
+    document.getElementById('suggesterName').textContent = `Group of ${count}`
+    document.getElementById('suggesterSub').textContent = `Detected from ${photoCount} photo${photoCount===1?'':'s'}.`
+
+    // Quality verdict badge — color-coded pill
+    const verdictLabel = verdict === 'green'  ? 'Source looks great'
+                       : verdict === 'red'    ? 'Source may not read well'
+                       : 'Source is workable'
+    document.getElementById('suggesterBadges').innerHTML = `
+      <span class="detected-badge">${count} subject${count===1?'':'s'}</span>
+      <span class="detected-badge" data-verdict="${verdict}">${verdictLabel}</span>
+    `
+
+    // Recommendation hint — only shown for yellow / red verdicts
+    const recEl = document.getElementById('sourceRecHint')
+    if (recEl){
+      if (recmsg){
+        recEl.textContent = recmsg
+        recEl.dataset.verdict = verdict
+        recEl.style.display = ''
+      } else {
+        recEl.style.display = 'none'
+      }
+    }
+
+    document.getElementById('suggesterStatus').style.display = 'none'
+    document.getElementById('suggesterResult').style.display = ''
+    updateStepperBounds()
+    updateScoreRule()
+  } catch (e){
+    document.getElementById('detectMiniLabel').textContent = 'Adjust subject count manually'
+    document.getElementById('suggesterName').textContent = 'Photo received'
+    document.getElementById('suggesterSub').textContent = 'Set subject count and pick materials.'
+    document.getElementById('suggesterStatus').style.display = 'none'
+    document.getElementById('suggesterResult').style.display = ''
+  }
+}
+
+// ── SUBJECT STEPPER ──────────────────────────────────────────
+function adjustSubjects(delta){
+  const next = Math.max(2, Math.min(15, state.subjectCount + delta))
+  if (next === state.subjectCount) return
+  state.subjectCount = next
+  state.subjectAuto = false
+  document.getElementById('subjValue').textContent = next
+  document.getElementById('subjectReadout').textContent = `manual ${next}`
+  updateStepperBounds()
+  updateScoreRule()
+}
+
+function updateStepperBounds(){
+  document.getElementById('subjMinus').disabled = state.subjectCount <= 2
+  document.getElementById('subjPlus').disabled  = state.subjectCount >= 15
+}
+
+// ── SCORING RULE READOUT ─────────────────────────────────────
+function updateScoreRule(){
+  const N = state.subjectCount
+  let txt
+  if (N <= 5){
+    txt = `9+/10 (all ${N})`
+  } else {
+    const top = Math.ceil(N * 0.7)
+    const rest = N - top
+    txt = `${top} ≥9/10, ${rest} ≥8/10`
+  }
+  document.getElementById('scoreRule').textContent = txt
+}
+
+// ── SELECT HANDLERS ──────────────────────────────────────────
+function selectMat(k){
+  state.selectedMat = k
+  // Update active state in the picker
+  document.querySelectorAll('#typeBar .type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mat === k)
+  })
+  const def = PRES.find(p => p.k === k)
+  document.getElementById('materialReadout').textContent = def?.label || '—'
+  // Material selection changes which locations are available — re-render
+  renderLocations()
+  applyDefaultLocation()
+  updateRunGate()
+}
+
+function selectLocation(loc){
+  state.location = loc
+  document.querySelectorAll('#locationBar .type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.loc === loc)
+  })
+  document.getElementById('locationCurrent').textContent =
+    LOCATION_LABELS[loc] || loc
+}
+
+function selectAspect(a){
+  state.aspect = a
+  document.querySelectorAll('#aspectBar .type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.aspect === a)
+  })
+  document.getElementById('aspectCurrent').textContent = a
+}
+
+// ── RUN GATE ─────────────────────────────────────────────────
+function updateRunGate(){
+  // Queue button: enabled when we have a buildable draft (mode-aware)
+  let draftOk
+  if (state.rawMode){
+    draftOk = !!state.primarySrc && state.rawPrompt.trim().length > 0
+  } else {
+    draftOk = !!state.primarySrc && !!state.selectedMat
+  }
+  document.getElementById('queueAddBtn').disabled = !draftOk || state.busy
+
+  // Run All: enabled if there are pending items, OR we can auto-add from draft
+  const hasPending = state.queue.some(q => q.status === 'pending')
+  const canAutoAdd = draftOk
+  document.getElementById('runAllBtn').disabled = state.busy || (!hasPending && !canAutoAdd)
+}
+
+// ── QUEUE ────────────────────────────────────────────────────
+function addToQueue(){
+  // Soft cap at 5 items — warn but allow more.
+  if (state.queue.length >= 5){
+    const ok = confirm(`Queue already has ${state.queue.length} items. Continue adding?`)
+    if (!ok) return
+  }
+
+  if (state.rawMode){
+    // Validate raw mode inputs
+    if (!state.primarySrc) return
+    const prompt = state.rawPrompt.trim()
+    if (!prompt) return
+
+    const id = ++state.queueIdSeq
+    state.queue.push({
+      id,
+      mode:                  'raw',
+      // snapshot of source + reference
+      source_image_b64:      state.primarySrc,
+      additional_images_b64: state.rawReference ? [state.rawReference] : [],
+      // raw config
+      raw_prompt:            prompt,
+      aspect_ratio:          state.aspect,
+      // status
+      status:                'pending',
+      result:                null,
+      error:                 null,
+      duration_ms:           null,
+    })
+  } else {
+    // Preset mode: snapshot the current draft → one pending item per click
+    if (!state.primarySrc || !state.selectedMat) return
+
+    const matKey = state.selectedMat
+    const matLocs = MATERIAL_LOCATIONS[matKey] || ['pedestal']
+    // Use the picked location if this material allows it; otherwise fall
+    // back to that material's first available location.
+    const locForMat = matLocs.includes(state.location) ? state.location : matLocs[0]
+
+    const id = ++state.queueIdSeq
+    state.queue.push({
+      id,
+      mode:                  'preset',
+      // snapshot of source images
+      source_image_b64:      state.primarySrc,
+      additional_images_b64: state.auxSrc.filter(Boolean),
+      // snapshot of config — style_id is hardcoded to 'realistic' since
+      // Style was removed from the UI. Backend still expects the field.
+      style_id:              'realistic',
+      preset:                matKey,
+      location:              locForMat,
+      scale:                 'fill',                  // Scale picker removed; outpaint disabled
+      aspect_ratio:          state.aspect,
+      subject_count:         state.subjectCount,
+      // status
+      status:                'pending',
+      result:                null,
+      error:                 null,
+      duration_ms:           null,
+      user_decision:         null,  // null | 'rerender' | 'refund' | 'accept'
+      rerender_count:        0,     // increments to 1 when this item is the clone of a Rerender click
+    })
+  }
+
+  renderQueueGrid()
+  updateQueueMeta()
+  updateRunGate()
+  // Show the queue view
+  document.getElementById('stageEmpty').style.display = 'none'
+  document.getElementById('stageSuggester').style.display = 'none'
+  document.getElementById('queueGrid').style.display = ''
+}
+
+function removeQueueItem(id){
+  const idx = state.queue.findIndex(q => q.id === id)
+  if (idx < 0) return
+  // Only allow remove for pending or failed
+  const item = state.queue[idx]
+  if (item.status === 'running') return
+  state.queue.splice(idx, 1)
+  renderQueueGrid()
+  updateQueueMeta()
+  updateRunGate()
+}
+
+// ── QA GATE HANDLERS (triggered when scorePerFigureFidelity fails) ──
+// A QA-failed item shows a watermarked image and three options:
+//   Rerender — clone the item into a fresh pending queue entry and run it.
+//   Refund   — flip user_decision='refund'. (No payment plumbing yet.)
+//   Accept   — flip user_decision='accept'. (No payment plumbing yet.)
+// Watermark + panel persist until user_decision is set.
+
+function qaRerender(id){
+  const original = state.queue.find(q => q.id === id)
+  if (!original) return
+  // Don't let an item that's already a rerender produce another rerender.
+  if ((original.rerender_count || 0) >= 1) return
+  original.user_decision = 'rerender'
+
+  // Clone the item config — fresh status, fresh ID, no result, no decision.
+  // Mark as a rerender so its own QA panel will hide the Rerender button.
+  const newId = ++state.queueIdSeq
+  const clone = {
+    ...original,
+    id:              newId,
+    status:          'pending',
+    result:          null,
+    error:           null,
+    duration_ms:     null,
+    user_decision:   null,
+    rerender_count:  (original.rerender_count || 0) + 1,
+  }
+  state.queue.push(clone)
+
+  renderQueueGrid()
+  updateQueueMeta()
+  updateRunGate()
+
+  // Kick off the new render immediately if we're not already in a Run All batch.
+  if (!state.busy){
+    runQueueItem(clone).then(() => updateQueueMeta())
+  }
+}
+
+function qaAccept(id){
+  const item = state.queue.find(q => q.id === id)
+  if (!item) return
+  item.user_decision = 'accept'
+  updateQueueCard(item)
+  updateQueueMeta()
+}
+
+function qaRefund(id){
+  const item = state.queue.find(q => q.id === id)
+  if (!item) return
+  item.user_decision = 'refund'
+  updateQueueCard(item)
+  updateQueueMeta()
+}
+
+async function retryQueueItem(id){
+  const item = state.queue.find(q => q.id === id)
+  if (!item || item.status === 'running') return
+  item.status = 'pending'
+  item.result = null
+  item.error  = null
+  updateQueueCard(item)
+  updateQueueMeta()
+  // Run just this item
+  state.busy = true
+  updateRunGate()
+  document.getElementById('gDot').classList.remove('ok','err')
+  document.getElementById('gDot').classList.add('busy')
+  document.getElementById('gStatus').textContent = 'retrying…'
+  document.getElementById('stageProgress').classList.add('busy')
+  await runQueueItem(item)
+  state.busy = false
+  finalizeRunStatus()
+  updateRunGate()
+}
+
+function renderQueueGrid(){
+  const inner = document.getElementById('queueGridInner')
+  inner.innerHTML = ''
+  for (const item of state.queue){
+    inner.appendChild(buildQueueCard(item))
+    // Hydrate post-init state (rendered images for done items, error text
+    // for failed items, scores, timing) so completed renders survive any
+    // grid rebuild triggered by a new addToQueue call.
+    updateQueueCard(item)
+  }
+}
+
+function buildQueueCard(item){
+  const card = document.createElement('div')
+  card.className = 'queue-card'
+  card.dataset.status = item.status
+  card.id = `q-${item.id}`
+
+  // image area aspect-ratio matches the requested aspect (best-effort)
+  const aspectStyle = aspectToCss(item.aspect_ratio)
+
+  // Branch meta-badge rendering on mode
+  let badges
+  if (item.mode === 'raw'){
+    const promptShort = (item.raw_prompt || '').replace(/\s+/g, ' ').slice(0, 60)
+    const promptTail  = (item.raw_prompt || '').length > 60 ? '…' : ''
+    const refTag = (item.additional_images_b64 && item.additional_images_b64.length)
+      ? `<span class="queue-badge">+ ref</span>` : ''
+    badges = `
+      <span class="queue-badge style-badge" style="background:var(--ink);color:#fff;border-color:var(--ink)">RAW</span>
+      <span class="queue-badge" title="${escapeHtml(item.raw_prompt || '')}">${escapeHtml(promptShort)}${promptTail}</span>
+      ${refTag}
+      <span class="queue-badge">${item.aspect_ratio}</span>
+    `
+  } else {
+    const matDef = PRES.find(p => p.k === item.preset)
+    badges = `
+      <span class="queue-badge style-badge" data-tier="${matDef?.tier || 'base'}">${matDef?.label || item.preset}</span>
+      <span class="queue-badge">${LOCATION_LABELS[item.location] || item.location}</span>
+      <span class="queue-badge">${item.subject_count} subj</span>
+      <span class="queue-badge">${item.aspect_ratio}</span>
+    `
+  }
+
+  card.innerHTML = `
+    <div class="queue-card-img" id="qimg-${item.id}" style="${aspectStyle}">
+      <img class="queue-card-source-thumb" src="data:image/jpeg;base64,${item.source_image_b64}" alt="source">
+      <span class="queue-card-status-pill" id="qpill-${item.id}" data-status="${item.status}">${statusLabel(item.status)}</span>
+      <div class="queue-card-empty" id="qempty-${item.id}">
+        ${item.status === 'running'
+          ? `<div class="queue-card-spinner"></div><div>Generating…</div>`
+          : item.status === 'pending'
+            ? `<div>queued</div>`
+            : item.status === 'failed'
+              ? `<div class="queue-card-error">${escapeHtml(item.error || 'failed')}</div>`
+              : ''}
+      </div>
+    </div>
+    <div class="queue-card-meta">
+      <div class="queue-card-badges">
+        ${badges}
+      </div>
+      <div class="queue-card-time" id="qtime-${item.id}">${item.status === 'pending' ? '—' : ''}</div>
+      <div class="figure-scores" id="qscores-${item.id}"></div>
+      <div class="pass-row" id="qpass-${item.id}"></div>
+      <div class="queue-card-actions" id="qactions-${item.id}">
+        ${actionsForStatus(item)}
+      </div>
+    </div>
+  `
+  return card
+}
+
+function aspectToCss(a){
+  // accepts "3:2", "16:9", etc — outputs aspect-ratio CSS
+  if (!a || !a.includes(':')) return ''
+  const [w,h] = a.split(':')
+  return `aspect-ratio:${w}/${h}`
+}
+
+function statusLabel(s){
+  return { pending:'queued', running:'running', done:'done', failed:'failed' }[s] || s
+}
+
+function actionsForStatus(item){
+  if (item.status === 'pending'){
+    return `<button class="queue-action-btn danger" onclick="removeQueueItem(${item.id})">Remove</button>`
+  }
+  if (item.status === 'failed'){
+    return `
+      <button class="queue-action-btn retry" onclick="retryQueueItem(${item.id})">Retry</button>
+      <button class="queue-action-btn danger" onclick="removeQueueItem(${item.id})">Remove</button>
+    `
+  }
+  return ''
+}
+
+function updateQueueCard(item){
+  const card = document.getElementById(`q-${item.id}`)
+  if (!card){
+    // Card not in DOM yet — re-render whole grid
+    renderQueueGrid()
+    return
+  }
+  card.dataset.status = item.status
+
+  // Status pill
+  const pill = document.getElementById(`qpill-${item.id}`)
+  if (pill){
+    pill.dataset.status = item.status
+    pill.textContent = statusLabel(item.status)
+  }
+
+  // Image area content
+  const empty = document.getElementById(`qempty-${item.id}`)
+  const imgWrap = document.getElementById(`qimg-${item.id}`)
+  if (item.status === 'done' && item.result?.image_b64){
+    // Replace empty with rendered image
+    if (empty) empty.remove()
+    // Avoid stacking multiple <img> nodes on retry
+    const existing = imgWrap.querySelector('img.queue-card-render')
+    if (existing) existing.remove()
+    const img = document.createElement('img')
+    img.className = 'queue-card-render'
+    img.src = `data:image/jpeg;base64,${item.result.image_b64}`
+    img.alt = item.mode === 'raw' ? 'raw render' : item.preset
+    img.addEventListener('click', () => openLightbox(img.src, item))
+    imgWrap.appendChild(img)
+  } else if (item.status === 'running'){
+    if (empty){
+      empty.innerHTML = `<div class="queue-card-spinner"></div><div>Generating…</div>`
+    }
+  } else if (item.status === 'pending'){
+    // Reset (e.g., on retry from failed → pending → running)
+    if (empty) empty.innerHTML = `<div>queued</div>`
+    // Remove any leftover render from prior attempt
+    const prior = imgWrap.querySelector('img.queue-card-render')
+    if (prior) prior.remove()
+  } else if (item.status === 'failed'){
+    if (empty){
+      empty.innerHTML = `<div class="queue-card-error">${escapeHtml(item.error || 'failed')}</div>`
+    } else {
+      // No empty container left from prior render — recreate
+      const prior = imgWrap.querySelector('img.queue-card-render')
+      if (prior) prior.remove()
+      const e = document.createElement('div')
+      e.className = 'queue-card-empty'
+      e.id = `qempty-${item.id}`
+      e.innerHTML = `<div class="queue-card-error">${escapeHtml(item.error || 'failed')}</div>`
+      imgWrap.appendChild(e)
+    }
+  }
+
+  // Time
+  const timeEl = document.getElementById(`qtime-${item.id}`)
+  if (timeEl){
+    if (item.status === 'pending') timeEl.textContent = '—'
+    else if (item.status === 'running') timeEl.textContent = ''
+    else if (item.status === 'failed') timeEl.textContent = 'failed'
+    else if (item.status === 'done' && item.result){
+      const ms = item.result.duration_ms || item.duration_ms || 0
+      const att = item.result.attempts?.length || 1
+      timeEl.textContent = `${(ms/1000).toFixed(1)}s · ${att} attempt${att===1?'':'s'}`
+    }
+  }
+
+  // Scores + pass row only when done (preset items only — raw has no scoring)
+  // QA gate: when preset render's final_pass=false and user hasn't decided,
+  // hide scores/pass-row and replace with watermark + decision panel.
+  const scoresEl = document.getElementById(`qscores-${item.id}`)
+  const passEl   = document.getElementById(`qpass-${item.id}`)
+  const isPresetDone = item.status === 'done' && item.result && item.mode !== 'raw'
+  const failed   = isPresetDone && item.result.final_pass === false
+  const decided  = !!item.user_decision
+  const qaFailPending = failed && !decided
+
+  // Card-level class drives the watermark CSS.
+  card.classList.toggle('qa-fail', qaFailPending)
+
+  if (qaFailPending){
+    // Hide scores/pass — they live inside the decision panel context
+    if (scoresEl) scoresEl.innerHTML = ''
+    if (passEl){
+      const usedReroll = (item.rerender_count || 0) >= 1
+      const rerenderBtn = usedReroll
+        ? ''
+        : `<button class="qa-btn qa-btn-primary" onclick="qaRerender(${item.id})">Rerender</button>`
+      const msg = usedReroll
+        ? `<strong>Quality check didn't pass.</strong> This was a rerender — choose how you'd like to proceed.`
+        : `<strong>Quality check didn't pass.</strong> We're watermarking this image until you decide what you want to do.`
+      passEl.innerHTML = `
+        <div class="qa-fail-panel">
+          <div class="qa-fail-msg">${msg}</div>
+          <div class="qa-fail-actions">
+            ${rerenderBtn}
+            <button class="qa-btn qa-btn-neutral" onclick="qaAccept(${item.id})">Accept image as is</button>
+            <button class="qa-btn qa-btn-danger"  onclick="qaRefund(${item.id})">Refund</button>
+          </div>
+        </div>
+      `
+    }
+  } else if (isPresetDone && decided){
+    // User has resolved a QA-failed render — hide scores, show decision pill
+    if (scoresEl) scoresEl.innerHTML = ''
+    if (passEl){
+      const label = item.user_decision === 'accept'   ? 'Accepted as is'
+                  : item.user_decision === 'refund'   ? 'Refund issued'
+                  : item.user_decision === 'rerender' ? 'Rerender requested'
+                  : ''
+      passEl.innerHTML = `
+        <div class="qa-decided" data-decision="${item.user_decision}">
+          <span class="qa-decided-dot"></span>
+          <span>${label}</span>
+        </div>
+      `
+    }
+  } else if (isPresetDone){
+    // Passed render — normal scores + pass row
+    renderScores(scoresEl, item.result, item.style_id)
+    renderPassRow(passEl, item.result)
+  } else {
+    if (scoresEl) scoresEl.innerHTML = ''
+    if (passEl)   passEl.innerHTML   = ''
+  }
+
+  // Actions
+  const actionsEl = document.getElementById(`qactions-${item.id}`)
+  if (actionsEl) actionsEl.innerHTML = actionsForStatus(item)
+}
+
+function renderScores(scoresEl, r, _styleId){
+  if (!scoresEl) return
+  const lastAttempt = r.attempts?.[r.attempts.length - 1]
+  // Groups only uses per-figure likeness scoring now. Holistic caricature
+  // moved to Art Gallery with the Tribal styles.
+  scoresEl.classList.remove('caricature-scores')
+  scoresEl.classList.add('figure-scores')
+  const scores = lastAttempt?.per_figure_scores || []
+  const N = scores.length
+  const topCount = N <= 5 ? N : Math.ceil(N * 0.7)
+  const sorted = [...scores].sort((a,b) => b.score - a.score)
+  scoresEl.innerHTML = sorted.map((s, idx) => {
+    const tier = idx < topCount
+      ? (s.score >= 8 ? 'top' : 'fail')
+      : (s.score >= 7 ? 'relaxed' : 'fail')
+    return `<span class="figure-score" data-tier="${tier}" title="${(s.reason || '').replace(/"/g,'&quot;')}">${s.score}/10</span>`
+  }).join('')
+}
+
+function renderPassRow(passEl, r){
+  if (!passEl) return
+  const passed = r.final_pass
+  passEl.innerHTML = `
+    <span class="pass-pill" data-pass="${passed}">${passed ? 'pass' : 'fail'}</span>
+    <span class="pass-attempts">${escapeHtml(r.final_reason || '')}</span>
+  `
+}
+
+function updateQueueMeta(){
+  const meta = document.getElementById('queueMeta')
+  if (!meta) return
+  if (state.queue.length === 0){
+    meta.innerHTML = ''
+    return
+  }
+  const counts = state.queue.reduce((acc, q) => {
+    acc[q.status] = (acc[q.status] || 0) + 1
+    return acc
+  }, {})
+  const total   = state.queue.length
+  const pending = counts.pending || 0
+  const running = counts.running || 0
+  const done    = counts.done    || 0
+  const failed  = counts.failed  || 0
+
+  const parts = [`<span class="meta-strong">${total}</span> in queue`]
+  if (pending) parts.push(`${pending} pending`)
+  if (running) parts.push(`${running} running`)
+  if (done)    parts.push(`${done} done`)
+  if (failed)  parts.push(`${failed} failed`)
+  meta.innerHTML = parts.map((p,i) => i === 0 ? p : `<span class="dot"></span><span>${p}</span>`).join('')
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;',
+  })[c])
+}
+
+// ── LIGHTBOX ─────────────────────────────────────────────────
+function openLightbox(src, item){
+  const lb = document.getElementById('lightbox')
+  const img = document.getElementById('lightboxImg')
+  img.src = src
+  img.alt = item
+    ? (item.mode === 'raw'
+        ? `raw · ${(item.raw_prompt || '').slice(0, 60)}`
+        : `${item.style_id} · ${item.preset}`)
+    : ''
+  lb.classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function closeLightbox(e){
+  // Only close if clicking the backdrop, close button, or pressing Esc.
+  // The image itself stops propagation so clicks ON it don't close.
+  if (e && e.target && e.target.tagName === 'IMG') return
+  const lb = document.getElementById('lightbox')
+  lb.classList.remove('open')
+  document.body.style.overflow = ''
+  // Free the data URL from memory (large b64 strings)
+  const img = document.getElementById('lightboxImg')
+  img.src = ''
+}
+
+// Esc key closes the lightbox
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const lb = document.getElementById('lightbox')
+    if (lb && lb.classList.contains('open')) closeLightbox()
+  }
+})
+
+// ── RUN ALL ──────────────────────────────────────────────────
+async function runAll(){
+  if (state.busy) return
+
+  // If there are no pending items but the draft is buildable, auto-add it.
+  const hasPending = state.queue.some(q => q.status === 'pending')
+  if (!hasPending){
+    const draftOk = state.rawMode
+      ? (!!state.primarySrc && state.rawPrompt.trim().length > 0)
+      : (!!state.primarySrc && !!state.selectedMat)
+    if (draftOk){
+      addToQueue()
+    } else {
       return
     }
+  }
 
-    state.proceedable = data.proceedable === true
-    const ok = state.proceedable
+  // Always show the queue grid
+  document.getElementById('stageEmpty').style.display = 'none'
+  document.getElementById('stageSuggester').style.display = 'none'
+  document.getElementById('queueGrid').style.display = ''
 
-    let name = ok
-      ? (data.subject_count === 1 ? '1 subject ready' : `${data.subject_count} subjects ready`)
-      : 'This photo needs adjustment'
+  state.busy = true
+  updateRunGate()
 
-    setAnalysisCard({
-      tierClass:        data.tier,
-      icon:             ok ? 'i-check' : 'i-warn',
-      name,
-      msg:              data.message || '',
-      warnings:         data.warnings || [],
-      showRejectActions: !ok,
-    })
+  const pending = state.queue.filter(q => q.status === 'pending')
+  document.getElementById('gDot').classList.remove('ok','err')
+  document.getElementById('gDot').classList.add('busy')
+  document.getElementById('gStatus').textContent = `running ${pending.length}…`
+  document.getElementById('stageProgress').classList.add('busy')
 
-    if (ok) {
-      revealSidebar(true)
-      buildStyleGrid()
-      document.getElementById('runAllBtn').disabled = false
+  // Stagger render starts to avoid burst rate-limiting on Replicate.
+  // Each render still runs in parallel after launch — we just don't fire
+  // them all at once. ~3.5s between starts spreads the API burst across
+  // the typical per-minute rate-limit window without losing parallelism.
+  const STAGGER_MS = 3500
+  const promises = []
+  for (let i = 0; i < pending.length; i++) {
+    const item = pending[i]
+    promises.push(runQueueItem(item))
+    if (i < pending.length - 1) {
+      console.log(`[groups/ui] staggered start ${i + 1}/${pending.length} — waiting ${STAGGER_MS}ms before next launch`)
+      await new Promise(r => setTimeout(r, STAGGER_MS))
+    }
+  }
+  await Promise.allSettled(promises)
+
+  state.busy = false
+  finalizeRunStatus()
+  updateRunGate()
+}
+
+function finalizeRunStatus(){
+  const anyFailed = state.queue.some(q => q.status === 'failed')
+  const anyRunning = state.queue.some(q => q.status === 'running')
+  const dot = document.getElementById('gDot')
+  dot.classList.remove('busy')
+  if (anyRunning) return // shouldn't happen, but guard
+  if (anyFailed){
+    dot.classList.add('err')
+    document.getElementById('gStatus').textContent = 'done with errors'
+  } else {
+    dot.classList.add('ok')
+    document.getElementById('gStatus').textContent = 'done'
+  }
+  document.getElementById('stageProgress').classList.remove('busy')
+}
+
+async function runQueueItem(item){
+  if (item.status === 'running' || item.status === 'done') return
+  const t0 = Date.now()
+  item.status = 'running'
+  updateQueueCard(item)
+  updateQueueMeta()
+
+  try{
+    if (item.mode === 'raw'){
+      // Raw mode → direct NB2 endpoint (google/nano-banana-2 via Replicate)
+      const body = {
+        source_image_b64:      item.source_image_b64,
+        additional_images_b64: item.additional_images_b64 || [],
+        prompt:                item.raw_prompt,
+        aspect_ratio:          item.aspect_ratio,
+      }
+      const res = await fetch('/api/v1/groups/raw-pipeline', {
+        method: 'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body),
+      })
+      if (!res.ok){
+        let errMsg = `HTTP ${res.status}`
+        try { const err = await res.json(); if (err?.error) errMsg = err.error } catch {}
+        throw new Error(errMsg)
+      }
+      const data = await res.json()
+      if (!data.image_b64){
+        item.status = 'failed'
+        item.error  = 'no image returned'
+        item.duration_ms = Date.now() - t0
+      } else {
+        item.status = 'done'
+        item.result = {
+          image_b64:   data.image_b64,
+          duration_ms: data.duration_ms || (Date.now() - t0),
+          // Raw renders carry no scores or pass info — leave those off
+        }
+        item.duration_ms = data.duration_ms || (Date.now() - t0)
+      }
     } else {
-      revealSidebar(false)
-      buildStyleGrid()
+      // Preset mode → full pipeline
+      const body = {
+        source_image_b64:      item.source_image_b64,
+        additional_images_b64: item.additional_images_b64 || [],
+        style_id:              item.style_id,
+        preset:                item.preset,
+        location:              item.location,
+        scale:                 item.scale,
+        aspect_ratio:          item.aspect_ratio,
+        subject_count:         item.subject_count,
+      }
+      const res = await fetch(API, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      const r = data.result || {}
+      if (r.fatal_error){
+        item.status = 'failed'
+        item.error  = r.fatal_error
+        item.duration_ms = Date.now() - t0
+      } else if (!r.image_b64){
+        item.status = 'failed'
+        item.error  = 'no image returned'
+        item.duration_ms = Date.now() - t0
+      } else {
+        item.status = 'done'
+        item.result = r
+        item.duration_ms = r.duration_ms || (Date.now() - t0)
+      }
     }
-  } catch (e) {
-    setAnalysisCard({ tierClass:'reject', icon:'i-warn', name:'Could not analyze', msg:e.message || String(e), warnings:[], showRejectActions:true })
-  }
-}
-
-function setAnalysisCard(cfg) {
-  const card = document.getElementById('analysisCard')
-  card.className = 'analysis-card tier-' + cfg.tierClass
-  document.getElementById('analysisIcon').innerHTML = `<svg><use href="#${cfg.icon}"/></svg>`
-  document.getElementById('analysisName').textContent = cfg.name
-  document.getElementById('analysisMsg').textContent  = cfg.msg
-
-  const wEl = document.getElementById('analysisWarnings')
-  if (cfg.warnings && cfg.warnings.length) {
-    wEl.innerHTML = cfg.warnings.map(w => `<div class="analysis-warning">⚠ ${esc(w)}</div>`).join('')
-    wEl.style.display = 'block'
-  } else { wEl.style.display = 'none' }
-
-  document.getElementById('rejectActions').style.display = cfg.showRejectActions ? 'flex' : 'none'
-}
-
-// ─── GENERATE ────────────────────────────────────────────────────
-
-async function runAllStandard() {
-  if (!state.proceedable) return
-  STYLES.forEach(s => {
-    if (!state.running[s.k]) runStyle(s.k, 'standard')
-  })
-}
-
-async function runStyle(styleKey, variantKey) {
-  if (!state.proceedable) return
-  if (state.running[styleKey]) return  // prevent double-run on same style
-
-  state.running[styleKey] = true
-  state.openCard = null
-  buildStyleGrid()
-  document.getElementById('runAllBtn').disabled = true
-
-  const cardId = 'card_' + (++state.cardCounter)
-  const placeholder = {
-    id:         cardId,
-    style:      styleKey,
-    variant:    variantKey,
-    state:      'loading',
-    imageUrl:   null,
-    moodLabel:  null,
-    warning:    null,
-    error:      null,
-  }
-  state.stack.unshift(placeholder)
-  state.activeId = cardId
-  renderStack()
-
-  const body = {
-    source_image_b64: state.fileB64,
-    plaque_title:     document.getElementById('plaqueText').value.trim() || undefined,
-    no_plaque:        document.getElementById('noPlaqueCheck').checked === true,
-    scene_style:      styleKey,
-    scene_variant:    variantKey,
-    notes:            document.getElementById('notesText').value.trim() || undefined,
+  } catch (e){
+    item.status = 'failed'
+    item.error  = e.message || String(e)
+    item.duration_ms = Date.now() - t0
   }
 
-  try {
-    const res = await fetch(GENERATE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    const data = await res.json()
+  updateQueueCard(item)
+  updateQueueMeta()
+}
 
-    const card = state.stack.find(c => c.id === cardId)
-    if (!card) return
+// ── RAW MODE — direct Nano Banana 2 prompt panel (no preset blocks) ──
+function toggleRawMode(){
+  state.rawMode = !state.rawMode
+  document.body.classList.toggle('raw-mode', state.rawMode)
+  document.getElementById('rawModeToggle').classList.toggle('active', state.rawMode)
+  // Hide aux source row when in raw mode — Reference slot replaces it
+  const auxRow = document.getElementById('auxSourceRow')
+  if (auxRow) auxRow.style.display = state.rawMode ? 'none' : ''
+  // Update tooltip labels for queue button to clarify intent in each mode
+  document.getElementById('queueAddBtn').title = state.rawMode
+    ? 'Add current raw prompt to queue'
+    : 'Add current draft (one material × one location) to queue'
+  updateRunGate()
+}
 
-    if (data.rejected)      { card.state = 'error'; card.error = data.message || "This photo couldn't be used." }
-    else if (data.error)    { card.state = 'error'; card.error = data.error }
-    else if (!data.result)  { card.state = 'error'; card.error = 'No result returned.' }
-    else {
-      card.state     = 'done'
-      card.imageUrl  = 'data:image/jpeg;base64,' + data.result.image_b64
-      card.moodLabel = data.result.mood_summary || ''
-      card.warning   = data.result.quality_warning || null
-    }
-  } catch (e) {
-    const card = state.stack.find(c => c.id === cardId)
-    if (card) { card.state = 'error'; card.error = e.message || String(e) }
-  } finally {
-    state.running[styleKey] = false
-    buildStyleGrid()
-    const anyRunning = Object.values(state.running).some(v => v)
-    document.getElementById('runAllBtn').disabled = anyRunning ? true : !state.proceedable
-    renderStack()
+function handleRawRefUpload(input){
+  const f = input.files[0]
+  if (!f) return
+  const r = new FileReader()
+  r.onload = () => {
+    state.rawReference = String(r.result).split(',')[1]
+    const slot   = document.getElementById('rawRefSlot')
+    const empty  = document.getElementById('rawRefEmpty')
+    const thumb  = document.getElementById('rawRefThumb')
+    thumb.src = r.result
+    thumb.style.display = ''
+    empty.style.display = 'none'
+    slot.classList.add('has-image')
+    document.getElementById('rawRefStatus').textContent = f.name.length > 20 ? f.name.slice(0,18)+'…' : f.name
+    updateRunGate()
   }
+  r.readAsDataURL(f)
 }
 
-// ─── STAGE / STACK ───────────────────────────────────────────────
-
-function setStageEmpty() {
-  document.getElementById('stage').innerHTML =
-    `<div class="stage-empty">
-       <div class="stage-empty-title">A figurine for the <em>family</em></div>
-       <div class="stage-empty-sub">Upload a photo of the people you'd like to sculpt — visible from at least the knees up. We'll handle the rest.</div>
-     </div>`
+function clearRawRef(ev){
+  if (ev) { ev.preventDefault(); ev.stopPropagation() }
+  state.rawReference = null
+  const slot  = document.getElementById('rawRefSlot')
+  const empty = document.getElementById('rawRefEmpty')
+  const thumb = document.getElementById('rawRefThumb')
+  const input = slot.querySelector('input[type="file"]')
+  thumb.src = ''
+  thumb.style.display = 'none'
+  empty.style.display = ''
+  slot.classList.remove('has-image')
+  if (input) input.value = ''
+  document.getElementById('rawRefStatus').textContent = 'empty'
+  updateRunGate()
 }
 
-function renderStack() {
-  if (state.stack.length === 0) { setStageEmpty(); return }
-  const cardsHtml = state.stack.map(c => renderResultCard(c)).join('')
-  const showDownloadAll = state.stack.filter(c => c.state === 'done').length > 1
-  const actionsHtml = showDownloadAll
-    ? `<div class="stack-actions"><button class="stack-actions-btn" onclick="downloadAll()">Download all</button></div>`
-    : ''
-  document.getElementById('stage').innerHTML = `<div class="stack">${cardsHtml}${actionsHtml}</div>`
+function updateRawPromptCounter(){
+  const ta  = document.getElementById('rawPromptText')
+  const v   = ta.value
+  state.rawPrompt = v
+  document.getElementById('rawPromptCounter').textContent = v.length
+  const line = document.getElementById('rawPromptCounterLine')
+  line.textContent = `${v.length} / 4000`
+  line.classList.toggle('warn', v.length >= 3600 && v.length < 4000)
+  line.classList.toggle('over', v.length >= 4000)
+  updateRunGate()
 }
 
-function variantLabel(styleKey, variantKey) {
-  const style = STYLES.find(s => s.k === styleKey)
-  if (!style) return variantKey
-  const v = style.variants.find(x => x.k === variantKey)
-  return v ? v.label : variantKey
-}
-
-function renderResultCard(c) {
-  const isActive = c.id === state.activeId
-  const styleLabel = STYLE_LABEL[c.style] || c.style
-  const variantTag = c.variant && c.variant !== 'standard' ? ` · ${variantLabel(c.style, c.variant)}` : ''
-
-  if (c.state === 'loading') {
-    return `<div class="result-card loading${isActive?' active':''}" id="${c.id}">
-              <div class="result-img-wrap">
-                <div class="result-loading">
-                  <div class="result-spin"></div>
-                  <div>Sculpting ${esc(styleLabel.toLowerCase())}…</div>
-                </div>
-              </div>
-              <div class="result-meta">
-                <div class="result-meta-left">
-                  <div class="result-style-tag">${esc(styleLabel)}${esc(variantTag)}</div>
-                  <div class="result-mood">In progress</div>
-                </div>
-              </div>
-            </div>`
-  }
-
-  if (c.state === 'error') {
-    return `<div class="result-card${isActive?' active':''}" id="${c.id}" onclick="bringToFront('${c.id}')">
-              <div class="result-img-wrap">
-                <div class="result-error">${esc(c.error)}</div>
-              </div>
-              <div class="result-meta">
-                <div class="result-meta-left">
-                  <div class="result-style-tag">${esc(styleLabel)}${esc(variantTag)}</div>
-                  <div class="result-mood">Couldn't render</div>
-                </div>
-                <div class="result-actions">
-                  <button class="result-btn" onclick="event.stopPropagation();retryCard('${c.id}')">Try again</button>
-                </div>
-              </div>
-            </div>`
-  }
-
-  const warnHtml = c.warning
-    ? `<div class="quality-warn"><div class="quality-warn-label">Note</div>${esc(c.warning)}</div>`
-    : ''
-
-  return `<div class="result-card${isActive?' active':''}" id="${c.id}" onclick="bringToFront('${c.id}')">
-            <div class="result-img-wrap">
-              <img class="result-img" src="${c.imageUrl}" onclick="event.stopPropagation();openLightbox('${c.imageUrl}')">
-            </div>
-            <div class="result-meta">
-              <div class="result-meta-left">
-                <div class="result-style-tag">${esc(styleLabel)}${esc(variantTag)}</div>
-                <div class="result-mood">${esc(c.moodLabel || 'a figurine')}</div>
-              </div>
-              <div class="result-actions">
-                <button class="result-btn primary" onclick="event.stopPropagation();downloadOne('${c.id}')">Download</button>
-              </div>
-            </div>
-          </div>${warnHtml}`
-}
-
-function bringToFront(cardId) {
-  const idx = state.stack.findIndex(c => c.id === cardId)
-  if (idx <= 0) return
-  const [card] = state.stack.splice(idx, 1)
-  state.stack.unshift(card)
-  state.activeId = cardId
-  renderStack()
-}
-
-function retryCard(cardId) {
-  const card = state.stack.find(c => c.id === cardId)
-  if (!card) return
-  state.stack = state.stack.filter(c => c.id !== cardId)
-  renderStack()
-  runStyle(card.style, card.variant || 'standard')
-}
-
-function downloadOne(cardId) {
-  const card = state.stack.find(c => c.id === cardId)
-  if (!card || !card.imageUrl) return
-  const a = document.createElement('a')
-  a.href = card.imageUrl
-  a.download = `minirama-${card.style}${card.variant && card.variant !== 'standard' ? '-' + card.variant : ''}.jpg`
-  a.click()
-}
-
-function downloadAll() {
-  state.stack.filter(c => c.state === 'done').forEach((card, i) => {
-    setTimeout(() => downloadOne(card.id), i * 200)
-  })
-}
-
-function openLightbox(src) {
-  const lb = document.createElement('div')
-  lb.className = 'lightbox'
-  lb.onclick = () => lb.remove()
-  lb.innerHTML = `<img src="${src}">`
-  document.body.appendChild(lb)
-}
+function selectRawQuality(){ /* no-op — NB2 has no quality tiers */ }
 </script>
+
+<!-- Lightbox for click-to-enlarge queue card renders -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox(event)" aria-label="Close">×</button>
+  <img id="lightboxImg" alt="" onclick="event.stopPropagation()">
+</div>
+
 </body>
 </html>

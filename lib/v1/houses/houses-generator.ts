@@ -40,6 +40,45 @@ const SYNC_WAIT_SECONDS = 60
 const POLL_MAX_ATTEMPTS = 30
 const POLL_DELAY_MS     = 2000
 
+// Rate-limit retry config — handles 429s from Replicate's shared NB2 pool.
+// NB2 is one of the hottest models on Replicate; transient 429s from pool
+// scaling are expected. Three retries with exponential backoff covers most
+// transient saturation. Honors Retry-After header when present.
+const MAX_RATE_LIMIT_RETRIES = 3
+const BASE_RETRY_DELAY_MS    = 2000   // 2s, 4s, 8s
+
+async function fetchWithRateLimitRetry(
+  url:     string,
+  options: RequestInit,
+  context: string,
+): Promise<Response> {
+  for (let attempt = 0; attempt <= MAX_RATE_LIMIT_RETRIES; attempt++) {
+    const res = await fetch(url, options)
+
+    if (res.status !== 429) return res
+    if (attempt === MAX_RATE_LIMIT_RETRIES) return res
+
+    const retryAfter = res.headers.get('Retry-After')
+    let delayMs: number
+    if (retryAfter) {
+      const seconds = Number(retryAfter)
+      delayMs = Number.isFinite(seconds) && seconds > 0
+        ? seconds * 1000
+        : BASE_RETRY_DELAY_MS * Math.pow(2, attempt)
+    } else {
+      delayMs = BASE_RETRY_DELAY_MS * Math.pow(2, attempt)
+    }
+
+    console.warn(
+      `[${context}] Replicate 429, retry ${attempt + 1}/${MAX_RATE_LIMIT_RETRIES} ` +
+      `after ${delayMs}ms${retryAfter ? ` (Retry-After: ${retryAfter}s)` : ''}`,
+    )
+    await new Promise(r => setTimeout(r, delayMs))
+  }
+
+  throw new Error('fetchWithRateLimitRetry exhausted retries')
+}
+
 export async function generateHouse(input: {
   request:           GenerateRequest
   replicateApiToken: string
@@ -95,7 +134,7 @@ export async function generateHouse(input: {
     },
   }
 
-  const res = await fetch(REPLICATE_URL, {
+  const res = await fetchWithRateLimitRetry(REPLICATE_URL, {
     method:  'POST',
     headers: {
       'Authorization':  `Token ${input.replicateApiToken}`,
@@ -103,7 +142,7 @@ export async function generateHouse(input: {
       'Prefer':         `wait=${SYNC_WAIT_SECONDS}`,
     },
     body: JSON.stringify(body),
-  })
+  }, 'houses')
 
   if (!res.ok) {
     const errText = await res.text()
@@ -142,10 +181,18 @@ export async function generateHouse(input: {
   // Opt-in during pilot (request.refine === true). Requires openaiApiKey.
   // Soft-fails to the Pass 1 output on any error — Pass 2 failure is
   // never fatal to the render.
+  // Artists Gallery presets bypass both post-stages: their prompts bake
+  // scene, framing, and medium. The miniature-register refine pass and
+  // photorealistic outpaint fill would each break the medium.
+  const artistsPreset = preset.mode === 'artists'
+  if (artistsPreset && (input.request.refine === true || input.request.expand !== false)) {
+    console.log(`[houses/generate] preset=${preset.id} artists mode — refine and outpaint forced off`)
+  }
+
   let refined = false
   let refineDurationMs: number | undefined = undefined
   let refinePromptUsed: string | undefined = undefined
-  const wantRefine = input.request.refine === true
+  const wantRefine = !artistsPreset && input.request.refine === true
   if (wantRefine) {
     if (!input.openaiApiKey) {
       console.warn(
@@ -178,7 +225,7 @@ export async function generateHouse(input: {
   // un-expanded image if Stability returns an error.
   let expanded = false
   let expandDurationMs: number | undefined = undefined
-  const wantExpand = input.request.expand !== false
+  const wantExpand = !artistsPreset && input.request.expand !== false
   if (wantExpand) {
     try {
       const exp = await expandHouseImage({ imageB64: b64 })

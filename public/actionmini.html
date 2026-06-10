@@ -9,26 +9,46 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* Surfaces */
-  --bg:           #FAFAF7;
+  /* Liten & Co — Landscapes brand tokens (warm beige paper + forest green) */
+  --bg:           #F4F1EA;
   --surface:      #FFFFFF;
-  --surface-2:    #F4F2EC;
-  --border:       #E8E4DA;
-  --border-strong:#D4CEC0;
+  --surface-2:    #EDE8DD;
+  --bg-soft:      #EDE8DD;
+  --bg-deeper:    #E5DFD0;
+  --border:       #D7CFBE;
+  --border-strong:#C8BFA8;
+  --hairline:     #D7CFBE;
+  --hairline-soft:#E5DFD0;
 
   /* Text */
-  --ink:    #1A1814;
-  --ink-2:  #5C564E;
-  --ink-3:  #8E877C;
+  --ink:       #1F1B14;
+  --ink-2:     #5A5246;
+  --ink-3:     #8E8676;
+  --ink-soft:  #5A5246;
+  --ink-faint: #8E8676;
 
-  /* Accent + state */
-  --accent:      #6B5BA8;
-  --accent-hover:#5A4D90;
-  --accent-soft: #EFEBF7;
-  --success:     #4A8A6E;
+  /* CTA + state */
+  --accent:        #3F4A2E;   /* CTA only — Run button */
+  --accent-hover:  #2F3722;
+  --accent-soft:   #3F4A2E14;
+
+  /* Selected/active state — sage olive (distinct from CTA so selections don't compete with Run) */
+  --selected:        #8d997a;
+  --selected-hover:  #7d8b6c;
+  --selected-soft:   rgba(141, 153, 122, .20);
+
+  /* Tier accent (subtle left border on material tiles) */
+  --brass:        #8B6F3E;
+  --signature:    #8B6F3E;
+  --premium:      #5A5246;
+  --base:         #8E8676;
+
+  /* Status */
+  --success:     #3F4A2E;
   --success-soft:#E8F0EB;
-  --danger:      #A85050;
-  --danger-soft: #F5EAEA;
+  --danger:      #8B3E3E;
+  --danger-soft: #8B3E3E14;
+  --error:       #8B3E3E;
 
   /* Type */
   --serif: 'Cormorant Garamond', Georgia, serif;
@@ -298,41 +318,92 @@ textarea.input-field{
 }
 .btn-bar.cols-2{grid-template-columns:1fr 1fr}
 .btn-bar.cols-3{grid-template-columns:1fr 1fr 1fr}
+.btn-bar.cols-5{grid-template-columns:repeat(5,1fr)}
+.btn-bar.cols-6{grid-template-columns:repeat(6,1fr)}
+
+/* Type-btn — used for Location, Scale, Aspect bars. Pill look mirroring Landscapes' .pill */
+.type-btn{
+  background:var(--bg-soft);
+  border:1px solid var(--hairline);
+  border-radius:99px;
+  padding:.35rem .5rem;
+  font-family:var(--sans);
+  font-size:.72rem;
+  font-weight:500;
+  color:var(--ink-soft);
+  letter-spacing:.01em;
+  cursor:pointer;
+  transition:all .15s;
+  text-align:center;
+  min-height:30px;
+}
+.type-btn:hover:not(.active):not(:disabled){
+  border-color:var(--ink-soft);
+  color:var(--ink);
+}
+.type-btn.active{
+  background:var(--selected);
+  border-color:var(--selected);
+  color:#fff;
+  font-weight:600;
+}
+.type-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Location pills (cols-5) get a touch more padding for legibility — labels can be longer */
+#locationBar .type-btn{padding:.4rem .55rem;font-size:.7rem;line-height:1.15}
+#aspectBar .type-btn{font-family:var(--mono);font-size:.7rem}
+/* Material tile — mirrors Landscapes' .material-tile (left-border tier accent) */
 .bbtn{
+  position:relative;
   display:flex;
   align-items:center;
-  justify-content:center;
+  justify-content:flex-start;
   gap:8px;
-  padding:10px 12px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:6px;
+  padding:.5rem .55rem .55rem .65rem;
+  background:var(--bg-soft);
+  border:1px solid var(--hairline);
+  border-left:2px solid var(--hairline);
+  border-radius:4px;
   cursor:pointer;
-  color:var(--ink-2);
+  color:var(--ink);
   font-family:var(--sans);
-  font-size:12px;
+  font-size:.8rem;
   font-weight:500;
+  letter-spacing:.005em;
+  text-align:left;
   transition:all .15s;
   min-height:36px;
 }
-.bbtn:hover:not(.disabled):not(.active){
-  border-color:var(--border-strong);
-  color:var(--ink);
+.bbtn:hover:not(.disabled):not(.active):not(.selected){
+  border-color:var(--ink-soft);
 }
+
+/* Tier accent — left border color */
+.bbtn.tier-base       { border-left-color:var(--ink-faint); opacity:.96; }
+.bbtn.tier-premium    { border-left-color:var(--ink-soft); }
+.bbtn.tier-signature  { border-left-color:var(--brass); }
+
+/* Selected (multi-select queue) — sage olive */
+.bbtn.selected,
 .bbtn.active{
-  border-color:var(--accent);
-  background:var(--accent-soft);
-  color:var(--accent);
+  background:var(--selected);
+  border-color:var(--selected);
+  border-left-color:var(--selected);
+  color:#fff;
+  font-weight:600;
 }
+
 .bbtn.disabled{
   opacity:.45;
   cursor:not-allowed;
   background:transparent;
 }
+
 .bbtn-icon{
   width:14px;height:14px;
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;
+  margin-right:.1rem;
 }
 .bbtn-icon svg{
   width:14px;height:14px;
@@ -342,10 +413,12 @@ textarea.input-field{
   stroke-linecap:round;
   stroke-linejoin:round;
 }
+
 .bbtn-soon{
+  margin-left:auto;
   font-family:var(--mono);
   font-size:9px;
-  color:var(--ink-3);
+  color:var(--ink-faint);
   letter-spacing:.04em;
   text-transform:uppercase;
 }
@@ -472,19 +545,23 @@ textarea.input-field{
   text-transform:uppercase;
   transition:color .15s;
 }
-.materials-count.has-selection{color:var(--accent)}
+.materials-count.has-selection{color:var(--selected-hover)}
 .materials-hint{
   font-size:11px;
-  color:var(--ink-3);
+  color:var(--ink-faint);
   margin-top:8px;
   letter-spacing:.01em;
+  font-family:var(--serif);
+  font-style:italic;
 }
 
-/* Multi-select state for material grid — overrides single-select .active */
+/* Multi-select state for material grid — sage olive (selected token) */
 .btn-bar.cols-3 .bbtn.selected{
-  border-color:var(--accent);
-  background:var(--accent-soft);
-  color:var(--accent);
+  background:var(--selected);
+  border-color:var(--selected);
+  border-left-color:var(--selected);
+  color:#fff;
+  font-weight:600;
   position:relative;
 }
 .btn-bar.cols-3 .bbtn.selected::before{
@@ -493,9 +570,10 @@ textarea.input-field{
   top:5px;right:5px;
   width:5px;height:5px;
   border-radius:50%;
-  background:var(--accent);
+  background:#fff;
+  opacity:.85;
 }
-/* Per-preset render status */
+/* Per-preset render status — running uses CTA accent (forest green) */
 .btn-bar.cols-3 .bbtn.running{border-color:var(--accent)}
 .btn-bar.cols-3 .bbtn.running::after{
   content:'';
@@ -1096,6 +1174,38 @@ textarea.input-field{
   color:rgba(255,255,255,.5);
   letter-spacing:.04em;
 }
+  /* ── BOTTOM RENDER LOG STRIP ────────────────────────────── */
+  /* Console-style log of the last N renders. Shows pipeline stages,
+     decisions, scores, retries, errors. "Relevant feedback only" —
+     no full prompts, no raw API output. */
+  .render-log {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    max-height: 180px; overflow-y: auto;
+    background: rgba(28,28,28,0.95); color: #d8d4cc;
+    border-top: 1px solid #444;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; line-height: 1.5;
+    padding: 6px 14px 8px; z-index: 999;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+  }
+  .render-log:empty { display: none; }
+  .render-log .row { padding: 2px 0; border-bottom: 1px solid #2a2a2a; }
+  .render-log .row:last-child { border-bottom: none; }
+  .render-log .name { color: #e8c172; font-weight: 600; }
+  .render-log .meta { color: #888; }
+  .render-log .stage-ok { color: #7ec98c; }
+  .render-log .stage-skip { color: #888; }
+  .render-log .stage-fail { color: #e57373; }
+  .render-log .score-pass { color: #7ec98c; font-weight: 600; }
+  .render-log .score-fail { color: #f0a050; font-weight: 600; }
+  .render-log .retry { color: #f0a050; font-style: italic; }
+  .render-log .clear-btn {
+    position: sticky; top: 0; right: 0; float: right;
+    background: #333; color: #999; border: 1px solid #555;
+    padding: 1px 8px; font-size: 10px; cursor: pointer;
+    border-radius: 3px;
+  }
+  .render-log .clear-btn:hover { background: #444; color: #ccc; }
 </style>
 </head>
 <body>
@@ -1115,7 +1225,7 @@ textarea.input-field{
     <symbol id="i-wax"        viewBox="0 0 24 24"><path d="M12 3l5 7v8a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3v-8z"/><path d="M12 3v3"/></symbol>
     <symbol id="i-bronze"     viewBox="0 0 24 24"><path d="M5 21h14M7 21V8l5-4 5 4v13M10 14h4"/></symbol>
     <symbol id="i-plushy"     viewBox="0 0 24 24"><circle cx="9" cy="9" r="2"/><circle cx="15" cy="9" r="2"/><path d="M5 16c0-3 3-6 7-6s7 3 7 6v3a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/></symbol>
-    <symbol id="i-metals"     viewBox="0 0 24 24"><path d="M3 12l4-7 4 7M11 12l4-7 4 7M3 12h8M11 12h8M5 12v9M9 12v9M13 12v9M17 12v9"/></symbol>
+    <symbol id="i-iron"       viewBox="0 0 24 24"><path d="M13 5l3-3 6 6-3 3zM14.5 9.5L4 20M2 18l4 4"/></symbol>
     <symbol id="i-terracotta" viewBox="0 0 24 24"><path d="M6 21V9l6-5 6 5v12M6 13l3 1M14 12l3 2M9 17l4 1"/></symbol>
     <symbol id="i-ceramic"    viewBox="0 0 24 24"><path d="M5 21V11c0-3 3-5 7-5s7 2 7 5v10M3 21h18"/><path d="M8 15l2-1M14 13l2 1"/></symbol>
     <symbol id="i-alabaster"  viewBox="0 0 24 24"><path d="M8 21V11c0-3 2-7 4-7s4 4 4 7v10M5 21h14"/><circle cx="12" cy="13" r="1.5"/></symbol>
@@ -1166,16 +1276,6 @@ textarea.input-field{
       </div>
 
       <div class="section">
-        <details class="refinements" id="refinementsDetails" open>
-          <summary class="refinements-summary">
-            <span class="section-label">Refinements</span>
-            <span class="refinements-count" id="refinementsCount">6 of 6 on</span>
-          </summary>
-          <div class="refinements-list" id="refinementsList"></div>
-        </details>
-      </div>
-
-      <div class="section">
         <div class="materials-hdr">
           <div class="section-label">Materials</div>
           <div class="materials-count" id="materialsCount">0 selected</div>
@@ -1187,14 +1287,28 @@ textarea.input-field{
       <div class="section">
         <div class="materials-hdr">
           <div class="section-label">Location</div>
-          <div class="materials-count" id="locationCurrent">On a desk</div>
+          <div class="materials-count" id="locationCurrent">Desk</div>
         </div>
-        <div class="btn-bar cols-3" id="locationBar">
-          <button class="type-btn" data-loc="in_context" onclick="selectLocation('in_context')">In context</button>
-          <button class="type-btn active" data-loc="on_a_desk" onclick="selectLocation('on_a_desk')">On a desk</button>
-          <button class="type-btn" data-loc="on_a_shelf" onclick="selectLocation('on_a_shelf')">On a shelf</button>
+        <div class="btn-bar cols-5" id="locationBar">
+          <button class="type-btn" data-loc="in_situ" onclick="selectLocation('in_situ')">In Environment</button>
+          <button class="type-btn active" data-loc="desk" onclick="selectLocation('desk')">Desk</button>
+          <button class="type-btn" data-loc="shelf" onclick="selectLocation('shelf')">Shelf</button>
+          <button class="type-btn" data-loc="workshop" onclick="selectLocation('workshop')">Workshop</button>
+          <button class="type-btn" data-loc="pedestal" onclick="selectLocation('pedestal')">Pedestal</button>
         </div>
         <div class="materials-hint">Where the sculpture is staged. Same setting for every material.</div>
+      </div>
+
+      <div class="section">
+        <div class="materials-hdr">
+          <div class="section-label">Scale</div>
+          <div class="materials-count" id="scaleCurrent">75% — Staged</div>
+        </div>
+        <div class="btn-bar cols-2" id="scaleBar">
+          <button class="type-btn active" data-scale="close_up" onclick="selectScale('close_up')">Staged</button>
+          <button class="type-btn" data-scale="fill" onclick="selectScale('fill')">Close Up</button>
+        </div>
+        <div class="materials-hint">How much of the frame the Subject (figure + base) fills.</div>
       </div>
 
       <div class="section">
@@ -1204,17 +1318,11 @@ textarea.input-field{
         </div>
         <div class="btn-bar cols-6" id="aspectBar" style="gap:4px">
           <button class="type-btn active" data-aspect="1:1" onclick="selectAspect('1:1')">1:1</button>
-          <button class="type-btn" data-aspect="4:3" onclick="selectAspect('4:3')">4:3</button>
           <button class="type-btn" data-aspect="3:2" onclick="selectAspect('3:2')">3:2</button>
-          <button class="type-btn" data-aspect="16:9" onclick="selectAspect('16:9')">16:9</button>
-          <button class="type-btn" data-aspect="21:9" onclick="selectAspect('21:9')">21:9</button>
-          <button class="type-btn" data-aspect="5:4" onclick="selectAspect('5:4')">5:4</button>
-        </div>
-        <div class="btn-bar cols-6" style="gap:4px;margin-top:4px">
           <button class="type-btn" data-aspect="2:3" onclick="selectAspect('2:3')">2:3</button>
+          <button class="type-btn" data-aspect="4:3" onclick="selectAspect('4:3')">4:3</button>
           <button class="type-btn" data-aspect="3:4" onclick="selectAspect('3:4')">3:4</button>
-          <button class="type-btn" data-aspect="4:5" onclick="selectAspect('4:5')">4:5</button>
-          <button class="type-btn" data-aspect="9:16" onclick="selectAspect('9:16')">9:16</button>
+          <button class="type-btn" data-aspect="16:9" onclick="selectAspect('16:9')">16:9</button>
         </div>
         <div class="materials-hint">Output dimensions for the render.</div>
       </div>
@@ -1283,21 +1391,21 @@ const ANALYZE = '/api/v1/actionmini/analyze'
 // Mood removed — staging is locked into each preset prompt.
 
 const PRES = [
-  // Row 1 — accessible / base
-  { k:'resin',                   label:'Resin',        icon:'i-resin',      disabled:false },
-  { k:'plushy',                  label:'Plushy',       icon:'i-plushy',     disabled:false },
-  { k:'carved_wood',             label:'Wood',         icon:'i-wood',       disabled:false },
-  // Row 2 — premium materials
-  { k:'wax_bronze',              label:'Wax',          icon:'i-wax',        disabled:false },
-  { k:'painted_ceramic_cracked', label:'Ceramic',      icon:'i-ceramic',    disabled:false },
-  { k:'terracotta_cracked',      label:'Terracotta',   icon:'i-terracotta', disabled:false },
-  // Row 3 — signature materials
-  { k:'bronze_bronze',           label:'Bronze',       icon:'i-bronze',     disabled:false },
-  { k:'mixed_metals',            label:'Metals',       icon:'i-metals',     disabled:false },
-  { k:'alabaster',               label:'Alabaster',    icon:'i-alabaster',  disabled:false },
-  // Row 4 — staging-led presets
-  { k:'window_sill',             label:'Window Sill',  icon:'i-window',     disabled:false },
-  { k:'trophy_shelf',            label:'Trophy Shelf', icon:'i-trophy',     disabled:false },
+  // Base — accessible
+  { k:'resin',                   label:'Resin',        icon:'i-resin',      tier:'base',      disabled:false },
+  { k:'plushy',                  label:'Plushy',       icon:'i-plushy',     tier:'base',      disabled:false },
+  // Premium
+  { k:'carved_wood',             label:'Wood',         icon:'i-wood',       tier:'premium',   disabled:false },
+  { k:'wax_bronze',              label:'Wax',          icon:'i-wax',        tier:'premium',   disabled:false },
+  { k:'painted_ceramic_cracked', label:'Ceramic',      icon:'i-ceramic',    tier:'premium',   disabled:false },
+  // Signature
+  { k:'terracotta_cracked',      label:'Terracotta',   icon:'i-terracotta', tier:'signature', disabled:false },
+  { k:'bronze_bronze',           label:'Bronze',       icon:'i-bronze',     tier:'signature', disabled:false },
+  { k:'iron',                    label:'Iron',         icon:'i-iron',       tier:'signature', disabled:false },
+  { k:'alabaster',               label:'Alabaster',    icon:'i-alabaster',  tier:'signature', disabled:false },
+  // V6: window_sill and trophy_shelf removed — they were locations
+  // masquerading as materials. Pick In Environment / Shelf with any
+  // material to get those staging registers.
 ]
 const PRES_LABEL = Object.fromEntries(PRES.map(p => [p.k, p.label]))
 
@@ -1317,13 +1425,15 @@ let detected = {
 const selectedPresets = new Set()
 const presetStatus = {}   // { [presetId]: 'running' | 'done' | 'error' }
 
-// Location — global staging selector. User picks one of three. Defaults to on_a_desk.
+// Location — global staging selector. User picks one of five. Defaults to desk.
 const LOCATION_LABELS = {
-  in_context: 'In context',
-  on_a_desk:  'On a desk',
-  on_a_shelf: 'On a shelf',
+  in_situ:   'In Environment',
+  desk:      'Desk',
+  shelf:     'Shelf',
+  workshop:  'Workshop',
+  pedestal:  'Pedestal',
 }
-let currentLocation = 'on_a_desk'
+let currentLocation = 'desk'
 
 function selectLocation(locId) {
   if (!LOCATION_LABELS[locId]) return
@@ -1348,17 +1458,19 @@ function selectAspect(ratio) {
   if (cur) cur.textContent = ratio
 }
 
-// Refinements — six toggleable blocks. Defaults all on (matches wrestler-shot
-// quality bar). Each refinement adds a guidance block to the prompt.
-const REFINEMENT_DEFS = [
-  { k:'craftDetail',      name:'Craft detail',      desc:'Pushes finer surface texture, sub-features on the sculpture itself' },
-  { k:'sceneDetail',      name:'Scene detail',      desc:'Pushes density in the surrounding environment — props, peripheral elements' },
-  { k:'kineticEffects',   name:'Kinetic effects',   desc:'Frozen-motion particles around the figure — dust, spray, debris' },
-  { k:'sceneEnvironment', name:'Scene environment', desc:'Honor the global Location setting (in context / on a desk / on a shelf)' },
-  { k:'dramaticLighting', name:'Dramatic lighting', desc:'Per-material atmospheric haze — soft diffused glow, no hard shafts' },
-  { k:'margins',          name:'20% horizontal margins', desc:'Subject occupies ~60% of width with breathing room left and right' },
-]
-const refinements = Object.fromEntries(REFINEMENT_DEFS.map(d => [d.k, true]))
+// Scale — composition mode. close_up → "Staged" 75%; fill → "Close Up" 90%.
+// ID/label inversion is intentional and matches Landscapes.
+let currentScale = 'close_up'
+
+function selectScale(scale) {
+  if (scale !== 'close_up' && scale !== 'fill') return
+  currentScale = scale
+  document.querySelectorAll('#scaleBar .type-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.scale === scale)
+  })
+  const cur = document.getElementById('scaleCurrent')
+  if (cur) cur.textContent = scale === 'close_up' ? '75% — Staged' : '90% — Close Up'
+}
 
 let stageState = 'empty'
 
@@ -1373,40 +1485,6 @@ function formatDuration(ms) {
   return `${m}m ${String(s).padStart(2, '0')}s`
 }
 
-function buildRefinementsList() {
-  const list = document.getElementById('refinementsList')
-  if (!list) return
-  list.innerHTML = ''
-  REFINEMENT_DEFS.forEach(def => {
-    const row = document.createElement('div')
-    row.className = 'refinement-row' + (refinements[def.k] ? ' on' : '')
-    row.onclick = (e) => { e.preventDefault(); toggleRefinement(def.k) }
-    row.innerHTML = `
-      <div class="refinement-toggle"></div>
-      <div class="refinement-text">
-        <div class="refinement-name">${def.name}</div>
-        <div class="refinement-desc">${def.desc}</div>
-      </div>
-    `
-    list.appendChild(row)
-  })
-  updateRefinementsCount()
-}
-
-function toggleRefinement(k) {
-  refinements[k] = !refinements[k]
-  buildRefinementsList()
-}
-
-function updateRefinementsCount() {
-  const el = document.getElementById('refinementsCount')
-  if (!el) return
-  const total = REFINEMENT_DEFS.length
-  const on    = REFINEMENT_DEFS.filter(d => refinements[d.k]).length
-  el.textContent = `${on} of ${total} on`
-  el.classList.toggle('has-off', on < total)
-}
-
 function buildTypeBar() {
   const bar = document.getElementById('typeBar')
   bar.innerHTML = ''
@@ -1416,12 +1494,11 @@ function buildTypeBar() {
     b.dataset.preset = p.k
     const isSelected = selectedPresets.has(p.k)
     const status = presetStatus[p.k]
-    // Status classes (running/done/error) take visual precedence over selected
-    // but selected stays in the class list so toggle behaviour is preserved.
     const statusClass = status ? ' ' + status : ''
     const selClass    = isSelected ? ' selected' : ''
     const disClass    = p.disabled ? ' disabled' : ''
-    b.className = 'bbtn' + selClass + statusClass + disClass
+    const tierClass   = p.tier ? ' tier-' + p.tier : ''
+    b.className = 'bbtn' + tierClass + selClass + statusClass + disClass
     b.innerHTML = `<span class="bbtn-icon"><svg><use href="#${p.icon}"/></svg></span><span>${p.label}</span>` +
                   (p.disabled ? '<span class="bbtn-soon">Soon</span>' : '')
     if (!p.disabled) b.onclick = () => togglePreset(p.k)
@@ -1749,9 +1826,9 @@ async function generateOne(p) {
         preset:            p.pres,
         kinetic_medium:    detected.kinetic_medium || 'other',
         location:          currentLocation,
+        scale:             currentScale,
         aspect_ratio:      currentAspect,
         display_name:      detected.display_name || p.name,
-        refinements:       { ...refinements },
       })
     })
     if(!res.ok) {
@@ -1769,6 +1846,7 @@ async function generateOne(p) {
     }
     if (r?.image_b64) {
       mkResult(p.name, r, p)
+      logRender(p.name, p.pres, p.loc || 'desk', p.scl || 'close_up', r)
     } else {
       // Route returned 200 but image is null — surface the structured error
       const err = new Error(r?.fatal_error || r?.error_code || 'No image returned')
@@ -1779,6 +1857,7 @@ async function generateOne(p) {
   } catch(e) {
     console.error('[generateOne] Failed:', { preset: p.pres, message: e.message, detail: e.detail })
     mkError(p.name, e.message, e.detail, p)
+    logRenderError(p.name, p.pres, p.loc || 'desk', p.scl || 'close_up', e.message)
     throw e
   }
 }
@@ -2072,8 +2151,9 @@ async function applyRefine(name) {
         preset:            presetId,
         kinetic_medium:    detected.kinetic_medium || 'other',
         location:          originalLocation,
+        scale:             currentScale,
+        aspect_ratio:      currentAspect,
         display_name:      name,
-        refinements:       { ...refinements },
         refinement_tweak:  tweak,
       })
     })
@@ -2103,7 +2183,6 @@ async function applyRefine(name) {
 }
 
 // ── INITIAL UI STATE ─────────────────────────────────────────
-buildRefinementsList()
 buildTypeBar()
 updateMaterialsCount()
 updateRunAllBtn()
@@ -2117,6 +2196,124 @@ updateRunAllBtn()
   const dataUrl = 'data:image/jpeg;base64,' + handoff.b64
   handleUploadedImage(handoff.b64, short, dataUrl, { runAnalyzer: true })
 })()
+
+// ── BOTTOM RENDER LOG ─────────────────────────────────────────
+// Captures the last N render outcomes with stage timings, decisions,
+// scores, retries. Only meaningful events — no prompt dumps.
+const RENDER_LOG_MAX = 12
+
+function logRender(name, preset, location, scale, result) {
+  let strip = document.getElementById('renderLog')
+  if (!strip) {
+    strip = document.createElement('div')
+    strip.id = 'renderLog'
+    strip.className = 'render-log'
+    const clearBtn = document.createElement('button')
+    clearBtn.className = 'clear-btn'
+    clearBtn.textContent = 'clear'
+    clearBtn.onclick = () => { strip.querySelectorAll('.row').forEach(r => r.remove()) }
+    strip.appendChild(clearBtn)
+    document.body.appendChild(strip)
+  }
+
+  const row = document.createElement('div')
+  row.className = 'row'
+
+  const t = (ms) => ms == null ? '–' : `${Math.round(ms/100)/10}s`
+
+  // Build stage status segments
+  const stages = []
+
+  // Pass 2
+  if (result.refined) {
+    stages.push(`<span class="stage-ok">P2 ${t(result.refine_ms)}</span>`)
+  } else {
+    const dec = result.refine_decision || ''
+    const short = dec.includes('face_visible=true') ? 'face' :
+                  dec.includes('face_visible=false') ? 'no-face' :
+                  dec.includes('explicit') ? 'opt' : 'skip'
+    stages.push(`<span class="stage-skip">P2 skip[${short}]</span>`)
+  }
+
+  // Outpaint
+  if (result.expanded) {
+    stages.push(`<span class="stage-ok">expand ${t(result.expand_ms)}</span>`)
+  } else if (result.expand_skip) {
+    const reason = result.expand_skip.startsWith('error') ? 'fail' : 'skip'
+    stages.push(`<span class="stage-${reason==='fail'?'fail':'skip'}">expand ${reason}</span>`)
+  }
+
+  // Face swap
+  if (result.swapped) {
+    stages.push(`<span class="stage-ok">swap ${t(result.swap_ms)}</span>`)
+  } else if (result.swap_skip) {
+    const isErr = result.swap_skip.startsWith('error')
+    stages.push(`<span class="stage-${isErr?'fail':'skip'}">swap ${isErr?'fail':'skip'}</span>`)
+  }
+
+  // Score
+  let scoreSeg = ''
+  if (result.final_score != null) {
+    const cls = result.final_score >= 7 ? 'score-pass' : 'score-fail'
+    scoreSeg = ` · <span class="${cls}">${result.final_score}/10</span>`
+  }
+
+  // Retries
+  let retrySeg = ''
+  const attemptCount = result.attempts ? result.attempts.length : 1
+  if (attemptCount > 1) {
+    retrySeg = ` · <span class="retry">${attemptCount} attempts</span>`
+  }
+
+  const total = result.duration_ms || (result.attempts || []).reduce((s, a) => s + (a.total_ms || 0), 0)
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+  // Override indicators — surface raw mode, V7, and expand-disabled
+  let overrides = ''
+  if (result.raw_prompt_used) overrides += ' <span class="retry">RAW-P1</span>'
+  if (result.raw_pass2_prompt_used) overrides += ' <span class="retry">RAW-P2</span>'
+  if (result.use_v7) overrides += ` <span class="retry">V7${result.v7_mode === 'gallery' ? '·gal' : ''}</span>`
+  if (result.expand_requested === false) overrides += ' <span class="meta">no-expand</span>'
+
+  row.innerHTML =
+    `<span class="meta">${time}</span> · ` +
+    `<span class="name">${name}</span> ` +
+    `<span class="meta">${preset}/${location}/${scale}</span>${overrides} · ` +
+    stages.join(' · ') +
+    scoreSeg + retrySeg +
+    ` · <span class="meta">${t(total)} total</span>`
+
+  strip.appendChild(row)
+
+  // Cap entries
+  const rows = strip.querySelectorAll('.row')
+  if (rows.length > RENDER_LOG_MAX) {
+    for (let i = 0; i < rows.length - RENDER_LOG_MAX; i++) rows[i].remove()
+  }
+
+  // Auto-scroll
+  strip.scrollTop = strip.scrollHeight
+}
+
+function logRenderError(name, preset, location, scale, errMsg) {
+  let strip = document.getElementById('renderLog')
+  if (!strip) {
+    strip = document.createElement('div')
+    strip.id = 'renderLog'
+    strip.className = 'render-log'
+    document.body.appendChild(strip)
+  }
+  const row = document.createElement('div')
+  row.className = 'row'
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  row.innerHTML =
+    `<span class="meta">${time}</span> · ` +
+    `<span class="name">${name}</span> ` +
+    `<span class="meta">${preset}/${location}/${scale}</span> · ` +
+    `<span class="stage-fail">FAILED — ${errMsg}</span>`
+  strip.appendChild(row)
+  strip.scrollTop = strip.scrollHeight
+}
 </script>
 
 </body>

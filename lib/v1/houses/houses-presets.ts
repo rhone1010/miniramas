@@ -6,6 +6,7 @@
 
 import type { Preset, PresetId, EnvironmentId, TimeOfDay } from './houses-shared'
 import { resolveEnvironment, resolveTimeOfDay } from './houses-shared'
+import { buildHousesArtistsPrompt, isHousesArtistsPreset } from './houses-artists'
 import {
   // Always-on stack
   COLLECTIBLE_ANCHOR_BLOCK,
@@ -321,6 +322,58 @@ export const PRESETS: Record<PresetId, Preset> = {
     layer:             LAYER_ABANDONED,
   },
 
+  // ───────────────────────────────────────────────────────
+  // ARTISTS GALLERY (4) — full custom prompts in houses-artists.ts.
+  // The clause/rule/lighting fields are placeholders; buildPresetPrompt
+  // routes artists-mode presets to buildHousesArtistsPrompt BEFORE these
+  // fields are read (mirrors the Portraits '__custom_artists_prompt__'
+  // pattern). Scene, lighting, and framing are baked into each prompt;
+  // the generator forces outpaint and the refine pass OFF for these.
+  // ───────────────────────────────────────────────────────
+  impressionist_oil: {
+    id:               'impressionist_oil',
+    mode:             'artists',
+    label:            'Impressionist',
+    tier:             'signature',
+    sculptureClause:  '__custom_artists_prompt__',
+    styleClause:      '__custom_artists_prompt__',
+    materialRule:     '__custom_artists_prompt__',
+    lighting:         '__custom_artists_prompt__',
+  },
+
+  watercolor_study: {
+    id:               'watercolor_study',
+    mode:             'artists',
+    label:            'Watercolor Study',
+    tier:             'signature',
+    sculptureClause:  '__custom_artists_prompt__',
+    styleClause:      '__custom_artists_prompt__',
+    materialRule:     '__custom_artists_prompt__',
+    lighting:         '__custom_artists_prompt__',
+  },
+
+  charcoal_chalk: {
+    id:               'charcoal_chalk',
+    mode:             'artists',
+    label:            'Charcoal & Chalk',
+    tier:             'premium',
+    sculptureClause:  '__custom_artists_prompt__',
+    styleClause:      '__custom_artists_prompt__',
+    materialRule:     '__custom_artists_prompt__',
+    lighting:         '__custom_artists_prompt__',
+  },
+
+  pen_ink: {
+    id:               'pen_ink',
+    mode:             'artists',
+    label:            'Pen & Ink',
+    tier:             'premium',
+    sculptureClause:  '__custom_artists_prompt__',
+    styleClause:      '__custom_artists_prompt__',
+    materialRule:     '__custom_artists_prompt__',
+    lighting:         '__custom_artists_prompt__',
+  },
+
 }
 
 // ── ACCESSORS ─────────────────────────────────────────────────
@@ -385,6 +438,16 @@ export function buildPresetPrompt(input: {
   lightingVariantId?: string
   refinementTweak?:   string
 }): string {
+
+  // Artists Gallery presets ship a full custom prompt — scene, lighting,
+  // and framing baked in. Route them out BEFORE the standard stack is
+  // assembled so the placeholder fields are never read.
+  if (input.preset.mode === 'artists' && isHousesArtistsPreset(input.preset.id)) {
+    return buildHousesArtistsPrompt({
+      presetId:        input.preset.id,
+      refinementTweak: input.refinementTweak,
+    })
+  }
 
   const env       = resolveEnvironment(input.preset, input.environmentId)
   const tod       = resolveTimeOfDay(input.preset, input.timeOfDay)

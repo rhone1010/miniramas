@@ -99,9 +99,19 @@ The room beyond is a warm study softly out of focus — bookshelves, framed pain
 Warm directional light wraps the model from one side. No visible light fixtures in frame. The camera pulls back to show the whole scene.
 `.trim()
 
+const ROOM_IN_HOUSE_BLOCK = `
+ENVIRONMENT — ROOM IN THIS HOUSE:
+The plinth sits on a side table or pedestal inside an interior room of this very house — the room's character matches the building's architectural style and the mood of the preset (period parlor, vintage study, restored hall).
+The room is in soft focus around the plinth — period furniture, wallpaper or paneling, framed art, an architectural detail glimpsed beyond. The plinth and the model on it are razor sharp; the room recedes into atmospheric blur.
+The artifact is displayed inside the very space it depicts — a model of the house, sitting in the house.
+Soft directional natural light appropriate to the room's mood. No visible light fixtures in frame.
+The diorama is a small precious object inside a large room — the camera pulls back to show the whole scene.
+`.trim()
+
 export const ENVIRONMENT_BLOCKS: Record<EnvironmentId, string> = {
-  in_situ: IN_SITU_BLOCK,
-  desk:    DESK_BLOCK,
+  in_situ:       IN_SITU_BLOCK,
+  desk:          DESK_BLOCK,
+  room_in_house: ROOM_IN_HOUSE_BLOCK,
 }
 
 // ═══════════════════════════════════════════════════════════════
