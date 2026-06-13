@@ -35,6 +35,7 @@ import type {
 
 import { classifySubject, decideRedirect } from '@/lib/shared/subject-redirect'
 import { loadQaSettings, startQaEntry, type QaEntry } from '@/lib/shared/qa-log'
+import { applyQaOverride } from '@/lib/shared/qa-override'
 // NOTE: scoreIntake/scoreAesthetic + MIN_LONG_EDGE_PX currently live in
 // lib/bench/bench-gates.ts; relocation to lib/shared/quality-gates.ts is the
 // noted cleanup. Importing from there short-term is fine.
@@ -51,6 +52,22 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
+
+    // ── Internal-traffic guard ──────────────────────────────────
+    const internal = (() => {
+      const key = process.env.LITEN_INTERNAL_KEY
+      return !!key && req.headers.get('x-liten-internal') === key
+    })()
+
+    // ── Item 11 — preview bake gate ─────────────────────────────
+    const isPreviewBake = body.is_preview_bake === true
+    const previewBakePath: string | undefined = body.preview_bake_path
+    if (isPreviewBake && !internal) {
+      return NextResponse.json({ error: 'unauthorized' }, { status: 403 })
+    }
+    if (isPreviewBake && !previewBakePath) {
+      return NextResponse.json({ error: 'preview_bake_path required when is_preview_bake is true' }, { status: 400 })
+    }
 
     // ── Field mapping ─────────────────────────────────────────
     const sourceImageB64: string = body.source_image_b64
@@ -125,6 +142,9 @@ export async function POST(req: NextRequest) {
     if (sb && openaiApiKey) {
       try {
         qaSettings = await loadQaSettings(sb, 'portraits')
+        // Item 8b — apply per-request qa_override (internal only; silently ignored otherwise)
+        const { settings: effective } = applyQaOverride(qaSettings, 'portraits', body, internal)
+        qaSettings = effective
 
         if (qaSettings.qaEnabled) {
           const sourceBuf  = Buffer.from(sourceImageB64, 'base64')
@@ -141,8 +161,8 @@ export async function POST(req: NextRequest) {
             series: 'portraits' as const,
             settings: qaSettings,
             presetId, styleId, locationId: location, scale, sourceHash,
-            sessionId: typeof body.session_id === 'string' ? body.session_id : undefined,
-            userRef:   typeof body.user_ref   === 'string' ? body.user_ref   : undefined,
+            sessionId: isPreviewBake ? undefined : (typeof body.session_id === 'string' ? body.session_id : undefined),
+            userRef:   isPreviewBake ? undefined : (typeof body.user_ref   === 'string' ? body.user_ref   : undefined),
             detectedSubject:    classification.subjectType,
             subjectConfidence:  classification.confidence,
             subjectDescription: classification.description,
@@ -277,6 +297,31 @@ export async function POST(req: NextRequest) {
       } catch (e: any) {
         console.warn(`[portraits/generate] QA outgoing skipped: ${e?.message || 'unknown'}`)
         try { await qa.finish({ status: result.ok ? 'passed' : 'errored', durationMs, costCents }) } catch {}
+      }
+    }
+
+    // ── Item 11 — preview bake: write JPEG to storage ─────────
+    if (isPreviewBake && sb && result.ok && result.image_b64) {
+      try {
+        const jpegBuf = await sharp(Buffer.from(result.image_b64, 'base64'))
+          .jpeg({ quality: 90 })
+          .toBuffer()
+
+        const { error: uploadErr } = await sb.storage
+          .from('previews')
+          .upload(previewBakePath!, jpegBuf, {
+            contentType: 'image/jpeg',
+            upsert: true,
+          })
+        if (uploadErr) throw uploadErr
+
+        return NextResponse.json({
+          status: 'baked',
+          storage_path: previewBakePath,
+          qa_log_id: qa?.id ?? null,
+        })
+      } catch (e: any) {
+        return NextResponse.json({ error: `bake upload failed: ${e?.message}` }, { status: 500 })
       }
     }
 
