@@ -29,6 +29,7 @@
 //     is a length-1 array) for frontend symmetry.
 
 import { buildPortraitsPrompt } from './portraits-prompt'
+import sharp from 'sharp'
 import { callGptImage1 } from './portraits-gpt-image'
 import { refinePortraitsImage } from './portraits-pass2'
 import { expandPortraitImage } from './portraits-expand'
@@ -42,6 +43,8 @@ import {
   evaluateCaricatureScore,
   resolveLocation,
   defaultAspectForStyle,
+  normalizeFraming,
+  outputDimensions,
   STYLE_PIPELINE,
   MAX_ATTEMPTS,
   MAX_SOURCE_IMAGES,
@@ -53,6 +56,7 @@ import {
   type PortraitsPresetId,
   type LocationId,
   type Scale,
+  type ResolutionTier,
   type PerFigureScore,
   type HolisticCaricatureScore,
 } from './portraits-shared'
@@ -157,11 +161,12 @@ export async function generatePortraitsRender(
       `style=${styleId} preset=${presetId} location=${locationId}`,
     )
 
-    // Build prompt — minimal 11–17 word builder.
+    // Build prompt — minimal 11–17 word builder, led by the framing block.
     const prompt = buildPortraitsPrompt({
       presetId,
       locationId,
       scale,
+      framing:          req.framing,
       plaqueText:       req.plaque_text,
       advanced:         req.advanced,
       upperBodyConcept: req.upper_body_concept,
@@ -338,6 +343,29 @@ export async function generatePortraitsRender(
     lastExpandSkip = req.scale === 'fill'
       ? `pipeline: scale=fill (no margins)`
       : `pipeline: expandEnabled=false for style=${styleId}`
+  }
+
+  // ── Stage 4 (post-attempt): resolution → output dimensions ───
+  // NB2 has no pixel control (it renders at the aspect_ratio string), so
+  // the resolution tier is realized here as a resize to exact dimensions
+  // for the framing's aspect. Only runs when resolution is set — legacy
+  // callers without it keep NB2's native size. Aspect already matches the
+  // framing (route derives aspect_ratio from framing), so this is a clean
+  // scale, not a crop. Non-fatal: on failure the un-resized image ships.
+  if (finalImageB64 && req.resolution) {
+    try {
+      const framing = normalizeFraming(req.framing)
+      const { width, height } = outputDimensions(framing, req.resolution as ResolutionTier)
+      finalImageB64 = (
+        await sharp(Buffer.from(finalImageB64, 'base64'))
+          .resize(width, height, { fit: 'cover', kernel: 'lanczos3' })
+          .jpeg({ quality: 95 })
+          .toBuffer()
+      ).toString('base64')
+      console.log(`[portraits] resized → ${width}×${height} (${req.resolution} @ ${framing})`)
+    } catch (e: any) {
+      console.warn(`[portraits] resize failed (non-fatal): ${e?.message}`)
+    }
   }
 
   return {

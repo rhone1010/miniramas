@@ -20,8 +20,13 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { createHash } from 'crypto'
+import { createHash, randomUUID } from 'crypto'
 import sharp from 'sharp'
+
+import {
+  normalizeEmail, clientIpHash, checkPreviewAllowed,
+  recordPreview, storeCleanOriginal, bakeWatermark,
+} from '@/lib/store/preview'
 
 import { generatePortraitsRender } from '@/lib/v1/portraits/portraits-generator'
 import { STYLE_PIPELINE, PRESET_LABELS } from '@/lib/v1/portraits/portraits-shared'
@@ -30,12 +35,17 @@ import type {
   PortraitsPresetId,
   LocationId,
   Scale,
+  Framing,
+  ResolutionTier,
   PortraitsGenerateRequest,
+} from '@/lib/v1/portraits/portraits-shared'
+import {
+  normalizeFraming, ASPECT_FOR_FRAMING, isResolutionTier,
 } from '@/lib/v1/portraits/portraits-shared'
 
 import { classifySubject, decideRedirect } from '@/lib/shared/subject-redirect'
 import { loadQaSettings, startQaEntry, type QaEntry } from '@/lib/shared/qa-log'
-import { applyQaOverride } from '@/lib/shared/qa-override'
+import { applyQaOverride, qaOverrideAllowed } from '@/lib/shared/qa-override'
 // NOTE: scoreIntake/scoreAesthetic + MIN_LONG_EDGE_PX currently live in
 // lib/bench/bench-gates.ts; relocation to lib/shared/quality-gates.ts is the
 // noted cleanup. Importing from there short-term is fine.
@@ -53,26 +63,26 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
 
-    // ── Internal-traffic guard ──────────────────────────────────
-    const internal = (() => {
-      const key = process.env.LITEN_INTERNAL_KEY
-      return !!key && req.headers.get('x-liten-internal') === key
-    })()
-
-    // ── Item 11 — preview bake gate ─────────────────────────────
-    const isPreviewBake = body.is_preview_bake === true
-    const previewBakePath: string | undefined = body.preview_bake_path
-    if (isPreviewBake && !internal) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 403 })
-    }
-    if (isPreviewBake && !previewBakePath) {
-      return NextResponse.json({ error: 'preview_bake_path required when is_preview_bake is true' }, { status: 400 })
-    }
-
     // ── Field mapping ─────────────────────────────────────────
     const sourceImageB64: string = body.source_image_b64
     if (!sourceImageB64) {
       return NextResponse.json({ error: 'source_image_b64 required' }, { status: 400 })
+    }
+
+    // ── Preview-bake mode (internal-only) ─────────────────────────
+    // Runs the IDENTICAL pipeline (prompts, gates, QA) and only diverts
+    // the output to storage + skips user-attributed side effects, so
+    // library previews can never drift from customer renders. Auth is the
+    // x-liten-internal token specifically — NOT qaOverrideAllowed — so a
+    // header-less call is rejected even when QA_OVERRIDE_ENABLED=1 on dev.
+    const isBake = body.is_preview_bake === true
+    if (isBake) {
+      if (!bakeAuthorized(req)) {
+        return NextResponse.json({ error: 'preview_bake_forbidden' }, { status: 403 })
+      }
+      if (typeof body.preview_bake_path !== 'string' || !body.preview_bake_path) {
+        return NextResponse.json({ error: 'preview_bake_path_required' }, { status: 400 })
+      }
     }
 
     const styleId:  PortraitsStyleId  = body.style_id
@@ -103,6 +113,14 @@ export async function POST(req: NextRequest) {
 
     const scale: Scale = (body.scale as Scale) || 'close_up'
 
+    // Three-framings (S1.1): framing is the source of truth; aspect is
+    // derived from it and OVERRIDES any client aspect (a stale client can
+    // disagree — framing wins). Resolution tier drives the post-render size.
+    const framing: Framing = normalizeFraming(body.framing)
+    const aspectForFraming: string = ASPECT_FOR_FRAMING[framing]
+    const resolution: ResolutionTier | undefined =
+      isResolutionTier(body.resolution) ? body.resolution : undefined
+
     const generateRequest: PortraitsGenerateRequest = {
       source_image_b64:       sourceImageB64,
       additional_images_b64:  body.additional_images_b64 || [],
@@ -111,7 +129,9 @@ export async function POST(req: NextRequest) {
       preset_id:              presetId,
       location_id:            location,
       scale,
-      aspect_ratio:           body.aspect_ratio || undefined,
+      framing,
+      resolution,
+      aspect_ratio:           aspectForFraming,   // framing wins; client aspect ignored
       refinements:            body.refinements || undefined,
       notes:                  body.notes || undefined,
       refinement_tweak:       body.refinement_tweak || undefined,
@@ -135,6 +155,31 @@ export async function POST(req: NextRequest) {
     // Fully fail-open: any throw here is caught and the render proceeds.
     // ════════════════════════════════════════════════════════════
     const sb = supaOrNull()
+
+    // ════════════════════════════════════════════════════════════
+    // FREE PREVIEW — entry gate (item 2). Commercial enforcement:
+    // confirmed prior use blocks; infra hiccups allow (generous).
+    // The ledger row is written only AFTER a piece renders.
+    // ════════════════════════════════════════════════════════════
+    let previewEmail:  string | null = null
+    let previewIpHash: string | null = null
+    if (generateRequest.is_preview === true && !isBake) {
+      previewEmail = normalizeEmail(body.preview_email)
+      if (!previewEmail) {
+        return NextResponse.json({ error: 'preview_email_required' }, { status: 400 })
+      }
+      previewIpHash = clientIpHash(req)
+      if (sb) {
+        const gate = await checkPreviewAllowed(sb, previewEmail, previewIpHash)
+        if (!gate.allowed) {
+          return NextResponse.json(
+            { status: 'preview_already_used', reason: gate.reason },
+            { status: 403 },
+          )
+        }
+      }
+    }
+
     let qa: QaEntry | null = null
     let qaSettings: Awaited<ReturnType<typeof loadQaSettings>> | null = null
     let costCents = 0
@@ -142,9 +187,12 @@ export async function POST(req: NextRequest) {
     if (sb && openaiApiKey) {
       try {
         qaSettings = await loadQaSettings(sb, 'portraits')
-        // Item 8b — apply per-request qa_override (internal only; silently ignored otherwise)
-        const { settings: effective } = applyQaOverride(qaSettings, 'portraits', body, internal)
-        qaSettings = effective
+
+        // 8b — per-request strictness override (internal traffic only).
+        // Moves intake (source) AND fidelity/aesthetic (render) thresholds
+        // together, since every gate below reads from this one qaSettings object.
+        // No-op for customer traffic and whenever no qa_override is attached.
+        qaSettings = applyQaOverride(qaSettings, 'portraits', body, qaOverrideAllowed(req)).settings
 
         if (qaSettings.qaEnabled) {
           const sourceBuf  = Buffer.from(sourceImageB64, 'base64')
@@ -161,8 +209,8 @@ export async function POST(req: NextRequest) {
             series: 'portraits' as const,
             settings: qaSettings,
             presetId, styleId, locationId: location, scale, sourceHash,
-            sessionId: isPreviewBake ? undefined : (typeof body.session_id === 'string' ? body.session_id : undefined),
-            userRef:   isPreviewBake ? undefined : (typeof body.user_ref   === 'string' ? body.user_ref   : undefined),
+            sessionId: typeof body.session_id === 'string' ? body.session_id : undefined,
+            userRef:   typeof body.user_ref   === 'string' ? body.user_ref   : undefined,
             detectedSubject:    classification.subjectType,
             subjectConfidence:  classification.confidence,
             subjectDescription: classification.description,
@@ -173,7 +221,10 @@ export async function POST(req: NextRequest) {
           }
 
           // Redirect path — offer the right Series, do NOT generate.
-          if (!decision.match && decision.redirectSeries) {
+          // skip_redirect: the customer already saw the multi-person
+          // warning and chose "craft the most prominent person."
+          const skipRedirect = body.skip_redirect === true
+          if (!skipRedirect && !decision.match && decision.redirectSeries) {
             qa = await startQaEntry(sb, incomingBase)
             await qa.finish({ status: 'redirected', costCents, durationMs: Date.now() - t0 })
             return NextResponse.json({
@@ -300,29 +351,82 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Item 11 — preview bake: write JPEG to storage ─────────
-    if (isPreviewBake && sb && result.ok && result.image_b64) {
-      try {
-        const jpegBuf = await sharp(Buffer.from(result.image_b64, 'base64'))
-          .jpeg({ quality: 90 })
-          .toBuffer()
-
-        const { error: uploadErr } = await sb.storage
-          .from('previews')
-          .upload(previewBakePath!, jpegBuf, {
-            contentType: 'image/jpeg',
-            upsert: true,
-          })
-        if (uploadErr) throw uploadErr
-
-        return NextResponse.json({
-          status: 'baked',
-          storage_path: previewBakePath,
-          qa_log_id: qa?.id ?? null,
-        })
-      } catch (e: any) {
-        return NextResponse.json({ error: `bake upload failed: ${e?.message}` }, { status: 500 })
+    // ════════════════════════════════════════════════════════════
+    // PREVIEW-BAKE — exit (internal library bake). Runs AFTER Gate 2
+    // so QA scored the render identically to a customer render. Diverts
+    // the image to storage and returns the baked shape. Gate 0/1 rejects
+    // already returned above (the bake script swaps the source on those).
+    // ════════════════════════════════════════════════════════════
+    if (isBake) {
+      if (!result.ok || !result.image_b64) {
+        return NextResponse.json(
+          { status: 'bake_failed', error: result.fatal_error || 'generator returned no image' },
+          { status: 500 },
+        )
       }
+      if (!sb) return NextResponse.json({ error: 'supabase not configured' }, { status: 500 })
+
+      const fullPath = String(body.preview_bake_path)
+      const slash    = fullPath.indexOf('/')
+      // First path segment is the (existing, private) bucket; remainder is the key.
+      const bucket   = slash > 0 ? fullPath.slice(0, slash) : 'previews'
+      const key      = slash > 0 ? fullPath.slice(slash + 1) : fullPath
+
+      // Same delivery-JPEG spec as customer renders: q82, sRGB, progressive,
+      // EXIF stripped (sharp drops metadata unless withMetadata() is called).
+      const jpeg = await sharp(Buffer.from(result.image_b64, 'base64'))
+        .toColourspace('srgb')
+        .jpeg({ quality: 82, progressive: true, mozjpeg: true })
+        .toBuffer()
+
+      const { error: upErr } = await sb.storage
+        .from(bucket)
+        .upload(key, jpeg, { contentType: 'image/jpeg', upsert: true })
+      if (upErr) {
+        return NextResponse.json({ error: `bake_upload_failed: ${upErr.message}` }, { status: 500 })
+      }
+
+      console.log(`[portraits/generate] baked → ${fullPath} (${jpeg.length}b)`)
+      return NextResponse.json({
+        status:       'baked',
+        storage_path: fullPath,
+        qa_log_id:    (qa as any)?.id ?? null,
+      })
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // FREE PREVIEW — exit processing (item 2). Runs AFTER Gate 2 so
+    // QA scores the clean render. Order: retain clean original →
+    // bake watermark (FAIL-CLOSED: never ship clean for free) →
+    // record the ledger row (the preview is spent only now, with a
+    // real piece in hand).
+    // ════════════════════════════════════════════════════════════
+    if (previewEmail && previewIpHash && result.ok && result.image_b64) {
+      const previewId = randomUUID()
+      let storagePath: string | null = null
+      if (sb) {
+        storagePath = await storeCleanOriginal(sb, previewId, result.image_b64)
+      }
+      try {
+        result.image_b64 = await bakeWatermark(result.image_b64)
+      } catch (e: any) {
+        console.error(`[portraits/generate] watermark bake FAILED — preview withheld: ${e?.message}`)
+        return NextResponse.json({ error: 'preview_processing_failed' }, { status: 500 })
+      }
+      if (sb) {
+        await recordPreview(sb, {
+          previewId,
+          email:      previewEmail,
+          ipHash:     previewIpHash,
+          series:     'portraits',
+          preset:     String(presetId),
+          resolution: typeof body.resolution === 'string' ? body.resolution : '1k',
+          storagePath,
+        })
+      }
+      ;(result as any).preview_id   = previewId
+      ;(result as any).watermarked  = true
+      console.log(`[portraits/generate] preview shipped id=${previewId} clean_retained=${!!storagePath}`)
     }
 
     return NextResponse.json({ result })
@@ -342,6 +446,14 @@ function supaOrNull() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) return null
   return createClient(url, key, { auth: { persistSession: false } })
+}
+
+// Preview-bake gate: requires the x-liten-internal token explicitly. Unlike
+// qaOverrideAllowed this does NOT honor QA_OVERRIDE_ENABLED — a customer (or a
+// header-less dev call) must never be able to write into the preview library.
+function bakeAuthorized(req: NextRequest): boolean {
+  const tok = process.env.LITEN_INTERNAL_TOKEN
+  return !!tok && req.headers.get('x-liten-internal') === tok
 }
 
 // Score lives on the LAST attempt: realistic/resolving carry per_figure_scores[0];

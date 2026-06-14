@@ -20,8 +20,8 @@
 //      evolves (writing desk, library shelf, display niche per the carryover
 //      doc), this map is where they'll plug in.
 
-import type { PortraitsPresetId, LocationId, Scale } from './portraits-shared'
-import { DEFAULT_PLAQUE_TEXT } from './portraits-shared'
+import type { PortraitsPresetId, LocationId, Scale, Framing } from './portraits-shared'
+import { DEFAULT_PLAQUE_TEXT, DEFAULT_FRAMING } from './portraits-shared'
 
 const MATERIAL_PHRASE: Record<PortraitsPresetId, string> = {
   bronze:
@@ -156,6 +156,63 @@ function isArtistsPreset(p: PortraitsPresetId): p is ArtistsPresetId {
 const BUST_UNIVERSAL =
   `Create a substantial portrait bust, not a floating head. The sculpture must include the full head, hair, neck, both shoulders, upper chest, visible garment structure, and both upper arms ending at mid-bicep. The bust must fill the composition from head to mid-bicep. The shoulders, chest, clothing, and arms must occupy at least as much visual importance as the face — ideally hair, shoulders, chest, clothing, and arms carry 60% or more of the visual transformation, and the face carries no more than 40%. Pose has character: slight forward lean, relaxed shoulders, natural asymmetry, believable human posture. Lock the bust anatomy, posture, and crop first; then apply likeness and material treatment. Preserve facial identity, eye spacing, nose, mouth, jawline, age, and expression.`
 
+// ── Framing composition blocks (S1.1) ───────────────────────────
+// Framing is now a selectable LEAD block — the composition every
+// material renders through — chosen before the material register is
+// applied. Same "framing first, material second" discipline as the
+// universal bust. The selected block leads both the Realistic and the
+// Artists builders (skipUniversal presets opt out of all framing).
+//
+// VERBATIM TEXT IS RICH'S (lane rule). Signature Pose is locked
+// (seam tracker S1.2, 2026-06-13) and slotted below as authored. Bust
+// uses the existing BUST_UNIVERSAL. Statuesque is PENDING Rich — until
+// his block lands it falls back to BUST_UNIVERSAL so the 3:4 frame still
+// renders a real piece rather than a placeholder; do NOT invent its text.
+
+// Signature Pose — LOCKED 2026-06-13 (Rich, verbatim). The new default.
+const SIGNATURE_UNIVERSAL =
+  `A finished portrait sculpture — settled, unhurried, in the implied prior attention of a figure just turning back to meet the viewer.\n\n` +
+  `Shoulders turned slightly from camera; head returns to a three-quarter view, eyes meeting the viewer. Arms descend naturally with continuous sculptural form from shoulder through elbow, wrist, and fingers — every connective element fully resolved. Both hands resolved at plinth level — on the base, the plaque, or each other. Hands and arms must never disconnect, fade, dissolve, or terminate in unsupported space.\n\n` +
+  `Soft directional museum light; the rotated shoulder takes quiet shadow.\n\n` +
+  `Square 1:1 frame. Inscription plaque integrated at the base.`
+
+// Statuesque — full-figure sculpture, head to feet on the plinth.
+// 3:4 aspect gives vertical room for the complete standing figure.
+const STATUESQUE_UNIVERSAL =
+  `Create a complete full-figure portrait sculpture from head to feet, standing on a plinth. The sculpture must include the full head, hair, neck, both shoulders, complete torso, both arms with resolved hands, hips, both legs, and feet — nothing cropped, nothing terminated mid-limb. The figure occupies the full height of the 3:4 frame from crown to plinth base. Weight shifted naturally to one leg, relaxed shoulders, natural asymmetry, believable human posture. Hands resolved naturally — at the sides, loosely clasped, or resting on a surface — never fading into undefined form. The torso, clothing, legs, and feet carry equal sculptural detail and material treatment as the face and shoulders; the full body is the composition, not an afterthought below a bust. Lock the full-figure anatomy, posture, and crop first; then apply likeness and material treatment. Preserve facial identity, eye spacing, nose, mouth, jawline, age, and expression. Small inscription plaque integrated at the base of the plinth.`
+
+const FRAMING_BLOCK: Record<Framing, string> = {
+  bust:       BUST_UNIVERSAL,
+  signature:  SIGNATURE_UNIVERSAL,
+  statuesque: STATUESQUE_UNIVERSAL,
+}
+
+function framingBlock(framing?: Framing): string {
+  return FRAMING_BLOCK[framing ?? DEFAULT_FRAMING]
+}
+
+// ── Craft Personality — universal creative direction ───────────
+// Runs after the framing block and before the material register.
+// Skipped for skipUniversal presets (e.g. pencil_sketch) whose
+// locked compositions would conflict.
+//
+// PROMPT MAINTENANCE (Rich, 2026-06-13): Do not continually append
+// new instructions. Consolidate and optimize existing guidance rather
+// than accumulating rules. Preserve successful behaviors whenever
+// possible. If instructions conflict, stop and request clarification
+// rather than guessing. Favor controlled variation over unrestricted
+// randomness while maintaining a consistent Liten visual identity.
+const CRAFT_PERSONALITY =
+  `Create a compelling collectible portrait sculpture that feels extraordinary, emotionally engaging, and worthy of display. The viewer's immediate reaction should be admiration for both the subject and the craftsmanship.\n\n` +
+  `Reveal personality rather than pose. Capture the subject in a moment that feels authentic, characteristic, and emotionally truthful. Favor natural posture, genuine expression, subtle human behavior, and believable gesture over formal posing.\n\n` +
+  `The sculpture should feel like the most recognizable and admirable version of the subject without idealization, beautification, caricature, or stylization.\n\n` +
+  `Identity preservation is a primary objective. Preserve the subject's unique facial geometry, proportions, expression, and distinctive asymmetries. The face should remain the primary focal point and strongest carrier of likeness.\n\n` +
+  `Use composition, camera placement, perspective, gesture, lighting, scale, and environment creatively to create beauty, presence, visual interest, and emotional connection. The camera should actively participate in the composition rather than merely document it.\n\n` +
+  `Favor editorial-quality photography over catalog photography. Seek the visual impact of premium portrait, gallery, design-magazine, and fine-art photography. Avoid repetitive compositions, rigid symmetry, static presentation, or showroom-style documentation.\n\n` +
+  `The sculpture should occupy meaningful visual prominence within the frame and feel physically present within the space. Close viewpoints, perspective, depth, foreground elements, and atmospheric lighting may be used when they strengthen the portrait.\n\n` +
+  `Establish clear visual hierarchy. The viewer's attention should naturally arrive at the face first, with pose, materials, craftsmanship, and environment supporting rather than competing with the portrait.\n\n` +
+  `The sculpture should exhibit museum-quality commissioned craftsmanship, heirloom-level finish, intentional surface refinement, believable material behavior, clean silhouette design, and extraordinary facial detail.`
+
 // ── Per-preset blocks: transformation + avoid + tail ──
 interface ArtistsBlocks {
   transformation: string
@@ -271,19 +328,23 @@ Museum-quality gallery lighting catches the dimensional side and casts subtle sh
 
 function buildArtistsPrompt(input: {
   presetId:          ArtistsPresetId
+  framing?:          Framing
+  locationId?:       LocationId
   plaqueText?:       string | null
   upperBodyConcept?: string | null
 }): string {
   const blocks = ARTISTS_BLOCKS[input.presetId]
   const parts: string[] = []
 
-  // 1. Universal bust block — anatomy + pose + 60/40 + identity preservation.
-  //    Runs FIRST: lock the bust before the material register is applied.
+  // 1. Framing composition block — anatomy + pose + identity, chosen by
+  //    framing (Bust / Signature / Statuesque). Runs FIRST: lock the
+  //    composition before the material register is applied.
   //    EXCEPTION: presets that opt out via skipUniversal handle their own
   //    composition entirely within the transformation block (e.g. Pencil
-  //    Sketch's side-angle asymmetric emergence).
+  //    Sketch's side-angle asymmetric emergence) — they take no framing.
   if (!blocks.skipUniversal) {
-    parts.push(BUST_UNIVERSAL)
+    parts.push(framingBlock(input.framing))
+    parts.push(CRAFT_PERSONALITY)
   }
 
   // 2. Subject wardrobe (Curator-provided — omitted entirely when no concept).
@@ -298,7 +359,15 @@ function buildArtistsPrompt(input: {
   // 4. Avoid list (per-preset).
   parts.push(blocks.avoid)
 
-  // 5. Gallery tail (per-preset) + plaque.
+  // 5. Location override — artists tails bake in a default gallery/museum
+  //    setting; when the user picks a different location, prepend it so
+  //    NB2 gets a concrete placement cue before the generic tail.
+  if (input.locationId && input.locationId !== 'pedestal') {
+    const locPhrase = LOCATION_PHRASE[input.locationId]
+    if (locPhrase) parts.push(`Presented ${locPhrase}.`)
+  }
+
+  // 6. Gallery tail (per-preset) + plaque.
   let finalBlock = blocks.tail
   if (input.plaqueText !== null) {
     const text = (input.plaqueText && input.plaqueText.trim()) || DEFAULT_PLAQUE_TEXT
@@ -314,6 +383,7 @@ export function buildPortraitsPrompt(input: {
   presetId:          PortraitsPresetId
   locationId:        LocationId
   scale:             Scale
+  framing?:          Framing
   plaqueText?:       string | null
   advanced?:         AdvancedLighting
   upperBodyConcept?: string | null
@@ -321,10 +391,12 @@ export function buildPortraitsPrompt(input: {
 
   // Route Artists Gallery presets to their custom prompt builder.
   // location/scale/advanced are intentionally ignored — the artist
-  // prompt is fully self-contained.
+  // prompt is fully self-contained — but framing still leads.
   if (isArtistsPreset(input.presetId)) {
     return buildArtistsPrompt({
       presetId:         input.presetId,
+      framing:          input.framing,
+      locationId:       input.locationId,
       plaqueText:       input.plaqueText,
       upperBodyConcept: input.upperBodyConcept,
     })
@@ -356,13 +428,12 @@ export function buildPortraitsPrompt(input: {
     plaqueClause = `, with a small plaque on the base reading "${text}"`
   }
 
-  // Realistic prompt now ALSO leads with the universal bust block.
-  // Bronze and Alabaster were rendering as head-only because the prior
-  // single-sentence prompt didn't lock bust anatomy first. Same fix
-  // applied to both series: anatomy first, material second.
+  // Realistic prompt leads with the selected framing composition block,
+  // then the material register — framing first, material second (same
+  // discipline that fixed head-only bronze/alabaster renders).
   const realisticSentence =
     `Portrait of a person rendered as 3D ${material}, ${location}${composition}${bodyClause}${lighting}${tail}${plaqueClause}. ` +
     `Likeness must be exact — the subject's face, expression, head angle and tilt, and gaze direction must match the source photograph precisely.`
 
-  return `${BUST_UNIVERSAL}\n\n${realisticSentence}`
+  return `${framingBlock(input.framing)}\n\n${CRAFT_PERSONALITY}\n\n${realisticSentence}`
 }

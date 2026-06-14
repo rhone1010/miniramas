@@ -196,6 +196,69 @@ export const SCALE_LABELS: Record<Scale, string> = {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// FRAMING — the three locked customer framings (S1.1).
+// Replaces the old single hardcoded bust. Framing selects the lead
+// composition block in the prompt builder AND implies the aspect —
+// the customer no longer picks aspect separately. Framing is the
+// source of truth; a conflicting client `aspect` is ignored.
+// ═══════════════════════════════════════════════════════════════
+
+export type Framing = 'bust' | 'signature' | 'statuesque'
+
+export const FRAMING_LABELS: Record<Framing, string> = {
+  bust:       'Bust',
+  signature:  'Signature Pose',
+  statuesque: 'Statuesque',
+}
+
+// Signature Pose is the new default and the house piece.
+export const DEFAULT_FRAMING: Framing = 'signature'
+
+// framing → aspect (authoritative; framing wins over any client aspect).
+export const ASPECT_FOR_FRAMING: Record<Framing, string> = {
+  bust:       '1:1',
+  signature:  '1:1',
+  statuesque: '3:4',
+}
+
+// Legacy bridge: the old engine vocabulary never reached the prompt
+// builder, but the UI's pre-trio data used `full_body`. Anything still
+// carrying it maps to Statuesque.
+export function normalizeFraming(v: unknown): Framing {
+  if (v === 'bust' || v === 'signature' || v === 'statuesque') return v
+  if (v === 'full_body') return 'statuesque'
+  return DEFAULT_FRAMING
+}
+
+// ── Resolution → output dimensions (per aspect) ────────────────
+// NB2 renders at an aspect_ratio string with no pixel control, so the
+// resolution tier is realized as a post-render resize to these exact
+// dimensions. The long edge is the tier; the short edge follows the
+// framing's aspect. 2K @ 1:1 = 2048×2048; 2K @ 3:4 = 1536×2048.
+export type ResolutionTier = '1k' | '2k' | '4k'
+
+const LONG_EDGE_PX: Record<ResolutionTier, number> = {
+  '1k': 1024,
+  '2k': 2048,
+  '4k': 4096,
+}
+
+export function isResolutionTier(v: unknown): v is ResolutionTier {
+  return v === '1k' || v === '2k' || v === '4k'
+}
+
+export function outputDimensions(
+  framing: Framing,
+  resolution: ResolutionTier,
+): { width: number; height: number } {
+  const long = LONG_EDGE_PX[resolution]
+  // 3:4 → width is three-quarters of the (long-edge) height; 1:1 → square.
+  return ASPECT_FOR_FRAMING[framing] === '3:4'
+    ? { width: Math.round((long * 3) / 4), height: long }
+    : { width: long, height: long }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // PIPELINE CONFIG — per-style branching
 // ═══════════════════════════════════════════════════════════════
 
@@ -307,6 +370,16 @@ export interface PortraitsGenerateRequest {
   location_id?:            LocationId
   scale?:                  Scale
   aspect_ratio?:           string
+
+  // Three-framings (S1.1). framing selects the lead composition block and
+  // implies the aspect (see ASPECT_FOR_FRAMING). The route derives aspect
+  // from framing and sets aspect_ratio accordingly; a client aspect that
+  // disagrees is ignored. Absent → DEFAULT_FRAMING ('signature').
+  framing?:                Framing
+  // Resolution tier → realized as a post-render resize to outputDimensions().
+  // Absent → no resize (native NB2 size; preserves legacy caller behavior).
+  resolution?:             ResolutionTier
+
   refinements?:            PortraitsRefinements
   notes?:                  string
   refinement_tweak?:       string
