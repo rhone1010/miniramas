@@ -272,9 +272,11 @@ const SOURCE_SET_PROMPT = `You are evaluating one or more source photographs tha
 For EACH photograph (in the order provided), return:
 - "sharpness": "good" | "fair" | "poor"
 - "lighting":  "good" | "fair" | "poor"
-- "faces": array of detected hero-subject faces, each with:
+- "faces": array of detected hero-subject faces, ordered left-to-right as they appear, each with:
     - "face_index": 0-based within this photo
     - "size_pct":   the face's bounding box shorter side as a PERCENTAGE of the photograph's shorter side (integer 1-100)
+    - "bbox":       the face bounding box as NORMALIZED fractions of the photo (NOT pixels): { "x": left edge 0..1, "y": top edge 0..1, "w": width 0..1, "h": height 0..1 }. Be as accurate as you can with the box around the head.
+    - "gate":       a per-face readiness verdict for a portrait of THIS person — "pass" (clear, usable), "small" (face too small to craft well), "occluded" (partly hidden by hand/object/hair), or "turned" (turned too far from camera)
 - "concerns": short array of free-form notes about quality issues (occlusion, motion blur, heavy compression, harsh shadow, etc.) — use [] if none
 
 Then aggregate across the full set:
@@ -286,6 +288,8 @@ Then aggregate across the full set:
     - "head_shoulders" — face plus the shoulder line is clearly visible (a classic head-and-shoulders portrait), but the torso below the collarbone is not.
     - "upper_body"    — the bust area is visible: shoulders, upper chest, and either clothing/torso or arms are in frame.
   When the subject's clothing, posture, and silhouette below the face are not knowable from the photo, return "face_only". When they are partially knowable, "head_shoulders". When they are clearly knowable, "upper_body".
+- "detected_gender": the apparent gender presentation of the hero subject. One of: "f" (female), "m" (male). When ambiguous, use the best visual estimate.
+- "detected_age_group": the approximate age bracket of the hero subject. One of: "child" (roughly 0-11), "teen" (12-17), "young" (18-29), "adult" (30-49), "mature" (50-64), "senior" (65+).
 
 Respond with ONLY valid JSON (no markdown, no preamble):
 {
@@ -294,20 +298,45 @@ Respond with ONLY valid JSON (no markdown, no preamble):
       "photo_index": 0,
       "sharpness":   "good",
       "lighting":    "good",
-      "faces":       [{ "face_index": 0, "size_pct": 32 }],
+      "faces":       [{ "face_index": 0, "size_pct": 32, "bbox": { "x": 0.40, "y": 0.12, "w": 0.20, "h": 0.22 }, "gate": "pass" }],
       "concerns":    []
     }
   ],
   "subject_count_estimate": 1,
   "quality_verdict":        "green",
   "recommendation":         null,
-  "body_coverage":          "face_only"
+  "body_coverage":          "face_only",
+  "detected_gender":        "f",
+  "detected_age_group":     "adult"
 }`
+
+export interface FaceBBox {
+  x: number   // 0..1 normalized left edge
+  y: number   // 0..1 normalized top edge
+  w: number   // 0..1 normalized width
+  h: number   // 0..1 normalized height
+}
+
+export type FaceGate = 'pass' | 'small' | 'occluded' | 'turned'
 
 export interface SourceFaceSize {
   face_index: number
   size_pct:   number
   size_px:    number
+  bbox:       FaceBBox | null
+  gate:       FaceGate
+}
+
+// §5 source-control contract — one entry per detected face on the PRIMARY
+// photo, consumed by the face-aware source control (Source Control v5).
+// `faceFillPct` = face area / image area (the dominant face-drift signal:
+// per-person intake gate + zoom seed). `subjectId` is the stable id the
+// `focal` object carries back to generate.
+export interface AnalyzedFace {
+  id:          string
+  bbox:        FaceBBox
+  faceFillPct: number
+  gate:        FaceGate
 }
 
 export interface SourcePhotoAnalysis {
@@ -321,6 +350,8 @@ export interface SourcePhotoAnalysis {
 }
 
 export type BodyCoverage = 'face_only' | 'head_shoulders' | 'upper_body'
+export type DetectedGender = 'f' | 'm'
+export type DetectedAgeGroup = 'child' | 'teen' | 'young' | 'adult' | 'mature' | 'senior'
 
 export interface SourceSetAnalysisResult {
   per_photo:                  SourcePhotoAnalysis[]
@@ -335,6 +366,50 @@ export interface SourceSetAnalysisResult {
   // upper-body concept before invoking NB2 — otherwise NB2 invents
   // body content (hats, hands, full torsos) that breaks likeness.
   body_coverage:              BodyCoverage
+  detected_gender:            DetectedGender | null
+  detected_age_group:         DetectedAgeGroup | null
+  // §5 — detected faces on the PRIMARY photo, with normalized bbox + per-face
+  // gate, for the face-aware source control's markers / subject pick / seed.
+  faces:                      AnalyzedFace[]
+}
+
+// Face area below this fraction of the image is too small to craft well —
+// the per-person intake gate (§7). Reuses the single-subject intent: a face
+// that fills very little of the frame yields a weak likeness.
+export const FACE_GATE_MIN_FILL = 0.012
+
+// Clamp a model-returned bbox to normalized [0..1], keeping it on-image.
+// Returns null when the model gave nothing usable.
+function parseBBox(raw: any): FaceBBox | null {
+  if (!raw || typeof raw !== 'object') return null
+  const n = (v: any) => (Number.isFinite(Number(v)) ? Number(v) : NaN)
+  let x = n(raw.x), y = n(raw.y), w = n(raw.w), h = n(raw.h)
+  if (![x, y, w, h].every(Number.isFinite)) return null
+  x = Math.min(Math.max(x, 0), 1); y = Math.min(Math.max(y, 0), 1)
+  w = Math.min(Math.max(w, 0), 1); h = Math.min(Math.max(h, 0), 1)
+  if (w <= 0 || h <= 0) return null
+  if (x + w > 1) w = 1 - x
+  if (y + h > 1) h = 1 - y
+  return { x, y, w, h }
+}
+
+function parseFaceGate(raw: any): FaceGate {
+  return raw === 'small' || raw === 'occluded' || raw === 'turned' ? raw : 'pass'
+}
+
+// Build the §5 primary-photo faces[] from the parsed per-face data. Assigns
+// stable subject ids, computes faceFillPct from bbox area, and lets the
+// face-size floor (FACE_GATE_MIN_FILL) override the model's gate to 'small'.
+function buildPrimaryFaces(primary: SourcePhotoAnalysis | undefined): AnalyzedFace[] {
+  if (!primary) return []
+  return primary.faces
+    .filter(f => f.bbox)
+    .map((f, i) => {
+      const bbox = f.bbox as FaceBBox
+      const faceFillPct = bbox.w * bbox.h
+      const gate: FaceGate = faceFillPct < FACE_GATE_MIN_FILL ? 'small' : f.gate
+      return { id: `subj_${i}`, bbox, faceFillPct, gate }
+    })
 }
 
 export async function analyzeSourceSet(input: {
@@ -353,6 +428,9 @@ export async function analyzeSourceSet(input: {
       smallest_face_min_dim_px: null,
       photo_count:              0,
       body_coverage:            'face_only',
+      detected_gender:          null,
+      detected_age_group:       null,
+      faces:                    [],
     }
   }
 
@@ -403,6 +481,9 @@ export async function analyzeSourceSet(input: {
       // routes through Curator and is safer than skipping the upper-body
       // reconstruction for a source we couldn't read.
       body_coverage:            'face_only',
+      detected_gender:          null,
+      detected_age_group:       null,
+      faces:                    [],
     }
   }
 
@@ -416,7 +497,13 @@ export async function analyzeSourceSet(input: {
       const pct = Math.max(0, Math.min(100, Number(f.size_pct) || 0))
       const px  = Math.round((pct / 100) * photoShortSide)
       if (px > 0 && (smallestPx === null || px < smallestPx)) smallestPx = px
-      return { face_index: Number(f.face_index) || 0, size_pct: pct, size_px: px }
+      return {
+        face_index: Number(f.face_index) || 0,
+        size_pct:   pct,
+        size_px:    px,
+        bbox:       parseBBox(f.bbox),
+        gate:       parseFaceGate(f.gate),
+      }
     })
     return {
       photo_index: i,
@@ -452,6 +539,13 @@ export async function analyzeSourceSet(input: {
       ? parsed.body_coverage
       : 'face_only'
 
+  const VALID_GENDERS: DetectedGender[] = ['f', 'm']
+  const VALID_AGE_GROUPS: DetectedAgeGroup[] = ['child', 'teen', 'young', 'adult', 'mature', 'senior']
+  const detectedGender: DetectedGender | null =
+    VALID_GENDERS.includes(parsed.detected_gender) ? parsed.detected_gender : null
+  const detectedAgeGroup: DetectedAgeGroup | null =
+    VALID_AGE_GROUPS.includes(parsed.detected_age_group) ? parsed.detected_age_group : null
+
   return {
     per_photo:                perPhoto,
     subject_count_estimate:   subjectCountEstimate,
@@ -460,5 +554,8 @@ export async function analyzeSourceSet(input: {
     smallest_face_min_dim_px: smallestPx,
     photo_count:              allB64s.length,
     body_coverage:            bodyCoverage,
+    detected_gender:          detectedGender,
+    detected_age_group:       detectedAgeGroup,
+    faces:                    buildPrimaryFaces(perPhoto[0]),
   }
 }

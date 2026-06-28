@@ -28,7 +28,10 @@ import {
   recordPreview, storeCleanOriginal, bakeWatermark,
 } from '@/lib/store/preview'
 
-import { generatePortraitsRender } from '@/lib/v1/portraits/portraits-generator'
+import { generatePortraitsRender, callNB2 } from '@/lib/v1/portraits/portraits-generator'
+import {
+  isExperimentalEffect, buildExperimentalPrompt,
+} from '@/lib/v1/portraits/portraits-experimental'
 import { STYLE_PIPELINE, PRESET_LABELS } from '@/lib/v1/portraits/portraits-shared'
 import type {
   PortraitsStyleId,
@@ -54,6 +57,68 @@ import { scoreIntake, scoreAesthetic, MIN_LONG_EDGE_PX } from '@/lib/bench/bench
 export const runtime     = 'nodejs'
 export const maxDuration = 300
 
+// ── FOCAL SUBJECT-PICK (Source Control v5, §4/§6) ────────────────────
+// focal {x,y,zoom,subjectId} is the single source of truth for framing. We
+// server-crop the source to the chosen 3:4 region BEFORE the QA gates and the
+// generator, so the picked subject fills the frame everything downstream sees
+// (and QA scores likeness against THAT face, not the most prominent one).
+interface Focal { x: number; y: number; zoom: number; subjectId: string | null }
+
+function parseFocal(raw: any): Focal | null {
+  if (!raw || typeof raw !== 'object') return null
+  const num = (v: any, d: number) => (Number.isFinite(Number(v)) ? Number(v) : d)
+  return {
+    x:    Math.min(Math.max(num(raw.x, 0.5), 0), 1),
+    y:    Math.min(Math.max(num(raw.y, 0.5), 0), 1),
+    zoom: Math.min(Math.max(num(raw.zoom, 1), 1), 3),
+    subjectId: typeof raw.subjectId === 'string' ? raw.subjectId : null,
+  }
+}
+
+// Only re-crop when the customer actually framed (picked a subject, zoomed, or
+// panned). An untouched single-subject source is left alone so the common path
+// never regresses.
+function focalIsMeaningful(f: Focal): boolean {
+  return f.subjectId !== null || f.zoom > 1.02 ||
+         Math.abs(f.x - 0.5) > 0.02 || Math.abs(f.y - 0.5) > 0.02
+}
+
+// Crop the source to the 3:4 focal region (mirrors the client's cover-fit +
+// zoom math). Fail-open: any error returns the original source untouched.
+async function cropSourceToFocal(b64: string, f: Focal): Promise<string> {
+  try {
+    const buf  = Buffer.from(b64, 'base64')
+    const meta = await sharp(buf).metadata()
+    const W = meta.width || 0, H = meta.height || 0
+    if (!W || !H) return b64
+    const VW = 3, VH = 4                                   // 3:4 viewport
+    const coverBase = Math.max(VW / W, VH / H)             // source covers viewport
+    const cw = VW / (coverBase * f.zoom)
+    const ch = VH / (coverBase * f.zoom)
+    let width  = Math.min(Math.round(cw), W)
+    let height = Math.min(Math.round(ch), H)
+    let left = Math.min(Math.max(Math.round(f.x * W - width  / 2), 0), W - width)
+    let top  = Math.min(Math.max(Math.round(f.y * H - height / 2), 0), H - height)
+    if (width < 8 || height < 8) return b64
+    let pipeline = sharp(buf).extract({ left, top, width, height })
+    // A tight crop can land below the intake resolution gate (MIN_LONG_EDGE_PX),
+    // which would bounce the piece before it ever renders. Upscale the crop so
+    // its long edge clears the floor with margin — the generator re-synthesizes
+    // anyway, so a moderate upscale costs nothing.
+    const longEdge = Math.max(width, height)
+    const MIN_OUT  = MIN_LONG_EDGE_PX + 256
+    if (longEdge < MIN_OUT) {
+      const scale = MIN_OUT / longEdge
+      pipeline = pipeline.resize(Math.round(width * scale), Math.round(height * scale))
+    }
+    const out = await pipeline.jpeg({ quality: 95 }).toBuffer()
+    return out.toString('base64')
+  } catch (e) {
+    console.warn('[portraits/generate] focal crop failed, using original source:', e)
+    return b64
+  }
+}
+
 // Rough per-stage cost (cents) for qa_log observability only — not billing.
 const QA_COST = { gate: 1, nb2: 5, canvasPad: 0, gptImage: 8 } as const
 
@@ -64,9 +129,69 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
 
     // ── Field mapping ─────────────────────────────────────────
-    const sourceImageB64: string = body.source_image_b64
+    let sourceImageB64: string = body.source_image_b64
     if (!sourceImageB64) {
       return NextResponse.json({ error: 'source_image_b64 required' }, { status: 400 })
+    }
+
+    // ── Focal subject-pick (§6, LIVE) ─────────────────────────────
+    // Crop the source to the customer's chosen 3:4 framing BEFORE the QA
+    // gates and generator. For a multi-person source this is what makes the
+    // picked subject the one that gets crafted; subjectId is logged for QA.
+    const focal = parseFocal(body.focal)
+    if (focal && focalIsMeaningful(focal)) {
+      sourceImageB64 = await cropSourceToFocal(sourceImageB64, focal)
+      console.log(
+        `[portraits/generate] focal crop applied — subject=${focal.subjectId ?? 'none'} ` +
+        `zoom=${focal.zoom.toFixed(2)} x=${focal.x.toFixed(2)} y=${focal.y.toFixed(2)}`,
+      )
+    }
+
+    // ── Experimental effects branch (portraits-experimental.ts) ───
+    // Additive path: ten "out there" materials that deliberately do NOT route
+    // through PortraitsPresetId. When experimental_effect is present we build
+    // the effect's self-contained prompt and call NB2 directly — skipping the
+    // normal preset/material/location assembly and Pass 2. No preset_id needed.
+    // Each effect carries its own setting, so no location is injected.
+    if (body.experimental_effect && isExperimentalEffect(body.experimental_effect)) {
+      const replicateApiToken = process.env.REPLICATE_API_TOKEN
+      if (!replicateApiToken) {
+        return NextResponse.json({ error: 'REPLICATE_API_TOKEN not configured' }, { status: 500 })
+      }
+      const expFraming: Framing = normalizeFraming(body.framing)
+      const expAspect: string   = ASPECT_FOR_FRAMING[expFraming]
+      const expPrompt = buildExperimentalPrompt({
+        effectId:   body.experimental_effect,
+        framing:    expFraming,
+        plaqueText: body.plaque ?? null,
+      })
+      console.log(
+        `[portraits/generate] experimental effect=${body.experimental_effect} ` +
+        `framing=${expFraming} aspect=${expAspect} prompt_chars=${expPrompt.length}`,
+      )
+      try {
+        const imageB64 = await callNB2({
+          prompt:              expPrompt,
+          sourceImageB64,
+          additionalImagesB64: body.additional_images_b64 || [],
+          aspectRatio:         expAspect,
+          replicateApiToken,
+        })
+        return NextResponse.json({
+          status:              'done',
+          image_b64:           imageB64,
+          experimental_effect: body.experimental_effect,
+          aspect_ratio:        expAspect,
+          prompt_chars:        expPrompt.length,
+          elapsed_ms:          Date.now() - t0,
+        })
+      } catch (e: any) {
+        console.error('[portraits/generate] experimental render failed:', e)
+        return NextResponse.json(
+          { error: e?.message || 'experimental render failed' },
+          { status: 500 },
+        )
+      }
     }
 
     // ── Preview-bake mode (internal-only) ─────────────────────────

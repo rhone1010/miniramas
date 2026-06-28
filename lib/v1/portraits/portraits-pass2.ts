@@ -81,6 +81,21 @@ Refine hammer-work texture across the surfaces, subtle burnished highlights on r
   plushy: `MATERIAL — PLUSHY:
 Refine stitch density on embroidered features, fabric weave variation, embroidered hair texture. Plushy stays SOFT — no hard edges, no photoreal materials, no skin.`,
 
+  // New materials — Pass 2 disabled; placeholders satisfy the exhaustive
+  // Record<PortraitsPresetId, …>. Replace with real refinement text if Pass 2
+  // is ever enabled for these.
+  pewter: `MATERIAL — PEWTER (Pass 2 disabled):
+[placeholder] Pass 2 currently disabled for this material — see STYLE_PIPELINE in portraits-shared.ts.`,
+
+  chocolate: `MATERIAL — CHOCOLATE (Pass 2 disabled):
+[placeholder] Pass 2 currently disabled for this material — see STYLE_PIPELINE in portraits-shared.ts.`,
+
+  stained_glass: `MATERIAL — STAINED GLASS (Pass 2 disabled):
+[placeholder] Pass 2 currently disabled for this material — see STYLE_PIPELINE in portraits-shared.ts.`,
+
+  driftwood_resin: `MATERIAL — DRIFTWOOD RESIN (Pass 2 disabled):
+[placeholder] Pass 2 currently disabled for this material — see STYLE_PIPELINE in portraits-shared.ts.`,
+
   // Artists Gallery — Pass 2 is disabled for this style. These entries
   // exist only to satisfy the Record<PortraitsPresetId, …> type. If Pass 2
   // is ever re-enabled for artists, these need real refinement text.

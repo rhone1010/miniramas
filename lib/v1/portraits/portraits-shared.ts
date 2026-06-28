@@ -68,6 +68,13 @@ export type PortraitsPresetId =
   | 'charcoal_chalk'
   | 'pencil_sketch'
   | 'sheet_music'
+  // ── New materials (2026-06) ───────────────────────────────────
+  // Realistic register (monolithic, take the TIER-2 hue lock):
+  | 'pewter'
+  | 'chocolate'
+  // Artists Gallery register (polychrome, hue-lock EXEMPT):
+  | 'stained_glass'
+  | 'driftwood_resin'
 
 export const PRESET_LABELS: Record<PortraitsPresetId, string> = {
   plushy:        'Plushy',
@@ -83,6 +90,10 @@ export const PRESET_LABELS: Record<PortraitsPresetId, string> = {
   charcoal_chalk: 'Charcoal & Chalk',
   pencil_sketch:  'Pencil Sketch',
   sheet_music:    'Sheet Music',
+  pewter:          'Pewter',
+  chocolate:       'Chocolate',
+  stained_glass:   'Stained Glass',
+  driftwood_resin: 'Driftwood & Resin',
 }
 
 export type PresetTier = 'base' | 'premium' | 'signature'
@@ -101,6 +112,10 @@ export const PRESET_TIER: Record<PortraitsPresetId, PresetTier> = {
   charcoal_chalk: 'signature',
   pencil_sketch:  'signature',
   sheet_music:    'signature',
+  pewter:          'signature',
+  chocolate:       'signature',   // seasonal upsell — confirm intended tier
+  stained_glass:   'signature',
+  driftwood_resin: 'signature',
 }
 
 // ── STYLE → MATERIALS ─────────────────────────────────────────
@@ -108,7 +123,8 @@ export const STYLE_MATERIALS: Record<PortraitsStyleId, PortraitsPresetId[]> = {
   realistic: [
     'plushy',
     'ebony', 'walnut', 'stone',
-    'bronze', 'iron', 'alabaster',
+    'bronze', 'iron', 'alabaster', 'pewter',
+    'chocolate',
   ],
   people_resolving: [
     'ebony', 'walnut', 'bronze', 'alabaster',
@@ -116,6 +132,7 @@ export const STYLE_MATERIALS: Record<PortraitsStyleId, PortraitsPresetId[]> = {
   artists_gallery: [
     'impressionist', 'torn_paper', 'folded_book', 'charcoal_chalk',
     'pencil_sketch', 'sheet_music',
+    'stained_glass', 'driftwood_resin',
   ],
 }
 
@@ -208,7 +225,7 @@ export type Framing = 'bust' | 'signature' | 'statuesque'
 export const FRAMING_LABELS: Record<Framing, string> = {
   bust:       'Bust',
   signature:  'Signature Pose',
-  statuesque: 'Statuesque',
+  statuesque: 'Three-Quarter',
 }
 
 // Signature Pose is the new default and the house piece.

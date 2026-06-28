@@ -440,7 +440,7 @@ function buildFatalResult(args: {
 
 // ─── NB2 CALL ───────────────────────────────────────────────────
 
-async function callNB2(input: {
+export async function callNB2(input: {
   prompt:              string
   sourceImageB64:      string
   additionalImagesB64: string[]

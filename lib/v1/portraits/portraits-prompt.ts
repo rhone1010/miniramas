@@ -25,17 +25,21 @@ import { DEFAULT_PLAQUE_TEXT, DEFAULT_FRAMING } from './portraits-shared'
 
 const MATERIAL_PHRASE: Record<PortraitsPresetId, string> = {
   bronze:
-    'polished bronze sculpture — face and hair rendered in classic patinated bronze, with clothing optionally in muted patinated bronze, ceramic, enamel, or textile-like sculpted surface used subtly and tastefully, dignified not costume-like',
+    'polished bronze sculpture in classic patinated bronze — face, hair, and clothing all rendered in the same patinated bronze, the surface dignified and tasteful, not costume-like',
   alabaster:
-    'carved translucent alabaster sculpture with warm subsurface scattering, milky stone depth, soft glowing edges, faint amber veining, polished and semi-translucent high points, and deeper cloudy opacity in thicker areas. The ENTIRE bust including hair and garment is rendered in this same translucent alabaster; do not retain the source subject\'s hair color or clothing color — hair, collar, sweater, and torso are also alabaster stone with the same translucent character as the face',
+    'carved translucent alabaster sculpture with warm subsurface scattering, milky stone depth, soft glowing edges, faint amber veining, polished and semi-translucent high points, and deeper cloudy opacity in thicker areas',
   iron:
-    'hand-forged iron sculpture in deep charcoal-black metal with a soft gunmetal sheen — visible hammer-work texture across every surface, burnished highlights on raised features (brow, cheekbones, nose bridge, hair ridges), and darker oxide patina settling into recesses and undercuts. The ENTIRE bust including hair and garment is rendered in this same forged iron; do not retain the source subject\'s hair color or clothing color — hair, collar, sweater, and torso are forged iron with the same hammered character as the face. Do not crop to head. Do not create a helmet, mask, or faceplate-only sculpture. No paint, no flesh tones, and no orange rust anywhere on the bust; the palette is charcoal, graphite, and warm gunmetal only',
+    'hand-forged iron sculpture in deep charcoal-black metal with a soft gunmetal sheen — visible hammer-work texture across every surface, burnished highlights on raised features (brow, cheekbones, nose bridge, hair ridges), and darker oxide patina settling into recesses and undercuts. Do not crop to head. Do not create a helmet, mask, or faceplate-only sculpture. No orange rust anywhere on the bust; the palette is charcoal, graphite, and warm gunmetal only',
   plushy:        'soft plushy figure',
   stone:
-    'polished Taj Mahal quartzite sculpture with characteristic creamy-beige base tones, warm gold and amber veining, smoky brown ribbons, and occasional charcoal-gray mineral threads — the stone pattern flows organically across face, hair, clothing, shoulders, and arms. The ENTIRE bust including hair and garment is rendered in this same quartzite stone; do not retain the source subject\'s hair color or clothing color — hair, collar, sweater, and torso are also Taj Mahal quartzite. Avoid pink, peach, rose, salmon, or flesh-toned veining anywhere on the bust; the mineral palette is cream, gold, brown, and charcoal only',
+    'polished Taj Mahal quartzite sculpture with characteristic creamy-beige base tones, warm gold and amber veining, smoky brown ribbons, and occasional charcoal-gray mineral threads — the stone pattern flows organically across face, hair, clothing, shoulders, and arms. Avoid pink, peach, rose, salmon, or flesh-toned veining anywhere on the bust; the mineral palette is cream, gold, brown, and charcoal only',
   ebony:         'carved ebony wood sculpture in deep black-brown, visible wood grain with subtle natural color variation, burls and whorls placed in the base and shoulders, fine smooth grain on the face',
   walnut:
     'carved walnut wood sculpture with rich grain variation visible across the entire bust — pronounced flowing wood grain patterns, natural color shifts ranging from warm honey-amber through chestnut to deep chocolate-walnut, occasional figured-grain knots, burls, and ribbon-grain character in the shoulders and torso. Finished in soft satin lacquer that catches studio lighting in subtle specular highlights — semi-gloss only, not varnish, not high-gloss wet-shine. The grain reads as living, characterful hardwood with depth and warmth — not flat or uniformly stained',
+  pewter:
+    'cast pewter sculpture in soft satin-grey alloy with a gentle low-luster sheen — smooth flowing surfaces, muted highlights pooling on raised features (brow, cheekbones, nose bridge), and slightly darker tarnish settling into recesses and undercuts. A refined, understated metal with a soft pewter glow, never mirror-bright. No paint, no flesh tones; the palette is cool silver-grey throughout',
+  chocolate:
+    'sculpted from rich tempered chocolate in deep cocoa-brown with a smooth satin chocolate sheen — flowing glossy surfaces, soft warm highlights on raised features, and deeper bittersweet-brown tones settling into recesses, as if molded by a master chocolatier. Decorative confectioner\'s detailing is welcome and expected: fine gold-leaf gilding, dustings of cocoa powder, and delicately piped scrollwork. Keep every tone within a warm café palette — dark and milk chocolate, cocoa, caramel, mocha, and latte-cream, with warm gold-leaf accents. No stark icing-white, no pastel frosting, and no color outside the warm chocolate-and-cream range anywhere on the bust',
   // Artists Gallery — these materials use full custom prompts (see
   // ARTISTS_BLOCKS below). The standard MATERIAL_PHRASE entry is
   // a placeholder kept only to satisfy the Record<PortraitsPresetId, …>
@@ -47,6 +51,8 @@ const MATERIAL_PHRASE: Record<PortraitsPresetId, string> = {
   charcoal_chalk: '__custom_artists_prompt__',
   pencil_sketch:  '__custom_artists_prompt__',
   sheet_music:    '__custom_artists_prompt__',
+  stained_glass:   '__custom_artists_prompt__',
+  driftwood_resin: '__custom_artists_prompt__',
 }
 
 // Location phrases lifted from groups-prompt.ts. Same staging register,
@@ -112,6 +118,7 @@ function buildAdvancedTail(adv?: AdvancedLighting): string {
 const ARTISTS_PRESETS = [
   'impressionist', 'torn_paper', 'folded_book', 'charcoal_chalk',
   'pencil_sketch', 'sheet_music',
+  'stained_glass', 'driftwood_resin',
 ] as const
 type ArtistsPresetId = (typeof ARTISTS_PRESETS)[number]
 
@@ -210,8 +217,71 @@ const CRAFT_PERSONALITY =
   `Use composition, camera placement, perspective, gesture, lighting, scale, and environment creatively to create beauty, presence, visual interest, and emotional connection. The camera should actively participate in the composition rather than merely document it.\n\n` +
   `Favor editorial-quality photography over catalog photography. Seek the visual impact of premium portrait, gallery, design-magazine, and fine-art photography. Avoid repetitive compositions, rigid symmetry, static presentation, or showroom-style documentation.\n\n` +
   `The sculpture should occupy meaningful visual prominence within the frame and feel physically present within the space. Close viewpoints, perspective, depth, foreground elements, and atmospheric lighting may be used when they strengthen the portrait.\n\n` +
-  `Establish clear visual hierarchy. The viewer's attention should naturally arrive at the face first, with pose, materials, craftsmanship, and environment supporting rather than competing with the portrait.\n\n` +
-  `The sculpture should exhibit museum-quality commissioned craftsmanship, heirloom-level finish, intentional surface refinement, believable material behavior, clean silhouette design, and extraordinary facial detail.`
+  `Establish clear visual hierarchy. The viewer's attention should naturally arrive at the face first, with pose, materials, and environment supporting rather than competing with the portrait.\n\n` +
+  `Favor bust and three-quarter figure compositions. Avoid full-body compositions unless they create a substantially stronger artistic result.\n\n` +
+  `Every craft should contain at least one memorable visual decision through gesture, composition, perspective, silhouette, expression, or material interaction.`
+
+// ── UNIVERSAL STUDIO DIRECTIVES (TIER 1) ─────────────────────────
+// Rules that apply to EVERY render — realistic, artists, AND experimental.
+// Emitted right after the framing + personality blocks, before any material
+// language. Added 2026-06 from the first market-readiness render pass:
+//   (1) the studio keeps subjects CLOTHED — the classical bare-shouldered
+//       bust convention was leaking nudity into material-as-surface effects
+//       (deep-sea, mercury, blown glass, geode all came back undressed);
+//   (2) hands appear only with their arms — no free-floating hands;
+//   (3) a calm source must read as content, not stern/sad/angry;
+//   (4) dynamic staging (angle, lighting, background, head turn) around a
+//       FIXED likeness — no aging, no idealizing, and no flat snapshot copy.
+const STUDIO_DIRECTIVES =
+  `CLOTHING — ALWAYS KEEP IT ON: The subject stays fully clothed in the same garment as the source photograph (t-shirt, sweater, hoodie, jacket, collar), rendered in the piece's material. NO REMOVING CLOTHING. Do not open, drop, thin, undress, or omit the clothing. Never depict the subject nude, shirtless, bare-chested, or with bare skin across the torso or shoulders. The classical bare-shouldered bust convention does NOT apply here — this studio keeps people dressed.
+
+ARMS & HANDS: Show a hand only when its full arm is shown with it, connected shoulder-to-hand. If an arm is not in frame, do not add a floating hand or forearm. No detached, severed, or disembodied hands resting on the base.
+
+EXPRESSION: Give the face a touch of warmth and quiet contentment — a faint, natural ease, the hint of a settled smile. A calm or neutral source must NOT be rendered as stern, severe, angry, or sad. Lifelike and content, never grim.
+
+STAGING — A GALLERY ARTWORK, NOT A PHOTOCOPY: Hold the subject's identity, facial features, and age EXACTLY — same person, same age, never aged forward, never idealized or smoothed into someone younger or generic. Around that fixed likeness, stage the piece with drama: an interesting camera angle (three-quarter, slightly low, or raking), strong directional gallery lighting, real depth and atmosphere in the background, and a naturally turned, characterful head rather than a flat front-on copy of the snapshot.`
+
+// ── TIER 2 — MATERIAL-FAMILY HUE LOCK ────────────────────────────
+// The middle tier between Universal (anatomy, every material) and
+// Per-preset (the material's own language). Some rules apply to a
+// FAMILY of materials — not all, not one. They have nowhere clean to
+// live in a two-tier system, so they get stuffed into the universal
+// block (too broad) or copy-pasted into individual materials (where
+// they drift). The hue-uniformity rule is the first family rule.
+//
+// Monolithic materials — one substance, one hue family — render the
+// whole bust in that single material and never import a foreign hue.
+// Polychrome materials (impressionist, and the incoming stained glass /
+// driftwood-resin / mixed-metals family) are EXEMPT: they are MEANT to
+// be multi-hued, and a blanket universal hue rule would wreck them.
+// That is precisely why this is a family tier, not a universal one.
+//
+// Centralizes a rule that previously drifted: alabaster, iron, and stone
+// carried it inline; bronze, ebony, walnut, and folded book did not.
+// Now it lives in exactly one place and is applied by family membership.
+const HUE_LOCK =
+  `Render the entire bust — face, hair, garment, shoulders, arms, and base — in this single material. Do not retain the source subject's original hair or clothing color; every surface takes the material's own hue. Shading, tonal depth, and texture variation within the material are encouraged. Introducing a color foreign to the material is not.`
+
+// Monolithic-family membership. Members receive HUE_LOCK in assembly
+// order, between the universal/framing tier and the per-preset tier.
+// NON-members (polychrome / multi-hue) MUST be omitted here.
+//   Locked:  bronze, alabaster, iron, stone, ebony, walnut,
+//            folded_book, charcoal_chalk, pewter, chocolate
+//   Exempt:  plushy (fabric can keep multiple felt colors),
+//            impressionist (polychrome paint), torn_paper, sheet_music,
+//            pencil_sketch (skipUniversal, bespoke composition),
+//            stained_glass + driftwood_resin (polychrome by design)
+const MONOLITHIC_PRESETS: ReadonlySet<PortraitsPresetId> = new Set<PortraitsPresetId>([
+  'bronze', 'alabaster', 'iron', 'stone', 'ebony', 'walnut',
+  'folded_book', 'charcoal_chalk',
+  'pewter', 'chocolate',
+])
+
+// Returns the family-lock block for a preset, or '' if exempt. The empty
+// string assembles cleanly via .filter(Boolean) — no stray separators.
+function familyLockBlock(presetId: PortraitsPresetId): string {
+  return MONOLITHIC_PRESETS.has(presetId) ? HUE_LOCK : ''
+}
 
 // ── Per-preset blocks: transformation + avoid + tail ──
 interface ArtistsBlocks {
@@ -324,6 +394,31 @@ Museum-quality gallery lighting catches the dimensional side and casts subtle sh
     tail:
       `Museum gallery lighting reveals paper texture, page edges, layered depth, and extraordinary craftsmanship. Fine-art paper sculpture. Highly dimensional, emotional, elegant.`,
   },
+
+  // Stained Glass — polychrome (hue-lock EXEMPT). Leaded cathedral glass in
+  // jewel tones with TRUE backlit translucency. The dark leading/came lines
+  // and the glow-from-within are the two non-negotiables that separate this
+  // from a flat mosaic. Couples read as figures in adjacent leaded panels.
+  stained_glass: {
+    transformation:
+      `Transform the entire bust into a luminous stained-glass sculpture — a dimensional portrait assembled from leaded cathedral glass. The complete form (head, hair, shoulders, chest, garment, and arms) is built from individual cut-glass cells in rich jewel tones — sapphire, ruby, amber, emerald, cobalt, and gold — each piece separated by dark leading (came lines) that trace the contours of the face, hair, and garment like a master glazier's drawing. The glass is genuinely translucent: light passes through from behind and within, so the piece glows from the inside rather than reading as a flat colored surface. Deeper, more saturated glass sits in the shadows; paler, brighter glass catches the backlight at the high points. The leading defines the structure and the likeness; the glowing glass carries the color and life. For couples or two subjects, render them as two figures in adjacent leaded panels.`,
+    avoid:
+      `Avoid a flat opaque mosaic, painted-on color, or a 2D stained-glass window with no dimensional form. Avoid glass without visible leading/came lines between the cells. Avoid a uniformly lit surface with no backlit glow — the inner luminosity and the dark leading are both required. Avoid muddy or desaturated glass; the cathedral-glass jewel tones must read as vivid and lit.`,
+    tail:
+      `Backlit gallery presentation with light streaming through the glass. Museum-quality leaded-glass craftsmanship. Jewel-tone luminosity. Dark came lines. Extraordinary translucent dimensionality. Fine-art stained-glass sculpture.`,
+  },
+
+  // Driftwood + Resin — polychrome (hue-lock EXEMPT). Live-edge resin-river:
+  // weathered driftwood carries the likeness, translucent epoxy carries the
+  // color. High-gloss finish baked in. Multi-material by design.
+  driftwood_resin: {
+    transformation:
+      `Transform the entire bust into a contemporary sculpture combining weathered driftwood and glossy colored epoxy resin — the live-edge resin-river aesthetic. The driftwood preserves the form and the likeness: the face and the structural planes of the head, shoulders, and major contours are carved from pale, silvery, weathered driftwood with visible grain, knots, cracks, and organic live edges, keeping the subject clearly recognizable. Flowing rivers and pools of translucent colored epoxy resin run through and between the wood — deep teal, ocean blue, amber, or emerald — filling the live-edge gaps, the cracks, and the negative spaces, catching and refracting light. The resin is where the color and translucency live; the wood is where the likeness lives. The whole piece is finished in a high-gloss polish so the resin reads as liquid-clear and the wood as satin-smooth.`,
+    avoid:
+      `Avoid an all-wood sculpture with no resin, or an all-resin sculpture with no wood — both materials must be present and distinct. Avoid a matte or unfinished surface; the glossy high-polish finish is required. Avoid resin that looks opaque or painted — it must read as translucent, light-catching epoxy. Avoid driftwood so abstract the face stops being recognizable; the wood carries the likeness.`,
+    tail:
+      `Contemporary gallery presentation. High-gloss finish catching the light. Translucent resin rivers. Weathered live-edge driftwood. Museum-quality craftsmanship. Highly tactile and dimensional. Fine-art mixed-media sculpture.`,
+  },
 }
 
 function buildArtistsPrompt(input: {
@@ -347,11 +442,23 @@ function buildArtistsPrompt(input: {
     parts.push(CRAFT_PERSONALITY)
   }
 
+  // Universal studio directives — clothing/hands/expression/dynamic staging.
+  // Pushed for ALL artists presets, including skipUniversal ones: the
+  // clothing lock and content-expression rules must never be skipped.
+  parts.push(STUDIO_DIRECTIVES)
+
   // 2. Subject wardrobe (Curator-provided — omitted entirely when no concept).
   //    Legacy flow input; the new Curator workflow no longer populates this.
   if (input.upperBodyConcept && input.upperBodyConcept.trim()) {
     parts.push(`Subject wardrobe: ${input.upperBodyConcept.trim()}`)
   }
+
+  // 2b. TIER 2 — material-family lock. Monolithic artists materials
+  //     (folded_book, charcoal_chalk) take the hue lock; polychrome
+  //     artists (impressionist, torn_paper, sheet_music) and the
+  //     skipUniversal pencil_sketch are exempt and receive '' (not pushed).
+  const familyLock = familyLockBlock(input.presetId)
+  if (familyLock) parts.push(familyLock)
 
   // 3. Material transformation (per-preset) — runs AFTER bust anatomy.
   parts.push(blocks.transformation)
@@ -431,9 +538,22 @@ export function buildPortraitsPrompt(input: {
   // Realistic prompt leads with the selected framing composition block,
   // then the material register — framing first, material second (same
   // discipline that fixed head-only bronze/alabaster renders).
-  const realisticSentence =
-    `Portrait of a person rendered as 3D ${material}, ${location}${composition}${bodyClause}${lighting}${tail}${plaqueClause}. ` +
-    `Likeness must be exact — the subject's face, expression, head angle and tilt, and gaze direction must match the source photograph precisely.`
+  const familyLock = familyLockBlock(input.presetId)   // TIER 2 — monolithic only
 
-  return `${framingBlock(input.framing)}\n\n${CRAFT_PERSONALITY}\n\n${realisticSentence}`
+  const realisticSentence =
+    `Portrait of a person rendered as 3D ${material}, ${location}${composition}${bodyClause}${lighting}${tail}${plaqueClause}.`
+
+  // Assembly order: TIER 1 universal (framing + personality + studio
+  // directives) → TIER 2 family lock (monolithic only; '' when exempt) →
+  // TIER 3 per-preset material. Identity, clothing, expression, and dynamic
+  // staging now live in STUDIO_DIRECTIVES — the old "match the photo exactly,
+  // same head angle and gaze" line was removed because it forced flat,
+  // frontal replication and fought the dynamic-staging directive.
+  return [framingBlock(input.framing), CRAFT_PERSONALITY, STUDIO_DIRECTIVES, familyLock, realisticSentence]
+    .filter(Boolean)
+    .join('\n\n')
 }
+
+// Re-exported for the experimental-effects addon (portraits-experimental.ts),
+// which reuses these tier primitives rather than duplicating them.
+export { framingBlock, CRAFT_PERSONALITY, HUE_LOCK, STUDIO_DIRECTIVES }

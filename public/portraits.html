@@ -471,6 +471,60 @@ body.raw-mode .preset-controls{ display:none; }
 }
 .source-preview img{width:100%;height:100%;object-fit:cover}
 
+/* ── FACE-AWARE SOURCE CONTROL (Source Control v5, locked 2026-06-24) ──
+   Fixed 3:4, no pre-crop — the customer frames their photo by drag/zoom and
+   picks the subject by tapping a face. Emits state.focal {x,y,zoom,subjectId},
+   the single source of truth for both the displayed crop and the render. */
+.fa-source{ width:100%; margin-top:8px; }
+.fa-source[hidden]{ display:none; }
+.fa-viewport{ position:relative; width:100%; aspect-ratio:3/4;
+  border-radius:6px; overflow:hidden; background:#15130f;
+  box-shadow:0 2px 6px rgba(0,0,0,.16); cursor:grab; touch-action:none; user-select:none; }
+.fa-viewport.dragging{ cursor:grabbing; }
+.fa-viewport img{ position:absolute; left:0; top:0; max-width:none; display:block;
+  pointer-events:none; -webkit-user-drag:none; }
+.fa-marker{ position:absolute; transform:translate(-50%,-50%); width:34px; height:34px; border-radius:50%;
+  border:2px solid rgba(243,237,225,.6); background:rgba(106,122,85,.20);
+  box-shadow:0 0 0 6px rgba(106,122,85,.12); cursor:pointer;
+  transition:opacity .3s ease, border-color .25s ease, background .25s ease;
+  display:flex; align-items:center; justify-content:center; }
+.fa-marker::after{ content:''; width:6px; height:6px; border-radius:50%; background:#a8b48d; }
+.fa-marker:hover{ border-color:#F0EAE0; background:rgba(106,122,85,.32); }
+.fa-ring{ position:absolute; transform:translate(-50%,-50%); border:2.5px solid #7B3F41; border-radius:20px;
+  box-shadow:0 0 0 3px rgba(123,63,65,.20), inset 0 0 0 1px rgba(243,237,225,.4); pointer-events:none; }
+.fa-viewport.touched .fa-marker:not(.active){ opacity:.45; }
+.fa-viewport.touched .fa-marker:not(.active):hover{ opacity:1; }
+.fa-hint{ position:absolute; left:0; right:0; bottom:0; padding:18px 12px 10px;
+  background:linear-gradient(to top, rgba(21,19,15,.78), transparent);
+  font-family:var(--mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase;
+  color:rgba(243,237,225,.95); text-align:center; pointer-events:none; transition:opacity .4s ease; }
+.fa-viewport.touched .fa-hint{ opacity:0; }
+.fa-controls{ display:flex; gap:10px; margin:12px 0 0; align-items:center; justify-content:center; position:relative; }
+.fa-pill{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:18px; color:#7B3F41;
+  background:#7B3F41; color:#F0EAE0; border:1.5px solid #7B3F41; border-radius:22px;
+  padding:.4rem .95rem; cursor:pointer; transition:all .25s ease; line-height:1; }
+.fa-pill:hover{ background:#5E3133; border-color:#5E3133; }
+.fa-zoomlabel{ font-family:var(--mono); font-size:13px; color:#8E8676; letter-spacing:.05em;
+  position:absolute; right:0; top:50%; transform:translateY(-50%); }
+
+/* ── EXPERIMENTAL EFFECTS (portraits-experimental.ts) ── */
+.experimental-fx{ margin-top:22px; padding-top:18px; border-top:1px solid rgba(0,0,0,.10); }
+.experimental-fx-head{
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:22px;
+  color:#5E3133; margin-bottom:3px;
+}
+.experimental-fx-sub{
+  font-family:'Cormorant Garamond', serif; font-size:18px; color:#5a544c; margin-bottom:12px;
+}
+.experimental-fx-grid{ display:flex; flex-wrap:wrap; gap:8px; }
+.experimental-fx-btn{
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:18px;
+  color:#7B3F41; background:#fff; border:1.5px solid #cbbe9f; border-radius:20px;
+  padding:.42rem 1rem; cursor:pointer; transition:all .18s ease; line-height:1; white-space:nowrap;
+}
+.experimental-fx-btn:hover{ background:#7B3F41; color:#F0EAE0; border-color:#7B3F41; }
+.experimental-fx-btn:disabled{ opacity:.5; cursor:default; }
+
 /* multi-source row */
 .source-row{
   display:flex;gap:5.1px;margin-top:6.8px;
@@ -2224,38 +2278,52 @@ body.raw-mode .preset-controls{ display:none; }
    When active, dominates the Stage area: a sage-tinted card with
    the Curator's voice driving each step (analysis → torso → effects).
    ──────────────────────────────────────────────────────────────── */
+/* ── CURATOR CARD (Source Control v5 §2) — flat champagne, programmatic
+   deckled rag edge (SVG turbulence sized to the card via ResizeObserver),
+   C-mark masthead, 22px+ Garamond type ramp. ──────────────────────────── */
 .curator-panel{
   margin:.25rem 0 1.4rem;
   width:auto;
-  padding:.6rem 0 1rem;
-  background:transparent;
+  padding:26px 30px 28px;
+  background:transparent;        /* the deckle paper provides the champagne */
   border:none;
   border-radius:0;
   position:relative;
 }
-.curator-panel-eyebrow{
-  font-family:'JetBrains Mono', monospace;
-  font-size:.72rem;
-  letter-spacing:.14em;
-  text-transform:uppercase;
-  color:#516e3a;
-  margin-bottom:.5rem;
+.curator-paper{
+  position:absolute; inset:0; width:100%; height:100%; z-index:0;
+  pointer-events:none; filter:drop-shadow(0 4px 10px rgba(70,45,25,.20));
 }
+/* content rides above the paper */
+.curator-panel > .curator-step,
+.curator-panel > .curator-masthead{ position:relative; z-index:1; }
+
+/* masthead — enlarged C mark (drop shadow) + Curator title, replacing the
+   small per-step "The Curator" eyebrow */
+.curator-masthead{ display:flex; align-items:center; gap:13px; margin:0 0 14px; }
+.curator-cmark{ flex:0 0 50px; width:50px; height:56px;
+  filter:drop-shadow(0 3px 4px rgba(60,30,30,.42)); }
+.curator-cmark svg{ width:100%; height:100%; display:block; }
+.curator-mast-title{ font-family:'Cormorant Garamond', serif; font-size:32px;
+  line-height:1; color:#5E3133; letter-spacing:.01em; }
+.curator-mast-rule{ height:1px; background:linear-gradient(to right,#c4b48f,transparent); margin:0 0 16px; position:relative; z-index:1; }
+
+.curator-panel-eyebrow{ display:none; }   /* superseded by the masthead */
 .curator-panel-title{
   font-family:'Cormorant Garamond', serif;
   font-style:italic;
-  font-size:1.65rem;
+  font-size:1.7rem;
   color:#2b2823;
   margin-bottom:.4rem;
   line-height:1.25;
 }
 .curator-panel-lead{
   font-family:'Cormorant Garamond', serif;
-  font-size:1.15rem;
+  font-size:1.42rem;             /* §2 — 22px+ Garamond body floor */
   color:#5a544c;
   margin-bottom:1.4rem;
-  line-height:1.55;
-  max-width:72ch;
+  line-height:1.5;
+  max-width:64ch;
 }
 .curator-loading{
   display:flex;align-items:center;gap:.7rem;
@@ -2400,8 +2468,8 @@ body.raw-mode .preset-controls{ display:none; }
 }
 .eff-card:hover{ transform:translateY(-2.5px); box-shadow:0 6.8px 19px rgba(43,40,35,.16); border-color:#763F41; }
 .eff-card-add{
-  width:100%; height:29px; order:-1;   /* sits on top */
-  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:18px;
+  width:100%; height:34px; order:-1;   /* sits on top */
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:20px;
   color:#2A241E; background:#F4F1EA; border:1px solid #CBBE9F; border-radius:3.4px; cursor:pointer;
   transition:background .15s ease, color .15s ease;
 }
@@ -2426,14 +2494,15 @@ body.raw-mode .preset-controls{ display:none; }
 
 /* 2-column effects layout: recs left, Your Queue card right */
 .cur-effects-layout{
-  display:flex; gap:24px; flex-wrap:nowrap;
+  display:flex; gap:18px; flex-wrap:nowrap;
   align-items:flex-start; justify-content:flex-start;
+  overflow:hidden; width:100%;
 }
 .cur-effects-left{
-  flex:0 1 auto; min-width:0; max-width:840px;
+  flex:1 1 auto; min-width:0; max-width:740px;
   align-self:flex-start;
   background:#EDE6D6; border:1px solid #CBBE9F; border-radius:6.8px;
-  padding:19px 20px 20px;
+  padding:16px 18px 18px;
   transition:max-width .5s cubic-bezier(.4,0,.2,1),
              opacity .35s ease .05s,
              padding .5s cubic-bezier(.4,0,.2,1),
@@ -2471,9 +2540,10 @@ body.raw-mode .preset-controls{ display:none; }
 .mycoll-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .mycoll-title{ font-family:'Cormorant Garamond', serif; font-style:italic; font-size:36px; color:#763F41; }
 .mycoll-close{
-  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:16px;
-  color:#763F41; background:#F4F1EA; border:1px solid #CBBE9F; border-radius:4.2px;
-  padding:5.1px 12px; cursor:pointer; transition:background .15s ease, color .15s ease;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:24px;
+  color:#763F41; background:#F4F1EA; border:1px solid #CBBE9F; border-radius:5.1px;
+  padding:8px 18px; cursor:pointer; transition:background .15s ease, color .15s ease;
+  white-space:nowrap; line-height:1.1;
 }
 .mycoll-close:hover{ background:#763F41; color:#F4F1EA; }
 .mycoll-bands{ display:flex; flex-direction:column; gap:22px; max-height:74vh; overflow-y:auto; overflow-x:hidden; padding-right:5.1px; }
@@ -2495,7 +2565,7 @@ body.raw-mode .preset-controls{ display:none; }
 
 /* Rendered column — large stacked finished pieces, own scroll */
 .cur-effects-rendered{
-  flex:0 1 auto; min-width:0; align-self:flex-start;
+  flex:1 1 0; min-width:0; align-self:flex-start;
   display:flex; flex-direction:column;
   transition:flex-basis .35s ease;
 }
@@ -2512,7 +2582,7 @@ body.raw-mode .preset-controls{ display:none; }
 }
 .mycoll-open-tab:hover{ background:#763F41; color:#F4F1EA; }
 .rendered-stack{
-  display:grid; grid-template-columns:repeat(2,325px); gap:15px;
+  display:grid; grid-template-columns:repeat(2,minmax(0,325px)); gap:15px;
   max-height:72vh; overflow-y:auto; overflow-x:hidden; padding-right:5.1px;
   align-content:start;
 }
@@ -2543,24 +2613,24 @@ body.raw-mode .preset-controls{ display:none; }
   font-family:'Cormorant Garamond', serif; font-style:italic; font-size:22px;
   color:#763F41; line-height:1.05;
 }
-.rendered-piece-sub{ font-family:var(--sans); font-size:12px; color:#5A5246; margin-top:1.7px; }
+.rendered-piece-sub{ font-family:var(--sans); font-size:14px; color:#5A5246; margin-top:2px; }
 .rendered-piece-actions{ display:flex; gap:6.8px; flex:0 0 auto; }
 .rendered-act{
-  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:15px;
-  padding:5.1px 10px; border-radius:4.2px; cursor:pointer; border:1px solid #CBBE9F;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:20px;
+  padding:6px 14px; border-radius:5.1px; cursor:pointer; border:1px solid #CBBE9F;
   background:#F4F1EA; color:#2A241E; transition:background .15s ease, color .15s ease;
   white-space:nowrap;
 }
 .rendered-act:hover{ background:#fff; color:#763F41; }
 .rendered-act.primary{ background:#763F41; color:#F4F1EA; border-color:#763F41; }
 .rendered-act.primary:hover{ background:#5e3133; color:#fff; }
-#curEffectCards.curator-effect-grid{ display:flex; flex-wrap:nowrap; gap:10px; width:100%; }
+/* curator grid is now 3-over-2 via the rule at #curEffectCards above */
 .cur-select-individually{
   font-family:'Cormorant Garamond', serif; font-style:italic; font-size:18px;
   color:#2A241E; text-align:center; margin:.2rem 0 1rem;
 }
 .cur-effects-queue{
-  flex:0 0 auto; min-width:0;
+  flex:0 0 auto; min-width:0; max-width:400px;
   background:#EDE6D6; border:1px solid #CBBE9F; border-radius:6.8px;
   padding:14px 14px 14px; align-self:flex-start;
   display:flex; flex-direction:column;
@@ -2574,7 +2644,7 @@ body.raw-mode .preset-controls{ display:none; }
   color:#763F41; margin-bottom:12px;
 }
 .your-queue-grid{
-  display:grid; grid-template-columns:repeat(3,150px); gap:8px;
+  display:grid; grid-template-columns:repeat(auto-fill,120px); gap:8px;
   margin-bottom:14px;
   max-height:476px; overflow-y:auto; overflow-x:hidden;
   align-content:start;
@@ -2621,10 +2691,10 @@ body.raw-mode .preset-controls{ display:none; }
 .queue-tile[data-status="redirected"] .queue-tile-sub{ color:#7d4242; font-style:italic; }
 .queue-tile-meta{ padding:4px 5.1px 5.1px; }
 .queue-tile-title{
-  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:14px;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:18px;
   color:#763F41; line-height:1.1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.queue-tile-sub{ font-family:var(--sans); font-size:10px; color:#5A5246; margin-top:1.7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.queue-tile-sub{ font-family:var(--sans); font-size:13px; color:#5A5246; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .queue-tile .queue-row-view,
 .queue-tile .queue-row-decide{ margin:0 7.6px 7.6px; }
 
@@ -2786,10 +2856,10 @@ body.raw-mode .preset-controls{ display:none; }
   margin-top:.4rem;
 }
 .curator-action-btn{
-  padding:.55rem .9rem;
+  padding:.55rem 1rem;
   font-family:'Cormorant Garamond', serif;
   font-style:italic;
-  font-size:1.1rem;
+  font-size:1.3rem;
   color:#7a2820;
   background:#fff;
   border:1px solid #7a2820;
@@ -3498,13 +3568,12 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 /* ── COLLAPSE SPINES — Curator/Queue labels shown when their column
    collapses during crafting or My Collection view. ─────────────── */
 .coll-spine{
-  display:none; flex:0 0 44px; align-self:stretch; cursor:pointer;
+  display:none; flex:0 0 44px; align-self:flex-start; cursor:pointer;
   writing-mode:vertical-rl; text-orientation:mixed;
   align-items:center; justify-content:center;
   font-family:'Cormorant Garamond', serif; font-style:italic; font-size:22px;
   color:#763F41; background:#EDE6D6; border:1px solid #CBBE9F; border-radius:5.1px;
   padding:18px 3.4px; transition:background .15s ease, opacity .35s ease, transform .35s ease;
-  min-height:120px;
 }
 .coll-spine:hover{ background:#fff; border-color:#763F41; }
 .cur-effects-layout.curator-collapsed #curatorSpine{
@@ -3705,6 +3774,206 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 .wm-lb{ position:absolute; inset:0; }
 .wm-lb::before{ font-size:54px; }
 .wm-tile.hidden{ display:none; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   V7 WORKSHOP LAYOUT (portraits-clean-build-v7.html — design truth).
+   Five-spine flex shell. Lifted verbatim from v7; inert until the shell
+   markup references these classes (Stage A onward). No collisions with
+   existing classes except .curator-paper (kept compatible). The existing
+   integrated Curator (.curator-panel/-masthead) is reconciled into the
+   .v7-curator spine at Stage C.
+   ═══════════════════════════════════════════════════════════════════ */
+:root{
+  --v7-warm-paper:#F0EAE0; --v7-champagne:#ECDFC1; --v7-champagne-2:#E0D2A8; --v7-vellum-soft:#f6f2ea;
+  --v7-ink:#1F1B14; --v7-ink-2:#5A5246; --v7-ink-3:#8E8676;
+  --v7-oxblood:#7B3F41; --v7-oxblood-dk:#5E3133; --v7-oxblood-soft:rgba(123,63,65,.13);
+  --v7-sage:#6a7a55; --v7-sage-light:#a8b48d; --v7-sage-tint:#e2e6d4; --v7-sage-border:#a8b48d;
+  --v7-brass:#75623a; --v7-border:#cbbe9f;
+  --v7-serif:'Cormorant Garamond','EB Garamond',Georgia,serif;
+  --v7-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --v7-r-card:8px; --v7-r-tile:6px;
+  --v7-ease:cubic-bezier(.4,0,.2,1); --v7-t-small:.25s ease; --v7-t-fly:.55s cubic-bezier(.4,0,.2,1);
+  --v7-shadow-card:0 4px 14px rgba(42,36,30,.08);
+  --w-spine-adv:48px; --w-curator:360px; --w-queue:240px; --w-collection:180px;
+}
+
+/* APP SHELL */
+.v7-app{
+  width:100%; max-width:2400px; margin:0 auto;
+  display:flex; gap:20px; padding:30px; align-items:stretch;
+  min-height:720px;
+}
+
+/* ADVANCED SPINE (collapsed v2 + expand) */
+.v7-spine{
+  position:relative; flex:0 0 52px; width:52px; cursor:pointer;
+  background:var(--v7-oxblood-soft); border:1px solid rgba(123,63,65,.22);
+  border-right:2.5px solid var(--v7-oxblood); border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; padding:18px 0;
+  transition:width .3s var(--v7-ease), background .3s var(--v7-ease);
+}
+.v7-spine:hover{ width:58px; background:rgba(123,63,65,.14); }
+.v7-adv-icon{ width:26px; height:26px; color:var(--v7-oxblood); margin-top:4px; position:relative; }
+.v7-adv-icon svg{ width:100%; height:100%; display:block; }
+.v7-adv-icon::before{ content:''; position:absolute; inset:-9px; border-radius:50%;
+  box-shadow:0 0 0 0 rgba(123,63,65,.34); animation:v7pulse 2.6s var(--v7-ease) infinite; }
+@keyframes v7pulse{ 0%{box-shadow:0 0 0 0 rgba(123,63,65,.30)} 70%{box-shadow:0 0 0 11px rgba(123,63,65,0)} 100%{box-shadow:0 0 0 0 rgba(123,63,65,0)} }
+.v7-adv-label{ writing-mode:vertical-rl; transform:rotate(180deg); margin-top:20px;
+  font-family:var(--v7-mono); font-size:12px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; color:var(--v7-oxblood); }
+.v7-adv-chevron{ margin-top:auto; font-family:var(--v7-serif); font-size:26px; color:var(--v7-oxblood); line-height:1; transition:transform .3s var(--v7-ease); }
+.v7-spine:hover .v7-adv-chevron{ transform:translateX(3px); }
+.v7-adv-tooltip{ position:absolute; left:calc(100% + 14px); top:24px; width:300px; z-index:20;
+  background:var(--v7-vellum-soft); border:1px solid var(--v7-border); border-radius:10px; padding:20px 22px;
+  box-shadow:0 10px 30px rgba(60,40,20,.18);
+  opacity:0; transform:translateX(-8px); pointer-events:none; transition:opacity .28s var(--v7-ease), transform .28s var(--v7-ease); }
+.v7-spine:hover .v7-adv-tooltip{ opacity:1; transform:translateX(0); }
+.v7-adv-tooltip::before{ content:''; position:absolute; left:-9px; top:30px; width:16px; height:16px;
+  background:var(--v7-vellum-soft); border-left:1px solid var(--v7-border); border-bottom:1px solid var(--v7-border); transform:rotate(45deg); }
+.v7-adv-tt-eyebrow{ font-family:var(--v7-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--v7-brass); margin-bottom:9px; }
+.v7-adv-tt-body{ font-family:var(--v7-serif); font-style:italic; font-size:22px; line-height:1.42; color:var(--v7-ink); margin:0; }
+.v7-adv-tt-sign{ color:var(--v7-oxblood); }
+/* Advanced expanded — holds the reparented controls (Stage B) */
+.v7-app[data-advanced="open"] .v7-spine{ flex:0 0 330px; width:330px; cursor:default;
+  background:var(--v7-vellum-soft); align-items:stretch; padding:0; overflow-y:auto; }
+.v7-app[data-advanced="open"] .v7-spine > .v7-adv-collapsedonly{ display:none; }
+.v7-adv-expanded{ display:none; }
+.v7-app[data-advanced="open"] .v7-adv-expanded{ display:block; }
+
+/* CURATOR SPINE (wraps the already-integrated curator — Stage C) */
+.v7-curator{ flex:0 0 var(--w-curator); position:relative; display:flex; flex-direction:column; overflow:visible; }
+
+/* SUGGESTED */
+.v7-suggested{
+  flex:1 1 auto; min-width:0;
+  background:rgba(255,255,255,.35); border:1px solid var(--v7-border); border-radius:var(--v7-r-card);
+  padding:18px; display:flex; flex-direction:column; gap:clamp(10px,1.2vh,16px); overflow:hidden;
+}
+.v7-suggested-grid{ display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:auto; align-content:start;
+  gap:clamp(10px,1vw,16px); flex:1 1 auto; min-height:0; overflow-y:auto; }
+.v7-rec-card{ position:relative; background:var(--v7-warm-paper); border:1px solid var(--v7-border);
+  border-radius:var(--v7-r-card); overflow:hidden; display:flex; flex-direction:column; cursor:pointer;
+  transition:transform var(--v7-t-small), box-shadow var(--v7-t-small), border-color var(--v7-t-small); }
+.v7-rec-card:hover{ transform:translateY(-2px); box-shadow:var(--v7-shadow-card); }
+.v7-rec-card.in-collection{ border-color:var(--v7-sage-border); }
+.v7-rec-img{ width:100%; aspect-ratio:1; overflow:hidden; position:relative; }
+.v7-rec-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+.v7-rec-img::after{ content:''; position:absolute; inset:auto 0 0 0; height:38%;
+  background:linear-gradient(to top, rgba(0,0,0,.62) 0%, rgba(0,0,0,.32) 40%, transparent 100%); pointer-events:none; }
+.v7-rec-name-float{ position:absolute; bottom:10px; left:12px; z-index:2;
+  font-family:var(--v7-serif); font-style:italic; font-size:20px; letter-spacing:-.02em; line-height:1;
+  color:var(--v7-warm-paper); text-shadow:0 1px 3px rgba(0,0,0,.4); }
+.v7-rec-quality-float{ position:absolute; bottom:11px; right:12px; z-index:2;
+  font-family:var(--v7-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  padding:3px 6px; border-radius:3px; background:rgba(243,237,225,.18); backdrop-filter:blur(4px); }
+/* badge color fix — sage/gold/brass per palette (NOT navy) */
+.v7-rec-quality-float[data-q="excellent"]{ color:#dfd2a4; }
+.v7-rec-quality-float[data-q="good"]{ color:#c8d8b0; }
+.v7-rec-quality-float[data-q="limited"]{ color:#e8c598; }
+.v7-rec-state-chip{ position:absolute; top:10px; right:10px; z-index:3;
+  font-family:var(--v7-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  padding:5px 9px; border-radius:3px; background:rgba(0,0,0,.35); color:var(--v7-warm-paper);
+  backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,.18); }
+.v7-rec-card.in-collection .v7-rec-state-chip{ background:var(--v7-sage); border-color:var(--v7-sage); color:#fff; }
+.v7-curator-pick{ position:absolute; top:9px; left:9px; z-index:3; display:flex; align-items:center; gap:5px;
+  padding:3px 8px 3px 4px; background:rgba(0,0,0,.32); border:1px solid rgba(255,255,255,.18); border-radius:14px;
+  backdrop-filter:blur(4px); font-family:var(--v7-serif); font-style:italic; font-size:11px; color:var(--v7-warm-paper); }
+.v7-curator-pick svg{ width:14px; height:16px; flex:0 0 14px; }
+.v7-bundle{ background:var(--v7-warm-paper); border:1px solid var(--v7-oxblood); border-radius:var(--v7-r-card);
+  padding:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+  cursor:pointer; transition:transform var(--v7-t-small), box-shadow var(--v7-t-small), background var(--v7-t-small);
+  text-align:center; aspect-ratio:1; }
+.v7-bundle:hover{ transform:translateY(-2px); box-shadow:var(--v7-shadow-card); background:#f5efe5; }
+.v7-bundle-eyebrow{ font-family:var(--v7-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--v7-oxblood); }
+.v7-bundle-label{ font-family:var(--v7-serif); font-style:italic; font-size:22px; letter-spacing:-.02em; line-height:1.15; color:var(--v7-ink); }
+.v7-bundle-sub{ font-family:var(--v7-serif); font-style:italic; font-size:13.5px; letter-spacing:-.01em; color:var(--v7-ink-2); }
+.v7-bundle-price{ font-family:var(--v7-serif); font-style:italic; font-size:24px; letter-spacing:-.02em; color:var(--v7-oxblood); margin-top:2px; }
+.v7-exploration{ display:grid; grid-template-columns:repeat(5,1fr) 2fr; gap:clamp(8px,1vw,12px); flex:0 0 auto; }
+.v7-expl-card{ position:relative; background:var(--v7-warm-paper); border:1px solid var(--v7-border); border-radius:var(--v7-r-card);
+  overflow:hidden; cursor:pointer; transition:transform var(--v7-t-small), box-shadow var(--v7-t-small); aspect-ratio:1; }
+.v7-expl-card:hover{ transform:translateY(-1px); box-shadow:var(--v7-shadow-card); }
+.v7-expl-card.in-collection{ border-color:var(--v7-sage-border); }
+.v7-expl-img{ width:100%; height:100%; position:relative; }
+.v7-expl-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+.v7-expl-img::after{ content:''; position:absolute; inset:auto 0 0 0; height:42%;
+  background:linear-gradient(to top, rgba(0,0,0,.62), rgba(0,0,0,.28) 40%, transparent); pointer-events:none; }
+.v7-expl-name-float{ position:absolute; bottom:7px; left:9px; z-index:2; font-family:var(--v7-serif); font-style:italic;
+  font-size:14px; letter-spacing:-.02em; color:var(--v7-warm-paper); text-shadow:0 1px 2px rgba(0,0,0,.4); }
+.v7-expl-state-chip{ position:absolute; top:7px; right:7px; z-index:3; width:20px; height:20px; border-radius:50%;
+  background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.18); backdrop-filter:blur(4px);
+  font-family:var(--v7-mono); font-size:10px; color:var(--v7-warm-paper); display:flex; align-items:center; justify-content:center; }
+.v7-expl-card.in-collection .v7-expl-state-chip{ background:var(--v7-sage); border-color:var(--v7-sage); color:#fff; }
+.v7-bundle-10{ background:var(--v7-warm-paper); border:1px solid var(--v7-oxblood); border-radius:var(--v7-r-card);
+  padding:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  cursor:pointer; text-align:center; transition:transform var(--v7-t-small), box-shadow var(--v7-t-small), background var(--v7-t-small); }
+.v7-bundle-10:hover{ transform:translateY(-1px); box-shadow:var(--v7-shadow-card); background:#f5efe5; }
+.v7-bundle-10 .v7-bundle-eyebrow{ font-size:10px; }
+.v7-bundle-10 .v7-bundle-label{ font-size:20px; line-height:1.15; }
+.v7-bundle-10 .v7-bundle-sub{ font-size:13px; }
+.v7-bundle-10 .v7-bundle-price{ font-size:20px; margin-top:2px; }
+
+/* QUEUE PILLS */
+.v7-queue{ flex:0 0 var(--w-queue); background:var(--v7-vellum-soft); border:1px solid var(--v7-border);
+  border-radius:var(--v7-r-card); padding:18px; display:flex; flex-direction:column; gap:12px; overflow:hidden; }
+.v7-queue-title{ font-family:var(--v7-serif); font-style:italic; font-size:22px; letter-spacing:-.03em; line-height:1; color:var(--v7-ink); flex:0 0 auto; }
+.v7-queue-list{ display:flex; flex-direction:column; gap:6px; flex:0 0 auto; }
+.v7-queue-pill{ display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--v7-border);
+  border-radius:24px; padding:8px 12px 8px 14px; position:relative; cursor:default;
+  transition:transform var(--v7-t-fly), opacity var(--v7-t-fly), border-color var(--v7-t-small); }
+.v7-queue-pill:hover{ border-color:var(--v7-sage-border); }
+.v7-queue-pill.is-flying{ animation:v7flyToCollection var(--v7-t-fly) both; }
+@keyframes v7flyToCollection{ 0%{ transform:translate(0,0) scale(1); opacity:1; } 100%{ transform:translate(var(--fly-x,200px),0) scale(.5); opacity:0; } }
+.v7-queue-pill-dot{ flex:0 0 8px; width:8px; height:8px; border-radius:50%; background:var(--v7-sage); box-shadow:0 0 0 2px var(--v7-sage-tint); }
+.v7-queue-pill-name{ flex:1; min-width:0; font-family:var(--v7-serif); font-style:italic; font-size:15px; letter-spacing:-.01em; line-height:1;
+  color:var(--v7-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.v7-queue-pill-num{ flex:0 0 auto; font-family:var(--v7-mono); font-size:9px; letter-spacing:.06em; color:var(--v7-ink-3); }
+.v7-queue-pill-x{ flex:0 0 18px; width:18px; height:18px; border-radius:50%; background:transparent; border:none;
+  font-size:12px; line-height:1; cursor:pointer; color:var(--v7-ink-3); transition:color var(--v7-t-small), background var(--v7-t-small); }
+.v7-queue-pill-x:hover{ color:var(--v7-oxblood); background:rgba(123,63,65,.08); }
+.v7-queue-empty{ font-family:var(--v7-serif); font-style:italic; font-size:14px; color:var(--v7-ink-3); text-align:center; padding:20px 8px; line-height:1.4; }
+.v7-queue-spacer{ flex:1 1 auto; min-height:0; }
+.v7-queue-total{ border-top:1px dashed rgba(0,0,0,.1); padding-top:10px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex:0 0 auto; }
+.v7-queue-total-label{ font-family:var(--v7-serif); font-style:italic; font-size:15px; color:var(--v7-ink-2); }
+.v7-qtp{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+.v7-qtp-was{ font-family:var(--v7-mono); font-size:12px; color:var(--v7-brass); text-decoration:line-through; }
+.v7-qtp-row{ display:flex; align-items:baseline; gap:6px; }
+.v7-qtp-now{ font-family:var(--v7-serif); font-style:italic; font-size:22px; color:var(--v7-oxblood); letter-spacing:-.02em; }
+.v7-qtp-off{ font-family:var(--v7-mono); font-size:10px; color:var(--v7-sage); letter-spacing:.04em; text-transform:uppercase; }
+.v7-btn-craft{ width:100%; padding:12px; font-family:var(--v7-serif); font-style:italic; font-size:19px; letter-spacing:-.01em;
+  color:var(--v7-warm-paper); background:var(--v7-oxblood); border:none; border-radius:5px; cursor:pointer;
+  transition:background var(--v7-t-small), transform var(--v7-t-small); flex:0 0 auto; }
+.v7-btn-craft:hover{ background:var(--v7-oxblood-dk); transform:translateY(-1px); }
+
+/* COLLECTION RAIL */
+.v7-collection-rail{ flex:0 0 var(--w-collection); background:rgba(255,255,255,.35); border:1px solid var(--v7-border);
+  border-radius:var(--v7-r-card); padding:12px; display:flex; flex-direction:column; gap:8px; overflow-y:auto; }
+.v7-collection-head{ font-family:var(--v7-mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--v7-oxblood);
+  padding:4px 4px 8px; flex:0 0 auto; text-align:center; border-bottom:1px dashed rgba(0,0,0,.08); }
+.v7-series-tile{ background:var(--v7-warm-paper); border:1px solid var(--v7-border); border-radius:var(--v7-r-card);
+  padding:14px 10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; cursor:pointer;
+  transition:transform var(--v7-t-small), box-shadow var(--v7-t-small), border-color var(--v7-t-small); aspect-ratio:1; flex:0 0 auto; }
+.v7-series-tile:hover{ transform:translateY(-2px); box-shadow:var(--v7-shadow-card); border-color:var(--v7-oxblood); }
+.v7-series-tile.active{ aspect-ratio:3/4; background:var(--v7-oxblood); border-color:var(--v7-oxblood-dk); padding:14px 10px 12px; gap:6px; cursor:default; }
+.v7-series-tile.active:hover{ transform:none; box-shadow:none; }
+.v7-series-icon{ width:30px; height:30px; color:var(--v7-oxblood); flex:0 0 auto; }
+.v7-series-tile.active .v7-series-icon{ width:28px; height:28px; color:var(--v7-warm-paper); }
+.v7-series-name{ font-family:var(--v7-serif); font-style:italic; font-size:14px; letter-spacing:-.01em; line-height:1.1; color:var(--v7-oxblood); text-align:center; }
+.v7-series-tile.active .v7-series-name{ font-size:16px; color:var(--v7-warm-paper); }
+.v7-series-count{ font-family:var(--v7-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--v7-sage); }
+.v7-series-tile.active .v7-series-count{ color:var(--v7-sage-light); font-size:9.5px; }
+.v7-series-count.empty{ opacity:.5; }
+.v7-series-thumbs{ display:flex; gap:3px; margin-top:auto; padding-top:6px; width:100%; justify-content:center; }
+.v7-series-thumb{ width:28px; height:28px; border-radius:3px; overflow:hidden; background:var(--v7-warm-paper); border:1px solid rgba(243,237,225,.4); }
+.v7-series-thumb img{ width:100%; height:100%; object-fit:cover; }
+.v7-series-thumb.is-arriving{ animation:v7thumbArriving 1.2s ease-out both; }
+@keyframes v7thumbArriving{ 0%{ box-shadow:0 0 0 3px var(--v7-sage-light); transform:scale(.7); } 60%{ transform:scale(1.1); } 100%{ box-shadow:0 0 0 0 transparent; transform:scale(1); } }
+
+/* RESPONSIVE (lifted from v7) */
+@media (max-width:1440px){ :root{ --w-curator:320px; --w-queue:220px; --w-collection:160px; } }
+@media (max-width:1280px){
+  :root{ --w-curator:280px; --w-queue:200px; --w-collection:140px; }
+  .v7-suggested-grid{ grid-template-columns:repeat(2,1fr); }
+  .v7-exploration{ grid-template-columns:repeat(4,1fr) 2fr; }
+}
 </style>
 </head>
 
@@ -3768,6 +4037,21 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
           </div>
           <img id="sourceThumb" style="display:none">
         </div>
+
+        <!-- Face-aware source control (v5). Hidden until a photo loads; the
+             square preview above is the empty-state upload target. Once a
+             source is in, this replaces it as the framing + subject-pick UI. -->
+        <div class="fa-source" id="faSource" hidden>
+          <div class="fa-viewport" id="faVp">
+            <img id="faImg" alt="source">
+            <div class="fa-hint" id="faHint">Drag to frame &middot; scroll to zoom &middot; tap a face</div>
+          </div>
+          <div class="fa-controls">
+            <button type="button" class="fa-pill" id="faAuto">Re-center on subject</button>
+            <span class="fa-zoomlabel" id="faZoom">1.0&times;</span>
+          </div>
+        </div>
+
         <div class="res-banner" id="resBanner" style="display:none"></div>
         <!-- Additional images appear ONLY when the studio asks for them
              (source review finds the lock weak / face-only). With a good
@@ -3880,7 +4164,7 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
         <div class="control-pills" id="framingPills">
           <button class="pill-lg" data-framing="bust"      onclick="selectFramingV2('bust')"><span class="fr-name">Bust</span><span class="fr-asp">1:1</span></button>
           <button class="pill-lg active" data-framing="signature" onclick="selectFramingV2('signature')"><span class="fr-name">Signature Pose</span><span class="fr-asp">1:1</span></button>
-          <button class="pill-lg" data-framing="statuesque" onclick="selectFramingV2('statuesque')"><span class="fr-name">Statuesque</span><span class="fr-asp">3:4</span></button>
+          <button class="pill-lg" data-framing="statuesque" onclick="selectFramingV2('statuesque')"><span class="fr-name">Three-Quarter</span><span class="fr-asp">3:4</span></button>
         </div>
       </div>
       </div><!-- /control-row -->
@@ -3980,6 +4264,31 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
                ─────────────────────────────────────────────────────── -->
           <div class="curator-panel curator-panel-compact" id="curatorPanel" style="display:none">
 
+            <!-- Deckled champagne paper (v5 §2). Sized to the card by
+                 sizeCuratorPaper() via a ResizeObserver so the torn edge
+                 stays even as steps switch. -->
+            <svg class="curator-paper" id="curatorPaper" preserveAspectRatio="none" viewBox="0 0 384 760" aria-hidden="true">
+              <defs>
+                <filter id="curatorDeckle" x="-8%" y="-6%" width="116%" height="112%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.014 0.016" numOctaves="4" seed="7" result="n"/>
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="16" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+              </defs>
+              <rect id="curatorPaperRect" x="14" y="14" width="356" height="732" rx="7" fill="#ECDFC1" stroke="#c4b48f" stroke-width="1.5" filter="url(#curatorDeckle)"/>
+            </svg>
+
+            <!-- Masthead — C mark + Curator, above the voiced body -->
+            <div class="curator-masthead">
+              <div class="curator-cmark">
+                <svg viewBox="0 0 67 75" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <ellipse cx="19.5" cy="34.5" rx="19.5" ry="21.5" fill="#763F41"/>
+                  <path d="M49.1504 15.4297C49.0592 16.2272 48.8086 17.4919 48.3984 19.2236C48.0111 20.9326 47.6807 22.2201 47.4072 23.0859L46.416 23.0518V22.1631C46.416 19.6794 46.1426 18.1299 45.5957 17.5146C45.0716 16.8766 43.9437 16.5576 42.2119 16.5576C41.5055 16.5804 40.9587 16.5918 40.5713 16.5918H39.3066C38.6914 16.569 38.2926 16.5576 38.1104 16.5576C36.4925 16.5576 34.681 16.8766 32.6758 17.5146C30.6706 18.1299 28.2666 19.3034 25.4639 21.0352C24.165 21.8555 22.2282 23.4733 19.6533 25.8887C18.6507 26.8457 16.9303 29.0674 14.4922 32.5537L13.3301 34.6045L11.8604 38.2959C11.4958 39.5036 11.2337 40.6657 11.0742 41.7822C10.9375 42.8988 10.8691 44.0381 10.8691 45.2002C10.8691 46.7497 11.04 48.208 11.3818 49.5752C11.7236 50.9424 12.1794 51.9906 12.749 52.7197C13.9567 54.2236 15.2327 55.4769 16.5771 56.4795C17.9443 57.4593 19.5052 58.2227 21.2598 58.7695C23.0371 59.3164 25.0879 59.5898 27.4121 59.5898C29.8047 59.5898 31.7757 59.248 33.3252 58.5645C34.8747 57.8809 36.2305 56.9124 37.3926 55.6592C37.7799 55.249 38.8737 53.6426 40.6738 50.8398L41.8018 51.1816L39.9561 56.9922C39.637 57.9948 39.3864 58.724 39.2041 59.1797C37.723 59.7266 36.1963 60.1253 34.624 60.376C31.6162 60.8545 28.6882 61.0938 25.8398 61.0938C21.6699 61.0938 18.457 60.695 16.2012 59.8975C13.9453 59.0999 11.7464 57.71 9.60449 55.7275C8.0778 54.3148 6.91569 52.526 6.11816 50.3613C5.32064 48.1738 4.92188 46.1458 4.92188 44.2773C4.92188 41.4518 5.35482 39.0479 6.2207 37.0654C8.04362 32.8727 10.1286 29.5459 12.4756 27.085C14.8454 24.6012 17.6367 22.4023 20.8496 20.4883C23.1738 19.0983 25.874 17.8109 28.9502 16.626C32.0492 15.4183 35.2393 14.8145 38.5205 14.8145L44.5361 14.7461C45.9945 14.7461 47.5326 14.974 49.1504 15.4297Z" fill="#F0EAE0"/>
+                </svg>
+              </div>
+              <div class="curator-mast-title">Curator</div>
+            </div>
+            <div class="curator-mast-rule"></div>
+
             <!-- Analysis status — visible during the initial photo read -->
             <div class="curator-step" id="curStepAnalysis" style="display:none">
               <div class="curator-panel-eyebrow">The Curator</div>
@@ -4061,10 +4370,10 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
               <div class="curator-panel-eyebrow">The Curator</div>
               <div class="curator-panel-title">A full figure in your photograph</div>
               <div class="curator-panel-lead">
-                We noticed you have a full body shot &mdash; would you prefer Statuesque framing instead?
+                We noticed you have a full body shot &mdash; would you prefer Three-Quarter framing instead?
               </div>
               <div class="subject-pick-alt">
-                <button class="subject-pick-btn" onclick="chooseFramingOffer('statuesque')"><span>Use Statuesque</span></button>
+                <button class="subject-pick-btn" onclick="chooseFramingOffer('statuesque')"><span>Use Three-Quarter</span></button>
                 <button class="curator-action-btn" onclick="chooseFramingOffer('signature')">Keep the Signature Pose</button>
               </div>
             </div>
@@ -4092,6 +4401,15 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
                   <span>The Curator is selecting from the catalog...</span>
                 </div>
                 <div class="curator-effect-grid" id="curEffectCards" style="display:none"></div>
+
+                <!-- Experimental Effects — additive "out there" finishes
+                     (portraits-experimental.ts). One button per effect; tapping
+                     queues a render that bypasses presets/material/location. -->
+                <div class="experimental-fx" id="experimentalFx" style="display:none">
+                  <div class="experimental-fx-head">Experimental Effects</div>
+                  <div class="experimental-fx-sub">Ten out-there finishes, still under test &mdash; tap one to craft it.</div>
+                  <div class="experimental-fx-grid" id="experimentalButtons"></div>
+                </div>
               </div>
 
               <aside class="cur-effects-queue" id="stageQueueCard" hidden>
@@ -4421,6 +4739,11 @@ const state = {
   plaqueOff:     false,
   // ── Stage tab ('preview' | 'queue') ──
   activeTab:     'preview',
+  // ── Face-aware source framing (Source Control v5) ──
+  // focal is the single source of truth: it governs the displayed crop AND
+  // the rendered crop, and carries the chosen subjectId to generate.
+  focal:         { x: 0.5, y: 0.5, zoom: 1.0, subjectId: null },
+  faces:         [],   // AnalyzedFace[] from analyze (id, bbox, faceFillPct, gate)
   // ── Step-through pulse — track which steps the user has touched ──
   // The pulse moves to the lowest unclicked step. Once any step is
   // touched, its pulse retires permanently for the session.
@@ -4903,7 +5226,7 @@ function renderAspectActiveState(){
 // (closing doesn't reset values) and is included in each queue item's
 // payload so the backend can apply the chosen lighting per-render.
 // ═══════════════════════════════════════════════════════════════
-const FRAMING_LABEL = { bust: 'Bust', signature: 'Signature Pose', statuesque: 'Statuesque', full_body: 'Statuesque' }
+const FRAMING_LABEL = { bust: 'Bust', signature: 'Signature Pose', statuesque: 'Three-Quarter', full_body: 'Three-Quarter' }
 
 // ── INSCRIPTION — the last choice before crafting ─────────────
 // state.inscription = null until chosen; { mode, text } after.
@@ -5260,6 +5583,142 @@ function applyDefaultLocation(){
 
 init()
 
+// ── FACE-AWARE SOURCE CONTROL (Source Control v5) ──────────────
+// Pan/zoom/subject-pick over a fixed 3:4 viewport. The only state it owns
+// is state.focal {x,y,zoom,subjectId} — the single source of truth handed to
+// generate. Seeds from state.faces (analyze). All math from the locked proto.
+const FA = (() => {
+  const ZMIN = 1.0, ZMAX = 3.0, FACE_FILL = 0.42
+  let vp, img, hint, zoomLbl, autoBtn, source, booted = false
+  let nat = { w:0, h:0 }, coverBase = 1
+  let faces = []   // viewport-space faces {id, cx, cy, w, h, gate}
+
+  function el(){
+    vp=document.getElementById('faVp'); img=document.getElementById('faImg')
+    hint=document.getElementById('faHint'); zoomLbl=document.getElementById('faZoom')
+    autoBtn=document.getElementById('faAuto'); source=document.getElementById('faSource')
+  }
+  function vpSize(){ const r=vp.getBoundingClientRect(); return {w:r.width,h:r.height} }
+  function displayed(){ return { w:nat.w*coverBase*state.focal.zoom, h:nat.h*coverBase*state.focal.zoom } }
+  function setCover(){ const {w:cw,h:ch}=vpSize(); coverBase=Math.max(cw/nat.w, ch/nat.h) || 1 }
+  function clampFocal(){
+    const {w:cw,h:ch}=vpSize(); const d=displayed()
+    const fx=(cw/2)/d.w, fy=(ch/2)/d.h
+    state.focal.x = d.w<=cw ? .5 : Math.min(Math.max(state.focal.x,fx),1-fx)
+    state.focal.y = d.h<=ch ? .5 : Math.min(Math.max(state.focal.y,fy),1-fy)
+  }
+  function render(){
+    if(!vp||!img||!nat.w) return
+    const {w:cw,h:ch}=vpSize(); const d=displayed()
+    const left=cw/2-state.focal.x*d.w, top=ch/2-state.focal.y*d.h
+    img.style.width=d.w+'px'; img.style.height=d.h+'px'; img.style.left=left+'px'; img.style.top=top+'px'
+    if(zoomLbl) zoomLbl.textContent=state.focal.zoom.toFixed(1)+'×'
+    vp.querySelectorAll('.fa-marker,.fa-ring').forEach(n=>n.remove())
+    faces.forEach(f=>{
+      const sx=left+f.cx*d.w, sy=top+f.cy*d.h
+      if(f.id===state.focal.subjectId){
+        const ring=document.createElement('div'); ring.className='fa-ring'
+        const rw=Math.max(f.w*d.w*1.7,76), rh=Math.max(f.h*d.h*2.0,92)
+        ring.style.left=sx+'px'; ring.style.top=(sy-rh*0.07)+'px'; ring.style.width=rw+'px'; ring.style.height=rh+'px'
+        vp.appendChild(ring)
+      } else {
+        const m=document.createElement('div'); m.className='fa-marker'
+        m.style.left=sx+'px'; m.style.top=sy+'px'; m.title=f.gate
+        m.addEventListener('pointerdown',e=>e.stopPropagation())
+        m.addEventListener('click',e=>{ e.stopPropagation(); pick(f.id) })
+        vp.appendChild(m)
+      }
+    })
+  }
+  function pick(id){
+    const f=faces.find(x=>x.id===id); if(!f) return
+    state.focal.subjectId=id; state.focal.x=f.cx; state.focal.y=f.cy
+    const {h:ch}=vpSize()
+    state.focal.zoom=Math.min(Math.max((FACE_FILL*ch)/(f.h*nat.h*coverBase||1),ZMIN),ZMAX)
+    clampFocal(); render()
+  }
+  function seedAuto(){
+    // Auto-frame the largest face (single OR multi subject). What the customer
+    // sees in this 3:4 viewport is what gets crafted and gated (§4) — framing
+    // onto the face makes it fill the frame, which is exactly what the intake
+    // gate wants. The route upscales any tight crop past the resolution floor,
+    // so a tight frame is safe.
+    if(!faces.length){ state.focal.subjectId=null; clampFocal(); render(); return }
+    let best=faces[0],area=0; faces.forEach(f=>{const a=f.w*f.h; if(a>area){area=a;best=f}})
+    if(vp) vp.classList.remove('touched'); pick(best.id)
+  }
+  // AnalyzedFace[] (bbox top-left) → viewport faces (center coords)
+  function setFaces(analyzed){
+    faces=(analyzed||[]).filter(f=>f&&f.bbox).map(f=>({
+      id:f.id, gate:f.gate||'pass',
+      cx:f.bbox.x+f.bbox.w/2, cy:f.bbox.y+f.bbox.h/2, w:f.bbox.w, h:f.bbox.h,
+    }))
+    if(booted) seedAuto()
+  }
+  function boot(){
+    el(); if(!vp||!img) return
+    nat={w:img.naturalWidth,h:img.naturalHeight}; if(!nat.w) return
+    setCover(); booted=true; seedAuto()
+  }
+  function show(dataUrl){
+    el(); if(!source||!img) return
+    source.hidden=false
+    const sb=document.getElementById('sidebarSourcePreview'); if(sb) sb.style.display='none'
+    booted=false; img.onload=boot; img.src=dataUrl
+    if(img.complete&&img.naturalWidth) boot()
+  }
+  function hide(){
+    el(); if(source) source.hidden=true
+    const sb=document.getElementById('sidebarSourcePreview'); if(sb) sb.style.display=''
+  }
+  function attach(){
+    el(); if(!vp) return
+    let drag=null
+    vp.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY}; vp.classList.add('dragging','touched'); vp.setPointerCapture(e.pointerId) })
+    vp.addEventListener('pointermove',e=>{ if(!drag)return; const d=displayed()
+      state.focal.x-=(e.clientX-drag.x)/d.w; state.focal.y-=(e.clientY-drag.y)/d.h; drag={x:e.clientX,y:e.clientY}; clampFocal(); render() })
+    const end=()=>{ drag=null; vp.classList.remove('dragging') }
+    vp.addEventListener('pointerup',end); vp.addEventListener('pointercancel',end)
+    vp.addEventListener('wheel',e=>{ e.preventDefault(); vp.classList.add('touched')
+      const factor=e.deltaY<0?1.06:1/1.06; state.focal.zoom=Math.min(Math.max(state.focal.zoom*factor,ZMIN),ZMAX); clampFocal(); render() },{passive:false})
+    let pinch=null
+    vp.addEventListener('touchstart',e=>{ if(e.touches.length===2){ vp.classList.add('touched')
+      pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY) } },{passive:false})
+    vp.addEventListener('touchmove',e=>{ if(e.touches.length===2&&pinch){ e.preventDefault()
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)
+      state.focal.zoom=Math.min(Math.max(state.focal.zoom*(d/pinch),ZMIN),ZMAX); pinch=d; clampFocal(); render() } },{passive:false})
+    vp.addEventListener('touchend',()=>{ pinch=null })
+    if(autoBtn) autoBtn.addEventListener('click',seedAuto)
+    window.addEventListener('resize',()=>{ if(!booted)return; setCover(); clampFocal(); render() })
+  }
+  return { show, hide, setFaces, attach, render, seedAuto }
+})()
+FA.attach()
+
+// ── Curator deckle paper sizing (v5 §2) ─────────────────────────
+// Keep the SVG rag edge sized to the card; a ResizeObserver re-fires on every
+// height change (steps switch, content grows) so the torn edge stays even.
+function sizeCuratorPaper(){
+  const panel=document.getElementById('curatorPanel')
+  const paper=document.getElementById('curatorPaper')
+  const rect =document.getElementById('curatorPaperRect')
+  if(!panel||!paper||!rect) return
+  const w=panel.offsetWidth, h=panel.offsetHeight
+  if(!w||!h) return
+  paper.setAttribute('viewBox','0 0 '+w+' '+h)
+  const ins=14
+  rect.setAttribute('x',ins); rect.setAttribute('y',ins)
+  rect.setAttribute('width',Math.max(0,w-2*ins)); rect.setAttribute('height',Math.max(0,h-2*ins))
+}
+;(function(){
+  const panel=document.getElementById('curatorPanel')
+  if(panel && typeof ResizeObserver!=='undefined'){
+    new ResizeObserver(()=>sizeCuratorPaper()).observe(panel)
+  }
+  window.addEventListener('resize',sizeCuratorPaper)
+  if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(sizeCuratorPaper) }
+})()
+
 // ── UPLOAD HANDLERS ──────────────────────────────────────────
 function handlePrimaryUpload(input){
   const f = input.files[0]
@@ -5282,12 +5741,19 @@ function handlePrimaryUpload(input){
       state.curator.bodyCoverage = null
       state.curator.dismissed    = false
     }
-    state.sourceFindings = []
-    state._analyzeResult = null
+    state.sourceFindings  = []
+    state._analyzeResult  = null
+    state.detectedGender   = null
+    state.detectedAgeGroup = null
     document.getElementById('sourceThumb').src = r.result
     document.getElementById('sourceThumb').style.display = ''
     document.getElementById('sourceEmpty').style.display = 'none'
     document.getElementById('sidebarSourcePreview').classList.add('has-image')
+    // Face-aware control takes over framing. Faces seed when analyze lands;
+    // until then it shows a centered cover-fit with no markers.
+    state.focal = { x: 0.5, y: 0.5, zoom: 1.0, subjectId: null }
+    state.faces = []
+    FA.show(String(r.result))
     document.getElementById('slot1').classList.add('has-file')
     document.getElementById('st1').textContent = f.name.length > 20 ? f.name.slice(0,18)+'…' : f.name
     // Tier 1 resolution gate — probe the actual pixel dimensions.
@@ -5756,7 +6222,7 @@ function buildQueueRow(item, num, tier){
   } else {
     title = matLabel(item.preset)
     if (item.subject_selector?.label) title += ` \u00b7 ${item.subject_selector.label}`
-    if (item.framing === 'statuesque' || item.framing === 'full_body') title += ' \u00b7 Statuesque'
+    if (item.framing === 'statuesque' || item.framing === 'full_body') title += ' \u00b7 Three-Quarter'
     else if (item.framing === 'bust') title += ' \u00b7 Bust'
     const locLabel = LOCATION_LABELS[item.location] || item.location
     sub = `${locLabel} · ${item.aspect_ratio}`
@@ -6052,14 +6518,13 @@ function updateColumnPhase(){
 
   if (renderedCol) renderedCol.hidden = !hasRendered
 
-  if (queueCol && layout &&
-      !layout.classList.contains('queue-collapsed') &&
-      !layout.classList.contains('mycoll-open')){
+  if (queueCol && layout && !layout.classList.contains('mycoll-open')){
     const shouldShow = queuedCount > 0 || pendingOrRunning
     if (shouldShow && queueCol.hidden){
       queueCol.hidden = false
+      if (layout.classList.contains('queue-collapsed')) layout.classList.remove('queue-collapsed')
       queueCol.classList.remove('fade-in'); void queueCol.offsetWidth; queueCol.classList.add('fade-in')
-    } else if (!shouldShow && !queueCol.hidden){
+    } else if (!shouldShow){
       queueCol.hidden = true
     }
   }
@@ -6147,6 +6612,12 @@ async function runAnalyze(){
     if (seq !== state.analyzeSeq) return   // stale — photo was replaced
     const r = data?.result || {}
 
+    // §5 — seed the face-aware control from detected faces (id, bbox,
+    // faceFillPct, gate). With multiple faces this lights up the markers and
+    // auto-frames the largest; with one or none it just centers the source.
+    state.faces = Array.isArray(r.faces) ? r.faces : []
+    FA.setFaces(state.faces)
+
     // Portraits backend returns subject_count_estimate / quality_verdict /
     // recommendation. We don't drive UI from the count (Portraits is always
     // single-subject) but we DO surface a soft advisory when the source has
@@ -6204,6 +6675,8 @@ async function runAnalyze(){
     // ── Curator handoff — analyze landed, decide what step to enter ──
     state.curator.bodyCoverage   = r.body_coverage   || 'face_only'
     state.curator.qualityVerdict = r.quality_verdict || 'yellow'
+    state.detectedGender         = r.detected_gender   || null
+    state.detectedAgeGroup       = r.detected_age_group || null
 
     if (state.curator.qualityVerdict === 'red'){
       // Quality fail — don't waste the user's time on torso/effects.
@@ -6452,8 +6925,20 @@ const PREVIEW_FILE = {
   iron:'iron.jpg', pencil_sketch:'pencil sketch.jpg', sheet_music:'sheet music.jpg',
   stone:'stone.jpg', torn_paper:'torn paper.jpg', walnut:'walnut.jpg',
 }
-// Filenames carry spaces on disk — encode so the browser fetches them correctly.
-const previewSrc = preset => PREVIEW_BASE + encodeURIComponent(PREVIEW_FILE[preset] || '')
+const DEMO_SUBJECT = {
+  f_child:'f_child_a', f_teen:'f_teen_a', f_young:'f_young_a',
+  f_adult:'f_adult_a', f_mature:'f_mature_a', f_senior:'f_senior_a',
+  m_child:'m_child_a', m_teen:'m_teen_b', m_young:'m_young_b',
+  m_adult:'m_adult_a', m_mature:'m_mature_a', m_senior:'m_senior_a',
+}
+function previewSrc(preset) {
+  if (state.detectedGender && state.detectedAgeGroup) {
+    const key = state.detectedGender + '_' + state.detectedAgeGroup
+    const subj = DEMO_SUBJECT[key]
+    if (subj) return PREVIEW_BASE + encodeURIComponent(preset) + '/' + encodeURIComponent(subj) + '.jpg'
+  }
+  return PREVIEW_BASE + encodeURIComponent(PREVIEW_FILE[preset] || '')
+}
 
 // Label helper — finished pieces and queue rows must resolve labels from
 // BOTH material lists; artists pieces were showing raw ids (charcoal_chalk).
@@ -6933,7 +7418,7 @@ function renderEffectCards(recs){
     const card = document.createElement('div')
     card.className = 'eff-card'
     const quality = r.quality_level || null
-    const framingLabel = r.framing === 'statuesque' ? 'Statuesque · 3:4'
+    const framingLabel = r.framing === 'statuesque' ? 'Three-Quarter · 3:4'
                        : r.framing === 'bust' ? 'Bust · 1:1'
                        : 'Signature · 1:1'
     card.innerHTML = `
@@ -6971,6 +7456,64 @@ function renderEffectCards(recs){
     grid.parentNode.insertBefore(dismissEl, grid.nextSibling)
   }
   dismissEl.style.display = ''
+  renderExperimentalButtons()
+}
+
+// ── EXPERIMENTAL EFFECTS (portraits-experimental.ts contract) ──────
+// Ordered to match EXPERIMENTAL_EFFECTS in the module. One button per effect;
+// tapping queues a render that POSTs { experimental_effect } to /generate,
+// which bypasses the preset/material/location pipeline + Pass 2.
+const EXPERIMENTAL_FX = [
+  { id:'kintsugi',         label:'Kintsugi Porcelain' },
+  { id:'geode_druzy',      label:'Geode Druzy' },
+  { id:'deep_sea',         label:'Bioluminescent Deep-Sea' },
+  { id:'circuit',          label:'Silicon Circuit Board' },
+  { id:'reclaimed_bronze', label:'Reclaimed Bronze' },
+  { id:'mercury',          label:'Liquid Mercury' },
+  { id:'blown_glass',      label:'Blown Art Glass' },
+  { id:'amber',            label:'Amber Inclusion' },
+  { id:'neon',             label:'Neon Light-Drawing' },
+  { id:'nebula_resin',     label:'Nebula Resin' },
+]
+function renderExperimentalButtons(){
+  const wrap = document.getElementById('experimentalFx')
+  const grid = document.getElementById('experimentalButtons')
+  if (!wrap || !grid) return
+  if (grid.childElementCount === 0){
+    EXPERIMENTAL_FX.forEach(fx => {
+      const b = document.createElement('button')
+      b.className = 'experimental-fx-btn'
+      b.textContent = fx.label
+      b.onclick = () => queueExperimental(fx.id)
+      grid.appendChild(b)
+    })
+  }
+  wrap.style.display = state.primarySrc ? '' : 'none'
+}
+function queueExperimental(effectId){
+  const fx = EXPERIMENTAL_FX.find(e => e.id === effectId)
+  if (!fx || !state.primarySrc) return
+  if (typeof closeMyCollection === 'function') closeMyCollection()
+  const id = ++state.queueIdSeq
+  state.queue.push({
+    id,
+    mode:                  'experimental',
+    experimental_effect:   effectId,
+    experimental_label:    fx.label,
+    // preset carries the human label so the existing title/alt display spots
+    // (matLabel(item.preset)) read correctly; the render path keys on mode.
+    preset:                fx.label,
+    framing:               state.framing || 'signature',
+    focal:                 { ...state.focal },
+    source_image_b64:      state.primarySrc,
+    additional_images_b64: state.auxSrc.filter(Boolean),
+    aspect_ratio:          state.aspect,
+    resolution:            state.resolution || '1k',
+    plaque_text:           typeof resolvePlaquePayload === 'function' ? resolvePlaquePayload() : undefined,
+    status:                'pending',
+    result:                null,
+  })
+  refreshQueueViews()
 }
 
 function curatorPickEffect(rec, cardEl){
@@ -7062,6 +7605,7 @@ function curatorQueueRec(rec){
     draft_key:             draftKey,
     framing:               rec.framing || state.framing || 'signature',
     subject_selector:      state.subjectSelector || null,
+    focal:                 { ...state.focal },
     source_image_b64:      state.primarySrc,
     additional_images_b64: state.auxSrc.filter(Boolean),
     style_id:              rec.series,
@@ -7324,6 +7868,7 @@ function addToQueue(){
       draft_key:             draftKey,
       framing:               state.framing || 'signature',
       subject_selector:      state.subjectSelector || null,
+      focal:                 { ...state.focal },
       // snapshot of source images
       source_image_b64:      state.primarySrc,
       additional_images_b64: state.auxSrc.filter(Boolean),
@@ -7800,8 +8345,30 @@ document.addEventListener('keydown', (e) => {
 })
 
 // ── CRAFT ALL ────────────────────────────────────────────────
+// §7 — per-person intake gate. Before render spend, the chosen subject must
+// clear the face-size floor. analyze marks a too-small face gate:'small'.
+// Minimal block + message for now (the voiced Curator intake state is §8,
+// deferred). Returns a message string when blocked, else null.
+function focalGateMessage(){
+  const id = state.focal && state.focal.subjectId
+  if (!id || !Array.isArray(state.faces)) return null
+  const f = state.faces.find(x => x && x.id === id)
+  if (!f) return null
+  if (f.gate === 'small')
+    return 'The face you picked is quite small in the photo — it won’t craft into a strong piece. Try a photo where that person’s face is larger, or pick a closer subject.'
+  return null
+}
+
 async function runAll(){
   if (state.busy) return
+
+  // §7 — per-person face-size gate before spend.
+  const gateMsg = focalGateMessage()
+  if (gateMsg){
+    if (typeof setGStatus === 'function') setGStatus('subject too small')
+    alert(gateMsg)
+    return
+  }
 
   // If there are no pending items but the draft is buildable, auto-add it.
   const hasPending = state.queue.some(q => q.status === 'pending')
@@ -7836,10 +8403,9 @@ async function runAll(){
 
 async function craftPending(){
   if (state.busy) return
-  // Crafting fired — tuck both Curator and Queue to their spines;
-  // rendered pieces appear in the Your Pieces column. (#1)
+  // Crafting fired — collapse Curator to spine; keep Queue visible
+  // so the user sees render progress. Queue hides after completion.
   suggCollapse()
-  queueCollapse()
 
   // Renders land in the Your Queue card (right) — no view switch.
   state.busy = true
@@ -7872,7 +8438,11 @@ async function craftPending(){
   refreshQueueViews()
   const stillPending = state.queue.some(q => q.status === 'pending' || q.status === 'running')
   const anyRendered  = state.queue.some(isRenderedPiece)
-  if (!stillPending && anyRendered){ suggCollapse(); queueCollapse() }   // #5
+  if (!stillPending && anyRendered){
+    suggCollapse()
+    const qc = document.getElementById('stageQueueCard')
+    if (qc) qc.hidden = true
+  }
   updateRunGate()
 }
 
@@ -7932,6 +8502,39 @@ async function runQueueItem(item){
         }
         item.duration_ms = data.duration_ms || (Date.now() - t0)
       }
+    } else if (item.mode === 'experimental'){
+      // Experimental effect → /generate experimental branch (no preset).
+      const body = {
+        source_image_b64:      item.source_image_b64,
+        additional_images_b64: item.additional_images_b64 || [],
+        experimental_effect:   item.experimental_effect,
+        framing:               item.framing,
+      }
+      if (item.plaque_text !== undefined) body.plaque = item.plaque_text
+      if (item.focal) body.focal = item.focal
+      const res = await fetch(API, {
+        method: 'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body),
+      })
+      if (!res.ok){
+        let errMsg = `HTTP ${res.status}`
+        try { const err = await res.json(); if (err?.error) errMsg = err.error } catch {}
+        throw new Error(errMsg)
+      }
+      const data = await res.json()
+      if (!data.image_b64){
+        item.status = 'failed'
+        item.error  = 'no image returned'
+        item.duration_ms = Date.now() - t0
+      } else {
+        item.status = 'done'
+        item.result = {
+          image_b64:   data.image_b64,
+          duration_ms: data.elapsed_ms || (Date.now() - t0),
+        }
+        item.duration_ms = data.elapsed_ms || (Date.now() - t0)
+      }
     } else {
       // Preset mode → full pipeline
       const body = {
@@ -7979,6 +8582,13 @@ async function runQueueItem(item){
       // likeness against the SELECTED face, not the most prominent one.
       if (item.subject_selector) {
         body.subject_selector = item.subject_selector
+      }
+      // §6 — focal framing (face-aware source control). The generate route
+      // server-crops the source to this region (3:4) before generation, so
+      // the chosen subject fills the frame. subjectId rides along as the QA/
+      // log tag. This is the LIVE wire for multi-person subject-pick.
+      if (item.focal) {
+        body.focal = item.focal
       }
       // Framing — 'bust' = Liten 3/4 (complete arms + hands, NEVER a
       // mid-arm termination); 'full_body' = head to toe. Engine weaves
