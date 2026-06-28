@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Advanced Spine · v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3ede1; --warm-paper:#F0EAE0; --champagne:#ECDFC1; --vellum-soft:#f6f2ea;
+  --ink:#1F1B14; --ink-2:#5A5246; --ink-3:#8E8676;
+  --oxblood:#7B3F41; --oxblood-dk:#5E3133; --oxblood-soft:rgba(123,63,65,.10);
+  --sage:#6a7a55; --sage-light:#a8b48d; --border:#cbbe9f; --brass:#75623a;
+  --serif:'Cormorant Garamond',Georgia,serif; --sans:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:var(--sans)}
+.hint{font-family:var(--mono);font-size:13px;letter-spacing:.06em;color:var(--ink-3);margin:0;padding:30px 30px 0 34px;text-transform:uppercase}
+/* workshop shell — sections separated by the standard 20px gap */
+.workshop{ display:flex; gap:20px; padding:24px 30px 30px; align-items:stretch; height:640px; }
+
+.adv-spine{ position:relative; width:52px; flex:0 0 52px; cursor:pointer;
+  background:var(--oxblood-soft); border:1px solid rgba(123,63,65,.22); border-right:2.5px solid var(--oxblood);
+  border-radius:10px; display:flex; flex-direction:column; align-items:center; padding:18px 0;
+  transition:width .3s var(--ease), background .3s var(--ease); }
+.adv-spine:hover{ width:58px; background:rgba(123,63,65,.14); }
+.adv-icon{ width:26px; height:26px; color:var(--oxblood); margin-top:4px; position:relative; }
+.adv-icon svg{ width:100%; height:100%; display:block; }
+.adv-icon::before{ content:''; position:absolute; inset:-9px; border-radius:50%;
+  box-shadow:0 0 0 0 rgba(123,63,65,.34); animation:pulse 2.6s var(--ease) infinite; }
+@keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(123,63,65,.30)} 70%{box-shadow:0 0 0 11px rgba(123,63,65,0)} 100%{box-shadow:0 0 0 0 rgba(123,63,65,0)} }
+.adv-label{ writing-mode:vertical-rl; transform:rotate(180deg); margin-top:20px;
+  font-family:var(--mono); font-size:12px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; color:var(--oxblood); }
+.adv-chevron{ margin-top:auto; font-family:var(--serif); font-size:26px; color:var(--oxblood); line-height:1; transition:transform .3s var(--ease); }
+.adv-spine:hover .adv-chevron{ transform:translateX(3px); }
+.adv-tooltip{ position:absolute; left:calc(100% + 14px); top:24px; width:300px; z-index:20;
+  background:var(--vellum-soft); border:1px solid var(--border); border-radius:10px; padding:20px 22px;
+  box-shadow:0 10px 30px rgba(60,40,20,.18);
+  opacity:0; transform:translateX(-8px); pointer-events:none; transition:opacity .28s var(--ease), transform .28s var(--ease); }
+.adv-spine:hover .adv-tooltip{ opacity:1; transform:translateX(0); }
+.adv-tooltip::before{ content:''; position:absolute; left:-9px; top:30px; width:16px; height:16px;
+  background:var(--vellum-soft); border-left:1px solid var(--border); border-bottom:1px solid var(--border); transform:rotate(45deg); }
+.adv-tt-eyebrow{ font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--brass); margin-bottom:9px; }
+.adv-tt-body{ font-family:var(--serif); font-style:italic; font-size:22px; line-height:1.42; color:var(--ink); margin:0; }
+.adv-tt-sign{ color:var(--oxblood); }
+/* curator panel — separate, margined */
+.ctx{ width:330px; flex:0 0 330px; background:var(--champagne); border-radius:10px; padding:26px;
+  box-shadow:0 2px 10px rgba(60,40,20,.08); font-family:var(--serif); color:var(--ink-3); display:flex; align-items:flex-start; }
+.ctx span{ font-style:italic; font-size:20px; }
+.rest{ flex:1; border-radius:10px; border:1px dashed var(--border); display:flex; align-items:flex-start; padding:26px;
+  font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+</style></head><body>
+<p class="hint">Hover the spine — note the 20px gap to the Curator, matching every section</p>
+<div class="workshop">
+  <div class="adv-spine">
+    <div class="adv-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.4" fill="#f6f2ea"/>
+        <line x1="4" y1="12.5" x2="20" y2="12.5"/><circle cx="15" cy="12.5" r="2.4" fill="#f6f2ea"/>
+        <line x1="4" y1="18" x2="20" y2="18"/><circle cx="7.5" cy="18" r="2.4" fill="#f6f2ea"/>
+      </svg>
+    </div>
+    <div class="adv-label">Advanced</div>
+    <div class="adv-chevron">&rsaquo;</div>
+    <div class="adv-tooltip">
+      <div class="adv-tt-eyebrow">More control</div>
+      <p class="adv-tt-body">Here you can shape finer choices — more materials, more to decide.
+      If you'd rather not, my suggestions are a safe place to start. <span class="adv-tt-sign">— C.</span></p>
+    </div>
+  </div>
+  <div class="ctx"><span>Curator panel →</span></div>
+  <div class="rest">Suggested · Queue · Collection</div>
+</div>
+</body></html>

@@ -26,7 +26,6 @@ import type { Framing } from './portraits-shared'
 import { framingBlock, CRAFT_PERSONALITY, HUE_LOCK, STUDIO_DIRECTIVES } from './portraits-prompt'
 
 export type ExperimentalEffectId =
-  | 'kintsugi'
   | 'geode_druzy'
   | 'deep_sea'
   | 'circuit'
@@ -48,40 +47,31 @@ interface ExperimentalEffect {
 // Ordered — the UI renders one Curator button per entry in this order.
 export const EXPERIMENTAL_EFFECTS: ExperimentalEffect[] = [
   {
-    id: 'kintsugi',
-    label: 'Kintsugi Porcelain',
-    monolithic: true,
-    body:
-      `Transform the entire clothed figure into pure white glazed porcelain — smooth, luminous, faintly translucent at the thin edges. The piece has been shattered and lovingly rebuilt in the kintsugi tradition, and the repair is abundant and beautiful: a rich, sprawling network of gold-filled cracks runs everywhere across the face, hair, and garment — many seams, some hairline-fine and others wide rivers of lustrous gold where whole fragments were rejoined, with gold pooling at the junctions. The porcelain stays uniformly white; gold appears ONLY along the repaired breaks. The more numerous and golden the repairs, the better — the history of breakage is celebrated, traced in veins of light across the whole sculpture.`,
-    avoid:
-      `Avoid colored or painted porcelain, flesh tones, or any hue other than white in the ceramic itself. Avoid gold anywhere except along the crack seams. Avoid a sparse or nearly-pristine surface — the repairs should be plentiful, varied in width, and visually rich.`,
-  },
-  {
     id: 'geode_druzy',
     label: 'Geode Druzy',
     monolithic: false,
     body:
-      `Transform the clothed figure into a sculpture of banded agate — face, hair, and garment all carved from concentric agate layers in earthy grey, white, and amber. The piece is deliberately asymmetric and organic: on one side the agate is whole, while on the other a great geode cavity has burst open and overtaken a shoulder and arm, dissolving the limb into a rough crystal-lined edge. That open cavity — breaking through the chest of the garment — is packed with sparkling druzy crystals: glittering quartz and amethyst points in violet, lilac, and clear, catching the light. The solid agate carries the likeness; the asymmetric crystal growth and its open cavity are the drama.`,
+      `Transform the clothed figure into a sculpture of banded agate — face, hair, and garment all carved from concentric agate layers in earthy grey, white, and amber, polished smooth. The geode cavity does NOT cut through the plane of the face or the front of the chest; instead it opens on the upper back and shoulder, the cut rotated roughly thirty degrees toward the rear and thirty degrees downward, so the crystal interior is revealed at an angle rather than head-on. The opening is irregular and jagged — not a clean disc — pulling back layers of agate to expose a deep, generous pocket of sparkling druzy: glittering quartz and amethyst points in violet, lilac, and clear, catching the light. The front and face stay solid agate carrying the likeness; the angled, irregular back cavity is the reveal.`,
     avoid:
-      `Avoid a fully crystalline figure with no solid stone — the face and form stay carved agate. Avoid dull, non-sparkling crystals; the druzy must glitter. Avoid a tidy, symmetric bust — the crystal growth should organically consume one shoulder and arm. Avoid garish or neon crystal colors; keep them natural amethyst and quartz.`,
+      `Avoid cutting the geode opening across the face or the front of the chest — it belongs on the upper back and shoulder, angled toward the rear and down. Avoid a clean circular cut; the opening is irregular and reveals deep internal crystal structure. Avoid dull, non-sparkling crystals. Avoid garish or neon crystal colors; keep them natural amethyst and quartz.`,
   },
   {
     id: 'deep_sea',
     label: 'Bioluminescent Deep-Sea',
     monolithic: false,
     body:
-      `Transform the entire clothed figure into a translucent, bioluminescent deep-sea form that glows with its own inner light. The body and garment read as semi-transparent, gelatinous, faintly iridescent tissue — lit from within by cool light in teal, cobalt, violet, and aqua, with luminous veins and glowing filaments tracing the contours of the face, shoulders, and clothing. Suspend it dramatically in dark deep-water space with drifting motes and a shaft of light from above, captured at a dynamic three-quarter angle. Ethereal, otherworldly, and alive.`,
+      `Sculpt the figure as a living deep-sea bioluminescent scene where light and water ARE the structure — not a solid body filled with light, but a form whose very substance is dark ocean water, glowing plankton, and the cold light of deep-sea creatures. Anglerfish with glowing lures, luminous jellyfish, and other bioluminescent fish drift WITHIN the form, their glow radiating outward into the surrounding body with soft, beautiful falloffs — pools of teal, cobalt, and violet light fading into deep shadow, so the piece reads as areas of luminous brightness and areas of near-darkness. Parts of the body are open and missing, dissolving into black water, then coalescing again where the creatures gather. The face stays clearly defined and unmistakably this person — but formed from water and living light, never from skin or flesh. Suspended in dark deep-water space with drifting motes.`,
     avoid:
-      `Avoid an opaque, solid, or matte surface — translucency and inner glow are required. Avoid bare skin or nudity; the clothed form glows as one translucent piece. Avoid warm colors; the palette is cool ocean light. Avoid losing the likeness in abstraction — the face stays recognizable beneath the glow.`,
+      `Avoid a solid body of blue-green glass with light inside — the water, glow, and creatures ARE the structure, and the form breaks open with missing sections. Avoid photorealistic skin or flesh on the face. Avoid even, uniform glow — there must be dramatic dark and bright regions with soft falloffs. Avoid losing the likeness; the face stays defined within the luminous water.`,
   },
   {
     id: 'circuit',
     label: 'Silicon Circuit Board',
     monolithic: false,
     body:
-      `Transform the entire bust into an intricate technological sculpture grown from circuit-board components. The face and form are built from a dark printed-circuit substrate traced with fine copper and gold conductive lines that follow the contours like topography, studded with tiny black microchips, gold contacts, and soldered components. The likeness emerges from the density and flow of the traces. A "digital soul" portrait — precise, gleaming, intricate.`,
+      `Transform the entire clothed figure — face, hair, garment, and all — into intricate futuristic circuitry. EVERY surface, including the face, is built from fine etched conductive traces, tiny chips, and contacts following the contours; the face is circuitry too, clearly defined and recognizable but never photorealistic skin. The palette is sleek and futuristic: a dark substrate with fine copper and silver traces, accented by a FEW pale, muted glowing system lights and softly lit wires here and there — restrained, not a blaze. The likeness emerges from the density and flow of the circuitry. Precise, advanced, and consistent across the whole sculpture.`,
     avoid:
-      `Avoid a flat 2D circuit diagram — this is a dimensional sculpted bust. Avoid random component clutter that breaks the face; the traces must follow and reveal the likeness. Avoid flesh tones or painted skin.`,
+      `Avoid any photorealistic skin face on a circuit body — the face must be circuitry like the rest; this is the most common failure. Avoid realism creeping in; the whole piece is etched circuitry. Avoid heavy or gaudy glow — only a few muted, pale system lights and softly glowing traces. Avoid random component clutter that breaks the face; traces follow and reveal the likeness.`,
   },
   {
     id: 'reclaimed_bronze',
@@ -97,18 +87,18 @@ export const EXPERIMENTAL_EFFECTS: ExperimentalEffect[] = [
     label: 'Liquid Mercury',
     monolithic: true,
     body:
-      `Transform the entire clothed figure into a frozen splash of liquid mercury — flowing, seamless, mirror-perfect chrome capturing the face, hair, and garment mid-motion. The surface is hyper-reflective, like polished liquid silver, with smooth rounded forms, beading droplets, and ribbons of metal flinging off the shoulders and sleeves. The likeness is held in the gleaming reflective contours. Stage it under dramatic gallery light at a dynamic angle. Surreal, fluid, and impossibly smooth.`,
+      `Render the subject in liquid mercury caught in dynamic transformation — a mirror-perfect chrome figure in the act of dissolving and re-forming. The clothed bust is hyper-reflective polished liquid metal, but alive with motion: ribbons and sheets of mercury peel and fling outward, droplets break away and hang suspended in the air, and parts of the form stretch into liquid tendrils mid-splash, like the surface of mercury disturbed and frozen at its most dramatic instant. Strong directional gallery light rakes across the chrome so reflections and droplets blaze. Surreal, kinetic, and impossibly fluid — a body in liquid-metal flux, not a static statue.`,
     avoid:
-      `Avoid a matte or brushed surface — the mirror-chrome reflectivity is the effect. Avoid reflections so chaotic the face is lost; the likeness must read clearly in the metal. Avoid any non-silver color.`,
+      `Avoid a still, solid, symmetric chrome bust — the drama is in the motion, the breaking droplets, and the peeling ribbons of metal. Avoid reflections so chaotic the face is lost; the likeness reads clearly in the mirrored surface. Avoid any non-silver color. Avoid photorealistic skin on the face; it is liquid chrome like the rest.`,
   },
   {
     id: 'blown_glass',
     label: 'Blown Art Glass',
     monolithic: false,
     body:
-      `Transform the clothed figure into a single breathtaking piece of hand-blown art glass in the Chihuly and Murano master tradition — a museum-grade studio-glass sculpture, never a cheap molded trinket. The form is seamless, deeply translucent, and alive with motion: bold ribbons and veils of molten color — amber, cobalt, crimson, gold, teal — swirl and twist through the glass in dramatic organic currents, with internal bubbles, lenses, and optical depth bending the light. The glass glows from within. Capture it from a dynamic, slightly low three-quarter camera angle under raking gallery light so the color and translucency blaze. Fluid, virtuosic, expensive — the work of a master glassblower.`,
+      `Transform the clothed figure into a single breathtaking piece of hand-blown art glass in the Chihuly and Murano master tradition — a museum-grade studio-glass sculpture, never a cheap molded trinket. The form is seamless, deeply translucent, and alive with motion: bold ribbons and veils of molten color — amber, cobalt, crimson, gold, teal — swirl and twist through the glass in dramatic organic currents, with internal bubbles, lenses, and optical depth bending the light. The entire piece including the face is this swirled translucent glass — the face is clearly defined but rendered in glass, never as photorealistic skin. The glass glows from within. Capture it from a dynamic, slightly low three-quarter camera angle under raking gallery light so the color and translucency blaze. Fluid, virtuosic, expensive.`,
     avoid:
-      `Avoid faceted or leaded stained-glass cells — this is seamless blown glass, not a window. Avoid a flat, static, symmetric, mold-made look; this is dynamic, asymmetric, virtuoso studio glass. Avoid an opaque or painted surface; the glass is translucent and light-filled. Avoid muddy or washed-out color; the swirled ribbons stay vivid and deep.`,
+      `Avoid faceted or leaded stained-glass cells — this is seamless blown glass, not a window. Avoid photorealistic skin or flesh tones on the face — the face is swirled glass like the body. Avoid a flat, static, symmetric, mold-made look; this is dynamic, asymmetric, virtuoso studio glass. Avoid an opaque or painted surface; the glass is translucent and light-filled.`,
   },
   {
     id: 'amber',
@@ -124,18 +114,18 @@ export const EXPERIMENTAL_EFFECTS: ExperimentalEffect[] = [
     label: 'Neon Light-Drawing',
     monolithic: false,
     body:
-      `Render the subject as a dimensional, free-standing neon-tube sculpture — a premium gallery light installation, not a flat wall sign. Real bent-glass neon tubes, layered front-to-back with genuine depth, trace the full clothed bust: the contours of the face, the hair, the garment, the shoulders and arms built up in overlapping luminous lines you could walk around. The tubes glow in rich electric color — magenta, cyan, warm white, deep blue, amber — with bright cores, soft halos, and colored light spilling onto a darkened gallery setting and the surface below. Layered, intricate, and three-dimensional, with the craftsmanship and presence of a high-value commissioned neon artwork.`,
+      `Render the subject as a fully three-dimensional neon-tube sculpture whose bent-glass tubes travel through all three axes — not a flat relief or a sign on a plane. The glowing tubes wrap around the head, loop forward and back through the depth of the form, and build the clothed bust as a true volumetric armature of light you could circle and see through, tubes crossing in front of and behind one another to carve out real volume. Rich electric color — magenta, cyan, warm white, deep blue, amber — with bright cores and soft halos, colored light spilling onto a darkened gallery setting and the surface below. A premium, high-value commissioned neon artwork with genuine sculptural depth.`,
     avoid:
-      `Avoid a flat single-plane neon sign or storefront logo — this is a dimensional sculpture with front-to-back depth. Avoid sparse, simple outlines; the piece is richly layered and detailed. Avoid filling solid areas; the portrait is built from lines of glowing tube with dark space between. Avoid dim or washed-out neon; the tubes glow vividly with real light bloom.`,
+      `Avoid a flat single-plane sign, relief, or outline drawing — the tubes must occupy real depth and wrap around the form in three dimensions. Avoid filling solid areas; the portrait is built from glowing tube with dark space between, but layered front-to-back. Avoid dim or washed-out neon; the tubes glow vividly with real bloom. Avoid skin or flesh — the face is built from neon tube like the rest.`,
   },
   {
     id: 'nebula_resin',
-    label: 'Nebula Resin',
+    label: 'Nebula',
     monolithic: false,
     body:
-      `Transform the entire bust into dark cosmic resin swirled with the colors of a galaxy — deep space-black shot through with currents of violet, magenta, teal, and blue nebula clouds, with tiny embedded points of light like stars and a faint aurora shimmer. The resin is glossy and semi-translucent, catching light across its surface. The likeness emerges from the swirling cosmos. Dreamy, infinite, otherworldly.`,
+      `The figure is FORMED FROM deep-space nebula itself — not a solid body painted with stars, but actual wispy, gaseous, glowing stellar matter that coalesces into the shape of a person. Swirls of violet, magenta, teal, and blue cosmic gas drift and curl through the form, dense and opaque where they gather into shoulders, chest, and hair, thinning to almost nothing elsewhere so portions of the body dissolve into open starfield and reappear further on. Pinpoint stars and faint aurora light glimmer throughout. The face is clearly defined and unmistakably this person — but sculpted FROM luminous gas and stardust, never from skin or flesh. Light and gas are the structure; there is no solid surface beneath.`,
     avoid:
-      `Avoid a flat painted galaxy print — the cosmos lives in the depth of glossy resin. Avoid an opaque matte surface. Avoid losing the face; the likeness stays clear within the swirl.`,
+      `Avoid a solid human body with a galaxy texture painted on top — the gas and stars ARE the structure. Avoid any photorealistic skin or flesh tones on the face. Avoid a complete, uniformly solid silhouette — parts of the form should thin, break, and dissolve into space, then coalesce again. Avoid a glossy resin or poured-solid look; this is gaseous and luminous.`,
   },
 ]
 

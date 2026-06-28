@@ -3794,7 +3794,7 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
   --v7-r-card:8px; --v7-r-tile:6px;
   --v7-ease:cubic-bezier(.4,0,.2,1); --v7-t-small:.25s ease; --v7-t-fly:.55s cubic-bezier(.4,0,.2,1);
   --v7-shadow-card:0 4px 14px rgba(42,36,30,.08);
-  --w-spine-adv:48px; --w-curator:360px; --w-queue:240px; --w-collection:180px;
+  --w-spine-adv:48px; --w-curator:460px; --w-queue:300px; --w-collection:180px;
 }
 
 /* APP SHELL */
@@ -3844,12 +3844,23 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 
 /* SUGGESTED */
 .v7-suggested{
-  flex:1 1 auto; min-width:0;
+  flex:1 1 auto; min-width:0; min-height:0;
   background:rgba(255,255,255,.35); border:1px solid var(--v7-border); border-radius:var(--v7-r-card);
-  padding:18px; display:flex; flex-direction:column; gap:clamp(10px,1.2vh,16px); overflow:hidden;
+  padding:18px; display:flex; flex-direction:column; gap:clamp(10px,1.2vh,16px);
+  overflow-y:auto; overflow-x:hidden;        /* the whole column scrolls — no nested clip */
 }
+.v7-suggested-head{ position:sticky; top:-18px; background:rgba(246,242,234,.92); backdrop-filter:blur(2px); margin:-18px -18px 0; padding:14px 18px 8px; z-index:4; }
+/* grid flows naturally inside the scrolling column (no independent scroll → no top clip) */
+.v7-suggested .v7-suggested-grid{ flex:0 0 auto; overflow:visible; min-height:0; }
+/* nested-flex scroll: every spine must be able to shrink below content */
+.v7-curator, .v7-queue, .v7-collection-rail{ min-height:0; }
+.layout[data-advanced]{ height:100%; }
+.v7-suggested-head{ flex:0 0 auto; padding:2px 2px 4px; }
+.v7-sg-title{ font-family:var(--v7-serif); font-style:italic; font-size:26px; letter-spacing:-.02em; color:var(--v7-ink); line-height:1.1; }
 .v7-suggested-grid{ display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:auto; align-content:start;
   gap:clamp(10px,1vw,16px); flex:1 1 auto; min-height:0; overflow-y:auto; }
+#v7Suggested #experimentalFx{ flex:0 0 auto; }
+#v7DesignOwn{ flex:0 0 auto; align-self:flex-start; margin-top:4px; }
 .v7-rec-card{ position:relative; background:var(--v7-warm-paper); border:1px solid var(--v7-border);
   border-radius:var(--v7-r-card); overflow:hidden; display:flex; flex-direction:column; cursor:pointer;
   transition:transform var(--v7-t-small), box-shadow var(--v7-t-small), border-color var(--v7-t-small); }
@@ -3974,6 +3985,36 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
   .v7-suggested-grid{ grid-template-columns:repeat(2,1fr); }
   .v7-exploration{ grid-template-columns:repeat(4,1fr) 2fr; }
 }
+
+/* ── STAGE B — control sidebar becomes the Advanced spine ──────────────
+   .layout flips to the v7 flex shell; .left collapses to a 52px Advanced
+   spine and expands (data-advanced="open") to reveal the existing controls,
+   handlers + sandbox calls untouched. */
+.layout[data-advanced]{ display:flex; gap:20px; padding:14px 22px 22px; align-items:stretch; min-height:0; }
+.layout[data-advanced] .left{
+  flex:0 0 52px; width:52px; position:relative; overflow:hidden; cursor:pointer;
+  background:var(--v7-oxblood-soft); border:1px solid rgba(123,63,65,.22);
+  border-right:2.5px solid var(--v7-oxblood); border-radius:10px;
+  transition:flex-basis .3s var(--v7-ease), width .3s var(--v7-ease), background .3s var(--v7-ease);
+}
+.layout[data-advanced="closed"] .left:hover{ width:58px; flex-basis:58px; background:rgba(123,63,65,.14); }
+.layout[data-advanced="open"] .left{
+  flex:0 0 340px; width:340px; cursor:default; overflow-y:auto; overflow-x:hidden;
+  background:var(--v7-vellum-soft); border-right:1px solid var(--v7-border);
+}
+/* collapsed spine vs expanded controls */
+.adv-collapsed{ display:flex; flex-direction:column; align-items:center; height:100%; padding:18px 0; }
+.layout[data-advanced="open"] .adv-collapsed{ display:none; }
+.layout[data-advanced] .left-inner{ display:none; }
+.layout[data-advanced="open"] .left-inner{ display:flex; }
+.layout[data-advanced="closed"] .left:hover .v7-adv-tooltip{ opacity:1; transform:translateX(0); }
+.adv-collapse-btn{
+  align-self:flex-end; margin:2px 2px 8px; background:none; border:none; cursor:pointer;
+  font-family:var(--v7-serif); font-style:italic; font-size:16px; color:var(--v7-oxblood); padding:4px 6px;
+}
+.adv-collapse-btn:hover{ color:var(--v7-oxblood-dk); }
+/* the .center becomes the flex remainder beside the spine */
+.layout[data-advanced] .center{ flex:1 1 auto; min-width:0; }
 </style>
 </head>
 
@@ -4012,12 +4053,32 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
   </div>
 </div>
 
-<div class="layout">
+<div class="layout" id="workshopShell" data-advanced="closed">
 
-  <!-- ── SIDEBAR ── -->
-  <div class="left">
+  <!-- ── ADVANCED SPINE (was the form sidebar) ── collapsed by default;
+       click to expand the controls. "Design Your Own" also opens it. -->
+  <div class="left" onclick="if(workshopShell.dataset.advanced!=='open')setAdvanced(true)">
+
+    <!-- collapsed state (advanced-spine-v2 design) -->
+    <div class="adv-collapsed">
+      <div class="v7-adv-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.4" fill="#f6f2ea"/>
+          <line x1="4" y1="12.5" x2="20" y2="12.5"/><circle cx="15" cy="12.5" r="2.4" fill="#f6f2ea"/>
+          <line x1="4" y1="18" x2="20" y2="18"/><circle cx="7.5" cy="18" r="2.4" fill="#f6f2ea"/>
+        </svg>
+      </div>
+      <div class="v7-adv-label">Advanced</div>
+      <div class="v7-adv-chevron">&rsaquo;</div>
+      <div class="v7-adv-tooltip">
+        <div class="v7-adv-tt-eyebrow">More control</div>
+        <p class="v7-adv-tt-body">Here you can shape finer choices &mdash; more materials, more to decide.
+        If you&rsquo;d rather not, my suggestions are a safe place to start. <span class="v7-adv-tt-sign">&mdash; C.</span></p>
+      </div>
+    </div>
 
     <div class="left-inner">
+      <button class="adv-collapse-btn" type="button" onclick="event.stopPropagation();setAdvanced(false)">&lsaquo; Done</button>
 
       <!-- Source image (primary + auxiliary) — standalone centerpiece,
            no header (Rich 2026-06-09 mock). Portrait crop previews the
@@ -5583,6 +5644,86 @@ function applyDefaultLocation(){
 
 init()
 
+// ── V7 FIVE-SPINE REPARENT ─────────────────────────────────────────
+// Build the real five-spine shell by MOVING the live functional containers
+// into v7 spine wrappers. IDs are preserved, so every render function /
+// handler keeps targeting the same elements — only their visual parent and
+// styling change. Curator | Suggested | Queue | Collection become flex
+// siblings of the Advanced spine.
+function buildV7Layout(){
+  const shell = document.getElementById('workshopShell')
+  if (!shell || shell.dataset.v7built) return
+  const center = shell.querySelector('.center')
+  const mk = (tag, cls, id) => { const e=document.createElement(tag); e.className=cls; e.id=id; return e }
+  const curatorSpine    = mk('aside',  'v7-curator',         'v7Curator')
+  const suggestedSpine  = mk('section','v7-suggested',       'v7Suggested')
+  const queueSpine      = mk('aside',  'v7-queue',           'v7Queue')
+  const collectionSpine = mk('aside',  'v7-collection-rail', 'v7Collection')
+  shell.appendChild(curatorSpine)
+  shell.appendChild(suggestedSpine)
+  shell.appendChild(queueSpine)
+  shell.appendChild(collectionSpine)
+  const move = (id, parent) => { const el=document.getElementById(id); if (el && parent) parent.appendChild(el) }
+  // Curator spine: upload affordance + source control + the deckled Curator
+  // card. The upload starts the whole process, so it lives here (NOT behind
+  // the Advanced spine). Order = top→bottom in the spine.
+  move('sidebarSourcePreview', curatorSpine)
+  move('faSource',        curatorSpine)
+  move('curatorPanel',    curatorSpine)
+  // Suggested spine: the recommendation grid + experimental effects
+  move('curEffectCards',  suggestedSpine)
+  move('experimentalFx',  suggestedSpine)
+  // Queue spine: the Ready-to-Craft card (tiles + total + Craft button)
+  move('stageQueueCard',  queueSpine)
+  // Collection spine: rendered pieces + My Collection
+  move('stageRenderedCol', collectionSpine)
+  move('stageMyCollection', collectionSpine)
+  // The Curator card + source are gated by state; reveal them so the spines
+  // read as v7 even before content lands. The grid stays visible by default
+  // (suggested-first, §3).
+  const cp = document.getElementById('curatorPanel'); if (cp){ cp.style.display=''; cp.classList.remove('curator-panel-compact') }
+  const ce = document.getElementById('curEffectCards'); if (ce) ce.style.display=''
+  const qc = document.getElementById('stageQueueCard'); if (qc) qc.hidden=false
+  // Old collection markup (rendered column + bands) is offscreen-styled; hide
+  // it and render the v7 series rail instead. (The full "slide onto stage"
+  // My Collection view awaits the functional spec.)
+  const rc = document.getElementById('stageRenderedCol'); if (rc) rc.hidden=true
+  const mc = document.getElementById('stageMyCollection'); if (mc) mc.hidden=true
+  renderV7Collection()
+  // Old center chrome (header, progress, bundle bar, bottom bar) no longer hosts content.
+  if (center) center.style.display='none'
+  shell.dataset.v7built = '1'
+}
+const V7_SERIES = [
+  ['portraits','Portraits'],['houses','Houses'],['action','Action'],['groups','Groups'],
+  ['landscapes','Landscapes'],['pets','Pets'],['forfun','For Fun'],['artist','Artist'],
+]
+// v7 Collection rail — 8 series tiles; Portraits is the active (oxblood 3:4)
+// tile showing thumbnails of crafted pieces. Updates whenever the queue changes.
+function renderV7Collection(){
+  const rail = document.getElementById('v7Collection')
+  if (!rail) return
+  let tiles = document.getElementById('v7CollectionTiles')
+  if (!tiles){ tiles = document.createElement('div'); tiles.id='v7CollectionTiles'
+    tiles.style.cssText='display:flex;flex-direction:column;gap:8px'; rail.insertBefore(tiles, rail.firstChild) }
+  const pieces = (state.queue||[]).filter(q => typeof isRenderedPiece==='function' && isRenderedPiece(q))
+  tiles.innerHTML = '<div class="v7-collection-head">My Collection</div>'
+  V7_SERIES.forEach(([id,name]) => {
+    const active = id === 'portraits'
+    const items = active ? pieces : []
+    const tile = document.createElement('div')
+    tile.className = 'v7-series-tile' + (active ? ' active' : '')
+    tile.innerHTML =
+      `<svg class="v7-series-icon" viewBox="0 0 24 24"><use href="#v7ic-${id}"/></svg>` +
+      `<div class="v7-series-name">${name}</div>` +
+      `<div class="v7-series-count${items.length?'':' empty'}">${items.length} ${items.length===1?'piece':'pieces'}</div>` +
+      (active && items.length ? `<div class="v7-series-thumbs">${items.slice(0,3).map(it=>`<div class="v7-series-thumb"><img src="data:image/jpeg;base64,${it.result.image_b64}" alt=""></div>`).join('')}</div>` : '')
+    if (active) tile.onclick = () => { if (typeof openMyCollection==='function') openMyCollection() }
+    tiles.appendChild(tile)
+  })
+}
+buildV7Layout()
+
 // ── FACE-AWARE SOURCE CONTROL (Source Control v5) ──────────────
 // Pan/zoom/subject-pick over a fixed 3:4 viewport. The only state it owns
 // is state.focal {x,y,zoom,subjectId} — the single source of truth handed to
@@ -6208,7 +6349,7 @@ function renderQueueList(){
 
 function buildQueueRow(item, num, tier){
   const row = document.createElement('div')
-  row.className = 'queue-tile'
+  row.className = 'v7-queue-pill'
   row.dataset.status = item.status
   row.dataset.id     = item.id
   row.id = `q-${item.id}`
@@ -6282,18 +6423,13 @@ function buildQueueRow(item, num, tier){
   // per-item price is retired — the queue totals once, below the grid.
   const statePill = (needsDecide || (qaFailed && decided) || isDone) ? trailing : ''
 
+  // v7 pill: dot · italic name · number · delete. Status drives the dot color;
+  // clicking the pill still routes through onQueueRowClick (lightbox / QA panel).
   row.innerHTML = `
-    <div class="queue-tile-thumb">
-      <span class="queue-tile-num">${String(num).padStart(2, '0')}</span>
-      <button class="queue-tile-x" onclick="event.stopPropagation(); removeQueueItem(${item.id})" title="Remove">×</button>
-      <img src="${thumbSrc}" alt="${isDone ? 'crafted piece' : 'source'}">
-      <div class="status-dot" data-status="${item.status}" data-qa="${row.dataset.qa || ''}"></div>
-    </div>
-    <div class="queue-tile-meta">
-      <div class="queue-tile-title">${title}</div>
-      <div class="queue-tile-sub">${sub}</div>
-    </div>
-    ${statePill}
+    <span class="v7-queue-pill-dot" data-status="${item.status}" data-qa="${row.dataset.qa || ''}"></span>
+    <span class="v7-queue-pill-name" title="${escapeHtml(title)}">${title}</span>
+    <span class="v7-queue-pill-num">${String(num).padStart(2, '0')}</span>
+    <button class="v7-queue-pill-x" onclick="event.stopPropagation(); removeQueueItem(${item.id})" title="Remove">×</button>
   `
 
   // Click anywhere on the tile → context-aware action
@@ -6369,6 +6505,7 @@ function refreshQueueViews(){
   updateQueueCountBadge()
   updateActionBar()
   updateColumnPhase()
+  if (typeof renderV7Collection === 'function') renderV7Collection()
 }
 
 // ── Rendered column: large stacked finished pieces, newest on top ──
@@ -7412,50 +7549,59 @@ function addCuratorQueueIcon(preset){
 function renderEffectCards(recs){
   const grid = document.getElementById('curEffectCards')
   if (!grid) return
+  grid.className = 'v7-suggested-grid'
+  grid.style.display = ''
   grid.innerHTML = ''
-  const settingLabel = (state.location && LOCATION_LABELS[state.location]) || 'Pedestal'
-  recs.forEach(r => {
+
+  // §4 dynamic count — read the ACTUAL number of cards, never hardcode "five".
+  const spine = document.getElementById('v7Suggested')
+  if (spine){
+    let head = document.getElementById('v7SuggestedHead')
+    if (!head){ head = document.createElement('div'); head.id='v7SuggestedHead'; head.className='v7-suggested-head'; spine.insertBefore(head, spine.firstChild) }
+    const n = recs.length
+    head.innerHTML = `<div class="v7-sg-title">${n} ${n===1?'style':'styles'} the Curator chose for you</div>`
+  }
+
+  const QMAP = { excellent:'excellent', good:'good', limited:'limited' }
+  recs.forEach((r, i) => {
     const card = document.createElement('div')
-    card.className = 'eff-card'
-    const quality = r.quality_level || null
-    const framingLabel = r.framing === 'statuesque' ? 'Three-Quarter · 3:4'
-                       : r.framing === 'bust' ? 'Bust · 1:1'
-                       : 'Signature · 1:1'
-    card.innerHTML = `
-      <button class="eff-card-add">Add</button>
-      <div class="eff-card-img">
-        <img src="${previewSrc(r.preset)}" alt="${escapeHtml(r.preset_label)}"
-             onerror="this.style.opacity=0">
-        ${quality ? `<span class="eff-card-q" data-q="${escapeHtml(quality)}">${escapeHtml(quality)}</span>` : ''}
-      </div>
-      <div class="eff-card-name">${escapeHtml(r.preset_label)}</div>
-      <div class="eff-card-meta">${escapeHtml(settingLabel)}</div>
-      <div class="eff-card-meta">${escapeHtml(framingLabel)}</div>
-    `
+    card.className = 'v7-rec-card'
     card.dataset.recId = String(r.id ?? r.preset)
-    card.querySelector('.eff-card-add').onclick = () => curatorPickEffect(r, card)
+    const q = String(r.quality_level || '').toLowerCase()
+    const qKey = QMAP[q] || 'good'                 // §4 badge color fix → sage/gold/brass
+    const pick = i < 2                              // Curator's pick on the first two
+    card.innerHTML = `
+      <div class="v7-rec-img">
+        <img src="${previewSrc(r.preset)}" alt="${escapeHtml(r.preset_label)}" onerror="this.style.opacity=0">
+        ${pick ? `<div class="v7-curator-pick">&#10022; Curator&rsquo;s pick</div>` : ''}
+        <div class="v7-rec-state-chip">+ Add</div>
+        <div class="v7-rec-name-float">${escapeHtml(r.preset_label)}</div>
+        ${r.quality_level ? `<div class="v7-rec-quality-float" data-q="${qKey}">${escapeHtml(r.quality_level)}</div>` : ''}
+      </div>
+    `
+    card.onclick = () => curatorPickEffect(r, card)
     grid.appendChild(card)
   })
-  // 6th cell: Add All + Design Your Own (3rd column of 2nd row)
-  const actionsCell = document.createElement('div')
-  actionsCell.className = 'cur-addall-cell'
-  actionsCell.id = 'curEffectActions'
-  actionsCell.innerHTML = `
-    <button class="cur-addall-btn" onclick="curatorRunAllFive()"><span id="addAllLabel">Add All ${recs.length}</span></button>
-    <button class="curator-action-btn" onclick="curatorEffectsOverride()">Design Your Own</button>
+
+  // 6th cell — Studio Bundle (five for the price of four)
+  const bundle = document.createElement('div')
+  bundle.className = 'v7-bundle'
+  bundle.innerHTML = `
+    <div class="v7-bundle-eyebrow">Studio Bundle</div>
+    <div class="v7-bundle-label">All ${recs.length}</div>
+    <div class="v7-bundle-sub">five for the price of four</div>
   `
-  grid.appendChild(actionsCell)
-  // Dismiss link below the grid
-  let dismissEl = document.getElementById('curatorDismissBtn')
-  if (!dismissEl){
-    dismissEl = document.createElement('button')
-    dismissEl.id = 'curatorDismissBtn'
-    dismissEl.className = 'curator-dismiss-btn'
-    dismissEl.innerHTML = '&times; Dismiss'
-    dismissEl.onclick = () => dismissCurator()
-    grid.parentNode.insertBefore(dismissEl, grid.nextSibling)
+  bundle.onclick = () => curatorRunAllFive()
+  grid.appendChild(bundle)
+
+  // Design Your Own → opens the Advanced spine to the controls.
+  let dyo = document.getElementById('v7DesignOwn')
+  if (!dyo && spine){
+    dyo = document.createElement('button'); dyo.id='v7DesignOwn'; dyo.className='curator-action-btn'
+    dyo.textContent = 'Design Your Own'
+    dyo.onclick = () => curatorEffectsOverride()
+    spine.appendChild(dyo)
   }
-  dismissEl.style.display = ''
   renderExperimentalButtons()
 }
 
@@ -7575,8 +7721,15 @@ function curatorRunAllFive(){
 function curatorEffectsOverride(){
   state.curator.step = 'override'
   suggCollapse()
+  setAdvanced(true)   // Design Your Own → open the Advanced spine to the controls
   if (typeof updateInfoBox    === 'function') updateInfoBox()
   if (typeof refreshStepPulse === 'function') refreshStepPulse()
+}
+
+// Stage B — toggle the Advanced spine (collapsed sidebar ↔ expanded controls).
+function setAdvanced(open){
+  const shell = document.getElementById('workshopShell')
+  if (shell) shell.setAttribute('data-advanced', open ? 'open' : 'closed')
 }
 
 function dismissCurator(){
@@ -8819,6 +8972,18 @@ function selectRawQuality(){ /* no-op — NB2 has no quality tiers */ }
     <button class="advanced-foot-btn apply" onclick="closeAdvanced()">Done</button>
   </div>
 </div>
+
+<!-- v7 series icons (Collection rail) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="v7ic-portraits" viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 19.5c0-3.5 2.9-6 6.5-6s6.5 2.5 6.5 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="v7ic-houses" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 11v9h5v-5h4v5h5v-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="v7ic-action" viewBox="0 0 24 24"><circle cx="14" cy="4" r="1.8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 20l2.5-5.5 3.5-3-1-4 4 3 4 1.5-3 4 2 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="v7ic-groups" viewBox="0 0 24 24"><circle cx="7" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 18c0-3 2-5 4-5M21 18c0-3-2-5-4-5M8 19c0-3 2-5 4-5s4 2 4 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="v7ic-landscapes" viewBox="0 0 24 24"><path d="M2 20L8 8l4 6 4-9 6 15z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="17" cy="6" r="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="v7ic-pets" viewBox="0 0 24 24"><ellipse cx="8" cy="8" rx="1.5" ry="2" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="12" cy="6" rx="1.5" ry="2" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="16" cy="8" rx="1.5" ry="2" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="19" cy="12" rx="1.5" ry="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 19c0-3 1.8-5 4-5s4 2 4 5c0 1.5-1 2-2 2h-4c-1 0-2-.5-2-2z" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="v7ic-forfun" viewBox="0 0 24 24"><path d="M12 3l2.4 5.4 5.6.7-4.2 4 1.1 5.9L12 16l-4.9 3 1.1-5.9L4 9.1l5.6-.7z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="v7ic-artist" viewBox="0 0 24 24"><path d="M15 4l5 5-10 10-4.5 1 1-4.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 6l5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+</defs></svg>
 
 </body>
 </html>

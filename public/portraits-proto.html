@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Liten & Co · Portraits — Elastic Stage Prototype</title>
+<!--
+  PROTOTYPE FILE — throw away. Tests the elastic stage redesign per
+  Rich's spec (2026-06-14). No API calls, no backend, mocked state.
+  Rail collapsed behind an Advanced spine; Curator is a persistent
+  left column; Recommendations are the hero; Queue is a stable right
+  column. Stage toggle at top flips A/B/C/D so we can feel the reshape.
+-->
+<style>
+:root {
+  --bg:#f3ede1; --ink:#2a241e; --ink-2:#5a5246; --ink-3:#8a8174;
+  --border:#cbbe9f; --frame:#aba39a;
+  --oxblood:#7d4242; --oxblood-dark:#5e3133;
+  --brass:#75623a; --sand:#c4a96e;
+  --vellum:#ede6d6; --chip:#d0c29d;
+  --sage:#6a7a55; --sage-tint:#e2e6d4; --sage-border:#a8b48d;
+  --good:#7c9c5e; --warn:#b8923a; --bad:#a64e4e;
+  --sans:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:ui-monospace, 'SF Mono', Menlo, monospace;
+  --shadow-card:0 6px 22px rgba(42,36,30,.10);
+  --shadow-hero:0 12px 36px rgba(42,36,30,.16);
+  --transition:.45s cubic-bezier(.4,0,.2,1);
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:16px; line-height:1.5; }
+
+/* ── TOPBAR — minimal, prototype-only with stage toggle ───────── */
+.topbar{
+  position:sticky; top:0; z-index:100;
+  display:flex; align-items:center; gap:18px;
+  padding:10px 22px; background:var(--bg);
+  border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.brand{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:21px; color:var(--ink);
+}
+.brand-sub{
+  font-family:var(--mono); font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3); margin-left:10px;
+}
+.proto-badge{
+  font-family:var(--mono); font-size:11px;
+  background:#fff3d0; color:#7a5a1a; padding:3px 8px;
+  border:1px solid #d9bf6a; border-radius:3px; margin-left:14px;
+}
+.stage-toggle{ display:flex; gap:0; margin-left:auto; }
+.stage-toggle button{
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:15px;
+  padding:6px 14px; background:#fff; color:var(--ink-2);
+  border:1px solid var(--border); border-right-width:0; cursor:pointer;
+  transition:background .15s ease;
+}
+.stage-toggle button:first-child{ border-radius:5px 0 0 5px; }
+.stage-toggle button:last-child{ border-radius:0 5px 5px 0; border-right-width:1px; }
+.stage-toggle button.active{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+.stage-toggle button:hover:not(.active){ background:var(--vellum); }
+
+/* ── APP SHELL ────────────────────────────────────────────────── */
+.app{
+  display:grid; grid-template-columns:auto 1fr;
+  min-height:calc(100vh - 56px);
+}
+
+/* ── ADVANCED RAIL SPINE — collapsed by default ───────────────── */
+.rail-spine{
+  width:48px; background:var(--vellum); border-right:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background .2s ease;
+}
+.rail-spine:hover{ background:#e6dec9; }
+.rail-spine-label{
+  writing-mode:vertical-rl; text-orientation:mixed;
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:15px; color:var(--oxblood); letter-spacing:.04em;
+}
+.rail-spine.is-open{ width:300px; padding:18px; align-items:flex-start; }
+.rail-spine.is-open .rail-spine-label{ display:none; }
+.rail-spine .rail-contents{ display:none; width:100%; }
+.rail-spine.is-open .rail-contents{ display:block; }
+.rail-h{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:21px; margin:0 0 12px 0;
+}
+.rail-close{
+  background:none; border:none; cursor:pointer; color:var(--ink-3);
+  font-size:20px; float:right; padding:0;
+}
+.rail-section{ margin-bottom:18px; }
+.rail-label{
+  font-family:var(--sans); font-size:11px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); margin-bottom:6px;
+}
+.rail-pills{ display:flex; flex-wrap:wrap; gap:6px; }
+.rail-pill{
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:14px;
+  padding:5px 11px; border:1px solid var(--border); border-radius:18px;
+  background:#fff; color:var(--ink-2); cursor:pointer;
+}
+.rail-pill.active{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+
+/* ── STAGE — the elastic surface ──────────────────────────────── */
+.stage{
+  display:grid; gap:24px;
+  padding:30px clamp(24px, 4vw, 56px);
+  transition:grid-template-columns var(--transition);
+  align-items:start;
+}
+
+/* Stage A — Upload: source dominant, curator beside */
+.stage[data-stage="A"]{
+  grid-template-columns:7fr 3fr;
+}
+
+/* Stage B & C — Recommendations: 20/60/20 three-column */
+.stage[data-stage="B"], .stage[data-stage="C"]{
+  grid-template-columns:minmax(280px, 1fr) minmax(640px, 3fr) minmax(280px, 1fr);
+}
+
+/* Stage D — Craft: Curator narrow, craft flow takes the rest */
+.stage[data-stage="D"]{
+  grid-template-columns:minmax(260px, 1fr) 4fr;
+}
+
+/* Stage E — Rendered: pieces are hero */
+.stage[data-stage="E"]{
+  grid-template-columns:minmax(220px, 15fr) minmax(620px, 65fr) minmax(260px, 20fr);
+}
+
+/* ── SOURCE PANEL (Stage A hero) ──────────────────────────────── */
+.source-hero{
+  background:#fff; border:1px solid var(--border); border-radius:8px;
+  padding:18px; box-shadow:var(--shadow-card);
+  animation:fadeRise .55s ease both;
+}
+.source-hero-frame{
+  width:100%; aspect-ratio:4/5; background:#222; border-radius:5px;
+  overflow:hidden; position:relative;
+}
+.source-hero-frame img{ width:100%; height:100%; object-fit:cover; }
+.source-hero-caption{
+  margin-top:14px;
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:18px; color:var(--ink-2);
+}
+.source-aux-row{
+  display:flex; gap:10px; margin-top:14px;
+}
+.source-aux{
+  flex:1; aspect-ratio:1; border:1px dashed var(--border);
+  border-radius:5px; display:flex; align-items:center; justify-content:center;
+  color:var(--ink-3); font-size:13px; cursor:pointer;
+}
+
+/* ── CURATOR COLUMN (persistent left) ─────────────────────────── */
+.curator-col{
+  background:var(--vellum); border:1px solid var(--border); border-radius:8px;
+  padding:22px; align-self:start;
+  display:flex; flex-direction:column; gap:18px;
+  animation:fadeRise .55s ease both;
+}
+.curator-eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--sage);
+}
+.curator-title{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:26px; line-height:1.1; color:var(--ink); margin:0;
+}
+.curator-lead{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:18px; color:var(--ink-2); line-height:1.4;
+}
+.curator-notes{ list-style:none; padding:0; margin:0; }
+.curator-notes li{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:17px; color:var(--ink); line-height:1.5;
+  padding:6px 0 6px 16px; position:relative;
+  border-bottom:1px dashed rgba(0,0,0,.08);
+}
+.curator-notes li:last-child{ border-bottom:none; }
+.curator-notes li::before{
+  content:''; position:absolute; left:0; top:15px;
+  width:6px; height:6px; border-radius:50%; background:var(--oxblood);
+}
+.curator-action{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:16px; padding:10px 14px; border-radius:5px;
+  border:1px solid var(--oxblood); color:var(--oxblood); background:#fff;
+  cursor:pointer; text-align:center;
+}
+.curator-action:hover{ background:var(--oxblood); color:#fff; }
+
+/* ── RECOMMENDATIONS GALLERY (Stage B hero) ───────────────────── */
+.gallery{
+  display:flex; flex-direction:column; gap:18px;
+  animation:fadeRise .65s ease both;
+}
+.gallery-head{
+  display:flex; justify-content:space-between; align-items:baseline;
+  flex-wrap:wrap; gap:14px;
+}
+.gallery-title{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:32px; line-height:1.1; margin:0;
+}
+.gallery-actions{ display:flex; gap:10px; align-items:center; }
+.btn-add-all{
+  width:170px; height:58px;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:22px;
+  color:#fff; background:var(--oxblood); border:none; border-radius:5px;
+  cursor:pointer; transition:background .15s ease;
+}
+.btn-add-all:hover{ background:var(--oxblood-dark); }
+.btn-add-all-note{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:15px; color:var(--ink-2); max-width:140px; line-height:1.25;
+}
+.btn-design{
+  width:170px; height:46px;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:18px;
+  color:var(--oxblood); background:#fff; border:1px solid var(--oxblood);
+  border-radius:5px; cursor:pointer;
+}
+
+.gallery-grid{
+  display:grid; gap:20px;
+  grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+}
+/* on very wide stages, force 3 across with bigger cards for hero feel */
+@media (min-width:1700px){
+  .gallery-grid{ grid-template-columns:repeat(3, 1fr); }
+}
+
+.rec-card{
+  background:#fff; border:1px solid var(--border); border-radius:8px;
+  overflow:hidden; box-shadow:var(--shadow-card);
+  display:flex; flex-direction:column;
+  cursor:pointer; transition:transform .25s ease, box-shadow .25s ease;
+  position:relative;
+}
+.rec-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow-hero); }
+.rec-card.is-queued{ outline:2px solid var(--sage); }
+.rec-img-wrap{ position:relative; aspect-ratio:1; overflow:hidden; background:#1a1a1a; }
+.rec-img-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
+.rec-quality{
+  position:absolute; top:10px; right:10px;
+  font-family:var(--mono); font-size:11px;
+  background:rgba(255,255,255,.92); padding:4px 8px; border-radius:12px;
+  color:var(--ink);
+}
+.rec-quality.good{ color:var(--good); }
+.rec-quality.excellent{ color:var(--brass); font-weight:600; }
+.rec-quality.limited{ color:var(--warn); }
+.rec-meta{
+  padding:14px 16px 16px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.rec-name{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:22px; color:var(--ink);
+}
+.rec-add{
+  margin-top:8px;
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:16px; padding:9px 14px;
+  background:#fff; border:1px solid var(--oxblood); color:var(--oxblood);
+  border-radius:5px; cursor:pointer; text-align:center;
+  transition:background .15s ease, color .15s ease;
+}
+.rec-add:hover{ background:var(--oxblood); color:#fff; }
+.rec-card.is-queued .rec-add{ background:var(--sage); color:#fff; border-color:var(--sage); }
+
+/* ── QUEUE COLUMN (persistent right) ──────────────────────────── */
+.queue-col{
+  background:var(--vellum); border:1px solid var(--border); border-radius:8px;
+  padding:22px; align-self:start;
+  display:flex; flex-direction:column; gap:14px;
+  animation:fadeRise .55s ease both;
+}
+.queue-head{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:24px; color:var(--ink); line-height:1.1;
+}
+.queue-empty{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:16px; color:var(--ink-3); padding:14px 0;
+}
+.queue-tiles{
+  display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;
+}
+.queue-tile{
+  position:relative; background:#fff; border:1px solid var(--border);
+  border-radius:5px; overflow:hidden;
+  aspect-ratio:1;
+}
+.queue-tile img{ width:100%; height:100%; object-fit:cover; display:block; }
+.queue-tile-num{
+  position:absolute; top:5px; left:5px;
+  font-family:var(--mono); font-size:11px;
+  background:rgba(255,255,255,.92); padding:2px 6px; border-radius:3px;
+}
+.queue-tile-x{
+  position:absolute; top:5px; right:5px; width:18px; height:18px;
+  border-radius:50%; background:rgba(255,255,255,.92); border:none;
+  font-size:12px; line-height:1; cursor:pointer; color:var(--ink-2);
+}
+.queue-tile-caption{
+  position:absolute; bottom:0; left:0; right:0;
+  padding:4px 6px; background:rgba(255,255,255,.95);
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:12px; color:var(--ink); border-top:1px solid var(--border);
+}
+.queue-total{
+  display:flex; justify-content:space-between; align-items:baseline;
+  padding:10px 0 6px;
+  border-top:1px solid rgba(0,0,0,.10);
+}
+.queue-total-label{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:17px; color:var(--ink-2);
+}
+.queue-total-price{ font-family:var(--sans); font-size:18px; font-weight:600; }
+.queue-total-price .was{ text-decoration:line-through; color:var(--ink-3); font-weight:400; margin-right:6px; }
+.queue-total-price .off{ color:var(--good); font-size:13px; margin-left:6px; }
+.btn-craft{
+  width:100%; padding:14px;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:20px;
+  color:#fff; background:var(--sage); border:none; border-radius:5px;
+  cursor:pointer; transition:background .15s ease;
+}
+.btn-craft:hover{ background:#576648; }
+.btn-craft:disabled{ background:#a8b48d; cursor:default; }
+
+/* Bundle progress — queue's gentle nudge toward collection tier */
+.bundle-progress{
+  background:#fff; border:1px solid var(--border); border-radius:5px;
+  padding:12px 14px;
+}
+.bundle-hint{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:15px; color:var(--ink-2); margin-bottom:8px;
+}
+.bundle-bar{
+  height:6px; background:rgba(0,0,0,.08); border-radius:3px; overflow:hidden;
+  position:relative;
+}
+.bundle-bar-fill{
+  height:100%; background:var(--sage); border-radius:3px;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.bundle-marker{
+  position:absolute; top:-3px; width:2px; height:12px; background:var(--sand);
+}
+.bundle-marker.tier-5{ left:50%; }
+.bundle-marker.tier-10{ left:100%; transform:translateX(-100%); }
+.bundle-tiers{
+  display:flex; justify-content:space-between;
+  font-family:var(--mono); font-size:11px; color:var(--ink-3);
+  margin-top:6px;
+}
+
+/* Curator follow-ups beneath queue */
+.queue-followups{
+  margin-top:14px; padding-top:14px;
+  border-top:1px solid rgba(0,0,0,.10);
+}
+.followup-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); margin-bottom:8px;
+}
+.followup-tile{
+  display:flex; gap:10px; align-items:center;
+  padding:8px; background:#fff; border:1px solid var(--border);
+  border-radius:5px; cursor:pointer; margin-bottom:6px;
+  transition:background .15s ease;
+}
+.followup-tile:hover{ background:var(--sage-tint); border-color:var(--sage-border); }
+.followup-tile img{
+  width:48px; height:48px; object-fit:cover; border-radius:3px;
+}
+.followup-tile-text{
+  flex:1; font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:15px; color:var(--ink);
+}
+.followup-tile-plus{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:16px; color:var(--oxblood);
+}
+
+/* ── STAGE D — Craft flow ─────────────────────────────────────── */
+.craft-flow{
+  background:#fff; border:1px solid var(--border); border-radius:8px;
+  padding:32px; box-shadow:var(--shadow-card);
+  animation:fadeRise .55s ease both;
+}
+.craft-title{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:32px; margin:0 0 8px;
+}
+.craft-summary{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:18px; color:var(--ink-2); margin-bottom:24px;
+}
+.craft-tiles{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+  gap:14px; margin-bottom:24px;
+}
+.craft-tile{
+  background:var(--vellum); border:1px solid var(--border); border-radius:5px;
+  overflow:hidden;
+}
+.craft-tile img{ width:100%; aspect-ratio:1; object-fit:cover; }
+.craft-tile-name{
+  padding:8px 12px;
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:15px; color:var(--ink);
+}
+.inscription-card{
+  background:var(--vellum); border:1px solid var(--border); border-radius:5px;
+  padding:18px; margin-bottom:20px;
+}
+.inscription-title{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:21px; margin-bottom:14px;
+}
+.insc-option{
+  border:1px solid var(--border); border-radius:5px; background:#fff;
+  padding:11px 14px; margin-bottom:8px; cursor:pointer;
+  transition:border-color .15s ease;
+}
+.insc-option:hover, .insc-option.active{
+  border-color:var(--oxblood); background:#fff5f0;
+}
+.insc-option-name{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:18px; color:var(--ink);
+}
+.insc-option-preview{
+  font-family:var(--mono); font-size:14px; color:var(--brass); margin-top:4px;
+}
+.craft-checkout{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:18px 0; border-top:1px solid var(--border);
+}
+.craft-total{ font-family:var(--sans); font-size:24px; font-weight:600; }
+.btn-pay{
+  padding:14px 36px;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:22px;
+  color:#fff; background:var(--oxblood); border:none; border-radius:5px;
+  cursor:pointer;
+}
+
+/* ── STAGE E — Rendered Collection ────────────────────────────── */
+.rendered-collection{
+  display:flex; flex-direction:column; gap:18px;
+  animation:fadeRise .65s ease both;
+}
+.rendered-head{
+  display:flex; justify-content:space-between; align-items:baseline;
+}
+.rendered-title{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:32px; margin:0;
+}
+.rendered-grid{
+  display:grid; gap:24px;
+  grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));
+}
+.rendered-piece{
+  background:#fff; border:1px solid var(--border); border-radius:8px;
+  overflow:hidden; box-shadow:var(--shadow-card);
+}
+.rendered-piece img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; }
+.rendered-piece-meta{
+  padding:14px 18px 18px;
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+}
+.rendered-piece-name{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:22px;
+}
+.rendered-piece-actions{ display:flex; gap:8px; }
+.rendered-action{
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:14px;
+  padding:6px 12px; border:1px solid var(--oxblood); color:var(--oxblood);
+  background:#fff; border-radius:18px; cursor:pointer;
+}
+.rendered-action.primary{ background:var(--oxblood); color:#fff; }
+
+/* ── ANIMATIONS ───────────────────────────────────────────────── */
+@keyframes fadeRise{
+  from{ opacity:0; transform:translateY(10px); }
+  to  { opacity:1; transform:translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">Liten &amp; Co</span>
+  <span class="brand-sub">Crafted Portraits</span>
+  <span class="proto-badge">PROTOTYPE · throw away</span>
+  <div class="stage-toggle" id="stageToggle">
+    <button data-stage="A" class="active">A · Upload</button>
+    <button data-stage="B">B · Recommendations</button>
+    <button data-stage="C">C · Queue Building</button>
+    <button data-stage="D">D · Craft</button>
+    <button data-stage="E">E · Rendered</button>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- ADVANCED RAIL — collapsed by default, spine to expand -->
+  <div class="rail-spine" id="railSpine" onclick="toggleRail()">
+    <span class="rail-spine-label">Advanced ›</span>
+    <div class="rail-contents">
+      <button class="rail-close" onclick="event.stopPropagation();toggleRail()">×</button>
+      <h2 class="rail-h">Style Controls</h2>
+      <div class="rail-section">
+        <div class="rail-label">Style</div>
+        <div class="rail-pills">
+          <button class="rail-pill active">Realistic</button>
+          <button class="rail-pill">Artists Gallery</button>
+        </div>
+      </div>
+      <div class="rail-section">
+        <div class="rail-label">Material</div>
+        <div class="rail-pills">
+          <button class="rail-pill">Ebony</button>
+          <button class="rail-pill">Walnut</button>
+          <button class="rail-pill">Stone</button>
+          <button class="rail-pill">Bronze</button>
+          <button class="rail-pill">Iron</button>
+          <button class="rail-pill">Alabaster</button>
+        </div>
+      </div>
+      <div class="rail-section">
+        <div class="rail-label">Framing</div>
+        <div class="rail-pills">
+          <button class="rail-pill">Bust · 1:1</button>
+          <button class="rail-pill active">Signature Pose · 1:1</button>
+          <button class="rail-pill">Statuesque · 3:4</button>
+        </div>
+      </div>
+      <div class="rail-section">
+        <div class="rail-label">Location</div>
+        <div class="rail-pills">
+          <button class="rail-pill active">Mantel</button>
+          <button class="rail-pill">Pedestal</button>
+          <button class="rail-pill">Gallery</button>
+        </div>
+      </div>
+      <div class="rail-section">
+        <div class="rail-label">Quality</div>
+        <div class="rail-pills">
+          <button class="rail-pill active">Web · incl.</button>
+          <button class="rail-pill">Print · +$2</button>
+          <button class="rail-pill">Collector · +$5</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE — reshapes per stage ─────────────────────────────── -->
+  <div class="stage" id="stage" data-stage="A">
+    <!-- Contents injected by renderStage() -->
+  </div>
+</div>
+
+<script>
+// ═══ MOCK DATA — placeholders that look real enough to feel the layout ═══
+const SOURCE_THUMB = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=750&fit=crop';
+
+const RECOMMENDATIONS = [
+  { id:'r1', name:'Walnut',          quality:'excellent', img:'https://images.unsplash.com/photo-1564594985645-4427056e22e2?w=600&h=600&fit=crop' },
+  { id:'r2', name:'Folded Book',     quality:'excellent', img:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&h=600&fit=crop' },
+  { id:'r3', name:'Bronze',          quality:'good',      img:'https://images.unsplash.com/photo-1578320339911-5e7975f31e3a?w=600&h=600&fit=crop' },
+  { id:'r4', name:'Alabaster',       quality:'good',      img:'https://images.unsplash.com/photo-1551184451-76b762941ad6?w=600&h=600&fit=crop' },
+  { id:'r5', name:'Charcoal & Chalk',quality:'limited',   img:'https://images.unsplash.com/photo-1531913764164-f85c52e6e654?w=600&h=600&fit=crop' },
+  { id:'r6', name:'Pencil Sketch',   quality:'good',      img:'https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?w=600&h=600&fit=crop' },
+]
+
+const FOLLOWUPS = [
+  { name:'Iron',         img:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&h=200&fit=crop' },
+  { name:'Sheet Music',  img:'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=200&h=200&fit=crop' },
+  { name:'Impressionist',img:'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=200&h=200&fit=crop' },
+]
+
+const RENDERED = [
+  { name:'Walnut',          img:'https://images.unsplash.com/photo-1564594985645-4427056e22e2?w=900&h=900&fit=crop' },
+  { name:'Folded Book',     img:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=900&h=900&fit=crop' },
+  { name:'Bronze',          img:'https://images.unsplash.com/photo-1578320339911-5e7975f31e3a?w=900&h=900&fit=crop' },
+  { name:'Alabaster',       img:'https://images.unsplash.com/photo-1551184451-76b762941ad6?w=900&h=900&fit=crop' },
+]
+
+// ── State (mock; persists across stage toggles for realism) ──
+const state = {
+  stage: 'A',
+  queue: [],   // populated when stage advances
+}
+
+// ═══ STAGE TOGGLE ═══
+document.getElementById('stageToggle').addEventListener('click', e => {
+  if (e.target.tagName !== 'BUTTON') return
+  const s = e.target.dataset.stage
+  document.querySelectorAll('#stageToggle button').forEach(b => b.classList.toggle('active', b.dataset.stage === s))
+  // Seed mock queue based on stage so each stage shows a believable state
+  if (s === 'A') state.queue = []
+  else if (s === 'B') state.queue = []
+  else if (s === 'C') state.queue = RECOMMENDATIONS.slice(0, 3).map(r => ({...r}))
+  else if (s === 'D') state.queue = RECOMMENDATIONS.slice(0, 5).map(r => ({...r}))
+  else if (s === 'E') state.queue = RECOMMENDATIONS.slice(0, 4).map(r => ({...r}))
+  state.stage = s
+  renderStage()
+})
+
+function toggleRail(){
+  document.getElementById('railSpine').classList.toggle('is-open')
+}
+
+// ═══ RENDER ═══
+function renderStage(){
+  const stage = document.getElementById('stage')
+  stage.dataset.stage = state.stage
+  stage.innerHTML = ''
+  if (state.stage === 'A') renderStageA(stage)
+  else if (state.stage === 'B') renderStageB(stage)
+  else if (state.stage === 'C') renderStageC(stage)
+  else if (state.stage === 'D') renderStageD(stage)
+  else if (state.stage === 'E') renderStageE(stage)
+}
+
+// ── Stage A — Upload: source hero + curator commentary ──
+function renderStageA(stage){
+  stage.innerHTML = `
+    <div class="source-hero">
+      <div class="source-hero-frame">
+        <img src="${SOURCE_THUMB}" alt="Source photograph">
+      </div>
+      <div class="source-hero-caption">Your photograph &mdash; the studio is taking it in.</div>
+      <div class="source-aux-row">
+        <div class="source-aux">+ add another</div>
+        <div class="source-aux">+ add another</div>
+        <div class="source-aux">+ add another</div>
+      </div>
+    </div>
+    ${curatorColumn({
+      eyebrow:'The Curator',
+      title:'About your photograph',
+      lead:'A few quiet notes before we begin.',
+      notes:[
+        'The face is sharp and well-lit &mdash; an excellent source.',
+        'A three-quarter angle would give the strongest piece, but this front view will work beautifully.',
+        'No need for additional photos &mdash; the studio has what it needs.',
+      ],
+      action:'Show me what you would craft &rsaquo;',
+    })}
+  `
+}
+
+// ── Stage B — Recommendations: 20/60/20 with gallery hero ──
+function renderStageB(stage){
+  stage.innerHTML = `
+    ${curatorColumn({
+      eyebrow:'The Curator',
+      title:'Five styles we&rsquo;d choose for you',
+      lead:'These are the materials I would reach for first.',
+      notes:[
+        'Walnut and Folded Book are the strongest matches &mdash; the warmth of your photograph holds up beautifully in both.',
+        'Bronze adds gravity. Alabaster softens.',
+        'Charcoal is the most experimental of the five.',
+      ],
+    })}
+    ${galleryColumn()}
+    ${queueColumn()}
+  `
+}
+
+// ── Stage C — Queue Building: same 20/60/20, queue has pieces ──
+function renderStageC(stage){
+  stage.innerHTML = `
+    ${curatorColumn({
+      eyebrow:'The Curator',
+      title:'A collection is forming',
+      lead:'You&rsquo;ve chosen three. Two more would complete the Curator&rsquo;s set.',
+      notes:[
+        'Walnut, Folded Book, and Bronze sit beautifully together &mdash; three different temperatures of the same subject.',
+        'Alabaster would round out the cool side.',
+        'Sheet Music or Iron would be an interesting departure.',
+      ],
+    })}
+    ${galleryColumn()}
+    ${queueColumn()}
+  `
+}
+
+// ── Stage D — Craft: curator narrow, craft flow takes the room ──
+function renderStageD(stage){
+  stage.innerHTML = `
+    ${curatorColumn({
+      eyebrow:'The Curator',
+      title:'A moment before we begin',
+      lead:'Once you&rsquo;ve crafted, the inscriptions are written into the pieces themselves.',
+      notes:[
+        'Each piece will carry its own small plaque.',
+        'The studio stamp is the default &mdash; sequential, museum-style.',
+      ],
+    })}
+    <div class="craft-flow">
+      <h2 class="craft-title">Ready to Craft</h2>
+      <div class="craft-summary">${state.queue.length} pieces &middot; the studio is ready when you are.</div>
+      <div class="craft-tiles">
+        ${state.queue.map((p,i) => `
+          <div class="craft-tile">
+            <img src="${p.img}" alt="${p.name}">
+            <div class="craft-tile-name">${String(i+1).padStart(2,'0')} &middot; ${p.name}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="inscription-card">
+        <div class="inscription-title">One last touch &mdash; the inscription</div>
+        <div class="insc-option active">
+          <div class="insc-option-name">The studio stamp</div>
+          <div class="insc-option-preview">Liten &amp; Co &middot; 2026 &middot; #P00043</div>
+        </div>
+        <div class="insc-option">
+          <div class="insc-option-name">The Curator&rsquo;s inscription</div>
+          <div class="insc-option-preview">Walnut &middot; Steadfast</div>
+        </div>
+        <div class="insc-option">
+          <div class="insc-option-name">Your own &mdash; 45 characters</div>
+        </div>
+        <div class="insc-option">
+          <div class="insc-option-name">No inscription</div>
+        </div>
+      </div>
+      <div class="craft-checkout">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:var(--ink-2)">${state.queue.length} pieces, 5 for the price of 4</div>
+          <div class="craft-total">$14.95</div>
+        </div>
+        <button class="btn-pay">Pay &amp; Craft &rsaquo;</button>
+      </div>
+    </div>
+  `
+}
+
+// ── Stage E — Rendered Collection ──
+function renderStageE(stage){
+  stage.innerHTML = `
+    ${curatorColumn({
+      eyebrow:'The Curator',
+      title:'Your pieces',
+      lead:'Each one came out beautifully. Take a moment.',
+      notes:[
+        'Walnut is the strongest of the four &mdash; the wood grain caught the light exactly as I&rsquo;d hoped.',
+        'Folded Book is intimate. Bronze is the one for the mantel.',
+      ],
+    })}
+    <div class="rendered-collection">
+      <div class="rendered-head">
+        <h2 class="rendered-title">Your Pieces</h2>
+        <button class="curator-action" style="font-size:14px;padding:6px 14px">My Collection &rsaquo;</button>
+      </div>
+      <div class="rendered-grid">
+        ${RENDERED.map(p => `
+          <div class="rendered-piece">
+            <img src="${p.img}" alt="${p.name}">
+            <div class="rendered-piece-meta">
+              <div class="rendered-piece-name">${p.name}</div>
+              <div class="rendered-piece-actions">
+                <button class="rendered-action">Download</button>
+                <button class="rendered-action primary">Print &rsaquo;</button>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ${queueColumn({title:'What&rsquo;s next?', followupsOnly:true})}
+  `
+}
+
+// ═══ COMPONENTS ═══
+function curatorColumn({eyebrow, title, lead, notes=[], action=null}){
+  return `
+    <aside class="curator-col">
+      <div class="curator-eyebrow">${eyebrow}</div>
+      <h2 class="curator-title">${title}</h2>
+      <p class="curator-lead">${lead}</p>
+      <ul class="curator-notes">
+        ${notes.map(n => `<li>${n}</li>`).join('')}
+      </ul>
+      ${action ? `<button class="curator-action">${action}</button>` : ''}
+    </aside>
+  `
+}
+
+function galleryColumn(){
+  const queued = new Set(state.queue.map(q => q.id))
+  return `
+    <section class="gallery">
+      <div class="gallery-head">
+        <h2 class="gallery-title">Five styles we&rsquo;d choose for you</h2>
+        <div class="gallery-actions">
+          <button class="btn-add-all" onclick="addAll()">Add All ${RECOMMENDATIONS.length - queued.size}</button>
+          <span class="btn-add-all-note">five for the price of four &middot; <strong>$14.95</strong></span>
+          <button class="btn-design">Design Your Own</button>
+        </div>
+      </div>
+      <div class="gallery-grid">
+        ${RECOMMENDATIONS.map(r => `
+          <div class="rec-card ${queued.has(r.id)?'is-queued':''}" onclick="toggleQueueItem('${r.id}')">
+            <div class="rec-img-wrap">
+              <img src="${r.img}" alt="${r.name}">
+              <div class="rec-quality ${r.quality}">${r.quality.charAt(0).toUpperCase()+r.quality.slice(1)}</div>
+            </div>
+            <div class="rec-meta">
+              <div class="rec-name">${r.name}</div>
+              <button class="rec-add">${queued.has(r.id) ? '✓ In Queue' : '+ Add'}</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `
+}
+
+function queueColumn({title='Ready to Craft', followupsOnly=false}={}){
+  const n = state.queue.length
+  const basePrice = 3.99
+  const tier = n >= 10 ? { perPiece: 2.79, label:'Studio Collection &mdash; 30% off' }
+            : n >= 5  ? { perPiece: 2.99, label:'Curator Collection &mdash; 25% off' }
+            : n >= 2  ? { perPiece: 3.39, label:'15% off' }
+            : { perPiece: 3.99, label:'' }
+  const total = (n * tier.perPiece).toFixed(2)
+  const was = (n * basePrice).toFixed(2)
+
+  const hint = n === 0 ? 'Add a piece to begin a collection.'
+             : n === 1 ? `Add ${5-n} more for the Curator Collection &mdash; 25% off.`
+             : n < 5   ? `Only ${5-n} more for the Curator Collection.`
+             : n === 5 ? `Curator Collection reached. ${10-n} more for the Studio Collection.`
+             : n < 10  ? `Only ${10-n} more for the Studio Collection &mdash; 30% off.`
+             :          'Studio Collection complete.'
+  const pct = Math.min(100, (n / 10) * 100)
+
+  return `
+    <aside class="queue-col">
+      <div class="queue-head">${title}</div>
+      ${followupsOnly ? '' : (n === 0 ? `<div class="queue-empty">Your collection is empty.</div>` : `
+        <div class="queue-tiles">
+          ${state.queue.map((p,i) => `
+            <div class="queue-tile">
+              <img src="${p.img}" alt="${p.name}">
+              <div class="queue-tile-num">${String(i+1).padStart(2,'0')}</div>
+              <button class="queue-tile-x" onclick="event.stopPropagation();toggleQueueItem('${p.id}')">×</button>
+              <div class="queue-tile-caption">${p.name}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="queue-total">
+          <span class="queue-total-label">${n} ${n===1?'piece':'pieces'}</span>
+          <span class="queue-total-price">
+            ${n>1?`<span class="was">$${was}</span>`:''}
+            $${total}
+            ${tier.label?`<span class="off">${tier.label}</span>`:''}
+          </span>
+        </div>
+        <div class="bundle-progress">
+          <div class="bundle-hint">${hint}</div>
+          <div class="bundle-bar">
+            <div class="bundle-bar-fill" style="width:${pct}%"></div>
+            <div class="bundle-marker tier-5"></div>
+            <div class="bundle-marker tier-10"></div>
+          </div>
+          <div class="bundle-tiers"><span>1</span><span>Curator · 5</span><span>Studio · 10</span></div>
+        </div>
+        <button class="btn-craft" ${n===0?'disabled':''}>Craft all ${n||''} &rsaquo;</button>
+      `)}
+      <div class="queue-followups">
+        <div class="followup-label">The Curator also suggests</div>
+        ${FOLLOWUPS.map(f => `
+          <div class="followup-tile">
+            <img src="${f.img}" alt="${f.name}">
+            <div class="followup-tile-text">${f.name}</div>
+            <div class="followup-tile-plus">+</div>
+          </div>
+        `).join('')}
+      </div>
+    </aside>
+  `
+}
+
+// ═══ INTERACTIONS (mock) ═══
+function toggleQueueItem(id){
+  const idx = state.queue.findIndex(q => q.id === id)
+  if (idx >= 0) state.queue.splice(idx, 1)
+  else state.queue.push({...RECOMMENDATIONS.find(r => r.id === id)})
+  renderStage()
+}
+
+function addAll(){
+  RECOMMENDATIONS.forEach(r => {
+    if (!state.queue.find(q => q.id === r.id)) state.queue.push({...r})
+  })
+  renderStage()
+}
+
+// Boot
+renderStage()
+</script>
+
+</body>
+</html>

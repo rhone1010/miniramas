@@ -235,7 +235,9 @@ const CRAFT_PERSONALITY =
 const STUDIO_DIRECTIVES =
   `CLOTHING — ALWAYS KEEP IT ON: The subject stays fully clothed in the same garment as the source photograph (t-shirt, sweater, hoodie, jacket, collar), rendered in the piece's material. NO REMOVING CLOTHING. Do not open, drop, thin, undress, or omit the clothing. Never depict the subject nude, shirtless, bare-chested, or with bare skin across the torso or shoulders. The classical bare-shouldered bust convention does NOT apply here — this studio keeps people dressed.
 
-ARMS & HANDS: Show a hand only when its full arm is shown with it, connected shoulder-to-hand. If an arm is not in frame, do not add a floating hand or forearm. No detached, severed, or disembodied hands resting on the base.
+FACE — IN-MATERIAL, NEVER SKIN: The face is rendered in the piece's own material exactly like the rest of the sculpture — clearly defined and unmistakably this person, but never photorealistic skin and never flesh tones. Whatever the body is made of, the face is made of the same.
+
+ARMS & HANDS — A BUST HAS NO HANDS: A bust composition ends at the chest and upper arms. Do NOT render hands, fingers, forearms, or arms folded or resting on the base or plinth anywhere on a bust — no hands at all. Only a full-figure (statuesque) piece resolves hands, and only with their complete arms. No detached or floating hands ever.
 
 EXPRESSION: Give the face a touch of warmth and quiet contentment — a faint, natural ease, the hint of a settled smile. A calm or neutral source must NOT be rendered as stern, severe, angry, or sad. Lifelike and content, never grim.
 
