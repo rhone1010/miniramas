@@ -3954,6 +3954,32 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
   transition:background var(--v7-t-small), transform var(--v7-t-small); flex:0 0 auto; }
 .v7-btn-craft:hover{ background:var(--v7-oxblood-dk); transform:translateY(-1px); }
 
+/* Queue spine — fit the reparented card + render rows as v7 pills */
+.v7-queue #stageQueueCard{ width:100%; max-width:none; min-width:0; background:transparent;
+  border:none; box-shadow:none; padding:0; display:flex; flex-direction:column; gap:12px; height:100%; }
+.v7-queue .your-queue-head{ font-family:var(--v7-serif); font-style:italic; font-weight:400; font-size:22px;
+  letter-spacing:-.03em; color:var(--v7-ink); margin:0; flex:0 0 auto; }
+.v7-queue .your-queue-grid{ display:flex !important; flex-direction:column; gap:6px;
+  grid-template-columns:none !important; max-height:none; overflow:visible; margin:0; padding:0; flex:0 1 auto; }
+.v7-queue .your-queue-grid > *{ width:100%; box-sizing:border-box; }
+.v7-queue-pill-dot[data-status="running"]{ background:var(--v7-brass); }
+.v7-queue-pill-dot[data-status="done"]{ background:var(--v7-sage); }
+.v7-queue-pill-dot[data-status="failed"], .v7-queue-pill-dot[data-status="rejected"],
+.v7-queue-pill-dot[data-status="redirected"]{ background:var(--v7-oxblood); box-shadow:0 0 0 2px rgba(123,63,65,.18); }
+.v7-queue .your-queue-total{ margin-top:auto; border-top:1px dashed rgba(0,0,0,.1); padding-top:10px;
+  display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex:0 0 auto; }
+.v7-queue .qt-count{ font-family:var(--v7-serif); font-style:italic; font-size:15px; color:var(--v7-ink-2); }
+.v7-queue .qt-price{ display:flex; align-items:baseline; gap:6px; }
+.v7-queue .qt-was{ font-family:var(--v7-mono); font-size:12px; color:var(--v7-brass); text-decoration:line-through; }
+.v7-queue .qt-now{ font-family:var(--v7-serif); font-style:italic; font-size:22px; color:var(--v7-oxblood); letter-spacing:-.02em; }
+.v7-queue .qt-off{ font-family:var(--v7-mono); font-size:10px; color:var(--v7-sage); text-transform:uppercase; letter-spacing:.04em; }
+.v7-queue .bottombar-actions{ flex:0 0 auto; }
+.v7-queue .btn-render{ width:100%; padding:12px; font-family:var(--v7-serif); font-style:italic; font-size:19px;
+  letter-spacing:-.01em; color:var(--v7-warm-paper); background:var(--v7-oxblood); border:none; border-radius:5px;
+  cursor:pointer; transition:background var(--v7-t-small); display:flex; align-items:center; justify-content:center; gap:8px; }
+.v7-queue .btn-render:hover{ background:var(--v7-oxblood-dk); }
+.v7-queue .btn-render .btn-price .now{ color:var(--v7-warm-paper); }
+
 /* COLLECTION RAIL */
 .v7-collection-rail{ flex:0 0 var(--w-collection); background:rgba(255,255,255,.35); border:1px solid var(--v7-border);
   border-radius:var(--v7-r-card); padding:12px; display:flex; flex-direction:column; gap:8px; overflow-y:auto; }
