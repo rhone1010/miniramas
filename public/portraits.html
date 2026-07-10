@@ -50,6 +50,10 @@
   /* Manrope is the sans/ledger role (Inter + JetBrains Mono retired, CC contract §1).
      --mono kept as a token name so the ~10 label call-sites need no edit. */
   --mono:  'Manrope', system-ui, -apple-system, sans-serif;
+  /* Motion vars — ported verbatim from the canonical proto (visual-port S1).
+     Consumed by the Advanced/mural/collection surfaces ported from the proto. */
+  --ease-out:cubic-bezier(.22,.7,.3,1);
+  --dur-micro:150ms; --dur-state:250ms; --dur-panel:400ms;
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
