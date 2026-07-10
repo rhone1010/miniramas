@@ -113,6 +113,17 @@ body{
 }
 .tb-spacer{flex:1}
 
+/* Dev chrome is hidden for customers; body.dev-mode (via ?dev=1 or Ctrl+Shift+D) reveals it. */
+body:not(.dev-mode) .dev-only{ display:none !important; }
+/* Customer masthead nav — account / My Collection count / cart total */
+.tb-account, .tb-collection{
+  font-family:var(--sans); font-size:12px; letter-spacing:.04em; color:var(--ink-2,#5A5246);
+  background:transparent; border:1px solid var(--border); border-radius:12px; height:24px;
+  padding:0 12px; display:inline-flex; align-items:center; cursor:pointer; text-decoration:none; transition:all .15s ease;
+}
+.tb-account:hover, .tb-collection:hover{ border-color:var(--oxblood,#7d4242); color:var(--oxblood,#7d4242); }
+.tb-cart{ font-family:var(--serif,'Cormorant Garamond',serif); font-size:16px; color:var(--ink,#2a241e); padding:0 2px; }
+
 /* upload slots */
 .upload-slot{
   position:relative;
@@ -458,9 +469,11 @@ body.raw-mode .preset-controls{ display:none; }
 .source-preview:hover{border-color:var(--ink-3)}
 .source-preview.has-image{border-style:solid;border-color:var(--border)}
 .source-empty{
-  display:flex;flex-direction:column;align-items:center;gap:5.1px;
-  color:var(--ink-3);font-size:11px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:var(--ink-3);font-size:11px;text-align:center;padding:0 16px;
 }
+.source-empty-primary{ font-family:var(--serif,'Cormorant Garamond',serif); font-style:italic; font-size:22px; color:var(--oxblood,#7d4242); }
+.source-empty-sub{ font-family:var(--serif,'Cormorant Garamond',serif); font-style:italic; font-size:16px; color:var(--ink-3); line-height:1.3; }
 .source-empty-plus{
   width:24px;height:24px;
   border:1px solid var(--border-strong);
@@ -509,12 +522,13 @@ body.raw-mode .preset-controls{ display:none; }
 
 /* ── EXPERIMENTAL EFFECTS (portraits-experimental.ts) ── */
 .experimental-fx{ margin-top:22px; padding-top:18px; border-top:1px solid rgba(0,0,0,.10); }
+/* Tier 2 eyebrow (addendum A) — sans, letterspaced, uppercase, brass. */
 .experimental-fx-head{
-  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:22px;
-  color:#5E3133; margin-bottom:3px;
+  font-family:var(--sans); font-size:12px; font-weight:500; letter-spacing:.18em; text-transform:uppercase;
+  color:#75623a; margin-bottom:6px;
 }
 .experimental-fx-sub{
-  font-family:'Cormorant Garamond', serif; font-size:18px; color:#5a544c; margin-bottom:12px;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:20px; color:#5a544c; margin-bottom:14px;
 }
 .experimental-fx-grid{ display:flex; flex-wrap:wrap; gap:8px; }
 .experimental-fx-btn{
@@ -734,52 +748,6 @@ body.raw-mode .preset-controls{ display:none; }
 /* the bottom of the rail. Designed to be discoverable but not loud:    */
 /* the placeholder text shows the default brand stamp so an empty field */
 /* is self-documenting.                                                 */
-.plaque-input{
-  width:100%;
-  background:var(--surface);
-  border:1px solid var(--hairline);
-  border-radius:2.5px;
-  padding:6px 8.5px;
-  font-family:var(--sans);
-  font-size:12px;
-  color:var(--ink);
-}
-.plaque-input:focus{outline:none;border-color:var(--selected)}
-.plaque-input::placeholder{color:var(--ink-3);font-style:italic}
-.plaque-input:disabled{
-  background:var(--bg-soft);
-  color:var(--ink-3);
-  cursor:not-allowed;
-}
-.plaque-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:5.1px;
-  gap:8.5px;
-}
-.plaque-off{
-  display:flex;
-  align-items:center;
-  gap:4.2px;
-  font-size:10px;
-  color:var(--ink-2);
-  font-family:var(--mono);
-  letter-spacing:.04em;
-  cursor:pointer;
-  user-select:none;
-}
-.plaque-off input[type="checkbox"]{
-  margin:0;
-  cursor:pointer;
-}
-.plaque-hint{
-  font-size:10px;
-  color:var(--ink-3);
-  font-style:italic;
-  text-align:right;
-  flex:1;
-}
 
 /* ── STAGE ── */
 .center{
@@ -2309,6 +2277,13 @@ body.raw-mode .preset-controls{ display:none; }
 .curator-mast-rule{ height:1px; background:linear-gradient(to right,#c4b48f,transparent); margin:0 0 16px; position:relative; z-index:1; }
 
 .curator-panel-eyebrow{ display:none; }   /* superseded by the masthead */
+/* upload box + face control now live INSIDE the Curator card, above the masthead */
+.curator-panel > .source-preview,
+.curator-panel > .fa-source{ position:relative; z-index:1; margin-bottom:14px; }
+.curator-panel > .source-preview{ height:auto; aspect-ratio:3/4; }
+/* #3 source cap — 400px tall max, centered; focal/drag/zoom unchanged */
+.curator-panel .fa-viewport{ max-height:400px; }
+.curator-panel > .source-preview{ max-height:400px; }
 .curator-panel-title{
   font-family:'Cormorant Garamond', serif;
   font-style:italic;
@@ -2562,6 +2537,19 @@ body.raw-mode .preset-controls{ display:none; }
   font-family:var(--sans); font-size:12.5px; color:#9A917F; font-style:italic;
   padding:12px 0; border:1px dashed #D7CFBE; border-radius:5.1px; text-align:center;
 }
+/* 4h — empty series: slim ~44px name-only rail (head expands when a piece lands). */
+.mycoll-band--empty .mycoll-band-head{ min-height:44px; display:flex; align-items:center;
+  margin:0; border-bottom:1px solid #E3DBCB; opacity:.72; }
+/* Current series → LARGE completed renders, 3 across, height driven by the viewport,
+   scrollable horizontally for clients to admire the finished pieces. */
+.mycoll-band--active .mycoll-band-grid{
+  display:flex; grid-template-columns:none; gap:16px; overflow-x:auto; overflow-y:hidden;
+  padding-bottom:10px; scroll-snap-type:x proximity;
+}
+.mycoll-band--active .mycoll-piece{
+  flex:0 0 calc((100% - 32px) / 3); min-width:calc((100% - 32px) / 3); scroll-snap-align:start;
+}
+.mycoll-band--active .mycoll-piece-img{ aspect-ratio:3/4; max-height:calc(82dvh - 150px); }
 
 /* Rendered column — large stacked finished pieces, own scroll */
 .cur-effects-rendered{
@@ -2710,7 +2698,7 @@ body.raw-mode .preset-controls{ display:none; }
 .qt-off{ color:#763F41; font-size:11px; }
 .your-queue-actions{ display:flex; flex-direction:column; gap:8.5px; margin-top:10px; }
 .your-queue-actions .stage-action-btn{ width:100%; }
-.eff-card.flying{ animation:effFly .55s cubic-bezier(.5,-0.2,.3,1) forwards; pointer-events:none; }
+.eff-card.flying, .v7-rec-card.flying{ animation:effFly .55s cubic-bezier(.5,-0.2,.3,1) forwards; pointer-events:none; }
 @keyframes effFly{
   0%{ transform:translateY(0) scale(1); opacity:1; }
   60%{ opacity:.9; }
@@ -3632,43 +3620,6 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 }
 .control.framing .pill-lg.active .fr-asp{ color:inherit; opacity:.8; }
 
-/* ── INSCRIPTION STEP ──────────────────────────────────────── */
-.insc-step{ margin:12px 0 5.1px; }
-.insc-queue-summary{
-  font-family:'Cormorant Garamond', serif; font-style:italic;
-  font-size:18px; color:var(--ink-3); margin-bottom:6.8px;
-  padding-bottom:6.8px; border-bottom:1px solid #E3DAC4;
-}
-.insc-title{
-  font-family:'Cormorant Garamond', serif; font-style:italic;
-  font-size:22px; color:#763F41; line-height:1.15;
-}
-.insc-lead{
-  font-family:var(--sans); font-size:16px; color:#5A5246;
-  line-height:1.4; margin:5.1px 0 10px;
-}
-.insc-option{
-  border:1px solid #C8BFA8; border-radius:5.1px; background:#F4F1EA;
-  padding:8.5px 10px; margin-bottom:6.8px; cursor:pointer;
-  transition:border-color .12s ease, background .12s ease;
-}
-.insc-option:hover{ border-color:#763F41; }
-.insc-option.selected{ border:1.7px solid #763F41; background:#F8F4EC; padding:7.6px 9.3px; }
-.insc-opt-name{
-  font-family:'Cormorant Garamond', serif; font-style:italic;
-  font-size:18px; color:var(--ink);
-}
-.insc-opt-preview{
-  font-family:var(--mono); font-size:16px; color:#75623a; margin-top:1.7px;
-}
-.insc-opt-sub{ font-family:var(--sans); font-size:16px; color:#8a8174; margin-top:2.5px; }
-.insc-input{
-  width:100%; margin-top:5.1px; font-family:var(--sans); font-size:16px;
-  padding:.5rem .65rem; border:1px solid #C8BFA8; border-radius:4.2px;
-  background:#fff; color:#1F1B14;
-}
-.insc-input:focus{ outline:1.7px solid #763F41; outline-offset:1px; }
-.insc-continue{ width:100%; margin-top:5.1px; }
 
 /* ── FREE PREVIEW BAND ─────────────────────────────────────── */
 .preview-band{
@@ -3794,7 +3745,7 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
   --v7-r-card:8px; --v7-r-tile:6px;
   --v7-ease:cubic-bezier(.4,0,.2,1); --v7-t-small:.25s ease; --v7-t-fly:.55s cubic-bezier(.4,0,.2,1);
   --v7-shadow-card:0 4px 14px rgba(42,36,30,.08);
-  --w-spine-adv:48px; --w-curator:460px; --w-queue:300px; --w-collection:180px;
+  --w-spine-adv:48px; --w-curator:510px; --w-queue:350px; --w-collection:260px;
 }
 
 /* APP SHELL */
@@ -3857,8 +3808,10 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 .layout[data-advanced]{ height:100%; }
 .v7-suggested-head{ flex:0 0 auto; padding:2px 2px 4px; }
 .v7-sg-title{ font-family:var(--v7-serif); font-style:italic; font-size:26px; letter-spacing:-.02em; color:var(--v7-ink); line-height:1.1; }
-.v7-suggested-grid{ display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:auto; align-content:start;
-  gap:clamp(10px,1vw,16px); flex:1 1 auto; min-height:0; overflow-y:auto; }
+/* Capped at 3 columns (six tiles → 3×2), filling the Suggested width; drops to
+   2 on smaller screens via the media query below. Cards stretch to fill. */
+.v7-suggested-grid{ display:grid; grid-template-columns:repeat(3, 1fr); grid-auto-rows:auto;
+  align-content:start; gap:20px; padding:6px 0 14px; flex:1 1 auto; min-height:0; overflow-y:auto; }
 #v7Suggested #experimentalFx{ flex:0 0 auto; }
 #v7DesignOwn{ flex:0 0 auto; align-self:flex-start; margin-top:4px; }
 .v7-rec-card{ position:relative; background:var(--v7-warm-paper); border:1px solid var(--v7-border);
@@ -3874,12 +3827,16 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
   font-family:var(--v7-serif); font-style:italic; font-size:20px; letter-spacing:-.02em; line-height:1;
   color:var(--v7-warm-paper); text-shadow:0 1px 3px rgba(0,0,0,.4); }
 .v7-rec-quality-float{ position:absolute; bottom:11px; right:12px; z-index:2;
-  font-family:var(--v7-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
-  padding:3px 6px; border-radius:3px; background:rgba(243,237,225,.18); backdrop-filter:blur(4px); }
+  font-family:var(--v7-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+  padding:4px 8px; border-radius:3px; background:rgba(243,237,225,.18); backdrop-filter:blur(4px); }
 /* badge color fix — sage/gold/brass per palette (NOT navy) */
 .v7-rec-quality-float[data-q="excellent"]{ color:#dfd2a4; }
 .v7-rec-quality-float[data-q="good"]{ color:#c8d8b0; }
 .v7-rec-quality-float[data-q="limited"]{ color:#e8c598; }
+/* 4e — Limited Edition chip (Variant A): brass, its own slot below the Add chip. */
+.v7-rec-limited{ position:absolute; top:44px; right:10px; z-index:3;
+  font-family:var(--v7-mono); font-size:12px; letter-spacing:.07em; text-transform:uppercase;
+  color:#f4f1ea; background:var(--v7-brass, #75623a); padding:4px 9px; border-radius:3px; box-shadow:0 1px 4px rgba(0,0,0,.25); }
 .v7-rec-state-chip{ position:absolute; top:10px; right:10px; z-index:3;
   font-family:var(--v7-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
   padding:5px 9px; border-radius:3px; background:rgba(0,0,0,.35); color:var(--v7-warm-paper);
@@ -3889,12 +3846,19 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
   padding:3px 8px 3px 4px; background:rgba(0,0,0,.32); border:1px solid rgba(255,255,255,.18); border-radius:14px;
   backdrop-filter:blur(4px); font-family:var(--v7-serif); font-style:italic; font-size:11px; color:var(--v7-warm-paper); }
 .v7-curator-pick svg{ width:14px; height:16px; flex:0 0 14px; }
+/* D — magnifier: hover any suggested card to open the image large */
+.v7-rec-magnify{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(.85); z-index:3;
+  width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.25);
+  backdrop-filter:blur(4px); color:var(--v7-warm-paper); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  padding:0; opacity:0; transition:opacity .2s var(--v7-ease), transform .2s var(--v7-ease); }
+.v7-rec-card:hover .v7-rec-magnify{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+.v7-rec-magnify svg{ width:18px; height:18px; }
 .v7-bundle{ background:var(--v7-warm-paper); border:1px solid var(--v7-oxblood); border-radius:var(--v7-r-card);
   padding:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
   cursor:pointer; transition:transform var(--v7-t-small), box-shadow var(--v7-t-small), background var(--v7-t-small);
   text-align:center; aspect-ratio:1; }
 .v7-bundle:hover{ transform:translateY(-2px); box-shadow:var(--v7-shadow-card); background:#f5efe5; }
-.v7-bundle-eyebrow{ font-family:var(--v7-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--v7-oxblood); }
+.v7-bundle-eyebrow{ font-family:var(--v7-mono); font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--v7-oxblood); }
 .v7-bundle-label{ font-family:var(--v7-serif); font-style:italic; font-size:22px; letter-spacing:-.02em; line-height:1.15; color:var(--v7-ink); }
 .v7-bundle-sub{ font-family:var(--v7-serif); font-style:italic; font-size:13.5px; letter-spacing:-.01em; color:var(--v7-ink-2); }
 .v7-bundle-price{ font-family:var(--v7-serif); font-style:italic; font-size:24px; letter-spacing:-.02em; color:var(--v7-oxblood); margin-top:2px; }
@@ -3963,6 +3927,64 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
   grid-template-columns:none !important; max-height:none; overflow:visible; margin:0; padding:0; flex:0 1 auto; }
 .v7-queue .your-queue-grid > *{ width:100%; box-sizing:border-box; }
 .v7-queue-pill-dot[data-status="running"]{ background:var(--v7-brass); }
+/* ── crafting feedback ── left→right color wipe on each rendering pill */
+.v7-queue-pill{ overflow:hidden; }
+.v7-queue-pill > *{ position:relative; z-index:1; }
+.v7-queue-pill[data-status="running"]::before{
+  content:''; position:absolute; top:0; bottom:0; left:0; width:56%; z-index:0; pointer-events:none;
+  background:linear-gradient(100deg, transparent, rgba(123,63,65,.10) 40%, rgba(123,63,65,.22) 60%,
+    rgba(170,76,80,.48) 77%, rgba(190,88,92,.16) 83%, transparent);
+  animation:v7wipe 2.4s var(--v7-ease) infinite;
+}
+/* slower + wider sweep with a saturated LEADING (right) edge */
+@keyframes v7wipe{ from{ transform:translateX(-130%); } to{ transform:translateX(230%); } }
+/* global signal — the Ready-to-Craft rail sweeps while anything is rendering */
+.v7-queue[data-crafting="yes"] .your-queue-head{ position:relative; overflow:hidden; }
+.v7-queue[data-crafting="yes"] .your-queue-head::after{
+  content:''; position:absolute; top:0; bottom:0; left:0; width:56%; pointer-events:none;
+  background:linear-gradient(100deg, transparent, rgba(240,234,224,.12) 40%, rgba(240,234,224,.30) 62%,
+    rgba(255,250,242,.52) 77%, transparent);
+  animation:v7wipe 2.8s var(--v7-ease) infinite;
+}
+/* fly-to-collection: a finished pill glides toward My Collection, then clears */
+.v7-queue-pill.is-flying{ animation:v7flyToCollection var(--v7-t-fly) both; z-index:5; }
+
+/* ── S5 crafting: rotating status line + completion choreography ── */
+.tbc-crafting-status{ display:flex; flex-direction:column; gap:2px; padding:2px 15px 10px; margin-bottom:4px;
+  border-bottom:1px solid rgba(48,49,40,.08); }
+.tbc-crafting-status[hidden]{ display:none; }
+.tbc-craft-primary{ font-family:var(--serif,'Cormorant Garamond',Georgia,serif); font-style:italic;
+  font-size:19px; line-height:1.15; color:var(--oxblood,#7B3F41); }
+.tbc-craft-micro{ font-family:var(--sans,-apple-system,sans-serif); font-size:12px; letter-spacing:.03em;
+  color:var(--taupe,#987946); min-height:1.2em; }
+/* completion flyer — the finished piece appears large at its queue slot, holds,
+   then shrinks and slides to the My Collection rail (~860ms, within 700–900ms).
+   Image-forward (the actual render), not the text pill. */
+.v7-piece-fly{ border-radius:9px; overflow:hidden; pointer-events:none; background:#15110d;
+  box-shadow:0 12px 34px rgba(20,15,12,.42); }
+.v7-piece-fly img{ width:100%; height:100%; object-fit:cover; display:block; }
+.v7-piece-fly.is-crafted-fly{ animation:v7CraftLand var(--v7-t-land,860ms) cubic-bezier(.34,0,.2,1) both; }
+@keyframes v7CraftLand{
+  0%   { transform:translate(0,0) scale(.86);  opacity:0; }
+  12%  { transform:translate(0,0) scale(1.12); opacity:1; }
+  36%  { transform:translate(0,0) scale(1.06); opacity:1; }
+  100% { transform:translate(var(--fly-x,220px), var(--fly-y,-20px)) scale(.34); opacity:0; }
+}
+@media (prefers-reduced-motion: reduce){
+  .v7-piece-fly.is-crafted-fly{ animation-duration:1ms; }
+}
+
+/* ── pre-craft piece name (batch) ── */
+.tbc-name{ padding:8px 15px 4px; }
+.tbc-name-label{ display:block; font-family:var(--sans,-apple-system,sans-serif); font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--taupe,#987946); margin-bottom:5px; }
+.tbc-name-opt{ text-transform:none; letter-spacing:0; opacity:.7; }
+.tbc-name-input{ width:100%; font-family:var(--serif,'Cormorant Garamond',Georgia,serif); font-style:italic; font-size:17px;
+  color:var(--ink,#2a241e); background:var(--paper,#faf6ec); border:1px solid var(--border,#d8cfba);
+  border-radius:6px; padding:8px 11px; outline:none; transition:border-color .15s; }
+.tbc-name-input:focus{ border-color:var(--oxblood,#7B3F41); }
+.tbc-name-input.invalid{ border-color:var(--danger,#a3432f); background:#fbf1ee; }
+.tbc-name-err{ font-family:var(--sans,-apple-system,sans-serif); font-size:12px; color:var(--danger,#a3432f); margin-top:5px; }
 .v7-queue-pill-dot[data-status="done"]{ background:var(--v7-sage); }
 .v7-queue-pill-dot[data-status="failed"], .v7-queue-pill-dot[data-status="rejected"],
 .v7-queue-pill-dot[data-status="redirected"]{ background:var(--v7-oxblood); box-shadow:0 0 0 2px rgba(123,63,65,.18); }
@@ -3995,8 +4017,8 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 .v7-series-tile.active .v7-series-icon{ width:28px; height:28px; color:var(--v7-warm-paper); }
 .v7-series-name{ font-family:var(--v7-serif); font-style:italic; font-size:14px; letter-spacing:-.01em; line-height:1.1; color:var(--v7-oxblood); text-align:center; }
 .v7-series-tile.active .v7-series-name{ font-size:16px; color:var(--v7-warm-paper); }
-.v7-series-count{ font-family:var(--v7-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--v7-sage); }
-.v7-series-tile.active .v7-series-count{ color:var(--v7-sage-light); font-size:9.5px; }
+.v7-series-count{ font-family:var(--v7-mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--v7-sage); }
+.v7-series-tile.active .v7-series-count{ color:var(--v7-sage-light); font-size:12px; }
 .v7-series-count.empty{ opacity:.5; }
 .v7-series-thumbs{ display:flex; gap:3px; margin-top:auto; padding-top:6px; width:100%; justify-content:center; }
 .v7-series-thumb{ width:28px; height:28px; border-radius:3px; overflow:hidden; background:var(--v7-warm-paper); border:1px solid rgba(243,237,225,.4); }
@@ -4005,10 +4027,10 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 @keyframes v7thumbArriving{ 0%{ box-shadow:0 0 0 3px var(--v7-sage-light); transform:scale(.7); } 60%{ transform:scale(1.1); } 100%{ box-shadow:0 0 0 0 transparent; transform:scale(1); } }
 
 /* RESPONSIVE (lifted from v7) */
-@media (max-width:1440px){ :root{ --w-curator:320px; --w-queue:220px; --w-collection:160px; } }
+@media (max-width:1440px){ :root{ --w-curator:370px; --w-queue:270px; --w-collection:260px; }
+  .v7-suggested-grid{ grid-template-columns:repeat(2, 1fr); } }
 @media (max-width:1280px){
-  :root{ --w-curator:280px; --w-queue:200px; --w-collection:140px; }
-  .v7-suggested-grid{ grid-template-columns:repeat(2,1fr); }
+  :root{ --w-curator:330px; --w-queue:250px; --w-collection:240px; }
   .v7-exploration{ grid-template-columns:repeat(4,1fr) 2fr; }
 }
 
@@ -4041,6 +4063,265 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 .adv-collapse-btn:hover{ color:var(--v7-oxblood-dk); }
 /* the .center becomes the flex remainder beside the spine */
 .layout[data-advanced] .center{ flex:1 1 auto; min-width:0; }
+
+/* ── C — MY COLLECTION CHOREOGRAPHY + per-panel collapse ──────────────
+   State lives on #workshopShell (mirrors data-advanced). All width change is
+   flex-basis driven so it eases both ways via --v7-ease. */
+#v7Curator, #v7Suggested, #v7Queue, #v7Collection{
+  transition:flex-basis .42s var(--v7-ease), flex-grow .42s var(--v7-ease), width .42s var(--v7-ease);
+}
+/* Suggested eases in as a WHOLE the moment real cards arrive — no abrupt pop.
+   (Keeps the flex-basis collapse transitions and adds opacity/transform.) */
+#v7Suggested{
+  transition:flex-basis .42s var(--v7-ease), flex-grow .42s var(--v7-ease), width .42s var(--v7-ease),
+             opacity .5s var(--v7-ease), transform .5s var(--v7-ease);
+}
+#v7Suggested:not(.has-cards){ opacity:0; transform:translateY(16px); }
+#v7Suggested.has-cards{ opacity:1; transform:translateY(0); }
+/* Content fades BOTH ways on collapse/expand (transition on the base element so
+   expanding-out-of-spine eases too, not just collapsing-in). */
+#v7Suggested > :not(.spine-label),
+#v7Queue     > :not(.spine-label),
+#v7Collection > :not(.spine-label){ transition:opacity .34s var(--v7-ease); }
+#v7Curator, #v7Suggested, #v7Queue{ position:relative; }
+/* Curator is LOCKED at min 400px — it never squeezes and never spines, so a new
+   cycle can always start and the voiced text never collapses to one word/line
+   (round-2 #3, Rich confirmed 400). It does not participate in the squeeze. */
+#v7Curator{ flex:0 0 var(--w-curator); min-width:var(--w-curator); flex-shrink:0; }
+/* Suggested / Queue → 52px spine (matches the Advanced spine), when collection is
+   open OR manually collapsed. The spine is ALWAYS visible + clickable, even before
+   cards exist — overrides the has-cards opacity gate so it never disappears. */
+#workshopShell[data-collection="open"] #v7Suggested,
+#workshopShell[data-suggested="spine"] #v7Suggested,
+#workshopShell[data-qpanel="spine"]    #v7Queue{
+  flex:0 0 52px; width:52px; overflow:hidden; cursor:pointer;
+}
+#workshopShell[data-collection="open"] #v7Suggested,
+#workshopShell[data-suggested="spine"] #v7Suggested{ opacity:1 !important; transform:none !important; }
+/* fade the real content while spined (display can't animate; opacity can) */
+#workshopShell[data-collection="open"] #v7Suggested > :not(.spine-label),
+#workshopShell[data-suggested="spine"] #v7Suggested > :not(.spine-label),
+#workshopShell[data-qpanel="spine"]    #v7Queue     > :not(.spine-label){
+  opacity:0; pointer-events:none; transition:opacity .2s var(--v7-ease);
+}
+.spine-label{ display:none; position:absolute; inset:0; flex-direction:column; align-items:center;
+  justify-content:flex-start; padding:18px 0; gap:14px; cursor:pointer; z-index:5;
+  background:var(--v7-oxblood-soft); border-radius:var(--v7-r-card); }
+.spine-label .spine-text{ writing-mode:vertical-rl; transform:rotate(180deg);
+  font-family:var(--v7-serif); font-style:italic; font-size:18px; letter-spacing:-.02em;
+  color:var(--v7-oxblood); white-space:nowrap; }
+.spine-label .spine-chev{ font-family:var(--v7-serif); font-size:22px; color:var(--v7-oxblood); line-height:1; }
+#workshopShell[data-collection="open"] #v7Suggested > .spine-label,
+#workshopShell[data-suggested="spine"] #v7Suggested > .spine-label,
+#workshopShell[data-qpanel="spine"]    #v7Queue     > .spine-label{ display:flex; }
+/* Collection expands into the freed space. The Queue is CONDITIONAL — present
+   only while something is queued/rendering (data-queue="filled"); otherwise it
+   collapses to nothing (its default absent state). */
+/* Open My Collection fills the freed space AND bleeds through the shell's 22px
+   right padding to reach the screen edge; content keeps a real 50px right inset. */
+#workshopShell[data-collection="open"] #v7Collection{ flex:1 1 auto; width:auto; overflow-y:auto; margin-right:-22px; }
+#workshopShell[data-collection="open"] #stageMyCollection .mycoll-bands{ padding-right:50px; }
+#workshopShell[data-queue="empty"] #v7Queue{ flex:0 0 0; width:0; padding:0; border-width:0; overflow:hidden; }
+/* swap the 180px tile list for the full series-bands view while open */
+.v7-coll-tiles{ display:flex; flex-direction:column; gap:8px; }
+#workshopShell[data-collection="open"]   #v7CollectionTiles{ display:none; }
+#workshopShell[data-collection="closed"] #stageMyCollection{ display:none; }
+#workshopShell[data-collection="open"]   #stageMyCollection{ display:block; }
+#workshopShell[data-collection="open"]   #v7Collection{ cursor:default; }
+.v7-collection-rail{ cursor:pointer; }   /* closed rail click-to-open */
+
+/* B — per-panel collapse device, placed before each section title */
+.panel-collapse-btn{ background:none; border:none; cursor:pointer; font-family:var(--v7-serif);
+  font-size:20px; line-height:1; color:var(--v7-oxblood); padding:0 8px 0 0; opacity:.55; transition:opacity .2s ease; }
+.panel-collapse-btn:hover{ opacity:1; }
+.v7-suggested-head{ display:flex; align-items:baseline; gap:2px; }
+.v7-queue .your-queue-head{ display:flex; align-items:baseline; gap:2px; }
+.curator-masthead{ position:relative; }
+.curator-masthead .panel-collapse-btn{ position:absolute; right:0; top:0; padding:0; }
+.v7-collection-head{ display:flex; align-items:center; justify-content:center; gap:6px; }
+
+/* ── HEADING SYSTEM · TIER 1 (addendum A) ────────────────────────────
+   Panel headers on a 52px oxblood rail: Garamond italic 24px vellum, inset to the
+   torn-paper edge (17px) so the rail width = paper width (no overhang). Deckle on
+   the BOTTOM edge only. Applies to Suggested / To Be Crafted / My Collection. */
+#v7Collection{ position:relative; }
+.v7-suggested-head,
+.v7-queue .your-queue-head,
+#v7Collection .mycoll-head,
+.v7-collection-head{
+  position:absolute; top:17px; left:17px; right:17px; height:52px; z-index:6;
+  box-sizing:border-box; display:flex; align-items:center; justify-content:flex-start; gap:12px;
+  margin:0; padding:0 24px; background:#7d4242; border-radius:8px 8px 0 0; overflow:visible;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:400; font-size:24px;
+  color:#f3ede1; letter-spacing:.01em; line-height:1; text-transform:none;
+}
+.v7-suggested-head .v7-sg-title,
+#v7Collection .mycoll-title{
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:400; font-size:24px;
+  color:#f3ede1; line-height:1; letter-spacing:.01em; text-transform:none;
+}
+/* right-aligned meta (counts) on the rail */
+.panel-rail-meta{ margin-left:auto; font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-weight:400; font-size:19px; color:rgba(243,237,225,.75); }
+/* bottom-edge deckle strip (torn only along the bottom of the rail) */
+.v7-suggested-head::after,
+.v7-queue .your-queue-head::after,
+#v7Collection .mycoll-head::after,
+.v7-collection-head::after{
+  content:''; position:absolute; left:0; right:0; bottom:-5px; height:9px; z-index:-1;
+  background:#7d4242; filter:url(#railDeckle);
+}
+.v7-suggested-head .panel-collapse-btn,
+.v7-queue .your-queue-head .panel-collapse-btn,
+.v7-collection-head .panel-collapse-btn{ color:#f3ede1; opacity:.85; }
+#v7Collection .mycoll-head .mycoll-close{ margin-left:auto; color:#f3ede1;
+  border:1px solid rgba(243,237,225,.5); background:transparent;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-size:18px; padding:4px 12px; border-radius:6px; }
+/* section content clears the rail (17 inset + 52 rail + ~11 gap ≈ 80px) */
+.v7-suggested{ padding:80px 32px 26px; }
+.v7-queue{ padding:0; }
+.v7-queue #stageQueueCard{ padding-top:80px; gap:0; }
+.v7-queue .your-queue-grid{ padding:14px 32px 0; }
+.v7-queue .bottombar-actions{ padding:12px 32px 18px; }
+#v7CollectionTiles{ padding-top:60px; }
+
+/* ── TO BE CRAFTED — pay-card content ── */
+.v7-queue .your-queue-total{ display:flex; flex-direction:column; gap:9px; margin:0; padding:16px 32px 4px; }
+.v7-queue .your-queue-total::before{ content:''; border-top:1px solid rgba(123,63,65,.16); margin-bottom:6px; }
+.tbc-rate{ font-family:var(--v7-serif); font-style:italic; font-weight:400; font-size:21px; color:var(--v7-brass); line-height:1.25; }
+.tbc-total{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.tbc-count{ font-family:var(--v7-serif); font-style:italic; font-weight:400; font-size:22px; color:var(--v7-ink); }
+.tbc-price{ font-family:var(--v7-serif); font-weight:400; font-size:32px; color:var(--v7-ink); letter-spacing:-.01em; }
+.tbc-footer{ font-family:var(--v7-serif); font-style:italic; font-weight:400; font-size:20px;
+  color:#8a8174; text-align:center; padding:8px 32px 22px; }
+/* Larger, more appealing craft CTA. */
+.v7-queue .btn-render{ padding:18px 16px; font-size:22px; border-radius:7px; }
+
+/* #4 — My Collection piece cards (Download / Print Shop / Make more) */
+#stageMyCollection .mycoll-bands{ padding:80px 18px 16px; }
+#stageMyCollection .mycoll-band-grid{ grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:16px; }
+.mycoll-piece{ background:#fff; border:1px solid var(--v7-border); border-radius:var(--v7-r-card); overflow:hidden; display:flex; flex-direction:column; }
+.mycoll-piece-img{ position:relative; aspect-ratio:1; cursor:zoom-in; overflow:hidden; background:#E5DFD0; }
+.mycoll-piece-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+.mycoll-piece-img .enlarge-hint{ position:absolute; top:8px; right:8px; opacity:0; transition:opacity .15s ease; }
+.mycoll-piece-img:hover .enlarge-hint{ opacity:1; }
+.mycoll-piece-name{ font-family:var(--v7-serif); font-style:italic; font-size:19px; color:#763F41; padding:10px 12px 4px; }
+.mycoll-piece-actions{ display:flex; gap:6px; padding:0 12px 12px; flex-wrap:wrap; }
+.mycoll-act{ font-family:var(--v7-serif); font-style:italic; font-size:15px; padding:5px 12px; border-radius:16px;
+  border:1px solid var(--v7-border); background:#F4F1EA; color:#2A241E; cursor:pointer; transition:background .15s ease, color .15s ease, border-color .15s ease; }
+.mycoll-act:hover{ background:var(--v7-oxblood); color:var(--v7-warm-paper); border-color:var(--v7-oxblood); }
+
+/* #3 / #5 — Curator rail: the one WARM-PAPER 65px section rail (C mark + "Curator",
+   oxblood text), flush to the top of the deckled card, above the source. */
+.curator-panel .curator-masthead{ height:65px; min-height:65px; box-sizing:border-box;
+  background:var(--v7-warm-paper); border-radius:9px 9px 0 0; display:flex; align-items:center;
+  gap:12px; padding:0 22px; margin:-26px -30px 16px; position:relative; z-index:1; }
+.curator-panel .curator-cmark{ flex:0 0 30px; width:30px; height:34px; }
+.curator-panel .curator-mast-title{ font-size:26px; color:var(--v7-oxblood); }
+.curator-panel .curator-mast-rule{ display:none; }
+/* curator voiced text — tinted sentiment (ink) + short effects blurb (oxblood) */
+#curEffectsLead .cur-analysis{ color:var(--v7-ink); }
+/* Second Curator mark + label in the effects copy block (mirrors the masthead). */
+.cur-effects-mark{ display:flex; align-items:center; gap:8px; margin:0 0 6px; }
+.cur-effects-cmark{ width:26px; height:29px; flex:0 0 26px; filter:drop-shadow(0 2px 3px rgba(60,30,30,.35)); }
+.cur-effects-mark-label{ font-family:'Cormorant Garamond', serif; font-size:22px; color:#5E3133; letter-spacing:.01em; }
+#curEffectsLead .cur-blurb{ display:block; margin-top:10px; color:var(--v7-oxblood); }
+#curEffectsLead .curator-tint{ background:var(--v7-oxblood-soft); color:var(--v7-ink); padding:1px 6px; border-radius:3px; }
+/* "add more photos" affordance under the source */
+.cur-add-photos{ display:block; width:100%; margin:0 0 12px; padding:8px; text-align:center;
+  font-family:var(--v7-serif); font-style:italic; font-size:16px; color:var(--v7-oxblood);
+  background:transparent; border:1px dashed var(--v7-border); border-radius:6px; cursor:pointer; transition:all .15s ease; }
+.cur-add-photos:hover{ background:var(--v7-oxblood); color:var(--v7-warm-paper); border-color:var(--v7-oxblood); }
+
+/* EMPTY STATE (no source photo) — Curator shows the upload box + the Curator's
+   promise; the Suggested region shows faded ghost studio pieces (Phase 4i).
+   Queue + Collection stay hidden until a source arrives. */
+#workshopShell[data-hassource="no"] #v7Queue,
+#workshopShell[data-hassource="no"] #v7Collection{ display:none; }
+/* Suggested stays visible for the ghosts — override the has-cards opacity gate. */
+#workshopShell[data-hassource="no"] #v7Suggested{ opacity:1; transform:none; }
+#v7Curator{ display:flex; flex-direction:column; }
+#v7Curator > .curator-panel{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+/* Upload box stays a normal portrait box (not full-height) in the empty state. */
+#workshopShell[data-hassource="no"] .curator-panel > .source-preview{
+  flex:0 0 auto; aspect-ratio:3/4; min-height:280px; max-height:420px; display:flex; align-items:center; justify-content:center;
+}
+#workshopShell[data-hassource="no"] .curator-panel > .fa-source,
+#workshopShell[data-hassource="no"] .curator-panel > #curAddPhotos,
+#workshopShell[data-hassource="no"] .curator-panel > #curNewPhoto{ display:none; }
+/* "Start a new portrait" — restart affordance, only live once a source is in AND
+   the queue has drained, so an in-flight run is never interrupted. */
+.cur-new-photo{ display:none; width:100%; margin-top:10px; padding:11px 12px;
+  font-family:var(--v7-serif,'Cormorant Garamond',Georgia,serif); font-style:italic; font-size:17px; letter-spacing:.01em;
+  color:var(--v7-warm-paper); background:var(--v7-oxblood); border:1px solid var(--v7-oxblood);
+  border-radius:6px; cursor:pointer; transition:background .15s ease; }
+.cur-new-photo:hover{ background:var(--v7-oxblood-dk,#5E3133); }
+#workshopShell[data-hassource="yes"][data-queue="empty"] #curNewPhoto{ display:block; }
+/* Suggested deckle background only appears once real cards are in. */
+#v7Suggested:not(.has-cards) > .deckle-paper{ display:none; }
+
+/* Curator's promise (empty state) — first person, sits under the upload box. */
+.cur-upload-prompt{ display:none; }
+#workshopShell[data-hassource="no"] .cur-upload-prompt{
+  display:block; margin-top:20px; text-align:left;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:400;
+  font-size:24px; line-height:1.3; color:var(--v7-ink);
+}
+
+/* ── EMPTY WORKSHOP GHOSTS (Phase 4i) ────────────────────────────────
+   Faded studio pieces fill the Suggested footprint before upload; real cards
+   replace them on the same grid, so the layout does not shift on upload. */
+#v7Ghosts{ display:none; }
+#workshopShell[data-hassource="no"] #v7Ghosts{ display:block; }
+#workshopShell[data-hassource="no"] #v7SuggestedHead,
+#workshopShell[data-hassource="no"] #curEffectCards,
+#workshopShell[data-hassource="no"] #curEffectsLead,
+#workshopShell[data-hassource="no"] #experimentalFx,
+#workshopShell[data-hassource="no"] #v7DesignOwn{ display:none !important; }
+.v7-ghost-head{ font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:400;
+  font-size:26px; color:var(--v7-brass); margin:0 0 18px; line-height:1.15; }
+.v7-ghost-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; align-items:start; }
+.v7-ghost-tile{ display:flex; flex-direction:column; gap:8px; animation:v7ghostIn .8s var(--v7-ease) both; }
+.v7-ghost-tile .gimg{ aspect-ratio:3/4; border-radius:8px; overflow:hidden; background:#dcd2bf; opacity:.45; }
+.v7-ghost-tile .gimg img{ width:100%; height:100%; object-fit:cover; display:block; }
+.v7-ghost-label{ font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:400; font-size:20px; color:#aba39a; }
+.v7-ghost-note{ font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:400; font-size:20px;
+  color:#aba39a; margin-top:18px; line-height:1.35; }
+@keyframes v7ghostIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+@media (prefers-reduced-motion: reduce){ .v7-ghost-tile{ animation:none; } }
+
+/* Inclusive sample imagery — labeled, muted "Example" tile (never competes) */
+.sample-tile{ position:relative; border-radius:var(--v7-r-card); overflow:hidden; opacity:.82; }
+.sample-tile img{ width:100%; height:100%; object-fit:cover; display:block; }
+.sample-chip{ position:absolute; top:8px; left:8px; font-family:var(--v7-mono); font-size:9px;
+  letter-spacing:.1em; text-transform:uppercase; background:rgba(31,27,20,.6); color:var(--v7-warm-paper);
+  padding:3px 7px; border-radius:3px; }
+
+/* ── PALETTE UPDATE (Rich) ─────────────────────────────────────────── */
+html, body{ background:#eddec7; }
+.layout[data-advanced]{ background:transparent; }
+/* Advanced spine (collapsed) → deep oxblood, light content */
+.layout[data-advanced="closed"] .left{ background:#793e42; border-color:#5e3133; }
+.layout[data-advanced="closed"] .left:hover{ background:#8a4a4e; }
+.layout[data-advanced="closed"] .left .v7-adv-icon,
+.layout[data-advanced="closed"] .left .v7-adv-label,
+.layout[data-advanced="closed"] .left .v7-adv-chevron{ color:#F0EAE0; }
+/* collapsed section spines (Suggested / Queue labels) → oxblood, light text */
+.spine-label{ background:var(--v7-oxblood); border-radius:var(--v7-r-card); }
+.spine-label .spine-text, .spine-label .spine-chev{ color:var(--v7-warm-paper); }
+/* Curator masthead — larger C mark + title on the curator champagne itself
+   (no warm-paper rail), deckle stays around the top. */
+.curator-panel .curator-masthead{ background:transparent; height:auto; min-height:0;
+  border-radius:0; padding:2px 0 0; margin:0 0 10px; gap:14px; }
+.curator-panel .curator-cmark{ flex:0 0 46px; width:46px; height:52px; }
+.curator-panel .curator-mast-title{ font-size:36px; color:var(--v7-oxblood); }
+
+/* ── DECKLED EDGES ON SECTIONS ─────────────────────────────────────── */
+.deckle-paper{ position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none;
+  filter:drop-shadow(0 2px 7px rgba(70,45,25,.16)); }
+.has-deckle{ background:transparent !important; border:none !important; border-radius:0 !important; position:relative; }
+.has-deckle > .deckle-paper{ z-index:0; }
+.has-deckle > :not(.deckle-paper){ position:relative; z-index:1; }
 </style>
 </head>
 
@@ -4067,19 +4348,26 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
     <span id="st1">Upload portrait photo</span>
     <input type="file" id="file1" accept="image/*" onchange="handlePrimaryUpload(this)">
   </label>
-  <button class="raw-mode-toggle" id="rawModeToggle" onclick="toggleRawMode()" title="Toggle direct Nano Banana 2 prompt mode (bypasses all preset blocks)">
+  <!-- Customer nav: My Collection count + cart total (non-zero only) + account -->
+  <a class="tb-collection" id="tbCollection" style="display:none" onclick="openMyCollection()">Collection</a>
+  <span class="tb-cart" id="tbCart" style="display:none"></span>
+  <button class="tb-account" id="tbAccount" onclick="onAccountClick()">Sign in</button>
+  <button class="tour-help-btn" id="tourHelpBtn" onclick="startTour()" title="Take the quick tour">?</button>
+  <!-- ── DEV CHROME — hidden for customers; shown with ?dev=1 or Ctrl+Shift+D ── -->
+  <button class="raw-mode-toggle dev-only" id="rawModeToggle" onclick="toggleRawMode()" title="Toggle direct Nano Banana 2 prompt mode (bypasses all preset blocks)">
     <span class="raw-mode-dot"></span>
     <span class="raw-mode-label">Raw Mode</span>
   </button>
-  <button class="tour-help-btn qa-top-btn" id="qaTopBtn" onclick="toggleQaPanel()" title="QA strictness settings (internal)">QA</button>
-  <button class="tour-help-btn" id="tourHelpBtn" onclick="startTour()" title="Take the quick tour">?</button>
-  <div class="status-meta">
+  <button class="tour-help-btn qa-top-btn dev-only" id="qaTopBtn" onclick="toggleQaPanel()" title="QA strictness settings (internal)">QA</button>
+  <div class="status-meta dev-only" id="statusMeta">
     <div class="status-dot" id="gDot"></div>
     <span id="gStatus">ready</span>
   </div>
 </div>
 
-<div class="layout" id="workshopShell" data-advanced="closed">
+<div class="layout" id="workshopShell" data-advanced="closed"
+     data-collection="closed" data-queue="empty" data-hassource="no"
+     data-curator="full" data-suggested="open" data-qpanel="open">
 
   <!-- ── ADVANCED SPINE (was the form sidebar) ── collapsed by default;
        click to expand the controls. "Design Your Own" also opens it. -->
@@ -4120,10 +4408,13 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
         <div class="source-preview source-preview-portrait" id="sidebarSourcePreview" onclick="document.getElementById('file1').click()">
           <div class="source-empty" id="sourceEmpty">
             <div class="source-empty-plus">+</div>
-            <div>Portrait photo</div>
+            <div class="source-empty-primary">Add portrait photo</div>
+            <div class="source-empty-sub">Start with a clear face-forward image.</div>
           </div>
           <img id="sourceThumb" style="display:none">
         </div>
+        <!-- Empty-state call to action — only shown when no source photo is loaded. -->
+        <div class="cur-upload-prompt" id="curUploadPrompt">Bring me a photograph and I&rsquo;ll choose five finishes for it myself. &mdash; C.</div>
 
         <!-- Face-aware source control (v5). Hidden until a photo loads; the
              square preview above is the empty-state upload target. Once a
@@ -4131,7 +4422,7 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
         <div class="fa-source" id="faSource" hidden>
           <div class="fa-viewport" id="faVp">
             <img id="faImg" alt="source">
-            <div class="fa-hint" id="faHint">Drag to frame &middot; scroll to zoom &middot; tap a face</div>
+            <div class="fa-hint" id="faHint">Drag to frame &middot; Scroll to zoom &middot; Tap a face</div>
           </div>
           <div class="fa-controls">
             <button type="button" class="fa-pill" id="faAuto">Re-center on subject</button>
@@ -4360,6 +4651,17 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
                   <feTurbulence type="fractalNoise" baseFrequency="0.014 0.016" numOctaves="4" seed="7" result="n"/>
                   <feDisplacementMap in="SourceGraphic" in2="n" scale="16" xChannelSelector="R" yChannelSelector="G"/>
                 </filter>
+                <!-- Finer/lighter deckle for the upload placeholder: higher noise
+                     frequency + smaller displacement = a subtle torn edge. -->
+                <filter id="fineDeckle" x="-6%" y="-6%" width="112%" height="112%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.03 0.032" numOctaves="4" seed="11" result="n"/>
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+                <!-- Torn bottom edge for the Tier-1 panel rails. -->
+                <filter id="railDeckle" x="-2%" y="-60%" width="104%" height="220%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.02 0.05" numOctaves="3" seed="5" result="n"/>
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
               </defs>
               <rect id="curatorPaperRect" x="14" y="14" width="356" height="732" rx="7" fill="#ECDFC1" stroke="#c4b48f" stroke-width="1.5" filter="url(#curatorDeckle)"/>
             </svg>
@@ -4468,17 +4770,19 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
             <!-- Effect curator — 2-col: left recs, right Your Queue card -->
             <div class="curator-step cur-effects-layout" id="curStepEffects" style="display:none">
               <div class="coll-spine" id="curatorSpine" onclick="suggExpand()">Curator</div>
-              <div class="coll-spine" id="queueSpine" onclick="queueExpand()">Queue</div>
+              <div class="coll-spine" id="queueSpine" onclick="queueExpand()">To Be Crafted</div>
               <div class="cur-effects-left">
                 <!-- Header: text left, actions top-right (Rich mock 2026-06-12) -->
                 <div class="cur-effects-head">
                   <div class="cur-effects-head-text">
-                    <div class="curator-panel-eyebrow">The Curator</div>
-                    <div class="curator-panel-title" id="curEffectsTitle">Five styles we'd choose for you</div>
+                    <div class="cur-effects-mark">
+                      <svg class="cur-effects-cmark" viewBox="0 0 67 75" aria-hidden="true"><use href="#curatorCMark"/></svg>
+                      <span class="cur-effects-mark-label">Curator</span>
+                    </div>
+                    <div class="curator-panel-title" id="curEffectsTitle">Finishes we&rsquo;d choose for you</div>
                     <div class="curator-panel-lead" id="curEffectsLead">
-                      Based on your photograph, here are five styles the Curator recommends. Each shows the expected
-                      quality for your photo. Pick one, craft all five at once, or design your own using the Style
-                      Controls in the left sidebar.
+                      <span class="cur-analysis">Your photograph carries real warmth and presence.</span>
+                      <span class="cur-blurb">Here are five finishes I&rsquo;d reach for first. &mdash; C.</span>
                     </div>
                   </div>
                 </div>
@@ -4494,57 +4798,38 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
                      queues a render that bypasses presets/material/location. -->
                 <div class="experimental-fx" id="experimentalFx" style="display:none">
                   <div class="experimental-fx-head">Experimental Effects</div>
-                  <div class="experimental-fx-sub">Ten out-there finishes, still under test &mdash; tap one to craft it.</div>
+                  <div class="experimental-fx-sub">A dozen out-there finishes, still under test &mdash; tap one to craft it.</div>
                   <div class="experimental-fx-grid" id="experimentalButtons"></div>
                 </div>
               </div>
 
               <aside class="cur-effects-queue" id="stageQueueCard" hidden>
-                <div class="your-queue-head">Ready to Craft</div>
+                <div class="your-queue-head">To Be Crafted</div>
+                <!-- S5 crafting status: primary + rotating microcopy, shown only
+                     while a piece is running (verbatim copy, never "Rendering"). -->
+                <div class="tbc-crafting-status" id="tbcCraftingStatus" hidden aria-live="polite">
+                  <span class="tbc-craft-primary" id="tbcCraftPrimary">Crafting your piece&hellip;</span>
+                  <span class="tbc-craft-micro" id="tbcCraftMicro"></span>
+                </div>
                 <div class="your-queue-grid queue-rows" id="queueRows" data-count="0"></div>
                 <div class="your-queue-total" id="queueTotalLine" style="display:none"></div>
 
-                <!-- ── INSCRIPTION — the last choice before crafting.
-                     Appears inline in this card the first time Craft is
-                     pressed (never a popup). Four options per Rich
-                     (2026-06-09): studio stamp + collector number,
-                     Curator-written, custom (45 chars), or none. -->
-                <div class="insc-step" id="inscriptionStep" style="display:none">
-                  <div class="insc-queue-summary" id="inscQueueSummary" style="display:none"></div>
-                  <div class="insc-title">One last touch &mdash; the inscription</div>
-                  <div class="insc-lead">A small plaque sits at the base of every piece. Choose what yours carries:</div>
-
-                  <div class="insc-option selected" data-insc="stamp" onclick="inscriptionChoose('stamp')">
-                    <div class="insc-opt-name">The studio stamp</div>
-                    <div class="insc-opt-preview">Liten &amp; Co &middot; 2026 &middot; #P&mdash;</div>
-                    <div class="insc-opt-sub">Your collector number is assigned the moment the piece is crafted.</div>
-                  </div>
-
-                  <div class="insc-option" data-insc="curator" onclick="inscriptionChoose('curator')">
-                    <div class="insc-opt-name">The Curator&rsquo;s inscription</div>
-                    <div class="insc-opt-preview" id="inscCuratorPreview">Bronze &middot; Quiet Strength</div>
-                    <div class="insc-opt-sub">Material and character, in the Curator&rsquo;s hand &mdash; unique to each piece.</div>
-                  </div>
-
-                  <div class="insc-option" data-insc="custom" onclick="inscriptionChoose('custom')">
-                    <div class="insc-opt-name">Your inscription</div>
-                    <input type="text" id="inscCustomInput" class="insc-input" maxlength="45"
-                      placeholder="Up to 45 characters" autocomplete="off" spellcheck="false"
-                      oninput="inscriptionCustomTyped(this.value)" onclick="event.stopPropagation()">
-                    <div class="insc-opt-sub"><span id="inscCharCount">0</span> / 45</div>
-                  </div>
-
-                  <div class="insc-option" data-insc="none" onclick="inscriptionChoose('none')">
-                    <div class="insc-opt-name">No inscription</div>
-                  </div>
-
-                  <button class="pb-btn insc-continue" onclick="inscriptionContinue()">Continue</button>
-                </div>
+                <!-- Inscription/plaque step removed — plaques are dropped
+                     entirely for this release (no base plaque on any piece). -->
 
                 <!-- ── FREE PREVIEW BAND — one free watermarked preview per
                      email (1 per IP enforced server-side). Unlock to a real
                      Web Quality piece at $3.99. Visible until the visitor's
                      preview is used. ── -->
+                <!-- Batch piece name: one name for the whole craft batch, applied
+                     to every finish. Optional → server stores "Untitled portrait".
+                     Moderated client-side (mirror) for instant re-prompt; the
+                     server /pieces route is the hard gate. -->
+                <div class="tbc-name">
+                  <label class="tbc-name-label" for="pieceNameInput">Name this piece <span class="tbc-name-opt">(optional)</span></label>
+                  <input type="text" id="pieceNameInput" class="tbc-name-input" maxlength="80" autocomplete="off" placeholder="e.g. The Nguyen Family">
+                  <div class="tbc-name-err" id="pieceNameErr" role="alert" style="display:none"></div>
+                </div>
                 <div class="your-queue-actions bottombar-actions">
                   <!-- The rail owns "Add this piece" — the card's copy was
                        orphaned from any draft and confused the flow.
@@ -4554,11 +4839,12 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
                     <span class="btn-price" id="addPrice"><span class="was">$3.99</span><span class="now">$3.39</span></span>
                   </button>
                   <button class="stage-action-btn btn-render" id="runAllBtn" disabled onclick="runAll()">
-                    <span class="btn-label">Craft all <span id="renderCount">0</span></span>
-                    <span class="btn-price"><span class="now" id="renderTotal">$0.00</span></span>
+                    <span class="btn-label" id="runAllLabel">Add styles to craft</span>
+                    <span class="btn-price" id="renderPriceWrap" style="display:none"><span class="now" id="renderTotal">$0.00</span></span>
                   </button>
                 </div>
-                <div class="sandbox-note" id="sandboxNote" style="display:none"></div>
+                <div class="tbc-footer" id="tbcFooter">Each piece joins your collection</div>
+                <div class="sandbox-note dev-only" id="sandboxNote" style="display:none"></div>
 
                 
               </aside>
@@ -4606,7 +4892,6 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
               <div class="stage-preview-config-line"><span class="label">Material</span><span class="val" id="stagePreviewMat">—</span></div>
               <div class="stage-preview-config-line"><span class="label">Location</span><span class="val" id="stagePreviewLoc">—</span></div>
               <div class="stage-preview-config-line"><span class="label">Aspect</span><span class="val" id="stagePreviewAspect">—</span></div>
-              <div class="stage-preview-config-line"><span class="label">Inscription</span><span class="val" id="stagePreviewPlaque">—</span></div>
             </div>
           </div>
         </div>
@@ -4743,6 +5028,78 @@ function priceForCount(N){
 
 function formatUsd(n){
   return '$' + n.toFixed(2)
+}
+
+// Spelled-out counts for the To Be Crafted panel (Phase 3 copy is word-based).
+function numberWord(n){
+  const w = ['zero','one','two','three','four','five','six','seven','eight','nine','ten',
+             'eleven','twelve']
+  return w[n] || String(n)
+}
+// 4e — Limited Edition treatment. Variant A: a brass "Limited Edition" chip in a
+// distinct slot (never the quality-badge slot). Variant B: no chip, the language
+// lives in hover copy only. Flip this to let Rich choose.
+const LIMITED_EDITION_VARIANT = 'A'   // 'A' | 'B'
+
+// 4f — crafting-in-progress copy. Primary + rotating microcopy (rotation wired in
+// Phase 5). Customer copy never says "Rendering".
+const CRAFT_PRIMARY   = 'Crafting your piece…'
+const CRAFT_MICROCOPY = ['Preparing finish…', 'Preserving likeness…', 'Finishing the piece…']
+
+// ── PIECE NAME (batch) — client MIRROR of lib/v1/_core/name-moderation.ts.
+// One name per craft batch, applied to every finish. The SERVER is the hard
+// gate; this mirror only gives instant re-prompt UX. Two layers: substring for
+// unambiguous terms, whole-word (\bterm\b) for short/embeddable ones so real
+// names/places ("Essex", "Scunthorpe") pass. KEEP THESE LISTS IN SYNC with the
+// server module.
+const NAME_LEET = {'0':'o','1':'i','!':'i','|':'i','3':'e','4':'a','@':'a','5':'s','$':'s','7':'t','+':'t','8':'b','9':'g','2':'z'}
+function nameFold(s){ let o=''; for (const c of s) o += (NAME_LEET[c] || c); return o }
+function nameNormalize(r){ return nameFold((r||'').toLowerCase()).replace(/[^a-z]/g,'') }
+function nameTokenize(r){ return nameFold((r||'').toLowerCase()).replace(/[^a-z]+/g,' ').trim() }
+const NAME_BLOCKED_SUBSTR = [
+  'nigger','nigga','faggot','wetback','tranny','raghead','beaner',
+  'fuck','motherfuck','bullshit','asshole','blowjob','handjob','cumshot',
+  'gangbang','deepthroat','creampie','masturbat','ejaculat','dildo',
+  'whore','porn','incest','orgasm','pussy','penis','vagina','boobs','bestiality',
+  'childporn','childsex','childabuse','childrape','kidporn','kidsex',
+  'pedophile','paedophile','pedophilia','paedophilia','lolicon','shotacon',
+  'jailbait','infantrape','toddlercon','minorporn','minorsex','preteen','underage',
+]
+const NAME_BLOCKED_WORD = [
+  'sex','rape','cum','anal','dick','ass','tit','tits','hoe','slut','prick','wank','twat','bollock','shit',
+  'coon','spic','gook','kike','chink','cunt','retard','fag',
+  'pedo','paedo','loli',
+]
+const NAME_WORD_RE = new RegExp('\\b(' + NAME_BLOCKED_WORD.join('|') + ')\\b')
+function nameIsClean(raw){
+  const n = nameNormalize(raw)
+  if (!n) return true                                        // empty → neutral fallback (server-side)
+  if (NAME_BLOCKED_SUBSTR.some(w => n.includes(w))) return false
+  if (NAME_WORD_RE.test(nameTokenize(raw))) return false
+  return true
+}
+// Read the pre-craft name input, moderate, show a neutral re-prompt on a hit.
+// → { ok:true, value } (value '' when blank) | { ok:false } (re-prompt shown, craft blocked)
+function readBatchName(){
+  const input = document.getElementById('pieceNameInput')
+  const err   = document.getElementById('pieceNameErr')
+  const raw   = input ? input.value : ''
+  if (nameIsClean(raw)){
+    if (err){ err.style.display = 'none' }
+    if (input){ input.classList.remove('invalid') }
+    return { ok: true, value: (raw || '').trim() }
+  }
+  if (err){ err.textContent = 'Please choose a different name'; err.style.display = '' }
+  if (input){ input.classList.add('invalid'); input.focus() }
+  return { ok: false }
+}
+
+// Dynamic craft CTA: "Craft this piece" / "Craft both" / "Craft all three…".
+function craftCtaLabel(N){
+  if (N <= 0) return 'Add styles to craft'
+  if (N === 1) return 'Craft this piece'
+  if (N === 2) return 'Craft both'
+  return 'Craft all ' + numberWord(N)
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5315,21 +5672,6 @@ function renderAspectActiveState(){
 // ═══════════════════════════════════════════════════════════════
 const FRAMING_LABEL = { bust: 'Bust', signature: 'Signature Pose', statuesque: 'Three-Quarter', full_body: 'Three-Quarter' }
 
-// ── INSCRIPTION — the last choice before crafting ─────────────
-// state.inscription = null until chosen; { mode, text } after.
-// 'stamp'   → engine bakes "Liten & Co · 2026 · #P00043" (sequential
-//             collector number assigned server-side at craft — sync doc 7)
-// 'curator' → material + character trait, one per piece
-// 'custom'  → the customer's words (45 chars)
-// 'none'    → plaque suppressed
-const INSC_TRAITS = ['Quiet Strength','Steadfast','Warmth','Good Humor',
-  'Grace','Resolve','Kind Eyes','Patience','Gentle Wit','Courage']
-// Placeholder trait pick until analyze returns a model-written trait —
-// deterministic per piece so re-renders keep their inscription.
-function curatorInscription(item){
-  const trait = INSC_TRAITS[(item.id || 0) % INSC_TRAITS.length]
-  return `${matLabel(item.preset)} \u00b7 ${trait}`
-}
 
 // ── EFFECT SHELF SYNC — cards reflect the queue's reality ─────
 // A suggestion leaves the shelf when its piece is genuinely in play
@@ -5339,7 +5681,7 @@ function curatorInscription(item){
 function syncEffectCards(){
   const grid = document.getElementById('curEffectCards')
   if (!grid) return
-  const cards = grid.querySelectorAll('.eff-card[data-rec-id]')
+  const cards = grid.querySelectorAll('.v7-rec-card[data-rec-id]')
   if (!cards.length) return
   let visible = 0
   cards.forEach(card => {
@@ -5474,81 +5816,6 @@ async function saveQaSettings(){
   }
 }
 
-function showInscriptionStep(afterAction){
-  state._afterInscription = afterAction || 'craft'
-  const step = document.getElementById('inscriptionStep')
-  if (!step) return
-  // Preview the Curator option against the first pending piece.
-  const first = state.queue.find(q => q.status === 'pending')
-  const prevEl = document.getElementById('inscCuratorPreview')
-  if (prevEl && first) prevEl.textContent = curatorInscription(first)
-  step.style.display = ''
-  const acts = document.querySelector('.your-queue-actions')
-  if (acts) acts.style.display = 'none'
-  const band = document.getElementById('previewBand')
-  if (band) band.style.display = 'none'
-  // The step takes the queue's place — tiles and total tuck away so the
-  // inscription sits in the first fold, no scrolling (Rich 2026-06-11).
-  const rows = document.getElementById('queueRows')
-  if (rows) rows.style.display = 'none'
-  const totalLine = document.getElementById('queueTotalLine')
-  const summary = document.getElementById('inscQueueSummary')
-  if (summary && totalLine){
-    summary.textContent = (totalLine.textContent || '').trim()
-    summary.style.display = ''
-  }
-  if (totalLine) totalLine.style.display = 'none'
-}
-
-function hideInscriptionStep(){
-  const step = document.getElementById('inscriptionStep')
-  if (step) step.style.display = 'none'
-  const acts = document.querySelector('.your-queue-actions')
-  if (acts) acts.style.display = ''
-  const rows = document.getElementById('queueRows')
-  if (rows) rows.style.display = ''
-  const summary = document.getElementById('inscQueueSummary')
-  if (summary) summary.style.display = 'none'
-  refreshQueueViews()   // restores the total line
-  updatePreviewBand()
-}
-
-function inscriptionChoose(mode){
-  document.querySelectorAll('.insc-option').forEach(el =>
-    el.classList.toggle('selected', el.dataset.insc === mode))
-  if (mode === 'custom'){
-    const inp = document.getElementById('inscCustomInput')
-    if (inp) inp.focus()
-  }
-}
-
-function inscriptionCustomTyped(v){
-  const c = document.getElementById('inscCharCount')
-  if (c) c.textContent = String(v.length)
-  inscriptionChoose('custom')
-}
-
-function inscriptionContinue(){
-  const sel = document.querySelector('.insc-option.selected')
-  let mode = sel ? sel.dataset.insc : 'stamp'
-  let text = ''
-  if (mode === 'custom'){
-    text = (document.getElementById('inscCustomInput')?.value || '').trim()
-    if (!text) mode = 'stamp'   // empty custom falls back to the stamp
-  }
-  state.inscription = { mode, text }
-  // Stamp the choice onto every pending piece.
-  state.queue.filter(q => q.status === 'pending').forEach(item => {
-    item.collector_stamp = false
-    if (mode === 'stamp'){ item.plaque_text = undefined; item.collector_stamp = true }
-    else if (mode === 'curator'){ item.plaque_text = curatorInscription(item) }
-    else if (mode === 'custom'){ item.plaque_text = text }
-    else { item.plaque_text = null }   // none → suppressed
-  })
-  hideInscriptionStep()
-  if (state._afterInscription === 'preview') startFreePreview()
-  else runAll()
-}
 
 function selectFramingV2(f){
   // Framing dictates aspect — three locked compositions (Rich 2026-06-13).
@@ -5676,6 +5943,15 @@ init()
 // handler keeps targeting the same elements — only their visual parent and
 // styling change. Curator | Suggested | Queue | Collection become flex
 // siblings of the Advanced spine.
+// Upload another source photo into the next free auxiliary slot (from the
+// Curator source area) — lets the customer add supporting images mid-flow.
+function addAuxFromCurator(){
+  const freeSlot = state.auxSrc.findIndex(s => !s)   // 0-based index into auxSrc
+  if (freeSlot < 0){ alert('You can add up to three additional photos.'); return }
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'
+  inp.onchange = () => { if (inp.files && inp.files[0]) handleAuxUpload(inp, freeSlot + 2) }
+  inp.click()
+}
 function buildV7Layout(){
   const shell = document.getElementById('workshopShell')
   if (!shell || shell.dataset.v7built) return
@@ -5690,12 +5966,42 @@ function buildV7Layout(){
   shell.appendChild(queueSpine)
   shell.appendChild(collectionSpine)
   const move = (id, parent) => { const el=document.getElementById(id); if (el && parent) parent.appendChild(el) }
-  // Curator spine: upload affordance + source control + the deckled Curator
-  // card. The upload starts the whole process, so it lives here (NOT behind
-  // the Advanced spine). Order = top→bottom in the spine.
-  move('sidebarSourcePreview', curatorSpine)
-  move('faSource',        curatorSpine)
-  move('curatorPanel',    curatorSpine)
+  // Curator spine: the deckled Curator card, with the upload box + face control
+  // moved INSIDE it (at the top of the card content, after the deckle paper).
+  // The upload starts every cycle, so it lives in the Curator (never behind a
+  // spine — the Curator stays in "ready" mode at min 200px).
+  move('curatorPanel', curatorSpine)
+  ;(function(){
+    const cp = document.getElementById('curatorPanel')
+    const src = document.getElementById('sidebarSourcePreview')
+    const fa  = document.getElementById('faSource')
+    const prompt = document.getElementById('curUploadPrompt')
+    if (cp){
+      // Order: Curator rail (masthead) → source → upload prompt → voiced text.
+      // Insert the source right after the masthead + rule so the rail stays on top.
+      const masthead = cp.querySelector('.curator-masthead')
+      const rule = cp.querySelector('.curator-mast-rule')
+      const anchor = (rule && rule.nextSibling) || (masthead && masthead.nextSibling) || cp.firstChild
+      if (src) cp.insertBefore(src, anchor)
+      if (prompt) cp.insertBefore(prompt, anchor)   // empty-state CTA, sits under the box
+      if (fa)  cp.insertBefore(fa, anchor)
+      // "add another photo" affordance — uploads into the next free aux slot.
+      if (!document.getElementById('curAddPhotos')){
+        const b = document.createElement('button'); b.id = 'curAddPhotos'; b.className = 'cur-add-photos'
+        b.type = 'button'; b.innerHTML = '+ Add another photo'; b.onclick = addAuxFromCurator
+        cp.insertBefore(b, anchor)
+      }
+      // "start a new portrait" — swaps in a brand-new primary photo to restart
+      // the cycle. Only active once the queue is empty (CSS-gated) so an in-flight
+      // run is never interrupted. Clears file input so re-picking a file still fires.
+      if (!document.getElementById('curNewPhoto')){
+        const nb = document.createElement('button'); nb.id = 'curNewPhoto'; nb.className = 'cur-new-photo'
+        nb.type = 'button'; nb.innerHTML = '&#8635; Start a new portrait'
+        nb.onclick = () => { const f = document.getElementById('file1'); if (f){ f.value = ''; f.click() } }
+        cp.insertBefore(nb, anchor)
+      }
+    }
+  })()
   // Suggested spine: the recommendation grid + experimental effects
   move('curEffectCards',  suggestedSpine)
   move('experimentalFx',  suggestedSpine)
@@ -5714,11 +6020,78 @@ function buildV7Layout(){
   // it and render the v7 series rail instead. (The full "slide onto stage"
   // My Collection view awaits the functional spec.)
   const rc = document.getElementById('stageRenderedCol'); if (rc) rc.hidden=true
-  const mc = document.getElementById('stageMyCollection'); if (mc) mc.hidden=true
+  // #stageMyCollection visibility is now CSS-driven by data-collection (NOT the
+  // hidden attr, which would beat the CSS). Remove the attribute entirely.
+  const mc = document.getElementById('stageMyCollection'); if (mc){ mc.hidden=false; mc.removeAttribute('hidden') }
   renderV7Collection()
+  syncSourcePresence()
+
+  // Collapsed-spine restore labels for Curator / Suggested / Queue. Clicking a
+  // spine while the collection is open is the restore gesture; otherwise it
+  // un-collapses that one panel.
+  const spineLabel = (panel, text) => {
+    const el = document.createElement('div'); el.className='spine-label'
+    el.innerHTML = `<span class="spine-text">${text}</span><span class="spine-chev">&rsaquo;</span>`
+    el.onclick = (e) => { e.stopPropagation(); spineClick(panel) }
+    return el
+  }
+  suggestedSpine.insertBefore(spineLabel('suggested','Suggested'), suggestedSpine.firstChild)
+  queueSpine.insertBefore(spineLabel('qpanel','To Be Crafted'), queueSpine.firstChild)
+
+  // Per-panel collapse devices before the Curator + Queue titles.
+  const addDevice = (sel, panel) => {
+    const host = document.querySelector(sel); if (!host || host.querySelector('.panel-collapse-btn')) return
+    const b = document.createElement('button'); b.className='panel-collapse-btn'; b.innerHTML='&lsaquo;'
+    b.title='Collapse'; b.onclick=(e)=>{ e.stopPropagation(); togglePanel(panel) }
+    host.insertBefore(b, host.firstChild)
+  }
+  addDevice('#v7Queue .your-queue-head', 'qpanel')
+
+  // The whole Collection rail opens My Collection when clicked (while closed).
+  collectionSpine.addEventListener('click', () => {
+    if (shell.dataset.collection !== 'open') setCollectionOpen(true)
+  })
+
+  // Deckled rag edge on the sections (reuses the #curatorDeckle filter).
+  deckleSection(suggestedSpine, '#F0EAE0')
+  deckleSection(queueSpine, '#F0EAE0')
+  deckleSection(collectionSpine, '#F0EAE0')
+  // Upload placeholder gets a finer, lighter torn edge in the paper color #f4f2ed.
+  const uploadBox = document.getElementById('sidebarSourcePreview')
+  if (uploadBox) deckleSection(uploadBox, '#f4f2ed', 'fineDeckle', 9)
+  // Empty-workshop ghosts host — sits first in Suggested; hidden once a source is in.
+  if (!document.getElementById('v7Ghosts')){
+    const gh = document.createElement('div'); gh.id = 'v7Ghosts'
+    suggestedSpine.insertBefore(gh, suggestedSpine.firstChild)
+  }
+
   // Old center chrome (header, progress, bundle bar, bottom bar) no longer hosts content.
   if (center) center.style.display='none'
   shell.dataset.v7built = '1'
+}
+// Give a section the deckled paper edge (SVG turbulence), sized to it, behind
+// its content — matching the Curator card. Reuses the #curatorDeckle filter.
+function deckleSection(el, fill, filterId, ins){
+  if (!el || el.querySelector(':scope > .deckle-paper')) return
+  filterId = filterId || 'curatorDeckle'
+  const NS = 'http://www.w3.org/2000/svg'
+  const svg = document.createElementNS(NS, 'svg')
+  svg.setAttribute('class', 'deckle-paper'); svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('viewBox', '0 0 100 100')
+  const rect = document.createElementNS(NS, 'rect')
+  // Inset must exceed the deckle displacement so ALL FOUR edges tear fully
+  // instead of being clipped flat at the paper bounds (17 for the coarse
+  // section filter; a lighter filter can use a smaller inset).
+  const INS = (typeof ins === 'number') ? ins : 17
+  rect.setAttribute('x', String(INS)); rect.setAttribute('y', String(INS)); rect.setAttribute('rx', '6')
+  rect.setAttribute('fill', fill); rect.setAttribute('stroke', '#c4b48f'); rect.setAttribute('stroke-width', '1.2')
+  rect.setAttribute('filter', 'url(#' + filterId + ')')
+  svg.appendChild(rect)
+  el.insertBefore(svg, el.firstChild)
+  el.classList.add('has-deckle')
+  const size = () => { const w = el.offsetWidth, h = el.offsetHeight; if (!w || !h) return
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`); rect.setAttribute('width', Math.max(0, w - 2 * INS)); rect.setAttribute('height', Math.max(0, h - 2 * INS)) }
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(size).observe(el)
+  requestAnimationFrame(size); size()
 }
 const V7_SERIES = [
   ['portraits','Portraits'],['houses','Houses'],['action','Action'],['groups','Groups'],
@@ -5726,14 +6099,23 @@ const V7_SERIES = [
 ]
 // v7 Collection rail — 8 series tiles; Portraits is the active (oxblood 3:4)
 // tile showing thumbnails of crafted pieces. Updates whenever the queue changes.
+// Empty state: with no source photo the workshop is just a full-height Curator
+// upload prompt — Suggested/Queue/Collection stay hidden (CSS keys off this).
+function syncSourcePresence(){
+  const shell = document.getElementById('workshopShell')
+  if (shell) shell.dataset.hassource = state.primarySrc ? 'yes' : 'no'
+}
 function renderV7Collection(){
   const rail = document.getElementById('v7Collection')
   if (!rail) return
+  // Not present until there's a source photo — no workshop, no collection rail.
+  rail.style.display = state.primarySrc ? '' : 'none'
+  if (!state.primarySrc) return
   let tiles = document.getElementById('v7CollectionTiles')
   if (!tiles){ tiles = document.createElement('div'); tiles.id='v7CollectionTiles'
-    tiles.style.cssText='display:flex;flex-direction:column;gap:8px'; rail.insertBefore(tiles, rail.firstChild) }
+    tiles.className='v7-coll-tiles'; rail.insertBefore(tiles, rail.firstChild) }
   const pieces = (state.queue||[]).filter(q => typeof isRenderedPiece==='function' && isRenderedPiece(q))
-  tiles.innerHTML = '<div class="v7-collection-head">My Collection</div>'
+  tiles.innerHTML = '<div class="v7-collection-head"><button class="panel-collapse-btn" onclick="event.stopPropagation(); setCollectionOpen(true)" title="Open">&rsaquo;</button>My Collection</div>'
   V7_SERIES.forEach(([id,name]) => {
     const active = id === 'portraits'
     const items = active ? pieces : []
@@ -5743,12 +6125,97 @@ function renderV7Collection(){
       `<svg class="v7-series-icon" viewBox="0 0 24 24"><use href="#v7ic-${id}"/></svg>` +
       `<div class="v7-series-name">${name}</div>` +
       `<div class="v7-series-count${items.length?'':' empty'}">${items.length} ${items.length===1?'piece':'pieces'}</div>` +
-      (active && items.length ? `<div class="v7-series-thumbs">${items.slice(0,3).map(it=>`<div class="v7-series-thumb"><img src="data:image/jpeg;base64,${it.result.image_b64}" alt=""></div>`).join('')}</div>` : '')
+      (active && items.length ? `<div class="v7-series-thumbs">${items.slice(0,3).map(it=>`<div class="v7-series-thumb"><img src="${pieceImgSrc(it)}" alt=""></div>`).join('')}</div>` : '')
     if (active) tile.onclick = () => { if (typeof openMyCollection==='function') openMyCollection() }
     tiles.appendChild(tile)
   })
 }
 buildV7Layout()
+// Dev chrome gate — Raw Mode / QA / READY / sandbox text are hidden for customers,
+// revealed with ?dev=1 or Ctrl+Shift+D (never deleted, just gated).
+;(function(){
+  try { if (new URLSearchParams(location.search).has('dev')) document.body.classList.add('dev-mode') } catch {}
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd')){ e.preventDefault(); document.body.classList.toggle('dev-mode') }
+  })
+})()
+// Account item — real sign-in (Supabase magic-link) lives in the main app; this
+// keeps the masthead item present until that flow is wired here.
+function onAccountClick(){ const t = document.getElementById('tbAccount'); if (t) t.blur() }
+// Masthead nav: My Collection count + cart total (shown only when non-zero).
+function updateMastheadMeta(){
+  const coll = state.queue.filter(q => typeof isRenderedPiece === 'function' && isRenderedPiece(q)).length
+  const cEl = document.getElementById('tbCollection')
+  if (cEl){ cEl.textContent = 'Collection · ' + coll; cEl.style.display = coll > 0 ? '' : 'none' }
+  const N = state.queue.filter(q => q.status === 'pending').length
+  const total = N > 0 ? (priceForCount(N).perPiece * N + queuedResolutionUpcharge()) : 0
+  const cartEl = document.getElementById('tbCart')
+  if (cartEl){ cartEl.textContent = total > 0 ? formatUsd(total) : ''; cartEl.style.display = total > 0 ? '' : 'none' }
+}
+// Deferred one tick so consts declared later in this script (PIECES_URL,
+// PREVIEW_VARIANT_POOL, GHOST_POOL) are initialized before these read them.
+setTimeout(() => {
+  // loadPersistedCollection() intentionally NOT called on boot: it injected
+  // server-persisted pieces (result.image_url, id 'srv_*') into state.queue,
+  // where they slipped past the isRenderedPiece() filter (which keys on
+  // image_b64) and rendered as queue pills whose X button — onclick=
+  // removeQueueItem(srv_123), an unquoted identifier — threw and did nothing.
+  // Net effect: un-removable "effects" appearing in the queue on load.
+  if (typeof renderGhostSuggestions  === 'function') renderGhostSuggestions()
+}, 0)
+
+// ── INCLUSIVE SAMPLE IMAGERY (UI lane) ──────────────────────────────
+// Consumes a tagged sample library the Engine populates (Sample schema).
+// Core rules: the customer render is ALWAYS the customer (samples never
+// replace the suggested cards); every sample is labeled "Example"; we never
+// classify the customer's demographics (spread only); only PASS samples surface.
+// Dark until /api/v1/samples returns rows — then example surfaces slot from it.
+const SampleLib = (() => {
+  let pool = [], byEffect = {}, seed = null
+  function hashStr(s){ let h=2166136261; for (let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619) } return h>>>0 }
+  function sessionId(){
+    if (seed) return seed
+    try { seed = sessionStorage.getItem('liten_sample_session') } catch {}
+    if (!seed){ seed = 's'+hashStr(String(Date.now())+navigator.userAgent).toString(36); try { sessionStorage.setItem('liten_sample_session', seed) } catch {} }
+    return seed
+  }
+  function qualityOk(s){ return s && (s.quality==='excellent'||s.quality==='good') && s.clothed!==false && s.hue_ok!==false }
+  async function load(){
+    try {
+      const res = await fetch('/api/v1/samples?series=portraits')
+      if (res.ok){ const d = await res.json(); pool = Array.isArray(d && d.samples) ? d.samples.filter(qualityOk) : [] }
+    } catch { pool = [] }
+    byEffect = {}
+    pool.forEach(s => { (byEffect[s.effect_id] = byEffect[s.effect_id] || []).push(s) })
+    return pool.length
+  }
+  // Deterministic per-session pick for one effect (stable across reloads).
+  function pickForEffect(effectId){
+    const c = byEffect[effectId] || []
+    return c.length ? c[hashStr(sessionId()+'|'+effectId) % c.length] : null
+  }
+  // Coverage pass — greedily maximize spread of age × presentation × skin-tone
+  // across the visible effects so a screen never clusters into one demographic.
+  // Seeded ordering keeps it stable. No customer demographics are ever read.
+  function pickSet(effectIds){
+    const seen = { age_band:new Set(), presentation:new Set(), skin_tone_band:new Set() }, out = {}
+    effectIds.slice().sort((a,b)=> hashStr(sessionId()+a)-hashStr(sessionId()+b)).forEach(eid => {
+      const c = byEffect[eid] || []
+      if (!c.length){ out[eid]=null; return }
+      let best=c[0], score=-1
+      c.forEach(x => { const sc=(!seen.age_band.has(x.age_band))+(!seen.presentation.has(x.presentation))+(!seen.skin_tone_band.has(x.skin_tone_band)); if (sc>score){ score=sc; best=x } })
+      seen.age_band.add(best.age_band); seen.presentation.add(best.presentation); seen.skin_tone_band.add(best.skin_tone_band)
+      out[eid]=best
+    })
+    return out
+  }
+  // Labeled, muted sample tile (Example chip — never competes with the customer's render).
+  function tileHTML(sample){
+    return sample ? `<div class="sample-tile"><img src="${sample.url}" alt="Example finish"><span class="sample-chip">Example</span></div>` : ''
+  }
+  return { load, pickForEffect, pickSet, tileHTML, sessionId, get size(){ return pool.length } }
+})()
+SampleLib.load().then(n => { if (n) console.log('[portraits/ui] sample library loaded:', n, 'samples') })
 
 // ── FACE-AWARE SOURCE CONTROL (Source Control v5) ──────────────
 // Pan/zoom/subject-pick over a fixed 3:4 viewport. The only state it owns
@@ -5810,7 +6277,9 @@ const FA = (() => {
     // onto the face makes it fill the frame, which is exactly what the intake
     // gate wants. The route upscales any tight crop past the resolution floor,
     // so a tight frame is safe.
-    if(!faces.length){ state.focal.subjectId=null; clampFocal(); render(); return }
+    // No analyzed faces yet — frame the upper-center where a face almost always
+    // sits, so the subject reads centered ASAP (refined the moment analyze lands).
+    if(!faces.length){ state.focal.subjectId=null; state.focal.x=0.5; state.focal.y=0.4; clampFocal(); render(); return }
     let best=faces[0],area=0; faces.forEach(f=>{const a=f.w*f.h; if(a>area){area=a;best=f}})
     if(vp) vp.classList.remove('touched'); pick(best.id)
   }
@@ -5921,8 +6390,12 @@ function handlePrimaryUpload(input){
     state.focal = { x: 0.5, y: 0.5, zoom: 1.0, subjectId: null }
     state.faces = []
     FA.show(String(r.result))
+    // A new photo starts a fresh cycle — leave any expanded My Collection.
+    if (typeof setCollectionOpen === 'function') setCollectionOpen(false)
+    if (typeof renderV7Collection === 'function') renderV7Collection()  // reveal the rail now a source exists
+    if (typeof syncSourcePresence === 'function') syncSourcePresence()   // exit the empty-state upload prompt
     document.getElementById('slot1').classList.add('has-file')
-    document.getElementById('st1').textContent = f.name.length > 20 ? f.name.slice(0,18)+'…' : f.name
+    document.getElementById('st1').textContent = 'Change photo'   // no internal filename in customer chrome
     // Tier 1 resolution gate — probe the actual pixel dimensions.
     const probe = new Image()
     probe.onload = () => {
@@ -6048,10 +6521,7 @@ function updateStagePreview(){
   document.getElementById('stagePreviewMat').textContent    = hasMat ? matLabel : 'Pick one in the rail →'
   document.getElementById('stagePreviewLoc').textContent    = hasMat ? locLabel : '—'
   document.getElementById('stagePreviewAspect').textContent = state.aspect
-  const plaqueDesc = state.plaqueOff
-    ? 'Off — no plaque'
-    : (state.plaqueText.trim() || 'Liten & Co · 2025 (default)')
-  document.getElementById('stagePreviewPlaque').textContent = plaqueDesc
+  // Inscription/plaque line removed — plaques dropped for this release.
 
   // Refresh the info box + step pulse to match new state
   updateInfoBox()
@@ -6088,7 +6558,7 @@ function updateInfoBox(){
       copy = 'Pick an <em>aspect ratio</em>. The recommended one is marked in the rail.'
       break
     case 5:
-      copy = 'Ready. Click <em>+ Add to queue</em> below to add this piece.'
+      copy = 'Ready. Click <em>+ Add this piece</em> below to add it.'
       break
   }
   text.innerHTML = copy
@@ -6266,12 +6736,15 @@ function updateActionBar(){
   const canAuto    = draftOk && state.queue.length === 0 && !dup
   const renderBtn  = document.getElementById('runAllBtn')
   renderBtn.disabled = state.busy || (!hasPending && !canAuto)
-  document.getElementById('renderCount').textContent = N || ''
+  // Phase 3: word-based CTA, no price on the button. Disabled/empty → prompt copy.
+  const runAllLabel = document.getElementById('runAllLabel')
+  if (runAllLabel) runAllLabel.textContent = craftCtaLabel(N)
 
-  // Total = sum of per-item prices at the current tier
+  // Total still computed (drives the order ledger below); the button no longer shows it.
   const currentTier = priceForCount(Math.max(N, 1))
   const total = N * currentTier.perPiece + queuedResolutionUpcharge()
-  document.getElementById('renderTotal').textContent = total > 0 ? formatUsd(total) : '$0.00'
+  const renderTotalEl = document.getElementById('renderTotal')
+  if (renderTotalEl) renderTotalEl.textContent = total > 0 ? formatUsd(total) : '$0.00'
 
   // Order ledger — the persistent total (and the future Stripe mount)
   const ledger = document.getElementById('orderLedger')
@@ -6339,9 +6812,60 @@ function isRenderedPiece(item){
       && (item.result.final_pass !== false || item.user_decision === 'accept')
 }
 
+// Completion choreography (S5): the finished piece appears large at its queue
+// slot, holds, then shrinks and slides to the My Collection rail — a soft settle
+// as the real piece lands in the collection and the count updates. Image-forward
+// (the actual render), falling back to a pill clone if the image is unavailable.
+// Called once per piece the moment it becomes a rendered piece.
+const _flownPills = new Set()
+function flyPillClone(pill, id){
+  if (_flownPills.has(id)) return
+  _flownPills.add(id)
+  const item = (state.queue || []).find(q => q.id === id)
+  const coll = document.getElementById('v7Collection')
+  const pr   = pill.getBoundingClientRect()
+
+  const src = item && item.result
+    ? (item.result.image_b64 ? 'data:image/jpeg;base64,' + item.result.image_b64
+                             : (item.result.image_url || ''))
+    : ''
+
+  // Piece-sized flyer centered on the pill (the wide-short row would letterbox).
+  const W = 132, H = 168
+  const cx = pr.left + pr.width / 2, cy = pr.top + pr.height / 2
+  const flyer = document.createElement('div')
+  flyer.className = 'v7-piece-fly'
+  flyer.style.cssText =
+    `position:fixed;left:${Math.round(cx - W / 2)}px;top:${Math.round(cy - H / 2)}px;` +
+    `width:${W}px;height:${H}px;margin:0;z-index:9999;`
+  if (src){ flyer.innerHTML = `<img src="${src}" alt="">` }
+  else    { flyer.appendChild(pill.cloneNode(true)) }
+
+  // Target = the My Collection rail, biased toward its header.
+  let dx = 220, dy = -20
+  if (coll){
+    const cr = coll.getBoundingClientRect()
+    dx = Math.round((cr.left + cr.width / 2) - cx)
+    dy = Math.round((cr.top + 48) - cy)
+  }
+  flyer.style.setProperty('--fly-x', dx + 'px')
+  flyer.style.setProperty('--fly-y', dy + 'px')
+  document.body.appendChild(flyer)
+  requestAnimationFrame(() => flyer.classList.add('is-crafted-fly'))
+  setTimeout(() => flyer.remove(), 940)
+}
+
 function renderQueueList(){
   const rows = document.getElementById('queueRows')
   if (!rows) return
+  // Detect pills that just finished (were on screen, now rendered) and fly a
+  // clone of each toward My Collection before the list is rebuilt.
+  const before = {}
+  rows.querySelectorAll('.v7-queue-pill[data-id]').forEach(p => { before[p.dataset.id] = p })
+  state.queue.forEach(it => {
+    const p = before[String(it.id)]
+    if (p && isRenderedPiece(it)) flyPillClone(p, it.id)
+  })
   rows.innerHTML = ''
   const queued = state.queue.filter(it =>
     !isRenderedPiece(it) && it.status !== 'rejected' && it.status !== 'redirected')
@@ -6354,7 +6878,7 @@ function renderQueueList(){
     rows.appendChild(row)
   })
 
-  // Single total below the grid (replaces per-item pricing on the tiles).
+  // Studio-rate line + single total (Phase 3: no anchor price, no % chip).
   const totalEl = document.getElementById('queueTotalLine')
   if (totalEl){
     if (N === 0){
@@ -6362,13 +6886,13 @@ function renderQueueList(){
     } else {
       totalEl.style.display = ''
       const total = tier.perPiece * N + queuedResolutionUpcharge()
-      const base  = PRICING.basePrice * N
-      totalEl.innerHTML = N >= 2
-        ? `<span class="qt-count">${N} pieces</span>`
-          + `<span class="qt-price"><span class="qt-was">${formatUsd(base)}</span>`
-          + `<span class="qt-now">${formatUsd(total)}</span>`
-          + `<span class="qt-off">${tier.off}</span></span>`
-        : `<span class="qt-count">${N} piece</span><span class="qt-price"><span class="qt-now">${formatUsd(total)}</span></span>`
+      // Studio rate framing only when the together-rate is actually active (2+).
+      const rate = N >= 2
+        ? `<div class="tbc-rate">Studio rate &mdash; ${numberWord(N)} pieces together</div>`
+        : ''
+      totalEl.innerHTML = rate
+        + `<div class="tbc-total"><span class="tbc-count">${N} ${N === 1 ? 'piece' : 'pieces'}</span>`
+        + `<span class="tbc-price">${formatUsd(total)}</span></div>`
     }
   }
 }
@@ -6532,6 +7056,40 @@ function refreshQueueViews(){
   updateActionBar()
   updateColumnPhase()
   if (typeof renderV7Collection === 'function') renderV7Collection()
+  if (typeof syncSourcePresence === 'function') syncSourcePresence()
+  if (typeof renderCollectionBands === 'function') renderCollectionBands()  // bands update as pieces render
+  if (typeof syncQueueFillState === 'function') syncQueueFillState()
+  if (typeof updateMastheadMeta === 'function') updateMastheadMeta()
+  const vq = document.getElementById('v7Queue')
+  if (vq) vq.dataset.crafting = state.queue.some(q => q.status === 'running') ? 'yes' : 'no'
+  updateCraftingStatus()
+}
+
+// S5 — crafting status line: primary + rotating microcopy (in order), shown only
+// while a piece is running. Copy is verbatim (CRAFT_PRIMARY / CRAFT_MICROCOPY);
+// never "Rendering." The rotation stops and the line hides when nothing runs.
+let _craftMicroTimer = null, _craftMicroIdx = 0
+function updateCraftingStatus(){
+  const el = document.getElementById('tbcCraftingStatus')
+  if (!el) return
+  const crafting = state.queue.some(q => q.status === 'running')
+  if (crafting){
+    el.hidden = false
+    const prim = document.getElementById('tbcCraftPrimary')
+    if (prim) prim.textContent = CRAFT_PRIMARY
+    if (!_craftMicroTimer){
+      const micro = document.getElementById('tbcCraftMicro')
+      const tick = () => {
+        if (micro) micro.textContent = CRAFT_MICROCOPY[_craftMicroIdx % CRAFT_MICROCOPY.length]
+        _craftMicroIdx++
+      }
+      tick()
+      _craftMicroTimer = setInterval(tick, 1900)
+    }
+  } else {
+    el.hidden = true
+    if (_craftMicroTimer){ clearInterval(_craftMicroTimer); _craftMicroTimer = null; _craftMicroIdx = 0 }
+  }
 }
 
 // ── Rendered column: large stacked finished pieces, newest on top ──
@@ -6585,14 +7143,73 @@ function renderRendered(){
 const COLLECTION_SERIES = [
   'Portrait', 'Houses', 'Action', 'Groups', 'Landscapes', 'Pets', 'For Fun', 'The Artist Series',
 ]
-function openMyCollection(){
-  const l = _layoutEl()
-  if (l) l.classList.add('mycoll-open','curator-collapsed','queue-collapsed')
-  const panel = document.getElementById('stageMyCollection')
-  if (panel) panel.hidden = false
-  renderCollectionBands()
-}
+// Redirected to the v7 shell state machine (the old class toggles targeted the
+// hidden .center and did nothing in the v7 layout — per Plan agent).
+function openMyCollection(){ setCollectionOpen(true) }
 function closeMyCollection(){ restoreWorkshop() }
+// ── Durable My Collection — server persistence (migration 006) ─────────
+// Pieces POST to /api/v1/portraits/pieces on completion and reload from it on
+// boot so the gallery survives a refresh (and follows a signed-in account).
+// ADDITIVE to state.queue: the in-session experience is unchanged; loaded pieces
+// are injected as synthetic "done" items flagged so they never re-post and never
+// re-appear as queue pills (renderQueueList already filters rendered pieces out).
+const PIECES_URL = '/api/v1/portraits/pieces'
+function ownerGuestKey(){
+  try {
+    let k = localStorage.getItem('liten_guest_key')
+    if (!k){ k = 'g_' + ((crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now()+'_'+Math.random().toString(36).slice(2)); localStorage.setItem('liten_guest_key', k) }
+    return k
+  } catch { return null }
+}
+// One image source for a piece: base64 (session-crafted) or signed URL (loaded).
+function pieceImgSrc(item){
+  const r = item && item.result
+  if (!r) return ''
+  return r.image_b64 ? ('data:image/jpeg;base64,' + r.image_b64) : (r.image_url || '')
+}
+async function persistPiece(item){
+  if (!item || item._persisted || item._persisting) return
+  const r = item.result
+  if (!r || !r.image_b64) return            // only fresh session pieces carry b64
+  item._persisting = true
+  try {
+    const res = await fetch(PIECES_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        guest_key:  ownerGuestKey(),
+        image_b64:  r.image_b64,
+        series:     'portraits',
+        preset:     item.preset,
+        label:      item.pieceName || '',   // batch name; empty → server 'Untitled portrait'. Finish stays in `preset`.
+        mode:       item.mode === 'experimental' ? 'experimental' : 'material',
+        meta:       { quality: r.quality_level || null },
+      }),
+    })
+    const data = await res.json().catch(() => null)
+    if (data && data.ok){ item._persisted = true; if (data.piece && data.piece.id) item._serverId = data.piece.id }
+  } catch {}
+  finally { item._persisting = false }
+}
+async function loadPersistedCollection(){
+  try {
+    const res  = await fetch(PIECES_URL + '?guest_key=' + encodeURIComponent(ownerGuestKey() || ''))
+    const data = await res.json().catch(() => null)
+    if (!data || !Array.isArray(data.pieces) || !data.pieces.length) return
+    const seen = new Set(state.queue.map(q => q._serverId).filter(Boolean))
+    // newest-first from the API → push oldest-first so session ordering holds
+    data.pieces.slice().reverse().forEach(p => {
+      if (seen.has(p.id)) return
+      state.queue.push({
+        id: 'srv_' + p.id, _serverId: p.id, _persisted: true, _fromServer: true,
+        status: 'done', mode: p.mode === 'experimental' ? 'experimental' : 'preset',
+        preset: p.preset, experimental_label: p.mode === 'experimental' ? p.label : undefined,
+        result: { image_url: p.image_url, final_pass: true }, source_url: p.source_url || null,
+      })
+    })
+    if (typeof refreshQueueViews === 'function') refreshQueueViews()
+  } catch {}
+}
+
 function renderCollectionBands(){
   const wrap = document.getElementById('mycollBands')
   if (!wrap) return
@@ -6600,25 +7217,54 @@ function renderCollectionBands(){
   const portraitPieces = state.queue.filter(isRenderedPiece).slice().reverse()
   COLLECTION_SERIES.forEach(series => {
     const band = document.createElement('div')
-    band.className = 'mycoll-band'
     const items = series === 'Portrait' ? portraitPieces : []
+    // Populated (current) series → large renders, 3 across, horizontal scroll.
+    // Empty series collapse to a slim name-only rail (4h) — no "No X pieces yet".
+    band.className = 'mycoll-band' + (items.length ? ' mycoll-band--active' : ' mycoll-band--empty')
     let body
     if (items.length){
-      body = '<div class="mycoll-band-grid">' + items.map(item =>
-        `<div class="mycoll-tile" data-id="${item.id}"><img src="data:image/jpeg;base64,${item.result.image_b64}" alt=""></div>`
-      ).join('') + '</div>'
+      body = '<div class="mycoll-band-grid">' + items.map(item => {
+        const nm = item.mode === 'experimental' ? (item.experimental_label || matLabel(item.preset)) : matLabel(item.preset)
+        return `<div class="mycoll-piece" data-id="${item.id}">
+          <div class="mycoll-piece-img"><img src="${pieceImgSrc(item)}" alt=""><span class="enlarge-hint">Enlarge</span></div>
+          <div class="mycoll-piece-name">${escapeHtml(nm)}</div>
+          <div class="mycoll-piece-actions">
+            <button class="mycoll-act" data-act="download">Download</button>
+            <button class="mycoll-act" data-act="print">Print Shop</button>
+          </div>
+        </div>`
+      }).join('') + '</div>'
     } else {
-      body = `<div class="mycoll-band-empty">No ${series} pieces yet</div>`
+      body = ''   // slim name-only rail
     }
     band.innerHTML = `<div class="mycoll-band-head">${escapeHtml(series)}</div>${body}`
     if (items.length){
-      band.querySelectorAll('.mycoll-tile').forEach(tile => {
+      band.querySelectorAll('.mycoll-piece').forEach(tile => {
         const item = portraitPieces.find(p => String(p.id) === tile.dataset.id)
-        if (item) tile.onclick = () => openLightbox(`data:image/jpeg;base64,${item.result.image_b64}`, item)
+        if (!item) return
+        const src = pieceImgSrc(item)
+        const img = tile.querySelector('.mycoll-piece-img'); if (img) img.onclick = () => openLightbox(src, item)
+        const dl = tile.querySelector('[data-act="download"]'); if (dl) dl.onclick = e => { e.stopPropagation(); downloadPiece(item) }
+        const pr = tile.querySelector('[data-act="print"]');    if (pr) pr.onclick = e => { e.stopPropagation(); sendToPrintShop(item) }
+        const mo = tile.querySelector('[data-act="more"]');     if (mo) mo.onclick = e => { e.stopPropagation(); makeMoreInSeries(item) }
       })
     }
     wrap.appendChild(band)
   })
+}
+
+// #4 — My Collection per-piece actions.
+function sendToPrintShop(item){
+  // Prodigi sandbox path — the live fulfillment contract is Engine-lane. The
+  // button is wired; it opens the piece and flags the pending integration.
+  if (item?.result?.image_b64) openLightbox(`data:image/jpeg;base64,${item.result.image_b64}`, item)
+  const g = document.getElementById('gStatus'); if (g) g.textContent = 'print shop (Prodigi sandbox) — pending Engine'
+  console.log('[portraits/ui] sendToPrintShop → Prodigi sandbox (Engine-lane contract pending)', item?.id)
+}
+function makeMoreInSeries(item){
+  // Back into the workshop to craft more of this style (re-queues the config).
+  if (typeof setCollectionOpen === 'function') setCollectionOpen(false)
+  if (typeof makeVariation === 'function') makeVariation(item)
 }
 
 // Turn a gate outcome into plain, warm guidance about the SOURCE photo.
@@ -6640,31 +7286,10 @@ function friendlyReject(item){
 function renderSourceFeedback(){
   const el = document.getElementById('curSourceFeedback')
   if (!el) return
-  const flagged = state.queue.find(it => it.status === 'rejected' || it.status === 'redirected')
-  let heading = null, bodyText = null
-  if (flagged){
-    heading  = flagged.status === 'redirected' ? 'A better home for this photograph' : 'A note on your photograph'
-    bodyText = friendlyReject(flagged)
-  } else {
-    // Precheck verdict — the real gate's word, delivered while the
-    // customer is still composing, before Craft is ever pressed.
-    const gc = state.gateCheck
-    const v  = gc && gc.status === 'done' ? gc.verdict : null
-    if (v && v.status && v.status !== 'passed'){
-      if (v.status === 'redirected' && v.redirect){
-        heading  = 'A better home for this photograph'
-        bodyText = v.redirect.message
-      } else {
-        heading  = 'A note on your photograph'
-        bodyText = friendlyReject({ status: 'rejected', error: (v.intake && v.intake.reasons) || '' })
-      }
-    }
-  }
-  if (!heading){ el.style.display = 'none'; el.innerHTML = ''; return }
-  el.style.display = ''
-  el.innerHTML = `<div class="csf-title">${heading}</div><div class="csf-body">${escapeHtml(bodyText)}</div>`
-  // Make sure the Curator card (which holds this note) is open, not spined.
-  suggExpand()
+  // 4b — the photo-quality warning fires ONCE, before Continue, in the "About your
+  // photograph" step. The post-Continue note card is removed entirely.
+  el.style.display = 'none'; el.innerHTML = ''
+  return
 }
 
 // Show/hide the Rendered column and manage the Suggestions collapse.
@@ -6679,18 +7304,13 @@ function updateColumnPhase(){
     !isRenderedPiece(it) && it.status !== 'rejected' && it.status !== 'redirected'
   ).length
 
-  if (renderedCol) renderedCol.hidden = !hasRendered
+  // v7: no separate "Your Pieces" column — a finished piece is just the current
+  // series' queue completing into My Collection. Keep the rendered column hidden.
+  if (renderedCol) renderedCol.hidden = true
 
-  if (queueCol && layout && !layout.classList.contains('mycoll-open')){
-    const shouldShow = queuedCount > 0 || pendingOrRunning
-    if (shouldShow && queueCol.hidden){
-      queueCol.hidden = false
-      if (layout.classList.contains('queue-collapsed')) layout.classList.remove('queue-collapsed')
-      queueCol.classList.remove('fade-in'); void queueCol.offsetWidth; queueCol.classList.add('fade-in')
-    } else if (!shouldShow){
-      queueCol.hidden = true
-    }
-  }
+  // v7 layout: the Queue spine is always present (shows "Ready to Craft" + its
+  // empty state when nothing is queued). Keep the card visible regardless.
+  if (queueCol) queueCol.hidden = false
 }
 
 function _layoutEl(){ return document.getElementById('curStepEffects') }
@@ -6702,30 +7322,24 @@ function setSpinesVisible(_on){
   // No-op — spine visibility is now driven by .curator-collapsed on
   // the parent layout. Kept for older call sites that still invoke it.
 }
-function restoreWorkshop(){
-  const l = _layoutEl()
-  if (l) l.classList.remove('mycoll-open')
-  // Restore curator if not dismissed or overridden; otherwise keep spined
-  const curDismissed = state.curator && (state.curator.dismissed || state.curator.step === 'override')
-  if (!curDismissed && l) l.classList.remove('curator-collapsed')
-  // Restore queue if there are pending items
-  const hasPending = state.queue.some(q => q.status === 'pending' || q.status === 'running')
-  if (hasPending && l) l.classList.remove('queue-collapsed')
-  else if (l) l.classList.remove('queue-collapsed')
-  const panel = document.getElementById('stageMyCollection')
-  if (panel) panel.hidden = true
-  updateColumnPhase()
-}
+function restoreWorkshop(){ setCollectionOpen(false) }
 
 // Download a finished piece as a JPEG.
-function downloadPiece(item){
-  if (!item.result?.image_b64) return
+async function downloadPiece(item){
   if (item.is_preview && !item.purchased) return   // previews unlock first
+  const r = item.result || {}
+  const name = `liten-${matLabel(item.preset || 'piece').toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${item.id}.jpg`
+  let href = r.image_b64 ? `data:image/jpeg;base64,${r.image_b64}` : null
+  // Persisted pieces arrive as a signed (cross-origin) URL — fetch to a blob so
+  // the download attribute actually forces a save instead of navigating.
+  if (!href && r.image_url){
+    try { const blob = await (await fetch(r.image_url)).blob(); href = URL.createObjectURL(blob) } catch { href = r.image_url }
+  }
+  if (!href) return
   const a = document.createElement('a')
-  a.href = `data:image/jpeg;base64,${item.result.image_b64}`
-  const name = matLabel(item.preset || 'piece').toLowerCase().replace(/[^a-z0-9]+/g,'-')
-  a.download = `liten-${name}-${item.id}.jpg`
+  a.href = href; a.download = name
   document.body.appendChild(a); a.click(); a.remove()
+  if (href.startsWith('blob:')) setTimeout(() => URL.revokeObjectURL(href), 4000)
 }
 
 // Make another: re-queue the same configuration as a fresh pending item.
@@ -6901,9 +7515,8 @@ function buildSourceFindings(r){
   }
   const fz = r && r.smallest_face_min_dim_px
   if (fz != null && fz < FACE_WARN_YELLOW_PX){
-    f.push(fz < FACE_WARN_RED_PX
-      ? { kind:'face', text:`The face in this photo is small (~${fz}px). The studio may decline it at crafting — a closer photo is the safe choice.` }
-      : { kind:'face', text:`The face is on the small side (~${fz}px). Likeness may soften — a closer photo gives a surer result.` })
+    // 4b — single photo-quality warning, verbatim, no pixel counts.
+    f.push({ kind:'face', text:'This photo may not produce your best result. A closer, clearer photo of the face usually creates stronger artwork. You can continue, or choose another photo.' })
   }
   if (state.curator.bodyCoverage === 'face_only'){
     f.push({ kind:'more_photos', text:'This photo shows the face beautifully but little else — one or two more photos showing shoulders, clothing, or posture make the strongest pieces.' })
@@ -7088,19 +7701,63 @@ const PREVIEW_FILE = {
   iron:'iron.jpg', pencil_sketch:'pencil sketch.jpg', sheet_music:'sheet music.jpg',
   stone:'stone.jpg', torn_paper:'torn paper.jpg', walnut:'walnut.jpg',
 }
-const DEMO_SUBJECT = {
-  f_child:'f_child_a', f_teen:'f_teen_a', f_young:'f_young_a',
-  f_adult:'f_adult_a', f_mature:'f_mature_a', f_senior:'f_senior_a',
-  m_child:'m_child_a', m_teen:'m_teen_b', m_young:'m_young_b',
-  m_adult:'m_adult_a', m_mature:'m_mature_a', m_senior:'m_senior_a',
-}
-function previewSrc(preset) {
-  if (state.detectedGender && state.detectedAgeGroup) {
-    const key = state.detectedGender + '_' + state.detectedAgeGroup
-    const subj = DEMO_SUBJECT[key]
-    if (subj) return PREVIEW_BASE + encodeURIComponent(preset) + '/' + encodeURIComponent(subj) + '.jpg'
+// Preview assets are now NUMBERED variants per preset:
+//   /previews/portraits/<preset>/<n>.jpg  (n in 1..PREVIEW_VARIANTS)
+// The old gender×age subject files (f_adult_a.jpg, …) and the top-level
+// <preset>.jpg thumbnails were retired, so previewSrc keys on the variant number.
+const PREVIEW_VARIANTS = 4
+const PREVIEW_VARIANT_POOL = Array.from({ length: PREVIEW_VARIANTS }, (_, i) => i + 1)
+// Previews are ALWAYS a diverse spread — each visible card gets a DISTINCT
+// variant, shuffled once per recommendation set so images don't flicker on queue
+// updates. The order is re-rolled only when the set of presets changes.
+let _pvOrderKey = null, _pvOrder = []
+function previewOrderFor(recs){
+  const key = (recs || []).map(r => r.preset).join(',')
+  if (key !== _pvOrderKey){
+    const a = PREVIEW_VARIANT_POOL.slice()
+    for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]] }
+    _pvOrder = a; _pvOrderKey = key
   }
-  return PREVIEW_BASE + encodeURIComponent(PREVIEW_FILE[preset] || '')
+  return _pvOrder
+}
+// previewSrc(preset [, variant]) → /previews/portraits/<preset>/<n>.jpg (n in 1..4)
+function previewSrc(preset, variant) {
+  const n = Number(variant) >= 1 ? Math.floor(Number(variant)) : 1
+  return PREVIEW_BASE + encodeURIComponent(preset) + '/' + n + '.jpg'
+}
+
+// ── EMPTY WORKSHOP GHOSTS (Phase 4i) ────────────────────────────────
+// Three faded, real preview renders fill the Suggested footprint before upload,
+// rotated per session so it isn't the same trio every visit. On upload the real
+// suggestions take the same grid (CSS-gated), so nothing shifts.
+const GHOST_POOL = Object.keys(PREVIEW_FILE)
+function ghostSeed(){
+  try {
+    let s = sessionStorage.getItem('liten_ghost_seed')
+    if (!s){ s = String(1 + Math.floor(Math.random() * 1e9)); sessionStorage.setItem('liten_ghost_seed', s) }
+    return parseInt(s, 10) || 1
+  } catch { return 1 }
+}
+function seededShuffle(arr, seed){
+  const a = arr.slice(); let s = (seed || 1) >>> 0
+  const rnd = () => { s = (Math.imul(s, 1103515245) + 12345) & 0x7fffffff; return s / 0x7fffffff }
+  for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]] }
+  return a
+}
+function renderGhostSuggestions(){
+  const host = document.getElementById('v7Ghosts'); if (!host) return
+  const seed     = ghostSeed()
+  const presets  = seededShuffle(GHOST_POOL, seed).slice(0, 3)
+  const variants = seededShuffle(PREVIEW_VARIANT_POOL, seed + 7)
+  const tiles = presets.map((p, i) => {
+    const src = previewSrc(p, variants[i % variants.length])
+    return `<div class="v7-ghost-tile"><div class="gimg"><img src="${src}" alt="" onerror="this.style.opacity=0"></div>`
+      + `<div class="v7-ghost-label">${escapeHtml(matLabel(p))}</div></div>`
+  }).join('')
+  host.innerHTML =
+      `<div class="v7-ghost-head">A few pieces from the studio, while you decide</div>`
+    + `<div class="v7-ghost-grid">${tiles}</div>`
+    + `<div class="v7-ghost-note">Your photograph replaces these the moment it arrives.</div>`
 }
 
 // Label helper — finished pieces and queue rows must resolve labels from
@@ -7171,10 +7828,7 @@ function startFreePreview(){
   if (note) note.style.display = 'none'
   state.previewEmail = email
 
-  if (!state.inscription){
-    showInscriptionStep('preview')
-    return
-  }
+  // Plaque/inscription removed for this release — no gate; craft proceeds.
 
   let first = state.queue.find(q => q.status === 'pending')
   if (!first){ addToQueue(); first = state.queue.find(q => q.status === 'pending') }
@@ -7395,6 +8049,7 @@ async function curatorEnterEffects(){
   curatorShowStep('curStepEffects')
   document.getElementById('curEffectsLoading').style.display = ''
   document.getElementById('curEffectCards').style.display    = 'none'
+  { const sg = document.getElementById('v7Suggested'); if (sg) sg.classList.remove('has-cards') }  // drop deckle until cards return
 
   try {
     // Persisted rotation counter so the Curator's hero rotation advances
@@ -7582,29 +8237,48 @@ function renderEffectCards(recs){
   // §4 dynamic count — read the ACTUAL number of cards, never hardcode "five".
   const spine = document.getElementById('v7Suggested')
   if (spine){
+    // Only paint the deckled background once real cards exist (§ don't show an
+    // empty deckled slab while the studio is still reading the photograph).
+    spine.classList.toggle('has-cards', recs.length > 0)
     let head = document.getElementById('v7SuggestedHead')
     if (!head){ head = document.createElement('div'); head.id='v7SuggestedHead'; head.className='v7-suggested-head'; spine.insertBefore(head, spine.firstChild) }
     const n = recs.length
-    head.innerHTML = `<div class="v7-sg-title">${n} ${n===1?'style':'styles'} the Curator chose for you</div>`
+    head.innerHTML = `<button class="panel-collapse-btn" onclick="togglePanel('suggested')" title="Collapse">&lsaquo;</button><div class="v7-sg-title">${n} ${n===1?'style':'styles'} the Curator chose for you</div>`
+  }
+  // Curator voiced text — sentiment (tinted) + a SHORT effects blurb (oxblood).
+  const lead = document.getElementById('curEffectsLead')
+  if (lead){
+    lead.innerHTML = `<span class="cur-analysis">Your photograph carries real warmth and presence.</span>`
+      + ` <span class="cur-blurb">Here are ${numberWord(recs.length)} finishes I&rsquo;d reach for first. &mdash; C.</span>`
   }
 
   const QMAP = { excellent:'excellent', good:'good', limited:'limited' }
+  const subjOrder = previewOrderFor(recs)          // distinct diverse subject per card
   recs.forEach((r, i) => {
     const card = document.createElement('div')
     card.className = 'v7-rec-card'
     card.dataset.recId = String(r.id ?? r.preset)
     const q = String(r.quality_level || '').toLowerCase()
     const qKey = QMAP[q] || 'good'                 // §4 badge color fix → sage/gold/brass
+    const isLimited = q === 'limited'              // 4e — never shown as a "warning" badge
     const pick = i < 2                              // Curator's pick on the first two
+    const pv = previewSrc(r.preset, subjOrder[i % subjOrder.length])
+    // Quality badge shows Good/Excellent only; Limited becomes a Limited Edition treatment.
+    const qualityBadge = (r.quality_level && !isLimited)
+      ? `<div class="v7-rec-quality-float" data-q="${qKey}">${escapeHtml(r.quality_level)}</div>` : ''
+    const limitedBadge = (isLimited && LIMITED_EDITION_VARIANT === 'A')
+      ? `<div class="v7-rec-limited">Limited Edition</div>` : ''
     card.innerHTML = `
       <div class="v7-rec-img">
-        <img src="${previewSrc(r.preset)}" alt="${escapeHtml(r.preset_label)}" onerror="this.style.opacity=0">
+        <img src="${pv}" alt="${escapeHtml(r.preset_label)}" onerror="this.style.opacity=0">
         ${pick ? `<div class="v7-curator-pick">&#10022; Curator&rsquo;s pick</div>` : ''}
         <div class="v7-rec-state-chip">+ Add</div>
+        <button class="v7-rec-magnify" title="View large" onclick="event.stopPropagation(); openLightbox('${pv}', null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21" stroke-linecap="round"/></svg></button>
         <div class="v7-rec-name-float">${escapeHtml(r.preset_label)}</div>
-        ${r.quality_level ? `<div class="v7-rec-quality-float" data-q="${qKey}">${escapeHtml(r.quality_level)}</div>` : ''}
+        ${qualityBadge}${limitedBadge}
       </div>
     `
+    if (isLimited && LIMITED_EDITION_VARIANT === 'B') card.title = 'A limited-edition finish.'  // 4e Variant B: hover copy only
     card.onclick = () => curatorPickEffect(r, card)
     grid.appendChild(card)
   })
@@ -7636,8 +8310,6 @@ function renderEffectCards(recs){
 // tapping queues a render that POSTs { experimental_effect } to /generate,
 // which bypasses the preset/material/location pipeline + Pass 2.
 const EXPERIMENTAL_FX = [
-  { id:'kintsugi',         label:'Kintsugi Porcelain' },
-  { id:'geode_druzy',      label:'Geode Druzy' },
   { id:'deep_sea',         label:'Bioluminescent Deep-Sea' },
   { id:'circuit',          label:'Silicon Circuit Board' },
   { id:'reclaimed_bronze', label:'Reclaimed Bronze' },
@@ -7646,6 +8318,10 @@ const EXPERIMENTAL_FX = [
   { id:'amber',            label:'Amber Inclusion' },
   { id:'neon',             label:'Neon Light-Drawing' },
   { id:'nebula_resin',     label:'Nebula Resin' },
+  { id:'dragon_skin',      label:'Dragon Skin' },
+  { id:'magic_energy',     label:'Magic Energy' },
+  { id:'fantasy_crystal',  label:'Enchanted Crystal' },   // id stays fantasy_crystal
+  { id:'armor',            label:'Living Armor' },         // engine id is 'armor'
 ]
 function renderExperimentalButtons(){
   const wrap = document.getElementById('experimentalFx')
@@ -7681,7 +8357,6 @@ function queueExperimental(effectId){
     additional_images_b64: state.auxSrc.filter(Boolean),
     aspect_ratio:          state.aspect,
     resolution:            state.resolution || '1k',
-    plaque_text:           typeof resolvePlaquePayload === 'function' ? resolvePlaquePayload() : undefined,
     status:                'pending',
     result:                null,
   })
@@ -7719,7 +8394,7 @@ function visibleShelfRecs(){
   const grid = document.getElementById('curEffectCards')
   if (!grid) return state.curator.effectRecs.slice()
   const liveIds = new Set(
-    [...grid.querySelectorAll('.eff-card[data-rec-id]')]
+    [...grid.querySelectorAll('.v7-rec-card[data-rec-id]')]
       .filter(c => c.style.display !== 'none')
       .map(c => c.dataset.recId))
   return state.curator.effectRecs.filter(r => liveIds.has(String(r.id ?? r.preset)))
@@ -7736,7 +8411,7 @@ function curatorRunAllFive(){
   // All five added — hide the shelf (NOT destroy it: gate bounces put
   // suggestions back) and tuck the Curator to its spine.
   const grid = document.getElementById('curEffectCards')
-  if (grid) grid.querySelectorAll('.eff-card').forEach(c => { c.style.display = 'none' })
+  if (grid) grid.querySelectorAll('.v7-rec-card').forEach(c => { c.style.display = 'none' })
   if (typeof suggCollapse === 'function') suggCollapse()
   // Stay on the stage — the Your Queue card (right) updates in place.
   if (typeof renderQueueGrid === 'function') renderQueueGrid()
@@ -7756,6 +8431,54 @@ function curatorEffectsOverride(){
 function setAdvanced(open){
   const shell = document.getElementById('workshopShell')
   if (shell) shell.setAttribute('data-advanced', open ? 'open' : 'closed')
+}
+
+// ── My Collection choreography (v7 shell state machine, per Plan agent) ──
+const _shell = () => document.getElementById('workshopShell')
+let _preCollectionPanels = null
+function setCollectionOpen(open){
+  const s = _shell(); if (!s) return
+  if (open){
+    _preCollectionPanels = { curator:s.dataset.curator, suggested:s.dataset.suggested, qpanel:s.dataset.qpanel }
+    syncQueueFillState()
+    s.dataset.collection = 'open'
+    if (typeof renderCollectionBands === 'function') renderCollectionBands()
+  } else {
+    s.dataset.collection = 'closed'
+    if (_preCollectionPanels){
+      s.dataset.curator   = _preCollectionPanels.curator   || 'open'
+      s.dataset.suggested = _preCollectionPanels.suggested || 'open'
+      s.dataset.qpanel    = _preCollectionPanels.qpanel    || 'open'
+      _preCollectionPanels = null
+    }
+  }
+}
+// Independent per-panel collapse (does NOT touch data-collection).
+function togglePanel(name){   // 'curator' | 'suggested' | 'qpanel'
+  const s = _shell(); if (!s) return
+  const key = 'data-' + name
+  if (name === 'curator'){     // Curator never spines — toggles full ↔ ready(200)
+    s.setAttribute(key, s.getAttribute(key) === 'ready' ? 'full' : 'ready')
+  } else {
+    s.setAttribute(key, s.getAttribute(key) === 'spine' ? 'open' : 'spine')
+  }
+}
+// A collapsed spine click: if collection is open, that's the restore gesture;
+// otherwise it's a manual un-collapse of that panel.
+function spineClick(name){
+  const s = _shell(); if (!s) return
+  if (s.dataset.collection === 'open') setCollectionOpen(false)
+  else s.setAttribute('data-'+name, 'open')
+}
+// Keep data-queue (empty|filled) current — drives the two expand targets.
+function syncQueueFillState(){
+  const s = _shell(); if (!s || typeof isRenderedPiece !== 'function') return
+  // "filled" = something queued or actively rendering. Completed (rendered)
+  // pieces do NOT count — they live in My Collection, so the Queue/craft
+  // section disappears once a run finishes (its default absent state).
+  const filled = state.queue.some(q => q.status==='pending' || q.status==='running') ||
+                 state.queue.filter(it => !isRenderedPiece(it) && it.status!=='rejected' && it.status!=='redirected').length > 0
+  s.dataset.queue = filled ? 'filled' : 'empty'
 }
 
 function dismissCurator(){
@@ -7792,7 +8515,6 @@ function curatorQueueRec(rec){
     location:              locForMat,
     scale:                 'auto_85',
     aspect_ratio:          state.aspect, resolution: state.resolution || '1k',
-    plaque_text:           typeof resolvePlaquePayload === 'function' ? resolvePlaquePayload() : undefined,
     advanced:              { ...state.advanced },
     upper_body_concept:    state.upperBodyConcept || null,
     status:                'pending',
@@ -7889,53 +8611,6 @@ function selectAspect(a){
 }
 
 // ── INSCRIPTION / PLAQUE ────────────────────────────────────
-// The backend always receives one of three plaque_text values:
-//   undefined → use the brand default (DEFAULT_PLAQUE_TEXT in shared)
-//   string    → inscribe the typed text
-//   null      → suppress (clean unmarked base)
-// We let the user discover this without burying them in radio buttons:
-// the input's placeholder shows what the default looks like, and a small
-// "No plaque" checkbox sits in the same row for the off case.
-function onPlaqueInput(value){
-  state.plaqueText = value || ''
-  document.getElementById('plaqueCharCount').textContent = state.plaqueText.length
-  updatePlaqueHint()
-  updateStagePreview()
-}
-
-function onPlaqueOff(checked){
-  state.plaqueOff = !!checked
-  const input  = document.getElementById('plaqueInput')
-  const counter = document.getElementById('plaqueCharCount')
-  input.disabled = state.plaqueOff
-  if (state.plaqueOff) {
-    counter.parentElement.style.opacity = '.4'
-  } else {
-    counter.parentElement.style.opacity = ''
-  }
-  updatePlaqueHint()
-  updateStagePreview()
-}
-
-function updatePlaqueHint(){
-  const hint = document.getElementById('plaqueHint')
-  if (!hint) return
-  if (state.plaqueOff) {
-    hint.textContent = 'Suppressed — the base will be unmarked.'
-  } else if (state.plaqueText && state.plaqueText.trim().length > 0){
-    hint.textContent = 'Custom inscription set.'
-  } else {
-    hint.textContent = 'Leave blank for the default stamp.'
-  }
-}
-
-// Resolve the value to send in the request body. Mirrors the three-state
-// contract on the backend: undefined → default, string → custom, null → off.
-function resolvePlaquePayload(){
-  if (state.plaqueOff) return null
-  const trimmed = (state.plaqueText || '').trim()
-  return trimmed.length > 0 ? trimmed : undefined
-}
 
 // ── ASPECT RATIO RECOMMENDATION ──────────────────────────────
 // Portraits skews vertical regardless of source content. Wide aspects (3:2,
@@ -8063,7 +8738,7 @@ function addToQueue(){
       scale:                 'auto_85',
       aspect_ratio:          state.aspect, resolution: state.resolution || '1k',
       // subject_count omitted — Portraits is single-subject. Backend infers.
-      plaque_text:           resolvePlaquePayload(), // undefined | string | null
+      // plaque_text removed — plaques dropped entirely for this release.
       // Advanced lighting bundle — backend ignores keys it doesn't know.
       advanced:              { ...state.advanced },
       // Curator's upper-body concept (if any) — populated when the user
@@ -8229,9 +8904,9 @@ function buildQueueCard(item){
       <span class="queue-card-status-pill" id="qpill-${item.id}" data-status="${item.status}">${statusLabel(item.status)}</span>
       <div class="queue-card-empty" id="qempty-${item.id}">
         ${item.status === 'running'
-          ? `<div class="queue-card-spinner"></div><div>Crafting\u2026</div>`
+          ? `<div class="queue-card-spinner"></div><div>Crafting your piece\u2026</div>`
           : item.status === 'pending'
-            ? `<div>queued</div>`
+            ? `<div>waiting</div>`
             : item.status === 'failed'
               ? `<div class="queue-card-error">${escapeHtml(item.error || 'failed')}</div>`
               : ''}
@@ -8562,12 +9237,15 @@ async function runAll(){
     }
   }
 
-  // ── INSCRIPTION GATE — the last choice appears once, inline,
-  // before anything crafts. ──
-  if (!state.inscription && state.queue.some(q => q.status === 'pending')){
-    showInscriptionStep('craft')
-    return
-  }
+  // Plaque/inscription removed for this release — no inscription gate before craft.
+
+  // Batch piece name — one name for the whole batch, applied to every finish.
+  // Moderated before spend; a hit re-prompts and blocks craft. Empty is fine
+  // (server stores "Untitled portrait"). Stamped on each pending item so the
+  // name rides through the payment redirect and lands at persist time.
+  const batch = readBatchName()
+  if (!batch.ok) return
+  state.queue.forEach(q => { if (q.status === 'pending') q.pieceName = batch.value })
 
   // ── PAYMENT GATE — money is gathered before crafting. The single
   // free preview (is_preview) is the only thing that crafts unpaid. ──
@@ -8582,9 +9260,11 @@ async function runAll(){
 
 async function craftPending(){
   if (state.busy) return
-  // Crafting fired — collapse Curator to spine; keep Queue visible
-  // so the user sees render progress. Queue hides after completion.
-  suggCollapse()
+  // My Collection stays collapsed on the stage during crafting — pieces fly into
+  // its collapsed rail. It only expands when the CUSTOMER clicks it.
+  // Suggested collapses to its spine while crafting so the workshop focuses on the
+  // To Be Crafted panel; it stays a visible spine after (click to reopen).
+  { const s = _shell(); if (s) s.dataset.suggested = 'spine' }
 
   // Renders land in the Your Queue card (right) — no view switch.
   state.busy = true
@@ -8689,7 +9369,6 @@ async function runQueueItem(item){
         experimental_effect:   item.experimental_effect,
         framing:               item.framing,
       }
-      if (item.plaque_text !== undefined) body.plaque = item.plaque_text
       if (item.focal) body.focal = item.focal
       const res = await fetch(API, {
         method: 'POST',
@@ -8727,17 +9406,7 @@ async function runQueueItem(item){
         resolution:            item.resolution || '1k',   // engine: wire to output size + cost
         // subject_count omitted — Portraits is single-subject.
       }
-      // Plaque text — only include the field when the user expressed an
-      // intent (custom string or explicit off). If undefined, omit the
-      // field so the backend falls through to DEFAULT_PLAQUE_TEXT.
-      if (item.plaque_text !== undefined) {
-        body.plaque_text = item.plaque_text
-      }
-      // Studio stamp w/ sequential collector number — engine assigns the
-      // number at craft time and bakes it onto the plaque (sync doc 7).
-      if (item.collector_stamp) {
-        body.collector_stamp = true
-      }
+      // Plaque removed entirely for this release — no plaque_text / stamp sent.
       // Internal QA override from the drawer — honored by Engine with a
       // one-liner (sync doc 8b); ignored harmlessly until then.
       if (state.qaOverride) {
@@ -8829,6 +9498,8 @@ async function runQueueItem(item){
   updateQueueCard(item)
   updateQueueMeta()
   refreshQueueViews()
+  // Durable collection: persist a freshly rendered piece so it survives reload.
+  if (typeof persistPiece === 'function' && typeof isRenderedPiece === 'function' && isRenderedPiece(item)) persistPiece(item)
 }
 
 // ── RAW MODE — direct Nano Banana 2 prompt panel (no preset blocks) ──
@@ -8984,8 +9655,8 @@ function selectRawQuality(){ /* no-op — NB2 has no quality tiers */ }
     </div>
 
     <div class="advanced-row">
-      <div class="advanced-row-label">Enhanced render</div>
-      <div class="advanced-row-sub">Tells the renderer to give the entire image a dramatic finish — richer color, deeper contrast, gallery-grade feel.</div>
+      <div class="advanced-row-label">Enhanced finish</div>
+      <div class="advanced-row-sub">Tells the studio to give the entire image a dramatic finish — richer color, deeper contrast, gallery-grade feel.</div>
       <div class="advanced-toggle">
         <button class="active" data-adv="enhanced" data-val="off" onclick="setAdv('enhanced','off')">Off</button>
         <button data-adv="enhanced" data-val="on" onclick="setAdv('enhanced','on')">On</button>
@@ -9001,6 +9672,7 @@ function selectRawQuality(){ /* no-op — NB2 has no quality tiers */ }
 
 <!-- v7 series icons (Collection rail) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="curatorCMark" viewBox="0 0 67 75"><ellipse cx="19.5" cy="34.5" rx="19.5" ry="21.5" fill="#763F41"/><path d="M49.1504 15.4297C49.0592 16.2272 48.8086 17.4919 48.3984 19.2236C48.0111 20.9326 47.6807 22.2201 47.4072 23.0859L46.416 23.0518V22.1631C46.416 19.6794 46.1426 18.1299 45.5957 17.5146C45.0716 16.8766 43.9437 16.5576 42.2119 16.5576C41.5055 16.5804 40.9587 16.5918 40.5713 16.5918H39.3066C38.6914 16.569 38.2926 16.5576 38.1104 16.5576C36.4925 16.5576 34.681 16.8766 32.6758 17.5146C30.6706 18.1299 28.2666 19.3034 25.4639 21.0352C24.165 21.8555 22.2282 23.4733 19.6533 25.8887C18.6507 26.8457 16.9303 29.0674 14.4922 32.5537L13.3301 34.6045L11.8604 38.2959C11.4958 39.5036 11.2337 40.6657 11.0742 41.7822C10.9375 42.8988 10.8691 44.0381 10.8691 45.2002C10.8691 46.7497 11.04 48.208 11.3818 49.5752C11.7236 50.9424 12.1794 51.9906 12.749 52.7197C13.9567 54.2236 15.2327 55.4769 16.5771 56.4795C17.9443 57.4593 19.5052 58.2227 21.2598 58.7695C23.0371 59.3164 25.0879 59.5898 27.4121 59.5898C29.8047 59.5898 31.7757 59.248 33.3252 58.5645C34.8747 57.8809 36.2305 56.9124 37.3926 55.6592C37.7799 55.249 38.8737 53.6426 40.6738 50.8398L41.8018 51.1816L39.9561 56.9922C39.637 57.9948 39.3864 58.724 39.2041 59.1797C37.723 59.7266 36.1963 60.1253 34.624 60.376C31.6162 60.8545 28.6882 61.0938 25.8398 61.0938C21.6699 61.0938 18.457 60.695 16.2012 59.8975C13.9453 59.0999 11.7464 57.71 9.60449 55.7275C8.0778 54.3148 6.91569 52.526 6.11816 50.3613C5.32064 48.1738 4.92188 46.1458 4.92188 44.2773C4.92188 41.4518 5.35482 39.0479 6.2207 37.0654C8.04362 32.8727 10.1286 29.5459 12.4756 27.085C14.8454 24.6012 17.6367 22.4023 20.8496 20.4883C23.1738 19.0983 25.874 17.8109 28.9502 16.626C32.0492 15.4183 35.2393 14.8145 38.5205 14.8145L44.5361 14.7461C45.9945 14.7461 47.5326 14.974 49.1504 15.4297Z" fill="#F0EAE0"/></symbol>
   <symbol id="v7ic-portraits" viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 19.5c0-3.5 2.9-6 6.5-6s6.5 2.5 6.5 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
   <symbol id="v7ic-houses" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 11v9h5v-5h4v5h5v-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
   <symbol id="v7ic-action" viewBox="0 0 24 24"><circle cx="14" cy="4" r="1.8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 20l2.5-5.5 3.5-3-1-4 4 3 4 1.5-3 4 2 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>

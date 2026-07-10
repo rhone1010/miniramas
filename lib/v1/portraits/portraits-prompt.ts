@@ -21,7 +21,7 @@
 //      doc), this map is where they'll plug in.
 
 import type { PortraitsPresetId, LocationId, Scale, Framing } from './portraits-shared'
-import { DEFAULT_PLAQUE_TEXT, DEFAULT_FRAMING } from './portraits-shared'
+import { DEFAULT_FRAMING } from './portraits-shared'
 
 const MATERIAL_PHRASE: Record<PortraitsPresetId, string> = {
   bronze:
@@ -104,8 +104,8 @@ function buildAdvancedTail(adv?: AdvancedLighting): string {
  *      NB2's default lighting varies wildly across renders. The Advanced
  *      Lighting bundle (three-point, beam, brightness) still layers on top.
  *
- * Plaque handling: undefined/empty → DEFAULT_PLAQUE_TEXT, string verbatim,
- * null → "clean unmarked base".
+ * Plaque/inscription: CUT product-wide (2026-07-08). Every piece renders a
+ * clean unmarked base regardless of the (now inert) plaqueText input.
  */
 // ── ARTISTS GALLERY PROMPTS ────────────────────────────────────
 // These materials produce fundamentally different artworks than the
@@ -179,14 +179,14 @@ const BUST_UNIVERSAL =
 // Signature Pose — LOCKED 2026-06-13 (Rich, verbatim). The new default.
 const SIGNATURE_UNIVERSAL =
   `A finished portrait sculpture — settled, unhurried, in the implied prior attention of a figure just turning back to meet the viewer.\n\n` +
-  `Shoulders turned slightly from camera; head returns to a three-quarter view, eyes meeting the viewer. Arms descend naturally with continuous sculptural form from shoulder through elbow, wrist, and fingers — every connective element fully resolved. Both hands resolved at plinth level — on the base, the plaque, or each other. Hands and arms must never disconnect, fade, dissolve, or terminate in unsupported space.\n\n` +
+  `Shoulders turned slightly from camera; head returns to a three-quarter view, eyes meeting the viewer. Arms descend naturally with continuous sculptural form from shoulder through elbow, wrist, and fingers — every connective element fully resolved. Both hands resolved at plinth level — on the base or each other. Hands and arms must never disconnect, fade, dissolve, or terminate in unsupported space.\n\n` +
   `Soft directional museum light; the rotated shoulder takes quiet shadow.\n\n` +
-  `Square 1:1 frame. Inscription plaque integrated at the base.`
+  `Square 1:1 frame. The base is clean and unmarked.`
 
 // Statuesque — full-figure sculpture, head to feet on the plinth.
 // 3:4 aspect gives vertical room for the complete standing figure.
 const STATUESQUE_UNIVERSAL =
-  `Create a complete full-figure portrait sculpture from head to feet, standing on a plinth. The sculpture must include the full head, hair, neck, both shoulders, complete torso, both arms with resolved hands, hips, both legs, and feet — nothing cropped, nothing terminated mid-limb. The figure occupies the full height of the 3:4 frame from crown to plinth base. Weight shifted naturally to one leg, relaxed shoulders, natural asymmetry, believable human posture. Hands resolved naturally — at the sides, loosely clasped, or resting on a surface — never fading into undefined form. The torso, clothing, legs, and feet carry equal sculptural detail and material treatment as the face and shoulders; the full body is the composition, not an afterthought below a bust. Lock the full-figure anatomy, posture, and crop first; then apply likeness and material treatment. Preserve facial identity, eye spacing, nose, mouth, jawline, age, and expression. Small inscription plaque integrated at the base of the plinth.`
+  `Create a complete full-figure portrait sculpture from head to feet, standing on a plinth. The sculpture must include the full head, hair, neck, both shoulders, complete torso, both arms with resolved hands, hips, both legs, and feet — nothing cropped, nothing terminated mid-limb. The figure occupies the full height of the 3:4 frame from crown to plinth base. Weight shifted naturally to one leg, relaxed shoulders, natural asymmetry, believable human posture. Hands resolved naturally — at the sides, loosely clasped, or resting on a surface — never fading into undefined form. The torso, clothing, legs, and feet carry equal sculptural detail and material treatment as the face and shoulders; the full body is the composition, not an afterthought below a bust. Lock the full-figure anatomy, posture, and crop first; then apply likeness and material treatment. Preserve facial identity, eye spacing, nose, mouth, jawline, age, and expression. The plinth base is clean and unmarked.`
 
 const FRAMING_BLOCK: Record<Framing, string> = {
   bust:       BUST_UNIVERSAL,
@@ -194,7 +194,54 @@ const FRAMING_BLOCK: Record<Framing, string> = {
   statuesque: STATUESQUE_UNIVERSAL,
 }
 
-function framingBlock(framing?: Framing): string {
+// ── Multi-subject (2–3 person) path — ADDITIVE, solo untouched ───
+// subjectMode: 'multi' selects a plural composition block + appends the
+// per-face fidelity lock. Gated entirely on the flag — when 'solo' (default)
+// nothing below is reached and the single-subject prompt is byte-for-byte
+// unchanged.
+//
+// FIGURE FIDELITY is borrowed VERBATIM from the Groups engine
+// (groups-blocks.ts · MULTI_SUBJECT_FIGURE_FIDELITY) — Rich's proven
+// per-face likeness lock, not new authorship.
+export type SubjectMode = 'solo' | 'multi'
+
+const MULTI_SUBJECT_FIGURE_FIDELITY = `
+FIGURE FIDELITY (PRIMARY REQUIREMENT — APPLIES TO EVERY SUBJECT):
+Every face in this piece must be recognizably the specific person from the source photograph. The MOST IMPORTANT requirement is that each individual subject's likeness is preserved.
+
+Per-subject anchor features to lock per face:
+- Eye spacing, eye shape, eyelid character
+- Nose bridge geometry, nostril shape, nose tip
+- Mouth corners, lip thickness, philtrum
+- Jawline, chin shape, cheekbone structure
+- Ear position and size relative to skull
+- Hairline shape, hair color, hair texture
+- Apparent age, ethnic features, distinguishing marks
+
+Each subject's individual features must be preserved AS THEMSELVES — never blend two subjects' features together, never average toward a "typical" face for the group. Every subject is fully clothed in a sculpted rendition of their source-photo clothing; never bare-chested.
+`.trim()
+
+// Signature Multi — forked from SIGNATURE_UNIVERSAL for 2–3 subjects.
+// Plaque line removed (inscription cut product-wide, 2026-07-08). Composition
+// pluralized to a close, intimate cluster — NOT a full-figure group tableau —
+// so faces stay large in frame for likeness.
+const SIGNATURE_MULTI =
+  `A finished multi-subject portrait sculpture of 2–3 people — settled, unhurried, an intimate cluster in the implied prior attention of figures just turning back to meet the viewer.\n\n` +
+  `The subjects are close together, shoulder-to-shoulder or slightly overlapping, sharing one continuous sculptural base. Each figure's shoulders turn slightly from camera; each head returns to a three-quarter view, eyes meeting the viewer. Every face is read clearly and frontally — no subject blocked by another's shoulder. Arms descend naturally with continuous sculptural form from shoulder through elbow, wrist, and fingers — every connective element fully resolved. Hands resolved at base level; hands and arms must never disconnect, fade, dissolve, or terminate in unsupported space.\n\n` +
+  `Preserve each subject's apparent age and scale from the source — if the source shows adults and children, the sculpture shows that difference; do not render every figure at uniform adult proportions.\n\n` +
+  `Soft directional museum light; rotated shoulders take quiet shadow. Framed close on the cluster so every face reads large — heads and shoulders dominate the frame, not a distant full-figure group. Square 1:1 frame. Clean unmarked base.`
+
+// Multi framing blocks. Only Signature-Multi is authored (the tested path).
+// Bust-Multi and Statuesque-Multi are PENDING Rich — until authored they fall
+// back to Signature-Multi so the flag always yields a real multi composition.
+const MULTI_FRAMING_BLOCK: Record<Framing, string> = {
+  bust:       SIGNATURE_MULTI,
+  signature:  SIGNATURE_MULTI,
+  statuesque: SIGNATURE_MULTI,
+}
+
+function framingBlock(framing?: Framing, subjectMode?: SubjectMode): string {
+  if (subjectMode === 'multi') return MULTI_FRAMING_BLOCK[framing ?? DEFAULT_FRAMING]
   return FRAMING_BLOCK[framing ?? DEFAULT_FRAMING]
 }
 
@@ -241,7 +288,24 @@ ARMS & HANDS — A BUST HAS NO HANDS: A bust composition ends at the chest and u
 
 EXPRESSION: Give the face a touch of warmth and quiet contentment — a faint, natural ease, the hint of a settled smile. A calm or neutral source must NOT be rendered as stern, severe, angry, or sad. Lifelike and content, never grim.
 
-STAGING — A GALLERY ARTWORK, NOT A PHOTOCOPY: Hold the subject's identity, facial features, and age EXACTLY — same person, same age, never aged forward, never idealized or smoothed into someone younger or generic. Around that fixed likeness, stage the piece with drama: an interesting camera angle (three-quarter, slightly low, or raking), strong directional gallery lighting, real depth and atmosphere in the background, and a naturally turned, characterful head rather than a flat front-on copy of the snapshot.`
+STAGING — A DRAMATICALLY-LIT GALLERY ARTWORK, NOT A PHOTOCOPY: Hold the subject's identity, facial features, and age EXACTLY — same person, same age, never aged forward, never idealized. But everything AROUND that fixed likeness must be reinterpreted, never copied from the snapshot. CAMERA — REQUIRED: choose a dynamic gallery angle — a three-quarter view, a slightly low or raking viewpoint, the head naturally turned. Never a flat, straight-on, passport-style copy of the source framing. LIGHTING — REQUIRED: do NOT carry over the source photo's lighting; the snapshot's lighting is NOT the source of truth. Relight the piece from scratch as a museum sculpture under strong, directional, studio-quality gallery lighting — a clear key light, deep modeling shadows, and highlight-and-falloff that sculpt the form. BACKGROUND: real depth and atmosphere, not a flat wall.`
+
+// ── COSTUME DIRECTIVES (TIER 1, realistic-portrait variant) ──────
+// For "costume" effects (Armor, Elizabethan, Victorian): the subject is
+// a REAL person dressed in costume, NOT transformed into a material.
+// Swaps two rules vs STUDIO_DIRECTIVES — the face stays real skin (not
+// in-material) and the clothing is replaced by the costume (not the
+// source garment). Hands, expression, and dynamic staging carry over.
+const COSTUME_DIRECTIVES =
+  `FACE & LIKENESS — KEEP IT REAL: Render the subject's own real face, skin, and features — accurate, lifelike, and unmistakably this exact person, same age, never idealized. This is a realistic portrait of the person in costume; the face is NOT stylized into a material, NOT metallic, NOT rendered in any surface other than real skin. Hair and makeup may be adapted to suit the period or theme.
+
+CLOTHING — IN COSTUME: Dress the subject in the costume described below, replacing their everyday clothing. Fully clothed and period-appropriate. Never nude, shirtless, or bare-chested.
+
+ARMS & HANDS — A BUST HAS NO HANDS: A bust composition ends at the chest and upper arms. Do NOT render hands, fingers, forearms, or arms folded or resting on the base anywhere on a bust — no hands at all. Only a full-figure piece resolves hands, with their complete arms.
+
+EXPRESSION: A touch of warmth and quiet contentment — a faint, natural ease, the hint of a settled smile. Never stern, severe, angry, or sad.
+
+STAGING — A DRAMATICALLY-LIT GALLERY PORTRAIT, NOT A PHOTOCOPY: Reinterpret camera and lighting; do not copy the snapshot. CAMERA: a dynamic three-quarter or slightly low angle, the head naturally turned — never a flat, straight-on copy of the source framing. LIGHTING: do NOT carry over the source photo's lighting; relight from scratch as a museum portrait under strong, directional, studio-quality gallery lighting with a clear key light, modeling shadows, and falloff. BACKGROUND: real depth and atmosphere.`
 
 // ── TIER 2 — MATERIAL-FAMILY HUE LOCK ────────────────────────────
 // The middle tier between Universal (anatomy, every material) and
@@ -429,9 +493,12 @@ function buildArtistsPrompt(input: {
   locationId?:       LocationId
   plaqueText?:       string | null
   upperBodyConcept?: string | null
+  subjectMode?:      SubjectMode
+  subjectCount?:     number
 }): string {
   const blocks = ARTISTS_BLOCKS[input.presetId]
   const parts: string[] = []
+  const isMulti = input.subjectMode === 'multi'
 
   // 1. Framing composition block — anatomy + pose + identity, chosen by
   //    framing (Bust / Signature / Statuesque). Runs FIRST: lock the
@@ -440,7 +507,7 @@ function buildArtistsPrompt(input: {
   //    composition entirely within the transformation block (e.g. Pencil
   //    Sketch's side-angle asymmetric emergence) — they take no framing.
   if (!blocks.skipUniversal) {
-    parts.push(framingBlock(input.framing))
+    parts.push(framingBlock(input.framing, input.subjectMode))
     parts.push(CRAFT_PERSONALITY)
   }
 
@@ -448,6 +515,9 @@ function buildArtistsPrompt(input: {
   // Pushed for ALL artists presets, including skipUniversal ones: the
   // clothing lock and content-expression rules must never be skipped.
   parts.push(STUDIO_DIRECTIVES)
+
+  // Multi path — per-face likeness lock (borrowed from Groups). Solo: skipped.
+  if (isMulti) parts.push(MULTI_SUBJECT_FIGURE_FIDELITY)
 
   // 2. Subject wardrobe (Curator-provided — omitted entirely when no concept).
   //    Legacy flow input; the new Curator workflow no longer populates this.
@@ -476,13 +546,9 @@ function buildArtistsPrompt(input: {
     if (locPhrase) parts.push(`Presented ${locPhrase}.`)
   }
 
-  // 6. Gallery tail (per-preset) + plaque.
-  let finalBlock = blocks.tail
-  if (input.plaqueText !== null) {
-    const text = (input.plaqueText && input.plaqueText.trim()) || DEFAULT_PLAQUE_TEXT
-    finalBlock += ` Small plaque on base reads: "${text}".`
-  }
-  parts.push(finalBlock)
+  // 6. Gallery tail (per-preset). Plaque/inscription cut product-wide
+  //    (2026-07-08) — no base plaque on any piece.
+  parts.push(blocks.tail)
 
   return parts.join('\n\n')
 }
@@ -496,7 +562,11 @@ export function buildPortraitsPrompt(input: {
   plaqueText?:       string | null
   advanced?:         AdvancedLighting
   upperBodyConcept?: string | null
+  subjectMode?:      SubjectMode   // ADDITIVE — 'multi' renders 2–3 subjects; default 'solo'
+  subjectCount?:     number        // 2 or 3 (informational, pluralizes the lead sentence)
 }): string {
+
+  const isMulti = input.subjectMode === 'multi'
 
   // Route Artists Gallery presets to their custom prompt builder.
   // location/scale/advanced are intentionally ignored — the artist
@@ -508,6 +578,8 @@ export function buildPortraitsPrompt(input: {
       locationId:       input.locationId,
       plaqueText:       input.plaqueText,
       upperBodyConcept: input.upperBodyConcept,
+      subjectMode:      input.subjectMode,
+      subjectCount:     input.subjectCount,
     })
   }
 
@@ -529,21 +601,22 @@ export function buildPortraitsPrompt(input: {
   // fill the frame is too strong. The expand step adds real canvas
   // padding around the rendered bust.
 
-  let plaqueClause: string
-  if (input.plaqueText === null) {
-    plaqueClause = ', with a clean unmarked base'
-  } else {
-    const text = (input.plaqueText && input.plaqueText.trim()) || DEFAULT_PLAQUE_TEXT
-    plaqueClause = `, with a small plaque on the base reading "${text}"`
-  }
+  // Base is always clean & unmarked — inscription/plaque cut product-wide
+  // (2026-07-08). Solo and multi both render an unmarked base; the old
+  // plaqueText branch is gone. plaqueText remains as inert plumbing (never
+  // affects output) so the route request shape is unchanged.
+  const plaqueClause = ', with a clean unmarked base'
 
   // Realistic prompt leads with the selected framing composition block,
   // then the material register — framing first, material second (same
   // discipline that fixed head-only bronze/alabaster renders).
   const familyLock = familyLockBlock(input.presetId)   // TIER 2 — monolithic only
 
+  const subjectPhrase = isMulti
+    ? `${input.subjectCount && input.subjectCount >= 2 ? input.subjectCount : 2} people`
+    : 'a person'
   const realisticSentence =
-    `Portrait of a person rendered as 3D ${material}, ${location}${composition}${bodyClause}${lighting}${tail}${plaqueClause}.`
+    `Portrait of ${subjectPhrase} rendered as 3D ${material}, ${location}${composition}${bodyClause}${lighting}${tail}${plaqueClause}.`
 
   // Assembly order: TIER 1 universal (framing + personality + studio
   // directives) → TIER 2 family lock (monolithic only; '' when exempt) →
@@ -551,11 +624,18 @@ export function buildPortraitsPrompt(input: {
   // staging now live in STUDIO_DIRECTIVES — the old "match the photo exactly,
   // same head angle and gaze" line was removed because it forced flat,
   // frontal replication and fought the dynamic-staging directive.
-  return [framingBlock(input.framing), CRAFT_PERSONALITY, STUDIO_DIRECTIVES, familyLock, realisticSentence]
+  return [
+    framingBlock(input.framing, input.subjectMode),
+    CRAFT_PERSONALITY,
+    STUDIO_DIRECTIVES,
+    isMulti ? MULTI_SUBJECT_FIGURE_FIDELITY : '',
+    familyLock,
+    realisticSentence,
+  ]
     .filter(Boolean)
     .join('\n\n')
 }
 
 // Re-exported for the experimental-effects addon (portraits-experimental.ts),
 // which reuses these tier primitives rather than duplicating them.
-export { framingBlock, CRAFT_PERSONALITY, HUE_LOCK, STUDIO_DIRECTIVES }
+export { framingBlock, CRAFT_PERSONALITY, HUE_LOCK, STUDIO_DIRECTIVES, COSTUME_DIRECTIVES }

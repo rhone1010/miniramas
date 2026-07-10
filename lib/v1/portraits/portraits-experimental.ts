@@ -23,10 +23,9 @@
 //   each effect carries its own setting.
 
 import type { Framing } from './portraits-shared'
-import { framingBlock, CRAFT_PERSONALITY, HUE_LOCK, STUDIO_DIRECTIVES } from './portraits-prompt'
+import { framingBlock, CRAFT_PERSONALITY, HUE_LOCK, STUDIO_DIRECTIVES, COSTUME_DIRECTIVES } from './portraits-prompt'
 
 export type ExperimentalEffectId =
-  | 'geode_druzy'
   | 'deep_sea'
   | 'circuit'
   | 'reclaimed_bronze'
@@ -35,26 +34,24 @@ export type ExperimentalEffectId =
   | 'amber'
   | 'neon'
   | 'nebula_resin'
+  | 'dragon_skin'
+  | 'magic_energy'
+  | 'armor'
+  | 'elizabethan'
+  | 'victorian'
+  | 'fantasy_crystal'
 
 interface ExperimentalEffect {
   id:         ExperimentalEffectId
   label:      string
   monolithic: boolean   // true → receives the TIER-2 hue lock
+  mode?:      'material' | 'costume'  // 'costume' → real face, costume clothing (default 'material')
   body:       string    // transformation + presentation (NB2-facing)
   avoid:      string    // negative constraints
 }
 
 // Ordered — the UI renders one Curator button per entry in this order.
 export const EXPERIMENTAL_EFFECTS: ExperimentalEffect[] = [
-  {
-    id: 'geode_druzy',
-    label: 'Geode Druzy',
-    monolithic: false,
-    body:
-      `Transform the clothed figure into a sculpture of banded agate — face, hair, and garment all carved from concentric agate layers in earthy grey, white, and amber, polished smooth. The geode cavity does NOT cut through the plane of the face or the front of the chest; instead it opens on the upper back and shoulder, the cut rotated roughly thirty degrees toward the rear and thirty degrees downward, so the crystal interior is revealed at an angle rather than head-on. The opening is irregular and jagged — not a clean disc — pulling back layers of agate to expose a deep, generous pocket of sparkling druzy: glittering quartz and amethyst points in violet, lilac, and clear, catching the light. The front and face stay solid agate carrying the likeness; the angled, irregular back cavity is the reveal.`,
-    avoid:
-      `Avoid cutting the geode opening across the face or the front of the chest — it belongs on the upper back and shoulder, angled toward the rear and down. Avoid a clean circular cut; the opening is irregular and reveals deep internal crystal structure. Avoid dull, non-sparkling crystals. Avoid garish or neon crystal colors; keep them natural amethyst and quartz.`,
-  },
   {
     id: 'deep_sea',
     label: 'Bioluminescent Deep-Sea',
@@ -114,18 +111,75 @@ export const EXPERIMENTAL_EFFECTS: ExperimentalEffect[] = [
     label: 'Neon Light-Drawing',
     monolithic: false,
     body:
-      `Render the subject as a fully three-dimensional neon-tube sculpture whose bent-glass tubes travel through all three axes — not a flat relief or a sign on a plane. The glowing tubes wrap around the head, loop forward and back through the depth of the form, and build the clothed bust as a true volumetric armature of light you could circle and see through, tubes crossing in front of and behind one another to carve out real volume. Rich electric color — magenta, cyan, warm white, deep blue, amber — with bright cores and soft halos, colored light spilling onto a darkened gallery setting and the surface below. A premium, high-value commissioned neon artwork with genuine sculptural depth.`,
+      `Render the subject as a fully three-dimensional neon-tube sculpture whose bent-glass tubes travel through all three axes — not a flat relief or a sign on a plane. The glowing tubes wrap around the head, loop forward and back through the depth of the form, and build the clothed bust as a true volumetric armature of light you could circle and see through, tubes crossing in front of and behind one another to carve out real volume with clear foreground, midground, and background layers. The tubes are NOT uniformly lit — some glow at full brilliance while others sit dimmer and cooler, giving the piece depth, modeling, and pockets of shadow between the lit runs. Rich electric color — magenta, cyan, warm white, deep blue, amber — with bright cores and soft halos, colored light spilling onto a darkened gallery setting and the surface below. A premium, high-value commissioned neon artwork with genuine sculptural depth.`,
     avoid:
-      `Avoid a flat single-plane sign, relief, or outline drawing — the tubes must occupy real depth and wrap around the form in three dimensions. Avoid filling solid areas; the portrait is built from glowing tube with dark space between, but layered front-to-back. Avoid dim or washed-out neon; the tubes glow vividly with real bloom. Avoid skin or flesh — the face is built from neon tube like the rest.`,
+      `Avoid a flat single-plane sign, relief, or outline drawing — the tubes must occupy real depth and wrap around the form in three dimensions. Avoid uniform, evenly-lit tubes; vary the brightness for depth and shadow. Avoid filling solid areas; the portrait is built from glowing tube with dark space between, layered front-to-back. Avoid a dim, washed-out overall look; the brightest tubes glow vividly with real bloom. Avoid skin or flesh — the face is built from neon tube like the rest.`,
   },
   {
     id: 'nebula_resin',
-    label: 'Nebula',
+    label: 'Nebula Resin',
     monolithic: false,
     body:
-      `The figure is FORMED FROM deep-space nebula itself — not a solid body painted with stars, but actual wispy, gaseous, glowing stellar matter that coalesces into the shape of a person. Swirls of violet, magenta, teal, and blue cosmic gas drift and curl through the form, dense and opaque where they gather into shoulders, chest, and hair, thinning to almost nothing elsewhere so portions of the body dissolve into open starfield and reappear further on. Pinpoint stars and faint aurora light glimmer throughout. The face is clearly defined and unmistakably this person — but sculpted FROM luminous gas and stardust, never from skin or flesh. Light and gas are the structure; there is no solid surface beneath.`,
+      `The figure is FORMED ENTIRELY FROM deep-space nebula — wispy gas, cosmic dust, and glowing stars, with NO solid surface anywhere and NO skin anywhere, including the face. Swirls of violet, magenta, teal, and blue gas curl through the form, dense where they gather into shoulders, chest, and hair, thinning to nothing elsewhere so portions of the body dissolve into open starfield and reappear further on. Pinpoint stars and aurora light glimmer throughout. The face is recognizable ONLY through the way the gas and stars gather, glow, and shadow into the person's features — it is made of the same nebula gas and dust as everything else, never of skin, flesh, or any solid or opaque surface. Light, gas, and dust are the entire structure.`,
     avoid:
-      `Avoid a solid human body with a galaxy texture painted on top — the gas and stars ARE the structure. Avoid any photorealistic skin or flesh tones on the face. Avoid a complete, uniformly solid silhouette — parts of the form should thin, break, and dissolve into space, then coalesce again. Avoid a glossy resin or poured-solid look; this is gaseous and luminous.`,
+      `Avoid ANY photorealistic skin, flesh, or solid opaque surface anywhere — most importantly on the face, which must be gas and stars like the rest, never a real face floating in nebula. Avoid a solid human body with a galaxy texture painted on top. Avoid a complete, uniformly solid silhouette — parts of the form thin, break, and dissolve into space. Avoid a glossy resin or poured-solid look; this is gaseous and luminous.`,
+  },
+  {
+    id: 'dragon_skin',
+    label: 'Dragon Skin',
+    monolithic: false,
+    body:
+      `Transform the subject into a dragon-human hybrid sculpture. The face, hair, and garment are rendered in fine iridescent dragon scales — deep emerald, oil-slick violet, bronze, and gold that shift in the light — larger and armored across the shoulders and chest, finer across the face. Behind and below the figure, a full dragon's body grows out of the back and shoulders: a scaled, spined draconic neck, ridged spine, and sweeping serpentine body curving down and away, as if the person is carved as one with a great dragon. Ridged horns and spines rise along the crown and back. The face is clearly defined and unmistakably this person, rendered entirely in fine scale, never in skin. Powerful, mythic, and jewel-like.`,
+    avoid:
+      `Avoid photorealistic human skin on the face — the face is fine dragon scale. Avoid a smooth, scaleless surface; overlapping scales are required. Avoid a flat single color; the scales are iridescent and shift hue. Avoid omitting the dragon body — a scaled draconic neck, spine, and body must grow from the back and curve down and away. Avoid a cartoonish or costume look — this is a museum-grade sculpture.`,
+  },
+  {
+    id: 'magic_energy',
+    label: 'Magic Energy',
+    monolithic: false,
+    body:
+      `Sculpt the figure from pure glowing magical energy — arcane power given human form. The body is made of swirling luminous energy, flowing ribbons of light, drifting embers, and crackling arcs of color — violet, gold, cyan, and rose — that coalesce into the shape of a person and radiate light into the darkness around them. Denser and brighter where the energy gathers into the head, shoulders, and chest; thinning into wisps, sparks, and floating motes at the edges where portions of the form dissolve into raw magic. The face is clearly defined and unmistakably this person — but formed from light and energy, never from skin or flesh. Glowing runic sigils and faint particles orbit the figure. Awe-inspiring and otherworldly.`,
+    avoid:
+      `Avoid a solid body with an energy glow painted on top — the energy IS the structure, and the form breaks into wisps and sparks at the edges. Avoid photorealistic skin or flesh on the face. Avoid a dim, flat look; the piece radiates its own light with bright cores and soft falloffs. Avoid losing the likeness; the face stays defined within the energy.`,
+  },
+  {
+    id: 'armor',
+    label: 'Armor',
+    monolithic: false,
+    mode: 'costume',
+    body:
+      `Depict the subject as a realistic portrait wearing a magnificent suit of ornate, engraved plate armor — burnished steel and dark iron chased with gold filigree, etched patterns, and a few gemstone accents, fitted and layered like a masterwork ceremonial suit across the shoulders, chest, and arms. The face, skin, and hair are the person's own — real, accurate, and lifelike, NOT metal and NOT stylized. The head is bare or open-helmed so the real face shows clearly. A regal, heroic portrait of this exact person in armor.`,
+    avoid:
+      `Avoid a metallic, bronzed, or material-rendered face — the face and skin are realistic and this exact person. Avoid a closed helmet hiding the face. Avoid a plain, undetailed surface; the armor is intricately engraved. Avoid a cheap costume-party look — this is museum-grade.`,
+  },
+  {
+    id: 'elizabethan',
+    label: 'Elizabethan Portrait',
+    monolithic: false,
+    mode: 'costume',
+    body:
+      `Depict the subject as a realistic Elizabethan-era portrait — the person dressed in richly detailed 16th-century finery: a high starched lace ruff collar, an embroidered brocade doublet or gown with pearls and gold thread, sumptuous period fabric. Hair and makeup are styled to the Elizabethan era. The face, skin, and hair are the person's own — real, accurate, and lifelike. Composed in the manner of a grand Elizabethan court portrait, but as this exact person.`,
+    avoid:
+      `Avoid a material-rendered or stylized face — the face is realistic and this exact person. Avoid any modern clothing; the dress is fully Elizabethan. Avoid a cheap costume look; this is opulent period finery. Avoid nudity or bare shoulders — fully period-clothed.`,
+  },
+  {
+    id: 'victorian',
+    label: 'Victorian Portrait',
+    monolithic: false,
+    mode: 'costume',
+    body:
+      `Depict the subject as a realistic Victorian-era portrait — the person dressed in refined 19th-century attire: a high-collared coat, cravat, and waistcoat, or an elegant high-necked lace-trimmed dress with a cameo brooch. Hair and makeup are styled to the Victorian era. The face, skin, and hair are the person's own — real, accurate, and lifelike. Composed like a dignified Victorian studio portrait, but as this exact person.`,
+    avoid:
+      `Avoid a material-rendered or stylized face — the face is realistic and this exact person. Avoid any modern clothing; the dress is fully Victorian. Avoid a costume-party look; this is refined period attire. Avoid nudity or bare shoulders — fully period-clothed.`,
+  },
+  {
+    id: 'fantasy_crystal',
+    label: 'Enchanted Crystal',
+    monolithic: false,
+    body:
+      `Transform the entire clothed figure into a sculpture of luminous enchanted crystal — a magical gemstone material carved into the subject's likeness. The face, hair, and garment are faceted, translucent crystal that glows softly from within, shifting through amethyst, aquamarine, rose, and gold as light passes through. Deeper, richer color pools in the mass of the shoulders and chest; the thin edges and facets catch and refract light into tiny rainbows. A faint magical aura and a few floating crystal shards drift around the piece. The face is clearly defined and unmistakably this person — but rendered in glowing carved crystal, never in skin. Enchanted, luminous, and jewel-like.`,
+    avoid:
+      `Avoid photorealistic skin on the face — the face is faceted glowing crystal like the rest. Avoid an opaque or dull surface; the crystal is translucent and lit from within. Avoid a single flat color; the enchanted crystal shifts hue and refracts light. Avoid a cheap plastic look — this reads as precious magical gemstone.`,
   },
 ]
 
@@ -157,17 +211,16 @@ export function buildExperimentalPrompt(input: {
   const fx = BY_ID[input.effectId]
   if (!fx) throw new Error(`unknown experimental effect: ${input.effectId}`)
 
-  let plaqueLine = ''
-  if (input.plaqueText === null) {
-    plaqueLine = 'Clean unmarked base.'
-  } else if (input.plaqueText && input.plaqueText.trim()) {
-    plaqueLine = `Small plaque on the base reading "${input.plaqueText.trim()}".`
-  }
+  // Plaque/inscription cut product-wide (2026-07-08) — every piece renders a
+  // clean unmarked base. plaqueText remains inert plumbing (request shape kept).
+  const plaqueLine = 'Clean unmarked base.'
+
+  const directives = fx.mode === 'costume' ? COSTUME_DIRECTIVES : STUDIO_DIRECTIVES
 
   return [
     framingBlock(input.framing),
     CRAFT_PERSONALITY,
-    STUDIO_DIRECTIVES,
+    directives,
     fx.monolithic ? HUE_LOCK : '',
     fx.body,
     fx.avoid,
