@@ -6,7 +6,7 @@
 <title>Liten &amp; Co · Crafted Portraits</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   /* Liten & Co — Landscapes brand tokens */
@@ -20,7 +20,7 @@
   --hairline:     #D7CFBE;
   --hairline-soft:#E5DFD0;
 
-  --ink:       #1F1B14;
+  --ink:       #2a241e;
   --ink-2:     #5A5246;
   --ink-3:     #8E8676;
   --ink-soft:  #5A5246;
@@ -34,7 +34,7 @@
   --selected-hover:  #7d8b6c;
   --selected-soft:   rgba(141, 153, 122, .20);
 
-  --brass:        #8B6F3E;
+  --brass:        #75623a;
   --signature:    #8B6F3E;
   --premium:      #5A5246;
   --base:         #8E8676;
@@ -46,8 +46,10 @@
   --warn:        #B07C2E;
 
   --serif: 'Cormorant Garamond', Georgia, serif;
-  --sans:  'Inter', system-ui, -apple-system, sans-serif;
-  --mono:  'JetBrains Mono', ui-monospace, monospace;
+  --sans:  'Manrope', system-ui, -apple-system, sans-serif;
+  /* Manrope is the sans/ledger role (Inter + JetBrains Mono retired, CC contract §1).
+     --mono kept as a token name so the ~10 label call-sites need no edit. */
+  --mono:  'Manrope', system-ui, -apple-system, sans-serif;
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -2457,7 +2459,7 @@ body.raw-mode .preset-controls{ display:none; }
 .eff-card-q{
   position:absolute; top:6.8px; right:6.8px;
   font-family:var(--sans); font-size:11px; letter-spacing:.04em;
-  padding:2.5px 6.8px; border-radius:849px; background:rgba(244,241,234,.92); color:#1F1B14;
+  padding:2.5px 6.8px; border-radius:849px; background:rgba(244,241,234,.92); color:#2a241e;
 }
 .eff-card-q[data-q="Excellent"]{ color:#3F4A2E; }
 .eff-card-q[data-q="Limited"]{ color:#763F41; }
@@ -2709,7 +2711,7 @@ body.raw-mode .preset-controls{ display:none; }
 .cur-queue-strip{ margin:0 0 1.1rem; }
 .cur-queue-strip-head{
   font-family:'Cormorant Garamond', serif; font-style:italic; font-size:36px;
-  color:#1F1B14; margin-bottom:.5rem;
+  color:#2a241e; margin-bottom:.5rem;
 }
 .cur-queue-icons{ display:flex; flex-wrap:wrap; gap:10px; min-height:83px; align-items:center; }
 .cur-queue-icon{
@@ -2775,7 +2777,7 @@ body.raw-mode .preset-controls{ display:none; }
 }
 .curator-card-series-tag{
   display:inline-block;
-  font-family:'JetBrains Mono', monospace;
+  font-family:'Manrope', system-ui, sans-serif;
   font-size:.62rem;
   letter-spacing:.1em;
   text-transform:uppercase;
@@ -2791,7 +2793,7 @@ body.raw-mode .preset-controls{ display:none; }
 /* Quality-level badge — Excellent / Good / Limited */
 .curator-card-quality{
   display:inline-block;
-  font-family:'JetBrains Mono', monospace;
+  font-family:'Manrope', system-ui, sans-serif;
   font-size:.62rem;
   letter-spacing:.08em;
   text-transform:uppercase;
@@ -2896,7 +2898,7 @@ body.raw-mode .preset-controls{ display:none; }
 }
 .curator-skip-note{
   margin-top:.6rem;
-  font-family:'JetBrains Mono', monospace;
+  font-family:'Manrope', system-ui, sans-serif;
   font-size:.7rem;
   letter-spacing:.06em;
   color:#9a8f7e;
@@ -3686,7 +3688,7 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 .pb-email{
   flex:1 1 auto; min-width:0; font-family:var(--sans); font-size:16px;
   padding:.55rem .7rem; border:1px solid #C8BFA8; border-radius:4.2px;
-  background:#fff; color:#1F1B14;
+  background:#fff; color:#2a241e;
 }
 .pb-email:focus{ outline:1.7px solid #763F41; outline-offset:1px; }
 .pb-btn{
@@ -3736,12 +3738,12 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
    ═══════════════════════════════════════════════════════════════════ */
 :root{
   --v7-warm-paper:#F0EAE0; --v7-champagne:#ECDFC1; --v7-champagne-2:#E0D2A8; --v7-vellum-soft:#f6f2ea;
-  --v7-ink:#1F1B14; --v7-ink-2:#5A5246; --v7-ink-3:#8E8676;
+  --v7-ink:#2a241e; --v7-ink-2:#5A5246; --v7-ink-3:#8E8676;
   --v7-oxblood:#7B3F41; --v7-oxblood-dk:#5E3133; --v7-oxblood-soft:rgba(123,63,65,.13);
   --v7-sage:#6a7a55; --v7-sage-light:#a8b48d; --v7-sage-tint:#e2e6d4; --v7-sage-border:#a8b48d;
   --v7-brass:#75623a; --v7-border:#cbbe9f;
   --v7-serif:'Cormorant Garamond','EB Garamond',Georgia,serif;
-  --v7-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --v7-mono:'Manrope',system-ui,-apple-system,sans-serif;
   --v7-r-card:8px; --v7-r-tile:6px;
   --v7-ease:cubic-bezier(.4,0,.2,1); --v7-t-small:.25s ease; --v7-t-fly:.55s cubic-bezier(.4,0,.2,1);
   --v7-shadow-card:0 4px 14px rgba(42,36,30,.08);
@@ -4583,7 +4585,7 @@ html, body{ background:#eddec7; }
       <div class="rail-addqueue rail-addqueue-sticky">
         <button class="stage-action-btn btn-add" id="railAddBtn" disabled onclick="addToQueue()">
           <span class="btn-label" id="railAddLabel">+ Add this piece</span>
-          <span class="btn-price" id="railAddPrice"><span class="now">$3.99</span></span>
+          <span class="btn-price" id="railAddPrice"><span class="now">$4.99</span></span>
         </button>
       </div>
 
@@ -4819,7 +4821,7 @@ html, body{ background:#eddec7; }
 
                 <!-- ── FREE PREVIEW BAND — one free watermarked preview per
                      email (1 per IP enforced server-side). Unlock to a real
-                     Web Quality piece at $3.99. Visible until the visitor's
+                     Web Quality piece at $4.99. Visible until the visitor's
                      preview is used. ── -->
                 <!-- Batch piece name: one name for the whole craft batch, applied
                      to every finish. Optional → server stores "Untitled portrait".
@@ -4836,7 +4838,7 @@ html, body{ background:#eddec7; }
                        Element kept hidden for JS refs. (Rich 2026-06-12) -->
                   <button class="stage-action-btn btn-add" id="queueAddBtn" style="display:none" disabled onclick="addToQueue()">
                     <span class="btn-label" id="addLabel">+ Add this piece</span>
-                    <span class="btn-price" id="addPrice"><span class="was">$3.99</span><span class="now">$3.39</span></span>
+                    <span class="btn-price" id="addPrice"><span class="now">$4.99</span></span>
                   </button>
                   <button class="stage-action-btn btn-render" id="runAllBtn" disabled onclick="runAll()">
                     <span class="btn-label" id="runAllLabel">Add styles to craft</span>
@@ -5001,21 +5003,15 @@ const DEFAULT_MATERIAL = 'bronze'
 // (which can shift as the user adds more pieces).
 // ═══════════════════════════════════════════════════════════════
 const PRICING = {
-  basePrice: 3.99,
+  basePrice: 4.99,   // flat, LOCKED (CC contract §3, 2026-07-10). Ladder + packs retired.
   // tiers — ordered from smallest set to largest. The active tier is
   // the highest-minCount tier whose minCount <= currentCount.
   // Ladder per Rich (2026-06-09): \u221215% at 2, \u221225% at 5, \u221230% at 10.
   tiers: [
-    { minCount: 1,  perPiece: 3.99, off: '0%'  },
-    { minCount: 2,  perPiece: 3.39, off: '\u221215%' },
-    { minCount: 5,  perPiece: 2.99, off: '\u221225%', packReached: 'curators' },
-    { minCount: 10, perPiece: 2.79, off: '\u221230%', packReached: 'studio'   },
+    { minCount: 1, perPiece: 4.99, off: '0%' },
   ],
   // \u26a0 CARRYOVER: pack names at the new 5/10 thresholds pending Rich's confirmation.
-  packs: [
-    { id: 'curators', threshold: 5,  name: 'Curators Pack' },
-    { id: 'studio',   threshold: 10, name: 'Studio Pack'   },
-  ],
+  packs: [],
 }
 
 function priceForCount(N){
@@ -6886,8 +6882,10 @@ function renderQueueList(){
     } else {
       totalEl.style.display = ''
       const total = tier.perPiece * N + queuedResolutionUpcharge()
-      // Studio rate framing only when the together-rate is actually active (2+).
-      const rate = N >= 2
+      // Flat $4.99 — no together-rate discount, so no studio-rate framing (plain
+      // display, CC contract §3). Kept behind an off-discount guard for if a
+      // multi/volume rate ever returns.
+      const rate = (N >= 2 && tier.off !== '0%')
         ? `<div class="tbc-rate">Studio rate &mdash; ${numberWord(N)} pieces together</div>`
         : ''
       totalEl.innerHTML = rate
@@ -7682,8 +7680,8 @@ function gotoSeries(series){
 // ── Pricing (set these two) ─────────────────────────────────
 // PER_RENDER_PRICE drives the à-la-carte buttons; PACK_5_PRICE is the
 // "Add All 5" pack. Edit these numbers; the buttons read from them.
-const PER_RENDER_PRICE = 3.99
-const PACK_5_PRICE     = 14.95   // 5 pieces at the \u221225% tier ($2.99 each)
+const PER_RENDER_PRICE = 4.99
+const PACK_5_PRICE     = 24.95   // dead \u2014 pack tiers retired; flat $4.99 each
 const fmtUSD = n => '$' + n.toFixed(2)
 
 // Quality tiers — Web Quality (1K) is included; Print Quality (2K) and
@@ -7778,7 +7776,7 @@ const CURATE_EFFECTS_URL = '/api/v1/portraits/curate-effects'
 // Model per Rich (2026-06-09):
 //   * One free WATERMARKED preview per email (1 per IP — server-side).
 //   * Money is gathered BEFORE crafting anything beyond the preview.
-//   * Unlock preview -> real Web Quality piece at $3.99.
+//   * Unlock preview -> real Web Quality piece at $4.99.
 //   * QA-failed pieces keep the watermark until "Keep it as is".
 //
 // Stripe: POSTs /api/v1/checkout (sandbox keys are wired env-side).
@@ -7793,7 +7791,7 @@ const CURATE_EFFECTS_URL = '/api/v1/portraits/curate-effects'
 // the ~5MB quota; the durable answer is server-side queue persistence
 // (same backend need as My Renders persistence).
 // ═══════════════════════════════════════════════════════════════
-const UNLOCK_PRICE = 3.99
+const UNLOCK_PRICE = 4.99
 const CHECKOUT_URL = '/api/v1/checkout'
 const SNAPSHOT_KEY = 'liten_workshop_snapshot'
 const PREVIEW_FLAG = 'liten_preview_used'

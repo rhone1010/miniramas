@@ -86,6 +86,7 @@ Dormant in codebase behind `subject_mode` (default solo). Solo path unaffected.
 - Collection-write 500 — resolved (endpoint returns 200; verified live 2026-07-10).
 - Font decision — **Manrope locked**. Karla retired.
 - Pricing — locked (§5).
+- `portraits.html` reconciliation (2026-07-10) — price → $4.99 flat (ladder/packs retired); Inter + JetBrains Mono → Manrope (`--sans`/`--mono`/`--v7-mono` + hardcoded); `--ink` #2a241e / `--brass` #75623a on both `:root` and `--v7-*`. `--signature` tier color + `--v7-oxblood` left as-is (not in the drift list — flag if brand-align wanted).
 
 ---
 
@@ -129,8 +130,8 @@ Product / flow (2026-07-08 session):
 - Portraits = 1–3 subjects. Solo scope = 1. 4+ → Groups.
 
 Pricing (locked 2026-07-10):
-- 1 person $4.99 · 2 people $6.49 · 3 people $7.99. Flat +$1.50/person, priced on crafted count.
-- Plain display, no "founding/rising" messaging. Revisit ~2 weeks post-launch on data.
+- **Base $4.99, FLAT per piece.** 1 person $4.99 · 2 people $6.49 · 3 people $7.99 (multi = +$1.50/person on crafted count, gated). Reconciled in `portraits.html` 2026-07-10: the old $3.99 base + volume-discount ladder ($3.39/$2.99/$2.79) and the Curators/Studio pack upsells are RETIRED.
+- Plain display, no "founding/rising" messaging, no discount grammar. Revisit ~2 weeks post-launch on data.
 
 Typography:
 - Sans/ledger = **Manrope** (locked). Voice = Cormorant Garamond italic (renders ~⅓ small — size up).
