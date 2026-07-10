@@ -54,6 +54,11 @@
      Consumed by the Advanced/mural/collection surfaces ported from the proto. */
   --ease-out:cubic-bezier(.22,.7,.3,1);
   --dur-micro:150ms; --dur-state:250ms; --dur-panel:400ms;
+  /* Proto palette tokens (visual-port foundation) — the ported surfaces
+     reference these bare names. Brand hex per CC §1. --ink/--brass/--hairline
+     already defined above are the live source of truth and are NOT overridden. */
+  --vellum:#f3ede1; --paper:#faf6ec; --panel:#ece2d0; --paper-up:#f4f2ed;
+  --oxblood:#7d4242; --oxblood-deep:#6a3737; --taupe:#aba39a; --sage:#8a9a7b;
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -3991,6 +3996,17 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 .tbc-name-input:focus{ border-color:var(--oxblood,#7B3F41); }
 .tbc-name-input.invalid{ border-color:var(--danger,#a3432f); background:#fbf1ee; }
 .tbc-name-err{ font-family:var(--sans,-apple-system,sans-serif); font-size:12px; color:var(--danger,#a3432f); margin-top:5px; }
+
+/* ── VISUAL PORT S2 — Curator card (from canonical proto, verbatim) ── */
+/* Invitation letter — the evolving letter, pre-upload (verbatim promise line,
+   flow-contract §S0b). Curator card ONLY; deckle stays on the card. */
+.inv-letter{margin-top:24px;background:linear-gradient(160deg,#F0EAE0,#ECDFC1 55%,#E0D2A8);border-radius:3px;padding:24px 24px 20px;position:relative;filter:drop-shadow(0 2px 5px rgba(0,0,0,.08))}
+.inv-letter p{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1.55;color:var(--ink)}
+.inv-letter .tint{background:rgba(123,63,65,.12);padding:0 6px;border-radius:3px}
+.inv-letter .sig{color:var(--oxblood)}
+/* start pulse on the empty upload target (proto .upload-card animation) */
+@keyframes startPulse{0%,100%{box-shadow:0 0 0 0 rgba(125,66,66,0)}50%{box-shadow:0 0 0 7px rgba(125,66,66,.13)}}
+.source-empty{animation:startPulse 3.6s ease-in-out infinite;border-radius:3px}
 .v7-queue-pill-dot[data-status="done"]{ background:var(--v7-sage); }
 .v7-queue-pill-dot[data-status="failed"], .v7-queue-pill-dot[data-status="rejected"],
 .v7-queue-pill-dot[data-status="redirected"]{ background:var(--v7-oxblood); box-shadow:0 0 0 2px rgba(123,63,65,.18); }
@@ -4419,8 +4435,12 @@ html, body{ background:#eddec7; }
           </div>
           <img id="sourceThumb" style="display:none">
         </div>
-        <!-- Empty-state call to action — only shown when no source photo is loaded. -->
-        <div class="cur-upload-prompt" id="curUploadPrompt">Bring me a photograph and I&rsquo;ll choose five finishes for it myself. &mdash; C.</div>
+        <!-- Invitation letter (evolving letter, pre-upload). Verbatim promise
+             line — flow-contract §S0b. Rendered as the proto's inv-letter card
+             (id kept so the show/hide-on-upload wiring is unchanged). -->
+        <div class="inv-letter" id="curUploadPrompt">
+          <p>Bring me a <span class="tint">portrait</span> and I&rsquo;ll choose a few starting pieces for you. <span class="sig">&mdash;&thinsp;C.</span></p>
+        </div>
 
         <!-- Face-aware source control (v5). Hidden until a photo loads; the
              square preview above is the empty-state upload target. Once a
@@ -6052,13 +6072,15 @@ function buildV7Layout(){
     if (shell.dataset.collection !== 'open') setCollectionOpen(true)
   })
 
-  // Deckled rag edge on the sections (reuses the #curatorDeckle filter).
-  deckleSection(suggestedSpine, '#F0EAE0')
-  deckleSection(queueSpine, '#F0EAE0')
-  deckleSection(collectionSpine, '#F0EAE0')
-  // Upload placeholder gets a finer, lighter torn edge in the paper color #f4f2ed.
-  const uploadBox = document.getElementById('sidebarSourcePreview')
-  if (uploadBox) deckleSection(uploadBox, '#f4f2ed', 'fineDeckle', 9)
+  // Deckle is the Curator card's signature edge ONLY (visual-port decision,
+  // 2026-07-10 — matches the canonical proto). The Suggested / Queue / Collection
+  // section deckles and the upload-box deckle are retired so the torn edge never
+  // appears anywhere but the Curator card. deckleSection() is kept (dead) for the
+  // curator card's own use elsewhere; do not re-add these calls.
+  // deckleSection(suggestedSpine, '#F0EAE0')
+  // deckleSection(queueSpine, '#F0EAE0')
+  // deckleSection(collectionSpine, '#F0EAE0')
+  // deckleSection(sidebarSourcePreview, '#f4f2ed', 'fineDeckle', 9)
   // Empty-workshop ghosts host — sits first in Suggested; hidden once a source is in.
   if (!document.getElementById('v7Ghosts')){
     const gh = document.createElement('div'); gh.id = 'v7Ghosts'

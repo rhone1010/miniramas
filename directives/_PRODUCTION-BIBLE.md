@@ -87,6 +87,7 @@ Dormant in codebase behind `subject_mode` (default solo). Solo path unaffected.
 - Font decision — **Manrope locked**. Karla retired.
 - Pricing — locked (§5).
 - `portraits.html` reconciliation (2026-07-10) — price → $4.99 flat (ladder/packs retired); Inter + JetBrains Mono → Manrope (`--sans`/`--mono`/`--v7-mono` + hardcoded); `--ink` #2a241e / `--brass` #75623a on both `:root` and `--v7-*`. `--signature` tier color + `--v7-oxblood` left as-is (not in the drift list — flag if brand-align wanted).
+- Visual port (proto → live), surface-by-surface. **S1 DONE** (`50b7f80`): motion vars + proto palette tokens (`--vellum/--paper/--panel/--paper-up/--oxblood/--taupe/--sage`) into `:root`. **S2 DONE**: Curator `inv-letter` card + verbatim promise "Bring me a portrait and I'll choose a few starting pieces for you. — C." (flow-contract §S0b, locked by Rich); `startPulse`; **deckle = Curator card ONLY** (section/upload deckles retired, locked by Rich). S3 Advanced / S4 mural / S5 My Collection pending.
 
 ---
 
