@@ -13,6 +13,22 @@ var MATS={
          ['dragon_skin','Dragon Skin','/previews/portraits/PLACEHOLDER.jpg'],['magic_energy','Magic Energy','/previews/portraits/PLACEHOLDER.jpg'],
          ['fantasy_crystal','Fantasy Crystal','/previews/portraits/PLACEHOLDER.jpg'],['reclaimed_bronze','Reclaimed Bronze','/previews/portraits/PLACEHOLDER.jpg']]
 };
+/* Advanced disc grid uses the Icon_Effect set (MASTER-LOCKED §9: icons are ONLY
+   the disc grid; render previews are for the mural/collection). Keys → files. */
+var ICON={
+ ebony:'/Icons/Icon_Effect__0000_Ebony.png', walnut:'/Icons/Icon_Effect__0001_Walnut.png',
+ stone:'/Icons/Icon_Effect__0002_Stone.png', bronze:'/Icons/Icon_Effect__0003_Bronze.png',
+ iron:'/Icons/Icon_Effect__0004_Iron.png', alabaster:'/Icons/Icon_Effect__0005_Alabaster.png',
+ impressionist:'/Icons/Icon_Effect__0006_Impressionist.png', torn_paper:'/Icons/Icon_Effect__0007_Torn-Paper.png',
+ folded_book:'/Icons/Icon_Effect__0008_Folded-Book.png', charcoal_chalk:'/Icons/Icon_Effect__0009_Charcoal.png',
+ pencil_sketch:'/Icons/Icon_Effect__0010_Pencil-Sketch.png', sheet_music:'/Icons/Icon_Effect__0011_Sheet-Music.png',
+ deep_sea:'/Icons/Icon_Effect__0012_Deep-Sea.png', circuit:'/Icons/Icon_Effect__0013_Circuit.png',
+ reclaimed_bronze:'/Icons/Icon_Effect__0014_Reclaimed-Bronze.png', mercury:'/Icons/Icon_Effect__0015_Mercury.png',
+ blown_glass:'/Icons/Icon_Effect__0016_Blown-Glass.png', amber:'/Icons/Icon_Effect__0017_Amber.png',
+ neon:'/Icons/Icon_Effect__0018_Neon.png', nebula_resin:'/Icons/Icon_Effect__0019_Nebula.png',
+ dragon_skin:'/Icons/Icon_Effect__0020_Dragon-Skin.png', magic_energy:'/Icons/Icon_Effect__0021_Magic-Energy.png',
+ fantasy_crystal:'/Icons/Icon_Effect__0022_Fantasy-Crystal.png', armor:'/Icons/Icon_Effect__0023_Armor.png'
+};
 var advState={mat:'walnut',set:'on a mantel',frame:'signature pose',base:4.99,extra:0};
 function renderSwatches(group){
   var el=document.getElementById('advSwatches');el.innerHTML='';
@@ -20,7 +36,7 @@ function renderSwatches(group){
     var d=document.createElement('div');
     d.className='swatch'+(advState.mat===m[0].replace(/_/g,' ')||advState.mat===m[1].toLowerCase()?' on':'');
     d.setAttribute('data-nm',m[1].toLowerCase());
-    d.innerHTML='<img class="disc" src="/previews/portraits/'+m[0]+'/1.jpg" alt="'+m[1]+'" onerror="this.style.visibility=\'hidden\'"><span class="nm">'+m[1]+'</span>';
+    d.innerHTML='<img class="disc" src="'+(ICON[m[0]]||'')+'" alt="'+m[1]+'" onerror="this.style.visibility=\'hidden\'"><span class="nm">'+m[1]+'</span>';
     d.onclick=function(){
       [].slice.call(el.children).forEach(function(x){x.classList.remove('on')});
       d.classList.add('on');advState.mat=m[1].toLowerCase();advRecipe();
