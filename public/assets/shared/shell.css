@@ -45,3 +45,22 @@ body{background:var(--vellum);font-family:var(--serif);color:var(--ink);min-widt
 .has-deckle{background:transparent !important;border:none !important;border-radius:0 !important;position:relative}
 .has-deckle > .deckle-paper{z-index:0}
 .has-deckle > :not(.deckle-paper){position:relative;z-index:1}
+
+/* ── ADVANCED PANEL DEFAULT STATE (shell behavior — travels to every series that
+   loads shell.css) ──────────────────────────────────────────────────────────
+   "Design your own" starts CLOSED: collapsed to a 52px oxblood rail, opening only
+   when the user chooses it. State lives on #workshopShell[data-advpanel]; the markup
+   ships data-advpanel="closed" so it RENDERS closed (no open-then-collapse flash).
+   The .stage flex reflows automatically — .main (flex:1) absorbs the width delta,
+   so curator/main/colrail (+ tbc) fill cleanly in both states with no overlap. */
+#workshopShell[data-advpanel="closed"] .adv{
+  width:52px; min-width:52px; flex-shrink:0; cursor:pointer; overflow:hidden;
+}
+#workshopShell[data-advpanel="closed"] .adv > .adv-body,
+#workshopShell[data-advpanel="closed"] .adv > .adv-foot{ display:none; }
+#workshopShell[data-advpanel="closed"] .adv > .adv-rail{
+  height:100%; width:52px; padding:22px 0; justify-content:center; white-space:nowrap;
+  writing-mode:vertical-rl; transform:rotate(180deg); font-size:20px;
+}
+#workshopShell[data-advpanel="closed"] .adv > .adv-rail > .adv-close{ display:none; }
+#workshopShell[data-advpanel="closed"] .adv:hover > .adv-rail{ background:var(--oxblood-deep); }
