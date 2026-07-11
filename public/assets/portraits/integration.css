@@ -20,3 +20,10 @@
    redundant with the proto mural — the mural is the empty state. Belt-and-braces
    in case the engine leaves it shown while a source is absent. */
 #workshopShell[data-hassource="no"] .main #stageEmpty { display: none; }
+
+/* Pass D — To Be Crafted is the 5th column, present only when carrying. The
+   engine sets #workshopShell[data-queue="filled"] when the queue has items
+   (syncQueueFillState). Collapse the column when empty. (#stageQueueCard must
+   stay in the DOM — updateActionBar hard-derefs #queueAddBtn/#runAllBtn — so this
+   is display:none rather than true DOM-absence.) */
+#workshopShell[data-queue="empty"] .tbc { display: none; }

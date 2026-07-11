@@ -308,51 +308,7 @@
                 </div>
               </div>
 
-              <aside class="cur-effects-queue" id="stageQueueCard" hidden>
-                <div class="your-queue-head">To Be Crafted</div>
-                <!-- S5 crafting status: primary + rotating microcopy, shown only
-                     while a piece is running (verbatim copy, never "Rendering"). -->
-                <div class="tbc-crafting-status" id="tbcCraftingStatus" hidden aria-live="polite">
-                  <span class="tbc-craft-primary" id="tbcCraftPrimary">Crafting your piece&hellip;</span>
-                  <span class="tbc-craft-micro" id="tbcCraftMicro"></span>
-                </div>
-                <div class="your-queue-grid queue-rows" id="queueRows" data-count="0"></div>
-                <div class="your-queue-total" id="queueTotalLine" style="display:none"></div>
-
-                <!-- Inscription/plaque step removed — plaques are dropped
-                     entirely for this release (no base plaque on any piece). -->
-
-                <!-- ── FREE PREVIEW BAND — one free watermarked preview per
-                     email (1 per IP enforced server-side). Unlock to a real
-                     Web Quality piece at $4.99. Visible until the visitor's
-                     preview is used. ── -->
-                <!-- Batch piece name: one name for the whole craft batch, applied
-                     to every finish. Optional → server stores "Untitled portrait".
-                     Moderated client-side (mirror) for instant re-prompt; the
-                     server /pieces route is the hard gate. -->
-                <div class="tbc-name">
-                  <label class="tbc-name-label" for="pieceNameInput">Name this piece <span class="tbc-name-opt">(optional)</span></label>
-                  <input type="text" id="pieceNameInput" class="tbc-name-input" maxlength="80" autocomplete="off" placeholder="e.g. The Nguyen Family">
-                  <div class="tbc-name-err" id="pieceNameErr" role="alert" style="display:none"></div>
-                </div>
-                <div class="your-queue-actions bottombar-actions">
-                  <!-- The rail owns "Add this piece" — the card's copy was
-                       orphaned from any draft and confused the flow.
-                       Element kept hidden for JS refs. (Rich 2026-06-12) -->
-                  <button class="stage-action-btn btn-add" id="queueAddBtn" style="display:none" disabled onclick="addToQueue()">
-                    <span class="btn-label" id="addLabel">+ Add this piece</span>
-                    <span class="btn-price" id="addPrice"><span class="now">$4.99</span></span>
-                  </button>
-                  <button class="stage-action-btn btn-render" id="runAllBtn" disabled onclick="runAll()">
-                    <span class="btn-label" id="runAllLabel">Add styles to craft</span>
-                    <span class="btn-price" id="renderPriceWrap" style="display:none"><span class="now" id="renderTotal">$0.00</span></span>
-                  </button>
-                </div>
-                <div class="tbc-footer" id="tbcFooter">Each piece joins your collection</div>
-                <div class="sandbox-note dev-only" id="sandboxNote" style="display:none"></div>
-
-                
-              </aside>
+              
 
               <!-- ── FREE PREVIEW — its own gift card, visually a
                      SEPARATE process from the paid set above, and it can
@@ -376,13 +332,7 @@
                 <div class="rendered-stack" id="renderedStack"></div>
               </section>
 
-              <section class="cur-effects-mycoll" id="stageMyCollection" hidden>
-                <div class="mycoll-head">
-                  <span class="mycoll-title">My Collection</span>
-                  <button class="mycoll-close" onclick="closeMyCollection()">&lsaquo; Back to workshop</button>
-                </div>
-                <div class="mycoll-bands" id="mycollBands"></div>
-              </section>
+              
             </div>
 
           </div>
@@ -482,6 +432,56 @@
   </div>
   </main>
 
+  <!-- TO BE CRAFTED — 5th column, direct child of .stage, before .colrail.
+       Present-when-carrying: CSS-gated on the engine data-queue signal. -->
+  <aside class="tbc">
+    <aside class="cur-effects-queue" id="stageQueueCard">
+                    <div class="your-queue-head">To Be Crafted</div>
+                    <!-- S5 crafting status: primary + rotating microcopy, shown only
+                         while a piece is running (verbatim copy, never "Rendering"). -->
+                    <div class="tbc-crafting-status" id="tbcCraftingStatus" hidden aria-live="polite">
+                      <span class="tbc-craft-primary" id="tbcCraftPrimary">Crafting your piece&hellip;</span>
+                      <span class="tbc-craft-micro" id="tbcCraftMicro"></span>
+                    </div>
+                    <div class="your-queue-grid queue-rows" id="queueRows" data-count="0"></div>
+                    <div class="your-queue-total" id="queueTotalLine" style="display:none"></div>
+    
+                    <!-- Inscription/plaque step removed — plaques are dropped
+                         entirely for this release (no base plaque on any piece). -->
+    
+                    <!-- ── FREE PREVIEW BAND — one free watermarked preview per
+                         email (1 per IP enforced server-side). Unlock to a real
+                         Web Quality piece at $4.99. Visible until the visitor's
+                         preview is used. ── -->
+                    <!-- Batch piece name: one name for the whole craft batch, applied
+                         to every finish. Optional → server stores "Untitled portrait".
+                         Moderated client-side (mirror) for instant re-prompt; the
+                         server /pieces route is the hard gate. -->
+                    <div class="tbc-name">
+                      <label class="tbc-name-label" for="pieceNameInput">Name this piece <span class="tbc-name-opt">(optional)</span></label>
+                      <input type="text" id="pieceNameInput" class="tbc-name-input" maxlength="80" autocomplete="off" placeholder="e.g. The Nguyen Family">
+                      <div class="tbc-name-err" id="pieceNameErr" role="alert" style="display:none"></div>
+                    </div>
+                    <div class="your-queue-actions bottombar-actions">
+                      <!-- The rail owns "Add this piece" — the card's copy was
+                           orphaned from any draft and confused the flow.
+                           Element kept hidden for JS refs. (Rich 2026-06-12) -->
+                      <button class="stage-action-btn btn-add" id="queueAddBtn" style="display:none" disabled onclick="addToQueue()">
+                        <span class="btn-label" id="addLabel">+ Add this piece</span>
+                        <span class="btn-price" id="addPrice"><span class="now">$4.99</span></span>
+                      </button>
+                      <button class="stage-action-btn btn-render" id="runAllBtn" disabled onclick="runAll()">
+                        <span class="btn-label" id="runAllLabel">Add styles to craft</span>
+                        <span class="btn-price" id="renderPriceWrap" style="display:none"><span class="now" id="renderTotal">$0.00</span></span>
+                      </button>
+                    </div>
+                    <div class="tbc-footer" id="tbcFooter">Each piece joins your collection</div>
+                    <div class="sandbox-note dev-only" id="sandboxNote" style="display:none"></div>
+    
+                    
+                  </aside>
+  </aside>
+
   <!-- COLLECTION RAIL — zero state -->
   <aside class="colrail">
     <div class="rail2">My Collection</div>
@@ -495,6 +495,17 @@
       <div class="cr-spine"><span class="name">For Fun</span></div>
       <div class="cr-spine"><span class="name">Artist</span></div>
     </div>
+  
+    <!-- engine My Collection (moved to .colrail) — the owned-library view,
+         shown when opened (data-collection="open"); the proto rail above is the
+         resting state. -->
+    <section class="cur-effects-mycoll" id="stageMyCollection" hidden>
+                    <div class="mycoll-head">
+                      <span class="mycoll-title">My Collection</span>
+                      <button class="mycoll-close" onclick="closeMyCollection()">&lsaquo; Back to workshop</button>
+                    </div>
+                    <div class="mycoll-bands" id="mycollBands"></div>
+                  </section>
   </aside>
 
 </div>
