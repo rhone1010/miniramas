@@ -1,0 +1,22 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   integration.css — glue between the proto shell and the live engine.
+   NOT proto-verbatim and NOT engine CSS: the small set of rules that bind the
+   two together. Loaded last so it wins. Kept separate so portraits.css stays a
+   clean copy of the proto and engine-regions.css stays a clean (scoped) copy of
+   the engine.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Pass C — .main content swap, driven by the engine's data-hassource signal
+   (syncSourcePresence sets #workshopShell[data-hassource]).
+     empty  → the proto mural IS the .main workspace; the engine stage is hidden.
+     source → hide the mural; the engine workspace (#stageViewPreview: curator
+              voice + suggested grid + preview) takes over .main.
+   Scoped to #workshopShell + direct children of .main, so .adv/.curator/.colrail
+   are never touched. */
+#workshopShell[data-hassource="no"]  .main > #stageViewPreview { display: none; }
+#workshopShell[data-hassource="yes"] .main > #mural            { display: none; }
+
+/* The engine's own empty-state card (#stageEmpty, "Your portrait awaits") is
+   redundant with the proto mural — the mural is the empty state. Belt-and-braces
+   in case the engine leaves it shown while a source is absent. */
+#workshopShell[data-hassource="no"] .main #stageEmpty { display: none; }
