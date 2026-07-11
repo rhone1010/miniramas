@@ -91,6 +91,22 @@
     <div class="inv-letter">
       <p>Bring me a <span class="tint">portrait</span> and I&rsquo;ll choose the finishes myself. A clear, face-forward photograph gives me the most to work with. <span class="sig">&mdash;&thinsp;C.</span></p>
     </div>
+  
+    <!-- face-aware framing (D3) — the engine crop/zoom/tap control, merged
+         into .curator inside a .eng marker so the scoped engine CSS styles it.
+         Shows once a photo is in (FA.show clears its hidden attr). -->
+    <div class="eng">
+      <div class="fa-source" id="faSource" hidden>
+          <div class="fa-viewport" id="faVp">
+            <img id="faImg" alt="source">
+            <div class="fa-hint" id="faHint">Drag to frame &middot; Scroll to zoom &middot; Tap a face</div>
+          </div>
+          <div class="fa-controls">
+            <button type="button" class="fa-pill" id="faAuto">Re-center on subject</button>
+            <span class="fa-zoomlabel" id="faZoom">1.0&times;</span>
+          </div>
+        </div>
+    </div>
   </section>
 
   <!-- GHOSTS -->
@@ -395,16 +411,7 @@
         <!-- Face-aware source control (v5). Hidden until a photo loads; the
              square preview above is the empty-state upload target. Once a
              source is in, this replaces it as the framing + subject-pick UI. -->
-        <div class="fa-source" id="faSource" hidden>
-          <div class="fa-viewport" id="faVp">
-            <img id="faImg" alt="source">
-            <div class="fa-hint" id="faHint">Drag to frame &middot; Scroll to zoom &middot; Tap a face</div>
-          </div>
-          <div class="fa-controls">
-            <button type="button" class="fa-pill" id="faAuto">Re-center on subject</button>
-            <span class="fa-zoomlabel" id="faZoom">1.0&times;</span>
-          </div>
-        </div>
+        
 
         <div class="res-banner" id="resBanner" style="display:none"></div>
         <!-- Additional images appear ONLY when the studio asks for them

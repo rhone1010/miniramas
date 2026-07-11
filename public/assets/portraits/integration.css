@@ -39,3 +39,9 @@
 #workshopShell .main .v7-rec-name-float{
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
 }
+
+/* D3 — once a photo is in, the Curator column shows the face-aware framing preview
+   (merged in via .eng); the empty-state upload-card + invitation letter step out.
+   The face-aware itself unhides via FA.show (clears #faSource[hidden]). */
+#workshopShell[data-hassource="yes"] .curator > .upload-card,
+#workshopShell[data-hassource="yes"] .curator > .inv-letter{ display:none; }
