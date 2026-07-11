@@ -4368,6 +4368,24 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 #v7Ghosts .m-title{font-family:var(--serif);font-style:italic;font-size:52px;color:var(--ink);line-height:1}
 #v7Ghosts .m-sub{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--ink-soft);margin-top:6px}
 
+/* ── VISUAL PORT S5 — My Collection redesign (from mycollection-redesign proto) ── */
+#mycollBands .chead{display:flex;align-items:center;gap:12px}
+#mycollBands .chead .cm{width:34px;height:34px;border-radius:50%;background:var(--oxblood);color:var(--paper);font-family:var(--serif);font-style:italic;font-size:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#mycollBands .chead .t{font-family:var(--serif);font-style:italic;font-size:28px;color:var(--ink)}
+#mycollBands .cline{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--ink-soft);margin:4px 0 16px}
+#mycollBands .coll-tabs{display:flex;gap:9px;margin-bottom:24px;flex-wrap:wrap}
+#mycollBands .coll-tab{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--ink);padding:9px 20px;border-radius:999px;cursor:pointer;background:var(--paper);border:1px solid var(--brass-lt,#c4a96e);transition:background .15s,color .15s,border-color .15s}
+#mycollBands .coll-tab:hover{background:var(--champ,#ECDFC1);border-color:var(--brass)}
+#mycollBands .coll-tab.on{background:var(--oxblood);color:var(--vellum);border-color:var(--oxblood)}
+#mycollBands .coll-tab.empty{color:var(--ink-soft)}
+#mycollBands .slab{font-family:var(--sans);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);font-weight:700;margin:6px 0 12px}
+#mycollBands .latest{display:flex;gap:18px;overflow-x:auto;padding-bottom:10px;margin-bottom:26px}
+#mycollBands .lcard{width:300px;flex-shrink:0;background:var(--paper);border:1px solid var(--hairline,#d8cfba);border-radius:6px;overflow:hidden;position:relative;cursor:pointer}
+#mycollBands .lcard img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+#mycollBands .lcard .ti{padding:12px 14px;font-family:var(--serif);font-style:italic;font-size:20px;text-align:center;color:var(--ink)}
+#mycollBands .lcard .pick{position:absolute;top:12px;left:12px;background:var(--oxblood);color:var(--champ,#ECDFC1);font-family:var(--serif);font-style:italic;font-size:15px;padding:4px 12px;border-radius:999px;z-index:2}
+#mycollBands .coll-empty{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--taupe);padding:16px 2px}
+
 /* Inclusive sample imagery — labeled, muted "Example" tile (never competes) */
 .sample-tile{ position:relative; border-radius:var(--v7-r-card); overflow:hidden; opacity:.82; }
 .sample-tile img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -7331,45 +7349,47 @@ async function loadPersistedCollection(){
 }
 
 function renderCollectionBands(){
+  // My Collection redesign (visual port S5): read-only owned library — Curator
+  // head + line, series TABS (oxblood pills, active filled), and a "Latest"
+  // horizontal scroll of the current series' pieces. Pieces open the lightbox
+  // (Download / Send to Print Shop live there — select-to-act, never ×-delete).
+  // "Your Sets" strips are deferred until set-definition data exists (see Bible).
   const wrap = document.getElementById('mycollBands')
   if (!wrap) return
-  wrap.innerHTML = ''
-  const portraitPieces = state.queue.filter(isRenderedPiece).slice().reverse()
-  COLLECTION_SERIES.forEach(series => {
-    const band = document.createElement('div')
-    const items = series === 'Portrait' ? portraitPieces : []
-    // Populated (current) series → large renders, 3 across, horizontal scroll.
-    // Empty series collapse to a slim name-only rail (4h) — no "No X pieces yet".
-    band.className = 'mycoll-band' + (items.length ? ' mycoll-band--active' : ' mycoll-band--empty')
-    let body
-    if (items.length){
-      body = '<div class="mycoll-band-grid">' + items.map(item => {
+  const pieces = state.queue.filter(isRenderedPiece).slice().reverse()   // newest-first
+  if (!state._collSeries) state._collSeries = 'Portrait'
+  const cur   = state._collSeries
+  const items = cur === 'Portrait' ? pieces : []   // Portrait is the only populated series today
+
+  const tabsHtml = COLLECTION_SERIES.map(s => {
+    const populated = (s === 'Portrait' && pieces.length > 0)
+    return `<div class="coll-tab${s === cur ? ' on' : ''}${populated ? '' : ' empty'}" data-series="${escapeHtml(s)}">${escapeHtml(s)}</div>`
+  }).join('')
+
+  const cline = pieces.length
+    ? `${numberWord(pieces.length)} ${pieces.length === 1 ? 'piece' : 'pieces'} crafted so far — kept for good.`
+    : 'Your crafted pieces gather here, kept for good.'
+
+  const latestHtml = items.length
+    ? '<div class="latest">' + items.map(item => {
         const nm = item.mode === 'experimental' ? (item.experimental_label || matLabel(item.preset)) : matLabel(item.preset)
-        return `<div class="mycoll-piece" data-id="${item.id}">
-          <div class="mycoll-piece-img"><img src="${pieceImgSrc(item)}" alt=""><span class="enlarge-hint">Enlarge</span></div>
-          <div class="mycoll-piece-name">${escapeHtml(nm)}</div>
-          <div class="mycoll-piece-actions">
-            <button class="mycoll-act" data-act="download">Download</button>
-            <button class="mycoll-act" data-act="print">Print Shop</button>
-          </div>
-        </div>`
+        return `<div class="lcard" data-id="${item.id}"><img src="${pieceImgSrc(item)}" alt=""><div class="ti">${escapeHtml(nm)}</div></div>`
       }).join('') + '</div>'
-    } else {
-      body = ''   // slim name-only rail
-    }
-    band.innerHTML = `<div class="mycoll-band-head">${escapeHtml(series)}</div>${body}`
-    if (items.length){
-      band.querySelectorAll('.mycoll-piece').forEach(tile => {
-        const item = portraitPieces.find(p => String(p.id) === tile.dataset.id)
-        if (!item) return
-        const src = pieceImgSrc(item)
-        const img = tile.querySelector('.mycoll-piece-img'); if (img) img.onclick = () => openLightbox(src, item)
-        const dl = tile.querySelector('[data-act="download"]'); if (dl) dl.onclick = e => { e.stopPropagation(); downloadPiece(item) }
-        const pr = tile.querySelector('[data-act="print"]');    if (pr) pr.onclick = e => { e.stopPropagation(); sendToPrintShop(item) }
-        const mo = tile.querySelector('[data-act="more"]');     if (mo) mo.onclick = e => { e.stopPropagation(); makeMoreInSeries(item) }
-      })
-    }
-    wrap.appendChild(band)
+    : `<div class="coll-empty">Your ${escapeHtml(cur)} pieces will gather here.</div>`
+
+  wrap.innerHTML =
+      '<div class="chead"><div class="cm">C</div><div class="t">Your Collection</div></div>'
+    + `<div class="cline">${cline}</div>`
+    + `<div class="coll-tabs">${tabsHtml}</div>`
+    + '<div class="slab">Latest</div>'
+    + latestHtml
+
+  wrap.querySelectorAll('.coll-tab').forEach(tab => {
+    tab.onclick = () => { state._collSeries = tab.dataset.series; renderCollectionBands() }
+  })
+  wrap.querySelectorAll('.lcard').forEach(card => {
+    const item = items.find(p => String(p.id) === card.dataset.id)
+    if (item) card.onclick = () => openLightbox(pieceImgSrc(item), item)
   })
 }
 
