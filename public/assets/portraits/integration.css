@@ -27,3 +27,15 @@
    stay in the DOM — updateActionBar hard-derefs #queueAddBtn/#runAllBtn — so this
    is display:none rather than true DOM-absence.) */
 #workshopShell[data-queue="empty"] .tbc { display: none; }
+
+/* Pass D polish — the engine suggested grid was sized for the v7 "Suggested"
+   column (repeat(3) at ~244px cards). In the proto .main that overflows, and the
+   floating name labels (.v7-rec-name-float) of adjacent cards collide ("Pencil
+   Sketch"/"Charcoal & Chalk" overlap Rich flagged). Fit the grid to the column,
+   and keep each label on one clean line. */
+#workshopShell .main #curEffectCards.curator-effect-grid{
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+#workshopShell .main .v7-rec-name-float{
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
