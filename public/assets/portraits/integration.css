@@ -45,3 +45,19 @@
    The face-aware itself unhides via FA.show (clears #faSource[hidden]). */
 #workshopShell[data-hassource="yes"] .curator > .upload-card,
 #workshopShell[data-hassource="yes"] .curator > .inv-letter{ display:none; }
+
+/* ── CURATOR SPLIT (five-spine): voice card -> .curator, suggested grid -> .main ──
+   STRUCTURAL fix applied; the visual polish (deckle/header/grid columns/spacing)
+   is pending a locked occupied-state spec. */
+/* Post-upload: the empty-state proto content (header/upload/invitation) steps out;
+   the engine voice card is shown in its place. */
+#workshopShell[data-hassource="yes"] .curator > .cur-head,
+#workshopShell[data-hassource="yes"] .curator > .upload-card,
+#workshopShell[data-hassource="yes"] .curator > .inv-letter{ display:none; }
+#workshopShell[data-hassource="yes"] .curator .cur-voice .curator-panel{ display:block; }
+/* One deckle only: the .curator card (deckle.js) is the single deckled surface.
+   Strip the engine panel's own paper + card chrome so it doesn't nest a 2nd edge. */
+.curator .cur-voice .curator-panel{ background:transparent; box-shadow:none; border:none; padding:0; }
+.curator .cur-voice .curator-paper{ display:none; }
+.curator .cur-voice .curator-masthead{ display:none; }  /* proto .cur-head is the header */
+/* the suggested grid fills .main (already responsive from the earlier polish fix). */

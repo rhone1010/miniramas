@@ -107,6 +107,194 @@
           </div>
         </div>
     </div>
+  
+    <!-- Curator voice card (moved from .main) — the five-spine puts the
+         Curator voice in .curator; .eng lets the scoped engine CSS style it. -->
+    <div class="eng cur-voice">
+      <div class="curator-panel curator-panel-compact" id="curatorPanel" style="display:none">
+      
+                  <!-- Deckled champagne paper (v5 §2). Sized to the card by
+                       sizeCuratorPaper() via a ResizeObserver so the torn edge
+                       stays even as steps switch. -->
+                  <svg class="curator-paper" id="curatorPaper" preserveAspectRatio="none" viewBox="0 0 384 760" aria-hidden="true">
+                    <defs>
+                      <filter id="curatorDeckle" x="-8%" y="-6%" width="116%" height="112%">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.014 0.016" numOctaves="4" seed="7" result="n"/>
+                        <feDisplacementMap in="SourceGraphic" in2="n" scale="16" xChannelSelector="R" yChannelSelector="G"/>
+                      </filter>
+                      <!-- Finer/lighter deckle for the upload placeholder: higher noise
+                           frequency + smaller displacement = a subtle torn edge. -->
+                      <filter id="fineDeckle" x="-6%" y="-6%" width="112%" height="112%">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.03 0.032" numOctaves="4" seed="11" result="n"/>
+                        <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+                      </filter>
+                      <!-- Torn bottom edge for the Tier-1 panel rails. -->
+                      <filter id="railDeckle" x="-2%" y="-60%" width="104%" height="220%">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.02 0.05" numOctaves="3" seed="5" result="n"/>
+                        <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+                      </filter>
+                    </defs>
+                    <rect id="curatorPaperRect" x="14" y="14" width="356" height="732" rx="7" fill="#ECDFC1" stroke="#c4b48f" stroke-width="1.5" filter="url(#curatorDeckle)"/>
+                  </svg>
+      
+                  <!-- Masthead — C mark + Curator, above the voiced body -->
+                  <div class="curator-masthead">
+                    <div class="curator-cmark">
+                      <svg viewBox="0 0 67 75" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <ellipse cx="19.5" cy="34.5" rx="19.5" ry="21.5" fill="#763F41"/>
+                        <path d="M49.1504 15.4297C49.0592 16.2272 48.8086 17.4919 48.3984 19.2236C48.0111 20.9326 47.6807 22.2201 47.4072 23.0859L46.416 23.0518V22.1631C46.416 19.6794 46.1426 18.1299 45.5957 17.5146C45.0716 16.8766 43.9437 16.5576 42.2119 16.5576C41.5055 16.5804 40.9587 16.5918 40.5713 16.5918H39.3066C38.6914 16.569 38.2926 16.5576 38.1104 16.5576C36.4925 16.5576 34.681 16.8766 32.6758 17.5146C30.6706 18.1299 28.2666 19.3034 25.4639 21.0352C24.165 21.8555 22.2282 23.4733 19.6533 25.8887C18.6507 26.8457 16.9303 29.0674 14.4922 32.5537L13.3301 34.6045L11.8604 38.2959C11.4958 39.5036 11.2337 40.6657 11.0742 41.7822C10.9375 42.8988 10.8691 44.0381 10.8691 45.2002C10.8691 46.7497 11.04 48.208 11.3818 49.5752C11.7236 50.9424 12.1794 51.9906 12.749 52.7197C13.9567 54.2236 15.2327 55.4769 16.5771 56.4795C17.9443 57.4593 19.5052 58.2227 21.2598 58.7695C23.0371 59.3164 25.0879 59.5898 27.4121 59.5898C29.8047 59.5898 31.7757 59.248 33.3252 58.5645C34.8747 57.8809 36.2305 56.9124 37.3926 55.6592C37.7799 55.249 38.8737 53.6426 40.6738 50.8398L41.8018 51.1816L39.9561 56.9922C39.637 57.9948 39.3864 58.724 39.2041 59.1797C37.723 59.7266 36.1963 60.1253 34.624 60.376C31.6162 60.8545 28.6882 61.0938 25.8398 61.0938C21.6699 61.0938 18.457 60.695 16.2012 59.8975C13.9453 59.0999 11.7464 57.71 9.60449 55.7275C8.0778 54.3148 6.91569 52.526 6.11816 50.3613C5.32064 48.1738 4.92188 46.1458 4.92188 44.2773C4.92188 41.4518 5.35482 39.0479 6.2207 37.0654C8.04362 32.8727 10.1286 29.5459 12.4756 27.085C14.8454 24.6012 17.6367 22.4023 20.8496 20.4883C23.1738 19.0983 25.874 17.8109 28.9502 16.626C32.0492 15.4183 35.2393 14.8145 38.5205 14.8145L44.5361 14.7461C45.9945 14.7461 47.5326 14.974 49.1504 15.4297Z" fill="#F0EAE0"/>
+                      </svg>
+                    </div>
+                    <div class="curator-mast-title">Curator</div>
+                  </div>
+                  <div class="curator-mast-rule"></div>
+      
+                  <!-- Analysis status — visible during the initial photo read -->
+                  <div class="curator-step" id="curStepAnalysis" style="display:none">
+                    <div class="curator-panel-eyebrow">The Curator</div>
+                    <div class="curator-panel-title">Reading your photograph</div>
+                    <div class="curator-loading">
+                      <div class="curator-spin"></div>
+                      <span id="curAnalysisStatusText">Taking a look at the source...</span>
+                    </div>
+                    <div class="curator-skip-note" id="curAnalysisQualityNote" style="display:none"></div>
+                  </div>
+      
+                  <!-- Quality failure — bad source photo -->
+                  <div class="curator-step" id="curStepQualityFail" style="display:none">
+                    <div class="curator-panel-eyebrow">The Curator</div>
+                    <div class="curator-panel-title">This photograph won&rsquo;t make a strong piece</div>
+                    <div class="curator-quality-bad" id="curQualityFailMsg">
+                      The source photo has quality issues that will compromise the final piece.
+                      Please upload a clearer, well-lit photograph.
+                    </div>
+                  </div>
+      
+                  <!-- Photo advisory — face-only source on body-dependent styles.
+                       NON-BLOCKING: user can upload more photos OR continue with
+                       the current one. Per the Curator Workflow spec (2026-06):
+                       "Never block the user from proceeding. Additional photos are
+                       recommendations, not requirements." -->
+                  <div class="curator-step" id="curStepAdvisory" style="display:none">
+                    <div class="curator-panel-eyebrow">The Curator</div>
+                    <div class="curator-panel-title">More photos would help</div>
+                    <div class="curator-panel-lead">
+                      This photo gives us an excellent look at the face. For the strongest
+                      finished pieces &mdash; especially styles such as Torn Paper, Sheet Music,
+                      and Folded Book &mdash; we recommend uploading one or two additional photos
+                      that show your shoulders, clothing, posture, or upper body.
+                    </div>
+                    <div class="curator-actions">
+                      <button class="curator-action-btn primary" onclick="curatorAdvisoryUpload()">Upload Additional Photos</button>
+                      <button class="curator-action-btn" onclick="curatorAdvisoryContinue()">Continue with Current Photo</button>
+                    </div>
+                  </div>
+      
+                  <!-- Subject pick — multi-person photo in a solo Series. The
+                       Curator offers each person it can see as a one-tap choice,
+                       with Groups as the graceful second path. Never blocks:
+                       "most prominent" remains available. Contract: analyze
+                       response carries people[] — see engine sync doc. -->
+                  <div class="curator-step" id="curStepSubjectPick" style="display:none">
+                    <div class="curator-panel-eyebrow">The Curator</div>
+                    <div class="curator-panel-title" id="subjectPickTitle">We see several people in your photograph</div>
+                    <div class="curator-panel-lead">
+                      Portrait crafts one person alone. Who shall we craft?
+                    </div>
+                    <div class="subject-pick-btns" id="subjectPickBtns"></div>
+                    <div class="subject-pick-alt">
+                      <button class="curator-action-btn" onclick="subjectPickProminent()">Craft the most prominent face</button>
+                      <button class="curator-action-btn sp-groups" onclick="gotoSeries('groups')">Or craft them together in Groups &rsaquo;</button>
+                    </div>
+                  </div>
+      
+                  <!-- SOURCE REVIEW — stage 1, before any suggestion. Every
+                       photograph note (soft, dim, small face, more photos)
+                       lands HERE as a list, not scattered rail banners.
+                       (Rich 2026-06-12) -->
+                  <div class="curator-step" id="curStepSourceReview" style="display:none">
+                    <div class="curator-panel-eyebrow">The Curator</div>
+                    <div class="curator-panel-title">About your photograph</div>
+                    <div class="curator-panel-lead">A few notes from the studio before we begin:</div>
+                    <ul class="source-review-list" id="sourceReviewList"></ul>
+                    <div class="subject-pick-alt">
+                      <button class="subject-pick-btn" onclick="sourceReviewContinue()"><span>Continue</span></button>
+                      <button class="curator-action-btn" id="srUploadBtn" style="display:none" onclick="sourceReviewUploadMore()">Upload Additional Photos</button>
+                      <button class="curator-action-btn" onclick="document.getElementById('file1').click()">Choose another photo</button>
+                    </div>
+                  </div>
+      
+                  <!-- Framing offer — analyze saw a full figure; the Curator
+                       offers the Statue Image. Copy locked per Rich. -->
+                  <div class="curator-step" id="curStepFramingOffer" style="display:none">
+                    <div class="curator-panel-eyebrow">The Curator</div>
+                    <div class="curator-panel-title">A full figure in your photograph</div>
+                    <div class="curator-panel-lead">
+                      We noticed you have a full body shot &mdash; would you prefer Three-Quarter framing instead?
+                    </div>
+                    <div class="subject-pick-alt">
+                      <button class="subject-pick-btn" onclick="chooseFramingOffer('statuesque')"><span>Use Three-Quarter</span></button>
+                      <button class="curator-action-btn" onclick="chooseFramingOffer('signature')">Keep the Signature Pose</button>
+                    </div>
+                  </div>
+      
+                  <!-- Effect curator — 2-col: left recs, right Your Queue card -->
+                  <div class="curator-step cur-effects-layout" id="curStepEffects" style="display:none">
+                    <div class="coll-spine" id="curatorSpine" onclick="suggExpand()">Curator</div>
+                    <div class="coll-spine" id="queueSpine" onclick="queueExpand()">To Be Crafted</div>
+                    <div class="cur-effects-left">
+                      <!-- Header: text left, actions top-right (Rich mock 2026-06-12) -->
+                      <div class="cur-effects-head">
+                        <div class="cur-effects-head-text">
+                          <div class="cur-effects-mark">
+                            <svg class="cur-effects-cmark" viewBox="0 0 67 75" aria-hidden="true"><use href="#curatorCMark"/></svg>
+                            <span class="cur-effects-mark-label">Curator</span>
+                          </div>
+                          <div class="curator-panel-title" id="curEffectsTitle">Finishes we&rsquo;d choose for you</div>
+                          <div class="curator-panel-lead" id="curEffectsLead">
+                            <span class="cur-analysis">Your photograph carries real warmth and presence.</span>
+                            <span class="cur-blurb">Here are five finishes I&rsquo;d reach for first. &mdash; C.</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="cur-source-feedback" id="curSourceFeedback" style="display:none"></div>
+                      <div class="curator-loading" id="curEffectsLoading">
+                        <div class="curator-spin"></div>
+                        <span>The Curator is selecting from the catalog...</span>
+                      </div>
+                      
+                      <!-- suggested grid (moved to .main from curatorPanel) -->
+                    </div>
+      
+                    
+      
+                    <!-- ── FREE PREVIEW — its own gift card, visually a
+                           SEPARATE process from the paid set above, and it can
+                           no longer push the craft buttons down. ── -->
+                      <div class="preview-band preview-gift preview-float" id="previewBand" style="display:none">
+                        <div class="pb-title">Your first piece is on us</div>
+                        <div class="pb-body">We&rsquo;ll craft your first piece free, as a watermarked preview. Enter your email and we&rsquo;ll begin.</div>
+                        <div class="pb-row">
+                          <input type="email" id="previewEmailInput" class="pb-email" placeholder="you@email.com" autocomplete="email">
+                          <button class="pb-btn" id="previewCraftBtn" onclick="startFreePreview()">Craft my free preview</button>
+                        </div>
+                        <div class="pb-note" id="previewNote" style="display:none"></div>
+                        <button class="pb-dismiss" onclick="dismissPreviewOffer()">No thanks</button>
+                      </div>
+      
+                    <section class="cur-effects-rendered" id="stageRenderedCol" hidden>
+                      <div class="rendered-head">
+                        <span>Your Pieces</span>
+                        <button class="mycoll-open-tab" onclick="openMyCollection()">My Collection &rsaquo;</button>
+                      </div>
+                      <div class="rendered-stack" id="renderedStack"></div>
+                    </section>
+      
+                    
+                  </div>
+      
+                </div>
+    </div>
   </section>
 
   <!-- GHOSTS -->
@@ -161,197 +349,7 @@
                Sub-panels (#curStepAnalysis, #curStepTorso, #curStepFallback,
                #curStepEffects) show one at a time based on state.curator.step.
                ─────────────────────────────────────────────────────── -->
-          <div class="curator-panel curator-panel-compact" id="curatorPanel" style="display:none">
-
-            <!-- Deckled champagne paper (v5 §2). Sized to the card by
-                 sizeCuratorPaper() via a ResizeObserver so the torn edge
-                 stays even as steps switch. -->
-            <svg class="curator-paper" id="curatorPaper" preserveAspectRatio="none" viewBox="0 0 384 760" aria-hidden="true">
-              <defs>
-                <filter id="curatorDeckle" x="-8%" y="-6%" width="116%" height="112%">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.014 0.016" numOctaves="4" seed="7" result="n"/>
-                  <feDisplacementMap in="SourceGraphic" in2="n" scale="16" xChannelSelector="R" yChannelSelector="G"/>
-                </filter>
-                <!-- Finer/lighter deckle for the upload placeholder: higher noise
-                     frequency + smaller displacement = a subtle torn edge. -->
-                <filter id="fineDeckle" x="-6%" y="-6%" width="112%" height="112%">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.03 0.032" numOctaves="4" seed="11" result="n"/>
-                  <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
-                </filter>
-                <!-- Torn bottom edge for the Tier-1 panel rails. -->
-                <filter id="railDeckle" x="-2%" y="-60%" width="104%" height="220%">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.02 0.05" numOctaves="3" seed="5" result="n"/>
-                  <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
-                </filter>
-              </defs>
-              <rect id="curatorPaperRect" x="14" y="14" width="356" height="732" rx="7" fill="#ECDFC1" stroke="#c4b48f" stroke-width="1.5" filter="url(#curatorDeckle)"/>
-            </svg>
-
-            <!-- Masthead — C mark + Curator, above the voiced body -->
-            <div class="curator-masthead">
-              <div class="curator-cmark">
-                <svg viewBox="0 0 67 75" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <ellipse cx="19.5" cy="34.5" rx="19.5" ry="21.5" fill="#763F41"/>
-                  <path d="M49.1504 15.4297C49.0592 16.2272 48.8086 17.4919 48.3984 19.2236C48.0111 20.9326 47.6807 22.2201 47.4072 23.0859L46.416 23.0518V22.1631C46.416 19.6794 46.1426 18.1299 45.5957 17.5146C45.0716 16.8766 43.9437 16.5576 42.2119 16.5576C41.5055 16.5804 40.9587 16.5918 40.5713 16.5918H39.3066C38.6914 16.569 38.2926 16.5576 38.1104 16.5576C36.4925 16.5576 34.681 16.8766 32.6758 17.5146C30.6706 18.1299 28.2666 19.3034 25.4639 21.0352C24.165 21.8555 22.2282 23.4733 19.6533 25.8887C18.6507 26.8457 16.9303 29.0674 14.4922 32.5537L13.3301 34.6045L11.8604 38.2959C11.4958 39.5036 11.2337 40.6657 11.0742 41.7822C10.9375 42.8988 10.8691 44.0381 10.8691 45.2002C10.8691 46.7497 11.04 48.208 11.3818 49.5752C11.7236 50.9424 12.1794 51.9906 12.749 52.7197C13.9567 54.2236 15.2327 55.4769 16.5771 56.4795C17.9443 57.4593 19.5052 58.2227 21.2598 58.7695C23.0371 59.3164 25.0879 59.5898 27.4121 59.5898C29.8047 59.5898 31.7757 59.248 33.3252 58.5645C34.8747 57.8809 36.2305 56.9124 37.3926 55.6592C37.7799 55.249 38.8737 53.6426 40.6738 50.8398L41.8018 51.1816L39.9561 56.9922C39.637 57.9948 39.3864 58.724 39.2041 59.1797C37.723 59.7266 36.1963 60.1253 34.624 60.376C31.6162 60.8545 28.6882 61.0938 25.8398 61.0938C21.6699 61.0938 18.457 60.695 16.2012 59.8975C13.9453 59.0999 11.7464 57.71 9.60449 55.7275C8.0778 54.3148 6.91569 52.526 6.11816 50.3613C5.32064 48.1738 4.92188 46.1458 4.92188 44.2773C4.92188 41.4518 5.35482 39.0479 6.2207 37.0654C8.04362 32.8727 10.1286 29.5459 12.4756 27.085C14.8454 24.6012 17.6367 22.4023 20.8496 20.4883C23.1738 19.0983 25.874 17.8109 28.9502 16.626C32.0492 15.4183 35.2393 14.8145 38.5205 14.8145L44.5361 14.7461C45.9945 14.7461 47.5326 14.974 49.1504 15.4297Z" fill="#F0EAE0"/>
-                </svg>
-              </div>
-              <div class="curator-mast-title">Curator</div>
-            </div>
-            <div class="curator-mast-rule"></div>
-
-            <!-- Analysis status — visible during the initial photo read -->
-            <div class="curator-step" id="curStepAnalysis" style="display:none">
-              <div class="curator-panel-eyebrow">The Curator</div>
-              <div class="curator-panel-title">Reading your photograph</div>
-              <div class="curator-loading">
-                <div class="curator-spin"></div>
-                <span id="curAnalysisStatusText">Taking a look at the source...</span>
-              </div>
-              <div class="curator-skip-note" id="curAnalysisQualityNote" style="display:none"></div>
-            </div>
-
-            <!-- Quality failure — bad source photo -->
-            <div class="curator-step" id="curStepQualityFail" style="display:none">
-              <div class="curator-panel-eyebrow">The Curator</div>
-              <div class="curator-panel-title">This photograph won&rsquo;t make a strong piece</div>
-              <div class="curator-quality-bad" id="curQualityFailMsg">
-                The source photo has quality issues that will compromise the final piece.
-                Please upload a clearer, well-lit photograph.
-              </div>
-            </div>
-
-            <!-- Photo advisory — face-only source on body-dependent styles.
-                 NON-BLOCKING: user can upload more photos OR continue with
-                 the current one. Per the Curator Workflow spec (2026-06):
-                 "Never block the user from proceeding. Additional photos are
-                 recommendations, not requirements." -->
-            <div class="curator-step" id="curStepAdvisory" style="display:none">
-              <div class="curator-panel-eyebrow">The Curator</div>
-              <div class="curator-panel-title">More photos would help</div>
-              <div class="curator-panel-lead">
-                This photo gives us an excellent look at the face. For the strongest
-                finished pieces &mdash; especially styles such as Torn Paper, Sheet Music,
-                and Folded Book &mdash; we recommend uploading one or two additional photos
-                that show your shoulders, clothing, posture, or upper body.
-              </div>
-              <div class="curator-actions">
-                <button class="curator-action-btn primary" onclick="curatorAdvisoryUpload()">Upload Additional Photos</button>
-                <button class="curator-action-btn" onclick="curatorAdvisoryContinue()">Continue with Current Photo</button>
-              </div>
-            </div>
-
-            <!-- Subject pick — multi-person photo in a solo Series. The
-                 Curator offers each person it can see as a one-tap choice,
-                 with Groups as the graceful second path. Never blocks:
-                 "most prominent" remains available. Contract: analyze
-                 response carries people[] — see engine sync doc. -->
-            <div class="curator-step" id="curStepSubjectPick" style="display:none">
-              <div class="curator-panel-eyebrow">The Curator</div>
-              <div class="curator-panel-title" id="subjectPickTitle">We see several people in your photograph</div>
-              <div class="curator-panel-lead">
-                Portrait crafts one person alone. Who shall we craft?
-              </div>
-              <div class="subject-pick-btns" id="subjectPickBtns"></div>
-              <div class="subject-pick-alt">
-                <button class="curator-action-btn" onclick="subjectPickProminent()">Craft the most prominent face</button>
-                <button class="curator-action-btn sp-groups" onclick="gotoSeries('groups')">Or craft them together in Groups &rsaquo;</button>
-              </div>
-            </div>
-
-            <!-- SOURCE REVIEW — stage 1, before any suggestion. Every
-                 photograph note (soft, dim, small face, more photos)
-                 lands HERE as a list, not scattered rail banners.
-                 (Rich 2026-06-12) -->
-            <div class="curator-step" id="curStepSourceReview" style="display:none">
-              <div class="curator-panel-eyebrow">The Curator</div>
-              <div class="curator-panel-title">About your photograph</div>
-              <div class="curator-panel-lead">A few notes from the studio before we begin:</div>
-              <ul class="source-review-list" id="sourceReviewList"></ul>
-              <div class="subject-pick-alt">
-                <button class="subject-pick-btn" onclick="sourceReviewContinue()"><span>Continue</span></button>
-                <button class="curator-action-btn" id="srUploadBtn" style="display:none" onclick="sourceReviewUploadMore()">Upload Additional Photos</button>
-                <button class="curator-action-btn" onclick="document.getElementById('file1').click()">Choose another photo</button>
-              </div>
-            </div>
-
-            <!-- Framing offer — analyze saw a full figure; the Curator
-                 offers the Statue Image. Copy locked per Rich. -->
-            <div class="curator-step" id="curStepFramingOffer" style="display:none">
-              <div class="curator-panel-eyebrow">The Curator</div>
-              <div class="curator-panel-title">A full figure in your photograph</div>
-              <div class="curator-panel-lead">
-                We noticed you have a full body shot &mdash; would you prefer Three-Quarter framing instead?
-              </div>
-              <div class="subject-pick-alt">
-                <button class="subject-pick-btn" onclick="chooseFramingOffer('statuesque')"><span>Use Three-Quarter</span></button>
-                <button class="curator-action-btn" onclick="chooseFramingOffer('signature')">Keep the Signature Pose</button>
-              </div>
-            </div>
-
-            <!-- Effect curator — 2-col: left recs, right Your Queue card -->
-            <div class="curator-step cur-effects-layout" id="curStepEffects" style="display:none">
-              <div class="coll-spine" id="curatorSpine" onclick="suggExpand()">Curator</div>
-              <div class="coll-spine" id="queueSpine" onclick="queueExpand()">To Be Crafted</div>
-              <div class="cur-effects-left">
-                <!-- Header: text left, actions top-right (Rich mock 2026-06-12) -->
-                <div class="cur-effects-head">
-                  <div class="cur-effects-head-text">
-                    <div class="cur-effects-mark">
-                      <svg class="cur-effects-cmark" viewBox="0 0 67 75" aria-hidden="true"><use href="#curatorCMark"/></svg>
-                      <span class="cur-effects-mark-label">Curator</span>
-                    </div>
-                    <div class="curator-panel-title" id="curEffectsTitle">Finishes we&rsquo;d choose for you</div>
-                    <div class="curator-panel-lead" id="curEffectsLead">
-                      <span class="cur-analysis">Your photograph carries real warmth and presence.</span>
-                      <span class="cur-blurb">Here are five finishes I&rsquo;d reach for first. &mdash; C.</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="cur-source-feedback" id="curSourceFeedback" style="display:none"></div>
-                <div class="curator-loading" id="curEffectsLoading">
-                  <div class="curator-spin"></div>
-                  <span>The Curator is selecting from the catalog...</span>
-                </div>
-                <div class="curator-effect-grid" id="curEffectCards" style="display:none"></div>
-
-                <!-- Experimental Effects — additive "out there" finishes
-                     (portraits-experimental.ts). One button per effect; tapping
-                     queues a render that bypasses presets/material/location. -->
-                <div class="experimental-fx" id="experimentalFx" style="display:none">
-                  <div class="experimental-fx-head">Experimental Effects</div>
-                  <div class="experimental-fx-sub">A dozen out-there finishes, still under test &mdash; tap one to craft it.</div>
-                  <div class="experimental-fx-grid" id="experimentalButtons"></div>
-                </div>
-              </div>
-
-              
-
-              <!-- ── FREE PREVIEW — its own gift card, visually a
-                     SEPARATE process from the paid set above, and it can
-                     no longer push the craft buttons down. ── -->
-                <div class="preview-band preview-gift preview-float" id="previewBand" style="display:none">
-                  <div class="pb-title">Your first piece is on us</div>
-                  <div class="pb-body">We&rsquo;ll craft your first piece free, as a watermarked preview. Enter your email and we&rsquo;ll begin.</div>
-                  <div class="pb-row">
-                    <input type="email" id="previewEmailInput" class="pb-email" placeholder="you@email.com" autocomplete="email">
-                    <button class="pb-btn" id="previewCraftBtn" onclick="startFreePreview()">Craft my free preview</button>
-                  </div>
-                  <div class="pb-note" id="previewNote" style="display:none"></div>
-                  <button class="pb-dismiss" onclick="dismissPreviewOffer()">No thanks</button>
-                </div>
-
-              <section class="cur-effects-rendered" id="stageRenderedCol" hidden>
-                <div class="rendered-head">
-                  <span>Your Pieces</span>
-                  <button class="mycoll-open-tab" onclick="openMyCollection()">My Collection &rsaquo;</button>
-                </div>
-                <div class="rendered-stack" id="renderedStack"></div>
-              </section>
-
-              
-            </div>
-
-          </div>
+          
 
           <!-- Source + settings -->
           <div class="stage-preview-source">
@@ -437,7 +435,20 @@
         </div>
       </div>
   </div>
-  </main>
+    <!-- suggested grid (the finishes) — .main is the Suggested spine -->
+  <div class="eng cur-suggested">
+    <div class="curator-effect-grid" id="curEffectCards" style="display:none"></div>
+    
+                    <!-- Experimental Effects — additive "out there" finishes
+                         (portraits-experimental.ts). One button per effect; tapping
+                         queues a render that bypasses presets/material/location. -->
+                    <div class="experimental-fx" id="experimentalFx" style="display:none">
+                      <div class="experimental-fx-head">Experimental Effects</div>
+                      <div class="experimental-fx-sub">A dozen out-there finishes, still under test &mdash; tap one to craft it.</div>
+                      <div class="experimental-fx-grid" id="experimentalButtons"></div>
+                    </div>
+  </div>
+</main>
 
   <!-- TO BE CRAFTED — 5th column, direct child of .stage, before .colrail.
        Present-when-carrying: CSS-gated on the engine data-queue signal. -->
