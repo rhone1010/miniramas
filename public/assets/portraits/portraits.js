@@ -30,6 +30,14 @@ var ICON={
  fantasy_crystal:'/Icons/Icon_Effect__0022_Fantasy-Crystal.png', armor:'/Icons/Icon_Effect__0023_Armor.png'
 };
 var advState={mat:'walnut',set:'on a mantel',frame:'signature pose',base:4.99,extra:0};
+/* ── ENGINE HOOKS ── the proto panel is presentational; these route each control
+   to the live engine's state functions (defined by the inline engine). Earth&Ore
+   and Artists discs set the base material; Curiosities are experimental finishes
+   that queue directly (engine requires an uploaded photo first). */
+function engineDisc(group,key){
+  if(group==='curios'){ if(typeof queueExperimental==='function') queueExperimental(key); return; }
+  if(typeof selectMat==='function') selectMat(key);
+}
 function renderSwatches(group){
   var el=document.getElementById('advSwatches');el.innerHTML='';
   MATS[group].forEach(function(m){
@@ -40,6 +48,7 @@ function renderSwatches(group){
     d.onclick=function(){
       [].slice.call(el.children).forEach(function(x){x.classList.remove('on')});
       d.classList.add('on');advState.mat=m[1].toLowerCase();advRecipe();
+      engineDisc(group,m[0]);   /* HOOK → engine material / experimental */
     };
     el.appendChild(d);
   });
@@ -47,7 +56,10 @@ function renderSwatches(group){
 [].slice.call(document.querySelectorAll('#advModes button')).forEach(function(b){
   b.onclick=function(){
     [].slice.call(document.querySelectorAll('#advModes button')).forEach(function(x){x.classList.remove('on')});
-    b.classList.add('on');renderSwatches(b.getAttribute('data-g'));
+    b.classList.add('on');
+    var g=b.getAttribute('data-g');
+    if(g!=='curios'&&typeof onSeriesClick==='function') onSeriesClick(g==='artists'?'artists_gallery':'realistic');   /* HOOK → engine series */
+    renderSwatches(g);
   };
 });
 renderSwatches('earth');
@@ -56,23 +68,32 @@ function advRecipe(){
   document.getElementById('advRecipe').innerHTML='A <span class="w">'+advState.mat+'</span> portrait, <span class="w">'+advState.set+'</span>, <span class="w">'+advState.frame+'</span>.';
   document.getElementById('advAdd').textContent='Add this piece \u00B7 '+advMoney(advState.base+advState.extra);
 }
-function advWire(id,key){
+function advWire(id,key,hook){
   var root=document.getElementById(id);
   [].slice.call(root.children).forEach(function(el){
     el.addEventListener('click',function(){
       [].slice.call(root.children).forEach(function(x){x.classList.remove('on')});
       el.classList.add('on');advState[key]=el.getAttribute('data-nm');advRecipe();
+      if(hook) hook(el.getAttribute('data-nm'));
     });
   });
 }
-advWire('advGlyphs','set');advWire('advFrames','frame');
+advWire('advGlyphs','set',function(nm){var m={'on a mantel':'mantel','on a pedestal':'pedestal','on a gradient':'gradient'}[nm];if(m&&typeof onLocationPick==='function')onLocationPick(m);});   /* HOOK → engine location */
+advWire('advFrames','frame',function(nm){var m={'bust framing':'bust','signature pose':'signature','statuesque':'statuesque'}[nm];if(m&&typeof selectFramingV2==='function')selectFramingV2(m);});   /* HOOK → engine framing */
 [].slice.call(document.querySelectorAll('#advLedger .lrow')).forEach(function(r){
   r.addEventListener('click',function(){
     [].slice.call(document.querySelectorAll('#advLedger .lrow')).forEach(function(x){x.classList.remove('on')});
     r.classList.add('on');advState.extra=parseFloat(r.getAttribute('data-p'));advRecipe();
+    var res={'0':'1k','2':'2k','4.99':'4k'}[r.getAttribute('data-p')];if(res&&typeof onResolutionPick==='function')onResolutionPick(res);   /* HOOK → engine resolution */
   });
 });
 advRecipe();
+/* Add-this-piece → engine queue; and sync the engine's default selection to the
+   proto's default active disc ('walnut') so engine state matches the UI before
+   the first click. */
+var advAddBtn=document.getElementById('advAdd');
+if(advAddBtn) advAddBtn.addEventListener('click',function(){if(typeof addToQueue==='function')addToQueue();});   /* HOOK → engine addToQueue */
+if(typeof selectMat==='function') selectMat('walnut');
 var POOL=[
  {img:'/previews/portraits/PLACEHOLDER.jpg',label:'Mercury'},
  {img:'/previews/portraits/PLACEHOLDER.jpg',label:'Dragon Skin'},
