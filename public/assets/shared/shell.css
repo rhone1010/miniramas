@@ -1,0 +1,47 @@
+/* ============================================================
+   LITEN & CO — LOCKED REFERENCE — WORKSHOP EMPTY STATE @1920
+   Claude Code: port this CSS VERBATIM. Do not re-express in
+   Tailwind. Do not adjust any value. Images are placeholders —
+   keep production preview-library sources and rotation.
+   ============================================================ */
+:root{
+  --vellum:#f3ede1; --paper:#faf6ec; --panel:#ece2d0; --paper-up:#f4f2ed;
+  --ink:#2a241e; --ink-soft:#5a5248; --oxblood:#7d4242; --oxblood-deep:#6a3737;
+  --brass:#75623a; --taupe:#aba39a; --sage:#8a9a7b; --hairline:#d8cfba;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',sans-serif;
+  --ease-out:cubic-bezier(.22,.7,.3,1);
+  --dur-micro:150ms; --dur-state:250ms; --dur-panel:400ms;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+button{font:inherit;border:none;background:none;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+body{background:var(--vellum);font-family:var(--serif);color:var(--ink);min-width:1440px;overflow:hidden}
+
+/* ===== MASTHEAD — 90px ===== */
+.masthead{height:90px;background:var(--vellum);border-bottom:1px solid var(--hairline);display:flex;align-items:center;padding:0 36px;position:sticky;top:0;z-index:50}
+.navcluster{flex:1;display:flex;align-items:center;justify-content:center;gap:40px}
+.silo2{font-family:var(--serif);font-style:italic;font-size:1.65rem;color:var(--brass)}
+.brand-cluster{display:flex;align-items:baseline;gap:16px}
+.wordmark{font-size:30px;font-style:italic}
+.wordmark b{font-style:normal;font-weight:400}
+.silo-eyebrow{font-family:var(--sans);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--taupe)}
+.mainnav{display:flex;gap:30px}
+.mainnav a{font-style:italic;font-size:1.3em;color:var(--ink-soft);text-decoration:none;padding:6px 2px;border-bottom:2px solid transparent;transition:color var(--dur-micro),border-color var(--dur-micro)}
+.mainnav a:hover{color:var(--oxblood)}
+.mainnav a.on{color:var(--oxblood);border-bottom-color:var(--oxblood)}
+.mast-actions{display:flex;align-items:center;gap:18px}
+.cta-pill{font-style:italic;font-size:1.65rem;background:var(--oxblood);color:var(--vellum);padding:12px 28px;border-radius:999px;transition:background var(--dur-micro),transform var(--dur-micro)}
+.cta-pill:hover{background:var(--oxblood-deep)}
+.cta-pill:active{transform:scale(.97)}
+.signin{font-style:italic;font-size:1.65rem;color:var(--ink-soft);border:1px solid var(--hairline);border-radius:999px;padding:10px 24px;transition:border-color var(--dur-micro),color var(--dur-micro)}
+.signin:hover{border-color:var(--oxblood);color:var(--oxblood)}
+
+/* ===== LAYOUT ===== */
+.stage{display:flex;align-items:stretch;gap:0;height:calc(100vh - 90px);overflow:hidden}
+
+/* ===== DECKLE (real feTurbulence edge — CURATOR CARD ONLY) ===== */
+.deckle-paper{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.has-deckle{background:transparent !important;border:none !important;border-radius:0 !important;position:relative}
+.has-deckle > .deckle-paper{z-index:0}
+.has-deckle > :not(.deckle-paper){position:relative;z-index:1}
