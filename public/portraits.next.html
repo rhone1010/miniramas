@@ -82,7 +82,7 @@
   <!-- CURATOR -->
   <section class="curator">
     <div class="cur-head"><span class="c-mark">C</span><span class="cur-title">Curator</span></div>
-    <div class="upload-card">
+    <div class="upload-card" onclick="document.getElementById('file1').click()" style="cursor:pointer">
       <div class="plus">+</div>
       <div class="up-label">Add portrait photo</div>
       <div class="up-sub">Start with a clear face-forward image.</div>
@@ -406,6 +406,79 @@
        so it is kept here hidden; the VISIBLE queue count belongs to the To Be
        Crafted column (Pass D). -->
   <span id="queueCountBadge" data-zero="yes" hidden>0</span>
+    <!-- engine upload compat (hidden): supplies #file1/#slot1/#st1 + the source
+       preview + FA face-aware controls so handlePrimaryUpload()/FA resolve. The
+       VISIBLE upload is the proto .upload-card in .curator (wired to #file1).
+       Merging the real face-aware framing UI into .curator is Pass C/D. -->
+  <div id="engineUploadCompat" hidden>
+<label class="upload-slot" id="slot1">
+    <span id="st1">Upload portrait photo</span>
+    <input type="file" id="file1" accept="image/*" onchange="handlePrimaryUpload(this)">
+  </label>
+<!-- Source image (primary + auxiliary) — standalone centerpiece,
+           no header (Rich 2026-06-09 mock). Portrait crop previews the
+           actual subject framing. Count/badge kept hidden for JS. -->
+      <div class="section">
+        <div class="section-hdr" style="display:none">
+          <div class="section-label">Source Images</div>
+          <div class="section-readout">
+            <span id="sourceCount">0 / 4</span>
+            <span class="res-badge" id="resBadge" style="display:none"></span>
+          </div>
+        </div>
+        <div class="source-preview source-preview-portrait" id="sidebarSourcePreview" onclick="document.getElementById('file1').click()">
+          <div class="source-empty" id="sourceEmpty">
+            <div class="source-empty-plus">+</div>
+            <div class="source-empty-primary">Add portrait photo</div>
+            <div class="source-empty-sub">Start with a clear face-forward image.</div>
+          </div>
+          <img id="sourceThumb" style="display:none">
+        </div>
+        <!-- Invitation letter (evolving letter, pre-upload). Verbatim promise
+             line — flow-contract §S0b. Rendered as the proto's inv-letter card
+             (id kept so the show/hide-on-upload wiring is unchanged). -->
+        <div class="inv-letter" id="curUploadPrompt">
+          <p>Bring me a <span class="tint">portrait</span> and I&rsquo;ll choose a few starting pieces for you. <span class="sig">&mdash;&thinsp;C.</span></p>
+        </div>
+
+        <!-- Face-aware source control (v5). Hidden until a photo loads; the
+             square preview above is the empty-state upload target. Once a
+             source is in, this replaces it as the framing + subject-pick UI. -->
+        <div class="fa-source" id="faSource" hidden>
+          <div class="fa-viewport" id="faVp">
+            <img id="faImg" alt="source">
+            <div class="fa-hint" id="faHint">Drag to frame &middot; Scroll to zoom &middot; Tap a face</div>
+          </div>
+          <div class="fa-controls">
+            <button type="button" class="fa-pill" id="faAuto">Re-center on subject</button>
+            <span class="fa-zoomlabel" id="faZoom">1.0&times;</span>
+          </div>
+        </div>
+
+        <div class="res-banner" id="resBanner" style="display:none"></div>
+        <!-- Additional images appear ONLY when the studio asks for them
+             (source review finds the lock weak / face-only). With a good
+             lock — likenesses landing 90%+ — the rail stays clean.
+             (Rich 2026-06-12) -->
+        <div id="auxSection" style="display:none">
+        <div class="source-row" id="auxSourceRow">
+          <label class="source-aux" data-aux="2">
+            <span>+</span>
+            <input type="file" accept="image/*" onchange="handleAuxUpload(this, 2)">
+          </label>
+          <label class="source-aux" data-aux="3">
+            <span>+</span>
+            <input type="file" accept="image/*" onchange="handleAuxUpload(this, 3)">
+          </label>
+          <label class="source-aux" data-aux="4">
+            <span>+</span>
+            <input type="file" accept="image/*" onchange="handleAuxUpload(this, 4)">
+          </label>
+        </div>
+        <div class="aux-caption">Additional Images</div>
+        </div>
+      </div>
+  </div>
   </main>
 
   <!-- COLLECTION RAIL — zero state -->
