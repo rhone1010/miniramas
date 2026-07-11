@@ -34,7 +34,7 @@
    Sketch"/"Charcoal & Chalk" overlap Rich flagged). Fit the grid to the column,
    and keep each label on one clean line. */
 #workshopShell .main #curEffectCards.curator-effect-grid{
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));   /* spec: ~3 cols Advanced-closed, ~2 carrying, no dead space */
 }
 #workshopShell .main .v7-rec-name-float{
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
@@ -61,3 +61,10 @@
 .curator .cur-voice .curator-paper{ display:none; }
 .curator .cur-voice .curator-masthead{ display:none; }  /* proto .cur-head is the header */
 /* the suggested grid fills .main (already responsive from the earlier polish fix). */
+
+/* Occupied-state spec (Rich 2026-07-11):
+   - Curator card = voice THEN framing (reordered in markup), one card, one deckle,
+     all photo-related content in .curator.
+   - Source thumbnail lives in .curator ONLY (the face-aware framing IS the photo
+     home) — kill the engine's second copy in .main's stage-preview. */
+#workshopShell .main .stage-preview-source{ display:none; }
