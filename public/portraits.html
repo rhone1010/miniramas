@@ -4352,6 +4352,22 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 @keyframes v7ghostIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
 @media (prefers-reduced-motion: reduce){ .v7-ghost-tile{ animation:none; } }
 
+/* ── VISUAL PORT S4 — Suggested metro mural (from canonical proto) ── */
+/* 2×2 wall of preview tiles, each crossfading on its own rhythm; unclickable. */
+#v7Ghosts .mural{position:relative;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:0;pointer-events:none;user-select:none;min-height:560px;height:100%}
+#v7Ghosts .mt{position:relative;overflow:hidden;margin:0}
+#v7Ghosts .mt .slide{position:absolute;inset:0;opacity:0;transition:opacity 1800ms ease-in-out}
+#v7Ghosts .mt .slide.show{opacity:1}
+#v7Ghosts .mt .slide img{width:100%;height:100%;object-fit:cover;object-position:50% 10%;display:block}
+#v7Ghosts .mt.q1{grid-column:1/3;grid-row:1/3}
+#v7Ghosts .mt.q2{grid-column:3/5;grid-row:1/3}
+#v7Ghosts .mt.q3{grid-column:1/3;grid-row:3/5}
+#v7Ghosts .mt.q4{grid-column:3/5;grid-row:3/5}
+#v7Ghosts .mt figcaption{position:absolute;left:0;right:0;bottom:0;padding:70px 22px 16px;color:#fff;font-family:var(--serif);font-style:italic;font-size:2.1rem;background:linear-gradient(transparent,#252935)}
+#v7Ghosts .m-overlay{position:absolute;z-index:5;bottom:8%;left:36%;background:rgba(243,237,225,.95);padding:20px 30px 18px;box-shadow:0 4px 16px rgba(42,36,30,.25)}
+#v7Ghosts .m-title{font-family:var(--serif);font-style:italic;font-size:52px;color:var(--ink);line-height:1}
+#v7Ghosts .m-sub{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--ink-soft);margin-top:6px}
+
 /* Inclusive sample imagery — labeled, muted "Example" tile (never competes) */
 .sample-tile{ position:relative; border-radius:var(--v7-r-card); overflow:hidden; opacity:.82; }
 .sample-tile img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -7850,18 +7866,42 @@ function seededShuffle(arr, seed){
 }
 function renderGhostSuggestions(){
   const host = document.getElementById('v7Ghosts'); if (!host) return
-  const seed     = ghostSeed()
-  const presets  = seededShuffle(GHOST_POOL, seed).slice(0, 3)
-  const variants = seededShuffle(PREVIEW_VARIANT_POOL, seed + 7)
-  const tiles = presets.map((p, i) => {
-    const src = previewSrc(p, variants[i % variants.length])
-    return `<div class="v7-ghost-tile"><div class="gimg"><img src="${src}" alt="" onerror="this.style.opacity=0"></div>`
-      + `<div class="v7-ghost-label">${escapeHtml(matLabel(p))}</div></div>`
-  }).join('')
+  // Proto metro mural (visual port S4): a 2×2 wall of preview tiles, each
+  // crossfading through the preview pool on its own rhythm — unclickable.
+  const seed = ghostSeed()
+  const pool = seededShuffle(GHOST_POOL, seed).map((p, i) => ({
+    img:   previewSrc(p, PREVIEW_VARIANT_POOL[i % PREVIEW_VARIANT_POOL.length] || 1),
+    label: matLabel(p),
+  }))
+  if (pool.length < 4) return
   host.innerHTML =
-      `<div class="v7-ghost-head">A few pieces from the studio, while you decide</div>`
-    + `<div class="v7-ghost-grid">${tiles}</div>`
-    + `<div class="v7-ghost-note">Your photograph replaces these the moment it arrives.</div>`
+      '<div class="mural" id="v7Mural">'
+    +   '<figure class="mt q1"></figure><figure class="mt q2"></figure>'
+    +   '<figure class="mt q3"></figure><figure class="mt q4"></figure>'
+    +   '<div class="m-overlay"><div class="m-title">Portraits</div>'
+    +     '<div class="m-sub">Some of our most popular effects</div></div>'
+    + '</div>'
+  const tiles   = [].slice.call(host.querySelectorAll('#v7Mural .mt'))
+  const current = [0, 1, 2, 3].map(n => n % pool.length)
+  tiles.forEach((t, ti) => {
+    t.innerHTML = pool.map((p, pi) =>
+      `<div class="slide${pi === current[ti] ? ' show' : ''}"><img src="${p.img}" alt="" onerror="this.style.opacity=0"><figcaption>${escapeHtml(p.label)}</figcaption></div>`
+    ).join('')
+  })
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduce || pool.length < 5) return   // <5 → can't rotate without a collision; leave static
+  const HOLDS = [5200, 6700, 8100, 9400], OFFSETS = [0, 1600, 3400, 5200]
+  function advance(ti){
+    const tile = tiles[ti]
+    if (!tile || !document.body.contains(tile)) return   // a re-render detaches old tiles → old loops stop
+    let next = current[ti]
+    do { next = (next + 1) % pool.length } while (current.indexOf(next) >= 0)
+    current[ti] = next
+    const slides = tile.querySelectorAll('.slide')
+    for (let i = 0; i < slides.length; i++) slides[i].classList.toggle('show', i === next)
+    setTimeout(function(){ advance(ti) }, HOLDS[ti])
+  }
+  tiles.forEach((t, ti) => setTimeout(function(){ advance(ti) }, HOLDS[ti] + OFFSETS[ti]))
 }
 
 // Label helper — finished pieces and queue rows must resolve labels from
