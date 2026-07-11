@@ -5968,6 +5968,13 @@ function selectFramingV2(f){
   if (typeof advRecipe === 'function') advRecipe()   // visual-port S3 recipe line
 }
 
+// Shim: refreshDraftKey() was called by selectFramingV2 but never defined (a
+// stale reference — the draft key is computed fresh in addToQueue via
+// computeDraftKey()). Route it to the run-gate refresh so a framing change
+// updates the action bar, matching selectMat/selectLocation which end in
+// updateRunGate().
+function refreshDraftKey(){ if (typeof updateRunGate === 'function') updateRunGate() }
+
 function refreshFramingPillsLegacy(f){
   // No-op shim — old selectFraming() called this when the old two-pill
   // bust/full_body control existed.
