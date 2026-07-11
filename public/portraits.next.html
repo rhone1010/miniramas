@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liten &amp; Co · Crafted Portraits</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/shared/shell.css">
+<link rel="stylesheet" href="/assets/portraits/portraits.css">
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>
+<filter id="curatorDeckle" x="-8%" y="-6%" width="116%" height="112%"><feTurbulence type="fractalNoise" baseFrequency="0.014 0.016" numOctaves="4" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+</defs></svg>
+
+
+<header class="masthead">
+  <img src="/homepage/liten-and-co.png" alt="Litenco — home" style="height:70px;width:auto">
+  <div class="navcluster">
+    <span class="silo2">Crafted Portraits</span>
+    <nav class="mainnav">
+      <a href="#" class="on">Workshop</a><a href="#">Gallery</a><a href="#">Sets</a><a href="#">Print Shop</a><a href="#">My Collection</a><a href="#">Help</a>
+    </nav>
+  </div>
+  <button class="signin">Sign in</button>
+</header>
+
+<div class="stage">
+
+  <!-- ADVANCED (open state) -->
+  <aside class="adv">
+    <div class="adv-rail">Design your own <button class="adv-close">&#8249;</button></div>
+    <div class="adv-body">
+      <div class="adv-section">
+        <div class="eyebrow">The piece</div>
+        <div class="mode-toggle" id="advModes">
+          <button class="on" data-g="earth">Earth &amp; Ore</button>
+          <button data-g="artists">Artists</button>
+          <button data-g="curios">Curiosities</button>
+        </div>
+        <div class="swatches" id="advSwatches"></div>
+      </div>
+      <div class="adv-section">
+        <div class="eyebrow">The setting</div>
+        <div class="glyphs" id="advGlyphs">
+          <div class="glyph on" data-nm="on a mantel">
+            <svg viewBox="0 0 34 26"><path d="M2 16h30M6 16v8M28 16v8"/><rect x="11" y="3" width="12" height="10" rx="1"/></svg>
+            <span class="nm">Mantel</span>
+          </div>
+          <div class="glyph" data-nm="on a pedestal">
+            <svg viewBox="0 0 34 26"><path d="M13 3h8M14 3l1 17h4l1-17M10 23h14M12 20h10"/></svg>
+            <span class="nm">Pedestal</span>
+          </div>
+          <div class="glyph" data-nm="on a gradient">
+            <svg viewBox="0 0 34 26"><rect x="6" y="3" width="22" height="20" rx="2"/><path d="M6 17c5-3 17-3 22 0" opacity=".55"/><path d="M6 12c5-2 17-2 22 0" opacity=".3"/></svg>
+            <span class="nm">Gradient</span>
+          </div>
+        </div>
+      </div>
+      <div class="adv-section">
+        <div class="eyebrow">The framing</div>
+        <div class="frames" id="advFrames">
+          <div class="frame" data-nm="bust framing"><img src="/previews/portraits/PLACEHOLDER.jpg" alt="Bust"><span class="plinth"></span><span class="nm">Bust</span><span class="ratio">1:1</span></div>
+          <div class="frame on" data-nm="signature pose"><img src="/previews/portraits/PLACEHOLDER.jpg" alt="Signature"><span class="plinth"></span><span class="nm">Signature</span><span class="ratio">1:1</span></div>
+          <div class="frame" data-nm="statuesque"><img src="/previews/portraits/PLACEHOLDER.jpg" alt="Statuesque"><span class="plinth"></span><span class="nm">Statuesque</span><span class="ratio">3:4</span></div>
+        </div>
+      </div>
+      <div class="recipe" id="advRecipe"></div>
+      <div class="ledger-q" id="advLedger">
+        <div class="lrow on" data-p="0"><span class="dot"></span>Web Quality<span class="price">included</span></div>
+        <div class="lrow" data-p="2"><span class="dot"></span>Print Quality<span class="price">+ $2.00</span></div>
+        <div class="lrow" data-p="4.99"><span class="dot"></span>Collector Print<span class="price">+ $4.99</span></div>
+      </div>
+      <button class="more-opts">More options</button>
+    </div>
+    <div class="adv-foot">
+      <button class="adv-add" id="advAdd"></button>
+    </div>
+  </aside>
+
+  <!-- CURATOR -->
+  <section class="curator">
+    <div class="cur-head"><span class="c-mark">C</span><span class="cur-title">Curator</span></div>
+    <div class="upload-card">
+      <div class="plus">+</div>
+      <div class="up-label">Add portrait photo</div>
+      <div class="up-sub">Start with a clear face-forward image.</div>
+    </div>
+    <div class="inv-letter">
+      <p>Bring me a <span class="tint">portrait</span> and I&rsquo;ll choose the finishes myself. A clear, face-forward photograph gives me the most to work with. <span class="sig">&mdash;&thinsp;C.</span></p>
+    </div>
+  </section>
+
+  <!-- GHOSTS -->
+  <main class="main">
+    <div class="mural" id="mural">
+      <figure class="mt q1"></figure>
+      <figure class="mt q2"></figure>
+      <figure class="mt q3"></figure>
+      <figure class="mt q4"></figure>
+      <div class="m-overlay">
+        <div class="m-title">Portraits</div>
+        <div class="m-sub">Some of our most popular effects</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- COLLECTION RAIL — zero state -->
+  <aside class="colrail">
+    <div class="rail2">My Collection</div>
+    <div class="cr-body">
+      <div class="cr-current">Portraits</div>
+      <div class="cr-spine"><span class="name">Houses</span><span class="dots"><i></i></span></div>
+      <div class="cr-spine"><span class="name">Action</span></div>
+      <div class="cr-spine"><span class="name">Groups</span></div>
+      <div class="cr-spine"><span class="name">Landscapes</span></div>
+      <div class="cr-spine"><span class="name">Pets</span></div>
+      <div class="cr-spine"><span class="name">For Fun</span></div>
+      <div class="cr-spine"><span class="name">Artist</span></div>
+    </div>
+  </aside>
+
+</div>
+<script src="/assets/portraits/portraits.js" defer></script>
+<script src="/assets/shared/deckle.js" defer></script>
+</body>
+</html>

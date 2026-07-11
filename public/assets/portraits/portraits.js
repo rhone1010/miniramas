@@ -20,7 +20,7 @@ function renderSwatches(group){
     var d=document.createElement('div');
     d.className='swatch'+(advState.mat===m[0].replace(/_/g,' ')||advState.mat===m[1].toLowerCase()?' on':'');
     d.setAttribute('data-nm',m[1].toLowerCase());
-    d.innerHTML='<img class="disc" src="'+m[2]+'" alt="'+m[1]+'"><span class="nm">'+m[1]+'</span>';
+    d.innerHTML='<img class="disc" src="/previews/portraits/'+m[0]+'/1.jpg" alt="'+m[1]+'" onerror="this.style.visibility=\'hidden\'"><span class="nm">'+m[1]+'</span>';
     d.onclick=function(){
       [].slice.call(el.children).forEach(function(x){x.classList.remove('on')});
       d.classList.add('on');advState.mat=m[1].toLowerCase();advRecipe();
@@ -75,7 +75,7 @@ var current=[0,1,2,3];
 tiles.forEach(function(t,ti){
   POOL.forEach(function(p,pi){
     var d=document.createElement('div');d.className='slide'+(pi===current[ti]?' show':'');
-    d.innerHTML='<img src="'+p.img+'" alt=""><figcaption>'+p.label+'</figcaption>';
+    d.innerHTML='<img src="/previews/portraits/'+p.label.toLowerCase().replace(/ & /g,"_").replace(/ /g,"_")+'/1.jpg" alt="" onerror="this.style.visibility=\'hidden\'"><figcaption>'+p.label+'</figcaption>';
     t.appendChild(d);
   });
 });
