@@ -4007,6 +4007,46 @@ body.raw-mode #locationControl, body.raw-mode #framingControl{ display:none; }
 /* start pulse on the empty upload target (proto .upload-card animation) */
 @keyframes startPulse{0%,100%{box-shadow:0 0 0 0 rgba(125,66,66,0)}50%{box-shadow:0 0 0 7px rgba(125,66,66,.13)}}
 .source-empty{animation:startPulse 3.6s ease-in-out infinite;border-radius:3px}
+
+/* ── VISUAL PORT S3 — Advanced "Design your own" (from canonical proto) ── */
+/* "Design your own" rail header on the expanded panel */
+.adv-rail-title{background:var(--oxblood);color:var(--vellum);height:52px;display:flex;align-items:center;padding:0 24px;font-family:var(--serif);font-style:italic;font-size:24px;margin:-2px -2px 18px;border-radius:0}
+.rail-cluster-title{font-family:var(--sans);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);margin:0 0 12px}
+/* mode-toggle (series) */
+#seriesPills.mode-toggle{display:flex;border:1px solid var(--oxblood);border-radius:999px;overflow:hidden;margin-bottom:16px;padding:0;background:none}
+#seriesPills.mode-toggle .pill-lg{flex:1;font-family:var(--serif);font-style:italic;font-size:15px;padding:8px 3px;color:var(--oxblood);background:none;border:none;border-radius:0;text-align:center;transition:background var(--dur-micro),color var(--dur-micro)}
+#seriesPills.mode-toggle .pill-lg.active{background:var(--oxblood);color:var(--vellum)}
+/* disc swatches (materials) */
+#materialPills.swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;background:none;border:none;padding:0}
+.swatch .disc{width:56px;height:56px;border-radius:50%;object-fit:cover;display:block;border:none;box-shadow:0 1px 3px rgba(42,36,30,.18);transition:transform var(--dur-state) var(--ease-out)}
+.swatch.active .disc{outline:2px solid var(--oxblood);outline-offset:2px}
+.swatch:hover .disc{transform:scale(1.06)}
+.swatch .nm{font-family:var(--serif);font-style:italic;font-size:1.1rem;color:var(--taupe);transition:color var(--dur-micro)}
+.swatch.active .nm{color:var(--ink)}
+/* glyph settings (location) */
+#locationPills.glyphs{display:flex;gap:10px;padding:0}
+.glyph{flex:1;border:1px solid var(--hairline);border-radius:8px;background:var(--vellum);padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:border-color var(--dur-state),background var(--dur-state)}
+.glyph svg{width:34px;height:26px;stroke:var(--ink-soft);fill:none;stroke-width:1.6;transition:stroke var(--dur-micro)}
+.glyph .nm{font-family:var(--serif);font-style:italic;font-size:1.1rem;color:var(--taupe)}
+.glyph.active{border-color:var(--oxblood);background:rgba(125,66,66,.06)}
+.glyph.active svg{stroke:var(--oxblood)}
+.glyph.active .nm{color:var(--ink)}
+/* recipe line — live-bound */
+.adv-recipe{font-family:var(--serif);font-style:italic;font-size:1.35rem;line-height:1.5;color:var(--ink);padding:10px 2px 4px}
+.adv-recipe .w{color:var(--oxblood)}
+/* quality ledger (resolution) */
+#resolutionPills.ledger-q{display:block;padding:0}
+.ledger-q .lrow{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:13px;letter-spacing:.02em;color:var(--ink-soft);padding:7px 2px;cursor:pointer;background:none;border:none;width:100%;text-align:left}
+.ledger-q .lrow .dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--taupe);flex-shrink:0;transition:all var(--dur-micro)}
+.ledger-q .lrow.active .dot{border-color:var(--oxblood);background:var(--oxblood);box-shadow:inset 0 0 0 3px var(--paper)}
+.ledger-q .lrow .price{margin-left:auto}
+.ledger-q .lrow.active{color:var(--ink)}
+/* adv-add button */
+#railAddBtn.adv-add{width:100%;background:var(--oxblood);color:var(--vellum);font-family:var(--serif);font-style:italic;font-size:20px;padding:13px;border-radius:10px;display:flex;justify-content:center;gap:8px;transition:background var(--dur-micro),transform var(--dur-micro)}
+#railAddBtn.adv-add:hover{background:var(--oxblood-deep)}
+#railAddBtn.adv-add:disabled{opacity:.5}
+#railAddBtn.adv-add .btn-price{opacity:.85}
 .v7-queue-pill-dot[data-status="done"]{ background:var(--v7-sage); }
 .v7-queue-pill-dot[data-status="failed"], .v7-queue-pill-dot[data-status="rejected"],
 .v7-queue-pill-dot[data-status="redirected"]{ background:var(--v7-oxblood); box-shadow:0 0 0 2px rgba(123,63,65,.18); }
@@ -4415,6 +4455,7 @@ html, body{ background:#eddec7; }
 
     <div class="left-inner">
       <button class="adv-collapse-btn" type="button" onclick="event.stopPropagation();setAdvanced(false)">&lsaquo; Done</button>
+      <div class="adv-rail-title">Design your own</div>
 
       <!-- Source image (primary + auxiliary) — standalone centerpiece,
            no header (Rich 2026-06-09 mock). Portrait crop previews the
@@ -4494,7 +4535,7 @@ html, body{ background:#eddec7; }
       <div class="material-group">
       <div class="rail-cluster-title">The Piece</div>
       <div class="control series expanded" id="seriesControl" data-section="series">
-        <div class="control-pills seg-tabs" id="seriesPills">
+        <div class="control-pills seg-tabs mode-toggle" id="seriesPills">
           <button class="pill-lg active" data-series="realistic"        onclick="onSeriesClick('realistic')">Realistic</button>
           <button class="pill-lg"        data-series="artists_gallery"  onclick="onSeriesClick('artists_gallery')">Artists Gallery</button>
         </div>
@@ -4579,13 +4620,17 @@ html, body{ background:#eddec7; }
            offers the Statue Image (curStepFramingOffer). state.framing
            and the engine contract are unchanged. -->
 
+      <!-- Live-bound recipe line (visual port S3) — "A {material} portrait,
+           {setting}, {framing}." Updated on material/location/framing change. -->
+      <div class="adv-recipe" id="advRecipe"></div>
+
       <div class="rail-cluster-title rail-cluster-rule">The Finish</div>
       <div class="control resolution expanded" id="resolutionControl" data-section="resolution">
         <div class="control-head"><div class="control-label">Quality</div></div>
-        <div class="control-pills" id="resolutionPills">
-          <button class="pill-lg active" data-res="1k" onclick="onResolutionPick('1k')">Web Quality</button>
-          <button class="pill-lg"        data-res="2k" onclick="onResolutionPick('2k')">Print Quality</button>
-          <button class="pill-lg"        data-res="4k" onclick="onResolutionPick('4k')">Collector Print Quality</button>
+        <div class="control-pills ledger-q" id="resolutionPills">
+          <button class="pill-lg lrow active" data-res="1k" onclick="onResolutionPick('1k')"><span class="dot"></span>Web Quality<span class="price">included</span></button>
+          <button class="pill-lg lrow"        data-res="2k" onclick="onResolutionPick('2k')"><span class="dot"></span>Print Quality<span class="price">+ $2.00</span></button>
+          <button class="pill-lg lrow"        data-res="4k" onclick="onResolutionPick('4k')"><span class="dot"></span>Collector Print<span class="price">+ $4.99</span></button>
         </div>
       </div>
       
@@ -4607,7 +4652,7 @@ html, body{ background:#eddec7; }
       </div><!-- /more-options-body -->
 
       <div class="rail-addqueue rail-addqueue-sticky">
-        <button class="stage-action-btn btn-add" id="railAddBtn" disabled onclick="addToQueue()">
+        <button class="stage-action-btn btn-add adv-add" id="railAddBtn" disabled onclick="addToQueue()">
           <span class="btn-label" id="railAddLabel">+ Add this piece</span>
           <span class="btn-price" id="railAddPrice"><span class="now">$4.99</span></span>
         </button>
@@ -5532,12 +5577,16 @@ function renderMaterials(){
   // Series-aware: PRES for realistic, ARTISTS_PRES for artists_gallery.
   const pills = document.getElementById('materialPills')
   if (!pills) return
+  pills.classList.add('swatches')   // proto disc-swatch grid (visual port S3)
   const sourceList = state.style === 'artists_gallery' ? ARTISTS_PRES : PRES
   pills.innerHTML = sourceList.map(p => {
     const isActive = state.selectedMat === p.k
-    const chev = isActive ? '<span class="chev">›</span>' : ''
-    return `<button class="pill-lg${isActive ? ' active' : ''}" data-mat="${p.k}" data-tier="${p.tier}" onclick="onMaterialPillClick('${p.k}')">${p.label}${chev}</button>`
+    const disc = (typeof previewSrc === 'function') ? previewSrc(p.k, 1) : ''
+    return `<button class="swatch${isActive ? ' active' : ''}" data-mat="${p.k}" data-tier="${p.tier}" onclick="onMaterialPillClick('${p.k}')">`
+      + `<img class="disc" src="${disc}" alt="${p.label}" onerror="this.style.visibility='hidden'">`
+      + `<span class="nm">${p.label}</span></button>`
   }).join('')
+  if (typeof advRecipe === 'function') advRecipe()
 }
 
 // ── Series switch — Realistic ↔ Artists Gallery ──────────────
@@ -5604,14 +5653,44 @@ function availableLocationsForSelection(){
   return MATERIAL_LOCATIONS[state.selectedMat] || ['pedestal']
 }
 
+// Proto setting glyphs (visual port S3) — SVG icons per location, verbatim from
+// the canonical proto. Unknown locations fall back to the pedestal glyph.
+const GLYPH_SVG = {
+  mantel:'<svg viewBox="0 0 34 26"><path d="M2 16h30M6 16v8M28 16v8"/><rect x="11" y="3" width="12" height="10" rx="1"/></svg>',
+  pedestal:'<svg viewBox="0 0 34 26"><path d="M13 3h8M14 3l1 17h4l1-17M10 23h14M12 20h10"/></svg>',
+  gradient:'<svg viewBox="0 0 34 26"><rect x="6" y="3" width="22" height="20" rx="2"/><path d="M6 17c5-3 17-3 22 0" opacity=".55"/><path d="M6 12c5-2 17-2 22 0" opacity=".3"/></svg>',
+}
 function renderLocations(){
   const pills = document.getElementById('locationPills')
   if (!pills) return
+  pills.classList.add('glyphs')     // proto setting glyphs (visual port S3)
   const allowed = availableLocationsForSelection()
   pills.innerHTML = allowed.map(loc => {
     const isActive = state.location === loc
-    return `<button class="pill-lg${isActive ? ' active' : ''}" data-loc="${loc}" onclick="onLocationPick('${loc}')">${LOCATION_LABELS[loc]}</button>`
+    const svg = GLYPH_SVG[loc] || GLYPH_SVG.pedestal
+    return `<button class="glyph${isActive ? ' active' : ''}" data-loc="${loc}" onclick="onLocationPick('${loc}')">${svg}<span class="nm">${LOCATION_LABELS[loc]}</span></button>`
   }).join('')
+  if (typeof advRecipe === 'function') advRecipe()
+}
+
+// Live-bound recipe line (visual port S3) — "A {material} portrait, {setting},
+// {framing}." Reads live state; empty until a material is chosen.
+function advRecipe(){
+  const el = document.getElementById('advRecipe')
+  if (!el) return
+  if (!state.selectedMat){ el.innerHTML = ''; return }
+  const LOC_PHRASE = { mantel:'on a mantel', pedestal:'on a pedestal', gradient:'on a gradient' }
+  const mat = (typeof matLabel === 'function' ? matLabel(state.selectedMat) : state.selectedMat) || ''
+  const parts = ['A <span class="w">' + String(mat).toLowerCase() + '</span> portrait']
+  if (state.location){
+    const loc = LOC_PHRASE[state.location] || LOCATION_LABELS[state.location] || state.location
+    parts.push('<span class="w">' + loc + '</span>')
+  }
+  if (state.framing){
+    const frm = String(FRAMING_LABEL[state.framing] || state.framing).toLowerCase()
+    parts.push('<span class="w">' + frm + '</span>')
+  }
+  el.innerHTML = parts.join(', ') + '.'
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5852,6 +5931,7 @@ function selectFramingV2(f){
   // Legacy single-control update kept for any code paths still listening
   refreshFramingPillsLegacy(f)
   refreshDraftKey()
+  if (typeof advRecipe === 'function') advRecipe()   // visual-port S3 recipe line
 }
 
 function refreshFramingPillsLegacy(f){
