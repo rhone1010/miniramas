@@ -110,3 +110,15 @@
   .tbc .queue-row[data-status="running"]::after,
   .main .queue-card[data-status="running"]::after{ animation:none; }
 }
+
+/* Punch-list E (2026-07-11) — redeal control: a quiet italic-SERIF pill (Master
+   List §9 — not a micro-link), near the "Finishes we'd choose for you" header. */
+.cur-redeal{
+  align-self:flex-start; margin-top:8px;
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif); font-style:italic; font-size:17px;
+  color:var(--oxblood, #7d4242); border:1px solid var(--oxblood, #7d4242);
+  background:transparent; border-radius:20px; padding:5px 16px; cursor:pointer;
+  transition:background .15s ease, color .15s ease;
+}
+.cur-redeal:hover{ background:var(--oxblood, #7d4242); color:var(--vellum, #f3ede1); }
+.cur-redeal:disabled{ opacity:.5; cursor:default; }

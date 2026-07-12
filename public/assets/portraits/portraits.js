@@ -143,3 +143,17 @@ if(!reduce){
   new MutationObserver(sync).observe(grid, {childList:true});
   sync();
 })();
+
+/* Punch-list E (2026-07-11) — redeal: re-run the engine's curatorEnterEffects() for
+   a fresh set (it auto-advances rotation_index in localStorage each call). Disabled
+   during the fetch to guard rapid re-clicks; the new batch deals in via the C
+   transition when #curEffectCards repopulates. */
+function curatorRedeal(){
+  var btn = document.getElementById('curRedeal');
+  if (btn && btn.disabled) return;
+  if (btn) btn.disabled = true;
+  try {
+    var p = (typeof curatorEnterEffects === 'function') ? curatorEnterEffects() : null;
+    Promise.resolve(p).catch(function(){}).then(function(){ if (btn) btn.disabled = false; });
+  } catch(e){ if (btn) btn.disabled = false; }
+}

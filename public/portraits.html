@@ -8452,18 +8452,14 @@ function renderEffectCards(recs){
     if (isLimited && LIMITED_EDITION_VARIANT === 'B') card.title = 'A limited-edition finish.'  // 4e Variant B: hover copy only
     card.onclick = () => curatorPickEffect(r, card)
     grid.appendChild(card)
+    // Punch-list D — Add-all-5 bundle caps batch 1 at slot 6
+    if (i === 4) grid.appendChild(_curBundle('Add all 5', 'five for the price of four', () => curatorRunBundle(recs.slice(0, 5))))
   })
 
-  // 6th cell — Studio Bundle (five for the price of four)
-  const bundle = document.createElement('div')
-  bundle.className = 'v7-bundle'
-  bundle.innerHTML = `
-    <div class="v7-bundle-eyebrow">Studio Bundle</div>
-    <div class="v7-bundle-label">All ${recs.length}</div>
-    <div class="v7-bundle-sub">five for the price of four</div>
-  `
-  bundle.onclick = () => curatorRunAllFive()
-  grid.appendChild(bundle)
+  // Punch-list D — 12-slot grid: Add-all-5 sits at slot 6 (inserted mid-loop);
+  // once curate-effects returns a 2nd batch (10 total), Add-all-N caps it at slot 12.
+  if (recs.length > 5) grid.appendChild(_curBundle('Add all ' + recs.length, 'all ' + numberWord(recs.length) + ', best value', () => curatorRunBundle(recs)))
+  else if (recs.length >= 1 && recs.length < 5) grid.appendChild(_curBundle('Add all ' + recs.length, 'best value', () => curatorRunBundle(recs)))
 
   // Design Your Own → opens the Advanced spine to the controls.
   let dyo = document.getElementById('v7DesignOwn')
@@ -8588,6 +8584,24 @@ function curatorRunAllFive(){
   if (typeof renderQueueGrid === 'function') renderQueueGrid()
   if (typeof updateQueueMeta === 'function') updateQueueMeta()
   if (typeof updateRunGate   === 'function') updateRunGate()
+}
+
+// Punch-list D helpers — a Studio Bundle cell + queue a specific subset.
+function _curBundle(label, sub, action){
+  const b = document.createElement('div'); b.className = 'v7-bundle'
+  b.innerHTML = '<div class="v7-bundle-eyebrow">Studio Bundle</div><div class="v7-bundle-label">' + label + '</div><div class="v7-bundle-sub">' + sub + '</div>'
+  b.onclick = action; return b
+}
+function curatorRunBundle(subset){
+  if (!subset || !subset.length) return
+  subset.forEach(rec => curatorQueueRec(rec))
+  state.curator.step = 'done'
+  const grid = document.getElementById('curEffectCards')
+  if (grid) grid.querySelectorAll('.v7-rec-card').forEach(c => { c.style.display = 'none' })
+  if (typeof suggCollapse === 'function') suggCollapse()
+  if (typeof renderQueueGrid === 'function') renderQueueGrid()
+  if (typeof updateQueueMeta === 'function') updateQueueMeta()
+  if (typeof updateRunGate === 'function') updateRunGate()
 }
 
 function curatorEffectsOverride(){
