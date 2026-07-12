@@ -6,15 +6,33 @@
    the engine.
    ───────────────────────────────────────────────────────────────────────── */
 
-/* Pass C — .main content swap, driven by the engine's data-hassource signal
-   (syncSourcePresence sets #workshopShell[data-hassource]).
-     empty  → the proto mural IS the .main workspace; the engine stage is hidden.
-     source → hide the mural; the engine workspace (#stageViewPreview: curator
-              voice + suggested grid + preview) takes over .main.
-   Scoped to #workshopShell + direct children of .main, so .adv/.curator/.colrail
-   are never touched. */
-#workshopShell[data-hassource="no"]  .main > #stageViewPreview { display: none; }
-#workshopShell[data-hassource="yes"] .main > #mural            { display: none; }
+/* Punch-list C (2026-07-11, Master List §9) — empty→suggested transition.
+   The mural HOLDS (keeps cycling) through upload + analyze — no swap on upload.
+   Only when the suggested cards are READY (portraits.js sets
+   #workshopShell[data-suggested-ready="yes"] by observing #curEffectCards) does the
+   mural FADE OUT (overlaying the grid so no side-by-side) and the cards DEAL IN
+   (staggered). Reduced-motion → simple fade, no stagger.
+   #stageViewPreview stays hidden — mural + grid + Curator card cover its states. */
+.main{ position:relative; }
+.main > #stageViewPreview{ display:none; }
+#workshopShell .main > #mural{ transition:opacity .55s ease; }
+#workshopShell[data-suggested-ready="yes"] .main > #mural{
+  position:absolute; inset:18px; opacity:0; pointer-events:none;
+}
+#workshopShell[data-suggested-ready="yes"] .main .curator-effect-grid .v7-rec-card{
+  animation:dealIn .5s cubic-bezier(.22,.7,.3,1) both;
+}
+.main .curator-effect-grid .v7-rec-card:nth-child(2){ animation-delay:.06s }
+.main .curator-effect-grid .v7-rec-card:nth-child(3){ animation-delay:.12s }
+.main .curator-effect-grid .v7-rec-card:nth-child(4){ animation-delay:.18s }
+.main .curator-effect-grid .v7-rec-card:nth-child(5){ animation-delay:.24s }
+.main .curator-effect-grid .v7-rec-card:nth-child(6){ animation-delay:.30s }
+.main .curator-effect-grid .v7-rec-card:nth-child(n+7){ animation-delay:.36s }
+@keyframes dealIn{ from{ opacity:0; transform:translateY(16px) scale(.97) } to{ opacity:1; transform:none } }
+@media (prefers-reduced-motion: reduce){
+  #workshopShell .main > #mural{ transition:none }
+  #workshopShell[data-suggested-ready="yes"] .main .curator-effect-grid .v7-rec-card{ animation:none }
+}
 
 /* The engine's own empty-state card (#stageEmpty, "Your portrait awaits") is
    redundant with the proto mural — the mural is the empty state. Belt-and-braces
