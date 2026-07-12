@@ -5143,7 +5143,7 @@ const LIMITED_EDITION_VARIANT = 'A'   // 'A' | 'B'
 // 4f — crafting-in-progress copy. Primary + rotating microcopy (rotation wired in
 // Phase 5). Customer copy never says "Rendering".
 const CRAFT_PRIMARY   = 'Crafting your piece…'
-const CRAFT_MICROCOPY = ['Preparing finish…', 'Preserving likeness…', 'Finishing the piece…']
+const CRAFT_MICROCOPY = ['Reading your photograph…', 'Casting your portrait%MAT%…', 'Shaping the piece…', 'Setting the light…', 'Almost there…']
 
 // ── PIECE NAME (batch) — client MIRROR of lib/v1/_core/name-moderation.ts.
 // One name per craft batch, applied to every finish. The SERVER is the hard
@@ -7225,11 +7225,11 @@ function updateCraftingStatus(){
     if (!_craftMicroTimer){
       const micro = document.getElementById('tbcCraftMicro')
       const tick = () => {
-        if (micro) micro.textContent = CRAFT_MICROCOPY[_craftMicroIdx % CRAFT_MICROCOPY.length]
+        if (micro) micro.textContent = CRAFT_MICROCOPY[_craftMicroIdx % CRAFT_MICROCOPY.length].replace('%MAT%', (typeof matLabel === 'function' && state.selectedMat) ? ' in ' + matLabel(state.selectedMat) : '')
         _craftMicroIdx++
       }
       tick()
-      _craftMicroTimer = setInterval(tick, 1900)
+      _craftMicroTimer = setInterval(tick, 4500)
     }
   } else {
     el.hidden = true

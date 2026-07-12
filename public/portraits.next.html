@@ -252,20 +252,11 @@
       
                     
       
-                    <!-- ── FREE PREVIEW — its own gift card, visually a
-                           SEPARATE process from the paid set above, and it can
-                           no longer push the craft buttons down. ── -->
-                      <div class="preview-band preview-gift preview-float" id="previewBand" style="display:none">
-                        <div class="pb-title">Your first piece is on us</div>
-                        <div class="pb-body">We&rsquo;ll craft your first piece free, as a watermarked preview. Enter your email and we&rsquo;ll begin.</div>
-                        <div class="pb-row">
-                          <input type="email" id="previewEmailInput" class="pb-email" placeholder="you@email.com" autocomplete="email">
-                          <button class="pb-btn" id="previewCraftBtn" onclick="startFreePreview()">Craft my free preview</button>
-                        </div>
-                        <div class="pb-note" id="previewNote" style="display:none"></div>
-                        <button class="pb-dismiss" onclick="dismissPreviewOffer()">No thanks</button>
-                      </div>
-      
+                    <!-- Punch-list #1 (2026-07-11): email / free-preview card REMOVED
+                         (deprecated — no email-for-preview gate). The .curator card is
+                         only C-header / voice / framing. updatePreviewBand() is guarded
+                         (if(band)) so it no-ops with the element gone. -->
+
                     <section class="cur-effects-rendered" id="stageRenderedCol" hidden>
                       <div class="rendered-head">
                         <span>Your Pieces</span>
@@ -642,7 +633,7 @@ const LIMITED_EDITION_VARIANT = 'A'   // 'A' | 'B'
 // 4f — crafting-in-progress copy. Primary + rotating microcopy (rotation wired in
 // Phase 5). Customer copy never says "Rendering".
 const CRAFT_PRIMARY   = 'Crafting your piece…'
-const CRAFT_MICROCOPY = ['Preparing finish…', 'Preserving likeness…', 'Finishing the piece…']
+const CRAFT_MICROCOPY = ['Reading your photograph…', 'Casting your portrait%MAT%…', 'Shaping the piece…', 'Setting the light…', 'Almost there…']
 
 // ── PIECE NAME (batch) — client MIRROR of lib/v1/_core/name-moderation.ts.
 // One name per craft batch, applied to every finish. The SERVER is the hard
@@ -2724,11 +2715,11 @@ function updateCraftingStatus(){
     if (!_craftMicroTimer){
       const micro = document.getElementById('tbcCraftMicro')
       const tick = () => {
-        if (micro) micro.textContent = CRAFT_MICROCOPY[_craftMicroIdx % CRAFT_MICROCOPY.length]
+        if (micro) micro.textContent = CRAFT_MICROCOPY[_craftMicroIdx % CRAFT_MICROCOPY.length].replace('%MAT%', (typeof matLabel === 'function' && state.selectedMat) ? ' in ' + matLabel(state.selectedMat) : '')
         _craftMicroIdx++
       }
       tick()
-      _craftMicroTimer = setInterval(tick, 1900)
+      _craftMicroTimer = setInterval(tick, 4500)
     }
   } else {
     el.hidden = true

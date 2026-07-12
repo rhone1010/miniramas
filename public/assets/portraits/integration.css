@@ -68,3 +68,27 @@
    - Source thumbnail lives in .curator ONLY (the face-aware framing IS the photo
      home) — kill the engine's second copy in .main's stage-preview. */
 #workshopShell .main .stage-preview-source{ display:none; }
+
+/* ── Punch-list #3 (2026-07-11) — crafting feedback: light-sweep shimmer over the
+   piece being rendered. Copied from portrait-wallpaper.html (.rendering sweep).
+   The engine already sets data-status="running" on the crafting card, so this is
+   pure CSS — no JS. Narration is the engine's #tbcCraftMicro (copy/timing updated
+   to the wallpaper sequence + {material}, ~4.5s). Reduced-motion stills the sweep. */
+.tbc .queue-card[data-status="running"], .tbc .queue-row[data-status="running"],
+.main .queue-card[data-status="running"]{ position:relative; }
+.tbc .queue-card[data-status="running"] .queue-card-img,
+.tbc .queue-row[data-status="running"] .queue-row-thumb,
+.main .queue-card[data-status="running"] .queue-card-img{ filter:brightness(.55) saturate(.75); }
+.tbc .queue-card[data-status="running"]::after,
+.tbc .queue-row[data-status="running"]::after,
+.main .queue-card[data-status="running"]::after{
+  content:''; position:absolute; inset:0; z-index:5; pointer-events:none; border-radius:inherit;
+  background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 50%,transparent 68%);
+  background-size:250% 100%; animation:wpSweep 1.5s linear infinite;
+}
+@keyframes wpSweep{ 0%{background-position:210% 0} 100%{background-position:-60% 0} }
+@media (prefers-reduced-motion: reduce){
+  .tbc .queue-card[data-status="running"]::after,
+  .tbc .queue-row[data-status="running"]::after,
+  .main .queue-card[data-status="running"]::after{ animation:none; }
+}

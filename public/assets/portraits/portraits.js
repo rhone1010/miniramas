@@ -130,3 +130,51 @@ if(!reduce){
     setTimeout(function(){advance(ti)},HOLDS[ti]+OFFSETS[ti]);
   });
 }
+
+/* ── Punch-list #4 (2026-07-11) — restore preview crossfade on the SUGGESTED grid
+   tiles. Same mechanism as the empty-state mural: each tile gently cycles through
+   its effect's available renders (/previews/portraits/<preset>/N.jpg). The engine
+   (renderEffectCards) paints tiles into #curEffectCards; we observe it and attach a
+   crossfade per tile. Reduced-motion => tiles stay static. Overlays (Add/magnify/
+   name/pick) sit after the slides in the DOM, so they stay on top. */
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var grid = document.getElementById('curEffectCards');
+  if(!grid) return;
+  function attach(card, ci){
+    if(card.getAttribute('data-xf')) return;
+    var host = card.querySelector('.v7-rec-img');
+    var img  = host && host.querySelector('img');
+    if(!img) return;
+    var m = (img.getAttribute('src')||'').match(/\/previews\/portraits\/([a-z0-9_]+)\/(\d+)\.(jpg|png)/i);
+    if(!m) return;
+    card.setAttribute('data-xf','1');
+    if(reduce) return;                         /* present but static under reduced-motion */
+    var preset=m[1], loaded=parseInt(m[2],10), ext=m[3], N=4;
+    var cs=window.getComputedStyle(host); if(cs.position==='static') host.style.position='relative';
+    img.style.transition='opacity .9s ease';
+    var slides=[img], anchor=img.nextSibling;
+    for(var i=1;i<=N;i++){
+      if(i===loaded) continue;                 /* the engine already loaded this render */
+      var s=document.createElement('img');
+      s.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s ease';
+      (function(sl){ sl.onerror=function(){ sl.setAttribute('data-dead','1'); }; })(s);
+      s.src='/previews/portraits/'+preset+'/'+i+'.'+ext;
+      host.insertBefore(s, anchor);
+      slides.push(s);
+    }
+    if(slides.length<2) return;                /* nothing to cycle */
+    var cur=0;
+    function step(){
+      var tries=0,next=cur;
+      do{ next=(next+1)%slides.length; tries++; }while(slides[next].getAttribute('data-dead') && tries<=slides.length);
+      cur=next;
+      for(var i=0;i<slides.length;i++) slides[i].style.opacity=(i===cur)?'1':'0';
+      setTimeout(step, 5200+(ci%4)*600);       /* staggered, no two tiles in lockstep */
+    }
+    setTimeout(step, 4200+(ci%4)*600);
+  }
+  function scan(){ [].slice.call(grid.querySelectorAll('.v7-rec-card')).forEach(attach); }
+  new MutationObserver(scan).observe(grid,{childList:true});
+  scan();
+})();
