@@ -23,3 +23,23 @@ console.log('silos 6 · effects 36 · no dups · filters 6 · 10 credits/image')
 console.log('  pieceId →', M.pieceId('Portraits','walnut',247));
 console.log('  awaiting engine prompts:', M.EFFECTS_FLAT.filter(e=>!e.engine).map(e=>e.id).join(', '));
 console.log('ALL GATES PASS');
+
+// ── build 0b: engine reconciliation gates ──────────────────────────────────
+const src2 = require('fs').readFileSync('portraits-catalogue.js','utf8');
+const M2 = new Function(src2 + ' return {EFFECTS_FLAT};')();
+const ENGINE = ['plushy','bronze','iron','alabaster','stone','ebony','walnut','impressionist',
+ 'torn_paper','folded_book','charcoal_chalk','pencil_sketch','sheet_music','pewter',
+ 'chocolate','stained_glass','driftwood_resin'];
+const CURATOR = ['bronze','alabaster','stone','ebony','walnut','iron','impressionist',
+ 'torn_paper','folded_book','charcoal_chalk','pencil_sketch','sheet_music'];
+const flagged = M2.EFFECTS_FLAT.filter(e=>e.engine).map(e=>e.id).sort();
+const truth   = M2.EFFECTS_FLAT.filter(e=>ENGINE.includes(e.id)).map(e=>e.id).sort();
+if (JSON.stringify(flagged)!==JSON.stringify(truth))
+  throw new Error('GATE FAIL — engine flags disagree with PRESET_LABELS');
+console.log('engine-backed:', truth.length + '/36');
+console.log('curator-visible:', M2.EFFECTS_FLAT.filter(e=>e.curator).length + '/36');
+console.log('  in engine, invisible to Curator:',
+  ENGINE.filter(id=>!CURATOR.includes(id)).join(', '));
+console.log('  no engine prompt at all:',
+  M2.EFFECTS_FLAT.filter(e=>!e.engine).length);
+console.log('RECONCILIATION GATES PASS');

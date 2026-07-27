@@ -11,7 +11,14 @@
  *   /previews/portraits/<siloId>/<effectId>.jpg
  * No markup change, no rebuild.
  *
- * ⚠ ENGINE RECONCILIATION REQUIRED. The `id` values below are CUI's derivation
+ * RECONCILED against lib/v1/portraits/portraits-shared.ts (PRESET_LABELS, 17 entries)
+ * and portraits-effect-curator.ts (EFFECT_CATALOG, 12 entries), read 2026-07-27.
+ *   engine:true  = present in PRESET_LABELS, /generate will accept it
+ *   curator:true = present in EFFECT_CATALOG, the Curator can recommend it
+ * Effects with engine:false may still exist on the experimental path —
+ * portraits-experimental.ts NOT YET READ. Provisional.
+ *
+ * ⚠ ORIGINAL NOTE. The `id` values below are CUI's derivation
  * from Rich's labels. They must be checked against the live engine preset ids
  * before build 3. Where the engine disagrees, the ENGINE wins and this file is
  * corrected. Effects with `engine:false` are known-or-suspected missing.
@@ -22,72 +29,72 @@ const CATALOGUE = [
     id: 'earth_ore',
     label: 'Earth & Ore',
     effects: [
-      { id: 'bronze',    label: 'Bronze',    engine: true  },
-      { id: 'iron',      label: 'Iron',      engine: true  },
-      { id: 'stone',     label: 'Stone',     engine: true  },
-      { id: 'alabaster', label: 'Alabaster', engine: true  },
-      { id: 'pewter',    label: 'Pewter',    engine: false }, // needs MATERIAL_REGISTER
-      { id: 'ebony',     label: 'Ebony',     engine: true  },
-      { id: 'walnut',    label: 'Walnut',    engine: true  }
+      { id: 'bronze',    label: 'Bronze',    engine: true , curator: true  },
+      { id: 'iron',      label: 'Iron',      engine: true , curator: true  },
+      { id: 'stone',     label: 'Stone',     engine: true , curator: true  },
+      { id: 'alabaster', label: 'Alabaster', engine: true , curator: true  },
+      { id: 'pewter',    label: 'Pewter',    engine: true , curator: false }, // needs MATERIAL_REGISTER
+      { id: 'ebony',     label: 'Ebony',     engine: true , curator: true  },
+      { id: 'walnut',    label: 'Walnut',    engine: true , curator: true  }
     ]
   },
   {
     id: 'artists_gallery',
     label: 'The Artists Gallery',
     effects: [
-      { id: 'impressionist',    label: 'Impressionist',     engine: true  },
-      { id: 'torn_paper',       label: 'Torn Paper',        engine: true  },
-      { id: 'folded_book',      label: 'Folded Book',       engine: true  },
-      { id: 'charcoal_chalk',   label: 'Charcoal & Chalk',  engine: true  },
-      { id: 'pencil_sketch',    label: 'Pencil Sketch',     engine: true  },
-      { id: 'sheet_music',      label: 'Sheet Music',       engine: true  },
-      { id: 'stained_glass',    label: 'Stained Glass',     engine: false }, // needs MATERIAL_REGISTER
-      { id: 'driftwood_resin',  label: 'Driftwood & Resin', engine: false }  // needs MATERIAL_REGISTER
+      { id: 'impressionist',    label: 'Impressionist',     engine: true , curator: true  },
+      { id: 'torn_paper',       label: 'Torn Paper',        engine: true , curator: true  },
+      { id: 'folded_book',      label: 'Folded Book',       engine: true , curator: true  },
+      { id: 'charcoal_chalk',   label: 'Charcoal & Chalk',  engine: true , curator: true  },
+      { id: 'pencil_sketch',    label: 'Pencil Sketch',     engine: true , curator: true  },
+      { id: 'sheet_music',      label: 'Sheet Music',       engine: true , curator: true  },
+      { id: 'stained_glass',    label: 'Stained Glass',     engine: true , curator: false }, // needs MATERIAL_REGISTER
+      { id: 'driftwood_resin',  label: 'Driftwood & Resin', engine: true , curator: false }  // needs MATERIAL_REGISTER
     ]
   },
   {
     id: 'light_glass',
     label: 'Light & Glass',
     effects: [
-      { id: 'cast_glass',        label: 'Cast Glass',        engine: false },
-      { id: 'blown_glass',       label: 'Blown Glass',       engine: true  },
-      { id: 'amber',             label: 'Amber',             engine: true  },
-      { id: 'frost_ice',         label: 'Frost & Ice',       engine: false },
-      { id: 'liquid_mercury',    label: 'Liquid Mercury',    engine: true  },
-      { id: 'enchanted_crystal', label: 'Enchanted Crystal', engine: true  }, // was Fantasy Crystal
-      { id: 'volumetric_light',  label: 'Volumetric Light',  engine: false }
+      { id: 'cast_glass',        label: 'Cast Glass',        engine: false, curator: false },
+      { id: 'blown_glass',       label: 'Blown Glass',       engine: false, curator: false },
+      { id: 'amber',             label: 'Amber',             engine: false, curator: false },
+      { id: 'frost_ice',         label: 'Frost & Ice',       engine: false, curator: false },
+      { id: 'liquid_mercury',    label: 'Liquid Mercury',    engine: false, curator: false },
+      { id: 'enchanted_crystal', label: 'Enchanted Crystal', engine: false, curator: false }, // was Fantasy Crystal
+      { id: 'volumetric_light',  label: 'Volumetric Light',  engine: false, curator: false }
     ]
   },
   {
     id: 'myth_legend',
     label: 'Myth & Legend',
     effects: [
-      { id: 'dragon_skin',      label: 'Dragon Skin',      engine: true  },
-      { id: 'fire_ember',       label: 'Fire & Ember',     engine: false },
-      { id: 'magic_energy',     label: 'Magic Energy',     engine: true  },
-      { id: 'living_armor',     label: 'Living Armor',     engine: true  },
-      { id: 'living_reef',      label: 'Living Reef',      engine: false },
-      { id: 'reclaimed_bronze', label: 'Reclaimed Bronze', engine: true  }
+      { id: 'dragon_skin',      label: 'Dragon Skin',      engine: false, curator: false },
+      { id: 'fire_ember',       label: 'Fire & Ember',     engine: false, curator: false },
+      { id: 'magic_energy',     label: 'Magic Energy',     engine: false, curator: false },
+      { id: 'living_armor',     label: 'Living Armor',     engine: false, curator: false },
+      { id: 'living_reef',      label: 'Living Reef',      engine: false, curator: false },
+      { id: 'reclaimed_bronze', label: 'Reclaimed Bronze', engine: false, curator: false }
     ]
   },
   {
     id: 'far_future',
     label: 'Far & Future',
     effects: [
-      { id: 'silicon_circuit',  label: 'Silicon Circuit',  engine: true  },
-      { id: 'atomic_robot',     label: 'Atomic Age Robot', engine: false },
-      { id: 'cosmic_bloom',     label: 'Cosmic Bloom',     engine: false },
-      { id: 'nebula_resin',     label: 'Nebula Resin',     engine: true  },
-      { id: 'neon_drawing',     label: 'Neon Drawing',     engine: true  }
+      { id: 'silicon_circuit',  label: 'Silicon Circuit',  engine: false, curator: false },
+      { id: 'atomic_robot',     label: 'Atomic Age Robot', engine: false, curator: false },
+      { id: 'cosmic_bloom',     label: 'Cosmic Bloom',     engine: false, curator: false },
+      { id: 'nebula_resin',     label: 'Nebula Resin',     engine: false, curator: false },
+      { id: 'neon_drawing',     label: 'Neon Drawing',     engine: false, curator: false }
     ]
   },
   {
     id: 'curiosities',
     label: 'Curiosities',
     effects: [
-      { id: 'plushy',                label: 'Plushy',                engine: true  },
-      { id: 'chocolate',             label: 'Chocolate',             engine: false }, // tier on hold
-      { id: 'elizabethan_portrait',  label: 'Elizabethan Portrait',  engine: false }
+      { id: 'plushy',                label: 'Plushy',                engine: true , curator: false },
+      { id: 'chocolate',             label: 'Chocolate',             engine: true , curator: false }, // tier on hold
+      { id: 'elizabethan_portrait',  label: 'Elizabethan Portrait',  engine: false, curator: false }
     ]
   }
 ];
