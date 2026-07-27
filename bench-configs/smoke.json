@@ -1,0 +1,14 @@
+{
+  "label": "portraits-smoke-01",
+  "series": "portraits",
+  "sourceDir": "D:\\minramas\\bench-sources\\smoke",
+  "sourceLimit": 15,
+  "matrix": {
+    "presetIds":   ["alabaster"],
+    "styleIds":    ["realistic"],
+    "locationIds": ["pedestal"],
+    "scales":      ["close_up"]
+  },
+  "fidelityThreshold": 8,
+  "costCeilingCents": 500
+}

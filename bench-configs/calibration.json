@@ -1,0 +1,17 @@
+{
+  "label": "portraits-calibration-01",
+  "series": "portraits",
+  "sourceDir": "D:\\minramas\\bench-sources\\calibration",
+  "sourceLimit": 100,
+  "matrix": {
+    "presetIds":   ["bronze", "mixed_metals", "alabaster", "impressionist"],
+    "styleIds":    ["realistic"],
+    "locationIds": ["pedestal"],
+    "scales":      ["close_up"]
+  },
+  "fidelityThreshold": 8,
+  "intakeThreshold": 6,
+  "mismatchBehavior": "redirect",
+  "concurrency": 2,
+  "costCeilingCents": 7500
+}

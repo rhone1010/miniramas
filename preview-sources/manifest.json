@@ -1,0 +1,242 @@
+[
+  {
+    "bin": "f_adult",
+    "candidate": "a",
+    "age": 38,
+    "gender": "f",
+    "file": "f_adult_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 38-year-old mixed-heritage woman, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_adult",
+    "candidate": "b",
+    "age": 38,
+    "gender": "f",
+    "file": "f_adult_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 38-year-old Middle Eastern woman, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_child",
+    "candidate": "a",
+    "age": 8,
+    "gender": "f",
+    "file": "f_child_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a bright-eyed and photogenic 8-year-old East Asian girl, wearing a simple solid-color top, neat and age-appropriate, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_child",
+    "candidate": "b",
+    "age": 8,
+    "gender": "f",
+    "file": "f_child_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a bright-eyed and photogenic 8-year-old white girl, wearing a simple solid-color top, neat and age-appropriate, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_mature",
+    "candidate": "a",
+    "age": 55,
+    "gender": "f",
+    "file": "f_mature_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 55-year-old white woman, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_mature",
+    "candidate": "b",
+    "age": 55,
+    "gender": "f",
+    "file": "f_mature_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 55-year-old Southeast Asian woman, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_senior",
+    "candidate": "a",
+    "age": 72,
+    "gender": "f",
+    "file": "f_senior_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 72-year-old East Asian woman, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_senior",
+    "candidate": "b",
+    "age": 72,
+    "gender": "f",
+    "file": "f_senior_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 72-year-old Black woman, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_teen",
+    "candidate": "a",
+    "age": 15,
+    "gender": "f",
+    "file": "f_teen_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a bright-eyed and photogenic 15-year-old Latina teenage girl, wearing a simple solid-color top, neat and age-appropriate, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_teen",
+    "candidate": "b",
+    "age": 15,
+    "gender": "f",
+    "file": "f_teen_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a bright-eyed and photogenic 15-year-old mixed-heritage teenage girl, wearing a simple solid-color top, neat and age-appropriate, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_young",
+    "candidate": "a",
+    "age": 25,
+    "gender": "f",
+    "file": "f_young_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 25-year-old South Asian woman, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "f_young",
+    "candidate": "b",
+    "age": 25,
+    "gender": "f",
+    "file": "f_young_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 25-year-old Latina woman, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_adult",
+    "candidate": "a",
+    "age": 38,
+    "gender": "m",
+    "file": "m_adult_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 38-year-old Southeast Asian man, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_adult",
+    "candidate": "b",
+    "age": 38,
+    "gender": "m",
+    "file": "m_adult_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 38-year-old white man, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_child",
+    "candidate": "a",
+    "age": 8,
+    "gender": "m",
+    "file": "m_child_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a bright-eyed and photogenic 8-year-old Black boy, wearing a simple solid-color top, neat and age-appropriate, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_child",
+    "candidate": "b",
+    "age": 8,
+    "gender": "m",
+    "file": "m_child_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a bright-eyed and photogenic 8-year-old South Asian boy, wearing a simple solid-color top, neat and age-appropriate, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_mature",
+    "candidate": "a",
+    "age": 55,
+    "gender": "m",
+    "file": "m_mature_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 55-year-old Black man, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_mature",
+    "candidate": "b",
+    "age": 55,
+    "gender": "m",
+    "file": "m_mature_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 55-year-old Latino man, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_senior",
+    "candidate": "a",
+    "age": 72,
+    "gender": "m",
+    "file": "m_senior_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 72-year-old Latino man, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_senior",
+    "candidate": "b",
+    "age": 72,
+    "gender": "m",
+    "file": "m_senior_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 72-year-old South Asian man, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_teen",
+    "candidate": "a",
+    "age": 15,
+    "gender": "m",
+    "file": "m_teen_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a bright-eyed and photogenic 15-year-old white teenage boy, wearing a simple solid-color top, neat and age-appropriate, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_teen",
+    "candidate": "b",
+    "age": 15,
+    "gender": "m",
+    "file": "m_teen_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a bright-eyed and photogenic 15-year-old Black teenage boy, wearing a simple solid-color top, neat and age-appropriate, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_young",
+    "candidate": "a",
+    "age": 25,
+    "gender": "m",
+    "file": "m_young_a.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 25-year-old Middle Eastern man, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subject from the backdrop. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  },
+  {
+    "bin": "m_young",
+    "candidate": "b",
+    "age": 25,
+    "gender": "m",
+    "file": "m_young_b.png",
+    "aspect": "3:4",
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. Subject: a strikingly attractive and photogenic 25-year-old East Asian man, wearing simple, timeless clothing in a solid color with a clean silhouette, no logos or busy patterns, framed from the hips up in a three-quarter portrait: torso with complete arms and BOTH hands fully visible in frame, hands relaxed and naturally posed (folded, resting, or loosely clasped) with well-formed natural fingers; never crop or terminate an arm mid-forearm; face large in the frame and tack sharp, subject facing the camera with a warm natural expression. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. The image should look like a premium studio session deliverable.",
+    "status": "ok"
+  }
+]
