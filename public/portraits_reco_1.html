@@ -1,3 +1,1161 @@
+
+/
+miniramas
+miniramas
+
+
+
+
+
+
+
+Recents
+Cleaning up stale files for Lincolnco launch
+just now
+CUI V21
+just now
+CLAW V20
+2 hours ago
+CENG V21
+2 hours ago
+CLAW V21 system initialization
+22 hours ago
+CAQ V20
+2 days ago
+CUI V20
+2 days ago
+Frontend development scope and priorities
+5 days ago
+Separating social advertising from social engagement
+6 days ago
+Bulk Effects System
+6 days ago
+Reward effects for completed sets
+Jul 19
+Structured portraits UI development process
+Jul 18
+Locking Up Portraits
+Jul 16
+Building social media advertising campaigns
+Jul 16
+Wrapping Up Portraits 070926
+Jul 16
+Series Cross Template
+Jul 11
+Moving into houses series
+Jul 11
+Finalizing pet effects and features
+Jul 10
+3D lock design and uncanny valley risk
+Jul 10
+Cleaning C drive after CCleaner
+Jul 9
+Show more
+Instructions
+Add instructions to tailor Claude’s responses
+
+Memory
+Only you
+Purpose & context Rich is the solo founder, creative director, and UI designer of Liten & Co, building an AI-powered image crafting platform (litenco.com, repo D:\minramas\, codename minramas) that transforms customer photographs into "Crafted Images" across multiple Series. Core stack: Next.js, TypeScript, Supabase, Stripe, Replicate (NB2 / google/nano-banana-2), OpenAI gpt-image-1, and Prodigi for print fulfillment. Eight customer-facing Series (called "Series," never "silos"): Portraits, Groups, Pets, Action, Houses, Landscapes, For Fun, The Artist Series (formerly Sculpture). Aug 1 test release is locked to five: Portraits, Pets, Groups, Action, and Mobile Wallpapers (9:16). Houses, Landscapes, For Fun, and The Artist Series are out for Aug 1. Positioning (locked): Banned vocabulary everywhere: sculpt/sculpture/sculpted (implies physical objects), "In-Situ"/"In Situ" in user-facing copy or model-facing prompt headers for Landscapes and Houses (use "In Environment"; internal code IDs insitu may stay) "Crafted Images" / "Crafted Portraits" replace all "Sculpted Images" customer-facing copy — make-or-break rule Homepage headline locked: "We turn your photographs into Crafted Images." | Sub: "Your favorite moments, reimagined by the studio — kept as digital files, printable on demand." "Crafted Images" always paired, capital C+I; plain accessible language throughout (avoid literary terms like "register") Multi-Claude coordination system (CLAW framework): CUI — UI lane: standalone HTML reference files, r-numbered, never dropped onto the live engine file CC (Claude Code) — plumbing/contract lane only; must never own HTML/CSS layout or invent UI; wires backend, Supabase, Stripe CENG — prompt engineering lane CAQ — UX/QA audit lane; files programmatic risk flags; Rich and human testers own perceived Pass/Fail on the glass CLAW — coordination layer, ticket system, routing, master status doc (CLAW-STATUS.md pasted at each session start) Rich is the primary decision-maker, personally tests and approves all files before they enter public/portraits.html --- Current state Active targets: Aug 1 no-money test release → Aug 15 commerce release. User path (locked): Upload → Craft → My Collection (inside Account page) → Download. Print Shop UI present with Prodigi fulfillment off for Aug 1. Currency architecture: Credits are the permanent currency (not a bypass). Testers get 50 credits. Two-tier code system: RHONE3166 = Rich's unlimited admin code; ten named tester codes (TESTER-AMBER through TESTER-JASPER) at 50 credits each. Stripe off for Aug 1 but architecture built now. Portraits engine: public/portraits.html is the live file (9,872 lines, 13 fetch() calls). litenco-portraits-2026-07-21-r77.html is the approved UI reference (fetchless). These must never be conflated. Git restore path: git checkout 8796549 -- public/portraits.html. Critical CC governance (CLAUDE.md at repo root): Strict fidelity law — line-count-matched ports with deviation reporting. CC does contract and plumbing work only. CUI owns all HTML/CSS layout. All files referenced as path + line count + date. Boot harness: scripts/boot-test.js — headless boot harness to catch temporal dead zone class of faults (e.g., PREVIEWBASE declared ~1,800 lines below first boot use). Browser console verification added to Definition of Done. Supabase: Migrations 007/008/009 applied via Dashboard SQL Editor. Credits gate wired by replacing startCheckout Stripe divert in runAll with a credits gate call; all 13 existing fetch calls untouched. Key artifacts in play: CLAW-STATUS.md, CREDITS-AND-CODES-SPEC-v3.md, CLAUDE.md, CC-PAYLOAD-2026-07-23.md, CLAW-RECONCILIATION-2026-07-23.md. Portraits workshop UI (CUI reference): v77 is approved. Five-spine layout at 1920px: Advanced 48 / Curator 360 / Suggested flex / Queue 240 / Collection 180. Locked design elements: deckled paper Curator card (feTurbulence+feDisplacementMap), inlined Curator C Mark, italic Garamond 18px body with tinted spans, horizontal queue pills, 3×2 primary grid with Studio Bundle in slot 6, 5×(1fr+2fr) exploration row, image-overlay labels, oxblood primary buttons, Collection with real thumbnails. Garamond globally weight 400. Real bride source photo + 7 real sculpture renders + 3 placeholder tiles (Bronze/Stone/Sheet Music) pending re-renders. Silent auto-naming format: Series - Effect - User Name - ### Studio failure remedies (three parallel choices): Recraft, Credit, Refund. Print Shop: Two-zone layout — limestone gallery left (74%) / charcoal Print Studio right (26%), centered 86%/max-2200px. Three finishes: Fine Art Print, Gallery Canvas, Framed Print. Nine style options. Declining-multiplier retail pricing (3.0× under $20 cost tapering to 2.0× over $80, nearest $5). Prodigi sizing:fit. Live file: litenco-printshop-2026-07-21-r9.html. Mobile Wallpapers filter removed (download-only, lives in My Collection). Account page: litenco-account-2026-07-22-r6.html. Global layout lock applied. My Collection folded in as page body (not separate route). Buy Credits built but flag-hidden. Sets, Billing, Pro/Upgrade, Order History removed. Single noun everywhere: "credits." Open blocker: Shared masthead component — sole token reconciliation task before launch. --- On the horizon Aug 15 commerce release: Stripe on, real data wiring for Cart and Print History (off Prodigi webhook) CC to pull Prodigi catalog and build cached SKU→cost→retail matrix Reward effects build (10 effects for set completion) — five covered in CENG sessions; Landscapes material injection system still inert pending plumbing My Places series concept (personalized sanctuary dioramas) — parked post-launch Mobile Wallpapers as output format within the five Aug 1 Series Multi-person Portraits path dormant behind subjectmode: 'solo'|'multi' — gated until solo ships Artists Gallery premium pricing tier (gpt-image-1 is slow/premium; price increase still to be applied) --- Key learnings & principles CC boundary is critical: CC violated the UI/engine file boundary earlier (replacing the 9,872-line engine file with a standalone). Canonical rule: CC does plumbing only; CUI owns the glass. CLAUDE.md enforces this in the repo. Cormorant Garamond renders ~⅓ smaller than sans-serif at the same px. Serif body copy floors at 22px (never below 20px), serif UI pills/controls at 18px+, mono/sans labels ≥12px, no body text below 16px. Size up when in doubt — undersized type is a recurring critical rejection. Action buttons must be visually substantial — never tiny micro-links. Italic serif pills at 1.1rem+ with clear padding (~0.5rem 0.8rem+), oxblood/sage outlined or filled. Recurring critical frustration; size up when in doubt. When Rich pastes a screenshot/mockup, treat it as a directive, not ambiguous data. Read the deliberate changes and commit. Do not respond with multiple-choice clarifying questions. No over-engineering prompt blocks — short, directive prompts outperform elaborate long ones for NB2 and gpt-image-1. Universal/always-on blocks must not embed staging assumptions — a frequent failure mode causing style bleed across Series. Route schema must match engine schema — stale validator schemas silently override new IDs (caused all location failures in an earlier Action session). Project-knowledge files drift from the live codebase — verify via PowerShell/git before treating as canonical; the live repo is the source of truth. File naming discipline: All renders use taxonomy-ID filenames (e.g., amber.jpg, dragonskin.jpg) — never sequential numbers, which cause silent overwrites. Session-recap discipline: Every session decision must be captured in a handoff doc with propagation checklist; CC edits the in-repo Bible in place, never full-regenerate. Funnel every decision through "do we really need this?" — aggressive removal of anything not on the critical path; no overreaction to setbacks. Prompt text must come verbatim from engine files, never invented — Rich authored verbatim composition blocks; Claude must not invent them. Curiosities/experimental effects skip the likeness gate (evalPassed = true) — strict likeness scoring wrongly flags excellent abstract renders. --- Approach & patterns Communication style: Terse, bottom-line first. Short answers followed by action. No tables, headers, or long bullet lists in chat (spec docs can be thorough). Decisions over option lists. One "place this file here, run this command" block per message. Correct without defensiveness. Build workflow: CUI builds standalone HTML reference files (r-numbered, assertion-gated Python builds: must-exist/must-not-exist string gates, node --check JS validation, brace-balance). CC ports approved deltas onto the engine file. Rich tests by dropping files into D:\minramas\ and viewing at localhost:3000. Mockups as directives: Screenshots/pastes are specifications to replicate exactly, not suggestions to interpret. Claude is blind to rendered output; visual correctness is driven entirely by Rich's eye. Session handoffs: CLAW-STATUS.md pasted at start of each session. Carryover docs written at session end capturing all decisions with propagation checklists. File delivery: Complete file rewrites preferred over diffs/patches. Files referenced as path + line count + date. Pricing formula (Print Shop): Declining multiplier — 3.0× under $20 cost, tapering to 2.0× over $80, rounded to nearest $5. PowerShell environment: Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; Unblock-File .\*.ps1 required in each new window. --- Tools & resources Repo: D:\minramas\ (Windows/PowerShell), Next.js/TypeScript, localhost:3000 Generators: Replicate NB2 (google/nano-banana-2) primary; OpenAI gpt-image-1 for Artists Gallery interpretive styles only (kept as primary generator there, retired as Pass 2 refine elsewhere) Services: Supabase (auth, DB, storage), Stripe (commerce, off for Aug 1), Prodigi (print fulfillment, off for Aug 1) Key files: public/portraits.html (live engine), litenco-portraits-2026-07-21-r77.html (UI reference), CLAW-STATUS.md, CLAUDE.md, scripts/boot-test.js, CREDITS-AND-CODES-SPEC-v3.md Design canvas: 2550px. Global layout: centered, 86% width, max 2200px. Left gallery 74% / right studio 26%. Header 72px. Card radius 12px, panel 16px, buttons 999px. Spacing rhythm: 8/12/20/32/48/72px. Background stone texture 6%, noise 3%, dark studio 5% — no paper/leather/wood textures. Account sidebar 17% / main 83%. Typography: Cormorant Garamond (brand voice/serif, size up aggressively — floors at 22px body, 18px+ controls), Manrope (sans/ledger, locked — Inter must be replaced where found in live build) Brand tokens: --ink: #2a241e, --brass: #75623a, oxblood #7d4242, vellum #f3ede1, limestone texture background Prompt extraction: Node.js evaluation scripts reading verbatim from engine .ts files — never hand-transcription --- Other instructions For Liten & Co Landscapes and Houses: never use "In-Situ" or "In Situ" in user-facing copy, UI labels, or model-facing prompt block headers. Use "In Environment." Internal code IDs in_situ may stay for code stability. All workshop quality-level / print-tier language (Web/Print/Collector, "Print Quality +$2") is being removed from the craft flow. Print quality is handled at Print Shop level only. Remove these references from CUI copy across all Series.
+
+Last updated 3 days ago
+
+Context
+90% of project capacity used
+Search mode
+
+CLAW-CARRYOVER-2026-07-24.md
+57 lines
+
+md
+
+
+
+PHILOSOPHY-v2-AMENDMENT-2026-07-24.md
+203 lines
+
+md
+
+
+
+portraits-2026-07-16-r76.html
+1,580 lines
+
+html
+
+
+
+MASTER-LOCKED-ELEMENTS-v2.1.md
+63 lines
+
+md
+
+
+
+CARRYOVER-2026-07-20-r76.md
+50 lines
+
+md
+
+
+
+portraits-2026-07-16-r42.html
+1,238 lines
+
+html
+
+
+
+CARRYOVER-portraits-UI-2026-07-16.md
+170 lines
+
+md
+
+
+
+PORTRAITS-WIZARD-LOCKED-DECISIONS-2026-07-16-r03.md
+154 lines
+
+md
+
+
+
+PORTRAITS-WIZARD-LOCKED-DECISIONS-2026-07-16-r01.md
+159 lines
+
+md
+
+
+
+litenco-s1-input-2026-07-08-light.html
+52 lines
+
+html
+
+
+
+litenco-printshop-workspace-2026-07-08-light.html
+75 lines
+
+html
+
+
+
+litenco-proto-workshop-deckle-1920-2026-07-07-light.html
+408 lines
+
+html
+
+
+
+litenco-collection-states-2026-07-07-light.html
+99 lines
+
+html
+
+
+
+litenco-mycollection-redesign-2026-07-08-light.html
+72 lines
+
+html
+
+
+
+claude-code-handoff-portraits-solo-v1.md
+176 lines
+
+md
+
+
+
+homepage-light.html
+552 lines
+
+html
+
+
+
+litenco-hero-fadewall-2026-07-07-light.html
+79 lines
+
+html
+
+
+
+litenco-payflow-2026-07-08-light.html
+66 lines
+
+html
+
+
+
+litenco-flow-contract-v1-2026-07-07.md
+226 lines
+
+md
+
+
+
+_PRODUCTION-BIBLE.md
+189 lines
+
+md
+
+
+
+portraits.html
+9,522 lines
+
+html
+
+
+
+portraits-shared-helpers.ts
+18 lines
+
+ts
+
+
+
+portraits-shared.ts
+574 lines
+
+ts
+
+
+
+portraits-presets.ts
+41 lines
+
+ts
+
+
+
+portraits-prompt.ts
+579 lines
+
+ts
+
+
+
+portraits-pass2.ts
+235 lines
+
+ts
+
+
+
+portraits-generator.ts
+529 lines
+
+ts
+
+
+
+portraits-refine.ts
+562 lines
+
+ts
+
+
+
+portraits-gpt-image.ts
+92 lines
+
+ts
+
+
+
+portraits-expand.ts
+125 lines
+
+ts
+
+
+
+portraits-effect-curator.ts
+314 lines
+
+ts
+
+
+
+portraits-experimental.ts
+235 lines
+
+ts
+
+
+
+portraits-curator.ts
+250 lines
+
+ts
+
+
+
+carryover-2026-06-24-v7.md
+166 lines
+
+md
+
+
+
+seam-tracker.md
+206 lines
+
+md
+
+
+
+portraits.html
+7,077 lines
+
+html
+
+
+
+engine-sync-checkout-preview.md
+60 lines
+
+md
+
+
+
+webhooks-stripe-route.ts
+125 lines
+
+ts
+
+
+
+structures-generate-route.ts
+71 lines
+
+ts
+
+
+
+sportsmem-generate-route.ts
+50 lines
+
+ts
+
+
+
+print-quote-route.ts
+117 lines
+
+ts
+
+
+
+print-webhook-route.ts
+169 lines
+
+ts
+
+
+
+skus-route.ts
+18 lines
+
+ts
+
+
+
+sportsmem-analyze-route.ts
+225 lines
+
+ts
+
+
+
+portraits-raw-pipeline-route.ts
+175 lines
+
+ts
+
+
+
+print-checkout-route.ts
+210 lines
+
+ts
+
+
+
+portraits-curate-upper-body-route.ts
+103 lines
+
+ts
+
+
+
+portraits-generate-route.ts
+322 lines
+
+ts
+
+
+
+portraits-raw-gpt-image-route.ts
+115 lines
+
+ts
+
+
+
+portraits-curate-effects-route.ts
+82 lines
+
+ts
+
+
+
+portraits-analyze-route.ts
+71 lines
+
+ts
+
+
+
+pets-analyze-route.ts
+70 lines
+
+ts
+
+
+
+pets-generate-route.ts
+167 lines
+
+ts
+
+
+
+moments-analyze-route.ts
+100 lines
+
+ts
+
+
+
+groups-raw-gpt-image-route.ts
+117 lines
+
+ts
+
+
+
+houses-generate-route.ts
+71 lines
+
+ts
+
+
+
+groups-generate-route.ts
+119 lines
+
+ts
+
+
+
+entitlements-route.ts
+45 lines
+
+ts
+
+
+
+groups-analyze-route.ts
+67 lines
+
+ts
+
+
+
+checkout-route.ts
+57 lines
+
+ts
+
+
+
+global-analyze-route.ts
+217 lines
+
+ts
+
+
+
+actionmini-generate-route.ts
+297 lines
+
+ts
+
+
+
+export-route.ts
+292 lines
+
+ts
+
+
+
+bundles-route.ts
+20 lines
+
+ts
+
+
+
+auth-me-route.ts
+14 lines
+
+ts
+
+
+
+account-route.ts
+41 lines
+
+ts
+
+
+
+actionmini-analyze-route.ts
+316 lines
+
+ts
+
+
+
+pets-generator.ts
+549 lines
+
+ts
+
+
+
+pets-refine.ts
+511 lines
+
+ts
+
+
+
+pets-shared.ts
+406 lines
+
+ts
+
+
+
+pets-prompt.ts
+277 lines
+
+ts
+
+
+
+pets-expand.ts
+123 lines
+
+ts
+
+
+
+groups-gpt-image.ts
+91 lines
+
+ts
+
+
+
+groups-shared-helpers.ts
+18 lines
+
+ts
+
+
+
+groups-shared.ts
+514 lines
+
+ts
+
+
+
+groups-refine.ts
+521 lines
+
+ts
+
+
+
+groups-faceswap.ts
+700 lines
+
+ts
+
+
+
+groups-generator.ts
+516 lines
+
+ts
+
+
+
+groups-presets.ts
+60 lines
+
+ts
+
+
+
+groups-prompt.ts
+118 lines
+
+ts
+
+
+
+groups-expand.ts
+41 lines
+
+ts
+
+
+
+groups-pass2.ts
+193 lines
+
+ts
+
+
+
+groups-blocks.ts
+755 lines
+
+ts
+
+
+
+landscapes-generator.ts
+207 lines
+
+ts
+
+
+
+landscapes-plaque.ts
+152 lines
+
+ts
+
+
+
+landscapes-presets.ts
+196 lines
+
+ts
+
+
+
+landscapes-refine.ts
+251 lines
+
+ts
+
+
+
+landscapes-shared.ts
+472 lines
+
+ts
+
+
+
+landscapes-expand.ts
+95 lines
+
+ts
+
+
+
+landscapes-effects.ts
+273 lines
+
+ts
+
+
+
+landscapes-prompt.ts
+173 lines
+
+ts
+
+
+
+actionmini-prompt.ts
+288 lines
+
+ts
+
+
+
+actionmini-blocks.ts
+662 lines
+
+ts
+
+
+
+actionmini-shared.ts
+52 lines
+
+ts
+
+
+
+actionmini-refine.ts
+244 lines
+
+ts
+
+
+
+actionmini-expand.ts
+122 lines
+
+ts
+
+
+
+actionmini-pass2.ts
+334 lines
+
+ts
+
+
+
+actionmini-faceswap.ts
+147 lines
+
+ts
+
+
+
+actionmini-generator.ts
+483 lines
+
+ts
+
+
+
+actionmini-presets.ts
+152 lines
+
+ts
+
+
+
+houses-artists-score.ts
+78 lines
+
+ts
+
+
+
+houses-shared.ts
+176 lines
+
+ts
+
+
+
+houses-expand.ts
+81 lines
+
+ts
+
+
+
+houses-effect-curator.ts
+164 lines
+
+ts
+
+
+
+houses-blocks.ts
+592 lines
+
+ts
+
+
+
+houses-generator.ts
+297 lines
+
+ts
+
+
+
+houses-presets.ts
+510 lines
+
+ts
+
+
+
+houses-refine.ts
+154 lines
+
+ts
+
+
+
+houses-analyze.ts
+94 lines
+
+ts
+
+
+
+houses-artists.ts
+163 lines
+
+ts
+
+
+
+portraits-curator.ts
+250 lines
+
+ts
+
+
+
+portraits-shared-helpers.ts
+18 lines
+
+ts
+
+
+
+portraits-refine.ts
+465 lines
+
+ts
+
+
+
+portraits-prompt.ts
+382 lines
+
+ts
+
+
+
+portraits-gpt-image.ts
+92 lines
+
+ts
+
+
+
+portraits-generator.ts
+501 lines
+
+ts
+
+
+
+portraits-presets.ts
+41 lines
+
+ts
+
+
+
+portraits-expand.ts
+125 lines
+
+ts
+
+
+
+portraits-shared.ts
+484 lines
+
+ts
+
+
+
+portraits-pass2.ts
+220 lines
+
+ts
+
+
+
+portraits-effect-curator.ts
+314 lines
+
+ts
+
+
+
+subject-redirect.ts
+229 lines
+
+ts
+
+
+
+portraits-expand.ts
+125 lines
+
+ts
+
+
+
+portraits-route.ts
+322 lines
+
+ts
+
+
+
+portrait-engine-briefing-2026-06-08.md
+56 lines
+
+md
+
+
+
+carryover-calibration-01-engine.md
+68 lines
+
+md
+
+
+
+portraits-route.ts
+322 lines
+
+ts
+
+
+
+portraits-expand.ts
+125 lines
+
+ts
+
+
+
+portrait-engine-briefing-2026-06-08.md
+56 lines
+
+md
+
+
+
+subject-redirect.ts
+229 lines
+
+ts
+
+
+
+liten-qa-log-wiring-v1.md
+66 lines
+
+md
+
+
+
+carryover-calibration-01-engine.md
+68 lines
+
+md
+
+
+
+liten-test-bench-spec-v1.md
+112 lines
+
+md
+
+
+
+liten-action-v7-spec.md
+287 lines
+
+md
+
+
+
+CARRYOVER-2026-05-31.md
+253 lines
+
+md
+
+
+
+liten-print-shop-mockup-v1.html
+836 lines
+
+html
+
+
+
+liten-three-rooms-v29.html
+4,032 lines
+
+html
+
+
+
+liten-workshop-carryover-2026-05-20.md
+342 lines
+
+md
+
+
+
+Curator_Core_-_Engine_Output_Spec.md
+491 lines
+
+md
+
+
+
+minirama-silos-and-art-gallery-2026-05-13.md
+164 lines
+
+md
+
+
+
+Curator_Core_-_Trigger_Taxonomy_and_Voice_Library.md
+404 lines
+
+md
+
+
+
+RESOLUTION-GATE-NOTES.md
+57 lines
+
+md
+
+
+
+MIGRATION-NOTES.md
+107 lines
+
+md
+
+
+
+minirama-carryover-2026-05-13.md
+223 lines
+
+md
+
+
+
+minirama-silos-and-art-gallery-2026-05-13.md
+164 lines
+
+md
+
+
+
+Curator_Core_-_UI_Behavior_and_Prompt_System.md
+378 lines
+
+md
+
+
+
+liten-face-swap-process-v1.md
+252 lines
+
+md
+
+
+
+liten-action-prompt-system-v1.md
+226 lines
+
+md
+
+
+
+GoToMarket-Launch-001-Strategy-v1.md
+474 lines
+
+md
+
+
+
+Landscapes-UI-001-Surface-v5.html
+1,248 lines
+
+html
+
+
+
+landscapes-presets.ts
+196 lines
+
+ts
+
+
+
+liten-mobile-prototype.html
+2,602 lines
+
+html
+
+
+
+MIGRATION-NOTES.md
+84 lines
+
+md
+
+
+
+qa-claude-carryover.md
+137 lines
+
+md
+
+
+
+ui-claude-carryover.md
+271 lines
+
+md
+
+
+Icon_Effect__0010_PencilSketch.png
+
+Scheduled
+Set up recurring tasks for this project.
+
+portraits-2026-07-16-r42.html
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1235,3 +2393,4 @@ advRecipe();
  
 </body>
 </html>
+ 

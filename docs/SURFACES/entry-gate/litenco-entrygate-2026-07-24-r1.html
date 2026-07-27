@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liten &amp; Co — Entry Gate [r1]</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   LITEN & CO — ENTRY GATE
+   The door before the workshop. Sign-in + code redemption.
+   Consent is NOT here — it lives at upload, bound to the photograph.
+   ========================================================================= */
+
+:root{
+  --oxblood:#7d4242; --oxblood-d:#6a3737; --oxblood-l:#8f4e4e;
+  --brass:#75623a; --brass-lt:#c4a96e; --gold:#b68a53; --gold-hover:#d2a768;
+  --sage:#8a9a7b; --olive:#3f4a2e;
+  --vellum:#f3ede1; --vellum-100:#f8f4eb; --vellum-200:#f3ecdd;
+  --vellum-300:#e9dec8; --vellum-400:#d8c7a9;
+  --paper:#faf6ec; --panel:#ece2d0;
+  --espresso:#26201a;
+  --coffee-900:#1f1714; --coffee-800:#2a1f1b; --coffee-700:#332620; --coffee-600:#40302a;
+  --ink:#2a241e; --ink-soft:#5a5248; --ink-mute:#8d8477;
+  --hairline:#d8cfba; --card-line:rgba(196,169,110,.28);
+  --serif:'Cormorant Garamond',Georgia,serif; --sans:'Manrope',sans-serif;
+  --radius-card:8px; --radius-input:8px; --radius-pill:8px;
+  --container:86%; --container-max:2200px; --container-min:1850px;
+  --mh-h:72px;
+  font-size:clamp(12px, 0.38vw + 6px, 15px);
+}
+@media (max-width:1849px){ :root{ --container-min:0; --container:92%; } }
+@media (max-width:1199px){ :root{ --container:94%; } }
+@media (max-width:767px) { :root{ --container:100%; } }
+
+*{margin:0;padding:0;box-sizing:border-box}
+button{font:inherit;border:none;background:none;cursor:pointer;color:inherit}
+input{font:inherit;color:inherit}
+[hidden]{display:none!important}
+html,body{max-width:100%;overflow-x:hidden}
+body{
+  background:var(--vellum);color:var(--ink);font-family:var(--sans);font-size:1rem;
+  background-image:
+    linear-gradient(rgba(243,237,225,.94),rgba(243,237,225,.94)),
+    url('/textures/natural-beige-stone.jpg');
+  background-size:auto,720px 720px;background-attachment:fixed;
+}
+
+/* masthead — the r2 shared component, abridged to what the door needs */
+.mh{
+  position:sticky;top:0;z-index:60;height:var(--mh-h);width:100%;
+  background:var(--espresso);border-bottom:1px solid var(--card-line);
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;
+  padding-inline:max(calc((100% - var(--container)) / 2),calc((100% - var(--container-max)) / 2));
+}
+.mh-logo{justify-self:start;text-decoration:none}
+.mh-logo .mark{font-family:var(--serif);font-size:2.267rem;line-height:1;color:var(--vellum-100);white-space:nowrap}
+.mh-logo .mark em{font-style:italic;color:var(--gold)}
+
+/* ======================= BEGIN ENTRY GATE ================================ */
+.gate-wrap{
+  min-height:calc(100dvh - var(--mh-h));
+  display:grid;place-items:center;
+  padding:3rem 1.5rem;
+}
+.gate{
+  width:min(520px,100%);
+  background:var(--paper);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius-card);
+  box-shadow:0 18px 48px rgba(30,24,18,.10);
+  padding:2.8rem 2.6rem 2.4rem;
+}
+.gate-mark{
+  width:44px;height:44px;border-radius:var(--radius-card);
+  background:var(--oxblood);display:grid;place-items:center;margin-bottom:1.4rem;
+}
+.gate-mark svg{width:20px;height:20px;stroke:var(--vellum-100);fill:none;stroke-width:1.5}
+.gate-h{font-family:var(--serif);font-size:2.667rem;font-weight:400;line-height:1.05;margin-bottom:.5rem}
+.gate-sub{font-family:var(--serif);font-style:italic;font-size:1.467rem;font-weight:400;color:var(--ink-soft);line-height:1.4;margin-bottom:2rem}
+
+.field{margin-bottom:1.2rem}
+.field label{display:block;font-size:.933rem;font-weight:600;margin-bottom:.5rem}
+.field .hint{font-size:.867rem;color:var(--ink-mute);margin-top:.45rem;line-height:1.4}
+.inp{
+  width:100%;height:52px;padding:0 16px;
+  background:var(--vellum-100);border:1px solid var(--hairline);
+  border-radius:var(--radius-input);font-size:1rem;
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+.inp::placeholder{color:var(--ink-mute)}
+.inp:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(182,138,83,.15)}
+.inp[aria-invalid="true"]{border-color:var(--oxblood);box-shadow:0 0 0 3px rgba(125,66,66,.12)}
+.inp.mono{font-variant-numeric:tabular-nums;letter-spacing:.06em;text-transform:uppercase}
+
+.btn-primary{
+  width:100%;height:56px;border-radius:var(--radius-input);
+  background:var(--oxblood);color:var(--vellum-100);
+  font-size:1.067rem;font-weight:600;
+  transition:background .16s ease;
+}
+.btn-primary:hover{background:var(--oxblood-d)}
+.btn-primary:disabled{background:var(--vellum-400);color:var(--ink-mute);cursor:not-allowed}
+.btn-quiet{
+  height:48px;padding:0 18px;border-radius:var(--radius-input);
+  border:1px solid var(--hairline);background:transparent;
+  font-size:1rem;font-weight:600;transition:background .16s ease;
+}
+.btn-quiet:hover{background:var(--vellum-200)}
+
+.rule{display:flex;align-items:center;gap:14px;margin:1.8rem 0 1.4rem;color:var(--ink-mute);font-size:.867rem}
+.rule::before,.rule::after{content:"";flex:1;height:1px;background:var(--hairline)}
+
+.code-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+
+/* messages — one line, never a banner */
+.msg{margin-top:1rem;font-size:.933rem;line-height:1.45;display:flex;gap:8px;align-items:flex-start}
+.msg[hidden]{display:none!important}
+.msg svg{width:16px;height:16px;flex:0 0 auto;margin-top:2px;stroke:currentColor;fill:none;stroke-width:2}
+.msg.ok{color:var(--olive)}
+.msg.warn{color:var(--brass)}
+.msg.err{color:var(--oxblood)}
+
+/* link-sent state */
+.sent-mark{
+  width:56px;height:56px;border-radius:50%;background:rgba(138,154,123,.16);
+  display:grid;place-items:center;margin-bottom:1.3rem;
+}
+.sent-mark svg{width:26px;height:26px;stroke:var(--olive);fill:none;stroke-width:1.5}
+.sent-addr{font-weight:600}
+.resend{font-size:.933rem;color:var(--ink-soft);margin-top:1.4rem}
+.resend button{color:var(--oxblood);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+/* signed-in state */
+.who{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;background:var(--vellum-200);
+  border:1px solid var(--hairline);border-radius:var(--radius-input);
+  margin-bottom:1.4rem;
+}
+.who .av{width:36px;height:36px;border-radius:50%;background:var(--coffee-700);color:var(--vellum-100);
+  display:grid;place-items:center;font-size:.933rem;font-weight:600;flex:0 0 auto}
+.who .id{min-width:0}
+.who .id b{display:block;font-size:.933rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who .id span{font-size:.867rem;color:var(--ink-mute)}
+.who .bal{margin-left:auto;font-size:.933rem;font-weight:600;white-space:nowrap}
+.who .bal em{font-style:normal;font-weight:400;color:var(--ink-mute)}
+
+.foot{margin-top:1.6rem;font-size:.867rem;color:var(--ink-mute);line-height:1.5}
+.foot a{color:var(--ink-soft)}
+/* ======================== END ENTRY GATE ================================= */
+
+/* demo scaffolding */
+.demo{padding:3rem max(calc((100% - var(--container)) / 2),1rem) 5rem;background:var(--vellum-200);border-top:1px solid var(--hairline)}
+.demo h2{font-family:var(--serif);font-weight:400;font-size:2rem;margin:2.5rem 0 .6rem}
+.demo p{max-width:70ch;color:var(--ink-soft);line-height:1.6;margin:0 0 1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:1.5rem;margin-top:1.5rem}
+.case{background:var(--vellum-100);border:1px solid var(--hairline);border-radius:var(--radius-card);overflow:hidden}
+.case-lbl{font-size:.867rem;font-weight:600;color:var(--ink-soft);padding:10px 16px;background:rgba(70,58,48,.05);border-bottom:1px solid var(--hairline)}
+.case .gate{box-shadow:none;border:none;border-radius:0;width:100%;padding:1.8rem}
+.hooks{border-collapse:collapse;width:100%;font-size:.933rem;margin-top:1rem;background:var(--vellum-100)}
+.hooks th,.hooks td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--hairline);vertical-align:top}
+.hooks th{font-weight:600;background:rgba(70,58,48,.05)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.867rem;background:rgba(70,58,48,.07);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<header class="mh">
+  <a class="mh-logo" href="/"><span class="mark">Liten <em>&amp; Co</em></span></a>
+</header>
+
+<!-- ===================== ENTRY GATE MARKUP ============================== -->
+<div class="gate-wrap">
+  <section class="gate" id="entryGate" data-state="signed-out">
+
+    <!-- STATE: signed out -->
+    <div id="gateSignedOut">
+      <div class="gate-mark">
+        <svg viewBox="0 0 24 24"><path d="M4 8l8 5 8-5M4 6h16v12H4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1 class="gate-h">Before we begin</h1>
+      <p class="gate-sub">Your pieces are kept to your account, so you can come back to them from anywhere.</p>
+
+      <div class="field">
+        <label for="gateEmail">Email</label>
+        <input class="inp" type="email" id="gateEmail" placeholder="you@example.com" autocomplete="email" inputmode="email">
+        <div class="hint">We'll send a link that signs you in. No password to remember.</div>
+      </div>
+
+      <div class="field">
+        <label for="gateCode">Studio code</label>
+        <input class="inp mono" type="text" id="gateCode" placeholder="TESTER-AMBER" autocomplete="off" spellcheck="false">
+        <div class="hint">Optional. Enter it now and it's applied the moment you sign in.</div>
+      </div>
+
+      <button class="btn-primary" id="gateSend">Send me a link</button>
+
+      <div class="msg err" id="gateMsg" hidden>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/></svg>
+        <span id="gateMsgText"></span>
+      </div>
+
+      <p class="foot">By continuing you agree to our <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.</p>
+    </div>
+
+    <!-- STATE: link sent -->
+    <div id="gateSent" hidden>
+      <div class="sent-mark">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4zM4 8l8 5 8-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1 class="gate-h">Check your email</h1>
+      <p class="gate-sub">We've sent a link to <span class="sent-addr" id="gateSentAddr">you@example.com</span>. Open it and you'll come straight back here.</p>
+      <div class="msg ok" id="gateHeldCode" hidden>
+        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Your code is held and will be applied when you arrive.</span>
+      </div>
+      <p class="resend">Nothing yet? <button id="gateResend">Send it again</button> or <button id="gateChangeEmail">use a different address</button>.</p>
+    </div>
+
+    <!-- STATE: signed in -->
+    <div id="gateSignedIn" hidden>
+      <h1 class="gate-h">Welcome back</h1>
+      <p class="gate-sub">The workshop is ready when you are.</p>
+
+      <div class="who">
+        <span class="av" id="gateAvatar">R</span>
+        <span class="id">
+          <b id="gateIdentity">rich@litenco.com</b>
+          <span>Signed in</span>
+        </span>
+        <span class="bal" id="gateBalance">50 <em>credits</em></span>
+      </div>
+
+      <button class="btn-primary" id="gateEnter">Enter the workshop</button>
+
+      <div class="rule">have a code?</div>
+
+      <div class="code-row">
+        <input class="inp mono" type="text" id="gateCodeIn" placeholder="TESTER-AMBER" autocomplete="off" spellcheck="false">
+        <button class="btn-quiet" id="gateRedeem">Redeem</button>
+      </div>
+
+      <div class="msg ok" id="gateRedeemMsg" hidden>
+        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="gateRedeemText"></span>
+      </div>
+    </div>
+
+  </section>
+</div>
+<!-- =================== END ENTRY GATE MARKUP ============================ -->
+
+<main class="demo">
+  <h2>States</h2>
+  <p>The gate above is live — enter an address and send to walk the sequence.
+    Every state below is the same card; only the contents change.</p>
+
+  <div class="grid">
+    <div class="case">
+      <div class="case-lbl">Code accepted</div>
+      <div class="gate">
+        <h1 class="gate-h">Welcome back</h1>
+        <p class="gate-sub">The workshop is ready when you are.</p>
+        <div class="who"><span class="av">A</span><span class="id"><b>amber@example.com</b><span>Signed in</span></span><span class="bal">50 <em>credits</em></span></div>
+        <button class="btn-primary">Enter the workshop</button>
+        <div class="rule">have a code?</div>
+        <div class="code-row"><input class="inp mono" value="TESTER-AMBER" readonly><button class="btn-quiet">Redeem</button></div>
+        <div class="msg ok"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>50 credits added.</span></div>
+      </div>
+    </div>
+
+    <div class="case">
+      <div class="case-lbl">Already redeemed — friendly, not an error</div>
+      <div class="gate">
+        <h1 class="gate-h">Welcome back</h1>
+        <p class="gate-sub">The workshop is ready when you are.</p>
+        <div class="who"><span class="av">A</span><span class="id"><b>amber@example.com</b><span>Signed in</span></span><span class="bal">50 <em>credits</em></span></div>
+        <button class="btn-primary">Enter the workshop</button>
+        <div class="rule">have a code?</div>
+        <div class="code-row"><input class="inp mono" value="TESTER-AMBER" readonly><button class="btn-quiet">Redeem</button></div>
+        <div class="msg warn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/></svg><span>You've already used this code. Your balance is unchanged.</span></div>
+      </div>
+    </div>
+
+    <div class="case">
+      <div class="case-lbl">Code not recognised</div>
+      <div class="gate">
+        <h1 class="gate-h">Welcome back</h1>
+        <p class="gate-sub">The workshop is ready when you are.</p>
+        <div class="who"><span class="av">A</span><span class="id"><b>amber@example.com</b><span>Signed in</span></span><span class="bal">0 <em>credits</em></span></div>
+        <button class="btn-primary" disabled>Enter the workshop</button>
+        <div class="rule">have a code?</div>
+        <div class="code-row"><input class="inp mono" value="TESTER-XXXXX" aria-invalid="true" readonly><button class="btn-quiet">Redeem</button></div>
+        <div class="msg err"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/></svg><span>We don't recognise that code. Check it and try again.</span></div>
+      </div>
+    </div>
+
+    <div class="case">
+      <div class="case-lbl">Signed in, no balance — the door holds</div>
+      <div class="gate">
+        <h1 class="gate-h">Welcome back</h1>
+        <p class="gate-sub">You'll need credits before the studio can begin.</p>
+        <div class="who"><span class="av">T</span><span class="id"><b>tester@example.com</b><span>Signed in</span></span><span class="bal">0 <em>credits</em></span></div>
+        <button class="btn-primary" disabled>Enter the workshop</button>
+        <div class="rule">have a code?</div>
+        <div class="code-row"><input class="inp mono" placeholder="TESTER-AMBER"><button class="btn-quiet">Redeem</button></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Hooks</h2>
+  <table class="hooks">
+    <tr><th>Hook</th><th>CC responsibility</th></tr>
+    <tr><td><code>#entryGate[data-state]</code></td><td><code>signed-out</code> · <code>link-sent</code> · <code>signed-in</code>. Drive this attribute; the panels follow it.</td></tr>
+    <tr><td><code>#gateEmail</code> · <code>#gateSend</code></td><td>Existing <code>signInWithOtp</code> via <code>SigninModal.tsx</code>. <b>Wire to it, do not rebuild.</b> Disable send until the address parses.</td></tr>
+    <tr><td><code>#gateCode</code></td><td>Optional, pre-auth. <b>Hold, do not redeem</b> — redemption requires an account. Apply on return from the link.</td></tr>
+    <tr><td><code>#gateMsg</code> · <code>#gateMsgText</code></td><td>One line, never a banner. Unhide with the reason.</td></tr>
+    <tr><td><code>#gateSent</code> · <code>#gateSentAddr</code></td><td>Link-sent panel and the address it went to.</td></tr>
+    <tr><td><code>#gateHeldCode</code></td><td>Unhide only when a code was entered pre-auth.</td></tr>
+    <tr><td><code>#gateResend</code> · <code>#gateChangeEmail</code></td><td>Resend; return to <code>signed-out</code> with the address kept.</td></tr>
+    <tr><td><code>#gateIdentity</code> · <code>#gateAvatar</code></td><td>Address and its first initial.</td></tr>
+    <tr><td><code>#gateBalance</code></td><td>Bare number. The word "credits" is markup, not data.</td></tr>
+    <tr><td><code>#gateEnter</code></td><td>Into the workshop. Native <code>disabled</code> at zero balance.</td></tr>
+    <tr><td><code>#gateCodeIn</code> · <code>#gateRedeem</code></td><td>Post-auth redemption against <code>access_codes</code>. Idempotent per account.</td></tr>
+    <tr><td><code>#gateRedeemMsg</code> · <code>#gateRedeemText</code></td><td>Swap <code>.ok</code> / <code>.warn</code> / <code>.err</code> on the parent.</td></tr>
+  </table>
+
+  <h2>What this gate does not do</h2>
+  <p><b>Consent is not here.</b> It lives at upload as <code>#s1consent</code> —
+    <i>"I have the right to use this photo and agree to the Terms"</i> — and that
+    sentence is about a photograph. At the door there is no photograph. Moving it
+    here would ask someone to affirm a right over an image they haven't chosen.
+    It stays at intake.</p>
+  <p><b>Nothing is sold here.</b> Buying credits is a considered act inside
+    Account, never an interstitial at a door.</p>
+</main>
+
+<script>
+(function(){
+  var gate=document.getElementById('entryGate');
+  var panels={'signed-out':'gateSignedOut','link-sent':'gateSent','signed-in':'gateSignedIn'};
+  function show(state){
+    gate.setAttribute('data-state',state);
+    for(var k in panels){
+      var el=document.getElementById(panels[k]);
+      if(k===state){el.removeAttribute('hidden');}else{el.setAttribute('hidden','');}
+    }
+  }
+  var email=document.getElementById('gateEmail'),
+      send=document.getElementById('gateSend'),
+      code=document.getElementById('gateCode'),
+      msg=document.getElementById('gateMsg'),
+      msgT=document.getElementById('gateMsgText');
+  function valid(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
+  function sync(){send.disabled=!valid(email.value.trim());}
+  email.addEventListener('input',function(){sync();msg.setAttribute('hidden','');});
+  sync();
+  send.addEventListener('click',function(){
+    var v=email.value.trim();
+    if(!valid(v)){msgT.textContent='That address doesn\u2019t look right.';msg.removeAttribute('hidden');return;}
+    document.getElementById('gateSentAddr').textContent=v;
+    var held=document.getElementById('gateHeldCode');
+    if(code.value.trim()){held.removeAttribute('hidden');}else{held.setAttribute('hidden','');}
+    show('link-sent');
+  });
+  document.getElementById('gateChangeEmail').addEventListener('click',function(){show('signed-out');email.focus();});
+  document.getElementById('gateResend').addEventListener('click',function(){});
+})();
+</script>
+</body>
+</html>
