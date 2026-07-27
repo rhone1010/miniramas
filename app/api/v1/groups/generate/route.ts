@@ -45,16 +45,21 @@ export async function POST(req: NextRequest) {
     const presetId: GroupsPresetId = body.preset_id ?? body.preset
     const location: LocationId | undefined =
       body.location_id ?? body.location
+    const experimentalEffect = body.experimental_effect || undefined
 
     if (!styleId)  return NextResponse.json({ error: 'style_id required'  }, { status: 400 })
-    if (!presetId) return NextResponse.json({ error: 'preset_id required' }, { status: 400 })
+    // preset_id is not required for experimental renders — the custom prompt
+    // owns the scene and preset_id/location_id are ignored downstream.
+    if (!presetId && !experimentalEffect) {
+      return NextResponse.json({ error: 'preset_id required' }, { status: 400 })
+    }
 
     const generateRequest: GroupsGenerateRequest = {
       source_image_b64:       sourceImageB64,
       additional_images_b64:  body.additional_images_b64 || [],
       style_reference_b64:    body.style_reference_b64 || undefined,
       style_id:               styleId,
-      preset_id:              presetId,
+      preset_id:              presetId ?? ('bronze' as GroupsPresetId),
       location_id:            location,
       scale:                  (body.scale as Scale) || 'close_up',
       aspect_ratio:           body.aspect_ratio || undefined,
@@ -66,6 +71,8 @@ export async function POST(req: NextRequest) {
       refinement_tweak:       body.refinement_tweak || undefined,
       refine:                 typeof body.refine === 'boolean' ? body.refine : undefined,
       is_preview:             typeof body.is_preview === 'boolean' ? body.is_preview : undefined,
+      plaque_text:            body.plaque_text,
+      experimental_effect:    experimentalEffect,
     }
 
     // ── Env ────────────────────────────────────────────────────

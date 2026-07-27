@@ -1,0 +1,62 @@
+[
+    {
+        "set":  1,
+        "before":  "/homepage/hero/set-01-before.png",
+        "after":  "/homepage/hero/set-01-after.jpg"
+    },
+    {
+        "set":  2,
+        "before":  "/homepage/hero/set-02-before.png",
+        "after":  "/homepage/hero/set-02-after.jpg"
+    },
+    {
+        "set":  3,
+        "before":  "/homepage/hero/set-03-before.png",
+        "after":  "/homepage/hero/set-03-after.jpg"
+    },
+    {
+        "set":  4,
+        "before":  "/homepage/hero/set-04-before.png",
+        "after":  "/homepage/hero/set-04-after.jpg"
+    },
+    {
+        "set":  5,
+        "before":  "/homepage/hero/set-05-before.png",
+        "after":  "/homepage/hero/set-05-after.jpg"
+    },
+    {
+        "set":  6,
+        "before":  "/homepage/hero/set-06-before.png",
+        "after":  "/homepage/hero/set-06-after.jpg"
+    },
+    {
+        "set":  7,
+        "before":  "/homepage/hero/set-07-before.png",
+        "after":  "/homepage/hero/set-07-after.jpg"
+    },
+    {
+        "set":  8,
+        "before":  "/homepage/hero/set-08-before.png",
+        "after":  "/homepage/hero/set-08-after.jpg"
+    },
+    {
+        "set":  9,
+        "before":  "/homepage/hero/set-09-before.png",
+        "after":  "/homepage/hero/set-09-after.jpg"
+    },
+    {
+        "set":  10,
+        "before":  "/homepage/hero/set-10-before.png",
+        "after":  "/homepage/hero/set-10-after.jpg"
+    },
+    {
+        "set":  11,
+        "before":  "/homepage/hero/set-11-before.png",
+        "after":  "/homepage/hero/set-11-after.jpg"
+    },
+    {
+        "set":  12,
+        "before":  "/homepage/hero/set-12-before.png",
+        "after":  "/homepage/hero/set-12-after.jpg"
+    }
+]

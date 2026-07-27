@@ -106,6 +106,7 @@ export function migrateAtmosphereID(raw: string | null | undefined): AtmosphereI
 export type MaterialID =
   | 'bronze'
   | 'museum_quality'
+  | 'legacy_edition'
   | 'alabaster'
   | 'glass'
   | 'carved_stone'
@@ -114,6 +115,7 @@ export type MaterialID =
 
 export const MATERIAL_LABELS: Record<MaterialID, string> = {
   bronze:          'Bronze',
+  legacy_edition:  'Legacy Edition',
   museum_quality:  'Museum Quality',
   alabaster:       'Alabaster',
   glass:           'Glass',
@@ -124,6 +126,7 @@ export const MATERIAL_LABELS: Record<MaterialID, string> = {
 
 export const MATERIAL_TIER: Record<MaterialID, 'base' | 'premium' | 'signature'> = {
   bronze:          'signature',
+  legacy_edition:  'signature',
   museum_quality:  'signature',
   alabaster:       'premium',
   glass:           'premium',
@@ -258,8 +261,8 @@ export const DEFAULT_ADD_BEAM = false
 export const MATERIAL_COMPATIBILITY: Record<SurfaceID, MaterialID[]> = {
   wet_luminous:        ['museum_quality', 'alabaster', 'glass'],
   soft_diffused:       ['museum_quality', 'alabaster', 'carved_wood', 'watercolor_wood'],
-  hard_raking:         ['bronze', 'museum_quality', 'carved_stone'],
-  layered_atmospheric: ['bronze', 'museum_quality', 'alabaster', 'carved_stone'],
+  hard_raking:         ['bronze', 'legacy_edition', 'museum_quality', 'carved_stone'],
+  layered_atmospheric: ['bronze', 'legacy_edition', 'museum_quality', 'alabaster', 'carved_stone'],
   lush_saturated:      ['museum_quality', 'carved_wood', 'watercolor_wood'],
 }
 

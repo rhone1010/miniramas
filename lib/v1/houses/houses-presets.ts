@@ -1,12 +1,13 @@
 // houses-presets.ts
 // lib/v1/houses-presets.ts
 //
-// Registry of all 19 preset definitions (10 materials + 4 seasons + 5 events)
-// + the prompt assembler.
+// Registry of all 31 preset definitions (8 materials + 10 curiosities
+// + 4 seasons + 5 events + 4 artists) + the prompt assembler.
 
 import type { Preset, PresetId, EnvironmentId, TimeOfDay } from './houses-shared'
 import { resolveEnvironment, resolveTimeOfDay } from './houses-shared'
 import { buildHousesArtistsPrompt, isHousesArtistsPreset } from './houses-artists'
+import { buildHousesCuriositiesPrompt, isHousesCuriositiesPreset } from './houses-curiosities'
 import {
   // Always-on stack
   COLLECTIBLE_ANCHOR_BLOCK,
@@ -18,19 +19,24 @@ import {
   NIGHT_OVERRIDE_BLOCK,
   REFINEMENT_GUARD_BLOCK,
 
-  // Materials (10)
+  // Materials (8)
   MATERIAL_BRONZE,            LIGHTING_BRONZE,
   LIGHTING_BRONZE_OUTDOOR_FLARE, LIGHTING_BRONZE_OUTDOOR_RAYS,
   MATERIAL_WAX,               LIGHTING_WAX,
   MATERIAL_ALABASTER,         LIGHTING_ALABASTER,
   MATERIAL_GLASS,             LIGHTING_GLASS,
-  MATERIAL_GINGERBREAD,       LIGHTING_GINGERBREAD,
-  MATERIAL_WATERCOLOR_WOOD,   LIGHTING_WATERCOLOR_WOOD,
   MATERIAL_CARVED_WOOD,       LIGHTING_CARVED_WOOD,
   MATERIAL_CARVED_STONE,      LIGHTING_CARVED_STONE,
+  MATERIAL_WALNUT,            LIGHTING_WALNUT,
+  MATERIAL_IRON,              LIGHTING_IRON,
+
+  // Curiosities — dimensional (standard stack); interpretive ones are
+  // full custom prompts in houses-curiosities.ts.
+  MATERIAL_GINGERBREAD,       LIGHTING_GINGERBREAD,
   MATERIAL_DOLLHOUSE,         LIGHTING_DOLLHOUSE,
-  MATERIAL_MUSEUM_QUALITY,    LIGHTING_MUSEUM_QUALITY,
   MATERIAL_SNOW_GLOBE,        LIGHTING_SNOW_GLOBE, LAYER_SNOW_GLOBE,
+  MATERIAL_AMBER_INCLUSION,   LIGHTING_AMBER_INCLUSION,
+  MATERIAL_ENCHANTED_CRYSTAL, LIGHTING_ENCHANTED_CRYSTAL,
 
   // Seasons (4) — share MATERIAL_SUMMER_RESIN as the realistic-mini base
   MATERIAL_SUMMER_RESIN,
@@ -52,13 +58,17 @@ const SCULPTURE_CLAUSE =
   'Photograph of a real physical 3D architectural scale model, three-dimensional and tangible, lit and shadowed as an actual object in space.'
 
 // ── REGISTRY ──────────────────────────────────────────────────
-// All 19 presets registered. UI lists them grouped by mode.
+// All 31 presets registered. UI lists them grouped by mode.
 //
-// `forcedEnvironment` — retained on the type but unused as of r2 (events
-//                       no longer force a room). Reserved for future presets
-//                       that may need to lock an environment.
+// `forcedEnvironment` — snow_globe forces 'desk' (its own layer owns the
+//                       scene; the env block is suppressed for it — see
+//                       ENVIRONMENT_BLOCK_SKIP).
 // `forcedTimeOfDay`   — haunted/fire/alien/snow_globe always night.
 //                       Day/Night toggle is hidden for those in the UI.
+// `ownScene`          — interpretive curiosities (ukiyo_e, art_nouveau,
+//                       cubism, daguerreotype, art_deco) ship a full custom
+//                       prompt and bypass the standard stack + refine +
+//                       outpaint, like artists presets.
 //
 // Tiers (cosmetic, for UI emphasis):
 //   signature: most distinctive, hero-treatment renders
@@ -67,7 +77,7 @@ const SCULPTURE_CLAUSE =
 export const PRESETS: Record<PresetId, Preset> = {
 
   // ───────────────────────────────────────────────────────
-  // MATERIALS (10)
+  // MATERIALS (8)
   // ───────────────────────────────────────────────────────
   bronze: {
     id:                    'bronze',
@@ -121,28 +131,6 @@ export const PRESETS: Record<PresetId, Preset> = {
     lighting:         LIGHTING_GLASS,
   },
 
-  gingerbread: {
-    id:               'gingerbread',
-    mode:             'materials',
-    label:            'Gingerbread',
-    tier:             'base',
-    sculptureClause:  SCULPTURE_CLAUSE,
-    styleClause:      'Edible gingerbread version of the building — baked gingerbread walls, royal-icing trim, candy detailing.',
-    materialRule:     MATERIAL_GINGERBREAD,
-    lighting:         LIGHTING_GINGERBREAD,
-  },
-
-  watercolor_wood: {
-    id:               'watercolor_wood',
-    mode:             'materials',
-    label:            'Watercolor Wood',
-    tier:             'base',
-    sculptureClause:  SCULPTURE_CLAUSE,
-    styleClause:      'Hand-painted wooden scale model with visible grain and watercolor washes.',
-    materialRule:     MATERIAL_WATERCOLOR_WOOD,
-    lighting:         LIGHTING_WATERCOLOR_WOOD,
-  },
-
   carved_wood: {
     id:               'carved_wood',
     mode:             'materials',
@@ -165,9 +153,38 @@ export const PRESETS: Record<PresetId, Preset> = {
     lighting:         LIGHTING_CARVED_STONE,
   },
 
+  walnut: {
+    id:               'walnut',
+    mode:             'materials',
+    label:            'Walnut',
+    tier:             'premium',
+    sculptureClause:  SCULPTURE_CLAUSE,
+    styleClause:      'Single-block dark-walnut carving of the building — flowing grain across every wall and roof, satin oil finish.',
+    materialRule:     MATERIAL_WALNUT,
+    lighting:         LIGHTING_WALNUT,
+  },
+
+  iron: {
+    id:               'iron',
+    mode:             'materials',
+    label:            'Iron',
+    tier:             'premium',
+    sculptureClause:  SCULPTURE_CLAUSE,
+    styleClause:      'Solid blackened cast-iron sculpture of the building — weighty and architectural, faint rust patina in the recesses.',
+    materialRule:     MATERIAL_IRON,
+    lighting:         LIGHTING_IRON,
+  },
+
+  // ───────────────────────────────────────────────────────
+  // CURIOSITIES (10)
+  //   Dimensional (standard stack): dollhouse, gingerbread, snow_globe,
+  //   amber_inclusion, enchanted_crystal.
+  //   Interpretive (ownScene, full custom prompts in houses-curiosities.ts):
+  //   ukiyo_e, art_nouveau, cubism, daguerreotype, art_deco.
+  // ───────────────────────────────────────────────────────
   dollhouse: {
     id:               'dollhouse',
-    mode:             'materials',
+    mode:             'curiosities',
     label:            'Dollhouse',
     tier:             'base',
     sculptureClause:  SCULPTURE_CLAUSE,
@@ -176,31 +193,116 @@ export const PRESETS: Record<PresetId, Preset> = {
     lighting:         LIGHTING_DOLLHOUSE,
   },
 
-  scaled_architectural: {
-    id:               'scaled_architectural',
-    mode:             'materials',
-    label:            'Museum Quality',
-    tier:             'signature',
+  gingerbread: {
+    id:               'gingerbread',
+    mode:             'curiosities',
+    label:            'Gingerbread',
+    tier:             'base',
     sculptureClause:  SCULPTURE_CLAUSE,
-    styleClause:      'Museum-quality collectible scale model of the building — apex craft, every micro-detail rendered.',
-    materialRule:     MATERIAL_MUSEUM_QUALITY,
-    lighting:         LIGHTING_MUSEUM_QUALITY,
+    styleClause:      'Edible gingerbread version of the building — baked gingerbread walls, royal-icing trim, candy detailing.',
+    materialRule:     MATERIAL_GINGERBREAD,
+    lighting:         LIGHTING_GINGERBREAD,
   },
 
   snow_globe: {
     id:                'snow_globe',
-    mode:              'materials',
+    mode:              'curiosities',
     label:             'Snow Globe',
     tier:              'signature',
-    forcedEnvironment: 'desk',   // LAYER_SNOW_GLOBE is a curated winter-
-                                  // cottage-interior atmosphere that won't
-                                  // resolve cleanly outdoors. Lock to desk.
+    forcedEnvironment: 'desk',   // env block suppressed via ENVIRONMENT_BLOCK_SKIP;
+                                  // LAYER_SNOW_GLOBE owns the cosy winter scene.
     forcedTimeOfDay:   'night',  // night-only by spec
     sculptureClause:   SCULPTURE_CLAUSE,
     styleClause:       'Snow-covered scale model inside a transparent snow globe with frosted-rim glass — wintered night scene.',
     materialRule:      MATERIAL_SNOW_GLOBE,
     lighting:          LIGHTING_SNOW_GLOBE,
     layer:             LAYER_SNOW_GLOBE,
+  },
+
+  amber_inclusion: {
+    id:               'amber_inclusion',
+    mode:             'curiosities',
+    label:            'Amber Inclusion',
+    tier:             'signature',
+    sculptureClause:  SCULPTURE_CLAUSE,
+    styleClause:      'The building suspended inside a drop of translucent golden amber — warm, eternal, glowing from within.',
+    materialRule:     MATERIAL_AMBER_INCLUSION,
+    lighting:         LIGHTING_AMBER_INCLUSION,
+  },
+
+  enchanted_crystal: {
+    id:               'enchanted_crystal',
+    mode:             'curiosities',
+    label:            'Enchanted Crystal',
+    tier:             'signature',
+    sculptureClause:  SCULPTURE_CLAUSE,
+    styleClause:      'The building grown as a single faceted crystal — light caught and refracted through every plane.',
+    materialRule:     MATERIAL_ENCHANTED_CRYSTAL,
+    lighting:         LIGHTING_ENCHANTED_CRYSTAL,
+  },
+
+  // ── Interpretive curiosities (ownScene — full custom prompts) ──
+  // clause/rule/lighting are placeholders; buildPresetPrompt routes
+  // ownScene presets to buildHousesCuriositiesPrompt BEFORE these fields
+  // are read (mirrors the artists '__custom_artists_prompt__' pattern).
+  ukiyo_e: {
+    id:               'ukiyo_e',
+    mode:             'curiosities',
+    label:            'Ukiyo-e',
+    tier:             'premium',
+    ownScene:         true,
+    sculptureClause:  '__custom_curiosities_prompt__',
+    styleClause:      '__custom_curiosities_prompt__',
+    materialRule:     '__custom_curiosities_prompt__',
+    lighting:         '__custom_curiosities_prompt__',
+  },
+
+  art_nouveau: {
+    id:               'art_nouveau',
+    mode:             'curiosities',
+    label:            'Art Nouveau',
+    tier:             'premium',
+    ownScene:         true,
+    sculptureClause:  '__custom_curiosities_prompt__',
+    styleClause:      '__custom_curiosities_prompt__',
+    materialRule:     '__custom_curiosities_prompt__',
+    lighting:         '__custom_curiosities_prompt__',
+  },
+
+  cubism: {
+    id:               'cubism',
+    mode:             'curiosities',
+    label:            'Cubism',
+    tier:             'premium',
+    ownScene:         true,
+    sculptureClause:  '__custom_curiosities_prompt__',
+    styleClause:      '__custom_curiosities_prompt__',
+    materialRule:     '__custom_curiosities_prompt__',
+    lighting:         '__custom_curiosities_prompt__',
+  },
+
+  daguerreotype: {
+    id:               'daguerreotype',
+    mode:             'curiosities',
+    label:            'Daguerreotype',
+    tier:             'premium',
+    ownScene:         true,
+    sculptureClause:  '__custom_curiosities_prompt__',
+    styleClause:      '__custom_curiosities_prompt__',
+    materialRule:     '__custom_curiosities_prompt__',
+    lighting:         '__custom_curiosities_prompt__',
+  },
+
+  art_deco: {
+    id:               'art_deco',
+    mode:             'curiosities',
+    label:            'Art Deco',
+    tier:             'premium',
+    ownScene:         true,
+    sculptureClause:  '__custom_curiosities_prompt__',
+    styleClause:      '__custom_curiosities_prompt__',
+    materialRule:     '__custom_curiosities_prompt__',
+    lighting:         '__custom_curiosities_prompt__',
   },
 
   // ───────────────────────────────────────────────────────
@@ -405,7 +507,7 @@ const NIGHT_OVERRIDE_SKIP: ReadonlySet<PresetId> = new Set<PresetId>([
 // contradict the material/event.
 //
 // Solid-material exclusions (no interior to light): bronze, wax, alabaster,
-// gingerbread, watercolor_wood, carved_wood, carved_stone.
+// gingerbread, carved_wood, carved_stone.
 //
 // Event exclusions: fire (electricity is out, the fire IS the interior
 // light), explosion (electricity knocked out by the blast), abandoned
@@ -419,15 +521,32 @@ const INTERIOR_LIGHTS_SKIP: ReadonlySet<PresetId> = new Set<PresetId>([
   'wax',
   'alabaster',
   'gingerbread',
-  'watercolor_wood',
   'carved_wood',
   'carved_stone',
+  'walnut',
+  'iron',
+  // encased/solid curiosities with no lit interior
+  'amber_inclusion',
+  'enchanted_crystal',
   // material with purpose-built interior glow language
   'snow_globe',
   // events that contradict lit windows
   'fire',
   'explosion',
   'abandoned',
+])
+
+// ── ENVIRONMENT BLOCK SKIP ────────────────────────────────────
+// The generic ENVIRONMENT_BLOCKS entry is skipped for presets whose own
+// layer/lighting already own the entire scene and would conflict with it.
+//
+// snow_globe forces 'desk' — which is now a clean, empty STUDIO GRADIENT.
+// But LAYER_SNOW_GLOBE + LIGHTING_SNOW_GLOBE build a complete cosy winter
+// interior (drapes, wood paneling, brass lamp, snowy window). Injecting the
+// bare gradient block would directly contradict that room. Skip the env
+// block; the layer owns the scene.
+const ENVIRONMENT_BLOCK_SKIP: ReadonlySet<PresetId> = new Set<PresetId>([
+  'snow_globe',
 ])
 
 // ── PROMPT BUILDER ────────────────────────────────────────────
@@ -444,6 +563,15 @@ export function buildPresetPrompt(input: {
   // assembled so the placeholder fields are never read.
   if (input.preset.mode === 'artists' && isHousesArtistsPreset(input.preset.id)) {
     return buildHousesArtistsPrompt({
+      presetId:        input.preset.id,
+      refinementTweak: input.refinementTweak,
+    })
+  }
+
+  // Interpretive curiosities (ownScene) ship a full custom prompt too —
+  // same bypass as artists. Route out before the standard stack.
+  if (input.preset.ownScene && isHousesCuriositiesPreset(input.preset.id)) {
+    return buildHousesCuriositiesPrompt({
       presetId:        input.preset.id,
       refinementTweak: input.refinementTweak,
     })
@@ -480,9 +608,16 @@ export function buildPresetPrompt(input: {
     COMPOSITION_BLOCK,
     STRUCTURE_FIDELITY_BLOCK,
     input.preset.materialRule,
-    envBlock,
-    lightingBlock,
   ]
+
+  // Env block — skipped for presets whose own layer owns the scene
+  // (snow_globe). The resolved environment still drives lighting selection
+  // above; only the descriptive env block is suppressed.
+  if (!ENVIRONMENT_BLOCK_SKIP.has(input.preset.id)) {
+    blocks.push(envBlock)
+  }
+
+  blocks.push(lightingBlock)
 
   // Interior lights — always-on for non-solid presets. Pulled out of
   // NIGHT_OVERRIDE so warm window glow shows up in day mode too.

@@ -1,34 +1,26 @@
 // actionmini-generator.ts
 // lib/v1/actionmini-generator.ts
 //
-// Two-stage dispatcher for Action Minis.
+// Pipeline for Action Minis (V7 — single-material hero).
 //
 // Stage 1 — NB2 / google/nano-banana-2 via Replicate. Image-to-image,
-// produces a Pass 1 render with figure identity, pose, expression,
-// material register, location, and atmospheric character driven by
-// the preset registry.
+// produces the render from buildPresetPrompt: one material throughout,
+// a material-matched backdrop, a volumetric beam, and source-aware
+// frozen action energy.
 //
-// Stage 1.5 — Pass 2 refine (gpt-image-1) via actionmini-pass2.ts.
-// Opt-in during pilot rollout (input.refine === true). Refines material
-// micro-texture, surface tactility, tiered luminance, and miniature-scale
-// credibility — without overriding Pass 1's figure identity, pose, or
-// material register. Soft-fails to the Pass 1 output if the refine call
-// throws.
+// Stage 2 — Face swap (Replicate) for likeness, then face-fidelity
+// scoring with one retry.
 //
-// No outpaint stage — Action figures don't need the frame margin Houses
-// requires (the figure already reads as the centerpiece without external
-// padding).
+// Removed in V7: the gpt-image-1 Pass 2 refine (actionmini-pass2.ts),
+// the Stability outpaint (actionmini-expand.ts), and the V7/V6 prompt
+// fork (actionmini-prompt.ts). Pipeline is NB2 → faceswap → done.
 
-import { ActionMiniPresetId, buildPresetPrompt, ActionMiniRefinements, LocationId, Scale } from './actionmini-presets'
-import { resolveLocationId } from './actionmini-blocks'
-import { refineActionMini } from './actionmini-pass2'
-import { expandActionImage } from './actionmini-expand'
+import { ActionMiniPresetId, buildPresetPrompt } from './actionmini-presets'
 import { swapActionFaces } from './actionmini-faceswap'
 import { scoreFaceFidelity } from './actionmini-refine'
-import { buildActionPrompt } from './actionmini-prompt'
 import type { KineticMedium } from './actionmini-shared'
 
-export type { ActionMiniPresetId, ActionMiniRefinements, LocationId, Scale }
+export type { ActionMiniPresetId }
 export type { ActionMiniHero, SecondaryFigures, KineticMedium } from './actionmini-shared'
 
 // Aspect ratios — V5 trimmed to 6 to match Landscapes exactly.
@@ -41,38 +33,17 @@ export type AspectRatio =
 export interface ActionMiniInput {
   sourceImageB64:    string
   presetId:          ActionMiniPresetId
-  kineticMedium?:    KineticMedium
-  locationId?:       LocationId         // user-picked staging; defaults to 'desk'
-  scale?:            Scale              // user-picked composition mode; defaults to 'close_up' (Staged)
+  kineticMedium?:    KineticMedium      // analyzer / UI badge labelling only — no longer drives the prompt
   aspectRatio?:      AspectRatio        // user-picked output ratio; defaults to '1:1'
-  refinements?:      ActionMiniRefinements
-  notes?:            string
   refinementTweak?:  string
   replicateApiToken: string
-  // Pass 2 controls (opt-in during pilot rollout)
-  refine?:           boolean
+  // Face-fidelity quality gate (Stage 5) — scoreFaceFidelity needs this.
+  // Retained after the Pass 2 removal: scoring/retry is a separate stage.
   openaiApiKey?:     string
-  // Outpaint controls — only fires when scale === 'close_up' (Staged).
-  // Reads STABILITY_API_KEY from env if not provided.
-  stabilityApiKey?:  string
-  // ── DEV/POWER-USER OVERRIDES ─────────────────────────────────
-  // rawPrompt        → replaces Pass 1 (NB2) prompt entirely. Bypasses
-  //                    buildPresetPrompt. preset/location/etc still used
-  //                    for non-prompt stages.
-  // rawPass2Prompt   → replaces Pass 2 (gpt-image-1) prompt entirely.
-  //                    Only meaningful when refine === true.
-  // expand           → boolean. false skips Stage 3 outpaint regardless
-  //                    of scale. Default true (current behavior).
-  // useV7            → true → use buildActionPrompt instead of buildPresetPrompt.
-  //                    V7 is the 9-block environment-mode architecture.
-  //                    location/scale/kinetic_medium ignored when on.
-  // v7Mode           → 'environment' (default) | 'gallery'. Only used
-  //                    when useV7 === true.
+  // ── DEV/POWER-USER OVERRIDE ──────────────────────────────────
+  // rawPrompt → replaces the NB2 prompt entirely, bypassing
+  //             buildPresetPrompt. Non-prompt stages run unchanged.
   rawPrompt?:        string
-  rawPass2Prompt?:   string
-  expand?:           boolean
-  useV7?:            boolean
-  v7Mode?:           'environment' | 'gallery'
 }
 
 // ── OUTPUT ───────────────────────────────────────────────────
@@ -237,43 +208,24 @@ const PASS_THRESHOLD  = 7     // face fidelity score 7+/10 = pass
 
 // ── MAIN ENTRY POINT ─────────────────────────────────────────
 export async function generateActionMini(input: ActionMiniInput): Promise<ActionMiniResult> {
-  // PROMPT SELECTION — three paths in priority order:
+  // PROMPT SELECTION — two paths:
   //   1. rawPrompt — user-supplied, bypasses all assembly
-  //   2. V7 builder — buildActionPrompt(preset, mode) when useV7 === true
-  //   3. V6.2 builder — buildPresetPrompt(...) default
-  // Non-prompt stages (face swap, scoring, retry) run the same way for
-  // all three paths.
+  //   2. buildPresetPrompt — the single hero look (V7)
   const rawPromptUsed = Boolean(input.rawPrompt)
-  let prompt: string
-  if (rawPromptUsed) {
-    prompt = input.rawPrompt as string
-  } else if (input.useV7) {
-    prompt = buildActionPrompt(input.presetId, input.v7Mode || 'environment')
-  } else {
-    prompt = buildPresetPrompt({
-      presetId:        input.presetId,
-      kineticMedium:   input.kineticMedium,
-      locationId:      input.locationId,
-      scale:           input.scale,
-      refinements:     input.refinements,
-      notes:           input.notes,
-      refinementTweak: input.refinementTweak,
-    })
-  }
+  const prompt: string = rawPromptUsed
+    ? (input.rawPrompt as string)
+    : buildPresetPrompt({
+        presetId:        input.presetId,
+        refinementTweak: input.refinementTweak,
+      }).fullLine
 
   if (rawPromptUsed) {
-    console.log(`[actionmini] RAW MODE — Pass 1 prompt overridden (${prompt.length} chars)`)
-  } else if (input.useV7) {
-    console.log(`[actionmini] V7 — mode=${input.v7Mode || 'environment'} (${prompt.length} chars)`)
+    console.log(`[actionmini] RAW MODE — prompt overridden (${prompt.length} chars)`)
   }
-
-  const rawPass2PromptUsed = Boolean(input.rawPass2Prompt)
-  const expandEnabled      = input.expand !== false
 
   // Default aspect ratio: 1:1. Without this NB2 in image-to-image mode
   // matches the source's aspect ratio, ignoring the user's pick.
   const aspectRatio = input.aspectRatio || '1:1'
-  const scaleForExpand: Scale = input.scale || 'close_up'
 
   // Final result accumulators (overwritten each attempt; last attempt wins)
   let finalImageB64        = ''
@@ -303,68 +255,17 @@ export async function generateActionMini(input: ActionMiniInput): Promise<Action
     })
     const pass1_ms = Date.now() - tPass1
 
-    // ── Stage 2: Pass 2 refine (gpt-image-1) — opt-in ─────────
-    let refined = false
-    let refineDurationMs: number | undefined
-    let refinePromptUsed: string | undefined
-    let pass2_skipped: string | null = 'opt-out'
-    if (input.refine === true) {
-      if (!input.openaiApiKey) {
-        pass2_skipped = 'no openai key'
-      } else {
-        try {
-          const resolvedLocation = resolveLocationId(
-            input.presetId,
-            input.locationId || 'desk',
-          )
-          const refineRes = await refineActionMini({
-            imageB64,
-            sourceImageB64: input.sourceImageB64,
-            aspectRatio,
-            resolvedLocation,
-            presetId:     input.presetId,
-            openaiApiKey: input.openaiApiKey,
-            customPrompt: input.rawPass2Prompt,  // RAW MODE override
-          })
-          imageB64         = refineRes.imageB64
-          refined          = true
-          refineDurationMs = refineRes.durationMs
-          refinePromptUsed = refineRes.promptUsed
-          pass2_skipped    = null
-        } catch (e: unknown) {
-          const msg = e instanceof Error ? e.message : 'unknown'
-          console.error(`[actionmini] refine failed: ${msg}`)
-          pass2_skipped = `error: ${msg}`
-        }
-      }
-    }
-
-    // ── Stage 3: Stability outpaint ───────────────────────────
-    let expanded = false
-    let expandDurationMs: number | undefined
-    let expand_skipped: string | null = null
-    if (!expandEnabled) {
-      expand_skipped = 'disabled by request (body.expand: false)'
-    } else {
-      try {
-        const expandRes = await expandActionImage({
-          imageB64,
-          scale:           scaleForExpand,
-          stabilityApiKey: input.stabilityApiKey,
-        })
-        if (expandRes.expanded) {
-          imageB64         = expandRes.imageB64
-          expanded         = true
-          expandDurationMs = expandRes.durationMs
-        } else {
-          expand_skipped = expandRes.reason || 'skipped'
-        }
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : 'unknown'
-        console.error(`[actionmini] expand failed: ${msg}`)
-        expand_skipped = `error: ${msg}`
-      }
-    }
+    // ── Pass 2 refine + Stability outpaint: REMOVED in V7 ─────
+    // The gpt-image-1 refine and the Stability outpaint stages are gone.
+    // These constants are retained so the result/attempt shape stays
+    // stable for the route and UI, which still read these fields.
+    const refined = false
+    const refineDurationMs: number | undefined = undefined
+    const refinePromptUsed: string | undefined = undefined
+    const pass2_skipped: string | null = 'removed in V7'
+    const expanded = false
+    const expandDurationMs: number | undefined = undefined
+    const expand_skipped: string | null = 'removed in V7'
 
     // ── Stage 4: Face swap (Replicate) ────────────────────────
     // Commercial-grade likeness lock. Detects faces in source + render,
@@ -477,6 +378,6 @@ export async function generateActionMini(input: ActionMiniInput): Promise<Action
     finalScoreReason,
     attempts,
     rawPromptUsed,
-    rawPass2PromptUsed,
+    rawPass2PromptUsed: false,   // Pass 2 removed in V7 — always false
   }
 }

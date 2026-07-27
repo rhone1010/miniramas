@@ -248,18 +248,18 @@ export function getArrangementBlock(arrangement: GroupArrangement): string {
 
 // ════════════════════════════════════════════════════════════════
 // 5. STYLE: REALISTIC — chest-line cutoff emergence + merging
-// 7 materials: plushy, wax, terracotta, bronze, iron, alabaster, wood
+// realistic materials: plushy, bronze, iron, alabaster, wood
 // ════════════════════════════════════════════════════════════════
 
-const REALISTIC_PRESET_LINES: Record<GroupsPresetId, string> = {
+const REALISTIC_PRESET_LINES: Partial<Record<GroupsPresetId, string>> = {
 
   resin: `Style: hand-painted resin figurines across every subject — collectible-grade smooth resin, crisp hand-painted detail in faithful source colors, satin finish, clean sculpted edges.`,
 
   plushy: `Style: plushy, three-dimensional handmade fabric figures across every subject — soft sculptural register, embroidered facial features, stitched seams visible in joinery.`,
 
-  wax: `Style: solid translucent wax sculpture across every subject, each figure pale-amber and luminous, all atop a shared cast bronze base with verdigris in the recesses.`,
 
-  terracotta: `Style: weathered terracotta sculpture across every subject — warm earth-orange-brown clay throughout, fired and aged, the material register of an excavated artifact.`,
+
+
 
   bronze: `Style: cast bronze sculpture across every subject — verdigris in recesses, polish on high points, monumental register, all figures atop a shared bronze plinth.`,
 
@@ -283,218 +283,7 @@ NO RE-RESOLUTION BELOW THE CHEST: there are no fully-formed legs, hips, knees, a
 NEVER apply emergence above the chest line. Faces, hair, necks, shoulders, and upper chests stay fully stitched, sealed, finished across every figure.
 `.trim(),
 
-  wax: `
-WAX EMERGENCE:
-Every face, head, and upper torso fully formed in solid translucent wax — finished, intact, complete down through the chest. From the chest line all the way down to the base, the lower body is ENTIRELY REPLACED by melting: soft deformation, dripping vertical runs, pooled translucent edges, semi-transparent sagging. Resolves at the base into pools of cooled wax atop the bronze plinth.
 
-NO RE-RESOLUTION BELOW THE CHEST: there are no fully-formed legs, hips, knees, ankles, feet, or toes; no clothing that completes itself underneath the melt; no intact wax surface that returns. The lower half of every figure exists ONLY as this melting/pooling treatment, continuous from chest to base.
-
-NEVER apply emergence above the chest line. Faces, hair, necks, shoulders, and upper chests stay fully resolved, smooth, intact across every figure.
-`.trim(),
-
-  terracotta: `
-TERRACOTTA EMERGENCE — ANCIENT AMPHORA, NOT PUZZLE PIECES:
-Every face, head, and upper torso fully formed in solid weathered terracotta — finished, intact, complete down through the chest. From the chest line downward, the lower body progressively breaks away as if a centuries-old artifact had lost its lower portion to time. The breakage is LARGE, ORGANIC, and ANCIENT in character — like a recovered amphora or a weathered ruin — never small repetitive pits.
-
-VERTICAL GRADIENT — CRITICAL:
-- Just below the chest: MOSTLY INTACT terracotta, with only subtle aging cracks and a few small chips. The torso reads as solid.
-- Mid-region (waist area): breakage begins — a few large missing sections at the sides and bottom edges, sweeping curved broken rims with lighter inner clay revealed at the breaks.
-- Bottom edges and corners: most pronounced erosion — substantial removed portions, large jagged edges, big swept-away curves. This is where the artifact has lost the most material.
-
-BREAKAGE CHARACTER:
-- LARGE removed sections (not small pits)
-- FEWER but more pronounced breaks (not many tiny ones)
-- ORGANIC sweeping rims (not regular puzzle-piece holes)
-- ANCIENT and WEATHERED (centuries of erosion, not freshly chipped)
-- Concentrated at the BOTTOM EDGES AND CORNERS — not distributed evenly across the whole lower body
-- Lighter inner clay color revealed at each broken edge
-
-NEGATIVES — CRITICAL:
-- NO uniform pitting across the surface
-- NO small repeated cavities or holes
-- NO puzzle-piece fragmentation
-- NO regular hollow pockmarks
-- The lower body is NOT a colander of small holes
-
-NO RE-RESOLUTION BELOW THE CHEST: no fully-formed legs, hips, knees, ankles, feet, or toes; no clothing that completes itself underneath the eroded mass; no intact terracotta surface that returns past the breakage gradient described above.
-
-NEVER apply emergence above the chest line. Faces, ears, hair, necks, shoulders, and upper chests stay fully resolved, smooth and unbroken across every figure.
-`.trim(),
-
-  bronze: `
-BRONZE EMERGENCE:
-Every face, head, and upper torso fully formed in cast bronze with verdigris in recesses and polish on high points — finished, intact, complete down through the chest. From the chest line all the way down to the base, the lower body is ENTIRELY REPLACED by exposed armature: skeletal wire framework, partial casting, unfinished molten pours, raw foundry transitions. Reads as a monument mid-cast.
-
-NO RE-RESOLUTION BELOW THE CHEST: no fully-formed legs, hips, knees, ankles, feet, or toes; no clothing that completes itself underneath; no intact bronze surface that returns.
-
-NEVER apply emergence above the chest line. Faces, hair, necks, shoulders, and upper chests stay fully cast, never showing armature or skeletal exposure.
-`.trim(),
-
-  iron: `
-IRON EMERGENCE:
-Every face, head, and upper torso fully formed in hand-forged iron — hammer-finished, burnished, complete down through the chest. From the chest line all the way down to the base, the lower body is ENTIRELY REPLACED by raw forge-work: hammer-welded seams, exposed rivets, rough-joined iron plates, unfinished strap-iron armature between sections.
-
-NO RE-RESOLUTION BELOW THE CHEST: no fully-formed legs, hips, knees, ankles, feet, or toes; no iron clothing that completes itself underneath; no intact finished iron surface that returns.
-
-NEVER apply emergence above the chest line. Faces, hair, necks, shoulders, and upper chests stay fully forged, sealed, finished — never showing weld marks across any figure.
-`.trim(),
-
-  alabaster: `
-ALABASTER EMERGENCE:
-Every face, head, and upper torso fully formed in solid alabaster — finished, intact, complete down through the chest. From the chest line all the way down to the base, the lower body is ENTIRELY REPLACED by translucent veiling, thin planes glowing internally where light passes through, soft mist-like dissolves. Resolves at the base into raw-cut stone, partially polished, partially unfinished.
-
-NO RE-RESOLUTION BELOW THE CHEST: no fully-formed legs, hips, knees, ankles, feet, or toes; no clothing that completes itself underneath; no intact alabaster surface that returns.
-
-NEVER apply emergence above the chest line. Faces, ears, hair, necks, shoulders, and upper chests stay fully resolved, opaque, intact.
-`.trim(),
-
-  wood: `
-WOOD EMERGENCE:
-Every face, head, and upper torso fully formed in carved natural wood — refined, polished, intact, complete down through the chest. From the chest line all the way down to the base, the lower body steps back into raw material: visible chisel and gouge marks, exposed grain planes. The lower body remains continuous with the unworked log/trunk that forms the base.
-
-NO RE-RESOLUTION BELOW THE CHEST: no fully-formed legs, hips, knees, ankles, feet, or toes; no clothing that completes itself underneath the rough carving; no polished anatomy that returns below the chest.
-
-NEVER apply emergence above the chest line. Faces, hair, necks, shoulders, and upper chests stay fully resolved, polished, refined across every figure.
-`.trim(),
-}
-
-const REALISTIC_MERGING_BLOCKS: Partial<Record<GroupsPresetId, string>> = {
-
-  plushy: `
-PLUSHY MERGING:
-Figures share stitched seams running between them — exposed batting blending between subjects below the chest, loose threads connecting forms, hand-sewn seams visibly joining one figure to the next. Reads as one continuous handmade plush. Faces and upper torsos remain individually stitched and distinct.
-`.trim(),
-
-  wax: `
-WAX MERGING:
-Figures connect through melted runs pooling between them — wax drips from one figure flow into shared pools at the base, lower bodies merged through suspended drip structures and joined translucent sags. Reads as a candle tableau, separate figures merged in shared melt. Faces and upper torsos remain individually formed.
-`.trim(),
-
-  terracotta: `
-TERRACOTTA MERGING:
-Figures emerge from a single shared mass of rough excavated clay — lower bodies fused together like ruins recovered as one piece, hollow cavities open where bodies overlap. Faces and upper torsos remain individually formed and distinct.
-`.trim(),
-
-  bronze: `
-BRONZE MERGING:
-Figures share a single internal armature framework — exposed skeletal structure runs between subjects below the chest, partial-cast bronze pours connecting bodies through shared structural members. Reads as a single monumental cast. Faces and upper torsos remain individually cast and distinct.
-`.trim(),
-
-  iron: `
-IRON MERGING:
-Figures connect through raw forge joins — hammer-welded seams span between bodies, riveted iron straps bridge across figures, rough structural iron members joining the group below the chest. Reads as one forged monument.
-`.trim(),
-
-  alabaster: `
-ALABASTER MERGING:
-Where figures stand close or overlap, their lower forms blend through ghostlike translucent overlap — alabaster planes pass through one another with thin glowing edges at the intersections. All subjects share a single base of raw-cut stone, bodies merging into shared translucency below the chest line.
-`.trim(),
-
-  wood: `
-WOOD MERGING:
-Figures emerge from a single trunk or block of wood — shared grain direction flowing through all subjects, intertwined forms connected through the unworked base, lower bodies still continuous with the raw material. Reads as one carving, not separate figures joined.
-`.trim(),
-}
-
-// CROSS-CUTTING FACE RULE — Realistic style only.
-// People Resolving uses a softer rule (gradient, not hard cutoff).
-export const REALISTIC_FACE_RULE = `
-ABSOLUTE FACE RULE — APPLIES TO EVERY SUBJECT, NO EXCEPTIONS:
-Whatever transformation language the material brings (emergence, breakage, melting, exposed armature, stitched seams, or just an organic base) NEVER applies to any face, head, hair, neck, shoulder, or upper chest. These zones are ALWAYS fully resolved, intact, complete in the chosen material.
-
-No face is ever eroded, melted, fractured, sliced, carved-incomplete, exposed-armature, mid-stitched, or geometrically-broken. No subject's face is ever blended with another subject's face. Every face is the specific source person, fully formed.
-
-If the material's character seems to want to extend upward into the face — STOP and resolve the upper body completely. The material character lives lower in the composition (on the lower body or on the base, depending on what the material block specifies), never on the head or upper chest.
-`.trim()
-
-// ════════════════════════════════════════════════════════════════
-// 6. STYLE: PEOPLE RESOLVING — gradient organic mass
-// 4 materials: wood, alabaster, wax, bronze
-// ════════════════════════════════════════════════════════════════
-
-const PEOPLE_RESOLVING_MATERIAL_BEHAVIOR: Partial<Record<GroupsPresetId, string>> = {
-  wood:      'Wood — flowing carved grain, smooth hand-carved transitions, weathered driftwood elegance.',
-  alabaster: 'Alabaster — softly translucent stone with subtle internal glow and polished carved surfaces.',
-  bronze:    'Bronze — smooth cast-metal surfaces with refined patina and sculptural weight.',
-  wax:       'Wax — smooth semi-translucent material with elegant softened edges and subtle material pooling.',
-}
-
-/**
- * Unified gradient-organic block for People Resolving style.
- * Replaces emergence + merging + base for the 4 supported materials.
- */
-export function getPeopleResolvingBlock(
-  presetId:     GroupsPresetId,
-  subjectCount: number,
-): string {
-  const isGroup = subjectCount > 1
-  const behavior = PEOPLE_RESOLVING_MATERIAL_BEHAVIOR[presetId] || PEOPLE_RESOLVING_MATERIAL_BEHAVIOR.alabaster!
-
-  const groupOpener = isGroup
-    ? `All ${subjectCount} subjects emerge together from a SHARED flowing abstract sculptural mass that unifies the entire composition into a single artwork. The base and lower structure behave as ONE continuous organic form — never separate pedestals, never separate figures merely placed side by side.`
-    : `The single subject emerges from a smooth flowing abstract mass that transitions gradually into the resolved human form.`
-
-  const variation = isGroup
-    ? `\n\nVARIATION ACROSS FIGURES — transition zones differ from figure to figure. Some subjects resolve beginning at the thighs, others at the waist or stomach, others near the lower chest or mid-arm. This variation is intentional and artistic, helping the composition feel dynamic and organically assembled rather than symmetrical or mechanically repeated.`
-    : ''
-
-  const massDescriptor = isGroup
-    ? `large and small eroded voids, smooth openings, carved pockets, flowing structural bridges between figures, smooth tunnels, and elegant negative space`
-    : `large and small eroded voids, smooth openings, carved pockets, and flowing negative space`
-
-  return `
-PEOPLE RESOLVING — GRADIENT ORGANIC MASS:
-
-${groupOpener}
-
-GRADIENT TRANSITION (NOT a hard cutoff):
-The figure${isGroup ? 's' : ''} transition gradually from abstract mass to resolved realism — not abruptly. The progression is:
-  • 100% abstract organic mass at the base
-  • partially resolved anatomy through the legs, hips, waist, and lower torso
-  • fully resolved realism at the upper chest, shoulders, arms, neck, head${isGroup ? 's' : ''}, and face${isGroup ? 's' : ''}
-
-The disambiguation is mostly below the lower pectorals and does NOT significantly consume the arms, shoulders, or head${isGroup ? 's' : ''}. Arms and faces remain largely complete and readable.${variation}
-
-ABSTRACT MASS AESTHETIC:
-The abstract material below the resolved figure${isGroup ? 's' : ''} is a smooth flowing organic mass with ${massDescriptor} — inspired by driftwood, weathered stone, root systems, and modern organic architecture. Larger flowing masses with selectively placed openings, smooth transitions between solid and void.
-
-NOT TO BE CONFUSED WITH:
-• NOT gooey, melted-plastic, or oozing
-• NOT coral, sponge-like, or chaotically pitted
-• NOT oatmeal-textured or noisy
-• NOT sharp fragmentation or shattered edges
-The forms are SMOOTH, sculptural, elegant, emotionally readable.
-
-BASE STRUCTURE:
-The sculpture mass originates from a smaller central area — approximately 50–75% the width of the final sculpture — then spreads outward and upward in irregular asymmetrical growth to encompass the ${isGroup ? 'full group composition' : 'figure'}. A thin discrete oval plinth disc in matching material sits beneath the organic mass, color-matched to the figures.
-
-MATERIAL BEHAVIOR:
-${behavior}
-
-PRESENTATION:
-Premium gallery / collectible / museum-grade. Soft directional gallery lighting, neutral studio backdrop, premium material rendering. Emotionally expressive, architectural, modern, collectible.
-`.trim()
-}
-
-export const PEOPLE_RESOLVING_FACE_RULE = `
-FACE + UPPER-BODY RULE (gradient register):
-Faces, heads, hair, necks, and shoulders are ALWAYS fully resolved across every figure. Arms remain largely complete and readable — never consumed by the abstract mass. The gradient transition begins below the upper pectorals and continues downward through the body into the base.
-
-CLOTHING PRESERVATION — CRITICAL:
-Every figure wears CLOTHING in the resolved upper-body zone. Shirts, dresses, jackets, tank tops, t-shirts — whatever the source photograph shows — are rendered as INTACT FABRIC in the resolved material (carved wood folds, sculpted alabaster drape, cast bronze fabric, etc.). Clothing covers the chest, shoulders, and torso fully. NEVER render figures bare-chested. NEVER let the abstract mass treatment dissolve the clothing on the upper body. If a source figure wore a shirt, the carved figure also wears a shirt; if a dress, a carved dress; if a tank top, a carved tank top.
-
-NEVER blend two subjects' faces. NEVER apply the abstract-mass treatment to face, head, hair, neck, shoulders, or upper-body clothing. Above the upper-pectoral line, every figure is a finished resolved realistic statue of the specific source person, fully clothed in carved/sculpted versions of the source clothing.
-`.trim()
-
-// ════════════════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════════════════
-// 7. STYLE: TRIBAL WALL MASKS — one unified merged mask sculpture
-// 2 materials: wood, marble
-// ════════════════════════════════════════════════════════════════
-
-const TRIBAL_WALL_MASK_MATERIAL: Partial<Record<GroupsPresetId, string>> = {
-  wood: `MATERIAL — CARVED WOOD (NATURAL, MIXED SPECIES):
-Natural carved wood only — pale oak, walnut, driftwood, aged hardwood, carved ash. Different sections of the sculpture may use different wood species; the species variation IS part of the visual character, intentionally readable as multiple woods carved into one piece. Preserve visible wood grain, knots, cracks, natural variation, weathering, hand-carved texture, softened worn edges. Warm natural tones throughout.`,
   marble: `MATERIAL — CARVED WHITE MARBLE: WHITE STONE. The sculpture material is COOL WHITE MARBLE — Carrara or Statuario white marble. The dominant color reading is WHITE, with subtle cool-grey veining. NOT cream, NOT tan, NOT ivory, NOT yellow, NOT warm, NOT wood-toned. The stone reads as cool-white in any lighting, never as warm cream. Surfaces vary between polished smooth planes and hand-tooled raw carved sections. Subtle grey veining flows naturally through the merged masses; the sculpture reads as carved from a single block of white Carrara stone. If the style reference image shows warm-toned wood, IGNORE the reference's color and render the sculpture in cool WHITE marble — only borrow the BLOCK GEOMETRY from the reference, not the color.`,
 }
 
@@ -609,8 +398,6 @@ function getBaseShape(
 
   const baseMaterialByPreset: Partial<Record<GroupsPresetId, string>> = {
     plushy:       'soft cushioned fabric pad, color-matched to subjects',
-    wax:          'pale bronze base with verdigris in recesses',
-    terracotta:   'rough cast terracotta plinth, integrated with the figures themselves',
     bronze:       'cast bronze plinth, polished top edges, verdigris recesses',
     iron:         'forged iron plinth, hammer-textured sides, burnished top edge',
     alabaster:    'raw-cut alabaster block, subtly veined',

@@ -350,7 +350,6 @@ textarea.input-field{
 .type-btn:disabled{opacity:.4;cursor:not-allowed}
 
 /* Location pills (cols-5) get a touch more padding for legibility — labels can be longer */
-#locationBar .type-btn{padding:.4rem .55rem;font-size:.7rem;line-height:1.15}
 #aspectBar .type-btn{font-family:var(--mono);font-size:.7rem}
 /* Material tile — mirrors Landscapes' .material-tile (left-border tier accent) */
 .bbtn{
@@ -1284,32 +1283,9 @@ textarea.input-field{
         <div class="materials-hint" id="materialsHint">Pick one or more — each becomes a render.</div>
       </div>
 
-      <div class="section">
-        <div class="materials-hdr">
-          <div class="section-label">Location</div>
-          <div class="materials-count" id="locationCurrent">Desk</div>
-        </div>
-        <div class="btn-bar cols-5" id="locationBar">
-          <button class="type-btn" data-loc="in_situ" onclick="selectLocation('in_situ')">In Environment</button>
-          <button class="type-btn active" data-loc="desk" onclick="selectLocation('desk')">Desk</button>
-          <button class="type-btn" data-loc="shelf" onclick="selectLocation('shelf')">Shelf</button>
-          <button class="type-btn" data-loc="workshop" onclick="selectLocation('workshop')">Workshop</button>
-          <button class="type-btn" data-loc="pedestal" onclick="selectLocation('pedestal')">Pedestal</button>
-        </div>
-        <div class="materials-hint">Where the sculpture is staged. Same setting for every material.</div>
-      </div>
-
-      <div class="section">
-        <div class="materials-hdr">
-          <div class="section-label">Scale</div>
-          <div class="materials-count" id="scaleCurrent">75% — Staged</div>
-        </div>
-        <div class="btn-bar cols-2" id="scaleBar">
-          <button class="type-btn active" data-scale="close_up" onclick="selectScale('close_up')">Staged</button>
-          <button class="type-btn" data-scale="fill" onclick="selectScale('fill')">Close Up</button>
-        </div>
-        <div class="materials-hint">How much of the frame the Subject (figure + base) fills.</div>
-      </div>
+      <!-- Location + Scale removed (V7): one hero look with a
+           material-matched backdrop; no scene reconstruction, no
+           composition mode. -->
 
       <div class="section">
         <div class="materials-hdr">
@@ -1390,22 +1366,26 @@ const ANALYZE = '/api/v1/actionmini/analyze'
 
 // Mood removed — staging is locked into each preset prompt.
 
+// V7 material set — 13, matching ACTION_MINI_PRESETS in
+// lib/v1/action/actionmini-presets.ts. Icons reuse the existing symbol
+// set (several share a glyph) — they need a design pass.
 const PRES = [
-  // Base — accessible
-  { k:'resin',                   label:'Resin',        icon:'i-resin',      tier:'base',      disabled:false },
-  { k:'plushy',                  label:'Plushy',       icon:'i-plushy',     tier:'base',      disabled:false },
+  // Base
+  { k:'bronze',           label:'Bronze',            icon:'i-bronze',     tier:'base',      disabled:false },
+  { k:'iron',             label:'Iron',              icon:'i-iron',       tier:'base',      disabled:false },
+  { k:'alabaster',        label:'Alabaster',         icon:'i-alabaster',  tier:'base',      disabled:false },
+  { k:'stone',            label:'Stone',             icon:'i-mountain',   tier:'base',      disabled:false },
+  { k:'carved_wood',      label:'Carved Wood',       icon:'i-wood',       tier:'base',      disabled:false },
+  { k:'plushy',           label:'Plushy',            icon:'i-plushy',     tier:'base',      disabled:false },
   // Premium
-  { k:'carved_wood',             label:'Wood',         icon:'i-wood',       tier:'premium',   disabled:false },
-  { k:'wax_bronze',              label:'Wax',          icon:'i-wax',        tier:'premium',   disabled:false },
-  { k:'painted_ceramic_cracked', label:'Ceramic',      icon:'i-ceramic',    tier:'premium',   disabled:false },
+  { k:'pewter',           label:'Pewter',            icon:'i-iron',       tier:'premium',   disabled:false },
+  { k:'ebony',            label:'Ebony',             icon:'i-wood',       tier:'premium',   disabled:false },
+  { k:'walnut',           label:'Walnut',            icon:'i-wood',       tier:'premium',   disabled:false },
+  { k:'chocolate',        label:'Chocolate',         icon:'i-wax',        tier:'premium',   disabled:false },
+  { k:'driftwood_resin',  label:'Driftwood & Resin', icon:'i-resin',      tier:'premium',   disabled:false },
   // Signature
-  { k:'terracotta_cracked',      label:'Terracotta',   icon:'i-terracotta', tier:'signature', disabled:false },
-  { k:'bronze_bronze',           label:'Bronze',       icon:'i-bronze',     tier:'signature', disabled:false },
-  { k:'iron',                    label:'Iron',         icon:'i-iron',       tier:'signature', disabled:false },
-  { k:'alabaster',               label:'Alabaster',    icon:'i-alabaster',  tier:'signature', disabled:false },
-  // V6: window_sill and trophy_shelf removed — they were locations
-  // masquerading as materials. Pick In Environment / Shelf with any
-  // material to get those staging registers.
+  { k:'charcoal_chalk',   label:'Charcoal & Chalk',  icon:'i-spark',      tier:'signature', disabled:false },
+  { k:'stained_glass',    label:'Stained Glass',     icon:'i-window',     tier:'signature', disabled:false },
 ]
 const PRES_LABEL = Object.fromEntries(PRES.map(p => [p.k, p.label]))
 
@@ -1425,25 +1405,8 @@ let detected = {
 const selectedPresets = new Set()
 const presetStatus = {}   // { [presetId]: 'running' | 'done' | 'error' }
 
-// Location — global staging selector. User picks one of five. Defaults to desk.
-const LOCATION_LABELS = {
-  in_situ:   'In Environment',
-  desk:      'Desk',
-  shelf:     'Shelf',
-  workshop:  'Workshop',
-  pedestal:  'Pedestal',
-}
-let currentLocation = 'desk'
-
-function selectLocation(locId) {
-  if (!LOCATION_LABELS[locId]) return
-  currentLocation = locId
-  document.querySelectorAll('#locationBar .type-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.loc === locId)
-  })
-  const cur = document.getElementById('locationCurrent')
-  if (cur) cur.textContent = LOCATION_LABELS[locId]
-}
+// Location removed (V7) — no staging selector. The backdrop is derived
+// from the chosen material, so there is nothing to pick.
 
 // Aspect ratio — defaults to 1:1. Sent through to NB2 via the request body.
 // All ten NB2-supported ratios available in the sidebar.
@@ -1458,19 +1421,8 @@ function selectAspect(ratio) {
   if (cur) cur.textContent = ratio
 }
 
-// Scale — composition mode. close_up → "Staged" 75%; fill → "Close Up" 90%.
-// ID/label inversion is intentional and matches Landscapes.
-let currentScale = 'close_up'
-
-function selectScale(scale) {
-  if (scale !== 'close_up' && scale !== 'fill') return
-  currentScale = scale
-  document.querySelectorAll('#scaleBar .type-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.scale === scale)
-  })
-  const cur = document.getElementById('scaleCurrent')
-  if (cur) cur.textContent = scale === 'close_up' ? '75% — Staged' : '90% — Close Up'
-}
+// Scale removed (V7) — the camera block owns the crop (close/low,
+// subject fills ~2/3 of frame). No composition mode to pick.
 
 let stageState = 'empty'
 
@@ -1825,8 +1777,6 @@ async function generateOne(p) {
         source_image_b64:  fileB64,
         preset:            p.pres,
         kinetic_medium:    detected.kinetic_medium || 'other',
-        location:          currentLocation,
-        scale:             currentScale,
         aspect_ratio:      currentAspect,
         display_name:      detected.display_name || p.name,
       })
@@ -2139,9 +2089,6 @@ async function applyRefine(name) {
   const card = document.getElementById('rc-' + name)
   if (card) card.classList.add('refining')
 
-  // Preserve the location from the original render — refines stay in same location
-  const originalLocation = (resStore[name] && resStore[name].location) || currentLocation
-
   try {
     const res = await fetch(API, {
       method: 'POST',
@@ -2150,8 +2097,6 @@ async function applyRefine(name) {
         source_image_b64:  fileB64,
         preset:            presetId,
         kinetic_medium:    detected.kinetic_medium || 'other',
-        location:          originalLocation,
-        scale:             currentScale,
         aspect_ratio:      currentAspect,
         display_name:      name,
         refinement_tweak:  tweak,

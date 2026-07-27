@@ -102,10 +102,10 @@ export async function generateHouse(input: {
     refinementTweak:    input.request.refinement_tweak,
   })
 
-  // Default aspect ratio: 1:1. Without this NB2 in image-to-image mode
-  // matches the source's aspect, which produced inconsistent dimensions
-  // across renders. Override with request.aspect_ratio when needed.
-  const aspectRatio = input.request.aspect_ratio || '1:1'
+  // Default aspect ratio: 3:2 (matches the UI default). Without this NB2 in
+  // image-to-image mode matches the source's aspect, which produced
+  // inconsistent dimensions across renders. Override with request.aspect_ratio.
+  const aspectRatio = input.request.aspect_ratio || '3:2'
 
   // Build the image_input array — primary source + any additional.
   // Capped at MAX_SOURCE_IMAGES (4). NB2 supports up to 14 but Google's
@@ -181,18 +181,19 @@ export async function generateHouse(input: {
   // Opt-in during pilot (request.refine === true). Requires openaiApiKey.
   // Soft-fails to the Pass 1 output on any error — Pass 2 failure is
   // never fatal to the render.
-  // Artists Gallery presets bypass both post-stages: their prompts bake
-  // scene, framing, and medium. The miniature-register refine pass and
-  // photorealistic outpaint fill would each break the medium.
-  const artistsPreset = preset.mode === 'artists'
-  if (artistsPreset && (input.request.refine === true || input.request.expand !== false)) {
-    console.log(`[houses/generate] preset=${preset.id} artists mode — refine and outpaint forced off`)
+  // Artists Gallery presets AND interpretive curiosities (ownScene) bypass
+  // both post-stages: their prompts bake scene, framing, and medium. The
+  // miniature-register refine pass and photorealistic outpaint fill would
+  // each break the medium.
+  const ownScenePreset = preset.mode === 'artists' || preset.ownScene === true
+  if (ownScenePreset && (input.request.refine === true || input.request.expand !== false)) {
+    console.log(`[houses/generate] preset=${preset.id} own-scene — refine and outpaint forced off`)
   }
 
   let refined = false
   let refineDurationMs: number | undefined = undefined
   let refinePromptUsed: string | undefined = undefined
-  const wantRefine = !artistsPreset && input.request.refine === true
+  const wantRefine = !ownScenePreset && input.request.refine === true
   if (wantRefine) {
     if (!input.openaiApiKey) {
       console.warn(
@@ -225,7 +226,7 @@ export async function generateHouse(input: {
   // un-expanded image if Stability returns an error.
   let expanded = false
   let expandDurationMs: number | undefined = undefined
-  const wantExpand = !artistsPreset && input.request.expand !== false
+  const wantExpand = !ownScenePreset && input.request.expand !== false
   if (wantExpand) {
     try {
       const exp = await expandHouseImage({ imageB64: b64 })

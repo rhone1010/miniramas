@@ -48,7 +48,7 @@ import { DEFAULT_PLAQUE_TEXT } from './pets-shared'
 // preservation is toggleable: an active action replaces pose AND
 // expression direction, so the expression sentences must drop (one
 // concern per block — the action phrase owns expression then).
-function petIdentityCore(preserveExpression: boolean): string {
+export function petIdentityCore(preserveExpression: boolean): string {
   const eyeClause = preserveExpression
     ? 'eye shape, size, color, spacing, and expression'
     : 'eye shape, size, color, and spacing'
@@ -75,9 +75,9 @@ function petUniversalSingle(action: ActionId): string {
   const closing = restaged
     ? `Give the animal a natural expression suited to the action while keeping its own recognizable personality. ` +
       `Render the specific animal in the photograph, not a generic or idealized example of its breed — a recognizable rendering of this exact pet is the goal. ` +
-      `Lock the animal's anatomy and markings first; stage the action second; apply the material treatment last.`
+      `Render EXACTLY ONE animal — a single subject only; never duplicate the animal and never add a second animal, twin, or companion. Lock the animal's anatomy and markings first; stage the action second; apply the material treatment last.`
     : `Render the specific animal in the photograph, not a generic or idealized example of its breed — a recognizable rendering of this exact pet, with this exact expression, is the goal. ` +
-      `Lock the animal's anatomy, pose, markings, and expression first; then apply the material treatment.`
+      `Render EXACTLY ONE animal — a single subject only; never duplicate the animal and never add a second animal, twin, or companion. Lock the animal's anatomy, pose, markings, and expression first; then apply the material treatment.`
 
   return `${lead}Preserve the animal's exact identity: ${petIdentityCore(!restaged)} ${closing}`
 }
@@ -108,7 +108,7 @@ function petUniversalGroup(count: number, action: ActionId): string {
 // within the material rather than dropping them.
 const MATERIAL_PHRASE: Record<PetsPresetId, string> = {
   bronze:
-    'polished bronze sculpture — the entire animal rendered in classic patinated bronze, with the animal\'s markings expressed as deliberate patina variation: darker and lighter bronze tones following the exact pattern of the coat\'s facial markings, blazes, spots, patches, and socks, so the marking pattern remains clearly readable in the metal, dignified fine-art bronze throughout',
+    'cast bronze sculpture — the ENTIRE animal molded from a single solid bronze, with NO original coat colors anywhere: no black fur, no tan fur, no white fur, only patinated bronze metal itself. The animal\'s markings are expressed purely as patina variation — darker and lighter bronze tones following the exact pattern of the coat\'s facial markings, blazes, spots, patches, and socks, so the marking pattern stays clearly readable in the metal, never as painted color. Dignified fine-art cast bronze with subtle surface patina throughout, unmistakably one solid molded metal piece',
   alabaster:
     'carved translucent alabaster sculpture with warm subsurface scattering, milky stone depth, soft glowing edges, faint amber veining, polished and semi-translucent high points, and deeper cloudy opacity in thicker areas. The ENTIRE animal including coat, ears, muzzle, tail, and paws is rendered in this same translucent alabaster; the animal\'s markings are expressed as deeper cloudy veining and tonal shifts within the stone, following the exact pattern of the source coat so the markings remain readable while the whole sculpture stays alabaster',
   mixed_metals:
@@ -116,13 +116,13 @@ const MATERIAL_PHRASE: Record<PetsPresetId, string> = {
   ceramic:
     'glossy glazed porcelain figurine — smooth glass-like fired finish with luminous reflective glaze highlights, softly rounded forms, subtle glaze pooling in the recesses and faint kiln marks that show the hand of the maker. The animal\'s true coat colors, facial markings, blazes, spots, patches, socks, and color transitions are hand-painted under the clear glaze faithfully and precisely as shown in the source photograph',
   plushy:
-    'handmade plush toy sculpture in soft puffy stuffed fabric — plump rounded forms, visible hand-stitched seams with slightly uneven stitches, clearly sewn-on features rendered in loving detail: embroidered or safety-button eyes placed and shaped to match the source, a stitched fabric nose, appliqué inner ears, and embroidered mouth line. The fabric color blocking follows the animal\'s actual coat colors and marking pattern exactly — facial markings, blazes, spots, patches, and socks each cut and sewn as their own fabric pieces. Unmistakably a sewn plush object, yet detailed enough that the specific animal is instantly recognizable',
-  felted_wool:
-    'needle-felted wool sculpture — dense matte wool-fiber surface with a fine soft fuzz halo at the edges, gently sculpted rounded forms, the wool colors matching the animal\'s true coat colors and marking pattern exactly: facial markings, blazes, spots, patches, and socks felted in as distinct color regions, fiber direction following the natural lie of the fur, warm handcrafted artisanal character throughout',
+    'handmade plush toy — a soft, plump, huggable stuffed animal with full, rounded, chunky forms and a simple cuddly toy-like character. Keep it simple and soft rather than finely detailed: gently rounded features, a stitched fabric nose, simple sewn or soft button eyes, and gentle seams — not intricate, not hyper-detailed. The fabric colors follow the animal\'s true coat colors and marking pattern (facial markings, blazes, patches, and socks as soft blocks of colored fabric) so the specific animal stays instantly recognizable, and the plush clearly captures the animal\'s own personality and expression. Unmistakably a plump, soft, sewn plush toy',
   stone:
     'polished Taj Mahal quartzite sculpture with characteristic creamy-beige base tones, warm gold and amber veining, smoky brown ribbons, and occasional charcoal-gray mineral threads — the stone pattern flows organically across the entire animal. The ENTIRE animal including coat, ears, muzzle, tail, and paws is rendered in this same quartzite; the animal\'s markings are expressed through the placement of the stone\'s natural veining and mineral tones, with darker smoky-brown and charcoal threads following the exact pattern of the coat\'s markings so the pattern remains readable. The mineral palette is cream, gold, brown, and charcoal only',
   walnut:
-    'carved walnut wood sculpture with rich grain variation visible across the entire animal — pronounced flowing wood grain patterns, natural color shifts ranging from warm honey-amber through chestnut to deep chocolate-walnut, with the lighter and darker grain tones following the exact pattern of the animal\'s coat markings so the blazes, patches, and socks remain readable in the wood. Occasional figured-grain knots, burls, and ribbon-grain character in the body and haunches. Finished in soft satin lacquer that catches the light in subtle specular highlights — semi-gloss only, not high-gloss wet-shine. The grain reads as living, characterful hardwood with depth and warmth',
+    'carved walnut wood sculpture — the ENTIRE animal carved from a single piece of solid walnut hardwood, with NO original coat colors anywhere: no black fur, no tan fur, no white fur, only the natural color range of walnut wood itself (warm honey-amber through chestnut to deep chocolate-walnut). Pronounced flowing wood grain runs across the whole form, and the lighter and darker grain tones follow the exact pattern of the animal\'s coat markings so the blazes, patches, and socks remain readable AS GRAIN and tonal shifts in the wood, never as painted color. Occasional figured knots, burls, and ribbon-grain in the body and haunches. Finished in soft satin lacquer with subtle specular highlights — semi-gloss, not wet-shine. Unmistakably one solid piece of carved characterful hardwood',
+  legacy_edition:
+    'sculpture carved from one block of flawless white statuary marble — the flagship, highest-tier piece. The ENTIRE animal including coat, ears, muzzle, tail, and paws carved in the round from cool luminous Carrara/Statuario stone, softly polished with a gentle sheen and a few honest hand-tooled passages beside the polished planes. Cool white throughout, never cream, ivory, tan, or warm; NO original coat colors as pigment — the animal\'s markings are expressed as subtle cool-grey veining following the exact pattern of the coat\'s facial markings, blazes, patches, and socks so the pattern stays readable in the stone. Master, confident composition; the absolute ceiling of realism, refined texture, and rich depth; restraint over spectacle — nothing exaggerated or flashy, no added ornament. Timeless, the specific animal instantly recognizable, it should feel impossible to improve',
 }
 
 // ── Environment phrases — Rich-authored (2026-06-05) ────────────

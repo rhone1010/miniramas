@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Liten &amp; Co — REF · PET WALLPAPERS · phone-only · DECKLE (curator only) · 1920</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   LITEN & CO — PET WALLPAPERS (phone-only) @1920
+   The four-column shell, inherited. Wallpaper deltas:
+     - Phone-vertical only (9:19.5). NO aspect-ratio row.
+     - Setting → Backdrop: Gradient / Blurred Room / Dark Shelf (just a wall).
+     - Framing = base Portraits poses (Bust / Signature / Statuesque).
+     - Animate toggle — STUBBED experimental (Living Art is v2, not launch).
+     - Fulfillment = DOWNLOAD to phone, NOT print (no Prodigi/Print Shop).
+     - `.main` = phone mockups cycling wallpaper examples.
+     - Manrope + Cormorant only. $4.99 (Wallpapers pricing still open — flagged).
+   ============================================================ */
+:root{
+  --vellum:#f3ede1; --paper:#faf6ec; --panel:#ece2d0; --paper-up:#f4f2ed;
+  --ink:#2a241e; --ink-soft:#5a5248; --oxblood:#7d4242; --oxblood-deep:#6a3737;
+  --brass:#75623a; --taupe:#aba39a; --sage:#8a9a7b; --hairline:#d8cfba;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',sans-serif;
+  --ease-out:cubic-bezier(.22,.7,.3,1);
+  --dur-micro:150ms; --dur-state:250ms; --dur-panel:400ms;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+button{font:inherit;border:none;background:none;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+body{background:var(--vellum);font-family:var(--serif);color:var(--ink);min-width:1440px;overflow:hidden}
+
+/* ===== MASTHEAD ===== */
+.masthead{height:90px;background:var(--vellum);border-bottom:1px solid var(--hairline);display:flex;align-items:center;padding:0 36px;position:sticky;top:0;z-index:50}
+.navcluster{flex:1;display:flex;align-items:center;justify-content:center;gap:40px}
+.silo2{font-family:var(--serif);font-style:italic;font-size:1.65rem;color:var(--brass)}
+.mainnav{display:flex;gap:30px}
+.mainnav a{font-style:italic;font-size:1.3em;color:var(--ink-soft);text-decoration:none;padding:6px 2px;border-bottom:2px solid transparent;transition:color var(--dur-micro),border-color var(--dur-micro)}
+.mainnav a:hover{color:var(--oxblood)}
+.mainnav a.on{color:var(--oxblood);border-bottom-color:var(--oxblood)}
+.signin{font-style:italic;font-size:1.65rem;color:var(--ink-soft);border:1px solid var(--hairline);border-radius:999px;padding:10px 24px;transition:border-color var(--dur-micro),color var(--dur-micro)}
+.signin:hover{border-color:var(--oxblood);color:var(--oxblood)}
+
+/* ===== LAYOUT ===== */
+.stage{display:flex;align-items:stretch;gap:0;height:calc(100vh - 90px);overflow:hidden}
+
+/* ===== ADVANCED ===== */
+.adv{width:clamp(280px,13.3vw,360px);flex-shrink:0;background:var(--paper);border-right:1px solid var(--hairline);display:flex;flex-direction:column}
+.adv-rail{background:var(--oxblood);color:var(--vellum);height:52px;display:flex;align-items:center;padding:0 24px;font-style:italic;font-size:24px;position:relative}
+.adv-close{margin-left:auto;font-size:20px;color:rgba(243,237,225,.8);padding:6px 10px}
+.adv-body{padding:24px 20px 16px;flex:1;overflow-y:auto;scrollbar-width:thin}
+.eyebrow{font-family:var(--sans);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);margin:0 0 12px}
+.adv-section{margin-bottom:26px}
+.mode-toggle{display:flex;border:1px solid var(--oxblood);border-radius:999px;overflow:hidden;margin-bottom:16px}
+.mode-toggle button{flex:1;font-style:italic;font-size:14px;padding:8px 3px;color:var(--oxblood);transition:background var(--dur-micro),color var(--dur-micro)}
+.mode-toggle button.on{background:var(--oxblood);color:var(--vellum)}
+.more-opts{font-style:italic;font-size:19px;color:var(--brass);border-bottom:1px solid var(--brass);padding-bottom:2px}
+.swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
+.swatch .disc{width:56px;height:56px;border-radius:50%;object-fit:cover;display:block;border:none;box-shadow:0 1px 3px rgba(42,36,30,.18);transition:transform var(--dur-state) var(--ease-out);background:linear-gradient(150deg,#e6dcc6,#d8cbac)}
+.swatch.on .disc{outline:2px solid var(--oxblood);outline-offset:2px}
+.swatch:hover .disc{transform:scale(1.06)}
+.swatch .nm{font-style:italic;font-size:1.1rem;color:var(--taupe);transition:color var(--dur-micro);text-align:center;line-height:1.15}
+.swatch.on .nm{color:var(--ink)}
+.glyphs{display:flex;gap:10px}
+.glyph{flex:1;border:1px solid var(--hairline);border-radius:8px;background:var(--vellum);padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:border-color var(--dur-state),background var(--dur-state)}
+.glyph svg{width:34px;height:26px;stroke:var(--ink-soft);fill:none;stroke-width:1.6;transition:stroke var(--dur-micro)}
+.glyph .nm{font-style:italic;font-size:1.05rem;color:var(--taupe);text-align:center;line-height:1.1}
+.glyph.on{border-color:var(--oxblood);background:rgba(125,66,66,.06)}
+.glyph.on svg{stroke:var(--oxblood)}
+.glyph.on .nm{color:var(--ink)}
+.poses{display:flex;gap:10px}
+.tod-toggle{display:flex;border:1px solid var(--oxblood);border-radius:999px;overflow:hidden}
+.tod-toggle button{flex:1;font-style:italic;font-size:16px;padding:9px 3px;color:var(--oxblood);transition:background var(--dur-micro),color var(--dur-micro)}
+.tod-toggle button.on{background:var(--oxblood);color:var(--vellum)}
+.tod-toggle button .exp{font-family:var(--sans);font-size:9px;letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin-left:5px;vertical-align:1px}
+.exp-note{font-family:var(--sans);font-size:11px;letter-spacing:.03em;color:var(--taupe);margin-top:7px;min-height:14px}
+.recipe{font-style:italic;font-size:1.35rem;line-height:1.5;color:var(--ink);padding:6px 2px 0}
+.recipe .w{color:var(--oxblood)}
+.ledger-q{margin-top:4px}
+.lrow{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:13px;letter-spacing:.02em;color:var(--ink-soft);padding:7px 2px;cursor:pointer}
+.lrow .dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--taupe);flex-shrink:0;transition:all var(--dur-micro)}
+.lrow.on .dot{border-color:var(--oxblood);background:var(--oxblood);box-shadow:inset 0 0 0 3px var(--paper)}
+.lrow .price{margin-left:auto;font-feature-settings:'tnum'}
+.lrow.on{color:var(--ink)}
+.adv-foot{padding:18px 26px 24px;border-top:1px solid var(--hairline);background:var(--paper)}
+.adv-add{width:100%;background:var(--oxblood);color:var(--vellum);font-style:italic;font-size:20px;padding:13px;border-radius:10px;transition:background var(--dur-micro),transform var(--dur-micro)}
+.adv-add:hover{background:var(--oxblood-deep)}
+.adv-add:active{transform:scale(.98)}
+
+/* ===== CURATOR ===== */
+.curator{width:clamp(380px,17vw,440px);flex-shrink:0;background:var(--panel);margin:24px 0 24px 28px;align-self:flex-start;border-radius:3px;padding:26px 28px 34px;position:relative;filter:drop-shadow(0 2px 6px rgba(42,36,30,.08))}
+.cur-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.c-mark{width:38px;height:38px;border-radius:50%;background:var(--oxblood);color:var(--paper);font-size:25px;font-style:italic;display:flex;align-items:center;justify-content:center}
+.cur-title{font-size:32px}
+.upload-card{background:var(--paper-up);border:1px solid #c9bd9d;border-radius:3px;padding:70px 30px;text-align:center;position:relative;transition:transform var(--dur-state) var(--ease-out),box-shadow var(--dur-state) var(--ease-out);cursor:pointer;animation:startPulse 3.6s ease-in-out infinite}
+.upload-card:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(42,36,30,.10)}
+@keyframes startPulse{0%,100%{box-shadow:0 0 0 0 rgba(125,66,66,0)}50%{box-shadow:0 0 0 7px rgba(125,66,66,.13)}}
+.plus{width:40px;height:40px;border-radius:50%;border:1px solid var(--taupe);color:var(--brass);font-size:23px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.up-label{font-style:italic;font-size:24px;color:var(--oxblood)}
+.up-sub{font-style:italic;font-size:19px;color:var(--taupe);margin-top:8px}
+.upload-card.has-photo{background-size:cover;background-position:center}
+.upload-card.has-photo .plus,.upload-card.has-photo .up-label,.upload-card.has-photo .up-sub{opacity:0}
+.inv-letter{margin-top:24px;background:linear-gradient(160deg,#F0EAE0,#ECDFC1 55%,#E0D2A8);border-radius:3px;padding:24px 24px 20px;position:relative;filter:drop-shadow(0 2px 5px rgba(0,0,0,.08))}
+.inv-letter p{font-style:italic;font-size:22px;line-height:1.55}
+.inv-letter .tint{background:rgba(123,63,65,.12);padding:0 6px;border-radius:3px}
+.inv-letter .sig{color:var(--oxblood)}
+
+/* ===== PHONE STAGE (.main) ===== */
+.main{flex:1;padding:18px;min-width:0;display:flex;align-items:center;justify-content:center;gap:56px;background:radial-gradient(120% 90% at 50% 0%,#efe7d6,#e6dcc6)}
+.phone{position:relative;height:78%;aspect-ratio:9/19.5;background:#0d0d10;border-radius:40px;padding:9px;box-shadow:0 26px 60px rgba(42,36,30,.32),0 4px 14px rgba(0,0,0,.2);flex-shrink:0}
+.phone.tilt-l{transform:rotate(-4deg) translateY(10px)}
+.phone.tilt-r{transform:rotate(4deg) translateY(10px)}
+.phone .screen{position:relative;width:100%;height:100%;border-radius:32px;overflow:hidden;background:#222}
+.phone .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:34%;height:22px;background:#0d0d10;border-radius:0 0 13px 13px;z-index:3}
+.wp-slide{position:absolute;inset:0;opacity:0;transition:opacity 1600ms ease-in-out;display:flex;align-items:center;justify-content:center}
+.wp-slide.show{opacity:1}
+/* rendering feedback — active sweep + dim while NB2 works */
+.phone .screen.rendering .wp-slide{filter:brightness(.45) saturate(.7);transition:filter .3s}
+.phone .screen.rendering::after{content:'';position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 50%,transparent 68%);background-size:250% 100%;animation:wpSweep 1.5s linear infinite}
+@keyframes wpSweep{0%{background-position:210% 0}100%{background-position:-60% 0}}
+.phone .screen.rendering .wp-dots{position:absolute;left:0;right:0;bottom:14%;z-index:6;text-align:center}
+.phone .screen.rendering .wp-dots i{display:inline-block;width:7px;height:7px;margin:0 4px;border-radius:50%;background:rgba(255,255,255,.85);animation:wpPulse 1.2s ease-in-out infinite}
+.phone .screen.rendering .wp-dots i:nth-child(2){animation-delay:.2s}
+.phone .screen.rendering .wp-dots i:nth-child(3){animation-delay:.4s}
+@keyframes wpPulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.wp-figure{width:52%;aspect-ratio:3/4;border-radius:8px;background:linear-gradient(160deg,rgba(255,255,255,.28),rgba(255,255,255,.05));box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.wp-label{position:absolute;bottom:8%;left:0;right:0;text-align:center;color:#fff;font-style:italic;font-size:1.5rem;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.lock-clock{position:absolute;top:11%;left:0;right:0;text-align:center;color:#fff;z-index:2;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+.lock-clock .t{font-family:var(--sans);font-weight:600;font-size:2.6rem;line-height:1}
+.lock-clock .d{font-family:var(--sans);font-size:.85rem;letter-spacing:.04em;opacity:.9;margin-top:2px}
+.home-icons{position:absolute;bottom:6%;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);gap:9px 14px;padding:0 16%;z-index:2}
+.home-icons i{aspect-ratio:1;border-radius:22%;background:rgba(255,255,255,.28);backdrop-filter:blur(2px)}
+.stage-cap{position:absolute;bottom:22px;left:0;right:0;text-align:center;font-style:italic;font-size:1.5rem;color:var(--ink-soft)}
+
+/* ===== COLLECTION RAIL ===== */
+.colrail{width:clamp(240px,10.5vw,300px);flex-shrink:0;background:var(--panel);overflow-y:auto}
+.colrail .rail2{background:var(--oxblood);color:var(--vellum);height:48px;display:flex;align-items:center;padding:0 20px;font-style:italic;font-size:22px;position:relative}
+.cr-body{padding:18px 14px 4px}
+.cr-current{font-style:italic;font-size:1.5rem;color:var(--ink);background:var(--paper);border:1px solid var(--hairline);border-left:4px solid var(--oxblood);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.cr-spine .dots{display:inline-flex;gap:4px;align-self:center;margin-left:8px}
+.cr-spine .dots i{width:6px;height:6px;border-radius:50%;background:var(--oxblood);opacity:.85}
+.cr-spine{display:flex;align-items:baseline;gap:10px;font-style:italic;font-size:19px;color:var(--taupe);padding:10px 14px;border-top:1px solid var(--hairline);cursor:pointer;transition:color var(--dur-micro),padding-left var(--dur-micro)}
+.cr-spine:hover{color:var(--oxblood);padding-left:18px}
+
+/* ===== DECKLE (CURATOR CARD ONLY) ===== */
+.deckle-paper{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.has-deckle{background:transparent !important;border:none !important;border-radius:0 !important;position:relative}
+.has-deckle > .deckle-paper{z-index:0}
+.has-deckle > :not(.deckle-paper){position:relative;z-index:1}
+</style>
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>
+<filter id="curatorDeckle" x="-8%" y="-6%" width="116%" height="112%"><feTurbulence type="fractalNoise" baseFrequency="0.014 0.016" numOctaves="4" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+</defs></svg>
+
+<header class="masthead">
+  <img src="/homepage/liten-and-co.png" alt="Litenco — home" style="height:70px;width:auto">
+  <div class="navcluster">
+    <span class="silo2">Pet Wallpapers</span>
+    <nav class="mainnav">
+      <a href="#" class="on">Workshop</a><a href="#">Gallery</a><a href="#">Downloads</a><a href="#">My Collection</a><a href="#">Help</a>
+    </nav>
+  </div>
+  <button class="signin">Sign in</button>
+</header>
+
+<div class="stage">
+
+  <!-- ADVANCED -->
+  <aside class="adv">
+    <div class="adv-rail">Design your own <button class="adv-close">&#8249;</button></div>
+    <div class="adv-body">
+      <div class="adv-section">
+        <div class="eyebrow">The piece</div>
+        <div class="mode-toggle" id="advModes">
+          <button class="on" data-g="materials">Materials</button>
+          <button data-g="curios">Curiosities</button>
+        </div>
+        <div class="swatches" id="advSwatches"></div>
+      </div>
+
+      <div class="adv-section">
+        <div class="eyebrow">The backdrop</div>
+        <div class="glyphs" id="advBackdrop">
+          <div class="glyph on" data-nm="on a gradient">
+            <svg viewBox="0 0 34 26"><rect x="6" y="3" width="22" height="20" rx="2"/><path d="M6 16c5-3 17-3 22 0" opacity=".5"/><path d="M6 11c5-2 17-2 22 0" opacity=".28"/></svg>
+            <span class="nm">Gradient</span>
+          </div>
+          <div class="glyph" data-nm="in a blurred room">
+            <svg viewBox="0 0 34 26"><rect x="4" y="4" width="26" height="18" rx="2" opacity=".5"/><path d="M9 9h7M9 13h11" opacity=".4"/></svg>
+            <span class="nm">Blurred Room</span>
+          </div>
+          <div class="glyph" data-nm="on a dark shelf">
+            <svg viewBox="0 0 34 26"><path d="M3 17h28"/><path d="M6 17v4M28 17v4"/><rect x="12" y="7" width="10" height="10" rx="1"/></svg>
+            <span class="nm">Dark Shelf</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="adv-section">
+        <div class="eyebrow">The framing</div>
+        <div class="poses" id="advPoses"></div>
+      </div>
+
+      <div class="adv-section">
+        <div class="eyebrow">Motion</div>
+        <div class="tod-toggle" id="advAnimate">
+          <button class="on" data-nm="still">Still</button>
+          <button data-nm="animated">Animated<span class="exp">soon</span></button>
+        </div>
+        <div class="exp-note" id="animNote"></div>
+      </div>
+
+      <div class="recipe" id="advRecipe"></div>
+      <div class="ledger-q" id="advLedger">
+        <div class="lrow on" data-p="0"><span class="dot"></span>Standard<span class="price">included</span></div>
+        <div class="lrow" data-p="2"><span class="dot"></span>Retina (High-DPI)<span class="price">+ $2.00</span></div>
+      </div>
+      <button class="more-opts">More options</button>
+    </div>
+    <div class="adv-foot">
+      <button class="adv-add" id="advAdd"></button>
+    </div>
+  </aside>
+
+  <!-- CURATOR -->
+  <section class="curator">
+    <div class="cur-head"><span class="c-mark">C</span><span class="cur-title">Curator</span></div>
+    <div class="upload-card" id="wpUpload">
+      <div class="plus">+</div>
+      <div class="up-label">Add a photo of your pet</div>
+      <div class="up-sub">A clear face-forward image — I&rsquo;ll set it for your phone.</div>
+    </div>
+    <div class="inv-letter">
+      <p>Bring me a <span class="tint">portrait</span> and I&rsquo;ll craft it into a wallpaper made for your phone — your favorite face, reimagined, on your lock screen. <span class="sig">&mdash;&thinsp;C.</span></p>
+    </div>
+  </section>
+  <input type="file" id="wpFile" accept="image/*" style="display:none">
+
+  <!-- PHONE STAGE -->
+  <main class="main">
+    <div class="phone tilt-l" id="phoneLock">
+      <div class="notch"></div>
+      <div class="screen" id="screenLock">
+        <div class="lock-clock"><div class="t">9:41</div><div class="d">Monday, June 8</div></div>
+      </div>
+    </div>
+    <div class="phone tilt-r" id="phoneHome">
+      <div class="notch"></div>
+      <div class="screen" id="screenHome">
+        <div class="home-icons"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+    </div>
+    <div class="stage-cap">Your pet, made for your phone</div>
+  </main>
+
+  <!-- COLLECTION RAIL -->
+  <aside class="colrail">
+    <div class="rail2">My Collection</div>
+    <div class="cr-body">
+      <div class="cr-current">Pet Wallpapers</div>
+      <div class="cr-spine"><span class="name">Pets</span><span class="dots"><i></i></span></div>
+      <div class="cr-spine"><span class="name">Portrait Wallpapers</span></div>
+      <div class="cr-spine"><span class="name">Houses</span></div>
+      <div class="cr-spine"><span class="name">Pets</span></div>
+      <div class="cr-spine"><span class="name">Groups</span></div>
+      <div class="cr-spine"><span class="name">Landscapes</span></div>
+    </div>
+  </aside>
+
+</div>
+<script>
+/* ============================================================
+   PET WALLPAPERS — portrait effect taxonomy reused (Earth & Ore /
+   Artists / Curiosities). Backdrop replaces setting. Framing = base
+   Portraits poses. Motion stubbed. Download-only fulfillment.
+   ============================================================ */
+var MATS={
+ materials:[['ceramic','Ceramic'],['plushy','Plushy'],['walnut','Walnut'],['stone','Stone'],['bronze','Bronze'],['mixed_metals','Metals'],['alabaster','Alabaster']],
+ curios:[['amber_inclusion','Amber Inclusion'],['garden_statue','Garden Statue'],['blown_glass','Blown Art Glass'],['enchanted_crystal','Enchanted Crystal'],['topiary','Topiary'],
+         ['regal','Regal'],['elizabethan_ruff','Elizabethan Ruff'],['sailor','Sailor'],
+         ['ukiyo_e','Ukiyo-e'],['art_nouveau','Art Nouveau'],['cubism','Cubism'],['daguerreotype','Daguerreotype'],['film_noir','Film Noir']]
+};
+var POSES=[['as_photographed','As Photographed'],['sleeping','Sleeping'],['sitting_proud','Sitting Proud']];
+
+var advState={group:'materials',mat:'bronze',matLabel:'bronze',backdrop:'on a gradient',
+              pose:'as_photographed',poseLabel:'As Photographed',motion:'still',base:4.99,extra:0};
+
+var PH='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56"><rect width="56" height="56" fill="%23d8cbac"/></svg>');
+
+function swatchNode(id,label){
+  var d=document.createElement('div');
+  d.className='swatch'+(advState.mat===id?' on':'');
+  d.innerHTML='<img class="disc" src="'+PH+'" alt="'+label+'"><span class="nm">'+label+'</span>';
+  d.onclick=function(){
+    advState.mat=id;advState.matLabel=label.toLowerCase();
+    [].slice.call(document.querySelectorAll('#advSwatches .swatch')).forEach(function(x){x.classList.remove('on')});
+    d.classList.add('on');advRecipe();
+  };
+  return d;
+}
+function renderSwatches(group){
+  var el=document.getElementById('advSwatches');el.innerHTML='';
+  if(!MATS[group].some(function(m){return m[0]===advState.mat})){ advState.mat=MATS[group][0][0];advState.matLabel=MATS[group][0][1].toLowerCase(); }
+  MATS[group].forEach(function(m){ el.appendChild(swatchNode(m[0],m[1])); });
+}
+[].slice.call(document.querySelectorAll('#advModes button')).forEach(function(b){
+  b.onclick=function(){
+    [].slice.call(document.querySelectorAll('#advModes button')).forEach(function(x){x.classList.remove('on')});
+    b.classList.add('on');advState.group=b.getAttribute('data-g');renderSwatches(advState.group);advRecipe();
+  };
+});
+/* Backdrop */
+[].slice.call(document.querySelectorAll('#advBackdrop .glyph')).forEach(function(g){
+  g.addEventListener('click',function(){
+    [].slice.call(document.querySelectorAll('#advBackdrop .glyph')).forEach(function(x){x.classList.remove('on')});
+    g.classList.add('on');advState.backdrop=g.getAttribute('data-nm');advRecipe();
+  });
+});
+/* Poses (base series framing) */
+(function(){
+  var wrap=document.getElementById('advPoses');
+  POSES.forEach(function(p){
+    var g=document.createElement('div');
+    g.className='glyph'+(advState.pose===p[0]?' on':'');
+    g.innerHTML='<svg viewBox="0 0 34 26"><circle cx="17" cy="9" r="4"/><path d="M9 22c0-5 4-8 8-8s8 3 8 8"/></svg><span class="nm">'+p[1]+'</span>';
+    g.onclick=function(){
+      [].slice.call(wrap.children).forEach(function(x){x.classList.remove('on')});
+      g.classList.add('on');advState.pose=p[0];advState.poseLabel=p[1];advRecipe();
+    };
+    wrap.appendChild(g);
+  });
+})();
+/* Motion — stubbed experimental */
+[].slice.call(document.querySelectorAll('#advAnimate button')).forEach(function(b){
+  b.addEventListener('click',function(){
+    [].slice.call(document.querySelectorAll('#advAnimate button')).forEach(function(x){x.classList.remove('on')});
+    b.classList.add('on');advState.motion=b.getAttribute('data-nm');
+    document.getElementById('animNote').textContent =
+      advState.motion==='animated' ? 'Living Art — coming soon. Still wallpaper ships today.' : '';
+    advRecipe();
+  });
+});
+
+function advMoney(n){return '$'+n.toFixed(2)}
+function advRecipe(){
+  var r='Your <span class="w">'+advState.matLabel+'</span> pet, <span class="w">'+advState.backdrop+'</span>, as a phone wallpaper.';
+  document.getElementById('advRecipe').innerHTML=r;
+  document.getElementById('advAdd').textContent='Add wallpaper \u00B7 '+advMoney(advState.base+advState.extra);
+}
+[].slice.call(document.querySelectorAll('#advLedger .lrow')).forEach(function(row){
+  row.addEventListener('click',function(){
+    [].slice.call(document.querySelectorAll('#advLedger .lrow')).forEach(function(x){x.classList.remove('on')});
+    row.classList.add('on');advState.extra=parseFloat(row.getAttribute('data-p'));advRecipe();
+  });
+});
+
+renderSwatches('materials');advRecipe();
+
+/* ===== phone wallpaper crossfade ===== */
+var WPOOL=[
+ {label:'Bronze',   g:'linear-gradient(160deg,#8a6a3a,#3a2a18)'},
+ {label:'Plushy', g:'linear-gradient(160deg,#1b4a5a,#0a1c2a)'},
+ {label:'Amber',    g:'linear-gradient(160deg,#c48a2a,#5a3410)'},
+ {label:'Ceramic',  g:'linear-gradient(160deg,#4a2a6a,#141026)'},
+ {label:'Alabaster',g:'linear-gradient(160deg,#e8e2d4,#b7ad98)'},
+ {label:'Impressionist',g:'linear-gradient(160deg,#6a7a4a,#2a3420)'}
+];
+function buildPhone(screenId, withFigure){
+  var scr=document.getElementById(screenId); var idx=0;
+  WPOOL.forEach(function(w,i){
+    var s=document.createElement('div');s.className='wp-slide'+(i===0?' show':'');
+    s.style.background=w.g;
+    s.innerHTML=(withFigure?'<div class="wp-figure"></div>':'')+'<div class="wp-label">'+w.label+'</div>';
+    scr.insertBefore(s, scr.firstChild);
+  });
+  return scr;
+}
+var lockScr=buildPhone('screenLock', true);
+var homeScr=buildPhone('screenHome', true);
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function cycle(scr, hold, off){
+  var slides=scr.querySelectorAll('.wp-slide'); var cur=0;
+  function step(){ slides[cur].classList.remove('show'); cur=(cur+1)%slides.length; slides[cur].classList.add('show'); setTimeout(step,hold); }
+  setTimeout(step, hold+off);
+}
+if(!reduce){ cycle(lockScr,5200,0); cycle(homeScr,6400,1400); }
+
+
+/* ===== WALLPAPER INTEGRATION — real routes (analyze + generate) ===== */
+(function(){
+  var API='/api/v1/pet-wallpaper';
+  var BACKDROP_ID={'on a gradient':'gradient','in a blurred room':'blurred_room','on a dark shelf':'dark_shelf'};
+  var wpSource=null;
+  var card=document.getElementById('wpUpload');
+  var fileInput=document.getElementById('wpFile');
+  function curatorSay(msg){ var el=document.querySelector('.inv-letter p'); if(el) el.innerHTML=msg+' <span class="sig">&mdash;&thinsp;C.</span>'; }
+  card.addEventListener('click',function(){ fileInput.click(); });
+  fileInput.addEventListener('change',function(e){
+    var f=e.target.files[0]; if(!f) return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      wpSource=String(rd.result).split(',')[1];
+      card.style.backgroundImage='url('+rd.result+')'; card.classList.add('has-photo');
+      curatorSay('Reading your photograph\u2026');
+      fetch(API+'/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_image_b64:wpSource})})
+        .then(function(r){return r.json();}).then(function(d){ curatorSay(d.reason||'Ready when you are.'); })
+        .catch(function(){ curatorSay('Ready when you are \u2014 pick a finish and craft.'); });
+    };
+    rd.readAsDataURL(f);
+  });
+  var addBtn=document.getElementById('advAdd');
+  addBtn.addEventListener('click',function(){
+    if(!wpSource){ curatorSay('Add a photo first, then I\u2019ll craft it into a wallpaper.'); return; }
+    var payload={ source_image_b64:wpSource, effect:advState.mat, backdrop:(BACKDROP_ID[advState.backdrop]||'gradient'), framing:advState.pose };
+    startRender();
+    fetch(API+'/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+      .then(function(r){return r.json();}).then(function(d){
+        stopRender();
+        if(d.image_b64){ paint('data:image/jpeg;base64,'+d.image_b64); curatorSay('Here it is \u2014 your wallpaper, ready to save to your phone.'); }
+        else { curatorSay(d.error?('Hmm \u2014 '+d.error):'Something went wrong. Try again.'); }
+      })
+      .catch(function(){ stopRender(); curatorSay('Something went wrong. Try again.'); });
+  });
+  var rotTimer=null;
+  function ensureDots(scr){ if(!scr.querySelector('.wp-dots')){ var d=document.createElement('div'); d.className='wp-dots'; d.innerHTML='<i></i><i></i><i></i>'; scr.appendChild(d); } }
+  function startRender(){
+    var mat=(advState.matLabel||'stone');
+    var msgs=['Reading your photograph\u2026','Casting your pet in '+mat+'\u2026','Shaping the piece\u2026','Setting the light\u2026','Almost there\u2026'];
+    ['screenLock','screenHome'].forEach(function(id){ var s=document.getElementById(id); if(s){ s.classList.add('rendering'); ensureDots(s); } });
+    var i=0; curatorSay(msgs[0]);
+    rotTimer=setInterval(function(){ i=(i+1)%msgs.length; curatorSay(msgs[i]); }, 4500);
+  }
+  function stopRender(){
+    if(rotTimer){ clearInterval(rotTimer); rotTimer=null; }
+    ['screenLock','screenHome'].forEach(function(id){ var s=document.getElementById(id); if(s){ s.classList.remove('rendering'); var d=s.querySelector('.wp-dots'); if(d) d.remove(); } });
+  }
+  function paint(url){
+    ['screenLock','screenHome'].forEach(function(id){
+      var scr=document.getElementById(id); if(!scr) return;
+      [].slice.call(scr.querySelectorAll('.wp-slide')).forEach(function(x){ x.remove(); });
+      var s=document.createElement('div'); s.className='wp-slide show'; s.style.background='#000';
+      s.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';
+      scr.insertBefore(s, scr.firstChild);
+    });
+  }
+})();
+
+/* ===== deckle boot ===== */
+(function(){
+  var CURATOR_SCALE=5.5;
+  function applyDeckle(el,fill,fid,rx){
+    if(!el||el.querySelector(':scope > .deckle-paper'))return;
+    var NS='http://www.w3.org/2000/svg';
+    var svg=document.createElementNS(NS,'svg');
+    svg.setAttribute('class','deckle-paper');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('viewBox','0 0 100 100');
+    var rect=document.createElementNS(NS,'rect');
+    rect.setAttribute('rx',rx==null?6:rx);rect.setAttribute('fill',fill);rect.setAttribute('stroke','#c4b48f');rect.setAttribute('stroke-width','1.2');
+    rect.setAttribute('filter','url(#'+fid+')');
+    svg.appendChild(rect);el.insertBefore(svg,el.firstChild);el.classList.add('has-deckle');
+    el._dk={svg:svg,rect:rect};sizeDeckle(el);
+    if(typeof ResizeObserver!=='undefined'){new ResizeObserver(function(){sizeDeckle(el)}).observe(el);}
+  }
+  function sizeDeckle(el){
+    var d=el._dk;if(!d)return;var w=el.offsetWidth,h=el.offsetHeight;if(!w||!h)return;
+    var INS=Math.max(2,Math.ceil(CURATOR_SCALE)+2);
+    d.svg.setAttribute('viewBox','0 0 '+w+' '+h);
+    d.rect.setAttribute('x',INS);d.rect.setAttribute('y',INS);
+    d.rect.setAttribute('width',Math.max(0,w-2*INS));d.rect.setAttribute('height',Math.max(0,h-2*INS));
+  }
+  function boot(){
+    applyDeckle(document.querySelector('.curator'),'#ece2d0','curatorDeckle',6);
+    requestAnimationFrame(function(){Array.prototype.forEach.call(document.querySelectorAll('.has-deckle'),function(e){sizeDeckle(e)});});
+  }
+  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(boot);setTimeout(boot,80);}
+  else{window.addEventListener('load',boot);}
+})();
+</script>
+</body>
+</html>

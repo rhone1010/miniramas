@@ -58,8 +58,8 @@ The model is always real 3D physical content — an actual miniature building wi
 // in_situ block header reads "IN-ENVIRONMENT" to match the user-facing
 // label "In Environment".
 const PASS2_ENV_BLOCKS: Record<EnvironmentId, string> = {
-  desk: `ENVIRONMENT (DESK):
-The model sits on a polished wood desk, shelf, or refined surface in an upscale interior — props and room softly out of focus behind. The room is secondary; the model is the subject. Light sources stay out of frame — their light is felt, never seen.`,
+  desk: `ENVIRONMENT (STUDIO GRADIENT):
+The model stands against a clean, seamless studio gradient backdrop — a smooth continuous neutral sweep with no furniture, no props, no room, no visible horizon or seam. The model is the single subject, large and centered, meeting its own soft contact shadow on a floor that blends seamlessly into the gradient. Preserve the backdrop Pass 1 established; do not add a desk, table, shelf, room, or props. Light sources stay out of frame — their light is felt, never seen.`,
 
   in_situ: `ENVIRONMENT (IN-ENVIRONMENT — OUTDOORS):
 The model is outdoors, photographed on location. The base sits directly on natural ground that continues the scene; the background is a blurred continuation of the real setting. NEVER add desks, tables, shelves, room walls, ceilings, windows, furniture, or indoor lighting. Natural ground only beneath and around the base.`,
@@ -138,7 +138,10 @@ export async function refineHouse(input: {
     model:  'gpt-image-1',
     image:  file,
     prompt,
-    size:   size === 'auto' ? undefined : size,
+    // gpt-image-1 accepts 1536x1024 / 1024x1536 at runtime, but the installed
+    // openai types still constrain images.edit.size to the DALL·E-2 union.
+    // Cast until the SDK types catch up (same drift across all gpt-image lanes).
+    size:   (size === 'auto' ? undefined : size) as '1024x1024' | undefined,
   })
 
   const b64 = res.data?.[0]?.b64_json

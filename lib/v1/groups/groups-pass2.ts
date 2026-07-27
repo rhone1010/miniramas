@@ -67,14 +67,10 @@ Stitched fabric with visible seams, embroidered features. Refine stitch density 
   wood: `MATERIAL REFINEMENT — CARVED WOOD (across every subject):
 Refine grain flow continuity across all figures, chisel-mark texture, polish variation on faces and torsos vs hand-tooled rougher zones. Wood color variation comes from grain and lighting only — NO paint, NO source-photo colors carried over.`,
 
-  wax: `MATERIAL REFINEMENT — WAX (across every subject):
-Refine translucent depth variation by thickness, surface sheen, drip detail where Pass 1 already showed it. NO painted color on faces; the wax IS the color.`,
 
   marble: `MATERIAL REFINEMENT — CARVED MARBLE:
 Refine veining flow, polished-vs-tooled surface variation, hand-tooled edge softening. Preserve the cool stone color Pass 1 produced — never warm-shift toward cream. NO source-photo colors carried over.`,
 
-  terracotta: `MATERIAL REFINEMENT — WEATHERED TERRACOTTA (across every subject):
-Solid weathered terracotta — warm earth-orange-brown throughout. Refine pitting and erosion details where Pass 1 placed them, lighter inner clay revealed at cracks, archaeological surface variation. NO source-photo colors.`,
 
   bronze: `MATERIAL REFINEMENT — CAST BRONZE (across every subject):
 Solid cast bronze with verdigris in recesses, polish on high points. Refine verdigris variation across figures (more weathered in shadow recesses, polished on raised features), patina depth on the base. NO painted color.`,
@@ -84,6 +80,30 @@ Deep charcoal-black iron with a soft gunmetal sheen. Refine hammer-work texture 
 
   alabaster: `MATERIAL REFINEMENT — TRANSLUCENT ALABASTER (across every subject):
 Solid translucent alabaster — off-white to warm-cream throughout. Internal glow varies with thickness. Refine the translucent depth, polished surface micro-detail, thin glowing edges where light passes through. NO painted color; the stone IS the color.`,
+
+  ebony: `MATERIAL REFINEMENT — EBONY (across every subject):
+Deep near-black ebony hardwood with a fine tight grain and high satin polish. Refine grain flow continuity across all figures, polish variation on faces and torsos vs hand-tooled zones, warm dark highlights on raised features. NO paint, NO source-photo colors — the wood is the color.`,
+
+  walnut: `MATERIAL REFINEMENT — CARVED WALNUT (across every subject):
+Rich chocolate-brown walnut with flowing figured grain. Refine grain continuity across figures, chisel-mark texture, satin-oil polish variation. Color comes from grain and lighting only — NO paint, NO source-photo colors carried over.`,
+
+  stone: `MATERIAL REFINEMENT — CARVED STONE (across every subject):
+Solid carved stone with honest tool marks and quiet weight. Refine chisel-and-rasp texture, polished-vs-tooled surface variation, edge softening. Preserve the neutral stone color Pass 1 produced. NO source-photo colors.`,
+
+  reclaimed_bronze: `MATERIAL REFINEMENT — RECLAIMED BRONZE (across every subject):
+Weathered bronze reclaimed by nature — deep verdigris over warm metal, with soft moss, pale lichen, and a few small ferns in crevices where Pass 1 placed them. Refine patina variation, moss density, gleam where rain wore the metal smooth. Keep the faces clear of foliage. NO bright artificial greens.`,
+
+  blown_glass: `MATERIAL REFINEMENT — BLOWN ART GLASS (across every subject):
+Seamless hand-blown translucent glass with swirling ribbons of color and internal bubbles and lenses. Refine optical depth, internal glow, edge translucency, color-current flow across figures. Seamless studio glass — NO faceted or leaded cells, NO opaque paint.`,
+
+  amber: `MATERIAL REFINEMENT — AMBER (single suspended mass):
+The group suspended together inside one translucent golden-amber drop. Refine internal glow, suspended inclusions (bubbles, flow lines, motes), caustic edge highlights, warm cast on the base. The amber IS the color — NO painted color on faces.`,
+
+  nebula_resin: `MATERIAL REFINEMENT — NEBULA RESIN (across every subject):
+Translucent resin with swirling galaxies, nebulae, and pinpoint starlight suspended inside. Refine internal cosmic depth, star density, translucent color pooling by thickness, glossy surface micro-detail. NO opaque paint on faces; the resin is lit from within.`,
+
+  fantasy_crystal: `MATERIAL REFINEMENT — ENCHANTED CRYSTAL (across every subject):
+Faceted translucent crystal glowing from within, shifting through amethyst, aquamarine, rose, and gold. Refine facet sharpness, internal glow by thickness, refracted rainbow glints on the sharpest edges. NO opaque or dull surface; the crystal is lit from within. NO painted skin on faces.`,
 }
 
 const PASS2_LOCATION_PRESERVATION: Record<LocationId, string> = {
@@ -137,9 +157,12 @@ export interface GroupsPass2Output {
 const PASS2_QUALITY = 'high' as const   // gpt-image-1 high quality (~$0.19)
 
 function aspectToSize(ar: string): '1024x1024' | '1024x1536' | '1536x1024' {
-  if (ar === '2:3' || ar === '3:4') return '1024x1536'
-  if (ar === '3:2' || ar === '4:3' || ar === '16:9') return '1536x1024'
-  return '1024x1024'
+  const [w, h] = ar.split(':').map(Number)
+  if (!w || !h) return '1024x1024'
+  const r = w / h
+  if (r > 1.1)  return '1536x1024'   // landscape: 3:2, 4:3, 5:4, 16:9
+  if (r < 0.91) return '1024x1536'   // portrait: 3:4, 4:5, 9:16
+  return '1024x1024'                 // square: 1:1
 }
 
 export async function refineGroupsImage(

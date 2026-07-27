@@ -1,0 +1,290 @@
+[
+  {
+    "id": "m01_3adults_pro",
+    "file": "m01_3adults_pro.png",
+    "composition": "m01_3adults_pro",
+    "style": "professional",
+    "people_count": 3,
+    "people": [
+      {
+        "role": "adult",
+        "age": 45,
+        "gender": "f",
+        "race": "East Asian"
+      },
+      {
+        "role": "adult",
+        "age": 31,
+        "gender": "m",
+        "race": "white"
+      },
+      {
+        "role": "adult",
+        "age": 41,
+        "gender": "f",
+        "race": "white"
+      }
+    ],
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. A professional group portrait of a 45-year-old East Asian woman, a 31-year-old white man, and a 41-year-old white woman, standing close together, shoulders slightly overlapping, warm natural expressions. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subjects from the backdrop. Fully clothed, wholesome, a premium studio group session that looks like a real deliverable.",
+    "aspect": "3:4",
+    "status": "ok"
+  },
+  {
+    "id": "m02_3adults_candid",
+    "file": "m02_3adults_candid.png",
+    "composition": "m02_3adults_candid",
+    "style": "candid",
+    "people_count": 3,
+    "people": [
+      {
+        "role": "adult",
+        "age": 42,
+        "gender": "m",
+        "race": "white"
+      },
+      {
+        "role": "adult",
+        "age": 26,
+        "gender": "f",
+        "race": "Middle Eastern"
+      },
+      {
+        "role": "adult",
+        "age": 30,
+        "gender": "m",
+        "race": "white"
+      }
+    ],
+    "prompt": "Candid natural-light photograph, authentic and unposed, warm and true-to-life, sharp focus on faces, ordinary everyday moment. A candid photo of a 42-year-old white man, a 26-year-old Middle Eastern woman, and a 30-year-old white man together in a sunny park, gathered naturally, relaxed and happy. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Warm natural daylight. Fully clothed, wholesome, an authentic family-and-friends snapshot full of personality.",
+    "aspect": "3:4",
+    "status": "ok"
+  },
+  {
+    "id": "m03_3teens_candid",
+    "file": "m03_3teens_candid.png",
+    "composition": "m03_3teens_candid",
+    "style": "candid",
+    "people_count": 3,
+    "people": [
+      {
+        "role": "teen",
+        "age": 18,
+        "gender": "f",
+        "race": "Black"
+      },
+      {
+        "role": "teen",
+        "age": 15,
+        "gender": "m",
+        "race": "Southeast Asian"
+      },
+      {
+        "role": "teen",
+        "age": 15,
+        "gender": "f",
+        "race": "Latina"
+      }
+    ],
+    "prompt": "Candid natural-light photograph, authentic and unposed, warm and true-to-life, sharp focus on faces, ordinary everyday moment. A candid photo of a 18-year-old Black woman, a 15-year-old Southeast Asian teenage boy, and a 15-year-old Latina teenage girl together on a cafe patio, gathered naturally, relaxed and happy. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Warm natural daylight. Fully clothed, wholesome, an authentic family-and-friends snapshot full of personality.",
+    "aspect": "3:4",
+    "status": "ok"
+  },
+  {
+    "id": "m04_3teens_pro",
+    "file": "m04_3teens_pro.png",
+    "composition": "m04_3teens_pro",
+    "style": "professional",
+    "people_count": 3,
+    "people": [
+      {
+        "role": "teen",
+        "age": 13,
+        "gender": "m",
+        "race": "South Asian"
+      },
+      {
+        "role": "teen",
+        "age": 18,
+        "gender": "f",
+        "race": "Black"
+      },
+      {
+        "role": "teen",
+        "age": 14,
+        "gender": "m",
+        "race": "Black"
+      }
+    ],
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. A professional group portrait of a 13-year-old South Asian teenage boy, a 18-year-old Black woman, and a 14-year-old Black teenage boy, standing close together, shoulders slightly overlapping, warm natural expressions. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. Fully clothed, wholesome, a premium studio group session that looks like a real deliverable.",
+    "aspect": "3:4",
+    "status": "ok"
+  },
+  {
+    "id": "m05_child_2adults_candid",
+    "file": "m05_child_2adults_candid.png",
+    "composition": "m05_child_2adults_candid",
+    "style": "candid",
+    "people_count": 3,
+    "people": [
+      {
+        "role": "child",
+        "age": 11,
+        "gender": "f",
+        "race": "white"
+      },
+      {
+        "role": "adult",
+        "age": 43,
+        "gender": "m",
+        "race": "white"
+      },
+      {
+        "role": "adult",
+        "age": 30,
+        "gender": "f",
+        "race": "white"
+      }
+    ],
+    "prompt": "Candid natural-light photograph, authentic and unposed, warm and true-to-life, sharp focus on faces, ordinary everyday moment. A candid photo of a 11-year-old white girl, a 43-year-old white man, and a 30-year-old white woman together in a leafy backyard, gathered naturally, relaxed and happy. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Warm natural daylight. Fully clothed, wholesome, an authentic family-and-friends snapshot full of personality.",
+    "aspect": "3:4",
+    "status": "ok"
+  },
+  {
+    "id": "m06_child_2adults_pro",
+    "file": "m06_child_2adults_pro.png",
+    "composition": "m06_child_2adults_pro",
+    "style": "professional",
+    "people_count": 3,
+    "people": [
+      {
+        "role": "child",
+        "age": 10,
+        "gender": "m",
+        "race": "Latino"
+      },
+      {
+        "role": "adult",
+        "age": 51,
+        "gender": "f",
+        "race": "Latina"
+      },
+      {
+        "role": "adult",
+        "age": 46,
+        "gender": "m",
+        "race": "Latino"
+      }
+    ],
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. A professional group portrait of a 10-year-old Latino boy, a 51-year-old Latina woman, and a 46-year-old Latino man, standing close together, shoulders slightly overlapping, warm natural expressions. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. Fully clothed, wholesome, a premium studio group session that looks like a real deliverable.",
+    "aspect": "3:4",
+    "status": "ok"
+  },
+  {
+    "id": "m07_2kids_1adult_candid",
+    "file": "m07_2kids_1adult_candid.png",
+    "composition": "m07_2kids_1adult_candid",
+    "style": "candid",
+    "people_count": 3,
+    "people": [
+      {
+        "role": "child",
+        "age": 9,
+        "gender": "f",
+        "race": "mixed-heritage"
+      },
+      {
+        "role": "child2",
+        "age": 11,
+        "gender": "m",
+        "race": "white"
+      },
+      {
+        "role": "adult",
+        "age": 28,
+        "gender": "f",
+        "race": "East Asian"
+      }
+    ],
+    "prompt": "Candid natural-light photograph, authentic and unposed, warm and true-to-life, sharp focus on faces, ordinary everyday moment. A candid photo of a 9-year-old mixed-heritage girl, a 11-year-old white boy, and a 28-year-old East Asian woman together at a kitchen table at home, gathered naturally, relaxed and happy. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Warm natural daylight. Fully clothed, wholesome, an authentic family-and-friends snapshot full of personality.",
+    "aspect": "3:4",
+    "status": "ok"
+  },
+  {
+    "id": "m08_2kids_1adult_pro",
+    "file": "m08_2kids_1adult_pro.png",
+    "composition": "m08_2kids_1adult_pro",
+    "style": "professional",
+    "people_count": 3,
+    "people": [
+      {
+        "role": "toddler",
+        "age": 3,
+        "gender": "m",
+        "race": "white"
+      },
+      {
+        "role": "child",
+        "age": 7,
+        "gender": "f",
+        "race": "white"
+      },
+      {
+        "role": "adult",
+        "age": 24,
+        "gender": "m",
+        "race": "white"
+      }
+    ],
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. A professional group portrait of a 3-year-old white toddler boy, a 7-year-old white girl, and a 24-year-old white man, standing close together, shoulders slightly overlapping, warm natural expressions. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Backdrop: a pure matte black studio backdrop, completely clean and featureless. Lighting: crisp butterfly lighting with a large softbox key and gentle fill, gallery-portrait quality. Fully clothed, wholesome, a premium studio group session that looks like a real deliverable.",
+    "aspect": "3:4",
+    "status": "ok"
+  },
+  {
+    "id": "m09_couple_pro",
+    "file": "m09_couple_pro.png",
+    "composition": "m09_couple_pro",
+    "style": "professional",
+    "people_count": 2,
+    "people": [
+      {
+        "role": "adult",
+        "age": 34,
+        "gender": "f",
+        "race": "Middle Eastern"
+      },
+      {
+        "role": "adult",
+        "age": 28,
+        "gender": "m",
+        "race": "white"
+      }
+    ],
+    "prompt": "Professional photography studio portrait, medium-format camera quality, tack-sharp focus, true-to-life skin texture, clean color, no environmental clutter, no props. A professional group portrait of a 34-year-old Middle Eastern woman and a 28-year-old white man, standing close together, shoulders slightly overlapping, warm natural expressions. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Backdrop: a smooth seamless studio backdrop with a soft charcoal-to-black radial gradient. Lighting: classic studio key light with a subtle rim light separating the subjects from the backdrop. Fully clothed, wholesome, a premium studio group session that looks like a real deliverable.",
+    "aspect": "3:4",
+    "status": "ok"
+  },
+  {
+    "id": "m10_2adults_candid",
+    "file": "m10_2adults_candid.png",
+    "composition": "m10_2adults_candid",
+    "style": "candid",
+    "people_count": 2,
+    "people": [
+      {
+        "role": "adult",
+        "age": 28,
+        "gender": "m",
+        "race": "Black"
+      },
+      {
+        "role": "adult",
+        "age": 45,
+        "gender": "f",
+        "race": "Southeast Asian"
+      }
+    ],
+    "prompt": "Candid natural-light photograph, authentic and unposed, warm and true-to-life, sharp focus on faces, ordinary everyday moment. A candid photo of a 28-year-old Black man and a 45-year-old Southeast Asian woman together in a cozy living room, gathered naturally, relaxed and happy. framed from roughly the waist up with everyone together in one shot; every person's face is large, fully visible, unobstructed and tack sharp; natural well-formed hands where visible. Warm natural daylight. Fully clothed, wholesome, an authentic family-and-friends snapshot full of personality.",
+    "aspect": "3:4",
+    "status": "ok"
+  }
+]

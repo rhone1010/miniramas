@@ -29,6 +29,7 @@
 // inferred by NB2 from just the material name + location phrase.
 
 import { buildGroupsPrompt } from './groups-prompt'
+import { buildGroupsExperimentalPrompt } from './groups-experimental'
 import { pickDefaultArrangement } from './groups-presets'  // still used for result fields
 import { refineGroupsImage } from './groups-pass2'
 import { swapGroupFaces } from './groups-faceswap'
@@ -179,18 +180,24 @@ export async function generateGroupsRender(
     const attemptT0 = Date.now()
     console.log(`[groups] attempt ${attemptIdx}/${MAX_ATTEMPTS} style=${styleId} preset=${presetId} location=${locationId}`)
 
-    // Build prompt — minimal 11–17 word builder (see groups-prompt.ts).
-    // Passes plaque_text and the advanced lighting bundle through. NB2
-    // infers subject count, proportions, and lighting from the location
-    // phrase + material name. The elaborate buildPresetPrompt is preserved
-    // on disk for reference but no longer called.
-    const prompt = buildGroupsPrompt({
-      presetId:    presetId,
-      locationId:  locationId,
-      scale:       scale,
-      plaqueText:  req.plaque_text,
-      advanced:    req.advanced,
-    })
+    // Build prompt. Two paths:
+    //   • experimental_effect set → full custom own-scene prompt
+    //     (groups-experimental.ts); preset_id / location_id ignored.
+    //   • otherwise → minimal 11–17 word builder (groups-prompt.ts).
+    let prompt: string
+    if (req.experimental_effect) {
+      prompt = buildGroupsExperimentalPrompt({
+        effectId: req.experimental_effect,
+      })
+    } else {
+      prompt = buildGroupsPrompt({
+        presetId:    presetId,
+        locationId:  locationId,
+        scale:       scale,
+        plaqueText:  req.plaque_text,
+        advanced:    req.advanced,
+      })
+    }
     finalPromptUsed = prompt
 
     // Prompt fingerprint — log size so we can spot regressions or unintended

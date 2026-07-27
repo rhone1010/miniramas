@@ -121,12 +121,10 @@ export default function HomePage() {
         <div className="scrim"></div>
         <div className="hero-copy">
           <h1>We turn your photographs into Crafted Images.</h1>
-          <p className="sub">A photograph goes in. A piece worth keeping comes back.</p>
+          <p className="sub">Your favorite moments, reimagined by the studio &mdash; kept as digital files, printable on demand.</p>
           <div className="ctas">
-            {/* Both enter the Portraits workshop (served static app). "Start with
-                the Curator" lands on the same welcome — the Curator lives there. */}
+            {/* Aug-1 (§3): one primary CTA. "Start with the Curator" removed. */}
             <a className="cta cta-fill" href="/portraits.html">Upload Your Photo</a>
-            <a className="cta cta-ghost" href="/portraits.html">Start with the Curator</a>
           </div>
         </div>
       </section>
@@ -139,27 +137,20 @@ export default function HomePage() {
           <h2>Places &amp; People</h2>
           <p>Where a story is set &mdash; and the people and creatures who matter.</p>
         </div>
+        {/* Aug-1 (§3): five Series only. Houses + Landscapes removed. Places & People = Portraits · Pets · Groups. */}
         <div className="gal">
-          <div className="gtile big">
-            <img src="/homepage/houses.jpg" alt="Houses" />
-            <div className="gcap"><h3>Houses</h3><button className="gstep">Step Inside Houses &rsaquo;</button></div>
-          </div>
-          <div className="gtile std">
-            <img src="/homepage/landscapes.jpg" alt="Landscapes" />
-            <div className="gcap"><h3>Landscapes</h3><button className="gstep">Step Inside Landscapes &rsaquo;</button></div>
-          </div>
-          <div className="gtile std">
-            <img src="/homepage/portrait.jpg" alt="Portrait" />
-            <div className="gcap"><h3>Portrait</h3><button className="gstep">Step Inside Portrait &rsaquo;</button></div>
-          </div>
-          <div className="gtile std">
-            <img src="/homepage/groups.jpg" alt="Groups" />
-            <div className="gcap"><h3>Groups</h3><button className="gstep">Step Inside Groups &rsaquo;</button></div>
-          </div>
-          <div className="gtile std is-ph">
+          <a className="gtile big" href="/portraits.html">
+            <img src="/homepage/portrait.jpg" alt="Portraits" />
+            <div className="gcap"><h3>Portraits</h3><span className="gstep">Step Inside Portraits &rsaquo;</span></div>
+          </a>
+          <a className="gtile std is-ph" href="/pets.html">
             <div className="ph"><span className="ph-eb">Sample coming</span></div>
-            <div className="gcap"><h3>Pets</h3><button className="gstep">Step Inside Pets &rsaquo;</button></div>
-          </div>
+            <div className="gcap"><h3>Pets</h3><span className="gstep">Step Inside Pets &rsaquo;</span></div>
+          </a>
+          <a className="gtile std" href="/groups.html">
+            <img src="/homepage/groups.jpg" alt="Groups" />
+            <div className="gcap"><h3>Groups</h3><span className="gstep">Step Inside Groups &rsaquo;</span></div>
+          </a>
         </div>
       </section>
 
@@ -171,19 +162,14 @@ export default function HomePage() {
           <h2>Motion &amp; Material</h2>
           <p>Where the studio gets playful.</p>
         </div>
-        <div className="gal trio">
-          <div className="gtile big">
+        {/* Aug-1 (§3): Artist Series + For Fun removed. Motion & Material = Action (+ Mobile
+            Wallpapers when its route lands — recon 4.1 flag-gated; not wired here to avoid a
+            dead link, see CC-PROGRESS-AND-FLAGS). */}
+        <div className="gal">
+          <a className="gtile big" href="/actionmini.html">
             <img src="/homepage/action.jpg" alt="Action" />
-            <div className="gcap"><h3>Action</h3><button className="gstep">Step Inside Action &rsaquo;</button></div>
-          </div>
-          <div className="gtile std">
-            <img src="/homepage/the-artist-series.jpg" alt="The Artist Series" />
-            <div className="gcap"><h3>The Artist Series</h3><button className="gstep">Step Inside The Artist Series &rsaquo;</button></div>
-          </div>
-          <div className="gtile std is-ph">
-            <div className="ph"><span className="ph-eb">Sample coming</span></div>
-            <div className="gcap"><h3>For Fun</h3><button className="gstep">Step Inside For Fun &rsaquo;</button></div>
-          </div>
+            <div className="gcap"><h3>Action</h3><span className="gstep">Step Inside Action &rsaquo;</span></div>
+          </a>
         </div>
       </section>
 

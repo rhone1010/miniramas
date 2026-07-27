@@ -54,24 +54,37 @@ export const STYLE_ORDER: GroupsStyleId[] = [
 export type GroupsPresetId =
   | 'resin'
   | 'plushy'
-  | 'wax'
-  | 'terracotta'
   | 'bronze'
   | 'iron'
   | 'alabaster'
   | 'wood'
   | 'marble'
+  // ── Bucket A: ported from Portraits (2026-07-11) ──
+  | 'ebony'
+  | 'walnut'
+  | 'stone'
+  | 'reclaimed_bronze'
+  | 'blown_glass'
+  | 'amber'
+  | 'nebula_resin'
+  | 'fantasy_crystal'
 
 export const PRESET_LABELS: Record<GroupsPresetId, string> = {
   resin:        'Resin',
   plushy:       'Plushy',
-  wax:          'Wax',
-  terracotta:   'Terracotta',
   bronze:       'Bronze',
   iron:         'Iron',
   alabaster:    'Alabaster',
   wood:         'Wood',
   marble:       'Marble',
+  ebony:            'Ebony',
+  walnut:           'Walnut',
+  stone:            'Stone',
+  reclaimed_bronze: 'Reclaimed Bronze',
+  blown_glass:      'Blown Glass',
+  amber:            'Amber',
+  nebula_resin:     'Nebula Resin',
+  fantasy_crystal:  'Enchanted Crystal',
 }
 
 export type PresetTier = 'base' | 'premium' | 'signature'
@@ -79,23 +92,33 @@ export type PresetTier = 'base' | 'premium' | 'signature'
 export const PRESET_TIER: Record<GroupsPresetId, PresetTier> = {
   resin:        'base',
   plushy:       'base',
-  wax:          'premium',
   bronze:       'signature',
   alabaster:    'signature',
-  terracotta:   'signature',
   iron:         'signature',
   wood:         'premium',
   marble:       'signature',
+  ebony:            'premium',
+  walnut:           'premium',
+  stone:            'signature',
+  reclaimed_bronze: 'signature',
+  blown_glass:      'signature',
+  amber:            'signature',
+  nebula_resin:     'signature',
+  fantasy_crystal:  'signature',
 }
 
 // ── STYLE → MATERIALS ─────────────────────────────────────────
 export const STYLE_MATERIALS: Record<GroupsStyleId, GroupsPresetId[]> = {
   realistic: [
-    'resin', 'plushy', 'wax',
-    'terracotta', 'bronze', 'iron', 'alabaster', 'wood',
+    'resin', 'plushy',
+    'bronze', 'iron', 'alabaster', 'wood',
+    // Bucket A — ported from Portraits
+    'ebony', 'walnut', 'stone',
+    'reclaimed_bronze', 'blown_glass', 'amber',
+    'nebula_resin', 'fantasy_crystal',
   ],
   people_resolving: [
-    'wood', 'wax', 'bronze', 'alabaster',
+    'wood', 'bronze', 'alabaster', 'ebony', 'walnut',
   ],
   tribal_wall_masks: [
     'wood', 'marble',
@@ -103,6 +126,54 @@ export const STYLE_MATERIALS: Record<GroupsStyleId, GroupsPresetId[]> = {
   tribal_statue: [
     'wood',
   ],
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ASPECT RATIOS — canonical 8-value set (2026-07-11), shared with
+// Houses/Landscapes. Requests still carry aspect_ratio as a loose string
+// for back-compat; the route validates against this set. Dropped from the
+// full NB2 list: 2:3 and ultrawide 21:9.
+// ═══════════════════════════════════════════════════════════════
+
+export type AspectRatio =
+  | '1:1' | '3:2' | '4:3' | '3:4' | '4:5' | '5:4' | '9:16' | '16:9'
+
+export const GROUPS_ASPECT_RATIOS: AspectRatio[] = [
+  '1:1', '3:2', '4:3', '3:4', '4:5', '5:4', '9:16', '16:9',
+]
+
+export function isValidAspectRatio(ar: string): ar is AspectRatio {
+  return (GROUPS_ASPECT_RATIOS as string[]).includes(ar)
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPERIMENTAL EFFECTS — custom-scene addon (2026-07-11)
+// Own-scene effects ported/adapted from Portraits + Houses. They bypass
+// the material / location / base-plaque builder and ship a full custom
+// prompt (see groups-experimental.ts). Routed by request.experimental_effect;
+// when set, preset_id / location_id are ignored. NB2-native; rides the
+// realistic (per-figure-likeness) pipeline.
+// ═══════════════════════════════════════════════════════════════
+
+export type GroupsExperimentalEffectId =
+  | 'ukiyo_e' | 'art_nouveau' | 'cubism' | 'daguerreotype' | 'film_noir'
+  | 'impressionist' | 'charcoal_chalk' | 'pencil_sketch'
+  | 'armor' | 'elizabethan' | 'victorian'
+  | 'magic_energy'
+
+export const GROUPS_EXPERIMENTAL_LABELS: Record<GroupsExperimentalEffectId, string> = {
+  ukiyo_e:        'Ukiyo-e',
+  art_nouveau:    'Art Nouveau',
+  cubism:         'Cubism',
+  daguerreotype:  'Daguerreotype',
+  film_noir:      'Film Noir',
+  impressionist:  'Impressionist',
+  charcoal_chalk: 'Charcoal & Chalk',
+  pencil_sketch:  'Pencil Sketch',
+  armor:          'Armor',
+  elizabethan:    'Elizabethan Portrait',
+  victorian:      'Victorian Portrait',
+  magic_energy:   'Magic Energy',
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -326,6 +397,11 @@ export interface GroupsGenerateRequest {
   //   null              → no plaque ("clean unmarked base")
   // Without this, NB2 confabulates plausible-but-fictional surnames.
   plaque_text?:            string | null
+
+  // Experimental custom-scene effect. When set, the generator ignores
+  // preset_id / location_id and builds a full custom prompt via
+  // groups-experimental.ts (buildGroupsExperimentalPrompt). NB2-native.
+  experimental_effect?:    GroupsExperimentalEffectId | null
 
   // Advanced lighting bundle — frontend "Advanced lighting" popover.
   // Any non-default flag appends short clauses to the minimal prompt.

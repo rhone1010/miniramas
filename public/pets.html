@@ -2596,6 +2596,18 @@ body.raw-mode .preset-controls{ display:none; }
   color:var(--ink);
 }
 .pill-lg.active:hover{ background:var(--sage-tint-hover) }
+
+/* ── CURIOSITIES — experimental finishes (pets-experimental.ts).
+   Reuse .pill-lg sizing (serif italic 17px — this file's control norm);
+   only the hover recolors to oxblood to mark the experimental path. ── */
+.control.curiosities{ border-top:1px solid var(--border-strong); }
+.curiosities-sub{
+  font-family:var(--serif); font-style:italic; font-size:13px;
+  color:var(--ink-faint); margin:-2px 0 4px;
+}
+.curiosity-btn:hover:not(.active){
+  border-color:var(--danger); color:var(--danger); background:var(--danger-soft);
+}
 .pill-lg .chev{
   font-style:normal;
   font-family:var(--sans);
@@ -3149,6 +3161,18 @@ body.raw-mode .preset-controls{ display:none; }
       <!-- Scale retired — the piece always occupies ~85% of the frame
            width now. Backend prompt's scale block sends "auto_85". -->
 
+      <!-- ── CURIOSITIES — experimental finishes (pets-experimental.ts).
+           Tap to queue immediately; a curiosity replaces the material
+           finish. Ships behind the Phase 2 dev flag (July 2 UI spec 4g). -->
+      <div class="control curiosities expanded" id="curiositiesControl" data-section="curiosities">
+        <div class="control-head">
+          <div class="control-label">Curiosities</div>
+          <div class="control-hint">experimental finishes</div>
+        </div>
+        <div class="curiosities-sub">Something different &mdash; tap one to add it to your queue. A curiosity replaces the material finish.</div>
+        <div class="control-pills curiosity-pills" id="curiosityButtons"></div>
+      </div>
+
       </div><!-- /preset-controls -->
 
       <!-- ── RAW CONTROLS (visible only when Raw Mode is on) ── -->
@@ -3411,7 +3435,6 @@ const ANALYZE = '/api/v1/pets/analyze'
 const PRES = [
   { k:'ceramic',      label:'Ceramic',     tier:'base' },
   { k:'plushy',       label:'Plushy',      tier:'base' },
-  { k:'felted_wool',  label:'Felted Wool', tier:'premium' },
   { k:'walnut',       label:'Walnut',      tier:'premium' },
   { k:'stone',        label:'Stone',      tier:'signature' },
   { k:'bronze',       label:'Bronze',     tier:'signature' },
@@ -3432,7 +3455,6 @@ const MATERIAL_LOCATIONS = {
   alabaster:     ['gallery', 'natural', 'atmospheric', 'home'],
   mixed_metals:  ['gallery', 'natural', 'atmospheric', 'home'],
   stone:         ['gallery', 'natural', 'atmospheric', 'home'],
-  felted_wool:   ['gallery', 'natural', 'atmospheric', 'home'],
   walnut:        ['gallery', 'natural', 'atmospheric', 'home'],
   ceramic:       ['gallery', 'natural', 'atmospheric', 'home'],
   plushy:        ['gallery', 'natural', 'atmospheric', 'home'],
@@ -3457,6 +3479,68 @@ const ACTIONS = [
   { k:'funny',           label:'Funny' },
 ]
 const ACTION_LABELS = Object.fromEntries(ACTIONS.map(a => [a.k, a.label]))
+
+// ── CURIOSITIES — experimental finishes. Order mirrors
+//    PET_EXPERIMENTAL_EFFECTS in pets-experimental.ts. Tapping a curiosity
+//    queues a render that POSTs { experimental_effect } to /generate,
+//    bypassing the material / environment / action pipeline. No plaque.
+const EXPERIMENTAL_FX = [
+  { id:'amber_inclusion',   label:'Amber Inclusion' },
+  { id:'garden_statue',     label:'Garden Statue' },
+  { id:'blown_glass',       label:'Blown Art Glass' },
+  { id:'enchanted_crystal', label:'Enchanted Crystal' },
+  { id:'topiary',           label:'Topiary' },
+  { id:'regal',             label:'Regal' },
+  { id:'elizabethan_ruff',  label:'Elizabethan Ruff' },
+  { id:'sailor',            label:'Sailor' },
+  { id:'ukiyo_e',           label:'Ukiyo-e' },
+  { id:'art_nouveau',       label:'Art Nouveau' },
+  { id:'cubism',            label:'Cubism' },
+  { id:'daguerreotype',     label:'Daguerreotype' },
+  { id:'film_noir',         label:'Film Noir' },
+]
+
+function renderCuriosities(){
+  const grid = document.getElementById('curiosityButtons')
+  if (!grid || grid.childElementCount) return
+  EXPERIMENTAL_FX.forEach(fx => {
+    const b = document.createElement('button')
+    b.className = 'pill-lg curiosity-btn'
+    b.textContent = fx.label
+    b.onclick = () => queueCuriosity(fx.id)
+    grid.appendChild(b)
+  })
+}
+
+function queueCuriosity(effectId){
+  const fx = EXPERIMENTAL_FX.find(e => e.id === effectId)
+  if (!fx || !state.primarySrc) return
+  const id = ++state.queueIdSeq
+  state.queue.push({
+    id,
+    mode:                  'experimental',
+    experimental_effect:   effectId,
+    experimental_label:    fx.label,
+    // preset carries the human label so the shared queue title/alt spots
+    // (which fall back to item.preset) read correctly; render path keys on mode.
+    preset:                fx.label,
+    source_image_b64:      state.primarySrc,
+    additional_images_b64: state.auxSrc.filter(Boolean),
+    aspect_ratio:          state.aspect,
+    // No plaque, no material/location/action — the effect carries its own
+    // staging; backend infers subject count from the source.
+    status:                'pending',
+    result:                null,
+    error:                 null,
+    duration_ms:           null,
+    user_decision:         null,
+    rerender_count:        0,
+  })
+  renderQueueGrid()
+  updateQueueMeta()
+  updateRunGate()
+  switchTab('queue')
+}
 
 // All Groups renders use per-figure likeness scoring against the source.
 // (Holistic-caricature scoring moved to Art Gallery with the Tribal styles.)
@@ -3753,6 +3837,7 @@ function init(){
   renderMaterials()
   renderLocations()
   renderActions()
+  renderCuriosities()
   applyDefaultLocation()
   updateScoreRule()
   applyAspectRecommendation()
@@ -4464,6 +4549,9 @@ function buildQueueRow(item, num, tier){
     const promptShort = (item.raw_prompt || '').replace(/\s+/g, ' ').slice(0, 40)
     title = `Raw · ${escapeHtml(promptShort)}${(item.raw_prompt || '').length > 40 ? '…' : ''}`
     sub   = `${item.aspect_ratio}`
+  } else if (item.mode === 'experimental'){
+    title = item.experimental_label || item.preset
+    sub   = `Curiosity · ${item.aspect_ratio}`
   } else {
     const matDef = PRES.find(p => p.k === item.preset)
     title = matDef?.label || item.preset
@@ -5643,27 +5731,42 @@ async function runQueueItem(item){
         item.duration_ms = data.duration_ms || (Date.now() - t0)
       }
     } else {
-      // Preset mode → full pipeline
+      // Preset OR experimental (curiosity) mode → full pipeline.
       // Wire names are the Pets engine schema (pets-shared.ts): preset_id +
       // environment_id. Internal queue keys keep the legacy 'preset'/'location'
       // names so the shared wizard JS lifts unchanged. Keep this mapping in
       // sync with PetsGenerateRequest — silent drops here caused a multi-
       // session debugging arc on Groups.
-      const body = {
-        source_image_b64:      item.source_image_b64,
-        additional_images_b64: item.additional_images_b64 || [],
-        style_id:              item.style_id,
-        preset_id:             item.preset,
-        environment_id:        item.location,
-        action_id:             item.action || 'as_photographed',
-        scale:                 item.scale,   // 'auto_85' → route maps to close_up
-        aspect_ratio:          item.aspect_ratio,
-      }
-      // Plaque text — only include the field when the user expressed an
-      // intent (custom string or explicit off). If undefined, omit the
-      // field so the backend falls through to DEFAULT_PLAQUE_TEXT.
-      if (item.plaque_text !== undefined) {
-        body.plaque_text = item.plaque_text
+      let body
+      if (item.mode === 'experimental') {
+        // Curiosity: send experimental_effect ONLY. No preset_id / environment
+        // / action / plaque — the effect carries its own staging
+        // (pets-experimental.ts). The route must branch on experimental_effect
+        // and skip preset validation (see engine spec).
+        body = {
+          source_image_b64:      item.source_image_b64,
+          additional_images_b64: item.additional_images_b64 || [],
+          style_id:              item.style_id || 'realistic',
+          experimental_effect:   item.experimental_effect,
+          aspect_ratio:          item.aspect_ratio,
+        }
+      } else {
+        body = {
+          source_image_b64:      item.source_image_b64,
+          additional_images_b64: item.additional_images_b64 || [],
+          style_id:              item.style_id,
+          preset_id:             item.preset,
+          environment_id:        item.location,
+          action_id:             item.action || 'as_photographed',
+          scale:                 item.scale,   // 'auto_85' → route maps to close_up
+          aspect_ratio:          item.aspect_ratio,
+        }
+        // Plaque text — only include the field when the user expressed an
+        // intent (custom string or explicit off). If undefined, omit the
+        // field so the backend falls through to DEFAULT_PLAQUE_TEXT.
+        if (item.plaque_text !== undefined) {
+          body.plaque_text = item.plaque_text
+        }
       }
       const res = await fetch(API, {
         method:'POST',

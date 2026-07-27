@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liten &amp; Co — Masthead Component [r2]</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   LITEN & CO — SHARED MASTHEAD COMPONENT · r2
+   Built to MASTHEAD-DIRECTIVE-v1. Espresso ground: the masthead is the building
+   the rooms sit inside, not part of either room.
+   Everything between BEGIN and END is the component.
+   ========================================================================= */
+
+:root{
+  /* canonical accents — locked, do not redefine */
+  --oxblood:#7d4242; --brass:#75623a; --gold:#b68a53; --ink:#2a241e;
+  --vellum:#f3ede1; --vellum-100:#f8f4eb; --vellum-200:#f3ecdd; --vellum-300:#e9dec8;
+  --espresso:#26201a;
+  --coffee-900:#1f1714; --coffee-800:#2a1f1b; --coffee-700:#332620; --coffee-600:#40302a;
+  --card-line:rgba(196,169,110,.28);
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',sans-serif;
+  --radius-pill:8px;
+
+  /* geometry ladder — inherited from r80d, do not redefine */
+  --container:86%; --container-max:2200px; --container-min:1850px;
+  --mh-h:72px;
+
+  font-size:clamp(12px, 0.38vw + 6px, 15px);
+}
+@media (max-width:1849px){ :root{ --container-min:0; --container:92%; } }
+@media (max-width:1199px){ :root{ --container:94%; } }
+@media (max-width:767px) { :root{ --container:100%; } }
+
+*{margin:0;padding:0;box-sizing:border-box}
+button{font:inherit;border:none;background:none;cursor:pointer;color:inherit}
+[hidden]{display:none!important}
+html,body{max-width:100%;overflow-x:hidden}
+body{background:var(--vellum);color:var(--ink);font-family:var(--sans);font-size:1rem}
+
+/* ===================== BEGIN MASTHEAD COMPONENT ========================== */
+.mh{
+  position:sticky;top:0;z-index:60;
+  height:var(--mh-h);
+  width:100%;
+  background:var(--espresso);
+  border-bottom:1px solid var(--card-line);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  /* tracks the content container edge at every step of the ladder.
+     never a flat padding — the misalignment grows with screen width. */
+  padding-inline:max(
+    calc((100% - var(--container)) / 2),
+    calc((100% - var(--container-max)) / 2)
+  );
+}
+
+/* wordmark — never collapses, never truncates */
+.mh-logo{justify-self:start;text-decoration:none;display:inline-flex;align-items:baseline}
+.mh-logo .mark{
+  font-family:var(--serif);font-size:2.267rem;font-weight:400;line-height:1;
+  color:var(--vellum-100);white-space:nowrap;
+}
+.mh-logo .mark em{font-style:italic;color:var(--gold)}
+
+/* navigation — centred on the page, not between the outer zones */
+.mh-nav{justify-self:center;display:flex;align-items:center;gap:2rem}
+.mh-nav a{
+  position:relative;text-decoration:none;white-space:nowrap;
+  font-family:var(--serif);font-size:1.6rem;font-weight:400;line-height:1;
+  color:var(--vellum-300);padding:6px 0;
+  transition:color .16s ease;
+}
+.mh-nav a:hover{color:var(--vellum-100)}
+.mh-nav a.on{color:var(--oxblood)}
+.mh-nav a.on::after{
+  content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;
+  background:var(--oxblood);
+}
+
+/* right cluster — credits then cart */
+.mh-right{justify-self:end;display:flex;align-items:center;gap:12px}
+
+.mh-credits,.mh-cart{
+  display:flex;align-items:center;gap:10px;
+  height:44px;padding:0 16px;
+  border-radius:var(--radius-pill);
+  background:var(--coffee-700);
+  border:1px solid var(--card-line);
+  color:var(--vellum-100);
+  font-family:var(--sans);font-size:1rem;font-weight:600;
+  transition:background .16s ease,border-color .16s ease;
+}
+.mh-credits:hover,.mh-cart:hover{background:var(--coffee-600);border-color:var(--gold)}
+.mh-credits .v,.mh-cart .cnt{font-variant-numeric:tabular-nums}
+.mh-credits .u{font-weight:400;color:var(--vellum-300)}
+.mh-cart svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6}
+
+/* the only circle in the component */
+.mh-cart .cnt{
+  min-width:24px;height:24px;padding:0 6px;border-radius:50%;
+  display:grid;place-items:center;
+  background:var(--oxblood);color:#fff;
+  font-size:.867rem;font-weight:600;
+}
+.mh-cart .cnt[data-empty="true"]{background:rgba(233,222,200,.22);color:var(--vellum-300)}
+
+/* menu — appears only where the nav gives way */
+.mh-menu{
+  display:none;align-items:center;justify-content:center;
+  width:44px;height:44px;border-radius:var(--radius-pill);
+  background:var(--coffee-700);border:1px solid var(--card-line);color:var(--vellum-100);
+}
+.mh-menu svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6}
+.mh-drawer{
+  position:absolute;top:var(--mh-h);left:0;right:0;
+  background:var(--espresso);border-bottom:1px solid var(--card-line);
+  padding:12px 0 20px;display:flex;flex-direction:column;
+}
+.mh-drawer a{
+  text-decoration:none;color:var(--vellum-300);
+  font-family:var(--serif);font-size:1.6rem;font-weight:400;
+  padding:12px max(calc((100% - var(--container)) / 2),16px);
+}
+.mh-drawer a.on{color:var(--oxblood)}
+
+/* Navigation is what gives way. The wordmark and the cart never do — if
+   something must be sacrificed it is never the way home or the way to pay. */
+@media (max-width:1849px){ .mh-nav{gap:1.6rem} }
+@media (max-width:1400px){ .mh-nav a{font-size:1.467rem} .mh-nav{gap:1.2rem} }
+@media (max-width:1199px){
+  .mh{grid-template-columns:auto 1fr auto}
+  .mh-nav{display:none}
+  .mh-menu{display:flex;justify-self:start;margin-left:12px}
+}
+@media (max-width:767px){
+  .mh{padding-inline:16px}
+  .mh-logo .mark{font-size:1.933rem}
+  .mh-credits{display:none}
+}
+/* ====================== END MASTHEAD COMPONENT =========================== */
+
+
+/* --- demo scaffolding; not part of the component ------------------------- */
+.demo{padding:2.5rem max(calc((100% - var(--container)) / 2),16px) 5rem}
+.demo h2{font-family:var(--serif);font-weight:400;font-size:2rem;margin:2.5rem 0 1rem}
+.demo p{max-width:70ch;color:#5a5248;line-height:1.6;margin:0 0 1rem}
+.strip{border:1px solid rgba(70,58,48,.16);border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
+.strip .mh{position:static}
+.strip-lbl{font-size:.867rem;font-weight:600;color:#5a5248;padding:8px 16px;background:rgba(70,58,48,.05)}
+.hooks{border-collapse:collapse;width:100%;max-width:900px;font-size:.933rem;margin-top:1rem}
+.hooks th,.hooks td{text-align:left;padding:10px 14px;border-bottom:1px solid rgba(70,58,48,.12);vertical-align:top}
+.hooks th{font-weight:600;background:rgba(70,58,48,.05)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.867rem;background:rgba(70,58,48,.07);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- ==================== MASTHEAD MARKUP (copy verbatim) ================== -->
+<header class="mh" id="masthead">
+  <a class="mh-logo" href="/"><span class="mark">Liten <em>&amp; Co</em></span></a>
+  <button class="mh-menu" id="mhMenuBtn" aria-label="Menu" aria-expanded="false">
+    <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg>
+  </button>
+  <nav class="mh-nav">
+    <a href="/portraits">Crafted Portraits</a>
+    <a href="/workshop">Workshop</a>
+    <a href="/gallery">Gallery</a>
+    <a href="/print" class="on">Print Shop</a>
+    <a href="/account">My Collection</a>
+    <a href="/help">Help</a>
+  </nav>
+  <div class="mh-right">
+    <button class="mh-credits" id="mhCreditsBtn" hidden>
+      <span class="v" id="mhCreditsCount">50</span><span class="u">credits</span>
+    </button>
+    <button class="mh-cart" id="mhCartBtn">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
+      <span class="lbl">Cart</span>
+      <span class="cnt" id="mhCartCount">6</span>
+    </button>
+  </div>
+  <nav class="mh-drawer" id="mhDrawer" hidden>
+    <a href="/portraits">Crafted Portraits</a>
+    <a href="/workshop">Workshop</a>
+    <a href="/gallery">Gallery</a>
+    <a href="/print" class="on">Print Shop</a>
+    <a href="/account">My Collection</a>
+    <a href="/help">Help</a>
+  </nav>
+</header>
+<!-- ================== END MASTHEAD MARKUP =============================== -->
+
+<main class="demo">
+  <h2>States</h2>
+  <p>The masthead above is live and sticky. Narrow the window past 1199px to see
+    the navigation give way to the menu — the wordmark and cart hold at every
+    width.</p>
+
+  <div class="strip">
+    <div class="strip-lbl">Empty cart — the badge mutes, it never hides</div>
+    <header class="mh">
+      <a class="mh-logo" href="#"><span class="mark">Liten <em>&amp; Co</em></span></a>
+      <nav class="mh-nav">
+        <a href="#">Crafted Portraits</a><a href="#">Workshop</a><a href="#">Gallery</a>
+        <a href="#">Print Shop</a><a href="#" class="on">My Collection</a><a href="#">Help</a>
+      </nav>
+      <div class="mh-right">
+        <button class="mh-cart">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
+          <span class="lbl">Cart</span><span class="cnt" data-empty="true">0</span>
+        </button>
+      </div>
+    </header>
+  </div>
+
+  <div class="strip">
+    <div class="strip-lbl">Credits visible — flag on, signed-in tester</div>
+    <header class="mh">
+      <a class="mh-logo" href="#"><span class="mark">Liten <em>&amp; Co</em></span></a>
+      <nav class="mh-nav">
+        <a href="#" class="on">Crafted Portraits</a><a href="#">Workshop</a><a href="#">Gallery</a>
+        <a href="#">Print Shop</a><a href="#">My Collection</a><a href="#">Help</a>
+      </nav>
+      <div class="mh-right">
+        <button class="mh-credits"><span class="v">50</span><span class="u">credits</span></button>
+        <button class="mh-cart">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
+          <span class="lbl">Cart</span><span class="cnt">3</span>
+        </button>
+      </div>
+    </header>
+  </div>
+
+  <h2>Hooks</h2>
+  <table class="hooks">
+    <tr><th>Hook</th><th>Owner</th><th>Behaviour</th></tr>
+    <tr><td><code>#masthead</code></td><td>CUI</td><td>Container. Sticky, 72px, inset tracks the container edge.</td></tr>
+    <tr><td><code>.mh-nav a.on</code></td><td>CC</td><td>Exactly one per page. Oxblood text plus a 2px rule.</td></tr>
+    <tr><td><code>#mhMenuBtn</code></td><td>CC</td><td>Toggles <code>#mhDrawer</code>. Keep <code>aria-expanded</code> in step. Visible below 1200px only.</td></tr>
+    <tr><td><code>#mhDrawer</code></td><td>CC</td><td>Collapsed navigation. Mirrors the same active item.</td></tr>
+    <tr><td><code>#mhCartBtn</code></td><td>CC</td><td>Opens the cart. Present on every surface.</td></tr>
+    <tr><td><code>#mhCartCount</code></td><td>CC</td><td>Line count. <code>data-empty="true"</code> at zero.</td></tr>
+    <tr><td><code>#mhCreditsBtn</code></td><td>CC</td><td>Built, <code>hidden</code>. Unhide when a signed-in balance exists.</td></tr>
+    <tr><td><code>#mhCreditsCount</code></td><td>CC</td><td>Bare number. The word "credits" is markup, not data.</td></tr>
+  </table>
+
+  <h2>Integration</h2>
+  <p>Copy the CSS between the BEGIN and END markers into the shared stylesheet,
+    and the markup between the MASTHEAD MARKUP comments into the layout. The
+    component reads only <code>--container*</code>, <code>--espresso</code>,
+    <code>--vellum-*</code>, <code>--coffee-*</code>, <code>--oxblood</code>,
+    <code>--gold</code>, <code>--card-line</code> and
+    <code>--radius-pill</code> — so every surface must be on the canonical token
+    set for it to render identically.</p>
+  <p>Every surface writes the badge through this component's API. The
+    <code>#mhCartBtn</code> / <code>#mhCartCount</code> IDs that appear inside
+    Print Shop carry <code>data-owner="masthead-component"</code> and exist only
+    so that mock renders — a page script must not query them directly.</p>
+</main>
+
+<script>
+(function(){
+  var btn=document.getElementById('mhMenuBtn'),
+      drawer=document.getElementById('mhDrawer');
+  if(!btn||!drawer)return;
+  btn.addEventListener('click',function(){
+    var open=drawer.hasAttribute('hidden');
+    if(open){drawer.removeAttribute('hidden');}else{drawer.setAttribute('hidden','');}
+    btn.setAttribute('aria-expanded',String(open));
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&!drawer.hasAttribute('hidden')){
+      drawer.setAttribute('hidden','');btn.setAttribute('aria-expanded','false');
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -47,7 +47,6 @@ export const STYLE_ORDER: PetsStyleId[] = ['realistic']
 export type PetsPresetId =
   | 'ceramic'
   | 'plushy'
-  | 'felted_wool'
   | 'bronze'
   | 'mixed_metals'
   | 'alabaster'
@@ -57,7 +56,6 @@ export type PetsPresetId =
 export const PRESET_LABELS: Record<PetsPresetId, string> = {
   ceramic:      'Ceramic',
   plushy:       'Plushy',
-  felted_wool:  'Felted Wool',
   bronze:       'Bronze',
   mixed_metals: 'Metals',
   alabaster:    'Alabaster',
@@ -70,7 +68,6 @@ export type PresetTier = 'base' | 'premium' | 'signature'
 export const PRESET_TIER: Record<PetsPresetId, PresetTier> = {
   ceramic:      'base',
   plushy:       'base',
-  felted_wool:  'premium',
   walnut:       'premium',
   stone:        'signature',
   bronze:       'signature',
@@ -84,7 +81,7 @@ export const PRESET_TIER: Record<PetsPresetId, PresetTier> = {
 // is a native market register and carries true coat colors.
 export const STYLE_MATERIALS: Record<PetsStyleId, PetsPresetId[]> = {
   realistic: [
-    'ceramic', 'plushy', 'felted_wool',
+    'ceramic', 'plushy',
     'walnut', 'stone',
     'bronze', 'mixed_metals', 'alabaster',
   ],

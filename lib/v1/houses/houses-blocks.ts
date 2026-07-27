@@ -86,17 +86,13 @@ Depth of field is strong: plinth and model razor sharp; everything beyond melts 
 `.trim()
 
 const DESK_BLOCK = `
-ENVIRONMENT — DESK:
-The miniature on its circular wooden plinth sits on a large rich walnut desk — book-matched grain richly figured with flowing chocolate-brown streaks and amber undertones, beautifully polished to a deep satin luster, the warm wood softly reflecting directional light along its surface. The desk extends generously beyond the plinth in every direction.
+ENVIRONMENT — STUDIO GRADIENT:
+The miniature on its circular wooden plinth stands against a clean, seamless studio gradient backdrop — a smooth continuous sweep of soft neutral tone, gently darker toward the edges and slightly brighter toward the back-upper area, with no visible horizon line, corner, or seam. No desk, no table, no furniture, no props, no room, no surface clutter of any kind — nothing competes with the model.
 
-MINIATURE SCALE ANCHOR — NON-NEGOTIABLE:
-The plinth occupies less than a third of the desk's depth. Generous warm walnut surface is visible on all sides between the plinth's edge and the desk's edges. Read the diorama at the scale of a coffee table book or a serving platter — a small precious object resting on a large desk. NEVER read it as a full-size dollhouse, NEVER let it dominate the room as the room's main feature.
+SCALE — BIG AND BEAUTIFUL:
+The model is the hero: large and centered, filling the frame generously, presented as the single subject of a gallery photograph. It sits softly grounded, meeting its own soft contact shadow on a smooth continuous floor that blends seamlessly into the gradient behind it. Read it as a precious object photographed on a professional seamless sweep — commanding, refined, unmistakably the whole point of the image.
 
-A leather-bound hardcover book lies open to the left, pages catching warm light. Reading glasses rest folded to the right, lenses glinting softly. A small ceramic mug holds what reads as steaming tea or coffee. The desk surface holds a soft warm reflection of the plinth and the lower part of the model.
-
-The room beyond is a warm study softly out of focus — bookshelves, framed paintings, the edge of a chair. Everything behind the desk is in soft warm bokeh — a real room subordinate to the artifact.
-
-Warm directional light wraps the model from one side. No visible light fixtures in frame. The camera pulls back to show the whole scene.
+Warm, diffused gallery light wraps the model from one upper side; atmospheric haze gives the air a soft luminous quality, slightly brighter toward the back-upper area. No visible light fixtures in frame. Clean, deep negative space surrounds the model; the camera pulls back just enough to hold the whole piece with breathing room.
 `.trim()
 
 const ROOM_IN_HOUSE_BLOCK = `
@@ -343,15 +339,6 @@ export const LIGHTING_GINGERBREAD = `
 LIGHTING: Warm bakery atmospheric haze — diffused honey-amber luminous quality in the air around the model, slightly brighter toward the back-upper area. The gingerbread catches light with rich warm brown surface, the icing reads bright white in lit areas and soft shadow elsewhere. Candy details catch tiny specular highlights. Cosy and edible.
 `.trim()
 
-// ── WATERCOLOR WOOD ──────────────────────────────────────────
-export const MATERIAL_WATERCOLOR_WOOD = `
-MATERIAL: The structure is a hand-painted wooden scale model — visible wood grain shows through everywhere, with watercolor washes applied loosely over the bare wood. Source colors DO carry through but as soft washed pigment rather than opaque paint, with visible brush strokes and pooling at corners. The grain of the wood remains the dominant texture; the paint is a translucent layer over it. Hand-crafted artisan feel, never industrially perfect.
-`.trim()
-
-export const LIGHTING_WATERCOLOR_WOOD = `
-LIGHTING: Warm gallery atmospheric haze — diffused luminous quality in the air around the model, slightly brighter toward the back-upper area. Soft directional warmth catches the watercolor washes and the wood grain showing through. Recessed details register with rich tonal variation between painted and unpainted wood.
-`.trim()
-
 // ── CARVED WOOD ──────────────────────────────────────────────
 export const MATERIAL_CARVED_WOOD = `
 MATERIAL: The whole structure is a single block of richly figured hardwood (walnut or cherry) carved into the form of the building — every wall, every shingle, every detail a hand-carved facet of one continuous piece of wood. Visible chisel and gouge marks remain in places, the grain flowing through the entire mass. No paint, no stain — natural wood color throughout. Polished satin oil finish. Source colors do NOT carry through.
@@ -379,13 +366,58 @@ export const LIGHTING_DOLLHOUSE = `
 LIGHTING: Cheerful warm atmospheric haze — bright diffused light around the model, slightly brighter toward the back-upper area. The plastic surfaces catch soft specular highlights along edges; painted details are bright and cheerful. Toy-shop window-display feel — clean, cheerful, never dramatic.
 `.trim()
 
-// ── MUSEUM-QUALITY (formerly scaled_architectural) ───────────
-export const MATERIAL_MUSEUM_QUALITY = `
-MATERIAL: This is the apex tier — every material element rendered at the highest possible craft quality. Hand-painted hardwood siding with a master's brushwork. Individually scribed shingles with subtle weathering variation. Real glass windows, micro-glazed and reflective. Trim profiles hand-carved from select hardwood. Foundation in tiny hand-laid scale stone or brick. Slight satin sheen of fine-art finish; every micro-detail crisp and convincing. Source colors carry through faithfully but rendered with painterly subtlety. The scale model a serious collector would pay thousands for.
+// ═══════════════════════════════════════════════════════════════
+// 6b. HOUSES v1 ADDITIONS (2026-07-10) — 2 materials + 2 dimensional
+//     curiosities. Standard-stack presets: honor Setting + Time of Day,
+//     run refine + outpaint. Interpretive curiosities (ukiyo_e, cubism,
+//     art_nouveau, art_deco, daguerreotype) live in houses-curiosities.ts.
+// ═══════════════════════════════════════════════════════════════
+
+// ── WALNUT (material) ─────────────────────────────────────────
+export const MATERIAL_WALNUT = `
+MATERIAL: The whole structure is turned and carved from a single block of dark walnut — every wall, roof plane, shingle, trim profile, porch, and foundation a hand-worked facet of one continuous piece of wood. Deep chocolate-brown heartwood with richly figured grain flowing continuously across walls and roof, book-matched cathedral figure, occasional paler sapwood streaks. Visible turning and carving marks remain in places — the hand of the maker. Polished satin oil finish, warm and deep, never glossy lacquer. No paint, no stain beyond the wood's own tone. Source colors do NOT carry through — the building's original paint is irrelevant; the whole form is walnut, the grain wrapping the architecture as one continuous figure.
 `.trim()
 
-export const LIGHTING_MUSEUM_QUALITY = `
-LIGHTING: Warm museum-gallery atmospheric haze — diffused luminous quality in the air around the model, slightly brighter toward the back-upper area. Soft directional warmth wraps every surface, picking up the master-craft details — every shingle, every trim profile, every brushstroke registering distinctly. Deep tonal range from highlight to shadow. The lighting itself feels gallery-curated.
+export const LIGHTING_WALNUT = `
+LIGHTING: Warm gallery atmospheric haze — diffused luminous quality in the air around the model, slightly brighter toward the back-upper area. Light rakes across the walnut grain along the lit faces, the figure of the wood revealing itself dramatically, faint chatoyance catching in the flowing grain. Recessed details fall into deeper warm shadow, the dark heartwood reading rich and warm throughout.
+`.trim()
+
+// ── IRON (material) ───────────────────────────────────────────
+export const MATERIAL_IRON = `
+MATERIAL: A SOLID CAST IRON SCULPTURE of the building — every surface is blackened cast iron. The entire structure recast as a single monolithic piece: siding, shingles, trim profiles, porch, columns, balustrades, foundation, even window frames. Weighty, architectural, exact. Deep blue-black iron tone throughout — matte to soft satin, with the faintly rough micro-texture of sand-cast metal and subtle casting seams. Warm rust patina appears EXCLUSIVELY in recesses and along lower edges where iron would weather — thin oxide-orange accents in undercuts and crevices, never a wall color, never on flat faces. Glass windows are the ONE exception: panes read as dark transparent glass behind iron frames. Source colors do NOT carry through — if the source house is blue, the iron house is blue-black iron, not blue. The reference is a museum-quality cast iron sculpture: entirely iron body with faint rust accents in the recesses. Metal, not painted material.
+`.trim()
+
+export const LIGHTING_IRON = `
+LIGHTING: Cool gallery atmospheric haze — diffused luminous quality in the air around the model, slightly brighter toward the back-upper area. Hard directional light picks up clean specular highlights along the iron's edges and silhouettes, the blue-black surface reading with metallic sheen on the lit faces and falling to deep near-black shadow on the away side. Rust accents in the recesses catch a faint warm glow. The weight of the metal reads in every plane.
+`.trim()
+
+// ── LEGACY EDITION (material — reward: Together, flagship) ─────
+// rewardOnly. Flawless white statuary marble, the highest tier. Restraint
+// over spectacle; do not imitate carved_stone — this is the ceiling.
+export const MATERIAL_LEGACY_EDITION = `
+MATERIAL: A single monolithic sculpture of the building carved from one block of flawless white statuary marble — every surface is cool luminous Carrara/Statuario stone: siding, shingles, trim, porch, columns, balustrades, foundation, even window frames, all one carved piece. Softly polished with a gentle sheen (never wet-glossy), subtle cool-grey veining flowing naturally across walls and roof, a few honest hand-tooled passages beside the polished planes. Cool white throughout — never cream, ivory, tan, or warm. Source colors do NOT carry through; the building's original paint is irrelevant, the whole form is white marble. The absolute ceiling of craftsmanship — refined, timeless, instantly recognizable — restraint over spectacle, nothing exaggerated, no added ornament. It should feel impossible to improve.
+`.trim()
+
+export const LIGHTING_LEGACY_EDITION = `
+LIGHTING: A single controlled key of soft daylight from one upper side, as if from a perfect museum skylight, with gentle fill and clean falloff — atmospheric haze giving the air a luminous quality, slightly brighter toward the back-upper area. The light models the marble's form and reveals the cool-grey veining and fine tool marks; polished planes catch a soft sheen, recesses fall into quiet cool shadow. Deep, calm negative space; master, restrained, timeless.
+`.trim()
+
+// ── AMBER INCLUSION (dimensional curiosity) ───────────────────
+export const MATERIAL_AMBER_INCLUSION = `
+MATERIAL: The entire building is suspended inside a single drop of translucent golden amber — a smooth, rounded, organic mass of fossil resin resting on the plinth, the house held perfectly at its center like an ancient insect preserved in amber. The amber is warm honey-gold deepening to cognac, glassy and polished on the outside, with the natural irregular contours of a hardened resin drop. The building inside keeps its exact architectural form, tinted through with the amber's warm glow — surfaces reading in translucent gold-brown, edges catching internal light. Suspended around the house: tiny trapped bubbles, fine flow lines and cracks, motes of ancient debris, a few suspended leaves. Light entering the drop scatters warmly through the resin, brightest where the amber is thinnest. Source colors carry only as far as the amber allows — the whole reads as warm translucent gold, eternal and preserved.
+`.trim()
+
+export const LIGHTING_AMBER_INCLUSION = `
+LIGHTING: Warm gallery atmospheric haze with strong back-and-side lighting that ignites the amber from within — the drop glows deep honey-gold, the suspended house haloed by internal light, the resin's edges crisp and bright with caustic highlights. Internal inclusions catch tiny sparks of light. The plinth picks up a warm amber cast from the glowing resin above. Soft warm shadow on the away side, slightly brighter toward the back-upper area.
+`.trim()
+
+// ── ENCHANTED CRYSTAL (dimensional curiosity) ─────────────────
+export const MATERIAL_ENCHANTED_CRYSTAL = `
+MATERIAL: The entire building has grown as a single faceted crystal — every wall, roof plane, tower, and trim profile rendered as sharp crystalline facets, as though the house crystallized from living mineral. Clear quartz-like crystal with a faint consistent tint (pale amethyst-violet) shifting subtly across the form. The architecture stays exact — the crystal grows along the building's real geometry, its facets following rooflines, bays, and porches — but every surface is hard, glassy, and many-planed. Sharp prismatic edges; internal fractures and phantom growth-lines visible deep inside the mass; clusters of smaller crystals sprouting at the base and foundation where the growth began. Light passes through every plane, refracting into faint rainbow caustics. Source colors do NOT carry through — the whole form is luminous grown crystal. Thick sections carry deep internal glow; thin trim and mullions read bright and crisp.
+`.trim()
+
+export const LIGHTING_ENCHANTED_CRYSTAL = `
+LIGHTING: Cool gallery atmospheric haze with bright directional light that ignites the crystal — each facet catches a clean specular highlight, light refracting through the mass and scattering prismatic caustics across the plinth. The crystal glows from within, thin edges brilliant, thick volumes carrying soft refracted color. Rainbow glints spark along the sharpest facets. Soft cool shadow on the away side, faint colored light pooling where caustics land. Slightly brighter toward the back-upper area.
 `.trim()
 
 // ── SNOW GLOBE ───────────────────────────────────────────────

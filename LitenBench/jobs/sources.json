@@ -1,0 +1,134 @@
+[
+ {
+  "id": "house_1",
+  "category": "house",
+  "name": "Stone & timber cottage at dusk",
+  "prompt": "A quaint rustic stone-and-timber cottage at dusk. the ENTIRE house fully visible and centered in the vertical frame — the complete roofline and both ends of the building in view, nothing cropped, generous breathing room with sky above and garden below. Wide establishing photograph, whole structure in frame. Warm golden light glowing from every window, a slightly overgrown cottage garden with wild roses and an uneven flagstone path, a thin curl of chimney smoke, deep blue twilight sky. Incredibly cozy, imperfect handmade charm. Natural dusk light, high detail."
+ },
+ {
+  "id": "house_2",
+  "category": "house",
+  "name": "Weathered farmhouse at dusk",
+  "prompt": "A weathered clapboard farmhouse with a wraparound porch at dusk. the ENTIRE house fully visible and centered in the vertical frame — the complete roofline and both ends of the building in view, nothing cropped, generous breathing room with sky above and garden below. Wide establishing photograph, whole structure in frame. Warm amber light pouring from the windows, a yard of wildflowers and long grass gone a little wild, a leaning picket fence, purple-and-orange twilight sky. Cozy, lived-in and imperfect. Natural dusk light, high detail."
+ },
+ {
+  "id": "house_3",
+  "category": "house",
+  "name": "Log cabin in the woods at dusk",
+  "prompt": "A cozy log cabin at the edge of the woods at dusk. the ENTIRE house fully visible and centered in the vertical frame — the complete roofline and both ends of the building in view, nothing cropped, generous breathing room with sky above and garden below. Wide establishing photograph, whole structure in frame. Warm lantern-lit windows, string lights along the porch, a mossy roof and uneven stone steps, ferns and overgrown shrubs, fireflies in the blue evening air. Rustic, imperfect, incredibly inviting. Natural dusk light, high detail."
+ },
+ {
+  "id": "house_4",
+  "category": "house",
+  "name": "Ivy brick bungalow at dusk",
+  "prompt": "A charming brick-and-shingle bungalow at dusk. the ENTIRE house fully visible and centered in the vertical frame — the complete roofline and both ends of the building in view, nothing cropped, generous breathing room with sky above and garden below. Wide establishing photograph, whole structure in frame. Climbing ivy and slightly overgrown hedges, warm light glowing from the windows, a crooked garden gate and flower pots on worn steps, soft violet dusk sky. Cozy, homey, imperfect landscaping. Natural evening light, high detail."
+ },
+ {
+  "id": "portrait_1",
+  "category": "portrait",
+  "name": "Freckled brunette laughing",
+  "prompt": "Candid photograph of a happy woman in her early twenties with a big natural smile, light freckles and tousled brown hair, wearing a cream knit sweater — girl-next-door and wholesome. Outdoors in soft natural light with gentle bokeh behind her, warm and genuine and unposed. Realistic photograph, natural lighting, shallow depth of field, high detail, photojournalistic and candid, not staged."
+ },
+ {
+  "id": "portrait_2",
+  "category": "portrait",
+  "name": "Blonde laughing, denim jacket",
+  "prompt": "Candid photograph of a cheerful blonde woman in her twenties laughing with the wind in her hair, wearing a denim jacket, a wholesome girl-next-door look. Golden-hour park softly blurred behind her, joyful and unposed. Realistic photograph, natural lighting, shallow depth of field, high detail, photojournalistic and candid, not staged."
+ },
+ {
+  "id": "portrait_3",
+  "category": "portrait",
+  "name": "Red-haired woman at a cafe",
+  "prompt": "Candid photograph of a red-haired woman in her early twenties mid-laugh by a cafe window, warm natural window light, a few freckles and a simple casual top, wholesome and approachable. A genuine unposed moment. Realistic photograph, natural lighting, shallow depth of field, high detail, photojournalistic and candid, not staged."
+ },
+ {
+  "id": "portrait_4",
+  "category": "portrait",
+  "name": "Woman with glasses, sunny kitchen",
+  "prompt": "Candid photograph of a young woman in her twenties with glasses and a loose ponytail and a warm genuine smile, in a sunlit kitchen with soft morning light, holding a coffee mug — wholesome girl-next-door feel, natural and unposed. Realistic photograph, natural lighting, shallow depth of field, high detail, photojournalistic and candid, not staged."
+ },
+ {
+  "id": "group_1",
+  "category": "group",
+  "name": "Four friends laughing outdoors",
+  "prompt": "Candid close-up group photograph of three young friends of mixed ethnicities laughing together, arms around each other, cropped TIGHT from mid-chest up so their faces and shoulders fill the frame, heads near the top edge, minimal space above — a warm close-up group portrait. warm afternoon light with soft bokeh, joyful unposed energy. Realistic photograph, natural lighting, shallow depth of field, high detail, candid."
+ },
+ {
+  "id": "group_2",
+  "category": "group",
+  "name": "Rooftop friends at sunset",
+  "prompt": "Candid close-up photograph of three diverse friends laughing at sunset, arms around each other, cropped TIGHT from mid-chest up so their faces and shoulders fill the frame, heads near the top edge, minimal space above — a warm close-up group portrait. warm golden light. Realistic photograph, natural lighting, shallow depth of field, high detail, candid."
+ },
+ {
+  "id": "group_3",
+  "category": "group",
+  "name": "Friends talking on steps",
+  "prompt": "Candid close-up photograph of three friends of different ethnicities laughing animatedly together, cropped TIGHT from mid-chest up so their faces and shoulders fill the frame, heads near the top edge, minimal space above — a warm close-up group portrait. soft natural light. Realistic photograph, natural lighting, shallow depth of field, high detail, candid."
+ },
+ {
+  "id": "group_4",
+  "category": "group",
+  "name": "Park picnic group",
+  "prompt": "Candid close-up photograph of three diverse friends laughing in a park, arms around each other, cropped TIGHT from mid-chest up so their faces and shoulders fill the frame, heads near the top edge, minimal space above — a warm close-up group portrait. warm dappled light. Realistic photograph, natural lighting, shallow depth of field, high detail, candid."
+ },
+ {
+  "id": "pet_1",
+  "category": "pet",
+  "name": "Basset head tilt, tongue out",
+  "prompt": "Candid close-up portrait photograph of a floppy-eared basset hound with a comical head tilt and tongue out, big droopy eyes and heavy jowls, a funny expression, warm natural light and a soft blurred background. Wholesome and hilarious. Realistic photograph, natural lighting, shallow depth of field, high detail, photojournalistic and candid, not staged."
+ },
+ {
+  "id": "pet_2",
+  "category": "pet",
+  "name": "Basset sprawled on couch",
+  "prompt": "Candid photograph of a basset hound sprawled on a couch with its long ears splayed out, a sleepy funny expression, cozy warm light, completely unposed and comical. Realistic photograph, natural lighting, shallow depth of field, high detail, photojournalistic and candid, not staged."
+ },
+ {
+  "id": "pet_3",
+  "category": "pet",
+  "name": "Basset mid-run, ears flying",
+  "prompt": "Candid photograph of a basset hound mid-run across grass with its long floppy ears flying up, a funny determined expression, sunny natural light, full of motion and joy. Realistic photograph, natural lighting, shallow depth of field, high detail, photojournalistic and candid, not staged."
+ },
+ {
+  "id": "pet_4",
+  "category": "pet",
+  "name": "Basset forlorn on porch",
+  "prompt": "Candid portrait photograph of a basset hound on a porch looking up at the camera with big droopy eyes and heavy jowls, a comically forlorn but adorable expression, warm afternoon light. Realistic photograph, natural lighting, shallow depth of field, high detail, photojournalistic and candid, not staged."
+ },
+ {
+  "id": "action_1",
+  "category": "action",
+  "name": "Fisheye hero",
+  "prompt": "Dynamic action photograph of a skateboarder at the explosive peak of a handrail trick, shot with an ULTRA-WIDE FISHEYE lens from a very low angle right beneath the board — extreme foreshortening, the skateboard and lead foot bulging huge toward the lens, the figure looming and filling the vertical frame, curved fisheye distortion at the edges. Frozen grit and dust, real speed. Background falls into dark motion blur. Realistic sports photography, sharp subject, high detail."
+ },
+ {
+  "id": "action_2",
+  "category": "action",
+  "name": "Panning motion blur",
+  "prompt": "Dynamic side-profile action photograph of a skateboarder mid-trick over a rail, shot with a PANNING MOTION-BLUR technique — the skater tack-sharp while the entire background streaks into horizontal motion blur conveying violent speed. Low angle, wide lens. Kicked-up debris trailing behind. Realistic sports photography, sharp subject, high detail."
+ },
+ {
+  "id": "action_3",
+  "category": "action",
+  "name": "Worm's-eye upshot",
+  "prompt": "Dramatic worm's-eye action photograph from GROUND LEVEL looking straight up as a skateboarder flies overhead off a rail — the board and shoes fill the top of the frame, the underside of the deck facing the camera, steep dramatic upshot, wide lens, sky and blurred structure behind. Explosive energy, frozen dust. Realistic sports photography, sharp subject, high detail."
+ },
+ {
+  "id": "action_4",
+  "category": "action",
+  "name": "Telephoto compression",
+  "prompt": "Action photograph of a skateboarder mid-trick over a rail shot on a LONG TELEPHOTO lens — compressed perspective, the figure crisply isolated against a heavily blurred compressed background, shallow depth of field, tight framing on the skater filling the vertical frame. Frozen at the peak, gritty and real. Realistic sports photography, sharp subject, high detail."
+ },
+ {
+  "id": "action_5",
+  "category": "action",
+  "name": "Dutch-tilt dynamic",
+  "prompt": "Dynamic action photograph of a skateboarder at the peak of a rail trick, shot wide with a strong DUTCH TILT — the whole frame tilted on a dramatic diagonal for kinetic energy, low angle, the board and lead foot thrust toward the camera, motion blur and flung debris. The figure dominates the frame, background dark and blurred. Realistic sports photography, sharp subject, high detail."
+ },
+ {
+  "id": "action_6",
+  "category": "action",
+  "name": "Bowl handplant",
+  "prompt": "Dynamic action photograph of a skateboarder doing a one-handed HANDPLANT INVERT on the coping of a concrete skatepark bowl — one hand planted firmly on the lip, body inverted and fully extended, legs kicked up toward the sky, the other hand grabbing the board overhead. Shot on a fairly NORMAL lens (about 35-40mm, minimal distortion — NOT a fisheye or ultra-wide) but the CAMERA IS PLACED LOW AND CLOSE, down near the coping looking up at the skater, so the dramatic perspective and towering angle come from camera POSITION, not lens distortion. Anatomy stays correct and believable — arms and legs read as natural, no bent or broken-looking limbs. The skater fills the vertical frame and looms over the viewer. Kicked-up dust and grit bursting off the coping, frozen mid-air. Athletic, explosive, warm sunset light. Realistic sports photography, sharp subject, high detail. No text, no watermark."
+ }
+]

@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { generatePetsRender } from '@/lib/v1/pets/pets-generator'
+import { isPetExperimentalEffect } from '@/lib/v1/pets/pets-experimental'
 import {
   STYLE_MATERIALS,
   STYLE_ENVIRONMENTS,
@@ -48,6 +49,12 @@ export async function POST(req: NextRequest) {
   // pet-specific artistic styles land, validate against STYLE_ORDER here.
   const styleId: PetsStyleId = 'realistic'
 
+  // Curiosities path: a valid experimental_effect bypasses the material
+  // pipeline entirely. Detected here so the preset requirement can be
+  // skipped for these renders (the effect carries its own staging).
+  const rawExperimental = typeof body.experimental_effect === 'string' ? body.experimental_effect : ''
+  const experimentalEffect = isPetExperimentalEffect(rawExperimental) ? rawExperimental : undefined
+
   const allowedMaterials = STYLE_MATERIALS[styleId]
   // Canonical key is preset_id; 'preset' accepted as an alias (the queue
   // UI's internal key). Same below for environment_id / 'environment' /
@@ -55,7 +62,7 @@ export async function POST(req: NextRequest) {
   const rawPreset = body.preset_id ?? body.preset
   const presetId: PetsPresetId | undefined =
     allowedMaterials.includes(rawPreset) ? rawPreset : undefined
-  if (!presetId) {
+  if (!experimentalEffect && !presetId) {
     return NextResponse.json(
       { ok: false, error: `preset_id must be one of: ${allowedMaterials.join(', ')}` },
       { status: 400 },
@@ -89,6 +96,7 @@ export async function POST(req: NextRequest) {
     style_reference_b64:   typeof body.style_reference_b64 === 'string' ? body.style_reference_b64 : undefined,
     style_id:              styleId,
     preset_id:             presetId,
+    experimental_effect:   experimentalEffect,
     environment_id:        environmentId,
     action_id:             actionId,
     scale,
@@ -107,10 +115,13 @@ export async function POST(req: NextRequest) {
   }
 
   console.log(
-    `[pets/generate] style=${request.style_id} preset=${request.preset_id} ` +
-    `environment=${request.environment_id || '(default)'} action=${request.action_id || 'as_photographed'} scale=${request.scale || '(default)'} ` +
+    `[pets/generate] style=${request.style_id} ` +
+    (request.experimental_effect
+      ? `curiosity=${request.experimental_effect} `
+      : `preset=${request.preset_id} ` +
+        `environment=${request.environment_id || '(default)'} action=${request.action_id || 'as_photographed'} scale=${request.scale || '(default)'} `) +
     `sources=${1 + (request.additional_images_b64?.length || 0)} ` +
-    `plaque=${request.plaque_text === null ? 'none' : request.plaque_text ? 'custom' : 'default'}`,
+    (request.experimental_effect ? '' : `plaque=${request.plaque_text === null ? 'none' : request.plaque_text ? 'custom' : 'default'}`),
   )
 
   const replicateApiToken = process.env.REPLICATE_API_TOKEN

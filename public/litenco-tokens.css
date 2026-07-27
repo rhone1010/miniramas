@@ -1,0 +1,29 @@
+/* ==========================================================================
+   litenco-tokens.css — brand tokens, resets, masthead. SHARED by all surfaces.
+   Liten & Co — extracted from portraits r77 (2026-07-22)
+   ========================================================================== */
+
+:root{
+  --vellum:#f3ede1; --paper:#faf6ec; --panel:#ece2d0; --paper-up:#f4f2ed;
+  --ink:#2a241e; --ink-soft:#5a5248; --oxblood:#7d4242; --oxblood-deep:#6a3737;
+  --brass:#75623a; --brass-lt:#c4a96e; --champ:#ECDFC1; --taupe:#aba39a; --sage:#8a9a7b; --hairline:#d8cfba;
+  --espresso:#26201a; --card-line:rgba(196,169,110,.28);
+  --coffee-900:#1F1714; --coffee-800:#2A1F1B; --coffee-700:#332620; --coffee-600:#40302A;
+  --coffee-highlight:rgba(196,157,110,.08); --coffee-shadow:rgba(0,0,0,.45);
+  --gold:#B68A53; --gold-hover:#D2A768; --gold-disabled:rgba(182,138,83,.45);
+  --vellum-100:#F8F4EB; --vellum-200:#F3ECDD; --vellum-300:#E9DEC8; --vellum-400:#D8C7A9;
+  --paper-shadow:rgba(120,90,45,.05); --paper-highlight:rgba(255,255,255,.55);
+  --bronze:#B58A55; --bronze-muted:#9E7B4F; --vellum-border:rgba(168,138,98,.22);
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',sans-serif;
+  --ease-out:cubic-bezier(.22,.7,.3,1);
+  --dur-micro:150ms; --dur-state:250ms; --dur-panel:400ms;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+button{font:inherit;border:none;background:none;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--vellum);font-family:var(--serif);color:var(--ink);min-width:1440px;overflow:hidden}
+
+/* ===== MASTHEAD — 90px ===== */
+.masthead{height:68px;background:var(--espresso);border-bottom:1px solid var(--card-line);display:flex;align-items:center;padding:0 36px;position:sticky;top:0;z-index:50}

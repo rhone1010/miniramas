@@ -126,6 +126,12 @@ export const CAMERA_EFFECTS: Record<CameraAngleID, string> = {
 
 // A) Object Realism — preserves source structure + tactile material language.
 // PLINTH treatment lives in its own dedicated block (PLINTH_BLOCK below).
+// ── MATERIAL TREATMENT — reward (Together, flagship) ──────────
+// NOTE: inert until a MaterialID->text map is wired into Pass 1/refine
+// (Landscapes has no material-treatment injection today — see handoff).
+export const MATERIAL_LEGACY_EDITION = `MATERIAL — LEGACY EDITION (FLAGSHIP WHITE MARBLE):
+The entire diorama — terrain, structures, and vegetation — carved from one block of flawless cool white statuary marble (Carrara/Statuario), softly polished with subtle cool-grey veining and a few honest hand-tooled passages. Cool white throughout, never cream or warm. No source colors carry through. The absolute ceiling of craftsmanship — refined, timeless, restraint over spectacle, nothing exaggerated or ornamental. It should feel impossible to improve.`
+
 export const OBJECT_REALISM_BLOCK = `OBJECT REALISM:
 Preserve structure, scale relationships, and material richness from the source. Use carved terrain, varied foliage, resin-like water, worn wood, rough stone, uneven vegetation, and natural imperfections. Avoid smoothing, beautification, tonal flattening, or repeated texture patterns. Preserve micro-contrast and tactile detail throughout the scene.`
 

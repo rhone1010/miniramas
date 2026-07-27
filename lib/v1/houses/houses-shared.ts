@@ -5,12 +5,17 @@
 // pattern: minimal interfaces + enums, no logic beyond the environment resolver.
 
 // ── MODE AXIS ──────────────────────────────────────────────────
-// Four independent selectors, not a matrix. User picks ONE per render.
+// Five independent selectors, not a matrix. User picks ONE per render.
 // 'artists' = Artists Gallery — interpretive-medium presets with full
 // custom prompts (see houses-artists.ts). They bypass environment /
 // time-of-day / lighting selection, the refine pass, AND the outpaint
 // stage — the prompt owns the whole scene.
-export type Mode = 'materials' | 'seasons' | 'events' | 'artists'
+// 'curiosities' = a mixed group. The dimensional ones (dollhouse,
+// gingerbread, snow_globe, amber_inclusion, enchanted_crystal) run the
+// standard stack. The interpretive ones (ukiyo_e, art_nouveau, cubism,
+// daguerreotype, art_deco) carry `ownScene: true` and behave like artists
+// presets — full custom prompt, no env/ToD, refine + outpaint forced off.
+export type Mode = 'materials' | 'seasons' | 'events' | 'artists' | 'curiosities'
 
 // ── ENVIRONMENT (global selector) ─────────────────────────────
 // Two environments. Internal ID 'in_situ' is stable; UI label is
@@ -32,12 +37,16 @@ export type Mode = 'materials' | 'seasons' | 'events' | 'artists'
 export type EnvironmentId = 'in_situ' | 'desk' | 'room_in_house'
 
 // ── PRESET REGISTRY KEYS ──────────────────────────────────────
-// Full catalog: 11 materials + 4 seasons + 5 events + 4 artists = 24 presets.
+// Full catalog: 8 materials + 10 curiosities + 4 seasons + 5 events
+// + 4 artists = 31 presets.
 export type PresetId =
-  // materials (11)
+  // materials (8)
   | 'bronze' | 'wax' | 'alabaster' | 'glass'
-  | 'gingerbread' | 'watercolor_wood' | 'carved_wood' | 'carved_stone'
-  | 'snow_globe' | 'dollhouse' | 'scaled_architectural'
+  | 'carved_wood' | 'carved_stone' | 'walnut' | 'iron'
+  // curiosities (10) — 5 dimensional (standard stack) + 5 interpretive (ownScene)
+  | 'dollhouse' | 'gingerbread' | 'snow_globe'
+  | 'amber_inclusion' | 'enchanted_crystal'
+  | 'ukiyo_e' | 'art_nouveau' | 'cubism' | 'daguerreotype' | 'art_deco'
   // seasons (4)
   | 'spring' | 'summer' | 'fall' | 'winter'
   // events (5)
@@ -74,6 +83,10 @@ export type TimeOfDay = 'day' | 'night'
 // `forcedTimeOfDay` lets a preset lock day or night regardless of toggle.
 // `lightingByEnvironment` lets a preset override its default lighting
 // recipe based on the resolved environment.
+// `ownScene` — the preset ships a full custom prompt that owns the whole
+// scene (interpretive curiosities). Like artists presets, these bypass
+// env/ToD/lighting selection and force refine + outpaint OFF. The builder
+// routes them to buildHousesCuriositiesPrompt before the standard stack.
 export type Preset = {
   id:                     PresetId
   mode:                   Mode
@@ -81,6 +94,7 @@ export type Preset = {
   tier:                   Tier
   forcedEnvironment?:     EnvironmentId
   forcedTimeOfDay?:       TimeOfDay
+  ownScene?:              boolean
   sculptureClause:        string
   styleClause:            string
   materialRule:           string
@@ -89,11 +103,11 @@ export type Preset = {
   layer?:                 string
 }
 
-// NB2-supported aspect ratios per Replicate model page.
-// Default is '1:1' — overrides NB2's default of matching source image aspect.
+// Houses accepted ratios (2026-07-10, r2 — widened from the initial 3).
+// Default is '3:2' (UI default, keeps the house big and centered). Dropped
+// only 2:3 and ultrawide 21:9. Groups and Landscapes share the same set.
 export type AspectRatio =
-  | '1:1' | '2:3' | '3:2' | '3:4' | '4:3'
-  | '4:5' | '5:4' | '9:16' | '16:9' | '21:9'
+  | '1:1' | '3:2' | '4:3' | '3:4' | '4:5' | '5:4' | '9:16' | '16:9'
 
 // ── REQUEST / RESPONSE ────────────────────────────────────────
 // Multi-image input: NB2 supports up to 14 reference images, but Google's

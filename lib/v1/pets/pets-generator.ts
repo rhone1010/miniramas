@@ -23,6 +23,11 @@
 //   - Stage 4 is permanently inert rather than config-gated.
 
 import { buildPetsPrompt } from './pets-prompt'
+import {
+  buildPetExperimentalPrompt,
+  isPetExperimentalEffect,
+  type PetExperimentalEffectId,
+} from './pets-experimental'
 import type { PetCoatProfile, PetFeatureProfile } from './pets-refine'
 import { expandPetImage } from './pets-expand'
 import {
@@ -79,7 +84,12 @@ export async function generatePetsRender(
 
   const styleId:     PetsStyleId  = req.style_id
   const pipeline                   = STYLE_PIPELINE[styleId]
-  const presetId:    PetsPresetId = req.preset_id
+  const presetId                   = req.preset_id   // undefined for Curiosities
+  const experimentalEffect: PetExperimentalEffectId | undefined =
+    (typeof req.experimental_effect === 'string' && isPetExperimentalEffect(req.experimental_effect))
+      ? req.experimental_effect
+      : undefined
+  const isExperimental             = !!experimentalEffect
   const actionId:    ActionId     = req.action_id || DEFAULT_ACTION
   const restaged                   = actionId !== 'as_photographed'
   const scale:       Scale        = req.scale || 'close_up'
@@ -178,25 +188,29 @@ export async function generatePetsRender(
     const attemptT0 = Date.now()
     console.log(
       `[pets] attempt ${attemptIdx}/${MAX_ATTEMPTS} ` +
-      `style=${styleId} preset=${presetId} environment=${environmentId}`,
+      `style=${styleId} ${isExperimental ? `curiosity=${experimentalEffect}` : `preset=${presetId} environment=${environmentId}`}`,
     )
 
-    const prompt = buildPetsPrompt({
-      presetId,
-      environmentId,
-      scale,
-      plaqueText:   req.plaque_text,
-      advanced:     req.advanced,
-      subjectCount,
-      actionId,
-      coatNote,
-      featureNote,
-    })
+    const prompt = isExperimental
+      ? buildPetExperimentalPrompt({ effectId: experimentalEffect!, count: subjectCount })
+      : buildPetsPrompt({
+          presetId:     presetId!,
+          environmentId,
+          scale,
+          plaqueText:   req.plaque_text,
+          advanced:     req.advanced,
+          subjectCount,
+          actionId,
+          coatNote,
+          featureNote,
+        })
     finalPromptUsed = prompt
 
     console.log(
-      `[pets/prompt] style=${styleId} preset=${presetId} environment=${environmentId} ` +
-      `action=${actionId} subjects=${subjectCount} chars=${prompt.length} has_advanced=${!!req.advanced}`,
+      isExperimental
+        ? `[pets/prompt] style=${styleId} curiosity=${experimentalEffect} subjects=${subjectCount} chars=${prompt.length}`
+        : `[pets/prompt] style=${styleId} preset=${presetId} environment=${environmentId} ` +
+          `action=${actionId} subjects=${subjectCount} chars=${prompt.length} has_advanced=${!!req.advanced}`,
     )
 
     // ── Stage 1: NB2 generate ──
@@ -214,7 +228,7 @@ export async function generatePetsRender(
       const msg = e?.message || 'NB2 generate failed'
       console.error(`[pets] attempt ${attemptIdx} NB2 failed: ${msg}`)
       return buildFatalResult({
-        msg, prompt, styleId, presetId, environmentId, actionId,
+        msg, prompt, styleId, presetId: presetId!, environmentId, actionId,
         refineDecision, attempts, t0,
       })
     }
@@ -231,7 +245,16 @@ export async function generatePetsRender(
     let evalPassed = false
     let evalReason = 'no scoring performed'
 
-    if (input.openaiApiKey) {
+    if (isExperimental) {
+      // Curiosities are intentional transformations spanning realistic
+      // (Amber, Garden Statue) to fully abstract (Wire, Phoenix, Cubism).
+      // Likeness scoring is not a meaningful gate here and wrongly flags
+      // excellent renders as fails, triggering the decide prompt. Accept
+      // the render, mark it passed, and skip the scorer entirely (no
+      // wasted OpenAI call). Per-material gating can be reintroduced later.
+      evalPassed = true
+      evalReason = `curiosity (${experimentalEffect}) — likeness gate not applied`
+    } else if (input.openaiApiKey) {
       try {
         const threshold = pipeline.scoringThreshold || PET_LIKENESS_THRESHOLD
         const actionLabel = restaged ? ACTION_LABELS[actionId] : undefined
@@ -275,7 +298,7 @@ export async function generatePetsRender(
     }
     attempts.push(attempt)
 
-    if (evalPassed || attemptIdx === MAX_ATTEMPTS) {
+    if (evalPassed || isExperimental || attemptIdx === MAX_ATTEMPTS) {
       finalImageB64 = imageB64
       console.log(`[pets] attempt ${attemptIdx} ${evalPassed ? 'PASSED' : 'EXHAUSTED'} — ${evalReason}`)
       break

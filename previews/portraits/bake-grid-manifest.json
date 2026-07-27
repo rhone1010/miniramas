@@ -1,0 +1,962 @@
+[
+  {
+    "effect": "ebony",
+    "section": "sculptural",
+    "variation": 1,
+    "source": "p057.png",
+    "age": 14,
+    "gender": "f",
+    "race": "mixed-heritage",
+    "status": "ok"
+  },
+  {
+    "effect": "ebony",
+    "section": "sculptural",
+    "variation": 2,
+    "source": "p020.png",
+    "age": 31,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "ebony",
+    "section": "sculptural",
+    "variation": 3,
+    "source": "p102.png",
+    "age": 50,
+    "gender": "m",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "ebony",
+    "section": "sculptural",
+    "variation": 4,
+    "source": "p056.png",
+    "age": 69,
+    "gender": "m",
+    "race": "East Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "walnut",
+    "section": "sculptural",
+    "variation": 2,
+    "source": "p027.png",
+    "age": 26,
+    "gender": "f",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "walnut",
+    "section": "sculptural",
+    "variation": 1,
+    "source": "p089.png",
+    "age": 17,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "walnut",
+    "section": "sculptural",
+    "variation": 4,
+    "source": "p072.png",
+    "age": 71,
+    "gender": "m",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "walnut",
+    "section": "sculptural",
+    "variation": 3,
+    "source": "p053.png",
+    "age": 40,
+    "gender": "f",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "stone",
+    "section": "sculptural",
+    "variation": 2,
+    "source": "p068.png",
+    "age": 34,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "stone",
+    "section": "sculptural",
+    "variation": 1,
+    "source": "p034.png",
+    "age": 20,
+    "gender": "m",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "stone",
+    "section": "sculptural",
+    "variation": 3,
+    "source": "p046.png",
+    "age": 46,
+    "gender": "m",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "stone",
+    "section": "sculptural",
+    "variation": 4,
+    "source": "p095.png",
+    "age": 61,
+    "gender": "f",
+    "race": "mixed-heritage",
+    "status": "ok"
+  },
+  {
+    "effect": "bronze",
+    "section": "sculptural",
+    "variation": 1,
+    "source": "p082.png",
+    "age": 23,
+    "gender": "m",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "bronze",
+    "section": "sculptural",
+    "variation": 2,
+    "source": "p084.png",
+    "age": 35,
+    "gender": "m",
+    "race": "East Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "bronze",
+    "section": "sculptural",
+    "variation": 3,
+    "source": "p078.png",
+    "age": 48,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "bronze",
+    "section": "sculptural",
+    "variation": 4,
+    "source": "p007.png",
+    "age": 51,
+    "gender": "f",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "iron",
+    "section": "sculptural",
+    "variation": 1,
+    "source": "p002.png",
+    "age": 18,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "iron",
+    "section": "sculptural",
+    "variation": 2,
+    "source": "p083.png",
+    "age": 29,
+    "gender": "f",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "iron",
+    "section": "sculptural",
+    "variation": 3,
+    "source": "p061.png",
+    "age": 41,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "iron",
+    "section": "sculptural",
+    "variation": 4,
+    "source": "p048.png",
+    "age": 68,
+    "gender": "m",
+    "race": "Middle Eastern",
+    "status": "ok"
+  },
+  {
+    "effect": "alabaster",
+    "section": "sculptural",
+    "variation": 1,
+    "source": "p050.png",
+    "age": 21,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "alabaster",
+    "section": "sculptural",
+    "variation": 2,
+    "source": "p075.png",
+    "age": 29,
+    "gender": "f",
+    "race": "South Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "alabaster",
+    "section": "sculptural",
+    "variation": 4,
+    "source": "p088.png",
+    "age": 73,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "alabaster",
+    "section": "sculptural",
+    "variation": 3,
+    "source": "p038.png",
+    "age": 46,
+    "gender": "m",
+    "race": "mixed-heritage",
+    "status": "ok"
+  },
+  {
+    "effect": "impressionist",
+    "section": "artists",
+    "variation": 1,
+    "source": "p041.png",
+    "age": 13,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "impressionist",
+    "section": "artists",
+    "variation": 2,
+    "source": "p091.png",
+    "age": 30,
+    "gender": "f",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "impressionist",
+    "section": "artists",
+    "variation": 3,
+    "source": "p062.png",
+    "age": 47,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "impressionist",
+    "section": "artists",
+    "variation": 4,
+    "source": "p071.png",
+    "age": 58,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "torn_paper",
+    "section": "artists",
+    "variation": 2,
+    "source": "p059.png",
+    "age": 28,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "torn_paper",
+    "section": "artists",
+    "variation": 1,
+    "source": "p049.png",
+    "age": 13,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "torn_paper",
+    "section": "artists",
+    "variation": 3,
+    "source": "p077.png",
+    "age": 42,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "torn_paper",
+    "section": "artists",
+    "variation": 4,
+    "source": "p016.png",
+    "age": 64,
+    "gender": "m",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "folded_book",
+    "section": "artists",
+    "variation": 1,
+    "source": "p090.png",
+    "age": 24,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "folded_book",
+    "section": "artists",
+    "variation": 3,
+    "source": "p030.png",
+    "age": 45,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "folded_book",
+    "section": "artists",
+    "variation": 2,
+    "source": "p035.png",
+    "age": 26,
+    "gender": "f",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "folded_book",
+    "section": "artists",
+    "variation": 4,
+    "source": "p096.png",
+    "age": 74,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "charcoal_chalk",
+    "section": "artists",
+    "variation": 1,
+    "source": "p009.png",
+    "age": 11,
+    "gender": "f",
+    "race": "South Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "charcoal_chalk",
+    "section": "artists",
+    "variation": 2,
+    "source": "p004.png",
+    "age": 30,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "charcoal_chalk",
+    "section": "artists",
+    "variation": 3,
+    "source": "p094.png",
+    "age": 49,
+    "gender": "m",
+    "race": "South Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "charcoal_chalk",
+    "section": "artists",
+    "variation": 4,
+    "source": "p063.png",
+    "age": 58,
+    "gender": "f",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "pencil_sketch",
+    "section": "artists",
+    "variation": 1,
+    "source": "p042.png",
+    "age": 21,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "pencil_sketch",
+    "section": "artists",
+    "variation": 2,
+    "source": "p067.png",
+    "age": 28,
+    "gender": "f",
+    "race": "Middle Eastern",
+    "status": "ok"
+  },
+  {
+    "effect": "pencil_sketch",
+    "section": "artists",
+    "variation": 3,
+    "source": "p029.png",
+    "age": 39,
+    "gender": "f",
+    "race": "Middle Eastern",
+    "status": "ok"
+  },
+  {
+    "effect": "pencil_sketch",
+    "section": "artists",
+    "variation": 4,
+    "source": "p024.png",
+    "age": 65,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "sheet_music",
+    "section": "artists",
+    "variation": 2,
+    "source": "p036.png",
+    "age": 32,
+    "gender": "m",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "sheet_music",
+    "section": "artists",
+    "variation": 1,
+    "source": "p098.png",
+    "age": 24,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "sheet_music",
+    "section": "artists",
+    "variation": 4,
+    "source": "p103.png",
+    "age": 62,
+    "gender": "f",
+    "race": "East Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "deep_sea",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p065.png",
+    "age": 14,
+    "gender": "f",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "sheet_music",
+    "section": "artists",
+    "variation": 3,
+    "source": "p045.png",
+    "age": 40,
+    "gender": "f",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "deep_sea",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p099.png",
+    "age": 30,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "deep_sea",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p037.png",
+    "age": 39,
+    "gender": "f",
+    "race": "East Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "deep_sea",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p008.png",
+    "age": 63,
+    "gender": "m",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "circuit",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p073.png",
+    "age": 15,
+    "gender": "f",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "circuit",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p003.png",
+    "age": 25,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "circuit",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p054.png",
+    "age": 47,
+    "gender": "m",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "circuit",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p087.png",
+    "age": 60,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "reclaimed_bronze",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p058.png",
+    "age": 22,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "reclaimed_bronze",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p012.png",
+    "age": 31,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "reclaimed_bronze",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p100.png",
+    "age": 37,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "mercury",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p033.png",
+    "age": 12,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "reclaimed_bronze",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p015.png",
+    "age": 52,
+    "gender": "f",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "mercury",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p021.png",
+    "age": 38,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "mercury",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p005.png",
+    "age": 37,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "mercury",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p039.png",
+    "age": 55,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "blown_glass",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p025.png",
+    "age": 12,
+    "gender": "f",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "blown_glass",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p070.png",
+    "age": 48,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "blown_glass",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p092.png",
+    "age": 36,
+    "gender": "m",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "amber",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p001.png",
+    "age": 10,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "blown_glass",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p079.png",
+    "age": 59,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "amber",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p013.png",
+    "age": 38,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "amber",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p060.png",
+    "age": 34,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "amber",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p040.png",
+    "age": 67,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "neon",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p017.png",
+    "age": 11,
+    "gender": "f",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "neon",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p044.png",
+    "age": 33,
+    "gender": "m",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "neon",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p085.png",
+    "age": 42,
+    "gender": "f",
+    "race": "Southeast Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "nebula_resin",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p081.png",
+    "age": 16,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "neon",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p064.png",
+    "age": 70,
+    "gender": "m",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "nebula_resin",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p043.png",
+    "age": 27,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "nebula_resin",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p101.png",
+    "age": 43,
+    "gender": "f",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "nebula_resin",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p055.png",
+    "age": 57,
+    "gender": "f",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "dragon_skin",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p010.png",
+    "age": 18,
+    "gender": "m",
+    "race": "mixed-heritage",
+    "status": "ok"
+  },
+  {
+    "effect": "dragon_skin",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p052.png",
+    "age": 33,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "dragon_skin",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p093.png",
+    "age": 43,
+    "gender": "f",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "dragon_skin",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p080.png",
+    "age": 72,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "magic_energy",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p074.png",
+    "age": 23,
+    "gender": "m",
+    "race": "Black",
+    "status": "ok"
+  },
+  {
+    "effect": "magic_energy",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p086.png",
+    "age": 49,
+    "gender": "m",
+    "race": "Middle Eastern",
+    "status": "ok"
+  },
+  {
+    "effect": "magic_energy",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p051.png",
+    "age": 27,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "fantasy_crystal",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p026.png",
+    "age": 20,
+    "gender": "m",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "magic_energy",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p047.png",
+    "age": 56,
+    "gender": "f",
+    "race": "Southeast Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "fantasy_crystal",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p028.png",
+    "age": 32,
+    "gender": "m",
+    "race": "South Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "fantasy_crystal",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p069.png",
+    "age": 41,
+    "gender": "f",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "fantasy_crystal",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p032.png",
+    "age": 66,
+    "gender": "m",
+    "race": "white",
+    "status": "ok"
+  },
+  {
+    "effect": "armor",
+    "section": "experimental",
+    "variation": 1,
+    "source": "p066.png",
+    "age": 22,
+    "gender": "m",
+    "race": "Southeast Asian",
+    "status": "ok"
+  },
+  {
+    "effect": "armor",
+    "section": "experimental",
+    "variation": 2,
+    "source": "p076.png",
+    "age": 35,
+    "gender": "m",
+    "race": "mixed-heritage",
+    "status": "ok"
+  },
+  {
+    "effect": "armor",
+    "section": "experimental",
+    "variation": 3,
+    "source": "p006.png",
+    "age": 44,
+    "gender": "m",
+    "race": "Latino",
+    "status": "ok"
+  },
+  {
+    "effect": "armor",
+    "section": "experimental",
+    "variation": 4,
+    "source": "p104.png",
+    "age": 75,
+    "gender": "m",
+    "race": "Southeast Asian",
+    "status": "ok"
+  }
+]

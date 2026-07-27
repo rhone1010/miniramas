@@ -14,10 +14,11 @@ import OpenAI, { toFile } from 'openai'
 const ASPECT_TO_SIZE: Record<string, '1024x1024' | '1024x1536' | '1536x1024'> = {
   '1:1':  '1024x1024',
   '3:2':  '1536x1024',
-  '2:3':  '1024x1536',
   '4:3':  '1536x1024',  // no native 4:3 — use landscape
-  '3:4':  '1024x1536',  // no native 3:4 — use portrait
+  '5:4':  '1536x1024',  // no native 5:4 — use landscape
   '16:9': '1536x1024',
+  '3:4':  '1024x1536',  // no native 3:4 — use portrait
+  '4:5':  '1024x1536',  // no native 4:5 — use portrait
   '9:16': '1024x1536',
 }
 

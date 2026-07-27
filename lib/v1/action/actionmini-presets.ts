@@ -1,38 +1,46 @@
-// lib/v1/actionmini-presets.ts
+// lib/v1/action/actionmini-presets.ts
 // Single source of truth for all Action Minis presets.
 //
-// V6 changes vs V5:
-//   • window_sill and trophy_shelf removed. They were locations
-//     masquerading as materials. Users wanting that look now pick
-//     In Environment / Shelf with any material.
-//   • Preset lines no longer hint at "log base" or "bronze base" — base
-//     architecture is owned by COMPLEMENTARY_BASE in actionmini-blocks.ts
-//     (per-preset material × per-location shape). Exception: carved_wood
-//     keeps its "log IS the base" line because that's a structural call,
-//     not a staging assumption.
+// V7 rewrite (single-material hero):
+//   • Material set 9 → 13. Removed: resin, wax_bronze, terracotta_cracked,
+//     painted_ceramic_cracked. Renamed: bronze_bronze → bronze.
+//     Added: pewter, stone, ebony, walnut, chocolate, charcoal_chalk,
+//     stained_glass, driftwood_resin.
+//   • Each def now carries its own materialColorRule — the per-preset
+//     MATERIAL_COLOR lookup in actionmini-blocks.ts is gone.
+//   • buildPresetPrompt takes only { presetId, refinementTweak? }.
+//     Location, scale, kineticMedium, refinements and notes are gone —
+//     one hero look, no scene reconstruction.
+//   • Tiers are a default grouping only; they do not affect prompts.
 
-import { assemblePrompt } from './actionmini-shared'
-import type { KineticMedium } from './actionmini-shared'
-import { ActionMiniRefinements, getRefinementBlocks, LocationId, Scale } from './actionmini-blocks'
+import {
+  FIGURE_FIDELITY_BLOCK, ACTION_DYNAMICS_BLOCK, CAMERA_BLOCK,
+  PRESENTATION_BLOCK, COLLECTIBLE_ANCHOR_BLOCK, CRAFTSMANSHIP_BLOCK,
+} from './actionmini-blocks'
 
 export type ActionMiniPresetId =
-  | 'resin'
-  | 'plushy'
-  | 'carved_wood'
-  | 'wax_bronze'
-  | 'painted_ceramic_cracked'
-  | 'terracotta_cracked'
-  | 'bronze_bronze'
+  | 'bronze'
   | 'iron'
+  | 'pewter'
   | 'alabaster'
+  | 'stone'
+  | 'ebony'
+  | 'walnut'
+  | 'carved_wood'
+  | 'plushy'
+  | 'chocolate'
+  | 'charcoal_chalk'
+  | 'stained_glass'
+  | 'driftwood_resin'
 
 export type PresetTier = 'base' | 'premium' | 'signature'
 
 export interface ActionMiniPresetDef {
-  id:          ActionMiniPresetId
-  label:       string
-  tier:        PresetTier
-  presetLine:  string
+  id:                ActionMiniPresetId
+  label:             string
+  tier:              PresetTier
+  presetLine:        string
+  materialColorRule: string
 }
 
 // ── 3D SCULPTURE CLAUSE ──────────────────────────────────────
@@ -40,68 +48,72 @@ export interface ActionMiniPresetDef {
 // physical sculpture, not an illustration.
 const SCULPTURE_CLAUSE = 'Photograph of a real physical 3D sculpture, three-dimensional and tangible, lit and shadowed as an actual object in space.'
 
-// ── THE 9 PRESETS ────────────────────────────────────────────
+// ── THE 13 PRESETS ───────────────────────────────────────────
 export const ACTION_MINI_PRESETS: ActionMiniPresetDef[] = [
-  // ── Base ──
   {
-    id:    'resin',
-    label: 'Resin',
-    tier:  'base',
-    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Hand-painted resin miniature with visible brushwork on the surface, slight artistic stylization, hobby-shop collectible quality. Style: painted resin scale model with hand-painted finish — NOT a photographic 1:1 replica, this is a miniature collectible with the soft hand-crafted feel of a painted figurine.`,
+    id: 'bronze', label: 'Bronze', tier: 'base',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: bronze miniature — polished patinated bronze with green-grey verdigris in the recesses.`,
+    materialColorRule: `MATERIAL COLOR — BRONZE: The entire figure, all clothing, equipment, the reacting environment, and the base are one single polished patinated bronze — warm bronze tone with polished highlights and green-grey verdigris settling into the recesses. Do not retain any of the source's original colors; every surface is this same bronze.`,
   },
   {
-    id:    'plushy',
-    label: 'Plushy',
-    tier:  'base',
-    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Kinetic energy action shot with environmental effects. Style: Plushy, three-dimensional handmade fabric toy.`,
-  },
-
-  // ── Premium ──
-  {
-    id:    'carved_wood',
-    label: 'Wood',
-    tier:  'premium',
-    // No separate plinth — the log IS the base. COMPLEMENTARY_BASE block
-    // recognizes this preset and emits the log-as-base treatment.
-    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Kinetic energy action shot with environmental effects. Style: carved from wooden log as if emerging through the struggle or action in the scene. The log itself is the base — flat-cut on the bottom, raw bark on the sides, no additional plinth beneath.`,
+    id: 'iron', label: 'Iron', tier: 'base',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: hand-forged iron miniature, deep charcoal-black with a gunmetal sheen.`,
+    materialColorRule: `MATERIAL COLOR — FORGED IRON: The entire figure, clothing, equipment, reacting environment, and base are one single hand-forged iron — deep charcoal-black with a cool gunmetal sheen, hammered and solid. No source colors retained; every surface is this same iron.`,
   },
   {
-    id:    'wax_bronze',
-    label: 'Wax',
-    tier:  'premium',
-    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Kinetic energy action shot with environmental effects. Style: wax miniature on a bronze base.`,
+    id: 'pewter', label: 'Pewter', tier: 'premium',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: cast pewter miniature — soft matte silver-grey metal with a gentle sheen.`,
+    materialColorRule: `MATERIAL COLOR — PEWTER: The entire figure, clothing, equipment, reacting environment, and base are one single cast pewter — soft matte silver-grey metal with a gentle low sheen and a subtle darker tone in the recesses. No source colors retained; every surface is this same pewter.`,
   },
   {
-    id:    'painted_ceramic_cracked',
-    label: 'Ceramic',
-    tier:  'premium',
-    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Hand-painted glazed ceramic miniature with visible brushwork on the surface, slight artistic stylization, hobby-collectible quality. Style: painted ceramic figurine with hand-painted finish and visible craquelure crack lines across the glaze — NOT a photographic 1:1 replica, this is a miniature collectible with the soft hand-crafted feel of a painted ceramic piece.`,
-  },
-
-  // ── Signature ──
-  {
-    id:    'terracotta_cracked',
-    label: 'Terracotta',
-    tier:  'signature',
-    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Kinetic energy action shot with environmental effects. Style: terra cotta sculpture with cracks and pieces missing.`,
+    id: 'alabaster', label: 'Alabaster', tier: 'base',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: carved translucent alabaster with warm subsurface glow and faint amber veining.`,
+    materialColorRule: `MATERIAL COLOR — ALABASTER: The entire figure, clothing, equipment, reacting environment, and base are one single carved translucent alabaster — warm subsurface scattering, milky stone depth, soft glowing edges, faint amber veining. Hair and clothing are also alabaster, not their source colors; every surface is this same translucent stone.`,
   },
   {
-    id:    'bronze_bronze',
-    label: 'Bronze',
-    tier:  'signature',
-    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Kinetic energy action shot with environmental effects. Style: bronze miniature on a bronze base.`,
+    id: 'stone', label: 'Stone', tier: 'base',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: polished Taj Mahal quartzite — creamy-beige with gold, amber, and charcoal veining.`,
+    materialColorRule: `MATERIAL COLOR — QUARTZITE STONE: The entire figure, clothing, equipment, reacting environment, and base are one single polished Taj Mahal quartzite — creamy-beige base tones with warm gold and amber veining, smoky brown ribbons, and occasional charcoal-grey mineral threads. The mineral palette is cream, gold, brown, and charcoal only — avoid any pink, peach, rose, or flesh-toned veining anywhere. Hair and clothing are also quartzite, not their source colors.`,
   },
   {
-    id:    'iron',
-    label: 'Iron',
-    tier:  'signature',
-    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Kinetic energy action shot with environmental effects. Style: hand-forged iron miniature, deep charcoal-black with a gunmetal sheen.`,
+    id: 'ebony', label: 'Ebony', tier: 'premium',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: carved ebony wood, deep black-brown with fine visible grain.`,
+    materialColorRule: `MATERIAL COLOR — EBONY WOOD: The entire figure, clothing, equipment, reacting environment, and base are one single carved ebony wood — deep black-brown with fine visible grain and subtle natural color variation. No source colors retained; every surface is this same ebony.`,
   },
   {
-    id:    'alabaster',
-    label: 'Alabaster',
-    tier:  'signature',
-    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Kinetic energy action shot with environmental effects. Style: highly detailed alabaster statue.`,
+    id: 'walnut', label: 'Walnut', tier: 'premium',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: carved walnut wood — flowing grain from honey-amber through chocolate, soft satin finish.`,
+    materialColorRule: `MATERIAL COLOR — WALNUT WOOD: The entire figure, clothing, equipment, reacting environment, and base are one single carved walnut — rich flowing grain shifting from warm honey-amber through chestnut to deep chocolate, occasional figured knots and ribbon grain, finished in soft satin lacquer (semi-gloss, not wet high-gloss). No source colors retained.`,
+  },
+  {
+    id: 'carved_wood', label: 'Carved Wood', tier: 'base',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: carved from a raw wooden log emerging through the action — the log itself is the base, flat-cut bottom, raw bark sides, no separate plinth.`,
+    materialColorRule: `MATERIAL COLOR — RAW CARVED LOG: The entire figure is carved from a single raw wooden log as if emerging through the action — warm natural wood tone with visible tool marks and grain. The log itself is the base: flat-cut on the bottom, raw bark on the sides, no separate plinth beneath. No source colors retained.`,
+  },
+  {
+    id: 'plushy', label: 'Plushy', tier: 'base',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: soft handmade plushy figure — three-dimensional fabric toy.`,
+    materialColorRule: `MATERIAL COLOR — PLUSHY: The entire figure, clothing, equipment, and base are one soft handmade plush fabric toy — stitched seams, soft stuffed volumes, visible fabric nap. Source colors may carry through as dyed fabric, but the whole piece reads unmistakably as a soft fabric plush, not skin or hard material.`,
+  },
+  {
+    id: 'chocolate', label: 'Chocolate', tier: 'premium',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: sculpted chocolate — rich glossy cocoa-brown with a smooth tempered sheen.`,
+    materialColorRule: `MATERIAL COLOR — CHOCOLATE: The entire figure, clothing, equipment, reacting environment, and base are one single sculpted tempered chocolate — rich glossy cocoa-brown with a smooth tempered sheen and a subtle darker tone in the recesses. No source colors retained; every surface is this same chocolate.`,
+  },
+  {
+    id: 'charcoal_chalk', label: 'Charcoal & Chalk', tier: 'signature',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: sculpted from compressed charcoal and white Conté chalk — chisel marks, fractured edges, floating charcoal dust.`,
+    materialColorRule: `MATERIAL COLOR — CHARCOAL & CHALK: The entire figure, clothing, equipment, reacting environment, and base are sculpted from compressed charcoal, broken charcoal sticks, and white Conté chalk — deep matte black charcoal with bright white chalk highlights, visible chisel marks, fractured edges, and layered charcoal fragments. Any frozen airborne debris from the action is charcoal dust and chalk powder. True sculptural mass, never a flat drawing.`,
+  },
+  {
+    id: 'stained_glass', label: 'Stained Glass', tier: 'signature',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: leaded cathedral stained glass — glowing translucent jewel-toned panels bound by dark lead came.`,
+    materialColorRule: `MATERIAL COLOR — STAINED GLASS: The entire figure, clothing, equipment, reacting environment, and base are one dimensional leaded cathedral stained glass — glowing translucent jewel-toned colored glass panels bound by dark lead came, light passing through the glass. A three-dimensional stained-glass sculpture, never a flat window pane.`,
+  },
+  {
+    id: 'driftwood_resin', label: 'Driftwood & Resin', tier: 'premium',
+    presetLine: `highly accurate highly detailed. ${SCULPTURE_CLAUSE} Style: weathered silvery driftwood fused with clear amber resin flowing between the grain.`,
+    materialColorRule: `MATERIAL COLOR — DRIFTWOOD & RESIN: The entire figure, clothing, equipment, reacting environment, and base are one material of weathered silvery-grey driftwood fused with pours of clear amber resin — smooth glassy resin flowing between the worn, cracked wood grain. No colors beyond the natural driftwood and amber-resin palette.`,
   },
 ]
 
@@ -115,37 +127,30 @@ export function listGridPresets(): ActionMiniPresetDef[] {
 }
 
 // ── PROMPT BUILDER ───────────────────────────────────────────
+// Single hero look — no mode, no location, no scale.
 export function buildPresetPrompt(input: {
   presetId:        ActionMiniPresetId
-  kineticMedium?:  KineticMedium
-  locationId?:     LocationId
-  scale?:          Scale
-  refinements?:    ActionMiniRefinements
-  notes?:          string
   refinementTweak?: string
-}): string {
+}): { fullLine: string } {
   const def = getPresetDef(input.presetId)
-  if (!def) throw new Error(`unknown preset: ${input.presetId}`)
-  const km    = input.kineticMedium || 'other'
-  const loc:  LocationId = input.locationId || 'desk'
-  const scale: Scale     = input.scale      || 'close_up'
-  const refinementBlocks = getRefinementBlocks(input.presetId, km, loc, scale, input.refinements)
-  const parts = [def.presetLine, ...refinementBlocks]
+  if (!def) throw new Error(`Unknown Action preset: ${input.presetId}`)
 
-  // Tweak appended last under guard block — highest attention.
+  const parts = [
+    def.presetLine,            // SCULPTURE_CLAUSE is already embedded here — do NOT prepend it again
+    FIGURE_FIDELITY_BLOCK,
+    def.materialColorRule,
+    ACTION_DYNAMICS_BLOCK,
+    CAMERA_BLOCK,
+    PRESENTATION_BLOCK,
+    COLLECTIBLE_ANCHOR_BLOCK,
+    CRAFTSMANSHIP_BLOCK,
+  ]
+
   if (input.refinementTweak?.trim()) {
     const { REFINEMENT_GUARD_BLOCK } = require('./actionmini-refine')
     parts.push(REFINEMENT_GUARD_BLOCK)
     parts.push(`ADJUSTMENT: ${input.refinementTweak.trim()}`)
   }
 
-  const fullLine = parts.join('\n\n')
-  return assemblePrompt({
-    presetLine: fullLine,
-    notes:      input.notes,
-  })
+  return { fullLine: parts.join('\n\n') }
 }
-
-// Re-export refinement types for downstream consumers (route, generator)
-export type { ActionMiniRefinements, LocationId, Scale } from './actionmini-blocks'
-export { LOCATION_LABELS, SCALE_LABELS } from './actionmini-blocks'
