@@ -61,7 +61,7 @@ check(/\.ground\s*\{[^}]*inset\s*:\s*0/.test(css), '.ground does not cover the v
 const gz = css.match(/\.ground\s*\{[^}]*z-index\s*:\s*(-?\d+)/);
 const sz = css.match(/\.stage\s*\{[^}]*z-index\s*:\s*(-?\d+)/);
 check(gz && sz && +gz[1] < +sz[1], 'the ground is not behind the stage');
-check(/\.ground\s*\{[^}]*url\("\/textures\/limestone\.png"\)/.test(css),
+check(/\.ground\s*\{[^}]*url\("\/textures\/limestone\.(png|jpg)"\)/.test(css),
       'limestone is not on the ground layer');
 check(!/\.stage\s*\{[^}]*limestone/.test(css),
       'limestone is on .stage — it must be edge to edge, not stage-width');
@@ -124,6 +124,22 @@ if (/class="mh"/.test(markup)) {
         'Cormorant is bolded in the nav — hierarchy is size, never weight');
   check(/\.mh-nav\s*a\s*\{[^}]*font-size\s*:\s*[\d.]+em/.test(css),
         'nav font-size is not in em — it must scale from one number');
+}
+
+/* 8c · noise blend discipline
+   multiply on light grounds, soft-light on dark. The wrong one either
+   washes out the tone or crushes the shadows into mud. */
+for (const m of css.matchAll(/([.#][\w-]+(?:\s*,\s*[.#][\w-]+)*)::before\s*\{([^}]*)\}/g)) {
+  const sel = m[1], body = m[2];
+  if (!/textures\/noise/.test(body)) continue;
+  const blend = (body.match(/mix-blend-mode\s*:\s*([\w-]+)/) || [])[1];
+  check(blend === 'multiply' || blend === 'soft-light',
+        `${sel} applies noise with blend "${blend}" — only multiply or soft-light`);
+  const op = parseFloat((body.match(/opacity\s*:\s*([\d.]+)/) || [])[1]);
+  if (blend === 'multiply' && op > 0.08)
+    fails.push(`${sel} noise at ${op} on multiply — grain becomes tone above ~0.08`);
+  if (blend === 'soft-light' && op > 0.20)
+    fails.push(`${sel} noise at ${op} on soft-light — overpowers the surface above ~0.20`);
 }
 
 /* 9 · braces */
