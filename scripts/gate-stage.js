@@ -12,6 +12,9 @@ const fs = require('fs');
 const file = process.argv[2] || 'public/litenco-stage-2026-07-28-s1.html';
 if (!fs.existsSync(file)) { console.error('FAIL — not found: ' + file); process.exit(1); }
 const s = fs.readFileSync(file, 'utf8');
+/* markup with all <style> and <script> removed — a selector is not an element */
+const markup = s.replace(/<style>[\s\S]*?<\/style>/g, '')
+                .replace(/<script[\s\S]*?<\/script>/g, '');
 let css = (s.match(/<style>([\s\S]*?)<\/style>/g) || []).join('\n');
 /* strip CSS comments first — a rule quoted in a comment is not a rule */
 css = css.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -85,9 +88,42 @@ for (const m of css.matchAll(/([^{}]+)\{[^}]*font-size\s*:\s*(\d+)px/g)) {
 }
 
 /* 8 · bench and measurement scaffolding must not reach a surface */
-if (!/stage-2026-07-28-s1|Stage Contract/.test(s)) {
+const isContract = /litenco-stage-2026-07-28-s\d/.test(file) || /STAGE CONTRACT ·/.test(s);
+if (!isContract) {
   check(!/class="readout"/.test(s), 'measurement readout ported into a surface');
   check(!/class="rule"/.test(s),    'measurement frame ported into a surface');
+}
+
+/* 8b · masthead, when present, obeys MASTHEAD-DIRECTIVE-v1 */
+if (/class="mh"/.test(markup)) {
+  check(/--mh-h\s*:\s*90px/.test(css), 'masthead is not 90px');
+  check(/\.mh\s*\{[^}]*padding-inline\s*:\s*var\(--stage-gutter\)/.test(css),
+        'masthead inset does not read --stage-gutter — a flat padding drifts from the stage edge');
+  check(/\.mh\s*\{[^}]*position\s*:\s*sticky/.test(css), 'masthead is not sticky');
+  check(/\.mh\s*\{[^}]*background\s*:\s*var\(--espresso\)/.test(css),
+        'masthead ground is not espresso');
+  check(/grid-template-columns\s*:\s*minmax\(0,1fr\) auto minmax\(0,1fr\)/.test(css),
+        'masthead is not three zones with the nav optically centred');
+  check(/data-empty="true"/.test(markup), 'cart badge has no muted empty state');
+  check(/id="mhCreditsBtn"[^>]*hidden/.test(markup), 'credits does not ship hidden');
+  /* series switcher */
+  if (/mh-series-btn/.test(markup)) {
+    check(/--series\s*:\s*#d7bd89/i.test(css), 'series colour is not #d7bd89');
+    check(/\.mh-series-btn\s*\{[^}]*color\s*:\s*var\(--series\)/.test(css),
+          'series button does not read --series');
+    check(/aria-expanded="false"/.test(markup), 'series button has no initial aria-expanded');
+    check(/id="mhSeriesMenu"[^>]*hidden/.test(markup), 'series menu does not ship hidden');
+    const items = markup.match(/role="menuitem"/g) || [];
+    check(items.length === 5, `series menu must list the five locked Series — found ${items.length}`);
+    for (const gone of ['Houses', 'Landscapes'])
+      check(!new RegExp('>'+gone+'<').test(markup), `${gone} is out for Aug 9 but appears in the series menu`);
+    const cur = (markup.match(/aria-current="page"/g) || []);
+    check(cur.length === 1, `exactly one series must be current — found ${cur.length}`);
+  }
+  check(!/\.mh-nav\s*a\s*\{[^}]*font-weight\s*:\s*[5-9]00/.test(css),
+        'Cormorant is bolded in the nav — hierarchy is size, never weight');
+  check(/\.mh-nav\s*a\s*\{[^}]*font-size\s*:\s*[\d.]+em/.test(css),
+        'nav font-size is not in em — it must scale from one number');
 }
 
 /* 9 · braces */
