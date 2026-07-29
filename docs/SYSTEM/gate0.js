@@ -6,11 +6,14 @@ const M = F();
 const ids = M.EFFECTS_FLAT.map(e=>e.id);
 const dup = ids.filter((x,i)=>ids.indexOf(x)!==i);
 const fail = m => { throw new Error('GATE FAIL — '+m); };
-if (M.CATALOGUE.length !== 6) fail('silo count');
+if (M.CATALOGUE.length !== 8) fail('silo count — eight rooms, two unnamed');
 if (M.EFFECTS_FLAT.length !== 36) fail('effect count');
 if (dup.length) fail('duplicate ids: '+dup);
 if (ids.includes('deep_sea')) fail('deep_sea present — it is cut');
-if (ids.includes('fantasy_crystal')) fail('fantasy_crystal — renamed enchanted_crystal');
+// id stays fantasy_crystal (engine truth); only the LABEL is Enchanted Crystal
+if (!ids.includes('fantasy_crystal')) fail('fantasy_crystal id missing — engine uses it');
+if (M.effectLabel('fantasy_crystal') !== 'Enchanted Crystal') fail('fantasy_crystal label');
+if (ids.includes('enchanted_crystal')) fail('enchanted_crystal is not an engine id');
 if (M.COLLECTION_FILTERS.length !== 6) fail('filter count');
 if (M.COLLECTION_FILTERS.some(f=>['houses','landscapes'].includes(f.id))) fail('stale series in filter');
 if (M.CREDITS_PER_IMAGE !== 10) fail('credits per image');
@@ -32,14 +35,46 @@ const ENGINE = ['plushy','bronze','iron','alabaster','stone','ebony','walnut','i
  'chocolate','stained_glass','driftwood_resin'];
 const CURATOR = ['bronze','alabaster','stone','ebony','walnut','iron','impressionist',
  'torn_paper','folded_book','charcoal_chalk','pencil_sketch','sheet_music'];
+// engine:true now means "renders by SOME path" — preset or experimental.
+// The path field records which. Both are checked in build 0c below.
+const EXPERIMENTAL = ['deep_sea','circuit','reclaimed_bronze','mercury','blown_glass',
+ 'amber','neon','nebula_resin','dragon_skin','magic_energy','armor','elizabethan',
+ 'victorian','fantasy_crystal'];
 const flagged = M2.EFFECTS_FLAT.filter(e=>e.engine).map(e=>e.id).sort();
-const truth   = M2.EFFECTS_FLAT.filter(e=>ENGINE.includes(e.id)).map(e=>e.id).sort();
+const truth   = M2.EFFECTS_FLAT
+  .filter(e=>ENGINE.includes(e.id)||EXPERIMENTAL.includes(e.id)).map(e=>e.id).sort();
 if (JSON.stringify(flagged)!==JSON.stringify(truth))
-  throw new Error('GATE FAIL — engine flags disagree with PRESET_LABELS');
-console.log('engine-backed:', truth.length + '/36');
+  throw new Error('GATE FAIL — engine flags disagree with PRESET_LABELS + EXPERIMENTAL');
+console.log('engine-backed (either path):', truth.length + '/36');
 console.log('curator-visible:', M2.EFFECTS_FLAT.filter(e=>e.curator).length + '/36');
 console.log('  in engine, invisible to Curator:',
   ENGINE.filter(id=>!CURATOR.includes(id)).join(', '));
 console.log('  no engine prompt at all:',
   M2.EFFECTS_FLAT.filter(e=>!e.engine).length);
 console.log('RECONCILIATION GATES PASS');
+
+// ── build 0c: three-path reconciliation ────────────────────────────────────
+const M3 = new Function(require('fs').readFileSync('portraits-catalogue.js','utf8')
+  + ' return {EFFECTS_FLAT};')();
+const PRESET_IDS = ['plushy','bronze','iron','alabaster','stone','ebony','walnut',
+ 'impressionist','torn_paper','folded_book','charcoal_chalk','pencil_sketch',
+ 'sheet_music','pewter','chocolate','stained_glass','driftwood_resin'];
+const EXP_IDS = ['deep_sea','circuit','reclaimed_bronze','mercury','blown_glass','amber',
+ 'neon','nebula_resin','dragon_skin','magic_energy','armor','elizabethan','victorian',
+ 'fantasy_crystal'];
+const byPath = p => M3.EFFECTS_FLAT.filter(e=>e.path===p);
+byPath('preset').forEach(e=>{ if(!PRESET_IDS.includes(e.id))
+  throw new Error('GATE FAIL — '+e.id+" tagged preset but not in PRESET_LABELS"); });
+byPath('experimental').forEach(e=>{ if(!EXP_IDS.includes(e.id))
+  throw new Error('GATE FAIL — '+e.id+" tagged experimental but not in EXPERIMENTAL_EFFECTS"); });
+byPath('none').forEach(e=>{ if(PRESET_IDS.includes(e.id)||EXP_IDS.includes(e.id))
+  throw new Error('GATE FAIL — '+e.id+' tagged none but the engine has it'); });
+const known = M3.EFFECTS_FLAT.map(e=>e.id);
+const orphans = [...PRESET_IDS,...EXP_IDS].filter(id=>!known.includes(id));
+console.log('  path preset:', byPath('preset').length,
+            '· experimental:', byPath('experimental').length,
+            '· none:', byPath('none').length);
+console.log('  renders today:', byPath('preset').length + byPath('experimental').length + '/36');
+console.log('  no prompt yet:', byPath('none').map(e=>e.id).join(', '));
+console.log('  ENGINE ORPHANS (exist, in no silo):', orphans.join(', ') || 'none');
+console.log('THREE-PATH GATES PASS');
