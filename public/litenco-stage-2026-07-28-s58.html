@@ -1,0 +1,2424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liten &amp; Co — Stage + Masthead — s58 — 2026-07-28</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   LITEN & CO — STAGE CONTRACT · s58 · 2026-07-28
+   The stage, the masthead, and the empty rooms inside it.
+   No content. Geometry only.
+
+   This file is the single authority for four things:
+       the ground, the stage width, the gutters, the type base.
+   Every surface adopts this block verbatim. Nothing downstream may set
+   width, margin, max-width or font-size on .ground, .stage or :root.
+
+   WHY THIS EXISTS
+   b7 had body{display:flex; gap:40px; justify-content:center}. That made the
+   stage a flex item, so width:86% was only a hint — actual width came from
+   flex distribution competing with auto margins and a 40px gap. Gutters were
+   therefore unpredictable and different at every viewport.
+   Here body is a block. The stage's width is simply true.
+   ====================================================================== */
+
+/* ---- TOKENS · the only place these numbers appear --------------------- */
+:root{
+  /* TYPE BASE — 16px at 1920 and below, growing to 22px on wide screens.
+     The floor is the point. The old clamp(12px, .38vw + 6px, 15px) bottomed
+     at 13px, which is what made every rem measurement read ~20% small for
+     months. A clamp whose minimum is 16px cannot reproduce that — it can
+     only grow. Everything above is declared in rem so the scale reaches it.
+     1440 → 16 · 1920 → 16 · 2560 → 19.2 · 2844 → 20.6 · 3840 → 22 (capped)
+     b7 used clamp(12px, 0.38vw + 6px, 15px), which resolved to 13px at
+     Rich's viewport. Every rem in the file was then measured against 13,
+     so type came out ~20% smaller than specified. That was the recurring
+     "fonts are too small" fault since March. It is fixed, not fluid. */
+  font-size:clamp(16px, 0.5vw + 6.4px, 22px);
+
+  /* GEOMETRY */
+  /* 90% wide, but the gutter never exceeds 100px a side.
+     max() picks whichever is wider: 90%, or the full width less 2x100px.
+     Below 2000px viewport the 5% gutter is under 100 and 90% governs.
+     Above it the gutter holds at 100 and the stage keeps growing. */
+  --stage-gutter-max:100px;
+  --stage-gutter:min(5%, var(--stage-gutter-max));   /* the one gutter value */
+  --stage-w:max(90%, calc(100% - (var(--stage-gutter-max) * 2)));
+  --mh-h:90px;          /* masthead height */
+  --mark-h:60px;        /* the L mark, measured by height — its width follows */
+
+  /* ROOMS — every proportion inside the stage, declared once */
+  --spine-w:clamp(300px, 20%, 460px);   /* rail + curator together */
+  --rail-w:60px;                        /* the closed "Design your own" spine */
+  --queue-w:clamp(220px, 14.5%, 330px);   /* To Be Crafted */
+  --room-gap:20px;
+  --stage-pad:24px;
+  --footer-h:104px;
+  --footer-pad:18px;
+
+  /* THE FLOOR — 12 columns, because 12 divides by 2, 3, 4 and 6.
+     Any row shape is a span change, never a new grid. */
+  --card-gap:clamp(14px, 1.1vw, 26px);
+  --card-ratio:.78;
+  --card-type:clamp(16px, 1vw, 26px);   /* the title; the count follows at .72em */
+  /* The Curator has its own scale. It cannot ride the full root ramp: the
+     panel does not widen as fast as the type does, so at 2560 a 30px serif
+     was landing in a 290px column — about nine characters a line. */
+  --cur-type:clamp(15px, .72vw, 20px);
+  --r-panel:8px;
+
+  /* GROUND */
+  --ls-tile:900px;      /* ground limestone tile. larger reads as ground, smaller as slab */
+
+  /* Curator stone — two knobs, same technique as the ground.
+     wash is a vellum veil laid over the stone: 1 hides it, 0 shows it raw. */
+  --cur-stone:url("/textures/limestone.jpg");
+  --cur-stone-wash:.42;
+  --cur-stone-tile:800px;
+
+  /* Footer — same two knobs. Lighter than the Curator by intent. */
+  --foot-stone:url("/textures/limestone.jpg");
+  --foot-stone-wash:.62;
+  --foot-stone-tile:1100px;
+
+  /* Queue / My Collection — the Curator's technique, dark ground.
+     Starting at the Curator's accepted numbers: wash .42, tile 800.
+     The veil is coffee, not vellum — a light veil over a dark ground greys it. */
+  --queue-tex:url("/textures/coffee_leather.jpg");
+  --queue-tex-wash:.42;
+  --queue-tex-tile:800px;
+  --ls-wash:.42;        /* vellum laid over the stone. higher = quieter stone */
+
+  /* PALETTE — canonical, do not shadow with near-miss values */
+  --ink:#2a241e;  --ink-soft:#5a5248;  --taupe:#aba39a;
+  --vellum:#f3ede1; --vellum-100:#f8f4eb; --vellum-200:#f3ecdd; --vellum-300:#e9dec8;
+  --limestone:#f1ece3;
+  --oxblood:#7d4242; --brass:#75623a; --gold:#b68a53;
+  --series:#d7bd89;     /* the series title, and its dropdown text */
+  --series-gap:50px;    /* extra space after the series title, on top of the 32px nav gap */
+  --espresso:#26201a; --coffee-700:#332620;
+  --card-line:rgba(196,169,110,.28);
+  --hairline:rgba(123,92,58,.20);
+
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',sans-serif;
+
+  --r-card:8px;         /* radius ceiling. 999px only on pills <=72px tall */
+}
+
+*{margin:0; padding:0; box-sizing:border-box}
+[hidden]{display:none!important}
+button{font:inherit; border:none; background:none; color:inherit}
+
+html{ height:100% }
+
+/* body is a BLOCK. Nothing here may make it a flex or grid container —
+   that is what broke the geometry in b7. */
+body{
+  min-height:100%;
+  background:var(--limestone);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:1rem;
+  overflow-x:hidden;
+}
+
+/* ---- THE GROUND · edge to edge, behind everything --------------------- */
+/* Fixed so it does not scroll away and does not depend on content height.
+   Separated from .stage on purpose: percentage background-size on the
+   gradients now resolves against the viewport, not against a box that also
+   carries a tiled image. That is why the 72% radial read wrong before. */
+.ground{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-color:var(--limestone);
+  background-image:
+    linear-gradient(0deg,
+      rgba(241,236,227,var(--ls-wash)), rgba(241,236,227,var(--ls-wash))),
+    url("/textures/limestone.jpg");
+  background-repeat:repeat, repeat;
+  background-size:auto, var(--ls-tile) var(--ls-tile);
+  background-position:center, center;
+}
+
+/* atmosphere — its own layer so it can be tuned without touching the stone */
+.ground::before{
+  content:""; position:absolute; inset:0;
+  background-image:
+    radial-gradient(circle at 16% 8%,
+      rgba(255,255,255,.86) 0%, rgba(255,255,255,.30) 24%, transparent 50%),
+    radial-gradient(circle at 86% 24%,
+      rgba(211,187,151,.24) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 112%,
+      rgba(92,66,40,.13) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(221,208,189,.14) 42%,
+      rgba(255,255,255,.10) 68%, rgba(191,166,130,.11) 100%);
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat;
+  background-size:72% 72%, 58% 66%, 100% 58%, cover;
+  background-position:top left, top right, bottom center, center;
+}
+
+/* grain and the room's inner shadow */
+.ground::after{
+  content:""; position:absolute; inset:0;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:240px 240px;
+  opacity:.025; mix-blend-mode:multiply;
+  box-shadow:inset 0 0 7rem rgba(69,44,29,.045),
+             inset 0 1px 0 rgba(255,255,255,.32);
+}
+
+
+/* ---- THE MASTHEAD · full-bleed ground, content on the stage edge ------ */
+/* Governed by MASTHEAD-DIRECTIVE-v1. Three zones, one row, never a fourth.
+   The inset reads --stage-gutter, so the wordmark sits exactly on the stage
+   edge at every width. A flat padding is the fault the directive names:
+   the misalignment grows with screen width. */
+.mh{
+  position:sticky; top:0; z-index:60;
+  height:var(--mh-h);
+  background:var(--espresso);
+  border-bottom:1px solid var(--card-line);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  padding-inline:var(--stage-gutter);
+}
+
+
+/* ---- SERIES SWITCHER · the first item in the nav row ------------------- */
+/* Not a fourth zone — it lives inside the nav so the three-zone rule holds.
+   It names the room you are standing in, and opens the door to the others. */
+.mh-series{ position:relative; display:flex; align-items:center;
+  margin-right:var(--series-gap) }
+.mh-series-btn{
+  display:inline-flex; align-items:center; gap:.34em;
+  font-family:var(--serif); font-size:1.8em; font-weight:400; line-height:1;
+  color:var(--series); padding:10px 0; cursor:pointer; white-space:nowrap;
+  transition:color .16s ease;
+}
+.mh-series-btn:hover{ color:#e6d2a8 }
+.mh-series-btn .caret{
+  width:.52em; height:.52em; flex:0 0 auto;
+  margin-top:.14em; opacity:.72;
+  transform-origin:50% 45%;
+  transition:transform .22s cubic-bezier(.22,.7,.3,1), opacity .16s ease;
+}
+.mh-series-btn .caret path{
+  fill:none; stroke:currentColor; stroke-width:1.35;
+  stroke-linecap:round; stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+.mh-series-btn:hover .caret{ opacity:1 }
+.mh-series-btn[aria-expanded="true"] .caret{ transform:rotate(180deg); opacity:1 }
+
+/* the panel — warm paper lettering on coffee */
+.mh-series-menu{
+  position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%);
+  min-width:16em;
+  background:linear-gradient(180deg,#2a1f1b 0%, #221915 100%);
+  border:1px solid var(--card-line);
+  border-radius:var(--r-card);
+  box-shadow:0 22px 48px -20px rgba(20,12,8,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  padding:20px;
+  display:flex; flex-direction:column;
+  z-index:70;
+}
+.mh-series-menu a{
+  display:flex; align-items:center; justify-content:space-between; gap:1.2em;
+  font-family:var(--serif); font-size:1.45em; font-weight:400; line-height:1.1;
+  color:var(--vellum-200); text-decoration:none; white-space:nowrap;
+  padding:.52em .7em; border-radius:6px;
+  transition:background .14s ease, color .14s ease;
+}
+.mh-series-menu a:hover,
+.mh-series-menu a:focus-visible{
+  background:linear-gradient(180deg, rgba(215,189,137,.16), rgba(215,189,137,.09));
+  color:var(--series); outline:none;
+}
+.mh-series-menu a[aria-current="page"]{ color:var(--series) }
+.mh-series-menu a[aria-current="page"]::after{
+  content:""; width:5px; height:5px; border-radius:50%; background:var(--series);
+}
+.mh-series-menu .sep{
+  height:1px; margin:6px 8px;
+  background:linear-gradient(90deg, transparent, rgba(215,189,137,.28), transparent);
+}
+
+/* wordmark — never collapses, never truncates */
+.mh-logo{
+  justify-self:start; text-decoration:none;
+  display:inline-flex; align-items:center;
+  color:var(--vellum-100);              /* the mark inherits this */
+}
+/* the mark is the wordmark. Its baked #fff fill is stripped on the way in so
+   it takes currentColor and can be recoloured without touching the file.
+   Height governs; width follows the 1.19:1 ratio. */
+.mh-mark{
+  height:var(--mark-h); width:auto; flex:0 0 auto;
+  display:block; overflow:visible;
+}
+.mh-mark path{ fill:currentColor }
+.sr{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* nav centred on the page, not between the outer zones */
+.mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
+.mh-nav a{
+  position:relative; text-decoration:none; white-space:nowrap;
+  font-family:var(--serif); font-size:1.5em; font-weight:400; line-height:1;
+  color:var(--vellum-300); padding:10px 0;
+  transition:color .16s ease;
+}
+.mh-nav a:hover{ color:var(--vellum-100) }
+.mh-nav a.on{ color:var(--gold) }
+.mh-nav a.on::after{
+  content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
+  background:var(--gold);
+}
+
+/* right cluster — credits then cart, in that order */
+.mh-right{ justify-self:end; display:flex; align-items:center; gap:12px }
+.mh-credits,.mh-cart{
+  display:flex; align-items:center; gap:10px;
+  height:44px; padding:0 16px;
+  border-radius:var(--r-card);
+  background:var(--coffee-700);
+  border:1px solid var(--card-line);
+  color:var(--vellum-100);
+  font-family:var(--sans); font-size:1rem; font-weight:600;
+  cursor:pointer;
+  transition:background .16s ease, border-color .16s ease;
+}
+.mh-credits:hover,.mh-cart:hover{ background:#40302a; border-color:var(--gold) }
+.mh-credits .v,.mh-cart .cnt{ font-variant-numeric:tabular-nums }
+.mh-credits .u{ font-weight:400; color:var(--vellum-300) }
+.mh-cart svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+
+/* the only circle in the component */
+.mh-cart .cnt{
+  min-width:24px; height:24px; padding:0 6px; border-radius:50%;
+  display:grid; place-items:center;
+  background:var(--oxblood); color:#fff;
+  font-family:var(--sans); font-size:0.875rem; font-weight:600;
+}
+/* at zero the badge mutes — a cart that disappears reads as broken */
+.mh-cart .cnt[data-empty="true"]{ background:rgba(233,222,200,.22); color:var(--vellum-300) }
+
+/* navigation is what gives way. the wordmark and the cart never do. */
+.mh-menu{
+  display:none; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:var(--r-card);
+  background:var(--coffee-700); border:1px solid var(--card-line);
+  color:var(--vellum-100); cursor:pointer;
+}
+.mh-menu svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+.mh-drawer{
+  position:absolute; top:var(--mh-h); left:0; right:0;
+  background:var(--espresso); border-bottom:1px solid var(--card-line);
+  padding:12px 0 20px; display:flex; flex-direction:column;
+}
+.mh-drawer a{
+  text-decoration:none; color:var(--vellum-300);
+  font-family:var(--serif); font-size:1.8em; font-weight:400;
+  padding:12px var(--stage-gutter);
+}
+.mh-drawer a.on{ color:var(--gold) }
+
+@media (max-width:1400px){ .mh-nav{ gap:22px; font-size:.88em } }
+@media (max-width:1199px){
+  .mh{ grid-template-columns:auto 1fr auto }
+  .mh-nav{ display:none }
+  .mh-menu{ display:flex; justify-self:start; margin-left:12px }
+}
+@media (max-width:767px){ .mh-credits{ display:none } }
+
+/* ---- THE STAGE · 86%, centred, at every width ------------------------- */
+.stage{
+  position:relative; z-index:1;
+  width:var(--stage-w);
+  margin-inline:auto;
+  min-height:calc(100vh - var(--mh-h));
+  padding-block:var(--stage-pad);
+}
+
+
+/* ======================================================================
+   THE ROOMS · s8
+   Four regions, no content. Each is a named area of one grid so their
+   proportions are declared in one place rather than emerging from a
+   sequence of flex rules. That is what went wrong before.
+
+       +--------+------------------+--------+
+       | spine  |     workshop     | queue  |
+       +--------+------------------+--------+
+       |            footer                  |
+       +------------------------------------+
+
+   The curator sits inside the spine column; the workshop takes the rest.
+   The footer runs the full width beneath all three.
+   ================================================================== */
+.rooms{
+  display:grid;
+  grid-template-columns:var(--spine-w) minmax(0,1fr) var(--queue-w);
+  grid-template-rows:minmax(0,1fr) auto;
+  grid-template-areas:
+    "curator workshop queue"
+    "footer  footer   footer";
+  gap:var(--room-gap);
+  height:calc(100vh - var(--mh-h) - (var(--stage-pad) * 2));
+  min-height:0;
+}
+
+.room{
+  position:relative; min-width:0; min-height:0;
+  border-radius:var(--r-panel);
+}
+
+/* the label sits centred until a room has something in it */
+.room::after{
+  content:attr(data-room);
+  position:absolute; inset:0;
+  display:grid; place-items:center;
+  font-family:var(--sans); font-size:0.8125rem; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:var(--taupe); pointer-events:none;
+}
+
+.room--curator { grid-area:curator }
+.room--workshop{ grid-area:workshop }  /* the open floor — the stone shows through */
+.room--queue   { grid-area:queue }
+.room--queue::after{ content:none }   /* the rail has contents now */
+.room--footer  { grid-area:footer }
+
+/* ---- the footer · five bays with hairline dividers -------------------- */
+.room--footer{
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0,1fr));
+  align-items:center;
+  /* height, not min-height. the contents were taller than the token, so the
+     token was being ignored rather than applied. */
+  height:var(--footer-h);
+  min-height:0;
+  overflow:hidden;
+  padding:0 var(--footer-pad);
+}
+.room--footer::after{ content:none }
+.bay{
+  position:relative; min-width:0; height:100%;
+  display:grid; place-items:center;
+  padding-inline:var(--footer-pad);
+}
+/* divider between bays, never before the first or after the last */
+.bay + .bay::before{
+  content:""; position:absolute; left:0; top:14%; bottom:14%; width:1px;
+  background:linear-gradient(180deg,
+    transparent, rgba(123,92,58,.30) 22%, rgba(123,92,58,.30) 78%, transparent);
+}
+.bay::after{
+  content:attr(data-bay);
+  font-family:var(--sans); font-size:0.8125rem; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--taupe);
+}
+
+/* ---- the spine · a closed rail the curator sits beside ---------------- */
+.room--curator{
+  display:grid;
+  grid-template-columns:var(--rail-w) minmax(0,1fr);
+  overflow:hidden;
+  padding:0;
+}
+.room--curator::after{ content:none }   /* the Curator has contents now */
+.rail{
+  grid-column:1; position:relative; z-index:3;
+  background:var(--oxblood);
+  display:grid; place-items:center;
+  cursor:pointer;
+}
+.rail span{
+  font-family:var(--serif); font-style:italic; font-size:1.6rem;
+  color:var(--vellum-200); white-space:nowrap;
+  writing-mode:vertical-rl; transform:rotate(180deg);
+  letter-spacing:.04em;
+}
+
+@media (max-width:1400px){
+  .rooms{ grid-template-columns:var(--spine-w) minmax(0,1fr) var(--queue-w) }
+}
+@media (max-width:1100px){
+  .rooms{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"curator" "workshop" "footer";
+    grid-template-rows:auto minmax(320px,1fr) auto;
+    height:auto;
+  }
+  .room--queue{ display:none }
+}
+
+
+/* ======================================================================
+   SURFACES · s9 · to Rich's texture spec, 2026-07-28
+
+   The rule that governs all of it: THE GRADIENTS CARRY THE TONE, THE NOISE
+   CARRIES ONLY GRAIN. Keeping those jobs separate is what stops a blend
+   mode turning a chosen colour into mud.
+
+   noise sits on ::before at z-index:-1 inside an isolated stacking context,
+   so it paints above the surface's own background and below its content.
+   multiply on light grounds. soft-light on dark ones.
+   ================================================================== */
+
+/* ---- 1 · Curator card · warm vellum ----------------------------------- */
+.room--curator{
+  isolation:isolate; overflow:hidden;
+  background-color:#f7f2e9;
+  background-image:
+    /* tone — carried by the gradients, per the spec */
+    radial-gradient(circle at 30% 15%, rgba(255,255,255,.28), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(112,77,43,.045), transparent 52%),
+    linear-gradient(145deg, rgba(255,255,255,.12), rgba(210,191,161,.055)),
+    /* the veil that decides how much stone shows */
+    linear-gradient(0deg,
+      rgba(247,242,233,var(--cur-stone-wash)), rgba(247,242,233,var(--cur-stone-wash))),
+    /* the stone itself, bottom of the stack */
+    var(--cur-stone);
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,var(--cur-stone-tile) var(--cur-stone-tile);
+  background-position:center,center,center,center,center;
+  border:1px solid rgba(137,105,67,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.62),
+             0 .7rem 1.6rem rgba(59,41,25,.15);
+}
+.room--curator::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:14rem 14rem;
+  opacity:.045; mix-blend-mode:multiply;
+}
+
+/* ---- 2 · Footer · pale limestone, quieter than the Curator ------------- */
+.room--footer{
+  isolation:isolate; overflow:hidden;
+  background-color:#f5efe6;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(102,73,42,.025)),
+    radial-gradient(circle at 12% 0%, rgba(255,255,255,.34), transparent 46%),
+    radial-gradient(circle at 90% 100%, rgba(118,82,45,.035), transparent 48%),
+    repeating-linear-gradient(0deg,
+      rgba(85,61,36,.012) 0, rgba(85,61,36,.012) 1px,
+      transparent 1px, transparent 15rem),
+    repeating-linear-gradient(90deg,
+      rgba(85,61,36,.01) 0, rgba(85,61,36,.01) 1px,
+      transparent 1px, transparent 15rem),
+    /* the veil that decides how much stone shows */
+    linear-gradient(0deg,
+      rgba(245,239,230,var(--foot-stone-wash)), rgba(245,239,230,var(--foot-stone-wash))),
+    /* the stone itself, bottom of the stack */
+    var(--foot-stone);
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,auto,auto,
+    var(--foot-stone-tile) var(--foot-stone-tile);
+  background-position:center,center,center,center,center,center,center;
+  border:1px solid rgba(142,108,68,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.64),
+             0 .7rem 1.8rem rgba(55,39,24,.07);
+}
+.room--footer::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:16rem 16rem;
+  opacity:.035; mix-blend-mode:multiply;
+}
+
+/* ---- 3 · Queue and My Collection · dark coffee ------------------------- */
+/* soft-light, not multiply — multiply crushes the shadows into mud. */
+.room--queue,
+.colrail,
+.my-collection{
+  isolation:isolate; overflow:hidden;
+  background-color:#1a1613;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.045), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(255,255,255,.025), transparent 48%),
+    linear-gradient(180deg, rgba(255,255,255,.018), rgba(0,0,0,.04)),
+    /* a coffee veil, not a vellum one — the ground beneath is dark */
+    linear-gradient(0deg,
+      rgba(26,22,19,var(--queue-tex-wash)), rgba(26,22,19,var(--queue-tex-wash))),
+    var(--queue-tex);
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,var(--queue-tex-tile) var(--queue-tex-tile);
+  background-position:center,center,center,center,center;
+  border:1px solid rgba(174,133,78,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),
+             0 .8rem 1.8rem rgba(25,16,10,.2);
+}
+.room--queue::before,
+.colrail::before,
+.my-collection::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:13rem 13rem;
+  opacity:.12; mix-blend-mode:soft-light;
+}
+/* alternates, per the spec — swap the base tone, keep soft-light
+   warmer coffee  #211915      near-black espresso  #151210 */
+
+/* ---- 4 · Curator's Pick · elevated ivory ------------------------------- */
+/* The light recommendation panel, not the small badge over an effect. */
+.curator-pick{
+  position:relative; isolation:isolate; overflow:hidden;
+  background-color:#fbf6ef;
+  background-image:
+    radial-gradient(circle at 12% 12%, rgba(255,255,255,.42), transparent 44%),
+    radial-gradient(circle at 88% 88%, rgba(121,83,44,.045), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(167,123,67,.04), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.24), rgba(217,197,166,.05));
+  border:1px solid rgba(183,135,65,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),
+             0 .15rem .45rem rgba(62,41,23,.05),
+             0 .9rem 2rem rgba(62,41,23,.08);
+}
+.curator-pick::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:14rem 14rem;
+  opacity:.04; mix-blend-mode:multiply;
+}
+.curator-pick::after{
+  content:""; position:absolute; inset:.35rem; z-index:1; pointer-events:none;
+  border:1px solid rgba(183,135,65,.18); border-radius:inherit;
+}
+.curator-pick > *{ position:relative; z-index:2 }
+
+
+
+/* ======================================================================
+   THE CURATOR · s32
+   One panel, four states. It asks, it reacts, it names the room you are in.
+   No step dots — the words carry the position. No cycle button.
+   ================================================================== */
+.room--curator{
+  display:grid;
+  grid-template-columns:var(--rail-w) minmax(0,1fr);
+}
+.cur{
+  grid-column:2;
+  display:flex; flex-direction:column;
+  min-width:0; min-height:0;
+  padding:clamp(20px,1.5vw,30px) clamp(18px,1.35vw,26px) clamp(22px,1.6vw,32px);
+  overflow-y:auto; overflow-x:hidden;
+  font-size:var(--cur-type);
+}
+
+/* ---- header, and the divider ------------------------------------------ */
+.cur-head{
+  position:relative;
+  display:flex; align-items:center; gap:12px;
+  border-bottom:1px solid rgba(123,92,58,.20);
+}
+.cur-head::after{
+  content:""; position:absolute; left:10%; right:10%; bottom:-1px; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(181,138,72,.45), transparent);
+  pointer-events:none;
+}
+.cur-mark{ width:50px; height:50px; flex:0 0 auto; border-radius:50%; display:block }
+.cur-title{ font-family:var(--serif); font-size:1.75rem; font-weight:400; line-height:1 }
+
+/* ---- the photograph ---------------------------------------------------- */
+.cur-photo{
+  margin-top:clamp(16px,1.2vw,24px);
+}
+.cur-slot{
+  display:grid; place-items:center; gap:.4em;
+  width:100%; aspect-ratio:1;
+  border:1px solid rgba(137,105,67,.3);
+  border-radius:6px;
+  background:rgba(255,255,255,.38);
+  cursor:pointer; text-align:center; padding:1.2em;
+  transition:border-color .3s var(--ease-nav), background .3s var(--ease-nav);
+}
+.cur-slot:hover{ border-color:var(--gold); background:rgba(255,255,255,.6) }
+.cur-slot-plus{
+  width:44px; height:44px; border-radius:50%;
+  border:1px solid rgba(137,105,67,.4);
+  display:grid; place-items:center;
+  font-family:var(--sans); font-size:1.375rem; color:var(--brass);
+}
+.cur-slot-t{ font-family:var(--serif); font-size:1.375rem; color:var(--oxblood) }
+.cur-slot-s{ font-family:var(--serif); font-size:1.125rem; color:var(--ink-soft); line-height:1.35 }
+
+.cur-thumb{ display:none; position:relative }
+.cur-thumb img{
+  display:block; width:100%; aspect-ratio:1; object-fit:cover;
+  border-radius:6px; border:1px solid rgba(137,105,67,.3);
+}
+.cur-change{
+  display:block; width:100%; margin-top:10px;
+  height:44px; border-radius:4px;
+  font-family:var(--serif); font-size:1.1875rem; line-height:1;
+  color:var(--vellum-100);
+  background:linear-gradient(180deg,#8a7038 0%, #75623a 100%);
+  border:1px solid rgba(70,58,32,.5);
+  box-shadow:0 .3rem .8rem rgba(60,48,24,.2), inset 0 1px 0 rgba(255,255,255,.14);
+  cursor:pointer;
+  transition:background .5s var(--ease-nav), border-color .5s var(--ease-nav);
+}
+.cur-change:hover{ background:linear-gradient(180deg,#9d8043 0%,#836f42 100%); border-color:var(--gold) }
+
+/* ---- the letter · one opening quote, never a closing one -------------- */
+.cur-letter{
+  position:relative;
+  margin-top:clamp(18px,1.4vw,28px);
+  padding:clamp(16px,1.9vw,36px) 2% 0 7%;
+}
+.cur-letter::before{
+  content:"\201C";
+  position:absolute; top:-.08em; left:0;
+  font-family:var(--serif); font-size:3.4em; line-height:1;
+  color:rgba(125,66,66,.15);
+  pointer-events:none; user-select:none;
+}
+.cur-letter p{
+  font-family:var(--serif); font-size:1.25em; line-height:1.35;
+  color:var(--ink); max-width:34ch; margin:0;
+  transition:opacity .4s var(--ease-nav);
+}
+.cur-letter .sign{
+  display:block; margin-top:.7em;
+  font-size:1.25rem; color:var(--ink-soft);
+}
+.cur-letter .hl{ background:rgba(125,66,66,.1); padding:0 .18em; border-radius:2px }
+.cur.is-changing .cur-letter p{ opacity:0 }
+
+/* ---- states ------------------------------------------------------------ */
+.cur[data-state="empty"] .cur-thumb,
+.cur[data-state="empty"] .cur-change{ display:none }
+.cur:not([data-state="empty"]) .cur-slot{ display:none }
+.cur:not([data-state="empty"]) .cur-thumb{ display:block }
+
+/* ======================================================================
+   THE FLOOR · s25
+   One card size everywhere. Four across, two rows, eight to a page.
+   What changes between rooms is placement, never scale.
+
+   Eight columns, each card spanning two. Eight is the smallest number that
+   lets a row of one, two or three sit centred against a row of four — a
+   four-column grid can only centre even counts.
+
+       count   shape          placement
+         1     1 centred      starts col 4
+         2     2 centred      starts col 3
+         3     3 centred      starts col 2
+         4     4              fills, outer cards to the edges
+         5     3 + 2          rows start col 2, col 3
+         6     3 + 3          rows start col 2, col 2
+         7     4 + 3          row two starts col 2
+         8     4 + 4  — the ceiling
+   ================================================================== */
+.floor{
+  display:grid;
+  grid-template-columns:repeat(8, minmax(0,1fr));
+  grid-template-rows:repeat(2, minmax(0,1fr));
+  gap:var(--card-gap);
+  align-content:stretch;
+  width:100%; height:100%;
+  min-width:0; min-height:0;
+  overflow:hidden;
+  padding:var(--card-gap);
+  font-size:var(--card-type);
+}
+.floor > *{
+  /* the span lives on the END, deliberately. `grid-column:span 2` puts the
+     span on the START and leaves the end auto — so any grid-column-start
+     override below would silently collapse the card to one column. */
+  grid-column:auto / span 2;
+  justify-self:center;
+}
+
+/* a full row of four reaches both edges; nothing else does */
+.floor[data-count="4"] > :nth-child(1),
+.floor[data-count="7"] > :nth-child(1),
+.floor[data-count="8"] > :nth-child(1),
+.floor[data-count="8"] > :nth-child(5){ justify-self:start }
+.floor[data-count="4"] > :nth-child(4),
+.floor[data-count="7"] > :nth-child(4),
+.floor[data-count="8"] > :nth-child(4),
+.floor[data-count="8"] > :nth-child(8){ justify-self:end }
+
+/* partial rows are centred by offsetting the first card of the row */
+.floor[data-count="1"] > :nth-child(1){ grid-column:4 / span 2 }
+.floor[data-count="2"] > :nth-child(1){ grid-column:3 / span 2 }
+.floor[data-count="3"] > :nth-child(1){ grid-column:2 / span 2 }
+.floor[data-count="5"] > :nth-child(1){ grid-column:2 / span 2 }
+.floor[data-count="5"] > :nth-child(4){ grid-column:3 / span 2; grid-row:2 }
+.floor[data-count="6"] > :nth-child(1){ grid-column:2 / span 2 }
+.floor[data-count="6"] > :nth-child(4){ grid-column:2 / span 2; grid-row:2 }
+.floor[data-count="7"] > :nth-child(5){ grid-column:2 / span 2; grid-row:2 }
+
+/* a room with fewer than eight keeps the second row's height — the empty
+   space is intentional, not a collapse. */
+
+
+
+/* ---- the card ---------------------------------------------------------- */
+.silo-card{
+  position:relative; isolation:isolate; overflow:hidden;
+  /* height comes from the row, width follows the ratio. the reverse — a
+     fixed ratio against a full-width card — overflows a fixed-height room. */
+  height:100%; width:auto; max-width:100%;
+  aspect-ratio:var(--card-ratio);
+  border:1px solid rgba(88,65,42,.22);
+  border-radius:clamp(.55rem,.55vw,.8rem);
+  background:#241c16;
+  box-shadow:0 .7rem 1.5rem rgba(52,36,25,.14),
+             0 .15rem .4rem rgba(52,36,25,.08);
+  cursor:pointer;
+  transition:transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.silo-card:hover{
+  transform:translateY(-.15rem);
+  border-color:rgba(169,126,63,.42);
+  box-shadow:0 1rem 2rem rgba(52,36,25,.18),
+             0 .25rem .65rem rgba(52,36,25,.09);
+}
+.silo-card:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+
+.silo-card__image{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; object-position:center;
+}
+.silo-card__overlay{
+  position:absolute; inset:0; z-index:1;
+  background:linear-gradient(180deg,
+    transparent 42%, rgba(19,13,9,.18) 58%, rgba(19,13,9,.88) 100%);
+}
+.silo-card__content{
+  position:absolute; z-index:2;
+  left:7%; right:7%; bottom:7%;
+  display:grid; gap:.35em;
+  color:rgba(255,252,246,.98);
+}
+.silo-card__title{
+  margin:0;
+  font-family:var(--serif); font-size:inherit; font-weight:400;
+  line-height:1.1;
+  text-shadow:0 .08rem .18rem rgba(18,12,8,.8),
+              0 .3rem .8rem rgba(18,12,8,.42);
+}
+.silo-card__count{
+  font-family:var(--serif); font-size:.72em; line-height:1;
+  letter-spacing:.08em; text-transform:uppercase;
+  color:rgba(239,205,148,.96);
+}
+
+/* the card's own ground shows through wherever the art has not loaded, so a
+   missing file reads as unfinished rather than as a broken image. */
+.silo-card__image{ background:transparent }
+.silo-card{
+  background-image:
+    radial-gradient(ellipse 70% 55% at 32% 26%, rgba(255,255,255,.10), transparent 62%),
+    radial-gradient(ellipse 46% 46% at 76% 78%, rgba(0,0,0,.30), transparent 66%),
+    linear-gradient(155deg, #3b2d22 0%, #241c16 58%, #17110d 100%);
+  background-color:#241c16;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .silo-card, .silo-card:hover{ transition:none; transform:none }
+}
+
+
+/* ======================================================================
+   THE FLOOR HAS TWO SIDES · s23
+   Silos on the front, effects on the back. Choosing a room turns the floor
+   over rather than replacing it, so the surface stays one thing.
+
+   The breadcrumb is the way back. It sits above the floor, always in the
+   same place, and names where you are — "All effects" is the control, the
+   silo name is where you stand. One line rather than a strip of pills.
+   ================================================================== */
+.room--workshop{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  min-height:0;
+}
+
+/* ---- the breadcrumb ---------------------------------------------------- */
+/* Two coffee pills. The first is the way back and the second names where you
+   stand — both substantial enough to read as navigation rather than a caption.
+   4px radius, deliberately squarer than the 8px used on panels. */
+.crumb{
+  display:flex; align-items:center; gap:10px;
+  padding:0 var(--card-gap) 12px;
+  min-height:48px;
+}
+.crumb-back,
+.crumb-here{
+  display:inline-flex; align-items:center; gap:.5em;
+  height:40px; padding:0 18px;
+  border-radius:4px;
+  font-family:var(--serif); font-size:1.3125rem; line-height:1;
+  white-space:nowrap;
+}
+.crumb-back{
+  color:var(--vellum-200);
+  background:linear-gradient(180deg,#2f2420 0%, #241b17 100%);
+  border:1px solid rgba(196,169,110,.26);
+  box-shadow:0 .35rem .9rem rgba(25,16,10,.22), inset 0 1px 0 rgba(255,255,255,.06);
+  cursor:pointer;
+  transition:background .5s var(--ease-nav), border-color .5s var(--ease-nav),
+             color .5s var(--ease-nav), opacity .5s var(--ease-nav),
+             transform .5s var(--ease-nav);
+}
+.crumb-back:hover{
+  background:linear-gradient(180deg,#3a2c26 0%, #2c211c 100%);
+  border-color:var(--gold); color:#fff;
+}
+.crumb-back:active{ transform:translateY(1px); transition-duration:.08s }
+.crumb-back:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.crumb-back svg{ width:.6em; height:.6em; flex:0 0 auto; opacity:.8 }
+.crumb-back path{
+  fill:none; stroke:currentColor; stroke-width:1.7;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+
+/* where you stand — same pill, quieter, not a control */
+.crumb-here{
+  color:var(--series);
+  background:linear-gradient(180deg, rgba(47,36,32,.55) 0%, rgba(36,27,23,.55) 100%);
+  border:1px solid rgba(196,169,110,.16);
+  opacity:0;
+}
+.crumb-sep{ display:none }
+
+.crumb-here{ transition:opacity .5s var(--ease-nav) .1s }
+.workshop-view--effects .crumb-here{ opacity:1 }
+.workshop-view--silos .crumb-back{
+  /* the way back stays on the glass. only the room name arrives and leaves —
+     both fading together read as the whole bar blinking. */
+  opacity:.82; pointer-events:none;
+}
+
+/* ---- the two faces ----------------------------------------------------- */
+.deck{ position:relative; min-height:0; perspective:2200px }
+.face{
+  position:absolute; inset:0;
+  backface-visibility:hidden;
+  transition:opacity .34s var(--ease-flip), visibility 0s linear .34s;
+}
+.face--effects{ opacity:0; visibility:hidden }
+.workshop-view--effects .face--silos { opacity:0; visibility:hidden }
+.workshop-view--effects .face--effects{ opacity:1; visibility:visible; transition-delay:0s,0s }
+
+/* ---- the flip ---------------------------------------------------------- */
+/* Each card turns on its own axis with a small stagger, so the floor reads
+   as a hand turning cards rather than a panel swapping. Cards keep their
+   own transform for hover, so the flip drives a variable instead. */
+:root{
+  --ease-flip:cubic-bezier(.34,.9,.28,1);
+  --ease-nav:cubic-bezier(.4,0,.2,1);   /* eased both ends, for the nav pills */
+  --flip-ms:420ms;
+  --flip-step:38ms;      /* the stagger between neighbours */
+}
+.silo-card{
+  transform-style:preserve-3d;
+  transform:translateY(var(--lift,0)) rotateY(var(--turn,0deg));
+  transition:transform var(--flip-ms) var(--ease-flip),
+             box-shadow 180ms ease, border-color 180ms ease;
+}
+.silo-card:hover{ --lift:-.15rem }
+
+.floor.is-turning > *{ --turn:90deg }
+.floor.is-turning > :nth-child(1){ transition-delay:0ms }
+.floor.is-turning > :nth-child(2){ transition-delay:calc(var(--flip-step) * 1) }
+.floor.is-turning > :nth-child(3){ transition-delay:calc(var(--flip-step) * 2) }
+.floor.is-turning > :nth-child(4){ transition-delay:calc(var(--flip-step) * 3) }
+.floor.is-turning > :nth-child(5){ transition-delay:calc(var(--flip-step) * 4) }
+.floor.is-turning > :nth-child(6){ transition-delay:calc(var(--flip-step) * 5) }
+.floor.is-turning > :nth-child(7){ transition-delay:calc(var(--flip-step) * 6) }
+.floor.is-turning > :nth-child(8){ transition-delay:calc(var(--flip-step) * 7) }
+.floor.is-turning > :nth-child(9){ transition-delay:calc(var(--flip-step) * 8) }
+
+/* arriving: the cards turn back into view, front row first */
+.floor.is-arriving > *{ --turn:-90deg; transition-duration:0ms }
+.floor.has-arrived > *{ --turn:0deg; transition-duration:var(--flip-ms) }
+
+@media (prefers-reduced-motion:reduce){
+  .silo-card{ transition:none }
+  .floor.is-turning > *, .floor.is-arriving > *, .floor.has-arrived > *{ --turn:0deg }
+  .face{ transition:none }
+}
+
+
+
+/* ---- an effect with no prompt behind it ------------------------------- */
+/* The gate sits upstream of /generate and will refuse to spend on a preset
+   the engine cannot render. The floor should not offer it in the first place:
+   a card that takes a click and then fails is worse than one that never
+   invited the click. */
+.silo-card.is-unavailable{
+  cursor:default;
+  filter:grayscale(.85) brightness(.62);
+  border-color:rgba(88,65,42,.16);
+  box-shadow:none;
+}
+.silo-card.is-unavailable:hover{ transform:none; border-color:rgba(88,65,42,.16); box-shadow:none }
+.silo-card.is-unavailable .silo-card__add{ display:none }
+.silo-card.is-unavailable .silo-card__title{ color:rgba(255,252,246,.62) }
+.silo-card.is-unavailable::after{
+  content:"In the studio";
+  position:absolute; z-index:4; left:7%; bottom:7%;
+  font-family:var(--sans); font-size:.34em; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:rgba(239,205,148,.75);
+  background:rgba(19,13,9,.62);
+  border:1px solid rgba(239,205,148,.28);
+  border-radius:3px; padding:.45em .7em;
+}
+
+/* ---- selected -------------------------------------------------------- */
+.silo-card.is-selected{
+  border-color:rgba(125,66,66,.62);
+  box-shadow:
+    inset 0 0 0 .18rem rgba(125,66,66,.18),
+    inset 0 .8rem 1.8rem rgba(18,12,8,.16),
+    0 .45rem 1rem rgba(52,36,25,.10);
+}
+.silo-card.is-selected .silo-card__image{
+  filter:brightness(.88) saturate(.92);
+}
+.silo-card.is-selected .silo-card__add{
+  background:rgb(209 148 164 / 98%);
+  border-color:rgba(125,66,66,.4);
+}
+.silo-card.is-selected .silo-card__add::before{
+  font-size:1.35em; color:#5e2b2b; line-height:1;
+}
+/* the mark is CSS, not text — nothing to keep in step in JavaScript */
+.silo-card__add::before{ content:"+" }
+.silo-card.is-selected .silo-card__add::before{ content:"\2713" }
+
+
+/* ---- the eighth card is the upsell ------------------------------------ */
+/* Every room holds up to seven effects. The eighth slot is never an effect
+   — it is the offer to take the room entire. It uses the ivory presentation
+   surface so it reads as a recommendation, not as another finish. */
+.silo-card.is-upsell{
+  background-color:#fbf6ef;
+  background-image:
+    radial-gradient(circle at 12% 12%, rgba(255,255,255,.42), transparent 44%),
+    radial-gradient(circle at 88% 88%, rgba(121,83,44,.045), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(167,123,67,.04), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.24), rgba(217,197,166,.05));
+  border-color:rgba(183,135,65,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),
+             0 .15rem .45rem rgba(62,41,23,.05),
+             0 .9rem 2rem rgba(62,41,23,.08);
+}
+.silo-card.is-upsell .silo-card__overlay,
+.silo-card.is-upsell .silo-card__add{ display:none }
+.silo-card.is-upsell::after{
+  content:""; position:absolute; inset:.4rem; z-index:1; pointer-events:none;
+  border:1px solid rgba(183,135,65,.18); border-radius:inherit;
+}
+.up{
+  position:absolute; inset:0; z-index:2;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:.3em; padding:1.1em .9em; text-align:center;
+}
+.up-eyebrow{
+  font-family:var(--sans); font-size:.4em; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--brass);
+}
+.up-title{
+  font-family:var(--serif); font-weight:400; font-size:1em; line-height:1.12;
+  color:var(--ink); margin:.15em 0 .1em;
+}
+.up-sub{ font-family:var(--serif); font-size:.62em; color:var(--ink-soft); line-height:1.35 }
+.up-save{ font-family:var(--serif); font-size:1.1em; color:var(--oxblood); margin-top:.25em }
+.up-cta{
+  margin-top:.55em; padding:.5em 1.1em; border-radius:4px;
+  font-family:var(--serif); font-size:.62em; line-height:1;
+  color:var(--vellum-100);
+  background:linear-gradient(180deg, var(--oxblood) 0%, #6a3737 100%);
+  border:1px solid rgba(60,28,28,.5);
+  box-shadow:0 .3rem .8rem rgba(60,28,28,.22), inset 0 1px 0 rgba(255,255,255,.12);
+}
+.silo-card.is-upsell:hover .up-cta{ background:linear-gradient(180deg,#8f4e4e 0%,#7d4242 100%) }
+
+
+/* ---- the offer escalates ---------------------------------------------- */
+/* Three registers, by what the offer would bring the queue to. The card gets
+   quieter or louder with the stakes rather than switching character at ten.
+   The tier names are the locked ones: THE SERIES up to nine, THE STUDIO at ten. */
+.silo-card.is-upsell[data-tier="1"]{ border-color:rgba(183,135,65,.34) }
+.silo-card.is-upsell[data-tier="1"] .up-save{ font-size:1em }
+
+.silo-card.is-upsell[data-tier="2"]{
+  border-color:rgba(183,135,65,.6);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),
+             0 0 0 1px rgba(183,135,65,.16),
+             0 1rem 2.1rem rgba(62,41,23,.12);
+}
+.silo-card.is-upsell[data-tier="2"] .up-save{ font-size:1.28em }
+
+.silo-card.is-upsell[data-tier="3"]{
+  border-color:rgba(183,135,65,.85);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),
+             0 0 0 1px rgba(183,135,65,.3),
+             0 0 2.4rem -0.4rem rgba(183,135,65,.5),
+             0 1.2rem 2.6rem rgba(62,41,23,.16);
+}
+.silo-card.is-upsell[data-tier="3"]::after{ border-color:rgba(183,135,65,.42) }
+.silo-card.is-upsell[data-tier="3"] .up-eyebrow{ color:#9a7332 }
+.silo-card.is-upsell[data-tier="3"] .up-save{ font-size:1.5em; color:#7d4242 }
+.silo-card.is-upsell[data-tier="3"] .up-cta{
+  background:linear-gradient(180deg,#8a6c38 0%, #6f5629 100%);
+  border-color:rgba(60,44,20,.6);
+}
+.silo-card.is-upsell[data-tier="3"] .up-tier{ color:#9a7332 }
+.up-tier{
+  font-family:var(--sans); font-size:.34em; font-weight:600;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--taupe);
+  margin-top:.5em;
+}
+
+/* ---- effect cards inherit the silo card entirely ----------------------- */
+/* the whole card is the target; the badge is an affordance, not the only
+   place a click lands. */
+.silo-card__add{
+  position:absolute; z-index:3; right:6%; bottom:6%;
+  display:grid; place-items:center;
+  width:2.1em; height:2.1em; border-radius:50%;
+  font-family:var(--sans); font-size:.5em; line-height:1;
+  color:var(--ink);
+  background:linear-gradient(145deg, rgba(255,255,255,.98), rgba(231,224,213,.96));
+  border:1px solid rgba(73,54,35,.22);
+  box-shadow:0 .35rem .9rem rgba(31,21,13,.26), inset 0 1px 0 rgba(255,255,255,.85);
+  pointer-events:none;                  /* the card owns the click */
+  transition:transform .16s ease, background .16s ease;
+}
+.silo-card:hover .silo-card__add{ transform:scale(1.2) }
+.silo-card__content{ padding-right:3.4em }
+
+
+/* ---- footer bays · icon, title, blurb --------------------------------- */
+.bay{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:center; gap:.85em;
+  place-items:stretch;
+}
+.bay::after{ content:none }          /* the skeleton label has done its job */
+.bay-ic{
+  display:grid; place-items:center;
+  /* sized from the band, so it can never push the footer taller */
+  width:calc(var(--footer-h) * .62); height:calc(var(--footer-h) * .62);
+  flex:0 0 auto;
+  border-radius:50%;
+  color:var(--brass);
+  background:linear-gradient(145deg, rgba(255,255,255,.9), rgba(230,221,207,.78));
+  border:1px solid rgba(108,78,45,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+.bay-ic svg{ width:48%; height:48% }
+.bay-ic path,.bay-ic circle,.bay-ic rect{
+  fill:none; stroke:currentColor; stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.bay-tx{ min-width:0; display:flex; flex-direction:column; justify-content:center }
+.bay-t{
+  font-family:var(--sans); font-size:.8em; font-weight:400;
+  line-height:1.2; letter-spacing:.01em; color:var(--ink);
+  margin:0 0 5px;
+}
+.bay-p{
+  font-family:var(--sans); font-size:.7em; font-weight:200;
+  line-height:1.3; color:var(--ink-soft); margin:0;
+  overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+/* The band sizes its own type. rem against the ramping root meant that at
+   2560 a 1.3rem footer became 31px inside a fixed 104px band, and the second
+   line clipped. Deriving from --footer-h makes the two impossible to
+   disagree: change the height and the text follows. */
+.room--footer{ font-size:calc(var(--footer-h) * .22) }
+
+/* ---- My Collection · the dark rail ------------------------------------ */
+.coll{
+  display:flex; flex-direction:column;
+  height:100%; min-height:0;
+  padding:clamp(18px,1.3vw,28px) clamp(12px,.9vw,18px);
+  overflow-y:auto;
+}
+.coll-head{
+  display:flex; align-items:center; gap:.5em;
+  padding:0 .6em clamp(12px,.9vw,18px);
+  font-family:var(--serif); font-style:italic;
+  font-size:1.15em; color:var(--series);
+  border-bottom:1px solid rgba(196,169,110,.18);
+}
+.coll-head svg{ width:1em; height:1em; flex:0 0 auto; opacity:.8 }
+.coll-head path,.coll-head circle{
+  fill:none; stroke:currentColor; stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.coll-list{ display:flex; flex-direction:column; gap:2px; margin-top:.7em }
+.coll-item{
+  display:flex; align-items:center; gap:1em;
+  padding:.62em .7em;
+  border-radius:4px;
+  font-family:var(--serif); font-size:1.15em; line-height:1;
+  color:var(--vellum-300); text-decoration:none;
+  border:1px solid transparent;
+  cursor:pointer;
+  transition:background .5s var(--ease-nav), color .5s var(--ease-nav),
+             border-color .5s var(--ease-nav);
+}
+.coll-item svg{ width:1em; height:1em; flex:0 0 auto; opacity:.75 }
+.coll-item path,.coll-item circle,.coll-item rect{
+  fill:none; stroke:currentColor; stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.coll-item:hover{
+  background:linear-gradient(180deg, rgba(215,189,137,.14), rgba(215,189,137,.07));
+  color:var(--series);
+}
+.coll-item[aria-current="true"]{
+  color:#2a1f14;
+  background:linear-gradient(180deg,#e2c288 0%, #cfa864 100%);
+  border-color:rgba(120,88,38,.45);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+}
+.coll-item[aria-current="true"] svg{ opacity:1 }
+.coll-count{
+  margin-left:auto;
+  font-family:var(--sans); font-size:.62em; letter-spacing:.06em;
+  color:rgba(233,222,200,.45);
+}
+.coll-item[aria-current="true"] .coll-count{ color:rgba(42,31,20,.6) }
+
+
+/* ======================================================================
+   INTAKE MODALS · s40 · ported from r81, namespaced
+   Eight pre-craft states. Every rule is scoped under #intakeModal, and the
+   three classes that collided with the Curator panel — .cur, .c-mark,
+   .cur-say — are renamed .mcur, .mc-mark, .mcur-say. Nothing leaks either way.
+
+   These are INTAKE ONLY: a photograph that will not do, or a subject that
+   belongs in another Series. There is no post-render state here — that gap
+   is named in PORTRAITS-SPEC v2 §7.4 and remains unbuilt.
+   ================================================================== */
+@keyframes shim{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.m-scrim .btn{font-style:italic;font-size:20px;padding:10px 18px;border-radius:7px;cursor:pointer;background:linear-gradient(180deg,#8a6c38,#6f5629);color:#fbf1d6;border:1px solid rgba(60,44,20,.55);text-shadow:0 1px 0 rgba(40,28,12,.5);box-shadow:inset 0 1px 0 rgba(255,244,210,.35), inset 0 -1px 2px rgba(40,28,12,.4), 0 2px 6px rgba(42,30,18,.28);transition:filter .15s}
+.m-scrim .btn:hover{filter:brightness(1.10)}
+.m-scrim .btn.fill{background:var(--oxblood);color:var(--vellum)}
+.m-scrim .btn.fill:hover{background:var(--oxblood-deep)}
+.m-scrim .btn.ghost{border:1px solid rgba(60,44,20,.5);color:#fbf1d6;text-shadow:0 1px 0 rgba(40,28,12,.5)}
+.m-scrim .redirect-cta .btn{margin-top:12px}
+.m-scrim .scrim{position:fixed;inset:0;z-index:120;background:rgba(31,27,20,.52);
+display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.m-scrim .scrim.show{opacity:1;pointer-events:auto}
+.m-scrim .modal{width:440px;max-width:100%;background:linear-gradient(180deg,#faf6ec,#f1e8d7);
+border:1px solid rgba(147,111,67,.4);border-radius:5px;padding:30px 30px 28px;position:relative;
+box-shadow:0 24px 60px rgba(31,27,20,.4),0 4px 12px rgba(31,27,20,.24),inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 26px rgba(137,101,62,.04);
+transform:translateY(14px) scale(.97);opacity:0;transition:transform .26s cubic-bezier(.32,.72,.32,1),opacity .2s}
+.m-scrim .scrim.show .modal{transform:translateY(0) scale(1);opacity:1}
+.m-scrim .mclose{position:absolute;top:16px;right:18px;width:30px;height:30px;border-radius:50%;
+border:1px solid var(--hairline);background:rgba(250,246,236,.7);color:var(--ink-soft);
+font-family:var(--serif);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.m-scrim .mclose:hover{background:#fff}
+.m-scrim .pieceframe{position:relative;border-radius:4px;overflow:hidden;height:130px;background:var(--panel);
+border:1px solid var(--hairline);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.m-scrim .pieceframe .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.32;filter:grayscale(.3)}
+.m-scrim .pieceframe.deferred .art{opacity:.2}
+.m-scrim .pieceframe.reject .art{opacity:.5;filter:none}
+.m-scrim .pieceframe.reject.blur .art{filter:blur(3px)}
+.m-scrim .pieceframe.reject.dim .art{filter:brightness(.5)}
+.m-scrim .interrupt-line{position:absolute;left:0;right:0;top:50%;height:1px;background:repeating-linear-gradient(90deg,var(--oxblood) 0 7px,transparent 7px 15px);opacity:.7}
+.m-scrim .craft-shimmer{position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(243,237,225,.55),transparent);animation:shim 2.1s linear infinite}
+.m-scrim .piece-badge{position:relative;z-index:2;font-style:italic;font-size:17px;color:var(--ink-soft);background:rgba(250,246,236,.85);padding:5px 12px;border-radius:99px;border:1px solid var(--hairline)}
+.m-scrim .safe{display:flex;align-items:center;gap:9px;margin:18px 0 2px;font-family:var(--sans);font-size:13px;color:var(--sage);letter-spacing:.01em}
+.m-scrim .safe svg{width:16px;height:16px;flex-shrink:0}
+.m-scrim .safe.warn{color:var(--brass)}
+.m-scrim .acts{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.m-scrim .m-modal .btn{font-family:var(--serif);font-style:italic;font-size:21px;text-align:center;padding:13px 18px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:.15s}
+.m-scrim .m-modal .btn.fill{background:var(--oxblood);color:var(--vellum)}
+.m-scrim .m-modal .btn.fill:hover{background:var(--oxblood-d)}
+.m-scrim .m-modal .btn.sage{background:var(--sage);color:var(--vellum)}
+.m-scrim .m-modal .btn.sage:hover{filter:brightness(1.07)}
+.m-scrim .m-modal .btn.ghost{background:transparent;color:var(--oxblood);border-color:rgba(125,66,66,.42)}
+.m-scrim .m-modal .btn.ghost:hover{background:rgba(125,66,66,.06)}
+.m-scrim .state{display:none}
+.m-scrim .state.active{display:block}
+.m-scrim .btn{font-size:26px}
+
+/* an unset photograph leaves the frame empty rather than broken */
+#intakeModal img[data-role="their-photo"]:not([src]),
+#intakeModal img[data-role="their-photo"][src=""]{ visibility:hidden }
+
+/* the modal ships closed */
+.m-scrim{ display:none }
+.m-scrim.is-open{ display:grid }
+.m-scrim .state{ display:none }
+.m-scrim .state.active{ display:block }
+.m-scrim .mclose{ cursor:pointer }
+
+
+/* ======================================================================
+   TO BE CRAFTED · s41
+   The rail holds what you have chosen, across every Series — pick a Portrait
+   finish, cross to Pets, and both stay. My Collection lives in the masthead;
+   this rail is only ever the queue.
+
+   The craft action sits directly beneath the last entry, not pinned to the
+   floor of the rail. A button at the bottom of a mostly empty column is
+   remote from the thing you just did.
+   ================================================================== */
+.tbc{
+  display:flex; flex-direction:column;
+  height:100%; min-height:0;
+  padding:clamp(18px,1.3vw,28px) clamp(12px,.9vw,18px);
+  overflow-y:auto;
+}
+.tbc-head{
+  display:flex; align-items:baseline; gap:.5em;
+  padding:0 .4em clamp(12px,.9vw,18px);
+  border-bottom:1px solid rgba(196,169,110,.18);
+}
+.tbc-title{
+  font-family:var(--serif); font-style:italic; font-size:1.15em;
+  color:var(--series); line-height:1;
+}
+.tbc-n{
+  margin-left:auto;
+  font-family:var(--sans); font-size:.62em; letter-spacing:.08em;
+  color:rgba(233,222,200,.45);
+}
+
+/* ---- empty ------------------------------------------------------------- */
+.tbc-empty{
+  font-family:var(--serif); font-style:italic; font-size:1.02em; line-height:1.5;
+  color:rgba(233,222,200,.42);
+  padding:1.4em .5em;
+}
+.tbc.has-items .tbc-empty{ display:none }
+
+/* ---- entries ----------------------------------------------------------- */
+.tbc-list{ display:flex; flex-direction:column; gap:6px; margin-top:.8em }
+.tbc-row{
+  display:grid; grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center; gap:.7em;
+  padding:.45em .5em;
+  border-radius:4px;
+  border:1px solid rgba(196,169,110,.14);
+  background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(0,0,0,.05));
+  animation:tbcIn .34s var(--ease-nav) both;
+}
+@keyframes tbcIn{ from{ opacity:0; transform:translateY(-.4em) } to{ opacity:1; transform:none } }
+.tbc-thumb{
+  width:2.6em; height:2.6em; flex:0 0 auto;
+  object-fit:cover; border-radius:3px;
+  border:1px solid rgba(196,169,110,.22);
+}
+.tbc-tx{ min-width:0 }
+.tbc-nm{
+  font-family:var(--serif); font-size:1.02em; line-height:1.15;
+  color:var(--vellum-200);
+  overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+}
+.tbc-sub{
+  font-family:var(--sans); font-size:.55em; letter-spacing:.07em;
+  text-transform:uppercase; color:rgba(233,222,200,.4);
+  margin-top:.25em;
+}
+.tbc-x{
+  width:2em; height:2em; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--sans); font-size:1.15em; font-weight:600; line-height:1;
+  color:rgba(233,222,200,.78);
+  border:1px solid transparent; cursor:pointer;
+  transition:color .3s var(--ease-nav), background .3s var(--ease-nav);
+}
+.tbc-x:hover{ color:#fff; background:rgba(125,66,66,.55) }
+
+
+/* ---- density · the rail tightens as it fills --------------------------- */
+/* Seven entries already overflowed at 1920, and the discount actively
+   encourages ten. Rather than scrolling — which hides the craft action —
+   the rows shed height and information as the count climbs.
+
+     1–4   full      thumbnail, name, the room it came from
+     5–7   medium    smaller thumbnail, room dropped
+     8–10  compact   small thumbnail, name only, tight
+
+   The room label is the first thing to go: by the time there are eight
+   pieces the customer chose each one and does not need reminding where. */
+.tbc-list[data-n="5"] .tbc-row,
+.tbc-list[data-n="6"] .tbc-row,
+.tbc-list[data-n="7"] .tbc-row{ padding:.3em .45em }
+.tbc-list[data-n="5"] .tbc-thumb,
+.tbc-list[data-n="6"] .tbc-thumb,
+.tbc-list[data-n="7"] .tbc-thumb{ width:2.1em; height:2.1em }
+.tbc-list[data-n="5"] .tbc-sub,
+.tbc-list[data-n="6"] .tbc-sub,
+.tbc-list[data-n="7"] .tbc-sub{ display:none }
+
+.tbc-list[data-n="8"] .tbc-row,
+.tbc-list[data-n="9"] .tbc-row,
+.tbc-list[data-n="10"] .tbc-row{ padding:.2em .4em }
+.tbc-list[data-n="8"] .tbc-thumb,
+.tbc-list[data-n="9"] .tbc-thumb,
+.tbc-list[data-n="10"] .tbc-thumb{ width:1.7em; height:1.7em }
+.tbc-list[data-n="8"] .tbc-sub,
+.tbc-list[data-n="9"] .tbc-sub,
+.tbc-list[data-n="10"] .tbc-sub{ display:none }
+.tbc-list[data-n="8"] .tbc-nm,
+.tbc-list[data-n="9"] .tbc-nm,
+.tbc-list[data-n="10"] .tbc-nm{ font-size:.92em }
+.tbc-list[data-n="8"] .tbc-x,
+.tbc-list[data-n="9"] .tbc-x,
+.tbc-list[data-n="10"] .tbc-x{ width:1.7em; height:1.7em; font-size:1em }
+.tbc-list[data-n="8"],
+.tbc-list[data-n="9"],
+.tbc-list[data-n="10"]{ gap:4px }
+
+/* the craft block tightens with them */
+.tbc-list[data-n="8"] ~ .tbc-craft,
+.tbc-list[data-n="9"] ~ .tbc-craft,
+.tbc-list[data-n="10"] ~ .tbc-craft{ margin-top:.7em }
+.tbc-list[data-n="8"] ~ .tbc-craft .tbc-go,
+.tbc-list[data-n="9"] ~ .tbc-craft .tbc-go,
+.tbc-list[data-n="10"] ~ .tbc-craft .tbc-go{ padding:.55em 1em; font-size:1.15em }
+
+/* a last resort, not a plan: if the rail still cannot hold the list, the
+   list scrolls and the craft action stays put. */
+.tbc{ display:flex; flex-direction:column }
+.tbc-list{ min-height:0; overflow-y:auto; flex:0 1 auto }
+.tbc-craft{ flex:0 0 auto }
+
+/* ---- the craft block · follows the last entry -------------------------- */
+.tbc-craft{ display:none; margin-top:1.1em }
+.tbc.has-items .tbc-craft{ display:block }
+.tbc-total{
+  display:flex; align-items:baseline; gap:.5em;
+  padding:0 .5em .7em;
+  font-family:var(--sans); font-size:.62em; letter-spacing:.08em;
+  text-transform:uppercase; color:rgba(233,222,200,.45);
+}
+.tbc-total b{
+  margin-left:auto; font-weight:600; font-size:1.5em; letter-spacing:0;
+  color:var(--series); font-variant-numeric:tabular-nums;
+}
+.tbc-go{
+  display:block; width:100%;
+  padding:.72em 1em;
+  border-radius:4px;
+  font-family:var(--serif); font-size:1.3em; line-height:1.15;
+  color:var(--vellum-100);
+  background:linear-gradient(180deg, var(--oxblood) 0%, #6a3737 100%);
+  border:1px solid rgba(60,28,28,.6);
+  box-shadow:0 .5rem 1.2rem rgba(40,18,18,.35), inset 0 1px 0 rgba(255,255,255,.14);
+  cursor:pointer;
+  transition:background .5s var(--ease-nav), transform .18s var(--ease-nav),
+             box-shadow .5s var(--ease-nav);
+}
+.tbc-go:hover{
+  background:linear-gradient(180deg,#8f4e4e 0%, #7d4242 100%);
+  box-shadow:0 .7rem 1.5rem rgba(40,18,18,.45), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.tbc-go:active{ transform:translateY(1px); transition-duration:.08s }
+.tbc-go small{
+  display:block; margin-top:.3em;
+  font-family:var(--sans); font-size:.42em; letter-spacing:.09em;
+  text-transform:uppercase; opacity:.7;
+}
+
+
+/* ---- the queue is full ------------------------------------------------- */
+/* Ten is where the ladder stops — past it the customer gains nothing but a
+   longer wait. The cap is explained rather than enforced silently, because a
+   card that refuses to tick with no word reads as a fault. */
+.m-scrim .cap-body{ padding:.4em 0 0 }
+.m-scrim .cap-n{
+  display:grid; place-items:center;
+  width:3.2em; height:3.2em; margin:0 auto .7em;
+  border-radius:50%;
+  font-family:var(--serif); font-size:1.6em; line-height:1;
+  color:var(--series);
+  background:linear-gradient(180deg, rgba(215,189,137,.18), rgba(215,189,137,.06));
+  border:1px solid rgba(196,169,110,.4);
+}
+
+
+/* ======================================================================
+   THE 1366–1920 BAND · s43
+   Seventy per cent of desktop traffic sits at 1366×768 or 1920×1080, and a
+   further ten per cent at 1536×864 — a 1080p panel at 125% Windows scaling.
+   Everything above 1920 is comfortable and was never the risk.
+
+   The rule below: THE RAILS GIVE GROUND BEFORE THE CARDS DO. At the old
+   token values a 1366 viewport left cards 132px wide, too small to read a
+   face. Narrowing the Curator and the queue first buys the floor back.
+
+        viewport   stage   main   card
+          1366      1229    704   ~162 × 208
+          1440      1296    758   ~176 × 226
+          1536      1382    835   ~195 × 250
+          1600      1440    889   ~208 × 267
+          1920      1728   1100   ~256 × 329
+   ================================================================== */
+
+/* ---- ≤1920 · the band Rich tuned -------------------------------------- */
+/* These values were judged on the glass at 1920. They were previously in the
+   base :root, which meant 2560 and above inherited a scale meant for a much
+   smaller stage — the Curator's cap in particular fell from 460 to 340.
+   Above 1920 the base values govern again. */
+@media (max-width:1920px){
+  :root{
+    --spine-w:clamp(265px, 18.8%, 340px);
+    --queue-w:clamp(210px, 14.5%, 290px);
+    --footer-h:85px;
+    --mh-h:76px;
+    --card-type:clamp(14px, .92vw, 20px);
+  }
+}
+
+@media (max-width:1599px){
+  :root{
+    --spine-w:clamp(250px, 18.8%, 300px);
+    --queue-w:clamp(195px, 14.5%, 250px);
+    --room-gap:16px;
+    --stage-pad:18px;
+    --footer-h:76px;
+    --footer-pad:14px;
+    --card-gap:clamp(11px, .85vw, 16px);
+    --mark-h:52px;
+  }
+}
+
+@media (max-width:1366px){
+  :root{
+    --spine-w:280px;
+    --rail-w:48px;
+    --queue-w:170px;
+    --room-gap:12px;
+    --stage-pad:14px;
+    --footer-h:68px;
+    --footer-pad:10px;
+    --card-gap:10px;
+    --mh-h:60px;
+    --mark-h:46px;
+  }
+  /* five bays will not hold their copy at this width — the band becomes
+     three, and the two that drop are the least load-bearing. */
+  .room--footer{ grid-template-columns:repeat(3, minmax(0,1fr)) }
+  .bay:nth-child(n+4){ display:none }
+  .crumb{ min-height:40px; padding-bottom:8px }
+  .crumb-back,.crumb-here{ height:34px; padding:0 13px; font-size:1.15rem }
+  .cur{ padding:14px 12px 16px }
+  .rail span{ font-size:1.4rem }
+  .cur-title{ font-size:1.5rem }
+  .tbc{ padding:14px 10px }
+}
+
+/* the spine label needs the room the rail has, at any width */
+@media (max-height:820px){
+  :root{ --footer-h:70px }
+  .cur-slot{ aspect-ratio:4/3 }
+}
+
+/* ======================================================================
+   MEASUREMENT — this block is NOT part of the contract.
+   It exists so the geometry can be verified on the glass and read back.
+   Delete everything below this line when adopting the contract.
+   ================================================================== */
+.readout{
+  position:fixed; left:16px; bottom:16px; z-index:90;
+  max-width:340px;
+  /* collapsed by default — it must never sit between Rich and the design */
+  transform:translateY(calc(100% - 34px));
+  transition:transform .35s var(--ease-nav), opacity .2s ease;
+  font-family:var(--sans); text-align:center; color:var(--ink);
+  background:rgba(250,246,236,.9);
+  border:1px solid var(--hairline);
+  border-radius:var(--r-card);
+  padding:16px 20px;
+  box-shadow:0 12px 34px -18px rgba(42,36,30,.4);
+  opacity:.5;
+}
+.readout:hover{ opacity:1 }
+.readout.is-open{ transform:none; opacity:1 }
+.readout-tab{
+  display:flex; align-items:center; gap:.5em;
+  width:100%; margin:-4px 0 10px;
+  font-family:var(--sans); font-size:12px; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-soft); cursor:pointer; text-align:left;
+}
+.readout-tab i{
+  display:inline-block; width:0; height:0; margin-left:auto;
+  border-left:5px solid transparent; border-right:5px solid transparent;
+  border-bottom:6px solid currentColor;
+  transition:transform .35s var(--ease-nav);
+}
+.readout.is-open .readout-tab i{ transform:rotate(180deg) }
+.readout h1,.readout p{ display:none }
+.readout h1{
+  font-family:var(--serif); font-weight:400; font-size:1.375rem;
+  line-height:1.1; margin-bottom:4px;
+}
+.readout p{ font-size:0.875rem; line-height:1.4; color:var(--ink-soft); margin-bottom:10px }
+.readout table{ border-collapse:collapse; font-size:0.875rem }
+.readout td{ padding:3px 10px; text-align:left; border-bottom:1px solid var(--hairline) }
+.readout td:first-child{ color:var(--ink-soft) }
+.readout td:last-child{ font-variant-numeric:tabular-nums; font-weight:600 }
+.readout .ok{ color:#4a6b45 } .readout .bad{ color:var(--oxblood) }
+</style>
+</head>
+<body>
+
+<div class="ground" aria-hidden="true"></div>
+
+<header class="mh" id="masthead">
+  <a class="mh-logo" href="/"><svg class="mh-mark" viewBox="0 0 1821.36 1528.47" role="img" aria-label="Liten &amp; Co" focusable="false"><g> <path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/> </g> <g> <path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/> <path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/> <path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/> <path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/> <path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/> <path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/> <path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/> </g></svg><span class="sr">Liten &amp; Co</span></a>
+  <button class="mh-menu" id="mhMenuBtn" aria-label="Menu" aria-expanded="false">
+    <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg>
+  </button>
+  <nav class="mh-nav">
+    <div class="mh-series">
+      <button class="mh-series-btn" id="mhSeriesBtn" aria-expanded="false" aria-haspopup="true">
+        <span id="mhSeriesLabel">Crafted Portraits</span>
+        <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
+      </button>
+      <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
+        <a href="/portraits" role="menuitem" aria-current="page">Portraits</a>
+        <a href="/action" role="menuitem">Action</a>
+        <a href="/groups" role="menuitem">Groups</a>
+        <a href="/pets" role="menuitem">Pets</a>
+        <div class="sep"></div>
+        <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
+      </div>
+    </div>
+    <a href="/gallery">Gallery</a>
+    <a href="/print">Print Shop</a>
+    <a href="/collection">My Collection</a>
+    <a href="/help">Help</a>
+  </nav>
+  <div class="mh-right">
+    <button class="mh-credits" id="mhCreditsBtn" hidden>
+      <span class="v" id="mhCreditsCount">0</span><span class="u">credits</span>
+    </button>
+    <button class="mh-cart" id="mhCartBtn">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
+      <span class="lbl">Cart</span>
+      <span class="cnt" id="mhCartCount" data-empty="true">0</span>
+    </button>
+  </div>
+  <nav class="mh-drawer" id="mhDrawer" hidden>
+    <a href="/portraits" class="on">Portraits</a>
+    <a href="/action">Action</a>
+    <a href="/groups">Groups</a>
+    <a href="/pets">Pets</a>
+    <a href="/wallpapers">Mobile Wallpapers</a>
+    <a href="/gallery">Gallery</a>
+    <a href="/print">Print Shop</a>
+    <a href="/collection">My Collection</a>
+    <a href="/help">Help</a>
+  </nav>
+</header>
+
+<div class="stage">
+  <div class="rooms">
+    <section class="room room--curator">
+      <div class="rail" title="Design your own"><span>Design your own</span></div>
+      <div class="cur" id="cur" data-state="empty">
+        <div class="cur-head">
+          <img class="cur-mark" src="/icons/curator-c.svg" alt="">
+          <span class="cur-title">Curator</span>
+        </div>
+
+        <div class="cur-photo">
+          <div class="cur-slot" id="curSlot" role="button" tabindex="0">
+            <span class="cur-slot-plus">+</span>
+            <span class="cur-slot-t">Add portrait photo</span>
+            <span class="cur-slot-s">Start with a clear, face-forward image.</span>
+          </div>
+          <div class="cur-thumb">
+            <img id="curThumb" src="/previews/silos/artists-gallery.jpg" alt="Your photograph">
+            <button class="cur-change" id="curChange" type="button">Use a different photograph</button>
+          </div>
+        </div>
+
+        <div class="cur-letter">
+          <p id="curSay"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="room room--workshop workshop-view--silos" id="workshop">
+    <div class="crumb">
+      <button class="crumb-back" id="crumbBack" type="button">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>All effects
+      </button>
+      <span class="crumb-sep">&rsaquo;</span>
+      <span class="crumb-here" id="crumbHere"></span>
+    </div>
+
+    <div class="deck" id="deck">
+      <div class="face face--silos">
+      <div class="floor face-floor" data-count="8">
+      <article class="silo-card" tabindex="0" data-silo="earth-ore">
+        <img class="silo-card__image" src="/previews/silos/earth-ore.jpg" alt="" loading="lazy">
+        <div class="silo-card__overlay"></div>
+        <div class="silo-card__content">
+          <h3 class="silo-card__title">Earth &amp; Ore</h3>
+          <span class="silo-card__count">7 Effects</span>
+        </div>
+      </article>
+      <article class="silo-card" tabindex="0" data-silo="artists-gallery">
+        <img class="silo-card__image" src="/previews/silos/artists-gallery.jpg" alt="" loading="lazy">
+        <div class="silo-card__overlay"></div>
+        <div class="silo-card__content">
+          <h3 class="silo-card__title">The Artists Gallery</h3>
+          <span class="silo-card__count">8 Effects</span>
+        </div>
+      </article>
+      <article class="silo-card" tabindex="0" data-silo="myth-legend">
+        <img class="silo-card__image" src="/previews/silos/myth-legend.jpg" alt="" loading="lazy">
+        <div class="silo-card__overlay"></div>
+        <div class="silo-card__content">
+          <h3 class="silo-card__title">Myth &amp; Legend</h3>
+          <span class="silo-card__count">6 Effects</span>
+        </div>
+      </article>
+      <article class="silo-card" tabindex="0" data-silo="light-glass">
+        <img class="silo-card__image" src="/previews/silos/light-glass.jpg" alt="" loading="lazy">
+        <div class="silo-card__overlay"></div>
+        <div class="silo-card__content">
+          <h3 class="silo-card__title">Light &amp; Glass</h3>
+          <span class="silo-card__count">7 Effects</span>
+        </div>
+      </article>
+      <article class="silo-card" tabindex="0" data-silo="far-future">
+        <img class="silo-card__image" src="/previews/silos/far-future.jpg" alt="" loading="lazy">
+        <div class="silo-card__overlay"></div>
+        <div class="silo-card__content">
+          <h3 class="silo-card__title">Far &amp; Future</h3>
+          <span class="silo-card__count">5 Effects</span>
+        </div>
+      </article>
+      <article class="silo-card" tabindex="0" data-silo="curiosities">
+        <img class="silo-card__image" src="/previews/silos/curiosities.jpg" alt="" loading="lazy">
+        <div class="silo-card__overlay"></div>
+        <div class="silo-card__content">
+          <h3 class="silo-card__title">Curiosities</h3>
+          <span class="silo-card__count">3 Effects</span>
+        </div>
+      </article>
+      <article class="silo-card" tabindex="0" data-silo="seventh">
+        <img class="silo-card__image" src="/previews/silos/seventh.jpg" alt="" loading="lazy">
+        <div class="silo-card__overlay"></div>
+        <div class="silo-card__content">
+          <h3 class="silo-card__title">Seventh room</h3>
+          <span class="silo-card__count">Unnamed</span>
+        </div>
+      </article>
+      <article class="silo-card" tabindex="0" data-silo="eigth">
+        <img class="silo-card__image" src="/previews/silos/eigth.jpg" alt="" loading="lazy">
+        <div class="silo-card__overlay"></div>
+        <div class="silo-card__content">
+          <h3 class="silo-card__title">Eighth room</h3>
+          <span class="silo-card__count">Unnamed</span>
+        </div>
+      </article>
+      </div>
+      </div>
+      <div class="face face--effects">
+        <div class="floor face-floor" id="effectFloor" data-count="0"></div>
+      </div>
+    </div>
+    </section>
+
+    <aside class="room room--queue">
+      <div class="tbc" id="tbc">
+        <div class="tbc-head">
+          <span class="tbc-title">To Be Crafted</span>
+          <span class="tbc-n" id="tbcN"></span>
+        </div>
+        <p class="tbc-empty">Nothing chosen yet. Pick a finish and I&rsquo;ll hold it here.</p>
+        <div class="tbc-list" id="tbcList"></div>
+        <div class="tbc-craft">
+          <div class="tbc-total">Total <b id="tbcTotal">0</b></div>
+          <button class="tbc-go" id="tbcGo" type="button">
+            Craft <span id="tbcGoN"></span>
+            <small id="tbcGoSub"></small>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <footer class="room room--footer">
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<div class="scrim m-scrim" id="intakeModal" data-role="modal">
+  <div class="modal m-modal" role="dialog" aria-modal="true">
+    <div class="mclose" id="mclose">&times;</div>
+
+    <!-- ============ STUDIO FAILURES (exact r02) ============ -->
+
+    <!-- 1 · INTERRUPTED -->
+    <div class="state active" data-s="1">
+      <div class="pieceframe"><img class="art" src="/previews/portraits/bronze/1.jpg" alt="">
+        <div class="interrupt-line"></div><div class="craft-shimmer"></div><span class="piece-badge">Crafting again&hellip;</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">The studio stumbled on this one. I&rsquo;m crafting it again now &mdash; nothing is lost. <span class="sig">&mdash;&thinsp;C.</span></div></div>
+      <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        Your payment is safe. A re-craft is never charged.</div>
+      <div class="acts"><div class="btn ghost">Try again</div></div>
+    </div>
+
+    <!-- 2 · THE PHOTOGRAPH -->
+    <div class="state" data-s="2">
+      <div class="pieceframe"><img class="art" src="/previews/portraits/walnut/1.jpg" alt=""><span class="piece-badge">This one didn&rsquo;t hold</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">This <span class="tint">photograph</span> is fighting me &mdash; the face sits a little small to keep a true likeness. A clearer, closer one will craft beautifully.</div></div>
+      <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        No charge to try again with a new photograph.</div>
+      <div class="acts"><div class="btn fill">Use a clearer photo</div><div class="btn ghost">Refund this piece</div></div>
+    </div>
+
+    <!-- 3 · AT CAPACITY -->
+    <div class="state" data-s="3">
+      <div class="pieceframe deferred"><img class="art" src="/previews/portraits/bronze/1.jpg" alt=""><span class="piece-badge">Held for the studio</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">The studio&rsquo;s at capacity just now. I&rsquo;ll craft your piece the moment there&rsquo;s room and write to you the instant it&rsquo;s ready.</div></div>
+      <div class="field"><label>We&rsquo;ll send it here</label><div class="inp">rich@email.com</div></div>
+      <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        Your payment is safe. Nothing to do &mdash; the piece comes to you.</div>
+      <div class="acts"><div class="btn sage">Keep me posted</div></div>
+      </div>
+
+    <!-- 4 · REFUNDED -->
+    <div class="state" data-s="4">
+      <div class="pieceframe"><img class="art" src="/previews/portraits/walnut/1.jpg" alt=""><span class="piece-badge">Not this time</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">I couldn&rsquo;t make this one the way it deserves &mdash; so I won&rsquo;t send it. It&rsquo;s refunded. No piece reaches you unless it&rsquo;s right.</div></div>
+      <div class="refund-line"><span>Refunded to your card</span><b>$9.99</b></div>
+      <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 6 9 17l-5-5"/></svg>
+        Refunds settle in 5&ndash;10 days, on the card you used.</div>
+      <div class="acts"><div class="btn fill">Craft something else</div></div>
+      </div>
+
+    <!-- ============ UPLOAD REJECTION (new — mapped to friendlyReject reasons) ============ -->
+
+    <!-- 5 · FACE TOO SMALL  → /face|small|close|crop|distance|far/ -->
+    <div class="state" data-s="5">
+      <span class="reason-tag">Before we begin · your photograph</span>
+      <div class="pieceframe reject"><img class="art" src="" data-role="their-photo" alt=""><div class="crop-guide"></div><span class="piece-badge">Face is small</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">The face here sits <span class="tint">small in the frame</span>. Try one taken closer &mdash; head and shoulders, where the face fills more of the picture.</div></div>
+      <div class="safe warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        Nothing has been crafted or charged yet.</div>
+      <div class="acts"><div class="btn fill">Choose a closer photo</div><div class="btn ghost">Use this one anyway</div></div>
+      </div>
+
+    <!-- 6 · BLURRY → /blur|sharp|focus|soft/ -->
+    <div class="state" data-s="6">
+      <span class="reason-tag">Before we begin · your photograph</span>
+      <div class="pieceframe reject blur"><img class="art" src="" data-role="their-photo" alt=""><span class="piece-badge">A little soft</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">This photograph is a little <span class="tint">soft</span>. A sharper one makes a stronger finished piece &mdash; the studio has more to hold onto.</div></div>
+      <div class="safe warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        Nothing has been crafted or charged yet.</div>
+      <div class="acts"><div class="btn fill">Choose a sharper photo</div></div>
+    </div>
+
+    <!-- 7 · TOO DIM → /dim|dark|light|expos|bright/ -->
+    <div class="state" data-s="7">
+      <span class="reason-tag">Before we begin · your photograph</span>
+      <div class="pieceframe reject dim"><img class="art" src="" data-role="their-photo" alt=""><span class="piece-badge">A bit dark</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">This photograph is <span class="tint">dim</span>. A brighter, evenly lit one gives the studio more detail to work with.</div></div>
+      <div class="safe warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        Nothing has been crafted or charged yet.</div>
+      <div class="acts"><div class="btn fill">Choose a brighter photo</div><div class="btn ghost">Use this one anyway</div></div>
+    </div>
+
+    <!-- 8 · CAN'T USE (generic / inappropriate / no person) → default branch + content -->
+    <div class="state" data-s="8">
+      <span class="reason-tag">Before we begin · your photograph</span>
+      <div class="pieceframe reject"><img class="art" src="" data-role="their-photo" alt=""><span class="piece-badge">Can&rsquo;t use this one</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">I can&rsquo;t craft from this photograph. A clear, close photo of a face works best &mdash; try another.</div></div>
+      <div class="safe warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        Nothing has been crafted or charged yet.</div>
+      <div class="acts"><div class="btn fill">Choose another photo</div></div>
+      </div>
+
+  </div>
+</div>
+
+<div class="scrim m-scrim" id="queueFullModal" data-role="modal">
+  <div class="modal m-modal" role="dialog" aria-modal="true">
+    <div class="mclose" id="capClose">&times;</div>
+    <div class="state active cap-body">
+      <div class="cap-n">10</div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">Ten pieces will keep the studio busy for a good while.
+          Let me craft these first &mdash; then we&rsquo;ll start another queue,
+          and you won&rsquo;t be left waiting on the whole lot at once.
+          <span class="sig">&mdash;&thinsp;C.</span></div></div>
+      <div class="acts"><div class="btn fill" id="capCraft">Craft these ten</div>
+        <div class="btn ghost" id="capBack">Keep looking</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="readout">
+  <button class="readout-tab" id="readoutTab" type="button">Metrics<i></i></button>
+  <table>
+    <tr><td>viewport</td><td id="vw">—</td></tr>
+    <tr><td>stage width</td><td id="sw">—</td></tr>
+    <tr><td>gutter each side</td><td id="gut">—</td></tr>
+    <tr><td>gutter expected</td><td id="gex">—</td></tr>
+    <tr><td>stage as % of viewport</td><td id="pct">—</td></tr>
+    <tr><td>root font-size</td><td id="fs">—</td></tr>
+    <tr><td>body display</td><td id="bd">—</td></tr>
+    <tr><td>masthead height</td><td id="mh">—</td></tr>
+    <tr><td>wordmark on stage edge</td><td id="al">—</td></tr>
+    <tr><td>curator / workshop / queue</td><td id="rw">—</td></tr>
+        <tr><td>band</td><td id="band">—</td></tr>
+        <tr><td>card size</td><td id="cardsz">—</td></tr>
+  </table>
+</div>
+
+<script>
+/* the two sides of the floor */
+window.SILO_EFFECTS = {"earth-ore": ["Bronze", "Iron", "Stone", "Alabaster", "Pewter", "Ebony", "Walnut"], "artists-gallery": ["Impressionist", "Torn Paper", "Folded Book", "Charcoal &amp; Chalk", "Pencil Sketch", "Sheet Music", "Stained Glass"], "myth-legend": ["Dragon Skin", "Fire &amp; Ember", "Magic Energy", "Living Armor", "Living Reef", "Reclaimed Bronze"], "light-glass": ["Cast Glass", "Blown Glass", "Amber", "Frost &amp; Ice", "Liquid Mercury", "Enchanted Crystal", "Volumetric Light"], "far-future": ["Silicon Circuit", "Atomic Age Robot", "Cosmic Bloom", "Nebula Resin", "Neon Drawing"], "curiosities": ["Plushy", "Chocolate", "Elizabethan Portrait"], "seventh": ["Effect One", "Effect Two", "Effect Three", "Effect Four", "Effect Five"], "eigth": ["Effect One", "Effect Two", "Effect Three", "Effect Four", "Effect Five", "Effect Six", "Effect Seven"]};
+/* No prompt behind these yet. The gate refuses to spend on them, so the
+   floor must not offer them. Remove a name here the moment CENG lands it. */
+window.NO_ENGINE = ["Cast Glass", "Frost &amp; Ice", "Volumetric Light", "Fire &amp; Ember", "Living Reef", "Atomic Age Robot", "Cosmic Bloom"];
+window.SILO_LINE = {"earth-ore": "Here are the Earth &amp; Ore finishes. Weight, grain, and the honesty of real material.", "artists-gallery": "Here are the Artists Gallery finishes. A maker&rsquo;s hand, left visible.", "myth-legend": "Here are the Myth &amp; Legend finishes. For a sitting with some nerve to it.", "light-glass": "Here are the Light &amp; Glass finishes. Translucent, and lit from within.", "far-future": "Here are the Far &amp; Future finishes. Cool metals and further horizons.", "curiosities": "Here are the Curiosities. Newer work, and a little stranger.", "seventh": "This room is not named yet.", "eigth": "This room is not named yet."};
+</script>
+
+<script>
+/* measurement only — not part of the contract */
+(function(){
+  function read(){
+    var st = document.querySelector('.stage');
+    var r  = st.getBoundingClientRect();
+    var vw = document.documentElement.clientWidth;
+    var pct = (r.width / vw) * 100;
+    var fs  = getComputedStyle(document.documentElement).fontSize;
+    var bd  = getComputedStyle(document.body).display;
+    document.getElementById('vw').textContent  = vw + ' px';
+    document.getElementById('sw').textContent  = r.width.toFixed(1) + ' px';
+    document.getElementById('gut').textContent = r.left.toFixed(1) + ' px';
+    document.getElementById('gex').textContent =
+      Math.min(vw * 0.05, 100).toFixed(1) + ' px';
+    var p = document.getElementById('pct');
+    p.textContent = pct.toFixed(2) + ' %';
+    var wantGut = Math.min(vw * 0.05, 100);
+    p.className = Math.abs(r.left - wantGut) < 1.5 ? 'ok' : 'bad';
+    var f = document.getElementById('fs');
+    f.textContent = fs;
+    f.className = fs === '16px' ? 'ok' : 'bad';
+    var mh = document.querySelector('.mh');
+    var lg = document.querySelector('.mh-logo');
+    if (mh && lg){
+      var mr = mh.getBoundingClientRect(), lr = lg.getBoundingClientRect();
+      document.getElementById('mh').textContent = mr.height.toFixed(0) + ' px';
+      var d = Math.abs(lr.left - r.left);
+      var a = document.getElementById('al');
+      a.textContent = d < 0.6 ? 'aligned' : 'off by ' + d.toFixed(1) + ' px';
+      a.className = d < 0.6 ? 'ok' : 'bad';
+    }
+    var rooms = document.querySelector('.rooms');
+    if (rooms){
+      var w = [...rooms.children].filter(function(n){ return !n.classList.contains('room--footer'); })
+                .map(function(n){ return Math.round(n.getBoundingClientRect().width); });
+      document.getElementById('rw').textContent = w.join(' / ') + ' px';
+    }
+    var bandEl = document.getElementById('band');
+    if (bandEl){
+      bandEl.textContent = vw <= 1100 ? 'stacked'
+                         : vw <= 1366 ? '≤1366  tight'
+                         : vw <= 1599 ? '1367–1599  narrow'
+                         : '≥1600  full';
+    }
+    var cz = document.getElementById('cardsz');
+    var anyCard = document.querySelector('.silo-card');
+    if (cz && anyCard){
+      var cr = anyCard.getBoundingClientRect();
+      cz.textContent = Math.round(cr.width) + ' × ' + Math.round(cr.height) + ' px';
+      cz.className = cr.width >= 150 ? 'ok' : 'bad';
+    }
+    var b = document.getElementById('bd');
+    b.textContent = bd;
+    b.className = bd === 'block' ? 'ok' : 'bad';
+  }
+  read();
+  addEventListener('resize', read);
+  var ro = document.querySelector('.readout'), rt = document.getElementById('readoutTab');
+  if (ro && rt) rt.addEventListener('click', function(){ ro.classList.toggle('is-open'); });
+
+
+
+
+  /* ---- the queue -------------------------------------------------------- */
+  /* Global across every Series. A Portrait finish and a Pets finish sit in the
+     same queue; crossing rooms never empties it. */
+  var QUEUE = [], QUEUE_CAP = 10;   /* payloads of ten */
+  var CREDITS_PER_IMAGE = 10, BASE_USD = 4.99;
+  var tbc = document.getElementById('tbc');
+  var tbcList = document.getElementById('tbcList');
+  var tbcN = document.getElementById('tbcN');
+  var tbcTotal = document.getElementById('tbcTotal');
+  var tbcGoN = document.getElementById('tbcGoN');
+  var tbcGoSub = document.getElementById('tbcGoSub');
+
+  /* The ladder now applies only where credits are bought. Kept here for the
+     purchase screen, which is unbuilt. It must never price a craft. */
+  function ladderPct(n){
+    if (n<=1) return 0; if (n===2) return .10; if (n===3) return .15;
+    if (n===4) return .20; if (n===5) return .25;
+    if (n<10) return .25 + (n-5)*.01;
+    if (n<20) return .30; if (n<30) return .38; return .45;
+  }
+  function keyOf(silo, effect){ return silo + '::' + effect; }
+
+  function renderQueue(){
+    tbcList.innerHTML = '';
+    QUEUE.forEach(function(it){
+      var row = document.createElement('div');
+      row.className = 'tbc-row';
+      row.innerHTML =
+        '<img class="tbc-thumb" src="/previews/silos/' + it.silo + '.jpg" alt="">' +
+        '<div class="tbc-tx"><div class="tbc-nm">' + it.effect + '</div>' +
+          '<div class="tbc-sub">' + it.room + '</div></div>' +
+        '<button class="tbc-x" type="button" aria-label="Remove">&times;</button>';
+      row.querySelector('.tbc-x').addEventListener('click', function(e){
+        e.stopPropagation();
+        removeFromQueue(it.silo, it.effect);
+      });
+      tbcList.appendChild(row);
+    });
+    var n = QUEUE.length;
+    tbcList.dataset.n = n;
+    tbc.classList.toggle('has-items', n > 0);
+    tbcN.textContent = n ? n : '';
+    tbcTotal.textContent = (n * CREDITS_PER_IMAGE) + ' credits';
+    tbcGoN.textContent = n === 1 ? 'this piece' : ('all ' + n);
+    if (UPSELL_CTX && effFloor.querySelector('.is-upsell')) repaintUpsell(UPSELL_CTX.silo, UPSELL_CTX.list);
+    /* No percentage, no dollars. The ladder belongs to the credit purchase —
+       quoting it again here charges the customer once and credits them twice. */
+    tbcGoSub.textContent = (n * CREDITS_PER_IMAGE) + ' credits';
+  }
+
+  function inQueue(silo, effect){
+    return QUEUE.some(function(q){ return keyOf(q.silo,q.effect) === keyOf(silo,effect); });
+  }
+  function addToQueue(silo, room, effect){
+    if (inQueue(silo, effect)) return true;
+    if (QUEUE.length >= QUEUE_CAP){ openCap(); return false; }
+    QUEUE.push({ silo:silo, room:room, effect:effect });
+    renderQueue();
+    return true;
+  }
+
+  /* the cap, explained */
+  var capModal = document.getElementById('queueFullModal');
+  function openCap(){ if (capModal) capModal.classList.add('is-open'); }
+  function closeCap(){ if (capModal) capModal.classList.remove('is-open'); }
+  if (capModal){
+    ['capClose','capBack'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('click', closeCap);
+    });
+    var cc = document.getElementById('capCraft');
+    if (cc) cc.addEventListener('click', function(){
+      closeCap();
+      var go = document.getElementById('tbcGo');
+      if (go) go.click();
+    });
+    capModal.addEventListener('click', function(e){ if (e.target === capModal) closeCap(); });
+    addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && capModal.classList.contains('is-open')) closeCap();
+    });
+  }
+  function removeFromQueue(silo, effect){
+    QUEUE = QUEUE.filter(function(q){ return keyOf(q.silo,q.effect) !== keyOf(silo,effect); });
+    renderQueue();
+    /* if that card is on the floor, untick it */
+    var card = effFloor.querySelector('[data-effect="' + effect + '"]');
+    if (card && card.dataset.silo === silo) card.classList.remove('is-selected');
+  }
+  renderQueue();
+
+  /* ---- intake modals ---------------------------------------------------- */
+  /* Eight states, one dialog. __openIntake(n) is kept as the entry point so
+     the harness r81 shipped with still works. */
+  var intake = document.getElementById('intakeModal');
+  window.__openIntake = function(n){
+    if (!intake) return;
+    intake.querySelectorAll('.state').forEach(function(el){
+      el.classList.toggle('active', el.dataset.s === String(n));
+    });
+    intake.classList.add('is-open');
+  };
+
+  /* ---- the modal shows their photograph, not a stock one ---------------- */
+  /* Four intake states illustrate a fault with a picture. That picture should
+     be the customer's own upload — telling someone their face sits too small
+     works far better over their photograph than over a stranger's. The CSS
+     already applies the blur and dim filters, so one image serves every
+     state and there are no example files to keep. */
+  function setIntakePhoto(src){
+    if (!intake) return;
+    intake.querySelectorAll('[data-role="their-photo"]').forEach(function(img){
+      if (src){ img.src = src; img.removeAttribute('hidden'); }
+      else { img.removeAttribute('src'); img.setAttribute('hidden',''); }
+    });
+  }
+  window.__setIntakePhoto = setIntakePhoto;
+
+  window.__closeIntake = function(){ if (intake) intake.classList.remove('is-open'); };
+  if (intake){
+    var mc = intake.querySelector('#mclose');
+    if (mc) mc.addEventListener('click', window.__closeIntake);
+    intake.addEventListener('click', function(e){
+      if (e.target === intake) window.__closeIntake();
+    });
+    addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && intake.classList.contains('is-open')) window.__closeIntake();
+    });
+  }
+
+  /* ---- the Curator speaks ---------------------------------------------- */
+  /* Four states, one panel. Placeholder copy — CENG owns the final words. */
+  var cur     = document.getElementById('cur');
+  var curSay  = document.getElementById('curSay');
+  var curSlot = document.getElementById('curSlot');
+  var curChange = document.getElementById('curChange');
+
+  var SAY = {
+    empty:  'Bring me a <span class="hl">portrait</span> and I&rsquo;ll choose the finishes ' +
+            'myself. A clear, face-forward photograph gives me the most to work with.' +
+            '<span class="sign">&mdash; C.</span>',
+    photo:  'The light across her hair is doing something lovely &mdash; that will carry ' +
+            'into almost anything. So: what kind of effect are you thinking about today?' +
+            '<span class="sign">&mdash; C.</span>',
+    reject: 'That one is a little soft for me. Something sharper, and closer to the face, ' +
+            'and I can do considerably better by you.' +
+            '<span class="sign">&mdash; C.</span>'
+  };
+
+  /* the letter fades out, changes, and fades back — it should read as the
+     Curator turning a page, not as text being replaced. */
+  function say(html){
+    if (!curSay) return;
+    cur.classList.add('is-changing');
+    setTimeout(function(){
+      curSay.innerHTML = html;
+      cur.classList.remove('is-changing');
+    }, 380);
+  }
+
+  function curatorState(name, html){
+    if (cur) cur.dataset.state = name;
+    say(html);
+    var t = document.getElementById('curThumb');
+    if (typeof setIntakePhoto === 'function'){
+      setIntakePhoto(name === 'empty' ? null : (t && t.getAttribute('src')) || null);
+    }
+  }
+
+  if (curSay) curSay.innerHTML = SAY.empty;
+
+  if (curSlot){
+    var take = function(){ curatorState('photo', SAY.photo); };
+    curSlot.addEventListener('click', take);
+    curSlot.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); take(); }
+    });
+  }
+  if (curChange) curChange.addEventListener('click', function(){
+    curatorState('empty', SAY.empty);
+  });
+
+  /* ---- the floor turns over -------------------------------------------- */
+  var workshop = document.getElementById('workshop');
+  var deck     = document.getElementById('deck');
+  var effFloor = document.getElementById('effectFloor');
+  var crumbHere= document.getElementById('crumbHere');
+  var crumbBack= document.getElementById('crumbBack');
+  var siloFloor= document.querySelector('.face--silos .floor');
+  var FLIP = 420, STEP = 38;
+
+  function effectCard(silo, name){
+    var a = document.createElement('article');
+    a.className = 'silo-card';
+    a.tabIndex = 0;
+    a.dataset.effect = name;
+    a.dataset.silo = silo;
+    if ((window.NO_ENGINE || []).indexOf(name) >= 0){
+      a.classList.add('is-unavailable');
+      a.removeAttribute('tabindex');
+    }
+    a.innerHTML =
+      '<img class="silo-card__image" src="/previews/silos/' + silo + '.jpg" alt="" loading="lazy">' +
+      '<div class="silo-card__overlay"></div>' +
+      '<div class="silo-card__add" aria-hidden="true"></div>' +
+      '<div class="silo-card__content"><h3 class="silo-card__title">' + name + '</h3></div>';
+    return a;
+  }
+
+  /* turn one face out, the other in. the stagger is per card, so the floor
+     reads as a hand turning cards rather than a panel swapping. */
+  function turn(from, to, after){
+    var n = from.children.length;
+    from.classList.add('is-turning');
+    var out = FLIP + STEP * Math.max(0, n - 1);
+    setTimeout(function(){
+      from.classList.remove('is-turning');
+      after();
+      to.classList.add('is-arriving');
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          to.classList.remove('is-arriving');
+          to.classList.add('has-arrived');
+          setTimeout(function(){ to.classList.remove('has-arrived'); },
+                     FLIP + STEP * Math.max(0, to.children.length - 1));
+        });
+      });
+    }, out);
+  }
+
+  /* Eight is the ceiling. A room never holds more than a single floor, so
+     there is no paging and no partial second page to design around. */
+  var CAP = 7;   /* seven effects; the eighth slot is the upsell */
+
+
+  /* the offer to take the room entire. priced from the locked ladder:
+     ten credits an image, -25% at five, -1% per image beyond to -30% at ten. */
+  function ladder(n){
+    if (n<=1) return 0; if (n===2) return .10; if (n===3) return .15;
+    if (n===4) return .20; if (n>=10) return .30; return .25 + (n-5)*.01;
+  }
+  /* The eighth slot reads the queue, not just the room.
+     Payloads are ten. The offer therefore always points at ten: it proposes
+     however many of this room's finishes will get the customer there, and
+     quotes the discount that results — not the discount for the room alone.
+     A room of six offered to an empty queue saves 26%. The same room offered
+     to a queue of four completes the ten and saves 30%. */
+  function upsellCard(silo, list){
+    var have = QUEUE.length;
+    var room = 10 - have;
+    var no = window.NO_ENGINE || [];
+    var left = list.filter(function(nm){
+      return !inQueue(silo, nm) && no.indexOf(nm) < 0;
+    });
+    var addN = Math.min(left.length, room);
+    var total = have + addN;
+    var credits = addN * CREDITS_PER_IMAGE;
+
+    var a = document.createElement('article');
+    a.className = 'silo-card is-upsell';
+    a.tabIndex = 0;
+    a.dataset.silo = silo;
+
+    if (addN === 0){
+      a.innerHTML =
+        '<div class="up">' +
+          '<p class="up-eyebrow">A full studio</p>' +
+          '<h3 class="up-title">Ten pieces waiting</h3>' +
+          '<p class="up-sub">That is a full payload. Craft these, then we will begin another.</p>' +
+        '</div>';
+      return a;
+    }
+
+    /* the register rises with the stakes */
+    var tier = total >= 10 ? 3 : total >= 6 ? 2 : 1;
+    a.dataset.tier = tier;
+
+    var eyebrow = tier === 3 ? 'The Studio'
+                : tier === 2 ? 'Curator&rsquo;s Pick'
+                             : 'Curator&rsquo;s Pick';
+    var title = tier === 3 ? 'Complete the studio'
+              : (have ? 'Add the rest of this room' : 'Take the room entire');
+    var sub = tier === 3
+      ? ('These ' + addN + ' bring the studio to ten &mdash; a full payload.')
+      : tier === 2
+        ? ('All ' + addN + ' of them, and ' + total + ' pieces in the studio.')
+        : ('All ' + addN + ' finishes of this room, side by side.');
+
+    a.innerHTML =
+      '<div class="up">' +
+        '<p class="up-eyebrow">' + eyebrow + '</p>' +
+        '<h3 class="up-title">' + title + '</h3>' +
+        '<p class="up-sub">' + sub + '</p>' +
+        '<p class="up-save">' + addN + ' finishes</p>' +
+        '<span class="up-cta">Add all ' + addN + ' &middot; ' + credits + ' credits</span>' +
+        '<p class="up-tier">' + (total >= 10 ? 'A full studio' : 'The Series') + '</p>' +
+      '</div>';
+
+    a.addEventListener('click', function(e){
+      e.stopPropagation();
+      left.slice(0, addN).forEach(function(nm){ addToQueue(silo, crumbHere.textContent, nm); });
+      effFloor.querySelectorAll('[data-effect]').forEach(function(el){
+        if (inQueue(silo, el.dataset.effect)) el.classList.add('is-selected');
+      });
+      repaintUpsell(silo, list);
+    });
+    return a;
+  }
+
+  /* the offer must follow the queue, so it is redrawn whenever the queue moves */
+  var UPSELL_CTX = null;
+  function repaintUpsell(silo, list){
+    UPSELL_CTX = { silo:silo, list:list };
+    var old = effFloor.querySelector('.is-upsell');
+    if (!old) return;
+    var fresh = upsellCard(silo, list);
+    old.replaceWith(fresh);
+  }
+
+  function openSilo(card){
+    var silo = card.dataset.silo;
+    var list = ((window.SILO_EFFECTS || {})[silo] || []).slice(0, CAP);
+    turn(siloFloor, effFloor, function(){
+      effFloor.innerHTML = '';
+      list.forEach(function(nm){
+        var el = effectCard(silo, nm);
+        if (inQueue(silo, nm)) el.classList.add('is-selected');
+        effFloor.appendChild(el);
+      });
+      effFloor.appendChild(upsellCard(silo, list));
+      UPSELL_CTX = { silo:silo, list:list };
+      effFloor.dataset.count = list.length + 1;
+      crumbHere.textContent = card.querySelector('.silo-card__title').textContent;
+      var line = (window.SILO_LINE || {})[silo];
+      if (line) say(line + '<span class="sign">&mdash; C.</span>');
+      workshop.classList.remove('workshop-view--silos');
+      workshop.classList.add('workshop-view--effects');
+    });
+  }
+
+  function backToSilos(){
+    turn(effFloor, siloFloor, function(){
+      if (cur && cur.dataset.state !== 'empty') say(SAY.photo);
+      workshop.classList.remove('workshop-view--effects');
+      workshop.classList.add('workshop-view--silos');
+    });
+  }
+
+  if (siloFloor) siloFloor.addEventListener('click', function(e){
+    var c = e.target.closest('.silo-card'); if (c) openSilo(c);
+  });
+  if (siloFloor) siloFloor.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var c = e.target.closest('.silo-card'); if (c){ e.preventDefault(); openSilo(c); }
+  });
+
+  /* the whole card is the target — the badge is an affordance, not the only
+     place a click lands. */
+  if (effFloor) effFloor.addEventListener('click', function(e){
+    var c = e.target.closest('.silo-card'); if (!c) return;
+    if (c.classList.contains('is-upsell')) return;      /* its own action */
+    if (c.classList.contains('is-unavailable')) return; /* nothing to craft */
+    var eff = c.dataset.effect, silo = c.dataset.silo, room = crumbHere.textContent;
+    if (c.classList.contains('is-selected')){
+      c.classList.remove('is-selected');
+      removeFromQueue(silo, eff);
+    } else if (addToQueue(silo, room, eff)){
+      c.classList.add('is-selected');
+    }
+  });
+  if (effFloor) effFloor.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var c = e.target.closest('.silo-card'); if (c){ e.preventDefault(); c.click(); }
+  });
+
+  if (crumbBack) crumbBack.addEventListener('click', backToSilos);
+  addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && workshop.classList.contains('workshop-view--effects'))
+      backToSilos();
+  });
+
+  var sb = document.getElementById('mhSeriesBtn'), sm = document.getElementById('mhSeriesMenu');
+  if (sb && sm){
+    sb.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = sm.hasAttribute('hidden');
+      if (open) sm.removeAttribute('hidden'); else sm.setAttribute('hidden','');
+      sb.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', function(e){
+      if (!sm.hasAttribute('hidden') && !sm.contains(e.target) && e.target !== sb){
+        sm.setAttribute('hidden',''); sb.setAttribute('aria-expanded','false');
+      }
+    });
+    addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && !sm.hasAttribute('hidden')){
+        sm.setAttribute('hidden',''); sb.setAttribute('aria-expanded','false'); sb.focus();
+      }
+    });
+  }
+  var mb = document.getElementById('mhMenuBtn'), dw = document.getElementById('mhDrawer');
+  if (mb && dw){
+    mb.addEventListener('click', function(){
+      var open = dw.hasAttribute('hidden');
+      if (open) dw.removeAttribute('hidden'); else dw.setAttribute('hidden','');
+      mb.setAttribute('aria-expanded', String(open));
+    });
+    addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && !dw.hasAttribute('hidden')){
+        dw.setAttribute('hidden',''); mb.setAttribute('aria-expanded','false');
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
