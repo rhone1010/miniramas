@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liten &amp; Co — Stage + Masthead — s4 — 2026-07-28</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   LITEN & CO — STAGE CONTRACT · s4 · 2026-07-28
+   The stage, plus the masthead. Nothing else lives here.
+
+   This file is the single authority for four things:
+       the ground, the stage width, the gutters, the type base.
+   Every surface adopts this block verbatim. Nothing downstream may set
+   width, margin, max-width or font-size on .ground, .stage or :root.
+
+   WHY THIS EXISTS
+   b7 had body{display:flex; gap:40px; justify-content:center}. That made the
+   stage a flex item, so width:86% was only a hint — actual width came from
+   flex distribution competing with auto margins and a 40px gap. Gutters were
+   therefore unpredictable and different at every viewport.
+   Here body is a block. The stage's width is simply true.
+   ====================================================================== */
+
+/* ---- TOKENS · the only place these numbers appear --------------------- */
+:root{
+  /* TYPE BASE — 16px, fixed.
+     b7 used clamp(12px, 0.38vw + 6px, 15px), which resolved to 13px at
+     Rich's viewport. Every rem in the file was then measured against 13,
+     so type came out ~20% smaller than specified. That was the recurring
+     "fonts are too small" fault since March. It is fixed, not fluid. */
+  font-size:16px;
+
+  /* GEOMETRY */
+  /* 90% wide, but the gutter never exceeds 100px a side.
+     max() picks whichever is wider: 90%, or the full width less 2x100px.
+     Below 2000px viewport the 5% gutter is under 100 and 90% governs.
+     Above it the gutter holds at 100 and the stage keeps growing. */
+  --stage-gutter-max:100px;
+  --stage-gutter:min(5%, var(--stage-gutter-max));   /* the one gutter value */
+  --stage-w:max(90%, calc(100% - (var(--stage-gutter-max) * 2)));
+  --mh-h:90px;          /* masthead height */
+
+  /* GROUND */
+  --ls-tile:900px;      /* limestone tile. larger reads as ground, smaller as slab */
+  --ls-wash:.42;        /* vellum laid over the stone. higher = quieter stone */
+
+  /* PALETTE — canonical, do not shadow with near-miss values */
+  --ink:#2a241e;  --ink-soft:#5a5248;  --taupe:#aba39a;
+  --vellum:#f3ede1; --vellum-100:#f8f4eb; --vellum-200:#f3ecdd; --vellum-300:#e9dec8;
+  --limestone:#f1ece3;
+  --oxblood:#7d4242; --brass:#75623a; --gold:#b68a53;
+  --series:#d7bd89;     /* the series title, and its dropdown text */
+  --espresso:#26201a; --coffee-700:#332620;
+  --card-line:rgba(196,169,110,.28);
+  --hairline:rgba(123,92,58,.20);
+
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',sans-serif;
+
+  --r-card:8px;         /* radius ceiling. 999px only on pills <=72px tall */
+}
+
+*{margin:0; padding:0; box-sizing:border-box}
+[hidden]{display:none!important}
+button{font:inherit; border:none; background:none; color:inherit}
+
+html{ height:100% }
+
+/* body is a BLOCK. Nothing here may make it a flex or grid container —
+   that is what broke the geometry in b7. */
+body{
+  min-height:100%;
+  background:var(--limestone);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:1rem;
+  overflow-x:hidden;
+}
+
+/* ---- THE GROUND · edge to edge, behind everything --------------------- */
+/* Fixed so it does not scroll away and does not depend on content height.
+   Separated from .stage on purpose: percentage background-size on the
+   gradients now resolves against the viewport, not against a box that also
+   carries a tiled image. That is why the 72% radial read wrong before. */
+.ground{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-color:var(--limestone);
+  background-image:
+    linear-gradient(0deg,
+      rgba(241,236,227,var(--ls-wash)), rgba(241,236,227,var(--ls-wash))),
+    url("/textures/limestone.png");
+  background-repeat:repeat, repeat;
+  background-size:auto, var(--ls-tile) var(--ls-tile);
+  background-position:center, center;
+}
+
+/* atmosphere — its own layer so it can be tuned without touching the stone */
+.ground::before{
+  content:""; position:absolute; inset:0;
+  background-image:
+    radial-gradient(circle at 16% 8%,
+      rgba(255,255,255,.86) 0%, rgba(255,255,255,.30) 24%, transparent 50%),
+    radial-gradient(circle at 86% 24%,
+      rgba(211,187,151,.24) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 112%,
+      rgba(92,66,40,.13) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(221,208,189,.14) 42%,
+      rgba(255,255,255,.10) 68%, rgba(191,166,130,.11) 100%);
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat;
+  background-size:72% 72%, 58% 66%, 100% 58%, cover;
+  background-position:top left, top right, bottom center, center;
+}
+
+/* grain and the room's inner shadow */
+.ground::after{
+  content:""; position:absolute; inset:0;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:240px 240px;
+  opacity:.025; mix-blend-mode:multiply;
+  box-shadow:inset 0 0 7rem rgba(69,44,29,.045),
+             inset 0 1px 0 rgba(255,255,255,.32);
+}
+
+
+/* ---- THE MASTHEAD · full-bleed ground, content on the stage edge ------ */
+/* Governed by MASTHEAD-DIRECTIVE-v1. Three zones, one row, never a fourth.
+   The inset reads --stage-gutter, so the wordmark sits exactly on the stage
+   edge at every width. A flat padding is the fault the directive names:
+   the misalignment grows with screen width. */
+.mh{
+  position:sticky; top:0; z-index:60;
+  height:var(--mh-h);
+  background:var(--espresso);
+  border-bottom:1px solid var(--card-line);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  padding-inline:var(--stage-gutter);
+}
+
+
+/* ---- SERIES SWITCHER · the first item in the nav row ------------------- */
+/* Not a fourth zone — it lives inside the nav so the three-zone rule holds.
+   It names the room you are standing in, and opens the door to the others. */
+.mh-series{ position:relative; display:flex; align-items:center }
+.mh-series-btn{
+  display:inline-flex; align-items:center; gap:.34em;
+  font-family:var(--serif); font-size:1.8em; font-weight:400; line-height:1;
+  color:var(--series); padding:10px 0; cursor:pointer; white-space:nowrap;
+  transition:color .16s ease;
+}
+.mh-series-btn:hover{ color:#e6d2a8 }
+.mh-series-btn .caret{
+  width:.44em; height:.44em; margin-top:.12em;
+  border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor;
+  transform:rotate(45deg); transition:transform .18s ease;
+}
+.mh-series-btn[aria-expanded="true"] .caret{ transform:rotate(-135deg); margin-top:.3em }
+
+/* the panel — warm paper lettering on coffee */
+.mh-series-menu{
+  position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%);
+  min-width:16em;
+  background:linear-gradient(180deg,#2a1f1b 0%, #221915 100%);
+  border:1px solid var(--card-line);
+  border-radius:var(--r-card);
+  box-shadow:0 22px 48px -20px rgba(20,12,8,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  padding:20px;
+  display:flex; flex-direction:column;
+  z-index:70;
+}
+.mh-series-menu a{
+  display:flex; align-items:center; justify-content:space-between; gap:1.2em;
+  font-family:var(--serif); font-size:1.45em; font-weight:400; line-height:1.1;
+  color:var(--vellum-200); text-decoration:none; white-space:nowrap;
+  padding:.52em .7em; border-radius:6px;
+  transition:background .14s ease, color .14s ease;
+}
+.mh-series-menu a:hover,
+.mh-series-menu a:focus-visible{
+  background:linear-gradient(180deg, rgba(215,189,137,.16), rgba(215,189,137,.09));
+  color:var(--series); outline:none;
+}
+.mh-series-menu a[aria-current="page"]{ color:var(--series) }
+.mh-series-menu a[aria-current="page"]::after{
+  content:""; width:5px; height:5px; border-radius:50%; background:var(--series);
+}
+.mh-series-menu .sep{
+  height:1px; margin:6px 8px;
+  background:linear-gradient(90deg, transparent, rgba(215,189,137,.28), transparent);
+}
+.mh-series-menu .note{
+  font-family:var(--sans); font-size:13px; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--taupe);
+  padding:.5em .7em .2em;
+}
+
+/* wordmark — never collapses, never truncates */
+.mh-logo{ justify-self:start; text-decoration:none; display:inline-flex; align-items:baseline }
+.mh-logo .mark{
+  font-family:var(--serif); font-size:36px; font-weight:400; line-height:1;
+  color:var(--vellum-100); white-space:nowrap;
+}
+.mh-logo .mark em{ font-style:italic; color:var(--gold) }
+
+/* nav centred on the page, not between the outer zones */
+.mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
+.mh-nav a{
+  position:relative; text-decoration:none; white-space:nowrap;
+  font-family:var(--serif); font-size:1.7em; font-weight:400; line-height:1;
+  color:var(--vellum-300); padding:10px 0;
+  transition:color .16s ease;
+}
+.mh-nav a:hover{ color:var(--vellum-100) }
+.mh-nav a.on{ color:var(--gold) }
+.mh-nav a.on::after{
+  content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
+  background:var(--gold);
+}
+
+/* right cluster — credits then cart, in that order */
+.mh-right{ justify-self:end; display:flex; align-items:center; gap:12px }
+.mh-credits,.mh-cart{
+  display:flex; align-items:center; gap:10px;
+  height:44px; padding:0 16px;
+  border-radius:var(--r-card);
+  background:var(--coffee-700);
+  border:1px solid var(--card-line);
+  color:var(--vellum-100);
+  font-family:var(--sans); font-size:16px; font-weight:600;
+  cursor:pointer;
+  transition:background .16s ease, border-color .16s ease;
+}
+.mh-credits:hover,.mh-cart:hover{ background:#40302a; border-color:var(--gold) }
+.mh-credits .v,.mh-cart .cnt{ font-variant-numeric:tabular-nums }
+.mh-credits .u{ font-weight:400; color:var(--vellum-300) }
+.mh-cart svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+
+/* the only circle in the component */
+.mh-cart .cnt{
+  min-width:24px; height:24px; padding:0 6px; border-radius:50%;
+  display:grid; place-items:center;
+  background:var(--oxblood); color:#fff;
+  font-family:var(--sans); font-size:14px; font-weight:600;
+}
+/* at zero the badge mutes — a cart that disappears reads as broken */
+.mh-cart .cnt[data-empty="true"]{ background:rgba(233,222,200,.22); color:var(--vellum-300) }
+
+/* navigation is what gives way. the wordmark and the cart never do. */
+.mh-menu{
+  display:none; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:var(--r-card);
+  background:var(--coffee-700); border:1px solid var(--card-line);
+  color:var(--vellum-100); cursor:pointer;
+}
+.mh-menu svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+.mh-drawer{
+  position:absolute; top:var(--mh-h); left:0; right:0;
+  background:var(--espresso); border-bottom:1px solid var(--card-line);
+  padding:12px 0 20px; display:flex; flex-direction:column;
+}
+.mh-drawer a{
+  text-decoration:none; color:var(--vellum-300);
+  font-family:var(--serif); font-size:1.8em; font-weight:400;
+  padding:12px var(--stage-gutter);
+}
+.mh-drawer a.on{ color:var(--gold) }
+
+@media (max-width:1400px){ .mh-nav{ gap:22px; font-size:.88em } }
+@media (max-width:1199px){
+  .mh{ grid-template-columns:auto 1fr auto }
+  .mh-nav{ display:none }
+  .mh-menu{ display:flex; justify-self:start; margin-left:12px }
+}
+@media (max-width:767px){ .mh-credits{ display:none } }
+
+/* ---- THE STAGE · 86%, centred, at every width ------------------------- */
+.stage{
+  position:relative; z-index:1;
+  width:var(--stage-w);
+  margin-inline:auto;
+  min-height:calc(100vh - var(--mh-h));
+  padding-block:24px;
+}
+
+/* ======================================================================
+   MEASUREMENT — this block is NOT part of the contract.
+   It exists so the geometry can be verified on the glass and read back.
+   Delete everything below this line when adopting the contract.
+   ================================================================== */
+.rule{
+  position:relative; z-index:2;
+  height:100%;
+  min-height:calc(100vh - var(--mh-h) - 48px);
+  border:1px dashed rgba(125,66,66,.45);
+  border-radius:var(--r-card);
+  display:grid; place-items:center;
+  background:rgba(255,255,255,.16);
+}
+.readout{
+  font-family:var(--sans); text-align:center; color:var(--ink);
+  background:rgba(250,246,236,.9);
+  border:1px solid var(--hairline);
+  border-radius:var(--r-card);
+  padding:28px 36px;
+  box-shadow:0 12px 34px -18px rgba(42,36,30,.4);
+}
+.readout h1{
+  font-family:var(--serif); font-weight:400; font-size:34px;
+  line-height:1.1; margin-bottom:6px;
+}
+.readout p{ font-size:16px; line-height:1.5; color:var(--ink-soft); margin-bottom:18px }
+.readout table{ border-collapse:collapse; margin:0 auto; font-size:16px }
+.readout td{ padding:5px 14px; text-align:left; border-bottom:1px solid var(--hairline) }
+.readout td:first-child{ color:var(--ink-soft) }
+.readout td:last-child{ font-variant-numeric:tabular-nums; font-weight:600 }
+.readout .ok{ color:#4a6b45 } .readout .bad{ color:var(--oxblood) }
+</style>
+</head>
+<body>
+
+<div class="ground" aria-hidden="true"></div>
+
+<header class="mh" id="masthead">
+  <a class="mh-logo" href="/"><span class="mark">Liten <em>&amp; Co</em></span></a>
+  <button class="mh-menu" id="mhMenuBtn" aria-label="Menu" aria-expanded="false">
+    <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg>
+  </button>
+  <nav class="mh-nav">
+    <div class="mh-series">
+      <button class="mh-series-btn" id="mhSeriesBtn" aria-expanded="false" aria-haspopup="true">
+        <span id="mhSeriesLabel">Crafted Portraits</span><i class="caret" aria-hidden="true"></i>
+      </button>
+      <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
+        <p class="note">Choose a series</p>
+        <a href="/portraits" role="menuitem" aria-current="page">Portraits</a>
+        <a href="/action" role="menuitem">Action</a>
+        <a href="/groups" role="menuitem">Groups</a>
+        <a href="/pets" role="menuitem">Pets</a>
+        <div class="sep"></div>
+        <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
+      </div>
+    </div>
+    <a href="/gallery">Gallery</a>
+    <a href="/print">Print Shop</a>
+    <a href="/collection">My Collection</a>
+    <a href="/help">Help</a>
+  </nav>
+  <div class="mh-right">
+    <button class="mh-credits" id="mhCreditsBtn" hidden>
+      <span class="v" id="mhCreditsCount">0</span><span class="u">credits</span>
+    </button>
+    <button class="mh-cart" id="mhCartBtn">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
+      <span class="lbl">Cart</span>
+      <span class="cnt" id="mhCartCount" data-empty="true">0</span>
+    </button>
+  </div>
+  <nav class="mh-drawer" id="mhDrawer" hidden>
+    <a href="/portraits" class="on">Portraits</a>
+    <a href="/action">Action</a>
+    <a href="/groups">Groups</a>
+    <a href="/pets">Pets</a>
+    <a href="/wallpapers">Mobile Wallpapers</a>
+    <a href="/gallery">Gallery</a>
+    <a href="/print">Print Shop</a>
+    <a href="/collection">My Collection</a>
+    <a href="/help">Help</a>
+  </nav>
+</header>
+
+<div class="stage">
+  <div class="rule">
+    <div class="readout">
+      <h1>Stage + Masthead &middot; s4</h1>
+      <p>The dashed edge is the stage. The stone runs to the page edge behind it.</p>
+      <table>
+        <tr><td>viewport</td><td id="vw">—</td></tr>
+        <tr><td>stage width</td><td id="sw">—</td></tr>
+        <tr><td>gutter each side</td><td id="gut">—</td></tr>
+        <tr><td>gutter expected</td><td id="gex">—</td></tr>
+        <tr><td>stage as % of viewport</td><td id="pct">—</td></tr>
+        <tr><td>root font-size</td><td id="fs">—</td></tr>
+        <tr><td>body display</td><td id="bd">—</td></tr>
+        <tr><td>masthead height</td><td id="mh">—</td></tr>
+        <tr><td>wordmark on stage edge</td><td id="al">—</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+/* measurement only — not part of the contract */
+(function(){
+  function read(){
+    var st = document.querySelector('.stage');
+    var r  = st.getBoundingClientRect();
+    var vw = document.documentElement.clientWidth;
+    var pct = (r.width / vw) * 100;
+    var fs  = getComputedStyle(document.documentElement).fontSize;
+    var bd  = getComputedStyle(document.body).display;
+    document.getElementById('vw').textContent  = vw + ' px';
+    document.getElementById('sw').textContent  = r.width.toFixed(1) + ' px';
+    document.getElementById('gut').textContent = r.left.toFixed(1) + ' px';
+    document.getElementById('gex').textContent =
+      Math.min(vw * 0.05, 100).toFixed(1) + ' px';
+    var p = document.getElementById('pct');
+    p.textContent = pct.toFixed(2) + ' %';
+    var wantGut = Math.min(vw * 0.05, 100);
+    p.className = Math.abs(r.left - wantGut) < 1.5 ? 'ok' : 'bad';
+    var f = document.getElementById('fs');
+    f.textContent = fs;
+    f.className = fs === '16px' ? 'ok' : 'bad';
+    var mh = document.querySelector('.mh');
+    var lg = document.querySelector('.mh-logo');
+    if (mh && lg){
+      var mr = mh.getBoundingClientRect(), lr = lg.getBoundingClientRect();
+      document.getElementById('mh').textContent = mr.height.toFixed(0) + ' px';
+      var d = Math.abs(lr.left - r.left);
+      var a = document.getElementById('al');
+      a.textContent = d < 0.6 ? 'aligned' : 'off by ' + d.toFixed(1) + ' px';
+      a.className = d < 0.6 ? 'ok' : 'bad';
+    }
+    var b = document.getElementById('bd');
+    b.textContent = bd;
+    b.className = bd === 'block' ? 'ok' : 'bad';
+  }
+  read();
+  addEventListener('resize', read);
+  var sb = document.getElementById('mhSeriesBtn'), sm = document.getElementById('mhSeriesMenu');
+  if (sb && sm){
+    sb.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = sm.hasAttribute('hidden');
+      if (open) sm.removeAttribute('hidden'); else sm.setAttribute('hidden','');
+      sb.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', function(e){
+      if (!sm.hasAttribute('hidden') && !sm.contains(e.target) && e.target !== sb){
+        sm.setAttribute('hidden',''); sb.setAttribute('aria-expanded','false');
+      }
+    });
+    addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && !sm.hasAttribute('hidden')){
+        sm.setAttribute('hidden',''); sb.setAttribute('aria-expanded','false'); sb.focus();
+      }
+    });
+  }
+  var mb = document.getElementById('mhMenuBtn'), dw = document.getElementById('mhDrawer');
+  if (mb && dw){
+    mb.addEventListener('click', function(){
+      var open = dw.hasAttribute('hidden');
+      if (open) dw.removeAttribute('hidden'); else dw.setAttribute('hidden','');
+      mb.setAttribute('aria-expanded', String(open));
+    });
+    addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && !dw.hasAttribute('hidden')){
+        dw.setAttribute('hidden',''); mb.setAttribute('aria-expanded','false');
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
