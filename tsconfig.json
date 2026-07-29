@@ -31,5 +31,11 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "_recovery",
+    "_route_upload",
+    "archive",
+    "lib/v1/action/Old"
+  ]
 }
