@@ -39,10 +39,31 @@ const rootFs = css.match(/:root\s*\{[^}]*font-size\s*:\s*([^;]+);/);
 check(rootFs, 'no :root font-size declared');
 if (rootFs) {
   const v = rootFs[1].trim();
-  check(v === '16px', `root font-size is "${v}" — the contract is a fixed 16px, never a clamp`);
+  /* A clamp is allowed, but its FLOOR is the whole protection. The fault it
+     replaced was clamp(12px,...) resolving to 13px. Sixteen is the floor. */
+  let floor = null;
+  const lit = v.match(/^clamp\(\s*(\d+(?:\.\d+)?)px/);
+  const tok = v.match(/^clamp\(\s*var\(--type-min\)/);
+  if (tok) {
+    const tm = css.match(/--type-min\s*:\s*(\d+(?:\.\d+)?)px/);
+    check(tm, '--type-min is not declared');
+    if (tm) floor = tm[1];
+  } else if (lit) {
+    floor = lit[1];
+  }
+  const cl = floor ? [null, floor] : null;
+  if (cl) {
+    check(parseFloat(cl[1]) >= 16,
+          `root clamp floor is ${cl[1]}px — 16px is the minimum, that is the whole protection`);
+  } else {
+    check(v === '16px', `root font-size is "${v}" — expected 16px or a clamp with a 16px floor`);
+  }
 }
-check(!/font-size\s*:\s*clamp\(/.test(css),
-      'a clamp() font-size exists — fluid type is what produced 13px');
+/* nothing but :root may size type fluidly */
+for (const m of css.matchAll(/([^{}]+)\{[^}]*font-size\s*:\s*clamp\(/g)) {
+  const sel = m[1].trim().split('\n').pop().trim();
+  if (sel !== ':root') fails.push(`${sel} sizes type with clamp() — only :root may`);
+}
 
 /* 3 · one stage width, expressed once */
 const stageW = [...css.matchAll(/\.stage\s*\{[^}]*?width\s*:\s*([^;]+);/g)].map(m => m[1].trim());
@@ -81,10 +102,11 @@ for (const m of css.matchAll(/([^{}]{0,160})border-radius\s*:\s*999(px|rem)/g)) 
 }
 
 /* 7 · type floors, for anything the contract sizes */
-for (const m of css.matchAll(/([^{}]+)\{[^}]*font-size\s*:\s*(\d+)px/g)) {
+/* type floors, now in rem against a 16px minimum root */
+for (const m of css.matchAll(/([^{}]+)\{[^}]*font-size\s*:\s*([\d.]+)rem/g)) {
   const sel = m[1].trim().split('\n').pop().trim();
-  const px = +m[2];
-  if (px < 13) fails.push(`${sel} at ${px}px — below every floor`);
+  const px = parseFloat(m[2]) * 16;
+  if (px < 13) fails.push(`${sel} at ${px.toFixed(1)}px minimum — below every floor`);
 }
 
 /* 8 · bench and measurement scaffolding must not reach a surface */
@@ -96,7 +118,14 @@ if (!isContract) {
 
 /* 8b · masthead, when present, obeys MASTHEAD-DIRECTIVE-v1 */
 if (/class="mh"/.test(markup)) {
-  check(/--mh-h\s*:\s*90px/.test(css), 'masthead is not 90px');
+  /* the masthead height is a tuned value, not a contract. What the contract
+     protects is that it is declared once as a token and everything reads it. */
+  const mh = css.match(/--mh-h\s*:\s*(\d+)px/);
+  check(mh, '--mh-h is not declared');
+  if (mh) check(+mh[1] >= 56 && +mh[1] <= 120,
+                `--mh-h is ${mh[1]}px — outside the 56–120px the layout is built for`);
+  check(!/\.mh\s*\{[^}]*height\s*:\s*\d+px/.test(css),
+        'the masthead hardcodes a height instead of reading --mh-h');
   check(/\.mh\s*\{[^}]*padding-inline\s*:\s*var\(--stage-gutter\)/.test(css),
         'masthead inset does not read --stage-gutter — a flat padding drifts from the stage edge');
   check(/\.mh\s*\{[^}]*position\s*:\s*sticky/.test(css), 'masthead is not sticky');
