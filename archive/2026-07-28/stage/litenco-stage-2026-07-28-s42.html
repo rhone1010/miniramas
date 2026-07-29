@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Liten &amp; Co — Stage + Masthead — s24 — 2026-07-28</title>
+<title>Liten &amp; Co — Stage + Masthead — s42 — 2026-07-28</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ==========================================================================
-   LITEN & CO — STAGE CONTRACT · s24 · 2026-07-28
+   LITEN & CO — STAGE CONTRACT · s42 · 2026-07-28
    The stage, the masthead, and the empty rooms inside it.
    No content. Geometry only.
 
@@ -28,12 +28,17 @@
 
 /* ---- TOKENS · the only place these numbers appear --------------------- */
 :root{
-  /* TYPE BASE — 16px, fixed.
+  /* TYPE BASE — 16px at 1920 and below, growing to 22px on wide screens.
+     The floor is the point. The old clamp(12px, .38vw + 6px, 15px) bottomed
+     at 13px, which is what made every rem measurement read ~20% small for
+     months. A clamp whose minimum is 16px cannot reproduce that — it can
+     only grow. Everything above is declared in rem so the scale reaches it.
+     1440 → 16 · 1920 → 16 · 2560 → 19.2 · 2844 → 20.6 · 3840 → 22 (capped)
      b7 used clamp(12px, 0.38vw + 6px, 15px), which resolved to 13px at
      Rich's viewport. Every rem in the file was then measured against 13,
      so type came out ~20% smaller than specified. That was the recurring
      "fonts are too small" fault since March. It is fixed, not fluid. */
-  font-size:16px;
+  font-size:clamp(16px, 0.5vw + 6.4px, 22px);
 
   /* GEOMETRY */
   /* 90% wide, but the gutter never exceeds 100px a side.
@@ -48,7 +53,7 @@
 
   /* ROOMS — every proportion inside the stage, declared once */
   --spine-w:clamp(340px, 24%, 460px);   /* rail + curator together */
-  --rail-w:52px;                        /* the closed "Design your own" spine */
+  --rail-w:60px;                        /* the closed "Design your own" spine */
   --queue-w:clamp(200px, 13%, 280px);   /* To Be Crafted */
   --room-gap:20px;
   --stage-pad:24px;
@@ -282,7 +287,7 @@ body{
   background:var(--coffee-700);
   border:1px solid var(--card-line);
   color:var(--vellum-100);
-  font-family:var(--sans); font-size:16px; font-weight:600;
+  font-family:var(--sans); font-size:1rem; font-weight:600;
   cursor:pointer;
   transition:background .16s ease, border-color .16s ease;
 }
@@ -296,7 +301,7 @@ body{
   min-width:24px; height:24px; padding:0 6px; border-radius:50%;
   display:grid; place-items:center;
   background:var(--oxblood); color:#fff;
-  font-family:var(--sans); font-size:14px; font-weight:600;
+  font-family:var(--sans); font-size:0.875rem; font-weight:600;
 }
 /* at zero the badge mutes — a cart that disappears reads as broken */
 .mh-cart .cnt[data-empty="true"]{ background:rgba(233,222,200,.22); color:var(--vellum-300) }
@@ -376,7 +381,7 @@ body{
   content:attr(data-room);
   position:absolute; inset:0;
   display:grid; place-items:center;
-  font-family:var(--sans); font-size:13px; font-weight:600;
+  font-family:var(--sans); font-size:0.8125rem; font-weight:600;
   letter-spacing:.16em; text-transform:uppercase;
   color:var(--taupe); pointer-events:none;
 }
@@ -384,7 +389,7 @@ body{
 .room--curator { grid-area:curator }
 .room--workshop{ grid-area:workshop }  /* the open floor — the stone shows through */
 .room--queue   { grid-area:queue }
-.room--queue::after{ color:rgba(233,222,200,.42) }
+.room--queue::after{ content:none }   /* the rail has contents now */
 .room--footer  { grid-area:footer }
 
 /* ---- the footer · five bays with hairline dividers -------------------- */
@@ -409,7 +414,7 @@ body{
 }
 .bay::after{
   content:attr(data-bay);
-  font-family:var(--sans); font-size:13px; font-weight:600;
+  font-family:var(--sans); font-size:0.8125rem; font-weight:600;
   letter-spacing:.16em; text-transform:uppercase; color:var(--taupe);
 }
 
@@ -420,7 +425,7 @@ body{
   overflow:hidden;
   padding:0;
 }
-.room--curator::after{ grid-column:2 }
+.room--curator::after{ content:none }   /* the Curator has contents now */
 .rail{
   grid-column:1; position:relative; z-index:3;
   background:var(--oxblood);
@@ -428,7 +433,7 @@ body{
   cursor:pointer;
 }
 .rail span{
-  font-family:var(--serif); font-style:italic; font-size:19px;
+  font-family:var(--serif); font-style:italic; font-size:1.6rem;
   color:var(--vellum-200); white-space:nowrap;
   writing-mode:vertical-rl; transform:rotate(180deg);
   letter-spacing:.04em;
@@ -583,32 +588,135 @@ body{
 .curator-pick > *{ position:relative; z-index:2 }
 
 
-/* ======================================================================
-   THE FLOOR · s18
-   One grid of twelve columns. The number of cards decides the shape, and
-   the shape is declared per count rather than emerging from wrapping.
-   This matters because the effects level varies between three and eight
-   cards, and each count wants a deliberate arrangement.
 
-       count   shape        spans
-         1     1            12
-         2     2            6
-         3     3            4
-         4     4            3
-         5     3 + 2        4,4,4 · 6,6
-         6     3 + 3        4
-         7     3 + 4        4,4,4 · 3,3,3,3
-         8     4 + 4        3
-         9     3 + 3 + 3    4
-        10     3 + 3 + 4    4,4,4 · 4,4,4 · 3,3,3,3
+/* ======================================================================
+   THE CURATOR · s32
+   One panel, four states. It asks, it reacts, it names the room you are in.
+   No step dots — the words carry the position. No cycle button.
+   ================================================================== */
+.room--curator{
+  display:grid;
+  grid-template-columns:var(--rail-w) minmax(0,1fr);
+}
+.cur{
+  grid-column:2;
+  display:flex; flex-direction:column;
+  min-width:0; min-height:0;
+  padding:clamp(20px,1.5vw,30px) clamp(18px,1.35vw,26px) clamp(22px,1.6vw,32px);
+  overflow-y:auto; overflow-x:hidden;
+}
+
+/* ---- header, and the divider ------------------------------------------ */
+.cur-head{
+  position:relative;
+  display:flex; align-items:center; gap:12px;
+  padding-bottom:clamp(14px,1vw,20px);
+  border-bottom:1px solid rgba(123,92,58,.20);
+}
+.cur-head::after{
+  content:""; position:absolute; left:10%; right:10%; bottom:-1px; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(181,138,72,.45), transparent);
+  pointer-events:none;
+}
+.cur-mark{ width:50px; height:50px; flex:0 0 auto; border-radius:50%; display:block }
+.cur-title{ font-family:var(--serif); font-size:1.75rem; font-weight:400; line-height:1 }
+
+/* ---- the photograph ---------------------------------------------------- */
+.cur-photo{
+  margin-top:clamp(16px,1.2vw,24px);
+}
+.cur-slot{
+  display:grid; place-items:center; gap:.4em;
+  width:100%; aspect-ratio:1;
+  border:1px solid rgba(137,105,67,.3);
+  border-radius:6px;
+  background:rgba(255,255,255,.38);
+  cursor:pointer; text-align:center; padding:1.2em;
+  transition:border-color .3s var(--ease-nav), background .3s var(--ease-nav);
+}
+.cur-slot:hover{ border-color:var(--gold); background:rgba(255,255,255,.6) }
+.cur-slot-plus{
+  width:44px; height:44px; border-radius:50%;
+  border:1px solid rgba(137,105,67,.4);
+  display:grid; place-items:center;
+  font-family:var(--sans); font-size:1.375rem; color:var(--brass);
+}
+.cur-slot-t{ font-family:var(--serif); font-size:1.375rem; color:var(--oxblood) }
+.cur-slot-s{ font-family:var(--serif); font-size:1.125rem; color:var(--ink-soft); line-height:1.35 }
+
+.cur-thumb{ display:none; position:relative }
+.cur-thumb img{
+  display:block; width:100%; aspect-ratio:1; object-fit:cover;
+  border-radius:6px; border:1px solid rgba(137,105,67,.3);
+}
+.cur-change{
+  display:block; width:100%; margin-top:10px;
+  height:44px; border-radius:4px;
+  font-family:var(--serif); font-size:1.1875rem; line-height:1;
+  color:var(--vellum-100);
+  background:linear-gradient(180deg,#8a7038 0%, #75623a 100%);
+  border:1px solid rgba(70,58,32,.5);
+  box-shadow:0 .3rem .8rem rgba(60,48,24,.2), inset 0 1px 0 rgba(255,255,255,.14);
+  cursor:pointer;
+  transition:background .5s var(--ease-nav), border-color .5s var(--ease-nav);
+}
+.cur-change:hover{ background:linear-gradient(180deg,#9d8043 0%,#836f42 100%); border-color:var(--gold) }
+
+/* ---- the letter · one opening quote, never a closing one -------------- */
+.cur-letter{
+  position:relative;
+  margin-top:clamp(18px,1.4vw,28px);
+  padding:clamp(26px,1.9vw,36px) 4% 0 11%;
+}
+.cur-letter::before{
+  content:"\201C";
+  position:absolute; top:-.08em; left:0;
+  font-family:var(--serif); font-size:5.75em; line-height:1;
+  color:rgba(125,66,66,.15);
+  pointer-events:none; user-select:none;
+}
+.cur-letter p{
+  font-family:var(--serif); font-size:1.4em; line-height:1.5;
+  color:var(--ink); max-width:30ch; margin:0 auto;
+  transition:opacity .4s var(--ease-nav);
+}
+.cur-letter .sign{
+  display:block; margin-top:.7em;
+  font-size:1.25rem; color:var(--ink-soft);
+}
+.cur-letter .hl{ background:rgba(125,66,66,.1); padding:0 .18em; border-radius:2px }
+.cur.is-changing .cur-letter p{ opacity:0 }
+
+/* ---- states ------------------------------------------------------------ */
+.cur[data-state="empty"] .cur-thumb,
+.cur[data-state="empty"] .cur-change{ display:none }
+.cur:not([data-state="empty"]) .cur-slot{ display:none }
+.cur:not([data-state="empty"]) .cur-thumb{ display:block }
+
+/* ======================================================================
+   THE FLOOR · s25
+   One card size everywhere. Four across, two rows, eight to a page.
+   What changes between rooms is placement, never scale.
+
+   Eight columns, each card spanning two. Eight is the smallest number that
+   lets a row of one, two or three sit centred against a row of four — a
+   four-column grid can only centre even counts.
+
+       count   shape          placement
+         1     1 centred      starts col 4
+         2     2 centred      starts col 3
+         3     3 centred      starts col 2
+         4     4              fills, outer cards to the edges
+         5     3 + 2          rows start col 2, col 3
+         6     3 + 3          rows start col 2, col 2
+         7     4 + 3          row two starts col 2
+         8     4 + 4  — the ceiling
    ================================================================== */
 .floor{
   display:grid;
-  grid-template-columns:repeat(12, minmax(0,1fr));
+  grid-template-columns:repeat(8, minmax(0,1fr));
+  grid-template-rows:repeat(2, minmax(0,1fr));
   gap:var(--card-gap);
-  /* rows share the height available. never center with overflow — in grid,
-     centre distributes negative free space and the rows overlap. */
-  grid-auto-rows:minmax(0,1fr);
   align-content:stretch;
   width:100%; height:100%;
   min-width:0; min-height:0;
@@ -616,44 +724,38 @@ body{
   padding:var(--card-gap);
   font-size:var(--card-type);
 }
-.floor > *{ grid-column:span 4 }                    /* 3-up default */
+.floor > *{
+  /* the span lives on the END, deliberately. `grid-column:span 2` puts the
+     span on the START and leaves the end auto — so any grid-column-start
+     override below would silently collapse the card to one column. */
+  grid-column:auto / span 2;
+  justify-self:center;
+}
 
-.floor[data-count="1"]  > *{ grid-column:span 12 }
-.floor[data-count="2"]  > *{ grid-column:span 6 }
-.floor[data-count="4"]  > *{ grid-column:span 3 }
-.floor[data-count="5"]  > :nth-child(n+4){ grid-column:span 6 }
-.floor[data-count="7"]  > :nth-child(n+4){ grid-column:span 3 }
-.floor[data-count="8"]  > *{ grid-column:span 3 }
-.floor[data-count="10"] > :nth-child(n+7){ grid-column:span 3 }
-.floor[data-count="11"] > :nth-child(n+4){ grid-column:span 3 }
-.floor[data-count="12"] > *{ grid-column:span 3 }
-
-
-/* ---- rows reach both edges ------------------------------------------- */
-/* Cards keep their ratio, so they do not fill their cell. Left-align the
-   first card of a row and right-align the last; the columns are equal, so
-   the gaps come out equal too and every row spans the same width. */
-.floor > *{ justify-self:center }
-
-.floor[data-count="3"] > :nth-child(1),
+/* a full row of four reaches both edges; nothing else does */
 .floor[data-count="4"] > :nth-child(1),
-.floor[data-count="5"] > :nth-child(1), .floor[data-count="5"] > :nth-child(4),
-.floor[data-count="6"] > :nth-child(1), .floor[data-count="6"] > :nth-child(4),
-.floor[data-count="7"] > :nth-child(1), .floor[data-count="7"] > :nth-child(4),
-.floor[data-count="8"] > :nth-child(1), .floor[data-count="8"] > :nth-child(5),
-.floor[data-count="9"] > :nth-child(1), .floor[data-count="9"] > :nth-child(4),
-.floor[data-count="9"] > :nth-child(7)
-{ justify-self:start }
-
-.floor[data-count="3"] > :nth-child(3),
+.floor[data-count="7"] > :nth-child(1),
+.floor[data-count="8"] > :nth-child(1),
+.floor[data-count="8"] > :nth-child(5){ justify-self:start }
 .floor[data-count="4"] > :nth-child(4),
-.floor[data-count="5"] > :nth-child(3), .floor[data-count="5"] > :nth-child(5),
-.floor[data-count="6"] > :nth-child(3), .floor[data-count="6"] > :nth-child(6),
-.floor[data-count="7"] > :nth-child(3), .floor[data-count="7"] > :nth-child(7),
-.floor[data-count="8"] > :nth-child(4), .floor[data-count="8"] > :nth-child(8),
-.floor[data-count="9"] > :nth-child(3), .floor[data-count="9"] > :nth-child(6),
-.floor[data-count="9"] > :nth-child(9)
-{ justify-self:end }
+.floor[data-count="7"] > :nth-child(4),
+.floor[data-count="8"] > :nth-child(4),
+.floor[data-count="8"] > :nth-child(8){ justify-self:end }
+
+/* partial rows are centred by offsetting the first card of the row */
+.floor[data-count="1"] > :nth-child(1){ grid-column:4 / span 2 }
+.floor[data-count="2"] > :nth-child(1){ grid-column:3 / span 2 }
+.floor[data-count="3"] > :nth-child(1){ grid-column:2 / span 2 }
+.floor[data-count="5"] > :nth-child(1){ grid-column:2 / span 2 }
+.floor[data-count="5"] > :nth-child(4){ grid-column:3 / span 2; grid-row:2 }
+.floor[data-count="6"] > :nth-child(1){ grid-column:2 / span 2 }
+.floor[data-count="6"] > :nth-child(4){ grid-column:2 / span 2; grid-row:2 }
+.floor[data-count="7"] > :nth-child(5){ grid-column:2 / span 2; grid-row:2 }
+
+/* a room with fewer than eight keeps the second row's height — the empty
+   space is intentional, not a collapse. */
+
+
 
 /* ---- the card ---------------------------------------------------------- */
 .silo-card{
@@ -728,7 +830,7 @@ body{
    over rather than replacing it, so the surface stays one thing.
 
    The breadcrumb is the way back. It sits above the floor, always in the
-   same place, and names where you are — "All rooms" is the control, the
+   same place, and names where you are — "All effects" is the control, the
    silo name is where you stand. One line rather than a strip of pills.
    ================================================================== */
 .room--workshop{
@@ -738,33 +840,60 @@ body{
 }
 
 /* ---- the breadcrumb ---------------------------------------------------- */
+/* Two coffee pills. The first is the way back and the second names where you
+   stand — both substantial enough to read as navigation rather than a caption.
+   4px radius, deliberately squarer than the 8px used on panels. */
 .crumb{
-  display:flex; align-items:center; gap:.5em;
-  padding:2px var(--card-gap) 10px;
-  font-family:var(--serif); font-size:20px; line-height:1;
-  color:var(--ink-soft);
-  min-height:34px;
+  display:flex; align-items:center; gap:10px;
+  padding:0 var(--card-gap) 12px;
+  min-height:48px;
+}
+.crumb-back,
+.crumb-here{
+  display:inline-flex; align-items:center; gap:.5em;
+  height:40px; padding:0 18px;
+  border-radius:4px;
+  font-family:var(--serif); font-size:1.3125rem; line-height:1;
+  white-space:nowrap;
 }
 .crumb-back{
-  display:inline-flex; align-items:center; gap:.45em;
-  font:inherit; color:var(--oxblood);
-  padding:6px 2px; cursor:pointer;
-  border-bottom:1px solid transparent;
-  transition:color .16s ease, border-color .16s ease, opacity .22s ease;
+  color:var(--vellum-200);
+  background:linear-gradient(180deg,#2f2420 0%, #241b17 100%);
+  border:1px solid rgba(196,169,110,.26);
+  box-shadow:0 .35rem .9rem rgba(25,16,10,.22), inset 0 1px 0 rgba(255,255,255,.06);
+  cursor:pointer;
+  transition:background .5s var(--ease-nav), border-color .5s var(--ease-nav),
+             color .5s var(--ease-nav), opacity .5s var(--ease-nav),
+             transform .5s var(--ease-nav);
 }
-.crumb-back:hover{ color:#9a5252; border-bottom-color:rgba(125,66,66,.4) }
-.crumb-back svg{ width:.62em; height:.62em; flex:0 0 auto }
+.crumb-back:hover{
+  background:linear-gradient(180deg,#3a2c26 0%, #2c211c 100%);
+  border-color:var(--gold); color:#fff;
+}
+.crumb-back:active{ transform:translateY(1px); transition-duration:.08s }
+.crumb-back:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.crumb-back svg{ width:.6em; height:.6em; flex:0 0 auto; opacity:.8 }
 .crumb-back path{
-  fill:none; stroke:currentColor; stroke-width:1.6;
+  fill:none; stroke:currentColor; stroke-width:1.7;
   stroke-linecap:round; stroke-linejoin:round;
 }
-.crumb-sep{ color:var(--taupe); opacity:0 }
-.crumb-here{ color:var(--ink); opacity:0 }
-/* at the top level the way back is not offered — there is nowhere behind */
-.crumb-sep,.crumb-here{ transition:opacity .3s ease .12s }
-.workshop-view--effects .crumb-sep,
+
+/* where you stand — same pill, quieter, not a control */
+.crumb-here{
+  color:var(--series);
+  background:linear-gradient(180deg, rgba(47,36,32,.55) 0%, rgba(36,27,23,.55) 100%);
+  border:1px solid rgba(196,169,110,.16);
+  opacity:0;
+}
+.crumb-sep{ display:none }
+
+.crumb-here{ transition:opacity .5s var(--ease-nav) .1s }
 .workshop-view--effects .crumb-here{ opacity:1 }
-.workshop-view--silos .crumb-back{ opacity:0; pointer-events:none }
+.workshop-view--silos .crumb-back{
+  /* the way back stays on the glass. only the room name arrives and leaves —
+     both fading together read as the whole bar blinking. */
+  opacity:.5; pointer-events:none;
+}
 
 /* ---- the two faces ----------------------------------------------------- */
 .deck{ position:relative; min-height:0; perspective:2200px }
@@ -783,6 +912,7 @@ body{
    own transform for hover, so the flip drives a variable instead. */
 :root{
   --ease-flip:cubic-bezier(.34,.9,.28,1);
+  --ease-nav:cubic-bezier(.4,0,.2,1);   /* eased both ends, for the nav pills */
   --flip-ms:420ms;
   --flip-step:38ms;      /* the stagger between neighbours */
 }
@@ -815,6 +945,77 @@ body{
   .face{ transition:none }
 }
 
+
+/* ---- selected -------------------------------------------------------- */
+.silo-card.is-selected{
+  border-color:rgba(125,66,66,.62);
+  box-shadow:
+    inset 0 0 0 .18rem rgba(125,66,66,.18),
+    inset 0 .8rem 1.8rem rgba(18,12,8,.16),
+    0 .45rem 1rem rgba(52,36,25,.10);
+}
+.silo-card.is-selected .silo-card__image{
+  filter:brightness(.88) saturate(.92);
+}
+.silo-card.is-selected .silo-card__add{
+  background:rgb(209 148 164 / 98%);
+  border-color:rgba(125,66,66,.4);
+}
+.silo-card.is-selected .silo-card__add::before{
+  font-size:1.35em; color:#5e2b2b; line-height:1;
+}
+/* the mark is CSS, not text — nothing to keep in step in JavaScript */
+.silo-card__add::before{ content:"+" }
+.silo-card.is-selected .silo-card__add::before{ content:"\2713" }
+
+
+/* ---- the eighth card is the upsell ------------------------------------ */
+/* Every room holds up to seven effects. The eighth slot is never an effect
+   — it is the offer to take the room entire. It uses the ivory presentation
+   surface so it reads as a recommendation, not as another finish. */
+.silo-card.is-upsell{
+  background-color:#fbf6ef;
+  background-image:
+    radial-gradient(circle at 12% 12%, rgba(255,255,255,.42), transparent 44%),
+    radial-gradient(circle at 88% 88%, rgba(121,83,44,.045), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(167,123,67,.04), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.24), rgba(217,197,166,.05));
+  border-color:rgba(183,135,65,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),
+             0 .15rem .45rem rgba(62,41,23,.05),
+             0 .9rem 2rem rgba(62,41,23,.08);
+}
+.silo-card.is-upsell .silo-card__overlay,
+.silo-card.is-upsell .silo-card__add{ display:none }
+.silo-card.is-upsell::after{
+  content:""; position:absolute; inset:.4rem; z-index:1; pointer-events:none;
+  border:1px solid rgba(183,135,65,.18); border-radius:inherit;
+}
+.up{
+  position:absolute; inset:0; z-index:2;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:.3em; padding:1.1em .9em; text-align:center;
+}
+.up-eyebrow{
+  font-family:var(--sans); font-size:.4em; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--brass);
+}
+.up-title{
+  font-family:var(--serif); font-weight:400; font-size:1em; line-height:1.12;
+  color:var(--ink); margin:.15em 0 .1em;
+}
+.up-sub{ font-family:var(--serif); font-size:.62em; color:var(--ink-soft); line-height:1.35 }
+.up-save{ font-family:var(--serif); font-size:1.1em; color:var(--oxblood); margin-top:.25em }
+.up-cta{
+  margin-top:.55em; padding:.5em 1.1em; border-radius:4px;
+  font-family:var(--serif); font-size:.62em; line-height:1;
+  color:var(--vellum-100);
+  background:linear-gradient(180deg, var(--oxblood) 0%, #6a3737 100%);
+  border:1px solid rgba(60,28,28,.5);
+  box-shadow:0 .3rem .8rem rgba(60,28,28,.22), inset 0 1px 0 rgba(255,255,255,.12);
+}
+.silo-card.is-upsell:hover .up-cta{ background:linear-gradient(180deg,#8f4e4e 0%,#7d4242 100%) }
+
 /* ---- effect cards inherit the silo card entirely ----------------------- */
 /* the whole card is the target; the badge is an affordance, not the only
    place a click lands. */
@@ -830,12 +1031,290 @@ body{
   pointer-events:none;                  /* the card owns the click */
   transition:transform .16s ease, background .16s ease;
 }
-.silo-card:hover .silo-card__add{ transform:scale(1.06) }
-.silo-card.is-picked .silo-card__add{
-  background:linear-gradient(145deg,#8a9a7b,#6f7f61); color:#fff; border-color:rgba(60,72,48,.5);
-}
-.silo-card.is-picked{ border-color:rgba(138,154,123,.7) }
+.silo-card:hover .silo-card__add{ transform:scale(1.2) }
 .silo-card__content{ padding-right:3.4em }
+
+
+/* ---- footer bays · icon, title, blurb --------------------------------- */
+.bay{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:center; gap:.85em;
+  place-items:stretch;
+}
+.bay::after{ content:none }          /* the skeleton label has done its job */
+.bay-ic{
+  display:grid; place-items:center;
+  width:2.6em; height:2.6em; flex:0 0 auto;
+  border-radius:50%;
+  color:var(--brass);
+  background:linear-gradient(145deg, rgba(255,255,255,.9), rgba(230,221,207,.78));
+  border:1px solid rgba(108,78,45,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+.bay-ic svg{ width:48%; height:48% }
+.bay-ic path,.bay-ic circle,.bay-ic rect{
+  fill:none; stroke:currentColor; stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.bay-tx{ min-width:0 }
+.bay-t{
+  font-family:var(--sans); font-size:.62em; font-weight:400;
+  line-height:1.25; letter-spacing:.01em; color:var(--ink);
+  margin:0 0 .25em;
+}
+.bay-p{
+  font-family:var(--sans); font-size:.4em; font-weight:400;
+  line-height:1.45; color:var(--ink-soft); margin:0;
+}
+.room--footer{ font-size:1.7rem }   /* one number sizes the whole band */
+
+/* ---- My Collection · the dark rail ------------------------------------ */
+.coll{
+  display:flex; flex-direction:column;
+  height:100%; min-height:0;
+  padding:clamp(18px,1.3vw,28px) clamp(12px,.9vw,18px);
+  overflow-y:auto;
+}
+.coll-head{
+  display:flex; align-items:center; gap:.5em;
+  padding:0 .6em clamp(12px,.9vw,18px);
+  font-family:var(--serif); font-style:italic;
+  font-size:1.15em; color:var(--series);
+  border-bottom:1px solid rgba(196,169,110,.18);
+}
+.coll-head svg{ width:1em; height:1em; flex:0 0 auto; opacity:.8 }
+.coll-head path,.coll-head circle{
+  fill:none; stroke:currentColor; stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.coll-list{ display:flex; flex-direction:column; gap:2px; margin-top:.7em }
+.coll-item{
+  display:flex; align-items:center; gap:1em;
+  padding:.62em .7em;
+  border-radius:4px;
+  font-family:var(--serif); font-size:1.15em; line-height:1;
+  color:var(--vellum-300); text-decoration:none;
+  border:1px solid transparent;
+  cursor:pointer;
+  transition:background .5s var(--ease-nav), color .5s var(--ease-nav),
+             border-color .5s var(--ease-nav);
+}
+.coll-item svg{ width:1em; height:1em; flex:0 0 auto; opacity:.75 }
+.coll-item path,.coll-item circle,.coll-item rect{
+  fill:none; stroke:currentColor; stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.coll-item:hover{
+  background:linear-gradient(180deg, rgba(215,189,137,.14), rgba(215,189,137,.07));
+  color:var(--series);
+}
+.coll-item[aria-current="true"]{
+  color:#2a1f14;
+  background:linear-gradient(180deg,#e2c288 0%, #cfa864 100%);
+  border-color:rgba(120,88,38,.45);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+}
+.coll-item[aria-current="true"] svg{ opacity:1 }
+.coll-count{
+  margin-left:auto;
+  font-family:var(--sans); font-size:.62em; letter-spacing:.06em;
+  color:rgba(233,222,200,.45);
+}
+.coll-item[aria-current="true"] .coll-count{ color:rgba(42,31,20,.6) }
+
+
+/* ======================================================================
+   INTAKE MODALS · s40 · ported from r81, namespaced
+   Eight pre-craft states. Every rule is scoped under #intakeModal, and the
+   three classes that collided with the Curator panel — .cur, .c-mark,
+   .cur-say — are renamed .mcur, .mc-mark, .mcur-say. Nothing leaks either way.
+
+   These are INTAKE ONLY: a photograph that will not do, or a subject that
+   belongs in another Series. There is no post-render state here — that gap
+   is named in PORTRAITS-SPEC v2 §7.4 and remains unbuilt.
+   ================================================================== */
+@keyframes shim{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.m-scrim .btn{font-style:italic;font-size:20px;padding:10px 18px;border-radius:7px;cursor:pointer;background:linear-gradient(180deg,#8a6c38,#6f5629);color:#fbf1d6;border:1px solid rgba(60,44,20,.55);text-shadow:0 1px 0 rgba(40,28,12,.5);box-shadow:inset 0 1px 0 rgba(255,244,210,.35), inset 0 -1px 2px rgba(40,28,12,.4), 0 2px 6px rgba(42,30,18,.28);transition:filter .15s}
+.m-scrim .btn:hover{filter:brightness(1.10)}
+.m-scrim .btn.fill{background:var(--oxblood);color:var(--vellum)}
+.m-scrim .btn.fill:hover{background:var(--oxblood-deep)}
+.m-scrim .btn.ghost{border:1px solid rgba(60,44,20,.5);color:#fbf1d6;text-shadow:0 1px 0 rgba(40,28,12,.5)}
+.m-scrim .redirect-cta .btn{margin-top:12px}
+.m-scrim .scrim{position:fixed;inset:0;z-index:120;background:rgba(31,27,20,.52);
+display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.m-scrim .scrim.show{opacity:1;pointer-events:auto}
+.m-scrim .modal{width:440px;max-width:100%;background:linear-gradient(180deg,#faf6ec,#f1e8d7);
+border:1px solid rgba(147,111,67,.4);border-radius:5px;padding:30px 30px 28px;position:relative;
+box-shadow:0 24px 60px rgba(31,27,20,.4),0 4px 12px rgba(31,27,20,.24),inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 26px rgba(137,101,62,.04);
+transform:translateY(14px) scale(.97);opacity:0;transition:transform .26s cubic-bezier(.32,.72,.32,1),opacity .2s}
+.m-scrim .scrim.show .modal{transform:translateY(0) scale(1);opacity:1}
+.m-scrim .mclose{position:absolute;top:16px;right:18px;width:30px;height:30px;border-radius:50%;
+border:1px solid var(--hairline);background:rgba(250,246,236,.7);color:var(--ink-soft);
+font-family:var(--serif);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.m-scrim .mclose:hover{background:#fff}
+.m-scrim .pieceframe{position:relative;border-radius:4px;overflow:hidden;height:130px;background:var(--panel);
+border:1px solid var(--hairline);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.m-scrim .pieceframe .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.32;filter:grayscale(.3)}
+.m-scrim .pieceframe.deferred .art{opacity:.2}
+.m-scrim .pieceframe.reject .art{opacity:.5;filter:none}
+.m-scrim .pieceframe.reject.blur .art{filter:blur(3px)}
+.m-scrim .pieceframe.reject.dim .art{filter:brightness(.5)}
+.m-scrim .interrupt-line{position:absolute;left:0;right:0;top:50%;height:1px;background:repeating-linear-gradient(90deg,var(--oxblood) 0 7px,transparent 7px 15px);opacity:.7}
+.m-scrim .craft-shimmer{position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(243,237,225,.55),transparent);animation:shim 2.1s linear infinite}
+.m-scrim .piece-badge{position:relative;z-index:2;font-style:italic;font-size:17px;color:var(--ink-soft);background:rgba(250,246,236,.85);padding:5px 12px;border-radius:99px;border:1px solid var(--hairline)}
+.m-scrim .safe{display:flex;align-items:center;gap:9px;margin:18px 0 2px;font-family:var(--sans);font-size:13px;color:var(--sage);letter-spacing:.01em}
+.m-scrim .safe svg{width:16px;height:16px;flex-shrink:0}
+.m-scrim .safe.warn{color:var(--brass)}
+.m-scrim .acts{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.m-scrim .m-modal .btn{font-family:var(--serif);font-style:italic;font-size:21px;text-align:center;padding:13px 18px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:.15s}
+.m-scrim .m-modal .btn.fill{background:var(--oxblood);color:var(--vellum)}
+.m-scrim .m-modal .btn.fill:hover{background:var(--oxblood-d)}
+.m-scrim .m-modal .btn.sage{background:var(--sage);color:var(--vellum)}
+.m-scrim .m-modal .btn.sage:hover{filter:brightness(1.07)}
+.m-scrim .m-modal .btn.ghost{background:transparent;color:var(--oxblood);border-color:rgba(125,66,66,.42)}
+.m-scrim .m-modal .btn.ghost:hover{background:rgba(125,66,66,.06)}
+.m-scrim .state{display:none}
+.m-scrim .state.active{display:block}
+.m-scrim .btn{font-size:26px}
+
+/* the modal ships closed */
+.m-scrim{ display:none }
+.m-scrim.is-open{ display:grid }
+.m-scrim .state{ display:none }
+.m-scrim .state.active{ display:block }
+.m-scrim .mclose{ cursor:pointer }
+
+
+/* ======================================================================
+   TO BE CRAFTED · s41
+   The rail holds what you have chosen, across every Series — pick a Portrait
+   finish, cross to Pets, and both stay. My Collection lives in the masthead;
+   this rail is only ever the queue.
+
+   The craft action sits directly beneath the last entry, not pinned to the
+   floor of the rail. A button at the bottom of a mostly empty column is
+   remote from the thing you just did.
+   ================================================================== */
+.tbc{
+  display:flex; flex-direction:column;
+  height:100%; min-height:0;
+  padding:clamp(18px,1.3vw,28px) clamp(12px,.9vw,18px);
+  overflow-y:auto;
+}
+.tbc-head{
+  display:flex; align-items:baseline; gap:.5em;
+  padding:0 .4em clamp(12px,.9vw,18px);
+  border-bottom:1px solid rgba(196,169,110,.18);
+}
+.tbc-title{
+  font-family:var(--serif); font-style:italic; font-size:1.15em;
+  color:var(--series); line-height:1;
+}
+.tbc-n{
+  margin-left:auto;
+  font-family:var(--sans); font-size:.62em; letter-spacing:.08em;
+  color:rgba(233,222,200,.45);
+}
+
+/* ---- empty ------------------------------------------------------------- */
+.tbc-empty{
+  font-family:var(--serif); font-style:italic; font-size:1.02em; line-height:1.5;
+  color:rgba(233,222,200,.42);
+  padding:1.4em .5em;
+}
+.tbc.has-items .tbc-empty{ display:none }
+
+/* ---- entries ----------------------------------------------------------- */
+.tbc-list{ display:flex; flex-direction:column; gap:6px; margin-top:.8em }
+.tbc-row{
+  display:grid; grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center; gap:.7em;
+  padding:.45em .5em;
+  border-radius:4px;
+  border:1px solid rgba(196,169,110,.14);
+  background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(0,0,0,.05));
+  animation:tbcIn .34s var(--ease-nav) both;
+}
+@keyframes tbcIn{ from{ opacity:0; transform:translateY(-.4em) } to{ opacity:1; transform:none } }
+.tbc-thumb{
+  width:2.6em; height:2.6em; flex:0 0 auto;
+  object-fit:cover; border-radius:3px;
+  border:1px solid rgba(196,169,110,.22);
+}
+.tbc-tx{ min-width:0 }
+.tbc-nm{
+  font-family:var(--serif); font-size:1.02em; line-height:1.15;
+  color:var(--vellum-200);
+  overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+}
+.tbc-sub{
+  font-family:var(--sans); font-size:.55em; letter-spacing:.07em;
+  text-transform:uppercase; color:rgba(233,222,200,.4);
+  margin-top:.25em;
+}
+.tbc-x{
+  width:1.6em; height:1.6em; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--sans); font-size:.8em; line-height:1;
+  color:rgba(233,222,200,.5);
+  border:1px solid transparent; cursor:pointer;
+  transition:color .3s var(--ease-nav), background .3s var(--ease-nav);
+}
+.tbc-x:hover{ color:#fff; background:rgba(125,66,66,.55) }
+
+/* ---- the craft block · follows the last entry -------------------------- */
+.tbc-craft{ display:none; margin-top:1.1em }
+.tbc.has-items .tbc-craft{ display:block }
+.tbc-total{
+  display:flex; align-items:baseline; gap:.5em;
+  padding:0 .5em .7em;
+  font-family:var(--sans); font-size:.62em; letter-spacing:.08em;
+  text-transform:uppercase; color:rgba(233,222,200,.45);
+}
+.tbc-total b{
+  margin-left:auto; font-weight:600; font-size:1.5em; letter-spacing:0;
+  color:var(--series); font-variant-numeric:tabular-nums;
+}
+.tbc-go{
+  display:block; width:100%;
+  padding:.72em 1em;
+  border-radius:4px;
+  font-family:var(--serif); font-size:1.3em; line-height:1.15;
+  color:var(--vellum-100);
+  background:linear-gradient(180deg, var(--oxblood) 0%, #6a3737 100%);
+  border:1px solid rgba(60,28,28,.6);
+  box-shadow:0 .5rem 1.2rem rgba(40,18,18,.35), inset 0 1px 0 rgba(255,255,255,.14);
+  cursor:pointer;
+  transition:background .5s var(--ease-nav), transform .18s var(--ease-nav),
+             box-shadow .5s var(--ease-nav);
+}
+.tbc-go:hover{
+  background:linear-gradient(180deg,#8f4e4e 0%, #7d4242 100%);
+  box-shadow:0 .7rem 1.5rem rgba(40,18,18,.45), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.tbc-go:active{ transform:translateY(1px); transition-duration:.08s }
+.tbc-go small{
+  display:block; margin-top:.3em;
+  font-family:var(--sans); font-size:.42em; letter-spacing:.09em;
+  text-transform:uppercase; opacity:.7;
+}
+
+
+/* ---- the queue is full ------------------------------------------------- */
+/* Ten is where the ladder stops — past it the customer gains nothing but a
+   longer wait. The cap is explained rather than enforced silently, because a
+   card that refuses to tick with no word reads as a fault. */
+.m-scrim .cap-body{ padding:.4em 0 0 }
+.m-scrim .cap-n{
+  display:grid; place-items:center;
+  width:3.2em; height:3.2em; margin:0 auto .7em;
+  border-radius:50%;
+  font-family:var(--serif); font-size:1.6em; line-height:1;
+  color:var(--series);
+  background:linear-gradient(180deg, rgba(215,189,137,.18), rgba(215,189,137,.06));
+  border:1px solid rgba(196,169,110,.4);
+}
 
 /* ======================================================================
    MEASUREMENT — this block is NOT part of the contract.
@@ -855,11 +1334,11 @@ body{
 }
 .readout:hover{ opacity:1 }
 .readout h1{
-  font-family:var(--serif); font-weight:400; font-size:22px;
+  font-family:var(--serif); font-weight:400; font-size:1.375rem;
   line-height:1.1; margin-bottom:4px;
 }
-.readout p{ font-size:14px; line-height:1.4; color:var(--ink-soft); margin-bottom:10px }
-.readout table{ border-collapse:collapse; font-size:14px }
+.readout p{ font-size:0.875rem; line-height:1.4; color:var(--ink-soft); margin-bottom:10px }
+.readout table{ border-collapse:collapse; font-size:0.875rem }
 .readout td{ padding:3px 10px; text-align:left; border-bottom:1px solid var(--hairline) }
 .readout td:first-child{ color:var(--ink-soft) }
 .readout td:last-child{ font-variant-numeric:tabular-nums; font-weight:600 }
@@ -920,14 +1399,36 @@ body{
 
 <div class="stage">
   <div class="rooms">
-    <section class="room room--curator" data-room="Curator">
+    <section class="room room--curator">
       <div class="rail" title="Design your own"><span>Design your own</span></div>
+      <div class="cur" id="cur" data-state="empty">
+        <div class="cur-head">
+          <img class="cur-mark" src="/icons/curator-c.svg" alt="">
+          <span class="cur-title">Curator</span>
+        </div>
+
+        <div class="cur-photo">
+          <div class="cur-slot" id="curSlot" role="button" tabindex="0">
+            <span class="cur-slot-plus">+</span>
+            <span class="cur-slot-t">Add portrait photo</span>
+            <span class="cur-slot-s">Start with a clear, face-forward image.</span>
+          </div>
+          <div class="cur-thumb">
+            <img id="curThumb" src="/previews/silos/artists-gallery.jpg" alt="Your photograph">
+            <button class="cur-change" id="curChange" type="button">Use a different photograph</button>
+          </div>
+        </div>
+
+        <div class="cur-letter">
+          <p id="curSay"></p>
+        </div>
+      </div>
     </section>
 
     <section class="room room--workshop workshop-view--silos" id="workshop">
     <div class="crumb">
       <button class="crumb-back" id="crumbBack" type="button">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>All rooms
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>All effects
       </button>
       <span class="crumb-sep">&rsaquo;</span>
       <span class="crumb-here" id="crumbHere"></span>
@@ -1008,20 +1509,180 @@ body{
     </div>
     </section>
 
-    <aside class="room room--queue" data-room="To Be Crafted"></aside>
+    <aside class="room room--queue">
+      <div class="tbc" id="tbc">
+        <div class="tbc-head">
+          <span class="tbc-title">To Be Crafted</span>
+          <span class="tbc-n" id="tbcN"></span>
+        </div>
+        <p class="tbc-empty">Nothing chosen yet. Pick a finish and I&rsquo;ll hold it here.</p>
+        <div class="tbc-list" id="tbcList"></div>
+        <div class="tbc-craft">
+          <div class="tbc-total">Total <b id="tbcTotal">0</b></div>
+          <button class="tbc-go" id="tbcGo" type="button">
+            Craft <span id="tbcGoN"></span>
+            <small id="tbcGoSub"></small>
+          </button>
+        </div>
+      </div>
+    </aside>
 
     <footer class="room room--footer">
-      <div class="bay" data-bay="Bay one"></div>
-      <div class="bay" data-bay="Bay two"></div>
-      <div class="bay" data-bay="Bay three"></div>
-      <div class="bay" data-bay="Bay four"></div>
-      <div class="bay" data-bay="Bay five"></div>
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
+      <div class="bay">
+        <span class="bay-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="bay-tx">
+          <p class="bay-t">Here be some text!</p>
+          <p class="bay-p">Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.</p>
+        </div>
+      </div>
     </footer>
   </div>
 </div>
 
+<div class="scrim m-scrim" id="intakeModal" data-role="modal">
+  <div class="modal m-modal" role="dialog" aria-modal="true">
+    <div class="mclose" id="mclose">&times;</div>
+
+    <!-- ============ STUDIO FAILURES (exact r02) ============ -->
+
+    <!-- 1 · INTERRUPTED -->
+    <div class="state active" data-s="1">
+      <div class="pieceframe"><img class="art" src="/previews/portraits/bronze/1.jpg" alt="">
+        <div class="interrupt-line"></div><div class="craft-shimmer"></div><span class="piece-badge">Crafting again&hellip;</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">The studio stumbled on this one. I&rsquo;m crafting it again now &mdash; nothing is lost. <span class="sig">&mdash;&thinsp;C.</span></div></div>
+      <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        Your payment is safe. A re-craft is never charged.</div>
+      <div class="acts"><div class="btn ghost">Try again</div></div>
+    </div>
+
+    <!-- 2 · THE PHOTOGRAPH -->
+    <div class="state" data-s="2">
+      <div class="pieceframe"><img class="art" src="/previews/portraits/walnut/1.jpg" alt=""><span class="piece-badge">This one didn&rsquo;t hold</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">This <span class="tint">photograph</span> is fighting me &mdash; the face sits a little small to keep a true likeness. A clearer, closer one will craft beautifully.</div></div>
+      <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        No charge to try again with a new photograph.</div>
+      <div class="acts"><div class="btn fill">Use a clearer photo</div><div class="btn ghost">Refund this piece</div></div>
+    </div>
+
+    <!-- 3 · AT CAPACITY -->
+    <div class="state" data-s="3">
+      <div class="pieceframe deferred"><img class="art" src="/previews/portraits/bronze/1.jpg" alt=""><span class="piece-badge">Held for the studio</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">The studio&rsquo;s at capacity just now. I&rsquo;ll craft your piece the moment there&rsquo;s room and write to you the instant it&rsquo;s ready.</div></div>
+      <div class="field"><label>We&rsquo;ll send it here</label><div class="inp">rich@email.com</div></div>
+      <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        Your payment is safe. Nothing to do &mdash; the piece comes to you.</div>
+      <div class="acts"><div class="btn sage">Keep me posted</div></div>
+      </div>
+
+    <!-- 4 · REFUNDED -->
+    <div class="state" data-s="4">
+      <div class="pieceframe"><img class="art" src="/previews/portraits/walnut/1.jpg" alt=""><span class="piece-badge">Not this time</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">I couldn&rsquo;t make this one the way it deserves &mdash; so I won&rsquo;t send it. It&rsquo;s refunded. No piece reaches you unless it&rsquo;s right.</div></div>
+      <div class="refund-line"><span>Refunded to your card</span><b>$9.99</b></div>
+      <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 6 9 17l-5-5"/></svg>
+        Refunds settle in 5&ndash;10 days, on the card you used.</div>
+      <div class="acts"><div class="btn fill">Craft something else</div></div>
+      </div>
+
+    <!-- ============ UPLOAD REJECTION (new — mapped to friendlyReject reasons) ============ -->
+
+    <!-- 5 · FACE TOO SMALL  → /face|small|close|crop|distance|far/ -->
+    <div class="state" data-s="5">
+      <span class="reason-tag">Before we begin · your photograph</span>
+      <div class="pieceframe reject"><img class="art" src="/previews/source/wide-shot.jpg" alt=""><div class="crop-guide"></div><span class="piece-badge">Face is small</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">The face here sits <span class="tint">small in the frame</span>. Try one taken closer &mdash; head and shoulders, where the face fills more of the picture.</div></div>
+      <div class="safe warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        Nothing has been crafted or charged yet.</div>
+      <div class="acts"><div class="btn fill">Choose a closer photo</div><div class="btn ghost">Use this one anyway</div></div>
+      </div>
+
+    <!-- 6 · BLURRY → /blur|sharp|focus|soft/ -->
+    <div class="state" data-s="6">
+      <span class="reason-tag">Before we begin · your photograph</span>
+      <div class="pieceframe reject blur"><img class="art" src="/previews/source/portrait.jpg" alt=""><span class="piece-badge">A little soft</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">This photograph is a little <span class="tint">soft</span>. A sharper one makes a stronger finished piece &mdash; the studio has more to hold onto.</div></div>
+      <div class="safe warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        Nothing has been crafted or charged yet.</div>
+      <div class="acts"><div class="btn fill">Choose a sharper photo</div></div>
+    </div>
+
+    <!-- 7 · TOO DIM → /dim|dark|light|expos|bright/ -->
+    <div class="state" data-s="7">
+      <span class="reason-tag">Before we begin · your photograph</span>
+      <div class="pieceframe reject dim"><img class="art" src="/previews/source/portrait.jpg" alt=""><span class="piece-badge">A bit dark</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">This photograph is <span class="tint">dim</span>. A brighter, evenly lit one gives the studio more detail to work with.</div></div>
+      <div class="safe warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        Nothing has been crafted or charged yet.</div>
+      <div class="acts"><div class="btn fill">Choose a brighter photo</div><div class="btn ghost">Use this one anyway</div></div>
+    </div>
+
+    <!-- 8 · CAN'T USE (generic / inappropriate / no person) → default branch + content -->
+    <div class="state" data-s="8">
+      <span class="reason-tag">Before we begin · your photograph</span>
+      <div class="pieceframe reject"><img class="art" src="/previews/source/blank.jpg" alt=""><span class="piece-badge">Can&rsquo;t use this one</span></div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">I can&rsquo;t craft from this photograph. A clear, close photo of a face works best &mdash; try another.</div></div>
+      <div class="safe warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        Nothing has been crafted or charged yet.</div>
+      <div class="acts"><div class="btn fill">Choose another photo</div></div>
+      </div>
+
+  </div>
+</div>
+
+<div class="scrim m-scrim" id="queueFullModal" data-role="modal">
+  <div class="modal m-modal" role="dialog" aria-modal="true">
+    <div class="mclose" id="capClose">&times;</div>
+    <div class="state active cap-body">
+      <div class="cap-n">10</div>
+      <div class="mcur"><span class="mc-mark">C</span>
+        <div class="mcur-say">Ten pieces will keep the studio busy for a good while.
+          Let me craft these first &mdash; then we&rsquo;ll start another queue,
+          and you won&rsquo;t be left waiting on the whole lot at once.
+          <span class="sig">&mdash;&thinsp;C.</span></div></div>
+      <div class="acts"><div class="btn fill" id="capCraft">Craft these ten</div>
+        <div class="btn ghost" id="capBack">Keep looking</div></div>
+    </div>
+  </div>
+</div>
+
 <div class="readout">
-  <h1>Silo floor &middot; s24</h1>
+  <h1>Queue cap &middot; s42</h1>
   <p>Geometry only. Hover to read.</p>
   <table>
     <tr><td>viewport</td><td id="vw">—</td></tr>
@@ -1039,7 +1700,7 @@ body{
 
 <script>
 /* the two sides of the floor */
-window.SILO_EFFECTS = {"earth-ore": ["Bronze", "Iron", "Stone", "Alabaster", "Pewter", "Ebony", "Walnut"], "artists-gallery": ["Impressionist", "Torn Paper", "Folded Book", "Charcoal &amp; Chalk", "Pencil Sketch", "Sheet Music", "Stained Glass", "Driftwood &amp; Resin"], "myth-legend": ["Dragon Skin", "Fire &amp; Ember", "Magic Energy", "Living Armor", "Living Reef", "Reclaimed Bronze"], "light-glass": ["Cast Glass", "Blown Glass", "Amber", "Frost &amp; Ice", "Liquid Mercury", "Enchanted Crystal", "Volumetric Light"], "far-future": ["Silicon Circuit", "Atomic Age Robot", "Cosmic Bloom", "Nebula Resin", "Neon Drawing"], "curiosities": ["Plushy", "Chocolate", "Elizabethan Portrait"], "seventh": ["Effect One", "Effect Two", "Effect Three", "Effect Four", "Effect Five"], "eigth": ["Effect One", "Effect Two", "Effect Three", "Effect Four", "Effect Five", "Effect Six", "Effect Seven", "Effect Eight", "Effect Nine"]};
+window.SILO_EFFECTS = {"earth-ore": ["Bronze", "Iron", "Stone", "Alabaster", "Pewter", "Ebony", "Walnut"], "artists-gallery": ["Impressionist", "Torn Paper", "Folded Book", "Charcoal &amp; Chalk", "Pencil Sketch", "Sheet Music", "Stained Glass"], "myth-legend": ["Dragon Skin", "Fire &amp; Ember", "Magic Energy", "Living Armor", "Living Reef", "Reclaimed Bronze"], "light-glass": ["Cast Glass", "Blown Glass", "Amber", "Frost &amp; Ice", "Liquid Mercury", "Enchanted Crystal", "Volumetric Light"], "far-future": ["Silicon Circuit", "Atomic Age Robot", "Cosmic Bloom", "Nebula Resin", "Neon Drawing"], "curiosities": ["Plushy", "Chocolate", "Elizabethan Portrait"], "seventh": ["Effect One", "Effect Two", "Effect Three", "Effect Four", "Effect Five"], "eigth": ["Effect One", "Effect Two", "Effect Three", "Effect Four", "Effect Five", "Effect Six", "Effect Seven"]};
 window.SILO_LINE = {"earth-ore": "Here are the Earth &amp; Ore finishes. Weight, grain, and the honesty of real material.", "artists-gallery": "Here are the Artists Gallery finishes. A maker&rsquo;s hand, left visible.", "myth-legend": "Here are the Myth &amp; Legend finishes. For a sitting with some nerve to it.", "light-glass": "Here are the Light &amp; Glass finishes. Translucent, and lit from within.", "far-future": "Here are the Far &amp; Future finishes. Cool metals and further horizons.", "curiosities": "Here are the Curiosities. Newer work, and a little stranger.", "seventh": "This room is not named yet.", "eigth": "This room is not named yet."};
 </script>
 
@@ -1088,6 +1749,166 @@ window.SILO_LINE = {"earth-ore": "Here are the Earth &amp; Ore finishes. Weight,
   read();
   addEventListener('resize', read);
 
+
+
+
+  /* ---- the queue -------------------------------------------------------- */
+  /* Global across every Series. A Portrait finish and a Pets finish sit in the
+     same queue; crossing rooms never empties it. */
+  var QUEUE = [], QUEUE_CAP = 10;
+  var CREDITS_PER_IMAGE = 10, BASE_USD = 4.99;
+  var tbc = document.getElementById('tbc');
+  var tbcList = document.getElementById('tbcList');
+  var tbcN = document.getElementById('tbcN');
+  var tbcTotal = document.getElementById('tbcTotal');
+  var tbcGoN = document.getElementById('tbcGoN');
+  var tbcGoSub = document.getElementById('tbcGoSub');
+
+  function ladderPct(n){
+    if (n<=1) return 0; if (n===2) return .10; if (n===3) return .15;
+    if (n===4) return .20; if (n>=10) return .30; return .25 + (n-5)*.01;
+  }
+  function keyOf(silo, effect){ return silo + '::' + effect; }
+
+  function renderQueue(){
+    tbcList.innerHTML = '';
+    QUEUE.forEach(function(it){
+      var row = document.createElement('div');
+      row.className = 'tbc-row';
+      row.innerHTML =
+        '<img class="tbc-thumb" src="/previews/silos/' + it.silo + '.jpg" alt="">' +
+        '<div class="tbc-tx"><div class="tbc-nm">' + it.effect + '</div>' +
+          '<div class="tbc-sub">' + it.room + '</div></div>' +
+        '<button class="tbc-x" type="button" aria-label="Remove">&times;</button>';
+      row.querySelector('.tbc-x').addEventListener('click', function(e){
+        e.stopPropagation();
+        removeFromQueue(it.silo, it.effect);
+      });
+      tbcList.appendChild(row);
+    });
+    var n = QUEUE.length;
+    tbc.classList.toggle('has-items', n > 0);
+    tbcN.textContent = n ? n : '';
+    tbcTotal.textContent = (n * CREDITS_PER_IMAGE) + ' credits';
+    tbcGoN.textContent = n === 1 ? 'this piece' : ('all ' + n);
+    var pct = Math.round(ladderPct(n) * 100);
+    var now = BASE_USD * n * (1 - ladderPct(n));
+    tbcGoSub.textContent = n * CREDITS_PER_IMAGE + ' credits'
+      + (pct ? '  ·  ' + pct + '% saved' : '')
+      + '  ·  $' + now.toFixed(2);
+  }
+
+  function inQueue(silo, effect){
+    return QUEUE.some(function(q){ return keyOf(q.silo,q.effect) === keyOf(silo,effect); });
+  }
+  function addToQueue(silo, room, effect){
+    if (inQueue(silo, effect)) return true;
+    if (QUEUE.length >= QUEUE_CAP){ openCap(); return false; }
+    QUEUE.push({ silo:silo, room:room, effect:effect });
+    renderQueue();
+    return true;
+  }
+
+  /* the cap, explained */
+  var capModal = document.getElementById('queueFullModal');
+  function openCap(){ if (capModal) capModal.classList.add('is-open'); }
+  function closeCap(){ if (capModal) capModal.classList.remove('is-open'); }
+  if (capModal){
+    ['capClose','capBack'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('click', closeCap);
+    });
+    var cc = document.getElementById('capCraft');
+    if (cc) cc.addEventListener('click', function(){
+      closeCap();
+      var go = document.getElementById('tbcGo');
+      if (go) go.click();
+    });
+    capModal.addEventListener('click', function(e){ if (e.target === capModal) closeCap(); });
+    addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && capModal.classList.contains('is-open')) closeCap();
+    });
+  }
+  function removeFromQueue(silo, effect){
+    QUEUE = QUEUE.filter(function(q){ return keyOf(q.silo,q.effect) !== keyOf(silo,effect); });
+    renderQueue();
+    /* if that card is on the floor, untick it */
+    var card = effFloor.querySelector('[data-effect="' + effect + '"]');
+    if (card && card.dataset.silo === silo) card.classList.remove('is-selected');
+  }
+  renderQueue();
+
+  /* ---- intake modals ---------------------------------------------------- */
+  /* Eight states, one dialog. __openIntake(n) is kept as the entry point so
+     the harness r81 shipped with still works. */
+  var intake = document.getElementById('intakeModal');
+  window.__openIntake = function(n){
+    if (!intake) return;
+    intake.querySelectorAll('.state').forEach(function(el){
+      el.classList.toggle('active', el.dataset.s === String(n));
+    });
+    intake.classList.add('is-open');
+  };
+  window.__closeIntake = function(){ if (intake) intake.classList.remove('is-open'); };
+  if (intake){
+    var mc = intake.querySelector('#mclose');
+    if (mc) mc.addEventListener('click', window.__closeIntake);
+    intake.addEventListener('click', function(e){
+      if (e.target === intake) window.__closeIntake();
+    });
+    addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && intake.classList.contains('is-open')) window.__closeIntake();
+    });
+  }
+
+  /* ---- the Curator speaks ---------------------------------------------- */
+  /* Four states, one panel. Placeholder copy — CENG owns the final words. */
+  var cur     = document.getElementById('cur');
+  var curSay  = document.getElementById('curSay');
+  var curSlot = document.getElementById('curSlot');
+  var curChange = document.getElementById('curChange');
+
+  var SAY = {
+    empty:  'Bring me a <span class="hl">portrait</span> and I&rsquo;ll choose the finishes ' +
+            'myself. A clear, face-forward photograph gives me the most to work with.' +
+            '<span class="sign">&mdash; C.</span>',
+    photo:  'The light across her hair is doing something lovely &mdash; that will carry ' +
+            'into almost anything. So: what kind of effect are you thinking about today?' +
+            '<span class="sign">&mdash; C.</span>',
+    reject: 'That one is a little soft for me. Something sharper, and closer to the face, ' +
+            'and I can do considerably better by you.' +
+            '<span class="sign">&mdash; C.</span>'
+  };
+
+  /* the letter fades out, changes, and fades back — it should read as the
+     Curator turning a page, not as text being replaced. */
+  function say(html){
+    if (!curSay) return;
+    cur.classList.add('is-changing');
+    setTimeout(function(){
+      curSay.innerHTML = html;
+      cur.classList.remove('is-changing');
+    }, 380);
+  }
+
+  function curatorState(name, html){
+    if (cur) cur.dataset.state = name;
+    say(html);
+  }
+
+  if (curSay) curSay.innerHTML = SAY.empty;
+
+  if (curSlot){
+    var take = function(){ curatorState('photo', SAY.photo); };
+    curSlot.addEventListener('click', take);
+    curSlot.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); take(); }
+    });
+  }
+  if (curChange) curChange.addEventListener('click', function(){
+    curatorState('empty', SAY.empty);
+  });
+
   /* ---- the floor turns over -------------------------------------------- */
   var workshop = document.getElementById('workshop');
   var deck     = document.getElementById('deck');
@@ -1102,10 +1923,11 @@ window.SILO_LINE = {"earth-ore": "Here are the Earth &amp; Ore finishes. Weight,
     a.className = 'silo-card';
     a.tabIndex = 0;
     a.dataset.effect = name;
+    a.dataset.silo = silo;
     a.innerHTML =
       '<img class="silo-card__image" src="/previews/silos/' + silo + '.jpg" alt="" loading="lazy">' +
       '<div class="silo-card__overlay"></div>' +
-      '<div class="silo-card__add" aria-hidden="true">+</div>' +
+      '<div class="silo-card__add" aria-hidden="true"></div>' +
       '<div class="silo-card__content"><h3 class="silo-card__title">' + name + '</h3></div>';
     return a;
   }
@@ -1131,14 +1953,51 @@ window.SILO_LINE = {"earth-ore": "Here are the Earth &amp; Ore finishes. Weight,
     }, out);
   }
 
+  /* Eight is the ceiling. A room never holds more than a single floor, so
+     there is no paging and no partial second page to design around. */
+  var CAP = 7;   /* seven effects; the eighth slot is the upsell */
+
+
+  /* the offer to take the room entire. priced from the locked ladder:
+     ten credits an image, -25% at five, -1% per image beyond to -30% at ten. */
+  function ladder(n){
+    if (n<=1) return 0; if (n===2) return .10; if (n===3) return .15;
+    if (n===4) return .20; if (n>=10) return .30; return .25 + (n-5)*.01;
+  }
+  function upsellCard(n){
+    var pct = Math.round(ladder(n)*100);
+    var credits = n * 10;
+    var full = 4.99 * n, now = full * (1 - ladder(n));
+    var a = document.createElement('article');
+    a.className = 'silo-card is-upsell';
+    a.tabIndex = 0;
+    a.innerHTML =
+      '<div class="up">' +
+        '<p class="up-eyebrow">Curator&rsquo;s Pick</p>' +
+        '<h3 class="up-title">Take the room entire</h3>' +
+        '<p class="up-sub">All ' + n + ' finishes of this room, side by side.</p>' +
+        '<p class="up-save">Save ' + pct + '%</p>' +
+        '<span class="up-cta">Add all ' + n + ' &middot; ' + credits + ' credits</span>' +
+        '<p class="up-sub">' + credits + ' credits &asymp; $' + now.toFixed(2) + '</p>' +
+      '</div>';
+    return a;
+  }
+
   function openSilo(card){
     var silo = card.dataset.silo;
-    var list = (window.SILO_EFFECTS || {})[silo] || [];
+    var list = ((window.SILO_EFFECTS || {})[silo] || []).slice(0, CAP);
     turn(siloFloor, effFloor, function(){
       effFloor.innerHTML = '';
-      list.forEach(function(nm){ effFloor.appendChild(effectCard(silo, nm)); });
-      effFloor.dataset.count = list.length;
+      list.forEach(function(nm){
+        var el = effectCard(silo, nm);
+        if (inQueue(silo, nm)) el.classList.add('is-selected');
+        effFloor.appendChild(el);
+      });
+      effFloor.appendChild(upsellCard(list.length));
+      effFloor.dataset.count = list.length + 1;
       crumbHere.textContent = card.querySelector('.silo-card__title').textContent;
+      var line = (window.SILO_LINE || {})[silo];
+      if (line) say(line + '<span class="sign">&mdash; C.</span>');
       workshop.classList.remove('workshop-view--silos');
       workshop.classList.add('workshop-view--effects');
     });
@@ -1146,6 +2005,7 @@ window.SILO_LINE = {"earth-ore": "Here are the Earth &amp; Ore finishes. Weight,
 
   function backToSilos(){
     turn(effFloor, siloFloor, function(){
+      if (cur && cur.dataset.state !== 'empty') say(SAY.photo);
       workshop.classList.remove('workshop-view--effects');
       workshop.classList.add('workshop-view--silos');
     });
@@ -1163,9 +2023,14 @@ window.SILO_LINE = {"earth-ore": "Here are the Earth &amp; Ore finishes. Weight,
      place a click lands. */
   if (effFloor) effFloor.addEventListener('click', function(e){
     var c = e.target.closest('.silo-card'); if (!c) return;
-    c.classList.toggle('is-picked');
-    c.querySelector('.silo-card__add').textContent =
-      c.classList.contains('is-picked') ? '\u2713' : '+';
+    if (c.classList.contains('is-upsell')) return;   /* its own action */
+    var eff = c.dataset.effect, silo = c.dataset.silo, room = crumbHere.textContent;
+    if (c.classList.contains('is-selected')){
+      c.classList.remove('is-selected');
+      removeFromQueue(silo, eff);
+    } else if (addToQueue(silo, room, eff)){
+      c.classList.add('is-selected');
+    }
   });
   if (effFloor) effFloor.addEventListener('keydown', function(e){
     if (e.key !== 'Enter' && e.key !== ' ') return;
