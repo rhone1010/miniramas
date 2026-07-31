@@ -147,33 +147,56 @@ const COLLECTION_FILTERS = [
   { id: 'wallpapers', label: 'Mobile Wallpapers' }
 ];
 
-/* ── ECONOMICS — 10 credits per image, locked ────────────────────────────── */
+/* ── ECONOMICS ───────────────────────────────────────────────────────────────
+ * Corrected 2026-07-30, ruled by Rich.
+ *
+ * 10 credits per image, $4.99 base. THE LADDER BELONGS TO THE PURCHASE AND
+ * NOWHERE ELSE. An image costs 10 credits whether it is the first or the
+ * thirtieth — the arithmetic is flat by construction and there is no room in
+ * it for a percentage. Quoting a saving at craft time tells the customer they
+ * are saving twice, which is not true. COMMERCE-AND-IDENTITY §2.
+ *
+ * WHAT CHANGED
+ *   · seven blocks became five. Seven is a spreadsheet; five is a choice.
+ *     The old curve was also finest where people spend least — four blocks
+ *     across 25 discount points between 10 and 50, two blocks across 15
+ *     between 100 and 300.
+ *   · the ceiling is 45% at 300, which the old table did not reach.
+ *   · discountFor() and usdFor() are now PURCHASE-ONLY and named so. The craft
+ *     path calls creditsFor() and nothing else. Leaving general-purpose
+ *     discount helpers in scope is how the double-count got in the first time.
+ */
 
 const CREDITS_PER_IMAGE = 10;
+const BASE_USD = 4.99;
 
+/* Five blocks. Each step drops the per-image price by roughly 50 cents, which
+   is a figure a customer can feel; the discount climbs 15/10/10/10 instead of
+   the old 10/5/10/5/8/7. 60 is marked because a five-block screen with nothing
+   highlighted makes the customer do the arithmetic. */
 const CREDIT_BLOCKS = [
-  { credits: 10,  images: 1,  usd: 4.99  },
-  { credits: 20,  images: 2,  usd: 8.98  },
-  { credits: 30,  images: 3,  usd: 12.72 },
-  { credits: 50,  images: 5,  usd: 18.71 },
-  { credits: 100, images: 10, usd: 34.93 }  // THE STUDIO, −30%
+  { credits: 10,  images: 1,  pct: 0,    usd: 4.99,  per: 4.99 },
+  { credits: 30,  images: 3,  pct: 0.15, usd: 12.72, per: 4.24 },
+  { credits: 60,  images: 6,  pct: 0.25, usd: 22.46, per: 3.74, recommended: true },
+  { credits: 120, images: 12, pct: 0.35, usd: 38.92, per: 3.24 },
+  { credits: 300, images: 30, pct: 0.45, usd: 82.34, per: 2.74 }
 ];
 
-/** Volume arc: −10% at 2, −15% at 3, −20% at 4, −25% at 5, −1%/image to −30% at 10. */
-function discountFor(images) {
-  if (images <= 1) return 0;
-  if (images === 2) return 0.10;
-  if (images === 3) return 0.15;
-  if (images === 4) return 0.20;
-  if (images >= 10) return 0.30;
-  return 0.25 + (images - 5) * 0.01;
+/** THE PURCHASE PATH ONLY. Never call these from the workshop. */
+function purchaseDiscountFor(credits) {
+  const b = CREDIT_BLOCKS.find(x => x.credits === credits);
+  return b ? b.pct : 0;
 }
-function usdFor(images) {
-  return +(4.99 * images * (1 - discountFor(images))).toFixed(2);
+function purchaseUsdFor(credits) {
+  const b = CREDIT_BLOCKS.find(x => x.credits === credits);
+  return b ? b.usd : +(BASE_USD * (credits / CREDITS_PER_IMAGE)).toFixed(2);
 }
+
+/** THE CRAFT PATH. Credits only — no percentage, no dollars. */
 function creditsFor(images) {
   return images * CREDITS_PER_IMAGE;
 }
+
 function tierFor(images) {
   return images >= 10 ? 'THE STUDIO' : 'THE SERIES';
 }

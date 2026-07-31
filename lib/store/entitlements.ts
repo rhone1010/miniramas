@@ -304,7 +304,7 @@ export async function confirmPurchase(args: {
 }): Promise<{ purchaseId: string; entitlementIds: string[] }> {
   const { data: existing, error: readErr } = await supabaseAdmin
     .from('purchases')
-    .select('id, status, stripe_charge_id')
+    .select('id, status, stripe_charge_id, sku_id, user_id')
     .eq('stripe_session_id', args.stripeSessionId)
     .maybeSingle()
   if (readErr) throw new Error(`purchase_read_failed: ${readErr.message}`)
