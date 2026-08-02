@@ -29,6 +29,7 @@
 //     is a length-1 array) for frontend symmetry.
 
 import { buildPortraitsPrompt } from './portraits-prompt'
+import { hasBody, buildEffectPrompt } from './portraits-bodies'
 import sharp from 'sharp'
 import {
   scoreSingleFaceFidelity,
@@ -158,20 +159,27 @@ export async function generatePortraitsRender(
       `style=${styleId} preset=${presetId} location=${locationId}`,
     )
 
-    // Build prompt — minimal 11–17 word builder, led by the framing block.
-    const prompt = buildPortraitsPrompt({
-      presetId,
-      locationId,
-      scale,
-      framing:          req.framing,
-      plaqueText:       req.plaque_text,
-      advanced:         req.advanced,
-      upperBodyConcept: req.upper_body_concept,
-    })
+    // Build prompt. portraits-bodies.ts is authoritative and its bodies are
+    // WHOLE — sent verbatim, nothing prepended, appended or composed. Effects
+    // not yet ported fall through to the legacy block builder. Remove the
+    // fallback once every id in the registry resolves through hasBody().
+    const promptFromBody = hasBody(presetId)
+    const prompt = promptFromBody
+      ? buildEffectPrompt(presetId)
+      : buildPortraitsPrompt({
+          presetId,
+          locationId,
+          scale,
+          framing:          req.framing,
+          plaqueText:       req.plaque_text,
+          advanced:         req.advanced,
+          upperBodyConcept: req.upper_body_concept,
+        })
     finalPromptUsed = prompt
 
     console.log(
-      `[portraits/prompt] style=${styleId} preset=${presetId} location=${locationId} ` +
+      `[portraits/prompt] src=${promptFromBody ? 'bodies' : 'legacy'} ` +
+      `style=${styleId} preset=${presetId} location=${locationId} ` +
       `chars=${prompt.length} has_advanced=${!!req.advanced} ` +
       `has_concept=${!!req.upper_body_concept}`,
     )

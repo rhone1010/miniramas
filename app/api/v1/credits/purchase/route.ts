@@ -19,6 +19,27 @@
 //   credit count. The row holds the price, Stripe holds the price, and the
 //   two are checked against each other before a session is made. A client
 //   total is not validated here because none is accepted.
+//
+// CUI V24 · 2026-08-02 · EMBEDDED CHECKOUT
+//
+//   Ruled by Rich: the customer buys credits without leaving the workshop.
+//   Hosted checkout took the whole window, so a shortfall meant leaving
+//   mid-craft and finding their way back — the queue, the photograph and the
+//   pose all held only by the resume machinery, and the studio replaced by
+//   a Stripe page.
+//
+//   ui_mode 'embedded' returns a client_secret instead of a url. The form
+//   renders inside our own slide-out, styled with Stripe's appearance API,
+//   and the customer watches their balance change without the studio ever
+//   going away.
+//
+//   WHAT DID NOT CHANGE: the price is still the SKU's, still checked against
+//   Stripe before a session exists, and the webhook still lands the credits.
+//   This is where the form is drawn, not who decides what it costs.
+//
+//   return_url replaces success_url and cancel_url — embedded sessions take
+//   one. There is no cancel: the customer closes the slide-out, the session
+//   expires on its own, and the pending row is never confirmed.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe, getAppUrl } from '@/lib/store/stripe'
@@ -89,9 +110,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'stripe_price_unavailable' }, { status: 502 })
   }
 
-  // ── Return URLs ─────────────────────────────────────────────
-  // Same-origin only. A return url is where the customer lands after paying;
-  // accepting an arbitrary host makes this an open redirect.
+  // ── Return URL ──────────────────────────────────────────────
+  // Same-origin only. Stripe sends the customer here when the payment
+  // completes; accepting an arbitrary host makes this an open redirect.
+  //
+  // Embedded sessions take ONE url and no cancel. Closing the slide-out is
+  // the cancel: the session expires by itself and the pending row is simply
+  // never confirmed.
   const base = safeReturn(body.returnUrl, appUrl)
 
   // ── Session ─────────────────────────────────────────────────
@@ -99,9 +124,9 @@ export async function POST(req: NextRequest) {
   try {
     session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      ui_mode: 'embedded',
       line_items: [{ price: sku.stripe_price_id, quantity: 1 }],
-      success_url: appendQuery(base, 'credits=1&session_id={CHECKOUT_SESSION_ID}'),
-      cancel_url:  appendQuery(base, 'canceled=1'),
+      return_url: appendQuery(base, 'credits=1&session_id={CHECKOUT_SESSION_ID}'),
       client_reference_id: ownerKey,
       metadata: {
         kind:      'credits',
@@ -116,8 +141,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'checkout_failed' }, { status: 502 })
   }
 
-  if (!session.url) {
-    return NextResponse.json({ error: 'stripe_session_missing_url' }, { status: 502 })
+  // An embedded session carries a client_secret, never a url. If it is
+  // missing the form cannot be drawn, and saying so here is better than a
+  // slide-out that opens on nothing.
+  if (!session.client_secret) {
+    return NextResponse.json({ error: 'stripe_session_missing_secret' }, { status: 502 })
   }
 
   // ── Pending purchase row ────────────────────────────────────
@@ -146,9 +174,11 @@ export async function POST(req: NextRequest) {
   )
 
   return NextResponse.json({
-    url:       session.url,
-    sessionId: session.id,
-    credits:   sku.count,
+    clientSecret: session.client_secret,   // ← was `url`; the form is ours now
+    sessionId:    session.id,
+    credits:      sku.count,
+    amountCents:  sku.price_cents,
+    label:        sku.display_name,
   })
 }
 
