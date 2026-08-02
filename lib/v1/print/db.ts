@@ -14,6 +14,22 @@
 //
 // Failure path:
 //   markError(msg) → status='error'     (asset pipeline or Prodigi rejection)
+//
+// CUI V24 · 2026-08-01 · orders now carry an owner, and can be withheld.
+//
+//   Two additions, both from migration 012.
+//
+//   owner_key — the signed-in account that placed the order. The table
+//   carried only customer_email, which is not an account: two accounts can
+//   share an address, and a customer can type a different one at checkout.
+//   Without an owner there is no way to ask whose fulfilment flag applies.
+//
+//   markWithheld() — a new terminal status for an order that was paid for and
+//   deliberately NOT sent to Prodigi, because the account is not cleared for
+//   fulfilment. It is not an error: nothing went wrong, and it must not sit in
+//   the same bucket as a failed asset pipeline or a Prodigi rejection, or the
+//   one thing that needs a human's attention will be buried under the thing
+//   that is working as designed.
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { PrintSize, PrintFinish } from './sku-map'
@@ -21,6 +37,7 @@ import type { PrintSize, PrintFinish } from './sku-map'
 export type PrintOrderStatus =
   | 'created'
   | 'paid'
+  | 'withheld'     // paid, deliberately not sent — the account cannot fulfil
   | 'placed'
   | 'in_production'
   | 'shipped'
@@ -50,6 +67,7 @@ export interface ShippingAddress {
 
 export interface PrintOrderRow {
   id:                     string
+  owner_key:              string | null   // 012; null on rows predating it
   stripe_session_id:      string
   stripe_payment_intent:  string | null
   prodigi_order_id:       string | null
@@ -91,6 +109,7 @@ function sb(): SupabaseClient {
 // ── CREATE ────────────────────────────────────────────────────
 export async function createPrintOrder(input: {
   stripeSessionId:     string
+  ownerKey:            string | null   // the signed-in account, or null
   customerEmail:       string
   shippingAddress:     ShippingAddress
   items:               PrintOrderItem[]
@@ -104,6 +123,7 @@ export async function createPrintOrder(input: {
     .from('print_orders')
     .insert({
       stripe_session_id:     input.stripeSessionId,
+      owner_key:             input.ownerKey,
       customer_email:        input.customerEmail,
       shipping_address:      input.shippingAddress,
       items:                 input.items,
@@ -151,7 +171,56 @@ export async function getPrintOrderByProdigiId(prodigiOrderId: string): Promise<
   return data
 }
 
+// ── FULFILMENT ────────────────────────────────────────────────
+/**
+ * May this account place a real, billable Prodigi order?
+ *
+ * Default false, and every failure mode returns false. An account with no
+ * row, a null owner, or a database that cannot be reached does not fulfil.
+ * The order is recorded either way and the money is real either way — the
+ * only question is whether a physical print is manufactured and charged for,
+ * and that is not a question to answer optimistically.
+ *
+ * Set by hand: migration 012 has the statement.
+ */
+export async function canFulfil(ownerKey: string | null): Promise<boolean> {
+  if (!ownerKey) return false
+  try {
+    const { data, error } = await sb()
+      .from('account_flags')
+      .select('fulfilment')
+      .eq('owner_key', ownerKey)
+      .maybeSingle<{ fulfilment: boolean }>()
+    if (error) {
+      console.error('[print/db] canFulfil read failed — withholding:', error.message)
+      return false
+    }
+    return data?.fulfilment === true
+  } catch (err) {
+    console.error('[print/db] canFulfil threw — withholding:', err)
+    return false
+  }
+}
+
 // ── UPDATE ────────────────────────────────────────────────────
+/**
+ * Paid, recorded, and deliberately not sent.
+ *
+ * Distinct from markError: nothing went wrong. Keeping the two apart is the
+ * point — an errored order needs a human, a withheld one is the guard doing
+ * exactly its job, and mixing them means the first is lost among the second.
+ */
+export async function markWithheld(sessionId: string, reason: string): Promise<void> {
+  const { error } = await sb()
+    .from('print_orders')
+    .update({
+      status:        'withheld',
+      error_message: reason.slice(0, 1000),
+    })
+    .eq('stripe_session_id', sessionId)
+  if (error) throw new Error(`markWithheld: ${error.message}`)
+}
+
 export async function markPaid(sessionId: string, paymentIntentId: string): Promise<void> {
   const { error } = await sb()
     .from('print_orders')

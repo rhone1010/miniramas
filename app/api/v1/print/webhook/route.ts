@@ -7,9 +7,10 @@
 //   2. Load the matching `print_orders` row by session_id
 //   3. Idempotency check — bail if already processed
 //   4. Mark paid
-//   5. For each item: fetch render URL → asset pipeline → signed Supabase URL
-//   6. Call Prodigi /Orders with all signed URLs
-//   7. Mark placed (or error)
+//   5. FULFILMENT GATE — may this account place a real order? (CUI V24)
+//   6. For each item: fetch render URL → asset pipeline → signed Supabase URL
+//   7. Call Prodigi /Orders with all signed URLs
+//   8. Mark placed (or error)
 //
 // Idempotency: Stripe retries on non-2xx responses. Our session-id keyed DB
 // row plus Prodigi's idempotencyKey (set to the same session_id) ensure
@@ -23,6 +24,32 @@
 // Local dev: use Stripe CLI to forward webhooks:
 //   stripe listen --forward-to localhost:3000/api/v1/print/webhook
 // The CLI prints a `whsec_*` secret — put it in .env.local as STRIPE_WEBHOOK_SECRET.
+//
+// ── CUI V24 · 2026-08-01 · THE FULFILMENT GATE ───────────────────────────
+//
+//   Nothing stood between a tester with granted credits and a real, billable
+//   print. LOCKED-DECISIONS has said since 27 July that a per-account flag
+//   gates this; it had never been built.
+//
+//   Checked 2026-08-01: PRODIGI_ENV reads 'sandbox', so nothing has in fact
+//   been billable. The risk arrives the moment it reads 'live'. This is the
+//   guard that must be in place before it does.
+//
+//   The gate sits AFTER markPaid and BEFORE the asset pipeline. That order is
+//   deliberate:
+//
+//     · after paid, because the payment is real and the row must say so
+//       whatever happens next. A withheld order is a paid order.
+//     · before the pipeline, because upscaling and uploading an asset for an
+//       order that will never be manufactured costs time and storage for
+//       nothing.
+//
+//   A withheld order gets its own status, not 'error'. Nothing went wrong: it
+//   is the guard doing its job. Filing it as an error would bury the orders
+//   that genuinely need a human under the ones that do not.
+//
+//   Password-gating the Print Shop is NOT this protection. That controls who
+//   reaches the button; this controls whether the button reaches Prodigi.
 
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
@@ -35,6 +62,8 @@ import {
   markPaid,
   markPlaced,
   markError,
+  markWithheld,
+  canFulfil,
 } from '@/lib/v1/print/db'
 import { getSku } from '@/lib/v1/print/sku-map'
 
@@ -88,6 +117,29 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error('[print-webhook] markPaid failed:', err)
     // Don't bail — keep going and update status further down.
+  }
+
+  // ── FULFILMENT GATE ────────────────────────────────────────
+  // May this account place a real, billable order? Default false, and every
+  // failure mode is false — no owner, no flag row, unreachable database.
+  //
+  // The order is recorded and the payment stands. Only the manufacturing is
+  // withheld, and it is withheld silently to Stripe: a 200 stops the retries,
+  // because a retry cannot change the answer.
+  const allowed = await canFulfil(order.owner_key)
+  if (!allowed) {
+    const why = order.owner_key
+      ? `account ${order.owner_key} is not cleared for fulfilment`
+      : 'order has no signed-in owner'
+    console.warn(
+      `[print-webhook] WITHHELD — ${why}. session=${session.id} ` +
+      `items=${order.items.length} retail=$${(order.retail_total_cents / 100).toFixed(2)}. ` +
+      `Nothing was sent to Prodigi. Enable with: ` +
+      `update account_flags set fulfilment = true where owner_key = '${order.owner_key ?? '<uid>'}';`
+    )
+    await markWithheld(session.id, why).catch(err =>
+      console.error('[print-webhook] markWithheld failed:', err))
+    return NextResponse.json({ ok: true, withheld: true, reason: why })
   }
 
   // ── Asset pipeline per item ────────────────────────────────

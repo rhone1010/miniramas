@@ -28,12 +28,29 @@
 //
 // Response:
 // { checkoutUrl: 'https://checkout.stripe.com/...', sessionId: 'cs_test_...' }
+//
+// CUI V24 · 2026-08-01 · the order now records who placed it.
+//
+//   The row carried only customer_email. An email is not an account: two
+//   accounts can share one, and a customer can type a different address at
+//   checkout than the one they signed in with. So there was no way for the
+//   webhook to ask whose fulfilment flag applied, and every paid order went
+//   to Prodigi regardless of who placed it.
+//
+//   owner_key is resolved from the session here and written to the row.
+//   Migration 012 adds the column; the webhook reads it.
+//
+//   AN UNSIGNED ORDER IS STILL ACCEPTED. Refusing at checkout would be a
+//   change to who can buy a print, and that is a product decision nobody has
+//   made. It is recorded with a null owner and withheld at the webhook, which
+//   is the same protection one step later and no money lost either way.
 
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/v1/print/stripe-client'
 import { getQuote, type ShippingMethod } from '@/lib/v1/print/prodigi-client'
 import { getSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
 import { createPrintOrder, type ShippingAddress } from '@/lib/v1/print/db'
+import { getUser } from '@/lib/store/auth'
 import type Stripe from 'stripe'
 
 export const runtime = 'nodejs'
@@ -54,6 +71,13 @@ interface CheckoutBody {
 }
 
 export async function POST(req: Request) {
+  // Who is placing this. Never fatal — see the header note. A null owner is
+  // recorded honestly and withheld at the webhook rather than refused here.
+  const ownerKey = await getUser().then(u => u?.id ?? null).catch(() => null)
+  if (!ownerKey) {
+    console.warn('[checkout] no signed-in account — this order cannot be fulfilled')
+  }
+
   let body: CheckoutBody
   try {
     body = await req.json()
@@ -183,6 +207,7 @@ export async function POST(req: Request) {
   try {
     await createPrintOrder({
       stripeSessionId:     session.id,
+      ownerKey,
       customerEmail:       body.email,
       shippingAddress:     addr,
       items:               dbItems,

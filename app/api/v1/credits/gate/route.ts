@@ -22,6 +22,22 @@
 //   · ledger and events write -cost_per per row, and balance_after walks by
 //     cost_per.
 //   · header cites v4.
+//
+// CUI V24 · 2026-08-01 · the charge is now nameable.
+//
+//   The refund route matches a ledger row on reason='craft' AND ref_id, and
+//   refuses outright without one. This route wrote `ref_id: null`, so no
+//   refund could ever find the charge it was reversing. Verified against the
+//   live ledger 2026-08-01 — ten consecutive craft rows, null on all ten.
+//
+//   Rich lost fifty credits to this in one session: a photograph with three
+//   people was redirected to Groups, nothing was delivered, and every refund
+//   came back 400 ref_id_required.
+//
+//   A ref_id is now minted here, written to both the ledger and the craft
+//   events, and returned to the caller so the refund can name what it
+//   reverses. The client may supply its own, so a retried gate call reuses
+//   one reference rather than charging under two.
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getUser }      from '@/lib/store/auth'
@@ -65,8 +81,8 @@ async function resolveOwner(): Promise<string | null> {
   return user?.id ?? null
 }
 
-// POST { count, cost_per?, series?, presets?[] }
-//   ok  → { ok:true, balance_after, granted, spent, cost_per, admin }
+// POST { count, cost_per?, series?, presets?[], ref_id? }
+//   ok  → { ok:true, ref_id, balance_after, granted, spent, cost_per, admin }
 //   !ok → { ok:false, reason:'insufficient_credits', balance, needed }
 export async function POST(req: Request) {
   try {
@@ -94,6 +110,17 @@ export async function POST(req: Request) {
         { ok: false, reason: 'cost_per_mismatch', expected: CREDITS_PER_IMAGE, got: asked },
         { status: 400 })
     }
+
+    // A charge must be nameable or nothing can reverse it. The refund route
+    // matches on this; until now it was written as null and every refund
+    // failed with ref_id_required.
+    //
+    // The client may supply one, so a gate call retried after a network drop
+    // reuses the same reference instead of charging under a second name. It
+    // is length-capped because it reaches a text column and comes from
+    // outside.
+    const suppliedRef = typeof body.ref_id === 'string' ? body.ref_id.trim() : ''
+    const refId = suppliedRef ? suppliedRef.slice(0, 64) : `craft_${crypto.randomUUID()}`
 
     const total  = n * costPer          // ← the whole fix: credits, not images
     const series = typeof body.series === 'string' ? body.series : 'portraits'
@@ -169,6 +196,7 @@ export async function POST(req: Request) {
       event: 'craft_started',
       attempts: 1,
       credits_delta: delta,
+      source_photo_id: refId,   // the only reference column on this table
     }))
     const { error: evErr } = await db.from('craft_events').insert(events)
     if (evErr) console.error('[credits/gate] craft_events insert failed', evErr)
@@ -177,7 +205,7 @@ export async function POST(req: Request) {
       owner_key: owner,
       delta,
       reason: 'craft',
-      ref_id: null as string | null,
+      ref_id: refId,          // ← was null; the refund could never match it
       balance_after: isAdmin ? balanceAfter : balanceAfter + (n - 1 - k) * costPer,
     }))
     const { error: ldErr } = await db.from('credit_ledger').insert(ledger)
@@ -185,6 +213,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true,
+      ref_id: refId,          // the client holds this and sends it to /refund
       balance_after: balanceAfter,
       granted: n,
       spent: isAdmin ? 0 : total,
