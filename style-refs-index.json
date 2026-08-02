@@ -1,0 +1,482 @@
+[
+  {
+    "path": "alabaster",
+    "Length": null
+  },
+  {
+    "path": "amber",
+    "Length": null
+  },
+  {
+    "path": "balloon_face",
+    "Length": null
+  },
+  {
+    "path": "beaded",
+    "Length": null
+  },
+  {
+    "path": "blown_glass",
+    "Length": null
+  },
+  {
+    "path": "bronze",
+    "Length": null
+  },
+  {
+    "path": "charcoal_chalk",
+    "Length": null
+  },
+  {
+    "path": "chocolate",
+    "Length": null
+  },
+  {
+    "path": "coral",
+    "Length": null
+  },
+  {
+    "path": "cosmic",
+    "Length": null
+  },
+  {
+    "path": "deco_20s",
+    "Length": null
+  },
+  {
+    "path": "dragon_skin",
+    "Length": null
+  },
+  {
+    "path": "driftwood_resin",
+    "Length": null
+  },
+  {
+    "path": "ebony",
+    "Length": null
+  },
+  {
+    "path": "elizabethan",
+    "Length": null
+  },
+  {
+    "path": "fire_face",
+    "Length": null
+  },
+  {
+    "path": "folded_book",
+    "Length": null
+  },
+  {
+    "path": "forest_gaurdian",
+    "Length": null
+  },
+  {
+    "path": "haunted",
+    "Length": null
+  },
+  {
+    "path": "ice",
+    "Length": null
+  },
+  {
+    "path": "impressionist",
+    "Length": null
+  },
+  {
+    "path": "iron",
+    "Length": null
+  },
+  {
+    "path": "jade",
+    "Length": null
+  },
+  {
+    "path": "living_vines",
+    "Length": null
+  },
+  {
+    "path": "magic_energy",
+    "Length": null
+  },
+  {
+    "path": "melted_wax",
+    "Length": null
+  },
+  {
+    "path": "neon",
+    "Length": null
+  },
+  {
+    "path": "persian",
+    "Length": null
+  },
+  {
+    "path": "plushy",
+    "Length": null
+  },
+  {
+    "path": "polished_gold",
+    "Length": null
+  },
+  {
+    "path": "reclaimed_bronze",
+    "Length": null
+  },
+  {
+    "path": "renaissance",
+    "Length": null
+  },
+  {
+    "path": "retro_robot",
+    "Length": null
+  },
+  {
+    "path": "samurai",
+    "Length": null
+  },
+  {
+    "path": "sandstone",
+    "Length": null
+  },
+  {
+    "path": "sea_glass",
+    "Length": null
+  },
+  {
+    "path": "sheet_music",
+    "Length": null
+  },
+  {
+    "path": "stained_glass",
+    "Length": null
+  },
+  {
+    "path": "stone",
+    "Length": null
+  },
+  {
+    "path": "tidewood",
+    "Length": null
+  },
+  {
+    "path": "victorian",
+    "Length": null
+  },
+  {
+    "path": "volume_light",
+    "Length": null
+  },
+  {
+    "path": "walnut",
+    "Length": null
+  },
+  {
+    "path": "watercolour",
+    "Length": null
+  },
+  {
+    "path": "wild_west",
+    "Length": null
+  },
+  {
+    "path": "alabaster\\1.jpg",
+    "Length": 145470
+  },
+  {
+    "path": "amber\\1.jpg",
+    "Length": 250714
+  },
+  {
+    "path": "balloon_face\\1_woman.jpg",
+    "Length": 157096
+  },
+  {
+    "path": "balloon_face\\2_man.jpg",
+    "Length": 149850
+  },
+  {
+    "path": "beaded\\1_woman.jpg",
+    "Length": 195786
+  },
+  {
+    "path": "beaded\\2_man.jpg",
+    "Length": 198170
+  },
+  {
+    "path": "blown_glass\\1.jpg",
+    "Length": 251416
+  },
+  {
+    "path": "blown_glass\\2.jpg",
+    "Length": 241976
+  },
+  {
+    "path": "bronze\\1.jpg",
+    "Length": 195962
+  },
+  {
+    "path": "charcoal_chalk\\1.jpg",
+    "Length": 248216
+  },
+  {
+    "path": "chocolate\\1.jpg",
+    "Length": 224845
+  },
+  {
+    "path": "coral\\1_man.jpg",
+    "Length": 348852
+  },
+  {
+    "path": "coral\\2_woman.jpg",
+    "Length": 390248
+  },
+  {
+    "path": "cosmic\\2_man.jpg",
+    "Length": 368898
+  },
+  {
+    "path": "cosmic\\2_woman.jpg",
+    "Length": 351821
+  },
+  {
+    "path": "deco_20s\\1_man.jpg",
+    "Length": 152020
+  },
+  {
+    "path": "deco_20s\\2_woman.jpg",
+    "Length": 180626
+  },
+  {
+    "path": "dragon_skin\\1_woman.jpg",
+    "Length": 253763
+  },
+  {
+    "path": "dragon_skin\\2_man.jpg",
+    "Length": 258821
+  },
+  {
+    "path": "driftwood_resin\\1.jpg",
+    "Length": 253341
+  },
+  {
+    "path": "ebony\\1.jpg",
+    "Length": 178787
+  },
+  {
+    "path": "elizabethan\\2_man.jpg",
+    "Length": 285454
+  },
+  {
+    "path": "elizabethan\\2_woman.jpg",
+    "Length": 243999
+  },
+  {
+    "path": "fire_face\\1_man.jpg",
+    "Length": 254054
+  },
+  {
+    "path": "fire_face\\2_woman.jpg",
+    "Length": 245633
+  },
+  {
+    "path": "folded_book\\1.jpg",
+    "Length": 230301
+  },
+  {
+    "path": "forest_gaurdian\\1_man.jpg",
+    "Length": 321999
+  },
+  {
+    "path": "forest_gaurdian\\2_woman.jpg",
+    "Length": 341546
+  },
+  {
+    "path": "haunted\\1_man.jpg",
+    "Length": 295700
+  },
+  {
+    "path": "haunted\\2_woman.jpg",
+    "Length": 192014
+  },
+  {
+    "path": "ice\\1_man.jpg",
+    "Length": 186531
+  },
+  {
+    "path": "ice\\2_woman.jpg",
+    "Length": 208647
+  },
+  {
+    "path": "impressionist\\1.jpg",
+    "Length": 255099
+  },
+  {
+    "path": "iron\\1.jpg",
+    "Length": 181763
+  },
+  {
+    "path": "jade\\1.jpg",
+    "Length": 198962
+  },
+  {
+    "path": "jade\\2.jpg",
+    "Length": 208342
+  },
+  {
+    "path": "living_vines\\1_woman.jpg",
+    "Length": 336695
+  },
+  {
+    "path": "magic_energy\\1_woman.jpg",
+    "Length": 236931
+  },
+  {
+    "path": "magic_energy\\2_man.jpg",
+    "Length": 226847
+  },
+  {
+    "path": "melted_wax\\1.jpg",
+    "Length": 13585
+  },
+  {
+    "path": "melted_wax\\2.jpg",
+    "Length": 20956
+  },
+  {
+    "path": "melted_wax\\3.jpg",
+    "Length": 13066
+  },
+  {
+    "path": "neon\\1.jpeg",
+    "Length": 176912
+  },
+  {
+    "path": "neon\\2.jpg",
+    "Length": 294444
+  },
+  {
+    "path": "persian\\1_man.jpg",
+    "Length": 210010
+  },
+  {
+    "path": "persian\\2_woman.jpg",
+    "Length": 85165
+  },
+  {
+    "path": "plushy\\1.jpg",
+    "Length": 250736
+  },
+  {
+    "path": "polished_gold\\1.jpg",
+    "Length": 200090
+  },
+  {
+    "path": "reclaimed_bronze\\1_woman.jpg",
+    "Length": 289695
+  },
+  {
+    "path": "reclaimed_bronze\\2_man.jpg",
+    "Length": 280014
+  },
+  {
+    "path": "renaissance\\1_male.jpg",
+    "Length": 208731
+  },
+  {
+    "path": "renaissance\\2_female.jpg",
+    "Length": 180340
+  },
+  {
+    "path": "retro_robot\\1_girl.jpg",
+    "Length": 293014
+  },
+  {
+    "path": "retro_robot\\2_man.jpg",
+    "Length": 240634
+  },
+  {
+    "path": "samurai\\1_man.jpg",
+    "Length": 246197
+  },
+  {
+    "path": "samurai\\2_woman.jpg",
+    "Length": 241966
+  },
+  {
+    "path": "sandstone\\1_man.jpg",
+    "Length": 289274
+  },
+  {
+    "path": "sandstone\\2_woman.jpg",
+    "Length": 229962
+  },
+  {
+    "path": "sea_glass\\1_woman.jpg",
+    "Length": 300591
+  },
+  {
+    "path": "sea_glass\\2_man.jpg",
+    "Length": 281490
+  },
+  {
+    "path": "sheet_music\\1.jpg",
+    "Length": 298792
+  },
+  {
+    "path": "stained_glass\\1.jpg",
+    "Length": 258774
+  },
+  {
+    "path": "stone\\1.jpg",
+    "Length": 158074
+  },
+  {
+    "path": "tidewood\\1_woman.jpg",
+    "Length": 280902
+  },
+  {
+    "path": "tidewood\\2_man.jpg",
+    "Length": 228221
+  },
+  {
+    "path": "victorian\\1_woman.jpg",
+    "Length": 268914
+  },
+  {
+    "path": "victorian\\2_woman.jpg",
+    "Length": 186978
+  },
+  {
+    "path": "victorian\\3_woman.jpg",
+    "Length": 243893
+  },
+  {
+    "path": "victorian\\4_man.jpg",
+    "Length": 155595
+  },
+  {
+    "path": "volume_light\\1.jpg",
+    "Length": 186020
+  },
+  {
+    "path": "volume_light\\3.jpg",
+    "Length": 92790
+  },
+  {
+    "path": "walnut\\1.jpg",
+    "Length": 178352
+  },
+  {
+    "path": "watercolour\\1.jpg",
+    "Length": 178777
+  },
+  {
+    "path": "wild_west\\1_man.jpg",
+    "Length": 204572
+  },
+  {
+    "path": "wild_west\\2_woman.jpg",
+    "Length": 177704
+  }
+]

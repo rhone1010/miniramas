@@ -26,8 +26,24 @@
   var ANALYZE_URL    = '/api/v1/portraits/analyze';
   var CURATE_URL     = '/api/v1/portraits/curate-effects';
 
-  /* b2 4827-4829 and 4999-5000, carried over unchanged. Board 2.5 says the
-     intake thresholds are written nowhere; they are written here now. */
+  /* b2 4827-4829 and 4999-5000, carried over unchanged.
+
+     ⚠ THESE NUMBERS ARE GUESSES AND THEY ARE WRONG.
+
+     Rich, 2026-08-01, on a photograph this code called dim: "not accurate.
+     NB2 could do this one easily." He is right. These constants came across
+     from b2 as-is and have never been measured against a photograph anyone
+     actually looked at. Board 2.5 already says so — one recorded render, no
+     distribution, thresholds written nowhere.
+
+     WHAT IS NEEDED, and it is not another guess: a set of photographs Rich
+     has judged yes or no by eye, run through localPhotoCheck, with the
+     variance and luma recorded for each. The thresholds then sit where the
+     two groups actually separate. Twenty of each is enough to see it.
+
+     Until that exists these should be read as provisional, and a customer
+     turned away by them is more likely to be a false alarm than a bad
+     photograph. */
   var LOCAL_BLUR_SOFT      = 110;   /* Laplacian variance below this = soft   */
   var LOCAL_BLUR_VERY_SOFT = 45;    /* ...below this = very soft              */
   var LOCAL_LUMA_DIM       = 62;    /* mean luma 0-255 below this = dim       */
