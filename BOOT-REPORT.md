@@ -1,6 +1,6 @@
 # BOOT REPORT
 
-Generated 2026-07-29 04:31 from disk.
+Generated 2026-07-31 17:34 from disk.
 **Everything below is machine-read this run.** Where a document disagrees
 with this report, the report is right and the document is corrected today.
 
@@ -10,18 +10,18 @@ with this report, the report is right and the document is corrected today.
 - Last commit: ?
 - Pushed and current with origin.
 
-- ⚠ **2 untracked path(s).** Untracked means it exists
+- ⚠ **5 untracked path(s).** Untracked means it exists
   nowhere but this disk. This is how fifteen days of work was nearly lost.
-  - `_recovery/pipeline/010_credits_v4.sql`
-  - `scripts/boot.js`
+  - `_upload/`
+  - `docs/GOVERNANCE/CARRYOVER-CUI-V23-2026-07-31.md`
+  - `docs/GOVERNANCE/RETRIEVAL-MAP-2026-07-31.md`
+  - `docs/SYSTEM/SURFACE-TOKENS-2026-07-31.md`
+  - `scripts/build_1a_strip.py`
 
-- 6 modified, uncommitted:
-  - `recovery/at-19c3157`
+- 3 modified, uncommitted:
+  - `OOT-REPORT.md`
+  - `_recovery/at-19c3157`
   - `_recovery/at-d023aef`
-  - `app/api/v1/credits/balance/route.ts`
-  - `app/api/v1/credits/gate/route.ts`
-  - `app/api/v1/credits/refund/route.ts`
-  - `scripts/gate-stage.js`
 
 ## 2 · Surfaces — what exists, measured
 
@@ -40,12 +40,11 @@ with this report, the report is right and the document is corrected today.
 | `public/interiors.html` | 122 | 16 | 1 | 8 | 2026-05-06 |
 | `public/landscapes.html` | 2230 | 36 | 1 | 42 | 2026-05-07 |
 | `public/liten-prompt-bench-v3.html` | 273 | 13 | 0 | 35 | 2026-07-19 |
+| `public/litenco-stage-2026-07-30-s72.html` | 3830 | 70 | 0 | 52 | 2026-07-30 |
 | `public/pet-wallpaper.html` | 483 | 16 | 2 | 15 | 2026-07-11 |
 | `public/pets.html` | 5939 | 89 | 3 | 106 | 2026-07-09 |
 | `public/portrait-wallpaper.html` | 486 | 16 | 2 | 15 | 2026-07-11 |
-| `public/portraits-b1.html` | 8821 | 143 | 9 | 201 | 2026-07-27 |
 | `public/portraits-b2.html` | 8877 | 143 | 10 | 203 | 2026-07-27 |
-| `public/portraits-b4.html` | 10308 | 216 | 10 | 273 | 2026-07-28 |
 | `public/portraits_recover2.html` | 8825 | 143 | 9 | 201 | 2026-07-27 |
 | `public/print-config.html` | 436 | 9 | 0 | 3 | 2026-05-30 |
 | `public/sportsmem.html` | 371 | 11 | 1 | 4 | 2026-05-06 |
@@ -59,11 +58,18 @@ Before building any UI, check this list. Reinventing something that already
 exists has cost real time more than once.
 
 - `docs/CONTENT/`
+  - CENG-CARRYOVER-2026-07-29-STYLE-REFS.md
+  - CENG-CARRYOVER-2026-07-30-STYLE-REFS-v2.md
+  - CENG-HANDOFF-2026-07-30.md
+  - EFFECTS-REVISION-2026-07-29.md
   - portraits-prompt-reference.md
 - `docs/GOVERNANCE/`
+  - CARRYOVER-CUI-V23-2026-07-31.md
+  - LAUNCH-BOARD-2026-07-31.md
   - LIVE-FILE-LEDGER.md
   - LOCKED-DECISIONS-2026-07-27.md
   - PROCEDURES-AND-LANES-2026-07-27.md
+  - RETRIEVAL-MAP-2026-07-31.md
 - `docs/SURFACES/account/`
   - litenco-account-2026-07-24-r7.html
 - `docs/SURFACES/entry-gate/`
@@ -78,10 +84,15 @@ exists has cost real time more than once.
   - CLAW-TICKET-PRINTSHOP-PRODUCTS-2026-07-24.md
   - litenco-printshop-2026-07-24-r28.html
 - `docs/SYSTEM/`
+  - BUILD-INVENTORY-2026-07-28.md
   - CC-TICKET-FOCAL-POINT-2026-07-24.md
+  - COMMERCE-AND-IDENTITY-2026-07-28.md
+  - CONCIERGE-SPEC-2026-07-30.md
   - CREDITS-AND-CODES-SPEC-v4.md
+  - INTERACTION-MODEL-s58-2026-07-28.md
   - PROJECT-KNOWLEDGE-TRIAGE-2026-07-24.md
-  - SURFACE-TOKENS-2026-07-28.md
+  - QUALITY-GATE-DATA-2026-07-30.md
+  - SURFACE-TOKENS-2026-07-31.md
   - gate0.js
   - portraits-catalogue.js
 - `docs/tasks/`
@@ -104,10 +115,10 @@ The Curator is the customer path — an effect it cannot name is invisible.
 
 ## 5 · Catalogue vs engine
 
-- 6 silos · 36 effects
-- **23/36 render today.**
-- No prompt yet: `cast_glass, frost_ice, liquid_mercury, enchanted_crystal, volumetric_light, fire_ember, living_armor, living_reef, silicon_circuit, atomic_robot, cosmic_bloom, neon_drawing, elizabethan_portrait`
-- ⚠ Engine has, catalogue does not: `deep_sea, circuit, mercury, neon, armor, elizabethan, victorian, fantasy_crystal`
+- 8 silos · 36 effects
+- **29/36 render today.**
+- No prompt yet: `cast_glass, frost_ice, volumetric_light, fire_ember, living_reef, atomic_robot, cosmic_bloom`
+- ⚠ Engine has, catalogue does not: `deep_sea, victorian`
 
 ## 6 · Assets
 
@@ -117,15 +128,28 @@ The Curator is the customer path — an effect it cannot name is invisible.
 
 ## 7 · Referenced but absent
 
-4 asset(s) referenced by a surface but not on disk:
+9 asset(s) referenced by a surface but not on disk:
 - `/rewards-insets/'+inset+'.png`
 - `/previews/source/wide-shot.jpg`
 - `/previews/source/portrait.jpg`
 - `/previews/source/blank.jpg`
+- `/previews/silos/' + it.siloId + '.jpg`
+- `/previews/silos/' + silo.id + '.jpg`
+- `/previews/silos/' + siloId + '.jpg`
+- `/previews/pose/' + p.id + '.jpg`
+- `/previews/silos/' + r.silo.id +
+               '.jpg`
 
 ## 7b · Stage contract
 
-- no stage file found in public/
+- canonical: `public/litenco-stage-2026-07-30-s72.html`
+- ✓ body is a block
+- ✓ root type has a 16px floor
+- ✓ stage reads --stage-w
+- ✓ ground is fixed
+- ✓ masthead tracks the gutter
+
+Run `node scripts/gate-stage.js public/litenco-stage-2026-07-30-s72.html` for the full check.
 
 ## 8 · Standing gates
 
