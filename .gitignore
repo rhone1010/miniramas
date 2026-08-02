@@ -41,3 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 stripe.exe
+
+# CENG session debris — 2026-08-01
+_testpool/
+_upload/
+_route_upload/
+_route-collection/
+_archive/
+*.bak-*
+*.bak2-*
