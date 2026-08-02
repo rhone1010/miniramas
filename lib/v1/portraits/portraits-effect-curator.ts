@@ -54,9 +54,9 @@ export interface CurateEffectsResult {
 //       'high'   — material-transformation effects that need surface area
 //                  (Folded Book, Sheet Music, Charcoal, Antique Clock, etc.)
 //       'medium' — improves with body but works face-forward (Impressionist,
-//                  Pencil Sketch, Torn Paper)
+//                  Pencil Sketch)
 //       'low'    — face-forward styles where torso info matters less
-//                  (Bronze, Alabaster, Ceramic — traditional busts)
+//                  (Bronze, Stone — traditional busts)
 //
 // body_dependency drives quality_level assessment for face-only sources.
 // The GPT-4o pass also looks at the actual photo to factor in lighting,
@@ -65,22 +65,16 @@ const EFFECT_CATALOG = [
   // Realistic series
   { series: 'realistic' as const,       preset: 'bronze' as const,         label: 'Bronze',          body_dependency: 'low' as const,
     description: 'Traditional museum-quality bronze portrait emphasizing realism and likeness.' },
-  { series: 'realistic' as const,       preset: 'alabaster' as const,      label: 'Alabaster',       body_dependency: 'low' as const,
-    description: 'Translucent carved alabaster with warm subsurface scattering, faint amber veining, and milky glowing depth.' },
   { series: 'realistic' as const,       preset: 'stone' as const,          label: 'Stone',           body_dependency: 'medium' as const,
     description: 'Polished multicolored quartzite with natural mineral bands of rust, cream, gray, rose, and ochre.' },
   { series: 'realistic' as const,       preset: 'ebony' as const,          label: 'Ebony',           body_dependency: 'medium' as const,
     description: 'Carved ebony wood sculpture in deep black-brown with visible grain and dignified presence.' },
-  { series: 'realistic' as const,       preset: 'walnut' as const,         label: 'Walnut',          body_dependency: 'medium' as const,
-    description: 'Carved walnut wood sculpture in rich warm tones with considered casual character.' },
   { series: 'realistic' as const,       preset: 'iron' as const,           label: 'Iron',            body_dependency: 'medium' as const,
     description: 'Dark forged iron with burnished highlights, hammer-work texture, and natural oxide patina.' },
 
   // Artists Gallery series — material-transformation effects, body-dependent
   { series: 'artists_gallery' as const, preset: 'impressionist' as const,  label: 'Impressionist',   body_dependency: 'medium' as const,
     description: 'Thick impasto paint strokes with real visible texture form a painterly sculptural portrait.' },
-  { series: 'artists_gallery' as const, preset: 'torn_paper' as const,     label: 'Torn Paper',      body_dependency: 'high' as const,
-    description: 'Thousands of torn and layered paper contours stack into a topographic terrain-map sculpture.' },
   { series: 'artists_gallery' as const, preset: 'folded_book' as const,    label: 'Folded Book',     body_dependency: 'high' as const,
     description: 'Flowing paper ribbons emerge from an open book to form a contemporary gallery sculpture (best with visible upper body).' },
   { series: 'artists_gallery' as const, preset: 'charcoal_chalk' as const, label: 'Charcoal & Chalk', body_dependency: 'high' as const,
@@ -137,7 +131,7 @@ OUTPUT JSON ONLY — no markdown, no preamble:
     {
       "id":            "rec_2",
       "series":        "realistic",
-      "preset":        "walnut",
+      "preset":        "ebony",
       "quality_level": "Good"
     },
     {
@@ -162,20 +156,20 @@ The preset_label and description fields are hardcoded from the catalog and will 
 // picks (which already tend to include them, but not deterministically).
 //
 // PRIMARY (slot 1, every call) — impressionist every other call; the
-// off-positions cycle walnut → charcoal → bronze → pencil_sketch.
+// off-positions cycle ebony → charcoal → bronze → pencil_sketch.
 // SECONDARY (every 8th call) — also force one of iron → sheet_music →
-// alabaster → walnut into a top slot, advancing once per full cycle.
+// stone → ebony into a top slot, advancing once per full cycle.
 //
 // To retune: edit these two arrays. "paper sketch" is mapped to
-// pencil_sketch; swap to 'torn_paper' here if that's what was meant.
+// pencil_sketch.
 // ═══════════════════════════════════════════════════════════════
 const HERO_PRIMARY: PortraitsPresetId[] = [
-  'impressionist', 'walnut',
+  'impressionist', 'ebony',
   'impressionist', 'charcoal_chalk',
   'impressionist', 'bronze',
   'impressionist', 'pencil_sketch',
 ]
-const HERO_SECONDARY: PortraitsPresetId[] = ['iron', 'sheet_music', 'alabaster', 'walnut']
+const HERO_SECONDARY: PortraitsPresetId[] = ['iron', 'sheet_music', 'stone', 'ebony']
 
 // Best-effort counter for when the client doesn't pass rotationIndex.
 let moduleRotationCounter = 0
@@ -227,7 +221,7 @@ function applyHeroRotation(
     used.add(r.preset)
   }
   // Pad from strong crowd-pleasers if GPT under-delivered.
-  const PAD: PortraitsPresetId[] = ['impressionist', 'bronze', 'walnut', 'folded_book', 'iron', 'alabaster']
+  const PAD: PortraitsPresetId[] = ['impressionist', 'bronze', 'ebony', 'folded_book', 'iron', 'stone']
   for (const preset of PAD) {
     if (out.length === 5) break
     if (used.has(preset) || !ENTRY_BY_PRESET[preset]) continue

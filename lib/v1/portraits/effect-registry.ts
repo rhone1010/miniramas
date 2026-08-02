@@ -16,13 +16,13 @@
 
 export type SiloId =
   | 'earth_ore'
-  | 'artists_gallery'
   | 'light_glass'
-  | 'myth_legend'
-  | 'far_future'
-  | 'another_age'
   | 'living_world'
-  | 'handmade'
+  | 'made_by_hand'
+  | 'artists_gallery'
+  | 'ink_paper'
+  | 'fantasy_future'
+  | 'another_age'
 
 /** 'live'     — body + avoid are in the engine NOW; safe to offer and spend on.
  *  'authored' — text exists (see the CENG carryover) but is NOT yet entered
@@ -69,23 +69,24 @@ export interface Effect {
 // ── SILOS ────────────────────────────────────────────────────────────────────
 
 export const SILOS: Silo[] = [
-  { id:'earth_ore',      label:'Earth & Ore',
+  { id:'earth_ore',       label:'Earth & Ore',
     line:'Here are the Earth & Ore finishes. Weight, grain, and the honesty of real material.' },
+  { id:'light_glass',     label:'Light & Glass',
+    line:'Here are the Light & Glass finishes. Translucent, and lit from within.' },
+  { id:'living_world',    label:'The Living World',
+    line:'Here are The Living World finishes. Grown rather than made.' },
+  { id:'made_by_hand',    label:'Made by Hand',
+    line:'Here are the Made by Hand finishes. Softer work, and the maker\u2019s hand still on it.' },
   { id:'artists_gallery', label:'The Artists Gallery',
     line:'Here are the Artists Gallery finishes. A maker\u2019s hand, left visible.' },
-  { id:'light_glass',    label:'Light & Glass',
-    line:'Here are the Light & Glass finishes. Translucent, and lit from within.' },
-  { id:'myth_legend',    label:'Myth & Legend',
-    line:'Here are the Myth & Legend finishes. For a sitting with some nerve to it.' },
-  { id:'far_future',     label:'Far & Future',
-    line:'Here are the Far & Future finishes. Cool metals and further horizons.' },
-  { id:'another_age',    label:'Another Age',
+  { id:'ink_paper',       label:'Ink & Paper',
+    line:'Here are the Ink & Paper finishes. Pressed, printed, and drawn.' },
+  { id:'fantasy_future',  label:'Fantasy & Future',
+    line:'Here are the Fantasy & Future finishes. For a sitting with some nerve to it.' },
+  { id:'another_age',     label:'Another Age',
     line:'Here are the Another Age finishes. A sitting in a century not your own.' },
-  { id:'living_world',   label:'Living World',
-    line:'Here are the Living World finishes. Grown rather than made.' },
-  { id:'handmade',       label:'Handmade',
-    line:'Here are the Handmade finishes. Softer work, and made by hand.' },
 ]
+
 
 // ── EFFECTS ──────────────────────────────────────────────────────────────────
 // 56 slots. See EFFECTS-REVISION-2026-07-29.md for adds/drops/moves and reasons.

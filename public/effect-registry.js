@@ -1,12 +1,12 @@
 /* GENERATED FILE — DO NOT EDIT.
    Source: lib/v1/portraits/effect-registry.ts  (CENG-owned)
    Regenerate: node scripts/emit-effect-registry.js
-   Emitted: 2026-08-02T07:16:36.657Z
+   Emitted: 2026-08-02T22:50:05.304Z
 
    Labels are plain unicode. Key on .id, never on .label.
    Offer only effects where body === 'live' — the gate refuses the rest. */
 window.EFFECT_REGISTRY = {
-  "generatedAt": "2026-08-02T07:16:36.657Z",
+  "generatedAt": "2026-08-02T22:50:05.304Z",
   "silos": [
     {
       "id": "earth_ore",
@@ -14,39 +14,39 @@ window.EFFECT_REGISTRY = {
       "line": "Here are the Earth & Ore finishes. Weight, grain, and the honesty of real material."
     },
     {
-      "id": "artists_gallery",
-      "label": "The Artists Gallery",
-      "line": "Here are the Artists Gallery finishes. A maker’s hand, left visible."
-    },
-    {
       "id": "light_glass",
       "label": "Light & Glass",
       "line": "Here are the Light & Glass finishes. Translucent, and lit from within."
     },
     {
-      "id": "myth_legend",
-      "label": "Myth & Legend",
-      "line": "Here are the Myth & Legend finishes. For a sitting with some nerve to it."
+      "id": "living_world",
+      "label": "The Living World",
+      "line": "Here are The Living World finishes. Grown rather than made."
     },
     {
-      "id": "far_future",
-      "label": "Far & Future",
-      "line": "Here are the Far & Future finishes. Cool metals and further horizons."
+      "id": "made_by_hand",
+      "label": "Made by Hand",
+      "line": "Here are the Made by Hand finishes. Softer work, and the maker’s hand still on it."
+    },
+    {
+      "id": "artists_gallery",
+      "label": "The Artists Gallery",
+      "line": "Here are the Artists Gallery finishes. A maker’s hand, left visible."
+    },
+    {
+      "id": "ink_paper",
+      "label": "Ink & Paper",
+      "line": "Here are the Ink & Paper finishes. Pressed, printed, and drawn."
+    },
+    {
+      "id": "fantasy_future",
+      "label": "Fantasy & Future",
+      "line": "Here are the Fantasy & Future finishes. For a sitting with some nerve to it."
     },
     {
       "id": "another_age",
       "label": "Another Age",
       "line": "Here are the Another Age finishes. A sitting in a century not your own."
-    },
-    {
-      "id": "living_world",
-      "label": "Living World",
-      "line": "Here are the Living World finishes. Grown rather than made."
-    },
-    {
-      "id": "handmade",
-      "label": "Handmade",
-      "line": "Here are the Handmade finishes. Softer work, and made by hand."
     }
   ],
   "effects": [
@@ -67,7 +67,7 @@ window.EFFECT_REGISTRY = {
       "mode": "material",
       "monolithic": true,
       "body": "live",
-      "refs": 1,
+      "refs": 2,
       "likenessFloor": "strict"
     },
     {
@@ -77,17 +77,7 @@ window.EFFECT_REGISTRY = {
       "mode": "material",
       "monolithic": true,
       "body": "live",
-      "refs": 1,
-      "likenessFloor": "strict"
-    },
-    {
-      "id": "alabaster",
-      "label": "Alabaster",
-      "category": "earth_ore",
-      "mode": "material",
-      "monolithic": true,
-      "body": "live",
-      "refs": 1,
+      "refs": 3,
       "likenessFloor": "strict"
     },
     {
@@ -111,13 +101,237 @@ window.EFFECT_REGISTRY = {
       "likenessFloor": "strict"
     },
     {
-      "id": "walnut",
-      "label": "Walnut",
+      "id": "reclaimed_bronze",
+      "label": "Reclaimed Bronze",
+      "category": "earth_ore",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "petrified_wood",
+      "label": "Petrified Wood",
       "category": "earth_ore",
       "mode": "material",
       "monolithic": true,
       "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "cast_glass",
+      "label": "Cast Glass",
+      "category": "light_glass",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
       "refs": 1,
+      "likenessFloor": "relaxed"
+    },
+    {
+      "id": "stained_glass",
+      "label": "Stained Glass",
+      "category": "light_glass",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 1,
+      "likenessFloor": "relaxed"
+    },
+    {
+      "id": "ice",
+      "label": "Frost & Ice",
+      "category": "light_glass",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "relaxed"
+    },
+    {
+      "id": "mercury",
+      "label": "Liquid Mercury",
+      "category": "light_glass",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 1,
+      "likenessFloor": "relaxed"
+    },
+    {
+      "id": "neon",
+      "label": "Neon Drawing",
+      "category": "light_glass",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "relaxed"
+    },
+    {
+      "id": "sea_glass",
+      "label": "Sea Glass",
+      "category": "light_glass",
+      "mode": "material",
+      "monolithic": true,
+      "body": "todo",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "polished_gold",
+      "label": "Polished Gold",
+      "category": "light_glass",
+      "mode": "material",
+      "monolithic": true,
+      "body": "todo",
+      "refs": 1,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "driftwood_resin",
+      "label": "Driftwood & Resin",
+      "category": "living_world",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 1,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "coral",
+      "label": "Living Reef",
+      "category": "living_world",
+      "mode": "material",
+      "monolithic": false,
+      "body": "authored",
+      "refs": 2,
+      "framing": "statuesque",
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "tidewood",
+      "label": "Tidewood",
+      "category": "living_world",
+      "mode": "material",
+      "monolithic": true,
+      "body": "todo",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "lichen_granite",
+      "label": "Lichen Granite",
+      "category": "living_world",
+      "mode": "material",
+      "monolithic": true,
+      "body": "todo",
+      "refs": 1,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "petal_sculpture",
+      "label": "Petal Sculpture",
+      "category": "living_world",
+      "mode": "material",
+      "monolithic": true,
+      "body": "todo",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "sand_form",
+      "label": "Sand Form",
+      "category": "living_world",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "sandstone",
+      "label": "Sandstone",
+      "category": "living_world",
+      "mode": "material",
+      "monolithic": true,
+      "body": "todo",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "plushy",
+      "label": "Plushy",
+      "category": "made_by_hand",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 1,
+      "likenessFloor": "relaxed",
+      "genderedRefs": true
+    },
+    {
+      "id": "chocolate",
+      "label": "Chocolate",
+      "category": "made_by_hand",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 1,
+      "likenessFloor": "strict",
+      "genderedRefs": true
+    },
+    {
+      "id": "balloon_face",
+      "label": "Balloon",
+      "category": "made_by_hand",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "relaxed",
+      "genderedRefs": true
+    },
+    {
+      "id": "quilted",
+      "label": "Quilted",
+      "category": "made_by_hand",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "origami",
+      "label": "Origami",
+      "category": "made_by_hand",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "porcelain",
+      "label": "Porcelain",
+      "category": "made_by_hand",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "beaded",
+      "label": "Beaded",
+      "category": "made_by_hand",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
       "likenessFloor": "strict"
     },
     {
@@ -141,16 +355,6 @@ window.EFFECT_REGISTRY = {
       "likenessFloor": "relaxed"
     },
     {
-      "id": "folded_book",
-      "label": "Folded Book",
-      "category": "artists_gallery",
-      "mode": "material",
-      "monolithic": true,
-      "body": "live",
-      "refs": 1,
-      "likenessFloor": "strict"
-    },
-    {
       "id": "charcoal_chalk",
       "label": "Charcoal & Chalk",
       "category": "artists_gallery",
@@ -171,16 +375,6 @@ window.EFFECT_REGISTRY = {
       "likenessFloor": "strict"
     },
     {
-      "id": "driftwood_resin",
-      "label": "Driftwood & Resin",
-      "category": "artists_gallery",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 1,
-      "likenessFloor": "strict"
-    },
-    {
       "id": "pencil_sketch",
       "label": "Pencil Sketch",
       "category": "artists_gallery",
@@ -192,19 +386,39 @@ window.EFFECT_REGISTRY = {
       "skipUniversal": true
     },
     {
-      "id": "cast_glass",
-      "label": "Cast Glass",
-      "category": "light_glass",
+      "id": "oil_impasto",
+      "label": "Oil Impasto",
+      "category": "artists_gallery",
       "mode": "material",
-      "monolithic": false,
-      "body": "authored",
-      "refs": 0,
-      "likenessFloor": "relaxed"
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
     },
     {
-      "id": "blown_glass",
-      "label": "Blown Glass",
-      "category": "light_glass",
+      "id": "linocut",
+      "label": "Linocut",
+      "category": "artists_gallery",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "folded_book",
+      "label": "Folded Book",
+      "category": "ink_paper",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 1,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "magic_energy",
+      "label": "Magic Energy",
+      "category": "ink_paper",
       "mode": "material",
       "monolithic": false,
       "body": "live",
@@ -212,207 +426,125 @@ window.EFFECT_REGISTRY = {
       "likenessFloor": "relaxed"
     },
     {
-      "id": "stained_glass",
-      "label": "Stained Glass",
-      "category": "light_glass",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 0,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "amber",
-      "label": "Amber",
-      "category": "light_glass",
+      "id": "ukiyo_e",
+      "label": "Ukiyo E",
+      "category": "ink_paper",
       "mode": "material",
       "monolithic": true,
       "body": "live",
-      "refs": 0,
-      "likenessFloor": "relaxed"
+      "refs": 1,
+      "likenessFloor": "strict"
     },
     {
-      "id": "ice",
-      "label": "Frost & Ice",
-      "category": "light_glass",
-      "mode": "material",
-      "monolithic": true,
-      "body": "authored",
-      "refs": 2,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "mercury",
-      "label": "Liquid Mercury",
-      "category": "light_glass",
+      "id": "cubism",
+      "label": "Cubism",
+      "category": "ink_paper",
       "mode": "material",
       "monolithic": true,
       "body": "live",
-      "refs": 0,
-      "likenessFloor": "relaxed"
+      "refs": 1,
+      "likenessFloor": "strict"
     },
     {
-      "id": "fantasy_crystal",
-      "label": "Enchanted Crystal",
-      "category": "light_glass",
+      "id": "art_deco",
+      "label": "Art Deco",
+      "category": "ink_paper",
       "mode": "material",
-      "monolithic": false,
+      "monolithic": true,
       "body": "live",
-      "refs": 0,
-      "likenessFloor": "relaxed"
+      "refs": 1,
+      "likenessFloor": "strict"
     },
     {
-      "id": "dichroic_glass",
-      "label": "Dichroic Glass",
-      "category": "light_glass",
+      "id": "art_nouveau",
+      "label": "Art Nouveau",
+      "category": "ink_paper",
       "mode": "material",
-      "monolithic": false,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "relaxed"
+      "monolithic": true,
+      "body": "live",
+      "refs": 1,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "daguerreotype",
+      "label": "Daguerreotype",
+      "category": "ink_paper",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 1,
+      "likenessFloor": "strict"
     },
     {
       "id": "dragon_skin",
       "label": "Dragon Skin",
-      "category": "myth_legend",
+      "category": "fantasy_future",
       "mode": "material",
       "monolithic": false,
       "body": "live",
-      "refs": 0,
+      "refs": 2,
       "likenessFloor": "strict"
     },
     {
       "id": "fire_face",
       "label": "Fire & Ember",
-      "category": "myth_legend",
+      "category": "fantasy_future",
       "mode": "costume",
       "monolithic": false,
       "body": "authored",
-      "refs": 3,
+      "refs": 2,
       "likenessFloor": "strict",
       "skipStaging": true
     },
     {
-      "id": "magic_energy",
-      "label": "Magic Energy",
-      "category": "myth_legend",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 0,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "armor",
-      "label": "Living Armor",
-      "category": "myth_legend",
-      "mode": "costume",
-      "monolithic": false,
-      "body": "live",
-      "refs": 0,
-      "likenessFloor": "strict"
-    },
-    {
-      "id": "reclaimed_bronze",
-      "label": "Reclaimed Bronze",
-      "category": "myth_legend",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 0,
-      "likenessFloor": "strict"
-    },
-    {
-      "id": "golden_idol",
-      "label": "Golden Idol",
-      "category": "myth_legend",
-      "mode": "material",
-      "monolithic": true,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "strict"
-    },
-    {
-      "id": "runestone",
-      "label": "Runestone",
-      "category": "myth_legend",
-      "mode": "material",
-      "monolithic": true,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "strict"
-    },
-    {
       "id": "retro_robot",
       "label": "Atomic Age Robot",
-      "category": "far_future",
+      "category": "fantasy_future",
       "mode": "material",
       "monolithic": false,
-      "body": "authored",
+      "body": "live",
       "refs": 2,
       "likenessFloor": "strict"
     },
     {
-      "id": "cosmic",
-      "label": "Cosmic Bloom",
-      "category": "far_future",
-      "mode": "costume",
-      "monolithic": false,
-      "body": "authored",
-      "refs": 2,
-      "likenessFloor": "relaxed",
-      "genderedRefs": true
-    },
-    {
-      "id": "nebula_resin",
-      "label": "Nebula Resin",
-      "category": "far_future",
+      "id": "forest_guardian",
+      "label": "Forest Guardian",
+      "category": "fantasy_future",
       "mode": "material",
-      "monolithic": false,
+      "monolithic": true,
       "body": "live",
-      "refs": 0,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "neon",
-      "label": "Neon Drawing",
-      "category": "far_future",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 0,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "volume_light",
-      "label": "Volumetric Light",
-      "category": "far_future",
-      "mode": "material",
-      "monolithic": false,
-      "body": "authored",
-      "refs": 3,
-      "likenessFloor": "bypass",
-      "skipStaging": true
-    },
-    {
-      "id": "wireframe",
-      "label": "Wireframe Model",
-      "category": "far_future",
-      "mode": "material",
-      "monolithic": false,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "digital_human",
-      "label": "Digital Human",
-      "category": "far_future",
-      "mode": "material",
-      "monolithic": false,
-      "body": "todo",
       "refs": 2,
-      "likenessFloor": "relaxed"
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "clockwork",
+      "label": "Clockwork",
+      "category": "fantasy_future",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "starfield",
+      "label": "Starfield",
+      "category": "fantasy_future",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "crystallized",
+      "label": "Crystallized",
+      "category": "fantasy_future",
+      "mode": "material",
+      "monolithic": true,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
     },
     {
       "id": "elizabethan",
@@ -421,7 +553,7 @@ window.EFFECT_REGISTRY = {
       "mode": "costume",
       "monolithic": false,
       "body": "live",
-      "refs": 3,
+      "refs": 2,
       "likenessFloor": "strict",
       "genderedRefs": true
     },
@@ -432,7 +564,7 @@ window.EFFECT_REGISTRY = {
       "mode": "costume",
       "monolithic": false,
       "body": "todo",
-      "refs": 0,
+      "refs": 4,
       "likenessFloor": "strict",
       "genderedRefs": true
     },
@@ -442,8 +574,8 @@ window.EFFECT_REGISTRY = {
       "category": "another_age",
       "mode": "costume",
       "monolithic": false,
-      "body": "todo",
-      "refs": 0,
+      "body": "live",
+      "refs": 2,
       "likenessFloor": "strict",
       "genderedRefs": true
     },
@@ -453,8 +585,8 @@ window.EFFECT_REGISTRY = {
       "category": "another_age",
       "mode": "costume",
       "monolithic": false,
-      "body": "todo",
-      "refs": 0,
+      "body": "live",
+      "refs": 4,
       "likenessFloor": "strict",
       "genderedRefs": true
     },
@@ -464,8 +596,8 @@ window.EFFECT_REGISTRY = {
       "category": "another_age",
       "mode": "costume",
       "monolithic": false,
-      "body": "todo",
-      "refs": 0,
+      "body": "live",
+      "refs": 2,
       "likenessFloor": "strict",
       "genderedRefs": true
     },
@@ -476,167 +608,96 @@ window.EFFECT_REGISTRY = {
       "mode": "costume",
       "monolithic": false,
       "body": "todo",
-      "refs": 0,
+      "refs": 2,
       "likenessFloor": "strict",
       "genderedRefs": true
     },
     {
-      "id": "ancient_egypt",
-      "label": "Ancient Egypt",
+      "id": "persian_court",
+      "label": "Persian Court",
       "category": "another_age",
       "mode": "costume",
       "monolithic": false,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "strict",
-      "genderedRefs": true
-    },
-    {
-      "id": "coral",
-      "label": "Living Reef",
-      "category": "living_world",
-      "mode": "material",
-      "monolithic": false,
-      "body": "authored",
-      "refs": 2,
-      "framing": "statuesque",
-      "likenessFloor": "strict"
-    },
-    {
-      "id": "flowing_water",
-      "label": "Flowing Water",
-      "category": "living_world",
-      "mode": "material",
-      "monolithic": false,
-      "body": "todo",
-      "refs": 2,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "frozen_splash",
-      "label": "Frozen Splash",
-      "category": "living_world",
-      "mode": "material",
-      "monolithic": false,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "moss_stone",
-      "label": "Moss & Stone",
-      "category": "living_world",
-      "mode": "material",
-      "monolithic": false,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "strict"
-    },
-    {
-      "id": "blossom",
-      "label": "Blossom",
-      "category": "living_world",
-      "mode": "material",
-      "monolithic": false,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "autumn_leaf",
-      "label": "Autumn Leaf",
-      "category": "living_world",
-      "mode": "material",
-      "monolithic": false,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "butterfly_wing",
-      "label": "Butterfly Wing",
-      "category": "living_world",
-      "mode": "material",
-      "monolithic": false,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "relaxed"
-    },
-    {
-      "id": "plushy",
-      "label": "Plushy",
-      "category": "handmade",
-      "mode": "material",
-      "monolithic": false,
       "body": "live",
-      "refs": 0,
-      "likenessFloor": "relaxed",
-      "genderedRefs": true
+      "refs": 2,
+      "likenessFloor": "strict"
     },
     {
-      "id": "chocolate",
-      "label": "Chocolate",
-      "category": "handmade",
-      "mode": "material",
-      "monolithic": true,
+      "id": "victorian_woman",
+      "label": "Victorian Woman",
+      "category": "another_age",
+      "mode": "costume",
+      "monolithic": false,
       "body": "live",
       "refs": 0,
       "likenessFloor": "strict",
       "genderedRefs": true
     },
     {
-      "id": "balloon",
-      "label": "Balloon",
-      "category": "handmade",
-      "mode": "material",
+      "id": "renaissance_woman",
+      "label": "Renaissance Woman",
+      "category": "another_age",
+      "mode": "costume",
       "monolithic": false,
-      "body": "todo",
-      "refs": 2,
-      "likenessFloor": "relaxed",
-      "genderedRefs": true
-    },
-    {
-      "id": "mosaic",
-      "label": "Tile Mosaic",
-      "category": "handmade",
-      "mode": "material",
-      "monolithic": false,
-      "body": "todo",
+      "body": "live",
       "refs": 0,
       "likenessFloor": "strict",
       "genderedRefs": true
     },
     {
-      "id": "topiary",
-      "label": "Living Topiary",
-      "category": "handmade",
-      "mode": "material",
-      "monolithic": true,
-      "body": "todo",
-      "refs": 0,
-      "likenessFloor": "relaxed",
-      "genderedRefs": true
-    },
-    {
-      "id": "wicker",
-      "label": "Woven Wicker",
-      "category": "handmade",
-      "mode": "material",
-      "monolithic": true,
-      "body": "todo",
+      "id": "persian_court_woman",
+      "label": "Persian Court Woman",
+      "category": "another_age",
+      "mode": "costume",
+      "monolithic": false,
+      "body": "live",
       "refs": 0,
       "likenessFloor": "strict",
       "genderedRefs": true
     },
     {
-      "id": "melted_wax",
-      "label": "Melted Wax",
-      "category": "handmade",
-      "mode": "material",
-      "monolithic": true,
-      "body": "todo",
-      "refs": 3,
-      "likenessFloor": "relaxed"
+      "id": "wild_west_woman",
+      "label": "Wild West Woman",
+      "category": "another_age",
+      "mode": "costume",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict",
+      "genderedRefs": true
+    },
+    {
+      "id": "deco_twenties_woman",
+      "label": "Deco Twenties Woman",
+      "category": "another_age",
+      "mode": "costume",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict",
+      "genderedRefs": true
+    },
+    {
+      "id": "samurai_woman",
+      "label": "Samurai Woman",
+      "category": "another_age",
+      "mode": "costume",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict",
+      "genderedRefs": true
+    },
+    {
+      "id": "elizabethan_woman",
+      "label": "Elizabethan Woman",
+      "category": "another_age",
+      "mode": "costume",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict",
+      "genderedRefs": true
     }
   ],
   "poses": [

@@ -174,6 +174,7 @@ export async function POST(req: NextRequest) {
           prompt:              expPrompt,
           sourceImageB64,
           additionalImagesB64: body.additional_images_b64 || [],
+          styleReferenceB64s:  [],
           aspectRatio:         expAspect,
           replicateApiToken,
         })

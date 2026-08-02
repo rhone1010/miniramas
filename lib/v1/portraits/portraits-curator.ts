@@ -55,15 +55,12 @@ export interface CurateUpperBodyResult {
 const MATERIAL_REGISTER: Partial<Record<PortraitsPresetId, string>> = {
   // Realistic series
   bronze:         'classic, intentional, slightly formal but lived-in',
-  alabaster:      'refined, quietly elegant',
   iron:           'forged, deliberate, quietly strong',
   plushy:         'soft, approachable, character-driven',
   stone:          'grounded, sturdy, authentically casual',
   ebony:          'dignified, deliberate, well-tailored',
-  walnut:         'thoughtful, warm, considered casual',
   // Artists Gallery series — each material implies a specific persona
   impressionist:  'painterly, expressive, slightly bohemian',
-  torn_paper:     'literary, contemplative, soft layered casual',
   folded_book:    'well-read casual — turtleneck, soft jacket, slight scarf, the kind of person who lives in libraries',
   charcoal_chalk: 'studio creative — paint-flecked workshirt, rolled sleeves, soft collar',
   pencil_sketch:  'thoughtful contemporary — interesting layering, statement collar, considered drape',

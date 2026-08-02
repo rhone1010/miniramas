@@ -30,6 +30,7 @@
 
 import { buildPortraitsPrompt } from './portraits-prompt'
 import { hasBody, buildEffectPrompt } from './portraits-bodies'
+import { loadStyleRefs, MAX_STYLE_REFS } from './style-refs'
 import sharp from 'sharp'
 import {
   scoreSingleFaceFidelity,
@@ -129,9 +130,18 @@ export async function generatePortraitsRender(
     ? `explicit (override=${input.refineOverride})`
     : `pipeline: style=${styleId}, passTwoEnabled=${pipeline.passTwoEnabled}, refine=${refineEnabled}`
 
-  // Style references — Portraits ships with the loader removed. User-
-  // supplied refs still flow through.
-  const styleRefs = req.style_reference_b64 ? [req.style_reference_b64] : []
+  // Style references. A caller-supplied ref wins outright — that path is how
+  // the bench and one-off tests pin a specific plate. Otherwise load the
+  // effect's own plates from disk. Either way capped at MAX_STYLE_REFS; NB2
+  // takes 14 images total and one source plus two refs is well inside.
+  const styleRefs: string[] = req.style_reference_b64
+    ? [req.style_reference_b64]
+    : loadStyleRefs(presetId)
+
+  console.log(
+    `[portraits] style_refs=${styleRefs.length}/${MAX_STYLE_REFS} ` +
+    `src=${req.style_reference_b64 ? 'request' : 'disk'} preset=${presetId}`,
+  )
 
   const attempts: PortraitsAttempt[] = []
   let finalImageB64: string | null = null
@@ -191,7 +201,7 @@ export async function generatePortraitsRender(
         prompt,
         sourceImageB64:      req.source_image_b64,
         additionalImagesB64: req.additional_images_b64 || [],
-        styleReferenceB64:   styleRefs[0],
+        styleReferenceB64s:  styleRefs,
         aspectRatio,
         replicateApiToken:   input.replicateApiToken,
       })
@@ -386,7 +396,7 @@ export async function callNB2(input: {
   prompt:              string
   sourceImageB64:      string
   additionalImagesB64: string[]
-  styleReferenceB64?:  string
+  styleReferenceB64s:  string[]
   aspectRatio:         string
   replicateApiToken:   string
 }): Promise<string> {
@@ -396,14 +406,17 @@ export async function callNB2(input: {
     ...input.additionalImagesB64,
   ].slice(0, MAX_SOURCE_IMAGES).map(b => `data:image/jpeg;base64,${b}`)
 
-  // Style ref appended as the LAST input image.
-  const imageInput = input.styleReferenceB64
-    ? [...sourceUris, `data:image/jpeg;base64,${input.styleReferenceB64}`]
-    : sourceUris
+  // Style refs appended AFTER the sources, in order. Position matters — NB2
+  // reads the trailing images as style, the leading ones as subject.
+  const styleUris = (input.styleReferenceB64s || [])
+    .slice(0, MAX_STYLE_REFS)
+    .map(b => `data:image/jpeg;base64,${b}`)
+
+  const imageInput = [...sourceUris, ...styleUris]
 
   console.log(
     `[portraits/generate] NB2 aspect=${input.aspectRatio} ` +
-    `sources=${sourceUris.length}${input.styleReferenceB64 ? ' +1 style_ref' : ''} ` +
+    `sources=${sourceUris.length}${styleUris.length ? ` +${styleUris.length} style_ref` : ''} ` +
     `prompt_chars=${input.prompt.length}`,
   )
 

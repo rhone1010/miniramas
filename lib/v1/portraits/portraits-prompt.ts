@@ -23,32 +23,23 @@
 import type { PortraitsPresetId, LocationId, Scale, Framing } from './portraits-shared'
 import { DEFAULT_FRAMING } from './portraits-shared'
 
-const MATERIAL_PHRASE: Record<PortraitsPresetId, string> = {
+const MATERIAL_PHRASE: Partial<Record<PortraitsPresetId, string>> = {
   bronze:
     'polished bronze sculpture in classic patinated bronze — face, hair, and clothing all rendered in the same patinated bronze, the surface dignified and tasteful, not costume-like',
-  alabaster:
-    'carved translucent alabaster sculpture with warm subsurface scattering, milky stone depth, soft glowing edges, faint amber veining, polished and semi-translucent high points, and deeper cloudy opacity in thicker areas',
   iron:
     'hand-forged iron sculpture in deep charcoal-black metal with a soft gunmetal sheen — visible hammer-work texture across every surface, burnished highlights on raised features (brow, cheekbones, nose bridge, hair ridges), and darker oxide patina settling into recesses and undercuts. Do not crop to head. Do not create a helmet, mask, or faceplate-only sculpture. No orange rust anywhere on the bust; the palette is charcoal, graphite, and warm gunmetal only',
   plushy:        'soft plushy figure',
   stone:
     'polished Taj Mahal quartzite sculpture with characteristic creamy-beige base tones, warm gold and amber veining, smoky brown ribbons, and occasional charcoal-gray mineral threads — the stone pattern flows organically across face, hair, clothing, shoulders, and arms. Avoid pink, peach, rose, salmon, or flesh-toned veining anywhere on the bust; the mineral palette is cream, gold, brown, and charcoal only',
   ebony:         'carved ebony wood sculpture in deep black-brown, visible wood grain with subtle natural color variation, burls and whorls placed in the base and shoulders, fine smooth grain on the face',
-  walnut:
-    'carved walnut wood sculpture with rich grain variation visible across the entire bust — pronounced flowing wood grain patterns, natural color shifts ranging from warm honey-amber through chestnut to deep chocolate-walnut, occasional figured-grain knots, burls, and ribbon-grain character in the shoulders and torso. Finished in soft satin lacquer that catches studio lighting in subtle specular highlights — semi-gloss only, not varnish, not high-gloss wet-shine. The grain reads as living, characterful hardwood with depth and warmth — not flat or uniformly stained',
-  pewter:
-    'cast pewter sculpture in soft satin-grey alloy with a gentle low-luster sheen — smooth flowing surfaces, muted highlights pooling on raised features (brow, cheekbones, nose bridge), and slightly darker tarnish settling into recesses and undercuts. A refined, understated metal with a soft pewter glow, never mirror-bright. No paint, no flesh tones; the palette is cool silver-grey throughout',
   chocolate:
     'sculpted from rich tempered chocolate in deep cocoa-brown with a smooth satin chocolate sheen — flowing glossy surfaces, soft warm highlights on raised features, and deeper bittersweet-brown tones settling into recesses, as if molded by a master chocolatier. Decorative confectioner\'s detailing is welcome and expected: fine gold-leaf gilding, dustings of cocoa powder, and delicately piped scrollwork. Keep every tone within a warm café palette — dark and milk chocolate, cocoa, caramel, mocha, and latte-cream, with warm gold-leaf accents. No stark icing-white, no pastel frosting, and no color outside the warm chocolate-and-cream range anywhere on the bust',
-  legacy_edition:
-    'sculpture carved from one block of flawless white statuary marble — the flagship, highest-tier piece. Face, hair, and clothing all carved in the round from cool luminous Carrara/Statuario stone, softly polished with a gentle sheen, subtle cool-grey veining flowing naturally through the form, a few honest hand-tooled passages beside the polished planes. Cool white throughout, never cream, ivory, tan, or warm; no source colors carry through. Master, confident, balanced composition; the absolute ceiling of realism, refined texture, and rich depth; restraint over spectacle — nothing exaggerated, nothing flashy, no added ornament or novelty. Timeless and instantly recognizable, it should feel impossible to improve',
   // Artists Gallery — these materials use full custom prompts (see
   // ARTISTS_BLOCKS below). The standard MATERIAL_PHRASE entry is
   // a placeholder kept only to satisfy the Record<PortraitsPresetId, …>
   // type — buildPortraitsPrompt routes these to buildArtistsPrompt before
   // MATERIAL_PHRASE is ever read.
   impressionist:  '__custom_artists_prompt__',
-  torn_paper:     '__custom_artists_prompt__',
   folded_book:    '__custom_artists_prompt__',
   charcoal_chalk: '__custom_artists_prompt__',
   pencil_sketch:  '__custom_artists_prompt__',
@@ -118,14 +109,14 @@ function buildAdvancedTail(adv?: AdvancedLighting): string {
 // conditioning.
 
 const ARTISTS_PRESETS = [
-  'impressionist', 'torn_paper', 'folded_book', 'charcoal_chalk',
+  'impressionist', 'folded_book', 'charcoal_chalk',
   'pencil_sketch', 'sheet_music',
   'stained_glass', 'driftwood_resin',
 ] as const
-type ArtistsPresetId = (typeof ARTISTS_PRESETS)[number]
+type ArtistsPresetId = (typeof ARTISTS_PRESETS)[number] & PortraitsPresetId
 
 function isArtistsPreset(p: PortraitsPresetId): p is ArtistsPresetId {
-  return (ARTISTS_PRESETS as readonly string[]).includes(p)
+  return (ARTISTS_PRESETS as readonly string[]).includes(p as string)
 }
 
 
@@ -324,8 +315,8 @@ STAGING — A DRAMATICALLY-LIT GALLERY PORTRAIT, NOT A PHOTOCOPY: Reinterpret ca
 // be multi-hued, and a blanket universal hue rule would wreck them.
 // That is precisely why this is a family tier, not a universal one.
 //
-// Centralizes a rule that previously drifted: alabaster, iron, and stone
-// carried it inline; bronze, ebony, walnut, and folded book did not.
+// Centralizes a rule that previously drifted: iron and stone
+// carried it inline; bronze, ebony, and folded book did not.
 // Now it lives in exactly one place and is applied by family membership.
 const HUE_LOCK =
   `Render the entire bust — face, hair, garment, shoulders, arms, and base — in this single material. Do not retain the source subject's original hair or clothing color; every surface takes the material's own hue. Shading, tonal depth, and texture variation within the material are encouraged. Introducing a color foreign to the material is not.`
@@ -333,16 +324,16 @@ const HUE_LOCK =
 // Monolithic-family membership. Members receive HUE_LOCK in assembly
 // order, between the universal/framing tier and the per-preset tier.
 // NON-members (polychrome / multi-hue) MUST be omitted here.
-//   Locked:  bronze, alabaster, iron, stone, ebony, walnut,
-//            folded_book, charcoal_chalk, pewter, chocolate
+//   Locked:  bronze, iron, stone, ebony,
+//            folded_book, charcoal_chalk, chocolate
 //   Exempt:  plushy (fabric can keep multiple felt colors),
-//            impressionist (polychrome paint), torn_paper, sheet_music,
+//            impressionist (polychrome paint), sheet_music,
 //            pencil_sketch (skipUniversal, bespoke composition),
 //            stained_glass + driftwood_resin (polychrome by design)
 const MONOLITHIC_PRESETS: ReadonlySet<PortraitsPresetId> = new Set<PortraitsPresetId>([
-  'bronze', 'alabaster', 'iron', 'stone', 'ebony', 'walnut',
+  'bronze', 'iron', 'stone', 'ebony',
   'folded_book', 'charcoal_chalk',
-  'pewter', 'chocolate',
+  'chocolate',
 ])
 
 // Returns the family-lock block for a preset, or '' if exempt. The empty
@@ -394,15 +385,6 @@ const ARTISTS_BLOCKS: Record<ArtistsPresetId, ArtistsBlocks> = {
       `Avoid smooth painted surfaces, flat color application, photo-realistic finishing, 2D painted treatment, or thin paint layers. The paint must carry physical mass and dimensional depth.`,
     tail:
       `Sculpture on a base in a contemporary museum, center focused. Skylights cast luminous volumetric light down and around the sculpture. Strong depth of field blurring the background. Museum-quality craftsmanship. Fine-art collectible sculpture.`,
-  },
-
-  torn_paper: {
-    transformation:
-      `Transform the entire bust into a sculpture constructed from thousands of torn and layered paper contours. The complete sculpture—including head, hair, shoulders, chest, garment fabric, and arms—emerges from stacked topographic layers similar to a terrain map. Every contour follows the underlying form, creating depth through elevation rather than shading. Different paper tones create highlights and shadows naturally through layering. Paper edges remain visible and handcrafted, revealing fiber texture and subtle imperfections. Hair, shoulders, garment folds, chest contours, and arm structure are all built from the same torn paper contours with equal layering density.`,
-    avoid:
-      `Avoid smooth painted finishes, carved relief, engraved surfaces, 2D paper-cut techniques, or paper that lays flat without elevation. The construction must read as topographic layers with depth.`,
-    tail:
-      `Contemporary gallery presentation. Museum-quality craftsmanship. Soft directional lighting emphasizing depth and edge detail. Fine-art paper sculpture. Architectural precision. Highly detailed, tactile, and dimensional. Professional studio photography.`,
   },
 
   // Charcoal & Chalk — Rich's note: working. Just enforce material density
@@ -529,7 +511,7 @@ function buildArtistsPrompt(input: {
 
   // 2b. TIER 2 — material-family lock. Monolithic artists materials
   //     (folded_book, charcoal_chalk) take the hue lock; polychrome
-  //     artists (impressionist, torn_paper, sheet_music) and the
+  //     artists (impressionist, sheet_music) and the
   //     skipUniversal pencil_sketch are exempt and receive '' (not pushed).
   const familyLock = familyLockBlock(input.presetId)
   if (familyLock) parts.push(familyLock)
@@ -585,7 +567,7 @@ export function buildPortraitsPrompt(input: {
     })
   }
 
-  const material    = MATERIAL_PHRASE[input.presetId]
+  const material    = MATERIAL_PHRASE[input.presetId] ?? ''
   const location    = LOCATION_PHRASE[input.locationId]
   const composition = input.scale === 'fill' ? ', tight composition' : ''
   const lighting    = ', lit by soft directional studio lighting that brings out facial detail'
@@ -611,7 +593,7 @@ export function buildPortraitsPrompt(input: {
 
   // Realistic prompt leads with the selected framing composition block,
   // then the material register — framing first, material second (same
-  // discipline that fixed head-only bronze/alabaster renders).
+  // discipline that fixed head-only bronze renders).
   const familyLock = familyLockBlock(input.presetId)   // TIER 2 — monolithic only
 
   const subjectPhrase = isMulti

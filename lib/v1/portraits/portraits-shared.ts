@@ -54,85 +54,164 @@ export const STYLE_ORDER: PortraitsStyleId[] = [
 // ═══════════════════════════════════════════════════════════════
 
 export type PortraitsPresetId =
-  | 'plushy'
   | 'bronze'
   | 'iron'
-  | 'alabaster'
   | 'stone'
+  | 'jade'
   | 'ebony'
-  | 'walnut'
-  // ── Artists Gallery (separate series; full custom prompts) ─────
-  | 'impressionist'
-  | 'torn_paper'
-  | 'folded_book'
-  | 'charcoal_chalk'
-  | 'pencil_sketch'
-  | 'sheet_music'
-  // ── New materials (2026-06) ───────────────────────────────────
-  // Realistic register (monolithic, take the TIER-2 hue lock):
-  | 'pewter'
-  | 'chocolate'
-  // Artists Gallery register (polychrome, hue-lock EXEMPT):
+  | 'reclaimed_bronze'
+  | 'petrified_wood'
+  | 'cast_glass'
   | 'stained_glass'
+  | 'ice'
+  | 'mercury'
+  | 'neon'
+  | 'sea_glass'
+  | 'polished_gold'
   | 'driftwood_resin'
+  | 'coral'
+  | 'tidewood'
+  | 'lichen_granite'
+  | 'petal_sculpture'
+  | 'sand_form'
+  | 'sandstone'
+  | 'plushy'
+  | 'chocolate'
+  | 'balloon_face'
+  | 'quilted'
+  | 'origami'
+  | 'porcelain'
+  | 'beaded'
+  | 'impressionist'
+  | 'watercolour'
+  | 'charcoal_chalk'
+  | 'sheet_music'
+  | 'pencil_sketch'
+  | 'oil_impasto'
+  | 'linocut'
+  | 'folded_book'
+  | 'magic_energy'
+  | 'ukiyo_e'
+  | 'cubism'
+  | 'art_deco'
+  | 'art_nouveau'
+  | 'daguerreotype'
+  | 'dragon_skin'
+  | 'fire_face'
+  | 'retro_robot'
+  | 'forest_guardian'
+  | 'clockwork'
+  | 'starfield'
+  | 'crystallized'
+  | 'elizabethan'
+  | 'renaissance'
+  | 'deco_twenties'
+  | 'victorian'
+  | 'samurai'
+  | 'wild_west'
+  | 'persian_court'
+  | 'victorian_woman'
+  | 'renaissance_woman'
+  | 'persian_court_woman'
+  | 'wild_west_woman'
+  | 'deco_twenties_woman'
+  | 'samurai_woman'
+  | 'elizabethan_woman'
 
 export const PRESET_LABELS: Record<PortraitsPresetId, string> = {
-  plushy:        'Plushy',
-  bronze:        'Bronze',
-  iron:          'Iron',
-  alabaster:     'Alabaster',
-  stone:         'Stone',
-  ebony:         'Ebony',
-  walnut:        'Walnut',
-  impressionist:  'Impressionist',
-  torn_paper:     'Torn Paper',
-  folded_book:    'Folded Book',
-  charcoal_chalk: 'Charcoal & Chalk',
-  pencil_sketch:  'Pencil Sketch',
-  sheet_music:    'Sheet Music',
-  pewter:          'Pewter',
-  chocolate:       'Chocolate',
-  stained_glass:   'Stained Glass',
-  driftwood_resin: 'Driftwood & Resin',
-}
-
-export type PresetTier = 'base' | 'premium' | 'signature'
-
-export const PRESET_TIER: Record<PortraitsPresetId, PresetTier> = {
-  plushy:        'base',
-  ebony:         'premium',
-  walnut:        'premium',
-  stone:         'signature',
-  bronze:        'signature',
-  alabaster:     'signature',
-  iron:          'signature',
-  impressionist:  'signature',
-  torn_paper:     'signature',
-  folded_book:    'signature',
-  charcoal_chalk: 'signature',
-  pencil_sketch:  'signature',
-  sheet_music:    'signature',
-  pewter:          'signature',
-  chocolate:       'signature',   // seasonal upsell — confirm intended tier
-  stained_glass:   'signature',
-  driftwood_resin: 'signature',
+  bronze:               'Bronze',
+  iron:                 'Iron',
+  stone:                'Quartzite',
+  jade:                 'Carved Jade',
+  ebony:                'Ebony',
+  reclaimed_bronze:     'Reclaimed Bronze',
+  petrified_wood:       'Petrified Wood',
+  cast_glass:           'Cast Glass',
+  stained_glass:        'Stained Glass',
+  ice:                  'Frost & Ice',
+  mercury:              'Liquid Mercury',
+  neon:                 'Neon Drawing',
+  sea_glass:            'Sea Glass',
+  polished_gold:        'Polished Gold',
+  driftwood_resin:      'Driftwood & Resin',
+  coral:                'Living Reef',
+  tidewood:             'Tidewood',
+  lichen_granite:       'Lichen Granite',
+  petal_sculpture:      'Petal Sculpture',
+  sand_form:            'Sand Form',
+  sandstone:            'Sandstone',
+  plushy:               'Plushy',
+  chocolate:            'Chocolate',
+  balloon_face:         'Balloon',
+  quilted:              'Quilted',
+  origami:              'Origami',
+  porcelain:            'Porcelain',
+  beaded:               'Beaded',
+  impressionist:        'Impressionist',
+  watercolour:          'Watercolour',
+  charcoal_chalk:       'Charcoal & Chalk',
+  sheet_music:          'Sheet Music',
+  pencil_sketch:        'Pencil Sketch',
+  oil_impasto:          'Oil Impasto',
+  linocut:              'Linocut',
+  folded_book:          'Folded Book',
+  magic_energy:         'Magic Energy',
+  ukiyo_e:              'Ukiyo E',
+  cubism:               'Cubism',
+  art_deco:             'Art Deco',
+  art_nouveau:          'Art Nouveau',
+  daguerreotype:        'Daguerreotype',
+  dragon_skin:          'Dragon Skin',
+  fire_face:            'Fire & Ember',
+  retro_robot:          'Atomic Age Robot',
+  forest_guardian:      'Forest Guardian',
+  clockwork:            'Clockwork',
+  starfield:            'Starfield',
+  crystallized:         'Crystallized',
+  elizabethan:          'Elizabethan Portrait',
+  renaissance:          'Renaissance Portrait',
+  deco_twenties:        'Deco Twenties',
+  victorian:            'Victorian Portrait',
+  samurai:              'Samurai',
+  wild_west:            'Wild West',
+  persian_court:        'Persian Court',
+  victorian_woman:      'Victorian Woman',
+  renaissance_woman:    'Renaissance Woman',
+  persian_court_woman:  'Persian Court Woman',
+  wild_west_woman:      'Wild West Woman',
+  deco_twenties_woman:  'Deco Twenties Woman',
+  samurai_woman:        'Samurai Woman',
+  elizabethan_woman:    'Elizabethan Woman',
 }
 
 // ── STYLE → MATERIALS ─────────────────────────────────────────
+// Derived from effect-registry.ts `category`. The Artists Gallery silo IS the
+// artists_gallery style; every other silo is realistic. people_resolving is a
+// user-selectable treatment, not a silo — it keeps a hand-picked subset.
+// Regenerate from the registry after any catalog change.
 export const STYLE_MATERIALS: Record<PortraitsStyleId, PortraitsPresetId[]> = {
   realistic: [
-    'plushy',
-    'ebony', 'walnut', 'stone',
-    'bronze', 'iron', 'alabaster', 'pewter',
-    'chocolate',
+    'bronze', 'iron', 'stone', 'jade',
+    'ebony', 'reclaimed_bronze', 'petrified_wood', 'cast_glass',
+    'stained_glass', 'ice', 'mercury', 'neon',
+    'sea_glass', 'polished_gold', 'driftwood_resin', 'coral',
+    'tidewood', 'lichen_granite', 'petal_sculpture', 'sand_form',
+    'sandstone', 'plushy', 'chocolate', 'balloon_face',
+    'quilted', 'origami', 'porcelain', 'beaded',
+    'folded_book', 'magic_energy', 'ukiyo_e', 'cubism',
+    'art_deco', 'art_nouveau', 'daguerreotype', 'dragon_skin',
+    'fire_face', 'retro_robot', 'forest_guardian', 'clockwork',
+    'starfield', 'crystallized', 'elizabethan', 'renaissance',
+    'deco_twenties', 'victorian', 'samurai', 'wild_west',
+    'persian_court', 'victorian_woman', 'renaissance_woman', 'persian_court_woman',
+    'wild_west_woman', 'deco_twenties_woman', 'samurai_woman', 'elizabethan_woman',
   ],
   people_resolving: [
-    'ebony', 'walnut', 'bronze', 'alabaster',
+    'ebony', 'bronze', 'iron', 'stone',
   ],
   artists_gallery: [
-    'impressionist', 'torn_paper', 'folded_book', 'charcoal_chalk',
-    'pencil_sketch', 'sheet_music',
-    'stained_glass', 'driftwood_resin',
+    'impressionist', 'watercolour', 'charcoal_chalk', 'sheet_music',
+    'pencil_sketch', 'oil_impasto', 'linocut',
   ],
 }
 
@@ -555,13 +634,10 @@ export const MAX_SOURCE_IMAGES = 4
 
 export const DEFAULT_STYLE: PortraitsStyleId = 'realistic'
 
+// Pricing is flat — 10 credits per image regardless of effect. Tier selection
+// was removed 2026-08-02 along with the tier map; first in the list is the default.
 export function defaultMaterialForStyle(style: PortraitsStyleId): PortraitsPresetId {
-  const list = STYLE_MATERIALS[style]
-  const bySignature = list.find(m => PRESET_TIER[m] === 'signature')
-  if (bySignature) return bySignature
-  const byPremium = list.find(m => PRESET_TIER[m] === 'premium')
-  if (byPremium) return byPremium
-  return list[0]
+  return STYLE_MATERIALS[style][0]
 }
 
 // Portraits skews vertical by default — a bust reads best in 3:4 or 2:3.
