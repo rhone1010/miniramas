@@ -316,6 +316,13 @@ Graceful three-quarter pose, serene expression. Luminous warm skin, soft romanti
   },
   // persian_court_woman: supersedes 07-30 version
 
+  renaissance_woman: {
+    id:    'renaissance_woman',
+    body:  `make the subject a realistic photo of a Renaissance noblewoman. warm earth palette of umber, ochre, deep red and black. velvet gown with a squared low neckline over a fine linen chemise, full sleeves tied at the shoulder with the chemise puffing through the lacing, hair parted at the centre and dressed with a fine pearl net, a single gold chain. no ruff. woman facing front, three-quarter turn of the shoulders. zoom in for torso and headshot. face should be 20% of image. calm, settled expression. do not modify ethnicity. Background: a Renaissance interior — a plastered wall in warm ochre, a carved walnut chest, a heavy tapestry with faded figures, a leaded window off to the left throwing one shaft of light. deep shadow, warm dim air, slightly out of focus. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age.`,
+    avoid: null,
+  },
+  // renaissance_woman: logged 08-02 from Rich. §1.3 tail expanded inline per bodies-are-whole.
+
   samurai: {
     id:    'samurai',
     body:  `Professional cinematic portrait of a male samurai in authentic Edo-period armor, layered red lacquered lamellar plates and thick silk lacing, with the convincing weight, wear and imperfection of real historical armor. Hair naturally arranged beneath the helmet.
@@ -355,6 +362,13 @@ Preserve the subject's face, age, proportions and natural asymmetry. Refine temp
     avoid: null,
   },
   // victorian_woman: supersedes 07-30 authored parlour version
+
+  wild_west_woman: {
+    id:    'wild_west_woman',
+    body:  `make the subject a realistic photo of a frontier woman of the American West, 1880s. muted palette of dust, tobacco brown, faded indigo and oxblood — low in contrast, no clean whites, everything worn and sun-faded. a high-collared calico bodice buttoned to the throat, a small cameo at the collar, a wool shawl over the shoulders. hair pinned up but loosening, strands falling around the face. woman facing front, three-quarter turn of the shoulders. framed from mid-chest to the top of the head. face should be 20% of image. calm, settled expression, weathered skin. do not modify ethnicity. Likeness is essential. Background: a saloon back room — plank walls, a stove, bottles on a shelf, one dirty window off to the left. deep shadow, warm dim light falling off fast. heavily out of focus, only shapes and glow readable. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age.`,
+    avoid: null,
+  },
+  // wild_west_woman: logged 08-02 from Rich. §1.3 tail expanded inline per bodies-are-whole.
 
 }
 

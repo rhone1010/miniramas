@@ -1,0 +1,50 @@
+{
+  "generated": "2026-08-02",
+  "note": "Final 8x7 layout, approved by Rich 2026-08-02. Non-costume 49 across 7 silos, plus Another Age at 7 tiles with a men/women toggle.",
+  "renames": {
+    "myth_legend": "fantasy_future",
+    "far_future": "ink_paper",
+    "handmade": "made_by_hand"
+  },
+  "labels": {
+    "earth_ore": "Earth & Ore",
+    "light_glass": "Light & Glass",
+    "living_world": "The Living World",
+    "made_by_hand": "Made by Hand",
+    "artists_gallery": "The Artists Gallery",
+    "ink_paper": "Ink & Paper",
+    "fantasy_future": "Fantasy & Future",
+    "another_age": "Another Age"
+  },
+  "layout": {
+    "earth_ore":       ["bronze","iron","stone","jade","ebony","petrified_wood","reclaimed_bronze"],
+    "light_glass":     ["ice","cast_glass","sea_glass","stained_glass","neon","polished_gold","mercury"],
+    "living_world":    ["coral","tidewood","driftwood_resin","lichen_granite","petal_sculpture","sand_form","sandstone"],
+    "made_by_hand":    ["plushy","chocolate","balloon_face","quilted","origami","porcelain","beaded"],
+    "artists_gallery": ["impressionist","watercolour","charcoal_chalk","pencil_sketch","oil_impasto","linocut","sheet_music"],
+    "ink_paper":       ["ukiyo_e","cubism","art_deco","art_nouveau","daguerreotype","folded_book","magic_energy"],
+    "fantasy_future":  ["dragon_skin","fire_face","forest_guardian","retro_robot","clockwork","starfield","crystallized"],
+    "another_age":     ["victorian","renaissance","persian_court","wild_west","deco_twenties","samurai","elizabethan"]
+  },
+  "genderedVariants": {
+    "note": "Behind the Another Age men/women toggle. Own registry rows, NOT own tiles.",
+    "ids": ["victorian_woman","renaissance_woman","persian_court_woman","wild_west_woman","deco_twenties_woman","samurai_woman","elizabethan_woman"]
+  },
+  "idRenames": {
+    "balloon": "balloon_face",
+    "oil_impasto_palette_knife": "oil_impasto"
+  },
+  "aliases": {
+    "note": "Same effect, different name in different places. Engine id wins.",
+    "stone": "label is Quartzite; id stays `stone` — renaming touches PortraitsPresetId, PRESET_LABELS, STYLE_MATERIALS"
+  },
+  "remove": {
+    "note": "Cut entirely. 16 never-written todos + 9 cut/failed effects currently marked live.",
+    "todos": ["ancient_egypt","wireframe","mosaic","topiary","wicker","dichroic_glass","frozen_splash","blossom","autumn_leaf","butterfly_wing","golden_idol","runestone","moss_stone","melted_wax","digital_human","flowing_water"],
+    "cut":   ["alabaster","walnut","blown_glass","amber","cosmic","volume_light","armor","fantasy_crystal","nebula_resin"]
+  },
+  "postLaunch": {
+    "note": "Good effects with nowhere to sit. Not gaps.",
+    "ink_stroke": "Minimal sumi-e brushstrokes floating in air, wet glossy ink, dripping. Body drafted 2026-08-02, never shot."
+  }
+}
