@@ -30,9 +30,6 @@
 
 import { buildPortraitsPrompt } from './portraits-prompt'
 import sharp from 'sharp'
-import { callGptImage1 } from './portraits-gpt-image'
-import { refinePortraitsImage } from './portraits-pass2'
-import { expandPortraitImage } from './portraits-expand'
 import {
   scoreSingleFaceFidelity,
   scoreHolisticCaricature,
@@ -182,28 +179,14 @@ export async function generatePortraitsRender(
     // ── Stage 1: generate (branches on pipeline.generator) ──
     let imageB64: string
     try {
-      if (pipeline.generator === 'gpt-image-1') {
-        if (!input.openaiApiKey) {
-          throw new Error('OPENAI_API_KEY required for gpt-image-1 path')
-        }
-        imageB64 = await callGptImage1({
-          prompt,
-          sourceImageB64:      req.source_image_b64,
-          additionalImagesB64: req.additional_images_b64 || [],
-          styleReferenceB64s:  styleRefs,
-          aspectRatio,
-          openaiApiKey:        input.openaiApiKey,
-        })
-      } else {
-        imageB64 = await callNB2({
-          prompt,
-          sourceImageB64:      req.source_image_b64,
-          additionalImagesB64: req.additional_images_b64 || [],
-          styleReferenceB64:   styleRefs[0],
-          aspectRatio,
-          replicateApiToken:   input.replicateApiToken,
-        })
-      }
+      imageB64 = await callNB2({
+        prompt,
+        sourceImageB64:      req.source_image_b64,
+        additionalImagesB64: req.additional_images_b64 || [],
+        styleReferenceB64:   styleRefs[0],
+        aspectRatio,
+        replicateApiToken:   input.replicateApiToken,
+      })
     } catch (e: any) {
       const msg = e?.message || `${pipeline.generator} generate failed`
       console.error(`[portraits] attempt ${attemptIdx} ${pipeline.generator} failed: ${msg}`)
@@ -213,33 +196,12 @@ export async function generatePortraitsRender(
       })
     }
 
-    // ── Stage 2: gpt-image-1 refine (per style config) ──
-    // Pass 2 fires for Realistic + Resolving with sculpture-only input. The
-    // refine call takes ONLY the Pass 1 render — source photo intentionally
-    // omitted to avoid gpt-image-1's photo-paste failure mode. The prompt
-    // (portraits-pass2.ts) frames the face as carved geometry to preserve,
-    // never as a face to refine. Non-fatal: Pass 1 image is kept on failure.
-    if (refineEnabled && input.openaiApiKey) {
-      try {
-        const r = await refinePortraitsImage({
-          imageB64,
-          presetId,
-          locationId,
-          aspectRatio,
-          openaiApiKey:   input.openaiApiKey,
-        })
-        imageB64     = r.imageB64
-        lastRefined  = r.refined
-        lastRefineMs = r.durationMs
-        if (!r.refined && r.reason) {
-          console.warn(`[portraits] Pass 2 returned Pass 1 image — ${r.reason}`)
-        }
-      } catch (e: any) {
-        console.warn(`[portraits] Pass 2 hard fail (non-fatal): ${e?.message}`)
-      }
-    } else if (refineEnabled && !input.openaiApiKey) {
-      console.warn(`[portraits] Pass 2 requested but OPENAI_API_KEY missing — skipping`)
-    }
+
+    // ── Stage 2: REMOVED 2026-08-01 ──
+    // gpt-image-1 Pass 2 deleted. It was dead in every STYLE_PIPELINE
+    // (passTwoEnabled=false) and could not hold face identity against
+    // gpt-image-1's regen prior. lastRefined stays false; the `refined`
+    // and `refine_ms` response fields are retained for shape parity.
 
     // ── Stage 3: SKIPPED (no post-process margin) ──
     // Subject-IS-the-piece silo. Empty Stage 3 is intentional per the
@@ -310,40 +272,12 @@ export async function generatePortraitsRender(
     console.log(`[portraits] attempt ${attemptIdx} FAILED — ${evalReason}; retrying`)
   }
 
-  // ── Stage 3 (post-attempt): Stability outpaint ──────────────
-  // Margins are real now — adds canvas padding around the bust so the
-  // subject doesn't fill the frame. Runs only on scales !== 'fill' and
-  // only when the style's pipeline.expandEnabled is true. Non-fatal:
-  // if Stability fails, the original final image is kept.
-  const expandPercent = pipeline.expandPercent
-  if (pipeline.expandEnabled && req.scale !== 'fill' && finalImageB64) {
-    if (input.stabilityApiKey) {
-      try {
-        const r = await expandPortraitImage({
-          imageB64:        finalImageB64,
-          expandPercent,
-          stabilityApiKey: input.stabilityApiKey,
-        })
-        finalImageB64 = r.imageB64
-        lastExpanded  = r.expanded
-        lastExpandMs  = r.durationMs
-        if (!r.expanded && r.reason) {
-          lastExpandSkip = r.reason
-          console.warn(`[portraits] expand returned original — ${r.reason}`)
-        }
-      } catch (e: any) {
-        lastExpandSkip = `hard fail: ${e?.message}`
-        console.warn(`[portraits] expand hard fail (non-fatal): ${e?.message}`)
-      }
-    } else {
-      lastExpandSkip = 'STABILITY_API_KEY missing'
-      console.warn(`[portraits] expand requested but STABILITY_API_KEY missing — skipping`)
-    }
-  } else {
-    lastExpandSkip = req.scale === 'fill'
-      ? `pipeline: scale=fill (no margins)`
-      : `pipeline: expandEnabled=false for style=${styleId}`
-  }
+
+  // ── Stage 3: REMOVED 2026-08-01 ──
+  // Local canvas-pad outpaint deleted. expandEnabled was false on every
+  // style — the mirrored blurred margin read as a defect. The `expanded`,
+  // `expand_ms` and `expand_skip` response fields are retained.
+  lastExpandSkip = 'stage removed 2026-08-01'
 
   // ── Stage 4 (post-attempt): resolution → output dimensions ───
   // NB2 has no pixel control (it renders at the aspect_ratio string), so
