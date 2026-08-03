@@ -1,13 +1,18 @@
 /* GENERATED FILE — DO NOT EDIT.
    Source: lib/v1/portraits/effect-registry.ts  (CENG-owned)
    Regenerate: node scripts/emit-effect-registry.js
-   Emitted: 2026-08-02T22:50:05.304Z
+   Emitted: 2026-08-03T01:14:27.336Z
 
    Labels are plain unicode. Key on .id, never on .label.
    Offer only effects where body === 'live' — the gate refuses the rest. */
 window.EFFECT_REGISTRY = {
-  "generatedAt": "2026-08-02T22:50:05.304Z",
+  "generatedAt": "2026-08-03T01:14:27.336Z",
   "silos": [
+    {
+      "id": "another_age",
+      "label": "Another Age",
+      "line": "Here are the Another Age finishes. A sitting in a century not your own."
+    },
     {
       "id": "earth_ore",
       "label": "Earth & Ore",
@@ -42,11 +47,6 @@ window.EFFECT_REGISTRY = {
       "id": "fantasy_future",
       "label": "Fantasy & Future",
       "line": "Here are the Fantasy & Future finishes. For a sitting with some nerve to it."
-    },
-    {
-      "id": "another_age",
-      "label": "Another Age",
-      "line": "Here are the Another Age finishes. A sitting in a century not your own."
     }
   ],
   "effects": [
@@ -86,7 +86,7 @@ window.EFFECT_REGISTRY = {
       "category": "earth_ore",
       "mode": "material",
       "monolithic": true,
-      "body": "authored",
+      "body": "live",
       "refs": 2,
       "likenessFloor": "strict"
     },
@@ -176,7 +176,7 @@ window.EFFECT_REGISTRY = {
       "category": "light_glass",
       "mode": "material",
       "monolithic": true,
-      "body": "todo",
+      "body": "live",
       "refs": 2,
       "likenessFloor": "strict"
     },
@@ -186,7 +186,7 @@ window.EFFECT_REGISTRY = {
       "category": "light_glass",
       "mode": "material",
       "monolithic": true,
-      "body": "todo",
+      "body": "live",
       "refs": 1,
       "likenessFloor": "strict"
     },
@@ -206,7 +206,7 @@ window.EFFECT_REGISTRY = {
       "category": "living_world",
       "mode": "material",
       "monolithic": false,
-      "body": "authored",
+      "body": "live",
       "refs": 2,
       "framing": "statuesque",
       "likenessFloor": "strict"
@@ -217,7 +217,7 @@ window.EFFECT_REGISTRY = {
       "category": "living_world",
       "mode": "material",
       "monolithic": true,
-      "body": "todo",
+      "body": "live",
       "refs": 2,
       "likenessFloor": "strict"
     },
@@ -227,7 +227,7 @@ window.EFFECT_REGISTRY = {
       "category": "living_world",
       "mode": "material",
       "monolithic": true,
-      "body": "todo",
+      "body": "live",
       "refs": 1,
       "likenessFloor": "strict"
     },
@@ -237,7 +237,7 @@ window.EFFECT_REGISTRY = {
       "category": "living_world",
       "mode": "material",
       "monolithic": true,
-      "body": "todo",
+      "body": "live",
       "refs": 2,
       "likenessFloor": "strict"
     },
@@ -257,7 +257,7 @@ window.EFFECT_REGISTRY = {
       "category": "living_world",
       "mode": "material",
       "monolithic": true,
-      "body": "todo",
+      "body": "live",
       "refs": 2,
       "likenessFloor": "strict"
     },
@@ -350,7 +350,7 @@ window.EFFECT_REGISTRY = {
       "category": "artists_gallery",
       "mode": "material",
       "monolithic": false,
-      "body": "authored",
+      "body": "live",
       "refs": 1,
       "likenessFloor": "relaxed"
     },
@@ -491,7 +491,7 @@ window.EFFECT_REGISTRY = {
       "category": "fantasy_future",
       "mode": "costume",
       "monolithic": false,
-      "body": "authored",
+      "body": "live",
       "refs": 2,
       "likenessFloor": "strict",
       "skipStaging": true
@@ -563,7 +563,7 @@ window.EFFECT_REGISTRY = {
       "category": "another_age",
       "mode": "costume",
       "monolithic": false,
-      "body": "todo",
+      "body": "live",
       "refs": 4,
       "likenessFloor": "strict",
       "genderedRefs": true
@@ -607,7 +607,7 @@ window.EFFECT_REGISTRY = {
       "category": "another_age",
       "mode": "costume",
       "monolithic": false,
-      "body": "todo",
+      "body": "live",
       "refs": 2,
       "likenessFloor": "strict",
       "genderedRefs": true
@@ -738,4 +738,26 @@ window.EFFECT_REGISTRY.offerableBySilo = function (siloId) {
 };
 window.EFFECT_REGISTRY.byId = function (id) {
   return window.EFFECT_REGISTRY.effects.filter(function (e) { return e.id === id; })[0];
+};
+
+/* Gendered costume variants sit BEHIND a tile, not on one. Another Age has
+   seven tiles and fourteen rows: victorian is the tile, victorian_woman is
+   the woman side of its toggle. Draw tiles with tilesBySilo(); resolve the
+   toggle with variantFor(). */
+window.EFFECT_REGISTRY.isVariant = function (id) {
+  return /_woman$/.test(id);
+};
+window.EFFECT_REGISTRY.tilesBySilo = function (siloId) {
+  return window.EFFECT_REGISTRY.bySilo(siloId).filter(function (e) {
+    return !window.EFFECT_REGISTRY.isVariant(e.id);
+  });
+};
+window.EFFECT_REGISTRY.offerableTilesBySilo = function (siloId) {
+  return window.EFFECT_REGISTRY.tilesBySilo(siloId).filter(function (e) {
+    return e.body === 'live';
+  });
+};
+window.EFFECT_REGISTRY.variantFor = function (id, subject) {
+  if (subject !== 'woman') return window.EFFECT_REGISTRY.byId(id);
+  return window.EFFECT_REGISTRY.byId(id + '_woman') || window.EFFECT_REGISTRY.byId(id);
 };

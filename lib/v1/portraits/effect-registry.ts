@@ -69,6 +69,8 @@ export interface Effect {
 // ── SILOS ────────────────────────────────────────────────────────────────────
 
 export const SILOS: Silo[] = [
+  { id:'another_age',     label:'Another Age',
+    line:'Here are the Another Age finishes. A sitting in a century not your own.' },
   { id:'earth_ore',       label:'Earth & Ore',
     line:'Here are the Earth & Ore finishes. Weight, grain, and the honesty of real material.' },
   { id:'light_glass',     label:'Light & Glass',
@@ -83,9 +85,8 @@ export const SILOS: Silo[] = [
     line:'Here are the Ink & Paper finishes. Pressed, printed, and drawn.' },
   { id:'fantasy_future',  label:'Fantasy & Future',
     line:'Here are the Fantasy & Future finishes. For a sitting with some nerve to it.' },
-  { id:'another_age',     label:'Another Age',
-    line:'Here are the Another Age finishes. A sitting in a century not your own.' },
 ]
+
 
 
 // ── EFFECTS ──────────────────────────────────────────────────────────────────
@@ -96,7 +97,7 @@ export const EFFECTS: Effect[] = [
   { id:'bronze', label:'Bronze', category:'earth_ore', mode:'material', monolithic:true, body:'live', refs:1, likenessFloor:'strict' },
   { id:'iron', label:'Iron', category:'earth_ore', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict' },
   { id:'stone', label:'Quartzite', category:'earth_ore', mode:'material', monolithic:true, body:'live', refs:3, likenessFloor:'strict', note:'LABEL CHANGED from Stone. id stays `stone` — renaming touches PortraitsPresetId, PRESET_LABELS, STYLE_MATERIALS, Pass 2. Pass 2 debt: its refinement text still describes rough-chiseled stone; contradicts polished quartzite. Inert (Pass 2 off) — rewrite before enabling.' },
-  { id:'jade', label:'Carved Jade', category:'earth_ore', mode:'material', monolithic:true, body:'authored', refs:2, likenessFloor:'strict', note:'NEW — replaces pewter. Matte/waxy nephrite lustre, not glassy jadeite. SSS must be bound: pale and stone-toned, ears do not light up, light originates outside the piece.' },
+  { id:'jade', label:'Carved Jade', category:'earth_ore', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'NEW — replaces pewter. Matte/waxy nephrite lustre, not glassy jadeite. SSS must be bound: pale and stone-toned, ears do not light up, light originates outside the piece.' },
   { id:'ebony', label:'Ebony', category:'earth_ore', mode:'material', monolithic:true, body:'live', refs:1, likenessFloor:'strict', note:'Needs a light background for silhouette separation, plus a fill light at half key or the face goes unreadable.' },
   { id:'reclaimed_bronze', label:'Reclaimed Bronze', category:'earth_ore', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'strict', note:'DUPLICATE FLAG vs bronze in earth_ore. Different silos makes it worse, not better. Compare side by side; if they read the same to a customer, cut one.' },
   { id:'petrified_wood', label:'Petrified Wood', category:'earth_ore', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
@@ -107,17 +108,17 @@ export const EFFECTS: Effect[] = [
   { id:'ice', label:'Frost & Ice', category:'light_glass', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'relaxed', note:'Frost tracery settles into wrinkles — needs the anti-ageing pair most of the five. Ref problems: 1_man.jpg is a female child; rename and replace with an adult male plate or it pulls subjects younger and fights the age lock.' },
   { id:'mercury', label:'Liquid Mercury', category:'light_glass', mode:'material', monolithic:true, body:'live', refs:1, likenessFloor:'relaxed' },
   { id:'neon', label:'Neon Drawing', category:'light_glass', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'relaxed' },
-  { id:'sea_glass', label:'Sea Glass', category:'light_glass', mode:'material', monolithic:true, body:'todo', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
-  { id:'polished_gold', label:'Polished Gold', category:'light_glass', mode:'material', monolithic:true, body:'todo', refs:1, likenessFloor:'strict', note:'added 2026-08-02' },
+  { id:'sea_glass', label:'Sea Glass', category:'light_glass', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
+  { id:'polished_gold', label:'Polished Gold', category:'light_glass', mode:'material', monolithic:true, body:'live', refs:1, likenessFloor:'strict', note:'added 2026-08-02' },
 
   // ── The Living World ──────────────────────────────────────────────
   { id:'driftwood_resin', label:'Driftwood & Resin', category:'living_world', mode:'material', monolithic:false, body:'live', refs:1, likenessFloor:'strict', note:'Required an explicit skin ban naming face/neck/forehead/ears — two attempts produced skin with wood texture.' },
-  { id:'coral', label:'Living Reef', category:'living_world', mode:'material', monolithic:false, body:'authored', refs:2, likenessFloor:'strict', framing:'statuesque', note:'MOVED from myth_legend. framing statuesque is load-bearing — hands are specified and every universal forbids them under bust. Refs: source + brain-coral texture plate (the smoothed-face anchor) + one composition plate. DROP the reef-environment plate: no figure, pulls composition toward landscape.' },
-  { id:'tidewood', label:'Tidewood', category:'living_world', mode:'material', monolithic:true, body:'todo', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
-  { id:'lichen_granite', label:'Lichen Granite', category:'living_world', mode:'material', monolithic:true, body:'todo', refs:1, likenessFloor:'strict', note:'added 2026-08-02' },
-  { id:'petal_sculpture', label:'Petal Sculpture', category:'living_world', mode:'material', monolithic:true, body:'todo', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
+  { id:'coral', label:'Living Reef', category:'living_world', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'strict', framing:'statuesque', note:'MOVED from myth_legend. framing statuesque is load-bearing — hands are specified and every universal forbids them under bust. Refs: source + brain-coral texture plate (the smoothed-face anchor) + one composition plate. DROP the reef-environment plate: no figure, pulls composition toward landscape.' },
+  { id:'tidewood', label:'Tidewood', category:'living_world', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
+  { id:'lichen_granite', label:'Lichen Granite', category:'living_world', mode:'material', monolithic:true, body:'live', refs:1, likenessFloor:'strict', note:'added 2026-08-02' },
+  { id:'petal_sculpture', label:'Petal Sculpture', category:'living_world', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
   { id:'sand_form', label:'Sand Form', category:'living_world', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
-  { id:'sandstone', label:'Sandstone', category:'living_world', mode:'material', monolithic:true, body:'todo', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
+  { id:'sandstone', label:'Sandstone', category:'living_world', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
 
   // ── Made by Hand ──────────────────────────────────────────────────
   { id:'plushy', label:'Plushy', category:'made_by_hand', mode:'material', monolithic:false, body:'live', refs:1, likenessFloor:'relaxed', genderedRefs:true },
@@ -130,7 +131,7 @@ export const EFFECTS: Effect[] = [
 
   // ── The Artists Gallery ───────────────────────────────────────────
   { id:'impressionist', label:'Impressionist', category:'artists_gallery', mode:'material', monolithic:false, body:'live', refs:1, likenessFloor:'strict', note:'Polychrome, hue-lock exempt. Specifies a ROUND plinth, unlike Earth & Ore\u2019s dark block. Artists tails bake their own staging — LOCATION is a no-op.' },
-  { id:'watercolour', label:'Watercolour', category:'artists_gallery', mode:'material', monolithic:false, body:'authored', refs:1, likenessFloor:'relaxed', note:'NEW — replaces torn_paper. Fills the transparent-pigment gap. SPELLING IS AN ID: watercolour, UK. Do not let it drift to watercolor.' },
+  { id:'watercolour', label:'Watercolour', category:'artists_gallery', mode:'material', monolithic:false, body:'live', refs:1, likenessFloor:'relaxed', note:'NEW — replaces torn_paper. Fills the transparent-pigment gap. SPELLING IS AN ID: watercolour, UK. Do not let it drift to watercolor.' },
   { id:'charcoal_chalk', label:'Charcoal & Chalk', category:'artists_gallery', mode:'material', monolithic:true, body:'live', refs:1, likenessFloor:'strict' },
   { id:'sheet_music', label:'Sheet Music', category:'artists_gallery', mode:'material', monolithic:false, body:'live', refs:1, likenessFloor:'strict', note:'Notation stays legible — that is the effect. No no-text clause.' },
   { id:'pencil_sketch', label:'Pencil Sketch', category:'artists_gallery', mode:'material', monolithic:true, body:'live', refs:0, likenessFloor:'strict', skipUniversal:true, note:'skipUniversal — owns its own side-angle asymmetric composition. Ref prompt must be authored specially, NOT from the standard template.' },
@@ -148,7 +149,7 @@ export const EFFECTS: Effect[] = [
 
   // ── Fantasy & Future ──────────────────────────────────────────────
   { id:'dragon_skin', label:'Dragon Skin', category:'fantasy_future', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'strict' },
-  { id:'fire_face', label:'Fire & Ember', category:'fantasy_future', mode:'costume', monolithic:false, body:'authored', refs:2, likenessFloor:'strict', skipStaging:true, note:'FOLDER RENAME REQUIRED: public/style-refs/portraits/fire-face -> fire_face. A hyphen loads zero refs, silently. skipStaging — refs are lit by the fire, conflicting with the mandated gallery key. First costume effect whose refs are photoreal people rather than sculpture: check register against the gallery line.' },
+  { id:'fire_face', label:'Fire & Ember', category:'fantasy_future', mode:'costume', monolithic:false, body:'live', refs:2, likenessFloor:'strict', skipStaging:true, note:'FOLDER RENAME REQUIRED: public/style-refs/portraits/fire-face -> fire_face. A hyphen loads zero refs, silently. skipStaging — refs are lit by the fire, conflicting with the mandated gallery key. First costume effect whose refs are photoreal people rather than sculpture: check register against the gallery line.' },
   { id:'retro_robot', label:'Atomic Age Robot', category:'fantasy_future', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'strict', note:'Ref cleanup required before use: both plates carry garbled signage (crop it out — refs outrank text); the plates disagree on clothing (pick fabric-garment-in-metal); rename 1_girl.jpg -> 2_woman.jpg and do not add an age axis.' },
   { id:'forest_guardian', label:'Forest Guardian', category:'fantasy_future', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
   { id:'clockwork', label:'Clockwork', category:'fantasy_future', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
@@ -157,11 +158,11 @@ export const EFFECTS: Effect[] = [
 
   // ── Another Age ───────────────────────────────────────────────────
   { id:'elizabethan', label:'Elizabethan Portrait', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:2, likenessFloor:'strict', genderedRefs:true, note:'DECIDED: 3D render, NOT painting. The Holbein / Horenbout / Teerlinc / Toto / Penni direction is dead. Needs the thoughtful EXPRESSION_BLOCK — the mandated settled smile overrode neutral-period in one of three test outputs.' },
-  { id:'renaissance', label:'Renaissance Portrait', category:'another_age', mode:'costume', monolithic:false, body:'todo', refs:4, likenessFloor:'strict', genderedRefs:true },
+  { id:'renaissance', label:'Renaissance Portrait', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:4, likenessFloor:'strict', genderedRefs:true },
   { id:'deco_twenties', label:'Deco Twenties', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:2, likenessFloor:'strict', genderedRefs:true },
   { id:'victorian', label:'Victorian Portrait', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:4, likenessFloor:'strict', genderedRefs:true, note:'REWRITE, not a first draft — the old body was cut for failing. Root cause: costume mode strips the material anchor, leaving nothing to resist NB2\u2019s photographic prior. FIX: the body must name a MEDIUM (hand-tinted photograph, oil portrait, albumen print), not just "Victorian styling". Same fix that made elizabethan work. Ensure CC does not resurrect the old body.' },
   { id:'samurai', label:'Samurai', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:2, likenessFloor:'strict', genderedRefs:true, note:'Will drift toward ethnic recasting of the subject\u2019s features. The avoid MUST block this explicitly or it is a support problem, not a portrait.' },
-  { id:'wild_west', label:'Wild West', category:'another_age', mode:'costume', monolithic:false, body:'todo', refs:2, likenessFloor:'strict', genderedRefs:true },
+  { id:'wild_west', label:'Wild West', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:2, likenessFloor:'strict', genderedRefs:true },
   { id:'persian_court', label:'Persian Court', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
   { id:'victorian_woman', label:'Victorian Woman', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:0, likenessFloor:'strict', genderedRefs:true, note:'added 2026-08-02' },
   { id:'renaissance_woman', label:'Renaissance Woman', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:0, likenessFloor:'strict', genderedRefs:true, note:'added 2026-08-02' },

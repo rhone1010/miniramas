@@ -150,6 +150,28 @@ window.EFFECT_REGISTRY.offerableBySilo = function (siloId) {
 window.EFFECT_REGISTRY.byId = function (id) {
   return window.EFFECT_REGISTRY.effects.filter(function (e) { return e.id === id; })[0];
 };
+
+/* Gendered costume variants sit BEHIND a tile, not on one. Another Age has
+   seven tiles and fourteen rows: victorian is the tile, victorian_woman is
+   the woman side of its toggle. Draw tiles with tilesBySilo(); resolve the
+   toggle with variantFor(). */
+window.EFFECT_REGISTRY.isVariant = function (id) {
+  return /_woman$/.test(id);
+};
+window.EFFECT_REGISTRY.tilesBySilo = function (siloId) {
+  return window.EFFECT_REGISTRY.bySilo(siloId).filter(function (e) {
+    return !window.EFFECT_REGISTRY.isVariant(e.id);
+  });
+};
+window.EFFECT_REGISTRY.offerableTilesBySilo = function (siloId) {
+  return window.EFFECT_REGISTRY.tilesBySilo(siloId).filter(function (e) {
+    return e.body === 'live';
+  });
+};
+window.EFFECT_REGISTRY.variantFor = function (id, subject) {
+  if (subject !== 'woman') return window.EFFECT_REGISTRY.byId(id);
+  return window.EFFECT_REGISTRY.byId(id + '_woman') || window.EFFECT_REGISTRY.byId(id);
+};
 `;
 
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
@@ -163,13 +185,22 @@ const refs     = effects.reduce((n, e) => n + (e.refs || 0), 0);
 
 console.log(`\n[emit-registry] wrote ${path.relative(process.cwd(), OUT)}`);
 console.log(`  silos    ${silos.length}`);
+const variants = effects.filter(e => /_woman$/.test(e.id)).length;
 console.log(`  effects  ${effects.length}   live ${live} · authored ${authored} · todo ${todo}`);
+console.log(`  tiles    ${effects.length - variants}   (${variants} gendered variants behind toggles)`);
 console.log(`  poses    ${poses.length}`);
 console.log(`  refs     ${refs} plates approved`);
 
+// Tiles, not rows. A gendered costume variant (`*_woman`) lives behind its
+// base tile's men/women toggle and must not be counted as a tile of its own —
+// Another Age is 7 tiles and 14 rows by design.
+const isVariant = id => /_woman$/.test(id);
+
 silos.forEach(s => {
-  const n = effects.filter(e => e.category === s.id).length;
-  const flag = n === 7 ? '' : `   <-- ${n > 7 ? 'OVER' : 'UNDER'} by ${Math.abs(n - 7)}`;
-  console.log(`  ${s.id.padEnd(18)} ${n}${flag}`);
+  const rows  = effects.filter(e => e.category === s.id);
+  const tiles = rows.filter(e => !isVariant(e.id)).length;
+  const flag  = tiles === 7 ? '' : `   <-- ${tiles > 7 ? 'OVER' : 'UNDER'} by ${Math.abs(tiles - 7)}`;
+  const extra = rows.length !== tiles ? `  (${rows.length} rows, ${rows.length - tiles} behind the toggle)` : '';
+  console.log(`  ${s.id.padEnd(18)} ${tiles}${extra}${flag}`);
 });
 console.log('');
