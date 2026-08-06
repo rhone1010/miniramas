@@ -23,7 +23,7 @@
 //
 // Local dev: use Stripe CLI to forward webhooks:
 //   stripe listen --forward-to localhost:3000/api/v1/print/webhook
-// The CLI prints a `whsec_*` secret — put it in .env.local as STRIPE_WEBHOOK_SECRET.
+// The CLI prints a `whsec_*` secret — put it in .env.local as STRIPE_PRINT_WEBHOOK_SECRET.
 //
 // ── CUI V24 · 2026-08-01 · THE FULFILMENT GATE ───────────────────────────
 //
@@ -74,9 +74,9 @@ export async function POST(req: Request) {
   if (!sig) {
     return NextResponse.json({ error: 'No stripe-signature header' }, { status: 400 })
   }
-  const secret = process.env.STRIPE_WEBHOOK_SECRET
+  const secret = process.env.STRIPE_PRINT_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET
   if (!secret) {
-    console.error('[print-webhook] Missing STRIPE_WEBHOOK_SECRET in env')
+    console.error('[print-webhook] Missing STRIPE_PRINT_WEBHOOK_SECRET in env')
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
   }
 
