@@ -1,0 +1,245 @@
+{
+  "generated": "2026-08-02",
+  "note": "Pets launch layout, 49 effects across 8 rooms. Rooms are DELIBERATELY UNEVEN for this launch — Rich's call. Portraits is 7x7; Pets is not. Do not pad rooms to seven.",
+  "speciesAxis": {
+    "note": "The Pets analogue of the Portraits gender toggle. Inferred from analyze, NOT user-overridable — nobody wants their cat shown as a lizard. Selects which preview the card shows and which plate reaches NB2. Prompts are species-agnostic and never branch on this.",
+    "values": [
+      "dog",
+      "cat",
+      "bird",
+      "reptile",
+      "horse"
+    ],
+    "fallback": "dog",
+    "plateNames": [
+      "1_dog.jpg",
+      "2_cat.jpg",
+      "3_bird.jpg",
+      "4_reptile.jpg",
+      "5_horse.jpg"
+    ],
+    "shipOrder": [
+      "dog",
+      "cat",
+      "bird",
+      "reptile",
+      "horse"
+    ]
+  },
+  "labels": {
+    "another_age": "Another Age",
+    "earth_ore": "Earth & Ore",
+    "light_glass": "Light & Glass",
+    "living_world": "The Living World",
+    "made_by_hand": "Made by Hand",
+    "artists_gallery": "The Artists Gallery",
+    "ink_paper": "Ink & Paper",
+    "fantasy_future": "Fantasy & Future"
+  },
+  "layout": {
+    "another_age": [
+      "egyptian_royalty",
+      "elizabethan",
+      "persian_royalty",
+      "renaissance",
+      "samurai",
+      "wild_west",
+      "sailor"
+    ],
+    "earth_ore": [
+      "bronze",
+      "ebony",
+      "jade",
+      "mixed_metals",
+      "petrified_wood",
+      "stone"
+    ],
+    "light_glass": [
+      "enchanted_crystal",
+      "ice",
+      "mercury",
+      "neon",
+      "polished_gold",
+      "sea_glass",
+      "stained_glass"
+    ],
+    "living_world": [
+      "coral",
+      "driftwood_resin",
+      "garden_statue",
+      "lichen_granite",
+      "petal_sculpture",
+      "sandstone",
+      "topiary"
+    ],
+    "made_by_hand": [
+      "balloon_face",
+      "beaded",
+      "chocolate",
+      "origami",
+      "plushy",
+      "porcelain",
+      "quilted"
+    ],
+    "artists_gallery": [
+      "charcoal_chalk",
+      "impressionist",
+      "oil_impasto",
+      "sheet_music"
+    ],
+    "ink_paper": [
+      "art_deco",
+      "art_nouveau",
+      "cubism",
+      "folded_book",
+      "magic_energy",
+      "ukiyo_e"
+    ],
+    "fantasy_future": [
+      "clockwork",
+      "crystallized",
+      "dragon_skin",
+      "forest_guardian",
+      "starfield"
+    ]
+  },
+  "promptSource": {
+    "note": "Where each body comes from. 'tonight' bodies are 350-500 chars and outperformed the 2400-3000 char bench prompts on every axis. Bench prompts must be compressed on the way in, not copied.",
+    "tonight": [
+      "egyptian_royalty",
+      "elizabethan",
+      "persian_royalty",
+      "renaissance",
+      "samurai",
+      "wild_west"
+    ],
+    "benchCompressed": [
+      "garden_statue",
+      "topiary",
+      "art_nouveau",
+      "ukiyo_e",
+      "sailor"
+    ],
+    "benchNeedsCompressing": [
+      "enchanted_crystal",
+      "mixed_metals",
+      "cubism"
+    ],
+    "fromPortraits": [
+      "balloon_face",
+      "beaded",
+      "bronze",
+      "charcoal_chalk",
+      "chocolate",
+      "clockwork",
+      "coral",
+      "crystallized",
+      "dragon_skin",
+      "driftwood_resin",
+      "ebony",
+      "folded_book",
+      "forest_guardian",
+      "ice",
+      "impressionist",
+      "jade",
+      "lichen_granite",
+      "magic_energy",
+      "mercury",
+      "neon",
+      "oil_impasto",
+      "origami",
+      "petal_sculpture",
+      "petrified_wood",
+      "plushy",
+      "polished_gold",
+      "porcelain",
+      "quilted",
+      "sandstone",
+      "sea_glass",
+      "sheet_music",
+      "stained_glass",
+      "starfield",
+      "stone",
+      "art_deco"
+    ],
+    "portraitsNeedPetRewrite": "All fromPortraits bodies are written for humans — bust framing, garments, hairstyle. They need the pet substitutions: full body nose to tail, markings as the identity anchor, no garment, muzzle for mouth, collar and tags allowed."
+  },
+  "cut": {
+    "note": "Removed from the 71-row union. Duplicates resolved in favour of the pet-written version.",
+    "duplicateResolved": {
+      "persian_court": "persian_royalty — kept the version written for pets",
+      "elizabethan_ruff": "elizabethan",
+      "regal": "the seven costumes supersede it"
+    },
+    "redundancy": {
+      "sand_form": "fifth stone",
+      "tidewood": "too close to driftwood_resin",
+      "reclaimed_bronze": "third bronze",
+      "iron": "third bronze",
+      "alabaster": "fifth stone",
+      "walnut": "fifth wood",
+      "cast_glass": "third clear glass"
+    },
+    "weak": {
+      "fire_face": "dog plus fire, not dog IS fire",
+      "blown_art_glass": "background fights the object",
+      "daguerreotype": "reviewer liked it; Rich cut it",
+      "victorian": "Rich unhappy with the render",
+      "pencil_sketch": "cut for pets",
+      "linocut": "cut for pets",
+      "watercolour": "cut for pets",
+      "retro_robot": "cut for pets",
+      "deco_twenties": "cut for pets",
+      "ceramic": "cut",
+      "film_noir": "untested",
+      "amber_inclusion": "untested"
+    }
+  },
+  "rules": {
+    "framing": "Full body, nose to tail. There is no mid-chest crop for pets.",
+    "likenessAnchor": "Markings. They do for a pet what facial structure does for a person.",
+    "props": "Collars and tags are identity, not props, and are always allowed. Costume props — the pipe, the badge, the pocket watch — are the joke and must not be suppressed.",
+    "negatives": "Only for artefacts the model adds unprompted, chiefly stray lettering. Never write an avoid list for the thing you want.",
+    "species": "Bodies say 'the cat or dog' even when the species is known. It lets NB2 choose species-appropriate garments. A macaw got a waistcoat around its wings; a skink stood up in a sheriff's vest.",
+    "colour": "Period colour instructions attach to the whole photograph, never to the animal. 'Fade the pet' was ignored; 'give the entire photograph the muted palette' worked.",
+    "gating": "Gate on the source photograph — readable face, two visible eyes, distinct silhouette. Never publish a species list."
+  },
+  "sources": {
+    "note": "25 generated source photographs, five per species, at lib/v1/pets/sources/<species>/. Every effect plate is shot against these so the same animals recur across the catalog.",
+    "dog": [
+      "golden_retriever",
+      "french_bulldog",
+      "basset_hound",
+      "black_poodle",
+      "husky"
+    ],
+    "cat": [
+      "orange_tabby",
+      "black_cat",
+      "maine_coon",
+      "siamese",
+      "persian"
+    ],
+    "bird": [
+      "scarlet_macaw",
+      "african_grey",
+      "cockatiel",
+      "cockatoo",
+      "budgerigar"
+    ],
+    "reptile": [
+      "bearded_dragon",
+      "leopard_gecko",
+      "green_iguana",
+      "chameleon",
+      "blue_tongued_skink"
+    ],
+    "horse": [
+      "bay_thoroughbred",
+      "black_friesian",
+      "palomino",
+      "appaloosa",
+      "shetland_pony"
+    ]
+  }
+}

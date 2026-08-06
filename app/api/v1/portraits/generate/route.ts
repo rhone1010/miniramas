@@ -29,10 +29,15 @@ import {
 } from '@/lib/store/preview'
 
 import { generatePortraitsRender, callNB2 } from '@/lib/v1/portraits/portraits-generator'
+import { detectFaceVisibility } from '@/lib/v1/portraits/portraits-refine'
 import {
   isExperimentalEffect, buildExperimentalPrompt,
 } from '@/lib/v1/portraits/portraits-experimental'
-import { STYLE_PIPELINE, PRESET_LABELS } from '@/lib/v1/portraits/portraits-shared'
+import {
+  STYLE_PIPELINE, PRESET_LABELS, isPoseId,
+  isSubject, subjectFromDetectedGender,
+  isAgeGroup,
+} from '@/lib/v1/portraits/portraits-shared'
 import type {
   PortraitsStyleId,
   PortraitsPresetId,
@@ -41,6 +46,8 @@ import type {
   Framing,
   ResolutionTier,
   PortraitsGenerateRequest,
+  PortraitsSubject,
+  PortraitsAgeGroup,
 } from '@/lib/v1/portraits/portraits-shared'
 import {
   normalizeFraming, ASPECT_FOR_FRAMING, isResolutionTier,
@@ -247,6 +254,55 @@ export async function POST(req: NextRequest) {
     const resolution: ResolutionTier | undefined =
       isResolutionTier(body.resolution) ? body.resolution : undefined
 
+    // Subject picks the gendered prompt body and the matching style-ref
+    // plate. An explicit `subject` wins; otherwise fall back to analyze's
+    // detected_gender so an untouched client still gets it right.
+    // Undefined is valid — the engine renders the base variant.
+    const subject: PortraitsSubject | undefined =
+      isSubject(body.subject)
+        ? body.subject
+        : subjectFromDetectedGender(body.detected_gender)
+
+    // Age bracket from analyze. 'child' and 'teen' suppress the style-ref
+    // plates in the generator — every plate is an adult and a ref outranks
+    // the source photograph.
+    const ageGroup: PortraitsAgeGroup | undefined =
+      isAgeGroup(body.age_group)
+        ? body.age_group
+        : (isAgeGroup(body.detected_age_group) ? body.detected_age_group : undefined)
+
+    // ── AGE REFUSAL (server-side, authoritative) ──────────────────
+    // Policy: Liten and Co does not craft images of anyone under 18.
+    // The client gate in the workshop is a courtesy; this one is the gate.
+    // Client-supplied age_group is NOT trusted here — we detect on the bytes
+    // we are about to render. Best-guess by design: a wrong refusal goes to
+    // concierge with an ID upload, a wrong pass is accepted.
+    //
+    // Fails OPEN on detection error. A vision outage must not stop the
+    // business; it must not silently become a policy either, so it is logged.
+    try {
+      const ageCheck = await detectFaceVisibility({
+        sourceImageB64,
+        openaiApiKey: process.env.OPENAI_API_KEY || '',
+      })
+      console.log(
+        `[portraits/generate] age gate: age_group=${ageCheck.age_group ?? 'null'} ` +
+        `gender=${ageCheck.gender ?? 'null'}`
+      )
+      if (ageCheck.age_group === 'child' || ageCheck.age_group === 'teen') {
+        return NextResponse.json(
+          {
+            error:  'This photograph appears to show someone under 18. Liten and Co crafts images of adults only.',
+            code:   'age_restricted',
+            reason: ageCheck.age_group,
+          },
+          { status: 403 }
+        )
+      }
+    } catch (e) {
+      console.error('[portraits/generate] age gate FAILED OPEN —', e)
+    }
+
     const generateRequest: PortraitsGenerateRequest = {
       source_image_b64:       sourceImageB64,
       additional_images_b64:  body.additional_images_b64 || [],
@@ -254,6 +310,9 @@ export async function POST(req: NextRequest) {
       style_id:               styleId,
       preset_id:              presetId,
       location_id:            location,
+      pose_id:                isPoseId(body.pose_id ?? body.pose) ? (body.pose_id ?? body.pose) : undefined,
+      subject,
+      age_group:              ageGroup,
       scale,
       framing,
       resolution,

@@ -32,8 +32,19 @@
 import fs   from 'fs'
 import path from 'path'
 
-/** NB2 accepts 14 images total. One source plus this. */
-export const MAX_STYLE_REFS = 2
+/**
+ * NB2 accepts 14 images total. One source plus this.
+ *
+ * SET TO 0 ON 2026-08-03. Plates were outranking the source photograph on
+ * facial structure — renaissance_woman reproduced its plate's narrow oval,
+ * long nose and closed mouth over a broad, wide-smiling source, and a prompt
+ * clause telling NB2 to take style only did not beat the image. The bodies
+ * carry the period on their own.
+ *
+ * Set back to 2 to restore plates. Nothing else needs to change: the
+ * style-reference clause in the prompt fires only when plates are present.
+ */
+export const MAX_STYLE_REFS = 0
 
 const ROOT = path.join(process.cwd(), 'lib', 'v1', 'portraits', 'style-refs')
 
@@ -153,6 +164,24 @@ export function loadStyleRefs(effectId: string, opts: StyleRefOptions = {}): str
       `[style-refs] no "${subject}" plate in "${resolved.folder}" — ` +
       `falling back to the full set`,
     )
+  }
+
+  // No subject known. Serving the first two plates hands NB2 a man and a
+  // woman as one style reference; it cannot reconcile them and returns one
+  // plate nearly unchanged. One coherent plate beats a contradictory pair.
+  const gendered = plates.filter(p => {
+    const n = p.name.toLowerCase()
+    return n.includes('_man') || n.includes('_woman')
+  })
+  if (gendered.length > 1) {
+    const first = gendered[0].name.toLowerCase().includes('_woman') ? '_woman' : '_man'
+    const same  = gendered.filter(p => p.name.toLowerCase().includes(first))
+    warnOnce(
+      `${resolved.folder}:nosubject`,
+      `[style-refs] no subject for "${resolved.folder}" \u2014 serving ${first} only ` +
+      `(a mixed pair contradicts itself)`,
+    )
+    return same.slice(0, limit).map(p => p.b64)
   }
 
   return plates.slice(0, limit).map(p => p.b64)

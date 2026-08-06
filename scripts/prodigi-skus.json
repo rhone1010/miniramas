@@ -1,0 +1,994 @@
+{
+  "checkedAt": "2026-08-04T01:20:33.677Z",
+  "environment": "sandbox",
+  "results": [
+    {
+      "family": "fine_art",
+      "label": "Fine Art Print",
+      "size": "8X8",
+      "found": true,
+      "sku": "GLOBAL-FAP-8X8",
+      "description": "EMA, Enhanced Matte Art Paper, 200gsm, 20x20cm / 8x8\"",
+      "dimensions": {
+        "width": 8,
+        "height": 8,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 2400,
+        "h": 2400
+      },
+      "shipsToCount": 236,
+      "attributes": {
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "fine_art",
+      "label": "Fine Art Print",
+      "size": "12X12",
+      "found": true,
+      "sku": "GLOBAL-FAP-12X12",
+      "description": "EMA, Enhanced Matte Art Paper, 200gsm, 30x30cm / 12x12\"",
+      "dimensions": {
+        "width": 12,
+        "height": 12,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 3600,
+        "h": 3600
+      },
+      "shipsToCount": 236,
+      "attributes": {
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "fine_art",
+      "label": "Fine Art Print",
+      "size": "16X16",
+      "found": true,
+      "sku": "GLOBAL-FAP-16X16",
+      "description": "EMA, Enhanced Matte Art Paper, 200gsm, 40x40cm / 16x16\"",
+      "dimensions": {
+        "width": 16,
+        "height": 16,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 4800,
+        "h": 4800
+      },
+      "shipsToCount": 236,
+      "attributes": {
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "fine_art",
+      "label": "Fine Art Print",
+      "size": "20X20",
+      "found": true,
+      "sku": "GLOBAL-FAP-20X20",
+      "description": "EMA, Enhanced Matte Art Paper, 200gsm, 50x50cm / 20x20\"",
+      "dimensions": {
+        "width": 20,
+        "height": 20,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 6000,
+        "h": 6000
+      },
+      "shipsToCount": 236,
+      "attributes": {
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "premium",
+      "label": "Premium Fine Art Print",
+      "size": "8X8",
+      "found": true,
+      "sku": "GLOBAL-HPR-8X8",
+      "description": "Hahnemühle Photo Rag, 20x20 cm / 8x8\"",
+      "dimensions": {
+        "width": 8,
+        "height": 8,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 2400,
+        "h": 2400
+      },
+      "shipsToCount": 236,
+      "attributes": {
+        "paperType": [
+          "HPR"
+        ],
+        "substrateWeight": [
+          "308gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "premium",
+      "label": "Premium Fine Art Print",
+      "size": "12X12",
+      "found": true,
+      "sku": "GLOBAL-HPR-12X12",
+      "description": "Hahnemühle Photo Rag, 30x30 cm / 12x12\"",
+      "dimensions": {
+        "width": 12,
+        "height": 12,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 3600,
+        "h": 3600
+      },
+      "shipsToCount": 236,
+      "attributes": {
+        "paperType": [
+          "HPR"
+        ],
+        "substrateWeight": [
+          "308gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "premium",
+      "label": "Premium Fine Art Print",
+      "size": "16X16",
+      "found": true,
+      "sku": "GLOBAL-HPR-16X16",
+      "description": "Hahnemühle Photo Rag, 40x40 cm / 16x16\"",
+      "dimensions": {
+        "width": 16,
+        "height": 16,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 4800,
+        "h": 4800
+      },
+      "shipsToCount": 236,
+      "attributes": {
+        "paperType": [
+          "HPR"
+        ],
+        "substrateWeight": [
+          "308gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "premium",
+      "label": "Premium Fine Art Print",
+      "size": "20X20",
+      "found": true,
+      "sku": "GLOBAL-HPR-20X20",
+      "description": "Hahnemühle Photo Rag, 50x50 cm / 20x20\"",
+      "dimensions": {
+        "width": 20,
+        "height": 20,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 6000,
+        "h": 6000
+      },
+      "shipsToCount": 236,
+      "attributes": {
+        "paperType": [
+          "HPR"
+        ],
+        "substrateWeight": [
+          "308gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "canvas",
+      "label": "Canvas",
+      "size": "8X8",
+      "found": true,
+      "sku": "GLOBAL-CAN-8X8",
+      "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 8x8\" / 20x20cm",
+      "dimensions": {
+        "width": 8,
+        "height": 8,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 2454,
+        "h": 2454
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "edge": [
+          "38mm"
+        ],
+        "frame": [
+          "38mm standard stretcher bar"
+        ],
+        "paperType": [
+          "Standard canvas (SC)"
+        ],
+        "substrateWeight": [
+          "400gsm"
+        ],
+        "wrap": [
+          "Black",
+          "ImageWrap",
+          "MirrorWrap",
+          "White"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "canvas",
+      "label": "Canvas",
+      "size": "12X12",
+      "found": true,
+      "sku": "GLOBAL-CAN-12X12",
+      "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 12x12\" / 31x31cm",
+      "dimensions": {
+        "width": 12,
+        "height": 12,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 3654,
+        "h": 3654
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "edge": [
+          "38mm"
+        ],
+        "frame": [
+          "38mm standard stretcher bar"
+        ],
+        "paperType": [
+          "Standard canvas (SC)"
+        ],
+        "substrateWeight": [
+          "400gsm"
+        ],
+        "wrap": [
+          "Black",
+          "ImageWrap",
+          "MirrorWrap",
+          "White"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "canvas",
+      "label": "Canvas",
+      "size": "16X16",
+      "found": true,
+      "sku": "GLOBAL-CAN-16X16",
+      "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 16x16\" / 41x41cm",
+      "dimensions": {
+        "width": 16,
+        "height": 16,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 4854,
+        "h": 4854
+      },
+      "shipsToCount": 232,
+      "attributes": {
+        "edge": [
+          "38mm"
+        ],
+        "frame": [
+          "38mm standard stretcher bar"
+        ],
+        "paperType": [
+          "Standard canvas (SC)"
+        ],
+        "substrateWeight": [
+          "400gsm"
+        ],
+        "wrap": [
+          "Black",
+          "ImageWrap",
+          "MirrorWrap",
+          "White"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "canvas",
+      "label": "Canvas",
+      "size": "20X20",
+      "found": true,
+      "sku": "GLOBAL-CAN-20X20",
+      "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 20x20\" / 51x51cm",
+      "dimensions": {
+        "width": 20,
+        "height": 20,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 6054,
+        "h": 6054
+      },
+      "shipsToCount": 232,
+      "attributes": {
+        "edge": [
+          "38mm"
+        ],
+        "frame": [
+          "38mm standard stretcher bar"
+        ],
+        "paperType": [
+          "Standard canvas (SC)"
+        ],
+        "substrateWeight": [
+          "400gsm"
+        ],
+        "wrap": [
+          "Black",
+          "ImageWrap",
+          "MirrorWrap",
+          "White"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "framed_canvas",
+      "label": "Framed Canvas",
+      "size": "8X8",
+      "found": true,
+      "sku": "GLOBAL-FRA-CAN-8X8",
+      "description": "Global float framed canvas on premium stretcher bars, 8x8\" / 20x20  cm",
+      "dimensions": {
+        "width": 8,
+        "height": 8,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 2454,
+        "h": 2454
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "edge": [
+          "38mm"
+        ],
+        "frame": [
+          "Float frame, 38mm standard stretcher bar"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "gold",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "paperType": [
+          "Standard canvas (SC)"
+        ],
+        "substrateWeight": [
+          "400gsm"
+        ],
+        "wrap": [
+          "Black",
+          "ImageWrap",
+          "MirrorWrap",
+          "White"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "framed_canvas",
+      "label": "Framed Canvas",
+      "size": "12X12",
+      "found": true,
+      "sku": "GLOBAL-FRA-CAN-12X12",
+      "description": "Global float framed canvas on premium stretcher bars, 12x12\" / 30x30  cm",
+      "dimensions": {
+        "width": 12,
+        "height": 12,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 3654,
+        "h": 3654
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "edge": [
+          "38mm"
+        ],
+        "frame": [
+          "Float frame, 38mm standard stretcher bar"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "gold",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "paperType": [
+          "Standard canvas (SC)"
+        ],
+        "substrateWeight": [
+          "400gsm"
+        ],
+        "wrap": [
+          "Black",
+          "ImageWrap",
+          "MirrorWrap",
+          "White"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "framed_canvas",
+      "label": "Framed Canvas",
+      "size": "16X16",
+      "found": true,
+      "sku": "GLOBAL-FRA-CAN-16X16",
+      "description": "Global float framed canvas on premium stretcher bars, 16x16\" / 41x41  cm",
+      "dimensions": {
+        "width": 16,
+        "height": 16,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 4854,
+        "h": 4854
+      },
+      "shipsToCount": 232,
+      "attributes": {
+        "edge": [
+          "38mm"
+        ],
+        "frame": [
+          "Float frame, 38mm standard stretcher bar"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "gold",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "paperType": [
+          "Standard canvas (SC)"
+        ],
+        "substrateWeight": [
+          "400gsm"
+        ],
+        "wrap": [
+          "Black",
+          "ImageWrap",
+          "MirrorWrap",
+          "White"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "framed_canvas",
+      "label": "Framed Canvas",
+      "size": "20X20",
+      "found": true,
+      "sku": "GLOBAL-FRA-CAN-20X20",
+      "description": "Global float framed canvas on premium stretcher bars, 20x20\" / 51x51  cm",
+      "dimensions": {
+        "width": 20,
+        "height": 20,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 6054,
+        "h": 6054
+      },
+      "shipsToCount": 232,
+      "attributes": {
+        "edge": [
+          "38mm"
+        ],
+        "frame": [
+          "Float frame, 38mm standard stretcher bar"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "gold",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "paperType": [
+          "Standard canvas (SC)"
+        ],
+        "substrateWeight": [
+          "400gsm"
+        ],
+        "wrap": [
+          "Black",
+          "ImageWrap",
+          "MirrorWrap",
+          "White"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "framed",
+      "label": "Classic Framed Print",
+      "size": "8X8",
+      "found": true,
+      "sku": "GLOBAL-CFP-8X8",
+      "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 20x20cm/8x8\"",
+      "dimensions": {
+        "width": 20,
+        "height": 20,
+        "units": "cm"
+      },
+      "requiredPx": {
+        "w": 2400,
+        "h": 2400
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "frame": [
+          "Classic"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "dark grey",
+          "gold",
+          "light grey",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "glaze": [
+          "Acrylic / Perspex"
+        ],
+        "mount": [
+          "No mount / Mat"
+        ],
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "framed",
+      "label": "Classic Framed Print",
+      "size": "12X12",
+      "found": true,
+      "sku": "GLOBAL-CFP-12X12",
+      "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 30x30cm/12x12\"",
+      "dimensions": {
+        "width": 30,
+        "height": 30,
+        "units": "cm"
+      },
+      "requiredPx": {
+        "w": 3600,
+        "h": 3600
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "frame": [
+          "Classic"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "dark grey",
+          "gold",
+          "light grey",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "glaze": [
+          "Acrylic / Perspex"
+        ],
+        "mount": [
+          "No mount / Mat"
+        ],
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "http 400 {\"outcome\":\"ValidationFailed\",\"failures\":{\"items[0].attributes\":[{\"code\":\"MissingRequiredAttributes\",\"missingItems\":{\"attributes\":[{\"name\":\"color\",\"validValues\":[\"white\",\"silver\",\"natural\",\"light grey\",\"gold\",\"dark grey\",\"brown\",\"black\"]}]},\"providedValue\":null}]},\"traceParent\":\"00-ec88d72e44b2340ac"
+      }
+    },
+    {
+      "family": "framed",
+      "label": "Classic Framed Print",
+      "size": "16X16",
+      "found": true,
+      "sku": "GLOBAL-CFP-16X16",
+      "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 40x40cm/16x16\"",
+      "dimensions": {
+        "width": 40,
+        "height": 40,
+        "units": "cm"
+      },
+      "requiredPx": {
+        "w": 4800,
+        "h": 4800
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "frame": [
+          "Classic"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "dark grey",
+          "gold",
+          "light grey",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "glaze": [
+          "Acrylic / Perspex"
+        ],
+        "mount": [
+          "No mount / Mat"
+        ],
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "http 400 {\"outcome\":\"ValidationFailed\",\"failures\":{\"items[0].attributes\":[{\"code\":\"MissingRequiredAttributes\",\"missingItems\":{\"attributes\":[{\"name\":\"color\",\"validValues\":[\"white\",\"silver\",\"natural\",\"light grey\",\"gold\",\"dark grey\",\"brown\",\"black\"]}]},\"providedValue\":null}]},\"traceParent\":\"00-a1ee9bc480b898dbe"
+      }
+    },
+    {
+      "family": "framed",
+      "label": "Classic Framed Print",
+      "size": "20X20",
+      "found": true,
+      "sku": "GLOBAL-CFP-20X20",
+      "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 50x50cm/20x20\"",
+      "dimensions": {
+        "width": 50,
+        "height": 50,
+        "units": "cm"
+      },
+      "requiredPx": {
+        "w": 6000,
+        "h": 6000
+      },
+      "shipsToCount": 232,
+      "attributes": {
+        "frame": [
+          "Classic"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "dark grey",
+          "gold",
+          "light grey",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "glaze": [
+          "Acrylic / Perspex"
+        ],
+        "mount": [
+          "No mount / Mat"
+        ],
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "http 400 {\"outcome\":\"ValidationFailed\",\"failures\":{\"items[0].attributes\":[{\"code\":\"MissingRequiredAttributes\",\"missingItems\":{\"attributes\":[{\"name\":\"color\",\"validValues\":[\"white\",\"silver\",\"natural\",\"light grey\",\"gold\",\"dark grey\",\"brown\",\"black\"]}]},\"providedValue\":null}]},\"traceParent\":\"00-db5f342e98d54ee69"
+      }
+    },
+    {
+      "family": "matted",
+      "label": "Matted Classic Frame",
+      "size": "8X8",
+      "found": true,
+      "sku": "GLOBAL-CFPM-8X8",
+      "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 20x20cm/8x8\"",
+      "dimensions": {
+        "width": 20.32,
+        "height": 20.32,
+        "units": "cm"
+      },
+      "requiredPx": {
+        "w": 1800,
+        "h": 1800
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "frame": [
+          "Classic"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "dark grey",
+          "gold",
+          "light grey",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "glaze": [
+          "Acrylic / Perspex"
+        ],
+        "mount": [
+          "2.4mm"
+        ],
+        "mountColor": [
+          "Snow white"
+        ],
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "http 400 {\"outcome\":\"ValidationFailed\",\"failures\":{\"items[0].attributes\":[{\"code\":\"MissingRequiredAttributes\",\"missingItems\":{\"attributes\":[{\"name\":\"color\",\"validValues\":[\"white\",\"silver\",\"natural\",\"light grey\",\"gold\",\"dark grey\",\"brown\",\"black\"]}]},\"providedValue\":null}]},\"traceParent\":\"00-142fd0386da1ef1bd"
+      }
+    },
+    {
+      "family": "matted",
+      "label": "Matted Classic Frame",
+      "size": "12X12",
+      "found": true,
+      "sku": "GLOBAL-CFPM-12X12",
+      "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 30x30cm/12x12\"",
+      "dimensions": {
+        "width": 30,
+        "height": 30,
+        "units": "cm"
+      },
+      "requiredPx": {
+        "w": 2700,
+        "h": 2700
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "frame": [
+          "Classic"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "dark grey",
+          "gold",
+          "light grey",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "glaze": [
+          "Acrylic / Perspex"
+        ],
+        "mount": [
+          "2.4mm"
+        ],
+        "mountColor": [
+          "Snow white"
+        ],
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "matted",
+      "label": "Matted Classic Frame",
+      "size": "16X16",
+      "found": true,
+      "sku": "GLOBAL-CFPM-16X16",
+      "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 40x40cm/16x16\"",
+      "dimensions": {
+        "width": 16,
+        "height": 16,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 3600,
+        "h": 3600
+      },
+      "shipsToCount": 235,
+      "attributes": {
+        "frame": [
+          "Classic"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "dark grey",
+          "gold",
+          "light grey",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "glaze": [
+          "Acrylic / Perspex"
+        ],
+        "mount": [
+          "2.4mm"
+        ],
+        "mountColor": [
+          "Snow white"
+        ],
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    },
+    {
+      "family": "matted",
+      "label": "Matted Classic Frame",
+      "size": "20X20",
+      "found": true,
+      "sku": "GLOBAL-CFPM-20X20",
+      "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 50x50cm/20x20\"",
+      "dimensions": {
+        "width": 20,
+        "height": 20,
+        "units": "in"
+      },
+      "requiredPx": {
+        "w": 4800,
+        "h": 4800
+      },
+      "shipsToCount": 232,
+      "attributes": {
+        "frame": [
+          "Classic"
+        ],
+        "color": [
+          "black",
+          "brown",
+          "dark grey",
+          "gold",
+          "light grey",
+          "natural",
+          "silver",
+          "white"
+        ],
+        "glaze": [
+          "Acrylic / Perspex"
+        ],
+        "mount": [
+          "2.4mm"
+        ],
+        "mountColor": [
+          "Snow white"
+        ],
+        "paperType": [
+          "EMA"
+        ],
+        "substrateWeight": [
+          "200gsm"
+        ]
+      },
+      "wholesale": {
+        "error": "timed out"
+      }
+    }
+  ]
+}

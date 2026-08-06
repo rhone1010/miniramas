@@ -1,21 +1,25 @@
 {
-  "generatedAt": "2026-08-03T01:14:28.087Z",
+  "generatedAt": "2026-08-04T22:53:06.351Z",
   "base": "/previews/effects/",
+  "siloBase": "/previews/silos/",
+  "poseBase": "/previews/pose/",
   "effects": {
     "art_deco": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "art_nouveau": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "balloon_face": {
@@ -37,44 +41,48 @@
       ]
     },
     "bronze": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "cast_glass": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "charcoal_chalk": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "chocolate": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "clockwork": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "2.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "coral": {
@@ -87,28 +95,30 @@
       ]
     },
     "crystallized": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "2.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "cubism": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "daguerreotype": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "deco_twenties": {
@@ -130,19 +140,21 @@
       ]
     },
     "driftwood_resin": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "ebony": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "elizabethan": {
@@ -164,11 +176,12 @@
       ]
     },
     "folded_book": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "forest_guardian": {
@@ -190,46 +203,48 @@
       ]
     },
     "impressionist": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "iron": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "2_man.jpg",
+      "woman": "1_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "2.jpg"
+        "1_woman.jpg",
+        "2_man.jpg"
       ]
     },
     "jade": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "2_man.jpg",
+      "woman": "1_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "2.jpg"
+        "1_woman.jpg",
+        "2_man.jpg"
       ]
     },
     "lichen_granite": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "linocut": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "2.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "magic_energy": {
@@ -242,46 +257,48 @@
       ]
     },
     "mercury": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "neon": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
-      "all": [
-        "1.jpg",
-        "2.jpg"
-      ]
-    },
-    "oil_impasto": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
-      "all": [
-        "1.jpg",
-        "2.jpg"
-      ]
-    },
-    "origami": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
-      "all": [
-        "1.jpg",
-        "2.jpg"
-      ]
-    },
-    "pencil_sketch": {
-      "man": null,
+      "man": "2_man.jpg",
       "woman": "1_woman.jpg",
       "neutral": null,
       "all": [
-        "1_woman.jpg"
+        "1_woman.jpg",
+        "2_man.jpg"
+      ]
+    },
+    "oil_impasto": {
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
+      "all": [
+        "1_man.jpg",
+        "2_woman.jpg"
+      ]
+    },
+    "origami": {
+      "man": "2_man.jpg",
+      "woman": "1_woman.jpg",
+      "neutral": null,
+      "all": [
+        "1_woman.jpg",
+        "2_man.jpg"
+      ]
+    },
+    "pencil_sketch": {
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
+      "all": [
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "persian_court": {
@@ -304,45 +321,48 @@
     },
     "petrified_wood": {
       "man": null,
-      "woman": null,
+      "woman": "2_woman.jpg",
       "neutral": "1.jpg",
       "all": [
         "1.jpg",
+        "2_woman.jpg",
         "2.jpg"
       ]
     },
     "plushy": {
       "man": null,
-      "woman": null,
+      "woman": "2_woman.jpg",
       "neutral": "1.jpg",
       "all": [
-        "1.jpg"
+        "1.jpg",
+        "2_woman.jpg"
       ]
     },
     "polished_gold": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "porcelain": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "2_man.jpg",
+      "woman": "1_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "2.jpg"
+        "1_woman.jpg",
+        "2_man.jpg"
       ]
     },
     "quilted": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "2_man.jpg",
+      "woman": "1_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "2.jpg"
+        "1_woman.jpg",
+        "2_man.jpg"
       ]
     },
     "reclaimed_bronze": {
@@ -382,12 +402,12 @@
       ]
     },
     "sand_form": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "2.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "sandstone": {
@@ -409,28 +429,30 @@
       ]
     },
     "sheet_music": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "stained_glass": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "starfield": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "2.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "stone": {
@@ -452,11 +474,12 @@
       ]
     },
     "ukiyo_e": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "victorian": {
@@ -469,11 +492,12 @@
       ]
     },
     "watercolour": {
-      "man": null,
-      "woman": null,
-      "neutral": "1.jpg",
+      "man": "1_man.jpg",
+      "woman": "2_woman.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg"
+        "1_man.jpg",
+        "2_woman.jpg"
       ]
     },
     "wild_west": {
@@ -484,6 +508,75 @@
         "1_man.jpg",
         "2_woman.jpg"
       ]
+    }
+  },
+  "silos": {
+    "another_age": {
+      "man": "another_age_man.jpg",
+      "woman": "another_age_woman.jpg",
+      "neutral": null
+    },
+    "artists_gallery": {
+      "man": "artists_gallery_man.jpg",
+      "woman": "artists_gallery_woman.jpg",
+      "neutral": null
+    },
+    "earth_ore": {
+      "man": "earth_ore_man.jpg",
+      "woman": "earth_ore_woman.jpg",
+      "neutral": null
+    },
+    "fantasy_future": {
+      "man": "fantasy_future_man.jpg",
+      "woman": "fantasy_future_woman.jpg",
+      "neutral": null
+    },
+    "ink_paper": {
+      "man": "ink_paper_man.jpg",
+      "woman": "ink_paper_woman.jpg",
+      "neutral": null
+    },
+    "light_glass": {
+      "man": "light_glass_man.jpg",
+      "woman": "light_glass_woman.jpg",
+      "neutral": null
+    },
+    "living_world": {
+      "man": "living_world_man.jpg",
+      "woman": "living_world_woman.jpg",
+      "neutral": null
+    },
+    "made_by_hand": {
+      "man": "made_by_hand_man.jpg",
+      "woman": "made_by_hand_woman.jpg",
+      "neutral": null
+    }
+  },
+  "poses": {
+    "dramatic": {
+      "man": "dramatic_man.png",
+      "woman": "dramatic_woman.jpg",
+      "neutral": null
+    },
+    "goofy": {
+      "man": "goofy_man.png",
+      "woman": "goofy_woman.jpg",
+      "neutral": null
+    },
+    "laughing": {
+      "man": "laughing_man.png",
+      "woman": "laughing_woman.jpg",
+      "neutral": null
+    },
+    "smiling": {
+      "man": "smiling_man.png",
+      "woman": "smiling_woman.jpg",
+      "neutral": null
+    },
+    "thoughtful": {
+      "man": "thoughtful_man.png",
+      "woman": "thoughtful_woman.jpg",
+      "neutral": null
     }
   }
 }

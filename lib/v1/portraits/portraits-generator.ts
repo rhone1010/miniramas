@@ -30,6 +30,7 @@
 
 import { buildPortraitsPrompt } from './portraits-prompt'
 import { hasBody, buildEffectPrompt } from './portraits-bodies'
+import { POSE_PHRASE, DEFAULT_POSE, isPoseId, STYLE_REF_CLAUSE } from './portraits-shared'
 import { loadStyleRefs, MAX_STYLE_REFS } from './style-refs'
 import sharp from 'sharp'
 import {
@@ -47,6 +48,10 @@ import {
   STYLE_PIPELINE,
   MAX_ATTEMPTS,
   MAX_SOURCE_IMAGES,
+  isSubject,
+  resolvePresetForSubject,
+  shouldSendStyleRefs,
+  type PortraitsSubject,
   SINGLE_FACE_THRESHOLD,
   type PortraitsGenerateRequest,
   type PortraitsGenerateResult,
@@ -86,7 +91,15 @@ export async function generatePortraitsRender(
 
   const styleId:    PortraitsStyleId  = req.style_id
   const pipeline                       = STYLE_PIPELINE[styleId]
-  const presetId:   PortraitsPresetId = req.preset_id
+  // Subject drives two things: which prompt body is used (the seven Another
+  // Age effects carry a `_woman` twin) and which style-ref plates are served.
+  // Absent means the caller did not pass analyze's detected_gender through.
+  // Set below, after Stage 0. An explicit request value wins; otherwise
+  // detection supplies it. `let` because Stage 0 has not run yet.
+  let subject: PortraitsSubject | undefined =
+    isSubject(req.subject) ? req.subject : undefined
+  let ageGroup: string | undefined =
+    typeof req.age_group === 'string' ? req.age_group : undefined
   const scale:      Scale             = req.scale || 'close_up'
   const aspectRatio:string            = req.aspect_ratio || defaultAspectForStyle(styleId)
 
@@ -104,9 +117,16 @@ export async function generatePortraitsRender(
       })
       detectedFaceVisible  = det.face_visible
       detectedSubjectCount = det.subject_count_estimate
+
+      // Detection fills the gender axis when the caller did not. This is the
+      // whole reason the axis works without any client change: the vision
+      // call already happens, so gender costs nothing extra.
+      if (!subject && det.gender) subject = det.gender === 'f' ? 'woman' : 'man'
+      if (!ageGroup && det.age_group) ageGroup = det.age_group
       console.log(
         `[portraits] detect: face_visible=${det.face_visible} ` +
-        `count=${det.subject_count_estimate} reason="${det.reason}"`,
+        `count=${det.subject_count_estimate} gender=${det.gender || 'none'} ` +
+        `age=${det.age_group || 'none'} reason="${det.reason}"`,
       )
       if (det.subject_count_estimate > 1) {
         console.log(
@@ -117,6 +137,12 @@ export async function generatePortraitsRender(
     } catch (e: any) {
       console.warn(`[portraits] detection failed: ${e?.message}`)
     }
+  }
+
+  // Preset resolved AFTER detection so the gendered body swap can use it.
+  const presetId: PortraitsPresetId = resolvePresetForSubject(req.preset_id, subject)
+  if (presetId !== req.preset_id) {
+    console.log(`[portraits] subject=${subject} preset ${req.preset_id} -> ${presetId}`)
   }
 
   // Locations resolved AFTER detection so we have everything in one place.
@@ -134,13 +160,21 @@ export async function generatePortraitsRender(
   // the bench and one-off tests pin a specific plate. Otherwise load the
   // effect's own plates from disk. Either way capped at MAX_STYLE_REFS; NB2
   // takes 14 images total and one source plus two refs is well inside.
+  // Every plate in the catalog is an adult, and a style ref outranks the
+  // source. For a child or teen we send none and let the body carry the
+  // effect — an adult plate would pull the face toward an adult one.
+  const sendRefs = shouldSendStyleRefs(ageGroup)
   const styleRefs: string[] = req.style_reference_b64
     ? [req.style_reference_b64]
-    : loadStyleRefs(presetId)
+    : (sendRefs ? loadStyleRefs(presetId, { subject }) : [])
+  if (!sendRefs) {
+    console.log(`[portraits] style refs suppressed — age_group=${ageGroup}`)
+  }
 
   console.log(
     `[portraits] style_refs=${styleRefs.length}/${MAX_STYLE_REFS} ` +
-    `src=${req.style_reference_b64 ? 'request' : 'disk'} preset=${presetId}`,
+    `src=${req.style_reference_b64 ? 'request' : 'disk'} preset=${presetId} ` +
+    `subject=${subject || 'none'}`,
   )
 
   const attempts: PortraitsAttempt[] = []
@@ -174,7 +208,7 @@ export async function generatePortraitsRender(
     // not yet ported fall through to the legacy block builder. Remove the
     // fallback once every id in the registry resolves through hasBody().
     const promptFromBody = hasBody(presetId)
-    const prompt = promptFromBody
+    const promptBody = promptFromBody
       ? buildEffectPrompt(presetId)
       : buildPortraitsPrompt({
           presetId,
@@ -185,12 +219,25 @@ export async function generatePortraitsRender(
           advanced:         req.advanced,
           upperBodyConcept: req.upper_body_concept,
         })
+    // Pose — the one composed element. Appended AFTER the whole body so the
+    // body's own material, framing and background are read first.
+    const poseId = isPoseId(req.pose_id) ? req.pose_id : DEFAULT_POSE
+    const posePhrase = POSE_PHRASE[poseId]
+    const posed = posePhrase ? `${promptBody}\n\n${posePhrase}` : promptBody
+
+    // Style-reference clause. Only when a plate is actually sent — otherwise
+    // it points at an image that is not there.
+    const prompt = styleRefs.length > 0
+      ? `${posed}\n\n${STYLE_REF_CLAUSE}`
+      : posed
+
     finalPromptUsed = prompt
 
     console.log(
-      `[portraits/prompt] src=${promptFromBody ? 'bodies' : 'legacy'} ` +
+      `[portraits/prompt] src=${promptFromBody ? 'bodies' : 'legacy'} pose=${poseId} ` +
       `style=${styleId} preset=${presetId} location=${locationId} ` +
-      `chars=${prompt.length} has_advanced=${!!req.advanced} ` +
+      `chars=${prompt.length} refclause=${styleRefs.length > 0} ` +
+      `has_advanced=${!!req.advanced} ` +
       `has_concept=${!!req.upper_body_concept}`,
     )
 

@@ -1,28 +1,51 @@
 // lib/v1/print/asset-pipeline.ts
 //
-// Print asset pipeline: source image → (upscale if needed) → Supabase Storage → signed URL
-// for Prodigi to fetch when placing the order.
+// Print asset pipeline: crafted piece → 1K → upscale → sRGB JPEG → Supabase →
+// signed URL for Prodigi to fetch.
 //
-// Flow:
-//   1. Inspect source dimensions
-//   2. If below the target SKU's required pixels, upscale via Stability Fast (4×)
-//   3. Upload result to private `print-assets` bucket, keyed by render_id + size
-//   4. Return a 7-day signed URL that Prodigi servers can GET
+// CUI V25 · 2026-08-03 · REWRITTEN
 //
-// Caching: uploads are keyed `{renderId}/{size}.jpg`. Re-running for the same
-// renderId + size overwrites (last-write-wins) so we never grow stale duplicates
-// for retries. For a fresh customer ordering multiple sizes of the same render,
-// each size produces its own keyed object.
+//   WHAT CHANGED AND WHY
 //
-// Stability Fast does a 4× upscale in one sync call:
-//   1024² → 4096²   (covers 8×10 and 12×16 cleanly at 300 DPI)
-//   2048² → 8192²   (covers 18×24 at 300 DPI with room to spare)
-// If a render is below 1024 on its long edge we still call it — output quality
-// just plateaus. Source ≥ 2048 is recommended for 18×24 quality.
+//   1 · STABILITY IS GONE. It was retired on 2026-07-27 along with BFL and
+//       Runware, and this file was the last thing still calling it. Real-ESRGAN
+//       on Replicate now — same vendor as the craft, same billing, same token.
+//
+//   2 · WE SEND 1K, NOT 2K. Rich's finding: the upscaler produces a better
+//       result from a smaller, cleaner input than from a larger one. A 2K
+//       source was being pre-resized down to 1MP by the old Stability cap
+//       anyway; this does it deliberately and at a known size.
+//
+//   3 · THE SCALE IS PER SKU, NOT A CONSTANT. A fixed 4× cleared the old
+//       rectangular sizes and clears almost nothing in the square catalogue:
+//
+//         8×8    wants 2400px   →  2.4× from 1024
+//         12×12  wants 3600px   →  3.6×
+//         16×16  wants 4800px   →  4.7×
+//         20×20  wants 6000px   →  5.9×
+//         CFPM   wants 1800px   →  1.8×  (the picture is smaller than the frame)
+//
+//       Measured at 1.8s for 4×, so the difference between 2.4 and 5.9 costs
+//       seconds rather than architecture. It still runs inline in the webhook.
+//
+//   4 · THE OUTPUT IS JPEG. Real-ESRGAN returns PNG, and a 6000² PNG is about
+//       30MB. The same image as sRGB JPEG at 92 is nearer 4MB. Quality 92 with
+//       4:4:4 chroma, not the 82 used for collection thumbnails — that is fine
+//       on a 400px card and visible on a twenty-inch print, particularly in
+//       the linework effects.
+//
+//   5 · THE FINAL SIZE IS EXACT. Whatever the upscaler returns is resized to
+//       the SKU's requiredPx with lanczos3. An asset a few pixels short of
+//       Prodigi's stated requirement is a rejected order after the money has
+//       moved.
+//
+// Caching: uploads are keyed `{renderId}/{finish}-{size}.jpg`. The old key was
+// `{renderId}/{size}.jpg`, which collided — the same piece at 12×12 on canvas
+// and 12×12 framed wanted different pixel counts and overwrote each other.
 //
 // Env vars required:
-//   STABILITY_API_KEY                (already in use for expand.ts)
-//   NEXT_PUBLIC_SUPABASE_URL         (your existing client uses this)
+//   REPLICATE_API_TOKEN              (already in use for the craft)
+//   NEXT_PUBLIC_SUPABASE_URL         (or SUPABASE_URL)
 //   SUPABASE_SERVICE_ROLE_KEY        (server-only; bypasses RLS for uploads)
 
 import sharp from 'sharp'
@@ -30,14 +53,22 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { getSku, type PrintSize, type PrintFinish } from './sku-map'
 
 const BUCKET                = 'print-assets'
-const SIGNED_URL_EXPIRY_SEC = 7 * 24 * 60 * 60   // 7 days; covers Prodigi's 30-day retention with margin
-const STABILITY_FAST_URL    = 'https://api.stability.ai/v2beta/stable-image/upscale/fast'
-const STABILITY_MAX_INPUT_PX = 1_048_576         // Stability Fast input cap: 1024² = 1,048,576 pixels
+const SIGNED_URL_EXPIRY_SEC = 7 * 24 * 60 * 60   // 7 days; Prodigi fetches within minutes
+
+/* What we hand the upscaler. Rich's finding, 2026-08-03: it works better from
+   a clean 1K than from a larger source. */
+const UPSCALE_INPUT_EDGE = 1024
+
+/* Replicate caps scale at 10. Nothing in the catalogue needs beyond 6. */
+const MAX_SCALE = 10
+
+const REPLICATE_MODEL = 'nightmareai/real-esrgan'
+const REPLICATE_URL   = `https://api.replicate.com/v1/models/${REPLICATE_MODEL}/predictions`
+
+/* Print quality, not thumbnail quality. */
+const JPEG_QUALITY = 92
 
 // ── SUPABASE CLIENT (server-side, service role) ───────────────
-//
-// Initialized lazily so import doesn't crash in environments without env vars
-// (e.g. CI builds that compile but don't run this code).
 let _supabase: SupabaseClient | null = null
 function supabase(): SupabaseClient {
   if (_supabase) return _supabase
@@ -48,143 +79,149 @@ function supabase(): SupabaseClient {
       'Missing NEXT_PUBLIC_SUPABASE_URL (or SUPABASE_URL) or SUPABASE_SERVICE_ROLE_KEY in env'
     )
   }
-  console.log(`[asset-pipeline] supabase init — url="${url}", service-key length=${service.length}`)
   _supabase = createClient(url, service, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
   return _supabase
 }
 
-// ── STABILITY FAST UPSCALE (4×) ───────────────────────────────
-//
-// Sync endpoint. Returns the upscaled image directly. ~1 credit per call.
-// Docs: https://platform.stability.ai/docs/api-reference#tag/Upscale
-async function upscaleFast(imageB64: string): Promise<{
-  b64:    string
-  width:  number
-  height: number
-}> {
-  const apiKey = process.env.STABILITY_API_KEY
-  if (!apiKey) throw new Error('Missing STABILITY_API_KEY in env')
+// ── THE INPUT ─────────────────────────────────────────────────
+/**
+ * Down to a clean 1K square-ish input, as JPEG at high quality. The upscaler
+ * reads detail, not artefacts, so this is 95 rather than the output's 92.
+ */
+async function toUpscaleInput(imageB64: string): Promise<{ buf: Buffer; w: number; h: number }> {
+  const src = Buffer.from(imageB64, 'base64')
+  const meta = await sharp(src).metadata()
+  const w = meta.width || 0
+  const h = meta.height || 0
+  const longEdge = Math.max(w, h)
 
-  let input = Buffer.from(imageB64, 'base64')
+  if (!longEdge) throw new Error('could not read the source image dimensions')
 
-  // Stability Fast input cap is 1MP. Pre-resize if source exceeds.
-  // Aspect ratio is preserved; the 4× upscale on the other side gives us
-  // ~16MP output regardless, which is enough headroom for all three print sizes.
-  const srcMeta = await sharp(input).metadata()
-  const srcW = srcMeta.width  || 0
-  const srcH = srcMeta.height || 0
-  if (srcW * srcH > STABILITY_MAX_INPUT_PX) {
-    const scale = Math.sqrt(STABILITY_MAX_INPUT_PX / (srcW * srcH))
-    const newW  = Math.floor(srcW * scale)
-    const newH  = Math.floor(srcH * scale)
-    console.log(`[upscale] pre-resize: ${srcW}×${srcH} → ${newW}×${newH} (Stability 1MP cap)`)
-    input = await sharp(input).resize(newW, newH).jpeg({ quality: 95 }).toBuffer()
+  // Already at or below 1K — send it as it is rather than enlarging twice.
+  if (longEdge <= UPSCALE_INPUT_EDGE) {
+    const buf = await sharp(src).toColourspace('srgb').jpeg({ quality: 95 }).toBuffer()
+    return { buf, w, h }
   }
 
-  const form = new FormData()
-  form.append('image',         new Blob([input], { type: 'image/jpeg' }), 'image.jpg')
-  form.append('output_format', 'jpeg')
+  const scale = UPSCALE_INPUT_EDGE / longEdge
+  const nw = Math.round(w * scale)
+  const nh = Math.round(h * scale)
+  console.log(`[asset-pipeline] input ${w}×${h} → ${nw}×${nh} for the upscaler`)
+  const buf = await sharp(src)
+    .resize(nw, nh, { kernel: 'lanczos3' })
+    .toColourspace('srgb')
+    .jpeg({ quality: 95 })
+    .toBuffer()
+  return { buf, w: nw, h: nh }
+}
 
-  const res = await fetch(STABILITY_FAST_URL, {
-    method:  'POST',
+// ── THE UPSCALE ───────────────────────────────────────────────
+/**
+ * Real-ESRGAN, synchronous. `Prefer: wait` holds the connection until the
+ * prediction finishes, which at these sizes is seconds — measured at 1.8s for
+ * 4× on 2026-08-03. No queue, no job row, no second round trip.
+ *
+ * face_enhance is deliberately OFF. Most of this catalogue is bronze, stone,
+ * glass and impasto; a face model applied to a bronze bust recovers skin
+ * texture that was never meant to be there and undoes the effect.
+ */
+async function upscale(inputBuf: Buffer, scale: number): Promise<Buffer> {
+  const token = process.env.REPLICATE_API_TOKEN
+  if (!token) throw new Error('Missing REPLICATE_API_TOKEN in env')
+
+  const dataUri = 'data:image/jpeg;base64,' + inputBuf.toString('base64')
+  const t0 = Date.now()
+
+  const res = await fetch(REPLICATE_URL, {
+    method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Accept':        'image/*',
+      Authorization:  `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Prefer:         'wait',
     },
-    body: form,
+    body: JSON.stringify({
+      input: {
+        image:        dataUri,
+        scale:        scale,
+        face_enhance: false,
+      },
+    }),
   })
 
   if (!res.ok) {
     const err = await res.text()
-    throw new Error(`Stability fast-upscale failed (${res.status}): ${err.slice(0, 200)}`)
+    throw new Error(`Replicate upscale failed (${res.status}): ${err.slice(0, 300)}`)
   }
 
-  const buf  = Buffer.from(await res.arrayBuffer())
-  const meta = await sharp(buf).metadata()
-  console.log(`[upscale] Stability fast 4× done — output: ${meta.width}×${meta.height}`)
-
-  return {
-    b64:    buf.toString('base64'),
-    width:  meta.width  || 0,
-    height: meta.height || 0,
+  const body = await res.json()
+  if (body.status === 'failed' || body.error) {
+    throw new Error(`Replicate upscale failed: ${body.error || 'unknown'}`)
   }
+
+  // The model returns a single URL.
+  const out = Array.isArray(body.output) ? body.output[0] : body.output
+  if (typeof out !== 'string' || !out) {
+    throw new Error('Replicate returned no image — status=' + body.status)
+  }
+
+  const img = await fetch(out)
+  if (!img.ok) throw new Error(`could not fetch the upscaled image: ${img.status}`)
+  const buf = Buffer.from(await img.arrayBuffer())
+
+  console.log(`[asset-pipeline] upscaled ${scale}× in ${Date.now() - t0}ms — ${buf.length} bytes (png)`)
+  return buf
 }
 
-// ── RESOLUTION GATE ───────────────────────────────────────────
-//
-// Only upscale if the source's long edge falls below what the target SKU needs.
-// Saves money on small prints — an 8×10 from a 2048² render skips upscale entirely.
-async function ensurePrintResolution(
-  imageB64: string,
-  size:     PrintSize,
-  finish:   PrintFinish,
-): Promise<{ b64: string; width: number; height: number; upscaled: boolean }> {
-  const entry = getSku(size, finish)
-  const meta  = await sharp(Buffer.from(imageB64, 'base64')).metadata()
-  const srcW  = meta.width  || 0
-  const srcH  = meta.height || 0
-
-  const minLongEdge = Math.max(entry.requiredPx.w, entry.requiredPx.h)
-  const srcLongEdge = Math.max(srcW, srcH)
-
-  if (srcLongEdge >= minLongEdge) {
-    console.log(
-      `[asset-pipeline] Source ${srcW}×${srcH} meets ${size} target ` +
-      `${entry.requiredPx.w}×${entry.requiredPx.h} — skipping upscale`
-    )
-    return { b64: imageB64, width: srcW, height: srcH, upscaled: false }
-  }
+// ── TO PRINT ──────────────────────────────────────────────────
+/**
+ * Exactly the pixels the SKU asks for, in sRGB, as JPEG.
+ *
+ * The resize at the end is not decoration. Real-ESRGAN scales by a factor, so
+ * a 2.4× of 1024 is 2458 and a 5.9× is 6042 — close to the target and not
+ * equal to it. Prodigi states a required resolution; an asset a few pixels
+ * short is a rejected order after the money has moved.
+ */
+async function toPrintJpeg(
+  buf: Buffer,
+  targetW: number,
+  targetH: number,
+): Promise<{ buf: Buffer; w: number; h: number }> {
+  const out = await sharp(buf)
+    .resize(targetW, targetH, { kernel: 'lanczos3', fit: 'fill' })
+    .toColourspace('srgb')
+    .jpeg({
+      quality: JPEG_QUALITY,
+      // 4:4:4. The default 4:2:0 throws away colour detail that survives
+      // being looked at from a foot away on paper.
+      chromaSubsampling: '4:4:4',
+      progressive: false,   // Prodigi's fetcher, not a browser
+      mozjpeg: true,
+    })
+    .toBuffer()
 
   console.log(
-    `[asset-pipeline] Source ${srcW}×${srcH} below ${size} target ` +
-    `${entry.requiredPx.w}×${entry.requiredPx.h} — upscaling`
+    `[asset-pipeline] print asset ${targetW}×${targetH} — ` +
+    `${(out.length / 1024 / 1024).toFixed(1)}MB jpeg q${JPEG_QUALITY}`
   )
-  const up = await upscaleFast(imageB64)
-  return { ...up, upscaled: true }
+  return { buf: out, w: targetW, h: targetH }
 }
 
 // ── UPLOAD + SIGN ─────────────────────────────────────────────
-async function uploadAndSign(
-  imageB64: string,
-  renderId: string,
-  size:     PrintSize,
-): Promise<string> {
-  const sb   = supabase()
-  const path = `${renderId}/${size}.jpg`
-  const buf  = Buffer.from(imageB64, 'base64')
-
-  console.log(`[asset-pipeline] upload start — bucket="${BUCKET}" path="${path}" bytes=${buf.length}`)
+async function uploadAndSign(buf: Buffer, path: string): Promise<string> {
+  const sb = supabase()
 
   const { error: uploadErr } = await sb.storage
     .from(BUCKET)
-    .upload(path, buf, {
-      contentType: 'image/jpeg',
-      upsert:      true,
-    })
+    .upload(path, buf, { contentType: 'image/jpeg', upsert: true })
+
   if (uploadErr) {
-    // Surface as much as possible — supabase-js wraps the underlying fetch error
-    // in `originalError`, which itself may have a `cause`. Drill in.
     const original = (uploadErr as any).originalError as Error | undefined
-    const cause    = original ? (original as any).cause : undefined
     console.error('[asset-pipeline] upload error:', {
-      message:    uploadErr.message,
-      name:       uploadErr.name,
+      message: uploadErr.message,
       statusCode: (uploadErr as any).statusCode,
-      originalError: original ? {
-        message: original.message,
-        name:    original.name,
-        code:    (original as any).code,
-        cause:   cause ? {
-          message: cause.message,
-          name:    cause.name,
-          code:    (cause as any).code,
-          errno:   (cause as any).errno,
-          syscall: (cause as any).syscall,
-        } : null,
-        stackTop: original.stack?.split('\n').slice(0, 4).join('\n'),
-      } : null,
+      original: original ? original.message : null,
     })
     throw new Error(`Supabase upload failed for ${path}: ${uploadErr.message}`)
   }
@@ -192,24 +229,21 @@ async function uploadAndSign(
   const { data, error: signErr } = await sb.storage
     .from(BUCKET)
     .createSignedUrl(path, SIGNED_URL_EXPIRY_SEC)
+
   if (signErr || !data?.signedUrl) {
     throw new Error(`Supabase signed URL failed for ${path}: ${signErr?.message}`)
   }
-
-  console.log(`[asset-pipeline] uploaded ${path} → signed URL (expires in ${SIGNED_URL_EXPIRY_SEC}s)`)
   return data.signedUrl
 }
 
 // ── ORCHESTRATOR ──────────────────────────────────────────────
 /**
- * Main entry point. Call this from the Stripe webhook handler once payment confirms.
+ * Call this from the print webhook once payment confirms.
  *
- * Returns a public URL Prodigi can GET to fetch the print-ready asset.
- *
- * @param imageB64    Source render as base64 (no data: prefix)
- * @param renderId    Stable identifier for this render — used as storage key
- * @param size        '8x10' | '12x16' | '18x24'
- * @param finish      'unframed' | 'framed'
+ * @param imageB64  The crafted piece as base64 (no data: prefix)
+ * @param renderId  Stable identifier — the storage key
+ * @param size      '8x8' | '12x12' | '16x16' | '20x20'
+ * @param finish    the SKU family
  */
 export async function preparePrintAsset(input: {
   imageB64: string
@@ -217,25 +251,56 @@ export async function preparePrintAsset(input: {
   size:     PrintSize
   finish:   PrintFinish
 }): Promise<{
-  signedUrl: string
-  width:     number
-  height:    number
-  upscaled:  boolean
+  signedUrl:   string
+  width:       number
+  height:      number
+  upscaled:    boolean
+  scale:       number
   storagePath: string
 }> {
   const { imageB64, renderId, size, finish } = input
+  const entry = getSku(size, finish)
+  const targetW = entry.requiredPx.w
+  const targetH = entry.requiredPx.h
 
-  // 1. Ensure resolution meets target
-  const { b64, width, height, upscaled } = await ensurePrintResolution(imageB64, size, finish)
+  // The key carries the finish: the same piece at 12×12 on canvas and 12×12
+  // framed need different pixel counts, and the old key collided.
+  const path = `${renderId}/${finish}-${size}.jpg`
 
-  // 2. Upload + sign
-  const signedUrl = await uploadAndSign(b64, renderId, size)
+  const src = await toUpscaleInput(imageB64)
+  const longEdge = Math.max(src.w, src.h)
+  const targetLong = Math.max(targetW, targetH)
+
+  let working: Buffer
+  let scale = 0
+  let upscaled = false
+
+  if (longEdge >= targetLong) {
+    // Nothing in the current catalogue reaches here from a 1K craft, but a
+    // future larger render would, and paying for an upscale that changes
+    // nothing would be silly.
+    console.log(`[asset-pipeline] ${size} ${finish}: source already ${longEdge}px, no upscale`)
+    working = src.buf
+  } else {
+    // Round up a tenth so we never land under the target and rely on the
+    // resize to enlarge, which would undo the point of upscaling.
+    scale = Math.min(MAX_SCALE, Math.ceil((targetLong / longEdge) * 10) / 10)
+    console.log(
+      `[asset-pipeline] ${size} ${finish}: ${longEdge}px → ${targetLong}px, ${scale}×`
+    )
+    working = await upscale(src.buf, scale)
+    upscaled = true
+  }
+
+  const print = await toPrintJpeg(working, targetW, targetH)
+  const signedUrl = await uploadAndSign(print.buf, path)
 
   return {
     signedUrl,
-    width,
-    height,
+    width:  print.w,
+    height: print.h,
     upscaled,
-    storagePath: `${renderId}/${size}.jpg`,
+    scale,
+    storagePath: path,
   }
 }

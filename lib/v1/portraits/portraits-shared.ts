@@ -456,6 +456,149 @@ export interface PortraitsRefinements {
   sceneDetail?: boolean
 }
 
+// ── POSE ──────────────────────────────────────────────────────
+// The one thing composed at request time. Every other part of a Portraits
+// prompt is whole and sent verbatim (bodies-are-whole, 2026-08-01); pose is
+// the deliberate exception, because the customer chooses it after the effect.
+//
+// Rich wrote and shot all five 2026-08-03 against neon, mercury and starfield
+// — the three darkest bodies in the catalog — and the bodies held their own
+// light and background in every case. The lighting language inside these
+// clauses is his and stays.
+//
+// 'as_photographed' is the default and appends NOTHING: the source pose is
+// preserved by saying nothing about it.
+export type PortraitsPoseId =
+  | 'as_photographed'
+  | 'smiling'
+  | 'laughing'
+  | 'thoughtful'
+  | 'dramatic'
+  | 'goofy'
+
+export const DEFAULT_POSE: PortraitsPoseId = 'as_photographed'
+
+// ═════════════════════════════════════════════════════════════
+// STYLE REFERENCE CLAUSE
+// ═════════════════════════════════════════════════════════════
+// Appended only when a plate is actually sent. Without it NB2 reads the
+// trailing image as a person to resemble rather than a sample to imitate,
+// and copies its facial structure and expression along with its costume.
+// Observed on renaissance_woman 2026-08-03: the plate's narrow oval, long
+// nose and closed mouth all reached the render.
+//
+// Composed, not baked into the 63 bodies, because it must not be present
+// when no plate is sent — a reference to a non-existent image is noise.
+
+export const STYLE_REF_CLAUSE =
+  'The additional image is a style reference only. Take from it the period, ' +
+  'costume, setting, material, palette and lighting. Take nothing of the ' +
+  'face: the facial structure, proportions, features, hair and expression ' +
+  'come from the source photograph alone. The person in the style reference ' +
+  'is not the subject.'
+
+export const POSE_PHRASE: Record<PortraitsPoseId, string> = {
+  as_photographed: '',
+
+  smiling:
+    'A warm, genuine smile with relaxed eyes and natural confidence. Golden side ' +
+    'light and soft fill create a bright, welcoming portrait with subtle rim light ' +
+    'separating the subject from the background.',
+
+  laughing:
+    'Caught in an authentic burst of laughter, eyes bright and full of life. Warm ' +
+    'sunlight and lively rim lighting create sparkling highlights, giving the ' +
+    'portrait energy and joy. Maintain likeness.',
+
+  thoughtful:
+    'Eyes focused into the distance with a calm, reflective expression. Soft ' +
+    'directional window light gently models the face, with quiet shadows and muted ' +
+    'contrast for an intimate, contemplative portrait.',
+
+  dramatic:
+    'Frozen mid-performance, leaning forward with one hand extended as if ' +
+    'commanding the room. Powerful expression, dynamic posture and sweeping strong ' +
+    'cinematic light with bold highlights, deep shadows and a glowing rim light ' +
+    'create a portrait that demands attention. Camera moves in to neck and face, ' +
+    'camera angle even with the neck.',
+
+  goofy:
+    'A playful, exaggerated expression with a silly face, raised eyebrows or ' +
+    'crossed eyes while remaining unmistakably the same person. Bright, cheerful ' +
+    'lighting with soft wraparound illumination enhances the lighthearted mood.',
+}
+
+export function isPoseId(v: any): v is PortraitsPoseId {
+  return typeof v === 'string' && v in POSE_PHRASE
+}
+
+// ═════════════════════════════════════════════════════════════
+// SUBJECT — the gender axis
+// ═════════════════════════════════════════════════════════════
+// Mirrors the `Subject` type in style-refs.ts. Declared here rather than
+// imported because style-refs.ts is server-only — it reads the filesystem
+// and must never reach the browser.
+
+export type PortraitsSubject = 'man' | 'woman'
+
+/**
+ * Age bracket from analyze. Mirrors DetectedAgeGroup in portraits-refine.ts,
+ * declared here so the request type does not pull a server-only module.
+ */
+export type PortraitsAgeGroup =
+  | 'child' | 'teen' | 'young' | 'adult' | 'mature' | 'senior'
+
+const YOUNG_AGE_GROUPS = new Set<string>(['child', 'teen'])
+
+/**
+ * Whether to send style-reference plates at all.
+ *
+ * Every plate in the catalog is an adult, and a style ref outranks the source
+ * photograph — so an adult plate drags a child's face toward an adult one.
+ * A child plate would do the same thing with a different child. For a young
+ * subject the body alone is the safer instruction: weaker on style, but it
+ * cannot overwrite the face.
+ *
+ * Revisit when child plates exist per effect.
+ */
+export function isAgeGroup(v: unknown): v is PortraitsAgeGroup {
+  return v === 'child' || v === 'teen' || v === 'young' ||
+         v === 'adult' || v === 'mature' || v === 'senior'
+}
+
+export function shouldSendStyleRefs(ageGroup?: string | null): boolean {
+  return !(ageGroup && YOUNG_AGE_GROUPS.has(ageGroup))
+}
+
+export function isSubject(v: unknown): v is PortraitsSubject {
+  return v === 'man' || v === 'woman'
+}
+
+/** analyze's detected_gender ('f' | 'm' | null) -> a subject. */
+export function subjectFromDetectedGender(g: unknown): PortraitsSubject | undefined {
+  if (g === 'f') return 'woman'
+  if (g === 'm') return 'man'
+  return undefined
+}
+
+/**
+ * The effect id to actually render, given the subject.
+ *
+ * Seven Another Age effects carry a `_woman` twin with its own prompt body
+ * and its own plates. A woman asking for `elizabethan` should get
+ * `elizabethan_woman`. Everything else — every material effect — has no
+ * twin and resolves to itself; the subject still filters its plates.
+ */
+export function resolvePresetForSubject(
+  presetId: PortraitsPresetId,
+  subject?: PortraitsSubject,
+): PortraitsPresetId {
+  if (subject !== 'woman') return presetId
+  if (presetId.endsWith('_woman')) return presetId
+  const variant = `${presetId}_woman` as PortraitsPresetId
+  return variant in PRESET_LABELS ? variant : presetId
+}
+
 export interface PortraitsGenerateRequest {
   source_image_b64:        string
   additional_images_b64?:  string[]
@@ -464,6 +607,18 @@ export interface PortraitsGenerateRequest {
   style_id:                PortraitsStyleId
   preset_id:               PortraitsPresetId
   location_id?:            LocationId
+  // Chosen on the pose floor. Absent → DEFAULT_POSE, which appends nothing.
+  pose_id?:                PortraitsPoseId
+
+  // Gender of the person in the source, from analyze's detected_gender.
+  // Selects the gendered prompt body where one exists (elizabethan ->
+  // elizabethan_woman) and filters the style-ref plates. Absent or 'man'
+  // leaves the requested preset untouched.
+  subject?:                PortraitsSubject
+
+  // Age bracket from analyze. 'child' and 'teen' suppress the style-ref
+  // plates — see shouldSendStyleRefs. Absent means plates are sent.
+  age_group?:              PortraitsAgeGroup
   scale?:                  Scale
   aspect_ratio?:           string
 

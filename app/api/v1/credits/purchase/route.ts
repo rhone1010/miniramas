@@ -173,12 +173,17 @@ export async function POST(req: NextRequest) {
     `[credits/purchase] ${sku.id} ${sku.count}cr $${(sku.price_cents / 100).toFixed(2)} owner=${ownerKey} session=${session.id}`,
   )
 
+  // The stage is a static HTML file — no build step, no process.env. The
+  // publishable key can only reach the browser in a response, so it travels
+  // with the client secret. It is the one Stripe key meant to be public;
+  // the secret key never leaves the server.
   return NextResponse.json({
-    clientSecret: session.client_secret,   // ← was `url`; the form is ours now
-    sessionId:    session.id,
-    credits:      sku.count,
-    amountCents:  sku.price_cents,
-    label:        sku.display_name,
+    clientSecret:   session.client_secret,   // ← was `url`; the form is ours now
+    publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || '',
+    sessionId:      session.id,
+    credits:        sku.count,
+    amountCents:    sku.price_cents,
+    label:          sku.display_name,
   })
 }
 

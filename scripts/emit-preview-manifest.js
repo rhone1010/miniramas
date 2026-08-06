@@ -19,8 +19,20 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const DIR = path.join(ROOT, 'public', 'previews', 'effects');
+const PREV = path.join(ROOT, 'public', 'previews');
 const OUT = path.join(ROOT, 'public', 'previews', 'effects-manifest.json');
+
+/* THREE TREES, ONE RULE — <id>_<gender>.<ext>, and the extension varies.
+   Pose men are .png and pose women are .jpg; one style-ref is .jpeg. So
+   nothing anywhere builds a filename from an id: the manifest carries the
+   whole name, read off disk.
+
+     effects  previews/effects/<id>/1_man.jpg   — a folder per effect
+     silos    previews/silos/<id>_man.jpg       — flat
+     poses    previews/pose/<id>_man.png        — flat  */
+const DIR = path.join(PREV, 'effects');
+const SILO_DIR = path.join(PREV, 'silos');
+const POSE_DIR = path.join(PREV, 'pose');
 
 if (!fs.existsSync(DIR)) {
   console.error('no such directory: ' + DIR);
@@ -80,18 +92,52 @@ fs.readdirSync(DIR, { withFileTypes: true })
     if (pick.woman && !pick.man) notes.push(d.name + ' — woman only');
   });
 
+/* The flat trees. Same suffix rule, no folder — the id is the stem. */
+function flatTree(dir) {
+  const picked = {};
+  if (!fs.existsSync(dir)) return picked;
+  fs.readdirSync(dir)
+    .filter((f) => IMG.test(f))
+    .sort((a, b) => a.localeCompare(b))
+    .forEach((f) => {
+      const stem = f.replace(IMG, '');
+      const m = stem.match(/^(.*?)_(man|male|woman|female)$/i);
+      const id = m ? m[1] : stem;
+      const who = m ? (/^(man|male)$/i.test(m[2]) ? 'man' : 'woman') : 'neutral';
+      if (!picked[id]) picked[id] = { man: null, woman: null, neutral: null };
+      if (!picked[id][who]) picked[id][who] = f;
+    });
+  return picked;
+}
+
+const silos = flatTree(SILO_DIR);
+const poses = flatTree(POSE_DIR);
+
 const json = {
   generatedAt: new Date().toISOString(),
   base: '/previews/effects/',
+  siloBase: '/previews/silos/',
+  poseBase: '/previews/pose/',
   effects: out,
+  silos,
+  poses,
 };
 
 fs.writeFileSync(OUT, JSON.stringify(json, null, 2) + '\n', 'utf8');
 
 const ids = Object.keys(out);
 const gendered = ids.filter((id) => out[id].man || out[id].woman);
-console.log(
-  'wrote ' + path.relative(ROOT, OUT) + ' — ' + ids.length + ' effects, ' +
-  gendered.length + ' with a gendered plate'
-);
-notes.forEach((n) => console.log('  · ' + n));
+function report(name, tree) {
+  const k = Object.keys(tree);
+  const both = k.filter((id) => tree[id].man && tree[id].woman).length;
+  console.log('  ' + name + ': ' + k.length + ', ' + both + ' with both');
+  k.filter((id) => !(tree[id].man && tree[id].woman))
+   .forEach((id) => console.log('    · ' + id + ' — ' +
+     (tree[id].man ? 'man only' : tree[id].woman ? 'woman only' : 'ungendered')));
+}
+
+console.log('wrote ' + path.relative(ROOT, OUT));
+console.log('  effects: ' + ids.length + ', ' + gendered.length + ' with a gendered plate');
+notes.forEach((n) => console.log('    · ' + n));
+report('silos', silos);
+report('poses', poses);

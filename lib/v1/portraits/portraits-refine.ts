@@ -62,11 +62,14 @@ export function sanitizeTweak(raw: unknown): string | undefined {
 // reliably picks the photo's compositional subject given a single-subject
 // minimal prompt).
 
-const FACE_VISIBILITY_PROMPT = `You are looking at a source photograph that will be used to generate a single-subject miniature portrait sculpture.
+const AGE_GROUPS: string[] = ['child', 'teen', 'young', 'adult', 'mature', 'senior']
+
+const FACE_VISIBILITY_PROMPT = `You are looking at a source photograph that will be used to craft a single-subject portrait piece.
 
 Your job is to:
 1. Determine whether at least one HERO SUBJECT face is clearly visible.
 2. Count the HERO SUBJECTS in the photograph — the people who are clearly intended as the focal subject(s), not background bystanders or crowds.
+3. Report the hero subject's apparent GENDER PRESENTATION and AGE BRACKET. Use your best visual estimate; do not return null for gender.
 
 A HERO SUBJECT is someone who:
 - Is prominently positioned (foreground or compositionally central)
@@ -82,6 +85,8 @@ Respond with ONLY a JSON object:
 {
   "face_visible": <boolean — at least one usable hero face is visible>,
   "subject_count_estimate": <int 1-20 — number of hero subjects>,
+  "gender": "<'f' for female or 'm' for male — the hero subject>",
+  "age_group": "<one of: child (0-11), teen (12-17), young (18-29), adult (30-49), mature (50-64), senior (65+)>",
   "reason": "<short, one sentence>"
 }
 
@@ -90,7 +95,13 @@ No preamble, no markdown.`
 export async function detectFaceVisibility(input: {
   sourceImageB64: string
   openaiApiKey:   string
-}): Promise<{ face_visible: boolean; subject_count_estimate: number; reason: string }> {
+}): Promise<{
+  face_visible:           boolean
+  subject_count_estimate: number
+  gender:                 DetectedGender | null
+  age_group:              DetectedAgeGroup | null
+  reason:                 string
+}> {
   const openai = new OpenAI({ apiKey: input.openaiApiKey })
 
   const response = await openai.chat.completions.create({
@@ -112,10 +123,15 @@ export async function detectFaceVisibility(input: {
     return {
       face_visible:           Boolean(parsed.face_visible),
       subject_count_estimate: Math.max(1, Math.min(20, Number(parsed.subject_count_estimate) || 1)),
+      gender:    parsed.gender === 'f' || parsed.gender === 'm' ? parsed.gender : null,
+      age_group: AGE_GROUPS.includes(parsed.age_group) ? parsed.age_group : null,
       reason:                 String(parsed.reason || 'no reason given').slice(0, 200),
     }
   } catch {
-    return { face_visible: true, subject_count_estimate: 1, reason: 'detection parse failed' }
+    return {
+      face_visible: true, subject_count_estimate: 1,
+      gender: null, age_group: null, reason: 'detection parse failed',
+    }
   }
 }
 
@@ -125,9 +141,9 @@ export async function detectFaceVisibility(input: {
 // One subject in, one PerFigureScore out. Pass threshold ≥8/10 by default
 // (see SINGLE_FACE_THRESHOLD in portraits-shared.ts).
 
-const SINGLE_FACE_SCORE_PROMPT = `You are scoring a single-subject miniature portrait render against the source photograph.
+const SINGLE_FACE_SCORE_PROMPT = `You are scoring a single-subject crafted portrait against the source photograph.
 
-The miniature has been intentionally stylized as a sculpted bust or figurine — the material register is correct and should NOT factor into your score. Score ONLY facial likeness preservation.
+The piece has been intentionally transformed — into a material, a costume of another era, or an artistic medium. That transformation is correct and should NOT factor into your score. Period dress, an unfamiliar setting and a changed medium are all expected. Score ONLY facial likeness preservation.
 
 Compare the rendered face to the hero subject in the source:
 - Is the rendered figure recognizable as the same person?
@@ -267,7 +283,7 @@ export async function scoreHolisticCaricature(input: {
 // The model returns face size as a percentage of the photo's shorter side.
 // We compute absolute pixel size with sharp().
 
-const SOURCE_SET_PROMPT = `You are evaluating one or more source photographs that will be used as the basis for a single-subject stylized portrait sculpture.
+const SOURCE_SET_PROMPT = `You are evaluating one or more source photographs that will be used as the basis for a single-subject crafted portrait.
 
 For EACH photograph (in the order provided), return:
 - "sharpness": "good" | "fair" | "poor"

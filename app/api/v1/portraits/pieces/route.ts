@@ -2,15 +2,30 @@
 //
 // Durable "My Collection" persistence (migration 006).
 //
-//   POST — persist one finished crafted piece: upload its JPEG to the private
-//          'collection' bucket and insert a collection_pieces row scoped to the
-//          caller's owner_key (auth user id when signed in, else a browser guest
-//          token). Returns the new piece with a signed image URL.
-//   GET  — list the caller's pieces (newest first) as signed URLs.
+//   POST  — persist one finished crafted piece: upload its JPEG to the private
+//           'collection' bucket and insert a collection_pieces row scoped to the
+//           caller's owner_key. Returns the new piece with a signed image URL.
+//   GET   — list the caller's pieces (newest first) as signed URLs.
+//           ?archived=1 returns the archive instead of the wall.
+//           ?all=1      returns both, for the Print Shop.
+//   PATCH — put a piece away, or bring it back.
 //
 // Failure is soft on purpose: if Supabase isn't configured the endpoints degrade
 // to a no-op / empty list so the in-session workshop keeps working. Persistence
-// is additive to the client's live state.queue, never a gate on crafting.
+// is additive to the client's live state, never a gate on crafting.
+//
+// CUI V25 · 2026-08-03 · ARCHIVING (migration 014)
+//
+//   A customer with dozens of pieces needs to tidy the wall. Ruled: archive,
+//   not delete.
+//
+//   NOTHING HERE DESTROYS ANYTHING. There is no DELETE handler and there
+//   should not be one — a Crafted Image cost ten credits, and a click must
+//   not be able to throw the customer's work away.
+//
+//   AN ARCHIVED PIECE IS STILL PRINTABLE. Ruled 2026-08-03. Archiving is
+//   tidying a wall, not discarding work, so the Print Shop asks for ?all=1
+//   and sees everything. Only the collection view filters.
 
 import { NextResponse } from 'next/server'
 import { randomUUID }   from 'crypto'
@@ -25,9 +40,7 @@ const SIGNED_URL_TTL = 60 * 60 * 24   // 24h — a browsing session's worth
 // Service-role client for the WRITE — instantiated here (server-side only) with
 // SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY, the exact pair the generate route
 // uses to write. The write model is service-role-only: never grant insert to
-// anon, never add an anon RLS insert policy. (The shared @/lib/supabase admin is
-// built from NEXT_PUBLIC_SUPABASE_URL; when that origin differs from SUPABASE_URL
-// the service JWT is rejected and the insert falls back to anon → 42501.)
+// anon, never add an anon RLS insert policy.
 function svc() {
   const url = process.env.SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -75,9 +88,6 @@ export async function POST(req: Request) {
     // Auto-naming — generate the label at persist time (after a successful upload,
     // so a failed craft never burns a sequence number):
     //   [Series] - [Effect] - [User Name] - [###]
-    // Absent segments are omitted. [User Name] = account name (unavailable via
-    // magic-link) → email local-part → omitted. [###] = atomic account-wide seq
-    // (008_collection_label_seq). If the RPC is unavailable, falls back to 001.
     const SERIES_LABEL: Record<string, string> = {
       portraits: 'Portraits', pets: 'Pets', groups: 'Groups',
       actionmini: 'Action', action: 'Action', wallpapers: 'Wallpapers',
@@ -111,7 +121,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       piece: { id: pieceId, series: row.series, preset: row.preset, label: row.label,
-               mode: row.mode, image_url: signed?.signedUrl ?? null, created_at: new Date().toISOString() },
+               mode: row.mode, archived: false,
+               image_url: signed?.signedUrl ?? null, created_at: new Date().toISOString() },
     })
   } catch (e: any) {
     return NextResponse.json({ ok: false, reason: e?.message || 'error' }, { status: 500 })
@@ -126,14 +137,31 @@ export async function GET(req: Request) {
     const { ownerKey } = await resolveOwner(url.searchParams.get('guest_key'))
     if (!ownerKey) return NextResponse.json({ pieces: [] })
 
-    const { data, error } = await db
-      .from('collection_pieces')
-      .select('id, series, preset, label, mode, image_path, source_path, meta, created_at')
-      .eq('owner_key', ownerKey)
-      .order('created_at', { ascending: false })
-    if (error || !data) return NextResponse.json({ pieces: [] })
+    // Three views of the same shelf:
+    //   default    the wall — what the customer has not put away
+    //   ?archived=1 the archive
+    //   ?all=1     everything, which is what the Print Shop asks for, because
+    //              an archived piece is still printable (ruled 2026-08-03)
+    const wantAll      = url.searchParams.get('all') === '1'
+    const wantArchived = url.searchParams.get('archived') === '1'
 
-    const pieces = await Promise.all(data.map(async (r) => {
+    let q = db
+      .from('collection_pieces')
+      .select('id, series, preset, label, mode, image_path, source_path, meta, created_at, archived, archived_at')
+      .eq('owner_key', ownerKey)
+
+    if (!wantAll) q = q.eq('archived', wantArchived)
+
+    const { data, error } = await q.order('created_at', { ascending: false })
+    if (error || !data) {
+      // A missing column means migration 014 has not been applied. Say so
+      // once rather than returning an empty collection to a customer who has
+      // fifty pieces.
+      if (error) console.error('[pieces] read failed:', error.message)
+      return NextResponse.json({ pieces: [] })
+    }
+
+    const pieces = await Promise.all(data.map(async (r: any) => {
       const { data: sImg } = await db.storage.from(BUCKET).createSignedUrl(r.image_path, SIGNED_URL_TTL)
       let sourceUrl: string | null = null
       if (r.source_path) {
@@ -142,11 +170,66 @@ export async function GET(req: Request) {
       }
       return {
         id: r.id, series: r.series, preset: r.preset, label: r.label, mode: r.mode,
-        image_url: sImg?.signedUrl ?? null, source_url: sourceUrl, meta: r.meta, created_at: r.created_at,
+        archived: !!r.archived, archived_at: r.archived_at ?? null,
+        image_url: sImg?.signedUrl ?? null, source_url: sourceUrl,
+        meta: r.meta, created_at: r.created_at,
       }
     }))
     return NextResponse.json({ pieces })
   } catch {
     return NextResponse.json({ pieces: [] })
+  }
+}
+
+/**
+ * PATCH — put a piece away, or bring it back.
+ *
+ * { id: '<piece id>', archived: true | false }
+ *
+ * Scoped to the caller's owner_key in the WHERE clause, not checked first
+ * and updated after: a read-then-write here would let a crafted id from one
+ * account touch a row in another between the two statements.
+ */
+export async function PATCH(req: Request) {
+  try {
+    const db = svc()
+    if (!db) return NextResponse.json({ ok: false, reason: 'not_configured' }, { status: 503 })
+
+    const body = await req.json().catch(() => ({}))
+    const { ownerKey } = await resolveOwner(body.guest_key)
+    if (!ownerKey) return NextResponse.json({ ok: false, reason: 'no_owner' }, { status: 401 })
+
+    const id = typeof body.id === 'string' ? body.id.trim() : ''
+    if (!id) return NextResponse.json({ ok: false, reason: 'id required' }, { status: 400 })
+    if (typeof body.archived !== 'boolean') {
+      return NextResponse.json({ ok: false, reason: 'archived must be true or false' }, { status: 400 })
+    }
+
+    // The two columns move together — migration 014 has a CHECK that refuses
+    // any other combination.
+    const { data, error } = await db
+      .from('collection_pieces')
+      .update({
+        archived:    body.archived,
+        archived_at: body.archived ? new Date().toISOString() : null,
+      })
+      .eq('id', id)
+      .eq('owner_key', ownerKey)
+      .select('id, archived')
+
+    if (error) {
+      console.error('[pieces] archive failed:', error.message)
+      return NextResponse.json({ ok: false, reason: error.message }, { status: 500 })
+    }
+    if (!data || !data.length) {
+      // Either no such piece, or it belongs to somebody else. The customer
+      // gets the same answer for both; which one it was is not their business
+      // and telling them would confirm the id exists.
+      return NextResponse.json({ ok: false, reason: 'not_found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ ok: true, id: data[0].id, archived: data[0].archived })
+  } catch (e: any) {
+    return NextResponse.json({ ok: false, reason: e?.message || 'error' }, { status: 500 })
   }
 }

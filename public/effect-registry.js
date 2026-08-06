@@ -1,12 +1,12 @@
 /* GENERATED FILE — DO NOT EDIT.
    Source: lib/v1/portraits/effect-registry.ts  (CENG-owned)
    Regenerate: node scripts/emit-effect-registry.js
-   Emitted: 2026-08-03T01:14:27.336Z
+   Emitted: 2026-08-03T22:48:53.900Z
 
    Labels are plain unicode. Key on .id, never on .label.
    Offer only effects where body === 'live' — the gate refuses the rest. */
 window.EFFECT_REGISTRY = {
-  "generatedAt": "2026-08-03T01:14:27.336Z",
+  "generatedAt": "2026-08-03T22:48:53.900Z",
   "silos": [
     {
       "id": "another_age",
