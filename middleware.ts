@@ -6,7 +6,9 @@ import { NextRequest, NextResponse } from 'next/server';
  *  1. Home is the workshop: / serves public/portraits.html.
  *     The old homepage is still reachable at /home.
  *  2. Gate: ungated visits get the real page with a dimmed overlay and
- *     the passcode card above it. One code, one cookie, 30 days.
+ *     the passcode card above it. The cookie is a session cookie, so it
+ *     dies when the browser closes, and it also expires after an hour
+ *     of inactivity — whichever comes first. /logout ends it.
  *
  *  The page behind the gate is real and therefore readable by anyone
  *  who views source. Rich's call, 2026-08-06: accepted.
@@ -16,7 +18,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * ------------------------------------------------------------------ */
 
 const COOKIE = 'liten_access';
-const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+const IDLE_MS = 60 * 60 * 1000; // 1 hour of inactivity
 const BYPASS = 'x-liten-gate-bypass';
 
 /* Extensionless paths -> files in public/. Anything absent 404s
@@ -53,28 +55,56 @@ export async function middleware(req: NextRequest) {
      the page behind it needs its images. */
   if (ASSET.test(url.pathname)) return NextResponse.next();
 
-  /* Correct code supplied -> set cookie, redirect to the clean URL so
-     the code never sits in the address bar or a shared screenshot. */
+  /* Deliberate end of session. */
+  if (url.pathname === '/logout') {
+    const res = NextResponse.redirect(new URL('/', url.origin));
+    res.cookies.set(COOKIE, '', { path: '/', maxAge: 0 });
+    return res;
+  }
+
+  /* Correct code supplied -> issue the session, redirect to the clean
+     URL so the code never sits in the address bar or a screenshot. */
   const supplied = url.searchParams.get('access');
   if (supplied !== null && supplied === code) {
     const clean = new URL(url.toString());
     clean.searchParams.delete('access');
     const res = NextResponse.redirect(clean);
-    res.cookies.set(COOKIE, code, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: MAX_AGE,
-      path: '/',
-    });
+    issue(res, code);
     return res;
   }
 
-  /* Already through. */
-  if (req.cookies.get(COOKIE)?.value === code) return route(req, url);
+  /* Already through, and not idle too long. Every page request
+     re-stamps the cookie, so the hour is idle time, not total. */
+  if (valid(req.cookies.get(COOKIE)?.value, code)) {
+    const res = route(req, url);
+    issue(res, code);
+    return res;
+  }
 
   /* Otherwise: the real page, with the gate over it. */
   return gatedPage(req, url, supplied !== null);
+}
+
+/* Cookie value is the code and the time it was last seen, so the idle
+   window is checked without any server-side store. No maxAge: the
+   cookie dies when the browser closes. */
+function issue(res: NextResponse, code: string) {
+  res.cookies.set(COOKIE, code + '|' + Date.now(), {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+  });
+}
+
+function valid(value: string | undefined, code: string) {
+  if (!value) return false;
+  const cut = value.lastIndexOf('|');
+  if (cut === -1) return false;
+  if (value.slice(0, cut) !== code) return false;
+  const seen = Number(value.slice(cut + 1));
+  if (!Number.isFinite(seen)) return false;
+  return Date.now() - seen < IDLE_MS;
 }
 
 function target(url: URL) {
