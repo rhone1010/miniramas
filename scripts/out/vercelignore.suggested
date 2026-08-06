@@ -1,0 +1,85 @@
+# .vercelignore — SUGGESTED. Review before using.
+#
+# Files listed here are not uploaded to Vercel. They are NOT deleted, NOT
+# untracked, and still on disk and in git. This is the mechanism for
+# "keep it, do not ship it".
+#
+# Generated 2026-08-06 by scripts/audit-dead-weight.js
+
+# Every stage revision except the current one. An old build still takes
+# money at old prices.
+public/litenco-stage-2026-07-30-s72.html
+public/litenco-stage-2026-07-31-s73.html
+public/litenco-stage-2026-07-31-s74.html
+public/litenco-stage-2026-07-31-s75.html
+public/litenco-stage-2026-07-31-s76.html
+public/litenco-stage-2026-07-31-s77.html
+public/litenco-stage-2026-07-31-s78.html
+public/litenco-stage-2026-07-31-s79.html
+public/litenco-stage-2026-07-31-s80.html
+public/litenco-stage-2026-08-01-s81.html
+public/litenco-stage-2026-08-01-s82.html
+public/litenco-stage-2026-08-01-s83.html
+public/litenco-stage-2026-08-01-s84.html
+public/litenco-stage-2026-08-01-s85.html
+public/litenco-stage-2026-08-01-s86.html
+public/litenco-stage-2026-08-01-s87.html
+public/litenco-stage-2026-08-01-s88.html
+public/litenco-stage-2026-08-01-s89.html
+public/litenco-stage-2026-08-01-s90.html
+public/litenco-stage-2026-08-01-s91.html
+public/litenco-stage-2026-08-02-s92.html
+public/litenco-stage-2026-08-02-s93.html
+public/litenco-stage-2026-08-02-s94.html
+public/litenco-stage-2026-08-02-s95.html
+public/litenco-stage-2026-08-02-s96.html
+public/litenco-stage-2026-08-02-s97.html
+public/litenco-stage-2026-08-02-s99.html
+public/litenco-stage-2026-08-03-s100.html
+public/litenco-stage-2026-08-03-s101.html
+public/litenco-stage-2026-08-03-s102.html
+public/litenco-stage-2026-08-03-s103.html
+public/litenco-stage-2026-08-03-s104.html
+public/litenco-stage-2026-08-03-s106.html
+public/litenco-stage-2026-08-03-s107.html
+public/litenco-stage-2026-08-03-s108.html
+public/litenco-stage-2026-08-03-s109.html
+public/litenco-stage-2026-08-03-s110.html
+public/litenco-stage-2026-08-03-s111.html
+public/litenco-stage-2026-08-03-s112.html
+public/litenco-stage-2026-08-03-s113.html
+public/litenco-stage-2026-08-03-s114 - Copy.html
+public/litenco-stage-2026-08-03-s114.html
+public/litenco-stage-2026-08-03-s115.html
+public/litenco-stage-2026-08-03-s116.html
+public/litenco-stage-2026-08-04-s117.html
+public/litenco-stage-2026-08-04-s118.html
+public/litenco-stage-2026-08-04-s119.html
+public/litenco-stage-2026-08-04-s120.html
+public/litenco-stage-2026-08-04-s121.html
+public/litenco-stage-2026-08-04-s122.html
+public/litenco-stage-2026-08-04-s123.html
+public/litenco-stage-2026-08-04-s124.html
+public/litenco-stage-2026-08-05-s126.html
+public/litenco-stage-2026-08-05-s127.html
+public/litenco-stage-2026-08-05-s128.html
+
+# Build scripts and their records — the repo keeps them, Vercel has no use
+# for them.
+scripts/
+
+# Working notes.
+docs/
+_recovery/
+
+# Series not in the Aug 9 scope. REVIEW EACH ONE: excluding a folder that
+# something still imports will fail the build rather than slim it.
+# lib/v1/houses
+# app/api/v1/houses
+# lib/v1/landscapes
+# app/api/v1/landscapes
+# lib/v1/sportsmem
+# app/api/v1/sportsmem
+# lib/v1/moments
+# app/api/v1/moments
+
