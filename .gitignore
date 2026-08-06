@@ -50,3 +50,8 @@ _route-collection/
 _archive/
 *.bak-*
 *.bak2-*
+
+.vercel
+.env*
+
+*.log
