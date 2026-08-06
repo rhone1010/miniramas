@@ -182,7 +182,7 @@ body{font-family:var(--sans);color:var(--walnut);background:var(--warm-paper);li
 .gcap{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:64px 22px 16px;color:#fff;background:linear-gradient(transparent,#252935)}
 .gcap h3{font-family:var(--serif);font-style:italic;font-weight:500;font-size:2.4rem;line-height:1.05;color:#fff}
 .gtile.big .gcap h3{font-size:2.4rem}
-.gstep{font-family:var(--serif);font-style:italic;font-size:27px;line-height:1;cursor:pointer;border:none;border-radius:5px;background:rgba(240,234,224,.95);color:var(--oxblood);padding:9px 18px;margin-top:14px;opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s,background .15s;pointer-events:none}
+.gstep{display:inline-block;text-decoration:none;font-family:var(--serif);font-style:italic;font-size:27px;line-height:1;cursor:pointer;border:none;border-radius:5px;background:rgba(240,234,224,.95);color:var(--oxblood);padding:9px 18px;margin-top:14px;opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s,background .15s;pointer-events:none}
 .gtile:hover .gstep{opacity:1;transform:translateY(0);pointer-events:auto}
 .gtile.is-ph{background:linear-gradient(135deg,var(--champagne),var(--vellum))}
 .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
@@ -338,7 +338,7 @@ body{font-family:var(--sans);color:var(--walnut);background:var(--warm-paper);li
     <h2>Places &amp; People</h2><p>Where a story is set &mdash; and the people and creatures who matter.</p></div>
   <div class="gal"><div class="gtile big"><img src="/homepage/houses.jpg" alt="Houses"><div class="gcap"><h3>Houses</h3><button class="gstep">Step Inside Houses &rsaquo;</button></div></div>
     <div class="gtile std"><img src="/homepage/landscapes.jpg" alt="Landscapes"><div class="gcap"><h3>Landscapes</h3><button class="gstep">Step Inside Landscapes &rsaquo;</button></div></div>
-    <div class="gtile std"><img src="/homepage/portrait.jpg" alt="Portrait"><div class="gcap"><h3>Portrait</h3><button class="gstep">Step Inside Portrait &rsaquo;</button></div></div>
+    <div class="gtile std"><img src="/homepage/portrait.jpg" alt="Portrait"><div class="gcap"><h3>Portrait</h3><a class="gstep" href="/portraits">Step Inside Portrait &rsaquo;</a></div></div>
     <div class="gtile std"><img src="/homepage/groups.jpg" alt="Groups"><div class="gcap"><h3>Groups</h3><button class="gstep">Step Inside Groups &rsaquo;</button></div></div>
     <div class="gtile std is-ph"><div class="ph"><span class="ph-eb">Sample coming</span></div><div class="gcap"><h3>Pets</h3><button class="gstep">Step Inside Pets &rsaquo;</button></div></div></div>
 </section>
