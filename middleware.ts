@@ -161,132 +161,146 @@ function gate(wrong: boolean) {
 <style id="lg-style">
   html.lg-locked, html.lg-locked body{ overflow:hidden !important; }
 
+  /* coffee, half strength */
   #lg-scrim{
     position:fixed; inset:0; z-index:2147483000;
-    background:rgba(20,15,12,.25);
-    -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px);
+    background:rgba(51,38,32,.5);
   }
   #lg-wrap{
     position:fixed; inset:0; z-index:2147483001;
     display:flex; align-items:center; justify-content:center;
-    padding:40px 24px; overflow:auto;
+    padding:32px 20px; overflow:auto;
     font-family:'Cormorant Garamond',Georgia,serif;
-    color:#2a241e;
-  }
-  #lg-card{
-    --oxblood:#7d4242; --brass:#75623a; --ink:#2a241e;
-    position:relative; width:100%; max-width:860px;
-    background:linear-gradient(170deg,#f2ebdf 0%,#e9e1d3 46%,#e4dbca 100%);
-    border-radius:18px; overflow:hidden;
-    box-shadow:0 40px 90px rgba(0,0,0,.55);
-    padding:52px 48px 40px;
-    text-align:center;
-  }
-  #lg-card::after{
-    content:''; position:absolute; inset:0; pointer-events:none;
-    background-image:radial-gradient(rgba(42,36,30,.045) 1px, transparent 1px);
-    background-size:3px 3px;
   }
 
+  #lg-card{
+    position:relative; width:100%; max-width:660px;
+    background:
+      url("/textures/noise.png"),
+      linear-gradient(163deg,#f7f2e8 0%,#f1e9d9 42%,#e9dfcc 78%,#e3d8c2 100%);
+    background-size:180px 180px, cover;
+    background-blend-mode:multiply, normal;
+    border-radius:20px; overflow:hidden;
+    box-shadow:0 50px 110px rgba(0,0,0,.6), 0 0 0 1px rgba(123,92,58,.18);
+    padding:0 0 40px;
+    color:#2a241e;
+  }
+
+  /* --- figures: anchored top, fading inward and downward --------- */
+  #lg-card .lg-figs{
+    position:relative; height:400px; margin-bottom:-190px;
+  }
   #lg-card .lg-fig{
-    position:absolute; bottom:0; height:74%; width:auto; z-index:1;
+    position:absolute; top:0; height:400px; width:auto; z-index:1;
     pointer-events:none; user-select:none;
   }
   #lg-card .lg-w{ left:0;
-    -webkit-mask-image:linear-gradient(to right,#000 44%,transparent 95%);
-            mask-image:linear-gradient(to right,#000 44%,transparent 95%); }
+    -webkit-mask-image:linear-gradient(to right,#000 40%,transparent 92%);
+            mask-image:linear-gradient(to right,#000 40%,transparent 92%); }
   #lg-card .lg-m{ right:0;
-    -webkit-mask-image:linear-gradient(to left,#000 44%,transparent 95%);
-            mask-image:linear-gradient(to left,#000 44%,transparent 95%); }
+    -webkit-mask-image:linear-gradient(to left,#000 40%,transparent 92%);
+            mask-image:linear-gradient(to left,#000 40%,transparent 92%); }
   #lg-card .lg-fade{
-    position:absolute; left:0; right:0; bottom:0; height:48%; z-index:2;
-    background:linear-gradient(to bottom,rgba(233,225,211,0) 0%,#e7dfd0 60%,#e4dbca 100%);
+    position:absolute; left:0; right:0; top:0; height:440px; z-index:2;
+    background:linear-gradient(to bottom,
+      rgba(247,242,232,0) 0%,
+      rgba(245,239,227,.35) 42%,
+      rgba(242,235,221,.82) 66%,
+      #efe7d6 84%, #ece3d0 100%);
     pointer-events:none;
   }
 
-  #lg-card .lg-inner{ position:relative; z-index:3; }
-  #lg-card .lg-mark{ display:block; margin:0 auto 20px; width:252px; max-width:60%; height:auto; }
+  /* --- content --------------------------------------------------- */
+  #lg-card .lg-inner{ position:relative; z-index:3; padding:44px 52px 0; text-align:center; }
+  #lg-card .lg-mark{ display:block; margin:0 auto 14px; width:230px; max-width:64%; height:auto; }
 
   #lg-card .lg-rule{
-    display:flex; align-items:center; justify-content:center; gap:14px;
-    margin:0 auto 36px; max-width:330px;
+    display:flex; align-items:center; justify-content:center; gap:16px;
+    margin:0 auto 176px; max-width:400px;
   }
-  #lg-card .lg-rule i{ flex:1; height:1px; background:rgba(117,98,58,.42); }
-  #lg-card .lg-rule s{ color:#75623a; font-size:11px; line-height:1; text-decoration:none; }
+  #lg-card .lg-rule i{ flex:1; height:1px;
+    background:linear-gradient(to right,rgba(182,138,83,0),rgba(182,138,83,.55),rgba(182,138,83,0)); }
+  #lg-card .lg-rule s{ color:#b68a53; font-size:12px; line-height:1; text-decoration:none; }
 
   #lg-card h1{
     font-family:'Cormorant Garamond',Georgia,serif;
-    font-weight:500; font-size:50px; line-height:1.1; color:#2a241e;
-    margin:0 0 14px; letter-spacing:.005em;
+    font-weight:500; font-size:54px; line-height:1.08; color:#2a241e;
+    margin:0 0 14px; letter-spacing:.004em;
   }
   #lg-card .lg-lede{
-    font-style:italic; font-size:26px; line-height:1.4;
-    color:#7d4242; margin:0 0 26px;
+    font-style:italic; font-size:27px; line-height:1.35;
+    color:#7d4242; margin:0 0 28px;
   }
   #lg-card .lg-body{
-    font-size:23px; line-height:1.55; color:#2a241e;
-    margin:0 auto 18px; max-width:26em;
+    font-size:23px; line-height:1.5; color:#3d352c;
+    margin:0 auto 18px; max-width:19em;
   }
 
-  #lg-card form{ margin:44px auto 0; max-width:580px; text-align:left; }
+  /* --- form ------------------------------------------------------ */
+  #lg-card form{ margin:46px auto 0; max-width:520px; text-align:left; }
   #lg-card label{
     display:block; font-family:'Manrope',system-ui,sans-serif;
-    font-size:12px; font-weight:600; letter-spacing:.2em;
-    text-transform:uppercase; color:#75623a; margin:0 0 10px 4px;
+    font-size:13px; font-weight:600; letter-spacing:.22em;
+    text-transform:uppercase; color:#75623a; margin:0 0 12px 2px;
   }
   #lg-card .lg-field{ position:relative; }
   #lg-card input{
-    width:100%; padding:.85rem 3.2rem .85rem 1.3rem;
-    font-family:'Cormorant Garamond',Georgia,serif; font-size:22px;
-    color:#2a241e; background:#f6f1e7;
-    border:1px solid rgba(117,98,58,.38); border-radius:12px;
-    box-shadow:none;
+    width:100%; padding:.95rem 3.4rem .95rem 1.4rem;
+    font-family:'Cormorant Garamond',Georgia,serif; font-size:24px;
+    color:#2a241e; background:#f8f4ea;
+    border:1px solid rgba(123,92,58,.34); border-radius:14px;
+    box-shadow:inset 0 1px 3px rgba(42,36,30,.05);
   }
-  #lg-card input::placeholder{ color:rgba(42,36,30,.42); }
+  #lg-card input::placeholder{ color:rgba(42,36,30,.4); }
   #lg-card input:focus{ outline:none; border-color:#7d4242; }
   #lg-card .lg-eye{
-    position:absolute; top:50%; right:14px; transform:translateY(-50%);
+    position:absolute; top:50%; right:16px; transform:translateY(-50%);
     background:none; border:none; cursor:pointer; padding:6px;
     color:#75623a; line-height:0;
   }
   #lg-card .lg-go{
-    display:block; width:100%; margin:18px 0 0;
+    display:block; width:100%; margin:20px 0 0;
     font-family:'Manrope',system-ui,sans-serif;
-    font-size:15px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
-    color:#f3ece0; background:#3a2a22;
-    border:none; border-radius:12px; padding:1.05rem 1rem; cursor:pointer;
+    font-size:16px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
+    color:#f2e9d8; background:linear-gradient(180deg,#3f2e23,#332620);
+    border:none; border-radius:14px; padding:1.15rem 1rem; cursor:pointer;
+    box-shadow:0 2px 10px rgba(38,32,26,.28);
   }
-  #lg-card .lg-go:hover{ background:#7d4242; }
+  #lg-card .lg-go:hover{ background:linear-gradient(180deg,#7d4242,#6b3838); }
   #lg-card .lg-err{
-    font-family:'Manrope',system-ui,sans-serif; font-size:13px;
-    color:#7d4242; margin:12px 0 0; min-height:1.2em; text-align:center;
+    font-family:'Manrope',system-ui,sans-serif; font-size:14px;
+    color:#7d4242; margin:14px 0 0; min-height:1.2em; text-align:center;
   }
 
-  #lg-card .lg-foot{ margin-top:30px; }
-  #lg-card .lg-foot .lg-rule{ margin-bottom:14px; }
+  #lg-card .lg-foot{ margin-top:36px; }
+  #lg-card .lg-foot .lg-rule{ margin-bottom:18px; max-width:340px; }
   #lg-card .lg-foot p{
-    font-style:italic; font-size:21px; color:rgba(42,36,30,.7); margin:0;
+    font-style:italic; font-size:22px; color:rgba(61,53,44,.72); margin:0;
   }
 
-  @media (max-width:820px){
-    #lg-card .lg-fig{ display:none; }
-    #lg-card{ padding:40px 24px 32px; }
-    #lg-card h1{ font-size:38px; }
-    #lg-card .lg-lede{ font-size:23px; }
-    #lg-card .lg-body{ font-size:21px; }
+  @media (max-width:700px){
+    #lg-card .lg-figs{ height:300px; margin-bottom:-160px; }
+    #lg-card .lg-fig{ height:300px; }
+    #lg-card .lg-fade{ height:330px; }
+    #lg-card .lg-inner{ padding:32px 24px 0; }
+    #lg-card .lg-rule{ margin-bottom:130px; }
+    #lg-card h1{ font-size:40px; }
+    #lg-card .lg-lede{ font-size:24px; }
+    #lg-card .lg-body{ font-size:22px; }
   }
 </style>
 
 <div id="lg-scrim"></div>
 <div id="lg-wrap">
   <div id="lg-card">
-    <img class="lg-fig lg-w" src="/gate/gate_woman_image.png" alt="">
-    <img class="lg-fig lg-m" src="/gate/gate_man_image.png" alt="">
-    <div class="lg-fade"></div>
+    <div class="lg-figs">
+      <img class="lg-fig lg-w" src="/gate/gate_woman_image.png" alt="">
+      <img class="lg-fig lg-m" src="/gate/gate_man_image.png" alt="">
+      <div class="lg-fade"></div>
+    </div>
 
     <div class="lg-inner">
       <img class="lg-mark" src="/gate/liten-and-co.svg" alt="Liten &amp; Co">
-
       <div class="lg-rule"><i></i><s>&#9670;</s><i></i></div>
 
       <h1>You&rsquo;re Invited</h1>
@@ -299,7 +313,7 @@ function gate(wrong: boolean) {
         <div class="lg-field">
           <input id="lg-access" type="password" name="access" placeholder="Enter passcode">
           <button type="button" class="lg-eye" id="lg-eye" aria-label="Show passcode">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
               <path d="M1.5 12S5 5.5 12 5.5 22.5 12 22.5 12 19 18.5 12 18.5 1.5 12 1.5 12Z"/>
               <circle cx="12" cy="12" r="3.2"/>
             </svg>
