@@ -1,0 +1,29 @@
+# Liten & Co — deploy exclusions.
+# Nothing here is deleted or untracked. These files stay on disk and in
+# git; they simply do not upload to Vercel.
+#
+# Rule: only surfaces that are current and in scope for the soft launch
+# reach the domain. A superseded stage revision on a public URL takes
+# real money at old prices.
+
+# --- superseded stage revisions (55 files, ~15.2MB) ---
+public/litenco-stage-*.html
+
+# --- engine recovery bases and benches, not customer surfaces ---
+public/portraits_recover2.html
+public/portraits-b2.html
+public/liten-prompt-bench-v3.html
+public/groups-testbench.html
+public/print-config.html
+
+# --- series out of scope for Aug 1 ---
+public/houses.html
+public/landscapes.html
+public/interiors.html
+public/sportsmem.html
+public/actionmini.html
+public/groups.html
+public/pets.html
+
+# --- local logs ---
+*.log
