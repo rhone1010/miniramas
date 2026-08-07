@@ -125,12 +125,25 @@ export async function scoreIntake(input: {
   // customer-facing guidance: crop closer to the face for the truest
   // likeness.
   const faceSizeOk = input.mode !== 'subject' || Boolean(parsed.face_size_ok ?? true)
-  if (!faceSizeOk) reasons.unshift('face too small in frame for reliable likeness — crop closer')
+  if (!faceSizeOk) reasons.unshift('face is small in frame — likeness will hold better cropped closer')
 
-  const passed = input.resolutionOk && faceSizeOk && score >= input.threshold
+  // Softened 2026-08-07 on Rich's ruling. This was `&& faceSizeOk`, which no
+  // strictness setting could reach: a small face failed at 10 and at 1 alike.
+  // The calibration finding stands, so it still costs — three points off a
+  // ten-point score is heavy — but the dial now governs it like everything
+  // else. A genuinely tiny face still lands under the threshold and is still
+  // refused; a marginal one gets through at a loose setting.
+  //
+  // Note for CENG: the returned score now carries the penalty, so intake
+  // scores logged after this date are not directly comparable with those
+  // before it for sources where face_size_ok was false.
+  const FACE_SIZE_PENALTY = 3
+  const effectiveScore = faceSizeOk ? score : Math.max(1, score - FACE_SIZE_PENALTY)
+
+  const passed = input.resolutionOk && effectiveScore >= input.threshold
 
   return {
-    score,
+    score: effectiveScore,
     passed,
     reasons,
     signals: {
