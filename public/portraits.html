@@ -360,8 +360,22 @@ body{
   .mh-nav{ gap:16px; font-size:.85em }
   .mh-credits,.mh-cart{ height:34px; padding:0 .7em; font-size:.9em }
 }
+/* The name, quietly, before the number. Brass rather than gold so the
+   balance stays the thing the eye lands on. */
+.mh-credits .who{
+  max-width:11ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  color:var(--vellum-300); font-weight:400;
+}
+.mh-credits .who:after{
+  content:'\00b7'; padding:0 .1em 0 .45em; opacity:.55;
+}
+
 @media (max-width:1320px){
   .mh-nav{ gap:11px; font-size:.8em }
+  /* Ruled 2026-08-07: 'Crafted' goes before anything else shrinks. The
+     Series is Portraits; the surface carries the rest of the brand. */
+  #mhSeriesLabel .mh-crafted{ display:none }
+  .mh-credits .who{ max-width:8ch }
   .mh-series-btn{ font-size:.9em }
   .mh-credits .u{ display:none }   /* the number is the point */
 }
@@ -3706,7 +3720,7 @@ body.is-lboxed{ overflow:hidden }
   <nav class="mh-nav">
     <div class="mh-series">
       <button class="mh-series-btn" id="mhSeriesBtn" aria-expanded="false" aria-haspopup="true">
-        <span id="mhSeriesLabel">Crafted Portraits</span>
+        <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Portraits</span>
         <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
       </button>
       <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
@@ -3726,6 +3740,7 @@ body.is-lboxed{ overflow:hidden }
   </nav>
   <div class="mh-right">
     <button class="mh-credits" id="mhCreditsBtn" hidden>
+      <span class="who" id="mhWho" hidden></span>
       <span class="v" id="mhCreditsCount">0</span><span class="u">credits</span>
     </button>
     <button class="mh-cart" id="mhCartBtn">
@@ -7032,6 +7047,16 @@ window.EFFECT_PREVIEWS = {
        than a zero — a zero over an unknown tells someone with sixty
        credits they have none. */
     var uSpan = mhCreditsBtn.querySelector('.u');
+    var whoSpan = mhCreditsBtn.querySelector('.who');
+    /* The local part of the address, which is what people recognise as
+       their own name. The full address is too long for this row and the
+       domain tells nobody anything. */
+    if (whoSpan){
+      var em = (ME && ME.email) ? String(ME.email) : '';
+      var local = em.indexOf('@') > 0 ? em.slice(0, em.indexOf('@')) : em;
+      whoSpan.textContent = local;
+      whoSpan.hidden = !local;
+    }
     /* No session. Not a zero — an invitation. Somebody who lands here
        signed out had no control at all before this, and no way to find
        one. The panel exists; nothing opened it. */
