@@ -155,185 +155,246 @@ async function gatedPage(req: NextRequest, url: URL, wrong: boolean) {
 
 function gate(wrong: boolean) {
   return `
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <style id="lg-style">
   html.lg-locked, html.lg-locked body{ overflow:hidden !important; }
 
-  /* coffee, half strength */
-  #lg-scrim{
-    position:fixed; inset:0; z-index:2147483000;
-    background:rgba(51,38,32,.5);
-  }
+  /* Everything is scoped under #lg-wrap. The workshop has its own :root,
+     its own box-sizing and its own .form — an unscoped rule here would
+     reach into the page underneath. */
   #lg-wrap{
+    --lg-paper:#efe0c7;
+    --lg-paper-light:#f6ead7;
+    --lg-ink:#382117;
+    --lg-gold:#b58a4c;
+
     position:fixed; inset:0; z-index:2147483001;
-    display:flex; align-items:center; justify-content:center;
-    padding:32px 20px; overflow:auto;
-    font-family:'Cormorant Garamond',Georgia,serif;
+    display:grid; place-items:center;
+    padding:4vh 4vw; overflow:auto;
+    font-family:Georgia,"Times New Roman",serif;
+    background:
+      radial-gradient(circle at 50% 18%,rgba(176,126,70,.18),transparent 28%),
+      linear-gradient(rgba(33,20,13,.94),rgba(18,11,8,.96));
+  }
+  #lg-wrap *{ box-sizing:border-box; }
+
+  #lg-wrap .lg-gate{
+    position:relative;
+    width:min(74vw,930px);
+    aspect-ratio:1110/1400;
+    overflow:hidden;
+    border-radius:3.3%;
+    background:
+      radial-gradient(circle at 50% 9%,rgba(255,255,255,.40),transparent 32%),
+      linear-gradient(180deg,var(--lg-paper-light),var(--lg-paper));
+    border:1px solid rgba(95,57,31,.72);
+    box-shadow:0 34px 90px rgba(0,0,0,.54),
+               inset 0 0 0 1px rgba(255,255,255,.30);
+  }
+  #lg-wrap .lg-gate:after{
+    content:""; position:absolute; inset:0; z-index:20;
+    pointer-events:none; border-radius:inherit;
+    box-shadow:inset 0 0 44px rgba(77,46,26,.10);
   }
 
-  /* Flat light ground. No blend modes: a dark noise texture multiplied over
-     this turned the whole card brown and took the text with it. Grain is a
-     dot overlay on top instead, where it cannot darken anything. */
-  #lg-card{
-    position:relative; width:100%; max-width:660px;
-    background-color:#f2ebdf;
-    background-image:linear-gradient(163deg,#f7f2e8 0%,#f1e9d9 42%,#e9dfcc 78%,#e3d8c2 100%);
-    border-radius:20px; overflow:hidden;
-    box-shadow:0 50px 110px rgba(0,0,0,.6), 0 0 0 1px rgba(123,92,58,.18);
-    padding:0 0 40px;
-    color:#2a241e;
+  /* PORTRAITS */
+  #lg-wrap .lg-figure{
+    position:absolute; z-index:1;
+    bottom:20%; width:48%; height:68%;
+    background-repeat:no-repeat; background-size:contain;
   }
-  #lg-card::after{
-    content:''; position:absolute; inset:0; pointer-events:none; z-index:4;
-    background-image:radial-gradient(rgba(42,36,30,.04) 1px, transparent 1px);
-    background-size:3px 3px;
+  #lg-wrap .lg-figure-left{
+    left:-4%;
+    background-image:url("/gate/gate_woman_image.png");
+    background-position:left bottom;
   }
-
-  /* --- figures: anchored top, fading inward and downward --------- */
-  #lg-card .lg-figs{
-    position:relative; height:400px; margin-bottom:-190px;
+  #lg-wrap .lg-figure-right{
+    right:-4%;
+    background-image:url("/gate/gate_man_image.png");
+    background-position:right bottom;
   }
-  #lg-card .lg-fig{
-    position:absolute; top:0; height:400px; width:auto; z-index:1;
-    pointer-events:none; user-select:none;
-  }
-  #lg-card .lg-w{ left:0;
-    -webkit-mask-image:linear-gradient(to right,#000 40%,transparent 92%);
-            mask-image:linear-gradient(to right,#000 40%,transparent 92%); }
-  #lg-card .lg-m{ right:0;
-    -webkit-mask-image:linear-gradient(to left,#000 40%,transparent 92%);
-            mask-image:linear-gradient(to left,#000 40%,transparent 92%); }
-  #lg-card .lg-fade{
-    position:absolute; left:0; right:0; top:0; height:440px; z-index:2;
+  #lg-wrap .lg-figure-fade{
+    position:absolute; z-index:2; left:0; right:0;
+    bottom:17%; height:27%; pointer-events:none;
     background:linear-gradient(to bottom,
-      rgba(247,242,232,0) 0%,
-      rgba(245,239,227,.35) 42%,
-      rgba(242,235,221,.82) 66%,
-      #efe7d6 84%, #ece3d0 100%);
-    pointer-events:none;
+      rgba(239,224,199,0) 0%,
+      rgba(239,224,199,.18) 18%,
+      rgba(239,224,199,.72) 62%,
+      var(--lg-paper) 92%);
   }
 
-  /* --- content --------------------------------------------------- */
-  #lg-card .lg-inner{ position:relative; z-index:3; padding:44px 52px 0; text-align:center; }
-  #lg-card .lg-mark{ display:block; margin:0 auto 14px; width:230px; max-width:64%; height:auto; }
-
-  #lg-card .lg-rule{
-    display:flex; align-items:center; justify-content:center; gap:16px;
-    margin:0 auto 176px; max-width:400px;
-  }
-  #lg-card .lg-rule i{ flex:1; height:1px;
-    background:linear-gradient(to right,rgba(182,138,83,0),rgba(182,138,83,.55),rgba(182,138,83,0)); }
-  #lg-card .lg-rule s{ color:#b68a53; font-size:12px; line-height:1; text-decoration:none; }
-
-  #lg-card h1{
-    font-family:'Cormorant Garamond',Georgia,serif;
-    font-weight:500; font-size:54px; line-height:1.08; color:#2a241e;
-    margin:0 0 14px; letter-spacing:.004em;
-  }
-  #lg-card .lg-lede{
-    font-style:italic; font-size:27px; line-height:1.35;
-    color:#7d4242; margin:0 0 28px;
-  }
-  #lg-card .lg-body{
-    font-size:23px; line-height:1.5; color:#3d352c;
-    margin:0 auto 18px; max-width:19em;
+  #lg-wrap .lg-content{
+    position:absolute; inset:0; z-index:5;
+    color:var(--lg-ink); text-align:center;
   }
 
-  /* --- form ------------------------------------------------------ */
-  #lg-card form{ margin:46px auto 0; max-width:520px; text-align:left; }
-  #lg-card label{
-    display:block; font-family:'Manrope',system-ui,sans-serif;
-    font-size:13px; font-weight:600; letter-spacing:.22em;
-    text-transform:uppercase; color:#75623a; margin:0 0 12px 2px;
+  /* BRAND */
+  #lg-wrap .lg-logo-wrap{
+    position:absolute; top:5.2%; left:50%; width:48%;
+    transform:translateX(-50%);
   }
-  #lg-card .lg-field{ position:relative; }
-  #lg-card input{
-    width:100%; padding:.95rem 3.4rem .95rem 1.4rem;
-    font-family:'Cormorant Garamond',Georgia,serif; font-size:24px;
-    color:#2a241e; background:#f8f4ea;
-    border:1px solid rgba(123,92,58,.34); border-radius:14px;
-    box-shadow:inset 0 1px 3px rgba(42,36,30,.05);
+  #lg-wrap .lg-brand-logo{
+    display:block; width:68%; max-height:105px;
+    object-fit:contain; margin:0 auto;
   }
-  #lg-card input::placeholder{ color:rgba(42,36,30,.4); }
-  #lg-card input:focus{ outline:none; border-color:#7d4242; }
-  #lg-card .lg-eye{
-    position:absolute; top:50%; right:16px; transform:translateY(-50%);
-    background:none; border:none; cursor:pointer; padding:6px;
-    color:#75623a; line-height:0;
+  #lg-wrap .lg-brand-rule{
+    position:relative; width:43%; height:1px; margin:4% auto 0;
+    background:linear-gradient(90deg,transparent,var(--lg-gold),transparent);
   }
-  #lg-card .lg-go{
-    display:block; width:100%; margin:20px 0 0;
-    font-family:'Manrope',system-ui,sans-serif;
-    font-size:16px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
-    color:#f2e9d8; background:linear-gradient(180deg,#3f2e23,#332620);
-    border:none; border-radius:14px; padding:1.15rem 1rem; cursor:pointer;
-    box-shadow:0 2px 10px rgba(38,32,26,.28);
-  }
-  #lg-card .lg-go:hover{ background:linear-gradient(180deg,#7d4242,#6b3838); }
-  #lg-card .lg-err{
-    font-family:'Manrope',system-ui,sans-serif; font-size:14px;
-    color:#7d4242; margin:14px 0 0; min-height:1.2em; text-align:center;
+  #lg-wrap .lg-brand-rule:after{
+    content:"\u25C6"; position:absolute; left:50%; top:50%;
+    transform:translate(-50%,-52%); padding:0 .55em;
+    background:var(--lg-paper-light); color:var(--lg-gold); font-size:11px;
   }
 
-  #lg-card .lg-foot{ margin-top:36px; }
-  #lg-card .lg-foot .lg-rule{ margin-bottom:18px; max-width:340px; }
-  #lg-card .lg-foot p{
-    font-style:italic; font-size:22px; color:rgba(61,53,44,.72); margin:0;
+  /* CENTER COPY */
+  #lg-wrap .lg-invite{
+    position:absolute; top:28.5%; left:50%; width:43%;
+    transform:translateX(-50%);
+  }
+  #lg-wrap .lg-invite h1{
+    margin:0 0 3%; font-size:clamp(33px,4vw,52px); line-height:1.05;
+    font-weight:500; letter-spacing:-.025em; color:var(--lg-ink);
+    font-family:inherit;
+  }
+  #lg-wrap .lg-soft{
+    margin:0 0 7%; font-size:clamp(17px,1.9vw,24px);
+    font-style:italic; color:#624532;
+  }
+  #lg-wrap .lg-copy{
+    margin:0; font-size:clamp(14px,1.45vw,19px);
+    line-height:1.48; color:#4f382a;
   }
 
-  @media (max-width:700px){
-    #lg-card .lg-figs{ height:300px; margin-bottom:-160px; }
-    #lg-card .lg-fig{ height:300px; }
-    #lg-card .lg-fade{ height:330px; }
-    #lg-card .lg-inner{ padding:32px 24px 0; }
-    #lg-card .lg-rule{ margin-bottom:130px; }
-    #lg-card h1{ font-size:40px; }
-    #lg-card .lg-lede{ font-size:24px; }
-    #lg-card .lg-body{ font-size:22px; }
+  /* PASSCODE */
+  #lg-wrap .lg-form{
+    position:absolute; left:50%; bottom:6.2%; width:65.5%;
+    transform:translateX(-50%); text-align:left;
+  }
+  #lg-wrap .lg-form label{
+    display:block; margin-bottom:1.7%;
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:clamp(11px,1.05vw,14px); font-weight:700;
+    letter-spacing:.17em; color:#6d4932; text-transform:none;
+  }
+  #lg-wrap .lg-input-shell{ position:relative; }
+  #lg-wrap .lg-form input{
+    width:100%; height:clamp(62px,6.8vw,80px);
+    padding:0 4.3rem 0 1.45rem;
+    border:1px solid rgba(92,56,35,.58); border-radius:14px; outline:none;
+    background:rgba(255,255,255,.48);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+    color:var(--lg-ink);
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:clamp(18px,1.75vw,23px);
+  }
+  #lg-wrap .lg-form input::placeholder{ color:#9b897a; }
+  #lg-wrap .lg-form input:focus{
+    border-color:var(--lg-gold);
+    box-shadow:0 0 0 3px rgba(181,138,76,.15);
+  }
+  #lg-wrap .lg-eye{
+    position:absolute; right:1.25rem; top:50%; transform:translateY(-50%);
+    padding:0; border:0; background:transparent; color:#68452f;
+    cursor:pointer; font-size:1.5rem; line-height:1;
+  }
+  #lg-wrap .lg-unlock{
+    display:block; width:100%; height:clamp(62px,6.7vw,79px);
+    margin-top:3.2%; border:0; border-radius:13px; cursor:pointer;
+    background:linear-gradient(180deg,#4b2a1a,#28150e);
+    box-shadow:0 9px 20px rgba(52,29,17,.18);
+    color:#e0be83; font-family:Arial,Helvetica,sans-serif;
+    font-size:clamp(14px,1.35vw,18px); font-weight:500; letter-spacing:.18em;
+  }
+  #lg-wrap .lg-unlock:hover{ filter:brightness(1.06); }
+
+  /* A wrong code has to say so. Sized so the layout does not jump. */
+  #lg-wrap .lg-err{
+    min-height:1.4em; margin:2.4% 0 0; text-align:center;
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:clamp(12px,1.15vw,15px); color:#8d3b3b;
+  }
+
+  #lg-wrap .lg-bottom-rule{
+    display:flex; align-items:center; gap:12px;
+    width:92%; margin:3.2% auto 2.2%; color:var(--lg-gold);
+  }
+  #lg-wrap .lg-bottom-rule:before,
+  #lg-wrap .lg-bottom-rule:after{
+    content:""; flex:1; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(181,138,76,.58));
+  }
+  #lg-wrap .lg-bottom-rule:after{ transform:scaleX(-1); }
+  #lg-wrap .lg-leaf{ font-size:17px; transform:rotate(-18deg); }
+
+  #lg-wrap .lg-thanks{
+    text-align:center; color:#78583e;
+    font-size:clamp(14px,1.4vw,18px); font-style:italic;
+  }
+
+  @media(max-width:760px){
+    #lg-wrap{ padding:0; }
+    #lg-wrap .lg-gate{
+      width:100vw; min-height:100vh; aspect-ratio:auto; border-radius:0;
+    }
+    #lg-wrap .lg-figure{ width:58%; height:55%; bottom:27%; opacity:.52; }
+    #lg-wrap .lg-figure-left{ left:-13%; }
+    #lg-wrap .lg-figure-right{ right:-13%; }
+    #lg-wrap .lg-logo-wrap{ top:5%; width:72%; }
+    #lg-wrap .lg-invite{ top:27%; width:64%; }
+    #lg-wrap .lg-form{ width:84%; bottom:6%; }
   }
 </style>
 
-<div id="lg-scrim"></div>
 <div id="lg-wrap">
-  <div id="lg-card">
-    <div class="lg-figs">
-      <img class="lg-fig lg-w" src="/gate/gate_woman_image.png" alt="">
-      <img class="lg-fig lg-m" src="/gate/gate_man_image.png" alt="">
-      <div class="lg-fade"></div>
-    </div>
+  <main class="lg-gate" role="dialog" aria-modal="true" aria-labelledby="lg-title">
 
-    <div class="lg-inner">
-      <img class="lg-mark" src="/gate/liten-and-co.svg" alt="Liten &amp; Co">
-      <div class="lg-rule"><i></i><s>&#9670;</s><i></i></div>
+    <div class="lg-figure lg-figure-left" aria-hidden="true"></div>
+    <div class="lg-figure lg-figure-right" aria-hidden="true"></div>
+    <div class="lg-figure-fade" aria-hidden="true"></div>
 
-      <h1>You&rsquo;re Invited</h1>
-      <p class="lg-lede">Liten &amp; Co is in soft launch.</p>
-      <p class="lg-body">We&rsquo;re opening our doors to a select group of testers and family.</p>
-      <p class="lg-body">Enter your passcode to explore.</p>
+    <section class="lg-content">
 
-      <form method="GET" autocomplete="off">
-        <label for="lg-access">Passcode</label>
-        <div class="lg-field">
-          <input id="lg-access" type="password" name="access" placeholder="Enter passcode">
-          <button type="button" class="lg-eye" id="lg-eye" aria-label="Show passcode">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-              <path d="M1.5 12S5 5.5 12 5.5 22.5 12 22.5 12 19 18.5 12 18.5 1.5 12 1.5 12Z"/>
-              <circle cx="12" cy="12" r="3.2"/>
-            </svg>
-          </button>
+      <div class="lg-logo-wrap">
+        <img class="lg-brand-logo" src="/gate/liten-and-co.svg" alt="Liten &amp; Co">
+        <div class="lg-brand-rule"></div>
+      </div>
+
+      <div class="lg-invite">
+        <h1 id="lg-title">You&rsquo;re Invited</h1>
+        <p class="lg-soft">Liten &amp; Co is in soft launch.</p>
+        <p class="lg-copy">
+          We&rsquo;re opening our doors to a select<br>
+          group of testers and family.
+          <br><br>
+          Enter your passcode to explore.
+        </p>
+      </div>
+
+      <form class="lg-form" method="GET" autocomplete="off">
+
+        <label for="lg-access">PASSCODE</label>
+
+        <div class="lg-input-shell">
+          <input id="lg-access" name="access" type="password"
+                 placeholder="Enter passcode" autocomplete="current-password">
+          <button class="lg-eye" type="button" id="lg-eye"
+                  aria-label="Show passcode">&#9673;</button>
         </div>
-        <button type="submit" class="lg-go">Unlock Access</button>
+
+        <button class="lg-unlock" type="submit">UNLOCK ACCESS</button>
+
         <p class="lg-err">${wrong ? 'That passcode was not recognised.' : ''}</p>
+
+        <div class="lg-bottom-rule"><span class="lg-leaf">&#10087;</span></div>
+
+        <div class="lg-thanks">
+          Thank you for helping us shape something beautiful.
+        </div>
+
       </form>
 
-      <div class="lg-foot">
-        <div class="lg-rule"><i></i><s>&#10047;</s><i></i></div>
-        <p>Thank you for helping us shape something beautiful.</p>
-      </div>
-    </div>
-  </div>
+    </section>
+  </main>
 </div>
 
 <script>
@@ -341,12 +402,13 @@ function gate(wrong: boolean) {
   document.documentElement.classList.add('lg-locked');
   var f = document.getElementById('lg-access');
   var e = document.getElementById('lg-eye');
-  if(f){ try{ f.focus(); }catch(_){} }
-  if(f && e){
+  if (f){ try{ f.focus(); }catch(_){} }
+  if (f && e){
     e.addEventListener('click', function(){
-      var showing = f.type === 'text';
-      f.type = showing ? 'password' : 'text';
-      e.setAttribute('aria-label', showing ? 'Show passcode' : 'Hide passcode');
+      var hidden = f.type === 'password';
+      f.type = hidden ? 'text' : 'password';
+      e.innerHTML = hidden ? '\u25CE' : '\u25C9';
+      e.setAttribute('aria-label', hidden ? 'Hide passcode' : 'Show passcode');
       f.focus();
     });
   }
