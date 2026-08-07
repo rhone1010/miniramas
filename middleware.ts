@@ -173,17 +173,22 @@ function gate(wrong: boolean) {
     font-family:'Cormorant Garamond',Georgia,serif;
   }
 
+  /* Flat light ground. No blend modes: a dark noise texture multiplied over
+     this turned the whole card brown and took the text with it. Grain is a
+     dot overlay on top instead, where it cannot darken anything. */
   #lg-card{
     position:relative; width:100%; max-width:660px;
-    background:
-      url("/textures/noise.png"),
-      linear-gradient(163deg,#f7f2e8 0%,#f1e9d9 42%,#e9dfcc 78%,#e3d8c2 100%);
-    background-size:180px 180px, cover;
-    background-blend-mode:multiply, normal;
+    background-color:#f2ebdf;
+    background-image:linear-gradient(163deg,#f7f2e8 0%,#f1e9d9 42%,#e9dfcc 78%,#e3d8c2 100%);
     border-radius:20px; overflow:hidden;
     box-shadow:0 50px 110px rgba(0,0,0,.6), 0 0 0 1px rgba(123,92,58,.18);
     padding:0 0 40px;
     color:#2a241e;
+  }
+  #lg-card::after{
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:4;
+    background-image:radial-gradient(rgba(42,36,30,.04) 1px, transparent 1px);
+    background-size:3px 3px;
   }
 
   /* --- figures: anchored top, fading inward and downward --------- */
