@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+/* THE RECEIPT PRIMER · runs before anything else on the page.
+   Coming back from Stripe, the receipt used to wait for 400KB of markup to
+   parse and every script to boot before it so much as asked the server what
+   had been ordered. Ten seconds of nothing, all of it serial.
+   The request starts here instead, in the head, and the panel further down
+   consumes the promise whenever it is ready. The round trip now overlaps
+   the page boot rather than following it. */
+(function(){
+  try{
+    var q = new URLSearchParams(window.location.search);
+    if (q.get('print') !== '1') return;
+    var s = q.get('session');
+    if (!s || s.charAt(0) === '{') return;
+    window.__lgOrderPromise = fetch(
+      '/api/v1/print/order?session=' + encodeURIComponent(s),
+      { credentials: 'same-origin' }
+    ).then(function(r){ return r.json(); });
+  }catch(_){}
+})();
+</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Liten &amp; Co — Stage + Masthead — s58 — 2026-07-28</title>
@@ -8685,8 +8707,12 @@ window.EFFECT_PREVIEWS = {
     var st = document.createElement('style');
     st.id = 'ps-receipt-style';
     st.textContent = [
-      '.ps-rc{ position:absolute; inset:0; z-index:6; display:none;',
-      '  overflow-y:auto; padding:clamp(28px,3vw,56px) clamp(24px,4vw,72px); }',
+      /* Covers the shop entire. At z-index 6 over the wall only, the head
+         and the dark order rail showed through, and the receipt read as an
+         overlay on a half-finished screen. */
+      '.ps-rc{ position:absolute; inset:0; z-index:40; display:none;',
+      '  overflow-y:auto; padding:clamp(28px,3vw,56px) clamp(24px,4vw,72px);',
+      '  background:inherit; background-color:var(--vellum,#f3ede1); }',
       '.ps-rc.is-on{ display:block }',
       '.ps-rc-in{ max-width:900px; margin:0 auto }',
       '.ps-rc-eyebrow{ font-family:var(--sans,system-ui,sans-serif); font-size:12px;',
@@ -8780,8 +8806,12 @@ window.EFFECT_PREVIEWS = {
               'Something went wrong between us and the lab. Your payment is ' +
               'safe and the studio has been told. We will put it right.'];
     }
+    /* 'paid' means the webhook has run and the lab step has not completed.
+       Either it is seconds away or it stopped. Saying it is 'being prepared'
+       would be a guess dressed as a fact. */
     return ['Payment received.',
-            'The order is being prepared for the lab.'];
+            'We have your order. It has not gone to the lab yet \u2014 you will ' +
+            'get an email the moment it does.'];
   }
 
   function psReceiptPaint(o){
@@ -8873,9 +8903,14 @@ window.EFFECT_PREVIEWS = {
       '<div class="ps-rc-in"><p class="ps-rc-eyebrow">Your order</p>' +
       '<h2>Reading your order&hellip;</h2></div>';
 
-    fetch('/api/v1/print/order?session=' + encodeURIComponent(session), {
-      credentials: 'same-origin'
-    }).then(function(r){ return r.json(); }).then(function(d){
+    /* The head primer started this before the page finished parsing. Fall
+       back to a fresh request only if it is not there. */
+    var pending = window.__lgOrderPromise ||
+      fetch('/api/v1/print/order?session=' + encodeURIComponent(session), {
+        credentials: 'same-origin'
+      }).then(function(r){ return r.json(); });
+
+    pending.then(function(d){
       if (d && d.ok && d.order) { psReceiptPaint(d.order); return; }
       psReceiptMount().innerHTML =
         '<div class="ps-rc-in"><p class="ps-rc-eyebrow">Your order</p>' +

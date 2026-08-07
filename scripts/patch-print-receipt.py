@@ -31,6 +31,32 @@ import io
 import sys
 
 ANCHOR = "  window.__showPrintShop = showPrintShop;"
+HEAD_ANCHOR = "<head>"
+
+PRIMER = r"""
+<script>
+/* THE RECEIPT PRIMER · runs before anything else on the page.
+   Coming back from Stripe, the receipt used to wait for 400KB of markup to
+   parse and every script to boot before it so much as asked the server what
+   had been ordered. Ten seconds of nothing, all of it serial.
+   The request starts here instead, in the head, and the panel further down
+   consumes the promise whenever it is ready. The round trip now overlaps
+   the page boot rather than following it. */
+(function(){
+  try{
+    var q = new URLSearchParams(window.location.search);
+    if (q.get('print') !== '1') return;
+    var s = q.get('session');
+    if (!s || s.charAt(0) === '{') return;
+    window.__lgOrderPromise = fetch(
+      '/api/v1/print/order?session=' + encodeURIComponent(s),
+      { credentials: 'same-origin' }
+    ).then(function(r){ return r.json(); });
+  }catch(_){}
+})();
+</script>
+"""
+
 
 BLOCK = r"""
   /* ======================================================================
@@ -62,8 +88,12 @@ BLOCK = r"""
     var st = document.createElement('style');
     st.id = 'ps-receipt-style';
     st.textContent = [
-      '.ps-rc{ position:absolute; inset:0; z-index:6; display:none;',
-      '  overflow-y:auto; padding:clamp(28px,3vw,56px) clamp(24px,4vw,72px); }',
+      /* Covers the shop entire. At z-index 6 over the wall only, the head
+         and the dark order rail showed through, and the receipt read as an
+         overlay on a half-finished screen. */
+      '.ps-rc{ position:absolute; inset:0; z-index:40; display:none;',
+      '  overflow-y:auto; padding:clamp(28px,3vw,56px) clamp(24px,4vw,72px);',
+      '  background:inherit; background-color:var(--vellum,#f3ede1); }',
       '.ps-rc.is-on{ display:block }',
       '.ps-rc-in{ max-width:900px; margin:0 auto }',
       '.ps-rc-eyebrow{ font-family:var(--sans,system-ui,sans-serif); font-size:12px;',
@@ -157,8 +187,12 @@ BLOCK = r"""
               'Something went wrong between us and the lab. Your payment is ' +
               'safe and the studio has been told. We will put it right.'];
     }
+    /* 'paid' means the webhook has run and the lab step has not completed.
+       Either it is seconds away or it stopped. Saying it is 'being prepared'
+       would be a guess dressed as a fact. */
     return ['Payment received.',
-            'The order is being prepared for the lab.'];
+            'We have your order. It has not gone to the lab yet \u2014 you will ' +
+            'get an email the moment it does.'];
   }
 
   function psReceiptPaint(o){
@@ -250,9 +284,14 @@ BLOCK = r"""
       '<div class="ps-rc-in"><p class="ps-rc-eyebrow">Your order</p>' +
       '<h2>Reading your order&hellip;</h2></div>';
 
-    fetch('/api/v1/print/order?session=' + encodeURIComponent(session), {
-      credentials: 'same-origin'
-    }).then(function(r){ return r.json(); }).then(function(d){
+    /* The head primer started this before the page finished parsing. Fall
+       back to a fresh request only if it is not there. */
+    var pending = window.__lgOrderPromise ||
+      fetch('/api/v1/print/order?session=' + encodeURIComponent(session), {
+        credentials: 'same-origin'
+      }).then(function(r){ return r.json(); });
+
+    pending.then(function(d){
       if (d && d.ok && d.order) { psReceiptPaint(d.order); return; }
       psReceiptMount().innerHTML =
         '<div class="ps-rc-in"><p class="ps-rc-eyebrow">Your order</p>' +
@@ -289,10 +328,19 @@ def main(path):
     else:
         raise SystemExit("FAIL: anchor not found. Nothing was written.")
 
+    # The primer goes in the head so the request leaves before the body parses.
+    if doc.count(HEAD_ANCHOR) < 1:
+        raise SystemExit("FAIL: no <head> to prime. Nothing was written.")
+    doc = doc.replace(HEAD_ANCHOR, HEAD_ANCHOR + PRIMER, 1)
+
     if doc.count("psReceiptArrival") != 1:
         raise SystemExit("FAIL: arrival handler not written exactly once")
-    if doc.count("'/api/v1/print/order?session='") != 1:
-        raise SystemExit("FAIL: order read not written exactly once")
+    # Twice now, deliberately: the head primer and the fallback beneath it.
+    if doc.count("'/api/v1/print/order?session='") != 2:
+        raise SystemExit("FAIL: expected the primer and its fallback, found %d"
+                         % doc.count("'/api/v1/print/order?session='"))
+    if doc.count("__lgOrderPromise") != 2:
+        raise SystemExit("FAIL: primer and consumer must appear once each")
     if "window.__showPrintShop = showPrintShop;" not in doc:
         raise SystemExit("FAIL: the anchor line itself was lost")
 
