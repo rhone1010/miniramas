@@ -7009,7 +7009,21 @@ window.EFFECT_PREVIEWS = {
     /* Signed out, or a balance we could not read. Show nothing rather
        than a zero — a zero over an unknown tells someone with sixty
        credits they have none. */
-    if (!ME || CREDITS == null){ mhCreditsBtn.hidden = true; return; }
+    var uSpan = mhCreditsBtn.querySelector('.u');
+    /* No session. Not a zero — an invitation. Somebody who lands here
+       signed out had no control at all before this, and no way to find
+       one. The panel exists; nothing opened it. */
+    if (!ME){
+      mhCreditsBtn.hidden = false;
+      mhCreditsCount.textContent = '';
+      if (uSpan) uSpan.textContent = 'Sign in';
+      mhCreditsBtn.setAttribute('aria-label', 'Sign in');
+      return;
+    }
+    /* Signed in, but the balance could not be read. Still show nothing
+       rather than a zero — the original reasoning holds. */
+    if (CREDITS == null){ mhCreditsBtn.hidden = true; return; }
+    if (uSpan) uSpan.textContent = 'credits';
     mhCreditsBtn.hidden = false;
     mhCreditsCount.textContent = String(CREDITS);
     mhCreditsBtn.setAttribute('aria-label',
@@ -7038,6 +7052,11 @@ window.EFFECT_PREVIEWS = {
   /* The masthead pill is a way to buy, not only a readout. `needed: 0`
      is what tells the panel this is a visit rather than a rescue. */
   if (mhCreditsBtn) mhCreditsBtn.addEventListener('click', function(){
+    /* Signed out, the pill is the way in, not the way to buy. */
+    if (!ME){
+      if (typeof openSignin === 'function') openSignin();
+      return;
+    }
     if (typeof window.__openPaywall === 'function'){
       window.__openPaywall({ needed: 0, balance: CREDITS || 0, reason: 'browse' });
     }
