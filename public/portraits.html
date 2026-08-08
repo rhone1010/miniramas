@@ -384,7 +384,15 @@ body{
   .mh-nav{ display:none }
   .mh-menu{ display:flex; justify-self:start; margin-left:12px }
 }
-@media (max-width:767px){ .mh-credits{ display:none } }
+/* The pill used to be a balance and nothing else, so hiding it on a phone
+   cost only information. It now carries the name and, with no session,
+   reads 'Sign in' and opens the panel — it is the only way into an
+   account on this width and it stays. The word 'credits' goes instead;
+   the number was always the point. */
+@media (max-width:767px){
+  .mh-credits .u{ display:none }
+  .mh-credits .who{ max-width:7ch }
+}
 
 /* ---- THE STAGE · 86%, centred, at every width ------------------------- */
 .stage{
@@ -506,6 +514,75 @@ body{
     height:auto;
   }
   .room--queue{ display:none }
+}
+
+/* ======================================================================
+   THE PHONE · stage one · the frame only
+   ======================================================================
+   Everything above this line was written for a canvas. These rules stop
+   the canvas fighting a 390px screen: the gutter closes, the masthead
+   gives up its fixed height, and the footer scrolls rather than crushes.
+
+   Nothing inside a surface is touched here. Read as: the building fits
+   on the street now; the rooms are still furnished for a bigger house.
+   ================================================================== */
+@media (max-width:767px){
+  :root{
+    /* The stage IS the screen. A 5% gutter is 19px of nothing on each
+       side of a phone, and the content needs every pixel. */
+    --stage-gutter:12px;
+    --stage-w:calc(100% - 24px);
+    --room-gap:12px;
+    --mh-h:auto;
+    --footer-h:auto;
+    --footer-pad:12px;
+  }
+
+  /* The masthead stops being a fixed bar. At 90px it was a tenth of the
+     screen holding three things. */
+  .mh{
+    height:auto; min-height:56px;
+    padding-block:6px;
+    column-gap:8px;
+  }
+  .mh-mark{ font-size:.9em }
+
+  /* The floor needs room to hold a card, and the page scrolls rather
+     than the rooms scrolling inside a locked viewport. */
+  .rooms{
+    grid-template-rows:auto minmax(420px,auto) auto;
+    height:auto; min-height:0;
+  }
+  .room{ min-height:0 }
+
+  /* Five bays across 390px is 78px each, which fits neither an icon nor
+     a line of type. They keep their width and the row scrolls. */
+  .room--footer{
+    grid-template-columns:none;
+    grid-auto-flow:column;
+    grid-auto-columns:minmax(210px, 1fr);
+    overflow-x:auto;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
+    height:auto;
+  }
+  .room--footer::-webkit-scrollbar{ display:none }
+  .room--footer{ scrollbar-width:none }
+  .bay{ scroll-snap-align:center; padding-block:14px }
+
+  /* The full-screen surfaces were positioned against a computed left
+     edge — gutter plus spine plus a room gap. On a phone there is no
+     spine, so they start at the edge. */
+  .mycoll, .pshop, .acct{
+    left:0; right:0; border-radius:0;
+  }
+}
+
+/* Small phones. The 390 rules hold; these only stop type from wrapping
+   into single words. */
+@media (max-width:400px){
+  :root{ --stage-gutter:8px; --stage-w:calc(100% - 16px) }
+  .mh-mark{ font-size:.82em }
 }
 
 
