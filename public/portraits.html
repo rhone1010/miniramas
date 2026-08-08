@@ -75,7 +75,7 @@
 
   /* ROOMS — every proportion inside the stage, declared once */
   --spine-w:clamp(300px, 20%, 460px);   /* rail + curator together */
-  --rail-w:60px;                        /* the closed "Design your own" spine */
+
   --queue-w:clamp(220px, 14.5%, 330px);   /* To Be Crafted */
   --room-gap:20px;
   --stage-pad:24px;
@@ -491,23 +491,16 @@ body{
 /* ---- the spine · a closed rail the curator sits beside ---------------- */
 .room--curator{
   display:grid;
-  grid-template-columns:var(--rail-w) minmax(0,1fr);
+  grid-template-columns:minmax(0,1fr);
   overflow:hidden;
   padding:0;
 }
 .room--curator::after{ content:none }   /* the Curator has contents now */
-.rail{
-  grid-column:1; position:relative; z-index:3;
-  background:var(--oxblood);
-  display:grid; place-items:center;
-  cursor:pointer;
-}
-.rail span{
-  font-family:var(--serif); font-style:italic; font-size:1.6rem;
-  color:var(--vellum-200); white-space:nowrap;
-  writing-mode:vertical-rl; transform:rotate(180deg);
-  letter-spacing:.04em;
-}
+/* The "Design your own" spine was removed 2026-08-07. It had no handler
+   and opened nothing — the closed edge of a drawer that was never built,
+   keeping its cursor:pointer and its title long after whatever it was
+   meant to open had gone. Sixty pixels of a screen promising an action
+   nobody could take. */
 
 @media (max-width:1400px){
   .rooms{ grid-template-columns:var(--spine-w) minmax(0,1fr) var(--queue-w) }
@@ -647,8 +640,6 @@ body{
      the Curator card is the only thing in that column, so the column goes.
      Her letter goes with it — she is speaking from the band, and saying it
      in two places at once is saying it worse. */
-  .room--curator{ grid-template-columns:minmax(0,1fr) }
-  .rail{ display:none }
   .cur{ grid-column:1 }
   .cur-say, .cur-letter{ display:none }
 }
@@ -804,7 +795,7 @@ body{
    ================================================================== */
 .room--curator{
   display:grid;
-  grid-template-columns:var(--rail-w) minmax(0,1fr);
+  grid-template-columns:minmax(0,1fr);
 }
 .cur{
   grid-column:2;
@@ -3762,7 +3753,7 @@ body.is-lboxed{ overflow:hidden }
 @media (max-width:1366px){
   :root{
     --spine-w:280px;
-    --rail-w:48px;
+
     /* 200px, not 170. The rail holds a thumbnail, a name, a series and a
        remove — 170 was starving it. The 30px comes off the gutters rather
        than the workshop, so the floor keeps its 755px. */
@@ -3788,7 +3779,6 @@ body.is-lboxed{ overflow:hidden }
   .crumb{ min-height:40px; padding-bottom:8px }
   .crumb-back,.crumb-here{ height:34px; padding:0 13px; font-size:1.15rem }
   .cur{ padding:14px 12px 16px }
-  .rail span{ font-size:1.4rem }
   .cur-title{ font-size:1.5rem }
   .tbc{ padding:14px 10px }
   /* PROPOSED, not ruled. Rich's preserve-card values were judged at 1920 and
@@ -3915,7 +3905,6 @@ body.is-lboxed{ overflow:hidden }
 <div class="stage">
   <div class="rooms">
     <section class="room room--curator">
-      <div class="rail" title="Design your own"><span>Design your own</span></div>
       <div class="cur" id="cur" data-state="empty">
         <div class="cur-head">
           <img class="cur-mark" src="/icons/curator-c.svg" alt="">
