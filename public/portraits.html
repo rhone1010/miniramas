@@ -3490,13 +3490,10 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
 /* ---- the bulk bar ---------------------------------------------------- */
 /* Centred on the screen, not parked at the foot of the panel. It appears
    when a piece is chosen and it is about that piece. */
-.mc-bulk{
-  position:fixed; z-index:60; left:50%; top:50%;
-  transform:translate(-50%, -50%) scale(.96);
-  opacity:0; pointer-events:none;
-  transition:opacity .28s ease, transform .28s cubic-bezier(.16,1,.3,1);
-}
-.mc-bulk.is-up{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1) }
+/* .mc-bulk and .mc-bulk-unused were removed 2026-08-07 with the bar they
+   dressed. The half-renamed class was the tell that this was already
+   half-removed: the panel styling sat on a name nothing used, so the bar
+   rendered as three loose buttons over the collection. */
 .mc-bulk-unused{
   display:flex; align-items:center; gap:.7em;
   padding:.7em .9em;
@@ -3504,7 +3501,7 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   background:rgba(26,22,19,.96);
   box-shadow:0 .9rem 2rem rgba(18,12,8,.5);
 }
-.mc-bulk.is-up{ transform:translate(-50%, 0) }
+
 .mc-bulk-n{
   font-family:var(--sans); font-size:.72rem; letter-spacing:.09em;
   text-transform:uppercase; color:rgba(233,222,200,.5);
@@ -4050,12 +4047,10 @@ body.is-lboxed{ overflow:hidden }
     <div class="mc-filters" id="mcFilters"></div>
     <div class="mc-grid" id="mcGrid"></div>
     <div class="mc-onward" id="mcOnward" hidden></div>
-    <div class="mc-bulk" id="mcBulk">
-      <span class="mc-bulk-n" id="mcBulkN"></span>
-      <button class="mc-act is-fill" id="mcDownload" type="button">Download</button>
-      <button class="mc-act" id="mcPrint" type="button">Send to Print Shop</button>
-      <button class="mc-act" id="mcClear" type="button">Clear</button>
-    </div>
+    <!-- The bulk bar was removed 2026-08-07. Batch selection was ruled out
+         for V1 and this was its furniture: a second Download and Send for
+         the same single piece the featured actions already serve. One
+         target, one set of actions. -->
   </section>
 
   <!-- ============================================================
@@ -7575,8 +7570,6 @@ window.EFFECT_PREVIEWS = {
   var mcFilters= document.getElementById('mcFilters');
   var mcN      = document.getElementById('mcN');
   var mcSay    = document.getElementById('mcSay');
-  var mcBulk   = document.getElementById('mcBulk');
-  var mcBulkN  = document.getElementById('mcBulkN');
 
   /* Declared here, above renderCollection, which calls it. A function
      declaration hoists, but keeping it above its caller is how the s63
@@ -7784,18 +7777,10 @@ window.EFFECT_PREVIEWS = {
     updateBulk();
   }
 
-  function updateBulk(){
-    if (!mcBulk) return;
-    var n = mcCount();
-    /* "1 selected" is a count of a thing that can only be one. The name
-       of the piece is the useful label. */
-    if (mcBulkN){
-      var one = null;
-      PIECES.forEach(function(p){ if (PICKED[p.id]) one = p; });
-      mcBulkN.textContent = one ? (one.name || 'Crafted Image') : '';
-    }
-    mcBulk.classList.toggle('is-up', n > 0);
-  }
+  /* Deliberately empty. The bulk bar it drove is gone, and it is called
+     from six places — a no-op here is one edit instead of six, and it
+     leaves the call sites reading as they always did. */
+  function updateBulk(){}
 
   /* One piece at a time. PICKED still exists because Download and Send
      read it, but it never holds more than one — so nothing downstream
@@ -8109,30 +8094,9 @@ window.EFFECT_PREVIEWS = {
 
   /* Download is real from here. Print still reports and settles back — the
      Print Shop is its own surface and is not built yet. */
-  var mcDownload = document.getElementById('mcDownload');
-  var mcPrint    = document.getElementById('mcPrint');
-  var mcClear    = document.getElementById('mcClear');
-  if (mcDownload) mcDownload.addEventListener('click', function(){
-    var picked = PIECES.filter(function(p){ return PICKED[p.id] && p.art; });
-    if (!picked.length) return;
-    flash(mcDownload, picked.length > 1
-      ? ('Saving ' + picked.length + ' \u2713') : 'Saving \u2713', 'Download');
-    downloadMany(picked);
-  });
-  /* Was a flash over nothing. The Print Shop exists now, so this opens it
-     with the picked pieces already on the wall. */
-  if (mcPrint) mcPrint.addEventListener('click', function(){
-    var picked = PIECES.filter(function(p){ return PICKED[p.id] && printable(p); });
-    sendToPrintShop(picked);
-    if (picked.length === 1){ PS_PIECE = picked[0]; PS_OPT = 0; }
-    psView('wall');
-    showPrintShop();
-  });
-  if (mcClear) mcClear.addEventListener('click', function(){
-    PICKED = {};
-    [].forEach.call(mcGrid.querySelectorAll('.piece'), function(el){ el.classList.remove('is-picked'); });
-    updateBulk();
-  });
+  /* The bulk bar's handlers went with it. Download and Send now live only
+     on the featured piece, in renderCollection, where the piece being
+     acted on is the piece being looked at. */
 
   if (lboxActs) lboxActs.addEventListener('click', function(e){
     var b = e.target.closest('[data-lb]'); if (!b) return;
