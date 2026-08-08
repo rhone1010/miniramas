@@ -501,31 +501,23 @@ export const POSE_PHRASE: Record<PortraitsPoseId, string> = {
   as_photographed: '',
 
   smiling:
-    'A warm, genuine smile with relaxed eyes and natural confidence. Golden side ' +
-    'light and soft fill create a bright, welcoming portrait with subtle rim light ' +
-    'separating the subject from the background.',
+    'A warm, genuine smile with relaxed eyes and natural confidence.',
 
   laughing:
-    'Caught in an authentic burst of laughter, eyes bright and full of life. Warm ' +
-    'sunlight and lively rim lighting create sparkling highlights, giving the ' +
-    'portrait energy and joy. Maintain likeness.',
+    'Caught in an authentic burst of laughter, eyes bright and full of life. ' +
+    'Maintain likeness.',
 
   thoughtful:
-    'Eyes focused into the distance with a calm, reflective expression. Soft ' +
-    'directional window light gently models the face, with quiet shadows and muted ' +
-    'contrast for an intimate, contemplative portrait.',
+    'Eyes focused into the distance with a calm, reflective expression.',
 
   dramatic:
     'Frozen mid-performance, leaning forward with one hand extended as if ' +
-    'commanding the room. Powerful expression, dynamic posture and sweeping strong ' +
-    'cinematic light with bold highlights, deep shadows and a glowing rim light ' +
-    'create a portrait that demands attention. Camera moves in to neck and face, ' +
-    'camera angle even with the neck.',
+    'commanding the room. Powerful expression and dynamic posture. ' +
+    'Camera moves in to neck and face, camera angle even with the neck.',
 
   goofy:
     'A playful, exaggerated expression with a silly face, raised eyebrows or ' +
-    'crossed eyes while remaining unmistakably the same person. Bright, cheerful ' +
-    'lighting with soft wraparound illumination enhances the lighthearted mood.',
+    'crossed eyes while remaining unmistakably the same person.',
 }
 
 export function isPoseId(v: any): v is PortraitsPoseId {
