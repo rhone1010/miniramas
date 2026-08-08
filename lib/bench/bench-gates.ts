@@ -28,15 +28,30 @@ Assess the photograph on these qualities:
 
 Count the hero subjects — the people the photograph is clearly about.
 
+Judge each concern on a three-step scale, because the difference between
+"not ideal" and "unusable" decides whether this customer is turned away.
+
+  "good"   — no meaningful issue
+  "minor"  — noticeably short of ideal, and the face is still fully readable
+  "severe" — facial information is genuinely lost and cannot be recovered
+
+Reserve "severe" for photographs where the likeness itself is unavailable:
+a face lost to darkness or blown highlights, motion blur that erases
+features, a face largely hidden. A photograph that is simply darker or
+softer than you would choose is "minor". Most ordinary photographs taken
+indoors are "minor" at worst.
+
 Respond with ONLY a JSON object:
 {
   "score": <integer 1-10, overall usability as art source>,
   "face_visible": <boolean>,
-  "face_size_ok": <boolean>,
-  "sharpness_ok": <boolean>,
-  "lighting_ok": <boolean>,
-  "occlusion_ok": <boolean>,
-  "subject_count": <integer>,
+  "face_size": <"good" | "minor" | "severe">,
+  "sharpness": <"good" | "minor" | "severe">,
+  "lighting": <"good" | "minor" | "severe">,
+  "occlusion": <"good" | "minor" | "severe">,
+  "pose_extreme": <boolean, true only if the head is turned so far that one
+                   eye is not visible>,
+  "subject_count": <integer, how many people are a primary subject>,
   "reasons": ["<up to 3 short notes on what helps or limits this photo>"]
 }
 
@@ -59,14 +74,18 @@ Assess the photograph on these qualities:
 - Obstruction: the subject is visible rather than blocked by vehicles, crowds, or foreground clutter
 - File integrity: the image is intact, with the subject free of corruption bands, glitch artifacts, or large damaged regions
 
+Judge each concern as "good", "minor" or "severe". Reserve "severe" for
+photographs where the structure itself cannot be read.
+
 Respond with ONLY a JSON object:
 {
   "score": <integer 1-10, overall usability as art source>,
   "face_visible": false,
-  "face_size_ok": true,
-  "sharpness_ok": <boolean>,
-  "lighting_ok": <boolean>,
-  "occlusion_ok": <boolean>,
+  "face_size": "good",
+  "sharpness": <"good" | "minor" | "severe">,
+  "lighting": <"good" | "minor" | "severe">,
+  "occlusion": <"good" | "minor" | "severe">,
+  "pose_extreme": false,
   "subject_count": 1,
   "reasons": ["<up to 3 short notes on what helps or limits this photo>"]
 }
@@ -98,7 +117,12 @@ export async function scoreIntake(input: {
     messages: [{
       role: 'user',
       content: [
-        { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${input.sourceImageB64}`, detail: 'low' } },
+        /* 'low' downsamples to about 512px. The model was being asked
+           whether a photograph is sharp and well lit, and answering about
+           a thumbnail — which is soft and flat however good the original
+           is. Intake is the one gate that turns a paying customer away;
+           it sees the real image. */
+        { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${input.sourceImageB64}`, detail: 'high' } },
         { type: 'text', text: prompt },
       ],
     }],
@@ -113,46 +137,83 @@ export async function scoreIntake(input: {
     ? parsed.reasons.slice(0, 3).map((r: unknown) => String(r).slice(0, 160))
     : ['intake parse failed, defaulting to neutral 5']
 
-  // Resolution is a local computation, not a model opinion. A photo that
-  // fails the resolution floor fails intake regardless of model score.
-  if (!input.resolutionOk) reasons.unshift('below resolution floor')
+  /* ── SEVERITY ─────────────────────────────────────────────────────
+     Three steps, not a boolean. 'somewhat dark' and 'the face is lost to
+     exposure' were both lighting_ok:false, and the gate could not tell
+     them apart — so it treated advice as refusal. Anything unrecognised
+     reads as 'good': a scorer that returns nonsense must not refuse a
+     customer. */
+  const sev = (v: unknown): 'good' | 'minor' | 'severe' => {
+    const s = String(v || 'good').toLowerCase()
+    return s === 'severe' ? 'severe' : s === 'minor' ? 'minor' : 'good'
+  }
 
-  // Calibration run 01 finding: small faces are the dominant face-drift
-  // driver across ALL materials (a face that is too small in frame gives
-  // the generator too few identity pixels to hold likeness). For subject
-  // photos, face_size_ok is therefore a hard intake requirement, same as
-  // the resolution floor. Production upload flow mirrors this rule;
-  // customer-facing guidance: crop closer to the face for the truest
-  // likeness.
-  const faceSizeOk = input.mode !== 'subject' || Boolean(parsed.face_size_ok ?? true)
-  if (!faceSizeOk) reasons.unshift('face is small in frame — likeness will hold better cropped closer')
+  const isSubject   = input.mode === 'subject'
+  const faceVisible = isSubject ? Boolean(parsed.face_visible ?? true) : true
+  const faceSize    = isSubject ? sev(parsed.face_size) : 'good'
+  const sharpness   = sev(parsed.sharpness)
+  const lighting    = sev(parsed.lighting)
+  const occlusion   = sev(parsed.occlusion)
+  const poseExtreme = Boolean(parsed.pose_extreme ?? false)
+  const subjects    = Math.max(1, Number(parsed.subject_count) || 1)
 
-  // Softened 2026-08-07 on Rich's ruling. This was `&& faceSizeOk`, which no
-  // strictness setting could reach: a small face failed at 10 and at 1 alike.
-  // The calibration finding stands, so it still costs — three points off a
-  // ten-point score is heavy — but the dial now governs it like everything
-  // else. A genuinely tiny face still lands under the threshold and is still
-  // refused; a marginal one gets through at a loose setting.
-  //
-  // Note for CENG: the returned score now carries the penalty, so intake
-  // scores logged after this date are not directly comparable with those
-  // before it for sources where face_size_ok was false.
-  const FACE_SIZE_PENALTY = 3
-  const effectiveScore = faceSizeOk ? score : Math.max(1, score - FACE_SIZE_PENALTY)
+  /* ── HARD FAIL · Rich's spec, 2026-08-07 ──────────────────────────
+     These six and nothing else. A photograph is refused only when the
+     likeness genuinely cannot be recovered from it. Everything short of
+     that is advice, and advice does not turn a customer away. */
+  const hardFail =
+    (isSubject && !faceVisible) ||
+    (isSubject && subjects > 1) ||
+    faceSize  === 'severe' ||
+    sharpness === 'severe' ||
+    occlusion === 'severe' ||
+    lighting  === 'severe'
 
-  const passed = input.resolutionOk && effectiveScore >= input.threshold
+  /* ── ADVISORY ─────────────────────────────────────────────────────
+     Usable, not ideal. The resolution floor lives here now rather than in
+     hardFail: the spec is explicit that resolution alone must not refuse
+     an image unless the face crop itself is too small, and face size is
+     judged separately above. */
+  const advisory =
+    !hardFail && (
+      faceSize  === 'minor' ||
+      sharpness === 'minor' ||
+      lighting  === 'minor' ||
+      occlusion === 'minor' ||
+      poseExtreme ||
+      !input.resolutionOk ||
+      score < input.threshold
+    )
+
+  if (isSubject && !faceVisible)  reasons.unshift('no face found in this photograph')
+  if (isSubject && subjects > 1)  reasons.unshift('more than one person is a primary subject')
+  if (faceSize  === 'severe') reasons.unshift('the face is too small to hold a likeness')
+  if (sharpness === 'severe') reasons.unshift('the face is too blurred to read')
+  if (occlusion === 'severe') reasons.unshift('the face is largely hidden')
+  if (lighting  === 'severe') reasons.unshift('facial detail is lost to the exposure')
+  if (!hardFail && !input.resolutionOk) reasons.push('smaller file than ideal')
+  if (!hardFail && poseExtreme) reasons.push('the head is turned a long way from camera')
+
+  const verdict: 'pass' | 'advisory' | 'fail' =
+    hardFail ? 'fail' : advisory ? 'advisory' : 'pass'
+
+  /* `passed` stays true for an advisory. Every caller reads it as "may
+     this craft proceed", and under this spec an advisory proceeds. A
+     caller that wants the distinction reads `verdict`. */
+  const passed = !hardFail
 
   return {
-    score: effectiveScore,
+    score,
     passed,
+    verdict,
     reasons,
     signals: {
-      face_visible:  Boolean(parsed.face_visible ?? true),
-      face_size_ok:  Boolean(parsed.face_size_ok ?? true),
-      sharpness_ok:  Boolean(parsed.sharpness_ok ?? true),
-      lighting_ok:   Boolean(parsed.lighting_ok ?? true),
-      occlusion_ok:  Boolean(parsed.occlusion_ok ?? true),
-      subject_count: Math.max(1, Number(parsed.subject_count) || 1),
+      face_visible:  faceVisible,
+      face_size_ok:  faceSize === 'good',
+      sharpness_ok:  sharpness === 'good',
+      lighting_ok:   lighting === 'good',
+      occlusion_ok:  occlusion === 'good',
+      subject_count: subjects,
       resolution_ok: input.resolutionOk,
     },
     costCents: COST_CENTS.gpt4o_mini_score,

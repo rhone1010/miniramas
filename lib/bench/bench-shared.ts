@@ -104,8 +104,12 @@ export type FailCategory = typeof FAIL_CATEGORIES[number]
 // ─── INTAKE GATE RESULT ──────────────────────────────────────────
 
 export interface IntakeResult {
-  score:    number              // 1-10 composite usability
-  passed:   boolean
+  score:    number              // 1-10 composite usability, informational only
+  passed:   boolean             // may the craft proceed. true for an advisory.
+  /* Three outcomes, Rich's spec 2026-08-07. `passed` answers "may this go
+     ahead"; `verdict` says on what terms. An advisory is usable and is
+     shown to the customer as a choice, never as a refusal. */
+  verdict:  'pass' | 'advisory' | 'fail'
   reasons:  string[]            // human-readable notes, pass or fail
   signals: {
     face_visible:    boolean    // subject Series only; true default for place Series

@@ -91,7 +91,14 @@ export async function POST(req: NextRequest) {
       resolutionOk,
     })
 
-    const status = intake.passed ? 'passed' : 'intake_rejected'
+    /* Three outcomes now, not two. `intake_rejected` is reserved for the
+       six hard faults; an advisory is a usable photograph with a note,
+       and the customer is shown a choice rather than a wall. A caller
+       that has not been taught 'advisory' reads it as not-rejected,
+       which is the safe direction. */
+    const status =
+      intake.verdict === 'fail'     ? 'intake_rejected' :
+      intake.verdict === 'advisory' ? 'advisory' : 'passed'
 
     console.log(
       `[portraits/gate] ${status} in ${Date.now() - t0}ms ` +
@@ -101,7 +108,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       status,
-      intake: { score: intake.score, reasons: intake.reasons },
+      intake: {
+        score:   intake.score,
+        reasons: intake.reasons,
+        verdict: intake.verdict,
+        signals: intake.signals,
+      },
     })
 
   } catch (e: any) {
