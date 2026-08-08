@@ -582,6 +582,12 @@ body{
    ====================================================================== */
 .band{ display:none }
 
+/* Drawn in script on every width because the markup is cheap and CSS
+   decides who sees it — but the default has to live out here. Inside the
+   767 query there was no rule above 767, and a button with no rule is a
+   visible button: a black arrow in the middle of the workshop. */
+.phone-back{ display:none }
+
 @media (max-width:767px){
   .band{
     display:block;
@@ -6872,11 +6878,10 @@ window.EFFECT_PREVIEWS = {
       /* Nothing to craft in here yet. Grey it and refuse the door rather than
          opening onto seven dead cards, which reads as broken and not unfinished. */
       a.classList.add('is-unavailable');
-      a.querySelector('.silo-card__count').textContent = '';
+      /* the count was removed 2026-08-08 */
     } else {
       a.tabIndex = 0;
-      a.querySelector('.silo-card__count').textContent =
-        live + (live === 1 ? ' effect' : ' effects');
+      /* the count was removed 2026-08-08 — photograph, title, nothing else */
     }
     return a;
   }
