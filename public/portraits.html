@@ -390,7 +390,13 @@ body{
    account on this width and it stays. The word 'credits' goes instead;
    the number was always the point. */
 @media (max-width:767px){
-  .mh-credits .u{ display:none }
+  /* The word 'credits' is decoration next to a number and goes. It is NOT
+     decoration when it is the only thing in the control — signed out, this
+     span holds 'Sign in' and the number holds nothing, and hiding it left
+     an empty box where the way into an account should be. The painter
+     marks the pill when it is carrying a balance; only then does the
+     label go. */
+  .mh-credits.has-balance .u{ display:none }
   .mh-credits .who{ max-width:7ch }
 }
 
@@ -4266,7 +4272,7 @@ body.is-lboxed{ overflow:hidden }
   </div>
 </div>
 
-<div class="readout">
+<div class="readout" id="readout" hidden>
   <button class="readout-tab" id="readoutTab" type="button">Metrics<i></i></button>
   <table>
     <tr><td>viewport</td><td id="vw">—</td></tr>
@@ -7134,6 +7140,7 @@ window.EFFECT_PREVIEWS = {
       whoSpan.textContent = local;
       whoSpan.hidden = !local;
     }
+    if (!ME) mhCreditsBtn.classList.remove('has-balance');
     /* No session. Not a zero — an invitation. Somebody who lands here
        signed out had no control at all before this, and no way to find
        one. The panel exists; nothing opened it. */
@@ -7148,6 +7155,10 @@ window.EFFECT_PREVIEWS = {
        rather than a zero — the original reasoning holds. */
     if (CREDITS == null){ mhCreditsBtn.hidden = true; return; }
     if (uSpan) uSpan.textContent = 'credits';
+    /* A balance is present, so the unit label may be dropped on a narrow
+       screen. The signed-out branch above returns before this and never
+       carries the class. */
+    mhCreditsBtn.classList.add('has-balance');
     mhCreditsBtn.hidden = false;
     mhCreditsCount.textContent = String(CREDITS);
     mhCreditsBtn.setAttribute('aria-label',
@@ -8779,6 +8790,19 @@ window.EFFECT_PREVIEWS = {
   if (psCloseBtn) psCloseBtn.addEventListener('click', hidePrintShop);
 
   window.__showPrintShop = showPrintShop;
+
+  /* The readout is the tool the layout was measured with. It stays in the
+     file and it stays off, and ?metrics=1 brings it back for whoever is
+     doing the measuring. */
+  (function(){
+    try{
+      if (new URLSearchParams(window.location.search).get('metrics') === '1'){
+        var r = document.getElementById('readout');
+        if (r) r.hidden = false;
+      }
+    }catch(_){}
+  })();
+
 
   /* ======================================================================
      THE RECEIPT · after the money has moved
