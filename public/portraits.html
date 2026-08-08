@@ -644,6 +644,93 @@ body{
   .cur-say, .cur-letter{ display:none }
 }
 
+/* ======================================================================
+   THE SURFACES · stage three · phones only
+   ======================================================================
+   The three full-screen surfaces were positioned against a computed left
+   edge — gutter plus spine plus room gap — because on a desktop they slide
+   over the workshop and leave the Curator standing. On a phone there is
+   nothing to leave standing and nothing to slide over: they are the
+   screen, and they have to stop above the band rather than run under it.
+   ================================================================== */
+@media (max-width:767px){
+
+  /* ---- all three ---------------------------------------------------- */
+  .mycoll, .pshop, .acct{
+    left:0; right:0;
+    top:0;                      /* the masthead is no longer a fixed bar */
+    bottom:118px;               /* the band's height, reserved */
+    padding:14px 12px 0;
+    border-left:0; border-radius:0;
+  }
+
+  /* Their heads were a single row: title, count, and a close button that
+     had to share the width with both. Stacked, the close button gets a
+     full-width target and the title stops truncating. */
+  .mc-head{
+    flex-wrap:wrap; gap:.4em .6em;
+    padding-bottom:.6em;
+  }
+  .mc-close{
+    order:-1; width:100%; height:44px; margin-right:0;
+    justify-content:center;
+  }
+  .mc-title{ font-size:1.5rem }
+  .mc-n{ font-size:.72rem }
+  .mc-say{ font-size:1.05rem; padding:.6em .1em .1em }
+
+  /* Eight Series across 390px wrapped to four rows of stubs and pushed the
+     work off the screen. They keep their size and the row scrolls. */
+  .mc-filters{
+    flex-wrap:nowrap; overflow-x:auto;
+    padding:.7em 0 .8em;
+    scrollbar-width:none; -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
+  }
+  .mc-filters::-webkit-scrollbar{ display:none }
+  .mc-filter{
+    flex:0 0 auto; min-height:38px; scroll-snap-align:start;
+  }
+
+  /* ---- My Collection ------------------------------------------------- */
+  /* Featured above, the rest below. Side by side at this width gave the
+     featured piece about 150px, which is smaller than the thumbnails. */
+  .mc-latest{
+    grid-template-columns:minmax(0,1fr);
+    gap:14px;
+  }
+  .mc-feat{ max-width:none; width:100% }
+  .mc-minimap{
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:8px;
+  }
+  /* Full width and stacked: two actions side by side at this width are
+     two half-width targets, and both matter. */
+  .mc-acts{ flex-direction:column; gap:.5em }
+  .mc-acts .mc-act{ width:100%; min-height:44px; justify-content:center }
+
+  /* ---- the Print Shop ------------------------------------------------ */
+  .ps-wall{ grid-template-columns:minmax(0,1fr) }
+  .ps-fly{
+    width:auto; max-width:none; max-height:none;
+    margin:0 0 1.2rem;
+  }
+  .pshop .ps-wall{ padding-bottom:1.2rem }
+
+  /* ---- Your Account -------------------------------------------------- */
+  /* Label over value. Side by side, a shipping address had about 140px and
+     ellipsed to nothing useful. */
+  .ac-row, .acct .row{
+    flex-direction:column; align-items:flex-start; gap:.25em;
+  }
+  .ac-row .v, .acct .row .v{
+    text-align:left; white-space:normal; max-width:100%;
+  }
+
+  /* ---- anything a thumb has to hit ----------------------------------- */
+  .mc-act, .ps-act, .ac-act, .btn{ min-height:44px }
+}
+
 /* Small phones. The 390 rules hold; these only stop type from wrapping
    into single words. */
 @media (max-width:400px){
