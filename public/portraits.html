@@ -3121,6 +3121,46 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
     gap:10px;
   }
 
+  /* ---- the floor ----------------------------------------------------- */
+  /* Eight columns by two rows is sixteen cells, and at 390px that is 45px
+     a card — narrow enough that "Driftwood & Resin" breaks to three lines
+     and the Curator's Pick compresses to five. Two columns, rows sized by
+     content, and the floor scrolls.
+
+     A row and a bit shows at rest. Ruled 2026-08-08: a peek says there is
+     more without spending a tap, and without a sideways gesture arguing
+     with the vertical one. */
+  .floor{
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    grid-template-rows:none;
+    grid-auto-rows:minmax(190px, auto);
+    height:auto; min-height:0;
+    overflow:visible;
+    gap:10px; padding:10px;
+  }
+  /* Those nth-child rules pull the first and last of a row to the edges of
+     an eight-wide grid. In two columns they pull cards away from each
+     other for no reason. */
+  .floor > *{ justify-self:stretch !important }
+  /* A card that spanned two of eight now wants to span two of two, which
+     is the whole width — which is right for the Curator's Pick and wrong
+     for nothing else, since only it spans. */
+  .face-floor .fx-card, .floor > *{ min-width:0 }
+
+  /* ---- the crumb and the toggle -------------------------------------- */
+  /* The toggle was centred absolutely against the crumb — fine beside a
+     short label at 1920, and directly on top of it at 390. */
+  .crumb{
+    flex-wrap:wrap; gap:8px;
+    padding-bottom:8px; min-height:0;
+  }
+  .agetog{
+    position:static; transform:none;
+    order:3; width:100%; height:42px;
+  }
+  .agetog-b{ flex:1; justify-content:center; padding:0 }
+  .crumb-here{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+
   /* ---- anything a thumb has to hit ----------------------------------- */
   .mc-act, .ps-act, .ac-act, .btn{ min-height:44px }
 }
@@ -9102,8 +9142,15 @@ window.EFFECT_PREVIEWS = {
     var src = document.querySelector('.cur-say, .cur-letter');
     function carry(){
       if (!say || !src) return;
-      var t = (src.textContent || '').replace(/\s+/g, ' ').trim();
-      t = t.replace(/\u2014\s*C\.?\s*$/, '').trim();
+      /* Her letter, and nothing that merely sits near it. The signature
+         was already stripped; the button beneath was not, because it is a
+         sibling rather than part of the text — so the band read
+         "...rather than made.— C. Suggest seven finishes". */
+      var clone = src.cloneNode(true);
+      [].forEach.call(clone.querySelectorAll('button, a, .sign, .cur-cta'),
+        function(el){ el.parentNode.removeChild(el); });
+      var t = (clone.textContent || '').replace(/\s+/g, ' ').trim();
+      t = t.replace(/\u2014\s*C\.?.*$/, '').trim();
       if (t) say.textContent = t;
     }
     carry();
