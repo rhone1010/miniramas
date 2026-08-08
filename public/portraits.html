@@ -5080,7 +5080,43 @@ window.EFFECT_PREVIEWS = {
       return 8;
     }
     var a = SRC.analyze || {};
+    /* A file the browser could not decode. Not a judgement about a
+       photograph — a broken file, and the one local fault that stands. */
     if (a.quality_verdict === 'red') return 8;
+
+    /* ── WHY THE LOCAL FLAGS NO LONGER REFUSE · 2026-08-07 ────────────
+       localPhotoCheck averages luminance and variance across the whole
+       image in a canvas. Those two numbers were refusing photographs that
+       the server had just scored 9/10 with "Subject is well-lit and
+       clearly visible" — and because the refusal happened here, in the
+       browser, no row was ever written to qa_log and the cause was
+       invisible from the outside.
+
+       A mean cannot tell a bright window behind a well-lit face from a
+       genuinely dark room, and it never sees a face at all. The server
+       does. So the flags advise and the server decides, which is Rich's
+       spec of 2026-08-07 applied to the half of the gate that was still
+       enforcing on its own.
+
+       The flags are still computed and still read by advisoryState below,
+       so the note survives — it is a note now rather than a wall. */
+    return 0;
+  }
+
+  /* What to SAY about a photograph that is going ahead anyway. Same
+     numbering as faultState, so one card serves both, but nothing here
+     stops a craft. */
+  function advisoryState(){
+    var g = SRC.gate;
+    if (g && g.status === 'advisory'){
+      var raw = ((g.intake && g.intake.reasons) || []).join(' ').toLowerCase();
+      if (/face|small|close|crop|distance|far/.test(raw))  return 5;
+      if (/blur|sharp|focus|soft/.test(raw))               return 6;
+      if (/dim|dark|light|expos|bright/.test(raw))         return 7;
+      if (/resolution|smaller file/.test(raw))             return 5;
+      return 0;
+    }
+    var a = SRC.analyze || {};
     var px = a.smallest_face_min_dim_px;
     if (px != null && px < FACE_WARN_RED_PX) return 5;
     var f = SRC.flags;
