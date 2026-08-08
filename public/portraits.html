@@ -4420,6 +4420,34 @@ body.is-lboxed{ overflow:hidden }
   .band{ transform:none !important }
   .band-tabs{ padding-top:2px }
 }
+
+/* ======================================================================
+   PHONE · THE COLLECTION FILLS, SCROLLS AND OPENS
+   ================================================================== */
+@media (max-width:767px){
+  /* 1 · On the band's measured height, not a constant. The constant was
+        118px, measured when the band carried a line it no longer has. */
+  .mycoll, .pshop, .acct{
+    top:0 !important;
+    bottom:var(--lg-band-h, 62px) !important;
+    left:0 !important; right:0 !important;
+    display:flex !important; flex-direction:column;
+  }
+
+  /* 2 · The grid takes the room that is left and scrolls inside it. */
+  .mycoll .mc-grid{
+    flex:1 1 auto !important;
+    min-height:0;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .mycoll .mc-head,
+  .mycoll .mc-say,
+  .mycoll .mc-filters{ flex:0 0 auto }
+
+  /* 3 · A tile is a target. */
+  .mycoll .mc-minimap .piece{ cursor:pointer }
+}
 </style>
 <script src="/track.js" defer></script>
 </head>
@@ -8629,6 +8657,11 @@ window.EFFECT_PREVIEWS = {
     }
     lboxActs.innerHTML = acts;
   }
+  /* Exported so the phone's tile handler can reach it. On a desktop the
+     featured piece is the only way in; on a phone the featured piece is
+     hidden and the tile has to open it directly. */
+  window.__openPiece = function(id){ openLightbox(id); };
+
   function openLightbox(id){
     var list = lbList(); var at = -1;
     list.forEach(function(p, i){ if (p.id === id) at = i; });
@@ -10583,6 +10616,45 @@ window.EFFECT_PREVIEWS = {
 
     window.addEventListener('resize', seat);
     untuck();
+  }
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+
+<script>
+/* ---- THE BAND'S HEIGHT, PUBLISHED --------------------------------------
+   The surfaces sat above a constant. The band is not one — it changed when
+   the Curator left it, and it will change again. Measured here and
+   re-measured whenever it moves, so nothing has to guess. */
+(function(){
+  function boot(){
+    var band = document.getElementById('lgBand');
+    if (!band) return;
+    function publish(){
+      var h = band.offsetHeight || 62;
+      document.documentElement.style.setProperty('--lg-band-h', h + 'px');
+    }
+    publish();
+    window.addEventListener('resize', publish);
+    if (window.MutationObserver){
+      new MutationObserver(publish).observe(band,
+        { childList:true, subtree:true, attributes:true });
+    }
+
+    /* A tile opens the piece. Only #mcFeat did, and #mcFeat is hidden on a
+       phone — so a tap moved something invisible and read as nothing. The
+       featuring underneath still runs, so the desktop is untouched. */
+    var grid = document.getElementById('mcGrid');
+    if (grid) grid.addEventListener('click', function(e){
+      if (!window.matchMedia || !window.matchMedia('(max-width:767px)').matches) return;
+      var tile = e.target.closest('[data-piece]');
+      if (!tile) return;
+      if (e.target.closest('[data-arch]') || e.target.closest('[data-pick]')) return;
+      var id = tile.getAttribute('data-piece');
+      if (id && typeof window.__openPiece === 'function') window.__openPiece(id);
+    });
   }
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', boot);
