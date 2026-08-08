@@ -4388,6 +4388,38 @@ body.is-lboxed{ overflow:hidden }
   .face--poses .silo-card__sub,
   .face--poses .pose-note{ font-size:.72em; line-height:1.25 }
 }
+
+/* ======================================================================
+   PHONE · THE BAND IS NAVIGATION, AND ONE THING OPENS AT A TIME
+   ======================================================================
+   Last in the file. Both of these turn earlier rules off, and turning a
+   rule off from above it is how the last two evenings were spent.
+   ================================================================== */
+@media (max-width:767px){
+
+  /* 1 · The collection is a grid. The lightbox does full size — it has
+        the arrows and the actions, and it already existed. A second
+        full-view layer meant two closes for one photograph. */
+  .mycoll .mc-feat{ display:none !important }
+  .mycoll .mc-col{ display:flex !important; width:100% }
+  .mycoll .mc-minimap{
+    display:grid !important;
+    grid-template-columns:repeat(3, minmax(0,1fr)) !important;
+    gap:8px;
+  }
+  .mycoll .mc-acts{ display:none !important }
+  .mycoll .mc-head,
+  .mycoll .mc-say,
+  .mycoll .mc-filters{ display:flex !important }
+  .mycoll .mc-say{ display:block !important }
+  .mc-mode{ display:none !important }
+
+  /* 2 · She is not in the band. Her card keeps her, on the step where
+        she is talking about something the person is looking at. */
+  .band-cur{ display:none !important }
+  .band{ transform:none !important }
+  .band-tabs{ padding-top:2px }
+}
 </style>
 <script src="/track.js" defer></script>
 </head>
@@ -8365,15 +8397,10 @@ window.EFFECT_PREVIEWS = {
       if (!b) return;
       mycoll.classList.toggle('is-viewing', b.getAttribute('data-mode') === 'full');
     });
-    /* Tapping a piece is the other way in. It already features the piece;
-       this only says which mode that means on a phone. */
-    var grid = document.getElementById('mcGrid');
-    if (grid) grid.addEventListener('click', function(e){
-      if (!e.target.closest('[data-piece]')) return;
-      if (window.matchMedia && window.matchMedia('(max-width:767px)').matches){
-        mycoll.classList.add('is-viewing');
-      }
-    });
+    /* Removed 2026-08-08. Tapping a piece already opens the lightbox,
+       which navigates between pieces and carries the actions. This added
+       a second full-view layer underneath it, so closing the lightbox
+       revealed another full view and read as a close that did nothing. */
   })();
 
   function showCollection(){
