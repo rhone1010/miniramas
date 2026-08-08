@@ -10,6 +10,11 @@
 //     session, never from the request body.
 //   - Unknown event names are dropped silently (they're almost always a
 //     stale deploy, not an attack).
+//
+// DIAGNOSTIC MODE: while EVENTS_DEBUG=1 is set, the response includes a
+// `debug` field naming exactly why rows were dropped. Remove the env var
+// (or leave it unset) and the route goes quiet again. No behaviour changes
+// either way — the response is always 200.
 
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
@@ -20,6 +25,7 @@ export const runtime = 'nodejs'
 
 const MAX_BATCH = 50
 const MAX_PROPS_BYTES = 4096
+const DEBUG = process.env.EVENTS_DEBUG === '1'
 
 type Incoming = {
   name?: unknown
@@ -51,6 +57,8 @@ function deviceFrom(ua: string): string {
 }
 
 export async function POST(req: Request) {
+  const dropped: string[] = []
+
   try {
     const h = await headers()
     const ua = (h.get('user-agent') || '').slice(0, 512)
@@ -61,7 +69,7 @@ export async function POST(req: Request) {
     try {
       body = await req.json()
     } catch {
-      return NextResponse.json({ ok: true, accepted: 0 })
+      return NextResponse.json({ ok: true, accepted: 0, ...(DEBUG && { debug: 'bad_json' }) })
     }
 
     const batch: Incoming[] = Array.isArray(body)
@@ -70,16 +78,19 @@ export async function POST(req: Request) {
         ? ((body as { events: Incoming[] }).events)
         : []
 
-    if (!batch.length) return NextResponse.json({ ok: true, accepted: 0 })
+    if (!batch.length) {
+      return NextResponse.json({ ok: true, accepted: 0, ...(DEBUG && { debug: 'empty_batch' }) })
+    }
 
     const rows = batch.slice(0, MAX_BATCH).flatMap((e) => {
       const name = str(e.name, 64)
-      if (!name || !EVENT_NAMES.has(name)) return []
+      if (!name) { dropped.push('missing_name'); return [] }
+      if (!EVENT_NAMES.has(name)) { dropped.push(`unknown_name:${name}`); return [] }
 
       const anon = str(e.anon_id, 64)
       const sess = str(e.session_id, 64)
-      if (!anon || !UUID_RE.test(anon)) return []
-      if (!sess || !UUID_RE.test(sess)) return []
+      if (!anon || !UUID_RE.test(anon)) { dropped.push('bad_anon_id'); return [] }
+      if (!sess || !UUID_RE.test(sess)) { dropped.push('bad_session_id'); return [] }
 
       let props: Record<string, unknown> = {}
       if (e.props && typeof e.props === 'object' && !Array.isArray(e.props)) {
@@ -108,17 +119,27 @@ export async function POST(req: Request) {
       }]
     })
 
-    if (!rows.length) return NextResponse.json({ ok: true, accepted: 0 })
+    if (!rows.length) {
+      return NextResponse.json({ ok: true, accepted: 0, ...(DEBUG && { debug: { stage: 'validation', dropped } }) })
+    }
 
     const { error } = await supabaseAdmin.from('events').insert(rows)
     if (error) {
       console.warn('[events] insert failed', error.message)
-      return NextResponse.json({ ok: true, accepted: 0 })
+      return NextResponse.json({
+        ok: true,
+        accepted: 0,
+        ...(DEBUG && { debug: { stage: 'insert', message: error.message, details: error.details, hint: error.hint, code: error.code } }),
+      })
     }
 
     return NextResponse.json({ ok: true, accepted: rows.length })
   } catch (err) {
     console.warn('[events] unexpected', err)
-    return NextResponse.json({ ok: true, accepted: 0 })
+    return NextResponse.json({
+      ok: true,
+      accepted: 0,
+      ...(DEBUG && { debug: { stage: 'exception', message: err instanceof Error ? err.message : String(err) } }),
+    })
   }
 }
