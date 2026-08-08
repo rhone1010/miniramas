@@ -8864,7 +8864,10 @@ window.EFFECT_PREVIEWS = {
      The tabs open the same surfaces the masthead does — the same three
      functions, not a second set. A phone navigation that drifts from the
      desktop's is two navigations to keep true. */
-  (function(){
+  /* Deferred, because this sits ~800 lines above its own markup and the
+     first run found nothing. readyState covers both cases: still parsing,
+     so wait; already done, so go now. */
+  function lgBandSetup(){
     var band = document.getElementById('lgBand');
     if (!band) return;
     band.hidden = false;
@@ -8925,7 +8928,12 @@ window.EFFECT_PREVIEWS = {
     /* The masthead's own links keep working; the band follows them. */
     document.addEventListener('click', function(){ setTimeout(paintBand, 60); });
     paintBand();
-  })();
+  }
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', lgBandSetup);
+  } else {
+    lgBandSetup();
+  }
 
 
   /* The readout is the tool the layout was measured with. It stays in the
