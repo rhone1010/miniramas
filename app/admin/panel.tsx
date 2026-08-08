@@ -13,7 +13,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { PanelData } from '@/lib/admin/panel-data'
-import { money, num, pct, secs, delta } from '@/lib/admin/panel-data'
+import { money, num, pct, secs, delta } from '@/lib/admin/format'
 
 type Tab = 'overview'|'engine'|'marketing'|'customers'|'fulfilment'|'health'|'controls'
 
