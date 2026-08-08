@@ -4346,6 +4346,48 @@ body.is-lboxed{ overflow:hidden }
   .mc-col{ order:1; width:100% }
   .mc-feat{ order:2 }
 }
+
+/* ======================================================================
+   PHONE CLEAN-UP · 2026-08-08
+   ================================================================== */
+@media (max-width:767px){
+
+  /* 1 · one mark, and it is in the band. */
+  .cur-head .cur-mark{ display:none }
+  .cur-head{ padding-left:0 }
+
+  /* 2 · the band tucks to a lip so the work has the screen. 26px, not 10:
+        ten is thinner than a thumb finds, and this still reads as a line. */
+  .band{
+    transition:transform .3s cubic-bezier(.3,.9,.3,1);
+  }
+  .band.is-tucked{
+    transform:translateY(calc(100% - 26px));
+  }
+  .band.is-tucked .band-cur{
+    padding:3px 16px; cursor:pointer;
+  }
+  .band.is-tucked .band-cur p{ max-height:0; opacity:0 }
+  .band.is-tucked .band-c{ width:18px; height:18px; font-size:12px }
+
+  /* 4 · the crumb holds its row. Two pills wrapped and dropped the second
+        to a line of its own. */
+  .crumb{ flex-wrap:wrap }
+  .crumb-back, .crumb-here{
+    min-width:0; flex:0 1 auto;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    font-size:1.05rem; height:36px; padding:0 12px;
+  }
+  .agetog{ order:3 }
+
+  /* 4 · and the pose card fits its own words. Three lines of type and an
+        icon do not fit a .78 ratio at this width. */
+  .face--poses .silo-card{ aspect-ratio:1 / 1.15 }
+  .face--poses .silo-card__content{ padding:1.1em .55em .5em }
+  .face--poses .silo-card__title{ font-size:.86em; line-height:1.1 }
+  .face--poses .silo-card__sub,
+  .face--poses .pose-note{ font-size:.72em; line-height:1.25 }
+}
 </style>
 <script src="/track.js" defer></script>
 </head>
@@ -4426,13 +4468,13 @@ body.is-lboxed{ overflow:hidden }
             <!-- Phones only, hidden by default in CSS. The way on from the
                  photograph, so that leaving this step is something a person
                  does rather than something that happens to them. -->
-            <button class="lg-go-on" id="lgGoOn" type="button">Choose finishes &rarr;</button>
+            <button class="lg-go-on" id="lgGoOn" type="button">Choose effects &rarr;</button>
           </div>
         </div>
 
         <div class="cur-letter">
           <p id="curSay"></p>
-          <button class="cur-seven" id="curSeven" type="button">Suggest seven finishes</button>
+          <button class="cur-seven" id="curSeven" type="button">Suggest seven effects</button>
         </div>
       </div>
     </section>
@@ -4471,7 +4513,7 @@ body.is-lboxed{ overflow:hidden }
           <span class="tbc-title">To Be Crafted</span>
           <span class="tbc-n" id="tbcN"></span>
         </div>
-        <p class="tbc-empty">Nothing chosen yet. Pick a finish and I&rsquo;ll hold it here.</p>
+        <p class="tbc-empty">Nothing chosen yet. Pick an effect and I&rsquo;ll hold it here.</p>
         <div class="tbc-list" id="tbcList"></div>
         <div class="tbc-craft">
           <div class="tbc-total">Total <b id="tbcTotal">0</b></div>
@@ -5040,8 +5082,8 @@ window.EFFECT_PREVIEWS = {
      and not as a value, which is precisely how s63 lost its interactivity.
      Draft copy, mine to be replaced; each is one string. */
   var OPEN_SAY = {
-    browsing: 'Add as many finishes as you like \u2014 the pose comes last.',
-    posing:   'Go back to the finishes any time to add more.',
+    browsing: 'Add as many effects as you like \u2014 the pose comes last.',
+    posing:   'Go back to the effects any time to add more.',
     full:     'Ten is the most I can craft in one go.'
   };
   var CREDITS_PER_IMAGE = 10, BASE_USD = 4.99;
@@ -5335,7 +5377,7 @@ window.EFFECT_PREVIEWS = {
   var curChange = document.getElementById('curChange');
 
   var SAY = {
-    empty:  'Bring me a <span class="hl">portrait</span> and I&rsquo;ll choose the finishes ' +
+    empty:  'Bring me a <span class="hl">portrait</span> and I&rsquo;ll choose the effects ' +
             'myself. A clear, face-forward photograph gives me the most to work with.' +
             '<span class="sign">&mdash; C.</span>',
     /* CENG, 2026-08-02. The line it replaced observed light on hair over
@@ -7138,14 +7180,14 @@ window.EFFECT_PREVIEWS = {
       ? ('These ' + addN + ' bring the studio to ten &mdash; a full payload.')
       : tier === 2
         ? ('All ' + addN + ' of them, and ' + total + ' pieces in the studio.')
-        : ('All ' + addN + ' finishes of this room, side by side.');
+        : ('All ' + addN + ' effects of this room, side by side.');
 
     a.innerHTML =
       '<div class="up">' +
         '<p class="up-eyebrow">' + eyebrow + '</p>' +
         '<h3 class="up-title">' + title + '</h3>' +
         '<p class="up-sub">' + sub + '</p>' +
-        '<p class="up-save">' + addN + ' finishes</p>' +
+        '<p class="up-save">' + addN + ' effects</p>' +
         '<span class="up-cta">Add all ' + addN + ' &middot; ' + credits + ' credits</span>' +
         '<p class="up-tier">' + (total >= 10 ? 'A full studio' : 'The Series') + '</p>' +
       '</div>';
@@ -7550,7 +7592,7 @@ window.EFFECT_PREVIEWS = {
       poseFloor.dataset.count = POSES.length;
       poseFloor.classList.add('has-choice');   /* one is already chosen */
       if (crumbHere)  crumbHere.textContent  = 'Step 2 \u00b7 the pose';
-      if (crumbLabel) crumbLabel.textContent = 'Back to the finishes';
+      if (crumbLabel) crumbLabel.textContent = 'Back to the effects';
       say(POSE_SAY.intro);
       workshop.classList.remove('workshop-view--' + POSE_FROM);
       workshop.classList.add('workshop-view--poses');
@@ -7868,7 +7910,7 @@ window.EFFECT_PREVIEWS = {
     if (!img && QUEUE.length){
       /* Say the one true thing: the finishes are here, the photograph is not.
          Placeholder until the Curator lane rules the line. */
-      SUB_NOTE = 'Your finishes are here \u00b7 choose your photograph again';
+      SUB_NOTE = 'Your effects are here \u00b7 choose your photograph again';
       labelGo();
     }
     return true;
@@ -8784,7 +8826,7 @@ window.EFFECT_PREVIEWS = {
       '<button class="ow-go" type="button">Explore These Effects \u2192</button>';
     c1.querySelector('.ow-title').textContent = 'The Curator Recommends';
     c1.querySelector('.ow-line').textContent =
-      'Three finishes that would sit well beside what you\u2019ve already made.';
+      'Three effects that would sit well beside what you\u2019ve already made.';
     wrap.appendChild(c1);
 
     /* 2 · print shop — MARKETING ART, never the customer's own pieces.
@@ -10360,7 +10402,7 @@ window.EFFECT_PREVIEWS = {
 <div class="band" id="lgBand" hidden>
   <div class="band-cur">
     <span class="band-c">C</span>
-    <p id="bandSay">Bring me a portrait and I&rsquo;ll choose the finishes myself.</p>
+    <p id="bandSay">Bring me a portrait and I&rsquo;ll choose the effects myself.</p>
   </div>
   <nav class="band-tabs">
     <button class="band-tab is-on" data-band="/portraits">
@@ -10416,7 +10458,7 @@ window.EFFECT_PREVIEWS = {
       var count = list ? list.children.length : 0;
       tray.classList.toggle('is-up', count > 0);
       if (!count) return;
-      n.textContent = count + (count === 1 ? ' finish chosen' : ' finishes chosen');
+      n.textContent = count + (count === 1 ? ' effect chosen' : ' effects chosen');
       var total = document.getElementById('tbcTotal');
       c.textContent = total ? total.textContent : '';
       var verb = document.getElementById('tbcGoVerb');
@@ -10434,6 +10476,86 @@ window.EFFECT_PREVIEWS = {
       });
     }
     paint();
+  }
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+
+<script>
+/* ---- PHONE CLEAN-UP · the band and the tray -------------------------- */
+(function(){
+  function boot(){
+    var band = document.getElementById('lgBand');
+    var tray = document.getElementById('lgTray');
+    if (!band) return;
+
+    function onPhone(){
+      return window.matchMedia && window.matchMedia('(max-width:767px)').matches;
+    }
+
+    /* 3 · The tray sat at bottom:118px — a constant, over a band that is
+       not one. It changes with her line and again when it tucks, so the
+       height is measured and re-measured rather than assumed. */
+    function seat(){
+      if (!tray || !onPhone()) return;
+      var h = band.classList.contains('is-tucked') ? 26 : band.offsetHeight;
+      tray.style.bottom = h + 'px';
+    }
+
+    /* 2 · She speaks, then the whole band tucks away. A tap on the lip
+       brings it back — and any new line from her does too, because a line
+       nobody can see is a line not worth writing. */
+    var tuckAt = null;
+    function untuck(){
+      band.classList.remove('is-tucked');
+      clearTimeout(tuckAt);
+      tuckAt = setTimeout(function(){
+        if (!onPhone()) return;
+        band.classList.add('is-tucked');
+        seat();
+      }, 7000);
+      seat();
+    }
+    band.addEventListener('click', function(e){
+      if (band.classList.contains('is-tucked')){ untuck(); return; }
+      if (e.target.closest('[data-band]')) return;
+    });
+
+    var say = document.getElementById('bandSay');
+    if (say && window.MutationObserver){
+      new MutationObserver(untuck).observe(say,
+        { childList:true, characterData:true, subtree:true });
+    }
+    if (window.MutationObserver){
+      new MutationObserver(seat).observe(band,
+        { childList:true, subtree:true, attributes:true, characterData:true });
+    }
+
+    /* 5 · The tray belongs to the workshop. It followed a person into the
+       collection and said "Crafting" over the pieces landing, which are
+       the feedback. */
+    function overlaid(){
+      return ['mycoll','pshop','acct'].some(function(id){
+        var el = document.getElementById(id);
+        return el && el.classList.contains('is-open');
+      });
+    }
+    if (tray && window.MutationObserver){
+      var watch = function(){
+        tray.style.visibility = overlaid() ? 'hidden' : '';
+      };
+      ['mycoll','pshop','acct'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (el) new MutationObserver(watch).observe(el,
+          { attributes:true, attributeFilter:['class'] });
+      });
+      watch();
+    }
+
+    window.addEventListener('resize', seat);
+    untuck();
   }
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', boot);
