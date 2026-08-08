@@ -3096,9 +3096,9 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
     backdrop-filter:blur(4px);
   }
   .mc-mode svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.7 }
-  .mycoll:not(.is-viewing) .mc-mode[data-mode="grid"]{ display:none }
-  .mycoll.is-viewing .mc-mode[data-mode="full"]{ display:none }
-  .mycoll.is-viewing .mc-mode{ bottom:22px }
+  /* Only while a piece is open — there is nothing to close otherwise. */
+  .mycoll:not(.is-viewing) .mc-mode{ display:none }
+  .mycoll.is-viewing .mc-mode{ top:14px; right:14px; bottom:auto }
 
   /* ---- 4 · the footer ------------------------------------------------ */
   .room--footer{ display:none }
@@ -3306,11 +3306,14 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   /* They were twins: two lit pills of equal weight, so neither read as
      the current location. */
   .crumb-back, .crumb-here, .phone-back{ border-radius:6px }
+  /* Quiet, and legible. It was light text on a transparent ground over
+     limestone — present and invisible. Quiet means the lesser of two
+     pills, not the unreadable one. */
   .phone-back{
     border-radius:6px;
-    background:transparent;
-    border-color:rgba(196,169,110,.2);
-    color:rgba(243,237,225,.58);
+    background:rgba(255,255,255,.42);
+    border-color:rgba(88,65,42,.26);
+    color:rgba(58,42,32,.78);
     box-shadow:none;
   }
   .crumb-back{
@@ -8182,28 +8185,17 @@ window.EFFECT_PREVIEWS = {
      shown by CSS, so the desktop never sees them. */
   (function(){
     if (!mycoll || mycoll.querySelector('.mc-mode')) return;
-    var ICON = {
-      full: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>',
-      grid: '<svg viewBox="0 0 24 24">' +
-            '<rect x="3.5" y="3.5" width="5" height="5" rx="1"/>' +
-            '<rect x="9.5" y="3.5" width="5" height="5" rx="1"/>' +
-            '<rect x="15.5" y="3.5" width="5" height="5" rx="1"/>' +
-            '<rect x="3.5" y="9.5" width="5" height="5" rx="1"/>' +
-            '<rect x="9.5" y="9.5" width="5" height="5" rx="1"/>' +
-            '<rect x="15.5" y="9.5" width="5" height="5" rx="1"/>' +
-            '<rect x="3.5" y="15.5" width="5" height="5" rx="1"/>' +
-            '<rect x="9.5" y="15.5" width="5" height="5" rx="1"/>' +
-            '<rect x="15.5" y="15.5" width="5" height="5" rx="1"/></svg>'
-    };
-    ['full','grid'].forEach(function(m){
-      var b = document.createElement('button');
-      b.className = 'mc-mode';
-      b.type = 'button';
-      b.setAttribute('data-mode', m);
-      b.setAttribute('aria-label', m === 'full' ? 'View full size' : 'Back to the grid');
-      b.innerHTML = ICON[m];
-      mycoll.appendChild(b);
-    });
+    /* One control, not two. A tap opens a piece — which is what a
+       photograph does everywhere else on a phone and needs no legend —
+       and an X closes it. The square-and-grid pair was a mode switch
+       asking to be learned. */
+    var b = document.createElement('button');
+    b.className = 'mc-mode';
+    b.type = 'button';
+    b.setAttribute('data-mode', 'grid');
+    b.setAttribute('aria-label', 'Close');
+    b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    mycoll.appendChild(b);
     mycoll.addEventListener('click', function(e){
       var b = e.target.closest('.mc-mode');
       if (!b) return;
@@ -8646,6 +8638,16 @@ window.EFFECT_PREVIEWS = {
        lands there is nothing to print and nothing to set as a wallpaper, and a
        row of three where two are empty argues against itself. */
     if (!done.length){ wrap.hidden = true; wrap.innerHTML = ''; return; }
+    /* Not on a phone. Ruled 2026-08-08: three panels of things to buy
+       sat between a person and their own work, and hiding them was not
+       enough — this function still built them, still measured them, and
+       `wrap.hidden = false` beat the rule that hid them, because [hidden]
+       is a default and any rule outranks it. */
+    if (window.matchMedia && window.matchMedia('(max-width:767px)').matches){
+      wrap.hidden = true;
+      wrap.innerHTML = '';
+      return;
+    }
     wrap.hidden = false;
     wrap.innerHTML = '';
 
