@@ -3250,6 +3250,22 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
      question rather than an answer. */
   .workshop-view--silos .phone-back{ display:inline-flex }
 
+  /* ---- two columns, actually ----------------------------------------- */
+  /* A card spans two of the desktop's eight columns. In a two-column grid
+     that is the whole width, which is why the two-column rule was already
+     there and every card still took a row to itself. */
+  .floor > *{
+    grid-column:auto !important;
+    grid-row:auto !important;
+    justify-self:stretch !important;
+  }
+
+  /* Titles at a size a phone can read. clamp(16px, 1vw, 26px) floors at 16
+     below 1600px, and Garamond sets about a third smaller than a sans — so
+     16px reads like 11px of sans, under the floor held everywhere else. */
+  :root{ --card-type:20px }
+  .floor{ font-size:20px }
+
   /* ---- anything a thumb has to hit ----------------------------------- */
   .mc-act, .ps-act, .ac-act, .btn{ min-height:44px }
 }
@@ -9220,12 +9236,37 @@ window.EFFECT_PREVIEWS = {
       if (!hasPhoto()) step('upload');
     }
 
-    /* The photograph landing is what advances it. */
+    /* Anything that has something to say about the photograph says it in
+       this one modal — the four intake faults and the age gate both. */
+    function modalUp(){
+      var m = document.querySelector('.m-scrim.is-open');
+      return !!m;
+    }
+
+    /* The photograph landing is what advances it — but not while there is
+       something to answer first. `data-state` is set as soon as the file
+       is read, which is before the gate has replied, so advancing on it
+       alone took a person to the worlds and then refused them there. */
+    function advanceWhenClear(){
+      if (!modalUp()){ step('work'); return; }
+      var watch = new MutationObserver(function(){
+        if (modalUp()) return;
+        watch.disconnect();
+        /* The usual way out of that modal is to choose a different
+           photograph. Advancing then would be moving on from a decision
+           the person has just undone. */
+        if (hasPhoto()) step('work');
+      });
+      watch.observe(document.body, {
+        attributes:true, subtree:true, attributeFilter:['class']
+      });
+    }
+
     var wasEmpty = !hasPhoto();
     new MutationObserver(function(){
       if (!onPhone()) return;
       var empty = !hasPhoto();
-      if (wasEmpty && !empty) step('work');
+      if (wasEmpty && !empty) advanceWhenClear();
       if (!wasEmpty && empty) step('upload');
       wasEmpty = empty;
     }).observe(card, { attributes:true, attributeFilter:['data-state'] });
