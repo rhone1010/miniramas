@@ -4448,6 +4448,65 @@ body.is-lboxed{ overflow:hidden }
   /* 3 · A tile is a target. */
   .mycoll .mc-minimap .piece{ cursor:pointer }
 }
+
+/* ======================================================================
+   PHONE · THE COLLECTION IS FOR LOOKING AT PIECES
+   ======================================================================
+   Half the screen was furniture. What is left is the title, the count, and
+   a row of Series that scrolls instead of wrapping.
+   ================================================================== */
+@media (max-width:767px){
+
+  /* The sentence describing what the pieces are, above the pieces. */
+  .mycoll .mc-say{ display:none !important }
+
+  /* One line: what this is, and how much of it there is. */
+  .mycoll .mc-head{
+    flex-wrap:nowrap !important;
+    align-items:baseline;
+    gap:.5em;
+    padding:8px 0 6px !important;
+    min-height:0;
+  }
+  .mycoll .mc-title{ font-size:1.35rem; flex:0 0 auto }
+  .mycoll .mc-n{
+    font-size:.66rem; letter-spacing:.14em;
+    flex:1 1 auto; min-width:0;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  /* The close control is in the band's Workshop tab. A second way out of
+     this room, at the top, is a second thing to explain. */
+  .mycoll .mc-close{ display:none !important }
+
+  /* Seven Series and an archive count wrapped to three rows. One row that
+     scrolls, so the number of Series stops deciding how much screen they
+     take. */
+  .mycoll .mc-filters{
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    overflow-x:auto;
+    gap:6px;
+    padding:0 0 8px !important;
+    margin:0;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
+  }
+  .mycoll .mc-filters::-webkit-scrollbar{ display:none }
+  .mycoll .mc-filter{
+    flex:0 0 auto;
+    min-height:34px; height:34px; padding:0 .85em;
+    font-size:1rem;
+    scroll-snap-align:start;
+  }
+  /* Archived was pushed to a row of its own by an auto margin. */
+  .mycoll .mc-filter.is-archive,
+  .mycoll .mc-filters > :last-child{ margin-left:0 !important }
+
+  /* And the pieces take what is left. */
+  .mycoll .mc-grid{ padding-top:2px }
+  .mycoll .mc-minimap{ gap:6px }
+}
 </style>
 <script src="/track.js" defer></script>
 </head>
