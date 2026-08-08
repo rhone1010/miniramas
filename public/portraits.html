@@ -3161,6 +3161,47 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   .agetog-b{ flex:1; justify-content:center; padding:0 }
   .crumb-here{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 
+  /* ---- the card takes its size from the column ----------------------- */
+  /* On a canvas the row sets the height and the ratio gives the width.
+     With rows sized by content that is circular — the row asks the card,
+     the card asks the row — and it resolves to a card a screen tall.
+     Here the column sets the width and the ratio gives the height. */
+  .silo-card, .fx-card, .pose-card, .floor > *{
+    height:auto !important;
+    width:100% !important;
+    max-width:none !important;
+    aspect-ratio:var(--card-ratio, .78);
+  }
+  .floor{ grid-auto-rows:auto }
+
+  /* ---- the deck holds its own height --------------------------------- */
+  /* The three faces are stacked absolutely and swapped by opacity, so the
+     deck has no height of its own and the floor spills past it. In the
+     flow, with the two that are not showing removed: the change reads as
+     a page turn rather than a cross-fade, which is what a phone expects. */
+  .deck{ min-height:0; perspective:none }
+  .face{
+    position:relative; inset:auto;
+    display:none; opacity:1; visibility:visible;
+    transition:none;
+  }
+  .workshop-view--silos   .face--silos,
+  .workshop-view--effects .face--effects,
+  .workshop-view--poses   .face--poses{ display:block }
+  .room--workshop{ grid-template-rows:auto auto }
+
+  /* ---- the Curator's photograph -------------------------------------- */
+  /* A full-width square is 366px before her letter starts, which put the
+     workshop below the fold on every visit. Cropped from the top, where a
+     face is. */
+  .cur-thumb img{
+    aspect-ratio:auto;
+    max-height:200px; width:100%;
+    object-fit:cover; object-position:50% 22%;
+  }
+  .cur-slot{ aspect-ratio:auto; min-height:150px }
+  .cur{ padding-bottom:12px }
+
   /* ---- anything a thumb has to hit ----------------------------------- */
   .mc-act, .ps-act, .ac-act, .btn{ min-height:44px }
 }
