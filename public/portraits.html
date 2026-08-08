@@ -4318,6 +4318,34 @@ body.is-lboxed{ overflow:hidden }
 }
 .lg-tray{ display:none }
 @media (max-width:767px){ .lg-tray{ display:flex } }
+
+/* ---- the way on from the photograph · phones ------------------------- */
+.lg-go-on{ display:none }
+@media (max-width:767px){
+  /* Only once there is a photograph to go on from. */
+  .cur:not([data-state="empty"]) .lg-go-on{
+    display:block; width:100%; margin:10px 0 0;
+    min-height:48px; padding:.6em 1em;
+    border:0; border-radius:8px; cursor:pointer;
+    background:var(--oxblood, #7d4242); color:#f6f1e7;
+    font-family:var(--serif); font-style:italic; font-size:21px;
+  }
+  .cur-change{ width:100% }
+
+  /* ---- the grid was off the side of the screen ----------------------- */
+  /* .mc-latest is a grid with a 500px first column, declared further down
+     the file than the phone rules. At 390px the featured piece took the
+     500 and the grid column — every thumbnail — sat past the right edge.
+     Not hidden. Outside. */
+  .mc-latest{
+    display:flex !important;
+    flex-direction:column !important;
+    grid-template-columns:none !important;
+    gap:12px;
+  }
+  .mc-col{ order:1; width:100% }
+  .mc-feat{ order:2 }
+}
 </style>
 <script src="/track.js" defer></script>
 </head>
@@ -4395,6 +4423,10 @@ body.is-lboxed{ overflow:hidden }
           <div class="cur-thumb">
             <img id="curThumb" src="/previews/silos/artists_gallery.jpg" alt="Your photograph">
             <button class="cur-change" id="curChange" type="button">Use a different photograph</button>
+            <!-- Phones only, hidden by default in CSS. The way on from the
+                 photograph, so that leaving this step is something a person
+                 does rather than something that happens to them. -->
+            <button class="lg-go-on" id="lgGoOn" type="button">Choose finishes &rarr;</button>
           </div>
         </div>
 
@@ -9438,11 +9470,23 @@ window.EFFECT_PREVIEWS = {
       });
     }
 
+    /* The advance is a press, not a consequence. A photograph landing used
+       to change the screen on its own — no pause, nothing said, and no
+       chance to look at what had been chosen before moving on. Which is
+       exactly the moment a person wants to look at it.
+
+       Removed rather than delayed: a delayed jump is still a jump. */
+    var goOn = document.getElementById('lgGoOn');
+    if (goOn) goOn.addEventListener('click', function(){
+      if (hasPhoto()) advanceWhenClear();
+    });
+
     var wasEmpty = !hasPhoto();
     new MutationObserver(function(){
       if (!onPhone()) return;
       var empty = !hasPhoto();
-      if (wasEmpty && !empty) advanceWhenClear();
+      /* Losing the photograph still returns on its own — there is nothing
+         to stay for and nothing to decide. */
       if (!wasEmpty && empty) step('upload');
       wasEmpty = empty;
     }).observe(card, { attributes:true, attributeFilter:['data-state'] });
