@@ -29,8 +29,10 @@ export type Engine = {
   renders_recent: number
   first_pass_pct: number | null
   kept_pieces: number
-  cost_per_kept: number | null
-  renders_per_kept: number | null
+  cost_total_cents: number
+  cost_per_render: number | null
+  cost_per_passed: number | null
+  attributed: number
   outcomes: { passed: number; failed: number; rejected: number; redirected: number }
   by_finish: Array<{
     finish: string; crafted: number; first_pct: number | null

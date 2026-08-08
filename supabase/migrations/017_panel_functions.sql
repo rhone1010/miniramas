@@ -109,8 +109,15 @@ select jsonb_build_object(
   'renders_recent',   (select recent from tot),
   'first_pass_pct',   (select round(100.0 * firsts / nullif(all_time,0)) from tot),
   'kept_pieces',      (select n from kept),
-  'cost_per_kept',    (select round((select cost from tot)::numeric / nullif((select n from kept),0) / 100.0, 2)),
-  'renders_per_kept', (select round((select all_time from tot)::numeric / nullif((select n from kept),0), 1)),
+  -- Cost is measured per PASSED render. qa_log counts bench runs as well as
+  -- customer crafts, and collection_pieces holds only the latter, so dividing
+  -- one by the other compares two different populations and reads far too
+  -- high. When qa_log carries render_ref and user_ref, a true per-piece
+  -- figure becomes possible; until then this is the honest number.
+  'cost_total_cents', (select cost from tot),
+  'cost_per_render',  (select round((select cost from tot)::numeric / nullif((select all_time from tot),0) / 100.0, 3)),
+  'cost_per_passed',  (select round((select cost from tot)::numeric / nullif((select passed from tot),0) / 100.0, 2)),
+  'attributed',       (select count(*) from public.qa_log where render_ref is not null),
   'outcomes', jsonb_build_object(
       'passed',     (select passed from tot),
       'failed',     (select failed from tot),
@@ -229,7 +236,7 @@ with
   t as (select duration_ms from public.qa_log
         where duration_ms is not null and created_at >= (select since from span)),
   hourly as (
-    select extract(hour from created_at)::int hour,
+    select extract(hour from created_at)::int as "hour",
            round(avg(duration_ms)/1000.0, 1) avg_s,
            count(*) n,
            count(*) filter (where status in ('failed','errored')) fails
@@ -239,7 +246,7 @@ with
   ),
   inc as (
     select incident_id, severity, surface, component, summary,
-           count, first_seen, last_seen, status
+           "count", first_seen, last_seen, status
     from public.error_log where status in ('open','ack')
     order by last_seen desc limit 25
   )
