@@ -33,7 +33,10 @@
   --vellum:#f3ede1; --vellum-100:#f8f4eb; --vellum-200:#f3ecdd; --vellum-300:#e9dec8;
   --limestone:#f1ece3;
   --oxblood:#7d4242; --brass:#75623a; --gold:#b68a53;
-  --espresso:#26201a;
+  --espresso:#26201a; --coffee-700:#332620;
+
+  --mh-h:90px;    /* masthead height — the workshop's number */
+  --mark-h:60px;  /* the L mark, measured by height; width follows */
   --card-line:rgba(196,169,110,.28);
   --hairline:rgba(123,92,58,.20);
 
@@ -41,10 +44,15 @@
   --sans:'Manrope',sans-serif;
   --r-card:8px;
 
-  /* A FIXED 100px GUTTER. Not a percentage: the tiles are the point on
-     this page and a percentage gutter takes width away from them exactly
-     when there is most width to give. */
-  --stage-gutter:100px;
+  /* 5% a side. */
+  --stage-gutter:5%;
+
+  /* THE PLATES ARE 400px WIDE. A tile drawn wider than its source is a
+     blurry tile, so the ceiling is 430 — 400 plus a little, which reads
+     sharp. Two of those plus the gap is 886, and beyond that a wide
+     screen gets more margin rather than a bigger blur. */
+  --tile-max:430px;
+  --tiles-max:calc((var(--tile-max) * 2) + var(--tile-gap));
   --stage-w:calc(100% - (var(--stage-gutter) * 2));
 
   --tile-gap:clamp(14px, 1.1vw, 26px);
@@ -56,7 +64,7 @@
 button{font:inherit; border:none; background:none; color:inherit}
 img{display:block; max-width:100%}
 
-html{ scroll-behavior:smooth; scroll-padding-top:150px }
+html{ scroll-behavior:smooth; scroll-padding-top:145px }
 body{
   min-height:100%;
   background:var(--limestone);
@@ -73,15 +81,23 @@ body{
 /* ---- MASTHEAD · the workshop's geometry, verbatim -------------------- */
 .mh{
   position:sticky; top:0; z-index:60;
-  height:90px;
+  height:var(--mh-h);
   background:var(--espresso);
-  border-bottom:1px solid var(--card-line);
   display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
   align-items:center;
   padding-inline:var(--stage-gutter);
 }
 .mh-logo{ justify-self:start; display:block }
-.mh-mark{ height:52px; width:auto; fill:var(--vellum-100) }
+.mh-logo{
+  justify-self:start; text-decoration:none;
+  display:inline-flex; align-items:center;
+  color:var(--vellum-100);          /* the mark inherits this */
+}
+.mh-mark{
+  height:var(--mark-h); width:auto; flex:0 0 auto;
+  display:block; overflow:visible;
+}
+.mh-mark path{ fill:currentColor }
 .mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
 .mh-nav a{
   position:relative; text-decoration:none; white-space:nowrap;
@@ -104,64 +120,61 @@ body{
 }
 .mh-cta:hover{ background:#8d4b4b; color:#fff }
 
-/* ---- OPENING ---------------------------------------------------------
-   Side by side, not stacked. Stacked, the words took a third of the screen
-   before a single finish appeared — on a page whose whole argument is the
-   volume of work, that is the wrong thing to spend the fold on. */
-.open{
-  padding:clamp(28px,3vw,52px) 0 clamp(18px,1.8vw,28px);
-  display:grid; grid-template-columns:auto minmax(0,44ch);
-  gap:clamp(24px,4vw,72px); align-items:baseline;
-}
+/* ---- THE HEAD --------------------------------------------------------
+   A TITLE, NOT A FOLD. Ruled 2026-08-09: nothing above the first tile may
+   take more than about 150px. This is a gallery — the argument is the
+   volume of work, and a paragraph explaining that in front of it is the
+   wrong thing to spend the first screen on. Centred, two lines, done. */
+.open{ padding:34px 0 26px; text-align:center }
 .open h1{
-  font-family:var(--serif); font-weight:300; font-style:italic;
-  font-size:clamp(2.2rem,3.6vw,3.4rem); line-height:1.05; color:var(--ink);
-  white-space:nowrap;
+  font-family:var(--serif); font-weight:400; font-style:italic;
+  font-size:clamp(2rem,2.9vw,2.75rem); line-height:1.06; color:var(--ink);
 }
 .open p{
-  font-family:var(--serif); font-size:1.375rem; line-height:1.45;
-  color:var(--ink-soft);
+  font-family:var(--sans); font-weight:300;
+  font-size:1.0625rem; letter-spacing:.01em;
+  color:var(--ink-soft); margin-top:.35rem;
 }
 
 /* ---- SILO JUMP ------------------------------------------------------- */
 .jump{
-  position:sticky; top:90px; z-index:30;
-  background:rgba(241,236,227,.94);
-  backdrop-filter:blur(8px);
-  border-top:1px solid var(--hairline);
-  border-bottom:1px solid var(--hairline);
+  position:sticky; top:var(--mh-h); z-index:50;
+  background:var(--espresso);
+  border-bottom:1px solid var(--card-line);
 }
 .jump-in{
   width:var(--stage-w); margin:0 auto;
-  display:flex; justify-content:center; gap:10px; overflow-x:auto;
-  padding:14px 0; scrollbar-width:none;
+  display:flex; justify-content:center; gap:8px; overflow-x:auto;
+  padding:10px 0; scrollbar-width:none;
 }
 .jump-in::-webkit-scrollbar{ display:none }
-.jump a{
-  font-family:var(--serif); font-style:italic; font-size:1.125rem;
-  text-decoration:none; white-space:nowrap;
-  padding:.45rem 1.25rem; border-radius:999px;
+.jump a, .jump button{
+  font-family:var(--serif); font-style:italic; font-size:.9375rem;
+  text-decoration:none; white-space:nowrap; line-height:1;
+  padding:.4rem .95rem; border-radius:999px;
   background:var(--coffee-700); color:var(--vellum-200);
-  border:1px solid var(--coffee-700);
+  border:1px solid rgba(233,222,200,.14);
   transition:background .16s ease, color .16s ease, border-color .16s ease;
 }
-.jump a:hover{ background:var(--espresso); color:var(--vellum-100) }
-.jump a.on{
-  background:var(--vellum-100); color:var(--ink); border-color:var(--hairline);
+.jump a:hover, .jump button:hover{
+  background:#453429; color:var(--vellum-100); border-color:rgba(233,222,200,.3);
+}
+.jump a.on, .jump button.on{
+  background:var(--gold); color:var(--espresso); border-color:var(--gold);
 }
 
 /* ---- A SILO ---------------------------------------------------------- */
-.silo{ padding:clamp(52px,5.5vw,96px) 0; border-bottom:1px solid var(--hairline) }
+.silo{ padding:clamp(38px,3.6vw,64px) 0; border-bottom:1px solid var(--hairline) }
 .silo:last-of-type{ border-bottom:none }
 
-.silo-head{ margin-bottom:clamp(24px,2.4vw,44px) }
+.silo-head{ margin-bottom:clamp(18px,1.8vw,30px) }
 .silo-head h2{
   font-family:var(--serif); font-weight:400; font-style:italic;
-  font-size:clamp(2rem,3.4vw,3.2rem); line-height:1.1; color:var(--ink);
+  font-size:clamp(1.75rem,2.4vw,2.375rem); line-height:1.1; color:var(--ink);
 }
 .silo-head p{
-  font-family:var(--serif); font-size:1.375rem; line-height:1.4;
-  color:var(--ink-soft); margin-top:.5rem; max-width:52ch;
+  font-family:var(--serif); font-size:1.25rem; line-height:1.4;
+  color:var(--ink-soft); margin-top:.3rem; max-width:52ch;
 }
 
 /* The two sitters, side by side. */
@@ -172,7 +185,10 @@ body{
   padding-bottom:.75rem; margin-bottom:1.25rem;
   border-bottom:1px solid var(--hairline);
 }
-.tiles{ display:grid; grid-template-columns:1fr 1fr; gap:var(--tile-gap) }
+.tiles{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:var(--tile-gap); max-width:var(--tiles-max);
+}
 
 /* ---- A TILE ---------------------------------------------------------- */
 .tile{
@@ -195,15 +211,18 @@ body{
   font-family:var(--serif); font-style:italic; font-size:1.125rem;
   color:var(--taupe); text-align:center; padding:1rem;
 }
-.tile-cap{ padding:.85rem 1rem 1rem }
+/* One line, the finish's name, and nothing under it. "Craft this finish"
+   came off 2026-08-09: it promised to open that finish and delivered a
+   generic workshop, because ?effect= is not read at the other end. A link
+   that lies is worse than no link. It comes back when the workshop opens
+   the silo and the Curator is waiting.
+
+   Garamond is NOT used at caption size. It sets about a third smaller
+   than a sans at the same px, so small serif reads as an accident. */
+.tile-cap{ padding:.75rem 1rem .9rem }
 .tile-cap b{
   display:block; font-family:var(--serif); font-weight:400;
-  font-size:1.375rem; line-height:1.2; color:var(--ink);
-}
-.tile-cap span{
-  display:block; margin-top:.35rem;
-  font-family:var(--serif); font-style:italic; font-size:1.0625rem;
-  color:var(--oxblood);
+  font-size:1.4375rem; line-height:1.2; color:var(--ink);
 }
 
 /* ---- CLOSING --------------------------------------------------------- */
@@ -234,24 +253,22 @@ body{
    The two sitter columns stack rather than shrink. Two columns of one
    tile each on a phone is not a gallery, it is a list with a gap down
    the middle. Stacked, each sitter still gets two across. */
-@media (max-width:1200px){
-  .open{ grid-template-columns:1fr; gap:.75rem }
-  .open h1{ white-space:normal }
-}
 @media (max-width:900px){
-  :root{ --stage-gutter:32px }
+  :root{ --stage-gutter:4% }
   .subjects{ grid-template-columns:1fr; gap:clamp(32px,6vw,48px) }
 }
 @media (max-width:767px){
   :root{ --stage-gutter:20px }
-  html{ scroll-padding-top:130px }
-  .mh{ height:72px; grid-template-columns:auto 1fr auto; gap:12px }
-  .mh-mark{ height:38px }
+  .tiles{ max-width:none }
+  html{ scroll-padding-top:110px }
+  :root{ --mh-h:60px; --mark-h:46px }
+  .mh{ grid-template-columns:auto 1fr auto; gap:12px }
+
   .mh-nav{ display:none }
   .mh-cta{ font-size:1.0625rem; padding:.45rem 1.1rem }
-  .jump{ top:72px }
+
   .jump-in{ justify-content:flex-start }
-  .open{ padding:36px 0 20px }
+  .open{ padding:24px 0 18px }
   .tile-cap{ padding:.7rem .8rem .85rem }
   .tile-cap b{ font-size:1.1875rem }
   .tile-cap span{ font-size:1rem }
@@ -276,10 +293,8 @@ body{
 
 <div class="stage">
   <section class="open">
-    <h1>Every finish we make.</h1>
-    <p>Eight rooms, and in each one a set of finishes shown on two sitters.
-       Nothing here is a sample of a style — every one was crafted from a
-       photograph, the same way yours will be.</p>
+    <h1>Every Effect We Have</h1>
+    <p>In one place</p>
   </section>
 </div>
 
@@ -393,8 +408,9 @@ body{
       /* Labels go in through textContent, never innerHTML — the registry
          emits plain unicode, so "Charcoal & Chalk" would become &amp;amp;
          on a second pass. */
-      cap.innerHTML = '<b></b><span>Craft this finish</span>';
-      cap.querySelector('b').textContent = e.label;
+      var nm = document.createElement('b');
+      nm.textContent = e.label;
+      cap.appendChild(nm);
 
       a.appendChild(box);
       a.appendChild(cap);
