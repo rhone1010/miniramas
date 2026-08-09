@@ -12,15 +12,19 @@
 
 <style>
 /* ==========================================================================
-   HELP · 2026-08-08
+   HELP · 2026-08-08 · r2
    Ten questions, the Concierge, and the two documents.
 
-   The order is the argument. Trust questions first — what happens to my
-   photograph, will it look like the person, what if I hate it — because a
-   visitor who does not believe us never reads the how-to. The Concierge
-   sits AFTER the ten, not floating over the page: someone who has read ten
-   answers and still has a question has earned a conversation. Someone who
-   just arrived has not asked one yet.
+   THE COLUMN IS CENTRED. Long prose set against the left edge of a 1920
+   screen leaves two thirds of the page empty and the eye travelling further
+   than it should. Everything reading-length sits in one centred measure;
+   the masthead and the section bar span the full width so the page still
+   feels like a page rather than a document floating on one.
+
+   THE CONCIERGE IS TRIGGERED, NOT PARKED. She was sitting in the scroll
+   between the questions and the terms, which put a conversation in the
+   middle of a document. She now has her own band and opens over the page
+   when asked for.
    ====================================================================== */
 
 :root{
@@ -30,12 +34,12 @@
   --vellum:#f3ede1; --vellum-100:#f8f4eb; --vellum-200:#f3ecdd; --vellum-300:#e9dec8;
   --limestone:#f1ece3;
   --oxblood:#7d4242; --brass:#75623a; --gold:#b68a53;
-  --espresso:#26201a;
+  --espresso:#26201a; --coffee-700:#332620;
 
   /* THE CONCIERGE'S GREEN. Sage, matched to the palette by value and
-     saturation rather than by hue — oxblood #7d4242 and brass #75623a are
-     both desaturated and mid-value, and a green that is not sits on the
-     page like a sticker. */
+     saturation rather than hue — oxblood #7d4242 and brass #75623a are both
+     desaturated and mid-value, and a green that is not sits on the page
+     like a sticker. */
   --sage:#4a6b4a;
   --sage-light:#5d7d5d;
   --sage-wash:rgba(74,107,74,.07);
@@ -46,11 +50,14 @@
 
   --serif:'Cormorant Garamond',Georgia,serif;
   --sans:'Manrope',sans-serif;
-  --r-card:8px;
 
-  --stage-gutter-max:100px;
-  --stage-w:max(90%, calc(100% - (var(--stage-gutter-max) * 2)));
-  --read-w:min(100%, 68ch);
+  --stage-gutter:100px;
+  --stage-w:calc(100% - (var(--stage-gutter) * 2));
+
+  /* The reading measure. 74ch lands around 1000px at this type size —
+     comfortable at 1320 and still comfortable at 1920, where the extra
+     width goes to the margins rather than to the line. */
+  --read-w:min(100%, 74ch);
 }
 
 *{margin:0; padding:0; box-sizing:border-box}
@@ -58,117 +65,136 @@
 button{font:inherit; border:none; background:none; color:inherit; cursor:pointer}
 img{display:block; max-width:100%}
 
-html{height:100%; scroll-behavior:smooth}
+html{ scroll-behavior:smooth; scroll-padding-top:150px }
 body{
   min-height:100%;
   background:var(--limestone);
   color:var(--ink);
   font-family:var(--sans);
   font-size:1rem;
-  overflow-x:hidden;
+  /* clip, NOT hidden. overflow-x:hidden on the body makes it a scroll
+     container in Chrome and silently kills every position:sticky on the
+     page — which is exactly what was happening to the masthead. */
+  overflow-x:clip;
 }
 .stage{ width:var(--stage-w); margin:0 auto }
+.read{ width:var(--read-w); margin:0 auto }
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-/* ---- MASTHEAD -------------------------------------------------------- */
+/* ---- MASTHEAD · the workshop's geometry, verbatim -------------------- */
 .mh{
-  height:90px; background:var(--espresso);
-  display:flex; align-items:center; gap:32px;
-  padding:0 clamp(20px,5%,100px);
-  position:sticky; top:0; z-index:40;
+  position:sticky; top:0; z-index:60;
+  height:90px;
+  background:var(--espresso);
+  border-bottom:1px solid var(--card-line);
+  display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  padding-inline:var(--stage-gutter);
 }
-.mh-mark{ height:44px; width:auto; fill:var(--vellum-100) }
-.mh-nav{ margin-left:auto; display:flex; align-items:center; gap:28px }
+.mh-logo{ justify-self:start; display:block }
+.mh-mark{ height:52px; width:auto; fill:var(--vellum-100) }
+.mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
 .mh-nav a{
-  font-family:var(--serif); font-style:italic; font-size:1.25rem;
-  color:var(--vellum-300); text-decoration:none;
+  position:relative; text-decoration:none; white-space:nowrap;
+  font-family:var(--serif); font-size:1.5em; font-weight:400; line-height:1;
+  color:var(--vellum-300); padding:10px 0;
+  transition:color .16s ease;
 }
 .mh-nav a:hover{ color:var(--vellum-100) }
+.mh-nav a.on{ color:var(--gold) }
+.mh-nav a.on::after{
+  content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
+  background:var(--gold);
+}
+.mh-right{ justify-self:end; display:flex; align-items:center; gap:12px }
 .mh-cta{
   font-family:var(--serif); font-style:italic; font-size:1.25rem;
   background:var(--oxblood); color:var(--vellum-100);
-  padding:.5rem 1.25rem; border-radius:999px; text-decoration:none;
+  padding:.5rem 1.4rem; border-radius:999px; text-decoration:none;
   white-space:nowrap;
 }
 .mh-cta:hover{ background:#8d4b4b; color:#fff }
 
 /* ---- BANNER ---------------------------------------------------------
-   Real crafted pieces, not decoration. The strip is the evidence behind
-   half the answers below it. */
+   Real crafted pieces. The strip is the evidence behind half the answers
+   below it. */
 .banner{
   display:grid; grid-template-columns:repeat(8,1fr);
-  height:clamp(150px,20vw,300px); overflow:hidden;
+  height:clamp(130px,15vw,240px); overflow:hidden;
   background:var(--espresso);
-  border-bottom:1px solid var(--hairline);
 }
 .banner div{ overflow:hidden; position:relative }
-.banner img{
-  width:100%; height:100%; object-fit:cover;
-  filter:saturate(.94);
-}
+.banner img{ width:100%; height:100%; object-fit:cover; filter:saturate(.94) }
 .banner div::after{
   content:''; position:absolute; inset:0;
-  background:linear-gradient(rgba(38,32,26,.06),rgba(38,32,26,.22));
+  background:linear-gradient(rgba(38,32,26,.06),rgba(38,32,26,.24));
 }
-@media (max-width:900px){ .banner{ grid-template-columns:repeat(4,1fr) } }
-@media (max-width:520px){ .banner{ grid-template-columns:repeat(3,1fr) } }
 
 /* ---- OPENING --------------------------------------------------------- */
-.open{ padding:clamp(44px,5vw,88px) 0 clamp(20px,2.4vw,36px) }
+.open{ padding:clamp(34px,3.6vw,60px) 0 clamp(20px,2vw,32px); text-align:center }
 .open h1{
   font-family:var(--serif); font-weight:300; font-style:italic;
-  font-size:clamp(2.6rem,5vw,4.4rem); line-height:1.05;
+  font-size:clamp(2.4rem,4vw,3.6rem); line-height:1.05;
 }
 .open p{
-  font-family:var(--serif); font-size:1.5rem; line-height:1.45;
-  color:var(--ink-soft); max-width:46ch; margin-top:1rem;
+  font-family:var(--serif); font-size:1.375rem; line-height:1.45;
+  color:var(--ink-soft); max-width:52ch; margin:.6rem auto 0;
 }
 
-/* ---- SECTION JUMP ---------------------------------------------------- */
+/* ---- SECTION BAR ----------------------------------------------------
+   Dark pills, light text. The current one inverts: light pill, dark text.
+   Same weight as the masthead above it, so the two read as one apparatus
+   rather than as a bar stuck under a header. */
 .jump{
-  position:sticky; top:90px; z-index:30;
-  background:rgba(241,236,227,.94); backdrop-filter:blur(8px);
+  position:sticky; top:90px; z-index:50;
+  background:rgba(241,236,227,.96); backdrop-filter:blur(8px);
   border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline);
 }
 .jump-in{
   width:var(--stage-w); margin:0 auto;
-  display:flex; gap:10px; overflow-x:auto; padding:14px 0;
-  scrollbar-width:none;
+  display:flex; justify-content:center; gap:10px;
+  overflow-x:auto; padding:14px 0; scrollbar-width:none;
 }
 .jump-in::-webkit-scrollbar{ display:none }
-.jump a{
+.jump button{
   font-family:var(--serif); font-style:italic; font-size:1.125rem;
-  color:var(--ink-soft); text-decoration:none; white-space:nowrap;
-  padding:.4rem 1rem; border:1px solid var(--hairline); border-radius:999px;
+  white-space:nowrap; padding:.45rem 1.25rem; border-radius:999px;
+  background:var(--coffee-700); color:var(--vellum-200);
+  border:1px solid var(--coffee-700);
+  transition:background .16s ease, color .16s ease, border-color .16s ease;
 }
-.jump a:hover{ color:var(--oxblood); border-color:var(--oxblood) }
+.jump button:hover{ background:var(--espresso); color:var(--vellum-100) }
+.jump button.on{
+  background:var(--vellum-100); color:var(--ink);
+  border-color:var(--hairline);
+}
 
 /* ---- BLOCKS ---------------------------------------------------------- */
-.block{ padding:clamp(48px,5vw,88px) 0; border-bottom:1px solid var(--hairline) }
+.block{ padding:clamp(48px,5vw,84px) 0; border-bottom:1px solid var(--hairline) }
 .block:last-of-type{ border-bottom:none }
-.block > h2{
+.block > .read > h2{
   font-family:var(--serif); font-weight:400; font-style:italic;
-  font-size:clamp(2rem,3.4vw,3rem); line-height:1.1;
-  margin-bottom:clamp(20px,2vw,36px);
+  font-size:clamp(2rem,3.2vw,2.875rem); line-height:1.1;
+  margin-bottom:clamp(18px,1.8vw,32px);
 }
 
 /* ---- THE TEN --------------------------------------------------------- */
-.qs{ max-width:var(--read-w) }
 .q{ border-bottom:1px solid var(--hairline) }
-.q:first-child{ border-top:1px solid var(--hairline) }
+.q:first-of-type{ border-top:1px solid var(--hairline) }
 .q-btn{
   display:flex; align-items:baseline; gap:1rem;
   width:100%; text-align:left; padding:1.15rem 0;
   font-family:var(--serif); font-size:1.5rem; line-height:1.3; color:var(--ink);
+  list-style:none;
 }
+.q-btn::-webkit-details-marker{ display:none }
 .q-btn:hover{ color:var(--oxblood) }
 .q-btn .mk{
-  flex:none; font-family:var(--sans); font-size:.75rem; font-weight:600;
-  color:var(--brass); transform:translateY(-.15em);
-  transition:transform .18s ease;
+  flex:none; width:1em; font-family:var(--sans); font-size:1rem;
+  color:var(--brass); transition:transform .18s ease;
 }
-.q[open] .q-btn .mk{ transform:translateY(-.15em) rotate(45deg) }
-.q-body{ padding:0 0 1.5rem 2.1rem; max-width:60ch }
+.q[open] .q-btn .mk{ transform:rotate(45deg) }
+.q-body{ padding:0 0 1.5rem 2rem; max-width:64ch }
 .q-body p{
   font-family:var(--serif); font-size:1.3125rem; line-height:1.5;
   color:var(--ink-soft);
@@ -176,46 +202,83 @@ body{
 .q-body p + p{ margin-top:.7rem }
 .q-body a{ color:var(--oxblood) }
 
-/* ---- THE CONCIERGE --------------------------------------------------- */
+/* ---- THE CONCIERGE · her own band ------------------------------------ */
+.con-band{
+  text-align:center;
+  padding:clamp(48px,5vw,84px) 0;
+  background:var(--sage-wash);
+  border-top:1px solid var(--sage-line);
+  border-bottom:1px solid var(--sage-line);
+}
+.con-band h2{
+  font-family:var(--serif); font-weight:400; font-style:italic;
+  font-size:clamp(2rem,3.2vw,2.875rem); color:var(--sage);
+}
+.con-band p{
+  font-family:var(--serif); font-size:1.375rem; line-height:1.45;
+  color:var(--ink-soft); max-width:48ch; margin:.6rem auto 1.6rem;
+}
+.con-open{
+  font-family:var(--serif); font-style:italic; font-size:1.5rem;
+  background:var(--sage); color:var(--vellum-100);
+  padding:.7rem 2.2rem; border-radius:999px;
+}
+.con-open:hover{ background:var(--sage-light) }
+
+/* The panel itself. Fixed and centred, over the page. */
+.con-veil{
+  position:fixed; inset:0; z-index:200;
+  display:grid; place-items:center; padding:4vh 4vw;
+  background:rgba(30,24,18,.52); backdrop-filter:blur(3px);
+}
 .con{
-  max-width:var(--read-w);
+  width:min(680px,100%); max-height:88vh; display:flex; flex-direction:column;
   background:var(--vellum-100);
-  border:1px solid var(--sage-line); border-radius:12px;
-  box-shadow:0 18px 48px rgba(0,0,0,.10);
+  border:1px solid var(--sage-line); border-radius:14px;
+  box-shadow:0 30px 80px rgba(0,0,0,.34);
   overflow:hidden;
 }
 .con-head{
-  display:flex; align-items:center; gap:.8rem;
+  display:flex; align-items:center; gap:.8rem; flex:none;
   padding:1.1rem 1.4rem; background:var(--sage-wash);
   border-bottom:1px solid var(--sage-line);
 }
-.con-dot{
-  width:10px; height:10px; border-radius:50%; background:var(--sage); flex:none;
-}
+.con-dot{ width:10px; height:10px; border-radius:50%; background:var(--sage); flex:none }
 .con-head b{
   font-family:var(--serif); font-weight:400; font-style:italic;
   font-size:1.4375rem; color:var(--sage);
 }
-.con-head span{
-  margin-left:auto; font-family:var(--sans); font-size:.75rem;
-  letter-spacing:.12em; text-transform:uppercase; color:var(--taupe);
+.con-x{
+  margin-left:auto; font-size:1.6rem; line-height:1; color:var(--taupe);
+  padding:.2rem .5rem;
 }
+.con-x:hover{ color:var(--ink) }
+
 .con-log{
-  padding:1.4rem; min-height:200px; max-height:440px; overflow-y:auto;
-  display:flex; flex-direction:column; gap:1rem;
+  flex:1; min-height:180px; overflow-y:auto;
+  padding:1.4rem; display:flex; flex-direction:column; gap:1rem;
 }
-.msg{ max-width:88%; font-family:var(--serif); font-size:1.25rem; line-height:1.45 }
+.msg{ max-width:86%; font-family:var(--serif); font-size:1.25rem; line-height:1.45 }
 .msg.you{
   align-self:flex-end; background:var(--vellum-300); color:var(--ink);
-  padding:.7rem 1rem; border-radius:12px 12px 3px 12px;
+  padding:.85rem 1.15rem; border-radius:14px 14px 4px 14px;
 }
-.msg.con{ align-self:flex-start; color:var(--ink) }
+/* Padding on hers too. Without it the text sat hard against the border
+   and read as a mistake rather than as a card. */
+.msg.con{
+  align-self:flex-start; color:var(--ink);
+  background:#fff; border:1px solid var(--sage-line);
+  padding:.85rem 1.15rem; border-radius:14px 14px 14px 4px;
+}
 .msg.con b{
   display:block; font-family:var(--sans); font-size:.6875rem; font-weight:600;
   letter-spacing:.14em; text-transform:uppercase; color:var(--sage);
-  margin-bottom:.3rem;
+  margin-bottom:.35rem;
 }
-.msg.err{ align-self:flex-start; color:var(--oxblood); font-style:italic }
+.msg.err{
+  align-self:flex-start; color:var(--oxblood); font-style:italic;
+  padding:.4rem 0;
+}
 .dots{ display:inline-flex; gap:4px; align-items:center; height:1.4em }
 .dots i{
   width:5px; height:5px; border-radius:50%; background:var(--sage);
@@ -225,27 +288,7 @@ body{
 .dots i:nth-child(3){ animation-delay:.36s }
 @keyframes blink{ 0%,100%{opacity:.25} 50%{opacity:.9} }
 
-.con-ask{
-  display:flex; gap:.7rem; padding:1rem 1.4rem 1.3rem;
-  border-top:1px solid var(--sage-line);
-}
-.con-ask input{
-  flex:1; min-width:0; height:56px; padding:0 1.1rem;
-  font-family:var(--serif); font-size:1.25rem; color:var(--ink);
-  background:#fff; border:1px solid var(--sage-line); border-radius:999px;
-  outline:none;
-}
-.con-ask input::placeholder{ color:var(--taupe) }
-.con-ask input:focus{ border-color:var(--sage) }
-.con-send{
-  flex:none; height:56px; padding:0 1.8rem; border-radius:999px;
-  background:var(--sage); color:var(--vellum-100);
-  font-family:var(--serif); font-style:italic; font-size:1.25rem;
-}
-.con-send:hover{ background:var(--sage-light) }
-.con-send:disabled{ opacity:.45; cursor:default }
-
-.con-seeds{ display:flex; flex-wrap:wrap; gap:.5rem; padding:0 1.4rem 1.3rem }
+.con-seeds{ display:flex; flex-wrap:wrap; gap:.5rem; padding:0 1.4rem 1.2rem; flex:none }
 .con-seeds button{
   font-family:var(--serif); font-style:italic; font-size:1.0625rem;
   color:var(--sage); padding:.4rem 1rem;
@@ -253,14 +296,32 @@ body{
 }
 .con-seeds button:hover{ background:var(--sage-wash) }
 
-.con-note{
-  max-width:var(--read-w); margin-top:1rem;
-  font-family:var(--serif); font-style:italic; font-size:1.125rem;
+.con-ask{
+  display:flex; gap:.7rem; flex:none;
+  padding:1rem 1.4rem; border-top:1px solid var(--sage-line);
+}
+.con-ask input{
+  flex:1; min-width:0; height:54px; padding:0 1.1rem;
+  font-family:var(--serif); font-size:1.25rem; color:var(--ink);
+  background:#fff; border:1px solid var(--sage-line); border-radius:999px;
+  outline:none;
+}
+.con-ask input::placeholder{ color:var(--taupe) }
+.con-ask input:focus{ border-color:var(--sage) }
+.con-send{
+  flex:none; height:54px; padding:0 1.8rem; border-radius:999px;
+  background:var(--sage); color:var(--vellum-100);
+  font-family:var(--serif); font-style:italic; font-size:1.25rem;
+}
+.con-send:hover{ background:var(--sage-light) }
+.con-send:disabled{ opacity:.45; cursor:default }
+.con-foot{
+  flex:none; padding:0 1.4rem 1.2rem;
+  font-family:var(--serif); font-style:italic; font-size:1.0625rem;
   color:var(--taupe);
 }
 
 /* ---- DOCUMENTS ------------------------------------------------------- */
-.doc{ max-width:var(--read-w) }
 .doc h3{
   font-family:var(--serif); font-weight:400; font-size:1.625rem;
   color:var(--ink); margin:2rem 0 .5rem;
@@ -285,27 +346,41 @@ body{
 .doc strong{ color:var(--ink); font-weight:600 }
 
 /* ---- FOOT ------------------------------------------------------------ */
-.foot{
-  background:var(--espresso); color:var(--vellum-300);
-  padding:clamp(40px,4vw,72px) 0; margin-top:clamp(48px,5vw,88px);
+.foot{ background:var(--espresso); color:var(--vellum-300); padding:clamp(40px,4vw,72px) 0 }
+.foot .read{ display:flex; flex-wrap:wrap; gap:1.2rem 2.4rem; align-items:baseline }
+.foot a{
+  color:var(--vellum-300); text-decoration:none;
+  font-family:var(--serif); font-style:italic; font-size:1.1875rem;
 }
-.foot .stage{ display:flex; flex-wrap:wrap; gap:1.5rem 3rem; align-items:baseline }
-.foot a{ color:var(--vellum-300); text-decoration:none;
-  font-family:var(--serif); font-style:italic; font-size:1.1875rem }
 .foot a:hover{ color:var(--vellum-100) }
 .foot small{
   display:block; width:100%; margin-top:1rem;
   font-family:var(--sans); font-size:.8125rem; color:#7a6f62; line-height:1.6;
 }
 
+/* ---- NARROW ---------------------------------------------------------- */
+@media (max-width:1100px){
+  :root{ --stage-gutter:40px }
+  .banner{ grid-template-columns:repeat(4,1fr) }
+}
 @media (max-width:767px){
-  .mh{ height:72px; gap:16px; padding:0 20px }
-  .mh-mark{ height:34px }
-  .mh-nav a:not(.mh-cta){ display:none }
+  :root{ --stage-gutter:20px }
+  html{ scroll-padding-top:130px }
+  .mh{ height:72px; grid-template-columns:auto 1fr auto; gap:12px }
+  .mh-mark{ height:38px }
+  .mh-nav{ display:none }
+  .mh-cta{ font-size:1.0625rem; padding:.45rem 1.1rem }
   .jump{ top:72px }
-  .open{ padding:32px 0 16px }
-  .q-btn{ font-size:1.3125rem }
-  .q-body{ padding-left:1.7rem }
+  .jump-in{ justify-content:flex-start; padding:11px 0 }
+  .jump button{ font-size:1.0625rem; padding:.4rem 1rem }
+  .banner{ grid-template-columns:repeat(3,1fr); height:120px }
+  .open{ padding:26px 0 14px }
+  .q-btn{ font-size:1.25rem; padding:1rem 0 }
+  .q-body{ padding-left:1.75rem }
+  .q-body p{ font-size:1.1875rem }
+  .doc p, .doc li{ font-size:1.1875rem }
+  .con-veil{ padding:0 }
+  .con{ width:100%; max-height:100vh; height:100%; border-radius:0; border:none }
   .con-ask{ flex-wrap:wrap }
   .con-send{ width:100% }
 }
@@ -314,15 +389,17 @@ body{
 <body>
 
 <header class="mh">
-  <a href="/" aria-label="Liten &amp; Co">
+  <a class="mh-logo" href="/" aria-label="Liten &amp; Co">
     <svg class="mh-mark" viewBox="0 0 1821.36 1528.47" role="img" focusable="false"><g><path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/></g><g><path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/><path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/><path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/><path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/><path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/><path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/><path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/></g></svg>
     <span class="sr">Liten &amp; Co</span>
   </a>
   <nav class="mh-nav">
-    <a href="/">The Workshop</a>
-    <a href="/gallery">The Gallery</a>
-    <a class="mh-cta" href="/">Craft a portrait</a>
+    <a href="/">Portraits</a>
+    <a href="/gallery">Gallery</a>
   </nav>
+  <div class="mh-right">
+    <a class="mh-cta" href="/">Craft a portrait</a>
+  </div>
 </header>
 
 <div class="banner" id="banner" aria-hidden="true"></div>
@@ -330,28 +407,28 @@ body{
 <div class="stage">
   <section class="open">
     <h1>Help.</h1>
-    <p>The questions worth answering, our terms and our privacy policy, and
+    <p>The questions worth answering, our terms and our privacy policy — and
        the Concierge if none of it covers what you need.</p>
   </section>
 </div>
 
 <nav class="jump" aria-label="Sections">
-  <div class="jump-in">
-    <a href="#questions">Questions</a>
-    <a href="#concierge">Ask the Concierge</a>
-    <a href="#terms">Terms of Use</a>
-    <a href="#privacy">Privacy</a>
+  <div class="jump-in" id="jump">
+    <button type="button" data-go="questions" class="on">Questions</button>
+    <button type="button" data-con>Ask the Concierge</button>
+    <button type="button" data-go="terms">Terms of Use</button>
+    <button type="button" data-go="privacy">Privacy</button>
   </div>
 </nav>
 
-<main class="stage">
+<main>
 
 <!-- ── THE TEN ──────────────────────────────────────────────────────── -->
 <section class="block" id="questions">
-  <h2>Ten questions</h2>
-  <div class="qs">
+  <div class="read">
+    <h2>Ten questions</h2>
 
-    <details class="q" open>
+    <details class="q" name="faq" open>
       <summary class="q-btn"><span class="mk">✦</span> What happens to my photograph?</summary>
       <div class="q-body">
         <p>We use it to craft your portrait, and then we delete it. We do not
@@ -364,7 +441,7 @@ body{
       </div>
     </details>
 
-    <details class="q">
+    <details class="q" name="faq">
       <summary class="q-btn"><span class="mk">✦</span> Will it actually look like the person?</summary>
       <div class="q-body">
         <p>That is the whole job. Every finish is built to hold the face
@@ -377,7 +454,7 @@ body{
       </div>
     </details>
 
-    <details class="q">
+    <details class="q" name="faq">
       <summary class="q-btn"><span class="mk">✦</span> What if I don't like what I get?</summary>
       <div class="q-body">
         <p>We craft it again, or we give your credits back, or we refund you.
@@ -387,7 +464,7 @@ body{
       </div>
     </details>
 
-    <details class="q">
+    <details class="q" name="faq">
       <summary class="q-btn"><span class="mk">✦</span> How does it work?</summary>
       <div class="q-body">
         <p>Upload a photograph, choose a finish, and we craft a portrait from
@@ -398,7 +475,7 @@ body{
       </div>
     </details>
 
-    <details class="q">
+    <details class="q" name="faq">
       <summary class="q-btn"><span class="mk">✦</span> Why was my photograph turned away?</summary>
       <div class="q-body">
         <p>Six things stop a photograph outright: no face in it, more than
@@ -411,7 +488,7 @@ body{
       </div>
     </details>
 
-    <details class="q">
+    <details class="q" name="faq">
       <summary class="q-btn"><span class="mk">✦</span> Can I use a photograph of my child?</summary>
       <div class="q-body">
         <p>A family photograph with children in it, yes. A photograph of a
@@ -419,7 +496,7 @@ body{
       </div>
     </details>
 
-    <details class="q">
+    <details class="q" name="faq">
       <summary class="q-btn"><span class="mk">✦</span> What does it cost?</summary>
       <div class="q-body">
         <p>Crafting is paid for in credits, bought in advance and spent one
@@ -429,7 +506,7 @@ body{
       </div>
     </details>
 
-    <details class="q">
+    <details class="q" name="faq">
       <summary class="q-btn"><span class="mk">✦</span> Can I print it, and is it mine?</summary>
       <div class="q-body">
         <p>Yes to both. Every piece in your collection can be sent to print,
@@ -441,7 +518,7 @@ body{
       </div>
     </details>
 
-    <details class="q">
+    <details class="q" name="faq">
       <summary class="q-btn"><span class="mk">✦</span> How long until my print arrives?</summary>
       <div class="q-body">
         <p>You will get a note with tracking on the day it leaves the press.
@@ -451,7 +528,7 @@ body{
       </div>
     </details>
 
-    <details class="q">
+    <details class="q" name="faq">
       <summary class="q-btn"><span class="mk">✦</span> Who are you?</summary>
       <div class="q-body">
         <p>Liten &amp; Co is a small studio in California. We built this
@@ -462,285 +539,263 @@ body{
            hear it.</p>
       </div>
     </details>
-
   </div>
 </section>
 
-<!-- ── THE CONCIERGE ────────────────────────────────────────────────── -->
-<section class="block" id="concierge">
-  <h2>Ask the Concierge</h2>
-
-  <div class="con">
-    <div class="con-head">
-      <span class="con-dot" aria-hidden="true"></span>
-      <b>The Concierge</b>
-      <span>Liten &amp; Co</span>
-    </div>
-
-    <div class="con-log" id="conLog" role="log" aria-live="polite">
-      <div class="msg con">
-        <b>Concierge</b>
-        Good day. Ask me anything about how Liten &amp; Co works — finishes,
-        photographs, prints, what we do with your picture. I can answer
-        questions, though I cannot look at your account.
-      </div>
-    </div>
-
-    <div class="con-seeds" id="conSeeds">
-      <button type="button">What makes a good photograph?</button>
-      <button type="button">How long does a craft take?</button>
-      <button type="button">What happens to my picture?</button>
-    </div>
-
-    <div class="con-ask">
-      <input id="conInput" type="text" placeholder="Ask a question"
-             autocomplete="off" aria-label="Ask the Concierge">
-      <button class="con-send" id="conSend" type="button">Ask</button>
-    </div>
-  </div>
-
-  <p class="con-note">She answers questions. For anything to do with your own
-     account — an order, a refund, a craft that went wrong — write to the
-     address in the footer and a person will pick it up.</p>
+<!-- ── THE CONCIERGE · her own band ─────────────────────────────────── -->
+<section class="con-band" id="concierge">
+  <h2>Still stuck?</h2>
+  <p>The Concierge answers questions about how Liten &amp; Co works —
+     finishes, photographs, prints, and what becomes of your picture.</p>
+  <button class="con-open" type="button" data-con>Ask the Concierge</button>
 </section>
 
 <!-- ── TERMS ────────────────────────────────────────────────────────── -->
 <section class="block" id="terms">
-  <h2>Terms of Use</h2>
-  <div class="doc">
-    <p class="stamp">Last updated 8 August 2026</p>
+  <div class="read">
+    <h2>Terms of Use</h2>
+    <div class="doc">
+      <p class="stamp">Last updated 8 August 2026</p>
 
-    <h3>Who we are</h3>
-    <p>Liten &amp; Co is a trading name of an individual operating in
-       California, United States. In these terms, “we” and “us” mean that
-       business. “You” means the person using the service.</p>
+      <h3>Who we are</h3>
+      <p>Liten &amp; Co is a trading name of an individual operating in
+         California, United States. In these terms, “we” and “us” mean that
+         business. “You” means the person using the service.</p>
 
-    <h3>What the service does</h3>
-    <p>You upload a photograph. We use it to craft a new image — a stylised
-       portrait in one of our finishes. You can keep that image and order it
-       as a print. The crafted image is generated by software: a new work
-       made from your photograph, not a filter applied to it, and it will not
-       be identical to what you supplied.</p>
+      <h3>What the service does</h3>
+      <p>You upload a photograph. We use it to craft a new image — a stylised
+         portrait in one of our finishes. You can keep that image and order
+         it as a print. The crafted image is generated by software: a new
+         work made from your photograph, not a filter applied to it, and it
+         will not be identical to what you supplied.</p>
 
-    <h3>Your account</h3>
-    <p>You need an account to buy anything, and you must be 18 or over to
-       hold one. Keep your sign-in details to yourself — anything done
-       through your account is treated as done by you.</p>
+      <h3>Your account</h3>
+      <p>You need an account to buy anything, and you must be 18 or over to
+         hold one. Keep your sign-in details to yourself — anything done
+         through your account is treated as done by you.</p>
 
-    <h3>The photographs you upload</h3>
-    <p><strong>You must have the right to upload the photograph.</strong> By
-       uploading it you confirm that you took it or have permission to use
-       it, and that everyone shown in it has agreed to it being used this
-       way.</p>
-    <p>A family photograph that includes children is fine. A photograph of a
-       child on their own is not, and we will refuse it.</p>
-    <p>You must not upload photographs of people who have not agreed to it,
-       images you do not have the right to use, sexual content, or anything
-       unlawful. We can refuse or remove anything, and close an account that
-       does this.</p>
+      <h3>The photographs you upload</h3>
+      <p><strong>You must have the right to upload the photograph.</strong>
+         By uploading it you confirm that you took it or have permission to
+         use it, and that everyone shown in it has agreed to it being used
+         this way.</p>
+      <p>A family photograph that includes children is fine. A photograph of
+         a child on their own is not, and we will refuse it.</p>
+      <p>You must not upload photographs of people who have not agreed to it,
+         images you do not have the right to use, sexual content, or anything
+         unlawful. We can refuse or remove anything, and close an account
+         that does this.</p>
 
-    <h3>What you are granting us</h3>
-    <p class="lede">A licence to craft your image, and nothing else.</p>
-    <p>You keep ownership of your photograph. You grant us permission to
-       store and process it for the sole purpose of crafting the images you
-       ask for, and fulfilling any print you order.</p>
-    <p>We do not use your photographs to train anything. We do not sell them,
-       share them, license them onward, or use them to advertise Liten &amp;
-       Co. If we ever want to show a piece publicly we will ask first, and
-       you can say no. This licence ends when we delete the photograph.</p>
+      <h3>What you are granting us</h3>
+      <p class="lede">A licence to craft your image, and nothing else.</p>
+      <p>You keep ownership of your photograph. You grant us permission to
+         store and process it for the sole purpose of crafting the images you
+         ask for, and fulfilling any print you order.</p>
+      <p>We do not use your photographs to train anything. We do not sell
+         them, share them, license them onward, or use them to advertise
+         Liten &amp; Co. If we ever want to show a piece publicly we will ask
+         first, and you can say no. This licence ends when we delete the
+         photograph.</p>
 
-    <h3>How long we keep your photograph</h3>
-    <p><strong>We delete your source photograph once the work using it is
-       finished.</strong> We hold it only while it is needed — during a
-       craft, and through a commission until the piece is accepted.</p>
-    <p>If a dispute is open we keep it until that is closed, because we
-       cannot look into a complaint without it. A dispute may stay open for
-       up to a year, and we will tell you if yours is one that is keeping
-       your photograph with us. We would rather settle it quickly, and will
-       do what we can to reach you and put it right.</p>
-    <p>Your crafted images stay in your collection until you remove them or
-       close your account.</p>
+      <h3>How long we keep your photograph</h3>
+      <p><strong>We delete your source photograph once the work using it is
+         finished.</strong> We hold it only while it is needed — during a
+         craft, and through a commission until the piece is accepted.</p>
+      <p>If a dispute is open we keep it until that is closed, because we
+         cannot look into a complaint without it. A dispute may stay open for
+         up to a year, and we will tell you if yours is one that is keeping
+         your photograph with us. We would rather settle it quickly, and will
+         do what we can to reach you and put it right.</p>
+      <p>Your crafted images stay in your collection until you remove them or
+         close your account.</p>
 
-    <h3>What you own</h3>
-    <p><strong>The crafted image is yours.</strong> Print it, hang it, give
-       it away, use it commercially. We keep our own materials — the finishes
-       themselves, the software, and everything on this site that we made.</p>
+      <h3>What you own</h3>
+      <p><strong>The crafted image is yours.</strong> Print it, hang it, give
+         it away, use it commercially. We keep our own materials — the
+         finishes themselves, the software, and everything on this site that
+         we made.</p>
 
-    <h3>Credits and payment</h3>
-    <p>Crafting is paid for in credits, bought in advance. Prices are shown
-       before you pay. Payment is handled by Stripe; we never see or store
-       your card number.</p>
-    <p>Credits do not expire while your account is open. They have no cash
-       value and cannot be transferred.</p>
+      <h3>Credits and payment</h3>
+      <p>Crafting is paid for in credits, bought in advance. Prices are shown
+         before you pay. Payment is handled by Stripe; we never see or store
+         your card number.</p>
+      <p>Credits do not expire while your account is open. They have no cash
+         value and cannot be transferred.</p>
 
-    <h3>Prints</h3>
-    <p>Prints are made and shipped by a professional print house on our
-       behalf, and we will tell you when your order is dispatched. If a print
-       arrives damaged or misprinted, tell us and we will sort it out.</p>
+      <h3>Prints</h3>
+      <p>Prints are made and shipped by a professional print house on our
+         behalf, and we will tell you when your order is dispatched. If a
+         print arrives damaged or misprinted, tell us and we will sort it
+         out.</p>
 
-    <h3>If something goes wrong</h3>
-    <p>We would rather fix it than argue about it. If a crafted image did not
-       come out as it should, tell us — depending on what happened we will
-       craft it again at no cost, return your credits, or refund you. You do
-       not have to prove anything.</p>
-    <p>Requests that look like a deliberate attempt to obtain crafts without
-       paying for them are reviewed by a person before anything is
-       refunded.</p>
+      <h3>If something goes wrong</h3>
+      <p>We would rather fix it than argue about it. If a crafted image did
+         not come out as it should, tell us — depending on what happened we
+         will craft it again at no cost, return your credits, or refund you.
+         You do not have to prove anything.</p>
+      <p>Requests that look like a deliberate attempt to obtain crafts
+         without paying for them are reviewed by a person before anything is
+         refunded.</p>
 
-    <h3>What we cannot promise</h3>
-    <p>The service uses generative software and results vary. We cannot
-       promise that a particular craft will please you, that a likeness will
-       meet a particular standard, or that the service will be available
-       without interruption.</p>
-    <p>We are a small studio. To the extent the law allows, our liability to
-       you for anything arising out of these terms is limited to what you
-       have paid us in the twelve months before the problem arose. Nothing
-       here limits liability that cannot lawfully be limited.</p>
+      <h3>What we cannot promise</h3>
+      <p>The service uses generative software and results vary. We cannot
+         promise that a particular craft will please you, that a likeness
+         will meet a particular standard, or that the service will be
+         available without interruption.</p>
+      <p>We are a small studio. To the extent the law allows, our liability
+         to you for anything arising out of these terms is limited to what
+         you have paid us in the twelve months before the problem arose.
+         Nothing here limits liability that cannot lawfully be limited.</p>
 
-    <h3>Closing an account</h3>
-    <p>You can close your account at any time by asking us. We will delete
-       your collection and anything still held, except where we must keep
-       something to resolve an open dispute or because the law requires it.
-       We may close an account that breaks these terms, and we will say
-       why.</p>
+      <h3>Closing an account</h3>
+      <p>You can close your account at any time by asking us. We will delete
+         your collection and anything still held, except where we must keep
+         something to resolve an open dispute or because the law requires it.
+         We may close an account that breaks these terms, and we will say
+         why.</p>
 
-    <h3>Changes, and the law that applies</h3>
-    <p>We will update these terms as the service grows. If a change matters
-       to you — pricing, what we do with your photographs, your rights — we
-       will tell you before it takes effect.</p>
-    <p>These terms are governed by the laws of the State of California, and
-       disputes go to the courts of California.</p>
+      <h3>Changes, and the law that applies</h3>
+      <p>We will update these terms as the service grows. If a change matters
+         to you — pricing, what we do with your photographs, your rights — we
+         will tell you before it takes effect.</p>
+      <p>These terms are governed by the laws of the State of California, and
+         disputes go to the courts of California.</p>
+    </div>
   </div>
 </section>
 
 <!-- ── PRIVACY ──────────────────────────────────────────────────────── -->
 <section class="block" id="privacy">
-  <h2>Privacy</h2>
-  <div class="doc">
-    <p class="stamp">Last updated 8 August 2026</p>
+  <div class="read">
+    <h2>Privacy</h2>
+    <div class="doc">
+      <p class="stamp">Last updated 8 August 2026</p>
 
-    <p class="lede">We do not sell your information. We do not share your
-       photographs. We do not train anything on your face. We keep your
-       source photograph only as long as we are working with it, and then we
-       delete it.</p>
+      <p class="lede">We do not sell your information. We do not share your
+         photographs. We do not train anything on your face. We keep your
+         source photograph only as long as we are working with it, and then
+         we delete it.</p>
 
-    <p>We do advertise, and like any business that advertises we use tags
-       that recognise a browser. Those tags never see your photographs or
-       your account — only that someone visited. The cookies section below
-       says exactly what that means.</p>
+      <p>We do advertise, and like any business that advertises we use tags
+         that recognise a browser. Those tags never see your photographs or
+         your account — only that someone visited. The cookies section below
+         says exactly what that means.</p>
 
-    <h3>What we collect</h3>
-    <ul>
-      <li><strong>Your email address</strong>, when you make an account.</li>
-      <li><strong>Your photographs</strong>, when you upload them.</li>
-      <li><strong>Your crafted images</strong>, stored in your collection.</li>
-      <li><strong>Payment information</strong> — handled entirely by Stripe.
-          We see that a payment succeeded and what it was for. We never see
-          your card number.</li>
-      <li><strong>Your shipping address</strong>, if you order a print. It
-          goes to the print house so they can post it to you.</li>
-      <li><strong>Basic technical information</strong> that any website
-          receives — pages visited, browser, error reports.</li>
-      <li><strong>Your messages to us</strong>, including conversations with
-          the Concierge.</li>
-    </ul>
+      <h3>What we collect</h3>
+      <ul>
+        <li><strong>Your email address</strong>, when you make an account.</li>
+        <li><strong>Your photographs</strong>, when you upload them.</li>
+        <li><strong>Your crafted images</strong>, stored in your collection.</li>
+        <li><strong>Payment information</strong> — handled entirely by
+            Stripe. We see that a payment succeeded and what it was for. We
+            never see your card number.</li>
+        <li><strong>Your shipping address</strong>, if you order a print. It
+            goes to the print house so they can post it to you.</li>
+        <li><strong>Basic technical information</strong> that any website
+            receives — pages visited, browser, error reports.</li>
+        <li><strong>Your messages to us</strong>, including conversations
+            with the Concierge.</li>
+      </ul>
 
-    <h3>What we do with it</h3>
-    <p>Your email address identifies your account and lets us send you what
-       you asked for — sign-in links, receipts, dispatch notes.</p>
-    <p><strong>Your photographs are used to craft your images and for nothing
-       else.</strong> We do not train models on them, sell them, or share
-       them with anyone except the services below that make the crafting and
-       printing work. If we ever want to show a piece publicly we will ask
-       first.</p>
+      <h3>What we do with it</h3>
+      <p>Your email address identifies your account and lets us send you what
+         you asked for — sign-in links, receipts, dispatch notes.</p>
+      <p><strong>Your photographs are used to craft your images and for
+         nothing else.</strong> We do not train models on them, sell them, or
+         share them with anyone except the services below that make the
+         crafting and printing work. If we ever want to show a piece publicly
+         we will ask first.</p>
 
-    <h3>How long we keep things</h3>
-    <p>Source photographs are deleted once the work using them is finished.
-       If a dispute is open we keep the source and the images crafted from it
-       until it is closed — a dispute may stay open up to a year, and we will
-       tell you if yours is one we are holding.</p>
-    <p>Crafted images stay in your collection until you remove them or close
-       your account. Account and purchase records are kept while your account
-       is open, and afterwards as long as tax rules require.</p>
+      <h3>How long we keep things</h3>
+      <p>Source photographs are deleted once the work using them is finished.
+         If a dispute is open we keep the source and the images crafted from
+         it until it is closed — a dispute may stay open up to a year, and we
+         will tell you if yours is one we are holding.</p>
+      <p>Crafted images stay in your collection until you remove them or
+         close your account. Account and purchase records are kept while your
+         account is open, and afterwards as long as tax rules require.</p>
 
-    <h3>Who else touches your data</h3>
-    <p>A small number of established services run Liten &amp; Co. Each does
-       one job, receives only what that job needs, and may not use your data
-       for anything else.</p>
-    <ul>
-      <li><strong>Vercel</strong> — hosting.</li>
-      <li><strong>Supabase</strong> — the database and image storage.</li>
-      <li><strong>Stripe</strong> — payments. Card details go to Stripe, never
-          to us.</li>
-      <li><strong>Replicate</strong> and <strong>Google</strong> — the
-          crafting itself. Your photograph is processed and not retained for
-          training.</li>
-      <li><strong>Prodigi</strong> — print production and shipping. Receives
-          your image and shipping address for that order.</li>
-      <li><strong>Resend</strong> — sending email.</li>
-      <li><strong>OpenAI</strong> — assessing photograph quality and finished
-          crafts, and answering questions as the Concierge.</li>
-    </ul>
-    <p><strong>We do not sell your personal information.</strong> We do not
-       share your photographs, crafted images or account contents with anyone
-       for advertising.</p>
+      <h3>Who else touches your data</h3>
+      <p>A small number of established services run Liten &amp; Co. Each does
+         one job, receives only what that job needs, and may not use your
+         data for anything else.</p>
+      <ul>
+        <li><strong>Vercel</strong> — hosting.</li>
+        <li><strong>Supabase</strong> — the database and image storage.</li>
+        <li><strong>Stripe</strong> — payments. Card details go to Stripe,
+            never to us.</li>
+        <li><strong>Replicate</strong> and <strong>Google</strong> — the
+            crafting itself. Your photograph is processed and not retained
+            for training.</li>
+        <li><strong>Prodigi</strong> — print production and shipping.
+            Receives your image and shipping address for that order.</li>
+        <li><strong>Resend</strong> — sending email.</li>
+        <li><strong>OpenAI</strong> — assessing photograph quality and
+            finished crafts, and answering questions as the Concierge.</li>
+      </ul>
+      <p><strong>We do not sell your personal information.</strong> We do not
+         share your photographs, crafted images or account contents with
+         anyone for advertising.</p>
 
-    <h3>Your choices</h3>
-    <p>You can ask us to tell you what we hold, correct anything wrong,
-       delete your account and everything in it, or send you a copy of your
-       data. Write to us and we will do it — we will not make you justify the
-       request and we will not charge for it.</p>
-    <p>The only thing we may hold back is something needed to resolve an open
-       dispute, or that the law requires us to keep. If that applies we will
-       say so, and say why.</p>
-    <p>If you are in California the CCPA gives you these rights formally,
-       including the right not to be treated differently for exercising them.
-       We do not sell personal information. Advertising tags may count as
-       “sharing” under California law, so you can tell us to stop and we
-       will, and your browser’s Global Privacy Control signal is honoured.</p>
+      <h3>Your choices</h3>
+      <p>You can ask us to tell you what we hold, correct anything wrong,
+         delete your account and everything in it, or send you a copy of your
+         data. Write to us and we will do it — we will not make you justify
+         the request and we will not charge for it.</p>
+      <p>The only thing we may hold back is something needed to resolve an
+         open dispute, or that the law requires us to keep. If that applies
+         we will say so, and say why.</p>
+      <p>If you are in California the CCPA gives you these rights formally,
+         including the right not to be treated differently for exercising
+         them. We do not sell personal information. Advertising tags may
+         count as “sharing” under California law, so you can tell us to stop
+         and we will, and your browser’s Global Privacy Control signal is
+         honoured.</p>
 
-    <h3>Children</h3>
-    <p>Liten &amp; Co is for adults, and you must be 18 or over to hold an
-       account. A family photograph that includes children may be uploaded by
-       an adult who has the right to use it. A photograph of a child on their
-       own is not permitted and we refuse it.</p>
+      <h3>Children</h3>
+      <p>Liten &amp; Co is for adults, and you must be 18 or over to hold an
+         account. A family photograph that includes children may be uploaded
+         by an adult who has the right to use it. A photograph of a child on
+         their own is not permitted and we refuse it.</p>
 
-    <h3>Security</h3>
-    <p>Images are held in private storage and reached only through links that
-       expire. Payment details never reach us. Access to production data is
-       limited to the people who need it to run the service.</p>
-    <p>No system is perfect. If something happens that affects your data we
-       will tell you, rather than hope you do not notice.</p>
+      <h3>Security</h3>
+      <p>Images are held in private storage and reached only through links
+         that expire. Payment details never reach us. Access to production
+         data is limited to the people who need it to run the service.</p>
+      <p>No system is perfect. If something happens that affects your data we
+         will tell you, rather than hope you do not notice.</p>
 
-    <h3>Cookies and analytics</h3>
-    <p><strong>Essential cookies</strong> keep you signed in and remember
-       your session. The site does not work without them.</p>
-    <p><strong>Analytics and advertising cookies</strong> help us understand
-       how people find Liten &amp; Co and whether our advertising reaches the
-       right people. That includes tags from advertising platforms, which can
-       recognise a browser that has visited us before.</p>
-    <p>What those tags see is the fact of a visit and the pages viewed.
-       <strong>They never see your photographs, your crafted images, or the
-       contents of your account.</strong> You can refuse them through your
-       browser or device settings, and the site will work exactly as
-       before.</p>
+      <h3>Cookies and analytics</h3>
+      <p><strong>Essential cookies</strong> keep you signed in and remember
+         your session. The site does not work without them.</p>
+      <p><strong>Analytics and advertising cookies</strong> help us
+         understand how people find Liten &amp; Co and whether our
+         advertising reaches the right people. That includes tags from
+         advertising platforms, which can recognise a browser that has
+         visited us before.</p>
+      <p>What those tags see is the fact of a visit and the pages viewed.
+         <strong>They never see your photographs, your crafted images, or the
+         contents of your account.</strong> You can refuse them through your
+         browser or device settings, and the site will work exactly as
+         before.</p>
 
-    <h3>Where your data is, and changes to this page</h3>
-    <p>Liten &amp; Co operates in the United States, and the services above
-       process data in the United States and elsewhere.</p>
-    <p>We will update this page as the service grows. If a change matters —
-       what we do with your photographs, who receives your data, how long we
-       keep it — we will tell you before it takes effect rather than quietly
-       re-dating the page.</p>
+      <h3>Where your data is, and changes to this page</h3>
+      <p>Liten &amp; Co operates in the United States, and the services above
+         process data in the United States and elsewhere.</p>
+      <p>We will update this page as the service grows. If a change matters —
+         what we do with your photographs, who receives your data, how long
+         we keep it — we will tell you before it takes effect rather than
+         quietly re-dating the page.</p>
+    </div>
   </div>
 </section>
 
 </main>
 
 <footer class="foot">
-  <div class="stage">
-    <a href="/">The Workshop</a>
-    <a href="/gallery">The Gallery</a>
+  <div class="read">
+    <a href="/">Portraits</a>
+    <a href="/gallery">Gallery</a>
     <a href="#terms">Terms of Use</a>
     <a href="#privacy">Privacy</a>
     <a href="mailto:[SUPPORT EMAIL]">[SUPPORT EMAIL]</a>
@@ -757,10 +812,10 @@ body{
 
   /* ── BANNER ───────────────────────────────────────────────────────────
      Real crafted pieces from the preview manifest, not stock decoration.
-     Eight finishes chosen to span the rooms — stone through to ink — so
-     the strip reads as range rather than as one look repeated. If the
-     manifest is missing the strip simply does not draw; a help page must
-     not fall over because a photograph did not load. */
+     Eight finishes chosen to span the rooms, so the strip reads as range
+     rather than one look repeated. If the manifest is missing the strip
+     does not draw; a help page must not fall over because a photograph
+     did not load. */
   var PICKS = [
     ['bronze','man'], ['stained_glass','woman'], ['linocut','man'],
     ['watercolour','woman'], ['origami','man'], ['ice','woman'],
@@ -771,7 +826,7 @@ body{
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(M){
       if (!M || !M.effects) return;
-      var base = M.base || '/previews/effects/';
+      var base  = M.base || '/previews/effects/';
       var strip = document.getElementById('banner');
       PICKS.forEach(function(p){
         var a = M.effects[p[0]];
@@ -790,17 +845,110 @@ body{
     })
     .catch(function(){ /* no strip, no harm */ });
 
-  /* ── THE CONCIERGE ───────────────────────────────────────────────────
-     The whole conversation is sent each turn, because the endpoint holds
-     no state. History is capped server-side; this only keeps the browser
-     copy from growing without end. */
-  var log   = document.getElementById('conLog');
-  var input = document.getElementById('conInput');
-  var send  = document.getElementById('conSend');
-  var seeds = document.getElementById('conSeeds');
+  /* ── ONE QUESTION OPEN AT A TIME ─────────────────────────────────────
+     `name` on <details> does this natively in current browsers. This is
+     the fallback for the ones that do not, so behaviour is the same
+     everywhere rather than depending on the browser. */
+  var qs = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  qs.forEach(function(d){
+    d.addEventListener('toggle', function(){
+      if (!d.open) return;
+      qs.forEach(function(o){ if (o !== d) o.open = false; });
+    });
+  });
 
-  var history = [];
-  var busy = false;
+  /* ── SECTION BAR ─────────────────────────────────────────────────────
+     Buttons rather than anchors, because one of them opens a panel rather
+     than moving the page, and a link that does not navigate is a lie. */
+  var jump  = document.getElementById('jump');
+  var marks = Array.prototype.slice.call(jump.querySelectorAll('[data-go]'));
+
+  jump.addEventListener('click', function(e){
+    var b = e.target.closest('button');
+    if (!b) return;
+    if (b.hasAttribute('data-con')) { openCon(); return; }
+    var id = b.getAttribute('data-go');
+    var el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+
+  /* Which section is current. Marked on the section whose top has passed
+     the sticky apparatus — 150px of masthead and bar. */
+  function mark(){
+    var line = 170;
+    var cur = marks[0];
+    marks.forEach(function(b){
+      var el = document.getElementById(b.getAttribute('data-go'));
+      if (el && el.getBoundingClientRect().top <= line) cur = b;
+    });
+    marks.forEach(function(b){ b.classList.toggle('on', b === cur); });
+  }
+  addEventListener('scroll', mark, { passive:true });
+  mark();
+
+  /* ── THE CONCIERGE ───────────────────────────────────────────────────
+     Built once, on first open. The whole conversation is sent each turn
+     because the endpoint holds no state; history is capped server-side,
+     and this only stops the browser copy growing without end. */
+  var veil = null, log = null, input = null, send = null, seeds = null;
+  var history = [], busy = false;
+
+  function openCon(){
+    if (veil){ veil.hidden = false; input.focus(); return; }
+
+    veil = document.createElement('div');
+    veil.className = 'con-veil';
+    veil.innerHTML =
+      '<div class="con" role="dialog" aria-modal="true" aria-label="The Concierge">' +
+        '<div class="con-head">' +
+          '<span class="con-dot"></span><b>The Concierge</b>' +
+          '<button class="con-x" type="button" aria-label="Close">&times;</button>' +
+        '</div>' +
+        '<div class="con-log" role="log" aria-live="polite">' +
+          '<div class="msg con"><b>Concierge</b>Good day. Ask me anything ' +
+          'about how Liten &amp; Co works — finishes, photographs, prints, ' +
+          'what we do with your picture. I can answer questions, though I ' +
+          'cannot look at your account.</div>' +
+        '</div>' +
+        '<div class="con-seeds">' +
+          '<button type="button">What makes a good photograph?</button>' +
+          '<button type="button">How long does a craft take?</button>' +
+          '<button type="button">What happens to my picture?</button>' +
+        '</div>' +
+        '<div class="con-ask">' +
+          '<input type="text" placeholder="Ask a question" autocomplete="off" ' +
+                 'aria-label="Ask the Concierge">' +
+          '<button class="con-send" type="button">Ask</button>' +
+        '</div>' +
+        '<p class="con-foot">For anything to do with your own account — an ' +
+        'order, a refund, a craft that went wrong — write to the address in ' +
+        'the footer and a person will pick it up.</p>' +
+      '</div>';
+    document.body.appendChild(veil);
+
+    log   = veil.querySelector('.con-log');
+    input = veil.querySelector('.con-ask input');
+    send  = veil.querySelector('.con-send');
+    seeds = veil.querySelector('.con-seeds');
+
+    veil.querySelector('.con-x').addEventListener('click', closeCon);
+    veil.addEventListener('click', function(e){ if (e.target === veil) closeCon(); });
+    send.addEventListener('click', function(){ ask(input.value); });
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') ask(input.value); });
+    seeds.addEventListener('click', function(e){
+      var b = e.target.closest('button');
+      if (b) ask(b.textContent);
+    });
+    input.focus();
+  }
+
+  function closeCon(){ if (veil) veil.hidden = true; }
+  addEventListener('keydown', function(e){ if (e.key === 'Escape') closeCon(); });
+
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-con]');
+    if (b) openCon();
+  });
 
   function bubble(who, text){
     var d = document.createElement('div');
@@ -818,15 +966,6 @@ body{
     return d;
   }
 
-  function thinking(){
-    var d = document.createElement('div');
-    d.className = 'msg con';
-    d.innerHTML = '<b>Concierge</b><span class="dots"><i></i><i></i><i></i></span>';
-    log.appendChild(d);
-    log.scrollTop = log.scrollHeight;
-    return d;
-  }
-
   function ask(text){
     text = String(text || '').trim();
     if (!text || busy) return;
@@ -834,11 +973,16 @@ body{
     busy = true;
     send.disabled = true;
     input.value = '';
-    if (seeds) seeds.remove();
+    if (seeds) { seeds.remove(); seeds = null; }
 
     bubble('you', text);
     history.push({ role:'user', content:text });
-    var wait = thinking();
+
+    var wait = document.createElement('div');
+    wait.className = 'msg con';
+    wait.innerHTML = '<b>Concierge</b><span class="dots"><i></i><i></i><i></i></span>';
+    log.appendChild(wait);
+    log.scrollTop = log.scrollHeight;
 
     fetch('/api/v1/concierge', {
       method:'POST',
@@ -854,9 +998,8 @@ body{
         } else {
           var m = document.createElement('div');
           m.className = 'msg err';
-          m.textContent =
-            'I could not reach the desk just then. Try again in a moment, ' +
-            'or write to the address in the footer.';
+          m.textContent = 'I could not reach the desk just then. Try again in ' +
+            'a moment, or write to the address in the footer.';
           log.appendChild(m);
           log.scrollTop = log.scrollHeight;
         }
@@ -865,8 +1008,7 @@ body{
         wait.remove();
         var m = document.createElement('div');
         m.className = 'msg err';
-        m.textContent =
-          'I could not reach the desk just then. Try again in a moment.';
+        m.textContent = 'I could not reach the desk just then. Try again in a moment.';
         log.appendChild(m);
       })
       .finally(function(){
@@ -874,17 +1016,6 @@ body{
         send.disabled = false;
         input.focus();
       });
-  }
-
-  send.addEventListener('click', function(){ ask(input.value); });
-  input.addEventListener('keydown', function(e){
-    if (e.key === 'Enter') ask(input.value);
-  });
-  if (seeds){
-    seeds.addEventListener('click', function(e){
-      var b = e.target.closest('button');
-      if (b) ask(b.textContent);
-    });
   }
 })();
 </script>
