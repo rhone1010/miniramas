@@ -866,6 +866,48 @@ body{
   border-color:var(--gold); color:var(--gold);
 }
 .cur-slot.is-asking:hover{ animation:none }
+
+/* A refused click gets a harder beat than the resting pulse — the answer
+   to "why did nothing happen" has to be visible in one glance. */
+@keyframes curUrgent{
+  0%,100%{ transform:translateX(0) }
+  18%    { transform:translateX(-4px) }
+  38%    { transform:translateX(4px) }
+  58%    { transform:translateX(-2px) }
+  78%    { transform:translateX(2px) }
+}
+.cur-slot.is-urgent{
+  animation:curUrgent .5s var(--ease-nav) 2 !important;
+  border-color:var(--oxblood) !important;
+  box-shadow:0 0 0 8px rgba(125,66,66,.14) !important;
+}
+
+/* ---- THE NUDGE ---------------------------------------------------------
+   A tooltip on the tile that was pressed. Not a modal: a modal for this is
+   a door slammed in front of someone who was only browsing. */
+.nudge{
+  position:fixed; z-index:9000; pointer-events:none;
+  padding:.5em .95em; border-radius:8px; white-space:nowrap;
+  background:var(--espresso); color:var(--vellum-100);
+  font-family:var(--serif); font-style:italic; font-size:1.125rem; line-height:1.2;
+  box-shadow:0 10px 28px rgba(0,0,0,.30);
+  opacity:0; transform:translateY(6px);
+  transition:opacity .18s var(--ease-nav), transform .18s var(--ease-nav);
+}
+.nudge.is-up{ opacity:1; transform:none }
+.nudge::after{
+  content:''; position:absolute; left:50%; margin-left:-6px;
+  border:6px solid transparent; border-top-color:var(--espresso);
+  top:100%;
+}
+.nudge[data-below]::after{
+  top:auto; bottom:100%;
+  border-top-color:transparent; border-bottom-color:var(--espresso);
+}
+@media (prefers-reduced-motion:reduce){
+  .cur-slot.is-urgent{ animation:none !important }
+  .nudge{ transition:none }
+}
 @media (prefers-reduced-motion:reduce){
   .cur[data-state='empty'] .cur-slot.is-asking,
   .cur[data-state='empty'] .cur-slot.is-asking .cur-slot-plus{ animation:none }
@@ -5611,24 +5653,69 @@ window.EFFECT_PREVIEWS = {
      It stops for good the moment a photograph lands, and it never starts
      again in that session. Guidance that keeps re-appearing after it has
      been answered reads as a page that is not listening. */
-  var ASKED = false;
-  function askForPhoto(){
-    if (ASKED || !curSlot) return;
-    if (cur && cur.dataset.state !== 'empty') return;
-    ASKED = true;
+  /* Is there a photograph in hand? The Curator's own state is the truth —
+     it is what every other part of the page already reads. */
+  function hasSource(){
+    return !!(cur && cur.dataset.state && cur.dataset.state !== 'empty');
+  }
+
+  /* THE PULSE RUNS FROM THE START. Ruled 2026-08-09. It used to wait for
+     twenty-five seconds or a room to open, on the reasoning that pulsing
+     immediately is nagging. That was wrong here: nothing on this page can
+     happen without a photograph, so the slot is not nagging, it is saying
+     where to begin. It stops the moment one lands and never returns. */
+  function askForPhoto(hard){
+    if (!curSlot || hasSource()) return;
     curSlot.classList.add('is-asking');
+    /* A refused click gets a stronger beat than the resting pulse, so the
+       answer to "why did nothing happen" is visible in one glance. */
+    if (hard){
+      curSlot.classList.remove('is-urgent');
+      void curSlot.offsetWidth;              /* restart the animation */
+      curSlot.classList.add('is-urgent');
+      setTimeout(function(){ curSlot.classList.remove('is-urgent'); }, 1500);
+    }
   }
   window.__stopAsking = function(){
-    ASKED = true;                       /* never ask again this session */
-    if (curSlot) curSlot.classList.remove('is-asking');
+    if (curSlot) curSlot.classList.remove('is-asking', 'is-urgent');
   };
-  /* Wandered on the clock. */
-  setTimeout(askForPhoto, 25000);
-  /* Wandered into a room — the stronger signal of the two, so it does not
-     wait out the rest of the clock. */
-  document.addEventListener('click', function(e){
-    if (e.target.closest && e.target.closest('.silo-card')) setTimeout(askForPhoto, 900);
-  });
+  askForPhoto();
+
+  /* ---- THE NUDGE ------------------------------------------------------
+     A tooltip on the tile they pressed, not a modal. A modal for this is
+     a door slammed in front of someone who was only browsing; the tile
+     says why nothing happened and gets out of the way. */
+  var nudgeEl = null, nudgeTimer = null;
+  function nudge(anchor, text){
+    if (!anchor) return;
+    if (!nudgeEl){
+      nudgeEl = document.createElement('div');
+      nudgeEl.className = 'nudge';
+      nudgeEl.setAttribute('role', 'status');
+      document.body.appendChild(nudgeEl);
+    }
+    nudgeEl.textContent = text;
+    nudgeEl.classList.remove('is-up');
+    void nudgeEl.offsetWidth;
+
+    var r = anchor.getBoundingClientRect();
+    nudgeEl.style.visibility = 'hidden';
+    nudgeEl.classList.add('is-up');
+    var w = nudgeEl.offsetWidth, h = nudgeEl.offsetHeight;
+    /* Above the tile, or below it when the tile is near the top of the
+       window and above would be off screen. */
+    var top = r.top - h - 12;
+    if (top < 12){ top = r.bottom + 12; nudgeEl.dataset.below = '1'; }
+    else { delete nudgeEl.dataset.below; }
+    var left = r.left + (r.width - w) / 2;
+    left = Math.max(12, Math.min(left, innerWidth - w - 12));
+    nudgeEl.style.top  = Math.round(top) + 'px';
+    nudgeEl.style.left = Math.round(left) + 'px';
+    nudgeEl.style.visibility = '';
+
+    clearTimeout(nudgeTimer);
+    nudgeTimer = setTimeout(function(){ nudgeEl.classList.remove('is-up'); }, 2600);
+  }
   /* Was: clear the panel and wait to be clicked a second time — which
      also threw away the photograph before the customer had chosen a
      replacement. Open the picker; the photograph stands until a new one
@@ -10550,6 +10637,21 @@ window.EFFECT_PREVIEWS = {
     var c = e.target.closest('.silo-card'); if (!c) return;
     if (c.classList.contains('is-upsell')) return;      /* its own action */
     if (c.classList.contains('is-unavailable')) return; /* nothing to craft */
+
+    /* NOTHING CAN BE CHOSEN WITHOUT A PHOTOGRAPH. Ruled 2026-08-09.
+       Selecting first put a craft in hand with no source, which failed at
+       the engine and still opened My Collection — the customer ended up
+       somewhere new looking at nothing, which reads as the site losing
+       their work rather than refusing an impossible request.
+
+       BROWSING STAYS OPEN. Rooms open, tiles are readable, the whole
+       catalogue can be walked. Only adding one to be crafted is held. */
+    if (!hasSource()){
+      nudge(c, 'Please upload an image first');
+      askForPhoto(true);
+      return;
+    }
+
     var effectId = c.dataset.effectId, siloId = c.dataset.siloId;
     if (c.classList.contains('is-selected')){
       c.classList.remove('is-selected');

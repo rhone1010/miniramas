@@ -361,7 +361,7 @@ footer nav a:hover{color:var(--series)}
 .i-g-proof{background-image:url(/previews/home/gift-proof.jpg)}
 .i-g-framed-canvas{background-image:url(/previews/home/gift-framed-canvas.jpg)}
 .i-g-classic-frame{background-image:url(/previews/home/gift-classic-frame.jpg)}
-.i-g-canvas{background-image:url(/previews/home/gift-canvas.jpg)}
+.i-g-folded-book{background-image:url(/previews/home/group_folded_book.jpg)}
 .i-g-mounted-frame{background-image:url(/previews/home/gift-mounted-frame.jpg)}
 .i-g-archive-print{background-image:url(/previews/home/gift-archive-print.jpg)}
 .i-g-three-ages{background-image:url(/previews/home/gift-three-ages.jpg)}
@@ -779,6 +779,14 @@ footer nav a:hover{color:var(--series)}
   .pc.w4{ grid-column:span 12 }
   .proof .frame{ transform:none }
 }
+
+/* ---- THE WIDE ONE ----------------------------------------------------
+   A five-up group portrait is 16:9 and does not survive a square card —
+   three of the five get cropped away. It takes a row of its own; the two
+   squares below pair off. */
+.pc.wide-one .stage > .frame{ max-width:1100px }
+.pc.wide-one .body{ max-width:76ch; margin:0 auto; text-align:center }
+.pc.wide-one .sizes{ justify-content:center }
 </style></head><body>
 <div class="ground"></div>
 <div class="stage">
@@ -918,12 +926,12 @@ footer nav a:hover{color:var(--series)}
 <section class="gift2 s-limestone desk-only">
   <div class="wrap">
     <div class="cat">
-      <div class="pc w4 s-ivory">
-        <div class="stage"><div class="frame"><div class="mat"><div class="art sq i-g-canvas"></div></div></div></div>
+      <div class="pc w12 wide-one s-ivory">
+        <div class="stage"><div class="frame"><div class="mat"><div class="art wide i-g-folded-book"></div></div></div></div>
         <div class="body">
           <div class="kick">Stretched canvas, ready to hang</div>
-          <h3>Driftwood &amp; Resin</h3>
-          <p>Grain and amber, held together. No glass, no frame, nothing left to decide &mdash; the safest gift here.</p>
+          <h3>Folded Book</h3>
+          <p>Five people cut from the pages of a library. No glass, no frame, nothing left to decide &mdash; the safest gift here.</p>
           <div class="sizes"><div class="sz lead"><b>12&Prime;</b><i>$73</i></div><div class="sz"><b>16&Prime;</b><i>$85</i></div><div class="sz"><b>20&Prime;</b><i>$99</i></div></div><div class="incl">Crafting and delivery included.</div>
         </div>
       </div>
@@ -1078,7 +1086,7 @@ footer nav a:hover{color:var(--series)}
      the argument is made by the third one, and the rest is scrolling. */
   var PAIRS = [
     ['man_renaissance_real.jpg',               'man_renaissance.jpg',       'Renaissance'],
-    ['woman_magic_energy_real.jpg',            'woman_magic_energy.jpg',    'Magic Energy'],
+    ['woman_music_real.jpg',                   'woman_music.jpg',           'Sheet Music'],
     ['man_stained_glass_real.jpg',             'man_stained_glass.jpg',     'Stained Glass'],
     ['woman_plushy_real.jpg',                  'woman_plushy.jpg',          'Plushy'],
     ['man_quartzite_real.jpg',                 'man_quartzite.jpg',         'Quartzite'],
@@ -1314,7 +1322,7 @@ footer nav a:hover{color:var(--series)}
      good it looks, and belongs upstairs in the hero. */
   var PAIRS = [
     ['man_renaissance_real.jpg',                'man_renaissance.jpg',      'Renaissance'],
-    ['woman_magic_energy_real.jpg',             'woman_magic_energy.jpg',   'Magic Energy'],
+    ['woman_music_real.jpg',                    'woman_music.jpg',          'Sheet Music'],
     ['man_stained_glass_real.jpg',              'man_stained_glass.jpg',    'Stained Glass'],
     ['woman_plushy_real.jpg',                   'woman_plushy.jpg',         'Plushy'],
     ['man_quartzite_real.jpg',                  'man_quartzite.jpg',        'Quartzite'],
