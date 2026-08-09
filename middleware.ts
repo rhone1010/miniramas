@@ -24,9 +24,14 @@ const BYPASS = 'x-liten-gate-bypass';
 /* Extensionless paths -> files in public/. Anything absent 404s
    honestly rather than resolving somewhere wrong. */
 const PAGES: Record<string, string> = {
-  '/': '/portraits.html',
-  '/portraits': '/portraits.html',
+  /* Home is the homepage as of 2026-08-08. The workshop, which used to
+     sit at /, keeps /portraits — the masthead and every in-page link
+     already point there, so nothing else moves. /home still resolves so
+     an old link or bookmark lands somewhere sensible. */
+  '/': '/index.html',
   '/home': '/index.html',
+  '/portraits': '/portraits.html',
+  '/workshop': '/portraits.html',
   '/wallpapers': '/portrait-wallpaper.html',
   '/portrait-wallpaper': '/portrait-wallpaper.html',
   '/pet-wallpaper': '/pet-wallpaper.html',
