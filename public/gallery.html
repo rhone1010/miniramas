@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Gallery · Liten &amp; Co</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Manrope:wght@300..700&display=swap" rel="stylesheet">
+
+<!-- The catalogue, exactly as portraits.html loads it. Nothing about the
+     finishes is restated in this file: a finish added to
+     effect-registry.ts appears here after the emit, with no edit. -->
+<script src="/effect-registry.js"></script>
+
+<style>
+/* ==========================================================================
+   THE GALLERY · 2026-08-08
+   A showroom, not the workshop. Every finish at size, on both sitters.
+
+   THE SHAPE IS THE ARGUMENT. Men and women run in two columns side by
+   side rather than behind a toggle, so nobody has to press anything to
+   find out whether a finish was made for them. Four tiles across the
+   page, two to a side.
+   ====================================================================== */
+
+:root{
+  /* Same ramp as the workshop. The floor is the point — a clamp whose
+     minimum is 16px cannot reproduce the undersized type fault. */
+  font-size:clamp(16px, 0.5vw + 6.4px, 22px);
+
+  --ink:#2a241e;  --ink-soft:#5a5248;  --taupe:#aba39a;
+  --vellum:#f3ede1; --vellum-100:#f8f4eb; --vellum-200:#f3ecdd; --vellum-300:#e9dec8;
+  --limestone:#f1ece3;
+  --oxblood:#7d4242; --brass:#75623a; --gold:#b68a53;
+  --espresso:#26201a;
+  --card-line:rgba(196,169,110,.28);
+  --hairline:rgba(123,92,58,.20);
+
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',sans-serif;
+  --r-card:8px;
+
+  --stage-gutter-max:100px;
+  --stage-w:max(90%, calc(100% - (var(--stage-gutter-max) * 2)));
+
+  --tile-gap:clamp(14px, 1.1vw, 26px);
+  --column-gap:clamp(28px, 3vw, 72px);
+}
+
+*{margin:0; padding:0; box-sizing:border-box}
+[hidden]{display:none!important}
+button{font:inherit; border:none; background:none; color:inherit}
+img{display:block; max-width:100%}
+
+html{height:100%; scroll-behavior:smooth}
+body{
+  min-height:100%;
+  background:var(--limestone);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:1rem;
+  overflow-x:hidden;
+}
+.stage{ width:var(--stage-w); margin:0 auto }
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---- MASTHEAD -------------------------------------------------------- */
+.mh{
+  height:90px; background:var(--espresso);
+  display:flex; align-items:center; gap:32px;
+  padding:0 clamp(20px,5%,100px);
+  position:sticky; top:0; z-index:40;
+}
+.mh-mark{ height:44px; width:auto; fill:var(--vellum-100) }
+.mh-nav{ margin-left:auto; display:flex; align-items:center; gap:28px }
+.mh-nav a{
+  font-family:var(--serif); font-style:italic; font-size:1.25rem;
+  color:var(--vellum-300); text-decoration:none;
+}
+.mh-nav a:hover{ color:var(--vellum-100) }
+.mh-cta{
+  font-family:var(--serif); font-style:italic; font-size:1.25rem;
+  background:var(--oxblood); color:var(--vellum-100);
+  padding:.5rem 1.25rem; border-radius:999px; text-decoration:none;
+  white-space:nowrap;
+}
+.mh-cta:hover{ background:#8d4b4b; color:#fff }
+
+/* ---- OPENING --------------------------------------------------------- */
+.open{ padding:clamp(48px,6vw,104px) 0 clamp(28px,3vw,48px) }
+.open h1{
+  font-family:var(--serif); font-weight:300; font-style:italic;
+  font-size:clamp(2.6rem,5vw,4.4rem); line-height:1.05; color:var(--ink);
+}
+.open p{
+  font-family:var(--serif); font-size:1.5rem; line-height:1.45;
+  color:var(--ink-soft); max-width:46ch; margin-top:1rem;
+}
+
+/* ---- SILO JUMP ------------------------------------------------------- */
+.jump{
+  position:sticky; top:90px; z-index:30;
+  background:rgba(241,236,227,.94);
+  backdrop-filter:blur(8px);
+  border-top:1px solid var(--hairline);
+  border-bottom:1px solid var(--hairline);
+}
+.jump-in{
+  width:var(--stage-w); margin:0 auto;
+  display:flex; gap:10px; overflow-x:auto;
+  padding:14px 0; scrollbar-width:none;
+}
+.jump-in::-webkit-scrollbar{ display:none }
+.jump a{
+  font-family:var(--serif); font-style:italic; font-size:1.125rem;
+  color:var(--ink-soft); text-decoration:none; white-space:nowrap;
+  padding:.4rem 1rem; border:1px solid var(--hairline); border-radius:999px;
+}
+.jump a:hover{ color:var(--oxblood); border-color:var(--oxblood) }
+
+/* ---- A SILO ---------------------------------------------------------- */
+.silo{ padding:clamp(52px,5.5vw,96px) 0; border-bottom:1px solid var(--hairline) }
+.silo:last-of-type{ border-bottom:none }
+
+.silo-head{ margin-bottom:clamp(24px,2.4vw,44px) }
+.silo-head h2{
+  font-family:var(--serif); font-weight:400; font-style:italic;
+  font-size:clamp(2rem,3.4vw,3.2rem); line-height:1.1; color:var(--ink);
+}
+.silo-head p{
+  font-family:var(--serif); font-size:1.375rem; line-height:1.4;
+  color:var(--ink-soft); margin-top:.5rem; max-width:52ch;
+}
+
+/* The two sitters, side by side. */
+.subjects{ display:grid; grid-template-columns:1fr 1fr; gap:var(--column-gap) }
+.subject-head{
+  font-family:var(--sans); font-size:.8125rem; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--brass);
+  padding-bottom:.75rem; margin-bottom:1.25rem;
+  border-bottom:1px solid var(--hairline);
+}
+.tiles{ display:grid; grid-template-columns:1fr 1fr; gap:var(--tile-gap) }
+
+/* ---- A TILE ---------------------------------------------------------- */
+.tile{
+  display:block; text-decoration:none; color:inherit;
+  background:var(--vellum-100);
+  border:1px solid var(--card-line); border-radius:var(--r-card);
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.tile:hover{ transform:translateY(-3px); box-shadow:0 14px 34px rgba(0,0,0,.14) }
+.tile-img{ aspect-ratio:4/5; background:var(--vellum-300); position:relative }
+.tile-img img{ width:100%; height:100%; object-fit:cover }
+/* A finish with no plate for this sitter says so. It does not borrow the
+   other sitter's photograph — that is how a woman ended up on a man's
+   card before, and it reads as a mistake rather than an absence. */
+.tile-img.is-empty::after{
+  content:'Not yet photographed';
+  position:absolute; inset:0; display:grid; place-items:center;
+  font-family:var(--serif); font-style:italic; font-size:1.125rem;
+  color:var(--taupe); text-align:center; padding:1rem;
+}
+.tile-cap{ padding:.85rem 1rem 1rem }
+.tile-cap b{
+  display:block; font-family:var(--serif); font-weight:400;
+  font-size:1.375rem; line-height:1.2; color:var(--ink);
+}
+.tile-cap span{
+  display:block; margin-top:.35rem;
+  font-family:var(--serif); font-style:italic; font-size:1.0625rem;
+  color:var(--oxblood);
+}
+
+/* ---- CLOSING --------------------------------------------------------- */
+.close{ padding:clamp(64px,7vw,120px) 0; text-align:center }
+.close h2{
+  font-family:var(--serif); font-weight:300; font-style:italic;
+  font-size:clamp(2rem,3.6vw,3.2rem); color:var(--ink);
+}
+.close p{
+  font-family:var(--serif); font-size:1.4375rem; color:var(--ink-soft);
+  margin:.75rem auto 2rem; max-width:44ch;
+}
+.close a{
+  display:inline-block;
+  font-family:var(--serif); font-style:italic; font-size:1.5rem;
+  background:var(--oxblood); color:var(--vellum-100);
+  padding:.7rem 2.2rem; border-radius:999px; text-decoration:none;
+}
+.close a:hover{ background:#8d4b4b; color:#fff }
+
+.notice{
+  font-family:var(--serif); font-size:1.375rem; line-height:1.5;
+  color:var(--ink-soft); padding:4rem 0;
+}
+.notice code{ font-family:var(--sans); font-size:.9em; color:var(--oxblood) }
+
+/* ---- NARROW ---------------------------------------------------------
+   The two sitter columns stack rather than shrink. Two columns of one
+   tile each on a phone is not a gallery, it is a list with a gap down
+   the middle. Stacked, each sitter still gets two across. */
+@media (max-width:900px){
+  .subjects{ grid-template-columns:1fr; gap:clamp(32px,6vw,48px) }
+}
+@media (max-width:767px){
+  .mh{ height:72px; gap:16px; padding:0 20px }
+  .mh-mark{ height:34px }
+  .mh-nav a:not(.mh-cta){ display:none }
+  .jump{ top:72px }
+  .open{ padding:36px 0 20px }
+  .tile-cap{ padding:.7rem .8rem .85rem }
+  .tile-cap b{ font-size:1.1875rem }
+  .tile-cap span{ font-size:1rem }
+}
+</style>
+</head>
+<body>
+
+<header class="mh">
+  <a href="/" aria-label="Liten &amp; Co">
+    <svg class="mh-mark" viewBox="0 0 1821.36 1528.47" role="img" focusable="false"><g><path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/></g><g><path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/><path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/><path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/><path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/><path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/><path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/><path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/></g></svg>
+    <span class="sr">Liten &amp; Co</span>
+  </a>
+  <nav class="mh-nav">
+    <a href="/">The Workshop</a>
+    <a class="mh-cta" href="/">Craft a portrait</a>
+  </nav>
+</header>
+
+<div class="stage">
+  <section class="open">
+    <h1>Every finish we make.</h1>
+    <p>Eight rooms, and in each one a set of finishes shown on two sitters.
+       Nothing here is a sample of a style — every one was crafted from a
+       photograph, the same way yours will be.</p>
+  </section>
+</div>
+
+<nav class="jump" aria-label="Rooms"><div class="jump-in" id="jump"></div></nav>
+
+<main class="stage" id="gallery"></main>
+
+<div class="stage">
+  <section class="close">
+    <h2>Bring us a photograph.</h2>
+    <p>Choose a finish, and we will craft it.</p>
+    <a href="/">Enter the workshop</a>
+  </section>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var gallery = document.getElementById('gallery');
+  var jump    = document.getElementById('jump');
+
+  function notice(msg){
+    var p = document.createElement('p');
+    p.className = 'notice';
+    p.innerHTML = msg;
+    gallery.innerHTML = '';
+    gallery.appendChild(p);
+  }
+
+  /* ── THE CATALOGUE ──────────────────────────────────────────────────
+     window.EFFECT_REGISTRY is emitted by scripts/emit-effect-registry.js
+     from effect-registry.ts. Lowercase keys — silos, effects, poses. */
+  var R = window.EFFECT_REGISTRY;
+  if (!R || !R.silos || !R.effects || !R.effects.length){
+    notice('The catalogue did not load. <code>/effect-registry.js</code> is ' +
+           'missing or empty — run <code>node scripts/emit-effect-registry.js</code>.');
+    return;
+  }
+
+  /* ── THE PLATES ─────────────────────────────────────────────────────
+     Fetched rather than inlined. portraits.html inlines its copy because
+     the first paint of a room must not wait on a request; this page is a
+     scroll, and one request at the top costs nothing worth having. */
+  fetch('/previews/effects-manifest.json', { cache:'no-cache' })
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(draw)
+    .catch(function(){
+      notice('The photographs did not load. ' +
+             '<code>/previews/effects-manifest.json</code> is missing — run ' +
+             '<code>node scripts/emit-preview-manifest.js</code>.');
+    });
+
+  function draw(M){
+    var base = M.base || '/previews/effects/';
+    var art  = M.effects || {};
+
+    /* Whole filenames come out of the manifest, because the extension
+       varies by tree and by sitter. Nothing here builds a path from an id
+       and hopes. Where a sitter's plate is unshot, the neutral serves; if
+       there is no neutral either, the tile says so rather than showing
+       the other sitter. */
+    function plate(id, which){
+      var a = art[id];
+      if (!a) return null;
+      var name = a[which] || a.neutral || null;
+      return name ? base + id + '/' + name : null;
+    }
+
+    /* The `_woman` ids are CRAFT routes, not finishes — Another Age
+       carries seven so a woman's craft reaches a woman's body. They have
+       no plates of their own and printing them would draw that room
+       twice. One tile per finish. */
+    function isVariant(id){
+      return R.isVariant ? R.isVariant(id) : /_woman$/.test(id);
+    }
+
+    var offerable = R.effects.filter(function(e){
+      return e.body === 'live' && !isVariant(e.id);
+    });
+
+    function tile(e, which){
+      var src = plate(e.id, which);
+
+      var a = document.createElement('a');
+      a.className = 'tile';
+      a.href = '/?effect=' + encodeURIComponent(e.id);
+
+      var box = document.createElement('div');
+      box.className = 'tile-img';
+
+      if (src){
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = e.label + ', crafted';
+        img.loading  = 'lazy';
+        img.decoding = 'async';
+        /* Named in the manifest but absent on disk must not leave a grey
+           hole with no explanation. */
+        img.addEventListener('error', function(){
+          img.remove();
+          box.classList.add('is-empty');
+        });
+        box.appendChild(img);
+      } else {
+        box.classList.add('is-empty');
+      }
+
+      var cap = document.createElement('div');
+      cap.className = 'tile-cap';
+      /* Labels go in through textContent, never innerHTML — the registry
+         emits plain unicode, so "Charcoal & Chalk" would become &amp;amp;
+         on a second pass. */
+      cap.innerHTML = '<b></b><span>Craft this finish</span>';
+      cap.querySelector('b').textContent = e.label;
+
+      a.appendChild(box);
+      a.appendChild(cap);
+      return a;
+    }
+
+    function column(list, which, heading){
+      var col  = document.createElement('div');
+      var h    = document.createElement('div');
+      h.className = 'subject-head';
+      h.textContent = heading;
+      var grid = document.createElement('div');
+      grid.className = 'tiles';
+      list.forEach(function(e){ grid.appendChild(tile(e, which)); });
+      col.appendChild(h);
+      col.appendChild(grid);
+      return col;
+    }
+
+    gallery.innerHTML = '';
+    jump.innerHTML    = '';
+
+    R.silos.forEach(function(silo){
+      var list = offerable.filter(function(e){ return e.category === silo.id; });
+      if (!list.length) return;
+
+      var sec = document.createElement('section');
+      sec.className = 'silo';
+      sec.id = 'silo-' + silo.id;
+
+      var head = document.createElement('div');
+      head.className = 'silo-head';
+      head.innerHTML = '<h2></h2><p></p>';
+      head.querySelector('h2').textContent = silo.label;
+      /* The Curator's line, with its "Here are the ... finishes." opener
+         trimmed. She is speaking to someone standing in the room, and
+         this page is not the room. */
+      head.querySelector('p').textContent =
+        String(silo.line || '').replace(/^Here are (the )?[^.]*finishes\.\s*/i, '');
+      sec.appendChild(head);
+
+      var subjects = document.createElement('div');
+      subjects.className = 'subjects';
+      subjects.appendChild(column(list, 'man',   'Men'));
+      subjects.appendChild(column(list, 'woman', 'Women'));
+      sec.appendChild(subjects);
+
+      gallery.appendChild(sec);
+
+      var a = document.createElement('a');
+      a.href = '#silo-' + silo.id;
+      a.textContent = silo.label;
+      jump.appendChild(a);
+    });
+
+    if (!gallery.children.length){
+      notice('The catalogue loaded, but no finish is marked <code>live</code>.');
+    }
+  }
+})();
+</script>
+</body>
+</html>
