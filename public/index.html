@@ -548,6 +548,7 @@ footer nav a:hover{color:var(--series)}
 
   /* ---- THE SERIES SHEET --------------------------------------------- */
   .m-sheet{ position:fixed; inset:0; z-index:90; display:flex; align-items:flex-end }
+  .m-sheet[hidden]{ display:none }
   .m-sheet::before{
     content:''; position:absolute; inset:0;
     background:rgba(20,15,11,.56); backdrop-filter:blur(2px);
@@ -682,25 +683,26 @@ footer nav a:hover{color:var(--series)}
    back — on its own clock, so the wall is always mid-thought rather than
    flipping as one.
    ══════════════════════════════════════════════════════════════════ */
-.proof{ padding:clamp(72px,7vw,128px) 0; background:var(--limestone) }
-.proof-hd{ text-align:center; margin-bottom:clamp(36px,3.4vw,58px) }
-.proof-hd .eyebrow{
+.likeness{ padding:clamp(72px,7vw,128px) 0; background:var(--limestone) }
+.likeness-hd{ text-align:center; margin-bottom:clamp(36px,3.4vw,58px) }
+.likeness-hd .eyebrow{
   font-family:var(--sans); font-size:12px; font-weight:500;
   letter-spacing:.26em; text-transform:uppercase; color:var(--brass);
 }
-.proof-hd h2{
+.likeness-hd h2{
   font-family:var(--serif); font-weight:300; font-size:clamp(38px,3.6vw,60px);
   line-height:1.06; color:var(--ink); margin-top:12px;
 }
-.proof-hd h2 em{ font-style:italic; color:var(--oxblood) }
-.proof-hd p{
+.likeness-hd h2 em{ font-style:italic; color:var(--oxblood) }
+.likeness-hd p{
   font-family:var(--serif); font-size:clamp(19px,1.4vw,24px); line-height:1.45;
   color:var(--ink-soft); max-width:56ch; margin:14px auto 0;
 }
 
-.proof-wall{
+.likeness-wall{
   display:grid; grid-template-columns:repeat(4,1fr);
-  gap:clamp(14px,1.2vw,24px);
+  gap:clamp(16px,1.4vw,28px);
+  width:100%;
 }
 .flip{
   position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden;
@@ -724,15 +726,59 @@ footer nav a:hover{color:var(--series)}
   transition:opacity .4s ease;
 }
 .flip .tag.fade{ opacity:0 }
-.proof-note{
+.likeness-note{
   text-align:center; margin-top:clamp(28px,2.6vw,44px);
   font-family:var(--serif); font-style:italic; font-size:20px;
   color:var(--ink-soft);
 }
-.proof-note a{ color:var(--oxblood) }
+.likeness-note a{ color:var(--oxblood) }
 
-@media (max-width:1080px){ .proof-wall{ grid-template-columns:repeat(3,1fr) } }
-@media (max-width:820px){ .proof-wall{ grid-template-columns:repeat(2,1fr) } }
+@media (max-width:1080px){ .likeness-wall{ grid-template-columns:repeat(3,1fr) } }
+@media (max-width:820px){ .likeness-wall{ grid-template-columns:repeat(2,1fr) } }
+
+/* ---- THE WORLDS FOLD ENDS IN TWO ASKS -------------------------------
+   The cards used to be eight links to one page, which is eight ways of
+   asking the same question. They are plates now; the question is asked
+   once, here, and the answer branches. */
+.world{ cursor:default }
+.w-acts{ display:flex; gap:14px; justify-content:center; margin-top:26px }
+.w-acts a{
+  font-family:var(--serif); font-style:italic; font-size:21px;
+  padding:14px 40px; border-radius:999px; text-decoration:none;
+  transition:background .18s ease, color .18s ease;
+}
+.w-go{ background:var(--oxblood); color:var(--vellum-100) }
+.w-go:hover{ background:#8d4b4b; color:#fff }
+.w-own{ background:var(--vellum-100); color:var(--ink) }
+.w-own:hover{ background:#fff }
+
+/* ---- 4 · THE GIFT PROOF · the frame is the star ---------------------
+   Scaled 1.3. It is the one picture on the page that has to carry the
+   whole "this is a printed object" argument, and it was losing to the
+   copy beside it. */
+.proof .frame{ transform:scale(1.3); transform-origin:center }
+.proof{ overflow:visible }
+.proof > div:last-child{ padding-block:5% }
+
+/* ---- 5 · THE CATALOGUE PLATES --------------------------------------- */
+.pc .stage > .frame{ max-width:800px }
+
+/* ---- 6 · TWO ACROSS, NOT THREE -------------------------------------- */
+.pc.w4{ grid-column:span 6 }
+.pc.w4 h3{ font-size:34px }
+.pc.w4 .stage{ padding:34px 34px 26px }
+.pc.w4 .body{ padding:6px 34px 34px }
+
+/* ---- 7 · THE LAST CARD IS CENTRED ----------------------------------- */
+.pc.w12 .stage > .frame{ max-width:900px }
+.pc.w12 .body{ max-width:70ch; margin:0 auto; text-align:center }
+.pc.w12 .sizes{ justify-content:center }
+.pc.w12 .spec{ text-align:center }
+
+@media (max-width:900px){
+  .pc.w4{ grid-column:span 12 }
+  .proof .frame{ transform:none }
+}
 </style></head><body>
 <div class="ground"></div>
 <div class="stage">
@@ -768,17 +814,17 @@ footer nav a:hover{color:var(--series)}
 </section>
 
 <!-- ══ FOLD 2 · THE PROOF ══════════════════════════════════════════════ -->
-<section class="proof desk-only" id="proof">
+<section class="likeness desk-only" id="likeness">
   <div class="wrap">
-    <div class="proof-hd">
+    <div class="likeness-hd">
       <div class="eyebrow">The same person, twice</div>
       <h2>Will it still <em>look like them?</em></h2>
       <p>Every picture below turns over between the photograph we were given
          and the piece we made from it. Nothing is retouched, nothing is
          staged &mdash; it is the same face, held through the material.</p>
     </div>
-    <div class="proof-wall" id="proofWall"></div>
-    <p class="proof-note">Bring us one photograph and we will do the rest.
+    <div class="likeness-wall" id="likenessWall"></div>
+    <p class="likeness-note">Bring us one photograph and we will do the rest.
        <a href="/portraits">Start a portrait</a>.</p>
   </div>
 </section>
@@ -792,26 +838,29 @@ footer nav a:hover{color:var(--series)}
       <p>Materials, eras, and ways of making. Choose a world and I&rsquo;ll show you what your photograph becomes inside it.</p>
     </div>
     <div class="wgrid">
-      <a class="world" href="/gallery"><div class="ph i-w-another-age"></div><div class="body"><div class="n">Another Age</div>
-          <div class="fin">Elizabethan · Renaissance · Victorian · Samurai · Wild West</div><div class="cnt">7 finishes</div></div></a>
-      <a class="world" href="/gallery"><div class="ph i-w-earth-ore"></div><div class="body"><div class="n">Earth &amp; Ore</div>
-          <div class="fin">Bronze · Stone · Jade · Iron · Ebony · Polished Gold</div><div class="cnt">7 finishes</div></div></a>
-      <a class="world" href="/gallery"><div class="ph i-w-light-glass"></div><div class="body"><div class="n">Light &amp; Glass</div>
-          <div class="fin">Stained Glass · Cast Glass · Ice · Mercury · Sea Glass</div><div class="cnt">7 finishes</div></div></a>
-      <a class="world" href="/gallery"><div class="ph i-w-living-world"></div><div class="body"><div class="n">The Living World</div>
-          <div class="fin">Coral · Petal Sculpture · Driftwood &amp; Resin · Tidewood</div><div class="cnt">7 finishes</div></div></a>
-      <a class="world" href="/gallery"><div class="ph i-w-made-by-hand"></div><div class="body"><div class="n">Made by Hand</div>
-          <div class="fin">Quilted · Beaded · Origami · Folded Book · Plushy</div><div class="cnt">7 finishes</div></div></a>
-      <a class="world" href="/gallery"><div class="ph i-w-ink-paper"></div><div class="body"><div class="n">Ink &amp; Paper</div>
-          <div class="fin">Pencil · Charcoal · Linocut · Watercolour · Daguerreotype</div><div class="cnt">7 finishes</div></div></a>
-      <a class="world" href="/gallery"><div class="ph i-w-fantasy-future"></div><div class="body"><div class="n">Fantasy &amp; Future</div>
-          <div class="fin">Clockwork · Retro Robot · Dragon Skin · Starfield</div><div class="cnt">7 finishes</div></div></a>
-      <a class="world" href="/gallery"><div class="ph i-w-artists-gallery"></div><div class="body"><div class="n">The Artists Gallery</div>
-          <div class="fin">Impressionist · Cubism · Art Nouveau · Ukiyo-e · Impasto</div><div class="cnt">7 finishes</div></div></a>
+      <div class="world"><div class="ph i-w-another-age"></div><div class="body"><div class="n">Another Age</div>
+          <div class="fin">Elizabethan · Renaissance · Victorian · Samurai · Wild West</div><div class="cnt">7 finishes</div></div></div>
+      <div class="world"><div class="ph i-w-earth-ore"></div><div class="body"><div class="n">Earth &amp; Ore</div>
+          <div class="fin">Bronze · Stone · Jade · Iron · Ebony · Polished Gold</div><div class="cnt">7 finishes</div></div></div>
+      <div class="world"><div class="ph i-w-light-glass"></div><div class="body"><div class="n">Light &amp; Glass</div>
+          <div class="fin">Stained Glass · Cast Glass · Ice · Mercury · Sea Glass</div><div class="cnt">7 finishes</div></div></div>
+      <div class="world"><div class="ph i-w-living-world"></div><div class="body"><div class="n">The Living World</div>
+          <div class="fin">Coral · Petal Sculpture · Driftwood &amp; Resin · Tidewood</div><div class="cnt">7 finishes</div></div></div>
+      <div class="world"><div class="ph i-w-made-by-hand"></div><div class="body"><div class="n">Made by Hand</div>
+          <div class="fin">Quilted · Beaded · Origami · Folded Book · Plushy</div><div class="cnt">7 finishes</div></div></div>
+      <div class="world"><div class="ph i-w-ink-paper"></div><div class="body"><div class="n">Ink &amp; Paper</div>
+          <div class="fin">Pencil · Charcoal · Linocut · Watercolour · Daguerreotype</div><div class="cnt">7 finishes</div></div></div>
+      <div class="world"><div class="ph i-w-fantasy-future"></div><div class="body"><div class="n">Fantasy &amp; Future</div>
+          <div class="fin">Clockwork · Retro Robot · Dragon Skin · Starfield</div><div class="cnt">7 finishes</div></div></div>
+      <div class="world"><div class="ph i-w-artists-gallery"></div><div class="body"><div class="n">The Artists Gallery</div>
+          <div class="fin">Impressionist · Cubism · Art Nouveau · Ukiyo-e · Impasto</div><div class="cnt">7 finishes</div></div></div>
     </div>
     <div class="w-foot">
       <p>&ldquo;Most people arrive certain, and leave with something they didn&rsquo;t expect.&rdquo; &mdash; C.</p>
-      <a class="pill pill-light" href="/portraits">Enter the studio</a>
+      <div class="w-acts">
+        <a class="w-go" href="/gallery">Visit the Gallery</a>
+        <a class="w-own" href="/portraits">Create My Own</a>
+      </div>
     </div>
   </div>
 </section>
@@ -1154,7 +1203,7 @@ footer nav a:hover{color:var(--series)}
               tag.classList.remove('fade');
             }, 380);
             flip();
-          }, crafted ? 2000 : 3400);
+          }, crafted ? 4000 : 6800);
         })();
       });
     }
@@ -1321,7 +1370,7 @@ footer nav a:hover{color:var(--series)}
   });
 
   /* ---- the proof wall ------------------------------------------------ */
-  var wall = document.getElementById('proofWall');
+  var wall = document.getElementById('likenessWall');
   if (!wall) return;
 
   PAIRS.slice(0, 12).forEach(function(pair, k){
@@ -1355,13 +1404,14 @@ footer nav a:hover{color:var(--series)}
       }, 400);
       /* The finish is held longer than the photograph. The photograph is
          the setup; the finish is the point, and the eye needs longer on
-         the thing being argued for. */
-      setTimeout(flip, crafted ? 3400 : 2000);
+         the thing being argued for. Doubled 2026-08-09 — at half these
+         numbers the wall read as a flicker rather than a comparison. */
+      setTimeout(flip, crafted ? 6800 : 4000);
     }
 
     /* Every card on its own clock, so the wall is always mid-thought
        rather than turning over as one. */
-    setTimeout(flip, 1200 + (k * 430) % 3700);
+    setTimeout(flip, 1200 + (k * 870) % 7400);
   });
 })();
 </script>
