@@ -840,6 +840,37 @@ body{
   transition:border-color .3s var(--ease-nav), background .3s var(--ease-nav);
 }
 .cur-slot:hover{ border-color:var(--gold); background:rgba(255,255,255,.6) }
+
+/* ---- THE PULSE ---------------------------------------------------------
+   A customer who has browsed three rooms and uploaded nothing has lost the
+   thread. Nothing here can happen until a photograph arrives, so the slot
+   asks for one — quietly, and only after they have wandered.
+
+   It breathes rather than flashes. A hard blink on a page this calm reads
+   as an error state, and it is not an error: they are browsing, which is
+   allowed. It also stops the moment they touch it, and it never runs once
+   a photograph is in. */
+@keyframes curBreathe{
+  0%,100%{ border-color:rgba(137,105,67,.3); box-shadow:0 0 0 0 rgba(181,138,76,0) }
+  50%    { border-color:var(--gold);         box-shadow:0 0 0 7px rgba(181,138,76,.14) }
+}
+@keyframes curPlus{
+  0%,100%{ transform:scale(1) }
+  50%    { transform:scale(1.11) }
+}
+.cur[data-state='empty'] .cur-slot.is-asking{
+  animation:curBreathe 2.6s var(--ease-nav) infinite;
+}
+.cur[data-state='empty'] .cur-slot.is-asking .cur-slot-plus{
+  animation:curPlus 2.6s var(--ease-nav) infinite;
+  border-color:var(--gold); color:var(--gold);
+}
+.cur-slot.is-asking:hover{ animation:none }
+@media (prefers-reduced-motion:reduce){
+  .cur[data-state='empty'] .cur-slot.is-asking,
+  .cur[data-state='empty'] .cur-slot.is-asking .cur-slot-plus{ animation:none }
+  .cur[data-state='empty'] .cur-slot.is-asking{ border-color:var(--gold) }
+}
 .cur-slot-plus{
   width:44px; height:44px; border-radius:50%;
   border:1px solid rgba(137,105,67,.4);
@@ -5543,6 +5574,9 @@ window.EFFECT_PREVIEWS = {
 
   function curatorState(name, html){
     if (cur) cur.dataset.state = name;
+    /* A photograph is in. The slot has been answered — stop asking, and
+       do not start again. */
+    if (name !== 'empty' && window.__stopAsking) window.__stopAsking();
     say(html);
     var t = document.getElementById('curThumb');
     if (typeof setIntakePhoto === 'function'){
@@ -5562,6 +5596,39 @@ window.EFFECT_PREVIEWS = {
       if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); take(); }
     });
   }
+
+  /* ---- THE PULSE ------------------------------------------------------
+     Browsing is allowed, and someone who opens a room to look around has
+     done nothing wrong. But nothing in here can happen without a
+     photograph, and a customer three rooms deep with an empty slot has
+     lost the thread rather than made a choice.
+
+     So the slot waits, and then asks. It does not ask immediately —
+     pulsing at someone who has been on the page four seconds is nagging,
+     not guidance. It asks once they have wandered: a room opened, or
+     twenty-five seconds gone.
+
+     It stops for good the moment a photograph lands, and it never starts
+     again in that session. Guidance that keeps re-appearing after it has
+     been answered reads as a page that is not listening. */
+  var ASKED = false;
+  function askForPhoto(){
+    if (ASKED || !curSlot) return;
+    if (cur && cur.dataset.state !== 'empty') return;
+    ASKED = true;
+    curSlot.classList.add('is-asking');
+  }
+  window.__stopAsking = function(){
+    ASKED = true;                       /* never ask again this session */
+    if (curSlot) curSlot.classList.remove('is-asking');
+  };
+  /* Wandered on the clock. */
+  setTimeout(askForPhoto, 25000);
+  /* Wandered into a room — the stronger signal of the two, so it does not
+     wait out the rest of the clock. */
+  document.addEventListener('click', function(e){
+    if (e.target.closest && e.target.closest('.silo-card')) setTimeout(askForPhoto, 900);
+  });
   /* Was: clear the panel and wait to be clicked a second time — which
      also threw away the photograph before the customer had chosen a
      replacement. Open the picker; the photograph stands until a new one
@@ -7406,10 +7473,38 @@ window.EFFECT_PREVIEWS = {
      Ask for the subject, fall back to the plate that serves both, then
      to whatever exists — a card with no picture is worse than a card
      showing the other face, and two effects are still short a plate. */
+  /* BEFORE A PHOTOGRAPH ARRIVES, THE FLOOR IS MIXED. Ruled 2026-08-09.
+     SUBJECT is null until we have seen a face, and the old fallback took
+     f[0] every time — which is the man's plate on all eight cards. A wall
+     of men is a wall that tells half the people who land here that this
+     was not made for them.
+
+     Four and four, shuffled once per load. Per load, not per call: the
+     same card must not change sitter between two paints of the same
+     screen. Once SUBJECT is known this never runs again — the customer's
+     own sitter wins over everything here. */
+  var COIN = {};
+  function coinFor(id, keys){
+    if (COIN[id]) return COIN[id];
+    var list = (keys || []).slice().sort();
+    var half = Math.ceil(list.length / 2);
+    var want = [];
+    for (var i = 0; i < list.length; i++) want.push(i < half ? 'man' : 'woman');
+    /* Fisher-Yates, so the split is exact and the order is not. */
+    for (var j = want.length - 1; j > 0; j--){
+      var k = Math.floor(Math.random() * (j + 1));
+      var t = want[j]; want[j] = want[k]; want[k] = t;
+    }
+    for (var m = 0; m < list.length; m++) COIN[list[m]] = want[m];
+    return COIN[id] || 'man';
+  }
+
   function plateFrom(tree, base, id, sub){
     var f = tree && tree[id];
     if (!f) return '';
-    var want = SUBJECT === 'woman' ? f[1] : SUBJECT === 'man' ? f[0] : '';
+    var who = SUBJECT;
+    if (!who && tree === PV.silos) who = coinFor(id, Object.keys(tree));
+    var want = who === 'woman' ? f[1] : who === 'man' ? f[0] : '';
     var file = want || f[0] || f[2] || f[1] || '';
     return file ? base + (sub ? id + '/' : '') + file : '';
   }
