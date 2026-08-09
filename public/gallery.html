@@ -41,8 +41,11 @@
   --sans:'Manrope',sans-serif;
   --r-card:8px;
 
-  --stage-gutter-max:100px;
-  --stage-w:max(90%, calc(100% - (var(--stage-gutter-max) * 2)));
+  /* A FIXED 100px GUTTER. Not a percentage: the tiles are the point on
+     this page and a percentage gutter takes width away from them exactly
+     when there is most width to give. */
+  --stage-gutter:100px;
+  --stage-w:calc(100% - (var(--stage-gutter) * 2));
 
   --tile-gap:clamp(14px, 1.1vw, 26px);
   --column-gap:clamp(28px, 3vw, 72px);
@@ -87,15 +90,23 @@ body{
 }
 .mh-cta:hover{ background:#8d4b4b; color:#fff }
 
-/* ---- OPENING --------------------------------------------------------- */
-.open{ padding:clamp(48px,6vw,104px) 0 clamp(28px,3vw,48px) }
+/* ---- OPENING ---------------------------------------------------------
+   Side by side, not stacked. Stacked, the words took a third of the screen
+   before a single finish appeared — on a page whose whole argument is the
+   volume of work, that is the wrong thing to spend the fold on. */
+.open{
+  padding:clamp(28px,3vw,52px) 0 clamp(18px,1.8vw,28px);
+  display:grid; grid-template-columns:auto minmax(0,44ch);
+  gap:clamp(24px,4vw,72px); align-items:baseline;
+}
 .open h1{
   font-family:var(--serif); font-weight:300; font-style:italic;
-  font-size:clamp(2.6rem,5vw,4.4rem); line-height:1.05; color:var(--ink);
+  font-size:clamp(2.2rem,3.6vw,3.4rem); line-height:1.05; color:var(--ink);
+  white-space:nowrap;
 }
 .open p{
-  font-family:var(--serif); font-size:1.5rem; line-height:1.45;
-  color:var(--ink-soft); max-width:46ch; margin-top:1rem;
+  font-family:var(--serif); font-size:1.375rem; line-height:1.45;
+  color:var(--ink-soft);
 }
 
 /* ---- SILO JUMP ------------------------------------------------------- */
@@ -203,10 +214,16 @@ body{
    The two sitter columns stack rather than shrink. Two columns of one
    tile each on a phone is not a gallery, it is a list with a gap down
    the middle. Stacked, each sitter still gets two across. */
+@media (max-width:1200px){
+  .open{ grid-template-columns:1fr; gap:.75rem }
+  .open h1{ white-space:normal }
+}
 @media (max-width:900px){
+  :root{ --stage-gutter:32px }
   .subjects{ grid-template-columns:1fr; gap:clamp(32px,6vw,48px) }
 }
 @media (max-width:767px){
+  :root{ --stage-gutter:20px }
   .mh{ height:72px; gap:16px; padding:0 20px }
   .mh-mark{ height:34px }
   .mh-nav a:not(.mh-cta){ display:none }
