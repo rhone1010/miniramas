@@ -1,552 +1,556 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Liten &amp; Co — Crafted · Home</title>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liten &amp; Co</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+
 :root{
-  --oxblood:#7B3F41; --oxblood-deep:#653030; --oxblood-seal:#763F41;
-  --walnut:#303128; --header-brown:#3A2D24; --warm-paper:#F0EAE0; --vellum:#908B87;
-  --champagne:#CDC2BB; --taupe:#987946; --gold:#F5CA59; --stroke-sel:#bfb3ab;
-  --serif:"Cormorant Garamond",Garamond,Georgia,serif; --sans:"Manrope",-apple-system,sans-serif;
+  /* PALETTE — canonical, from portraits.html */
+  --ink:#2a241e; --ink-soft:#5a5248; --taupe:#aba39a;
+  --vellum:#f3ede1; --vellum-100:#f8f4eb; --vellum-200:#f3ecdd; --vellum-300:#e9dec8;
+  --limestone:#f1ece3;
+  --oxblood:#7d4242; --brass:#75623a; --gold:#b68a53;
+  --series:#d7bd89;
+  --espresso:#26201a; --coffee-700:#332620;
+  --card-line:rgba(196,169,110,.28);
+  --hairline:rgba(123,92,58,.20);
+  --ink-faint:rgba(42,36,30,.44);
+
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',sans-serif;
+
+  /* radius ceiling is 8. 999px only on pills <= 72px tall. */
+  --r-card:8px; --r-panel:8px;
+
+  /* GROUND */
+  --ls-tile:900px; --ls-wash:.42;
+  --cur-stone-wash:.42; --cur-stone-tile:800px;
+  --foot-stone-wash:.62; --foot-stone-tile:1100px;
+  --queue-tex-wash:.42; --queue-tex-tile:800px;
+
+  --maxw:1620px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--sans);color:var(--walnut);background:var(--warm-paper);line-height:1.5;-webkit-font-smoothing:antialiased}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;height:100%}
+body{min-height:100%;background:var(--limestone);color:var(--ink);font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;overflow-x:clip}  /* clip, NOT hidden — hidden makes body a scroll container and kills position:sticky */
+.wrap{width:88%;max-width:var(--maxw);margin:0 auto}
+.label{font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink-faint)}
+.label.lt{color:rgba(243,237,225,.46)}
 
-/* NAV — light surface */
-.topbar{position:sticky;top:0;z-index:30;height:72px;display:flex;align-items:center;
-  padding:0 40px;gap:28px;background:rgba(243,237,225,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
-  border-bottom:1px solid rgba(48,49,40,.12)}
-.brand{display:flex;align-items:center;gap:14px;text-decoration:none;white-space:nowrap}
-.brand .logo{height:46px;width:auto;display:block}
-.brand .wordmark{font-family:var(--serif);font-style:italic;font-weight:500;font-size:35px;line-height:1;
-  color:var(--header-brown);letter-spacing:-.01em}
-.tabs{display:flex;align-items:center;gap:.2rem;margin-left:auto}
-.tab{font-family:var(--serif);font-style:italic;font-size:27px;color:var(--walnut);background:none;border:none;
-  cursor:pointer;padding:9px 18px;border-radius:5px;transition:background .15s}
-.tab:hover{background:rgba(48,49,40,.07)}
-/* nav resolution comps */
-@media (min-width:1820px){
-  .topbar{height:78px;padding:0 48px}
-  .brand .logo{height:50px}.brand .wordmark{font-size:38px}.tab{font-size:29px}
+/* ── THE GROUND · fixed, edge to edge, behind everything ─────────── */
+.ground{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-color:var(--limestone);
+  background-image:
+    linear-gradient(0deg, rgba(241,236,227,var(--ls-wash)), rgba(241,236,227,var(--ls-wash))),
+    var(--tex-limestone);
+  background-repeat:repeat,repeat;
+  background-size:auto, var(--ls-tile) var(--ls-tile);
+  background-position:center,center}
+.ground::before{content:"";position:absolute;inset:0;
+  background-image:
+    radial-gradient(circle at 16% 8%, rgba(255,255,255,.86) 0%, rgba(255,255,255,.30) 24%, transparent 50%),
+    radial-gradient(circle at 86% 24%, rgba(211,187,151,.24) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 112%, rgba(92,66,40,.13) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(221,208,189,.14) 42%,
+      rgba(255,255,255,.10) 68%, rgba(191,166,130,.11) 100%);
+  background-repeat:no-repeat;
+  background-size:72% 72%, 58% 66%, 100% 58%, cover;
+  background-position:top left, top right, bottom center, center}
+.ground::after{content:"";position:absolute;inset:0;
+  background-image:var(--tex-noise);background-repeat:repeat;background-size:240px 240px;
+  opacity:.025;mix-blend-mode:multiply;
+  box-shadow:inset 0 0 7rem rgba(69,44,29,.045), inset 0 1px 0 rgba(255,255,255,.32)}
+.stage{position:relative;z-index:1}
+
+/* ── SURFACE RECIPES · gradients carry tone, noise carries grain ── */
+.s-vellum{isolation:isolate;position:relative;overflow:hidden;
+  background-color:#f7f2e9;
+  background-image:
+    radial-gradient(circle at 30% 15%, rgba(255,255,255,.28), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(112,77,43,.045), transparent 52%),
+    linear-gradient(145deg, rgba(255,255,255,.12), rgba(210,191,161,.055)),
+    linear-gradient(0deg, rgba(247,242,233,var(--cur-stone-wash)), rgba(247,242,233,var(--cur-stone-wash))),
+    var(--tex-limestone);
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,var(--cur-stone-tile) var(--cur-stone-tile);
+  background-position:center}
+.s-vellum::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background-image:var(--tex-noise);background-repeat:repeat;background-size:14rem 14rem;
+  opacity:.045;mix-blend-mode:multiply}
+
+.s-limestone{isolation:isolate;position:relative;overflow:hidden;
+  background-color:#f5efe6;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(102,73,42,.025)),
+    radial-gradient(circle at 12% 0%, rgba(255,255,255,.34), transparent 46%),
+    radial-gradient(circle at 90% 100%, rgba(118,82,45,.035), transparent 48%),
+    repeating-linear-gradient(0deg, rgba(85,61,36,.012) 0, rgba(85,61,36,.012) 1px, transparent 1px, transparent 15rem),
+    repeating-linear-gradient(90deg, rgba(85,61,36,.01) 0, rgba(85,61,36,.01) 1px, transparent 1px, transparent 15rem),
+    linear-gradient(0deg, rgba(245,239,230,var(--foot-stone-wash)), rgba(245,239,230,var(--foot-stone-wash))),
+    var(--tex-limestone);
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,auto,auto,var(--foot-stone-tile) var(--foot-stone-tile);
+  background-position:center}
+.s-limestone::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background-image:var(--tex-noise);background-repeat:repeat;background-size:16rem 16rem;
+  opacity:.035;mix-blend-mode:multiply}
+
+.s-coffee{isolation:isolate;position:relative;overflow:hidden;color:var(--vellum);
+  background-color:#1a1613;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.045), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(255,255,255,.025), transparent 48%),
+    linear-gradient(180deg, rgba(255,255,255,.018), rgba(0,0,0,.04)),
+    linear-gradient(0deg, rgba(26,22,19,var(--queue-tex-wash)), rgba(26,22,19,var(--queue-tex-wash))),
+    var(--tex-leather);
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,var(--queue-tex-tile) var(--queue-tex-tile);
+  background-position:center}
+.s-coffee::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background-image:var(--tex-noise);background-repeat:repeat;background-size:13rem 13rem;
+  opacity:.12;mix-blend-mode:soft-light}
+
+/* elevated ivory — the Curator's Pick recipe, used for product cards */
+.s-ivory{position:relative;isolation:isolate;overflow:hidden;
+  background-color:#fbf6ef;
+  background-image:
+    radial-gradient(circle at 12% 12%, rgba(255,255,255,.42), transparent 44%),
+    radial-gradient(circle at 88% 88%, rgba(121,83,44,.045), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(167,123,67,.04), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.24), rgba(217,197,166,.05));
+  border:1px solid rgba(183,135,65,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),
+             0 .15rem .45rem rgba(62,41,23,.05), 0 .9rem 2rem rgba(62,41,23,.08)}
+.s-ivory::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background-image:var(--tex-noise);background-repeat:repeat;background-size:14rem 14rem;
+  opacity:.04;mix-blend-mode:multiply}
+.s-ivory::after{content:"";position:absolute;inset:.35rem;z-index:1;pointer-events:none;
+  border:1px solid rgba(183,135,65,.18);border-radius:inherit}
+.s-ivory > *{position:relative;z-index:2}
+
+/* ── pills ──────────────────────────────────────────────────────── */
+.pill{display:inline-block;font-family:var(--serif);font-style:italic;font-size:1.3rem;line-height:1;
+  padding:.9rem 2.1rem;border-radius:999px;text-decoration:none;transition:all .22s;
+  border:1px solid transparent;cursor:pointer}
+.pill-solid{background:var(--oxblood);color:var(--vellum)}
+.pill-solid:hover{background:#6b3838;transform:translateY(-1px);box-shadow:0 6px 18px rgba(125,66,66,.3)}
+.pill-ghost{border-color:rgba(125,66,66,.42);color:var(--oxblood)}
+.pill-ghost:hover{background:rgba(125,66,66,.07)}
+.pill-light{border-color:rgba(183,135,65,.5);color:var(--vellum)}
+.pill-light:hover{background:rgba(214,180,120,.12)}
+
+/* ── header ─────────────────────────────────────────────────────── */
+header{position:sticky;top:0;z-index:80;background:rgba(241,236,227,.9);backdrop-filter:blur(4px);
+  border-bottom:1px solid var(--hairline)}
+.hdr{display:flex;align-items:center;justify-content:space-between;height:84px}
+.mark{font-family:var(--serif);font-size:31px;letter-spacing:.02em}
+.mark small{display:block;font-family:var(--sans);font-size:11px;font-weight:600;
+  letter-spacing:.26em;color:var(--ink-faint);margin-top:3px}
+nav{display:flex;align-items:center;gap:36px}
+nav a{font-family:var(--serif);font-size:21px;color:var(--ink-soft);text-decoration:none;transition:color .2s}
+nav a:hover{color:var(--oxblood)}
+
+/* ── image slots ────────────────────────────────────────────────── */
+.ph{background-size:cover;background-position:center 22%;background-color:var(--vellum-300);position:relative}
+.ph.empty{display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;
+  background-color:var(--vellum-300);
+  background-image:linear-gradient(0deg,rgba(233,222,200,.55),rgba(233,222,200,.55)),var(--tex-limestone);
+  background-size:auto,600px 600px}
+.ph.empty.dark{background-color:#241d18;
+  background-image:linear-gradient(0deg,rgba(26,22,19,.5),rgba(26,22,19,.5)),var(--tex-leather);
+  background-size:auto,600px 600px}
+.ph.empty::after{content:attr(data-slot);font-family:var(--serif);font-style:italic;font-size:21px;
+  line-height:1.35;color:rgba(42,36,30,.42);max-width:14ch}
+.ph.empty.dark::after{color:rgba(215,189,137,.38)}
+
+/* ── FOLD 1 · montage ───────────────────────────────────────────── */
+.hero{position:relative;padding:80px 0 120px}
+.hero-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:56px;align-items:center}
+h1{font-family:var(--serif);font-weight:300;font-size:clamp(52px,4.9vw,86px);line-height:1.04;letter-spacing:-.012em}
+h1 em{font-style:italic;color:var(--oxblood)}
+.lede{font-family:var(--serif);font-size:26px;line-height:1.5;color:var(--ink-soft);margin-top:28px;max-width:31ch}
+.curator{margin-top:40px;padding-left:24px;border-left:2px solid rgba(125,66,66,.3)}
+.curator p{font-family:var(--serif);font-style:italic;font-size:23px;line-height:1.55;color:var(--ink-soft)}
+.curator .sig{font-family:var(--serif);font-style:italic;font-size:21px;color:var(--oxblood);margin-top:10px}
+.cta-row{display:flex;gap:18px;align-items:center;margin-top:44px;flex-wrap:wrap}
+.montage{position:relative;height:800px}
+.mo{position:absolute;border-radius:var(--r-card);overflow:hidden;background:var(--vellum-300);
+  border:5px solid #fdfaf3;box-shadow:0 .8rem 2.2rem rgba(59,41,25,.26), inset 0 0 0 1px rgba(123,92,58,.18);
+  transition:transform .35s ease, box-shadow .35s ease}
+.mo:hover{transform:translateY(-6px) scale(1.012);box-shadow:0 1.6rem 3.6rem rgba(35,22,12,.34);z-index:20!important}
+.mo .ph{position:absolute;inset:0}
+.mo .tag{position:absolute;left:0;right:0;bottom:0;padding:18px 20px;
+  background:linear-gradient(to top,rgba(16,13,10,.86),transparent);pointer-events:none}
+.mo .tag .w{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(215,189,137,.72)}
+.mo .tag .n{font-family:var(--serif);font-size:23px;color:var(--vellum);margin-top:1px}
+.mo.big .tag{padding:24px 26px}
+.mo.big .tag .n{font-size:32px}
+.mo.big .tag .w{font-size:12px}
+.m1{left:6%;top:8%;width:50%;height:60%;z-index:6}
+.m2{left:58%;top:0%;width:34%;height:33%;z-index:5}
+.m3{left:60%;top:35%;width:40%;height:44%;z-index:7}
+.m4{left:0%;top:56%;width:34%;height:38%;z-index:8}
+.m5{left:36%;top:71%;width:27%;height:26%;z-index:9}
+.hero-count{position:absolute;right:2%;bottom:-6px;font-family:var(--serif);font-style:italic;
+  font-size:21px;color:var(--ink-faint);z-index:10}
+
+/* ── FOLD 2 · worlds, on the dark coffee ground ─────────────────── */
+.worlds{padding:104px 0 112px;border-top:1px solid rgba(174,133,78,.2);border-bottom:1px solid rgba(174,133,78,.2)}
+.sec-head{text-align:center;max-width:900px;margin:0 auto 60px}
+.sec-head h2{font-family:var(--serif);font-weight:300;font-size:clamp(42px,4.2vw,70px);line-height:1.08;margin-top:20px}
+.sec-head h2 em{font-style:italic;color:var(--series)}
+.sec-head p{font-family:var(--serif);font-size:24px;line-height:1.55;color:rgba(243,237,225,.66);margin-top:22px}
+.wgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:26px}
+.world{border-radius:var(--r-card);overflow:hidden;background:rgba(38,32,26,.72);
+  border:1px solid var(--card-line);box-shadow:0 .8rem 1.8rem rgba(25,16,10,.28);
+  text-decoration:none;display:block;transition:transform .3s,border-color .3s}
+.world:hover{transform:translateY(-5px);border-color:rgba(214,180,120,.5)}
+.world .ph{aspect-ratio:1/1}
+.world .body{padding:22px 22px 26px}
+.world .n{font-family:var(--serif);font-size:29px;color:var(--vellum);line-height:1.15}
+.world .fin{font-family:var(--serif);font-size:19px;line-height:1.5;color:rgba(243,237,225,.55);margin-top:8px}
+.world .cnt{font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--gold);margin-top:14px}
+.w-foot{text-align:center;margin-top:58px}
+.w-foot p{font-family:var(--serif);font-style:italic;font-size:24px;color:rgba(243,237,225,.58);margin-bottom:28px}
+
+/* ── gift folds ─────────────────────────────────────────────────── */
+.gift{padding:104px 0 52px}
+.gift2{padding:52px 0 118px}
+.gift::after,.gift2::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(620px 380px at 84% 16%, rgba(182,138,83,.16), transparent 72%)}
+.gift > *,.gift2 > *{position:relative;z-index:2}
+.soon{display:inline-flex;align-items:center;gap:11px;font-family:var(--sans);font-size:12px;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--oxblood);
+  border:1px solid rgba(125,66,66,.34);border-radius:999px;padding:.6rem 1.3rem;background:rgba(255,253,248,.6)}
+.soon i{width:7px;height:7px;border-radius:50%;background:var(--oxblood)}
+.gift-head{display:grid;grid-template-columns:1.15fr .85fr;gap:60px;align-items:end;margin-bottom:56px}
+.gift-head h2{font-family:var(--serif);font-weight:300;font-size:clamp(46px,4.6vw,78px);line-height:1.04;margin-top:26px}
+.gift-head h2 em{font-style:italic;color:var(--oxblood)}
+.gift-head .lede{max-width:38ch;margin-top:22px}
+.rule{display:flex;align-items:center;gap:16px;margin:0 0 40px}
+.rule span{flex:1;height:1px;background:var(--hairline)}
+.rule b{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--brass)}
+.gift-cta{margin-top:66px;display:flex;gap:22px;align-items:center;justify-content:center;flex-wrap:wrap}
+.gift-note{font-family:var(--serif);font-style:italic;font-size:21px;color:var(--ink-faint)}
+
+/* ── footer ─────────────────────────────────────────────────────── */
+footer{padding:64px 0 56px;border-top:1px solid rgba(174,133,78,.2)}
+.f-row{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;flex-wrap:wrap}
+footer .mark{color:var(--vellum)}
+footer .mark small{color:rgba(215,189,137,.5)}
+footer nav a{color:rgba(243,237,225,.62);font-size:20px}
+footer nav a:hover{color:var(--series)}
+.fine{margin-top:44px;padding-top:26px;border-top:1px solid rgba(174,133,78,.18);
+  font-family:var(--sans);font-size:13px;color:rgba(243,237,225,.42);letter-spacing:.04em}
+
+@media (max-width:1240px){ .wgrid{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:1080px){
+  .hero-grid,.gift-head{grid-template-columns:1fr;gap:48px}
+  .montage{height:620px}
+  nav .navlink{display:none}
 }
-@media (min-width:2200px){
-  .topbar{height:96px;padding:0 64px;gap:36px}
-  .brand{gap:18px}.brand .logo{height:64px}.brand .wordmark{font-size:49px}
-  .tab{font-size:36px;padding:12px 22px}
+@media (max-width:680px){
+  .wrap{width:91%}
+  .wgrid{grid-template-columns:1fr}
+  .montage{height:520px}
+  .mo .tag .n{font-size:18px}
+  .mo.big .tag .n{font-size:24px}
 }
 
-/* HERO BAND — the curator stage is the masthead */
-.band{max-width:1700px;margin:0 auto;padding:44px 36px 84px}
-.band.hero-band{padding:22px 36px 24px}
-.hero-head{text-align:center;margin-bottom:14px}
-.hero-head h1{font-family:var(--serif);font-style:italic;font-weight:500;font-size:68px;line-height:1.04;color:var(--oxblood);margin-bottom:10px}
-.hero-sub{font-family:var(--serif);font-style:italic;font-size:29px;color:var(--walnut);margin-bottom:22px}
-.hero-ctas2{display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap}
+/* ── the printed-image band ───────────────────────────── */
+.proof{position:relative;display:grid;grid-template-columns:.95fr 1.05fr;gap:56px;align-items:center;
+  margin:0 0 72px;padding:44px 48px;border-radius:var(--r-panel)}
+.proof h3{font-family:var(--serif);font-weight:400;font-size:42px;line-height:1.1}
+.proof h3 em{font-style:italic;color:var(--oxblood)}
+.proof p{font-family:var(--serif);font-size:23px;line-height:1.52;color:var(--ink-soft);margin-top:16px;max-width:44ch}
+.proof .facts{display:flex;gap:26px;flex-wrap:wrap;margin-top:24px}
+.proof .facts span{font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--brass)}
 
-.divider{border:none;height:2px;background:var(--oxblood);margin:0 0 22px}
-.band-head{text-align:center;margin-bottom:26px}
-.band-head h2{font-family:var(--serif);font-style:italic;font-weight:500;font-size:57px;line-height:1.04;color:var(--oxblood);margin-bottom:8px}
-.band-head p{font-family:var(--serif);font-style:italic;font-size:27px;color:var(--walnut)}
+/* ── frame + mat: proves it is a print, normalises ratios ─ */
+.frame{background:linear-gradient(160deg,#fffdf8,#f6efe2);padding:18px;border-radius:5px;
+  box-shadow:0 .8rem 2rem rgba(59,41,25,.20), inset 0 0 0 1px rgba(123,92,58,.16);
+  border:1px solid rgba(123,92,58,.30)}
+.frame.dk{background:linear-gradient(160deg,#4a3f33,#332b23);border-color:rgba(0,0,0,.4)}
+.mat{background:var(--vellum-200);padding:7%;border-radius:2px;box-shadow:inset 0 1px 3px rgba(42,36,30,.16)}
+.frame.dk .mat{background:var(--vellum-100)}
+.art{background-repeat:no-repeat;background-position:center;background-size:contain;
+  background-color:var(--vellum-200);box-shadow:0 1px 4px rgba(42,36,30,.28)}
+.art.sq{aspect-ratio:1/1}
+.art.wide{aspect-ratio:16/9}
+.art.tall{aspect-ratio:4/5}
+.art.frame-fill{background-size:cover}
 
-.stage{position:relative;width:100%;max-width:1600px;margin:0 auto;aspect-ratio:1588/842;border-radius:6px;overflow:hidden;box-shadow:0 0 0 6px var(--stroke-sel),0 16px 48px rgba(48,49,40,.24);background:#15110d}
-.layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.layer.source{z-index:1}
-.output-stack{position:absolute;inset:0;z-index:2;opacity:0;transition:opacity 1.1s ease}
-.output-stack img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .6s ease}
-.output-stack img.active{opacity:1}
-
-.sstrip{position:absolute;left:50%;top:18px;transform:translateX(-50%);z-index:8;display:flex;border:1.5px solid rgba(240,234,224,.5);border-radius:999px;padding:4px;background:rgba(18,14,10,.42);backdrop-filter:blur(4px)}
-.sstrip button{font-family:var(--serif);font-style:italic;font-size:20px;cursor:pointer;border:none;background:transparent;color:var(--warm-paper);padding:7px 18px;border-radius:999px;transition:background .2s,color .2s}
-.sstrip button.active{background:var(--warm-paper);color:var(--oxblood)}
-
-.cur-overlay{position:absolute;left:2%;top:41.8%;z-index:5;width:27.4%;background:rgba(243,237,228,.90);
-  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:5px;padding:22px 22px 20px 60px;box-shadow:0 10px 30px rgba(18,14,10,.32);opacity:0;transition:opacity .5s ease}
-.c-seal{position:absolute;top:18px;left:16px;width:40px;height:40px;border-radius:50%;background:var(--oxblood-seal);color:var(--warm-paper);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:24px;line-height:1}
-.cur-text{font-family:var(--serif);font-style:italic;font-size:21px;line-height:1.38;color:var(--oxblood);min-height:1.4em}
-.cur-text .hl{background:rgba(151,121,70,.22);padding:.02em .14em;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
-.cur-text .cursor{display:inline-block;width:2px;background:var(--oxblood);margin-left:1px;animation:blink .9s steps(1) infinite;vertical-align:-2px}
-@keyframes blink{50%{opacity:0}}
-.cur-foot{margin-top:16px;opacity:0;transition:opacity .5s ease .2s}
-.lab{font-family:var(--sans);font-size:20px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--taupe);margin-bottom:9px}
-.treat-row{display:flex;gap:8px;flex-wrap:wrap}
-.treat{font-family:var(--serif);font-style:italic;font-size:20px;cursor:pointer;padding:6px 14px;border-radius:999px;background:transparent;border:1px solid rgba(48,49,40,.25);color:var(--walnut);transition:background .2s,color .2s,border-color .2s}
-.treat:hover{background:var(--champagne)}
-.treat.active{background:var(--oxblood);color:var(--warm-paper);border-color:transparent}
-
-.src-thumb{position:absolute;left:2%;top:5.3%;width:27.5%;z-index:5;opacity:0;transition:opacity .5s ease}
-.src-thumb img{width:100%;border-radius:4px;display:block;box-shadow:0 6px 18px rgba(0,0,0,.45);border:2px solid rgba(240,234,224,.9)}
-
-.ba{position:absolute;inset:0;display:none;cursor:ew-resize;user-select:none;--pos:50%}
-.stage[data-mode=slider] .ba{display:block}
-.stage[data-mode=slider] .comp{display:none}
-.ba img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
-.ba .before-layer{position:absolute;inset:0;clip-path:inset(0 calc(100% - var(--pos)) 0 0)}
-.ba .ba-tag{position:absolute;top:18px;z-index:6;font-family:var(--serif);font-style:italic;font-size:22px;color:#fff;padding:6px 14px;border-radius:4px;background:#252935}
-.ba .tag-before{left:18px}.ba .tag-after{right:18px}
-.ba .handle{position:absolute;top:0;bottom:0;left:var(--pos);width:3px;background:var(--warm-paper);transform:translateX(-50%);z-index:7;box-shadow:0 0 10px rgba(0,0,0,.4)}
-.ba .grip{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:var(--warm-paper);color:var(--oxblood);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 3px 12px rgba(0,0,0,.35)}
-
-.toggle{position:absolute;left:50%;bottom:32px;transform:translateX(-50%);z-index:8;display:flex;border:1.5px solid rgba(240,234,224,.5);border-radius:999px;padding:4px;background:rgba(18,14,10,.42);backdrop-filter:blur(4px)}
-.toggle button{font-family:var(--serif);font-style:italic;font-size:20px;cursor:pointer;border:none;background:transparent;color:var(--warm-paper);padding:7px 16px;border-radius:999px;transition:background .2s,color .2s}
-.toggle button.active{background:var(--warm-paper);color:var(--oxblood)}
-.replay{position:absolute;left:18px;bottom:22px;z-index:8;font-family:var(--sans);font-size:20px;cursor:pointer;border:none;background:rgba(18,14,10,.42);color:var(--warm-paper);padding:9px 15px;border-radius:999px;backdrop-filter:blur(4px);opacity:0;transition:opacity .4s}
-.stage[data-mode=comp] .replay{opacity:1}
-.expand{position:absolute;right:18px;bottom:22px;z-index:8;cursor:pointer;border:none;background:rgba(18,14,10,.42);color:var(--warm-paper);width:40px;height:40px;border-radius:50%;font-size:20px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.ba-side{position:absolute;left:0;top:0;bottom:0;width:31%;z-index:6;display:none;flex-direction:column;justify-content:center;background:#efe7da;padding:0 6% 0 7%;box-shadow:inset -1px 0 0 rgba(48,49,40,.12)}
-.stage[data-mode=slider] .ba-side{display:flex}
-.stage[data-mode=slider] .ba{left:31%}
-.stage[data-mode=slider] .sstrip{left:65.5%}
-.ba-side .ps-eb{font-family:var(--sans);font-size:20px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--taupe);margin-bottom:24px}
-.ba-side ol{list-style:none;counter-reset:s;margin:0 0 26px}
-.ba-side li{counter-increment:s;position:relative;padding-left:44px;margin-bottom:18px;font-family:var(--serif);font-style:italic;font-size:20px;line-height:1.34;color:var(--walnut)}
-.ba-side li::before{content:counter(s);position:absolute;left:0;top:-1px;width:29px;height:29px;border-radius:50%;background:var(--oxblood);color:var(--warm-paper);font-family:var(--serif);font-style:italic;font-size:20px;display:flex;align-items:center;justify-content:center;line-height:1}
-.ba-side li b{font-weight:600;font-style:italic;color:var(--oxblood)}
-.ba-side .guar{font-family:var(--sans);font-size:20px;font-weight:700;letter-spacing:.02em;color:var(--taupe);display:flex;align-items:center;gap:8px}
-.ba-side .guar .dia{color:var(--oxblood);font-size:20px}
-
-.btn-fill{font-family:var(--serif);font-style:italic;font-size:30px;cursor:pointer;padding:16px 38px;border-radius:5px;border:none;background:var(--oxblood);color:var(--warm-paper);box-shadow:0 3px 14px rgba(48,49,40,.2);transition:background .15s,transform .15s}
-.btn-fill:hover{background:var(--oxblood-deep);transform:translateY(-1px)}
-.btn-ghost{font-family:var(--serif);font-style:italic;font-size:27px;cursor:pointer;padding:14px 30px;border-radius:5px;background:transparent;color:var(--oxblood);border:1.5px solid var(--oxblood);transition:background .15s,color .15s}
-.btn-ghost:hover{background:var(--oxblood);color:var(--warm-paper)}
-
-.b2-mobile{display:none}
-.b2m-source{width:64%;margin:16px 0 0}
-.b2m-source img{width:100%;border-radius:5px;display:block;box-shadow:0 6px 18px rgba(48,49,40,.18)}
-.b2m-source .cap{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--taupe);margin-top:7px}
-.b2m-card{position:relative;background:#efe7da;border-radius:5px;padding:24px 22px 22px 64px;margin-top:18px;box-shadow:inset 0 0 0 1px rgba(48,49,40,.06)}
-.b2m-card .cur-foot{opacity:1;margin-top:16px}
-
-.lightbox{position:fixed;inset:0;z-index:200;background:rgba(15,11,9,.94);display:none;flex-direction:column}
-.lightbox.open{display:flex}
-.lb-bar{flex:0 0 auto;display:flex;justify-content:flex-end;padding:14px 18px}
-.lb-close{cursor:pointer;border:none;background:rgba(240,234,224,.14);color:var(--warm-paper);width:42px;height:42px;border-radius:50%;font-size:22px}
-.lb-scroll{flex:1;overflow:auto;display:flex;align-items:center}
-.lb-scroll img{height:88vh;max-height:88vh;width:auto;display:block;margin:auto}
-.lb-hint{flex:0 0 auto;text-align:center;color:rgba(240,234,224,.6);font-family:var(--sans);font-size:20px;letter-spacing:.1em;padding:8px 0 16px}
-
-@media (max-width:760px){
-  .topbar{padding:0 18px}
-  .tabs{display:none}
-  .band{padding:28px 16px 56px}
-  .band.hero-band{padding:18px 16px 48px}
-  .hero-head h1{font-size:39px;line-height:1.08}
-  .hero-sub{font-size:34px;margin-bottom:16px}
-  .band-head h2{font-size:35px;line-height:1.08}
-  .band-head p{font-size:31px}
-  .stage{aspect-ratio:16/9;box-shadow:0 0 0 4px var(--stroke-sel),0 10px 30px rgba(48,49,40,.22)}
-  .cur-overlay,.src-thumb,.replay{display:none}
-  .output-stack{opacity:1!important}
-  .layer.source{display:none}
-  .sstrip{top:10px}
-  .sstrip button{font-size:20px;padding:5px 11px}
-  .toggle{bottom:10px}.toggle button{font-size:20px;padding:6px 12px;white-space:nowrap}
-  .expand{width:36px;height:36px;font-size:20px;bottom:12px;right:12px}
-  .ba-side{display:none!important}
-  .stage[data-mode=slider] .ba{left:0}
-  .stage[data-mode=slider] .sstrip{left:50%}
-  .b2-mobile{display:block}
-  .b2m-card .cur-text{font-size:21px}
-  .btn-fill{font-size:26px;padding:14px 30px}.btn-ghost{font-size:29px;padding:12px 24px}
+/* ── product cards sized to hold framed art ─────────────── */
+.cat{display:grid;grid-template-columns:repeat(12,1fr);gap:32px;align-items:start}
+.pc{border-radius:var(--r-panel);transition:transform .3s}
+.pc:hover{transform:translateY(-5px)}
+.pc .stage{padding:34px 34px 26px;display:flex;justify-content:center;
+  background:radial-gradient(520px 260px at 50% 0%, rgba(182,138,83,.18), transparent 72%)}
+.pc .stage > .frame{width:100%;max-width:520px}
+.pc .body{padding:6px 34px 34px}
+.pc .kick{font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--brass)}
+.pc h3{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.1;margin-top:8px}
+.pc p{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink-soft);margin-top:12px}
+.pc .spec{font-family:var(--sans);font-size:13px;letter-spacing:.05em;color:var(--ink-faint);margin-top:16px}
+.sizes{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+.sz{border:1px solid rgba(183,135,65,.42);border-radius:var(--r-pill);padding:.42rem .95rem;
+  background:rgba(251,246,239,.72);text-align:center;line-height:1.15}
+.sz b{display:block;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--ink-faint)}
+.sz i{display:block;font-family:var(--serif);font-style:normal;font-size:22px;color:var(--oxblood);margin-top:2px}
+.sz.lead{border-color:rgba(125,66,66,.5);background:rgba(125,66,66,.07)}
+.incl{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--ink-faint);margin-top:14px}
+.pc .price{font-family:var(--serif);font-size:27px;color:var(--oxblood);margin-top:16px}
+.pc .price small{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--ink-faint);margin-left:8px}
+.pc.w7{grid-column:span 7}
+.pc.w5{grid-column:span 5}
+.pc.w4{grid-column:span 4}
+.pc.w4 h3{font-size:30px}
+.pc.w4 .stage{padding:26px 26px 20px}
+.pc.w4 .body{padding:4px 26px 28px}
+.pc.w12{grid-column:span 12}
+.pc.split{display:grid;grid-template-columns:1.02fr .98fr;gap:0}
+.pc.split .stage{padding:44px 40px}
+.pc.split .body{padding:48px 52px 48px 8px;display:flex;flex-direction:column;justify-content:center}
+.pc.split h3{font-size:46px}
+.pc.split p{font-size:24px;max-width:40ch}
+@media (max-width:1080px){
+  .proof{grid-template-columns:1fr;gap:36px;padding:34px}
+  .pc.w7,.pc.w5,.pc.split{grid-column:span 12}
+  .pc.w4{grid-column:span 6}
+  .pc.split{grid-template-columns:1fr}
+  .pc.split .body{padding:8px 34px 36px}
+}
+@media (max-width:680px){ .pc.w4{grid-column:span 12} }
+:root{
+  /* The ground textures live on disk, same files the workshop uses. */
+  --tex-limestone:url("/textures/limestone.jpg");
+  --tex-leather:url("/textures/coffee_leather.jpg");
+  --tex-noise:none;
 }
 
-/* ===== MAGAZINE CONSISTENCY: one measure, one rhythm ===== */
-.band,.g-band,.bun-band{max-width:1680px;margin:0 auto;padding:72px 40px}
-.stage{max-width:100%}
-.gal,.bun-grid{max-width:100%}
-.band-head,.g-head{margin-bottom:30px}
-.band-head h2,.g-head h2{font-size:52px;line-height:1.05}
-.divider{border:none;height:2px;background:var(--oxblood);margin:0 0 24px}
-@media (max-width:760px){
-  .band,.g-band,.bun-band{padding:48px 16px}
-  .band-head h2,.g-head h2{font-size:36px}
-}
+/* ── THE ART ──────────────────────────────────────────────────────────
+   Files on disk, not baked into this page. Re-shoot a plate and drop it
+   in public/previews/home/ — nothing here changes. */
+.i-hero1{background-image:url(/previews/home/hero-1.jpg)}
+.i-hero2{background-image:url(/previews/home/hero-2.jpg)}
+.i-hero3{background-image:url(/previews/home/hero-3.jpg)}
+.i-hero4{background-image:url(/previews/home/hero-4.jpg)}
+.i-hero5{background-image:url(/previews/home/hero-5.jpg)}
 
-/* shared band head */
-.eyebrow{font-family:var(--sans);font-size:26px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--taupe);margin-bottom:12px}
-.g-band{max-width:1760px;margin:0 auto;padding:40px 24px}
-.g-head{text-align:center;margin-bottom:18px}
-.g-head h2{font-family:var(--serif);font-style:italic;font-weight:500;font-size:52px;line-height:1.04;color:var(--oxblood);margin-bottom:8px}
-.g-head p{font-family:var(--serif);font-style:italic;font-size:27px;color:var(--walnut)}
-.gal{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:300px;gap:8px;grid-auto-flow:dense}
-.gtile{position:relative;border-radius:6px;overflow:hidden;cursor:pointer;background:var(--champagne);box-shadow:0 6px 20px rgba(48,49,40,.14)}
-.gtile.big{grid-column:span 2;grid-row:span 2}
-.gtile.std{grid-column:span 1;grid-row:span 1}
-.gal.trio{grid-template-columns:repeat(3,1fr);grid-auto-rows:380px}
-.gal.trio .gtile.big,.gal.trio .gtile.std{grid-column:span 1;grid-row:span 1}
-.gal.trio .gtile .gcap h3{font-size:2.4rem}
-.gtile img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}
-.gtile:hover img{transform:scale(1.05)}
-.gcap{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:64px 22px 16px;color:#fff;background:linear-gradient(transparent,#252935)}
-.gcap h3{font-family:var(--serif);font-style:italic;font-weight:500;font-size:2.4rem;line-height:1.05;color:#fff}
-.gtile.big .gcap h3{font-size:2.4rem}
-.gstep{display:inline-block;text-decoration:none;font-family:var(--serif);font-style:italic;font-size:27px;line-height:1;cursor:pointer;border:none;border-radius:5px;background:rgba(240,234,224,.95);color:var(--oxblood);padding:9px 18px;margin-top:14px;opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s,background .15s;pointer-events:none}
-.gtile:hover .gstep{opacity:1;transform:translateY(0);pointer-events:auto}
-.gtile.is-ph{background:linear-gradient(135deg,var(--champagne),var(--vellum))}
-.ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-.ph-eb{font-family:var(--sans);font-size:26px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,234,224,.92);background:rgba(48,49,40,.28);padding:7px 14px;border-radius:999px}
-.gtile.is-ph .gcap{background:linear-gradient(transparent,#252935)}
+.i-w-another-age{background-image:url(/previews/home/world-another-age.jpg)}
+.i-w-earth-ore{background-image:url(/previews/home/world-earth-ore.jpg)}
+.i-w-light-glass{background-image:url(/previews/home/world-light-glass.jpg)}
+.i-w-living-world{background-image:url(/previews/home/world-living-world.jpg)}
+.i-w-made-by-hand{background-image:url(/previews/home/world-made-by-hand.jpg)}
+.i-w-ink-paper{background-image:url(/previews/home/world-ink-paper.jpg)}
+.i-w-fantasy-future{background-image:url(/previews/home/world-fantasy-future.jpg)}
+.i-w-artists-gallery{background-image:url(/previews/home/world-artists-gallery.jpg)}
 
-/* ===== RESOLUTION COMPS — 1660 (base) · 1920 · 2550 ===== */
-/* base above already tuned for ~1660: measure 1760, rows 400/500 → near-square */
-@media (min-width:1820px){            /* 1920 comp */
-  .g-band{max-width:1840px;padding:44px 28px}
-  .gal{grid-auto-rows:340px;gap:10px}
-  .gal.trio{grid-auto-rows:430px}
-  .g-head h2{font-size:57px}
-}
-@media (min-width:2200px){            /* 2550 comp — bigger measure + type so it fills, not islands */
-  .g-band{max-width:2280px;padding:56px 32px}
-  .gal{grid-auto-rows:440px;gap:12px}
-  .gal.trio{grid-auto-rows:560px}
-  .g-head{margin-bottom:24px}
-  .g-head h2{font-size:70px}.g-head p{font-size:34px}
-  .eyebrow{font-size:26px}
-  .gcap h3,.gtile.big .gcap h3,.gal.trio .gtile .gcap h3{font-size:3rem}
-}
-
-
-/* bundles */
-.bun-band{max-width:1680px;margin:0 auto;padding:72px 40px}
-.bun-grid{display:grid;grid-template-columns:1fr 1fr;gap:34px}
-.bun-card{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 10px 34px rgba(48,49,40,.16);display:flex;flex-direction:column}
-.bun-hero{position:relative;aspect-ratio:16/9;overflow:hidden}.bun-hero .xf-slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 900ms ease-in-out}.bun-hero .xf-slide.show{opacity:1}
-.bun-hero img{width:100%;height:100%;object-fit:cover;display:block}
-.bun-badge{position:absolute;top:16px;left:16px;font-family:var(--sans);font-size:26px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--warm-paper);background:var(--oxblood);padding:7px 14px;border-radius:999px}
-.bun-body{padding:28px 30px 30px;display:flex;flex-direction:column;flex:1}
-.bun-body h3{font-family:var(--serif);font-style:italic;font-weight:500;font-size:44px;color:var(--oxblood);line-height:1.02;margin-bottom:8px}
-.bun-sub{font-family:var(--serif);font-style:italic;font-size:27px;color:var(--walnut);margin-bottom:18px}
-.bun-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-.bchip{font-family:var(--serif);font-style:italic;font-size:26px;color:var(--walnut);border:1px solid rgba(48,49,40,.22);border-radius:999px;padding:5px 13px}
-.bun-note{font-family:var(--sans);font-size:26px;font-weight:600;letter-spacing:.02em;color:var(--taupe);margin-bottom:20px}
-.bun-buy{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.bun-price{display:flex;align-items:baseline;gap:12px}
-.bun-price .amt{font-family:var(--serif);font-size:44px;font-weight:600;color:var(--walnut);line-height:1}
-.bun-price .pct{font-family:var(--sans);font-size:26px;font-weight:700;letter-spacing:.04em;color:var(--warm-paper);background:var(--taupe);padding:5px 11px;border-radius:999px}
-
-@media (max-width:760px){
-  .g-band{padding:28px 12px 14px}
-  .g-head h2{font-size:39px}.g-head p{font-size:29px}
-  .gal{grid-template-columns:1fr 1fr;grid-auto-rows:220px;gap:8px}
-  .gal.trio{grid-template-columns:1fr 1fr;grid-auto-rows:220px}
-  .gtile.big{grid-column:span 2;grid-row:span 2}.gtile.std{grid-column:span 1;grid-row:span 1}
-  .gcap{padding:48px 16px 14px}.gcap h3,.gtile.big .gcap h3{font-size:1.9rem}
-  .gstep{opacity:1;transform:none;pointer-events:auto;font-size:27px;padding:7px 13px;margin-top:10px}
-  .bun-band{padding:40px 16px 64px}
-  .bun-grid{grid-template-columns:1fr;gap:24px}
-  .bun-body h3{font-size:36px}.bun-sub{font-size:29px}
-}
-
-
-/* ===== FOOTER ===== */
-.site-footer{background:#2a241e;color:#e8dfce;padding:56px 40px 40px;margin-top:8px}
-.foot-inner{max-width:1760px;margin:0 auto;display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;align-items:flex-start;border-bottom:1px solid rgba(232,223,206,.18);padding-bottom:30px}
-.foot-brand{display:flex;flex-direction:column;gap:12px;max-width:560px}
-.foot-brand .row{display:flex;align-items:center;gap:14px}
-.foot-logo{height:46px;filter:brightness(0) invert(1);opacity:.92}
-.foot-brand .wm{font-family:var(--serif);font-style:italic;font-size:29px;color:#f3ede1}
-.foot-tag{font-family:var(--serif);font-style:italic;font-size:22px;color:#c9bfa9;line-height:1.4}
-.foot-links{display:flex;gap:30px;flex-wrap:wrap}
-.foot-links a{font-family:var(--serif);font-style:italic;font-size:22px;color:#e8dfce;text-decoration:none;cursor:pointer;transition:color .15s}
-.foot-links a:hover{color:#fff}
-.foot-legal{max-width:1760px;margin:24px auto 0;display:flex;flex-direction:column;gap:12px}
-.foot-legal p{font-family:var(--sans);font-size:1.2rem;line-height:1.55;color:#b7ab93;letter-spacing:.01em}
-.foot-legal strong{color:#e8dfce;font-weight:700}
-.foot-copy{font-family:var(--sans);font-size:1.2rem;color:#8f846d;margin-top:4px}
-
-.foot-social{display:flex;gap:13px;margin-top:6px}
-.foot-social a{width:42px;height:42px;border-radius:50%;border:1px solid rgba(232,223,206,.28);display:flex;align-items:center;justify-content:center;color:#e8dfce;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
-.foot-social a:hover{border-color:#e8dfce;color:#fff;background:rgba(232,223,206,.08)}
-.foot-social svg{width:21px;height:21px}
-.foot-links{flex-direction:column;align-items:flex-end}
-.foot-mail{font-family:var(--sans) !important;font-size:1.2rem !important;color:#9c9078 !important;margin-top:6px}
+.i-g-proof{background-image:url(/previews/home/gift-proof.jpg)}
+.i-g-framed-canvas{background-image:url(/previews/home/gift-framed-canvas.jpg)}
+.i-g-classic-frame{background-image:url(/previews/home/gift-classic-frame.jpg)}
+.i-g-canvas{background-image:url(/previews/home/gift-canvas.jpg)}
+.i-g-mounted-frame{background-image:url(/previews/home/gift-mounted-frame.jpg)}
+.i-g-archive-print{background-image:url(/previews/home/gift-archive-print.jpg)}
+.i-g-three-ages{background-image:url(/previews/home/gift-three-ages.jpg)}
 </style></head><body>
+<div class="ground"></div>
+<div class="stage">
 
-<header class="topbar">
-  <a class="brand" href="#"><img class="logo" src="/homepage/liten-and-co.png" alt="Liten & Co"><span class="wordmark">Crafted Portraits</span></a>
-  <nav class="tabs"><button class="tab">My Collection</button><button class="tab">Sets</button><button class="tab">Print Shop</button></nav>
-</header>
+<header><div class="wrap hdr">
+  <div class="mark">Liten &amp; Co<small>AI Portrait Studio</small></div>
+  <nav>
+    <a class="navlink" href="/gallery">The Finishes</a>
+    <a class="navlink" href="#gift">The Gift</a>
+    <a class="navlink" href="/help">Help</a>
+    <a class="pill pill-ghost" href="/">Enter the studio</a>
+  </nav>
+</div></header>
 
-<section class="band hero-band">
-  <div class="hero-head">
-    <h1>We turn your photographs into Crafted Images.</h1>
-    <p class="hero-sub">A photograph goes in. A piece worth keeping comes back.</p>
-    <div class="hero-ctas2"><button class="btn-fill">Upload Your Photo</button><button class="btn-ghost">Start with the Curator</button></div>
-  </div>
-
-  <div class="stage" id="stage" data-mode="comp">
-    <div class="comp">
-      <img class="layer source" id="srcLayer" alt="Your photograph">
-      <div class="output-stack" id="outStack">
-        <img data-out="groups:mixed" class="active" src="/homepage/groups-mixed-metals.jpg" alt="Groups — Mixed Metals">
-        <img data-out="groups:bronze" src="/homepage/groups-aged-bronze.jpg" alt="Groups — Aged Bronze">
-        <img data-out="groups:wood" src="/homepage/groups-carved-wood.jpg" alt="Groups — Carved Wood">
-        <img data-out="groups:alabaster" src="/homepage/groups-alabaster.jpg" alt="Groups — Alabaster">
-        <img data-out="portrait:impressionist" src="/homepage/portrait-impressionist.jpg" alt="Portrait — Impressionist">
-        <img data-out="houses:fall" src="/homepage/houses-fall.jpg" alt="Houses — Fall">
-        <img data-out="action:ceramic" src="/homepage/action-ceramic.jpg" alt="Action — Ceramic">
+<!-- ═══ FOLD 1 · MONTAGE ═══ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="label">The Studio</div>
+      <h1>Photographs, <em>reimagined.</em><br>A likeness, recrafted.</h1>
+      <p class="lede">Fifty-six finishes across eight worlds. The same face in bronze, in glass, in oil &mdash; or in another century entirely.</p>
+      <div class="curator">
+        <p>&ldquo;Bring me a portrait and I&rsquo;ll choose the finishes myself. Nothing is spent until you say craft.&rdquo;</p>
+        <div class="sig">&mdash; C.</div>
       </div>
-      <div class="cur-overlay" id="curOverlay">
-        <div class="c-seal">C</div>
-        <p class="cur-text" id="curText"></p>
-        <div class="cur-foot" id="curFoot"></div>
+      <div class="cta-row">
+        <a class="pill pill-solid" href="/">Begin a portrait</a>
+        <a class="pill pill-ghost" href="/gallery">See every finish</a>
       </div>
-      <div class="src-thumb" id="srcThumb"><img id="srcThumbImg" alt="Your photograph"></div>
     </div>
-
-    <div class="ba" id="ba">
-      <img class="after-img" id="baAfter" alt="Crafted Image">
-      <div class="before-layer"><img id="baBefore" alt="Your photograph"></div>
-      <span class="ba-tag tag-before">Your Photograph</span>
-      <span class="ba-tag tag-after">Crafted Image</span>
-      <div class="handle"><span class="grip">&#8596;</span></div>
+    <div class="montage">
+      <div class="mo m1 big"><div class="ph i-hero1"></div><div class="tag"><div class="w">Another Age</div><div class="n">Renaissance</div></div></div>
+      <div class="mo m2"><div class="ph i-hero2"></div><div class="tag"><div class="w">The Living World</div><div class="n">Petal Sculpture</div></div></div>
+      <div class="mo m3"><div class="ph i-hero3"></div><div class="tag"><div class="w">Another Age</div><div class="n">Victorian</div></div></div>
+      <div class="mo m4"><div class="ph i-hero4"></div><div class="tag"><div class="w">Earth &amp; Ore</div><div class="n">Bronze</div></div></div>
+      <div class="mo m5"><div class="ph i-hero5"></div><div class="tag"><div class="w">Light &amp; Glass</div><div class="n">Stained Glass</div></div></div>
+      <div class="hero-count">&hellip;and fifty-one more.</div>
     </div>
-    <div class="ba-side">
-      <div class="ps-eb">How the studio works</div>
-      <ol>
-        <li><b>The Curator reads your photograph</b> and proposes the treatment that suits the moment.</li>
-        <li><b>The studio crafts it</b> in the material you choose, composed piece by piece.</li>
-        <li><b>You approve the likeness</b> &mdash; and we re-craft it, free, until it&rsquo;s right.</li>
-      </ol>
-      <div class="guar"><span class="dia">&#9670;</span> Likeness Guaranteed</div>
-    </div>
-
-    <div class="sstrip" id="sstrip">
-      <button class="active">Groups</button><button>Portrait</button><button>Houses</button><button>Action</button>
-    </div>
-    <button class="replay" id="replay">&#8635; Replay</button>
-    <button class="expand" id="expand" title="View larger">&#10530;</button>
-    <div class="toggle"><button class="active" data-view="comp">Curator Composition</button><button data-view="slider">Before / After</button></div>
-  </div>
-
-  <div class="b2-mobile">
-    <div class="b2m-card">
-      <div class="c-seal">C</div>
-      <div class="cur-text" id="b2mText"></div>
-      <div class="cur-foot" id="b2mFoot"></div>
-    </div>
-    <div class="b2m-source"><img id="b2mSrcImg" alt="Your photograph"><div class="cap">Your Photograph</div></div>
   </div>
 </section>
 
-
-<section class="g-band">
-  <hr class="divider">
-  <div class="g-head"><div class="eyebrow">Explore the Galleries</div>
-    <h2>Places &amp; People</h2><p>Where a story is set &mdash; and the people and creatures who matter.</p></div>
-  <div class="gal"><div class="gtile big"><img src="/homepage/houses.jpg" alt="Houses"><div class="gcap"><h3>Houses</h3><button class="gstep">Step Inside Houses &rsaquo;</button></div></div>
-    <div class="gtile std"><img src="/homepage/landscapes.jpg" alt="Landscapes"><div class="gcap"><h3>Landscapes</h3><button class="gstep">Step Inside Landscapes &rsaquo;</button></div></div>
-    <div class="gtile std"><img src="/homepage/portrait.jpg" alt="Portrait"><div class="gcap"><h3>Portrait</h3><a class="gstep" href="/portraits">Step Inside Portrait &rsaquo;</a></div></div>
-    <div class="gtile std"><img src="/homepage/groups.jpg" alt="Groups"><div class="gcap"><h3>Groups</h3><button class="gstep">Step Inside Groups &rsaquo;</button></div></div>
-    <div class="gtile std is-ph"><div class="ph"><span class="ph-eb">Sample coming</span></div><div class="gcap"><h3>Pets</h3><button class="gstep">Step Inside Pets &rsaquo;</button></div></div></div>
+<!-- ═══ FOLD 2 · EIGHT WORLDS ═══ -->
+<section class="worlds s-coffee" id="worlds">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="label lt">Eight worlds &middot; fifty-six finishes</div>
+      <h2>Every finish belongs to <em>a world.</em></h2>
+      <p>Materials, eras, and ways of making. Choose a world and I&rsquo;ll show you what your photograph becomes inside it.</p>
+    </div>
+    <div class="wgrid">
+      <a class="world" href="/gallery"><div class="ph i-w-another-age"></div><div class="body"><div class="n">Another Age</div>
+          <div class="fin">Elizabethan · Renaissance · Victorian · Samurai · Wild West</div><div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/gallery"><div class="ph i-w-earth-ore"></div><div class="body"><div class="n">Earth &amp; Ore</div>
+          <div class="fin">Bronze · Stone · Jade · Iron · Ebony · Polished Gold</div><div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/gallery"><div class="ph i-w-light-glass"></div><div class="body"><div class="n">Light &amp; Glass</div>
+          <div class="fin">Stained Glass · Cast Glass · Ice · Mercury · Sea Glass</div><div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/gallery"><div class="ph i-w-living-world"></div><div class="body"><div class="n">The Living World</div>
+          <div class="fin">Coral · Petal Sculpture · Driftwood &amp; Resin · Tidewood</div><div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/gallery"><div class="ph i-w-made-by-hand"></div><div class="body"><div class="n">Made by Hand</div>
+          <div class="fin">Quilted · Beaded · Origami · Folded Book · Plushy</div><div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/gallery"><div class="ph i-w-ink-paper"></div><div class="body"><div class="n">Ink &amp; Paper</div>
+          <div class="fin">Pencil · Charcoal · Linocut · Watercolour · Daguerreotype</div><div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/gallery"><div class="ph i-w-fantasy-future"></div><div class="body"><div class="n">Fantasy &amp; Future</div>
+          <div class="fin">Clockwork · Retro Robot · Dragon Skin · Starfield</div><div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/gallery"><div class="ph i-w-artists-gallery"></div><div class="body"><div class="n">The Artists Gallery</div>
+          <div class="fin">Impressionist · Cubism · Art Nouveau · Ukiyo-e · Impasto</div><div class="cnt">7 finishes</div></div></a>
+    </div>
+    <div class="w-foot">
+      <p>&ldquo;Most people arrive certain, and leave with something they didn&rsquo;t expect.&rdquo; &mdash; C.</p>
+      <a class="pill pill-light" href="/">Enter the studio</a>
+    </div>
+  </div>
 </section>
-<section class="g-band">
-  <hr class="divider">
-  <div class="g-head"><div class="eyebrow">Explore the Galleries</div>
-    <h2>Motion &amp; Material</h2><p>Where the studio gets playful.</p></div>
-  <div class="gal trio"><div class="gtile big"><img src="/homepage/action.jpg" alt="Action"><div class="gcap"><h3>Action</h3><button class="gstep">Step Inside Action &rsaquo;</button></div></div>
-    <div class="gtile std"><img src="/homepage/the-artist-series.jpg" alt="The Artist Series"><div class="gcap"><h3>The Artist Series</h3><button class="gstep">Step Inside The Artist Series &rsaquo;</button></div></div>
-    <div class="gtile std is-ph"><div class="ph"><span class="ph-eb">Sample coming</span></div><div class="gcap"><h3>For Fun</h3><button class="gstep">Step Inside For Fun &rsaquo;</button></div></div></div>
+
+<!-- ═══ FOLD 3 · THE GIFT, PART ONE ═══ -->
+<section class="gift s-vellum" id="gift">
+  <div class="wrap">
+    <div class="gift-head">
+      <div>
+        <div class="soon"><i></i> The Gift Collection &middot; Coming soon</div>
+        <h2>A gift they&rsquo;ll keep <em>on the wall.</em></h2>
+      </div>
+      <p class="lede">This winter the studio makes objects, not files. Framed, glazed and sent to the door &mdash; with the crafting included, and all the time you need to get the likeness right.</p>
+    </div>
+
+    <!-- the one thing the page must be unmistakable about -->
+    <div class="proof s-ivory">
+      <div>
+        <h3>Every piece is <em>a picture.</em></h3>
+        <p>It may look carved from walnut, cast in bronze or cut from coloured glass. It is none of those things. It is a printed image &mdash; ink on fine art paper or canvas, matted, framed behind glaze, and hung on a wall like any other picture in the house.</p>
+        <div class="facts">
+          <span>Printed, not carved</span><span>Flat &middot; behind glaze</span><span>Ready to hang</span>
+        </div>
+      </div>
+      <div class="frame"><div class="mat"><div class="art wide i-g-proof"></div></div></div>
+    </div>
+
+    <div class="rule"><b>The Collection</b><span></span></div>
+
+    <div class="cat">
+      <div class="pc w7 s-ivory">
+        <div class="stage"><div class="frame"><div class="mat"><div class="art wide i-g-framed-canvas"></div></div></div></div>
+        <div class="body">
+          <div class="kick">Canvas in a solid frame</div>
+          <h3>Alabaster</h3>
+          <p>Pale stone, lit from the side. Reads as a painting rather than a print &mdash; the right home for the material finishes, where glass would only get in the way.</p>
+          <div class="sizes"><div class="sz lead"><b>12&Prime;</b><i>$97</i></div><div class="sz"><b>16&Prime;</b><i>$115</i></div><div class="sz"><b>20&Prime;</b><i>$142</i></div></div><div class="incl">Crafting and delivery included.</div>
+        </div>
+      </div>
+
+      <div class="pc w5 s-ivory">
+        <div class="stage"><div class="frame dk"><div class="mat"><div class="art tall i-g-classic-frame"></div></div></div></div>
+        <div class="body">
+          <div class="kick">Framed behind glaze</div>
+          <h3>Bronze</h3>
+          <p>A whole family cast in one piece. Framed, glazed and ready to hang the moment the paper comes off &mdash; the one most people give.</p>
+          <div class="sizes"><div class="sz lead"><b>12&Prime;</b><i>$94</i></div><div class="sz"><b>16&Prime;</b><i>$105</i></div><div class="sz"><b>20&Prime;</b><i>$115</i></div></div><div class="incl">Crafting and delivery included.</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<section class="bun-band">
-  <hr class="divider">
-  <div class="g-head"><div class="eyebrow">Studio Bundles</div>
-    <h2>Sets Worth Keeping</h2><p>One moment, crafted many ways &mdash; kept as a set.</p></div>
-  <div class="bun-grid">
+<!-- ═══ FOLD 4 · THE GIFT, PART TWO ═══ -->
+<section class="gift2 s-limestone">
+  <div class="wrap">
+    <div class="cat">
+      <div class="pc w4 s-ivory">
+        <div class="stage"><div class="frame"><div class="mat"><div class="art sq i-g-canvas"></div></div></div></div>
+        <div class="body">
+          <div class="kick">Stretched canvas, ready to hang</div>
+          <h3>Driftwood &amp; Resin</h3>
+          <p>Grain and amber, held together. No glass, no frame, nothing left to decide &mdash; the safest gift here.</p>
+          <div class="sizes"><div class="sz lead"><b>12&Prime;</b><i>$73</i></div><div class="sz"><b>16&Prime;</b><i>$85</i></div><div class="sz"><b>20&Prime;</b><i>$99</i></div></div><div class="incl">Crafting and delivery included.</div>
+        </div>
+      </div>
 
-    <div class="bun-card">
-      <div class="bun-hero"><img class="xf-slide show" src="/previews/portraits/impressionist/1.jpg" alt="Impressionist"><img class="xf-slide" src="/previews/portraits/torn_paper/1.jpg" alt="Torn Paper"><img class="xf-slide" src="/previews/portraits/folded_book/1.jpg" alt="Folded Book"><img class="xf-slide" src="/previews/portraits/charcoal_chalk/1.jpg" alt="Charcoal"><img class="xf-slide" src="/previews/portraits/pencil_sketch/1.jpg" alt="Pencil Sketch"><img class="xf-slide" src="/previews/portraits/sheet_music/1.jpg" alt="Sheet Music"><span class="bun-badge">Premium</span></div>
-      <div class="bun-body">
-        <h3>The Artist Portrait</h3>
-        <p class="bun-sub">One face, crafted seven ways by the studio &mdash; The Artist Series.</p>
-        
-        <div class="bun-note">&#9670; Higher likeness bar &mdash; Likeness Guaranteed</div>
-        <div class="bun-buy">
-          <div class="bun-price"><span class="amt">$25.99</span></div>
-          <button class="btn-fill">Craft This Set</button>
+      <div class="pc w4 s-ivory">
+        <div class="stage"><div class="frame"><div class="mat"><div class="art sq i-g-mounted-frame"></div></div></div></div>
+        <div class="body">
+          <div class="kick">Framed with a wide mount</div>
+          <h3>Plushy</h3>
+          <p>Soft-sewn and seamed, sat behind glass. A wide mount and a quiet frame &mdash; the most formal thing we make, holding the least formal thing we craft.</p>
+          <div class="sizes"><div class="sz lead"><b>12&Prime;</b><i>$103</i></div><div class="sz"><b>16&Prime;</b><i>$112</i></div><div class="sz"><b>20&Prime;</b><i>$125</i></div></div><div class="incl">Crafting and delivery included.</div>
+        </div>
+      </div>
+
+      <div class="pc w4 s-ivory">
+        <div class="stage"><div class="frame"><div class="mat"><div class="art tall i-g-archive-print"></div></div></div></div>
+        <div class="body">
+          <div class="kick">Heavyweight paper, sent flat</div>
+          <h3>Mosaic</h3>
+          <p>Set in tesserae, one small square at a time. Sent flat and unframed, for someone with strong opinions about frames.</p>
+          <div class="sizes"><div class="sz lead"><b>12&Prime;</b><i>$29</i></div><div class="sz"><b>16&Prime;</b><i>$31</i></div><div class="sz"><b>20&Prime;</b><i>$34</i></div></div><div class="incl">Crafting and delivery included.</div>
+        </div>
+      </div>
+
+      <div class="pc w12 split s-ivory">
+        <div class="stage"><div class="frame dk"><div class="mat"><div class="art tall i-g-three-ages"></div></div></div></div>
+        <div class="body">
+          <div class="kick">Three framed panels &middot; hung together</div>
+          <h3>Me, Myself and I</h3>
+          <p>The boy, the man, the old man &mdash; the same person, three times, side by side on one wall. One photograph is all I need; I find the other two.</p>
+          <p>Three panels is not three pictures. It is one piece with a beginning, a middle and an end, and it is the only thing here that can hold a whole life.</p>
+          <div class="spec">Three framed panels, matched and ready to hang</div>
+<div class="sizes"><div class="sz lead"><b>12&Prime;</b><i>$241</i></div><div class="sz"><b>16&Prime;</b><i>$277</i></div><div class="sz"><b>20&Prime;</b><i>$304</i></div></div><div class="incl">Crafting and delivery included.</div>
+          <div class="incl">Three panels, each at the size chosen.</div>
         </div>
       </div>
     </div>
 
-    <div class="bun-card">
-      <div class="bun-hero"><img class="xf-slide show" src="/homepage/groups-mixed-metals.jpg" alt="Groups — Mixed Metals"><img class="xf-slide" src="/homepage/groups-aged-bronze.jpg" alt="Groups — Aged Bronze"><img class="xf-slide" src="/homepage/groups-carved-wood.jpg" alt="Groups — Carved Wood"><img class="xf-slide" src="/homepage/groups-alabaster.jpg" alt="Groups — Alabaster"></div>
-      <div class="bun-body">
-        <h3>Groups in Material</h3>
-        <p class="bun-sub">Your people, crafted in seven materials.</p>
-        
-        <div class="bun-note" style="visibility:hidden">spacer</div>
-        <div class="bun-buy">
-          <div class="bun-price"><span class="amt">$24.59</span></div>
-          <button class="btn-fill">Craft This Set</button>
-        </div>
-      </div>
+    <div class="gift-cta">
+      <a class="pill pill-solid" href="#">Tell me when it opens</a>
+      <span class="gift-note">Order by 10 December for Christmas delivery.</span>
     </div>
-
   </div>
 </section>
 
-<div class="lightbox" id="lightbox">
-  <div class="lb-bar"><button class="lb-close" id="lbClose">&times;</button></div>
-  <div class="lb-scroll"><img id="lbImg" src="" alt="Crafted Image, full view"></div>
-  <div class="lb-hint">Scroll to pan across the full piece</div>
+<footer class="s-coffee"><div class="wrap">
+  <div class="f-row">
+    <div class="mark">Liten &amp; Co<small>AI Portrait Studio</small></div>
+    <nav><a href="/gallery">The Finishes</a><a href="#gift">The Gift</a>
+      <a href="/help">Help</a><a href="/">The Workshop</a></nav>
+  </div>
+  <div class="fine">Every Crafted Image is a printed picture &mdash; ink on paper or canvas, framed and glazed. Nothing is carved, cast or moulded. Prints are made to order and shipped from our fulfilment studio.</div>
+</div></footer>
+
 </div>
-
-<script>
-var isMobile = window.matchMedia('(max-width:760px)').matches;
-
-var IMGS={
- groups:{srcW:'/homepage/stage-groups.jpg',srcS:'/homepage/source-groups.jpg'},
- portrait:{srcW:'/homepage/stage-portrait.jpg',srcS:'/homepage/source-portrait.jpg'},
- houses:{srcW:'/homepage/stage-houses.jpg',srcS:'/homepage/source-houses.jpg'},
- action:{srcW:'/homepage/stage-action.jpg',srcS:'/homepage/source-action.jpg'}
-};
-var EX=[
- {key:'groups',label:'Groups',
-  seg:[{t:"Three generations in one room, all gathered",hl:true},
-       {t:" \u2014 a family photograph that asks to be kept. ",hl:false},
-       {t:"Mixed Metals gives each person their own patina",hl:true},
-       {t:", the elders settling into bronze and verdigris while the younger generations catch brighter copper and brass.",hl:false}],
-  outs:['mixed','bronze','wood','alabaster'],
-  names:{mixed:'Mixed Metals',bronze:'Aged Bronze',wood:'Carved Wood',alabaster:'Alabaster'},
-  footLabel:'Suggested treatment'},
- {key:'portrait',label:'Portrait',
-  seg:[{t:"A lifetime gathered in one gaze",hl:true},
-       {t:" \u2014 the Impressionist treatment keeps every line honest, built up in ",hl:false},
-       {t:"thick strokes of living oil",hl:true},{t:".",hl:false}],
-  outs:['impressionist'],names:{impressionist:'Impressionist Paint'},footLabel:'Artist Bundle'},
- {key:'houses',label:'Houses',
-  seg:[{t:"The house you know by heart",hl:true},
-       {t:", reimagined by the studio \u2014 ",hl:false},
-       {t:"Fall turns the maples to copper",hl:true},
-       {t:" and the windows go warm before dinner.",hl:false}],
-  outs:['fall'],names:{fall:'Fall'},footLabel:'Seasons Bundle'},
- {key:'action',label:'Action',
-  seg:[{t:"The wave holds its curl forever",hl:true},
-       {t:" \u2014 glazed ceramic catches the break mid-motion, the rider ",hl:false},
-       {t:"balanced in glazed stillness",hl:true},{t:".",hl:false}],
-  outs:['ceramic'],names:{ceramic:'Ceramic'},footLabel:'Material Bundle'}
-];
-
-var cur=0, SEG=EX[0].seg, TOTAL=0;
-var stage=document.getElementById('stage'),outStack=document.getElementById('outStack'),
-    curText=document.getElementById('curText'),curOverlay=document.getElementById('curOverlay'),curFoot=document.getElementById('curFoot'),
-    srcLayer=document.getElementById('srcLayer'),srcThumb=document.getElementById('srcThumb'),srcThumbImg=document.getElementById('srcThumbImg'),
-    baBefore=document.getElementById('baBefore'),baAfter=document.getElementById('baAfter'),
-    lb=document.getElementById('lightbox'),lbImg=document.getElementById('lbImg');
-
-function calcTotal(){TOTAL=SEG.reduce(function(a,s){return a+s.t.length;},0);}
-function fullHTML(){return SEG.map(function(s){return s.hl?('<span class="hl">'+s.t+'</span>'):s.t;}).join('');}
-function render(n){var html='',c=0;
-  for(var i=0;i<SEG.length;i++){var s=SEG[i],t=Math.max(0,Math.min(s.t.length,n-c));
-    if(t>0){var p=s.t.slice(0,t);html+=s.hl?('<span class="hl">'+p+'</span>'):p;}
-    c+=s.t.length;if(n<c)break;}
-  curText.innerHTML=html+'<span class="cursor">&nbsp;</span>';}
-
-function setOut(k){
-  outStack.querySelectorAll('img').forEach(function(im){im.classList.toggle('active',im.dataset.out===k);});
-  var a=outStack.querySelector('img.active'); if(a)baAfter.src=a.src;
-  document.querySelectorAll('.treat').forEach(function(t){t.classList.toggle('active',t.dataset.out===k);});}
-
-function renderFoot(ex,el){if(!el)return;
-  var active=(outStack.querySelector('img.active')||{}).dataset||{};
-  var chips=ex.outs.map(function(o){var k=ex.key+':'+o;
-    return '<button class="treat'+(active.out===k?' active':'')+'" data-out="'+k+'">'+ex.names[o]+'</button>';}).join('');
-  el.innerHTML='<div class="lab">'+ex.footLabel+'</div><div class="treat-row">'+chips+'</div>';}
-
-var runId=0,typer=null;
-function renderResolved(){var my=++runId;clearInterval(typer);
-  curText.innerHTML=fullHTML();curOverlay.style.opacity=1;curFoot.style.opacity=1;
-  outStack.style.opacity=1;srcThumb.style.opacity=1;}
-function playComp(){var my=++runId;clearInterval(typer);
-  outStack.style.opacity=0;curOverlay.style.opacity=0;curFoot.style.opacity=0;srcThumb.style.opacity=0;curText.innerHTML='';
-  setTimeout(function(){if(my!==runId)return;curOverlay.style.opacity=1;var n=0;
-    typer=setInterval(function(){if(my!==runId){clearInterval(typer);return;}n++;render(n);
-      if(n>=TOTAL){clearInterval(typer);var c=curText.querySelector('.cursor');if(c)c.style.display='none';
-        setTimeout(function(){if(my!==runId)return;outStack.style.opacity=1;curFoot.style.opacity=1;srcThumb.style.opacity=1;},450);}},14);},700);}
-
-function goTo(i,instant){
-  cur=(i+EX.length)%EX.length; var ex=EX[cur];
-  document.querySelectorAll('#sstrip button').forEach(function(b,n){b.classList.toggle('active',n===cur);});
-  SEG=ex.seg;calcTotal();
-  srcLayer.src=IMGS[ex.key].srcW; srcThumbImg.src=IMGS[ex.key].srcS; baBefore.src=IMGS[ex.key].srcW;
-  setOut(ex.key+':'+ex.outs[0]);
-  renderFoot(ex,curFoot); renderFoot(ex,document.getElementById('b2mFoot'));
-  var mt=document.getElementById('b2mText'); if(mt)mt.innerHTML=fullHTML();
-  var ms=document.getElementById('b2mSrcImg'); if(ms)ms.src=IMGS[ex.key].srcS;
-  if(isMobile||stage.dataset.mode==='slider'||instant){renderResolved();}else{playComp();}
-}
-
-document.querySelectorAll('#sstrip button').forEach(function(b,n){
-  b.addEventListener('click',function(){goTo(n);resetGalTimer();});});
-var galTimer=null,hovering=false;
-function resetGalTimer(){clearInterval(galTimer);
-  galTimer=setInterval(function(){
-    if(hovering)return; if(lb.classList.contains('open'))return;
-    goTo(cur+1);},10000);}
-stage.addEventListener('mouseenter',function(){hovering=true;});
-stage.addEventListener('mouseleave',function(){hovering=false;});
-
-document.querySelectorAll('.toggle button').forEach(function(b){b.addEventListener('click',function(){
-  document.querySelectorAll('.toggle button').forEach(function(x){x.classList.remove('active')});b.classList.add('active');
-  stage.dataset.mode=b.dataset.view;
-  if(b.dataset.view==='comp'&&!isMobile)playComp();});});
-document.getElementById('replay').addEventListener('click',function(){if(!isMobile)playComp();});
-
-document.addEventListener('click',function(e){var t=e.target.closest('.treat');if(!t)return;e.stopPropagation();setOut(t.dataset.out);});
-
-(function(){var ba=document.getElementById('ba'),drag=false;
-  function sp(x){var r=ba.getBoundingClientRect();var p=((x-r.left)/r.width)*100;p=Math.max(2,Math.min(98,p));ba.style.setProperty('--pos',p+'%');}
-  ba.addEventListener('pointerdown',function(e){drag=true;sp(e.clientX);ba.setPointerCapture(e.pointerId);});
-  ba.addEventListener('pointermove',function(e){if(drag)sp(e.clientX);});
-  ba.addEventListener('pointerup',function(){drag=false;});})();
-
-function openLB(){var a=outStack.querySelector('img.active');lbImg.src=a?a.src:'';lb.classList.add('open');}
-document.getElementById('expand').addEventListener('click',function(e){e.stopPropagation();openLB();});
-document.getElementById('lbClose').addEventListener('click',function(){lb.classList.remove('open');});
-lb.addEventListener('click',function(e){if(e.target===lb)lb.classList.remove('open');});
-
-/* land resolved; the reveal plays on transitions */
-goTo(0,true); resetGalTimer();
-</script>
-
-<script>
-(function(){/* stage: rescale whole thing to fit fold (no crop) */
-  function fit(){var st=document.querySelector('.stage');if(!st)return;
-    st.style.transform='none';st.style.marginBottom='0px';
-    var natH=st.offsetHeight;if(!natH)return;
-    var docTop=st.getBoundingClientRect().top+window.scrollY;
-    var avail=window.innerHeight-docTop-20;var s=Math.min(1,avail/natH);
-    if(s<1){st.style.transformOrigin='top center';st.style.transform='scale('+s+')';st.style.marginBottom=Math.round((s-1)*natH)+'px';}}
-  window.addEventListener('resize',fit);
-  window.addEventListener('load',function(){requestAnimationFrame(fit);});
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){requestAnimationFrame(fit);});
-})();
-(function(){/* bundle preview crossfade */
-  document.querySelectorAll('.bun-hero').forEach(function(hero,hi){
-    var sl=hero.querySelectorAll('.xf-slide');if(sl.length<2)return;var i=0;
-    setTimeout(function(){setInterval(function(){sl[i].classList.remove('show');i=(i+1)%sl.length;sl[i].classList.add('show');},2600);},hi*1300);
-  });
-})();
-</script>
-
-<footer class="site-footer">
-  <div class="foot-inner">
-    <div class="foot-brand">
-      <div class="row"><img class="foot-logo" src="/homepage/liten-and-co.png" alt="Liten & Co"><span class="wm">Crafted Portraits</span></div>
-      <p class="foot-tag">We turn your photographs into Crafted Images.</p>
-      <div class="foot-social"><a aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg></a><a aria-label="Pinterest"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.6 19.3c-.1-.8-.2-2 0-2.9l1.2-5s-.3-.6-.3-1.5c0-1.4.8-2.4 1.8-2.4.9 0 1.3.6 1.3 1.4 0 .9-.6 2.2-.9 3.4-.2 1 .5 1.8 1.5 1.8 1.8 0 3.1-1.9 3.1-4.6 0-2.4-1.7-4.1-4.2-4.1-2.9 0-4.6 2.1-4.6 4.4 0 .9.3 1.8.7 2.3.1.1.1.2.1.3l-.3 1.1c0 .2-.2.2-.3.1-1.2-.6-2-2.3-2-3.7 0-3 2.2-5.8 6.3-5.8 3.3 0 5.9 2.4 5.9 5.5 0 3.3-2.1 5.9-5 5.9-1 0-1.9-.5-2.2-1.1l-.6 2.3c-.2.8-.8 1.9-1.2 2.5A10 10 0 1 0 12 2z"/></svg></a><a aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.5 1.6-1.5h1.7V3.9c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3V10H7.4v3h2.9v8h3.2z"/></svg></a><a aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 3h3l-6.6 7.6L21.7 21h-6l-4.7-6.1L5.6 21h-3l7-8L2.6 3h6.1l4.3 5.7L17.5 3zm-1 16h1.7L7.6 4.7H5.8L16.5 19z"/></svg></a><a aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.3 2 1.6 3.6 3.5 3.9v2.6c-1.3 0-2.5-.4-3.5-1.1v5.7c0 2.9-2.3 5.2-5.2 5.2S6.1 19 6.1 16.1s2.3-5.2 5.2-5.2c.3 0 .5 0 .8.1v2.7c-.3-.1-.5-.1-.8-.1-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5 2.6-1.1 2.6-2.5V3h2.6z"/></svg></a></div>
-    </div>
-    <nav class="foot-links">
-      <a>Privacy Policy</a><a>Terms of Service</a><a>Legal</a><a>Help</a><a>Contact</a><a class="foot-mail" href="mailto:hello@litenco.com">hello@litenco.com</a>
-    </nav>
-  </div>
-  <div class="foot-legal">
-    <p class="foot-privacy"><strong>Privacy.</strong> [Placeholder] Liten &amp; Co collects only what is needed to craft and deliver your pieces. We never sell your photographs or personal data. A full privacy policy will be published here.</p>
-    <p class="foot-terms"><strong>Legal.</strong> [Placeholder] Crafted images are licensed for personal use. Full Terms of Service and legal notices will be published here.</p>
-    <p class="foot-copy">&copy; 2026 Liten &amp; Co &middot; All rights reserved</p>
-  </div>
-</footer>
 </body></html>
