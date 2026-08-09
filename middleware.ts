@@ -31,6 +31,7 @@ const PAGES: Record<string, string> = {
   '/portrait-wallpaper': '/portrait-wallpaper.html',
   '/pet-wallpaper': '/pet-wallpaper.html',
   '/gallery': '/gallery.html',
+  '/help': '/help.html',
 };
 
 export const config = {
