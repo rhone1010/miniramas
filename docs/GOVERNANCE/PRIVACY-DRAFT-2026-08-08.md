@@ -23,7 +23,11 @@ We do not sell your information. We do not share your photographs. We do not
 train anything on your face. We keep your source photograph only as long as
 we are working with it, and then we delete it.
 
-The rest of this page is the detail behind those four sentences.
+We do advertise, and like any business that advertises we use tags that
+recognise a browser. Those tags never see your photographs or your account —
+only that someone visited. Section 10 says exactly what that means.
+
+The rest of this page is the detail behind those sentences.
 
 ---
 
@@ -109,8 +113,10 @@ data for anything else.
 > sub-processor named here that we do not use, or used and not named, is the
 > kind of error that matters.
 
-**We do not sell your personal information, and we do not share it for
-advertising.**
+**We do not sell your personal information.** We do not share your
+photographs, your crafted images or your account contents with anyone for
+advertising. Advertising platforms do receive basic browsing signals — see
+section 10.
 
 ## 6 · Your choices
 
@@ -129,9 +135,10 @@ dispute, or that the law requires us to keep. If that applies we will say so
 and say why.
 
 **If you are in California**, the CCPA gives you these rights formally,
-including the right not to be treated differently for exercising them. We
-would not, and there is nothing to opt out of, because we do not sell or
-share personal information.
+including the right not to be treated differently for exercising them. We do
+not sell personal information. Advertising tags may count as "sharing" under
+California law, so you can tell us to stop at `[PRIVACY EMAIL]` and we will,
+and your browser's Global Privacy Control signal is honoured.
 
 ## 7 · Children
 
@@ -159,15 +166,23 @@ Liten & Co operates in the United States, and the services above process data
 in the United States and elsewhere. Using the service means your data is
 handled in those places.
 
-## 10 · Cookies
+## 10 · Cookies and analytics
 
-We use a small number of cookies to keep you signed in and to remember your
-session. We do not use advertising cookies or third-party trackers.
+**Essential cookies** keep you signed in and remember your session. The site
+does not work without them.
 
-> **Update this if the Q4 remarketing tag goes on.** The moment an
-> advertising pixel is added, this section and section 5 both change, and
-> "we do not share it for advertising" stops being true. That is a real
-> decision with a real cost — do not let a tag land quietly.
+**Analytics and advertising cookies.** We use these to understand how people
+find Liten & Co and whether our advertising is reaching the right people.
+That includes tags from advertising platforms — Google, Meta, TikTok and
+Pinterest among them — which can recognise a browser that has visited us
+before so we can show relevant advertising elsewhere.
+
+What those tags see is the fact of a visit and the pages viewed. **They never
+see your photographs, your crafted images, or the contents of your account.**
+Nothing about the work you make here is passed to an advertising platform.
+
+You can refuse these through your browser or your device settings, and the
+site will work exactly as before.
 
 ## 11 · Changes
 
