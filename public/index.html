@@ -403,19 +403,38 @@ footer nav a:hover{color:var(--series)}
     position:relative; height:100svh; overflow:hidden;
     background:var(--espresso);
   }
+  /* EDGE TO EDGE. The plates in splash/tall/ were outpainted to 9:16 by
+     scripts/outpaint-splash.mjs, so there is a real picture where the
+     crop used to eat into the portrait and `cover` costs nothing now.
+
+     The blurred ground behind stays. It is no longer load-bearing for the
+     tall plates, but a plate that has not been outpainted — or one whose
+     outpaint invented a second chin and was deleted — falls back to the
+     square original, and that one still needs somewhere to sit. */
   .m-slide{
     position:absolute; inset:0;
-    background-size:cover; background-position:center;
     opacity:0; transition:opacity 1.1s cubic-bezier(.4,0,.2,1);
     will-change:opacity;
+    background-size:cover; background-position:center;
+    background-repeat:no-repeat;
+  }
+  .m-slide.is-short{
+    background-size:contain;
+  }
+  .m-slide.is-short::before{
+    content:''; position:absolute; inset:0; z-index:-1;
+    background-image:inherit;
+    background-size:cover; background-position:center;
+    filter:blur(26px) saturate(.7) brightness(.42);
+    transform:scale(1.15);
   }
   .m-slide.show{ opacity:1 }
   /* The words sit on the picture, so the picture has to give them a
      ground to sit on. A scrim, not a panel. */
   .m-reel::after{
-    content:''; position:absolute; inset:0; pointer-events:none;
-    background:linear-gradient(rgba(20,15,11,.34) 0%, rgba(20,15,11,0) 26%,
-                               rgba(20,15,11,0) 42%, rgba(20,15,11,.82) 88%);
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:2;
+    background:linear-gradient(rgba(20,15,11,.28) 0%, rgba(20,15,11,0) 24%,
+                               rgba(20,15,11,0) 46%, rgba(20,15,11,.74) 90%);
   }
   .m-say{
     position:absolute; left:0; right:0; bottom:0; z-index:3;
@@ -612,11 +631,22 @@ footer nav a:hover{color:var(--series)}
   background:var(--espresso); overflow:hidden;
 }
 .trip-panel{ position:relative; overflow:hidden }
+/* A third of a tall screen is a narrow column — close enough to 9:16 that
+   the outpainted plates fill it properly. */
 .trip-layer{
   position:absolute; inset:0;
-  background-size:cover; background-position:center top;
   opacity:0; transition:opacity 1.4s cubic-bezier(.4,0,.2,1);
   will-change:opacity;
+  background-size:cover; background-position:center;
+  background-repeat:no-repeat;
+}
+.trip-layer.is-short{ background-size:contain }
+.trip-layer.is-short::before{
+  content:''; position:absolute; inset:0; z-index:-1;
+  background-image:inherit;
+  background-size:cover; background-position:center;
+  filter:blur(30px) saturate(.7) brightness(.4);
+  transform:scale(1.2);
 }
 .trip-layer.show{ opacity:1 }
 /* A hairline between panels, so three pictures read as a triptych rather
@@ -1144,10 +1174,16 @@ footer nav a:hover{color:var(--series)}
        share a thought without the words being repeated over each. Resolved
        here rather than at paint time — the reel loops, so slide one has to
        already know what it says when it comes round again. */
+    /* THE TALL PLATE FIRST. scripts/outpaint-splash.mjs extends the near
+       square plates to 9:16 through Stability and writes them to
+       splash/tall/. Anything not in there — a plate that has not been run,
+       or one whose outpaint invented a second chin and was deleted —
+       falls back to the square original, which still shows whole on its
+       blurred ground. Nothing has to be kept in step by hand. */
     var frames = [], carried = '';
     REEL.forEach(function(row){
       if (row[1]) carried = row[1];
-      frames.push({ big:S + row[0], small:null, say:carried });
+      frames.push({ big:S + 'tall/' + row[0], small:S + row[0], say:carried });
     });
     if (!frames.length) return;
 
@@ -1164,7 +1200,7 @@ footer nav a:hover{color:var(--series)}
       var img = new Image();
       img.onload = function(){ show(img.src); };
       img.onerror = function(){
-        if (f.big && img.src.indexOf('@2x') > -1 && f.small){
+        if (f.small && img.src !== f.small){
           img.src = f.small;
           return;
         }
@@ -1174,6 +1210,10 @@ footer nav a:hover{color:var(--series)}
 
       function show(url){
         if (!url) return;
+        /* A square plate that fell back must not be stretched to fill a
+           tall screen — it gets contained on the blurred ground instead.
+           The tall ones bleed edge to edge. */
+        back.classList.toggle('is-short', url.indexOf('/tall/') === -1);
         back.style.backgroundImage = 'url("' + url + '")';
         back.classList.add('show');
         front.classList.remove('show');
@@ -1201,6 +1241,8 @@ footer nav a:hover{color:var(--series)}
 
     /* Warm the next few so the fade has something to fade to. */
     frames.slice(1, 6).forEach(function(f){ new Image().src = f.big || f.small; });
+    /* And the squares behind them, so a fallback does not stall the fade. */
+    frames.slice(1, 6).forEach(function(f){ if (f.small) new Image().src = f.small; });
 
     /* ---- the proof ---------------------------------------------------
        Each card turns over between the photograph and the piece, on its
@@ -1378,19 +1420,28 @@ footer nav a:hover{color:var(--series)}
     var i = 0;
 
     function turn(){
-      var url = S + list[i];
+      var tall  = S + 'tall/' + list[i];
+      var plain = S + list[i];
+
       /* Decoded before it is faded up. Cross-fading to a picture that has
          not loaded shows a grey panel for half a second, which is worse
-         than holding the one already there a beat longer. */
+         than holding the one already there a beat longer. Decoding first
+         also does the fallback for free: no outpainted plate on disk
+         fires onerror before anything has been shown. */
       var img = new Image();
       img.onload = function(){
+        var url = img.src;
+        back.classList.toggle('is-short', url.indexOf('/tall/') === -1);
         back.style.backgroundImage = 'url("' + url + '")';
         back.classList.add('show');
         front.classList.remove('show');
         var t = front; front = back; back = t;
       };
-      img.onerror = function(){ /* a missing plate is skipped, not shown */ };
-      img.src = url;
+      img.onerror = function(){
+        if (img.src.indexOf('/tall/') > -1){ img.src = plain; return; }
+        /* neither on disk — skipped rather than shown as a grey panel */
+      };
+      img.src = tall;
       i = (i + 1) % list.length;
     }
 
@@ -1402,7 +1453,7 @@ footer nav a:hover{color:var(--series)}
       setInterval(turn, 5200 + c * 700);
     }, 2000 + c * 1400);
 
-    list.slice(0, 3).forEach(function(f){ new Image().src = S + f; });
+    list.slice(0, 3).forEach(function(f){ new Image().src = S + 'tall/' + f; });
   });
 
   /* ---- the proof wall ------------------------------------------------ */
