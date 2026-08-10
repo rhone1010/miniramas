@@ -1073,7 +1073,6 @@ footer nav a:hover{color:var(--series)}
     ['woman_music.jpg',         'Or the notes of a song'],
     ['woman_stained_glass.jpg', 'Or maybe as a beautiful lamp'],
 
-    ['man_quartzite.jpg',       null],
     ['man_ice.jpg',             'We turn your photographs into impossible things'],
     ['woman_renaissance.jpg',   'Or take you back to the Renaissance'],
 
@@ -1192,10 +1191,13 @@ footer nav a:hover{color:var(--series)}
     }
 
     paint(frames[0]);
+    /* Three seconds. Two read as a flicker — the cross fade alone is over
+       a second of it, so the picture was barely still before the next one
+       arrived. Four was a beat too patient. */
     setInterval(function(){
       i = (i + 1) % frames.length;
       paint(frames[i]);
-    }, 2000);
+    }, 3000);
 
     /* Warm the next few so the fade has something to fade to. */
     frames.slice(1, 6).forEach(function(f){ new Image().src = f.big || f.small; });
