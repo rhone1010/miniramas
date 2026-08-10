@@ -1061,23 +1061,46 @@ footer nav a:hover{color:var(--series)}
      over whatever happens to be showing — "or cast in solid bronze" over
      a watercolour is worse than no line at all. Three slides a headline,
      two seconds each. */
+  /* THE REEL. One headline per slide now, not per group of three — Rich's
+     sheet, 2026-08-09. A blank line holds the one before it, which is how
+     three pictures share a thought without repeating the words over each.
+
+     The order is the argument: it opens on what we make, widens through
+     the worlds, states the scale, and ends by asking. Twenty-five slides,
+     two seconds each. */
   var REEL = [
-    ['Imagine yourself in the Renaissance.',
-       ['man_renaissance.jpg','woman_elizabethan.jpg','man_persian_court.jpg']],
-    ['Materials never meant to become human.',
-       ['man_quartzite.jpg','man_ice.jpg','woman_porcelain.jpg']],
-    ['Impossible effects, brought to life.',
-       ['woman_magic_energy.jpg','woman_dragon_skin.jpg','woman_forest_guardian.jpg']],
-    ['Become a book in a library.',
-       ['woman_folded_book.jpg','man_impressionist.jpg','woman_face_petals.jpg']],
-    ['Your photograph, completely reimagined.',
-       ['woman_coral.jpg','man_driftwood.jpg','woman_robot_1.jpg']],
-    ['Imagine yourself made of stained glass.',
-       ['man_stained_glass.jpg','woman_clockwork.jpg','man_driftwood_resin.jpg']],
-    ['Or cast in solid bronze.',
-       ['woman_robot_2.jpg','man_quartzite.jpg','man_renaissance.jpg']],
-    ['Or, perhaps, as a plushie.',
-       ['woman_plushy.jpg','man_balloons.jpg','woman_coral.jpg']]
+    ['impressionist_man2.jpg',  'Imagine yourself as a work of art'],
+    ['woman_music.jpg',         'Or the notes of a song'],
+    ['woman_stained_glass.jpg', 'Or maybe as a beautiful lamp'],
+
+    ['man_quartzite.jpg',       null],
+    ['man_ice.jpg',             'We turn your photographs into impossible things'],
+    ['woman_renaissance.jpg',   'Or take you back to the Renaissance'],
+
+    ['woman_victorian_2.jpg',   'Or Victorian England'],
+    ['woman_persian_court.jpg', 'Or the Persian court'],
+    ['woman_dragon_skin.jpg',   'Become dragon kin'],
+    ['woman_forest_guardian.jpg','Or a forest guardian'],
+
+    ['woman_folded_book.jpg',   'Or turn into your favourite novel'],
+    ['man_charcoal.jpg',        'Or a new gallery favourite'],
+    ['woman_face_petals.jpg',   'Or your favourite flowers'],
+
+    ['woman_coral.jpg',         'A trip under the sea?'],
+    ['man_driftwood.jpg',       'Or to the beach'],
+    ['woman_robot_1.jpg',       'Maybe to the future'],
+
+    ['man_stained_glass.jpg',   'We have dozens of finishes'],
+    ['woman_clockwork.jpg',     'Set in eight separate worlds'],
+    ['man_driftwood_resin.jpg', 'With thousands of possibilities'],
+
+    ['woman_robot_2.jpg',       'All driven by your photographs and imagination'],
+    ['man_neon.jpg',            'And our transformations'],
+    ['man_renaissance.jpg',     null],
+    ['woman_plushy.jpg',        null],
+
+    ['man_balloons.jpg',        'Upload your photograph to get started'],
+    ['woman_coral.jpg',         'We\u2019ll be here']
   ];
 
   /* FOLD TWO. One sitter, six finishes — the same woman throughout, or
@@ -1118,11 +1141,14 @@ footer nav a:hover{color:var(--series)}
         B = document.getElementById('mB'),
         SAY = document.getElementById('mSay');
 
-    var frames = [];
-    REEL.forEach(function(group){
-      group[1].forEach(function(file){
-        frames.push({ big:S + file, small:null, say:group[0] });
-      });
+    /* A blank headline carries the one before it, so three pictures can
+       share a thought without the words being repeated over each. Resolved
+       here rather than at paint time — the reel loops, so slide one has to
+       already know what it says when it comes round again. */
+    var frames = [], carried = '';
+    REEL.forEach(function(row){
+      if (row[1]) carried = row[1];
+      frames.push({ big:S + row[0], small:null, say:carried });
     });
     if (!frames.length) return;
 
