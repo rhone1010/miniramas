@@ -306,6 +306,18 @@ body{
 
 /* right cluster — credits then cart, in that order */
 .mh-right{ justify-self:end; display:flex; align-items:center; gap:12px }
+
+/* ---- SIGNING OUT -------------------------------------------------------
+   Quiet, and deliberately not a pill. It is not an action anybody comes
+   here to perform — it only needs to be findable by somebody looking for
+   it, which on a soft launch is mostly Rich testing a second address. */
+.mh-out{
+  font-family:var(--serif); font-style:italic; font-size:1.0625rem;
+  color:var(--vellum-300); opacity:.62; padding:6px 4px;
+  cursor:pointer; background:none; border:none; white-space:nowrap;
+  transition:opacity .16s ease, color .16s ease;
+}
+.mh-out:hover{ opacity:1; color:var(--vellum-100) }
 .mh-credits,.mh-cart{
   display:flex; align-items:center; gap:10px;
   height:44px; padding:0 16px;
@@ -4618,6 +4630,9 @@ body.is-lboxed{ overflow:hidden }
       <span class="who" id="mhWho" hidden></span>
       <span class="v" id="mhCreditsCount">0</span><span class="u">credits</span>
     </button>
+    <!-- The way out. Hidden until there is somebody to sign out. -->
+    <button class="mh-out" id="mhSignOut" hidden
+            aria-label="Sign out">Sign out</button>
     <button class="mh-cart" id="mhCartBtn">
       <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
       <span class="lbl">Cart</span>
@@ -8064,6 +8079,8 @@ window.EFFECT_PREVIEWS = {
   var mhCreditsCount = document.getElementById('mhCreditsCount');
 
   function paintCredits(){
+    /* The way out is only there when there is somebody to sign out. */
+    if (mhSignOut) mhSignOut.hidden = !ME;
     if (!mhCreditsBtn || !mhCreditsCount) return;
     /* Signed out, or a balance we could not read. Show nothing rather
        than a zero — a zero over an unknown tells someone with sixty
@@ -8117,10 +8134,64 @@ window.EFFECT_PREVIEWS = {
         ME = (d && d.user) ? d.user : null;
         CREDITS = (d && typeof d.credits === 'number') ? d.credits : null;
         paintCredits();
+        if (ME) claimLaunchGrant();
         return ME;
       })
       .catch(function(){ ME = null; CREDITS = null; paintCredits(); return null; });
   }
+
+  /* ---- THE LAUNCH GRANT --------------------------------------------------
+     Eighty credits were promised at the passcode gate, against an email,
+     before there was an account to pay them into. This is where the promise
+     is redeemed — the first time we know who they are.
+
+     Called on every arrival and does nothing at all in the common case. The
+     endpoint is idempotent twice over: a claimed_at stamp on the invite, and
+     grant_credits keyed on the address, so even two tabs racing can only
+     ever land one grant.
+
+     It also refuses to fail loudly. A missing grant is a support message; a
+     broken workshop is a lost customer. */
+  var GRANT_TRIED = false;
+  function claimLaunchGrant(){
+    if (GRANT_TRIED) return;
+    GRANT_TRIED = true;
+
+    fetch('/api/v1/invite/claim', { method:'POST', credentials:'same-origin' })
+      .then(function(res){ return res.ok ? res.json() : null; })
+      .then(function(d){
+        if (!d || !d.claimed) return;
+        if (typeof d.balance === 'number') setCredits(d.balance);
+        else if (typeof CREDITS === 'number') setCredits(CREDITS + d.credits);
+
+        /* Say it once, in her voice, on the card they are already looking
+           at. A modal for good news is a door in the way of somebody who
+           just arrived wanting to make something. */
+        if (typeof say === 'function' && cur && cur.dataset.state === 'empty'){
+          say('<span class="line">Welcome. I\u2019ve put <b>' + d.credits +
+              ' credits</b> in your account \u2014 enough for eight ' +
+              'pictures. Start with a photograph.</span>' +
+              '<span class="sign">\u2014 C.</span>');
+        }
+      })
+      .catch(function(){ /* a grant that did not land is a support message */ });
+  }
+
+  /* ---- SIGNING OUT ------------------------------------------------------
+     POST, not a link: a GET sign-out gets fired by link prefetchers and
+     people find themselves signed out for no reason.
+
+     The page is reloaded rather than repainted. Half this workshop caches
+     who the customer is — their pieces, their balance, their queue — and
+     unpicking all of it by hand is how one stale reference shows the next
+     person somebody else's collection. */
+  var mhSignOut = document.getElementById('mhSignOut');
+  if (mhSignOut) mhSignOut.addEventListener('click', function(){
+    mhSignOut.disabled = true;
+    fetch('/api/v1/auth/signout', { method:'POST', credentials:'same-origin' })
+      .catch(function(){})
+      .then(function(){ location.href = '/portraits'; });
+  });
 
   /* The masthead is a way to buy, not only a readout. */
   /* The masthead pill is a way to buy, not only a readout. `needed: 0`
