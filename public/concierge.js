@@ -78,6 +78,13 @@
   var SELF      = document.currentScript;
   var WANT_DOCK = !!(SELF && SELF.hasAttribute('data-dock'));
   var WANT_EYE  = !!(SELF && SELF.hasAttribute('data-attention'));
+  /* TAKING A MESSAGE IS OPT-IN, AND ONLY /help ASKS FOR IT. Ruled
+     2026-08-10. It used to appear after her first answer anywhere she was
+     loaded, so somebody who asked where the upload button was got offered
+     a support ticket for their trouble. A message box belongs where
+     somebody has a real problem - a refund, an order, a piece that went
+     wrong - not on the floor of the workshop mid-question. */
+  var WANT_MSG  = !!(SELF && SELF.hasAttribute('data-handoff'));
 
   var SAGE = '#4a6b4a';
   var GOLD = '#b68a53';
@@ -317,7 +324,9 @@
       seeds.appendChild(b);
     });
 
-    foot('For anything to do with your own account, I can take a message.');
+    foot(WANT_MSG
+      ? 'For anything to do with your own account, I can take a message.'
+      : 'For anything to do with your own account, the Help page has the desk.');
   }
 
   function foot(html) {
@@ -600,12 +609,14 @@
       });
   }
 
-  /* THE HANDOFF. Offered once, after she has actually said something —
-     a "leave a message" button sitting there from the first paint tells
-     somebody with a simple question that she is not going to answer it. */
+  /* THE HANDOFF. Off unless the page asked for it, and even then not
+     until she has had three goes at answering. Offering to take a message
+     after one reply says "I am not going to be able to help you" to
+     somebody who has barely asked anything. */
   var handedOff = false;
   function offerHandoff() {
-    if (handedOff || history.length < 2) return;
+    if (!WANT_MSG) return;
+    if (handedOff || history.length < 6) return;
     handedOff = true;
 
     var wrap = document.createElement('div');
