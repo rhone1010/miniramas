@@ -7586,26 +7586,80 @@ window.EFFECT_PREVIEWS = {
      screen. Once SUBJECT is known this never runs again — the customer's
      own sitter wins over everything here. */
   var COIN = {};
-  function coinFor(id, keys){
-    if (COIN[id]) return COIN[id];
-    var list = (keys || []).slice().sort();
-    var half = Math.ceil(list.length / 2);
+  var COIN_DEALT = {};
+
+  /* An exact half-and-half over one list, shuffled. Fisher-Yates rather
+     than a coin per card, because a real coin gives you eight men about
+     once in every two hundred and fifty loads and that load is somebody's
+     first impression. Keys are namespaced by tree: a silo and an effect
+     could one day share an id, and finding that out through a picture of
+     the wrong person is not how it should be found out. */
+  function deal(ns, list){
+    var l = (list || []).slice().sort();
+    if (!l.length) return;
+    var half = Math.ceil(l.length / 2);
     var want = [];
-    for (var i = 0; i < list.length; i++) want.push(i < half ? 'man' : 'woman');
-    /* Fisher-Yates, so the split is exact and the order is not. */
+    for (var i = 0; i < l.length; i++) want.push(i < half ? 'man' : 'woman');
     for (var j = want.length - 1; j > 0; j--){
       var k = Math.floor(Math.random() * (j + 1));
       var t = want[j]; want[j] = want[k]; want[k] = t;
     }
-    for (var m = 0; m < list.length; m++) COIN[list[m]] = want[m];
-    return COIN[id] || 'man';
+    /* Never re-deal a card that already has a sitter. The same card must
+       not change person between two paints of the same screen. */
+    for (var m = 0; m < l.length; m++){
+      var key = ns + ':' + l[m];
+      if (!COIN[key]) COIN[key] = want[m];
+    }
+  }
+
+  /* THE EFFECTS ARE DEALT ROOM BY ROOM. One shuffle across all sixty-three
+     balances the catalogue and still deals a room of eight men often
+     enough to matter, and a room is the thing a customer stands in. Each
+     room gets its own exact half. */
+  function dealEffects(tree){
+    var seen = {};
+    var silos = (R && R.silos) ? R.silos : [];
+    for (var i = 0; i < silos.length; i++){
+      var list = [];
+      var rows = R.offerableTilesBySilo ? R.offerableTilesBySilo(silos[i].id)
+               : R.offerableBySilo     ? R.offerableBySilo(silos[i].id)
+               : [];
+      for (var j = 0; j < rows.length; j++){
+        if (!tree[rows[j].id]) continue;      /* no plate, nothing to deal */
+        list.push(rows[j].id);
+        seen[rows[j].id] = 1;
+      }
+      deal('files', list);
+    }
+    /* Anything the registry did not put in a room still needs a sitter,
+       or it silently reverts to the man. */
+    var rest = [];
+    var all = Object.keys(tree);
+    for (var k = 0; k < all.length; k++) if (!seen[all[k]]) rest.push(all[k]);
+    deal('files', rest);
+  }
+
+  function coinFor(tree, id){
+    var ns = tree === PV.silos ? 'silos' : tree === PV.poses ? 'poses' : 'files';
+    var key = ns + ':' + id;
+    if (COIN[key]) return COIN[key];
+    if (!COIN_DEALT[ns]){
+      COIN_DEALT[ns] = true;
+      if (ns === 'files') dealEffects(tree);
+      else deal(ns, Object.keys(tree));
+    }
+    return COIN[key] || 'man';
   }
 
   function plateFrom(tree, base, id, sub){
     var f = tree && tree[id];
     if (!f) return '';
     var who = SUBJECT;
-    if (!who && tree === PV.silos) who = coinFor(id, Object.keys(tree));
+    /* Was: silos only. The rooms were four and four and every room you
+       opened was eight men, because the effect and pose trees fell
+       through to f[0]. All three trees now, and the customer's own sitter
+       still wins over all of it the moment a face is seen. */
+    if (!who) who = coinFor(tree, id);
     var want = who === 'woman' ? f[1] : who === 'man' ? f[0] : '';
     var file = want || f[0] || f[2] || f[1] || '';
     return file ? base + (sub ? id + '/' : '') + file : '';
