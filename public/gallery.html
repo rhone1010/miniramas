@@ -12,6 +12,8 @@
      finishes is restated in this file: a finish added to
      effect-registry.ts appears here after the emit, with no edit. -->
 <script src="/effect-registry.js"></script>
+<!-- The Concierge, shared with the workshop and the help page. -->
+<script src="/concierge.js" defer></script>
 
 <style>
 /* ==========================================================================
@@ -285,6 +287,7 @@ body{
   <nav class="mh-nav">
     <a href="/portraits">Portraits</a>
     <a href="/help">Help</a>
+    <a href="#" data-concierge>Ask</a>
   </nav>
   <div class="mh-right">
     <a class="mh-cta" href="/portraits">Craft a portrait</a>
@@ -364,6 +367,23 @@ body{
       return name ? base + id + '/' + name : null;
     }
 
+    /* THE GALLERY ASKS FOR THE BIG PLATE FIRST. Built 2026-08-09 by
+       scripts/build-gallery-plates.py at 900px, because a tile drawn 430
+       CSS pixels wide is 860 real ones on the 2x displays most people
+       are using, and the 390s were softening.
+
+       Not in the manifest on purpose: the manifest is written by the
+       preview build and knows about man.jpg and woman.jpg. Rather than
+       teach two build scripts about each other, the tile asks for @2x
+       and falls back to the manifest plate if it is not there — which is
+       also what happens for the four effects whose source was too small
+       to build. */
+    function bigPlate(id, which){
+      var a = art[id];
+      if (!a || !a[which]) return null;      /* no plate for this sitter */
+      return base + id + '/' + which + '@2x.jpg';
+    }
+
     /* The `_woman` ids are CRAFT routes, not finishes — Another Age
        carries seven so a woman's craft reaches a woman's body. They have
        no plates of their own and printing them would draw that room
@@ -377,7 +397,8 @@ body{
     });
 
     function tile(e, which){
-      var src = plate(e.id, which);
+      var small = plate(e.id, which);
+      var big   = bigPlate(e.id, which);
 
       var a = document.createElement('a');
       a.className = 'tile';
@@ -386,18 +407,26 @@ body{
       var box = document.createElement('div');
       box.className = 'tile-img';
 
-      if (src){
+      if (big || small){
         var img = document.createElement('img');
-        img.src = src;
         img.alt = e.label + ', crafted';
         img.loading  = 'lazy';
         img.decoding = 'async';
-        /* Named in the manifest but absent on disk must not leave a grey
-           hole with no explanation. */
+        /* One retry, then the empty state. The first miss falls back to
+           the 390; a second miss means there is genuinely nothing on disk
+           and the tile says so rather than leaving a grey hole with no
+           explanation. */
+        var tried = false;
         img.addEventListener('error', function(){
+          if (!tried && small && img.getAttribute('src') !== small){
+            tried = true;
+            img.src = small;
+            return;
+          }
           img.remove();
           box.classList.add('is-empty');
         });
+        img.src = big || small;
         box.appendChild(img);
       } else {
         box.classList.add('is-empty');
