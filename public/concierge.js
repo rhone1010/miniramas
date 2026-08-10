@@ -13,6 +13,45 @@
  * button in a masthead, a tab in a bottom bar, a pill in a section bar.
  * She styles herself and cleans up after herself.
  *
+ * TWO SHAPES
+ *     VEIL (default) — a modal over a darkened page. Right for the
+ *     gallery and the help page, where the page behind is a document
+ *     and covering it costs nothing.
+ *
+ *     DOCK — <script src="/concierge.js" defer data-dock></script>
+ *     A panel at the bottom right with no backdrop. The page stays live
+ *     underneath: they can keep clicking, keep uploading, keep choosing
+ *     while she talks. Right for the workshop, where the whole reason
+ *     somebody asks a question is that they are trying to do something.
+ *     Below 900px a dock becomes a sheet anyway — a phone has no room
+ *     for a panel beside the work.
+ *
+ * SHE CAN POINT AT THINGS
+ *     A page publishes what she is allowed to point at:
+ *
+ *         window.CONCIERGE_POINTS = [
+ *           { sel:'#curSlot', phrases:['photograph','upload'] }, ...
+ *         ];
+ *
+ *     When her answer contains one of those words and the element is
+ *     actually on the glass, the word becomes a quiet link and the
+ *     element takes a gold ring. Nothing is invented: a phrase whose
+ *     element is missing or hidden is left as plain text, so she can
+ *     never point at a control that is not there.
+ *
+ *     THE RING IS DRAWN OVER THE ELEMENT, NEVER ON IT. Adding a class
+ *     to a control inside a ten-thousand-line workshop is how a layout
+ *     breaks at the moment somebody asked for help. The ring is a fixed
+ *     overlay that tracks the rect and touches nothing.
+ *
+ * SHE NOTICES SOMEBODY STUCK
+ *     data-attention on the script tag. The page reports real progress
+ *     by dispatching document.dispatchEvent(new Event('concierge:acted')).
+ *     If somebody is plainly moving around the page and nothing has been
+ *     achieved, her trigger scales and pulses. It stops for good the
+ *     moment they act, or the moment they open her — offering help three
+ *     times to somebody who is doing fine is nagging.
+ *
  * WHAT SHE CAN DO
  *     Answer questions. That is all, and she says so. She cannot see an
  *     account, cannot issue credits, cannot refund. When somebody needs
@@ -34,11 +73,26 @@
   if (window.__conciergeReady) return;
   window.__conciergeReady = true;
 
+  /* Read from the tag that loaded us, so a page opts in with an
+     attribute rather than a global that has to exist before we run. */
+  var SELF      = document.currentScript;
+  var WANT_DOCK = !!(SELF && SELF.hasAttribute('data-dock'));
+  var WANT_EYE  = !!(SELF && SELF.hasAttribute('data-attention'));
+
   var SAGE = '#4a6b4a';
+  var GOLD = '#b68a53';
+
   var history = [];
   var busy = false;
   var veil = null, log = null, input = null, send = null, seeds = null;
   var mode = 'ask';          /* 'ask' | 'message' | 'sent' */
+
+  function narrow(){
+    return window.matchMedia && window.matchMedia('(max-width:900px)').matches;
+  }
+  /* A dock on a phone is a sheet. Decided at open, not at load — a
+     tablet turned on its side changes the answer. */
+  function docked(){ return WANT_DOCK && !narrow(); }
 
   /* ── STYLE ──────────────────────────────────────────────────────────
      Injected rather than required in a stylesheet, so a page adopts her
@@ -46,15 +100,28 @@
      .cx- : this drops into a 10,000-line workshop with its own :root and
      its own box-sizing, and an unscoped rule here would reach into it. */
   var css = [
+    /* THE SHELL. Two shapes off one element: .cx-veil covers the page,
+       .cx-dock sits in the corner of it. */
     '.cx-veil{position:fixed;inset:0;z-index:2147482000;display:grid;place-items:center;',
       'padding:4vh 4vw;background:rgba(30,24,18,.52);backdrop-filter:blur(3px);',
       'font-size:16px}',
     '.cx-veil *{box-sizing:border-box}',
     '.cx-veil[hidden]{display:none}',
 
+    /* The dock has no backdrop and does not fill the screen, so it needs
+       pointer-events off on the shell itself — otherwise an invisible
+       full-page layer would eat every click on the workshop under it. */
+    '.cx-veil.is-dock{display:block;inset:auto;right:20px;bottom:20px;',
+      'padding:0;background:none;backdrop-filter:none;pointer-events:none;',
+      'max-height:none}',
+    '.cx-veil.is-dock .cx{pointer-events:auto}',
+    /* Half-visible while she points at something underneath her. */
+    '.cx-veil.is-ghost .cx{opacity:.16;transition:opacity .2s ease}',
+
     '.cx{width:min(620px,100%);max-height:86vh;display:flex;flex-direction:column;',
       'background:#f8f4eb;border:1px solid rgba(74,107,74,.22);border-radius:14px;',
-      'box-shadow:0 30px 80px rgba(0,0,0,.34);overflow:hidden}',
+      'box-shadow:0 30px 80px rgba(0,0,0,.34);overflow:hidden;transition:opacity .2s ease}',
+    '.cx-veil.is-dock .cx{width:min(420px,calc(100vw - 40px));max-height:min(620px,74vh)}',
 
     '.cx-hd{display:flex;align-items:center;gap:.7em;flex:0 0 auto;padding:1em 1.15em;',
       'background:rgba(74,107,74,.07);border-bottom:1px solid rgba(74,107,74,.22)}',
@@ -67,6 +134,7 @@
 
     '.cx-log{flex:1 1 auto;min-height:170px;overflow-y:auto;padding:1.15em;',
       'display:flex;flex-direction:column;gap:.85em}',
+    '.cx-veil.is-dock .cx-log{min-height:130px}',
     '.cx-msg{max-width:86%;font-family:Georgia,serif;font-size:1.12em;line-height:1.45}',
     '.cx-msg.you{align-self:flex-end;background:#e9dec8;color:#2a241e;',
       'padding:.75em 1em;border-radius:14px 14px 4px 14px}',
@@ -76,6 +144,23 @@
       'font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:' + SAGE + ';',
       'margin-bottom:.4em}',
     '.cx-msg.err{align-self:flex-start;color:#7d4242;font-style:italic;padding:.3em 0}',
+
+    /* A WORD SHE CAN POINT WITH. Underlined in gold rather than made a
+       button — it is a word in a sentence and should still read as one.
+       Big enough to hit: this is the same size as the text around it,
+       which on a phone is already past the target floor. */
+    '.cx-pt{font:inherit;color:#7a5a2e;background:none;border:none;padding:0;',
+      'cursor:pointer;text-decoration:underline;text-decoration-color:rgba(182,138,83,.7);',
+      'text-underline-offset:.16em;text-decoration-thickness:1.5px}',
+    '.cx-pt:hover{color:#5d4322;text-decoration-color:' + GOLD + '}',
+
+    /* THE RING. Drawn over the target, never on it. */
+    '.cx-ring{position:fixed;z-index:2147481500;pointer-events:none;border-radius:10px;',
+      'opacity:0;box-shadow:0 0 0 3px rgba(182,138,83,.92),0 0 0 11px rgba(182,138,83,.20),',
+      '0 0 26px 6px rgba(182,138,83,.30)}',
+    '.cx-ring.is-on{animation:cxRing 1.25s ease-out 3}',
+    '@keyframes cxRing{0%{opacity:0;transform:scale(1.05)}',
+      '18%{opacity:1;transform:scale(1)}70%{opacity:.85}100%{opacity:0;transform:scale(1.02)}}',
 
     '.cx-dots{display:inline-flex;gap:4px;align-items:center;height:1.3em}',
     '.cx-dots i{width:5px;height:5px;border-radius:50%;background:' + SAGE + ';',
@@ -113,9 +198,31 @@
       'padding:.55em 1.3em;border-radius:999px}',
     '.cx-hand button:hover{background:#5d7d5d}',
 
+    /* THE TRIGGER, WHEN SOMEBODY IS PLAINLY STUCK. Scale and a ring, on
+       whatever element the page gave a data-concierge. It is applied to
+       the trigger and not to a badge of our own, because the answer to
+       "where do I get help" should be the thing that was always there. */
+    '[data-concierge].cx-notice{animation:cxNotice 2.4s ease-in-out infinite;',
+      'border-radius:8px}',
+    '@keyframes cxNotice{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(182,138,83,0)}',
+      '35%{transform:scale(1.09);box-shadow:0 0 0 4px rgba(182,138,83,.34)}',
+      '70%{transform:scale(1);box-shadow:0 0 0 9px rgba(182,138,83,0)}}',
+
+    '@media (prefers-reduced-motion:reduce){',
+      '.cx-ring.is-on{animation:none;opacity:1}',
+      '[data-concierge].cx-notice{animation:none;box-shadow:0 0 0 3px rgba(182,138,83,.5)}',
+    '}',
+
+    '@media (max-width:900px){',
+      '.cx-veil.is-dock{position:fixed;inset:0;right:0;bottom:0;display:grid;',
+        'place-items:center;background:rgba(30,24,18,.52);backdrop-filter:blur(3px);',
+        'pointer-events:auto}',
+      '.cx-veil.is-dock .cx{width:100%;max-height:100vh}',
+    '}',
     '@media (max-width:600px){',
       '.cx-veil{padding:0}',
       '.cx{width:100%;height:100%;max-height:100vh;border:none;border-radius:0}',
+      '.cx-veil.is-dock .cx{height:100%;max-height:100vh;border-radius:0}',
       '.cx-ask{flex-wrap:wrap;padding-bottom:calc(.9em + env(safe-area-inset-bottom))}',
       '.cx-send{width:100%;padding:.85em 0}',
     '}',
@@ -130,7 +237,7 @@
     veil = document.createElement('div');
     veil.className = 'cx-veil';
     veil.innerHTML =
-      '<div class="cx" role="dialog" aria-modal="true" aria-label="The Concierge">' +
+      '<div class="cx" role="dialog" aria-label="The Concierge">' +
         '<div class="cx-hd">' +
           '<span class="cx-dot"></span><b>The Concierge</b>' +
           '<button class="cx-x" type="button" aria-label="Close">&times;</button>' +
@@ -152,7 +259,13 @@
     seeds = veil.querySelector('.cx-seeds');
 
     veil.querySelector('.cx-x').addEventListener('click', close);
-    veil.addEventListener('click', function (e) { if (e.target === veil) close(); });
+    /* Only the veil closes on a click outside itself. A dock does not:
+       the page under it is meant to be used, and a click on the floor
+       that closed her would make her impossible to keep open while
+       following what she said. */
+    veil.addEventListener('click', function (e) {
+      if (e.target === veil && !docked()) close();
+    });
     send.addEventListener('click', function () { submit(); });
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
@@ -162,8 +275,29 @@
       if (b) ask(b.textContent);
     });
 
+    /* A pointed word, wherever it lands in the log. */
+    log.addEventListener('click', function (e) {
+      var p = e.target.closest('.cx-pt');
+      if (!p) return;
+      point(p.getAttribute('data-cx-sel'));
+    });
+
     greet();
   }
+
+  function shape() {
+    if (!veil) return;
+    var d = docked();
+    veil.classList.toggle('is-dock', d);
+    /* aria-modal is a lie in a dock — the page behind it is live and a
+       screen reader should be able to reach it. */
+    var box = veil.querySelector('.cx');
+    if (box){
+      if (d) box.removeAttribute('aria-modal');
+      else   box.setAttribute('aria-modal', 'true');
+    }
+  }
+  window.addEventListener('resize', shape);
 
   function greet() {
     bubble('con',
@@ -172,9 +306,11 @@
       'questions, though I cannot look at your account.');
 
     seeds.innerHTML = '';
-    ['What makes a good photograph?',
-     'How long does a craft take?',
-     'What happens to my picture?'].forEach(function (t) {
+    (window.CONCIERGE_SEEDS || [
+      'What makes a good photograph?',
+      'How long does a craft take?',
+      'What happens to my picture?'
+    ]).forEach(function (t) {
       var b = document.createElement('button');
       b.type = 'button';
       b.textContent = t;
@@ -191,8 +327,10 @@
 
   function open() {
     if (!veil) build();
+    shape();
     veil.hidden = false;
-    setTimeout(function () { input.focus(); }, 40);
+    quiet();                      /* she has been found; stop asking */
+    setTimeout(function () { input && input.focus(); }, 40);
   }
   function close() { if (veil) veil.hidden = true; }
 
@@ -208,15 +346,187 @@
   });
   window.__openConcierge = open;
 
+  /* ── POINTING ────────────────────────────────────────────────────────
+     The page says what may be pointed at; this decides whether it is
+     currently true. An element that is missing, hidden, or off the glass
+     is not pointed at and its word stays plain text — she should never
+     appear to gesture at something that is not there. */
+  function points() {
+    var p = window.CONCIERGE_POINTS;
+    return (p && p.length) ? p : [];
+  }
+
+  function liveTarget(sel) {
+    if (!sel) return null;
+    var el;
+    try { el = document.querySelector(sel); } catch (e) { return null; }
+    if (!el) return null;
+    if (el.hasAttribute('hidden')) return null;
+    var r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    var cs = getComputedStyle(el);
+    if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) return null;
+    return el;
+  }
+
+  var ring = null, ringTimer = null, ringTrack = null;
+
+  function point(sel, el) {
+    var t = el || liveTarget(sel);
+    if (!t) return false;
+
+    if (!ring) {
+      ring = document.createElement('div');
+      ring.className = 'cx-ring';
+      document.body.appendChild(ring);
+    }
+
+    /* Bring it onto the glass first. A ring around something below the
+       fold is a ring nobody sees. */
+    try { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+
+    function seat() {
+      var r = t.getBoundingClientRect();
+      ring.style.top    = Math.round(r.top - 4) + 'px';
+      ring.style.left   = Math.round(r.left - 4) + 'px';
+      ring.style.width  = Math.round(r.width + 8) + 'px';
+      ring.style.height = Math.round(r.height + 8) + 'px';
+      /* If she is sitting on top of the thing she is pointing at, she
+         gets out of the way for as long as the ring runs. */
+      if (veil && !veil.hidden && docked()) {
+        var v = veil.querySelector('.cx').getBoundingClientRect();
+        var over = !(r.right < v.left || r.left > v.right ||
+                     r.bottom < v.top || r.top > v.bottom);
+        veil.classList.toggle('is-ghost', over);
+      }
+    }
+
+    ring.classList.remove('is-on');
+    void ring.offsetWidth;                    /* restart the animation */
+    seat();
+    ring.classList.add('is-on');
+
+    clearInterval(ringTrack);
+    ringTrack = setInterval(seat, 120);       /* it may be scrolling */
+    clearTimeout(ringTimer);
+    ringTimer = setTimeout(function () {
+      ring.classList.remove('is-on');
+      clearInterval(ringTrack);
+      if (veil) veil.classList.remove('is-ghost');
+    }, 3900);
+
+    return true;
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  /* Wrap the first occurrence of each pointable phrase. At most three in
+     one answer: a paragraph of underlined words reads as a link farm and
+     stops meaning anything. */
+  function linkify(text) {
+    var html = esc(text);
+    var list = points();
+    if (!list.length) return { html: html, first: null };
+
+    var found = [], first = null;
+
+    list.forEach(function (p) {
+      if (found.length >= 3) return;
+      if (!liveTarget(p.sel)) return;
+      var phrases = p.phrases || [];
+      for (var i = 0; i < phrases.length; i++) {
+        var rx = new RegExp('(^|[^\\w-])(' +
+          phrases[i].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?![\\w-])', 'i');
+        var m = rx.exec(html);
+        if (!m) continue;
+        found.push({ at: m.index + m[1].length, len: m[2].length, sel: p.sel });
+        break;
+      }
+    });
+
+    found.sort(function (a, b) { return b.at - a.at; });   /* back to front */
+    found.forEach(function (f) {
+      html = html.slice(0, f.at) +
+        '<button type="button" class="cx-pt" data-cx-sel="' + esc(f.sel) + '">' +
+        html.slice(f.at, f.at + f.len) + '</button>' +
+        html.slice(f.at + f.len);
+    });
+
+    if (found.length) first = found[found.length - 1].sel;  /* earliest */
+    return { html: html, first: first };
+  }
+
+  /* ── ATTENTION ───────────────────────────────────────────────────────
+     Two ways to be stuck, and they look different. One is a person
+     moving around the page achieving nothing; the other is a person who
+     has stopped moving at all. Both get the same offer, once.
+
+     Real progress is reported by the page, because only the page knows
+     what progress is here. A scroll is not progress. */
+  var acts = 0, fidget = 0, since = Date.now(), shown = 0, eyeTimer = null;
+
+  function triggers() {
+    return document.querySelectorAll('[data-concierge]');
+  }
+  function louder() {
+    if (shown >= 2) return;
+    shown++;
+    [].forEach.call(triggers(), function (t) { t.classList.add('cx-notice'); });
+  }
+  function quiet() {
+    [].forEach.call(triggers(), function (t) { t.classList.remove('cx-notice'); });
+  }
+
+  function acted() {
+    acts++;
+    fidget = 0;
+    since = Date.now();
+    quiet();
+  }
+  document.addEventListener('concierge:acted', acted);
+
+  if (WANT_EYE) {
+    ['mousemove', 'pointerdown', 'wheel', 'keydown', 'touchstart'].forEach(function (ev) {
+      addEventListener(ev, function () { fidget++; }, { passive: true });
+    });
+
+    eyeTimer = setInterval(function () {
+      if (acts) return;                          /* they are getting on with it */
+      if (veil && !veil.hidden) return;          /* she is already open */
+      if (shown >= 2) { clearInterval(eyeTimer); return; }
+      var idle = Date.now() - since;
+      /* Wandering: plainly here, plainly busy, nothing achieved. */
+      if (fidget > 40 && idle > 45000) { since = Date.now(); fidget = 0; louder(); return; }
+      /* Stalled: nothing at all for a minute and a half. */
+      if (idle > 90000) { since = Date.now(); louder(); }
+    }, 5000);
+  }
+
   /* ── MESSAGES ───────────────────────────────────────────────────── */
-  function bubble(who, text) {
+  function bubble(who, text, link) {
     var d = document.createElement('div');
     d.className = 'cx-msg ' + who;
     if (who === 'con') {
       var b = document.createElement('b');
       b.textContent = 'Concierge';
       d.appendChild(b);
-      d.appendChild(document.createTextNode(text));
+      /* Only her ANSWERS carry pointable words. Her greeting says she
+         cannot look at your account, and underlining "account" there
+         would point at the Account link as if that were the offer.
+         Nothing a customer types ever becomes markup. */
+      if (link) {
+        var body = document.createElement('span');
+        var made = linkify(text);
+        body.innerHTML = made.html;
+        d.appendChild(body);
+        d.__firstPoint = made.first;
+      } else {
+        d.appendChild(document.createTextNode(text));
+      }
     } else {
       d.textContent = text;
     }
@@ -265,8 +575,14 @@
       .then(function (d) {
         wait.remove();
         if (d && d.ok && d.reply) {
-          bubble('con', d.reply);
+          var said = bubble('con', d.reply, true);
           history.push({ role: 'assistant', content: d.reply });
+          /* Point at the first thing she named, once, after a beat — the
+             ring and the sentence arriving together is two things at
+             once and neither gets read. */
+          if (said.__firstPoint) {
+            setTimeout(function () { point(said.__firstPoint); }, 550);
+          }
           offerHandoff();
         } else {
           err('I could not reach the desk just then. Try again in a moment, ' +
@@ -391,4 +707,13 @@
         if (send) send.disabled = false;
       });
   }
+
+  /* What a page is allowed to ask of her. Deliberately small. */
+  window.Concierge = {
+    open:  open,
+    close: close,
+    acted: acted,
+    point: function (sel) { return point(sel); },
+    isOpen: function () { return !!(veil && !veil.hidden); }
+  };
 })();
