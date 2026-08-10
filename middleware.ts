@@ -18,7 +18,11 @@ import { NextRequest, NextResponse } from 'next/server';
  * ------------------------------------------------------------------ */
 
 const COOKIE = 'liten_access';
-const IDLE_MS = 60 * 60 * 1000; // 1 hour of inactivity
+/* Thirty days, re-stamped on every page request, so this is idle time and
+   not total. It was one hour and a session cookie, which meant the passcode
+   had to be typed again on nearly every visit - friction on a door that is
+   a courtesy rather than a boundary. See the note in the patch script. */
+const IDLE_MS = 30 * 24 * 60 * 60 * 1000;
 const BYPASS = 'x-liten-gate-bypass';
 
 /* Extensionless paths -> files in public/. Anything absent 404s
@@ -36,6 +40,10 @@ const PAGES: Record<string, string> = {
   '/portrait-wallpaper': '/portrait-wallpaper.html',
   '/pet-wallpaper': '/pet-wallpaper.html',
   '/gallery': '/gallery.html',
+  /* THE BOARD. A page rather than a panel: it is somewhere you go and spend
+     time, it wants a URL somebody can send to a friend, and it is the only
+     page here that could bring a stranger in. */
+  '/community': '/community.html',
   '/help': '/help.html',
 };
 
@@ -70,11 +78,33 @@ export async function middleware(req: NextRequest) {
   }
 
   /* Correct code supplied -> issue the session, redirect to the clean
-     URL so the code never sits in the address bar or a screenshot. */
+     URL so the code never sits in the address bar or a screenshot.
+
+     THE EMAIL IS TAKEN AT THE DOOR. The card asks for it alongside the
+     passcode because this is a soft launch: we want to know who came in,
+     and it is the address the 80-credit grant attaches to.
+
+     It is recorded by /api/v1/invite, not written here. Middleware runs on
+     the edge with no database and no service key, and it must stay that
+     way — this function is on the path of every request on the site. */
   const supplied = url.searchParams.get('access');
   if (supplied !== null && supplied === code) {
     const clean = new URL(url.toString());
     clean.searchParams.delete('access');
+
+    const email = (url.searchParams.get('email') || '').trim();
+    clean.searchParams.delete('email');
+
+    /* Fire and forget. A failure to record the address must never stop
+       somebody getting through a door they have the key to. */
+    if (email && email.includes('@')) {
+      fetch(new URL('/api/v1/invite', url.origin), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email }),
+      }).catch(() => {});
+    }
+
     const res = NextResponse.redirect(clean);
     issue(res, code);
     return res;
@@ -93,14 +123,19 @@ export async function middleware(req: NextRequest) {
 }
 
 /* Cookie value is the code and the time it was last seen, so the idle
-   window is checked without any server-side store. No maxAge: the
-   cookie dies when the browser closes. */
+   window is checked without any server-side store.
+
+   IT NOW HAS A maxAge. Without one it was a session cookie and died with
+   the browser, which is why an invited guest met the passcode card again
+   every morning. Thirty days, re-stamped on every page request. /logout
+   still ends it immediately. */
 function issue(res: NextResponse, code: string) {
   res.cookies.set(COOKIE, code + '|' + Date.now(), {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
+    maxAge: IDLE_MS / 1000,
   });
 }
 
@@ -255,7 +290,7 @@ function gate(wrong: boolean) {
 
   /* CENTER COPY */
   #lg-wrap .lg-invite{
-    position:absolute; top:28.5%; left:50%; width:43%;
+    position:absolute; top:24%; left:50%; width:47%;
     transform:translateX(-50%);
   }
   #lg-wrap .lg-invite h1{
@@ -268,24 +303,28 @@ function gate(wrong: boolean) {
     font-style:italic; color:#624532;
   }
   #lg-wrap .lg-copy{
-    margin:0; font-size:clamp(14px,1.45vw,19px);
-    line-height:1.48; color:#4f382a;
+    margin:0; font-size:clamp(13px,1.25vw,17px);
+    line-height:1.5; color:#4f382a;
   }
+  #lg-wrap .lg-copy b{ color:var(--lg-ink); font-weight:600; }
 
   /* PASSCODE */
   #lg-wrap .lg-form{
-    position:absolute; left:50%; bottom:6.2%; width:65.5%;
+    position:absolute; left:50%; bottom:5%; width:65.5%;
     transform:translateX(-50%); text-align:left;
   }
+  /* The email sits above the passcode. It is the thing we are actually
+     asking for; the passcode is a door they already have the key to. */
+  #lg-wrap .lg-input-shell.lg-first{ margin-bottom:3.6%; }
   #lg-wrap .lg-form label{
-    display:block; margin-bottom:1.7%;
+    display:block; margin-bottom:1.3%;
     font-family:Arial,Helvetica,sans-serif;
     font-size:clamp(11px,1.05vw,14px); font-weight:700;
     letter-spacing:.17em; color:#6d4932; text-transform:none;
   }
   #lg-wrap .lg-input-shell{ position:relative; }
   #lg-wrap .lg-form input{
-    width:100%; height:clamp(62px,6.8vw,80px);
+    width:100%; height:clamp(52px,5.4vw,64px);
     padding:0 4.3rem 0 1.45rem;
     border:1px solid rgba(92,56,35,.58); border-radius:14px; outline:none;
     background:rgba(255,255,255,.48);
@@ -305,7 +344,7 @@ function gate(wrong: boolean) {
     cursor:pointer; font-size:1.5rem; line-height:1;
   }
   #lg-wrap .lg-unlock{
-    display:block; width:100%; height:clamp(62px,6.7vw,79px);
+    display:block; width:100%; height:clamp(52px,5.4vw,64px);
     margin-top:3.2%; border:0; border-radius:13px; cursor:pointer;
     background:linear-gradient(180deg,#4b2a1a,#28150e);
     box-shadow:0 9px 20px rgba(52,29,17,.18);
@@ -367,17 +406,28 @@ function gate(wrong: boolean) {
       </div>
 
       <div class="lg-invite">
-        <h1 id="lg-title">You&rsquo;re Invited</h1>
-        <p class="lg-soft">Liten &amp; Co is in soft launch.</p>
+        <h1 id="lg-title">Welcome to Liten &amp; Co.</h1>
+        <p class="lg-soft">A first look inside the Studio.</p>
         <p class="lg-copy">
-          We&rsquo;re opening our doors to a select<br>
-          group of testers and family.
+          We&rsquo;re opening the doors to family and friends, and would love
+          for you to explore what we&rsquo;ve been creating. Enter your
+          passcode and email to come inside, and we&rsquo;ll add
+          <b>80 complimentary credits</b> &mdash; enough to craft eight
+          images &mdash; to your account.
           <br><br>
-          Enter your passcode to explore.
+          Try the effects, experiment with your photographs, and most
+          importantly, have some fun with it.
         </p>
       </div>
 
       <form class="lg-form" method="GET" autocomplete="off">
+
+        <label for="lg-email">EMAIL</label>
+        <div class="lg-input-shell lg-first">
+          <input id="lg-email" name="email" type="email" required
+                 placeholder="you@example.com" autocomplete="email"
+                 inputmode="email">
+        </div>
 
         <label for="lg-access">PASSCODE</label>
 
@@ -388,7 +438,7 @@ function gate(wrong: boolean) {
                   aria-label="Show passcode">&#9673;</button>
         </div>
 
-        <button class="lg-unlock" type="submit">UNLOCK ACCESS</button>
+        <button class="lg-unlock" type="submit">COME INSIDE</button>
 
         <p class="lg-err">${wrong ? 'That passcode was not recognised.' : ''}</p>
 

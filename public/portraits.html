@@ -4646,18 +4646,27 @@ body.is-lboxed{ overflow:hidden }
       </button>
       <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
         <a href="/portraits" role="menuitem" aria-current="page">Portraits</a>
-        <a href="/action" role="menuitem">Action</a>
-        <a href="/groups" role="menuitem">Groups</a>
-        <a href="/pets" role="menuitem">Pets</a>
+        <!-- Action, Groups and Pets were listed here and are not in
+             middleware's PAGES map, so all three 404. A Series menu that
+             offers four rooms and opens one is worse than a menu that
+             offers one: the first is a broken shop, the second is a small
+             one. They come back when they exist. -->
         <div class="sep"></div>
         <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
       </div>
     </div>
     <a href="/gallery">Gallery</a>
-    <a href="/print">Print Shop</a>
+    <!-- THE BOARD. Between Gallery and My Collection because that is the
+         order of the thought: what the studio can do, what other people
+         did with it, what you have done with it. -->
+    <a href="/community">Community</a>
     <a href="/collection">My Collection</a>
     <a href="/account">Account</a>
-    <a href="/help">Help</a>
+    <!-- PRINT SHOP AND HELP LEFT THIS BAR. Print Shop is an action on a
+         piece, not a place - it already has its button in My Collection,
+         which is where somebody is actually looking at the thing they
+         might buy. Help is the Concierge mark in the right cluster, and
+         her panel carries the link to /help for the terms. -->
   </nav>
   <div class="mh-right">
     <!-- The way to ask. Light rather than coffee-filled, so it reads as
@@ -4684,15 +4693,11 @@ body.is-lboxed{ overflow:hidden }
   </div>
   <nav class="mh-drawer" id="mhDrawer" hidden>
     <a href="/portraits" class="on">Portraits</a>
-    <a href="/action">Action</a>
-    <a href="/groups">Groups</a>
-    <a href="/pets">Pets</a>
     <a href="/wallpapers">Mobile Wallpapers</a>
     <a href="/gallery">Gallery</a>
-    <a href="/print">Print Shop</a>
+    <a href="/community">Community</a>
     <a href="/collection">My Collection</a>
     <a href="/account">Account</a>
-    <a href="/help">Help</a>
     <a href="#" data-concierge>Ask the Concierge</a>
   </nav>
 </header>
@@ -8706,6 +8711,11 @@ window.EFFECT_PREVIEWS = {
           '<div class="mc-feat__hint">Click to view full \u2192</div>' +
         '</div>';
     }
+    /* The button is built once and hidden per piece, rather than rebuilt -
+       rebuilding the row would drop the Download listener bound beside it. */
+    var pr1 = document.getElementById('mcPr1');
+    if (pr1) pr1.hidden = !printable(p);
+
     [].forEach.call(mcGrid.querySelectorAll('.mc-minimap .piece'), function(el){
       el.classList.toggle('is-on', el.dataset.piece === id);
     });
@@ -9068,8 +9078,12 @@ window.EFFECT_PREVIEWS = {
     /* The re-render offer lives HERE and not on the tile. Rejecting a piece is
        a considered act, taken while looking at it properly — not a hover. */
     var left = RERENDER_CAP - window.__RERENDERS_USED;
-    var acts = '<button class="mc-act is-fill" data-lb="dl">Download</button>' +
-               '<button class="mc-act" data-lb="pr">Send to Print Shop</button>';
+    var acts = '<button class="mc-act is-fill" data-lb="dl">Download</button>';
+    /* Same rule as the featured pane. A wallpaper offers Download and
+       nothing else - the absence is the whole message. */
+    if (printable(p)){
+      acts += '<button class="mc-act" data-lb="pr">Send to Print Shop</button>';
+    }
     if (left > 0){
       acts += '<button class="mc-act" data-lb="re">' +
               (left === 1 ? 'Craft this again \u00b7 last one' : 'Craft this again') +
@@ -9434,9 +9448,22 @@ window.EFFECT_PREVIEWS = {
   function money(c){ return '$' + (c / 100).toFixed(2); }
 
   /* Prodigi fetches the asset itself, so a piece with no signed URL cannot
-     be printed. That is a piece still saving, not a piece that failed. */
+     be printed. That is a piece still saving, not a piece that failed.
+
+     WALLPAPERS ARE DOWNLOAD-ONLY. Added 2026-08-10 - a separate pipeline
+     that must never reach Prodigi, because a 9:16 phone image sent to a
+     print lab comes back as a refund request and the customer would be
+     right to ask for it.
+
+     Matched on the word rather than an exact series id: the engine calls
+     the pipeline portrait-wallpaper and the middleware calls the page
+     /wallpapers. Anything with wallpaper in its name is one, and a Series
+     added later inherits the rule instead of inheriting a Print button
+     nobody meant to give it. */
   function printable(p){
-    return !!(p && p.art && p.serverId && String(p.art).indexOf('data:') !== 0);
+    if (!p) return false;
+    if (/wallpaper/i.test(String(p.series || ''))) return false;
+    return !!(p.art && p.serverId && String(p.art).indexOf('data:') !== 0);
   }
 
   function orderCount(){
@@ -11121,7 +11148,7 @@ window.CONCIERGE_POINTS = [
   { sel:'#mhCartBtn',  phrases:['cart','basket'] },
   { sel:'#mhSeriesBtn', phrases:['Series'] },
   { sel:'.mh-nav a[href="/collection"]', phrases:['My Collection','collection'] },
-  { sel:'.mh-nav a[href="/print"]',      phrases:['Print Shop','printing','print'] },
+  { sel:'.mh-nav a[href="/community"]',  phrases:['Community','the board'] },
   { sel:'.mh-nav a[href="/gallery"]',    phrases:['gallery'] },
   { sel:'.mh-nav a[href="/account"]',    phrases:['account'] },
   { sel:'#mhSignOut',  phrases:['sign out','signed out'] },
