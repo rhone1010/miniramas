@@ -6,8 +6,8 @@
 // body, and so the port from each source catalog stays traceable to the
 // file it came from. This is the only place they are merged.
 //
-// Target is 14 per silo, 56 total. Portraits is in; Pets, Action and Open
-// Studio are not yet ported.
+// Portraits carries 14, Halloween 28, Pets is not yet ported, and Studio
+// has no catalog. 42 ids live today.
 
 import {
   WALLPAPER_COMPOSITION,
@@ -17,15 +17,17 @@ import {
   type WallpaperSiloId,
 } from './wallpapers-shared'
 import { PORTRAITS_WALLPAPERS } from './wallpapers-portraits'
+import { HALLOWEEN_WALLPAPERS } from './wallpapers-halloween'
 
 export { WALLPAPER_ASPECT, WALLPAPER_SILOS, WALLPAPER_COMPOSITION }
 export type { WallpaperEffect, WallpaperSiloId }
 
 export const WALLPAPER_EFFECTS: Record<string, WallpaperEffect> = {
   ...PORTRAITS_WALLPAPERS,
-  // ...PETS_WALLPAPERS,      — needs PETS-SPEC-2026-08-02.md
-  // ...ACTION_WALLPAPERS,    — needs the Action prompt system
-  // Open Studio has no catalog by design.
+  ...HALLOWEEN_WALLPAPERS,
+  // ...PETS_WALLPAPERS,  — needs PETS-SPEC-2026-08-02.md
+  // Studio has no catalog by design: four dropdowns and a slider, and a
+  // different model. It does not belong in this map.
 }
 
 export const WALLPAPER_EFFECT_IDS = Object.keys(WALLPAPER_EFFECTS)

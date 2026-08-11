@@ -2,7 +2,11 @@
 //
 // MOBILE WALLPAPERS. 9:16, download only, no print path.
 //
-// Four silos, fourteen effects each: Portraits, Pets, Action, Open Studio.
+// Four silos: Portraits, Pets, Halloween, Studio.
+//
+// Halloween took the slot originally scoped for Groups, and it carries 28
+// effects rather than 14 — the floor is 5 across and 3 down, so that room
+// needs a toggle to flip between halves of its catalog.
 // $2.99 a piece, bulk discounts on top of the credit discounts. Volume
 // product — the thing that decides whether it works is composition, not
 // effect count.
@@ -50,22 +54,25 @@ export const WALLPAPER_COMPOSITION =
 export type WallpaperSiloId =
   | 'portraits'
   | 'pets'
-  | 'action'
-  | 'open_studio'
+  | 'halloween'
+  | 'studio'
 
 export interface WallpaperSilo {
   id:    WallpaperSiloId
   label: string
-  /** Open Studio takes a customer-written prompt rather than a fixed
-   *  catalog. See note below. */
+  /** Studio has no catalog — the prompt is built from four dropdowns and
+   *  a slider, and it runs a different model. See note below. */
   freeform?: boolean
+  /** Rotates. Halloween through October, Christmas from November. Wants a
+   *  date the glass can read rather than a deploy. */
+  seasonal?: boolean
 }
 
 export const WALLPAPER_SILOS: Record<WallpaperSiloId, WallpaperSilo> = {
-  portraits:   { id: 'portraits',   label: 'Portraits' },
-  pets:        { id: 'pets',        label: 'Pets' },
-  action:      { id: 'action',      label: 'Action' },
-  open_studio: { id: 'open_studio', label: 'Open Studio', freeform: true },
+  portraits: { id: 'portraits', label: 'Portraits' },
+  pets:      { id: 'pets',      label: 'Pets' },
+  halloween: { id: 'halloween', label: 'Halloween', seasonal: true },
+  studio:    { id: 'studio',    label: 'Studio', freeform: true },
 }
 
 export interface WallpaperEffect {
