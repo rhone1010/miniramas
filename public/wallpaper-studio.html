@@ -761,7 +761,79 @@ body::before{
      flat folder the second would overwrite the first and two controls
      would wear the same picture, which reads as a design choice rather
      than a fault. */
-  function icon(axis, id){ return '/icons/studio/' + axis + '/' + id + '.png'; }
+  /* ==================================================================
+     THE HALLOWEEN VOCABULARY
+
+     The same four axes, different words - which is the whole mechanism for
+     seasons. Christmas in November is another entry here and another icon
+     folder, not another page.
+
+     Labels only, as with the general set. The bodies live in
+     lib/v1/wallpapers/studio-halloween.ts and the page never sees them.
+     ================================================================== */
+  var HW = {
+    label:'Halloween',
+    icons:'halloween',
+    worlds:[
+      { id:'haunted',    label:'Haunted' },
+      { id:'spectral',   label:'Spectral' },
+      { id:'infernal',   label:'Infernal' },
+      { id:'harvest',    label:'Harvest' },
+      { id:'occult',     label:'Occult' },
+      { id:'gothic',     label:'Gothic' },
+      { id:'nightmare',  label:'Nightmare' },
+      { id:'otherworld', label:'Otherworld' }
+    ],
+    moods:[
+      { id:'bewitched',   label:'Bewitched' },
+      { id:'haunting',    label:'Haunting' },
+      { id:'ominous',     label:'Ominous' },
+      { id:'macabre',     label:'Macabre' },
+      { id:'nightmarish', label:'Nightmarish' },
+      /* MAJESTIC is what keeps this room from being only horror. Somebody
+         looks at a phone a hundred times a day and dread wears out inside
+         a week; this is the mood that makes a piece worth keeping into
+         November. */
+      { id:'majestic',    label:'Majestic' }
+    ],
+    /* ENERGY IS SHARED, and deliberately. Composition and motion mean the
+       same thing in a graveyard as in a nebula - Spectral + Drift is wispy
+       ghosts, Infernal + Eruption is another universe, out of one set of
+       five words. */
+    palettes:[
+      { id:'blood_moon',   label:'Blood Moon' },
+      { id:'pumpkin_fire', label:'Pumpkin Fire' },
+      { id:'witchlight',   label:'Witchlight' },
+      { id:'ghostlight',   label:'Ghostlight' },
+      { id:'poison',       label:'Poison' },
+      { id:'midnight',     label:'Midnight' },
+      { id:'dead_forest',  label:'Dead Forest' },
+      { id:'gothic_jewel', label:'Gothic Jewel' },
+      { id:'eclipse',      label:'Eclipse' },
+      { id:'phantom_rose', label:'Phantom Rose' }
+    ],
+    /* The general Studio's nudges are about material - More Glassy, More
+       Organic - and mean very little in a graveyard. These are about
+       atmosphere, which is what this room is made of. */
+    nudges:[
+      { id:'darker',   label:'Darker',      say:'Deeper shadow' },
+      { id:'grander',  label:'Grander',     say:'Greater scale' },
+      { id:'stranger', label:'Stranger',    say:'Further from sense' },
+      { id:'quieter',  label:'Quieter',     say:'Fewer forms' },
+      { id:'older',    label:'Older',       say:'More ruin and age' },
+      { id:'colour',   label:'New Palette', say:'Another set of colours' }
+    ]
+  };
+
+  var SEASONS = { halloween:HW };
+
+  /* THE ICONS ARE FOLDERED BY AXIS AND BY SEASON. Inferno and Midnight each
+     exist twice within one room, and again across rooms - one flat folder
+     would let a later file overwrite an earlier one and two controls would
+     quietly wear the same picture. */
+  function icon(axis, id){
+    return '/icons/' + ICONS + '/' + axis + '/' + id + '.png';
+  }
 
   var CHOICE = { world:null, mood:null, energy:null, palette:null };
 
@@ -776,7 +848,16 @@ body::before{
     return m ? m[1] : null;
   })();
 
-  var SEASON_LABEL = { halloween:'Halloween', christmas:'Christmas' };
+  /* THE SWAP. One place decides which words and which pictures this room
+     speaks in; everything downstream reads these four names, so a season
+     added later cannot half-apply. */
+  var S = SEASONS[SEASON] || null;
+  if (S){
+    WORLDS   = S.worlds;
+    MOODS    = S.moods;
+    PALETTES = S.palettes;
+  }
+  var ICONS = S ? S.icons : 'studio';
 
   /* Per-room price, in credits. Four is $1.99 at the rate the rest of the
      site runs on — the Studio is cheaper than a portrait wallpaper because
@@ -835,6 +916,10 @@ body::before{
           '<span class="opt-label">' + esc(o.label) + '</span>'
         : '<span class="opt-art"><img alt="" src="' + icon(axis, o.id) +
           '"></span><span class="opt-label">' + esc(o.label) + '</span>';
+      /* An icon not yet drawn leaves a plain tile rather than a browser's
+         broken-image glyph. The control still works; it has no picture. */
+      var im = b.querySelector('img');
+      if (im) im.addEventListener('error', function(){ im.remove(); });
       el.appendChild(b);
     });
   }
@@ -1038,7 +1123,7 @@ body::before{
   document.getElementById('go').addEventListener('click', function(){ generate(); });
 
   /* ---- remix ------------------------------------------------------ */
-  var REMIXES = [
+  var REMIXES = (S && S.nudges) || [
     { id:'glassier', label:'More Glassy',   say:'Glass and crystal' },
     { id:'organic',  label:'More Organic',  say:'Growth and nature' },
     { id:'dramatic', label:'More Dramatic', say:'Contrast and depth' },
@@ -1172,13 +1257,18 @@ body::before{
   readUnlock();
 
   /* ---- the season ------------------------------------------------- */
-  if (SEASON && SEASON_LABEL[SEASON]){
-    var tag = document.getElementById('seasonTag');
-    tag.textContent = SEASON_LABEL[SEASON];
-    tag.hidden = false;
-    document.querySelector('.head p').textContent =
-      'Four choices, a ' + SEASON_LABEL[SEASON].toLowerCase() + ' vocabulary, ' +
-      'and no photograph.';
+  /* THE ROOM RENAMES ITSELF.
+     This block carried over from the stacked first version and still
+     pointed at `.head p`, which that layout had and the two-column one
+     does not - so the first visitor with ?season=halloween would have met
+     a TypeError instead of a season. Found 2026-08-11 while wiring the
+     vocabulary; the selectors are the panel's now. */
+  if (S){
+    var h1 = document.querySelector('.panel-head h1');
+    if (h1) h1.textContent = 'The ' + S.label + ' Studio';
+    document.title = 'The ' + S.label + ' Studio \u00b7 Liten & Co';
+    var tag = byId('seasonTag');
+    if (tag){ tag.textContent = S.label; tag.hidden = false; }
   }
 
   paintAll();
