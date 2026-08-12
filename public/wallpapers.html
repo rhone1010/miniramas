@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mobile Wallpapers &middot; Liten &amp; Co</title>
+
+<!--
+  public/wallpapers.html
+  MOBILE WALLPAPERS - the stage and the floor.
+
+  Four rooms, one file: Portraits, Pets, Halloween, Studio. The first three
+  share a rail, an upload and a craft loop, and differ only in which effects
+  they offer. Three files would be three copies of the rail and three places
+  to fix one bug. Studio has its own page - no photograph, no Curator, a
+  different model and different money, so nothing to share.
+
+  WHAT THIS FILE IS AND IS NOT
+    It is the stage, the silo cards, the floor, the room toggle and the Set
+    card. It is NOT the craft loop - no upload handler, no generate call, no
+    To Be Crafted rail. Those wait on the route contract from CENG, and
+    writing them against a guess is how a morning gets spent finding out the
+    guess was wrong.
+
+  THE FLOOR IS 5 x 3
+    Fourteen effects and a Set card in the fifteenth slot. At 9:16 that puts
+    a card near 400 x 710 on a wide screen - deliberately larger than the
+    Portraits tiles, because somebody is judging this as a phone screen and a
+    phone screen shown small tells them nothing.
+
+  HALLOWEEN CARRIES 28
+    Two sets of fourteen behind a toggle: CLASSIC NIGHTMARES and DARK
+    CREATIONS. THE SPLIT BELOW IS PROVISIONAL - Rich has not ruled which
+    fourteen go where. It honours the two placement rules from the registry
+    and is otherwise a reading, not a decision.
+
+  PLATES
+    /previews/wallpapers/<room>/<sex>_<effect_id>.jpeg, renamed on
+    2026-08-10 to match the engine ids exactly so no lookup table is needed.
+    Some effects have no plate yet; a card with no plate shows its name on
+    a quiet ground rather than a broken image.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ==================================================================
+   TOKENS
+   The locked Liten & Co system. Nothing invented here - the palette,
+   the two faces and the 8px radius ceiling are the studio's, and a
+   wallpaper room that looked like a different company would be a
+   wallpaper room nobody trusted with a photograph.
+   ================================================================== */
+:root{
+  --oxblood:#7d4242;
+  --brass:#75623a;
+  --gold:#b68a53;
+  --series:#d7bd89;
+  --ink:#2a241e;
+  --vellum:#f3ede1;
+  --limestone:#f1ece3;
+  --espresso:#221c17;
+  --coffee:#2f2721;
+
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Manrope', system-ui, -apple-system, sans-serif;
+
+  --mh-h:72px;
+  --r-card:8px;
+
+  /* The floor. SEVEN across, two rows, fourteen to a page - ruled
+     2026-08-10. Seven at 9:16 is narrower than the workshop's four at 4:5,
+     which is the trade for showing a whole set at once instead of half of
+     one. The gap is what keeps two lit screens from bleeding together. */
+  /* FIVE ACROSS, NEVER MORE. Ruled 2026-08-10 after seven was tried and
+     was wrong: at 9:16 a seventh column makes a card too narrow to read as
+     a telephone screen, which is the only thing this product is. Two rows,
+     so ten slots - nine effects and the unlock in the tenth. */
+  --floor-cols:5;
+  --floor-gap:20px;
+  /* A CARD DOES NOT GROW PAST THIS. At 2560 five columns of a fluid grid
+     gave cards near 430px - a telephone screen rendered half again bigger
+     than the telephone. 300 x 533 is close to life size, which is the only
+     size that tells somebody the truth about what they are buying. Above
+     that the row grows a margin instead. */
+  --tile-max:300px;
+  /* ---- masthead tokens · the workshop's, so the two agree ------------ */
+  --mh-h:90px;
+  --mark-h:60px;
+  --stage-gutter:min(5%, 92px);
+  --vellum-100:#f8f4eb;
+  --vellum-200:#f3ecdd;
+  --vellum-300:#e9dec8;
+  --coffee-700:#332620;
+  --card-line:rgba(196,169,110,.28);
+  --mh-bg:var(--espresso);
+}
+
+*{ box-sizing:border-box }
+html,body{ margin:0; padding:0 }
+
+body{
+  background:var(--limestone);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:22px;              /* Garamond runs a third small; this is the floor */
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Grain rather than a texture image. 4% over a gradient reads as paper
+   without asking anybody to download a photograph of paper. */
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  opacity:.05; mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* 92% rather than the workshop's 86%. The workshop gives up six per cent a
+   side to the To Be Crafted rail; this page has no rail, so that gutter is
+   empty margin and the cards can have it. */
+.wrap{
+  position:relative; z-index:1;
+  width:92%; max-width:2400px; min-width:0;
+  margin:0 auto;
+}
+@media (min-width:1900px){ .wrap{ min-width:1850px } }
+
+/* ==================================================================
+   MASTHEAD
+   Same furniture as the workshop so somebody moving between them does
+   not feel handed to a different company.
+   ================================================================== */
+@media (min-width:1200px){
+
+/* ==================================================================
+   THE STAGE
+   Left rail is the Curator; the room fills the rest. The same split as
+   the workshop, because it IS the workshop with a different shelf.
+   ================================================================== */
+/* TWO COLUMNS ON THE LANDING, THREE IN A ROOM.
+   There is nothing to queue until an effect can be chosen, so the landing
+   gives the rail's width to the cards. The moment a room opens the queue
+   takes its column back and the floor narrows to what it will actually
+   have - a floor that resized under somebody the first time they picked
+   something would be the page moving while they used it. */
+.stage{
+  display:grid;
+  grid-template-columns:minmax(260px,18%) 1fr;
+  gap:clamp(20px,2vw,36px);
+  padding:32px 0 72px;
+  align-items:stretch;
+}
+.stage.in-room{
+  /* The rail is 200px and does not grow. It holds a short list of names
+     and a total; giving it a percentage made it take a fifth of a 2560
+     screen to say "nothing chosen yet". */
+  grid-template-columns:minmax(260px,17%) 1fr 200px;
+}
+@media (max-width:1100px){
+  .stage,.stage.in-room{ grid-template-columns:1fr }
+}
+
+/* ---- the rail ---------------------------------------------------- */
+.rail{
+  position:sticky; top:calc(var(--mh-h) + 24px);
+  background:rgba(243,237,225,.62);
+  border:1px solid rgba(117,98,58,.18);
+  border-radius:var(--r-card);
+  padding:28px 26px 32px;
+}
+@media (max-width:1100px){ .rail{ position:static } }
+
+.rail-head{
+  display:flex; align-items:center; gap:12px;
+  padding-bottom:16px; margin-bottom:22px;
+  border-bottom:1px solid rgba(117,98,58,.18);
+}
+.rail-mark{
+  width:26px; height:26px; border-radius:50%;
+  background:radial-gradient(circle at 32% 30%, var(--oxblood), #4a2626);
+}
+.rail-head h2{ margin:0; font-size:1.5rem; font-weight:400 }
+
+/* The slot. Empty until there is a photograph, and it says what makes a
+   good one rather than what the machine needs. */
+.slot{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:16px; text-align:center;
+  aspect-ratio:9/16; width:100%;
+  padding:24px;
+  background:rgba(255,255,255,.5);
+  border:1px solid rgba(182,138,83,.42);
+  border-radius:var(--r-card);
+  cursor:pointer;
+  transition:border-color .18s ease, background .18s ease;
+}
+.slot:hover{ border-color:var(--gold); background:rgba(255,255,255,.72) }
+.slot-plus{
+  width:52px; height:52px; border-radius:50%;
+  border:1px solid var(--gold); color:var(--gold);
+  display:grid; place-items:center; font-size:1.6rem; line-height:1;
+}
+.slot-say{ color:var(--oxblood); font-size:1.32rem }
+.slot-sub{ font-size:1.05rem; color:rgba(42,36,30,.6); font-style:italic }
+
+.rail-note{
+  margin-top:26px; padding-top:22px;
+  border-top:1px solid rgba(117,98,58,.18);
+  font-size:1.18rem; line-height:1.55;
+}
+.rail-note .sig{ display:block; margin-top:14px; font-style:italic; color:rgba(42,36,30,.6) }
+
+/* ==================================================================
+   THE FOUR ROOMS
+   Shown as 9:16 cards, because the shape IS the product and a square
+   card would be lying about what they are buying.
+   ================================================================== */
+/* THE FOUR ROOMS, CENTRED IN THE HEIGHT.
+   They are the only thing on this screen, so they sit in the middle of it
+   rather than hanging from the top under a band of empty ground. The cap
+   stops four cards stretching to absurdity on a 2560 - past about 1500 the
+   row grows a margin instead of growing the cards. */
+.rooms-wrap{
+  display:flex; align-items:center; justify-content:center;
+  min-height:calc(100vh - var(--mh-h) - 150px);
+  padding:24px 0;
+}
+.rooms{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:clamp(18px,1.8vw,34px);
+  width:100%; max-width:1500px;
+}
+@media (max-width:900px){
+  .rooms{ grid-template-columns:repeat(2,1fr) }
+  .rooms-wrap{ min-height:0 }
+}
+
+.room{
+  position:relative; display:block;
+  aspect-ratio:9/16;
+  border:none; padding:0; cursor:pointer;
+  border-radius:var(--r-card); overflow:hidden;
+  background:var(--coffee);
+  text-align:left;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.room:hover{ transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,0,0,.22) }
+.room img{ width:100%; height:100%; object-fit:cover; display:block }
+.room-label{
+  position:absolute; left:0; right:0; bottom:0;
+  padding:26px 24px 24px;
+  background:linear-gradient(to top, rgba(20,16,12,.88), rgba(20,16,12,0));
+  color:var(--vellum);
+  font-size:1.68rem;
+}
+.room-count{
+  display:block; margin-top:2px;
+  font-family:var(--sans); font-size:12px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:var(--series); opacity:.9;
+}
+/* A room with nothing in it yet says so on the card rather than opening
+   onto an empty floor. An empty screen should be an invitation or an
+   explanation, never a surprise. */
+.room.is-soon{ cursor:default }
+.room.is-soon:hover{ transform:none; box-shadow:none }
+.room.is-soon img{ filter:grayscale(1) brightness(.62) }
+.room.is-soon .room-count{ color:rgba(243,237,225,.72) }
+
+/* ==================================================================
+   TO BE CRAFTED
+   The workshop's rail, in the workshop's own register: it holds things
+   rather than counting them, and it says so when it is empty.
+   ================================================================== */
+.queue{
+  position:sticky; top:calc(var(--mh-h) + 24px);
+  display:flex; flex-direction:column;
+  background:var(--coffee);
+  border-radius:var(--r-card);
+  padding:22px 16px 18px;
+  color:var(--vellum);
+  min-height:360px;
+}
+@media (max-width:1100px){ .queue{ position:static } }
+.q-head{
+  display:flex; align-items:baseline; gap:10px;
+  padding-bottom:14px; margin-bottom:16px;
+  border-bottom:1px solid rgba(243,237,225,.16);
+}
+.q-title{ font-size:1.2rem; font-style:italic; color:var(--series) }
+.q-n{ font-family:var(--sans); font-size:12px; letter-spacing:.14em;
+      color:rgba(243,237,225,.5) }
+.q-empty{
+  margin:0; font-size:1.02rem; font-style:italic; line-height:1.5;
+  color:rgba(243,237,225,.52);
+}
+.q-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:18px }
+.q-item{
+  display:flex; align-items:center; gap:12px;
+  padding:8px; border-radius:6px;
+  background:rgba(243,237,225,.06);
+}
+.q-item img{ width:28px; height:50px; object-fit:cover; border-radius:4px; flex:none }
+.q-item b{ font-weight:400; font-size:.98rem; line-height:1.2 }
+.q-drop{
+  margin-left:auto; background:none; border:none; cursor:pointer;
+  color:rgba(243,237,225,.45); font-size:1.3rem; line-height:1; padding:0 4px;
+}
+.q-drop:hover{ color:var(--vellum) }
+.q-foot{ margin-top:auto; padding-top:16px; border-top:1px solid rgba(243,237,225,.16) }
+.q-total{ font-size:.98rem; color:rgba(243,237,225,.6); margin:0 0 12px }
+.q-total b{ color:var(--series); font-weight:400 }
+.q-go{
+  width:100%; padding:.7em .8em; cursor:pointer;
+  font-family:var(--serif); font-style:italic; font-size:1.12rem;
+  color:var(--vellum); background:var(--oxblood);
+  border:none; border-radius:999px;
+}
+.q-go:hover{ background:#8f4c4c }
+.q-go:disabled{ opacity:.4; cursor:default }
+
+/* ==================================================================
+   THE FLOOR
+   ================================================================== */
+.floor-head{
+  display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+  margin-bottom:24px;
+}
+.back{
+  font-family:var(--serif); font-style:italic; font-size:1.15rem;
+  color:var(--vellum); background:var(--coffee);
+  border:none; border-radius:999px; padding:.5em 1.4em; cursor:pointer;
+}
+.back:hover{ background:var(--espresso) }
+.floor-title{ margin:0; font-size:1.9rem; font-weight:400 }
+
+/* THE TOGGLE. Large, because a room of twenty-eight has two halves and
+   somebody must be able to find the other one without hunting. Named,
+   because "1 / 2" is a filing system and these are collections. */
+.sets{ display:flex; gap:12px; margin-left:auto; flex-wrap:wrap }
+.set-btn{
+  font-family:var(--serif); font-size:1.12rem; letter-spacing:.02em;
+  color:var(--ink); background:rgba(255,255,255,.5);
+  border:1px solid rgba(117,98,58,.3); border-radius:999px;
+  padding:.62em 1.7em; cursor:pointer;
+  transition:background .16s ease, color .16s ease, border-color .16s ease;
+}
+.set-btn:hover{ border-color:var(--gold) }
+.set-btn[aria-pressed="true"]{
+  background:var(--coffee); color:var(--series); border-color:var(--coffee);
+}
+
+.floor{
+  display:grid;
+  grid-template-columns:repeat(var(--floor-cols), minmax(0, var(--tile-max)));
+  justify-content:center;
+  gap:var(--floor-gap);
+}
+/* ======================================================================
+   THE BAND
+   Same principle the workshop runs on: THE RAILS GIVE GROUND BEFORE THE
+   CARDS DO. Seventy per cent of desktop sits at 1366 or 1920, and at 1366
+   a fluid three-column stage left these cards too narrow to read as a
+   screen. The Curator and the queue narrow first; the floor keeps five
+   across as long as it can hold them.
+   ====================================================================== */
+
+/* 1600 and under. The rails start giving. */
+@media (max-width:1600px){
+  :root{ --floor-gap:16px; --tile-max:260px }
+  .stage.in-room{ grid-template-columns:minmax(230px,16%) 1fr 190px }
+  .floor-title{ font-size:1.7rem }
+  .set-btn{ font-size:1.02rem; padding:.55em 1.25em }
+  .tile-label{ font-size:1.12rem; padding:14px 12px 12px }
+}
+
+/* 1366 and under. The band Rich tuned the workshop for. Four toggles have
+   to sit on one line here or the crumb bar wraps and eats a card's worth
+   of height - so they lose padding before the floor loses a column. */
+@media (max-width:1400px){
+  :root{ --floor-gap:12px; --tile-max:220px }
+  .stage{ grid-template-columns:220px 1fr }
+  .stage.in-room{ grid-template-columns:220px 1fr 170px }
+  .rail{ padding:18px 16px 22px }
+  .rail-head h2{ font-size:1.32rem }
+  .slot{ padding:16px }
+  .slot-plus{ width:44px; height:44px; font-size:1.4rem }
+  .slot-say{ font-size:1.15rem }
+  .slot-sub{ font-size:.95rem }
+  .rail-note{ font-size:1.05rem; margin-top:18px; padding-top:16px }
+
+  .floor-head{ gap:12px; margin-bottom:18px }
+  .back{ font-size:1.02rem; padding:.42em 1.1em }
+  .floor-title{ font-size:1.5rem }
+  .sets{ gap:8px }
+  .set-btn{ font-size:.92rem; padding:.5em .95em; letter-spacing:0 }
+
+  .tile-label{ font-size:1.02rem; padding:12px 10px 10px }
+  .queue{ padding:18px 13px 15px; min-height:320px }
+  .q-title{ font-size:1.08rem }
+  .q-empty{ font-size:.95rem }
+  .q-go{ font-size:1.02rem }
+
+  .set-count{ font-size:2.1rem }
+  .set-name{ font-size:1.24rem }
+  .set-sub{ font-size:.95rem }
+  .set-eyebrow{ font-size:11px; letter-spacing:.16em }
+}
+
+/* Below this the floor gives up columns, because four toggles and five
+   cards will not both fit and the cards matter more. */
+@media (max-width:1180px){ :root{ --floor-cols:4 } }
+@media (max-width:980px){  :root{ --floor-cols:3 } }
+@media (max-width:640px){  :root{ --floor-cols:2; --floor-gap:12px } }
+
+.tile{
+  position:relative; display:block; padding:0; border:none; cursor:pointer;
+  aspect-ratio:9/16;
+  border-radius:var(--r-card); overflow:hidden;
+  background:var(--coffee);
+  text-align:left;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.tile:hover{ transform:translateY(-3px); box-shadow:0 16px 34px rgba(0,0,0,.2) }
+/* Held. A ring rather than a tick in a corner - the whole card is the thing
+   that was chosen, so the whole card should say so. */
+.tile.is-held{ box-shadow:0 0 0 3px var(--gold), 0 16px 34px rgba(0,0,0,.2) }
+.tile img{ width:100%; height:100%; object-fit:cover; display:block }
+.tile-label{
+  position:absolute; left:0; right:0; bottom:0;
+  padding:16px 14px 14px;
+  background:linear-gradient(to top, rgba(20,16,12,.88), rgba(20,16,12,0));
+  color:var(--vellum); font-size:1.22rem; line-height:1.25;
+}
+
+/* A tile whose plate has not been shot. It shows its name on a dark
+   ground - which is what an unshot effect honestly is - rather than a
+   browser's broken-image glyph. */
+.tile-bare{
+  position:absolute; inset:0;
+  display:grid; place-items:center; padding:24px;
+  background:
+    radial-gradient(ellipse at 50% 34%, rgba(182,138,83,.16), transparent 62%),
+    var(--coffee);
+  color:rgba(243,237,225,.5);
+  font-style:italic; font-size:1.1rem; text-align:center;
+}
+
+/* ---- THE SET CARD, in the fifteenth slot -------------------------
+   Not a bundle and not a discount. Buy five from this room and its
+   special edition unlocks - so the card is a COUNTER, and the thing it
+   counts is already true when they arrive. A card that says "3 of 5"
+   is an invitation; a card that says "buy 5" is an advertisement. */
+.setcard{
+  position:relative; aspect-ratio:9/16;
+  border-radius:var(--r-card); overflow:hidden;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; padding:28px 22px; text-align:center;
+  background:
+    radial-gradient(ellipse at 50% 22%, rgba(182,138,83,.2), transparent 60%),
+    var(--vellum);
+  border:1px solid rgba(182,138,83,.5);
+}
+.set-eyebrow{
+  font-family:var(--sans); font-size:12px; font-weight:600;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--brass);
+}
+.set-name{ font-size:1.6rem; line-height:1.2 }
+.set-count{ font-size:2.6rem; color:var(--oxblood); line-height:1 }
+.set-sub{ font-size:1.05rem; font-style:italic; color:rgba(42,36,30,.62) }
+/* The progress bar is the only decoration on this card, and it earns its
+   place by being the whole message. */
+.set-bar{
+  width:78%; height:5px; border-radius:999px;
+  background:rgba(117,98,58,.2); overflow:hidden;
+}
+.set-bar i{ display:block; height:100%; background:var(--gold); width:0 }
+
+.foot{
+  padding:40px 0 64px; text-align:center;
+  font-size:1.05rem; font-style:italic; color:rgba(42,36,30,.5);
+}
+
+[hidden]{ display:none !important }
+
+@media (prefers-reduced-motion:reduce){
+  *{ transition:none !important }
+  .tile:hover,.room:hover{ transform:none }
+}
+
+/* ======================================================================
+   THE MASTHEAD
+   Transplanted from portraits.html on 2026-08-11, not reimplemented. Three
+   pages had three mastheads because these two were written from the token
+   list rather than from the workshop - nav at 1.15rem and 1.12rem against
+   the workshop's 1.5em, a flex row against its three-zone grid, and a text
+   logo where the workshop draws the mark.
+
+   Nobody decided the wallpaper rooms should have a smaller masthead. This
+   is what agreeing looks like.
+   ====================================================================== */
+.mh{
+  position:sticky; top:0; z-index:60;
+  height:var(--mh-h);
+  background:var(--mh-bg);
+  border-bottom:1px solid var(--card-line);
+  display:grid;
+  /* THREE ZONES. The nav is centred on the PAGE, not between the outer
+     two - so it does not shift when the right cluster gains a pill. */
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  padding-inline:var(--stage-gutter);
+}
+
+/* ---- the wordmark ---------------------------------------------------
+   Its baked #fff fill is stripped on the way in so it takes currentColor
+   and can be recoloured without touching the file. Height governs; width
+   follows the 1.19:1 ratio. */
+.mh-logo{
+  justify-self:start; text-decoration:none;
+  display:inline-flex; align-items:center;
+  color:var(--vellum-100);
+}
+.mh-mark{ height:var(--mark-h); width:auto; flex:0 0 auto;
+          display:block; overflow:visible }
+.mh-mark path{ fill:currentColor }
+.sr{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* ---- the series switcher --------------------------------------------
+   Not a fourth zone - it lives inside the nav so the three-zone rule
+   holds. It names the room you are standing in and opens the door to the
+   others, which these pages had no way of doing: the way back to the
+   workshop was a nav link that looked like every other nav link. */
+.mh-series{ position:relative; display:flex; align-items:center; margin-right:34px }
+.mh-series-btn{
+  display:inline-flex; align-items:center; gap:.34em;
+  font-family:var(--serif); font-size:1.8em; font-weight:400; line-height:1;
+  color:var(--series); padding:10px 0; cursor:pointer; white-space:nowrap;
+  background:none; border:none;
+  transition:color .16s ease;
+}
+.mh-series-btn:hover{ color:#e6d2a8 }
+.mh-series-btn .caret{
+  width:.52em; height:.52em; flex:0 0 auto; margin-top:.14em; opacity:.72;
+  transform-origin:50% 45%;
+  transition:transform .22s cubic-bezier(.22,.7,.3,1), opacity .16s ease;
+}
+.mh-series-btn .caret path{
+  fill:none; stroke:currentColor; stroke-width:1.35;
+  stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;
+}
+.mh-series-btn:hover .caret{ opacity:1 }
+.mh-series-btn[aria-expanded="true"] .caret{ transform:rotate(180deg); opacity:1 }
+
+.mh-series-menu{
+  position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%);
+  min-width:16em;
+  background:linear-gradient(180deg,#2a1f1b 0%, #221915 100%);
+  border:1px solid var(--card-line);
+  border-radius:var(--r-card);
+  box-shadow:0 22px 48px -20px rgba(20,12,8,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  padding:20px; display:flex; flex-direction:column; z-index:70;
+}
+.mh-series-menu a{
+  display:flex; align-items:center; justify-content:space-between; gap:1.2em;
+  font-family:var(--serif); font-size:1.45em; font-weight:400; line-height:1.1;
+  color:var(--vellum-200); text-decoration:none; white-space:nowrap;
+  padding:.52em .7em; border-radius:6px;
+  transition:background .14s ease, color .14s ease;
+}
+.mh-series-menu a:hover,.mh-series-menu a:focus-visible{
+  background:linear-gradient(180deg, rgba(215,189,137,.16), rgba(215,189,137,.09));
+  color:var(--series); outline:none;
+}
+.mh-series-menu a[aria-current="page"]{ color:var(--series) }
+.mh-series-menu a[aria-current="page"]::after{
+  content:""; width:5px; height:5px; border-radius:50%; background:var(--series);
+}
+.mh-series-menu .sep{
+  height:1px; margin:6px 8px;
+  background:linear-gradient(90deg, transparent, rgba(215,189,137,.28), transparent);
+}
+
+/* ---- the nav --------------------------------------------------------
+   1.5em, which is the number these pages were missing. Cormorant renders
+   about a third smaller than a sans at the same size, so a nav that looks
+   generous in the stylesheet reads as small on the glass. */
+.mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
+.mh-nav a{
+  position:relative; text-decoration:none; white-space:nowrap;
+  font-family:var(--serif); font-size:1.5em; font-weight:400; line-height:1;
+  color:var(--vellum-300); padding:10px 0;
+  transition:color .16s ease;
+}
+.mh-nav a:hover{ color:var(--vellum-100) }
+.mh-nav a.on,.mh-nav a[aria-current="page"]{ color:var(--gold) }
+.mh-nav a.on::after,.mh-nav a[aria-current="page"]::after{
+  content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
+  background:var(--gold);
+}
+
+/* ---- the right cluster ---------------------------------------------
+   NO CART. Wallpapers are download-only and never reach the print
+   pipeline, so a basket here would be furniture promising something that
+   cannot happen. */
+.mh-right{ justify-self:end; display:flex; align-items:center; gap:12px }
+.mh-credits{
+  display:flex; align-items:center; gap:10px;
+  height:44px; padding:0 16px; border-radius:var(--r-card);
+  background:var(--coffee-700); border:1px solid var(--card-line);
+  color:var(--vellum-100);
+  font-family:var(--sans); font-size:1rem; font-weight:600; cursor:pointer;
+  transition:background .16s ease, border-color .16s ease;
+}
+.mh-credits:hover{ background:#40302a; border-color:var(--gold) }
+.mh-credits .v{ font-variant-numeric:tabular-nums }
+.mh-credits .u{ font-weight:400; color:var(--vellum-300) }
+
+/* ---- ask · the Concierge's mark -------------------------------------
+   The one light-bodied control in the cluster: credits are the customer's
+   own thing, this is the studio offering something. The pulse when
+   somebody looks stuck belongs to concierge.js and lands here as
+   .cx-notice, so one place decides when help is offered. */
+.mh-ask{
+  display:flex; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:var(--r-card);
+  background:rgba(243,237,225,.10);
+  border:1px solid rgba(243,237,225,.34);
+  color:var(--vellum-100); cursor:pointer;
+  transition:background .16s ease, border-color .16s ease, color .16s ease;
+}
+.mh-ask:hover{ background:rgba(243,237,225,.20); border-color:var(--gold); color:#fff }
+.mh-ask svg{
+  width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.6;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+
+/* ---- the band -------------------------------------------------------
+   The workshop's, so a masthead is the same height on both at every
+   width. It shrinks by giving up height and mark before it gives up
+   type. */
+@media (max-width:1920px){ :root{ --mh-h:76px } }
+@media (max-width:1599px){ :root{ --mark-h:52px } }
+@media (max-width:1366px){
+  :root{ --mh-h:60px; --mark-h:46px; --stage-gutter:3.9% }
+  .mh-ask{ width:34px; height:34px }
+  .mh-ask svg{ width:18px; height:18px }
+  .mh-credits{ height:38px; padding:0 12px }
+  .mh-nav{ gap:22px }
+  .mh-series{ margin-right:24px }
+}
+@media (max-width:1100px){
+  .mh-nav{ display:none }
+  .mh{ grid-template-columns:auto 1fr auto }
+}
+</style>
+</head>
+<body>
+
+<header class="mh">
+  <a class="mh-logo" href="/"><svg class="mh-mark" viewBox="0 0 1821.36 1528.47" role="img" aria-label="Liten &amp; Co" focusable="false"><g> <path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/> </g> <g> <path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/> <path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/> <path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/> <path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/> <path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/> <path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/> <path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/> </g></svg><span class="sr">Liten &amp; Co</span></a>
+  <nav class="mh-nav">
+    <div class="mh-series">
+      <button class="mh-series-btn" id="mhSeriesBtn" type="button"
+              aria-expanded="false" aria-haspopup="true">
+        <span>Mobile Wallpapers</span>
+        <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
+      </button>
+      <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
+        <a href="/portraits" role="menuitem">Portraits</a>
+        <div class="sep"></div>
+        <a href="/wallpapers" role="menuitem" aria-current="page">Mobile Wallpapers</a>
+        <a href="/wallpapers/studio" role="menuitem">The Studio</a>
+      </div>
+    </div>
+    <a href="/gallery">Gallery</a>
+    <a href="/community">Community</a>
+    <a href="/collection">My Collection</a>
+    <a href="/account">Account</a>
+  </nav>
+  <div class="mh-right">
+    <button class="mh-credits" id="mhCredits" type="button" hidden>
+      <span class="v" id="mhCreditsN">0</span><span class="u">credits</span>
+    </button>
+    <button class="mh-ask" type="button" data-concierge aria-label="Ask the Concierge">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8Z"/><path d="M8.6 11h6.8"/><path d="M8.6 14.4h4.2"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stage">
+
+    <!-- THE RAIL -->
+    <aside class="rail">
+      <div class="rail-head">
+        <span class="rail-mark"></span>
+        <h2>Curator</h2>
+      </div>
+
+      <!-- NO PHOTOGRAPH AT THIS LEVEL. Ruled 2026-08-10: the Curator speaks
+           alone on the landing and the slot appears once a room is chosen,
+           because which room it is decides what she asks for - one
+           photograph for Portraits and Pets, a question first for Groups,
+           nothing at all for Studio. Asking for a picture before knowing
+           what it is for is asking the wrong question. -->
+      <button class="slot" id="slot" type="button" hidden>
+        <span class="slot-plus">+</span>
+        <span class="slot-say">Add a photograph</span>
+        <span class="slot-sub">A clear, face-forward image.</span>
+      </button>
+
+      <p class="rail-note" id="railNote">
+        Choose a room and I&rsquo;ll show you what your photograph can become
+        on a telephone screen.
+        <span class="sig">&mdash; C.</span>
+      </p>
+    </aside>
+
+    <!-- THE ROOM -->
+    <main>
+      <!-- STAGE: the four rooms -->
+      <section id="stageRooms">
+        <div class="rooms-wrap">
+          <div class="rooms" id="rooms"></div>
+        </div>
+      </section>
+
+      <!-- FLOOR: one room's effects -->
+      <section id="stageFloor" hidden>
+        <div class="floor-head">
+          <button class="back" id="back" type="button">&lsaquo; All rooms</button>
+          <h1 class="floor-title" id="floorTitle">Portraits</h1>
+          <div class="sets" id="sets" hidden></div>
+        </div>
+        <div class="floor" id="floor"></div>
+      </section>
+
+      <p class="foot">Wallpapers are download-only. Nothing here is sent to the print lab.</p>
+    </main>
+
+    <!-- Present only inside a room. See the note on .stage. -->
+    <aside class="queue" id="queue" hidden>
+      <div class="q-head">
+        <span class="q-title">To Be Crafted</span>
+        <span class="q-n" id="qN"></span>
+      </div>
+      <p class="q-empty" id="qEmpty">Nothing chosen yet. Pick an effect and I&rsquo;ll hold it here.</p>
+      <div class="q-list" id="qList"></div>
+      <div class="q-foot">
+        <p class="q-total">Total <b id="qTotal">0 credits</b></p>
+        <button class="q-go" id="qGo" type="button" disabled>Craft</button>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+
+<script>
+/* The Series switcher. Opens, closes on Escape or a click outside, and
+   does nothing else - it is a door, not a menu system. */
+(function(){
+  var b = document.getElementById('mhSeriesBtn');
+  var m = document.getElementById('mhSeriesMenu');
+  if (!b || !m) return;
+  function shut(){ m.hidden = true; b.setAttribute('aria-expanded','false'); }
+  b.addEventListener('click', function(e){
+    e.stopPropagation();
+    var open = m.hidden;
+    m.hidden = !open;
+    b.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', function(e){
+    if (!m.hidden && !m.contains(e.target)) shut();
+  });
+  addEventListener('keydown', function(e){ if (e.key === 'Escape') shut(); });
+})();
+</script>
+<script src="/concierge.js" defer data-dock data-attention></script>
+
+<script>
+/* ==================================================================
+   THE CATALOG
+
+   Read from window.WALLPAPER_ROWS when the engine's registry script is
+   on the page, and fall back to the copy below when it is not. The
+   fallback is a MIRROR of lib/v1/wallpapers/wallpaper-registry-rows.ts
+   as of 2026-08-10 and is here so this page can be looked at before
+   that script ships - not as a second source of truth.
+
+   If the two ever disagree, the registry wins. Delete this block the
+   day the registry is served.
+   ================================================================== */
+(function(){
+  'use strict';
+
+  var FALLBACK_ROOMS = [
+    { id:'portraits', label:'Portraits' },
+    { id:'pets',      label:'Pets' },
+    /* HALLOWEEN IS A SEASON, NOT A ROOM. Ruled 11 August: it holds every
+       Halloween thing - the photo effects, pets in costume, and generated
+       art from the Studio's controls - so it opens onto its own cards
+       rather than straight onto a floor. Christmas does the same in
+       November. `season` is what makes it behave that way. */
+    { id:'halloween', label:'Halloween', season:true },
+    { id:'studio',    label:'Studio',    freeform:true }
+  ];
+
+  var FALLBACK_ROWS = [
+    /* PORTRAITS · 14 */
+    { id:'stained_glass',   label:'Stained Glass',        room:'portraits' },
+    { id:'petal_sculpture', label:'Petal Sculpture',      room:'portraits' },
+    { id:'tidewood',        label:'Tidewood',             room:'portraits' },
+    { id:'retro_robot',     label:'Atomic Age Robot',     room:'portraits' },
+    { id:'clockwork',       label:'Clockwork',            room:'portraits' },
+    { id:'balloon_face',    label:'Balloon',              room:'portraits' },
+    { id:'neon',            label:'Neon Drawing',         room:'portraits' },
+    { id:'victorian',       label:'Victorian Portrait',   room:'portraits' },
+    { id:'renaissance',     label:'Renaissance Portrait', room:'portraits' },
+    { id:'persian_court',   label:'Persian Court',        room:'portraits' },
+    { id:'impressionist',   label:'Impressionist',        room:'portraits' },
+    { id:'charcoal_chalk',  label:'Charcoal & Chalk',     room:'portraits' },
+    { id:'bronze',          label:'Bronze',               room:'portraits' },
+    { id:'ebony',           label:'Ebony',                room:'portraits' },
+
+    /* HALLOWEEN · 28, in four sets of seven. Rich's lists, 2026-08-10.
+       Order is page order: the first nine are page one, and so on.
+
+       THIS IS NOT THE LIST IN wallpaper-registry-rows.ts. Seven of these
+       are new - skeleton, spirit, candle_wraith, pumpkin, bone_collector,
+       crimson_oracle, haunted_ringmaster - and eight that were in the
+       registry are not here. Rich's list is the one; the registry needs
+       bringing to it. */
+    { id:'elegant_vampire',    label:'Elegant Vampire',     room:'halloween' },
+    { id:'skeleton',           label:'Skeleton',            room:'halloween' },
+    { id:'mummy',              label:'Mummy',               room:'halloween' },
+    { id:'spirit',             label:'Victorian Spirit',    room:'halloween' },
+    { id:'ghost_pirate',       label:'Ghost Pirate',        room:'halloween' },
+    { id:'necromancer',        label:'Necromancer',         room:'halloween' },
+    { id:'candle_wraith',      label:'Candle Wraith',       room:'halloween' },
+
+    { id:'werewolf',           label:'Werewolf',            room:'halloween' },
+    { id:'swamp_creature',     label:'Swamp Creature',      room:'halloween' },
+    { id:'moon_beast',         label:'Moon Beast',          room:'halloween' },
+    { id:'moth_monarch',       label:'Moth King / Queen',   room:'halloween' },
+    { id:'haunted_scarecrow',  label:'Scarecrow',           room:'halloween' },
+    { id:'harvest_god',        label:'Harvest God',         room:'halloween' },
+    { id:'hollow_tree',        label:'Hollow Tree',         room:'halloween' },
+
+    { id:'pumpkin',            label:'Pumpkin King',        room:'halloween' },
+    { id:'cursed_knight',      label:'Cursed Knight',       room:'halloween' },
+    { id:'clockwork_corpse',   label:'Clockwork Corpse',    room:'halloween' },
+    { id:'bone_collector',     label:'Bone Collector',      room:'halloween' },
+    { id:'living_cathedral',   label:'Living Cathedral',    room:'halloween' },
+    { id:'lantern_keeper',     label:'Lantern Keeper',      room:'halloween' },
+    { id:'headless_horseman',  label:'Headless Horseman',   room:'halloween' },
+
+    { id:'gothic_witch',       label:'Gothic Witch',        room:'halloween' },
+    { id:'dark_wizard',        label:'Dark Wizard',         room:'halloween' },
+    { id:'demon_lord',         label:'Demon Lord',          room:'halloween' },
+    { id:'shadow_monarch',     label:'Shadow King / Queen', room:'halloween' },
+    { id:'eclipse',            label:'Eclipse',             room:'halloween' },
+    { id:'crimson_oracle',     label:'Crimson Oracle',      room:'halloween' },
+    { id:'haunted_ringmaster', label:'Haunted Ringmaster',  room:'halloween' }
+  ];
+
+  /* PAGE NAMES BELONG TO A ROOM. They were a flat list keyed on page index,
+     so Portraits' second page came up called THE BEASTS - Halloween's names
+     appearing in a room that has no beasts in it. A room with no entry here
+     gets numbered pages, which is honest: only Halloween's pages are
+     actually collections. */
+  var SET_NAMES = {
+    halloween: ['The Undead', 'The Beasts', 'The Cursed', 'The Dark Arts']
+  };
+
+  /* WHAT FIVE UNLOCKS. Named per room because it is a thing Rich chooses
+     rather than a rule that can be computed.
+
+     The Studio has no catalogue, so there is nothing to name - the sixth
+     is simply free. A different feeling from a named edition, and the
+     right one: in a room of 2,880 combinations the reward is another go,
+     not an object somebody else picked. */
+  var SPECIAL = {
+    portraits: 'the Gilded Portrait',
+    halloween: 'the Blood Moon',
+    pets:      'the Companion',
+    studio:    null
+  };
+
+  /* Per room, in credits. The Studio is 4 - $1.99 at the rate the rest of
+     the site runs on - because it costs a tenth of a cent to make and the
+     market will not bear a portrait's price for something nobody's face is
+     in. Everything else is 6, which is $2.99. */
+  var CREDITS = { studio: 4 };
+  var CREDITS_DEFAULT = 6;
+
+  var ROOMS = (window.WALLPAPER_ROOMS && window.WALLPAPER_ROOMS.length)
+    ? window.WALLPAPER_ROOMS : FALLBACK_ROOMS;
+  var ROWS = (window.WALLPAPER_ROWS && window.WALLPAPER_ROWS.length)
+    ? window.WALLPAPER_ROWS : FALLBACK_ROWS;
+
+  /* NINE TO A PAGE. Ten slots on the floor and the unlock takes the last
+     one, so a page is nine effects. A room's catalogue is cut into pages
+     here rather than carried as a `set` on every row - the page a thing
+     lands on is a consequence of how many came before it, and writing that
+     onto each row means renumbering the file every time one is added. */
+  var PER_PAGE = 9;
+
+  function rowsFor(room){
+    var out = [];
+    for (var i = 0; i < ROWS.length; i++){
+      if (ROWS[i].room === room) out.push(ROWS[i]);
+    }
+    return out;
+  }
+
+  function pagesFor(room){
+    var all = rowsFor(room), out = [];
+    for (var i = 0; i < all.length; i += PER_PAGE) out.push(all.slice(i, i + PER_PAGE));
+    return out;
+  }
+
+  /* ==================================================================
+     WHICH SITTER
+     The same problem the Portraits floor has, and the same answer: an
+     exact half and half, shuffled, dealt once per room. A real coin per
+     card gives you fourteen men about once in every sixteen thousand
+     loads, and that load is somebody's first impression.
+
+     Named off anything else in the file on purpose. A second `coinFor`
+     in one scope is what killed this on the Portraits floor and cost a
+     working session to find.
+     ================================================================== */
+  var SITTER = {};
+  var DEALT = {};
+
+  function dealRoom(room){
+    if (DEALT[room]) return;
+    DEALT[room] = true;
+    var list = rowsFor(room).map(function(r){ return r.id; }).sort();
+    var half = Math.ceil(list.length / 2);
+    var want = [];
+    for (var i = 0; i < list.length; i++) want.push(i < half ? 'man' : 'woman');
+    for (var j = want.length - 1; j > 0; j--){
+      var k = Math.floor(Math.random() * (j + 1));
+      var t = want[j]; want[j] = want[k]; want[k] = t;
+    }
+    for (var m = 0; m < list.length; m++) SITTER[room + ':' + list[m]] = want[m];
+  }
+
+  /* SUBJECT wins over the coin the moment a photograph is read, exactly as
+     it does in the workshop. Null until then. */
+  var SUBJECT = null;
+
+  function plate(row){
+    dealRoom(row.room);
+    var who = SUBJECT || SITTER[row.room + ':' + row.id] || 'man';
+    return '/previews/wallpapers/' + row.room + '/' + who + '_' +
+           (row.preview || row.id) + '.jpeg';
+  }
+
+  /* ==================================================================
+     PAINT
+     ================================================================== */
+  var elRooms   = document.getElementById('rooms');
+  var elFloor   = document.getElementById('floor');
+  var elSets    = document.getElementById('sets');
+  var elTitle   = document.getElementById('floorTitle');
+  var stageRooms= document.getElementById('stageRooms');
+  var stageFloor= document.getElementById('stageFloor');
+  var railNote  = document.getElementById('railNote');
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c];
+    });
+  }
+
+  /* A card whose plate is missing shows its name instead. The onerror
+     fires once and then removes itself, so a slow connection that
+     recovers does not leave the bare card behind. */
+  function bare(img, label){
+    var host = img.parentNode;
+    if (!host || host.querySelector('.tile-bare')) return;
+    img.remove();
+    var d = document.createElement('div');
+    d.className = 'tile-bare';
+    d.textContent = label;
+    host.insertBefore(d, host.firstChild);
+  }
+
+  function paintRooms(){
+    elRooms.innerHTML = '';
+    ROOMS.forEach(function(room){
+      var rows = rowsFor(room.id);
+      var live = rows.length;
+      var soon = !live && !room.freeform && !room.season;
+
+      var b = document.createElement('button');
+      b.className = 'room' + (soon ? ' is-soon' : '');
+      b.type = 'button';
+      b.dataset.room = room.id;
+      if (soon) b.disabled = true;
+
+      var art = room.freeform
+        ? '/previews/wallpapers/studio/cover.jpeg'
+        : (rows.length ? plate(rows[0]) : '');
+
+      var count = room.season   ? 'Effects, pets and the Studio'
+                : room.freeform ? 'No photograph needed'
+                : soon          ? 'Coming soon'
+                : live + ' effect' + (live === 1 ? '' : 's');
+
+      b.innerHTML =
+        (art ? '<img alt="" src="' + esc(art) + '">' : '') +
+        '<span class="room-label">' + esc(room.label) +
+        '<span class="room-count">' + esc(count) + '</span></span>';
+
+      var img = b.querySelector('img');
+      if (img) img.addEventListener('error', function(){ bare(img, room.label); });
+
+      elRooms.appendChild(b);
+    });
+  }
+
+  var openRoom = null;
+  var openSet  = 0;
+
+  /* WHAT A SEASON HOLDS. Three ways in rather than a floor: the same
+     effects a portrait gets, the same for a pet, and the Studio's four
+     controls speaking a seasonal vocabulary. Data rather than markup, so
+     Christmas is an entry here and not a second screen to build. */
+  var SEASON_WAYS = {
+    halloween: [
+      { id:'halloween',        kind:'floor',
+        label:'Portraits',     line:'Your photograph, transformed' },
+      { id:'halloween-pets',   kind:'soon',
+        label:'Pets',          line:'Coming soon' },
+      { id:'halloween-studio', kind:'studio',
+        label:'The Studio',    line:'No photograph needed' }
+    ]
+  };
+
+  function paintFloor(){
+    var room = ROOMS.filter(function(r){ return r.id === openRoom; })[0];
+    if (!room) return;
+
+    elTitle.textContent = room.label;
+
+    /* The toggle only exists for a room that carries more than one floor's
+       worth. Showing a one-option toggle would be furniture pretending to
+       be a choice. */
+    /* The toggle is drawn from the number of PAGES, not from a flag. A room
+       that grows past nine gets one without anybody remembering to set
+       something; a room that shrinks loses it the same way. */
+    var pages = pagesFor(openRoom);
+    if (openSet >= pages.length) openSet = 0;
+
+    elSets.hidden = pages.length < 2;
+    if (pages.length > 1){
+      elSets.innerHTML = '';
+      pages.forEach(function(_, i){
+        var b = document.createElement('button');
+        b.className = 'set-btn';
+        b.type = 'button';
+        var names = SET_NAMES[openRoom] || [];
+        b.textContent = (names[i] || ('Set ' + (i + 1))).toUpperCase();
+        b.setAttribute('aria-pressed', String(i === openSet));
+        b.dataset.set = String(i);
+        elSets.appendChild(b);
+      });
+    }
+
+    var rows = pages[openSet] || [];
+
+    elFloor.innerHTML = '';
+    rows.forEach(function(row){
+      var b = document.createElement('button');
+      b.className = 'tile';
+      b.type = 'button';
+      b.dataset.effect = row.id;
+      b.innerHTML =
+        '<img alt="" src="' + esc(plate(row)) + '">' +
+        '<span class="tile-label">' + esc(row.label) + '</span>';
+      var img = b.querySelector('img');
+      img.addEventListener('error', function(){ bare(img, row.label); });
+      elFloor.appendChild(b);
+    });
+
+    elFloor.appendChild(unlockCard(room));
+    paintQueue();
+  }
+
+  /* THE UNLOCK, in the tenth slot. Five from this room and its special
+     edition is yours, once per room. A COUNTER rather than an offer: the
+     number is already true when they arrive, and a card that shows where
+     somebody stands invites the next one in a way that a card saying BUY
+     FIVE never does. */
+  function unlockCard(room){
+    var have = ownedIn(room.id), need = 5, done = have >= need;
+    var special = SPECIAL[room.id];
+    var d = document.createElement('div');
+    d.className = 'setcard';
+    d.innerHTML =
+      '<span class="set-eyebrow">' + (done ? 'Unlocked' : 'The Set') + '</span>' +
+      '<span class="set-count">' + Math.min(have, need) + ' of ' + need + '</span>' +
+      '<span class="set-bar"><i style="width:' +
+        Math.round(Math.min(have / need, 1) * 100) + '%"></i></span>' +
+      '<span class="set-name">' + (done
+        ? (special ? 'Yours: ' + esc(special) : 'Your next one is free')
+        : (special
+            ? 'Five from this room and ' + esc(special) + ' is yours'
+            : 'Five from this room and the sixth is free')) + '</span>' +
+      '<span class="set-sub">' + (done
+        ? 'Already in your collection.'
+        : 'No charge for it. One per room.') + '</span>';
+    return d;
+  }
+
+  /* How many from this room they hold. Wired to the account when the craft
+     loop lands; zero until then, which is the honest answer for somebody
+     who has not made anything yet. */
+  function ownedIn(){ return 0; }
+
+  /* The Set lives in the footer now, not on the floor. Five from a room
+     unlocks that room's special edition, once per room. Wired when the
+     craft loop lands. */
+
+  /* ==================================================================
+     NAVIGATION
+     ================================================================== */
+  /* replaceState throws in any sandboxed document - an artifact preview, an
+     iframe with a null origin, a file:// open. The URL is a courtesy so a
+     room can be linked; it is not worth an uncaught error in a console
+     somebody is reading for a real fault. */
+  function setPath(p){
+    try { if (history.replaceState) history.replaceState(null, '', p); }
+    catch (e) {}
+  }
+
+  function showRooms(){
+    openRoom = null;
+    paintRooms();
+    stageFloor.hidden = true;
+    stageRooms.hidden = false;
+    var slot0 = document.getElementById('slot');
+    if (slot0) slot0.hidden = true;
+    document.getElementById('queue').hidden = true;
+    document.querySelector('.stage').classList.remove('in-room');
+    railNote.innerHTML =
+      'Choose a room and I&rsquo;ll show you what your photograph can become ' +
+      'on a telephone screen.<span class="sig">&mdash; C.</span>';
+    setPath('/wallpapers');
+  }
+
+  /* `viaSeason` is set when the call came from a season's own card. Without
+     it showFloor would see the season flag, send the customer back to the
+     cards they just pressed, and the floor would never open - the season
+     would be a door that opens onto itself. */
+  function showFloor(id, viaSeason){
+    var room = ROOMS.filter(function(r){ return r.id === id; })[0];
+    if (!room) return;
+
+    /* Studio is a different product on a different page - no photograph,
+       no Curator, another model. It is a room on this stage and nothing
+       else here applies to it. */
+    if (room.freeform){
+      location.href = '/wallpapers/studio';
+      return;
+    }
+    /* A season opens onto its ways in, not onto a floor. */
+    if (room.season && SEASON_WAYS[id] && !viaSeason){
+      showSeason(room);
+      return;
+    }
+    if (!rowsFor(id).length) return;
+
+    openRoom = id;
+    openSet = 0;
+    stageRooms.hidden = true;
+    stageFloor.hidden = false;
+    /* The slot arrives with the room. See the note on the markup. */
+    var slot = document.getElementById('slot');
+    if (slot) slot.hidden = false;
+    document.getElementById('queue').hidden = false;
+    document.querySelector('.stage').classList.add('in-room');
+    paintFloor();
+    railNote.innerHTML = esc(room.label) +
+      '. Pick what you like and I&rsquo;ll hold it.<span class="sig">&mdash; C.</span>';
+    setPath('/wallpapers/' + id);
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  /* THE QUEUE. Six credits an effect - $2.99 at the ruled rate. Held here
+     only; nothing is spent until Craft, and Craft is not wired until the
+     route contract lands. */
+  function perEffect(){
+    return CREDITS[openRoom] || CREDITS_DEFAULT;
+  }
+  var HELD = [];
+
+  function paintQueue(){
+    var list  = document.getElementById('qList');
+    var empty = document.getElementById('qEmpty');
+    var n     = HELD.length;
+
+    document.getElementById('qN').textContent = n ? n + '' : '';
+    empty.hidden = n > 0;
+    list.innerHTML = '';
+
+    HELD.forEach(function(row){
+      var d = document.createElement('div');
+      d.className = 'q-item';
+      d.innerHTML =
+        '<img alt="" src="' + esc(plate(row)) + '">' +
+        '<b>' + esc(row.label) + '</b>' +
+        '<button class="q-drop" type="button" data-drop="' + esc(row.id) +
+        '" aria-label="Remove ' + esc(row.label) + '">&times;</button>';
+      list.appendChild(d);
+    });
+
+    document.getElementById('qTotal').textContent =
+      (n * perEffect()) + ' credit' + (n * perEffect() === 1 ? '' : 's');
+    document.getElementById('qGo').disabled = !n;
+    document.getElementById('qGo').textContent = n ? 'Craft ' + n : 'Craft';
+
+    /* The floor shows what is already held, so pressing a tile twice reads
+       as a state and not as a failure. */
+    [].forEach.call(elFloor.querySelectorAll('.tile'), function(t){
+      t.classList.toggle('is-held', held(t.dataset.effect));
+    });
+  }
+
+  function held(id){
+    for (var i = 0; i < HELD.length; i++) if (HELD[i].id === id) return true;
+    return false;
+  }
+
+  elFloor.addEventListener('click', function(e){
+    var drop = e.target.closest('[data-drop]');
+    if (drop){
+      HELD = HELD.filter(function(r){ return r.id !== drop.dataset.drop; });
+      paintQueue();
+      return;
+    }
+    var t = e.target.closest('.tile');
+    if (!t) return;
+    var id = t.dataset.effect;
+    if (held(id)){
+      HELD = HELD.filter(function(r){ return r.id !== id; });
+    } else {
+      var row = ROWS.filter(function(r){ return r.id === id; })[0];
+      if (row) HELD.push(row);
+    }
+    paintQueue();
+  });
+
+  document.getElementById('qList').addEventListener('click', function(e){
+    var b = e.target.closest('[data-drop]');
+    if (!b) return;
+    HELD = HELD.filter(function(r){ return r.id !== b.dataset.drop; });
+    paintQueue();
+  });
+
+  /* THE SEASON'S OWN STAGE. The same room cards, one level down - the
+     shape somebody just used to get here, so nothing has to be learned
+     twice. */
+  function showSeason(room){
+    openRoom = null;
+    stageFloor.hidden = true;
+    stageRooms.hidden = false;
+    document.getElementById('queue').hidden = true;
+    document.querySelector('.stage').classList.remove('in-room');
+    document.getElementById('slot').hidden = true;
+
+    elRooms.innerHTML = '';
+    SEASON_WAYS[room.id].forEach(function(way){
+      var rows = rowsFor(way.kind === 'floor' ? room.id : way.id);
+      var soon = way.kind === 'soon';
+      var b = document.createElement('button');
+      b.className = 'room' + (soon ? ' is-soon' : '');
+      b.type = 'button';
+      b.dataset.way = way.id;
+      b.dataset.kind = way.kind;
+      if (soon) b.disabled = true;
+      var art = rows.length ? plate(rows[0]) : '';
+      b.innerHTML =
+        (art ? '<img alt="" src="' + esc(art) + '">' : '') +
+        '<span class="room-label">' + esc(way.label) +
+        '<span class="room-count">' + esc(way.line) + '</span></span>';
+      var img = b.querySelector('img');
+      if (img) img.addEventListener('error', function(){ bare(img, way.label); });
+      elRooms.appendChild(b);
+    });
+
+    railNote.innerHTML = esc(room.label) +
+      '. Three ways in.<span class="sig">&mdash; C.</span>';
+    setPath('/wallpapers/' + room.id);
+  }
+
+  elRooms.addEventListener('click', function(e){
+    var b = e.target.closest('.room');
+    if (!b || b.disabled) return;
+    /* Inside a season the cards are ways in, not rooms. */
+    if (b.dataset.kind === 'studio'){
+      location.href = '/wallpapers/studio?season=halloween';
+      return;
+    }
+    showFloor(b.dataset.way || b.dataset.room, !!b.dataset.way);
+  });
+
+  document.getElementById('back').addEventListener('click', showRooms);
+
+  elSets.addEventListener('click', function(e){
+    var b = e.target.closest('.set-btn');
+    if (!b) return;
+    openSet = Number(b.dataset.set) || 0;
+    paintFloor();
+  });
+
+  /* Deep link. /wallpapers/halloween opens that floor directly, which is
+     what a link somebody sends a friend has to do. An unknown room lands
+     on the stage rather than an error - a stale link from October should
+     look like a normal arrival. */
+  function fromPath(){
+    var m = location.pathname.match(/^\/wallpapers\/([a-z-]+)/);
+    if (m && rowsFor(m[1]).length) showFloor(m[1]);
+    else showRooms();
+  }
+
+  paintRooms();
+  fromPath();
+
+  /* What the Concierge may point at here. She knows how to draw a ring
+     over a control and nothing about this page, so the page tells her -
+     and only about controls that exist, so she cannot gesture at
+     something that is not on the glass. */
+  window.CONCIERGE_POINTS = [
+    { sel:'#slot',       phrases:['photograph','photo','upload','picture'] },
+    { sel:'#sets',       phrases:['Classic Nightmares','Dark Creations','toggle'] },
+    { sel:'.setcard',    phrases:['the Set','special edition','five'] },
+    { sel:'#rooms',      phrases:['rooms','Halloween','Portraits'] }
+  ];
+  window.CONCIERGE_SEEDS = [
+    'How do wallpapers work?',
+    'What is the Set?',
+    'Can I print one?'
+  ];
+})();
+</script>
+
+</body>
+</html>

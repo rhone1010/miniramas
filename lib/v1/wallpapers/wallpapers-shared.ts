@@ -19,9 +19,17 @@
 // Portraits and Groups body does, correctly, for a print — puts the
 // subject exactly where the icons land.
 //
-// So every wallpaper body carries WALLPAPER_COMPOSITION. Subject low,
-// clean air on top. This is the difference between a wallpaper and a
-// portrait that happens to be tall.
+// So every wallpaper body carries its own framing: subject low, legs cut
+// at the image bottom so it fills the screen rather than sitting on a
+// plinth, and the top third OCCUPIED but quiet — dim material-appropriate
+// content, not empty sky. An early neon test came back with clean sky and
+// was dead.
+//
+// That framing belongs in the body and nowhere else. WALLPAPER_COMPOSITION
+// used to restate it and contradicted every body it was appended to — it
+// asked for clean space up top and nothing cropped at the edges, which is
+// the opposite of both findings above, and it ran last where it would have
+// won. Stripped 2026-08-11 to the phone-elements clause alone.
 //
 // ── OUTPAINT IS THE FALLBACK, NOT THE PLAN ─────────────────────────────
 //
@@ -40,16 +48,17 @@ export const WALLPAPER_ASPECT = '9:16'
 /**
  * Appended to every wallpaper body.
  *
- * Deliberately short. Long framing instructions compete with the effect
- * body for NB2's attention, and the failure mode there is well documented
- * in this repo — the more clauses fighting, the more likely the later one
- * simply loses.
+ * Framing is NOT here. It lives in the bodies, where it was tuned against
+ * a render. All 42 were written and shot at 9:16 with their own framing
+ * sentence; a second framing instruction appended after them would be the
+ * later of two on the same axis, and the later one wins.
+ *
+ * What survives is the one clause that costs nothing at any aspect and
+ * that NB2 needs — left alone it draws its own clock and status bar. It
+ * produced "Trnday, Nep 26" on an early Portraits shot and a full
+ * wifi-and-battery row on The Ferryman.
  */
-export const WALLPAPER_COMPOSITION =
-  'Composed for a phone screen: the subject sits in the lower-middle third ' +
-  'of the tall frame, with clean uncluttered space across the top third ' +
-  'where a clock and date will sit. Nothing important in the top third and ' +
-  'nothing cropped at the edges.'
+export const WALLPAPER_COMPOSITION = 'Do not include phone elements.'
 
 export type WallpaperSiloId =
   | 'portraits'
