@@ -12,6 +12,17 @@ export const runtime = 'nodejs'
 
 const PAGE = 24
 
+// The pieces live in the private `collection` bucket, written by
+// /api/v1/portraits/pieces. Same bucket, same 24h signature that route
+// hands the workshop.
+//
+// A signed URL is not shareable past its window, so a board image pasted
+// into a message dies within the day. If the board is ever meant to be
+// hotlinked, embedded, or cached by a CDN, the answer is a PUBLIC COPY
+// MADE AT POST TIME - not a longer signature.
+const BOARD_BUCKET   = 'collection'
+const SIGNED_URL_TTL = 60 * 60 * 24
+
 // ---------------------------------------------------------------------------
 // GET /api/v1/community/posts?before=<iso>
 //
@@ -50,6 +61,24 @@ export async function GET(req: NextRequest) {
     const more = rows.length > PAGE
     const posts = rows.slice(0, PAGE)
 
+    // One call for the whole page. createSignedUrls answers in the order it
+    // was asked but is keyed by path here anyway - an answer that silently
+    // shifted by one would put a stranger's face under somebody's handle.
+    const paths = posts
+      .map((p: { image_path: string | null }) => p.image_path)
+      .filter((s: string | null): s is string => !!s)
+
+    const urls: Record<string, string> = {}
+    if (paths.length) {
+      const { data: signed, error: sErr } = await db.storage
+        .from(BOARD_BUCKET)
+        .createSignedUrls(paths, SIGNED_URL_TTL)
+      if (sErr) console.error('[community/posts] sign failed:', sErr.message)
+      for (const s of signed ?? []) {
+        if (s.path && s.signedUrl) urls[s.path] = s.signedUrl
+      }
+    }
+
     // Which of these has the caller already hearted. One query, not one per
     // card, and it simply comes back empty when nobody is signed in.
     const me = await owner()
@@ -65,7 +94,26 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      posts,
+      // Built by hand rather than spread. image_path must not leave this
+      // route, and a spread that drops it is one refactor away from not
+      // dropping it.
+      posts: posts.map((p: {
+        id: string; effect_id: string; series: string; image_path: string | null;
+        heart_count: number; comment_count: number; handle: string | null;
+        created_at: string;
+      }) => ({
+        id:            p.id,
+        effect_id:     p.effect_id,
+        series:        p.series,
+        heart_count:   p.heart_count,
+        comment_count: p.comment_count,
+        handle:        p.handle,
+        created_at:    p.created_at,
+        // null rather than absent. A card whose signature failed shows the
+        // empty state and keeps its handle and its hearts; it does not
+        // vanish out of somebody's board because storage was slow.
+        image_url:     p.image_path ? (urls[p.image_path] ?? null) : null,
+      })),
       more,
       hearted,
       signed_in: !!me,

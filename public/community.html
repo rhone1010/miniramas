@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Community · Liten &amp; Co</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- The catalogue, for effect labels. A post carries effect_id and nothing
+     else; the name of the finish lives in one place and this page reads it
+     rather than keeping a second copy that would drift. -->
+<script src="/effect-registry.js"></script>
+<script src="/concierge.js" defer data-dock data-attention></script>
+
+<style>
+/* ==========================================================================
+   THE COMMUNITY BOARD · 2026-08-18
+
+   A wall of other people's work, visible signed out. Ruled 2026-08-10: it
+   is the only page here that can bring a stranger in, and a marketing
+   surface behind a sign-in wall is a locked shop window.
+
+   THE SHAPE IS THE ARGUMENT. Columns, not a grid — the pieces are not all
+   the same shape (a portrait, a group, a 9:16 wallpaper) and a uniform
+   crop would make a board of varied work look like a catalogue of one
+   product. Nothing is cropped. The wall is ragged on purpose.
+
+   Tokens, masthead and ground are adopted VERBATIM from portraits.html.
+   Nothing below may set width, margin, max-width or font-size on .ground,
+   .stage or :root.
+   ====================================================================== */
+
+:root{
+  font-size:clamp(16px, 0.5vw + 6.4px, 22px);
+
+  --stage-gutter-max:100px;
+  --stage-gutter:min(5%, var(--stage-gutter-max));
+  --stage-w:max(90%, calc(100% - (var(--stage-gutter-max) * 2)));
+  --mh-h:90px;
+  --mark-h:60px;
+
+  --ls-tile:900px;
+  --ls-wash:.42;
+
+  --ink:#2a241e;  --ink-soft:#5a5248;  --taupe:#aba39a;
+  --vellum:#f3ede1; --vellum-100:#f8f4eb; --vellum-200:#f3ecdd; --vellum-300:#e9dec8;
+  --limestone:#f1ece3;
+  --oxblood:#7d4242; --brass:#75623a; --gold:#b68a53;
+  --series:#d7bd89;
+  --series-gap:50px;
+  --espresso:#26201a; --coffee-700:#332620;
+  --card-line:rgba(196,169,110,.28);
+  --hairline:rgba(123,92,58,.20);
+
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',sans-serif;
+
+  --r-card:8px;
+  --r-panel:16px;
+
+  --board-gap:clamp(14px, 1.1vw, 26px);
+}
+
+*{margin:0; padding:0; box-sizing:border-box}
+[hidden]{display:none!important}
+button{font:inherit; border:none; background:none; color:inherit}
+img{display:block; max-width:100%}
+html{ height:100%; scroll-behavior:smooth; scroll-padding-top:150px }
+body{
+  min-height:100%;
+  background:var(--limestone);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:1rem;
+  /* clip, NOT hidden — overflow-x:hidden on the body makes it a scroll
+     container in Chrome and silently kills every position:sticky. */
+  overflow-x:clip;
+}
+.stage{ width:var(--stage-w); margin:0 auto; position:relative; z-index:1 }
+.sr{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* ---- THE GROUND ------------------------------------------------------- */
+.ground{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-color:var(--limestone);
+  background-image:
+    linear-gradient(0deg,
+      rgba(241,236,227,var(--ls-wash)), rgba(241,236,227,var(--ls-wash))),
+    url("/textures/limestone.jpg");
+  background-repeat:repeat, repeat;
+  background-size:auto, var(--ls-tile) var(--ls-tile);
+  background-position:center, center;
+}
+.ground::before{
+  content:""; position:absolute; inset:0;
+  background-image:
+    radial-gradient(circle at 16% 8%,
+      rgba(255,255,255,.86) 0%, rgba(255,255,255,.30) 24%, transparent 50%),
+    radial-gradient(circle at 86% 24%,
+      rgba(211,187,151,.24) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 112%,
+      rgba(92,66,40,.13) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(221,208,189,.14) 42%,
+      rgba(255,255,255,.10) 68%, rgba(191,166,130,.11) 100%);
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat;
+  background-size:72% 72%, 58% 66%, 100% 58%, cover;
+  background-position:top left, top right, bottom center, center;
+}
+.ground::after{
+  content:""; position:absolute; inset:0;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:240px 240px;
+  opacity:.025; mix-blend-mode:multiply;
+  box-shadow:inset 0 0 7rem rgba(69,44,29,.045),
+             inset 0 1px 0 rgba(255,255,255,.32);
+}
+
+/* ---- THE MASTHEAD · adopted verbatim ---------------------------------- */
+.mh{
+  position:sticky; top:0; z-index:60;
+  height:var(--mh-h);
+  background:var(--espresso);
+  border-bottom:1px solid var(--card-line);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  padding-inline:var(--stage-gutter);
+}
+.mh-series{ position:relative; display:flex; align-items:center;
+  margin-right:var(--series-gap) }
+.mh-series-btn{
+  display:inline-flex; align-items:center; gap:.34em;
+  font-family:var(--serif); font-size:1.8em; font-weight:400; line-height:1;
+  color:var(--series); padding:10px 0; cursor:pointer; white-space:nowrap;
+  transition:color .16s ease;
+}
+.mh-series-btn:hover{ color:#e6d2a8 }
+.mh-series-btn .caret{
+  width:.52em; height:.52em; flex:0 0 auto;
+  margin-top:.14em; opacity:.72;
+  transform-origin:50% 45%;
+  transition:transform .22s cubic-bezier(.22,.7,.3,1), opacity .16s ease;
+}
+.mh-series-btn .caret path{
+  fill:none; stroke:currentColor; stroke-width:1.35;
+  stroke-linecap:round; stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+.mh-series-btn:hover .caret{ opacity:1 }
+.mh-series-btn[aria-expanded="true"] .caret{ transform:rotate(180deg); opacity:1 }
+
+.mh-series-menu{
+  position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%);
+  min-width:16em;
+  background:linear-gradient(180deg,#2a1f1b 0%, #221915 100%);
+  border:1px solid var(--card-line);
+  border-radius:var(--r-card);
+  box-shadow:0 22px 48px -20px rgba(20,12,8,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  padding:20px;
+  display:flex; flex-direction:column;
+  z-index:70;
+}
+.mh-series-menu a{
+  display:flex; align-items:center; justify-content:space-between; gap:1.2em;
+  font-family:var(--serif); font-size:1.45em; font-weight:400; line-height:1.1;
+  color:var(--vellum-200); text-decoration:none; white-space:nowrap;
+  padding:.52em .7em; border-radius:6px;
+  transition:background .14s ease, color .14s ease;
+}
+.mh-series-menu a:hover,
+.mh-series-menu a:focus-visible{
+  background:linear-gradient(180deg, rgba(215,189,137,.16), rgba(215,189,137,.09));
+  color:var(--series); outline:none;
+}
+.mh-series-menu .sep{
+  height:1px; margin:6px 8px;
+  background:linear-gradient(90deg, transparent, rgba(215,189,137,.28), transparent);
+}
+
+.mh-logo{
+  justify-self:start; text-decoration:none;
+  display:inline-flex; align-items:center;
+  color:var(--vellum-100);
+}
+.mh-mark{
+  height:var(--mark-h); width:auto; flex:0 0 auto;
+  display:block; overflow:visible;
+}
+.mh-mark path{ fill:currentColor }
+
+.mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
+.mh-nav a{
+  position:relative; text-decoration:none; white-space:nowrap;
+  font-family:var(--serif); font-size:1.5em; font-weight:400; line-height:1;
+  color:var(--vellum-300); padding:10px 0;
+  transition:color .16s ease;
+}
+.mh-nav a:hover{ color:var(--vellum-100) }
+.mh-nav a.on{ color:var(--gold) }
+.mh-nav a.on::after{
+  content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
+  background:var(--gold);
+}
+
+.mh-right{ justify-self:end; display:flex; align-items:center; gap:12px }
+.mh-out{
+  font-family:var(--serif); font-style:italic; font-size:1.0625rem;
+  color:var(--vellum-300); opacity:.62; padding:6px 4px;
+  cursor:pointer; background:none; border:none; white-space:nowrap;
+  transition:opacity .16s ease, color .16s ease;
+}
+.mh-out:hover{ opacity:1; color:var(--vellum-100) }
+.mh-credits{
+  display:flex; align-items:center; gap:10px;
+  height:44px; padding:0 16px;
+  border-radius:var(--r-card);
+  background:var(--coffee-700);
+  border:1px solid var(--card-line);
+  color:var(--vellum-100);
+  font-family:var(--sans); font-size:1rem; font-weight:600;
+  cursor:pointer;
+  transition:background .16s ease, border-color .16s ease;
+}
+.mh-credits:hover{ background:#40302a; border-color:var(--gold) }
+.mh-credits .v{ font-variant-numeric:tabular-nums }
+.mh-credits .u{ font-weight:400; color:var(--vellum-300) }
+.mh-credits .who{
+  max-width:11ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  color:var(--vellum-300); font-weight:400;
+}
+.mh-credits .who:after{ content:'\00b7'; padding:0 .1em 0 .45em; opacity:.55 }
+
+.mh-menu{
+  display:none; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:var(--r-card);
+  background:var(--coffee-700); border:1px solid var(--card-line);
+  color:var(--vellum-100); cursor:pointer;
+}
+.mh-menu svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+
+.mh-ask{
+  display:flex; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:var(--r-card);
+  background:rgba(243,237,225,.10);
+  border:1px solid rgba(243,237,225,.34);
+  color:var(--vellum-100); cursor:pointer;
+  transition:background .16s ease, border-color .16s ease, color .16s ease;
+}
+.mh-ask:hover{ background:rgba(243,237,225,.20); border-color:var(--gold); color:#fff }
+.mh-ask svg{
+  width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.6;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+
+.mh-drawer{
+  position:absolute; top:var(--mh-h); left:0; right:0;
+  background:var(--espresso); border-bottom:1px solid var(--card-line);
+  padding:12px 0 20px; display:flex; flex-direction:column;
+  z-index:59;
+}
+.mh-drawer a{
+  text-decoration:none; color:var(--vellum-300);
+  font-family:var(--serif); font-size:1.8em; font-weight:400;
+  padding:12px var(--stage-gutter);
+}
+.mh-drawer a.on{ color:var(--gold) }
+
+/* ---- THE HEAD ---------------------------------------------------------
+   A title, not a fold. The argument on this page is the volume of other
+   people's work; a paragraph in front of it is the wrong thing to spend
+   the first screen on. */
+.open{ padding:34px 0 22px; text-align:center }
+.open h1{
+  font-family:var(--serif); font-weight:400; font-style:italic;
+  font-size:clamp(2rem,2.9vw,2.75rem); line-height:1.06; color:var(--ink);
+}
+.open p{
+  font-family:var(--sans); font-weight:400;
+  font-size:1.0625rem; letter-spacing:.01em;
+  color:var(--ink-soft); margin-top:.35rem;
+}
+
+/* ---- THE TWO VIEWS ----------------------------------------------------
+   The board, and the suggestion box. One page, because Ideas on its own
+   would be an empty room somebody has to be told about. */
+.views{
+  position:sticky; top:var(--mh-h); z-index:50;
+  background:var(--espresso);
+  border-bottom:1px solid var(--card-line);
+}
+.views-in{
+  width:var(--stage-w); margin:0 auto;
+  display:flex; justify-content:center; gap:8px;
+  padding:10px 0;
+}
+.views button{
+  font-family:var(--serif); font-style:italic; font-size:1.1rem;
+  white-space:nowrap; line-height:1; cursor:pointer;
+  padding:.5rem 1.2rem; border-radius:999px;
+  background:var(--coffee-700); color:var(--vellum-200);
+  border:1px solid rgba(233,222,200,.14);
+  transition:background .16s ease, color .16s ease, border-color .16s ease;
+}
+.views button:hover{
+  background:#453429; color:var(--vellum-100); border-color:rgba(233,222,200,.3);
+}
+.views button.on{
+  background:var(--gold); color:var(--espresso); border-color:var(--gold);
+}
+
+/* ---- THE WALL ---------------------------------------------------------
+   CSS columns rather than a grid. Nothing is cropped: a 9:16 wallpaper and
+   a 4:5 portrait are different shapes and the board should look like it. */
+.wall{ padding:clamp(26px,2.6vw,44px) 0 }
+.wall-cols{
+  columns:4 260px;
+  column-gap:var(--board-gap);
+}
+.pc{
+  break-inside:avoid; -webkit-column-break-inside:avoid;
+  margin:0 0 var(--board-gap);
+  background:var(--vellum-100);
+  border:1px solid var(--card-line); border-radius:var(--r-card);
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
+  cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.pc:hover{ transform:translateY(-3px); box-shadow:0 14px 34px rgba(0,0,0,.14) }
+.pc:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.pc img{ width:100%; height:auto }
+/* A card whose signature did not come back keeps its handle and its hearts
+   rather than vanishing out of somebody's board. */
+.pc-gap{
+  aspect-ratio:4/5; background:var(--vellum-300);
+  display:grid; place-items:center;
+  font-family:var(--serif); font-style:italic; font-size:1.125rem;
+  color:var(--taupe); text-align:center; padding:1rem;
+}
+.pc-cap{ padding:.7rem .9rem .85rem }
+.pc-nm{
+  display:block; font-family:var(--serif); font-weight:400;
+  font-size:1.3125rem; line-height:1.2; color:var(--ink);
+}
+.pc-by{
+  display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+  margin-top:.3rem;
+  font-family:var(--sans); font-size:.875rem; color:var(--ink-soft);
+}
+.pc-counts{ display:flex; align-items:center; gap:.7rem; white-space:nowrap }
+.pc-counts span{ display:inline-flex; align-items:center; gap:.25rem }
+.pc-counts svg{ width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.7 }
+.pc-counts .is-hearted svg{ fill:var(--oxblood); stroke:var(--oxblood) }
+
+.wall-more{ text-align:center; padding:0 0 clamp(48px,5vw,88px) }
+.wall-more button{
+  font-family:var(--serif); font-style:italic; font-size:1.375rem;
+  background:var(--coffee-700); color:var(--vellum-100);
+  border:1px solid var(--card-line);
+  padding:.6rem 2rem; border-radius:999px; cursor:pointer;
+}
+.wall-more button:hover{ background:#40302a; border-color:var(--gold) }
+
+/* ---- THE EMPTY BOARD --------------------------------------------------
+   Not an error. On the day this ships it is the ordinary state, and it is
+   the best chance the page has to explain what it is for. */
+.empty{
+  max-width:44ch; margin:0 auto; padding:clamp(48px,6vw,96px) 0;
+  text-align:center;
+}
+.empty h2{
+  font-family:var(--serif); font-weight:400; font-style:italic;
+  font-size:clamp(1.75rem,2.6vw,2.375rem); color:var(--ink);
+}
+.empty p{
+  font-family:var(--serif); font-size:1.375rem; line-height:1.45;
+  color:var(--ink-soft); margin:.7rem 0 1.6rem;
+}
+.empty a{
+  display:inline-block;
+  font-family:var(--serif); font-style:italic; font-size:1.375rem;
+  background:var(--oxblood); color:var(--vellum-100);
+  padding:.6rem 1.9rem; border-radius:999px; text-decoration:none;
+}
+.empty a:hover{ background:#8d4b4b; color:#fff }
+
+/* ---- IDEAS ------------------------------------------------------------ */
+.ideas{ padding:clamp(26px,2.6vw,44px) 0 clamp(48px,5vw,88px);
+        max-width:64ch; margin:0 auto }
+.ideas-say{
+  font-family:var(--serif); font-size:1.4375rem; line-height:1.45;
+  color:var(--ink-soft); margin-bottom:1.4rem;
+}
+.ideas-say .sign{ display:block; margin-top:.5rem; color:var(--brass) }
+.idea{
+  padding:1.1rem 0; border-bottom:1px solid var(--hairline);
+}
+.idea:last-child{ border-bottom:none }
+.idea-b{ font-family:var(--serif); font-size:1.3125rem; line-height:1.4; color:var(--ink) }
+.idea-m{
+  margin-top:.35rem; display:flex; align-items:center; gap:.6rem;
+  font-family:var(--sans); font-size:.875rem; color:var(--ink-soft);
+}
+/* Rich marks an idea built. It is the only badge on this page, and it is
+   the whole reason somebody bothers to leave one. */
+.idea-built{
+  font-family:var(--sans); font-size:.75rem; font-weight:600;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--espresso); background:var(--series);
+  padding:.2rem .5rem; border-radius:4px;
+}
+
+/* ---- WRITING SOMETHING ------------------------------------------------ */
+.say{
+  margin-top:1.4rem; padding-top:1.4rem; border-top:1px solid var(--hairline);
+}
+.say textarea{
+  width:100%; min-height:5.5rem; resize:vertical;
+  font-family:var(--serif); font-size:1.3125rem; line-height:1.4;
+  color:var(--ink); background:var(--vellum-100);
+  border:1px solid var(--card-line); border-radius:var(--r-card);
+  padding:.75rem .9rem;
+}
+.say textarea:focus{ outline:none; border-color:var(--gold) }
+.say-row{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  margin-top:.7rem;
+}
+.say-n{ font-family:var(--sans); font-size:.8125rem; color:var(--taupe);
+        font-variant-numeric:tabular-nums }
+.say-go{
+  font-family:var(--serif); font-style:italic; font-size:1.25rem;
+  background:var(--oxblood); color:var(--vellum-100);
+  padding:.5rem 1.6rem; border-radius:999px; cursor:pointer;
+}
+.say-go:hover{ background:#8d4b4b; color:#fff }
+.say-go[disabled]{ opacity:.45; cursor:default }
+.say-out{
+  font-family:var(--serif); font-style:italic; font-size:1.1875rem;
+  color:var(--brass); margin-top:.6rem;
+}
+.say-in{
+  font-family:var(--serif); font-size:1.3125rem; color:var(--ink-soft);
+  margin-top:1.4rem; padding-top:1.4rem; border-top:1px solid var(--hairline);
+}
+.say-in a{ color:var(--oxblood) }
+
+/* ---- THE HANDLE -------------------------------------------------------
+   Asked for at the first thing somebody writes, never at signup. The
+   suggestion is the local part of their address, so most people press one
+   button instead of inventing a persona mid-thought. */
+.handle{ margin-top:1.2rem }
+.handle h3{
+  font-family:var(--serif); font-style:italic; font-weight:400;
+  font-size:1.5rem; color:var(--ink);
+}
+.handle p{
+  font-family:var(--serif); font-size:1.25rem; color:var(--ink-soft);
+  margin:.3rem 0 .8rem; line-height:1.4;
+}
+.handle-row{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap }
+.handle input{
+  flex:1 1 12rem; min-width:0;
+  font-family:var(--sans); font-size:1.0625rem;
+  color:var(--ink); background:var(--vellum-100);
+  border:1px solid var(--card-line); border-radius:var(--r-card);
+  padding:.6rem .8rem;
+}
+.handle input:focus{ outline:none; border-color:var(--gold) }
+.handle-go{
+  font-family:var(--serif); font-style:italic; font-size:1.1875rem;
+  background:var(--brass); color:var(--vellum-100);
+  padding:.5rem 1.3rem; border-radius:999px; cursor:pointer; white-space:nowrap;
+}
+.handle-go:hover{ background:#8a743f }
+.handle-go[disabled]{ opacity:.45; cursor:default }
+.handle-out{
+  font-family:var(--serif); font-style:italic; font-size:1.125rem;
+  color:var(--oxblood); margin-top:.5rem;
+}
+
+/* ---- ONE POST · the slide-over ----------------------------------------
+   The same apparatus My Collection uses, so a customer who has opened one
+   panel on this site has opened all of them. */
+.post{
+  position:fixed; inset:0; z-index:80;
+  background:rgba(24,17,12,.62);
+  display:none; align-items:stretch; justify-content:flex-end;
+}
+.post.is-open{ display:flex }
+.post-in{
+  width:min(760px, 100%); height:100%; overflow-y:auto;
+  background:var(--limestone);
+  border-left:1px solid var(--card-line);
+  box-shadow:-24px 0 60px -30px rgba(20,12,8,.7);
+  padding:0 clamp(20px,3vw,44px) clamp(40px,5vw,72px);
+}
+.post-head{
+  position:sticky; top:0; z-index:2;
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:1.1rem 0; margin-bottom:.4rem;
+  background:var(--limestone);
+  border-bottom:1px solid var(--hairline);
+}
+.post-head h2{
+  font-family:var(--serif); font-weight:400; font-style:italic;
+  font-size:clamp(1.5rem,2.1vw,2rem); line-height:1.1; color:var(--ink);
+}
+.post-x{
+  font-family:var(--serif); font-style:italic; font-size:1.25rem;
+  color:var(--ink-soft); cursor:pointer; padding:.35rem .7rem;
+  border:1px solid var(--card-line); border-radius:999px; white-space:nowrap;
+}
+.post-x:hover{ color:var(--ink); border-color:var(--gold) }
+.post-art{
+  border:1px solid var(--card-line); border-radius:var(--r-card);
+  overflow:hidden; background:var(--vellum-300); margin-bottom:1rem;
+}
+.post-by{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  flex-wrap:wrap;
+  font-family:var(--sans); font-size:.9375rem; color:var(--ink-soft);
+  padding-bottom:1rem; border-bottom:1px solid var(--hairline);
+}
+.post-acts{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap }
+.heart{
+  display:inline-flex; align-items:center; gap:.4rem;
+  font-family:var(--serif); font-style:italic; font-size:1.1875rem;
+  color:var(--ink); background:var(--vellum-100);
+  border:1px solid var(--card-line); border-radius:999px;
+  padding:.4rem 1rem; cursor:pointer;
+}
+.heart svg{ width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:1.7 }
+.heart:hover{ border-color:var(--oxblood) }
+.heart.is-on{ color:var(--oxblood); border-color:var(--oxblood) }
+.heart.is-on svg{ fill:var(--oxblood) }
+.heart .n{ font-family:var(--sans); font-size:.9375rem; font-variant-numeric:tabular-nums }
+/* Quiet, and not a pill. Reporting is not an action the page is inviting;
+   it only has to be findable by somebody looking for it. */
+.post-quiet{
+  font-family:var(--serif); font-style:italic; font-size:1.0625rem;
+  color:var(--taupe); cursor:pointer; padding:.4rem .2rem;
+  background:none; border:none;
+}
+.post-quiet:hover{ color:var(--ink-soft) }
+.post-pull{ color:var(--oxblood) }
+
+.cmts{ padding-top:1.2rem }
+.cmt{ padding:.9rem 0; border-bottom:1px solid var(--hairline) }
+.cmt:last-of-type{ border-bottom:none }
+.cmt-b{ font-family:var(--serif); font-size:1.3125rem; line-height:1.4; color:var(--ink) }
+.cmt-m{
+  margin-top:.3rem; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+  font-family:var(--sans); font-size:.875rem; color:var(--ink-soft);
+}
+.cmt-none{
+  font-family:var(--serif); font-style:italic; font-size:1.25rem;
+  color:var(--taupe); padding:1rem 0;
+}
+
+.by-line{ font-family:var(--serif); font-size:1.1875rem; color:var(--ink-soft) }
+.by-line b{ font-weight:400; color:var(--brass) }
+
+/* ---- NARROW · LAST IN THE FILE ---------------------------------------- */
+@media (max-width:1600px){ .mh-nav{ gap:24px; font-size:.92em } }
+@media (max-width:1400px){
+  .mh-nav{ gap:16px; font-size:.85em }
+  .mh-credits{ height:34px; padding:0 .7em; font-size:.9em }
+  .mh-ask{ width:34px; height:34px }
+  .mh-ask svg{ width:18px; height:18px }
+}
+@media (max-width:1320px){
+  .mh-nav{ gap:11px; font-size:.8em }
+  #mhSeriesLabel .mh-crafted{ display:none }
+  .mh-credits .who{ max-width:8ch }
+  .mh-series-btn{ font-size:.9em }
+  .mh-credits .u{ display:none }
+}
+@media (max-width:1199px){
+  .mh{ grid-template-columns:auto 1fr auto }
+  .mh-nav{ display:none }
+  .mh-menu{ display:flex; justify-self:start; margin-left:12px }
+}
+@media (max-width:900px){
+  .wall-cols{ columns:3 220px }
+}
+@media (max-width:767px){
+  :root{ --mh-h:60px; --mark-h:46px }
+  html{ scroll-padding-top:112px }
+  .mh-credits.has-balance .u{ display:none }
+  .wall-cols{ columns:2 150px }
+  .open{ padding:22px 0 16px }
+  .post-in{ width:100%; border-left:none }
+  .pc-nm{ font-size:1.125rem }
+  .pc-by{ font-size:.8125rem }
+}
+</style>
+</head>
+<body>
+
+<div class="ground" aria-hidden="true"></div>
+
+<header class="mh" id="masthead">
+  <a class="mh-logo" href="/"><svg class="mh-mark" viewBox="0 0 1821.36 1528.47" role="img" aria-label="Liten &amp; Co" focusable="false"><g> <path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/> </g> <g> <path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/> <path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/> <path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/> <path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/> <path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/> <path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/> <path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/> </g></svg><span class="sr">Liten &amp; Co</span></a>
+  <button class="mh-menu" id="mhMenuBtn" aria-label="Menu" aria-expanded="false">
+    <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg>
+  </button>
+  <nav class="mh-nav">
+    <div class="mh-series">
+      <button class="mh-series-btn" id="mhSeriesBtn" aria-expanded="false" aria-haspopup="true">
+        <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Portraits</span>
+        <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
+      </button>
+      <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
+        <a href="/portraits" role="menuitem">Portraits</a>
+        <div class="sep"></div>
+        <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
+      </div>
+    </div>
+    <a href="/gallery">Gallery</a>
+    <a href="/community" class="on">Community</a>
+    <a href="/collection">My Collection</a>
+    <a href="/account">Account</a>
+  </nav>
+  <div class="mh-right">
+    <button class="mh-ask" id="mhAskBtn" type="button" data-concierge
+            aria-label="Ask the Concierge">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8Z"/><path d="M8.6 11h6.8"/><path d="M8.6 14.4h4.2"/></svg>
+    </button>
+    <!-- No cart on this page. The cart is a panel inside the workshop and a
+         button here that could not open it would be a control that lies.
+         The credits pill stays: signed out it reads 'Sign in' and is the
+         only way into an account on a phone. -->
+    <button class="mh-credits" id="mhCreditsBtn" hidden>
+      <span class="who" id="mhWho" hidden></span>
+      <span class="v" id="mhCreditsCount">0</span><span class="u">credits</span>
+    </button>
+    <button class="mh-out" id="mhSignOut" hidden aria-label="Sign out">Sign out</button>
+  </div>
+  <nav class="mh-drawer" id="mhDrawer" hidden>
+    <a href="/portraits">Portraits</a>
+    <a href="/wallpapers">Mobile Wallpapers</a>
+    <a href="/gallery">Gallery</a>
+    <a href="/community" class="on">Community</a>
+    <a href="/collection">My Collection</a>
+    <a href="/account">Account</a>
+    <a href="#" data-concierge>Ask the Concierge</a>
+  </nav>
+</header>
+
+<div class="stage">
+  <section class="open">
+    <h1>What people have made</h1>
+    <p>Pieces our customers chose to show</p>
+  </section>
+</div>
+
+<nav class="views" aria-label="Views">
+  <div class="views-in">
+    <button type="button" id="vBoard" class="on" aria-pressed="true">The Board</button>
+    <button type="button" id="vIdeas" aria-pressed="false">Ideas</button>
+  </div>
+</nav>
+
+<main class="stage">
+
+  <section class="wall" id="wall">
+    <div class="wall-cols" id="wallCols"></div>
+  </section>
+  <div class="wall-more" id="wallMore" hidden>
+    <button type="button" id="wallMoreBtn">Show more</button>
+  </div>
+
+  <section class="ideas" id="ideas" hidden>
+    <p class="ideas-say">
+      Tell me what you would like the studio to make. I read all of these,
+      and the ones we build get marked.
+      <span class="sign">&mdash; C.</span>
+    </p>
+    <div id="ideaList"></div>
+    <div class="say" id="ideaSay" hidden>
+      <textarea id="ideaText" maxlength="500" rows="3"
+                placeholder="A finish, a Series, something you wish we did&hellip;"></textarea>
+      <div class="say-row">
+        <span class="say-n" id="ideaN">0 / 500</span>
+        <button type="button" class="say-go" id="ideaGo" disabled>Leave it</button>
+      </div>
+      <p class="say-out" id="ideaOut" hidden></p>
+    </div>
+    <p class="say-in" id="ideaIn" hidden>
+      <a href="/portraits">Sign in</a> to leave one.
+    </p>
+    <div class="handle" id="ideaHandle" hidden></div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     ONE POST
+     ============================================================ -->
+<section class="post" id="post" aria-hidden="true" aria-label="A piece on the board">
+  <div class="post-in">
+    <div class="post-head">
+      <h2 id="postTitle">A piece</h2>
+      <button type="button" class="post-x" id="postX">Close</button>
+    </div>
+    <div class="post-art" id="postArt"></div>
+    <div class="post-by">
+      <span class="by-line" id="postBy"></span>
+      <span class="post-acts">
+        <button type="button" class="heart" id="postHeart">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 0 1 19.4 13Z"/></svg>
+          <span class="n" id="postHearts">0</span>
+        </button>
+        <button type="button" class="post-quiet" id="postReport">Report</button>
+        <button type="button" class="post-quiet post-pull" id="postWithdraw" hidden>Take it down</button>
+      </span>
+    </div>
+    <div class="cmts" id="postCmts"></div>
+    <div class="say" id="cmtSay" hidden>
+      <textarea id="cmtText" maxlength="500" rows="2"
+                placeholder="Say something about this piece&hellip;"></textarea>
+      <div class="say-row">
+        <span class="say-n" id="cmtN">0 / 500</span>
+        <button type="button" class="say-go" id="cmtGo" disabled>Leave it</button>
+      </div>
+      <p class="say-out" id="cmtOut" hidden></p>
+    </div>
+    <p class="say-in" id="cmtIn" hidden>
+      <a href="/portraits">Sign in</a> to leave a comment.
+    </p>
+    <div class="handle" id="cmtHandle" hidden></div>
+  </div>
+</section>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ── ROUTES ─────────────────────────────────────────────────────────── */
+  var R_POSTS    = '/api/v1/community/posts';
+  var R_COMMENTS = '/api/v1/community/comments';
+  var R_HANDLE   = '/api/v1/community/handle';
+  var R_HEARTS   = '/api/v1/community/hearts/';
+  var R_REPORTS  = '/api/v1/community/reports';
+  var R_ME       = '/api/v1/auth/me';
+
+  /* ── STATE ──────────────────────────────────────────────────────────── */
+  var POSTS     = [];      /* every card drawn so far, in order */
+  var HEARTED   = {};      /* post id -> true */
+  var SIGNED_IN = false;
+  var MY_HANDLE = null;    /* set once /handle answers */
+  var SUGGEST   = null;
+  var CURSOR    = null;    /* created_at of the oldest card drawn */
+  var OPEN_ID   = null;    /* the post in the slide-over */
+  var LOADING   = false;
+  var MORE      = false;   /* the route said there is another page */
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  /* ── EFFECT LABELS ──────────────────────────────────────────────────
+     From the same registry the gallery reads. A post carries effect_id;
+     the name of the finish is not restated here, so a finish renamed in
+     effect-registry.ts is renamed on this board with no edit. */
+  var LABEL = {};
+  (function(){
+    var Reg = window.EFFECT_REGISTRY;
+    if (!Reg || !Reg.effects) return;
+    Reg.effects.forEach(function(e){ if (e && e.id) LABEL[e.id] = e.label; });
+  })();
+  var SERIES_LABEL = {
+    portraits:'Portraits', pets:'Pets', groups:'Groups',
+    action:'Action', actionmini:'Action', wallpapers:'Mobile Wallpapers'
+  };
+  function titleFor(p){
+    return LABEL[p.effect_id] || SERIES_LABEL[p.series] || 'Crafted Image';
+  }
+
+  /* ── WHEN ───────────────────────────────────────────────────────────
+     Relative, and coarse. An exact timestamp on a board is noise, and on
+     a quiet board it also says out loud how quiet it is. */
+  function when(iso){
+    var t = new Date(iso).getTime();
+    if (!t) return '';
+    var mins = Math.round((Date.now() - t) / 60000);
+    if (mins < 2)     return 'just now';
+    if (mins < 60)    return mins + ' minutes ago';
+    var hrs = Math.round(mins / 60);
+    if (hrs < 24)     return hrs === 1 ? 'an hour ago' : hrs + ' hours ago';
+    var days = Math.round(hrs / 24);
+    if (days < 7)     return days === 1 ? 'yesterday' : days + ' days ago';
+    var wks = Math.round(days / 7);
+    if (wks < 5)      return wks === 1 ? 'last week' : wks + ' weeks ago';
+    return new Date(t).toLocaleDateString(undefined, { month:'long', year:'numeric' });
+  }
+
+  /* ══ THE MASTHEAD ════════════════════════════════════════════════════
+     The same three controls the workshop has, minus the ones that would
+     lie here. */
+  var mhCreditsBtn = $('mhCreditsBtn');
+  var mhCreditsCount = $('mhCreditsCount');
+  var mhSignOut = $('mhSignOut');
+  var ME = null, CREDITS = null;
+
+  function paintCredits(){
+    if (mhSignOut) mhSignOut.hidden = !ME;
+    if (!mhCreditsBtn || !mhCreditsCount) return;
+    var uSpan = mhCreditsBtn.querySelector('.u');
+    var whoSpan = mhCreditsBtn.querySelector('.who');
+    if (whoSpan){
+      var em = (ME && ME.email) ? String(ME.email) : '';
+      var local = em.indexOf('@') > 0 ? em.slice(0, em.indexOf('@')) : em;
+      whoSpan.textContent = local;
+      whoSpan.hidden = !local;
+    }
+    if (!ME){
+      mhCreditsBtn.classList.remove('has-balance');
+      mhCreditsBtn.hidden = false;
+      mhCreditsCount.textContent = '';
+      if (uSpan) uSpan.textContent = 'Sign in';
+      mhCreditsBtn.setAttribute('aria-label', 'Sign in');
+      return;
+    }
+    /* Signed in with a balance we could not read: show nothing rather
+       than a zero. A zero over an unknown tells somebody with sixty
+       credits they have none. */
+    if (CREDITS == null){ mhCreditsBtn.hidden = true; return; }
+    if (uSpan) uSpan.textContent = 'credits';
+    mhCreditsBtn.classList.add('has-balance');
+    mhCreditsBtn.hidden = false;
+    mhCreditsCount.textContent = String(CREDITS);
+    mhCreditsBtn.setAttribute('aria-label',
+      CREDITS + (CREDITS === 1 ? ' credit' : ' credits'));
+  }
+
+  /* The panel that sells credits lives in the workshop, so the pill sends
+     them there rather than opening something this page does not have. */
+  if (mhCreditsBtn) mhCreditsBtn.addEventListener('click', function(){
+    location.href = '/portraits';
+  });
+  if (mhSignOut) mhSignOut.addEventListener('click', function(){
+    mhSignOut.disabled = true;
+    fetch('/api/v1/auth/signout', { method:'POST', credentials:'same-origin' })
+      .catch(function(){})
+      .then(function(){ location.reload(); });
+  });
+
+  fetch(R_ME, { credentials:'same-origin' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      ME = (d && d.user) ? d.user : null;
+      CREDITS = (d && typeof d.credits === 'number') ? d.credits : null;
+      paintCredits();
+    })
+    .catch(function(){ ME = null; CREDITS = null; paintCredits(); });
+
+  var sb = $('mhSeriesBtn'), sm = $('mhSeriesMenu');
+  if (sb && sm){
+    sb.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = sm.hasAttribute('hidden');
+      if (open) sm.removeAttribute('hidden'); else sm.setAttribute('hidden','');
+      sb.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', function(e){
+      if (!sm.hasAttribute('hidden') && !sm.contains(e.target) && e.target !== sb){
+        sm.setAttribute('hidden',''); sb.setAttribute('aria-expanded','false');
+      }
+    });
+  }
+  var mb = $('mhMenuBtn'), dw = $('mhDrawer');
+  if (mb && dw){
+    mb.addEventListener('click', function(){
+      var open = dw.hasAttribute('hidden');
+      if (open) dw.removeAttribute('hidden'); else dw.setAttribute('hidden','');
+      mb.setAttribute('aria-expanded', String(open));
+    });
+  }
+  addEventListener('keydown', function(e){
+    if (e.key !== 'Escape') return;
+    if (sm && !sm.hasAttribute('hidden')){
+      sm.setAttribute('hidden',''); if (sb) sb.setAttribute('aria-expanded','false');
+    }
+    if (dw && !dw.hasAttribute('hidden')){
+      dw.setAttribute('hidden',''); if (mb) mb.setAttribute('aria-expanded','false');
+    }
+    if (OPEN_ID) closePost();
+  });
+
+  /* ══ WHO AM I, ON THE BOARD ══════════════════════════════════════════
+     The posts route does not say which cards are mine — the board view
+     cannot carry owner_key and should not. My own handle is mine to
+     know, so Take it down appears on any card wearing it. */
+  function loadHandle(){
+    return fetch(R_HANDLE, { credentials:'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (!d) return;
+        MY_HANDLE = d.handle || null;
+        SUGGEST   = d.suggestion || null;
+      })
+      .catch(function(){});
+  }
+
+  /* ── THE HANDLE CLAIM ───────────────────────────────────────────────
+     Drawn into whichever place needs it, because it is needed in two and
+     a duplicated form is two forms to keep in step. */
+  function drawHandleClaim(host, after){
+    if (!host) return;
+    host.hidden = false;
+    host.innerHTML =
+      '<h3>First, a name to write under</h3>' +
+      '<p>It appears under everything you leave here. You can change it later.</p>' +
+      '<div class="handle-row">' +
+        '<input type="text" maxlength="20" autocomplete="off" spellcheck="false"' +
+        ' value="' + esc(SUGGEST || '') + '" placeholder="3\u201320 letters, numbers, - or _">' +
+        '<button type="button" class="handle-go">Use this name</button>' +
+      '</div>' +
+      '<p class="handle-out" hidden></p>';
+
+    var input = host.querySelector('input');
+    var go    = host.querySelector('.handle-go');
+    var out   = host.querySelector('.handle-out');
+
+    function fail(msg){
+      out.textContent = msg;
+      out.hidden = false;
+      go.disabled = false;
+    }
+
+    go.addEventListener('click', function(){
+      var v = String(input.value || '').trim();
+      if (!v) return;
+      go.disabled = true;
+      out.hidden = true;
+      fetch(R_HANDLE, {
+        method:'PUT',
+        headers:{ 'Content-Type':'application/json' },
+        credentials:'same-origin',
+        body: JSON.stringify({ handle: v })
+      })
+        .then(function(r){ return r.json().then(function(d){ d.__s = r.status; return d; }); })
+        .then(function(d){
+          if (d && d.ok){
+            MY_HANDLE = d.handle;
+            host.hidden = true;
+            host.innerHTML = '';
+            if (typeof after === 'function') after();
+            return;
+          }
+          if (d && d.reason === 'taken')  return fail('Somebody already writes under that one.');
+          if (d && d.message)             return fail(d.message);
+          if (d && d.reason === 'signed_out') return fail('Sign in first.');
+          fail('That did not take. Try another.');
+        })
+        .catch(function(){ fail('That did not take. Try again in a moment.'); });
+    });
+
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter'){ e.preventDefault(); go.click(); }
+    });
+  }
+
+  /* ══ THE WALL ════════════════════════════════════════════════════════ */
+  var wallCols = $('wallCols');
+  var wallMore = $('wallMore');
+  var wallMoreBtn = $('wallMoreBtn');
+
+  function heartsSvg(){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 0 1 19.4 13Z"/></svg>';
+  }
+  function cmtsSvg(){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8Z"/></svg>';
+  }
+
+  function card(p){
+    var el = document.createElement('article');
+    el.className = 'pc';
+    el.tabIndex = 0;
+    el.dataset.postId = p.id;
+    el.setAttribute('role', 'button');
+
+    var art = p.image_url
+      ? '<img src="' + esc(p.image_url) + '" alt="' + esc(titleFor(p)) +
+        ', crafted" loading="lazy" decoding="async">'
+      : '<div class="pc-gap">Not showing just now</div>';
+
+    var mine = !!(MY_HANDLE && p.handle && p.handle === MY_HANDLE);
+
+    el.innerHTML =
+      art +
+      '<div class="pc-cap">' +
+        '<b class="pc-nm">' + esc(titleFor(p)) + '</b>' +
+        '<div class="pc-by">' +
+          '<span>' + (p.handle ? esc(p.handle) : 'A customer') +
+            (mine ? ' \u00b7 yours' : '') + '</span>' +
+          '<span class="pc-counts">' +
+            '<span class="' + (HEARTED[p.id] ? 'is-hearted' : '') + '">' +
+              heartsSvg() + (p.heart_count || 0) + '</span>' +
+            '<span>' + cmtsSvg() + (p.comment_count || 0) + '</span>' +
+          '</span>' +
+        '</div>' +
+      '</div>';
+
+    /* An image that will not load takes the empty state rather than
+       leaving a grey hole with no explanation. A signed URL that has
+       expired between the fetch and the paint looks exactly like this. */
+    var img = el.querySelector('img');
+    if (img) img.addEventListener('error', function(){
+      var gap = document.createElement('div');
+      gap.className = 'pc-gap';
+      gap.textContent = 'Not showing just now';
+      img.replaceWith(gap);
+    });
+
+    return el;
+  }
+
+  function drawEmpty(){
+    wallCols.innerHTML = '';
+    var d = document.createElement('div');
+    d.className = 'empty';
+    d.innerHTML =
+      '<h2>Nothing on the board yet.</h2>' +
+      '<p>When somebody puts a piece up, it appears here. Yours could be ' +
+         'the first \u2014 there is a button on every piece in your ' +
+         'collection.</p>' +
+      '<a href="/portraits">Craft something</a>';
+    /* Out of the columns, or it is one narrow ribbon down the left. */
+    wallCols.style.columns = 'auto';
+    wallCols.appendChild(d);
+  }
+
+  function loadPosts(){
+    if (LOADING) return Promise.resolve();
+    LOADING = true;
+    if (wallMoreBtn) wallMoreBtn.disabled = true;
+
+    var url = R_POSTS + (CURSOR ? '?before=' + encodeURIComponent(CURSOR) : '');
+    return fetch(url, { credentials:'same-origin' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        LOADING = false;
+        if (wallMoreBtn) wallMoreBtn.disabled = false;
+        if (!d || !d.ok) return;
+
+        SIGNED_IN = !!d.signed_in;
+        (d.hearted || []).forEach(function(id){ HEARTED[id] = true; });
+
+        var rows = d.posts || [];
+        rows.forEach(function(p){
+          POSTS.push(p);
+          wallCols.appendChild(card(p));
+        });
+        if (rows.length) CURSOR = rows[rows.length - 1].created_at;
+
+        if (!POSTS.length) drawEmpty();
+        MORE = !!d.more;
+        if (wallMore) wallMore.hidden = !MORE;
+      })
+      .catch(function(){
+        LOADING = false;
+        if (wallMoreBtn) wallMoreBtn.disabled = false;
+        if (!POSTS.length) drawEmpty();
+      });
+  }
+
+  if (wallMoreBtn) wallMoreBtn.addEventListener('click', function(){ loadPosts(); });
+
+  wallCols.addEventListener('click', function(e){
+    var c = e.target.closest('.pc'); if (!c) return;
+    openPost(c.dataset.postId);
+  });
+  wallCols.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var c = e.target.closest('.pc'); if (!c) return;
+    e.preventDefault();
+    openPost(c.dataset.postId);
+  });
+
+  function findPost(id){
+    for (var i = 0; i < POSTS.length; i++) if (POSTS[i].id === id) return POSTS[i];
+    return null;
+  }
+
+  /* Redraw one card in place rather than the whole wall — a board that
+     reflows under somebody's cursor after they heart something has moved
+     the thing they were reading. */
+  function repaintCard(id){
+    var el = wallCols.querySelector('.pc[data-post-id="' + id + '"]');
+    var p = findPost(id);
+    if (!el || !p) return;
+    el.replaceWith(card(p));
+  }
+
+  /* ══ ONE POST ════════════════════════════════════════════════════════ */
+  var post = $('post');
+
+  function openPost(id){
+    var p = findPost(id); if (!p) return;
+    OPEN_ID = id;
+
+    $('postTitle').textContent = titleFor(p);
+    $('postArt').innerHTML = p.image_url
+      ? '<img src="' + esc(p.image_url) + '" alt="' + esc(titleFor(p)) + ', crafted">'
+      : '<div class="pc-gap">Not showing just now</div>';
+    $('postBy').innerHTML =
+      'By <b>' + (p.handle ? esc(p.handle) : 'a customer') + '</b> \u00b7 ' +
+      esc(when(p.created_at));
+
+    var heart = $('postHeart');
+    $('postHearts').textContent = String(p.heart_count || 0);
+    heart.classList.toggle('is-on', !!HEARTED[id]);
+
+    var mine = !!(MY_HANDLE && p.handle && p.handle === MY_HANDLE);
+    $('postWithdraw').hidden = !mine;
+    /* Nobody reports their own piece. */
+    $('postReport').hidden = mine || !SIGNED_IN;
+
+    $('postCmts').innerHTML = '<p class="cmt-none">Reading the comments\u2026</p>';
+    $('cmtOut').hidden = true;
+    $('cmtText').value = '';
+    $('cmtN').textContent = '0 / 500';
+    $('cmtGo').disabled = true;
+    paintWriteState('cmt');
+
+    post.classList.add('is-open');
+    post.setAttribute('aria-hidden', 'false');
+    post.querySelector('.post-in').scrollTop = 0;
+    loadComments(id);
+  }
+
+  function closePost(){
+    OPEN_ID = null;
+    post.classList.remove('is-open');
+    post.setAttribute('aria-hidden', 'true');
+  }
+  $('postX').addEventListener('click', closePost);
+  post.addEventListener('click', function(e){ if (e.target === post) closePost(); });
+
+  /* ── HEARTS · once, ever. There is no un-heart. ─────────────────────── */
+  $('postHeart').addEventListener('click', function(){
+    if (!OPEN_ID) return;
+    if (!SIGNED_IN){ location.href = '/portraits'; return; }
+    var id = OPEN_ID;
+    if (HEARTED[id]) return;
+
+    var p = findPost(id);
+    var heart = $('postHeart');
+
+    /* Marked immediately. The count is corrected from the answer, and a
+       second press does nothing either way — the route returns the true
+       number for a repeat rather than an error. */
+    HEARTED[id] = true;
+    heart.classList.add('is-on');
+    if (p){ p.heart_count = (p.heart_count || 0) + 1; }
+    $('postHearts').textContent = String(p ? p.heart_count : 1);
+
+    fetch(R_HEARTS + encodeURIComponent(id), {
+      method:'POST', credentials:'same-origin'
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d || !d.ok) return;
+        if (typeof d.hearts === 'number' && p){
+          p.heart_count = d.hearts;
+          if (OPEN_ID === id) $('postHearts').textContent = String(d.hearts);
+        }
+        repaintCard(id);
+      })
+      .catch(function(){ repaintCard(id); });
+  });
+
+  /* ── REPORTING · quiet ──────────────────────────────────────────────
+     The same acknowledgement whether it was the first report or the third,
+     whether it pulled anything or not. A reporting mechanism that shows
+     its effect is one people learn to aim. */
+  $('postReport').addEventListener('click', function(){
+    if (!OPEN_ID) return;
+    var btn = this;
+    fetch(R_REPORTS, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'same-origin',
+      body: JSON.stringify({ target_kind:'post', target_id: OPEN_ID })
+    }).catch(function(){});
+    btn.disabled = true;
+    btn.textContent = 'Thank you \u2014 we will look';
+  });
+
+  /* ── WITHDRAWAL · never negotiated ──────────────────────────────────
+     One confirm, and it is gone. Somebody who wants their face off a
+     public page gets it off the page. */
+  $('postWithdraw').addEventListener('click', function(){
+    if (!OPEN_ID) return;
+    if (!confirm('Take this piece off the board? It stays in your collection.')) return;
+    var id = OPEN_ID;
+    fetch(R_POSTS + '/' + encodeURIComponent(id), {
+      method:'DELETE', credentials:'same-origin'
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d || !d.ok) return;
+        POSTS = POSTS.filter(function(p){ return p.id !== id; });
+        var el = wallCols.querySelector('.pc[data-post-id="' + id + '"]');
+        if (el) el.remove();
+        if (!POSTS.length) drawEmpty();
+        closePost();
+      })
+      .catch(function(){});
+  });
+
+  /* ══ COMMENTS ════════════════════════════════════════════════════════ */
+  function commentRow(c, canRemove){
+    var el = document.createElement('div');
+    el.className = 'cmt';
+    el.dataset.cmtId = c.id;
+    el.innerHTML =
+      '<div class="cmt-b">' + esc(c.body) + '</div>' +
+      '<div class="cmt-m">' +
+        '<span>' + (c.handle ? esc(c.handle) : 'A customer') + '</span>' +
+        '<span>' + esc(when(c.created_at)) + '</span>' +
+        (canRemove ? '<button type="button" class="post-quiet" data-rm>Remove</button>' : '') +
+      '</div>';
+    return el;
+  }
+
+  function loadComments(id){
+    fetch(R_COMMENTS + '?post=' + encodeURIComponent(id), { credentials:'same-origin' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (OPEN_ID !== id) return;          /* they moved on while we waited */
+        var host = $('postCmts');
+        host.innerHTML = '';
+        var list = (d && d.comments) || [];
+        if (!list.length){
+          host.innerHTML = '<p class="cmt-none">No one has said anything yet.</p>';
+          return;
+        }
+        var p = findPost(id);
+        var iOwnPost = !!(MY_HANDLE && p && p.handle === MY_HANDLE);
+        list.forEach(function(c){
+          /* Two people may remove a comment: whoever wrote it, and whoever
+             owns the piece it sits under. The second is the most effective
+             moderation there is and it costs nothing to run. */
+          host.appendChild(commentRow(c, !!c.mine || iOwnPost));
+        });
+      })
+      .catch(function(){
+        if (OPEN_ID !== id) return;
+        $('postCmts').innerHTML =
+          '<p class="cmt-none">The comments did not load.</p>';
+      });
+  }
+
+  $('postCmts').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-rm]'); if (!btn) return;
+    var row = btn.closest('.cmt'); if (!row) return;
+    var cid = row.dataset.cmtId;
+    btn.disabled = true;
+    fetch(R_COMMENTS + '/' + encodeURIComponent(cid), {
+      method:'DELETE', credentials:'same-origin'
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.ok){
+          row.remove();
+          var p = findPost(OPEN_ID);
+          if (p && p.comment_count) { p.comment_count -= 1; repaintCard(OPEN_ID); }
+          if (!$('postCmts').children.length){
+            $('postCmts').innerHTML =
+              '<p class="cmt-none">No one has said anything yet.</p>';
+          }
+        } else { btn.disabled = false; }
+      })
+      .catch(function(){ btn.disabled = false; });
+  });
+
+  /* ══ WRITING · comments and ideas, one mechanism ═════════════════════
+     An idea is a comment with nothing attached — same route, same
+     classifier, same handle. Two mechanisms here would drift the week
+     somebody changes one of them. */
+  var WRITE = {
+    cmt:  { text:'cmtText',  n:'cmtN',  go:'cmtGo',  out:'cmtOut',
+            say:'cmtSay',  sin:'cmtIn',  handle:'cmtHandle',  kind:'comment' },
+    idea: { text:'ideaText', n:'ideaN', go:'ideaGo', out:'ideaOut',
+            say:'ideaSay', sin:'ideaIn', handle:'ideaHandle', kind:'idea' }
+  };
+
+  function paintWriteState(which){
+    var w = WRITE[which];
+    var say = $(w.say), sin = $(w.sin), handle = $(w.handle);
+    if (!SIGNED_IN){
+      say.hidden = true; sin.hidden = false; handle.hidden = true;
+      return;
+    }
+    sin.hidden = true;
+    if (!MY_HANDLE){
+      say.hidden = true;
+      drawHandleClaim(handle, function(){ paintWriteState(which); });
+      return;
+    }
+    handle.hidden = true;
+    say.hidden = false;
+  }
+
+  function wireWriter(which){
+    var w = WRITE[which];
+    var text = $(w.text), n = $(w.n), go = $(w.go), out = $(w.out);
+
+    text.addEventListener('input', function(){
+      var len = text.value.length;
+      n.textContent = len + ' / 500';
+      go.disabled = !text.value.trim();
+    });
+
+    go.addEventListener('click', function(){
+      var body = text.value.trim();
+      if (!body) return;
+      go.disabled = true;
+      out.hidden = true;
+
+      var payload = { body: body, kind: w.kind };
+      if (w.kind === 'comment') payload.post_id = OPEN_ID;
+
+      fetch(R_COMMENTS, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        credentials:'same-origin',
+        body: JSON.stringify(payload)
+      })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (d && d.ok){
+            text.value = '';
+            n.textContent = '0 / 500';
+            /* THE SAME ANSWER EITHER WAY, and no mention of a filter.
+               Somebody told their comment is "awaiting review" knows there
+               is one and can sit there rewording until they find its edge.
+               A held comment is usually a false positive released within
+               hours; it simply appears later, or it does not. */
+            out.textContent = 'Left. Thank you.';
+            out.hidden = false;
+            if (w.kind === 'comment' && OPEN_ID){
+              loadComments(OPEN_ID);
+              var p = findPost(OPEN_ID);
+              if (p){ p.comment_count = (p.comment_count || 0) + 1; repaintCard(OPEN_ID); }
+            } else {
+              loadIdeas();
+            }
+            return;
+          }
+          go.disabled = false;
+          if (d && d.reason === 'need_handle'){ MY_HANDLE = null; paintWriteState(which); return; }
+          if (d && d.reason === 'slow_down'){
+            out.textContent = 'That is a lot in one hour. Come back shortly.';
+          } else if (d && d.reason === 'signed_out'){
+            out.textContent = 'Sign in first.';
+          } else {
+            out.textContent = 'That did not take. Try again in a moment.';
+          }
+          out.hidden = false;
+        })
+        .catch(function(){
+          go.disabled = false;
+          out.textContent = 'That did not take. Try again in a moment.';
+          out.hidden = false;
+        });
+    });
+  }
+  wireWriter('cmt');
+  wireWriter('idea');
+
+  /* ══ IDEAS ═══════════════════════════════════════════════════════════ */
+  function loadIdeas(){
+    return fetch(R_COMMENTS + '?ideas=1', { credentials:'same-origin' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var host = $('ideaList');
+        host.innerHTML = '';
+        var list = (d && d.comments) || [];
+        if (!list.length){
+          host.innerHTML =
+            '<p class="cmt-none">Nothing yet. Yours would be the first.</p>';
+          return;
+        }
+        list.forEach(function(c){
+          var el = document.createElement('div');
+          el.className = 'idea';
+          el.innerHTML =
+            '<div class="idea-b">' + esc(c.body) + '</div>' +
+            '<div class="idea-m">' +
+              '<span>' + (c.handle ? esc(c.handle) : 'A customer') + '</span>' +
+              '<span>' + esc(when(c.created_at)) + '</span>' +
+              (c.built ? '<span class="idea-built">Built</span>' : '') +
+            '</div>';
+          host.appendChild(el);
+        });
+      })
+      .catch(function(){
+        $('ideaList').innerHTML =
+          '<p class="cmt-none">The ideas did not load.</p>';
+      });
+  }
+
+  /* ── THE TWO VIEWS ─────────────────────────────────────────────────── */
+  var vBoard = $('vBoard'), vIdeas = $('vIdeas');
+  var IDEAS_LOADED = false;
+
+  function showView(which){
+    var board = which === 'board';
+    $('wall').hidden = !board;
+    $('wallMore').hidden = !board || !MORE;
+    $('ideas').hidden = board;
+    vBoard.classList.toggle('on', board);
+    vIdeas.classList.toggle('on', !board);
+    vBoard.setAttribute('aria-pressed', String(board));
+    vIdeas.setAttribute('aria-pressed', String(!board));
+    if (!board && !IDEAS_LOADED){
+      IDEAS_LOADED = true;
+      loadIdeas();
+      paintWriteState('idea');
+    }
+  }
+  vBoard.addEventListener('click', function(){ showView('board'); });
+  vIdeas.addEventListener('click', function(){ showView('ideas'); });
+
+  /* ══ BOOT ════════════════════════════════════════════════════════════
+     The handle first, because the wall needs it to know which cards are
+     the caller's own. One extra round trip on arrival, and it runs
+     alongside auth/me rather than after it. */
+  loadHandle().then(loadPosts);
+})();
+</script>
+
+<script>
+/* ---- WHAT THE CONCIERGE MAY POINT AT ---------------------------------
+   She knows how to draw a ring over an element; she does not know what is
+   on this page and must not guess. A hidden or missing element is skipped
+   and the word stays plain, so she can never appear to gesture at a
+   control this customer does not have. */
+window.CONCIERGE_POINTS = [
+  { sel:'#vIdeas',       phrases:['ideas','suggestion','suggest'] },
+  { sel:'#vBoard',       phrases:['the board','board'] },
+  { sel:'#mhCreditsBtn', phrases:['credits','credit','balance','sign in'] },
+  { sel:'#mhSeriesBtn',  phrases:['Series'] },
+  { sel:'.mh-nav a[href="/collection"]', phrases:['My Collection','collection','post a piece','put it up'] },
+  { sel:'.mh-nav a[href="/gallery"]',    phrases:['gallery'] },
+  { sel:'.mh-nav a[href="/account"]',    phrases:['account'] },
+  { sel:'#mhSignOut',    phrases:['sign out','signed out'] },
+];
+
+window.CONCIERGE_SEEDS = [
+  'How do I put a piece on the board?',
+  'Who can see what I post?',
+  'Can I take something down?'
+];
+
+/* The phone drawer closes behind her — every other entry navigates away,
+   so nothing ever had to close it. */
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.mh-drawer [data-concierge]')) return;
+  var dw = document.getElementById('mhDrawer');
+  var mb = document.getElementById('mhMenuBtn');
+  if (dw) dw.setAttribute('hidden','');
+  if (mb) mb.setAttribute('aria-expanded','false');
+});
+</script>
+
+</body>
+</html>
