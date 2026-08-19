@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Studio &middot; Liten &amp; Co</title>
+
+<!--
+  public/wallpaper-studio.html
+  THE STUDIO — wallpapers made from four choices and no photograph.
+
+  Rebuilt 11 August to the two-column stage: four controls on the left,
+  four results on the right, both on one screen. The first version stacked
+  them, so choosing and seeing were never visible at once and every round
+  was a scroll. The shape of the thing is pick, press, look, adjust — the
+  layout should not fight it.
+
+  WHAT IS WIRED
+    Controls, the round, results, remix, surprise me, the viewer, the
+    session cap and the unlock counter. GENERATION is one function posting
+    four IDS to CENG's route.
+
+    THE PAGE NEVER SENDS A PROMPT. Four dropdowns cannot be talked into
+    anything, and that stops being true the moment a browser is trusted
+    with words that reach the model.
+
+  TAKEN FROM THE MOCKUP
+    Two columns, numbered steps with a label and a hint, icon cards for
+    World, Mood and Palette, Energy as a row of five read calm to wild,
+    and the brass press carrying its own subtitle.
+
+  LEFT OUT OF THE MOCKUP, DELIBERATELY
+    Hearts on the results — they imply saving to a collection, and
+    previews are not kept.
+    A percentage while waiting — schnell returns in seconds and a counter
+    measuring nothing is a small lie.
+    "Crafted, not generated" — true of the workshop, false here. The
+    Studio generates and the Curator does not live in this room.
+    The trust bar and the gallery invitation — neither is a thing this
+    page does.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --oxblood:#7d4242;
+  --brass:#75623a;
+  --gold:#b68a53;
+  --series:#d7bd89;
+  --ink:#2a241e;
+  --vellum:#f3ede1;
+  --espresso:#221c17;
+  --coffee:#2f2721;
+
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Manrope', system-ui, -apple-system, sans-serif;
+
+  --mh-h:72px;
+  --r-card:8px;
+  --panel:#191412;
+  --edge:rgba(243,237,225,.12);
+  /* ---- masthead tokens · the workshop's, so the two agree ------------ */
+  --mh-h:90px;
+  --mark-h:60px;
+  --stage-gutter:min(5%, 92px);
+  --vellum-100:#f8f4eb;
+  --vellum-200:#f3ecdd;
+  --vellum-300:#e9dec8;
+  --coffee-700:#332620;
+  --card-line:rgba(196,169,110,.28);
+  --mh-bg:#0e0b0a;
+}
+
+*{ box-sizing:border-box }
+html,body{ margin:0; padding:0 }
+
+/* THE ONE DARK PAGE ON THE SITE. Everything else sits on limestone because
+   a print is looked at in a room; a wallpaper is looked at on a lit screen,
+   and luminous work on paper-coloured ground looks weaker than it is. */
+body{
+  background:#120e0c; color:var(--vellum);
+  font-family:var(--serif); font-size:22px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  opacity:.05; mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- masthead ---------------------------------------------------- */
+@media (min-width:1100px){
+
+/* ==================================================================
+   THE STAGE — CHOOSING AND SEEING, SIDE BY SIDE
+   The controls do not scroll away from the results. Somebody adjusts a
+   palette and watches four pictures change; putting those on separate
+   screens turns one gesture into two.
+   ================================================================== */
+.stage{
+  display:grid; grid-template-columns:minmax(430px,31%) 1fr;
+  gap:clamp(20px,2vw,36px);
+  padding:24px clamp(16px,2.4vw,40px) 60px;
+  align-items:start;
+}
+@media (max-width:1200px){ .stage{ grid-template-columns:1fr } }
+
+.panel{
+  position:sticky; top:calc(var(--mh-h) + 20px);
+  background:var(--panel); border:1px solid var(--edge);
+  border-radius:var(--r-card); padding:24px 22px 22px;
+}
+@media (max-width:1200px){ .panel{ position:static } }
+
+.panel-head{ text-align:center; padding-bottom:18px }
+.panel-head h1{
+  margin:0; font-size:2rem; font-weight:400; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--series);
+}
+.rule{ width:60px; height:1px; margin:11px auto;
+       background:linear-gradient(to right, transparent, var(--gold), transparent) }
+.panel-head p{ margin:0; font-size:1.06rem; font-style:italic;
+               color:rgba(243,237,225,.5) }
+.season-tag{
+  display:inline-block; margin-top:12px; padding:.3em 1em;
+  border:1px solid var(--gold); border-radius:999px;
+  font-family:var(--sans); font-size:10px; font-weight:600;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--gold);
+}
+
+/* ---- a step ------------------------------------------------------ */
+.step{
+  display:grid; grid-template-columns:98px 1fr; gap:14px;
+  padding:17px 0; border-top:1px solid rgba(243,237,225,.08);
+}
+.step-tag{ padding-top:2px }
+.step-n{
+  display:grid; place-items:center; width:27px; height:27px; margin-bottom:8px;
+  border:1px solid var(--gold); border-radius:50%;
+  font-size:1rem; color:var(--gold);
+}
+.step-name{
+  display:block; font-family:var(--sans); font-size:10px; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--vellum);
+  opacity:.86; line-height:1.4;
+}
+.step-hint{ display:block; margin-top:4px; font-size:.92rem; font-style:italic;
+            color:rgba(243,237,225,.4); line-height:1.35 }
+
+/* ---- the icon cards ---------------------------------------------- */
+.opts{ display:grid; gap:9px }
+.opts.four{ grid-template-columns:repeat(4,1fr) }
+.opts.six{  grid-template-columns:repeat(6,1fr) }
+
+.opt{
+  position:relative; padding:0; border:none; background:none; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+}
+.opt-art{
+  position:relative; width:100%; aspect-ratio:1/1; overflow:hidden;
+  border-radius:6px; background:#0d0a09;
+  border:1px solid rgba(243,237,225,.12);
+  transition:border-color .16s ease, box-shadow .16s ease;
+}
+.opt-art img{ width:100%; height:100%; object-fit:cover; display:block }
+.opt-label{ font-size:.95rem; color:rgba(243,237,225,.6);
+            line-height:1.2; text-align:center }
+.opt:hover .opt-art{ border-color:rgba(182,138,83,.6) }
+.opt[aria-pressed="true"] .opt-art{
+  border-color:var(--gold); box-shadow:0 0 0 1px var(--gold);
+}
+.opt[aria-pressed="true"] .opt-label{ color:var(--series) }
+/* The tick sits ON the art, because the art is what was chosen. */
+.opt[aria-pressed="true"] .opt-art::after{
+  content:'\2713'; position:absolute; top:4px; right:4px;
+  width:17px; height:17px; border-radius:50%;
+  background:var(--gold); color:#17110c;
+  font-size:11px; line-height:17px; text-align:center;
+}
+
+/* ENERGY IS A ROW, NOT A GRID. Five states in order, calm to wild, and
+   the order is the axis the four results spread along — reading it left
+   to right IS the information. Five framed cards would read as five
+   worlds instead of one scale. */
+.energy{
+  display:grid; grid-template-columns:repeat(5,1fr);
+  border:1px solid rgba(243,237,225,.12); border-radius:6px; overflow:hidden;
+}
+.energy .opt{
+  flex-direction:row; justify-content:center; gap:7px;
+  padding:11px 4px; border-right:1px solid rgba(243,237,225,.09);
+}
+.energy .opt:last-child{ border-right:none }
+.energy .opt img{ width:19px; height:19px; object-fit:contain; opacity:.7 }
+.energy .opt-label{ font-size:.98rem }
+.energy .opt:hover{ background:rgba(243,237,225,.04) }
+.energy .opt[aria-pressed="true"]{ background:rgba(182,138,83,.16) }
+.energy .opt[aria-pressed="true"] img{ opacity:1 }
+.energy .opt[aria-pressed="true"] .opt-label{ color:var(--series) }
+
+/* ---- the press --------------------------------------------------- */
+.press{ padding-top:20px; text-align:center }
+.go{
+  width:100%; display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:.7em 1em; cursor:pointer;
+  border:1px solid rgba(215,189,137,.55); border-radius:var(--r-card);
+  background:linear-gradient(180deg,#c9a163 0%,#a07d43 100%); color:#1a1309;
+}
+.go:hover{ background:linear-gradient(180deg,#d6ad6c 0%,#ab874a 100%) }
+.go:disabled{ opacity:.34; cursor:default }
+.go b{ font-family:var(--sans); font-size:14px; font-weight:600;
+       letter-spacing:.18em; text-transform:uppercase }
+.go i{ font-size:.94rem; font-style:italic; opacity:.75 }
+.ghost{
+  margin-top:11px; font-family:var(--serif); font-style:italic; font-size:1.06rem;
+  color:var(--series); background:none;
+  border:1px solid rgba(215,189,137,.32); border-radius:999px;
+  padding:.4em 1.5em; cursor:pointer;
+}
+.ghost:hover{ border-color:var(--series) }
+.press-note{ margin:11px 0 0; font-size:.94rem; font-style:italic;
+             color:rgba(243,237,225,.36) }
+
+/* ==================================================================
+   RESULTS · four across
+   Frames that exist BEFORE the images do and fill as each lands. The
+   first arriving in a second makes the wait feel like nothing; four
+   appearing together makes the whole wait feel as long as the slowest.
+   ================================================================== */
+.right-head{
+  display:flex; align-items:center; gap:14px; margin:4px 0 16px;
+  font-family:var(--sans); font-size:11px; font-weight:600;
+  letter-spacing:.22em; text-transform:uppercase; color:var(--series);
+}
+.right-head::before,.right-head::after{
+  content:''; flex:1; height:1px;
+  background:linear-gradient(to right, transparent, rgba(182,138,83,.4), transparent);
+}
+.grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px }
+@media (max-width:820px){ .grid{ grid-template-columns:repeat(2,1fr); gap:12px } }
+
+.shot{
+  position:relative; aspect-ratio:9/16; overflow:hidden; padding:0;
+  border-radius:var(--r-card); background:#0d0a09;
+  border:1px solid rgba(243,237,225,.1); cursor:pointer;
+}
+.shot img{ width:100%; height:100%; object-fit:cover; display:block }
+.shot:hover{ border-color:rgba(182,138,83,.6) }
+.shot.is-on{ border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) }
+.shot-wait{
+  position:absolute; inset:0; display:grid; place-items:center;
+  background:linear-gradient(120deg,#0d0a09 30%,#221a14 50%,#0d0a09 70%);
+  background-size:220% 100%; animation:sweep 1.7s linear infinite;
+  font-family:var(--sans); font-size:10px; letter-spacing:.2em;
+  text-transform:uppercase; color:rgba(243,237,225,.26);
+}
+@keyframes sweep{ from{ background-position:120% 0 } to{ background-position:-120% 0 } }
+
+/* WHAT EACH ONE IS. The four differ along Energy; without the label
+   somebody reads that variation as the machine being inconsistent rather
+   than as four options. */
+.shot-tag{
+  position:absolute; left:9px; top:9px;
+  font-family:var(--sans); font-size:9px; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--vellum);
+  background:rgba(14,11,10,.78); padding:.42em .8em; border-radius:999px;
+}
+
+/* ---- remix ------------------------------------------------------- */
+.further{ margin-top:32px }
+.nudges{ display:grid; grid-template-columns:repeat(6,1fr); gap:10px }
+@media (max-width:1000px){ .nudges{ grid-template-columns:repeat(3,1fr) } }
+.nudge{
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:13px 8px; cursor:pointer;
+  border:1px solid rgba(243,237,225,.14); border-radius:var(--r-card);
+  background:rgba(243,237,225,.03); color:var(--vellum);
+  font-family:var(--serif); font-size:1.04rem; text-align:center;
+}
+.nudge:hover{ border-color:rgba(182,138,83,.6); background:rgba(182,138,83,.08) }
+.nudge span{ font-size:.84rem; font-style:italic; color:rgba(243,237,225,.4) }
+
+/* ---- the wall ---------------------------------------------------- */
+.wall{
+  grid-column:1/-1; text-align:center; padding:52px 24px;
+  border:1px solid rgba(182,138,83,.35); border-radius:var(--r-card);
+  background:radial-gradient(ellipse at 50% 0%, rgba(182,138,83,.12), transparent 70%);
+}
+.wall-say{ margin:0 auto 10px; max-width:520px; font-size:1.28rem;
+           color:rgba(243,237,225,.86) }
+.wall-sub{ margin:0 0 22px; font-size:1.04rem; font-style:italic;
+           color:rgba(243,237,225,.5) }
+
+/* ---- the unlock -------------------------------------------------- */
+.unlock{
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  margin-top:28px; padding:16px 22px; border-radius:var(--r-card);
+  border:1px solid rgba(182,138,83,.34);
+  background:radial-gradient(ellipse at 50% 0%, rgba(182,138,83,.1), transparent 72%);
+}
+.unlock-n{ font-size:1.65rem; color:var(--series); line-height:1 }
+.unlock-say{ font-size:1.06rem; color:rgba(243,237,225,.68) }
+.unlock-bar{ flex:1 1 150px; height:4px; border-radius:999px;
+             background:rgba(243,237,225,.12); overflow:hidden }
+.unlock-bar i{ display:block; height:100%; background:var(--gold); width:0 }
+
+.foot{ padding:28px 0 0; font-size:1rem; font-style:italic;
+       color:rgba(243,237,225,.3) }
+.foot a{ color:var(--series) }
+
+/* ---- the viewer -------------------------------------------------- */
+.viewer{
+  position:fixed; inset:0; z-index:120; display:grid; place-items:center;
+  padding:4vh 4vw; background:rgba(8,6,5,.92);
+}
+.viewer[hidden]{ display:none }
+.phone{
+  position:relative; width:min(320px,72vw); aspect-ratio:9/19.5;
+  border-radius:38px; overflow:hidden; border:8px solid #0a0807;
+  box-shadow:0 40px 100px rgba(0,0,0,.75), 0 0 0 1px rgba(243,237,225,.12);
+}
+.phone img{ width:100%; height:100%; object-fit:cover; display:block }
+/* THE CLOCK IS DRAWN HERE AND NEVER ASKED OF THE MODEL. Naming phone
+   furniture in a prompt makes the model draw phone furniture — learned on
+   the photo wallpapers. This is the honest way to show somebody their own
+   screen. */
+.phone-clock{
+  position:absolute; left:0; right:0; top:9%; text-align:center;
+  color:#fff; pointer-events:none; text-shadow:0 2px 10px rgba(0,0,0,.5);
+}
+.phone-clock b{ display:block; font-family:var(--sans); font-weight:400;
+                font-size:50px; line-height:1 }
+.phone-clock span{ font-family:var(--sans); font-size:12px; opacity:.9 }
+.viewer-side{ display:flex; flex-direction:column; align-items:center; gap:22px }
+.viewer-acts{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center }
+.viewer-acts .go{ width:auto; padding:.6em 2.2em }
+.viewer-x{
+  position:absolute; top:18px; right:24px; font-size:2rem; line-height:1;
+  color:rgba(243,237,225,.5); background:none; border:none; cursor:pointer;
+}
+.viewer-x:hover{ color:var(--vellum) }
+
+[hidden]{ display:none !important }
+
+/* ---- the band ---------------------------------------------------- */
+@media (max-width:1500px){
+  .stage{ grid-template-columns:minmax(390px,34%) 1fr }
+  .panel{ padding:18px 16px }
+  .step{ grid-template-columns:86px 1fr; gap:11px; padding:14px 0 }
+  .opts{ gap:7px }
+  .panel-head h1{ font-size:1.75rem }
+  .opt-label{ font-size:.88rem }
+}
+@media (max-width:1200px){
+  .panel-head h1{ font-size:1.9rem }
+  .step{ grid-template-columns:110px 1fr }
+  .opt-label{ font-size:.95rem }
+}
+@media (max-width:700px){
+  .stage{ padding:16px 14px 40px }
+  .opts.six{ grid-template-columns:repeat(3,1fr) }
+  .energy .opt{ flex-direction:column; gap:4px; padding:9px 2px }
+  .energy .opt-label{ font-size:.84rem }
+  .step{ grid-template-columns:1fr; gap:10px }
+  .step-tag{ display:flex; align-items:center; gap:10px }
+  .step-n{ margin-bottom:0 }
+  .step-hint{ margin-top:0 }
+}
+@media (prefers-reduced-motion:reduce){
+  .shot-wait{ animation:none }
+  *{ transition:none !important }
+}
+
+/* ======================================================================
+   THE MASTHEAD
+   Transplanted from portraits.html on 2026-08-11, not reimplemented. Three
+   pages had three mastheads because these two were written from the token
+   list rather than from the workshop - nav at 1.15rem and 1.12rem against
+   the workshop's 1.5em, a flex row against its three-zone grid, and a text
+   logo where the workshop draws the mark.
+
+   Nobody decided the wallpaper rooms should have a smaller masthead. This
+   is what agreeing looks like.
+   ====================================================================== */
+.mh{
+  position:sticky; top:0; z-index:60;
+  height:var(--mh-h);
+  background:var(--mh-bg);
+  border-bottom:1px solid var(--card-line);
+  display:grid;
+  /* THREE ZONES. The nav is centred on the PAGE, not between the outer
+     two - so it does not shift when the right cluster gains a pill. */
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  padding-inline:var(--stage-gutter);
+}
+
+/* ---- the wordmark ---------------------------------------------------
+   Its baked #fff fill is stripped on the way in so it takes currentColor
+   and can be recoloured without touching the file. Height governs; width
+   follows the 1.19:1 ratio. */
+.mh-logo{
+  justify-self:start; text-decoration:none;
+  display:inline-flex; align-items:center;
+  color:var(--vellum-100);
+}
+.mh-mark{ height:var(--mark-h); width:auto; flex:0 0 auto;
+          display:block; overflow:visible }
+.mh-mark path{ fill:currentColor }
+.sr{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* ---- the series switcher --------------------------------------------
+   Not a fourth zone - it lives inside the nav so the three-zone rule
+   holds. It names the room you are standing in and opens the door to the
+   others, which these pages had no way of doing: the way back to the
+   workshop was a nav link that looked like every other nav link. */
+.mh-series{ position:relative; display:flex; align-items:center; margin-right:34px }
+.mh-series-btn{
+  display:inline-flex; align-items:center; gap:.34em;
+  font-family:var(--serif); font-size:1.8em; font-weight:400; line-height:1;
+  color:var(--series); padding:10px 0; cursor:pointer; white-space:nowrap;
+  background:none; border:none;
+  transition:color .16s ease;
+}
+.mh-series-btn:hover{ color:#e6d2a8 }
+.mh-series-btn .caret{
+  width:.52em; height:.52em; flex:0 0 auto; margin-top:.14em; opacity:.72;
+  transform-origin:50% 45%;
+  transition:transform .22s cubic-bezier(.22,.7,.3,1), opacity .16s ease;
+}
+.mh-series-btn .caret path{
+  fill:none; stroke:currentColor; stroke-width:1.35;
+  stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;
+}
+.mh-series-btn:hover .caret{ opacity:1 }
+.mh-series-btn[aria-expanded="true"] .caret{ transform:rotate(180deg); opacity:1 }
+
+.mh-series-menu{
+  position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%);
+  min-width:16em;
+  background:linear-gradient(180deg,#2a1f1b 0%, #221915 100%);
+  border:1px solid var(--card-line);
+  border-radius:var(--r-card);
+  box-shadow:0 22px 48px -20px rgba(20,12,8,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  padding:20px; display:flex; flex-direction:column; z-index:70;
+}
+.mh-series-menu a{
+  display:flex; align-items:center; justify-content:space-between; gap:1.2em;
+  font-family:var(--serif); font-size:1.45em; font-weight:400; line-height:1.1;
+  color:var(--vellum-200); text-decoration:none; white-space:nowrap;
+  padding:.52em .7em; border-radius:6px;
+  transition:background .14s ease, color .14s ease;
+}
+.mh-series-menu a:hover,.mh-series-menu a:focus-visible{
+  background:linear-gradient(180deg, rgba(215,189,137,.16), rgba(215,189,137,.09));
+  color:var(--series); outline:none;
+}
+.mh-series-menu a[aria-current="page"]{ color:var(--series) }
+.mh-series-menu a[aria-current="page"]::after{
+  content:""; width:5px; height:5px; border-radius:50%; background:var(--series);
+}
+.mh-series-menu .sep{
+  height:1px; margin:6px 8px;
+  background:linear-gradient(90deg, transparent, rgba(215,189,137,.28), transparent);
+}
+
+/* ---- the nav --------------------------------------------------------
+   1.5em, which is the number these pages were missing. Cormorant renders
+   about a third smaller than a sans at the same size, so a nav that looks
+   generous in the stylesheet reads as small on the glass. */
+.mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
+.mh-nav a{
+  position:relative; text-decoration:none; white-space:nowrap;
+  font-family:var(--serif); font-size:1.5em; font-weight:400; line-height:1;
+  color:var(--vellum-300); padding:10px 0;
+  transition:color .16s ease;
+}
+.mh-nav a:hover{ color:var(--vellum-100) }
+.mh-nav a.on,.mh-nav a[aria-current="page"]{ color:var(--gold) }
+.mh-nav a.on::after,.mh-nav a[aria-current="page"]::after{
+  content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
+  background:var(--gold);
+}
+
+/* ---- the right cluster ---------------------------------------------
+   NO CART. Wallpapers are download-only and never reach the print
+   pipeline, so a basket here would be furniture promising something that
+   cannot happen. */
+.mh-right{ justify-self:end; display:flex; align-items:center; gap:12px }
+.mh-credits{
+  display:flex; align-items:center; gap:10px;
+  height:44px; padding:0 16px; border-radius:var(--r-card);
+  background:var(--coffee-700); border:1px solid var(--card-line);
+  color:var(--vellum-100);
+  font-family:var(--sans); font-size:1rem; font-weight:600; cursor:pointer;
+  transition:background .16s ease, border-color .16s ease;
+}
+.mh-credits:hover{ background:#40302a; border-color:var(--gold) }
+.mh-credits .v{ font-variant-numeric:tabular-nums }
+.mh-credits .u{ font-weight:400; color:var(--vellum-300) }
+
+/* ---- ask · the Concierge's mark -------------------------------------
+   The one light-bodied control in the cluster: credits are the customer's
+   own thing, this is the studio offering something. The pulse when
+   somebody looks stuck belongs to concierge.js and lands here as
+   .cx-notice, so one place decides when help is offered. */
+.mh-ask{
+  display:flex; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:var(--r-card);
+  background:rgba(243,237,225,.10);
+  border:1px solid rgba(243,237,225,.34);
+  color:var(--vellum-100); cursor:pointer;
+  transition:background .16s ease, border-color .16s ease, color .16s ease;
+}
+.mh-ask:hover{ background:rgba(243,237,225,.20); border-color:var(--gold); color:#fff }
+.mh-ask svg{
+  width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.6;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+
+/* ---- the band -------------------------------------------------------
+   The workshop's, so a masthead is the same height on both at every
+   width. It shrinks by giving up height and mark before it gives up
+   type. */
+@media (max-width:1920px){ :root{ --mh-h:76px } }
+@media (max-width:1599px){ :root{ --mark-h:52px } }
+@media (max-width:1366px){
+  :root{ --mh-h:60px; --mark-h:46px; --stage-gutter:3.9% }
+  .mh-ask{ width:34px; height:34px }
+  .mh-ask svg{ width:18px; height:18px }
+  .mh-credits{ height:38px; padding:0 12px }
+  .mh-nav{ gap:22px }
+  .mh-series{ margin-right:24px }
+}
+@media (max-width:1100px){
+  .mh-nav{ display:none }
+  .mh{ grid-template-columns:auto 1fr auto }
+}
+
+/* ======================================================================
+   THE ACCORDION
+   Four steps, one open. Choosing advances to the next unanswered one,
+   which is the whole argument for this over four open rows.
+   ====================================================================== */
+#steps{ display:flex; flex-direction:column }
+
+/* display:block IS THE LOAD-BEARING LINE. `.step` is declared far above
+   this as `display:grid; grid-template-columns:98px 1fr`, which was right
+   for the four fixed rows and puts the accordion's bar in a 98px column -
+   every title wrapping one word per line, and the body stranded in a
+   second column that is empty whenever the step is shut.
+
+   Scoped to #steps so anything else still wearing .step keeps what it
+   had. padding and border-top are reset for the same reason: the old rule
+   set both, and its border-top under this rule's border-bottom draws
+   every divider twice. */
+#steps .step{
+  display:block;
+  padding:0;
+  border-top:none;
+  border-bottom:1px solid rgba(215,189,137,.16);
+}
+#steps .step:first-child{ border-top:1px solid rgba(215,189,137,.16) }
+
+.step-bar{
+  width:100%; display:flex; align-items:center; gap:14px;
+  padding:16px 2px; cursor:pointer; text-align:left;
+  background:none; border:none; color:inherit;
+  transition:opacity .16s ease;
+}
+.step-bar:hover{ opacity:.85 }
+.step-bar .step-n{
+  flex:0 0 auto; font-size:.86rem; letter-spacing:.14em;
+  color:rgba(215,189,137,.5); font-variant-numeric:tabular-nums;
+}
+.step-bar > span:nth-child(2){ flex:1 1 auto; min-width:0 }
+.step-title{
+  display:block; font-size:1.24rem; line-height:1.15; color:var(--vellum-100);
+}
+.step-hint{
+  display:block; margin-top:3px; font-size:.9rem; font-style:italic;
+  color:rgba(243,237,225,.42);
+}
+
+/* The answer rides on the closed bar. A shut accordion that does not say
+   what is inside it is four rows of nothing. */
+.step-answer{
+  flex:0 0 auto; display:flex; align-items:center; gap:8px;
+  max-width:44%; overflow:hidden;
+}
+.step-answer img{
+  width:26px; height:26px; border-radius:4px; object-fit:cover; flex:0 0 auto;
+}
+.step-answer span{
+  font-size:.98rem; color:var(--series); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.step.is-open .step-answer{ display:none }
+
+.chev{
+  flex:0 0 auto; width:13px; height:13px; opacity:.5;
+  transition:transform .22s cubic-bezier(.22,.7,.3,1);
+}
+.chev path{
+  fill:none; stroke:currentColor; stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.step.is-open .chev{ transform:rotate(180deg); opacity:.9 }
+
+/* Height is not animated. The bodies differ by two hundred pixels between
+   steps and a transition on `height:auto` either does not run or runs on a
+   measured pixel value that is wrong the moment the column resizes. */
+.step-body{ display:none; padding:2px 0 20px }
+.step.is-open .step-body{ display:block }
+
+/* ======================================================================
+   THE STAGE WHILE IT IS MAKING
+   ====================================================================== */
+.right-say{
+  margin:0 0 16px; text-align:center;
+  font-size:1rem; font-style:italic; color:rgba(243,237,225,.5);
+}
+
+.grid{ position:relative; isolation:isolate; overflow:visible }
+
+.ghost-mark{
+  position:absolute; inset:0; display:grid; place-items:center;
+  font-family:var(--serif); font-size:2.4rem; line-height:1;
+  color:rgba(215,189,137,.16); pointer-events:none;
+  transition:color .3s ease;
+}
+.shot img ~ .ghost-mark{ display:none }
+
+.await, .making-say{
+  margin-top:18px; text-align:center;
+}
+.await b, .making-say b{
+  display:block; font-family:var(--serif); font-size:1.2rem;
+  color:rgba(243,237,225,.7);
+}
+.await i, .making-say i{
+  display:block; margin-top:4px; font-size:.96rem;
+  color:rgba(243,237,225,.42);
+}
+
+/* ---- THE FALLBACK ------------------------------------------------------
+   CSS smoke. It runs when the canvas does not, which is what a fallback is
+   for - no flag, no branch to forget. The scene simply covers it. */
+.scene-field, .smoke-field{
+  position:absolute; inset:0; z-index:0;
+  pointer-events:none; opacity:0;
+  transition:opacity .5s ease;
+}
+.grid.is-making .smoke-field{
+  opacity:1;
+  background:
+    radial-gradient(38% 46% at 22% 34%, rgba(182,138,83,.55), transparent 70%),
+    radial-gradient(42% 40% at 74% 62%, rgba(125,66,66,.5),  transparent 72%),
+    radial-gradient(36% 44% at 52% 20%, rgba(215,189,137,.34), transparent 74%);
+  filter:url(#smoke);
+  animation:smokedrift 14s ease-in-out infinite alternate;
+}
+.grid.is-making .scene-field{ opacity:1 }
+
+@keyframes smokedrift{
+  from{ transform:translate3d(-2%,1%,0) scale(1.05) }
+  to  { transform:translate3d(3%,-2%,0) scale(1.12) }
+}
+
+.grid.is-making{
+  background:rgba(10,8,7,.5);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.5);
+}
+.grid.is-making .shot{ position:relative; z-index:1 }
+.grid.is-making .ghost-mark{ color:rgba(245,228,190,.3) }
+
+/* ======================================================================
+   WHEN THE SCENE IS UP, EVERYTHING ELSE STOPS.
+
+   Five layers of weather were running in one rectangle - the scene, the
+   smoke beneath it, the drift, the grain, and tinted panes on top - which
+   is why it read as noise rather than as one thing happening. The scene
+   has its own grain and its own flow; it does not need ours arguing.
+
+   THESE SIT LAST IN THE FILE ON PURPOSE. `.grid.has-scene .smoke-field`
+   and `.grid.is-making .smoke-field` are the same specificity, three
+   classes each, so the only thing deciding which wins is which comes
+   later. Declared first, they lose silently: the class lands, the rule is
+   correct, and nothing changes on the glass. An override belongs below
+   everything it overrides.
+   ====================================================================== */
+.grid.has-scene .smoke-field{ display:none }
+
+/* No black rectangle and no inner shadow. The stage is the page again and
+   the cards are the only lit things on it. */
+.grid.has-scene{
+  background:none;
+  box-shadow:none;
+}
+
+/* ---- THE FIELD IS MASKED TO THE COLUMNS --------------------------------
+   One canvas across the whole stage means the gaps between the cards are
+   as bright as the cards, so four windows read as one wash with three
+   faint lines down it - the grid disappears exactly when it should be
+   doing the most work, which is saying that four things are coming.
+
+   So the canvas is masked to the rhythm the grid runs on: a band the width
+   of a column, then a gap, repeating. Because it repeats on
+   (column + gap) it lands on the columns at any width, without anybody
+   computing four positions, and if the column count changes only --gap and
+   the divisor move.
+
+   Inset by the stage's own padding so band one starts where card one
+   starts. Get that wrong and every band is off by 18px, which reads as a
+   rendering fault rather than an arithmetic one. */
+.grid.has-scene .scene-field{
+  /* ZERO, NOT --pad. The mockup's grid had 18px of padding and this one
+     has none - .grid is display:grid with gap:16px and nothing else. An
+     18px inset puts every band in the gutter instead of behind a card,
+     which reads as a bright seam down the right edge of each. The bands
+     are measured from the grid's own box, so band one only lands on card
+     one when that box is the box the cards are in. */
+  inset:0;
+  --gap:16px;
+  --colw:calc((100% - 3 * var(--gap)) / 4);
+  -webkit-mask-image:repeating-linear-gradient(to right,
+    #000 0 var(--colw), transparent var(--colw) calc(var(--colw) + var(--gap)));
+  mask-image:repeating-linear-gradient(to right,
+    #000 0 var(--colw), transparent var(--colw) calc(var(--colw) + var(--gap)));
+}
+
+/* THE CARD IS A WINDOW, NOT A TINT. Over the black stage it needed shading
+   to read as glass. Over the field it needs none - anything laid on top is
+   dirt on the window.
+
+   RADIUS 4, AND THAT IS A COMPROMISE. The mask cuts square-cornered bands,
+   so a rounded card leaves a small shoulder of field outside the arc at
+   each corner. At 4px nobody finds it; at 12 it looks like a bug. Rounding
+   the mask per column would mean four positioned layers and the fluid
+   column width computed twice, which is a lot of machinery for four
+   corners. */
+.grid.has-scene .shot{
+  background:none !important;
+  border:1px solid rgba(236,207,157,.34);
+  border-radius:4px;
+  backdrop-filter:none;
+  box-shadow:0 10px 30px rgba(0,0,0,.34);
+}
+.grid.has-scene .ghost-mark{ color:rgba(255,248,232,.42) }
+
+/* Two columns on a phone, so the four-column mask would land on nothing.
+   The field goes back to covering the stage; at that size the gaps are
+   small enough that it reads as one thing either way. */
+@media (max-width:820px){
+  .grid.has-scene .scene-field{
+    -webkit-mask-image:none;
+    mask-image:none;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .grid.is-making .smoke-field{ animation:none }
+}
+
+</style>
+</head>
+<body>
+
+<header class="mh">
+  <a class="mh-logo" href="/"><svg class="mh-mark" viewBox="0 0 1821.36 1528.47" role="img" aria-label="Liten &amp; Co" focusable="false"><g> <path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/> </g> <g> <path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/> <path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/> <path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/> <path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/> <path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/> <path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/> <path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/> </g></svg><span class="sr">Liten &amp; Co</span></a>
+  <nav class="mh-nav">
+    <div class="mh-series">
+      <button class="mh-series-btn" id="mhSeriesBtn" type="button"
+              aria-expanded="false" aria-haspopup="true">
+        <span>The Studio</span>
+        <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
+      </button>
+      <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
+        <a href="/portraits" role="menuitem">Portraits</a>
+        <div class="sep"></div>
+        <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
+        <a href="/wallpapers/studio" role="menuitem" aria-current="page">The Studio</a>
+      </div>
+    </div>
+    <a href="/gallery">Gallery</a>
+    <a href="/community">Community</a>
+    <a href="/collection">My Collection</a>
+    <a href="/account">Account</a>
+  </nav>
+  <div class="mh-right">
+    <button class="mh-credits" id="mhCredits" type="button" hidden>
+      <span class="v" id="mhCreditsN">0</span><span class="u">credits</span>
+    </button>
+    <button class="mh-ask" type="button" data-concierge aria-label="Ask the Concierge">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8Z"/><path d="M8.6 11h6.8"/><path d="M8.6 14.4h4.2"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="stage">
+
+  <!-- THE FOUR CHOICES -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h1>The Studio</h1>
+      <div class="rule"></div>
+      <p>Four choices. Something that has never existed.</p>
+      <span class="season-tag" id="seasonTag" hidden></span>
+    </div>
+
+    <!-- FOUR STEPS, ONE OPEN. Built by paint(); the ids the old fixed rows
+         carried (#axWorld and the rest) are gone, and anything that pointed
+         at them has been moved with them. -->
+    <div id="steps"></div>
+
+    <div class="press">
+      <button class="go" id="go" type="button" disabled>
+        <b>Create four wallpapers</b>
+        <i id="goSay">Answer all four to begin</i>
+      </button>
+      <button class="ghost" id="surprise" type="button">Surprise me</button>
+    </div>
+  </aside>
+
+  <!-- WHAT CAME BACK -->
+  <main id="results">
+    <div class="right-head" id="rightHead">Your four wallpapers</div>
+    <p class="right-say">Free to look at. Nothing is charged until you keep one.</p>
+
+    <!-- THE TWO FIELD LAYERS ARE PERMANENT. In the DOM from first paint and
+         revealed by a class - inserted per round, the drift would restart
+         and the first second of every wait would jump.
+
+         Which is also why nothing below may set #grid.innerHTML. -->
+    <div class="grid" id="grid">
+      <div class="scene-field" id="sceneField" aria-hidden="true"></div>
+      <div class="smoke-field" aria-hidden="true"></div>
+      <button class="shot" type="button" data-n="0"><span class="ghost-mark">L</span></button>
+      <button class="shot" type="button" data-n="1"><span class="ghost-mark">L</span></button>
+      <button class="shot" type="button" data-n="2"><span class="ghost-mark">L</span></button>
+      <button class="shot" type="button" data-n="3"><span class="ghost-mark">L</span></button>
+    </div>
+
+    <div class="await" id="await">
+      <b>Your wallpapers will appear here.</b>
+      <i>Four variations, from the four things you chose.</i>
+    </div>
+    <div class="making-say" id="makingSay" hidden>
+      <b>Making four.</b>
+      <i>A few seconds.</i>
+    </div>
+
+    <div class="further" id="further" hidden>
+      <div class="right-head">Take these further</div>
+      <div class="nudges" id="nudges"></div>
+    </div>
+
+    <div class="unlock" id="unlock" hidden>
+      <span class="unlock-n" id="unlockN">0 of 5</span>
+      <span class="unlock-bar"><i id="unlockBar"></i></span>
+      <span class="unlock-say" id="unlockSay">Five from the Studio and the sixth is free.</span>
+    </div>
+
+    <p class="foot">
+      Download only &mdash; nothing here is sent to the print lab.
+      Looking for portraits? <a href="/portraits">The workshop is this way.</a>
+    </p>
+  </main>
+
+</div>
+
+<div class="viewer" id="viewer" hidden>
+  <button class="viewer-x" id="viewerX" type="button" aria-label="Close">&times;</button>
+  <div class="viewer-side">
+    <div class="phone">
+      <img id="viewerImg" alt="">
+      <div class="phone-clock"><b id="clockH">9:41</b><span id="clockD"></span></div>
+    </div>
+    <div class="viewer-acts">
+      <button class="go" id="keep" type="button"><b>Keep this one</b></button>
+      <button class="ghost" id="more" type="button">More like this</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* The Series switcher. Opens, closes on Escape or a click outside, and
+   does nothing else - it is a door, not a menu system. */
+(function(){
+  var b = document.getElementById('mhSeriesBtn');
+  var m = document.getElementById('mhSeriesMenu');
+  if (!b || !m) return;
+  function shut(){ m.hidden = true; b.setAttribute('aria-expanded','false'); }
+  b.addEventListener('click', function(e){
+    e.stopPropagation();
+    var open = m.hidden;
+    m.hidden = !open;
+    b.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', function(e){
+    if (!m.hidden && !m.contains(e.target)) shut();
+  });
+  addEventListener('keydown', function(e){ if (e.key === 'Escape') shut(); });
+})();
+</script>
+<script src="/concierge.js" defer data-dock data-attention></script>
+
+<script>
+/* ==================================================================
+   THE VOCABULARIES
+
+   A MIRROR of lib/v1/wallpapers/studio-prompt.ts. The page holds the
+   labels so it can draw the controls; the SERVER holds the bodies and
+   builds the prompt.
+
+   WHAT THIS PAGE SENDS IS FOUR IDS, NEVER A PROMPT. A prompt string
+   travelling from a browser to an image model is exactly the hole this
+   product was designed not to have — four dropdowns cannot be talked
+   into anything, and that stops being true the moment the browser is
+   trusted with the words.
+   ================================================================== */
+(function(){
+  'use strict';
+
+  var WORLDS = [
+    { id:'cosmos',       label:'Cosmos' },
+    { id:'ocean',        label:'Ocean' },
+    { id:'glass',        label:'Glass' },
+    { id:'botanical',    label:'Botanical' },
+    { id:'liquid',       label:'Liquid' },
+    { id:'architecture', label:'Architecture' },
+    { id:'light',        label:'Light' },
+    { id:'mineral',      label:'Mineral' }
+  ];
+
+  var MOODS = [
+    { id:'dream',    label:'Dream' },
+    { id:'storm',    label:'Storm' },
+    { id:'twilight', label:'Twilight' },
+    { id:'eclipse',  label:'Eclipse' },
+    { id:'midnight', label:'Midnight' },
+    { id:'inferno',  label:'Inferno' }
+  ];
+
+  /* Named states, in order, calm to wild. The order is the axis the four
+     results spread along, so it must not be shuffled for display. */
+  var ENERGIES = [
+    { id:'stillness', label:'Stillness' },
+    { id:'drift',     label:'Drift' },
+    { id:'flow',      label:'Flow' },
+    { id:'surge',     label:'Surge' },
+    { id:'eruption',  label:'Eruption' }
+  ];
+
+  var PALETTES = [
+    { id:'aurora',      label:'Aurora' },
+    { id:'ember',       label:'Ember' },
+    { id:'deep_ocean',  label:'Deep Ocean' },
+    { id:'ultraviolet', label:'Ultraviolet' },
+    { id:'solar',       label:'Solar' },
+    { id:'neon_noir',   label:'Neon Noir' },
+    { id:'emerald',     label:'Emerald' },
+    { id:'opal',        label:'Opal' },
+    { id:'inferno',     label:'Inferno' },
+    { id:'arctic',      label:'Arctic' },
+    { id:'midnight',    label:'Midnight' },
+    { id:'prismatic',   label:'Prismatic' }
+  ];
+
+  /* THE ICONS ARE FOLDERED BY AXIS, AND THAT IS LOAD-BEARING. Inferno and
+     Midnight each exist twice - once as a Mood, once as a Palette. In one
+     flat folder the second would overwrite the first and two controls
+     would wear the same picture, which reads as a design choice rather
+     than a fault. */
+  /* ==================================================================
+     THE HALLOWEEN VOCABULARY
+
+     The same four axes, different words - which is the whole mechanism for
+     seasons. Christmas in November is another entry here and another icon
+     folder, not another page.
+
+     Labels only, as with the general set. The bodies live in
+     lib/v1/wallpapers/studio-halloween.ts and the page never sees them.
+     ================================================================== */
+  var HW = {
+    label:'Halloween',
+    icons:'halloween',
+    worlds:[
+      { id:'haunted',    label:'Haunted' },
+      { id:'spectral',   label:'Spectral' },
+      { id:'infernal',   label:'Infernal' },
+      { id:'harvest',    label:'Harvest' },
+      { id:'occult',     label:'Occult' },
+      { id:'gothic',     label:'Gothic' },
+      { id:'nightmare',  label:'Nightmare' },
+      { id:'otherworld', label:'Otherworld' }
+    ],
+    moods:[
+      { id:'bewitched',   label:'Bewitched' },
+      { id:'haunting',    label:'Haunting' },
+      { id:'ominous',     label:'Ominous' },
+      { id:'macabre',     label:'Macabre' },
+      { id:'nightmarish', label:'Nightmarish' },
+      /* MAJESTIC is what keeps this room from being only horror. Somebody
+         looks at a phone a hundred times a day and dread wears out inside
+         a week; this is the mood that makes a piece worth keeping into
+         November. */
+      { id:'majestic',    label:'Majestic' }
+    ],
+    /* ENERGY IS SHARED, and deliberately. Composition and motion mean the
+       same thing in a graveyard as in a nebula - Spectral + Drift is wispy
+       ghosts, Infernal + Eruption is another universe, out of one set of
+       five words. */
+    palettes:[
+      { id:'blood_moon',   label:'Blood Moon' },
+      { id:'pumpkin_fire', label:'Pumpkin Fire' },
+      { id:'witchlight',   label:'Witchlight' },
+      { id:'ghostlight',   label:'Ghostlight' },
+      { id:'poison',       label:'Poison' },
+      { id:'midnight',     label:'Midnight' },
+      { id:'dead_forest',  label:'Dead Forest' },
+      { id:'gothic_jewel', label:'Gothic Jewel' },
+      { id:'eclipse',      label:'Eclipse' },
+      { id:'phantom_rose', label:'Phantom Rose' }
+    ],
+    /* The general Studio's nudges are about material - More Glassy, More
+       Organic - and mean very little in a graveyard. These are about
+       atmosphere, which is what this room is made of. */
+    nudges:[
+      { id:'darker',   label:'Darker',      say:'Deeper shadow' },
+      { id:'grander',  label:'Grander',     say:'Greater scale' },
+      { id:'stranger', label:'Stranger',    say:'Further from sense' },
+      { id:'quieter',  label:'Quieter',     say:'Fewer forms' },
+      { id:'older',    label:'Older',       say:'More ruin and age' },
+      { id:'colour',   label:'New Palette', say:'Another set of colours' }
+    ]
+  };
+
+  var SEASONS = { halloween:HW };
+
+  /* THE ICONS ARE FOLDERED BY AXIS AND BY SEASON. Inferno and Midnight each
+     exist twice within one room, and again across rooms - one flat folder
+     would let a later file overwrite an earlier one and two controls would
+     quietly wear the same picture. */
+  function icon(axis, id){
+    return '/icons/' + ICONS + '/' + axis + '/' + id + '.png';
+  }
+
+  var CHOICE = { world:null, mood:null, energy:null, palette:null };
+
+  /* THE SEASON. /wallpapers/studio?season=halloween arrives here from the
+     Halloween stage. Halloween is a season and not a room — it holds its
+     own photo effects, its own pets and this — so the Studio speaks a
+     different vocabulary under it rather than being a different product.
+     The vocabulary itself is the engine's; the page only carries the flag
+     and says so on the glass. */
+  var SEASON = (function(){
+    var m = location.search.match(/[?&]season=([a-z-]+)/);
+    return m ? m[1] : null;
+  })();
+
+  /* THE SWAP. One place decides which words and which pictures this room
+     speaks in; everything downstream reads these four names, so a season
+     added later cannot half-apply. */
+  var S = SEASONS[SEASON] || null;
+  if (S){
+    WORLDS   = S.worlds;
+    MOODS    = S.moods;
+    PALETTES = S.palettes;
+  }
+  var ICONS = S ? S.icons : 'studio';
+
+  /* Per-room price, in credits. Four is $1.99 at the rate the rest of the
+     site runs on — the Studio is cheaper than a portrait wallpaper because
+     nobody's face is in it and the market will not bear the same price. */
+  var CREDITS = 4;
+
+  /* THE SESSION.
+     The per-session cap is fifteen rounds and it cannot bite without
+     something to count against. sessionStorage rather than a cookie: it
+     dies with the tab, which is the right lifetime for "this sitting",
+     and it never travels to any other request on the site.
+
+     It is not identity and must never be treated as any. It is a number
+     to count rounds against, and somebody who wants a fresh one can open
+     a new tab - which is fine, because the IP ceiling is the one that
+     actually stops abuse and this one only stops accidents. */
+  var SESSION = (function(){
+    var k = 'liten.studio.session';
+    try {
+      var v = sessionStorage.getItem(k);
+      if (!v){
+        v = (Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+        sessionStorage.setItem(k, v);
+      }
+      return v;
+    } catch (e) {
+      /* Private browsing, or storage refused. A session that lasts one
+         page view is still better than none. */
+      return 'x' + Math.random().toString(36).slice(2, 12);
+    }
+  })();
+
+  function byId(id){ return document.getElementById(id); }
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c];
+    });
+  }
+
+  /* ---- the controls ---------------------------------------------- */
+  /* ==================================================================
+     THE ACCORDION
+
+     One open at a time. A COMPLETED STEP REOPENS, AN UNREACHED ONE DOES
+     NOT - jumping to step four before step one is answered leaves a page
+     whose numbers mean nothing, but going back to change a mood must
+     always be one click.
+     ================================================================== */
+  var STEPS = [
+    { key:'world',   title:'Choose a world',     hint:'What it is made of',
+      axis:'worlds',   kind:'four' },
+    { key:'mood',    title:'Set the mood',       hint:'How it is lit',
+      axis:'moods',    kind:'six' },
+    { key:'energy',  title:'Choose its energy',  hint:'How it moves',
+      axis:'energies', kind:'energy' },
+    { key:'palette', title:'Choose its colours', hint:'Its palette',
+      axis:'palettes', kind:'six' }
+  ];
+
+  var OPEN = 0;
+
+  function listFor(axis){
+    if (axis === 'worlds')   return WORLDS;
+    if (axis === 'moods')    return MOODS;
+    if (axis === 'energies') return ENERGIES;
+    return PALETTES;
+  }
+  function labelOf(axis, id){
+    var l = listFor(axis);
+    for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i].label;
+    return '';
+  }
+
+  function paintAll(){
+    var host = byId('steps');
+    if (!host) return;
+    host.innerHTML = '';
+
+    STEPS.forEach(function(st, i){
+      var done   = !!CHOICE[st.key];
+      var isOpen = i === OPEN;
+
+      var el = document.createElement('div');
+      el.className = 'step' + (isOpen ? ' is-open' : '') + (done ? ' is-done' : '');
+
+      var answer = done
+        ? '<span class="step-answer">' +
+            '<img alt="" src="' + icon(st.axis, CHOICE[st.key]) + '">' +
+            '<span>' + esc(labelOf(st.axis, CHOICE[st.key])) + '</span>' +
+          '</span>'
+        : '<span class="step-answer"></span>';
+
+      var boxClass = st.kind === 'energy' ? 'energy'
+                   : (st.kind === 'six' ? 'opts six' : 'opts four');
+
+      el.innerHTML =
+        '<button class="step-bar" type="button" data-step="' + i + '">' +
+          '<span class="step-n">0' + (i + 1) + '</span>' +
+          '<span><span class="step-title">' + esc(st.title) + '</span>' +
+          '<span class="step-hint">' + esc(st.hint) + '</span></span>' +
+          answer +
+          '<svg class="chev" viewBox="0 0 16 16"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>' +
+        '</button>' +
+        '<div class="step-body"><div class="' + boxClass +
+          '" data-axis="' + st.axis + '" data-key="' + st.key + '"></div></div>';
+
+      host.appendChild(el);
+
+      var box = el.querySelector('[data-axis]');
+      listFor(st.axis).forEach(function(o){
+        var b = document.createElement('button');
+        b.className = 'opt';
+        b.type = 'button';
+        b.dataset.v = o.id;
+        b.setAttribute('aria-pressed', String(CHOICE[st.key] === o.id));
+        b.innerHTML = st.kind === 'energy'
+          ? '<img alt="" src="' + icon(st.axis, o.id) + '">' +
+            '<span class="opt-label">' + esc(o.label) + '</span>'
+          : '<span class="opt-art"><img alt="" src="' + icon(st.axis, o.id) +
+            '"></span><span class="opt-label">' + esc(o.label) + '</span>';
+        /* A missing icon leaves the label rather than a broken-image box.
+           There are 31 studio icons and 29 halloween ones against more
+           entries than that, so this is the ordinary case, not the edge. */
+        var im = b.querySelector('img');
+        if (im) im.addEventListener('error', function(){ im.remove(); });
+        box.appendChild(b);
+      });
+    });
+
+    var ready = STEPS.every(function(st){ return !!CHOICE[st.key]; });
+    var go = byId('go');
+    if (go) go.disabled = !ready || busy;
+    var say = byId('goSay');
+    if (say){
+      var left = STEPS.filter(function(st){ return !CHOICE[st.key]; }).length;
+      say.textContent = ready ? 'Free to look at'
+                              : left + ' left to choose';
+    }
+  }
+
+  byId('steps').addEventListener('click', function(e){
+    var bar = e.target.closest('.step-bar');
+    if (bar){
+      var i = Number(bar.dataset.step);
+      var reachable = i === 0 || !!CHOICE[STEPS[i - 1].key] || !!CHOICE[STEPS[i].key];
+      if (!reachable) return;
+      OPEN = (OPEN === i) ? -1 : i;
+      paintAll();
+      return;
+    }
+
+    var b = e.target.closest('.opt');
+    if (!b) return;
+    var box = b.closest('[data-key]');
+    var key = box.dataset.key;
+
+    /* TOGGLE-TO-CLEAR IS KEPT. Pressing the chosen one again clears it -
+       somebody exploring must be able to go back to nothing without
+       reloading. It was written against data-k, which paintAxis set and
+       the accordion does not; the key now comes off the box. */
+    var cleared = CHOICE[key] === b.dataset.v;
+    CHOICE[key] = cleared ? null : b.dataset.v;
+
+    /* CHOOSING ADVANCES. The next unanswered step opens itself, which is
+       the whole argument for an accordion over four open rows. If they are
+       all answered nothing opens and the press is what is left.
+
+       CLEARING DOES NOT ADVANCE. It reopens the step just emptied, or the
+       accordion would shut the moment somebody undid something. */
+    if (cleared){
+      for (var q = 0; q < STEPS.length; q++){
+        if (STEPS[q].key === key){ OPEN = q; break; }
+      }
+    } else {
+      var next = -1;
+      for (var k = 0; k < STEPS.length; k++){
+        if (!CHOICE[STEPS[k].key]){ next = k; break; }
+      }
+      OPEN = next;
+    }
+    paintAll();
+  });
+
+  document.getElementById('surprise').addEventListener('click', function(){
+    function any(l){ return l[Math.floor(Math.random() * l.length)].id; }
+    CHOICE = { world:any(WORLDS), mood:any(MOODS),
+               energy:any(ENERGIES), palette:any(PALETTES) };
+    paintAll();
+    generate();
+  });
+
+  /* ==================================================================
+     THE ROUND
+
+     Four results, spread along Energy rather than four seeds on one
+     prompt — four seeds returns four near-identical pictures and the
+     customer concludes the machine is stuck.
+
+     The ends spread INWARD by two rather than clamping: at Stillness,
+     "one calmer" is Stillness again, which would return three of the
+     same image at the setting most likely to be chosen first.
+     ================================================================== */
+  function round(){
+    var i = ENERGIES.map(function(e){ return e.id; }).indexOf(CHOICE.energy);
+    var last = ENERGIES.length - 1;
+    var calmer = i === 0 ? i + 2 : i - 1;
+    var wilder = i === last ? i - 2 : i + 1;
+    return [
+      { energy:ENERGIES[i].id,      label:ENERGIES[i].label },
+      { energy:ENERGIES[calmer].id, label:ENERGIES[calmer].label },
+      { energy:ENERGIES[i].id,      label:ENERGIES[i].label, variant:1 },
+      { energy:ENERGIES[wilder].id, label:ENERGIES[wilder].label }
+    ];
+  }
+
+  var SHOTS = [];
+  var busy = false;
+
+  /* EVERYTHING EXCEPT THE FIELD. innerHTML = '' would take the scene and
+     the smoke with it. */
+  function clearShots(g){
+    [].slice.call(g.querySelectorAll('.shot, .wall, .round-fail'))
+      .forEach(function(el){ el.remove(); });
+  }
+
+  /* ==================================================================
+     THE SCENE
+
+     Unicorn Studio, loaded when the wait starts and destroyed when it
+     ends. Three things that arrangement buys:
+
+     NOTHING IS FETCHED BY SOMEBODY WHO NEVER PRESSES THE BUTTON. 124kb of
+     SDK and 19kb of scene, on a page whose whole appeal is being instant.
+
+     THE CSS SMOKE IS THE FALLBACK AND NOT A DECISION. If the script does
+     not load, or the scene does not, nothing covers the smoke and the
+     smoke is what runs. No flag, no branch to forget.
+
+     IT IS DESTROYED, NOT HIDDEN. A WebGL context left running behind a
+     display:none is a phone getting warm for no reason.
+
+     Both files are self-hosted, so a bad morning at their end is not a bad
+     morning here.
+     ================================================================== */
+  var SDK_URL    = '/vendor/unicornStudio.umd.js';
+  var SCENE_JSON = '/scenes/studio-field.json';
+
+  var sdk = null;
+  var scene = null;
+
+  function loadSDK(){
+    if (sdk) return sdk;
+    sdk = new Promise(function(resolve, reject){
+      if (window.UnicornStudio) return resolve(window.UnicornStudio);
+      var el = document.createElement('script');
+      el.src = SDK_URL;
+      el.async = true;
+      el.onload = function(){
+        window.UnicornStudio ? resolve(window.UnicornStudio)
+                             : reject(new Error('no UnicornStudio'));
+      };
+      el.onerror = function(){ reject(new Error('sdk failed')); };
+      document.head.appendChild(el);
+    });
+    return sdk;
+  }
+
+  function sceneStart(){
+    /* Somebody who asked for less motion gets the smoke, which holds
+       still, rather than a field that cannot. */
+    if (window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var phone = window.matchMedia &&
+                window.matchMedia('(max-width:820px)').matches;
+
+    loadSDK().then(function(US){
+      /* The round may already be over. Starting a scene into a stage that
+         has gone back to four pictures is the one way this leaks. */
+      if (!byId('grid').classList.contains('is-making')) return;
+      return US.addScene({
+        elementId:'sceneField',
+        fps:60,
+        /* Half scale and DPI 1 on a phone. The field is a soft blur, so
+           nobody sees the difference, and it took the scene from 279MB to
+           18MB in Rich's own measurements. */
+        scale: phone ? 0.5 : 1,
+        dpi:   phone ? 1 : 1.5,
+        lazyLoad:false,
+        filePath: SCENE_JSON
+      }).then(function(sc){
+        scene = sc;
+        /* Only once it is actually rendering. Setting it at request time
+           would hide the smoke during the load and leave the stage empty
+           for however long the scene took. */
+        if (byId('grid').classList.contains('is-making')){
+          byId('grid').classList.add('has-scene');
+        } else {
+          sceneStop();
+        }
+      });
+    }).catch(function(){
+      /* Deliberately silent. The smoke is running underneath and the
+         customer is looking at a wait, not at a fault. */
+    });
+  }
+
+  function sceneStop(){
+    if (scene && scene.destroy){ try { scene.destroy(); } catch(e){} }
+    scene = null;
+    var host = byId('sceneField');
+    if (host) host.innerHTML = '';
+    byId('grid').classList.remove('has-scene');
+  }
+
+  /* One switch for the whole making state, so the field, the copy and the
+     class can never disagree about whether a round is running. */
+  function making(on){
+    var g = byId('grid');
+    g.classList.toggle('is-making', !!on);
+    var aw = byId('await'), ms = byId('makingSay');
+    if (aw) aw.hidden = !!on;
+    if (ms) ms.hidden = !on;
+    if (on) sceneStart(); else sceneStop();
+  }
+
+  function frames(spread){
+    var g = document.getElementById('grid');
+    clearShots(g);
+    spread.forEach(function(s, n){
+      var b = document.createElement('button');
+      b.className = 'shot';
+      b.type = 'button';
+      b.dataset.n = String(n);
+      b.innerHTML =
+        '<div class="shot-wait">Making</div>' +
+        '<span class="shot-tag">' + esc(s.label) + '</span>';
+      g.appendChild(b);
+    });
+    byId('further').hidden = true;
+    byId('rightHead').textContent = 'Making four';
+    making(true);
+  }
+
+  /* One image has landed. Called per result rather than once at the end,
+     so the first arriving in a second or two makes the wait feel like
+     nothing — a spinner that resolves into four at once makes the whole
+     wait feel as long as the slowest of them. */
+  function land(n, url, tag){
+    var b = document.querySelector('.shot[data-n="' + n + '"]');
+    if (!b) return;
+    var wait = b.querySelector('.shot-wait');
+    if (wait) wait.remove();
+    var img = document.createElement('img');
+    img.alt = '';
+    img.src = url;
+    b.insertBefore(img, b.firstChild);
+    /* No mark drawn here - the watermark is burned into the preview
+       server-side, which is the only version that protects the file. */
+    if (tag){
+      var t = b.querySelector('.shot-tag');
+      if (t) t.textContent = tag;
+    }
+  }
+
+  /* ==================================================================
+     GENERATE — THE ONE THING NOT WIRED
+
+     Posts the four CHOICES and the season. The server builds the prompt
+     from its own copy of the vocabularies; nothing this page could be
+     made to say reaches the model.
+
+     The route is CENG's and does not exist yet. Everything above and
+     below this function is real, so when it lands nothing else changes.
+     ================================================================== */
+  function generate(nudge){
+    if (busy) return;
+    if (!(CHOICE.world && CHOICE.mood && CHOICE.energy && CHOICE.palette)) return;
+
+    busy = true;
+    document.getElementById('go').disabled = true;
+    var spread = round();
+    SHOTS = [];
+    frames(spread);
+
+    /* Wrapped. scrollIntoView is a courtesy - bringing the results onto
+       the glass - and it must not be able to stop a generation that has
+       already been paid for in attention. */
+    try {
+      document.getElementById('results')
+        .scrollIntoView({ behavior:'smooth', block:'start' });
+    } catch (e) {}
+
+    fetch('/api/v1/wallpapers/studio/generate', {
+      method:'POST',
+      headers:{ 'content-type':'application/json' },
+      body: JSON.stringify({
+        world:   CHOICE.world,
+        mood:    CHOICE.mood,
+        energy:  CHOICE.energy,
+        palette: CHOICE.palette,
+        season:  SEASON || null,
+        session_id: SESSION,
+        /* The nudge, when a Remix button sent us. The server appends its
+           own text from REMIXES in studio-prompt.ts - the page sends an ID
+           and never a phrase, the same rule the four axes follow. A browser
+           that can put words into a prompt is the one hole this product was
+           designed not to have. */
+        remix:   nudge || null
+      })
+    })
+      .then(function(r){ return r.json().catch(function(){ return null; }); })
+      .then(function(d){
+        /* THE WALL IS NOT AN ERROR. Somebody who has made fifteen rounds
+           and bought nothing is somebody who liked this enough to try
+           fifteen times - the worst moment on the whole site to show them
+           a failure. It gets its own answer, and the answer is an offer. */
+        if (d && d.reason === 'capped'){ wall(); return; }
+
+        if (!d || !d.ok || !d.images || !d.images.length) throw new Error('no images');
+        d.images.forEach(function(im, n){
+          SHOTS[n] = im;
+          /* THE SERVER'S LABEL WINS. The page guesses the spread so the
+             frames can be tagged before anything arrives; if the two
+             disagree, what was actually rendered is the truth. */
+          land(n, im.preview || im.url, im.energy_label || im.energy);
+        });
+        /* The wait is over the moment the four are on the glass. The
+           field comes down here rather than in the .then below, which
+           also runs after the cap wall and after a failure. */
+        making(false);
+        byId('rightHead').textContent = 'Your four wallpapers';
+        byId('further').hidden = false;
+      })
+      .catch(function(){
+        making(false);
+        var g = document.getElementById('grid');
+        clearShots(g);
+        g.insertAdjacentHTML('beforeend',
+          '<p class="round-fail" style="grid-column:1/-1;text-align:center;' +
+          'font-style:italic;color:rgba(243,237,225,.5)">' +
+          'That did not come back. Try it again in a moment.</p>');
+        byId('rightHead').textContent = 'Your four wallpapers';
+      })
+      .then(function(){
+        busy = false;
+        document.getElementById('go').disabled = false;
+      });
+  }
+
+  /* What fifteen rounds and no purchase gets. The Concierge's register,
+     not an error's: it says what happened, it does not apologise twice,
+     and the way out is the thing we wanted them to do anyway. The copy is
+     Rich's to settle - this is a placeholder that is at least the right
+     shape. */
+  function wall(){
+    making(false);
+    var wg = document.getElementById('grid');
+    clearShots(wg);
+    wg.insertAdjacentHTML('beforeend',
+      '<div class="wall">' +
+        '<p class="wall-say">That is fifteen rounds &mdash; you have given ' +
+          'this a proper go, and I would rather not keep making you look ' +
+          'at watermarks.</p>' +
+        '<p class="wall-sub">Keep one and the counter starts again.</p>' +
+        '<button class="go" id="wallKeep" type="button">Keep one of these</button>' +
+      '</div>');
+    byId('further').hidden = true;
+    byId('rightHead').textContent = 'Your four wallpapers';
+    var b = byId('wallKeep');
+    if (b) b.addEventListener('click', function(){
+      /* Back to the last round they made rather than to a price list. The
+         thing they want is already on the screen behind this. */
+      if (SHOTS.length) location.reload();
+      else location.href = '/account?credits=1';
+    });
+  }
+
+  document.getElementById('go').addEventListener('click', function(){ generate(); });
+
+  /* ---- remix ------------------------------------------------------ */
+  var REMIXES = (S && S.nudges) || [
+    { id:'glassier', label:'More Glassy',   say:'Glass and crystal' },
+    { id:'organic',  label:'More Organic',  say:'Growth and nature' },
+    { id:'dramatic', label:'More Dramatic', say:'Contrast and depth' },
+    { id:'simpler',  label:'Simplify',      say:'Cleaner, fewer forms' },
+    { id:'stranger', label:'Get Weird',     say:'Stranger, more surreal' },
+    { id:'colour',   label:'New Palette',   say:'Another set of colours' }
+  ];
+
+  (function(){
+    var el = byId('nudges');
+    REMIXES.forEach(function(r){
+      var b = document.createElement('button');
+      b.className = 'nudge';
+      b.type = 'button';
+      b.dataset.remix = r.id;
+      b.innerHTML = esc(r.label) + '<span>' + esc(r.say) + '</span>';
+      el.appendChild(b);
+    });
+    el.addEventListener('click', function(e){
+      var b = e.target.closest('[data-remix]');
+      if (!b) return;
+      /* New Palette re-rolls the CHOICE rather than sending a nudge -
+         telling a model "different colours" when it already has a palette
+         is two instructions arguing, and the palette wins. */
+      if (b.dataset.remix === 'colour'){
+        var others = PALETTES.filter(function(p){ return p.id !== CHOICE.palette; });
+        CHOICE.palette = others[Math.floor(Math.random() * others.length)].id;
+        paintAll();
+        generate();
+        return;
+      }
+      generate(b.dataset.remix);
+    });
+  })();
+
+  /* ---- the viewer ------------------------------------------------- */
+  var viewer = document.getElementById('viewer');
+
+  document.getElementById('grid').addEventListener('click', function(e){
+    var b = e.target.closest('.shot');
+    if (!b) return;
+    var n = Number(b.dataset.n);
+    var shot = SHOTS[n];
+    if (!shot) return;
+    [].forEach.call(document.querySelectorAll('.shot'), function(x){
+      x.classList.toggle('is-on', x === b);
+    });
+    document.getElementById('viewerImg').src = shot.preview || shot.url;
+    viewer.dataset.n = String(n);
+    viewer.hidden = false;
+  });
+
+  function closeViewer(){ viewer.hidden = true; }
+  document.getElementById('viewerX').addEventListener('click', closeViewer);
+  viewer.addEventListener('click', function(e){ if (e.target === viewer) closeViewer(); });
+  addEventListener('keydown', function(e){ if (e.key === 'Escape') closeViewer(); });
+
+  /* MORE LIKE THIS is the same choices again with new seeds - not a nudge,
+     which is why it sends none. */
+  document.getElementById('more').addEventListener('click', function(){
+    closeViewer();
+    generate();
+  });
+
+  /* KEEP. Spends the credits and returns the clean file. The route is
+     CENG's; this is the shape it will be called with. */
+  document.getElementById('keep').addEventListener('click', function(){
+    var n = Number(viewer.dataset.n);
+    var shot = SHOTS[n];
+    if (!shot) return;
+    fetch('/api/v1/wallpapers/studio/keep', {
+      method:'POST',
+      credentials:'same-origin',
+      headers:{ 'content-type':'application/json' },
+      body: JSON.stringify({ id: shot.id })
+    })
+      .then(function(r){ return r.json().catch(function(){ return null; }); })
+      .then(function(d){
+        if (d && d.ok && d.url){
+          /* The count comes back with the purchase when the route sends
+             it, so the card is already right if they come back here. */
+          if (typeof d.kept === 'number') paintUnlock(d.kept);
+          location.href = d.url;
+        } else if (d && d.reason === 'signed_out'){
+          location.href = '/?signin=1&next=' +
+            encodeURIComponent(location.pathname + location.search);
+        } else if (d && d.reason === 'no_credits'){
+          location.href = '/account?credits=1';
+        }
+      })
+      .catch(function(){});
+  });
+
+  /* ---- the clock on the phone ------------------------------------- */
+  (function(){
+    var d = new Date();
+    var h = d.getHours() % 12 || 12;
+    document.getElementById('clockH').textContent =
+      h + ':' + String(d.getMinutes()).padStart(2, '0');
+    document.getElementById('clockD').textContent =
+      d.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+  })();
+
+  
+/* ---- the unlock -------------------------------------------------- */
+  function paintUnlock(have){
+    var need = 5;
+    document.getElementById('unlock').hidden = false;
+    document.getElementById('unlockN').textContent =
+      Math.min(have, need) + ' of ' + need;
+    document.getElementById('unlockBar').style.width =
+      Math.round(Math.min(have / need, 1) * 100) + '%';
+    document.getElementById('unlockSay').textContent = have >= need
+      ? 'Your next one is free.'
+      : 'Five from the Studio and the sixth is free.';
+  }
+  /* HOW MANY THEY HAVE KEPT. Read once on load and again from whatever
+     `keep` returns, so the counter is right the moment it changes rather
+     than on the next page view - the count going up is most of the reason
+     the card is there at all.
+
+     Per season: Halloween keeps its own five. */
+  function readUnlock(){
+    fetch('/api/v1/wallpapers/studio/kept' +
+          (SEASON ? '?season=' + encodeURIComponent(SEASON) : ''),
+          { credentials:'same-origin' })
+      .then(function(r){ return r.json().catch(function(){ return null; }); })
+      .then(function(d){ paintUnlock(d && typeof d.kept === 'number' ? d.kept : 0); })
+      .catch(function(){ paintUnlock(0); });
+  }
+  readUnlock();
+
+  /* ---- the season ------------------------------------------------- */
+  /* THE ROOM RENAMES ITSELF.
+     This block carried over from the stacked first version and still
+     pointed at `.head p`, which that layout had and the two-column one
+     does not - so the first visitor with ?season=halloween would have met
+     a TypeError instead of a season. Found 2026-08-11 while wiring the
+     vocabulary; the selectors are the panel's now. */
+  if (S){
+    var h1 = document.querySelector('.panel-head h1');
+    if (h1) h1.textContent = 'The ' + S.label + ' Studio';
+    document.title = 'The ' + S.label + ' Studio \u00b7 Liten & Co';
+    var tag = byId('seasonTag');
+    if (tag){ tag.textContent = S.label; tag.hidden = false; }
+  }
+
+  paintAll();
+
+  /* What the Concierge may point at here, and nothing that is not on the
+     glass — she must never gesture at a control this customer does not
+     have. */
+  /* The balance, when there is one. Hidden signed out rather than showing
+     a zero, which reads as an empty account instead of no account. */
+  fetch('/api/v1/credits/balance', { credentials:'same-origin' })
+    .then(function(r){ return r.json().catch(function(){ return null; }); })
+    .then(function(d){
+      if (d && d.signed_in){
+        byId('mhCreditsN').textContent = d.balance;
+        byId('mhCredits').hidden = false;
+      }
+    })
+    .catch(function(){});
+
+  byId('mhCredits').addEventListener('click', function(){
+    location.href = '/account?credits=1';
+  });
+
+  window.CONCIERGE_POINTS = [
+    { sel:'#axWorld',   phrases:['World','what it is made of'] },
+    { sel:'#axPalette', phrases:['palette','colours','colors'] },
+    { sel:'#axEnergy',  phrases:['Energy','movement'] },
+    { sel:'#go',        phrases:['Create four','make four','generate'] },
+    { sel:'#nudges',    phrases:['remix','take these further'] },
+    { sel:'#unlock',    phrases:['free','the sixth','five'] }
+  ];
+  window.CONCIERGE_SEEDS = [
+    'How does the Studio work?',
+    'What do I get for $1.99?',
+    'Can I print one?'
+  ];
+})();
+</script>
+
+
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <filter id="smoke">
+    <feTurbulence type="fractalNoise" baseFrequency=".008 .022"
+                  numOctaves="4" seed="14" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="115"
+                       xChannelSelector="R" yChannelSelector="B"/>
+  </filter>
+</svg>
+
+</body>
+</html>
