@@ -2,22 +2,28 @@
 //
 // Render-refinement and quality-gate support for Groups.
 //
-// Two scoring rubrics:
-//   • scorePerFigureFidelity   — Realistic + People Resolving styles.
-//                                 Returns one score per detected figure.
-//                                 Used with size-tiered evaluator (9+/10
-//                                 for ≤5, sliding 70/30 for ≥6).
-//   • scoreHolisticCaricature  — Tribal Wall Masks + Tribal Statue.
-//                                 Returns one composite score per render
-//                                 plus three sub-scores (emotional capture,
-//                                 craft quality, composition). Used with
-//                                 6+/10 average threshold.
+// One scoring rubric:
+//   • scorePerFigureFidelity   — one score per detected figure, used with
+//                                 the size-tiered evaluator in
+//                                 groups-shared (9+/10 for <=5 figures,
+//                                 sliding 70/30 above that).
 
 import OpenAI from 'openai'
-import type {
-  PerFigureScore,
-  HolisticCaricatureScore,
-} from './groups-shared'
+import type { PerFigureScore } from './groups-shared'
+
+// ── WHAT WAS REMOVED, 2026-08-11 ───────────────────────────────────────
+//
+// scoreHolisticCaricature and HOLISTIC_CARICATURE_PROMPT are gone, and the
+// HolisticCaricatureScore type import with them.
+//
+// They scored Tribal Wall Masks and Tribal Statue, which are intentionally
+// abstracted — the caricature bar is emotional capture and craft, not
+// facial accuracy. Both effects went with the style axis when Groups was
+// rewritten to a flat catalog, and groups-shared.ts had already dropped
+// HolisticCaricatureScore, so this file did not compile.
+//
+// Nothing else in the flat pipeline scores holistically. If an interpretive
+// path returns, this comes back from git rather than being rewritten.
 
 // ─── REFINEMENT GUARD BLOCK ─────────────────────────────────────
 export const REFINEMENT_GUARD_BLOCK = `
@@ -220,90 +226,6 @@ export async function scorePerFigureFidelity(input: {
   } catch (e) {
     console.warn('[groups/refine] per-figure score parse failed:', e)
     return [{ figure_index: 0, score: 5, reason: 'scoring parse failed' }]
-  }
-}
-
-// ─── HOLISTIC CARICATURE (Tribal Wall Masks + Tribal Statue) ───
-
-const HOLISTIC_CARICATURE_PROMPT = `You are scoring a Tribal-style abstracted carved sculpture against the source photograph(s) it was based on.
-
-This sculpture is INTENTIONALLY ABSTRACTED — likeness is interpreted as caricature, NOT photographic accuracy. DO NOT score for facial accuracy. Score on caricature/abstraction quality:
-
-EMOTIONAL CAPTURE (1-10): does the carving capture each subject's emotional essence (warmth, humor, gentleness, confidence, intimacy, playfulness)? Would someone who knows the subjects sense their personalities through the abstraction?
-- 9-10: Every subject's personality reads through the abstraction, dominant traits sensitively exaggerated
-- 7-8: Most subjects' essence comes through, minor missed cues
-- 5-6: Generic emotional read, personality vague but present
-- 3-4: Emotional essence largely absent
-- 1-2: Generic faces with no personality
-
-CRAFT QUALITY (1-10): is the carving / segmentation aesthetically successful as a sculpture? Smooth transitions, intentional asymmetry, varied block sizes, natural material variation, organic randomness, museum-grade finish.
-- 9-10: Gallery-collectible craft, every detail intentional
-- 7-8: Strong craft, minor mechanical or repetitive moments
-- 5-6: Acceptable craft, some puzzle-piece or AI-generated feel
-- 3-4: Weak craft, mechanical or rigid segmentation
-- 1-2: Failed — voxelized, Minecraft-like, chaotic noise
-
-COMPOSITION (1-10): does the overall sculpture work as one artwork? Subject count correct, arrangement intentional, mounting (wall or pedestal) appropriate, presentation gallery-worthy.
-- 9-10: Cohesive single artwork, presentation hits museum register
-- 7-8: Strong overall composition, minor staging issues
-- 5-6: Acceptable composition, presentation feels slightly off
-- 3-4: Weak composition, feels assembled rather than designed
-- 1-2: Failed composition
-
-OVERALL_SCORE (1-10): your overall judgment of the sculpture as a successful tribal-style caricature artwork.
-
-Respond with ONLY a JSON object:
-{
-  "overall_score": <int 1-10>,
-  "emotional_capture": <int 1-10>,
-  "craft_quality": <int 1-10>,
-  "composition": <int 1-10>,
-  "reason": "<one or two sentences explaining the scores>"
-}
-
-Respond with ONLY the JSON. No preamble.`
-
-export async function scoreHolisticCaricature(input: {
-  sourceImageB64:    string
-  renderedImageB64:  string
-  openaiApiKey:      string
-}): Promise<HolisticCaricatureScore> {
-
-  const openai = new OpenAI({ apiKey: input.openaiApiKey })
-
-  const response = await openai.chat.completions.create({
-    model:           'gpt-4o-mini',
-    max_tokens:      400,
-    response_format: { type: 'json_object' },
-    messages: [{
-      role: 'user',
-      content: [
-        { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${input.sourceImageB64}`,  detail: 'high' } },
-        { type: 'image_url', image_url: { url: `data:image/png;base64,${input.renderedImageB64}`, detail: 'high' } },
-        { type: 'text', text: HOLISTIC_CARICATURE_PROMPT },
-      ],
-    }],
-  })
-
-  const content = (response.choices[0]?.message?.content || '{}').trim()
-  try {
-    const parsed = JSON.parse(content)
-    return {
-      overall_score:     Math.max(1, Math.min(10, Number(parsed.overall_score) || 6)),
-      emotional_capture: Math.max(1, Math.min(10, Number(parsed.emotional_capture) || 6)),
-      craft_quality:     Math.max(1, Math.min(10, Number(parsed.craft_quality) || 6)),
-      composition:       Math.max(1, Math.min(10, Number(parsed.composition) || 6)),
-      reason:            String(parsed.reason || 'no reason given').slice(0, 400),
-    }
-  } catch (e) {
-    console.warn('[groups/refine] caricature score parse failed:', e)
-    return {
-      overall_score:     6,
-      emotional_capture: 6,
-      craft_quality:     6,
-      composition:       6,
-      reason:            'scoring parse failed, defaulting to neutral 6/10 across the board',
-    }
   }
 }
 

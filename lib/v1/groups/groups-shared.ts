@@ -134,4 +134,108 @@ export const TYPICAL_MAX  = 12
 // question sits with the uploading adult and is not an engine decision.
 // Do not build this gate until that comes back.
 
+// ═══════════════════════════════════════════════════════════════
+// REQUEST AND RESULT
+// ═══════════════════════════════════════════════════════════════
+//
+// Added back 2026-08-11. The flat-catalog rewrite removed these along with
+// the style axis and nothing replaced them, so groups-generator.ts imported
+// two types that did not exist and the silo did not compile.
+//
+// These carry NO style, preset, location, scale or arrangement. An effect
+// id and a subject count are the whole request now.
+
+export interface GroupsGenerateRequest {
+  /** Every source photograph, base64. One for a group_photo effect; one
+   *  per person for a multi_photo composite. */
+  source_images_b64: string[]
+  effect_id:         GroupsEffectId
+  /** From analyze. Drives the framing clause AND the scoring rule, so a
+   *  wrong count here is a wrong piece scored against the wrong bar. */
+  subject_count:     number
+  /** Skips scoring and retries. Internal shoots only — never a customer
+   *  path, because an unscored group render is exactly what the gate
+   *  exists to catch. */
+  skip_scoring?:     boolean
+}
+
+/**
+ * Why a craft failed, in a shape the Concierge can speak from.
+ *
+ * NOT a message. The Concierge writes the words; this says what is true.
+ * The distinction matters because "one figure was turned away from the
+ * camera" and "every figure came back wrong" want different advice — the
+ * first is a better photograph, the second is a different effect — and
+ * only the engine knows which happened.
+ */
+export interface GroupsFailure {
+  kind:
+    | 'some_figures'      // a minority failed; usually a source-photo problem
+    | 'most_figures'      // the render is wrong, not the photograph
+    | 'face_not_visible'  // caught pre-flight, before a render was paid for
+    | 'no_figures'        // the scorer found nobody in the render
+    | 'render_failed'     // NB2 never returned an image
+  /** Figure indices below the bar on the best attempt. */
+  failed_figures: number[]
+  /** The scorer's own words for those figures, deduplicated. Describes the
+   *  picture, never a person. */
+  reasons: string[]
+  attempts: number
+}
+
+export interface GroupsGenerateResult {
+  ok:             boolean
+  image_b64:      string | null
+  prompt_used:    string
+  effect:         GroupsEffectId
+  subject_count:  number
+  /** Every attempt in order. The last is the one returned. */
+  attempts:       GroupsAttempt[]
+  /** True when a render passed the gate. False WITH an image present means
+   *  the best of four is being offered rather than shipped — see failure. */
+  passed:         boolean
+  failure:        GroupsFailure | null
+  outpainted:     boolean
+  outpaint_skip:  string | null
+  fatal_error:    string | null
+  error_code?:    string
+  retryable?:     boolean
+  duration_ms:    number
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRICE AND ATTEMPTS
+// ═══════════════════════════════════════════════════════════════
+//
+// Rich, 2026-08-11. Groups is banded by subject count because the COST is
+// banded by subject count: every figure is another face the gate has to
+// pass, and up to four attempts with a vision call per attempt. A
+// twelve-person composite was never the same craft as a two-person one.
+//
+// THE CREDIT GATE DOES NOT KNOW THIS YET. app/api/v1/credits/gate/route.ts
+// validates cost_per against a flat CREDITS_PER_IMAGE of 10 and refuses
+// anything else, so a Groups craft above the first band is refused today.
+// Flagged rather than patched — that route is the money path and belongs
+// to CUI.
+
+export function groupsCreditCost(subjectCount: number): number {
+  if (subjectCount >= 10) return 40
+  if (subjectCount >= 7)  return 25
+  if (subjectCount >= 4)  return 15
+  return 10
+}
+
+/**
+ * Attempts before the gate gives up, raised from two.
+ *
+ * Two attempts on a five-person composite where every figure must reach
+ * 9/10 is a gate that mostly fails, and a failed craft that still charged
+ * is worse than an expensive one.
+ *
+ * MAX_ATTEMPTS above is left at 2 and is now unused by Groups. It is not
+ * deleted here because nothing in this file can prove what else imports
+ * it — grep before removing.
+ */
+export const MAX_ATTEMPTS_GROUPS = 4
+
 export type { GroupsEffectId }

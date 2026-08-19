@@ -6,6 +6,20 @@
 //   Stage 2  Stability outpaint — ONLY if the render came back short
 //   Stage 3  (none)
 //
+// ── NO FREEFORM PATH, 2026-08-11 ───────────────────────────────────────
+//
+// freeform_prompt is gone from the request and from buildWallpaperPrompt.
+//
+// It existed for an Open Studio that lets the customer type a prompt. The
+// Studio that was actually built has four dropdowns and a slider, sends
+// four ids and never a prompt, and runs a different model through
+// studio-generator.ts — so this path had no caller, and the moderation
+// surface it implied was a problem nobody had.
+//
+// Do not add it back for "flexibility". The absence of free text is the
+// entire safety story for the Studio and it is worth more than any
+// classifier that could be put in front of it.
+//
 // ── NO SCORING, DELIBERATELY ───────────────────────────────────────────
 //
 // Groups scores per-figure likeness and retries once. Wallpapers do not,
@@ -19,6 +33,11 @@
 // three Portraits carryovers and still unruled: failed renders return
 // ok=true and land in the collection. Wallpapers make it cheaper to be
 // wrong, not acceptable.
+//
+// Groups took the opposite posture on 2026-08-11 — four attempts, a
+// per-figure gate, and a refund offered when it still misses. The
+// difference is the price: a group piece is up to forty credits and goes
+// to print, and a wallpaper is a $2.99 download.
 //
 // ── OUTPAINT IS A FALLBACK ─────────────────────────────────────────────
 //
@@ -49,14 +68,9 @@ const REPLICATE_URL =
   'https://api.replicate.com/v1/models/google/nano-banana-2/predictions'
 
 export interface WallpaperGenerateRequest {
-  /** Optional. Open Studio may be text-only — see the note in
-   *  wallpapers-shared.ts, which is Rich's ruling to make. */
   source_image_b64?:      string
   additional_images_b64?: string[]
   effect_id:              string
-  /** Open Studio only: the customer's own prompt, already through the
-   *  builder. Ignored for catalog effects. */
-  freeform_prompt?:       string
   is_preview?:            boolean
 }
 
@@ -88,7 +102,7 @@ export async function generateWallpaper(
   const req = input.request
 
   const effect = getWallpaperEffect(req.effect_id)
-  if (!effect && !req.freeform_prompt) {
+  if (!effect) {
     return fatal({
       msg: `unknown wallpaper effect: ${req.effect_id}`,
       effectId: req.effect_id,
@@ -99,10 +113,7 @@ export async function generateWallpaper(
     })
   }
 
-  const prompt = buildWallpaperPrompt({
-    effectId:       req.effect_id,
-    freeformPrompt: req.freeform_prompt,
-  })
+  const prompt = buildWallpaperPrompt({ effectId: req.effect_id })
 
   console.log(
     `[wallpapers] effect=${req.effect_id} chars=${prompt.length} ` +
