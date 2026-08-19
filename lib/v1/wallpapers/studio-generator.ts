@@ -2,7 +2,7 @@
 //
 // THE STUDIO. Four dropdowns, no photograph, no prompt box, no LLM.
 //
-//   Stage 1  studio-prompt.buildRound -> four prompts
+//   Stage 1  studio-round.buildStudioRound -> four prompts
 //   Stage 2  flux-schnell, four calls in parallel
 //   Stage 3  watermark burned into each preview
 //
@@ -27,16 +27,17 @@
 // ── FOUR CALLS, NOT ONE CALL FOR FOUR ──────────────────────────────────
 //
 // flux-schnell takes num_outputs, but the four images in a round are four
-// DIFFERENT prompts — buildRound spreads the Energy axis so the round is
+// DIFFERENT prompts — the round spreads the Energy axis so it is
 // four different pictures rather than four samples of one. So it is four
 // predictions, fired together.
 //
-// They are returned in buildRound's order and settled independently: the
+// They are returned in the round's order and settled independently: the
 // page shows each as it lands, and one failure costs one tile rather than
 // the round.
 
 import sharp from 'sharp'
-import { buildRound, isValid, remix, REMIXES, type Choice } from './studio-prompt'
+import { REMIXES } from './studio-prompt'
+import type { StudioRoundEntry } from './studio-round'
 import { litenMarkGroup, LITEN_MARK_ASPECT } from './liten-mark'
 
 // ── HARDCODED. SEE THE HEADER. ──
@@ -54,10 +55,15 @@ const POLL_DELAY_MS     = 1000
 
 export interface StudioImage {
   /** Stable within a round. The id `keep` is called back with. */
-  id:       string
-  energy:   string
-  prompt:   string
-  seed:     number
+  id:           string
+  energy:       string
+  /** What the page prints on the frame. */
+  energy_label: string
+  /** Halloween only, never shown. Carried so a good round can be explained
+   *  after the fact from a log. */
+  twist:        string | null
+  prompt:       string
+  seed:         number
   /** Watermarked. This is what the page is shown. */
   preview:  Buffer
   /** Clean. NEVER returned to a browser before keep is paid. */
@@ -73,13 +79,10 @@ export interface StudioRoundResult {
 }
 
 export interface GenerateStudioRoundInput {
-  choice:            Choice
-  /** Optional remix id from REMIXES. Anything unknown is ignored rather
-   *  than refused — a stale button on a cached page is not an error. */
-  remixId?:          string
-  /** Accepted and ignored until Rich's vocabulary lands. Present so the
-   *  page can ship first. */
-  season?:           string | null
+  /** Already built and already validated. This module does not know there
+   *  are two vocabularies and does not need to — studio-round.ts owns that
+   *  and hands over four finished prompts. */
+  entries:           StudioRoundEntry[]
   replicateApiToken: string
   /** Burned-in watermark. Omit ONLY for internal shoots. */
   watermark?:        boolean
@@ -91,16 +94,8 @@ export async function generateStudioRound(
 
   const t0 = Date.now()
 
-  if (!isValid(input.choice)) {
-    throw new Error('studio: invalid choice')
-  }
-
-  const round = buildRound(input.choice)
-
-  const prompts = round.map(r => ({
-    energy: r.energy,
-    prompt: input.remixId ? remix(r.prompt, input.remixId) : r.prompt,
-  }))
+  const prompts = input.entries
+  if (!prompts.length) throw new Error('studio: empty round')
 
   const roundId = cryptoId()
   const wantWatermark = input.watermark !== false
@@ -115,9 +110,11 @@ export async function generateStudioRound(
       })
       const preview = wantWatermark ? await watermark(clean) : clean
       return {
-        id:      `${roundId}-${i}`,
-        energy:  p.energy,
-        prompt:  p.prompt,
+        id:           `${roundId}-${i}`,
+        energy:       p.energy,
+        energy_label: p.energy_label,
+        twist:        p.twist,
+        prompt:       p.prompt,
         seed,
         preview,
         clean,
@@ -134,10 +131,8 @@ export async function generateStudioRound(
   })
 
   console.log(
-    `[studio] round in ${Date.now() - t0}ms — ` +
-    `world=${input.choice.world} mood=${input.choice.mood} ` +
-    `energy=${input.choice.energy} palette=${input.choice.palette} ` +
-    `remix=${input.remixId ?? '-'} ok=${images.length}/4`,
+    `[studio] round in ${Date.now() - t0}ms — ok=${images.length}/${prompts.length} ` +
+    `energies=${prompts.map(p => p.energy).join(',')}`,
   )
 
   return {
