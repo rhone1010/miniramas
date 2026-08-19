@@ -36,14 +36,25 @@ const PAGES: Record<string, string> = {
   '/home': '/index.html',
   '/portraits': '/portraits.html',
   '/workshop': '/portraits.html',
-  '/wallpapers': '/portrait-wallpaper.html',
-  '/portrait-wallpaper': '/portrait-wallpaper.html',
-  '/pet-wallpaper': '/pet-wallpaper.html',
   '/gallery': '/gallery.html',
   /* THE BOARD. A page rather than a panel: it is somewhere you go and spend
      time, it wants a URL somebody can send to a friend, and it is the only
      page here that could bring a stranger in. */
   '/community': '/community.html',
+
+  /* MOBILE WALLPAPERS. Exact-match, so every room needs its own line.
+     The first four are one file: the page reads the room off the path.
+     Studio is separate because it shares nothing with them - no
+     photograph, no Curator, another model and other money. */
+  '/wallpapers': '/wallpapers.html',
+  '/wallpapers/portraits': '/wallpapers.html',
+  '/wallpapers/pets': '/wallpapers.html',
+  '/wallpapers/halloween': '/wallpapers.html',
+  /* THE ACCORDION AND THE FIELD, merged 19 August. The previous page is
+     still in the repo as wallpaper-studio.html and this line is the whole
+     way back - point it at the old name and the old Studio returns, with
+     no file operation and no deploy of anything but this. */
+  '/wallpapers/studio': '/wallpaper-studio-V001.html',
   '/help': '/help.html',
 };
 
