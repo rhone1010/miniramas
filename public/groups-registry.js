@@ -18,6 +18,17 @@
    Family Impressionism and Layered Paper expect five. Sending a single
    group shot to a multi_photo effect produces one face repeated.
 
+   PLATES DERIVE FROM THE ID. Every plate is public/previews/groups/
+   groups_<id>.jpg, lowercase, .jpg, verified against the directory on
+   19 August 2026 - twenty-eight files, twenty-eight ids, no exceptions.
+   The `plate` field and its lookup table are gone. They existed because
+   the legacy set carried _01 and _02 suffixes, mixed .jpg and .jpeg, seven
+   names that were not the id, and one capital U that worked on Windows and
+   would have 404'd on Vercel. That set has been archived off and the
+   contract CENG wrote is now true.
+   If a plate ever fails to load, the fix is the filename on disk, not a
+   row in here.
+
    Every effect here is live. There is no `body: 'pending'` state in Groups
    the way there is in Portraits - CENG shipped twenty-eight approved and
    cut the two that were not (Iron, Dragon Skin), so the catalogue and the
@@ -55,7 +66,6 @@ window.GROUPS_REGISTRY = {
       "label": "Bronze",
       "category": "cast_carved",
       "intake": "group_photo",
-      "plate": "groups_bronze_01.jpg",
       "body": "live"
     },
     {
@@ -63,7 +73,6 @@ window.GROUPS_REGISTRY = {
       "label": "Ebony",
       "category": "cast_carved",
       "intake": "group_photo",
-      "plate": "groups_ebony_01.jpg",
       "body": "live"
     },
     {
@@ -71,7 +80,6 @@ window.GROUPS_REGISTRY = {
       "label": "Stone",
       "category": "cast_carved",
       "intake": "group_photo",
-      "plate": "groups_stone_01.jpg",
       "body": "live"
     },
     {
@@ -79,7 +87,6 @@ window.GROUPS_REGISTRY = {
       "label": "Reclaimed Bronze",
       "category": "cast_carved",
       "intake": "group_photo",
-      "plate": "groups_reclaimed_bronze_01.jpg",
       "body": "live"
     },
     {
@@ -87,7 +94,6 @@ window.GROUPS_REGISTRY = {
       "label": "Porcelain",
       "category": "cast_carved",
       "intake": "group_photo",
-      "plate": "groups_porcelain_01.jpeg",
       "body": "live"
     },
     {
@@ -95,7 +101,6 @@ window.GROUPS_REGISTRY = {
       "label": "Carved Family",
       "category": "cast_carved",
       "intake": "multi_photo",
-      "plate": "groups_wood_carved_01.jpg",
       "body": "live"
     },
     {
@@ -103,7 +108,6 @@ window.GROUPS_REGISTRY = {
       "label": "Atomic-Age Robot",
       "category": "cast_carved",
       "intake": "group_photo",
-      "plate": "groups_retro_robot_01.jpeg",
       "body": "live"
     },
     {
@@ -111,7 +115,6 @@ window.GROUPS_REGISTRY = {
       "label": "Plushy",
       "category": "made_by_hand",
       "intake": "group_photo",
-      "plate": "groups_plushy.jpg",
       "body": "live"
     },
     {
@@ -119,7 +122,6 @@ window.GROUPS_REGISTRY = {
       "label": "Folded Book",
       "category": "made_by_hand",
       "intake": "group_photo",
-      "plate": "groups_folded_book.jpg",
       "body": "live"
     },
     {
@@ -127,7 +129,6 @@ window.GROUPS_REGISTRY = {
       "label": "Origami",
       "category": "made_by_hand",
       "intake": "group_photo",
-      "plate": "groups_origami_01.jpeg",
       "body": "live"
     },
     {
@@ -135,7 +136,6 @@ window.GROUPS_REGISTRY = {
       "label": "Balloon",
       "category": "made_by_hand",
       "intake": "group_photo",
-      "plate": "groups_balloon_01.jpeg",
       "body": "live"
     },
     {
@@ -143,7 +143,6 @@ window.GROUPS_REGISTRY = {
       "label": "Layered Paper",
       "category": "made_by_hand",
       "intake": "multi_photo",
-      "plate": "groups_cut_paper_01.jpg",
       "body": "live",
       "expectedPhotos": 5
     },
@@ -152,7 +151,6 @@ window.GROUPS_REGISTRY = {
       "label": "Pencil Sketch",
       "category": "made_by_hand",
       "intake": "group_photo",
-      "plate": "groups_pencil_01.jpeg",
       "body": "live"
     },
     {
@@ -160,7 +158,6 @@ window.GROUPS_REGISTRY = {
       "label": "Sea Glass",
       "category": "made_by_hand",
       "intake": "group_photo",
-      "plate": "groups_sea_glass_01.jpeg",
       "body": "live"
     },
     {
@@ -168,7 +165,6 @@ window.GROUPS_REGISTRY = {
       "label": "Cubism",
       "category": "painted_printed",
       "intake": "group_photo",
-      "plate": "groups_cubism_01.jpg",
       "body": "live"
     },
     {
@@ -176,7 +172,6 @@ window.GROUPS_REGISTRY = {
       "label": "Art Nouveau",
       "category": "painted_printed",
       "intake": "group_photo",
-      "plate": "groups_art_nouveau.jpg",
       "body": "live"
     },
     {
@@ -184,7 +179,6 @@ window.GROUPS_REGISTRY = {
       "label": "Ukiyo-e",
       "category": "painted_printed",
       "intake": "group_photo",
-      "plate": "groups_Ukiyo-e_01.jpg",
       "body": "live"
     },
     {
@@ -192,7 +186,6 @@ window.GROUPS_REGISTRY = {
       "label": "Family Impressionism",
       "category": "painted_printed",
       "intake": "multi_photo",
-      "plate": "groups_impressionism_1.jpg",
       "body": "live",
       "expectedPhotos": 5
     },
@@ -201,7 +194,6 @@ window.GROUPS_REGISTRY = {
       "label": "The Family Mosaic",
       "category": "painted_printed",
       "intake": "multi_photo",
-      "plate": "groups_mosaic_01.jpg",
       "body": "live"
     },
     {
@@ -209,7 +201,6 @@ window.GROUPS_REGISTRY = {
       "label": "Neon",
       "category": "painted_printed",
       "intake": "group_photo",
-      "plate": "groups_neon_01.jpeg",
       "body": "live"
     },
     {
@@ -217,7 +208,6 @@ window.GROUPS_REGISTRY = {
       "label": "Frost & Ice",
       "category": "painted_printed",
       "intake": "group_photo",
-      "plate": "groups_frost_ice_01.jpeg",
       "body": "live"
     },
     {
@@ -225,7 +215,6 @@ window.GROUPS_REGISTRY = {
       "label": "Victorian",
       "category": "another_time",
       "intake": "group_photo",
-      "plate": "groups_victorian_01.jpeg",
       "body": "live"
     },
     {
@@ -233,7 +222,6 @@ window.GROUPS_REGISTRY = {
       "label": "Elizabethan",
       "category": "another_time",
       "intake": "group_photo",
-      "plate": "groups_elizabethan_01.jpeg",
       "body": "live"
     },
     {
@@ -241,7 +229,6 @@ window.GROUPS_REGISTRY = {
       "label": "Renaissance",
       "category": "another_time",
       "intake": "group_photo",
-      "plate": "groups_renaissance_02.jpeg",
       "body": "live"
     },
     {
@@ -249,7 +236,6 @@ window.GROUPS_REGISTRY = {
       "label": "Persian Court",
       "category": "another_time",
       "intake": "group_photo",
-      "plate": "groups_persian_01.jpeg",
       "body": "live"
     },
     {
@@ -257,7 +243,6 @@ window.GROUPS_REGISTRY = {
       "label": "Samurai",
       "category": "another_time",
       "intake": "group_photo",
-      "plate": "groups_samurai_01.jpeg",
       "body": "live"
     },
     {
@@ -265,7 +250,6 @@ window.GROUPS_REGISTRY = {
       "label": "Wild West",
       "category": "another_time",
       "intake": "group_photo",
-      "plate": "groups_wild_west.jpeg",
       "body": "live"
     },
     {
@@ -273,7 +257,6 @@ window.GROUPS_REGISTRY = {
       "label": "Clockwork",
       "category": "another_time",
       "intake": "group_photo",
-      "plate": "groups_clockwork.jpeg",
       "body": "live"
     }
   ],
@@ -308,10 +291,15 @@ window.EFFECT_REGISTRY.variantFor = function (id) {
   return window.EFFECT_REGISTRY.byId(id);
 };
 
-/* The plate for an effect, whole path. Never build one from an id. */
+/* The plate for an effect, whole path. Derived from the id - see the header.
+   Unknown ids return empty rather than a path that will 404, so a card with
+   no effect behind it paints as a card with no picture rather than a broken
+   image. */
+window.EFFECT_REGISTRY.PLATE_DIR = '/previews/groups/';
 window.EFFECT_REGISTRY.plateFor = function (id) {
   var e = window.EFFECT_REGISTRY.byId(id);
-  return (e && e.plate) ? '/previews/groups/' + e.plate : '';
+  if (!e) { return ''; }
+  return window.EFFECT_REGISTRY.PLATE_DIR + 'groups_' + e.id + '.jpg';
 };
 
 /* Intake, asked of an effect id. The uploader is the only caller. */
