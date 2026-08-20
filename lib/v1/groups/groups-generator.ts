@@ -3,7 +3,7 @@
 // Orchestrator for the Groups silo. REWRITTEN 2026-08-11.
 //
 //   Pre-flight   face visibility on the source, before anything is spent
-//   Stage 1      NB2 generate
+//   Stage 1      NB2 generate at MAIN_ASPECT
 //   Stage 2      per-figure likeness score
 //                -> retry from Stage 1, up to four attempts
 //   Stage 3      Stability outpaint, margin mode, every render
@@ -72,6 +72,7 @@ import {
   type PerFigureScore,
 } from './groups-shared'
 import { outpaintMargin } from '../shared/outpaint'
+import { MAIN_ASPECT } from '../shared/render-aspect'
 
 const SYNC_WAIT_SECONDS = 60
 const POLL_MAX_ATTEMPTS = 30
@@ -246,6 +247,7 @@ export async function generateGroupsRender(
       imageB64 = await callNB2({
         prompt: finalPrompt,
         sourceImagesB64:   sources,
+        aspectRatio:       MAIN_ASPECT,
         replicateApiToken: input.replicateApiToken,
       })
     } catch (e: any) {
@@ -538,13 +540,25 @@ function readJpegDimensions(
 async function callNB2(input: {
   prompt:            string
   sourceImagesB64:   string[]
+  aspectRatio:       string
   replicateApiToken: string
 }): Promise<string> {
 
+  // ── THE ASPECT IS SENT, AS OF 2026-08-20 ─────────────────────────────
+  //
+  // It was not sent at all before. NB2 took its default, which follows the
+  // source photograph — so a Groups piece came out whatever shape the
+  // customer's snapshot happened to be, and nothing in the engine had an
+  // opinion about it.
+  //
+  // From lib/v1/shared/render-aspect.ts, so the day it becomes a customer
+  // choice this line does not change: MAIN_ASPECT stops being a constant
+  // and starts being a default.
   const body: any = {
     input: {
       prompt:        input.prompt,
       image_input:   input.sourceImagesB64.map(b => `data:image/jpeg;base64,${b}`),
+      aspect_ratio:  input.aspectRatio,
       output_format: 'jpg',
     },
   }

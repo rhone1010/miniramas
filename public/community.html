@@ -1056,7 +1056,13 @@ body{
         if (wallMoreBtn) wallMoreBtn.disabled = false;
         if (!d || !d.ok) return;
 
-        SIGNED_IN = !!d.signed_in;
+        /* ONLY WHEN THE FIELD IS ACTUALLY THERE. The route has three
+           fallback returns - no database, read failed, and the catch -
+           and none of them carries signed_in. Reading !!undefined off
+           one of those told a signed-in customer to sign in.
+           And never downgrade: once the server has said somebody is
+           signed in, a later failed read does not un-sign them. */
+        if (typeof d.signed_in === 'boolean') SIGNED_IN = SIGNED_IN || d.signed_in;
         (d.hearted || []).forEach(function(id){ HEARTED[id] = true; });
 
         var rows = d.posts || [];
@@ -1441,7 +1447,14 @@ body{
      The handle first, because the wall needs it to know which cards are
      the caller's own. One extra round trip on arrival, and it runs
      alongside auth/me rather than after it. */
-  loadHandle().then(loadPosts);
+  /* Repaint after the board answers. showView('ideas') paints the write
+     state the moment it is clicked, and until the board lands SIGNED_IN
+     is still its initial false - so an early click drew the sign-in
+     prompt and nothing ever corrected it. */
+  loadHandle().then(loadPosts).then(function(){
+    if (IDEAS_LOADED) paintWriteState('idea');
+    paintWriteState('cmt');
+  });
 })();
 </script>
 
