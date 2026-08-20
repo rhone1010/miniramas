@@ -17,9 +17,10 @@
 //
 //   1  signed in?
 //   2  does the clean file exist?
-//   3  spend
-//   4  record the piece
-//   5  sign the URL
+//   3  copy it into the collection bucket
+//   4  spend
+//   5  record the piece
+//   6  sign the URL
 //
 // Two comes before three because money must not move for a file that
 // cannot be delivered — the same rule the craft gate learned when a
@@ -28,6 +29,36 @@
 //
 // Four comes after three because a signed URL handed out before the spend
 // settles is the file, given away.
+//
+// ── THE PIECE MOVES BUCKETS ON KEEP ────────────────────────────────────
+//
+// CORRECTED 20 August. This route wrote image_path as
+// `previews/studio/<id>.jpg` and was wrong twice over.
+//
+// The convention, set by app/api/v1/portraits/pieces/route.ts and followed
+// by everything that reads a piece:
+//
+//   bucket      collection
+//   image_path  <ownerKey>/<pieceId>.jpg
+//
+// A BARE PATH scoped by owner, with no bucket prefix, because every reader
+// signs image_path against the collection bucket itself. Writing the
+// bucket into the path means the reader signs `collection/previews/...`
+// and gets nothing.
+//
+// Either fault alone returns null. On the community board that looks
+// exactly like a board nobody has posted to, which is how it would have
+// stayed hidden.
+//
+// So the clean file is COPIED out of the private previews bucket into
+// collection under the owner's key. Cross-bucket, so it is a download and
+// an upload rather than a storage copy.
+//
+// It happens BEFORE the spend. Money must not move for a piece that cannot
+// be delivered — the same rule the craft gate learned when a customer paid
+// ten credits for an effect with no prompt behind it. A copy that succeeds
+// and a spend that fails leaves an unreferenced object in storage, which
+// costs pennies and is swept.
 //
 // ── PREVIEWS ARE NOT KEPT. A KEPT IMAGE IS. ────────────────────────────
 //
@@ -56,6 +87,8 @@ import {
   STUDIO_BUCKET,
   studioCleanPath,
   STUDIO_SIGNED_URL_SECONDS,
+  COLLECTION_BUCKET,
+  collectionPiecePath,
 } from '@/lib/v1/wallpapers/studio-store'
 
 export const runtime = 'nodejs'
@@ -106,7 +139,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, reason: 'expired' }, { status: 404 })
     }
 
-    // ── 3 · Spend ──
+    // ── 3 · Copy it into the collection bucket ──
+    //
+    // The piece id is minted here rather than left to the table's default,
+    // because the path contains it and the file has to be in place before
+    // the row that names it.
+    const pieceId    = randomUUID()
+    const piecePath  = collectionPiecePath(owner, pieceId)
+
+    const { data: clean, error: dlErr } = await db.storage
+      .from(STUDIO_BUCKET).download(path)
+
+    if (dlErr || !clean) {
+      console.error(`[studio/keep] download failed ${path}: ${dlErr?.message}`)
+      return NextResponse.json({ ok: false, reason: 'storage_unavailable' }, { status: 503 })
+    }
+
+    const { error: upErr } = await db.storage
+      .from(COLLECTION_BUCKET)
+      .upload(piecePath, Buffer.from(await clean.arrayBuffer()), {
+        contentType: 'image/jpeg',
+        upsert:      true,
+      })
+
+    if (upErr) {
+      // Before the spend, so nobody has paid. A refusal here is a bad
+      // moment, not a bad outcome.
+      console.error(`[studio/keep] copy to collection failed ${piecePath}: ${upErr.message}`)
+      return NextResponse.json({ ok: false, reason: 'storage_unavailable' }, { status: 503 })
+    }
+
+    // ── 4 · Spend ──
     const suppliedRef = typeof body.ref_id === 'string' ? body.ref_id.trim() : ''
     const refId = suppliedRef ? suppliedRef.slice(0, 64) : `studio_${randomUUID()}`
 
@@ -149,10 +212,13 @@ export async function POST(req: Request) {
       console.error(`[studio/keep] credit_ledger insert FAILED ref=${refId}: ${ldErr.message}`)
     }
 
-    // ── 4 · Release ──
+    // ── 6 · Release ──
+    //
+    // Signed against collection, from the bare owner-scoped path, exactly
+    // as every other reader of a piece does.
     const { data: signed, error: signErr } = await db.storage
-      .from(STUDIO_BUCKET)
-      .createSignedUrl(path, STUDIO_SIGNED_URL_SECONDS)
+      .from(COLLECTION_BUCKET)
+      .createSignedUrl(piecePath, STUDIO_SIGNED_URL_SECONDS)
 
     if (signErr || !signed?.signedUrl) {
       // Paid and undelivered. This is the one state that must never be
@@ -166,7 +232,7 @@ export async function POST(req: Request) {
       }, { status: 500 })
     }
 
-    // ── 4 · Record the piece ──
+    // ── 5 · Record the piece ──
     //
     // series is 'wallpapers' rather than 'studio' so the Print Shop's
     // exclusion of this silo works off one value, and so a season is a
@@ -179,13 +245,15 @@ export async function POST(req: Request) {
       : null
 
     const { error: pieceErr } = await db.from('collection_pieces').insert({
+      id:         pieceId,
       owner_key:  owner,
       user_id:    owner,
       series:     'wallpapers',
       preset:     'studio',
       label:      season ? 'Studio · Halloween' : 'Studio',
       mode:       'studio',
-      image_path: `${STUDIO_BUCKET}/${path}`,
+      // Bare, owner-scoped, no bucket prefix. See the header.
+      image_path: piecePath,
       meta:       {
         room:    'studio',
         season,

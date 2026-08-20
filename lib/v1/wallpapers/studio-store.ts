@@ -40,3 +40,27 @@ export function studioCleanPath(imageId: string): string {
  *  a bad connection, short enough that a link pasted into a group chat
  *  stops working. */
 export const STUDIO_SIGNED_URL_SECONDS = 60 * 60
+
+// ── WHERE A KEPT PIECE LIVES ───────────────────────────────────────────
+//
+// Different bucket, different shape, and neither is negotiable — the
+// convention is set by app/api/v1/portraits/pieces/route.ts and followed
+// by everything that reads a piece, including the community board.
+//
+//   bucket      collection
+//   image_path  <ownerKey>/<pieceId>.jpg
+//
+// BARE. No bucket prefix in the path, because every reader signs
+// image_path against the collection bucket itself. A path carrying its own
+// bucket makes the reader sign `collection/previews/...` and get nothing —
+// and a null image on a board nobody has posted to looks exactly like a
+// board nobody has posted to.
+//
+// Scoped by owner rather than flat, so one customer's pieces cannot be
+// enumerated by guessing at another's ids.
+
+export const COLLECTION_BUCKET = 'collection'
+
+export function collectionPiecePath(ownerKey: string, pieceId: string): string {
+  return `${ownerKey}/${pieceId}.jpg`
+}
