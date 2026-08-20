@@ -36,6 +36,12 @@ const PAGES: Record<string, string> = {
   '/home': '/index.html',
   '/portraits': '/portraits.html',
   '/workshop': '/portraits.html',
+  /* GROUPS. Same navigation model as Portraits - four rooms where that has
+     eight, and everything below the rooms identical. The Series menu on
+     both pages links here, so without this line that menu offers a room
+     and 404s, which is the exact fault the Portraits menu comment above
+     was written about. */
+  '/groups': '/groups.html',
   '/gallery': '/gallery.html',
   /* THE BOARD. A page rather than a panel: it is somewhere you go and spend
      time, it wants a URL somebody can send to a friend, and it is the only
@@ -54,7 +60,14 @@ const PAGES: Record<string, string> = {
      still in the repo as wallpaper-studio.html and this line is the whole
      way back - point it at the old name and the old Studio returns, with
      no file operation and no deploy of anything but this. */
-  '/wallpapers/studio': '/wallpaper-studio-V001.html',
+  /* V002 as of 19 August. V001 shipped with two faults of mine: a
+     `.step` grid rule surviving from the old design, which put every
+     accordion title in a 98px column and wrapped it one word per line, and
+     an `inset:var(--pad)` carried over from a mockup whose grid was padded
+     - this one is not, so the mask bands landed in the gutters.
+
+     V001 is still in the repo and this line is still the whole way back. */
+  '/wallpapers/studio': '/wallpaper-studio-V002.html',
   '/help': '/help.html',
 };
 
