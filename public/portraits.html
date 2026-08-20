@@ -4301,6 +4301,20 @@ body.is-lboxed{ overflow:hidden }
   .cur-slot{ aspect-ratio:4/3 }
 }
 
+/* ---- FOOTER HIDDEN - NOT REMOVED ------------------------------------
+   Five bays of placeholder heading and lorem. The markup, the stone,
+   the hairline dividers and the icons all stay; there is simply no copy
+   for them yet and placeholder latin on a shop page is worse than a
+   shorter page.
+
+   Last rule in the sheet on purpose. Ten .room--footer rules precede it,
+   two of them inside media queries, and source order is what decides.
+
+   TO BRING IT BACK: delete this block. Nothing else was touched.
+   -------------------------------------------------------------------- */
+.room--footer{ display:none !important }
+.rooms{ row-gap:0; column-gap:var(--room-gap) }
+
 /* ======================================================================
    MEASUREMENT — this block is NOT part of the contract.
    It exists so the geometry can be verified on the glass and read back.
@@ -4646,10 +4660,11 @@ body.is-lboxed{ overflow:hidden }
       </button>
       <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
         <a href="/portraits" role="menuitem" aria-current="page">Portraits</a>
-        <!-- Action, Groups and Pets were listed here and are not in
-             middleware's PAGES map, so all three 404. A Series menu that
-             offers four rooms and opens one is worse than a menu that
-             offers one: the first is a broken shop, the second is a small
+        <a href="/groups" role="menuitem">Groups</a>
+        <!-- Action and Pets were listed here too and are still not in
+             middleware's PAGES map, so both 404. A Series menu that
+             offers four rooms and opens two is worse than a menu that
+             offers two: the first is a broken shop, the second is a small
              one. They come back when they exist. -->
         <div class="sep"></div>
         <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
@@ -4693,6 +4708,7 @@ body.is-lboxed{ overflow:hidden }
   </div>
   <nav class="mh-drawer" id="mhDrawer" hidden>
     <a href="/portraits" class="on">Portraits</a>
+    <a href="/groups">Groups</a>
     <a href="/wallpapers">Mobile Wallpapers</a>
     <a href="/gallery">Gallery</a>
     <a href="/community">Community</a>
