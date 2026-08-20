@@ -30,6 +30,25 @@
 // craft should have cost, so a mismatch is visible in the log instead of
 // being discovered in the ledger.
 //
+// ── THE FREE RETRY ─────────────────────────────────────────────────────
+//
+// When the gate is missed after four attempts, a token is written against
+// the charge. It buys one more craft at no cost, and ONLY if the inputs
+// change — a closer photograph when some figures missed, a different
+// effect when most of them did.
+//
+// The four attempts are already paid for by the studio; that cost is sunk
+// the moment the gate fails. Charging again for a fifth run on identical
+// inputs would be charging twice for the same failure. A changed input is
+// genuinely different work and is the thing most likely to succeed.
+//
+// Ungated it would be a reroll button. Gated, it is the only lever that
+// improves the odds, and it lets the Curator ask the customer to DO
+// something rather than to try again and hope.
+//
+// Issuing is non-fatal: a token that failed to write costs the studio a
+// conversion, not the customer a craft.
+//
 // ── FAILING THE GATE IS NOT AN ERROR ───────────────────────────────────
 //
 // Four attempts that all miss the likeness bar return HTTP 200 with
@@ -42,6 +61,8 @@
 // they never got.
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { getUser } from '@/lib/store/auth'
 import { generateGroupsRender } from '@/lib/v1/groups/groups-generator'
 import {
   GROUPS_EFFECTS,
@@ -170,6 +191,14 @@ export async function POST(req: NextRequest) {
       console.warn('[groups/generate] STABILITY_API_KEY missing — piece will crop at the frame edge')
     }
 
+    // Who this craft belongs to, and which charge. The ref_id is minted by
+    // the credit gate and passed through so a retry — and later a refund —
+    // can name the charge it answers to. Without one, no token: an
+    // unnameable free render is one nothing can reconcile.
+    const user     = await getUser().catch(() => null)
+    const ownerKey = user?.id ?? null
+    const refId    = typeof body.ref_id === 'string' ? body.ref_id.trim().slice(0, 64) : null
+
     const generateRequest: GroupsGenerateRequest = {
       source_images_b64: sources,
       effect_id:         effectId,
@@ -214,7 +243,32 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    return NextResponse.json({ result, credit_cost: creditCost })
+    // ── Issue the retry token ──
+    //
+    // Only for the two failure kinds a changed input can actually fix.
+    // face_not_visible fired before any render and cost nothing, so there
+    // is nothing to compensate; no_figures and render_failed are not
+    // fixable by a better photograph of the same people.
+    let retry: { available: boolean; change: string } | null = null
+
+    if (
+      !result.passed &&
+      result.image_b64 &&
+      refId &&
+      ownerKey &&
+      (result.failure?.kind === 'some_figures' || result.failure?.kind === 'most_figures')
+    ) {
+      retry = await issueRetryToken({
+        ownerKey,
+        refId,
+        effectId,
+        subjectCount: result.subject_count,
+        sourceCount:  sources.length,
+        reason:       result.failure.kind,
+      })
+    }
+
+    return NextResponse.json({ result, credit_cost: creditCost, retry })
 
   } catch (e: any) {
     const msg = e?.message || 'unknown error'
@@ -224,5 +278,55 @@ export async function POST(req: NextRequest) {
       { error: msg, duration_ms: durationMs },
       { status: 500 },
     )
+  }
+}
+
+// ─── RETRY TOKEN ────────────────────────────────────────────────
+//
+// One row per charge, enforced by a unique index on ref_id rather than by
+// this function remembering to check. A second failed craft is a second
+// ref_id and earns its own token; a second failure on the SAME craft does
+// not.
+
+async function issueRetryToken(args: {
+  ownerKey:     string
+  refId:        string
+  effectId:     string
+  subjectCount: number
+  sourceCount:  number
+  reason:       'some_figures' | 'most_figures'
+}): Promise<{ available: boolean; change: string } | null> {
+
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+
+  const db = createClient(url, key, { auth: { persistSession: false } })
+
+  const { error } = await db.from('groups_retry_tokens').insert({
+    owner_key:     args.ownerKey,
+    ref_id:        args.refId,
+    effect_id:     args.effectId,
+    subject_count: args.subjectCount,
+    source_count:  args.sourceCount,
+    reason:        args.reason,
+  })
+
+  if (error) {
+    // A duplicate is not a fault: this craft already earned its one token.
+    // Anything else is logged and the offer is simply not made.
+    if (!/duplicate|unique/i.test(error.message)) {
+      console.error(`[groups/generate] retry token insert failed ref=${args.refId}: ${error.message}`)
+    }
+    return null
+  }
+
+  console.log(`[groups/generate] retry token issued ref=${args.refId} reason=${args.reason}`)
+
+  // What the customer has to change. The glass turns this into an
+  // affordance; the Curator turns it into a sentence.
+  return {
+    available: true,
+    change:    args.reason === 'some_figures' ? 'add_photograph' : 'change_effect',
   }
 }
