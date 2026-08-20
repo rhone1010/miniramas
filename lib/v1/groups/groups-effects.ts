@@ -31,6 +31,19 @@
 //
 // Framing: never baked into a group_photo body. See FRAMING_CLAUSE.
 //
+// ── ASPECT IS NOT BAKED IN EITHER, 2026-08-20 ──────────────────────────
+//
+// folded_book and family_impressionism carried aspect: '16:9'. Both were
+// shot square on 20 August and both held — five busts across a square
+// frame, and the five Impressionist panels without needing a horizontal.
+// Rich approved. The fields are gone.
+//
+// The aspect now comes from ONE constant on the calling surface, so
+// changing it later is one line rather than a hunt through the catalog.
+// family_impressionism's BODY still says "a single 16:9 horizontal
+// composition" — that is Rich's text and it is left alone; it rendered
+// square anyway, which says the aspect argument outranks the sentence.
+//
 // ── PERIOD COSTUME, ADDED 2026-08-18 ───────────────────────────────────
 // Six effects merged from the Portraits gendered pairs and approved by
 // Rich against live renders the same day. They are group_photo intake and
@@ -238,7 +251,6 @@ Arrange the busts in a shallow arc across the frame, evenly spaced at the same h
 Avoid a photo-realistic or smooth lifelike face — the faces are built from layered paper like the rest of the figures, not left as skin. Avoid carved relief, engraved surfaces, stacked page-edge carving, paper-cut or woodcut techniques, and topographic page slicing. Avoid chaotic paper strips that destroy the likenesses, and avoid generic wild paper curls or spirals replacing the real hairstyles. Avoid full figures, bodies below the chest, or any bust merging into its neighbour — each is a separate piece.
 The group stands in a grand two-storey private library — a wrought-iron spiral staircase rising to a mezzanine gallery, floor-to-ceiling shelves on both levels, a tall arched window, warm lamplight, dust in the air. Strong depth of field heavily blurring the background. Museum-quality craftsmanship. Extraordinary dimensionality. Elegant paper architecture. Fine-art collectible sculpture.
 Facing the camera directly, warm natural smiles, eyes to the viewer. Camera at eye level. Fully clothed in source garments, collars closed, no bare shoulders. Each bust ends at the chest. No plaque. No legible text or titles on the surrounding books.`,
-    aspect: '16:9',
     // KNOWN CONFLICT, RICH AWARE, LOCKED AS-IS 2026-08-10:
     // the arrangement paragraph rotates the busts outward and the final
     // paragraph says "facing the camera directly, eyes to the viewer".
@@ -442,7 +454,6 @@ Keep permanent structure on every face: lines, scars and the natural asymmetry. 
     label: 'Family Impressionism',
     intake: 'multi_photo',
     expectedSubjects: 5,
-    aspect: '16:9',
     body: `Create five completely independent three-dimensional Impressionist portrait sculptures, one from each supplied reference, arranged side-by-side across a single 16:9 horizontal composition. Treat each reference as a separate identity. Likeness is paramount. Never blend facial characteristics between subjects.
 Each portrait is physically sculpted from exceptionally thick oil paint with extraordinary mass and depth. Use bold, decisive palette-knife strokes, heavy slabs of pigment, deep furrows, raised ridges, broken edges and sweeping ropes of paint. Individual strokes should be clearly visible from across the image, casting real shadows onto neighboring strokes.
 Push the work toward masterful expressive Impressionism rather than painted realism. Faces remain unmistakably recognizable but are constructed from large, confident planes and broken strokes of color rather than smoothly rendered skin. Allow edges to dissolve, colors to collide and forms to become increasingly abstract through hair, clothing and shoulders.

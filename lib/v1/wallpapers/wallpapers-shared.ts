@@ -19,17 +19,22 @@
 // Portraits and Groups body does, correctly, for a print — puts the
 // subject exactly where the icons land.
 //
-// So every wallpaper body carries its own framing: subject low, legs cut
-// at the image bottom so it fills the screen rather than sitting on a
-// plinth, and the top third OCCUPIED but quiet — dim material-appropriate
-// content, not empty sky. An early neon test came back with clean sky and
-// was dead.
+// The Portraits wallpaper bodies still carry their own framing — subject
+// low, legs cut at the image bottom so it fills the screen rather than
+// sitting on a plinth, and the top third OCCUPIED but quiet. An early neon
+// test came back with clean sky and was dead.
 //
-// That framing belongs in the body and nowhere else. WALLPAPER_COMPOSITION
-// used to restate it and contradicted every body it was appended to — it
-// asked for clean space up top and nothing cropped at the edges, which is
-// the opposite of both findings above, and it ran last where it would have
-// won. Stripped 2026-08-11 to the phone-elements clause alone.
+// THE HALLOWEEN ROOMS NO LONGER DO. Their fifty-five bodies went to
+// litenco main at 1:1 on 20 August, where a phone instruction produces a
+// square with a third of it deliberately empty. The framing moved to
+// WALLPAPER_COMPOSITION below, which is where a fact about the SURFACE
+// belongs — every wallpaper is a phone screen, and no individual effect
+// needed to know that.
+//
+// THE TWO STATES NOW COEXIST, which is worth knowing before editing
+// either: Portraits bodies say their own framing, Halloween bodies say
+// none. When the Portraits fourteen are next touched they should lose
+// theirs too.
 //
 // ── OUTPAINT IS THE FALLBACK, NOT THE PLAN ─────────────────────────────
 //
@@ -43,7 +48,10 @@
 // usually means empty ceiling, which is harmless; on a face it means a
 // second chin. Prompting for the shape is always the better answer.
 
-export const WALLPAPER_ASPECT = '9:16'
+// Re-exported from the one place aspects live, so the wallpaper room and
+// litenco main cannot drift apart by accident. See
+// lib/v1/shared/render-aspect.ts.
+export { WALLPAPER_ASPECT } from '../shared/render-aspect'
 
 /**
  * Appended to every wallpaper body.
@@ -58,7 +66,26 @@ export const WALLPAPER_ASPECT = '9:16'
  * produced "Trnday, Nep 26" on an early Portraits shot and a full
  * wifi-and-battery row on The Ferryman.
  */
-export const WALLPAPER_COMPOSITION = 'Do not include phone elements.'
+// ── THE PHONE FRAMING LIVES HERE NOW, 2026-08-20 ───────────────────────
+//
+// The Halloween bodies used to carry it themselves — "Keep subject in
+// lower 2/3 of image to allow for phone UI elements" and eight other
+// phrasings across fifty-five effects.
+//
+// That was correct while 9:16 was the only shape they were ever rendered
+// at. The moment the same effects went to litenco main at 1:1 it produced
+// a square with a third of it deliberately empty: a prompt describing the
+// SHAPE of the output rather than its content, still describing the old
+// shape.
+//
+// So the sentences came out of the bodies and moved to the SURFACE, where
+// they were always a property of. Every wallpaper is a phone screen; no
+// individual effect needed to know that.
+//
+// A body says what the picture is OF. This says what shape it comes out
+// in. Appended last, because whatever follows a body is the later
+// instruction and the later one wins.
+export { PHONE_COMPOSITION as WALLPAPER_COMPOSITION } from '../shared/render-aspect'
 
 export type WallpaperSiloId =
   | 'portraits'
