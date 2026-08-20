@@ -2,10 +2,24 @@
 //
 // THE LITEN & CO MARK, AS PATH DATA.
 //
-// Lifted verbatim from public/liten-and-co.svg on 2026-08-11. Nine paths,
+// Regenerated from public/liten-and-co.svg on 2026-08-19. Eight paths,
 // viewBox 1821.36 x 1528.47.
 //
-// WHY IT IS HERE AND NOT READ FROM public/ ----------------------------
+// ── ONE PATH IS DELIBERATELY MISSING ───────────────────────────────────
+//
+// The source SVG carries NINE paths. The first has class="cls-1" with
+// fill:#fff and is a white underlay sitting inside the L's counter — in
+// the two-tone original it is invisible, doing nothing but backing the
+// outline.
+//
+// Forced to white for a single-colour watermark it FILLS THE COUNTER, and
+// the L comes back as a solid blob instead of a stroke. The first version
+// of this file included it and that is exactly what happened.
+//
+// So: eight paths, not nine. If this is ever regenerated from the SVG,
+// drop any path carrying cls-1 and check the L before shipping it.
+//
+// ── WHY IT IS HERE AND NOT READ FROM public/ ───────────────────────────
 //
 // public/ is served by the CDN. It is not guaranteed to be on the disk a
 // serverless function runs from, so fs.readFile('public/liten-and-co.svg')
@@ -13,18 +27,17 @@
 // only thing protecting the file being sold, so it cannot depend on a read
 // that might not happen.
 //
-// The source file is still the source of truth for the mark. If it is
-// redrawn, regenerate this constant from it -- do not edit the coordinates
+// The source file remains the source of truth for the mark. If it is
+// redrawn, regenerate this constant from it — do not edit the coordinates
 // by hand.
 //
-// Fill is applied by the caller, not baked in: the original carries a
-// two-tone fill (one white underlay path, eight in the default colour)
-// which is meaningless in a single-colour watermark.
+// The lettering is paths too, so no font has to be present on the runtime
+// for "LITEN CO" to appear. One less thing that can differ silently
+// between local and production.
 
 export const LITEN_MARK_VIEWBOX = { width: 1821.36, height: 1528.47 }
 
 export const LITEN_MARK_PATHS: string[] = [
-  'M172.56,1026.32s170.41,155.57,260.13,25.55C592.95,819.61,883.85,99.17,1164.3,41.54c223.62-45.94,27.87,529.55-371.61,699.1S33.25,923.53,153.98,986.83c190.45,99.87,738.58-144,1112.52-104.52s497.03,74.32,497.03,74.32',
   'M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z',
   'M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z',
   'M244.95,1316.29h23.54v208.6h-23.54v-208.6Z',

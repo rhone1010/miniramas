@@ -18,7 +18,8 @@
 //   1  signed in?
 //   2  does the clean file exist?
 //   3  spend
-//   4  sign the URL
+//   4  record the piece
+//   5  sign the URL
 //
 // Two comes before three because money must not move for a file that
 // cannot be delivered — the same rule the craft gate learned when a
@@ -27,6 +28,17 @@
 //
 // Four comes after three because a signed URL handed out before the spend
 // settles is the file, given away.
+//
+// ── PREVIEWS ARE NOT KEPT. A KEPT IMAGE IS. ────────────────────────────
+//
+// Ruled 11 August: the four previews in a round live as long as the session
+// needs them and are swept. Only a kept image becomes a collection_pieces
+// row — nobody pays to store rounds nobody wanted.
+//
+// That row is also what the "five and the sixth is free" counter counts, so
+// it is not merely a record: it is the thing the offer is made of. Written
+// non-fatally all the same. A customer who paid must get their file even if
+// the row fails, and a failed insert is loud enough to reconcile by hand.
 //
 // ── EVERY CHARGE IS NAMEABLE ───────────────────────────────────────────
 //
@@ -154,7 +166,55 @@ export async function POST(req: Request) {
       }, { status: 500 })
     }
 
-    console.log(`[studio/keep] kept id=${rawId} owner=${owner} ref=${refId}`)
+    // ── 4 · Record the piece ──
+    //
+    // series is 'wallpapers' rather than 'studio' so the Print Shop's
+    // exclusion of this silo works off one value, and so a season is a
+    // vocabulary rather than a series — the same rule the rooms follow.
+    //
+    // The season lives in meta, which is where the kept-count query filters
+    // it: Halloween keeps its own five.
+    const season = typeof body.season === 'string' && body.season === 'halloween'
+      ? 'halloween'
+      : null
+
+    const { error: pieceErr } = await db.from('collection_pieces').insert({
+      owner_key:  owner,
+      user_id:    owner,
+      series:     'wallpapers',
+      preset:     'studio',
+      label:      season ? 'Studio · Halloween' : 'Studio',
+      mode:       'studio',
+      image_path: `${STUDIO_BUCKET}/${path}`,
+      meta:       {
+        room:    'studio',
+        season,
+        ref_id:  refId,
+        credits: STUDIO_KEEP_CREDITS,
+      },
+    })
+
+    if (pieceErr) {
+      // Loud, not fatal. The customer has paid and the file is about to be
+      // released; a missing row costs them a place in their collection and
+      // one step toward the free sixth, both recoverable by hand.
+      console.error(
+        `[studio/keep] collection_pieces insert FAILED owner=${owner} ` +
+        `ref=${refId} id=${rawId}: ${pieceErr.message}`,
+      )
+    }
+
+    console.log(`[studio/keep] kept id=${rawId} owner=${owner} ref=${refId} season=${season ?? '-'}`)
+
+    // The count AFTER this keep, so the page can update its counter the
+    // moment it changes rather than on the next page view. Soft — a count
+    // that failed to read is not worth failing a delivered file over.
+    let kept: number | null = null
+    try {
+      kept = await countKept(db, owner, season)
+    } catch (e: any) {
+      console.warn(`[studio/keep] kept count failed: ${e?.message}`)
+    }
 
     return NextResponse.json({
       ok:            true,
@@ -162,6 +222,7 @@ export async function POST(req: Request) {
       ref_id:        refId,
       balance_after: balanceAfter,
       spent:         STUDIO_KEEP_CREDITS,
+      kept,
     })
 
   } catch (e: unknown) {
@@ -176,4 +237,38 @@ function svc() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) return null
   return createClient(url, key, { auth: { persistSession: false } })
+}
+
+/**
+ * How many Studio pieces this owner has kept, in this season.
+ *
+ * PER SEASON, deliberately. Halloween keeps its own five and its own free
+ * sixth. A season is a vocabulary rather than a product, but the reward is
+ * per room — five Halloween pieces should not spend a general Studio's
+ * count, and the customer would be right to be annoyed if they did.
+ *
+ * Filters on meta->>'season', which is null for the general Studio. Postgres
+ * treats `meta->>'season' is null` and `= 'halloween'` as the two cases, so
+ * neither can accidentally match the other.
+ */
+export async function countKept(
+  db: ReturnType<typeof createClient>,
+  owner: string,
+  season: string | null,
+): Promise<number> {
+  let q = db
+    .from('collection_pieces')
+    .select('id', { count: 'exact', head: true })
+    .eq('owner_key', owner)
+    .eq('series', 'wallpapers')
+    .eq('mode', 'studio')
+    .eq('archived', false)
+
+  q = season
+    ? q.eq('meta->>season', season)
+    : q.is('meta->>season', null)
+
+  const { count, error } = await q
+  if (error) throw new Error(error.message)
+  return count ?? 0
 }
