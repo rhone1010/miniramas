@@ -99,6 +99,66 @@ body::before{
    palette and watches four pictures change; putting those on separate
    screens turns one gesture into two.
    ================================================================== */
+/* ======================================================================
+   THE BREADCRUMB
+   Lifted from the workshop. It sits above the stage, always in the same
+   place, and names where you are. The Studio was a leaf with no way out
+   but the Series dropdown, which is a control that looks like a way
+   sideways rather than a way back.
+
+   Two pills. The first is the route out and is a control. The second
+   names where you stand and is not - quieter, no hover, no cursor.
+   ====================================================================== */
+.crumb{
+  display:flex; align-items:center; gap:10px;
+  padding:24px clamp(16px,2.4vw,40px) 0;
+  min-height:48px;
+}
+.crumb-back,
+.crumb-here{
+  display:inline-flex; align-items:center; gap:.5em;
+  height:40px; padding:0 18px;
+  border-radius:4px;
+  font-family:var(--serif); font-size:1.3125rem; line-height:1;
+  white-space:nowrap; text-decoration:none;
+}
+.crumb-back{
+  color:var(--vellum-200);
+  background:linear-gradient(180deg,#2f2420 0%, #241b17 100%);
+  border:1px solid rgba(196,169,110,.26);
+  box-shadow:0 .35rem .9rem rgba(25,16,10,.22), inset 0 1px 0 rgba(255,255,255,.06);
+  cursor:pointer;
+  transition:background .5s cubic-bezier(.22,.61,.36,1),
+             border-color .5s cubic-bezier(.22,.61,.36,1),
+             color .5s cubic-bezier(.22,.61,.36,1),
+             transform .5s cubic-bezier(.22,.61,.36,1);
+}
+.crumb-back:hover{
+  background:linear-gradient(180deg,#3a2c26 0%, #2c211c 100%);
+  border-color:var(--gold); color:#fff;
+}
+.crumb-back:active{ transform:translateY(1px); transition-duration:.08s }
+.crumb-back:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.crumb-back svg{ width:.6em; height:.6em; flex:0 0 auto; opacity:.8 }
+.crumb-back path{
+  fill:none; stroke:currentColor; stroke-width:1.7;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+/* where you stand - same pill, quieter, not a control */
+.crumb-here{
+  color:var(--series);
+  background:linear-gradient(180deg, rgba(47,36,32,.55) 0%, rgba(36,27,23,.55) 100%);
+  border:1px solid rgba(196,169,110,.16);
+}
+/* The stage already carries the top padding the crumb now owns. Taking
+   it back here keeps the panel where it was rather than pushing the
+   whole page down by the height of the bar. */
+.crumb + .stage{ padding-top:16px }
+@media (max-width:900px){
+  .crumb{ padding-top:16px }
+  .crumb-back,.crumb-here{ font-size:1.15rem; height:36px; padding:0 14px }
+}
+
 .stage{
   display:grid; grid-template-columns:minmax(430px,31%) 1fr;
   gap:clamp(20px,2vw,36px);
@@ -801,6 +861,13 @@ body::before{
     </button>
   </div>
 </header>
+
+<nav class="crumb" aria-label="Breadcrumb">
+  <a class="crumb-back" href="/wallpapers">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg><span>Mobile Wallpapers</span>
+  </a>
+  <span class="crumb-here" aria-current="page">The Studio</span>
+</nav>
 
 <div class="stage">
 

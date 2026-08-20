@@ -11245,5 +11245,36 @@ document.addEventListener('click', function(e){
 });
 </script>
 
+<script>
+/* ---- ARRIVE ON A PANEL --------------------------------------------
+   My Collection, Account and the Print Shop are slide-overs in this
+   file, and the masthead here intercepts its own links so they never
+   navigate. Every OTHER page links to them as ordinary URLs, and
+   middleware now rewrites those three paths to this file.
+
+   So: if we arrived on one, open it. Same three openers the masthead
+   uses - not a second way in.
+
+   The URL is left as it is. It is where the customer asked to be, it
+   is what they will bookmark, and paintMastOpen() reads it to mark
+   the current link in the masthead. */
+(function(){
+  var OPEN = {
+    '/collection': '__showCollection',
+    '/account':    '__showAccount',
+    '/print':      '__showPrintShop'
+  };
+  var path = location.pathname.replace(/\/+$/, '') || '/';
+  var name = OPEN[path];
+  if (!name) return;
+  /* The openers live in script blocks further up that have already run
+     by now; a zero timeout lands after the last of them settles. */
+  setTimeout(function(){
+    var fn = window[name];
+    if (typeof fn === 'function') fn();
+  }, 0);
+})();
+</script>
+
 </body>
 </html>

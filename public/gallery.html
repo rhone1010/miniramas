@@ -36,6 +36,7 @@
   --limestone:#f1ece3;
   --oxblood:#7d4242; --brass:#75623a; --gold:#b68a53;
   --espresso:#26201a; --coffee-700:#332620;
+  --series:#d7bd89;   /* the switcher's colour; this page never had it */
 
   --mh-h:90px;    /* masthead height — the workshop's number */
   --mark-h:60px;  /* the L mark, measured by height; width follows */
@@ -100,6 +101,60 @@ body{
   display:block; overflow:visible;
 }
 .mh-mark path{ fill:currentColor }
+/* ---- the series switcher --------------------------------------------
+   Ported verbatim from the Studio. Not a fourth zone - it lives inside
+   the nav so the three-zone rule holds. It names the room you are
+   standing in and opens the door to the others. */
+.mh-series{ position:relative; display:flex; align-items:center; margin-right:34px }
+.mh-series-btn{
+  display:inline-flex; align-items:center; gap:.34em;
+  font-family:var(--serif); font-size:1.8em; font-weight:400; line-height:1;
+  color:var(--series); padding:10px 0; cursor:pointer; white-space:nowrap;
+  background:none; border:none;
+  transition:color .16s ease;
+}
+.mh-series-btn:hover{ color:#e6d2a8 }
+.mh-series-btn .caret{
+  width:.52em; height:.52em; flex:0 0 auto; margin-top:.14em; opacity:.72;
+  transform-origin:50% 45%;
+  transition:transform .22s cubic-bezier(.22,.7,.3,1), opacity .16s ease;
+}
+.mh-series-btn .caret path{
+  fill:none; stroke:currentColor; stroke-width:1.35;
+  stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;
+}
+.mh-series-btn:hover .caret{ opacity:1 }
+.mh-series-btn[aria-expanded="true"] .caret{ transform:rotate(180deg); opacity:1 }
+
+.mh-series-menu{
+  position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%);
+  min-width:16em;
+  background:linear-gradient(180deg,#2a1f1b 0%, #221915 100%);
+  border:1px solid var(--card-line);
+  border-radius:var(--r-card);
+  box-shadow:0 22px 48px -20px rgba(20,12,8,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  padding:20px; display:flex; flex-direction:column; z-index:70;
+}
+.mh-series-menu a{
+  display:flex; align-items:center; justify-content:space-between; gap:1.2em;
+  font-family:var(--serif); font-size:1.45em; font-weight:400; line-height:1.1;
+  color:var(--vellum-200); text-decoration:none; white-space:nowrap;
+  padding:.52em .7em; border-radius:6px;
+  transition:background .14s ease, color .14s ease;
+}
+.mh-series-menu a:hover,.mh-series-menu a:focus-visible{
+  background:linear-gradient(180deg, rgba(215,189,137,.16), rgba(215,189,137,.09));
+  color:var(--series); outline:none;
+}
+.mh-series-menu a[aria-current="page"]{ color:var(--series) }
+.mh-series-menu a[aria-current="page"]::after{
+  content:""; width:5px; height:5px; border-radius:50%; background:var(--series);
+}
+.mh-series-menu .sep{
+  height:1px; margin:6px 8px;
+  background:linear-gradient(90deg, transparent, rgba(215,189,137,.28), transparent);
+}
+
 .mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
 .mh-nav a{
   position:relative; text-decoration:none; white-space:nowrap;
@@ -108,7 +163,7 @@ body{
   transition:color .16s ease;
 }
 .mh-nav a:hover{ color:var(--vellum-100) }
-.mh-nav a.on{ color:var(--gold) }
+.mh-nav a.on,.mh-nav a[aria-current="page"]{ color:var(--gold) }
 .mh-nav a.on::after{
   content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
   background:var(--gold);
@@ -139,21 +194,31 @@ body{
 }
 
 /* ---- SILO JUMP ------------------------------------------------------- */
+/* THE FILTERS FLOAT. Still sticky under the masthead, but the espresso
+   fill and the hairline are gone - those were what made a separate bar
+   read as the bottom of the masthead. The pills keep their own dark
+   fill, so they stay legible while the vellum runs beneath them. */
 .jump{
   position:sticky; top:var(--mh-h); z-index:50;
-  background:var(--espresso);
-  border-bottom:1px solid var(--card-line);
+  background:transparent;
+  border-bottom:none;
+  pointer-events:none;   /* the bar is air; only the pills take clicks */
 }
+.jump-in{ pointer-events:auto }
 .jump-in{
   width:var(--stage-w); margin:0 auto;
   display:flex; justify-content:center; gap:8px; overflow-x:auto;
   padding:10px 0; scrollbar-width:none;
 }
 .jump-in::-webkit-scrollbar{ display:none }
+/* 1.5rem. At .9375 these read as captions; they are the only way to move
+   around this page and should look like it. Padding opened to match, and
+   a shadow so a pill sitting over a photograph still has an edge. */
 .jump a, .jump button{
-  font-family:var(--serif); font-style:italic; font-size:.9375rem;
+  font-family:var(--serif); font-style:italic; font-size:1.5rem;
   text-decoration:none; white-space:nowrap; line-height:1;
-  padding:.4rem .95rem; border-radius:999px;
+  padding:.5rem 1.15rem; border-radius:999px;
+  box-shadow:0 .3rem .8rem rgba(25,16,10,.18);
   background:var(--coffee-700); color:var(--vellum-200);
   border:1px solid rgba(233,222,200,.14);
   transition:background .16s ease, color .16s ease, border-color .16s ease;
@@ -285,9 +350,24 @@ body{
     <span class="sr">Liten &amp; Co</span>
   </a>
   <nav class="mh-nav">
-    <a href="/portraits">Portraits</a>
+    <div class="mh-series">
+      <button class="mh-series-btn" id="mhSeriesBtn" type="button"
+              aria-expanded="false" aria-haspopup="true">
+        <span>Crafted Portraits</span>
+        <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
+      </button>
+      <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
+        <a href="/portraits" role="menuitem">Portraits</a>
+        <a href="/groups" role="menuitem">Groups</a>
+        <div class="sep"></div>
+        <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
+        <a href="/wallpapers/studio" role="menuitem">The Studio</a>
+      </div>
+    </div>
+    <a href="/gallery" aria-current="page">Gallery</a>
     <a href="/community">Community</a>
-    <a href="#" data-concierge>Ask</a>
+    <a href="/collection">My Collection</a>
+    <a href="/account">Account</a>
   </nav>
   <div class="mh-right">
     <a class="mh-cta" href="/portraits">Craft a portrait</a>
@@ -513,6 +593,26 @@ body{
       notice('The catalogue loaded, but no finish is marked <code>live</code>.');
     }
   }
+})();
+</script>
+<script>
+/* The Series switcher. Same three behaviours as every other page:
+   click toggles, a click anywhere else shuts it, Escape shuts it. */
+(function(){
+  var b = document.getElementById('mhSeriesBtn');
+  var m = document.getElementById('mhSeriesMenu');
+  if (!b || !m) return;
+  function shut(){ m.hidden = true; b.setAttribute('aria-expanded','false'); }
+  b.addEventListener('click', function(e){
+    e.stopPropagation();
+    var open = m.hidden;
+    m.hidden = !open;
+    b.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', function(e){
+    if (!m.hidden && !m.contains(e.target)) shut();
+  });
+  addEventListener('keydown', function(e){ if (e.key === 'Escape') shut(); });
 })();
 </script>
 </body>

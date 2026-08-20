@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Studio &middot; accordion mockup</title>
+
+<!--
+  MOCKUP · THE STUDIO, ACCORDION · 2026-08-12
+  Not the live page. public/wallpaper-studio.html is untouched.
+
+  WHAT IS BEING TRIED
+    Four steps that open one at a time instead of four rows all live at
+    once. Choose a world and the step closes and hands you the mood; the
+    press stays locked until all four are answered.
+
+    The live page shows everything at once, which is honest and also puts
+    31 controls on the glass before anybody has decided anything. This
+    asks one question at a time and shows the answer so far.
+
+  THE THING THAT MAKES OR BREAKS IT
+    A CLOSED STEP MUST SHOW WHAT WAS CHOSEN. An accordion that collapses
+    to a bare title makes somebody reopen three steps to remember what
+    they picked before pressing a button that costs them nothing but
+    still feels like a commitment. Every closed step here carries its
+    answer and its thumbnail, and is one click from being changed.
+
+  TEXTURES
+    Rich's set, expected at /textures/studio/. The mockup degrades to flat
+    colour if they are not placed - the leather and parchment are painted
+    underneath as gradients, so the layout can be judged either way.
+
+  DEVIATIONS FROM THE REFERENCE, DELIBERATE
+    All eight worlds at once rather than four with paging. Eight fit; a
+    pager to see the other four is friction bought for nothing, and it
+    hides half the catalogue behind a control nobody is looking for.
+
+    No lock icon on the press. It is dimmed and it says what it wants -
+    a padlock on a button that costs nothing to press reads as a paywall.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --oxblood:#7d4242;
+  --gold:#b68a53;
+  --series:#d7bd89;
+  --ink:#2a241e;
+  --vellum:#f3ede1;
+
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Manrope', system-ui, -apple-system, sans-serif;
+
+  --mh-h:72px;
+  --r-card:8px;
+
+  /* The two grounds. Painted as gradients first so the layout survives
+     the textures being absent, with the images layered over. */
+  --leather:#3a2419;
+  --leather-deep:#241610;
+  --parchment:#e8dcc4;
+  --parchment-deep:#d8c8a8;
+}
+
+*{ box-sizing:border-box }
+html,body{ margin:0; padding:0 }
+
+body{
+  background:var(--leather-deep);
+  color:var(--vellum);
+  font-family:var(--serif);
+  font-size:22px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---- masthead ---------------------------------------------------- */
+.mh{
+  position:sticky; top:0; z-index:60; height:var(--mh-h);
+  display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center; padding-inline:clamp(16px,2.4vw,40px);
+  background:#160f0b; border-bottom:1px solid rgba(182,138,83,.22);
+}
+.mh-logo{
+  justify-self:start; display:inline-flex; flex-direction:column;
+  align-items:center; gap:2px; text-decoration:none; color:var(--vellum);
+}
+.mh-logo b{ font-family:var(--serif); font-size:2rem; line-height:.8;
+            font-weight:400; font-style:italic }
+.mh-logo span{ font-family:var(--sans); font-size:9px; font-weight:600;
+               letter-spacing:.3em; opacity:.8 }
+.mh-nav{ justify-self:center; display:flex; align-items:center; gap:30px }
+.mh-nav a{
+  font-family:var(--serif); font-size:1.5em; line-height:1;
+  color:rgba(243,237,225,.82); text-decoration:none; white-space:nowrap;
+}
+.mh-nav a:hover{ color:var(--vellum) }
+.mh-nav a.on{ color:var(--gold); border-bottom:2px solid var(--gold); padding-bottom:4px }
+.mh-right{ justify-self:end }
+.mh-ask{
+  display:flex; align-items:center; justify-content:center;
+  width:42px; height:42px; border-radius:var(--r-card);
+  background:rgba(243,237,225,.08); border:1px solid rgba(243,237,225,.26);
+  color:var(--vellum); cursor:pointer;
+}
+.mh-ask svg{ width:20px; height:20px; stroke:currentColor; fill:none;
+             stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round }
+
+/* ==================================================================
+   THE STAGE · leather left, parchment right
+   The split is not decoration. The left is where you work and the right
+   is where the work lands, and giving them different grounds says that
+   without a heading.
+   ================================================================== */
+.stage{ display:grid; grid-template-columns:minmax(380px,30%) 1fr;
+        min-height:calc(100vh - var(--mh-h)) }
+@media (max-width:1100px){ .stage{ grid-template-columns:1fr } }
+
+.left{
+  position:relative; padding:34px 28px 40px;
+  background:
+    linear-gradient(160deg, rgba(90,58,38,.5), transparent 60%),
+    linear-gradient(180deg, var(--leather) 0%, var(--leather-deep) 100%);
+  border-right:1px solid rgba(182,138,83,.2);
+}
+.left::before{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:url('/textures/studio/leather.png');
+  background-size:cover; background-position:center;
+  opacity:.5; mix-blend-mode:overlay;
+}
+/* The binding runs down the seam. Stitching against an edge is what makes
+   leather read as a bound thing rather than a brown rectangle. */
+.left::after{
+  content:''; position:absolute; top:0; right:0; bottom:0; width:26px;
+  pointer-events:none;
+  background:url('/textures/studio/binding.png') repeat-y right center / 26px auto;
+  opacity:.55;
+}
+.left > *{ position:relative; z-index:1 }
+
+.right{
+  position:relative; padding:30px clamp(20px,3vw,52px) 60px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255,250,235,.45), transparent 62%),
+    linear-gradient(170deg, var(--parchment) 0%, var(--parchment-deep) 100%);
+  color:var(--ink); overflow:hidden;
+}
+/* PAPER GRAIN, TILED - NOT A STAINED SHEET.
+   The watermarked parchment was one enormous scan stretched to fill, so
+   its burnt edges and water rings landed wherever the viewport happened
+   to put them: a coffee ring across a wallpaper frame at one width and
+   nowhere near it at another. Incident where there should be surface.
+
+   Grain tiles, so it is the same everywhere and reads as paper rather
+   than as a photograph of one particular piece of paper. */
+.right::before{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:url('/textures/studio/paper-grain.png') repeat center / 420px 420px;
+  opacity:.55; mix-blend-mode:multiply;
+}
+/* The wheat and the stains. Placed rather than tiled - a texture that
+   repeats stops reading as a thing on a desk and starts reading as
+   wallpaper, which is the one joke this page cannot make. */
+.right .flora{ position:absolute; pointer-events:none; z-index:0 }
+.flora.wheat-r{ right:-10px; bottom:-20px; width:190px;
+                background:url('/textures/studio/wheat-large.png') no-repeat bottom right / contain;
+                height:460px; opacity:.5 }
+.flora.wheat-l{ left:14px; bottom:40px; width:70px; height:200px;
+                background:url('/textures/studio/wheat-small.png') no-repeat bottom / contain;
+                opacity:.32; transform:scaleX(-1) }
+/* The ring and the drip were removed on 12 August - too pronounced, and
+   they sat over the frames rather than beside them. The wheat stays: it
+   is at the margins, where a thing on a desk belongs. */
+.right > *{ position:relative; z-index:1 }
+
+/* ---- the panel head ---------------------------------------------- */
+.head{ text-align:center; margin-bottom:26px }
+.head h1{
+  margin:0; font-size:2.1rem; font-weight:400; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--series);
+}
+.head p{ margin:6px 0 0; font-size:1.06rem; font-style:italic;
+         color:rgba(243,237,225,.5) }
+.rule{ width:62px; height:1px; margin:14px auto 0;
+       background:linear-gradient(to right, transparent, var(--gold), transparent) }
+
+/* ==================================================================
+   THE STEPS
+   ================================================================== */
+.step{
+  margin-bottom:10px; border-radius:var(--r-card);
+  border:1px solid rgba(182,138,83,.24);
+  background:rgba(255,244,225,.045);
+  overflow:hidden; transition:border-color .18s ease, background .18s ease;
+}
+.step.is-open{ border-color:rgba(182,138,83,.55); background:rgba(255,244,225,.075) }
+.step.is-done .step-bar{ cursor:pointer }
+
+.step-bar{
+  width:100%; display:grid; grid-template-columns:auto 1fr auto auto;
+  align-items:center; gap:14px; padding:15px 16px;
+  background:none; border:none; cursor:pointer; text-align:left; color:inherit;
+}
+.step-n{
+  display:grid; place-items:center; width:32px; height:32px;
+  border:1px solid rgba(182,138,83,.6); border-radius:50%;
+  font-family:var(--sans); font-size:12px; font-weight:600;
+  color:var(--gold); transition:background .18s ease, color .18s ease;
+}
+.step.is-done .step-n{ background:var(--gold); color:#1c1309; border-color:var(--gold) }
+.step-title{
+  display:block; font-family:var(--sans); font-size:11px; font-weight:600;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--vellum);
+}
+.step-hint{ display:block; margin-top:3px; font-size:.95rem; font-style:italic;
+            color:rgba(243,237,225,.42) }
+
+/* THE ANSWER, ON THE CLOSED BAR. The whole reason an accordion is
+   tolerable here: nobody should have to reopen a step to remember what
+   they chose. */
+.step-answer{ display:flex; align-items:center; gap:9px; opacity:0;
+              transition:opacity .18s ease }
+.step.is-done .step-answer{ opacity:1 }
+.step.is-open .step-answer{ opacity:0 }
+.step-answer img{ width:30px; height:30px; border-radius:5px; object-fit:cover;
+                  border:1px solid rgba(182,138,83,.4) }
+.step-answer span{ font-size:1.12rem; color:var(--series); white-space:nowrap }
+
+.chev{ width:15px; height:15px; stroke:rgba(243,237,225,.5); fill:none;
+       stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;
+       transition:transform .2s ease }
+.step.is-open .chev{ transform:rotate(180deg) }
+
+.step-body{ display:none; padding:2px 16px 18px }
+.step.is-open .step-body{ display:block }
+
+/* ---- the choices -------------------------------------------------- */
+.opts{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px }
+.opts.six{ grid-template-columns:repeat(3,1fr) }
+.opt{ padding:0; border:none; background:none; cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; gap:6px }
+/* SIZED PER AXIS, ON RICH'S EYE - 12 August. They were all one size and
+   read as one size, which flattened four different kinds of question into
+   a wall of squares. A world is the biggest decision on the page and
+   looks it; a palette is a colour and needs less room to say so.
+
+   The percentage is of the grid cell, so the columns do not move and the
+   labels stay on their own centre lines. */
+.opt-art{
+  position:relative; width:100%; aspect-ratio:1/1; overflow:hidden;
+  border-radius:6px; background:#150e0a;
+  border:1px solid rgba(243,237,225,.14);
+  transition:border-color .16s ease, box-shadow .16s ease;
+}
+[data-axis="worlds"]   .opt-art{ width:80% }
+[data-axis="moods"]    .opt-art{ width:70% }
+[data-axis="palettes"] .opt-art{ width:60% }
+.opt-art img{ width:100%; height:100%; object-fit:cover; display:block }
+.opt-label{ font-size:.98rem; color:rgba(243,237,225,.62); text-align:center;
+            line-height:1.2 }
+.opt:hover .opt-art{ border-color:rgba(182,138,83,.65) }
+.opt[aria-pressed="true"] .opt-art{ border-color:var(--gold);
+                                    box-shadow:0 0 0 1px var(--gold) }
+.opt[aria-pressed="true"] .opt-label{ color:var(--series) }
+.opt[aria-pressed="true"] .opt-art::after{
+  content:'\2713'; position:absolute; right:4px; bottom:4px;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--gold); color:#17110c;
+  font-size:11px; line-height:18px; text-align:center;
+}
+
+/* Energy is a column of five here, not a row - the accordion is narrow
+   and five words side by side would set at nine pixels. Order still
+   reads calm to wild, top to bottom. */
+.energy{ display:flex; flex-direction:column; gap:7px }
+.energy .opt{ flex-direction:row; justify-content:flex-start; gap:14px;
+              padding:8px 14px; border:1px solid rgba(243,237,225,.12);
+              border-radius:6px; width:100% }
+/* 45px. The energy row has no card behind it, so the mark IS the control
+   and 22px was a bullet point. */
+.energy .opt img{ width:45px; height:45px; object-fit:contain; opacity:.75 }
+.energy .opt-label{ font-size:1.15rem; text-align:left }
+.energy .opt:hover{ background:rgba(243,237,225,.05) }
+.energy .opt[aria-pressed="true"]{ background:rgba(182,138,83,.18);
+                                   border-color:var(--gold) }
+.energy .opt[aria-pressed="true"] img{ opacity:1 }
+
+/* ---- the press ---------------------------------------------------- */
+.press{ margin-top:20px }
+.go{
+  width:100%; display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:.82em 1em; cursor:pointer; border-radius:var(--r-card);
+  border:1px solid rgba(215,189,137,.5);
+  background:linear-gradient(180deg,#c9a163 0%,#96733c 100%);
+  color:#1a1309;
+  transition:filter .16s ease;
+}
+.go:hover{ filter:brightness(1.08) }
+.go b{ font-family:var(--sans); font-size:14px; font-weight:600;
+       letter-spacing:.18em; text-transform:uppercase }
+.go i{ font-size:.95rem; font-style:italic; opacity:.78 }
+/* LOCKED, NOT PADLOCKED. It is dimmed and it says what it wants. A
+   padlock on a button that costs nothing reads as a paywall, and this
+   one is free. */
+.go[disabled]{
+  cursor:default; background:rgba(255,244,225,.06);
+  border-color:rgba(182,138,83,.26); color:rgba(243,237,225,.42);
+}
+.ghost{
+  display:block; width:100%; margin-top:10px;
+  font-family:var(--serif); font-style:italic; font-size:1.06rem;
+  color:var(--series); background:none;
+  border:1px solid rgba(215,189,137,.28); border-radius:999px;
+  padding:.44em 1.4em; cursor:pointer;
+}
+.ghost:hover{ border-color:var(--series) }
+
+/* ==================================================================
+   THE RIGHT · four frames waiting
+   ================================================================== */
+.right-head{
+  display:flex; align-items:center; gap:16px; margin-bottom:6px;
+  font-family:var(--sans); font-size:11px; font-weight:600;
+  letter-spacing:.22em; text-transform:uppercase; color:#8a6b3e;
+}
+.right-head::before,.right-head::after{
+  content:''; flex:1; height:1px;
+  background:linear-gradient(to right, transparent, rgba(138,107,62,.5), transparent);
+}
+.right-say{ text-align:right; font-size:1.06rem; font-style:italic;
+            color:rgba(42,36,30,.5); margin:0 0 20px }
+
+.grid{ display:grid; grid-template-columns:repeat(4,1fr);
+       gap:var(--gap); --gap:20px }
+@media (max-width:820px){ .grid{ grid-template-columns:repeat(2,1fr) } }
+
+.shot{
+  position:relative; aspect-ratio:9/16; border-radius:var(--r-card);
+  border:1px solid rgba(120,92,54,.36);
+  background:rgba(255,252,242,.28);
+  display:grid; place-items:center; overflow:hidden;
+}
+/* The waiting mark. The studio's own L, ghosted - a frame with nothing in
+   it should still look like it belongs to somebody. */
+.shot .ghost-mark{
+  font-family:var(--serif); font-size:3.6rem; font-style:italic;
+  color:rgba(120,92,54,.22);
+}
+.shot img{ width:100%; height:100%; object-fit:cover }
+
+.await{ text-align:center; margin-top:34px }
+.await b{ display:block; font-weight:400; font-size:1.5rem; color:var(--ink) }
+.await i{ font-size:1.1rem; color:rgba(42,36,30,.55) }
+
+
+/* ==================================================================
+   MAKING · SMOKE
+
+   Rich's, 12 August. The second version, and the one that works: SVG
+   turbulence displacing a field of gradients, which is what makes it
+   read as smoke rather than as four coloured blurs.
+
+   WHY THE FIELD IS AT STAGE LEVEL AGAIN.
+   The first attempt leaked across the whole results panel, so it was
+   rebuilt as one field per card. This one does not need that, because
+   the stage carries its own ground and its own overflow: it is a dark
+   panel with the field inside it and the cards floating on top, and the
+   clipping is the stage's own. Simpler, and the gaps between the cards
+   showing smoke is the point rather than a fault.
+
+   WHAT THE CARDS ARE NOW.
+   Not apertures - translucent panes. They darken what is behind them and
+   catch a little of it, which is why they read as glass over a fire
+   rather than as holes cut in paper.
+
+   THE COST, AND WHERE TO CUT IT.
+   smokeBreath animates the `filter` property, so the turbulence and the
+   displacement map are re-evaluated every frame at numOctaves 4. That is
+   the expensive line on this page by a wide margin. If it drags on a
+   phone, take the filter out of the keyframes and animate opacity alone
+   - the drift and the sweep carry the movement, and the breathing is the
+   part nobody could name afterwards.
+   ================================================================== */
+
+.smoke-field{ display:none }
+
+/* THE CANVAS, WHEN THERE IS ONE.
+   Sits where the CSS field sits and covers it. If the scene never
+   arrives - no network, no SDK, their CDN having a bad morning - this
+   element stays empty and the smoke underneath is what is seen. The
+   fallback is not a code path anybody has to remember: it is what
+   happens when nothing covers it. */
+/* BEHIND THE CARDS, AND THE STAGE KEEPS ITS OWN HEIGHT.
+   The first attempt gave this z-index 1, which is where the cards live,
+   so the canvas covered them and the stage collapsed to the canvas's own
+   shape - one wide block where four phone screens should be. It sits at
+   0 now, with the smoke below it and the cards above, and the grid's own
+   rows decide how tall the stage is. */
+.scene-field{
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  overflow:hidden; border-radius:var(--r-card);
+}
+.scene-field canvas{
+  width:100% !important; height:100% !important;
+  display:block; object-fit:cover;
+}
+.grid.is-making .smoke-field{ z-index:0 }
+.grid.is-making .shot{ z-index:2 }
+
+
+/* THE STAGE ONLY GOES DARK FOR THE SMOKE.
+   The CSS fallback needs a black ground - those colours do nothing over
+   cream. The scene does not: it is masked to the columns, so the
+   parchment can stay and the field appears inside the four cards and
+   nowhere else. Which is what was asked for two rounds ago and is only
+   now actually true. */
+.grid.is-making{
+  position:relative; isolation:isolate; overflow:visible;
+  border-radius:var(--r-card);
+  padding:18px;
+  background:#0d0908;
+  box-shadow:0 26px 80px rgba(13,9,8,.55);
+}
+/* The cards keep their shape inside the darkened stage. Padding on the
+   stage does not change what a 9:16 card is, and the row must not
+   shorten just because it gained a background. */
+.grid.is-making .shot{ aspect-ratio:9/16 }
+
+.grid.is-making .smoke-field{
+  display:block;
+  position:absolute; inset:-30% -20%; z-index:0; pointer-events:none;
+  background:
+    /* hot gold filament */
+    radial-gradient(ellipse at 12% 48%,
+      rgba(255,231,166,.95) 0%, rgba(224,157,55,.72) 3%,
+      rgba(177,91,22,.25) 10%, transparent 22%),
+    /* purple core */
+    radial-gradient(ellipse at 38% 30%,
+      rgba(205,155,255,.82) 0%, rgba(113,62,177,.58) 7%,
+      rgba(68,34,105,.18) 18%, transparent 31%),
+    /* cyan, petroleum */
+    radial-gradient(ellipse at 66% 61%,
+      rgba(119,244,232,.82) 0%, rgba(25,151,160,.56) 6%,
+      rgba(11,75,87,.28) 15%, transparent 30%),
+    /* crimson shadow */
+    radial-gradient(ellipse at 46% 78%,
+      rgba(222,80,86,.55) 0%, rgba(115,31,57,.32) 8%, transparent 27%),
+    #090707;
+  filter:url(#smoke) blur(13px) saturate(145%) contrast(135%);
+  transform:scale(1.22);
+  animation:smokeDrift 19s ease-in-out infinite alternate,
+            smokeBreath 11s ease-in-out infinite alternate;
+}
+
+/* The bright wisp, crossing all four. */
+.grid.is-making::before{
+  content:''; position:absolute; z-index:2; pointer-events:none;
+  width:70%; height:160%; left:-45%; top:-30%;
+  background:linear-gradient(104deg,
+    transparent 34%,
+    rgba(226,159,74,0) 41%,
+    rgba(255,215,151,.18) 44%,
+    rgba(255,238,190,.82) 47%,
+    rgba(194,145,255,.42) 49%,
+    rgba(76,216,210,.18) 52%,
+    transparent 58%);
+  filter:url(#smoke) blur(9px);
+  mix-blend-mode:screen;
+  animation:filamentSweep 9.5s ease-in-out infinite;
+}
+
+/* Particulate. */
+.grid.is-making::after{
+  content:''; position:absolute; inset:0; z-index:3; pointer-events:none;
+  background-image:radial-gradient(circle,
+    rgba(255,236,197,.16) 0 .7px, transparent .9px);
+  background-size:5px 5px;
+  opacity:.15; mix-blend-mode:screen;
+  animation:particulate 4.3s steps(7) infinite;
+}
+
+/* THE CARDS, AS PANES. */
+.grid.is-making .shot{
+  position:relative; z-index:1; overflow:hidden;
+  border-radius:8px;
+  background:linear-gradient(180deg,
+    rgba(5,4,4,.32), rgba(9,7,7,.10) 45%, rgba(3,3,3,.38));
+  border:1px solid rgba(236,207,157,.22);
+  box-shadow:inset 0 0 45px rgba(0,0,0,.28), 0 8px 24px rgba(30,20,12,.12);
+  backdrop-filter:contrast(110%);
+}
+.grid.is-making .ghost-mark{
+  position:relative; z-index:4;
+  font-size:40px; color:rgba(245,220,171,.23);
+}
+
+@keyframes smokeDrift{
+  0%{ transform:translate3d(-8%,3%,0) scale(1.22) rotate(-2deg) }
+  45%{ transform:translate3d(4%,-5%,0) scale(1.31) rotate(2deg) }
+  100%{ transform:translate3d(11%,4%,0) scale(1.25) rotate(-1deg) }
+}
+@keyframes smokeBreath{
+  from{ opacity:.68; filter:url(#smoke) blur(15px) saturate(130%) contrast(125%) }
+  to{ opacity:1; filter:url(#smoke) blur(8px) saturate(170%) contrast(155%) }
+}
+@keyframes filamentSweep{
+  0%{ transform:translateX(-20%) rotate(-5deg); opacity:0 }
+  12%{ opacity:.35 }
+  44%{ opacity:1 }
+  72%{ opacity:.55 }
+  100%{ transform:translateX(245%) rotate(4deg); opacity:0 }
+}
+@keyframes particulate{
+  0%{ transform:translate(0,0) }
+  20%{ transform:translate(-3px,2px) }
+  40%{ transform:translate(2px,-3px) }
+  60%{ transform:translate(4px,1px) }
+  80%{ transform:translate(-2px,-2px) }
+  100%{ transform:translate(0,0) }
+}
+
+
+/* ==================================================================
+   WHEN THE SCENE IS UP, EVERYTHING ELSE STOPS.
+
+   Five layers of weather were running in one rectangle - the scene, the
+   smoke beneath it, the travelling band, the grain, and tinted panes on
+   top - which is why it read as noise rather than as one thing
+   happening. The scene has its own grain and its own flow; it does not
+   need ours arguing with it.
+
+   THESE SIT LAST IN THE FILE ON PURPOSE. `.grid.has-scene .smoke-field`
+   and `.grid.is-making .smoke-field` are the same specificity - three
+   classes each - so the only thing deciding which wins is which comes
+   later. They were declared first and lost silently: the class landed,
+   the rule was correct, and nothing changed on the glass. Anything that
+   overrides a making rule belongs below every making rule.
+
+   The smoke is the fallback and only the fallback. It runs when the
+   canvas does not, which is what a fallback is for.
+   ================================================================== */
+.grid.has-scene .smoke-field{ display:none }
+.grid.has-scene::before,
+.grid.has-scene::after{ display:none }
+
+/* No black rectangle, no drop shadow, no padding box. The stage is the
+   page again and the cards are the only lit things on it. */
+.grid.has-scene{
+  background:none;
+  box-shadow:none;
+}
+
+/* ---- THE FIELD IS MASKED TO THE COLUMNS --------------------------------
+   One canvas across the whole stage means the gaps between the cards are
+   as bright as the cards, so four windows read as one wash with three
+   faint lines down it. The grid disappears exactly when it should be
+   doing the most work - saying that four things are coming.
+
+   So the canvas is masked to the same rhythm the grid runs on: a
+   repeating band the width of a column, then a gap. Because the gradient
+   repeats on (column + gap), it lands on the columns exactly, at any
+   width, without anybody computing four positions - and if the column
+   count ever changes, --gap and the divisor are the only two numbers
+   that move.
+
+   The field is inset by the stage's own padding so band one starts where
+   card one starts. Get that wrong and every band is off by 18px, which
+   looks like a rendering fault rather than a maths one. */
+.grid.is-making{ --pad:18px }
+/* Still inset by the padding, because the CARDS are still inset by it -
+   the grid's own box did not move, only its background went away. */
+.grid.has-scene .scene-field{
+  inset:var(--pad);
+  --colw:calc((100% - 3 * var(--gap)) / 4);
+  -webkit-mask-image:repeating-linear-gradient(to right,
+    #000 0 var(--colw), transparent var(--colw) calc(var(--colw) + var(--gap)));
+  mask-image:repeating-linear-gradient(to right,
+    #000 0 var(--colw), transparent var(--colw) calc(var(--colw) + var(--gap)));
+}
+
+/* THE CARDS GO ALMOST CLEAR. They were panes tuned against bright CSS
+   smoke; over the scene they were near-black rectangles and the field
+   could not be seen through them. Now they are frames with a breath of
+   shade - the field is the thing, the cards say where the four land. */
+/* THE CARD IS A WINDOW, NOT A TINT.
+   Over the black stage it needed shading to read as glass. On parchment
+   it needs none: the field is bright, the paper is not, and the frame is
+   the only thing that has to be drawn. Anything laid over the field here
+   is just dirt on the window.
+
+   RADIUS 4, AND THAT IS A COMPROMISE. The mask cuts square-cornered
+   bands, so a rounded card leaves a small shoulder of field outside the
+   arc at each corner. At 4px nobody will find it; at 12 it would look
+   like a bug. Rounding the mask per column would mean four positioned
+   layers and the fluid column width computed twice, which is a lot of
+   machinery for four corners. */
+.grid.has-scene .shot{
+  background:none !important;
+  border:1px solid rgba(120,92,54,.5);
+  border-radius:4px;
+  backdrop-filter:none;
+  box-shadow:0 10px 30px rgba(60,42,22,.28);
+}
+.grid.has-scene .ghost-mark{ color:rgba(255,248,232,.42) }
+
+.making-say{ text-align:center; margin-top:22px }
+.making-say b{ display:block; font-weight:400; font-size:1.4rem; color:var(--ink) }
+.making-say i{ font-size:1.05rem; color:rgba(42,36,30,.5) }
+
+[hidden]{ display:none !important }
+/* NOTHING MOVES if they have asked for that. A drifting field behind four
+   cards is exactly the kind of ambient motion the setting exists for, and
+   the state still reads: the panel still darkens and the frames are still
+   apertures, they simply hold still. */
+@media (prefers-reduced-motion:reduce){
+  *{ transition:none !important }
+  .smoke-field,
+  .grid.is-making::before,
+  .grid.is-making::after{ animation:none }
+}
+</style>
+</head>
+<body>
+
+<header class="mh">
+  <a class="mh-logo" href="/"><b>L</b><span>LITEN CO</span></a>
+  <nav class="mh-nav">
+    <a href="#" class="on">The Studio</a>
+    <a href="#">Gallery</a>
+    <a href="#">Community</a>
+    <a href="#">My Collection</a>
+    <a href="#">Account</a>
+  </nav>
+  <div class="mh-right">
+    <button class="mh-ask" type="button" aria-label="Ask the Concierge">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8Z"/><path d="M8.6 11h6.8"/><path d="M8.6 14.4h4.2"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="stage">
+
+  <aside class="left">
+    <div class="head">
+      <h1 id="title">The Studio</h1>
+      <p id="sub">Build something that has not existed before.</p>
+      <div class="rule"></div>
+    </div>
+    <div id="steps"></div>
+    <div class="press">
+      <button class="go" id="go" type="button" disabled>
+        <b>Create four wallpapers</b>
+        <i id="goSay">Answer all four to begin</i>
+      </button>
+      <button class="ghost" id="surprise" type="button">Surprise me</button>
+    </div>
+  </aside>
+
+  <main class="right">
+    <span class="flora wheat-r"></span>
+    <span class="flora wheat-l"></span>
+
+    <div class="right-head">Your four wallpapers</div>
+    <p class="right-say">Free to look at. Nothing is charged until you keep one.</p>
+    <div class="grid" id="grid">
+      <!-- One field, behind all four. In the DOM permanently and revealed
+           by the class - inserting it per round would restart the drift
+           and the first second would jump. -->
+      <!-- The scene renders into this and is torn down after. Behind the
+           cards, in front of nothing. -->
+      <div class="scene-field" id="sceneField" aria-hidden="true"></div>
+      <div class="smoke-field" aria-hidden="true"></div>
+      <div class="shot"><span class="ghost-mark">L</span></div>
+      <div class="shot"><span class="ghost-mark">L</span></div>
+      <div class="shot"><span class="ghost-mark">L</span></div>
+      <div class="shot"><span class="ghost-mark">L</span></div>
+    </div>
+    <div class="await" id="await">
+      <b>Your wallpapers will appear here.</b>
+      <i>Four variations, from the four things you chose.</i>
+    </div>
+    <div class="making-say" id="makingSay" hidden>
+      <b>Making four.</b>
+      <i>A few seconds.</i>
+    </div>
+  </main>
+
+</div>
+
+<!-- THE SMOKE FILTER.
+     Turbulence displacing the gradient field, which is the whole
+     difference between smoke and four coloured blurs. It must be in the
+     document for `filter:url(#smoke)` to resolve - a stylesheet cannot
+     carry it, and an SVG in a background-image cannot be referenced by
+     id. Zero-sized and hidden from the tree. -->
+<svg width="0" height="0" aria-hidden="true" focusable="false"
+     style="position:absolute">
+  <filter id="smoke">
+    <feTurbulence type="fractalNoise" baseFrequency=".008 .022"
+                  numOctaves="4" seed="14" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="115"
+                       xChannelSelector="R" yChannelSelector="B"/>
+  </filter>
+</svg>
+
+<script>
+(function(){
+  'use strict';
+
+  /* Labels only. The bodies live in lib/v1/wallpapers/, and the page never
+     sees them - it sends four ids and the server builds the prompt. */
+  var SETS = {
+    studio: {
+      title:'The Studio',
+      sub:'Build something that has not existed before.',
+      icons:'studio',
+      worlds:[['cosmos','Cosmos'],['ocean','Ocean'],['glass','Glass'],
+              ['botanical','Botanical'],['liquid','Liquid'],
+              ['architecture','Architecture'],['light','Light'],
+              ['mineral','Mineral']],
+      moods:[['dream','Dream'],['storm','Storm'],['twilight','Twilight'],
+             ['eclipse','Eclipse'],['midnight','Midnight'],['inferno','Inferno']],
+      palettes:[['aurora','Aurora'],['ember','Ember'],['deep_ocean','Deep Ocean'],
+                ['ultraviolet','Ultraviolet'],['solar','Solar'],['neon_noir','Neon Noir'],
+                ['emerald','Emerald'],['opal','Opal'],['inferno','Inferno'],
+                ['arctic','Arctic'],['midnight','Midnight'],['prismatic','Prismatic']]
+    },
+    halloween: {
+      title:'The Halloween Studio',
+      sub:'Something wonderfully unexpected, and wicked.',
+      icons:'halloween',
+      worlds:[['haunted','Haunted'],['spectral','Spectral'],['infernal','Infernal'],
+              ['harvest','Harvest'],['occult','Occult'],['gothic','Gothic'],
+              ['nightmare','Nightmare'],['otherworld','Otherworld']],
+      moods:[['bewitched','Bewitched'],['haunting','Haunting'],['ominous','Ominous'],
+             ['macabre','Macabre'],['nightmarish','Nightmarish'],['majestic','Majestic']],
+      palettes:[['blood_moon','Blood Moon'],['pumpkin_fire','Pumpkin Fire'],
+                ['witchlight','Witchlight'],['ghostlight','Ghostlight'],
+                ['poison','Poison'],['midnight','Midnight'],
+                ['dead_forest','Dead Forest'],['gothic_jewel','Gothic Jewel'],
+                ['eclipse','Eclipse'],['phantom_rose','Phantom Rose']]
+    }
+  };
+
+  /* Energy is shared between the two rooms. Composition and motion mean
+     the same thing in a graveyard as in a nebula. */
+  var ENERGIES = [['stillness','Stillness'],['drift','Drift'],['flow','Flow'],
+                  ['surge','Surge'],['eruption','Eruption']];
+
+  var SEASON = (location.search.match(/season=([a-z-]+)/) || [])[1];
+  var S = SETS[SEASON] || SETS.studio;
+
+  var STEPS = [
+    { key:'world',   title:'Choose a world', hint:'What it is made of',
+      axis:'worlds',   cols:4 },
+    { key:'mood',    title:'Set the mood',   hint:'How it is lit',
+      axis:'moods',    cols:3 },
+    { key:'energy',  title:'Choose its energy', hint:'How it moves',
+      axis:'energies', cols:0 },
+    { key:'palette', title:'Choose its colours', hint:'Its palette',
+      axis:'palettes', cols:3 }
+  ];
+
+  var CHOICE = {};
+  var open = 0;
+
+  function list(axis){
+    return axis === 'energies' ? ENERGIES : S[axis];
+  }
+  function icon(axis, id){
+    return '/icons/' + S.icons + '/' + axis + '/' + id + '.png';
+  }
+  function labelOf(axis, id){
+    var l = list(axis);
+    for (var i = 0; i < l.length; i++) if (l[i][0] === id) return l[i][1];
+    return '';
+  }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c];
+    });
+  }
+
+  function paint(){
+    var host = document.getElementById('steps');
+    host.innerHTML = '';
+
+    STEPS.forEach(function(st, i){
+      var done = !!CHOICE[st.key];
+      var isOpen = i === open;
+
+      var el = document.createElement('div');
+      el.className = 'step' + (isOpen ? ' is-open' : '') + (done ? ' is-done' : '');
+
+      var answer = done
+        ? '<span class="step-answer">' +
+            '<img alt="" src="' + icon(st.axis, CHOICE[st.key]) + '">' +
+            '<span>' + esc(labelOf(st.axis, CHOICE[st.key])) + '</span>' +
+          '</span>'
+        : '<span class="step-answer"></span>';
+
+      el.innerHTML =
+        '<button class="step-bar" type="button" data-step="' + i + '">' +
+          '<span class="step-n">' + (i + 1 < 10 ? '0' : '') + (i + 1) + '</span>' +
+          '<span><span class="step-title">' + esc(st.title) + '</span>' +
+          '<span class="step-hint">' + esc(st.hint) + '</span></span>' +
+          answer +
+          '<svg class="chev" viewBox="0 0 16 16"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>' +
+        '</button>' +
+        '<div class="step-body"><div class="' +
+          (st.axis === 'energies' ? 'energy' :
+           'opts' + (st.cols === 3 ? ' six' : '')) +
+          '" data-axis="' + st.axis + '" data-key="' + st.key + '"></div></div>';
+
+      host.appendChild(el);
+
+      var box = el.querySelector('[data-axis]');
+      list(st.axis).forEach(function(o){
+        var b = document.createElement('button');
+        b.className = 'opt';
+        b.type = 'button';
+        b.dataset.v = o[0];
+        b.setAttribute('aria-pressed', String(CHOICE[st.key] === o[0]));
+        b.innerHTML = st.axis === 'energies'
+          ? '<img alt="" src="' + icon(st.axis, o[0]) + '">' +
+            '<span class="opt-label">' + esc(o[1]) + '</span>'
+          : '<span class="opt-art"><img alt="" src="' + icon(st.axis, o[0]) +
+            '"></span><span class="opt-label">' + esc(o[1]) + '</span>';
+        var im = b.querySelector('img');
+        if (im) im.addEventListener('error', function(){ im.remove(); });
+        box.appendChild(b);
+      });
+    });
+
+    var ready = STEPS.every(function(st){ return !!CHOICE[st.key]; });
+    var go = document.getElementById('go');
+    go.disabled = !ready;
+    document.getElementById('goSay').textContent = ready
+      ? 'Free to look at'
+      : (4 - Object.keys(CHOICE).length) + ' left to choose';
+  }
+
+  document.getElementById('steps').addEventListener('click', function(e){
+    var bar = e.target.closest('.step-bar');
+    if (bar){
+      var i = Number(bar.dataset.step);
+      /* A COMPLETED STEP REOPENS, AN UNREACHED ONE DOES NOT. Jumping to
+         step four before step one is answered would leave a page whose
+         numbers mean nothing - but going back to change a mood must
+         always be one click. */
+      var reachable = i === 0 || !!CHOICE[STEPS[i - 1].key] || !!CHOICE[STEPS[i].key];
+      if (!reachable) return;
+      open = (open === i) ? -1 : i;
+      paint();
+      return;
+    }
+
+    var opt = e.target.closest('.opt');
+    if (!opt) return;
+    var box = opt.closest('[data-key]');
+    CHOICE[box.dataset.key] = opt.dataset.v;
+
+    /* CHOOSING ADVANCES. The next unanswered step opens itself - which is
+       the whole argument for an accordion over four open rows. If they
+       are all answered nothing opens, and the press is what is left. */
+    var next = -1;
+    for (var i = 0; i < STEPS.length; i++){
+      if (!CHOICE[STEPS[i].key]){ next = i; break; }
+    }
+    open = next;
+    paint();
+  });
+
+  document.getElementById('surprise').addEventListener('click', function(){
+    STEPS.forEach(function(st){
+      var l = list(st.axis);
+      CHOICE[st.key] = l[Math.floor(Math.random() * l.length)][0];
+    });
+    open = -1;
+    paint();
+  });
+
+  /* ==================================================================
+     THE SCENE
+
+     Unicorn Studio, loaded only when the wait starts and destroyed when
+     it ends. Three things this arrangement buys:
+
+     NOTHING IS FETCHED BY SOMEBODY WHO NEVER PRESSES THE BUTTON. The SDK
+     is 50kb gzipped and the scene is more; on a page whose whole appeal
+     is being instant, that is not paid up front.
+
+     THE CSS SMOKE IS THE FALLBACK, AND NOT A DECISION. If the script
+     does not load, or the scene does not, nothing covers the smoke and
+     the smoke is what runs. No flag, no branch to forget.
+
+     IT IS DESTROYED, NOT HIDDEN. A WebGL context left running behind a
+     display:none is a phone getting warm for no reason.
+
+     SELF-HOST BOTH BEFORE THIS SHIPS. SDK_URL and SCENE_JSON below point
+     at a CDN and at Unicorn's own servers; on the Legend plan the scene
+     exports as JSON, and both belong in public/. Then a bad morning at
+     their end is not a bad morning here.
+     ================================================================== */
+  /* BOTH SELF-HOSTED, 12 August. 124kb of SDK and 19kb of scene, in this
+     repo, served from this domain.
+
+     Nothing about the wait now depends on somebody else's servers being
+     up, which for a thing that only ever appears while a customer is
+     already waiting is the difference between a slow moment and a broken
+     one. It also ends the subscription question: the scene is a file. */
+  var SDK_URL    = '/vendor/unicornStudio.umd.js';
+  var SCENE_JSON = '/scenes/studio-field.json';
+
+  var sdk = null;      /* a promise, once asked for */
+  var scene = null;    /* the live scene, while it runs */
+
+  function loadSDK(){
+    if (sdk) return sdk;
+    sdk = new Promise(function(resolve, reject){
+      if (window.UnicornStudio) return resolve(window.UnicornStudio);
+      var el = document.createElement('script');
+      el.src = SDK_URL;
+      el.async = true;
+      el.onload = function(){
+        window.UnicornStudio ? resolve(window.UnicornStudio)
+                             : reject(new Error('no UnicornStudio'));
+      };
+      el.onerror = function(){ reject(new Error('sdk failed')); };
+      document.head.appendChild(el);
+    });
+    return sdk;
+  }
+
+  function sceneStart(){
+    /* Somebody who has asked for less motion gets the smoke, which holds
+       still, rather than a WebGL field that cannot. */
+    if (window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var phone = window.matchMedia &&
+                window.matchMedia('(max-width:820px)').matches;
+
+    loadSDK().then(function(US){
+      /* The wait may already be over. Starting a scene into a stage that
+         has gone back to parchment is the one way this leaks. */
+      if (!document.getElementById('grid').classList.contains('is-making')) return;
+      var opt = {
+        elementId:'sceneField',
+        fps:60,
+        /* Half scale and DPI 1 on a phone. The field is a soft blur -
+           nobody can see the difference, and it took the scene from
+           279MB to 18MB in Rich's own measurements. */
+        scale: phone ? 0.5 : 1,
+        dpi:   phone ? 1 : 1.5,
+        lazyLoad:false
+      };
+      opt.filePath = SCENE_JSON;
+      return US.addScene(opt).then(function(sc){
+        scene = sc;
+        /* Only once it is actually rendering. Setting it at request time
+           would hide the smoke during the load and leave the stage empty
+           for however long the scene took. */
+        document.getElementById('grid').classList.add('has-scene');
+      });
+    }).catch(function(){
+      /* Deliberately silent. The smoke is already running underneath and
+         the customer is looking at a wait, not at a fault. */
+    });
+  }
+
+  function sceneStop(){
+    if (scene && scene.destroy) { try { scene.destroy(); } catch(e){} }
+    scene = null;
+    var host = document.getElementById('sceneField');
+    if (host) host.innerHTML = '';
+    document.getElementById('grid').classList.remove('has-scene');
+  }
+
+  /* MOCKUP ONLY. The live page enters this state when the request goes out
+     and leaves it as each image lands; here the press runs it for six
+     seconds so the field can be judged without a route behind it. */
+  document.getElementById('go').addEventListener('click', function(){
+    if (this.disabled) return;
+    var grid = document.getElementById('grid');
+    grid.classList.add('is-making');
+    document.getElementById('await').hidden = true;
+    document.getElementById('makingSay').hidden = false;
+    sceneStart();
+    setTimeout(function(){
+      sceneStop();
+      grid.classList.remove('is-making');
+      document.getElementById('await').hidden = false;
+      document.getElementById('makingSay').hidden = true;
+    }, 6000);
+  });
+
+  document.getElementById('title').textContent = S.title;
+  document.getElementById('sub').textContent = S.sub;
+  document.title = S.title + ' \u00b7 mockup';
+
+  paint();
+})();
+</script>
+
+</body>
+</html>
