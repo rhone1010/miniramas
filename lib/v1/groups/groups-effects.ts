@@ -100,7 +100,6 @@ export type GroupsIntake = 'group_photo' | 'multi_photo'
 export type GroupsEffectId =
   // materials
   | 'bronze'
-  | 'iron'
   | 'ebony'
   | 'stone'
   | 'reclaimed_bronze'
@@ -187,12 +186,6 @@ export const GROUPS_EFFECTS: Record<GroupsEffectId, GroupsEffect> = {
     body: `Transform the group into a realistic patinated bronze sculpture — classic warm bronze with deep verdigris settling into the recesses and bright polish on the raised features: brow, cheekbones, nose bridge and jaw. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified sculptural artwork — it must read as one cohesive piece rather than separate statues, busts, or relief carvings. Faces, hair and garments all rendered in the same patinated bronze, dignified and tasteful, never costume-like. Hard directional key light from the upper left with deep shadow across the right and strong falloff. Professional magazine-cover photography. No letters, no plaque. The entire sculpture is bronze — no other materials, no real skin, hair or nails. Each person's own garment carries through in the same material. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Anything a person is holding in the photograph carries through in the same material — bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings. Award-winning fine-art photography. Dynamic camera angle, slightly off-axis rather than square on. Rich directional key light with soft fill and clean falloff, sculpting form and separating the piece from behind. A complementary background, heavily blurred, shallow depth of field.`,
   },
 
-  iron: {
-    id: 'iron',
-    label: 'Iron',
-    intake: 'group_photo',
-    body: `Transform the group into a hand-forged iron sculpture in deep charcoal-black metal with a soft gunmetal sheen — visible hammer-work texture across every surface, burnished highlights on raised features (brow, cheekbones, nose bridge, hair ridges), and darker oxide patina settling into recesses and undercuts. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified sculptural artwork — it must read as one cohesive piece rather than separate statues, busts, or relief carvings. No orange rust anywhere; the palette is charcoal, graphite, and warm gunmetal only. Each person's own garment carries through in the same material. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Anything a person is holding in the photograph carries through in the same material — bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings. Award-winning fine-art photography. Dynamic camera angle, slightly off-axis rather than square on. Rich directional key light with soft fill and clean falloff, sculpting form and separating the piece from behind. A complementary background, heavily blurred, shallow depth of field.`,
-  },
 
   ebony: {
     id: 'ebony',

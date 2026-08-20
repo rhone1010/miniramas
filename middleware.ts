@@ -68,6 +68,20 @@ const PAGES: Record<string, string> = {
 
      V001 is still in the repo and this line is still the whole way back. */
   '/wallpapers/studio': '/wallpaper-studio-V002.html',
+  /* THE THREE PANELS. My Collection, Account and the Print Shop are
+     slide-overs inside portraits.html, not pages of their own. The
+     workshop intercepts clicks on its own masthead so they never
+     navigate - but the Studio, Community and Gallery all link to them
+     as ordinary URLs, and without these three lines every one of those
+     links 404s.
+
+     Rewriting here is only half of it. portraits.html has to open the
+     panel it was asked for, or this lands somebody on the workshop
+     floor wondering where their collection went. See
+     scripts/patch-portraits-panel-boot.py. */
+  '/collection': '/portraits.html',
+  '/account': '/portraits.html',
+  '/print': '/portraits.html',
   '/help': '/help.html',
 };
 

@@ -298,10 +298,12 @@ body{
   display:flex; justify-content:center; gap:8px;
   padding:10px 0;
 }
+/* 1.5rem, matching the Gallery filter pills. These two are the only way
+   to change what the page shows and should read as controls. */
 .views button{
-  font-family:var(--serif); font-style:italic; font-size:1.1rem;
+  font-family:var(--serif); font-style:italic; font-size:1.5rem;
   white-space:nowrap; line-height:1; cursor:pointer;
-  padding:.5rem 1.2rem; border-radius:999px;
+  padding:.5rem 1.15rem; border-radius:999px;
   background:var(--coffee-700); color:var(--vellum-200);
   border:1px solid rgba(233,222,200,.14);
   transition:background .16s ease, color .16s ease, border-color .16s ease;

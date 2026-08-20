@@ -17,8 +17,10 @@
 //
 //   1  signed in?
 //   2  does the clean file exist?
-//   3  spend
-//   4  sign the URL
+//   3  copy it into the collection bucket
+//   4  spend
+//   5  record the piece
+//   6  sign the URL
 //
 // Two comes before three because money must not move for a file that
 // cannot be delivered — the same rule the craft gate learned when a
@@ -27,6 +29,47 @@
 //
 // Four comes after three because a signed URL handed out before the spend
 // settles is the file, given away.
+//
+// ── THE PIECE MOVES BUCKETS ON KEEP ────────────────────────────────────
+//
+// CORRECTED 20 August. This route wrote image_path as
+// `previews/studio/<id>.jpg` and was wrong twice over.
+//
+// The convention, set by app/api/v1/portraits/pieces/route.ts and followed
+// by everything that reads a piece:
+//
+//   bucket      collection
+//   image_path  <ownerKey>/<pieceId>.jpg
+//
+// A BARE PATH scoped by owner, with no bucket prefix, because every reader
+// signs image_path against the collection bucket itself. Writing the
+// bucket into the path means the reader signs `collection/previews/...`
+// and gets nothing.
+//
+// Either fault alone returns null. On the community board that looks
+// exactly like a board nobody has posted to, which is how it would have
+// stayed hidden.
+//
+// So the clean file is COPIED out of the private previews bucket into
+// collection under the owner's key. Cross-bucket, so it is a download and
+// an upload rather than a storage copy.
+//
+// It happens BEFORE the spend. Money must not move for a piece that cannot
+// be delivered — the same rule the craft gate learned when a customer paid
+// ten credits for an effect with no prompt behind it. A copy that succeeds
+// and a spend that fails leaves an unreferenced object in storage, which
+// costs pennies and is swept.
+//
+// ── PREVIEWS ARE NOT KEPT. A KEPT IMAGE IS. ────────────────────────────
+//
+// Ruled 11 August: the four previews in a round live as long as the session
+// needs them and are swept. Only a kept image becomes a collection_pieces
+// row — nobody pays to store rounds nobody wanted.
+//
+// That row is also what the "five and the sixth is free" counter counts, so
+// it is not merely a record: it is the thing the offer is made of. Written
+// non-fatally all the same. A customer who paid must get their file even if
+// the row fails, and a failed insert is loud enough to reconcile by hand.
 //
 // ── EVERY CHARGE IS NAMEABLE ───────────────────────────────────────────
 //
@@ -44,6 +87,8 @@ import {
   STUDIO_BUCKET,
   studioCleanPath,
   STUDIO_SIGNED_URL_SECONDS,
+  COLLECTION_BUCKET,
+  collectionPiecePath,
 } from '@/lib/v1/wallpapers/studio-store'
 
 export const runtime = 'nodejs'
@@ -94,7 +139,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, reason: 'expired' }, { status: 404 })
     }
 
-    // ── 3 · Spend ──
+    // ── 3 · Copy it into the collection bucket ──
+    //
+    // The piece id is minted here rather than left to the table's default,
+    // because the path contains it and the file has to be in place before
+    // the row that names it.
+    const pieceId    = randomUUID()
+    const piecePath  = collectionPiecePath(owner, pieceId)
+
+    const { data: clean, error: dlErr } = await db.storage
+      .from(STUDIO_BUCKET).download(path)
+
+    if (dlErr || !clean) {
+      console.error(`[studio/keep] download failed ${path}: ${dlErr?.message}`)
+      return NextResponse.json({ ok: false, reason: 'storage_unavailable' }, { status: 503 })
+    }
+
+    const { error: upErr } = await db.storage
+      .from(COLLECTION_BUCKET)
+      .upload(piecePath, Buffer.from(await clean.arrayBuffer()), {
+        contentType: 'image/jpeg',
+        upsert:      true,
+      })
+
+    if (upErr) {
+      // Before the spend, so nobody has paid. A refusal here is a bad
+      // moment, not a bad outcome.
+      console.error(`[studio/keep] copy to collection failed ${piecePath}: ${upErr.message}`)
+      return NextResponse.json({ ok: false, reason: 'storage_unavailable' }, { status: 503 })
+    }
+
+    // ── 4 · Spend ──
     const suppliedRef = typeof body.ref_id === 'string' ? body.ref_id.trim() : ''
     const refId = suppliedRef ? suppliedRef.slice(0, 64) : `studio_${randomUUID()}`
 
@@ -137,10 +212,13 @@ export async function POST(req: Request) {
       console.error(`[studio/keep] credit_ledger insert FAILED ref=${refId}: ${ldErr.message}`)
     }
 
-    // ── 4 · Release ──
+    // ── 6 · Release ──
+    //
+    // Signed against collection, from the bare owner-scoped path, exactly
+    // as every other reader of a piece does.
     const { data: signed, error: signErr } = await db.storage
-      .from(STUDIO_BUCKET)
-      .createSignedUrl(path, STUDIO_SIGNED_URL_SECONDS)
+      .from(COLLECTION_BUCKET)
+      .createSignedUrl(piecePath, STUDIO_SIGNED_URL_SECONDS)
 
     if (signErr || !signed?.signedUrl) {
       // Paid and undelivered. This is the one state that must never be
@@ -154,7 +232,57 @@ export async function POST(req: Request) {
       }, { status: 500 })
     }
 
-    console.log(`[studio/keep] kept id=${rawId} owner=${owner} ref=${refId}`)
+    // ── 5 · Record the piece ──
+    //
+    // series is 'wallpapers' rather than 'studio' so the Print Shop's
+    // exclusion of this silo works off one value, and so a season is a
+    // vocabulary rather than a series — the same rule the rooms follow.
+    //
+    // The season lives in meta, which is where the kept-count query filters
+    // it: Halloween keeps its own five.
+    const season = typeof body.season === 'string' && body.season === 'halloween'
+      ? 'halloween'
+      : null
+
+    const { error: pieceErr } = await db.from('collection_pieces').insert({
+      id:         pieceId,
+      owner_key:  owner,
+      user_id:    owner,
+      series:     'wallpapers',
+      preset:     'studio',
+      label:      season ? 'Studio · Halloween' : 'Studio',
+      mode:       'studio',
+      // Bare, owner-scoped, no bucket prefix. See the header.
+      image_path: piecePath,
+      meta:       {
+        room:    'studio',
+        season,
+        ref_id:  refId,
+        credits: STUDIO_KEEP_CREDITS,
+      },
+    })
+
+    if (pieceErr) {
+      // Loud, not fatal. The customer has paid and the file is about to be
+      // released; a missing row costs them a place in their collection and
+      // one step toward the free sixth, both recoverable by hand.
+      console.error(
+        `[studio/keep] collection_pieces insert FAILED owner=${owner} ` +
+        `ref=${refId} id=${rawId}: ${pieceErr.message}`,
+      )
+    }
+
+    console.log(`[studio/keep] kept id=${rawId} owner=${owner} ref=${refId} season=${season ?? '-'}`)
+
+    // The count AFTER this keep, so the page can update its counter the
+    // moment it changes rather than on the next page view. Soft — a count
+    // that failed to read is not worth failing a delivered file over.
+    let kept: number | null = null
+    try {
+      kept = await countKept(db, owner, season)
+    } catch (e: any) {
+      console.warn(`[studio/keep] kept count failed: ${e?.message}`)
+    }
 
     return NextResponse.json({
       ok:            true,
@@ -162,6 +290,7 @@ export async function POST(req: Request) {
       ref_id:        refId,
       balance_after: balanceAfter,
       spent:         STUDIO_KEEP_CREDITS,
+      kept,
     })
 
   } catch (e: unknown) {
@@ -176,4 +305,38 @@ function svc() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) return null
   return createClient(url, key, { auth: { persistSession: false } })
+}
+
+/**
+ * How many Studio pieces this owner has kept, in this season.
+ *
+ * PER SEASON, deliberately. Halloween keeps its own five and its own free
+ * sixth. A season is a vocabulary rather than a product, but the reward is
+ * per room — five Halloween pieces should not spend a general Studio's
+ * count, and the customer would be right to be annoyed if they did.
+ *
+ * Filters on meta->>'season', which is null for the general Studio. Postgres
+ * treats `meta->>'season' is null` and `= 'halloween'` as the two cases, so
+ * neither can accidentally match the other.
+ */
+export async function countKept(
+  db: ReturnType<typeof createClient>,
+  owner: string,
+  season: string | null,
+): Promise<number> {
+  let q = db
+    .from('collection_pieces')
+    .select('id', { count: 'exact', head: true })
+    .eq('owner_key', owner)
+    .eq('series', 'wallpapers')
+    .eq('mode', 'studio')
+    .eq('archived', false)
+
+  q = season
+    ? q.eq('meta->>season', season)
+    : q.is('meta->>season', null)
+
+  const { count, error } = await q
+  if (error) throw new Error(error.message)
+  return count ?? 0
 }

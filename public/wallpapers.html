@@ -85,7 +85,17 @@
      than the telephone. 300 x 533 is close to life size, which is the only
      size that tells somebody the truth about what they are buying. Above
      that the row grows a margin instead. */
-  --tile-max:300px;
+  --tile-cap:300px;
+  /* HEIGHT IS THE BINDING CONSTRAINT ABOVE 1920, NOT WIDTH.
+     Tiles are 9:16, so a 300px tile is 533px tall and two rows want
+     about 1330px of viewport. A 2560x1440 screen has roughly 1300
+     after the browser bar, and the second row ran off the bottom.
+     Every rule in the band below is keyed to width, so none of them
+     fired on a screen that wide.
+     --tile-max is now the smaller of the width band's figure and
+     what height is left. 9/32 is 9/16 halved - two rows share it. */
+  --floor-chrome:282px;
+  --tile-max:min(var(--tile-cap), calc((100vh - var(--floor-chrome)) * 9 / 32));
   /* ---- masthead tokens · the workshop's, so the two agree ------------ */
   --mh-h:90px;
   --mark-h:60px;
@@ -371,7 +381,7 @@ body::before{
 
 /* 1600 and under. The rails start giving. */
 @media (max-width:1600px){
-  :root{ --floor-gap:16px; --tile-max:260px }
+  :root{ --floor-gap:16px; --tile-cap:260px }
   .stage.in-room{ grid-template-columns:minmax(230px,16%) 1fr 190px }
   .floor-title{ font-size:1.7rem }
   .set-btn{ font-size:1.02rem; padding:.55em 1.25em }
@@ -382,7 +392,7 @@ body::before{
    to sit on one line here or the crumb bar wraps and eats a card's worth
    of height - so they lose padding before the floor loses a column. */
 @media (max-width:1400px){
-  :root{ --floor-gap:12px; --tile-max:220px }
+  :root{ --floor-gap:12px; --tile-cap:220px }
   .stage{ grid-template-columns:220px 1fr }
   .stage.in-room{ grid-template-columns:220px 1fr 170px }
   .rail{ padding:18px 16px 22px }
@@ -869,7 +879,45 @@ body::before{
     { id:'shadow_monarch',     label:'Shadow King / Queen', room:'halloween' },
     { id:'eclipse',            label:'Eclipse',             room:'halloween' },
     { id:'crimson_oracle',     label:'Crimson Oracle',      room:'halloween' },
-    { id:'haunted_ringmaster', label:'Haunted Ringmaster',  room:'halloween' }
+    { id:'haunted_ringmaster', label:'Haunted Ringmaster',  room:'halloween' },
+
+    /* HALLOWEEN PETS · 27.
+       Three clean pages of nine with the unlock in each tenth slot - which
+       is why it is 27 and not the twenty that were shot first.
+
+       ONE PLATE PER EFFECT, not a pair. The other rooms carry a man and a
+       woman because the engine picks a body by detected gender; a pet is a
+       pet, so `plate()` resolves a single file here and the sitter coin
+       never runs on this room. */
+    { id:'harvest_god_beast',          label:"Harvest God's Beast",          room:'halloween-pets' },
+    { id:'graveyard_guardian',         label:'Graveyard Guardian',           room:'halloween-pets' },
+    { id:'hellborn_beast',             label:'Hellborn Beast',               room:'halloween-pets' },
+    { id:'blood_moon_beast',           label:'Blood Moon Beast',             room:'halloween-pets' },
+    { id:'storm_wraith',               label:'Storm Wraith',                 room:'halloween-pets' },
+    { id:'banshee_familiar',           label:"Banshee's Familiar",           room:'halloween-pets' },
+    { id:'thorn_king_beast',           label:"Thorn King's Beast",           room:'halloween-pets' },
+    { id:'drowned_revenant',           label:'Drowned Revenant',             room:'halloween-pets' },
+    { id:'witch_familiar',             label:"Witch's Familiar",             room:'halloween-pets' },
+
+    { id:'shadow_beast',               label:'Shadow Beast',                 room:'halloween-pets' },
+    { id:'plague_beast',               label:'Plague Beast',                 room:'halloween-pets' },
+    { id:'frost_wraith',               label:'Frost Wraith',                 room:'halloween-pets' },
+    { id:'bone_collector_beast',       label:"Bone Collector's Beast",       room:'halloween-pets' },
+    { id:'swamp_revenant',             label:'Swamp Revenant',               room:'halloween-pets' },
+    { id:'raven_lord_familiar',        label:"Raven Lord's Familiar",        room:'halloween-pets' },
+    { id:'demon_familiar',             label:"Demon's Familiar",             room:'halloween-pets' },
+    { id:'ancient_crypt_beast',        label:'Ancient Crypt Beast',          room:'halloween-pets' },
+    { id:'headless_horseman_familiar', label:"Headless Horseman's Familiar", room:'halloween-pets' },
+
+    { id:'nightmare_creature',         label:'Nightmare Creature',           room:'halloween-pets' },
+    { id:'spirit_caller',              label:'Spirit Caller',                room:'halloween-pets' },
+    { id:'death_companion',            label:"Death's Companion",            room:'halloween-pets' },
+    { id:'gargoyle_beast',             label:'Gargoyle Beast',               room:'halloween-pets' },
+    { id:'phantom_of_the_forest',      label:'Phantom of the Forest',        room:'halloween-pets' },
+    { id:'spider_queen_familiar',      label:"Spider Queen's Familiar",      room:'halloween-pets' },
+    { id:'the_possessed',              label:'The Possessed',                room:'halloween-pets' },
+    { id:'the_soul_eater',             label:'The Soul Eater',               room:'halloween-pets' },
+    { id:'vampire_familiar',           label:"The Vampire's Familiar",       room:'halloween-pets' }
   ];
 
   /* PAGE NAMES BELONG TO A ROOM. They were a flat list keyed on page index,
@@ -878,7 +926,8 @@ body::before{
      gets numbered pages, which is honest: only Halloween's pages are
      actually collections. */
   var SET_NAMES = {
-    halloween: ['The Undead', 'The Beasts', 'The Cursed', 'The Dark Arts']
+    halloween: ['The Undead', 'The Beasts', 'The Cursed', 'The Dark Arts'],
+    'halloween-pets': ['The Risen', 'The Elements', 'The Summoned']
   };
 
   /* WHAT FIVE UNLOCKS. Named per room because it is a thing Rich chooses
@@ -892,6 +941,7 @@ body::before{
     portraits: 'the Gilded Portrait',
     halloween: 'the Blood Moon',
     pets:      'the Companion',
+    'halloween-pets': 'the Black Cat',
     studio:    null
   };
 
@@ -960,11 +1010,19 @@ body::before{
      it does in the workshop. Null until then. */
   var SUBJECT = null;
 
+  /* Rooms whose plates come one per effect rather than as a pair. A pet is
+     a pet: there is nobody to detect and nothing to deal, so the sitter
+     coin is skipped rather than run and ignored. */
+  var SINGLE_PLATE = { 'halloween-pets':1 };
+
   function plate(row){
+    var file = row.preview || row.id;
+    if (SINGLE_PLATE[row.room]){
+      return '/previews/wallpapers/' + row.room + '/' + file + '.jpeg';
+    }
     dealRoom(row.room);
     var who = SUBJECT || SITTER[row.room + ':' + row.id] || 'man';
-    return '/previews/wallpapers/' + row.room + '/' + who + '_' +
-           (row.preview || row.id) + '.jpeg';
+    return '/previews/wallpapers/' + row.room + '/' + who + '_' + file + '.jpeg';
   }
 
   /* ==================================================================
@@ -1031,6 +1089,29 @@ body::before{
     });
   }
 
+  /* ONE PLACE THAT TURNS AN ID INTO A ROOM.
+     A season's rooms are not on the stage - halloween-pets is reachable
+     only from inside Halloween, so it is not in ROOMS. showFloor and
+     paintFloor each looked a room up themselves and each bailed silently
+     when it was not there, which gave a floor that opened onto the
+     previous room's tiles: no error, no empty state, just the wrong
+     pictures under the right heading.
+
+     Two lookups meant fixing one and thinking it was done. Now there is
+     one, and the label comes from the season's own card, which is the only
+     place it is written down. */
+  function roomFor(id){
+    var r = ROOMS.filter(function(x){ return x.id === id; })[0];
+    if (r) return r;
+    for (var k in SEASON_WAYS){
+      for (var i = 0; i < SEASON_WAYS[k].length; i++){
+        var w = SEASON_WAYS[k][i];
+        if (w.id === id) return { id:id, label:w.label };
+      }
+    }
+    return null;
+  }
+
   var openRoom = null;
   var openSet  = 0;
 
@@ -1042,15 +1123,15 @@ body::before{
     halloween: [
       { id:'halloween',        kind:'floor',
         label:'Portraits',     line:'Your photograph, transformed' },
-      { id:'halloween-pets',   kind:'soon',
-        label:'Pets',          line:'Coming soon' },
+      { id:'halloween-pets',   kind:'floor',
+        label:'Pets',          line:'Your animal, transformed' },
       { id:'halloween-studio', kind:'studio',
         label:'The Studio',    line:'No photograph needed' }
     ]
   };
 
   function paintFloor(){
-    var room = ROOMS.filter(function(r){ return r.id === openRoom; })[0];
+    var room = roomFor(openRoom);
     if (!room) return;
 
     elTitle.textContent = room.label;
@@ -1166,7 +1247,7 @@ body::before{
      cards they just pressed, and the floor would never open - the season
      would be a door that opens onto itself. */
   function showFloor(id, viaSeason){
-    var room = ROOMS.filter(function(r){ return r.id === id; })[0];
+    var room = roomFor(id);
     if (!room) return;
 
     /* Studio is a different product on a different page - no photograph,
@@ -1193,8 +1274,21 @@ body::before{
     document.getElementById('queue').hidden = false;
     document.querySelector('.stage').classList.add('in-room');
     paintFloor();
-    railNote.innerHTML = esc(room.label) +
-      '. Pick what you like and I&rsquo;ll hold it.<span class="sig">&mdash; C.</span>';
+    /* The pet room asks for a different photograph, so she asks in
+       different words. Telling somebody to bring a clear, face-forward
+       image of their lurcher is the sort of small wrongness that makes a
+       studio feel automated. */
+    var petRoom = openRoom === 'halloween-pets';
+    railNote.innerHTML = (petRoom
+      ? 'Bring me your animal &mdash; the whole of it, and looking at you if it will.'
+      : esc(room.label) + '. Pick what you like and I&rsquo;ll hold it.') +
+      '<span class="sig">&mdash; C.</span>';
+    var slotSay = document.querySelector('.slot-say');
+    var slotSub = document.querySelector('.slot-sub');
+    if (slotSay) slotSay.textContent = petRoom
+      ? 'Add a photograph of your pet' : 'Add a photograph';
+    if (slotSub) slotSub.textContent = petRoom
+      ? 'The whole animal, in good light.' : 'A clear, face-forward image.';
     setPath('/wallpapers/' + id);
     window.scrollTo({ top:0, behavior:'smooth' });
   }

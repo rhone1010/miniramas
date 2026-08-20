@@ -4301,6 +4301,105 @@ body.is-lboxed{ overflow:hidden }
   .cur-slot{ aspect-ratio:4/3 }
 }
 
+/* ---- FOOTER HIDDEN - NOT REMOVED ------------------------------------
+   Five bays of placeholder heading and lorem. The markup, the stone,
+   the hairline dividers and the icons all stay; there is simply no copy
+   for them yet and placeholder latin on a shop page is worse than a
+   shorter page.
+
+   Last rule in the sheet on purpose. Ten .room--footer rules precede it,
+   two of them inside media queries, and source order is what decides.
+
+   TO BRING IT BACK: delete this block. Nothing else was touched.
+   -------------------------------------------------------------------- */
+.room--footer{ display:none !important }
+
+/* ---- POST TO COMMUNITY ----------------------------------------------
+   Its own scrim and card rather than a state inside the intake modal.
+   That one is a gallery of studio failures; this is a thing somebody
+   chose to do, and dressing a choice in the clothes of a failure is how
+   a choice starts to feel like one.
+
+   Everything is scoped under .pcm- so nothing here can reach into the
+   workshop's own .modal, .btn or .field.
+   -------------------------------------------------------------------- */
+.pcm-scrim{
+  position:fixed; inset:0; z-index:140;
+  display:none; align-items:center; justify-content:center; padding:1.5rem;
+  background:rgba(20,14,10,.72);
+}
+.pcm-scrim.is-open{ display:flex }
+.pcm-card{
+  width:min(92vw,560px); max-height:88vh; overflow:auto;
+  padding:30px 32px 26px; border-radius:8px;
+  background:linear-gradient(180deg,#3a2c26 0%, #2c211c 100%);
+  border:1px solid rgba(196,169,110,.26);
+  box-shadow:0 30px 70px -24px rgba(20,12,8,.8), inset 0 1px 0 rgba(255,255,255,.06);
+  color:var(--vellum-200);
+}
+.pcm-h{
+  font-family:var(--serif); font-size:1.9rem; line-height:1.15;
+  color:var(--series); margin:0 0 .3em;
+}
+.pcm-sub{
+  font-family:var(--serif); font-size:1.22rem; line-height:1.45;
+  color:rgba(243,237,225,.82); margin:0 0 22px;
+}
+.pcm-art{
+  width:132px; aspect-ratio:1; float:left; margin:0 20px 14px 0;
+  border-radius:6px; object-fit:cover;
+  border:1px solid rgba(196,169,110,.24); background:rgba(0,0,0,.25);
+}
+.pcm-field{ clear:both; margin:0 0 18px }
+.pcm-field label{
+  display:block; margin:0 0 .45em;
+  font-family:var(--sans); font-size:.82rem; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--brass);
+}
+.pcm-field input{
+  width:100%; height:48px; padding:0 14px;
+  font-family:var(--serif); font-size:1.22rem; color:var(--vellum-200);
+  background:rgba(0,0,0,.22); border:1px solid rgba(196,169,110,.3);
+  border-radius:6px; outline:none;
+}
+.pcm-field input:focus{ border-color:var(--gold) }
+/* THE CONSENT IS A LABEL AROUND THE BOX, so the words are the target.
+   A 16px square is a small thing to ask somebody to hit before they
+   agree to something in public. */
+.pcm-consent{
+  display:flex; gap:12px; align-items:flex-start; cursor:pointer;
+  padding:14px 16px; margin:0 0 20px; border-radius:6px;
+  background:rgba(0,0,0,.18); border:1px solid rgba(196,169,110,.18);
+}
+.pcm-consent input{ width:20px; height:20px; margin-top:.18em; flex:0 0 auto; cursor:pointer }
+.pcm-consent span{
+  font-family:var(--serif); font-size:1.1rem; line-height:1.45;
+  color:rgba(243,237,225,.86);
+}
+.pcm-acts{ display:flex; gap:12px; justify-content:flex-end; align-items:center }
+.pcm-b{
+  padding:.55em 1.25em; border-radius:6px; cursor:pointer;
+  font-family:var(--serif); font-style:italic; font-size:1.18rem;
+  border:1px solid rgba(196,169,110,.34);
+  background:rgba(255,255,255,.03); color:rgba(243,237,225,.88);
+  transition:background 160ms ease, color 160ms ease;
+}
+.pcm-b:hover{ background:rgba(196,169,110,.16); color:#fff }
+.pcm-b.is-fill{
+  background:linear-gradient(180deg, var(--oxblood) 0%, #6a3737 100%);
+  border-color:rgba(196,169,110,.4); color:#fff;
+}
+.pcm-b[disabled]{ opacity:.45; cursor:default }
+.pcm-b[disabled]:hover{ background:rgba(255,255,255,.03); color:rgba(243,237,225,.88) }
+/* Sized so the card does not jump when a refusal arrives. */
+.pcm-say{
+  clear:both; min-height:1.5em; margin:0 0 14px;
+  font-family:var(--serif); font-size:1.1rem; line-height:1.4;
+  color:#e0a5a5;
+}
+.pcm-say.is-good{ color:var(--series) }
+.rooms{ row-gap:0; column-gap:var(--room-gap) }
+
 /* ======================================================================
    MEASUREMENT — this block is NOT part of the contract.
    It exists so the geometry can be verified on the glass and read back.
@@ -4646,10 +4745,11 @@ body.is-lboxed{ overflow:hidden }
       </button>
       <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
         <a href="/portraits" role="menuitem" aria-current="page">Portraits</a>
-        <!-- Action, Groups and Pets were listed here and are not in
-             middleware's PAGES map, so all three 404. A Series menu that
-             offers four rooms and opens one is worse than a menu that
-             offers one: the first is a broken shop, the second is a small
+        <a href="/groups" role="menuitem">Groups</a>
+        <!-- Action and Pets were listed here too and are still not in
+             middleware's PAGES map, so both 404. A Series menu that
+             offers four rooms and opens two is worse than a menu that
+             offers two: the first is a broken shop, the second is a small
              one. They come back when they exist. -->
         <div class="sep"></div>
         <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
@@ -4693,6 +4793,7 @@ body.is-lboxed{ overflow:hidden }
   </div>
   <nav class="mh-drawer" id="mhDrawer" hidden>
     <a href="/portraits" class="on">Portraits</a>
+    <a href="/groups">Groups</a>
     <a href="/wallpapers">Mobile Wallpapers</a>
     <a href="/gallery">Gallery</a>
     <a href="/community">Community</a>
@@ -8750,6 +8851,8 @@ window.EFFECT_PREVIEWS = {
           '<div class="mc-acts">' +
             '<button class="mc-act is-fill" id="mcDl1" type="button">Download</button>' +
             '<button class="mc-act" id="mcPr1" type="button">Send to Print Shop</button>' +
+            /* The third thing you can do with a piece you own. */
+            '<button class="mc-act" id="mcPost1" type="button">Post to Community</button>' +
           '</div>' +
         '</div>';
       mcGrid.appendChild(wrap);
@@ -8778,6 +8881,11 @@ window.EFFECT_PREVIEWS = {
         if (!one || !one.art) return;
         flash(d1, 'Saving \u2713', 'Download');
         downloadPiece(one);
+      });
+      var q1 = wrap.querySelector('#mcPost1');
+      if (q1) q1.addEventListener('click', function(){
+        var one = featuredPiece();
+        if (one && typeof openPostToCommunity === 'function') openPostToCommunity(one);
       });
       if (p1) p1.addEventListener('click', function(){
         var one = featuredPiece();
@@ -11227,6 +11335,231 @@ document.addEventListener('click', function(e){
   if (dw) dw.setAttribute('hidden','');
   if (mb) mb.setAttribute('aria-expanded','false');
 });
+</script>
+
+<script>
+/* ---- ARRIVE ON A PANEL --------------------------------------------
+   My Collection, Account and the Print Shop are slide-overs in this
+   file, and the masthead here intercepts its own links so they never
+   navigate. Every OTHER page links to them as ordinary URLs, and
+   middleware now rewrites those three paths to this file.
+
+   So: if we arrived on one, open it. Same three openers the masthead
+   uses - not a second way in.
+
+   The URL is left as it is. It is where the customer asked to be, it
+   is what they will bookmark, and paintMastOpen() reads it to mark
+   the current link in the masthead. */
+(function(){
+  var OPEN = {
+    '/collection': '__showCollection',
+    '/account':    '__showAccount',
+    '/print':      '__showPrintShop'
+  };
+  var path = location.pathname.replace(/\/+$/, '') || '/';
+  var name = OPEN[path];
+  if (!name) return;
+  /* The openers live in script blocks further up that have already run
+     by now; a zero timeout lands after the last of them settles. */
+  setTimeout(function(){
+    var fn = window[name];
+    if (typeof fn === 'function') fn();
+  }, 0);
+})();
+</script>
+
+<div class="pcm-scrim" id="pcmScrim">
+  <div class="pcm-card" role="dialog" aria-modal="true" aria-labelledby="pcmH">
+    <h2 class="pcm-h" id="pcmH">Put this on the board</h2>
+    <p class="pcm-sub">Community is where people show what they have made.</p>
+    <img class="pcm-art" id="pcmArt" alt="">
+    <div class="pcm-field" id="pcmHandleField" hidden>
+      <label for="pcmHandle">Your handle</label>
+      <input id="pcmHandle" type="text" maxlength="40" autocomplete="off"
+             placeholder="What should sit under your work?">
+    </div>
+    <label class="pcm-consent">
+      <input type="checkbox" id="pcmConsent">
+      <span id="pcmConsentText"></span>
+    </label>
+    <p class="pcm-say" id="pcmSay"></p>
+    <div class="pcm-acts">
+      <button class="pcm-b" id="pcmCancel" type="button">Not now</button>
+      <button class="pcm-b is-fill" id="pcmGo" type="button" disabled>Post it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---- POST TO COMMUNITY --------------------------------------------
+   The board has been readable, heartable and commentable since V28 and
+   there has never been a way to put anything ON it. This is that way.
+
+   POST /api/v1/community/posts { piece_id, consent:true }
+   GET/PUT /api/v1/community/handle
+
+   The consent string is copied verbatim from lib/community/db.ts. It is
+   stored on every post as agreed, so changing it here changes what the
+   NEXT person agrees to and nothing about anybody already on the board.
+   If that file's CONSENT_TEXT_V1 changes, change this with it.
+
+   Consent is checked server-side too. A tick in a browser is a statement
+   about a browser; the row is what we would have to stand behind. */
+(function(){
+  var CONSENT =
+    'This is my own photograph, or I have the permission of the person in it. ' +
+    'I understand it will be visible to anyone who visits Liten & Co, with my ' +
+    'handle beneath it, and that I can take it down at any time.';
+
+  var R_POSTS  = '/api/v1/community/posts';
+  var R_HANDLE = '/api/v1/community/handle';
+
+  var scrim  = document.getElementById('pcmScrim');
+  if (!scrim) return;
+  var art    = document.getElementById('pcmArt');
+  var hField = document.getElementById('pcmHandleField');
+  var hInput = document.getElementById('pcmHandle');
+  var tick   = document.getElementById('pcmConsent');
+  var say    = document.getElementById('pcmSay');
+  var go     = document.getElementById('pcmGo');
+  var cancel = document.getElementById('pcmCancel');
+
+  document.getElementById('pcmConsentText').textContent = CONSENT;
+
+  var PIECE  = null;
+  var HANDLE = null;
+  var busy   = false;
+
+  function tell(msg, good){
+    say.textContent = msg || '';
+    say.classList.toggle('is-good', !!good);
+  }
+
+  /* Post is available when consent is ticked and a handle exists - either
+     one already claimed, or something typed into the box. */
+  function paint(){
+    var named = !!HANDLE || (hInput && String(hInput.value || '').trim().length > 0);
+    go.disabled = busy || !tick.checked || !named;
+  }
+
+  function shut(){
+    scrim.classList.remove('is-open');
+    PIECE = null; busy = false;
+  }
+
+  window.openPostToCommunity = function(piece){
+    if (!piece) return;
+    PIECE = piece;
+    busy = false;
+    tick.checked = false;
+    tell('');
+    go.textContent = 'Post it';
+    if (art) art.src = piece.art || '';
+    scrim.classList.add('is-open');
+    paint();
+
+    /* Asked for in place. Sending somebody to another page to claim a
+       handle loses the piece they were trying to post. */
+    fetch(R_HANDLE, { credentials:'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        HANDLE = (d && d.handle) || null;
+        if (hField) hField.hidden = !!HANDLE;
+        if (!HANDLE && hInput && d && d.suggestion) hInput.value = d.suggestion;
+        paint();
+      })
+      .catch(function(){ if (hField) hField.hidden = false; paint(); });
+  };
+
+  tick.addEventListener('change', paint);
+  if (hInput) hInput.addEventListener('input', paint);
+  cancel.addEventListener('click', shut);
+  scrim.addEventListener('click', function(e){ if (e.target === scrim) shut(); });
+  addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && scrim.classList.contains('is-open')) shut();
+  });
+
+  /* Every reason the route can give, said plainly. A bare "that did not
+     work" on a thing somebody chose to do in public is the worst of the
+     available answers. */
+  var WHY = {
+    signed_out:     'Sign in first, then this will go straight up.',
+    no_piece:       'I cannot find that piece any more.',
+    archived:       'That one is archived. Bring it back first and it can go up.',
+    no_consent:     'Tick the box and it can go up.',
+    need_handle:    'Choose a handle first - it sits beneath your work.',
+    already_posted: 'This one is already on the board.',
+    slow_down:      'That is three in an hour. Give it a little while.',
+    unavailable:    'The board is not answering just now. Try again shortly.'
+  };
+
+  function post(){
+    busy = true; paint(); tell('');
+    fetch(R_POSTS, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'same-origin',
+      body: JSON.stringify({ piece_id: PIECE.id, consent: true })
+    })
+      .then(function(r){ return r.json().then(function(d){ d.__s = r.status; return d; }); })
+      .then(function(d){
+        busy = false;
+        if (d && d.ok){
+          /* Ten live pieces earns a craft. The route says so; saying it
+             here is the only place the customer finds out. */
+          tell(d.earned
+            ? 'It is on the board - and that is ten, so a craft is on us.'
+            : 'It is on the board.', true);
+          go.textContent = 'Posted';
+          go.disabled = true;
+          setTimeout(shut, 1800);
+          return;
+        }
+        tell((d && WHY[d.reason]) || 'That did not take. Try again in a moment.');
+        paint();
+      })
+      .catch(function(){
+        busy = false;
+        tell('That did not take. Try again in a moment.');
+        paint();
+      });
+  }
+
+  go.addEventListener('click', function(){
+    if (!PIECE || busy) return;
+    if (HANDLE) return post();
+    /* Claim the handle, then post - one press, two calls, because two
+       presses to do one thing is how somebody abandons it halfway. */
+    var want = String(hInput.value || '').trim();
+    if (!want) return;
+    busy = true; paint(); tell('');
+    fetch(R_HANDLE, {
+      method:'PUT',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'same-origin',
+      body: JSON.stringify({ handle: want })
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        busy = false;
+        if (d && d.ok){
+          HANDLE = d.handle;
+          if (hField) hField.hidden = true;
+          return post();
+        }
+        if (d && d.reason === 'taken') tell('Somebody already writes under that one.');
+        else if (d && d.message)       tell(d.message);
+        else if (d && d.reason === 'signed_out') tell(WHY.signed_out);
+        else tell('That handle did not take. Try another.');
+        paint();
+      })
+      .catch(function(){
+        busy = false;
+        tell('That did not take. Try again in a moment.');
+        paint();
+      });
+  });
+})();
 </script>
 
 </body>

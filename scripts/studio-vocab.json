@@ -1,0 +1,96 @@
+{
+  "composition": "Vertical 9:16 mobile wallpaper, full-bleed edge to edge composition. The upper region of the frame is open and unadorned — atmosphere, gradient falloff or empty depth, no detail and no focal point there. The principal subject sits in the lower two thirds, weighted below centre and placed off the vertical axis. Clear depth across three planes: near, middle and far. No text, no letterforms, no numerals, no signature, no watermark, no logo, no border and no frame.",
+
+  "energies": [
+    { "id": "stillness", "label": "Stillness", "body": "Centered, balanced composition with generous negative space, minimal directional movement, simple large forms and a strong sense of visual stability." },
+    { "id": "drift", "label": "Drift", "body": "Gentle directional movement, softly displaced forms, subtle asymmetry and relaxed visual flow across the composition." },
+    { "id": "flow", "label": "Flow", "body": "Continuous sweeping movement, interconnected forms, graceful curves and clear directional pathways carrying the eye through the composition." },
+    { "id": "surge", "label": "Surge", "body": "Forceful directional movement, strong diagonals, overlapping forms, dynamic scale changes and pronounced visual momentum." },
+    { "id": "eruption", "label": "Eruption", "body": "Explosive outward movement, fragmented forms, dramatic displacement, extreme scale variation and dense controlled complexity radiating through the composition." }
+  ],
+
+  "general": {
+    "base": "A single striking abstract artwork made as a mobile phone wallpaper.",
+    "worlds": [
+      { "id": "cosmos", "label": "Cosmos", "body": "Vast celestial forms, nebulae, star fields, cosmic dust, planetary curves, gravitational arcs and luminous interstellar structures." },
+      { "id": "ocean", "label": "Ocean", "body": "Deep water, waves, currents, suspended droplets, foam, bubbles, translucent depths and fluid underwater forms." },
+      { "id": "glass", "label": "Glass", "body": "Transparent and translucent glass, refraction, caustics, prisms, curved surfaces, crystalline edges, internal reflections and luminous optical depth." },
+      { "id": "botanical", "label": "Botanical", "body": "Leaves, petals, vines, roots, branches, blossoms, seeds and intricate organic plant structures woven into layered compositions." },
+      { "id": "liquid", "label": "Liquid", "body": "Flowing, suspended and colliding fluids; ribbons, droplets, splashes, folds, pools and smooth sculptural forms shaped by surface tension." },
+      { "id": "architecture", "label": "Architecture", "body": "Arches, columns, vaults, stairs, towers, passages and monumental geometric structures arranged with dramatic scale and depth." },
+      { "id": "light", "label": "Light", "body": "Beams, halos, luminous ribbons, glowing fields, volumetric rays, reflections and radiant forms constructed primarily from illumination." },
+      { "id": "mineral", "label": "Mineral", "body": "Crystals, geodes, stone, metallic ore, fractured rock, polished mineral surfaces and intricate geological structures." }
+    ],
+    "moods": [
+      { "id": "dream", "label": "Dream", "body": "Soft diffused illumination, luminous haze, gentle tonal transitions, restrained contrast, subtle bloom and an ethereal atmospheric glow." },
+      { "id": "storm", "label": "Storm", "body": "Hard raking light through broken darkness, sharp highlights, deep shadows, high contrast and dense moisture-filled atmosphere." },
+      { "id": "twilight", "label": "Twilight", "body": "Low directional light, long soft shadows, subdued highlights, layered atmospheric haze and a gradual transition between luminous and dark values." },
+      { "id": "eclipse", "label": "Eclipse", "body": "Strong backlighting, deep silhouettes, narrow brilliant rim light, extreme separation between darkness and radiance, with restrained atmospheric glow." },
+      { "id": "midnight", "label": "Midnight", "body": "Predominantly deep values, sparse concentrated illumination, rich shadows, isolated highlights and quiet low-light atmosphere." },
+      { "id": "inferno", "label": "Inferno", "body": "Intense internal illumination, brilliant hot highlights, deep surrounding shadows, glowing atmospheric haze and aggressive high-contrast luminosity." }
+    ],
+    "palettes": [
+      { "id": "aurora", "label": "Aurora", "body": "Electric cyan, violet and emerald, luminous against midnight." },
+      { "id": "ember", "label": "Ember", "body": "Molten orange, crimson and amber against charcoal." },
+      { "id": "deep_ocean", "label": "Deep Ocean", "body": "Cobalt, teal and turquoise with tiny aqua highlights." },
+      { "id": "ultraviolet", "label": "Ultraviolet", "body": "Saturated violet, magenta and electric blue against black." },
+      { "id": "solar", "label": "Solar", "body": "Radiant gold, amber and warm ivory against deep bronze." },
+      { "id": "neon_noir", "label": "Neon Noir", "body": "Hot magenta, cyan and violet against near-black." },
+      { "id": "emerald", "label": "Emerald", "body": "Deep forest, emerald and jade with luminous chartreuse accents." },
+      { "id": "opal", "label": "Opal", "body": "Pearl, lavender, pale cyan and blush with iridescent highlights." },
+      { "id": "inferno", "label": "Inferno", "body": "Scarlet, vermilion and molten gold against black." },
+      { "id": "arctic", "label": "Arctic", "body": "Ice blue, silver and white with restrained cobalt shadows." },
+      { "id": "midnight", "label": "Midnight", "body": "Navy, indigo and black with sparse electric-blue illumination." },
+      { "id": "prismatic", "label": "Prismatic", "body": "Controlled spectrum colour, rich refraction, luminous transitions." }
+    ],
+    "twists": []
+  },
+
+  "halloween": {
+    "base": "A single striking Halloween artwork made as a mobile phone wallpaper. One extraordinary focal idea, composed as a scene rather than an arrangement of seasonal objects.",
+    "worlds": [
+      { "id": "haunted", "label": "Haunted", "body": "A vast supernatural environment of impossible haunted mansions, ruined castles, forgotten estates and ancient graveyards. Architecture feels alive and subtly wrong: impossible corridors, leaning towers, illuminated windows, monumental gates and structures disappearing into fog. Unseen inhabitants are suggested through distant lights, silhouettes and movement. Elegant gothic horror." },
+      { "id": "spectral", "label": "Spectral", "body": "A world suspended between physical reality and the spirit realm. Translucent apparitions, spectral architecture, luminous mist and enormous ghostly forms emerge from darkness, clouds, water and landscape. Solid objects dissolve into ethereal material and re-form elsewhere. Haunting, beautiful and otherworldly." },
+      { "id": "infernal", "label": "Infernal", "body": "An immense mythic underworld of obsidian formations, volcanic chasms, ruined citadels and monumental demonic architecture. Molten light glows through cracks in black stone while smoke, embers and enormous shadowy entities occupy impossible distances. Ancient, powerful and visually magnificent." },
+      { "id": "harvest", "label": "Harvest", "body": "An enchanted late-autumn world overtaken by twisted vines, enormous pumpkins, ancient orchards, cornfields, wheat, gnarled wood and strange harvest monuments. Natural forms grow into impossible structures and creatures beneath enormous autumn moons. Rich, tactile and slightly threatening, balancing folk-horror mystery with spectacular seasonal beauty." },
+      { "id": "occult", "label": "Occult", "body": "An ancient world shaped by mysterious forbidden rituals: monumental circles, floating relics, candles, arcane geometry, strange altars, suspended objects and luminous symbols embedded into architecture and landscape. Invisible forces distort light, gravity and space. Sophisticated supernatural mystery." },
+      { "id": "gothic", "label": "Gothic", "body": "A monumental dark-romantic world of cathedrals, gargoyles, ruined abbeys, ironwork, ancient stone, enormous windows and impossible vertical architecture. Structures rise dramatically through mist and darkness, illuminated by moonlight, candles and supernatural glow. Ornate, decaying and breathtaking, beauty and menace in equal measure." },
+      { "id": "nightmare", "label": "Nightmare", "body": "A surreal dream-world where familiar reality has become beautifully impossible. Landscapes bend, structures grow organically, enormous mysterious creatures appear at impossible scale and ordinary objects transform into unsettling forms. Dream logic replaces physics. Strange and psychologically eerie, and visually beautiful." },
+      { "id": "otherworld", "label": "Otherworld", "body": "An immense supernatural realm beneath impossible moons, eclipses and unfamiliar skies. Floating landscapes, colossal celestial bodies, ancient structures, luminous atmospheric phenomena and mysterious distant forms create overwhelming scale. Halloween imagery appears as if discovered in an alien mythology." }
+    ],
+    "moods": [
+      { "id": "bewitched", "label": "Bewitched", "body": "Seductive supernatural illumination, luminous haze and mysterious coloured light. Shadows remain soft and dimensional while magical highlights appear unexpectedly throughout the scene. Enchanting, mysterious and beautiful, with a subtle sense that something impossible is happening." },
+      { "id": "haunting", "label": "Haunting", "body": "Quiet, melancholy and deeply atmospheric. Diffused moonlight, pale illumination, long shadows, drifting fog and restrained contrast create the feeling of a place inhabited by memories or unseen presences. Beautiful first, unsettling second." },
+      { "id": "ominous", "label": "Ominous", "body": "Heavy darkness, approaching weather, deep directional shadows and isolated pools of illumination create mounting tension. The composition suggests that something enormous is about to happen without revealing exactly what it is." },
+      { "id": "macabre", "label": "Macabre", "body": "Elegant darkness with stronger mortality and decay: aged surfaces, skeletal forms, dead vegetation, ruined grandeur and stark chiaroscuro. Sophisticated gothic beauty, disturbing details used sparingly against richly rendered darkness." },
+      { "id": "nightmarish", "label": "Nightmarish", "body": "Unnatural lighting, extreme scale, distorted depth and impossible shadows make the scene feel like a vivid nightmare. Familiar forms become subtly wrong and visual logic begins to break down. Intensely unsettling and surreal, sophisticated and visually spectacular." },
+      { "id": "majestic", "label": "Majestic", "body": "Grand cinematic illumination, monumental scale, deep dimensional contrast and radiant focal light. Darkness frames moments of extraordinary beauty and power. The scene inspires awe as much as fear, treating Halloween fantasy with the visual grandeur of an epic myth." }
+    ],
+    "palettes": [
+      { "id": "blood_moon", "label": "Blood Moon", "body": "Blood red, crimson and burnt orange against black." },
+      { "id": "pumpkin_fire", "label": "Pumpkin Fire", "body": "Pumpkin orange, amber and copper against deep umber." },
+      { "id": "witchlight", "label": "Witchlight", "body": "Violet, ultraviolet and magenta against black." },
+      { "id": "ghostlight", "label": "Ghostlight", "body": "Spectral cyan, pale aqua and icy white against midnight blue." },
+      { "id": "poison", "label": "Poison", "body": "Acid green, emerald and chartreuse against black." },
+      { "id": "midnight", "label": "Midnight", "body": "Midnight blue, indigo and moon silver against near-black." },
+      { "id": "dead_forest", "label": "Dead Forest", "body": "Umber, moss green and rust against smoky black." },
+      { "id": "gothic_jewel", "label": "Gothic Jewel", "body": "Garnet, emerald, sapphire and amethyst with antique gold." },
+      { "id": "eclipse", "label": "Eclipse", "body": "Charcoal and black with burning gold and solar orange." },
+      { "id": "phantom_rose", "label": "Phantom Rose", "body": "Spectral lavender, dusty rose and pale moonlight against smoky violet." }
+    ],
+    "twists": [
+      { "id": "impossible_scale", "label": "Impossible Scale", "body": "One element is vastly larger than it could be, dwarfing everything around it." },
+      { "id": "living_architecture", "label": "Living Architecture", "body": "Built structures behave like a creature: breathing, watching, reaching, or forming a silhouette that is almost a body." },
+      { "id": "beautiful_decay", "label": "Beautiful Decay", "body": "Ruin rendered as splendour: collapse, erosion and overgrowth arranged into something lovelier than the intact thing was." },
+      { "id": "hidden_presence", "label": "Hidden Presence", "body": "Something enormous is barely perceptible within the scene, read only as a shape in the mist, the stone or the shadow." },
+      { "id": "material_transformation", "label": "Material Transformation", "body": "One substance becomes another mid-form: stone into smoke, water into glass, cloth into flame." },
+      { "id": "unnatural_light", "label": "Unnatural Light", "body": "Light behaves impossibly: falling upward, casting the wrong shadow, glowing from within a solid, or illuminating only one thing." },
+      { "id": "ancient_monument", "label": "Ancient Monument", "body": "A single colossal made object dominates, older than anything around it and built for a purpose nobody remembers." },
+      { "id": "endless_depth", "label": "Endless Depth", "body": "The scene recedes far past where it should end, plane behind plane into immeasurable distance." },
+      { "id": "emerging_form", "label": "Emerging Form", "body": "A shape is resolving out of the environment itself, half-formed and still becoming." },
+      { "id": "impossible_weather", "label": "Impossible Weather", "body": "The atmosphere does something it could not: falling upward, standing still, burning, or moving as one body." },
+      { "id": "organic_geometry", "label": "Organic Geometry", "body": "Living forms arranged into exact geometry, or geometry grown the way a plant grows." },
+      { "id": "something_watching", "label": "Something Watching", "body": "The composition is arranged around an unseen observer, and the scene knows it is being looked at." }
+    ]
+  }
+}
