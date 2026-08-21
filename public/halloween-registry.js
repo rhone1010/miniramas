@@ -47,22 +47,26 @@ window.HALLOWEEN_REGISTRY = {
     {
       "id": "creatures",
       "label": "Creatures",
-      "line": "Here are the Creatures. Beasts, monsters and things better left in the dark."
+      "line": "Here are the Creatures. Beasts, monsters and things better left in the dark.",
+      "plate": "/previews/halloween/woman_swamp_creature.jpg"
     },
     {
       "id": "restless_dead",
       "label": "Restless Dead",
-      "line": "Here are the Restless Dead. Some elegant, some cursed, none quite finished."
+      "line": "Here are the Restless Dead. Some elegant, some cursed, none quite finished.",
+      "plate": "/previews/halloween/man_clockwork_corpse.jpg"
     },
     {
       "id": "old_magic",
       "label": "Old Magic",
-      "line": "Here is the Old Magic. Witches, wraiths and powers that have been waiting a very long time."
+      "line": "Here is the Old Magic. Witches, wraiths and powers that have been waiting a very long time.",
+      "plate": "/previews/halloween/woman_necromancer.jpg"
     },
     {
       "id": "harvest",
       "label": "Harvest",
-      "line": "Here is the Harvest. Old gods, hollow things and what comes out after dark."
+      "line": "Here is the Harvest. Old gods, hollow things and what comes out after dark.",
+      "plate": "/previews/halloween/man_haunted_scarecrow.jpg"
     }
   ],
   "effects": [

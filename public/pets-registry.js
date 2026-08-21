@@ -51,27 +51,32 @@ window.PETS_REGISTRY = {
     {
       "id": "cast_carved",
       "label": "Cast & Carved",
-      "line": "Here are the Cast & Carved effects. Your animal in one material, worked as a single piece."
+      "line": "Here are the Cast & Carved effects. Your animal in one material, worked as a single piece.",
+      "plate": "/previews/pets/pets_stone.jpg"
     },
     {
       "id": "by_hand",
       "label": "Made by Hand",
-      "line": "Here are the Made by Hand effects. Softer work, with the maker's hand still on it."
+      "line": "Here are the Made by Hand effects. Softer work, with the maker's hand still on it.",
+      "plate": "/previews/pets/pets_quilted.jpg"
     },
     {
       "id": "painted",
       "label": "Painted",
-      "line": "Here are the Painted effects. Pencil, pigment and brushwork, each with its own hand."
+      "line": "Here are the Painted effects. Pencil, pigment and brushwork, each with its own hand.",
+      "plate": "/previews/pets/pets_impressionist.jpg"
     },
     {
       "id": "another_time",
       "label": "Another Time",
-      "line": "Here are the Another Time effects. Your animal, made in a time not its own."
+      "line": "Here are the Another Time effects. Your animal, made in a time not its own.",
+      "plate": "/previews/pets/pets_elizabethan.jpg"
     },
     {
       "id": "make_believe",
       "label": "Make Believe",
-      "line": "Here are the Make Believe effects. A few stranger ways to become someone else."
+      "line": "Here are the Make Believe effects. A few stranger ways to become someone else.",
+      "plate": "/previews/pets/pets_clockwork.jpg"
     }
   ],
   "effects": [
