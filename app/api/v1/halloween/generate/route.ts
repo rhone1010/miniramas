@@ -36,6 +36,10 @@ import {
   HALLOWEEN_MAIN_ORDER,
   isHalloweenEffect,
 } from '@/lib/v1/halloween/halloween-catalog'
+import {
+  PETS_HALLOWEEN_MAIN_ORDER,
+  isPetsHalloweenEffect,
+} from '@/lib/v1/halloween/pets-halloween-catalog'
 
 export const runtime     = 'nodejs'
 export const maxDuration = 180   // NB2 ~30-60s, plus detection, scoring and one retry
@@ -62,13 +66,26 @@ export async function POST(req: NextRequest) {
   // aliases because the queue dispatch on the glass uses its own key per
   // room and this one has no page yet to settle it. Alias tolerance plus
   // explicit extraction means no silent drop either way.
+  //
+  // BOTH ROOMS ANSWER HERE. The human 28 and the pet 27 share this route:
+  // the pethw_ prefix tells them apart and the generator branches on it.
+  // Rich, 21 August - Pets on the nav opens a chooser, so the two are two
+  // PAGES, but one endpoint. Two endpoints would be the same file twice.
   const rawEffect = body.effect_id ?? body.effect ?? body.preset_id
-  if (!isHalloweenEffect(rawEffect)) {
+  const isPet   = isPetsHalloweenEffect(rawEffect)
+  const isHuman = isHalloweenEffect(rawEffect)
+  if (!isPet && !isHuman) {
+    // Both lists returned, so a wrong id says what IS allowed rather than
+    // half of it. A pet id sent with the prefix dropped is the likely
+    // mistake and this is where it should be legible.
     return NextResponse.json(
       {
         ok:      false,
         error:   'unknown effect_id',
-        effects: HALLOWEEN_MAIN_ORDER,
+        effects: {
+          halloween:      HALLOWEEN_MAIN_ORDER,
+          pets_halloween: PETS_HALLOWEEN_MAIN_ORDER,
+        },
       },
       { status: 400 },
     )
@@ -99,7 +116,7 @@ export async function POST(req: NextRequest) {
   }
 
   console.log(
-    `[halloween/generate] effect=${request.effect_id} ` +
+    `[halloween/generate] room=${isPet ? 'pet' : 'person'} effect=${request.effect_id} ` +
     `sources=${1 + (request.additional_images_b64?.length || 0)} ` +
     `aspect=${request.aspect_ratio || '(default)'}`,
   )
