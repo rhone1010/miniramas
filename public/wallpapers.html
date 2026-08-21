@@ -844,18 +844,35 @@ body::before{
     /* HALLOWEEN · 28, in four sets of seven. Rich's lists, 2026-08-10.
        Order is page order: the first nine are page one, and so on.
 
-       THIS IS NOT THE LIST IN wallpaper-registry-rows.ts. Seven of these
-       are new - skeleton, spirit, candle_wraith, pumpkin, bone_collector,
-       crimson_oracle, haunted_ringmaster - and eight that were in the
-       registry are not here. Rich's list is the one; the registry needs
-       bringing to it. */
+       RECONCILED 2026-08-20. This list and wallpapers-halloween.ts now
+       agree on all twenty-eight ids.
+
+       Eight rows here had no engine effect behind them and were
+       exchanged for eight that were built but never offered:
+
+         skeleton, mummy, spirit, candle_wraith, pumpkin,
+         bone_collector, crimson_oracle, haunted_ringmaster
+                                     out
+         ghoul, the_ferryman, porcelain_doll, ice_wraith, night_bloom,
+         halloween_monarch, raven_monarch, spider_monarch
+                                     in
+
+       Four of the eight removed had plates and looked entirely real -
+       Mummy, Victorian Spirit, Pumpkin King and Bone Collector would
+       have taken credits and failed at the engine. The other four had
+       no plate either, which is the only reason this was spotted.
+
+       Every row below now has an engine effect and both plates on disk,
+       with one exception: headless_horseman has the woman and not the
+       man, so it goes bare on the loads that deal a man. */
     { id:'elegant_vampire',    label:'Elegant Vampire',     room:'halloween' },
-    { id:'skeleton',           label:'Skeleton',            room:'halloween' },
-    { id:'mummy',              label:'Mummy',               room:'halloween' },
-    { id:'spirit',             label:'Victorian Spirit',    room:'halloween' },
+    { id:'ghoul',              label:'Ghoul',               room:'halloween' },
+    /* Not adjacent to lantern_keeper - different page entirely. */
+    { id:'the_ferryman',       label:'The Ferryman',        room:'halloween' },
+    { id:'porcelain_doll',     label:'Living Porcelain Doll', room:'halloween' },
     { id:'ghost_pirate',       label:'Ghost Pirate',        room:'halloween' },
     { id:'necromancer',        label:'Necromancer',         room:'halloween' },
-    { id:'candle_wraith',      label:'Candle Wraith',       room:'halloween' },
+    { id:'ice_wraith',         label:'Ice Wraith',          room:'halloween' },
 
     { id:'werewolf',           label:'Werewolf',            room:'halloween' },
     { id:'swamp_creature',     label:'Swamp Creature',      room:'halloween' },
@@ -865,10 +882,10 @@ body::before{
     { id:'harvest_god',        label:'Harvest God',         room:'halloween' },
     { id:'hollow_tree',        label:'Hollow Tree',         room:'halloween' },
 
-    { id:'pumpkin',            label:'Pumpkin King',        room:'halloween' },
+    { id:'night_bloom',        label:'The Night Bloom',     room:'halloween' },
     { id:'cursed_knight',      label:'Cursed Knight',       room:'halloween' },
     { id:'clockwork_corpse',   label:'Clockwork Corpse',    room:'halloween' },
-    { id:'bone_collector',     label:'Bone Collector',      room:'halloween' },
+    { id:'halloween_monarch',  label:'Lord / Lady of Halloween', room:'halloween' },
     { id:'living_cathedral',   label:'Living Cathedral',    room:'halloween' },
     { id:'lantern_keeper',     label:'Lantern Keeper',      room:'halloween' },
     { id:'headless_horseman',  label:'Headless Horseman',   room:'halloween' },
@@ -878,8 +895,8 @@ body::before{
     { id:'demon_lord',         label:'Demon Lord',          room:'halloween' },
     { id:'shadow_monarch',     label:'Shadow King / Queen', room:'halloween' },
     { id:'eclipse',            label:'Eclipse',             room:'halloween' },
-    { id:'crimson_oracle',     label:'Crimson Oracle',      room:'halloween' },
-    { id:'haunted_ringmaster', label:'Haunted Ringmaster',  room:'halloween' },
+    { id:'raven_monarch',      label:'Raven King / Queen',  room:'halloween' },
+    { id:'spider_monarch',     label:'Spider King / Queen', room:'halloween' },
 
     /* HALLOWEEN PETS · 27.
        Three clean pages of nine with the unlock in each tenth slot - which
