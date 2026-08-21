@@ -22,8 +22,6 @@ public/landscapes.html
 public/interiors.html
 public/sportsmem.html
 public/actionmini.html
-public/groups.html
-public/pets.html
 
 # --- local logs ---
 *.log
