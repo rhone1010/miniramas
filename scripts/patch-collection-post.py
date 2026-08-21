@@ -412,13 +412,21 @@ def main():
     assert text.count('id="mcPost1"') == 1, "button markup missing or duplicated"
     assert text.count("querySelector('#mcPost1')") == 1, "button wiring missing or duplicated"
     assert text.count('.pcm-scrim{') == 1, "styles missing or duplicated"
-    assert text.count('window.openPostToCommunity') == 1, "opener missing"
+    # The definition, plus any references. patch-feat-acts adds two of its
+    # own in the action row, so an exact count here is wrong the moment the
+    # two patches meet - assert the definition exists instead.
+    assert text.count("window.openPostToCommunity = function(piece)") == 1, \
+        "opener missing or defined twice"
     assert text.count('</body>') == 1 and text.count('</html>') == 1, "document closed twice"
     assert text.rstrip().endswith('</html>'), "content after the document"
     assert text.index('.pcm-scrim{') < text.index('</style>'), "styles outside the sheet"
     assert text.index('id="pcmScrim"') > text.index('</style>'), "markup inside the sheet"
     # the earlier panel-boot hook must survive and still run
-    assert text.count('ARRIVE ON A PANEL') == 1, "panel boot hook lost"
+    # patch-portraits-panel-boot.py has only ever run against portraits.html,
+    # so this hook is absent from a Series clone. Assert it survives where it
+    # exists rather than requiring it everywhere.
+    if 'ARRIVE ON A PANEL' in original:
+        assert text.count('ARRIVE ON A PANEL') == 1, "panel boot hook lost"
     assert text.count('window.__showCollection') == 1, "collection opener disturbed"
     # the consent must match db.ts verbatim
     assert 'This is my own photograph, or I have the permission of the person in it. ' in text, \
