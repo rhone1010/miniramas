@@ -42,6 +42,17 @@ const PAGES: Record<string, string> = {
      and 404s, which is the exact fault the Portraits menu comment above
      was written about. */
   '/groups': '/groups.html',
+  /* PETS AND HALLOWEEN, 21 August. Both files exist and both are wired to
+     their own engines -- pets/analyze and pets/generate for one,
+     portraits/analyze plus halloween/generate for the other.
+
+     /pets serves the room as built today. It becomes the two-card chooser
+     when that exists, at which point this line changes and
+     /pets/portraits and /pets/halloween join it. Adding those two now
+     would put a room in the Series menu that opens onto nothing, which is
+     the fault the Portraits menu comment above was written about. */
+  '/pets': '/pets.html',
+  '/halloween': '/halloween.html',
   '/gallery': '/gallery.html',
   /* THE BOARD. A page rather than a panel: it is somewhere you go and spend
      time, it wants a URL somebody can send to a friend, and it is the only
