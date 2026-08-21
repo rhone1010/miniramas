@@ -11661,7 +11661,9 @@ document.addEventListener('click', function(e){
       credentials:'same-origin',
       body: JSON.stringify({ handle: want })
     })
-      .then(function(r){ return r.json(); })
+      /* Carry the status through, exactly as post() does. Without it the
+         branch below cannot tell a refused handle from a broken studio. */
+      .then(function(r){ return r.json().then(function(d){ d.__s = r.status; return d; }); })
       .then(function(d){
         busy = false;
         if (d && d.ok){
@@ -11672,6 +11674,14 @@ document.addEventListener('click', function(e){
         if (d && d.reason === 'taken') tell('Somebody already writes under that one.');
         else if (d && d.message)       tell(d.message);
         else if (d && d.reason === 'signed_out') tell(WHY.signed_out);
+        /* A FAULT IS NOT A BAD NAME. This branch used to end by telling
+           everybody to try another handle, including when the answer was a
+           500 with reason:'failed' -- so a database fault read as a
+           rejected name and the customer tried other names against a
+           server that was not listening. The status is already on the
+           response; it was simply never read here. */
+        else if (d && (d.__s >= 500 || d.reason === 'failed'))
+          tell('The studio could not do that just now. Nothing is wrong with that name - try again in a moment.');
         else tell('That handle did not take. Try another.');
         paint();
       })
