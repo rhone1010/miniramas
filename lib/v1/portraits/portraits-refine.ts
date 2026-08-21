@@ -208,6 +208,326 @@ export async function scoreSingleFaceFidelity(input: {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// SINGLE-FACE SCORING v2 — TRAIT CHECKLIST, ARITHMETIC SCORE
+// ═══════════════════════════════════════════════════════════════
+//
+// ── WHY THERE IS A SECOND SCORER ───────────────────────────────────────
+//
+// On 21 August the v1 scorer was run over eight renders of one source: four
+// that had silently REMOVED the subject's beard and filled in his receding
+// hairline, and four from a rewritten prompt that kept both.
+//
+// It scored all eight 8/10.
+//
+// The difference between those two sets is the single most visible thing
+// about them - a bearded man rendered clean-shaven is not a minor drift,
+// it is a different face - and the gate could not see it. Every threshold
+// tuned against that scorer was tuning against noise, and the one retry the
+// route spends was being spent on a ranking that did not rank.
+//
+// v1 IS UNTOUCHED ABOVE AND STILL THE ONE THE ROUTE CALLS. This is added
+// alongside so its numbers can be compared against real renders BEFORE
+// anything that ships changes. Swapping the call site is a separate,
+// deliberate edit.
+//
+// ── WHAT CHANGED, AND WHY EACH ────────────────────────────────────────
+//
+// 1. THE MODEL. v1 asks gpt-4o-mini. detectFaceVisibility in this same file
+//    asks gpt-4o, and the harder question was going to the weaker model.
+//    Scoring runs once or twice per render, not per card, so the cost is
+//    small against a wrong answer.
+//
+// 2. NO HOLISTIC NUMBER IS REQUESTED. v1 asks for a 1-10 and gets 8 almost
+//    every time - a model asked to summarise a face in one integer reaches
+//    for the middle of "good". v2 asks only for OBSERVATIONS: is the beard
+//    the same, did the hairline move, is the face the same width. The score
+//    is then arithmetic, computed below in TypeScript from those answers.
+//    A number that is calculated cannot cluster.
+//
+// 3. IT IS ASKED ADVERSARIALLY, NOT AGREEABLY. The first v2 draft asked a
+//    polite checklist and gpt-4o answered "same, same, same" on three
+//    renders that had visibly lost the beard - and wrote its note about the
+//    costume, the one thing the prompt had told it to ignore. Told that a
+//    transformation was correct, it treated every difference as part of it.
+//
+//    So it is no longer asked whether traits were preserved. It is told
+//    someone is ASSERTING these are the same man and that it has to check,
+//    made to describe each face separately BEFORE comparing them, and told
+//    plainly that a bearded man rendered clean-shaven is a different man.
+//    Rich's framing, 21 August: would you swear these are the same person,
+//    or would you say the first one is clearly different and here is why.
+//
+// 4. THE TRAITS ARE NAMED AND SEPARATE. v1 lists them inside one bullet -
+//    "distinguishing marks (glasses, facial hair, hair colour/texture)" -
+//    where a model can answer around them. v2 makes each its own field with
+//    its own enum, so "removed" has to be typed out.
+//
+// 5. FACIAL HAIR AND HAIRLINE CARRY THE HEAVIEST PENALTIES. They are what
+//    NB2 actually drifts on, they are what a customer notices first, and
+//    they were what v1 missed.
+//
+// ── THE WEIGHTS ARE A STARTING POINT, NOT A FINDING ───────────────────
+//
+// They were set by hand against one afternoon's evidence. Run the rescore
+// script over a folder of renders that have already been judged by eye
+// before trusting a threshold against them.
+//
+// The one thing they are built to guarantee: a removed beard cannot score
+// above 6, so it cannot pass a gate of 8 however good the rest is.
+
+export type TraitMatch  = 'same' | 'changed' | 'absent_in_both'
+export type BeardMatch  = 'same' | 'removed' | 'added' | 'changed' | 'none_in_either'
+export type HairlineMatch = 'same' | 'lowered_or_thickened' | 'raised' | 'changed'
+export type ShapeMatch  = 'same' | 'narrower' | 'wider' | 'changed'
+export type AgeMatch    = 'same' | 'younger' | 'older'
+
+export interface LikenessTraits {
+  beard:        BeardMatch
+  hairline:     HairlineMatch
+  face_shape:   ShapeMatch
+  eyes:         TraitMatch
+  nose:         TraitMatch
+  mouth:        TraitMatch
+  age:          AgeMatch
+  recognizable: boolean
+  note:         string
+}
+
+export interface LikenessScore extends PerFigureScore {
+  traits:      LikenessTraits
+  deductions:  string[]
+}
+
+const SINGLE_FACE_SCORE_PROMPT_V2 = `Two images. The FIRST is a photograph of a real person. The SECOND claims to be a portrait of that same person.
+
+Someone is asserting these are the same man. You are the one who has to check, and you will be held to it.
+
+Do not be agreeable. A polite "close enough" is the wrong answer here - if the second image would send someone looking for the wrong man, say so.
+
+WORK IN THIS ORDER. Do not skip to the verdict.
+
+STEP 1 - Describe the face in the FIRST image only. Ignore the second image entirely for now. Facial hair: is there a beard, stubble, moustache, or is he clean-shaven? What length, what colour? Hairline: where does the hair start, is there recession at the temples, how much hair is there? The width and weight of the face. The eyes, nose, mouth. Apparent age.
+
+STEP 2 - Now describe the face in the SECOND image, on those same points. Describe what is actually there, not what you expect to be there. A render can be beautiful, well-lit and skilfully made and still be a different man.
+
+STEP 3 - Put the two descriptions side by side and name every point where they disagree.
+
+The second image has been deliberately transformed - carved in a material, dressed in another century, painted in another medium, set in another room. Costume, setting, medium and surface are NOT differences. A man in a top hat is still the same man. A man carved in wood is still the same man.
+
+But a bearded man rendered clean-shaven is A DIFFERENT MAN.
+A balding man given a full head of hair is A DIFFERENT MAN.
+A broad, heavy face rendered slim is A DIFFERENT MAN.
+
+Those are the ones that matter and they are the ones most often missed, because a render that changes them usually looks good while doing it.
+
+Now answer:
+
+beard - his facial hair in the second image against the first.
+  "same" / "removed" / "added" / "changed" / "none_in_either"
+  Check the jaw, the chin and the upper lip specifically. Grey stubble on a
+  textured or dark render is easy to overlook. If you are unsure whether it
+  is there, it is not there - say "removed".
+
+hairline - where the hair starts and how much of it there is.
+  "same" / "lowered_or_thickened" / "raised" / "changed"
+  Filling in a receding temple is "lowered_or_thickened".
+
+face_shape - width and weight through the cheeks and jaw.
+  "same" / "narrower" / "wider" / "changed"
+
+eyes, nose, mouth - "same" / "changed" / "absent_in_both"
+
+age - "same" / "younger" / "older"
+
+recognizable - true only if his own family would pick him out of a line-up
+  from the second image alone. If they would hesitate, false.
+
+note - one sentence naming the single most misleading difference. Do NOT
+  write about the costume, the medium, the lighting or the setting. If those
+  are all you can find, write "no facial difference".
+
+Respond with ONLY a JSON object:
+{
+  "beard":        "same|removed|added|changed|none_in_either",
+  "hairline":     "same|lowered_or_thickened|raised|changed",
+  "face_shape":   "same|narrower|wider|changed",
+  "eyes":         "same|changed|absent_in_both",
+  "nose":         "same|changed|absent_in_both",
+  "mouth":        "same|changed|absent_in_both",
+  "age":          "same|younger|older",
+  "recognizable": true|false,
+  "note":         "<one sentence about the FACE>"
+}
+
+No preamble, no markdown, no score.`
+
+/**
+ * The score, computed rather than asked for.
+ *
+ * ── THE WEIGHTS WERE WRONG ON THE FIRST PASS ──────────────────────────
+ *
+ * The first version deducted 4 for a removed beard, 3 for a filled-in
+ * hairline and 3 more for "not recognizable" - and landed a render on 1/10.
+ *
+ * That was a bug of arithmetic, not of observation: the model had seen
+ * exactly the right things. "Not recognizable" was being ADDED on top of
+ * the very faults that caused it, so one fault was paid for twice.
+ *
+ * Rich, 21 August: those renders are a 5 or a 6, not a complete failure.
+ * They are him, drifted. A 1 belongs to a render that is a stranger, and
+ * calling a drifted portrait a 1 makes the number as useless as the flat 8
+ * it replaced - a scale that only ever reads 1 or 10 is not a scale.
+ *
+ * So: every weight came down, and recognizability became a CEILING rather
+ * than another deduction. A render whose beard and hairline both went now
+ * lands on 5. One where only the beard went lands on 7 - visible, worth a
+ * retry, not a catastrophe.
+ *
+ *   beard removed        -3
+ *   beard added          -2
+ *   beard changed        -1
+ *   hairline lowered     -2
+ *   hairline raised      -1
+ *   hairline changed     -1
+ *   face reshaped        -2   any of narrower, wider, changed
+ *   eyes changed         -2
+ *   nose changed         -2
+ *   mouth changed        -1   expression moves a mouth honestly
+ *   age shifted          -1
+ *
+ * NOT RECOGNIZABLE IS A CEILING OF 3, NOT A DEDUCTION. If the model says
+ * his family would hesitate, the render cannot score above 3 however few
+ * individual faults were named - and it does not stack with them.
+ *
+ * FLOOR OF 4 WHILE STILL RECOGNIZABLE. Below 4 means a stranger's face,
+ * and a render the model called recognizable is not that whatever the
+ * deductions add up to.
+ *
+ * These are still a starting point set against one afternoon. Run the
+ * rescore script over renders already judged by eye before trusting a
+ * threshold against them.
+ */
+export function scoreFromTraits(t: LikenessTraits): { score: number; deductions: string[] } {
+  let score = 10
+  const out: string[] = []
+  const cut = (n: number, why: string) => { score -= n; out.push(`-${n} ${why}`) }
+
+  if (t.beard === 'removed')       cut(3, 'beard removed')
+  else if (t.beard === 'added')    cut(2, 'beard added')
+  else if (t.beard === 'changed')  cut(1, 'beard changed')
+
+  if (t.hairline === 'lowered_or_thickened') cut(2, 'hairline lowered or hair thickened')
+  else if (t.hairline === 'raised')          cut(1, 'hairline raised')
+  else if (t.hairline === 'changed')         cut(1, 'hairline changed')
+
+  if (t.face_shape === 'narrower')     cut(2, 'face narrowed')
+  else if (t.face_shape === 'wider')   cut(2, 'face widened')
+  else if (t.face_shape === 'changed') cut(2, 'face reshaped')
+
+  if (t.eyes  === 'changed') cut(2, 'eyes changed')
+  if (t.nose  === 'changed') cut(2, 'nose changed')
+  if (t.mouth === 'changed') cut(1, 'mouth changed')
+
+  if (t.age !== 'same') cut(1, `age reads ${t.age}`)
+
+  if (t.recognizable) {
+    // Still him. Floor of 4 - see above.
+    score = Math.max(4, score)
+  } else {
+    // A stranger. Ceiling of 3, and NOT another deduction.
+    score = Math.min(3, score)
+    out.push('capped at 3: not recognizable as the same person')
+  }
+
+  return { score: Math.max(1, Math.min(10, score)), deductions: out }
+}
+
+const BEARD_VALUES: BeardMatch[] = ['same', 'removed', 'added', 'changed', 'none_in_either']
+const HAIRLINE_VALUES: HairlineMatch[] = ['same', 'lowered_or_thickened', 'raised', 'changed']
+const SHAPE_VALUES: ShapeMatch[] = ['same', 'narrower', 'wider', 'changed']
+const TRAIT_VALUES: TraitMatch[] = ['same', 'changed', 'absent_in_both']
+const AGE_VALUES: AgeMatch[] = ['same', 'younger', 'older']
+
+function pick<T extends string>(raw: unknown, allowed: T[], fallback: T): T {
+  const v = String(raw || '')
+  return (allowed as string[]).includes(v) ? (v as T) : fallback
+}
+
+/**
+ * Trait-checklist likeness score. Same PerFigureScore shape as v1 plus the
+ * traits and the deductions, so an existing caller can read .score and
+ * .reason and ignore the rest.
+ *
+ * On a parse failure it returns 5 with everything marked 'same' - the same
+ * defensive middle v1 uses. A scorer that throws would fail a render that
+ * may well have been fine.
+ */
+export async function scoreSingleFaceLikeness(input: {
+  sourceImageB64:   string
+  renderedImageB64: string
+  openaiApiKey:     string
+}): Promise<LikenessScore> {
+  const openai = new OpenAI({ apiKey: input.openaiApiKey })
+
+  const response = await openai.chat.completions.create({
+    // gpt-4o, not mini. See note 1 above.
+    model:           'gpt-4o',
+    max_tokens:      500,
+    response_format: { type: 'json_object' },
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${input.sourceImageB64}`,   detail: 'high' } },
+        { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${input.renderedImageB64}`, detail: 'high' } },
+        { type: 'text', text: SINGLE_FACE_SCORE_PROMPT_V2 },
+      ],
+    }],
+  })
+
+  const content = (response.choices[0]?.message?.content || '{}').trim()
+
+  try {
+    const p = JSON.parse(content)
+    const traits: LikenessTraits = {
+      beard:        pick(p.beard,      BEARD_VALUES,    'same'),
+      hairline:     pick(p.hairline,   HAIRLINE_VALUES, 'same'),
+      face_shape:   pick(p.face_shape, SHAPE_VALUES,    'same'),
+      eyes:         pick(p.eyes,       TRAIT_VALUES,    'same'),
+      nose:         pick(p.nose,       TRAIT_VALUES,    'same'),
+      mouth:        pick(p.mouth,      TRAIT_VALUES,    'same'),
+      age:          pick(p.age,        AGE_VALUES,      'same'),
+      recognizable: p.recognizable !== false,
+      note:         String(p.note || '').slice(0, 200),
+    }
+    const { score, deductions } = scoreFromTraits(traits)
+    return {
+      figure_index: 0,
+      score,
+      // Built from the deductions rather than from the model's prose, so the
+      // reason and the number can never disagree.
+      reason: deductions.length
+        ? `${deductions.join(', ')} — ${traits.note}`
+        : (traits.note || 'no drift observed'),
+      traits,
+      deductions,
+    }
+  } catch {
+    const traits: LikenessTraits = {
+      beard: 'same', hairline: 'same', face_shape: 'same',
+      eyes: 'same', nose: 'same', mouth: 'same', age: 'same',
+      recognizable: true, note: 'parse failed',
+    }
+    return {
+      figure_index: 0,
+      score:        5,
+      reason:       'trait scoring parse failed — defaulted to 5/10',
+      traits,
+      deductions:   [],
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // HOLISTIC CARICATURE SCORING (Tribal styles)
 // ═══════════════════════════════════════════════════════════════
 // Same shape as Groups — single composite + 3 sub-scores. Threshold ≥6/10.

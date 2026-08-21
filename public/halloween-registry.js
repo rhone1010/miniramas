@@ -46,23 +46,23 @@ window.HALLOWEEN_REGISTRY = {
   "silos": [
     {
       "id": "creatures",
-      "label": "Creatures of the Night",
-      "line": ""
+      "label": "Creatures",
+      "line": "Here are the Creatures. Beasts, monsters and things better left in the dark."
     },
     {
       "id": "restless_dead",
-      "label": "The Restless Dead",
-      "line": ""
+      "label": "Restless Dead",
+      "line": "Here are the Restless Dead. Some elegant, some cursed, none quite finished."
     },
     {
       "id": "old_magic",
       "label": "Old Magic",
-      "line": ""
+      "line": "Here is the Old Magic. Witches, wraiths and powers that have been waiting a very long time."
     },
     {
       "id": "harvest",
-      "label": "The Harvest",
-      "line": ""
+      "label": "Harvest",
+      "line": "Here is the Harvest. Old gods, hollow things and what comes out after dark."
     }
   ],
   "effects": [
