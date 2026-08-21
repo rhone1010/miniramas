@@ -56,6 +56,11 @@ import {
   buildHalloweenPrompt,
   isHalloweenEffect,
 } from './halloween-catalog'
+import {
+  PETS_HALLOWEEN_MAIN,
+  buildPetsHalloweenPrompt,
+  isPetsHalloweenEffect,
+} from './pets-halloween-catalog'
 import { MAIN_ASPECT } from '../shared/render-aspect'
 import {
   detectFaceVisibility,
@@ -68,6 +73,31 @@ import {
   SINGLE_FACE_THRESHOLD,
   type PerFigureScore,
 } from '../portraits/portraits-shared'
+import {
+  detectPetVisibility,
+  scorePetFidelity,
+} from '../pets/pets-refine'
+import {
+  evaluatePetScore,
+  PET_LIKENESS_THRESHOLD,
+} from '../pets/pets-shared'
+
+// ── TWO ROOMS, ONE PIPELINE ────────────────────────────────────────────
+//
+// Rich, 21 August: Pets on the nav opens a chooser - Pets Portraits or Pets
+// Halloween. Two pages, so two registries on the glass. But ONE route and
+// ONE generator here, because the pipeline is identical and the pethw_
+// prefix already tells the two catalogues apart.
+//
+// FOUR THINGS BRANCH, and only four. They are collected in resolveRoom()
+// below rather than scattered through the run, so a fifth difference has
+// one obvious place to go.
+//
+// THE SCORER IS THE BRANCH THAT MATTERS. scoreSingleFaceFidelity asks
+// whether a human face survived; run it on a dog and it answers about a
+// face that is not there. scorePetFidelity asks about coat, markings and
+// muzzle. Both return PerFigureScore, so everything downstream is common -
+// which is exactly what makes the wrong one easy to leave in by accident.
 
 const SYNC_WAIT_SECONDS      = 60
 const POLL_MAX_ATTEMPTS      = 30
@@ -145,7 +175,9 @@ export async function generateHalloweenRender(
   const t0  = Date.now()
   const req = input.request
 
-  if (!isHalloweenEffect(req.effect_id)) {
+  const room = resolveRoom(req.effect_id)
+
+  if (!room) {
     return buildFatalResult({
       msg:      `unknown halloween effect: ${req.effect_id}`,
       code:     'unknown_effect',
@@ -159,14 +191,17 @@ export async function generateHalloweenRender(
     })
   }
 
-  const effect       = HALLOWEEN_MAIN[req.effect_id]
-  const aspectRatio  = req.aspect_ratio || MAIN_ASPECT
+  const effect      = room.effect
+  const aspectRatio = req.aspect_ratio || MAIN_ASPECT
 
-  // Body + framing. Assembled once, outside the attempt loop: nothing in
-  // the loop varies it, and a retry re-sending the identical prompt is the
+  // The prompt. Assembled once, outside the attempt loop: nothing in the
+  // loop varies it, and a retry re-sending the identical prompt is the
   // intended behaviour - the retry exists because NB2 is stochastic, not
   // because the prompt was wrong.
-  const prompt = buildHalloweenPrompt(req.effect_id)
+  //
+  // The human 28 get body + chest-to-head framing. The pet 27 get the body
+  // verbatim, no framing at all, per Rich on 21 August.
+  const prompt = room.buildPrompt(req.effect_id)
 
   // ── Stage 0: face visibility ─────────────────────────────────
   //
@@ -178,14 +213,16 @@ export async function generateHalloweenRender(
   let facesInSource = 1
   if (input.openaiApiKey) {
     try {
-      const det = await detectFaceVisibility({
+      const det = await room.detect({
         sourceImageB64: req.source_image_b64,
         openaiApiKey:   input.openaiApiKey,
       })
-      faceVisible   = det.face_visible
+      faceVisible   = det.visible
       facesInSource = det.subject_count_estimate
       if (!faceVisible) {
-        console.warn('[halloween] stage 0: no clear face in source — rendering anyway')
+        console.warn(
+          `[halloween] stage 0: no clear ${room.subject} in source — rendering anyway`,
+        )
       }
     } catch (e: any) {
       console.warn(`[halloween] stage 0 detection failed (non-fatal): ${e?.message}`)
@@ -196,7 +233,7 @@ export async function generateHalloweenRender(
   let finalImageB64: string | null = null
 
   console.log(
-    `[halloween] effect=${effect.id} aspect=${aspectRatio} ` +
+    `[halloween] room=${room.subject} effect=${effect.id} aspect=${aspectRatio} ` +
     `chars=${prompt.length} sources=${1 + (req.additional_images_b64?.length || 0)} ` +
     `faces_src=${facesInSource}`,
   )
@@ -239,23 +276,28 @@ export async function generateHalloweenRender(
     // fur, bone - so the scorer is being asked whether the LIKENESS survived
     // the transformation, not whether the face was left alone.
     //
-    // WATCH THIS THRESHOLD. It is Portraits' 8, unchanged, and it has never
-    // been run against a Halloween render. If good pieces come back failing,
-    // the threshold is wrong for this room and not the bodies. Render
-    // strictness above 6 has already refused good work once on the material
-    // effects.
+    // WATCH THESE THRESHOLDS. Both are 8 - Portraits' SINGLE_FACE_THRESHOLD
+    // for the human 28, Pets' PET_LIKENESS_THRESHOLD for the 27 - and
+    // NEITHER has been run against a Halloween render. If good pieces come
+    // back failing, the threshold is wrong for the room and not the bodies.
+    // Render strictness above 6 has already refused good work once on the
+    // material effects.
+    //
+    // The pet room is the likelier of the two to complain. Its bodies
+    // deliberately rebuild the animal - roots, bone growths, ember fissures
+    // - and the scorer is looking for the coat it started with.
     let perFigureScore: PerFigureScore | undefined
     let evalPassed = false
     let evalReason = 'no scoring performed'
 
     if (input.openaiApiKey) {
       try {
-        perFigureScore = await scoreSingleFaceFidelity({
+        perFigureScore = await room.score({
           sourceImageB64:   req.source_image_b64,
           renderedImageB64: imageB64,
           openaiApiKey:     input.openaiApiKey,
         })
-        const evaluated = evaluateSingleFaceScore(perFigureScore, SINGLE_FACE_THRESHOLD)
+        const evaluated = room.evaluate(perFigureScore)
         evalPassed = evaluated.passed
         evalReason = evaluated.reason
       } catch (e: any) {
@@ -299,6 +341,73 @@ export async function generateHalloweenRender(
     fatal_error:           null,
     duration_ms:           Date.now() - t0,
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// THE BRANCH
+// ═══════════════════════════════════════════════════════════════
+
+interface Room {
+  /** For logs and messages. Not an id. */
+  subject:     'person' | 'pet'
+  effect:      { id: string; label: string }
+  buildPrompt: (id: string) => string
+  detect:      (a: { sourceImageB64: string; openaiApiKey: string })
+                 => Promise<{ visible: boolean; subject_count_estimate: number }>
+  score:       (a: { sourceImageB64: string; renderedImageB64: string; openaiApiKey: string })
+                 => Promise<PerFigureScore>
+  evaluate:    (s: PerFigureScore) => { passed: boolean; reason: string }
+}
+
+/**
+ * Which room an effect id belongs to, and everything that differs about it.
+ *
+ * The pethw_ prefix is the separator and this is the only place in the
+ * engine that tests it. Returns undefined for an unknown id rather than
+ * guessing a room - an id that is in neither catalogue is a 400, not a
+ * render against whichever catalogue happened to be checked first.
+ *
+ * detectPetVisibility returns pet_visible and detectFaceVisibility returns
+ * face_visible; both are normalised to `visible` here so the run reads one
+ * field. The two also return more than this - coats, features, reasons -
+ * and none of it is used yet. When the pet room wants coat data threaded
+ * into a retry, widen this interface rather than reaching past it.
+ */
+function resolveRoom(effectId: string): Room | undefined {
+  if (isPetsHalloweenEffect(effectId)) {
+    const fx = PETS_HALLOWEEN_MAIN[effectId]
+    return {
+      subject:     'pet',
+      effect:      { id: fx.id, label: fx.label },
+      buildPrompt: buildPetsHalloweenPrompt,
+      detect: async (a) => {
+        const d = await detectPetVisibility(a)
+        return { visible: d.pet_visible, subject_count_estimate: d.subject_count_estimate }
+      },
+      // actionLabel is deliberately not passed. It exists so the pet scorer
+      // can forgive a re-staged pose, and this room has no pose step - the
+      // bodies stage themselves and Rich dropped the stage on 21 August.
+      score:    (a) => scorePetFidelity(a),
+      evaluate: (s) => evaluatePetScore(s, PET_LIKENESS_THRESHOLD),
+    }
+  }
+
+  if (isHalloweenEffect(effectId)) {
+    const fx = HALLOWEEN_MAIN[effectId]
+    return {
+      subject:     'person',
+      effect:      { id: fx.id, label: fx.label },
+      buildPrompt: buildHalloweenPrompt,
+      detect: async (a) => {
+        const d = await detectFaceVisibility(a)
+        return { visible: d.face_visible, subject_count_estimate: d.subject_count_estimate }
+      },
+      score:    (a) => scoreSingleFaceFidelity(a),
+      evaluate: (s) => evaluateSingleFaceScore(s, SINGLE_FACE_THRESHOLD),
+    }
+  }
+
+  return undefined
 }
 
 // ═══════════════════════════════════════════════════════════════
