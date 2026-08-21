@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generatePetsRender } from '@/lib/v1/pets/pets-generator'
 import { isPetExperimentalEffect } from '@/lib/v1/pets/pets-experimental'
+import { PETS_35 } from '@/lib/v1/pets/pets-catalog-35'
 import {
   STYLE_MATERIALS,
   STYLE_ENVIRONMENTS,
@@ -55,16 +56,33 @@ export async function POST(req: NextRequest) {
   const rawExperimental = typeof body.experimental_effect === 'string' ? body.experimental_effect : ''
   const experimentalEffect = isPetExperimentalEffect(rawExperimental) ? rawExperimental : undefined
 
+  // ── THE CATALOG IS A THIRD SOURCE OF VALID IDS ───────────────────────
+  //
+  // PETS_35 holds the thirty-four whole bodies approved on 20 August. They
+  // arrive on preset_id like a material does, and the generator resolves
+  // the catalog first.
+  //
+  // Validated here rather than waved through, for the same reason
+  // STYLE_MATERIALS is: an unknown id should be a 400 that names what is
+  // allowed, not a render of nothing.
   const allowedMaterials = STYLE_MATERIALS[styleId]
+  const catalogIds       = Object.keys(PETS_35)
   // Canonical key is preset_id; 'preset' accepted as an alias (the queue
   // UI's internal key). Same below for environment_id / 'environment' /
   // 'location'. Alias tolerance + explicit extraction = no silent drops.
   const rawPreset = body.preset_id ?? body.preset
   const presetId: PetsPresetId | undefined =
-    allowedMaterials.includes(rawPreset) ? rawPreset : undefined
+    (allowedMaterials.includes(rawPreset) || catalogIds.includes(rawPreset))
+      ? rawPreset
+      : undefined
   if (!experimentalEffect && !presetId) {
     return NextResponse.json(
-      { ok: false, error: `preset_id must be one of: ${allowedMaterials.join(', ')}` },
+      {
+        ok: false,
+        error: 'unknown preset_id',
+        materials: allowedMaterials,
+        catalog:   catalogIds,
+      },
       { status: 400 },
     )
   }
@@ -116,6 +134,7 @@ export async function POST(req: NextRequest) {
 
   console.log(
     `[pets/generate] style=${request.style_id} ` +
+    (request.preset_id && catalogIds.includes(request.preset_id) ? `catalog ` : '') +
     (request.experimental_effect
       ? `curiosity=${request.experimental_effect} `
       : `preset=${request.preset_id} ` +

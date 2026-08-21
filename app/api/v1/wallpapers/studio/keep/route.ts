@@ -319,8 +319,19 @@ function svc() {
  * treats `meta->>'season' is null` and `= 'halloween'` as the two cases, so
  * neither can accidentally match the other.
  */
+/**
+ * The client's own type, taken from svc rather than written out.
+ *
+ * `ReturnType<typeof createClient>` is NOT the same type - it resolves the
+ * generics to their defaults, the schema parameter widens to `never`, and
+ * every query argument then looks unassignable for reasons that have
+ * nothing to do with the query. Same fault, same fix, as the studio
+ * generate route.
+ */
+type Db = NonNullable<ReturnType<typeof svc>>
+
 export async function countKept(
-  db: ReturnType<typeof createClient>,
+  db: Db,
   owner: string,
   season: string | null,
 ): Promise<number> {

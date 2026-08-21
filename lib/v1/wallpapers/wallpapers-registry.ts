@@ -6,8 +6,8 @@
 // body, and so the port from each source catalog stays traceable to the
 // file it came from. This is the only place they are merged.
 //
-// Portraits carries 14, Halloween 28, Pets Halloween 27, Pets is not yet
-// ported, and Studio has no catalog. 69 ids live today.
+// Portraits carries 14, Halloween 28, Pets Halloween 27, Pets 34, and
+// Studio has no catalog. 103 ids live today.
 
 import {
   WALLPAPER_COMPOSITION,
@@ -19,6 +19,7 @@ import {
 import { PORTRAITS_WALLPAPERS } from './wallpapers-portraits'
 import { HALLOWEEN_WALLPAPERS } from './wallpapers-halloween'
 import { PETS_HALLOWEEN_WALLPAPERS } from './wallpapers-pets-halloween'
+import { PETS_WALLPAPERS } from './wallpapers-pets'
 
 export { WALLPAPER_ASPECT, WALLPAPER_SILOS, WALLPAPER_COMPOSITION }
 export type { WallpaperEffect, WallpaperSiloId }
@@ -27,7 +28,9 @@ export const WALLPAPER_EFFECTS: Record<string, WallpaperEffect> = {
   ...PORTRAITS_WALLPAPERS,
   ...HALLOWEEN_WALLPAPERS,
   ...PETS_HALLOWEEN_WALLPAPERS,
-  // ...PETS_WALLPAPERS,  — needs PETS-SPEC-2026-08-02.md
+  // Derived from the thirty-four print bodies with the composition
+  // paragraph swapped — see wallpapers-pets.ts. Not a second catalog.
+  ...PETS_WALLPAPERS,
   // Studio has no catalog by design: four dropdowns and a slider, and a
   // different model. It does not belong in this map.
 }

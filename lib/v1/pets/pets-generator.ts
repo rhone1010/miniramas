@@ -23,6 +23,8 @@
 //   - Stage 4 is permanently inert rather than config-gated.
 
 import { buildPetsPrompt } from './pets-prompt'
+import { PETS_35 } from './pets-catalog-35'
+import { MAIN_ASPECT } from '../shared/render-aspect'
 import {
   buildPetExperimentalPrompt,
   isPetExperimentalEffect,
@@ -93,7 +95,37 @@ export async function generatePetsRender(
   const actionId:    ActionId     = req.action_id || DEFAULT_ACTION
   const restaged                   = actionId !== 'as_photographed'
   const scale:       Scale        = req.scale || 'close_up'
-  const aspectRatio: string       = req.aspect_ratio || defaultAspectForStyle(styleId)
+  // ── THE CATALOG PATH, ADDED 2026-08-20 ───────────────────────────────
+  //
+  // A third way of getting a prompt, beside the material pipeline and the
+  // curiosities. PETS_35 holds thirty-four whole bodies Rich approved
+  // against live renders on 20 August; the material pipeline COMPOSES a
+  // prompt from a phrase, a universal block, an environment and a tail.
+  //
+  // Both are kept because they answer different questions. The composed
+  // path can express a material the catalog has no body for, and carries
+  // the coat and feature notes from Stage 0. The catalog carries effects
+  // that are a whole idea rather than a surface - Clown, Persian Court,
+  // Ukiyo-e - which no phrase-and-block assembly was ever going to reach.
+  //
+  // Checked BEFORE the material pipeline, so an id that exists in both
+  // resolves to the approved body rather than to the composed one.
+  const catalogEffect = !isExperimental && req.preset_id && PETS_35[req.preset_id]
+    ? PETS_35[req.preset_id]
+    : undefined
+
+  // ── ASPECT ───────────────────────────────────────────────────────────
+  //
+  // Was defaultAspectForStyle, which ignores its argument and returns
+  // '3:4' - a leftover from a style axis that no longer exists. Every
+  // Pets craft on main was therefore portrait-shaped while the plates
+  // approved on 20 August are square.
+  //
+  // MAIN_ASPECT comes from lib/v1/shared/render-aspect.ts, which is the
+  // one place an aspect lives. When it becomes a customer choice this
+  // line does not change: the constant becomes a default and req.aspect_ratio
+  // already wins over it.
+  const aspectRatio: string       = req.aspect_ratio || MAIN_ASPECT
 
   // Stage 0: pet-visibility detection. subject_count is informational —
   // we always render one piece — but multi-animal sources are logged so
@@ -191,7 +223,13 @@ export async function generatePetsRender(
       `style=${styleId} ${isExperimental ? `curiosity=${experimentalEffect}` : `preset=${presetId} environment=${environmentId}`}`,
     )
 
-    const prompt = isExperimental
+    const prompt = catalogEffect
+      // Whole body, plus its avoid clause. Nothing appended: the framing,
+      // the markings rule and the horse conditional are all inside it,
+      // which is what makes any one of these testable on its own in a
+      // browser.
+      ? catalogEffect.body + (catalogEffect.avoid ? '\n' + catalogEffect.avoid : '')
+      : isExperimental
       ? buildPetExperimentalPrompt({ effectId: experimentalEffect!, count: subjectCount })
       : buildPetsPrompt({
           presetId:     presetId!,
@@ -207,7 +245,9 @@ export async function generatePetsRender(
     finalPromptUsed = prompt
 
     console.log(
-      isExperimental
+      catalogEffect
+        ? `[pets/prompt] catalog=${catalogEffect.id} subjects=${subjectCount} chars=${prompt.length}`
+        : isExperimental
         ? `[pets/prompt] style=${styleId} curiosity=${experimentalEffect} subjects=${subjectCount} chars=${prompt.length}`
         : `[pets/prompt] style=${styleId} preset=${presetId} environment=${environmentId} ` +
           `action=${actionId} subjects=${subjectCount} chars=${prompt.length} has_advanced=${!!req.advanced}`,
