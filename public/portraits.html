@@ -265,6 +265,20 @@ body{
 .mh-series-menu a[aria-current="page"]::after{
   content:""; width:5px; height:5px; border-radius:50%; background:var(--series);
 }
+/* SECOND LEVEL. The rooms inside Mobile Wallpapers. Indented and a size
+   down rather than a flyout: a hover submenu cannot be opened by a thumb,
+   and this menu is already a click-toggle. The rule sits on the anchor so
+   the existing hover, focus and aria-current rules above still apply. */
+.mh-series-menu a.sub{
+  font-size:1.15em; padding-left:1.9em; color:var(--vellum-300, var(--vellum-200));
+}
+.mh-series-menu a.sub::before{
+  content:""; position:absolute; left:1.05em;
+  width:1px; height:1.05em;
+  background:linear-gradient(180deg, transparent, rgba(215,189,137,.42));
+}
+.mh-series-menu a.sub{ position:relative }
+
 .mh-series-menu .sep{
   height:1px; margin:6px 8px;
   background:linear-gradient(90deg, transparent, rgba(215,189,137,.28), transparent);
@@ -4754,14 +4768,14 @@ body.is-lboxed{ overflow:hidden }
       </button>
       <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
         <a href="/portraits" role="menuitem" aria-current="page">Portraits</a>
+        <a href="/pets" role="menuitem">Pets</a>
         <a href="/groups" role="menuitem">Groups</a>
-        <!-- Action and Pets were listed here too and are still not in
-             middleware's PAGES map, so both 404. A Series menu that
-             offers four rooms and opens two is worse than a menu that
-             offers two: the first is a broken shop, the second is a small
-             one. They come back when they exist. -->
+        <a href="/halloween" role="menuitem">Halloween</a>
         <div class="sep"></div>
         <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
+        <a href="/wallpapers/portraits" class="sub" role="menuitem">Portraits</a>
+        <a href="/wallpapers/pets" class="sub" role="menuitem">Pets</a>
+        <a href="/wallpapers/studio" class="sub" role="menuitem">Studio</a>
       </div>
     </div>
     <a href="/gallery">Gallery</a>
