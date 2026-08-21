@@ -7518,18 +7518,19 @@ window.EFFECT_PREVIEWS = {
      THIS IS A GUARD, NOT A DECISION. The answer is the eleven ids reaching
      PRESET_LABELS, PRESET_TIER and STYLE_MATERIALS. When they do, the next
      build reads them and this list grows on its own. */
-  var ROUTE_ACCEPTS = ['bronze', 'iron', 'stone', 'jade', 'ebony', 'reclaimed_bronze', 
-    'petrified_wood', 'cast_glass', 'stained_glass', 'ice', 'mercury', 'neon', 'sea_glass', 
-    'polished_gold', 'driftwood_resin', 'coral', 'tidewood', 'lichen_granite', 
-    'petal_sculpture', 'sand_form', 'sandstone', 'plushy', 'chocolate', 'balloon_face', 
-    'quilted', 'origami', 'porcelain', 'beaded', 'impressionist', 'watercolour', 
-    'charcoal_chalk', 'sheet_music', 'pencil_sketch', 'oil_impasto', 'linocut', 'folded_book', 
-    'magic_energy', 'ukiyo_e', 'cubism', 'art_deco', 'art_nouveau', 'daguerreotype', 
-    'dragon_skin', 'fire_face', 'retro_robot', 'forest_guardian', 'clockwork', 'starfield', 
-    'crystallized', 'elizabethan', 'renaissance', 'deco_twenties', 'victorian', 'samurai', 
-    'wild_west', 'persian_court', 'victorian_woman', 'renaissance_woman', 
-    'persian_court_woman', 'wild_west_woman', 'deco_twenties_woman', 'samurai_woman', 
-    'elizabethan_woman'];
+  /* DERIVED, not kept by hand. Was a verbatim copy of the Portraits list
+     of 63 preset ids, inherited by the clone and never edited -- so
+     craftable() below dropped every effect whose id was not a Portraits
+     id. Halloween lost all 28 and rendered an empty room; Pets lost 27 of
+     34 and rendered seven, which read as a room of seven rather than a
+     fault.
+
+     The registry is generated from the same catalogue the route reads, so
+     it cannot disagree with the route the way a hand-kept list can. If an
+     effect is in here and the route refuses it, the registry is wrong and
+     that is where the fix belongs. */
+  var ROUTE_ACCEPTS = ((window.EFFECT_REGISTRY && window.EFFECT_REGISTRY.effects) || [])
+    .map(function(e){ return e.id; });
   function craftable(e){ return e && e.body === 'live' && ROUTE_ACCEPTS.indexOf(e.id) >= 0; }
 
   var CAP = 7;   /* seven effects; the eighth slot is the upsell */
@@ -11614,7 +11615,9 @@ document.addEventListener('click', function(e){
       credentials:'same-origin',
       body: JSON.stringify({ handle: want })
     })
-      .then(function(r){ return r.json(); })
+      /* Carry the status through, exactly as post() does. Without it the
+         branch below cannot tell a refused handle from a broken studio. */
+      .then(function(r){ return r.json().then(function(d){ d.__s = r.status; return d; }); })
       .then(function(d){
         busy = false;
         if (d && d.ok){
@@ -11625,6 +11628,14 @@ document.addEventListener('click', function(e){
         if (d && d.reason === 'taken') tell('Somebody already writes under that one.');
         else if (d && d.message)       tell(d.message);
         else if (d && d.reason === 'signed_out') tell(WHY.signed_out);
+        /* A FAULT IS NOT A BAD NAME. This branch used to end by telling
+           everybody to try another handle, including when the answer was a
+           500 with reason:'failed' -- so a database fault read as a
+           rejected name and the customer tried other names against a
+           server that was not listening. The status is already on the
+           response; it was simply never read here. */
+        else if (d && (d.__s >= 500 || d.reason === 'failed'))
+          tell('The studio could not do that just now. Nothing is wrong with that name - try again in a moment.');
         else tell('That handle did not take. Try another.');
         paint();
       })
