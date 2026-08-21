@@ -3862,6 +3862,15 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
 /* The two actions stay on the glass whether or not anything is ticked — the
    bulk bar is for a selection, these are for the piece you are looking at. */
 .mc-acts{ display:flex; flex-wrap:wrap; gap:.6em }
+/* The piece and its actions are one column now. The actions sit under
+   the image rather than beside the thumbnails, which is where somebody
+   looking at a piece expects to find them. */
+.mc-featwrap{ display:flex; flex-direction:column; gap:.7em; min-width:0 }
+.mc-featwrap .mc-feat{ margin:0 }
+.mc-featwrap .mc-acts{ margin-top:.1em }
+/* Kept in the DOM so three other patches keep their anchors and their
+   listeners. Never shown. */
+.mc-acts--old{ display:none !important }
 
 @media (max-width:1599px){
   .mc-latest{ grid-template-columns:minmax(230px, 30%) minmax(0,1fr) }
@@ -8852,11 +8861,70 @@ window.EFFECT_PREVIEWS = {
        rebuilding the row would drop the Download listener bound beside it. */
     var pr1 = document.getElementById('mcPr1');
     if (pr1) pr1.hidden = !printable(p);
+    paintFeatActs(p);
 
     [].forEach.call(mcGrid.querySelectorAll('.mc-minimap .piece'), function(el){
       el.classList.toggle('is-on', el.dataset.piece === id);
     });
   }
+
+  /* ---- THE ACTIONS UNDER THE FEATURED PIECE -------------------------
+     Same three rules the lightbox applies, in the same order, so the
+     two surfaces cannot disagree about what a piece allows.
+
+     Rebuilt on every change of featured piece, so clicks are delegated
+     rather than bound - a rebuilt row drops bound listeners, which is
+     the note left on the old static row. */
+  function paintFeatActs(p){
+    var box = document.getElementById('mcActs');
+    if (!box || !p) return;
+    var acts = '<button class="mc-act is-fill" data-fa="dl" type="button">Download</button>';
+    /* A wallpaper offers Download and nothing else. */
+    if (printable(p)){
+      acts += '<button class="mc-act" data-fa="pr" type="button">Send to Print Shop</button>';
+    }
+    var left = RERENDER_CAP - window.__RERENDERS_USED;
+    if (left > 0){
+      acts += '<button class="mc-act" data-fa="re" type="button">' +
+              (left === 1 ? 'Craft this again \u00b7 last one' : 'Craft this again') +
+              '</button>';
+    }
+    /* Only where the modal exists. A button that opens nothing is
+       worse than no button. */
+    if (typeof window.openPostToCommunity === 'function'){
+      acts += '<button class="mc-act" data-fa="post" type="button">Post to Community</button>';
+    }
+    box.innerHTML = acts;
+  }
+
+  document.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('#mcActs [data-fa]') : null;
+    if (!b) return;
+    /* Resolved at click, never closed over - FEAT moves when a piece
+       lands behind the panel. */
+    var p = null;
+    PIECES.forEach(function(x){ if (x.id === FEAT) p = x; });
+    if (!p) return;
+    var what = b.dataset.fa;
+    if (what === 'dl'){
+      var d1 = document.getElementById('mcDl1');
+      if (d1) d1.click();
+    }
+    else if (what === 'pr'){
+      var q1 = document.getElementById('mcPr1');
+      if (q1) q1.click();
+    }
+    else if (what === 're'){
+      /* Two per account, then the action is gone. Same counter the
+         lightbox moves - one tally, not two. */
+      window.__RERENDERS_USED = Math.min(RERENDER_CAP, window.__RERENDERS_USED + 1);
+      if (typeof window.__requestRerender === 'function') window.__requestRerender(p);
+      paintFeatActs(p);
+    }
+    else if (what === 'post'){
+      if (typeof window.openPostToCommunity === 'function') window.openPostToCommunity(p);
+    }
+  });
 
   function renderCollection(){
     if (!mcGrid) return;
@@ -8881,10 +8949,17 @@ window.EFFECT_PREVIEWS = {
       var wrap = document.createElement('div');
       wrap.className = 'mc-latest';
       wrap.innerHTML =
-        '<div class="mc-feat" id="mcFeat"></div>' +
+        /* The piece and the things you can do to it, together. */
+        '<div class="mc-featwrap">' +
+          '<div class="mc-feat" id="mcFeat"></div>' +
+          '<div class="mc-acts" id="mcActs"></div>' +
+        '</div>' +
         '<div class="mc-col">' +
           '<div class="mc-minimap" id="mcMini"></div>' +
-          '<div class="mc-acts">' +
+          /* HIDDEN, NOT DELETED. Three other patches anchor on the
+             buttons below and their listeners still bind. The visible
+             row is #mcActs above, painted per piece. */
+          '<div class="mc-acts mc-acts--old" hidden>' +
             '<button class="mc-act is-fill" id="mcDl1" type="button">Download</button>' +
             '<button class="mc-act" id="mcPr1" type="button">Send to Print Shop</button>' +
             /* The third thing you can do with a piece you own. */

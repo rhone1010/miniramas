@@ -514,6 +514,91 @@ body{
    one rule to delete.
    -------------------------------------------------------------------- */
 .room--footer{ display:none !important }
+
+/* ---- POST TO COMMUNITY ----------------------------------------------
+   Its own scrim and card rather than a state inside the intake modal.
+   That one is a gallery of studio failures; this is a thing somebody
+   chose to do, and dressing a choice in the clothes of a failure is how
+   a choice starts to feel like one.
+
+   Everything is scoped under .pcm- so nothing here can reach into the
+   workshop's own .modal, .btn or .field.
+   -------------------------------------------------------------------- */
+.pcm-scrim{
+  position:fixed; inset:0; z-index:140;
+  display:none; align-items:center; justify-content:center; padding:1.5rem;
+  background:rgba(20,14,10,.72);
+}
+.pcm-scrim.is-open{ display:flex }
+.pcm-card{
+  width:min(92vw,560px); max-height:88vh; overflow:auto;
+  padding:30px 32px 26px; border-radius:8px;
+  background:linear-gradient(180deg,#3a2c26 0%, #2c211c 100%);
+  border:1px solid rgba(196,169,110,.26);
+  box-shadow:0 30px 70px -24px rgba(20,12,8,.8), inset 0 1px 0 rgba(255,255,255,.06);
+  color:var(--vellum-200);
+}
+.pcm-h{
+  font-family:var(--serif); font-size:1.9rem; line-height:1.15;
+  color:var(--series); margin:0 0 .3em;
+}
+.pcm-sub{
+  font-family:var(--serif); font-size:1.22rem; line-height:1.45;
+  color:rgba(243,237,225,.82); margin:0 0 22px;
+}
+.pcm-art{
+  width:132px; aspect-ratio:1; float:left; margin:0 20px 14px 0;
+  border-radius:6px; object-fit:cover;
+  border:1px solid rgba(196,169,110,.24); background:rgba(0,0,0,.25);
+}
+.pcm-field{ clear:both; margin:0 0 18px }
+.pcm-field label{
+  display:block; margin:0 0 .45em;
+  font-family:var(--sans); font-size:.82rem; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--brass);
+}
+.pcm-field input{
+  width:100%; height:48px; padding:0 14px;
+  font-family:var(--serif); font-size:1.22rem; color:var(--vellum-200);
+  background:rgba(0,0,0,.22); border:1px solid rgba(196,169,110,.3);
+  border-radius:6px; outline:none;
+}
+.pcm-field input:focus{ border-color:var(--gold) }
+/* THE CONSENT IS A LABEL AROUND THE BOX, so the words are the target.
+   A 16px square is a small thing to ask somebody to hit before they
+   agree to something in public. */
+.pcm-consent{
+  display:flex; gap:12px; align-items:flex-start; cursor:pointer;
+  padding:14px 16px; margin:0 0 20px; border-radius:6px;
+  background:rgba(0,0,0,.18); border:1px solid rgba(196,169,110,.18);
+}
+.pcm-consent input{ width:20px; height:20px; margin-top:.18em; flex:0 0 auto; cursor:pointer }
+.pcm-consent span{
+  font-family:var(--serif); font-size:1.1rem; line-height:1.45;
+  color:rgba(243,237,225,.86);
+}
+.pcm-acts{ display:flex; gap:12px; justify-content:flex-end; align-items:center }
+.pcm-b{
+  padding:.55em 1.25em; border-radius:6px; cursor:pointer;
+  font-family:var(--serif); font-style:italic; font-size:1.18rem;
+  border:1px solid rgba(196,169,110,.34);
+  background:rgba(255,255,255,.03); color:rgba(243,237,225,.88);
+  transition:background 160ms ease, color 160ms ease;
+}
+.pcm-b:hover{ background:rgba(196,169,110,.16); color:#fff }
+.pcm-b.is-fill{
+  background:linear-gradient(180deg, var(--oxblood) 0%, #6a3737 100%);
+  border-color:rgba(196,169,110,.4); color:#fff;
+}
+.pcm-b[disabled]{ opacity:.45; cursor:default }
+.pcm-b[disabled]:hover{ background:rgba(255,255,255,.03); color:rgba(243,237,225,.88) }
+/* Sized so the card does not jump when a refusal arrives. */
+.pcm-say{
+  clear:both; min-height:1.5em; margin:0 0 14px;
+  font-family:var(--serif); font-size:1.1rem; line-height:1.4;
+  color:#e0a5a5;
+}
+.pcm-say.is-good{ color:var(--series) }
 .rooms{ row-gap:0; column-gap:var(--room-gap) }
 
 .room--footer{
@@ -3890,6 +3975,15 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
 /* The two actions stay on the glass whether or not anything is ticked — the
    bulk bar is for a selection, these are for the piece you are looking at. */
 .mc-acts{ display:flex; flex-wrap:wrap; gap:.6em }
+/* The piece and its actions are one column now. The actions sit under
+   the image rather than beside the thumbnails, which is where somebody
+   looking at a piece expects to find them. */
+.mc-featwrap{ display:flex; flex-direction:column; gap:.7em; min-width:0 }
+.mc-featwrap .mc-feat{ margin:0 }
+.mc-featwrap .mc-acts{ margin-top:.1em }
+/* Kept in the DOM so three other patches keep their anchors and their
+   listeners. Never shown. */
+.mc-acts--old{ display:none !important }
 
 @media (max-width:1599px){
   .mc-latest{ grid-template-columns:minmax(230px, 30%) minmax(0,1fr) }
@@ -5310,7 +5404,8 @@ window.EFFECT_PREVIEWS = {
      and not as a value, which is precisely how s63 lost its interactivity.
      Draft copy, mine to be replaced; each is one string. */
   var OPEN_SAY = {
-    browsing: 'Add as many effects as you like \u2014 the pose comes last.',
+    /* Was a promise that a pose step would follow. It does not. */
+    browsing: 'Add as many effects as you like.',
     posing:   'Go back to the effects any time to add more.',
     full:     'Ten is the most I can craft in one go.'
   };
@@ -6924,7 +7019,12 @@ window.EFFECT_PREVIEWS = {
       window.__pieceLanded({
         id:       'q' + it.id,
         name:     effectLabel(it.effectId),
-        series:   'Portraits',
+        /* THE ROOM IT IS ACTUALLY BEING CRAFTED IN. This said 'Portraits'
+           - left behind by the clone - so a Groups craft waited in the
+           Portraits filter and disappeared from its own. land() a few
+           hundred lines below has always written 'Groups'; the waiting
+           tile and the piece it becomes now agree. */
+        series:   'Groups',
         art:      null,
         crafting: true
       });
@@ -8074,17 +8174,17 @@ window.EFFECT_PREVIEWS = {
        undefined on the first pass and reading .classList off it threw —
        killing init and every listener below it. Ask the DOM instead, and
        treat 'not there yet' as 'not in the pose view', which it is. */
-    var stage  = workshop || document.getElementById('workshop');
-    var inPose = !!(stage && stage.classList.contains('workshop-view--poses'));
-    if (inPose){
-      tbcGoVerb.textContent = 'Craft';
-      tbcGoN.textContent    = n === 1 ? 'this piece' : ('all ' + n);
-      tbcGoSub.textContent  = 'Step 2 of 2 \u00b7 ' + credits;
-    } else {
-      tbcGoVerb.textContent = 'Next';
-      tbcGoN.textContent    = '\u00b7 choose a pose';
-      tbcGoSub.textContent  = 'Step 1 of 2 \u00b7 ' + credits;
-    }
+    /* NO POSE STEP IN GROUPS. There is no pose field on the route and
+       the bodies carry their own arrangement, so the click handler has
+       always run the craft directly. The label had not caught up: it
+       promised a second step that never came and then charged.
+
+       One label now, and the sub-line is the price - which is the
+       thing worth saying to somebody about to spend. */
+    var inPose = false;
+    tbcGoVerb.textContent = 'Craft';
+    tbcGoN.textContent    = n === 1 ? 'this piece' : ('all ' + n);
+    tbcGoSub.textContent  = credits;
     /* A standing note outranks the step line. See SUB_NOTE — this exists so
        a message about money survives the floor flipping back, which calls
        this function again on a timer. */
@@ -8847,11 +8947,70 @@ window.EFFECT_PREVIEWS = {
        rebuilding the row would drop the Download listener bound beside it. */
     var pr1 = document.getElementById('mcPr1');
     if (pr1) pr1.hidden = !printable(p);
+    paintFeatActs(p);
 
     [].forEach.call(mcGrid.querySelectorAll('.mc-minimap .piece'), function(el){
       el.classList.toggle('is-on', el.dataset.piece === id);
     });
   }
+
+  /* ---- THE ACTIONS UNDER THE FEATURED PIECE -------------------------
+     Same three rules the lightbox applies, in the same order, so the
+     two surfaces cannot disagree about what a piece allows.
+
+     Rebuilt on every change of featured piece, so clicks are delegated
+     rather than bound - a rebuilt row drops bound listeners, which is
+     the note left on the old static row. */
+  function paintFeatActs(p){
+    var box = document.getElementById('mcActs');
+    if (!box || !p) return;
+    var acts = '<button class="mc-act is-fill" data-fa="dl" type="button">Download</button>';
+    /* A wallpaper offers Download and nothing else. */
+    if (printable(p)){
+      acts += '<button class="mc-act" data-fa="pr" type="button">Send to Print Shop</button>';
+    }
+    var left = RERENDER_CAP - window.__RERENDERS_USED;
+    if (left > 0){
+      acts += '<button class="mc-act" data-fa="re" type="button">' +
+              (left === 1 ? 'Craft this again \u00b7 last one' : 'Craft this again') +
+              '</button>';
+    }
+    /* Only where the modal exists. A button that opens nothing is
+       worse than no button. */
+    if (typeof window.openPostToCommunity === 'function'){
+      acts += '<button class="mc-act" data-fa="post" type="button">Post to Community</button>';
+    }
+    box.innerHTML = acts;
+  }
+
+  document.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('#mcActs [data-fa]') : null;
+    if (!b) return;
+    /* Resolved at click, never closed over - FEAT moves when a piece
+       lands behind the panel. */
+    var p = null;
+    PIECES.forEach(function(x){ if (x.id === FEAT) p = x; });
+    if (!p) return;
+    var what = b.dataset.fa;
+    if (what === 'dl'){
+      var d1 = document.getElementById('mcDl1');
+      if (d1) d1.click();
+    }
+    else if (what === 'pr'){
+      var q1 = document.getElementById('mcPr1');
+      if (q1) q1.click();
+    }
+    else if (what === 're'){
+      /* Two per account, then the action is gone. Same counter the
+         lightbox moves - one tally, not two. */
+      window.__RERENDERS_USED = Math.min(RERENDER_CAP, window.__RERENDERS_USED + 1);
+      if (typeof window.__requestRerender === 'function') window.__requestRerender(p);
+      paintFeatActs(p);
+    }
+    else if (what === 'post'){
+      if (typeof window.openPostToCommunity === 'function') window.openPostToCommunity(p);
+    }
+  });
 
   function renderCollection(){
     if (!mcGrid) return;
@@ -8876,12 +9035,21 @@ window.EFFECT_PREVIEWS = {
       var wrap = document.createElement('div');
       wrap.className = 'mc-latest';
       wrap.innerHTML =
-        '<div class="mc-feat" id="mcFeat"></div>' +
+        /* The piece and the things you can do to it, together. */
+        '<div class="mc-featwrap">' +
+          '<div class="mc-feat" id="mcFeat"></div>' +
+          '<div class="mc-acts" id="mcActs"></div>' +
+        '</div>' +
         '<div class="mc-col">' +
           '<div class="mc-minimap" id="mcMini"></div>' +
-          '<div class="mc-acts">' +
+          /* HIDDEN, NOT DELETED. Three other patches anchor on the
+             buttons below and their listeners still bind. The visible
+             row is #mcActs above, painted per piece. */
+          '<div class="mc-acts mc-acts--old" hidden>' +
             '<button class="mc-act is-fill" id="mcDl1" type="button">Download</button>' +
             '<button class="mc-act" id="mcPr1" type="button">Send to Print Shop</button>' +
+            /* The third thing you can do with a piece you own. */
+            '<button class="mc-act" id="mcPost1" type="button">Post to Community</button>' +
           '</div>' +
         '</div>';
       mcGrid.appendChild(wrap);
@@ -8910,6 +9078,11 @@ window.EFFECT_PREVIEWS = {
         if (!one || !one.art) return;
         flash(d1, 'Saving \u2713', 'Download');
         downloadPiece(one);
+      });
+      var q1 = wrap.querySelector('#mcPost1');
+      if (q1) q1.addEventListener('click', function(){
+        var one = featuredPiece();
+        if (one && typeof openPostToCommunity === 'function') openPostToCommunity(one);
       });
       if (p1) p1.addEventListener('click', function(){
         var one = featuredPiece();
@@ -11359,6 +11532,231 @@ document.addEventListener('click', function(e){
   if (dw) dw.setAttribute('hidden','');
   if (mb) mb.setAttribute('aria-expanded','false');
 });
+</script>
+
+<div class="pcm-scrim" id="pcmScrim">
+  <div class="pcm-card" role="dialog" aria-modal="true" aria-labelledby="pcmH">
+    <h2 class="pcm-h" id="pcmH">Put this on the board</h2>
+    <p class="pcm-sub">Community is where people show what they have made.</p>
+    <img class="pcm-art" id="pcmArt" alt="">
+    <div class="pcm-field" id="pcmHandleField" hidden>
+      <label for="pcmHandle">Your handle</label>
+      <input id="pcmHandle" type="text" maxlength="40" autocomplete="off"
+             placeholder="What should sit under your work?">
+    </div>
+    <label class="pcm-consent">
+      <input type="checkbox" id="pcmConsent">
+      <span id="pcmConsentText"></span>
+    </label>
+    <p class="pcm-say" id="pcmSay"></p>
+    <div class="pcm-acts">
+      <button class="pcm-b" id="pcmCancel" type="button">Not now</button>
+      <button class="pcm-b is-fill" id="pcmGo" type="button" disabled>Post it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---- POST TO COMMUNITY --------------------------------------------
+   The board has been readable, heartable and commentable since V28 and
+   there has never been a way to put anything ON it. This is that way.
+
+   POST /api/v1/community/posts { piece_id, consent:true }
+   GET/PUT /api/v1/community/handle
+
+   The consent string is copied verbatim from lib/community/db.ts. It is
+   stored on every post as agreed, so changing it here changes what the
+   NEXT person agrees to and nothing about anybody already on the board.
+   If that file's CONSENT_TEXT_V1 changes, change this with it.
+
+   Consent is checked server-side too. A tick in a browser is a statement
+   about a browser; the row is what we would have to stand behind. */
+(function(){
+  var CONSENT =
+    'This is my own photograph, or I have the permission of the person in it. ' +
+    'I understand it will be visible to anyone who visits Liten & Co, with my ' +
+    'handle beneath it, and that I can take it down at any time.';
+
+  var R_POSTS  = '/api/v1/community/posts';
+  var R_HANDLE = '/api/v1/community/handle';
+
+  var scrim  = document.getElementById('pcmScrim');
+  if (!scrim) return;
+  var art    = document.getElementById('pcmArt');
+  var hField = document.getElementById('pcmHandleField');
+  var hInput = document.getElementById('pcmHandle');
+  var tick   = document.getElementById('pcmConsent');
+  var say    = document.getElementById('pcmSay');
+  var go     = document.getElementById('pcmGo');
+  var cancel = document.getElementById('pcmCancel');
+
+  document.getElementById('pcmConsentText').textContent = CONSENT;
+
+  var PIECE  = null;
+  var HANDLE = null;
+  var busy   = false;
+
+  function tell(msg, good){
+    say.textContent = msg || '';
+    say.classList.toggle('is-good', !!good);
+  }
+
+  /* Post is available when consent is ticked and a handle exists - either
+     one already claimed, or something typed into the box. */
+  function paint(){
+    var named = !!HANDLE || (hInput && String(hInput.value || '').trim().length > 0);
+    go.disabled = busy || !tick.checked || !named;
+  }
+
+  function shut(){
+    scrim.classList.remove('is-open');
+    PIECE = null; busy = false;
+  }
+
+  window.openPostToCommunity = function(piece){
+    if (!piece) return;
+    PIECE = piece;
+    busy = false;
+    tick.checked = false;
+    tell('');
+    go.textContent = 'Post it';
+    if (art) art.src = piece.art || '';
+    scrim.classList.add('is-open');
+    paint();
+
+    /* Asked for in place. Sending somebody to another page to claim a
+       handle loses the piece they were trying to post. */
+    fetch(R_HANDLE, { credentials:'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        HANDLE = (d && d.handle) || null;
+        if (hField) hField.hidden = !!HANDLE;
+        if (!HANDLE && hInput && d && d.suggestion) hInput.value = d.suggestion;
+        paint();
+      })
+      .catch(function(){ if (hField) hField.hidden = false; paint(); });
+  };
+
+  tick.addEventListener('change', paint);
+  if (hInput) hInput.addEventListener('input', paint);
+  cancel.addEventListener('click', shut);
+  scrim.addEventListener('click', function(e){ if (e.target === scrim) shut(); });
+  addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && scrim.classList.contains('is-open')) shut();
+  });
+
+  /* Every reason the route can give, said plainly. A bare "that did not
+     work" on a thing somebody chose to do in public is the worst of the
+     available answers. */
+  var WHY = {
+    signed_out:     'Sign in first, then this will go straight up.',
+    no_piece:       'I cannot find that piece any more.',
+    archived:       'That one is archived. Bring it back first and it can go up.',
+    no_consent:     'Tick the box and it can go up.',
+    need_handle:    'Choose a handle first - it sits beneath your work.',
+    already_posted: 'This one is already on the board.',
+    slow_down:      'That is three in an hour. Give it a little while.',
+    unavailable:    'The board is not answering just now. Try again shortly.'
+  };
+
+  function post(){
+    busy = true; paint(); tell('');
+    fetch(R_POSTS, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'same-origin',
+      body: JSON.stringify({ piece_id: PIECE.id, consent: true })
+    })
+      .then(function(r){ return r.json().then(function(d){ d.__s = r.status; return d; }); })
+      .then(function(d){
+        busy = false;
+        if (d && d.ok){
+          /* Ten live pieces earns a craft. The route says so; saying it
+             here is the only place the customer finds out. */
+          tell(d.earned
+            ? 'It is on the board - and that is ten, so a craft is on us.'
+            : 'It is on the board.', true);
+          go.textContent = 'Posted';
+          go.disabled = true;
+          setTimeout(shut, 1800);
+          return;
+        }
+        tell((d && WHY[d.reason]) || 'That did not take. Try again in a moment.');
+        paint();
+      })
+      .catch(function(){
+        busy = false;
+        tell('That did not take. Try again in a moment.');
+        paint();
+      });
+  }
+
+  go.addEventListener('click', function(){
+    if (!PIECE || busy) return;
+    if (HANDLE) return post();
+    /* Claim the handle, then post - one press, two calls, because two
+       presses to do one thing is how somebody abandons it halfway. */
+    var want = String(hInput.value || '').trim();
+    if (!want) return;
+    busy = true; paint(); tell('');
+    fetch(R_HANDLE, {
+      method:'PUT',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'same-origin',
+      body: JSON.stringify({ handle: want })
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        busy = false;
+        if (d && d.ok){
+          HANDLE = d.handle;
+          if (hField) hField.hidden = true;
+          return post();
+        }
+        if (d && d.reason === 'taken') tell('Somebody already writes under that one.');
+        else if (d && d.message)       tell(d.message);
+        else if (d && d.reason === 'signed_out') tell(WHY.signed_out);
+        else tell('That handle did not take. Try another.');
+        paint();
+      })
+      .catch(function(){
+        busy = false;
+        tell('That did not take. Try again in a moment.');
+        paint();
+      });
+  });
+})();
+</script>
+
+<script>
+/* ---- ARRIVE ON A PANEL --------------------------------------------
+   My Collection, Account and the Print Shop are slide-overs in this
+   file, and the masthead here intercepts its own links so they never
+   navigate. Every OTHER page links to them as ordinary URLs, and
+   middleware now rewrites those three paths to this file.
+
+   So: if we arrived on one, open it. Same three openers the masthead
+   uses - not a second way in.
+
+   The URL is left as it is. It is where the customer asked to be, it
+   is what they will bookmark, and paintMastOpen() reads it to mark
+   the current link in the masthead. */
+(function(){
+  var OPEN = {
+    '/collection': '__showCollection',
+    '/account':    '__showAccount',
+    '/print':      '__showPrintShop'
+  };
+  var path = location.pathname.replace(/\/+$/, '') || '/';
+  var name = OPEN[path];
+  if (!name) return;
+  /* The openers live in script blocks further up that have already run
+     by now; a zero timeout lands after the last of them settles. */
+  setTimeout(function(){
+    var fn = window[name];
+    if (typeof fn === 'function') fn();
+  }, 0);
+})();
 </script>
 
 </body>
