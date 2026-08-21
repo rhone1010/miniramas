@@ -4763,7 +4763,7 @@ body.is-lboxed{ overflow:hidden }
   <nav class="mh-nav">
     <div class="mh-series">
       <button class="mh-series-btn" id="mhSeriesBtn" aria-expanded="false" aria-haspopup="true">
-        <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Portraits</span>
+        <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Pets</span>
         <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
       </button>
       <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
@@ -7836,6 +7836,20 @@ window.EFFECT_PREVIEWS = {
     return plateFrom(PV.files, PV.base, tileId, false);
   }
   function siloArt(siloId){
+    /* THE REGISTRY FIRST. A room's picture now sits on its own row beside
+       its label and its line, because EFFECT_PREVIEWS is a snapshot the
+       build script takes of a directory and goes stale without saying so.
+       Same reasoning as previewFor().
+
+       The manifest stays as a fallback so an older registry paints as it
+       always did rather than going blank. */
+    if (R && R.silos){
+      for (var i = 0; i < R.silos.length; i++){
+        if (R.silos[i].id === siloId && R.silos[i].plate){
+          return R.silos[i].plate;
+        }
+      }
+    }
     return plateFrom(PV.silos, PV.siloBase || '/previews/silos/', siloId, false);
   }
   function poseArt(poseId){
