@@ -45,8 +45,23 @@ window.HALLOWEEN_REGISTRY = {
   "generatedAt": "2026-08-21T00:00:00.000Z",
   "silos": [
     {
-      "id": "halloween",
-      "label": "Halloween",
+      "id": "creatures",
+      "label": "Creatures of the Night",
+      "line": ""
+    },
+    {
+      "id": "restless_dead",
+      "label": "The Restless Dead",
+      "line": ""
+    },
+    {
+      "id": "old_magic",
+      "label": "Old Magic",
+      "line": ""
+    },
+    {
+      "id": "harvest",
+      "label": "The Harvest",
       "line": ""
     }
   ],
@@ -54,196 +69,196 @@ window.HALLOWEEN_REGISTRY = {
     {
       "id": "lantern_keeper",
       "label": "Lantern Keeper",
-      "category": "halloween",
+      "category": "harvest",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "moon_beast",
       "label": "Moon Beast",
-      "category": "halloween",
+      "category": "creatures",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "clockwork_corpse",
       "label": "Clockwork Corpse",
-      "category": "halloween",
+      "category": "restless_dead",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "elegant_vampire",
       "label": "Elegant Vampire",
-      "category": "halloween",
+      "category": "restless_dead",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "harvest_god",
       "label": "Harvest God",
-      "category": "halloween",
+      "category": "harvest",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "werewolf",
       "label": "Werewolf",
-      "category": "halloween",
+      "category": "creatures",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "eclipse",
       "label": "Eclipse",
-      "category": "halloween",
+      "category": "harvest",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "ghoul",
       "label": "Ghoul",
-      "category": "halloween",
+      "category": "creatures",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "living_cathedral",
       "label": "Living Cathedral",
-      "category": "halloween",
+      "category": "harvest",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "gothic_witch",
       "label": "Gothic Witch",
-      "category": "halloween",
+      "category": "old_magic",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "headless_horseman",
       "label": "Headless Horseman",
-      "category": "halloween",
+      "category": "restless_dead",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "swamp_creature",
       "label": "Swamp Creature",
-      "category": "halloween",
+      "category": "creatures",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "haunted_scarecrow",
       "label": "Haunted Scarecrow",
-      "category": "halloween",
+      "category": "harvest",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "raven_monarch",
       "label": "Raven King / Queen",
-      "category": "halloween",
+      "category": "old_magic",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "ghost_pirate",
       "label": "Ghost Pirate",
-      "category": "halloween",
+      "category": "restless_dead",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "spider_monarch",
       "label": "Spider King / Queen",
-      "category": "halloween",
+      "category": "creatures",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "dark_wizard",
       "label": "Dark Wizard",
-      "category": "halloween",
+      "category": "old_magic",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "demon_lord",
       "label": "Demon Lord",
-      "category": "halloween",
+      "category": "creatures",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "ice_wraith",
       "label": "Ice Wraith",
-      "category": "halloween",
+      "category": "old_magic",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "necromancer",
       "label": "Necromancer",
-      "category": "halloween",
+      "category": "old_magic",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "shadow_monarch",
       "label": "Shadow King / Queen",
-      "category": "halloween",
+      "category": "old_magic",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "cursed_knight",
       "label": "Cursed Knight",
-      "category": "halloween",
+      "category": "restless_dead",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "the_ferryman",
       "label": "The Ferryman",
-      "category": "halloween",
+      "category": "restless_dead",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "porcelain_doll",
       "label": "Living Porcelain Doll",
-      "category": "halloween",
+      "category": "restless_dead",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "moth_monarch",
       "label": "Moth King / Queen",
-      "category": "halloween",
+      "category": "creatures",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "hollow_tree",
       "label": "The Hollow Tree",
-      "category": "halloween",
+      "category": "harvest",
       "plateGender": "woman",
       "body": "live"
     },
     {
       "id": "night_bloom",
       "label": "The Night Bloom",
-      "category": "halloween",
+      "category": "harvest",
       "plateGender": "man",
       "body": "live"
     },
     {
       "id": "halloween_monarch",
       "label": "Lord / Lady of Halloween",
-      "category": "halloween",
+      "category": "old_magic",
       "plateGender": "woman",
       "body": "live"
     }

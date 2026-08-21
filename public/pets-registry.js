@@ -49,8 +49,28 @@ window.PETS_REGISTRY = {
   "generatedAt": "2026-08-21T00:00:00.000Z",
   "silos": [
     {
-      "id": "pets",
-      "label": "Pets",
+      "id": "cast_carved",
+      "label": "Cast & Carved",
+      "line": ""
+    },
+    {
+      "id": "by_hand",
+      "label": "Made by Hand",
+      "line": ""
+    },
+    {
+      "id": "painted",
+      "label": "Painted & Printed",
+      "line": ""
+    },
+    {
+      "id": "another_time",
+      "label": "Another Time",
+      "line": ""
+    },
+    {
+      "id": "make_believe",
+      "label": "Make Believe",
       "line": ""
     }
   ],
@@ -58,205 +78,205 @@ window.PETS_REGISTRY = {
     {
       "id": "bronze",
       "label": "Bronze",
-      "category": "pets",
+      "category": "cast_carved",
       "body": "live"
     },
     {
       "id": "ebony",
       "label": "Ebony",
-      "category": "pets",
+      "category": "cast_carved",
       "body": "live"
     },
     {
       "id": "plushy",
       "label": "Plushy",
-      "category": "pets",
+      "category": "by_hand",
       "body": "live"
     },
     {
       "id": "stone",
       "label": "Stone",
-      "category": "pets",
+      "category": "cast_carved",
       "body": "live"
     },
     {
       "id": "alabaster",
       "label": "Alabaster",
-      "category": "pets",
+      "category": "cast_carved",
       "body": "live"
     },
     {
       "id": "victorian",
       "label": "Victorian",
-      "category": "pets",
+      "category": "another_time",
       "body": "live"
     },
     {
       "id": "clown",
       "label": "Clown",
-      "category": "pets",
+      "category": "make_believe",
       "body": "live"
     },
     {
       "id": "elizabethan",
       "label": "Elizabethan",
-      "category": "pets",
+      "category": "another_time",
       "body": "live"
     },
     {
       "id": "persian_court",
       "label": "Persian Court",
-      "category": "pets",
+      "category": "another_time",
       "body": "live"
     },
     {
       "id": "pencil_sketch",
       "label": "Pencil Sketch",
-      "category": "pets",
+      "category": "painted",
       "body": "live"
     },
     {
       "id": "impressionist",
       "label": "Impressionist",
-      "category": "pets",
+      "category": "painted",
       "body": "live"
     },
     {
       "id": "oil_impasto",
       "label": "Impasto Oil",
-      "category": "pets",
+      "category": "painted",
       "body": "live"
     },
     {
       "id": "sea_glass",
       "label": "Sea Glass",
-      "category": "pets",
+      "category": "make_believe",
       "body": "live"
     },
     {
       "id": "ice",
       "label": "Ice & Frost",
-      "category": "pets",
+      "category": "make_believe",
       "body": "live"
     },
     {
       "id": "cubism",
       "label": "Cubism",
-      "category": "pets",
+      "category": "painted",
       "body": "live"
     },
     {
       "id": "art_nouveau",
       "label": "Art Nouveau",
-      "category": "pets",
+      "category": "painted",
       "body": "live"
     },
     {
       "id": "deco_twenties",
       "label": "Deco Twenties",
-      "category": "pets",
+      "category": "another_time",
       "body": "live"
     },
     {
       "id": "samurai",
       "label": "Samurai",
-      "category": "pets",
+      "category": "another_time",
       "body": "live"
     },
     {
       "id": "stained_glass",
       "label": "Stained Glass",
-      "category": "pets",
+      "category": "by_hand",
       "body": "live"
     },
     {
       "id": "neon",
       "label": "Neon",
-      "category": "pets",
+      "category": "make_believe",
       "body": "live"
     },
     {
       "id": "polished_gold",
       "label": "Polished Gold",
-      "category": "pets",
+      "category": "cast_carved",
       "body": "live"
     },
     {
       "id": "driftwood_resin",
       "label": "Driftwood & Resin",
-      "category": "pets",
+      "category": "by_hand",
       "body": "live"
     },
     {
       "id": "origami",
       "label": "Origami",
-      "category": "pets",
+      "category": "by_hand",
       "body": "live"
     },
     {
       "id": "porcelain",
       "label": "Porcelain",
-      "category": "pets",
+      "category": "by_hand",
       "body": "live"
     },
     {
       "id": "retro_robot",
       "label": "Retro Robot",
-      "category": "pets",
+      "category": "make_believe",
       "body": "live"
     },
     {
       "id": "clockwork",
       "label": "Clockwork",
-      "category": "pets",
+      "category": "make_believe",
       "body": "live"
     },
     {
       "id": "forest_guardian",
       "label": "Forest Guardian",
-      "category": "pets",
+      "category": "make_believe",
       "body": "live"
     },
     {
       "id": "iron",
       "label": "Iron",
-      "category": "pets",
+      "category": "cast_carved",
       "body": "live"
     },
     {
       "id": "jade",
       "label": "Carved Jade",
-      "category": "pets",
+      "category": "cast_carved",
       "body": "live"
     },
     {
       "id": "art_deco",
       "label": "Art Deco",
-      "category": "pets",
+      "category": "another_time",
       "body": "live"
     },
     {
       "id": "ukiyo_e",
       "label": "Ukiyo-e",
-      "category": "pets",
+      "category": "painted",
       "body": "live"
     },
     {
       "id": "watercolour",
       "label": "Watercolour",
-      "category": "pets",
+      "category": "painted",
       "body": "live"
     },
     {
       "id": "sheet_music",
       "label": "Sheet Music",
-      "category": "pets",
+      "category": "by_hand",
       "body": "live"
     },
     {
       "id": "quilted",
       "label": "Quilted",
-      "category": "pets",
+      "category": "by_hand",
       "body": "live"
     }
   ],
