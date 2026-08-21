@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     console.log(
       `[pets/analyze] photos=${result.photo_count} ` +
       `count=${result.subject_count_estimate} verdict=${result.quality_verdict} ` +
-      `coverage=${result.pet_coverage} ` +
+      `coverage=${result.pet_coverage} species=${result.species} ` +
       `smallest_head_px=${result.smallest_head_min_dim_px ?? 'n/a'}`,
     )
 

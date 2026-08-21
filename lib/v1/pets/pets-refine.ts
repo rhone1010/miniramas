@@ -330,6 +330,7 @@ For EACH photo (in the order provided), assess:
 - "concerns": short strings for anything that would hurt a sculpted likeness (motion blur, eyes closed, heavy shadow across the face, animal partially out of frame, obstructed by hands or toys, extreme angle).
 
 Then assess the SET as a whole:
+- "species": what kind of animal this is. One of "dog", "cat", "bird", "reptile", "horse", "other". Judge the ANIMAL, not the setting. A pony is "horse". A rabbit or ferret is "other".
 - "subject_count_estimate": how many distinct hero animals appear across the set (usually 1).
 - "quality_verdict": "green" if every photo is good, "yellow" if some concerns, "red" if any photo has significant quality issues that would compromise likeness.
 - "recommendation": Either null when the set is great as-is, OR a single-sentence suggestion to the user (e.g. "A photo showing your pet's full body would help capture their proportions and tail.", "One photo is fairly blurry — a sharper shot would improve the result.").
@@ -350,6 +351,7 @@ Respond with ONLY valid JSON (no markdown, no preamble):
       "concerns":    []
     }
   ],
+  "species":                "dog",
   "subject_count_estimate": 1,
   "quality_verdict":        "green",
   "recommendation":         null,
@@ -374,6 +376,23 @@ export interface PetPhotoAnalysis {
 
 export type PetCoverage = 'head_only' | 'head_and_body_partial' | 'full_body'
 
+// ── SPECIES DRIVES FRAMING, AND FRAMING IS NOT ONE RULE ────────────────
+//
+// "Full body, nose to tail" is correct for a cat and wrong for a horse:
+// at a head occupying a fifth of the frame, a whole horse leaves the head
+// too small to recognise, and recognising the animal is the entire
+// product.
+//
+// The 20 August shoot proved it. Nine effects drew a horse source and all
+// nine came back as a small animal in a large field; re-run with head and
+// neck only, the same nine were the strongest pieces in the set.
+//
+// So this is not a label for the UI. It picks a framing clause, and
+// getting it wrong produces a piece the customer will not recognise.
+export type PetSpecies = 'dog' | 'cat' | 'bird' | 'reptile' | 'horse' | 'other'
+
+const PET_SPECIES: PetSpecies[] = ['dog','cat','bird','reptile','horse','other']
+
 export interface PetSourceSetAnalysisResult {
   per_photo:                PetPhotoAnalysis[]
   subject_count_estimate:   number
@@ -385,6 +404,10 @@ export interface PetSourceSetAnalysisResult {
   // non-blocking advisory recommending a full-body photo — otherwise
   // NB2 invents body proportions, tail carriage, and body markings.
   pet_coverage:             PetCoverage
+  // Detected, never supplied by the caller. Nobody wants their cat shown
+  // as a lizard, and a client that could set this could pick its own
+  // framing.
+  species:                  PetSpecies
 }
 
 export async function analyzePetSourceSet(input: {
@@ -403,6 +426,7 @@ export async function analyzePetSourceSet(input: {
       smallest_head_min_dim_px: null,
       photo_count:              0,
       pet_coverage:             'head_only',
+      species:                  'other',
     }
   }
 
@@ -453,6 +477,7 @@ export async function analyzePetSourceSet(input: {
       // Routes through the advisory; safer than skipping it for a
       // source we couldn't read.
       pet_coverage:             'head_only',
+      species:                  'other',
     }
   }
 
@@ -498,6 +523,13 @@ export async function analyzePetSourceSet(input: {
       ? parsed.pet_coverage
       : 'head_only'
 
+  // 'other' is the fallback, and it is the SAFE one: it takes the
+  // full-body framing that suits every small animal. A bad guess of
+  // 'horse' would crop a dog to its head and neck, which is a worse
+  // failure than a horse rendered whole.
+  const species: PetSpecies =
+    PET_SPECIES.includes(parsed.species) ? parsed.species : 'other'
+
   return {
     per_photo:                perPhoto,
     subject_count_estimate:   subjectCountEstimate,
@@ -506,5 +538,30 @@ export async function analyzePetSourceSet(input: {
     smallest_head_min_dim_px: smallestPx,
     photo_count:              allB64s.length,
     pet_coverage:             petCoverage,
+    species,
+  }
+}
+
+// ── THE FRAMING CLAUSE ─────────────────────────────────────────────────
+//
+// One place, so the prompt builder and any shoot script cannot disagree.
+//
+// Large animals get head and neck. Everything else gets the whole animal,
+// because a cat, a dog or a gecko at full length still leaves a readable
+// head, and the body carries markings that ARE the likeness.
+//
+// Birds get their perch named: a bird with nothing under its feet floats,
+// and NB2 invents a plinth that fights whatever material the effect asked
+// for.
+export function petFramingClause(species: PetSpecies): string {
+  switch (species) {
+    case 'horse':
+      return 'Frame the head and neck only - a whole horse at this scale leaves the head too small to recognise.'
+    case 'bird':
+      return 'Complete full-body sculpture, the whole bird including the perch or branch it stands on, nothing cropped.'
+    case 'reptile':
+      return 'Complete full-body sculpture, the whole animal from snout to tail tip, nothing cropped - the frame widens rather than the animal shortening.'
+    default:
+      return 'Complete full-body sculpture, the whole animal from nose to tail to paws, nothing omitted, simplified or cropped.'
   }
 }
