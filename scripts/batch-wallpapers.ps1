@@ -126,6 +126,20 @@ param(
   [int] $DelayMs = 0
 )
 
+# ---- tracking ---------------------------------------------------------------
+# Every image this batch writes is registered to
+# H:\NO_DELETE_ARCHIVE\Logs\FileActions_<date>.csv, wrapped in batch markers
+# so a run of six hundred plates reads as one job.
+#
+# If H: is absent the tracker says so once and the shoot goes ahead
+# untracked - an audit gap is preferable to losing a batch.
+$TrackerPath = Join-Path $PSScriptRoot 'FileOps-Tracker.ps1'
+if (Test-Path -LiteralPath $TrackerPath) {
+  . $TrackerPath
+} else {
+  Write-Host "FileOps-Tracker.ps1 not found - this shoot will be UNTRACKED." -ForegroundColor Red
+}
+
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
@@ -580,6 +594,9 @@ if (-not $NoWatermark) {
 New-Item -ItemType Directory -Force -Path $cleanDir   | Out-Null
 New-Item -ItemType Directory -Force -Path $previewDir | Out-Null
 
+$BatchId = "wallpapers-{0}" -f (Get-Date -Format "yyyyMMdd-HHmmss")
+Start-TrackedBatch -BatchId $BatchId -Description "batch-wallpapers season=$Season clean=$cleanDir preview=$previewDir"
+
 if (-not (Test-Path -LiteralPath $manifest)) {
   'index,plate,season,world,mood,energy,palette,twist,seed,clean_path,preview_path,duration_ms,status,prompt' |
     Set-Content -LiteralPath $manifest -Encoding UTF8
@@ -636,6 +653,12 @@ try {
       [System.IO.File]::WriteAllBytes($cleanLocal, $cleanBytes)
       [System.IO.File]::WriteAllBytes($prevLocal,  $prevBytes)
 
+      # Registered here rather than after the upload: these two files exist
+      # on disk now, and whether Supabase accepted them is a different fact
+      # recorded in the manifest row below.
+      Register-GeneratedFile -Path $cleanLocal -BatchId $BatchId -Note "clean plate $plate"
+      Register-GeneratedFile -Path $prevLocal  -BatchId $BatchId -Note "preview plate $plate"
+
       if (-not $LocalOnly) {
         Send-ToSupabase -Bytes $cleanBytes -BucketName $CleanBucket   -ObjectPath $cleanObj
         Send-ToSupabase -Bytes $prevBytes  -BucketName $PreviewBucket -ObjectPath $prevObj
@@ -673,6 +696,9 @@ try {
 }
 finally {
   if ($null -ne $mark) { $mark.Dispose() }
+  # In the finally, so a run that is interrupted still closes its batch
+  # rather than leaving a BATCH_START with no end a month later.
+  End-TrackedBatch -BatchId $BatchId -Description "ok=$ok failed=$failed skipped=$skipped"
 }
 
 $elapsed = [int]((Get-Date) - $t0all).TotalSeconds

@@ -24,6 +24,32 @@ const BOARD_BUCKET   = 'collection'
 const SIGNED_URL_TTL = 60 * 60 * 24
 
 // ---------------------------------------------------------------------------
+// EVERY GET RETURN IS THE SAME SHAPE. Corrected 2026-08-20.
+//
+// There are four exits from the board read - no database, a read error, the
+// catch, and success - and the first three answered { ok, posts, more }
+// while success answered { ok, posts, more, hearted, signed_in }.
+//
+// A caller reading signed_in off one of the short answers gets undefined,
+// which is falsy, so A SIGNED-IN CUSTOMER LOOKS SIGNED OUT the moment the
+// database hiccups. `hearted` has the worse version of the same fault: the
+// glass iterates it, and undefined is not an empty array.
+//
+// The glass now guards against both, which is correct of it and is not a
+// reason for the route to keep answering inconsistently. A caller should
+// never have to know which branch produced its answer.
+// ---------------------------------------------------------------------------
+function emptyBoard(signedIn: boolean) {
+  return NextResponse.json({
+    ok:        true,
+    posts:     [],
+    more:      false,
+    hearted:   [],
+    signed_in: signedIn,
+  })
+}
+
+// ---------------------------------------------------------------------------
 // GET /api/v1/community/posts?before=<iso>
 //
 // THE BOARD IS VISIBLE SIGNED OUT. Ruled 2026-08-10 - it is the only page on
@@ -38,8 +64,13 @@ const SIGNED_URL_TTL = 60 * 60 * 24
 // ---------------------------------------------------------------------------
 export async function GET(req: NextRequest) {
   try {
+    // Read BEFORE the database check, so every exit below can report it
+    // honestly. It is a session read rather than a query, and does not
+    // depend on the board being available.
+    const me = await owner()
+
     const db = svc()
-    if (!db) return NextResponse.json({ ok: true, posts: [], more: false })
+    if (!db) return emptyBoard(!!me)
 
     const before = req.nextUrl.searchParams.get('before')
 
@@ -54,7 +85,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await q
     if (error) {
       console.error('[community/posts] read failed:', error.message)
-      return NextResponse.json({ ok: true, posts: [], more: false })
+      return emptyBoard(!!me)
     }
 
     const rows = data ?? []
@@ -81,7 +112,6 @@ export async function GET(req: NextRequest) {
 
     // Which of these has the caller already hearted. One query, not one per
     // card, and it simply comes back empty when nobody is signed in.
-    const me = await owner()
     let hearted: string[] = []
     if (me && posts.length) {
       const { data: h } = await db
@@ -120,7 +150,11 @@ export async function GET(req: NextRequest) {
     })
   } catch (e) {
     console.error('[community/posts] GET threw:', (e as Error).message)
-    return NextResponse.json({ ok: true, posts: [], more: false })
+    // The one exit that cannot report sign-in honestly: the throw may have
+    // come from owner() itself. Stated rather than hidden - a customer who
+    // sees a signed-out board here has hit a real fault, and the log line
+    // above is where it will be found.
+    return emptyBoard(false)
   }
 }
 

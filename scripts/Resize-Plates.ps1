@@ -35,6 +35,19 @@ param(
   [switch] $Apply
 )
 
+# ---- tracking ---------------------------------------------------------------
+# Every resized plate written by this script is recorded to H:\NO_DELETE_ARCHIVE\Logs\FileActions_<date>.csv
+#
+# If H: is absent the tracker says so and the work goes ahead untracked - an
+# audit gap is preferable to a script that will not run.
+$TrackerPath = Join-Path $PSScriptRoot 'FileOps-Tracker.ps1'
+if (Test-Path -LiteralPath $TrackerPath) {
+  . $TrackerPath
+} else {
+  Write-Host "FileOps-Tracker.ps1 not found - operations will be UNTRACKED." -ForegroundColor Red
+}
+
+
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
@@ -59,6 +72,17 @@ $params = New-Object System.Drawing.Imaging.EncoderParameters(1)
 $params.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter(
   [System.Drawing.Imaging.Encoder]::Quality, [int64]$Quality)
 
+# REFUSED: writing over the originals.
+#
+# $out is Join-Path $Dest $f.Name, so a Dest equal to Source overwrites each
+# input with its own resized version and the original is gone. Nothing in
+# this project overwrites in place - the displaced version goes to H: first.
+if ($Apply -and ((Resolve-Path -LiteralPath $Source).Path -eq (Resolve-Path -LiteralPath $Dest -ErrorAction SilentlyContinue).Path)) {
+  Write-Host "REFUSED: -Dest is the same folder as -Source." -ForegroundColor Red
+  Write-Host "That would write over every original. Give a different -Dest."  -ForegroundColor Red
+  exit 1
+}
+
 if ($Apply -and -not (Test-Path $Dest)) {
   New-Item -ItemType Directory -Path $Dest -Force | Out-Null
 }
@@ -66,6 +90,9 @@ if ($Apply -and -not (Test-Path $Dest)) {
 $files = Get-ChildItem -Path $Source -File |
          Where-Object { $_.Extension -match '^\.(jpg|jpeg|png)$' } |
          Sort-Object Name
+
+$BatchId = "resize-{0}" -f (Get-Date -Format "yyyyMMdd-HHmmss")
+if ($Apply) { Start-TrackedBatch -BatchId $BatchId -Description "Resize-Plates $Source -> $Dest, max edge $MaxEdge" }
 
 $before = 0L
 $after  = 0L
@@ -95,6 +122,7 @@ foreach ($f in $files) {
 
       $img.Dispose(); $img = $null      # released before the write
       $bmp.Save($out, $codec, $params)
+      Register-GeneratedFile -Path $out -BatchId $BatchId -Note "Resize-Plates: $($f.Name) -> ${nw}x${nh}"
       $bmp.Dispose(); $bmp = $null
 
       $newLen = (Get-Item $out).Length
@@ -124,6 +152,8 @@ foreach ($f in $files) {
     if ($img) { $img.Dispose() }
   }
 }
+
+if ($Apply) { End-TrackedBatch -BatchId $BatchId -Description "$n files resized into $Dest" }
 
 Write-Host ""
 Write-Host ("  {0} files" -f $n)

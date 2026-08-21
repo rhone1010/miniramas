@@ -30,6 +30,19 @@ param(
   [switch] $Apply
 )
 
+# ---- tracking ---------------------------------------------------------------
+# This script moves nothing itself - Archive-File.ps1 does, once per file, and
+# that script logs each move. The markers below wrap the loop so a run of
+# twenty-three archives reads as ONE act rather than twenty-three unrelated
+# moves a week later.
+$TrackerPath = Join-Path $PSScriptRoot 'FileOps-Tracker.ps1'
+if (Test-Path -LiteralPath $TrackerPath) {
+  . $TrackerPath
+} else {
+  Write-Host "FileOps-Tracker.ps1 not found - the batch markers will be missing." -ForegroundColor Red
+}
+
+
 $ErrorActionPreference = 'Stop'
 
 $IDS = @(
@@ -98,12 +111,17 @@ if (-not $Apply) {
   exit 0
 }
 
+$BatchId = "legacyplates-{0}" -f (Get-Date -Format "yyyyMMdd-HHmmss")
+Start-TrackedBatch -BatchId $BatchId -Description "Archive-LegacyPlates $Folder - $($move.Count) files"
+
 $done = 0
 foreach ($m in $move) {
   $rel = Join-Path $Folder $m.Name
   & powershell -ExecutionPolicy Bypass -File $archiver $rel
   if ($LASTEXITCODE -eq 0) { $done++ } else { Write-Host "  FAILED  $($m.Name)" }
 }
+
+End-TrackedBatch -BatchId $BatchId -Description "moved $done of $($move.Count)"
 
 Write-Host ""
 Write-Host "  moved $done of $($move.Count) to H:. Nothing was deleted."

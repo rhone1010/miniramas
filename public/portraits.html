@@ -7226,7 +7226,17 @@ window.EFFECT_PREVIEWS = {
 
   /* The named hook s72 left undone, and the reason the Craft button used to
      stop dead. It has a destination now. */
-  window.__openPaywall = function(short){ openBuy(short); };
+  window.__openPaywall = function(short){
+    /* THE SHORTFALL ALWAYS GETS THROUGH. `needed` is what separates a
+       craft that cannot be paid for from somebody browsing prices, and
+       only the second is closed during soft launch. */
+    var browsing = !short || !short.needed;
+    if (browsing && typeof window.__buyingOffered === 'function'
+        && !window.__buyingOffered()){
+      return;
+    }
+    openBuy(short);
+  };
 
   /* ---- Stripe, inside our own panel --------------------------------------
      The session is created server-side; the client sends a SKU id and never
@@ -8289,6 +8299,28 @@ window.EFFECT_PREVIEWS = {
      could have changed: arrival, a spend, a refund, and the wait for a
      webhook. A masthead that lags the ledger is worse than an empty one. */
   var CREDITS = null;
+
+  /* ---- SOFT LAUNCH -------------------------------------------------
+     Guests arrive with a grant. Until they have spent it there is no
+     price list anywhere they can reach on purpose - being handed a
+     gift and a bill in the same breath is a poor welcome.
+
+     SET THIS TO false TO REOPEN THE SHOP. Nothing else changes. */
+  var SOFT_LAUNCH = true;
+
+  /* Is buying offered as something to go and do? Distinct from being
+     offered as the answer to a craft that cannot be paid for - that
+     one is always available and is not this function's business.
+
+     A balance of null means it could not be read. During soft launch
+     that counts as not exhausted and the doors stay shut; a short
+     craft still raises the panel with the real figure, so nobody is
+     stranded by an unread balance. */
+  function buyingOffered(){
+    if (!SOFT_LAUNCH) return true;
+    return (typeof CREDITS === 'number' && CREDITS <= 0);
+  }
+  window.__buyingOffered = buyingOffered;
   var mhCreditsBtn = document.getElementById('mhCreditsBtn');
   var mhCreditsCount = document.getElementById('mhCreditsCount');
 
@@ -8331,8 +8363,12 @@ window.EFFECT_PREVIEWS = {
     mhCreditsBtn.classList.add('has-balance');
     mhCreditsBtn.hidden = false;
     mhCreditsCount.textContent = String(CREDITS);
+    /* It reads out the balance either way - that is the only place a
+       guest can see it. It just stops claiming to be a way to buy
+       while there is nothing to buy yet. */
     mhCreditsBtn.setAttribute('aria-label',
-      CREDITS + (CREDITS === 1 ? ' credit' : ' credits') + ' \u00b7 buy more');
+      CREDITS + (CREDITS === 1 ? ' credit' : ' credits') +
+      (buyingOffered() ? ' \u00b7 buy more' : ''));
   }
 
   function setCredits(n){
@@ -10729,8 +10765,13 @@ window.EFFECT_PREVIEWS = {
       /* Download all used to sit here, beneath a balance and beside Buy
          credits, where it read as downloading the credits. It acts on
          pieces, so it lives with the piece count now. */
+      /* Omitted entirely rather than disabled during soft launch. A
+         greyed-out Buy credits still advertises a price list and
+         invites a click that does nothing. */
       '<div class="ac-acts">' +
-        '<button class="ac-buy" id="acBuy" type="button">Buy credits</button>' +
+        ((typeof window.__buyingOffered !== 'function' || window.__buyingOffered())
+          ? '<button class="ac-buy" id="acBuy" type="button">Buy credits</button>'
+          : '') +
       '</div>' +
       (pieces
         ? '<div class="ac-work">' +
