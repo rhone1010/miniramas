@@ -121,8 +121,16 @@ const MATERIAL_PHRASE: Record<PetsPresetId, string> = {
     'polished Taj Mahal quartzite sculpture with characteristic creamy-beige base tones, warm gold and amber veining, smoky brown ribbons, and occasional charcoal-gray mineral threads — the stone pattern flows organically across the entire animal. The ENTIRE animal including coat, ears, muzzle, tail, and paws is rendered in this same quartzite; the animal\'s markings are expressed through the placement of the stone\'s natural veining and mineral tones, with darker smoky-brown and charcoal threads following the exact pattern of the coat\'s markings so the pattern remains readable. The mineral palette is cream, gold, brown, and charcoal only',
   walnut:
     'carved walnut wood sculpture — the ENTIRE animal carved from a single piece of solid walnut hardwood, with NO original coat colors anywhere: no black fur, no tan fur, no white fur, only the natural color range of walnut wood itself (warm honey-amber through chestnut to deep chocolate-walnut). Pronounced flowing wood grain runs across the whole form, and the lighter and darker grain tones follow the exact pattern of the animal\'s coat markings so the blazes, patches, and socks remain readable AS GRAIN and tonal shifts in the wood, never as painted color. Occasional figured knots, burls, and ribbon-grain in the body and haunches. Finished in soft satin lacquer with subtle specular highlights — semi-gloss, not wet-shine. Unmistakably one solid piece of carved characterful hardwood',
-  legacy_edition:
-    'sculpture carved from one block of flawless white statuary marble — the flagship, highest-tier piece. The ENTIRE animal including coat, ears, muzzle, tail, and paws carved in the round from cool luminous Carrara/Statuario stone, softly polished with a gentle sheen and a few honest hand-tooled passages beside the polished planes. Cool white throughout, never cream, ivory, tan, or warm; NO original coat colors as pigment — the animal\'s markings are expressed as subtle cool-grey veining following the exact pattern of the coat\'s facial markings, blazes, patches, and socks so the pattern stays readable in the stone. Master, confident composition; the absolute ceiling of realism, refined texture, and rich depth; restraint over spectacle — nothing exaggerated or flashy, no added ornament. Timeless, the specific animal instantly recognizable, it should feel impossible to improve',
+  // legacy_edition removed 2026-08-21. It was a white statuary marble
+  // body, written and never wired: absent from PetsPresetId,
+  // PRESET_LABELS, STYLE_MATERIALS and PETS_35, so nothing could select
+  // it and the route would have refused the id. tsc had been reporting
+  // it as an excess key on this record.
+  //
+  // Rich, 2026-08-21: there are no separate tiers yet. The text is not
+  // lost - it is in H:\minramas\lib\v1\pets\pets-prompt_NNN.ts. If a
+  // flagship material ships later it needs four entries, not one: the
+  // id, the label, the STYLE_MATERIALS row and this phrase.
 }
 
 // ── Environment phrases — Rich-authored (2026-06-05) ────────────

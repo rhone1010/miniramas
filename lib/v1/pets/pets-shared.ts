@@ -231,7 +231,17 @@ export interface PetsGenerateRequest {
   style_reference_b64?:   string
 
   style_id:               PetsStyleId
-  preset_id:              PetsPresetId
+  // Optional because the Curiosities path carries its own staging and
+  // arrives with no material at all (pets-generator.ts line 89 has said
+  // "undefined for Curiosities" since that path was built; the type did
+  // not agree). Catalog ids from PETS_35 also arrive on this field —
+  // the generator resolves the catalog before the material pipeline.
+  preset_id?:             PetsPresetId
+  // A Curiosity id. Declared as string rather than PetExperimentalEffectId
+  // to keep pets-shared free of an import from pets-experimental; every
+  // reader narrows it through isPetExperimentalEffect() before use, which
+  // is what the generator and the route already do.
+  experimental_effect?:   string
   environment_id?:        EnvironmentId
   // Pose re-staging. Omitted / 'as_photographed' → source pose preserved.
   action_id?:             ActionId
@@ -291,7 +301,8 @@ export interface PetsGenerateResult {
   image_b64:             string | null
   prompt_used:           string
   style:                 PetsStyleId
-  preset:                PetsPresetId
+  // undefined on a Curiosity render — there is no material to report.
+  preset:                PetsPresetId | undefined
   environment:           EnvironmentId
   action:                ActionId
   subject_count:         number   // detected hero animals rendered (1–5)
