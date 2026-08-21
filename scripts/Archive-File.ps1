@@ -27,6 +27,19 @@ param(
     [switch]$DryRun
 )
 
+# ---- tracking ---------------------------------------------------------------
+# The move below is recorded to
+# H:\NO_DELETE_ARCHIVE\Logs\FileActions_<date>.csv
+#
+# If H: is absent the tracker says so and the move goes ahead untracked - an
+# audit gap is preferable to a script that will not run.
+$TrackerPath = Join-Path $PSScriptRoot 'FileOps-Tracker.ps1'
+if (Test-Path -LiteralPath $TrackerPath) {
+  . $TrackerPath
+} else {
+  Write-Host "FileOps-Tracker.ps1 not found - operations will be UNTRACKED." -ForegroundColor Red
+}
+
 $ErrorActionPreference = 'Stop'
 
 function Fail([string]$msg) {
@@ -95,7 +108,7 @@ if (-not (Test-Path -LiteralPath $archiveDir)) {
     Write-Host "  made      $archiveDir"
 }
 
-Move-Item -LiteralPath $src -Destination $archivePath
+Invoke-TrackedMove -Source $src -Destination $archivePath -Note "Archive-File: $Target leaving the repo"
 
 # Read it back off the filesystem. A file believed to be somewhere and not
 # there has cost this project two deployments.

@@ -49,6 +49,20 @@ param(
   [switch] $DryRun
 )
 
+# ---- tracking ---------------------------------------------------------------
+# Every file move in this script is recorded to
+# H:\NO_DELETE_ARCHIVE\Logs\FileActions_<date>.csv
+#
+# Dot-sourced rather than imported so the tracked functions land in this
+# scope. If H: is absent the tracker says so once and the moves go ahead
+# untracked - an audit gap is preferable to a script that will not run.
+$TrackerPath = Join-Path $PSScriptRoot 'FileOps-Tracker.ps1'
+if (Test-Path -LiteralPath $TrackerPath) {
+  . $TrackerPath
+} else {
+  Write-Host "FileOps-Tracker.ps1 not found - operations will be UNTRACKED." -ForegroundColor Red
+}
+
 $ErrorActionPreference = 'Stop'
 
 function Say-Step { param([string] $m) Write-Host "  $m" }
@@ -173,7 +187,7 @@ if ($Existing) {
   }
   # No -Force. If anything is at that name the move fails loudly rather than
   # writing over a version we kept on purpose.
-  Move-Item -LiteralPath $TargetPath -Destination $ArchivePath
+  Invoke-TrackedMove -Source $TargetPath -Destination $ArchivePath -Note "Install-File: archiving the displaced version"
   Say-Step "kept      $LeafName -> $(Split-Path -Leaf $ArchivePath)"
 }
 
@@ -183,7 +197,7 @@ if ($TargetDir -and -not (Test-Path -LiteralPath $TargetDir)) {
 
 # The target is guaranteed free by this point: either it never existed, or it
 # has just been moved to the archive.
-Move-Item -LiteralPath $FromItem.FullName -Destination $TargetPath
+Invoke-TrackedMove -Source $FromItem.FullName -Destination $TargetPath -Note "Install-File: installing $Target"
 Say-Step "installed $Target"
 
 Write-Host ""
