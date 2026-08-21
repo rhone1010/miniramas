@@ -51,27 +51,27 @@ window.PETS_REGISTRY = {
     {
       "id": "cast_carved",
       "label": "Cast & Carved",
-      "line": ""
+      "line": "Here are the Cast & Carved effects. Your animal in one material, worked as a single piece."
     },
     {
       "id": "by_hand",
       "label": "Made by Hand",
-      "line": ""
+      "line": "Here are the Made by Hand effects. Softer work, with the maker's hand still on it."
     },
     {
       "id": "painted",
-      "label": "Painted & Printed",
-      "line": ""
+      "label": "Painted",
+      "line": "Here are the Painted effects. Pencil, pigment and brushwork, each with its own hand."
     },
     {
       "id": "another_time",
       "label": "Another Time",
-      "line": ""
+      "line": "Here are the Another Time effects. Your animal, made in a time not its own."
     },
     {
       "id": "make_believe",
       "label": "Make Believe",
-      "line": ""
+      "line": "Here are the Make Believe effects. A few stranger ways to become someone else."
     }
   ],
   "effects": [
