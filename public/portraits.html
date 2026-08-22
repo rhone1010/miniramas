@@ -8693,7 +8693,10 @@ window.EFFECT_PREVIEWS = {
 
   /* Alphabetical. Every Series shows whether or not it holds anything — a
      missing tab reads as a Series that does not exist. */
-  var MC_SERIES = ['Action','Groups','Mobile Wallpapers','Pets','Portraits'];
+  /* Halloween was missing, so every piece from that room had no filter to
+     appear under and was reachable only by View All. Alphabetical, like
+     the rest -- an appended entry reads as an afterthought. */
+  var MC_SERIES = ['Action','Groups','Halloween','Mobile Wallpapers','Pets','Portraits'];
 
   /* Declared HERE, with the other constants, because renderCollection() runs
      during init and calls renderOnward(), which reads this. A var assigned
@@ -9126,7 +9129,12 @@ window.EFFECT_PREVIEWS = {
      The tile lands first and the save follows it. A customer never waits on
      an upload to see their own work, and a failed save costs them the
      durability rather than the piece. */
+  /* halloween was missing, so a piece stored under it fell through to the
+     room's own default and read as Portraits on one page and Pets on
+     another. Pets Halloween is not here on purpose: it stores 'pets', so
+     both pet rooms share one filter. */
   var SERIES_LABEL = { portraits:'Portraits', pets:'Pets', groups:'Groups',
+                       halloween:'Halloween',
                        action:'Action', actionmini:'Action',
                        wallpapers:'Mobile Wallpapers' };
 

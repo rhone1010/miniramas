@@ -47,172 +47,191 @@ window.PETS_HALLOWEEN_REGISTRY = {
   "generatedAt": "2026-08-21T00:00:00.000Z",
   "silos": [
     {
-      "id": "pets_halloween",
-      "label": "Pets Halloween",
-      "line": ""
+      "id": "familiars",
+      "label": "Familiars",
+      "line": "",
+      "plate": "/previews/halloween-pets/banshee_familiar.jpg"
+    },
+    {
+      "id": "restless_dead",
+      "label": "Restless Dead",
+      "line": "",
+      "plate": "/previews/halloween-pets/bone_collector_beast.jpg"
+    },
+    {
+      "id": "creatures",
+      "label": "Creatures",
+      "line": "",
+      "plate": "/previews/halloween-pets/blood_moon_beast.jpg"
+    },
+    {
+      "id": "harvest",
+      "label": "Harvest",
+      "line": "",
+      "plate": "/previews/halloween-pets/thorn_king_beast.jpg"
     }
   ],
   "effects": [
     {
       "id": "pethw_harvest_god_beast",
       "label": "Harvest God's Beast",
-      "category": "pets_halloween",
+      "category": "harvest",
       "body": "live"
     },
     {
       "id": "pethw_graveyard_guardian",
       "label": "Graveyard Guardian",
-      "category": "pets_halloween",
+      "category": "harvest",
       "body": "live"
     },
     {
       "id": "pethw_hellborn_beast",
       "label": "Hellborn Beast",
-      "category": "pets_halloween",
+      "category": "creatures",
       "body": "live"
     },
     {
       "id": "pethw_blood_moon_beast",
       "label": "Blood Moon Beast",
-      "category": "pets_halloween",
+      "category": "creatures",
       "body": "live"
     },
     {
       "id": "pethw_storm_wraith",
       "label": "Storm Wraith",
-      "category": "pets_halloween",
+      "category": "creatures",
       "body": "live"
     },
     {
       "id": "pethw_banshee_familiar",
       "label": "Banshee's Familiar",
-      "category": "pets_halloween",
+      "category": "familiars",
       "body": "live"
     },
     {
       "id": "pethw_thorn_king_beast",
       "label": "Thorn King's Beast",
-      "category": "pets_halloween",
+      "category": "harvest",
       "body": "live"
     },
     {
       "id": "pethw_drowned_revenant",
       "label": "Drowned Revenant",
-      "category": "pets_halloween",
+      "category": "restless_dead",
       "body": "live"
     },
     {
       "id": "pethw_witch_familiar",
       "label": "Witch's Familiar",
-      "category": "pets_halloween",
+      "category": "familiars",
       "body": "live"
     },
     {
       "id": "pethw_shadow_beast",
       "label": "Shadow Beast",
-      "category": "pets_halloween",
+      "category": "creatures",
       "body": "live"
     },
     {
       "id": "pethw_plague_beast",
       "label": "Plague Beast",
-      "category": "pets_halloween",
+      "category": "creatures",
       "body": "live"
     },
     {
       "id": "pethw_frost_wraith",
       "label": "Frost Wraith",
-      "category": "pets_halloween",
+      "category": "creatures",
       "body": "live"
     },
     {
       "id": "pethw_bone_collector_beast",
       "label": "Bone Collector's Beast",
-      "category": "pets_halloween",
+      "category": "restless_dead",
       "body": "live"
     },
     {
       "id": "pethw_swamp_revenant",
       "label": "Swamp Revenant",
-      "category": "pets_halloween",
+      "category": "restless_dead",
       "body": "live"
     },
     {
       "id": "pethw_raven_lord_familiar",
       "label": "Raven Lord's Familiar",
-      "category": "pets_halloween",
+      "category": "familiars",
       "body": "live"
     },
     {
       "id": "pethw_demon_familiar",
       "label": "Demon's Familiar",
-      "category": "pets_halloween",
+      "category": "familiars",
       "body": "live"
     },
     {
       "id": "pethw_ancient_crypt_beast",
       "label": "Ancient Crypt Beast",
-      "category": "pets_halloween",
+      "category": "restless_dead",
       "body": "live"
     },
     {
       "id": "pethw_headless_horseman_familiar",
       "label": "Headless Horseman's Familiar",
-      "category": "pets_halloween",
+      "category": "familiars",
       "body": "live"
     },
     {
       "id": "pethw_nightmare_creature",
       "label": "Nightmare Creature",
-      "category": "pets_halloween",
+      "category": "creatures",
       "body": "live"
     },
     {
       "id": "pethw_spirit_caller",
       "label": "Spirit Caller",
-      "category": "pets_halloween",
+      "category": "harvest",
       "body": "live"
     },
     {
       "id": "pethw_the_soul_eater",
       "label": "The Soul Eater",
-      "category": "pets_halloween",
+      "category": "restless_dead",
       "body": "live"
     },
     {
       "id": "pethw_spider_queen_familiar",
       "label": "Spider Queen's Familiar",
-      "category": "pets_halloween",
+      "category": "familiars",
       "body": "live"
     },
     {
       "id": "pethw_the_possessed",
       "label": "The Possessed",
-      "category": "pets_halloween",
+      "category": "restless_dead",
       "body": "live"
     },
     {
       "id": "pethw_gargoyle_beast",
       "label": "Gargoyle Beast",
-      "category": "pets_halloween",
+      "category": "harvest",
       "body": "live"
     },
     {
       "id": "pethw_phantom_of_the_forest",
       "label": "Phantom of the Forest",
-      "category": "pets_halloween",
+      "category": "harvest",
       "body": "live"
     },
     {
       "id": "pethw_vampire_familiar",
       "label": "The Vampire's Familiar",
-      "category": "pets_halloween",
+      "category": "familiars",
       "body": "live"
     },
     {
       "id": "pethw_death_companion",
       "label": "Death's Companion",
-      "category": "pets_halloween",
+      "category": "restless_dead",
       "body": "live"
     }
   ],
