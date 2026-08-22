@@ -160,15 +160,23 @@ Frame from mid-chest to the top of the head. Preserve natural facial character, 
 
   art_deco: {
     id:    'art_deco',
-    body:  `Redraw the subject as a 1920s Art Deco poster panel — flat graphic illustration with strong bilateral symmetry, crisp geometry and hard-edged colour. The face is simplified into clean planes with a single sharp shadow edge; the hair becomes a bold sculptural shape in flat black or gold. Stepped chevron and sunburst motifs radiate behind the head; fluted vertical lines frame the panel. A luxe restrained palette — black, cream, deep jade and gold leaf, with chrome accents tracing the key lines. Elegant, confident, machine-age. Likeness is critical — the face stays clearly this person. Frame from mid-chest to the top of the head. No lettering or text. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
-    avoid: `Avoid photographic rendering, organic curves, three-dimensional shading, a relief or sculpture, or garish colour.`,
+    body:  `Redraw the subject as a 1920s Art Deco poster panel — flat graphic illustration with strong bilateral symmetry, crisp geometry and hard-edged colour. The face is simplified into clean planes with a single sharp shadow edge, but those planes follow THIS person's brow, cheekbones, nose and jaw — the simplification is in the rendering, never in the underlying face. Likeness is essential: keep the shape and character of his face, his micro gestures and the set of his mouth. Keep his hairline, hairstyle, length and direction exactly as photographed and do not invent hair he does not have; the hair becomes a bold sculptural shape in flat black or gold, but it is his hair, stylised. Do not add weight and do not age him.
+
+THE SYMMETRY IS A STYLE OF DRAWING, NOT A CHANGE TO HIS FACE. Art Deco's bilateral symmetry applies to the panel, the motifs and the framing. His own natural asymmetry stays.
+
+Stepped chevron and sunburst motifs radiate behind the head; fluted vertical lines frame the panel. A luxe restrained palette — black, cream, deep jade and gold leaf, with chrome accents tracing the key lines. Elegant, confident, machine-age. Frame from the stomach to the top of the head. No lettering or text. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `AVOID: Avoid photographic rendering, organic curves, three-dimensional shading, a relief or sculpture, or garish colour. Avoid a symmetrical generic Deco face — the symmetry belongs to the panel, not to him.`,
   },
   // art_deco: NEW to Portraits. Ported from Houses curiosities.
 
   art_nouveau: {
     id:    'art_nouveau',
-    body:  `Redraw the subject as an Art Nouveau poster in the manner of Mucha — flat decorative illustration, not a photograph and not a sculpture. Confident dark outlines of even weight describe the face, hair and garment. Colour sits in flat muted fields — sage, dusty rose, ochre, cream — with almost no shading; only the faintest modelling on the face. The hair becomes long sweeping decorative curves, stylised into ornament while keeping its real length and direction. Behind the head, a large circular halo motif filled with stylised flowers and whiplash vine linework. A decorative border frames the panel. Elegant, graphic, ornamental. Likeness is critical — the face stays clearly this person. No lettering or text anywhere. Dont create hair that doesnt exist No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
-    avoid: `Avoid photographic rendering, three-dimensional shading or realistic light. Avoid a sculpture — this is a flat drawn panel. Avoid lettering, type or signage. Avoid losing the likeness to generic Art Nouveau features.`,
+    body:  `Redraw the subject as an Art Nouveau poster in the manner of Mucha — flat decorative illustration, not a photograph and not a sculpture. Confident dark outlines of even weight describe the face, hair and garment, and those outlines follow THIS person's own brow, nose, mouth and jaw. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression. The ornament is around him, never instead of him.
+
+Colour sits in flat muted fields — sage, dusty rose, ochre, cream — with almost no shading; only the faintest modelling on the face. Keep his hairline, hairstyle, length and direction, and do not prematurely grey it: the hair becomes long sweeping decorative curves, stylised into ornament, but it is his hair and its real length. Do not create hair that does not exist. Do not add weight and do not age him. Do not change hair style, length, or line.
+
+Behind the head, a large circular halo motif filled with stylised flowers and whiplash vine linework. A decorative border frames the panel. Elegant, graphic, ornamental. Frame from the stomach to the top of the head. No lettering or text anywhere. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `AVOID: Avoid photographic rendering, three-dimensional shading or realistic light. Avoid a sculpture — this is a flat drawn panel. Avoid lettering, type or signage. Avoid losing the likeness to generic Art Nouveau features.`,
   },
   // art_nouveau: Rich's addition 'Dont create hair that doesnt exist' is the fix — the halo motif was inviting invented hair.
 
@@ -181,8 +189,16 @@ Frame from mid-chest to the top of the head. Preserve natural facial character, 
 
   daguerreotype: {
     id:    'daguerreotype',
-    body:  `Render the subject as an 1840s daguerreotype on a polished silvered copper plate — delicate silvery monochrome, ghostly and precise, tones shifting toward negative where the mirror surface catches light. Fine sharpness across the face, faint tarnish bloom creeping in from the edges, a hairline scratch or two in the silver. Period dress: a dark coat and high collar, or a dark bodice with a lace collar. Behind the sitter, a painted studio backdrop of the era — a soft-focus classical column, a swagged drape, a distant painted landscape, all pale and slightly out of register. Still, formal, unsmiling — the long exposure holds them. The plate fills the frame with only a narrow brass mat at its edge. Likeness is critical. Frame the sitter from the waist to the top of the head. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
-    avoid: `Avoid modern colour, clean digital sharpness without the silver's tonal shift, a flat paper print, a smile, or a thick decorative case.`,
+    body:  `Render the subject as an 1840s daguerreotype on a polished silvered copper plate — delicate silvery monochrome, ghostly and precise, tones shifting toward negative where the mirror surface catches light. The sitter is THIS man. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the small particulars of his expression.
+
+DO NOT MIRROR, FLIP OR LATERALLY REVERSE THE FACE. A real daguerreotype plate reverses its sitter; this one must not. Every feature stays on the side it is on in the photograph — the same eye higher, the same side of the mouth lifted, the same parting in the hair. This is the single most important instruction here.
+
+Keep his hairline, hairstyle, length and direction, dressed to the period but not replaced by it, and do not prematurely grey him. Do not add weight and do not age him.
+
+Fine sharpness across the face, faint tarnish bloom creeping in from the edges, a hairline scratch or two in the silver. Period dress: a dark coat and high collar. Behind the sitter, a painted studio backdrop of the era — a soft-focus classical column, a swagged drape, a distant painted landscape, all pale and slightly out of register. Still, formal, unsmiling — the long exposure holds him. The plate fills the frame with only a narrow brass mat at its edge.
+
+Frame the sitter from the stomach to the top of the head. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `AVOID: Avoid modern colour, clean digital sharpness without the silver's tonal shift, a flat paper print, a smile, or a thick decorative case. Avoid a mirrored or laterally reversed face.`,
   },
   // daguerreotype: NEW to Portraits. Ported from Houses curiosities. Case still appears despite the avoid; locked as shot.
 
@@ -276,15 +292,25 @@ Clear temporary blemishes and blotchiness, but **do not reshape, de-age, enlarge
 
   coral: {
     id:    'coral',
-    body:  `make the subject a bust built entirely from hard calcareous coral — rich colors and the whole surface a porous mesh of small cups. Branching staghorn forms mass out where the hair should be, and thin brain-coral ridges run across the shoulders. The face is the smoothest passage, worked in fine plating coral so the features stay clean while the porous texture still reads across it. Eyes are blind coral, no whites. Lips are coral. No skin, no real hair. the coral is undersea with streams of volume light in the background. schools of fish are swiming around and one or two in front. eyes are real`,
+    body:  `Make the subject a bust built entirely from hard calcareous coral — rich colours and the whole surface a porous mesh of small cups. The coral is grown into THIS person's own structure. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression. Do not add weight and do not age him. NO human hair.
+
+Branching staghorn forms mass out where the hair should be, following his real hairline, hairstyle, length and direction — do not invent hair he does not have. Thin brain-coral ridges run across the shoulders. The face is the smoothest passage, worked in fine plating coral so the features stay clean while the porous texture still reads across it. Lips are coral. No skin, no real hair. Eyes are real, with a clear catchlight.
+
+Frame from the stomach to the top of the head. The scene is undersea: streams of volumetric light falling from above, schools of fish swimming around the bust and one or two crossing in front of it, the water deepening into blue behind. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
     avoid: null,
   },
   // coral: restored VERBATIM from the CENG batch files 08-02. Do not rewrite from plates.
 
   driftwood_resin: {
     id:    'driftwood_resin',
-    body:  `Transform the entire figure into a contemporary sculpture combining weathered driftwood and glossy colored epoxy resin — the live-edge resin-river aesthetic. The driftwood preserves the form and the likeness: the face and the structural planes of the head, shoulders, and major contours are carved from pale, silvery, weathered driftwood with visible grain, knots, cracks, and organic live edges, keeping the subject clearly recognizable. Flowing rivers and pools of translucent colored epoxy resin run through and between the wood — deep teal, ocean blue, amber, or emerald — filling the live-edge gaps, the cracks, and the negative spaces, catching and refracting light. The resin is where the color and translucency live; the wood is where the likeness lives. The whole piece is finished in a high-gloss polish so the resin reads as liquid-clear and the wood as satin-smooth. No human skin anywhere — the face, neck, forehead, ears and every visible surface are weathered driftwood, not skin. The wood grain, cracks and live edges continue across the entire face. This is the most common failure. Avoid an all-wood sculpture with no resin, or an all-resin sculpture with no wood — both materials must be present and distinct. Avoid a matte or unfinished surface; the glossy high-polish finish is required. Avoid resin that looks opaque or painted — it must read as translucent, light-catching epoxy. Avoid driftwood so abstract the face stops being recognizable; the wood carries the likeness. Sculpture on a base in a coastal woodworker's studio — a wide window onto grey sea and sky, live-edge slabs leaning against the walls, clamps and resin buckets, sawdust light. Strong depth of field heavily blurring the background. Contemporary gallery presentation. High-gloss finish catching the light. Translucent resin rivers. Weathered live-edge driftwood. Museum-quality craftsmanship. Highly tactile and dimensional. Fine-art mixed-media sculpture. Facing the camera directly, warm natural smile, eyes to the viewer. Camera at eye level. Head, shoulders and upper chest fill the frame with a little breathing room, face roughly 30% of the image. No plaque. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
-    avoid: null,
+    body:  `Transform the entire figure into a contemporary sculpture combining weathered driftwood and glossy coloured epoxy resin — the live-edge resin-river aesthetic. The driftwood carries the likeness: the face and the structural planes of the head, shoulders and major contours are carved from pale, silvery, weathered driftwood with visible grain, knots, cracks and organic live edges, cut to THIS person's own brow, cheekbones, nose and jaw. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression. Keep his hairline, hairstyle, length and direction carved in the same wood, and do not prematurely grey it. Do not add weight and do not age him.
+
+Flowing rivers and pools of translucent coloured epoxy resin run through and between the wood — deep teal, ocean blue, amber or emerald — filling the live-edge gaps, the cracks and the negative spaces, catching and refracting light. The resin is where the colour and translucency live; the wood is where the likeness lives. The whole piece is finished in a high-gloss polish so the resin reads as liquid-clear and the wood as satin-smooth.
+
+No human skin anywhere — the face, neck, forehead, ears and every visible surface are weathered driftwood, not skin. The wood grain, cracks and live edges continue across the entire face.
+
+Sculpture on a base in a coastal woodworker's studio — a wide window onto grey sea and sky, live-edge slabs leaning against the walls, clamps and resin buckets, sawdust light, heavily out of focus. Contemporary gallery presentation. Museum-quality craftsmanship. Facing the camera directly, warm natural smile, eyes to the viewer, camera at eye level. Frame from the stomach to the top of the head. No plaque. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `AVOID: Avoid an all-wood sculpture with no resin, or an all-resin sculpture with no wood — both materials must be present and distinct. Avoid a matte or unfinished surface. Avoid resin that looks opaque or painted. Avoid driftwood so abstract the face stops being recognisable; the wood carries the likeness.`,
   },
   // driftwood_resin: restored VERBATIM from the CENG batch files 08-02. Do not rewrite from plates.
 
@@ -438,19 +464,25 @@ Maintain: hair length, style and hairline. Do not invent hair`,
 
   balloon_face: {
     id:    'balloon_face',
-    body:  `Transform the subject into a sculpture built from inflated balloons — glossy latex in twisted and pressed segments, the face, hair and garment all formed from balloon shapes tied and bunched into the person's own structure. Taut curved surfaces with bright specular highlights, the pinch and knot visible where segments meet, faint seams running the length of each balloon. The colors Use a restrained, sophisticated near-monochromatic palette of smoked amethyst, deep aubergine, dusty plum, muted mauve and blackberry, with subtle tonal variations between individual balloons. Keep the face in warm muted blush and taupe balloon tones. Avoid primary colors, rainbow colors and children's-party colors. The overall color treatment should feel luxurious, editorial and distinctly adult.. The face is balloon throughout — no skin, no real hair. Likeness is critical; the features read clearly through the rounded forms. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. Idealized and beautiful. Photographic — a real object photographed in real light, not an illustration. Background: a bright party hall, streamers and lights out of focus behind. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings. 
-The background is an adult style party in a club.`,
-    avoid: `Avoid a face painted onto a balloon. Avoid real skin or hair. Avoid a balloon animal or novelty shape. Avoid losing the likeness to rounded generic features.`,
+    body:  `Rebuild the subject as a **3D sculpture made entirely from inflated latex. Likeness is critical.** Preserve exact head shape, facial proportions, brow, eye spacing, nose, cheekbones, mouth, jaw, chin, natural asymmetry and subtle expression.
+Form the face from **only one or two broad, partially inflated pieces of thin translucent balloon latex**, stretched and tensioned over the facial structure. The latex closely follows the underlying facial planes rather than becoming round or puffy. Preserve fine contours around the eyes, nose, mouth and cheeks through tension in the thin rubber, **not additional balloons**.
+Recreate the exact hairline, hairstyle, length, color, direction and natural irregularity with layered balloon forms. Facial-hair density stays exact: **stubble remains stubble; never invent a beard or moustache.**
+Colors follow the subject. Face latex derives from the real complexion; hair matches the actual hair color; garment retains its original colors. Keep the material unmistakably balloon latex: thin, slightly translucent, taut and glossy, with subtle stretching, seams and occasional pinches.
+Frame stomach to top of head. Real physical sculpture photographed in real light, with a heavily blurred upscale adult club party behind.`,
+    avoid: `**Avoid:** segmented or patchwork faces, puffy cheeks, rounded generic features, altered facial structure, real skin or hair, painted-on features, children's colors, or sacrificing likeness for balloon-animal construction.`,
   },
   // balloon_face: First captured body. Refs existed, prompt never did.
 
-  beaded: {
-    id:    'beaded',
-    body:  `highly detailed sphere basic sculpture of the subject in the photo.  Subject should be framed chest to head. face should occupy 30% of image. the sculpture is fully 3d and made from beads and orbs of different sizes that are lighting with an internal falloff. The color of the spheres, orbs and beads are monochromatic greens with variations in value to create interest. Leave some negative space to show volume. likeness is important. . the sculpture ends at the chest with shoulders and garment resolved in beads. Background is an Indian dye market — deep jade and sage  and verdant pigment heaped in open sacks and brass bowls, stained cloth hanging above, warm low light from a doorway. Heavily blurred. No real skin, hair. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Keep the eyes human
-Place the sculpture on a turned warm walnut indian style pedastal that is smooth polished No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
-    avoid: null,
-  },
-  // beaded: supersedes 07-30 red free-floating version, and the green free-floating version locked earlier the same day
+  // beaded: CUT 2026-08-21 by Rich. The body is not lost - it is in the
+  // archived copy at H:\minramas\lib\v1\portraits\portraits-bodies_NNN.ts.
+  //
+  // Removing it from here is only half. effect-registry.ts and the emitted
+  // public/effect-registry.js still list it, and a tile with no body behind
+  // it throws from getBody(). CUI owns that half.
+  //
+  // The style-ref folder lib/v1/portraits/style-refs/beaded/ is left alone -
+  // MAX_STYLE_REFS is 0 so nothing reads it, and deleting files is against
+  // the standing rule.
 
   origami: {
     id:    'origami',
@@ -478,17 +510,27 @@ Place the sculpture on a turned warm walnut indian style pedastal that is smooth
 
   clockwork: {
     id:    'clockwork',
-    body:  `The subject is built as a clockwork automaton — brass and steel plate over a visible movement, tiny gears, jewelled bearings and coiled springs turning in the openings at the temple, throat and shoulder. The face is shaped brass, its panels following this person's own brow, cheekbones and jaw, joints hairline-fine where the plates meet. Eyes stay human in size and spacing. The garment rebuilt in engraved plate. Warm brass, blued steel, a little verdigris in the seams. Likeness is critical. Frame from stomach to the top of the head. Face should occupy 15% of the image. Photographic and highly idealized — a real made object in real light, the finest piece of its kind. Background: a watchmaker's bench, loupes and movements out of focus, warm low light. Preserve natural facial character, asymmetry, lines and scars. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings. 
-No human skin or hair. Make hair, beards, mustaches flat plates with deep grooves to match the existing hairs style and texture as close as possible.
-Place the subject inside an intimate old Swiss watchmaker's workshop, warm, cluttered and handcrafted, with the charm of Geppetto's shop. Behind him, tall divided-light wood windows look out onto a narrow old-European district of crooked stone buildings, weathered plaster facades, shop signs and a cobbled pedestrian lane receding into the distance. Shelves and workbenches filled with watchmaker's tools, tiny drawers, brass instruments and half-finished clocks create layers of depth. Warm amber workshop light inside contrasts with soft cool daylight from the street, atmospheric and cinematic.`,
+    body:  `Rebuild the subject as a **clockwork automaton of shaped brass and steel, precisely fitted to THIS person's face. Likeness is critical.** Preserve exact head shape, facial proportions, brow, eyes, nose, cheekbones, mouth, jaw, natural asymmetry and the **subtle micro-gestures of the original expression**. Do not idealize, age, add weight or alter expression. If chin hair is too fine do not include. 
+Eyes are also clockwork.
+The face is thin shaped brass plate following the subject's real facial planes, with hairline-fine panel joints. Human-sized eyes. Tiny gears, jewelled bearings and springs visible only through select openings at the temple, throat and shoulders.
+No human skin or hair. Recreate the **exact hairline, hairstyle, length, direction and natural irregularity** in layered metal strands and plates. Hair should feel loose, organic and imperfect, **never uniformly combed, symmetrical or helmet-like.** 
+Garment becomes engraved plate. Warm brass, blued steel and restrained verdigris. Frame stomach to top of head. Photographic, a real handcrafted object in real light.
+Set in a warm, cluttered old Swiss watchmaker's workshop overlooking a narrow cobbled European street. Antique tools, tiny drawers, clocks and brass instruments heavily blurred behind. Warm workshop light mixed with cool window daylight.
+No held objects, eyewear or watches. Worn jewellery is fine.`,
     avoid: null,
   },
   // clockwork: NEW.
 
   dragon_skin: {
     id:    'dragon_skin',
-    body:  `Transform the subject into a dragon-human hybrid — the entire head and figure surfaced in fine iridescent dragon scale, deep emerald and oil-slick violet shifting through bronze and gold. The face is scale all the way through, including the mouth — scaled lips, no human teeth or gums. Larger armored scale across the shoulders and chest, finer across the face. Hair keeps its real length and silhouette, rendered as scaled tendrils. A full dragon's body grows from the back — spined neck, ridged spine, a serpentine body curving down and away. Horns rise from the crown. Rebuild the garment in overlapping scale plate. Remove glasses and worn accessories. The face is turned to the camera and lit, clearly this person. Powerful, mythic, jewel-like. Photographic. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a rock ledge at dusk, a cliff falling into haze behind, cold light from the left and warm firelight from the right, heavily out of focus. Maintain expression of the subject. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
-    avoid: `Avoid human lips, teeth or hair. Avoid glasses and worn accessories. Avoid the source fabric showing through the scale. Avoid an illustrated look.`,
+    body:  `Transform the subject into a dragon-human hybrid — the entire head and figure surfaced in fine iridescent dragon scale, deep emerald and oil-slick violet shifting through bronze and gold. The scale is laid over THIS person's own structure. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression — the face is turned to the camera and lit, clearly this person. Do not add weight and do not age him. 
+
+The face is scale all the way through, including the mouth — scaled lips, no human teeth or gums. Larger armoured scale across the shoulders and chest, finer across the face. Keep his hairline, hairstyle, length and direction, rendered as scaled tendrils, and do not prematurely grey them.
+
+A full dragon's body grows from the back — spined neck, ridged spine, a serpentine body curving down and away. Horns rise from the crown. Rebuild the garment in overlapping scale plate. Remove glasses and worn accessories. Powerful, mythic, jewel-like. Photographic.
+
+Frame from the stomach to the top of the head. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a rock ledge at dusk, a cliff falling into haze behind, cold light from the left and warm firelight from the right, heavily out of focus. No held objects — no cups, glasses, phones, books, tools, watches or eyewear.`,
+    avoid: `AVOID: Avoid human lips, teeth or hair. Avoid glasses and worn accessories. Avoid the source fabric showing through the scale. Avoid an illustrated look.`,
   },
   // dragon_skin: supersedes 07-30 version
   // dragon_skin: §1.3 garment tail line deliberately REMOVED — it was preserving the source shirt.
@@ -552,10 +594,16 @@ The feeling is charming vintage tin toy brought to life, not cyborg, android or 
 
   deco_twenties: {
     id:    'deco_twenties',
-    body:  `Transform the subject into a realistic romantic photograph of an aristocratic gentleman at an elegant 1926 hotel party, preserving facial likeness and ethnicity. Dress him in a black dinner jacket with satin lapels, white wing-collar shirt, black bow tie and white silk pocket square. Hair slicked flat with pomade and a hard side part, clean-shaven. Likeness is essential.
-Frame from mid-chest to head, shoulders three-quarter turned, facing camera with a calm expression and faint smile. He should belong completely to the period, never appearing modern in vintage costume.
+    body:  `Transform the subject into a realistic romantic photograph of an aristocratic gentleman at an elegant 1926 hotel party. This is a photograph of THIS man in 1926 dress, not a period gentleman who resembles him. Likeness is essential: keep the shape and character of his face, his natural asymmetry, his real weight and build, and the micro gestures of his expression. Do not add weight and do not age him.
+
+Dress him in a black dinner jacket with satin lapels, white wing-collar shirt, black bow tie and white silk pocket square. His hair is dressed to the period — worn back with a side part and a light pomade sheen — but it is HIS hairline, HIS hairstyle, HIS length and HIS colour underneath. Do not give him more hair than he has, do not lower his hairline, and do not prematurely grey him.
+
+Frame from the stomach to the top of the head, shoulders three-quarter turned, facing camera with a calm expression and faint smile. He should belong completely to the period, never appearing modern in vintage costume.
+
 Behind him, an opulent 1920s ballroom dissolves into mirrored panels, muted gold ornament, low amber lamps and cigarette haze, heavily out of focus with no other people visible.
-Give the photograph a gently aged 1920s character: muted warm color, restrained sepia-amber cast, slightly desaturated ivory skin, softened blacks, subtle grain, highlight bloom and gentle corner falloff. Retain subdued gold, tobacco and warm skin tones. It should feel like a beautifully preserved early color photograph, not monochrome or a modern vintage filter.
+
+Give the photograph a gently aged 1920s character: muted warm colour, restrained sepia-amber cast, slightly desaturated ivory skin, softened blacks, subtle grain, highlight bloom and gentle corner falloff. Retain subdued gold, tobacco and warm skin tones. It should feel like a beautifully preserved early colour photograph, not monochrome or a modern vintage filter.
+
 Preserve natural facial structure, lines, scars and asymmetry. Remove temporary blemishes only. Never reshape, enlarge eyes or de-age. No held objects.`,
     avoid: null,
   },
