@@ -6631,10 +6631,24 @@ window.EFFECT_PREVIEWS = {
       if (!data.ok){
         var needed = data.needed != null ? data.needed : items.length * creditsPerImage();
         if (!quiet){
-          if (typeof window.__openPaywall === 'function'){
-            window.__openPaywall({ needed: needed, balance: data.balance || 0, reason: data.reason });
+          /* THE SHOP OPENS FOR A SHORTFALL AND NOTHING ELSE. It used to open
+             on any refusal at all, so a gate saying no for a reason that had
+             nothing to do with money produced a panel reading "this craft
+             needs 50 credits, your balance is 537, your pieces are held while
+             you decide" -- two sentences that contradict each other, and no
+             way out except pressing Craft again and seeing it a second time.
+
+             Reported on /halloween 21 August with 537 credits in hand. The
+             cause there was a wrong series in the gate body, fixed above; this
+             is the class of fault rather than that one instance. */
+          var balance = data.balance || 0;
+          var short   = data.reason === 'insufficient' ||
+                        data.reason === 'insufficient_credits' ||
+                        (typeof data.balance === 'number' && data.balance < needed);
+          if (short && typeof window.__openPaywall === 'function'){
+            window.__openPaywall({ needed: needed, balance: balance, reason: data.reason });
           }
-          creditsNotice(data.reason, data.balance || 0, needed);
+          creditsNotice(data.reason, balance, needed);
         }
         return false;
       }
