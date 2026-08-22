@@ -1118,6 +1118,37 @@ body{
 /* a room with fewer than eight keeps the second row's height — the empty
    space is intentional, not a collapse. */
 
+/* ---- FOUR SILOS LAY 2x2, CENTRED --------------------------------------
+   Rich, 21 August, from a mockup. Four silos were filling one row of the
+   eight-column grid and reaching both edges, which left the whole second
+   row empty and held each card to about 280 at 1920.
+
+   Scoped to the silo floor by id on purpose. The effects floor and the
+   pose floor share every .floor rule above and neither is moving, and the
+   id also outranks the justify-self:start/end pair for data-count="4"
+   without those needing to be edited -- they stay correct for any other
+   four-up floor.
+
+   THE WIDTH. 320 at 1920, given. Written as vw so the room still holds at
+   2550, where a fixed 320 would be a postage stamp. 16.7vw is 320.6 at
+   1920. The two ends of the clamp are a guess at a range not yet seen and
+   are the numbers to change. */
+:root{ --silo-w:clamp(240px, 16.7vw, 420px); }
+
+#siloFloor[data-count="4"]{
+  grid-template-columns:repeat(2, var(--silo-w));
+  grid-template-rows:repeat(2, auto);
+  justify-content:center;
+  align-content:center;
+}
+#siloFloor[data-count="4"] > *{
+  /* auto, not `auto / span 2` -- the columns are now the card width
+     rather than eighths of the floor, so a span of two would take both. */
+  grid-column:auto;
+  justify-self:stretch;
+  width:var(--silo-w);
+}
+
 
 
 /* ---- the card ---------------------------------------------------------- */
@@ -8661,7 +8692,10 @@ window.EFFECT_PREVIEWS = {
 
   /* Alphabetical. Every Series shows whether or not it holds anything — a
      missing tab reads as a Series that does not exist. */
-  var MC_SERIES = ['Action','Groups','Mobile Wallpapers','Pets','Portraits'];
+  /* Halloween was missing, so every piece from that room had no filter to
+     appear under and was reachable only by View All. Alphabetical, like
+     the rest -- an appended entry reads as an afterthought. */
+  var MC_SERIES = ['Action','Groups','Halloween','Mobile Wallpapers','Pets','Portraits'];
 
   /* Declared HERE, with the other constants, because renderCollection() runs
      during init and calls renderOnward(), which reads this. A var assigned
@@ -9094,7 +9128,12 @@ window.EFFECT_PREVIEWS = {
      The tile lands first and the save follows it. A customer never waits on
      an upload to see their own work, and a failed save costs them the
      durability rather than the piece. */
+  /* halloween was missing, so a piece stored under it fell through to the
+     room's own default and read as Portraits on one page and Pets on
+     another. Pets Halloween is not here on purpose: it stores 'pets', so
+     both pet rooms share one filter. */
   var SERIES_LABEL = { portraits:'Portraits', pets:'Pets', groups:'Groups',
+                       halloween:'Halloween',
                        action:'Action', actionmini:'Action',
                        wallpapers:'Mobile Wallpapers' };
 

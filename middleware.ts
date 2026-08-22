@@ -52,6 +52,16 @@ const PAGES: Record<string, string> = {
      would put a room in the Series menu that opens onto nothing, which is
      the fault the Portraits menu comment above was written about. */
   '/pets': '/pets.html',
+  /* THE TWO PET ROOMS. Rich ruled /pets becomes a two-card chooser with
+     these behind it. Until that exists /pets serves the Portraits room
+     directly, so somebody clicking Pets in the menu lands somewhere real
+     rather than on an empty stage.
+
+     /pets/portraits is mapped now, ahead of the chooser, so that when the
+     chooser lands only the /pets line above changes and both rooms are
+     already addressable. Same shape /wallpapers already uses. */
+  '/pets/portraits': '/pets.html',
+  '/pets/halloween': '/pets-halloween.html',
   '/halloween': '/halloween.html',
   '/gallery': '/gallery.html',
   /* THE BOARD. A page rather than a panel: it is somewhere you go and spend
