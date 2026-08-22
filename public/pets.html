@@ -6532,7 +6532,11 @@ window.EFFECT_PREVIEWS = {
       body: JSON.stringify({
         count:    items.length,
         cost_per: CREDITS_PER_IMAGE,
-        series:   'portraits',
+        /* Was 'portraits', inherited from the clone. The gate checks
+           the presets against the series it is given, so this room was
+           handing its own presets to the Portraits catalogue and being
+           refused - which then opened the shop. */
+        series:   'pets',
         presets:  items.map(function(q){ return q.preset || null; })
       })
     }).then(function(res){
@@ -6541,10 +6545,24 @@ window.EFFECT_PREVIEWS = {
       if (!data.ok){
         var needed = data.needed != null ? data.needed : items.length * CREDITS_PER_IMAGE;
         if (!quiet){
-          if (typeof window.__openPaywall === 'function'){
-            window.__openPaywall({ needed: needed, balance: data.balance || 0, reason: data.reason });
+          /* THE SHOP OPENS FOR A SHORTFALL AND NOTHING ELSE. It used to open
+             on any refusal at all, so a gate saying no for a reason that had
+             nothing to do with money produced a panel reading "this craft
+             needs 50 credits, your balance is 537, your pieces are held while
+             you decide" -- two sentences that contradict each other, and no
+             way out except pressing Craft again and seeing it a second time.
+
+             Reported on /halloween 21 August with 537 credits in hand. The
+             cause there was a wrong series in the gate body, fixed above; this
+             is the class of fault rather than that one instance. */
+          var balance = data.balance || 0;
+          var short   = data.reason === 'insufficient' ||
+                        data.reason === 'insufficient_credits' ||
+                        (typeof data.balance === 'number' && data.balance < needed);
+          if (short && typeof window.__openPaywall === 'function'){
+            window.__openPaywall({ needed: needed, balance: balance, reason: data.reason });
           }
-          creditsNotice(data.reason, data.balance || 0, needed);
+          creditsNotice(data.reason, balance, needed);
         }
         return false;
       }
@@ -6722,7 +6740,10 @@ window.EFFECT_PREVIEWS = {
       count:    items.length,
       cost_per: CREDITS_PER_IMAGE,
       ref_id:   ref,
-      series:   'portraits',
+      /* Was 'portraits' too. A failed craft here was asking the refund
+         route to reverse a charge under a series it was never made
+         under - so the money would not have come back. */
+      series:   'pets',
       reason:   'craft_failed',
       presets:  items.map(function(q){ return q.preset || null; })
     };

@@ -6529,7 +6529,11 @@ window.EFFECT_PREVIEWS = {
       body: JSON.stringify({
         count:    items.length,
         cost_per: CREDITS_PER_IMAGE,
-        series:   'portraits',
+        /* Was 'portraits', inherited from the clone. The gate checks
+           the presets against the series it is given, so this room was
+           handing its own presets to the Portraits catalogue and being
+           refused - which then opened the shop. */
+        series:   'halloween',
         presets:  items.map(function(q){ return q.preset || null; })
       })
     }).then(function(res){
@@ -6538,10 +6542,24 @@ window.EFFECT_PREVIEWS = {
       if (!data.ok){
         var needed = data.needed != null ? data.needed : items.length * CREDITS_PER_IMAGE;
         if (!quiet){
-          if (typeof window.__openPaywall === 'function'){
-            window.__openPaywall({ needed: needed, balance: data.balance || 0, reason: data.reason });
+          /* THE SHOP OPENS FOR A SHORTFALL AND NOTHING ELSE. It used to open
+             on any refusal at all, so a gate saying no for a reason that had
+             nothing to do with money produced a panel reading "this craft
+             needs 50 credits, your balance is 537, your pieces are held while
+             you decide" -- two sentences that contradict each other, and no
+             way out except pressing Craft again and seeing it a second time.
+
+             Reported on /halloween 21 August with 537 credits in hand. The
+             cause there was a wrong series in the gate body, fixed above; this
+             is the class of fault rather than that one instance. */
+          var balance = data.balance || 0;
+          var short   = data.reason === 'insufficient' ||
+                        data.reason === 'insufficient_credits' ||
+                        (typeof data.balance === 'number' && data.balance < needed);
+          if (short && typeof window.__openPaywall === 'function'){
+            window.__openPaywall({ needed: needed, balance: balance, reason: data.reason });
           }
-          creditsNotice(data.reason, data.balance || 0, needed);
+          creditsNotice(data.reason, balance, needed);
         }
         return false;
       }
@@ -6719,7 +6737,10 @@ window.EFFECT_PREVIEWS = {
       count:    items.length,
       cost_per: CREDITS_PER_IMAGE,
       ref_id:   ref,
-      series:   'portraits',
+      /* Was 'portraits' too. A failed craft here was asking the refund
+         route to reverse a charge under a series it was never made
+         under - so the money would not have come back. */
+      series:   'halloween',
       reason:   'craft_failed',
       presets:  items.map(function(q){ return q.preset || null; })
     };
@@ -8095,11 +8116,13 @@ window.EFFECT_PREVIEWS = {
     if (inPose){
       tbcGoVerb.textContent = 'Craft';
       tbcGoN.textContent    = n === 1 ? 'this piece' : ('all ' + n);
-      tbcGoSub.textContent  = 'Step 2 of 2 \u00b7 ' + credits;
+      tbcGoSub.textContent  = credits;   /* no step count - there is one */
     } else {
-      tbcGoVerb.textContent = 'Next';
-      tbcGoN.textContent    = '\u00b7 choose a pose';
-      tbcGoSub.textContent  = 'Step 1 of 2 \u00b7 ' + credits;
+      /* One step in this room. The button used to promise a second and then
+         charge -- both halves of a removed step or neither. */
+      tbcGoVerb.textContent = 'Craft';
+      tbcGoN.textContent    = n === 1 ? 'this piece' : ('all ' + n);
+      tbcGoSub.textContent  = credits;
     }
     /* A standing note outranks the step line. See SUB_NOTE — this exists so
        a message about money survives the floor flipping back, which calls
@@ -8673,7 +8696,11 @@ window.EFFECT_PREVIEWS = {
       if (!ME){ PENDING_CRAFT = true; openSignin(); return; }
       window.__runAll();
     } else {
-      openPoses();
+      /* Was openPoses(). This room has no poses -- the registry says so and
+         the route carries no pose field -- so the second step drew an empty
+         floor and the craft could not be reached through it. Ruled by Rich
+         21 August; the page was never brought back in line. */
+      window.__runAll();
     }
   });
 
