@@ -12,6 +12,13 @@
      else; the name of the finish lives in one place and this page reads it
      rather than keeping a second copy that would drift. -->
 <script src="/effect-registry.js"></script>
+<!-- Portraits has no named global of its own and every registry below
+     claims EFFECT_REGISTRY, so it is given one before they load. -->
+<script>window.PORTRAITS_REGISTRY = window.EFFECT_REGISTRY;</script>
+<script src="/groups-registry.js"></script>
+<script src="/pets-registry.js"></script>
+<script src="/halloween-registry.js"></script>
+<script src="/pets-halloween-registry.js"></script>
 <script src="/concierge.js" defer data-dock data-attention></script>
 
 <style>
@@ -334,7 +341,9 @@ body{
    a 4:5 portrait are different shapes and the board should look like it. */
 .wall{ padding:clamp(26px,2.6vw,44px) 0 }
 .wall-cols{
-  columns:4 260px;
+  /* 400px columns, count unspecified - the board takes as many as the
+     page allows rather than forcing four. Ruled 22 August. */
+  columns:400px;
   column-gap:var(--board-gap);
 }
 .pc{
@@ -370,6 +379,21 @@ body{
 }
 .pc-counts{ display:flex; align-items:center; gap:.7rem; white-space:nowrap }
 .pc-counts span{ display:inline-flex; align-items:center; gap:.25rem }
+/* THE HEART IS PRESSABLE ON THE CARD. It was a readout of something a
+   customer had to open the piece to do. Sized as a control rather than
+   a caption - a target under 32px is a miss on a touch screen. */
+.pc-heart{
+  display:inline-flex; align-items:center; gap:.3rem;
+  min-height:32px; padding:.25rem .55rem; margin:-.25rem -.25rem -.25rem 0;
+  background:none; border:1px solid transparent; border-radius:999px;
+  font-family:var(--sans); font-size:.875rem; color:var(--ink-soft);
+  cursor:pointer;
+  transition:color .16s ease, border-color .16s ease;
+}
+.pc-heart:hover{ color:var(--oxblood); border-color:var(--oxblood) }
+.pc-heart:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.pc-heart.is-hearted{ color:var(--oxblood) }
+.pc-heart.is-hearted svg{ fill:var(--oxblood); stroke:var(--oxblood) }
 .pc-counts svg{ width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.7 }
 .pc-counts .is-hearted svg{ fill:var(--oxblood); stroke:var(--oxblood) }
 
@@ -603,13 +627,13 @@ body{
   .mh-menu{ display:flex; justify-self:start; margin-left:12px }
 }
 @media (max-width:900px){
-  .wall-cols{ columns:3 220px }
+  .wall-cols{ columns:300px }
 }
 @media (max-width:767px){
   :root{ --mh-h:60px; --mark-h:46px }
   html{ scroll-padding-top:112px }
   .mh-credits.has-balance .u{ display:none }
-  .wall-cols{ columns:2 150px }
+  .wall-cols{ columns:1 }
   .open{ padding:22px 0 16px }
   .post-in{ width:100%; border-left:none }
   .pc-nm{ font-size:1.125rem }
@@ -629,7 +653,7 @@ body{
   <nav class="mh-nav">
     <div class="mh-series">
       <button class="mh-series-btn" id="mhSeriesBtn" aria-expanded="false" aria-haspopup="true">
-        <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Portraits</span>
+        <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Rooms</span>
         <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
       </button>
       <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
@@ -796,9 +820,18 @@ body{
      effect-registry.ts is renamed on this board with no edit. */
   var LABEL = {};
   (function(){
-    var Reg = window.EFFECT_REGISTRY;
-    if (!Reg || !Reg.effects) return;
-    Reg.effects.forEach(function(e){ if (e && e.id) LABEL[e.id] = e.label; });
+    /* EVERY registry, not one. The board carries pieces from every
+       Series, so a label map built from one room leaves the rest
+       falling back to the Series name. Walked by suffix rather than
+       by a list, so a sixth registry needs no edit here. */
+    Object.keys(window).forEach(function(k){
+      if (k.slice(-9) !== '_REGISTRY') return;
+      var Reg = window[k];
+      if (!Reg || !Reg.effects || !Reg.effects.forEach) return;
+      Reg.effects.forEach(function(e){
+        if (e && e.id && e.label && !LABEL[e.id]) LABEL[e.id] = e.label;
+      });
+    });
   })();
   var SERIES_LABEL = {
     portraits:'Portraits', pets:'Pets', groups:'Groups',
@@ -1027,8 +1060,9 @@ body{
           '<span>' + (p.handle ? esc(p.handle) : 'A customer') +
             (mine ? ' \u00b7 yours' : '') + '</span>' +
           '<span class="pc-counts">' +
-            '<span class="' + (HEARTED[p.id] ? 'is-hearted' : '') + '">' +
-              heartsSvg() + (p.heart_count || 0) + '</span>' +
+            '<button type="button" class="pc-heart' +
+              (HEARTED[p.id] ? ' is-hearted' : '') + '">' +
+              heartsSvg() + (p.heart_count || 0) + '</button>' +
             '<span>' + cmtsSvg() + (p.comment_count || 0) + '</span>' +
           '</span>' +
         '</div>' +
@@ -1105,7 +1139,20 @@ body{
 
   if (wallMoreBtn) wallMoreBtn.addEventListener('click', function(){ loadPosts(); });
 
+  /* THE HEART, ON THE CARD. Checked before anything else and returns,
+     so a press here never falls through to the piece beneath it. */
   wallCols.addEventListener('click', function(e){
+    var h = e.target.closest('.pc-heart'); if (!h) return;
+    var c = h.closest('.pc'); if (!c) return;
+    e.stopPropagation();
+    heartPost(c.dataset.postId);
+  });
+
+  /* SINGLE CLICK DOES NOTHING. Ruled 22 August: the piece opens on a
+     double click. A wall where every stray click throws a lightbox in
+     front of you is a wall you cannot browse. */
+  wallCols.addEventListener('dblclick', function(e){
+    if (e.target.closest('.pc-heart')) return;
     var c = e.target.closest('.pc'); if (!c) return;
     openPost(c.dataset.postId);
   });
@@ -1177,10 +1224,12 @@ body{
   post.addEventListener('click', function(e){ if (e.target === post) closePost(); });
 
   /* ── HEARTS · once, ever. There is no un-heart. ─────────────────────── */
-  $('postHeart').addEventListener('click', function(){
-    if (!OPEN_ID) return;
+  /* ONE MECHANISM, TWO SURFACES. This was inline in the lightbox
+     handler and read OPEN_ID directly, so the card could not reach it.
+     It takes an id now and the lightbox passes OPEN_ID in. */
+  function heartPost(id){
+    if (!id) return;
     if (!SIGNED_IN){ location.href = '/portraits'; return; }
-    var id = OPEN_ID;
     if (HEARTED[id]) return;
 
     var p = findPost(id);
@@ -1190,9 +1239,15 @@ body{
        second press does nothing either way — the route returns the true
        number for a repeat rather than an error. */
     HEARTED[id] = true;
-    heart.classList.add('is-on');
+    /* The lightbox controls are only meaningful while THIS piece is
+       the open one. Hearting from the card must not repaint a count
+       belonging to a different piece. */
+    if (OPEN_ID === id){
+      heart.classList.add('is-on');
+      $('postHearts').textContent = String(p ? (p.heart_count || 0) + 1 : 1);
+    }
     if (p){ p.heart_count = (p.heart_count || 0) + 1; }
-    $('postHearts').textContent = String(p ? p.heart_count : 1);
+    repaintCard(id);
 
     fetch(R_HEARTS + encodeURIComponent(id), {
       method:'POST', credentials:'same-origin'
@@ -1207,6 +1262,10 @@ body{
         repaintCard(id);
       })
       .catch(function(){ repaintCard(id); });
+  }
+
+  $('postHeart').addEventListener('click', function(){
+    heartPost(OPEN_ID);
   });
 
   /* ── REPORTING · quiet ──────────────────────────────────────────────
