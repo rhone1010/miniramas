@@ -796,7 +796,11 @@ body{
   body{ padding-bottom:118px }
 
   /* The tabs are the navigation now. */
-  .mh-menu, .mh-drawer{ display:none !important }
+  /* CUI 41A, 23 Aug 2026. r1 turned the hamburger off and gave its
+     place to the Series pill. Sign out now lives in the drawer, so the
+     hamburger comes back and the two share the bar. */
+  .mh-menu{ display:flex !important; margin-left:0 }
+
 
   /* ---- SERIES, ON A PHONE  ------------------------------------------
      CUI 41A, 23 Aug 2026. Below 767 there was no way to another Series
@@ -822,6 +826,38 @@ body{
   /* Two words of a four-word label. The Series name is the part that
      changes and the part being read. */
   .mh-series-btn .mh-crafted{ display:none }
+
+  /* ---- THE RIGHT CLUSTER  -------------------------------------------
+     CUI 41A, 23 Aug 2026. Rich's five.
+
+     The name goes. The balance stays -- it is the only number on the
+     bar that changes and the only one anybody checks. Sign out goes to
+     the drawer. Help and cart end up beside each other, which is where
+     they belonged: one asks the studio something, the other holds what
+     is being bought, and neither is the balance.
+
+     Order, left to right: credits, help, cart. DOM order is help,
+     credits, cart, so the flex order property does the move rather
+     than the markup -- the desktop arrangement is untouched. */
+  .mh-credits .who{ display:none !important }
+  .mh-out{ display:none !important }
+
+  .mh-right{ gap:8px }
+  .mh-credits{ order:1 }
+  .mh-ask{ order:2 }
+  .mh-cart{ order:3 }
+
+  /* The trolley says cart. The word is 44px of a 366px bar. */
+  .mh-cart .lbl{ display:none }
+
+  /* Pills at 16px of padding each side were sized for a canvas. */
+  .mh-credits, .mh-cart{ padding:0 11px; gap:7px }
+
+  /* With the hamburger back, the pill takes what is left rather than a
+     share of the viewport. 46vw was 179px and it ran under the help
+     mark on a 390px screen. */
+  .mh-series-btn{ max-width:34vw }
+
 
 
   /* The spine held a rotated label and 60px of a 390px screen. On a phone
@@ -4894,6 +4930,12 @@ body.is-lboxed{ overflow:hidden }
     <a href="/collection">My Collection</a>
     <a href="/account">Account</a>
     <a href="#" data-concierge>Ask the Concierge</a>
+    <!-- CUI 41A, 23 Aug 2026. The way out, on a phone. The real
+         control is #mhSignOut in the right cluster, which has no room
+         at this width; this entry clicks it rather than holding a
+         second copy of the fetch. Hidden with it when there is nobody
+         to sign out. -->
+    <a href="#" id="mhDrawerOut" data-signout hidden>Sign out</a>
   </nav>
 </header>
 
@@ -8591,6 +8633,10 @@ window.EFFECT_PREVIEWS = {
   function paintCredits(){
     /* The way out is only there when there is somebody to sign out. */
     if (mhSignOut) mhSignOut.hidden = !ME;
+    /* CUI 41A, 23 Aug 2026. The drawer's copy follows it. A dead
+       'Sign out' in a menu is worse than none. */
+    var drawerOut = document.getElementById('mhDrawerOut');
+    if (drawerOut) drawerOut.hidden = !ME;
     if (!mhCreditsBtn || !mhCreditsCount) return;
     /* Signed out, or a balance we could not read. Show nothing rather
        than a zero — a zero over an unknown tells someone with sixty
@@ -11732,6 +11778,19 @@ document.addEventListener('click', function(e){
   var mb = document.getElementById('mhMenuBtn');
   if (dw) dw.setAttribute('hidden','');
   if (mb) mb.setAttribute('aria-expanded','false');
+});
+
+/* CUI 41A, 23 Aug 2026. Same shape for the way out. The drawer closes
+   and the real button is clicked -- one signout path, not two. */
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.mh-drawer [data-signout]')) return;
+  e.preventDefault();
+  var dw = document.getElementById('mhDrawer');
+  var mb = document.getElementById('mhMenuBtn');
+  if (dw) dw.setAttribute('hidden','');
+  if (mb) mb.setAttribute('aria-expanded','false');
+  var real = document.getElementById('mhSignOut');
+  if (real) real.click();
 });
 </script>
 
