@@ -423,7 +423,12 @@ body{
   margin-top:.3rem;
   font-family:var(--sans); font-size:.875rem; color:var(--ink-soft);
 }
-.pc-counts{ display:flex; align-items:center; gap:.7rem; white-space:nowrap }
+/* HEARTS AND COMMENT COUNTS ARE OFF THE BOARD. Neither is wired to
+   anything that works - see the header of patch-board-share.py. Held
+   as display:none rather than cut, so switching them back on is one
+   line when the schema is reconciled. */
+.pc-counts{ display:none }
+.pc-counts-off{ display:flex; align-items:center; gap:.7rem; white-space:nowrap }
 .pc-counts span{ display:inline-flex; align-items:center; gap:.25rem }
 /* THE HEART IS PRESSABLE ON THE CARD. It was a readout of something a
    customer had to open the piece to do. Sized as a control rather than
@@ -440,6 +445,24 @@ body{
 .pc-heart:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
 .pc-heart.is-hearted{ color:var(--oxblood) }
 .pc-heart.is-hearted svg{ fill:var(--oxblood); stroke:var(--oxblood) }
+
+/* THE SHARE CONTROL. Sized as a control, not a caption - 1.1rem serif
+   italic in a pill, which is the house shape for an action. A link
+   that reads as a caption does not get pressed. */
+.pc-share{
+  font-family:var(--serif); font-style:italic; font-size:1.1rem;
+  line-height:1; white-space:nowrap;
+  padding:.5rem .8rem; border-radius:999px;
+  background:none; color:var(--oxblood);
+  border:1px solid var(--oxblood); cursor:pointer;
+  transition:background .16s ease, color .16s ease;
+}
+.pc-share:hover{ background:var(--oxblood); color:var(--vellum-100) }
+.pc-share:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+/* Said once, in place, and gone. No toast, no banner. */
+.pc-share.is-done{
+  background:var(--oxblood); color:var(--vellum-100);
+}
 .pc-counts svg{ width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.7 }
 .pc-counts .is-hearted svg{ fill:var(--oxblood); stroke:var(--oxblood) }
 
@@ -815,7 +838,10 @@ body{
     <div class="post-by">
       <span class="by-line" id="postBy"></span>
       <span class="post-acts">
-        <button type="button" class="heart" id="postHeart">
+        <!-- Hidden 23 August. Hearts have never written a row; see
+             patch-board-share.py. Kept in the markup because turning
+             them back on should be one attribute. -->
+        <button type="button" class="heart" id="postHeart" hidden>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 0 1 19.4 13Z"/></svg>
           <span class="n" id="postHearts">0</span>
         </button>
@@ -1115,6 +1141,13 @@ body{
         '<div class="pc-by">' +
           '<span>' + (p.handle ? esc(p.handle) : 'A customer') +
             (mine ? ' \u00b7 yours' : '') + '</span>' +
+          /* SHARE, WHERE THE COUNTS WERE. Offered only when CENG says
+             the image is permanent. A false here means image_url is
+             still a 24-hour signature, and handing somebody a link
+             that dies overnight is worse than offering nothing. */
+          (p.shareable && p.image_url
+            ? '<button type="button" class="pc-share">Share</button>'
+            : '') +
           '<span class="pc-counts">' +
             '<button type="button" class="pc-heart' +
               (HEARTED[p.id] ? ' is-hearted' : '') + '">' +
@@ -1298,8 +1331,45 @@ body{
 
   if (wallMoreBtn) wallMoreBtn.addEventListener('click', function(){ loadPosts(); });
 
-  /* THE HEART, ON THE CARD. Checked before anything else and returns,
-     so a press here never falls through to the piece beneath it. */
+  /* SHARE. Checked first, and returns - a press here must not open the
+     piece underneath it.
+
+     THE CLIPBOARD CAN REFUSE. It needs a secure context and, in some
+     browsers, a permission. When it does refuse the link is selected
+     in a prompt instead, so the customer can still take it - a Share
+     button that silently does nothing is the fault this replaced. */
+  wallCols.addEventListener('click', function(e){
+    var b = e.target.closest('.pc-share'); if (!b) return;
+    var c = b.closest('.pc'); if (!c) return;
+    e.stopPropagation();
+
+    var p = findPost(c.dataset.postId);
+    if (!p || !p.image_url) return;
+
+    function said(){
+      b.classList.add('is-done');
+      b.textContent = 'Link copied';
+      setTimeout(function(){
+        b.classList.remove('is-done');
+        b.textContent = 'Share';
+      }, 1800);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(p.image_url).then(said, function(){
+        window.prompt('Copy this link', p.image_url);
+      });
+    } else {
+      window.prompt('Copy this link', p.image_url);
+    }
+  });
+
+  /* THE HEART, ON THE CARD. Dead while hearts are hidden - the button
+     is display:none, so this cannot fire. Left in place because the
+     day the schema is reconciled it should work again untouched.
+
+     Checked before the piece opens, so a press here never falls
+     through to the card beneath it. */
   wallCols.addEventListener('click', function(e){
     var h = e.target.closest('.pc-heart'); if (!h) return;
     var c = h.closest('.pc'); if (!c) return;
@@ -1311,7 +1381,7 @@ body{
      double click. A wall where every stray click throws a lightbox in
      front of you is a wall you cannot browse. */
   wallCols.addEventListener('dblclick', function(e){
-    if (e.target.closest('.pc-heart')) return;
+    if (e.target.closest('.pc-heart') || e.target.closest('.pc-share')) return;
     var c = e.target.closest('.pc'); if (!c) return;
     openPost(c.dataset.postId);
   });
