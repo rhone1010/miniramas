@@ -697,6 +697,32 @@ body{
   /* The tabs are the navigation now. */
   .mh-menu, .mh-drawer{ display:none !important }
 
+  /* ---- SERIES, ON A PHONE  ------------------------------------------
+     CUI 41A, 23 Aug 2026. Below 767 there was no way to another Series
+     at all: this bar goes at 900, the hamburger takes over, and the
+     line above then hides the hamburger. The picker was built and
+     working the whole time, sitting inside the hidden bar.
+
+     The bar comes back holding one thing. The pill says the room you
+     are in and opens the list. Gallery, Community, My Collection and
+     Account stay out -- three of the four are tabs in the band, and
+     Gallery is not worth the width up here. */
+  .mh-nav{
+    display:flex !important;
+    justify-self:start; margin-left:10px;
+    gap:0; min-width:0;
+  }
+  .mh-nav > a{ display:none !important }
+  .mh-series{ min-width:0 }
+  .mh-series-btn{
+    max-width:46vw; min-height:38px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  /* Two words of a four-word label. The Series name is the part that
+     changes and the part being read. */
+  .mh-series-btn .mh-crafted{ display:none }
+
+
   /* The spine held a rotated label and 60px of a 390px screen. On a phone
      the Curator card is the only thing in that column, so the column goes.
      Her letter goes with it — she is speaking from the band, and saying it
@@ -9437,6 +9463,15 @@ window.EFFECT_PREVIEWS = {
               (left === 1 ? 'Craft this again \u00b7 last one' : 'Craft this again') +
               '</button>';
     }
+    /* CUI 41A, 23 Aug 2026. The fourth action, which the featured pane
+       has had since the modal shipped. On a phone .mc-acts is hidden
+       and this is the only place a piece is looked at, so the button
+       was simply not reachable. Same guard as paintActs -- a button
+       that opens nothing is worse than no button -- plus serverId,
+       because a piece still crafting has no row to post. */
+    if (p.serverId && typeof window.openPostToCommunity === 'function'){
+      acts += '<button class="mc-act" data-lb="post">Post to Community</button>';
+    }
     lboxActs.innerHTML = acts;
   }
   /* Exported so the phone's tile handler can reach it. On a desktop the
@@ -9533,6 +9568,11 @@ window.EFFECT_PREVIEWS = {
       window.__RERENDERS_USED = Math.min(RERENDER_CAP, window.__RERENDERS_USED + 1);
       if (typeof window.__requestRerender === 'function') window.__requestRerender(lbList()[LB_AT]);
       paintLightbox();
+    }
+    else if (what === 'post'){
+      /* Straight across from the featured pane's handler. */
+      var post = lbList()[LB_AT];
+      if (typeof window.openPostToCommunity === 'function') window.openPostToCommunity(post);
     }
   });
 
@@ -11375,7 +11415,12 @@ window.EFFECT_PREVIEWS = {
        height is measured and re-measured rather than assumed. */
     function seat(){
       if (!tray || !onPhone()) return;
-      var h = band.classList.contains('is-tucked') ? 26 : band.offsetHeight;
+      /* CUI 41A, 23 Aug 2026. Was: is-tucked ? 26 : offsetHeight. The
+         tuck transform is disabled in the last phone block, so the
+         class arrives on the 7s timer while the band stays put and the
+         tray dropped 36px onto the tabs. The measured height is the
+         only true one. */
+      var h = band.offsetHeight;
       tray.style.bottom = h + 'px';
     }
 
