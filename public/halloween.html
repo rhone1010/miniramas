@@ -3907,6 +3907,19 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   display:flex; flex-wrap:wrap; gap:.45em;
   padding:.8em 0 .9em;
 }
+/* THE MARK. Oxblood on vellum, bottom left, out of the way of the tick
+   at top right and the Archive control below it. A label, not a
+   button - nothing here is pressable. */
+.piece__wall{
+  position:absolute; left:8px; bottom:8px; z-index:2;
+  font-family:var(--serif); font-style:italic; font-size:.95rem;
+  line-height:1; padding:.3rem .6rem; border-radius:999px;
+  background:var(--oxblood); color:var(--vellum-100);
+  box-shadow:0 .2rem .6rem rgba(25,16,10,.28);
+  pointer-events:none; white-space:nowrap;
+}
+.mc-filter.is-wall{ color:var(--oxblood); border-color:var(--oxblood) }
+.mc-filter.is-wall.is-on{ background:var(--oxblood); color:var(--vellum-100) }
 .mc-filter{
   padding:.4em .9em;
   border:1px solid rgba(196,169,110,.24); border-radius:99px;
@@ -8992,7 +9005,11 @@ window.EFFECT_PREVIEWS = {
   /* Halloween was missing, so every piece from that room had no filter to
      appear under and was reachable only by View All. Alphabetical, like
      the rest -- an appended entry reads as an afterthought. */
-  var MC_SERIES = ['Action','Groups','Halloween','Mobile Wallpapers','Pets','Portraits'];
+  /* Action is out - the Series does not exist and nothing writes it.
+     Pets Halloween is in, and is the one entry not backed by a stored
+     series: those pieces store 'pets'. See mcSeriesOf(). */
+  var MC_SERIES = ['Groups','Halloween','Mobile Wallpapers','Pets',
+                   'Pets Halloween','Portraits'];
 
   /* Declared HERE, with the other constants, because renderCollection() runs
      during init and calls renderOnward(), which reads this. A var assigned
@@ -9042,7 +9059,11 @@ window.EFFECT_PREVIEWS = {
   /* We arrive here on the FIRST completion with others still rendering, so the
      default is the featured mode showing that new piece — not a flat grid.
      View All remains the way to see everything at once. */
-  var MC_FILT = 'Halloween';
+  /* VIEW ALL. Every room defaulted this to its own Series, so somebody
+     whose last three pieces were Groups arrived in the Portraits room
+     at a collection that looked empty, and had to find the right pill
+     to see their own work. Ruled 23 August. */
+  var MC_FILT = 'all'; //'Halloween';
   var PICKED  = {};
 
   /* Read-only glass. The account column is CC's when the wiring lands — the
@@ -9076,7 +9097,10 @@ window.EFFECT_PREVIEWS = {
     }
     var live = PIECES.filter(function(p){ return !p.archived; });
     if (MC_FILT === 'all') return live;
-    return live.filter(function(p){ return p.series === MC_FILT; });
+    if (MC_FILT === 'wall'){
+      return live.filter(function(p){ return onWall(p); });
+    }
+    return live.filter(function(p){ return mcSeriesOf(p) === MC_FILT; });
   }
   function mcArchivedCount(){
     return PIECES.filter(function(p){ return p.archived; }).length;
@@ -9085,6 +9109,57 @@ window.EFFECT_PREVIEWS = {
   function esc(s){
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
                     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── PETS HALLOWEEN, SPLIT OUT OF PETS ───────────────────────
+     Those pieces store series 'pets', so there is nothing in the row
+     that separates the two pet rooms. The collection carries no preset,
+     so the pethw_ prefix used everywhere else is not available.
+
+     Matched on the label instead, against the 27 names in the Pets
+     Halloween registry when that registry happens to be loaded on this
+     page. Where it is not, the map is empty and every pet piece stays
+     under Pets - which is the behaviour before today, not a fault.
+
+     A Pets effect sharing a label with a Pets Halloween one would land
+     in the wrong pill. `preset` on the collection row is the real fix
+     and it is CENG's. */
+  var PETHW_LABELS = (function(){
+    var m = {}, r = window.PETS_HALLOWEEN_REGISTRY;
+    if (r && r.effects && r.effects.forEach){
+      r.effects.forEach(function(e){ if (e && e.label) m[e.label] = true; });
+    }
+    return m;
+  })();
+
+  function mcSeriesOf(p){
+    if (p && p.series === 'Pets' && p.name && PETHW_LABELS[p.name]){
+      return 'Pets Halloween';
+    }
+    return p ? p.series : '';
+  }
+
+  /* ── WHAT IS ON THE WALL ───────────────────────────────
+     serverId -> post id, from GET /api/v1/community/posts/mine. The
+     post id is what DELETE takes, which is why it is held rather than
+     a boolean. */
+  var ON_WALL = {};
+
+  function loadOnWall(){
+    return fetch('/api/v1/community/posts/mine', { credentials:'include' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d || !d.ok || !d.posts) return;
+        ON_WALL = d.posts;
+        renderCollection();
+      })
+      /* Degraded, not broken. No badges this load; everything else on
+         the page still works. */
+      .catch(function(){});
+  }
+
+  function onWall(p){
+    return !!(p && p.serverId && ON_WALL[p.serverId]);
   }
 
   function pieceTile(p){
@@ -9105,6 +9180,9 @@ window.EFFECT_PREVIEWS = {
       a.innerHTML =
         '<img class="piece__img" src="' + esc(p.art) + '" alt="" loading="lazy">' +
         '<span class="piece__pick" data-pick="' + esc(p.id) + '">\u2713</span>' +
+        /* A mark, not a control. Taking a piece down happens under the
+           featured piece where there is room to say what it means. */
+        (onWall(p) ? '<span class="piece__wall" title="On the board">On The Wall</span>' : '') +
         /* Only a piece the server knows about can be put away — a tile
            still saving has no id to send. */
         (p.serverId
@@ -9129,11 +9207,24 @@ window.EFFECT_PREVIEWS = {
     var html = rows.map(function(r){
       var held = r.id === 'all'
         ? live.length
-        : live.filter(function(p){ return p.series === r.id; }).length;
+        : live.filter(function(p){ return mcSeriesOf(p) === r.id; }).length;
       return '<button class="mc-filter' + (MC_FILT === r.id ? ' is-on' : '') + '" type="button"' +
              ' data-filter="' + esc(r.id) + '" data-empty="' + (held ? '0' : '1') + '">' +
              esc(r.label) + '</button>';
     }).join('');
+
+    /* ON THE WALL, on the same rule as the archive: drawn only once
+       something is in it. Nobody who has never posted needs a pill
+       telling them so. */
+    var up = live.filter(function(p){ return onWall(p); }).length;
+    if (up){
+      html += '<button class="mc-filter is-wall' +
+              (MC_FILT === 'wall' ? ' is-on' : '') + '" type="button"' +
+              ' data-filter="wall">On The Wall \u00b7 ' + up + '</button>';
+    } else if (MC_FILT === 'wall'){
+      /* The last one came down while we were looking at it. */
+      MC_FILT = 'all';
+    }
 
     /* Drawn only once something is in it. An empty archive is not a
        place, and a pill for it would be a question nobody asked. */
@@ -9210,7 +9301,12 @@ window.EFFECT_PREVIEWS = {
     }
     /* Only where the modal exists. A button that opens nothing is
        worse than no button. */
-    if (typeof window.openPostToCommunity === 'function'){
+    /* A piece already on the board offers the way back off it instead
+       of the way on. Both at once would be two buttons contradicting
+       each other. */
+    if (onWall(p)){
+      acts += '<button class="mc-act" data-fa="unpost" type="button">Take it off the board</button>';
+    } else if (typeof window.openPostToCommunity === 'function'){
       acts += '<button class="mc-act" data-fa="post" type="button">Post to Community</button>';
     }
     box.innerHTML = acts;
@@ -9242,6 +9338,26 @@ window.EFFECT_PREVIEWS = {
     }
     else if (what === 'post'){
       if (typeof window.openPostToCommunity === 'function') window.openPostToCommunity(p);
+    }
+    else if (what === 'unpost'){
+      var postId = p.serverId && ON_WALL[p.serverId];
+      if (!postId) return;
+      b.disabled = true;
+      b.textContent = 'Taking it down\u2026';
+      /* Optimism would be wrong here. This deletes the public copy, so
+         the mark must not come off until the studio says it has. */
+      fetch('/api/v1/community/posts/' + encodeURIComponent(postId), {
+        method:'DELETE', credentials:'include'
+      })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (!d || !d.ok){ b.disabled = false; b.textContent = 'Take it off the board'; return; }
+          delete ON_WALL[p.serverId];
+          renderCollection();
+        })
+        .catch(function(){
+          b.disabled = false; b.textContent = 'Take it off the board';
+        });
     }
   });
 
@@ -9494,6 +9610,9 @@ window.EFFECT_PREVIEWS = {
           });
         });
         renderCollection();
+        /* After the pieces, not before - the badges need tiles to sit
+           on, and this repaints when it answers. */
+        loadOnWall();
         return rows.length;
       })
       .catch(function(e){
