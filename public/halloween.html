@@ -4795,7 +4795,13 @@ body.is-lboxed{ overflow:hidden }
   /* 1 · On the band's measured height, not a constant. The constant was
         118px, measured when the band carried a line it no longer has. */
   .mycoll, .pshop, .acct{
-    top:0 !important;
+    /* CUI 41A, 23 Aug 2026. Was top:0, which put all three of these
+       underneath the masthead -- the collection's filter rail and its
+       head were behind the bar and could not be scrolled out. The base
+       rule seats them at var(--mh-h), but this block sets that to
+       'auto' so the bar can size to its content, and 'auto' is not a
+       length. Measured instead, the same way the band below is. */
+    top:var(--mh-real-h, 60px) !important;
     bottom:var(--lg-band-h, 62px) !important;
     left:0 !important; right:0 !important;
     display:flex !important; flex-direction:column;
@@ -4853,8 +4859,12 @@ body.is-lboxed{ overflow:hidden }
     flex-wrap:nowrap !important;
     overflow-x:auto;
     gap:6px;
-    padding:0 0 8px !important;
-    margin:0;
+    /* CUI 41A, 23 Aug 2026. Was 0 at both ends. The first pill sat
+       against the screen edge and the last was sliced mid-word, so a
+       rail with more to show read as a rail running off the page.
+       Room at each end, and a top margin so it clears the head. */
+    padding:0 12px 8px !important;
+    margin:6px 0 0;
     scrollbar-width:none;
     -webkit-overflow-scrolling:touch;
     scroll-snap-type:x proximity;
@@ -11610,6 +11620,24 @@ window.EFFECT_PREVIEWS = {
       }
     });
   }
+  /* CUI 41A, 23 Aug 2026. The masthead's real height, published for the
+     three fixed surfaces that have to start below it. --mh-h is 'auto'
+     on a phone so the bar can size to its content, which means nothing
+     can position against it. The bar also wraps to two rows at some
+     widths, so this is watched rather than read once. */
+  (function(){
+    var head = document.querySelector('.mh');
+    if (!head) return;
+    function measure(){
+      var h = head.offsetHeight;
+      if (h > 0) document.documentElement.style.setProperty('--mh-real-h', h + 'px');
+    }
+    measure();
+    addEventListener('resize', measure);
+    addEventListener('load', measure);
+    if (window.ResizeObserver) new ResizeObserver(measure).observe(head);
+  })();
+
   var mb = document.getElementById('mhMenuBtn'), dw = document.getElementById('mhDrawer');
   if (mb && dw){
     mb.addEventListener('click', function(){
