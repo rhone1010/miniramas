@@ -711,20 +711,13 @@ body{
      are in and opens the list. Gallery, Community, My Collection and
      Account stay out -- three of the four are tabs in the band, and
      Gallery is not worth the width up here. */
-  .mh-nav{
-    display:flex !important;
-    justify-self:start; margin-left:10px;
-    gap:0; min-width:0;
-  }
-  .mh-nav > a{ display:none !important }
-  .mh-series{ min-width:0 }
-  .mh-series-btn{
-    max-width:46vw; min-height:38px;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
-  /* Two words of a four-word label. The Series name is the part that
-     changes and the part being read. */
-  .mh-series-btn .mh-crafted{ display:none }
+  /* CUI 41A, 23 Aug 2026. r1 showed the Series pill here. Ruled out by
+     Rich the same day: the hamburger already lists every Series, so
+     this was a second navigation on a bar that had no room for it. It
+     wrapped the masthead onto two rows and the label shrank past
+     reading to fit. The room now says its own name -- see .room-name
+     below. */
+  .mh-nav{ display:none !important }
 
   /* ---- THE RIGHT CLUSTER  -------------------------------------------
      CUI 41A, 23 Aug 2026. Rich's five.
@@ -755,7 +748,22 @@ body{
   /* With the hamburger back, the pill takes what is left rather than a
      share of the viewport. 46vw was 179px and it ran under the help
      mark on a 390px screen. */
-  .mh-series-btn{ max-width:34vw }
+  .mh-series-btn{ max-width:34vw }   /* dead since r5; the pill is gone */
+
+  /* ---- THE ROOM'S NAME  ---------------------------------------------
+     CUI 41A, 23 Aug 2026. What the pill was carrying, at a size worth
+     carrying it at. Above the crumb rather than in it: the crumb is two
+     controls and a toggle, and a title among them reads as a fourth
+     control. Serif, because it is the studio speaking rather than the
+     interface labelling itself. */
+  .room-name{
+    display:block;
+    margin:0; padding:14px var(--card-gap) 2px;
+    font-family:var(--serif); font-weight:400; font-style:normal;
+    font-size:2.1rem; line-height:1.1;
+    color:var(--ink);
+  }
+
 
   /* ---- THE ROOM CARD  ------------------------------------------------
      CUI 41A, 23 Aug 2026. Six lines of copy in a card a thumb wide.
@@ -1301,6 +1309,10 @@ body{
 /* Two coffee pills. The first is the way back and the second names where you
    stand — both substantial enough to read as navigation rather than a caption.
    4px radius, deliberately squarer than the 8px used on panels. */
+/* CUI 41A, 23 Aug 2026. Phone only -- see the 767 block. On a desktop
+   the masthead pill is the Series and a heading would say it twice. */
+.room-name{ display:none }
+
 .crumb{
   display:flex; align-items:center; gap:10px;
   padding:0 var(--card-gap) 12px;
@@ -4961,6 +4973,9 @@ body.is-lboxed{ overflow:hidden }
     </section>
 
     <section class="room room--workshop workshop-view--silos" id="workshop">
+    <!-- CUI 41A, 23 Aug 2026. Phone only. Filled from #mhSeriesLabel so
+         a Series rename stays one edit. -->
+    <h1 class="room-name" id="roomName"></h1>
     <div class="crumb">
       <button class="crumb-back" id="crumbBack" type="button">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg><span id="crumbLabel">All effects</span>
@@ -10576,6 +10591,19 @@ window.EFFECT_PREVIEWS = {
       b.addEventListener('click', function(){ step('upload'); });
       crumb.insertBefore(b, crumb.firstChild);
     }
+
+    /* CUI 41A, 23 Aug 2026. The room's name, taken from the masthead
+       label so there is one source for it. 'Crafted' is the brand half
+       and lives in its own span; what is wanted is the Series. */
+    (function(){
+      var out = document.getElementById('roomName');
+      var src = document.getElementById('mhSeriesLabel');
+      if (!out || !src) return;
+      var full = (src.textContent || '').trim();
+      var word = src.querySelector('.mh-crafted');
+      if (word) full = full.replace((word.textContent || '').trim(), '').trim();
+      out.textContent = full;
+    })();
 
     window.addEventListener('resize', sync);
     sync();
