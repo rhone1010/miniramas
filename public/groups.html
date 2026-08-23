@@ -4934,7 +4934,7 @@ body.is-lboxed{ overflow:hidden }
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8Z"/><path d="M8.6 11h6.8"/><path d="M8.6 14.4h4.2"/></svg>
     </button>
     <button class="mh-credits" id="mhCreditsBtn" hidden>
-      <span class="who" id="mhWho" hidden></span>
+      <span class="who" id="mhWho" data-r6-hidden hidden></span>
       <span class="v" id="mhCreditsCount">0</span><span class="u">credits</span>
     </button>
     <!-- The way out. Hidden until there is somebody to sign out. -->
@@ -4946,7 +4946,13 @@ body.is-lboxed{ overflow:hidden }
       <span class="cnt" id="mhCartCount" data-empty="true">0</span>
     </button>
   </div>
-  <nav class="mh-drawer" id="mhDrawer" hidden>
+  <style>
+/* CUI 41A, 23 Aug 2026. Ruled by Rich: no name in any masthead on a
+   phone. r2 did this for three rooms inside their own mobile block;
+   this reaches the rest without needing to find seven of them. */
+@media (max-width:767px){ [data-r6-hidden]{ display:none !important } }
+</style>
+<nav class="mh-drawer" id="mhDrawer" hidden>
     <a href="/portraits">Portraits</a>
     <a href="/groups" class="on">Groups</a>
     <a href="/wallpapers">Mobile Wallpapers</a>
@@ -4962,6 +4968,30 @@ body.is-lboxed{ overflow:hidden }
          to sign out. -->
     <a href="#" id="mhDrawerOut" data-signout hidden>Sign out</a>
   </nav>
+<script>
+/* CUI 41A, 23 Aug 2026. The drawer closes on the next click, whatever
+   it lands on. It used to close only on its own hamburger, on Escape,
+   and on the two links wired by hand -- which meant it stayed open
+   over My Collection and Account, the two drawer entries that change a
+   surface on this page instead of loading another one.
+
+   Delegated rather than bound per link, so a link added to the drawer
+   later cannot reintroduce this. Capture phase, so it runs before a
+   handler that stops propagation. The hamburger is excepted or its own
+   click would close what it just opened. */
+(function(){
+  document.addEventListener('click', function(e){
+    var dw = document.getElementById('mhDrawer');
+    if (!dw || dw.hasAttribute('hidden')) return;
+    var t = e.target;
+    if (t && t.closest && t.closest('#mhMenuBtn')) return;
+    dw.setAttribute('hidden','');
+    var mb = document.getElementById('mhMenuBtn');
+    if (mb) mb.setAttribute('aria-expanded','false');
+  }, true);
+})();
+</script>
+
 </header>
 
 <div class="stage">
