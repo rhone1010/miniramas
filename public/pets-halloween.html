@@ -695,7 +695,90 @@ body{
   body{ padding-bottom:118px }
 
   /* The tabs are the navigation now. */
-  .mh-menu, .mh-drawer{ display:none !important }
+  /* CUI 41A, 23 Aug 2026. r1 turned the hamburger off and gave its
+     place to the Series pill. Sign out now lives in the drawer, so the
+     hamburger comes back and the two share the bar. */
+  .mh-menu{ display:flex !important; margin-left:0 }
+
+
+  /* ---- SERIES, ON A PHONE  ------------------------------------------
+     CUI 41A, 23 Aug 2026. Below 767 there was no way to another Series
+     at all: this bar goes at 900, the hamburger takes over, and the
+     line above then hides the hamburger. The picker was built and
+     working the whole time, sitting inside the hidden bar.
+
+     The bar comes back holding one thing. The pill says the room you
+     are in and opens the list. Gallery, Community, My Collection and
+     Account stay out -- three of the four are tabs in the band, and
+     Gallery is not worth the width up here. */
+  /* CUI 41A, 23 Aug 2026. r1 showed the Series pill here. Ruled out by
+     Rich the same day: the hamburger already lists every Series, so
+     this was a second navigation on a bar that had no room for it. It
+     wrapped the masthead onto two rows and the label shrank past
+     reading to fit. The room now says its own name -- see .room-name
+     below. */
+  .mh-nav{ display:none !important }
+
+  /* ---- THE RIGHT CLUSTER  -------------------------------------------
+     CUI 41A, 23 Aug 2026. Rich's five.
+
+     The name goes. The balance stays -- it is the only number on the
+     bar that changes and the only one anybody checks. Sign out goes to
+     the drawer. Help and cart end up beside each other, which is where
+     they belonged: one asks the studio something, the other holds what
+     is being bought, and neither is the balance.
+
+     Order, left to right: credits, help, cart. DOM order is help,
+     credits, cart, so the flex order property does the move rather
+     than the markup -- the desktop arrangement is untouched. */
+  .mh-credits .who{ display:none !important }
+  .mh-out{ display:none !important }
+
+  .mh-right{ gap:8px }
+  .mh-credits{ order:1 }
+  .mh-ask{ order:2 }
+  .mh-cart{ order:3 }
+
+  /* The trolley says cart. The word is 44px of a 366px bar. */
+  .mh-cart .lbl{ display:none }
+
+  /* Pills at 16px of padding each side were sized for a canvas. */
+  .mh-credits, .mh-cart{ padding:0 11px; gap:7px }
+
+  /* With the hamburger back, the pill takes what is left rather than a
+     share of the viewport. 46vw was 179px and it ran under the help
+     mark on a 390px screen. */
+  .mh-series-btn{ max-width:34vw }   /* dead since r5; the pill is gone */
+
+  /* ---- THE ROOM'S NAME  ---------------------------------------------
+     CUI 41A, 23 Aug 2026. What the pill was carrying, at a size worth
+     carrying it at. Above the crumb rather than in it: the crumb is two
+     controls and a toggle, and a title among them reads as a fourth
+     control. Serif, because it is the studio speaking rather than the
+     interface labelling itself. */
+  .room-name{
+    display:block;
+    margin:0; padding:14px var(--card-gap) 2px;
+    font-family:var(--serif); font-weight:400; font-style:normal;
+    font-size:2.1rem; line-height:1.1;
+    color:var(--ink);
+  }
+
+
+  /* ---- THE ROOM CARD  ------------------------------------------------
+     CUI 41A, 23 Aug 2026. Six lines of copy in a card a thumb wide.
+     What survives is the offer: what it is, how many, what it costs.
+     The eyebrow, the sub-line and the tier line are register, and
+     register is what a small screen has least room for. They keep
+     their place on a desktop. */
+  .silo-card.is-upsell .up-eyebrow,
+  .silo-card.is-upsell .up-sub,
+  .silo-card.is-upsell .up-tier{ display:none }
+  .silo-card.is-upsell .up-title{ font-size:1.5rem; line-height:1.15 }
+  .silo-card.is-upsell .up{ gap:10px }
+
+
+
 
   /* The spine held a rotated label and 60px of a 390px screen. On a phone
      the Curator card is the only thing in that column, so the column goes.
@@ -1240,6 +1323,10 @@ body{
 /* Two coffee pills. The first is the way back and the second names where you
    stand — both substantial enough to read as navigation rather than a caption.
    4px radius, deliberately squarer than the 8px used on panels. */
+/* CUI 41A, 23 Aug 2026. Phone only -- see the 767 block. On a desktop
+   the masthead pill is the Series and a heading would say it twice. */
+.room-name{ display:none }
+
 .crumb{
   display:flex; align-items:center; gap:10px;
   padding:0 var(--card-gap) 12px;
@@ -3823,6 +3910,19 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   display:flex; flex-wrap:wrap; gap:.45em;
   padding:.8em 0 .9em;
 }
+/* THE MARK. Oxblood on vellum, bottom left, out of the way of the tick
+   at top right and the Archive control below it. A label, not a
+   button - nothing here is pressable. */
+.piece__wall{
+  position:absolute; left:8px; bottom:8px; z-index:2;
+  font-family:var(--serif); font-style:italic; font-size:.95rem;
+  line-height:1; padding:.3rem .6rem; border-radius:999px;
+  background:var(--oxblood); color:var(--vellum-100);
+  box-shadow:0 .2rem .6rem rgba(25,16,10,.28);
+  pointer-events:none; white-space:nowrap;
+}
+.mc-filter.is-wall{ color:var(--oxblood); border-color:var(--oxblood) }
+.mc-filter.is-wall.is-on{ background:var(--oxblood); color:var(--vellum-100) }
 .mc-filter{
   padding:.4em .9em;
   border:1px solid rgba(196,169,110,.24); border-radius:99px;
@@ -4836,7 +4936,7 @@ body.is-lboxed{ overflow:hidden }
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8Z"/><path d="M8.6 11h6.8"/><path d="M8.6 14.4h4.2"/></svg>
     </button>
     <button class="mh-credits" id="mhCreditsBtn" hidden>
-      <span class="who" id="mhWho" hidden></span>
+      <span class="who" id="mhWho" data-r6-hidden hidden></span>
       <span class="v" id="mhCreditsCount">0</span><span class="u">credits</span>
     </button>
     <!-- The way out. Hidden until there is somebody to sign out. -->
@@ -4848,7 +4948,13 @@ body.is-lboxed{ overflow:hidden }
       <span class="cnt" id="mhCartCount" data-empty="true">0</span>
     </button>
   </div>
-  <nav class="mh-drawer" id="mhDrawer" hidden>
+  <style>
+/* CUI 41A, 23 Aug 2026. Ruled by Rich: no name in any masthead on a
+   phone. r2 did this for three rooms inside their own mobile block;
+   this reaches the rest without needing to find seven of them. */
+@media (max-width:767px){ [data-r6-hidden]{ display:none !important } }
+</style>
+<nav class="mh-drawer" id="mhDrawer" hidden>
     <a href="/portraits" class="on">Portraits</a>
     <a href="/groups">Groups</a>
     <a href="/wallpapers">Mobile Wallpapers</a>
@@ -4857,7 +4963,37 @@ body.is-lboxed{ overflow:hidden }
     <a href="/collection">My Collection</a>
     <a href="/account">Account</a>
     <a href="#" data-concierge>Ask the Concierge</a>
+    <!-- CUI 41A, 23 Aug 2026. The way out, on a phone. The real
+         control is #mhSignOut in the right cluster, which has no room
+         at this width; this entry clicks it rather than holding a
+         second copy of the fetch. Hidden with it when there is nobody
+         to sign out. -->
+    <a href="#" id="mhDrawerOut" data-signout hidden>Sign out</a>
   </nav>
+<script>
+/* CUI 41A, 23 Aug 2026. The drawer closes on the next click, whatever
+   it lands on. It used to close only on its own hamburger, on Escape,
+   and on the two links wired by hand -- which meant it stayed open
+   over My Collection and Account, the two drawer entries that change a
+   surface on this page instead of loading another one.
+
+   Delegated rather than bound per link, so a link added to the drawer
+   later cannot reintroduce this. Capture phase, so it runs before a
+   handler that stops propagation. The hamburger is excepted or its own
+   click would close what it just opened. */
+(function(){
+  document.addEventListener('click', function(e){
+    var dw = document.getElementById('mhDrawer');
+    if (!dw || dw.hasAttribute('hidden')) return;
+    var t = e.target;
+    if (t && t.closest && t.closest('#mhMenuBtn')) return;
+    dw.setAttribute('hidden','');
+    var mb = document.getElementById('mhMenuBtn');
+    if (mb) mb.setAttribute('aria-expanded','false');
+  }, true);
+})();
+</script>
+
 </header>
 
 <div class="stage">
@@ -4894,6 +5030,9 @@ body.is-lboxed{ overflow:hidden }
     </section>
 
     <section class="room room--workshop workshop-view--silos" id="workshop">
+    <!-- CUI 41A, 23 Aug 2026. Phone only. Filled from #mhSeriesLabel so
+         a Series rename stays one edit. -->
+    <h1 class="room-name" id="roomName"></h1>
     <div class="crumb">
       <button class="crumb-back" id="crumbBack" type="button">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg><span id="crumbLabel">All effects</span>
@@ -5272,6 +5411,26 @@ body.is-lboxed{ overflow:hidden }
   </div>
 </div>
 
+<!-- CUI 41A, 23 Aug 2026. The one thing standing between a person and
+     an effect they have just pressed. Shaped like the cap modal
+     because it is the same kind of moment: a thing they asked for,
+     not yet possible, and a way forward in the same breath. Phone
+     only -- on a desktop the upload card is on the screen already. -->
+<div class="scrim m-scrim" id="needPhotoModal" data-role="modal">
+  <div class="modal m-modal" role="dialog" aria-modal="true">
+    <div class="mclose" id="npClose">&times;</div>
+    <div class="state active cap-body">
+      <div class="mcur"><img class="mc-mark" src="/icons/curator-c.svg" alt="">
+        <div class="mcur-say">A fine choice. I will need a photograph to
+          work from before I can begin &mdash; bring me one and we will
+          come straight back here.
+          <span class="sig">&mdash;&thinsp;C.</span></div></div>
+      <div class="acts"><div class="btn fill" id="npGo">Add your photograph</div>
+        <div class="btn ghost" id="npBack">Keep looking</div></div>
+    </div>
+  </div>
+</div>
+
 <div class="scrim m-scrim" id="queueFullModal" data-role="modal">
   <div class="modal m-modal" role="dialog" aria-modal="true">
     <div class="mclose" id="capClose">&times;</div>
@@ -5532,10 +5691,24 @@ window.EFFECT_PREVIEWS = {
   }
   /* No room label stored — it is derived from the silo id, so a renamed silo
      does not leave stale text sitting in the queue. */
+  /* CUI 41A, 23 Aug 2026. Ruled by Rich: on a phone the room comes
+     first and the photograph is asked for here, at the press. Read off
+     the Curator card's own data-state rather than the phone-step
+     closure's hasPhoto -- one record, and this sits 4,800 lines above
+     that IIFE. */
+  function phoneNeedsPhoto(){
+    if (!window.matchMedia || !window.matchMedia('(max-width:767px)').matches) return false;
+    var card = document.getElementById('cur');
+    return !!card && card.getAttribute('data-state') === 'empty';
+  }
+
   function addToQueue(siloId, effectId){
     /* They have moved on. The note about the last run stops standing. */
     SUB_NOTE = null;
     if (inQueue(siloId, effectId)) return true;
+    /* Before the cap, because a person with no photograph has no queue
+       to have filled. */
+    if (phoneNeedsPhoto()){ openNeedPhoto(); return false; }
     if (QUEUE.length >= QUEUE_CAP){ openCap(); return false; }
     /* Was: two fields, enough to paint a row. Now the whole item — see
        buildPayload. The rail still reads only siloId and effectId, so
@@ -5543,6 +5716,25 @@ window.EFFECT_PREVIEWS = {
     QUEUE.push(buildPayload(siloId, effectId));
     renderQueue();
     return true;
+  }
+
+  /* the photograph, asked for */
+  var needPhotoModal = document.getElementById('needPhotoModal');
+  function openNeedPhoto(){ if (needPhotoModal) needPhotoModal.classList.add('is-open'); }
+  function closeNeedPhoto(){ if (needPhotoModal) needPhotoModal.classList.remove('is-open'); }
+  if (needPhotoModal){
+    ['npClose','npBack'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('click', closeNeedPhoto);
+    });
+    var npGo = document.getElementById('npGo');
+    if (npGo) npGo.addEventListener('click', function(){
+      closeNeedPhoto();
+      /* __phoneStep is published by the phone-step IIFE further down.
+         Guarded because this file is also served to a desktop, where
+         it does not exist. */
+      if (typeof window.__phoneStep === 'function') window.__phoneStep('upload');
+    });
   }
 
   /* the cap, explained */
@@ -8485,6 +8677,10 @@ window.EFFECT_PREVIEWS = {
   function paintCredits(){
     /* The way out is only there when there is somebody to sign out. */
     if (mhSignOut) mhSignOut.hidden = !ME;
+    /* CUI 41A, 23 Aug 2026. The drawer's copy follows it. A dead
+       'Sign out' in a menu is worse than none. */
+    var drawerOut = document.getElementById('mhDrawerOut');
+    if (drawerOut) drawerOut.hidden = !ME;
     if (!mhCreditsBtn || !mhCreditsCount) return;
     /* Signed out, or a balance we could not read. Show nothing rather
        than a zero — a zero over an unknown tells someone with sixty
@@ -8829,7 +9025,11 @@ window.EFFECT_PREVIEWS = {
      missing tab reads as a Series that does not exist. */
   /* Halloween was missing, so pieces from that room had no filter to
      appear under and were reachable only by View All. */
-  var MC_SERIES = ['Action','Groups','Halloween','Mobile Wallpapers','Pets','Portraits'];
+  /* Action is out - the Series does not exist and nothing writes it.
+     Pets Halloween is in, and is the one entry not backed by a stored
+     series: those pieces store 'pets'. See mcSeriesOf(). */
+  var MC_SERIES = ['Groups','Halloween','Mobile Wallpapers','Pets',
+                   'Pets Halloween','Portraits'];
 
   /* Declared HERE, with the other constants, because renderCollection() runs
      during init and calls renderOnward(), which reads this. A var assigned
@@ -8879,7 +9079,11 @@ window.EFFECT_PREVIEWS = {
   /* We arrive here on the FIRST completion with others still rendering, so the
      default is the featured mode showing that new piece — not a flat grid.
      View All remains the way to see everything at once. */
-  var MC_FILT = 'Pets';
+  /* VIEW ALL. Every room defaulted this to its own Series, so somebody
+     whose last three pieces were Groups arrived in the Portraits room
+     at a collection that looked empty, and had to find the right pill
+     to see their own work. Ruled 23 August. */
+  var MC_FILT = 'all'; //'Pets';
   var PICKED  = {};
 
   /* Read-only glass. The account column is CC's when the wiring lands — the
@@ -8913,7 +9117,10 @@ window.EFFECT_PREVIEWS = {
     }
     var live = PIECES.filter(function(p){ return !p.archived; });
     if (MC_FILT === 'all') return live;
-    return live.filter(function(p){ return p.series === MC_FILT; });
+    if (MC_FILT === 'wall'){
+      return live.filter(function(p){ return onWall(p); });
+    }
+    return live.filter(function(p){ return mcSeriesOf(p) === MC_FILT; });
   }
   function mcArchivedCount(){
     return PIECES.filter(function(p){ return p.archived; }).length;
@@ -8922,6 +9129,57 @@ window.EFFECT_PREVIEWS = {
   function esc(s){
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
                     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── PETS HALLOWEEN, SPLIT OUT OF PETS ───────────────────────
+     Those pieces store series 'pets', so there is nothing in the row
+     that separates the two pet rooms. The collection carries no preset,
+     so the pethw_ prefix used everywhere else is not available.
+
+     Matched on the label instead, against the 27 names in the Pets
+     Halloween registry when that registry happens to be loaded on this
+     page. Where it is not, the map is empty and every pet piece stays
+     under Pets - which is the behaviour before today, not a fault.
+
+     A Pets effect sharing a label with a Pets Halloween one would land
+     in the wrong pill. `preset` on the collection row is the real fix
+     and it is CENG's. */
+  var PETHW_LABELS = (function(){
+    var m = {}, r = window.PETS_HALLOWEEN_REGISTRY;
+    if (r && r.effects && r.effects.forEach){
+      r.effects.forEach(function(e){ if (e && e.label) m[e.label] = true; });
+    }
+    return m;
+  })();
+
+  function mcSeriesOf(p){
+    if (p && p.series === 'Pets' && p.name && PETHW_LABELS[p.name]){
+      return 'Pets Halloween';
+    }
+    return p ? p.series : '';
+  }
+
+  /* ── WHAT IS ON THE WALL ───────────────────────────────
+     serverId -> post id, from GET /api/v1/community/posts/mine. The
+     post id is what DELETE takes, which is why it is held rather than
+     a boolean. */
+  var ON_WALL = {};
+
+  function loadOnWall(){
+    return fetch('/api/v1/community/posts/mine', { credentials:'include' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d || !d.ok || !d.posts) return;
+        ON_WALL = d.posts;
+        renderCollection();
+      })
+      /* Degraded, not broken. No badges this load; everything else on
+         the page still works. */
+      .catch(function(){});
+  }
+
+  function onWall(p){
+    return !!(p && p.serverId && ON_WALL[p.serverId]);
   }
 
   function pieceTile(p){
@@ -8942,6 +9200,9 @@ window.EFFECT_PREVIEWS = {
       a.innerHTML =
         '<img class="piece__img" src="' + esc(p.art) + '" alt="" loading="lazy">' +
         '<span class="piece__pick" data-pick="' + esc(p.id) + '">\u2713</span>' +
+        /* A mark, not a control. Taking a piece down happens under the
+           featured piece where there is room to say what it means. */
+        (onWall(p) ? '<span class="piece__wall" title="On the board">On The Wall</span>' : '') +
         /* Only a piece the server knows about can be put away — a tile
            still saving has no id to send. */
         (p.serverId
@@ -8966,11 +9227,24 @@ window.EFFECT_PREVIEWS = {
     var html = rows.map(function(r){
       var held = r.id === 'all'
         ? live.length
-        : live.filter(function(p){ return p.series === r.id; }).length;
+        : live.filter(function(p){ return mcSeriesOf(p) === r.id; }).length;
       return '<button class="mc-filter' + (MC_FILT === r.id ? ' is-on' : '') + '" type="button"' +
              ' data-filter="' + esc(r.id) + '" data-empty="' + (held ? '0' : '1') + '">' +
              esc(r.label) + '</button>';
     }).join('');
+
+    /* ON THE WALL, on the same rule as the archive: drawn only once
+       something is in it. Nobody who has never posted needs a pill
+       telling them so. */
+    var up = live.filter(function(p){ return onWall(p); }).length;
+    if (up){
+      html += '<button class="mc-filter is-wall' +
+              (MC_FILT === 'wall' ? ' is-on' : '') + '" type="button"' +
+              ' data-filter="wall">On The Wall \u00b7 ' + up + '</button>';
+    } else if (MC_FILT === 'wall'){
+      /* The last one came down while we were looking at it. */
+      MC_FILT = 'all';
+    }
 
     /* Drawn only once something is in it. An empty archive is not a
        place, and a pill for it would be a question nobody asked. */
@@ -9047,7 +9321,12 @@ window.EFFECT_PREVIEWS = {
     }
     /* Only where the modal exists. A button that opens nothing is
        worse than no button. */
-    if (typeof window.openPostToCommunity === 'function'){
+    /* A piece already on the board offers the way back off it instead
+       of the way on. Both at once would be two buttons contradicting
+       each other. */
+    if (onWall(p)){
+      acts += '<button class="mc-act" data-fa="unpost" type="button">Take it off the board</button>';
+    } else if (typeof window.openPostToCommunity === 'function'){
       acts += '<button class="mc-act" data-fa="post" type="button">Post to Community</button>';
     }
     box.innerHTML = acts;
@@ -9079,6 +9358,26 @@ window.EFFECT_PREVIEWS = {
     }
     else if (what === 'post'){
       if (typeof window.openPostToCommunity === 'function') window.openPostToCommunity(p);
+    }
+    else if (what === 'unpost'){
+      var postId = p.serverId && ON_WALL[p.serverId];
+      if (!postId) return;
+      b.disabled = true;
+      b.textContent = 'Taking it down\u2026';
+      /* Optimism would be wrong here. This deletes the public copy, so
+         the mark must not come off until the studio says it has. */
+      fetch('/api/v1/community/posts/' + encodeURIComponent(postId), {
+        method:'DELETE', credentials:'include'
+      })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (!d || !d.ok){ b.disabled = false; b.textContent = 'Take it off the board'; return; }
+          delete ON_WALL[p.serverId];
+          renderCollection();
+        })
+        .catch(function(){
+          b.disabled = false; b.textContent = 'Take it off the board';
+        });
     }
   });
 
@@ -9330,6 +9629,9 @@ window.EFFECT_PREVIEWS = {
           });
         });
         renderCollection();
+        /* After the pieces, not before - the badges need tiles to sit
+           on, and this repaints when it answers. */
+        loadOnWall();
         return rows.length;
       })
       .catch(function(e){
@@ -9468,6 +9770,15 @@ window.EFFECT_PREVIEWS = {
               (left === 1 ? 'Craft this again \u00b7 last one' : 'Craft this again') +
               '</button>';
     }
+    /* CUI 41A, 23 Aug 2026. The fourth action, which the featured pane
+       has had since the modal shipped. On a phone .mc-acts is hidden
+       and this is the only place a piece is looked at, so the button
+       was simply not reachable. Same guard as paintActs -- a button
+       that opens nothing is worse than no button -- plus serverId,
+       because a piece still crafting has no row to post. */
+    if (p.serverId && typeof window.openPostToCommunity === 'function'){
+      acts += '<button class="mc-act" data-lb="post">Post to Community</button>';
+    }
     lboxActs.innerHTML = acts;
   }
   /* Exported so the phone's tile handler can reach it. On a desktop the
@@ -9564,6 +9875,11 @@ window.EFFECT_PREVIEWS = {
       window.__RERENDERS_USED = Math.min(RERENDER_CAP, window.__RERENDERS_USED + 1);
       if (typeof window.__requestRerender === 'function') window.__requestRerender(lbList()[LB_AT]);
       paintLightbox();
+    }
+    else if (what === 'post'){
+      /* Straight across from the featured pane's handler. */
+      var post = lbList()[LB_AT];
+      if (typeof window.openPostToCommunity === 'function') window.openPostToCommunity(post);
     }
   });
 
@@ -10366,10 +10682,18 @@ window.EFFECT_PREVIEWS = {
          throw them forward again. */
       if (!rooms.classList.contains('phone-step--upload') &&
           !rooms.classList.contains('phone-step--work')){
-        step(hasPhoto() ? 'work' : 'upload');
+        /* CUI 41A, 23 Aug 2026. Was: hasPhoto() ? 'work' : 'upload'.
+           A first visit opened on an empty box asking for a face,
+           before anything had been shown that would explain why. The
+           floor comes first now, always. The photograph is asked for
+           at the press, by needPhotoModal. */
+        step('work');
         return;
       }
-      if (!hasPhoto()) step('upload');
+      /* The line that stood here forced 'upload' on every sync while
+         there was no photograph, which under the rule above would
+         throw a person off the floor the moment they turned the
+         phone. */
     }
 
     /* Anything that has something to say about the photograph says it in
@@ -10413,9 +10737,10 @@ window.EFFECT_PREVIEWS = {
     new MutationObserver(function(){
       if (!onPhone()) return;
       var empty = !hasPhoto();
-      /* Losing the photograph still returns on its own — there is nothing
-         to stay for and nothing to decide. */
-      if (!wasEmpty && empty) step('upload');
+      /* CUI 41A, 23 Aug 2026. It no longer returns. Under the rule
+         above the floor is worth staying on with no photograph -- that
+         is now the ordinary first visit -- and a person who has just
+         cleared a photograph deliberately has not asked to be moved. */
       wasEmpty = empty;
     }).observe(card, { attributes:true, attributeFilter:['data-state'] });
 
@@ -10430,6 +10755,19 @@ window.EFFECT_PREVIEWS = {
       b.addEventListener('click', function(){ step('upload'); });
       crumb.insertBefore(b, crumb.firstChild);
     }
+
+    /* CUI 41A, 23 Aug 2026. The room's name, taken from the masthead
+       label so there is one source for it. 'Crafted' is the brand half
+       and lives in its own span; what is wanted is the Series. */
+    (function(){
+      var out = document.getElementById('roomName');
+      var src = document.getElementById('mhSeriesLabel');
+      if (!out || !src) return;
+      var full = (src.textContent || '').trim();
+      var word = src.querySelector('.mh-crafted');
+      if (word) full = full.replace((word.textContent || '').trim(), '').trim();
+      out.textContent = full;
+    })();
 
     window.addEventListener('resize', sync);
     sync();
@@ -11237,6 +11575,13 @@ window.EFFECT_PREVIEWS = {
        BROWSING STAYS OPEN. Rooms open, tiles are readable, the whole
        catalogue can be walked. Only adding one to be crafted is held. */
     if (!hasSource()){
+      /* CUI 41A, 23 Aug 2026. On a phone this guard fired ahead of the
+         gate r3 put on addToQueue, so the modal never opened. The
+         toast is honest and the pulse is not -- curSlot is on the
+         upload step, off screen, so nothing visibly answered the
+         press. The modal is the only one of the three that offers a
+         way to go and fix it. */
+      if (phoneNeedsPhoto()){ openNeedPhoto(); return; }
       nudge(c, 'Please upload an image first');
       askForPhoto(true);
       return;
@@ -11406,7 +11751,12 @@ window.EFFECT_PREVIEWS = {
        height is measured and re-measured rather than assumed. */
     function seat(){
       if (!tray || !onPhone()) return;
-      var h = band.classList.contains('is-tucked') ? 26 : band.offsetHeight;
+      /* CUI 41A, 23 Aug 2026. Was: is-tucked ? 26 : offsetHeight. The
+         tuck transform is disabled in the last phone block, so the
+         class arrives on the 7s timer while the band stays put and the
+         tray dropped 36px onto the tabs. The measured height is the
+         only true one. */
+      var h = band.offsetHeight;
       tray.style.bottom = h + 'px';
     }
 
@@ -11610,6 +11960,19 @@ document.addEventListener('click', function(e){
   var mb = document.getElementById('mhMenuBtn');
   if (dw) dw.setAttribute('hidden','');
   if (mb) mb.setAttribute('aria-expanded','false');
+});
+
+/* CUI 41A, 23 Aug 2026. Same shape for the way out. The drawer closes
+   and the real button is clicked -- one signout path, not two. */
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.mh-drawer [data-signout]')) return;
+  e.preventDefault();
+  var dw = document.getElementById('mhDrawer');
+  var mb = document.getElementById('mhMenuBtn');
+  if (dw) dw.setAttribute('hidden','');
+  if (mb) mb.setAttribute('aria-expanded','false');
+  var real = document.getElementById('mhSignOut');
+  if (real) real.click();
 });
 </script>
 

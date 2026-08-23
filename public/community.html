@@ -752,12 +752,18 @@ body{
          The credits pill stays: signed out it reads 'Sign in' and is the
          only way into an account on a phone. -->
     <button class="mh-credits" id="mhCreditsBtn" hidden>
-      <span class="who" id="mhWho" hidden></span>
+      <span class="who" id="mhWho" data-r6-hidden hidden></span>
       <span class="v" id="mhCreditsCount">0</span><span class="u">credits</span>
     </button>
     <button class="mh-out" id="mhSignOut" hidden aria-label="Sign out">Sign out</button>
   </div>
-  <nav class="mh-drawer" id="mhDrawer" hidden>
+  <style>
+/* CUI 41A, 23 Aug 2026. Ruled by Rich: no name in any masthead on a
+   phone. r2 did this for three rooms inside their own mobile block;
+   this reaches the rest without needing to find seven of them. */
+@media (max-width:767px){ [data-r6-hidden]{ display:none !important } }
+</style>
+<nav class="mh-drawer" id="mhDrawer" hidden>
     <a href="/portraits">Portraits</a>
     <a href="/wallpapers">Mobile Wallpapers</a>
     <a href="/gallery">Gallery</a>
@@ -766,6 +772,30 @@ body{
     <a href="/account">Account</a>
     <a href="#" data-concierge>Ask the Concierge</a>
   </nav>
+<script>
+/* CUI 41A, 23 Aug 2026. The drawer closes on the next click, whatever
+   it lands on. It used to close only on its own hamburger, on Escape,
+   and on the two links wired by hand -- which meant it stayed open
+   over My Collection and Account, the two drawer entries that change a
+   surface on this page instead of loading another one.
+
+   Delegated rather than bound per link, so a link added to the drawer
+   later cannot reintroduce this. Capture phase, so it runs before a
+   handler that stops propagation. The hamburger is excepted or its own
+   click would close what it just opened. */
+(function(){
+  document.addEventListener('click', function(e){
+    var dw = document.getElementById('mhDrawer');
+    if (!dw || dw.hasAttribute('hidden')) return;
+    var t = e.target;
+    if (t && t.closest && t.closest('#mhMenuBtn')) return;
+    dw.setAttribute('hidden','');
+    var mb = document.getElementById('mhMenuBtn');
+    if (mb) mb.setAttribute('aria-expanded','false');
+  }, true);
+})();
+</script>
+
 </header>
 
 <div class="stage">
