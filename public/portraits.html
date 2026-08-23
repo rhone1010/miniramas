@@ -11367,6 +11367,13 @@ window.EFFECT_PREVIEWS = {
        BROWSING STAYS OPEN. Rooms open, tiles are readable, the whole
        catalogue can be walked. Only adding one to be crafted is held. */
     if (!hasSource()){
+      /* CUI 41A, 23 Aug 2026. On a phone this guard fired ahead of the
+         gate r3 put on addToQueue, so the modal never opened. The
+         toast is honest and the pulse is not -- curSlot is on the
+         upload step, off screen, so nothing visibly answered the
+         press. The modal is the only one of the three that offers a
+         way to go and fix it. */
+      if (phoneNeedsPhoto()){ openNeedPhoto(); return; }
       nudge(c, 'Please upload an image first');
       askForPhoto(true);
       return;
