@@ -340,6 +340,52 @@ body{
    CSS columns rather than a grid. Nothing is cropped: a 9:16 wallpaper and
    a 4:5 portrait are different shapes and the board should look like it. */
 .wall{ padding:clamp(26px,2.6vw,44px) 0 }
+
+/* THE JUMP BAR. Gallery's pattern, unchanged: the bar is air and only
+   the pills take clicks, so a transparent strip across the page does
+   not eat the scroll. Sticky under the masthead. */
+.bjump{
+  position:sticky; top:var(--mh-h); z-index:50;
+  background:transparent; pointer-events:none;
+}
+.bjump-in{
+  pointer-events:auto;
+  width:var(--stage-w); margin:0 auto;
+  display:flex; justify-content:center; gap:8px; overflow-x:auto;
+  padding:10px 0; scrollbar-width:none;
+}
+.bjump-in::-webkit-scrollbar{ display:none }
+/* 1.5rem. These are the only way to move around this page and should
+   look like it. A shadow so a pill over a photograph keeps an edge. */
+.bjump a{
+  font-family:var(--serif); font-style:italic; font-size:1.5rem;
+  text-decoration:none; white-space:nowrap; line-height:1;
+  padding:.5rem 1.15rem; border-radius:999px;
+  box-shadow:0 .3rem .8rem rgba(25,16,10,.18);
+  background:var(--coffee-700); color:var(--vellum-200);
+  border:1px solid rgba(233,222,200,.14);
+  transition:background .16s ease, color .16s ease, border-color .16s ease;
+}
+.bjump a:hover{
+  background:#453429; color:var(--vellum-100);
+  border-color:rgba(233,222,200,.3);
+}
+.bjump a.on{
+  background:var(--gold); color:var(--espresso); border-color:var(--gold);
+}
+/* Hidden when there is nothing to jump between - one Series on the
+   board makes a menu of one, which is furniture. */
+.bjump[hidden]{ display:none }
+
+/* THE SEPARATOR. A rule and a name, not a banner. The board is the
+   pieces; the headings are there to be scanned past. */
+.wall-sec{
+  font-family:var(--serif); font-size:2rem; font-weight:400;
+  color:var(--ink); margin:0 0 var(--board-gap);
+  padding:0 0 .4rem; border-bottom:1px solid rgba(42,36,30,.16);
+  scroll-margin-top:calc(var(--mh-h) + 76px);
+}
+.wall-sec + .wall-cols{ margin-bottom:clamp(34px,3.4vw,62px) }
 .wall-cols{
   /* 400px columns, count unspecified - the board takes as many as the
      page allows rather than forcing four. Ruled 22 August. */
@@ -713,10 +759,20 @@ body{
   </div>
 </nav>
 
+<!-- THE JUMP BAR. Painted by paintWall() from whatever Series are on
+     the board; hidden when there are fewer than two. Below the view
+     tabs, because it applies to the board and not to Ideas. -->
+<nav class="bjump" id="bjump" hidden aria-label="Jump to a Series">
+  <div class="bjump-in" id="bjumpIn"></div>
+</nav>
+
 <main class="stage">
 
   <section class="wall" id="wall">
-    <div class="wall-cols" id="wallCols"></div>
+    <!-- Not .wall-cols any more. It holds section blocks, each of
+         which is a .wall-cols of its own - a heading inside a
+         multi-column flow lands halfway down the third column. -->
+    <div id="wallCols"></div>
   </section>
   <div class="wall-more" id="wallMore" hidden>
     <button type="button" id="wallMoreBtn">Show more</button>
@@ -1082,6 +1138,109 @@ body{
     return el;
   }
 
+  /* ── THE SECTIONS ───────────────────────────────────
+     Order is fixed rather than alphabetical or by count, so the board
+     does not rearrange itself as pieces arrive. Anything with a series
+     not on this list is appended after, under its raw name - better a
+     section nobody named than a piece that vanishes. */
+  var SEC_ORDER = ['portraits', 'groups', 'pets', 'halloween',
+                   'pets_halloween', 'action', 'actionmini', 'wallpapers'];
+  var SEC_LABEL = {
+    portraits:'Portraits', groups:'Groups', pets:'Pets',
+    halloween:'Halloween', pets_halloween:'Pets Halloween',
+    action:'Action', actionmini:'Action', wallpapers:'Mobile Wallpapers'
+  };
+
+  function secLabel(s){
+    if (SEC_LABEL[s]) return SEC_LABEL[s];
+    /* Unknown series, named from itself: pets_halloween -> Pets
+       Halloween. Not pretty, and it is the case that should not
+       happen. */
+    return String(s || 'Other').replace(/[_-]+/g, ' ')
+      .replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+  }
+
+  function secId(s){ return 'sec-' + String(s || 'other'); }
+
+  /* REBUILT FROM POSTS, NOT APPENDED TO. Cards used to be appended in
+     the order they arrived, which cannot produce sections - a Pets
+     piece on page two would land under the Groups heading. POSTS is
+     already the record of everything drawn, so the wall is drawn from
+     it each time. */
+  function paintWall(){
+    wallCols.innerHTML = '';
+    wallCols.style.columns = '';
+
+    if (!POSTS.length){ paintJump([]); return; }
+
+    var bucket = {};
+    var order  = [];
+    POSTS.forEach(function(p){
+      var s = p.series || 'other';
+      if (!bucket[s]){ bucket[s] = []; order.push(s); }
+      bucket[s].push(p);
+    });
+
+    /* Known series in the fixed order, then anything else in the order
+       it turned up. */
+    var series = SEC_ORDER.filter(function(s){ return bucket[s]; })
+      .concat(order.filter(function(s){ return SEC_ORDER.indexOf(s) < 0; }));
+
+    series.forEach(function(s){
+      var h = document.createElement('h2');
+      h.className = 'wall-sec';
+      h.id = secId(s);
+      h.textContent = secLabel(s);
+      wallCols.appendChild(h);
+
+      var block = document.createElement('div');
+      block.className = 'wall-cols';
+      bucket[s].forEach(function(p){ block.appendChild(card(p)); });
+      wallCols.appendChild(block);
+    });
+
+    paintJump(series);
+  }
+
+  /* ── THE JUMP BAR ───────────────────────────────────
+     Anchors, not filters. Everything on the board stays on the board;
+     the pills move you to a part of it. Hidden below two Series -
+     a menu of one is furniture. */
+  var bjump   = $('bjump');
+  var bjumpIn = $('bjumpIn');
+
+  function paintJump(series){
+    if (!bjump || !bjumpIn) return;
+    if (!series || series.length < 2){ bjump.hidden = true; bjumpIn.innerHTML = ''; return; }
+    bjump.hidden = false;
+    bjumpIn.innerHTML = series.map(function(s){
+      return '<a href="#' + secId(s) + '" data-sec="' + secId(s) + '">' +
+             esc(secLabel(s)) + '</a>';
+    }).join('');
+    markJump();
+  }
+
+  /* Which section is current: the last heading whose top has passed
+     the sticky furniture. Same test gallery uses on its rooms. */
+  function markJump(){
+    if (!bjumpIn || bjump.hidden) return;
+    var pills = bjumpIn.querySelectorAll('a');
+    if (!pills.length) return;
+    var line = 180;
+    var cur  = pills[0].getAttribute('data-sec');
+    for (var i = 0; i < pills.length; i++){
+      var id = pills[i].getAttribute('data-sec');
+      var h  = document.getElementById(id);
+      if (h && h.getBoundingClientRect().top <= line) cur = id;
+    }
+    for (var j = 0; j < pills.length; j++){
+      pills[j].classList.toggle('on',
+        pills[j].getAttribute('data-sec') === cur);
+    }
+  }
+
+  window.addEventListener('scroll', markJump, { passive:true });
+
   function drawEmpty(){
     wallCols.innerHTML = '';
     var d = document.createElement('div');
@@ -1092,9 +1251,9 @@ body{
          'the first \u2014 there is a button on every piece in your ' +
          'collection.</p>' +
       '<a href="/portraits">Craft something</a>';
-    /* Out of the columns, or it is one narrow ribbon down the left. */
-    wallCols.style.columns = 'auto';
     wallCols.appendChild(d);
+    /* Nothing to jump between. */
+    if (bjump) bjump.hidden = true;
   }
 
   function loadPosts(){
@@ -1120,10 +1279,10 @@ body{
         (d.hearted || []).forEach(function(id){ HEARTED[id] = true; });
 
         var rows = d.posts || [];
-        rows.forEach(function(p){
-          POSTS.push(p);
-          wallCols.appendChild(card(p));
-        });
+        rows.forEach(function(p){ POSTS.push(p); });
+        /* Repainted, not appended - a Pets piece arriving on page two
+           belongs under the Pets heading, not at the end. */
+        if (POSTS.length) paintWall();
         if (rows.length) CURSOR = rows[rows.length - 1].created_at;
 
         if (!POSTS.length) drawEmpty();
@@ -1299,9 +1458,9 @@ body{
       .then(function(d){
         if (!d || !d.ok) return;
         POSTS = POSTS.filter(function(p){ return p.id !== id; });
-        var el = wallCols.querySelector('.pc[data-post-id="' + id + '"]');
-        if (el) el.remove();
-        if (!POSTS.length) drawEmpty();
+        /* Repainted rather than plucked out. Taking down the only Pets
+           piece must take the Pets heading with it. */
+        if (POSTS.length) paintWall(); else drawEmpty();
         closePost();
       })
       .catch(function(){});
