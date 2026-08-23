@@ -114,6 +114,12 @@ body{
   transition:color .16s ease;
 }
 .mh-series-btn:hover{ color:#e6d2a8 }
+/* The label collapses the way Community's does, at the same width and
+   by the same mechanism. Gallery had no breakpoint above 900px, so the
+   query is new here rather than a rule added to an existing one. */
+@media (max-width:1320px){
+  #mhSeriesLabel .mh-crafted{ display:none }
+}
 .mh-series-btn .caret{
   width:.52em; height:.52em; flex:0 0 auto; margin-top:.14em; opacity:.72;
   transform-origin:50% 45%;
@@ -367,7 +373,7 @@ body{
     <div class="mh-series">
       <button class="mh-series-btn" id="mhSeriesBtn" type="button"
               aria-expanded="false" aria-haspopup="true">
-        <span>Crafted Portraits</span>
+        <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Rooms</span>
         <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
       </button>
       <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
