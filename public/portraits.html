@@ -4832,8 +4832,10 @@ body.is-lboxed{ overflow:hidden }
        against the screen edge and the last was sliced mid-word, so a
        rail with more to show read as a rail running off the page.
        Room at each end, and a top margin so it clears the head. */
-    padding:0 12px 8px !important;
-    margin:6px 0 0;
+    padding:0 12px 10px !important;
+    /* CUI 41A, 23 Aug 2026. 6px was not enough -- the pills still read
+       as pressed against the ceiling. */
+    margin:16px 0 0;
     scrollbar-width:none;
     -webkit-overflow-scrolling:touch;
     scroll-snap-type:x proximity;

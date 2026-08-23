@@ -1340,6 +1340,30 @@ body{
   width:var(--silo-w);
 }
 
+/* CUI 41A, 23 Aug 2026. On a phone, one column and four rows.
+
+   Two columns of var(--silo-w) is 500px at the clamp's floor, against a
+   390px screen -- the cards were cut at both edges and the page
+   scrolled sideways. The phone block has said repeat(2, minmax(0,1fr))
+   the whole time and lost every time, because an id outranks a class
+   regardless of order or media query. The fix belongs here, at the same
+   specificity, not under an !important on the class.
+
+   One rather than two, ruled by Rich: a group photograph is wide, and
+   half a phone is not enough of one to choose by. */
+@media (max-width:767px){
+  #siloFloor[data-count="4"]{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:none;
+    grid-auto-rows:auto;
+    justify-content:stretch;
+  }
+  #siloFloor[data-count="4"] > *{
+    width:auto;
+    justify-self:stretch;
+  }
+}
+
 
 
 /* ---- the card ---------------------------------------------------------- */
@@ -4877,8 +4901,10 @@ body.is-lboxed{ overflow:hidden }
        against the screen edge and the last was sliced mid-word, so a
        rail with more to show read as a rail running off the page.
        Room at each end, and a top margin so it clears the head. */
-    padding:0 12px 8px !important;
-    margin:6px 0 0;
+    padding:0 12px 10px !important;
+    /* CUI 41A, 23 Aug 2026. 6px was not enough -- the pills still read
+       as pressed against the ceiling. */
+    margin:16px 0 0;
     scrollbar-width:none;
     -webkit-overflow-scrolling:touch;
     scroll-snap-type:x proximity;
