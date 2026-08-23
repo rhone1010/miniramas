@@ -1232,6 +1232,30 @@ body{
   width:var(--silo-w);
 }
 
+/* CUI 41A, 23 Aug 2026. On a phone, one column and four rows.
+
+   Two columns of var(--silo-w) is 500px at the clamp's floor, against a
+   390px screen -- the cards were cut at both edges and the page
+   scrolled sideways. The phone block has said repeat(2, minmax(0,1fr))
+   the whole time and lost every time, because an id outranks a class
+   regardless of order or media query. The fix belongs here, at the same
+   specificity, not under an !important on the class.
+
+   One rather than two, ruled by Rich: a group photograph is wide, and
+   half a phone is not enough of one to choose by. */
+@media (max-width:767px){
+  #siloFloor[data-count="4"]{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:none;
+    grid-auto-rows:auto;
+    justify-content:stretch;
+  }
+  #siloFloor[data-count="4"] > *{
+    width:auto;
+    justify-self:stretch;
+  }
+}
+
 
 
 /* ---- the card ---------------------------------------------------------- */
@@ -3394,6 +3418,18 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
      an eight-wide grid. In two columns they pull cards away from each
      other for no reason. */
   .floor > *{ justify-self:stretch !important }
+  /* CUI 41A, 23 Aug 2026. And placed by the grid, not by the
+     eight-column centring rules above.
+
+     Those give a short row explicit lines -- grid-column:2 / span 2 for
+     a floor of five, 3 / span 2 for its fourth card. Two columns is all
+     there is here, so a card asking for line three creates columns
+     outside the container and the floor overflows in both directions.
+     The comment above caught the span and not the start.
+
+     Covers all three floors -- silos, effects and poses -- and every
+     count from one to eight. */
+  .floor > *{ grid-column:auto !important; grid-row:auto !important }
   /* A card that spanned two of eight now wants to span two of two, which
      is the whole width — which is right for the Curator's Pick and wrong
      for nothing else, since only it spans. */
@@ -4795,7 +4831,13 @@ body.is-lboxed{ overflow:hidden }
   /* 1 · On the band's measured height, not a constant. The constant was
         118px, measured when the band carried a line it no longer has. */
   .mycoll, .pshop, .acct{
-    top:0 !important;
+    /* CUI 41A, 23 Aug 2026. Was top:0, which put all three of these
+       underneath the masthead -- the collection's filter rail and its
+       head were behind the bar and could not be scrolled out. The base
+       rule seats them at var(--mh-h), but this block sets that to
+       'auto' so the bar can size to its content, and 'auto' is not a
+       length. Measured instead, the same way the band below is. */
+    top:var(--mh-real-h, 60px) !important;
     bottom:var(--lg-band-h, 62px) !important;
     left:0 !important; right:0 !important;
     display:flex !important; flex-direction:column;
@@ -4853,8 +4895,14 @@ body.is-lboxed{ overflow:hidden }
     flex-wrap:nowrap !important;
     overflow-x:auto;
     gap:6px;
-    padding:0 0 8px !important;
-    margin:0;
+    /* CUI 41A, 23 Aug 2026. Was 0 at both ends. The first pill sat
+       against the screen edge and the last was sliced mid-word, so a
+       rail with more to show read as a rail running off the page.
+       Room at each end, and a top margin so it clears the head. */
+    padding:0 12px 10px !important;
+    /* CUI 41A, 23 Aug 2026. 6px was not enough -- the pills still read
+       as pressed against the ceiling. */
+    margin:16px 0 0;
     scrollbar-width:none;
     -webkit-overflow-scrolling:touch;
     scroll-snap-type:x proximity;
@@ -11610,6 +11658,24 @@ window.EFFECT_PREVIEWS = {
       }
     });
   }
+  /* CUI 41A, 23 Aug 2026. The masthead's real height, published for the
+     three fixed surfaces that have to start below it. --mh-h is 'auto'
+     on a phone so the bar can size to its content, which means nothing
+     can position against it. The bar also wraps to two rows at some
+     widths, so this is watched rather than read once. */
+  (function(){
+    var head = document.querySelector('.mh');
+    if (!head) return;
+    function measure(){
+      var h = head.offsetHeight;
+      if (h > 0) document.documentElement.style.setProperty('--mh-real-h', h + 'px');
+    }
+    measure();
+    addEventListener('resize', measure);
+    addEventListener('load', measure);
+    if (window.ResizeObserver) new ResizeObserver(measure).observe(head);
+  })();
+
   var mb = document.getElementById('mhMenuBtn'), dw = document.getElementById('mhDrawer');
   if (mb && dw){
     mb.addEventListener('click', function(){
