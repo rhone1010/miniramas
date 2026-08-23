@@ -3363,6 +3363,18 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
      an eight-wide grid. In two columns they pull cards away from each
      other for no reason. */
   .floor > *{ justify-self:stretch !important }
+  /* CUI 41A, 23 Aug 2026. And placed by the grid, not by the
+     eight-column centring rules above.
+
+     Those give a short row explicit lines -- grid-column:2 / span 2 for
+     a floor of five, 3 / span 2 for its fourth card. Two columns is all
+     there is here, so a card asking for line three creates columns
+     outside the container and the floor overflows in both directions.
+     The comment above caught the span and not the start.
+
+     Covers all three floors -- silos, effects and poses -- and every
+     count from one to eight. */
+  .floor > *{ grid-column:auto !important; grid-row:auto !important }
   /* A card that spanned two of eight now wants to span two of two, which
      is the whole width — which is right for the Curator's Pick and wrong
      for nothing else, since only it spans. */
