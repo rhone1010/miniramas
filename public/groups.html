@@ -6195,6 +6195,61 @@ window.EFFECT_PREVIEWS = {
     });
   }
 
+  /* ---- fitting a photograph to the wire ----------------------------------
+     Vercel's request body ceiling is 4.5MB and is not ours to raise. base64
+     inflates by roughly a third, so the practical limit on the file itself
+     is about 3.3MB.
+
+     A face at 2048px on the long edge is well past what the generator
+     needs -- it returns 1024 square -- so nothing a customer can see is
+     lost. A 12MB photograph comes out around 800KB.
+
+     A photograph already inside both limits is passed straight through.
+     Re-encoding a small JPEG would degrade it for nothing.
+
+     Calls back with (dataUrl, note) on success, (null) if four passes could
+     not get it under. `note` is null when nothing was changed, so the
+     caller can leave SRC alone. */
+  var FIT_MAX_EDGE = 2048;
+  var FIT_MAX_B64  = 3300000;          /* ~4.4MB once base64'd */
+  var FIT_QUALITY  = [0.9, 0.82, 0.74, 0.66];
+
+  function fitSourceForUpload(probe, done){
+    var w = probe.naturalWidth, h = probe.naturalHeight;
+    var b64len = (SRC.b64 || '').length;
+    var oversize = b64len * 0.75;      /* bytes, near enough */
+
+    if (Math.max(w, h) <= FIT_MAX_EDGE && oversize <= FIT_MAX_B64){
+      done(SRC.dataUrl, null);         /* nothing to do, and nothing done */
+      return;
+    }
+
+    var scale = Math.min(1, FIT_MAX_EDGE / Math.max(w, h));
+    var cw = Math.round(w * scale), ch = Math.round(h * scale);
+
+    var c = document.createElement('canvas');
+    c.width = cw; c.height = ch;
+    var ctx = c.getContext('2d');
+    if (!ctx){ done(SRC.dataUrl, null); return; }   /* no canvas, no change */
+    /* Browsers have applied EXIF rotation on decode since 2020 and this
+       draws what was decoded, so a phone portrait stays upright. */
+    ctx.drawImage(probe, 0, 0, cw, ch);
+
+    for (var i = 0; i < FIT_QUALITY.length; i++){
+      var out;
+      try { out = c.toDataURL('image/jpeg', FIT_QUALITY[i]); }
+      catch (e){ done(SRC.dataUrl, null); return; }  /* tainted canvas */
+      var bytes = (out.length - out.indexOf(',') - 1) * 0.75;
+      if (bytes <= FIT_MAX_B64){
+        done(out, w + '\u00d7' + h + ' \u2192 ' + cw + '\u00d7' + ch +
+                  ' at q' + FIT_QUALITY[i] + ', ' +
+                  Math.round(bytes / 1024) + 'KB');
+        return;
+      }
+    }
+    done(null);
+  }
+
   function onSourceFile(file){ if (file) onSourceFiles([file]); }
 
   function onSourceLoaded(urls){
@@ -6240,10 +6295,37 @@ window.EFFECT_PREVIEWS = {
         }
 
         SRC.flags = localPhotoCheck(probe);
-        /* ONE CALL, NOT TWO. Portraits runs /analyze and /gate side by side;
-           the Groups analyze route answers both questions and prices the
-           craft in the same breath. precheckSourceGate is gone with it. */
-        runAnalyze();
+
+        /* MADE TO FIT BEFORE ANYTHING IS SENT. Vercel refuses a request body
+           over 4.5MB and base64 adds about a third, so a photograph over
+           roughly 3.3MB on disk 413s on analyze, on the gate and on generate
+           -- which is every modern phone. Seen on /halloween 21 August: four
+           413s, a charge, and a refund, with nothing on screen to say why.
+
+           Fitted here rather than at read time because this is the last
+           point where the dimensions are known and the first before any
+           route is called, so analyze and the gate see exactly what generate
+           will. */
+        fitSourceForUpload(probe, function(fitted, note){
+          if (!fitted){
+            /* Four passes and still too heavy. Better to say so than to send
+               something that will be refused three times over. */
+            say('That photograph is larger than I can work from, even after ' +
+                'resizing. Try one saved at a smaller size.' +
+                '<span class="sign">&mdash; C.</span>');
+            return;
+          }
+          if (note){
+            SRC.b64     = fitted.split(',')[1] || null;
+            SRC.dataUrl = fitted;
+            var th = document.getElementById('curThumb');
+            if (th) th.src = fitted;
+            console.log('[intake] ' + note);
+          }
+          /* ONE CALL, NOT TWO - the Groups analyze route answers the gate's
+             question and prices the craft in the same breath. */
+          runAnalyze();
+        });
       };
       /* A file the browser cannot decode is a fault in itself, and state 8
          is the one that says so. */
@@ -11689,6 +11771,11 @@ document.addEventListener('click', function(e){
 
   window.openPostToCommunity = function(piece){
     if (!piece) return;
+    /* No serverId means no row in collection_pieces yet - a tile that
+       is still crafting. There is nothing to post, and opening the
+       dialog only to refuse at the end is the worse of the two. The
+       same test guards printing and archiving. */
+    if (!piece.serverId) return;
     PIECE = piece;
     busy = false;
     tick.checked = false;
@@ -11739,7 +11826,11 @@ document.addEventListener('click', function(e){
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       credentials:'same-origin',
-      body: JSON.stringify({ piece_id: PIECE.id, consent: true })
+      /* serverId, NOT id. PIECE.id is a client id - 'q3' while the
+         piece is crafting, 'srv_<uuid>' once it has been read back.
+         Neither exists in collection_pieces, so the route answered
+         no_piece over a piece that was plainly there. */
+      body: JSON.stringify({ piece_id: PIECE.serverId, consent: true })
     })
       .then(function(r){ return r.json().then(function(d){ d.__s = r.status; return d; }); })
       .then(function(d){

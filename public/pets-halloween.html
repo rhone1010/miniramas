@@ -11725,6 +11725,11 @@ document.addEventListener('click', function(e){
 
   window.openPostToCommunity = function(piece){
     if (!piece) return;
+    /* No serverId means no row in collection_pieces yet - a tile that
+       is still crafting. There is nothing to post, and opening the
+       dialog only to refuse at the end is the worse of the two. The
+       same test guards printing and archiving. */
+    if (!piece.serverId) return;
     PIECE = piece;
     busy = false;
     tick.checked = false;
@@ -11775,7 +11780,11 @@ document.addEventListener('click', function(e){
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       credentials:'same-origin',
-      body: JSON.stringify({ piece_id: PIECE.id, consent: true })
+      /* serverId, NOT id. PIECE.id is a client id - 'q3' while the
+         piece is crafting, 'srv_<uuid>' once it has been read back.
+         Neither exists in collection_pieces, so the route answered
+         no_piece over a piece that was plainly there. */
+      body: JSON.stringify({ piece_id: PIECE.serverId, consent: true })
     })
       .then(function(r){ return r.json().then(function(d){ d.__s = r.status; return d; }); })
       .then(function(d){
