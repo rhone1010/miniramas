@@ -1078,6 +1078,20 @@ body.is-chooser #siloFloor{ grid-template-rows:auto; align-content:center }
 .cur-slot-t{ font-family:var(--serif); font-size:1.375rem; color:var(--oxblood) }
 .cur-slot-s{ font-family:var(--serif); font-size:1.125rem; color:var(--ink-soft); line-height:1.35 }
 
+/* CUI 41A, 24 Aug 2026. The camera pill. Sized to the standing rule
+   on action controls -- serif italic, 1.15rem+, real padding. */
+.cur-camera{
+  display:block; margin:12px auto 0;
+  font-family:var(--serif); font-style:italic; font-size:1.15rem;
+  padding:.55rem 1.4rem; border-radius:999px;
+  border:1px solid rgba(125,66,66,.45); background:transparent;
+  color:var(--oxblood, #7d4242); cursor:pointer;
+  transition:background .2s, color .2s;
+}
+.cur-camera:hover{ background:rgba(125,66,66,.08) }
+/* Gone once a photograph is in -- the slot is gone then too. */
+.cur.has-photo .cur-camera, .cur[data-state="ready"] .cur-camera{ display:none }
+
 .cur-thumb{ display:none; position:relative }
 /* The card takes the photograph's shape, not the other way round.
    --thumb-ar is written on load from the file's own dimensions and
@@ -5018,11 +5032,18 @@ body.is-lboxed{ overflow:hidden }
 
         <div class="cur-photo">
           <input type="file" id="srcFile" accept="image/*" hidden>
+          <!-- CUI 41A, 24 Aug 2026. The camera. capture opens the
+               native camera app on a phone; its own flip control
+               covers front/rear. Ignored on a desktop, where this
+               opens the picker like its sibling. -->
+          <input type="file" id="srcCamera" accept="image/*" capture="environment" hidden>
           <div class="cur-slot" id="curSlot" role="button" tabindex="0">
             <span class="cur-slot-plus">+</span>
             <span class="cur-slot-t">Add portrait photo</span>
             <span class="cur-slot-s">Start with a clear, face-forward image.</span>
           </div>
+          <!-- CUI 41A, 24 Aug 2026. The other way in. -->
+          <button class="cur-camera" id="curCamera" type="button">Take a photo</button>
           <div class="cur-thumb">
             <img id="curThumb" src="/previews/silos/artists_gallery.jpg" alt="Your photograph">
             <button class="cur-change" id="curChange" type="button">Use a different photograph</button>
@@ -6400,6 +6421,21 @@ window.EFFECT_PREVIEWS = {
     onSourceFile(srcFile.files && srcFile.files[0]);
     srcFile.value = '';           /* same file twice must still fire change */
   });
+
+  /* CUI 41A, 24 Aug 2026. The camera lands in the same intake as an
+     upload. One handler, two doors. */
+  var srcCamera = document.getElementById('srcCamera');
+  var curCamera = document.getElementById('curCamera');
+  if (curCamera && srcCamera){
+    curCamera.addEventListener('click', function(e){
+      e.stopPropagation();
+      srcCamera.click();
+    });
+    srcCamera.addEventListener('change', function(){
+      onSourceFile(srcCamera.files && srcCamera.files[0]);
+      srcCamera.value = '';
+    });
+  }
 
   /* ---- /portraits/analyze ------------------------------------------------
      b2 6585. The run token survives: replace the photograph mid-flight and
