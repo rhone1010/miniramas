@@ -122,7 +122,6 @@ export type GroupsEffectId =
   | 'art_nouveau'
   | 'ukiyo_e'
   // period costume
-  | 'samurai'
   // ported from Portraits, 2026-08-18
   | 'ice'
   | 'pencil_sketch'
@@ -302,15 +301,6 @@ The finished piece should feel hand-printed, sophisticated and quietly dimension
 
 
 
-  samurai: {
-    id:     'samurai',
-    label:  'Samurai',
-    intake: 'group_photo',
-    body: `Professional cinematic portrait of a family of Edo-period samurai in authentic armour, layered lacquered lamellar plates and thick silk lacing, with the convincing weight, wear and imperfection of real historical armour. Red and blue lacquer across the group. Hair naturally arranged beneath the helmets, worn or held as suits each person. Preserve every face, skin tone, ethnicity and permanent features.
-Strong late-afternoon sunlight sweeps across them from the side, sculpting faces and armour with luminous highlights and deep expressive shadows. Use foreshortening and strong dynamic lighting.
-Photographic realism with the richness and visual poetry of a great painted portrait - atmospheric, tactile and subtly painterly without becoming an illustration. Rich restrained colour, beautiful falloff, shallow depth of field, softly impressionistic Japanese setting. Idealized and striking while remaining completely believable as a photograph.
-Age the photograph with filters and reduce saturation on skin tones by 15%.`,
-  },
 
 
   // ── PORTED FROM PORTRAITS ────────────────────────────────────────────
