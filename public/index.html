@@ -480,10 +480,8 @@ footer nav a:hover{color:var(--series)}
      the fixed bar and anything down there is a thumb's width from the
      wrong tap. */
   .m-dots{
-    position:absolute; left:0; right:0; z-index:4;
-    bottom:calc(66px + env(safe-area-inset-bottom) + 143px);
     display:flex; justify-content:center; gap:10px;
-    pointer-events:none;
+    margin-bottom:16px; pointer-events:none;
   }
   .m-dot{
     pointer-events:auto;
@@ -1202,15 +1200,17 @@ footer nav a:hover{color:var(--series)}
     <div class="m-slide" id="mA"></div>
     <div class="m-slide" id="mB"></div>
     <div class="m-say">
+      <!-- CUI 41A, 24 Aug 2026. Above the text, in its flow -- a bottom
+           offset was a guess at how many lines the headline runs, and it
+           guessed wrong. -->
+      <div class="m-dots" id="mDots"></div>
       <h1 id="mSay">Imagine yourself in the Renaissance.</h1>
       <!-- CUI 41A, 23 Aug 2026. The button follows the panel. Its
            label and its href are both written by the reel. -->
       <a class="m-go" id="mGo" href="/portraits">Let&rsquo;s Get Started</a>
       <span class="m-scroll">Scroll</span>
     </div>
-    <!-- Which of five, and how far along. Tappable, because a dot that
-         shows position and refuses to take you there is a tease. -->
-    <div class="m-dots" id="mDots"></div>
+    <!-- The dots live inside .m-say now, above the headline. -->
   </section>
 
   <!-- FOLD TWO · the proof -->
@@ -1310,10 +1310,10 @@ footer nav a:hover{color:var(--series)}
     { id:'halloween', label:'Halloween', href:'/halloween',
       go:'Enter Halloween', dir:'halloween/',
       plates:[
-        ['man_haunted_scarecrow.jpg','Or something that waits after dark'],
-        ['woman_swamp_creature.jpg', 'We have a room for October'],
+        ['man_haunted_scarecrow.jpg?v=2','Or something that waits after dark'],
+        ['woman_swamp_creature.jpg?v=2', 'We have a room for October'],
         ['man_haunted_scarecrow.jpg','Some faces are better after dark'],      /* DRAFT */
-        ['man_clockwork_corpse.jpg', 'Twenty-eight ways to be unrecognisable'] /* DRAFT */
+        ['man_clockwork_corpse.jpg?v=2', 'Twenty-eight ways to be unrecognisable'] /* DRAFT */
       ] },
 
     { id:'groups', label:'Groups', href:'/groups',
@@ -1330,8 +1330,8 @@ footer nav a:hover{color:var(--series)}
       plates:[
         ['pets_victorian.jpg',     'Your dog has never been painted'],
         ['pets_impressionist.jpg', 'Cats sit for us too'],
-        ['pets_quilted.jpg',       'Thirty-four finishes, for the ones who will not hold still'], /* DRAFT */
-        ['pets_clockwork.jpg',     'Nobody has ever asked us for a small one']  /* DRAFT */
+        ['pets_quilted.jpg?v=2',   'Thirty-four finishes, for the ones who will not hold still'], /* DRAFT */
+        ['pets_clockwork.jpg?v=2', 'Nobody has ever asked us for a small one']  /* DRAFT */
       ] },
 
     { id:'pets-halloween', label:'Pets Halloween', href:'/pets/halloween',
@@ -1340,7 +1340,7 @@ footer nav a:hover{color:var(--series)}
         ['hellborn_beast.jpg',     'Though he may prefer something fiercer'],
         ['harvest_god_beast.jpg',  'And come back as something else'],
         ['gargoyle_beast.jpg',     'The other season, for the other half of the house'], /* DRAFT */
-        ['plague_beast.jpg',       'Twenty-seven of them, and they all bite']   /* DRAFT */
+        ['posessed_beast.jpg',     'Twenty-seven of them, and they all bite']   /* DRAFT */
       ] }
   ];
 
@@ -1450,10 +1450,14 @@ footer nav a:hover{color:var(--series)}
       return {
         id:s.id, label:s.label, href:s.href, go:s.go,
         frames:s.plates.map(function(p){
+          /* A ?v= query marks a re-outpainted plate whose tall-small has
+             not been recompressed yet -- skip straight to tall/ for it.
+             CUI 41A, 24 Aug 2026. */
+          var fresh = p[0].indexOf('?') > -1;
           return {
-            big:   S + 'tall-small/' + s.dir + p[0],
+            big:   S + (fresh ? 'tall/' : 'tall-small/') + s.dir + p[0],
             mid:   S + 'tall/'       + s.dir + p[0],
-            small: S + s.dir + p[0],
+            small: S + s.dir + p[0].replace('?v=2',''),
             say:   p[1]
           };
         })
@@ -1624,7 +1628,9 @@ footer nav a:hover{color:var(--series)}
       timer = setInterval(function(){
         /* Last plate of the panel, and nobody has touched it lately. */
         if (i === frames.length - 1 && Date.now() > held){
-          go(panel + 1, 1);
+          /* 0: an automatic turn. The nudge is an answer to a thumb,
+             and there was no thumb. CUI 41A, 24 Aug 2026. */
+          go(panel + 1, 0);
           return;
         }
         i = (i + 1) % frames.length;
@@ -1779,11 +1785,11 @@ footer nav a:hover{color:var(--series)}
      desktop headline can follow them. */
   var COL_GROUPS = [
     /* Portraits */
-    ['man_renaissance.jpg',                     'woman_watercolor.jpg',              'woman_forest_guardian.jpg'],
+    ['man_neon.jpg',                            'woman_watercolor.jpg',              'woman_forest_guardian.jpg'],
     ['woman_tidewood.jpg',                      'man_driftwood_resin.jpg',           'man_balloons.jpg'],
     ['woman_stained_glass.jpg',                 'man_ice.jpg',                       'woman_robot_1.jpg'],
     /* Halloween */
-    ['halloween/man_haunted_scarecrow.jpg',     'halloween/woman_swamp_creature.jpg','halloween/man_clockwork_corpse.jpg'],
+    ['halloween/man_haunted_scarecrow.jpg?v=2', 'halloween/woman_swamp_creature.jpg?v=2','halloween/man_clockwork_corpse.jpg?v=2'],
     ['woman_clockwork.jpg',                     'woman_dragon_skin.jpg',             'man_driftwood.jpg'],
     ['man_quartzite.jpg',                       'man_impressionist.jpg',             'woman_music.jpg'],
     /* Groups */
@@ -1791,12 +1797,12 @@ footer nav a:hover{color:var(--series)}
     ['groups/groups_family_mosaic.jpg',         'groups/groups_plushy.jpg',          'woman_face_petals.jpg'],
     ['man_pencil_sketch.jpg',                   'woman_porcelain.jpg',               'man_watercolor2.jpg'],
     /* Pets */
-    ['pets/pets_victorian.jpg?v=2',             'pets/pets_impressionist.jpg',       'pets/pets_clockwork.jpg'],
+    ['pets/pets_victorian.jpg?v=2',             'pets/pets_impressionist.jpg',       'pets/pets_clockwork.jpg?v=2'],
     ['pets-halloween/hellborn_beast.jpg',        'pets-halloween/gargoyle_beast.jpg', 'woman_plushy.jpg'],
     ['woman_robot_2.jpg',                       'man_coral.jpg',                     'man_elizabethan.jpg'],
     /* Pets Halloween */
-    ['pets-halloween/harvest_god_beast.jpg',    'pets-halloween/plague_beast.jpg',   'pets-halloween/hellborn_beast.jpg'],
-    ['pets/pets_quilted.jpg',                   'pets/pets_impressionist.jpg',       'pets/pets_clockwork.jpg'],
+    ['pets-halloween/harvest_god_beast.jpg',    'pets-halloween/posessed_beast.jpg', 'pets-halloween/hellborn_beast.jpg'],
+    ['pets/pets_quilted.jpg?v=2',               'pets/pets_impressionist.jpg',       'pets/pets_clockwork.jpg?v=2'],
     ['woman_face_petals.jpg',                   'man_coral.jpg',                     'man_pencil_sketch.jpg']
   ];
 
@@ -1877,8 +1883,11 @@ footer nav a:hover{color:var(--series)}
       /* Root-level plates: straight to tall/ (tall-small/ doesn't have them).
          Subfoldered plates: try tall-small/ first, fall back to tall/. */
       var hasFolder = filename.indexOf('/') > -1;
-      var first  = S + (hasFolder ? 'tall-small/' : 'tall/') + filename;
-      var second = hasFolder ? S + 'tall/' + filename : null;
+      /* A ?v= query marks a re-outpainted plate whose tall-small is
+         stale -- go straight to tall/. CUI 41A, 24 Aug 2026. */
+      var fresh  = filename.indexOf('?') > -1;
+      var first  = S + ((hasFolder && !fresh) ? 'tall-small/' : 'tall/') + filename;
+      var second = (hasFolder && !fresh) ? S + 'tall/' + filename : null;
       var plain  = S + filename.replace('?v=2','');
       /* CUI 41A, 24 Aug 2026. An attempt index, not a src comparison.
          img.src returns the resolved absolute URL and the candidates are
