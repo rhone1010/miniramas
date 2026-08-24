@@ -113,9 +113,32 @@ function svc() {
  *  This is the seam the Groups analyze route replaces. When a server-held
  *  count exists, it is read here and `subjectCount` stops being a parameter.
  */
-function priceFor(series: string, subjectCount: unknown):
-  { ok: true; cost: number; subjects: number | null } |
+function priceFor(series: string, subjectCount: unknown, count: number):
+  { ok: true; cost: number; total?: number; subjects: number | null } |
   { ok: false; reason: string; detail?: unknown } {
+
+  // WALLPAPERS ARE PRICED AS A BUNDLE, NOT PER IMAGE.
+  //
+  // Rich, 23 August: one for 3 credits, five for 10. Every full five costs
+  // ten and the remainder costs three each, so six is 13 and ten is 20.
+  // Confirmed 24 August.
+  //
+  // There is no honest per-image figure here - five at 10 is two apiece and
+  // one at 3 is three - so this returns a TOTAL and the route uses it
+  // directly instead of multiplying. `cost` is still populated because the
+  // response carries cost_per, and it is the average rounded down, marked
+  // as such where it is read.
+  if (series === 'wallpapers') {
+    const n = Math.floor(Number(count))
+    if (!Number.isFinite(n) || n < 1) {
+      return { ok: false, reason: 'count_required' }
+    }
+    const total = Math.floor(n / 5) * 10 + (n % 5) * 3
+    if (!Number.isFinite(total) || total <= 0) {
+      return { ok: false, reason: 'price_unavailable' }
+    }
+    return { ok: true, cost: Math.floor(total / n), total, subjects: null }
+  }
 
   if (series !== 'groups') {
     return { ok: true, cost: CREDITS_PER_IMAGE, subjects: null }
@@ -179,15 +202,18 @@ export async function POST(req: Request) {
     }
 
     const n = Math.max(1, Math.floor(Number(body.count) || 1))
-    if (n > MAX_PAYLOAD) {
+    const series = typeof body.series === 'string' ? body.series : 'portraits'
+
+    // MAX_PAYLOAD exists because the RENDER QUEUE caps at ten. Wallpapers
+    // render nothing - every file is already sitting in the public bucket -
+    // so the cap has nothing to protect. Rich, 24 August: "cap is none."
+    if (series !== 'wallpapers' && n > MAX_PAYLOAD) {
       return NextResponse.json(
         { ok: false, reason: 'payload_too_large', max: MAX_PAYLOAD }, { status: 400 })
     }
 
-    const series = typeof body.series === 'string' ? body.series : 'portraits'
-
     // The server's own figure, before the client's is looked at.
-    const priced = priceFor(series, body.subject_count)
+    const priced = priceFor(series, body.subject_count, n)
     if (!priced.ok) {
       return NextResponse.json(
         { ok: false, reason: priced.reason, detail: priced.detail }, { status: 400 })
@@ -219,7 +245,10 @@ export async function POST(req: Request) {
     const suppliedRef = typeof body.ref_id === 'string' ? body.ref_id.trim() : ''
     const refId = suppliedRef ? suppliedRef.slice(0, 64) : `craft_${crypto.randomUUID()}`
 
-    const total  = n * costPer          // credits, not images
+    // Bundled Series quote a total; per-image Series multiply. Wallpapers is
+    // the only bundled one today, and `priced.total` is absent everywhere
+    // else, so the fallback is the original arithmetic unchanged.
+    const total  = priced.total ?? (n * costPer)   // credits, not images
     const presets: string[] = Array.isArray(body.presets)
       ? body.presets.filter((p: unknown): p is string => typeof p === 'string')
       : []
@@ -281,31 +310,56 @@ export async function POST(req: Request) {
       balanceAfter = spent
     }
 
-    // Audit — one craft_started event and one ledger row per image, each
-    // moving cost_per. balance_after walks from the pre-spend balance down.
+    // Audit. Two shapes, because two things are being described.
+    //
+    // A CRAFT is n renders that can each fail, so it gets one craft_events
+    // row and one ledger row per image, each moving cost_per, with
+    // balance_after walking from the pre-spend balance down. Unchanged.
+    //
+    // A WALLPAPER PURCHASE is one transaction for files that already exist.
+    // It gets ONE ledger row for the whole basket and no craft_events row at
+    // all - that table describes renders, its event column is
+    // 'craft_started', and nothing was crafted here.
+    //
+    // reason='wallpapers' rather than 'craft' makes it UNREFUNDABLE by
+    // construction: the refund route matches reason='craft' AND ref_id and
+    // will never see these rows. Rich, 24 August. Nothing renders and
+    // nothing can fail, so there is nothing to reverse - but if that is ever
+    // revisited, rows already written still say 'wallpapers'.
     const delta = isAdmin ? 0 : -costPer
 
-    const events = Array.from({ length: n }, (_, i) => ({
-      owner_key: owner,
-      series,
-      preset: presets[i] ?? presets[0] ?? null,
-      event: 'craft_started',
-      attempts: 1,
-      credits_delta: delta,
-      source_photo_id: refId,   // the only reference column on this table
-    }))
-    const { error: evErr } = await db.from('craft_events').insert(events)
-    if (evErr) console.error('[credits/gate] craft_events insert failed', evErr)
+    if (series === 'wallpapers') {
+      const { error: ldErr } = await db.from('credit_ledger').insert([{
+        owner_key: owner,
+        delta: isAdmin ? 0 : -total,
+        reason: 'wallpapers',
+        ref_id: refId,
+        balance_after: balanceAfter,
+      }])
+      if (ldErr) console.error('[credits/gate] credit_ledger insert failed', ldErr)
+    } else {
+      const events = Array.from({ length: n }, (_, i) => ({
+        owner_key: owner,
+        series,
+        preset: presets[i] ?? presets[0] ?? null,
+        event: 'craft_started',
+        attempts: 1,
+        credits_delta: delta,
+        source_photo_id: refId,   // the only reference column on this table
+      }))
+      const { error: evErr } = await db.from('craft_events').insert(events)
+      if (evErr) console.error('[credits/gate] craft_events insert failed', evErr)
 
-    const ledger = Array.from({ length: n }, (_, k) => ({
-      owner_key: owner,
-      delta,
-      reason: 'craft',
-      ref_id: refId,          // the refund route matches on this
-      balance_after: isAdmin ? balanceAfter : balanceAfter + (n - 1 - k) * costPer,
-    }))
-    const { error: ldErr } = await db.from('credit_ledger').insert(ledger)
-    if (ldErr) console.error('[credits/gate] credit_ledger insert failed', ldErr)
+      const ledger = Array.from({ length: n }, (_, k) => ({
+        owner_key: owner,
+        delta,
+        reason: 'craft',
+        ref_id: refId,          // the refund route matches on this
+        balance_after: isAdmin ? balanceAfter : balanceAfter + (n - 1 - k) * costPer,
+      }))
+      const { error: ldErr } = await db.from('credit_ledger').insert(ledger)
+      if (ldErr) console.error('[credits/gate] credit_ledger insert failed', ldErr)
+    }
 
     return NextResponse.json({
       ok: true,
@@ -313,7 +367,11 @@ export async function POST(req: Request) {
       balance_after: balanceAfter,
       granted: n,
       spent: isAdmin ? 0 : total,
+      // On a bundled Series this is the AVERAGE, floored - it is not what any
+      // single item cost, because no single item has a price. `spent` above
+      // is the figure that is true.
       cost_per: costPer,
+      bundled: priced.total !== undefined,
       subject_count: priced.subjects,   // null off Groups
       admin: isAdmin,
     })
