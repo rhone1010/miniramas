@@ -201,98 +201,104 @@ body::before{
 .room.is-soon .room-count{ color:rgba(243,237,225,.72) }
 
 /* ==================================================================
-   ONE FOLD, TWO HALVES                            CUI 41 · 23 Aug 2026
-   Ruled by Rich in session. Five cards across, on one horizontal fold,
-   divided down the middle: three on vellum that cost a photograph, two
-   on coffee that are already made.
+   ONE FOLD, TWO HALVES                            CUI 41 · 24 Aug 2026
+   Built to Rich's mockup. Five cards across one full-height fold, split
+   three and two, and the ground is what divides them.
 
-   THE DIVISION IS VERTICAL AND IT IS A HARD EDGE. Stacked bands made the
-   page a list of two things; side by side, the choice is one glance. The
-   ground changes at the seam and runs to the edge of the screen on both
-   sides, so neither half reads as a panel sitting on the other.
+   THE COFFEE IS PAINTED, NOT PACKED. It is a pseudo-element on the fold
+   covering the right 40% - exactly the 2 of the 3fr 2fr split - rather
+   than a background on the right column. That is what lets the ground
+   run from the masthead to the bottom of the screen while the two card
+   rows still sit in the same grid row and line up across the seam. A
+   background on the column could do one or the other, not both.
 
-   THE SPLIT IS 3fr 2fr, which is the card count. That is what keeps a
-   card the same width on both sides without either half being told a
-   width - the tracks divide in the same proportion as the cards in them.
+   THE TITLE SITS IN THE VELLUM HALF, in its own row above the cards. The
+   coffee runs up behind that row to the masthead, so the seam is one
+   unbroken vertical edge for the full height of the fold.
 
-   CARDS ARE CAPPED. Left to fill a 2560 they became posters; the row
-   holds its size and the fold grows margins instead.
+   HEADINGS ARE CENTRED OVER THEIR CARDS and carry no count. The rule and
+   the eyebrow both came off - with only three cards and two under them,
+   a heading that has to be measured out to the edge of the screen is
+   doing work the cards already did.
    ================================================================== */
-
-/* ---- the head ---------------------------------------------------- */
-.pg-head{ text-align:center; padding:clamp(28px,3vw,52px) 0 clamp(26px,2.6vw,44px) }
-.pg-title{ margin:0; font-size:clamp(2.4rem,3vw,3.2rem); font-weight:400; line-height:1.05 }
-.pg-sub{ margin:8px 0 0; font-size:1.28rem; font-style:italic; color:rgba(42,36,30,.6) }
-.pg-say{
-  margin:18px auto 0; max-width:620px;
-  font-size:1.18rem; line-height:1.6; color:rgba(42,36,30,.7);
-}
-.pg-say .sig{ display:block; margin-top:8px; font-style:italic; color:rgba(42,36,30,.5) }
-
-/* ---- the fold ----------------------------------------------------- */
-/* Full bleed out of the centred container, then the container's own
-   inset is given back as padding on the outer edge of each half - so the
-   cards line up with everything else on the site while the grounds run
-   to the screen edge. */
 .fold{
+  position:relative;
   margin-left:calc(50% - 50vw);
   margin-right:calc(50% - 50vw);
   display:grid;
   grid-template-columns:3fr 2fr;
-  align-items:start;
+  grid-template-rows:auto 1fr;
+  min-height:calc(100vh - var(--mh-h));
 }
-.half{ padding-block:clamp(32px,3.2vw,56px) }
+/* The coffee. 60% is 2fr of 3fr 2fr - it has to be stated numerically
+   because a pseudo-element cannot read a grid track. If the split above
+   ever changes, change it here too. */
+.fold::before{
+  content:"";
+  position:absolute; inset:0 0 0 60%;
+  background:var(--coffee);
+}
+.fold > *{ position:relative }
+
+/* ---- the title ---------------------------------------------------- */
+.fold-head{
+  grid-column:1; grid-row:1;
+  text-align:center;
+  padding:clamp(28px,3.4vw,60px) clamp(24px,2.6vw,44px) clamp(20px,2.4vw,40px);
+}
+.pg-title{ margin:0; font-size:clamp(2.4rem,3.2vw,3.4rem); font-weight:400; line-height:1.05 }
+
+/* ---- the halves --------------------------------------------------- */
+.half{
+  grid-row:2;
+  display:flex; flex-direction:column; align-items:center;
+  padding-bottom:clamp(32px,3.4vw,64px);
+}
 .half--craft{
-  padding-left:calc(50vw - 50%);
+  grid-column:1;
+  padding-left:clamp(24px,2.6vw,44px);
   padding-right:clamp(24px,2.6vw,44px);
 }
 .half--store{
-  padding-right:calc(50vw - 50%);
-  padding-left:clamp(24px,2.6vw,44px);
-  background:var(--coffee);
+  grid-column:2;
   color:var(--vellum);
+  padding-left:clamp(24px,2.6vw,44px);
+  padding-right:clamp(24px,2.6vw,44px);
 }
 
-/* Below the split the two halves stop being a comparison and become a
-   list, so they stack and each takes the full width. */
+/* Below the split the halves stop being a comparison and become a list.
+   The painted ground has to come off with them - a right-hand 40% band
+   means nothing once the columns are stacked. */
 @media (max-width:1180px){
-  .fold{ grid-template-columns:1fr }
-  .half--craft{ padding-right:calc(50vw - 50%) }
-  .half--store{ padding-left:calc(50vw - 50%) }
+  .fold{ grid-template-columns:1fr; grid-template-rows:auto auto auto; min-height:0 }
+  .fold::before{ display:none }
+  .fold-head{ grid-column:1; grid-row:1 }
+  .half--craft{ grid-column:1; grid-row:2 }
+  .half--store{ grid-column:1; grid-row:3; background:var(--coffee);
+                padding-top:clamp(32px,3.4vw,56px);
+                margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw); }
 }
 
-/* ---- the band heading -------------------------------------------- */
+/* ---- the headings -------------------------------------------------- */
 .band-h{
-  display:flex; align-items:baseline; gap:16px;
-  margin:0 0 clamp(16px,1.6vw,26px);
-  font-weight:400; font-size:clamp(1.4rem,1.5vw,1.75rem);
-  color:var(--coffee);
+  margin:0 0 clamp(18px,1.8vw,30px);
+  font-weight:400; font-size:clamp(1.5rem,1.85vw,2.05rem);
+  text-align:center; color:var(--coffee);
 }
-.band-h .n{
-  font-family:var(--sans); font-size:12px; font-weight:500;
-  letter-spacing:.18em; text-transform:uppercase;
-  color:rgba(42,36,30,.42); white-space:nowrap;
-}
-.band-h::after{ content:""; flex:1 1 auto; height:1px; background:rgba(117,98,58,.28) }
-.half--store .band-h{ color:var(--series) }
-.half--store .band-h .n{ color:rgba(243,237,225,.45) }
-.half--store .band-h::after{ background:rgba(243,237,225,.2) }
+.half--store .band-h{ color:var(--vellum) }
 
 /* ---- the cards ---------------------------------------------------- */
-/* A card is capped, not stretched. justify-content:start keeps the row
-   packed to the seam rather than spread across it once the cap bites. */
+/* Capped, and centred under the heading rather than packed to the seam. */
 .rooms{
   display:grid;
   gap:clamp(14px,1.3vw,24px);
-  justify-content:start;
+  justify-content:center;
 }
-.rooms--three{ grid-template-columns:repeat(3, minmax(0, 264px)) }
-.rooms--two  { grid-template-columns:repeat(2, minmax(0, 264px)) }
-@media (max-width:1180px){
-  .rooms--three, .rooms--two{ grid-template-columns:repeat(3, minmax(0,264px)) }
-}
+.rooms--three{ grid-template-columns:repeat(3, minmax(0, 250px)) }
+.rooms--two  { grid-template-columns:repeat(2, minmax(0, 250px)) }
 @media (max-width:760px){
-  .rooms--three, .rooms--two{ grid-template-columns:repeat(2, minmax(0,1fr)) }
+  .rooms--three{ grid-template-columns:repeat(2, minmax(0,1fr)) }
+  .rooms--two  { grid-template-columns:repeat(2, minmax(0,1fr)) }
 }
 
 /* On coffee a card with no plate would sink into the ground. */
@@ -300,8 +306,9 @@ body::before{
 .half--store .tile-bare{ background:rgba(243,237,225,.06); color:rgba(243,237,225,.5) }
 
 .reg-note{
+  align-self:flex-start;
   margin:clamp(18px,1.8vw,28px) 0 0;
-  font-size:1.05rem; font-style:italic; color:rgba(243,237,225,.5);
+  font-size:1.02rem; font-style:italic; color:rgba(243,237,225,.5);
 }
 
 .floor-head{
@@ -567,30 +574,25 @@ body::before{
   <div class="stage">
     <main>
 
-      <div class="pg-head">
-        <h1 class="pg-title">Wallpapers</h1>
-        <p class="pg-sub">For the screen you look at most</p>
-        <p class="pg-say">
-          Two ways to dress a telephone screen. Send me a photograph and
-          I&rsquo;ll craft one, or take something already finished from
-          the shelf.
-          <span class="sig">&mdash; C.</span>
-        </p>
-      </div>
-
       <div class="fold">
+
+        <div class="fold-head">
+          <h1 class="pg-title">Wallpapers</h1>
+        </div>
+
         <!-- VELLUM: costs a photograph -->
         <section class="half half--craft">
-          <h2 class="band-h"><span>Made from your photograph</span><span class="n">Three rooms</span></h2>
+          <h2 class="band-h">Crafted From Your Photographs</h2>
           <div class="rooms rooms--three" id="bandCraft"></div>
         </section>
 
         <!-- COFFEE: already made -->
         <section class="half half--store">
-          <h2 class="band-h"><span>Ready to buy</span><span class="n">1,029 pieces</span></h2>
+          <h2 class="band-h">Ready To Buy</h2>
           <div class="rooms rooms--two" id="bandStore"></div>
           <p class="reg-note">Nothing to send, nothing to wait for.</p>
         </section>
+
       </div>
 
       <p class="foot">Wallpapers are download-only. Nothing here is sent to the print lab.</p>
