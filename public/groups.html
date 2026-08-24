@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<!-- CUI 42B · 2026-08-24 -->
+<!-- CUI 42A · 2026-08-24 -->
 <html lang="en">
 <head>
 <script>
@@ -1354,6 +1356,26 @@ body{
   width:var(--silo-w);
 }
 
+/* ---- FIVE SILOS LAY 2 OVER 3, CENTRED --------------------------------
+   CUI 42A · 2026-08-24. Rich's ruling. "Another Time" is gone and two
+   rooms arrived, so the floor deals five. Same card width as the 2x2;
+   six half-columns so the top pair can sit centred over the bottom row
+   of three. The id outranks the generic .floor[data-count="5"] partial-
+   row rule, which stays correct for the effects floor. */
+#siloFloor[data-count="5"]{
+  grid-template-columns:repeat(6, calc(var(--silo-w) / 2));
+  grid-template-rows:repeat(2, auto);
+  justify-content:center;
+  align-content:center;
+}
+#siloFloor[data-count="5"] > *{
+  grid-column:auto / span 2;
+  justify-self:stretch;
+  width:var(--silo-w);
+}
+#siloFloor[data-count="5"] > :nth-child(1){ grid-column:2 / span 2 }
+#siloFloor[data-count="5"] > :nth-child(3){ grid-column:1 / span 2; grid-row:2 }
+
 /* CUI 41A, 23 Aug 2026. On a phone, one column and four rows.
 
    Two columns of var(--silo-w) is 500px at the clamp's floor, against a
@@ -1547,33 +1569,10 @@ body{
    the breadcrumb, because it is a choice about the work and not a piece
    of navigation. Same coffee pill language, same 4px, one shared ground
    so the two sides read as one control. */
-.agetog{
-  position:absolute; left:50%; top:0; transform:translateX(-50%);
-  display:inline-flex; gap:4px;
-  height:40px; padding:4px;
-  border-radius:4px;
-  background:linear-gradient(180deg, rgba(47,36,32,.55) 0%, rgba(36,27,23,.55) 100%);
-  border:1px solid rgba(196,169,110,.16);
-}
-.agetog[hidden]{ display:none }
-.agetog-b{
-  display:inline-flex; align-items:center;
-  height:100%; padding:0 20px;
-  border:0; border-radius:3px; background:transparent;
-  font-family:var(--serif); font-size:1.3125rem; line-height:1;
-  color:var(--vellum-200); opacity:.62;
-  cursor:pointer;
-  transition:background .38s var(--ease-nav), color .38s var(--ease-nav),
-             opacity .38s var(--ease-nav);
-}
-.agetog-b:hover{ opacity:.85 }
-.agetog-b:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
-.agetog-b.is-on{
-  opacity:1; color:#fff;
-  background:linear-gradient(180deg,#3a2c26 0%, #2c211c 100%);
-  border:1px solid rgba(196,169,110,.26);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
-}
+/* The Men/Women toggle lived here. Removed CUI 42A · 2026-08-24 -
+   every costume effect is gone from Groups and material effects
+   re-materialise the clothes each person already wears, so there is
+   no sex to infer and nothing for a toggle to say. */
 .crumb-back,
 .crumb-here{
   display:inline-flex; align-items:center; gap:.5em;
@@ -3569,11 +3568,6 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
     flex-wrap:wrap; gap:8px;
     padding-bottom:8px; min-height:0;
   }
-  .agetog{
-    position:static; transform:none;
-    order:3; width:100%; height:42px;
-  }
-  .agetog-b{ flex:1; justify-content:center; padding:0 }
   .crumb-here{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 
   /* ---- the card takes its size from the column ----------------------- */
@@ -4809,7 +4803,6 @@ body.is-lboxed{ overflow:hidden }
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     font-size:1.05rem; height:36px; padding:0 12px;
   }
-  .agetog{ order:3 }
 
   /* 4 · and the pose card fits its own words. Three lines of type and an
         icon do not fit a .78 ratio at this width. */
@@ -5122,10 +5115,6 @@ body.is-lboxed{ overflow:hidden }
       </button>
       <span class="crumb-sep">&rsaquo;</span>
       <span class="crumb-here" id="crumbHere"></span>
-      <div class="agetog" id="ageTog" role="group" aria-label="Another Age" hidden>
-        <button class="agetog-b is-on" id="ageM" type="button" data-age="m">Men</button>
-        <button class="agetog-b" id="ageW" type="button" data-age="w">Women</button>
-      </div>
     </div>
 
     <div class="deck" id="deck">
@@ -6749,7 +6738,6 @@ window.EFFECT_PREVIEWS = {
 
      Ported from public/portraits-b2.html, read 2026-07-31:
        addToQueue            7812   the payload body, 93 lines
-       MATERIAL_LOCATIONS    4594   verbatim
 
      THE MERGE. b2 and s72 both declare addToQueue and they are different
      functions — b2's takes no arguments and reads module state, s72's takes
@@ -6769,51 +6757,17 @@ window.EFFECT_PREVIEWS = {
      field the route reads-and-discards is a change to the wire that this
      build has no need to make. */
 
-  /* b2 4594, unchanged. NOT every effect is in here — see checkLocations
-     below, which makes the gap loud rather than letting it default. */
-  var MATERIAL_LOCATIONS = {
-    bronze:        ['mantel', 'pedestal', 'gradient'],
-    alabaster:     ['mantel', 'pedestal', 'gradient'],
-    iron:          ['mantel', 'pedestal', 'gradient'],
-    stone:         ['mantel', 'pedestal', 'gradient'],
-    ebony:         ['mantel', 'pedestal', 'gradient'],
-    walnut:        ['mantel', 'pedestal', 'gradient'],
-    plushy:        ['plushy_shelf'],
-    impressionist:  ['mantel', 'pedestal', 'gradient'],
-    torn_paper:     ['mantel', 'pedestal', 'gradient'],
-    folded_book:    ['mantel', 'pedestal', 'gradient'],
-    charcoal_chalk: ['mantel', 'pedestal', 'gradient'],
-    pencil_sketch:  ['mantel', 'pedestal', 'gradient'],
-    sheet_music:    ['mantel', 'pedestal', 'gradient']
-  };
-  var DEFAULT_LOCATION = 'pedestal';
-
-  /* Thirteen presets are mapped and the registry offers more than thirteen.
-     An unmapped effect silently takes 'pedestal', which may be right and may
-     be wrong, and nobody would ever find out. So it is counted at boot and
-     put on the console once. Rich and CENG own the answer; this lane only
-     refuses to hide the question. */
-  function checkLocations(){
-    var missing = (R.effects || []).filter(function(e){
-      return e.body === 'live' && !MATERIAL_LOCATIONS[e.id];
-    }).map(function(e){ return e.id; });
-    if (missing.length){
-      console.warn('[payload] ' + missing.length + ' live effects have no location mapping ' +
-                   'and will default to ' + DEFAULT_LOCATION + ': ' + missing.join(', '));
-    }
-    return missing;
-  }
-  window.__UNMAPPED = checkLocations();
+  /* MATERIAL_LOCATIONS, its pedestal default, the boot warning and
+     locationForEffect stood here, ported verbatim from the Portraits b2
+     clone. Removed · CUI 42B · 2026-08-24. GroupsGenerateRequest accepts
+     source_images_b64, effect_id, subject_count and skip_scoring —
+     `location` was discarded on arrival since the flat-catalogue port,
+     and pedestals do not exist in Groups. */
 
   /* style_id is derived, not chosen. b2 had a Series switch above the
      material picker; the room is that switch now. */
   function styleForSilo(siloId){
     return siloId === 'artists_gallery' ? 'artists_gallery' : 'realistic';
-  }
-
-  function locationForEffect(effectId){
-    var locs = MATERIAL_LOCATIONS[effectId];
-    return (locs && locs[0]) || DEFAULT_LOCATION;
   }
 
   /* One queue item, ready for /generate. Everything it needs comes from the
@@ -6842,16 +6796,14 @@ window.EFFECT_PREVIEWS = {
 
       style_id:              styleForSilo(siloId),
       preset:                effectId,
-      location:              locationForEffect(effectId),
       scale:                 'auto_85',
-      aspect_ratio:          '1:1',
+      /* aspect_ratio is GONE from the wire · CUI 42A. The route never
+         read it, and groupsAspect() in groups-generator.ts now measures
+         the source photograph and snaps to 1:1, 5:4 or 4:3. Sending
+         '1:1' was a lie in the payload waiting for a reader to believe
+         it. subject went with it — nothing in Groups infers sex. */
       resolution:            '1k',
       pose:                  window.__POSE || 'as_photographed',
-      /* Whatever the card showed. The engine detects this itself when it
-         is absent, but then the Men/Women toggle would be a lie — a
-         customer who flipped to Women would be shown women and sent a
-         man. An explicit choice always beats detection. */
-      subject:               SUBJECT || null,
 
       status:                'pending',
       result:                null,
@@ -8027,7 +7979,7 @@ window.EFFECT_PREVIEWS = {
     /* Two ids. tileId is the thing on the floor and never changes;
        effectId is what gets crafted and follows the subject. */
     a.dataset.tileId   = effect.id;
-    a.dataset.effectId = craftIdFor(effect.id);
+    a.dataset.effectId = effect.id;   /* no variants in Groups · CUI 42A */
     a.dataset.siloId = siloId;
     a.innerHTML =
       '<img class="silo-card__image" src="' +
@@ -8064,30 +8016,19 @@ window.EFFECT_PREVIEWS = {
   /* Eight is the ceiling. A room never holds more than a single floor, so
      there is no paging and no partial second page to design around. */
   /* ==================================================================
-     WHAT THE ROUTE WILL ACTUALLY ACCEPT
+     WHAT THE ROUTE WILL ACTUALLY ACCEPT · CUI 42A · 2026-08-24
      ==================================================================
-     Read out of lib/v1/portraits/portraits-shared.ts by the build script
-     that produced this file, on the day it produced it. Not hand-kept.
+     The hardcoded ROUTE_ACCEPTS list that stood here drifted for a month
+     under a "not hand-kept" banner — it still offered six costume effects
+     removed on 23 August and knew nothing of the thirteen that replaced
+     them. It does not get a second chance.
 
-     The registry decides what EXISTS and whether it is finished. The route
-     decides what it will CRAFT, at line 227 of the generate route, and it
-     400s on anything absent from PRESET_LABELS — before the engine, in
-     fifteen milliseconds, after the credits have gone.
-
-     11 live effects were refused when this was built. Offering them is
-     charging for a certain failure, so the floor does not.
-
-     THIS IS A GUARD, NOT A DECISION. The answer is the eleven ids reaching
-     PRESET_LABELS, PRESET_TIER and STYLE_MATERIALS. When they do, the next
-     build reads them and this list grows on its own. */
-  var ROUTE_ACCEPTS = ['bronze', 'ebony', 'stone', 'reclaimed_bronze', 
-    'porcelain', 'carved_family', 'retro_robot', 'plushy', 'folded_book', 
-    'origami', 'balloon_face', 'layered_paper', 'pencil_sketch', 
-    'sea_glass', 'cubism', 'art_nouveau', 'ukiyo_e', 
-    'family_impressionism', 'family_mosaic', 'neon', 'ice', 'victorian', 
-    'elizabethan', 'renaissance', 'persian_court', 'samurai', 'wild_west', 
-    'clockwork'];
-  function craftable(e){ return e && e.body === 'live' && ROUTE_ACCEPTS.indexOf(e.id) >= 0; }
+     The registry is now generated by scripts/emit-groups-registry.js from
+     lib/v1/groups/groups-effects.ts — the same catalogue the generate
+     route reads — and the emitter refuses to write an id the catalogue
+     does not hold. What the registry offers, the route accepts, by
+     construction rather than by a list kept in step by hand. */
+  function craftable(e){ return !!(e && e.body === 'live'); }
 
   var CAP = 7;   /* seven effects; the eighth slot is the upsell */
 
@@ -8159,7 +8100,7 @@ window.EFFECT_PREVIEWS = {
          LABEL as the effect id, and the effect itself as a third that
          was ignored. Ten cards, none of them an effect. */
       left.slice(0, addN).forEach(function(e2){
-        addToQueue(silo, craftIdFor(e2.id));
+        addToQueue(silo, e2.id);
       });
       /* The attribute is data-effect-id. [data-effect] matched nothing,
          so nothing was ever marked chosen. */
@@ -8181,62 +8122,18 @@ window.EFFECT_PREVIEWS = {
     old.replaceWith(fresh);
   }
 
-  /* ---- the subject ------------------------------------------------------
-     One tile, two faces. The _woman ids are variants sitting behind their
-     base tile, not tiles of their own — s97 had them as a second set and
-     flipping the toggle swapped the floor, which is not the ruling. The
-     tiles hold still; the faces change.
-
-     The photograph decides first. `subject` is CENG's field and is read
-     ahead of everything; detected_gender already ships and carries it
-     until then. Neither, and the ungendered plate serves. */
-  var AGE_SILO = 'another_age';   /* kept: the room the toggle was born in */
-  var SUBJECT  = null;            /* 'man' | 'woman' | null */
-  var SUBJECT_FORCED = false;     /* the customer has overridden the photograph */
-  var ageTog   = document.getElementById('ageTog');
+  /* ---- the subject · REMOVED · CUI 42A · 2026-08-24 --------------------
+     SUBJECT, subjectFromPhoto, craftIdFor and the sitter dealing all
+     existed because six costume effects had to guess everybody's sex.
+     All six were removed from the catalogue on 23 August; no _woman id
+     exists anywhere in Groups and material effects re-materialise the
+     clothes each person is already wearing. The registry keeps
+     isVariant() and variantFor() as identity functions so this floor
+     code never has to test for a toggle that cannot exist here. */
   var PV       = window.EFFECT_PREVIEWS || { base:'/previews/effects/', files:{} };
 
   function isVariantId(id){
     return R.isVariant ? R.isVariant(id) : /_woman$/.test(id);
-  }
-
-  /* What the photograph says, before any override. */
-  /* `subject` arrives at the TOP LEVEL of the analyze response, beside
-     `result` rather than inside it, and it is the string the filenames
-     already use. It comes from a dedicated vision call — the old
-     result.detected_gender was null on every photograph.
-
-     All three shapes are read, newest first, so a response in the old
-     form still works and neither side has to land before the other. */
-  function subjectFromPhoto(){
-    var top = (SRC && SRC.subject) || null;
-    if (top === 'man' || top === 'woman') return top;
-    var g = (SRC && SRC.gender) || null;
-    if (g === 'm') return 'man';
-    if (g === 'f') return 'woman';
-    var a = (SRC && SRC.analyze) || {};
-    if (a.subject === 'man' || a.subject === 'woman') return a.subject;
-    if (a.detected_gender === 'm') return 'man';
-    if (a.detected_gender === 'f') return 'woman';
-    return null;
-  }
-
-  /* The craft id, not just the picture. A woman choosing Victorian queues
-     victorian_woman — but only where that id exists and the route will
-     take it, so a room without variants is untouched. */
-  function craftIdFor(tileId){
-    if (SUBJECT !== 'woman') return tileId;
-    if (R.variantFor){
-      var v = R.variantFor(tileId, 'woman');
-      if (v && v !== tileId && craftableId(v)) return v;
-      if (v && v !== tileId) return tileId;
-    }
-    var guess = tileId + '_woman';
-    return craftableId(guess) ? guess : tileId;
-  }
-  function craftableId(id){
-    var e = R.byId ? R.byId(id) : null;
-    return !!(e && craftable(e));
   }
 
   /* [man, woman, neutral]. Ask for the subject, fall back to the plate
@@ -8248,103 +8145,13 @@ window.EFFECT_PREVIEWS = {
      Ask for the subject, fall back to the plate that serves both, then
      to whatever exists — a card with no picture is worse than a card
      showing the other face, and two effects are still short a plate. */
-  /* BEFORE A PHOTOGRAPH ARRIVES, THE FLOOR IS MIXED. Ruled 2026-08-09.
-     SUBJECT is null until we have seen a face, and the old fallback took
-     f[0] every time — which is the man's plate on all eight cards. A wall
-     of men is a wall that tells half the people who land here that this
-     was not made for them.
-
-     Four and four, shuffled once per load. Per load, not per call: the
-     same card must not change sitter between two paints of the same
-     screen. Once SUBJECT is known this never runs again — the customer's
-     own sitter wins over everything here. */
-  /* NAMED SITTER, NOT COIN. Ruled 2026-08-10 after the floor came back
-     eight men on a page that deals four and four. The Account panel
-     three thousand lines below declares its own COIN and its own picker
-     under the same two names, in this same scope; declarations hoist,
-     the later one wins, and every call from here was reaching the
-     credit-icon picker and getting a PNG path back. A PNG path is not
-     'woman', so every card fell to the man's plate.
-
-     Nothing here is namespaced by accident any more. If a name in this
-     scope is not obviously about sitters, it is not ours. */
-  var SITTER = {};
-  var SITTER_DEALT = {};
-
-  /* An exact half-and-half over one list, shuffled. Fisher-Yates rather
-     than a coin per card, because a real coin gives you eight men about
-     once in every two hundred and fifty loads and that load is somebody's
-     first impression. Keys are namespaced by tree: a silo and an effect
-     could one day share an id, and finding that out through a picture of
-     the wrong person is not how it should be found out. */
-  function dealSitters(ns, list){
-    var l = (list || []).slice().sort();
-    if (!l.length) return;
-    var half = Math.ceil(l.length / 2);
-    var want = [];
-    for (var i = 0; i < l.length; i++) want.push(i < half ? 'man' : 'woman');
-    for (var j = want.length - 1; j > 0; j--){
-      var k = Math.floor(Math.random() * (j + 1));
-      var t = want[j]; want[j] = want[k]; want[k] = t;
-    }
-    /* Never re-deal a card that already has a sitter. The same card must
-       not change person between two paints of the same screen. */
-    for (var m = 0; m < l.length; m++){
-      var key = ns + ':' + l[m];
-      if (!SITTER[key]) SITTER[key] = want[m];
-    }
-  }
-
-  /* THE EFFECTS ARE DEALT ROOM BY ROOM. One shuffle across all sixty-three
-     balances the catalogue and still deals a room of eight men often
-     enough to matter, and a room is the thing a customer stands in. Each
-     room gets its own exact half. */
-  function dealEffectSitters(tree){
-    var seen = {};
-    var silos = (R && R.silos) ? R.silos : [];
-    for (var i = 0; i < silos.length; i++){
-      var list = [];
-      var rows = R.offerableTilesBySilo ? R.offerableTilesBySilo(silos[i].id)
-               : R.offerableBySilo     ? R.offerableBySilo(silos[i].id)
-               : [];
-      for (var j = 0; j < rows.length; j++){
-        if (!tree[rows[j].id]) continue;      /* no plate, nothing to deal */
-        list.push(rows[j].id);
-        seen[rows[j].id] = 1;
-      }
-      dealSitters('files', list);
-    }
-    /* Anything the registry did not put in a room still needs a sitter,
-       or it silently reverts to the man. */
-    var rest = [];
-    var all = Object.keys(tree);
-    for (var k = 0; k < all.length; k++) if (!seen[all[k]]) rest.push(all[k]);
-    dealSitters('files', rest);
-  }
-
-  function sitterFor(tree, id){
-    var ns = tree === PV.silos ? 'silos' : tree === PV.poses ? 'poses' : 'files';
-    var key = ns + ':' + id;
-    if (SITTER[key]) return SITTER[key];
-    if (!SITTER_DEALT[ns]){
-      SITTER_DEALT[ns] = true;
-      if (ns === 'files') dealEffectSitters(tree);
-      else dealSitters(ns, Object.keys(tree));
-    }
-    return SITTER[key] || 'man';
-  }
-
+  /* The sitter dealing that stood here — SITTER, dealSitters,
+     dealEffectSitters, sitterFor — left with the subject · CUI 42A.
+     Groups plates are ungendered and derive from the id. */
   function plateFrom(tree, base, id, sub){
     var f = tree && tree[id];
     if (!f) return '';
-    var who = SUBJECT;
-    /* Was: silos only. The rooms were four and four and every room you
-       opened was eight men, because the effect and pose trees fell
-       through to f[0]. All three trees now, and the customer's own sitter
-       still wins over all of it the moment a face is seen. */
-    if (!who) who = sitterFor(tree, id);
-    var want = who === 'woman' ? f[1] : who === 'man' ? f[0] : '';
-    var file = want || f[0] || f[2] || f[1] || '';
+    var file = f[0] || f[2] || f[1] || '';
     return file ? base + (sub ? id + '/' : '') + file : '';
   }
 
@@ -8381,15 +8188,6 @@ window.EFFECT_PREVIEWS = {
     return plateFrom(PV.poses, PV.poseBase || '/previews/pose/', poseId, false);
   }
 
-  /* A room earns the toggle by holding a tile with both plates. */
-  function roomHasBoth(list){
-    for (var i = 0; i < list.length; i++){
-      var f = PV.files && PV.files[list[i].id];
-      if (f && f[0] && f[1]) return true;
-    }
-    return false;
-  }
-
   function siloList(siloId){
     /* offerableBySilo answers "finished?"; craftable also answers "will the
        route take it?". Both must be true or the customer pays for a 400.
@@ -8417,81 +8215,12 @@ window.EFFECT_PREVIEWS = {
     effFloor.dataset.count = list.length + 1;
   }
 
-  function paintAgeTog(){
-    if (!ageTog) return;
-    var want = SUBJECT === 'woman' ? 'w' : 'm';
-    var on = ageTog.querySelectorAll('.agetog-b');
-    for (var i = 0; i < on.length; i++){
-      on[i].classList.toggle('is-on', on[i].dataset.age === want);
-      on[i].setAttribute('aria-pressed', on[i].dataset.age === want ? 'true' : 'false');
-    }
-  }
-
-  /* Same tiles, different faces. Rebuilding the floor here would lose the
-     card turn's place and re-order nothing, so each card is edited where
-     it stands. */
-  function repaintSubject(){
-    /* The effect floor — the cards in front of the customer. */
-    var cards = effFloor.querySelectorAll('.silo-card[data-tile-id]');
-    for (var i = 0; i < cards.length; i++){
-      var c = cards[i];
-      var tile = c.dataset.tileId;
-      var img = c.querySelector('.silo-card__image');
-      var next = previewFor(tile);
-      if (img && next) img.src = next;
-      c.dataset.effectId = craftIdFor(tile);
-      c.classList.toggle('is-selected', inQueue(c.dataset.siloId, c.dataset.effectId));
-    }
-
-    /* The silo floor — the rooms behind them. renderSilos runs once at
-       boot, before a photograph exists and so before the subject is
-       known, and every card resolved to the man's plate and stayed
-       there. A woman chose between eight men.
-
-       Edited in place: the floor carries the card-turn's state and a
-       rebuild mid-turn would drop the animation. */
-    if (siloFloor){
-      var rooms = siloFloor.querySelectorAll('.silo-card[data-silo-id]');
-      for (var j = 0; j < rooms.length; j++){
-        var rimg = rooms[j].querySelector('.silo-card__image');
-        var rnext = siloArt(rooms[j].dataset.siloId);
-        if (rimg && rnext) rimg.src = rnext;
-      }
-    }
-
-    /* The pose floor, when it has been drawn. */
-    if (poseFloor){
-      var poses = poseFloor.querySelectorAll('.silo-card[data-pose]');
-      for (var k = 0; k < poses.length; k++){
-        var pimg = poses[k].querySelector('.silo-card__image');
-        var pnext = poseArt(poses[k].dataset.pose);
-        if (pimg && pnext) pimg.src = pnext;
-      }
-    }
-
-    /* And the rail. A queued finish shows its room's plate, and that
-       plate has a gender now. */
-    if (typeof renderQueue === 'function') renderQueue();
-  }
-
-  /* The photograph sets the subject; this is the customer disagreeing,
-     which they are entitled to do and which sticks for the session. */
-  if (ageTog) ageTog.addEventListener('click', function(ev){
-    var b = ev.target.closest('.agetog-b'); if (!b) return;
-    var want = b.dataset.age === 'w' ? 'woman' : 'man';
-    if (want === SUBJECT) return;
-    SUBJECT = want;
-    SUBJECT_FORCED = true;
-    paintAgeTog();
-    repaintSubject();
-  });
+  /* paintAgeTog, repaintSubject and the toggle's click handler stood
+     here. Removed with the subject · CUI 42A · 2026-08-24. */
 
   function openSilo(card){
     var siloId = card.dataset.siloId;
     var silo   = siloById(siloId);
-    /* A fresh photograph re-decides the subject every time a room opens,
-       unless the customer has already said otherwise. */
-    if (!SUBJECT_FORCED) SUBJECT = subjectFromPhoto();
     var list   = siloList(siloId);
     if (!list.length){
       /* A room with nothing offerable does not open. Say why rather than
@@ -8502,7 +8231,6 @@ window.EFFECT_PREVIEWS = {
     }
     turn(siloFloor, effFloor, function(){
       paintEffects(siloId, list);
-      if (ageTog){ ageTog.hidden = !roomHasBoth(list); paintAgeTog(); }
       crumbHere.textContent = silo ? silo.label : siloId;
       /* The line travels with the silo now, not in a parallel map. */
       if (silo && silo.line) say(silo.line + '<span class="sign">&mdash; C.</span>');
@@ -8512,7 +8240,6 @@ window.EFFECT_PREVIEWS = {
   }
 
   function backToSilos(){
-    if (ageTog) ageTog.hidden = true;
     turn(effFloor, siloFloor, function(){
       if (cur && cur.dataset.state !== 'empty') say(SAY.photo);
       workshop.classList.remove('workshop-view--effects');
@@ -8771,8 +8498,6 @@ window.EFFECT_PREVIEWS = {
       UPSELL_CTX = null;
       effFloor.dataset.count = picks.length;
       crumbHere.textContent = 'Chosen for You';
-      if (ageTog){ ageTog.hidden = !roomHasBoth(picks.map(function(p){ return p.effect; }));
-                   paintAgeTog(); }
       workshop.classList.remove('workshop-view--silos');
       workshop.classList.add('workshop-view--effects');
     };
