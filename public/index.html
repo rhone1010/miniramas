@@ -1238,8 +1238,14 @@ footer nav a:hover{color:var(--series)}
 
      LINES MARKED DRAFT ARE NOT RICH'S. Groups had no lines at all and
      the newer Halloween and Pet plates had none either. Everything
-     unmarked is carried over from the old REEL, plate for plate. */
-  var SERIES = [
+     unmarked is carried over from the old REEL, plate for plate.
+
+     REEL_SERIES, not SERIES. start() declares its own `var SERIES` for
+     the Series picker further down, and `var` hoists to the top of the
+     function -- so inside start() the bare name meant the picker's
+     array, unassigned at the point the reel read it. r10 shipped that
+     and threw on load. CUI 41A, 23 Aug 2026. */
+  var REEL_SERIES = [
     { id:'portraits', label:'Portraits', href:'/portraits',
       go:'Craft a portrait', dir:'',
       plates:[
@@ -1392,7 +1398,7 @@ footer nav a:hover{color:var(--series)}
        shows contained on the blurred ground. The existing paint()
        already walks a big/small pair on error, so this hands it the two
        best available and keeps the third behind them. */
-    var PANELS = SERIES.map(function(s){
+    var PANELS = REEL_SERIES.map(function(s){
       return {
         id:s.id, label:s.label, href:s.href, go:s.go,
         frames:s.plates.map(function(p){
@@ -1431,6 +1437,9 @@ footer nav a:hover{color:var(--series)}
        answered with a short nudge in the direction travelled so the
        gesture is acknowledged even though nothing slides. */
     function go(next, dirn){
+      /* dirn is 0 only for the first paint. Anything else came from a
+         thumb or a dot, so the automatic turn stands off for a while. */
+      if (dirn) held = Date.now() + HOLD;
       next = (next + PANELS.length) % PANELS.length;
       panel = next;
       frames = PANELS[panel].frames;
@@ -1552,9 +1561,24 @@ footer nav a:hover{color:var(--series)}
 
        Three seconds, unchanged. Two read as a flicker; four is a beat
        too patient. */
+    /* CUI 41A, 23 Aug 2026. The panel advances by itself once its
+       plates have been round once. Somebody who never touches the
+       screen still sees every Series; the swipe is for people who want
+       to get on rather than the only way to move.
+
+       A manual swipe buys HOLD milliseconds of quiet. Without it the
+       automatic turn drags them off the panel they have just chosen,
+       which is worse than not having it at all. */
+    var HOLD = 10000, held = 0;
+
     function clock(){
       if (timer) clearInterval(timer);
       timer = setInterval(function(){
+        /* Last plate of the panel, and nobody has touched it lately. */
+        if (i === frames.length - 1 && Date.now() > held){
+          go(panel + 1, 1);
+          return;
+        }
         i = (i + 1) % frames.length;
         paint(frames[i]);
       }, 3000);
