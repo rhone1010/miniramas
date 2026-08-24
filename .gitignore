@@ -1,57 +1,36 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+# ── Node ──────────────────────────────────────────────────────────────
+node_modules/
+.next/
+.next-*/
 *.tsbuildinfo
-next-env.d.ts
 
-stripe.exe
+# ── Python ────────────────────────────────────────────────────────────
+__pycache__/
+scripts/__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# CENG session debris — 2026-08-01
-_testpool/
-_upload/
-_route_upload/
-_route-collection/
-_archive/
-*.bak-*
-*.bak2-*
+# ── OS / editor ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
 
-.vercel
-.env*
+# ── Generated / build output ──────────────────────────────────────────
+# Plate generation output folders — committed by name when ready,
+# not as a live output directory.
+public/previews/groups-small/
+public/previews/groups-candidates/
 
+# ── Logs and local tooling ────────────────────────────────────────────
+# The real log is H:\NO_DELETE_ARCHIVE\Logs\ — not the repo.
+_ledger.csv
 *.log
+
+# ── Secrets ───────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local

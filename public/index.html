@@ -1828,27 +1828,58 @@ footer nav a:hover{color:var(--series)}
   ];
 
   /* ---- the triptych ------------------------------------------------- */
-  var panels = document.querySelectorAll('#trip .trip-panel');
+  /* CUI 41A, 24 Aug 2026. ONE MASTER CLOCK.
 
-  panels.forEach(function(panel, c){
-    var list  = COLS[c] || [];
-    if (!list.length) return;
+     The previous three independent clocks drifted further apart with
+     every tick. The gate waiting for all three to agree just made the
+     headline arrive late -- the columns never showed the same Series at
+     the same moment.
+
+     Now: one setInterval drives all three columns simultaneously. Each
+     tick, every column shows the next plate in the current group. When
+     the group ends, all three jump to the next group together and the
+     headline changes at the same instant.
+
+     Visual variety at load: each column starts at a different offset
+     within the first group (0, 1, 2), so they don't show the same plate.
+     After that they move in lockstep.
+
+     404 fix: root-level plates (Portraits) skip tall-small/ because it
+     only has subfoldered plates. Subfoldered plates still try tall-small/
+     first since those exist at half the weight. */
+
+  var GROUP_META = [
+    { label:'Portraits',
+      say:'Photographs, <em>reimagined.</em><br>A likeness, recrafted.',
+      go:'Craft a portrait', href:'/portraits' },
+    { label:'Halloween',
+      say:'Some faces are better <em>after dark.</em>',
+      go:'Enter Halloween', href:'/halloween' },
+    { label:'Groups',
+      say:'Everyone, <em>in one piece.</em>',
+      go:'Craft a group portrait', href:'/groups' },
+    { label:'Pets',
+      say:'They sat for you <em>once.</em>',
+      go:'Craft a pet portrait', href:'/pets/portraits' },
+    { label:'Pets Halloween',
+      say:'The other season, <em>for the other half of the house.</em>',
+      go:'Enter the Pet Halloween room', href:'/pets/halloween' }
+  ];
+
+  var PLATES_PER_GROUP = 3;
+  var NUM_GROUPS = GROUP_META.length;
+
+  /* One painter per column. */
+  function makePainter(panel){
     var pair  = panel.querySelectorAll('.trip-layer');
     var front = pair[0], back = pair[1];
-    var i = 0;
-
-    function turn(){
-      /* CUI 41A, 23 Aug 2026. tall-small is tried first: same plates,
-         half the weight. Falls through to tall, then plain. */
-      var tall  = S + 'tall-small/' + list[i];
-      var mid   = S + 'tall/' + list[i];
-      var plain = S + list[i].replace('?v=2','');
-
-      /* Decoded before it is faded up. Cross-fading to a picture that has
-         not loaded shows a grey panel for half a second, which is worse
-         than holding the one already there a beat longer. Decoding first
-         also does the fallback for free: no outpainted plate on disk
-         fires onerror before anything has been shown. */
+    return function paint(filename){
+      /* Root-level plates: straight to tall/ (tall-small/ doesn't have them).
+         Subfoldered plates: try tall-small/ first, fall back to tall/. */
+      var hasFolder = filename.indexOf('/') > -1;
+      var first  = S + (hasFolder ? 'tall-small/' : 'tall/') + filename;
+      var second = hasFolder ? S + 'tall/' + filename : null;
+      var plain  = S + filename.replace('?v=2','');
       var img = new Image();
       img.onload = function(){
         var url = img.src;
@@ -1859,81 +1890,77 @@ footer nav a:hover{color:var(--series)}
         var t = front; front = back; back = t;
       };
       img.onerror = function(){
-        if (img.src.indexOf('/tall-small/') > -1){ img.src = mid; return; }
-        if (img.src.indexOf('/tall/') > -1){ img.src = plain; return; }
-        /* neither on disk — skipped rather than shown as a grey panel */
+        if (second && img.src === first){ img.src = second; return; }
+        if (img.src !== plain){ img.src = plain; return; }
       };
-      img.src = tall;
-      i = (i + 1) % list.length;
-      /* Each column reports its group. The copy updates when all
-         three agree. CUI 41A, 23 Aug 2026. */
-      if (window.__tripTick) window.__tripTick(c, Math.floor(i / 3));
-    }
-
-    turn();
-    /* Staggered starts and slightly different intervals.
-       When column 0 turns over, check whether the group index has moved
-       and update the headline and button if so. Three plates per group
-       = group index is Math.floor(i_col0 / 3). */
-    var GROUP_META = [
-      { label:'Portraits',
-        say:'Photographs, <em>reimagined.</em><br>A likeness, recrafted.',
-        go:'Craft a portrait', href:'/portraits' },
-      { label:'Halloween',
-        say:'Some faces are better <em>after dark.</em>',
-        go:'Enter Halloween', href:'/halloween' },
-      { label:'Groups',
-        say:'Everyone, <em>in one piece.</em>',
-        go:'Craft a group portrait', href:'/groups' },
-      { label:'Pets',
-        say:'They sat for you <em>once.</em>',
-        go:'Craft a pet portrait', href:'/pets/portraits' },
-      { label:'Pets Halloween',
-        say:'The other season, <em>for the other half of the house.</em>',
-        go:'Enter the Pet Halloween room', href:'/pets/halloween' }
-    ];
-    var tripSayEl = document.getElementById('tripSay');
-    var tripH1    = document.getElementById('tripH1');
-    var tripEye   = document.getElementById('tripEye');
-    var tripGo    = document.getElementById('tripGo');
-    var colGroup  = [-1, -1, -1];   /* current group per column */
-    var lastGroup = -1;
-
-    /* Called by every column on every plate turn.
-       The copy updates only when all three columns agree on the same
-       group -- i.e. once every column has committed at least one plate
-       from the new Series. CUI 41A, 23 Aug 2026. */
-    window.__tripTick = function(col, g){
-      g = g % GROUP_META.length;
-      colGroup[col] = g;
-      /* All three in agreement? */
-      if (colGroup[0] !== colGroup[1] || colGroup[1] !== colGroup[2]) return;
-      if (g === lastGroup) return;
-      lastGroup = g;
-      var m = GROUP_META[g];
-      /* Fade out, swap, fade in. */
-      if (tripSayEl){
-        tripSayEl.classList.add('is-fading');
-        setTimeout(function(){
-          if (tripH1)  tripH1.innerHTML  = m.say;
-          if (tripEye) tripEye.textContent = m.label;
-          if (tripGo){ tripGo.textContent = m.go; tripGo.href = m.href; }
-          tripSayEl.classList.remove('is-fading');
-        }, 450);
-      } else {
-        if (tripH1)  tripH1.innerHTML  = m.say;
-        if (tripEye) tripEye.textContent = m.label;
-        if (tripGo){ tripGo.textContent = m.go; tripGo.href = m.href; }
-      }
+      img.src = first;
     };
+  }
 
-    setTimeout(function(){
-      turn();
-      setInterval(turn, 5200 + c * 700);
-    }, 2000 + c * 1400);
+  var panels = document.querySelectorAll('#trip .trip-panel');
+  if (!panels.length) return;
+  var painters = [].map.call(panels, makePainter);
 
-    list.slice(0, 3).forEach(function(f){ new Image().src = S + 'tall-small/' + f; });
+  /* Headline controls. */
+  var tripSayEl = document.getElementById('tripSay');
+  var tripH1    = document.getElementById('tripH1');
+  var tripEye   = document.getElementById('tripEye');
+  var tripGo    = document.getElementById('tripGo');
+
+  function updateCopy(g){
+    var m = GROUP_META[g];
+    if (!m) return;
+    if (tripSayEl){
+      tripSayEl.classList.add('is-fading');
+      setTimeout(function(){
+        if (tripH1)  tripH1.innerHTML    = m.say;
+        if (tripEye) tripEye.textContent = m.label;
+        if (tripGo){ tripGo.textContent  = m.go; tripGo.href = m.href; }
+        tripSayEl.classList.remove('is-fading');
+      }, 450);
+    } else {
+      if (tripH1)  tripH1.innerHTML    = m.say;
+      if (tripEye) tripEye.textContent = m.label;
+      if (tripGo){ tripGo.textContent  = m.go; tripGo.href = m.href; }
+    }
+  }
+
+  /* Master state. */
+  var group      = 0;
+  var plateInGrp = 0;
+  var lastGroup  = -1;
+
+  function tick(){
+    plateInGrp = (plateInGrp + 1) % PLATES_PER_GROUP;
+    if (plateInGrp === 0){
+      group = (group + 1) % NUM_GROUPS;
+    }
+    painters.forEach(function(paint, c){
+      var globalIdx = group * PLATES_PER_GROUP + plateInGrp;
+      paint(COLS[c][globalIdx] || COLS[c][0]);
+    });
+    if (group !== lastGroup){
+      lastGroup = group;
+      updateCopy(group);
+    }
+  }
+
+  /* Initial paint: each column at a different offset within group 0. */
+  painters.forEach(function(paint, c){
+    paint(COLS[c][c % PLATES_PER_GROUP]);
   });
+  plateInGrp = painters.length - 1;
+
+  /* Warm the next few plates. */
+  painters.forEach(function(paint, c){
+    COLS[c].slice(0, 4).forEach(function(f){
+      var hasFolder = f.indexOf('/') > -1;
+      new Image().src = S + (hasFolder ? 'tall-small/' : 'tall/') + f;
+    });
+  });
+
+  /* One clock. Four seconds per plate. */
+  setInterval(tick, 4000);
 
   /* ---- the proof wall ------------------------------------------------ */
   var wall = document.getElementById('likenessWall');

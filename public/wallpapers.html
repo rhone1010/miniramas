@@ -8,20 +8,41 @@
 <!--
   public/wallpapers.html
   MOBILE WALLPAPERS - the landing.
-  Rebuilt by CUI V41, 23 August 2026, from the four-room stage that stood
-  here before.
+  Rebuilt by CUI 42, 24 August 2026.
 
-  WHAT THIS PAGE IS
-    A door. Two bands and five cards on one screen. Every card
-    navigates; nothing here crafts, uploads or charges.
+  WHY THIS REBUILD
+    CUI 41 shipped three times and was rejected three times, all correct
+    rejections, all found in a screenshot after a deploy because nothing
+    was ever rendered before installing. See CARRYOVER-CUI-41 for the
+    full account. Three faults, one root cause each:
 
-  WHAT WENT
-    The floor, the queue, the upload slot and the effect registry. Each
-    craft room owns its own page now, so this file no longer holds a copy
-    of the loop. The Studio card came off with them - the Studios are
-    PARKED, NOT DELETED: public/wallpaper-studio.html, -V001 and -V002 all
-    stay on disk and stay reachable by URL. They lose their door because
-    what is sold now is what they already made.
+    1. THE SEAM SAT AT ~78%, NOT 60%. The coffee ground was a
+       pseudo-element on .fold painted at a hardcoded 60% - a guess at
+       what a 3fr/2fr grid track would resolve to. It does not resolve
+       to that once three fixed-width cards refuse to shrink below their
+       content. FIXED by making the two halves real grid columns
+       (minmax(0,3fr) minmax(0,2fr)) instead of a painted percentage -
+       there is no longer a number to get wrong.
+
+    2. A HARD EDGE ACROSS THE VELLUM. The title row had no background of
+       its own and the vellum gradient only covered the card half below
+       it, so the gradient's top edge read as a stray line. FIXED by
+       taking the title off the vellum texture entirely - it now sits on
+       the page's own plain ground, above both halves, and the two
+       textured halves start below it. No texture, no edge.
+
+    3. THE STORE PLATES 404D. They were never confirmed committed and
+       lived at a guessed path. FIXED - plates now read from
+       /previews/wallpapers/ready_to_buy/, confirmed live on disk.
+
+  THE TEXTURE ITSELF
+    Pulled from portraits.html verbatim, not reinvented: the same
+    five-layer recipe used on .room--curator (vellum) and .room--queue
+    (dark coffee) everywhere else in the product - two tone gradients,
+    a wash, a stone/leather image, and a noise layer on its own
+    ::before at multiply (light) or soft-light (dark). This is why every
+    other warm and dark surface in the studio looks the way it does, and
+    is the reason this page did not, until now.
 
   THE FOUR CARDS
     Made from your photograph - Portraits, Pets, Pets Halloween.
@@ -29,19 +50,22 @@
     Ready to buy             - Liten & Co Studio, Halloween Studio.
                                 On the coffee. Already made.
 
-  THE GROUND IS THE EXPLANATION. Ruled by Rich, 23 August. The two halves
-  are different products, and a customer who does not meet that here meets
-  it at checkout, which is late. Changing the ground says it without a
-  paragraph.
+  CARD SIZING
+    Replaced the old viewport-height-driven --card-h/--card system with
+    plain grid tracks: repeat(N, minmax(0,1fr)) inside each half, cards
+    at aspect-ratio 9/16, capped by a max-width clamp. A track sized this
+    way cannot collapse if a plate 404s - the old bug where a missing
+    image starved its own column of width cannot recur, because width no
+    longer comes from the image.
 
   KNOWN GAPS, both marked in the script
     - Pets (non-Halloween) has no page yet. Its card is disabled and says
       so rather than pointing at a 404. One line to flip.
-    - The six plate paths were picked, not verified. A miss falls back to
-      the card's name on a dark ground.
+    - Store card plates are two representative pieces, not the catalogue
+      itself - the catalogue pages are the next build.
 
-  UNTOUCHED: tokens, the rail, the .room card, the masthead and every
-  breakpoint - all carried across verbatim from the file this replaces.
+  UNTOUCHED: tokens, the masthead and its breakpoints, carried across
+  verbatim from the file this replaces.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,42 +97,24 @@
   --mh-h:72px;
   --r-card:8px;
 
-  /* The floor. SEVEN across, two rows, fourteen to a page - ruled
-     2026-08-10. Seven at 9:16 is narrower than the workshop's four at 4:5,
-     which is the trade for showing a whole set at once instead of half of
-     one. The gap is what keeps two lit screens from bleeding together. */
-  /* FIVE ACROSS, NEVER MORE. Ruled 2026-08-10 after seven was tried and
-     was wrong: at 9:16 a seventh column makes a card too narrow to read as
-     a telephone screen, which is the only thing this product is. Two rows,
-     so ten slots - nine effects and the unlock in the tenth. */
-  --floor-cols:5;
-  --floor-gap:20px;
-  /* A CARD DOES NOT GROW PAST THIS. At 2560 five columns of a fluid grid
-     gave cards near 430px - a telephone screen rendered half again bigger
-     than the telephone. 300 x 533 is close to life size, which is the only
-     size that tells somebody the truth about what they are buying. Above
-     that the row grows a margin instead. */
-  --tile-cap:300px;
-  /* HEIGHT IS THE BINDING CONSTRAINT ABOVE 1920, NOT WIDTH.
-     Tiles are 9:16, so a 300px tile is 533px tall and two rows want
-     about 1330px of viewport. A 2560x1440 screen has roughly 1300
-     after the browser bar, and the second row ran off the bottom.
-     Every rule in the band below is keyed to width, so none of them
-     fired on a screen that wide.
-     --tile-max is now the smaller of the width band's figure and
-     what height is left. 9/32 is 9/16 halved - two rows share it. */
-  --floor-chrome:282px;
-  --tile-max:min(var(--tile-cap), calc((100vh - var(--floor-chrome)) * 9 / 32));
-  /* ---- masthead tokens · the workshop's, so the two agree ------------ */
-  --mh-h:90px;
-  --mark-h:60px;
-  --stage-gutter:min(5%, 92px);
   --vellum-100:#f8f4eb;
   --vellum-200:#f3ecdd;
   --vellum-300:#e9dec8;
   --coffee-700:#332620;
   --card-line:rgba(196,169,110,.28);
   --mh-bg:var(--espresso);
+
+  /* ---- the vellum recipe, from portraits.html's .room--curator ------
+     the wash is the veil laid over the stone: higher = quieter stone. */
+  --cur-stone:url("/textures/limestone.jpg");
+  --cur-stone-wash:.42;
+  --cur-stone-tile:800px;
+
+  /* ---- the coffee recipe, from portraits.html's .room--queue --------
+     a coffee veil, not a vellum one - the ground beneath is dark. */
+  --queue-tex:url("/textures/coffee_leather.jpg");
+  --queue-tex-wash:.42;
+  --queue-tex-tile:800px;
 }
 
 *{ box-sizing:border-box }
@@ -123,17 +129,17 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 
-/* Grain rather than a texture image. 4% over a gradient reads as paper
-   without asking anybody to download a photograph of paper. */
+/* Grain rather than a texture image on the page itself. 5% over the
+   limestone reads as paper without asking anybody to download a
+   photograph of paper. The two banded halves below carry their own,
+   stronger grain as part of their own recipe - this layer is only for
+   the plain ground the masthead and title sit on. */
 body::before{
   content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
   opacity:.05; mix-blend-mode:multiply;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* 92% rather than the workshop's 86%. The workshop gives up six per cent a
-   side to the To Be Crafted rail; this page has no rail, so that gutter is
-   empty margin and the cards can have it. */
 .wrap{
   position:relative; z-index:1;
   width:92%; max-width:2400px; min-width:0;
@@ -142,37 +148,18 @@ body::before{
 @media (min-width:1900px){ .wrap{ min-width:1850px } }
 
 /* ==================================================================
-   MASTHEAD
-   Same furniture as the workshop so somebody moving between them does
-   not feel handed to a different company.
+   THE CARD
+   Shared by both halves - only the ground under it and its resting
+   shadow differ, set below per half.
    ================================================================== */
-@media (min-width:1200px){
-
-/* ==================================================================
-   THE STAGE
-   Left rail is the Curator; the room fills the rest. The same split as
-   the workshop, because it IS the workshop with a different shelf.
-   ================================================================== */
-/* TWO COLUMNS ON THE LANDING, THREE IN A ROOM.
-   There is nothing to queue until an effect can be chosen, so the landing
-   gives the rail's width to the cards. The moment a room opens the queue
-   takes its column back and the floor narrows to what it will actually
-   have - a floor that resized under somebody the first time they picked
-   something would be the page moving while they used it. */
-
 .room{
-  position:relative; display:block;
-  aspect-ratio:9/16;
+  position:relative; display:block; isolation:isolate;
+  width:100%; aspect-ratio:9/16;
   border:none; padding:0; cursor:pointer;
   border-radius:var(--r-card); overflow:hidden;
   background:var(--coffee);
   text-align:left;
   transition:transform .2s ease, box-shadow .2s ease;
-}
-/* ELEVATION. A card is an object on a surface, so it casts. Two shadows:
-   a tight one that seats it and a wide soft one that gives it height. The
-   hairline is what stops a dark plate dissolving into the coffee. */
-.room{
   box-shadow:
     0 2px 4px rgba(20,16,12,.10),
     0 8px 24px rgba(20,16,12,.14);
@@ -183,7 +170,6 @@ body::before{
   box-shadow:inset 0 0 0 1px rgba(243,237,225,.10);
 }
 .half--craft .room::after{ box-shadow:inset 0 0 0 1px rgba(42,36,30,.10) }
-
 .room:hover{
   transform:translateY(-4px);
   box-shadow:
@@ -191,6 +177,7 @@ body::before{
     0 20px 46px rgba(20,16,12,.26);
 }
 .half--store .room{
+  background:var(--espresso);
   box-shadow:
     0 2px 4px rgba(0,0,0,.30),
     0 10px 30px rgba(0,0,0,.34);
@@ -214,157 +201,113 @@ body::before{
   letter-spacing:.16em; text-transform:uppercase;
   color:var(--series); opacity:.9;
 }
-/* A room with nothing in it yet says so on the card rather than opening
-   onto an empty floor. An empty screen should be an invitation or an
-   explanation, never a surprise. */
 .room.is-soon{ cursor:default }
-/* No lift, but it keeps its resting elevation - box-shadow:none here
-   made the disabled card the only flat object on the page. */
 .room.is-soon:hover{ transform:none }
 .room.is-soon img{ filter:grayscale(1) brightness(.62) }
 .room.is-soon .room-count{ color:rgba(243,237,225,.72) }
 
+/* A tile whose plate 404s. Shows the card's ground with no image rather
+   than a broken-image glyph - the label is already on it. */
+.tile-bare{ position:absolute; inset:0 }
+.half--store .tile-bare{ background:rgba(243,237,225,.04) }
+
 /* ==================================================================
-   ONE FOLD, TWO HALVES                            CUI 41 · 24 Aug 2026
-   Built to Rich's mockup. Five cards across one full-height fold, split
-   three and two, and the ground is what divides them.
-
-   THE COFFEE IS PAINTED, NOT PACKED. It is a pseudo-element on the fold
-   covering the right 40% - exactly the 2 of the 3fr 2fr split - rather
-   than a background on the right column. That is what lets the ground
-   run from the masthead to the bottom of the screen while the two card
-   rows still sit in the same grid row and line up across the seam. A
-   background on the column could do one or the other, not both.
-
-   THE TITLE SITS IN THE VELLUM HALF, in its own row above the cards. The
-   coffee runs up behind that row to the masthead, so the seam is one
-   unbroken vertical edge for the full height of the fold.
-
-   HEADINGS ARE CENTRED OVER THEIR CARDS and carry no count. The rule and
-   the eyebrow both came off - with only three cards and two under them,
-   a heading that has to be measured out to the edge of the screen is
-   doing work the cards already did.
+   THE FOLD                                    CUI 42 · 24 Aug 2026
+   Title on the page's own plain ground, full width, above both halves.
+   Below it, two real grid columns - not a painted percentage - each
+   carrying the full vellum or coffee recipe as its own background.
    ================================================================== */
-.fold{
-  position:relative;
-  display:grid;
-  grid-template-columns:3fr 2fr;
-  grid-template-rows:auto 1fr;
-  min-height:calc(100vh - var(--mh-h));
-}
-/* THE COFFEE. 60% is the 2fr of 3fr 2fr - a pseudo-element cannot read a
-   grid track, so it is stated. If the split changes, change it here.
+.fold{ position:relative }
 
-   Not a flat fill. Two gradients: one that lifts the ground behind the
-   cards so they sit in light rather than on a slab, and one that darkens
-   the outer edge so the half turns away at the screen edge instead of
-   stopping. A single colour at this size reads as an unpainted div. */
-.fold::before{
-  content:"";
-  position:absolute; inset:0 0 0 60%;
-  background:
-    radial-gradient(120% 80% at 42% 44%, rgba(182,138,83,.13), transparent 64%),
-    linear-gradient(100deg, #352c25 0%, var(--coffee) 46%, #241d18 100%);
-}
-/* THE GRAIN, on its own layer. body::before is a fixed sheet at z-index 0
-   and the fold paints over it, so the fold's own surfaces would be the
-   only flat things on the site. Soft-light on the dark half - multiply
-   would only make it muddier. */
-.fold::after{
-  content:"";
-  position:absolute; inset:0 0 0 60%;
-  pointer-events:none;
-  opacity:.055; mix-blend-mode:soft-light;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* THE SEAM. A hairline of warm light where the two grounds meet, and a
-   short falloff into the coffee. Without it the edge is a hard butt join
-   that reads as two screenshots beside each other. */
-.fold .half--store::before{
-  content:"";
-  position:absolute; top:0; bottom:0; left:0; width:120px;
-  pointer-events:none;
-  background:linear-gradient(90deg, rgba(0,0,0,.28), transparent);
-}
-.fold .half--store::after{
-  content:"";
-  position:absolute; top:0; bottom:0; left:0; width:1px;
-  pointer-events:none;
-  background:linear-gradient(180deg,
-    transparent, rgba(214,189,137,.32) 22%, rgba(214,189,137,.32) 78%, transparent);
-}
-
-/* THE VELLUM. Warmed towards the seam so the two halves meet in the same
-   light, and grained at the same strength as the rest of the site. */
-.half--craft::before{
-  content:"";
-  position:absolute; inset:0;
-  pointer-events:none;
-  background:
-    radial-gradient(90% 70% at 52% 40%, rgba(255,255,255,.55), transparent 66%),
-    linear-gradient(100deg, #efe9dd 0%, var(--limestone) 62%, #e9e2d4 100%);
-}
-.half--craft::after{
-  content:"";
-  position:absolute; inset:0;
-  pointer-events:none;
-  opacity:.05; mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-.fold > *{ position:relative }
-.fold-head, .half > *{ position:relative; z-index:1 }
-
-/* ---- the title ---------------------------------------------------- */
 .fold-head{
-  grid-column:1; grid-row:1;
   text-align:center;
-  padding:clamp(28px,3.4vw,60px) clamp(24px,2.6vw,44px) clamp(20px,2.4vw,40px);
+  padding:clamp(28px,3.4vw,60px) clamp(24px,2.6vw,44px) clamp(18px,2vw,32px);
 }
 .pg-title{ margin:0; font-size:clamp(2.4rem,3.2vw,3.4rem); font-weight:400; line-height:1.05 }
+.pg-sub{
+  margin:.5em 0 0; font-style:italic; font-size:1.15rem;
+  color:rgba(42,36,30,.6);
+}
 
-/* ---- the halves --------------------------------------------------- */
+.bands{
+  display:grid;
+  grid-template-columns:minmax(0,3fr) minmax(0,2fr);
+  min-height:calc(100vh - var(--mh-h) - 210px);
+}
+@media (max-width:1180px){
+  .bands{ grid-template-columns:1fr; min-height:0 }
+}
+
 .half{
-  position:relative;
-  grid-row:2;
+  position:relative; isolation:isolate; overflow:hidden;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
-  padding:0 clamp(20px,2.4vw,44px) clamp(32px,3.4vw,64px);
+  padding:clamp(32px,3.4vw,56px) clamp(24px,2.6vw,48px);
 }
-.half--craft{ grid-column:1 }
-.half--store{ grid-column:2; color:var(--vellum) }
 
-/* Stacked, the halves are a list rather than a comparison, and a painted
-   right-hand 40% means nothing - so it comes off and the coffee goes on
-   the section itself. */
+/* ---- THE VELLUM · pulled verbatim from portraits.html's
+        .room--curator, the studio's warm-paper recipe -------------- */
+.half--craft{
+  background-color:#f7f2e9;
+  background-image:
+    radial-gradient(circle at 30% 15%, rgba(255,255,255,.28), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(112,77,43,.045), transparent 52%),
+    linear-gradient(145deg, rgba(255,255,255,.12), rgba(210,191,161,.055)),
+    linear-gradient(0deg,
+      rgba(247,242,233,var(--cur-stone-wash)), rgba(247,242,233,var(--cur-stone-wash))),
+    var(--cur-stone);
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,var(--cur-stone-tile) var(--cur-stone-tile);
+  background-position:center,center,center,center,center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+}
+.half--craft::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:14rem 14rem;
+  opacity:.045; mix-blend-mode:multiply;
+}
+
+/* ---- THE COFFEE · pulled verbatim from portraits.html's
+        .room--queue, the studio's dark-leather recipe. soft-light,
+        not multiply - multiply crushes the shadows into mud -------- */
+.half--store{
+  color:var(--vellum);
+  background-color:#1a1613;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.045), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(255,255,255,.025), transparent 48%),
+    linear-gradient(180deg, rgba(255,255,255,.018), rgba(0,0,0,.04)),
+    linear-gradient(0deg,
+      rgba(26,22,19,var(--queue-tex-wash)), rgba(26,22,19,var(--queue-tex-wash))),
+    var(--queue-tex);
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,var(--queue-tex-tile) var(--queue-tex-tile);
+  background-position:center,center,center,center,center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.half--store::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:13rem 13rem;
+  opacity:.12; mix-blend-mode:soft-light;
+}
+
+/* ---- THE SEAM. A hairline of warm light where the two grounds meet -
+        cosmetic only now, since the grid column is what actually
+        divides them. Lives on the store half's own left edge. -------- */
+.half--store::after{
+  content:""; position:absolute; top:0; bottom:0; left:0; width:1px;
+  pointer-events:none; z-index:2;
+  background:linear-gradient(180deg,
+    transparent, rgba(214,189,137,.32) 14%, rgba(214,189,137,.32) 86%, transparent);
+}
 @media (max-width:1180px){
-  .fold{ grid-template-columns:1fr; grid-template-rows:auto auto auto; min-height:0 }
-  .fold-head{ grid-column:1; grid-row:1 }
-  .half--craft{ grid-column:1; grid-row:2 }
-  .half--store{ grid-column:1; grid-row:3; padding-top:clamp(32px,3.4vw,56px) }
-
-  /* EVERY LAYER KEYED TO 60% COMES OFF. The coffee, its grain and the
-     seam are all measured from a column that no longer exists; left on,
-     they paint a strip down the right of the vellum. The store half takes
-     its own ground and its own grain instead. */
-  .fold::before, .fold::after{ display:none }
-  .half--store::before{
-    content:"";
-    position:absolute; inset:0; width:auto;
-    background:
-      radial-gradient(120% 70% at 50% 40%, rgba(182,138,83,.12), transparent 66%),
-      linear-gradient(180deg, #352c25 0%, var(--coffee) 55%, #241d18 100%);
-  }
-  .half--store::after{
-    content:"";
-    position:absolute; inset:0; width:auto;
-    opacity:.055; mix-blend-mode:soft-light;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
+  .half--store::after{ top:0; bottom:auto; left:0; right:0; width:auto; height:1px }
 }
 
-/* ---- the headings -------------------------------------------------- */
+.half > *{ position:relative; z-index:1 }
+
 .band-h{
   margin:0 0 clamp(18px,1.8vw,30px);
   font-weight:400; font-size:clamp(1.5rem,1.85vw,2.05rem);
@@ -372,93 +315,40 @@ body::before{
 }
 .half--store .band-h{ color:var(--vellum) }
 
-/* ---- the cards ---------------------------------------------------- */
-/* Capped, and centred under the heading rather than packed to the seam. */
-/* CARDS ARE SIZED OFF THE FOLD'S HEIGHT, NOT ITS WIDTH.
-
-   Two faults, one cause. The tracks were minmax(0,250px) inside a centred
-   flex column, which gives the grid nothing to resolve against: a card
-   whose plate loaded borrowed width from the image and looked right, and
-   a card whose plate 404d had nothing to borrow, so its track collapsed
-   and took the 9:16 with it. Then, once fixed, a width-based cap left the
-   cards small with a screen of empty vellum under them - because the
-   fold is a full viewport tall and a vw cap knows nothing about that.
-
-   So the card is measured from the height it has to fill and the width
-   follows from 9:16. The fold fills, and the tracks are definite for
-   every card whether its plate arrives or not.
-
-   --card-h is what is left of the viewport after the masthead, the title
-   and the heading, with room to breathe. The clamp floor keeps it usable
-   on a short laptop; the ceiling stops a card becoming a poster on a tall
-   display. */
+/* ---- the card grid --------------------------------------------------
+   Plain fr tracks, not a viewport-height calculation. minmax(0,1fr)
+   guarantees a definite track width whether or not the plate inside it
+   ever loads - width comes from the column, never from the image. A
+   max-width clamp keeps a card from becoming a poster on a very wide
+   screen; nothing enforces a floor because the column itself has one. */
 .rooms{
-  --card-h:clamp(300px, calc(100vh - var(--mh-h) - 260px), 660px);
-  --card:calc(var(--card-h) * 9 / 16);
+  width:100%; max-width:920px;
   display:grid;
-  gap:clamp(14px,1.3vw,26px);
-  justify-content:center;
+  gap:clamp(14px,1.6vw,26px);
 }
-.rooms--three{ grid-template-columns:repeat(3, var(--card)) }
-.rooms--two  { grid-template-columns:repeat(2, var(--card)) }
+.rooms > .room{ max-width:260px; margin:0 auto; width:100% }
+.rooms--three{ grid-template-columns:repeat(3, minmax(0,1fr)) }
+.rooms--two  { grid-template-columns:repeat(2, minmax(0,1fr)) }
 
-/* Three cards plus gaps must fit the vellum column, which is 60% of the
-   screen less its padding. Below that the height rule would overflow it,
-   so width takes over as the binding constraint. */
-@media (max-width:1600px){
-  .rooms{ --card:min(calc(var(--card-h) * 9 / 16), 17vw) }
-}
 @media (max-width:1180px){
-  .rooms{
-    --card-h:clamp(300px, 62vh, 560px);
-    --card:min(calc(var(--card-h) * 9 / 16), 26vw);
-  }
+  .rooms{ max-width:640px }
+  .rooms > .room{ max-width:220px }
 }
 @media (max-width:620px){
   .rooms--three, .rooms--two{ grid-template-columns:repeat(2, minmax(0,1fr)) }
+  .rooms > .room{ max-width:none }
 }
 
-/* On coffee a card with no plate would sink into the ground. */
-.half--store .room{ background:var(--espresso) }
-.half--store .tile-bare{ background:rgba(243,237,225,.06); color:rgba(243,237,225,.5) }
-
 .reg-note{
-  align-self:flex-start;
+  align-self:center;
   margin:clamp(18px,1.8vw,28px) 0 0;
   font-size:1.02rem; font-style:italic; color:rgba(243,237,225,.5);
 }
 
-.floor-head{
-  display:flex; align-items:center; gap:20px; flex-wrap:wrap;
-  margin-bottom:24px;
-}
-.back{
-  font-family:var(--serif); font-style:italic; font-size:1.15rem;
-  color:var(--vellum); background:var(--coffee);
-  border:none; border-radius:999px; padding:.5em 1.4em; cursor:pointer;
-}
-.back:hover{ background:var(--espresso) }
-.floor-title{ margin:0; font-size:1.9rem; font-weight:400 }
-
-/* A tile whose plate has not been shot. It shows its name on a dark
-   ground - which is what an unshot effect honestly is - rather than a
-   browser's broken-image glyph. */
-/* Absolute, so it fills a card that is already the right shape rather
-   than trying to give it one. The width now comes from the track. */
-.tile-bare{
-  position:absolute; inset:0;
-  display:grid; place-items:center; padding:24px;
-  background:
-    radial-gradient(ellipse at 50% 34%, rgba(182,138,83,.16), transparent 62%),
-    var(--coffee);
-  color:rgba(243,237,225,.5);
-  font-style:italic; font-size:1.1rem; text-align:center;
-}
 .foot{
   padding:40px 0 64px; text-align:center;
   font-size:1.05rem; font-style:italic; color:rgba(42,36,30,.5);
 }
-
 
 [hidden]{ display:none !important }
 
@@ -469,14 +359,7 @@ body::before{
 
 /* ======================================================================
    THE MASTHEAD
-   Transplanted from portraits.html on 2026-08-11, not reimplemented. Three
-   pages had three mastheads because these two were written from the token
-   list rather than from the workshop - nav at 1.15rem and 1.12rem against
-   the workshop's 1.5em, a flex row against its three-zone grid, and a text
-   logo where the workshop draws the mark.
-
-   Nobody decided the wallpaper rooms should have a smaller masthead. This
-   is what agreeing looks like.
+   Transplanted from portraits.html on 2026-08-11, not reimplemented.
    ====================================================================== */
 .mh{
   position:sticky; top:0; z-index:60;
@@ -484,35 +367,22 @@ body::before{
   background:var(--mh-bg);
   border-bottom:1px solid var(--card-line);
   display:grid;
-  /* THREE ZONES. The nav is centred on the PAGE, not between the outer
-     two - so it does not shift when the right cluster gains a pill. */
   grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
   align-items:center;
-  padding-inline:var(--stage-gutter);
+  padding-inline:var(--stage-gutter, min(5%, 92px));
 }
-
-/* ---- the wordmark ---------------------------------------------------
-   Its baked #fff fill is stripped on the way in so it takes currentColor
-   and can be recoloured without touching the file. Height governs; width
-   follows the 1.19:1 ratio. */
 .mh-logo{
   justify-self:start; text-decoration:none;
   display:inline-flex; align-items:center;
   color:var(--vellum-100);
 }
-.mh-mark{ height:var(--mark-h); width:auto; flex:0 0 auto;
+.mh-mark{ height:var(--mark-h, 60px); width:auto; flex:0 0 auto;
           display:block; overflow:visible }
 .mh-mark path{ fill:currentColor }
 .sr{
   position:absolute; width:1px; height:1px; padding:0; margin:-1px;
   overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
 }
-
-/* ---- the series switcher --------------------------------------------
-   Not a fourth zone - it lives inside the nav so the three-zone rule
-   holds. It names the room you are standing in and opens the door to the
-   others, which these pages had no way of doing: the way back to the
-   workshop was a nav link that looked like every other nav link. */
 .mh-series{ position:relative; display:flex; align-items:center; margin-right:34px }
 .mh-series-btn{
   display:inline-flex; align-items:center; gap:.34em;
@@ -533,7 +403,6 @@ body::before{
 }
 .mh-series-btn:hover .caret{ opacity:1 }
 .mh-series-btn[aria-expanded="true"] .caret{ transform:rotate(180deg); opacity:1 }
-
 .mh-series-menu{
   position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%);
   min-width:16em;
@@ -558,10 +427,6 @@ body::before{
 .mh-series-menu a[aria-current="page"]::after{
   content:""; width:5px; height:5px; border-radius:50%; background:var(--series);
 }
-/* SECOND LEVEL. The rooms inside Mobile Wallpapers. Indented and a size
-   down rather than a flyout: a hover submenu cannot be opened by a thumb,
-   and this menu is already a click-toggle. The rule sits on the anchor so
-   the existing hover, focus and aria-current rules above still apply. */
 .mh-series-menu a.sub{
   font-size:1.15em; padding-left:1.9em; color:var(--vellum-300, var(--vellum-200));
 }
@@ -571,16 +436,10 @@ body::before{
   background:linear-gradient(180deg, transparent, rgba(215,189,137,.42));
 }
 .mh-series-menu a.sub{ position:relative }
-
 .mh-series-menu .sep{
   height:1px; margin:6px 8px;
   background:linear-gradient(90deg, transparent, rgba(215,189,137,.28), transparent);
 }
-
-/* ---- the nav --------------------------------------------------------
-   1.5em, which is the number these pages were missing. Cormorant renders
-   about a third smaller than a sans at the same size, so a nav that looks
-   generous in the stylesheet reads as small on the glass. */
 .mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
 .mh-nav a{
   position:relative; text-decoration:none; white-space:nowrap;
@@ -594,11 +453,6 @@ body::before{
   content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
   background:var(--gold);
 }
-
-/* ---- the right cluster ---------------------------------------------
-   NO CART. Wallpapers are download-only and never reach the print
-   pipeline, so a basket here would be furniture promising something that
-   cannot happen. */
 .mh-right{ justify-self:end; display:flex; align-items:center; gap:12px }
 .mh-credits{
   display:flex; align-items:center; gap:10px;
@@ -611,12 +465,6 @@ body::before{
 .mh-credits:hover{ background:#40302a; border-color:var(--gold) }
 .mh-credits .v{ font-variant-numeric:tabular-nums }
 .mh-credits .u{ font-weight:400; color:var(--vellum-300) }
-
-/* ---- ask · the Concierge's mark -------------------------------------
-   The one light-bodied control in the cluster: credits are the customer's
-   own thing, this is the studio offering something. The pulse when
-   somebody looks stuck belongs to concierge.js and lands here as
-   .cx-notice, so one place decides when help is offered. */
 .mh-ask{
   display:flex; align-items:center; justify-content:center;
   width:44px; height:44px; border-radius:var(--r-card);
@@ -630,11 +478,7 @@ body::before{
   width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.6;
   stroke-linecap:round; stroke-linejoin:round;
 }
-
-/* ---- the band -------------------------------------------------------
-   The workshop's, so a masthead is the same height on both at every
-   width. It shrinks by giving up height and mark before it gives up
-   type. */
+@media (min-width:1200px){}
 @media (max-width:1920px){ :root{ --mh-h:76px } }
 @media (max-width:1599px){ :root{ --mark-h:52px } }
 @media (max-width:1366px){
@@ -689,30 +533,27 @@ body::before{
   </div>
 </header>
 
-<!-- THE FOLD IS NOT IN THE CENTRED CONTAINER.
-     It used to be, and reached the screen edge with margin:calc(50% - 50vw).
-     That arithmetic is wrong by exactly the width of the scrollbar - 50vw
-     counts it, 50% does not - so the page overflowed sideways instead of
-     reflowing. Out here it is simply 100% of the body and the problem
-     cannot occur. -->
 <main class="fold">
 
   <div class="fold-head">
     <h1 class="pg-title">Wallpapers</h1>
+    <p class="pg-sub">For the screen you look at most</p>
   </div>
 
-  <!-- VELLUM: costs a photograph -->
-  <section class="half half--craft">
-    <h2 class="band-h">Crafted From Your Photographs</h2>
-    <div class="rooms rooms--three" id="bandCraft"></div>
-  </section>
+  <div class="bands">
+    <!-- VELLUM: costs a photograph -->
+    <section class="half half--craft">
+      <h2 class="band-h">Crafted From Your Photographs</h2>
+      <div class="rooms rooms--three" id="bandCraft"></div>
+    </section>
 
-  <!-- COFFEE: already made -->
-  <section class="half half--store">
-    <h2 class="band-h">Ready To Buy</h2>
-    <div class="rooms rooms--two" id="bandStore"></div>
-    <p class="reg-note">Nothing to send, nothing to wait for.</p>
-  </section>
+    <!-- COFFEE: already made -->
+    <section class="half half--store">
+      <h2 class="band-h">Ready To Buy</h2>
+      <div class="rooms rooms--two" id="bandStore"></div>
+      <p class="reg-note">Nothing to send, nothing to wait for.</p>
+    </section>
+  </div>
 
 </main>
 
@@ -722,8 +563,6 @@ body::before{
 
 
 <script>
-/* The Series switcher. Opens, closes on Escape or a click outside, and
-   does nothing else - it is a door, not a menu system. */
 (function(){
   var b = document.getElementById('mhSeriesBtn');
   var m = document.getElementById('mhSeriesMenu');
@@ -746,62 +585,26 @@ body::before{
 <script>
 /* ======================================================================
    WALLPAPERS - THE LANDING
-   CUI V41, 23 August 2026.
-
-   WHAT THIS PAGE IS NOW
-     A door. Nothing is crafted here and nothing is bought here: every
-     card navigates. The floor, the queue and the upload slot
-     that used to live in this file went with the rooms - each of the
-     three craft rooms has its own page, and each store catalogue will.
-
-   WHAT CAME OFF
-     The Studio card. The Studios are parked, not deleted -
-     public/wallpaper-studio*.html stay on disk and stay reachable by
-     URL. They lose their door, because what is sold now is what they
-     already generated.
+   CUI 42, 24 August 2026.
 
    THE ONE THING TO EDIT
-     PLATES, below. Six paths, picked rather than verified - the repo
-     was not readable from here. A path that 404s falls back to the
-     card's own name on a dark ground, so a wrong guess is ugly and not
-     broken. Swap them and nothing else needs touching.
+     PLATES, below. The two store plates now point at
+     /previews/wallpapers/ready_to_buy/ - confirmed present on disk,
+     replacing the guessed /store/ path that 404d. Filenames are two
+     representative pieces Rich can swap for any other file in that
+     folder without touching anything else.
    ====================================================================== */
 (function(){
   'use strict';
 
-  /* ---- PLATES ---------------------------------------------------------
-     Read from the repo on 23 August, not guessed.
-
-       portraits/      man_ and woman_ prefixes, .jpeg. Confirmed present.
-       halloween-pets/ bare effect ids, .jpeg. There is no cover file, so
-                       one of the twenty-seven stands for the room.
-       pets/           pets_<id>.jpg. Its card is disabled until the page
-                       exists, so the plate is greyed either way.
-
-     THE TWO STORE PLATES were chosen by Rich, 23 August, out of the
-     bucket. Copy them into public/previews/wallpapers/store/ under these
-     names - the bucket filename does not travel, because the homepage
-     and this page should not go dark if Supabase does.
-
-       general.jpg    0250_botanical_dream_eruption_neon_noir.jpg
-       halloween.jpg  0090_spectral_nightmarish_surge_pumpkin_fire_
-                      beautiful_decay.jpg
-
-     Until they are there those two cards show their names on a dark
-     ground. No code changes when they land. */
   var PLATES = {
     portraits : '/previews/wallpapers/portraits/woman_stained_glass.jpeg',
     pets      : '/previews/wallpapers/pets/pets_stained_glass.jpg',
     petsHall  : '/previews/wallpapers/halloween-pets/witch_familiar.jpeg',
-    general   : '/previews/wallpapers/store/general.jpg',
-    halloween : '/previews/wallpapers/store/halloween.jpg'
+    general   : '/previews/wallpapers/ready_to_buy/0257_botanical_twilight_drift_emerald.jpg',
+    halloween : '/previews/wallpapers/ready_to_buy/0090_spectral_nightmarish_surge_pumpkin_fire_beautiful_decay.jpg'
   };
 
-  /* ---- THE CRAFT BAND -------------------------------------------------
-     `soon` disables a card and greys its plate rather than pointing it at
-     a page that is not there. Pets is the only one: the engine is done
-     and the glass is not. Delete the soon line the day the page lands and
-     nothing else changes. */
   var CRAFT = [
     { label:'Portraits', line:'Your photograph, transformed',
       art:PLATES.portraits, href:'/wallpapers/portraits' },
@@ -811,9 +614,6 @@ body::before{
       art:PLATES.petsHall, href:'/wallpapers/halloween-pets' }
   ];
 
-  /* ---- THE STORE BAND -------------------------------------------------
-     Two shelves, on the coffee. Counts are the bucket as read on
-     23 August: 527 under studio/general, 502 under studio/halloween. */
   var STORE = [
     { label:'Liten &amp; Co Studio', line:'527 pieces',
       art:PLATES.general,   href:'/wallpapers/store' },
@@ -824,18 +624,12 @@ body::before{
   var elCraft = document.getElementById('bandCraft');
   var elStore = document.getElementById('bandStore');
 
-  /* A card whose plate is missing shows its name instead. The handler
-     drops the image on the first error, so a slow connection that
-     recovers does not leave the bare card behind. */
   function bare(img){
     var host = img.parentNode;
     if (!host || host.querySelector('.tile-bare')) return;
     img.remove();
     var d = document.createElement('div');
     d.className = 'tile-bare';
-    /* No text. The card's own label is already on it, and a fallback that
-       repeats the name prints it twice on one card. This is a ground, not
-       a message. */
     host.insertBefore(d, host.firstChild);
   }
 
@@ -872,9 +666,6 @@ body::before{
   paint(elCraft, CRAFT);
   paint(elStore, STORE);
 
-  /* What the Concierge may point at here. She knows how to draw a ring
-     over a control and nothing about this page, so the page tells her -
-     and only about controls that exist. */
   window.CONCIERGE_POINTS = [
     { sel:'#bandCraft', phrases:['photograph','photo','portraits','pets','craft'] },
     { sel:'#bandStore', phrases:['buy','ready','finished','shelf','halloween'] }
