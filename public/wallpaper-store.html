@@ -808,38 +808,66 @@ body::before{
   });
 
   /* ---- BUY -----------------------------------------------------------
-     POSTs the cart to the checkout route on the credit mechanism.
-     skuId "wallpaper_cart" DOES NOT EXIST server-side yet - CENG must
-     add it. Until then the server answers sku_not_found and the rail
-     says so rather than pretending. */
+     CENG's ruling, 24 Aug: wallpapers are bought with CREDITS, not
+     Stripe. The right mechanism is the credits gate, NOT /checkout -
+     but the gate alone only spends; fulfilment (writing the clean files
+     into My Collection) is not built yet, and there are NO REFUNDS by
+     construction. Charging credits and delivering nothing is the one
+     outcome this page must never produce.
+
+     So: the page POSTs ONE route, /api/v1/wallpapers/purchase, proposed
+     to CENG in SYNC-CUI42 (24 Aug) - it validates the filenames FIRST,
+     spends via the gate second, writes collection_pieces third, and
+     answers with the pieces. Until CENG confirms it exists, the flag
+     below holds the till shut and the button says so honestly.
+
+     FLIP THIS TO true WHEN CENG CONFIRMS THE PURCHASE ROUTE IS LIVE. */
+  var PURCHASE_LIVE = false;
+
   elBuy.addEventListener('click', function(){
     if (!cart.length) return;
+
+    if (!PURCHASE_LIVE){
+      elSay.hidden = false; elSay.classList.remove('err');
+      elSay.textContent = 'The till opens shortly \u2014 your picks will keep.';
+      return;
+    }
+
     elBuy.disabled = true;
     elSay.hidden = false; elSay.classList.remove('err');
     elSay.textContent = 'One moment\u2026';
 
-    fetch('/api/v1/checkout', {
+    fetch('/api/v1/wallpapers/purchase', {
       method:'POST',
       headers:{ 'content-type':'application/json' },
       body: JSON.stringify({
-        skuId: 'wallpaper_cart',
-        cart: {
-          kind: 'wallpapers',
-          section: SECTION,
-          items: cart.map(function(c){ return c.filename; }),
-          totalCredits: price(cart.length)
-        },
-        returnUrl: location.origin + location.pathname
+        section: SECTION,
+        items: cart.map(function(c){ return c.filename; })
       })
     })
     .then(function(r){ return r.json().catch(function(){ return null; }); })
     .then(function(d){
-      if (d && d.url){ location.href = d.url; return; }
-      var msg = (d && d.error) || 'checkout_failed';
+      if (d && d.ok){
+        elSay.classList.remove('err');
+        elSay.textContent = 'Yours. ' + d.spent + ' credits \u2014 find them in My Collection.';
+        cart = [];
+        paintCart();
+        elFloor.querySelectorAll('.tile.picked').forEach(function(t){
+          t.classList.remove('picked');
+        });
+        return;
+      }
+      var reason = (d && d.reason) || 'failed';
       elSay.classList.add('err');
-      elSay.textContent = msg === 'sku_not_found'
-        ? 'The till is not wired up yet \u2014 soon.'
-        : 'That did not go through. Try again in a moment.';
+      if (reason === 'not_signed_in'){
+        elSay.textContent = 'Sign in first \u2014 the pieces need somewhere to live.';
+      } else if (reason === 'insufficient_credits'){
+        elSay.textContent = 'Not enough credits \u2014 you have ' +
+          (d.balance != null ? d.balance : '?') + ', this needs ' +
+          (d.needed != null ? d.needed : '?') + '.';
+      } else {
+        elSay.textContent = 'That did not go through. Try again in a moment.';
+      }
       elBuy.disabled = false;
     })
     .catch(function(){
