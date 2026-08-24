@@ -1880,6 +1880,12 @@ footer nav a:hover{color:var(--series)}
       var first  = S + (hasFolder ? 'tall-small/' : 'tall/') + filename;
       var second = hasFolder ? S + 'tall/' + filename : null;
       var plain  = S + filename.replace('?v=2','');
+      /* CUI 41A, 24 Aug 2026. An attempt index, not a src comparison.
+         img.src returns the resolved absolute URL and the candidates are
+         relative, so the old comparison never matched -- the tall/ step
+         was skipped and a plain 404 looped forever. */
+      var tries = [first, second, plain].filter(Boolean);
+      var at = 0;
       var img = new Image();
       img.onload = function(){
         var url = img.src;
@@ -1890,10 +1896,11 @@ footer nav a:hover{color:var(--series)}
         var t = front; front = back; back = t;
       };
       img.onerror = function(){
-        if (second && img.src === first){ img.src = second; return; }
-        if (img.src !== plain){ img.src = plain; return; }
+        at += 1;
+        if (at < tries.length){ img.src = tries[at]; return; }
+        /* All three missed. Stop. The layer keeps what it had. */
       };
-      img.src = first;
+      img.src = tries[0];
     };
   }
 
