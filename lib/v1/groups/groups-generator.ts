@@ -71,6 +71,7 @@ import {
   type GroupsFailure,
   type PerFigureScore,
 } from './groups-shared'
+import { outpaintMargin } from '../shared/outpaint'
 import { MAIN_ASPECT } from '../shared/render-aspect'
 
 const SYNC_WAIT_SECONDS = 60
@@ -342,29 +343,54 @@ export async function generateGroupsRender(
     }
   }
 
-  // ── OUTPAINT REMOVED, 2026-08-23 ──
+  // ── Outpaint, every render ──
   //
-  // Stage 3 called Stability on EVERY render to add an 8% margin, because
-  // NB2 left none and every Groups render cropped at the frame edge.
+  // Not conditional, unlike Wallpapers. NB2 does not leave margins and a
+  // Groups render crops at the frame edge, so the piece needs room around
+  // it before it reaches a print.
   //
-  // That was true of renders squeezed into a SQUARE. The figures were
-  // pressed to the edges because the composition did not fit the shape it
-  // was being forced into. With the aspect following the source the
-  // composition has its own margin, and a paid API call per craft to fix a
-  // problem that no longer exists is a cost and a failure mode for
-  // nothing. Rich, 23 August.
+  // REMOVED 23 AUGUST AND RESTORED 24 AUGUST. The removal reasoned that the
+  // cropping came from squeezing landscape sources into a square, and that
+  // fixing the aspect would fix the margin too. Aspect fixed the
+  // COMPOSITION - one coherent piece instead of stacked cutouts - and did
+  // nothing for the MARGIN: the 4:5 shoots still ran hands, elbows and the
+  // base of the piece off the edge. Two problems, not one.
   //
-  // The two fields are KEPT on the result. They are declared in
-  // GroupsGenerateResult and removing them is a type change across the
-  // silo. They now report the truth: nothing was outpainted, and the
-  // reason is that the stage is gone.
-  //
-  // `stabilityApiKey` is still accepted on the input and is now unused.
-  // Left in place so callers do not have to change; delete it when
-  // something else needs that signature touched.
-  const outpainted   = false
-  const outpaintSkip: string | null = 'disabled'
-  const outB64 = finalB64
+  // Non-fatal by construction: outpaintMargin never throws to here. On any
+  // error the original buffer comes back with outpainted:false and a reason
+  // for the log, because a tight crop is a worse piece and not a broken
+  // one.
+  let outpainted   = false
+  let outpaintSkip: string | null = null
+  let outB64 = finalB64
+
+  if (input.stabilityApiKey) {
+    try {
+      const buf  = Buffer.from(finalB64, 'base64')
+      const dims = readJpegDimensions(buf)
+      if (!dims) {
+        outpaintSkip = 'dimensions_unreadable'
+      } else {
+        const r = await outpaintMargin({
+          image:           buf,
+          width:           dims.width,
+          height:          dims.height,
+          stabilityApiKey: input.stabilityApiKey,
+        })
+        if (r.outpainted) {
+          outB64     = r.image.toString('base64')
+          outpainted = true
+        } else {
+          outpaintSkip = r.reason || 'unknown'
+        }
+      }
+    } catch (e: any) {
+      console.warn(`[groups] outpaint hard fail (non-fatal): ${e?.message}`)
+      outpaintSkip = `error: ${e?.message}`
+    }
+  } else {
+    outpaintSkip = 'STABILITY_API_KEY not set'
+  }
 
   const passed = passedB64 !== null
 

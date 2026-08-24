@@ -150,6 +150,7 @@ export type GroupsEffectId =
   | 'polished_gold'
   | 'wax'
   | 'silver'
+  | 'stained_glass'
 
 export interface GroupsEffect {
   id: GroupsEffectId
@@ -508,6 +509,13 @@ World-class contemporary wood sculpture, elegant and handcrafted. No text.`,
     label: 'Silver',
     intake: 'group_photo',
     body: `Transform the group into a single sculpture cast in solid silver. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified sculptural artwork - it must read as one cohesive piece rather than separate statues or busts, with real depth and overlap between figures. The silver carries a slightly dull satin sheen across most of its surface - rich, dense, unmistakably heavy metal. Polish appears the way silver actually wears, burnished where a piece would be handled and rubbed: shoulders, elbows, hands, the tops of heads, the crest of a chest. The brightness rises and falls gradually out of the satin, never a hard-edged pool of mirror against dull ground. The face stays satin throughout, with no polished patches on cheeks, brows or noses. Faces, hair and garments are all the same silver: eyes are satin silver with no wet gleam, lips and mouths are silver, and hair is silver worked into each person's real style and length, never real hair. Each person's own garment carries through in the same material. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. The sculpture stands on a rich walnut table. Behind it and slightly to one side, secondary to the piece, an open walnut presentation box lined in deep red-purple velvet, with the shape of the sculpture clearly pressed into the velvet where it sits. Full-height divided windows further back are thrown far out of focus, glowing with an evening sunset. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets.`,
+  },
+  stained_glass: {
+    id: 'stained_glass',
+    label: 'Stained Glass',
+    intake: 'group_photo',
+    body: `make the group one fully 3d stained glass sculpture. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. Tiffany meets Bronze Sculpture. Internally lit with nice falloffs for character. likeness is important. No human skin, hair, nails or teeth. rortate the statue 10 degrees left. the background is a beautiful tiffany lamp style shop. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `Avoid a flat opaque mosaic, painted-on color, or a 2D stained-glass window with no dimensional form. Avoid glass without visible leading/came lines between the cells. Avoid a uniformly lit surface with no backlit glow — the inner luminosity and the dark leading are both required. Avoid muddy or desaturated glass; the cathedral-glass jewel tones must read as vivid and lit.`,
   },
 }
 

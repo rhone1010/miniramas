@@ -55,3 +55,4 @@ _archive/
 .env*
 
 *.log
+public/previews/*-small/
