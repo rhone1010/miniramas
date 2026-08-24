@@ -201,71 +201,55 @@ body::before{
 .room.is-soon .room-count{ color:rgba(243,237,225,.72) }
 
 /* ==================================================================
-   ONE FOLD, TWO HALVES                            CUI 41 · 23 Aug 2026
-   Ruled by Rich in session. Five cards across, on one horizontal fold,
-   divided down the middle: three on vellum that cost a photograph, two
-   on coffee that are already made.
+   TWO REGISTERS                                   CUI 41 · 23 Aug 2026
+   Ruled by Rich in session. The page is two horizontal bands, edge to
+   edge, and the ground is what tells them apart: vellum for the three
+   that cost a photograph, coffee for the two that are already made.
 
-   THE DIVISION IS VERTICAL AND IT IS A HARD EDGE. Stacked bands made the
-   page a list of two things; side by side, the choice is one glance. The
-   ground changes at the seam and runs to the edge of the screen on both
-   sides, so neither half reads as a panel sitting on the other.
+   THE BANDS BLEED. A coffee panel floating inside a centred column reads
+   as a component; a coffee band that runs off both edges reads as half
+   the page. That is the difference between a layout and a design, and it
+   is the whole reason for the 50vw trick below.
 
-   THE SPLIT IS 3fr 2fr, which is the card count. That is what keeps a
-   card the same width on both sides without either half being told a
-   width - the tracks divide in the same proportion as the cards in them.
-
-   CARDS ARE CAPPED. Left to fill a 2560 they became posters; the row
-   holds its size and the fold grows margins instead.
+   THE RAIL IS GONE. Nothing on this page is crafted, so the Curator had
+   one line to say and a column to say it in. The line moved under the
+   title and the column went back to the cards.
    ================================================================== */
 
-/* ---- the head ---------------------------------------------------- */
-.pg-head{ text-align:center; padding:clamp(28px,3vw,52px) 0 clamp(26px,2.6vw,44px) }
-.pg-title{ margin:0; font-size:clamp(2.4rem,3vw,3.2rem); font-weight:400; line-height:1.05 }
-.pg-sub{ margin:8px 0 0; font-size:1.28rem; font-style:italic; color:rgba(42,36,30,.6) }
-.pg-say{
-  margin:18px auto 0; max-width:620px;
-  font-size:1.18rem; line-height:1.6; color:rgba(42,36,30,.7);
-}
-.pg-say .sig{ display:block; margin-top:8px; font-style:italic; color:rgba(42,36,30,.5) }
-
-/* ---- the fold ----------------------------------------------------- */
-/* Full bleed out of the centred container, then the container's own
-   inset is given back as padding on the outer edge of each half - so the
-   cards line up with everything else on the site while the grounds run
-   to the screen edge. */
-.fold{
+/* Full-bleed out of the centred container. Left edge to right edge, at
+   any width, with no horizontal scrollbar. */
+.reg{
+  position:relative;
   margin-left:calc(50% - 50vw);
   margin-right:calc(50% - 50vw);
-  display:grid;
-  grid-template-columns:3fr 2fr;
-  align-items:start;
+  padding-inline:calc(50vw - 50%);
 }
-.half{ padding-block:clamp(32px,3.2vw,56px) }
-.half--craft{
-  padding-left:calc(50vw - 50%);
-  padding-right:clamp(24px,2.6vw,44px);
-}
-.half--store{
-  padding-right:calc(50vw - 50%);
-  padding-left:clamp(24px,2.6vw,44px);
+.reg--vellum{ padding-block:clamp(40px,4vw,72px) }
+.reg--coffee{
+  padding-block:clamp(44px,4.4vw,80px);
   background:var(--coffee);
   color:var(--vellum);
 }
 
-/* Below the split the two halves stop being a comparison and become a
-   list, so they stack and each takes the full width. */
-@media (max-width:1180px){
-  .fold{ grid-template-columns:1fr }
-  .half--craft{ padding-right:calc(50vw - 50%) }
-  .half--store{ padding-left:calc(50vw - 50%) }
+/* ---- the head ---------------------------------------------------- */
+.pg-head{ text-align:center; padding:clamp(36px,3.6vw,64px) 0 0 }
+.pg-title{ margin:0; font-size:clamp(2.6rem,3.4vw,3.6rem); font-weight:400; line-height:1.05 }
+.pg-sub{
+  margin:10px 0 0; font-size:1.32rem; font-style:italic;
+  color:rgba(42,36,30,.6);
 }
+/* The Curator's line, once, where the rail used to be a column. */
+.pg-say{
+  margin:22px auto 0; max-width:640px;
+  font-size:1.22rem; line-height:1.6; color:rgba(42,36,30,.72);
+}
+.pg-say .sig{ display:block; margin-top:10px; font-style:italic; color:rgba(42,36,30,.5) }
 
 /* ---- the band heading -------------------------------------------- */
 .band-h{
-  display:flex; align-items:baseline; gap:16px;
-  margin:0 0 clamp(16px,1.6vw,26px);
-  font-weight:400; font-size:clamp(1.4rem,1.5vw,1.75rem);
+  display:flex; align-items:baseline; gap:20px;
+  margin:0 0 clamp(20px,2vw,32px);
+  font-weight:400; font-size:clamp(1.5rem,1.7vw,1.9rem);
   color:var(--coffee);
 }
 .band-h .n{
@@ -274,34 +258,35 @@ body::before{
   color:rgba(42,36,30,.42); white-space:nowrap;
 }
 .band-h::after{ content:""; flex:1 1 auto; height:1px; background:rgba(117,98,58,.28) }
-.half--store .band-h{ color:var(--series) }
-.half--store .band-h .n{ color:rgba(243,237,225,.45) }
-.half--store .band-h::after{ background:rgba(243,237,225,.2) }
+.reg--coffee .band-h{ color:var(--series) }
+.reg--coffee .band-h .n{ color:rgba(243,237,225,.45) }
+.reg--coffee .band-h::after{ background:rgba(243,237,225,.2) }
 
 /* ---- the cards ---------------------------------------------------- */
-/* A card is capped, not stretched. justify-content:start keeps the row
-   packed to the seam rather than spread across it once the cap bites. */
+/* Both bands run on the same track, so a card is one size on the page
+   regardless of which register it is in. Three fit; two leave the third
+   place empty, which is honest - there are two of them. */
 .rooms{
   display:grid;
-  gap:clamp(14px,1.3vw,24px);
-  justify-content:start;
+  grid-template-columns:repeat(3, 1fr);
+  gap:clamp(20px,2vw,34px);
 }
-.rooms--three{ grid-template-columns:repeat(3, minmax(0, 264px)) }
-.rooms--two  { grid-template-columns:repeat(2, minmax(0, 264px)) }
-@media (max-width:1180px){
-  .rooms--three, .rooms--two{ grid-template-columns:repeat(3, minmax(0,264px)) }
+.rooms--two{ grid-template-columns:repeat(3, 1fr) }
+.rooms--two > *{ grid-column:span 1 }
+@media (max-width:1000px){
+  .rooms, .rooms--two{ grid-template-columns:repeat(2,1fr) }
 }
-@media (max-width:760px){
-  .rooms--three, .rooms--two{ grid-template-columns:repeat(2, minmax(0,1fr)) }
+@media (max-width:620px){
+  .rooms, .rooms--two{ grid-template-columns:1fr }
 }
 
 /* On coffee a card with no plate would sink into the ground. */
-.half--store .room{ background:var(--espresso) }
-.half--store .tile-bare{ background:rgba(243,237,225,.06); color:rgba(243,237,225,.5) }
+.reg--coffee .room{ background:var(--espresso) }
+.reg--coffee .tile-bare{ background:rgba(243,237,225,.06); color:rgba(243,237,225,.5) }
 
 .reg-note{
-  margin:clamp(18px,1.8vw,28px) 0 0;
-  font-size:1.05rem; font-style:italic; color:rgba(243,237,225,.5);
+  margin:clamp(22px,2.2vw,34px) 0 0;
+  font-size:1.1rem; font-style:italic; color:rgba(243,237,225,.52);
 }
 
 .floor-head{
@@ -578,20 +563,18 @@ body::before{
         </p>
       </div>
 
-      <div class="fold">
-        <!-- VELLUM: costs a photograph -->
-        <section class="half half--craft">
-          <h2 class="band-h"><span>Made from your photograph</span><span class="n">Three rooms</span></h2>
-          <div class="rooms rooms--three" id="bandCraft"></div>
-        </section>
+      <!-- VELLUM: costs a photograph -->
+      <section class="reg reg--vellum">
+        <h2 class="band-h"><span>Made from your photograph</span><span class="n">Three rooms</span></h2>
+        <div class="rooms" id="bandCraft"></div>
+      </section>
 
-        <!-- COFFEE: already made -->
-        <section class="half half--store">
-          <h2 class="band-h"><span>Ready to buy</span><span class="n">1,029 pieces</span></h2>
-          <div class="rooms rooms--two" id="bandStore"></div>
-          <p class="reg-note">Nothing to send, nothing to wait for.</p>
-        </section>
-      </div>
+      <!-- COFFEE: already made -->
+      <section class="reg reg--coffee">
+        <h2 class="band-h"><span>Ready to buy</span><span class="n">1,029 pieces</span></h2>
+        <div class="rooms rooms--two" id="bandStore"></div>
+        <p class="reg-note">Finished pieces. Nothing to send, nothing to wait for.</p>
+      </section>
 
       <p class="foot">Wallpapers are download-only. Nothing here is sent to the print lab.</p>
     </main>
@@ -657,23 +640,19 @@ body::before{
        pets/           pets_<id>.jpg. Its card is disabled until the page
                        exists, so the plate is greyed either way.
 
-     THE TWO STORE PLATES were chosen by Rich, 23 August, out of the
-     bucket. Copy them into public/previews/wallpapers/store/ under these
-     names - the bucket filename does not travel, because the homepage
-     and this page should not go dark if Supabase does.
-
-       general.jpg    0250_botanical_dream_eruption_neon_noir.jpg
-       halloween.jpg  0090_spectral_nightmarish_surge_pumpkin_fire_
-                      beautiful_decay.jpg
-
-     Until they are there those two cards show their names on a dark
-     ground. No code changes when they land. */
+     THE THREE STORE PATHS ARE NAMES, NOT FILES. That folder does not
+     exist. Make public/previews/wallpapers/store/ and drop three
+     wallpapers in as cover.jpeg, general.jpeg and halloween.jpeg -
+     9:16, and cover.jpeg wants to survive a wide crop. Until they are
+     there those cards show their names on a dark ground, which is what
+     an unshot plate honestly is. No code changes when they land. */
   var PLATES = {
     portraits : '/previews/wallpapers/portraits/woman_stained_glass.jpeg',
     pets      : '/previews/wallpapers/pets/pets_stained_glass.jpg',
     petsHall  : '/previews/wallpapers/halloween-pets/witch_familiar.jpeg',
-    general   : '/previews/wallpapers/store/general.jpg',
-    halloween : '/previews/wallpapers/store/halloween.jpg'
+    store     : '/previews/wallpapers/store/cover.jpeg',
+    general   : '/previews/wallpapers/store/general.jpeg',
+    halloween : '/previews/wallpapers/store/halloween.jpeg'
   };
 
   /* ---- THE CRAFT BAND -------------------------------------------------
