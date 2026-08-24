@@ -217,32 +217,48 @@ body::before{
    Below it, two real grid columns - not a painted percentage - each
    carrying the full vellum or coffee recipe as its own background.
    ================================================================== */
-.fold{ position:relative }
+/* THE TITLE ROW IS PART OF THE SAME GRID AS THE CARDS, NOT A SEPARATE
+   BLOCK ABOVE IT. Each half now spans both grid rows (grid-row:1/3) and
+   paints its texture across its own full height - masthead to floor - so
+   the title sits on continuous vellum or coffee rather than a plain strip
+   that stops where the cards start. The title has no background of its
+   own; centred on the page, it stays comfortably inside the vellum's 60%,
+   so the coffee half never has to carry text over it. */
+.fold{
+  display:grid;
+  grid-template-columns:minmax(0,3fr) minmax(0,2fr);
+  grid-template-rows:auto 1fr;
+  min-height:calc(100vh - var(--mh-h));
+}
+@media (max-width:1180px){
+  .fold{ grid-template-columns:1fr; grid-template-rows:auto auto auto; min-height:0 }
+}
 
 .fold-head{
+  grid-column:1/3; grid-row:1; position:relative; z-index:2;
   text-align:center;
   padding:clamp(28px,3.4vw,60px) clamp(24px,2.6vw,44px) clamp(18px,2vw,32px);
 }
+@media (max-width:1180px){ .fold-head{ grid-column:1; grid-row:1 } }
 .pg-title{ margin:0; font-size:clamp(2.4rem,3.2vw,3.4rem); font-weight:400; line-height:1.05 }
 .pg-sub{
   margin:.5em 0 0; font-style:italic; font-size:1.15rem;
   color:rgba(42,36,30,.6);
 }
 
-.bands{
-  display:grid;
-  grid-template-columns:minmax(0,3fr) minmax(0,2fr);
-  min-height:calc(100vh - var(--mh-h) - 210px);
-}
-@media (max-width:1180px){
-  .bands{ grid-template-columns:1fr; min-height:0 }
-}
-
 .half{
   position:relative; isolation:isolate; overflow:hidden;
+  grid-row:1/3;
   display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
+  align-items:center; justify-content:flex-end;
   padding:clamp(32px,3.4vw,56px) clamp(24px,2.6vw,48px);
+}
+.half--craft{ grid-column:1 }
+.half--store{ grid-column:2 }
+@media (max-width:1180px){
+  .half{ grid-row:auto }
+  .half--craft{ grid-column:1; grid-row:2 }
+  .half--store{ grid-column:1; grid-row:3; padding-top:clamp(32px,3.4vw,56px) }
 }
 
 /* ---- THE VELLUM · pulled verbatim from portraits.html's
@@ -321,18 +337,22 @@ body::before{
    ever loads - width comes from the column, never from the image. A
    max-width clamp keeps a card from becoming a poster on a very wide
    screen; nothing enforces a floor because the column itself has one. */
+/* Cards at 325px / 275px - 25% over the 260px / 220px this replaced,
+   ruled 24 August. Container widths scale with them so three cards plus
+   gaps still fit the vellum column without the height-based system this
+   page used to run on. */
 .rooms{
-  width:100%; max-width:920px;
+  width:100%; max-width:1130px;
   display:grid;
   gap:clamp(14px,1.6vw,26px);
 }
-.rooms > .room{ max-width:260px; margin:0 auto; width:100% }
+.rooms > .room{ max-width:325px; margin:0 auto; width:100% }
 .rooms--three{ grid-template-columns:repeat(3, minmax(0,1fr)) }
 .rooms--two  { grid-template-columns:repeat(2, minmax(0,1fr)) }
 
 @media (max-width:1180px){
-  .rooms{ max-width:640px }
-  .rooms > .room{ max-width:220px }
+  .rooms{ max-width:900px }
+  .rooms > .room{ max-width:275px }
 }
 @media (max-width:620px){
   .rooms--three, .rooms--two{ grid-template-columns:repeat(2, minmax(0,1fr)) }
@@ -540,20 +560,18 @@ body::before{
     <p class="pg-sub">For the screen you look at most</p>
   </div>
 
-  <div class="bands">
-    <!-- VELLUM: costs a photograph -->
-    <section class="half half--craft">
-      <h2 class="band-h">Crafted From Your Photographs</h2>
-      <div class="rooms rooms--three" id="bandCraft"></div>
-    </section>
+  <!-- VELLUM: costs a photograph -->
+  <section class="half half--craft">
+    <h2 class="band-h">Crafted From Your Photographs</h2>
+    <div class="rooms rooms--three" id="bandCraft"></div>
+  </section>
 
-    <!-- COFFEE: already made -->
-    <section class="half half--store">
-      <h2 class="band-h">Ready To Buy</h2>
-      <div class="rooms rooms--two" id="bandStore"></div>
-      <p class="reg-note">Nothing to send, nothing to wait for.</p>
-    </section>
-  </div>
+  <!-- COFFEE: already made -->
+  <section class="half half--store">
+    <h2 class="band-h">Ready To Buy</h2>
+    <div class="rooms rooms--two" id="bandStore"></div>
+    <p class="reg-note">Nothing to send, nothing to wait for.</p>
+  </section>
 
 </main>
 

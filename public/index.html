@@ -154,7 +154,7 @@ header{position:sticky;top:0;z-index:80;background:rgba(241,236,227,.9);backdrop
 .mark small{display:block;font-family:var(--sans);font-size:11px;font-weight:600;
   letter-spacing:.26em;color:var(--ink-faint);margin-top:3px}
 nav{display:flex;align-items:center;gap:36px}
-nav a{font-family:var(--serif);font-size:21px;color:var(--ink-soft);text-decoration:none;transition:color .2s}
+nav a{font-family:var(--serif);font-size:30px;color:var(--ink-soft);text-decoration:none;transition:color .2s}
 nav a:hover{color:var(--oxblood)}
 
 /* ── image slots ────────────────────────────────────────────────── */
@@ -1945,9 +1945,24 @@ footer nav a:hover{color:var(--series)}
     }
   }
 
-  /* Initial paint: each column at a different offset within group 0. */
+  /* Initial paint: each column at a different offset within group 0.
+     CUI 41A, 24 Aug 2026. Fallback: if still blank after 2s paint the
+     square original so no column is ever empty. */
+  var panels3 = document.querySelectorAll('#trip .trip-panel');
   painters.forEach(function(paint, c){
-    paint(COLS[c][c % PLATES_PER_GROUP]);
+    var filename = COLS[c][c % PLATES_PER_GROUP];
+    paint(filename);
+    var panel3 = panels3[c];
+    setTimeout(function(){
+      if (!panel3) return;
+      var layers = panel3.querySelectorAll('.trip-layer');
+      var painted = [].some.call(layers, function(l){ return !!l.style.backgroundImage; });
+      if (!painted){
+        var plain = S + filename.replace('?v=2','');
+        layers[0].style.backgroundImage = 'url("' + plain + '")';
+        layers[0].classList.add('show');
+      }
+    }, 2000);
   });
   plateInGrp = painters.length - 1;
 

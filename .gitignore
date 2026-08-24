@@ -34,3 +34,11 @@ _ledger.csv
 .env
 .env.local
 .env.*.local
+*.bak-*
+.vercel/
+.env.test
+.env.vercel
+stripe.exe
+next-env.d.ts
+_archive/
+_testpool/
