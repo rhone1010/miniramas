@@ -808,38 +808,84 @@ body::before{
   });
 
   /* ---- BUY -----------------------------------------------------------
-     POSTs the cart to the checkout route on the credit mechanism.
-     skuId "wallpaper_cart" DOES NOT EXIST server-side yet - CENG must
-     add it. Until then the server answers sku_not_found and the rail
-     says so rather than pretending. */
+     CENG r02, 24 Aug: POST /api/v1/wallpapers/purchase - LIVE. One call
+     validates, delivers, charges - in that order, charge LAST, so a
+     charge without a delivery cannot happen. No refunds by construction,
+     which is safe precisely because of that ordering.
+
+     ref_id: idempotency. One ref per basket; reused on retry so a
+     double-click or a flaky connection cannot buy twice. The ref resets
+     whenever the basket changes. A ref that already purchased answers
+     ok:true, duplicate:true, spent:0 with the original pieces. */
+  var refId = null, refSig = null;
+  function basketRef(){
+    var sig = cart.map(function(c){ return c.filename; }).sort().join('|');
+    if (sig !== refSig){
+      refSig = sig;
+      refId = 'wpui_' + Date.now().toString(36) + '_' +
+        Math.random().toString(36).slice(2, 10);
+    }
+    return refId;
+  }
+
   elBuy.addEventListener('click', function(){
     if (!cart.length) return;
     elBuy.disabled = true;
     elSay.hidden = false; elSay.classList.remove('err');
     elSay.textContent = 'One moment\u2026';
 
-    fetch('/api/v1/checkout', {
+    fetch('/api/v1/wallpapers/purchase', {
       method:'POST',
       headers:{ 'content-type':'application/json' },
       body: JSON.stringify({
-        skuId: 'wallpaper_cart',
-        cart: {
-          kind: 'wallpapers',
-          section: SECTION,
-          items: cart.map(function(c){ return c.filename; }),
-          totalCredits: price(cart.length)
-        },
-        returnUrl: location.origin + location.pathname
+        items: cart.map(function(c){
+          return { section: SECTION, filename: c.filename };
+        }),
+        ref_id: basketRef()
       })
     })
     .then(function(r){ return r.json().catch(function(){ return null; }); })
     .then(function(d){
-      if (d && d.url){ location.href = d.url; return; }
-      var msg = (d && d.error) || 'checkout_failed';
+      if (d && d.ok){
+        elSay.classList.remove('err');
+        elSay.textContent = d.duplicate
+          ? 'Already yours \u2014 they are in My Collection.'
+          : 'Yours. ' + d.spent + ' credits \u2014 they are in My Collection.';
+        cart = []; refSig = null; refId = null;
+        paintCart();
+        elFloor.querySelectorAll('.tile.picked').forEach(function(t){
+          t.classList.remove('picked');
+        });
+        return;
+      }
+      var reason = (d && d.reason) || 'failed';
       elSay.classList.add('err');
-      elSay.textContent = msg === 'sku_not_found'
-        ? 'The till is not wired up yet \u2014 soon.'
-        : 'That did not go through. Try again in a moment.';
+      if (reason === 'not_signed_in'){
+        elSay.textContent = 'Sign in first \u2014 the pieces need somewhere to live.';
+      } else if (reason === 'insufficient_credits'){
+        elSay.textContent = 'Not enough credits \u2014 you have ' +
+          (d.balance != null ? d.balance : '?') + ', this needs ' +
+          (d.needed != null ? d.needed : '?') + '.';
+      } else if (reason === 'items_rejected'){
+        var bad = (d.rejected || []).map(function(x){ return x.filename; });
+        /* A basket with one bad item refuses whole - drop the culprits
+           so the next press can succeed. */
+        if (bad.length){
+          cart = cart.filter(function(c){ return bad.indexOf(c.filename) === -1; });
+          bad.forEach(function(fn){
+            var t = elFloor.querySelector('.tile[data-fn="' + fn + '"]');
+            if (t) t.classList.remove('picked');
+          });
+          paintCart();
+          elSay.textContent = bad.length + ' piece' + (bad.length > 1 ? 's' : '') +
+            ' could not be sold and ' + (bad.length > 1 ? 'were' : 'was') +
+            ' set aside \u2014 press Buy again for the rest.';
+        } else {
+          elSay.textContent = 'That did not go through. Try again in a moment.';
+        }
+      } else {
+        elSay.textContent = 'That did not go through. Try again in a moment.';
+      }
       elBuy.disabled = false;
     })
     .catch(function(){
