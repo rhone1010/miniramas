@@ -1966,11 +1966,13 @@ footer nav a:hover{color:var(--series)}
   });
   plateInGrp = painters.length - 1;
 
-  /* Warm the next few plates. */
+  /* Preload ALL plates on load -- the tick fires every 4s and any
+     plate not ready goes black. CUI 41A, 24 Aug 2026. */
   painters.forEach(function(paint, c){
-    COLS[c].slice(0, 4).forEach(function(f){
+    COLS[c].forEach(function(f){
       var hasFolder = f.indexOf('/') > -1;
-      new Image().src = S + (hasFolder ? 'tall-small/' : 'tall/') + f;
+      var img1 = new Image(); img1.src = S + (hasFolder ? 'tall-small/' : 'tall/') + f;
+      var img2 = new Image(); img2.src = S + (hasFolder ? 'tall/' : '') + f.replace('?v=2','');
     });
   });
 

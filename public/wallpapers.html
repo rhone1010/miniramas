@@ -250,8 +250,9 @@ body::before{
   position:relative; isolation:isolate; overflow:hidden;
   grid-row:1/3;
   display:flex; flex-direction:column;
-  align-items:center; justify-content:flex-end;
-  padding:clamp(32px,3.4vw,56px) clamp(24px,2.6vw,48px);
+  align-items:center; justify-content:center;
+  /* clears the title overlay so centring happens in the space below it */
+  padding:clamp(120px,14vh,200px) clamp(24px,2.6vw,48px) clamp(32px,3.4vw,56px);
 }
 .half--craft{ grid-column:1 }
 .half--store{ grid-column:2 }
