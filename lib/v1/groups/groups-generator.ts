@@ -71,7 +71,6 @@ import {
   type GroupsFailure,
   type PerFigureScore,
 } from './groups-shared'
-import { outpaintMargin } from '../shared/outpaint'
 import { MAIN_ASPECT } from '../shared/render-aspect'
 
 const SYNC_WAIT_SECONDS = 60
@@ -247,7 +246,7 @@ export async function generateGroupsRender(
       imageB64 = await callNB2({
         prompt: finalPrompt,
         sourceImagesB64:   sources,
-        aspectRatio:       MAIN_ASPECT,
+        aspectRatio:       groupsAspect(sources[0]),
         replicateApiToken: input.replicateApiToken,
       })
     } catch (e: any) {
@@ -343,42 +342,29 @@ export async function generateGroupsRender(
     }
   }
 
-  // ── Outpaint, every render ──
+  // ── OUTPAINT REMOVED, 2026-08-23 ──
   //
-  // Not conditional, unlike Wallpapers. NB2 does not leave margins and
-  // every Groups render to date crops at the frame edge, so the piece
-  // needs room around it before it reaches a print.
-  let outpainted   = false
-  let outpaintSkip: string | null = null
-  let outB64 = finalB64
-
-  if (input.stabilityApiKey) {
-    try {
-      const buf  = Buffer.from(finalB64, 'base64')
-      const dims = readJpegDimensions(buf)
-      if (!dims) {
-        outpaintSkip = 'dimensions_unreadable'
-      } else {
-        const r = await outpaintMargin({
-          image:           buf,
-          width:           dims.width,
-          height:          dims.height,
-          stabilityApiKey: input.stabilityApiKey,
-        })
-        if (r.outpainted) {
-          outB64     = r.image.toString('base64')
-          outpainted = true
-        } else {
-          outpaintSkip = r.reason || 'unknown'
-        }
-      }
-    } catch (e: any) {
-      console.warn(`[groups] outpaint hard fail (non-fatal): ${e?.message}`)
-      outpaintSkip = `error: ${e?.message}`
-    }
-  } else {
-    outpaintSkip = 'STABILITY_API_KEY not set'
-  }
+  // Stage 3 called Stability on EVERY render to add an 8% margin, because
+  // NB2 left none and every Groups render cropped at the frame edge.
+  //
+  // That was true of renders squeezed into a SQUARE. The figures were
+  // pressed to the edges because the composition did not fit the shape it
+  // was being forced into. With the aspect following the source the
+  // composition has its own margin, and a paid API call per craft to fix a
+  // problem that no longer exists is a cost and a failure mode for
+  // nothing. Rich, 23 August.
+  //
+  // The two fields are KEPT on the result. They are declared in
+  // GroupsGenerateResult and removing them is a type change across the
+  // silo. They now report the truth: nothing was outpainted, and the
+  // reason is that the stage is gone.
+  //
+  // `stabilityApiKey` is still accepted on the input and is now unused.
+  // Left in place so callers do not have to change; delete it when
+  // something else needs that signature touched.
+  const outpainted   = false
+  const outpaintSkip: string | null = 'disabled'
+  const outB64 = finalB64
 
   const passed = passedB64 !== null
 
@@ -469,9 +455,9 @@ function emptyResult(
   return {
     ok:            true,
     image_b64:     null,
-    prompt_used:   finalPrompt,
+    prompt_used:   prompt,
     effect:        req.effect_id,
-    subject_count: detectedCount,
+    subject_count: req.subject_count,
     attempts:      [],
     passed:        false,
     failure:       null,
@@ -502,6 +488,71 @@ function fatal(args: {
 /** Width and height from a JPEG's SOF marker. Keeps sharp out of the
  *  route's dependency chain — outpaint takes dimensions as arguments
  *  rather than reading the buffer itself. */
+
+// ═══════════════════════════════════════════════════════════════
+// ASPECT
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * The three ratios a Groups piece may come out in, widest last.
+ *
+ * Rich's band, 23 August: 1:1 to 4:3, with 5:4 allowed, and NOT 16:9 -
+ * the gallery renders at 1:1 and a very wide piece has nowhere to live
+ * yet. My Collection crops its tiles to square; the full-size view shows
+ * the true shape.
+ */
+const GROUPS_RATIOS: Array<{ label: string; value: number }> = [
+  { label: '1:1', value: 1 },
+  { label: '5:4', value: 1.25 },
+  { label: '4:3', value: 4 / 3 },
+]
+
+/**
+ * Snaps the source photograph's shape to the nearest allowed ratio.
+ *
+ * WHY THIS EXISTS AT ALL. Production sent MAIN_ASPECT ('1:1') on every
+ * render. A square output of a landscape source is not a crop - NB2
+ * recomposes to fit, and a wide group becomes separate stacked figures
+ * because that is what fits a square. Proved 23 August: the same prompt
+ * with the aspect field omitted came back as one coherent piece.
+ *
+ * PORTRAIT AND SQUARE SOURCES GET 1:1. The band is landscape only and
+ * Rich has not ruled on a portrait group photo. 1:1 is what production
+ * already sent, so it is the conservative answer. Do not add 3:4 without
+ * him.
+ *
+ * ANYTHING WIDER THAN 4:3 IS CAPPED, not passed through.
+ *
+ * Falls back to MAIN_ASPECT when the dimensions cannot be read - a
+ * source we cannot measure is not a reason to fail a craft.
+ */
+function groupsAspect(sourceB64: string): string {
+  let dims: { width: number; height: number } | null = null
+  try {
+    dims = readJpegDimensions(Buffer.from(sourceB64, 'base64'))
+  } catch {
+    dims = null
+  }
+
+  if (!dims || !dims.width || !dims.height) {
+    console.warn('[groups] source dimensions unreadable, falling back to MAIN_ASPECT')
+    return MAIN_ASPECT
+  }
+
+  const ratio = dims.width / dims.height
+  if (ratio <= 1) return '1:1'
+
+  let best = GROUPS_RATIOS[0]
+  for (const r of GROUPS_RATIOS) {
+    if (Math.abs(ratio - r.value) < Math.abs(ratio - best.value)) best = r
+  }
+
+  console.log(
+    `[groups] source ${dims.width}x${dims.height} (${ratio.toFixed(3)}) -> ${best.label}`,
+  )
+  return best.label
+}
+
 function readJpegDimensions(
   buf: Buffer,
 ): { width: number; height: number } | null {
