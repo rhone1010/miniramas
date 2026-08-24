@@ -117,18 +117,12 @@ export type GroupsEffectId =
   | 'stone'
   | 'reclaimed_bronze'
   | 'plushy'
-  | 'folded_book'
   // picture styles
   | 'cubism'
   | 'art_nouveau'
   | 'ukiyo_e'
   // period costume
-  | 'victorian'
-  | 'elizabethan'
-  | 'renaissance'
-  | 'persian_court'
   | 'samurai'
-  | 'wild_west'
   // ported from Portraits, 2026-08-18
   | 'ice'
   | 'pencil_sketch'
@@ -144,6 +138,19 @@ export type GroupsEffectId =
   | 'family_mosaic'
   | 'layered_paper'
   | 'carved_family'
+  // material effects added 2026-08-23, replacing the costume five
+  | 'quilted'
+  | 'petal_sculpture'
+  | 'sand_form'
+  | 'watercolour'
+  | 'impressionist'
+  | 'driftwood_resin'
+  | 'chocolate'
+  | 'linocut'
+  | 'lichen_granite'
+  | 'polished_gold'
+  | 'wax'
+  | 'silver'
 
 export interface GroupsEffect {
   id: GroupsEffectId
@@ -241,22 +248,6 @@ Soft overcast daylight with subtle warm backlight catching bronze edges, moistur
     body: `Transform every person in the group into an adorable, soft, slightly overstuffed handmade plush toy, preserving strong facial likeness for each while gently idealizing their attractiveness and warmth. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. The figures sit together as one cohesive group, nestled and gently squished against each other exactly as they are arranged in the photograph. Give each face a sweet, lovable expression, softly flattering proportions and a subtle friendly smile without becoming cartoonish. Very soft fabric, visible hand stitching, gently uneven seams and cuddly compression. Clothing carries through entirely in soft knitted and stuffed materials. Anything a person is holding in the photograph carries through in soft plush materials too. Golden light keeps the faces bright and flattering, with soft open shadows and rich tactile detail. Lovable, cuddly, safe and deeply comforting, like treasured childhood plush toys. No letters.`,
   },
 
-  folded_book: {
-    id: 'folded_book',
-    label: 'Folded Book',
-    intake: 'group_photo',
-    body: `Transform every person in the group — faces included — into fine-art busts assembled from folded and layered book pages, each emerging from its own open book. Every surface is paper: the faces, hair, necks, shoulders, chests and garments are all built from curled paper ribbons, folded pages, and layered printed sheets. The paper layers across each face follow that person's real facial structure — overlapping pages shape the planes of the forehead, brow, nose, cheeks, and lips so every likeness stays clearly recognizable, while the surface reads unmistakably as layered paper rather than skin. Hair is formed from paper ribbons that follow each subject's actual hairstyle exactly — same length, direction, volume, and character; the paper interprets the real hair and never invents wild curls, paper spirals, or fantasy hair shapes. Broad sweeping ribbons define the major forms; individual printed pages stay visible throughout. Each bust feels assembled from pages rather than carved into pages.
-Preserve every person's identity, expression, hairstyle, age, garment and relative position exactly as shown. Do not add, remove, duplicate, replace or merge people.
-Arrange the busts in a shallow arc across the frame, evenly spaced at the same height and scale, each on its own open book. Reading from the centre outward, the rotations are zero degrees at centre, five degrees for the busts immediately either side, and ten degrees for the busts at each end — each turned outward from centre. The arc also curves back in depth: the centre bust sits nearest the camera, the pair either side set back slightly, and the end busts set back furthest, so the group forms a gentle concave curve receding at the edges. 
-Avoid a photo-realistic or smooth lifelike face — the faces are built from layered paper like the rest of the figures, not left as skin. Avoid carved relief, engraved surfaces, stacked page-edge carving, paper-cut or woodcut techniques, and topographic page slicing. Avoid chaotic paper strips that destroy the likenesses, and avoid generic wild paper curls or spirals replacing the real hairstyles. Avoid full figures, bodies below the chest, or any bust merging into its neighbour — each is a separate piece.
-The group stands in a grand two-storey private library — a wrought-iron spiral staircase rising to a mezzanine gallery, floor-to-ceiling shelves on both levels, a tall arched window, warm lamplight, dust in the air. Strong depth of field heavily blurring the background. Museum-quality craftsmanship. Extraordinary dimensionality. Elegant paper architecture. Fine-art collectible sculpture.
-Facing the camera directly, warm natural smiles, eyes to the viewer. Camera at eye level. Fully clothed in source garments, collars closed, no bare shoulders. Each bust ends at the chest. No plaque. No legible text or titles on the surrounding books.`,
-    // KNOWN CONFLICT, RICH AWARE, LOCKED AS-IS 2026-08-10:
-    // the arrangement paragraph rotates the busts outward and the final
-    // paragraph says "facing the camera directly, eyes to the viewer".
-    // The final paragraph wins — the approved render has all five square
-    // to camera. Do not resolve this without a green light.
-  },
 
   // ── PICTURE STYLES ───────────────────────────────────────────────────
 
@@ -307,59 +298,9 @@ The finished piece should feel hand-printed, sophisticated and quietly dimension
 
   // ── PERIOD COSTUME ───────────────────────────────────────────────────
 
-  victorian: {
-    id:     'victorian',
-    label:  'Victorian',
-    intake: 'group_photo',
-    body: `Transform this photograph into a Victorian family portrait, preserving every face, skin tone and ethnicity precisely. Dress each person in period clothing appropriate to their apparent sex and age: velvet frock coats, patterned silk waistcoats and cravats for the men and boys; silk gowns with lace, high collars and long full skirts for the women and girls, hair pinned with soft curls. Hats where they suit the person. Period detailing throughout.
-Deep saturated teal, peacock blue, burgundy, turquoise, ivory and antique gold dominate the portrait. Romantic painterly photography with luminous warm skin, rich directional window light, glowing highlights, deep velvety shadows and jewel-like colour. A Victorian interior dissolves behind them into dark teal, warm amber and golden bokeh.
-Give the entire photograph a subtle aged finish with softened blacks, warm highlights and gentle painterly grain, while retaining saturated colour and luminous detail.
-LIKENESS IS ESSENTIAL AND COMES BEFORE THE STYLING. Every face is the specific person from the source photograph, never a type and never an average of the group.
-For each person, maintain micro facial gestures, imperfections, changes in symmetry - all the characteristics that make this person this person. Keep the shape and character of their face, their natural asymmetry, their real weight and build, and the set of their mouth.
-Hair is theirs. Keep each person's hairline, hair density, length and COLOUR as photographed. Period arrangement may restyle the hair they have, but do not invent hair they do not have, do not lengthen or thicken it, do not lower a hairline, and do not prematurely grey anyone. Facial-hair density stays exact: stubble remains stubble; never invent a beard or moustache.
-Do not add weight and do not age anyone - and do not make anyone younger. Each person's apparent age is the age they are in the photograph.`,
-  },
 
-  elizabethan: {
-    id:     'elizabethan',
-    label:  'Elizabethan',
-    intake: 'group_photo',
-    body: `Transform this photograph into an Elizabethan portrait, preserving every face and ethnicity precisely. Dress each person in richly woven velvet, silk and brocade appropriate to their apparent sex and age: doublets and jerkins for the men and boys; court gowns with embroidered bodices, pearl detailing and lace cuffs for the women and girls, with period-dressed hair. Elaborate lace ruffs throughout, and restrained antique jewellery.
-Everyone belongs completely to the period rather than appearing as modern people in historical costume. Natural, reserved courtly posture. Avoid modern portrait poses and contemporary fashion or glamour styling.
-Photograph them deep inside an intimate Elizabethan manor chamber by dim firelight and candlelight, with dark carved oak, faded tapestries, aged plaster, heavy textiles and glimpses of leaded-glass windows disappearing into shadow. The room should feel inhabited and old rather than staged.
-Give the entire photograph a softly aged, time-worn colour character: faded wine red, aged black, tarnished gold, tobacco brown, warm umber and muted forest green, with pearl and ivory in the lace. Slightly desaturated colours, lifted warm blacks, gentle amber haze, restrained contrast, subtle grain and softened highlights, as though the image has acquired centuries of patina. Deep velvety shadows and the uneven falloff of candlelight.
-Romantic and intimate rather than theatrical, like an old Elizabethan oil portrait somehow captured through a camera - imperfect and atmospheric.
-Preserve each face, age, ethnicity, proportions and natural asymmetry.`,
-  },
 
-  renaissance: {
-    id:     'renaissance',
-    label:  'Renaissance',
-    intake: 'group_photo',
-    body: `Transform this photograph into a realistic Renaissance family portrait. Do not modify ethnicity. Warm earth palette of umber, ochre, deep red and black. Dress each person in period clothing appropriate to their apparent sex and age: slashed velvet doublets with full soft sleeves, fine linen shirts at the collar and a single gold chain for the men and boys; velvet gowns with a squared neckline over a linen chemise, full sleeves tied at the shoulder with the chemise puffing through the lacing, hair parted at the centre and dressed with a fine pearl net for the women and girls. No ruffs.
-Calm, settled expressions. Background: a Renaissance interior - a plastered wall in warm ochre, a carved walnut chest, a heavy tapestry with faded figures, and a leaded window throwing one shaft of light. Deep shadow, warm dim air, slightly out of focus.
-Desaturate skin colours 15% and add a filter to age the entire photograph slightly.
-LIKENESS IS ESSENTIAL AND COMES BEFORE THE STYLING. Every face is the specific person from the source photograph, never a type and never an average of the group.
-For each person, maintain micro facial gestures, imperfections, changes in symmetry - all the characteristics that make this person this person. Keep the shape and character of their face, their natural asymmetry, their real weight and build, and the set of their mouth.
-Hair is theirs. Keep each person's hairline, hair density, length and COLOUR as photographed. Period arrangement may restyle the hair they have, but do not invent hair they do not have, do not lengthen or thicken it, do not lower a hairline, and do not prematurely grey anyone. Facial-hair density stays exact: stubble remains stubble; never invent a beard or moustache.
-Do not add weight and do not age anyone - and do not make anyone younger. Each person's apparent age is the age they are in the photograph.`,
-  },
 
-  persian_court: {
-    id:     'persian_court',
-    label:  'Persian Court',
-    intake: 'group_photo',
-    body: `Transform this photograph into an intimate portrait of a family of the Safavid Persian court, preserving every face and ethnicity precisely. Dress each person in richly woven crimson, madder red and tarnished-gold brocade with layered period garments and restrained antique jewellery, appropriate to their apparent sex and age: jewelled sashes and Safavid turbans for the men and boys; layered pearls, delicate gold jewellery and fine silk veils flowing from small jewelled caps for the women and girls, hair falling loosely beneath.
-Everyone belongs completely to the period, with natural, reserved courtly posture and quiet, self-possessed expressions. Avoid modern posing and contemporary styling.
-Photograph them in an intimate Safavid palace chamber by dim oil-lamp and candlelight, with carved plaster, faded Persian textiles, dark wood and intricate tilework disappearing into shadow. Photographed by available lamplight - real skin texture, shallow depth of field, the falloff of a single flame.
-Give the entire photograph a softly aged, time-worn character: faded crimson, tarnished gold, tobacco brown, warm umber and muted lapis. Slightly desaturated colours, warm lifted blacks, amber haze, subtle grain and softened highlights. Deep velvety shadows with uneven flame falloff.
-Romantic and intimate rather than theatrical, like an old Persian court portrait somehow captured through a camera - imperfect and atmospheric.
-Period objects may be held - a book, a scroll, a cup, prayer beads, a flower. Nothing modern.
-LIKENESS IS ESSENTIAL AND COMES BEFORE THE STYLING. Every face is the specific person from the source photograph, never a type and never an average of the group.
-For each person, maintain micro facial gestures, imperfections, changes in symmetry - all the characteristics that make this person this person. Keep the shape and character of their face, their natural asymmetry, their real weight and build, and the set of their mouth.
-Hair is theirs. Keep each person's hairline, hair density, length and COLOUR as photographed. Period arrangement may restyle the hair they have, but do not invent hair they do not have, do not lengthen or thicken it, do not lower a hairline, and do not prematurely grey anyone. Facial-hair density stays exact: stubble remains stubble; never invent a beard or moustache.
-Do not add weight and do not age anyone - and do not make anyone younger. Each person's apparent age is the age they are in the photograph.`,
-  },
 
   samurai: {
     id:     'samurai',
@@ -371,18 +312,6 @@ Photographic realism with the richness and visual poetry of a great painted port
 Age the photograph with filters and reduce saturation on skin tones by 15%.`,
   },
 
-  wild_west: {
-    id:     'wild_west',
-    label:  'Wild West',
-    intake: 'group_photo',
-    body: `make this photograph a realistic photo of a frontier family of the American West, 1880s. muted palette of dust, tobacco brown, faded indigo and oxblood - low in contrast, no clean whites, everything worn and sun-faded. Dress each person for the period according to their apparent sex and age: wool waistcoats over collarless shirts, knotted neckerchiefs and broad felt hats creased and stained with wear for the men and boys; high-collared calico bodices buttoned to the throat, a small cameo at the collar and wool shawls over the shoulders for the women and girls, hair pinned up but loosening with strands falling around the face. do not crop the hats.
-calm, settled expressions, weathered skin. do not modify ethnicity. likeness is important.
-Background: a saloon back room - plank walls, a stove, bottles on a shelf, one dirty window off to the left. deep shadow, warm dim light falling off fast. heavily out of focus, only shapes and glow readable.
-LIKENESS IS ESSENTIAL AND COMES BEFORE THE STYLING. Every face is the specific person from the source photograph, never a type and never an average of the group.
-For each person, maintain micro facial gestures, imperfections, changes in symmetry - all the characteristics that make this person this person. Keep the shape and character of their face, their natural asymmetry, their real weight and build, and the set of their mouth.
-Hair is theirs. Keep each person's hairline, hair density, length and COLOUR as photographed. Period arrangement may restyle the hair they have, but do not invent hair they do not have, do not lengthen or thicken it, do not lower a hairline, and do not prematurely grey anyone. Facial-hair density stays exact: stubble remains stubble; never invent a beard or moustache.
-Do not add weight and do not age anyone - and do not make anyone younger. Each person's apparent age is the age they are in the photograph.`,
-  },
 
   // ── PORTED FROM PORTRAITS ────────────────────────────────────────────
 
@@ -512,6 +441,83 @@ Keep faces finely detailed and recognizable, while hair, clothing and surroundin
 Allow the grain and carved forms surrounding each portrait to flow organically into one another, connecting the separate people into a single piece of wood.
 Deep carving, visible chisel work, polished high points and rougher recessed areas give the sculpture extraordinary physical presence. Warm grazing gallery light reveals the grain and dimensional carving.
 World-class contemporary wood sculpture, elegant and handcrafted. No text.`,
+  },
+  quilted: {
+    id: 'quilted',
+    label: 'Quilted',
+    intake: 'group_photo',
+    body: `The group is sewn from quilted fabric — panels of patterned cotton pieced together and stitched, with visible seams, running stitch lines and the soft puff of batting between the layers. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. Every face is quilted cloth throughout: pieced panels shaped to the brow, cheeks and jaw, the stitching following the planes rather than the features. Every set of eyes and mouth is embroidered in thread. Each person's hair is cut and layered fabric in their real style and length. A folk palette of faded indigo, madder red, ochre and cream, prints small and repeating, the cloth softly worn. Each person's own garment carries through in pieced quilt. Likeness is critical. Idealized and beautiful. Photographic — a real object photographed in real light, not an illustration. Background: a quilter's room — a frame, folded bolts, a window with soft daylight, heavily out of focus. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `Avoid real skin or hair. Avoid a flat printed quilt or wall hanging — this is dimensional and sewn. Avoid a rag doll or novelty toy. Avoid stitching that traces the wrinkles of the face.`,
+  },
+  petal_sculpture: {
+    id: 'petal_sculpture',
+    label: 'Petal Sculpture',
+    intake: 'group_photo',
+    body: `The group is sculpted entirely from thousands of densely layered flower petals, creating a seamless floral sculpture with no visible skin. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. The likeness emerges through flowing planes of overlapping petals rather than individual flowers, while only occasional blossoms appear to reveal the material. Rich gradients of crimson, scarlet, coral, tangerine, peach, magenta, fuchsia, violet, lavender, and deep burgundy flow naturally across the sculpture like a living oil painting. Each person's hair transforms into sweeping masses of layered petals that preserve their original hairstyle, blending seamlessly into the figure. Dramatic spring sunlight with warm rim light. Avoid bouquets, floral crowns, flower garlands, makeup effects, visible skin, individual flowers covering the face, decorative arrangements, or flowers attached to a person. The petals themselves are the sculptural material. The sculpture stands on a polished dark wood plinth, blurred green foliage behind, warm sunlight from the left. Each person's own garment carries through in the same material. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+  },
+  sand_form: {
+    id: 'sand_form',
+    label: 'Sand Form',
+    intake: 'group_photo',
+    body: `The group is formed entirely from desert sand — a face and figure held for a moment in drifting dune, the whole mass loose grain all the way through with no skin, teeth or real hair anywhere. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. Every set of lips, eyes and mouth is sand like everything else. The windward side is sharp and fully resolved; on the leeward side the wind has scooped a shallow cavity out of the cheek and temple, the edge crumbling and streaming off into the air in fine ribbons, the shoulder dissolving into the dune it rises from. Warm ochre, bone and pale gold, the low sun raking across and throwing the ripple texture into relief. Each face is clearly that person while it lasts — brow, cheek and jaw carved by wind rather than hand. Each person's hair keeps its real length and silhouette, streaming back as blown sand. Likeness is critical. Photographic and highly idealized — beautiful, quiet, already going. Background: windblown dunes at low sun, a sky bleached pale, heavily out of focus. Preserve each person's natural facial character, asymmetry, lines and scars. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `Avoid sand dusted over a real person. Avoid real skin, lips, teeth, eyes or hair. Avoid a solid sandstone carving — this is loose grain, mid-collapse. Avoid a symmetrical or fully intact face.`,
+  },
+  watercolour: {
+    id: 'watercolour',
+    label: 'Watercolour',
+    intake: 'group_photo',
+    body: `Rebuild the group as one three-dimensional sculpture painted in watercolour — a solid object with real volume, not a picture on paper. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. rotate the group 20 degrees left. The whole form is soft transparent washes: the face, hair, shoulders and garment modelled in light and shade, with hard edges where a wash dried against itself and the white of the surface left bare at the brightest points. The paint is still wet. Colour runs down the shoulders and the front of the garment in fine coloured rivulets and drips, gathering in bright pools of red, ochre and violet on the round white board the group stands on. Colours natural to each person's complexion and clothing, transparent and luminous, granulating in the low spots. Likeness is critical. Keep permanent structure: lines, scars and the natural asymmetry of each face. Never reshape, enlarge eyes, correct asymmetry or de-age. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `Avoid a flat painting or anything on paper — this is a solid object standing on a board. Avoid opaque or body colour. Avoid a photographic face. Avoid a bright white modern gallery; the room is an old cluttered atelier.`,
+  },
+  impressionist: {
+    id: 'impressionist',
+    label: 'Impressionist',
+    intake: 'group_photo',
+    body: `Rebuild the group as **one three-dimensional sculptural work made entirely from thick Impressionist oil paint**, standing physically in the room. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. Faces, hair, necks, clothing and shoulders are formed from heavy palette-knife impasto: broad slabs, ridges and lifted strokes with real depth, hard edges and tiny cast shadows. **Preserve every person's likeness, face shape, skin tone, distinctive features, and exact hairstyle, length and colour.** Every face remains clearly recognizable despite the expressive construction. Hair is especially sculptural, formed from bold ropes, sweeps and ridges of paint following each person's original hair direction and volume. Use broken natural color, with violet, blue and green worked into shadows instead of grey or black. The work stands on a round base, with excess paint running over the shoulders and pooling naturally around the base. Place it in a romantic, generations-old artist's atelier: aged timber, worn plaster, antique easels, stacked canvases, portfolios, drawing tools and pinned studies. A huge ribbed iron-and-glass industrial skylight fills the studio with soft directional daylight, atmospheric dust and long shadows. Shallow depth of field. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `**Avoid:** flat paintings, canvas portraits, smooth or photorealistic skin, thin or blended paint, uniform brushwork, grey or black shadows. The subject must read unmistakably as a **solid sculptural object physically built from thick oil paint**.`,
+  },
+  driftwood_resin: {
+    id: 'driftwood_resin',
+    label: 'Driftwood & Resin',
+    intake: 'group_photo',
+    body: `Transform the whole group into a contemporary sculpture combining weathered driftwood and glossy colored epoxy resin — the live-edge resin-river aesthetic. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. The driftwood preserves the form and the likeness: each face and the structural planes of every head, shoulders, and major contours are carved from pale, silvery, weathered driftwood with visible grain, knots, cracks, and organic live edges, keeping every person clearly recognizable. Flowing rivers and pools of translucent colored epoxy resin run through and between the wood — deep teal, ocean blue, amber, or emerald — filling the live-edge gaps, the cracks, and the negative spaces, catching and refracting light. The resin is where the color and translucency live; the wood is where the likeness lives. The whole piece is finished in a high-gloss polish so the resin reads as liquid-clear and the wood as satin-smooth. No human skin anywhere — every face, neck, forehead, ears and every visible surface are weathered driftwood, not skin. The wood grain, cracks and live edges continue across every face. This is the most common failure. Avoid an all-wood sculpture with no resin, or an all-resin sculpture with no wood — both materials must be present and distinct. Avoid a matte or unfinished surface; the glossy high-polish finish is required. Avoid resin that looks opaque or painted — it must read as translucent, light-catching epoxy. Avoid driftwood so abstract the faces stop being recognizable; the wood carries the likeness. Sculpture on a base in a coastal woodworker's studio — a wide window onto grey sea and sky, live-edge slabs leaning against the walls, clamps and resin buckets, sawdust light. Strong depth of field heavily blurring the background. Contemporary gallery presentation. High-gloss finish catching the light. Translucent resin rivers. Weathered live-edge driftwood. Museum-quality craftsmanship. Highly tactile and dimensional. Fine-art mixed-media sculpture. No plaque. Each person's own garment carries through in the same material. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+  },
+  chocolate: {
+    id: 'chocolate',
+    label: 'Chocolate',
+    intake: 'group_photo',
+    body: `convert the group into a rich chocolate sculpture. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. smooth brown milk chocolate with highly detailed features. Background should be a chocolate shop (blurred). no visible letters. satin sheen on entire sculpture Each person's own garment carries through in the same material. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+  },
+  linocut: {
+    id: 'linocut',
+    label: 'Linocut',
+    intake: 'group_photo',
+    body: `Redraw the group as a hand-cut linocut print — bold black ink on cream paper, the image built entirely from carved marks. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. Broad cleared areas of pure white, dense black masses, and the form described by parallel gouge strokes that swell and taper. Visible slips of the blade and small imperfect edges where the lino chipped. Each head of hair is a solid black shape cut with a few sweeping white gouges. One second colour, a flat overprinted ochre or red, slightly out of register. Likeness is critical. No lettering. The print lies on a bench, its edges curling. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+    avoid: `Avoid grey tones or shading — the image is black, white and one flat colour. Avoid photographic rendering. Avoid a sculpture.`,
+  },
+  lichen_granite: {
+    id: 'lichen_granite',
+    label: 'Lichen Granite',
+    intake: 'group_photo',
+    body: `The group is carved directly from a massive ancient granite monolith rising from the forest floor, preserving every person's likeness while remaining unmistakably part of the original boulder. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. The stone surface is weathered by centuries of moss, colorful lichens, delicate ferns, creeping vines, and tiny woodland plants that naturally reclaim cracks and ledges, while each person's existing hair becomes moss, roots, and woodland growth that preserve its original silhouette. Warm shafts of sunlight filter through towering trees, illuminating damp stone and drifting forest particles. Preserve each person's existing clothing naturally carved into the stone, no human skin. Existing clothing remains, carved from the same weathered granite and integrated seamlessly into the monolith. Each person's own garment carries through in the same material. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+  },
+  polished_gold: {
+    id: 'polished_gold',
+    label: 'Polished Gold',
+    intake: 'group_photo',
+    body: `Transform the whole group into a contemporary polished gold sculpture — mirror-bright warm yellow gold with a high specular finish, the surface smooth and flowing with no visible tool marks. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified artwork - it must read as one cohesive piece rather than separate busts, statues or a flat lineup, with real depth and overlap between figures. hair is poured liguid gold that matches each person's with deep carved separations catching bright highlights. No human skin anywhere — every face is polished gold like the rest. Each person's own garment carries through in the same material. the background is an expensively appointed conservatory with many windows with warm lighting streaming through inside potted trees and plants. Make the creation match age. Mainting each person's hair style, hairline, face shape. micro gestures. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+  },
+  wax: {
+    id: 'wax',
+    label: 'Wax',
+    intake: 'group_photo',
+    body: `Transform the group into a single sculpture cast in fine wax. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. No human skin, hair, nails, teeth. Everything is wax. The entire sculpture is cast from ONE wax in a single colour - warm honey-cream, the colour of a beeswax candle. Garments, hair, skin and every surface are that same wax. Differences between people and between clothes appear only as shifts in density and translucency, never as different hues: a dark jacket is deeper, more opaque wax and never brown; a red shirt is denser wax and never red. Any pattern in the clothing - checks, stripes, knitwear - is carried as relief and texture pressed into the wax surface, never as printed colour. Do not add, remove, duplicate, replace, or reposition any person. Create one unified sculptural artwork - it must read as one cohesive piece rather than separate statues or busts, with real depth and overlap between figures. The wax has deep subsurface scattering: light enters the surface and glows out from within, warmest where the material is thinnest. Translucency is artistically placed - the outer edge of an ear, the bridge of a nose, the rim of a shoulder, the trailing edge of a sleeve - while the mass of each figure stays dense and softly opaque. Strong backlighting drives that glow through the edges of the group. Faces, hair and garments are all the same wax: eyes are wax with no wet gleam, lips and mouths are wax, and hair is wax formed into each person's real style and length, never real hair. Each person's own garment carries through in the same material. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. The sculpture stands on a rich aged oak plank table in a 300-year-old candle shop at night, dark wood throughout. Every light in the room is a large burning candle, casting a warm yellow-orange glow with deep shadow beyond. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets. Worn jewellery is fine: necklaces, earrings, piercings.`,
+  },
+  silver: {
+    id: 'silver',
+    label: 'Silver',
+    intake: 'group_photo',
+    body: `Transform the group into a single sculpture cast in solid silver. Preserve every person's identity, facial features, expression, hairstyle, age, clothing, pose, proportions, relative position, and interaction exactly as shown. Do not add, remove, duplicate, replace, or reposition any person. Create one unified sculptural artwork - it must read as one cohesive piece rather than separate statues or busts, with real depth and overlap between figures. The silver carries a slightly dull satin sheen across most of its surface - rich, dense, unmistakably heavy metal. Polish appears the way silver actually wears, burnished where a piece would be handled and rubbed: shoulders, elbows, hands, the tops of heads, the crest of a chest. The brightness rises and falls gradually out of the satin, never a hard-edged pool of mirror against dull ground. The face stays satin throughout, with no polished patches on cheeks, brows or noses. Faces, hair and garments are all the same silver: eyes are satin silver with no wet gleam, lips and mouths are silver, and hair is silver worked into each person's real style and length, never real hair. Each person's own garment carries through in the same material. Keep permanent structure: lines, scars and the natural asymmetry of each face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. The sculpture stands on a rich walnut table. Behind it and slightly to one side, secondary to the piece, an open walnut presentation box lined in deep red-purple velvet, with the shape of the sculpture clearly pressed into the velvet where it sits. Full-height divided windows further back are thrown far out of focus, glowing with an evening sunset. Anything a person is holding in the photograph carries through in the same material - bouquets, glasses, instruments, babies, pets.`,
   },
 }
 
