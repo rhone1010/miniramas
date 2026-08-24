@@ -169,7 +169,37 @@ body::before{
   text-align:left;
   transition:transform .2s ease, box-shadow .2s ease;
 }
-.room:hover{ transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,0,0,.22) }
+/* ELEVATION. A card is an object on a surface, so it casts. Two shadows:
+   a tight one that seats it and a wide soft one that gives it height. The
+   hairline is what stops a dark plate dissolving into the coffee. */
+.room{
+  box-shadow:
+    0 2px 4px rgba(20,16,12,.10),
+    0 8px 24px rgba(20,16,12,.14);
+}
+.room::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(243,237,225,.10);
+}
+.half--craft .room::after{ box-shadow:inset 0 0 0 1px rgba(42,36,30,.10) }
+
+.room:hover{
+  transform:translateY(-4px);
+  box-shadow:
+    0 3px 6px rgba(20,16,12,.12),
+    0 20px 46px rgba(20,16,12,.26);
+}
+.half--store .room{
+  box-shadow:
+    0 2px 4px rgba(0,0,0,.30),
+    0 10px 30px rgba(0,0,0,.34);
+}
+.half--store .room:hover{
+  box-shadow:
+    0 3px 7px rgba(0,0,0,.34),
+    0 22px 52px rgba(0,0,0,.46);
+}
 .room img{ width:100%; height:100%; object-fit:cover; display:block }
 .room-label{
   position:absolute; left:0; right:0; bottom:0;
@@ -188,7 +218,9 @@ body::before{
    onto an empty floor. An empty screen should be an invitation or an
    explanation, never a surprise. */
 .room.is-soon{ cursor:default }
-.room.is-soon:hover{ transform:none; box-shadow:none }
+/* No lift, but it keeps its resting elevation - box-shadow:none here
+   made the disabled card the only flat object on the page. */
+.room.is-soon:hover{ transform:none }
 .room.is-soon img{ filter:grayscale(1) brightness(.62) }
 .room.is-soon .room-count{ color:rgba(243,237,225,.72) }
 
@@ -220,14 +252,69 @@ body::before{
   grid-template-rows:auto 1fr;
   min-height:calc(100vh - var(--mh-h));
 }
-/* The coffee. 60% is the 2fr of 3fr 2fr - a pseudo-element cannot read a
-   grid track, so it is stated. If the split changes, change it here. */
+/* THE COFFEE. 60% is the 2fr of 3fr 2fr - a pseudo-element cannot read a
+   grid track, so it is stated. If the split changes, change it here.
+
+   Not a flat fill. Two gradients: one that lifts the ground behind the
+   cards so they sit in light rather than on a slab, and one that darkens
+   the outer edge so the half turns away at the screen edge instead of
+   stopping. A single colour at this size reads as an unpainted div. */
 .fold::before{
   content:"";
   position:absolute; inset:0 0 0 60%;
-  background:var(--coffee);
+  background:
+    radial-gradient(120% 80% at 42% 44%, rgba(182,138,83,.13), transparent 64%),
+    linear-gradient(100deg, #352c25 0%, var(--coffee) 46%, #241d18 100%);
 }
+/* THE GRAIN, on its own layer. body::before is a fixed sheet at z-index 0
+   and the fold paints over it, so the fold's own surfaces would be the
+   only flat things on the site. Soft-light on the dark half - multiply
+   would only make it muddier. */
+.fold::after{
+  content:"";
+  position:absolute; inset:0 0 0 60%;
+  pointer-events:none;
+  opacity:.055; mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* THE SEAM. A hairline of warm light where the two grounds meet, and a
+   short falloff into the coffee. Without it the edge is a hard butt join
+   that reads as two screenshots beside each other. */
+.fold .half--store::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0; width:120px;
+  pointer-events:none;
+  background:linear-gradient(90deg, rgba(0,0,0,.28), transparent);
+}
+.fold .half--store::after{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0; width:1px;
+  pointer-events:none;
+  background:linear-gradient(180deg,
+    transparent, rgba(214,189,137,.32) 22%, rgba(214,189,137,.32) 78%, transparent);
+}
+
+/* THE VELLUM. Warmed towards the seam so the two halves meet in the same
+   light, and grained at the same strength as the rest of the site. */
+.half--craft::before{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(90% 70% at 52% 40%, rgba(255,255,255,.55), transparent 66%),
+    linear-gradient(100deg, #efe9dd 0%, var(--limestone) 62%, #e9e2d4 100%);
+}
+.half--craft::after{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none;
+  opacity:.05; mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 .fold > *{ position:relative }
+.fold-head, .half > *{ position:relative; z-index:1 }
 
 /* ---- the title ---------------------------------------------------- */
 .fold-head{
@@ -239,6 +326,7 @@ body::before{
 
 /* ---- the halves --------------------------------------------------- */
 .half{
+  position:relative;
   grid-row:2;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
@@ -252,13 +340,27 @@ body::before{
    the section itself. */
 @media (max-width:1180px){
   .fold{ grid-template-columns:1fr; grid-template-rows:auto auto auto; min-height:0 }
-  .fold::before{ display:none }
   .fold-head{ grid-column:1; grid-row:1 }
   .half--craft{ grid-column:1; grid-row:2 }
-  .half--store{
-    grid-column:1; grid-row:3;
-    background:var(--coffee);
-    padding-top:clamp(32px,3.4vw,56px);
+  .half--store{ grid-column:1; grid-row:3; padding-top:clamp(32px,3.4vw,56px) }
+
+  /* EVERY LAYER KEYED TO 60% COMES OFF. The coffee, its grain and the
+     seam are all measured from a column that no longer exists; left on,
+     they paint a strip down the right of the vellum. The store half takes
+     its own ground and its own grain instead. */
+  .fold::before, .fold::after{ display:none }
+  .half--store::before{
+    content:"";
+    position:absolute; inset:0; width:auto;
+    background:
+      radial-gradient(120% 70% at 50% 40%, rgba(182,138,83,.12), transparent 66%),
+      linear-gradient(180deg, #352c25 0%, var(--coffee) 55%, #241d18 100%);
+  }
+  .half--store::after{
+    content:"";
+    position:absolute; inset:0; width:auto;
+    opacity:.055; mix-blend-mode:soft-light;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }
 
