@@ -1500,23 +1500,36 @@ footer nav a:hover{color:var(--series)}
          Decoding first also does the fallback for free: if the 900 is not
          on disk this fires onerror before anything is shown, and the 390
          goes up instead with no flicker in between. */
+      /* CUI 41, 23 Aug 2026. THREE RUNGS, NOT TWO.
+
+         PANELS has always built big, mid and small. This walker read big
+         and small and skipped the middle - and since splash/tall-small/
+         does not exist, every plate fell past the tall version it had to
+         the square original. Groups fell past its only plates to a folder
+         that is not there and showed nothing.
+
+         Now it walks the list in order and stops at the first that
+         loads, so the best available plate wins on its own. Creating
+         tall-small/ later needs no edit here. */
+      var chain = [f.big, f.mid, f.small].filter(Boolean);
+      var rung  = 0;
+
       var img = new Image();
       img.onload = function(){ show(img.src); };
       img.onerror = function(){
-        if (f.small && img.src !== f.small){
-          img.src = f.small;
-          return;
-        }
-        show(f.small || f.big);
+        rung += 1;
+        if (rung < chain.length){ img.src = chain[rung]; return; }
+        show(chain[chain.length - 1]);
       };
-      img.src = f.big || f.small;
+      if (!chain.length) return;
+      img.src = chain[0];
 
       function show(url){
         if (!url) return;
         /* A square plate that fell back must not be stretched to fill a
            tall screen — it gets contained on the blurred ground instead.
            The tall ones bleed edge to edge. */
-        back.classList.toggle('is-short', url.indexOf('/tall/') === -1);
+        back.classList.toggle('is-short', !/\/tall(-small)?\//.test(url));
         back.style.backgroundImage = 'url("' + url + '")';
         back.classList.add('show');
         front.classList.remove('show');
@@ -1743,7 +1756,7 @@ footer nav a:hover{color:var(--series)}
       var img = new Image();
       img.onload = function(){
         var url = img.src;
-        back.classList.toggle('is-short', url.indexOf('/tall/') === -1);
+        back.classList.toggle('is-short', !/\/tall(-small)?\//.test(url));
         back.style.backgroundImage = 'url("' + url + '")';
         back.classList.add('show');
         front.classList.remove('show');
