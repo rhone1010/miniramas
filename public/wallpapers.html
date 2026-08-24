@@ -12,8 +12,8 @@
   here before.
 
   WHAT THIS PAGE IS
-    A door. Two bands and four cards, and a chooser one level down. Every
-    card navigates; nothing on this page crafts, uploads or charges.
+    A door. Two bands and five cards on one screen. Every card
+    navigates; nothing here crafts, uploads or charges.
 
   WHAT WENT
     The floor, the queue, the upload slot and the effect registry. Each
@@ -24,8 +24,15 @@
     what is sold now is what they already made.
 
   THE FOUR CARDS
-    Made from your photograph - Portraits, Pets, Pets Halloween
-    Ready to buy             - one card onto a chooser of two catalogues
+    Made from your photograph - Portraits, Pets, Pets Halloween.
+                                On the vellum. Each costs a photograph.
+    Ready to buy             - Liten & Co Studio, Halloween Studio.
+                                On the coffee. Already made.
+
+  THE GROUND IS THE EXPLANATION. Ruled by Rich, 23 August. The two halves
+  are different products, and a customer who does not meet that here meets
+  it at checkout, which is late. Changing the ground says it without a
+  paragraph.
 
   KNOWN GAPS, both marked in the script
     - Pets (non-Halloween) has no page yet. Its card is disabled and says
@@ -277,11 +284,19 @@ body::before{
 .room.is-soon .room-count{ color:rgba(243,237,225,.72) }
 
 /* ==================================================================
-   THE TWO BANDS                                   CUI V41 · 23 Aug 2026
-   The landing is a door and nothing else. Two bands, because the two
-   halves are different products: one costs a photograph and a wait,
-   the other is a file that already exists. A customer who does not
-   meet that distinction here meets it at checkout, which is late.
+   THE TWO BANDS                                   CUI 41 · 23 Aug 2026
+   Ruled by Rich in session: the page divides by ground. The three cards
+   that cost a photograph sit on the vellum the whole site is made of.
+   The two that are already made sit on coffee. The division does the
+   explaining, so the headings stay short and no card has to carry a
+   sentence about what kind of thing it is.
+
+   THE CHOOSER IS GONE. It was a screen whose only job was to send you to
+   another screen. Both its cards sit on the coffee now, one level up.
+
+   CARDS ARE ONE SIZE ON BOTH BANDS. The store band is capped and
+   left-aligned rather than stretched to two-across, so a card here and a
+   card above are the same object seen twice - which is what they are.
    ================================================================== */
 .pg-head{ padding:8px 0 4px; text-align:center }
 .pg-title{ margin:0; font-size:2.6rem; font-weight:400; line-height:1.1 }
@@ -297,45 +312,47 @@ body::before{
 .band-h{
   display:flex; align-items:center; gap:18px;
   margin:0 0 20px; font-weight:400; font-size:1.5rem;
-  color:var(--coffee-700, var(--coffee));
+  color:var(--coffee);
 }
 .band-h::after{
   content:""; flex:1 1 auto; height:1px;
   background:rgba(117,98,58,.28);
 }
 
-/* THE CRAFT BAND. Three cards at the same 9:16 the workshop uses, so a
-   card here and a card on the floor are recognisably the same object. */
+/* THE CRAFT BAND, on the page's own ground. */
 .rooms--three{ grid-template-columns:repeat(3,1fr); max-width:1160px }
 @media (max-width:900px){ .rooms--three{ grid-template-columns:repeat(2,1fr) } }
 @media (max-width:560px){ .rooms--three{ grid-template-columns:1fr } }
 
-/* THE STORE BAND. One card, and a lone 9:16 under a heading with three
-   empty columns beside it reads as a page that failed to load. So it is
-   a different shape on purpose: a wide door, which is what it is - it
-   opens onto a choice rather than onto a product. */
-.rooms--wide{ grid-template-columns:1fr; max-width:1160px }
-.room--wide{ aspect-ratio:auto; min-height:260px }
-@media (max-width:900px){ .room--wide{ min-height:200px } }
-.room--wide .room-label{ padding:30px 30px 28px }
-.room--wide .room-name{ font-size:2rem }
-/* The two counts sit on the card so the size of the thing is known
-   before the click. Gold, per the card pattern. */
-.room-counts{
-  display:block; margin-top:6px;
-  font-family:var(--sans); font-size:12px; font-weight:500;
-  letter-spacing:.16em; text-transform:uppercase;
-  color:var(--series); opacity:.9;
+/* THE STORE BAND. Coffee, and it HOLDS the cards rather than sitting
+   behind them - the padding is what makes it read as a shelf and not as
+   a coloured rectangle somebody forgot to take off. */
+.shelf{
+  background:var(--coffee);
+  border-radius:16px;
+  padding:clamp(24px,2.4vw,40px);
+  max-width:1160px;
 }
+.shelf .band-h{ color:var(--series) }
+.shelf .band-h::after{ background:rgba(243,237,225,.22) }
 
-/* THE CHOOSER. Two cards, centred, capped - two cards allowed to fill a
-   2560 would each be the size of a poster. */
-.rooms--two{ grid-template-columns:repeat(2,1fr); max-width:760px; margin:0 auto }
-@media (max-width:640px){ .rooms--two{ grid-template-columns:1fr } }
+/* Two cards at the width three cards have above, left-aligned under the
+   heading. Centred, they would break the line the page reads down. */
+.rooms--two{
+  grid-template-columns:repeat(2, minmax(0, 358px));
+  justify-content:start;
+}
+@media (max-width:900px){ .rooms--two{ grid-template-columns:repeat(2,1fr) } }
+@media (max-width:560px){ .rooms--two{ grid-template-columns:1fr } }
 
-.store-note{
-  margin:28px auto 0; max-width:760px; text-align:center;
-  font-size:1.1rem; font-style:italic; color:rgba(42,36,30,.58);
+/* On coffee the card's own ground would vanish into the shelf, so an
+   unshot plate gets a lighter one. */
+.shelf .room{ background:var(--espresso) }
+.shelf .tile-bare{ background:rgba(243,237,225,.06); color:rgba(243,237,225,.55) }
+
+.shelf-note{
+  margin:22px 0 0; font-size:1.08rem; font-style:italic;
+  color:rgba(243,237,225,.55);
 }
 
 .floor-head{
@@ -608,43 +625,32 @@ body::before{
         <h2>Curator</h2>
       </div>
       <p class="rail-note" id="railNote">
-        Two ways to dress a telephone screen: send me a photograph and
-        I&rsquo;ll craft one, or take a finished piece from the shelf.
+        Two ways to dress a telephone screen. Send me a photograph and
+        I&rsquo;ll craft one, or take something already finished from the
+        shelf below.
         <span class="sig">&mdash; C.</span>
       </p>
     </aside>
 
     <main>
 
-      <!-- THE LANDING -->
-      <section id="stageBands">
-        <div class="pg-head">
-          <h1 class="pg-title">Wallpapers</h1>
-          <p class="pg-sub">For the screen you look at most</p>
-        </div>
+      <div class="pg-head">
+        <h1 class="pg-title">Wallpapers</h1>
+        <p class="pg-sub">For the screen you look at most</p>
+      </div>
 
-        <div class="band">
-          <h2 class="band-h"><span>Made from your photograph</span></h2>
-          <div class="rooms rooms--three" id="bandCraft"></div>
-        </div>
+      <!-- ON THE VELLUM: costs a photograph -->
+      <div class="band">
+        <h2 class="band-h"><span>Made from your photograph</span></h2>
+        <div class="rooms rooms--three" id="bandCraft"></div>
+      </div>
 
-        <div class="band">
-          <h2 class="band-h"><span>Ready to buy</span></h2>
-          <div class="rooms rooms--wide" id="bandStore"></div>
-        </div>
-      </section>
-
-      <!-- THE CHOOSER, one level down -->
-      <section id="stageStore" hidden>
-        <div class="floor-head">
-          <button class="back" id="back" type="button">&lsaquo; Wallpapers</button>
-          <h1 class="floor-title">Ready to buy</h1>
-        </div>
-        <div class="rooms rooms--two" id="storeWays"></div>
-        <p class="store-note">
-          Finished pieces. Nothing to send, nothing to wait for.
-        </p>
-      </section>
+      <!-- ON THE COFFEE: already made -->
+      <div class="band shelf">
+        <h2 class="band-h"><span>Ready to buy</span></h2>
+        <div class="rooms rooms--two" id="bandStore"></div>
+        <p class="shelf-note">Finished pieces. Nothing to send, nothing to wait for.</p>
+      </div>
 
       <p class="foot">Wallpapers are download-only. Nothing here is sent to the print lab.</p>
     </main>
@@ -681,8 +687,8 @@ body::before{
    CUI V41, 23 August 2026.
 
    WHAT THIS PAGE IS NOW
-     A door and a chooser. Nothing is crafted here and nothing is bought
-     here: every card navigates. The floor, the queue and the upload slot
+     A door. Nothing is crafted here and nothing is bought here: every
+     card navigates. The floor, the queue and the upload slot
      that used to live in this file went with the rooms - each of the
      three craft rooms has its own page, and each store catalogue will.
 
@@ -701,14 +707,25 @@ body::before{
 (function(){
   'use strict';
 
-  /* ---- PLATES · CHECK THESE ------------------------------------------
-     Convention taken from the file this replaced: room covers sit under
-     /previews/wallpapers/<room>/. The store paths are invented - that
-     folder does not exist yet. */
+  /* ---- PLATES ---------------------------------------------------------
+     Read from the repo on 23 August, not guessed.
+
+       portraits/      man_ and woman_ prefixes, .jpeg. Confirmed present.
+       halloween-pets/ bare effect ids, .jpeg. There is no cover file, so
+                       one of the twenty-seven stands for the room.
+       pets/           pets_<id>.jpg. Its card is disabled until the page
+                       exists, so the plate is greyed either way.
+
+     THE THREE STORE PATHS ARE NAMES, NOT FILES. That folder does not
+     exist. Make public/previews/wallpapers/store/ and drop three
+     wallpapers in as cover.jpeg, general.jpeg and halloween.jpeg -
+     9:16, and cover.jpeg wants to survive a wide crop. Until they are
+     there those cards show their names on a dark ground, which is what
+     an unshot plate honestly is. No code changes when they land. */
   var PLATES = {
     portraits : '/previews/wallpapers/portraits/woman_stained_glass.jpeg',
-    pets      : '/previews/wallpapers/pets/cover.jpeg',
-    petsHall  : '/previews/wallpapers/halloween-pets/cover.jpeg',
+    pets      : '/previews/wallpapers/pets/pets_stained_glass.jpg',
+    petsHall  : '/previews/wallpapers/halloween-pets/witch_familiar.jpeg',
     store     : '/previews/wallpapers/store/cover.jpeg',
     general   : '/previews/wallpapers/store/general.jpeg',
     halloween : '/previews/wallpapers/store/halloween.jpeg'
@@ -728,18 +745,10 @@ body::before{
       art:PLATES.petsHall, href:'/wallpapers/halloween-pets' }
   ];
 
-  /* ---- THE STORE BAND ------------------------------------------------- */
-  var STORE = {
-    label:'Ready to buy',
-    line:'Finished pieces, ready to download',
-    counts:'1,029 pieces',
-    art:PLATES.store
-  };
-
-  /* ---- THE CHOOSER ---------------------------------------------------
-     Counts are the bucket as read on 23 August: 527 under studio/general
-     and 502 under studio/halloween. If the bucket grows, these move. */
-  var WAYS = [
+  /* ---- THE STORE BAND -------------------------------------------------
+     Two shelves, on the coffee. Counts are the bucket as read on
+     23 August: 527 under studio/general, 502 under studio/halloween. */
+  var STORE = [
     { label:'Liten &amp; Co Studio', line:'527 pieces',
       art:PLATES.general,   href:'/wallpapers/store' },
     { label:'Halloween Studio',      line:'502 pieces',
@@ -748,18 +757,9 @@ body::before{
 
   var elCraft = document.getElementById('bandCraft');
   var elStore = document.getElementById('bandStore');
-  var elWays  = document.getElementById('storeWays');
-  var secBand = document.getElementById('stageBands');
-  var secStore= document.getElementById('stageStore');
-  var railNote= document.getElementById('railNote');
-
-  function esc(s){
-    return String(s).replace(/&(?!amp;|lsaquo;|mdash;|rsquo;)/g,'&amp;')
-                    .replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
 
   /* A card whose plate is missing shows its name instead. The handler
-     removes the image on the first error, so a slow connection that
+     drops the image on the first error, so a slow connection that
      recovers does not leave the bare card behind. */
   function bare(img, label){
     var host = img.parentNode;
@@ -771,19 +771,17 @@ body::before{
     host.insertBefore(d, host.firstChild);
   }
 
-  function card(o, wide){
+  function card(o){
     var b = document.createElement('button');
-    b.className = 'room' + (wide ? ' room--wide' : '') + (o.soon ? ' is-soon' : '');
+    b.className = 'room' + (o.soon ? ' is-soon' : '');
     b.type = 'button';
     if (o.soon) b.disabled = true;
     if (o.href) b.dataset.href = o.href;
-    if (o.chooser) b.dataset.chooser = '1';
 
     b.innerHTML =
       (o.art ? '<img alt="" src="' + o.art + '">' : '') +
       '<span class="room-label">' +
         '<span class="room-name">' + o.label + '</span>' +
-        (o.counts ? '<span class="room-counts">' + o.counts + '</span>' : '') +
         '<span class="room-count">' + o.line + '</span>' +
       '</span>';
 
@@ -792,73 +790,26 @@ body::before{
     return b;
   }
 
-  function paintLanding(){
-    elCraft.innerHTML = '';
-    CRAFT.forEach(function(o){ elCraft.appendChild(card(o, false)); });
-    elStore.innerHTML = '';
-    elStore.appendChild(card({
-      label:STORE.label, line:STORE.line, counts:STORE.counts,
-      art:STORE.art, chooser:true
-    }, true));
+  function paint(el, list){
+    el.innerHTML = '';
+    list.forEach(function(o){ el.appendChild(card(o)); });
   }
-
-  /* THE CHOOSER. The same cards one level down - the shape somebody just
-     used to get here, so nothing has to be learned twice. */
-  function showStore(){
-    elWays.innerHTML = '';
-    WAYS.forEach(function(o){ elWays.appendChild(card(o, false)); });
-    secBand.hidden = true;
-    secStore.hidden = false;
-    railNote.innerHTML =
-      'Two shelves. One is the studio&rsquo;s own work; the other is ' +
-      'everything it made for October.<span class="sig">&mdash; C.</span>';
-    setPath('/wallpapers/store');
-    try{ window.scrollTo(0,0); }catch(e){}
-  }
-
-  function showLanding(){
-    secStore.hidden = true;
-    secBand.hidden = false;
-    railNote.innerHTML =
-      'Two ways to dress a telephone screen: send me a photograph and ' +
-      'I&rsquo;ll craft one, or take a finished piece from the shelf.' +
-      '<span class="sig">&mdash; C.</span>';
-    setPath('/wallpapers');
-    try{ window.scrollTo(0,0); }catch(e){}
-  }
-
-  /* The chooser is a screen, so it gets an address. Back works, and a
-     link somebody sends opens where they meant. */
-  function setPath(p){
-    if (location.pathname !== p) history.pushState({p:p}, '', p);
-  }
-  addEventListener('popstate', function(){
-    if (/^\/wallpapers\/store\/?$/.test(location.pathname)) {
-      secBand.hidden = true; secStore.hidden = false;
-    } else {
-      secStore.hidden = true; secBand.hidden = false;
-    }
-  });
 
   document.addEventListener('click', function(e){
     var b = e.target.closest('.room');
-    if (!b || b.disabled) return;
-    if (b.dataset.chooser){ showStore(); return; }
-    if (b.dataset.href){ location.href = b.dataset.href; }
+    if (!b || b.disabled || !b.dataset.href) return;
+    location.href = b.dataset.href;
   });
 
-  document.getElementById('back').addEventListener('click', showLanding);
-
-  paintLanding();
-  /* Deep link. /wallpapers/store opens the chooser directly. */
-  if (/^\/wallpapers\/store\/?$/.test(location.pathname)) showStore();
+  paint(elCraft, CRAFT);
+  paint(elStore, STORE);
 
   /* What the Concierge may point at here. She knows how to draw a ring
      over a control and nothing about this page, so the page tells her -
      and only about controls that exist. */
   window.CONCIERGE_POINTS = [
     { sel:'#bandCraft', phrases:['photograph','photo','portraits','pets','craft'] },
-    { sel:'#bandStore', phrases:['buy','ready','store','finished','shelf'] }
+    { sel:'#bandStore', phrases:['buy','ready','finished','shelf','halloween'] }
   ];
   window.CONCIERGE_SEEDS = [
     'How do wallpapers work?',

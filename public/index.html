@@ -471,6 +471,40 @@ footer nav a:hover{color:var(--series)}
      needed. */
   .m-scroll{ display:none }
 
+  /* ---- ONE PANEL PER SERIES  ---------------------------------------
+     CUI 41A, 23 Aug 2026. Five Series, swiped between. The dots say
+     which of five and take you there; a dot that shows position and
+     refuses to act on a tap is a tease.
+
+     They sit above the button rather than below it, because below it is
+     the fixed bar and anything down there is a thumb's width from the
+     wrong tap. */
+  .m-dots{
+    position:absolute; left:0; right:0; z-index:4;
+    bottom:calc(66px + env(safe-area-inset-bottom) + 128px);
+    display:flex; justify-content:center; gap:10px;
+    pointer-events:none;
+  }
+  .m-dot{
+    pointer-events:auto;
+    width:8px; height:8px; padding:0; border:0; border-radius:999px;
+    background:rgba(243,237,225,.38);
+    transition:background .3s ease, width .3s ease;
+  }
+  /* The one you are on is longer, not merely brighter. Brightness alone
+     is hard to read over a picture that keeps changing underneath it. */
+  .m-dot.is-on{ width:26px; background:var(--vellum-100) }
+
+  /* The swipe is answered even though nothing slides -- the plates are
+     two stacked layers and a real carousel would need five copies of
+     them. A short travel in the direction of the thumb is enough to say
+     the gesture landed. */
+  @keyframes m-nudge-l{ from{ transform:translateX(26px) } to{ transform:none } }
+  @keyframes m-nudge-r{ from{ transform:translateX(-26px) } to{ transform:none } }
+  .m-reel.nudge-l .m-slide{ animation:m-nudge-l .42s cubic-bezier(.2,.7,.3,1) }
+  .m-reel.nudge-r .m-slide{ animation:m-nudge-r .42s cubic-bezier(.2,.7,.3,1) }
+
+
   /* ---- FOLD TWO · THE PROOF ----------------------------------------
      One photograph, then the same face several ways. This is the only
      claim on the page a stranger can verify by looking, so it gets the
@@ -1121,9 +1155,14 @@ footer nav a:hover{color:var(--series)}
     <div class="m-slide" id="mB"></div>
     <div class="m-say">
       <h1 id="mSay">Imagine yourself in the Renaissance.</h1>
-      <a class="m-go" href="/portraits">Let&rsquo;s Get Started</a>
+      <!-- CUI 41A, 23 Aug 2026. The button follows the panel. Its
+           label and its href are both written by the reel. -->
+      <a class="m-go" id="mGo" href="/portraits">Let&rsquo;s Get Started</a>
       <span class="m-scroll">Scroll</span>
     </div>
+    <!-- Which of five, and how far along. Tappable, because a dot that
+         shows position and refuses to take you there is a tease. -->
+    <div class="m-dots" id="mDots"></div>
   </section>
 
   <!-- FOLD TWO · the proof -->
@@ -1190,6 +1229,68 @@ footer nav a:hover{color:var(--series)}
      The order is the argument: it opens on what we make, widens through
      the worlds, states the scale, and ends by asking. Twenty-five slides,
      two seconds each. */
+  /* CUI 41A, 23 Aug 2026. REEL became SERIES: one panel per Series,
+     swiped between, each holding its own plates and its own way in.
+
+     `plates` carry their own extension. Groups is .jpeg and the rest
+     are .jpg, and a builder that appended a fixed one would quietly
+     404 a quarter of the reel.
+
+     LINES MARKED DRAFT ARE NOT RICH'S. Groups had no lines at all and
+     the newer Halloween and Pet plates had none either. Everything
+     unmarked is carried over from the old REEL, plate for plate. */
+  var SERIES = [
+    { id:'portraits', label:'Portraits', href:'/portraits',
+      go:'Craft a portrait', dir:'',
+      plates:[
+        ['impressionist_man2.jpg',   'Imagine yourself as a work of art'],
+        ['woman_music.jpg',          'Or the notes of a song'],
+        ['woman_renaissance.jpg',    'Or back to the Renaissance'],
+        ['woman_stained_glass.jpg',  'Or maybe as a beautiful lamp'],
+        ['man_ice.jpg',              'We turn your photographs into impossible things'],
+        ['woman_folded_book.jpg',    'Or turn into your favourite novel'],
+        ['woman_face_petals.jpg',    'Or your favourite flowers'],
+        ['man_neon.jpg',             'Fifty-six finishes, and counting']       /* DRAFT */
+      ] },
+
+    { id:'halloween', label:'Halloween', href:'/halloween',
+      go:'Enter Halloween', dir:'halloween/',
+      plates:[
+        ['man_ice_wraith.jpg',       'Or something that waits after dark'],
+        ['woman_swamp_creature.jpg', 'We have a room for October'],
+        ['man_haunted_scarecrow.jpg','Some faces are better after dark'],      /* DRAFT */
+        ['man_clockwork_corpse.jpg', 'Twenty-eight ways to be unrecognisable'] /* DRAFT */
+      ] },
+
+    { id:'groups', label:'Groups', href:'/groups',
+      go:'Craft a group portrait', dir:'groups/',
+      plates:[
+        ['groups_quilted.jpeg',         'Everyone, in one piece'],             /* DRAFT */
+        ['groups_porcelain.jpeg',       'The whole family, held still'],       /* DRAFT */
+        ['groups_forest_guardian.jpeg', 'Or somewhere none of you have been'], /* DRAFT */
+        ['groups_origami.jpeg',         'Bring us the one photograph you all liked'] /* DRAFT */
+      ] },
+
+    { id:'pets', label:'Pets', href:'/pets/portraits',
+      go:'Craft a pet portrait', dir:'pets/',
+      plates:[
+        ['pets_victorian.jpg',     'Your dog has never been painted'],
+        ['pets_impressionist.jpg', 'Cats sit for us too'],
+        ['pets_quilted.jpg',       'Thirty-four finishes, for the ones who will not hold still'], /* DRAFT */
+        ['pets_clockwork.jpg',     'Nobody has ever asked us for a small one']  /* DRAFT */
+      ] },
+
+    { id:'pets-halloween', label:'Pets Halloween', href:'/pets/halloween',
+      go:'Enter the Pet Halloween room', dir:'pets-halloween/',
+      plates:[
+        ['hellborn_beast.jpg',     'Though he may prefer something fiercer'],
+        ['harvest_god_beast.jpg',  'And come back as something else'],
+        ['gargoyle_beast.jpg',     'The other season, for the other half of the house'], /* DRAFT */
+        ['plague_beast.jpg',       'Twenty-seven of them, and they all bite']   /* DRAFT */
+      ] }
+  ];
+
+  /* Kept so nothing else that reads REEL breaks. Nothing does today. */
   var REEL = [
     ['impressionist_man2.jpg',  'Imagine yourself as a work of art'],
     ['woman_music.jpg',         'Or the notes of a song'],
@@ -1283,12 +1384,111 @@ footer nav a:hover{color:var(--series)}
        or one whose outpaint invented a second chin and was deleted —
        falls back to the square original, which still shows whole on its
        blurred ground. Nothing has to be kept in step by hand. */
-    var frames = [], carried = '';
-    REEL.forEach(function(row){
-      if (row[1]) carried = row[1];
-      frames.push({ big:S + 'tall/' + row[0], small:S + row[0], say:carried });
+    /* CUI 41A, 23 Aug 2026. Built per Series rather than as one list.
+
+       Three sources per plate, tried in order: tall-small, which is the
+       compressed 9:16 and the only place the Groups plates live; tall,
+       for anything not compressed yet; and the square original, which
+       shows contained on the blurred ground. The existing paint()
+       already walks a big/small pair on error, so this hands it the two
+       best available and keeps the third behind them. */
+    var PANELS = SERIES.map(function(s){
+      return {
+        id:s.id, label:s.label, href:s.href, go:s.go,
+        frames:s.plates.map(function(p){
+          return {
+            big:   S + 'tall-small/' + s.dir + p[0],
+            mid:   S + 'tall/'       + s.dir + p[0],
+            small: S + s.dir + p[0],
+            say:   p[1]
+          };
+        })
+      };
+    }).filter(function(p){ return p.frames.length; });
+    if (!PANELS.length) return;
+
+    var GO   = document.getElementById('mGo');
+    var DOTS = document.getElementById('mDots');
+    var panel = 0, timer = null;
+    var frames = PANELS[0].frames;
+
+    function dots(){
+      if (!DOTS) return;
+      DOTS.innerHTML = '';
+      PANELS.forEach(function(p, k){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'm-dot' + (k === panel ? ' is-on' : '');
+        b.setAttribute('aria-label', p.label);
+        b.addEventListener('click', function(){ go(k, k > panel ? 1 : -1); });
+        DOTS.appendChild(b);
+      });
+    }
+
+    /* The panel changes under the crossfade rather than sliding a
+       carousel: the plates are already two stacked layers, and a real
+       horizontal scroller would need five copies of them. The swipe is
+       answered with a short nudge in the direction travelled so the
+       gesture is acknowledged even though nothing slides. */
+    function go(next, dirn){
+      next = (next + PANELS.length) % PANELS.length;
+      panel = next;
+      frames = PANELS[panel].frames;
+      i = 0;
+      if (GO){
+        GO.textContent = PANELS[panel].go;
+        GO.setAttribute('href', PANELS[panel].href);
+      }
+      var reel = document.getElementById('mReel');
+      if (reel && dirn){
+        reel.classList.remove('nudge-l','nudge-r');
+        void reel.offsetWidth;
+        reel.classList.add(dirn > 0 ? 'nudge-l' : 'nudge-r');
+      }
+      dots();
+      paint(frames[0]);
+      warm();
+      clock();
+    }
+
+    function warm(){
+      frames.slice(1, 4).forEach(function(f){ new Image().src = f.big; });
+    }
+
+    /* ---- the swipe ----------------------------------------------
+       Touch, not pointer events: a horizontal drag on a full-bleed
+       picture must not also be read as a scroll, and touchmove is
+       where that is decided. The axis is settled on the first few
+       pixels and not revisited, so a swipe that drifts does not turn
+       into a scroll halfway through. */
+    (function(){
+      var reel = document.getElementById('mReel');
+      if (!reel) return;
+      var x0 = 0, y0 = 0, axis = '';
+      reel.addEventListener('touchstart', function(e){
+        var t = e.changedTouches[0];
+        x0 = t.clientX; y0 = t.clientY; axis = '';
+      }, { passive:true });
+      reel.addEventListener('touchmove', function(e){
+        if (axis) return;
+        var t = e.changedTouches[0];
+        var dx = Math.abs(t.clientX - x0), dy = Math.abs(t.clientY - y0);
+        if (dx < 8 && dy < 8) return;
+        axis = dx > dy ? 'x' : 'y';
+      }, { passive:true });
+      reel.addEventListener('touchend', function(e){
+        if (axis !== 'x') return;
+        var dx = e.changedTouches[0].clientX - x0;
+        if (Math.abs(dx) < 45) return;
+        go(panel + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+      }, { passive:true });
+    })();
+
+    /* A keyboard and a trackpad reach this page too. */
+    addEventListener('keydown', function(e){
+      if (e.key === 'ArrowRight') go(panel + 1, 1);
+      if (e.key === 'ArrowLeft')  go(panel - 1, -1);
     });
-    if (!frames.length) return;
 
     var i = 0, front = A, back = B, said = null;
 
@@ -1300,23 +1500,36 @@ footer nav a:hover{color:var(--series)}
          Decoding first also does the fallback for free: if the 900 is not
          on disk this fires onerror before anything is shown, and the 390
          goes up instead with no flicker in between. */
+      /* CUI 41, 23 Aug 2026. THREE RUNGS, NOT TWO.
+
+         PANELS has always built big, mid and small. This walker read big
+         and small and skipped the middle - and since splash/tall-small/
+         does not exist, every plate fell past the tall version it had to
+         the square original. Groups fell past its only plates to a folder
+         that is not there and showed nothing.
+
+         Now it walks the list in order and stops at the first that
+         loads, so the best available plate wins on its own. Creating
+         tall-small/ later needs no edit here. */
+      var chain = [f.big, f.mid, f.small].filter(Boolean);
+      var rung  = 0;
+
       var img = new Image();
       img.onload = function(){ show(img.src); };
       img.onerror = function(){
-        if (f.small && img.src !== f.small){
-          img.src = f.small;
-          return;
-        }
-        show(f.small || f.big);
+        rung += 1;
+        if (rung < chain.length){ img.src = chain[rung]; return; }
+        show(chain[chain.length - 1]);
       };
-      img.src = f.big || f.small;
+      if (!chain.length) return;
+      img.src = chain[0];
 
       function show(url){
         if (!url) return;
         /* A square plate that fell back must not be stretched to fill a
            tall screen — it gets contained on the blurred ground instead.
            The tall ones bleed edge to edge. */
-        back.classList.toggle('is-short', url.indexOf('/tall/') === -1);
+        back.classList.toggle('is-short', !/\/tall(-small)?\//.test(url));
         back.style.backgroundImage = 'url("' + url + '")';
         back.classList.add('show');
         front.classList.remove('show');
@@ -1333,19 +1546,21 @@ footer nav a:hover{color:var(--series)}
       }
     }
 
-    paint(frames[0]);
-    /* Three seconds. Two read as a flicker — the cross fade alone is over
-       a second of it, so the picture was barely still before the next one
-       arrived. Four was a beat too patient. */
-    setInterval(function(){
-      i = (i + 1) % frames.length;
-      paint(frames[i]);
-    }, 3000);
+    /* CUI 41A, 23 Aug 2026. The clock restarts on every panel change --
+       an interval left running would advance the plate a moment after a
+       swipe and make the swipe look like it did two things.
 
-    /* Warm the next few so the fade has something to fade to. */
-    frames.slice(1, 6).forEach(function(f){ new Image().src = f.big || f.small; });
-    /* And the squares behind them, so a fallback does not stall the fade. */
-    frames.slice(1, 6).forEach(function(f){ if (f.small) new Image().src = f.small; });
+       Three seconds, unchanged. Two read as a flicker; four is a beat
+       too patient. */
+    function clock(){
+      if (timer) clearInterval(timer);
+      timer = setInterval(function(){
+        i = (i + 1) % frames.length;
+        paint(frames[i]);
+      }, 3000);
+    }
+
+    go(0, 0);
 
     /* ---- the proof ---------------------------------------------------
        Each card turns over between the photograph and the piece, on its
@@ -1541,7 +1756,7 @@ footer nav a:hover{color:var(--series)}
       var img = new Image();
       img.onload = function(){
         var url = img.src;
-        back.classList.toggle('is-short', url.indexOf('/tall/') === -1);
+        back.classList.toggle('is-short', !/\/tall(-small)?\//.test(url));
         back.style.backgroundImage = 'url("' + url + '")';
         back.classList.add('show');
         front.classList.remove('show');
