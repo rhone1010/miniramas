@@ -481,7 +481,7 @@ footer nav a:hover{color:var(--series)}
      wrong tap. */
   .m-dots{
     position:absolute; left:0; right:0; z-index:4;
-    bottom:calc(66px + env(safe-area-inset-bottom) + 128px);
+    bottom:calc(66px + env(safe-area-inset-bottom) + 143px);
     display:flex; justify-content:center; gap:10px;
     pointer-events:none;
   }
@@ -885,7 +885,7 @@ footer nav a:hover{color:var(--series)}
     <p>Fifty-six finishes across eight worlds. The same face in bronze, in
        glass, in oil &mdash; or in another century entirely.</p>
     <div class="trip-acts">
-      <a class="trip-go" href="/portraits">Let&rsquo;s Get Started</a>
+      <a class="trip-go" id="tripGo" href="/portraits">Let&rsquo;s Get Started</a>
       <a class="trip-see" href="/gallery">See every finish</a>
     </div>
   </div>
@@ -958,7 +958,7 @@ footer nav a:hover{color:var(--series)}
     </div>
     <div class="wgrid">
       <a class="world" href="/halloween">
-        <div class="ph" style="background-image:url(/previews/home/splash/halloween/man_ice_wraith.jpg);background-size:cover;background-position:center"></div>
+        <div class="ph" style="background-image:url(/previews/home/splash/halloween/man_haunted_scarecrow.jpg);background-size:cover;background-position:center"></div>
         <div class="body"><div class="n">The Restless Dead</div>
           <div class="fin">Ice Wraith &middot; Revenant &middot; The Possessed</div>
           <div class="cnt">7 finishes</div></div></a>
@@ -1024,6 +1024,46 @@ footer nav a:hover{color:var(--series)}
       <p>&ldquo;Nobody has ever asked me for a small one.&rdquo; &mdash; C.</p>
       <div class="w-acts">
         <a class="w-own" href="/pets">Enter the Pet rooms</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOLD · GROUPS. Four plates, one fold, same pattern as Halloween. -->
+<section class="worlds s-coffee desk-only" id="groupsfold">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="label lt">Groups &middot; twenty-eight finishes</div>
+      <h2>Everyone, <em>in one piece.</em></h2>
+      <p>Bring us the one photograph you all liked. We will find
+         something to do with it that holds everyone together.</p>
+    </div>
+    <div class="wgrid">
+      <a class="world" href="/groups">
+        <div class="ph" style="background-image:url(/previews/home/splash/tall/groups/groups_forest_guardian.jpeg);background-size:cover;background-position:center top"></div>
+        <div class="body"><div class="n">The Natural World</div>
+          <div class="fin">Forest Guardian &middot; Living Reef &middot; Lichen Granite</div>
+          <div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/groups">
+        <div class="ph" style="background-image:url(/previews/home/splash/tall/groups/groups_family_mosaic.jpg);background-size:cover;background-position:center"></div>
+        <div class="body"><div class="n">Art &amp; Craft</div>
+          <div class="fin">Family Mosaic &middot; Ukiyo-e &middot; Art Nouveau</div>
+          <div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/groups">
+        <div class="ph" style="background-image:url(/previews/home/splash/tall/groups/groups_plushy.jpg);background-size:cover;background-position:center"></div>
+        <div class="body"><div class="n">Made by Hand</div>
+          <div class="fin">Plushy &middot; Quilted &middot; Origami &middot; Folded Book</div>
+          <div class="cnt">7 finishes</div></div></a>
+      <a class="world" href="/groups">
+        <div class="ph" style="background-image:url(/previews/home/splash/tall/groups/groups_quilted.jpeg);background-size:cover;background-position:center"></div>
+        <div class="body"><div class="n">Another Time</div>
+          <div class="fin">Renaissance &middot; Elizabethan &middot; Persian Court</div>
+          <div class="cnt">7 finishes</div></div></a>
+    </div>
+    <div class="w-foot">
+      <p>&ldquo;Bring us the one photograph you all liked.&rdquo; &mdash; C.</p>
+      <div class="w-acts">
+        <a class="w-own" href="/groups">Enter the Groups room</a>
       </div>
     </div>
   </div>
@@ -1262,7 +1302,7 @@ footer nav a:hover{color:var(--series)}
     { id:'halloween', label:'Halloween', href:'/halloween',
       go:'Enter Halloween', dir:'halloween/',
       plates:[
-        ['man_ice_wraith.jpg',       'Or something that waits after dark'],
+        ['man_haunted_scarecrow.jpg','Or something that waits after dark'],
         ['woman_swamp_creature.jpg', 'We have a room for October'],
         ['man_haunted_scarecrow.jpg','Some faces are better after dark'],      /* DRAFT */
         ['man_clockwork_corpse.jpg', 'Twenty-eight ways to be unrecognisable'] /* DRAFT */
@@ -1311,7 +1351,7 @@ footer nav a:hover{color:var(--series)}
     ['woman_forest_guardian.jpg','Or a forest guardian'],
 
     /* Halloween, 23 August. */
-    ['halloween/man_ice_wraith.jpg',      'Or something that waits after dark'],
+    ['halloween/man_haunted_scarecrow.jpg','Or something that waits after dark'],
     ['halloween/woman_swamp_creature.jpg','We have a room for October'],
 
     ['woman_folded_book.jpg',   'Or turn into your favourite novel'],
@@ -1719,22 +1759,43 @@ footer nav a:hover{color:var(--series)}
      per Series and spaced, so no column turns over into the same world
      twice running and the three never show the same register at once.
      Paths are relative to S, which is why they carry their folder. */
-  var COLS = [
-    ['man_renaissance.jpg','halloween/man_ice_wraith.jpg','woman_tidewood.jpg',
-     'man_stained_glass.jpg','pets/pets_victorian.jpg','woman_clockwork.jpg',
-     'man_quartzite.jpg','pets-halloween/hellborn_beast.jpg',
-     'woman_face_petals.jpg','man_pencil_sketch.jpg','woman_robot_2.jpg'],
+  /* CUI 41A, 23 Aug 2026.
+     Plates are now grouped: three Portraits, three Halloween, three Groups,
+     three Pets, three Pets Halloween -- cycled in that order across all
+     three columns. The headline and button follow the group index.
+     Swaps: man_ice_wraith -> man_haunted_scarecrow (col 0),
+            man_stained_glass -> woman_stained_glass (col 0),
+            woman_elizabethan -> woman_plushy (col 1). */
 
-    ['woman_watercolor.jpg','pets/pets_impressionist.jpg','man_driftwood_resin.jpg',
-     'woman_elizabethan.jpg','pets-halloween/gargoyle_beast.jpg','man_ice.jpg',
-     'woman_dragon_skin.jpg','halloween/woman_swamp_creature.jpg',
-     'man_impressionist.jpg','woman_porcelain.jpg','man_coral.jpg'],
-
-    ['woman_forest_guardian.jpg','pets-halloween/harvest_god_beast.jpg','man_balloons.jpg',
-     'woman_robot_1.jpg','halloween/man_haunted_scarecrow.jpg','man_driftwood.jpg',
-     'woman_plushy.jpg','pets/pets_clockwork.jpg','man_elizabethan.jpg',
-     'woman_music.jpg','man_watercolor2.jpg']
+  /* Each sub-array is [col0, col1, col2]. Grouped by Series so the
+     desktop headline can follow them. */
+  var COL_GROUPS = [
+    /* Portraits */
+    ['man_renaissance.jpg',                     'woman_watercolor.jpg',              'woman_forest_guardian.jpg'],
+    ['woman_tidewood.jpg',                      'man_driftwood_resin.jpg',           'man_balloons.jpg'],
+    ['woman_stained_glass.jpg',                 'man_ice.jpg',                       'woman_robot_1.jpg'],
+    /* Halloween */
+    ['halloween/man_haunted_scarecrow.jpg',     'halloween/woman_swamp_creature.jpg','halloween/man_clockwork_corpse.jpg'],
+    ['woman_clockwork.jpg',                     'woman_dragon_skin.jpg',             'man_driftwood.jpg'],
+    ['man_quartzite.jpg',                       'man_impressionist.jpg',             'woman_music.jpg'],
+    /* Groups */
+    ['groups/groups_quilted.jpeg',              'groups/groups_porcelain.jpeg',      'groups/groups_forest_guardian.jpeg'],
+    ['groups/groups_family_mosaic.jpg',         'groups/groups_plushy.jpg',          'woman_face_petals.jpg'],
+    ['man_pencil_sketch.jpg',                   'woman_porcelain.jpg',               'man_watercolor2.jpg'],
+    /* Pets */
+    ['pets/pets_victorian.jpg?v=2',             'pets/pets_impressionist.jpg',       'pets/pets_clockwork.jpg'],
+    ['pets-halloween/hellborn_beast.jpg',        'pets-halloween/gargoyle_beast.jpg', 'woman_plushy.jpg'],
+    ['woman_robot_2.jpg',                       'man_coral.jpg',                     'man_elizabethan.jpg'],
+    /* Pets Halloween */
+    ['pets-halloween/harvest_god_beast.jpg',    'pets-halloween/plague_beast.jpg',   'pets-halloween/hellborn_beast.jpg'],
+    ['pets/pets_quilted.jpg',                   'pets/pets_impressionist.jpg',       'pets/pets_clockwork.jpg'],
+    ['woman_face_petals.jpg',                   'man_coral.jpg',                     'man_pencil_sketch.jpg']
   ];
+
+  /* Flat arrays per column, for the existing turn() loop. */
+  var COLS = [0,1,2].map(function(c){
+    return COL_GROUPS.map(function(g){ return g[c]; });
+  });
 
   /* THE PAIRS. Photograph first, then what came out of it. Only pairs go
      on this wall — an effect with no source proves nothing here, however
@@ -1769,8 +1830,11 @@ footer nav a:hover{color:var(--series)}
     var i = 0;
 
     function turn(){
-      var tall  = S + 'tall/' + list[i];
-      var plain = S + list[i];
+      /* CUI 41A, 23 Aug 2026. tall-small is tried first: same plates,
+         half the weight. Falls through to tall, then plain. */
+      var tall  = S + 'tall-small/' + list[i];
+      var mid   = S + 'tall/' + list[i];
+      var plain = S + list[i].replace('?v=2','');
 
       /* Decoded before it is faded up. Cross-fading to a picture that has
          not loaded shows a grey panel for half a second, which is worse
@@ -1787,22 +1851,52 @@ footer nav a:hover{color:var(--series)}
         var t = front; front = back; back = t;
       };
       img.onerror = function(){
+        if (img.src.indexOf('/tall-small/') > -1){ img.src = mid; return; }
         if (img.src.indexOf('/tall/') > -1){ img.src = plain; return; }
         /* neither on disk — skipped rather than shown as a grey panel */
       };
       img.src = tall;
       i = (i + 1) % list.length;
+      /* Column 0 drives the headline. */
+      if (c === 0 && window.__tripTick) window.__tripTick(i);
     }
 
     turn();
-    /* Staggered starts and slightly different intervals. Three panels on
-       the same clock is a slideshow; three on their own is a room. */
+    /* Staggered starts and slightly different intervals.
+       When column 0 turns over, check whether the group index has moved
+       and update the headline and button if so. Three plates per group
+       = group index is Math.floor(i_col0 / 3). */
+    var GROUP_META = [
+      { say:'Photographs, <em>reimagined.</em><br>A likeness, recrafted.',
+        go:'Craft a portrait', href:'/portraits' },
+      { say:'Some faces are better <em>after dark.</em>',
+        go:'Enter Halloween', href:'/halloween' },
+      { say:'Everyone, <em>in one piece.</em>',
+        go:'Craft a group portrait', href:'/groups' },
+      { say:'They sat for you <em>once.</em>',
+        go:'Craft a pet portrait', href:'/pets/portraits' },
+      { say:'The other season, <em>for the other half of the house.</em>',
+        go:'Enter the Pet Halloween room', href:'/pets/halloween' }
+    ];
+    var tripSay = document.querySelector('.trip-say h1');
+    var tripGo  = document.getElementById('tripGo');
+    var lastGroup = -1;
+    /* Called by column 0's turn() after each advance. */
+    window.__tripTick = function(idx){
+      var g = Math.floor(idx / 3) % GROUP_META.length;
+      if (g === lastGroup) return;
+      lastGroup = g;
+      var m = GROUP_META[g];
+      if (tripSay) tripSay.innerHTML = m.say;
+      if (tripGo){ tripGo.textContent = m.go; tripGo.href = m.href; }
+    };
+
     setTimeout(function(){
       turn();
       setInterval(turn, 5200 + c * 700);
     }, 2000 + c * 1400);
 
-    list.slice(0, 3).forEach(function(f){ new Image().src = S + 'tall/' + f; });
+    list.slice(0, 3).forEach(function(f){ new Image().src = S + 'tall-small/' + f; });
   });
 
   /* ---- the proof wall ------------------------------------------------ */
