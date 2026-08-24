@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- CUI 42B · 2026-08-24 -->
 <!-- CUI 42A · 2026-08-24 -->
 <html lang="en">
 <head>
@@ -6737,7 +6738,6 @@ window.EFFECT_PREVIEWS = {
 
      Ported from public/portraits-b2.html, read 2026-07-31:
        addToQueue            7812   the payload body, 93 lines
-       MATERIAL_LOCATIONS    4594   verbatim
 
      THE MERGE. b2 and s72 both declare addToQueue and they are different
      functions — b2's takes no arguments and reads module state, s72's takes
@@ -6757,51 +6757,17 @@ window.EFFECT_PREVIEWS = {
      field the route reads-and-discards is a change to the wire that this
      build has no need to make. */
 
-  /* b2 4594, unchanged. NOT every effect is in here — see checkLocations
-     below, which makes the gap loud rather than letting it default. */
-  var MATERIAL_LOCATIONS = {
-    bronze:        ['mantel', 'pedestal', 'gradient'],
-    alabaster:     ['mantel', 'pedestal', 'gradient'],
-    iron:          ['mantel', 'pedestal', 'gradient'],
-    stone:         ['mantel', 'pedestal', 'gradient'],
-    ebony:         ['mantel', 'pedestal', 'gradient'],
-    walnut:        ['mantel', 'pedestal', 'gradient'],
-    plushy:        ['plushy_shelf'],
-    impressionist:  ['mantel', 'pedestal', 'gradient'],
-    torn_paper:     ['mantel', 'pedestal', 'gradient'],
-    folded_book:    ['mantel', 'pedestal', 'gradient'],
-    charcoal_chalk: ['mantel', 'pedestal', 'gradient'],
-    pencil_sketch:  ['mantel', 'pedestal', 'gradient'],
-    sheet_music:    ['mantel', 'pedestal', 'gradient']
-  };
-  var DEFAULT_LOCATION = 'pedestal';
-
-  /* Thirteen presets are mapped and the registry offers more than thirteen.
-     An unmapped effect silently takes 'pedestal', which may be right and may
-     be wrong, and nobody would ever find out. So it is counted at boot and
-     put on the console once. Rich and CENG own the answer; this lane only
-     refuses to hide the question. */
-  function checkLocations(){
-    var missing = (R.effects || []).filter(function(e){
-      return e.body === 'live' && !MATERIAL_LOCATIONS[e.id];
-    }).map(function(e){ return e.id; });
-    if (missing.length){
-      console.warn('[payload] ' + missing.length + ' live effects have no location mapping ' +
-                   'and will default to ' + DEFAULT_LOCATION + ': ' + missing.join(', '));
-    }
-    return missing;
-  }
-  window.__UNMAPPED = checkLocations();
+  /* MATERIAL_LOCATIONS, its pedestal default, the boot warning and
+     locationForEffect stood here, ported verbatim from the Portraits b2
+     clone. Removed · CUI 42B · 2026-08-24. GroupsGenerateRequest accepts
+     source_images_b64, effect_id, subject_count and skip_scoring —
+     `location` was discarded on arrival since the flat-catalogue port,
+     and pedestals do not exist in Groups. */
 
   /* style_id is derived, not chosen. b2 had a Series switch above the
      material picker; the room is that switch now. */
   function styleForSilo(siloId){
     return siloId === 'artists_gallery' ? 'artists_gallery' : 'realistic';
-  }
-
-  function locationForEffect(effectId){
-    var locs = MATERIAL_LOCATIONS[effectId];
-    return (locs && locs[0]) || DEFAULT_LOCATION;
   }
 
   /* One queue item, ready for /generate. Everything it needs comes from the
@@ -6830,7 +6796,6 @@ window.EFFECT_PREVIEWS = {
 
       style_id:              styleForSilo(siloId),
       preset:                effectId,
-      location:              locationForEffect(effectId),
       scale:                 'auto_85',
       /* aspect_ratio is GONE from the wire · CUI 42A. The route never
          read it, and groupsAspect() in groups-generator.ts now measures
