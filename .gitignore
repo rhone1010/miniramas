@@ -56,3 +56,4 @@ _archive/
 
 *.log
 public/previews/*-small/
+scripts/__pycache__/

@@ -105,6 +105,28 @@ const FRAMING = argValue('--framing')
 if (FRAMING && !['stomach', 'toe'].includes(FRAMING)) {
   throw new Error(`--framing must be "stomach" or "toe", got "${FRAMING}"`)
 }
+
+// ── ASPECT OVERRIDE ──────────────────────────────────────────────────
+//
+// Production sends MAIN_ASPECT ('1:1') on every Groups render. Group
+// photographs are overwhelmingly LANDSCAPE, so a square output is not a
+// crop - NB2 recomposes the picture to fit, and eight people spread across
+// a wide frame get resolved as separate stacked figures because that is
+// what fits a square.
+//
+// The same prompt pasted into the Replicate browser UI came back cohesive,
+// and the UI leaves aspect_ratio on its default, which follows the input.
+// That is the only difference between the two, which is why this flag
+// exists.
+//
+//   --aspect match    omit aspect_ratio entirely, as the browser UI does
+//   --aspect 4:5      any literal NB2 accepts
+//   (absent)          MAIN_ASPECT, as production
+//
+// NOT A FIX. This measures whether the square is the cause. If it is, the
+// answer is a decision about what shape Groups pieces are, and that is
+// Rich's and it reaches pricing and Prodigi.
+const ASPECT = argValue('--aspect')
 const SUBJ_ARG = argValue('--subjects')?.split(',').map(s => s.trim()).filter(Boolean)
 
 // tsx does not load .env.local - that is Next.js behaviour. Shell wins.
@@ -188,7 +210,9 @@ async function callNB2(prompt: string, sourceB64: string): Promise<string> {
       input: {
         prompt,
         image_input:   [`data:image/jpeg;base64,${sourceB64}`],
-        aspect_ratio:  MAIN_ASPECT,
+        // Omitted entirely under --aspect match. Sending an empty string
+        // is not the same thing as not sending the field.
+        ...(ASPECT === 'match' ? {} : { aspect_ratio: ASPECT || MAIN_ASPECT }),
         output_format: 'jpg',
       },
     }),
@@ -230,7 +254,9 @@ async function callNB2(prompt: string, sourceB64: string): Promise<string> {
 async function main() {
   // A forced-framing run goes to its own directory. Overwriting the
   // production-framed render with a variant would destroy the comparison.
-  const suffix = FRAMING ? `-${FRAMING}` : ''
+  const suffix =
+    (FRAMING ? `-${FRAMING}` : '') +
+    (ASPECT ? `-${ASPECT.replace(':', 'x')}` : '')
   const runDir = path.join(OUT_ROOT, `groups-candidates-${stamp()}${suffix}`)
 
   const wantSubjects = SUBJ_ARG ?? DEFAULT_SUBJECTS
@@ -247,6 +273,7 @@ async function main() {
   console.log(`  candidates : ${ids.length}`)
   console.log(`  dry run    : ${DRY_RUN ? 'YES - nothing will render' : 'no'}`)
   console.log(`  framing    : ${FRAMING ? FRAMING.toUpperCase() + ' (forced)' : 'by subject count'}`)
+  console.log(`  aspect     : ${ASPECT === 'match' ? 'MATCH SOURCE (field omitted)' : (ASPECT || MAIN_ASPECT + ' (production)')}`)
   console.log(`  output     : ${runDir}`)
   console.log('')
 
