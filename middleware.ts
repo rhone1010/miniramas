@@ -75,10 +75,10 @@ const PAGES: Record<string, string> = {
      room is its own page now, and the two store catalogues share one
      file that reads its section off the path. */
   '/wallpapers': '/wallpapers.html',
-  '/wallpapers/portraits': '/portrait-wallpaper.html',
+  '/wallpapers/portraits': '/wallpapers-portraits.html',
   '/wallpapers/pets': '/wallpapers-pets.html',
-  '/wallpapers/halloween-pets': '/pet-wallpaper.html',
-  '/wallpapers/halloween': '/pet-wallpaper.html',
+  '/wallpapers/halloween-pets': '/wallpapers-halloween-pets.html',
+  '/wallpapers/halloween': '/wallpapers-halloween-pets.html',
   '/wallpapers/store': '/wallpaper-store.html',
   '/wallpapers/store/halloween': '/wallpaper-store.html',
   /* THE ACCORDION AND THE FIELD, merged 19 August. The previous page is
