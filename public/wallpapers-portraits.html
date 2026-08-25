@@ -1178,7 +1178,14 @@ body{
   grid-template-rows:repeat(2, minmax(0,1fr));
   gap:var(--card-gap);
   align-content:stretch;
-  width:100%; height:100%;
+  /* FIT-CONTENT, CENTRED. The tracks were stretched across the whole
+     stage, so with narrow cards the gutters ran several times the row
+     gap. A fit-content grid hugs the cards - the gap is the only
+     horizontal space, equal to the vertical - while the 8-track system
+     and every count-based centring rule below keep working untouched.
+     Rich's ruling, 24-25 Aug. */
+  width:fit-content; max-width:100%; margin-inline:auto;
+  height:100%;
   min-width:0; min-height:0;
   overflow:hidden;
   padding:var(--card-gap);
