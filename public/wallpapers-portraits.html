@@ -6812,6 +6812,12 @@ window.EFFECT_PREVIEWS = {
       additional_images_b64: item.additional_images_b64,
       style_id:              item.style_id,
       preset:                item.preset,
+      /* The portrait-wallpaper route (July, read 24 Aug) keys on
+         `effect` and `framing`, ignores everything else. It defaults
+         framing to bust; only the three ids it knows are sent. */
+      effect:                item.preset,
+      framing:               (['bust','signature','statuesque']
+                               .indexOf(item.pose) !== -1 ? item.pose : undefined),
       location:              item.location,
       scale:                 item.scale,
       aspect_ratio:          item.aspect_ratio,
