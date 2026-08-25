@@ -283,8 +283,42 @@ body::before{
   opacity:.12; mix-blend-mode:soft-light;
 }
 @media (max-width:1100px){
+  /* THE CART IS A BAR, NOT A SHEET. Collapsed it shows count, total and
+     Buy; tapping the head opens the list. A permanently expanded sheet
+     ate half the screen - Rich, 24 Aug. */
   .cart{ position:fixed; left:0; right:0; bottom:0; top:auto;
-         border-radius:12px 12px 0 0; max-height:52vh; z-index:80 }
+         border-radius:12px 12px 0 0; z-index:80;
+         padding:14px 16px 16px; gap:10px }
+  .cart-head{ cursor:pointer; padding-bottom:8px }
+  .cart-head::after{
+    content:"\2303"; margin-left:auto; align-self:center;
+    font-family:var(--sans); font-size:14px; color:var(--series);
+    transform:translateY(2px); transition:transform .2s ease;
+  }
+  .cart.open .cart-head::after{ transform:rotate(180deg) }
+  .cart .cart-list, .cart .cart-note{ display:none }
+  .cart.open .cart-list{ display:flex; max-height:32vh }
+  .cart.open .cart-note{ display:block }
+  .cart-total{ font-size:1.1rem }
+  .buy{ font-size:1.2rem; padding:.5em 1em }
+}
+
+/* MOBILE FILTERS - one row, thumb-scrolled, a pill always peeking at
+   the right edge so the row reads as scrollable. Ruled 24 Aug. */
+@media (max-width:760px){
+  .jump{ padding:10px 0 12px }
+  .jump-in{
+    flex-wrap:nowrap; justify-content:flex-start;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    gap:8px; padding:2px 14px 6px;
+    scrollbar-width:none;
+  }
+  .jump-in::-webkit-scrollbar{ display:none }
+  .pill{
+    flex:0 0 auto;
+    font-size:1.1rem; padding:.42em .85em;
+  }
+  .pill .n{ font-size:10px; margin-left:.4em }
 }
 
 .cart-head{
@@ -637,7 +671,12 @@ body::before{
   /* ---- STATE ------------------------------------------------------- */
   var PAGE = 24;
   var shown = 0;
-  var activeWorlds = {};           /* multi-select within the axis */
+  /* Most-recently-pressed world first. An object cannot remember which
+     pill was pressed last, and with a union filter in registry order a
+     new world's pieces landed below the old one's - the press looked
+     like it did nothing. Ruled by Rich, 24 Aug: the pressed filter's
+     pieces come to the top. */
+  var activeWorlds = [];           /* ids, most recent first */
   var cart = [];                   /* array of item refs (registry rows) */
 
   try {
@@ -658,22 +697,23 @@ body::before{
   function paintRail(){
     elRail.innerHTML = '';
     var all = document.createElement('button');
-    all.className = 'pill' + (Object.keys(activeWorlds).length ? '' : ' on');
+    all.className = 'pill' + (activeWorlds.length ? '' : ' on');
     all.type = 'button';
     all.innerHTML = 'All <span class="n">' + DATA.count + '</span>';
     all.addEventListener('click', function(){
-      activeWorlds = {}; shown = 0; paintRail(); paintFloor(true);
+      activeWorlds = []; shown = 0; paintRail(); paintFloor(true);
     });
     elRail.appendChild(all);
 
     DATA.worlds.forEach(function(w){
       var b = document.createElement('button');
-      b.className = 'pill' + (activeWorlds[w.id] ? ' on' : '');
+      b.className = 'pill' + (activeWorlds.indexOf(w.id) !== -1 ? ' on' : '');
       b.type = 'button';
       b.innerHTML = w.label + ' <span class="n">' + w.count + '</span>';
       b.addEventListener('click', function(){
-        if (activeWorlds[w.id]) delete activeWorlds[w.id];
-        else activeWorlds[w.id] = true;
+        var i = activeWorlds.indexOf(w.id);
+        if (i !== -1) activeWorlds.splice(i, 1);
+        else activeWorlds.unshift(w.id);   /* newest press goes first */
         shown = 0; paintRail(); paintFloor(true);
       });
       elRail.appendChild(b);
@@ -681,9 +721,13 @@ body::before{
   }
 
   function visibleItems(){
-    var keys = Object.keys(activeWorlds);
-    if (!keys.length) return DATA.items;
-    return DATA.items.filter(function(it){ return activeWorlds[it.world]; });
+    if (!activeWorlds.length) return DATA.items;
+    /* grouped by press order, newest world's pieces first */
+    var out = [];
+    activeWorlds.forEach(function(wid){
+      DATA.items.forEach(function(it){ if (it.world === wid) out.push(it); });
+    });
+    return out;
   }
 
   /* ---- THE FLOOR ---------------------------------------------------- */
@@ -710,7 +754,12 @@ body::before{
 
   function paintFloor(reset){
     var items = visibleItems();
-    if (reset){ elFloor.innerHTML = ''; shown = 0; }
+    if (reset){
+      elFloor.innerHTML = ''; shown = 0;
+      /* the press must be seen - back to the top of the grid */
+      var y = elFloor.getBoundingClientRect().top + window.pageYOffset - 170;
+      if (window.pageYOffset > y) window.scrollTo({ top: Math.max(y, 0) });
+    }
     if (!items.length){
       elFloor.innerHTML = '<p class="floor-empty">Nothing behind that combination yet.</p>';
       elMore.hidden = true;
@@ -808,31 +857,28 @@ body::before{
   });
 
   /* ---- BUY -----------------------------------------------------------
-     CENG's ruling, 24 Aug: wallpapers are bought with CREDITS, not
-     Stripe. The right mechanism is the credits gate, NOT /checkout -
-     but the gate alone only spends; fulfilment (writing the clean files
-     into My Collection) is not built yet, and there are NO REFUNDS by
-     construction. Charging credits and delivering nothing is the one
-     outcome this page must never produce.
+     CENG r02, 24 Aug: POST /api/v1/wallpapers/purchase - LIVE. One call
+     validates, delivers, charges - in that order, charge LAST, so a
+     charge without a delivery cannot happen. No refunds by construction,
+     which is safe precisely because of that ordering.
 
-     So: the page POSTs ONE route, /api/v1/wallpapers/purchase, proposed
-     to CENG in SYNC-CUI42 (24 Aug) - it validates the filenames FIRST,
-     spends via the gate second, writes collection_pieces third, and
-     answers with the pieces. Until CENG confirms it exists, the flag
-     below holds the till shut and the button says so honestly.
-
-     FLIP THIS TO true WHEN CENG CONFIRMS THE PURCHASE ROUTE IS LIVE. */
-  var PURCHASE_LIVE = false;
+     ref_id: idempotency. One ref per basket; reused on retry so a
+     double-click or a flaky connection cannot buy twice. The ref resets
+     whenever the basket changes. A ref that already purchased answers
+     ok:true, duplicate:true, spent:0 with the original pieces. */
+  var refId = null, refSig = null;
+  function basketRef(){
+    var sig = cart.map(function(c){ return c.filename; }).sort().join('|');
+    if (sig !== refSig){
+      refSig = sig;
+      refId = 'wpui_' + Date.now().toString(36) + '_' +
+        Math.random().toString(36).slice(2, 10);
+    }
+    return refId;
+  }
 
   elBuy.addEventListener('click', function(){
     if (!cart.length) return;
-
-    if (!PURCHASE_LIVE){
-      elSay.hidden = false; elSay.classList.remove('err');
-      elSay.textContent = 'The till opens shortly \u2014 your picks will keep.';
-      return;
-    }
-
     elBuy.disabled = true;
     elSay.hidden = false; elSay.classList.remove('err');
     elSay.textContent = 'One moment\u2026';
@@ -841,16 +887,20 @@ body::before{
       method:'POST',
       headers:{ 'content-type':'application/json' },
       body: JSON.stringify({
-        section: SECTION,
-        items: cart.map(function(c){ return c.filename; })
+        items: cart.map(function(c){
+          return { section: SECTION, filename: c.filename };
+        }),
+        ref_id: basketRef()
       })
     })
     .then(function(r){ return r.json().catch(function(){ return null; }); })
     .then(function(d){
       if (d && d.ok){
         elSay.classList.remove('err');
-        elSay.textContent = 'Yours. ' + d.spent + ' credits \u2014 find them in My Collection.';
-        cart = [];
+        elSay.textContent = d.duplicate
+          ? 'Already yours \u2014 they are in My Collection.'
+          : 'Yours. ' + d.spent + ' credits \u2014 they are in My Collection.';
+        cart = []; refSig = null; refId = null;
         paintCart();
         elFloor.querySelectorAll('.tile.picked').forEach(function(t){
           t.classList.remove('picked');
@@ -865,6 +915,23 @@ body::before{
         elSay.textContent = 'Not enough credits \u2014 you have ' +
           (d.balance != null ? d.balance : '?') + ', this needs ' +
           (d.needed != null ? d.needed : '?') + '.';
+      } else if (reason === 'items_rejected'){
+        var bad = (d.rejected || []).map(function(x){ return x.filename; });
+        /* A basket with one bad item refuses whole - drop the culprits
+           so the next press can succeed. */
+        if (bad.length){
+          cart = cart.filter(function(c){ return bad.indexOf(c.filename) === -1; });
+          bad.forEach(function(fn){
+            var t = elFloor.querySelector('.tile[data-fn="' + fn + '"]');
+            if (t) t.classList.remove('picked');
+          });
+          paintCart();
+          elSay.textContent = bad.length + ' piece' + (bad.length > 1 ? 's' : '') +
+            ' could not be sold and ' + (bad.length > 1 ? 'were' : 'was') +
+            ' set aside \u2014 press Buy again for the rest.';
+        } else {
+          elSay.textContent = 'That did not go through. Try again in a moment.';
+        }
       } else {
         elSay.textContent = 'That did not go through. Try again in a moment.';
       }
@@ -887,6 +954,12 @@ body::before{
     'How do I get my wallpaper after buying?',
     'Can I print one?'
   ];
+
+  /* Mobile cart: the head toggles the list open. On desktop the list is
+     always shown, so the class is inert there. */
+  document.querySelector('.cart-head').addEventListener('click', function(){
+    document.getElementById('cart').classList.toggle('open');
+  });
 
   /* ---- GO ------------------------------------------------------------ */
   paintRail();
