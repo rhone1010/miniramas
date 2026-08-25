@@ -131,14 +131,52 @@ export async function POST(req: Request) {
     // ── DELIVER ─────────────────────────────────────────────────────
     // Five bought is five rows - five tiles in My Collection, each its own
     // downloadable picture. Rich, 24 August.
-    const rows = items.map(it => ({
+    // ── COPY INTO THE COLLECTION BUCKET, before any row or charge ───
+    //
+    // The pieces reader signs image_path against the private 'collection'
+    // bucket - the same one crafted pieces live in, <owner>/<uuid>.jpg.
+    // The public studio path CANNOT go into image_path: signing it yields
+    // null and the tile renders blank. So each bought file is copied under
+    // the buyer's prefix and the row carries the collection path; the
+    // studio path stays in meta as source_path.
+    //
+    // A copy failure refuses the whole basket here, before anything is
+    // written or billed - same posture as validation, and for the same
+    // reason: nobody pays for a blank tile.
+    const copied: Array<{ it: WallpaperItem; collectionPath: string }> = []
+    for (const it of items) {
+      const src = wallpaperPath(it)
+      const { data: blob, error: dlErr } = await db.storage
+        .from('wallpapers').download(src)
+      if (dlErr || !blob) {
+        console.error('[wallpapers/purchase] download failed:', src, dlErr?.message)
+        return NextResponse.json(
+          { ok: false, reason: 'items_rejected',
+            rejected: [{ filename: it.filename, reason: 'copy_failed' }] },
+          { status: 503 })
+      }
+      const collectionPath = `${owner}/${crypto.randomUUID()}.jpg`
+      const { error: upErr } = await db.storage
+        .from('collection')
+        .upload(collectionPath, blob, { contentType: 'image/jpeg', upsert: false })
+      if (upErr) {
+        console.error('[wallpapers/purchase] copy failed:', collectionPath, upErr.message)
+        return NextResponse.json(
+          { ok: false, reason: 'items_rejected',
+            rejected: [{ filename: it.filename, reason: 'copy_failed' }] },
+          { status: 503 })
+      }
+      copied.push({ it, collectionPath })
+    }
+
+    const rows = copied.map(({ it, collectionPath }) => ({
       owner_key: owner,
       user_id: owner,
       series: 'wallpapers',
       preset: it.filename.replace(/\.jpg$/, '').split('_')[1] ?? null,  // the world, for filtering
       label: wallpaperLabel(it.filename),
-      image_path: wallpaperPath(it),
-      meta: { ...wallpaperMeta(it), purchase_ref: refId },
+      image_path: collectionPath,
+      meta: { ...wallpaperMeta(it), purchase_ref: refId, source_path: wallpaperPath(it) },
       archived: false,
     }))
 
