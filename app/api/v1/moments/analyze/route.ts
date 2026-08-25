@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { getUser } from '@/lib/store/auth'
 
 const ANALYZE_PROMPT = `Analyze this photograph of people for a miniature figurine recreation. Respond ONLY with valid JSON matching this exact shape (no markdown, no explanation).
 
@@ -36,6 +37,17 @@ IMPORTANT RULES:
 - Keep clothing descriptions to what is visible — no assumptions about what's underneath or behind.`.trim()
 
 export async function POST(req: NextRequest) {
+  /* THE MOMENT OF INTENT IS THE MOMENT OF CAPTURE. Rich, 25 August.
+     Upload is analyze, and analyze is where the account begins - the site
+     is public now and this was an open vision-model tap with no account
+     behind it. Same answer the money routes give; the glass upload card
+     is built on catching exactly this 401. */
+  const authedUser = await getUser().catch(() => null)
+  if (!authedUser) {
+    return NextResponse.json({ ok: false, reason: 'not_signed_in' }, { status: 401 })
+  }
+
+
   try {
     const { image_b64 } = await req.json()
     if (!image_b64) return NextResponse.json({ error: 'image_b64 required' }, { status: 400 })
