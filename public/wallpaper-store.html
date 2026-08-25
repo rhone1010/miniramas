@@ -808,28 +808,31 @@ body::before{
   });
 
   /* ---- BUY -----------------------------------------------------------
-     CENG r02, 24 Aug: POST /api/v1/wallpapers/purchase - LIVE. One call
-     validates, delivers, charges - in that order, charge LAST, so a
-     charge without a delivery cannot happen. No refunds by construction,
-     which is safe precisely because of that ordering.
+     CENG's ruling, 24 Aug: wallpapers are bought with CREDITS, not
+     Stripe. The right mechanism is the credits gate, NOT /checkout -
+     but the gate alone only spends; fulfilment (writing the clean files
+     into My Collection) is not built yet, and there are NO REFUNDS by
+     construction. Charging credits and delivering nothing is the one
+     outcome this page must never produce.
 
-     ref_id: idempotency. One ref per basket; reused on retry so a
-     double-click or a flaky connection cannot buy twice. The ref resets
-     whenever the basket changes. A ref that already purchased answers
-     ok:true, duplicate:true, spent:0 with the original pieces. */
-  var refId = null, refSig = null;
-  function basketRef(){
-    var sig = cart.map(function(c){ return c.filename; }).sort().join('|');
-    if (sig !== refSig){
-      refSig = sig;
-      refId = 'wpui_' + Date.now().toString(36) + '_' +
-        Math.random().toString(36).slice(2, 10);
-    }
-    return refId;
-  }
+     So: the page POSTs ONE route, /api/v1/wallpapers/purchase, proposed
+     to CENG in SYNC-CUI42 (24 Aug) - it validates the filenames FIRST,
+     spends via the gate second, writes collection_pieces third, and
+     answers with the pieces. Until CENG confirms it exists, the flag
+     below holds the till shut and the button says so honestly.
+
+     FLIP THIS TO true WHEN CENG CONFIRMS THE PURCHASE ROUTE IS LIVE. */
+  var PURCHASE_LIVE = false;
 
   elBuy.addEventListener('click', function(){
     if (!cart.length) return;
+
+    if (!PURCHASE_LIVE){
+      elSay.hidden = false; elSay.classList.remove('err');
+      elSay.textContent = 'The till opens shortly \u2014 your picks will keep.';
+      return;
+    }
+
     elBuy.disabled = true;
     elSay.hidden = false; elSay.classList.remove('err');
     elSay.textContent = 'One moment\u2026';
@@ -838,20 +841,16 @@ body::before{
       method:'POST',
       headers:{ 'content-type':'application/json' },
       body: JSON.stringify({
-        items: cart.map(function(c){
-          return { section: SECTION, filename: c.filename };
-        }),
-        ref_id: basketRef()
+        section: SECTION,
+        items: cart.map(function(c){ return c.filename; })
       })
     })
     .then(function(r){ return r.json().catch(function(){ return null; }); })
     .then(function(d){
       if (d && d.ok){
         elSay.classList.remove('err');
-        elSay.textContent = d.duplicate
-          ? 'Already yours \u2014 they are in My Collection.'
-          : 'Yours. ' + d.spent + ' credits \u2014 they are in My Collection.';
-        cart = []; refSig = null; refId = null;
+        elSay.textContent = 'Yours. ' + d.spent + ' credits \u2014 find them in My Collection.';
+        cart = [];
         paintCart();
         elFloor.querySelectorAll('.tile.picked').forEach(function(t){
           t.classList.remove('picked');
@@ -866,23 +865,6 @@ body::before{
         elSay.textContent = 'Not enough credits \u2014 you have ' +
           (d.balance != null ? d.balance : '?') + ', this needs ' +
           (d.needed != null ? d.needed : '?') + '.';
-      } else if (reason === 'items_rejected'){
-        var bad = (d.rejected || []).map(function(x){ return x.filename; });
-        /* A basket with one bad item refuses whole - drop the culprits
-           so the next press can succeed. */
-        if (bad.length){
-          cart = cart.filter(function(c){ return bad.indexOf(c.filename) === -1; });
-          bad.forEach(function(fn){
-            var t = elFloor.querySelector('.tile[data-fn="' + fn + '"]');
-            if (t) t.classList.remove('picked');
-          });
-          paintCart();
-          elSay.textContent = bad.length + ' piece' + (bad.length > 1 ? 's' : '') +
-            ' could not be sold and ' + (bad.length > 1 ? 'were' : 'was') +
-            ' set aside \u2014 press Buy again for the rest.';
-        } else {
-          elSay.textContent = 'That did not go through. Try again in a moment.';
-        }
       } else {
         elSay.textContent = 'That did not go through. Try again in a moment.';
       }
