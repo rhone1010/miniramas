@@ -5110,8 +5110,13 @@ body.is-lboxed{ overflow:hidden }
          a Series rename stays one edit. -->
     <h1 class="room-name" id="roomName"></h1>
     <div class="crumb">
+      <!-- The trail starts at the section, not the room - Rich, 25 Aug:
+           Wallpapers > Pets Halloween > silo, so the way up never needs the
+           dropdown. Same pill dress as the back control. -->
+      <a class="crumb-back" href="/wallpapers"><span>Wallpapers</span></a>
+      <span class="crumb-sep">&rsaquo;</span>
       <button class="crumb-back" id="crumbBack" type="button">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg><span id="crumbLabel">All effects</span>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg><span id="crumbLabel">Pets Halloween</span>
       </button>
       <span class="crumb-sep">&rsaquo;</span>
       <span class="crumb-here" id="crumbHere"></span>
@@ -8586,7 +8591,7 @@ window.EFFECT_PREVIEWS = {
   function backFromPoses(){
     var to = POSE_FROM === 'effects' ? effFloor : siloFloor;
     turn(poseFloor, to, function(){
-      if (crumbLabel) crumbLabel.textContent = 'All effects';
+      if (crumbLabel) crumbLabel.textContent = 'Pets Halloween';
       if (POSE_FROM === 'silos' && cur && cur.dataset.state !== 'empty') say(SAY.photo);
       workshop.classList.remove('workshop-view--poses');
       workshop.classList.add('workshop-view--' + POSE_FROM);
