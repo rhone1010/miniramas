@@ -2358,6 +2358,8 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   border:1px solid rgba(42,36,30,.22); border-radius:4px;
 }
 .signin-in:focus{ outline:none; border-color:var(--gold) }
+.signin-lbl-opt{ margin-top:14px }
+.signin-opt{ font-style:italic; color:var(--ink-soft); font-weight:400 }
 .signin-err{ min-height:1.2em; margin-top:.5em;
   font:400 .82rem/1.3 var(--sans, system-ui, sans-serif); color:#a05a5a }
 /* The rail reports the craft. Added with s76, which writes data-craft.
@@ -5406,6 +5408,12 @@ body.is-lboxed{ overflow:hidden }
       <label class="signin-lbl" for="signinEmail">Email</label>
       <input class="signin-in" id="signinEmail" type="email" autocomplete="email"
              placeholder="you@example.com" spellcheck="false">
+      <!-- CUI 41A, 25 Aug 2026. The coupon, not the wall. Optional; an
+           empty field is the common case and costs nothing. DRAFT copy. -->
+      <label class="signin-lbl signin-lbl-opt" for="signinCode">Have an invite code?
+        <span class="signin-opt">50 credits on us &middot; optional</span></label>
+      <input class="signin-in" id="signinCode" type="text" autocomplete="off"
+             autocapitalize="characters" spellcheck="false" placeholder="">
       <div class="signin-err" id="signinErr"></div>
       <div class="acts"><div class="btn fill" id="signinSend">Send the link</div></div>
       <div class="m-safe">Nothing is charged until your piece is crafted.</div>
@@ -8804,9 +8812,16 @@ window.EFFECT_PREVIEWS = {
            at. A modal for good news is a door in the way of somebody who
            just arrived wanting to make something. */
         if (typeof say === 'function' && cur && cur.dataset.state === 'empty'){
+          /* The engine's number is the only number. Fifty credits at ten
+             a piece reads "five pictures"; whatever is granted, the words
+             follow it. CUI 41A, 25 Aug 2026. */
+          var pieces = Math.max(1, Math.floor(d.credits / 10));
+          var W = ['','one','two','three','four','five','six','seven','eight','nine','ten'];
+          var pw = W[pieces] || String(pieces);
           say('<span class="line">Welcome. I\u2019ve put <b>' + d.credits +
-              ' credits</b> in your account \u2014 enough for eight ' +
-              'pictures. Start with a photograph.</span>' +
+              ' credits</b> in your account \u2014 enough for ' + pw +
+              ' picture' + (pieces === 1 ? '' : 's') +
+              '. Start with a photograph.</span>' +
               '<span class="sign">\u2014 C.</span>');
         }
       })
@@ -8962,6 +8977,42 @@ window.EFFECT_PREVIEWS = {
     signinSend.disabled = true;
     signinSend.textContent = 'Sending';
     if (signinErr) signinErr.textContent = '';
+
+    /* CUI 41A, 25 Aug 2026. A filled code goes to /api/v1/invite first,
+       so the 50 credits are waiting when the link lands. A bad code is
+       said plainly and the send halts - fix it or clear it; an empty
+       field never blocks the link. The route checks the code itself
+       server-side, so nothing here is trusted with an amount. */
+    var codeEl = document.getElementById('signinCode');
+    var inviteCode = codeEl ? codeEl.value.trim() : '';
+    if (inviteCode){
+      signinSend.textContent = 'Checking the code';
+      fetch('/api/v1/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ email: email, code: inviteCode })
+      }).then(function(res){
+        return res.json().catch(function(){ return { ok:false }; });
+      }).then(function(d){
+        if (d && d.ok){ reallySend(email); return; }
+        signinSend.disabled = false;
+        signinSend.textContent = 'Send the link';
+        if (signinErr) signinErr.textContent =
+          'That code is not one of ours. Fix it or clear the field and the link will still come.';
+      }).catch(function(){
+        signinSend.disabled = false;
+        signinSend.textContent = 'Send the link';
+        if (signinErr) signinErr.textContent =
+          'The code could not be checked just now. Clear it to sign in without it.';
+      });
+      return;
+    }
+    reallySend(email);
+  }
+
+  function reallySend(email){
+    signinSend.textContent = 'Sending';
 
     /* Held BEFORE the request. If the send succeeds they may leave for their
        inbox within seconds, and on another device the tab never runs again. */
@@ -11205,6 +11256,7 @@ window.EFFECT_PREVIEWS = {
     craft:    'A piece crafted',
     refund:   'Returned',
     grant:    'Granted',
+    launch_grant: 'Welcome credits',   /* DRAFT - the word is Rich's */
     admin:    'Adjusted by the studio'
   };
 
