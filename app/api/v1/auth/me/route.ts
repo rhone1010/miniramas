@@ -16,16 +16,26 @@
 //   masthead shows nothing — never a zero, which would read as "you have no
 //   credits" to somebody who has sixty.
 //
-//   READ ONLY. Nothing here spends, grants, or reconciles. credit_balances
-//   is maintained by the RPCs; this only looks at it.
+//   ONE EXCEPTION TO READ-ONLY, 2026-08-24: the launch grant is claimed
+//   here. /api/v1/invite records a promise against an email; its header
+//   said claimLaunchGrant() pays it on first sign-in, and that function
+//   was never written - every invited person signed in to zero. This is
+//   the read every surface makes on boot, so claiming here makes the
+//   grant self-healing and shows the credits on the very first paint.
+//   Idempotent by ledger ref (invite_<email>); nothing else writes.
 
 import { NextResponse } from 'next/server'
 import { getUser } from '@/lib/store/auth'
 import { supabaseAdmin } from '@/lib/supabase'
+import { claimLaunchGrant } from '@/lib/v1/launch/claim-grant'
 
 export async function GET() {
   const user = await getUser()
   if (!user) return NextResponse.json({ user: null }, { status: 401 })
+
+  // The claim runs before the read, so an invited person's first ever
+  // /auth/me already answers with their grant in the balance.
+  await claimLaunchGrant(supabaseAdmin, user)
 
   let credits: number | null = null
   try {
