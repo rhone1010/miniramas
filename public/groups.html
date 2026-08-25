@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- CUI 42D · 2026-08-24 -->
 <!-- CUI 42C-r2 · 2026-08-24 -->
 <!-- CUI 42B · 2026-08-24 -->
 <!-- CUI 42A · 2026-08-24 -->
@@ -81,10 +82,10 @@
      1180x1180 and a .78 card was cropping a fifth of every one -
      which on a group photograph is whoever is standing at the edge.
      Narrowing these three is what pays for the width. */
-  --spine-w:clamp(250px, 14.5%, 330px);   /* rail + curator together */
+  --spine-w:clamp(300px, 20%, 460px);   /* rail + curator together · Portraits’ value · CUI 42D */
 
-  --queue-w:clamp(180px, 10.5%, 250px);   /* To Be Crafted */
-  --room-gap:16px;
+  --queue-w:clamp(220px, 14.5%, 330px);   /* To Be Crafted · Portraits’ value · CUI 42D */
+  --room-gap:20px;   /* Portraits’ value · CUI 42D */
   --stage-pad:24px;
   --footer-h:104px;
   --footer-pad:18px;
@@ -1341,21 +1342,11 @@ body{
    2550, where a fixed 320 would be a postage stamp. 16.7vw is 320.6 at
    1920. The two ends of the clamp are a guess at a range not yet seen and
    are the numbers to change. */
-:root{ --silo-w:clamp(200px, 13vw, 330px); }  /* CUI 42C-r2 · trimmed for the taller card */
+/* --silo-w and the fixed-width silo-floor blocks removed · CUI 42D ·
+   Portraits has neither: the shared 12-column floor sizes the cards. */
 
-#siloFloor[data-count="4"]{
-  grid-template-columns:repeat(2, var(--silo-w));
-  grid-template-rows:repeat(2, auto);
-  justify-content:center;
-  align-content:center;
-}
-#siloFloor[data-count="4"] > *{
-  /* auto, not `auto / span 2` -- the columns are now the card width
-     rather than eighths of the floor, so a span of two would take both. */
-  grid-column:auto;
-  justify-self:stretch;
-  width:var(--silo-w);
-}
+
+
 
 /* ---- FIVE SILOS LAY 2 OVER 3, CENTRED --------------------------------
    CUI 42A · 2026-08-24. Rich's ruling. "Another Time" is gone and two
@@ -1363,19 +1354,10 @@ body{
    six half-columns so the top pair can sit centred over the bottom row
    of three. The id outranks the generic .floor[data-count="5"] partial-
    row rule, which stays correct for the effects floor. */
-#siloFloor[data-count="5"]{
-  grid-template-columns:repeat(6, calc(var(--silo-w) / 2));
-  grid-template-rows:repeat(2, auto);
-  justify-content:center;
-  align-content:center;
-}
-#siloFloor[data-count="5"] > *{
-  grid-column:auto / span 2;
-  justify-self:stretch;
-  width:var(--silo-w);
-}
-#siloFloor[data-count="5"] > :nth-child(1){ grid-column:2 / span 2 }
-#siloFloor[data-count="5"] > :nth-child(3){ grid-column:1 / span 2; grid-row:2 }
+
+
+
+
 
 /* CUI 41A, 23 Aug 2026. On a phone, one column and four rows.
 
@@ -1389,16 +1371,8 @@ body{
    One rather than two, ruled by Rich: a group photograph is wide, and
    half a phone is not enough of one to choose by. */
 @media (max-width:767px){
-  #siloFloor[data-count="4"]{
-    grid-template-columns:minmax(0,1fr);
-    grid-template-rows:none;
-    grid-auto-rows:auto;
-    justify-content:stretch;
-  }
-  #siloFloor[data-count="4"] > *{
-    width:auto;
-    justify-self:stretch;
-  }
+  
+  
 }
 
 
