@@ -162,7 +162,18 @@ export async function GET(req: Request) {
     }
 
     const pieces = await Promise.all(data.map(async (r: any) => {
-      const { data: sImg } = await db.storage.from(BUCKET).createSignedUrl(r.image_path, SIGNED_URL_TTL)
+      // PURCHASED STORE WALLPAPERS live in the PUBLIC 'wallpapers'
+      // bucket (studio/<section>/<file>), not the private collection
+      // bucket - signing there fails and the piece rendered
+      // src="null". Public bucket, public URL, no signing needed.
+      // CUI 42, 25 Aug 2026.
+      let imageUrl: string | null = null
+      if (typeof r.image_path === 'string' && r.image_path.startsWith('studio/')) {
+        imageUrl = db.storage.from('wallpapers').getPublicUrl(r.image_path).data.publicUrl ?? null
+      } else {
+        const { data: sImg } = await db.storage.from(BUCKET).createSignedUrl(r.image_path, SIGNED_URL_TTL)
+        imageUrl = sImg?.signedUrl ?? null
+      }
       let sourceUrl: string | null = null
       if (r.source_path) {
         const { data: sSrc } = await db.storage.from(BUCKET).createSignedUrl(r.source_path, SIGNED_URL_TTL)
@@ -171,7 +182,7 @@ export async function GET(req: Request) {
       return {
         id: r.id, series: r.series, preset: r.preset, label: r.label, mode: r.mode,
         archived: !!r.archived, archived_at: r.archived_at ?? null,
-        image_url: sImg?.signedUrl ?? null, source_url: sourceUrl,
+        image_url: imageUrl, source_url: sourceUrl,
         meta: r.meta, created_at: r.created_at,
       }
     }))
