@@ -1455,7 +1455,9 @@ footer nav a:hover{color:var(--series)}
              CUI 41A, 24 Aug 2026. */
           var fresh = p[0].indexOf('?') > -1;
           return {
-            big:   S + (fresh ? 'tall/' : 'tall-small/') + s.dir + p[0],
+            /* tall-small retired 24 Aug 2026 -- folders were empty and
+               nothing but noise came of preferring them. CUI 41A. */
+            big:   S + 'tall/' + s.dir + p[0],
             mid:   S + 'tall/'       + s.dir + p[0],
             small: S + s.dir + p[0].replace('?v=2',''),
             say:   p[1]
@@ -1886,8 +1888,9 @@ footer nav a:hover{color:var(--series)}
       /* A ?v= query marks a re-outpainted plate whose tall-small is
          stale -- go straight to tall/. CUI 41A, 24 Aug 2026. */
       var fresh  = filename.indexOf('?') > -1;
-      var first  = S + ((hasFolder && !fresh) ? 'tall-small/' : 'tall/') + filename;
-      var second = (hasFolder && !fresh) ? S + 'tall/' + filename : null;
+      /* tall-small retired 24 Aug 2026 -- see the mobile builder. */
+      var first  = S + 'tall/' + filename;
+      var second = null;
       var plain  = S + filename.replace('?v=2','');
       /* CUI 41A, 24 Aug 2026. An attempt index, not a src comparison.
          img.src returns the resolved absolute URL and the candidates are
@@ -1987,7 +1990,7 @@ footer nav a:hover{color:var(--series)}
   painters.forEach(function(paint, c){
     COLS[c].forEach(function(f){
       var hasFolder = f.indexOf('/') > -1;
-      var img1 = new Image(); img1.src = S + (hasFolder ? 'tall-small/' : 'tall/') + f;
+      var img1 = new Image(); img1.src = S + 'tall/' + f;
       var img2 = new Image(); img2.src = S + (hasFolder ? 'tall/' : '') + f.replace('?v=2','');
     });
   });
