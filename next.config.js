@@ -17,8 +17,8 @@ const nextConfig = {
       // THE CRAFT ROOMS. Portraits and Pets Halloween pre-date this file;
       // these entries make the routes explicit rather than dependent on
       // whatever mapped them before. Pets is new, 24 Aug.
-      { source: '/wallpapers/portraits', destination: '/portrait-wallpaper.html' },
-      { source: '/wallpapers/halloween-pets', destination: '/pet-wallpaper.html' },
+      { source: '/wallpapers/portraits', destination: '/wallpapers-portraits.html' },
+      { source: '/wallpapers/halloween-pets', destination: '/wallpapers-halloween-pets.html' },
       { source: '/wallpapers/pets', destination: '/wallpapers-pets.html' },
     ]
   },
