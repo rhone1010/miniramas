@@ -82,7 +82,11 @@ export async function claimLaunchGrant(
         p_owner:  user.id,
         p_n:      credits,
         p_reason: 'launch_grant',
-        p_ref:    `invite_${email}`,
+        // launch:<email> - THE SAME REF /api/v1/invite/claim USES. Two
+        // claim paths write this grant, and the ref being identical is
+        // what makes grant_credits the lock between them. Do not rename
+        // one without the other.
+        p_ref:    `launch:${email}`,
       })
       if (grantErr) {
         // NOT stamped claimed - the next /auth/me retries, which is the
