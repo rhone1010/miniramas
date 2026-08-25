@@ -6785,6 +6785,9 @@ window.EFFECT_PREVIEWS = {
       additional_images_b64: item.additional_images_b64,
       style_id:              item.style_id,
       preset:                item.preset,
+      /* CENG's wallpapers route (24 Aug) keys on effect_id; the rest of
+         this payload is the pets engine schema it ignores harmlessly. */
+      effect_id:             item.preset,
       location:              item.location,
       scale:                 item.scale,
       aspect_ratio:          item.aspect_ratio,
@@ -6871,7 +6874,10 @@ window.EFFECT_PREVIEWS = {
            the presets against the series it is given, so this room was
            handing its own presets to the Portraits catalogue and being
            refused - which then opened the shop. */
-        series:   'pets-wallpaper',
+        series:   'pets',   /* the gate prices these at the flat 10 and
+           validates presets against the pets catalogue - CENG, 24 Aug:
+           crafts, not the 3-credit store bundle. The PIECE still stores
+           'pets-wallpaper' so print stays excluded. */
         presets:  items.map(function(q){ return q.preset || null; })
       })
     }).then(function(res){
