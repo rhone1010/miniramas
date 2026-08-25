@@ -18,6 +18,18 @@ $repo = Split-Path $PSScriptRoot -Parent
 Set-Location $repo
 
 # ----------------------------------------------------------------
+# REFUSE TO RUN ON MAIN. Four lanes share this working copy and the
+# branch keeps getting switched. A run on main commits and pushes
+# straight to production with no PR and no file-list check.
+# ----------------------------------------------------------------
+$branch = (git branch --show-current).Trim()
+if ($branch -eq 'main') {
+  Write-Host "REFUSED: working copy is on 'main'. Switch first:" -ForegroundColor Red
+  Write-Host "  git checkout feature/store-commerce" -ForegroundColor Red
+  exit 1
+}
+
+# ----------------------------------------------------------------
 # YOUR FILES. Add every path this lane owns.
 # Do NOT include another lane's files here.
 # Note: wallpapers.html and public\previews\wallpapers\** are listed
@@ -101,8 +113,10 @@ $prText = ($prOut | Out-String)
 if ($prText -match 'pull/(\d+)') { $prNum = $Matches[1] }
 if (-not $prNum) {
   $open = gh pr list --state open --json number,headRefName 2>$null | ConvertFrom-Json
-  $prNum = ($open | Where-Object { $_.headRefName -eq 'feature/store-commerce' } |
-            Select-Object -First 1).number
+  if ($open) {
+    $match = @($open) | Where-Object { $_.headRefName -eq $branch } | Select-Object -First 1
+    if ($match) { $prNum = $match.number }
+  }
 }
 
 if ($prNum) {
