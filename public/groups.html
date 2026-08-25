@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- CUI 42C-r2 · 2026-08-24 -->
 <!-- CUI 42B · 2026-08-24 -->
 <!-- CUI 42A · 2026-08-24 -->
 <html lang="en">
@@ -93,7 +94,7 @@
   --card-gap:clamp(14px, 1.1vw, 26px);
   /* SQUARE. The plates are square; .78 was inherited from the
      portraits clone, where it is correct and here it was not. */
-  --card-ratio:1;
+  --card-ratio:.78;   /* CUI 42C-r2 · plates are 4:5, token matches Portraits */
   --card-type:clamp(16px, 1vw, 26px);   /* the title; the count follows at .72em */
   /* The Curator has its own scale. It cannot ride the full root ramp: the
      panel does not widen as fast as the type does, so at 2560 a 30px serif
@@ -1340,7 +1341,7 @@ body{
    2550, where a fixed 320 would be a postage stamp. 16.7vw is 320.6 at
    1920. The two ends of the clamp are a guess at a range not yet seen and
    are the numbers to change. */
-:root{ --silo-w:clamp(240px, 16.7vw, 420px); }
+:root{ --silo-w:clamp(200px, 13vw, 330px); }  /* CUI 42C-r2 · trimmed for the taller card */
 
 #siloFloor[data-count="4"]{
   grid-template-columns:repeat(2, var(--silo-w));
