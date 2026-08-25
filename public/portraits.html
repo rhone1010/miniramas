@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- CUI 42 · open doors glass · 2026-08-25 -->
 <html lang="en">
 <head>
 <script>
@@ -6561,6 +6562,19 @@ window.EFFECT_PREVIEWS = {
         additional_images_b64: []
       })
     }).then(function(res){
+      /* OPEN DOORS · CUI 42 · open doors glass · 2026-08-25. Unsigned, analyze answers 401
+         { ok:false, reason:'not_signed_in' }. The card rises at this
+         moment of intent; the throw then rides the existing soft-fail
+         catch, which returns the person to the floor they were on -
+         now behind the sign-in card. Anchored on the response shape,
+         per CENG. */
+      if (res.status === 401){
+        return res.json().catch(function(){ return {}; }).then(function(d){
+          if (d && d.reason === 'not_signed_in' &&
+              typeof openSignin === 'function') openSignin();
+          throw new Error('analyze 401');
+        });
+      }
       if (!res.ok) throw new Error('analyze ' + res.status);
       return res.json();
     }).then(function(data){
@@ -9000,7 +9014,22 @@ window.EFFECT_PREVIEWS = {
       }).then(function(res){
         return res.json().catch(function(){ return { ok:false }; });
       }).then(function(d){
-        if (d && d.ok){ reallySend(email); return; }
+        if (d && d.ok){
+          /* The invite route has ALREADY sent the sign-in link - CENG's
+             contract, 25 Aug 2026. Calling reallySend() here as well
+             fired the signin POST on top and mailed every invited
+             person twice. The sent state shows directly; already:true
+             is the same link going again, also success. Resume is held
+             because they are about to leave for their inbox.
+             CUI 42 · open doors glass · 2026-08-25 */
+          saveResume();
+          signinSend.disabled = false;
+          signinSend.textContent = 'Send the link';
+          if (signinAddr) signinAddr.textContent = email;
+          if (signinAsk)  signinAsk.hidden  = true;
+          if (signinSent) signinSent.hidden = false;
+          return;
+        }
         signinSend.disabled = false;
         signinSend.textContent = 'Send the link';
         if (signinErr) signinErr.textContent =
@@ -9398,7 +9427,8 @@ window.EFFECT_PREVIEWS = {
       acts += '<button class="mc-act" data-fa="pr" type="button">Send to Print Shop</button>';
     }
     var left = RERENDER_CAP - window.__RERENDERS_USED;
-    if (left > 0){
+    if (left > 0 && !(p && /wallpaper/i.test(String(p.series || '')))){
+      /* A purchased wallpaper cannot be crafted again · CUI 42 · open doors glass · 2026-08-25 */
       acts += '<button class="mc-act" data-fa="re" type="button">' +
               (left === 1 ? 'Craft this again \u00b7 last one' : 'Craft this again') +
               '</button>';
@@ -9850,7 +9880,8 @@ window.EFFECT_PREVIEWS = {
     if (printable(p)){
       acts += '<button class="mc-act" data-lb="pr">Send to Print Shop</button>';
     }
-    if (left > 0){
+    if (left > 0 && !(p && /wallpaper/i.test(String(p.series || '')))){
+      /* Same guard as the featured pane · CUI 42 · open doors glass · 2026-08-25 */
       acts += '<button class="mc-act" data-lb="re">' +
               (left === 1 ? 'Craft this again \u00b7 last one' : 'Craft this again') +
               '</button>';
