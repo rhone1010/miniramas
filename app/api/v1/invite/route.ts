@@ -71,7 +71,12 @@ export async function POST(req: Request) {
       .maybeSingle()
 
     if (existing) {
-      return NextResponse.json({ ok: true, already: true })
+      // Same person, new browser - which happens constantly. Their old
+      // magic link is dead or in another tab's inbox, so RESEND rather
+      // than strand them. Supabase's own per-address OTP rate limit is
+      // the flood control.
+      const sent = await sendMagicLink(email, req)
+      return NextResponse.json({ ok: true, already: true, link_sent: sent })
     }
 
     const { count } = await db
@@ -95,10 +100,56 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, reason: 'insert_failed' }, { status: 500 })
     }
 
-    return NextResponse.json({ ok: true, granted: within ? GRANT_CREDITS : 0 })
+    // The door and the sign-in are ONE step. The link goes out from here,
+    // so nobody has to discover the masthead button and type the same
+    // address twice - Rich hit that himself on the first live test.
+    const sent = await sendMagicLink(email, req)
+
+    return NextResponse.json({
+      ok: true,
+      granted: within ? GRANT_CREDITS : 0,
+      link_sent: sent,
+    })
   } catch (e: any) {
     console.error('[invite] fatal:', e?.message || e)
     return NextResponse.json({ ok: false, reason: 'error' }, { status: 500 })
+  }
+}
+
+/**
+ * Sends the magic link, the same way /api/v1/auth/signin does - with one
+ * deliberate difference. Signin runs a PKCE cookie client because the
+ * browser posts to it and the verifier cookie lands on that browser. THIS
+ * route is called by the edge middleware, fire-and-forget: no browser is
+ * attached, so a verifier cookie would be set on a response nobody keeps.
+ * The anon client's implicit flow sends a link that carries its own tokens
+ * instead.
+ *
+ * Failure here must never close the door: somebody with the right passcode
+ * gets in whether or not the mail went out. The response says link_sent so
+ * the glass can tell them to check their inbox - or to use the masthead
+ * sign-in if it could not be sent.
+ */
+async function sendMagicLink(email: string, req: Request): Promise<boolean> {
+  try {
+    const url  = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !anon) return false
+
+    const auth = createClient(url, anon, { auth: { persistSession: false } })
+    const origin = new URL(req.url).origin
+    const { error } = await auth.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: `${origin}/auth/callback?next=%2F` },
+    })
+    if (error) {
+      console.warn('[invite] magic link failed:', error.message)
+      return false
+    }
+    return true
+  } catch (e: any) {
+    console.warn('[invite] magic link threw:', e?.message || e)
+    return false
   }
 }
 
