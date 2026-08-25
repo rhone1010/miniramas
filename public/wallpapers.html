@@ -217,21 +217,17 @@ body::before{
    Below it, two real grid columns - not a painted percentage - each
    carrying the full vellum or coffee recipe as its own background.
    ================================================================== */
-/* THE TITLE ROW IS PART OF THE SAME GRID AS THE CARDS, NOT A SEPARATE
-   BLOCK ABOVE IT. Each half now spans both grid rows (grid-row:1/3) and
-   paints its texture across its own full height - masthead to floor - so
-   the title sits on continuous vellum or coffee rather than a plain strip
-   that stops where the cards start. The title has no background of its
-   own; centred on the page, it stays comfortably inside the vellum's 60%,
-   so the coffee half never has to carry text over it. */
+/* SHARED ROWS, SO THE TWO HALVES CANNOT DRIFT. The headings live in one
+   grid row and the card rows in another, across both columns - they are
+   on the same line by construction, not by hoping two independently
+   centred columns happen to agree. The vellum and coffee are background
+   elements spanning every row of their column; content sits on top. */
 .fold{
   display:grid;
   grid-template-columns:minmax(0,3fr) minmax(0,2fr);
-  grid-template-rows:auto 1fr;
+  grid-template-rows:auto 1fr auto auto 1.2fr;
+  /* rows: title · breathing · headings · cards · breathing/note */
   min-height:calc(100vh - var(--mh-h));
-}
-@media (max-width:1180px){
-  .fold{ grid-template-columns:1fr; grid-template-rows:auto auto auto; min-height:0 }
 }
 
 .fold-head{
@@ -239,27 +235,74 @@ body::before{
   text-align:center;
   padding:clamp(28px,3.4vw,60px) clamp(24px,2.6vw,44px) clamp(18px,2vw,32px);
 }
-@media (max-width:1180px){ .fold-head{ grid-column:1; grid-row:1 } }
 .pg-title{ margin:0; font-size:clamp(2.4rem,3.2vw,3.4rem); font-weight:400; line-height:1.05 }
 .pg-sub{
   margin:.5em 0 0; font-style:italic; font-size:1.15rem;
   color:rgba(42,36,30,.6);
 }
 
+/* the grounds - background layers only, all rows of their column */
 .half{
   position:relative; isolation:isolate; overflow:hidden;
-  grid-row:1/3;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  /* clears the title overlay so centring happens in the space below it */
-  padding:clamp(120px,14vh,200px) clamp(24px,2.6vw,48px) clamp(32px,3.4vw,56px);
+  grid-row:1/6;
 }
 .half--craft{ grid-column:1 }
 .half--store{ grid-column:2 }
+
+/* content, placed on the shared rows */
+.band-h{
+  position:relative; z-index:1;
+  grid-row:3; align-self:end;
+  margin:0 0 clamp(18px,1.8vw,30px);
+  font-weight:400; font-size:clamp(1.5rem,1.85vw,2.05rem);
+  text-align:center; color:var(--coffee);
+  padding:0 clamp(24px,2.6vw,48px);
+}
+.band-h--craft{ grid-column:1 }
+.band-h--store{ grid-column:2; color:var(--vellum) }
+
+.rooms{
+  position:relative; z-index:1;
+  grid-row:4; justify-self:center;
+  width:100%; max-width:1130px;
+  display:grid;
+  gap:clamp(14px,1.6vw,26px);
+  padding:0 clamp(24px,2.6vw,48px);
+}
+.rooms--three{ grid-column:1; grid-template-columns:repeat(3, minmax(0,1fr)) }
+.rooms--two  { grid-column:2; grid-template-columns:repeat(2, minmax(0,1fr)); max-width:780px }
+.rooms > .room{ max-width:325px; margin:0 auto; width:100% }
+
+.reg-note{
+  position:relative; z-index:1;
+  grid-column:2; grid-row:5; align-self:start; justify-self:center;
+  margin:clamp(14px,1.4vw,22px) 0 0;
+  font-size:1.02rem; font-style:italic; color:rgba(243,237,225,.5);
+}
+
 @media (max-width:1180px){
-  .half{ grid-row:auto }
-  .half--craft{ grid-column:1; grid-row:2 }
-  .half--store{ grid-column:1; grid-row:3; padding-top:clamp(32px,3.4vw,56px) }
+  .fold{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto auto auto auto auto;
+    min-height:0;
+  }
+  .fold-head{ grid-column:1 }
+  .half--craft{ grid-column:1; grid-row:2/4 }
+  .half--store{ grid-column:1; grid-row:4/7 }
+  .band-h--craft{ grid-column:1; grid-row:2; align-self:end;
+    padding-top:clamp(26px,4vw,40px) }
+  .rooms--three{ grid-column:1; grid-row:3; padding-bottom:clamp(26px,4vw,40px) }
+  .band-h--store{ grid-column:1; grid-row:4; align-self:end;
+    padding-top:clamp(26px,4vw,40px) }
+  .rooms--two{ grid-column:1; grid-row:5 }
+  .reg-note{ grid-column:1; grid-row:6; align-self:start;
+    padding-bottom:clamp(26px,4vw,40px) }
+  .rooms{ max-width:900px }
+  .rooms > .room{ max-width:275px }
+}
+@media (max-width:620px){
+  .rooms--three, .rooms--two{ grid-template-columns:repeat(2, minmax(0,1fr)) }
+  .rooms > .room{ max-width:none }
 }
 
 /* ---- THE VELLUM · pulled verbatim from portraits.html's
@@ -324,47 +367,6 @@ body::before{
 }
 
 .half > *{ position:relative; z-index:1 }
-
-.band-h{
-  margin:0 0 clamp(18px,1.8vw,30px);
-  font-weight:400; font-size:clamp(1.5rem,1.85vw,2.05rem);
-  text-align:center; color:var(--coffee);
-}
-.half--store .band-h{ color:var(--vellum) }
-
-/* ---- the card grid --------------------------------------------------
-   Plain fr tracks, not a viewport-height calculation. minmax(0,1fr)
-   guarantees a definite track width whether or not the plate inside it
-   ever loads - width comes from the column, never from the image. A
-   max-width clamp keeps a card from becoming a poster on a very wide
-   screen; nothing enforces a floor because the column itself has one. */
-/* Cards at 325px / 275px - 25% over the 260px / 220px this replaced,
-   ruled 24 August. Container widths scale with them so three cards plus
-   gaps still fit the vellum column without the height-based system this
-   page used to run on. */
-.rooms{
-  width:100%; max-width:1130px;
-  display:grid;
-  gap:clamp(14px,1.6vw,26px);
-}
-.rooms > .room{ max-width:325px; margin:0 auto; width:100% }
-.rooms--three{ grid-template-columns:repeat(3, minmax(0,1fr)) }
-.rooms--two  { grid-template-columns:repeat(2, minmax(0,1fr)) }
-
-@media (max-width:1180px){
-  .rooms{ max-width:900px }
-  .rooms > .room{ max-width:275px }
-}
-@media (max-width:620px){
-  .rooms--three, .rooms--two{ grid-template-columns:repeat(2, minmax(0,1fr)) }
-  .rooms > .room{ max-width:none }
-}
-
-.reg-note{
-  align-self:center;
-  margin:clamp(18px,1.8vw,28px) 0 0;
-  font-size:1.02rem; font-style:italic; color:rgba(243,237,225,.5);
-}
 
 .foot{
   padding:40px 0 64px; text-align:center;
@@ -561,18 +563,16 @@ body::before{
     <p class="pg-sub">For the screen you look at most</p>
   </div>
 
-  <!-- VELLUM: costs a photograph -->
-  <section class="half half--craft">
-    <h2 class="band-h">Crafted From Your Photographs</h2>
-    <div class="rooms rooms--three" id="bandCraft"></div>
-  </section>
+  <!-- the grounds - background layers spanning every row of their column -->
+  <div class="half half--craft" aria-hidden="true"></div>
+  <div class="half half--store" aria-hidden="true"></div>
 
-  <!-- COFFEE: already made -->
-  <section class="half half--store">
-    <h2 class="band-h">Ready To Buy</h2>
-    <div class="rooms rooms--two" id="bandStore"></div>
-    <p class="reg-note">Nothing to send, nothing to wait for.</p>
-  </section>
+  <!-- content, on shared rows so the two sides cannot misalign -->
+  <h2 class="band-h band-h--craft">Crafted From Your Photographs</h2>
+  <h2 class="band-h band-h--store">Ready To Buy</h2>
+  <div class="rooms rooms--three" id="bandCraft"></div>
+  <div class="rooms rooms--two" id="bandStore"></div>
+  <p class="reg-note">Nothing to send, nothing to wait for.</p>
 
 </main>
 
