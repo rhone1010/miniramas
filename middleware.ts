@@ -70,13 +70,17 @@ const PAGES: Record<string, string> = {
   '/community': '/community.html',
 
   /* MOBILE WALLPAPERS. Exact-match, so every room needs its own line.
-     The first four are one file: the page reads the room off the path.
-     Studio is separate because it shares nothing with them - no
-     photograph, no Curator, another model and other money. */
+     CORRECTED 24 Aug (CUI 42): the craft-room routes pointed back at the
+     landing itself, from the era when this was one four-room SPA. Each
+     room is its own page now, and the two store catalogues share one
+     file that reads its section off the path. */
   '/wallpapers': '/wallpapers.html',
-  '/wallpapers/portraits': '/wallpapers.html',
-  '/wallpapers/pets': '/wallpapers.html',
-  '/wallpapers/halloween': '/wallpapers.html',
+  '/wallpapers/portraits': '/portrait-wallpaper.html',
+  '/wallpapers/pets': '/wallpapers-pets.html',
+  '/wallpapers/halloween-pets': '/pet-wallpaper.html',
+  '/wallpapers/halloween': '/pet-wallpaper.html',
+  '/wallpapers/store': '/wallpaper-store.html',
+  '/wallpapers/store/halloween': '/wallpaper-store.html',
   /* THE ACCORDION AND THE FIELD, merged 19 August. The previous page is
      still in the repo as wallpaper-studio.html and this line is the whole
      way back - point it at the old name and the old Studio returns, with
