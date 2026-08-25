@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- CUI 42 · copy pass r2 · 2026-08-25 -->
 <!-- CUI 42 · open doors glass · 2026-08-25 -->
 <html lang="en">
 <head>
@@ -5478,6 +5479,8 @@ body.is-lboxed{ overflow:hidden }
         <div class="m-title">Curator&rsquo;s Note</div></div>
       <div class="m-rule"><span class="m-fleuron">&#10086;</span></div>
       <div class="m-say">The link is on its way to <b id="signinAddr"></b>.
+        It can take a few minutes to arrive, and do check your spam folder;
+        some mailboxes are suspicious of new friends.
           Open it and I&rsquo;ll have everything just as you left it &mdash; the
           link works on any device.<span class="sig">&mdash;&thinsp;C.</span></div>
       <div class="acts"><div class="btn fill" id="signinDone">Close</div></div>
@@ -9042,29 +9045,35 @@ window.EFFECT_PREVIEWS = {
       }).then(function(d){
         if (d && d.ok){
           /* The invite route has ALREADY sent the sign-in link - CENG's
-             contract, 25 Aug 2026. Calling reallySend() here as well
-             fired the signin POST on top and mailed every invited
-             person twice. The sent state shows directly; already:true
-             is the same link going again, also success. Resume is held
-             because they are about to leave for their inbox.
-             CUI 42 · open doors glass · 2026-08-25 */
+             contract, 25 Aug 2026; the sent state shows directly, no
+             second POST. Copy is Rich's locked pass · CUI 42 · copy pass r2 · 2026-08-25 */
           saveResume();
           signinSend.disabled = false;
           signinSend.textContent = 'Send the link';
           if (signinAddr) signinAddr.textContent = email;
           if (signinAsk)  signinAsk.hidden  = true;
           if (signinSent) signinSent.hidden = false;
+          var okLine = d.already
+            ? 'You\u2019re already on the list \u2014 we\u2019ve sent you a fresh link.'
+            : 'You\u2019re in. 50 credits have been added to your account.';
+          var sentSay = signinSent ? signinSent.querySelector('.m-say') : null;
+          if (sentSay){
+            var codeNote = document.createElement('div');
+            codeNote.className = 'signin-codenote';
+            codeNote.textContent = okLine;
+            sentSay.parentNode.insertBefore(codeNote, sentSay);
+          }
           return;
         }
         signinSend.disabled = false;
         signinSend.textContent = 'Send the link';
         if (signinErr) signinErr.textContent =
-          'That code is not one of ours. Fix it or clear the field and the link will still come.';
+          'That code wasn\u2019t recognised. Check it, or leave it blank and come in anyway.';
       }).catch(function(){
         signinSend.disabled = false;
         signinSend.textContent = 'Send the link';
         if (signinErr) signinErr.textContent =
-          'The code could not be checked just now. Clear it to sign in without it.';
+          'The code couldn\u2019t be checked just now. Leave it blank and come in anyway.';
       });
       return;
     }
@@ -11319,10 +11328,17 @@ window.EFFECT_PREVIEWS = {
      recorded; this only makes it readable. */
   var AC_REASON = {
     purchase: 'Credits bought',
-    craft:    'A piece crafted',
-    refund:   'Returned',
-    grant:    'Granted',
-    launch_grant: 'Welcome credits',   /* DRAFT - the word is Rich's */
+    craft:    'Creation',
+    refund:   'Credits returned',
+    grant:    'Studio credit',
+    /* Rich's locked labels against the REAL reason set, per the engine
+       correction of 25 Aug: craft, purchase, refund, launch_grant,
+       wallpapers, code, grant, recraft. · CUI 42 · copy pass r2 · 2026-08-25 */
+    launch_grant: 'Welcome credits',
+    wallpapers:   'Wallpapers',
+    purchase:     'Credit purchase',
+    code:         'Code redeemed',
+    recraft:      'Crafted again',
     admin:    'Adjusted by the studio'
   };
 
