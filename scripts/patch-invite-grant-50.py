@@ -73,8 +73,12 @@ def main():
         raise SystemExit('REFUSED: constant not changed cleanly. Nothing written.')
     if '80-credit' in out:
         raise SystemExit('REFUSED: an 80-credit mention survives. Nothing written.')
-    if len(out) != before_len:
-        raise SystemExit('REFUSED: byte count moved on a same-length edit. Nothing written.')
+    # "80" -> "50" is same length; "eight" -> "five" is one byte shorter.
+    # The first version of this check asserted zero change and refused its
+    # own correct edit.
+    if len(out) != before_len - 1:
+        raise SystemExit('REFUSED: byte count moved by %d, expected -1. Nothing written.'
+                         % (len(out) - before_len))
 
     print('  %s' % PATH)
     print('  GRANT_CREDITS 80 -> 50, header updated, %d bytes unchanged' % before_len)

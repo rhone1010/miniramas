@@ -6,7 +6,7 @@
 // where that address lands. Two jobs:
 //
 //   1. Record it, so Rich knows who accepted the invitation.
-//   2. Hold the 80-credit launch grant against it, so that when the person
+//   2. Hold the 50-credit launch grant against it, so that when the person
 //      signs in properly the credits are already waiting.
 //
 // WHY THE GRANT IS NOT ISSUED HERE
@@ -30,7 +30,7 @@ import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
 
-const GRANT_CREDITS = 80    // eight crafts at ten credits each
+const GRANT_CREDITS = 50    // five crafts at ten credits each
 const MAX_INVITES   = 40
 
 function svc() {
