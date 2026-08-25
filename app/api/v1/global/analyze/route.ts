@@ -18,6 +18,7 @@ import OpenAI from 'openai'
 import { moderateUploadedImage } from '@/lib/v1/_core/moderation'
 import { logRejection, deriveUserId } from '@/lib/v1/_core/rejection-log'
 import { checkRateLimit } from '@/lib/v1/_core/rate-limit'
+import { getUser } from '@/lib/store/auth'
 
 interface ModuleSuitability {
   score:  number
@@ -77,6 +78,17 @@ The "suited" boolean should be true when score >= 60.
 Respond ONLY with valid JSON. No markdown, no commentary.`
 
 export async function POST(req: NextRequest) {
+  /* THE MOMENT OF INTENT IS THE MOMENT OF CAPTURE. Rich, 25 August.
+     Upload is analyze, and analyze is where the account begins - the site
+     is public now and this was an open vision-model tap with no account
+     behind it. Same answer the money routes give; the glass upload card
+     is built on catching exactly this 401. */
+  const authedUser = await getUser().catch(() => null)
+  if (!authedUser) {
+    return NextResponse.json({ ok: false, reason: 'not_signed_in' }, { status: 401 })
+  }
+
+
   try {
     const { image_b64 } = await req.json()
     if (!image_b64) {

@@ -31,6 +31,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import {
+import { getUser } from '@/lib/store/auth'
   analyzeSourceSet,
   detectFaceVisibility,
 } from '@/lib/v1/portraits/portraits-refine'
@@ -38,6 +39,17 @@ import {
 export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
+  /* THE MOMENT OF INTENT IS THE MOMENT OF CAPTURE. Rich, 25 August.
+     Upload is analyze, and analyze is where the account begins - the site
+     is public now and this was an open vision-model tap with no account
+     behind it. Same answer the money routes give; the glass upload card
+     is built on catching exactly this 401. */
+  const authedUser = await getUser().catch(() => null)
+  if (!authedUser) {
+    return NextResponse.json({ ok: false, reason: 'not_signed_in' }, { status: 401 })
+  }
+
+
   const t0 = Date.now()
 
   try {
