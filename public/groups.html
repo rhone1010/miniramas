@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- CUI 42H · 2026-08-24 -->
 <!-- CUI 42G · 2026-08-24 -->
 <!-- CUI 42F · 2026-08-24 -->
 <!-- CUI 42E · 2026-08-24 -->
@@ -1309,8 +1310,11 @@ body{
    three take the count-3 centring, one row down. Card size is
    therefore identical to Portraits'. Outranks the generic
    .floor[data-count="5"] rule by id. */
-#siloFloor > :nth-child(1){ grid-column:3 / span 2 }
+#siloFloor > :nth-child(1){ grid-column:3 / span 2; grid-row:1 }
+#siloFloor > :nth-child(2){ grid-column:5 / span 2; grid-row:1 }
 #siloFloor > :nth-child(3){ grid-column:2 / span 2; grid-row:2 }
+#siloFloor > :nth-child(4){ grid-column:4 / span 2; grid-row:2 }
+#siloFloor > :nth-child(5){ grid-column:6 / span 2; grid-row:2 }
 
 /* a full row of four reaches both edges; nothing else does */
 .floor[data-count="4"] > :nth-child(1),
