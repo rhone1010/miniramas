@@ -61,6 +61,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, reason: 'bad_email' }, { status: 400 })
     }
 
+    /* THE PASSCODE IS CHECKED HERE NOW, NOT AT A WALL. Until 25 August the
+       middleware gated the whole site and only forwarded emails it had
+       already verified ?access= for. The wall is gone - the site is open,
+       and this endpoint is reachable by anyone. The code is the coupon
+       that makes an invite worth 50 credits, so the coupon is verified
+       where it is redeemed.
+
+       Wrong or missing records NOTHING - no row, no mail. bad_code is the
+       glass's cue to let the person fix or clear the field; it must never
+       block plain sign-in, which does not come through here.
+
+       Env absent = open, matching the old middleware's gate-off behaviour
+       so local dev still works without secrets. */
+    const expected = process.env.LITEN_ACCESS_CODE
+    if (expected) {
+      const suppliedCode = typeof body?.code === 'string' ? body.code.trim() : ''
+      if (suppliedCode !== expected) {
+        return NextResponse.json({ ok: false, reason: 'bad_code' }, { status: 403 })
+      }
+    }
+
     /* Already invited — the same person coming back through the gate on a
        new browser, which happens constantly. Not an error, and not a
        second grant. */
