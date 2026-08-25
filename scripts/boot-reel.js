@@ -79,8 +79,9 @@ setTimeout(() => {
                (doc.getElementById('mB').style.backgroundImage || '');
     if (bg.indexOf('groups') === -1) fail('no Groups plate painted: ' + bg);
     else pass('a Groups plate is on screen');
-    if (bg.indexOf('tall-small') === -1) fail('not using tall-small');
-    else pass('serving from tall-small');
+    /* tall-small retired 24 Aug 2026 -- the reel serves tall/. */
+    if (bg.indexOf('/tall/') === -1) fail('not serving from tall/');
+    else pass('serving from tall/');
 
     console.log('');
   }, 120);
