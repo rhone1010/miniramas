@@ -67,8 +67,11 @@ text = SILOW.sub('/* --silo-w and the fixed-width silo-floor blocks removed \u00
 nl = '\r\n' if '\r\n' in text else '\n'
 text = text.replace('<!DOCTYPE html>', '<!DOCTYPE html>' + nl + '<!-- ' + MARK + ' -->', 1)
 
-if 'var(--silo-w)' in text:
-    die('post-verify: var(--silo-w) still referenced after removal - NOTHING written')
+# Functional uses only - line 1382 mentions var(--silo-w) in prose inside
+# a comment, which is harmless and stays.
+for use in ['width:var(--silo-w)', 'repeat(2, var(--silo-w))', 'calc(var(--silo-w)']:
+    if use in text:
+        die('post-verify: ' + use + ' still present - NOTHING written')
 for want in ['--spine-w:clamp(300px, 20%, 460px)', '--queue-w:clamp(220px, 14.5%, 330px)',
              '--room-gap:20px', MARK]:
     if want not in text: die('post-verify: missing ' + want + ' - NOTHING written')
