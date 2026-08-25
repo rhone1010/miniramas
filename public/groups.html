@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- CUI 42G · 2026-08-24 -->
 <!-- CUI 42F · 2026-08-24 -->
 <!-- CUI 42E · 2026-08-24 -->
 <!-- CUI 42D · 2026-08-24 -->
@@ -1302,21 +1303,14 @@ body{
   justify-self:center;
 }
 
-/* ---- THE FIVE ROOMS · 2 OVER 3, CENTRED · CUI 42F · 2026-08-24 ------
-   Rich's ruling, restored after 42D dropped it. Id-scoped to the silo
-   floor; the effects floor keeps the shared Portraits rules.
-   Six columns, cards span two: each card gets a third of the floor,
-   which is more track than a .78 card at row height needs - so
-   max-width never bites and the ratio draws true. */
-#siloFloor{
-  grid-template-columns:repeat(6, minmax(0,1fr));
-}
-#siloFloor > *{ grid-column:auto / span 2; justify-self:center }
-#siloFloor > :nth-child(1){ grid-column:2 / span 2 }
-#siloFloor > :nth-child(2){ grid-column:4 / span 2 }
-#siloFloor > :nth-child(3){ grid-column:1 / span 2; grid-row:2 }
-#siloFloor > :nth-child(4){ grid-column:3 / span 2; grid-row:2 }
-#siloFloor > :nth-child(5){ grid-column:5 / span 2; grid-row:2 }
+/* ---- THE FIVE ROOMS · 2 OVER 3 · CUI 42G · 2026-08-24 ---------------
+   Portraits' code, nothing else: the shared 8-column grid and its own
+   partial-row offsets. Top pair takes the count-2 centring, bottom
+   three take the count-3 centring, one row down. Card size is
+   therefore identical to Portraits'. Outranks the generic
+   .floor[data-count="5"] rule by id. */
+#siloFloor > :nth-child(1){ grid-column:3 / span 2 }
+#siloFloor > :nth-child(3){ grid-column:2 / span 2; grid-row:2 }
 
 /* a full row of four reaches both edges; nothing else does */
 .floor[data-count="4"] > :nth-child(1),
