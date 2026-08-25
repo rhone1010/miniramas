@@ -25,7 +25,7 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Liten &amp; Co — Portrait Wallpapers</title>
+<title>Liten &amp; Co — Pets Halloween Wallpapers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1173,15 +1173,11 @@ body{
          8     4 + 4  — the ceiling
    ================================================================== */
 .floor{
-  /* FLEX, NOT THE 8-COLUMN GRID. At 9:16 the cards are far narrower than
-     the .78 the grid was tuned for, so fr tracks left gutters several
-     times wider than the row gap. Flex puts ONE gap on both axes -
-     Rich's ruling, 24 Aug: the horizontal separation matches the
-     vertical. The count-based grid-column rules below are inert under
-     flex and left in place for the day this reverts. */
-  display:flex; flex-wrap:wrap;
-  justify-content:center; align-content:center;
+  display:grid;
+  grid-template-columns:repeat(8, minmax(0,1fr));
+  grid-template-rows:repeat(2, minmax(0,1fr));
   gap:var(--card-gap);
+  align-content:stretch;
   width:100%; height:100%;
   min-width:0; min-height:0;
   overflow:hidden;
@@ -1189,9 +1185,11 @@ body{
   font-size:var(--card-type);
 }
 .floor > *{
-  /* two rows share the height, one gap between them */
-  height:calc((100% - var(--card-gap)) / 2);
-  flex:0 0 auto;
+  /* the span lives on the END, deliberately. `grid-column:span 2` puts the
+     span on the START and leaves the end auto — so any grid-column-start
+     override below would silently collapse the card to one column. */
+  grid-column:auto / span 2;
+  justify-self:center;
 }
 
 /* a full row of four reaches both edges; nothing else does */
@@ -1216,6 +1214,64 @@ body{
 
 /* a room with fewer than eight keeps the second row's height — the empty
    space is intentional, not a collapse. */
+
+/* ---- FOUR SILOS LAY 2x2, CENTRED --------------------------------------
+   Rich, 21 August, from a mockup. Four silos were filling one row of the
+   eight-column grid and reaching both edges, which left the whole second
+   row empty and held each card to about 280 at 1920.
+
+   Scoped to the silo floor by id on purpose. The effects floor and the
+   pose floor share every .floor rule above and neither is moving, and the
+   id also outranks the justify-self:start/end pair for data-count="4"
+   without those needing to be edited -- they stay correct for any other
+   four-up floor.
+
+   THE WIDTH. 320 at 1920, given. Written as vw so the room still holds at
+   2550, where a fixed 320 would be a postage stamp. 16.7vw is 320.6 at
+   1920. The two ends of the clamp are a guess at a range not yet seen and
+   are the numbers to change. */
+:root{ --silo-w:clamp(240px, 16.7vw, 420px); }
+
+#siloFloor[data-count="4"]{
+  grid-template-columns:repeat(2, var(--silo-w));
+  grid-template-rows:repeat(2, auto);
+  justify-content:center;
+  align-content:center;
+}
+#siloFloor[data-count="4"] > *{
+  /* auto, not `auto / span 2` -- the columns are now the card width
+     rather than eighths of the floor, so a span of two would take both. */
+  grid-column:auto;
+  justify-self:stretch;
+  width:var(--silo-w);
+}
+
+/* CUI 41A, 23 Aug 2026. On a phone, one column and four rows.
+
+   Two columns of var(--silo-w) is 500px at the clamp's floor, against a
+   390px screen -- the cards were cut at both edges and the page
+   scrolled sideways. The phone block has said repeat(2, minmax(0,1fr))
+   the whole time and lost every time, because an id outranks a class
+   regardless of order or media query. The fix belongs here, at the same
+   specificity, not under an !important on the class.
+
+   One rather than two, ruled by Rich: a group photograph is wide, and
+   half a phone is not enough of one to choose by. */
+@media (max-width:767px){
+  #siloFloor[data-count="4"]{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:none;
+    grid-auto-rows:auto;
+    justify-content:stretch;
+  }
+  #siloFloor[data-count="4"] > *{
+    width:auto;
+    justify-self:stretch;
+  }
+}
+
+/* The five-up silo rule from pets.html is not here: this room has
+   four. Add the 2x2 with scripts/patch-silo-2x2.py. */
 
 
 
@@ -3419,7 +3475,7 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
     height:auto !important;
     width:100% !important;
     max-width:none !important;
-    aspect-ratio:var(--card-ratio, .78);
+    aspect-ratio:var(--card-ratio, 1);
   }
   .floor{ grid-auto-rows:auto }
 
@@ -4903,12 +4959,12 @@ body.is-lboxed{ overflow:hidden }
   <nav class="mh-nav">
     <div class="mh-series">
       <button class="mh-series-btn" id="mhSeriesBtn" aria-expanded="false" aria-haspopup="true">
-        <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Portraits</span>
+        <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Pets Halloween</span>
         <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
       </button>
       <div class="mh-series-menu" id="mhSeriesMenu" role="menu" hidden>
-        <a href="/portraits" role="menuitem" aria-current="page">Portraits</a>
-        <a href="/pets" role="menuitem">Pets</a>
+        <a href="/portraits" role="menuitem">Portraits</a>
+        <a href="/pets" role="menuitem" aria-current="page">Pets</a>
         <a href="/groups" role="menuitem">Groups</a>
         <a href="/halloween" role="menuitem">Halloween</a>
         <div class="sep"></div>
@@ -5017,7 +5073,7 @@ body.is-lboxed{ overflow:hidden }
                native camera app on a phone; its own flip control
                covers front/rear. Ignored on a desktop, where this
                opens the picker like its sibling. -->
-          <input type="file" id="srcCamera" accept="image/*" capture="user" hidden>
+          <input type="file" id="srcCamera" accept="image/*" capture="environment" hidden>
           <div class="cur-slot" id="curSlot" role="button" tabindex="0">
             <span class="cur-slot-plus">+</span>
             <span class="cur-slot-t">Add portrait photo</span>
@@ -5485,7 +5541,7 @@ body.is-lboxed{ overflow:hidden }
      One file, three states per effect — live is offerable, authored has text
      but no engine body, todo has neither. The gate refuses anything but live,
      so the floor offers nothing but live. -->
-<script src="/effect-registry.js"></script>
+<script src="/pets-halloween-registry.js"></script>
 <script>
 /* GENERATED — do not edit. Written into this file by
    scripts/build_s99_subject_previews.py from
@@ -5509,87 +5565,45 @@ window.FINISH_ART = {
 };
 
 window.EFFECT_PREVIEWS = {
-  base: "/previews/wallpapers/portraits/",
+  base: "/previews/wallpapers/halloween-pets/",
   siloBase: "/previews/silos/",
   poseBase: "/previews/pose/",
-  generatedAt: "2026-08-04T04:46:48.224Z",
-  /* id: [man, woman, neutral] — whole filenames, because the extension
-     varies by tree and by gender and must never be guessed. */
+  /* GENERATED by scripts/build-pets-halloween-page.py from the contents
+     of public/previews/halloween-pets/, keyed by the catalogue id.
+     The id carries pethw_ and the file does not - the folder name
+     already says what the prefix says. Only a fallback: previewFor()
+     asks the registry plateFor() first, which does the same stripping. */
   files: {
-    "art_deco": ["", "", ""],
-    "art_nouveau": ["", "", ""],
-    "balloon_face": ["man_balloon_face.jpeg", "woman_balloon_face.jpeg", ""],
-    "beaded": ["", "", ""],
-    "bronze": ["man_bronze.jpeg", "woman_bronze.jpeg", ""],
-    "cast_glass": ["", "", ""],
-    "charcoal_chalk": ["man_charcoal_chalk.jpeg", "woman_charcoal_chalk.jpeg", ""],
-    "chocolate": ["", "", ""],
-    "clockwork": ["man_clockwork.jpeg", "woman_clockwork.jpeg", ""],
-    "coral": ["", "", ""],
-    "crystallized": ["", "", ""],
-    "cubism": ["", "", ""],
-    "daguerreotype": ["", "", ""],
-    "deco_twenties": ["", "", ""],
-    "dragon_skin": ["", "", ""],
-    "driftwood_resin": ["", "", ""],
-    "ebony": ["man_ebony.jpeg", "woman_ebony.jpeg", ""],
-    "elizabethan": ["", "", ""],
-    "fire_face": ["", "", ""],
-    "folded_book": ["", "", ""],
-    "forest_guardian": ["", "", ""],
-    "ice": ["", "", ""],
-    "impressionist": ["man_impressionist.jpeg", "woman_impressionist.jpeg", ""],
-    "iron": ["", "", ""],
-    "jade": ["", "", ""],
-    "lichen_granite": ["", "", ""],
-    "linocut": ["", "", ""],
-    "magic_energy": ["", "", ""],
-    "mercury": ["", "", ""],
-    "neon": ["man_neon.jpeg", "woman_neon.jpeg", ""],
-    "oil_impasto": ["", "", ""],
-    "origami": ["", "", ""],
-    "pencil_sketch": ["", "", ""],
-    "persian_court": ["man_persian_court.jpeg", "woman_persian_court.jpeg", ""],
-    "petal_sculpture": ["man_petal_sculpture.jpeg", "woman_petal_sculpture.jpeg", ""],
-    "petrified_wood": ["", "", ""],
-    "plushy": ["man_plushie.jpeg", "woman_plushie.jpeg", ""],
-    "polished_gold": ["", "", ""],
-    "porcelain": ["", "", ""],
-    "quilted": ["", "", ""],
-    "reclaimed_bronze": ["", "", ""],
-    "renaissance": ["man_renaissance.jpeg", "woman_renaissance.jpeg", ""],
-    "retro_robot": ["man_retro_robot.jpeg", "woman_retro_robot.jpeg", ""],
-    "samurai": ["", "", ""],
-    "sand_form": ["", "", ""],
-    "sandstone": ["", "", ""],
-    "sea_glass": ["", "", ""],
-    "sheet_music": ["", "", ""],
-    "stained_glass": ["man_stained_glass.jpeg", "woman_stained_glass.jpeg", ""],
-    "starfield": ["", "", ""],
-    "stone": ["", "", ""],
-    "tidewood": ["man_tidewood.jpeg", "woman_tidewood.jpeg", ""],
-    "ukiyo_e": ["", "", ""],
-    "victorian": ["man_victorian.jpeg", "woman_victorian.jpeg", ""],
-    "watercolour": ["", "", ""],
-    "wild_west": ["", "", ""]
+    "pethw_harvest_god_beast": ["harvest_god_beast.jpg", "", ""],
+    "pethw_graveyard_guardian": ["graveyard_guardian.jpg", "", ""],
+    "pethw_hellborn_beast": ["hellborn_beast.jpg", "", ""],
+    "pethw_blood_moon_beast": ["blood_moon_beast.jpg", "", ""],
+    "pethw_storm_wraith": ["storm_wraith.jpg", "", ""],
+    "pethw_banshee_familiar": ["banshee_familiar.jpg", "", ""],
+    "pethw_thorn_king_beast": ["thorn_king_beast.jpg", "", ""],
+    "pethw_drowned_revenant": ["drowned_revenant.jpg", "", ""],
+    "pethw_witch_familiar": ["witch_familiar.jpg", "", ""],
+    "pethw_shadow_beast": ["shadow_beast.jpg", "", ""],
+    "pethw_plague_beast": ["plague_beast.jpg", "", ""],
+    "pethw_frost_wraith": ["frost_wraith.jpg", "", ""],
+    "pethw_bone_collector_beast": ["bone_collector_beast.jpg", "", ""],
+    "pethw_swamp_revenant": ["swamp_revenant.jpg", "", ""],
+    "pethw_raven_lord_familiar": ["raven_lord_familiar.jpg", "", ""],
+    "pethw_demon_familiar": ["demon_familiar.jpg", "", ""],
+    "pethw_ancient_crypt_beast": ["ancient_crypt_beast.jpg", "", ""],
+    "pethw_headless_horseman_familiar": ["headless_horseman_familiar.jpg", "", ""],
+    "pethw_nightmare_creature": ["nightmare_creature.jpg", "", ""],
+    "pethw_spirit_caller": ["spirit_caller.jpg", "", ""],
+    "pethw_the_soul_eater": ["the_soul_eater.jpg", "", ""],
+    "pethw_spider_queen_familiar": ["spider_queen_familiar.jpg", "", ""],
+    "pethw_the_possessed": ["the_possessed.jpg", "", ""],
+    "pethw_gargoyle_beast": ["gargoyle_beast.jpg", "", ""],
+    "pethw_phantom_of_the_forest": ["phantom_of_the_forest.jpg", "", ""],
+    "pethw_vampire_familiar": ["vampire_familiar.jpg", "", ""],
+    "pethw_death_companion": ["death_companion.jpg", "", ""]
   },
-  silos: {
-    "another_age": ["another_age_man.jpg", "another_age_woman.jpg", ""],
-    "artists_gallery": ["artists_gallery_man.jpg", "artists_gallery_woman.jpg", ""],
-    "earth_ore": ["earth_ore_man.jpg", "earth_ore_woman.jpg", ""],
-    "fantasy_future": ["fantasy_future_man.jpg", "fantasy_future_woman.jpg", ""],
-    "ink_paper": ["ink_paper_man.jpg", "ink_paper_woman.jpg", ""],
-    "light_glass": ["light_glass_man.jpg", "light_glass_woman.jpg", ""],
-    "living_world": ["living_world_man.jpg", "living_world_woman.jpg", ""],
-    "made_by_hand": ["made_by_hand_man.jpg", "made_by_hand_woman.jpg", ""]
-  },
-  poses: {
-    "dramatic": ["dramatic_man.png", "dramatic_woman.jpg", ""],
-    "goofy": ["goofy_man.png", "goofy_woman.jpg", ""],
-    "laughing": ["laughing_man.png", "laughing_woman.jpg", ""],
-    "smiling": ["smiling_man.png", "smiling_woman.jpg", ""],
-    "thoughtful": ["thoughtful_man.png", "thoughtful_woman.jpg", ""]
-  }
+  silos: {},
+  poses: {}
 };
 </script>
 
@@ -6216,10 +6230,20 @@ window.EFFECT_PREVIEWS = {
      of them above where the resume constants live. */
   var INTENT_KEY = 'liten_craft_intent_v1';
 
-  var GATE_URL           = '/api/v1/portraits/gate';
-  var ANALYZE_URL        = '/api/v1/portrait-wallpaper/analyze';
-  var CURATE_URL         = '/api/v1/portraits/curate-effects';
-  var GENERATE_URL       = '/api/v1/portrait-wallpaper/generate';
+  /* NO GATE ROUTE IN THIS ROOM.
+     There is no /api/v1/pets/gate and none is coming. The Portraits
+     gate reads a human face for quality and for whether the
+     photograph belongs in another Series; an animal fails both
+     questions on their own terms. The Pets analyze route carries
+     the verdict instead, exactly as Groups does. */
+  var ANALYZE_URL        = '/api/v1/pets/analyze';
+  /* CURATE_URL removed with the function below. */
+  /* The HUMAN Halloween route, deliberately. It takes these 27 and the
+     human 28 both, and branches on the pethw_ prefix. There is no
+     pets-halloween endpoint and CENG says there should not be one.
+     ANALYZE_URL above stays on the pet analyzer - it is an animal in
+     the photograph either way. */
+  var GENERATE_URL       = '/api/v1/wallpapers/halloween-pets/generate';  /* DECLARED - CENG to confirm, see SYNC */
   var PIECES_URL         = '/api/v1/portraits/pieces';
   var ARCHIVE_ICON =
     '<svg viewBox="0 0 24 24" aria-hidden="true">' +
@@ -6594,7 +6618,12 @@ window.EFFECT_PREVIEWS = {
     var fp = SRC.b64.slice(0, 40);
     if (SRC.gateFp === fp) return Promise.resolve();
     SRC.gateFp = fp;
-    return fetch(GATE_URL, {
+    /* The fetch that stood here called a route this room does not
+       have. Resolved rather than removed: four call sites await
+       this and analyze already carries the verdict. */
+    return Promise.resolve();
+    /* eslint-disable-next-line no-unreachable */
+    return fetch('', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -6629,37 +6658,19 @@ window.EFFECT_PREVIEWS = {
     }).catch(function(){ /* gate is advisory — silence is a pass */ });
   }
 
-  /* ---- /portraits/curate-effects ----------------------------------------
-     b2 7225. b2 painted its own five cards; the floor already paints cards,
-     so this only decides WHICH. Every returned id is checked against the
-     registry and anything not live is dropped — the registry governs what
-     may be offered, and a recommendation is not an exception to that. */
-  function curatorEnterEffects(){
-    var rotation = 0;
-    try {
-      var stored = parseInt(localStorage.getItem('liten_curator_rotation') || '0', 10);
-      rotation = isFinite(stored) ? stored : 0;
-      localStorage.setItem('liten_curator_rotation', String(rotation + 1));
-    } catch (e){ /* no persistence — stay at 0 */ }
+  /* ---- no curate route in this room -------------------------------------
+     Ruled by Rich, 21 August: the Curator does not recommend effects here
+     until there is an engagement model to recommend them within. Nothing
+     equivalent to /portraits/curate-effects exists for this room, and a
+     client-side guess would be the studio pretending to have looked.
 
-    return fetch(CURATE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source_image_b64: SRC.b64,
-        rotation_index:   rotation
-      })
-    }).then(function(res){
-      if (!res.ok) throw new Error('curate ' + res.status);
-      return res.json();
-    }).then(function(data){
-      var list = (data && data.recommendations) || [];
-      SRC.recs = list.map(function(r){
-        var e = R.byId(r.preset);
-        return (e && e.body === 'live') ? e : null;
-      }).filter(Boolean);
-      window.__RECS = SRC.recs;
-    }).catch(function(){ SRC.recs = null; });
+     Kept as a function because four call sites reach it and a missing name
+     throws. It clears the recommendations rather than leaving stale ones
+     from a previous photograph. */
+  function curatorEnterEffects(){
+    SRC.recs = null;
+    window.__RECS = null;
+    return Promise.resolve();
   }
 
   /* ---- the intake modal's own buttons ------------------------------------
@@ -6812,12 +6823,6 @@ window.EFFECT_PREVIEWS = {
       additional_images_b64: item.additional_images_b64,
       style_id:              item.style_id,
       preset:                item.preset,
-      /* The portrait-wallpaper route (July, read 24 Aug) keys on
-         `effect` and `framing`, ignores everything else. It defaults
-         framing to bust; only the three ids it knows are sent. */
-      effect:                item.preset,
-      framing:               (['bust','signature','statuesque']
-                               .indexOf(item.pose) !== -1 ? item.pose : undefined),
       location:              item.location,
       scale:                 item.scale,
       aspect_ratio:          item.aspect_ratio,
@@ -6900,7 +6905,11 @@ window.EFFECT_PREVIEWS = {
       body: JSON.stringify({
         count:    items.length,
         cost_per: CREDITS_PER_IMAGE,
-        series:   'portrait-wallpaper',
+        /* Was 'portraits', inherited from the clone. The gate checks
+           the presets against the series it is given, so this room was
+           handing its own presets to the Portraits catalogue and being
+           refused - which then opened the shop. */
+        series:   'pets-halloween-wallpaper',
         presets:  items.map(function(q){ return q.preset || null; })
       })
     }).then(function(res){
@@ -7038,8 +7047,11 @@ window.EFFECT_PREVIEWS = {
     var clientId = 'q' + item.id;
     window.__pieceLanded({
       id:       clientId,
-      name:     'Portraits - ' + effectLabel(item.effectId) + ' - ' + n,
-      series:   'Portrait Wallpapers',
+      name:     'Pets Halloween - ' + effectLabel(item.effectId) + ' - ' + n,
+      /* Files under Pets, not Halloween. A customer with two pet rooms has
+         one body of pet work; splitting it across two filters makes them
+         remember which room a piece came from. */
+      series:   'Pets Halloween Wallpapers',
       art:      'data:image/png;base64,' + item.result.image_b64,
       crafting: false
     });
@@ -7104,7 +7116,10 @@ window.EFFECT_PREVIEWS = {
       count:    items.length,
       cost_per: CREDITS_PER_IMAGE,
       ref_id:   ref,
-      series:   'portrait-wallpaper',
+      /* Was 'portraits' too. A failed craft here was asking the refund
+         route to reverse a charge under a series it was never made
+         under - so the money would not have come back. */
+      series:   'pets-halloween-wallpaper',
       reason:   'craft_failed',
       presets:  items.map(function(q){ return q.preset || null; })
     };
@@ -7318,7 +7333,7 @@ window.EFFECT_PREVIEWS = {
       window.__pieceLanded({
         id:       'q' + it.id,
         name:     effectLabel(it.effectId),
-        series:   'Portrait Wallpapers',
+        series:   'Pets Halloween Wallpapers',
         art:      null,
         crafting: true
       });
@@ -7948,18 +7963,19 @@ window.EFFECT_PREVIEWS = {
      THIS IS A GUARD, NOT A DECISION. The answer is the eleven ids reaching
      PRESET_LABELS, PRESET_TIER and STYLE_MATERIALS. When they do, the next
      build reads them and this list grows on its own. */
-  var ROUTE_ACCEPTS = ['bronze', 'iron', 'stone', 'jade', 'ebony', 'reclaimed_bronze', 
-    'petrified_wood', 'cast_glass', 'stained_glass', 'ice', 'mercury', 'neon', 'sea_glass', 
-    'polished_gold', 'driftwood_resin', 'coral', 'tidewood', 'lichen_granite', 
-    'petal_sculpture', 'sand_form', 'sandstone', 'plushy', 'chocolate', 'balloon_face', 
-    'quilted', 'origami', 'porcelain', 'beaded', 'impressionist', 'watercolour', 
-    'charcoal_chalk', 'sheet_music', 'pencil_sketch', 'oil_impasto', 'linocut', 'folded_book', 
-    'magic_energy', 'ukiyo_e', 'cubism', 'art_deco', 'art_nouveau', 'daguerreotype', 
-    'dragon_skin', 'fire_face', 'retro_robot', 'forest_guardian', 'clockwork', 'starfield', 
-    'crystallized', 'elizabethan', 'renaissance', 'deco_twenties', 'victorian', 'samurai', 
-    'wild_west', 'persian_court', 'victorian_woman', 'renaissance_woman', 
-    'persian_court_woman', 'wild_west_woman', 'deco_twenties_woman', 'samurai_woman', 
-    'elizabethan_woman'];
+  /* DERIVED, not kept by hand. Was a verbatim copy of the Portraits list
+     of 63 preset ids, inherited by the clone and never edited -- so
+     craftable() below dropped every effect whose id was not a Portraits
+     id. Halloween lost all 28 and rendered an empty room; Pets lost 27 of
+     34 and rendered seven, which read as a room of seven rather than a
+     fault.
+
+     The registry is generated from the same catalogue the route reads, so
+     it cannot disagree with the route the way a hand-kept list can. If an
+     effect is in here and the route refuses it, the registry is wrong and
+     that is where the fix belongs. */
+  var ROUTE_ACCEPTS = ((window.EFFECT_REGISTRY && window.EFFECT_REGISTRY.effects) || [])
+    .map(function(e){ return e.id; });
   function craftable(e){ return e && e.body === 'live' && ROUTE_ACCEPTS.indexOf(e.id) >= 0; }
 
   var CAP = 7;   /* seven effects; the eighth slot is the upsell */
@@ -8222,11 +8238,35 @@ window.EFFECT_PREVIEWS = {
   }
 
   function previewFor(tileId){
-    /* WALLPAPER PLATES ARE FLAT - man_<id>.jpeg beside woman_<id>.jpeg,
-       no per-effect subfolder like the main room's tree. */
+    /* THE REGISTRY DECIDES, not the baked manifest. Both answer the same
+       today; only one of them keeps answering correctly after a plate is
+       added or renamed. The manifest below is a snapshot taken by the
+       build script and goes stale silently. CENG's note on both registries
+       says to call plateFor and never to build a path.
+
+       Falls back to the manifest if the registry is an older one without
+       plateFor, so this cannot blank a floor that used to paint. */
+    if (R && typeof R.plateFor === 'function'){
+      var p = R.plateFor(tileId);
+      if (p) return p;
+    }
     return plateFrom(PV.files, PV.base, tileId, false);
   }
   function siloArt(siloId){
+    /* THE REGISTRY FIRST. A room's picture now sits on its own row beside
+       its label and its line, because EFFECT_PREVIEWS is a snapshot the
+       build script takes of a directory and goes stale without saying so.
+       Same reasoning as previewFor().
+
+       The manifest stays as a fallback so an older registry paints as it
+       always did rather than going blank. */
+    if (R && R.silos){
+      for (var i = 0; i < R.silos.length; i++){
+        if (R.silos[i].id === siloId && R.silos[i].plate){
+          return R.silos[i].plate;
+        }
+      }
+    }
     return plateFrom(PV.silos, PV.siloBase || '/previews/silos/', siloId, false);
   }
   function poseArt(poseId){
@@ -8455,11 +8495,13 @@ window.EFFECT_PREVIEWS = {
     if (inPose){
       tbcGoVerb.textContent = 'Craft';
       tbcGoN.textContent    = n === 1 ? 'this piece' : ('all ' + n);
-      tbcGoSub.textContent  = 'Step 2 of 2 \u00b7 ' + credits;
+      tbcGoSub.textContent  = credits;   /* one step in Pets, so no count */
     } else {
-      tbcGoVerb.textContent = 'Next';
-      tbcGoN.textContent    = '\u00b7 choose a pose';
-      tbcGoSub.textContent  = 'Step 1 of 2 \u00b7 ' + credits;
+      /* Unreachable in Pets -- there is no pose view to be outside of --
+         but it must not promise a second step if it ever is reached. */
+      tbcGoVerb.textContent = 'Craft';
+      tbcGoN.textContent    = n === 1 ? 'this piece' : ('all ' + n);
+      tbcGoSub.textContent  = credits;
     }
     /* A standing note outranks the step line. See SUB_NOTE — this exists so
        a message about money survives the floor flipping back, which calls
@@ -9029,7 +9071,12 @@ window.EFFECT_PREVIEWS = {
   });
 
   if (tbcGo) tbcGo.addEventListener('click', function(){
-    if (workshop.classList.contains('workshop-view--poses')){
+    /* Pets has no pose step -- ruled 2026-08-20. The stage still exists in
+       the markup and is simply never entered, so this is a straight run.
+       labelGo is changed in the same patch: Groups shipped with the handler
+       short-circuited and the button still promising a pose, which charged
+       the customer under a sentence that was not true. */
+    if (true){
       /* Was: a named hook that did not exist, which is where the flow
          stopped. Now the run. Credits move inside runAll before anything
          is crafted; __openPaywall survives as the shortfall's destination
@@ -9060,9 +9107,8 @@ window.EFFECT_PREVIEWS = {
 
   /* Alphabetical. Every Series shows whether or not it holds anything — a
      missing tab reads as a Series that does not exist. */
-  /* Halloween was missing, so every piece from that room had no filter to
-     appear under and was reachable only by View All. Alphabetical, like
-     the rest -- an appended entry reads as an afterthought. */
+  /* Halloween was missing, so pieces from that room had no filter to
+     appear under and were reachable only by View All. */
   /* Action is out - the Series does not exist and nothing writes it.
      Pets Halloween is in, and is the one entry not backed by a stored
      series: those pieces store 'pets'. See mcSeriesOf(). */
@@ -9105,12 +9151,12 @@ window.EFFECT_PREVIEWS = {
      Art is real and already on disk — no placeholder files to keep. */
   var SEED_ON = false;   /* real pieces can land now — see build s76 */
   var SEED = [
-    { id:'p1', name:'Portraits - Alabaster - Rich - 001',      series:'Portraits', art:'/previews/silos/earth_ore.jpg' },
-    { id:'p2', name:'Portraits - Bronze - Rich - 002',         series:'Portraits', art:'/previews/portraits/bronze/1.jpg' },
-    { id:'p3', name:'Portraits - Walnut - Rich - 003',         series:'Portraits', art:'/previews/portraits/walnut/1.jpg' },
-    { id:'p4', name:'Portraits - Charcoal & Chalk - Rich - 004', series:'Portraits', art:'/previews/silos/artists_gallery.jpg' },
+    { id:'p1', name:'Pets - Alabaster - Rich - 001',      series:'Pets', art:'/previews/silos/earth_ore.jpg' },
+    { id:'p2', name:'Pets - Bronze - Rich - 002',         series:'Pets', art:'/previews/portraits/bronze/1.jpg' },
+    { id:'p3', name:'Pets - Walnut - Rich - 003',         series:'Pets', art:'/previews/portraits/walnut/1.jpg' },
+    { id:'p4', name:'Pets - Charcoal & Chalk - Rich - 004', series:'Pets', art:'/previews/silos/artists_gallery.jpg' },
     /* one in progress, so the animation can be judged against finished work */
-    { id:'p5', name:'Portraits - Dragon Skin - Rich - 005',    series:'Portraits', art:null, crafting:true }
+    { id:'p5', name:'Pets - Dragon Skin - Rich - 005',    series:'Pets', art:null, crafting:true }
   ];
 
   var PIECES  = SEED_ON ? SEED.slice() : [];
@@ -9121,7 +9167,7 @@ window.EFFECT_PREVIEWS = {
      whose last three pieces were Groups arrived in the Portraits room
      at a collection that looked empty, and had to find the right pill
      to see their own work. Ruled 23 August. */
-  var MC_FILT = 'all'; //'Portraits';
+  var MC_FILT = 'all'; //'Pets';
   var PICKED  = {};
 
   /* Read-only glass. The account column is CC's when the wiring lands — the
@@ -9599,10 +9645,9 @@ window.EFFECT_PREVIEWS = {
      The tile lands first and the save follows it. A customer never waits on
      an upload to see their own work, and a failed save costs them the
      durability rather than the piece. */
-  /* halloween was missing, so a piece stored under it fell through to the
-     room's own default and read as Portraits on one page and Pets on
-     another. Pets Halloween is not here on purpose: it stores 'pets', so
-     both pet rooms share one filter. */
+  /* halloween was missing, so every piece from the human Halloween room
+     stored a series this map could not name. Added 21 August. The same
+     line is needed in portraits, pets, groups and halloween. */
   var SERIES_LABEL = { portraits:'Portraits', pets:'Pets', groups:'Groups',
                        halloween:'Halloween',
                        action:'Action', actionmini:'Action',
@@ -9616,7 +9661,7 @@ window.EFFECT_PREVIEWS = {
       credentials:'same-origin',
       body: JSON.stringify({
         image_b64: item.result.image_b64,
-        series:    'portraits',
+        series:    'pets',   /* see land() - one collection for both pet rooms */
         preset:    item.effectId,
         mode:      item.mode || null,
         meta:      { likeness: item.likeness_score, silo: item.siloId }
@@ -9661,7 +9706,7 @@ window.EFFECT_PREVIEWS = {
             id:       'srv_' + p.id,
             serverId: p.id,
             name:     p.label || 'Crafted Image',
-            series:   SERIES_LABEL[p.series] || 'Portraits',
+            series:   SERIES_LABEL[p.series] || 'Pets',
             art:      p.image_url || null,
             archived: !!p.archived,
             crafting: false
