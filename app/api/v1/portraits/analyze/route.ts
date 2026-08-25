@@ -30,8 +30,8 @@
 // generate request to keep the render consistent with what was shown.
 
 import { NextRequest, NextResponse } from 'next/server'
-import {
 import { getUser } from '@/lib/store/auth'
+import {
   analyzeSourceSet,
   detectFaceVisibility,
 } from '@/lib/v1/portraits/portraits-refine'
