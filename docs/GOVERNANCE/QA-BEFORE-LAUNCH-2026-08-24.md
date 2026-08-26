@@ -8,6 +8,10 @@ tick or fail with a screenshot. Phone = real S23, not responsive mode.
       pieces are HELD and complete after purchase.
 - [ ] While SOFT_LAUNCH: pill and Account buy-doors closed until
       balance is zero; shortfall door always opens. All five rooms.
+- [ ] FIRST: flip the test account's fulfilment flag ON in the admin
+      panel (Controls). Prints reach Prodigi only for flagged
+      accounts - unflagged, the order silently never sends and
+      reads as a bug. (Panel review, 25 Aug.)
 - [ ] Print order end-to-end: quote -> checkout -> Stripe webhook ->
       Prodigi order visible in their dashboard. One real cheap print.
 - [ ] Refund path known: who presses what when a guest writes in.
@@ -56,6 +60,9 @@ tick or fail with a screenshot. Phone = real S23, not responsive mode.
       valid; codes match what Rich is sending.
 - [ ] Feedback path exists for guests (even just a mailto) --
       the golden bug is parked, guests still need a door.
+- [ ] Admin panel: Health tab OPEN through the evening (incidents
+      badge); fulfilment flags default OFF for guests; per-Series QA
+      sliders confirmed at launch values. /admin, one screen.
 - [ ] H: mounted, FileActions log rolling, Save-Work green.
 
 Anything unticked is a launch decision, not a surprise.
