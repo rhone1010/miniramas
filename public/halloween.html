@@ -1075,6 +1075,10 @@ body{
 .cur-camera:hover{ background:rgba(125,66,66,.08) }
 /* Gone once a photograph is in -- the slot is gone then too. */
 .cur.has-photo .cur-camera, .cur[data-state="ready"] .cur-camera{ display:none }
+/* A device with hover and a fine pointer has no camera worth offering -
+   the pill just reopened the picker under a misleading label (beta #5).
+   Phones and tablets keep it. CUI 41A, 26 Aug 2026. */
+@media (hover:hover) and (pointer:fine){ .cur-camera{ display:none } }
 
 .cur-thumb{ display:none; position:relative }
 /* The card takes the photograph's shape, not the other way round.
@@ -1506,8 +1510,10 @@ body{
 .workshop-view--effects .crumb-here{ opacity:1 }
 .workshop-view--silos .crumb-back{
   /* the way back stays on the glass. only the room name arrives and leaves —
-     both fading together read as the whole bar blinking. */
-  opacity:.82; pointer-events:none;
+     both fading together read as the whole bar blinking.
+     .38, not .82: at .82 inert was indistinguishable from active and a
+     tester pressed it - beta #6. CUI 41A, 26 Aug 2026. */
+  opacity:.38; pointer-events:none;
 }
 
 /* ---- the two faces ----------------------------------------------------- */
