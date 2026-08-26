@@ -71,7 +71,11 @@ export async function POST(req: NextRequest) {
   // the pethw_ prefix tells them apart and the generator branches on it.
   // Rich, 21 August - Pets on the nav opens a chooser, so the two are two
   // PAGES, but one endpoint. Two endpoints would be the same file twice.
-  const rawEffect = body.effect_id ?? body.effect ?? body.preset_id
+  // `preset` (bare) joined 25 Aug: the glass sends exactly that, the
+  // chain missed it, and every craft in both rooms arrived id-less -
+  // 'unknown effect_id' across the catalogue, first misread as one
+  // broken effect. The comment above promised no silent drop; now true.
+  const rawEffect = body.effect_id ?? body.effect ?? body.preset_id ?? body.preset
   const isPet   = isPetsHalloweenEffect(rawEffect)
   const isHuman = isHalloweenEffect(rawEffect)
   if (!isPet && !isHuman) {

@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<!-- CUI 42 · copy pass r2 · 2026-08-25 -->
+<!-- CUI 42 · open doors glass · 2026-08-25 -->
 <!-- CUI 42H · 2026-08-24 -->
 <!-- CUI 42G · 2026-08-24 -->
 <!-- CUI 42F · 2026-08-24 -->
@@ -5465,6 +5467,8 @@ body.is-lboxed{ overflow:hidden }
         <div class="m-title">Curator&rsquo;s Note</div></div>
       <div class="m-rule"><span class="m-fleuron">&#10086;</span></div>
       <div class="m-say">The link is on its way to <b id="signinAddr"></b>.
+        It can take a few minutes to arrive, and do check your spam folder;
+        some mailboxes are suspicious of new friends.
           Open it and I&rsquo;ll have everything just as you left it &mdash; the
           link works on any device.<span class="sig">&mdash;&thinsp;C.</span></div>
       <div class="acts"><div class="btn fill" id="signinDone">Close</div></div>
@@ -6610,6 +6614,16 @@ window.EFFECT_PREVIEWS = {
     }).then(function(r){
       if (seq !== SRC.seq) return;
       var data = r.d;
+      /* OPEN DOORS · CUI 42 · open doors glass · 2026-08-25. Unsigned, the analyze routes
+         answer 401 { ok:false, reason:'not_signed_in' } - the moment of
+         intent is the moment of capture, so the card rises here, before
+         this response could fall into the nothing_to_craft branch and
+         tell a signed-out person their photograph had no faces.
+         Anchored on the response shape, per CENG. */
+      if (r.st === 401 && data && data.reason === 'not_signed_in'){
+        if (typeof openSignin === 'function') openSignin();
+        return;
+      }
       console.log('[timing] analyze answered in ' + (Date.now() - SRC.t0) + 'ms');
       SRC.analyze = data;
 
@@ -8829,16 +8843,37 @@ window.EFFECT_PREVIEWS = {
       }).then(function(res){
         return res.json().catch(function(){ return { ok:false }; });
       }).then(function(d){
-        if (d && d.ok){ reallySend(email); return; }
+        if (d && d.ok){
+          /* The invite route has ALREADY sent the sign-in link - CENG's
+             contract, 25 Aug 2026; the sent state shows directly, no
+             second POST. Copy is Rich's locked pass · CUI 42 · copy pass r2 · 2026-08-25 */
+          saveResume();
+          signinSend.disabled = false;
+          signinSend.textContent = 'Send the link';
+          if (signinAddr) signinAddr.textContent = email;
+          if (signinAsk)  signinAsk.hidden  = true;
+          if (signinSent) signinSent.hidden = false;
+          var okLine = d.already
+            ? 'You\u2019re already on the list \u2014 we\u2019ve sent you a fresh link.'
+            : 'You\u2019re in. 50 credits have been added to your account.';
+          var sentSay = signinSent ? signinSent.querySelector('.m-say') : null;
+          if (sentSay){
+            var codeNote = document.createElement('div');
+            codeNote.className = 'signin-codenote';
+            codeNote.textContent = okLine;
+            sentSay.parentNode.insertBefore(codeNote, sentSay);
+          }
+          return;
+        }
         signinSend.disabled = false;
         signinSend.textContent = 'Send the link';
         if (signinErr) signinErr.textContent =
-          'That code is not one of ours. Fix it or clear the field and the link will still come.';
+          'That code wasn\u2019t recognised. Check it, or leave it blank and come in anyway.';
       }).catch(function(){
         signinSend.disabled = false;
         signinSend.textContent = 'Send the link';
         if (signinErr) signinErr.textContent =
-          'The code could not be checked just now. Clear it to sign in without it.';
+          'The code couldn\u2019t be checked just now. Leave it blank and come in anyway.';
       });
       return;
     }
@@ -9236,7 +9271,8 @@ window.EFFECT_PREVIEWS = {
       acts += '<button class="mc-act" data-fa="pr" type="button">Send to Print Shop</button>';
     }
     var left = RERENDER_CAP - window.__RERENDERS_USED;
-    if (left > 0){
+    if (left > 0 && !(p && /wallpaper/i.test(String(p.series || '')))){
+      /* A purchased wallpaper cannot be crafted again · CUI 42 · open doors glass · 2026-08-25 */
       acts += '<button class="mc-act" data-fa="re" type="button">' +
               (left === 1 ? 'Craft this again \u00b7 last one' : 'Craft this again') +
               '</button>';
@@ -9688,7 +9724,8 @@ window.EFFECT_PREVIEWS = {
     if (printable(p)){
       acts += '<button class="mc-act" data-lb="pr">Send to Print Shop</button>';
     }
-    if (left > 0){
+    if (left > 0 && !(p && /wallpaper/i.test(String(p.series || '')))){
+      /* Same guard as the featured pane · CUI 42 · open doors glass · 2026-08-25 */
       acts += '<button class="mc-act" data-lb="re">' +
               (left === 1 ? 'Craft this again \u00b7 last one' : 'Craft this again') +
               '</button>';
@@ -10079,6 +10116,7 @@ window.EFFECT_PREVIEWS = {
      added later inherits the rule instead of inheriting a Print button
      nobody meant to give it. */
   function printable(p){
+    if (true) return false;  /* PRINT SHOP DISABLED -- coming soon. Rich, 2026-08-25 */
     if (!p) return false;
     if (/wallpaper/i.test(String(p.series || ''))) return false;
     return !!(p.art && p.serverId && String(p.art).indexOf('data:') !== 0);
@@ -11096,10 +11134,17 @@ window.EFFECT_PREVIEWS = {
      recorded; this only makes it readable. */
   var AC_REASON = {
     purchase: 'Credits bought',
-    craft:    'A piece crafted',
-    refund:   'Returned',
-    grant:    'Granted',
-    launch_grant: 'Welcome credits',   /* DRAFT - the word is Rich's */
+    craft:    'Creation',
+    refund:   'Credits returned',
+    grant:    'Studio credit',
+    /* Rich's locked labels against the REAL reason set, per the engine
+       correction of 25 Aug: craft, purchase, refund, launch_grant,
+       wallpapers, code, grant, recraft. · CUI 42 · copy pass r2 · 2026-08-25 */
+    launch_grant: 'Welcome credits',
+    wallpapers:   'Wallpapers',
+    purchase:     'Credit purchase',
+    code:         'Code redeemed',
+    recraft:      'Crafted again',
     admin:    'Adjusted by the studio'
   };
 
@@ -12157,5 +12202,6 @@ document.addEventListener('click', function(e){
 })();
 </script>
 
+<script src="/welcome.js" defer></script>
 </body>
 </html>
