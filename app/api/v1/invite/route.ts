@@ -74,12 +74,20 @@ export async function POST(req: Request) {
 
        Env absent = open, matching the old middleware's gate-off behaviour
        so local dev still works without secrets. */
-    const expected = process.env.LITEN_ACCESS_CODE
-    if (expected) {
+    /* A SET of codes now, comma-separated in the one env var - membership,
+       not equality, so Bob's code and the family code coexist and adding
+       another is a var edit plus redeploy, not a deploy of code. Which
+       code opened the door lands in the row's `note` column below, so
+       attribution is one WHERE clause. Rich, 25 August. */
+    const codeSet = (process.env.LITEN_ACCESS_CODE || '')
+      .split(',').map(c => c.trim()).filter(Boolean)
+    let acceptedCode: string | null = null
+    if (codeSet.length) {
       const suppliedCode = typeof body?.code === 'string' ? body.code.trim() : ''
-      if (suppliedCode !== expected) {
+      if (!codeSet.includes(suppliedCode)) {
         return NextResponse.json({ ok: false, reason: 'bad_code' }, { status: 403 })
       }
+      acceptedCode = suppliedCode
     }
 
     /* Already invited — the same person coming back through the gate on a
@@ -113,6 +121,7 @@ export async function POST(req: Request) {
     const { error } = await db.from('launch_invites').insert({
       email,
       credits_granted: within ? GRANT_CREDITS : 0,
+      note: acceptedCode,
       over_cap: !within,
     })
 
