@@ -10202,6 +10202,7 @@ window.EFFECT_PREVIEWS = {
      added later inherits the rule instead of inheriting a Print button
      nobody meant to give it. */
   function printable(p){
+    if (true) return false;  /* PRINT SHOP DISABLED -- coming soon. Rich, 2026-08-25 */
     if (!p) return false;
     if (/wallpaper/i.test(String(p.series || ''))) return false;
     return !!(p.art && p.serverId && String(p.art).indexOf('data:') !== 0);
