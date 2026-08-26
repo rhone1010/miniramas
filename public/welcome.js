@@ -6,14 +6,20 @@
    it does not collect. Copy is Rich's locked pass of 25 Aug. */
 (function(){
   'use strict';
+  /* ?welcome=1 on any URL forces the screen - preview for copy and
+     type work, overriding both the day-stamp and the cutoff. */
+  var FORCE = /[?&]welcome=1\b/.test(location.search);
+
   var OFF_AFTER = new Date('2026-09-15T00:00:00');
-  if (new Date() >= OFF_AFTER) return;
+  if (!FORCE && new Date() >= OFF_AFTER) return;
 
   var KEY = 'liten_welcome_day';
   var today = new Date().toISOString().slice(0, 10);
-  try {
-    if (localStorage.getItem(KEY) === today) return;
-  } catch(e){ /* storage refused: greet anyway, once per load */ }
+  if (!FORCE){
+    try {
+      if (localStorage.getItem(KEY) === today) return;
+    } catch(e){ /* storage refused: greet anyway, once per load */ }
+  }
 
   var css = document.createElement('style');
   css.textContent =
@@ -26,13 +32,16 @@
       'background:#f3ede1;border:1px solid rgba(117,98,58,.35);' +
       'border-radius:8px;box-shadow:0 24px 64px rgba(0,0,0,.35);' +
       'cursor:default;text-align:center}' +
-    '.lw-card h2{margin:0 0 6px;font:600 2rem/1.2 "Cormorant Garamond",serif;' +
+    '.lw-card .lw-img{width:132px;height:132px;border-radius:50%;' +
+      'object-fit:cover;object-position:50% 22%;margin:0 auto 16px;display:block;' +
+      'border:2px solid rgba(117,98,58,.45);box-shadow:0 6px 18px rgba(0,0,0,.18)}' +
+    '.lw-card h2{margin:0 0 6px;font:600 2.3rem/1.2 "Cormorant Garamond",serif;' +
       'color:#2a241e}' +
-    '.lw-card .lw-open{margin:0 0 18px;font:italic 1.25rem/1.3 ' +
+    '.lw-card .lw-open{margin:0 0 18px;font:italic 1.45rem/1.3 ' +
       '"Cormorant Garamond",serif;color:#7d4242}' +
-    '.lw-card p{margin:0 0 14px;font:400 1.02rem/1.55 "Cormorant Garamond",serif;' +
-      'color:#2a241e;text-align:left}' +
-    '.lw-card .lw-note{font-size:.95rem;color:rgba(42,36,30,.75)}' +
+    '.lw-card p{margin:0 0 14px;font:500 1.18rem/1.55 "Cormorant Garamond",serif;' +
+      'color:#1f1a15;text-align:left}' +
+    '.lw-card .lw-note{font-size:1.05rem;color:#2a241e}' +
     '.lw-in{display:inline-flex;align-items:center;margin-top:10px;' +
       'padding:.55rem 1.6rem;border-radius:999px;border:1.5px solid #7d4242;' +
       'font:italic 600 1.15rem/1 "Cormorant Garamond",serif;color:#7d4242;' +
@@ -46,6 +55,7 @@
   scrim.setAttribute('aria-label', 'Welcome to Liten and Co');
   scrim.innerHTML =
     '<div class="lw-card">' +
+      '<img class="lw-img" src="/welcome/rich_welcome.jpg" alt="">' +
       '<h2>Welcome to Liten &amp; Co.</h2>' +
       '<div class="lw-open">We\u2019re officially open.</div>' +
       '<p>Turn the people and pets you love into something wonderfully ' +
