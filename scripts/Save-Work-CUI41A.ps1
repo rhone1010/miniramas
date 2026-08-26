@@ -12,6 +12,7 @@
 param(
   [Parameter(Mandatory=$true, Position=0)]
   [string]$Message,
+  [Parameter(ValueFromRemainingArguments=$true)]
   [string[]]$Extra = @()
 )
 
@@ -96,8 +97,17 @@ $CUI_FILES = @(
 Write-Host ""
 Write-Host "-- staging CUI files --" -ForegroundColor Cyan
 
+# -File flattens arrays; remaining-args + comma-split makes every
+# calling style work. CUI 41A, 26 Aug 2026.
+$ExtraFlat = @()
+foreach ($e in $Extra) {
+  foreach ($piece in ($e -split ',')) {
+    $p = $piece.Trim()
+    if ($p -ne '') { $ExtraFlat += $p }
+  }
+}
 $toStage = @()
-foreach ($f in ($CUI_FILES + $Extra)) {
+foreach ($f in ($CUI_FILES + $ExtraFlat)) {
   if (Test-Path $f) {
     $toStage += $f
   }
