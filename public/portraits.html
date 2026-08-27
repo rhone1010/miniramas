@@ -9161,8 +9161,10 @@ window.EFFECT_PREVIEWS = {
          it anyway by refusing without an owner. Asking here means the
          customer meets the request at the moment they want the thing,
          rather than at the door before they know what it is. */
-      if (!ME){ PENDING_CRAFT = true; openSignin(); return; }
-      window.__runAll();
+      whoAmI().then(function(freshUser){
+        if (!freshUser){ PENDING_CRAFT = true; openSignin(); return; }
+        window.__runAll();
+      });
     } else {
       openPoses();
     }
