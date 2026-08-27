@@ -1201,6 +1201,13 @@ body{
   padding:var(--card-gap);
   font-size:var(--card-type);
 }
+/* The hug is a desktop garment. Below 768 the floor wears its pre-hug
+   geometry - the one-column mobile layout was built against it, and
+   fit-content against an unsized parent collapses to specks (mobile
+   #1, the dots). Matches the sizer's 768 guard. CUI 41A, 27 Aug. */
+@media (max-width:767.98px){
+  .floor{ width:auto; height:auto }
+}
 .floor > *{
   /* the span lives on the END, deliberately. `grid-column:span 2` puts the
      span on the START and leaves the end auto — so any grid-column-start
