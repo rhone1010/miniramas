@@ -864,6 +864,7 @@ footer nav a:hover{color:var(--series)}
      ruling: once per browser, one click, then never again. -->
 <div class="welcome" id="welcome" hidden>
   <div class="welcome-card">
+    <button class="welcome-x" id="welcomeX" aria-label="Close">&times;</button>
     <h2 class="welcome-h">Welcome to Liten &amp; Co.</h2>
     <p class="welcome-open">We&rsquo;re officially open.</p>
     <p>Turn the people and pets you love into something wonderfully
@@ -889,6 +890,7 @@ footer nav a:hover{color:var(--series)}
   padding:24px;
 }
 .welcome-card{
+  position:relative;
   background:#f3ede1; color:#2a241e;
   max-width:560px; max-height:86vh; overflow:auto;
   padding:clamp(28px,4vw,48px);
@@ -912,6 +914,19 @@ footer nav a:hover{color:var(--series)}
   background:#7d4242; color:#f3ede1; cursor:pointer;
 }
 .welcome-go:hover{ background:#6d3838 }
+.welcome-x{
+  position:absolute; top:8px; right:12px;
+  font-size:26px; line-height:1; padding:6px 10px;
+  background:none; border:none; color:#7d4242; cursor:pointer;
+}
+/* Phone scale - Rich's note 27 Aug: the desktop sizes ran the card
+   past the fold and hid the only way out. */
+@media (max-width:640px){
+  .welcome{ padding:14px }
+  .welcome-card{ font-size:18px; padding:22px 20px; max-height:88dvh }
+  .welcome-h{ font-size:26px }
+  .welcome-go{ font-size:18px; padding:.5rem 1.3rem }
+}
 </style>
 <script>
 (function(){
@@ -924,10 +939,13 @@ footer nav a:hover{color:var(--series)}
     show it; it just cannot remember. */ }
   if (seen) return;
   el.hidden = false;
-  go.addEventListener('click', function(){
+  function leave(){
     el.hidden = true;
     try { localStorage.setItem(KEY, String(Date.now())); } catch(e){}
-  });
+  }
+  go.addEventListener('click', leave);
+  var x = document.getElementById('welcomeX');
+  if (x) x.addEventListener('click', leave);
 })();
 </script>
 <div class="ground"></div>
