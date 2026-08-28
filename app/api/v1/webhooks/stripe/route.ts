@@ -16,7 +16,7 @@ import Stripe from 'stripe'
 import { getStripe }                         from '@/lib/store/stripe'
 import { confirmPurchase, handlePaymentFailure } from '@/lib/store/entitlements'
 import { supabaseAdmin }                     from '@/lib/supabase'
-import { activateBasket }                    from '@/lib/store/basket-checkout'
+import { activatePortfolio }                 from '@/lib/store/portfolio-checkout'
 
 // Stripe needs the raw body to validate the signature. Disable parsing.
 // In Next.js App Router, request.text() returns the raw body as a string —
@@ -72,8 +72,8 @@ async function dispatch(event: Stripe.Event): Promise<void> {
         stripeSessionId: session.id,
         stripeChargeId:  chargeId,
       })
-      await activateBasket(purchaseId).catch((err) => {
-        console.error('[stripe-webhook] activateBasket failed', purchaseId, err)
+      await activatePortfolio(purchaseId).catch((err) => {
+        console.error('[stripe-webhook] activatePortfolio failed', purchaseId, err)
       })
       return
     }
