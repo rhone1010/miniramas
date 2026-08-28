@@ -1201,6 +1201,13 @@ body{
   padding:var(--card-gap);
   font-size:var(--card-type);
 }
+/* The hug is a desktop garment. Below 768 the floor wears its pre-hug
+   geometry - the one-column mobile layout was built against it, and
+   fit-content against an unsized parent collapses to specks (mobile
+   #1, the dots). Matches the sizer's 768 guard. CUI 41A, 27 Aug. */
+@media (max-width:767.98px){
+  .floor{ width:auto; height:auto }
+}
 .floor > *{
   /* the span lives on the END, deliberately. `grid-column:span 2` puts the
      span on the START and leaves the end auto — so any grid-column-start
@@ -1904,7 +1911,8 @@ body{
 .m-scrim .redirect-cta .btn{margin-top:12px}
 
 
-.m-scrim .modal{width:440px;max-width:100%;background:linear-gradient(180deg,#faf6ec,#f1e8d7);
+.m-scrim .modal{width:min(440px, calc(100vw - 48px));max-width:100%;/* the grid's auto track made 100% self-referential - beta #3, the
+   card off a 412 screen. CUI 41A, 27 Aug 2026. */background:linear-gradient(180deg,#faf6ec,#f1e8d7);
 border:1px solid rgba(147,111,67,.4);border-radius:5px;padding:30px 30px 28px;position:relative;
 box-shadow:0 24px 60px rgba(31,27,20,.4),0 4px 12px rgba(31,27,20,.24),inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 26px rgba(137,101,62,.04);
 transform:translateY(14px) scale(.97);opacity:0;transition:transform .26s cubic-bezier(.32,.72,.32,1),opacity .2s}

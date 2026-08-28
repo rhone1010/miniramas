@@ -2022,7 +2022,8 @@ body{
 .m-scrim .redirect-cta .btn{margin-top:12px}
 
 
-.m-scrim .modal{width:440px;max-width:100%;background:linear-gradient(180deg,#faf6ec,#f1e8d7);
+.m-scrim .modal{width:min(440px, calc(100vw - 48px));max-width:100%;/* the grid's auto track made 100% self-referential - beta #3, the
+   card off a 412 screen. CUI 41A, 27 Aug 2026. */background:linear-gradient(180deg,#faf6ec,#f1e8d7);
 border:1px solid rgba(147,111,67,.4);border-radius:5px;padding:30px 30px 28px;position:relative;
 box-shadow:0 24px 60px rgba(31,27,20,.4),0 4px 12px rgba(31,27,20,.24),inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 26px rgba(137,101,62,.04);
 transform:translateY(14px) scale(.97);opacity:0;transition:transform .26s cubic-bezier(.32,.72,.32,1),opacity .2s}
