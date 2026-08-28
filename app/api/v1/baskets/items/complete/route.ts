@@ -40,6 +40,20 @@ export async function POST(
   req: NextRequest,
   { kickoff = defaultGenerationKickoff }: { kickoff?: GenerationKickoff } = {},
 ) {
+  // -- Shared-secret auth --------------------------------------
+  // Server-to-server only. Fails closed if the secret isn't
+  // configured - matches the Stripe webhook's own posture on a
+  // missing STRIPE_WEBHOOK_SECRET.
+  const configuredSecret = process.env.BASKET_COMPLETE_SECRET
+  if (!configuredSecret) {
+    console.error('[baskets/items/complete] BASKET_COMPLETE_SECRET not set')
+    return NextResponse.json({ error: 'auth_not_configured' }, { status: 503 })
+  }
+  const providedSecret = req.headers.get('x-basket-secret')
+  if (providedSecret !== configuredSecret) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
   let body: any
   try {
     body = await req.json()
