@@ -1184,12 +1184,23 @@ body{
      horizontal space, equal to the vertical - while the 8-track system
      and every count-based centring rule below keep working untouched.
      Rich's ruling, 24-25 Aug. */
-  width:fit-content; max-width:100%; margin-inline:auto;
+  /* Safari cannot resolve fit-content against height-derived cards -
+     beta #2/#3, the sliver floors. A measured --floor-w is set by the
+     sizer below the silo paint; fit-content remains the fallback and
+     Chrome's layout is unchanged. CUI 41A, 26 Aug 2026. */
+  width:var(--floor-w, fit-content); max-width:100%; margin-inline:auto;
   height:100%;
   min-width:0; min-height:0;
   overflow:hidden;
   padding:var(--card-gap);
   font-size:var(--card-type);
+}
+/* The hug is a desktop garment. Below 768 the floor wears its pre-hug
+   geometry - the one-column mobile layout was built against it, and
+   fit-content against an unsized parent collapses to specks (mobile
+   #1, the dots). Matches the sizer's 768 guard. CUI 41A, 27 Aug. */
+@media (max-width:767.98px){
+  .floor{ width:auto; height:auto }
 }
 .floor > *{
   /* the span lives on the END, deliberately. `grid-column:span 2` puts the
@@ -7893,6 +7904,35 @@ window.EFFECT_PREVIEWS = {
     R.silos.forEach(function(s){ siloFloor.appendChild(siloCard(s)); });
     siloFloor.dataset.count = R.silos.length;
   }
+
+  /* THE FLOOR SIZER. Says the floor's width so Safari need not derive
+     it (see the .floor CSS note). Width = four cards + three gaps +
+     the padding, from the floor's measured height. Skips and clears
+     below 768px where the floor is single-column. CUI 41A, 26 Aug. */
+  function sizeFloors(){
+    var wide = window.matchMedia('(min-width: 768px)').matches;
+    document.querySelectorAll('.floor').forEach(function(f){
+      if (!wide){ f.style.removeProperty('--floor-w'); return; }
+      var cs  = getComputedStyle(f);
+      var pad = parseFloat(cs.paddingTop) || 0;
+      var gap = parseFloat(cs.rowGap) || 0;
+      var ratio = parseFloat(cs.getPropertyValue('--card-ratio')) || .78;
+      var rowH = (f.clientHeight - pad*2 - gap) / 2;
+      if (rowH <= 0){ f.style.removeProperty('--floor-w'); return; }
+      var cardW = rowH * ratio;
+      f.style.setProperty('--floor-w', (4*cardW + 3*gap + 2*pad) + 'px');
+    });
+  }
+  (function(){
+    if (!('ResizeObserver' in window)){
+      window.addEventListener('resize', sizeFloors);
+      sizeFloors(); return;
+    }
+    var ro = new ResizeObserver(sizeFloors);
+    document.querySelectorAll('.floor').forEach(function(f){ ro.observe(f); });
+    window.addEventListener('resize', sizeFloors);
+    sizeFloors();
+  })();
 
   /* Only live effects reach this — offerableBySilo() is the filter, and
      NO_ENGINE is gone. An effect the gate would refuse never appears. */
