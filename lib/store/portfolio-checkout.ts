@@ -1,7 +1,15 @@
 // lib/store/portfolio-checkout.ts
-// Renamed from basket-checkout.ts. Portfolio purchase is dynamic-count
-// pricing (resolveSelectionOffer), not a fixed-size SKU. Matches
-// CENG_DISCOVERY_ENGINE_SPEC.md section 6.
+// Fixed-size Portfolio pricing. Reuses the four live Stripe SKUs
+// (single, basket_discover_5, basket_discover_10, basket_discover_20)
+// with updated effect counts: 1, 4, 8, 16.
+//
+// Hard cap: 16 effects max per purchase this release.
+// Checkout requires selectedEffectIds.length to exactly match one of
+// {1, 4, 8, 16} — no rounding, no padding. CUI/Curator fills any
+// remainder before checkout fires.
+//
+// resolveSelectionOffer works for ANY count (used during browsing to
+// show tier context). Only createPortfolioCheckout rejects non-exact.
 
 import { getStripe, getAppUrl } from './stripe'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -9,46 +17,72 @@ import crypto from 'crypto'
 
 export type PortfolioSeries = 'portraits' | 'halloween' | 'groups' | 'pets'
 
-export type Tier = 'tier_1' | 'tier_2' | 'tier_3' | 'tier_4' | 'complete'
+export type Tier = 'tier_1' | 'tier_2' | 'tier_3' | 'tier_4'
 
 export interface SelectionOffer {
   count: number
   tier: Tier | null
+  skuId: string | null
   priceUsd: number
-  nextThreshold: number | null
-  capacityAtCurrentPrice: number
-  remainingAtCurrentPrice: number
   includedUnlocks: number
 }
 
-// Table from LITEN_DISCOVERY_PRODUCT_SPEC.md section 8/9. Single source
-// of truth - change here, nowhere else.
-const TIERS: Array<{ min: number; max: number; tier: Tier; priceUsd: number; unlocks: number }> = [
-  { min: 1,  max: 4,  tier: 'tier_1',  priceUsd: 2.99,  unlocks: 0 },
-  { min: 5,  max: 9,  tier: 'tier_2',  priceUsd: 4.99,  unlocks: 1 },
-  { min: 10, max: 19, tier: 'tier_3',  priceUsd: 7.99,  unlocks: 1 },
-  { min: 20, max: 39, tier: 'tier_4',  priceUsd: 12.99, unlocks: 2 },
-  { min: 40, max: 56, tier: 'complete', priceUsd: 24.99, unlocks: 3 },
+// Fixed purchase sizes, mapped to live SKU rows.
+// Stripe prices are unchanged — only the count column was updated.
+const PORTFOLIO_SIZES: Array<{
+  count: number; tier: Tier; skuId: string; priceCents: number; unlocks: number
+}> = [
+  { count: 1,  tier: 'tier_1', skuId: 'single',             priceCents: 299,  unlocks: 0 },
+  { count: 4,  tier: 'tier_2', skuId: 'basket_discover_5',   priceCents: 499,  unlocks: 1 },
+  { count: 8,  tier: 'tier_3', skuId: 'basket_discover_10',  priceCents: 799,  unlocks: 1 },
+  { count: 16, tier: 'tier_4', skuId: 'basket_discover_20',  priceCents: 1299, unlocks: 2 },
 ]
 
+const VALID_COUNTS = new Set(PORTFOLIO_SIZES.map((s) => s.count))
+
+/**
+ * Returns the offer for a given selection count. Works for any count
+ * (browsing context). For counts between fixed sizes, returns the tier
+ * the user would reach if they filled up to the next size. For count 0,
+ * returns a null-tier empty offer.
+ */
 export function resolveSelectionOffer(count: number): SelectionOffer {
   if (count <= 0) {
+    return { count, tier: null, skuId: null, priceUsd: 0, includedUnlocks: 0 }
+  }
+
+  // Exact match — the purchase sizes
+  const exact = PORTFOLIO_SIZES.find((s) => s.count === count)
+  if (exact) {
     return {
-      count, tier: null, priceUsd: 0, nextThreshold: 1,
-      capacityAtCurrentPrice: 0, remainingAtCurrentPrice: 0, includedUnlocks: 0,
+      count: exact.count,
+      tier: exact.tier,
+      skuId: exact.skuId,
+      priceUsd: exact.priceCents / 100,
+      includedUnlocks: exact.unlocks,
     }
   }
-  const row = TIERS.find((t) => count >= t.min && count <= t.max) ?? TIERS[TIERS.length - 1]
-  const idx = TIERS.indexOf(row)
-  const next = TIERS[idx + 1]
+
+  // Between sizes — find the next size up (the tier the user is working toward)
+  const nextUp = PORTFOLIO_SIZES.find((s) => s.count > count)
+  if (nextUp) {
+    return {
+      count,
+      tier: nextUp.tier,
+      skuId: nextUp.skuId,
+      priceUsd: nextUp.priceCents / 100,
+      includedUnlocks: nextUp.unlocks,
+    }
+  }
+
+  // Above max (shouldn't happen with cap at 16, but be safe)
+  const last = PORTFOLIO_SIZES[PORTFOLIO_SIZES.length - 1]
   return {
     count,
-    tier: row.tier,
-    priceUsd: row.priceUsd,
-    nextThreshold: next ? next.min : null,
-    capacityAtCurrentPrice: row.max,
-    remainingAtCurrentPrice: Math.max(0, row.max - count),
-    includedUnlocks: row.unlocks,
+    tier: last.tier,
+    skuId: last.skuId,
+    priceUsd: last.priceCents / 100,
+    includedUnlocks: last.unlocks,
   }
 }
 
@@ -90,10 +124,14 @@ export async function createPortfolioCheckout(
   if (!Array.isArray(args.selectedEffectIds) || args.selectedEffectIds.length === 0) {
     throw new Error('portfolio_empty_selection')
   }
-  if (args.selectedEffectIds.length > 56) throw new Error('portfolio_over_capacity')
   if (!args.sourceImageRef) throw new Error('portfolio_source_image_required')
 
-  const offer = resolveSelectionOffer(args.selectedEffectIds.length)
+  const count = args.selectedEffectIds.length
+  if (!VALID_COUNTS.has(count)) {
+    throw new Error(`portfolio_invalid_size: got ${count}, must be one of ${[...VALID_COUNTS].join(', ')}`)
+  }
+
+  const offer = resolveSelectionOffer(count)
   const serverCents = Math.round(offer.priceUsd * 100)
   const clientCents = Math.round(args.clientPriceUsd * 100)
   if (clientCents !== serverCents) {
@@ -106,14 +144,20 @@ export async function createPortfolioCheckout(
   const success = appendQuery(base, 'portfolio_paid=1&session_id={CHECKOUT_SESSION_ID}')
   const cancel = appendQuery(base, 'portfolio_canceled=1')
 
+  // Look up the live Stripe price ID from the SKU row.
+  const { data: sku, error: skuErr } = await supabaseAdmin
+    .from('skus')
+    .select('stripe_price_id')
+    .eq('id', offer.skuId!)
+    .single()
+  if (skuErr || !sku?.stripe_price_id) {
+    throw new Error(`sku_lookup_failed: ${offer.skuId} ${skuErr?.message ?? 'no stripe_price_id'}`)
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: [{
-      price_data: {
-        currency: 'usd',
-        unit_amount: serverCents,
-        product_data: { name: `Create My Collection - ${offer.count} effects` },
-      },
+      price: sku.stripe_price_id,
       quantity: 1,
     }],
     success_url: success,
@@ -123,7 +167,7 @@ export async function createPortfolioCheckout(
       series: args.series,
       userId: args.userId,
       count: String(offer.count),
-      tier: offer.tier ?? '',
+      skuId: offer.skuId!,
     },
   })
   if (!session.url) throw new Error('stripe_session_missing_url')
@@ -133,7 +177,7 @@ export async function createPortfolioCheckout(
     .insert({
       user_id: args.userId,
       guest_email: null,
-      sku_id: null,
+      sku_id: offer.skuId,
       stripe_session_id: session.id,
       amount_cents: serverCents,
       status: 'pending',
@@ -168,7 +212,7 @@ export async function createPortfolioCheckout(
   const { error: itemErr } = await supabaseAdmin.from('portfolio_items').insert(itemRows)
   if (itemErr) throw new Error(`portfolio_item_insert_failed: ${itemErr.message}`)
 
-  console.log(`[createPortfolioCheckout] ${args.series} ${offer.count}pc tier=${offer.tier} portfolio=${portfolioId}`)
+  console.log(`[createPortfolioCheckout] ${args.series} ${offer.count}pc sku=${offer.skuId} portfolio=${portfolioId}`)
   return { checkoutUrl: session.url, purchaseId, portfolioId }
 }
 

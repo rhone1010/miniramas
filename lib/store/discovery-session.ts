@@ -68,7 +68,7 @@ function rowToSession(row: SessionRow): DiscoverySession {
 }
 
 const TIER_ORDER: Record<Tier, number> = {
-  tier_1: 1, tier_2: 2, tier_3: 3, tier_4: 4, complete: 5,
+  tier_1: 1, tier_2: 2, tier_3: 3, tier_4: 4,
 }
 
 function computeTierChange(previous: Tier | null, current: Tier | null): TierChangeEvent {
