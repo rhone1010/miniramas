@@ -52,7 +52,7 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 
 .shell{ display:grid; grid-template-columns:var(--rail-w) 1fr; max-width:1800px; margin:0 auto; height:calc(100vh - var(--mh-h)) }
 
-.rail{ padding:28px 22px; overflow-y:auto; display:flex; flex-direction:column }
+.rail{ padding:28px 10%; overflow-y:auto; display:flex; flex-direction:column }
 .curator{ display:flex; align-items:center; gap:10px; margin-bottom:6px }
 .curator__badge{ width:34px; height:34px; border-radius:50%; background:var(--oxblood); color:var(--gold-soft); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:1.1rem }
 .curator h3{ font-family:var(--serif); font-weight:600; font-size:1.15rem; margin:0 }
@@ -102,6 +102,7 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
   border-bottom:3px solid transparent; padding:0 4px;
 }
 .icon-nav__item svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5 }
+.icon-nav__item img{ width:28px; height:28px; object-fit:contain }
 .icon-nav__item span{ font-size:var(--nav-fs); white-space:nowrap }
 .icon-nav__item.active{ color:var(--gold-soft); border-bottom-color:var(--gold-soft) }
 
@@ -115,15 +116,28 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 
 .grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap); width:95% }
 .card{ position:relative; border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15); cursor:pointer }
-.card__art{ aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24); display:flex; align-items:flex-end }
+.card__art{ position:relative; aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24) }
+/* Matches the real production overlay pattern (silo-card__overlay in
+   portraits.html) exactly: image fills the card, a gradient sits above
+   it (transparent -> dark, 42% -> 100%), title sits above that with a
+   text-shadow for legibility, not a solid background bar. */
+.card__overlay{
+  position:absolute; inset:0; z-index:1;
+  background:linear-gradient(180deg, transparent 42%, rgba(19,13,9,.18) 58%, rgba(19,13,9,.88) 100%);
+}
 .card__check{
-  position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:50%;
+  position:absolute; top:8px; right:8px; z-index:2; width:24px; height:24px; border-radius:50%;
   background:rgba(0,0,0,.35); border:1.5px solid rgba(255,255,255,.7);
   display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px;
 }
 .card__check.checked{ background:var(--gold); border-color:var(--gold); color:var(--oxblood) }
-.card__meta{ padding:10px 12px; background:#161210; color:#f3ede1 }
-.card__meta strong{ display:block; font-family:var(--serif); font-size:1.05rem; font-weight:600 }
+.card__content{
+  position:absolute; z-index:2; left:7%; right:7%; bottom:7%;
+}
+.card__content strong{
+  display:block; font-family:var(--serif); font-size:1.05rem; font-weight:400; color:#fffcf6;
+  text-shadow:0 .08rem .18rem rgba(18,12,8,.8), 0 .3rem .8rem rgba(18,12,8,.42);
+}
 
 /* ── Title card: same footprint as a photo card, occupies grid slot 1.
    Not selectable, not a check target — reads as the room's header
@@ -138,10 +152,11 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
   text-align:center; padding:18px; box-shadow:0 6px 16px rgba(35,31,27,.15);
 }
 .title-card .icon{
-  width:48px; height:48px; border-radius:50%; border:1px solid rgba(224,184,102,.5);
+  width:56px; height:56px; border-radius:50%; border:1px solid rgba(224,184,102,.5);
   display:flex; align-items:center; justify-content:center; margin-bottom:14px;
 }
 .title-card .icon svg{ width:24px; height:24px; stroke:var(--gold-soft); fill:none; stroke-width:1.5 }
+.title-card .icon img{ width:36px; height:36px; object-fit:contain }
 .title-card h3{ font-family:var(--serif); font-size:1.4rem; color:#f3ede1; margin:0 0 6px; line-height:1.15 }
 .title-card span{ font-size:.78rem; color:#c9a97e }
 
@@ -266,17 +281,10 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 </div>
 
 <script>
-// ── Real catalog data (effect-registry.ts), 8 silos, 7 canonical each. ──
-var ICONS = {
-  hourglass: '<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',
-  mountain:  '<path d="M3 19l6-10 4 6 3-4 5 8H3z"/>',
-  sparkle:   '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>',
-  leaf:      '<path d="M5 19C5 10 12 4 20 4c0 8-6 15-15 15zM5 19c2-4 5-7 9-9"/>',
-  hand:      '<path d="M7 11V5.5a1.5 1.5 0 013 0V10M10 10V4.5a1.5 1.5 0 013 0V10M13 10V6a1.5 1.5 0 013 0v6M16 12v-1a1.5 1.5 0 013 0v4a6 6 0 01-6 6h-2a6 6 0 01-5-3l-3-5a1.5 1.5 0 012.6-1.5L7 13"/>',
-  column:    '<path d="M5 21h14M6 19h12M7 19V8h10v11M6 6h12M7 6l-1-2h12l-1 2"/>',
-  quill:     '<path d="M20 4c-6 0-13 5-13 13v3M20 4c-1 4-3 7-6 9M11 13c2-2 5-4 9-9"/>',
-  wheel:     '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M6.3 17.7l2.8-2.8M14.9 9.1l2.8-2.8"/>',
-};
+// ── Real catalog data (effect-registry.ts), 8 silos, 7 canonical each.
+// Icon images: real assets now, /icons/discovery-filters/<silo.id>.png --
+// silo.id already matches the clean filenames, no mapping needed. ──
+function iconSrc(siloId){ return '/icons/discovery-filters/' + siloId + '.png'; }
 
 var SILOS = [
   { id:'another_age', name:'Another Age', icon:'hourglass', effects:['Victorian Noble','Civil War Era','Edwardian Portrait','Early Aviator','Baroque Masterpiece','Samurai','Renaissance Noble'] },
@@ -334,7 +342,7 @@ SILOS.forEach(function(silo, idx){
   var btn = document.createElement('button');
   btn.className = 'icon-nav__item' + (idx === 0 ? ' active' : '');
   btn.dataset.target = silo.id;
-  btn.innerHTML = '<svg viewBox="0 0 24 24">' + ICONS[silo.icon] + '</svg><span>' + silo.name + '</span>';
+  btn.innerHTML = '<img src="' + iconSrc(silo.id) + '" alt="">' + '<span>' + silo.name + '</span>';
   btn.addEventListener('click', function(){
     document.getElementById('silo-' + silo.id).scrollIntoView({ behavior:'smooth', block:'start' });
   });
@@ -352,7 +360,7 @@ SILOS.forEach(function(silo, idx){
   var titleCard = document.createElement('div');
   titleCard.className = 'title-card';
   titleCard.innerHTML =
-    '<div class="icon"><svg viewBox="0 0 24 24">' + ICONS[silo.icon] + '</svg></div>' +
+    '<div class="icon"><img src="' + iconSrc(silo.id) + '" alt=""></div>' +
     '<h3>' + silo.name + '</h3>' +
     '<span>' + silo.effects.length + ' effects</span>';
   gridEl.appendChild(titleCard);
@@ -364,8 +372,8 @@ SILOS.forEach(function(silo, idx){
     var card = document.createElement('div');
     card.className = 'card';
     card.innerHTML =
-      '<div class="card__art"><div class="card__check"></div></div>' +
-      '<div class="card__meta"><strong>' + name + '</strong></div>';
+      '<div class="card__art"><div class="card__overlay"></div><div class="card__check"></div>' +
+        '<div class="card__content"><strong>' + name + '</strong></div></div>';
     var checkEl = card.querySelector('.card__check');
     card.addEventListener('click', function(){
       toggleSelect(key, name, silo.name, checkEl, card);

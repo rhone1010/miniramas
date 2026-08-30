@@ -4176,22 +4176,6 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   position:absolute; inset:0; z-index:1;
   display:grid; place-items:center;
 }
-/* Real Unicorn Studio scene, layered beneath the existing ring/shimmer.
-   Ring always stays visible (small, reassuring, matches the original
-   scene mockup's own "reassurance, not decision" rule); the shimmer
-   background only fades once a real scene is actually rendering.
-   Capped at MAX_PIECE_SCENES concurrent instances in the JS below --
-   ten pieces can craft at once, and ten live WebGL contexts is not a
-   risk worth taking on the live site for a decorative wait state.
-   Ruled with Rich, 29 Aug 2026. */
-.piece__scene{
-  position:absolute; inset:0; z-index:0; pointer-events:none;
-  overflow:hidden;
-}
-.piece__scene canvas{
-  width:100% !important; height:100% !important; display:block; object-fit:cover;
-}
-.piece.has-scene .piece__wait::after{ display:none }
 .piece__wait::after{
   content:""; position:absolute; inset:0;
   background:linear-gradient(115deg, transparent 30%, rgba(243,237,225,.09) 50%, transparent 70%);
@@ -4200,11 +4184,12 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
 }
 @keyframes mcShim{ from{ background-position:120% 0 } to{ background-position:-120% 0 } }
 .piece__ring{
-  width:2.6rem; height:2.6rem;
-  border:2px solid rgba(201,166,96,.22);
-  border-top-color:rgba(201,166,96,.85);
+  width:3rem; height:3rem;
+  border:2.5px solid rgba(201,166,96,.22);
+  border-top-color:rgba(201,166,96,.9);
   border-radius:50%;
-  animation:mcSpin 1.05s linear infinite;
+  box-shadow:0 0 14px rgba(201,166,96,.18);
+  animation:mcSpin 1.4s linear infinite;
 }
 @keyframes mcSpin{ to{ transform:rotate(360deg) } }
 .piece.is-crafting .piece__name{ color:rgba(247,242,233,.62) }
@@ -9387,7 +9372,6 @@ window.EFFECT_PREVIEWS = {
     if (!p.crafting) a.tabIndex = 0;
     if (p.crafting){
       a.innerHTML =
-        '<div class="piece__scene" id="pieceScene-' + esc(p.id) + '"></div>' +
         '<div class="piece__wait"><div class="piece__ring"></div></div>' +
         '<div class="piece__veil"></div>' +
         '<div class="piece__body"><h3 class="piece__name">Crafting\u2026</h3>' +
@@ -9578,63 +9562,9 @@ window.EFFECT_PREVIEWS = {
     }
   });
 
-  /* ---- crafting-tile scene effect (Unicorn Studio, reused verbatim
-     lifecycle from studio-accordion-mockup.html) ---------------------
-     Capped at MAX_PIECE_SCENES concurrent real scenes -- pieces beyond
-     the cap keep the existing ring/shimmer fallback, which was already
-     the whole state before this. Nothing is removed, only added to.
-     Ruled with Rich, 29 Aug 2026. */
-  var MAX_PIECE_SCENES = 4;
-  var PIECE_SDK_URL = '/vendor/unicornStudio.umd.js';
-  var PIECE_SCENE_JSON = '/scenes/studio-field.json';
-  var __pieceSdk = null;
-  var __pieceScenes = {};
-
-  function __loadPieceSdk(){
-    if (__pieceSdk) return __pieceSdk;
-    __pieceSdk = new Promise(function(resolve, reject){
-      if (window.UnicornStudio) return resolve(window.UnicornStudio);
-      var el = document.createElement('script');
-      el.src = PIECE_SDK_URL; el.async = true;
-      el.onload = function(){ window.UnicornStudio ? resolve(window.UnicornStudio) : reject(new Error('no UnicornStudio')) };
-      el.onerror = function(){ reject(new Error('sdk failed')) };
-      document.head.appendChild(el);
-    });
-    return __pieceSdk;
-  }
-
-  function destroyAllPieceScenes(){
-    Object.keys(__pieceScenes).forEach(function(id){
-      var sc = __pieceScenes[id];
-      if (sc && sc.destroy) sc.destroy();
-    });
-    __pieceScenes = {};
-  }
-
-  function startPieceScenesForCrafting(list){
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var phone = window.matchMedia && window.matchMedia('(max-width:820px)').matches;
-    var crafting = list.filter(function(p){ return p.crafting; }).slice(0, MAX_PIECE_SCENES);
-    if (!crafting.length) return;
-    __loadPieceSdk().then(function(US){
-      crafting.forEach(function(p){
-        var elId = 'pieceScene-' + p.id;
-        var el = document.getElementById(elId);
-        if (!el) return;
-        var opt = { elementId: elId, fps:60, scale: phone?0.5:1, dpi: phone?1:1.5, lazyLoad:false, filePath:PIECE_SCENE_JSON };
-        US.addScene(opt).then(function(sc){
-          __pieceScenes[p.id] = sc;
-          var tile = el.closest('.piece');
-          if (tile) tile.classList.add('has-scene');
-        }).catch(function(){ /* ring/shimmer fallback keeps running */ });
-      });
-    }).catch(function(){ /* same -- fallback already showing */ });
-  }
-
   function renderCollection(){
     if (!mcGrid) return;
     var list = mcVisible();
-    destroyAllPieceScenes();
     mcGrid.innerHTML = '';
     if (!list.length){
       var e = document.createElement('p');
@@ -9675,7 +9605,6 @@ window.EFFECT_PREVIEWS = {
       mcGrid.appendChild(wrap);
       var mini = wrap.querySelector('#mcMini');
       list.forEach(function(p){ mini.appendChild(pieceTile(p)); });
-      startPieceScenesForCrafting(list);
 
       var first = null;
       list.forEach(function(p){ if (!first && !p.crafting) first = p; });
