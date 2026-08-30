@@ -2,7 +2,7 @@
 // GET returns the 56-position catalog map. Query param ?series=portraits
 // (only value supported today - others 400, not silently wrong data).
 import { NextRequest, NextResponse } from 'next/server'
-import { getPortraitsCatalogMap } from '@/lib/store/discovery-catalog'
+import { getPortraitsCatalogMap, getPortraitsSiloBoundaries } from '@/lib/store/discovery-catalog'
 
 export async function GET(req: NextRequest) {
   const series = req.nextUrl.searchParams.get('series') || 'portraits'
@@ -12,5 +12,5 @@ export async function GET(req: NextRequest) {
       { status: 400 },
     )
   }
-  return NextResponse.json({ series, map: getPortraitsCatalogMap() })
+  return NextResponse.json({ series, map: getPortraitsCatalogMap(), silos: getPortraitsSiloBoundaries() })
 }

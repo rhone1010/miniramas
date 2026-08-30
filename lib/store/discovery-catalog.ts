@@ -24,6 +24,8 @@
 // file covers Portraits only. Extending the map to other series needs
 // their registries confirmed first, not guessed from this shape.
 
+import { SILOS } from '@/lib/v1/portraits/effect-registry'
+
 export type SiloId =
   | 'earth_ore' | 'light_glass' | 'living_world' | 'made_by_hand'
   | 'artists_gallery' | 'ink_paper' | 'fantasy_future' | 'another_age'
@@ -33,6 +35,13 @@ export interface CatalogMapEntry {
   seriesId: 'portraits'
   siloId: SiloId
   effectId: string | null // null = known gap, not a guess
+}
+
+export interface SiloBoundary {
+  siloId: string
+  label: string
+  startIndex: number
+  endIndex: number
 }
 
 // Silo order matches effect-registry.ts's SILOS array order exactly.
@@ -80,6 +89,7 @@ const CANONICAL_BY_SILO: Record<SiloId, Array<string | null>> = {
 }
 
 let _map: CatalogMapEntry[] | null = null
+let _silos: SiloBoundary[] | null = null
 
 export function getPortraitsCatalogMap(): CatalogMapEntry[] {
   if (_map) return _map
@@ -93,6 +103,26 @@ export function getPortraitsCatalogMap(): CatalogMapEntry[] {
   }
   _map = entries
   return entries
+}
+
+const siloLabelMap = new Map(SILOS.map((s) => [s.id, s.label]))
+
+export function getPortraitsSiloBoundaries(): SiloBoundary[] {
+  if (_silos) return _silos
+  const boundaries: SiloBoundary[] = []
+  let offset = 0
+  for (const siloId of SILO_ORDER) {
+    const count = CANONICAL_BY_SILO[siloId].length
+    boundaries.push({
+      siloId,
+      label: siloLabelMap.get(siloId) ?? siloId,
+      startIndex: offset,
+      endIndex: offset + count - 1,
+    })
+    offset += count
+  }
+  _silos = boundaries
+  return boundaries
 }
 
 /** For variant resolution (spec section 4) - given a canonical effect id
