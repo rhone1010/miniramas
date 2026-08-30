@@ -39,100 +39,111 @@ export async function POST(req: NextRequest) {
 }
 
 async function renderOnePortfolioItem(portfolioItemId: string): Promise<void> {
-  const { data: item, error: itemErr } = await supabaseAdmin
-    .from('portfolio_items')
-    .select('id, portfolio_id, slot, preset, status, attempts')
-    .eq('id', portfolioItemId)
-    .maybeSingle()
-  if (itemErr || !item) {
-    console.error(`[portfolios/items/render] portfolio_item not found: ${portfolioItemId}`)
-    return
-  }
-
-  const { data: portfolio, error: portfolioErr } = await supabaseAdmin
-    .from('portfolios')
-    .select('id, series, source_image')
-    .eq('id', item.portfolio_id)
-    .maybeSingle()
-  if (portfolioErr || !portfolio) {
-    console.error(`[portfolios/items/render] portfolio not found for item ${portfolioItemId}`)
-    return
-  }
-
-  if (portfolio.series !== 'portraits') {
-    console.error(
-      `[portfolios/items/render] series '${portfolio.series}' not wired - only 'portraits' ` +
-      `is implemented. Item ${portfolioItemId} left in its current state.`,
-    )
-    return
-  }
-
-  const styleId = styleIdForPreset(item.preset)
-  const appUrl = getAppUrl()
-
-  let genResult: any
-  let ok = false
   try {
-    const res = await fetch(`${appUrl}/api/v1/portraits/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source_image_b64: portfolio.source_image,
-        style_id: styleId,
-        preset_id: item.preset,
-        framing: 'bust',
-        scale: 'close_up',
-      }),
-    })
-    genResult = await res.json()
-
-    if (res.status === 403 && genResult?.code === 'age_restricted') {
-      await failWholePortfolio(portfolio.id, 'age_restricted')
+    const { data: item, error: itemErr } = await supabaseAdmin
+      .from('portfolio_items')
+      .select('id, portfolio_id, slot, preset, status, attempts')
+      .eq('id', portfolioItemId)
+      .maybeSingle()
+    if (itemErr || !item) {
+      console.error(`[portfolios/items/render] portfolio_item not found: ${portfolioItemId}`)
       return
     }
-    ok = res.ok && genResult?.result?.ok && !!genResult?.result?.image_b64
-      && genResult?.status !== 'redirected' && genResult?.status !== 'intake_rejected'
+
+    const { data: portfolio, error: portfolioErr } = await supabaseAdmin
+      .from('portfolios')
+      .select('id, series, source_image')
+      .eq('id', item.portfolio_id)
+      .maybeSingle()
+    if (portfolioErr || !portfolio) {
+      console.error(`[portfolios/items/render] portfolio not found for item ${portfolioItemId}`)
+      return
+    }
+
+    if (portfolio.series !== 'portraits') {
+      console.error(
+        `[portfolios/items/render] series '${portfolio.series}' not wired - only 'portraits' ` +
+        `is implemented. Item ${portfolioItemId} left in its current state.`,
+      )
+      return
+    }
+
+    const styleId = styleIdForPreset(item.preset)
+    const appUrl = getAppUrl()
+
+    let genResult: any
+    let ok = false
+    try {
+      const res = await fetch(`${appUrl}/api/v1/portraits/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source_image_b64: portfolio.source_image,
+          style_id: styleId,
+          preset_id: item.preset,
+          framing: 'bust',
+          scale: 'close_up',
+        }),
+      })
+      genResult = await res.json()
+
+      if (res.status === 403 && genResult?.code === 'age_restricted') {
+        await failWholePortfolio(portfolio.id, 'age_restricted')
+        return
+      }
+      ok = res.ok && genResult?.result?.ok && !!genResult?.result?.image_b64
+        && genResult?.status !== 'redirected' && genResult?.status !== 'intake_rejected'
+    } catch (e: any) {
+      console.error(`[portfolios/items/render] fetch to generate failed for ${portfolioItemId}`, e)
+      ok = false
+    }
+
+    if (!ok) {
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts,
+        genResult?.error || genResult?.status || 'generate_failed')
+      return
+    }
+
+    const imageB64: string = genResult.result.image_b64
+    const previewId = crypto.randomUUID()
+    const storagePath = await storeCleanOriginal(supabaseAdmin, previewId, imageB64, portfolio.series)
+
+    let watermarked: string
+    try {
+      watermarked = await bakeWatermark(imageB64)
+    } catch (e: any) {
+      console.error(`[portfolios/items/render] watermark bake FAILED for ${portfolioItemId}`, e)
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'watermark_failed')
+      return
+    }
+
+    await recordPreview(supabaseAdmin, {
+      previewId,
+      email: `portfolio:${portfolio.id}`,
+      ipHash: `portfolio:${portfolio.id}`,
+      series: portfolio.series,
+      preset: item.preset,
+      resolution: '1k',
+      storagePath,
+    })
+
+    await supabaseAdmin
+      .from('portfolio_items')
+      .update({ status: 'done', preview_id: previewId })
+      .eq('id', portfolioItemId)
+
+    await maybeFlipReady(portfolio.id)
+    console.log(`[portfolios/items/render] done item=${portfolioItemId} preview=${previewId}`)
   } catch (e: any) {
-    console.error(`[portfolios/items/render] fetch to generate failed for ${portfolioItemId}`, e)
-    ok = false
+    console.error(`[portfolios/items/render] top-level failure for ${portfolioItemId}:`, e)
+    await supabaseAdmin
+      .from('portfolio_items')
+      .update({ status: 'failed', error: e?.message || 'unhandled_error' })
+      .eq('id', portfolioItemId)
+      .catch((dbErr: any) => {
+        console.error(`[portfolios/items/render] ALSO failed to write error to DB for ${portfolioItemId}:`, dbErr)
+      })
   }
-
-  if (!ok) {
-    await handleItemFailure(portfolioItemId, portfolio.id, item.attempts,
-      genResult?.error || genResult?.status || 'generate_failed')
-    return
-  }
-
-  const imageB64: string = genResult.result.image_b64
-  const previewId = crypto.randomUUID()
-  const storagePath = await storeCleanOriginal(supabaseAdmin, previewId, imageB64, portfolio.series)
-
-  let watermarked: string
-  try {
-    watermarked = await bakeWatermark(imageB64)
-  } catch (e: any) {
-    console.error(`[portfolios/items/render] watermark bake FAILED for ${portfolioItemId}`, e)
-    await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'watermark_failed')
-    return
-  }
-
-  await recordPreview(supabaseAdmin, {
-    previewId,
-    email: `portfolio:${portfolio.id}`,
-    ipHash: `portfolio:${portfolio.id}`,
-    series: portfolio.series,
-    preset: item.preset,
-    resolution: '1k',
-    storagePath,
-  })
-
-  await supabaseAdmin
-    .from('portfolio_items')
-    .update({ status: 'done', preview_id: previewId })
-    .eq('id', portfolioItemId)
-
-  await maybeFlipReady(portfolio.id)
-  console.log(`[portfolios/items/render] done item=${portfolioItemId} preview=${previewId}`)
 }
 
 /** Retry SAME effect, per product spec section 13. No substitution. */

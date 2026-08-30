@@ -28,6 +28,7 @@ public/previews/groups-candidates/
 # ── Logs and local tooling ────────────────────────────────────────────
 # The real log is H:\NO_DELETE_ARCHIVE\Logs\ — not the repo.
 _ledger.csv
+scripts/_query.js
 *.log
 
 # ── Secrets ───────────────────────────────────────────────────────────
