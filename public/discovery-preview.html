@@ -86,6 +86,7 @@ body{
   content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
   background-image:url("/textures/noise.png");
   background-repeat:repeat; background-size:14rem 14rem;
+  opacity:.045; mix-blend-mode:multiply;
 }
 .curator{ display:flex; align-items:center; gap:10px; margin-bottom:6px }
 .curator__badge{ width:34px; height:34px; border-radius:50%; background:var(--oxblood); color:var(--gold-soft); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:1.1rem }
@@ -94,7 +95,7 @@ body{
 .divider{ border:none; border-top:1px solid rgba(35,31,27,.15); margin:10px 0 16px }
 .eyebrow{ font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; color:#8a7a5f; margin-bottom:8px }
 .photo-row{ display:flex; align-items:center; gap:12px; margin-bottom:20px }
-.photo-stamp{ width:56px; height:56px; border:1px solid rgba(35,31,27,.3); border-radius:2px; padding:4px; background:#fff }
+.photo-stamp{ width:90px; height:90px; border:1px solid rgba(35,31,27,.3); border-radius:2px; padding:4px; background:#fff }
 .photo-stamp .fill{ width:100%; height:100%; background:linear-gradient(150deg,#8a725d,#3a2b24) }
 .photo-row button{ font-family:var(--sans); font-size:.8rem; border:1px solid rgba(35,31,27,.25); background:transparent; border-radius:14px; padding:6px 12px; cursor:pointer; color:var(--ink) }
 .q{ font-size:.85rem; color:#5a5142; margin:14px 0 10px }
@@ -109,9 +110,36 @@ body{
 .option span.sub{ font-size:.75rem; color:#6b5f4f }
 .option .chev{ color:#8a7a5f }
 
+/* ── Oxblood leather: real production leather texture
+   (coffee_leather.jpg, soft-light noise blend — "multiply crushes the
+   shadows into mud" per the file's own comment on a dark ground), but
+   with the wash/base tinted oxblood instead of neutral coffee, since
+   the neutral version wasn't actually what was asked for. Texture
+   path only resolves on the live domain, same caveat as elsewhere. ── */
+.leather{
+  position:relative; isolation:isolate; overflow:hidden;
+  background-color:#2a1414;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.045), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(255,255,255,.025), transparent 48%),
+    linear-gradient(180deg, rgba(255,255,255,.018), rgba(0,0,0,.04)),
+    linear-gradient(0deg, rgba(90,42,42,.5), rgba(90,42,42,.5)),
+    url("/textures/coffee_leather.jpg");
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,800px 800px;
+  background-position:center,center,center,center,center;
+  border:1px solid rgba(174,133,78,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 .8rem 1.8rem rgba(25,16,10,.2);
+}
+.leather::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:13rem 13rem;
+  opacity:.12; mix-blend-mode:soft-light;
+}
+
 .your-collection{
-  margin-top:16px; background:var(--oxblood); border:1px solid var(--oxblood-line);
-  border-radius:10px; padding:18px 18px 20px; color:#f3ede1;
+  margin-top:16px; border:none; border-radius:10px; padding:18px 18px 20px; color:#f3ede1;
 }
 .your-collection__head{ display:flex; align-items:center; gap:8px; margin-bottom:12px }
 .your-collection__head .icon{ color:var(--gold-soft); font-size:1rem }
@@ -127,8 +155,8 @@ body{
 .stage-col{ display:flex; flex-direction:column; min-height:0 }
 
 .icon-nav{
-  height:var(--nav-h); background:var(--oxblood); border-bottom:1px solid var(--oxblood-line);
-  display:flex; align-items:stretch; padding:0 24px; flex-shrink:0;
+  height:var(--nav-h); border:none; border-bottom:1px solid rgba(174,133,78,.2);
+  display:flex; align-items:stretch; padding:15px 24px; flex-shrink:0; box-sizing:content-box;
 }
 .icon-nav__item{
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
@@ -152,7 +180,7 @@ body{
 
 .silo-block{ margin-bottom:44px; scroll-margin-top:14px }
 
-.grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap); width:95% }
+.grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:var(--card-gap) }
 .card{
   position:relative; border-radius:8px; overflow:hidden; cursor:pointer;
   border:1px solid rgba(88,65,42,.22);
@@ -190,13 +218,9 @@ body{
    Not selectable, not a check target — reads as the room's header
    folded into the grid instead of a separate row above it. ── */
 .title-card{
-  aspect-ratio:2/3; border-radius:8px; overflow:hidden; cursor:default;
-  background:
-    radial-gradient(circle at 30% 20%, rgba(224,184,102,.12), transparent 55%),
-    linear-gradient(165deg, var(--oxblood), #240a0e);
-  border:1px solid var(--oxblood-line);
+  aspect-ratio:2/3; border-radius:8px; cursor:default;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; padding:18px; box-shadow:0 6px 16px rgba(35,31,27,.15);
+  text-align:center; padding:18px;
 }
 .title-card .icon{
   width:104px; height:104px; border-radius:50%; border:1px solid rgba(224,184,102,.5);
@@ -225,7 +249,7 @@ body{
 .review-banner p{ margin:2px 0 0; font-size:.9rem; color:#e7ddc9 }
 .back-btn{ border:1px solid rgba(224,184,102,.5); color:var(--gold-soft); background:transparent; border-radius:20px; padding:8px 16px; font-size:.85rem; display:flex; align-items:center; gap:6px; cursor:pointer }
 
-.review-grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap); padding:0 32px 40px; overflow-y:auto; width:95% }
+.review-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:var(--card-gap); padding:0 32px 40px; overflow-y:auto }
 .rcard{ border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15) }
 .rcard__art{ aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24); position:relative }
 .rcard__remove{
@@ -295,7 +319,7 @@ body{
       <span class="chev">›</span>
     </div>
 
-    <div class="your-collection">
+    <div class="your-collection leather">
       <div class="your-collection__head"><span class="icon">♥</span><span>Your Collection</span></div>
       <div class="your-collection__count" id="collCount">0 collected</div>
       <div class="your-collection__next" id="collNext"></div>
@@ -305,7 +329,7 @@ body{
 
   <!-- ── Discovery stage ── -->
   <div class="stage-col discovery-view" id="discoveryView">
-    <nav class="icon-nav" id="iconNav"></nav>
+    <nav class="icon-nav leather" id="iconNav"></nav>
     <main class="stage-scroll" id="stageScroll"></main>
   </div>
 
@@ -405,7 +429,7 @@ SILOS.forEach(function(silo, idx){
   // Title card occupies slot 1 -- folds the room header into the grid
   // itself instead of a separate row above it. Not selectable.
   var titleCard = document.createElement('div');
-  titleCard.className = 'title-card';
+  titleCard.className = 'title-card leather';
   titleCard.innerHTML =
     '<div class="icon"><img src="' + iconSrc(silo.id) + '" alt=""></div>' +
     '<h3>' + silo.name + '</h3>' +
@@ -531,7 +555,7 @@ function restoreDiscoveryRail(){
     '<div class="option"><div class="option__left"><span class="icon">✦</span><div><strong>Pick for me</strong><span class="sub">I\'ll choose great options for you.</span></div></div><span class="chev">›</span></div>' +
     '<div class="option"><div class="option__left"><span class="icon">⊘</span><div><strong>Help me choose</strong><span class="sub">Guide me to the right effects.</span></div></div><span class="chev">›</span></div>' +
     '<div class="option"><div class="option__left"><span class="icon">💬</span><div><strong>Describe what you\'re looking for</strong><span class="sub">Describe it in your own words.</span></div></div><span class="chev">›</span></div>' +
-    '<div class="your-collection">' +
+    '<div class="your-collection leather">' +
       '<div class="your-collection__head"><span class="icon">♥</span><span>Your Collection</span></div>' +
       '<div class="your-collection__count" id="collCount"></div>' +
       '<div class="your-collection__next" id="collNext"></div>' +
