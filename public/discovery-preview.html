@@ -34,7 +34,7 @@
   :root{ --rail-w:290px; --grid-cols:4; --nav-gap:20px; --nav-fs:.75rem; --card-gap:18px; --fs-brand:1.2rem; --fs-navlink:.9rem; }
 }
 @media (min-width:1920px){
-  :root{ --rail-w:290px; --grid-cols:5; --nav-gap:28px; --nav-fs:.8rem; --card-gap:20px; --fs-brand:1.3rem; --fs-navlink:.95rem; }
+  :root{ --rail-w:350px; --grid-cols:5; --nav-gap:28px; --nav-fs:.8rem; --card-gap:20px; --fs-brand:1.3rem; --fs-navlink:.95rem; }
 }
 @media (min-width:2560px){
   :root{ --rail-w:340px; --grid-cols:6; --nav-gap:34px; --nav-fs:.85rem; --card-gap:24px; --fs-brand:1.5rem; --fs-navlink:1.05rem; }
@@ -65,7 +65,7 @@ body{
 .masthead__right{ display:flex; align-items:center; gap:14px; font-size:.85rem; color:#cfc3ab }
 .pill-btn{ border:1px solid rgba(255,255,255,.25); border-radius:20px; padding:6px 14px; display:flex; align-items:center; gap:6px; color:#e7ddc9 }
 
-.shell{ display:grid; grid-template-columns:var(--rail-w) 1fr; max-width:1800px; margin:0 auto; height:calc(100vh - var(--mh-h)) }
+.shell{ display:grid; grid-template-columns:var(--rail-w) 1fr; margin:0 auto; height:calc(100vh - var(--mh-h)) }
 
 /* ── Real curator-panel treatment (portraits.html's .room--curator,
    adapted): warm vellum base, two radial gradients for tone, a linear
@@ -180,7 +180,7 @@ body{
 
 .silo-block{ margin-bottom:44px; scroll-margin-top:14px }
 
-.grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:var(--card-gap) }
+.grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:var(--card-gap) }
 .card{
   position:relative; border-radius:8px; overflow:hidden; cursor:pointer;
   border:1px solid rgba(88,65,42,.22);
