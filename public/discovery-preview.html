@@ -9,16 +9,19 @@
 <style>
 :root{
   --ink:#231f1b;
-  --parchment:#ede3d0;
-  --masthead:#100b09;
-  --oxblood:#3d1319;
-  --oxblood-line:#7a2e34;
-  --gold:#c9973f;
-  --gold-soft:#e0b866;
+  --parchment:#f1ece3;      /* real --limestone */
+  --masthead:#26201a;       /* real --espresso */
+  --oxblood:#7d4242;        /* real --oxblood -- corrected from an approximation */
+  --oxblood-line:rgba(196,169,110,.28); /* real --card-line */
+  --gold:#b68a53;           /* real --gold */
+  --brass:#75623a;          /* real --brass */
+  --vellum:#f3ede1;
+  --vellum-100:#f8f4eb;
+  --gold-soft:#d9b876;
   --serif:'Cormorant Garamond',Georgia,serif;
   --sans:'Manrope',Arial,sans-serif;
   --mh-h:64px;
-  --nav-h:72px;
+  --nav-h:92px;
   --rail-w:290px;
   --grid-cols:4;
   --nav-gap:16px;
@@ -37,7 +40,19 @@
   :root{ --rail-w:340px; --grid-cols:6; --nav-gap:34px; --nav-fs:.85rem; --card-gap:24px; --fs-brand:1.5rem; --fs-navlink:1.05rem; }
 }
 *{ box-sizing:border-box }
-body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parchment) }
+/* ── Real ground treatment (portraits.html's .ground, adapted): limestone
+   texture + wash overlay. Texture path only resolves on the live domain --
+   same caveat as the Unicorn Studio scene; this won't render as a
+   standalone file, only once viewed through the real site. ── */
+body{
+  margin:0; font-family:var(--sans); color:var(--ink);
+  background-color:var(--parchment);
+  background-image:
+    linear-gradient(0deg, rgba(241,236,227,.55), rgba(241,236,227,.55)),
+    url("/textures/limestone.jpg");
+  background-repeat:repeat, repeat;
+  background-size:auto, 22rem 22rem;
+}
 
 .masthead{
   height:var(--mh-h); background:var(--masthead); display:flex; align-items:center;
@@ -52,7 +67,26 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 
 .shell{ display:grid; grid-template-columns:var(--rail-w) 1fr; max-width:1800px; margin:0 auto; height:calc(100vh - var(--mh-h)) }
 
-.rail{ padding:28px 10%; overflow-y:auto; display:flex; flex-direction:column }
+/* ── Real curator-panel treatment (portraits.html's .room--curator,
+   adapted): warm vellum base, two radial gradients for tone, a linear
+   sheen, plus a noise texture veil. Noise path only resolves on the
+   live domain, same caveat as above. ── */
+.rail{
+  position:relative; isolation:isolate; overflow-y:auto;
+  padding:28px 10%; display:flex; flex-direction:column;
+  background-color:#f7f2e9;
+  background-image:
+    radial-gradient(circle at 30% 15%, rgba(255,255,255,.28), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(112,77,43,.045), transparent 52%),
+    linear-gradient(145deg, rgba(255,255,255,.12), rgba(210,191,161,.055));
+  border-right:1px solid rgba(137,105,67,.2);
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.4), inset 0 1px 0 rgba(255,255,255,.5);
+}
+.rail::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:14rem 14rem;
+}
 .curator{ display:flex; align-items:center; gap:10px; margin-bottom:6px }
 .curator__badge{ width:34px; height:34px; border-radius:50%; background:var(--oxblood); color:var(--gold-soft); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:1.1rem }
 .curator h3{ font-family:var(--serif); font-weight:600; font-size:1.15rem; margin:0 }
@@ -102,20 +136,33 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
   border-bottom:3px solid transparent; padding:0 4px;
 }
 .icon-nav__item svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5 }
-.icon-nav__item img{ width:28px; height:28px; object-fit:contain }
-.icon-nav__item span{ font-size:var(--nav-fs); white-space:nowrap }
+.icon-nav__badge{
+  width:56px; height:56px; border-radius:50%; border:1px solid rgba(224,184,102,.55);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.icon-nav__item img{ width:40px; height:40px; object-fit:contain }
+.icon-nav__item span{ font-size:1.1em; white-space:nowrap }
 .icon-nav__item.active{ color:var(--gold-soft); border-bottom-color:var(--gold-soft) }
 
 .stage-scroll{ flex:1; overflow-y:auto; padding:28px 32px 60px; scroll-behavior:smooth }
 .stage-scroll::-webkit-scrollbar{ width:10px }
 .stage-scroll::-webkit-scrollbar-track{ background:transparent }
-.stage-scroll::-webkit-scrollbar-thumb{ background:var(--oxblood-line); border-radius:6px }
+.stage-scroll::-webkit-scrollbar-thumb{ background:rgba(125,66,66,.55); border-radius:6px }
 .stage-scroll::-webkit-scrollbar-thumb:hover{ background:var(--oxblood) }
 
 .silo-block{ margin-bottom:44px; scroll-margin-top:14px }
 
 .grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap); width:95% }
-.card{ position:relative; border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15); cursor:pointer }
+.card{
+  position:relative; border-radius:8px; overflow:hidden; cursor:pointer;
+  border:1px solid rgba(88,65,42,.22);
+  box-shadow:0 .7rem 1.5rem rgba(52,36,25,.14), 0 .15rem .4rem rgba(52,36,25,.08);
+  transition:transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.card:hover{
+  transform:translateY(-.15rem); border-color:rgba(169,126,63,.42);
+  box-shadow:0 1rem 2rem rgba(52,36,25,.18), 0 .25rem .65rem rgba(52,36,25,.09);
+}
 .card__art{ position:relative; aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24) }
 /* Matches the real production overlay pattern (silo-card__overlay in
    portraits.html) exactly: image fills the card, a gradient sits above
@@ -152,11 +199,11 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
   text-align:center; padding:18px; box-shadow:0 6px 16px rgba(35,31,27,.15);
 }
 .title-card .icon{
-  width:56px; height:56px; border-radius:50%; border:1px solid rgba(224,184,102,.5);
+  width:104px; height:104px; border-radius:50%; border:1px solid rgba(224,184,102,.5);
   display:flex; align-items:center; justify-content:center; margin-bottom:14px;
 }
 .title-card .icon svg{ width:24px; height:24px; stroke:var(--gold-soft); fill:none; stroke-width:1.5 }
-.title-card .icon img{ width:36px; height:36px; object-fit:contain }
+.title-card .icon img{ width:80px; height:80px; object-fit:contain }
 .title-card h3{ font-family:var(--serif); font-size:1.4rem; color:#f3ede1; margin:0 0 6px; line-height:1.15 }
 .title-card span{ font-size:.78rem; color:#c9a97e }
 
@@ -342,7 +389,7 @@ SILOS.forEach(function(silo, idx){
   var btn = document.createElement('button');
   btn.className = 'icon-nav__item' + (idx === 0 ? ' active' : '');
   btn.dataset.target = silo.id;
-  btn.innerHTML = '<img src="' + iconSrc(silo.id) + '" alt="">' + '<span>' + silo.name + '</span>';
+  btn.innerHTML = '<span class="icon-nav__badge"><img src="' + iconSrc(silo.id) + '" alt=""></span>' + '<span>' + silo.name + '</span>';
   btn.addEventListener('click', function(){
     document.getElementById('silo-' + silo.id).scrollIntoView({ behavior:'smooth', block:'start' });
   });
