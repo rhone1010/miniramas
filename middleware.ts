@@ -121,6 +121,12 @@ const PAGES: Record<string, string> = {
   '/account': '/portraits.html',
   '/print': '/portraits.html',
   '/help': '/help.html',
+  /* DISCOVERY PREVIEW. Isolated test route, not linked from any nav
+     or menu -- reachable only by typing the URL directly. Added
+     30 Aug 2026 to test the icon-nav/continuous-scroll Discovery
+     redesign without touching any live traffic. Same pattern as
+     wallpaper-studio-V001 staying live alongside V002. */
+  '/discovery-preview': '/discovery-preview.html',
 };
 
 export const config = {
