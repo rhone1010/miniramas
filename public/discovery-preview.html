@@ -112,14 +112,6 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 .stage-scroll::-webkit-scrollbar-thumb:hover{ background:var(--oxblood) }
 
 .silo-block{ margin-bottom:44px; scroll-margin-top:14px }
-.silo-header{ display:flex; align-items:center; gap:14px; margin-bottom:20px }
-.silo-header .icon{
-  width:44px; height:44px; border-radius:50%; border:1px solid var(--oxblood-line); color:var(--oxblood);
-  display:flex; align-items:center; justify-content:center;
-}
-.silo-header .icon svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5 }
-.silo-header h2{ font-family:var(--serif); font-size:1.6rem; margin:0; color:var(--oxblood) }
-.silo-header .sub{ color:#8a7a5f; font-size:.9rem; margin-left:4px }
 
 .grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap); width:95% }
 .card{ position:relative; border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15); cursor:pointer }
@@ -132,6 +124,26 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 .card__check.checked{ background:var(--gold); border-color:var(--gold); color:var(--oxblood) }
 .card__meta{ padding:10px 12px; background:#161210; color:#f3ede1 }
 .card__meta strong{ display:block; font-family:var(--serif); font-size:1.05rem; font-weight:600 }
+
+/* ── Title card: same footprint as a photo card, occupies grid slot 1.
+   Not selectable, not a check target — reads as the room's header
+   folded into the grid instead of a separate row above it. ── */
+.title-card{
+  aspect-ratio:2/3; border-radius:8px; overflow:hidden; cursor:default;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(224,184,102,.12), transparent 55%),
+    linear-gradient(165deg, var(--oxblood), #240a0e);
+  border:1px solid var(--oxblood-line);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:18px; box-shadow:0 6px 16px rgba(35,31,27,.15);
+}
+.title-card .icon{
+  width:48px; height:48px; border-radius:50%; border:1px solid rgba(224,184,102,.5);
+  display:flex; align-items:center; justify-content:center; margin-bottom:14px;
+}
+.title-card .icon svg{ width:24px; height:24px; stroke:var(--gold-soft); fill:none; stroke-width:1.5 }
+.title-card h3{ font-family:var(--serif); font-size:1.4rem; color:#f3ede1; margin:0 0 6px; line-height:1.15 }
+.title-card span{ font-size:.78rem; color:#c9a97e }
 
 /* ── Review screen — swaps in over the stage-col, rail stays but its
    content is swapped too (Ready-to-create block instead of the
@@ -331,14 +343,22 @@ SILOS.forEach(function(silo, idx){
   var block = document.createElement('section');
   block.className = 'silo-block';
   block.id = 'silo-' + silo.id;
-  var header =
-    '<div class="silo-header">' +
-      '<div class="icon"><svg viewBox="0 0 24 24">' + ICONS[silo.icon] + '</svg></div>' +
-      '<h2>' + silo.name + '</h2>' +
-      '<span class="sub">— ' + silo.effects.length + ' effects</span>' +
-    '</div>';
+
   var gridEl = document.createElement('div');
   gridEl.className = 'grid';
+
+  // Title card occupies slot 1 -- folds the room header into the grid
+  // itself instead of a separate row above it. Not selectable.
+  var titleCard = document.createElement('div');
+  titleCard.className = 'title-card';
+  titleCard.innerHTML =
+    '<div class="icon"><svg viewBox="0 0 24 24">' + ICONS[silo.icon] + '</svg></div>' +
+    '<h3>' + silo.name + '</h3>' +
+    '<span>' + silo.effects.length + ' effects</span>';
+  gridEl.appendChild(titleCard);
+
+  // Effects fill slots 2-8, in their original order -- naturally uses
+  // what would otherwise be an empty final slot.
   silo.effects.forEach(function(name, i){
     var key = effectKey(silo.id, i);
     var card = document.createElement('div');
@@ -352,7 +372,6 @@ SILOS.forEach(function(silo, idx){
     });
     gridEl.appendChild(card);
   });
-  block.innerHTML = header;
   block.appendChild(gridEl);
   stage.appendChild(block);
 });
