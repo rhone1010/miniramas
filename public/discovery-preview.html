@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Discovery — icon nav + continuous scroll</title>
+<title>Discovery — click-to-select, closed loop to Review</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -27,10 +27,6 @@
   --fs-brand:1.1rem;
   --fs-navlink:.85rem;
 }
-
-/* Stepped, not fluid — proportions change AT each breakpoint, never
-   interpolate between them. Same convention as the earlier Portfolio
-   geometry work; this build just never had it applied. */
 @media (min-width:1660px){
   :root{ --rail-w:290px; --grid-cols:4; --nav-gap:20px; --nav-fs:.75rem; --card-gap:18px; --fs-brand:1.2rem; --fs-navlink:.9rem; }
 }
@@ -56,7 +52,7 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 
 .shell{ display:grid; grid-template-columns:var(--rail-w) 1fr; max-width:1800px; margin:0 auto; height:calc(100vh - var(--mh-h)) }
 
-.rail{ padding:28px 22px; overflow-y:auto }
+.rail{ padding:28px 22px; overflow-y:auto; display:flex; flex-direction:column }
 .curator{ display:flex; align-items:center; gap:10px; margin-bottom:6px }
 .curator__badge{ width:34px; height:34px; border-radius:50%; background:var(--oxblood); color:var(--gold-soft); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:1.1rem }
 .curator h3{ font-family:var(--serif); font-weight:600; font-size:1.15rem; margin:0 }
@@ -92,8 +88,8 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
   width:100%; background:var(--gold); color:var(--oxblood); border:none; border-radius:8px;
   padding:12px; font-family:var(--serif); font-weight:600; font-size:1.05rem; cursor:pointer;
 }
+.btn-review:disabled{ opacity:.45; cursor:not-allowed }
 
-/* ── Stage column: icon nav (sticky within this column) + scrollable card area ── */
 .stage-col{ display:flex; flex-direction:column; min-height:0 }
 
 .icon-nav{
@@ -109,9 +105,7 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 .icon-nav__item span{ font-size:var(--nav-fs); white-space:nowrap }
 .icon-nav__item.active{ color:var(--gold-soft); border-bottom-color:var(--gold-soft) }
 
-.stage-scroll{
-  flex:1; overflow-y:auto; padding:28px 32px 60px; scroll-behavior:smooth;
-}
+.stage-scroll{ flex:1; overflow-y:auto; padding:28px 32px 60px; scroll-behavior:smooth }
 .stage-scroll::-webkit-scrollbar{ width:10px }
 .stage-scroll::-webkit-scrollbar-track{ background:transparent }
 .stage-scroll::-webkit-scrollbar-thumb{ background:var(--oxblood-line); border-radius:6px }
@@ -127,8 +121,8 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 .silo-header h2{ font-family:var(--serif); font-size:1.6rem; margin:0; color:var(--oxblood) }
 .silo-header .sub{ color:#8a7a5f; font-size:.9rem; margin-left:4px }
 
-.grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap) }
-.card{ position:relative; border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15) }
+.grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap); width:95% }
+.card{ position:relative; border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15); cursor:pointer }
 .card__art{ aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24); display:flex; align-items:flex-end }
 .card__check{
   position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:50%;
@@ -138,6 +132,45 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 .card__check.checked{ background:var(--gold); border-color:var(--gold); color:var(--oxblood) }
 .card__meta{ padding:10px 12px; background:#161210; color:#f3ede1 }
 .card__meta strong{ display:block; font-family:var(--serif); font-size:1.05rem; font-weight:600 }
+
+/* ── Review screen — swaps in over the stage-col, rail stays but its
+   content is swapped too (Ready-to-create block instead of the
+   picker). Same shell, same masthead, one page, no navigation. ── */
+.review-view{ display:none }
+.review-view.active{ display:flex; flex-direction:column }
+.discovery-view.hidden{ display:none }
+
+.review-banner{
+  background:var(--oxblood); color:#f3ede1; border-radius:10px; padding:18px 24px;
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;
+  border:1px solid var(--oxblood-line); flex-shrink:0;
+}
+.review-banner__left{ display:flex; align-items:center; gap:14px }
+.review-banner__icon{ width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--gold-soft) }
+.review-banner h2{ font-family:var(--serif); font-weight:600; font-size:1.1rem; margin:0; letter-spacing:.03em; text-transform:uppercase; color:var(--gold-soft) }
+.review-banner p{ margin:2px 0 0; font-size:.9rem; color:#e7ddc9 }
+.back-btn{ border:1px solid rgba(224,184,102,.5); color:var(--gold-soft); background:transparent; border-radius:20px; padding:8px 16px; font-size:.85rem; display:flex; align-items:center; gap:6px; cursor:pointer }
+
+.review-grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap); padding:0 32px 40px; overflow-y:auto; width:95% }
+.rcard{ border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15) }
+.rcard__art{ aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24); position:relative }
+.rcard__remove{
+  position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:50%;
+  background:rgba(0,0,0,.5); color:#fff; border:none; cursor:pointer; font-size:14px;
+}
+.rcard__meta{ padding:10px 12px; background:#161210; color:#f3ede1 }
+.rcard__meta strong{ display:block; font-family:var(--serif); font-size:1.05rem; font-weight:600 }
+.rcard__meta span{ font-size:.75rem; color:var(--gold-soft) }
+
+.ready-block h4{ font-family:var(--serif); color:var(--oxblood); font-size:1.15rem; margin:16px 0 6px }
+.ready-block p{ font-size:.85rem; color:#5a5142; line-height:1.5; margin:0 0 16px }
+.stat-card{ background:rgba(255,255,255,.4); border:1px solid rgba(35,31,27,.12); border-radius:8px; padding:12px 14px; margin-bottom:8px; font-size:.85rem }
+.price-line{ font-family:var(--serif); font-size:1.8rem; color:var(--ink); margin:14px 0 16px }
+.btn-create{
+  width:100%; background:var(--oxblood); color:var(--gold-soft); border:1px solid var(--oxblood-line);
+  border-radius:8px; padding:14px; font-family:var(--serif); font-size:1.1rem; cursor:pointer;
+}
+.link-back{ margin-top:16px; font-size:.85rem; color:#5a5142; cursor:pointer; display:block }
 </style>
 </head>
 <body>
@@ -159,7 +192,8 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 </header>
 
 <div class="shell">
-  <aside class="rail">
+  <!-- ── Discovery rail ── -->
+  <aside class="rail" id="discoveryRail">
     <div class="curator">
       <div class="curator__badge">C</div>
       <h3>Curator</h3>
@@ -189,22 +223,38 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 
     <div class="your-collection">
       <div class="your-collection__head"><span class="icon">♥</span><span>Your Collection</span></div>
-      <div class="your-collection__count">6 collected</div>
-      <div class="your-collection__next">8 for $7.99</div>
-      <button class="btn-review">Review Collection →</button>
+      <div class="your-collection__count" id="collCount">0 collected</div>
+      <div class="your-collection__next" id="collNext"></div>
+      <button class="btn-review" id="btnGoReview" disabled>Review Collection →</button>
     </div>
   </aside>
 
-  <div class="stage-col">
+  <!-- ── Discovery stage ── -->
+  <div class="stage-col discovery-view" id="discoveryView">
     <nav class="icon-nav" id="iconNav"></nav>
     <main class="stage-scroll" id="stageScroll"></main>
+  </div>
+
+  <!-- ── Review stage (rail content injected by JS on entry) ── -->
+  <div class="stage-col review-view" id="reviewView">
+    <div style="padding:28px 32px 0">
+      <div class="review-banner">
+        <div class="review-banner__left">
+          <div class="review-banner__icon">🛡</div>
+          <div>
+            <h2>Your Collection · Review</h2>
+            <p>Take a final look before we create your images.</p>
+          </div>
+        </div>
+        <button class="back-btn" id="btnBackTop">← Back to Discovery</button>
+      </div>
+    </div>
+    <div class="review-grid" id="reviewGrid"></div>
   </div>
 </div>
 
 <script>
-// ── Real catalog data (effect-registry.ts), 8 silos, 7 canonical each.
-// Icons are simple inline SVG line-glyphs, matching the comp's style —
-// hourglass/mountain/sparkle/leaf/hand/column/quill/ship's-wheel.
+// ── Real catalog data (effect-registry.ts), 8 silos, 7 canonical each. ──
 var ICONS = {
   hourglass: '<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',
   mountain:  '<path d="M3 19l6-10 4 6 3-4 5 8H3z"/>',
@@ -227,11 +277,48 @@ var SILOS = [
   { id:'fantasy_future', name:'Fantasy & Future', icon:'wheel', effects:['Dragon Skin','Fire & Ember','Atomic Age Robot','Forest Guardian','Clockwork','Starfield','Crystallized'] },
 ];
 
+// ── Selection state, in selection order (matters for CheckoutSnapshot
+// per CENG §11 -- order is preserved by insertion order here). ──
+var SELECTED = []; // array of { key, name, siloName }
+
+function effectKey(siloId, i){ return siloId + '__' + i; }
+
+// resolveSelectionOffer display mirror -- NOT reimplemented business
+// logic, just demo display text matching CENG's real table (§6) so
+// the rail card shows something honest rather than a stale guess.
+function tierInfo(count){
+  if (count === 0) return { price:null, nextLabel:'' };
+  if (count <= 4)  return { price:2.99,  nextLabel:'5 for $4.99' };
+  if (count <= 9)  return { price:4.99,  nextLabel:'10 for $7.99' };
+  if (count <= 19) return { price:7.99,  nextLabel:'20 for $12.99' };
+  if (count <= 39) return { price:12.99, nextLabel:'40 for $24.99' };
+  return { price:24.99, nextLabel:'Complete Collection' };
+}
+
+function updateCollectionSummary(){
+  var n = SELECTED.length;
+  document.getElementById('collCount').textContent = n + (n === 1 ? ' collected' : ' collected');
+  var info = tierInfo(n);
+  document.getElementById('collNext').textContent = n === 0 ? 'Select effects to begin' : info.nextLabel;
+  document.getElementById('btnGoReview').disabled = n === 0;
+}
+
+function toggleSelect(key, name, siloName, checkEl, cardEl){
+  var idx = SELECTED.findIndex(function(s){ return s.key === key; });
+  if (idx === -1) {
+    SELECTED.push({ key:key, name:name, siloName:siloName });
+    checkEl.classList.add('checked'); checkEl.textContent = '✓';
+  } else {
+    SELECTED.splice(idx, 1);
+    checkEl.classList.remove('checked'); checkEl.textContent = '';
+  }
+  updateCollectionSummary();
+}
+
 var nav = document.getElementById('iconNav');
 var stage = document.getElementById('stageScroll');
 
 SILOS.forEach(function(silo, idx){
-  // nav button
   var btn = document.createElement('button');
   btn.className = 'icon-nav__item' + (idx === 0 ? ' active' : '');
   btn.dataset.target = silo.id;
@@ -241,29 +328,35 @@ SILOS.forEach(function(silo, idx){
   });
   nav.appendChild(btn);
 
-  // silo block
   var block = document.createElement('section');
   block.className = 'silo-block';
   block.id = 'silo-' + silo.id;
-  var cardsHtml = silo.effects.map(function(name, i){
-    var selected = (idx === 0 && i % 2 === 0); // demo state only
-    return '<div class="card"><div class="card__art"><div class="card__check' +
-      (selected ? ' checked' : '') + '">' + (selected ? '✓' : '') + '</div></div>' +
-      '<div class="card__meta"><strong>' + name + '</strong></div></div>';
-  }).join('');
-  block.innerHTML =
+  var header =
     '<div class="silo-header">' +
       '<div class="icon"><svg viewBox="0 0 24 24">' + ICONS[silo.icon] + '</svg></div>' +
       '<h2>' + silo.name + '</h2>' +
       '<span class="sub">— ' + silo.effects.length + ' effects</span>' +
-    '</div>' +
-    '<div class="grid">' + cardsHtml + '</div>';
+    '</div>';
+  var gridEl = document.createElement('div');
+  gridEl.className = 'grid';
+  silo.effects.forEach(function(name, i){
+    var key = effectKey(silo.id, i);
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML =
+      '<div class="card__art"><div class="card__check"></div></div>' +
+      '<div class="card__meta"><strong>' + name + '</strong></div>';
+    var checkEl = card.querySelector('.card__check');
+    card.addEventListener('click', function(){
+      toggleSelect(key, name, silo.name, checkEl, card);
+    });
+    gridEl.appendChild(card);
+  });
+  block.innerHTML = header;
+  block.appendChild(gridEl);
   stage.appendChild(block);
 });
 
-// ── Active-icon tracking as the user scrolls, IntersectionObserver
-// scoped to the stage-scroll container (not the page), since this is
-// a contained scroll region, not a full-page scroll. ──
 var navButtons = Array.prototype.slice.call(nav.querySelectorAll('.icon-nav__item'));
 var observer = new IntersectionObserver(function(entries){
   entries.forEach(function(entry){
@@ -271,15 +364,111 @@ var observer = new IntersectionObserver(function(entries){
     var id = entry.target.id.replace('silo-', '');
     navButtons.forEach(function(b){ b.classList.toggle('active', b.dataset.target === id); });
   });
-}, {
-  root: stage,
-  // Trigger when a silo's header area crosses roughly the top third of
-  // the scroll container -- fires on the block that's "currently being
-  // read", not merely first-visible-pixel.
-  rootMargin: '0px 0px -70% 0px',
-  threshold: 0,
-});
+}, { root: stage, rootMargin: '0px 0px -70% 0px', threshold: 0 });
 SILOS.forEach(function(s){ observer.observe(document.getElementById('silo-' + s.id)); });
+
+updateCollectionSummary();
+
+// ── Review screen: swap views, populate from real SELECTED state. ──
+var discoveryView = document.getElementById('discoveryView');
+var discoveryRail = document.getElementById('discoveryRail');
+var reviewView = document.getElementById('reviewView');
+var reviewGrid = document.getElementById('reviewGrid');
+
+function renderReviewRail(){
+  var n = SELECTED.length;
+  var info = tierInfo(n);
+  discoveryRail.innerHTML =
+    '<div class="curator"><div class="curator__badge">C</div><h3>Curator</h3></div>' +
+    '<p>I\'m here to help you create something wonderful.</p><hr class="divider">' +
+    '<div class="eyebrow">Source photo</div>' +
+    '<div class="photo-row"><div class="photo-stamp"><div class="fill"></div></div><button>Change photo ✎</button></div>' +
+    '<div class="ready-block"><h4>Ready to create</h4>' +
+    '<p>You\'ve selected ' + n + ' effect' + (n===1?'':'s') + '. We\'ll create all ' + n + ' so you can see how each one turned out.</p></div>' +
+    '<div class="stat-card"><strong>' + n + ' watermarked preview' + (n===1?'':'s') + '</strong></div>' +
+    '<div class="stat-card"><strong>1 finished image included</strong></div>' +
+    '<p style="font-size:.8rem;color:#5a5142;line-height:1.5;margin:8px 0 0">Love more than one? You can unlock additional finished images afterward.</p>' +
+    '<div class="price-line">$' + (info.price !== null ? info.price.toFixed(2) : '0.00') + '</div>' +
+    '<button class="btn-create">Create My Collection →</button>' +
+    '<a class="link-back" id="btnBackRail">← Back to Discovery</a>';
+  document.getElementById('btnBackRail').addEventListener('click', showDiscovery);
+}
+
+function renderReviewGrid(){
+  reviewGrid.innerHTML = '';
+  SELECTED.forEach(function(item){
+    var el = document.createElement('div');
+    el.className = 'rcard';
+    el.innerHTML =
+      '<div class="rcard__art"><button class="rcard__remove" data-key="' + item.key + '">✕</button></div>' +
+      '<div class="rcard__meta"><strong>' + item.name + '</strong><span>' + item.siloName + '</span></div>';
+    reviewGrid.appendChild(el);
+  });
+  reviewGrid.querySelectorAll('.rcard__remove').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var key = btn.dataset.key;
+      var idx = SELECTED.findIndex(function(s){ return s.key === key; });
+      if (idx !== -1) SELECTED.splice(idx, 1);
+      syncDiscoveryChecks();
+      updateCollectionSummary();
+      renderReviewRail();
+      renderReviewGrid();
+    });
+  });
+}
+
+// Every discovery card gets a stable data-key matching its SELECTED
+// entry, so Review's remove button can sync the checkmark back by key
+// rather than guessing by name.
+document.querySelectorAll('.stage-scroll .silo-block').forEach(function(block, siloIdx){
+  var siloId = SILOS[siloIdx].id;
+  block.querySelectorAll('.card').forEach(function(card, i){
+    card.dataset.key = effectKey(siloId, i);
+  });
+});
+function syncDiscoveryChecks(){
+  document.querySelectorAll('.stage-scroll .card').forEach(function(card){
+    var key = card.dataset.key;
+    var checkEl = card.querySelector('.card__check');
+    var isSelected = SELECTED.some(function(s){ return s.key === key; });
+    checkEl.classList.toggle('checked', isSelected);
+    checkEl.textContent = isSelected ? '✓' : '';
+  });
+}
+
+function showReview(){
+  discoveryView.classList.add('hidden');
+  reviewView.classList.add('active');
+  renderReviewRail();
+  renderReviewGrid();
+}
+function showDiscovery(){
+  reviewView.classList.remove('active');
+  discoveryView.classList.remove('hidden');
+  restoreDiscoveryRail();
+}
+function restoreDiscoveryRail(){
+  discoveryRail.innerHTML =
+    '<div class="curator"><div class="curator__badge">C</div><h3>Curator</h3></div>' +
+    '<p>I\'m here to help you create something wonderful.</p><hr class="divider">' +
+    '<div class="eyebrow">Source photo</div>' +
+    '<div class="photo-row"><div class="photo-stamp"><div class="fill"></div></div><button>Change photo ✎</button></div>' +
+    '<div class="q">What would you like me to do?</div>' +
+    '<div class="option"><div class="option__left"><span class="icon">✦</span><div><strong>Pick for me</strong><span class="sub">I\'ll choose great options for you.</span></div></div><span class="chev">›</span></div>' +
+    '<div class="option"><div class="option__left"><span class="icon">⊘</span><div><strong>Help me choose</strong><span class="sub">Guide me to the right effects.</span></div></div><span class="chev">›</span></div>' +
+    '<div class="option"><div class="option__left"><span class="icon">💬</span><div><strong>Describe what you\'re looking for</strong><span class="sub">Describe it in your own words.</span></div></div><span class="chev">›</span></div>' +
+    '<div class="your-collection">' +
+      '<div class="your-collection__head"><span class="icon">♥</span><span>Your Collection</span></div>' +
+      '<div class="your-collection__count" id="collCount"></div>' +
+      '<div class="your-collection__next" id="collNext"></div>' +
+      '<button class="btn-review" id="btnGoReview">Review Collection →</button>' +
+    '</div>';
+  document.getElementById('btnGoReview').addEventListener('click', showReview);
+  updateCollectionSummary();
+}
+
+document.getElementById('btnGoReview').addEventListener('click', showReview);
+document.getElementById('btnBackTop').addEventListener('click', showDiscovery);
 </script>
 </body>
 </html>
