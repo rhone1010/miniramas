@@ -19,6 +19,26 @@
   --sans:'Manrope',Arial,sans-serif;
   --mh-h:64px;
   --nav-h:72px;
+  --rail-w:290px;
+  --grid-cols:4;
+  --nav-gap:16px;
+  --nav-fs:.7rem;
+  --card-gap:16px;
+  --fs-brand:1.1rem;
+  --fs-navlink:.85rem;
+}
+
+/* Stepped, not fluid — proportions change AT each breakpoint, never
+   interpolate between them. Same convention as the earlier Portfolio
+   geometry work; this build just never had it applied. */
+@media (min-width:1660px){
+  :root{ --rail-w:290px; --grid-cols:4; --nav-gap:20px; --nav-fs:.75rem; --card-gap:18px; --fs-brand:1.2rem; --fs-navlink:.9rem; }
+}
+@media (min-width:1920px){
+  :root{ --rail-w:290px; --grid-cols:5; --nav-gap:28px; --nav-fs:.8rem; --card-gap:20px; --fs-brand:1.3rem; --fs-navlink:.95rem; }
+}
+@media (min-width:2560px){
+  :root{ --rail-w:340px; --grid-cols:6; --nav-gap:34px; --nav-fs:.85rem; --card-gap:24px; --fs-brand:1.5rem; --fs-navlink:1.05rem; }
 }
 *{ box-sizing:border-box }
 body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parchment) }
@@ -27,14 +47,14 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
   height:var(--mh-h); background:var(--masthead); display:flex; align-items:center;
   justify-content:space-between; padding:0 28px; color:#f3ede1; position:sticky; top:0; z-index:30;
 }
-.masthead__brand{ display:flex; align-items:center; gap:8px; font-family:var(--serif); font-size:1.3rem }
-.masthead__nav{ display:flex; align-items:center; gap:28px; font-size:.95rem }
+.masthead__brand{ display:flex; align-items:center; gap:8px; font-family:var(--serif); font-size:var(--fs-brand) }
+.masthead__nav{ display:flex; align-items:center; gap:var(--nav-gap); font-size:var(--fs-navlink) }
 .masthead__nav a{ color:#e7ddc9; text-decoration:none }
 .masthead__nav .active{ color:var(--gold-soft) }
 .masthead__right{ display:flex; align-items:center; gap:14px; font-size:.85rem; color:#cfc3ab }
 .pill-btn{ border:1px solid rgba(255,255,255,.25); border-radius:20px; padding:6px 14px; display:flex; align-items:center; gap:6px; color:#e7ddc9 }
 
-.shell{ display:grid; grid-template-columns:290px 1fr; max-width:1500px; margin:0 auto; height:calc(100vh - var(--mh-h)) }
+.shell{ display:grid; grid-template-columns:var(--rail-w) 1fr; max-width:1800px; margin:0 auto; height:calc(100vh - var(--mh-h)) }
 
 .rail{ padding:28px 22px; overflow-y:auto }
 .curator{ display:flex; align-items:center; gap:10px; margin-bottom:6px }
@@ -86,7 +106,7 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
   border-bottom:3px solid transparent; padding:0 4px;
 }
 .icon-nav__item svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5 }
-.icon-nav__item span{ font-size:.7rem; white-space:nowrap }
+.icon-nav__item span{ font-size:var(--nav-fs); white-space:nowrap }
 .icon-nav__item.active{ color:var(--gold-soft); border-bottom-color:var(--gold-soft) }
 
 .stage-scroll{
@@ -107,7 +127,7 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 .silo-header h2{ font-family:var(--serif); font-size:1.6rem; margin:0; color:var(--oxblood) }
 .silo-header .sub{ color:#8a7a5f; font-size:.9rem; margin-left:4px }
 
-.grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:20px }
+.grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap) }
 .card{ position:relative; border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15) }
 .card__art{ aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24); display:flex; align-items:flex-end }
 .card__check{
