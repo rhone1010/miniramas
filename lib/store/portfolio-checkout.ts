@@ -1,11 +1,15 @@
 // lib/store/portfolio-checkout.ts
-// Fixed-size Portfolio pricing. Reuses the four live Stripe SKUs
-// (single, basket_discover_5, basket_discover_10, basket_discover_20)
-// with updated effect counts: 1, 4, 8, 16.
+// Fixed-size Portfolio pricing. Reuses three live Stripe SKUs
+// (basket_discover_5, basket_discover_10, basket_discover_20)
+// with updated effect counts: 4, 8, 16.
+//
+// Size 1 is NOT a portfolio — it routes through the original single-craft
+// checkout (/api/v1/checkout, skuId:'single') which delivers an
+// unwatermarked render directly, no preview/unlock step.
 //
 // Hard cap: 16 effects max per purchase this release.
 // Checkout requires selectedEffectIds.length to exactly match one of
-// {1, 4, 8, 16} — no rounding, no padding. CUI/Curator fills any
+// {4, 8, 16} — no rounding, no padding. CUI/Curator fills any
 // remainder before checkout fires.
 //
 // resolveSelectionOffer works for ANY count (used during browsing to
@@ -29,10 +33,13 @@ export interface SelectionOffer {
 
 // Fixed purchase sizes, mapped to live SKU rows.
 // Stripe prices are unchanged — only the count column was updated.
+// Size 1 is NOT here — single-craft purchases route through the original
+// /api/v1/checkout endpoint (createCheckout, kind:'single'), which delivers
+// a straight unwatermarked render with no unlock step. Portfolio pipeline
+// is for batches of 4+ only.
 const PORTFOLIO_SIZES: Array<{
   count: number; tier: Tier; skuId: string; priceCents: number; unlocks: number
 }> = [
-  { count: 1,  tier: 'tier_1', skuId: 'single',             priceCents: 299,  unlocks: 0 },
   { count: 4,  tier: 'tier_2', skuId: 'basket_discover_5',   priceCents: 499,  unlocks: 1 },
   { count: 8,  tier: 'tier_3', skuId: 'basket_discover_10',  priceCents: 799,  unlocks: 1 },
   { count: 16, tier: 'tier_4', skuId: 'basket_discover_20',  priceCents: 1299, unlocks: 2 },
