@@ -245,8 +245,11 @@ body{
 .review-banner p{ margin:2px 0 0; font-size:.9rem; color:#e7ddc9 }
 .back-btn{ border:1px solid rgba(224,184,102,.5); color:var(--gold-soft); background:transparent; border-radius:20px; padding:8px 16px; font-size:.85rem; display:flex; align-items:center; gap:6px; cursor:pointer }
 
-.review-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:var(--card-gap); padding:0 32px 40px; overflow-y:auto }
-.rcard{ border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15) }
+.review-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:var(--card-gap); padding:0 32px 100px; overflow-y:auto }
+.rcard{
+  border-radius:8px; overflow:hidden; border:1px solid rgba(88,65,42,.22);
+  box-shadow:0 .7rem 1.5rem rgba(52,36,25,.14), 0 .15rem .4rem rgba(52,36,25,.08);
+}
 .rcard__art{ aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24); position:relative }
 .rcard__remove{
   position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:50%;
@@ -296,6 +299,19 @@ body{
   display:flex; align-items:center; justify-content:center;
   box-shadow:0 6px 16px rgba(0,0,0,.3);
 }
+/* ── Floating Craft CTA, Review screen only — fixed bottom-right,
+   mirrors the ? button's fixed bottom-left. Always reachable
+   regardless of scroll position, unlike a button at the end of the
+   grid content (16-piece collections span multiple rows). Rail's
+   own Craft button stays too -- this isn't a replacement, it's the
+   "I've seen everything, let's go" close once you've scrolled. ── */
+.craft-fab{
+  display:none; position:fixed; right:32px; bottom:32px; z-index:200;
+  background:var(--oxblood); color:#f3ede1; border:1px solid var(--oxblood-line);
+  border-radius:10px; padding:18px 32px; font-family:var(--serif); font-size:1.3rem;
+  cursor:pointer; box-shadow:0 10px 26px rgba(0,0,0,.35);
+}
+.craft-fab.active{ display:block }
 .tour-overlay{
   display:none; position:fixed; inset:0; z-index:210; pointer-events:none;
 }
@@ -440,10 +456,10 @@ body{
   <div class="masthead__brand">✒ LITEN &amp; CO</div>
   <nav class="masthead__nav">
     <a class="active">Crafted Portraits ▾</a>
-    <a>Gallery</a>
-    <a>Community</a>
+    <a href="/gallery">Gallery</a>
+    <a href="/community">Community</a>
     <a id="navMyCollection" style="cursor:pointer">My Collection</a>
-    <a>Account</a>
+    <a href="/account">Account</a>
   </nav>
   <div class="masthead__right">
     <span class="pill-btn">💬</span>
@@ -469,7 +485,7 @@ body{
     </div>
 
     <div class="q">What would you like me to do?</div>
-    <div class="option">
+    <div class="option" id="optPickForMe">
       <div class="option__left"><span class="icon">✦</span><div><strong>Pick for me</strong><span class="sub">I'll choose great options for you.</span></div></div>
       <span class="chev">›</span>
     </div>
@@ -539,6 +555,7 @@ body{
 </div>
 
 <button class="tour-fab" id="tourFab" aria-label="Show me how this works">?</button>
+<button class="craft-fab" id="craftFab">Craft My Collection →</button>
 <div class="tour-overlay" id="tourOverlay">
   <div class="tour-spotlight" id="tourSpotlight"></div>
   <div class="tour-tip" id="tourTip"></div>
@@ -564,6 +581,60 @@ var SILOS = [
 // ── Selection state, in selection order (matters for CheckoutSnapshot
 // per CENG §11 -- order is preserved by insertion order here). ──
 var SELECTED = []; // array of { key, name, siloName }
+
+// ── Real photo upload. Stored as a data URL so it survives the
+// Discovery<->Review innerHTML swaps (those regenerate the rail from
+// scratch each time, so DOM state alone wouldn't persist across them). ──
+var uploadedPhotoDataUrl = null;
+function photoStampHtml(){
+  return uploadedPhotoDataUrl
+    ? '<img src="' + uploadedPhotoDataUrl + '" alt="Your photo" style="width:100%;height:100%;object-fit:cover">'
+    : '<div class="fill"></div>';
+}
+var photoFileInput = document.createElement('input');
+photoFileInput.type = 'file';
+photoFileInput.accept = 'image/*';
+photoFileInput.style.display = 'none';
+document.body.appendChild(photoFileInput);
+photoFileInput.addEventListener('change', function(){
+  var file = photoFileInput.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    uploadedPhotoDataUrl = reader.result;
+    var stamp = document.querySelector('.photo-stamp');
+    if (stamp) stamp.innerHTML = photoStampHtml();
+  };
+  reader.readAsDataURL(file);
+});
+// Event delegation: works regardless of which rail markup instance
+// (initial static HTML, restoreDiscoveryRail, or renderReviewRail's
+// output) is currently in the DOM, without needing to re-bind after
+// every innerHTML replace.
+document.addEventListener('click', function(e){
+  if (e.target.closest('.photo-row button')) photoFileInput.click();
+});
+
+// ── "Pick for me" — PLACEHOLDER intelligence, not real Curator
+// logic. Picks a random valid size and fills it with random real
+// effects from the actual catalog. Swap for CENG's CuratorResponse
+// once it exists -- this is honest about being a stand-in, not
+// pretending to be the real recommendation engine. ──
+document.addEventListener('click', function(e){
+  if (!e.target.closest('#optPickForMe')) return;
+  SELECTED.length = 0;
+  document.querySelectorAll('.stage-scroll .card .card__check').forEach(function(c){
+    c.classList.remove('checked'); c.textContent = '';
+  });
+  var size = VALID_SIZES[Math.floor(Math.random() * VALID_SIZES.length)];
+  var allCards = Array.prototype.slice.call(document.querySelectorAll('.stage-scroll .card'));
+  for (var i = allCards.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i+1));
+    var t = allCards[i]; allCards[i] = allCards[j]; allCards[j] = t;
+  }
+  allCards.slice(0, size).forEach(function(card){ card.click(); });
+});
+
 
 function effectKey(siloId, i){ return siloId + '__' + i; }
 
@@ -686,19 +757,41 @@ var discoveryRail = document.getElementById('discoveryRail');
 var reviewView = document.getElementById('reviewView');
 var reviewGrid = document.getElementById('reviewGrid');
 
+// Real, confirmed by Rich (30 Aug):
+//   size 1  -> no watermark, straight render, no unlock step at all --
+//              doesn't go through the preview/unlock pipeline.
+//   size 4  -> 1 included unlock
+//   size 8  -> 1 included unlock
+//   size 16 -> 2 included unlocks
+var INCLUDED_UNLOCKS_BY_SIZE = { 1:0, 4:1, 8:1, 16:2 };
+
 function renderReviewRail(){
   var n = SELECTED.length;
   var info = sizeInfo(n); // n is guaranteed valid here -- Review is unreachable otherwise
+  var isDirectRender = (n === 1);
+  var included = INCLUDED_UNLOCKS_BY_SIZE[n];
+
+  var bodyHtml;
+  if (isDirectRender){
+    bodyHtml =
+      '<div class="ready-block"><h4>Ready to create</h4>' +
+      '<p>Your effect will be created as a finished image directly — no preview step, nothing to unlock.</p></div>' +
+      '<p style="font-size:.8rem;color:#5a5142;line-height:1.5;margin:8px 0 0">Want to try more? Bigger collections let you preview several effects before committing.</p>';
+  } else {
+    bodyHtml =
+      '<div class="ready-block"><h4>Ready to create</h4>' +
+      '<p>You\'ve selected ' + n + ' effects. We\'ll create all ' + n + ' as watermarked previews so you can see how each one turned out.</p></div>' +
+      '<div class="stat-card"><strong>' + n + ' watermarked previews</strong></div>' +
+      '<div class="stat-card"><strong>' + included + ' included unlock' + (included===1?'':'s') + '</strong></div>' +
+      '<p style="font-size:.8rem;color:#5a5142;line-height:1.5;margin:8px 0 0">Love more than ' + included + '? You can unlock additional finished images afterward.</p>';
+  }
+
   discoveryRail.innerHTML =
     '<div class="curator"><div class="curator__badge">C</div><h3>Curator</h3></div>' +
     '<p>I\'m here to help you create something wonderful.</p><hr class="divider">' +
     '<div class="eyebrow">Source photo</div>' +
-    '<div class="photo-row"><div class="photo-stamp"><div class="fill"></div></div><button>Change photo ✎</button></div>' +
-    '<div class="ready-block"><h4>Ready to create</h4>' +
-    '<p>You\'ve selected ' + n + ' effect' + (n===1?'':'s') + '. We\'ll create all ' + n + ' so you can see how each one turned out.</p></div>' +
-    '<div class="stat-card"><strong>' + n + ' watermarked preview' + (n===1?'':'s') + '</strong></div>' +
-    '<div class="stat-card"><strong>Included unlocks: TBD for size ' + n + '</strong></div>' +
-    '<p style="font-size:.8rem;color:#5a5142;line-height:1.5;margin:8px 0 0">Love more than one? You can unlock additional finished images afterward.</p>' +
+    '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div><button>Change photo ✎</button></div>' +
+    bodyHtml +
     '<div class="price-line">$' + info.price.toFixed(2) + '</div>' +
     '<button class="btn-create">Create My Collection →</button>' +
     '<a class="link-back" id="btnBackRail">← Back to Discovery</a>';
@@ -752,20 +845,22 @@ function showReview(){
   reviewView.classList.add('active');
   renderReviewRail();
   renderReviewGrid();
+  document.getElementById('craftFab').classList.add('active');
 }
 function showDiscovery(){
   reviewView.classList.remove('active');
   discoveryView.classList.remove('hidden');
   restoreDiscoveryRail();
+  document.getElementById('craftFab').classList.remove('active');
 }
 function restoreDiscoveryRail(){
   discoveryRail.innerHTML =
     '<div class="curator"><div class="curator__badge">C</div><h3>Curator</h3></div>' +
     '<p>I\'m here to help you create something wonderful.</p><hr class="divider">' +
     '<div class="eyebrow">Source photo</div>' +
-    '<div class="photo-row"><div class="photo-stamp"><div class="fill"></div></div><button>Change photo ✎</button></div>' +
+    '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div><button>Change photo ✎</button></div>' +
     '<div class="q">What would you like me to do?</div>' +
-    '<div class="option"><div class="option__left"><span class="icon">✦</span><div><strong>Pick for me</strong><span class="sub">I\'ll choose great options for you.</span></div></div><span class="chev">›</span></div>' +
+    '<div class="option" id="optPickForMe"><div class="option__left"><span class="icon">✦</span><div><strong>Pick for me</strong><span class="sub">I\'ll choose great options for you.</span></div></div><span class="chev">›</span></div>' +
     '<div class="option"><div class="option__left"><span class="icon">⊘</span><div><strong>Help me choose</strong><span class="sub">Guide me to the right effects.</span></div></div><span class="chev">›</span></div>' +
     '<div class="option"><div class="option__left"><span class="icon">💬</span><div><strong>Describe what you\'re looking for</strong><span class="sub">Describe it in your own words.</span></div></div><span class="chev">›</span></div>' +
     '<div class="your-collection leather">' +
@@ -780,6 +875,10 @@ function restoreDiscoveryRail(){
 
 document.getElementById('btnGoReview').addEventListener('click', showReview);
 document.getElementById('btnBackTop').addEventListener('click', showDiscovery);
+
+// Mirrors the rail's own Create button -- neither is wired to real
+// checkout yet. No-op until CENG's CheckoutSnapshot flow exists.
+document.getElementById('craftFab').addEventListener('click', function(){});
 
 // ══════════════════════════════════════════════════════════════
 // IDLE NUDGES — shared "what's the likely next action" logic feeds
@@ -873,11 +972,11 @@ var TOUR_STEPS = [
     text:'This opens a final look at everything you picked before anything is created.' },
   { sel:null, title:'Create your collection', before:showReview,
     selAfterBefore:'.btn-create',
-    text:'One tap creates watermarked previews of everything you selected, plus your included finished image.' },
+    text:'Pick a single effect and it renders directly, no preview step. Pick 4, 8, or 16 and you get watermarked previews of all of them first.' },
   { sel:null, title:'Then, in My Collection',
-    text:'Your previews arrive one by one as they finish — watermarked at first, so you can see them all before committing to any one.' },
+    text:'For 4, 8, or 16, your previews arrive one by one as they finish — watermarked at first, so you can see them all before committing to any one.' },
   { sel:null, title:'Unlock your favorites',
-    text:'Smaller collections include one finished, unwatermarked image. Larger collections (16+) include two.' },
+    text:'4 and 8 include 1 free unlock. 16 includes 2. Unlock more of your favorites any time after that.' },
 ];
 
 var tourIdx = 0;
