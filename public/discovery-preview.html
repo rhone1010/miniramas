@@ -3,18 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Discovery — icon nav + continuous scroll</title>
+<title>Discovery — click-to-select, closed loop to Review</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#231f1b;
-  --parchment:#ede3d0;
-  --masthead:#100b09;
-  --oxblood:#3d1319;
-  --oxblood-line:#7a2e34;
-  --gold:#c9973f;
-  --gold-soft:#e0b866;
+  --parchment:#f1ece3;      /* real --limestone */
+  --masthead:#26201a;       /* real --espresso */
+  --oxblood:#7d4242;        /* real --oxblood -- corrected from an approximation */
+  --oxblood-line:rgba(196,169,110,.28); /* real --card-line */
+  --gold:#b68a53;           /* real --gold */
+  --brass:#75623a;          /* real --brass */
+  --vellum:#f3ede1;
+  --vellum-100:#f8f4eb;
+  --gold-soft:#d9b876;
   --serif:'Cormorant Garamond',Georgia,serif;
   --sans:'Manrope',Arial,sans-serif;
   --mh-h:64px;
@@ -27,21 +30,29 @@
   --fs-brand:1.1rem;
   --fs-navlink:.85rem;
 }
-
-/* Stepped, not fluid — proportions change AT each breakpoint, never
-   interpolate between them. Same convention as the earlier Portfolio
-   geometry work; this build just never had it applied. */
 @media (min-width:1660px){
   :root{ --rail-w:290px; --grid-cols:4; --nav-gap:20px; --nav-fs:.75rem; --card-gap:18px; --fs-brand:1.2rem; --fs-navlink:.9rem; }
 }
 @media (min-width:1920px){
-  :root{ --rail-w:290px; --grid-cols:5; --nav-gap:28px; --nav-fs:.8rem; --card-gap:20px; --fs-brand:1.3rem; --fs-navlink:.95rem; }
+  :root{ --rail-w:400px; --grid-cols:5; --nav-gap:28px; --nav-fs:.8rem; --card-gap:20px; --fs-brand:1.3rem; --fs-navlink:.95rem; }
 }
 @media (min-width:2560px){
   :root{ --rail-w:340px; --grid-cols:6; --nav-gap:34px; --nav-fs:.85rem; --card-gap:24px; --fs-brand:1.5rem; --fs-navlink:1.05rem; }
 }
 *{ box-sizing:border-box }
-body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parchment) }
+/* ── Real ground treatment (portraits.html's .ground, adapted): limestone
+   texture + wash overlay. Texture path only resolves on the live domain --
+   same caveat as the Unicorn Studio scene; this won't render as a
+   standalone file, only once viewed through the real site. ── */
+body{
+  margin:0; font-family:var(--sans); color:var(--ink);
+  background-color:var(--parchment);
+  background-image:
+    linear-gradient(0deg, rgba(241,236,227,.55), rgba(241,236,227,.55)),
+    url("/textures/limestone.jpg");
+  background-repeat:repeat, repeat;
+  background-size:auto, 22rem 22rem;
+}
 
 .masthead{
   height:var(--mh-h); background:var(--masthead); display:flex; align-items:center;
@@ -54,9 +65,29 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 .masthead__right{ display:flex; align-items:center; gap:14px; font-size:.85rem; color:#cfc3ab }
 .pill-btn{ border:1px solid rgba(255,255,255,.25); border-radius:20px; padding:6px 14px; display:flex; align-items:center; gap:6px; color:#e7ddc9 }
 
-.shell{ display:grid; grid-template-columns:var(--rail-w) 1fr; max-width:1800px; margin:0 auto; height:calc(100vh - var(--mh-h)) }
+.shell{ display:grid; grid-template-columns:var(--rail-w) 1fr; margin:0 auto; height:calc(100vh - var(--mh-h)) }
 
-.rail{ padding:28px 22px; overflow-y:auto }
+/* ── Real curator-panel treatment (portraits.html's .room--curator,
+   adapted): warm vellum base, two radial gradients for tone, a linear
+   sheen, plus a noise texture veil. Noise path only resolves on the
+   live domain, same caveat as above. ── */
+.rail{
+  position:relative; isolation:isolate; overflow-y:auto;
+  padding:28px 10%; display:flex; flex-direction:column;
+  background-color:#f7f2e9;
+  background-image:
+    radial-gradient(circle at 30% 15%, rgba(255,255,255,.28), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(112,77,43,.045), transparent 52%),
+    linear-gradient(145deg, rgba(255,255,255,.12), rgba(210,191,161,.055));
+  border-right:1px solid rgba(137,105,67,.2);
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.4), inset 0 1px 0 rgba(255,255,255,.5);
+}
+.rail::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:14rem 14rem;
+  opacity:.045; mix-blend-mode:multiply;
+}
 .curator{ display:flex; align-items:center; gap:10px; margin-bottom:6px }
 .curator__badge{ width:34px; height:34px; border-radius:50%; background:var(--oxblood); color:var(--gold-soft); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:1.1rem }
 .curator h3{ font-family:var(--serif); font-weight:600; font-size:1.15rem; margin:0 }
@@ -64,7 +95,7 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 .divider{ border:none; border-top:1px solid rgba(35,31,27,.15); margin:10px 0 16px }
 .eyebrow{ font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; color:#8a7a5f; margin-bottom:8px }
 .photo-row{ display:flex; align-items:center; gap:12px; margin-bottom:20px }
-.photo-stamp{ width:56px; height:56px; border:1px solid rgba(35,31,27,.3); border-radius:2px; padding:4px; background:#fff }
+.photo-stamp{ width:90px; height:90px; border:1px solid rgba(35,31,27,.3); border-radius:2px; padding:4px; background:#fff }
 .photo-stamp .fill{ width:100%; height:100%; background:linear-gradient(150deg,#8a725d,#3a2b24) }
 .photo-row button{ font-family:var(--sans); font-size:.8rem; border:1px solid rgba(35,31,27,.25); background:transparent; border-radius:14px; padding:6px 12px; cursor:pointer; color:var(--ink) }
 .q{ font-size:.85rem; color:#5a5142; margin:14px 0 10px }
@@ -79,9 +110,36 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 .option span.sub{ font-size:.75rem; color:#6b5f4f }
 .option .chev{ color:#8a7a5f }
 
+/* ── Oxblood leather: real production leather texture
+   (coffee_leather.jpg, soft-light noise blend — "multiply crushes the
+   shadows into mud" per the file's own comment on a dark ground), but
+   with the wash/base tinted oxblood instead of neutral coffee, since
+   the neutral version wasn't actually what was asked for. Texture
+   path only resolves on the live domain, same caveat as elsewhere. ── */
+.leather{
+  position:relative; isolation:isolate; overflow:hidden;
+  background-color:#2a1414;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.045), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgba(255,255,255,.025), transparent 48%),
+    linear-gradient(180deg, rgba(255,255,255,.018), rgba(0,0,0,.04)),
+    linear-gradient(0deg, rgba(90,42,42,.5), rgba(90,42,42,.5)),
+    url("/textures/coffee_leather.jpg");
+  background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat;
+  background-size:auto,auto,auto,auto,800px 800px;
+  background-position:center,center,center,center,center;
+  border:1px solid rgba(174,133,78,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 .8rem 1.8rem rgba(25,16,10,.2);
+}
+.leather::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:13rem 13rem;
+  opacity:.12; mix-blend-mode:soft-light;
+}
+
 .your-collection{
-  margin-top:16px; background:var(--oxblood); border:1px solid var(--oxblood-line);
-  border-radius:10px; padding:18px 18px 20px; color:#f3ede1;
+  margin-top:16px; border:none; border-radius:10px; padding:18px 18px 20px; color:#f3ede1;
 }
 .your-collection__head{ display:flex; align-items:center; gap:8px; margin-bottom:12px }
 .your-collection__head .icon{ color:var(--gold-soft); font-size:1rem }
@@ -92,13 +150,13 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
   width:100%; background:var(--gold); color:var(--oxblood); border:none; border-radius:8px;
   padding:12px; font-family:var(--serif); font-weight:600; font-size:1.05rem; cursor:pointer;
 }
+.btn-review:disabled{ opacity:.45; cursor:not-allowed }
 
-/* ── Stage column: icon nav (sticky within this column) + scrollable card area ── */
 .stage-col{ display:flex; flex-direction:column; min-height:0 }
 
 .icon-nav{
-  height:var(--nav-h); background:var(--oxblood); border-bottom:1px solid var(--oxblood-line);
-  display:flex; align-items:stretch; padding:0 24px; flex-shrink:0;
+  height:var(--nav-h); border:none; border-bottom:1px solid rgba(174,133,78,.2);
+  display:flex; align-items:stretch; padding:15px 24px; flex-shrink:0; box-sizing:content-box;
 }
 .icon-nav__item{
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
@@ -106,38 +164,274 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
   border-bottom:3px solid transparent; padding:0 4px;
 }
 .icon-nav__item svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5 }
-.icon-nav__item span{ font-size:var(--nav-fs); white-space:nowrap }
+.icon-nav__item img{ width:40px; height:40px; object-fit:contain }
+.icon-nav__item span{ font-size:1.1em; white-space:nowrap }
 .icon-nav__item.active{ color:var(--gold-soft); border-bottom-color:var(--gold-soft) }
 
-.stage-scroll{
-  flex:1; overflow-y:auto; padding:28px 32px 60px; scroll-behavior:smooth;
-}
+.stage-scroll{ flex:1; overflow-y:auto; padding:28px 32px 60px; scroll-behavior:smooth }
 .stage-scroll::-webkit-scrollbar{ width:10px }
 .stage-scroll::-webkit-scrollbar-track{ background:transparent }
-.stage-scroll::-webkit-scrollbar-thumb{ background:var(--oxblood-line); border-radius:6px }
+.stage-scroll::-webkit-scrollbar-thumb{ background:rgba(125,66,66,.55); border-radius:6px }
 .stage-scroll::-webkit-scrollbar-thumb:hover{ background:var(--oxblood) }
 
 .silo-block{ margin-bottom:44px; scroll-margin-top:14px }
-.silo-header{ display:flex; align-items:center; gap:14px; margin-bottom:20px }
-.silo-header .icon{
-  width:44px; height:44px; border-radius:50%; border:1px solid var(--oxblood-line); color:var(--oxblood);
-  display:flex; align-items:center; justify-content:center;
-}
-.silo-header .icon svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5 }
-.silo-header h2{ font-family:var(--serif); font-size:1.6rem; margin:0; color:var(--oxblood) }
-.silo-header .sub{ color:#8a7a5f; font-size:.9rem; margin-left:4px }
 
-.grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap) }
-.card{ position:relative; border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15) }
-.card__art{ aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24); display:flex; align-items:flex-end }
+.grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:var(--card-gap) }
+.card{
+  position:relative; border-radius:8px; overflow:hidden; cursor:pointer;
+  border:1px solid rgba(88,65,42,.22);
+  box-shadow:0 .7rem 1.5rem rgba(52,36,25,.14), 0 .15rem .4rem rgba(52,36,25,.08);
+  transition:transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.card:hover{
+  transform:translateY(-.15rem); border-color:rgba(169,126,63,.42);
+  box-shadow:0 1rem 2rem rgba(52,36,25,.18), 0 .25rem .65rem rgba(52,36,25,.09);
+}
+.card__art{ position:relative; aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24) }
+/* Matches the real production overlay pattern (silo-card__overlay in
+   portraits.html) exactly: image fills the card, a gradient sits above
+   it (transparent -> dark, 42% -> 100%), title sits above that with a
+   text-shadow for legibility, not a solid background bar. */
+.card__overlay{
+  position:absolute; inset:0; z-index:1;
+  background:linear-gradient(180deg, transparent 42%, rgba(19,13,9,.18) 58%, rgba(19,13,9,.88) 100%);
+}
 .card__check{
-  position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:50%;
+  position:absolute; top:8px; right:8px; z-index:2; width:24px; height:24px; border-radius:50%;
   background:rgba(0,0,0,.35); border:1.5px solid rgba(255,255,255,.7);
   display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px;
 }
 .card__check.checked{ background:var(--gold); border-color:var(--gold); color:var(--oxblood) }
-.card__meta{ padding:10px 12px; background:#161210; color:#f3ede1 }
-.card__meta strong{ display:block; font-family:var(--serif); font-size:1.05rem; font-weight:600 }
+.card__content{
+  position:absolute; z-index:2; left:7%; right:7%; bottom:7%;
+}
+.card__content strong{
+  display:block; font-family:var(--serif); font-size:1.05rem; font-weight:400; color:#fffcf6;
+  text-shadow:0 .08rem .18rem rgba(18,12,8,.8), 0 .3rem .8rem rgba(18,12,8,.42);
+}
+
+/* ── Title card: same footprint as a photo card, occupies grid slot 1.
+   Not selectable, not a check target — reads as the room's header
+   folded into the grid instead of a separate row above it. ── */
+.title-card{
+  aspect-ratio:2/3; border-radius:8px; cursor:default;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:18px;
+}
+.title-card .icon{
+  width:104px; height:104px; border-radius:50%; border:1px solid rgba(224,184,102,.5);
+  display:flex; align-items:center; justify-content:center; margin-bottom:14px;
+}
+.title-card .icon svg{ width:24px; height:24px; stroke:var(--gold-soft); fill:none; stroke-width:1.5 }
+.title-card .icon img{ width:80px; height:80px; object-fit:contain }
+.title-card h3{ font-family:var(--serif); font-size:1.4rem; color:#f3ede1; margin:0 0 6px; line-height:1.15 }
+.title-card span{ font-size:.78rem; color:#c9a97e }
+
+/* ── Review screen — swaps in over the stage-col, rail stays but its
+   content is swapped too (Ready-to-create block instead of the
+   picker). Same shell, same masthead, one page, no navigation. ── */
+.review-view{ display:none }
+.review-view.active{ display:flex; flex-direction:column }
+.discovery-view.hidden{ display:none }
+
+.review-banner{
+  background:var(--oxblood); color:#f3ede1; border-radius:10px; padding:18px 24px;
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;
+  border:1px solid var(--oxblood-line); flex-shrink:0;
+}
+.review-banner__left{ display:flex; align-items:center; gap:14px }
+.review-banner__icon{ width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--gold-soft) }
+.review-banner h2{ font-family:var(--serif); font-weight:600; font-size:1.1rem; margin:0; letter-spacing:.03em; text-transform:uppercase; color:var(--gold-soft) }
+.review-banner p{ margin:2px 0 0; font-size:.9rem; color:#e7ddc9 }
+.back-btn{ border:1px solid rgba(224,184,102,.5); color:var(--gold-soft); background:transparent; border-radius:20px; padding:8px 16px; font-size:.85rem; display:flex; align-items:center; gap:6px; cursor:pointer }
+
+.review-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:var(--card-gap); padding:0 32px 40px; overflow-y:auto }
+.rcard{ border-radius:8px; overflow:hidden; box-shadow:0 6px 16px rgba(35,31,27,.15) }
+.rcard__art{ aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24); position:relative }
+.rcard__remove{
+  position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:50%;
+  background:rgba(0,0,0,.5); color:#fff; border:none; cursor:pointer; font-size:14px;
+}
+.rcard__meta{ padding:10px 12px; background:#161210; color:#f3ede1 }
+.rcard__meta strong{ display:block; font-family:var(--serif); font-size:1.05rem; font-weight:600 }
+.rcard__meta span{ font-size:.75rem; color:var(--gold-soft) }
+
+.ready-block h4{ font-family:var(--serif); color:var(--oxblood); font-size:1.15rem; margin:16px 0 6px }
+.ready-block p{ font-size:.85rem; color:#5a5142; line-height:1.5; margin:0 0 16px }
+.stat-card{ background:rgba(255,255,255,.4); border:1px solid rgba(35,31,27,.12); border-radius:8px; padding:12px 14px; margin-bottom:8px; font-size:.85rem }
+.price-line{ font-family:var(--serif); font-size:1.8rem; color:var(--ink); margin:14px 0 16px }
+.btn-create{
+  width:100%; background:var(--oxblood); color:var(--gold-soft); border:1px solid var(--oxblood-line);
+  border-radius:8px; padding:14px; font-family:var(--serif); font-size:1.1rem; cursor:pointer;
+}
+.link-back{ margin-top:16px; font-size:.85rem; color:#5a5142; cursor:pointer; display:block }
+
+/* ══════════════════════════════════════════════════════════════
+   IDLE NUDGES — 5s passive pulse, 10s Curator panel hint.
+   Both keyed off shared "what's likely next" state logic. No
+   blocking modal — dropped per research on time-triggered
+   interruptions underperforming behavior-triggered guidance.
+   ══════════════════════════════════════════════════════════════ */
+@keyframes nudgePulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(201,166,96,.55) }
+  50%{ box-shadow:0 0 0 8px rgba(201,166,96,0) }
+}
+.nudge-pulse{ animation:nudgePulse 1.6s ease-in-out infinite; border-radius:8px }
+
+.curator-hint{
+  font-size:.85rem; color:var(--oxblood); background:rgba(125,66,66,.08);
+  border:1px solid rgba(125,66,66,.25); border-radius:6px; padding:10px 12px;
+  margin:8px 0 18px; line-height:1.4;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   THE ? WALKTHROUGH — 50px oxblood circle, dark cutout overlay,
+   steps through the flow. On-demand only (pull, not push).
+   ══════════════════════════════════════════════════════════════ */
+.tour-fab{
+  position:fixed; left:24px; bottom:24px; z-index:200;
+  width:50px; height:50px; border-radius:50%; background:var(--oxblood);
+  border:1px solid var(--oxblood-line); color:#f3ede1; font-family:var(--serif);
+  font-size:1.5rem; font-weight:400; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 16px rgba(0,0,0,.3);
+}
+.tour-overlay{
+  display:none; position:fixed; inset:0; z-index:210; pointer-events:none;
+}
+.tour-overlay.active{ display:block }
+.tour-spotlight{
+  position:fixed; z-index:211; border-radius:8px; pointer-events:none;
+  box-shadow:0 0 0 9999px rgba(10,7,5,.72);
+  transition:top 260ms ease, left 260ms ease, width 260ms ease, height 260ms ease;
+}
+.tour-spotlight.no-target{ box-shadow:0 0 0 9999px rgba(10,7,5,.72); inset:0; width:auto; height:auto }
+.tour-tip{
+  position:fixed; z-index:212; max-width:340px; background:var(--vellum-100,#f8f4eb);
+  border:1px solid rgba(196,169,110,.4); border-radius:8px; padding:16px 18px;
+  box-shadow:0 12px 28px rgba(0,0,0,.35); font-size:.9rem; color:var(--ink); line-height:1.4;
+  pointer-events:auto;
+}
+.tour-tip h4{ font-family:var(--serif); font-size:1.1rem; margin:0 0 6px; color:var(--oxblood) }
+.tour-tip .tour-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:14px }
+.tour-tip .tour-step-count{ font-size:.75rem; color:#8a7a5f }
+.tour-tip button{
+  font-family:var(--serif); font-size:.95rem; border:1px solid var(--oxblood); border-radius:16px;
+  padding:6px 14px; cursor:pointer; background:transparent; color:var(--oxblood);
+}
+.tour-tip button.primary{ background:var(--oxblood); color:#f3ede1 }
+.tour-tip .tour-skip{ border:none; color:#8a7a5f; font-size:.8rem; text-decoration:underline; padding:0 }
+
+/* ══════════════════════════════════════════════════════════════
+   MY COLLECTION — slide-over panel, same mechanism as production's
+   .mycoll (transform:translateX(101%) -> .is-open slides in).
+   NEW: lock/watermark/unlock states -- none of this exists in
+   production yet, confirmed with Rich (30 Aug). Unlock pricing is
+   the SAME table as Discovery selection (1/$2.99, 4/$4.99, 8/$7.99,
+   16/$12.99), applied to the COUNT of additional pieces being
+   unlocked at once -- this is CUI's working interpretation, not
+   confirmed as the intended mechanic; flagged for Rich to correct
+   if wrong rather than silently assumed settled. ══════════════════ */
+.mycoll{
+  position:fixed; z-index:220; top:0; right:0; bottom:0; width:min(94vw,1400px);
+  background:var(--parchment); box-shadow:-1.2rem 0 2.4rem rgba(0,0,0,.25);
+  transform:translateX(101%); transition:transform .6s cubic-bezier(.16,1,.3,1);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.mycoll.is-open{ transform:translateX(0) }
+.mycoll__head{
+  height:var(--mh-h); flex-shrink:0; background:var(--masthead); color:#f3ede1;
+  display:flex; align-items:center; justify-content:space-between; padding:0 28px;
+}
+.mycoll__head h2{ font-family:var(--serif); font-size:1.3rem; margin:0 }
+.mycoll__close{
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.25);
+  background:transparent; color:#f3ede1; font-size:1.1rem; cursor:pointer;
+}
+.mycoll__summary{
+  flex-shrink:0; padding:16px 28px; display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid rgba(88,65,42,.18);
+}
+.mycoll__summary .left{ font-size:.95rem; color:var(--ink) }
+.mycoll__summary .left strong{ font-family:var(--serif); color:var(--oxblood); font-size:1.15rem }
+.mycoll__unlockbar{
+  display:none; align-items:center; gap:14px; padding:14px 28px; border-bottom:1px solid rgba(88,65,42,.18);
+  background:rgba(125,66,66,.06);
+}
+.mycoll__unlockbar.active{ display:flex }
+.mycoll__unlockbar .price{ font-family:var(--serif); font-size:1.3rem; color:var(--oxblood) }
+.mycoll__unlockbar button.primary{
+  background:var(--oxblood); color:#f3ede1; border:1px solid var(--oxblood-line); border-radius:8px;
+  padding:9px 18px; font-family:var(--serif); font-size:1rem; cursor:pointer;
+}
+.mycoll__unlockbar button.ghost{
+  background:transparent; border:1px solid rgba(88,65,42,.3); border-radius:8px;
+  padding:9px 18px; font-size:.85rem; cursor:pointer; color:var(--ink);
+}
+.mycoll__grid{
+  flex:1; overflow-y:auto; padding:24px 28px; display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:18px;
+}
+.mc-piece{ position:relative; border-radius:8px; overflow:hidden; cursor:pointer; box-shadow:0 6px 16px rgba(35,31,27,.15) }
+.mc-piece__art{ position:relative; aspect-ratio:2/3; background:linear-gradient(150deg,#8a725d,#3a2b24) }
+.mc-piece.is-locked .mc-piece__art::after{
+  content:"PREVIEW"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--sans); font-size:11px; letter-spacing:.12em; color:rgba(255,255,255,.6);
+  background:repeating-linear-gradient(45deg, rgba(0,0,0,.15) 0 3px, transparent 3px 18px);
+}
+.mc-piece__overlay{ position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, transparent 42%, rgba(19,13,9,.18) 58%, rgba(19,13,9,.88) 100%) }
+.mc-piece__lockbadge{
+  position:absolute; top:8px; right:8px; z-index:2; width:26px; height:26px; border-radius:50%;
+  background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.5); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:12px;
+}
+.mc-piece.is-selected .mc-piece__lockbadge{ background:var(--gold); border-color:var(--gold); color:var(--oxblood) }
+.mc-piece__content{ position:absolute; z-index:2; left:7%; right:7%; bottom:7% }
+.mc-piece__content strong{
+  display:block; font-family:var(--serif); font-size:1.02rem; font-weight:400; color:#fffcf6;
+  text-shadow:0 .08rem .18rem rgba(18,12,8,.8);
+}
+.mc-piece.is-crafting .mc-piece__art{
+  background:linear-gradient(180deg, rgba(5,4,4,.32), rgba(9,7,7,.10) 45%, rgba(3,3,3,.38));
+}
+.mc-piece__ring{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:2.6rem; height:2.6rem; border:2.5px solid rgba(201,166,96,.22); border-top-color:rgba(201,166,96,.9);
+  border-radius:50%; box-shadow:0 0 14px rgba(201,166,96,.18); animation:mcSpin 1.4s linear infinite; z-index:2;
+}
+@keyframes mcSpin{ to{ transform:translate(-50%,-50%) rotate(360deg) } }
+
+/* ── Featured/detail view for one piece ── */
+.mc-featured{
+  position:fixed; inset:0; z-index:230; background:rgba(10,7,5,.82);
+  display:none; align-items:center; justify-content:center; padding:40px;
+}
+.mc-featured.active{ display:flex }
+.mc-featured__card{
+  background:var(--parchment); border-radius:10px; overflow:hidden; max-width:900px; width:100%;
+  display:grid; grid-template-columns:1fr 320px; max-height:88vh;
+}
+.mc-featured__art{ position:relative; background:linear-gradient(150deg,#8a725d,#3a2b24) }
+.mc-featured__art.is-locked::after{
+  content:"PREVIEW"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--sans); font-size:14px; letter-spacing:.14em; color:rgba(255,255,255,.6);
+  background:repeating-linear-gradient(45deg, rgba(0,0,0,.15) 0 3px, transparent 3px 18px);
+}
+.mc-featured__side{ padding:26px; display:flex; flex-direction:column }
+.mc-featured__side h3{ font-family:var(--serif); font-size:1.4rem; color:var(--oxblood); margin:0 0 4px }
+.mc-featured__side .silo{ font-size:.85rem; color:#8a7a5f; margin-bottom:18px }
+.mc-featured__unlock{
+  background:var(--oxblood); color:#f3ede1; border:none; border-radius:8px; padding:12px;
+  font-family:var(--serif); font-size:1.05rem; cursor:pointer; margin-bottom:10px;
+}
+.mc-featured .mc-act{
+  background:transparent; border:1px solid rgba(88,65,42,.3); border-radius:8px; padding:10px;
+  font-size:.9rem; cursor:pointer; margin-bottom:8px; color:var(--ink); text-align:left;
+}
+.mc-featured__close{
+  align-self:flex-end; margin-top:auto; background:none; border:none; color:#8a7a5f; cursor:pointer;
+  font-size:.85rem; text-decoration:underline;
+}
 </style>
 </head>
 <body>
@@ -148,7 +442,7 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
     <a class="active">Crafted Portraits ▾</a>
     <a>Gallery</a>
     <a>Community</a>
-    <a>My Collection</a>
+    <a id="navMyCollection" style="cursor:pointer">My Collection</a>
     <a>Account</a>
   </nav>
   <div class="masthead__right">
@@ -159,7 +453,8 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
 </header>
 
 <div class="shell">
-  <aside class="rail">
+  <!-- ── Discovery rail ── -->
+  <aside class="rail" id="discoveryRail">
     <div class="curator">
       <div class="curator__badge">C</div>
       <h3>Curator</h3>
@@ -187,34 +482,73 @@ body{ margin:0; font-family:var(--sans); color:var(--ink); background:var(--parc
       <span class="chev">›</span>
     </div>
 
-    <div class="your-collection">
+    <div class="your-collection leather">
       <div class="your-collection__head"><span class="icon">♥</span><span>Your Collection</span></div>
-      <div class="your-collection__count">6 collected</div>
-      <div class="your-collection__next">8 for $7.99</div>
-      <button class="btn-review">Review Collection →</button>
+      <div class="your-collection__count" id="collCount">0 collected</div>
+      <div class="your-collection__next" id="collNext"></div>
+      <button class="btn-review" id="btnGoReview" disabled>Review Collection →</button>
     </div>
   </aside>
 
-  <div class="stage-col">
-    <nav class="icon-nav" id="iconNav"></nav>
+  <!-- ── Discovery stage ── -->
+  <div class="stage-col discovery-view" id="discoveryView">
+    <nav class="icon-nav leather" id="iconNav"></nav>
     <main class="stage-scroll" id="stageScroll"></main>
   </div>
+
+  <!-- ── Review stage (rail content injected by JS on entry) ── -->
+  <div class="stage-col review-view" id="reviewView">
+    <div style="padding:28px 32px 0">
+      <div class="review-banner">
+        <div class="review-banner__left">
+          <div class="review-banner__icon">🛡</div>
+          <div>
+            <h2>Your Collection · Review</h2>
+            <p>Take a final look before we create your images.</p>
+          </div>
+        </div>
+        <button class="back-btn" id="btnBackTop">← Back to Discovery</button>
+      </div>
+    </div>
+    <div class="review-grid" id="reviewGrid"></div>
+  </div>
+</div>
+
+<section class="mycoll" id="mycoll" aria-hidden="true">
+  <div class="mycoll__head">
+    <h2>Your Collection</h2>
+    <button class="mycoll__close" id="mycollClose">✕</button>
+  </div>
+  <div class="mycoll__summary">
+    <div class="left" id="mycollSummaryText"></div>
+  </div>
+  <div class="mycoll__unlockbar" id="mycollUnlockbar">
+    <span id="mycollUnlockCount"></span>
+    <span class="price" id="mycollUnlockPrice"></span>
+    <button class="primary" id="mycollUnlockBuy">Unlock selected</button>
+    <button class="ghost" id="mycollUnlockCancel">Cancel</button>
+  </div>
+  <div class="mycoll__grid" id="mycollGrid"></div>
+</section>
+
+<div class="mc-featured" id="mcFeatured">
+  <div class="mc-featured__card">
+    <div class="mc-featured__art" id="mcFeaturedArt"></div>
+    <div class="mc-featured__side" id="mcFeaturedSide"></div>
+  </div>
+</div>
+
+<button class="tour-fab" id="tourFab" aria-label="Show me how this works">?</button>
+<div class="tour-overlay" id="tourOverlay">
+  <div class="tour-spotlight" id="tourSpotlight"></div>
+  <div class="tour-tip" id="tourTip"></div>
 </div>
 
 <script>
 // ── Real catalog data (effect-registry.ts), 8 silos, 7 canonical each.
-// Icons are simple inline SVG line-glyphs, matching the comp's style —
-// hourglass/mountain/sparkle/leaf/hand/column/quill/ship's-wheel.
-var ICONS = {
-  hourglass: '<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',
-  mountain:  '<path d="M3 19l6-10 4 6 3-4 5 8H3z"/>',
-  sparkle:   '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>',
-  leaf:      '<path d="M5 19C5 10 12 4 20 4c0 8-6 15-15 15zM5 19c2-4 5-7 9-9"/>',
-  hand:      '<path d="M7 11V5.5a1.5 1.5 0 013 0V10M10 10V4.5a1.5 1.5 0 013 0V10M13 10V6a1.5 1.5 0 013 0v6M16 12v-1a1.5 1.5 0 013 0v4a6 6 0 01-6 6h-2a6 6 0 01-5-3l-3-5a1.5 1.5 0 012.6-1.5L7 13"/>',
-  column:    '<path d="M5 21h14M6 19h12M7 19V8h10v11M6 6h12M7 6l-1-2h12l-1 2"/>',
-  quill:     '<path d="M20 4c-6 0-13 5-13 13v3M20 4c-1 4-3 7-6 9M11 13c2-2 5-4 9-9"/>',
-  wheel:     '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M6.3 17.7l2.8-2.8M14.9 9.1l2.8-2.8"/>',
-};
+// Icon images: real assets now, /icons/discovery-filters/<silo.id>.png --
+// silo.id already matches the clean filenames, no mapping needed. ──
+function iconSrc(siloId){ return '/icons/discovery-filters/' + siloId + '.png'; }
 
 var SILOS = [
   { id:'another_age', name:'Another Age', icon:'hourglass', effects:['Victorian Noble','Civil War Era','Edwardian Portrait','Early Aviator','Baroque Masterpiece','Samurai','Renaissance Noble'] },
@@ -227,43 +561,113 @@ var SILOS = [
   { id:'fantasy_future', name:'Fantasy & Future', icon:'wheel', effects:['Dragon Skin','Fire & Ember','Atomic Age Robot','Forest Guardian','Clockwork','Starfield','Crystallized'] },
 ];
 
+// ── Selection state, in selection order (matters for CheckoutSnapshot
+// per CENG §11 -- order is preserved by insertion order here). ──
+var SELECTED = []; // array of { key, name, siloName }
+
+function effectKey(siloId, i){ return siloId + '__' + i; }
+
+// Real contract, per CENG-45 (30 Aug): FIXED sizes only, {1,4,8,16},
+// hard cap at 16, nothing purchasable at any other count.
+// resolveSelectionOffer rejects anything outside this set with
+// portfolio_invalid_size. This mirrors that for display -- NOT
+// reimplemented business logic, matches what's actually live.
+var VALID_SIZES = [1, 4, 8, 16];
+var SIZE_PRICE = { 1:2.99, 4:4.99, 8:7.99, 16:12.99 };
+var MAX_SELECTION = 16;
+
+function sizeInfo(count){
+  if (count === 0) return { valid:false, price:null, nudge:'Select effects to begin' };
+  if (VALID_SIZES.indexOf(count) !== -1){
+    return { valid:true, price:SIZE_PRICE[count], nudge:null };
+  }
+  // Find nearest valid size in each direction for the nudge message.
+  var below = null, above = null;
+  VALID_SIZES.forEach(function(s){
+    if (s < count) below = s;
+    if (s > count && above === null) above = s;
+  });
+  var msgs = [];
+  if (above !== null) msgs.push('add ' + (above - count) + ' more to reach ' + above + ' ($' + SIZE_PRICE[above].toFixed(2) + ')');
+  if (below !== null) msgs.push('remove ' + (count - below) + ' to drop to ' + below + ' ($' + SIZE_PRICE[below].toFixed(2) + ')');
+  return { valid:false, price:null, nudge: msgs.join(', or ') };
+}
+
+function updateCollectionSummary(){
+  var n = SELECTED.length;
+  document.getElementById('collCount').textContent = n + (n === 1 ? ' collected' : ' collected');
+  var info = sizeInfo(n);
+  document.getElementById('collNext').textContent = info.valid
+    ? ('Ready — $' + info.price.toFixed(2))
+    : info.nudge;
+  document.getElementById('btnGoReview').disabled = !info.valid;
+}
+
+function toggleSelect(key, name, siloName, checkEl, cardEl){
+  var idx = SELECTED.findIndex(function(s){ return s.key === key; });
+  if (idx === -1) {
+    if (SELECTED.length >= MAX_SELECTION){
+      // Hard cap -- 16 is the ceiling, no purchasable size above it.
+      return;
+    }
+    SELECTED.push({ key:key, name:name, siloName:siloName });
+    checkEl.classList.add('checked'); checkEl.textContent = '✓';
+  } else {
+    SELECTED.splice(idx, 1);
+    checkEl.classList.remove('checked'); checkEl.textContent = '';
+  }
+  updateCollectionSummary();
+}
+
 var nav = document.getElementById('iconNav');
 var stage = document.getElementById('stageScroll');
 
 SILOS.forEach(function(silo, idx){
-  // nav button
   var btn = document.createElement('button');
   btn.className = 'icon-nav__item' + (idx === 0 ? ' active' : '');
   btn.dataset.target = silo.id;
-  btn.innerHTML = '<svg viewBox="0 0 24 24">' + ICONS[silo.icon] + '</svg><span>' + silo.name + '</span>';
+  btn.innerHTML = '<img src="' + iconSrc(silo.id) + '" alt="">' + '<span>' + silo.name + '</span>';
   btn.addEventListener('click', function(){
     document.getElementById('silo-' + silo.id).scrollIntoView({ behavior:'smooth', block:'start' });
   });
   nav.appendChild(btn);
 
-  // silo block
   var block = document.createElement('section');
   block.className = 'silo-block';
   block.id = 'silo-' + silo.id;
-  var cardsHtml = silo.effects.map(function(name, i){
-    var selected = (idx === 0 && i % 2 === 0); // demo state only
-    return '<div class="card"><div class="card__art"><div class="card__check' +
-      (selected ? ' checked' : '') + '">' + (selected ? '✓' : '') + '</div></div>' +
-      '<div class="card__meta"><strong>' + name + '</strong></div></div>';
-  }).join('');
-  block.innerHTML =
-    '<div class="silo-header">' +
-      '<div class="icon"><svg viewBox="0 0 24 24">' + ICONS[silo.icon] + '</svg></div>' +
-      '<h2>' + silo.name + '</h2>' +
-      '<span class="sub">— ' + silo.effects.length + ' effects</span>' +
-    '</div>' +
-    '<div class="grid">' + cardsHtml + '</div>';
+
+  var gridEl = document.createElement('div');
+  gridEl.className = 'grid';
+
+  // Title card occupies slot 1 -- folds the room header into the grid
+  // itself instead of a separate row above it. Not selectable.
+  var titleCard = document.createElement('div');
+  titleCard.className = 'title-card leather';
+  titleCard.innerHTML =
+    '<div class="icon"><img src="' + iconSrc(silo.id) + '" alt=""></div>' +
+    '<h3>' + silo.name + '</h3>' +
+    '<span>' + silo.effects.length + ' effects</span>';
+  gridEl.appendChild(titleCard);
+
+  // Effects fill slots 2-8, in their original order -- naturally uses
+  // what would otherwise be an empty final slot.
+  silo.effects.forEach(function(name, i){
+    var key = effectKey(silo.id, i);
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML =
+      '<div class="card__art"><div class="card__overlay"></div><div class="card__check"></div>' +
+        '<div class="card__content"><strong>' + name + '</strong></div></div>';
+    var checkEl = card.querySelector('.card__check');
+    card.addEventListener('click', function(){
+      toggleSelect(key, name, silo.name, checkEl, card);
+    });
+    gridEl.appendChild(card);
+  });
+  block.appendChild(gridEl);
   stage.appendChild(block);
 });
 
-// ── Active-icon tracking as the user scrolls, IntersectionObserver
-// scoped to the stage-scroll container (not the page), since this is
-// a contained scroll region, not a full-page scroll. ──
 var navButtons = Array.prototype.slice.call(nav.querySelectorAll('.icon-nav__item'));
 var observer = new IntersectionObserver(function(entries){
   entries.forEach(function(entry){
@@ -271,15 +675,432 @@ var observer = new IntersectionObserver(function(entries){
     var id = entry.target.id.replace('silo-', '');
     navButtons.forEach(function(b){ b.classList.toggle('active', b.dataset.target === id); });
   });
-}, {
-  root: stage,
-  // Trigger when a silo's header area crosses roughly the top third of
-  // the scroll container -- fires on the block that's "currently being
-  // read", not merely first-visible-pixel.
-  rootMargin: '0px 0px -70% 0px',
-  threshold: 0,
-});
+}, { root: stage, rootMargin: '0px 0px -70% 0px', threshold: 0 });
 SILOS.forEach(function(s){ observer.observe(document.getElementById('silo-' + s.id)); });
+
+updateCollectionSummary();
+
+// ── Review screen: swap views, populate from real SELECTED state. ──
+var discoveryView = document.getElementById('discoveryView');
+var discoveryRail = document.getElementById('discoveryRail');
+var reviewView = document.getElementById('reviewView');
+var reviewGrid = document.getElementById('reviewGrid');
+
+function renderReviewRail(){
+  var n = SELECTED.length;
+  var info = sizeInfo(n); // n is guaranteed valid here -- Review is unreachable otherwise
+  discoveryRail.innerHTML =
+    '<div class="curator"><div class="curator__badge">C</div><h3>Curator</h3></div>' +
+    '<p>I\'m here to help you create something wonderful.</p><hr class="divider">' +
+    '<div class="eyebrow">Source photo</div>' +
+    '<div class="photo-row"><div class="photo-stamp"><div class="fill"></div></div><button>Change photo ✎</button></div>' +
+    '<div class="ready-block"><h4>Ready to create</h4>' +
+    '<p>You\'ve selected ' + n + ' effect' + (n===1?'':'s') + '. We\'ll create all ' + n + ' so you can see how each one turned out.</p></div>' +
+    '<div class="stat-card"><strong>' + n + ' watermarked preview' + (n===1?'':'s') + '</strong></div>' +
+    '<div class="stat-card"><strong>Included unlocks: TBD for size ' + n + '</strong></div>' +
+    '<p style="font-size:.8rem;color:#5a5142;line-height:1.5;margin:8px 0 0">Love more than one? You can unlock additional finished images afterward.</p>' +
+    '<div class="price-line">$' + info.price.toFixed(2) + '</div>' +
+    '<button class="btn-create">Create My Collection →</button>' +
+    '<a class="link-back" id="btnBackRail">← Back to Discovery</a>';
+  document.getElementById('btnBackRail').addEventListener('click', showDiscovery);
+}
+
+function renderReviewGrid(){
+  reviewGrid.innerHTML = '';
+  SELECTED.forEach(function(item){
+    var el = document.createElement('div');
+    el.className = 'rcard';
+    el.innerHTML =
+      '<div class="rcard__art"><button class="rcard__remove" data-key="' + item.key + '">✕</button></div>' +
+      '<div class="rcard__meta"><strong>' + item.name + '</strong><span>' + item.siloName + '</span></div>';
+    reviewGrid.appendChild(el);
+  });
+  reviewGrid.querySelectorAll('.rcard__remove').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var key = btn.dataset.key;
+      var idx = SELECTED.findIndex(function(s){ return s.key === key; });
+      if (idx !== -1) SELECTED.splice(idx, 1);
+      syncDiscoveryChecks();
+      updateCollectionSummary();
+      renderReviewRail();
+      renderReviewGrid();
+    });
+  });
+}
+
+// Every discovery card gets a stable data-key matching its SELECTED
+// entry, so Review's remove button can sync the checkmark back by key
+// rather than guessing by name.
+document.querySelectorAll('.stage-scroll .silo-block').forEach(function(block, siloIdx){
+  var siloId = SILOS[siloIdx].id;
+  block.querySelectorAll('.card').forEach(function(card, i){
+    card.dataset.key = effectKey(siloId, i);
+  });
+});
+function syncDiscoveryChecks(){
+  document.querySelectorAll('.stage-scroll .card').forEach(function(card){
+    var key = card.dataset.key;
+    var checkEl = card.querySelector('.card__check');
+    var isSelected = SELECTED.some(function(s){ return s.key === key; });
+    checkEl.classList.toggle('checked', isSelected);
+    checkEl.textContent = isSelected ? '✓' : '';
+  });
+}
+
+function showReview(){
+  discoveryView.classList.add('hidden');
+  reviewView.classList.add('active');
+  renderReviewRail();
+  renderReviewGrid();
+}
+function showDiscovery(){
+  reviewView.classList.remove('active');
+  discoveryView.classList.remove('hidden');
+  restoreDiscoveryRail();
+}
+function restoreDiscoveryRail(){
+  discoveryRail.innerHTML =
+    '<div class="curator"><div class="curator__badge">C</div><h3>Curator</h3></div>' +
+    '<p>I\'m here to help you create something wonderful.</p><hr class="divider">' +
+    '<div class="eyebrow">Source photo</div>' +
+    '<div class="photo-row"><div class="photo-stamp"><div class="fill"></div></div><button>Change photo ✎</button></div>' +
+    '<div class="q">What would you like me to do?</div>' +
+    '<div class="option"><div class="option__left"><span class="icon">✦</span><div><strong>Pick for me</strong><span class="sub">I\'ll choose great options for you.</span></div></div><span class="chev">›</span></div>' +
+    '<div class="option"><div class="option__left"><span class="icon">⊘</span><div><strong>Help me choose</strong><span class="sub">Guide me to the right effects.</span></div></div><span class="chev">›</span></div>' +
+    '<div class="option"><div class="option__left"><span class="icon">💬</span><div><strong>Describe what you\'re looking for</strong><span class="sub">Describe it in your own words.</span></div></div><span class="chev">›</span></div>' +
+    '<div class="your-collection leather">' +
+      '<div class="your-collection__head"><span class="icon">♥</span><span>Your Collection</span></div>' +
+      '<div class="your-collection__count" id="collCount"></div>' +
+      '<div class="your-collection__next" id="collNext"></div>' +
+      '<button class="btn-review" id="btnGoReview">Review Collection →</button>' +
+    '</div>';
+  document.getElementById('btnGoReview').addEventListener('click', showReview);
+  updateCollectionSummary();
+}
+
+document.getElementById('btnGoReview').addEventListener('click', showReview);
+document.getElementById('btnBackTop').addEventListener('click', showDiscovery);
+
+// ══════════════════════════════════════════════════════════════
+// IDLE NUDGES — shared "what's the likely next action" logic feeds
+// both the 5s pulse and the 10s Curator hint. Resets on ANY
+// interaction, not just the nudged one. One hint per idle period,
+// no stacking, fades on action or after ~7s.
+// ══════════════════════════════════════════════════════════════
+var idleTimer5, idleTimer10, hintFadeTimer;
+var activePulseEl = null;
+
+function likelyNextTarget(){
+  // Reviewing? nothing to pulse there (Review's own rail is rebuilt
+  // fresh each time, no stable id to pulse against safely).
+  if (reviewView.classList.contains('active')) return null;
+  if (SELECTED.length === 0){
+    // Nudge toward the first real card in view.
+    return document.querySelector('.stage-scroll .card');
+  }
+  // Something selected already -- nudge toward reviewing.
+  var btn = document.getElementById('btnGoReview');
+  return (btn && !btn.disabled) ? btn : null;
+}
+
+function curatorHintText(){
+  if (reviewView.classList.contains('active')){
+    return "Take your time. Everything you picked will still be here.";
+  }
+  if (SELECTED.length === 0){
+    return "Not sure where to start? Try tapping something that catches your eye.";
+  }
+  var info = sizeInfo(SELECTED.length);
+  if (info.valid) return "Looking good — tap Review Collection when you're ready.";
+  return "Almost there — " + info.nudge + ".";
+}
+
+function clearPulse(){
+  if (activePulseEl){ activePulseEl.classList.remove('nudge-pulse'); activePulseEl = null; }
+}
+
+function showCuratorHint(){
+  var rail = document.getElementById('discoveryRail');
+  if (!rail) return;
+  var existing = rail.querySelector('.curator-hint');
+  if (existing) return; // one per idle period, no stacking
+  var hint = document.createElement('div');
+  hint.className = 'curator-hint';
+  hint.textContent = curatorHintText();
+  var introP = rail.querySelector('.curator + p, p');
+  if (introP && introP.parentNode) introP.parentNode.insertBefore(hint, introP.nextSibling);
+  else rail.insertBefore(hint, rail.firstChild);
+  clearTimeout(hintFadeTimer);
+  hintFadeTimer = setTimeout(function(){ hint.remove(); }, 7000);
+}
+
+function resetIdleTimers(){
+  clearTimeout(idleTimer5);
+  clearTimeout(idleTimer10);
+  clearPulse();
+  idleTimer5 = setTimeout(function(){
+    var t = likelyNextTarget();
+    if (t){ t.classList.add('nudge-pulse'); activePulseEl = t; }
+  }, 5000);
+  idleTimer10 = setTimeout(showCuratorHint, 10000);
+}
+
+['click','keydown','scroll','mousemove'].forEach(function(evt){
+  document.addEventListener(evt, resetIdleTimers, { passive:true });
+});
+resetIdleTimers();
+
+// ══════════════════════════════════════════════════════════════
+// THE ? WALKTHROUGH — on-demand only, never auto-triggered. Steps
+// through the flow with a real spotlight cutout over each target.
+// Steps 8-10 (My Collection / watermark / unlock) live on a
+// different page in production -- shown as informational-only,
+// no spotlight target, since nothing to highlight exists here.
+// ══════════════════════════════════════════════════════════════
+var TOUR_STEPS = [
+  { sel:'.photo-row button', title:'Start with a photo',
+    text:'Upload a clear, forward-facing photo to begin.' },
+  { sel:'#discoveryRail .curator', title:'Meet the Curator',
+    text:"She can pick effects for you, guide you to the right ones, or just listen to what you're after.",
+    before:showDiscovery },
+  { sel:'.stage-scroll .card', title:'Pick an effect',
+    text:'Tap any card to add it. Tap again to remove it.' },
+  { sel:'.your-collection', title:'Your collection grows here',
+    text:'Every effect you pick shows up in this rail, with the running total and price.' },
+  { sel:'.icon-nav', title:'Explore other rooms',
+    text:'Jump between silos any time — your selections carry across all of them.' },
+  { sel:'#btnGoReview', title:'Review when ready',
+    text:'This opens a final look at everything you picked before anything is created.' },
+  { sel:null, title:'Create your collection', before:showReview,
+    selAfterBefore:'.btn-create',
+    text:'One tap creates watermarked previews of everything you selected, plus your included finished image.' },
+  { sel:null, title:'Then, in My Collection',
+    text:'Your previews arrive one by one as they finish — watermarked at first, so you can see them all before committing to any one.' },
+  { sel:null, title:'Unlock your favorites',
+    text:'Smaller collections include one finished, unwatermarked image. Larger collections (16+) include two.' },
+];
+
+var tourIdx = 0;
+var tourOverlay = document.getElementById('tourOverlay');
+var tourSpotlight = document.getElementById('tourSpotlight');
+var tourTip = document.getElementById('tourTip');
+
+function placeSpotlight(target){
+  if (!target){
+    tourSpotlight.classList.add('no-target');
+    tourSpotlight.style.top = tourSpotlight.style.left = tourSpotlight.style.width = tourSpotlight.style.height = '';
+    return;
+  }
+  tourSpotlight.classList.remove('no-target');
+  var r = target.getBoundingClientRect();
+  var pad = 6;
+  tourSpotlight.style.top = (r.top - pad) + 'px';
+  tourSpotlight.style.left = (r.left - pad) + 'px';
+  tourSpotlight.style.width = (r.width + pad*2) + 'px';
+  tourSpotlight.style.height = (r.height + pad*2) + 'px';
+}
+
+function placeTip(target){
+  var tipRect = tourTip.getBoundingClientRect();
+  if (!target){
+    tourTip.style.top = '50%'; tourTip.style.left = '50%';
+    tourTip.style.transform = 'translate(-50%,-50%)';
+    return;
+  }
+  tourTip.style.transform = 'none';
+  var r = target.getBoundingClientRect();
+  var top = r.bottom + 16;
+  if (top + tipRect.height > window.innerHeight - 20) top = Math.max(20, r.top - tipRect.height - 16);
+  var left = Math.min(Math.max(20, r.left), window.innerWidth - tipRect.width - 20);
+  tourTip.style.top = top + 'px';
+  tourTip.style.left = left + 'px';
+}
+
+function renderTourStep(){
+  var step = TOUR_STEPS[tourIdx];
+  if (step.before) step.before();
+  var sel = step.selAfterBefore || step.sel;
+  var target = sel ? document.querySelector(sel) : null;
+  placeSpotlight(target);
+  tourTip.innerHTML =
+    '<h4>' + step.title + '</h4><div>' + step.text + '</div>' +
+    '<div class="tour-actions">' +
+      '<button class="tour-skip" id="tourSkip">Skip tour</button>' +
+      '<span class="tour-step-count">' + (tourIdx+1) + ' of ' + TOUR_STEPS.length + '</span>' +
+      '<button class="primary" id="tourNext">' + (tourIdx === TOUR_STEPS.length-1 ? 'Done' : 'Next') + '</button>' +
+    '</div>';
+  placeTip(target);
+  document.getElementById('tourSkip').addEventListener('click', endTour);
+  document.getElementById('tourNext').addEventListener('click', function(){
+    if (tourIdx === TOUR_STEPS.length-1){ endTour(); return; }
+    tourIdx++;
+    renderTourStep();
+  });
+}
+
+function startTour(){
+  tourIdx = 0;
+  tourOverlay.classList.add('active');
+  renderTourStep();
+}
+function endTour(){
+  tourOverlay.classList.remove('active');
+  showDiscovery();
+}
+
+document.getElementById('tourFab').addEventListener('click', startTour);
+window.addEventListener('resize', function(){
+  if (tourOverlay.classList.contains('active')) renderTourStep();
+});
+
+// ══════════════════════════════════════════════════════════════
+// MY COLLECTION — demo pieces, lock/watermark/unlock states.
+// NOTE: CENG confirmed (30 Aug) that Discovery SELECTION uses
+// strict fixed sizes {1,4,8,16} only -- nothing purchasable at any
+// other count. This unlock-batch function still uses a graduated
+// band (any 2-4 -> $4.99, any 5-8 -> $7.99) rather than requiring
+// an exact match to one of the four sizes. Whether unlock-batches
+// should ALSO be strict-discrete like selection, or can genuinely
+// be any count banded this way, is a separate open question --
+// not resolved by CENG's selection-pricing answer. Flagging
+// explicitly rather than assuming it carries over.
+// ══════════════════════════════════════════════════════════════
+function unlockPrice(n){
+  if (n <= 0) return 0;
+  if (n === 1) return 2.99;
+  if (n <= 4) return 4.99;
+  if (n <= 8) return 7.99;
+  return 12.99; // covers up to 16; beyond 16 not defined, flat-caps here
+}
+
+// Demo data: mirrors whatever's in SELECTED if present, otherwise a
+// static fallback set, with one included unlock already spent as an
+// example of the "some locked, one already unlocked" state.
+var PIECES = (SELECTED.length ? SELECTED : [
+  { key:'demo1', name:'Victorian Noble', siloName:'Another Age' },
+  { key:'demo2', name:'Civil War Era', siloName:'Another Age' },
+  { key:'demo3', name:'Edwardian Portrait', siloName:'Another Age' },
+]).map(function(s, i){
+  return { key:s.key, name:s.name, siloName:s.siloName, crafting:false, locked:i !== 0 };
+});
+var INCLUDED_UNLOCKS_REMAINING = 1;
+var unlockSelection = {}; // key -> true
+
+var mycoll = document.getElementById('mycoll');
+var mycollGrid = document.getElementById('mycollGrid');
+
+function openMyCollection(){
+  mycoll.classList.add('is-open');
+  mycoll.setAttribute('aria-hidden','false');
+  renderMyCollectionGrid();
+}
+function closeMyCollection(){
+  mycoll.classList.remove('is-open');
+  mycoll.setAttribute('aria-hidden','true');
+  unlockSelection = {};
+}
+document.getElementById('navMyCollection').addEventListener('click', openMyCollection);
+document.getElementById('mycollClose').addEventListener('click', closeMyCollection);
+
+function renderMyCollectionGrid(){
+  var lockedCount = PIECES.filter(function(p){ return p.locked; }).length;
+  document.getElementById('mycollSummaryText').innerHTML =
+    '<strong>' + PIECES.length + ' pieces</strong> &nbsp;·&nbsp; ' +
+    INCLUDED_UNLOCKS_REMAINING + ' included unlock' + (INCLUDED_UNLOCKS_REMAINING===1?'':'s') + ' remaining &nbsp;·&nbsp; ' +
+    lockedCount + ' still watermarked';
+
+  mycollGrid.innerHTML = '';
+  PIECES.forEach(function(p){
+    var el = document.createElement('div');
+    el.className = 'mc-piece' + (p.locked ? ' is-locked' : '') + (unlockSelection[p.key] ? ' is-selected' : '');
+    if (p.crafting){
+      el.innerHTML = '<div class="mc-piece__art"><div class="mc-piece__ring"></div></div>' +
+        '<div class="mc-piece__content"><strong>Crafting…</strong></div>';
+    } else {
+      el.innerHTML =
+        '<div class="mc-piece__art">' +
+          '<div class="mc-piece__overlay"></div>' +
+          (p.locked ? '<div class="mc-piece__lockbadge" data-key="' + p.key + '">' + (unlockSelection[p.key]?'✓':'🔒') + '</div>' : '') +
+        '</div>' +
+        '<div class="mc-piece__content"><strong>' + p.name + '</strong></div>';
+    }
+    if (!p.crafting) {
+      el.querySelector('.mc-piece__art').addEventListener('click', function(e){
+        if (e.target.classList.contains('mc-piece__lockbadge')) return; // handled separately
+        openFeatured(p);
+      });
+    }
+    mycollGrid.appendChild(el);
+  });
+  mycollGrid.querySelectorAll('.mc-piece__lockbadge').forEach(function(badge){
+    badge.addEventListener('click', function(e){
+      e.stopPropagation();
+      var key = badge.dataset.key;
+      if (unlockSelection[key]) delete unlockSelection[key];
+      else unlockSelection[key] = true;
+      renderMyCollectionGrid();
+      renderUnlockBar();
+    });
+  });
+}
+
+function renderUnlockBar(){
+  var bar = document.getElementById('mycollUnlockbar');
+  var n = Object.keys(unlockSelection).length;
+  if (n === 0){ bar.classList.remove('active'); return; }
+  bar.classList.add('active');
+  document.getElementById('mycollUnlockCount').textContent = n + ' selected';
+  document.getElementById('mycollUnlockPrice').textContent = '$' + unlockPrice(n).toFixed(2);
+}
+document.getElementById('mycollUnlockCancel').addEventListener('click', function(){
+  unlockSelection = {};
+  renderMyCollectionGrid();
+  renderUnlockBar();
+});
+document.getElementById('mycollUnlockBuy').addEventListener('click', function(){
+  Object.keys(unlockSelection).forEach(function(key){
+    var p = PIECES.find(function(x){ return x.key === key; });
+    if (p) p.locked = false;
+  });
+  unlockSelection = {};
+  renderMyCollectionGrid();
+  renderUnlockBar();
+});
+
+// ── Featured/detail view ──
+var mcFeatured = document.getElementById('mcFeatured');
+function openFeatured(p){
+  document.getElementById('mcFeaturedArt').className = 'mc-featured__art' + (p.locked ? ' is-locked' : '');
+  var side = document.getElementById('mcFeaturedSide');
+  var actionsHtml;
+  if (p.locked){
+    var usingIncluded = INCLUDED_UNLOCKS_REMAINING > 0;
+    actionsHtml =
+      '<button class="mc-featured__unlock" id="mcUnlockOne">' +
+        (usingIncluded ? 'Use included unlock' : 'Unlock this favorite — $2.99') +
+      '</button>';
+  } else {
+    actionsHtml =
+      '<button class="mc-act">Download</button>' +
+      '<button class="mc-act">Send to Print Shop</button>' +
+      '<button class="mc-act">Post to Community</button>';
+  }
+  side.innerHTML =
+    '<h3>' + p.name + '</h3><div class="silo">' + (p.siloName||'') + '</div>' +
+    actionsHtml +
+    '<button class="mc-featured__close" id="mcFeaturedClose">Close</button>';
+  mcFeatured.classList.add('active');
+  document.getElementById('mcFeaturedClose').addEventListener('click', closeFeatured);
+  if (p.locked){
+    document.getElementById('mcUnlockOne').addEventListener('click', function(){
+      if (INCLUDED_UNLOCKS_REMAINING > 0) INCLUDED_UNLOCKS_REMAINING--;
+      p.locked = false;
+      closeFeatured();
+      renderMyCollectionGrid();
+    });
+  }
+}
+function closeFeatured(){ mcFeatured.classList.remove('active'); }
 </script>
 </body>
 </html>
