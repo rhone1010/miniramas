@@ -21,7 +21,7 @@
   --serif:'Cormorant Garamond',Georgia,serif;
   --sans:'Manrope',Arial,sans-serif;
   --mh-h:64px;
-  --nav-h:92px;
+  --nav-h:72px;
   --rail-w:290px;
   --grid-cols:4;
   --nav-gap:16px;
@@ -34,7 +34,7 @@
   :root{ --rail-w:290px; --grid-cols:4; --nav-gap:20px; --nav-fs:.75rem; --card-gap:18px; --fs-brand:1.2rem; --fs-navlink:.9rem; }
 }
 @media (min-width:1920px){
-  :root{ --rail-w:350px; --grid-cols:5; --nav-gap:28px; --nav-fs:.8rem; --card-gap:20px; --fs-brand:1.3rem; --fs-navlink:.95rem; }
+  :root{ --rail-w:400px; --grid-cols:5; --nav-gap:28px; --nav-fs:.8rem; --card-gap:20px; --fs-brand:1.3rem; --fs-navlink:.95rem; }
 }
 @media (min-width:2560px){
   :root{ --rail-w:340px; --grid-cols:6; --nav-gap:34px; --nav-fs:.85rem; --card-gap:24px; --fs-brand:1.5rem; --fs-navlink:1.05rem; }
@@ -164,10 +164,6 @@ body{
   border-bottom:3px solid transparent; padding:0 4px;
 }
 .icon-nav__item svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5 }
-.icon-nav__badge{
-  width:56px; height:56px; border-radius:50%; border:1px solid rgba(224,184,102,.55);
-  display:flex; align-items:center; justify-content:center; flex-shrink:0;
-}
 .icon-nav__item img{ width:40px; height:40px; object-fit:contain }
 .icon-nav__item span{ font-size:1.1em; white-space:nowrap }
 .icon-nav__item.active{ color:var(--gold-soft); border-bottom-color:var(--gold-soft) }
@@ -413,7 +409,7 @@ SILOS.forEach(function(silo, idx){
   var btn = document.createElement('button');
   btn.className = 'icon-nav__item' + (idx === 0 ? ' active' : '');
   btn.dataset.target = silo.id;
-  btn.innerHTML = '<span class="icon-nav__badge"><img src="' + iconSrc(silo.id) + '" alt=""></span>' + '<span>' + silo.name + '</span>';
+  btn.innerHTML = '<img src="' + iconSrc(silo.id) + '" alt="">' + '<span>' + silo.name + '</span>';
   btn.addEventListener('click', function(){
     document.getElementById('silo-' + silo.id).scrollIntoView({ behavior:'smooth', block:'start' });
   });
