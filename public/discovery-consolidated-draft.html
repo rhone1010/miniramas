@@ -1292,6 +1292,64 @@ body.is-lboxed{ overflow:hidden }
   border-radius:4px; border:1px solid rgba(243,237,225,.5);
   background:transparent; color:var(--vellum); cursor:pointer;
 }
+/* __POSE_STEP__ — ported from portraits.html:1477-1556. */
+.pose-view{ display:none }
+.pose-view.active{ display:flex }
+.pose-floor{
+  flex:1; overflow-y:auto; padding:28px var(--stage-pad-x) 60px;
+  display:grid; grid-template-columns:repeat(3,1fr); gap:var(--card-gap);
+  align-content:start;
+}
+.pose-card{
+  position:relative; border-radius:8px; overflow:hidden; cursor:pointer;
+  aspect-ratio:var(--card-ar);
+  border:1px solid rgba(88,65,42,.22);
+  transition:opacity 220ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.pose-floor.has-choice .pose-card{ opacity:.58 }
+.pose-floor.has-choice .pose-card.is-chosen{ opacity:1 }
+.pose-card.is-chosen{
+  border-color:rgba(201,166,96,.7);
+  box-shadow:inset 0 0 0 .16rem rgba(201,166,96,.28),
+             inset 0 .8rem 1.8rem rgba(18,12,8,.14),
+             0 .5rem 1.1rem rgba(52,36,25,.14);
+}
+/* the tick is CSS — nothing to keep in step in JavaScript */
+.pose-card.is-chosen::after{
+  content:"\2713"; position:absolute; z-index:5; top:.6rem; right:.6rem;
+  display:grid; place-items:center; width:1.7rem; height:1.7rem;
+  border-radius:50%; background:rgba(201,166,96,.94); color:#3a2a12;
+  font-size:1rem; line-height:1;
+}
+.pose-card__image{ width:100%; height:100%; object-fit:cover; display:block }
+.pose-card__overlay{ position:absolute; inset:0; z-index:1;
+  background:linear-gradient(180deg, transparent 42%, rgba(19,13,9,.18) 58%, rgba(19,13,9,.88) 100%) }
+.pose-card__content{ position:absolute; z-index:2; left:14px; right:14px; bottom:12px }
+.pose-card__title{ font-family:var(--serif); font-size:1.3rem; color:#f3ede1; margin:0;
+  text-shadow:0 2px 8px rgba(0,0,0,.6) }
+/* Keep My Pose — the card with no photograph. Five poses can be
+   photographed; keeping the one you arrived with cannot, so it reads as
+   a sealed thing rather than an absent image. portraits.html:1477. */
+.pose-card.preserve{
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  gap:22px; padding:42px 32px; text-align:center; color:#f3eee8;
+  background:radial-gradient(circle at 50% 22%, rgba(255,255,255,.035), transparent 55%),
+             linear-gradient(180deg, #372a23 0%, #241b16 100%);
+}
+.pose-card.preserve::before{ content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(ellipse at top, rgba(255,255,255,.05), transparent 55%) }
+.pose-card .icon-circle{ width:84px; height:84px; border-radius:50%;
+  border:1px solid rgba(224,184,102,.5); display:flex; align-items:center; justify-content:center }
+.pose-card .icon-circle svg{ width:30px; height:30px; stroke:var(--gold-soft); fill:none; stroke-width:1.5 }
+.pose-card.preserve h3{ font-family:var(--serif); font-size:1.35rem; margin:0 }
+.pose-card.preserve p{ font-family:var(--sans); font-size:.82rem; color:#c9a97e; margin:0; line-height:1.45 }
+.pose-head{ display:flex; align-items:center; gap:16px; padding:18px var(--stage-pad-x) 0 }
+.pose-head h2{ font-family:var(--serif); font-size:1.5rem; color:#f3ede1; margin:0 }
+@media (max-width:1024px){ .pose-floor{ grid-template-columns:repeat(2,1fr) } }
+@media (max-width:767px){ .pose-floor{ grid-template-columns:1fr 1fr; gap:10px;
+  padding:14px var(--stage-pad-x) calc(160px + env(safe-area-inset-bottom,0px)) }
+  .pose-card .icon-circle{ width:60px; height:60px }
+  .pose-card.preserve{ padding:20px 14px; gap:12px } }
 </style>
 </head>
 <body>
@@ -1371,6 +1429,16 @@ body.is-lboxed{ overflow:hidden }
   </div>
 
   <!-- ── Review stage (rail content injected by JS on entry) ── -->
+  <!-- __POSE_STEP__ Step 2 · the pose. portraits.html:8366-8373 puts this
+       after Craft and before the paywall; here that is after Review. -->
+  <div class="stage-col pose-view" id="poseView">
+    <div class="pose-head">
+      <button class="back-btn" id="btnBackPose">← Back to Review</button>
+      <h2>Step 2 · the pose</h2>
+    </div>
+    <main class="pose-floor" id="poseFloor"></main>
+  </div>
+
   <div class="stage-col review-view" id="reviewView">
     <div style="padding:28px 32px 0">
       <div class="review-banner leather">
@@ -2919,6 +2987,7 @@ function repaintSubject(){
     c.dataset.effectId = resolved;
   }
   if (typeof syncDiscoveryChecks === 'function') syncDiscoveryChecks();
+  if (typeof repaintPosePlates === 'function') repaintPosePlates();   /* __POSE_STEP__ */
 }
 
 var ACTIVE_SILO = SILOS[0].id;
@@ -3917,10 +3986,120 @@ function pieceTitle(p){ return p.series + ' - ' + p.name + ' - ' + CUSTOMER + ' 
 
    clientPriceUsd comes from the session's own offer, never computed here,
    because portfolio-checkout.ts:145 rejects a mismatch. */
+/* __POSE_STEP__
+   POSE travels as a request parameter, never persisted. portraits.html
+   :6748-6752 ruled it: the route has no field for it and ignores it,
+   exactly as it ignores aspect_ratio, and buildPayload sends it anyway
+   at :6774 beside subject. No discovery_sessions column, none added.
+
+   One pose for the whole collection (portraits.html:8368). */
+var POSE = 'as_photographed';
+var PRESERVE_DESC = 'Preserve your original expression and posture.';
+var POSES = (function(){
+  var reg = window.EFFECT_REGISTRY;
+  return ((reg && reg.poses) || []).map(function(p){
+    return { id:p.id, label:p.label, preserve:!!p.preserve,
+             desc:p.preserve ? PRESERVE_DESC : '' };
+  });
+})();
+
+var LOCK_SVG =
+  '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+    '<rect x="5" y="10.4" width="14" height="10.1" rx="2"/>' +
+    '<path d="M8.2 10.4V7.7a3.8 3.8 0 0 1 7.6 0v2.7"/>' +
+  '</svg>';
+
+/* portraits.html:8222 + plateFrom(:8202-8214) with sub=false: the pose
+   plates are FLAT in /previews/pose/, named <id>_<gender>.<ext>, not in
+   per-id folders like the effect plates. Gender resolves the same way
+   every other plate on this page does. */
+function poseArt(poseId){
+  if (!PREVIEWS || !PREVIEWS.poses) return '';
+  var f = PREVIEWS.poses[poseId]; if (!f) return '';
+  var want = SUBJECT === 'woman' ? f.woman : f.man;
+  var file = want || f.neutral || f.man || f.woman || (f.all && f.all[0]);
+  return file ? (PREVIEWS.poseBase || '/previews/pose/') + file : '';
+}
+
+function poseCard(p){
+  var a = document.createElement('article');
+  a.className = 'pose-card' + (p.preserve ? ' preserve' : '');
+  a.tabIndex = 0;
+  a.dataset.pose = p.id;
+  if (p.preserve){
+    a.innerHTML = '<div class="icon-circle">' + LOCK_SVG + '</div><h3></h3><p></p>';
+    a.querySelector('h3').textContent = p.label;
+    a.querySelector('p').textContent  = p.desc;
+  } else {
+    var src = poseArt(p.id);
+    a.innerHTML =
+      (src ? '<img class="pose-card__image" src="' + src + '" alt="" loading="lazy">' : '') +
+      '<div class="pose-card__overlay"></div>' +
+      '<div class="pose-card__content"><h3 class="pose-card__title"></h3></div>';
+    a.querySelector('.pose-card__title').textContent = p.label;
+  }
+  a.addEventListener('click', function(){ choosePose(p.id); });
+  a.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); choosePose(p.id); }
+  });
+  return a;
+}
+
+function renderPoses(){
+  var floor = document.getElementById('poseFloor'); if (!floor) return;
+  floor.innerHTML = '';
+  POSES.forEach(function(p){
+    var el = poseCard(p);
+    if (p.id === POSE) el.classList.add('is-chosen');
+    floor.appendChild(el);
+  });
+  floor.classList.add('has-choice');   /* one is always chosen */
+}
+
+function choosePose(id){
+  POSE = id;
+  document.querySelectorAll('#poseFloor .pose-card').forEach(function(el){
+    el.classList.toggle('is-chosen', el.dataset.pose === id);
+  });
+  logPayloadIfReady();
+}
+
+function showPoses(){
+  renderPoses();
+  if (reviewView) reviewView.classList.remove('active');
+  if (discoveryView) discoveryView.classList.add('hidden');
+  var pv = document.getElementById('poseView'); if (pv) pv.classList.add('active');
+}
+function hidePoses(){
+  var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
+  showReview();
+}
+window.showPoses = showPoses;
+
+/* Entry point: the Review rail's existing Create button, the same action
+   that opens poses in portraits.html. No new copy. */
+document.addEventListener('click', function(e){
+  if (e.target.closest && e.target.closest('#btnBackPose')){ hidePoses(); return; }
+  var create = e.target.closest && e.target.closest('.btn-create');
+  if (create && !create.id){ showPoses(); }
+});
+
+/* The subject can change after the pose floor was drawn, so repaint the
+   plates the same way the effect cards are repainted. */
+function repaintPosePlates(){
+  document.querySelectorAll('#poseFloor .pose-card:not(.preserve)').forEach(function(el){
+    var img = el.querySelector('.pose-card__image');
+    var next = poseArt(el.dataset.pose);
+    if (img && next) img.src = next;
+  });
+}
+
 function buildCheckoutPayload(){
   return {
     series: 'portraits',
     selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
+    pose: POSE || 'as_photographed',   /* __POSE_STEP__ request-time, like subject */
+    subject: SUBJECT || null,
     sourceImageRef: SRC_B64 || '',
     returnUrl: window.location.origin + window.location.pathname,
     clientPriceUsd: (SERVER_OFFER && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : null
@@ -3935,6 +4114,7 @@ function showCheckoutPayload(){
     series: p.series,
     count: p.selectedEffectIds.length,
     selectedEffectIds: p.selectedEffectIds,
+    pose: p.pose,
     subject: SUBJECT,
     subjectForced: SUBJECT_FORCED,
     subjectDetected: SUBJECT_DETECTED,
@@ -3962,7 +4142,7 @@ function logPayloadIfReady(){
   if (!SELECTED.length) return;
   var p = buildCheckoutPayload();
   console.log('[discovery] payload now: ' + p.selectedEffectIds.length + ' effect(s) [' +
-    p.selectedEffectIds.join(', ') + '] price=' + p.clientPriceUsd +
+    p.selectedEffectIds.join(', ') + '] pose=' + p.pose + ' price=' + p.clientPriceUsd +
     ' image=' + (p.sourceImageRef ? p.sourceImageRef.length + 'ch' : 'none') +
     '  — showCheckoutPayload() for the full object');
 }
