@@ -2403,8 +2403,14 @@ function subjectFromPhoto(d){
 }
 
 function runAnalyze(){
-  if (!SRC_B64) return Promise.resolve(null);
+  if (!SRC_B64){
+    console.warn('[discovery] analyze skipped - no image bytes');
+    return Promise.resolve(null);
+  }
   var seq = ++ANALYZE_SEQ;
+  /* Logged on ENTRY, before the request, so the network tab and the
+     console agree about whether the call was even attempted. */
+  console.log('[discovery] analyze -> POST /api/v1/portraits/analyze (' + SRC_B64.length + ' b64 chars, seq ' + seq + ')');
   return fetch('/api/v1/portraits/analyze', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ source_image_b64: SRC_B64 })
@@ -2511,13 +2517,26 @@ photoFileInput.addEventListener('change', function(){
     SESSION_ID = null;
     SOURCE_ASSET_ID = newAssetId();
     setUploadState('loading');
+
+    /* __ANALYZE_DECOUPLED__
+       These two are INDEPENDENT and are started together.
+
+       runAnalyze() used to sit inside ensureSession().then(...), which
+       gave detection a dependency it does not have: analyze takes
+       base64 and nothing else -- no session id, no offer, nothing the
+       session call produces. Chained that way, anything that stopped
+       that promise from SETTLING -- a hung POST, a 504, a serverless
+       cold start that outlives the page -- silently took detection with
+       it, with no error and no request in the network log.
+
+       Fired here instead, the analyze request is issued the moment
+       SRC_B64 exists, in the same turn as the session call, and neither
+       can suppress the other. */
+    runAnalyze();
+
     ensureSession().then(function(sid){
       if (sid){ setUploadState('ready'); }
       else { setUploadState('error', 'Could not start a session — tap to retry'); }
-      /* __SUBJECT_DETECT__ — runs whether or not the session was created,
-         and never blocks the upload from reaching 'ready'. Its failure
-         is silent by design. */
-      runAnalyze();
     });
   };
   reader.readAsDataURL(file);
