@@ -3402,6 +3402,17 @@ function renderReviewGrid(){
       '<div class="card__art"' + (rvUrl ? ' style="background-image:url(' + rvUrl + ')"' : '') + '><div class="card__overlay"></div>' +
           '<button class="card__badge" data-key="' + item.key + '" title="Remove">✕</button>' +
           '<div class="card__content"><strong>' + item.name + '</strong></div></div>';
+      /* __REVIEW_ART_REPORT__ — same URL, applied a second way. The attribute
+         above is parsed out of an innerHTML string; this sets the
+         property directly on the element that ends up in the tree, so
+         neither route alone can leave the card blank. */
+      if (rvUrl){
+        var artEl = card.querySelector('.card__art');
+        if (artEl){
+          artEl.style.backgroundImage = 'url("' + rvUrl + '")';
+          artEl.dataset.plate = rvUrl;
+        }
+      }
 
       card.addEventListener('mouseenter', function(){ card._hovering = true; applyFanTransform(card); });
       card.addEventListener('mouseleave', function(){ card._hovering = false; applyFanTransform(card); });
@@ -3427,7 +3438,58 @@ function renderReviewGrid(){
   });
 
   layoutFans();
+  try { reviewArtReport(); } catch (e){ console.warn('[discovery] art report failed', e); }
 }
+
+/* __REVIEW_ART_REPORT__
+   Says out loud what every Review card resolved to and whether the
+   browser could actually fetch it. A blank card is otherwise silent:
+   a 404 background image logs nothing and throws nothing.
+   Call reviewArtReport() by hand at any time. */
+function reviewArtReport(){
+  var cards = document.querySelectorAll('#reviewGrid .card.fan-card:not(.is-slot)');
+  if (!cards.length) return null;
+  var rows = [], urls = [];
+  for (var i = 0; i < cards.length; i++){
+    var art = cards[i].querySelector('.card__art');
+    var name = (cards[i].querySelector('strong') || {}).textContent || '';
+    var attr = art ? (art.getAttribute('style') || '') : '';
+    var plate = art ? (art.dataset.plate || '') : '';
+    var computed = '';
+    try { computed = art ? getComputedStyle(art).backgroundImage : ''; } catch (e){}
+    rows.push({
+      card: i + 1, name: name, plate: plate || '(none)',
+      inlineAttrHasUrl: /url\(/.test(attr),
+      computedHasUrl: /url\(/.test(computed),
+      computed: computed.slice(0, 70)
+    });
+    if (plate) urls.push(plate);
+  }
+  console.log('%c[discovery] Review art — ' + cards.length + ' card(s)', 'font-weight:bold');
+  console.table(rows);
+
+  /* Probe each distinct URL with a real load, so a 404 is named.
+     This is the one thing the DOM cannot tell you by inspection. */
+  var seen = {}, pending = 0, okN = 0, bad = [];
+  urls.forEach(function(u){
+    if (seen[u]) return; seen[u] = true; pending++;
+    var img = new Image();
+    img.onload  = function(){ okN++; if (!--pending) done(); };
+    img.onerror = function(){ bad.push(u); if (!--pending) done(); };
+    img.src = u;
+  });
+  if (!pending) console.warn('[discovery] Review art: no plate URLs were set on any card');
+  function done(){
+    if (bad.length){
+      console.error('[discovery] Review art: ' + bad.length + ' plate(s) FAILED to load:');
+      bad.forEach(function(u){ console.error('   ' + u); });
+    } else {
+      console.log('[discovery] Review art: all ' + okN + ' plate(s) loaded');
+    }
+  }
+  return rows;
+}
+window.reviewArtReport = reviewArtReport;
 
 function layoutFans(){
   var ar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-ar') || .75);
