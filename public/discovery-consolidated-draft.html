@@ -1232,6 +1232,40 @@ body.is-lboxed{ overflow:hidden }
   :root{ --grid-cols:2; --card-gap:8px; --stage-pad-x:10px; }
   .masthead__right .pill-btn span{ display:none }
 }
+/* __GENDER_TOGGLE__ — ported verbatim in intent from portraits.html:1382-1409.
+   Positioned for this stage rather than that one: the draft scrolls all
+   eight rooms continuously, so the toggle rides the sticky room nav
+   instead of sitting above a single open silo. */
+.agetog{
+  display:inline-flex; gap:4px; margin-left:auto; align-self:center;
+  height:40px; padding:4px; flex:0 0 auto;
+  border-radius:4px;
+  background:linear-gradient(180deg, rgba(47,36,32,.55) 0%, rgba(36,27,23,.55) 100%);
+  border:1px solid rgba(196,169,110,.16);
+}
+.agetog[hidden]{ display:none }
+.agetog-b{
+  display:inline-flex; align-items:center;
+  height:100%; padding:0 20px;
+  border:0; border-radius:3px; background:transparent;
+  font-family:var(--serif); font-size:1.15rem; line-height:1;
+  color:var(--vellum); opacity:.62;
+  cursor:pointer;
+  transition:background .38s ease, color .38s ease, opacity .38s ease;
+}
+.agetog-b:hover{ opacity:.85 }
+.agetog-b:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.agetog-b.is-on{
+  opacity:1; color:#fff;
+  background:linear-gradient(180deg,#3a2c26 0%, #2c211c 100%);
+  border:1px solid rgba(196,169,110,.26);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+@media (max-width:767px){
+  .agetog{ height:44px }              /* touch target floor */
+  .agetog-b{ padding:0 14px; font-size:1.05rem }
+}
+
 </style>
 </head>
 <body>
@@ -2247,11 +2281,24 @@ fetch('/previews/effects-manifest.json')
   .then(function(r){ return r.ok ? r.json() : null; })
   .then(function(d){ if (d && d.effects){ PREVIEWS = d; paintCardArt(); } })
   .catch(function(e){ console.warn('[discovery] previews manifest failed:', e); });
-function previewUrlFor(effectId){
+/* __GENDER_TOGGLE__ — the subject picks the plate. Order mirrors
+   portraits.html's previewFor: ask for the subject's plate, fall back to
+   the one that serves both, then to whatever exists. */
+function previewUrlFor(effectId, subject){
   if (!PREVIEWS || !PREVIEWS.effects) return null;
   var f = PREVIEWS.effects[effectId]; if (!f) return null;
-  var file = f.man || f.neutral || (f.all && f.all[0]); if (!file) return null;
+  var want = (subject || SUBJECT) === 'woman' ? f.woman : f.man;
+  var file = want || f.neutral || f.man || f.woman || (f.all && f.all[0]);
+  if (!file) return null;
   return PREVIEWS.base + effectId + '/' + file;
+}
+/* Same rule as portraits-shared.ts:584-592 (resolvePresetForSubject):
+   a woman asking for `elizabethan` gets `elizabethan_woman`, and only
+   where that twin actually exists. Everything else resolves to itself. */
+function resolveEffectId(baseId, subject){
+  if ((subject || SUBJECT) !== 'woman') return baseId;
+  if (/_woman$/.test(baseId)) return baseId;
+  return TWIN_IDS[baseId + '_woman'] ? baseId + '_woman' : baseId;
 }
 function paintCardArt(){
   document.querySelectorAll('.card[data-effect-id]').forEach(function(card){
@@ -2532,9 +2579,10 @@ SILOS.forEach(function(silo, idx){
     var key = e.id, name = e.label;
     var card = document.createElement('div');
     card.className = 'card';
-    card.dataset.effectId = e.id;
+    card.dataset.effectId = resolveEffectId(e.id, SUBJECT);
+    card.dataset.baseId = e.id;   /* canonical, survives subject flips */
     if (e.hasVariant) card.dataset.hasVariant = '1';
-    var url = previewUrlFor(e.id);
+    var url = previewUrlFor(e.id, SUBJECT);
     var style = url ? ' style="background-image:url(' + url + ')"' : artStyle(name);
     card.innerHTML =
       '<div class="card__art"' + style + '><div class="card__overlay"></div><div class="card__badge"></div>' +
@@ -2551,6 +2599,73 @@ SILOS.forEach(function(silo, idx){
 
 // ── Minimap: rebuilt whenever the rail is (restoreDiscoveryRail),
 // so it's a function, not a one-off. ──
+/* __GENDER_TOGGLE__
+   SUBJECT and the manual override, straight from portraits.html:8060.
+   No photo drives this yet — detection is task 4 — so it defaults to
+   'man' and only the customer moves it. SUBJECT_FORCED is what task 4
+   will have to respect when it starts reading the photograph. */
+var SUBJECT = 'man';           /* 'man' | 'woman' */
+var SUBJECT_FORCED = false;    /* the customer has overridden it */
+
+/* Every registry id ending _woman, so resolveEffectId can tell a real
+   twin from a guess. Built from the registry, never assumed. */
+var TWIN_IDS = (function(){
+  var out = {}, reg = window.EFFECT_REGISTRY;
+  if (reg && reg.effects) reg.effects.forEach(function(e){ if (/_woman$/.test(e.id)) out[e.id] = true; });
+  return out;
+})();
+
+/* portraits.html:8227 gates on the PLATES (man && woman both present).
+   This gates on hasVariant — a real registry twin — per the task. The two
+   are NOT the same against this data: every silo has both plates, only
+   another_age has twins. Gating on plates would show the toggle in all
+   eight rooms while only one of them changes what gets crafted. */
+function roomHasBoth(siloId){
+  var blk = document.getElementById('silo-' + siloId);
+  if (!blk) return false;
+  return !!blk.querySelector('.card[data-has-variant="1"]');
+}
+
+var ageTog = null;
+function paintAgeTog(){
+  if (!ageTog) return;
+  var want = SUBJECT === 'woman' ? 'w' : 'm';
+  var on = ageTog.querySelectorAll('.agetog-b');
+  for (var i = 0; i < on.length; i++){
+    on[i].classList.toggle('is-on', on[i].dataset.age === want);
+    on[i].setAttribute('aria-pressed', on[i].dataset.age === want ? 'true' : 'false');
+  }
+}
+function syncAgeTogVisibility(){
+  if (ageTog) ageTog.hidden = !roomHasBoth(ACTIVE_SILO);
+}
+
+/* Same tiles, different faces — portraits.html:8275. Each card is edited
+   where it stands. No rebuild, no second card, no duplicate grid: the
+   selection state and scroll position both survive.
+   data-effect-id carries the RESOLVED id, so a selection made as a woman
+   sends elizabethan_woman; data-base-id keeps the canonical one so the
+   card can be resolved again if the subject flips back. */
+function repaintSubject(){
+  var cards = document.querySelectorAll('#stageScroll .card[data-effect-id]');
+  for (var i = 0; i < cards.length; i++){
+    var c = cards[i];
+    var base = c.dataset.baseId || c.dataset.effectId;
+    var art = c.querySelector('.card__art');
+    var next = previewUrlFor(base, SUBJECT);
+    if (art && next) art.style.backgroundImage = 'url(' + next + ')';
+    var resolved = resolveEffectId(base, SUBJECT);
+    var wasSelected = SELECTED.some(function(s){ return s.key === c.dataset.effectId; });
+    if (wasSelected){
+      for (var k = 0; k < SELECTED.length; k++){
+        if (SELECTED[k].key === c.dataset.effectId) SELECTED[k].key = resolved;
+      }
+    }
+    c.dataset.effectId = resolved;
+  }
+  if (typeof syncDiscoveryChecks === 'function') syncDiscoveryChecks();
+}
+
 var ACTIVE_SILO = SILOS[0].id;
 function buildMinimap(){
   var mm = document.getElementById('minimap'); if (!mm) return;
@@ -2779,11 +2894,44 @@ var observer = new IntersectionObserver(function(entries){
     if (!entry.isIntersecting) return;
     var id = entry.target.id.replace('silo-', '');
     ACTIVE_SILO = id; ROOMS_SEEN[id] = true; maybeAsk(); paintProgressLine();
+    syncAgeTogVisibility();   /* __GENDER_TOGGLE__ follows the room in view */
     navButtons.forEach(function(b){ b.classList.toggle('active', b.dataset.target === id); });
     document.querySelectorAll('.mm').forEach(function(b){ b.classList.toggle('active', b.dataset.target === id); });
   });
 }, { root: stage, rootMargin: '0px 0px -70% 0px', threshold: 0 });
 SILOS.forEach(function(s){ observer.observe(document.getElementById('silo-' + s.id)); });
+
+/* __GENDER_TOGGLE__ — markup from portraits.html:5053-5056, mounted into the
+   room nav because this stage has no per-room header to sit above. */
+(function(){
+  var host = document.getElementById('iconNav');
+  if (!host) return;
+  ageTog = document.createElement('div');
+  ageTog.className = 'agetog';
+  ageTog.id = 'ageTog';
+  ageTog.setAttribute('role', 'group');
+  ageTog.setAttribute('aria-label', 'Who is in the photograph');
+  ageTog.hidden = true;
+  ageTog.innerHTML =
+    '<button class="agetog-b is-on" id="ageM" type="button" data-age="m" aria-pressed="true">Men</button>' +
+    '<button class="agetog-b" id="ageW" type="button" data-age="w" aria-pressed="false">Women</button>';
+  host.appendChild(ageTog);
+
+  /* portraits.html:8321 — the customer disagreeing, which they are
+     entitled to do and which sticks for the session. */
+  ageTog.addEventListener('click', function(ev){
+    var b = ev.target.closest('.agetog-b'); if (!b) return;
+    var want = b.dataset.age === 'w' ? 'woman' : 'man';
+    if (want === SUBJECT) return;
+    SUBJECT = want;
+    SUBJECT_FORCED = true;
+    paintAgeTog();
+    repaintSubject();
+  });
+
+  paintAgeTog();
+  syncAgeTogVisibility();
+})();
 
 updateCollectionSummary();
 
