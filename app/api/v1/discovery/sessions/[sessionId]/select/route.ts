@@ -11,8 +11,13 @@ const VALID_ACTIONS = new Set(['select', 'remove', 'toggle'])
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { sessionId: string } },
+  ctx: { params: Promise<{ sessionId: string }> },
 ) {
+  /* params is a Promise in this Next.js -- read it as a plain object
+     and every segment is undefined, which reached Postgres as the
+     literal string "undefined". Same shape checkout/[sessionId]
+     already uses. */
+  const { sessionId } = await ctx.params
   let body: any
   try {
     body = await req.json()
@@ -25,9 +30,9 @@ export async function POST(
 
   try {
     let result
-    if (action === 'select') result = await selectEffect(params.sessionId, effectId)
-    else if (action === 'remove') result = await removeEffect(params.sessionId, effectId)
-    else result = await toggleEffect(params.sessionId, effectId)
+    if (action === 'select') result = await selectEffect(sessionId, effectId)
+    else if (action === 'remove') result = await removeEffect(sessionId, effectId)
+    else result = await toggleEffect(sessionId, effectId)
 
     return NextResponse.json(result)
   } catch (e) {
