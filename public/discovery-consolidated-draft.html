@@ -2369,6 +2369,74 @@ document.body.appendChild(photoFileInput);
    the routes want. uploadedPhotoDataUrl keeps the full data URL because
    that is what an <img src> needs. Both are kept: tasks 4, 5 and 7 read
    them and nothing here discards either. */
+/* __SUBJECT_DETECT__
+   The photograph decides the subject; the customer may disagree and
+   that sticks. portraits.html:6567-6572 is the same three lines.
+
+   ANALYZE_SEQ mirrors SRC.seq (portraits.html:6538/6554/6580): each
+   upload takes a ticket, and an answer whose ticket is stale -- because
+   a second photograph was chosen while the first was in flight -- is
+   dropped rather than applied to the wrong picture.
+
+   401 IS NOT SPECIAL-CASED, deliberately. portraits.html:6551 throws on
+   any non-2xx and :6577 catches it as a soft fail, carrying on with the
+   floor the customer is already looking at. Detection is a courtesy,
+   not a step: signed out, the toggle simply stays manual. No sign-in
+   prompt is raised here -- that is not this task's to invent. */
+var ANALYZE_SEQ = 0;
+var ANALYZE_RESULT = null;   /* kept for later tasks; not fed to curator */
+var SUBJECT_DETECTED = null; /* what the photograph said, before override */
+
+/* portraits.html:8076-8090, same order: the top-level subject a
+   dedicated vision call sets, then gender m/f, then the same two
+   inside result for an older response shape. */
+function subjectFromPhoto(d){
+  if (!d) return null;
+  if (d.subject === 'man' || d.subject === 'woman') return d.subject;
+  if (d.gender === 'm') return 'man';
+  if (d.gender === 'f') return 'woman';
+  var a = d.result || {};
+  if (a.subject === 'man' || a.subject === 'woman') return a.subject;
+  if (a.detected_gender === 'm') return 'man';
+  if (a.detected_gender === 'f') return 'woman';
+  return null;
+}
+
+function runAnalyze(){
+  if (!SRC_B64) return Promise.resolve(null);
+  var seq = ++ANALYZE_SEQ;
+  return fetch('/api/v1/portraits/analyze', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ source_image_b64: SRC_B64 })
+  }).then(function(res){
+    if (!res.ok) throw new Error('analyze ' + res.status);
+    return res.json();
+  }).then(function(data){
+    if (seq !== ANALYZE_SEQ) return null;   /* a newer photograph won */
+    ANALYZE_RESULT = data;
+    var want = subjectFromPhoto(data);
+    SUBJECT_DETECTED = want;
+    if (!want) return null;                 /* gender null -> stay manual */
+
+    /* Manual wins, whenever it happened. A late answer must not undo a
+       choice the customer already made. */
+    if (SUBJECT_FORCED) return want;
+
+    SUBJECT = want;
+    /* Detection, not override -- SUBJECT_FORCED stays false, so a later
+       photograph may still move it. */
+    repaintSubject();
+    paintAgeTog();
+    return want;
+  }).catch(function(err){
+    /* Soft fail, portraits.html:6577. 401 signed-out lands here and is
+       the ordinary answer for a visitor, not a fault. */
+    if (seq !== ANALYZE_SEQ) return null;
+    console.log('[discovery] analyze unavailable (' + err.message + ') - toggle stays manual');
+    return null;
+  });
+}
+
 var SRC_B64 = null;          /* raw base64, no prefix — for the API */
 var SRC_MIME = null;
 var UPLOAD_STATE = 'idle';   /* idle | loading | ready | error */
@@ -2446,6 +2514,10 @@ photoFileInput.addEventListener('change', function(){
     ensureSession().then(function(sid){
       if (sid){ setUploadState('ready'); }
       else { setUploadState('error', 'Could not start a session — tap to retry'); }
+      /* __SUBJECT_DETECT__ — runs whether or not the session was created,
+         and never blocks the upload from reaching 'ready'. Its failure
+         is silent by design. */
+      runAnalyze();
     });
   };
   reader.readAsDataURL(file);
