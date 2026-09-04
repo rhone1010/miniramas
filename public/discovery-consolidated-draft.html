@@ -2645,7 +2645,10 @@ function paintTier(el){
     (r.nx ? markHtml('next', r.nx, '$' + priceOf(r.nx).toFixed(2)) : markHtml('hit', 16, 'full'));
   return VALID_SIZES.indexOf(n) > -1;
 }
-function allCatalogKeys(){ var out = []; SILOS.forEach(function(silo){ silo.effects.forEach(function(e){ out.push({ key:e.id, name:e.label, siloName:silo.name }); }); }); return out; }
+/* __REAL_PAYLOAD__ — baseId is the canonical id and never moves; key is the
+   RESOLVED id and follows the subject. PREVIEWS is keyed on canonical
+   ids, so the plate lookup needs baseId while the payload needs key. */
+function allCatalogKeys(){ var out = []; SILOS.forEach(function(silo){ silo.effects.forEach(function(e){ out.push({ key:resolveEffectId(e.id, SUBJECT), baseId:e.id, name:e.label, siloName:silo.name }); }); }); return out; }
 // Pick for me. Asks the engine for `v` canonical ids and selects those.
 // Random local picks are gone. Falls back to the local pool only if the
 // engine is unreachable, so the mock still demonstrates when offline.
@@ -2667,6 +2670,7 @@ function fillTo(v){
 function trimTo(v){ SELECTED.splice(v); releaseTier(); syncDiscoveryChecks(); afterSelectionChange(); }
 function afterSelectionChange(){
   updateCollectionSummary();
+  logPayloadIfReady();   /* __REAL_PAYLOAD__ */
   if (reviewView.classList.contains('active')){ lockTier(); renderReviewRail(); renderReviewGrid(); }
 }
 // marker taps (both rails)
@@ -2737,7 +2741,7 @@ function toggleSelect(key, name, siloName, checkEl, cardEl){
       // Hard cap -- 16 is the ceiling, no purchasable size above it.
       return;
     }
-    SELECTED.push({ key:key, name:name, siloName:siloName });
+    SELECTED.push({ key:key, baseId:(cardEl && cardEl.dataset.baseId) || key, name:name, siloName:siloName });
     syncSelect(key, 'select');
     checkEl.classList.add('checked'); checkEl.textContent = '✓';
     if (TIER && openSlots()){
@@ -2799,7 +2803,14 @@ SILOS.forEach(function(silo, idx){
         '<div class="card__content"><strong>' + name + '</strong></div></div>';
     var checkEl = card.querySelector('.card__badge');
     card.addEventListener('click', function(){
-      toggleSelect(key, name, silo.name, checkEl, card);
+      /* __REAL_PAYLOAD__ - read the id off the card, not the closure.
+         `key` was captured at BUILD time and is the canonical id;
+         repaintSubject rewrites card.dataset.effectId when the subject
+         changes but cannot reach into this closure. Selecting a twin
+         while the subject was 'woman' therefore sent `elizabethan`
+         rather than `elizabethan_woman` - the resolution was correct
+         on screen and wrong in the payload. */
+      toggleSelect(card.dataset.effectId || key, name, silo.name, checkEl, card);
     });
     gridEl.appendChild(card);
   });
@@ -3350,8 +3361,15 @@ function renderReviewGrid(){
         card.addEventListener('click', function(){ FILL_MODE = true; showDiscovery(); updateCollectionSummary(); });
         item.el = card; inner.appendChild(card); return;
       }
-      card.innerHTML =
-        '<div class="card__art"' + artStyle(item.name) + '><div class="card__overlay"></div>' +
+    /* __REAL_PAYLOAD__ — the real plate, resolved to the current subject.
+         This used artStyle(item.name), which reads the ART map — emptied in
+         task 1 when the base64 placeholders were replaced by the manifest.
+         Every Review card was therefore rendering with no image at all.
+         Same previewUrlFor() the Discovery grid uses, same PREVIEWS data,
+         keyed on baseId because the manifest holds canonical ids. */
+    var rvUrl = previewUrlFor(item.baseId || item.key, SUBJECT);
+    card.innerHTML =
+      '<div class="card__art"' + (rvUrl ? ' style="background-image:url(' + rvUrl + ')"' : '') + '><div class="card__overlay"></div>' +
           '<button class="card__badge" data-key="' + item.key + '" title="Remove">✕</button>' +
           '<div class="card__content"><strong>' + item.name + '</strong></div></div>';
 
@@ -3436,7 +3454,11 @@ function removeFanItem(fanIdx, key){
   if (TIER && SLOTS.length === TIER){
     // Tier held: the card becomes an open slot in its own position.
     var si = SLOTS.indexOf(key); if (si > -1) SLOTS[si] = null;
-    var selIdx0 = SELECTED.findIndex(function(s){ return s.key === key; }); if (selIdx0 > -1) SELECTED.splice(selIdx0, 1);
+    var selIdx0 = SELECTED.findIndex(function(s){ return s.key === key; });
+    if (selIdx0 > -1){ SELECTED.splice(selIdx0, 1); syncSelect(key, 'remove'); }
+    /* __REAL_PAYLOAD__ — the Review 'x' spliced SELECTED locally and told the
+       server nothing, so the session kept an effect the customer had
+       removed and the offer was priced on a stale count. */
     var slotItem = { key:'slot' + si, slot:true, slotIndex:si, el:el };
     items[idx] = slotItem;
     el.classList.add('is-slot'); el.classList.remove('is-front');
@@ -3787,26 +3809,76 @@ function pieceTitle(p){ return p.series + ' - ' + p.name + ' - ' + CUSTOMER + ' 
 // (portfolio-checkout.ts:145), so clientPriceUsd is the server's own last
 // answer rather than a number computed here. NOTE: no CTA in this mock is
 // bound to this yet - the flow ends at Review Collection.
+/* __REAL_PAYLOAD__
+   buildCheckoutPayload() is the single place the payload is assembled, so
+   what task 6 will send is exactly what can be inspected now.
+
+   sourceImageRef is SRC_B64, the RAW base64 — not uploadedPhotoDataUrl.
+   createPortfolioCheckout writes this straight into portfolios.source_image
+   (portfolio-checkout.ts:206) and items/render reads it back out as
+   source_image_b64 (items/render/route.ts:81). A data: prefix would travel
+   all the way to the model as part of the image string.
+
+   selectedEffectIds are the RESOLVED ids: SELECTED[].key is rewritten by
+   repaintSubject when the subject changes, so a card chosen as a woman
+   sends elizabethan_woman and a non-twin still sends bronze.
+
+   clientPriceUsd comes from the session's own offer, never computed here,
+   because portfolio-checkout.ts:145 rejects a mismatch. */
+function buildCheckoutPayload(){
+  return {
+    series: 'portraits',
+    selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
+    sourceImageRef: SRC_B64 || '',
+    returnUrl: window.location.origin + window.location.pathname,
+    clientPriceUsd: (SERVER_OFFER && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : null
+  };
+}
+
+/* Inspection surface. Task 5 stops at a correct payload; nothing here
+   fires POST /api/v1/portfolios — that is task 6. */
+function showCheckoutPayload(){
+  var p = buildCheckoutPayload();
+  var readable = {
+    series: p.series,
+    count: p.selectedEffectIds.length,
+    selectedEffectIds: p.selectedEffectIds,
+    subject: SUBJECT,
+    subjectForced: SUBJECT_FORCED,
+    subjectDetected: SUBJECT_DETECTED,
+    clientPriceUsd: p.clientPriceUsd,
+    sessionId: SESSION_ID,
+    sourceAssetId: SOURCE_ASSET_ID,
+    sourceImageRef: p.sourceImageRef ? ('<' + p.sourceImageRef.length + ' base64 chars, no data: prefix>') : '(none)',
+    returnUrl: p.returnUrl,
+    serverOffer: SERVER_OFFER
+  };
+  console.log('%c[discovery] checkout payload (NOT sent — task 6 sends it)', 'font-weight:bold');
+  console.table(p.selectedEffectIds.map(function(id, i){
+    var sel = SELECTED[i] || {};
+    return { slot:i + 1, sends:id, canonical:sel.baseId || id, name:sel.name || '', room:sel.siloName || '' };
+  }));
+  console.log(readable);
+  return readable;
+}
+window.showCheckoutPayload = showCheckoutPayload;
+window.buildCheckoutPayload = buildCheckoutPayload;
+
+/* Logged on every selection change so the payload is visible as it is
+   built, without anyone having to know to call anything. */
+function logPayloadIfReady(){
+  if (!SELECTED.length) return;
+  var p = buildCheckoutPayload();
+  console.log('[discovery] payload now: ' + p.selectedEffectIds.length + ' effect(s) [' +
+    p.selectedEffectIds.join(', ') + '] price=' + p.clientPriceUsd +
+    ' image=' + (p.sourceImageRef ? p.sourceImageRef.length + 'ch' : 'none') +
+    '  — showCheckoutPayload() for the full object');
+}
+
 function startCheckout(){
-  if (!SESSION_ID) return Promise.resolve(null);
-  var price = SERVER_OFFER && typeof SERVER_OFFER.priceUsd === 'number' ? SERVER_OFFER.priceUsd : null;
-  if (price === null){ console.warn('[discovery] no server offer yet - not checking out'); return Promise.resolve(null); }
-  return fetch('/api/v1/portfolios', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      series: 'portraits',
-      selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
-      sourceImageRef: uploadedPhotoDataUrl || '',
-      returnUrl: window.location.origin + window.location.pathname,
-      clientPriceUsd: price
-    })
-  }).then(function(r){ return r.json().then(function(d){ return { ok:r.ok, d:d }; }); })
-   .then(function(res){
-     if (!res.ok){ console.warn('[discovery] checkout rejected:', res.d && res.d.error); return null; }
-     PORTFOLIO_ID = res.d.portfolioId;
-     if (res.d.url) window.location.href = res.d.url;
-     return res.d;
-   }).catch(function(e){ console.warn('[discovery] checkout failed:', e); return null; });
+  /* TASK 6 WIRES THIS. Deliberately does not fire. */
+  console.warn('[discovery] startCheckout() is not wired yet — task 6. Payload:');
+  return Promise.resolve(showCheckoutPayload());
 }
 
 // Real collection, once a portfolio exists. status gives slot/preset/
