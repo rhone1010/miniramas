@@ -1,13 +1,15 @@
 // app/api/v1/discovery/sessions/[sessionId]/select/route.ts
 // This is the endpoint a click on an effect card's "+" actually calls.
-// body: { effectId: string, action?: 'select' | 'remove' | 'toggle' }
+// body: { effectId: string, action?: 'select' | 'remove' | 'toggle' | 'clear' }
+// 'clear' drops the whole collection in one write and is the one action
+// that takes no effectId.
 // action defaults to 'toggle' - matches a single button that adds or
 // removes depending on current state, which is the more common UI shape
 // for this kind of card.
 import { NextRequest, NextResponse } from 'next/server'
-import { selectEffect, removeEffect, toggleEffect } from '@/lib/store/discovery-session'
+import { selectEffect, removeEffect, toggleEffect, clearEffects } from '@/lib/store/discovery-session'
 
-const VALID_ACTIONS = new Set(['select', 'remove', 'toggle'])
+const VALID_ACTIONS = new Set(['select', 'remove', 'toggle', 'clear'])
 
 export async function POST(
   req: NextRequest,
@@ -30,7 +32,8 @@ export async function POST(
 
   try {
     let result
-    if (action === 'select') result = await selectEffect(sessionId, effectId)
+    if (action === 'clear') result = await clearEffects(sessionId)
+    else if (action === 'select') result = await selectEffect(sessionId, effectId)
     else if (action === 'remove') result = await removeEffect(sessionId, effectId)
     else result = await toggleEffect(sessionId, effectId)
 

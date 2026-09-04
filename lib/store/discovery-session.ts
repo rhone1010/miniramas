@@ -192,3 +192,41 @@ export async function removeEffect(sessionId: string, effectId: string): Promise
 export async function toggleEffect(sessionId: string, effectId: string): Promise<MutationResult> {
   return mutateSelection(sessionId, effectId, 'toggle')
 }
+
+/** Start over: drop the whole collection in one write.
+ *
+ * Deliberately NOT a loop of removeEffect calls. Up to 16 sequential
+ * round trips can fail halfway and leave the session holding a subset
+ * of what the customer thought they had cleared; a single update is
+ * either applied or it is not.
+ *
+ * visited_effect_ids is kept on purpose - that is browsing history,
+ * not selection, and the source photo and the session itself survive
+ * a clear too. Only the selection (and so the tier and the offer) go.
+ *
+ * Idempotent: clearing an already-empty session is a no-op that still
+ * returns the current state.
+ */
+export async function clearEffects(sessionId: string): Promise<MutationResult> {
+  const existing = await getSession(sessionId)
+  if (!existing) throw new Error('discovery_session_not_found')
+
+  const previousOffer = resolveSelectionOffer(existing.selectedEffectIds.length)
+
+  const { data, error } = await supabaseAdmin
+    .from('discovery_sessions')
+    .update({
+      selected_effect_ids: [],
+      updated_at: new Date().toISOString(),
+    })
+    .eq('session_id', sessionId)
+    .select()
+    .single()
+  if (error) throw new Error(`discovery_session_clear_failed: ${error.message}`)
+
+  const session = rowToSession(data as SessionRow)
+  const offer = resolveSelectionOffer(session.selectedEffectIds.length)
+  const tierChange = computeTierChange(previousOffer.tier, offer.tier)
+
+  return { session, offer, tierChange }
+}

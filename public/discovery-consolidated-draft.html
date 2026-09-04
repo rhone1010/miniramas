@@ -1297,7 +1297,7 @@ body.is-lboxed{ overflow:hidden }
 .pose-view.active{ display:flex }
 .pose-floor{
   flex:1; overflow-y:auto; padding:28px var(--stage-pad-x) 60px;
-  display:grid; grid-template-columns:repeat(3,1fr); gap:var(--card-gap);
+  display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); gap:var(--card-gap);
   align-content:start;
 }
 .pose-card{
@@ -1345,11 +1345,60 @@ body.is-lboxed{ overflow:hidden }
 .pose-card.preserve p{ font-family:var(--sans); font-size:.82rem; color:#c9a97e; margin:0; line-height:1.45 }
 .pose-head{ display:flex; align-items:center; gap:16px; padding:18px var(--stage-pad-x) 0 }
 .pose-head h2{ font-family:var(--serif); font-size:1.5rem; color:#f3ede1; margin:0 }
-@media (max-width:1024px){ .pose-floor{ grid-template-columns:repeat(2,1fr) } }
-@media (max-width:767px){ .pose-floor{ grid-template-columns:1fr 1fr; gap:10px;
+@media (max-width:767px){ .pose-floor{ gap:10px;
   padding:14px var(--stage-pad-x) calc(160px + env(safe-area-inset-bottom,0px)) }
   .pose-card .icon-circle{ width:60px; height:60px }
   .pose-card.preserve{ padding:20px 14px; gap:12px } }
+/* __START_OVER__ — lives in the rail, not the review banner:
+   .review-banner is display:none at :677 and its --legacy modifier is
+   never applied to anything, so that banner is dead markup. */
+.rail-startover{
+  width:100%; margin-top:10px;
+  font-family:var(--serif); font-style:italic; font-size:1.1rem;
+  padding:.55rem .9rem; border-radius:22px; cursor:pointer;
+  background:transparent; color:var(--oxblood);
+  border:1px solid var(--oxblood);
+}
+.rail-startover:hover{ background:rgba(118,63,65,.08) }
+.startover-confirm{ margin-top:10px; padding:12px 14px; border-radius:10px;
+  border:1px solid var(--oxblood); background:rgba(118,63,65,.06) }
+.startover-confirm p{ font-family:var(--serif); font-size:1.05rem; line-height:1.45;
+  color:#3a2a20; margin:0 0 10px }
+.startover-confirm__row{ display:flex; gap:10px }
+.startover-confirm button{ flex:1; font-family:var(--serif); font-style:italic;
+  font-size:1.1rem; padding:.5rem .8rem; border-radius:20px; cursor:pointer }
+.so-yes{ background:var(--oxblood); color:var(--vellum); border:1px solid var(--oxblood) }
+.so-no{ background:transparent; color:#5a5142; border:1px solid rgba(88,65,42,.45) }
+.startover-err{ font-family:var(--sans); font-size:12px; color:var(--oxblood); margin:8px 0 0 }
+
+/* __ASPECT_STEP__ — Square / Portrait / Landscape. Plain outlined
+   rectangles shaped to their own ratio; no plates, no new assets. */
+.aspect-view{ display:none }
+.aspect-view.active{ display:flex }
+.aspect-floor{ flex:1; overflow-y:auto; padding:28px var(--stage-pad-x) 60px }
+.aspect-row{ display:flex; gap:var(--card-gap); align-items:flex-end; flex-wrap:wrap }
+.aspect-opt{
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  padding:20px 24px; border-radius:10px; cursor:pointer;
+  background:transparent; border:1px solid rgba(88,65,42,.22);
+  transition:border-color 180ms ease, box-shadow 180ms ease, opacity 220ms ease;
+}
+.aspect-row.has-choice .aspect-opt{ opacity:.58 }
+.aspect-row.has-choice .aspect-opt.is-chosen{ opacity:1 }
+.aspect-opt.is-chosen{ border-color:rgba(201,166,96,.7);
+  box-shadow:inset 0 0 0 .16rem rgba(201,166,96,.28) }
+.aspect-shape{ border:2px solid var(--gold-soft); border-radius:4px;
+  background:rgba(255,255,255,.03) }
+.aspect-opt.is-chosen .aspect-shape{ background:rgba(201,166,96,.16) }
+.aspect-opt__label{ font-family:var(--serif); font-size:1.3rem; color:#f3ede1; margin:0 }
+.aspect-opt__ratio{ font-family:var(--sans); font-size:12px; letter-spacing:.06em;
+  color:var(--gold-soft); margin:0 }
+.aspect-head{ display:flex; align-items:center; gap:16px; padding:18px var(--stage-pad-x) 0 }
+.aspect-head h2{ font-family:var(--serif); font-size:1.5rem; color:#f3ede1; margin:0 }
+.step-next{ margin:22px var(--stage-pad-x) 0; align-self:flex-start }
+@media (max-width:767px){ .aspect-floor{ padding:14px var(--stage-pad-x)
+  calc(160px + env(safe-area-inset-bottom,0px)) }
+  .aspect-opt{ padding:14px 16px; gap:8px } }
 </style>
 </head>
 <body>
@@ -1437,6 +1486,19 @@ body.is-lboxed{ overflow:hidden }
       <h2>Step 2 · the pose</h2>
     </div>
     <main class="pose-floor" id="poseFloor"></main>
+    <button class="btn-create on step-next" id="btnPoseNext">Continue →</button>
+  </div>
+
+  <!-- __ASPECT_STEP__ Step 3 · the shape. After the pose, before the
+       craft commit task 6 wires. One choice per collection. -->
+  <div class="stage-col aspect-view" id="aspectView">
+    <div class="aspect-head">
+      <button class="back-btn" id="btnBackAspect">← Back to the pose</button>
+      <h2>Step 3 · the shape</h2>
+    </div>
+    <main class="aspect-floor" id="aspectFloor">
+      <div class="aspect-row" id="aspectRow"></div>
+    </main>
   </div>
 
   <div class="stage-col review-view" id="reviewView">
@@ -2571,6 +2633,7 @@ photoFileInput.addEventListener('change', function(){
       setUploadState('error', 'That did not read as an image'); return;
     }
     uploadedPhotoDataUrl = url;
+    detectPhotoOrientation(url);   /* __ASPECT_STEP__ default follows the photo */
     SRC_B64  = url.slice(comma + 1);
     SRC_MIME = url.slice(5, url.indexOf(';') > -1 ? url.indexOf(';') : comma);
 
@@ -3334,6 +3397,11 @@ function renderReviewRail(){
     bodyHtml +
     priceHtml +
     '<button class="btn-create' + ((info.valid && n > 0 && !openSlots()) ? ' on' : '') + '">Create My Collection →</button>' +
+    /* __START_OVER__ — always on Review, at every count, beside the
+       per-card removes. Rendered here because renderReviewRail() is
+       what repaints on entry AND after each remove. */
+    '<button class="rail-startover" id="btnStartOver" type="button">Start over</button>' +
+    '<div id="startOverConfirm"></div>' +
     '<a class="link-back" id="btnBackRail">← Back to Discovery</a>';
   document.getElementById('btnBackRail').addEventListener('click', showDiscovery);
   paintTier(document.getElementById('tierR'));
@@ -4094,11 +4162,176 @@ function repaintPosePlates(){
   });
 }
 
+/* ══ __START_OVER__ ══════════════════════════════════════════════
+   One atomic server write, then the client. The order matters: if the
+   server clear fails the client keeps its collection, because a UI
+   that says empty over a session that still holds 8 effects is worse
+   than not clearing at all.
+
+   Kept on purpose: the photograph, the session, the source asset id,
+   the detected subject. Only the collection, the tier and the pose go
+   — re-uploading to change your mind about effects would be absurd.
+   The shape returns to whatever the photograph itself implies. */
+function clearServerSelection(){
+  if (!SESSION_ID) return Promise.resolve({ skipped:true });
+  return fetch('/api/v1/discovery/sessions/' + encodeURIComponent(SESSION_ID) + '/select', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'clear' })
+  }).then(function(r){
+    if (!r.ok) throw new Error('clear_failed_' + r.status);
+    return r.json();
+  }).then(function(d){
+    if (d && d.offer) SERVER_OFFER = d.offer;
+    return d;
+  });
+}
+
+function startOver(){
+  return clearServerSelection().then(function(d){
+    SELECTED = [];
+    releaseTier();                 /* TIER 0, SLOTS [], FILL_MODE false */
+    POSE = 'as_photographed';      /* clean slate on the pose too */
+    ASPECT = defaultAspect();      /* back to what the photograph implies */
+    ASPECT_FORCED = false;
+    document.querySelectorAll('#stageScroll .card.is-selected')
+      .forEach(function(el){ el.classList.remove('is-selected'); });
+    showDiscovery();               /* rebuilds the rail, repaints the gauge */
+    console.log('[discovery] start over — server cleared:', d && !d.skipped,
+      'offer:', SERVER_OFFER);
+    return true;
+  }).catch(function(e){
+    /* Server said no. Leave the collection exactly as it was. */
+    console.warn('[discovery] start over failed, nothing cleared:', e);
+    var box = document.getElementById('startOverConfirm');
+    if (box) box.innerHTML = '<p class="startover-err">That did not go through. Nothing was cleared — please try again.</p>';
+    return false;
+  });
+}
+
+/* Simple two-step confirm, no overlay. Destructive to up to 16 picks. */
+function askStartOver(){
+  var box = document.getElementById('startOverConfirm'); if (!box) return;
+  var n = SELECTED.length;
+  box.innerHTML =
+    '<div class="startover-confirm">' +
+      '<p>Clear ' + n + ' selected effect' + (n === 1 ? '' : 's') + '? Your photograph stays.</p>' +
+      '<div class="startover-confirm__row">' +
+        '<button class="so-yes" id="soYes" type="button">Yes, start over</button>' +
+        '<button class="so-no" id="soNo" type="button">Keep them</button>' +
+      '</div>' +
+    '</div>';
+}
+document.addEventListener('click', function(e){
+  if (!e.target.closest) return;
+  if (e.target.closest('#btnStartOver')){ askStartOver(); return; }
+  if (e.target.closest('#soNo')){
+    var b = document.getElementById('startOverConfirm'); if (b) b.innerHTML = ''; return;
+  }
+  if (e.target.closest('#soYes')){ startOver(); return; }
+});
+window.startOver = startOver;
+
+/* ══ __ASPECT_STEP__ ═════════════════════════════════════════════
+   Three shapes, one per collection. The ratio strings match the repo:
+   ASPECT_FOR_FRAMING (portraits-shared.ts:314) already uses '1:1' and
+   '3:4'. It has no landscape value, so '4:3' here is the mechanical
+   inverse of '3:4' rather than an established constant — flagged.
+
+   KNOWN LIMITATION, accepted going in: portraits/generate/route.ts:319
+   sets aspect_ratio from framing and ignores a disagreeing client
+   value by design. This travels request-time exactly like pose. */
+var ASPECTS = [
+  { id:'square',    ratio:'1:1', label:'Square',    w:66, h:66 },
+  { id:'portrait',  ratio:'3:4', label:'Portrait',  w:57, h:76 },
+  { id:'landscape', ratio:'4:3', label:'Landscape', w:76, h:57 }
+];
+var ASPECT = 'portrait';       /* the stated default until a photo says otherwise */
+var ASPECT_FORCED = false;     /* true once the customer picks one themselves */
+var PHOTO_ORIENTATION = null;  /* 'square' | 'portrait' | 'landscape' | null */
+
+function defaultAspect(){ return PHOTO_ORIENTATION || 'portrait'; }
+function aspectRatioOf(id){
+  for (var i = 0; i < ASPECTS.length; i++) if (ASPECTS[i].id === id) return ASPECTS[i].ratio;
+  return '3:4';
+}
+
+/* Orientation off the upload itself. naturalWidth/Height on the data
+   URL we already hold — no extra request, no guessing. A photo within
+   2% of square reads as square. */
+function detectPhotoOrientation(dataUrl){
+  if (!dataUrl) return;
+  var probe = new Image();
+  probe.onload = function(){
+    var w = probe.naturalWidth, h = probe.naturalHeight;
+    if (!w || !h) return;
+    var r = w / h;
+    PHOTO_ORIENTATION = (Math.abs(r - 1) <= 0.02) ? 'square' : (r > 1 ? 'landscape' : 'portrait');
+    if (!ASPECT_FORCED){ ASPECT = PHOTO_ORIENTATION; renderAspects(); }
+    console.log('[discovery] photo is ' + w + 'x' + h + ' -> shape defaults to ' + ASPECT);
+  };
+  probe.src = dataUrl;
+}
+
+function renderAspects(){
+  var row = document.getElementById('aspectRow'); if (!row) return;
+  row.innerHTML = '';
+  ASPECTS.forEach(function(a){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'aspect-opt' + (a.id === ASPECT ? ' is-chosen' : '');
+    b.dataset.aspect = a.id;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', a.id === ASPECT ? 'true' : 'false');
+    b.innerHTML =
+      '<span class="aspect-shape" style="width:' + a.w + 'px;height:' + a.h + 'px"></span>' +
+      '<span class="aspect-opt__label"></span>' +
+      '<span class="aspect-opt__ratio"></span>';
+    b.querySelector('.aspect-opt__label').textContent = a.label;
+    b.querySelector('.aspect-opt__ratio').textContent = a.ratio;
+    b.addEventListener('click', function(){ chooseAspect(a.id); });
+    row.appendChild(b);
+  });
+  row.setAttribute('role', 'radiogroup');
+  row.classList.add('has-choice');   /* one is always chosen */
+}
+
+/* Radio behaviour: exactly one, always one. */
+function chooseAspect(id){
+  ASPECT = id;
+  ASPECT_FORCED = true;
+  document.querySelectorAll('#aspectRow .aspect-opt').forEach(function(el){
+    var on = el.dataset.aspect === id;
+    el.classList.toggle('is-chosen', on);
+    el.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  logPayloadIfReady();
+}
+
+function showAspect(){
+  renderAspects();
+  var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
+  if (reviewView) reviewView.classList.remove('active');
+  if (discoveryView) discoveryView.classList.add('hidden');
+  var av = document.getElementById('aspectView'); if (av) av.classList.add('active');
+}
+function hideAspect(){
+  var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
+  showPoses();
+}
+window.showAspect = showAspect;
+
+document.addEventListener('click', function(e){
+  if (!e.target.closest) return;
+  if (e.target.closest('#btnPoseNext')){ showAspect(); return; }
+  if (e.target.closest('#btnBackAspect')){ hideAspect(); return; }
+});
+
 function buildCheckoutPayload(){
   return {
     series: 'portraits',
     selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
     pose: POSE || 'as_photographed',   /* __POSE_STEP__ request-time, like subject */
+    aspect_ratio: aspectRatioOf(ASPECT),  /* __ASPECT_STEP__ request-time; route:319 lets framing win */
     subject: SUBJECT || null,
     sourceImageRef: SRC_B64 || '',
     returnUrl: window.location.origin + window.location.pathname,
@@ -4115,6 +4348,10 @@ function showCheckoutPayload(){
     count: p.selectedEffectIds.length,
     selectedEffectIds: p.selectedEffectIds,
     pose: p.pose,
+    aspect: ASPECT,
+    aspect_ratio: p.aspect_ratio,
+    aspectForced: ASPECT_FORCED,
+    photoOrientation: PHOTO_ORIENTATION,
     subject: SUBJECT,
     subjectForced: SUBJECT_FORCED,
     subjectDetected: SUBJECT_DETECTED,
@@ -4142,7 +4379,8 @@ function logPayloadIfReady(){
   if (!SELECTED.length) return;
   var p = buildCheckoutPayload();
   console.log('[discovery] payload now: ' + p.selectedEffectIds.length + ' effect(s) [' +
-    p.selectedEffectIds.join(', ') + '] pose=' + p.pose + ' price=' + p.clientPriceUsd +
+    p.selectedEffectIds.join(', ') + '] pose=' + p.pose + ' aspect=' + p.aspect_ratio +
+    ' price=' + p.clientPriceUsd +
     ' image=' + (p.sourceImageRef ? p.sourceImageRef.length + 'ch' : 'none') +
     '  — showCheckoutPayload() for the full object');
 }
