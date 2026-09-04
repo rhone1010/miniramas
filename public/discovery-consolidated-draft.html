@@ -2615,15 +2615,31 @@ var TWIN_IDS = (function(){
   return out;
 })();
 
-/* portraits.html:8227 gates on the PLATES (man && woman both present).
-   This gates on hasVariant — a real registry twin — per the task. The two
-   are NOT the same against this data: every silo has both plates, only
-   another_age has twins. Gating on plates would show the toggle in all
-   eight rooms while only one of them changes what gets crafted. */
+/* Plate parity with portraits.html:8227-8233, which reads
+     var f = PV.files[id]; if (f && f[0] && f[1]) return true;
+   f[0] is the man plate and f[1] the woman plate, so a room offers the
+   toggle when at least one card has BOTH. This manifest is keyed
+   {man, woman, neutral, all} rather than positionally, so the same test
+   is f.man && f.woman.
+
+   Rich's ruling, 4 September: exact parity with the live site. Outside
+   another_age this swaps the photograph and nothing else -- no twin id
+   exists to resolve to, so the same effect is crafted either way. That is
+   how portraits.html behaves today and it is carried over as-is rather
+   than improved on.
+
+   Keyed on data-base-id, never data-effect-id: the latter already carries
+   the resolved id, so as a woman it would read elizabethan_woman and miss
+   the manifest, which is keyed on canonical ids. */
 function roomHasBoth(siloId){
   var blk = document.getElementById('silo-' + siloId);
   if (!blk) return false;
-  return !!blk.querySelector('.card[data-has-variant="1"]');
+  var cards = blk.querySelectorAll('.card[data-base-id]');
+  for (var i = 0; i < cards.length; i++){
+    var f = PREVIEWS && PREVIEWS.effects && PREVIEWS.effects[cards[i].dataset.baseId];
+    if (f && f.man && f.woman) return true;
+  }
+  return false;
 }
 
 var ageTog = null;
