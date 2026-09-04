@@ -5,10 +5,15 @@ import { resolveSelectionOffer } from '@/lib/store/portfolio-checkout'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { sessionId: string } },
+  ctx: { params: Promise<{ sessionId: string }> },
 ) {
+  /* params is a Promise in this Next.js -- read it as a plain object
+     and every segment is undefined, which reached Postgres as the
+     literal string "undefined". Same shape checkout/[sessionId]
+     already uses. */
+  const { sessionId } = await ctx.params
   try {
-    const session = await getSession(params.sessionId)
+    const session = await getSession(sessionId)
     if (!session) return NextResponse.json({ error: 'session_not_found' }, { status: 404 })
     const offer = resolveSelectionOffer(session.selectedEffectIds.length)
     return NextResponse.json({ session, offer })

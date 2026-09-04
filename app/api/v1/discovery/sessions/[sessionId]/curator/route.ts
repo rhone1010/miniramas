@@ -8,8 +8,13 @@ import { getSession } from '@/lib/store/discovery-session'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { sessionId: string } },
+  ctx: { params: Promise<{ sessionId: string }> },
 ) {
+  /* params is a Promise in this Next.js -- read it as a plain object
+     and every segment is undefined, which reached Postgres as the
+     literal string "undefined". Same shape checkout/[sessionId]
+     already uses. */
+  const { sessionId } = await ctx.params
   let body: any
   try {
     body = await req.json()
@@ -18,11 +23,11 @@ export async function POST(
   }
 
   try {
-    const session = await getSession(params.sessionId)
+    const session = await getSession(sessionId)
     if (!session) return NextResponse.json({ error: 'session_not_found' }, { status: 404 })
 
     const result = await getCuratorRecommendation({
-      sessionId: params.sessionId,
+      sessionId: sessionId,
       sourceImageB64: typeof body.sourceImageB64 === 'string' ? body.sourceImageB64 : undefined,
       visitedEffectIds: session.visitedEffectIds,
       selectedEffectIds: session.selectedEffectIds,
