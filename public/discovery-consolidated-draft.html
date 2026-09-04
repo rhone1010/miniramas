@@ -1269,6 +1269,29 @@ body.is-lboxed{ overflow:hidden }
   .agetog-b{ padding:0 14px; font-size:1.05rem }
 }
 
+/* __PHOTO_UPLOAD__ — real upload states. The stamp is the only surface
+   that reports progress, so it carries all three. */
+.photo-stamp.is-loading{ cursor:progress }
+.photo-stamp .up-state{
+  position:absolute; inset:4px; z-index:3; border-radius:2px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; text-align:center; padding:10px;
+  font-family:var(--sans); font-size:.74rem; line-height:1.35;
+  background:rgba(35,31,27,.82); color:var(--vellum);
+}
+.photo-stamp .up-state.is-err{ background:rgba(125,66,66,.92) }
+.photo-stamp .up-spin{
+  width:22px; height:22px; border-radius:50%;
+  border:2px solid rgba(243,237,225,.25); border-top-color:var(--gold-soft);
+  animation:upSpin .8s linear infinite;
+}
+@keyframes upSpin{ to{ transform:rotate(360deg) } }
+@media (prefers-reduced-motion:reduce){ .photo-stamp .up-spin{ animation:none } }
+.photo-stamp .up-retry{
+  font-family:var(--sans); font-size:.72rem; padding:6px 10px; min-height:32px;
+  border-radius:4px; border:1px solid rgba(243,237,225,.5);
+  background:transparent; color:var(--vellum); cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -2335,17 +2358,106 @@ photoFileInput.type = 'file';
 photoFileInput.accept = 'image/*';
 photoFileInput.style.display = 'none';
 document.body.appendChild(photoFileInput);
+/* __PHOTO_UPLOAD__
+   No upload endpoint exists and none is being built (confirmed: no route
+   accepts multipart or stores an image; portraits/analyze:57-62 takes
+   base64 and persists nothing). The photograph is read client-side and
+   held in memory, exactly as portraits.html:6435/6511 fills SRC.b64 and
+   posts source_image_b64 to every endpoint.
+
+   SRC_B64 is the raw base64 with the data: prefix stripped, which is what
+   the routes want. uploadedPhotoDataUrl keeps the full data URL because
+   that is what an <img src> needs. Both are kept: tasks 4, 5 and 7 read
+   them and nothing here discards either. */
+var SRC_B64 = null;          /* raw base64, no prefix — for the API */
+var SRC_MIME = null;
+var UPLOAD_STATE = 'idle';   /* idle | loading | ready | error */
+var UPLOAD_ERROR = null;
+
+/* crypto.randomUUID where available, else a v4-shaped fallback. The
+   column is unconstrained text and nothing joins on it, so any stable
+   per-photo string is valid — but a uuid keeps it recognisable. */
+function newAssetId(){
+  try {
+    if (window.crypto && crypto.randomUUID) return 'src_' + crypto.randomUUID();
+  } catch (e){}
+  return 'src_xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+    var r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function paintUploadState(){
+  var stamp = document.querySelector('.photo-stamp');
+  if (!stamp) return;
+  stamp.classList.toggle('is-loading', UPLOAD_STATE === 'loading');
+  var old = stamp.querySelector('.up-state');
+  if (old) old.parentNode.removeChild(old);
+  if (UPLOAD_STATE === 'idle' || UPLOAD_STATE === 'ready') return;
+  var el = document.createElement('div');
+  el.className = 'up-state' + (UPLOAD_STATE === 'error' ? ' is-err' : '');
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-live', 'polite');
+  if (UPLOAD_STATE === 'loading'){
+    el.innerHTML = '<div class="up-spin" aria-hidden="true"></div><span>Reading your photograph</span>';
+  } else {
+    el.innerHTML = '<span>' + (UPLOAD_ERROR || 'That did not read') + '</span>' +
+                   '<button type="button" class="up-retry">Try another</button>';
+  }
+  stamp.appendChild(el);
+}
+
+function setUploadState(st, err){
+  UPLOAD_STATE = st; UPLOAD_ERROR = err || null; paintUploadState();
+}
+
 photoFileInput.addEventListener('change', function(){
   var file = photoFileInput.files[0];
   if (!file) return;
+
+  if (!/^image\//.test(file.type || '')){
+    setUploadState('error', 'That is not an image file'); return;
+  }
+  setUploadState('loading');
+
   var reader = new FileReader();
+  reader.onerror = function(){ setUploadState('error', 'Your device could not read that file'); };
   reader.onload = function(){
-    uploadedPhotoDataUrl = reader.result;
-    ensureSession();
+    var url = String(reader.result || '');
+    var comma = url.indexOf(',');
+    if (url.slice(0, 5) !== 'data:' || comma < 0){
+      setUploadState('error', 'That did not read as an image'); return;
+    }
+    uploadedPhotoDataUrl = url;
+    SRC_B64  = url.slice(comma + 1);
+    SRC_MIME = url.slice(5, url.indexOf(';') > -1 ? url.indexOf(';') : comma);
+
     var stamp = document.querySelector('.photo-stamp');
-    if (stamp){ stamp.innerHTML = photoStampHtml(); stamp.classList.remove('is-asking'); stamp.classList.remove('is-urgent'); }
+    if (stamp){
+      stamp.innerHTML = photoStampHtml();
+      stamp.classList.remove('is-asking'); stamp.classList.remove('is-urgent');
+    }
+
+    /* A new photograph is a new session. The id is generated here and
+       carried for the rest of the visit. */
+    SESSION_ID = null;
+    SOURCE_ASSET_ID = newAssetId();
+    setUploadState('loading');
+    ensureSession().then(function(sid){
+      if (sid){ setUploadState('ready'); }
+      else { setUploadState('error', 'Could not start a session — tap to retry'); }
+    });
   };
   reader.readAsDataURL(file);
+});
+
+/* Retry re-opens the picker rather than replaying a failed read. */
+document.addEventListener('click', function(ev){
+  if (ev.target.closest && ev.target.closest('.up-retry')){
+    ev.stopPropagation();
+    setUploadState('idle');
+    photoFileInput.click();
+  }
 });
 
 // __DISCOVERY_SESSION_WIRED__
@@ -2354,11 +2466,15 @@ photoFileInput.addEventListener('change', function(){
 // gauge reads it synchronously - it is kept in step with the server, which
 // owns pricing via the `offer` it returns (discovery-session.ts:178).
 var SESSION_ID = null, SERVER_OFFER = null, PORTFOLIO_ID = null;
+var SOURCE_ASSET_ID = null;   /* __PHOTO_UPLOAD__ client-generated, set on upload */
 function ensureSession(){
   if (SESSION_ID) return Promise.resolve(SESSION_ID);
   return fetch('/api/v1/discovery/sessions', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ sourceAssetId: 'upload-' + Date.now(), seriesId: 'portraits' })
+    body: JSON.stringify({
+      sourceAssetId: SOURCE_ASSET_ID || newAssetId(),
+      seriesId: 'portraits'
+    })
   }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
     if (d && d.session){ SESSION_ID = d.session.sessionId; SERVER_OFFER = d.offer; }
     return SESSION_ID;
