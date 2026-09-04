@@ -1237,7 +1237,10 @@ body.is-lboxed{ overflow:hidden }
    eight rooms continuously, so the toggle rides the sticky room nav
    instead of sitting above a single open silo. */
 .agetog{
-  display:inline-flex; gap:4px; margin-left:auto; align-self:center;
+  /* Lives inside .title-card, a centred flex column -- so it centres
+     and sits under the room name, rather than being pushed right the
+     way it was in the (retired) nav row. */
+  display:inline-flex; gap:4px; align-self:center; margin:14px 0 0;
   height:40px; padding:4px; flex:0 0 auto;
   border-radius:4px;
   background:linear-gradient(180deg, rgba(47,36,32,.55) 0%, rgba(36,27,23,.55) 100%);
@@ -2642,18 +2645,24 @@ function roomHasBoth(siloId){
   return false;
 }
 
-var ageTog = null;
+/* One toggle per room, mounted in that room's title card. Each answers
+   for its OWN room, so visibility no longer depends on tracking which
+   room is in view -- it is decided once, at build, per room. */
+var ageTogs = [];
 function paintAgeTog(){
-  if (!ageTog) return;
   var want = SUBJECT === 'woman' ? 'w' : 'm';
-  var on = ageTog.querySelectorAll('.agetog-b');
-  for (var i = 0; i < on.length; i++){
-    on[i].classList.toggle('is-on', on[i].dataset.age === want);
-    on[i].setAttribute('aria-pressed', on[i].dataset.age === want ? 'true' : 'false');
+  for (var t = 0; t < ageTogs.length; t++){
+    var on = ageTogs[t].querySelectorAll('.agetog-b');
+    for (var i = 0; i < on.length; i++){
+      on[i].classList.toggle('is-on', on[i].dataset.age === want);
+      on[i].setAttribute('aria-pressed', on[i].dataset.age === want ? 'true' : 'false');
+    }
   }
 }
 function syncAgeTogVisibility(){
-  if (ageTog) ageTog.hidden = !roomHasBoth(ACTIVE_SILO);
+  for (var t = 0; t < ageTogs.length; t++){
+    ageTogs[t].hidden = !roomHasBoth(ageTogs[t].dataset.silo);
+  }
 }
 
 /* Same tiles, different faces — portraits.html:8275. Each card is edited
@@ -2920,23 +2929,38 @@ SILOS.forEach(function(s){ observer.observe(document.getElementById('silo-' + s.
 /* __GENDER_TOGGLE__ — markup from portraits.html:5053-5056, mounted into the
    room nav because this stage has no per-room header to sit above. */
 (function(){
-  var host = document.getElementById('iconNav');
-  if (!host) return;
-  ageTog = document.createElement('div');
-  ageTog.className = 'agetog';
-  ageTog.id = 'ageTog';
-  ageTog.setAttribute('role', 'group');
-  ageTog.setAttribute('aria-label', 'Who is in the photograph');
-  ageTog.hidden = true;
-  ageTog.innerHTML =
-    '<button class="agetog-b is-on" id="ageM" type="button" data-age="m" aria-pressed="true">Men</button>' +
-    '<button class="agetog-b" id="ageW" type="button" data-age="w" aria-pressed="false">Women</button>';
-  host.appendChild(ageTog);
+  /* MOUNT POINT, corrected. This previously appended to #iconNav, which
+     is display:none at :496 -- retired on 2 Sep in favour of the rail
+     minimap plus the on-stage title card. The toggle was therefore in
+     the DOM, correct, and invisible.
 
-  /* portraits.html:8321 — the customer disagreeing, which they are
+     .title-card is that on-stage room name (built at :2568-2574), one
+     per .silo-block, so each room gets its own toggle. */
+  var blocks = document.querySelectorAll('#stageScroll .silo-block');
+  for (var b = 0; b < blocks.length; b++){
+    var card = blocks[b].querySelector('.title-card');
+    if (!card) continue;
+    var siloId = blocks[b].id.replace('silo-', '');
+    var t = document.createElement('div');
+    t.className = 'agetog';
+    t.dataset.silo = siloId;
+    t.setAttribute('role', 'group');
+    t.setAttribute('aria-label', 'Who is in the photograph');
+    t.hidden = true;
+    t.innerHTML =
+      '<button class="agetog-b is-on" type="button" data-age="m" aria-pressed="true">Men</button>' +
+      '<button class="agetog-b" type="button" data-age="w" aria-pressed="false">Women</button>';
+    card.appendChild(t);
+    ageTogs.push(t);
+  }
+  if (ageTogs[0]) ageTogs[0].id = 'ageTog';   /* stable handle for tests */
+
+  /* Delegated, so one listener serves every room's toggle.
+     portraits.html:8321 -- the customer disagreeing, which they are
      entitled to do and which sticks for the session. */
-  ageTog.addEventListener('click', function(ev){
-    var b = ev.target.closest('.agetog-b'); if (!b) return;
+  document.addEventListener('click', function(ev){
+    var b = ev.target.closest && ev.target.closest('.agetog-b');
+    if (!b) return;
     var want = b.dataset.age === 'w' ? 'woman' : 'man';
     if (want === SUBJECT) return;
     SUBJECT = want;
