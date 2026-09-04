@@ -2747,6 +2747,18 @@ function toggleSelect(key, name, siloName, checkEl, cardEl){
     if (TIER && openSlots()){
       SLOTS[SLOTS.indexOf(null)] = key;
       if (!openSlots() && FILL_MODE){ FILL_MODE = false; closeIntentGuided(); closeIntent(); updateCollectionSummary(); showReview(); return; }
+    } else if (TIER){
+      /* __TIER_RELOCK__
+         Added to a tier with no open slot. Removing already released
+         the tier unconditionally just below; adding did not, so TIER
+         and SLOTS stayed at the old size while SELECTED grew. That is
+         both the stale lock number and the half-rendered Review fan,
+         because reviewItems() hands the fan SLOTS, not SELECTED.
+
+         Same rule mobile-discovery-mock.html:446 already used: any
+         change that is not a slot-fill releases the held tier, and
+         Review relocks at the new size on entry. */
+      releaseTier();
     }
   } else {
     SELECTED.splice(idx, 1);
@@ -3318,9 +3330,27 @@ function applyFanTransform(el){
     ? fanHoverTransform(L) : fanBaseTransform(L);
 }
 
+/* __TIER_RELOCK__
+   SLOTS only describes the selection while the two still agree. The
+   length check alone was not enough: SLOTS.length === TIER stays true
+   after SELECTED has grown past it, and the fan was then built from the
+   shorter array -- the customer's other choices were not mis-rendered,
+   they were never handed to the renderer at all.
+
+   Now every filled slot must still be selected AND the filled count
+   must equal the selection. Any disagreement, whatever path produced
+   it, releases the tier and falls through to the real selection, so
+   Review relocks at the true size on entry. */
 function reviewItems(){
   if (TIER && SLOTS.length === TIER){
-    return SLOTS.map(function(k, i){ if (!k) return { key:'slot' + i, slot:true, slotIndex:i }; return SELECTED.find(function(x){ return x.key === k; }) || { key:'slot' + i, slot:true, slotIndex:i }; });
+    var filled = SLOTS.filter(function(k){ return !!k; });
+    var allStillSelected = filled.every(function(k){
+      return SELECTED.some(function(x){ return x.key === k; });
+    });
+    if (allStillSelected && filled.length === SELECTED.length){
+      return SLOTS.map(function(k, i){ if (!k) return { key:'slot' + i, slot:true, slotIndex:i }; return SELECTED.find(function(x){ return x.key === k; }) || { key:'slot' + i, slot:true, slotIndex:i }; });
+    }
+    releaseTier();
   }
   return SELECTED.slice();
 }
