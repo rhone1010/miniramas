@@ -61,7 +61,7 @@ recoverable. s70 and s71 never landed in `public/` — expected, not a gap.
 
 | File | Role |
 |---|---|
-| `app/page.tsx` | **Canonical, live.** Homepage cut applied here. |
+| `app/page.tsx` | **Dead — never renders. Corrected 3 September.** `middleware.ts` PAGES maps `'/'` and `'/home'` to `/index.html`, so every request for the homepage is rewritten past this file before the App Router reaches it. The live homepage is `public/index.html`. The homepage cut recorded here was applied to this file and is therefore not what ships. The underlying question — which of the two is meant to be canonical — is open and untouched; only this row's claim has been corrected. |
 
 ## Other Aug-1 series — attach to the proven path after Portraits
 
@@ -69,11 +69,39 @@ recoverable. s70 and s71 never landed in `public/` — expected, not a gap.
 |---|---|
 | `public/pets.html` | 5939 · 89 · 3 · 106 |
 | `public/groups.html` | 464 · 11 · 0 · 10 |
-| `public/actionmini.html` | 2266 · 50 · 4 · 35 |
+| `public/actionmini.html` | 2266 · 50 · 4 · 35 — **Archived 3 September.** Action is out of the five, see below. |
 | `public/portrait-wallpaper.html` | 486 · 16 · 2 · 15 |
 | `public/pet-wallpaper.html` | 483 · 16 · 2 · 15 |
 
-Aug 1 scope is five Series: Portraits, Pets, Groups, Action, Mobile Wallpapers.
+Aug 1 scope was five Series: Portraits, Pets, Groups, Action, Mobile Wallpapers.
+
+**Superseded 3 September — Action is out, Halloween is the fifth.** The five
+are now Portraits, Pets, Groups, **Halloween**, Mobile Wallpapers.
+
+**Action was never reachable, in any of the six repos.** `public/actionmini.html`
+is listed in `.vercelignore` and has no `middleware.ts` PAGES entry, so nothing
+on the domain ever linked to it — the reference audit of 3 September found zero
+references from any deployed page. Two faults sat behind that: the page calls
+`/api/v1/actionmini/analyze-render`, which does not exist, and the homepage tile
+pointing at it lives in `app/page.tsx`, which middleware rewrites past
+(`/` → `/index.html`), so it never rendered either. Halloween took the fifth
+slot in practice — `/halloween` and `/pets/halloween` are both in PAGES and both
+linked from the live homepage.
+
+**Do not reopen Action on the strength of the engine being intact.**
+`lib/v1/action/` (9 files) and its two routes were archived 3 September to
+`H:\LITENCO-ARCHIVE\02-SUPERSEDED-BUILDS\<repo>\`. Nothing was deleted and
+restoring it is a move back. What was missing was the routing, not the engine —
+reopening means a PAGES entry, an `.vercelignore` removal, and fixing the
+`analyze-render` call, not rewriting the Series.
+
+**Archived 3 September** (dead, zero importers outside their own set): Sportsmem,
+Interiors, Stadium, Moments, Action, and `lib/v1/generators/` (11 files).
+
+**Held in place** on Rich's instruction, not archived: Houses, Landscapes, their
+routes and HTML, and `lib/shared/subject-redirect.ts`. That last one is live —
+the Portraits gate imports it, and it still names Houses and Landscapes to
+customers in the Curator's Note.
 
 **Out of Aug 1:** `public/houses.html` (4069) · `public/landscapes.html` (2230)
 · `public/interiors.html` (122) · `public/sportsmem.html` (371).
