@@ -1501,7 +1501,7 @@ body.is-lboxed{ overflow:hidden }
         <path d="M16.9 12.2l2.9-1.1M16.9 14.6l2.8.6M16.4 16.9l2.2 1.9"/>
       </svg>
     </button>
-    <button class="pill-btn"><span>rich1hone</span></button>
+    <button class="pill-btn" id="mhName"></button>
     <button class="pill-btn">
       <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
       <span>Cart</span><span>0</span>
@@ -4184,11 +4184,15 @@ function unlockPrice(n){
 // first name -- placeholder until auth (CENG) exposes it.
 // Real signed-in identity (auth/me returns { user:{id,email}, credits }).
 // 401 when signed out, which leaves the placeholder in place.
-var CUSTOMER = 'Rich';
-fetch('/api/v1/auth/me').then(function(r){ return r.ok ? r.json() : null; })
+var CUSTOMER = null;
+var SIGNED_IN = false;
+fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.ok ? r.json() : null; })
   .then(function(d){
     if (d && d.user && d.user.email){
       CUSTOMER = d.user.email.split('@')[0];
+      SIGNED_IN = true;
+      var nameEl = document.getElementById('mhName');
+      if (nameEl) nameEl.textContent = CUSTOMER;
       try { renderCollection(); } catch(e){}
     }
   }).catch(function(){});
