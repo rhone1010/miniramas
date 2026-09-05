@@ -209,7 +209,16 @@ body{
 .nudge.is-up{ opacity:1; transform:none }
 .nudge::after{ content:''; position:absolute; left:50%; margin-left:-6px; border:6px solid transparent; border-top-color:#2a1414; top:100% }
 @media (prefers-reduced-motion:reduce){ .photo-stamp.is-urgent, .photo-stamp.is-asking{ animation:none !important } }
-.photo-stamp{ width:min(var(--photo-size),100%); aspect-ratio:1; height:auto; border:1px solid rgba(35,31,27,.3); border-radius:2px; padding:4px; background:#fff; box-sizing:border-box; position:relative; cursor:pointer }
+/* The stamp takes the photograph's shape, not the other way round.
+   --thumb-ar is written on load from the file's own dimensions and
+   --thumb-focus from the largest face the analyze call found. The
+   defaults hold for the moment between the two. */
+.photo-stamp{ width:min(var(--photo-size),100%); aspect-ratio:var(--thumb-ar, 1); height:auto; border:1px solid rgba(35,31,27,.3); border-radius:2px; padding:4px; background:#fff; box-sizing:border-box; position:relative; cursor:pointer }
+.photo-stamp img{
+  display:block; width:100%; height:100%;
+  object-fit:cover; object-position:var(--thumb-focus, 50% 38%);
+  transition:object-position .34s ease;
+}
 .photo-stamp .fill{
   width:100%; height:100%; position:relative; overflow:hidden;
   background:linear-gradient(150deg,#8a725d,#3a2b24);
@@ -1371,34 +1380,37 @@ body.is-lboxed{ overflow:hidden }
 .so-no{ background:transparent; color:#5a5142; border:1px solid rgba(88,65,42,.45) }
 .startover-err{ font-family:var(--sans); font-size:12px; color:var(--oxblood); margin:8px 0 0 }
 
-/* __ASPECT_STEP__ — Square / Portrait / Landscape. Plain outlined
-   rectangles shaped to their own ratio; no plates, no new assets. */
+/* __ASPECT_STEP__ — Square / Portrait / Landscape. Centred on stage,
+   doubled shapes, oxblood #7d4242 borders/labels/ratio text, unselected
+   background #d9ccb1. */
 .aspect-view{ display:none }
 .aspect-view.active{ display:flex }
-.aspect-floor{ flex:1; overflow-y:auto; padding:28px var(--stage-pad-x) 60px }
-.aspect-row{ display:flex; gap:var(--card-gap); align-items:flex-end; flex-wrap:wrap }
+.aspect-floor{ flex:1; overflow-y:auto; padding:28px var(--stage-pad-x) 60px;
+  display:flex; align-items:center; justify-content:center }
+.aspect-row{ display:flex; gap:calc(var(--card-gap) * 2); align-items:flex-end; flex-wrap:wrap;
+  justify-content:center }
 .aspect-opt{
-  display:flex; flex-direction:column; align-items:center; gap:12px;
-  padding:20px 24px; border-radius:10px; cursor:pointer;
-  background:transparent; border:1px solid rgba(88,65,42,.22);
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+  padding:28px 32px; border-radius:10px; cursor:pointer;
+  background:#d9ccb1; border:2px solid #7d4242;
   transition:border-color 180ms ease, box-shadow 180ms ease, opacity 220ms ease;
 }
 .aspect-row.has-choice .aspect-opt{ opacity:.58 }
 .aspect-row.has-choice .aspect-opt.is-chosen{ opacity:1 }
 .aspect-opt.is-chosen{ border-color:rgba(201,166,96,.7);
   box-shadow:inset 0 0 0 .16rem rgba(201,166,96,.28) }
-.aspect-shape{ border:2px solid var(--gold-soft); border-radius:4px;
+.aspect-shape{ border:2px solid #7d4242; border-radius:4px;
   background:rgba(255,255,255,.03) }
 .aspect-opt.is-chosen .aspect-shape{ background:rgba(201,166,96,.16) }
-.aspect-opt__label{ font-family:var(--serif); font-size:1.3rem; color:#f3ede1; margin:0 }
+.aspect-opt__label{ font-family:var(--serif); font-size:1.3rem; color:#7d4242; margin:0 }
 .aspect-opt__ratio{ font-family:var(--sans); font-size:12px; letter-spacing:.06em;
-  color:var(--gold-soft); margin:0 }
+  color:#7d4242; margin:0 }
 .aspect-head{ display:flex; align-items:center; gap:16px; padding:18px var(--stage-pad-x) 0 }
 .aspect-head h2{ font-family:var(--serif); font-size:1.5rem; color:#f3ede1; margin:0 }
-.step-next{ margin:22px var(--stage-pad-x) 0; align-self:flex-start }
+.aspect-head .back-btn{ font-size:1.1rem; padding:12px 24px }
 @media (max-width:767px){ .aspect-floor{ padding:14px var(--stage-pad-x)
   calc(160px + env(safe-area-inset-bottom,0px)) }
-  .aspect-opt{ padding:14px 16px; gap:8px } }
+  .aspect-opt{ padding:18px 20px; gap:10px } }
 </style>
 </head>
 <body>
@@ -1486,7 +1498,6 @@ body.is-lboxed{ overflow:hidden }
       <h2>Step 2 · the pose</h2>
     </div>
     <main class="pose-floor" id="poseFloor"></main>
-    <button class="btn-create on step-next" id="btnPoseNext">Continue →</button>
   </div>
 
   <!-- __ASPECT_STEP__ Step 3 · the shape. After the pose, before the
@@ -2476,7 +2487,7 @@ function photoStampHtml(){
     // Real photo present: image + bottom overlay, same treatment as
     // effect-card titles (gradient scrim + text-shadow), not the
     // hover-only change prompt from before.
-    return '<img src="' + uploadedPhotoDataUrl + '" alt="Your photo" style="width:100%;height:100%;object-fit:cover">' +
+    return '<img src="' + uploadedPhotoDataUrl + '" alt="Your photo">' +
       '<div class="photo-overlay"><span>Upload a different image</span></div>';
   }
   // No photo yet: prompt lives INSIDE the frame itself -- oxblood
@@ -2517,6 +2528,47 @@ var ANALYZE_SEQ = 0;
 var ANALYZE_RESULT = null;   /* kept for later tasks; not fed to curator */
 var SUBJECT_DETECTED = null; /* what the photograph said, before override */
 
+/* ---- the photograph's own shape ---------------------------------------
+   A square card cropped every tall portrait through the head. The card
+   now follows the file, and only clamps where a shape would wreck the
+   column: taller than 0.68 pushes the letter off the panel, wider than
+   1.5 leaves a letterbox with no face in it. */
+var THUMB_AR_TALL = 0.68;
+var THUMB_AR_WIDE = 1.50;
+
+function fitStampThumb(){
+  var stamp = document.querySelector('.photo-stamp');
+  if (!stamp) return;
+  var img = stamp.querySelector('img');
+  if (!img || !img.naturalWidth || !img.naturalHeight) return;
+  var ar  = img.naturalWidth / img.naturalHeight;
+  var use = Math.min(Math.max(ar, THUMB_AR_TALL), THUMB_AR_WIDE);
+  stamp.style.setProperty('--thumb-ar', String(use));
+  /* Only a clamped shape crops, and only a crop needs a focus. */
+  stamp.dataset.cropped = Math.abs(use - ar) > 0.005 ? '1' : '';
+}
+
+/* faces[].bbox is normalized 0..1, so the centre of the box is the
+   centre of the head as a percentage of the file — which is exactly
+   what object-position takes. The largest face is the hero; the array
+   is ordered left to right, not by importance. */
+function focusStampThumb(){
+  var stamp = document.querySelector('.photo-stamp');
+  if (!stamp) return;
+  var faces = (ANALYZE_RESULT && ANALYZE_RESULT.result && ANALYZE_RESULT.result.faces) || [];
+  var best = null, area = -1;
+  for (var i = 0; i < faces.length; i++){
+    var b = faces[i] && faces[i].bbox;
+    if (!b || !b.w || !b.h) continue;
+    if (b.w * b.h > area){ area = b.w * b.h; best = b; }
+  }
+  if (!best) return;
+  var cx = Math.min(Math.max(best.x + best.w / 2, 0), 1);
+  var cy = Math.min(Math.max(best.y + best.h / 2, 0), 1);
+  stamp.style.setProperty('--thumb-focus',
+    (cx * 100).toFixed(1) + '% ' + (cy * 100).toFixed(1) + '%');
+}
+
 /* portraits.html:8076-8090, same order: the top-level subject a
    dedicated vision call sets, then gender m/f, then the same two
    inside result for an older response shape. */
@@ -2550,6 +2602,7 @@ function runAnalyze(){
   }).then(function(data){
     if (seq !== ANALYZE_SEQ) return null;   /* a newer photograph won */
     ANALYZE_RESULT = data;
+    focusStampThumb();
     var want = subjectFromPhoto(data);
     SUBJECT_DETECTED = want;
     if (!want) return null;                 /* gender null -> stay manual */
@@ -2641,6 +2694,8 @@ photoFileInput.addEventListener('change', function(){
     if (stamp){
       stamp.innerHTML = photoStampHtml();
       stamp.classList.remove('is-asking'); stamp.classList.remove('is-urgent');
+      stamp.style.removeProperty('--thumb-focus');
+      fitStampThumb();
     }
 
     /* A new photograph is a new session. The id is generated here and
@@ -3405,6 +3460,8 @@ function renderReviewRail(){
     '<a class="link-back" id="btnBackRail">← Back to Discovery</a>';
   document.getElementById('btnBackRail').addEventListener('click', showDiscovery);
   paintTier(document.getElementById('tierR'));
+  fitStampThumb();
+  if (ANALYZE_RESULT) focusStampThumb();
 }
 
 // ── Fan layout (locked spec, approved 1 Sep) ──────────────────────
@@ -3746,6 +3803,8 @@ function syncDiscoveryChecks(){
 
 function showReview(){
   document.body.classList.add('is-review');
+  var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
+  var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
   if (!TIER || SLOTS.length !== TIER) lockTier();
   discoveryView.classList.add('hidden');
   reviewView.classList.add('active');
@@ -3755,6 +3814,8 @@ function showReview(){
 function showDiscovery(){
   document.body.classList.remove('is-review');
   reviewView.classList.remove('active');
+  var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
+  var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
   discoveryView.classList.remove('hidden');
   restoreDiscoveryRail();
 }
@@ -3789,6 +3850,8 @@ function restoreDiscoveryRail(){
   buildMinimap();
   paintProgressLine();
   updateCollectionSummary();
+  fitStampThumb();
+  if (ANALYZE_RESULT) focusStampThumb();
 }
 
 document.getElementById('btnGoReview').addEventListener('click', showReview);
@@ -4132,11 +4195,23 @@ function choosePose(id){
   logPayloadIfReady();
 }
 
+function renderPoseRail(){
+  discoveryRail.innerHTML =
+    '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>' +
+    '<button class="btn-create on" id="btnPoseNext">Next: Aspect Ratio</button>';
+  document.getElementById('btnPoseNext').addEventListener('click', showAspect);
+  fitStampThumb();
+  if (ANALYZE_RESULT) focusStampThumb();
+}
+
 function showPoses(){
   renderPoses();
+  document.body.classList.remove('is-review');
   if (reviewView) reviewView.classList.remove('active');
+  var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
   if (discoveryView) discoveryView.classList.add('hidden');
   var pv = document.getElementById('poseView'); if (pv) pv.classList.add('active');
+  renderPoseRail();
 }
 function hidePoses(){
   var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
@@ -4241,9 +4316,9 @@ window.startOver = startOver;
    sets aspect_ratio from framing and ignores a disagreeing client
    value by design. This travels request-time exactly like pose. */
 var ASPECTS = [
-  { id:'square',    ratio:'1:1', label:'Square',    w:66, h:66 },
-  { id:'portrait',  ratio:'3:4', label:'Portrait',  w:57, h:76 },
-  { id:'landscape', ratio:'4:3', label:'Landscape', w:76, h:57 }
+  { id:'square',    ratio:'1:1', label:'Square',    w:132, h:132 },
+  { id:'portrait',  ratio:'3:4', label:'Portrait',  w:114, h:152 },
+  { id:'landscape', ratio:'4:3', label:'Landscape', w:152, h:114 }
 ];
 var ASPECT = 'portrait';       /* the stated default until a photo says otherwise */
 var ASPECT_FORCED = false;     /* true once the customer picks one themselves */
@@ -4307,12 +4382,21 @@ function chooseAspect(id){
   logPayloadIfReady();
 }
 
+function renderAspectRail(){
+  discoveryRail.innerHTML =
+    '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>';
+  fitStampThumb();
+  if (ANALYZE_RESULT) focusStampThumb();
+}
+
 function showAspect(){
   renderAspects();
+  document.body.classList.remove('is-review');
   var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
   if (reviewView) reviewView.classList.remove('active');
   if (discoveryView) discoveryView.classList.add('hidden');
   var av = document.getElementById('aspectView'); if (av) av.classList.add('active');
+  renderAspectRail();
 }
 function hideAspect(){
   var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
@@ -4322,7 +4406,6 @@ window.showAspect = showAspect;
 
 document.addEventListener('click', function(e){
   if (!e.target.closest) return;
-  if (e.target.closest('#btnPoseNext')){ showAspect(); return; }
   if (e.target.closest('#btnBackAspect')){ hideAspect(); return; }
 });
 
