@@ -1417,6 +1417,51 @@ body.is-lboxed{ overflow:hidden }
   calc(160px + env(safe-area-inset-bottom,0px)) }
   .aspect-panel{ padding:24px 20px 20px }
   .aspect-opt{ padding:18px 20px; gap:10px } }
+/* ── Feedback panel ("Something off?") ── */
+.lcf-scarab{ width:40px; height:40px; border-radius:50%; border:1px solid rgba(215,189,137,.35); background:rgba(255,255,255,.04); display:grid; place-items:center; cursor:pointer; color:var(--lcf-gold,#b68a53); transition:background 160ms ease, transform 160ms ease }
+.lcf-scarab:hover{ background:rgba(182,138,83,.16); transform:translateY(-1px) }
+.lcf-scarab svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round }
+.lcf-scrim{ position:fixed; inset:0; z-index:400; background:rgba(14,10,8,.55); opacity:0; pointer-events:none; transition:opacity 220ms ease }
+.lcf-scrim.open{ opacity:1; pointer-events:auto }
+.lcf-panel{ position:fixed; top:0; right:0; z-index:401; width:min(440px,100vw); height:100vh; height:100dvh; background:var(--lcf-limestone,#f1ece3); color:var(--lcf-ink,#2a241e); font-family:var(--lcf-sans,Manrope,system-ui,sans-serif);
+  transform:translateX(100%); transition:transform 280ms cubic-bezier(.22,.61,.36,1); display:flex; flex-direction:column; box-shadow:-1rem 0 2.6rem rgba(0,0,0,.35) }
+.lcf-panel.open{ transform:none }
+.lcf-head{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 12px; border-bottom:1px solid rgba(88,65,42,.18) }
+.lcf-head h2{ font-family:var(--serif); font-weight:500; font-size:1.5rem; margin:0 }
+.lcf-head h2 small{ display:block; font-family:var(--sans); font-size:.75rem; color:var(--lcf-mute,#6f6350); margin-top:2px }
+.lcf-x{ width:36px; height:36px; border-radius:50%; border:1px solid rgba(88,65,42,.25); background:rgba(255,255,255,.6); cursor:pointer; color:var(--lcf-ink,#2a241e) }
+.lcf-body{ padding:14px 20px 20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px }
+.lcf-q{ font-family:var(--serif); font-size:1.1rem; margin:0 0 8px }
+.lcf-ctx{ display:flex; flex-wrap:wrap; gap:6px }
+.lcf-ctx span{ font-size:.7rem; padding:4px 9px; border-radius:999px; background:rgba(88,65,42,.08); border:1px solid rgba(88,65,42,.15); color:var(--lcf-mute,#6f6350) }
+.lcf-ctx span b{ color:var(--lcf-ink,#2a241e); font-weight:600 }
+.lcf-chips{ display:flex; flex-wrap:wrap; gap:8px }
+.lcf-chip{ font-family:var(--sans); font-weight:600; font-size:.85rem; padding:9px 14px; border-radius:999px; border:1px solid rgba(125,66,66,.35); background:rgba(255,255,255,.6); color:var(--lcf-ink,#2a241e); cursor:pointer }
+.lcf-chip.on{ background:var(--oxblood); border-color:var(--oxblood); color:#f3ede1 }
+.lcf-sev{ padding:6px 4px 0 }
+.lcf-sev input{ width:100%; accent-color:var(--oxblood) }
+.lcf-sev .labels{ display:flex; justify-content:space-between; font-size:.75rem; color:var(--lcf-mute,#6f6350); margin-top:4px }
+.lcf-sev .labels span.on{ color:var(--oxblood); font-weight:600 }
+.lcf-where{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px }
+.lcf-where button{ font-family:var(--sans); font-weight:600; font-size:.8rem; padding:9px 6px; border-radius:8px; border:1px solid rgba(88,65,42,.25); background:rgba(255,255,255,.6); color:var(--lcf-ink,#2a241e); cursor:pointer }
+.lcf-where button.on{ background:var(--gold,#b68a53); border-color:var(--gold,#b68a53); color:#2a1f14 }
+.lcf-ta{ width:100%; box-sizing:border-box; min-height:96px; resize:vertical; padding:12px; border-radius:8px; border:1px solid rgba(88,65,42,.3); background:rgba(255,255,255,.7); font-family:var(--serif); font-size:1.05rem; line-height:1.4; color:var(--lcf-ink,#2a241e) }
+.lcf-ta:focus{ outline:none; border-color:var(--oxblood) }
+.lcf-ta.short{ min-height:64px }
+.lcf-shot{ display:flex; align-items:center; gap:10px; font-size:.85rem; color:var(--lcf-ink,#2a241e) }
+.lcf-shot input{ width:18px; height:18px; accent-color:var(--oxblood) }
+.lcf-shot small{ color:var(--lcf-mute,#6f6350) }
+.lcf-foot{ padding:12px 20px calc(14px + env(safe-area-inset-bottom)); border-top:1px solid rgba(88,65,42,.18); display:grid; grid-template-columns:auto 1fr; gap:10px 10px; align-items:center }
+.lcf-foot .lcf-shot{ grid-column:1 / -1; font-size:.8rem }
+.lcf-send{ flex:1; font-family:var(--serif); font-size:1.25rem; padding:13px; border-radius:8px; border:1px solid var(--oxblood-line,#6a3737); background:var(--oxblood); color:#f3ede1; cursor:pointer }
+.lcf-send:disabled{ opacity:.45; cursor:default }
+.lcf-cancel{ font-family:var(--sans); font-weight:600; font-size:.85rem; padding:12px 14px; border-radius:8px; border:1px solid rgba(88,65,42,.3); background:rgba(255,255,255,.6); color:var(--lcf-ink,#2a241e); cursor:pointer }
+.lcf-done{ display:none; flex:1; place-items:center; text-align:center; padding:40px 24px }
+.lcf-done p{ font-family:var(--serif); font-size:1.4rem; line-height:1.35; margin:0 }
+.lcf-done .sig{ display:block; margin-top:8px; color:var(--oxblood); font-style:italic }
+.lcf-panel.sent .lcf-body, .lcf-panel.sent .lcf-foot{ display:none } .lcf-panel.sent .lcf-done{ display:grid }
+@media (max-width:767px){ .lcf-panel{ width:100vw } }
+@media (prefers-reduced-motion:reduce){ .lcf-panel, .lcf-scrim{ transition:none } }
 </style>
 </head>
 <body>
@@ -1443,6 +1488,17 @@ body.is-lboxed{ overflow:hidden }
   <div class="masthead__right">
     <button class="mh-ask" aria-label="Ask the Concierge">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8Z"/><path d="M8.6 11h6.8"/><path d="M8.6 14.4h4.2"/></svg>
+    </button>
+    <button class="lcf-scarab" id="mhScarab" type="button" aria-label="Something off? Tell the studio" title="Something off? Tell the studio">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 6.2c-2.9 0-5 2.3-5 5.4v3.1c0 2.9 2.1 4.9 5 4.9s5-2 5-4.9v-3.1c0-3.1-2.1-5.4-5-5.4z"/>
+        <path d="M12 8.6v11"/>
+        <path d="M7.2 10.6h9.6"/>
+        <path d="M9.4 6.4c.6-1.1 1.5-1.7 2.6-1.7s2 .6 2.6 1.7"/>
+        <path d="M10.4 4.7 9.2 2.9M13.6 4.7l1.2-1.8"/>
+        <path d="M7.1 12.2 4.2 11.1M7.1 14.6l-2.8.6M7.6 16.9l-2.2 1.9"/>
+        <path d="M16.9 12.2l2.9-1.1M16.9 14.6l2.8.6M16.4 16.9l2.2 1.9"/>
+      </svg>
     </button>
     <button class="pill-btn"><span>rich1hone</span></button>
     <button class="pill-btn">
@@ -2486,6 +2542,8 @@ function paintCardArt(){
 // ── Selection state, in selection order (matters for CheckoutSnapshot
 // per CENG §11 -- order is preserved by insertion order here). ──
 var SELECTED = []; // array of { key, name, siloName }
+var LAST_ACTIONS = [];
+function act(s){ LAST_ACTIONS.push(s); if (LAST_ACTIONS.length > 3) LAST_ACTIONS.shift(); }
 
 // ── Real photo upload. Stored as a data URL so it survives the
 // Discovery<->Review innerHTML swaps (those regenerate the rail from
@@ -2937,6 +2995,7 @@ function toggleSelect(key, name, siloName, checkEl, cardEl){
       return;
     }
     SELECTED.push({ key:key, baseId:(cardEl && cardEl.dataset.baseId) || key, name:name, siloName:siloName });
+    act('select ' + name);
     syncSelect(key, 'select');
     checkEl.classList.add('checked'); checkEl.textContent = '✓';
     if (TIER && openSlots()){
@@ -2957,6 +3016,7 @@ function toggleSelect(key, name, siloName, checkEl, cardEl){
     }
   } else {
     SELECTED.splice(idx, 1);
+    act('deselect ' + name);
     syncSelect(key, 'remove');
     checkEl.classList.remove('checked'); checkEl.textContent = '';
     if (TIER) releaseTier();
@@ -3251,6 +3311,7 @@ function openSizeBox(kind){
   box.scrollIntoView({ block:'nearest', behavior:'smooth' });
 }
 function confirmSize(v){
+  act('size ' + v);
   var n = SELECTED.length, more = v - n; SIZE_ASK.size = v;
   document.querySelectorAll('#sizeBox .size').forEach(function(b){ b.classList.toggle('on', +b.dataset.size === v); });
   var line = SIZE_ASK.kind === 'pick'
@@ -3326,6 +3387,7 @@ document.addEventListener('click', function(e){
   var dbox = document.getElementById('describeBox'), ibox = document.getElementById('intentBox');
   if (!dbox || !ibox) return;
   var kind = card.dataset.help;
+  act('open ' + (kind === 'pick' ? 'Pick for me' : kind === 'choose' ? 'Help me choose' : kind === 'describe' ? 'Tell me what you like' : kind));
   var sbox = document.getElementById('sizeBox');
   if (kind === 'pick' || kind === 'choose'){
     var already = sbox && sbox.classList.contains('open') && SIZE_ASK && SIZE_ASK.kind === kind;
@@ -3755,7 +3817,7 @@ function removeFanItem(fanIdx, key){
     // Tier held: the card becomes an open slot in its own position.
     var si = SLOTS.indexOf(key); if (si > -1) SLOTS[si] = null;
     var selIdx0 = SELECTED.findIndex(function(s){ return s.key === key; });
-    if (selIdx0 > -1){ SELECTED.splice(selIdx0, 1); syncSelect(key, 'remove'); }
+    if (selIdx0 > -1){ act('remove ' + key); SELECTED.splice(selIdx0, 1); syncSelect(key, 'remove'); }
     /* __REAL_PAYLOAD__ — the Review 'x' spliced SELECTED locally and told the
        server nothing, so the session kept an effect the customer had
        removed and the offer was priced on a stale count. */
@@ -3816,6 +3878,7 @@ function syncDiscoveryChecks(){
 }
 
 function showReview(){
+  act('open Review');
   document.body.classList.add('is-review');
   var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
   var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
@@ -3826,6 +3889,7 @@ function showReview(){
   renderReviewGrid();
 }
 function showDiscovery(){
+  act('back to Discovery');
   document.body.classList.remove('is-review');
   reviewView.classList.remove('active');
   var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
@@ -4247,6 +4311,7 @@ function renderPoseRail(){
 }
 
 function showPoses(){
+  act('open Pose');
   renderPoses();
   document.body.classList.remove('is-review');
   if (reviewView) reviewView.classList.remove('active');
@@ -4445,6 +4510,7 @@ function renderAspectRail(){
 }
 
 function showAspect(){
+  act('open Aspect');
   renderAspects();
   document.body.classList.remove('is-review');
   var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
@@ -4596,6 +4662,7 @@ var mycollGrid = document.getElementById('mycollGrid');
 
 var railBeforeMycoll = 'discovery';
 function openMyCollection(){
+  act('open My Collection');
   railBeforeMycoll = reviewView.classList.contains('active') ? 'review' : 'discovery';
   mycoll.classList.add('is-open');
   mycoll.setAttribute('aria-hidden','false');
@@ -4871,6 +4938,197 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
     }
   });
 })();
+</script>
+
+<!-- ═══ Feedback panel ("Something off?") ═══ -->
+<div id="lcFeedback">
+  <div class="lcf-scrim" id="lcfScrim"></div>
+  <aside class="lcf-panel" id="lcfPanel" role="dialog" aria-modal="true" aria-labelledby="lcfTitle">
+    <div class="lcf-head">
+      <h2 id="lcfTitle">Something off?<small>Tell the studio. It goes straight to the bench.</small></h2>
+      <button class="lcf-x" id="lcfX" type="button" aria-label="Close">✕</button>
+    </div>
+
+    <div class="lcf-body">
+      <div>
+        <p class="lcf-q">Here is what I already know</p>
+        <div class="lcf-ctx" id="lcfCtx"></div>
+      </div>
+
+      <div>
+        <p class="lcf-q">What kind of thing?</p>
+        <div class="lcf-chips" id="lcfKinds">
+          <button class="lcf-chip" type="button" data-kind="broken">Didn't work</button>
+          <button class="lcf-chip" type="button" data-kind="visual">Looked wrong</button>
+          <button class="lcf-chip" type="button" data-kind="confusing">Confusing</button>
+          <button class="lcf-chip" type="button" data-kind="slow">Slow</button>
+          <button class="lcf-chip" type="button" data-kind="idea">An idea</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="lcf-q">How bad?</p>
+        <div class="lcf-sev">
+          <input type="range" id="lcfSev" min="0" max="2" step="1" value="0" aria-label="How bad">
+          <div class="labels" id="lcfSevLabels"><span class="on">Annoying</span><span>Blocked me</span><span>Lost my work</span></div>
+        </div>
+      </div>
+
+      <div>
+        <p class="lcf-q">Where?</p>
+        <div class="lcf-where" id="lcfWhere">
+          <button type="button" data-where="discovery">Discovery</button>
+          <button type="button" data-where="review">Review</button>
+          <button type="button" data-where="mycoll">My Collection</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="lcf-q">What happened?</p>
+        <textarea class="lcf-ta" id="lcfWhat" placeholder="Tell it like a story. What you did, what you saw."></textarea>
+      </div>
+
+      <div>
+        <p class="lcf-q">What did you expect? <span style="font-family:var(--sans);font-size:.75rem;color:var(--lcf-mute,#6f6350)">optional</span></p>
+        <textarea class="lcf-ta short" id="lcfExpected" placeholder="If it's obvious, leave this."></textarea>
+      </div>
+
+    </div>
+
+    <div class="lcf-foot">
+      <label class="lcf-shot">
+        <input type="checkbox" id="lcfShot" checked>
+        <span>Include a picture of this screen <small>— the most useful thing you can send</small></span>
+      </label>
+      <button class="lcf-cancel" id="lcfCancel" type="button">Not now</button>
+      <button class="lcf-send" id="lcfSend" type="button" disabled>Send to the studio</button>
+    </div>
+
+    <div class="lcf-done">
+      <p>Noted. Thank you — I will have a look.<span class="sig">— C.</span></p>
+    </div>
+  </aside>
+</div>
+
+<script id="lc-feedback-js">
+(function(){
+  var S = { kinds:{}, severity:0, where:null, endpoint:null, context:function(){ return {}; }, onSent:null, capture:null };
+  var $ = function(id){ return document.getElementById(id); };
+  var panel = $('lcfPanel'), scrim = $('lcfScrim');
+
+  function open(){
+    var ctx = safe(S.context) || {};
+    S.where = ctx.screen || S.where || 'discovery';
+    paintWhere(); paintCtx(ctx);
+    panel.classList.remove('sent'); panel.classList.add('open'); scrim.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ $('lcfWhat').focus(); }, 300);
+  }
+  function close(){ panel.classList.remove('open'); scrim.classList.remove('open'); document.body.style.overflow = ''; }
+  function safe(fn){ try { return fn(); } catch(e){ return null; } }
+
+  function autoContext(){
+    return { url:location.href, viewport:innerWidth + '\u00d7' + innerHeight, dpr:devicePixelRatio, userAgent:navigator.userAgent, language:navigator.language, ts:new Date().toISOString() };
+  }
+  var LABEL = { screen:'Screen', series:'Series', count:'Collected', tier:'Tier', slotsOpen:'Open slots', hasPhoto:'Photo', viewport:'Viewport', lastActions:'Last' };
+  function paintCtx(ctx){
+    var all = Object.assign({}, ctx, autoContext());
+    var show = ['screen','series','count','tier','slotsOpen','hasPhoto','viewport','lastActions'];
+    $('lcfCtx').innerHTML = show.filter(function(k){ return all[k] !== undefined && all[k] !== null && all[k] !== ''; }).map(function(k){
+      var v = all[k]; if (Array.isArray(v)) v = v.slice(-3).join(' \u203a '); if (typeof v === 'boolean') v = v ? 'yes' : 'no';
+      return '<span>' + (LABEL[k] || k) + ' <b>' + String(v) + '</b></span>';
+    }).join('');
+  }
+  function paintWhere(){ $('lcfWhere').querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.where === S.where); }); }
+  function paintSend(){ $('lcfSend').disabled = !(Object.keys(S.kinds).length && $('lcfWhat').value.trim().length > 2); }
+
+  $('lcfKinds').addEventListener('click', function(e){ var b = e.target.closest('.lcf-chip'); if (!b) return; var k = b.dataset.kind; if (S.kinds[k]) delete S.kinds[k]; else S.kinds[k] = true; b.classList.toggle('on', !!S.kinds[k]); paintSend(); });
+  $('lcfSev').addEventListener('input', function(){ S.severity = +this.value; $('lcfSevLabels').querySelectorAll('span').forEach(function(sp, i){ sp.classList.toggle('on', i === S.severity); }); });
+  $('lcfWhere').addEventListener('click', function(e){ var b = e.target.closest('button'); if (!b) return; S.where = b.dataset.where; paintWhere(); });
+  $('lcfWhat').addEventListener('input', paintSend);
+  $('lcfX').addEventListener('click', close); $('lcfCancel').addEventListener('click', close); scrim.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
+
+  function screenshot(){
+    if (!$('lcfShot').checked) return Promise.resolve(null);
+    if (typeof S.capture === 'function') return Promise.resolve().then(S.capture).catch(function(){ return null; });
+    return Promise.resolve(null);
+  }
+
+  $('lcfSend').addEventListener('click', function(){
+    var btn = this; btn.disabled = true; btn.textContent = 'Sending\u2026';
+    screenshot().then(function(shot){
+      var body = {
+        kinds: Object.keys(S.kinds), severity: S.severity, where: S.where,
+        what: $('lcfWhat').value.trim(), expected: $('lcfExpected').value.trim(),
+        context: Object.assign({}, safe(S.context) || {}, autoContext()),
+        screenshot: shot
+      };
+      return fetch(S.endpoint, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body), credentials:'include' })
+        .then(function(r){
+          if (r.status === 413 && shot){
+            body.screenshot = null;
+            return fetch(S.endpoint, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body), credentials:'include' });
+          }
+          return r;
+        })
+        .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json().catch(function(){ return {}; }); })
+        .then(function(res){
+          panel.classList.add('sent');
+          if (typeof S.onSent === 'function') S.onSent(res);
+          setTimeout(function(){ close(); reset(); }, 2200);
+        });
+    }).catch(function(err){
+      btn.disabled = false; btn.textContent = 'Try again';
+      console.error('[LCFeedback] send failed', err);
+    });
+  });
+  function reset(){ S.kinds = {}; S.severity = 0; $('lcfKinds').querySelectorAll('.lcf-chip').forEach(function(c){ c.classList.remove('on'); }); $('lcfSev').value = 0; $('lcfSev').dispatchEvent(new Event('input')); $('lcfWhat').value = ''; $('lcfExpected').value = ''; $('lcfShot').checked = true; $('lcfSend').textContent = 'Send to the studio'; paintSend(); }
+
+  if (window.visualViewport){
+    var vv = window.visualViewport, fit = function(){ if (!panel.classList.contains('open')) return; panel.style.height = vv.height + 'px'; panel.style.top = vv.offsetTop + 'px'; };
+    vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit);
+    var _open = open; open = function(){ _open(); fit(); }; var _close = close; close = function(){ _close(); panel.style.height = ''; panel.style.top = ''; };
+  }
+
+  window.LCFeedback = {
+    mount: function(opts){
+      opts = opts || {};
+      if (opts.context) S.context = opts.context;
+      if (opts.endpoint) S.endpoint = opts.endpoint;
+      if (opts.onSent) S.onSent = opts.onSent;
+      if (opts.capture) S.capture = opts.capture;
+      var t = typeof opts.trigger === 'string' ? document.querySelector(opts.trigger) : opts.trigger;
+      if (t) t.addEventListener('click', open);
+    },
+    open: open, close: close
+  };
+})();
+
+/* ── Mount feedback panel with live Discovery state ── */
+LCFeedback.mount({
+  trigger: '#mhScarab',
+  endpoint: '/api/v1/feedback',
+  context: function(){
+    var pv = document.getElementById('poseView');
+    var av = document.getElementById('aspectView');
+    var screen = 'discovery';
+    if (typeof mycoll !== 'undefined' && mycoll.classList.contains('is-open')) screen = 'mycoll';
+    else if (av && av.classList.contains('active')) screen = 'discovery';
+    else if (pv && pv.classList.contains('active')) screen = 'discovery';
+    else if (typeof reviewView !== 'undefined' && reviewView.classList.contains('active')) screen = 'review';
+    return {
+      screen: screen,
+      series: 'Portraits',
+      count: typeof SELECTED !== 'undefined' ? SELECTED.length : 0,
+      tier: typeof TIER !== 'undefined' ? TIER : 0,
+      slotsOpen: typeof openSlots === 'function' ? openSlots() : 0,
+      hasPhoto: !!(typeof uploadedPhotoDataUrl !== 'undefined' && uploadedPhotoDataUrl),
+      lastActions: typeof LAST_ACTIONS !== 'undefined' ? LAST_ACTIONS : [],
+      userId: typeof CUSTOMER !== 'undefined' ? CUSTOMER : null
+    };
+  }
+});
 </script>
 </body>
 </html>
