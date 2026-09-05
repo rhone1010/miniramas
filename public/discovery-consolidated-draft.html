@@ -4637,7 +4637,8 @@ function startCheckout(){
   fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
+    credentials: 'include'
   })
   .then(function(res){ return res.json().then(function(d){ return { status: res.status, data: d }; }); })
   .then(function(r){
@@ -4650,9 +4651,9 @@ function startCheckout(){
     var reason = r.data.error || r.data.message || 'Checkout could not be started';
     if (reason.indexOf('price_mismatch') === 0) {
       reason = 'The price has changed — please go back and try again.';
-    } else if (reason.indexOf('portfolio_purchase_requires_user') === 0 || reason.indexOf('auth') === 0) {
+    } else if (reason.indexOf('portfolio_purchase_requires_user') === 0 || reason.indexOf('single_purchase_requires_user') === 0 || reason.indexOf('auth') === 0) {
       reason = 'Please sign in to continue.';
-    } else if (reason.indexOf('portfolio_source_image_required') === 0 || reason.indexOf('single_purchase_requires_') === 0) {
+    } else if (reason.indexOf('portfolio_source_image_required') === 0 || reason.indexOf('single_purchase_requires_style') === 0) {
       reason = 'A photo is required before checkout.';
     }
     showCheckoutError(reason);
