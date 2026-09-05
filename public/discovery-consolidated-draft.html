@@ -719,6 +719,7 @@ body{
   border-radius:8px; padding:14px; font-family:var(--serif); font-size:1.7rem; cursor:pointer;
 }
 .btn-create:hover{ background:#6a3737 }
+.btn-create.is-loading{ opacity:.6; cursor:wait }
 /* 4. Back to Discovery as a real button: light ground, subtle outline
    and shadow, thinner than Create. */
 .link-back{
@@ -4590,9 +4591,96 @@ function logPayloadIfReady(){
 }
 
 function startCheckout(){
-  /* TASK 6 WIRES THIS. Deliberately does not fire. */
-  console.warn('[discovery] startCheckout() is not wired yet — task 6. Payload:');
-  return Promise.resolve(showCheckoutPayload());
+  var btn = document.getElementById('btnCraft');
+  if (!btn || btn.disabled) return;
+
+  var n = SELECTED.length;
+  if (!n || VALID_SIZES.indexOf(n) === -1 || openSlots()) return;
+
+  /* Lock the button — real network call, prevent double-submit */
+  btn.disabled = true;
+  var origText = btn.textContent;
+  btn.textContent = 'Opening checkout…';
+  btn.classList.add('is-loading');
+
+  /* Clear any prior error */
+  var errEl = document.getElementById('checkoutError');
+  if (errEl) errEl.remove();
+
+  var payload, endpoint;
+
+  if (n === 1) {
+    /* ── Size 1 → single checkout (/api/v1/checkout) ──────────── */
+    var sel = SELECTED[0];
+    endpoint = '/api/v1/checkout';
+    payload = {
+      skuId: 'single',
+      style: sel.baseId,
+      variant: sel.key,
+      sourceImageRef: SRC_B64 || ''
+    };
+  } else {
+    /* ── Size 4/8/16 → portfolio checkout (/api/v1/portfolios) ── */
+    endpoint = '/api/v1/portfolios';
+    payload = {
+      series: 'portraits',
+      selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
+      sourceImageRef: SRC_B64 || '',
+      returnUrl: window.location.origin + window.location.pathname,
+      clientPriceUsd: (SERVER_OFFER && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]
+    };
+  }
+
+  act('checkout ' + n);
+  console.log('[discovery] startCheckout →', endpoint, 'count=' + n);
+
+  fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(res){ return res.json().then(function(d){ return { status: res.status, data: d }; }); })
+  .then(function(r){
+    if (r.data.url || r.data.checkoutUrl) {
+      /* Success — redirect to Stripe Checkout */
+      window.location.href = r.data.url || r.data.checkoutUrl;
+      return;
+    }
+    /* Server rejected */
+    var reason = r.data.error || r.data.message || 'Checkout could not be started';
+    if (reason.indexOf('price_mismatch') === 0) {
+      reason = 'The price has changed — please go back and try again.';
+    } else if (reason.indexOf('portfolio_purchase_requires_user') === 0 || reason.indexOf('auth') === 0) {
+      reason = 'Please sign in to continue.';
+    } else if (reason.indexOf('portfolio_source_image_required') === 0 || reason.indexOf('single_purchase_requires_') === 0) {
+      reason = 'A photo is required before checkout.';
+    }
+    showCheckoutError(reason);
+    resetCraftBtn(btn, origText);
+  })
+  .catch(function(err){
+    console.error('[discovery] checkout fetch failed:', err);
+    showCheckoutError('Connection error — please try again.');
+    resetCraftBtn(btn, origText);
+  });
+}
+
+function resetCraftBtn(btn, text){
+  if (!btn) return;
+  btn.disabled = false;
+  btn.textContent = text || 'Craft My Collection';
+  btn.classList.remove('is-loading');
+}
+
+function showCheckoutError(msg){
+  var existing = document.getElementById('checkoutError');
+  if (existing) existing.remove();
+  var el = document.createElement('div');
+  el.id = 'checkoutError';
+  el.style.cssText = 'color:var(--oxblood);font-family:var(--serif);font-size:1.1rem;text-align:center;margin:12px 0 0;padding:8px 12px;background:rgba(125,66,66,.12);border-radius:8px;';
+  el.textContent = msg;
+  var craft = document.getElementById('btnCraft');
+  if (craft && craft.parentNode) craft.parentNode.insertBefore(el, craft.nextSibling);
 }
 
 // Real collection, once a portfolio exists. status gives slot/preset/
