@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liten & Co — Feedback modal (standalone)</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════
+  LITEN & CO — "Something off?" feedback panel — STANDALONE for wire-up
+  ═══════════════════════════════════════════════════════════════════════
+  Drop-in: include the <style id="lc-feedback-css">, the <div id="lcFeedback">
+  block, and the <script id="lc-feedback-js"> in any page. Then call:
+
+      LCFeedback.mount({
+        trigger:   '#mhScarab',                 // masthead button (optional, see markup)
+        context:   function(){ return {...} },  // page supplies its live state (see below)
+        endpoint:  '/api/v1/feedback',          // POST target (CENG)
+        onSent:    function(res){}              // optional
+      });
+
+  The page's context() returns whatever it knows; the panel shows it as
+  chips the person can see and sends it verbatim. Suggested keys:
+      screen:'discovery'|'review'|'mycoll', series, count, tier, slotsOpen,
+      hasPhoto, lastActions:[...3], userId
+  The panel adds: url, viewport, dpr, userAgent, language, ts, screenshot (dataURL, optional).
+
+  POST body (JSON):
+      { kinds:[...], severity:0|1|2, where:'discovery'|..., what:'', expected:'',
+        context:{...}, screenshot:'data:image/png;base64,...'|null }
+  Server (CENG): write to Supabase `feedback` and open a GitHub issue in
+  rhone1010/miniramas labelled `test-release`. Respond 200 { id }.
+
+  No email field: the person is signed in. No priority: that's Rich's.
+  Copy in the Curator's voice is placeholder for Rich to revise.
+  ═══════════════════════════════════════════════════════════════════════
+-->
+<style id="lc-feedback-css">
+  :root{
+    --lcf-oxblood:#7d4242; --lcf-oxblood-line:#6a3737; --lcf-brass:#75623a; --lcf-gold:#b68a53; --lcf-gold-soft:#d7bd89;
+    --lcf-ink:#2a241e; --lcf-mute:#6f6350; --lcf-vellum:#f3ede1; --lcf-limestone:#f1ece3;
+    --lcf-serif:'Cormorant Garamond',Georgia,serif; --lcf-sans:Manrope,system-ui,sans-serif;
+  }
+  /* ── trigger: the scarab ── */
+  .lcf-scarab{ width:40px; height:40px; border-radius:50%; border:1px solid rgba(215,189,137,.35); background:rgba(255,255,255,.04); display:grid; place-items:center; cursor:pointer; color:var(--lcf-gold); transition:background 160ms ease, transform 160ms ease }
+  .lcf-scarab:hover{ background:rgba(182,138,83,.16); transform:translateY(-1px) }
+  .lcf-scarab svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round }
+  /* ── scrim + panel ── */
+  .lcf-scrim{ position:fixed; inset:0; z-index:400; background:rgba(14,10,8,.55); opacity:0; pointer-events:none; transition:opacity 220ms ease }
+  .lcf-scrim.open{ opacity:1; pointer-events:auto }
+  .lcf-panel{ position:fixed; top:0; right:0; bottom:0; z-index:401; width:min(440px,100vw); background:var(--lcf-limestone); color:var(--lcf-ink); font-family:var(--lcf-sans);
+    transform:translateX(100%); transition:transform 280ms cubic-bezier(.22,.61,.36,1); display:flex; flex-direction:column; box-shadow:-1rem 0 2.6rem rgba(0,0,0,.35) }
+  .lcf-panel.open{ transform:none }
+  .lcf-head{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 12px; border-bottom:1px solid rgba(88,65,42,.18) }
+  .lcf-head h2{ font-family:var(--lcf-serif); font-weight:500; font-size:1.5rem; margin:0 }
+  .lcf-head h2 small{ display:block; font-family:var(--lcf-sans); font-size:.75rem; color:var(--lcf-mute); margin-top:2px }
+  .lcf-x{ width:36px; height:36px; border-radius:50%; border:1px solid rgba(88,65,42,.25); background:rgba(255,255,255,.6); cursor:pointer; color:var(--lcf-ink) }
+  .lcf-body{ padding:14px 20px 20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px }
+  .lcf-q{ font-family:var(--lcf-serif); font-size:1.1rem; margin:0 0 8px }
+  /* context chips */
+  .lcf-ctx{ display:flex; flex-wrap:wrap; gap:6px }
+  .lcf-ctx span{ font-size:.7rem; padding:4px 9px; border-radius:999px; background:rgba(88,65,42,.08); border:1px solid rgba(88,65,42,.15); color:var(--lcf-mute) }
+  .lcf-ctx span b{ color:var(--lcf-ink); font-weight:600 }
+  /* kind chips */
+  .lcf-chips{ display:flex; flex-wrap:wrap; gap:8px }
+  .lcf-chip{ font-family:var(--lcf-sans); font-weight:600; font-size:.85rem; padding:9px 14px; border-radius:999px; border:1px solid rgba(125,66,66,.35); background:rgba(255,255,255,.6); color:var(--lcf-ink); cursor:pointer }
+  .lcf-chip.on{ background:var(--lcf-oxblood); border-color:var(--lcf-oxblood); color:#f3ede1 }
+  /* severity slider */
+  .lcf-sev{ padding:6px 4px 0 }
+  .lcf-sev input{ width:100%; accent-color:var(--lcf-oxblood) }
+  .lcf-sev .labels{ display:flex; justify-content:space-between; font-size:.75rem; color:var(--lcf-mute); margin-top:4px }
+  .lcf-sev .labels span.on{ color:var(--lcf-oxblood); font-weight:600 }
+  /* where */
+  .lcf-where{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px }
+  .lcf-where button{ font-family:var(--lcf-sans); font-weight:600; font-size:.8rem; padding:9px 6px; border-radius:8px; border:1px solid rgba(88,65,42,.25); background:rgba(255,255,255,.6); color:var(--lcf-ink); cursor:pointer }
+  .lcf-where button.on{ background:var(--lcf-gold); border-color:var(--lcf-gold); color:#2a1f14 }
+  /* text */
+  .lcf-ta{ width:100%; box-sizing:border-box; min-height:96px; resize:vertical; padding:12px; border-radius:8px; border:1px solid rgba(88,65,42,.3); background:rgba(255,255,255,.7); font-family:var(--lcf-serif); font-size:1.05rem; line-height:1.4; color:var(--lcf-ink) }
+  .lcf-ta:focus{ outline:none; border-color:var(--lcf-oxblood) }
+  .lcf-ta.short{ min-height:64px }
+  /* screenshot toggle */
+  .lcf-shot{ display:flex; align-items:center; gap:10px; font-size:.85rem; color:var(--lcf-ink) }
+  .lcf-shot input{ width:18px; height:18px; accent-color:var(--lcf-oxblood) }
+  .lcf-shot small{ color:var(--lcf-mute) }
+  /* foot */
+  .lcf-foot{ padding:14px 20px calc(16px + env(safe-area-inset-bottom)); border-top:1px solid rgba(88,65,42,.18); display:flex; gap:10px; align-items:center }
+  .lcf-send{ flex:1; font-family:var(--lcf-serif); font-size:1.25rem; padding:13px; border-radius:8px; border:1px solid var(--lcf-oxblood-line); background:var(--lcf-oxblood); color:#f3ede1; cursor:pointer }
+  .lcf-send:disabled{ opacity:.45; cursor:default }
+  .lcf-cancel{ font-family:var(--lcf-sans); font-weight:600; font-size:.85rem; padding:12px 14px; border-radius:8px; border:1px solid rgba(88,65,42,.3); background:rgba(255,255,255,.6); color:var(--lcf-ink); cursor:pointer }
+  /* done state */
+  .lcf-done{ display:none; flex:1; place-items:center; text-align:center; padding:40px 24px }
+  .lcf-done p{ font-family:var(--lcf-serif); font-size:1.4rem; line-height:1.35; margin:0 }
+  .lcf-done .sig{ display:block; margin-top:8px; color:var(--lcf-oxblood); font-style:italic }
+  .lcf-panel.sent .lcf-body, .lcf-panel.sent .lcf-foot{ display:none } .lcf-panel.sent .lcf-done{ display:grid }
+  @media (max-width:767px){ .lcf-panel{ width:100vw } }
+  @media (prefers-reduced-motion:reduce){ .lcf-panel, .lcf-scrim{ transition:none } }
+
+  /* ── demo page only ── */
+  body{ margin:0; background:#3a1e1e; min-height:100vh; font-family:var(--lcf-sans) }
+  .demo-mast{ height:70px; background:#1d1210; display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:0 40px; color:#e8ddc8 }
+  .demo-pill{ border:1px solid rgba(255,255,255,.2); border-radius:8px; padding:8px 14px; font-size:.85rem; font-weight:600 }
+  .demo-note{ color:#c9b8a4; font-size:.85rem; padding:40px; max-width:640px; line-height:1.5 }
+</style>
+</head>
+<body>
+
+<!-- ═══ demo masthead: only the scarab button is the deliverable ═══ -->
+<div class="demo-mast">
+  <button class="lcf-scarab" id="mhScarab" type="button" aria-label="Something off? Tell the studio" title="Something off? Tell the studio">
+    <!-- golden scarab, line-drawn: head, thorax, elytra with a centre seam, six legs, two antennae -->
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 6.2c-2.9 0-5 2.3-5 5.4v3.1c0 2.9 2.1 4.9 5 4.9s5-2 5-4.9v-3.1c0-3.1-2.1-5.4-5-5.4z"/>
+      <path d="M12 8.6v11"/>
+      <path d="M7.2 10.6h9.6"/>
+      <path d="M9.4 6.4c.6-1.1 1.5-1.7 2.6-1.7s2 .6 2.6 1.7"/>
+      <path d="M10.4 4.7 9.2 2.9M13.6 4.7l1.2-1.8"/>
+      <path d="M7.1 12.2 4.2 11.1M7.1 14.6l-2.8.6M7.6 16.9l-2.2 1.9"/>
+      <path d="M16.9 12.2l2.9-1.1M16.9 14.6l2.8.6M16.4 16.9l2.2 1.9"/>
+    </svg>
+  </button>
+  <span class="demo-pill">rich1hone</span>
+</div>
+<p class="demo-note">Standalone feedback panel. The scarab in the masthead opens it. Everything the page knows arrives as chips; the person taps a few and tells the story. <code>LCFeedback.mount()</code> at the bottom of this file shows the wire-up; the POST contract is in the header comment.</p>
+
+<!-- ═══ the panel ═══ -->
+<div id="lcFeedback">
+  <div class="lcf-scrim" id="lcfScrim"></div>
+  <aside class="lcf-panel" id="lcfPanel" role="dialog" aria-modal="true" aria-labelledby="lcfTitle">
+    <div class="lcf-head">
+      <h2 id="lcfTitle">Something off?<small>Tell the studio. It goes straight to the bench.</small></h2>
+      <button class="lcf-x" id="lcfX" type="button" aria-label="Close">✕</button>
+    </div>
+
+    <div class="lcf-body">
+      <div>
+        <p class="lcf-q">Here is what I already know</p>
+        <div class="lcf-ctx" id="lcfCtx"></div>
+      </div>
+
+      <div>
+        <p class="lcf-q">What kind of thing?</p>
+        <div class="lcf-chips" id="lcfKinds">
+          <button class="lcf-chip" type="button" data-kind="broken">Didn't work</button>
+          <button class="lcf-chip" type="button" data-kind="visual">Looked wrong</button>
+          <button class="lcf-chip" type="button" data-kind="confusing">Confusing</button>
+          <button class="lcf-chip" type="button" data-kind="slow">Slow</button>
+          <button class="lcf-chip" type="button" data-kind="idea">An idea</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="lcf-q">How bad?</p>
+        <div class="lcf-sev">
+          <input type="range" id="lcfSev" min="0" max="2" step="1" value="0" aria-label="How bad">
+          <div class="labels" id="lcfSevLabels"><span class="on">Annoying</span><span>Blocked me</span><span>Lost my work</span></div>
+        </div>
+      </div>
+
+      <div>
+        <p class="lcf-q">Where?</p>
+        <div class="lcf-where" id="lcfWhere">
+          <button type="button" data-where="discovery">Discovery</button>
+          <button type="button" data-where="review">Review</button>
+          <button type="button" data-where="mycoll">My Collection</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="lcf-q">What happened?</p>
+        <textarea class="lcf-ta" id="lcfWhat" placeholder="Tell it like a story. What you did, what you saw."></textarea>
+      </div>
+
+      <div>
+        <p class="lcf-q">What did you expect? <span style="font-family:var(--lcf-sans);font-size:.75rem;color:var(--lcf-mute)">optional</span></p>
+        <textarea class="lcf-ta short" id="lcfExpected" placeholder="If it's obvious, leave this."></textarea>
+      </div>
+
+      <label class="lcf-shot">
+        <input type="checkbox" id="lcfShot" checked>
+        <span>Include a picture of this screen <small>— the most useful thing you can send</small></span>
+      </label>
+    </div>
+
+    <div class="lcf-foot">
+      <button class="lcf-cancel" id="lcfCancel" type="button">Not now</button>
+      <button class="lcf-send" id="lcfSend" type="button" disabled>Send to the studio</button>
+    </div>
+
+    <div class="lcf-done">
+      <p>Noted. Thank you — I will have a look.<span class="sig">— C.</span></p>
+    </div>
+  </aside>
+</div>
+
+<script id="lc-feedback-js">
+(function(){
+  var S = { kinds:{}, severity:0, where:null, endpoint:null, context:function(){ return {}; }, onSent:null, capture:null };
+  var $ = function(id){ return document.getElementById(id); };
+  var panel = $('lcfPanel'), scrim = $('lcfScrim');
+
+  function open(){
+    var ctx = safe(S.context) || {};
+    // where defaults to the page's screen
+    S.where = ctx.screen || S.where || 'discovery';
+    paintWhere(); paintCtx(ctx);
+    panel.classList.remove('sent'); panel.classList.add('open'); scrim.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ $('lcfWhat').focus(); }, 300);
+  }
+  function close(){ panel.classList.remove('open'); scrim.classList.remove('open'); document.body.style.overflow = ''; }
+  function safe(fn){ try { return fn(); } catch(e){ return null; } }
+
+  function autoContext(){
+    return { url:location.href, viewport:innerWidth + '\u00d7' + innerHeight, dpr:devicePixelRatio, userAgent:navigator.userAgent, language:navigator.language, ts:new Date().toISOString() };
+  }
+  var LABEL = { screen:'Screen', series:'Series', count:'Collected', tier:'Tier', slotsOpen:'Open slots', hasPhoto:'Photo', viewport:'Viewport', lastActions:'Last' };
+  function paintCtx(ctx){
+    var all = Object.assign({}, ctx, autoContext());
+    var show = ['screen','series','count','tier','slotsOpen','hasPhoto','viewport','lastActions'];
+    $('lcfCtx').innerHTML = show.filter(function(k){ return all[k] !== undefined && all[k] !== null && all[k] !== ''; }).map(function(k){
+      var v = all[k]; if (Array.isArray(v)) v = v.slice(-3).join(' \u203a '); if (typeof v === 'boolean') v = v ? 'yes' : 'no';
+      return '<span>' + (LABEL[k] || k) + ' <b>' + String(v) + '</b></span>';
+    }).join('');
+  }
+  function paintWhere(){ $('lcfWhere').querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.where === S.where); }); }
+  function paintSend(){ $('lcfSend').disabled = !(Object.keys(S.kinds).length && $('lcfWhat').value.trim().length > 2); }
+
+  $('lcfKinds').addEventListener('click', function(e){ var b = e.target.closest('.lcf-chip'); if (!b) return; var k = b.dataset.kind; if (S.kinds[k]) delete S.kinds[k]; else S.kinds[k] = true; b.classList.toggle('on', !!S.kinds[k]); paintSend(); });
+  $('lcfSev').addEventListener('input', function(){ S.severity = +this.value; $('lcfSevLabels').querySelectorAll('span').forEach(function(sp, i){ sp.classList.toggle('on', i === S.severity); }); });
+  $('lcfWhere').addEventListener('click', function(e){ var b = e.target.closest('button'); if (!b) return; S.where = b.dataset.where; paintWhere(); });
+  $('lcfWhat').addEventListener('input', paintSend);
+  $('lcfX').addEventListener('click', close); $('lcfCancel').addEventListener('click', close); scrim.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
+
+  // Screenshot: the host supplies a capture function (e.g. html2canvas) via mount({capture}).
+  // Without one, we send null and the server can take its own from the URL + context.
+  function screenshot(){
+    if (!$('lcfShot').checked) return Promise.resolve(null);
+    if (typeof S.capture === 'function') return Promise.resolve().then(S.capture).catch(function(){ return null; });
+    return Promise.resolve(null);
+  }
+
+  $('lcfSend').addEventListener('click', function(){
+    var btn = this; btn.disabled = true; btn.textContent = 'Sending\u2026';
+    screenshot().then(function(shot){
+      var body = {
+        kinds: Object.keys(S.kinds), severity: S.severity, where: S.where,
+        what: $('lcfWhat').value.trim(), expected: $('lcfExpected').value.trim(),
+        context: Object.assign({}, safe(S.context) || {}, autoContext()),
+        screenshot: shot
+      };
+      var send = S.endpoint
+        ? fetch(S.endpoint, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body), credentials:'include' }).then(function(r){ if (!r.ok) throw new Error(r.status); return r.json().catch(function(){ return {}; }); })
+        : Promise.resolve({ demo:true, body:body });
+      return send.then(function(res){
+        panel.classList.add('sent');
+        if (typeof S.onSent === 'function') S.onSent(res);
+        if (!S.endpoint) console.log('[LCFeedback demo] would POST:', body);
+        setTimeout(function(){ close(); reset(); }, 2200);
+      });
+    }).catch(function(err){
+      btn.disabled = false; btn.textContent = 'Try again';
+      console.error('[LCFeedback] send failed', err);
+    });
+  });
+  function reset(){ S.kinds = {}; S.severity = 0; $('lcfKinds').querySelectorAll('.lcf-chip').forEach(function(c){ c.classList.remove('on'); }); $('lcfSev').value = 0; $('lcfSev').dispatchEvent(new Event('input')); $('lcfWhat').value = ''; $('lcfExpected').value = ''; $('lcfShot').checked = true; $('lcfSend').textContent = 'Send to the studio'; paintSend(); }
+
+  window.LCFeedback = {
+    mount: function(opts){
+      opts = opts || {};
+      if (opts.context) S.context = opts.context;
+      if (opts.endpoint) S.endpoint = opts.endpoint;
+      if (opts.onSent) S.onSent = opts.onSent;
+      if (opts.capture) S.capture = opts.capture;
+      var t = typeof opts.trigger === 'string' ? document.querySelector(opts.trigger) : opts.trigger;
+      if (t) t.addEventListener('click', open);
+    },
+    open: open, close: close
+  };
+})();
+
+/* ── demo wire-up: replace context() with the host page's real state ── */
+LCFeedback.mount({
+  trigger: '#mhScarab',
+  endpoint: null,   // CENG: '/api/v1/feedback'
+  context: function(){
+    return { screen:'discovery', series:'Portraits', count:5, tier:0, slotsOpen:0, hasPhoto:true, lastActions:['select Stained Glass','open Help me choose','pick intent: A gift'], userId:'rich1hone' };
+  }
+  // capture: function(){ return html2canvas(document.body).then(function(c){ return c.toDataURL('image/jpeg', .7); }); }
+});
+</script>
+</body>
+</html>
