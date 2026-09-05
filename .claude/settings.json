@@ -1,15 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm *)",
-      "Bash(npx *)",
-      "Bash(node *)",
-      "Bash(git *)",
-      "Bash(ls *)",
-      "Bash(mkdir *)",
-      "Bash(wc *)",
-      "Bash(cat *)",
-      "Bash(echo *)",
+      "Bash",
       "Read",
       "Write",
       "Edit",
@@ -20,6 +12,8 @@
     "deny": [
       "Bash(rm -rf *)",
       "Bash(rm -fr *)",
+      "Bash(rm -r *)",
+      "Bash(sudo *)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
       "Bash(git push --force-with-lease *)",
@@ -28,7 +22,12 @@
       "Bash(git restore *)",
       "Bash(git clean -f *)",
       "Bash(git clean -d *)",
-      "Bash(git branch -D *)"
+      "Bash(git branch -D *)",
+      "Read(.env*)",
+      "Edit(.env*)",
+      "Bash(cat .env*)",
+      "Bash(*password*)",
+      "Bash(*secret*)"
     ]
   }
 }

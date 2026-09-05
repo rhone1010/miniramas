@@ -42,3 +42,5 @@ stripe.exe
 next-env.d.ts
 _archive/
 _testpool/
+.vercel
+.env*
