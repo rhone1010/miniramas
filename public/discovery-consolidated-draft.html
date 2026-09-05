@@ -266,6 +266,7 @@ body{
    vertical room the three stacked options were taking. ── */
 .rail-top{ display:grid; grid-template-columns:var(--photo-size) 1fr; gap:12px; height:var(--photo-size); margin-bottom:14px }
 .rail-top .photo-row{ margin:0; justify-content:flex-start }
+.rail .photo-stamp{ aspect-ratio:1 }
 .rail-top .photo-stamp{ width:100% }
 .help-cards{ display:grid; grid-template-columns:1fr 1fr; grid-template-rows:minmax(0,1fr) minmax(0,1fr); gap:8px; margin:0; height:100%; min-height:0 }
 .help-card--wide{ grid-column:1 / -1; flex-direction:row; gap:10px }
@@ -709,8 +710,8 @@ body{
 /* .rcard family removed -- Review now uses the shared .card component
    directly, no separate implementation. */
 
-.ready-block h4{ font-family:var(--serif); color:var(--oxblood); font-size:1.15em; margin:16px 0 6px }
-.ready-block p{ font-size:.85em; color:#5a5142; line-height:1.5; margin:0 0 16px }
+.ready-block h4{ font-family:manrope; color:var(--oxblood); font-size:1.0em; margin:16px 0 6px }
+.ready-block p{ font-size:.9em; color:#5a5142; line-height:1.5; margin:0 0 16px }
 .stat-card{ background:rgba(255,255,255,.4); border:1px solid rgba(35,31,27,.12); border-radius:8px; padding:12px 14px; margin-bottom:8px; font-size:.85em }
 .price-line{ font-family:var(--serif); font-size:1.8em; color:var(--ink); margin:14px 0 16px }
 .btn-create{
@@ -725,7 +726,7 @@ body{
   padding:9px 14px; border-radius:8px; cursor:pointer;
   background:rgba(255,255,255,.55); border:1px solid rgba(88,65,42,.28);
   box-shadow:0 .15rem .4rem rgba(52,36,25,.10);
-  font-family:var(--serif); font-size:1.15rem; color:var(--ink); text-decoration:none;
+  font-family:var(--serif); font-size:1.4rem; color:var(--ink); text-decoration:none;
 }
 .link-back:hover{ background:rgba(255,255,255,.85); border-color:rgba(125,66,66,.4) }
 
@@ -1363,7 +1364,7 @@ body.is-lboxed{ overflow:hidden }
    never applied to anything, so that banner is dead markup. */
 .rail-startover{
   width:100%; margin-top:10px;
-  font-family:var(--serif); font-style:italic; font-size:1.1rem;
+  font-family:var(--serif); font-style:italic; font-size:1.4rem;
   padding:.55rem .9rem; border-radius:22px; cursor:pointer;
   background:transparent; color:var(--oxblood);
   border:1px solid var(--oxblood);
@@ -1380,13 +1381,17 @@ body.is-lboxed{ overflow:hidden }
 .so-no{ background:transparent; color:#5a5142; border:1px solid rgba(88,65,42,.45) }
 .startover-err{ font-family:var(--sans); font-size:12px; color:var(--oxblood); margin:8px 0 0 }
 
-/* __ASPECT_STEP__ — Square / Portrait / Landscape. Centred on stage,
-   doubled shapes, oxblood #7d4242 borders/labels/ratio text, unselected
-   background #d9ccb1. */
+/* __ASPECT_STEP__ — Square / Portrait / Landscape inside an oxblood
+   panel. Centred on stage, doubled shapes, "Shape" heading beneath. */
 .aspect-view{ display:none }
 .aspect-view.active{ display:flex }
 .aspect-floor{ flex:1; overflow-y:auto; padding:28px var(--stage-pad-x) 60px;
   display:flex; align-items:center; justify-content:center }
+.aspect-panel{
+  background:rgba(125,66,66,.12); border:2px solid #7d4242; border-radius:14px;
+  padding:42px 48px 36px; display:flex; flex-direction:column; align-items:center; gap:24px;
+}
+.aspect-panel__title{ font-family:var(--serif); font-size:1.5rem; color:#7d4242; margin:0; order:1 }
 .aspect-row{ display:flex; gap:calc(var(--card-gap) * 2); align-items:flex-end; flex-wrap:wrap;
   justify-content:center }
 .aspect-opt{
@@ -1402,14 +1407,15 @@ body.is-lboxed{ overflow:hidden }
 .aspect-shape{ border:2px solid #7d4242; border-radius:4px;
   background:rgba(255,255,255,.03) }
 .aspect-opt.is-chosen .aspect-shape{ background:rgba(201,166,96,.16) }
-.aspect-opt__label{ font-family:var(--serif); font-size:1.3rem; color:#7d4242; margin:0 }
-.aspect-opt__ratio{ font-family:var(--sans); font-size:12px; letter-spacing:.06em;
+.aspect-opt__label{ font-family:var(--serif); font-size:1.6rem; color:#7d4242; margin:0 }
+.aspect-opt__ratio{ font-family:var(--sans); font-size:18px; letter-spacing:.06em;
   color:#7d4242; margin:0 }
 .aspect-head{ display:flex; align-items:center; gap:16px; padding:18px var(--stage-pad-x) 0 }
 .aspect-head h2{ font-family:var(--serif); font-size:1.5rem; color:#f3ede1; margin:0 }
 .aspect-head .back-btn{ font-size:1.1rem; padding:12px 24px }
 @media (max-width:767px){ .aspect-floor{ padding:14px var(--stage-pad-x)
   calc(160px + env(safe-area-inset-bottom,0px)) }
+  .aspect-panel{ padding:24px 20px 20px }
   .aspect-opt{ padding:18px 20px; gap:10px } }
 </style>
 </head>
@@ -1508,7 +1514,10 @@ body.is-lboxed{ overflow:hidden }
       <h2>Step 3 · the shape</h2>
     </div>
     <main class="aspect-floor" id="aspectFloor">
-      <div class="aspect-row" id="aspectRow"></div>
+      <div class="aspect-panel">
+        <div class="aspect-row" id="aspectRow"></div>
+        <h3 class="aspect-panel__title">Shape</h3>
+      </div>
     </main>
   </div>
 
@@ -3208,25 +3217,19 @@ function applyIntent(id){
   ACTIVE_INTENT = id;
   var it = INTENTS.find(function(x){ return x.id === id; });
   var view = document.getElementById('discoveryView');
-  var picks = [];
+  view.classList.toggle('is-guided', !!it);
   if (it){
     askCurator({ quickChoice: it.id }).then(function(ids){
       if (ids && ids.length) highlightRecommended(ids);
     });
+  } else {
+    /* Clearing: remove all highlights. */
+    document.querySelectorAll('#discoveryView .silo-block .card.is-recommended')
+      .forEach(function(c){ c.classList.remove('is-recommended'); });
+    document.querySelectorAll('.mm.has-rec')
+      .forEach(function(m){ m.classList.remove('has-rec'); });
   }
-  view.classList.toggle('is-guided', !!it);
-  var rooms = {};
-  document.querySelectorAll('#discoveryView .silo-block .card').forEach(function(c){
-    var name = c.querySelector('strong') ? c.querySelector('strong').textContent : '';
-    var hit = picks.indexOf(name) !== -1;
-    c.classList.toggle('is-recommended', hit);
-    if (hit){ var blk = c.closest('.silo-block'); if (blk) rooms[blk.id.replace('silo-','')] = true; }
-  });
-  document.querySelectorAll('.mm').forEach(function(m){ m.classList.toggle('has-rec', !!rooms[m.dataset.target]); });
   renderIntentBox();
-  // land on the first room that has a pick
-  var first = document.querySelector('#discoveryView .silo-block .card.is-recommended');
-  if (first) first.closest('.silo-block').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 // ── The size step (Rich, 2 Sep): before Pick for me or Help me
 // choose act, "How many?" -- 1/4/8/16 with prices, tiers below the
@@ -3303,7 +3306,18 @@ function closeDescribe(){
 // help card, or selecting a card on the stage (the person moved on).
 document.addEventListener('click', function(e){
   if (e.target.closest('.describe-box__x')) return closeDescribe();
-  if (e.target.closest('.describe-box__send')) return closeDescribe(); // CENG: Curator API hand-off goes here
+  if (e.target.closest('.describe-box__send')){
+    var ta = document.querySelector('#describeBox textarea');
+    var text = ta ? ta.value.trim() : '';
+    if (text){
+      var view = document.getElementById('discoveryView');
+      view.classList.add('is-guided');
+      askCurator({ userIntentText: text }).then(function(ids){
+        if (ids && ids.length) highlightRecommended(ids);
+      });
+    }
+    return closeDescribe();
+  }
   if (e.target.closest('#discoveryView .silo-block .card')) closeDescribe();
 });
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ closeDescribe(); closeIntent(); } });
@@ -3408,14 +3422,12 @@ var reviewGrid = document.getElementById('reviewGrid');
 //   size 16 -> 2 included unlocks
 var INCLUDED_UNLOCKS_BY_SIZE = { 1:0, 4:1, 8:1, 16:2 };
 
-function renderReviewRail(){
-  // While a tier is held with open slots, the rail speaks about the tier
-  // ("all 8"), not the momentary count.
+/* Shared summary: the "Ready to create" block, stat cards, tier gauge
+   and fill note. Used by both Review and Pose rails so the customer
+   sees the same information in both places. */
+function buildSummaryHtml(){
   var n = (TIER && openSlots()) ? TIER : SELECTED.length;
-  var info = sizeInfo(n); // NOT guaranteed valid anymore -- removing a fan card
-    // in Review can take n off {1,4,8,16}. Only entry into Review was
-    // guaranteed valid; this function now also runs mid-Review after
-    // a remove, so it has to render something sane for an off-tier n.
+  var info = sizeInfo(n);
   var isDirectRender = (n === 1);
   var fallbackTier = resolveFanTier(n) || 1;
   var included = INCLUDED_UNLOCKS_BY_SIZE[n];
@@ -3430,28 +3442,30 @@ function renderReviewRail(){
     bodyHtml =
       '<div class="ready-block"><h4>Ready to create</h4>' +
       '<p>Your effect will be created as a finished image directly — no preview step, nothing to unlock.</p></div>' +
-      '<p class="fine" style="font-size:.8rem;color:#5a5142;line-height:1.5;margin:8px 0 0">Want to try more? Bigger collections let you preview several effects before committing.</p>';
+      '<p class="fine" style="font-size:.9rem;color:#5a5142;line-height:1.5;margin:8px 0 0">Want to try more? Bigger collections let you preview several effects before committing.</p>';
   } else {
     bodyHtml =
       '<div class="ready-block"><h4>Ready to create</h4>' +
       '<p>You\'ve selected ' + n + ' effects. We\'ll create all ' + n + ' as watermarked previews so you can see how each one turned out.</p></div>' +
       '<div class="stat-card"><strong>' + n + ' watermarked previews</strong></div>' +
       '<div class="stat-card"><strong>' + included + ' included unlock' + (included===1?'':'s') + '</strong></div>' +
-      '<p class="fine" style="font-size:.8rem;color:#5a5142;line-height:1.5;margin:8px 0 0">Love more than ' + included + '? You can unlock additional finished images afterward.</p>';
+      '<p class="fine" style="font-size:.9rem;color:#5a5142;line-height:1.5;margin:8px 0 0">Love more than ' + included + '? You can unlock additional finished images afterward.</p>';
   }
-  // Price line: real price at a valid size, the nudge (matches
-  // Discovery's own copy) at an off-tier size, nothing at zero.
   var priceHtml = '<div class="tier tier-light" id="tierR" style="margin-bottom:14px"></div>';
   if (TIER && openSlots()) priceHtml += '<div class="tier-fill-note" style="color:var(--oxblood)">Choose ' + openSlots() + ' more to complete your ' + TIER + '</div>';
-  // price-line retired: the instrument's reached marker carries the price.
+  return { bodyHtml: bodyHtml, priceHtml: priceHtml, info: info, n: n };
+}
+
+function renderReviewRail(){
+  var sum = buildSummaryHtml();
 
   discoveryRail.innerHTML =
     '<div class="curator"><div class="curator__badge"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjciIGhlaWdodD0iNzUiIHZpZXdCb3g9IjAgMCA2NyA3NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxlbGxpcHNlIGN4PSIxOS41IiBjeT0iMzQuNSIgcng9IjE5LjUiIHJ5PSIyMS41IiBmaWxsPSIjNzYzRjQxIi8+DQo8ZyBmaWx0ZXI9InVybCgjZmlsdGVyMF9kXzI4XzMpIj4NCjxwYXRoIGQ9Ik00OS4xNTA0IDE1LjQyOTdDNDkuMDU5MiAxNi4yMjcyIDQ4LjgwODYgMTcuNDkxOSA0OC4zOTg0IDE5LjIyMzZDNDguMDExMSAyMC45MzI2IDQ3LjY4MDcgMjIuMjIwMSA0Ny40MDcyIDIzLjA4NTlMNDYuNDE2IDIzLjA1MThWMjIuMTYzMUM0Ni40MTYgMTkuNjc5NCA0Ni4xNDI2IDE4LjEyOTkgNDUuNTk1NyAxNy41MTQ2QzQ1LjA3MTYgMTYuODc2NiA0My45NDM3IDE2LjU1NzYgNDIuMjExOSAxNi41NTc2QzQxLjUwNTUgMTYuNTgwNCA0MC45NTg3IDE2LjU5MTggNDAuNTcxMyAxNi41OTE4SDM5LjMwNjZDMzguNjkxNCAxNi41NjkgMzguMjkyNiAxNi41NTc2IDM4LjExMDQgMTYuNTU3NkMzNi40OTI1IDE2LjU1NzYgMzQuNjgxIDE2Ljg3NjYgMzIuNjc1OCAxNy41MTQ2QzMwLjY3MDYgMTguMTI5OSAyOC4yNjY2IDE5LjMwMzQgMjUuNDYzOSAyMS4wMzUyQzI0LjE2NSAyMS44NTU1IDIyLjIyODIgMjMuNDczMyAxOS42NTMzIDI1Ljg4ODdDMTguNjUwNyAyNi44NDU3IDE2LjkzMDMgMjkuMDY3NCAxNC40OTIyIDMyLjU1MzdMMTMuMzMwMSAzNC42MDQ1TDExLjg2MDQgMzguMjk1OUMxMS40OTU4IDM5LjUwMzYgMTEuMjMzNyA0MC42NjU3IDExLjA3NDIgNDEuNzgyMkMxMC45Mzc1IDQyLjg5ODggMTAuODY5MSA0NC4wMzgxIDEwLjg2OTEgNDUuMjAwMkMxMC44NjkxIDQ2Ljc0OTcgMTEuMDQgNDguMjA4IDExLjM4MTggNDkuNTc1MkMxMS43MjM2IDUwLjk0MjQgMTIuMTc5NCA1MS45OTA2IDEyLjc0OSA1Mi43MTk3QzEzLjk1NjcgNTQuMjIzNiAxNS4yMzI3IDU1LjQ3NjkgMTYuNTc3MSA1Ni40Nzk1QzE3Ljk0NDMgNTcuNDU5MyAxOS41MDUyIDU4LjIyMjcgMjEuMjU5OCA1OC43Njk1QzIzLjAzNzEgNTkuMzE2NCAyNS4wODc5IDU5LjU4OTggMjcuNDEyMSA1OS41ODk4QzI5LjgwNDcgNTkuNTg5OCAzMS43NzU3IDU5LjI0OCAzMy4zMjUyIDU4LjU2NDVDMzQuODc0NyA1Ny44ODA5IDM2LjIzMDUgNTYuOTEyNCAzNy4zOTI2IDU1LjY1OTJDMzcuNzc5OSA1NS4yNDkgMzguODczNyA1My42NDI2IDQwLjY3MzggNTAuODM5OEw0MS44MDE4IDUxLjE4MTZMMzkuOTU2MSA1Ni45OTIyQzM5LjYzNyA1Ny45OTQ4IDM5LjM4NjQgNTguNzI0IDM5LjIwNDEgNTkuMTc5N0MzNy43MjMgNTkuNzI2NiAzNi4xOTYzIDYwLjEyNTMgMzQuNjI0IDYwLjM3NkMzMS42MTYyIDYwLjg1NDUgMjguNjg4MiA2MS4wOTM4IDI1LjgzOTggNjEuMDkzOEMyMS42Njk5IDYxLjA5MzggMTguNDU3IDYwLjY5NSAxNi4yMDEyIDU5Ljg5NzVDMTMuOTQ1MyA1OS4wOTk5IDExLjc0NjQgNTcuNzEgOS42MDQ0OSA1NS43Mjc1QzguMDc3OCA1NC4zMTQ4IDYuOTE1NjkgNTIuNTI2IDYuMTE4MTYgNTAuMzYxM0M1LjMyMDY0IDQ4LjE3MzggNC45MjE4OCA0Ni4xNDU4IDQuOTIxODggNDQuMjc3M0M0LjkyMTg4IDQxLjQ1MTggNS4zNTQ4MiAzOS4wNDc5IDYuMjIwNyAzNy4wNjU0QzguMDQzNjIgMzIuODcyNyAxMC4xMjg2IDI5LjU0NTkgMTIuNDc1NiAyNy4wODVDMTQuODQ1NCAyNC42MDEyIDE3LjYzNjcgMjIuNDAyMyAyMC44NDk2IDIwLjQ4ODNDMjMuMTczOCAxOS4wOTgzIDI1Ljg3NCAxNy44MTA5IDI4Ljk1MDIgMTYuNjI2QzMyLjA0OTIgMTUuNDE4MyAzNS4yMzkzIDE0LjgxNDUgMzguNTIwNSAxNC44MTQ1TDQ0LjUzNjEgMTQuNzQ2MUM0NS45OTQ1IDE0Ljc0NjEgNDcuNTMyNiAxNC45NzQgNDkuMTUwNCAxNS40Mjk3WiIgZmlsbD0iI0YwRUFFMCIvPg0KPC9nPg0KPGRlZnM+DQo8ZmlsdGVyIGlkPSJmaWx0ZXIwX2RfMjhfMyIgeD0iMi45MjE4OCIgeT0iMTIuNzQ2MSIgd2lkdGg9IjUyLjIyODUiIGhlaWdodD0iNTQuMzQ3NyIgZmlsdGVyVW5pdHM9InVzZXJTcGFjZU9uVXNlIiBjb2xvci1pbnRlcnBvbGF0aW9uLWZpbHRlcnM9InNSR0IiPg0KPGZlRmxvb2QgZmxvb2Qtb3BhY2l0eT0iMCIgcmVzdWx0PSJCYWNrZ3JvdW5kSW1hZ2VGaXgiLz4NCjxmZUNvbG9yTWF0cml4IGluPSJTb3VyY2VBbHBoYSIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDEyNyAwIiByZXN1bHQ9ImhhcmRBbHBoYSIvPg0KPGZlT2Zmc2V0IGR4PSIyIiBkeT0iMiIvPg0KPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMiIvPg0KPGZlQ29tcG9zaXRlIGluMj0iaGFyZEFscGhhIiBvcGVyYXRvcj0ib3V0Ii8+DQo8ZmVDb2xvck1hdHJpeCB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMCAwIDAgMCAwLjQ2Mjc0NSAwIDAgMCAwIDAuMjQ3MDU5IDAgMCAwIDAgMC4yNTQ5MDIgMCAwIDAgMC42NCAwIi8+DQo8ZmVCbGVuZCBtb2RlPSJub3JtYWwiIGluMj0iQmFja2dyb3VuZEltYWdlRml4IiByZXN1bHQ9ImVmZmVjdDFfZHJvcFNoYWRvd18yOF8zIi8+DQo8ZmVCbGVuZCBtb2RlPSJub3JtYWwiIGluPSJTb3VyY2VHcmFwaGljIiBpbjI9ImVmZmVjdDFfZHJvcFNoYWRvd18yOF8zIiByZXN1bHQ9InNoYXBlIi8+DQo8L2ZpbHRlcj4NCjwvZGVmcz4NCjwvc3ZnPg0K" alt="Curator"></div><h3>Curator</h3></div>' +
     '<hr class="divider">' +
     '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>' +
-    bodyHtml +
-    priceHtml +
-    '<button class="btn-create' + ((info.valid && n > 0 && !openSlots()) ? ' on' : '') + '">Create My Collection →</button>' +
+    sum.bodyHtml +
+    sum.priceHtml +
+    '<button class="btn-create' + ((sum.info.valid && sum.n > 0 && !openSlots()) ? ' on' : '') + '">Next: Choose A Pose</button>' +
     /* __START_OVER__ — always on Review, at every count, beside the
        per-card removes. Rendered here because renderReviewRail() is
        what repaints on entry AND after each remove. */
@@ -3975,10 +3989,28 @@ var TOURS = {
       text:'How many pieces, how many still previews, and unlocks you have left.' },
     { sel:'#mycollBackRail', title:'Back to the Workshop',
       text:'When you want to craft more.' }
+  ],
+  pose: [
+    { sel:'.pose-card.preserve', title:'Keep your pose',
+      text:'Choose this to use the pose from your photograph exactly as it is.' },
+    { sel:'.pose-card:not(.preserve)', title:'Try a different pose',
+      text:'Pick one of these to change your pose in the final images.' },
+    { sel:'#btnPoseNext', title:'Move on to shape',
+      text:'Once you have picked a pose, continue to choose the shape of your images.' }
+  ],
+  aspect: [
+    { sel:'.aspect-panel', title:'Choose a shape',
+      text:'Square, portrait or landscape — one shape for your whole collection.' },
+    { sel:'#btnBackAspect', title:'Go back',
+      text:'Return to the pose step if you want to change your mind.' }
   ]
 };
 function currentTour(){
   if (mycoll.classList.contains('is-open')) return TOURS.mycoll;
+  var pv = document.getElementById('poseView');
+  var av = document.getElementById('aspectView');
+  if (av && av.classList.contains('active')) return TOURS.aspect;
+  if (pv && pv.classList.contains('active')) return TOURS.pose;
   if (reviewView.classList.contains('active')) return TOURS.review;
   return TOURS.discovery;
 }
@@ -4196,10 +4228,14 @@ function choosePose(id){
 }
 
 function renderPoseRail(){
+  var sum = buildSummaryHtml();
   discoveryRail.innerHTML =
     '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>' +
+    sum.bodyHtml +
+    sum.priceHtml +
     '<button class="btn-create on" id="btnPoseNext">Next: Aspect Ratio</button>';
   document.getElementById('btnPoseNext').addEventListener('click', showAspect);
+  paintTier(document.getElementById('tierR'));
   fitStampThumb();
   if (ANALYZE_RESULT) focusStampThumb();
 }
