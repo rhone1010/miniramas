@@ -1,82 +1,256 @@
 // app/api/v1/feedback/route.ts
 //
-// Bug reports and site feedback. PRIVATE. Never public.
+// "Something off?" panel — bug reports and site feedback.
 //
-// ── WHY THIS NEEDS NO MODERATION GATE ──────────────────────────────────
+// POST body matches the glass contract in litenco-feedback-modal.html:
+//   { kinds, severity, where, what, expected, context, screenshot }
 //
-// Because it has no rendering path. It goes to a table Rich reads and it
-// appears nowhere on the site, so there is no audience to protect.
-//
-// This is the ONLY place in the product where a customer's own words are
-// stored, and they are stored where nobody but the studio can read them.
-// That is deliberate: comments and captions were both dropped so that no
-// user-generated text is ever public on litenco.com, which is one sentence
-// to a lawyer and one sentence to a customer.
-//
-// ── SIGNED OUT IS ALLOWED ──────────────────────────────────────────────
-//
-// Somebody who cannot sign in is exactly the person most likely to have
-// something worth reporting, and requiring an account to say "this is
-// broken" loses the reports that matter most.
+// Auth required (test release). Screenshot decoded → Supabase Storage
+// feedback-shots/<id>.jpg. GitHub issue opened on insert; if GitHub
+// fails the row still saves and the issue number comes back null.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { getUser } from '@/lib/store/auth'
+import { supabaseAdmin }            from '@/lib/supabase'
+import { getUser }                   from '@/lib/store/auth'
 
 export const runtime = 'nodejs'
 
-/** Rich's to rename. Kept loose on purpose — a category list that does not
- *  fit what somebody wants to say sends them away rather than narrowing
- *  them down. */
-const CATEGORIES = ['broken', 'looks_wrong', 'idea', 'other'] as const
+const MAX_WHAT       = 4000
+const MAX_EXPECTED   = 2000
+const MAX_SCREENSHOT = 2 * 1024 * 1024  // 2 MB as base64 string length
+const RATE_WINDOW_MS = 60 * 60 * 1000   // 1 hour
+const RATE_MAX       = 10
 
-const MAX_BODY = 4000
+const VALID_KINDS  = ['broken', 'visual', 'confusing', 'slow', 'idea']
+const VALID_WHERE  = ['discovery', 'review', 'mycoll']
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json().catch(() => ({}))
-
-    const category = typeof body.category === 'string' &&
-      (CATEGORIES as readonly string[]).includes(body.category)
-        ? body.category
-        : 'other'
-
-    const text = typeof body.body === 'string' ? body.body.trim().slice(0, MAX_BODY) : ''
-    if (!text) {
-      return NextResponse.json({ ok: false, reason: 'empty' }, { status: 400 })
-    }
-
-    // Which page they were on. Worth more than the category for a bug
-    // report, and it costs the customer nothing to supply.
-    const page = typeof body.page === 'string' ? body.page.slice(0, 200) : null
-
-    const url = process.env.SUPABASE_URL
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!url || !key) {
-      return NextResponse.json({ ok: false, reason: 'not_configured' }, { status: 500 })
-    }
-
-    const db   = createClient(url, key, { auth: { persistSession: false } })
+    // ── Auth ──────────────────────────────────────────────────
     const user = await getUser().catch(() => null)
-
-    const { error } = await db.from('feedback').insert({
-      owner_key: user?.id ?? null,
-      category,
-      body:      text,
-      page,
-    })
-
-    if (error) {
-      console.error(`[feedback] insert failed: ${error.message}`)
-      return NextResponse.json({ ok: false, reason: 'send_failed' }, { status: 500 })
+    if (!user?.id) {
+      return NextResponse.json({ ok: false, reason: 'auth' }, { status: 401 })
     }
 
-    console.log(`[feedback] received category=${category} signed_in=${!!user?.id}`)
+    // ── Parse ─────────────────────────────────────────────────
+    const body = await req.json().catch(() => ({} as any))
 
-    return NextResponse.json({ ok: true })
+    const kinds: string[] = Array.isArray(body.kinds)
+      ? body.kinds.filter((k: any) => typeof k === 'string' && VALID_KINDS.includes(k))
+      : []
+    if (!kinds.length) {
+      return NextResponse.json({ ok: false, reason: 'kinds_required' }, { status: 400 })
+    }
+
+    const severity = typeof body.severity === 'number' && body.severity >= 0 && body.severity <= 2
+      ? body.severity
+      : 0
+
+    const where = typeof body.where === 'string' && VALID_WHERE.includes(body.where)
+      ? body.where
+      : 'discovery'
+
+    const what = typeof body.what === 'string' ? body.what.trim().slice(0, MAX_WHAT) : ''
+    if (what.length < 3) {
+      return NextResponse.json({ ok: false, reason: 'what_required' }, { status: 400 })
+    }
+
+    const expected = typeof body.expected === 'string'
+      ? body.expected.trim().slice(0, MAX_EXPECTED) || null
+      : null
+
+    const context = body.context && typeof body.context === 'object' && !Array.isArray(body.context)
+      ? body.context
+      : {}
+
+    const screenshot: string | null = typeof body.screenshot === 'string' && body.screenshot.startsWith('data:image/')
+      ? body.screenshot
+      : null
+
+    // ── Screenshot size check ─────────────────────────────────
+    if (screenshot && screenshot.length > MAX_SCREENSHOT) {
+      return NextResponse.json({ ok: false, reason: 'screenshot_too_large' }, { status: 413 })
+    }
+
+    // ── Rate limit ────────────────────────────────────────────
+    const since = new Date(Date.now() - RATE_WINDOW_MS).toISOString()
+    const { count } = await supabaseAdmin
+      .from('feedback')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', since)
+
+    if ((count ?? 0) >= RATE_MAX) {
+      return NextResponse.json({ ok: false, reason: 'too_many' }, { status: 429 })
+    }
+
+    // ── Insert row ────────────────────────────────────────────
+    const { data: row, error: insErr } = await supabaseAdmin
+      .from('feedback')
+      .insert({
+        user_id:    user.id,
+        handle:     context.userId || null,
+        kinds,
+        severity,
+        where,
+        what,
+        expected,
+        context,
+        screenshot: null,  // updated below if upload succeeds
+        url:        typeof context.url === 'string' ? context.url.slice(0, 2000) : null,
+        viewport:   typeof context.viewport === 'string' ? context.viewport.slice(0, 40) : null,
+        release:    'test',
+        status:     'new',
+      })
+      .select('id')
+      .single()
+
+    if (insErr || !row?.id) {
+      console.error('[feedback] insert failed:', insErr?.message)
+      return NextResponse.json({ ok: false, reason: 'insert_failed' }, { status: 500 })
+    }
+
+    const feedbackId = row.id as string
+
+    // ── Screenshot upload ─────────────────────────────────────
+    let screenshotPath: string | null = null
+    if (screenshot) {
+      try {
+        const match = screenshot.match(/^data:image\/(jpeg|png|webp);base64,(.+)$/)
+        if (match) {
+          const ext = match[1] === 'jpeg' ? 'jpg' : match[1]
+          const buf = Buffer.from(match[2], 'base64')
+          const path = `${feedbackId}.${ext}`
+
+          const { error: upErr } = await supabaseAdmin.storage
+            .from('feedback-shots')
+            .upload(path, buf, {
+              contentType: `image/${match[1]}`,
+              upsert: false,
+            })
+
+          if (upErr) {
+            console.error('[feedback] screenshot upload failed:', upErr.message)
+          } else {
+            screenshotPath = path
+            await supabaseAdmin
+              .from('feedback')
+              .update({ screenshot: path })
+              .eq('id', feedbackId)
+          }
+        }
+      } catch (e: any) {
+        console.error('[feedback] screenshot processing error:', e?.message)
+      }
+    }
+
+    // ── GitHub issue ──────────────────────────────────────────
+    let issueNumber: number | null = null
+    const ghToken = process.env.GITHUB_TOKEN
+    if (ghToken) {
+      try {
+        issueNumber = await openGitHubIssue({
+          token: ghToken,
+          kinds,
+          severity,
+          where,
+          what,
+          expected,
+          context,
+          feedbackId,
+          screenshotPath,
+        })
+        if (issueNumber) {
+          await supabaseAdmin
+            .from('feedback')
+            .update({ github_issue: issueNumber })
+            .eq('id', feedbackId)
+        }
+      } catch (e: any) {
+        // Row saves regardless. Issue can be retried.
+        console.error('[feedback] GitHub issue failed:', e?.message)
+      }
+    } else {
+      console.warn('[feedback] GITHUB_TOKEN not set — skipping issue creation')
+    }
+
+    console.log(`[feedback] saved id=${feedbackId} kinds=${kinds.join(',')} sev=${severity} where=${where} issue=${issueNumber ?? 'none'}`)
+
+    return NextResponse.json({ id: feedbackId, issue: issueNumber })
 
   } catch (e: any) {
-    console.error(`[feedback] ${e?.message}`)
+    console.error('[feedback] fatal:', e?.message || e)
     return NextResponse.json({ ok: false, reason: 'error' }, { status: 500 })
   }
+}
+
+// ── GitHub issue helper ───────────────────────────────────────────
+async function openGitHubIssue(opts: {
+  token: string
+  kinds: string[]
+  severity: number
+  where: string
+  what: string
+  expected: string | null
+  context: Record<string, any>
+  feedbackId: string
+  screenshotPath: string | null
+}): Promise<number | null> {
+  const sevLabel = ['annoying', 'blocked', 'lost-work'][opts.severity] || 'annoying'
+  const whatPreview = opts.what.length > 60 ? opts.what.slice(0, 60) + '…' : opts.what
+  const title = `[test] ${opts.where} · ${opts.kinds.join(', ')} · sev${opts.severity} — ${whatPreview}`
+
+  const labels = [
+    'test-release',
+    'from-feedback',
+    `where:${opts.where}`,
+    `sev:${opts.severity}`,
+  ]
+
+  // Build body
+  const contextLines = Object.entries(opts.context)
+    .filter(([, v]) => v !== null && v !== undefined && v !== '')
+    .map(([k, v]) => `| ${k} | ${typeof v === 'object' ? JSON.stringify(v) : String(v)} |`)
+    .join('\n')
+
+  let body = `## What happened\n\n${opts.what}\n`
+  if (opts.expected) {
+    body += `\n## Expected\n\n${opts.expected}\n`
+  }
+  if (contextLines) {
+    body += `\n## Context\n\n| Key | Value |\n|-----|-------|\n${contextLines}\n`
+  }
+  body += `\n---\n_Feedback ID: \`${opts.feedbackId}\`_`
+
+  if (opts.screenshotPath) {
+    const url = process.env.SUPABASE_URL
+    if (url) {
+      // Create a signed URL (7-day expiry) for the screenshot
+      const { data } = await supabaseAdmin.storage
+        .from('feedback-shots')
+        .createSignedUrl(opts.screenshotPath, 7 * 24 * 60 * 60)
+      if (data?.signedUrl) {
+        body += `\n\n## Screenshot\n\n![screenshot](${data.signedUrl})`
+      }
+    }
+  }
+
+  const res = await fetch('https://api.github.com/repos/rhone1010/miniramas/issues', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/vnd.github+json',
+      'Authorization': `Bearer ${opts.token}`,
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+    body: JSON.stringify({ title, body, labels }),
+  })
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    console.error('[feedback] GitHub API error:', res.status, detail.slice(0, 300))
+    return null
+  }
+
+  const issue = await res.json()
+  return issue.number ?? null
 }
