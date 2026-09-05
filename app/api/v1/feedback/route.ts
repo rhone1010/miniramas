@@ -176,6 +176,14 @@ export async function POST(req: NextRequest) {
 
     console.log(`[feedback] saved id=${feedbackId} kinds=${kinds.join(',')} sev=${severity} where=${where} issue=${issueNumber ?? 'none'}`)
 
+    // ── Retry orphaned rows (non-blocking) ─────────────────────
+    // On each new submission, check for rows where github_issue is
+    // null and created_at is older than 2 minutes. Retry up to 3
+    // at a time to avoid blocking the response. Fire-and-forget.
+    if (ghToken) {
+      retryOrphanedIssues(ghToken).catch(() => {})
+    }
+
     return NextResponse.json({ id: feedbackId, issue: issueNumber })
 
   } catch (e: any) {
@@ -253,4 +261,45 @@ async function openGitHubIssue(opts: {
 
   const issue = await res.json()
   return issue.number ?? null
+}
+
+// ── Retry orphaned issues ─────────────────────────────────────────
+// Rows where github_issue is null and created_at > 2 minutes ago.
+// Runs at most 3 per invocation, fire-and-forget from the main handler.
+async function retryOrphanedIssues(token: string) {
+  const cutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString()
+  const { data: orphans } = await supabaseAdmin
+    .from('feedback')
+    .select('id, kinds, severity, where, what, expected, context, screenshot')
+    .is('github_issue', null)
+    .lt('created_at', cutoff)
+    .order('created_at', { ascending: true })
+    .limit(3)
+
+  if (!orphans?.length) return
+
+  for (const row of orphans) {
+    try {
+      const num = await openGitHubIssue({
+        token,
+        kinds: row.kinds,
+        severity: row.severity,
+        where: row.where,
+        what: row.what,
+        expected: row.expected,
+        context: row.context ?? {},
+        feedbackId: row.id,
+        screenshotPath: row.screenshot,
+      })
+      if (num) {
+        await supabaseAdmin
+          .from('feedback')
+          .update({ github_issue: num })
+          .eq('id', row.id)
+        console.log(`[feedback] retry: backfilled issue #${num} for ${row.id}`)
+      }
+    } catch (e: any) {
+      console.error(`[feedback] retry failed for ${row.id}:`, e?.message)
+    }
+  }
 }
