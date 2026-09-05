@@ -1388,10 +1388,10 @@ body.is-lboxed{ overflow:hidden }
 .aspect-floor{ flex:1; overflow-y:auto; padding:28px var(--stage-pad-x) 60px;
   display:flex; align-items:center; justify-content:center }
 .aspect-panel{
-  background:rgba(125,66,66,.12); border:2px solid #7d4242; border-radius:14px;
+  background:#7d4242; border:2px solid #7d4242; border-radius:14px;
   padding:42px 48px 36px; display:flex; flex-direction:column; align-items:center; gap:24px;
 }
-.aspect-panel__title{ font-family:var(--serif); font-size:1.5rem; color:#7d4242; margin:0; order:1 }
+.aspect-panel__title{ font-family:var(--serif); font-size:1.5rem; color:#f3ede1; margin:0; order:-1 }
 .aspect-row{ display:flex; gap:calc(var(--card-gap) * 2); align-items:flex-end; flex-wrap:wrap;
   justify-content:center }
 .aspect-opt{
@@ -1406,7 +1406,7 @@ body.is-lboxed{ overflow:hidden }
   box-shadow:inset 0 0 0 .16rem rgba(201,166,96,.28) }
 .aspect-shape{ border:2px solid #7d4242; border-radius:4px;
   background:rgba(255,255,255,.03) }
-.aspect-opt.is-chosen .aspect-shape{ background:rgba(201,166,96,.16) }
+.aspect-opt.is-chosen .aspect-shape{ background:#d8b77b }
 .aspect-opt__label{ font-family:var(--serif); font-size:1.6rem; color:#7d4242; margin:0 }
 .aspect-opt__ratio{ font-family:var(--sans); font-size:18px; letter-spacing:.06em;
   color:#7d4242; margin:0 }
@@ -4419,8 +4419,12 @@ function chooseAspect(id){
 }
 
 function renderAspectRail(){
+  var sum = buildSummaryHtml();
   discoveryRail.innerHTML =
-    '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>';
+    '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>' +
+    sum.bodyHtml +
+    sum.priceHtml;
+  paintTier(document.getElementById('tierR'));
   fitStampThumb();
   if (ANALYZE_RESULT) focusStampThumb();
 }
