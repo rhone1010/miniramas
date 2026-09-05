@@ -1463,6 +1463,93 @@ body.is-lboxed{ overflow:hidden }
 .lcf-panel.sent .lcf-body, .lcf-panel.sent .lcf-foot{ display:none } .lcf-panel.sent .lcf-done{ display:grid }
 @media (max-width:767px){ .lcf-panel{ width:100vw } }
 @media (prefers-reduced-motion:reduce){ .lcf-panel, .lcf-scrim{ transition:none } }
+
+/* Sign-in. Borrows the modal shell wholesale; only the field is new. */
+.signin-lbl{
+  display:block; margin:1.1em 0 .35em;
+  font:600 .68rem/1 var(--mono, ui-monospace, monospace);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--vellum-300);
+}
+.signin-in{
+  width:100%; padding:.7em .8em;
+  font:400 1rem/1.2 var(--sans, system-ui, sans-serif);
+  color:var(--ink, #2a241e); background:#fff;
+  border:1px solid rgba(42,36,30,.22); border-radius:4px;
+}
+.signin-in:focus{ outline:none; border-color:var(--gold) }
+.signin-err{ min-height:1.2em; margin-top:.5em;
+  font:400 .82rem/1.3 var(--sans, system-ui, sans-serif); color:#a05a5a }
+
+.m-scrim{ display:none }
+.m-scrim.is-open{
+  display:grid; place-items:center;
+  position:fixed; top:0; right:0; bottom:0; left:0; z-index:1200;
+  background:rgba(31,27,20,.52);
+  padding:24px;
+  overflow-y:auto;
+}
+.m-card{
+  width:min(680px, 100%);
+  background:linear-gradient(180deg,#faf6ec,#f3ecdd);
+  border:1px solid rgba(147,111,67,.34);
+  border-radius:6px;
+  padding:2rem 2.2rem 1.9rem;
+  position:relative;
+  box-shadow:0 24px 60px rgba(31,27,20,.42), 0 4px 12px rgba(31,27,20,.24),
+             inset 0 1px 0 rgba(255,255,255,.75);
+}
+.m-head{ display:flex; align-items:center; gap:.7rem; }
+.m-head .m-mark{
+  width:2.4rem; height:2.4rem; flex:0 0 auto; display:block;
+}
+.m-head .m-title{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.7rem; font-weight:400; color:var(--ink); letter-spacing:.01em;
+}
+.m-x{
+  position:absolute; top:1.1rem; right:1.2rem;
+  width:2rem; height:2rem; border:0; border-radius:50%;
+  background:none; color:var(--taupe, #a59478); font-size:1.4rem; line-height:1;
+  cursor:pointer; transition:color .15s, background .15s;
+}
+.m-x:hover{ color:var(--ink); background:rgba(42,36,30,.06) }
+.m-rule{
+  display:flex; align-items:center; gap:.8rem;
+  margin:1.15rem 0;
+  color:rgba(147,111,67,.5);
+}
+.m-rule::before, .m-rule::after{
+  content:""; flex:1; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(147,111,67,.45), transparent);
+}
+.m-rule .m-fleuron{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:.95rem; color:rgba(147,111,67,.75); line-height:1;
+}
+.m-say{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.2rem;
+  line-height:1.4;
+  color:var(--ink);
+}
+.m-say .sig{
+  display:block; margin-top:.75rem;
+  font-size:1.15rem; color:var(--ink-soft, #5a5142); font-style:italic;
+}
+.m-safe{
+  margin-top:1.15rem;
+  font-family:var(--sans, system-ui, sans-serif);
+  font-size:.82rem; line-height:1.5; color:var(--ink-soft, #5a5142);
+}
+.m-card .acts{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.m-card .btn{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-style:italic; font-size:1.22rem; line-height:1.2;
+  padding:.62rem .9rem; border-radius:5px; text-align:center; cursor:pointer;
+  border:1px solid transparent; transition:filter .15s, background .15s;
+}
+.m-card .btn.fill{ background:var(--oxblood); color:var(--vellum-100) }
+.m-card .btn.fill:hover{ background:#6a3737 }
 </style>
 </head>
 <body>
@@ -1501,7 +1588,7 @@ body.is-lboxed{ overflow:hidden }
         <path d="M16.9 12.2l2.9-1.1M16.9 14.6l2.8.6M16.4 16.9l2.2 1.9"/>
       </svg>
     </button>
-    <button class="pill-btn" id="mhName"></button>
+    <button class="pill-btn" id="mhName" onclick="if(!SIGNED_IN && typeof openSignin==='function') openSignin()">Sign in</button>
     <button class="pill-btn">
       <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
       <span>Cart</span><span>0</span>
@@ -4688,6 +4775,72 @@ function showCheckoutError(msg){
   if (craft && craft.parentNode) craft.parentNode.insertBefore(el, craft.nextSibling);
 }
 
+// ── Sign-in modal — functions declared here (global scope),
+//    DOM binding deferred to a <script> after the modal markup. ───────
+var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
+var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function openSignin(){
+  var m = document.getElementById('signinModal');
+  if (!m) return;
+  var ask  = document.getElementById('signinAsk');
+  var sent = document.getElementById('signinSent');
+  var err  = document.getElementById('signinErr');
+  var inp  = document.getElementById('signinEmail');
+  if (ask)  ask.hidden  = false;
+  if (sent) sent.hidden = true;
+  if (err)  err.textContent = '';
+  m.classList.add('is-open');
+  if (inp) setTimeout(function(){ inp.focus(); }, 60);
+}
+function closeSignin(){
+  var m = document.getElementById('signinModal');
+  if (m) m.classList.remove('is-open');
+}
+
+function sendLink(){
+  var signinEmail = document.getElementById('signinEmail');
+  var signinSend  = document.getElementById('signinSend');
+  var signinErr   = document.getElementById('signinErr');
+  var signinAsk   = document.getElementById('signinAsk');
+  var signinSent  = document.getElementById('signinSent');
+  var signinAddr  = document.getElementById('signinAddr');
+  if (!signinEmail || !signinSend) return;
+  var email = signinEmail.value.trim().toLowerCase();
+  if (!EMAIL_RE.test(email)){
+    if (signinErr) signinErr.textContent = 'That does not look like an email address.';
+    return;
+  }
+  signinSend.disabled = true;
+  signinSend.textContent = 'Sending';
+  if (signinErr) signinErr.textContent = '';
+
+  fetch(AUTH_SIGNIN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ email: email, next: location.pathname })
+  }).then(function(res){
+    return res.json().catch(function(){ return { ok: false, reason: 'bad_response' }; });
+  }).then(function(d){
+    signinSend.disabled = false;
+    signinSend.textContent = 'Send the link';
+    if (!d || !d.ok){
+      if (signinErr) signinErr.textContent =
+        d && d.reason === 'invalid_email' ? 'That does not look like an email address.'
+                                          : 'The link could not be sent. Try again in a moment.';
+      return;
+    }
+    if (signinAddr) signinAddr.textContent = email;
+    if (signinAsk)  signinAsk.hidden  = true;
+    if (signinSent) signinSent.hidden = false;
+  }).catch(function(){
+    signinSend.disabled = false;
+    signinSend.textContent = 'Send the link';
+    if (signinErr) signinErr.textContent = 'The link could not be sent. Try again in a moment.';
+  });
+}
+
 // Real collection, once a portfolio exists. status gives slot/preset/
 // status/previewId; unlocks gives unlocked + includedRemaining.
 //
@@ -5222,6 +5375,57 @@ LCFeedback.mount({
     };
   }
 });
+</script>
+<div class="scrim m-scrim" id="signinModal" data-role="modal">
+  <div class="modal m-card">
+    <button class="m-x" id="signinX" aria-label="Close">&times;</button>
+    <div id="signinAsk">
+      <div class="m-head"><img class="m-mark" src="/icons/curator-c.svg" alt="">
+        <div class="m-title">Curator&rsquo;s Note</div></div>
+      <div class="m-rule"><span class="m-fleuron">&#10086;</span></div>
+      <div class="m-say">Before I begin &mdash; where shall I send your work?
+          I&rsquo;ll email you a link to sign in. There is no password to remember.
+          <span class="sig">&mdash;&thinsp;C.</span></div>
+      <label class="signin-lbl" for="signinEmail">Email</label>
+      <input class="signin-in" id="signinEmail" type="email" autocomplete="email"
+             placeholder="you@example.com" spellcheck="false">
+      <div class="signin-err" id="signinErr"></div>
+      <div class="acts"><div class="btn fill" id="signinSend">Send the link</div></div>
+      <div class="m-safe">Nothing is charged until your piece is crafted.</div>
+    </div>
+    <div id="signinSent" hidden>
+      <div class="m-head"><img class="m-mark" src="/icons/curator-c.svg" alt="">
+        <div class="m-title">Curator&rsquo;s Note</div></div>
+      <div class="m-rule"><span class="m-fleuron">&#10086;</span></div>
+      <div class="m-say">The link is on its way to <b id="signinAddr"></b>.
+          Open it and I&rsquo;ll have everything just as you left it &mdash; the
+          link works on any device.<span class="sig">&mdash;&thinsp;C.</span></div>
+      <div class="acts"><div class="btn fill" id="signinDone">Close</div></div>
+    </div>
+  </div>
+</div>
+<script>
+// ── Sign-in modal DOM binding (after markup) ─────────────────────────
+(function(){
+  var signinSend  = document.getElementById('signinSend');
+  var signinEmail = document.getElementById('signinEmail');
+  var signinX     = document.getElementById('signinX');
+  var signinDone  = document.getElementById('signinDone');
+  var signinModal = document.getElementById('signinModal');
+
+  if (signinSend) signinSend.addEventListener('click', sendLink);
+  if (signinEmail) signinEmail.addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){ e.preventDefault(); sendLink(); }
+  });
+  if (signinX) signinX.addEventListener('click', closeSignin);
+  if (signinDone) signinDone.addEventListener('click', closeSignin);
+  if (signinModal) signinModal.addEventListener('click', function(e){
+    if (e.target === signinModal) closeSignin();
+  });
+  addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && signinModal && signinModal.classList.contains('is-open')) closeSignin();
+  });
+})();
 </script>
 </body>
 </html>
