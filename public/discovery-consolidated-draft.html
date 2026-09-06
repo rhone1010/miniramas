@@ -4312,9 +4312,9 @@ fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.o
       SIGNED_IN = true;
       var nameEl = document.getElementById('mhName');
       if (nameEl) nameEl.textContent = CUSTOMER;
-      try { renderCollection(); } catch(e){}
+      renderCollection();
     }
-  }).catch(function(){});
+  }).catch(function(e){ console.warn('[discovery] auth/me failed:', e); });
 
 // ── Payment confirmation — ?paid=1&session_id=... or ?portfolio_paid=1&session_id=... ──
 // Stripe embedded checkout navigates to return_url after payment completes.
@@ -4358,6 +4358,8 @@ fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.o
         if (ckErr) ckErr.textContent = 'Could not confirm payment status. If you were charged, your collection will still appear shortly.';
       }
       ckModal.classList.add('is-open');
+      // Refresh collection after payment so new pieces appear
+      if (status === 'paid' && typeof renderCollection === 'function') renderCollection();
     })
     .catch(function(){
       // Network error — don't alarm, payment may still land via webhook
@@ -4956,6 +4958,36 @@ function sendLink(){
     signinSend.textContent = 'Send the link';
     if (signinErr) signinErr.textContent = 'The link could not be sent. Try again in a moment.';
   });
+}
+
+// Fetch all portfolios for the signed-in user and populate PIECES with real data.
+function renderCollection(){
+  fetch('/api/v1/portfolios', { credentials:'include' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if (!d || !d.portfolios || !d.portfolios.length) return;
+      var loads = d.portfolios.map(function(p){ return loadPortfolio(p.id); });
+      return Promise.all(loads);
+    })
+    .then(function(results){
+      if (!results) return;
+      var all = [];
+      var n = 0;
+      results.forEach(function(items){
+        if (!items) return;
+        items.forEach(function(item){
+          n++;
+          all.push({ key:'p'+n, name:item.name, siloName:item.siloName,
+                      series:item.series, num:n, crafting:item.crafting,
+                      locked:item.locked, previewId:item.previewId, art:item.art });
+        });
+      });
+      if (all.length) {
+        PIECES = all;
+        renderMyCollectionGrid();
+      }
+    })
+    .catch(function(e){ console.warn('[discovery] renderCollection failed:', e); });
 }
 
 // Real collection, once a portfolio exists. status gives slot/preset/
