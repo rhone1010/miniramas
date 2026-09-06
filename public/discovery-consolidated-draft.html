@@ -1550,6 +1550,38 @@ body.is-lboxed{ overflow:hidden }
 }
 .m-card .btn.fill{ background:var(--oxblood); color:var(--vellum-100) }
 .m-card .btn.fill:hover{ background:#6a3737 }
+/* ── Checkout modal (embedded Stripe) ────────────────────────── */
+.ck-scrim{ display:none }
+.ck-scrim.is-open{
+  display:grid; place-items:center;
+  position:fixed; top:0; right:0; bottom:0; left:0; z-index:1200;
+  background:rgba(31,27,20,.52);
+  padding:24px;
+  overflow-y:auto;
+}
+.ck-card{
+  width:min(520px, 100%);
+  background:linear-gradient(180deg,#faf6ec,#f3ecdd);
+  border:1px solid rgba(147,111,67,.34);
+  border-radius:6px;
+  padding:1.5rem 1.8rem 1.6rem;
+  position:relative;
+  box-shadow:0 24px 60px rgba(31,27,20,.42), 0 4px 12px rgba(31,27,20,.24),
+             inset 0 1px 0 rgba(255,255,255,.75);
+}
+.ck-x{
+  position:absolute; top:1.1rem; right:1.2rem;
+  width:2rem; height:2rem; border:0; border-radius:50%;
+  background:none; color:var(--taupe, #a59478); font-size:1.4rem; line-height:1;
+  cursor:pointer; transition:color .15s, background .15s; z-index:2;
+}
+.ck-x:hover{ color:var(--ink); background:rgba(42,36,30,.06) }
+.ck-err{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.1rem; color:var(--oxblood); text-align:center;
+  margin-top:12px;
+}
+#ckForm{ min-height:300px; }
 </style>
 </head>
 <body>
@@ -4681,6 +4713,28 @@ function logPayloadIfReady(){
     '  — showCheckoutPayload() for the full object');
 }
 
+var STRIPE_EMBED = null;
+
+function loadStripeJs(){
+  if (window.Stripe) return Promise.resolve();
+  return new Promise(function(res, rej){
+    var s = document.createElement('script');
+    s.src = 'https://js.stripe.com/v3/';
+    s.onload = res;
+    s.onerror = function(){ rej(new Error('stripe_js_unreachable')); };
+    document.head.appendChild(s);
+  });
+}
+
+function closeCheckout(){
+  var ckModal = document.getElementById('ckModal');
+  if (ckModal) ckModal.classList.remove('is-open');
+  if (STRIPE_EMBED && STRIPE_EMBED.destroy){ try { STRIPE_EMBED.destroy(); } catch(e){} }
+  STRIPE_EMBED = null;
+  var ckForm = document.getElementById('ckForm');
+  if (ckForm) ckForm.innerHTML = '';
+}
+
 function startCheckout(){
   var btn = document.getElementById('btnCraft');
   if (!btn || btn.disabled) return;
@@ -4726,34 +4780,47 @@ function startCheckout(){
   act('checkout ' + n);
   console.log('[discovery] startCheckout →', endpoint, 'count=' + n);
 
-  fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-    credentials: 'include'
-  })
-  .then(function(res){ return res.json().then(function(d){ return { status: res.status, data: d }; }); })
-  .then(function(r){
-    if (r.data.url || r.data.checkoutUrl) {
-      /* Success — redirect to Stripe Checkout */
-      window.location.href = r.data.url || r.data.checkoutUrl;
+  Promise.all([
+    loadStripeJs(),
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      credentials: 'include'
+    }).then(function(res){ return res.json().then(function(d){ return { status: res.status, data: d }; }); })
+  ]).then(function(out){
+    var r = out[1];
+    if (!r.data.clientSecret || !r.data.publishableKey) {
+      /* Server rejected */
+      var reason = r.data.error || r.data.message || 'Checkout could not be started';
+      if (reason.indexOf('price_mismatch') === 0) {
+        reason = 'The price has changed — please go back and try again.';
+      } else if (reason.indexOf('portfolio_purchase_requires_user') === 0 || reason.indexOf('single_purchase_requires_user') === 0 || reason.indexOf('auth') === 0) {
+        reason = 'Please sign in to continue.';
+      } else if (reason.indexOf('portfolio_source_image_required') === 0 || reason.indexOf('single_purchase_requires_style') === 0) {
+        reason = 'A photo is required before checkout.';
+      }
+      showCheckoutError(reason);
+      resetCraftBtn(btn, origText);
       return;
     }
-    /* Server rejected */
-    var reason = r.data.error || r.data.message || 'Checkout could not be started';
-    if (reason.indexOf('price_mismatch') === 0) {
-      reason = 'The price has changed — please go back and try again.';
-    } else if (reason.indexOf('portfolio_purchase_requires_user') === 0 || reason.indexOf('single_purchase_requires_user') === 0 || reason.indexOf('auth') === 0) {
-      reason = 'Please sign in to continue.';
-    } else if (reason.indexOf('portfolio_source_image_required') === 0 || reason.indexOf('single_purchase_requires_style') === 0) {
-      reason = 'A photo is required before checkout.';
-    }
-    showCheckoutError(reason);
+    /* Mount embedded checkout */
+    var stripe = window.Stripe(r.data.publishableKey);
+    return stripe.initEmbeddedCheckout({ clientSecret: r.data.clientSecret });
+  }).then(function(embed){
+    if (!embed) return;
+    STRIPE_EMBED = embed;
+    var ckForm = document.getElementById('ckForm');
+    if (ckForm) ckForm.innerHTML = '';
+    var ckErr = document.getElementById('ckErr');
+    if (ckErr) ckErr.textContent = '';
+    embed.mount('#ckForm');
+    var ckModal = document.getElementById('ckModal');
+    if (ckModal) ckModal.classList.add('is-open');
     resetCraftBtn(btn, origText);
-  })
-  .catch(function(err){
-    console.error('[discovery] checkout fetch failed:', err);
-    showCheckoutError('Connection error — please try again.');
+  }).catch(function(err){
+    console.error('[discovery] embedded checkout failed:', err);
+    showCheckoutError('The payment form could not be opened. Try again in a moment.');
     resetCraftBtn(btn, origText);
   });
 }
@@ -5377,6 +5444,13 @@ LCFeedback.mount({
   }
 });
 </script>
+<div class="scrim ck-scrim" id="ckModal">
+  <div class="ck-card">
+    <button class="ck-x" id="ckX" aria-label="Close">&times;</button>
+    <div id="ckForm"></div>
+    <div class="ck-err" id="ckErr"></div>
+  </div>
+</div>
 <div class="scrim m-scrim" id="signinModal" data-role="modal">
   <div class="modal m-card">
     <button class="m-x" id="signinX" aria-label="Close">&times;</button>
@@ -5425,6 +5499,18 @@ LCFeedback.mount({
   });
   addEventListener('keydown', function(e){
     if (e.key === 'Escape' && signinModal && signinModal.classList.contains('is-open')) closeSignin();
+  });
+})();
+// ── Checkout modal DOM binding ────────────────────────────────────────
+(function(){
+  var ckX     = document.getElementById('ckX');
+  var ckModal = document.getElementById('ckModal');
+  if (ckX) ckX.addEventListener('click', closeCheckout);
+  if (ckModal) ckModal.addEventListener('click', function(e){
+    if (e.target === ckModal) closeCheckout();
+  });
+  addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && ckModal && ckModal.classList.contains('is-open')) closeCheckout();
   });
 })();
 </script>

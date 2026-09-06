@@ -39,23 +39,6 @@ import type { GenerationKickoff } from './types'
 import { defaultGenerationKickoff } from './generation-kickoff'
 import crypto from 'crypto'
 
-// Same-origin return URL only (prevents redirecting to arbitrary hosts).
-function safeReturnBase(returnUrl: string | undefined, appUrl: string): string {
-  if (!returnUrl) return `${appUrl}/discovery-consolidated-draft.html`
-  try {
-    const u   = new URL(returnUrl)
-    const app = new URL(appUrl)
-    if (u.origin !== app.origin) return `${appUrl}/discovery-consolidated-draft.html`
-    return `${u.origin}${u.pathname}`
-  } catch {
-    return `${appUrl}/discovery-consolidated-draft.html`
-  }
-}
-
-function appendQuery(url: string, query: string): string {
-  return url.includes('?') ? `${url}&${query}` : `${url}?${query}`
-}
-
 export interface CreateCheckoutArgs {
   skuId:           string
   userId?:         string
@@ -70,9 +53,11 @@ export interface CreateCheckoutArgs {
 }
 
 export interface CreateCheckoutResult {
-  checkoutUrl: string
-  purchaseId:  string
-  jobId?:      string  // present only for singles once optimistic kickoff is wired
+  clientSecret:   string
+  publishableKey: string
+  sessionId:      string
+  purchaseId:     string
+  jobId?:         string  // present only for singles once optimistic kickoff is wired
 }
 
 export async function createCheckout(
@@ -102,9 +87,9 @@ export async function createCheckout(
   const stripe = getStripe()
   const session = await stripe.checkout.sessions.create({
     mode:        'payment',
+    ui_mode:     'embedded',
     line_items:  [{ price: sku.stripePriceId, quantity: 1 }],
-    success_url: appendQuery(base, 'paid=1&session_id={CHECKOUT_SESSION_ID}'),
-    cancel_url:  appendQuery(base, 'canceled=1'),
+    return_url:  appendQuery(base, 'paid=1&session_id={CHECKOUT_SESSION_ID}'),
     customer_email: args.guestEmail && !args.userId ? args.guestEmail : undefined,
     metadata: {
       skuId:       sku.id,
@@ -117,7 +102,7 @@ export async function createCheckout(
     },
   })
 
-  if (!session.url) throw new Error('stripe_session_missing_url')
+  if (!session.client_secret) throw new Error('stripe_session_missing_secret')
 
   // ── 3. Purchase row ──────────────────────────────────────────
   const { data: purchaseRow, error: purchaseErr } = await supabaseAdmin
@@ -178,7 +163,9 @@ export async function createCheckout(
   }
 
   return {
-    checkoutUrl: session.url,
+    clientSecret:   session.client_secret!,
+    publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || '',
+    sessionId:      session.id,
     purchaseId,
     jobId,
   }
@@ -207,8 +194,10 @@ export interface CreateCartCheckoutArgs {
 }
 
 export interface CreateCartCheckoutResult {
-  checkoutUrl: string
-  purchaseId:  string
+  clientSecret:   string
+  publishableKey: string
+  sessionId:      string
+  purchaseId:     string
 }
 
 // Volume ladder: per-piece unit price chosen by TOTAL piece count.
@@ -288,16 +277,15 @@ export async function createCartCheckout(
     throw new Error(`price_mismatch: client=${args.clientTotalCents} server=${serverTotal}`)
   }
 
-  // ── Return URLs ──────────────────────────────────────────────
+  // ── Return URL ──────────────────────────────────────────────
   const appUrl  = getAppUrl()
   const base    = safeReturnBase(args.returnUrl, appUrl)
-  const success = appendQuery(base, 'paid=1&session_id={CHECKOUT_SESSION_ID}')
-  const cancel  = appendQuery(base, 'canceled=1')
 
   // ── Stripe session (dynamic price_data per piece) ────────────
   const stripe = getStripe()
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
+    ui_mode: 'embedded',
     line_items: pieces.map((p, i) => ({
       price_data: {
         currency:     'usd',
@@ -306,8 +294,7 @@ export async function createCartCheckout(
       },
       quantity: 1,
     })),
-    success_url:    success,
-    cancel_url:     cancel,
+    return_url:     appendQuery(base, 'paid=1&session_id={CHECKOUT_SESSION_ID}'),
     customer_email: args.guestEmail && !args.userId ? args.guestEmail : undefined,
     metadata: {
       skuId:      args.skuId,
@@ -317,7 +304,7 @@ export async function createCartCheckout(
       guestEmail: args.guestEmail ?? '',
     },
   })
-  if (!session.url) throw new Error('stripe_session_missing_url')
+  if (!session.client_secret) throw new Error('stripe_session_missing_secret')
 
   // ── Purchase row ─────────────────────────────────────────────
   // sku_id is a NOT NULL FK to skus(id); the two cart SKUs are seeded
@@ -358,5 +345,10 @@ export async function createCartCheckout(
   console.log(
     `[createCartCheckout] ${args.kind} ${pieces.length}pc total=${serverTotal}c purchase=${purchaseId}`,
   )
-  return { checkoutUrl: session.url, purchaseId }
+  return {
+    clientSecret:   session.client_secret!,
+    publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || '',
+    sessionId:      session.id,
+    purchaseId,
+  }
 }

@@ -103,7 +103,9 @@ export interface CreatePortfolioCheckoutArgs {
 }
 
 export interface CreatePortfolioCheckoutResult {
-  checkoutUrl: string
+  clientSecret: string
+  publishableKey: string
+  sessionId: string
   purchaseId: string
   portfolioId: string
 }
@@ -148,8 +150,6 @@ export async function createPortfolioCheckout(
   const appUrl = getAppUrl()
   const stripe = getStripe()
   const base = safeReturnBase(args.returnUrl, appUrl)
-  const success = appendQuery(base, 'portfolio_paid=1&session_id={CHECKOUT_SESSION_ID}')
-  const cancel = appendQuery(base, 'portfolio_canceled=1')
 
   // Look up the live Stripe price ID from the SKU row.
   const { data: sku, error: skuErr } = await supabaseAdmin
@@ -163,12 +163,12 @@ export async function createPortfolioCheckout(
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
+    ui_mode: 'embedded',
     line_items: [{
       price: sku.stripe_price_id,
       quantity: 1,
     }],
-    success_url: success,
-    cancel_url: cancel,
+    return_url: appendQuery(base, 'portfolio_paid=1&session_id={CHECKOUT_SESSION_ID}'),
     metadata: {
       kind: 'portfolio',
       series: args.series,
@@ -177,7 +177,7 @@ export async function createPortfolioCheckout(
       skuId: offer.skuId!,
     },
   })
-  if (!session.url) throw new Error('stripe_session_missing_url')
+  if (!session.client_secret) throw new Error('stripe_session_missing_secret')
 
   const { data: purchaseRow, error: purchaseErr } = await supabaseAdmin
     .from('purchases')
@@ -220,7 +220,13 @@ export async function createPortfolioCheckout(
   if (itemErr) throw new Error(`portfolio_item_insert_failed: ${itemErr.message}`)
 
   console.log(`[createPortfolioCheckout] ${args.series} ${offer.count}pc sku=${offer.skuId} portfolio=${portfolioId}`)
-  return { checkoutUrl: session.url, purchaseId, portfolioId }
+  return {
+    clientSecret: session.client_secret!,
+    publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || '',
+    sessionId: session.id,
+    purchaseId,
+    portfolioId,
+  }
 }
 
 export async function activatePortfolio(purchaseId: string): Promise<void> {

@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         clientTotalCents: Number(cart.totalCents),
         returnUrl:        typeof body.returnUrl === 'string' ? body.returnUrl : '',
       })
-      return NextResponse.json({ url: result.checkoutUrl })
+      return NextResponse.json(result)
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
       console.error('[api/v1/checkout] cart failed', msg)

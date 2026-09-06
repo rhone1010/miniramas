@@ -34,7 +34,12 @@ export async function POST(req: NextRequest) {
       returnUrl: typeof body.returnUrl === 'string' ? body.returnUrl : '',
       clientPriceUsd: Number(body.clientPriceUsd),
     })
-    return NextResponse.json({ url: result.checkoutUrl, portfolioId: result.portfolioId })
+    return NextResponse.json({
+      clientSecret:   result.clientSecret,
+      publishableKey: result.publishableKey,
+      sessionId:      result.sessionId,
+      portfolioId:    result.portfolioId,
+    })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     console.error('[api/v1/portfolios] failed', msg)
