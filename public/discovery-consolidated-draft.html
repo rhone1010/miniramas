@@ -5002,7 +5002,7 @@ function loadPortfolio(id){
     if (!st) return null;
     var unlockedBySlot = {};
     if (un && un.items) un.items.forEach(function(i){ unlockedBySlot[i.slot] = i.unlocked; });
-    if (un && typeof un.includedRemaining === 'number') INCLUDED_LEFT = un.includedRemaining;
+    if (un && typeof un.includedRemaining === 'number') INCLUDED_UNLOCKS_REMAINING = un.includedRemaining;
     return st.items.map(function(i){
       return { name:i.preset, siloName:'', series:st.series,
                locked: !unlockedBySlot[i.slot], crafting: i.status !== 'done',
