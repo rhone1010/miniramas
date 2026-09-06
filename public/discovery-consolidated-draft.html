@@ -5155,7 +5155,7 @@ function renderMyCollectionGrid(){
     } else {
       el.dataset.piece = p.key;
       el.innerHTML =
-        '<div class="card__art"' + artStyle(p.name) + '>' +
+        '<div class="card__art"' + (p.art ? ' style="background-image:url(' + p.art + ')"' : artStyle(p.name)) + '>' +
           '<div class="card__overlay"></div>' +
           (p.locked ? '<button class="card__quick" data-quick="unlock">' + (INCLUDED_UNLOCKS_REMAINING > 0 ? 'Unlock \u00b7 included' : 'Unlock \u00b7 $2.99') + '</button>'
                     : '<button class="card__quick dl" data-quick="dl">Download</button>') +
