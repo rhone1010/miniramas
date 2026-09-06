@@ -18,11 +18,17 @@ export function getStripe(): Stripe {
 }
 
 export function getAppUrl(): string {
-  // VERCEL_URL is auto-set per deployment and always matches the
-  // current preview/production domain. Static APP_URL env vars go
-  // stale when testing across branches. Prefer the dynamic value.
-  const url = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
+  // Vercel auto-sets two domain vars per deployment:
+  //   VERCEL_BRANCH_URL  — branch-stable: myapp-git-branch-team.vercel.app
+  //   VERCEL_URL         — deployment-specific hash: myapp-abc123-team.vercel.app
+  // Prefer VERCEL_BRANCH_URL because Supabase's Redirect URL allowlist
+  // uses the branch pattern (miniramas-git-*-litenco.vercel.app/**),
+  // and the hash-based VERCEL_URL doesn't match that wildcard.
+  // Fall back to VERCEL_URL (still correct for Stripe redirects),
+  // then to static APP_URL for local dev.
+  const vercel = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
+  const url = vercel
+    ? `https://${vercel}`
     : process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || ''
   if (!url) throw new Error('APP_URL is not set')
   return url.replace(/\/$/, '')
