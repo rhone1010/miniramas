@@ -5273,6 +5273,7 @@ discoveryRail.addEventListener('click', function(e){
   if (e.target.closest('#mycollBackRail')) return closeMyCollection();
   if (e.target.closest('[data-feat-open]') && FEATURED){ openFeatured(FEATURED); return; }
   if (e.target.closest('[data-feat-unlock]') && FEATURED){ unlockPiece(FEATURED); return; }
+  if (e.target.closest('[data-feat-dl]') && FEATURED){ downloadPiece(FEATURED); return; }
   if (e.target.closest('#mycollUnlockCancel')){ unlockSelection = {}; renderMyCollectionGrid(); renderUnlockBar(); return; }
   if (e.target.closest('#mycollUnlockBuy')){
     Object.keys(unlockSelection).forEach(function(key){
@@ -5448,6 +5449,94 @@ function unlockPiece(p){
   });
 }
 
+/* ---- saving a file ----------------------------------------------------
+   Ported from portraits.html:9709-9739. Verbatim apart from where the bytes
+   come from, which is the one thing that genuinely differs here.
+
+   A signed URL is cross-origin, and the browser ignores the download
+   attribute across origins — it navigates instead, which loses the tab.
+   So the bytes are fetched, wrapped in a blob and saved under the
+   piece's own name. A data URL takes the same path and costs nothing. */
+function safeFileName(s){
+  return String(s || 'crafted-image')
+    .replace(/[\\/:*?"<>|]+/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120) + '.jpg';
+}
+
+function saveBlobAs(url, name){
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = safeFileName(name);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  /* Revoked late: Safari reads the blob after the click returns. */
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 20000);
+}
+
+/* WHERE THE BYTES COME FROM IS THE DELTA. p.art in Discovery is the
+   WATERMARKED preview, always, by design — saving it would hand the
+   customer the thing they paid to get rid of. So:
+
+     a portfolio piece  -> the clean original from the unlock. Held in
+                           memory from the unlock that just happened, and
+                           re-asked for after a reload; /portraits/unlock
+                           redelivers an already-unlocked preview without
+                           consuming a second entitlement.
+     a single           -> p.art IS the clean file (collection_pieces has
+                           no watermarked copy), so this is portraits'
+                           path exactly. */
+function downloadPiece(piece){
+  if (!piece || piece.locked) return Promise.resolve(false);
+
+  if (piece.previewId){
+    var held = UNLOCKED_ART[piece.previewId];
+    if (held){
+      return fetch('data:image/png;base64,' + held)
+        .then(function(r){ return r.blob(); })
+        .then(function(blob){
+          saveBlobAs(URL.createObjectURL(blob), pieceTitle(piece));
+          return true;
+        })
+        .catch(function(e){ console.warn('[download] failed:', e.message || e); return false; });
+    }
+    return fetch('/api/v1/portraits/unlock', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'include',
+      body: JSON.stringify({ preview_id: piece.previewId })
+    }).then(function(r){ return r.json(); }).then(function(d){
+      if (!d || !d.image_b64) throw new Error((d && d.error) || 'no image returned');
+      UNLOCKED_ART[piece.previewId] = d.image_b64;
+      return fetch('data:image/png;base64,' + d.image_b64).then(function(r){ return r.blob(); });
+    }).then(function(blob){
+      saveBlobAs(URL.createObjectURL(blob), pieceTitle(piece));
+      return true;
+    }).catch(function(e){
+      console.warn('[download] failed:', e.message || e);
+      showUnlockNote('That file could not be saved just now. Nothing has been charged.');
+      return false;
+    });
+  }
+
+  if (!piece.art) return Promise.resolve(false);
+  return fetch(piece.art)
+    .then(function(r){
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.blob();
+    })
+    .then(function(blob){
+      saveBlobAs(URL.createObjectURL(blob), pieceTitle(piece));
+      return true;
+    })
+    .catch(function(e){
+      console.warn('[download] failed:', e.message || e);
+      return false;
+    });
+}
+
 function renderMyCollectionGrid(){
   if (mycoll.classList.contains('is-open')) renderMycollRail(); // numbers live in the rail now
 
@@ -5477,7 +5566,7 @@ function renderMyCollectionGrid(){
       if (q) q.addEventListener('click', function(e){
         e.stopPropagation();
         if (q.dataset.quick === 'unlock'){ FEATURED = p; unlockPiece(p); }
-        // Download: CENG contract
+        else if (q.dataset.quick === 'dl'){ downloadPiece(p); }
       });
       el.querySelector('.card__art').addEventListener('click', function(e){
         if (e.target.classList.contains('card__badge')) return; // handled separately
@@ -5567,14 +5656,12 @@ document.addEventListener('keydown', function(e){
 document.getElementById('lboxActs').addEventListener('click', function(e){
   var b = e.target.closest('[data-lb]'); if (!b) return;
   var p = lbList()[LB_AT]; if (!p) return;
-  if (b.dataset.lb === 'unlock'){
-    if (INCLUDED_UNLOCKS_REMAINING > 0) INCLUDED_UNLOCKS_REMAINING--;
-    p.locked = false;
-    renderMyCollectionGrid();
-    paintLightbox();
-  }
-  // Download / Print Shop / Post / Craft again: not wired in the
-  // checkpoint (same as before -- CENG contract).
+  /* The third copy of the client-side unlock, missed when the other two
+     were replaced. Same real call as the card and the featured pane. */
+  if (b.dataset.lb === 'unlock'){ unlockPiece(p); return; }
+  if (b.dataset.lb === 'dl'){ downloadPiece(p); return; }
+  // Print Shop / Post / Craft again: not wired in the checkpoint
+  // (same as before -- CENG contract).
 });
 
 /* ══════════════════════════════════════════════════════════════

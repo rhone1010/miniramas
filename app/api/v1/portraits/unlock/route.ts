@@ -74,6 +74,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'clean_unavailable' }, { status: 404 })
     }
 
+    /* ── Already unlocked: redeliver, never charge twice ──────────
+       Added 2026-09-06 with the Discovery download. Downloading a piece you
+       have already unlocked is the same act as the first download, and this
+       route is the only way to the clean bytes — so without this branch a
+       reload turned "save my picture again" into "spend another unlock".
+
+       A signed-in caller had no ownership check at all before this (the
+       entitlement being theirs was the whole guard), so one is needed here
+       where no entitlement is consumed. Portfolio previews are recorded with
+       email `portfolio:{portfolioId}` (portfolios/items/render/route.ts:138),
+       which is what ties the preview back to an owner. */
+    if (ledger.unlocked_at) {
+      const owns = await ownsPreview(sb, ledger.email, user?.id ?? null, guestEmail)
+      if (!owns) return NextResponse.json({ error: 'wrong_owner' }, { status: 403 })
+      console.log(`[portraits/unlock] redelivered preview=${previewId} (already unlocked)`)
+      return NextResponse.json({ image_b64: cleanB64, preview_id: previewId, redelivered: true })
+    }
+
     // ── Find a redeemable entitlement (purchase must be PAID) ────
     let entQuery = sb
       .from('entitlements')
@@ -135,6 +153,25 @@ export async function POST(req: NextRequest) {
     console.error(`[portraits/unlock] failed: ${e?.message}`)
     return NextResponse.json({ error: e?.message || 'unlock_failed' }, { status: 500 })
   }
+}
+
+/* True when this caller is the one the preview was made for. A guest matches
+   on the email the ledger row carries. A signed-in customer matches through
+   the portfolio the preview belongs to — `portfolio:{id}` is the ledger email
+   the render route writes, and the portfolio row holds the owner. */
+async function ownsPreview(
+  sb: any, ledgerEmail: string | null, userId: string | null, guestEmail: string | null,
+): Promise<boolean> {
+  if (guestEmail) return ledgerEmail === guestEmail
+  if (!userId) return false
+  if (!ledgerEmail || !ledgerEmail.startsWith('portfolio:')) return false
+  const portfolioId = ledgerEmail.slice('portfolio:'.length)
+  const { data } = await sb
+    .from('portfolios')
+    .select('user_id')
+    .eq('id', portfolioId)
+    .maybeSingle()
+  return !!data && data.user_id === userId
 }
 
 function supaOrNull() {
