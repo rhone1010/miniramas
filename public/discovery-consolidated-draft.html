@@ -4828,9 +4828,18 @@ function startCheckout(){
   } else {
     /* ── Size 4/8/16 → portfolio checkout (/api/v1/portfolios) ── */
     endpoint = '/api/v1/portfolios';
+    /* pose, aspect_ratio and subject were built by buildCheckoutPayload()
+       and dropped here — this object was assembled by hand and never
+       carried them, so the pose step chose a pose that reached nothing.
+       clientPriceUsd keeps its own fallback: buildCheckoutPayload sends
+       null where this sends SIZE_PRICE[n], and the server rejects a
+       mismatch. */
     payload = {
       series: 'portraits',
       selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
+      pose: POSE || 'as_photographed',
+      aspect_ratio: aspectRatioOf(ASPECT),
+      subject: SUBJECT || null,
       sourceImageRef: SRC_B64 || '',
       returnUrl: window.location.origin + window.location.pathname,
       clientPriceUsd: (SERVER_OFFER && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]

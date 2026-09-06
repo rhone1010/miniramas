@@ -52,7 +52,7 @@ async function renderOnePortfolioItem(portfolioItemId: string): Promise<void> {
 
     const { data: portfolio, error: portfolioErr } = await supabaseAdmin
       .from('portfolios')
-      .select('id, series, source_image')
+      .select('id, series, source_image, composition')
       .eq('id', item.portfolio_id)
       .maybeSingle()
     if (portfolioErr || !portfolio) {
@@ -71,18 +71,43 @@ async function renderOnePortfolioItem(portfolioItemId: string): Promise<void> {
     const styleId = styleIdForPreset(item.preset)
     const appUrl = getAppUrl()
 
+    /* The composition block, one per portfolio (migration 025). Absent on
+       every portfolio bought before that migration, and absent until it is
+       applied — an empty block renders exactly as this route did before,
+       because the fallbacks below are the values it used to hardcode. */
+    const comp = (portfolio.composition ?? {}) as Record<string, unknown>
+    const compStr = (k: string): string | undefined =>
+      typeof comp[k] === 'string' && comp[k] ? (comp[k] as string) : undefined
+
     let genResult: any
     let ok = false
     try {
       const res = await fetch(`${appUrl}/api/v1/portraits/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        /* Ported in shape from portraits.html:6807-6824 payloadFor(). What
+           Discovery collects travels; what it does not collect is omitted, so
+           /portraits/generate applies its documented defaults rather than a
+           value invented here.
+
+           framing keeps 'bust' as its fallback deliberately. The route's own
+           default is 'signature' (portraits-shared.ts:311) and dropping the
+           field would silently recompose every Discovery piece. Note for Rich,
+           not fixed here: framing is authoritative over aspect_ratio at
+           generate/route.ts:252-253, so the customer's Shape choice does not
+           currently reach the render. That is a design call, not plumbing. */
         body: JSON.stringify({
           source_image_b64: portfolio.source_image,
           style_id: styleId,
           preset_id: item.preset,
-          framing: 'bust',
-          scale: 'close_up',
+          framing: compStr('framing') ?? 'bust',
+          scale: compStr('scale') ?? 'close_up',
+          pose: compStr('pose'),
+          aspect_ratio: compStr('aspect_ratio'),
+          subject: compStr('subject'),
+          location: compStr('location'),
+          resolution: compStr('resolution'),
+          focal: comp.focal ?? undefined,
         }),
       })
       genResult = await res.json()

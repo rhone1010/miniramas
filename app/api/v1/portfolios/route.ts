@@ -52,6 +52,14 @@ export async function POST(req: NextRequest) {
       sourceImageRef: typeof body.sourceImageRef === 'string' ? body.sourceImageRef : '',
       returnUrl: typeof body.returnUrl === 'string' ? body.returnUrl : '',
       clientPriceUsd: Number(body.clientPriceUsd),
+      /* The composition block the browser already builds and, until now, threw
+         away at this line. buildCheckoutPayload() has carried pose and
+         aspect_ratio since the pose step shipped. */
+      composition: {
+        ...(typeof body.pose === 'string' ? { pose: body.pose } : {}),
+        ...(typeof body.aspect_ratio === 'string' ? { aspect_ratio: body.aspect_ratio } : {}),
+        ...(typeof body.subject === 'string' ? { subject: body.subject } : {}),
+      },
     })
     return NextResponse.json({
       clientSecret:   result.clientSecret,

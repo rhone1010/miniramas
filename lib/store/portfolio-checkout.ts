@@ -93,6 +93,18 @@ export function resolveSelectionOffer(count: number): SelectionOffer {
   }
 }
 
+/* The composition block, ported in shape from portraits.html:6807-6824.
+   Discovery collects pose, aspect_ratio and subject; location, resolution
+   and focal it does not ask for, so they are absent and /portraits/generate
+   applies its own documented defaults — the same thing portraits does when
+   the queue item carries them undefined. */
+export interface PortfolioComposition {
+  pose?: string
+  aspect_ratio?: string
+  subject?: string | null
+  framing?: string
+}
+
 export interface CreatePortfolioCheckoutArgs {
   userId: string
   series: PortfolioSeries
@@ -100,6 +112,7 @@ export interface CreatePortfolioCheckoutArgs {
   sourceImageRef: string
   returnUrl: string
   clientPriceUsd: number // never trusted, checked against server resolve
+  composition?: PortfolioComposition
 }
 
 export interface CreatePortfolioCheckoutResult {
@@ -209,6 +222,27 @@ export async function createPortfolioCheckout(
     .single()
   if (portfolioErr) throw new Error(`portfolio_insert_failed: ${portfolioErr.message}`)
   const portfolioId: string = portfolioRow.id
+
+  /* ONE pose for the whole purchase, ruled 2026-09-06 — so the block goes on
+     the portfolio, never on the item rows. portraits.html:6807-6824 sends the
+     same block with every craft; here it is stored once and read back by
+     portfolios/items/render for each piece.
+
+     A follow-up UPDATE rather than a field in the INSERT above, on purpose:
+     migration 025 adds this column and until it is applied a checkout must
+     still complete. A missing column costs the pose, not the sale. */
+  if (args.composition && Object.keys(args.composition).length > 0) {
+    const { error: compErr } = await supabaseAdmin
+      .from('portfolios')
+      .update({ composition: args.composition })
+      .eq('id', portfolioId)
+    if (compErr) {
+      console.error(
+        `[createPortfolioCheckout] composition not stored for ${portfolioId} ` +
+        `(migration 025 applied?): ${compErr.message}`,
+      )
+    }
+  }
 
   const itemRows = args.selectedEffectIds.map((effectId, slot) => ({
     portfolio_id: portfolioId,
