@@ -39,6 +39,23 @@ import type { GenerationKickoff } from './types'
 import { defaultGenerationKickoff } from './generation-kickoff'
 import crypto from 'crypto'
 
+// Same-origin return URL only (prevents redirecting to arbitrary hosts).
+function safeReturnBase(returnUrl: string | undefined, appUrl: string): string {
+  if (!returnUrl) return `${appUrl}/discovery-consolidated-draft.html`
+  try {
+    const u   = new URL(returnUrl)
+    const app = new URL(appUrl)
+    if (u.origin !== app.origin) return `${appUrl}/discovery-consolidated-draft.html`
+    return `${u.origin}${u.pathname}`
+  } catch {
+    return `${appUrl}/discovery-consolidated-draft.html`
+  }
+}
+
+function appendQuery(url: string, query: string): string {
+  return url.includes('?') ? `${url}&${query}` : `${url}?${query}`
+}
+
 export interface CreateCheckoutArgs {
   skuId:           string
   userId?:         string
@@ -48,6 +65,8 @@ export interface CreateCheckoutArgs {
   variant?:        string
   // Source image data the application chat passes through:
   sourceImageRef?: string
+  // Return URL after Stripe — mirrors cart/portfolio pattern.
+  returnUrl?:      string
 }
 
 export interface CreateCheckoutResult {
@@ -79,12 +98,13 @@ export async function createCheckout(
 
   // ── 2. Stripe Checkout session ───────────────────────────────
   const appUrl = getAppUrl()
+  const base   = safeReturnBase(args.returnUrl, appUrl)
   const stripe = getStripe()
   const session = await stripe.checkout.sessions.create({
     mode:        'payment',
     line_items:  [{ price: sku.stripePriceId, quantity: 1 }],
-    success_url: `${appUrl}/store/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url:  `${appUrl}/store/cancel?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: appendQuery(base, 'paid=1&session_id={CHECKOUT_SESSION_ID}'),
+    cancel_url:  appendQuery(base, 'canceled=1'),
     customer_email: args.guestEmail && !args.userId ? args.guestEmail : undefined,
     metadata: {
       skuId:       sku.id,

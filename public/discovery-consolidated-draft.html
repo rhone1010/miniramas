@@ -4708,7 +4708,8 @@ function startCheckout(){
       skuId: 'single',
       style: sel.baseId,
       variant: sel.key,
-      sourceImageRef: SRC_B64 || ''
+      sourceImageRef: SRC_B64 || '',
+      returnUrl: window.location.origin + window.location.pathname
     };
   } else {
     /* ── Size 4/8/16 → portfolio checkout (/api/v1/portfolios) ── */

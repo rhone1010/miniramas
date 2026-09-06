@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
       style:          typeof body.style          === 'string' ? body.style          : undefined,
       variant:        typeof body.variant        === 'string' ? body.variant        : undefined,
       sourceImageRef: typeof body.sourceImageRef === 'string' ? body.sourceImageRef : undefined,
+      returnUrl:      typeof body.returnUrl      === 'string' ? body.returnUrl      : undefined,
     })
     return NextResponse.json(result)
   } catch (e) {
