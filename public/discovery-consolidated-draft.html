@@ -4359,7 +4359,16 @@ fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.o
       }
       ckModal.classList.add('is-open');
       // Refresh collection after payment so new pieces appear
-      if (status === 'paid' && typeof renderCollection === 'function') renderCollection();
+      /* portraits.html:7389 and 7318 -- a new run, so the next piece to land
+         is this run's first whatever the collection already holds, and the
+         customer is shown where the work will appear. One call and out was
+         the whole defect: every item was still 'pending' server-side at that
+         moment, so the collection filled with Crafting tiles and nothing
+         ever asked again. */
+      if (status === 'paid' && typeof craftWhenPiecesLand === 'function'){
+        RUN_LANDED = false;
+        craftWhenPiecesLand(0);
+      }
     })
     .catch(function(){
       // Network error — don't alarm, payment may still land via webhook
@@ -4960,34 +4969,97 @@ function sendLink(){
   });
 }
 
+/* ---- the piece arrives -------------------------------------------------
+   portraits.html:9755 __pieceLanded, same shape. A tile of the same key is
+   replaced WHERE IT STANDS, so a waiting tile becomes the finished piece
+   exactly where the customer was already looking. Wholesale replacement of
+   PIECES rebuilt every tile on every poll and took the featured piece and
+   the unlock basket with it.
+
+   Deviation from source: push, not unshift. The rows arrive ordered by slot
+   from /status and unshift would reverse them. */
+function pieceLanded(piece){
+  if (!piece || !piece.key) return;
+  var at = -1;
+  PIECES.forEach(function(p, i){ if (p.key === piece.key) at = i; });
+  if (at >= 0) PIECES[at] = piece; else PIECES.push(piece);
+}
+
 // Fetch all portfolios for the signed-in user and populate PIECES with real data.
+/* Resolves TRUE while a piece is still being crafted, FALSE once every piece
+   has landed, and null when there is nothing to report yet -- the webhook may
+   not have written the portfolio. Same three-way answer runAll() gives its
+   caller in portraits.html:7387, for the same reason: a poller has to be able
+   to tell "not yet" from "done". */
 function renderCollection(){
-  fetch('/api/v1/portfolios', { credentials:'include' })
+  return fetch('/api/v1/portfolios', { credentials:'include' })
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){
-      if (!d || !d.portfolios || !d.portfolios.length) return;
+      if (!d || !d.portfolios || !d.portfolios.length) return null;
       var loads = d.portfolios.map(function(p){ return loadPortfolio(p.id); });
       return Promise.all(loads);
     })
     .then(function(results){
-      if (!results) return;
+      if (!results) return null;
       var all = [];
       var n = 0;
       results.forEach(function(items){
         if (!items) return;
         items.forEach(function(item){
           n++;
-          all.push({ key:'p'+n, name:item.name, siloName:item.siloName,
+          all.push({ key:item.key, name:item.name, siloName:item.siloName,
                       series:item.series, num:n, crafting:item.crafting,
                       locked:item.locked, previewId:item.previewId, art:item.art });
         });
       });
-      if (all.length) {
-        PIECES = all;
+      if (!all.length) return null;
+      /* The demo seed goes the first time real work answers, and only then. */
+      if (!REAL_PIECES){ PIECES.length = 0; REAL_PIECES = true; }
+      all.forEach(pieceLanded);
+      /* Resolved by key, never held across a landing -- portraits.html:9463.
+         FEATURED pointed at the object the poll had just replaced. */
+      if (FEATURED){
+        PIECES.forEach(function(p){ if (p.key === FEATURED.key) FEATURED = p; });
+      }
+      /* portraits.html:9765 -- the question is per RUN, not per session. The
+         collection opens once for the run that was just paid for; a plain
+         page load repaints and leaves the panel alone. */
+      if (!RUN_LANDED){
+        RUN_LANDED = true;
+        if (typeof openMyCollection === 'function') openMyCollection();
+        else renderMyCollectionGrid();
+      } else {
         renderMyCollectionGrid();
       }
+      return all.some(function(p){ return p.crafting; });
     })
-    .catch(function(e){ console.warn('[discovery] renderCollection failed:', e); });
+    .catch(function(e){ console.warn('[discovery] renderCollection failed:', e); return null; });
+}
+
+/* ---- coming back with work to finish ------------------------------------
+   portraits.html:7726 craftWhenCreditsLand, same shape. There the webhook
+   grants the credits and the client fires the craft itself, so the piece
+   comes back on the same promise. Here the webhook fires the render jobs
+   server-side -- the watermark is baked where the clean original never
+   reaches the browser -- so the client has nothing to await and has to keep
+   asking instead. Each piece lands in its own tile as it finishes.
+
+   Three seconds rather than portraits' 1.5: that poll waits on a webhook
+   that usually lands in under two, this one waits on renders that take
+   about half a minute each. Sixty tries is three minutes, generous for a
+   sixteen-piece portfolio rendering in parallel. If it has not cleared by
+   then the tiles stay as they are and a reload picks them up. */
+var LAND_TRIES  = 60;
+var LAND_EVERY  = 3000;
+
+function craftWhenPiecesLand(n){
+  n = n || 0;
+  return renderCollection().then(function(working){
+    if (working === false) return true;
+    if (n >= LAND_TRIES) return false;
+    return new Promise(function(res){ setTimeout(res, LAND_EVERY); })
+      .then(function(){ return craftWhenPiecesLand(n + 1); });
+  });
 }
 
 // Real collection, once a portfolio exists. status gives slot/preset/
@@ -5003,8 +5075,13 @@ function loadPortfolio(id){
     var unlockedBySlot = {};
     if (un && un.items) un.items.forEach(function(i){ unlockedBySlot[i.slot] = i.unlocked; });
     if (un && typeof un.includedRemaining === 'number') INCLUDED_UNLOCKS_REMAINING = un.includedRemaining;
+    /* portraits.html:7031 -- the id is the queue item's, and it is what
+       land() replaces on. Portfolio + slot is the same thing here: stable
+       from the first waiting tile to the finished piece, where 'p'+n was a
+       position that moved as rows arrived. */
     return st.items.map(function(i){
-      return { name:i.preset, siloName:'', series:st.series,
+      return { key:'pf' + id + ':' + i.slot,
+               name:i.preset, siloName:'', series:st.series,
                locked: !unlockedBySlot[i.slot], crafting: i.status !== 'done',
                previewId: i.previewId, art: i.previewUrl || null };
     });
@@ -5036,6 +5113,11 @@ var PIECES = (SELECTED.length ? SELECTED.map(function(s, i){
   return { key:'demo'+i, name:r[0], siloName:r[1], series:r[2], num:i+1, crafting:(r[3]===null), locked:(r[3]===null ? true : r[3]) };
 }));
 var INCLUDED_UNLOCKS_REMAINING = 1;
+/* Starts true so a plain page load repaints without throwing the collection
+   open. craftWhenPiecesLand clears it at the start of a paid run, exactly as
+   runAll clears __RUN_LANDED -- portraits.html:7389. */
+var RUN_LANDED  = true;
+var REAL_PIECES = false;
 var unlockSelection = {}; // key -> true
 var MC_STATE = 'all', MC_SERIES = 'all';
 function mcVisible(){
@@ -5086,7 +5168,7 @@ function featuredHtml(){
   var p = FEATURED; if (!p) return '<div class="mc-feat" style="grid-template-columns:1fr"><div class="mc-feat__m" style="text-align:center;padding:10px 0">Tap a piece to see its details here.</div></div>';
   var locked = p.locked;
   return '<div class="mc-feat">' +
-    '<div class="mc-feat__img' + (locked?' locked':'') + '" data-feat-open' + (ART[p.name] ? ' style="background-image:url(' + ART[p.name] + ')"' : '') + '></div>' +
+    '<div class="mc-feat__img' + (locked?' locked':'') + '" data-feat-open' + (p.art ? ' style="background-image:url(' + p.art + ')"' : artStyle(p.name)) + '></div>' +
     '<div><div class="mc-feat__k">Selected</div><div class="mc-feat__t">' + pieceTitle(p) + '</div>' +
       '<div class="mc-feat__m">' + (p.siloName||'') + '<br>Crafted ' + (p.date||'Aug 28') + '</div>' +
       '<span class="mc-feat__state">' + (locked ? 'Preview' : 'Purchased') + '</span></div>' +
@@ -5210,7 +5292,7 @@ function paintLightbox(){
   if (FEATURED !== p){ FEATURED = p; renderMycollRail(); mycollGrid.querySelectorAll('.card.is-featured').forEach(function(c){ c.classList.remove('is-featured'); }); var t = mycollGrid.querySelector('.card[data-piece="' + p.key + '"]'); if (t) t.classList.add('is-featured'); }
   var li = document.getElementById('lboxImg');
   li.className = 'lbox__img' + (p.locked ? ' is-locked' : '');
-  li.style.backgroundImage = ART[p.name] ? 'url(' + ART[p.name] + ')' : '';
+  li.style.backgroundImage = p.art ? 'url(' + p.art + ')' : (ART[p.name] ? 'url(' + ART[p.name] + ')' : '');
   document.getElementById('lboxName').innerHTML = pieceTitle(p) + '<span class="lbox__series">' + (p.siloName||'') + '</span>';
   var acts;
   if (p.locked){
