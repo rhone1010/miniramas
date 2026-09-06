@@ -4315,6 +4315,55 @@ fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.o
       try { renderCollection(); } catch(e){}
     }
   }).catch(function(){});
+
+// ── Payment confirmation — ?paid=1&session_id=... or ?portfolio_paid=1&session_id=... ──
+// Stripe embedded checkout navigates to return_url after payment completes.
+// Verify server-side before showing success, then clean the URL.
+(function(){
+  var params = new URLSearchParams(location.search);
+  var isPaid = params.get('paid') === '1' || params.get('portfolio_paid') === '1';
+  var sessionId = params.get('session_id');
+  if (!isPaid || !sessionId) return;
+
+  // Clean URL immediately so refresh doesn't re-trigger
+  history.replaceState(null, '', location.pathname);
+
+  // Verify the purchase landed server-side
+  fetch('/api/v1/checkout/' + encodeURIComponent(sessionId), { credentials:'include' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      var status = d && d.purchase ? d.purchase.status : null;
+      // Show confirmation modal
+      var ckModal = document.getElementById('ckModal');
+      var ckForm  = document.getElementById('ckForm');
+      var ckErr   = document.getElementById('ckErr');
+      if (!ckModal || !ckForm) return;
+      if (status === 'paid') {
+        // PLACEHOLDER COPY — Rich to finalize Curator voice
+        ckForm.innerHTML = '<div style="text-align:center;padding:2rem 1rem;">' +
+          '<div style="font-family:var(--serif);font-size:1.5rem;color:var(--ink);margin-bottom:.8rem;">' +
+          'Your collection is being crafted</div>' +
+          '<div style="font-family:var(--serif);font-size:1.15rem;color:var(--ink-soft);line-height:1.5;">' +
+          'Payment confirmed. Your pieces are rendering now &mdash; they will appear in My Collection shortly.' +
+          '</div></div>';
+      } else if (status === 'pending') {
+        // Webhook hasn't landed yet — still processing
+        ckForm.innerHTML = '<div style="text-align:center;padding:2rem 1rem;">' +
+          '<div style="font-family:var(--serif);font-size:1.5rem;color:var(--ink);margin-bottom:.8rem;">' +
+          'Processing your payment</div>' +
+          '<div style="font-family:var(--serif);font-size:1.15rem;color:var(--ink-soft);line-height:1.5;">' +
+          'This usually takes a few seconds. Your collection will appear once payment is confirmed.' +
+          '</div></div>';
+      } else {
+        if (ckErr) ckErr.textContent = 'Could not confirm payment status. If you were charged, your collection will still appear shortly.';
+      }
+      ckModal.classList.add('is-open');
+    })
+    .catch(function(){
+      // Network error — don't alarm, payment may still land via webhook
+    });
+})();
+
 function pieceTitle(p){ return p.series + ' - ' + p.name + ' - ' + CUSTOMER + ' - ' + String(p.num).padStart(3,'0'); }
 
 // Checkout. Server re-resolves the offer and rejects on price_mismatch
@@ -4910,12 +4959,7 @@ function sendLink(){
 }
 
 // Real collection, once a portfolio exists. status gives slot/preset/
-// status/previewId; unlocks gives unlocked + includedRemaining.
-//
-// BLOCKED, SERVER-SIDE: neither route returns an image URL - only a
-// previewId uuid - and items/render/route.ts:113 bakes the watermark but
-// never persists it. So real art cannot be shown here yet; the demo
-// PIECES seed below stays until a preview URL exists to fetch.
+// status/previewId/previewUrl; unlocks gives unlocked + includedRemaining.
 function loadPortfolio(id){
   if (!id) return Promise.resolve(null);
   return Promise.all([
@@ -4930,7 +4974,7 @@ function loadPortfolio(id){
     return st.items.map(function(i){
       return { name:i.preset, siloName:'', series:st.series,
                locked: !unlockedBySlot[i.slot], crafting: i.status !== 'done',
-               previewId: i.previewId, art: null };
+               previewId: i.previewId, art: i.previewUrl || null };
     });
   }).catch(function(e){ console.warn('[discovery] portfolio load failed:', e); return null; });
 }
