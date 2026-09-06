@@ -236,6 +236,18 @@ const QUALITY_UPCHARGE_CENTS: Record<CartResolution, number> = {
 
 const MAX_CART_PIECES = 50
 
+/* An unlock is not a cart piece and does not ride the volume ladder.
+   Ruled 2026-09-06: one unlock is $2.99 — the price Discovery's own button
+   has always shown ("Unlock · $2.99"). The ladder's count-of-1 rate is 399,
+   which is the portraits cart's price for crafting a piece, a different
+   product; charging it here would have made the button lie by a dollar.
+
+   BATCH UNLOCK PRICING IS NOT WIRED. Discovery's unlockPrice() bands
+   (2.99 / 4.99 / 7.99 / 12.99) are a total for n pieces, not a per-piece
+   rate, and this checkout prices per line item. Unlocking a basket of
+   favourites in one go still needs a ruling on how that total decomposes. */
+const UNLOCK_UNIT_CENTS = 299
+
 function unitCentsForCount(count: number): number {
   for (const tier of VOLUME_LADDER) if (count >= tier.min) return tier.cents
   return 399
@@ -285,7 +297,7 @@ export async function createCartCheckout(
   }
 
   // ── Server-authoritative total (never trust the client) ──────
-  const unit        = unitCentsForCount(pieces.length)
+  const unit        = args.kind === 'unlock' ? UNLOCK_UNIT_CENTS : unitCentsForCount(pieces.length)
   const lineAmounts = pieces.map((p) => unit + QUALITY_UPCHARGE_CENTS[p.resolution])
   const serverTotal = lineAmounts.reduce((a, b) => a + b, 0)
 

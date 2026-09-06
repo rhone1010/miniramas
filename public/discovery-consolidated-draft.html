@@ -4365,9 +4365,28 @@ fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.o
          the whole defect: every item was still 'pending' server-side at that
          moment, so the collection filled with Crafting tiles and nothing
          ever asked again. */
-      if (status === 'paid' && typeof craftWhenPiecesLand === 'function'){
-        RUN_LANDED = false;
-        craftWhenPiecesLand(0);
+      if (status === 'paid'){
+        /* An unlock returns on ?paid=1 exactly as a purchase does. The
+           intent held across the trip is what tells them apart: a piece was
+           waiting to be unlocked, so finish that rather than opening the
+           collection for a run that never started. */
+        var unlockIntent = (typeof readUnlockIntent === 'function') ? readUnlockIntent() : null;
+        if (unlockIntent){
+          clearUnlockIntent();
+          if (typeof requestUnlock === 'function'){
+            requestUnlock(unlockIntent.previewId, unlockIntent.key).then(function(result){
+              if (result === 'unlocked') return;
+              /* The webhook lands in under two seconds as a rule, but the
+                 browser is back before it sometimes. */
+              if (result === 'payment_pending' || result === 'needs_payment'){
+                setTimeout(function(){ requestUnlock(unlockIntent.previewId, unlockIntent.key); }, 2500);
+              }
+            });
+          }
+        } else if (typeof craftWhenPiecesLand === 'function'){
+          RUN_LANDED = false;
+          craftWhenPiecesLand(0);
+        }
       }
     })
     .catch(function(){
@@ -5253,7 +5272,7 @@ function renderMycollRail(){
 discoveryRail.addEventListener('click', function(e){
   if (e.target.closest('#mycollBackRail')) return closeMyCollection();
   if (e.target.closest('[data-feat-open]') && FEATURED){ openFeatured(FEATURED); return; }
-  if (e.target.closest('[data-feat-unlock]') && FEATURED){ if (INCLUDED_UNLOCKS_REMAINING > 0) INCLUDED_UNLOCKS_REMAINING--; FEATURED.locked = false; renderMyCollectionGrid(); return; }
+  if (e.target.closest('[data-feat-unlock]') && FEATURED){ unlockPiece(FEATURED); return; }
   if (e.target.closest('#mycollUnlockCancel')){ unlockSelection = {}; renderMyCollectionGrid(); renderUnlockBar(); return; }
   if (e.target.closest('#mycollUnlockBuy')){
     Object.keys(unlockSelection).forEach(function(key){
@@ -5267,6 +5286,167 @@ discoveryRail.addEventListener('click', function(e){
 document.getElementById('navMyCollection').addEventListener('click', function(){
   if (mycoll.classList.contains('is-open')) closeMyCollection(); else openMyCollection();
 });
+
+
+/* ══════════════════════════════════════════════════════════════
+   UNLOCK — new, not a port. portraits.html has no lock: a piece there
+   is owned the moment it is crafted. Discovery previews are watermarked
+   and the clean original is bought.
+
+   THE SERVER DECIDES WHETHER THIS COSTS ANYTHING. The client does not
+   inspect INCLUDED_UNLOCKS_REMAINING and choose a path — it asks
+   /portraits/unlock first, and that route consumes the oldest available
+   entitlement whose purchase is paid (unlock/route.ts:78-90). An included
+   unlock is an entitlement activatePortfolio already wrote, so it is
+   consumed with no charge. Only when there is none does the route answer
+   409 no_entitlement, and only then does Stripe open. That is how the two
+   mechanics coexist without the browser arbitrating money.
+
+   What was here before: INCLUDED_UNLOCKS_REMAINING--; p.locked = false.
+   No server call, no payment, and a reload put the lock straight back.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Held beside the piece across the trip to Stripe, the same way portraits
+   holds a craft intent (portraits.html:6215 INTENT_KEY). An hour-old
+   intent is a different visit. */
+var UNLOCK_INTENT_KEY = 'liten_unlock_intent_v1';
+/* previewId -> clean image_b64, for the download the unlock just paid for.
+   Held in memory only: these are the customer's finished pieces and they
+   do not belong in localStorage. */
+var UNLOCKED_ART = {};
+
+function setUnlockIntent(previewId, key){
+  try { localStorage.setItem(UNLOCK_INTENT_KEY, JSON.stringify({ previewId:previewId, key:key, at:Date.now() })); } catch (e){}
+}
+function readUnlockIntent(){
+  try {
+    var raw = localStorage.getItem(UNLOCK_INTENT_KEY);
+    if (!raw) return null;
+    var it = JSON.parse(raw);
+    if (!it || !it.previewId) return null;
+    if (Date.now() - (it.at || 0) > 60 * 60 * 1000){ clearUnlockIntent(); return null; }
+    return it;
+  } catch (e){ return null; }
+}
+function clearUnlockIntent(){
+  try { localStorage.removeItem(UNLOCK_INTENT_KEY); } catch (e){}
+}
+
+/* PLACEHOLDER COPY — Rich to finalize Curator voice. Same convention the
+   payment confirmation above already uses. */
+function showUnlockNote(msg){
+  var bar = document.getElementById('mycollUnlockNote');
+  if (!bar){
+    bar = document.createElement('div');
+    bar.id = 'mycollUnlockNote';
+    bar.style.cssText = 'font-family:var(--serif);font-size:1.15rem;color:var(--oxblood);text-align:center;margin:10px 0;padding:8px 12px;background:rgba(125,66,66,.12);border-radius:8px;';
+    if (mycollGrid && mycollGrid.parentNode) mycollGrid.parentNode.insertBefore(bar, mycollGrid);
+  }
+  bar.textContent = msg;
+}
+function clearUnlockNote(){
+  var bar = document.getElementById('mycollUnlockNote');
+  if (bar) bar.remove();
+}
+
+/* Ask for the clean original. Resolves to a status string so the caller
+   can tell "done" from "pay first" from "something went wrong". */
+function requestUnlock(previewId, key){
+  return fetch('/api/v1/portraits/unlock', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    credentials:'include',
+    body: JSON.stringify({ preview_id: previewId })
+  }).then(function(r){
+    return r.json().then(function(d){ return { status:r.status, data:d }; });
+  }).then(function(out){
+    if (out.status === 200 && out.data && out.data.image_b64){
+      UNLOCKED_ART[previewId] = out.data.image_b64;
+      clearUnlockNote();
+      /* The server is authoritative from here — /unlocks reports the piece
+         as unlocked because the route stamped preview_ledger.unlocked_at. */
+      return renderCollection().then(function(){ return 'unlocked'; });
+    }
+    if (out.status === 409) return 'needs_payment';
+    if (out.status === 402) return 'payment_pending';
+    console.warn('[discovery] unlock refused:', (out.data && out.data.error) || out.status);
+    return 'failed';
+  }).catch(function(e){
+    console.warn('[discovery] unlock failed:', e);
+    return 'failed';
+  });
+}
+
+/* $2.99, one piece, through the cart/unlock path that already exists
+   (checkout/route.ts:6 — createCartCheckout, kind 'unlock'). No new
+   checkout route. The total is checked server-side against
+   UNLOCK_UNIT_CENTS, so this number cannot quietly drift from the button. */
+var UNLOCK_PRICE_CENTS = 299;
+
+function startUnlockCheckout(p){
+  setUnlockIntent(p.previewId, p.key);
+  return Promise.all([
+    loadStripeJs(),
+    fetch('/api/v1/checkout', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'include',
+      body: JSON.stringify({
+        skuId: 'portrait_unlock_web',
+        cart: {
+          kind: 'unlock',
+          pieces: [{ preset: p.name, resolution: '1k' }],
+          totalCents: UNLOCK_PRICE_CENTS
+        },
+        returnUrl: window.location.origin + window.location.pathname
+      })
+    }).then(function(res){ return res.json().then(function(d){ return { status:res.status, data:d }; }); })
+  ]).then(function(out){
+    var r = out[1];
+    if (!r.data.clientSecret || !r.data.publishableKey){
+      clearUnlockIntent();
+      console.warn('[discovery] unlock checkout refused:', r.data.error || r.status);
+      showUnlockNote('The payment form could not be opened. Try again in a moment.');
+      return;
+    }
+    var stripe = window.Stripe(r.data.publishableKey);
+    return stripe.initEmbeddedCheckout({ clientSecret: r.data.clientSecret }).then(function(embed){
+      STRIPE_EMBED = embed;
+      var ckForm = document.getElementById('ckForm');
+      if (ckForm) ckForm.innerHTML = '';
+      var ckErr = document.getElementById('ckErr');
+      if (ckErr) ckErr.textContent = '';
+      embed.mount('#ckForm');
+      var ckModal = document.getElementById('ckModal');
+      if (ckModal) ckModal.classList.add('is-open');
+    });
+  }).catch(function(e){
+    clearUnlockIntent();
+    console.error('[discovery] unlock checkout failed:', e);
+    showUnlockNote('The payment form could not be opened. Try again in a moment.');
+  });
+}
+
+/* The one entry point both unlock buttons call. */
+function unlockPiece(p){
+  if (!p || !p.locked) return;
+  if (!p.previewId){
+    /* A demo seed tile, or a single bought outright — neither has a
+       preview to unlock. */
+    console.warn('[discovery] no previewId on', p.key, '— nothing to unlock');
+    return;
+  }
+  clearUnlockNote();
+  requestUnlock(p.previewId, p.key).then(function(result){
+    if (result === 'unlocked') return;
+    if (result === 'needs_payment') return startUnlockCheckout(p);
+    if (result === 'payment_pending'){
+      showUnlockNote('Your payment is still going through. This usually takes a few seconds.');
+      return;
+    }
+    showUnlockNote('That unlock could not be completed. Nothing has been charged.');
+  });
+}
 
 function renderMyCollectionGrid(){
   if (mycoll.classList.contains('is-open')) renderMycollRail(); // numbers live in the rail now
@@ -5296,7 +5476,7 @@ function renderMyCollectionGrid(){
       var q = el.querySelector('.card__quick');
       if (q) q.addEventListener('click', function(e){
         e.stopPropagation();
-        if (q.dataset.quick === 'unlock'){ if (INCLUDED_UNLOCKS_REMAINING > 0) INCLUDED_UNLOCKS_REMAINING--; p.locked = false; FEATURED = p; renderMyCollectionGrid(); }
+        if (q.dataset.quick === 'unlock'){ FEATURED = p; unlockPiece(p); }
         // Download: CENG contract
       });
       el.querySelector('.card__art').addEventListener('click', function(e){
