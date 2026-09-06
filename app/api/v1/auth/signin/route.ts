@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient }        from '@supabase/ssr'
 import { cookies }                   from 'next/headers'
+import { getAppUrl }                 from '@/lib/store/stripe'
 
 export async function POST(req: NextRequest) {
   let email = ''
@@ -47,8 +48,12 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  const origin          = new URL(req.url).origin
-  const emailRedirectTo  = `${origin}/auth/callback?next=${encodeURIComponent(next)}`
+  // Use getAppUrl() (prefers VERCEL_URL) rather than req.url origin.
+  // Supabase validates emailRedirectTo against its Redirect URL allowlist;
+  // the preview domain must be listed there or Supabase silently redirects
+  // to the first matching entry (typically the production domain).
+  const appUrl           = getAppUrl()
+  const emailRedirectTo  = `${appUrl}/auth/callback?next=${encodeURIComponent(next)}`
   const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo } })
   if (error) {
     return NextResponse.json({ ok: false, reason: 'otp_failed', message: error.message }, { status: 500 })
