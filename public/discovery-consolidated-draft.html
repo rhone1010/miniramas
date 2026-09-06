@@ -4318,7 +4318,8 @@ fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.o
 
 // ── Payment confirmation — ?paid=1&session_id=... or ?portfolio_paid=1&session_id=... ──
 // Stripe embedded checkout navigates to return_url after payment completes.
-// Verify server-side before showing success, then clean the URL.
+// Clean the URL, verify server-side, then finish whatever was started —
+// an unlock, or the poll that fills My Collection. Nothing is drawn here.
 (function(){
   var params = new URLSearchParams(location.search);
   var isPaid = params.get('paid') === '1' || params.get('portfolio_paid') === '1';
@@ -4333,31 +4334,14 @@ fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.o
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){
       var status = d && d.purchase ? d.purchase.status : null;
-      // Show confirmation modal
-      var ckModal = document.getElementById('ckModal');
-      var ckForm  = document.getElementById('ckForm');
-      var ckErr   = document.getElementById('ckErr');
-      if (!ckModal || !ckForm) return;
-      if (status === 'paid') {
-        // PLACEHOLDER COPY — Rich to finalize Curator voice
-        ckForm.innerHTML = '<div style="text-align:center;padding:2rem 1rem;">' +
-          '<div style="font-family:var(--serif);font-size:1.5rem;color:var(--ink);margin-bottom:.8rem;">' +
-          'Your collection is being crafted</div>' +
-          '<div style="font-family:var(--serif);font-size:1.15rem;color:var(--ink-soft);line-height:1.5;">' +
-          'Payment confirmed. Your pieces are rendering now &mdash; they will appear in My Collection shortly.' +
-          '</div></div>';
-      } else if (status === 'pending') {
-        // Webhook hasn't landed yet — still processing
-        ckForm.innerHTML = '<div style="text-align:center;padding:2rem 1rem;">' +
-          '<div style="font-family:var(--serif);font-size:1.5rem;color:var(--ink);margin-bottom:.8rem;">' +
-          'Processing your payment</div>' +
-          '<div style="font-family:var(--serif);font-size:1.15rem;color:var(--ink-soft);line-height:1.5;">' +
-          'This usually takes a few seconds. Your collection will appear once payment is confirmed.' +
-          '</div></div>';
-      } else {
-        if (ckErr) ckErr.textContent = 'Could not confirm payment status. If you were charged, your collection will still appear shortly.';
-      }
-      ckModal.classList.add('is-open');
+      /* NO CONFIRMATION MODAL. My Collection opens with the crafting tiles
+         already in it, and that is the confirmation — a panel saying the
+         same thing over the top of it was one confirmation too many.
+         Removed 2026-09-06.
+
+         The verification call above stays: `status` is what decides whether
+         to finish an unlock or start the poll, so the answer is still
+         needed even though nothing is drawn from it. */
       // Refresh collection after payment so new pieces appear
       /* portraits.html:7389 and 7318 -- a new run, so the next piece to land
          is this run's first whatever the collection already holds, and the
@@ -5010,11 +4994,32 @@ function sendLink(){
 
    Deviation from source: push, not unshift. The rows arrive ordered by slot
    from /status and unshift would reverse them. */
+/* Answers TRUE when the piece actually moved, so a poll tick that learned
+   nothing can leave the glass alone.
+
+   /status mints a NEW signed URL on every call (status/route.ts:45-48), so
+   `art` is a different string every three seconds for a piece that has not
+   changed at all. Taking it unconditionally rewrote every tile's
+   background-image on every tick and the browser refetched each one — that
+   was the flicker, and it was worst on the tiles that had already landed
+   and had the most to lose. The fresh URL is taken only when the piece
+   behind it changed, or when there was no URL yet. */
 function pieceLanded(piece){
-  if (!piece || !piece.key) return;
+  if (!piece || !piece.key) return false;
   var at = -1;
   PIECES.forEach(function(p, i){ if (p.key === piece.key) at = i; });
-  if (at >= 0) PIECES[at] = piece; else PIECES.push(piece);
+  if (at < 0){ PIECES.push(piece); return true; }
+
+  var was = PIECES[at];
+  var moved = was.crafting  !== piece.crafting  ||
+              was.locked    !== piece.locked    ||
+              was.previewId !== piece.previewId ||
+              was.num       !== piece.num;
+  /* Same piece, same state: keep the URL already on the glass. */
+  if (!moved && was.art) piece.art = was.art;
+  if (!moved && !was.art && piece.art) moved = true;   /* the first URL arrived */
+  PIECES[at] = piece;
+  return moved;
 }
 
 /* ---- the shelf --------------------------------------------------------
@@ -5081,8 +5086,9 @@ function renderCollection(){
       });
       if (!all.length) return null;
       /* The demo seed goes the first time real work answers, and only then. */
-      if (!REAL_PIECES){ PIECES.length = 0; REAL_PIECES = true; }
-      all.forEach(pieceLanded);
+      var changed = false;
+      if (!REAL_PIECES){ PIECES.length = 0; REAL_PIECES = true; changed = true; }
+      all.forEach(function(p){ if (pieceLanded(p)) changed = true; });
       /* Resolved by key, never held across a landing -- portraits.html:9463.
          FEATURED pointed at the object the poll had just replaced. */
       if (FEATURED){
@@ -5095,7 +5101,12 @@ function renderCollection(){
         RUN_LANDED = true;
         if (typeof openMyCollection === 'function') openMyCollection();
         else renderMyCollectionGrid();
-      } else {
+      } else if (changed){
+        /* Only when a piece actually moved. renderMyCollectionGrid() clears
+           mycollGrid and rebuilds every tile, and renderMycollRail() rebuilds
+           the rail with it — doing that on a tick that learned nothing threw
+           away finished images and asked for them again. A landed piece is
+           drawn once and left alone until the next real change. */
         renderMyCollectionGrid();
       }
       return all.some(function(p){ return p.crafting; });
