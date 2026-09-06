@@ -48,6 +48,18 @@ export interface CreateCheckoutArgs {
   variant?:        string
   // Source image data the application chat passes through:
   sourceImageRef?: string
+  // The signed-in customer's email, for the piece label the shelf generates.
+  userEmail?:      string | null
+  /* One pose, one shape — the same block the portfolio path stores on the
+     portfolio row (portfolio-checkout.ts PortfolioComposition). A single has
+     no portfolio to hang it on, so it travels straight to the kickoff. */
+  composition?: {
+    pose?:         string
+    aspect_ratio?: string
+    subject?:      string | null
+    framing?:      string
+    scale?:        string
+  }
   // Return URL after Stripe — mirrors cart/portfolio pattern.
   returnUrl?:      string
 }
@@ -153,6 +165,10 @@ export async function createCheckout(
         style:          args.style!,
         variant:        args.variant!,
         sourceImageRef: args.sourceImageRef,
+        userId:         args.userId,
+        guestEmail:     args.guestEmail,
+        userEmail:      args.userEmail ?? null,
+        composition:    args.composition,
       }).catch((err) => {
         console.error('[createCheckout] kickoff.start threw', err)
       })

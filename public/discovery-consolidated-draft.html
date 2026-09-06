@@ -4822,6 +4822,10 @@ function startCheckout(){
       skuId: 'single',
       style: sel.baseId,
       variant: sel.key,
+      /* One piece, same composition block as a portfolio of sixteen. */
+      pose: POSE || 'as_photographed',
+      aspect_ratio: aspectRatioOf(ASPECT),
+      subject: SUBJECT || null,
       sourceImageRef: SRC_B64 || '',
       returnUrl: window.location.origin + window.location.pathname
     };
@@ -4994,6 +4998,31 @@ function pieceLanded(piece){
   if (at >= 0) PIECES[at] = piece; else PIECES.push(piece);
 }
 
+/* ---- the shelf --------------------------------------------------------
+   Ported from portraits.html:9638-9667 loadPieces(). A single-piece purchase
+   is bought outright and delivered clean, so it never enters the portfolio
+   preview/unlock pipeline and lands instead in collection_pieces — the same
+   table and the same route portraits.html has always read. Soft on every
+   failure, for the same reason it is soft there: the route answers
+   { pieces: [] } rather than an error, and an empty shelf must never stop
+   the collection from opening. */
+function loadShelf(){
+  return fetch('/api/v1/portraits/pieces', { credentials:'include' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      var rows = (d && d.pieces) || [];
+      return rows.map(function(p){
+        /* Owned outright: never locked, never crafting. The lock is a
+           portfolio mechanic and a single has no preview to unlock. */
+        return { key:'pc' + p.id, name:p.preset || p.label, siloName:'',
+                 series:p.series === 'portraits' ? 'Portraits' : p.series,
+                 crafting:false, locked:false, previewId:null,
+                 art:p.image_url || null };
+      });
+    })
+    .catch(function(e){ console.warn('[discovery] shelf not loaded:', e); return []; });
+}
+
 // Fetch all portfolios for the signed-in user and populate PIECES with real data.
 /* Resolves TRUE while a piece is still being crafted, FALSE once every piece
    has landed, and null when there is nothing to report yet -- the webhook may
@@ -5001,18 +5030,22 @@ function pieceLanded(piece){
    caller in portraits.html:7387, for the same reason: a poller has to be able
    to tell "not yet" from "done". */
 function renderCollection(){
-  return fetch('/api/v1/portfolios', { credentials:'include' })
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(d){
-      if (!d || !d.portfolios || !d.portfolios.length) return null;
-      var loads = d.portfolios.map(function(p){ return loadPortfolio(p.id); });
-      return Promise.all(loads);
-    })
-    .then(function(results){
-      if (!results) return null;
+  return Promise.all([
+    fetch('/api/v1/portfolios', { credentials:'include' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (!d || !d.portfolios || !d.portfolios.length) return null;
+        return Promise.all(d.portfolios.map(function(p){ return loadPortfolio(p.id); }));
+      })
+      .catch(function(e){ console.warn('[discovery] portfolios not loaded:', e); return null; }),
+    loadShelf()
+  ])
+    .then(function(both){
+      var results = both[0], shelf = both[1] || [];
+      if (!results && !shelf.length) return null;
       var all = [];
       var n = 0;
-      results.forEach(function(items){
+      (results || []).forEach(function(items){
         if (!items) return;
         items.forEach(function(item){
           n++;
@@ -5020,6 +5053,12 @@ function renderCollection(){
                       series:item.series, num:n, crafting:item.crafting,
                       locked:item.locked, previewId:item.previewId, art:item.art });
         });
+      });
+      shelf.forEach(function(item){
+        n++;
+        all.push({ key:item.key, name:item.name, siloName:item.siloName,
+                    series:item.series, num:n, crafting:item.crafting,
+                    locked:item.locked, previewId:item.previewId, art:item.art });
       });
       if (!all.length) return null;
       /* The demo seed goes the first time real work answers, and only then. */

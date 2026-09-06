@@ -83,6 +83,14 @@ export async function POST(req: NextRequest) {
       variant:        typeof body.variant        === 'string' ? body.variant        : undefined,
       sourceImageRef: typeof body.sourceImageRef === 'string' ? body.sourceImageRef : undefined,
       returnUrl:      typeof body.returnUrl      === 'string' ? body.returnUrl      : undefined,
+      userEmail:      user?.email ?? null,
+      /* Same block /api/v1/portfolios reads. A single is one piece, so it
+         goes to the kickoff rather than onto a portfolio row. */
+      composition: {
+        ...(typeof body.pose         === 'string' ? { pose:         body.pose }         : {}),
+        ...(typeof body.aspect_ratio === 'string' ? { aspect_ratio: body.aspect_ratio } : {}),
+        ...(typeof body.subject      === 'string' ? { subject:      body.subject }      : {}),
+      },
     })
     return NextResponse.json(result)
   } catch (e) {

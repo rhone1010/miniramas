@@ -64,5 +64,20 @@ export interface GenerationKickoff {
     style:          string
     variant:        string
     sourceImageRef: string | null
+    /* Added 2026-09-06 with the real implementation. The stub logged and
+       returned, so it needed none of this: identity to consume or restore
+       the entitlement against and to own the shelved piece, and the
+       composition block so a single is composed the same way a portfolio
+       piece is (portraits.html:6807-6824). */
+    userId?:        string
+    guestEmail?:    string
+    userEmail?:     string | null
+    composition?: {
+      pose?:         string
+      aspect_ratio?: string
+      subject?:      string | null
+      framing?:      string
+      scale?:        string
+    }
   }): Promise<void>
 }
