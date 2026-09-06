@@ -18,7 +18,12 @@ export function getStripe(): Stripe {
 }
 
 export function getAppUrl(): string {
-  const url = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL
+  // VERCEL_URL is auto-set per deployment and always matches the
+  // current preview/production domain. Static APP_URL env vars go
+  // stale when testing across branches. Prefer the dynamic value.
+  const url = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || ''
   if (!url) throw new Error('APP_URL is not set')
   return url.replace(/\/$/, '')
 }
