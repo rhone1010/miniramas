@@ -33,6 +33,7 @@ import { getAppUrl } from './stripe'
 import { consumeEntitlement, restoreEntitlement } from './entitlements'
 import { styleIdForPreset } from './portraits-style-lookup'
 import { savePiece } from './collection-pieces'
+import { internalHeaders } from './internal-fetch'
 
 export const defaultGenerationKickoff: GenerationKickoff = {
   async start(args) {
@@ -65,7 +66,7 @@ export const defaultGenerationKickoff: GenerationKickoff = {
       const comp = args.composition ?? {}
       const res = await fetch(`${appUrl}/api/v1/portraits/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: internalHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           source_image_b64: args.sourceImageRef,
           style_id: styleId,

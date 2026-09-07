@@ -16,6 +16,7 @@
 // show tier context). Only createPortfolioCheckout rejects non-exact.
 
 import { getStripe, getAppUrl } from './stripe'
+import { internalHeaders } from './internal-fetch'
 import { supabaseAdmin } from '@/lib/supabase'
 import crypto from 'crypto'
 
@@ -316,7 +317,7 @@ export async function activatePortfolio(purchaseId: string): Promise<void> {
   for (const item of items ?? []) {
     fetch(`${appUrl}/api/v1/portfolios/items/render`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ portfolioItemId: item.id }),
     }).then(async (res) => {
       if (res.ok) return

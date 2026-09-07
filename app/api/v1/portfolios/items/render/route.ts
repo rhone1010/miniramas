@@ -12,6 +12,7 @@ import { getAppUrl } from '@/lib/store/stripe'
 import { storeCleanOriginal, bakeWatermark, recordPreview, PREVIEW_BUCKET } from '@/lib/store/preview'
 import { decideRetry } from '@/lib/store/portfolio-replace'
 import { styleIdForPreset } from '@/lib/store/portraits-style-lookup'
+import { internalHeaders } from '@/lib/store/internal-fetch'
 import crypto from 'crypto'
 
 export const runtime = 'nodejs'
@@ -84,7 +85,7 @@ async function renderOnePortfolioItem(portfolioItemId: string): Promise<void> {
     try {
       const res = await fetch(`${appUrl}/api/v1/portraits/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: internalHeaders({ 'Content-Type': 'application/json' }),
         /* Ported in shape from portraits.html:6807-6824 payloadFor(). What
            Discovery collects travels; what it does not collect is omitted, so
            /portraits/generate applies its documented defaults rather than a
@@ -232,7 +233,7 @@ async function handleItemFailure(
   const appUrl = getAppUrl()
   await fetch(`${appUrl}/api/v1/portfolios/items/render`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: internalHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ portfolioItemId }),
   }).catch((err) => {
     console.error(`[portfolios/items/render] retry fetch failed for ${portfolioItemId}`, err)
