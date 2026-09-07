@@ -165,7 +165,10 @@ async function ownsPreview(
   if (guestEmail) return ledgerEmail === guestEmail
   if (!userId) return false
   if (!ledgerEmail || !ledgerEmail.startsWith('portfolio:')) return false
-  const portfolioId = ledgerEmail.slice('portfolio:'.length)
+  /* `portfolio:{id}:{slot}` since 2026-09-07; `portfolio:{id}` before that,
+     because the slot was missing and every item of a portfolio collided on
+     uq_preview_ledger_email. Both shapes resolve to the same portfolio. */
+  const portfolioId = ledgerEmail.slice('portfolio:'.length).split(':')[0]
   const { data } = await sb
     .from('portfolios')
     .select('user_id')

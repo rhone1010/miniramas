@@ -158,15 +158,37 @@ async function renderOnePortfolioItem(portfolioItemId: string): Promise<void> {
       return
     }
 
-    await recordPreview(supabaseAdmin, {
+    /* THE SLOT IS PART OF THE KEY, and it has to be. preview_ledger has a
+       UNIQUE constraint on email (uq_preview_ledger_email), and this wrote
+       `portfolio:{id}` for every item of a portfolio — identical for all of
+       them. So the first item inserted its ledger row and every other item
+       was rejected as a duplicate. recordPreview logs that and returns
+       false (preview.ts:91-94), the route ignored the answer, and the item
+       was still marked done.
+
+       The damage is invisible until the customer tries to unlock: the
+       unlock route resolves the clean original through preview_ledger
+       (unlock/route.ts:51-57), so for a portfolio of four, three pieces
+       would answer preview_not_found for a preview that is sitting in
+       storage. Proved against the live database 2026-09-07 — a second
+       insert with the same email is rejected outright.
+
+       Verified rather than assumed now: a preview nobody can unlock is not
+       a finished piece, so a failed ledger write fails the item. */
+    const ledgered = await recordPreview(supabaseAdmin, {
       previewId,
-      email: `portfolio:${portfolio.id}`,
-      ipHash: `portfolio:${portfolio.id}`,
+      email: `portfolio:${portfolio.id}:${item.slot}`,
+      ipHash: `portfolio:${portfolio.id}:${item.slot}`,
       series: portfolio.series,
       preset: item.preset,
       resolution: '1k',
       storagePath,
     })
+    if (!ledgered) {
+      console.error(`[portfolios/items/render] ledger write failed for ${portfolioItemId} — not marking done`)
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'ledger_write_failed')
+      return
+    }
 
     await supabaseAdmin
       .from('portfolio_items')

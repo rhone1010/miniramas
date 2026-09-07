@@ -298,14 +298,43 @@ export async function activatePortfolio(purchaseId: string): Promise<void> {
     .eq('portfolio_id', portfolio.id)
   if (itemsErr) throw new Error(`portfolio_items_read_failed: ${itemsErr.message}`)
 
+  /* THE RESPONSE MATTERS. This used to fire and only catch a thrown error —
+     but a request that is answered is not a throw, so every non-2xx was
+     swallowed in silence. Proved 2026-09-07: on a protected Vercel preview
+     this exact POST is answered
+
+       401  {"error":{"message":"Protected deployment","code":"401"}}
+
+     and the portfolio sat at 'generating' with attempts=0 and error=null
+     for nine days, looking for all the world like a render that was still
+     running. The status is now checked and written to the item, so a job
+     that was never accepted says so instead of disappearing.
+
+     Deliberately still fire-and-forget in aggregate: the customer's webhook
+     must not wait on N renders. Each promise records its own outcome. */
   const appUrl = getAppUrl()
   for (const item of items ?? []) {
     fetch(`${appUrl}/api/v1/portfolios/items/render`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ portfolioItemId: item.id }),
-    }).catch((err) => {
+    }).then(async (res) => {
+      if (res.ok) return
+      const body = (await res.text().catch(() => '')).slice(0, 200)
+      console.error(
+        `[activatePortfolio] render dispatch REFUSED for item ${item.id}: ` +
+        `HTTP ${res.status} ${body}`,
+      )
+      await supabaseAdmin
+        .from('portfolio_items')
+        .update({ error: `dispatch_http_${res.status}` })
+        .eq('id', item.id)
+    }).catch(async (err) => {
       console.error(`[activatePortfolio] render fetch failed for item ${item.id}`, err)
+      await supabaseAdmin
+        .from('portfolio_items')
+        .update({ error: 'dispatch_fetch_failed' })
+        .eq('id', item.id)
     })
   }
 
