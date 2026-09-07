@@ -5080,7 +5080,10 @@ function activateIfStalled(list){
           return;
         }
         if (out.status === 402){
-          /* The webhook has not landed yet. Ask again on a later tick. */
+          /* Genuinely not paid — mid-checkout, or abandoned. The route has
+             already asked Stripe directly, so this is not a webhook that is
+             merely running late. Ask again on a later tick anyway; a card
+             that is still being authorised resolves within seconds. */
           ACTIVATION_ASKED[p.id] = false;
           return;
         }

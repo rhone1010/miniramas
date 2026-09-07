@@ -34,6 +34,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getUser } from '@/lib/store/auth'
+import { getStripe } from '@/lib/store/stripe'
+import { confirmPurchase } from '@/lib/store/entitlements'
 import { activatePortfolio } from '@/lib/store/portfolio-checkout'
 
 export const runtime = 'nodejs'
@@ -68,20 +70,71 @@ export async function POST(
   // The purchase, not the caller, decides whether this is allowed.
   const { data: purchase, error: purchaseErr } = await supabaseAdmin
     .from('purchases')
-    .select('id, status')
+    .select('id, status, stripe_session_id')
     .eq('id', portfolio.purchase_id)
     .maybeSingle()
   if (purchaseErr) {
     return NextResponse.json({ error: 'purchase_query_failed', detail: purchaseErr.message }, { status: 500 })
   }
   if (!purchase) return NextResponse.json({ error: 'purchase_not_found' }, { status: 404 })
+
+  /* ── The purchase is still 'pending' — ask Stripe, not the caller ──────
+     Confirmed 2026-09-06: a paid portfolio sat at 'pending' because the
+     webhook never arrived, so confirmPurchase never ran and nothing in our
+     database knew the money had moved. The customer had paid.
+
+     A webhook is the right way to hear about a payment the customer walked
+     away from. It is the wrong single point of failure for the customer who
+     is sitting here looking at the page, because delivery can fail for
+     reasons that have nothing to do with them — a preview behind deployment
+     protection answers Stripe's POST with a 302 to an SSO page.
+
+     So the session is read back from Stripe, which is authoritative, and
+     confirmPurchase runs from here if the payment really did complete. Both
+     paths converge on the same function and confirmPurchase is idempotent
+     by charge id (entitlements.ts:313), so the webhook arriving late finds
+     the work already done and does nothing. */
   if (purchase.status !== 'paid') {
-    /* The webhook has not landed yet. The caller polls, so this is a "not
-       yet", not a failure. */
-    return NextResponse.json(
-      { error: 'payment_pending', purchaseStatus: purchase.status },
-      { status: 402 },
-    )
+    if (!purchase.stripe_session_id) {
+      return NextResponse.json(
+        { error: 'payment_pending', purchaseStatus: purchase.status, detail: 'no stripe session on purchase' },
+        { status: 402 },
+      )
+    }
+    let paymentStatus = 'unknown'
+    try {
+      const session = await getStripe().checkout.sessions.retrieve(purchase.stripe_session_id)
+      paymentStatus = session.payment_status ?? 'unknown'
+      if (session.payment_status === 'paid') {
+        const chargeId =
+          (typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id) || session.id
+        await confirmPurchase({
+          stripeSessionId: purchase.stripe_session_id,
+          stripeChargeId:  chargeId,
+        })
+        console.log(
+          `[portfolios/activate] confirmed purchase ${purchase.id} from Stripe ` +
+          `(webhook had not landed) session=${purchase.stripe_session_id}`,
+        )
+      }
+    } catch (e: any) {
+      console.error(`[portfolios/activate] stripe reconcile failed for ${portfolioId}:`, e?.message || e)
+      return NextResponse.json(
+        { error: 'reconcile_failed', detail: e?.message || String(e) },
+        { status: 500 },
+      )
+    }
+
+    if (paymentStatus !== 'paid') {
+      /* Genuinely not paid — the customer is mid-checkout, or abandoned it.
+         The caller polls, so this is a "not yet", not a failure. */
+      return NextResponse.json(
+        { error: 'payment_pending', purchaseStatus: purchase.status, stripePaymentStatus: paymentStatus },
+        { status: 402 },
+      )
+    }
   }
 
   try {
