@@ -5053,12 +5053,52 @@ function loadShelf(){
    not have written the portfolio. Same three-way answer runAll() gives its
    caller in portraits.html:7387, for the same reason: a poller has to be able
    to tell "not yet" from "done". */
+/* ---- a paid portfolio that never started -------------------------------
+   Activation happens in one place: the Stripe webhook, one delivery to one
+   URL (webhooks/stripe/route.ts:71-78). On a preview deployment that POST
+   is answered with a 302 to Vercel's SSO page and the route never runs, and
+   even in production a throw inside activatePortfolio is caught and logged
+   rather than surfaced. Either way the customer has paid and the portfolio
+   sits at 'pending' with no jobs and no explanation.
+
+   So the page that is already polling asks for activation itself. Once per
+   portfolio per session — activatePortfolio is idempotent, but hammering it
+   every three seconds would be noise, not safety. The route refuses unless
+   our own purchase row says paid, so this cannot start unbought work. */
+var ACTIVATION_ASKED = {};
+
+function activateIfStalled(list){
+  (list || []).forEach(function(p){
+    if (!p || p.status !== 'pending' || ACTIVATION_ASKED[p.id]) return;
+    ACTIVATION_ASKED[p.id] = true;
+    fetch('/api/v1/portfolios/' + encodeURIComponent(p.id) + '/activate', {
+      method:'POST', credentials:'include'
+    }).then(function(r){ return r.json().then(function(d){ return { status:r.status, data:d }; }); })
+      .then(function(out){
+        if (out.status === 200){
+          console.log('[discovery] portfolio ' + p.id + ' activated -> ' + out.data.status);
+          return;
+        }
+        if (out.status === 402){
+          /* The webhook has not landed yet. Ask again on a later tick. */
+          ACTIVATION_ASKED[p.id] = false;
+          return;
+        }
+        /* The reason the webhook swallowed. */
+        console.error('[discovery] portfolio ' + p.id + ' could not be activated:',
+                      (out.data && (out.data.detail || out.data.error)) || out.status);
+      })
+      .catch(function(e){ console.warn('[discovery] activate call failed:', e); });
+  });
+}
+
 function renderCollection(){
   return Promise.all([
     fetch('/api/v1/portfolios', { credentials:'include' })
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(d){
         if (!d || !d.portfolios || !d.portfolios.length) return null;
+        activateIfStalled(d.portfolios);
         return Promise.all(d.portfolios.map(function(p){ return loadPortfolio(p.id); }));
       })
       .catch(function(e){ console.warn('[discovery] portfolios not loaded:', e); return null; }),
