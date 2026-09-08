@@ -127,7 +127,32 @@ export async function updateNavigation(
   return rowToSession(data as SessionRow)
 }
 
-/** Core mutation, shared by select/remove/toggle. Idempotent per effectId. */
+/** Core mutation, shared by select/remove/toggle. Idempotent per effectId.
+ *
+ * COMPARE-AND-SWAP, BECAUSE THESE ARRIVE TOGETHER. This was a plain
+ * read-then-write, and "Pick for me" fires one call per effect in the same
+ * turn (discovery-consolidated-draft.html fillTo). Four concurrent requests
+ * all read the same starting array, each appended its own id, and the last
+ * write won -- three appends lost. The session then held one id while the
+ * browser held four, and since the offer is derived from the session's count
+ * the browser was handed a price for the wrong size. That is the
+ * price_mismatch at checkout.
+ *
+ * The update now only lands if updated_at is still what we read, so a writer
+ * that was overtaken matches no row, re-reads and redoes its work on the
+ * winner's array. Every append survives, in arrival order.
+ *
+ * Retried rather than locked: the operations are idempotent per effectId, so
+ * redoing one is free, and a contended session is a customer tapping fast,
+ * not a queue worth holding a lock for.
+ */
+/* One retry per writer that can be in flight at once, plus headroom. The
+   browser caps a selection at 16 (MAX_SELECTION) and "Pick for me" fires the
+   whole set together, so the last writer of sixteen can be overtaken fifteen
+   times before it lands. Five attempts threw discovery_session_mutate_contended
+   on a set of eight when this was measured. */
+const MUTATE_ATTEMPTS = 24
+
 async function mutateSelection(
   sessionId: string,
   effectId: string,
@@ -135,50 +160,60 @@ async function mutateSelection(
 ): Promise<MutationResult> {
   if (!effectId) throw new Error('discovery_effect_id_required')
 
-  const existing = await getSession(sessionId)
-  if (!existing) throw new Error('discovery_session_not_found')
+  for (let attempt = 1; attempt <= MUTATE_ATTEMPTS; attempt++) {
+    const existing = await getSession(sessionId)
+    if (!existing) throw new Error('discovery_session_not_found')
 
-  const wasSelected = existing.selectedEffectIds.includes(effectId)
-  const willSelect = op === 'select' ? true : op === 'remove' ? false : !wasSelected
+    const wasSelected = existing.selectedEffectIds.includes(effectId)
+    const willSelect = op === 'select' ? true : op === 'remove' ? false : !wasSelected
 
-  const previousOffer = resolveSelectionOffer(existing.selectedEffectIds.length)
+    const previousOffer = resolveSelectionOffer(existing.selectedEffectIds.length)
 
-  let newSelected: string[]
-  if (willSelect && !wasSelected) {
-    // Preserve selection order - append. No duplicates, per spec section 5.
-    newSelected = [...existing.selectedEffectIds, effectId]
-  } else if (!willSelect && wasSelected) {
-    // Compact order (spec section 5: "removing effects compacts selection
-    // order unless a stable historical order is required elsewhere" - no
-    // requirement for stable order has been specified, so compacting).
-    newSelected = existing.selectedEffectIds.filter((id) => id !== effectId)
-  } else {
-    // No-op: select-when-already-selected, or remove-when-not-selected.
-    // Idempotent per spec section 5 - return current state unchanged.
-    newSelected = existing.selectedEffectIds
+    let newSelected: string[]
+    if (willSelect && !wasSelected) {
+      // Preserve selection order - append. No duplicates, per spec section 5.
+      newSelected = [...existing.selectedEffectIds, effectId]
+    } else if (!willSelect && wasSelected) {
+      // Compact order (spec section 5: "removing effects compacts selection
+      // order unless a stable historical order is required elsewhere" - no
+      // requirement for stable order has been specified, so compacting).
+      newSelected = existing.selectedEffectIds.filter((id) => id !== effectId)
+    } else {
+      // No-op: select-when-already-selected, or remove-when-not-selected.
+      // Idempotent per spec section 5 - return current state unchanged.
+      newSelected = existing.selectedEffectIds
+    }
+
+    const newVisited = existing.visitedEffectIds.includes(effectId)
+      ? existing.visitedEffectIds
+      : [...existing.visitedEffectIds, effectId]
+
+    const { data, error } = await supabaseAdmin
+      .from('discovery_sessions')
+      .update({
+        selected_effect_ids: newSelected,
+        visited_effect_ids: newVisited,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('session_id', sessionId)
+      .eq('updated_at', existing.updatedAt)
+      .select()
+      .maybeSingle()
+    if (error) throw new Error(`discovery_session_mutate_failed: ${error.message}`)
+
+    /* No row matched: another writer moved updated_at between the read above
+       and this write. Nothing has been changed by us -- go round again on
+       whatever they left behind. */
+    if (!data) continue
+
+    const session = rowToSession(data as SessionRow)
+    const offer = resolveSelectionOffer(session.selectedEffectIds.length)
+    const tierChange = computeTierChange(previousOffer.tier, offer.tier)
+
+    return { session, offer, tierChange }
   }
 
-  const newVisited = existing.visitedEffectIds.includes(effectId)
-    ? existing.visitedEffectIds
-    : [...existing.visitedEffectIds, effectId]
-
-  const { data, error } = await supabaseAdmin
-    .from('discovery_sessions')
-    .update({
-      selected_effect_ids: newSelected,
-      visited_effect_ids: newVisited,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('session_id', sessionId)
-    .select()
-    .single()
-  if (error) throw new Error(`discovery_session_mutate_failed: ${error.message}`)
-
-  const session = rowToSession(data as SessionRow)
-  const offer = resolveSelectionOffer(session.selectedEffectIds.length)
-  const tierChange = computeTierChange(previousOffer.tier, offer.tier)
-
-  return { session, offer, tierChange }
+  throw new Error('discovery_session_mutate_contended')
 }
 
 export async function selectEffect(sessionId: string, effectId: string): Promise<MutationResult> {
