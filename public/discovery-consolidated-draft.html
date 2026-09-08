@@ -1582,6 +1582,61 @@ body.is-lboxed{ overflow:hidden }
   margin-top:12px;
 }
 #ckForm{ min-height:300px; }
+.agegate{
+  position:fixed; inset:0; z-index:130;
+  display:none; align-items:center; justify-content:center;
+  padding:1.5rem;
+  background:rgba(20,14,10,.72);
+  backdrop-filter:blur(3px);
+}
+.agegate.is-open{ display:flex }
+.agegate-card{
+  width:min(440px,100%);
+  padding:1.8rem 1.9rem 1.6rem;
+  border-radius:10px;
+  background:var(--vellum-100);
+  border:1px solid rgba(137,105,67,.3);
+  box-shadow:0 1.4rem 3rem rgba(28,18,10,.4);
+}
+.agegate-card h3{
+  font-family:var(--serif); font-weight:400; font-size:1.5rem;
+  color:var(--ink); margin-bottom:.5em;
+}
+.agegate-card p{
+  font-family:var(--sans); font-size:.9rem; line-height:1.6;
+  color:var(--ink-soft);
+}
+.agegate-card p + p{ margin-top:.7em }
+/* the full statement, behind one link */
+.agegate-more{
+  display:block; width:100%; margin-top:1rem;
+  background:none; border:0; padding:0; cursor:pointer;
+  font-family:var(--serif); font-style:italic; font-size:1.02rem;
+  color:var(--oxblood); text-align:left;
+}
+.agegate-more:hover{ text-decoration:underline }
+.agegate-policy{
+  display:none; margin-top:1rem; padding-top:1rem;
+  border-top:1px solid rgba(137,105,67,.24);
+  max-height:38vh; overflow-y:auto;
+}
+.agegate-policy.is-open{ display:block }
+.agegate-policy h4{
+  font-family:var(--serif); font-weight:400; font-size:1.15rem;
+  color:var(--ink); margin-bottom:.4em;
+}
+.agegate-policy h4 + p{ margin-top:0 }
+.agegate-policy p{
+  font-family:var(--sans); font-size:.84rem; line-height:1.6;
+  color:var(--ink-soft); margin-top:.6em;
+}
+.agegate-policy h4:not(:first-child){ margin-top:1.1em }
+.agegate-card button{
+  width:100%; margin-top:1.4rem; padding:.8em;
+  border:0; border-radius:8px; background:var(--oxblood);
+  font-family:var(--serif); font-style:italic; font-size:1.2rem;
+  color:var(--vellum-100); cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -1753,6 +1808,42 @@ body.is-lboxed{ overflow:hidden }
   <div class="tour-spotlight" id="tourSpotlight"></div>
   <div class="tour-tip" id="tourTip"></div>
 </div>
+
+  <div class="agegate" id="ageGate" role="alertdialog" aria-modal="true"
+       aria-labelledby="ageGateH">
+    <div class="agegate-card">
+      <h3 id="ageGateH">We can't craft from this photograph</h3>
+      <p>Liten &amp; Co crafts portraits of adults. We are not able to work
+        from photographs of children.</p>
+      <p>Nothing has been crafted and nothing has been charged.</p>
+      <button id="ageGateGo" type="button">Choose a different photograph</button>
+      <button class="agegate-more" id="ageGateMore" type="button"
+              aria-expanded="false" aria-controls="ageGatePolicy">
+        Why we do this
+      </button>
+
+      <!-- Rich's words, locked 2026-08-05. One place. If this changes it
+           changes here. -->
+      <div class="agegate-policy" id="ageGatePolicy">
+        <h4>Portraits of adults only, for now</h4>
+        <p>Liten &amp; Co currently creates portraits of adults 18 and over.</p>
+        <p>We&rsquo;re taking a little more time to understand the evolving
+          policies and usage rights surrounding the transformation of images
+          and likenesses of people under 18, both in the U.S. and
+          internationally.</p>
+        <p>For now, photos of anyone we believe to be under 18 will be
+          declined before anything is crafted or charged.</p>
+        <p>We hope to offer this in future as the policies and protections
+          around younger subjects become clearer. We&rsquo;ll keep you
+          posted.</p>
+
+        <h4>A note about your photos</h4>
+        <p>Your photograph is used only to create your Liten &amp; Co pieces.
+          We don&rsquo;t sell them, use them to train AI models, or share
+          them with others.</p>
+      </div>
+    </div>
+  </div>
 
 <!-- Canonical effect catalog. Same script tag portraits.html:5486 uses;
      sets window.EFFECT_REGISTRY (id, label, category) for all 63 rows.
@@ -2789,6 +2880,12 @@ function runAnalyze(){
   }).then(function(data){
     if (seq !== ANALYZE_SEQ) return null;   /* a newer photograph won */
     ANALYZE_RESULT = data;
+
+    /* BEFORE anything else. Not after the rooms have been offered and
+       certainly not after a charge — refusing then would mean taking
+       money for something we were never going to make. */
+    if (isUnderage()){ openAgeGate(); return null; }
+
     focusStampThumb();
     var want = subjectFromPhoto(data);
     SUBJECT_DETECTED = want;
@@ -2854,6 +2951,89 @@ function paintUploadState(){
 function setUploadState(st, err){
   UPLOAD_STATE = st; UPLOAD_ERROR = err || null; paintUploadState();
 }
+
+  /* ---- the age gate --------------------------------------------------------
+     Ruled 2026-08-05. analyze returns `age_group` at the top level:
+     child (0-11), teen (12-17), young (18-29), adult, mature, senior.
+     The first two are under eighteen.
+
+     THREE THINGS THAT ARE TRUE OF THIS AND SHOULD NOT BE FORGOTTEN:
+
+     1 · It runs in a browser. Anyone who opens devtools steps around it.
+         The refusal has to exist in /portraits/generate as well or it
+         stops only the people who were not trying.
+     2 · Age from a photograph is not reliable in either direction. This
+         refuses some adults and passes some seventeen-year-olds.
+     3 · Null is not a refusal. When analyze cannot say — which is most of
+         the time today — the craft proceeds, because blocking on null
+         would refuse every photograph in the product. */
+  var UNDER_18 = { child:true, teen:true };
+  var ageGate = document.getElementById('ageGate');
+
+  function ageFromPhoto(){
+    /* Top level first — that is where the dedicated vision call puts it.
+       The nested one is the old shape and is read so neither side has to
+       land before the other. */
+    var top = (ANALYZE_RESULT && ANALYZE_RESULT.age_group) || null;
+    if (top) return top;
+    var a = (ANALYZE_RESULT && ANALYZE_RESULT.result) || {};
+    return a.detected_age_group || null;
+  }
+
+  function isUnderage(){ return !!UNDER_18[ageFromPhoto()]; }
+
+  function openAgeGate(){
+    if (!ageGate) return;
+    /* The photograph goes. Leaving it in the panel beside a refusal is an
+       invitation to try the same file again. */
+    SRC_B64 = null; uploadedPhotoDataUrl = null; ANALYZE_RESULT = null;
+    SUBJECT_DETECTED = null; SUBJECT_FORCED = false;
+    SELECTED.length = 0;
+    if (typeof setUploadState === 'function') setUploadState('idle');
+    if (typeof renderQueue === 'function') renderQueue();
+    if (typeof clearResume === 'function') clearResume();
+    if (typeof curatorState === 'function') curatorState('empty', SAY.empty);
+    /* Shut, every time. A customer who read it once should not have the
+       whole statement in their face on a second refusal. */
+    var pol = document.getElementById('ageGatePolicy');
+    if (pol) pol.classList.remove('is-open');
+    if (ageGateMore){
+      ageGateMore.textContent = 'Why we do this';
+      ageGateMore.setAttribute('aria-expanded', 'false');
+    }
+    ageGate.classList.add('is-open');
+    console.warn('[age] refused — the studio does not craft from photographs of children');
+  }
+
+  /* A way to see this without having to find a photograph of a child.
+     __ageCheck('teen') raises it; __ageCheck('adult') does not. Same
+     shape as __openIntake and for the same reason — a refusal nobody can
+     look at is a refusal nobody has judged. */
+  window.__ageCheck = function(bracket){
+    ANALYZE_RESULT = { age_group: bracket || null };
+    if (isUnderage()){ openAgeGate(); return 'refused'; }
+    return 'passed';
+  };
+
+
+  /* One link, opening in place. A separate page would be a page a
+     customer has to leave the refusal to read, and they would not come
+     back. */
+  var ageGateMore = document.getElementById('ageGateMore');
+  if (ageGateMore) ageGateMore.addEventListener('click', function(){
+    var p = document.getElementById('ageGatePolicy');
+    if (!p) return;
+    var open = p.classList.toggle('is-open');
+    ageGateMore.setAttribute('aria-expanded', open ? 'true' : 'false');
+    ageGateMore.textContent = open ? 'Close' : 'Why we do this';
+  });
+
+  var ageGateGo = document.getElementById('ageGateGo');
+  if (ageGateGo) ageGateGo.addEventListener('click', function(){
+    ageGate.classList.remove('is-open');
+    if (photoFileInput) photoFileInput.click();
+  });
+
 
 photoFileInput.addEventListener('change', function(){
   var file = photoFileInput.files[0];
