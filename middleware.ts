@@ -81,6 +81,9 @@ const PAGES: Record<string, string> = {
      time, it wants a URL somebody can send to a friend, and it is the only
      page here that could bring a stranger in. */
   '/community': '/community.html',
+  /* DISCOVERY. Served from public/discovery-consolidated-draft.html, the
+     one responsive file that replaced the three device mocks. */
+  '/discovery': '/discovery-consolidated-draft.html',
 
   /* MOBILE WALLPAPERS. Exact-match, so every room needs its own line.
      CORRECTED 24 Aug (CUI 42): the craft-room routes pointed back at the
