@@ -5147,7 +5147,14 @@ function startCheckout(){
       subject: SUBJECT || null,
       sourceImageRef: SRC_B64 || '',
       returnUrl: window.location.origin + window.location.pathname,
-      clientPriceUsd: (SERVER_OFFER && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]
+      /* SERVER_OFFER is built from the SESSION's count, not SELECTED.length
+         (discovery-session.ts:178). The two drift, and an unguarded read sent
+         the session's price for a different size -- most often the count-0
+         offer the session is created with, whose priceUsd is 0, which the
+         old `typeof === 'number'` test happily accepted. Server then priced
+         the 4 ids actually posted at 499 and refused: price_mismatch.
+         Same count guard the price on the rail has always used (3256). */
+      clientPriceUsd: (SERVER_OFFER && SERVER_OFFER.count === n && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]
     };
   }
 
