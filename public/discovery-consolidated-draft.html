@@ -1675,7 +1675,7 @@ body.is-lboxed{ overflow:hidden }
         <path d="M16.9 12.2l2.9-1.1M16.9 14.6l2.8.6M16.4 16.9l2.2 1.9"/>
       </svg>
     </button>
-    <button class="pill-btn" id="mhName" onclick="if(!SIGNED_IN && typeof openSignin==='function') openSignin()">Sign in</button>
+    <button class="pill-btn" id="mhName" onclick="if(!ME && typeof openSignin==='function') openSignin()">Sign in</button>
     <button class="pill-btn">
       <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
       <span>Cart</span><span>0</span>
@@ -3039,6 +3039,10 @@ photoFileInput.addEventListener('change', function(){
   var file = photoFileInput.files[0];
   if (!file) return;
 
+  /* Same gate at the choke point, so a picker opened any other way cannot
+     get a photograph past it. Decision 6. */
+  if (!ME){ photoFileInput.value = ''; PENDING_CRAFT = true; openSignin(); return; }
+
   if (!/^image\//.test(file.type || '')){
     setUploadState('error', 'That is not an image file'); return;
   }
@@ -3141,7 +3145,19 @@ function repaintPrice(){ try { updateCollectionSummary(); } catch(e){} }
 // output) is currently in the DOM, without needing to re-bind after
 // every innerHTML replace.
 document.addEventListener('click', function(e){
-  if (e.target.closest('.photo-stamp')) photoFileInput.click();
+  if (!e.target.closest('.photo-stamp')) return;
+  /* THE GATE MOVES EARLIER THAN PORTRAITS PUTS IT. Authorised by brief
+     2026-09-08-phase-1-goahead, decision 6.
+
+     portraits asks at the Craft button (9031) so the customer meets the
+     request at the moment they want the thing. That reasoning does not
+     survive here: /portraits/analyze answers 401 to a signed-out visitor
+     (analyze/route.ts:46-49), so the age check never runs for a guest and
+     a photograph of a child reaches the grid unexamined. The leak is at
+     upload, so the gate is at upload. The server already rules the same
+     way — "Upload is analyze, and analyze is where the account begins". */
+  if (!ME){ PENDING_CRAFT = true; openSignin(); return; }
+  photoFileInput.click();
 });
 
 
@@ -4483,18 +4499,75 @@ function unlockPrice(n){
 // first name -- placeholder until auth (CENG) exposes it.
 // Real signed-in identity (auth/me returns { user:{id,email}, credits }).
 // 401 when signed out, which leaves the placeholder in place.
-var CUSTOMER = null;
-var SIGNED_IN = false;
-fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.ok ? r.json() : null; })
-  .then(function(d){
-    if (d && d.user && d.user.email){
-      CUSTOMER = d.user.email.split('@')[0];
-      SIGNED_IN = true;
-      var nameEl = document.getElementById('mhName');
-      if (nameEl) nameEl.textContent = CUSTOMER;
-      renderCollection();
+var AUTH_ME_URL     = '/api/v1/auth/me';
+
+  var ME = null;                 /* { id, email } once known */
+  var PENDING_CRAFT = false;     /* they pressed Craft and we stopped them */
+
+  /* ---- holding their work ------------------------------------------------
+     Ported from portraits.html:8846-8880. Sign-in takes the customer away —
+     to an inbox, often on another device — and brings them back to a page
+     that has forgotten everything. So the state is saved before the email is
+     sent. localStorage, not sessionStorage: the link usually opens a new tab,
+     and sessionStorage does not survive that.
+
+     The photograph is by far the largest thing here and may not fit — a
+     phone photograph as base64 can run past the storage quota on its own.
+     So it is written last and separately: if it will not fit, the finishes
+     and the pose still survive and only the photograph must be chosen
+     again. */
+  var RESUME_KEY      = 'liten_resume_v1';
+
+  function saveResume(){
+    var core = {
+      at:    Date.now(),
+      queue: SELECTED.map(function(q){ return { key: q.key, baseId: q.baseId, name: q.name, siloName: q.siloName }; }),
+      pose:  POSE || null
+    };
+    try {
+      localStorage.setItem(RESUME_KEY, JSON.stringify(core));
+    } catch (e){
+      console.warn('[resume] could not hold the finishes', e);
+      return;
     }
-  }).catch(function(e){ console.warn('[discovery] auth/me failed:', e); });
+    try {
+      localStorage.setItem(RESUME_KEY + '_img', uploadedPhotoDataUrl || '');
+    } catch (e){
+      /* Quota. Expected on large photographs and not an error — the finishes
+         are already safe and the Curator asks for the photograph again. */
+      try { localStorage.removeItem(RESUME_KEY + '_img'); } catch (e2){}
+      console.warn('[resume] photograph too large to hold — it will be asked for again');
+    }
+  }
+
+  function clearResume(){
+    try {
+      localStorage.removeItem(RESUME_KEY);
+      localStorage.removeItem(RESUME_KEY + '_img');
+    } catch (e){}
+  }
+
+  /* ---- who is this ------------------------------------------------------
+     401 is the ordinary answer for a visitor, not a fault. */
+  function whoAmI(){
+    return fetch(AUTH_ME_URL, { credentials: 'same-origin' })
+      .then(function(res){ return res.ok ? res.json() : null; })
+      .then(function(d){
+        ME = (d && d.user) ? d.user : null;
+        paintMe();
+        return ME;
+      })
+      .catch(function(){ ME = null; paintMe(); return null; });
+  }
+
+/* Discovery's own masthead + collection paint, which portraits does in
+   paintCredits(). Kept as its own step so whoAmI stays portraits' shape. */
+function paintMe(){
+  var nameEl = document.getElementById('mhName');
+  if (nameEl) nameEl.textContent = ME && ME.email ? ME.email.split('@')[0] : 'Sign in';
+  if (ME) renderCollection();
+}
+whoAmI();
 
 // ── Payment confirmation — ?paid=1&session_id=... or ?portfolio_paid=1&session_id=... ──
 // Stripe embedded checkout navigates to return_url after payment completes.
@@ -4558,7 +4631,7 @@ fetch('/api/v1/auth/me', { credentials:'include' }).then(function(r){ return r.o
     });
 })();
 
-function pieceTitle(p){ return p.series + ' - ' + p.name + ' - ' + CUSTOMER + ' - ' + String(p.num).padStart(3,'0'); }
+function pieceTitle(p){ return p.series + ' - ' + p.name + ' - ' + (ME && ME.email ? ME.email.split('@')[0] : '') + ' - ' + String(p.num).padStart(3,'0'); }
 
 // Checkout. Server re-resolves the offer and rejects on price_mismatch
 // (portfolio-checkout.ts:145), so clientPriceUsd is the server's own last
@@ -4982,6 +5055,10 @@ function startCheckout(){
   var btn = document.getElementById('btnCraft');
   if (!btn || btn.disabled) return;
 
+  /* Sign-in precedes crafting — portraits.html:9026-9031, copied. The
+     routes enforce it anyway by refusing without an owner. */
+  if (!ME){ PENDING_CRAFT = true; openSignin(); return; }
+
   var n = SELECTED.length;
   if (!n || VALID_SIZES.indexOf(n) === -1 || openSlots()) return;
 
@@ -5097,72 +5174,6 @@ function showCheckoutError(msg){
   el.textContent = msg;
   var craft = document.getElementById('btnCraft');
   if (craft && craft.parentNode) craft.parentNode.insertBefore(el, craft.nextSibling);
-}
-
-// ── Sign-in modal — functions declared here (global scope),
-//    DOM binding deferred to a <script> after the modal markup. ───────
-var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
-var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function openSignin(){
-  var m = document.getElementById('signinModal');
-  if (!m) return;
-  var ask  = document.getElementById('signinAsk');
-  var sent = document.getElementById('signinSent');
-  var err  = document.getElementById('signinErr');
-  var inp  = document.getElementById('signinEmail');
-  if (ask)  ask.hidden  = false;
-  if (sent) sent.hidden = true;
-  if (err)  err.textContent = '';
-  m.classList.add('is-open');
-  if (inp) setTimeout(function(){ inp.focus(); }, 60);
-}
-function closeSignin(){
-  var m = document.getElementById('signinModal');
-  if (m) m.classList.remove('is-open');
-}
-
-function sendLink(){
-  var signinEmail = document.getElementById('signinEmail');
-  var signinSend  = document.getElementById('signinSend');
-  var signinErr   = document.getElementById('signinErr');
-  var signinAsk   = document.getElementById('signinAsk');
-  var signinSent  = document.getElementById('signinSent');
-  var signinAddr  = document.getElementById('signinAddr');
-  if (!signinEmail || !signinSend) return;
-  var email = signinEmail.value.trim().toLowerCase();
-  if (!EMAIL_RE.test(email)){
-    if (signinErr) signinErr.textContent = 'That does not look like an email address.';
-    return;
-  }
-  signinSend.disabled = true;
-  signinSend.textContent = 'Sending';
-  if (signinErr) signinErr.textContent = '';
-
-  fetch(AUTH_SIGNIN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'same-origin',
-    body: JSON.stringify({ email: email, next: location.pathname })
-  }).then(function(res){
-    return res.json().catch(function(){ return { ok: false, reason: 'bad_response' }; });
-  }).then(function(d){
-    signinSend.disabled = false;
-    signinSend.textContent = 'Send the link';
-    if (!d || !d.ok){
-      if (signinErr) signinErr.textContent =
-        d && d.reason === 'invalid_email' ? 'That does not look like an email address.'
-                                          : 'The link could not be sent. Try again in a moment.';
-      return;
-    }
-    if (signinAddr) signinAddr.textContent = email;
-    if (signinAsk)  signinAsk.hidden  = true;
-    if (signinSent) signinSent.hidden = false;
-  }).catch(function(){
-    signinSend.disabled = false;
-    signinSend.textContent = 'Send the link';
-    if (signinErr) signinErr.textContent = 'The link could not be sent. Try again in a moment.';
-  });
 }
 
 /* ---- the piece arrives -------------------------------------------------
@@ -6146,7 +6157,7 @@ LCFeedback.mount({
       slotsOpen: typeof openSlots === 'function' ? openSlots() : 0,
       hasPhoto: !!(typeof uploadedPhotoDataUrl !== 'undefined' && uploadedPhotoDataUrl),
       lastActions: typeof LAST_ACTIONS !== 'undefined' ? LAST_ACTIONS : [],
-      userId: typeof CUSTOMER !== 'undefined' ? CUSTOMER : null
+      userId: typeof ME !== 'undefined' && ME ? ME.id : null
     };
   }
 });
@@ -6187,27 +6198,91 @@ LCFeedback.mount({
   </div>
 </div>
 <script>
-// ── Sign-in modal DOM binding (after markup) ─────────────────────────
-(function(){
-  var signinSend  = document.getElementById('signinSend');
-  var signinEmail = document.getElementById('signinEmail');
-  var signinX     = document.getElementById('signinX');
-  var signinDone  = document.getElementById('signinDone');
+// ── Sign-in modal — ported verbatim from portraits.html:8931-9008.
+//    At top level, not in an IIFE: openSignin must stay callable from the
+//    masthead button and the upload gate, which sit outside this script.
+var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
   var signinModal = document.getElementById('signinModal');
+  var signinEmail = document.getElementById('signinEmail');
+  var signinSend  = document.getElementById('signinSend');
+  var signinErr   = document.getElementById('signinErr');
+  var signinAsk   = document.getElementById('signinAsk');
+  var signinSent  = document.getElementById('signinSent');
+  var signinAddr  = document.getElementById('signinAddr');
+  var signinX     = document.getElementById('signinX');
+
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function openSignin(){
+    if (!signinModal) return;
+    if (signinAsk)  signinAsk.hidden  = false;
+    if (signinSent) signinSent.hidden = true;
+    if (signinErr)  signinErr.textContent = '';
+    signinModal.classList.add('is-open');
+    if (signinEmail) setTimeout(function(){ signinEmail.focus(); }, 60);
+  }
+  function closeSignin(){
+    if (signinModal) signinModal.classList.remove('is-open');
+    PENDING_CRAFT = false;
+  }
+
+  function sendLink(){
+    if (!signinEmail || !signinSend) return;
+    var email = signinEmail.value.trim().toLowerCase();
+    if (!EMAIL_RE.test(email)){
+      if (signinErr) signinErr.textContent = 'That does not look like an email address.';
+      return;
+    }
+    signinSend.disabled = true;
+    signinSend.textContent = 'Sending';
+    if (signinErr) signinErr.textContent = '';
+
+    /* Held BEFORE the request. If the send succeeds they may leave for their
+       inbox within seconds, and on another device the tab never runs again. */
+    saveResume();
+
+    fetch(AUTH_SIGNIN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ email: email, next: location.pathname })
+    }).then(function(res){
+      return res.json().catch(function(){ return { ok: false, reason: 'bad_response' }; });
+    }).then(function(d){
+      signinSend.disabled = false;
+      signinSend.textContent = 'Send the link';
+      if (!d || !d.ok){
+        clearResume();
+        if (signinErr) signinErr.textContent =
+          d && d.reason === 'invalid_email' ? 'That does not look like an email address.'
+                                            : 'The link could not be sent. Try again in a moment.';
+        return;
+      }
+      if (signinAddr) signinAddr.textContent = email;
+      if (signinAsk)  signinAsk.hidden  = true;
+      if (signinSent) signinSent.hidden = false;
+    }).catch(function(){
+      clearResume();
+      signinSend.disabled = false;
+      signinSend.textContent = 'Send the link';
+      if (signinErr) signinErr.textContent = 'The link could not be sent. Try again in a moment.';
+    });
+  }
 
   if (signinSend) signinSend.addEventListener('click', sendLink);
   if (signinEmail) signinEmail.addEventListener('keydown', function(e){
     if (e.key === 'Enter'){ e.preventDefault(); sendLink(); }
   });
   if (signinX) signinX.addEventListener('click', closeSignin);
-  if (signinDone) signinDone.addEventListener('click', closeSignin);
   if (signinModal) signinModal.addEventListener('click', function(e){
     if (e.target === signinModal) closeSignin();
   });
   addEventListener('keydown', function(e){
     if (e.key === 'Escape' && signinModal && signinModal.classList.contains('is-open')) closeSignin();
   });
-})();
+/* Discovery's modal carries a Close button portraits' does not. */
+var signinDone = document.getElementById('signinDone');
+if (signinDone) signinDone.addEventListener('click', closeSignin);
 // ── Checkout modal DOM binding ────────────────────────────────────────
 (function(){
   var ckX     = document.getElementById('ckX');
