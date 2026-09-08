@@ -3514,7 +3514,7 @@ function buildMinimap(){
 buildMinimap();
 function paintMinimapSelection(){
   document.querySelectorAll('.mm__grid i[data-key]').forEach(function(cell){
-    cell.classList.toggle('sel', SELECTED.some(function(s){ return s.key === cell.dataset.key || s.baseId === cell.dataset.key; }));
+    cell.classList.toggle('sel', SELECTED.some(function(s){ return s.key === cell.dataset.key; }));
   });
 }
 var TOTAL_EFFECTS = SILOS.reduce(function(a, s){ return a + s.effects.length; }, 0);
@@ -4187,11 +4187,7 @@ function syncDiscoveryChecks(){
   document.querySelectorAll('#discoveryView .stage-frame .card').forEach(function(card){
     var key = card.dataset.key;
     var checkEl = card.querySelector('.card__badge'); if (!checkEl) return;
-    /* dataset.key is always the BASE id (effectKey -> effects[i].id), while
-       SELECTED[].key becomes the subject-RESOLVED id once repaintSubject
-       rewrites it (3487). Matching baseId too is what keeps a variant
-       effect checked -- saveResume stores both. */
-    var isSelected = SELECTED.some(function(s){ return s.key === key || s.baseId === key; });
+    var isSelected = SELECTED.some(function(s){ return s.key === key; });
     checkEl.classList.toggle('checked', isSelected);
     checkEl.textContent = isSelected ? '✓' : '';
   });
@@ -4551,43 +4547,6 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
     } catch (e){}
   }
 
-  /* Restored only for someone who came back signed in, and only if it is
-     recent. A queue rebuilt from last week would be a surprise, not a
-     courtesy. Ported from portraits.html:8885-8923. */
-  function restoreResume(){
-    var raw = null, img = null;
-    try {
-      raw = localStorage.getItem(RESUME_KEY);
-      img = localStorage.getItem(RESUME_KEY + '_img');
-    } catch (e){ return false; }
-    if (!raw) return false;
-
-    var core;
-    try { core = JSON.parse(raw); } catch (e){ clearResume(); return false; }
-    if (!core || !core.queue || !core.queue.length){ clearResume(); return false; }
-    if (Date.now() - (core.at || 0) > 2 * 60 * 60 * 1000){ clearResume(); return false; }
-
-    if (img){
-      uploadedPhotoDataUrl = img;
-      SRC_B64 = img.split(',')[1] || null;
-      var stamp = document.querySelector('.photo-stamp');
-      if (stamp){ stamp.innerHTML = photoStampHtml(); fitStampThumb(); }
-    }
-
-    /* saveResume already wrote entries in SELECTED's own shape, so they go
-       back in directly -- no lookup, no rebuild. */
-    core.queue.forEach(function(q){
-      if (!SELECTED.some(function(s){ return s.key === q.key; })) SELECTED.push(q);
-    });
-    if (core.pose) POSE = core.pose;
-
-    syncDiscoveryChecks();
-    afterSelectionChange();
-
-    clearResume();
-    return true;
-  }
-
   /* ---- who is this ------------------------------------------------------
      401 is the ordinary answer for a visitor, not a fault. */
   function whoAmI(){
@@ -4608,7 +4567,7 @@ function paintMe(){
   if (nameEl) nameEl.textContent = ME && ME.email ? ME.email.split('@')[0] : 'Sign in';
   if (ME) renderCollection();
 }
-whoAmI().then(function(u){ if (u) restoreResume(); });
+whoAmI();
 
 // ── Payment confirmation — ?paid=1&session_id=... or ?portfolio_paid=1&session_id=... ──
 // Stripe embedded checkout navigates to return_url after payment completes.
@@ -5147,14 +5106,7 @@ function startCheckout(){
       subject: SUBJECT || null,
       sourceImageRef: SRC_B64 || '',
       returnUrl: window.location.origin + window.location.pathname,
-      /* SERVER_OFFER is built from the SESSION's count, not SELECTED.length
-         (discovery-session.ts:178). The two drift, and an unguarded read sent
-         the session's price for a different size -- most often the count-0
-         offer the session is created with, whose priceUsd is 0, which the
-         old `typeof === 'number'` test happily accepted. Server then priced
-         the 4 ids actually posted at 499 and refused: price_mismatch.
-         Same count guard the price on the rail has always used (3256). */
-      clientPriceUsd: (SERVER_OFFER && SERVER_OFFER.count === n && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]
+      clientPriceUsd: (SERVER_OFFER && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]
     };
   }
 
@@ -5171,6 +5123,7 @@ function startCheckout(){
     }).then(function(res){ return res.json().then(function(d){ return { status: res.status, data: d }; }); })
   ]).then(function(out){
     var r = out[1];
+    if (r.data.url) { window.location = r.data.url; return; }
     if (!r.data.clientSecret || !r.data.publishableKey) {
       /* Server rejected */
       var reason = r.data.error || r.data.message || 'Checkout could not be started';
@@ -6000,7 +5953,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
       document.body.appendChild(coll);
       coll.classList.add('is-docked');
     } else if (!small && coll.parentNode === document.body){
-      home.parentNode.insertBefore(coll, home.nextSibling);
+      if (home.parentNode) home.parentNode.insertBefore(coll, home.nextSibling);
       coll.classList.remove('is-docked');
       closeRail();
     }
