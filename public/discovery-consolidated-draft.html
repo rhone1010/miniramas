@@ -5171,6 +5171,7 @@ function startCheckout(){
     }).then(function(res){ return res.json().then(function(d){ return { status: res.status, data: d }; }); })
   ]).then(function(out){
     var r = out[1];
+    if (r.data.url) { window.location = r.data.url; return; }
     if (!r.data.clientSecret || !r.data.publishableKey) {
       /* Server rejected */
       var reason = r.data.error || r.data.message || 'Checkout could not be started';
@@ -6000,7 +6001,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
       document.body.appendChild(coll);
       coll.classList.add('is-docked');
     } else if (!small && coll.parentNode === document.body){
-      home.parentNode.insertBefore(coll, home.nextSibling);
+      if (home.parentNode) home.parentNode.insertBefore(coll, home.nextSibling);
       coll.classList.remove('is-docked');
       closeRail();
     }
