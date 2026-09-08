@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getStripe }                         from '@/lib/store/stripe'
 import { confirmPurchase, handlePaymentFailure } from '@/lib/store/entitlements'
+import { activatePortfolio }                     from '@/lib/store/portfolio-checkout'
 import { supabaseAdmin }                     from '@/lib/supabase'
 
 // Stripe needs the raw body to validate the signature. Disable parsing.
@@ -67,10 +68,14 @@ async function dispatch(event: Stripe.Event): Promise<void> {
           ? session.payment_intent
           : session.payment_intent?.id) ||
         session.id
-      await confirmPurchase({
+      const { purchaseId } = await confirmPurchase({
         stripeSessionId: session.id,
         stripeChargeId:  chargeId,
       })
+      // activatePortfolio is a no-op if no portfolio row exists for this
+      // purchase (singles, credits, carts). For portfolios it flips status
+      // to 'generating' and fires render jobs for each item.
+      await activatePortfolio(purchaseId)
       return
     }
 

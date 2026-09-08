@@ -104,9 +104,10 @@ export async function storeCleanOriginal(
   sb: SupabaseClient,
   previewId: string,
   imageB64: string,
+  series: string = 'portraits', // default preserves every existing caller's behavior
 ): Promise<string | null> {
   try {
-    const path = `portraits/${previewId}.png`
+    const path = `${series}/${previewId}.png`
     const { error } = await sb.storage
       .from(PREVIEW_BUCKET)
       .upload(path, Buffer.from(imageB64, 'base64'), {
