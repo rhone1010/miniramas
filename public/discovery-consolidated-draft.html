@@ -5394,14 +5394,14 @@ function renderCollection(){
         if (!items) return;
         items.forEach(function(item){
           n++;
-          all.push({ key:item.key, name:item.name, siloName:item.siloName,
+          all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
                       series:item.series, num:n, crafting:item.crafting,
                       locked:item.locked, previewId:item.previewId, art:item.art });
         });
       });
       shelf.forEach(function(item){
         n++;
-        all.push({ key:item.key, name:item.name, siloName:item.siloName,
+        all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
                     series:item.series, num:n, crafting:item.crafting,
                     locked:item.locked, previewId:item.previewId, art:item.art });
       });
@@ -5473,13 +5473,18 @@ function loadPortfolio(id){
     if (!st) return null;
     var unlockedBySlot = {};
     if (un && un.items) un.items.forEach(function(i){ unlockedBySlot[i.slot] = i.unlocked; });
-    if (un && typeof un.includedRemaining === 'number') INCLUDED_UNLOCKS_REMAINING = un.includedRemaining;
+    /* PER PORTFOLIO, NOT ONE GLOBAL. renderCollection runs loadPortfolio for
+       every portfolio in parallel, and this used to assign to a single
+       global — so the last fetch to resolve won, in a non-deterministic
+       order. With three portfolios the rail showed some other portfolio's
+       count and never moved when you spent this one's unlock. */
+    if (un && typeof un.includedRemaining === 'number') INCLUDED_BY_PORTFOLIO[id] = un.includedRemaining;
     /* portraits.html:7031 -- the id is the queue item's, and it is what
        land() replaces on. Portfolio + slot is the same thing here: stable
        from the first waiting tile to the finished piece, where 'p'+n was a
        position that moved as rows arrived. */
     return st.items.map(function(i){
-      return { key:'pf' + id + ':' + i.slot,
+      return { key:'pf' + id + ':' + i.slot, portfolioId: id,
                name:i.preset, siloName:'', series:canonicalSeries(st.series),
                locked: !unlockedBySlot[i.slot], crafting: i.status !== 'done',
                previewId: i.previewId, art: i.previewUrl || null };
@@ -5511,7 +5516,14 @@ var PIECES = (SELECTED.length ? SELECTED.map(function(s, i){
 ].map(function(r, i){
   return { key:'demo'+i, name:r[0], siloName:r[1], series:r[2], num:i+1, crafting:(r[3]===null), locked:(r[3]===null ? true : r[3]) };
 }));
-var INCLUDED_UNLOCKS_REMAINING = 1;
+/* Included unlocks belong to a portfolio, not to the account. Keyed by
+   portfolio id; a shelf piece has no portfolio and no included unlock. */
+var INCLUDED_BY_PORTFOLIO = {};
+function includedRemainingFor(p){
+  if (!p || !p.portfolioId) return 0;
+  var n = INCLUDED_BY_PORTFOLIO[p.portfolioId];
+  return typeof n === 'number' ? n : 0;
+}
 /* Starts true so a plain page load repaints without throwing the collection
    open. craftWhenPiecesLand clears it at the start of a paid run, exactly as
    runAll clears __RUN_LANDED -- portraits.html:7389. */
@@ -5589,12 +5601,13 @@ function featuredHtml(){
       '<div class="mc-feat__m">' + (p.siloName||'') + '<br>Crafted ' + (p.date||'Aug 28') + '</div>' +
       '<span class="mc-feat__state">' + (locked ? 'Preview' : 'Purchased') + '</span></div>' +
     '<div class="mc-feat__acts">' +
-      (locked ? '<button class="go" data-feat-unlock>' + (INCLUDED_UNLOCKS_REMAINING > 0 ? 'Unlock \u00b7 uses your included unlock' : 'Unlock this favourite \u00b7 $2.99') + '</button>'
+      (locked ? '<button class="go" data-feat-unlock>' + (includedRemainingFor(p) > 0 ? 'Unlock \u00b7 uses your included unlock' : 'Unlock this favourite \u00b7 $2.99') + '</button>'
               : '<button class="go ox" data-feat-dl>Download</button>') +
       '<button class="lnk" data-feat-open>View full size</button>' +
     '</div></div>';
 }
 function renderMycollRail(){
+  var featuredIncluded = includedRemainingFor(FEATURED);
   var lockedCount = PIECES.filter(function(p){ return p.locked && !p.crafting; }).length;
   var n = Object.keys(unlockSelection).length;
   var basket = n ? (
@@ -5613,7 +5626,11 @@ function renderMycollRail(){
         '<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 16l4.5-4.5 3.5 3.5 3-3L20 17"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>', Math.round((PIECES.length - lockedCount) / Math.max(1, PIECES.length) * 100)) +
       mcStat('preview', lockedCount, 'preview' + (lockedCount===1?'':'s') + ' waiting',
         '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>', Math.round(lockedCount / Math.max(1, PIECES.length) * 100)) +
-      mcStat('unlock', INCLUDED_UNLOCKS_REMAINING, 'included unlock' + (INCLUDED_UNLOCKS_REMAINING===1?'':'s') + ' left',
+      /* The featured piece's own portfolio, ruled 2026-09-09. Not a sum
+         across portfolios and not a per-card counter: a customer with three
+         purchases has three separate allowances, and one number for all of
+         them cannot be right for any of them. */
+      mcStat('unlock', featuredIncluded, 'included unlock' + (featuredIncluded===1?'':'s') + ' left',
         '<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>') +
     '</div>' + featuredHtml() + basket +
     '<button class="mc-back" id="mycollBackRail">← Back to Workshop</button>';
@@ -5650,7 +5667,7 @@ document.getElementById('navMyCollection').addEventListener('click', function(){
    and the clean original is bought.
 
    THE SERVER DECIDES WHETHER THIS COSTS ANYTHING. The client does not
-   inspect INCLUDED_UNLOCKS_REMAINING and choose a path — it asks
+   inspect the included-unlock count and choose a path — it asks
    /portraits/unlock first, and that route consumes the oldest available
    entitlement whose purchase is paid (unlock/route.ts:78-90). An included
    unlock is an entitlement activatePortfolio already wrote, so it is
@@ -5658,7 +5675,7 @@ document.getElementById('navMyCollection').addEventListener('click', function(){
    409 no_entitlement, and only then does Stripe open. That is how the two
    mechanics coexist without the browser arbitrating money.
 
-   What was here before: INCLUDED_UNLOCKS_REMAINING--; p.locked = false.
+   What was here before: a blind counter decrement and p.locked = false.
    No server call, no payment, and a reload put the lock straight back.
    ══════════════════════════════════════════════════════════════ */
 
@@ -5719,9 +5736,29 @@ function requestUnlock(previewId, key){
     if (out.status === 200 && out.data && out.data.image_b64){
       UNLOCKED_ART[previewId] = out.data.image_b64;
       clearUnlockNote();
-      /* The server is authoritative from here — /unlocks reports the piece
-         as unlocked because the route stamped preview_ledger.unlocked_at. */
-      return renderCollection().then(function(){ return 'unlocked'; });
+      /* POST-CONFIRMATION, NOT OPTIMISTIC. Nothing moves until the server has
+         said yes; this runs on a 200 that already carries the clean bytes.
+
+         It used to wait for renderCollection() before anything changed on
+         screen — a full re-read of every portfolio, eight requests for a
+         collection of three, on top of an unlock call that downloads the
+         clean original. Three seconds of a card that looked untouched, which
+         reads as a click that did not land.
+
+         Only the confirmed piece changes, and only its own portfolio's
+         allowance. renderCollection still runs underneath to reconcile with
+         the server; it is no longer what the customer is waiting for. */
+      var confirmed = null;
+      for (var ci = 0; ci < PIECES.length; ci++){ if (PIECES[ci].key === key){ confirmed = PIECES[ci]; break; } }
+      if (confirmed){
+        confirmed.locked = false;
+        if (confirmed.portfolioId && INCLUDED_BY_PORTFOLIO[confirmed.portfolioId] > 0){
+          INCLUDED_BY_PORTFOLIO[confirmed.portfolioId] -= 1;
+        }
+      }
+      renderMyCollectionGrid();
+      renderCollection();
+      return 'unlocked';
     }
     if (out.status === 409) return 'needs_payment';
     if (out.status === 402) return 'payment_pending';
@@ -5784,6 +5821,24 @@ function startUnlockCheckout(p){
 }
 
 /* The one entry point both unlock buttons call. */
+/* One unlock at a time per piece. Without this every click during the
+   round trip fired another POST /portraits/unlock and another full
+   renderCollection, so impatience made it slower. The ledger claim already
+   stops a second request from spending a second entitlement — this stops it
+   being sent at all. Keyed by piece, so two different pieces can still be
+   unlocked independently. */
+var UNLOCK_INFLIGHT = {};
+
+function setUnlockBusy(key, busy){
+  var card = mycollGrid && mycollGrid.querySelector('.card[data-piece="' + key + '"]');
+  var btn = card && card.querySelector('.card__quick[data-quick="unlock"]');
+  if (btn){ btn.disabled = busy; if (busy) btn.textContent = 'Unlocking…'; }
+  if (FEATURED && FEATURED.key === key){
+    var feat = document.querySelector('[data-feat-unlock]');
+    if (feat){ feat.disabled = busy; if (busy) feat.textContent = 'Unlocking…'; }
+  }
+}
+
 function unlockPiece(p){
   if (!p || !p.locked) return;
   if (!p.previewId){
@@ -5792,8 +5847,15 @@ function unlockPiece(p){
     console.warn('[discovery] no previewId on', p.key, '— nothing to unlock');
     return;
   }
+  if (UNLOCK_INFLIGHT[p.key]) return;
+  UNLOCK_INFLIGHT[p.key] = true;
+  setUnlockBusy(p.key, true);
   clearUnlockNote();
   requestUnlock(p.previewId, p.key).then(function(result){
+    delete UNLOCK_INFLIGHT[p.key];
+    /* Success already repainted; every other path has to put the control
+       back, because the label was replaced with "Unlocking…". */
+    if (result !== 'unlocked') { setUnlockBusy(p.key, false); renderMyCollectionGrid(); }
     if (result === 'unlocked') return;
     if (result === 'needs_payment') return startUnlockCheckout(p);
     if (result === 'payment_pending'){
@@ -5911,7 +5973,7 @@ function renderMyCollectionGrid(){
       el.innerHTML =
         '<div class="card__art"' + (p.art ? ' style="background-image:url(' + p.art + ')"' : artStyle(p.name)) + '>' +
           '<div class="card__overlay"></div>' +
-          (p.locked ? '<button class="card__quick" data-quick="unlock">' + (INCLUDED_UNLOCKS_REMAINING > 0 ? 'Unlock \u00b7 included' : 'Unlock \u00b7 $2.99') + '</button>'
+          (p.locked ? '<button class="card__quick" data-quick="unlock">' + (includedRemainingFor(p) > 0 ? 'Unlock \u00b7 included' : 'Unlock \u00b7 $2.99') + '</button>'
                     : '<button class="card__quick dl" data-quick="dl">Download</button>') +
           (p.locked ? '<div class="card__badge' + (unlockSelection[p.key]?' on':'') + '" data-key="' + p.key + '">' + (unlockSelection[p.key]?'✓':'🔒') + '</div>' : '') +
         '</div>'; // no title on the tile -- the image is the identification
@@ -5968,7 +6030,7 @@ function paintLightbox(){
   document.getElementById('lboxName').innerHTML = pieceTitle(p) + '<span class="lbox__series">' + (p.siloName||'') + '</span>';
   var acts;
   if (p.locked){
-    var usingIncluded = INCLUDED_UNLOCKS_REMAINING > 0;
+    var usingIncluded = includedRemainingFor(p) > 0;
     acts = '<button class="mc-act is-fill" data-lb="unlock">' +
       (usingIncluded ? 'Use included unlock' : 'Unlock this favorite \u00b7 $2.99') + '</button>';
   } else {
