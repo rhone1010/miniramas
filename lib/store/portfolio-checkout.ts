@@ -275,22 +275,22 @@ export async function activatePortfolio(purchaseId: string): Promise<void> {
     .eq('id', portfolio.id)
   if (flipErr) throw new Error(`portfolio_activate_flip_failed: ${flipErr.message}`)
 
-  const { data: items, error: itemsErr } = await supabaseAdmin
-    .from('portfolio_items')
-    .select('id, slot, preset')
-    .eq('portfolio_id', portfolio.id)
-  if (itemsErr) throw new Error(`portfolio_items_read_failed: ${itemsErr.message}`)
+  /* ACTIVATION SETS STATE. IT DOES NOT SCHEDULE.
+     A per-item dispatch loop used to sit here, firing one unawaited POST per
+     item from inside the Stripe webhook. It had stopped working twice over:
+     items/render is secret-gated and the loop sent no Authorization, so every
+     request answered 401 — and a 401 is a response rather than a throw, so
+     the .catch() never fired and nothing was logged. Underneath that, the
+     webhook has no maxDuration and may be frozen once its response is sent,
+     so requests it does not await are not requests that get made.
 
-  const appUrl = getAppUrl()
-  for (const item of items ?? []) {
-    fetch(`${appUrl}/api/v1/portfolios/items/render`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ portfolioItemId: item.id }),
-    }).catch((err) => {
-      console.error(`[activatePortfolio] render fetch failed for item ${item.id}`, err)
-    })
-  }
+     It is removed rather than repaired. The authenticated client dispatch
+     route (/portfolios/[portfolioId]/dispatch) is the primary scheduler and
+     the cron poller is recovery; giving this its Authorization header back
+     would make a second primary scheduler out of the least reliable caller in
+     the system. Anything the client misses is what cron is for.
 
-  console.log(`[activatePortfolio] portfolio=${portfolio.id} fired ${items?.length ?? 0} jobs`)
+     'generating' is the whole contract: it is what dispatch and the poller
+     both select on, and it is the proof the purchase was confirmed. */
+  console.log(`[activatePortfolio] portfolio=${portfolio.id} activated`)
 }
