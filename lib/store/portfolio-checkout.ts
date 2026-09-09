@@ -61,29 +61,32 @@ const PORTFOLIO_SIZES: Array<{
   { count: 16, tier: 'tier_4', skuId: 'basket_discover_20',  priceCents: 1299, unlocks: 2, delivery: 'preview'   },
 ]
 
-/* COMPOSITION: FRAMING, NOT ASPECT. portraits/generate:319 derives the aspect
-   ratio from framing and ignores whatever aspect the client sent --
-   ASPECT_FOR_FRAMING is bust 1:1, signature 1:1, statuesque 3:4. So carrying
-   the customer's aspect choice means choosing the framing that produces it.
+/* FRAMING AND ASPECT ARE SEPARATE CONCERNS. An earlier cut of this file
+   mapped the customer's aspect onto a framing -- 3:4 became 'statuesque' --
+   because portraits/generate derived aspect from framing and that looked
+   like the only lever available. It was the wrong lever: framing selects the
+   verbatim composition block that describes the SUBJECT, and swapping it
+   changed how a piece was composed for a customer who had only picked a
+   canvas shape. It also could not express 4:3 at all, because no framing
+   produces it.
 
-   1:1 maps to bust rather than signature because bust is what
-   renderOnePortfolioItem has always hardcoded; picking signature here would
-   change the look of every square piece, which is not what was asked for.
+   Ruled 2026-09-09: Discovery has no framing step. All three of its aspect
+   choices -- Square 1:1, Portrait 3:4, Landscape 4:3 -- use the Bust
+   composition block, which is exactly what renderOnePortfolioItem has always
+   sent. So framing is a constant here, and the canvas is carried on its own
+   as output_aspect_ratio. */
+const PURCHASED_FRAMING = 'bust'
 
-   4:3 HAS NO FRAMING. The generator's vocabulary produces 1:1 and 3:4 and
-   nothing else, so the Landscape option in the aspect step cannot be
-   honoured. It falls back to bust -- today's behaviour for every piece of
-   every size, so nothing regresses -- and says so in the log. Reported to
-   Rich 2026-09-09 as an unmet term of the size-1 contract; the fix is a
-   product decision about the framing vocabulary, not a mapping to invent
-   here. */
-export function framingForAspect(aspectRatio: string | null | undefined): string {
-  if (aspectRatio === '3:4') return 'statuesque'
-  if (aspectRatio === '1:1') return 'bust'
+/* The aspect step's three options and nothing else. An unrecognised value
+   records null rather than guessing -- null means "not captured", and the
+   render then falls through to the framing-derived aspect exactly as every
+   piece did before any of this existed. */
+export function normalizeAspectChoice(aspectRatio: string | null | undefined): string | null {
+  if (aspectRatio === '1:1' || aspectRatio === '3:4' || aspectRatio === '4:3') return aspectRatio
   if (aspectRatio) {
-    console.warn(`[portfolio-checkout] no framing produces aspect ${aspectRatio} — falling back to bust (1:1)`)
+    console.warn(`[portfolio-checkout] unrecognised aspect ${aspectRatio} -- recording null`)
   }
-  return 'bust'
+  return null
 }
 
 const VALID_COUNTS = new Set(PORTFOLIO_SIZES.map((s) => s.count))
@@ -285,7 +288,8 @@ export async function createPortfolioCheckout(
          this column instead of counting items. */
       delivery: offer.delivery,
       pose: args.pose ?? null,
-      framing: framingForAspect(args.aspectRatio),
+      framing: PURCHASED_FRAMING,
+      aspect_ratio: normalizeAspectChoice(args.aspectRatio),
       subject: args.subject ?? null,
     })
     .select()
@@ -304,7 +308,7 @@ export async function createPortfolioCheckout(
 
   console.log(
     `[createPortfolioCheckout] ${args.series} ${offer.count}pc sku=${offer.skuId} ` +
-    `delivery=${offer.delivery} framing=${framingForAspect(args.aspectRatio)} ` +
+    `delivery=${offer.delivery} framing=${PURCHASED_FRAMING} aspect=${normalizeAspectChoice(args.aspectRatio) ?? 'none'} ` +
     `pose=${args.pose ?? 'none'} portfolio=${portfolioId}`,
   )
   return { checkoutUrl: session.url, purchaseId, portfolioId }
