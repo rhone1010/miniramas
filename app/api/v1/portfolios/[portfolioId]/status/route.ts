@@ -2,6 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getUser } from '@/lib/store/auth'
+import { PREVIEW_BUCKET } from '@/lib/store/preview'
+
+const SIGNED_URL_TTL = 60 * 60 * 24   // 24h — a browsing session's worth
 
 export async function GET(
   req: NextRequest,
@@ -33,6 +36,27 @@ export async function GET(
 
   const doneCount = (items ?? []).filter((i) => i.status === 'done').length
 
+  // Mint signed URLs for watermarked previews (24h TTL, same as pieces route).
+  // Path is deterministic: watermarked/{series}/{previewId}.png
+  const mappedItems = await Promise.all((items ?? []).map(async (i) => {
+    let previewUrl: string | null = null
+    if (i.preview_id && i.status === 'done') {
+      const wmPath = `watermarked/${portfolio.series}/${i.preview_id}.png`
+      const { data: signed } = await supabaseAdmin.storage
+        .from(PREVIEW_BUCKET)
+        .createSignedUrl(wmPath, SIGNED_URL_TTL)
+      previewUrl = signed?.signedUrl ?? null
+    }
+    return {
+      slot: i.slot,
+      preset: i.preset,
+      status: i.status,
+      previewId: i.preview_id,
+      previewUrl,
+      attempts: i.attempts ?? 0,
+    }
+  }))
+
   return NextResponse.json({
     portfolioId: portfolio.id,
     series: portfolio.series,
@@ -40,12 +64,6 @@ export async function GET(
     status: portfolio.status,
     doneCount,
     freeUnlocks: portfolio.free_unlocks,
-    items: (items ?? []).map((i) => ({
-      slot: i.slot,
-      preset: i.preset,
-      status: i.status,
-      previewId: i.preview_id,
-      attempts: i.attempts ?? 0,
-    })),
+    items: mappedItems,
   })
 }

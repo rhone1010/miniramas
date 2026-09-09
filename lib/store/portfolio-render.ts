@@ -17,7 +17,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase'
 import { getAppUrl } from '@/lib/store/stripe'
-import { storeCleanOriginal, bakeWatermark, recordPreview } from '@/lib/store/preview'
+import { storeCleanOriginal, bakeWatermark, recordPreview, PREVIEW_BUCKET } from '@/lib/store/preview'
 import { decideRetry } from '@/lib/store/portfolio-replace'
 import { styleIdForPreset } from '@/lib/store/portraits-style-lookup'
 import crypto from 'crypto'
@@ -98,6 +98,22 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     } catch (e: any) {
       console.error(`[portfolios/items/render] watermark bake FAILED for ${portfolioItemId}`, e)
       await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'watermark_failed')
+      return
+    }
+
+    // Persist the watermarked bytes alongside the clean original.
+    // Clean original lives at {series}/{previewId}.png (for unlock/print).
+    // Watermarked lives at watermarked/{series}/{previewId}.png (for preview display).
+    const wmPath = `watermarked/${portfolio.series}/${previewId}.png`
+    const { error: wmUpErr } = await supabaseAdmin.storage
+      .from(PREVIEW_BUCKET)
+      .upload(wmPath, Buffer.from(watermarked, 'base64'), {
+        contentType: 'image/png',
+        upsert: true,
+      })
+    if (wmUpErr) {
+      console.error(`[portfolios/items/render] watermark upload FAILED for ${portfolioItemId}:`, wmUpErr.message)
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'watermark_upload_failed')
       return
     }
 
