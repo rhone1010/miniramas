@@ -108,12 +108,35 @@ export interface CreatePortfolioCheckoutResult {
   portfolioId: string
 }
 
-function safeReturnBase(returnUrl: string | undefined, appUrl: string): string {
+/* Where Stripe sends the customer back to.
+ *
+ * OPEN-REDIRECT GUARD. returnUrl arrives from the browser, so an attacker
+ * who can set it must not be able to point our success_url at a host they
+ * control. Anything that is not ours falls back to APP_URL.
+ *
+ * "Ours" includes subdomains as of 2026-09-08. Discovery is served from
+ * discovery.litenco.com while APP_URL is litenco.com, so exact-origin
+ * matching rejected every Discovery return and sent the customer to
+ * APP_URL/collections instead — a path that does not exist, on a host that
+ * is not Discovery. The portfolio rendered and was never shown, because
+ * nothing on that page knows how to look for it.
+ *
+ * The subdomain test requires the leading dot, which is the whole of the
+ * protection: litenco.com.evil.com ends with ".evil.com" and evillitenco.com
+ * ends with nothing of ours, so both fail. Protocol must match as well, so
+ * an https deployment cannot be talked into returning over http.
+ *
+ * Exported for test only.
+ */
+export function safeReturnBase(returnUrl: string | undefined, appUrl: string): string {
   if (!returnUrl) return `${appUrl}/collections`
   try {
     const u = new URL(returnUrl)
     const app = new URL(appUrl)
-    if (u.origin !== app.origin) return `${appUrl}/collections`
+    if (u.protocol !== app.protocol) return `${appUrl}/collections`
+    const sameHost  = u.host === app.host
+    const subdomain = u.hostname.endsWith(`.${app.hostname}`)
+    if (!sameHost && !subdomain) return `${appUrl}/collections`
     return `${u.origin}${u.pathname}`
   } catch {
     return `${appUrl}/collections`
