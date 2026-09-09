@@ -20,7 +20,7 @@ export async function GET(
 
   const { data: portfolio, error: portfolioErr } = await supabaseAdmin
     .from('portfolios')
-    .select('id, user_id, series, size, status, free_unlocks')
+    .select('id, user_id, series, size, status, free_unlocks, aspect_ratio')
     .eq('id', portfolioId)
     .maybeSingle()
   if (portfolioErr) return NextResponse.json({ error: 'portfolio_status_query_failed' }, { status: 500 })
@@ -114,6 +114,11 @@ export async function GET(
     portfolioId: portfolio.id,
     series: portfolio.series,
     size: portfolio.size,
+    /* The canvas the customer bought. Portfolio-level: every item of a
+       portfolio shares it. Null for the six that predate migration 030 and
+       for every preview bundle, and the client falls back to the card
+       ratio exactly as it did before. */
+    aspectRatio: portfolio.aspect_ratio ?? null,
     status: portfolio.status,
     doneCount,
     freeUnlocks: portfolio.free_unlocks,
