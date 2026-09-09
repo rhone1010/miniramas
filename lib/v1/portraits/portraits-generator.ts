@@ -354,7 +354,11 @@ export async function generatePortraitsRender(
   if (finalImageB64 && req.resolution) {
     try {
       const framing = normalizeFraming(req.framing)
-      const { width, height } = outputDimensions(framing, req.resolution as ResolutionTier)
+      /* The override has to reach the resize too, or Stage 4 crops a 4:3
+         render back to the framing's square with fit:'cover'. */
+      const { width, height } = outputDimensions(
+        framing, req.resolution as ResolutionTier, req.output_aspect_ratio ?? null,
+      )
       finalImageB64 = (
         await sharp(Buffer.from(finalImageB64, 'base64'))
           .resize(width, height, { fit: 'cover', kernel: 'lanczos3' })

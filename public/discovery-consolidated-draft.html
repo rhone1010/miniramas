@@ -962,8 +962,20 @@ body{
   display:flex; flex-direction:column; align-items:center; gap:1em;
   max-width:min(86vw, 940px); max-height:100%;
 }
+/* FULL SIZE SHOWS THE WHOLE MASTER, AT ITS OWN SHAPE. The gallery card is
+   a fixed frame that crops to fill, and stays exactly as it was. This is the
+   one place the true canvas is visible, so its box takes the piece's ratio
+   instead of the card's.
+
+   Same rule as before, not a new one: the .75 in the width was the 3:4
+   card ratio written out by hand, so both halves now read the same custom
+   property. --lbox-ar is set per piece by paintLightbox and left unset for
+   anything without a stored ratio -- a preview bundle, or a piece predating
+   migration 030 -- where the fallbacks are the literal values this rule
+   always had. Because the box then matches the image, background-size:cover
+   fills it exactly and crops nothing. */
 .lbox__img{
-  position:relative; width:min(86vw, 68vh * .75); aspect-ratio:var(--card-ar);
+  position:relative; width:min(86vw, 68vh * var(--lbox-ar, .75)); aspect-ratio:var(--lbox-ar, var(--card-ar));
   max-height:68vh;
   border:1px solid rgba(196,169,110,.26); border-radius:6px;
   box-shadow:0 1.6rem 4rem rgba(0,0,0,.6);
@@ -5113,50 +5125,39 @@ function startCheckout(){
   var errEl = document.getElementById('checkoutError');
   if (errEl) errEl.remove();
 
-  var payload, endpoint;
+  /* ONE ENDPOINT FOR EVERY SIZE. A `n === 1` branch used to sit here and
+     send size 1 to /api/v1/checkout with skuId:'single' -- the original
+     single-craft path. That is where the 13 historical paid singles went,
+     and where 10 of their entitlements are still stranded at 'pending'
+     with a return page that 404s.
 
-  if (n === 1) {
-    /* ── Size 1 → single checkout (/api/v1/checkout) ──────────── */
-    var sel = SELECTED[0];
-    endpoint = '/api/v1/checkout';
-    payload = {
-      skuId: 'single',
-      style: sel.baseId,
-      variant: sel.key,
-      /* One piece, same composition block as a portfolio of sixteen. */
-      pose: POSE || 'as_photographed',
-      aspect_ratio: aspectRatioOf(ASPECT),
-      subject: SUBJECT || null,
-      sourceImageRef: SRC_B64 || '',
-      returnUrl: window.location.origin + window.location.pathname
-    };
-  } else {
-    /* ── Size 4/8/16 → portfolio checkout (/api/v1/portfolios) ── */
-    endpoint = '/api/v1/portfolios';
-    /* pose, aspect_ratio and subject were built by buildCheckoutPayload()
-       and dropped here — this object was assembled by hand and never
-       carried them, so the pose step chose a pose that reached nothing.
-       clientPriceUsd keeps its own fallback: buildCheckoutPayload sends
-       null where this sends SIZE_PRICE[n], and the server rejects a
-       mismatch. */
-    payload = {
-      series: 'portraits',
-      selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
-      pose: POSE || 'as_photographed',
-      aspect_ratio: aspectRatioOf(ASPECT),
-      subject: SUBJECT || null,
-      sourceImageRef: SRC_B64 || '',
-      returnUrl: window.location.origin + window.location.pathname,
-      /* SERVER_OFFER is built from the SESSION's count, not SELECTED.length
-         (discovery-session.ts:178). The two drift, and an unguarded read sent
-         the session's price for a different size -- most often the count-0
-         offer the session is created with, whose priceUsd is 0, which the
-         old `typeof === 'number'` test happily accepted. Server then priced
-         the 4 ids actually posted at 499 and refused: price_mismatch.
-         Same count guard the price on the rail has always used (3256). */
-      clientPriceUsd: (SERVER_OFFER && SERVER_OFFER.count === n && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]
-    };
-  }
+     Size 1 is now a portfolio of one and rides the same proven machinery:
+     payment -> activation -> immediate dispatch -> render. The server
+     prices it from the same size table (portfolio-checkout.ts), still
+     against the same 'single' SKU at 299, and records
+     portfolios.delivery = 'purchased' so the piece is bought outright and
+     renders already unlocked -- no preview, no unlock step.
+
+     The historical rows are untouched by this and stay distinguishable:
+     they have no portfolios row at all. */
+  var endpoint = '/api/v1/portfolios';
+  var payload = {
+    series: 'portraits',
+    selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
+    pose: POSE || 'as_photographed',
+    aspect_ratio: aspectRatioOf(ASPECT),
+    subject: SUBJECT || null,
+    sourceImageRef: SRC_B64 || '',
+    returnUrl: window.location.origin + window.location.pathname,
+    /* SERVER_OFFER is built from the SESSION's count, not SELECTED.length
+       (discovery-session.ts:178). The two drift, and an unguarded read sent
+       the session's price for a different size -- most often the count-0
+       offer the session is created with, whose priceUsd is 0, which the
+       old `typeof === 'number'` test happily accepted. Server then priced
+       the 4 ids actually posted at 499 and refused: price_mismatch.
+       Same count guard the price on the rail has always used (3256). */
+    clientPriceUsd: (SERVER_OFFER && SERVER_OFFER.count === n && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]
+  };
 
   act('checkout ' + n);
   console.log('[discovery] startCheckout →', endpoint, 'count=' + n);
@@ -5396,14 +5397,16 @@ function renderCollection(){
           n++;
           all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
                       series:item.series, num:n, crafting:item.crafting,
-                      locked:item.locked, previewId:item.previewId, art:item.art });
+                      locked:item.locked, previewId:item.previewId, art:item.art,
+                      aspect:item.aspect });
         });
       });
       shelf.forEach(function(item){
         n++;
         all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
                     series:item.series, num:n, crafting:item.crafting,
-                    locked:item.locked, previewId:item.previewId, art:item.art });
+                    locked:item.locked, previewId:item.previewId, art:item.art,
+                    aspect:item.aspect });
       });
       if (!all.length) return null;
       /* The demo seed goes the first time real work answers, and only then. */
@@ -5487,7 +5490,11 @@ function loadPortfolio(id){
       return { key:'pf' + id + ':' + i.slot, portfolioId: id,
                name:i.preset, siloName:'', series:canonicalSeries(st.series),
                locked: !unlockedBySlot[i.slot], crafting: i.status !== 'done',
-               previewId: i.previewId, art: i.previewUrl || null };
+               previewId: i.previewId, art: i.previewUrl || null,
+               /* The canvas this master was rendered on. Portfolio-level, so
+                  every item shares it. Null for a preview bundle and for
+                  anything predating migration 030. */
+               aspect: st.aspectRatio || null };
     });
   }).catch(function(e){ console.warn('[discovery] portfolio load failed:', e); return null; });
 }
@@ -6020,12 +6027,26 @@ document.getElementById('mycollFilters').addEventListener('click', function(e){
 var lbox = document.getElementById('lbox');
 var LB_AT = 0;
 function lbList(){ return mcVisible().filter(function(p){ return !p.crafting; }); }
+/* The three canvases a purchased master can have. Anything else -- and that
+   includes every preview bundle, which stores none -- returns null and leaves
+   the lightbox on the card ratio it has always used. */
+var LBOX_AR = { '1:1': '1', '3:4': '0.75', '4:3': '1.3333' };
+function lboxAspectFor(p){
+  return (p && p.aspect && LBOX_AR[p.aspect]) || null;
+}
+
 function paintLightbox(){
   var list = lbList(); var p = list[LB_AT];
   if (!p) return;
   if (FEATURED !== p){ FEATURED = p; renderMycollRail(); mycollGrid.querySelectorAll('.card.is-featured').forEach(function(c){ c.classList.remove('is-featured'); }); var t = mycollGrid.querySelector('.card[data-piece="' + p.key + '"]'); if (t) t.classList.add('is-featured'); }
   var li = document.getElementById('lboxImg');
   li.className = 'lbox__img' + (p.locked ? ' is-locked' : '');
+  /* Ratio as a decimal, because the width uses it inside a calc where a
+     'w/h' token is not a number. Cleared when the piece has no stored
+     ratio, so the rule falls back to exactly what it did before. */
+  var lbAr = lboxAspectFor(p);
+  if (lbAr) li.style.setProperty('--lbox-ar', lbAr);
+  else li.style.removeProperty('--lbox-ar');
   li.style.backgroundImage = p.art ? 'url(' + p.art + ')' : (ART[p.name] ? 'url(' + ART[p.name] + ')' : '');
   document.getElementById('lboxName').innerHTML = pieceTitle(p) + '<span class="lbox__series">' + (p.siloName||'') + '</span>';
   var acts;

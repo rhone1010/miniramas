@@ -36,7 +36,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
 
     const { data: portfolio, error: portfolioErr } = await supabaseAdmin
       .from('portfolios')
-      .select('id, series, source_image')
+      .select('id, series, source_image, delivery, pose, framing, subject, aspect_ratio')
       .eq('id', item.portfolio_id)
       .maybeSingle()
     if (portfolioErr || !portfolio) {
@@ -52,6 +52,10 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
       return
     }
 
+    /* Read once, used three times below. The column is the authority --
+       nothing here counts items or tests size. */
+    const purchased = portfolio.delivery === 'purchased'
+
     const styleId = styleIdForPreset(item.preset)
     const appUrl = getAppUrl()
 
@@ -65,8 +69,34 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
           source_image_b64: portfolio.source_image,
           style_id: styleId,
           preset_id: item.preset,
-          framing: 'bust',
+          /* COMPOSITION APPLIES TO A PURCHASED PORTFOLIO ONLY.
+             The columns are captured for every size, but reading them back
+             for 4/8/16 would change what those bundles render -- their
+             pieces have always come out bust/close_up/1:1 -- and that was
+             explicitly out of scope. So a preview bundle keeps the literal
+             values it has always sent, byte for byte, and only a purchased
+             single honours what the customer chose.
+             Honouring it for bundles later is this one condition. */
+          /* Framing is 'bust' for every size. Discovery has no framing step
+             and all three of its aspect choices use the Bust composition
+             block, so this is the literal value 4/8/16 have always sent. */
+          framing: purchased ? (portfolio.framing || 'bust') : 'bust',
           scale: 'close_up',
+          /* THE CANVAS, CARRIED SEPARATELY FROM THE COMPOSITION. Only a
+             purchased portfolio sends it, so a preview bundle's request is
+             byte-identical to what it has always been and keeps rendering
+             at the framing-derived 1:1.
+
+             Deliberately not `aspect_ratio`: portraits.html sends that as
+             '1:1' on every request and depends on the route discarding it
+             (portraits.html:6742). output_aspect_ratio is a new field
+             nothing else sends. Absent -> the route's existing
+             ASPECT_FOR_FRAMING behaviour, unchanged. */
+          ...(purchased && portfolio.aspect_ratio
+            ? { output_aspect_ratio: portfolio.aspect_ratio }
+            : {}),
+          ...(purchased && portfolio.pose    ? { pose: portfolio.pose }       : {}),
+          ...(purchased && portfolio.subject ? { subject: portfolio.subject } : {}),
         }),
       })
       genResult = await res.json()
@@ -150,6 +180,13 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
       preset: item.preset,
       resolution: '1k',
       storagePath,
+      /* BOUGHT OUTRIGHT MEANS BORN UNLOCKED. This is the only place the
+         delivery model changes what gets written, and it is one field: a
+         purchased piece has no unlock step and no entitlement behind it, so
+         stamping unlocked_at here is what makes /status serve the clean
+         master and the client show Download instead of Unlock. Neither of
+         those needed a change. */
+      unlockedAt: purchased ? new Date().toISOString() : null,
     })
     if (!ledgered) {
       console.error(`[portfolios/items/render] ledger write failed for ${portfolioItemId} — not marking done`)

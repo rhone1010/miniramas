@@ -317,6 +317,24 @@ export const ASPECT_FOR_FRAMING: Record<Framing, string> = {
   statuesque: '3:4',
 }
 
+/* ── OUTPUT ASPECT, INDEPENDENT OF FRAMING ────────────────────────
+   Framing and aspect are separate concerns and were fused here: framing
+   picks the verbatim composition block that describes the subject, and the
+   table above happened to be the only thing that ever set a canvas shape.
+   Three framings collapse to two ratios, so 4:3 was unreachable -- not
+   because NB2 cannot do it (landscapes, houses, groups and actionmini all
+   ask it for 4:3) but because Portraits had no way to say so.
+
+   These are the ratios a Portrait may be rendered on. Deliberately NOT the
+   full NB2 list: this is the set Discovery's aspect step offers -- Square,
+   Portrait, Landscape -- and widening it is a product decision. */
+export const PORTRAIT_OUTPUT_ASPECTS = ['1:1', '3:4', '4:3'] as const
+export type PortraitOutputAspect = typeof PORTRAIT_OUTPUT_ASPECTS[number]
+
+export function isPortraitOutputAspect(v: unknown): v is PortraitOutputAspect {
+  return typeof v === 'string' && (PORTRAIT_OUTPUT_ASPECTS as readonly string[]).includes(v)
+}
+
 // Legacy bridge: the old engine vocabulary never reached the prompt
 // builder, but the UI's pre-trio data used `full_body`. Anything still
 // carrying it maps to Statuesque.
@@ -346,12 +364,29 @@ export function isResolutionTier(v: unknown): v is ResolutionTier {
 export function outputDimensions(
   framing: Framing,
   resolution: ResolutionTier,
+  outputAspect?: string | null,
 ): { width: number; height: number } {
   const long = LONG_EDGE_PX[resolution]
-  // 3:4 → width is three-quarters of the (long-edge) height; 1:1 → square.
-  return ASPECT_FOR_FRAMING[framing] === '3:4'
-    ? { width: Math.round((long * 3) / 4), height: long }
-    : { width: long, height: long }
+
+  /* THE CROP TRAP THIS CLOSES. Stage 4 resizes to these dimensions with
+     fit:'cover', and this used to read the ratio off the FRAMING. A render
+     produced on a 4:3 canvas with framing 'bust' would be resized to bust's
+     square and cropped back to 1:1 -- silently, after the fact, undoing the
+     whole point of asking for 4:3.
+
+     It is inert today: Stage 4 only runs when a resolution tier is set, and
+     the portfolio render path never sets one. It would have bitten the first
+     time anyone added a tier there. */
+  const ratio = outputAspect ?? ASPECT_FOR_FRAMING[framing]
+  const [w, h] = ratio.split(':').map(Number)
+  if (!w || !h || !isFinite(w) || !isFinite(h)) return { width: long, height: long }
+
+  /* Long edge is the larger side, whichever it is. For the two ratios that
+     existed before this argument, the arithmetic is unchanged: 3:4 gives
+     width = long*3/4, height = long; 1:1 gives a square. */
+  return w >= h
+    ? { width: long, height: Math.round((long * h) / w) }
+    : { width: Math.round((long * w) / h), height: long }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -619,6 +654,17 @@ export interface PortraitsGenerateRequest {
   // from framing and sets aspect_ratio accordingly; a client aspect that
   // disagrees is ignored. Absent → DEFAULT_FRAMING ('signature').
   framing?:                Framing
+
+  /* AN EXPLICIT CANVAS, WHEN THE CALLER MEANS IT. Overrides the
+     framing-derived aspect above -- and only this field does. It is
+     deliberately NOT `aspect_ratio`: portraits.html sends
+     aspect_ratio:'1:1' on every single request (portraits.html:6821) and
+     relies on the route discarding it, so honouring that field would pin
+     every live Portraits render to square and break Statuesque's 3:4.
+     Nothing existing sends output_aspect_ratio, so nothing existing
+     changes. Absent → the framing-derived aspect, byte for byte.
+     Validated against PORTRAIT_OUTPUT_ASPECTS at the route. */
+  output_aspect_ratio?:    PortraitOutputAspect
   // Resolution tier → realized as a post-render resize to outputDimensions().
   // Absent → no resize (native NB2 size; preserves legacy caller behavior).
   resolution?:             ResolutionTier
