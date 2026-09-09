@@ -110,6 +110,9 @@ export async function POST(req: Request) {
       preset:     presetKey || null,
       label:      generatedLabel,
       mode:       typeof body.mode === 'string' ? body.mode : null,
+      /* Explicit, never inferred. Absent means Portraits, which is what
+         every caller of this route is today. */
+      product_path: typeof body.product_path === 'string' ? body.product_path : 'portraits',
       image_path: imagePath,
       source_path: null,
       meta:       body.meta && typeof body.meta === 'object' ? body.meta : {},
@@ -145,10 +148,19 @@ export async function GET(req: Request) {
     const wantAll      = url.searchParams.get('all') === '1'
     const wantArchived = url.searchParams.get('archived') === '1'
 
+    /* WHICH PRODUCT'S SHELF. Portraits and Discovery are separate product
+       paths with separate collections, ruled 2026-09-09. Defaulting to
+       'portraits' keeps every existing caller — portraits.html, the Print
+       Shop, the account page — reading exactly what it read before, while
+       Discovery asks for its own shelf by name. Nothing is inferred: the
+       column is written at insert (migration 027). */
+    const productPath = url.searchParams.get('product_path') || 'portraits'
+
     let q = db
       .from('collection_pieces')
       .select('id, series, preset, label, mode, image_path, source_path, meta, created_at, archived, archived_at')
       .eq('owner_key', ownerKey)
+      .eq('product_path', productPath)
 
     if (!wantAll) q = q.eq('archived', wantArchived)
 

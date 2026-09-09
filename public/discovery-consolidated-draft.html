@@ -5271,7 +5271,10 @@ function pieceLanded(piece){
    { pieces: [] } rather than an error, and an empty shelf must never stop
    the collection from opening. */
 function loadShelf(){
-  return fetch('/api/v1/portraits/pieces', { credentials:'include' })
+  /* Discovery's own shelf only. Portraits pieces stay in Portraits —
+     separate product paths, separate collections. The scope is an
+     explicit column (migration 027), not a guess at series or date. */
+  return fetch('/api/v1/portraits/pieces?product_path=discovery', { credentials:'include' })
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){
       var rows = (d && d.pieces) || [];
@@ -5279,7 +5282,7 @@ function loadShelf(){
         /* Owned outright: never locked, never crafting. The lock is a
            portfolio mechanic and a single has no preview to unlock. */
         return { key:'pc' + p.id, name:p.preset || p.label, siloName:'',
-                 series:p.series === 'portraits' ? 'Portraits' : p.series,
+                 series:canonicalSeries(p.series),
                  crafting:false, locked:false, previewId:null,
                  art:p.image_url || null };
       });
@@ -5442,7 +5445,7 @@ function loadPortfolio(id){
        position that moved as rows arrived. */
     return st.items.map(function(i){
       return { key:'pf' + id + ':' + i.slot,
-               name:i.preset, siloName:'', series:st.series,
+               name:i.preset, siloName:'', series:canonicalSeries(st.series),
                locked: !unlockedBySlot[i.slot], crafting: i.status !== 'done',
                previewId: i.previewId, art: i.previewUrl || null };
     });
@@ -5480,6 +5483,23 @@ var INCLUDED_UNLOCKS_REMAINING = 1;
 var RUN_LANDED  = true;
 var REAL_PIECES = false;
 var unlockSelection = {}; // key -> true
+/* ONE BOUNDARY FOR SERIES CASING. The DB stores lowercase ('portraits',
+   'pets'), the filter pills carry capitalised labels ('Portraits', 'Pets'),
+   and until now each source converted on its own: loadShelf capitalised
+   'portraits' with a ternary and passed everything else through untouched,
+   loadPortfolio passed the raw value straight from /status. So a strict
+   compare in mcVisible() matched Portraits and nothing else — Pets,
+   Halloween and Groups were unreachable through their own pills.
+
+   Both sources now come through here, and the pills compare against the one
+   canonical form. Display only: nothing persisted changes. */
+var SERIES_LABEL = { portraits:'Portraits', pets:'Pets', groups:'Groups',
+                     halloween:'Halloween', wallpapers:'Wallpapers' };
+function canonicalSeries(s){
+  if (!s) return '';
+  return SERIES_LABEL[String(s).toLowerCase()] || String(s);
+}
+
 var MC_STATE = 'all', MC_SERIES = 'all';
 function mcVisible(){
   return PIECES.filter(function(p){
