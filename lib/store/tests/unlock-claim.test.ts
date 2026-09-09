@@ -7,6 +7,13 @@
 //    uuid. The route built `unlock-<previewId>-<8 hex>`, Postgres refused the
 //    cast with 22P02, consumeEntitlement threw, and the route answered 500.
 //
+//    It must be a FRESH uuid per attempt, not the previewId. job_id names the
+//    generation attempt, not the thing unlocked: reserveEntitlement stamps it
+//    beside generation_started_at, restoreEntitlement nulls it when an attempt
+//    is abandoned, /result/[jobId] addresses one by it, and every other writer
+//    mints randomUUID() per attempt. Reusing previewId would give two
+//    entitlements the same job_id across a release-and-retry.
+//
 // 2. preview_ledger.unlocked_at was selected and never read, so a retry or a
 //    double-click spent a SECOND entitlement on an image already unlocked.
 //    The fix claims the ledger with a conditional update; only the caller
@@ -16,28 +23,40 @@
 // the same shape the route uses, no database and no network.
 
 import { describe, it, expect, beforeEach } from 'vitest'
+import { randomUUID } from 'crypto'
 
 // ── 1 · the identifier ────────────────────────────────────────────────
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const PREVIEW_ID = 'a28b55c3-a5c1-46ba-bf6d-3d927735fe7a'
 
-describe('unlock jobId must be a uuid', () => {
-  it('rejects the identifier the route used to build', () => {
+/** What the route now sends as jobId, one call = one attempt. */
+const jobIdForAttempt = () => randomUUID()
+
+describe('unlock jobId', () => {
+  it('never sends a synthetic unlock-... string', () => {
     // The exact shape from the production 500.
-    const old = `unlock-${PREVIEW_ID}-5e7a2f24`
-    expect(UUID_RE.test(old)).toBe(false)
+    const synthetic = `unlock-${PREVIEW_ID}-5e7a2f24`
+    expect(UUID_RE.test(synthetic)).toBe(false)
+
+    for (let i = 0; i < 20; i++) {
+      const sent = jobIdForAttempt()
+      expect(sent.startsWith('unlock-')).toBe(false)
+      expect(sent).not.toContain(PREVIEW_ID)
+    }
   })
 
-  it('accepts previewId, which is what the route sends now', () => {
-    expect(UUID_RE.test(PREVIEW_ID)).toBe(true)
+  it('sends a valid uuid', () => {
+    for (let i = 0; i < 20; i++) {
+      expect(UUID_RE.test(jobIdForAttempt())).toBe(true)
+    }
   })
 
-  it('previewId also records which preview the entitlement was spent on', () => {
-    // The old string embedded previewId precisely to say this. Passing it
-    // directly is both type-correct and more truthful than a random uuid.
-    const old = `unlock-${PREVIEW_ID}-5e7a2f24`
-    expect(old).toContain(PREVIEW_ID)
+  it('gives separate unlock attempts distinct uuids', () => {
+    // job_id names the attempt. A release-and-retry on the same preview must
+    // not stamp two entitlements with one id.
+    const ids = Array.from({ length: 200 }, jobIdForAttempt)
+    expect(new Set(ids).size).toBe(ids.length)
   })
 })
 

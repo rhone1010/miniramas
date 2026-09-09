@@ -21,6 +21,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { randomUUID } from 'crypto'
 
 import { getUser } from '@/lib/store/auth'
 import { consumeEntitlement } from '@/lib/store/entitlements'
@@ -155,11 +156,19 @@ export async function POST(req: NextRequest) {
          for type uuid — consumeEntitlement threw, and the catch below
          turned it into a 500.
 
-         previewId is itself a uuid (preview_ledger.id), and it is exactly
-         what the old string was trying to record: which preview this
-         entitlement was spent on. So it goes in directly — type-correct and
-         more truthful than the random value the alternative would store. */
-      jobId:         previewId,
+         A FRESH UUID PER ATTEMPT, not the previewId. job_id identifies the
+         generation attempt, not the thing being unlocked, and the schema is
+         consistent about it: reserveEntitlement stamps it beside
+         generation_started_at, restoreEntitlement nulls it when an attempt
+         is abandoned, /result/[jobId] addresses one by it, and every other
+         writer mints crypto.randomUUID() per attempt (checkout.ts:140,
+         basket-checkout.ts:260). Reusing previewId would give two
+         entitlements the same job_id whenever a claim is released and
+         retried.
+
+         Which preview was unlocked is already recorded, by
+         preview_ledger.unlocked_at, set atomically by the claim above. */
+      jobId:         randomUUID(),
       style:         ent.locked_style   ?? 'portrait_unlock',
       variant:       ent.locked_variant ?? '1k',
       userId:        user?.id,
