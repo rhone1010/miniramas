@@ -5996,12 +5996,32 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeRail(); });
 
   function apply(){
+    /* RE-ADOPT BEFORE DECIDING ANYTHING. The rail is rebuilt with
+       innerHTML in five places, and those templates mint a fresh
+       .your-collection of their own (4241). Any rebuild therefore
+       destroys the marker and orphans the bar captured at boot.
+
+       If that happened while the bar was docked in <body>, the page ends
+       up with two: the stale one stranded at body level, full width,
+       squeezing the grid at desktop, and the live one inside the rail.
+       Adopt the live one and drop the stale copy. */
+    var live = rail.querySelector('.your-collection');
+    if (live && live !== coll){
+      if (coll.parentNode) coll.parentNode.removeChild(coll);
+      coll = live;
+      if (!home.parentNode) coll.parentNode.insertBefore(home, coll);
+    }
+
     var small = window.matchMedia(SMALL).matches;
     if (small && coll.parentNode !== document.body){
       document.body.appendChild(coll);
       coll.classList.add('is-docked');
     } else if (!small && coll.parentNode === document.body){
-      if (home.parentNode) home.parentNode.insertBefore(coll, home.nextSibling);
+      /* Re-plant the marker if a rebuild took it, rather than skipping the
+         move: skipping is what left the bar in <body> for the rest of the
+         session, because no later call can put it back either. */
+      if (!home.parentNode) rail.appendChild(home);
+      home.parentNode.insertBefore(coll, home.nextSibling);
       coll.classList.remove('is-docked');
       closeRail();
     }
