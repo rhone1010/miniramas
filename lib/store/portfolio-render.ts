@@ -17,7 +17,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase'
 import { getAppUrl } from '@/lib/store/stripe'
-import { storeCleanOriginal, bakeWatermark, recordPreview, PREVIEW_BUCKET } from '@/lib/store/preview'
+import { storeCleanOriginal, makeLockedPreview, lockedPreviewPath, recordPreview, PREVIEW_BUCKET } from '@/lib/store/preview'
 import { decideRetry } from '@/lib/store/portfolio-replace'
 import { styleIdForPreset } from '@/lib/store/portraits-style-lookup'
 import crypto from 'crypto'
@@ -92,28 +92,36 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     const previewId = crypto.randomUUID()
     const storagePath = await storeCleanOriginal(supabaseAdmin, previewId, imageB64, portfolio.series)
 
-    let watermarked: string
+    /* FAIL CLOSED, exactly as the bake did. A locked piece may only ever be
+       shown its derivative; if there is no derivative there is nothing this
+       item is allowed to display, and the clean master is not a substitute.
+       So a failure here fails the item rather than marking it done. */
+    let lockedPreview: Buffer
     try {
-      watermarked = await bakeWatermark(imageB64)
+      lockedPreview = await makeLockedPreview(imageB64)
     } catch (e: any) {
-      console.error(`[portfolios/items/render] watermark bake FAILED for ${portfolioItemId}`, e)
-      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'watermark_failed')
+      console.error(`[portfolios/items/render] locked-preview build FAILED for ${portfolioItemId}`, e)
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'locked_preview_failed')
       return
     }
 
-    // Persist the watermarked bytes alongside the clean original.
-    // Clean original lives at {series}/{previewId}.png (for unlock/print).
-    // Watermarked lives at watermarked/{series}/{previewId}.png (for preview display).
-    const wmPath = `watermarked/${portfolio.series}/${previewId}.png`
-    const { error: wmUpErr } = await supabaseAdmin.storage
+    // Two objects per piece now:
+    //   clean master  {series}/{previewId}.png            -- unlock, print, and
+    //                                                        an unlocked tile
+    //   locked view   locked/{series}/{previewId}.jpg     -- what a locked
+    //                                                        browser may see
+    // The retired bake at watermarked/{series}/{previewId}.png is no longer
+    // written; existing ones stay put as the fallback for un-backfilled rows.
+    const lockedPath = lockedPreviewPath(portfolio.series, previewId)
+    const { error: lockedUpErr } = await supabaseAdmin.storage
       .from(PREVIEW_BUCKET)
-      .upload(wmPath, Buffer.from(watermarked, 'base64'), {
-        contentType: 'image/png',
+      .upload(lockedPath, lockedPreview, {
+        contentType: 'image/jpeg',
         upsert: true,
       })
-    if (wmUpErr) {
-      console.error(`[portfolios/items/render] watermark upload FAILED for ${portfolioItemId}:`, wmUpErr.message)
-      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'watermark_upload_failed')
+    if (lockedUpErr) {
+      console.error(`[portfolios/items/render] locked-preview upload FAILED for ${portfolioItemId}:`, lockedUpErr.message)
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'locked_preview_upload_failed')
       return
     }
 
