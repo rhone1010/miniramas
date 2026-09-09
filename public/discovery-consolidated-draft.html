@@ -5625,10 +5625,16 @@ discoveryRail.addEventListener('click', function(e){
   if (e.target.closest('[data-feat-dl]') && FEATURED){ downloadPiece(FEATURED); return; }
   if (e.target.closest('#mycollUnlockCancel')){ unlockSelection = {}; renderMyCollectionGrid(); renderUnlockBar(); return; }
   if (e.target.closest('#mycollUnlockBuy')){
-    Object.keys(unlockSelection).forEach(function(key){
-      var p = PIECES.find(function(x){ return x.key === key; });
-      if (p) p.locked = false;
-    });
+    /* THIS USED TO UNLOCK NOTHING AND SHOW EVERYTHING. It set p.locked=false
+       on every selected piece client-side — no /portraits/unlock, no
+       entitlement, no payment — so the preview protection came off until the
+       next poll put it back. Preview protection is not the client's to give
+       away.
+
+       Removed rather than replaced: the paid multi-select flow is not built,
+       and inventing an interim behaviour here is what produced the fake one.
+       The per-card Unlock button is the real path and it goes through the
+       server. Selection is simply cleared. */
     unlockSelection = {};
     renderMyCollectionGrid(); renderUnlockBar();
   }
@@ -5974,7 +5980,18 @@ function paintLightbox(){
   document.getElementById('lboxActs').innerHTML = acts;
 }
 function openFeatured(p){
-  var list = lbList(); var at = list.indexOf(p);
+  if (!p) return;
+  /* A LOCKED PREVIEW HAS NO FULL SIZE. Full size is what the purchase buys;
+     showing a watermarked preview at full size hands over a bigger copy of
+     the thing the watermark exists to protect. Unlocked pieces open. */
+  if (p.locked) return;
+  /* BY KEY, NOT BY REFERENCE. pieceLanded replaces piece objects wholesale
+     on every poll (PIECES[at] = piece), so a FEATURED captured from a card
+     click points at an object that is no longer in the array a few seconds
+     later. indexOf then returned -1 and this bailed silently — the button
+     did nothing, with no error. The key is stable across every replacement. */
+  var list = lbList();
+  var at = list.findIndex(function(x){ return x.key === p.key; });
   if (at < 0) return;
   LB_AT = at;
   paintLightbox();

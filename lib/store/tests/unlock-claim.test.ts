@@ -140,3 +140,97 @@ describe('unlock claim prevents double consumption', () => {
     expect(entitlementsSpent).toBe(1)
   })
 })
+
+// ── 3 · entitlement scope ─────────────────────────────────────────────
+//
+// AN ENTITLEMENT HAS SCOPE. Owning one is not permission to spend it
+// anywhere. The route used to take the oldest available entitlement the
+// account held, from any purchase. In production on 2026-09-09 that unlocked
+// three previews of portfolio 935148c0 while that portfolio's own included
+// unlock sat untouched at 'available' — each one paid for by a leftover
+// entitlement from an unrelated purchase, of which the account had fourteen.
+//
+// The rule modelled here: a preview may only be paid for by an entitlement
+// belonging to ITS OWN portfolio's purchase. No fallback.
+
+/** `portfolio:{portfolioId}:{slot}` — the ledger email the render route writes. */
+function portfolioIdFromLedgerEmail(ledgerEmail: string | null): string | null {
+  if (!ledgerEmail || !ledgerEmail.startsWith('portfolio:')) return null
+  const id = ledgerEmail.slice('portfolio:'.length).split(':')[0]
+  return id || null
+}
+
+const PF = '935148c0-d899-4e4c-98d7-9002436106a5'
+
+describe('ledger email identifies the portfolio', () => {
+  it('reads the id from a per-slot key', () => {
+    expect(portfolioIdFromLedgerEmail(`portfolio:${PF}:2`)).toBe(PF)
+  })
+  it('reads the id from the older key with no slot', () => {
+    expect(portfolioIdFromLedgerEmail(`portfolio:${PF}`)).toBe(PF)
+  })
+  it('returns null for a preview that came from no portfolio', () => {
+    expect(portfolioIdFromLedgerEmail('someone@example.com')).toBeNull()
+    expect(portfolioIdFromLedgerEmail(null)).toBeNull()
+    expect(portfolioIdFromLedgerEmail('portfolio:')).toBeNull()
+  })
+})
+
+type Ent = { id: string; purchase_id: string; status: 'available' | 'consumed'; created_at: number }
+
+/** The scoped selection the route now performs. */
+function selectEntitlement(all: Ent[], portfolioPurchaseId: string | null): Ent | null {
+  if (!portfolioPurchaseId) return null              // no portfolio -> nothing to spend
+  return all
+    .filter((e) => e.status === 'available' && e.purchase_id === portfolioPurchaseId)
+    .sort((a, b) => a.created_at - b.created_at)[0] ?? null
+}
+
+describe('unlock spends only its own portfolio purchase', () => {
+  const OWN = 'purchase-26c47d1e'
+  const OTHER_A = 'purchase-ba72ade9'
+  const OTHER_B = 'purchase-4ac92f9a'
+
+  it('spends the portfolio own included unlock', () => {
+    const all: Ent[] = [
+      { id: 'e-other', purchase_id: OTHER_A, status: 'available', created_at: 1 },
+      { id: 'e-own',   purchase_id: OWN,     status: 'available', created_at: 9 },
+    ]
+    // The unrelated one is OLDER, so the old "oldest available" rule would
+    // have taken it. Scope wins over age.
+    expect(selectEntitlement(all, OWN)?.id).toBe('e-own')
+  })
+
+  it('never falls through to another purchase when its own is spent', () => {
+    const all: Ent[] = [
+      { id: 'e-own',     purchase_id: OWN,     status: 'consumed',  created_at: 1 },
+      { id: 'e-other-a', purchase_id: OTHER_A, status: 'available', created_at: 2 },
+      { id: 'e-other-b', purchase_id: OTHER_B, status: 'available', created_at: 3 },
+    ]
+    expect(selectEntitlement(all, OWN)).toBeNull()
+  })
+
+  it('reproduces the production case: 14 unrelated credits buy nothing here', () => {
+    const all: Ent[] = Array.from({ length: 14 }, (_, i) => ({
+      id: `stranded-${i}`, purchase_id: `single-purchase-${i}`,
+      status: 'available' as const, created_at: i,
+    }))
+    all.push({ id: 'e-own', purchase_id: OWN, status: 'consumed', created_at: 99 })
+    expect(selectEntitlement(all, OWN)).toBeNull()
+  })
+
+  it('spends nothing for a preview with no portfolio behind it', () => {
+    const all: Ent[] = [{ id: 'e-any', purchase_id: OTHER_A, status: 'available', created_at: 1 }]
+    expect(selectEntitlement(all, portfolioIdFromLedgerEmail('someone@example.com'))).toBeNull()
+  })
+
+  it('one portfolio unlock does not touch a sibling portfolio', () => {
+    const SIB = 'purchase-sibling'
+    const all: Ent[] = [
+      { id: 'e-own', purchase_id: OWN, status: 'available', created_at: 1 },
+      { id: 'e-sib', purchase_id: SIB, status: 'available', created_at: 2 },
+    ]
+    expect(selectEntitlement(all, OWN)?.id).toBe('e-own')
+    expect(selectEntitlement(all, SIB)?.id).toBe('e-sib')
+  })
+})
