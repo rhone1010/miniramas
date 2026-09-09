@@ -5,15 +5,20 @@ import { getUser } from '@/lib/store/auth'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { portfolioId: string } },
+  ctx: { params: Promise<{ portfolioId: string }> },
 ) {
+  /* params is a Promise in this Next.js -- read it as a plain object
+     and every segment is undefined, which reached Postgres as the
+     literal string "undefined". Same shape checkout/[sessionId]
+     already uses. */
+  const { portfolioId } = await ctx.params
   const user = await getUser()
   if (!user) return NextResponse.json({ error: 'auth_required' }, { status: 401 })
 
   const { data: portfolio, error: portfolioErr } = await supabaseAdmin
     .from('portfolios')
     .select('id, user_id, series, size, status, free_unlocks')
-    .eq('id', params.portfolioId)
+    .eq('id', portfolioId)
     .maybeSingle()
   if (portfolioErr) return NextResponse.json({ error: 'portfolio_status_query_failed' }, { status: 500 })
   if (!portfolio) return NextResponse.json({ error: 'portfolio_not_found' }, { status: 404 })
