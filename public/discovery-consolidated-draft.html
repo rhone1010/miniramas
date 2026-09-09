@@ -5310,6 +5310,40 @@ function loadShelf(){
    our own purchase row says paid, so this cannot start unbought work. */
 var ACTIVATION_ASKED = {};
 
+/* ---- start the work, now ------------------------------------------------
+   A paid portfolio is 'generating' the moment the webhook activates it, but
+   until this call nothing began: the cron poller was the only trigger, three
+   items at a time, every two minutes, so a four-pack's fourth image could be
+   four minutes behind its first.
+
+   Asked once per portfolio per session. The route is owner-checked and only
+   acts on a portfolio already at 'generating' — which is itself the proof of
+   payment — so asking cannot start unbought work, and asking twice costs
+   nothing because each item is claimed by whichever invocation gets there.
+
+   NOT AWAITED, deliberately. The renders are the server's problem from here:
+   the request has been accepted and every item runs as its own invocation.
+   The customer can close the tab. What is already on screen is the status
+   poll below, which shows each piece as it lands. */
+var DISPATCH_ASKED = {};
+
+function dispatchIfGenerating(list){
+  (list || []).forEach(function(p){
+    if (!p || p.status !== 'generating' || DISPATCH_ASKED[p.id]) return;
+    DISPATCH_ASKED[p.id] = true;
+    fetch('/api/v1/portfolios/' + encodeURIComponent(p.id) + '/dispatch', {
+      method:'POST', credentials:'include'
+    }).then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (d) console.log('[discovery] dispatch ' + p.id + ':', JSON.stringify(d));
+      })
+      .catch(function(e){
+        /* Cron picks up whatever this missed. */
+        console.warn('[discovery] dispatch call failed:', e);
+      });
+  });
+}
+
 function activateIfStalled(list){
   (list || []).forEach(function(p){
     if (!p || p.status !== 'pending' || ACTIVATION_ASKED[p.id]) return;
@@ -5345,6 +5379,7 @@ function renderCollection(){
       .then(function(d){
         if (!d || !d.portfolios || !d.portfolios.length) return null;
         activateIfStalled(d.portfolios);
+        dispatchIfGenerating(d.portfolios);
         return Promise.all(d.portfolios.map(function(p){ return loadPortfolio(p.id); }));
       })
       .catch(function(e){ console.warn('[discovery] portfolios not loaded:', e); return null; }),
