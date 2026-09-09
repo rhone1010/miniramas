@@ -2,6 +2,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createPortfolioCheckout, type PortfolioSeries } from '@/lib/store/portfolio-checkout'
 import { getUser } from '@/lib/store/auth'
+import { supabaseAdmin } from '@/lib/supabase'
+
+// GET: list the signed-in user's portfolios (id, series, status).
+// Used by My Collection to discover which portfolios to load.
+export async function GET() {
+  const user = await getUser()
+  if (!user) return NextResponse.json({ portfolios: [] })
+
+  const { data, error } = await supabaseAdmin
+    .from('portfolios')
+    .select('id, series, size, status')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('[api/v1/portfolios] list failed', error.message)
+    return NextResponse.json({ portfolios: [] })
+  }
+  return NextResponse.json({ portfolios: data ?? [] })
+}
 
 const BAD_REQUEST = [
   'portfolio_purchase_requires_user', 'portfolio_empty_selection',
