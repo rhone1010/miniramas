@@ -107,12 +107,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ image_b64: cleanB64, preview_id: previewId, redelivered: true })
     }
 
+    /* ── WHICH PURCHASE MAY PAY FOR THIS ─────────────────────────
+       AN ENTITLEMENT HAS SCOPE. Owning one is not permission to spend it
+       anywhere. This query used to take the OLDEST available entitlement the
+       account held, from any purchase, and that is exactly what it did in
+       production on 2026-09-09: three previews of portfolio 935148c0 were
+       unlocked while that portfolio's own included unlock sat untouched at
+       'available', each one paid for by a leftover entitlement from an
+       unrelated purchase. The account had fourteen of those, so unlocking
+       was effectively unlimited, and includedRemaining never moved — which
+       is why the button kept inviting another click.
+
+       An unlock included with a portfolio may only unlock a preview of that
+       portfolio. The preview names its portfolio in the ledger email the
+       render route writes, `portfolio:{portfolioId}:{slot}`, and the
+       portfolio names the purchase that paid for it. Nothing falls through
+       to the rest of the account. */
+    const scopedPortfolioId = portfolioIdFromLedgerEmail(ledger.email)
+    if (!scopedPortfolioId) {
+      /* A preview with no portfolio behind it has no included unlock to
+         spend. Paid additional unlocks are not built yet, so this is the
+         honest answer rather than reaching for an unrelated entitlement. */
+      await releaseClaim(sb, previewId)
+      return NextResponse.json({ error: 'no_entitlement' }, { status: 409 })
+    }
+
+    const { data: scopedPortfolio, error: scopedErr } = await sb
+      .from('portfolios')
+      .select('id, purchase_id')
+      .eq('id', scopedPortfolioId)
+      .maybeSingle()
+    if (scopedErr) {
+      await releaseClaim(sb, previewId)
+      return NextResponse.json({ error: scopedErr.message }, { status: 500 })
+    }
+    if (!scopedPortfolio?.purchase_id) {
+      await releaseClaim(sb, previewId)
+      return NextResponse.json({ error: 'no_entitlement' }, { status: 409 })
+    }
+
     // ── Find a redeemable entitlement (purchase must be PAID) ────
     let entQuery = sb
       .from('entitlements')
       .select('id, locked_style, locked_variant, purchase_id, purchases!inner(status)')
       .eq('status', 'available')
       .eq('purchases.status', 'paid')
+      .eq('purchase_id', scopedPortfolio.purchase_id)
       .order('created_at', { ascending: true })
       .limit(1)
     entQuery = user
@@ -123,12 +163,13 @@ export async function POST(req: NextRequest) {
     if (entErr) return NextResponse.json({ error: entErr.message }, { status: 500 })
 
     if (!ents || ents.length === 0) {
-      // Disambiguate: pending payment vs. nothing at all.
+      // Disambiguate: pending payment vs. nothing at all — same scope.
       let pendQuery = sb
         .from('entitlements')
         .select('id, purchases!inner(status)')
         .eq('status', 'available')
         .eq('purchases.status', 'pending')
+        .eq('purchase_id', scopedPortfolio.purchase_id)
         .limit(1)
       pendQuery = user
         ? pendQuery.eq('user_id', user.id)
@@ -207,13 +248,23 @@ async function releaseClaim(sb: any, previewId: string): Promise<void> {
    the portfolio the preview belongs to — `portfolio:{id}:{slot}` is the
    ledger email the render route writes, and the portfolio row holds the
    owner. */
+/* `portfolio:{portfolioId}:{slot}` is the ledger email portfolio-render.ts
+   writes. Returns the portfolio id, or null for a preview that did not come
+   from a portfolio. One parser, so scoping and ownership can never disagree
+   about which portfolio a preview belongs to. */
+function portfolioIdFromLedgerEmail(ledgerEmail: string | null): string | null {
+  if (!ledgerEmail || !ledgerEmail.startsWith('portfolio:')) return null
+  const id = ledgerEmail.slice('portfolio:'.length).split(':')[0]
+  return id || null
+}
+
 async function ownsPreview(
   sb: any, ledgerEmail: string | null, userId: string | null, guestEmail: string | null,
 ): Promise<boolean> {
   if (guestEmail) return ledgerEmail === guestEmail
   if (!userId) return false
-  if (!ledgerEmail || !ledgerEmail.startsWith('portfolio:')) return false
-  const portfolioId = ledgerEmail.slice('portfolio:'.length).split(':')[0]
+  const portfolioId = portfolioIdFromLedgerEmail(ledgerEmail)
+  if (!portfolioId) return false
   const { data } = await sb
     .from('portfolios')
     .select('user_id')
