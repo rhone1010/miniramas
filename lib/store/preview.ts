@@ -18,6 +18,8 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createHash } from 'crypto'
+import { readFileSync } from 'fs'
+import path from 'path'
 import sharp from 'sharp'
 
 export const PREVIEW_BUCKET = 'previews'
@@ -138,21 +140,87 @@ export async function fetchCleanOriginal(
 
 // ── Baked watermark ──────────────────────────────────────────────
 //
-// Tiled diagonal "Liten & Co · preview" composited into the pixels.
-// Throws on failure — callers must treat a bake failure as a failed
-// preview (fail-closed), never ship the clean image.
+// The Liten & Co watermark pattern, repeated across the preview and
+// composited into the pixels. Throws on failure — callers must treat a bake
+// failure as a failed preview (fail-closed), never ship the clean image.
+
+/* The canonical design asset is public/icons/litenco_watermark.svg. This is
+   a copy, because public/ is served statically and is not guaranteed to be
+   in the serverless bundle, while lib/ is — the same reason style-refs.ts
+   keeps its images under lib/. If the design changes, change it there and
+   copy it here.
+
+   The asset is a FINISHED PATTERN, not a logo: a 440-unit box showing an
+   SVG <pattern> whose period is 300 user units. Nothing here rotates,
+   re-spaces or otherwise rearranges it — the arrangement is the designer's. */
+const WATERMARK_SVG_PATH = path.join(
+  process.cwd(), 'lib', 'store', 'assets', 'litenco_watermark.svg',
+)
+
+/* Read off the asset: <svg viewBox="0 0 440 440"> containing
+   <pattern width="300" height="300" patternUnits="userSpaceOnUse">. */
+const PATTERN_BOX    = 440
+const PATTERN_PERIOD = 300
+
+const WM_COLOR     = '#ffffff'
+const WM_OPACITY   = 0.25
+const WM_TILE_RATIO = 0.32   // one pattern period, as a fraction of image width
+const WM_TILE_MIN   = 160
+const WM_TILE_MAX   = 520
+
+let wmSvgCache: string | null = null
+
+/* Read once, then recolour by splicing two presentation attributes onto the
+   root <svg>. Deliberately NOT a rule that touches individual paths: the
+   asset carries `.cls-1 { fill: url(#New_Pattern_3) }` on the rect and
+   `.cls-2 { fill: none }` on the counters, and a CSS declaration beats an
+   inherited presentation attribute — so the pattern fill and the hollow
+   counters both survive, and only the artwork takes the white. */
+function watermarkSvg(): Buffer {
+  if (wmSvgCache === null) wmSvgCache = readFileSync(WATERMARK_SVG_PATH, 'utf8')
+  return Buffer.from(
+    wmSvgCache.replace('<svg ', `<svg fill="${WM_COLOR}" opacity="${WM_OPACITY}" `),
+  )
+}
+
+/* ONE PERIOD, NOT THE WHOLE BOX. composite({ tile: true }) repeats its input
+   edge to edge, so the input has to be a whole number of pattern periods or
+   the phase jumps at every tile boundary. The box is 440 units against a
+   300-unit period — 1.467 periods — and tiling it visibly clusters the marks
+   in pairs with gaps between them. Rendering the box and taking one period
+   out of it repeats seamlessly, and takes the spacing from the asset rather
+   than inventing any. Cached: a portfolio bakes four to sixteen images at
+   one size. */
+const tileCache = new Map<number, Buffer>()
+
+async function watermarkTile(tilePx: number): Promise<Buffer> {
+  const hit = tileCache.get(tilePx)
+  if (hit) return hit
+
+  const renderPx = Math.round(tilePx * (PATTERN_BOX / PATTERN_PERIOD))
+  const tile = await sharp(watermarkSvg())
+    .resize({ width: renderPx })
+    .extract({ left: 0, top: 0, width: tilePx, height: tilePx })
+    .png()
+    .toBuffer()
+
+  tileCache.set(tilePx, tile)
+  return tile
+}
 
 export async function bakeWatermark(imageB64: string): Promise<string> {
-  const tile = Buffer.from(
-    `<svg width="420" height="280" xmlns="http://www.w3.org/2000/svg">` +
-      `<text x="210" y="140" text-anchor="middle" ` +
-      `font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="30" ` +
-      `fill="rgba(255,255,255,0.32)" stroke="rgba(42,36,30,0.22)" stroke-width="0.75" ` +
-      `transform="rotate(-30 210 140)">Liten &amp; Co \u00B7 preview</text>` +
-    `</svg>`,
+  const src = Buffer.from(imageB64, 'base64')
+
+  /* Sized against the finished image so the pattern reads at the same
+     density whether NB2 returns 1024 square or something wider. */
+  const { width } = await sharp(src).metadata()
+  const tilePx = Math.max(
+    WM_TILE_MIN,
+    Math.min(WM_TILE_MAX, Math.round((width ?? 1024) * WM_TILE_RATIO)),
   )
-  const out = await sharp(Buffer.from(imageB64, 'base64'))
-    .composite([{ input: tile, tile: true }])
+
+  const out = await sharp(src)
+    .composite([{ input: await watermarkTile(tilePx), tile: true }])
     .png()
     .toBuffer()
   return out.toString('base64')
