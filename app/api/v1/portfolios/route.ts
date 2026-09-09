@@ -52,6 +52,15 @@ export async function POST(req: NextRequest) {
       sourceImageRef: typeof body.sourceImageRef === 'string' ? body.sourceImageRef : '',
       returnUrl: typeof body.returnUrl === 'string' ? body.returnUrl : '',
       clientPriceUsd: Number(body.clientPriceUsd),
+      /* THE CLIENT ALWAYS SENT THESE. This route read five fields and
+         dropped the rest on the floor, so the pose step chose a pose that
+         reached nothing and every piece came out 1:1 whatever the aspect
+         step said. They are now recorded on the portfolio for every size;
+         only a purchased portfolio reads them back at render, so 4/8/16
+         output is unchanged. */
+      pose: typeof body.pose === 'string' ? body.pose : null,
+      aspectRatio: typeof body.aspect_ratio === 'string' ? body.aspect_ratio : null,
+      subject: typeof body.subject === 'string' ? body.subject : null,
     })
     return NextResponse.json({ url: result.checkoutUrl, portfolioId: result.portfolioId })
   } catch (e) {

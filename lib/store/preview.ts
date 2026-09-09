@@ -80,6 +80,13 @@ export async function recordPreview(
     preset?:     string
     resolution?: string
     storagePath: string | null
+    /* SET AT INSERT FOR A PIECE THAT WAS BOUGHT OUTRIGHT. unlocked_at is
+       normally stamped by the unlock route when an entitlement is spent, and
+       a null here is what makes a piece locked. A purchased portfolio (size
+       1) has no unlock step and no entitlement to spend, so its one piece is
+       born unlocked -- and /status then serves the clean master rather than
+       a derivative, with no special case anywhere but this argument. */
+    unlockedAt?: string | null
   },
 ): Promise<boolean> {
   const { error } = await sb.from('preview_ledger').insert({
@@ -90,6 +97,7 @@ export async function recordPreview(
     preset:       args.preset ?? null,
     resolution:   args.resolution ?? null,
     storage_path: args.storagePath,
+    unlocked_at:  args.unlockedAt ?? null,
   })
   if (error) {
     console.error(`[preview] ledger record FAILED for ${args.previewId}: ${error.message}`)

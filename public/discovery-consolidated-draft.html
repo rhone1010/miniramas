@@ -5113,50 +5113,39 @@ function startCheckout(){
   var errEl = document.getElementById('checkoutError');
   if (errEl) errEl.remove();
 
-  var payload, endpoint;
+  /* ONE ENDPOINT FOR EVERY SIZE. A `n === 1` branch used to sit here and
+     send size 1 to /api/v1/checkout with skuId:'single' -- the original
+     single-craft path. That is where the 13 historical paid singles went,
+     and where 10 of their entitlements are still stranded at 'pending'
+     with a return page that 404s.
 
-  if (n === 1) {
-    /* ── Size 1 → single checkout (/api/v1/checkout) ──────────── */
-    var sel = SELECTED[0];
-    endpoint = '/api/v1/checkout';
-    payload = {
-      skuId: 'single',
-      style: sel.baseId,
-      variant: sel.key,
-      /* One piece, same composition block as a portfolio of sixteen. */
-      pose: POSE || 'as_photographed',
-      aspect_ratio: aspectRatioOf(ASPECT),
-      subject: SUBJECT || null,
-      sourceImageRef: SRC_B64 || '',
-      returnUrl: window.location.origin + window.location.pathname
-    };
-  } else {
-    /* ── Size 4/8/16 → portfolio checkout (/api/v1/portfolios) ── */
-    endpoint = '/api/v1/portfolios';
-    /* pose, aspect_ratio and subject were built by buildCheckoutPayload()
-       and dropped here — this object was assembled by hand and never
-       carried them, so the pose step chose a pose that reached nothing.
-       clientPriceUsd keeps its own fallback: buildCheckoutPayload sends
-       null where this sends SIZE_PRICE[n], and the server rejects a
-       mismatch. */
-    payload = {
-      series: 'portraits',
-      selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
-      pose: POSE || 'as_photographed',
-      aspect_ratio: aspectRatioOf(ASPECT),
-      subject: SUBJECT || null,
-      sourceImageRef: SRC_B64 || '',
-      returnUrl: window.location.origin + window.location.pathname,
-      /* SERVER_OFFER is built from the SESSION's count, not SELECTED.length
-         (discovery-session.ts:178). The two drift, and an unguarded read sent
-         the session's price for a different size -- most often the count-0
-         offer the session is created with, whose priceUsd is 0, which the
-         old `typeof === 'number'` test happily accepted. Server then priced
-         the 4 ids actually posted at 499 and refused: price_mismatch.
-         Same count guard the price on the rail has always used (3256). */
-      clientPriceUsd: (SERVER_OFFER && SERVER_OFFER.count === n && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]
-    };
-  }
+     Size 1 is now a portfolio of one and rides the same proven machinery:
+     payment -> activation -> immediate dispatch -> render. The server
+     prices it from the same size table (portfolio-checkout.ts), still
+     against the same 'single' SKU at 299, and records
+     portfolios.delivery = 'purchased' so the piece is bought outright and
+     renders already unlocked -- no preview, no unlock step.
+
+     The historical rows are untouched by this and stay distinguishable:
+     they have no portfolios row at all. */
+  var endpoint = '/api/v1/portfolios';
+  var payload = {
+    series: 'portraits',
+    selectedEffectIds: SELECTED.map(function(s){ return s.key; }),
+    pose: POSE || 'as_photographed',
+    aspect_ratio: aspectRatioOf(ASPECT),
+    subject: SUBJECT || null,
+    sourceImageRef: SRC_B64 || '',
+    returnUrl: window.location.origin + window.location.pathname,
+    /* SERVER_OFFER is built from the SESSION's count, not SELECTED.length
+       (discovery-session.ts:178). The two drift, and an unguarded read sent
+       the session's price for a different size -- most often the count-0
+       offer the session is created with, whose priceUsd is 0, which the
+       old `typeof === 'number'` test happily accepted. Server then priced
+       the 4 ids actually posted at 499 and refused: price_mismatch.
+       Same count guard the price on the rail has always used (3256). */
+    clientPriceUsd: (SERVER_OFFER && SERVER_OFFER.count === n && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : SIZE_PRICE[n]
+  };
 
   act('checkout ' + n);
   console.log('[discovery] startCheckout →', endpoint, 'count=' + n);

@@ -1,11 +1,19 @@
 // lib/store/portfolio-checkout.ts
-// Fixed-size Portfolio pricing. Reuses three live Stripe SKUs
-// (basket_discover_5, basket_discover_10, basket_discover_20)
-// with updated effect counts: 4, 8, 16.
+// Fixed-size Portfolio pricing. Reuses four live Stripe SKUs
+// (single, basket_discover_5, basket_discover_10, basket_discover_20)
+// with updated effect counts: 1, 4, 8, 16.
 //
-// Size 1 is NOT a portfolio — it routes through the original single-craft
-// checkout (/api/v1/checkout, skuId:'single') which delivers an
-// unwatermarked render directly, no preview/unlock step.
+// SIZE 1 IS A PORTFOLIO OF ONE, as of 2026-09-09. It used to route through
+// the original single-craft checkout (/api/v1/checkout, skuId:'single'),
+// which is where the 13 historical paid singles went: 10 of their
+// entitlements are still stranded at 'pending' and the return page 404s.
+// It now uses the same payment -> activation -> dispatch -> render
+// machinery as 4/8/16, and differs in exactly one recorded fact --
+// portfolios.delivery = 'purchased' -- which means its piece is bought
+// outright and renders already unlocked. It still buys the SAME 'single'
+// SKU at the same 299, so nothing changes in Stripe. The historical rows
+// stay distinguishable because they have no portfolios row at all; this
+// PR does not touch them.
 //
 // Hard cap: 16 effects max per purchase this release.
 // Checkout requires selectedEffectIds.length to exactly match one of
@@ -23,27 +31,60 @@ export type PortfolioSeries = 'portraits' | 'halloween' | 'groups' | 'pets'
 
 export type Tier = 'tier_1' | 'tier_2' | 'tier_3' | 'tier_4'
 
+export type Delivery = 'preview' | 'purchased'
+
 export interface SelectionOffer {
   count: number
   tier: Tier | null
   skuId: string | null
   priceUsd: number
   includedUnlocks: number
+  delivery: Delivery
 }
 
-// Fixed purchase sizes, mapped to live SKU rows.
-// Stripe prices are unchanged — only the count column was updated.
-// Size 1 is NOT here — single-craft purchases route through the original
-// /api/v1/checkout endpoint (createCheckout, kind:'single'), which delivers
-// a straight unwatermarked render with no unlock step. Portfolio pipeline
-// is for batches of 4+ only.
+/* Fixed purchase sizes, mapped to live SKU rows. Stripe prices are unchanged.
+   DELIVERY IS DATA HERE, not a conditional. This table is the single place
+   where a size decides what kind of product it is; every reader downstream
+   asks portfolios.delivery instead of counting items. That is the whole point
+   of the column -- one boundary, no `size === 1` scattered through the
+   activation, render, status and client paths.
+
+   Size 1 carries no included unlocks because there is nothing to unlock: the
+   piece is bought outright, so activatePortfolio mints zero entitlements and
+   the render stamps it unlocked from the start. */
 const PORTFOLIO_SIZES: Array<{
-  count: number; tier: Tier; skuId: string; priceCents: number; unlocks: number
+  count: number; tier: Tier; skuId: string; priceCents: number; unlocks: number; delivery: Delivery
 }> = [
-  { count: 4,  tier: 'tier_2', skuId: 'basket_discover_5',   priceCents: 499,  unlocks: 1 },
-  { count: 8,  tier: 'tier_3', skuId: 'basket_discover_10',  priceCents: 799,  unlocks: 1 },
-  { count: 16, tier: 'tier_4', skuId: 'basket_discover_20',  priceCents: 1299, unlocks: 2 },
+  { count: 1,  tier: 'tier_1', skuId: 'single',              priceCents: 299,  unlocks: 0, delivery: 'purchased' },
+  { count: 4,  tier: 'tier_2', skuId: 'basket_discover_5',   priceCents: 499,  unlocks: 1, delivery: 'preview'   },
+  { count: 8,  tier: 'tier_3', skuId: 'basket_discover_10',  priceCents: 799,  unlocks: 1, delivery: 'preview'   },
+  { count: 16, tier: 'tier_4', skuId: 'basket_discover_20',  priceCents: 1299, unlocks: 2, delivery: 'preview'   },
 ]
+
+/* COMPOSITION: FRAMING, NOT ASPECT. portraits/generate:319 derives the aspect
+   ratio from framing and ignores whatever aspect the client sent --
+   ASPECT_FOR_FRAMING is bust 1:1, signature 1:1, statuesque 3:4. So carrying
+   the customer's aspect choice means choosing the framing that produces it.
+
+   1:1 maps to bust rather than signature because bust is what
+   renderOnePortfolioItem has always hardcoded; picking signature here would
+   change the look of every square piece, which is not what was asked for.
+
+   4:3 HAS NO FRAMING. The generator's vocabulary produces 1:1 and 3:4 and
+   nothing else, so the Landscape option in the aspect step cannot be
+   honoured. It falls back to bust -- today's behaviour for every piece of
+   every size, so nothing regresses -- and says so in the log. Reported to
+   Rich 2026-09-09 as an unmet term of the size-1 contract; the fix is a
+   product decision about the framing vocabulary, not a mapping to invent
+   here. */
+export function framingForAspect(aspectRatio: string | null | undefined): string {
+  if (aspectRatio === '3:4') return 'statuesque'
+  if (aspectRatio === '1:1') return 'bust'
+  if (aspectRatio) {
+    console.warn(`[portfolio-checkout] no framing produces aspect ${aspectRatio} — falling back to bust (1:1)`)
+  }
+  return 'bust'
+}
 
 const VALID_COUNTS = new Set(PORTFOLIO_SIZES.map((s) => s.count))
 
@@ -55,7 +96,7 @@ const VALID_COUNTS = new Set(PORTFOLIO_SIZES.map((s) => s.count))
  */
 export function resolveSelectionOffer(count: number): SelectionOffer {
   if (count <= 0) {
-    return { count, tier: null, skuId: null, priceUsd: 0, includedUnlocks: 0 }
+    return { count, tier: null, skuId: null, priceUsd: 0, includedUnlocks: 0, delivery: 'preview' }
   }
 
   // Exact match — the purchase sizes
@@ -67,6 +108,7 @@ export function resolveSelectionOffer(count: number): SelectionOffer {
       skuId: exact.skuId,
       priceUsd: exact.priceCents / 100,
       includedUnlocks: exact.unlocks,
+      delivery: exact.delivery,
     }
   }
 
@@ -79,6 +121,10 @@ export function resolveSelectionOffer(count: number): SelectionOffer {
       skuId: nextUp.skuId,
       priceUsd: nextUp.priceCents / 100,
       includedUnlocks: nextUp.unlocks,
+      /* A browsing offer for an in-between count describes the bundle the
+         customer would reach by filling up, so it takes that bundle's
+         delivery -- never 'purchased', which belongs to an exact size of 1. */
+      delivery: nextUp.delivery,
     }
   }
 
@@ -90,6 +136,7 @@ export function resolveSelectionOffer(count: number): SelectionOffer {
     skuId: last.skuId,
     priceUsd: last.priceCents / 100,
     includedUnlocks: last.unlocks,
+    delivery: last.delivery,
   }
 }
 
@@ -100,6 +147,13 @@ export interface CreatePortfolioCheckoutArgs {
   sourceImageRef: string
   returnUrl: string
   clientPriceUsd: number // never trusted, checked against server resolve
+  /* The composition steps. The client has always sent these and this
+     function has always ignored them; they are now recorded on the
+     portfolio. Optional because a caller that omits them is not an error --
+     null records "not captured", which is the honest state. */
+  pose?: string | null
+  aspectRatio?: string | null
+  subject?: string | null
 }
 
 export interface CreatePortfolioCheckoutResult {
@@ -227,6 +281,12 @@ export async function createPortfolioCheckout(
       status: 'pending',
       free_unlocks: offer.includedUnlocks,
       source_image: args.sourceImageRef,
+      /* The one place a size becomes a kind. Everything downstream reads
+         this column instead of counting items. */
+      delivery: offer.delivery,
+      pose: args.pose ?? null,
+      framing: framingForAspect(args.aspectRatio),
+      subject: args.subject ?? null,
     })
     .select()
     .single()
@@ -242,7 +302,11 @@ export async function createPortfolioCheckout(
   const { error: itemErr } = await supabaseAdmin.from('portfolio_items').insert(itemRows)
   if (itemErr) throw new Error(`portfolio_item_insert_failed: ${itemErr.message}`)
 
-  console.log(`[createPortfolioCheckout] ${args.series} ${offer.count}pc sku=${offer.skuId} portfolio=${portfolioId}`)
+  console.log(
+    `[createPortfolioCheckout] ${args.series} ${offer.count}pc sku=${offer.skuId} ` +
+    `delivery=${offer.delivery} framing=${framingForAspect(args.aspectRatio)} ` +
+    `pose=${args.pose ?? 'none'} portfolio=${portfolioId}`,
+  )
   return { checkoutUrl: session.url, purchaseId, portfolioId }
 }
 
