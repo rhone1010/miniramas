@@ -16,15 +16,21 @@
 //      preview only by Vercel's deployment protection and not at all on
 //      production. It now requires the internal shared secret.
 //
-// NOTE ON after(): this route's after() callback does not execute in this
-// Vercel environment — a POST returns 202 in ~484ms with no outgoing requests
-// and the render never runs. That is why items/render-poll exists and is the
-// reliable path. after() is left in place rather than removed because
-// removing it is a behaviour change to a route that is now secret-gated and
-// effectively unused; see the PR for the recommendation to retire it.
+// after() IS GONE. It never executed in this Vercel environment — a POST
+// returned 202 in ~484ms with no outgoing requests and the render never ran.
+// This route now does the work inside its own invocation and answers when the
+// item is finished, so the caller learns the outcome and the platform has no
+// opportunity to freeze anything mid-flight.
+//
+// IT ALSO CLAIMS. Two callers can now reach the same item: the dispatch that
+// runs the moment a portfolio is activated, and the cron poller recovering
+// what dispatch missed. The claim is a conditional update — 'pending' ->
+// 'rendering' — so exactly one of them proceeds and an item is never rendered,
+// or billed, twice. The claim stamps rendering_started_at (migration 028) so a
+// row whose invocation dies can be told apart from one still working.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { after } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase'
 import { checkInternalAuth } from '@/lib/store/internal-auth'
 import { renderOnePortfolioItem } from '@/lib/store/portfolio-render'
 
@@ -48,11 +54,39 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'portfolioItemId_required' }, { status: 400 })
   }
 
-  after(() => {
-    renderOnePortfolioItem(portfolioItemId).catch((err) => {
-      console.error(`[portfolios/items/render] unhandled error for ${portfolioItemId}`, err)
-    })
-  })
+  /* Claim first. .select() returns the rows the update actually touched:
+     one row means this invocation won it, zero means it was already taken —
+     by the other caller, or by an earlier attempt of this one. */
+  const { data: claimed, error: claimErr } = await supabaseAdmin
+    .from('portfolio_items')
+    .update({ status: 'rendering', rendering_started_at: new Date().toISOString() })
+    .eq('id', portfolioItemId)
+    .eq('status', 'pending')
+    .select('id')
+  if (claimErr) {
+    console.error(`[portfolios/items/render] claim failed for ${portfolioItemId}:`, claimErr.message)
+    return NextResponse.json({ error: 'claim_failed' }, { status: 500 })
+  }
+  if (!claimed || claimed.length === 0) {
+    /* Not an error. The item is already rendering, already done, or failed —
+       whoever holds it will finish it. */
+    return NextResponse.json({ rendered: false, reason: 'not_claimable' }, { status: 200 })
+  }
 
-  return NextResponse.json({ accepted: true }, { status: 202 })
+  try {
+    await renderOnePortfolioItem(portfolioItemId)
+  } catch (err) {
+    /* renderOnePortfolioItem writes its own failure state and does not
+       normally throw. If it does, the row is still 'rendering' and no later
+       caller would select it, so put it back for one. */
+    console.error(`[portfolios/items/render] render threw for ${portfolioItemId}:`, err)
+    await supabaseAdmin
+      .from('portfolio_items')
+      .update({ status: 'pending' })
+      .eq('id', portfolioItemId)
+      .eq('status', 'rendering')
+    return NextResponse.json({ rendered: false, error: 'render_failed' }, { status: 500 })
+  }
+
+  return NextResponse.json({ rendered: true }, { status: 200 })
 }

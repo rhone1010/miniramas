@@ -3,7 +3,15 @@
 // The reliable trigger for portfolio renders. Vercel Cron calls this on a
 // schedule; it finds real, activated, waiting work and runs it.
 //
-// WHY THIS EXISTS. Rendering used to be triggered by after() inside
+// RECOVERY, NOT THE SCHEDULE. The fast path is now
+// /portfolios/[portfolioId]/dispatch, which the client calls the moment a
+// paid portfolio is activated and which starts every outstanding item at
+// once. This tick exists for what that misses: a customer who closed the tab
+// before dispatch landed, a dispatch that failed, and rows stranded at
+// 'rendering' by an invocation that died mid-render. Its three-per-tick limit
+// is therefore a recovery pace, not a customer-visible schedule.
+//
+// WHY IT EXISTS AT ALL. Rendering used to be triggered by after() inside
 // items/render. Measured on production 2026-09-07: that POST returns 202 in
 // ~484ms and Vercel records "No outgoing requests" — the callback never runs.
 // It has never run in this environment. Nothing else ever started a render,
@@ -48,6 +56,16 @@ export const dynamic = 'force-dynamic'
 const MAX_ITEMS_PER_TICK = 3
 const STOP_STARTING_AFTER_MS = 120_000
 
+/* A row is stranded, not working, after this long at 'rendering'.
+   Derived, not picked: items/render carries maxDuration = 300, so no
+   invocation holding a claim can still be alive past 300 seconds. Doubling
+   that covers cold start, clock skew and the gap between the claim write and
+   the render actually beginning. The asymmetry argues for erring long —
+   reclaiming too early means two NB2 renders and two charges for one image,
+   reclaiming too late costs only minutes on a row that is already dead.
+   Approved 2026-09-09. */
+const STALE_RENDERING_MS = 600_000
+
 export async function GET(req: NextRequest) {
   const auth = checkInternalAuth(req)
   if (!auth.ok) {
@@ -55,6 +73,26 @@ export async function GET(req: NextRequest) {
   }
 
   const startedAt = Date.now()
+
+  /* RECLAIM FIRST. An item is claimed by flipping 'pending' -> 'rendering'.
+     If the invocation holding it dies — timeout, deploy mid-flight, a cold
+     start that never finishes — nothing else would ever select it again,
+     because every scan looks for 'pending'. A paid image would sit there for
+     good, with no error and no retry. Put anything older than the threshold
+     back so the scan below can pick it up; attempts is untouched, so
+     decideRetry still governs how many real tries it gets. */
+  const staleBefore = new Date(Date.now() - STALE_RENDERING_MS).toISOString()
+  const { data: reclaimedRows, error: reclaimErr } = await supabaseAdmin
+    .from('portfolio_items')
+    .update({ status: 'pending', rendering_started_at: null })
+    .eq('status', 'rendering')
+    .lt('rendering_started_at', staleBefore)
+    .select('id')
+  if (reclaimErr) console.error('[render-poll] stale reclaim failed:', reclaimErr.message)
+  const reclaimed = reclaimedRows?.length ?? 0
+  if (reclaimed > 0) {
+    console.warn(`[render-poll] reclaimed ${reclaimed} item(s) stranded at 'rendering' for over ${STALE_RENDERING_MS / 1000}s`)
+  }
 
   /* Two queries rather than one embedded join. PostgREST can filter on an
      embedded resource, but the embed is named after the foreign key and this
@@ -72,7 +110,7 @@ export async function GET(req: NextRequest) {
 
   const portfolioIds = (portfolios ?? []).map((p) => p.id)
   if (portfolioIds.length === 0) {
-    return NextResponse.json({ scanned: 0, claimed: 0, rendered: 0, skipped: 0 })
+    return NextResponse.json({ reclaimed, scanned: 0, claimed: 0, rendered: 0, skipped: 0 })
   }
 
   const { data: items, error: itemsErr } = await supabaseAdmin
@@ -104,7 +142,7 @@ export async function GET(req: NextRequest) {
        it between the read above and now. */
     const { data: claimedRows, error: claimErr } = await supabaseAdmin
       .from('portfolio_items')
-      .update({ status: 'rendering' })
+      .update({ status: 'rendering', rendering_started_at: new Date().toISOString() })
       .eq('id', item.id)
       .eq('status', 'pending')
       .select('id')
@@ -137,7 +175,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const summary = { scanned, claimed, rendered, failed, skipped, ms: Date.now() - startedAt }
+  const summary = { reclaimed, scanned, claimed, rendered, failed, skipped, ms: Date.now() - startedAt }
   console.log('[render-poll]', JSON.stringify(summary))
   return NextResponse.json(summary)
 }
