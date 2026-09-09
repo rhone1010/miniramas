@@ -138,7 +138,64 @@ export async function fetchCleanOriginal(
   }
 }
 
+// ── Locked-preview derivative ────────────────────────────────────
+//
+// What a LOCKED piece is allowed to be shown. Not the clean master at a
+// smaller size by accident — a deliberately reduced file that is pleasant to
+// look at and not worth keeping.
+//
+// This replaces the baked watermark as the protection for locked pieces. The
+// bake put the mark in the pixels, which was strong, but it cost: the master
+// arrives from NB2 as a ~180-207 KB JPEG and came back out as a 1.9-2.5 MB
+// PNG, so a locked four-pack pushed roughly 8 MB of tile art at the browser.
+// Measured against live storage 2026-09-09.
+//
+// PRODUCT-IMPACTING CONSTANTS. Both are named here rather than chosen
+// silently, because both are visible to the customer.
+
+/* 512 of the master's 1024 — half on each edge, a quarter of the pixels.
+   Enough to judge the piece and to fill the tile at 2x on a phone; not
+   enough to print or to pass off as the bought file. */
+export const LOCKED_PREVIEW_PX = 512
+
+/* The master is itself a JPEG, so this re-encodes rather than converting a
+   lossless source: 82 holds the tonal transitions a portrait lives on
+   without a visible artefact at tile size, and lands near 45-60 KB — around
+   a fortieth of what the baked PNG cost. */
+export const LOCKED_PREVIEW_QUALITY = 82
+
+/** Where a locked piece's derivative lives. Separate prefix from both the
+ *  clean master ({series}/) and the retired bake (watermarked/{series}/), so
+ *  the three never collide and the old assets stay readable as a fallback. */
+export function lockedPreviewPath(series: string, previewId: string): string {
+  return `locked/${series}/${previewId}.jpg`
+}
+
+/** Build the locked derivative from clean master bytes.
+ *
+ *  Throws on failure. Callers MUST treat that as a failed item, exactly as a
+ *  failed bake was treated: without a derivative there is nothing a locked
+ *  browser is allowed to be shown, and the clean master is never the answer. */
+export async function makeLockedPreview(imageB64: string): Promise<Buffer> {
+  return sharp(Buffer.from(imageB64, 'base64'))
+    .resize({ width: LOCKED_PREVIEW_PX, height: LOCKED_PREVIEW_PX, fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: LOCKED_PREVIEW_QUALITY })
+    .toBuffer()
+}
+
 // ── Baked watermark ──────────────────────────────────────────────
+//
+// STILL LIVE, on a narrower path than before. As of 2026-09-09 the portfolio
+// render path no longer bakes — the locked derivative above replaced it there
+// — but the FREE PREVIEW still does (portraits/generate/route.ts:596), and
+// that has not changed. A free preview is given away to someone who has not
+// bought anything and may never have an account, so the mark stays in its
+// pixels; a portfolio piece is already behind payment and an owner check.
+//
+// The assets this wrote for portfolio pieces stay in place as the fallback
+// for any preview whose derivative is missing, which is what the reader in
+// portfolios/[portfolioId]/status looks for second.
+
 //
 // The Liten & Co watermark pattern, repeated across the preview and
 // composited into the pixels. Throws on failure — callers must treat a bake
