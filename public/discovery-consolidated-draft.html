@@ -4622,10 +4622,140 @@ function paintMe(){
 }
 whoAmI().then(function(u){ if (u) restoreResume(); });
 
-// ── Payment confirmation — ?paid=1&session_id=... or ?portfolio_paid=1&session_id=... ──
-// Stripe embedded checkout navigates to return_url after payment completes.
-// Clean the URL, verify server-side, then finish whatever was started —
-// an unlock, or the poll that fills My Collection. Nothing is drawn here.
+// ── Paid-run verification — one implementation, two callers ──
+// A portfolio purchase can finish in two places, and both end here:
+//
+//   IN THE MODAL. Card and Link complete inside Discovery's own embedded
+//   checkout, over the Aspect Ratio screen. Stripe calls onComplete and the
+//   page never leaves. See onEmbeddedCheckoutComplete, below startCheckout.
+//
+//   BY RETURN. Klarna, Cash App Pay and Amazon Pay have to leave for the
+//   provider, and come back on ?portfolio_paid=1&session_id=... -- the
+//   handler after this block.
+//
+// Both hand a session id to verifyPurchasePaid, which is the whole of the
+// verification: one bounded question, asked the same way whoever asks it.
+// What each caller does once the answer is yes is the only thing that
+// differs, and it is passed in.
+
+/* HOW LONG TO WAIT FOR THE WEBHOOK.
+   purchases.status flips to 'paid' when the Stripe webhook lands, and the
+   browser is sometimes back before it. This used to be a single question:
+   one GET, and if it answered 'pending' the branch was skipped, nothing
+   retried, and the URL state was already gone -- so the collection never
+   opened on that load and only a manual reload recovered it.
+
+   2500ms is not a new number. It is the interval the unlock path below
+   already chose for this exact problem, with the reason recorded there:
+   the webhook lands in under two seconds as a rule. Five checks at that
+   spacing is a ten-second budget -- bounded and finite. This is not a poll
+   of anything else: it stops on the first definite answer, paid or
+   otherwise.
+
+   CORRECTED 2026-09-10: this comment used to say a slower webhook would be
+   covered by activateIfStalled. It is not. That function POSTs to
+   /api/v1/portfolios/<id>/activate, and no such route exists, so it has
+   never activated anything. The webhook is the only thing that flips a
+   portfolio to 'generating'. Logged separately; not changed here. */
+var PAID_RETRY_EVERY = 2500;
+var PAID_RETRY_TRIES = 4;
+
+/* Opening is one step, and it happens on a CONFIRMED payment -- never on a
+   URL parameter or a client-side event alone. The parameter is
+   attacker-supplied and free, and onComplete is only the browser's word;
+   the server's answer is what is trusted.
+
+   WHY THE SEED IS CLEARED FIRST. PIECES is built at parse time and, with
+   no selection restored, it is the 28-item demo collection -- fabricated
+   Groups, Pets and Halloween entries. Until #169 the panel could only open
+   from inside renderCollection, AFTER that seed had been replaced by real
+   work, so nobody ever saw it. Opening earlier than renderCollection means
+   the seed has to go here instead, or a paying customer is shown a
+   collection of pieces that do not exist. REAL_PIECES is set with it so
+   renderCollection does not repeat the swap; pieceLanded still reports
+   every arriving piece as changed, so the grid fills normally. */
+function openCollectionForPaidRun(){
+  if (typeof openMyCollection !== 'function') return;
+  if (typeof REAL_PIECES !== 'undefined' && !REAL_PIECES){
+    PIECES.length = 0;
+    REAL_PIECES = true;
+  }
+  /* Set before the open, so the very first paint of the empty grid already
+     carries the post-purchase wording rather than the generic one. */
+  AWAITING_PAID_HYDRATION = true;
+  openMyCollection();
+}
+
+/* THE PANEL OPENS HERE, NOT THREE LEVELS DOWN IN renderCollection.
+   It used to be reached only after GET /portfolios, then a /status and an
+   /unlocks for every portfolio the account owns, then loadShelf --
+   seventeen requests for eight portfolios -- and only if all of it
+   returned at least one piece. None of that is anything the panel needs in
+   order to be visible: openMyCollection is local DOM, and the crafting
+   tiles are drawn by the poll that starts on the next line.
+
+   renderCollection still opens it for every other caller, guarded by
+   RUN_LANDED exactly as before -- that path is untouched. The old code set
+   RUN_LANDED false so renderCollection would do the opening. The open has
+   happened already, so the flag is left true and the poll fills the tiles
+   without opening anything a second time. The assignment is a no-op
+   against the default and is written out because the value is
+   load-bearing, not incidental. */
+function beginPaidRun(){
+  openCollectionForPaidRun();
+
+  if (typeof craftWhenPiecesLand === 'function'){
+    RUN_LANDED = true;
+    craftWhenPiecesLand(0);
+  }
+}
+
+/* Ask whether the purchase behind this Checkout Session is paid, a bounded
+   number of times, and call onPaid on the first yes. Nothing else. */
+function verifyPurchasePaid(sessionId, onPaid, triesLeft){
+  if (triesLeft === undefined) triesLeft = PAID_RETRY_TRIES;
+  return fetch('/api/v1/checkout/' + encodeURIComponent(sessionId), { credentials:'include' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      var status = d && d.purchase ? d.purchase.status : null;
+      /* NO CONFIRMATION MODAL. My Collection opens with the crafting tiles
+         already in it, and that is the confirmation -- a panel saying the
+         same thing over the top of it was one confirmation too many.
+         Removed 2026-09-06. */
+      if (status === 'paid'){
+        onPaid();
+        return;
+      }
+
+      /* A DEFINITE NO IS FINAL. failed and refunded are terminal in the
+         purchases check constraint, so there is nothing to wait for and
+         the collection must not be presented as a successful purchase. */
+      if (status === 'failed' || status === 'refunded'){
+        console.warn('[discovery] purchase ' + status + ' — not opening the collection');
+        return;
+      }
+
+      /* 'pending', or no row yet. Ask again, a bounded number of times. */
+      if (triesLeft > 0){
+        setTimeout(function(){ verifyPurchasePaid(sessionId, onPaid, triesLeft - 1); }, PAID_RETRY_EVERY);
+      } else {
+        console.warn('[discovery] payment still unconfirmed after ' +
+          (PAID_RETRY_TRIES * PAID_RETRY_EVERY / 1000) + 's — leaving the collection closed');
+      }
+    })
+    .catch(function(){
+      // Network error — don't alarm, payment may still land via webhook.
+      // Same budget as a pending answer; a dropped request is not a no.
+      if (triesLeft > 0) setTimeout(function(){ verifyPurchasePaid(sessionId, onPaid, triesLeft - 1); }, PAID_RETRY_EVERY);
+    });
+}
+
+// ── Payment confirmation by return — ?paid=1&session_id=... or ?portfolio_paid=1&session_id=... ──
+// The redirect path. For a portfolio this now means a payment method that
+// had to leave the page to finish -- card and Link complete in the modal
+// and never arrive here. An unlock (hosted, via startUnlockCheckout) still
+// returns here on ?paid=1. Clean the URL, verify server-side, then finish
+// whatever was started. Nothing is drawn here.
 (function(){
   var params = new URLSearchParams(location.search);
   var isPaid = params.get('paid') === '1' || params.get('portfolio_paid') === '1';
@@ -4637,134 +4767,32 @@ whoAmI().then(function(u){ if (u) restoreResume(); });
 
   /* THE URL IS GONE, SO THE CLOSURE IS THE STATE. replaceState above erases
      portfolio_paid and session_id one line after they are read, which is
-     what stops a refresh re-firing the flow. It also means that from here
-     on, these two locals are the only record that a paid return is in
-     progress -- nothing else in the document knows. Every retry below reads
-     them from here rather than from location. */
-
-  /* HOW LONG TO WAIT FOR THE WEBHOOK.
-     purchases.status flips to 'paid' when the Stripe webhook lands, and the
-     browser is sometimes back before it. This used to be a single question:
-     one GET, and if it answered 'pending' the branch was skipped, nothing
-     retried, and the URL state was already gone -- so the collection never
-     opened on that load and only a manual reload recovered it.
-
-     2500ms is not a new number. It is the interval the unlock path below
-     already chose for this exact problem, with the reason recorded there:
-     the webhook lands in under two seconds as a rule. Five checks at that
-     spacing is a ten-second budget, which is bounded, finite, and well
-     inside the window activateIfStalled would cover anyway if it ran long.
-     This is not a poll of anything else: it stops on the first definite
-     answer, paid or otherwise. */
-  var PAID_RETRY_EVERY = 2500;
-  var PAID_RETRY_TRIES = 4;
-
-  /* Opening is one step, and it happens on a CONFIRMED payment -- never on
-     the URL parameter alone. Stripe does not redirect to success_url for a
-     failed payment, but the parameter is attacker-supplied and free, so the
-     server's answer is what is trusted.
-
-     WHY THE SEED IS CLEARED FIRST. PIECES is built at parse time and, with
-     no selection restored, it is the 28-item demo collection -- fabricated
-     Groups, Pets and Halloween entries. Until now the panel could only open
-     from inside renderCollection, AFTER that seed had been replaced by real
-     work, so nobody ever saw it. Opening earlier than renderCollection
-     means the seed has to go here instead, or a paying customer is shown a
-     collection of pieces that do not exist. REAL_PIECES is set with it so
-     renderCollection does not repeat the swap; pieceLanded still reports
-     every arriving piece as changed, so the grid fills normally. */
-  function openCollectionForPaidRun(){
-    if (typeof openMyCollection !== 'function') return;
-    if (typeof REAL_PIECES !== 'undefined' && !REAL_PIECES){
-      PIECES.length = 0;
-      REAL_PIECES = true;
+     what stops a refresh re-firing the flow. From here on, sessionId is the
+     only record that a paid return is in progress, and every retry inside
+     verifyPurchasePaid carries it rather than reading location again. */
+  verifyPurchasePaid(sessionId, function(){
+    /* An unlock returns on ?paid=1 exactly as a purchase does. The intent
+       held across the trip is what tells them apart: a piece was waiting to
+       be unlocked, so finish that rather than opening the collection for a
+       run that never started. UNCHANGED. */
+    var unlockIntent = (typeof readUnlockIntent === 'function') ? readUnlockIntent() : null;
+    if (unlockIntent){
+      clearUnlockIntent();
+      if (typeof requestUnlock === 'function'){
+        requestUnlock(unlockIntent.previewId, unlockIntent.key).then(function(result){
+          if (result === 'unlocked') return;
+          /* The webhook lands in under two seconds as a rule, but the
+             browser is back before it sometimes. */
+          if (result === 'payment_pending' || result === 'needs_payment'){
+            setTimeout(function(){ requestUnlock(unlockIntent.previewId, unlockIntent.key); }, 2500);
+          }
+        });
+      }
+      return;
     }
-    /* Set before the open, so the very first paint of the empty grid already
-       carries the post-purchase wording rather than the generic one. */
-    AWAITING_PAID_HYDRATION = true;
-    openMyCollection();
-  }
 
-  function verify(triesLeft){
-    return fetch('/api/v1/checkout/' + encodeURIComponent(sessionId), { credentials:'include' })
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(d){
-        var status = d && d.purchase ? d.purchase.status : null;
-        /* NO CONFIRMATION MODAL. My Collection opens with the crafting tiles
-           already in it, and that is the confirmation -- a panel saying the
-           same thing over the top of it was one confirmation too many.
-           Removed 2026-09-06. */
-        if (status === 'paid'){
-          /* An unlock returns on ?paid=1 exactly as a purchase does. The
-             intent held across the trip is what tells them apart: a piece was
-             waiting to be unlocked, so finish that rather than opening the
-             collection for a run that never started. UNCHANGED. */
-          var unlockIntent = (typeof readUnlockIntent === 'function') ? readUnlockIntent() : null;
-          if (unlockIntent){
-            clearUnlockIntent();
-            if (typeof requestUnlock === 'function'){
-              requestUnlock(unlockIntent.previewId, unlockIntent.key).then(function(result){
-                if (result === 'unlocked') return;
-                /* The webhook lands in under two seconds as a rule, but the
-                   browser is back before it sometimes. */
-                if (result === 'payment_pending' || result === 'needs_payment'){
-                  setTimeout(function(){ requestUnlock(unlockIntent.previewId, unlockIntent.key); }, 2500);
-                }
-              });
-            }
-            return;
-          }
-
-          /* THE PANEL OPENS HERE, NOT THREE LEVELS DOWN IN renderCollection.
-             It used to be reached only after GET /portfolios, then a
-             /status and an /unlocks for every portfolio the account owns,
-             then loadShelf -- seventeen requests for eight portfolios --
-             and only if all of it returned at least one piece. None of that
-             is anything the panel needs in order to be visible:
-             openMyCollection is local DOM, and the crafting tiles are drawn
-             by the poll that starts on the next line.
-
-             renderCollection still opens it for every other caller, guarded
-             by RUN_LANDED exactly as before -- that path is untouched. What
-             changed is which side of the flag this run sits on: the old code
-             set RUN_LANDED false so renderCollection would do the opening.
-             The open has happened already, so the flag is left true and the
-             poll below fills the tiles without opening anything a second
-             time. The assignment is a no-op against the default and is
-             written out because the value is load-bearing, not incidental. */
-          openCollectionForPaidRun();
-
-          if (typeof craftWhenPiecesLand === 'function'){
-            RUN_LANDED = true;
-            craftWhenPiecesLand(0);
-          }
-          return;
-        }
-
-        /* A DEFINITE NO IS FINAL. failed and refunded are terminal in the
-           purchases check constraint, so there is nothing to wait for and
-           the collection must not be presented as a successful purchase. */
-        if (status === 'failed' || status === 'refunded'){
-          console.warn('[discovery] purchase ' + status + ' — not opening the collection');
-          return;
-        }
-
-        /* 'pending', or no row yet. Ask again, a bounded number of times. */
-        if (triesLeft > 0){
-          setTimeout(function(){ verify(triesLeft - 1); }, PAID_RETRY_EVERY);
-        } else {
-          console.warn('[discovery] payment still unconfirmed after ' +
-            (PAID_RETRY_TRIES * PAID_RETRY_EVERY / 1000) + 's — leaving the collection closed');
-        }
-      })
-      .catch(function(){
-        // Network error — don't alarm, payment may still land via webhook.
-        // Same budget as a pending answer; a dropped request is not a no.
-        if (triesLeft > 0) setTimeout(function(){ verify(triesLeft - 1); }, PAID_RETRY_EVERY);
-      });
-  }
-
-  verify(PAID_RETRY_TRIES);
+    beginPaidRun();
+  });
 })();
 
 function pieceTitle(p){ return p.series + ' - ' + p.name + ' - ' + (ME && ME.email ? ME.email.split('@')[0] : '') + ' - ' + String(p.num).padStart(3,'0'); }
@@ -5255,7 +5283,13 @@ function startCheckout(){
     }).then(function(res){ return res.json().then(function(d){ return { status: res.status, data: d }; }); })
   ]).then(function(out){
     var r = out[1];
-    if (r.data.url) { window.location = r.data.url; return; }
+    /* NO HOSTED REDIRECT. A `window.location = r.data.url` line used to sit
+       here, and because the portfolios route returned a url it always won:
+       every portfolio purchase left Discovery for a Stripe page, and the
+       modal below had never once rendered for one. The route now creates an
+       embedded session and returns a client secret, so the form is drawn in
+       #ckModal over the Aspect Ratio screen, which stays exactly where it
+       was underneath -- nothing navigates, nothing is rebuilt. */
     if (!r.data.clientSecret || !r.data.publishableKey) {
       /* Server rejected */
       var reason = r.data.error || r.data.message || 'Checkout could not be started';
@@ -5272,7 +5306,15 @@ function startCheckout(){
     }
     /* Mount embedded checkout */
     var stripe = window.Stripe(r.data.publishableKey);
-    return stripe.initEmbeddedCheckout({ clientSecret: r.data.clientSecret });
+    var checkoutSessionId = r.data.sessionId;
+    return stripe.initEmbeddedCheckout({
+      clientSecret: r.data.clientSecret,
+      /* Card and Link finish here and never leave the page. A method that
+         must go to its provider (Klarna, Cash App Pay, Amazon Pay) does not
+         call this -- it comes back on the return_url instead, to the
+         portfolio_paid handler, which verifies the same way. */
+      onComplete: function(){ onEmbeddedCheckoutComplete(checkoutSessionId); }
+    });
   }).then(function(embed){
     if (!embed) return;
     STRIPE_EMBED = embed;
@@ -5289,6 +5331,33 @@ function startCheckout(){
     showCheckoutError('The payment form could not be opened. Try again in a moment.');
     resetCraftBtn(btn, origText);
   });
+}
+
+/* PAID IN THE MODAL. Close the form, then ask the server the same bounded
+   question the return path asks -- verifyPurchasePaid, one implementation --
+   and on a confirmed yes open the collection with the run already started.
+   onComplete is only the browser reporting that Stripe finished; it is not
+   treated as proof of payment, so nothing opens until the purchase row says
+   paid.
+
+   No unlock-intent check, unlike the return path. That check exists because
+   an unlock and a purchase both come back on ?paid=1 and need telling
+   apart. This callback is only ever attached to a portfolio checkout, so
+   there is nothing to tell apart -- and consulting a stored intent here
+   could divert a portfolio purchase into an unlock left over from earlier.
+
+   Closing first means the Aspect Ratio screen is briefly visible while the
+   check is in flight, then the collection slides in over it. If payment
+   cannot be confirmed within the budget, the customer is left on Aspect
+   Ratio with their selections intact, and the webhook still fulfils the
+   order. */
+function onEmbeddedCheckoutComplete(sessionId){
+  closeCheckout();
+  if (!sessionId){
+    console.warn('[discovery] embedded checkout completed with no session id — cannot verify; the webhook will still fulfil');
+    return;
+  }
+  verifyPurchasePaid(sessionId, beginPaidRun);
 }
 
 function resetCraftBtn(btn, text){

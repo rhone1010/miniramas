@@ -62,7 +62,18 @@ export async function POST(req: NextRequest) {
       aspectRatio: typeof body.aspect_ratio === 'string' ? body.aspect_ratio : null,
       subject: typeof body.subject === 'string' ? body.subject : null,
     })
-    return NextResponse.json({ url: result.checkoutUrl, portfolioId: result.portfolioId })
+    /* The client mounts this in its own checkout modal instead of
+       navigating to a Stripe page. The stage is a static HTML file with no
+       build step, so the publishable key can only reach the browser in a
+       response -- same arrangement as credits/purchase. It is the one Stripe
+       key meant to be public; the secret key never leaves the server.
+       sessionId is what the in-modal completion path verifies by. */
+    return NextResponse.json({
+      clientSecret:   result.clientSecret,
+      publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || '',
+      sessionId:      result.sessionId,
+      portfolioId:    result.portfolioId,
+    })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     console.error('[api/v1/portfolios] failed', msg)
