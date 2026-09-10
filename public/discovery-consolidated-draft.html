@@ -4635,53 +4635,136 @@ whoAmI().then(function(u){ if (u) restoreResume(); });
   // Clean URL immediately so refresh doesn't re-trigger
   history.replaceState(null, '', location.pathname);
 
-  // Verify the purchase landed server-side
-  fetch('/api/v1/checkout/' + encodeURIComponent(sessionId), { credentials:'include' })
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(d){
-      var status = d && d.purchase ? d.purchase.status : null;
-      /* NO CONFIRMATION MODAL. My Collection opens with the crafting tiles
-         already in it, and that is the confirmation — a panel saying the
-         same thing over the top of it was one confirmation too many.
-         Removed 2026-09-06.
+  /* THE URL IS GONE, SO THE CLOSURE IS THE STATE. replaceState above erases
+     portfolio_paid and session_id one line after they are read, which is
+     what stops a refresh re-firing the flow. It also means that from here
+     on, these two locals are the only record that a paid return is in
+     progress -- nothing else in the document knows. Every retry below reads
+     them from here rather than from location. */
 
-         The verification call above stays: `status` is what decides whether
-         to finish an unlock or start the poll, so the answer is still
-         needed even though nothing is drawn from it. */
-      // Refresh collection after payment so new pieces appear
-      /* portraits.html:7389 and 7318 -- a new run, so the next piece to land
-         is this run's first whatever the collection already holds, and the
-         customer is shown where the work will appear. One call and out was
-         the whole defect: every item was still 'pending' server-side at that
-         moment, so the collection filled with Crafting tiles and nothing
-         ever asked again. */
-      if (status === 'paid'){
-        /* An unlock returns on ?paid=1 exactly as a purchase does. The
-           intent held across the trip is what tells them apart: a piece was
-           waiting to be unlocked, so finish that rather than opening the
-           collection for a run that never started. */
-        var unlockIntent = (typeof readUnlockIntent === 'function') ? readUnlockIntent() : null;
-        if (unlockIntent){
-          clearUnlockIntent();
-          if (typeof requestUnlock === 'function'){
-            requestUnlock(unlockIntent.previewId, unlockIntent.key).then(function(result){
-              if (result === 'unlocked') return;
-              /* The webhook lands in under two seconds as a rule, but the
-                 browser is back before it sometimes. */
-              if (result === 'payment_pending' || result === 'needs_payment'){
-                setTimeout(function(){ requestUnlock(unlockIntent.previewId, unlockIntent.key); }, 2500);
-              }
-            });
+  /* HOW LONG TO WAIT FOR THE WEBHOOK.
+     purchases.status flips to 'paid' when the Stripe webhook lands, and the
+     browser is sometimes back before it. This used to be a single question:
+     one GET, and if it answered 'pending' the branch was skipped, nothing
+     retried, and the URL state was already gone -- so the collection never
+     opened on that load and only a manual reload recovered it.
+
+     2500ms is not a new number. It is the interval the unlock path below
+     already chose for this exact problem, with the reason recorded there:
+     the webhook lands in under two seconds as a rule. Five checks at that
+     spacing is a ten-second budget, which is bounded, finite, and well
+     inside the window activateIfStalled would cover anyway if it ran long.
+     This is not a poll of anything else: it stops on the first definite
+     answer, paid or otherwise. */
+  var PAID_RETRY_EVERY = 2500;
+  var PAID_RETRY_TRIES = 4;
+
+  /* Opening is one step, and it happens on a CONFIRMED payment -- never on
+     the URL parameter alone. Stripe does not redirect to success_url for a
+     failed payment, but the parameter is attacker-supplied and free, so the
+     server's answer is what is trusted.
+
+     WHY THE SEED IS CLEARED FIRST. PIECES is built at parse time and, with
+     no selection restored, it is the 28-item demo collection -- fabricated
+     Groups, Pets and Halloween entries. Until now the panel could only open
+     from inside renderCollection, AFTER that seed had been replaced by real
+     work, so nobody ever saw it. Opening earlier than renderCollection
+     means the seed has to go here instead, or a paying customer is shown a
+     collection of pieces that do not exist. REAL_PIECES is set with it so
+     renderCollection does not repeat the swap; pieceLanded still reports
+     every arriving piece as changed, so the grid fills normally. */
+  function openCollectionForPaidRun(){
+    if (typeof openMyCollection !== 'function') return;
+    if (typeof REAL_PIECES !== 'undefined' && !REAL_PIECES){
+      PIECES.length = 0;
+      REAL_PIECES = true;
+    }
+    /* Set before the open, so the very first paint of the empty grid already
+       carries the post-purchase wording rather than the generic one. */
+    AWAITING_PAID_HYDRATION = true;
+    openMyCollection();
+  }
+
+  function verify(triesLeft){
+    return fetch('/api/v1/checkout/' + encodeURIComponent(sessionId), { credentials:'include' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        var status = d && d.purchase ? d.purchase.status : null;
+        /* NO CONFIRMATION MODAL. My Collection opens with the crafting tiles
+           already in it, and that is the confirmation -- a panel saying the
+           same thing over the top of it was one confirmation too many.
+           Removed 2026-09-06. */
+        if (status === 'paid'){
+          /* An unlock returns on ?paid=1 exactly as a purchase does. The
+             intent held across the trip is what tells them apart: a piece was
+             waiting to be unlocked, so finish that rather than opening the
+             collection for a run that never started. UNCHANGED. */
+          var unlockIntent = (typeof readUnlockIntent === 'function') ? readUnlockIntent() : null;
+          if (unlockIntent){
+            clearUnlockIntent();
+            if (typeof requestUnlock === 'function'){
+              requestUnlock(unlockIntent.previewId, unlockIntent.key).then(function(result){
+                if (result === 'unlocked') return;
+                /* The webhook lands in under two seconds as a rule, but the
+                   browser is back before it sometimes. */
+                if (result === 'payment_pending' || result === 'needs_payment'){
+                  setTimeout(function(){ requestUnlock(unlockIntent.previewId, unlockIntent.key); }, 2500);
+                }
+              });
+            }
+            return;
           }
-        } else if (typeof craftWhenPiecesLand === 'function'){
-          RUN_LANDED = false;
-          craftWhenPiecesLand(0);
+
+          /* THE PANEL OPENS HERE, NOT THREE LEVELS DOWN IN renderCollection.
+             It used to be reached only after GET /portfolios, then a
+             /status and an /unlocks for every portfolio the account owns,
+             then loadShelf -- seventeen requests for eight portfolios --
+             and only if all of it returned at least one piece. None of that
+             is anything the panel needs in order to be visible:
+             openMyCollection is local DOM, and the crafting tiles are drawn
+             by the poll that starts on the next line.
+
+             renderCollection still opens it for every other caller, guarded
+             by RUN_LANDED exactly as before -- that path is untouched. What
+             changed is which side of the flag this run sits on: the old code
+             set RUN_LANDED false so renderCollection would do the opening.
+             The open has happened already, so the flag is left true and the
+             poll below fills the tiles without opening anything a second
+             time. The assignment is a no-op against the default and is
+             written out because the value is load-bearing, not incidental. */
+          openCollectionForPaidRun();
+
+          if (typeof craftWhenPiecesLand === 'function'){
+            RUN_LANDED = true;
+            craftWhenPiecesLand(0);
+          }
+          return;
         }
-      }
-    })
-    .catch(function(){
-      // Network error — don't alarm, payment may still land via webhook
-    });
+
+        /* A DEFINITE NO IS FINAL. failed and refunded are terminal in the
+           purchases check constraint, so there is nothing to wait for and
+           the collection must not be presented as a successful purchase. */
+        if (status === 'failed' || status === 'refunded'){
+          console.warn('[discovery] purchase ' + status + ' — not opening the collection');
+          return;
+        }
+
+        /* 'pending', or no row yet. Ask again, a bounded number of times. */
+        if (triesLeft > 0){
+          setTimeout(function(){ verify(triesLeft - 1); }, PAID_RETRY_EVERY);
+        } else {
+          console.warn('[discovery] payment still unconfirmed after ' +
+            (PAID_RETRY_TRIES * PAID_RETRY_EVERY / 1000) + 's — leaving the collection closed');
+        }
+      })
+      .catch(function(){
+        // Network error — don't alarm, payment may still land via webhook.
+        // Same budget as a pending answer; a dropped request is not a no.
+        if (triesLeft > 0) setTimeout(function(){ verify(triesLeft - 1); }, PAID_RETRY_EVERY);
+      });
+  }
+
+  verify(PAID_RETRY_TRIES);
 })();
 
 function pieceTitle(p){ return p.series + ' - ' + p.name + ' - ' + (ME && ME.email ? ME.email.split('@')[0] : '') + ' - ' + String(p.num).padStart(3,'0'); }
@@ -5409,6 +5492,10 @@ function renderCollection(){
                     aspect:item.aspect });
       });
       if (!all.length) return null;
+      /* Real pieces exist from here, so the purchase is no longer waiting to
+         be represented. Cleared here rather than on a timer: this is the
+         one place that knows work has actually come back. */
+      AWAITING_PAID_HYDRATION = false;
       /* The demo seed goes the first time real work answers, and only then. */
       var changed = false;
       if (!REAL_PIECES){ PIECES.length = 0; REAL_PIECES = true; changed = true; }
@@ -5536,6 +5623,14 @@ function includedRemainingFor(p){
    runAll clears __RUN_LANDED -- portraits.html:7389. */
 var RUN_LANDED  = true;
 var REAL_PIECES = false;
+/* THE GAP BETWEEN PAYING AND THE FIRST TILE. Set only when the collection
+   is opened on a confirmed payment, and only until real pieces arrive.
+   While it is true the empty grid says the purchase is being worked on
+   rather than that there is nothing here -- the generic line is right for a
+   collection that is genuinely empty and wrong for one that was bought
+   four seconds ago. Cleared the moment renderCollection returns a piece,
+   which is also the moment the empty message stops being drawn at all. */
+var AWAITING_PAID_HYDRATION = false;
 var unlockSelection = {}; // key -> true
 /* ONE BOUNDARY FOR SERIES CASING. The DB stores lowercase ('portraits',
    'pets'), the filter pills carry capitalised labels ('Portraits', 'Pets'),
@@ -5967,7 +6062,14 @@ function renderMyCollectionGrid(){
   mycollGrid.innerHTML = '';
   var vis = mcVisible();
   if (!vis.length){
-    mycollGrid.innerHTML = '<div class="mycoll__empty">Nothing here yet under this view.</div>';
+    /* Two states, one slot. The generic line stays exactly as it was for a
+       collection that is genuinely empty or filtered down to nothing; the
+       post-purchase wording is used only in the window between a confirmed
+       payment and the first piece landing. Same element and same class --
+       no new rule, nothing restyled. */
+    mycollGrid.innerHTML = AWAITING_PAID_HYDRATION
+      ? '<div class="mycoll__empty">Creating your collection…<br>Your images will appear here as they’re ready.</div>'
+      : '<div class="mycoll__empty">Nothing here yet under this view.</div>';
   }
   vis.forEach(function(p){
     var el = document.createElement('div');
