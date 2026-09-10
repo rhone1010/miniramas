@@ -4410,7 +4410,7 @@ var TOURS = {
       text:'The lock marks a watermarked preview. Tap the lock on the ones you love to gather them for unlocking.' },
     { sel:'.mc-rail-summary', title:'Your numbers',
       text:'How many pieces, how many still previews, and unlocks you have left.' },
-    { sel:'#mycollBackRail', title:'Back to the Workshop',
+    { sel:'#mycollBackRail', title:'Back to Discovery',
       text:'When you want to craft more.' }
   ],
   pose: [
@@ -4765,11 +4765,38 @@ function foregroundPaidRun(run){
    load-bearing, not incidental. */
 function beginPaidRun(run){
   openCollectionForPaidRun(run);
+  clearPurchasedSelection(run);
 
   if (typeof craftWhenPiecesLand === 'function'){
     RUN_LANDED = true;
     craftWhenPiecesLand(0);
   }
+}
+
+/* A CONFIRMED PURCHASE TAKES ITS EFFECTS OUT OF THE SELECTION. Card and Link
+   finish in the modal and the page never reloads, so SELECTED, the tier held
+   at that size and the server session all still carried the run just bought:
+   back in Discovery it was already chosen ("You have 1. I'll pick 3 more to
+   make 4."). Reached only from beginPaidRun, so only once the purchase row
+   says paid -- an unconfirmed payment leaves the selection exactly as it was.
+
+   Only the ids this checkout posted (run.effectIds, captured in startCheckout)
+   leave. The photograph, pose, shape and session stay; this is not Start over.
+   The server is told the same thing with the call a card tap makes -- one
+   remove per id, compare-and-swap on the server -- so the next offer it
+   prices, which is what checkout sends as clientPriceUsd, counts only what is
+   still selected. The return path passes no run and has nothing to clear: it
+   arrives on a fresh page load. */
+function clearPurchasedSelection(run){
+  if (!run || !run.effectIds || !run.effectIds.length) return;
+  var bought = run.effectIds;
+  for (var i = SELECTED.length - 1; i >= 0; i--){
+    if (bought.indexOf(SELECTED[i].key) > -1) SELECTED.splice(i, 1);
+  }
+  bought.forEach(function(id){ syncSelect(id, 'remove'); });
+  releaseTier();
+  syncDiscoveryChecks();
+  afterSelectionChange();
 }
 
 /* Ask whether the purchase behind this Checkout Session is paid, a bounded
@@ -5856,8 +5883,19 @@ function closeMyCollection(){
   unlockSelection = {};
   if (railBeforeMycoll === 'review') renderReviewRail(); else restoreDiscoveryRail();
 }
+/* The rail's own way out says Back to Discovery, so it goes there -- not to
+   whichever rail was showing when the collection opened. closeMyCollection
+   only swaps the rail back; the stage under the panel is still whatever it
+   was, which after a purchase is the Aspect Ratio step. showDiscovery puts
+   the Discovery stage and rail up together, exactly as the Review, Pose and
+   Aspect rails' own Back to Discovery does. The main-nav toggle still closes
+   through closeMyCollection alone, unchanged. */
+function mycollBackToDiscovery(){
+  closeMyCollection();
+  showDiscovery();
+}
 // The rail is this screen's control surface (same pattern as Review):
-// Back to Workshop, the collection's numbers, and the unlock basket.
+// Back to Discovery, the collection's numbers, and the unlock basket.
 // Curator tools for Discovery (photo, help cards, minimap) don't apply here.
 function mcStat(kind, n, label, svg, pct){
   return '<div class="mc-stat mc-stat--' + kind + '"><div class="mc-stat__icon">' + svg + '</div>' +
@@ -5912,10 +5950,10 @@ function renderMycollRail(){
       mcStat('unlock', featuredIncluded, 'included unlock' + (featuredIncluded===1?'':'s') + ' left',
         '<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>') +
     '</div>' + featuredHtml() + basket +
-    '<button class="mc-back" id="mycollBackRail">← Back to Workshop</button>';
+    '<a class="link-back" id="mycollBackRail">← Back to Discovery</a>';
 }
 discoveryRail.addEventListener('click', function(e){
-  if (e.target.closest('#mycollBackRail')) return closeMyCollection();
+  if (e.target.closest('#mycollBackRail')) return mycollBackToDiscovery();
   if (e.target.closest('[data-feat-open]') && FEATURED){ openFeatured(FEATURED); return; }
   if (e.target.closest('[data-feat-unlock]') && FEATURED){ unlockPiece(FEATURED); return; }
   if (e.target.closest('[data-feat-dl]') && FEATURED){ downloadPiece(FEATURED); return; }

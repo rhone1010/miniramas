@@ -127,6 +127,7 @@ function build(opts: { realPieces?: boolean; pieces?: any[] } = {}) {
     renderMycollRail() {},
     craftWhenPiecesLand() {},             // the poll's cadence is not under test; waves are driven by hand
     readUnlockIntent: () => null, clearUnlockIntent() {}, requestUnlock: () => Promise.resolve('unlocked'),
+    SELECTED: [], syncSelect: () => Promise.resolve(null), releaseTier() {}, syncDiscoveryChecks() {}, afterSelectionChange() {},
     canonicalSeries: (s: string) => (({ portraits: 'Portraits' } as any)[String(s).toLowerCase()] || s),
     MC_SERIES: 'all', MC_STATE: 'all',
     PIECES: opts.pieces ?? [],
@@ -141,7 +142,7 @@ function build(opts: { realPieces?: boolean; pieces?: any[] } = {}) {
     retryConstants(),
     fn('pieceLanded'), fn('mcVisible'), fn('paidRunsFirst'),
     fn('renderCollection'),
-    fn('openCollectionForPaidRun'), fn('foregroundPaidRun'), fn('beginPaidRun'),
+    fn('openCollectionForPaidRun'), fn('foregroundPaidRun'), fn('beginPaidRun'), fn('clearPurchasedSelection'),
     fn('verifyPurchasePaid'), fn('closeCheckout'), fn('onEmbeddedCheckoutComplete'),
     'function runReturnHandler(){ ' + returnHandler() + ' }',
     'return { renderCollection: renderCollection, mcVisible: mcVisible,',
@@ -386,7 +387,7 @@ describe('ordinary hydration and the redirect path are untouched', () => {
     server = [pending(NEW_ID, NEW_EFFECTS), ...EXISTING.map(([id, n]) => done(id, n))]
     const body = [
       retryConstants(), fn('pieceLanded'), fn('mcVisible'), fn('paidRunsFirst'), fn('renderCollection'),
-      fn('openCollectionForPaidRun'), fn('foregroundPaidRun'), fn('beginPaidRun'), fn('verifyPurchasePaid'),
+      fn('openCollectionForPaidRun'), fn('foregroundPaidRun'), fn('beginPaidRun'), fn('clearPurchasedSelection'), fn('verifyPurchasePaid'),
       'function runReturnHandler(){ ' + returnHandler() + ' }',
       'return { run: runReturnHandler, renderCollection: renderCollection, mcVisible: mcVisible,',
       '  fg: function(){ return PAID_RUN_FOREGROUND; } };',
@@ -402,6 +403,7 @@ describe('ordinary hydration and the redirect path are untouched', () => {
       loadPortfolio, loadShelf: () => Promise.resolve([]), activateIfStalled() {}, dispatchIfGenerating() {},
       openMyCollection: () => { opened++ }, renderMyCollectionGrid() {}, renderMycollRail() {},
       craftWhenPiecesLand() {}, readUnlockIntent: () => null, clearUnlockIntent() {}, requestUnlock() {},
+      SELECTED: [], syncSelect: () => Promise.resolve(null), releaseTier() {}, syncDiscoveryChecks() {}, afterSelectionChange() {},
       canonicalSeries: (x: string) => x, MC_SERIES: 'all', MC_STATE: 'all',
       PIECES: [{ key: 'demo0', series: 'Portraits', crafting: false, locked: true }],
       REAL_PIECES: false, RUN_LANDED: true, AWAITING_PAID_HYDRATION: false, PAID_RUN_FOREGROUND: [], FEATURED: null,

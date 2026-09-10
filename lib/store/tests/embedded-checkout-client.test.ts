@@ -177,6 +177,11 @@ function build(opts: { selected?: number; realPieces?: boolean } = {}) {
     readUnlockIntent: () => unlockIntent,
     clearUnlockIntent: () => { unlockIntent = null },
     requestUnlock: (...a: unknown[]) => { requestUnlockCalls.push(a); return Promise.resolve('unlocked') },
+    // what clearPurchasedSelection calls once the purchase is confirmed
+    syncSelect: () => Promise.resolve(null),
+    releaseTier: () => {},
+    syncDiscoveryChecks: () => {},
+    afterSelectionChange: () => {},
   }
 
   const body = [
@@ -184,6 +189,7 @@ function build(opts: { selected?: number; realPieces?: boolean } = {}) {
     fn('openCollectionForPaidRun'),
     fn('foregroundPaidRun'),
     fn('beginPaidRun'),
+    fn('clearPurchasedSelection'),
     fn('verifyPurchasePaid'),
     fn('closeCheckout'),
     fn('startCheckout'),
