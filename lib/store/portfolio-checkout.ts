@@ -160,7 +160,13 @@ export interface CreatePortfolioCheckoutArgs {
 }
 
 export interface CreatePortfolioCheckoutResult {
-  checkoutUrl: string
+  /* EMBEDDED, NOT HOSTED. The session is drawn inside Discovery's own
+     checkout modal over the Aspect Ratio screen, so there is no Stripe page
+     to send anyone to: an embedded session carries a client secret and its
+     url is null. sessionId travels with it because the in-modal completion
+     path verifies the purchase by it, exactly as the return_url path does. */
+  clientSecret: string
+  sessionId: string
   purchaseId: string
   portfolioId: string
 }
@@ -228,8 +234,18 @@ export async function createPortfolioCheckout(
   const appUrl = getAppUrl()
   const stripe = getStripe()
   const base = safeReturnBase(args.returnUrl, appUrl)
-  const success = appendQuery(base, 'portfolio_paid=1&session_id={CHECKOUT_SESSION_ID}')
-  const cancel = appendQuery(base, 'portfolio_canceled=1')
+  /* ONE URL, NO CANCEL. An embedded session takes a single return_url in
+     place of success_url and cancel_url -- the same shape credits/purchase
+     already ships. Closing the modal is the cancel: the session expires by
+     itself and the pending purchase row is never confirmed.
+
+     The return_url is only used for payment methods that have to leave the
+     page to finish -- Klarna, Cash App Pay, Amazon Pay. Card and Link
+     complete inside the modal and never navigate. The URL is exactly the
+     one success_url carried, so a redirect lands on the portfolio_paid
+     handler #169 already runs. portfolio_canceled had no reader in the
+     client and goes with cancel_url. */
+  const returnUrl = appendQuery(base, 'portfolio_paid=1&session_id={CHECKOUT_SESSION_ID}')
 
   // Look up the live Stripe price ID from the SKU row.
   const { data: sku, error: skuErr } = await supabaseAdmin
@@ -243,12 +259,19 @@ export async function createPortfolioCheckout(
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
+    /* PROBED BEFORE IT SHIPPED (2026-09-10, test mode, basket_discover_5).
+       'if_required' keeps all five methods the hosted page offered --
+       card, klarna, link, cashapp, amazon_pay -- and completes card and
+       Link in the modal. 'never' was also probed and silently dropped
+       klarna, cashapp and amazon_pay, which would have removed three
+       payment options customers are offered today. */
+    ui_mode: 'embedded',
+    redirect_on_completion: 'if_required',
+    return_url: returnUrl,
     line_items: [{
       price: sku.stripe_price_id,
       quantity: 1,
     }],
-    success_url: success,
-    cancel_url: cancel,
     metadata: {
       kind: 'portfolio',
       series: args.series,
@@ -257,7 +280,10 @@ export async function createPortfolioCheckout(
       skuId: offer.skuId!,
     },
   })
-  if (!session.url) throw new Error('stripe_session_missing_url')
+  /* An embedded session carries a client secret and never a url. Without
+     one the modal would open on nothing, so refuse here -- before any
+     purchase or portfolio row is written. */
+  if (!session.client_secret) throw new Error('stripe_session_missing_secret')
 
   const { data: purchaseRow, error: purchaseErr } = await supabaseAdmin
     .from('purchases')
@@ -311,7 +337,7 @@ export async function createPortfolioCheckout(
     `delivery=${offer.delivery} framing=${PURCHASED_FRAMING} aspect=${normalizeAspectChoice(args.aspectRatio) ?? 'none'} ` +
     `pose=${args.pose ?? 'none'} portfolio=${portfolioId}`,
   )
-  return { checkoutUrl: session.url, purchaseId, portfolioId }
+  return { clientSecret: session.client_secret, sessionId: session.id, purchaseId, portfolioId }
 }
 
 export async function activatePortfolio(purchaseId: string): Promise<void> {
