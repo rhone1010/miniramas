@@ -43,6 +43,7 @@ let unlockFinished: string | null
 let piecesSeed: string[]
 let realPieces: boolean
 let runLanded: boolean
+let awaitingPaidHydration: boolean
 
 /** The demo seed PIECES is built with at parse time when no selection is
  *  restored -- fabricated Groups/Pets/Halloween entries. */
@@ -59,7 +60,21 @@ function openCollectionForPaidRun() {
     piecesSeed = []
     realPieces = true
   }
+  awaitingPaidHydration = true
   openMyCollection()
+}
+
+const GENERIC_EMPTY = 'Nothing here yet under this view.'
+const PAID_EMPTY = 'Creating your collection…<br>Your images will appear here as they’re ready.'
+
+/** renderMyCollectionGrid's empty branch, as shipped. */
+function emptyCopy(): string {
+  return awaitingPaidHydration ? PAID_EMPTY : GENERIC_EMPTY
+}
+
+/** The point in renderCollection where real pieces exist. */
+function piecesArrived() {
+  awaitingPaidHydration = false
 }
 
 /** The renderCollection wave. Deliberately slow and counted: the point of
@@ -131,6 +146,7 @@ beforeEach(() => {
   piecesSeed = [...DEMO_SEED]
   realPieces = false
   runLanded = true
+  awaitingPaidHydration = false
 })
 afterEach(() => vi.useRealTimers())
 
@@ -379,5 +395,77 @@ describe('the shipped handler uses these constants', () => {
   it('still guards the open behind a confirmed paid status', () => {
     expect(HTML).toContain("if (status === 'paid'){")
     expect(HTML).toContain("if (status === 'failed' || status === 'refunded'){")
+  })
+})
+
+// -- 6 . the post-purchase empty state ----------------------------
+//
+// One slot, two states. Between a confirmed payment and the first piece
+// landing the grid is empty, and the generic line -- right for a collection
+// that is genuinely empty -- reads as though the purchase did not happen.
+
+describe('the empty grid says the right thing after a purchase', () => {
+  it('shows the post-purchase wording once the collection opens on payment', async () => {
+    const p = runPaidReturn({ isPaid: true, sessionId: 'cs_1' })
+    await vi.runAllTimersAsync()
+    await p
+    expect(awaitingPaidHydration).toBe(true)
+    expect(emptyCopy()).toBe(PAID_EMPTY)
+    expect(emptyCopy()).toContain('Creating your collection')
+    expect(emptyCopy()).toContain('Your images will appear here as they')
+  })
+
+  it('goes back to the generic line the moment real pieces arrive', async () => {
+    const p = runPaidReturn({ isPaid: true, sessionId: 'cs_1' })
+    await vi.runAllTimersAsync()
+    await p
+    expect(emptyCopy()).toBe(PAID_EMPTY)
+    piecesArrived()
+    expect(awaitingPaidHydration).toBe(false)
+    expect(emptyCopy()).toBe(GENERIC_EMPTY)
+  })
+
+  it('a genuinely empty collection is UNCHANGED -- no Stripe return at all', async () => {
+    const p = runPaidReturn({ isPaid: false, sessionId: null })
+    await vi.runAllTimersAsync()
+    await p
+    expect(awaitingPaidHydration).toBe(false)
+    expect(emptyCopy()).toBe(GENERIC_EMPTY)
+  })
+
+  it('never claims to be creating anything on a terminal failure', async () => {
+    scripted = ['failed']
+    const p = runPaidReturn({ isPaid: true, sessionId: 'cs_1' })
+    await vi.runAllTimersAsync()
+    await p
+    expect(awaitingPaidHydration).toBe(false)
+    expect(emptyCopy()).toBe(GENERIC_EMPTY)
+  })
+
+  it('does not claim it while payment is still unconfirmed', async () => {
+    scripted = ['pending', 'paid']
+    const p = runPaidReturn({ isPaid: true, sessionId: 'cs_1' })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(emptyCopy()).toBe(GENERIC_EMPTY)
+    await vi.runAllTimersAsync()
+    await p
+    expect(emptyCopy()).toBe(PAID_EMPTY)
+  })
+
+  it('an unlock return never changes the empty copy', async () => {
+    const p = runPaidReturn({ isPaid: true, sessionId: 'cs_1', hasUnlockIntent: true })
+    await vi.runAllTimersAsync()
+    await p
+    expect(awaitingPaidHydration).toBe(false)
+    expect(emptyCopy()).toBe(GENERIC_EMPTY)
+  })
+
+  it('both strings are the ones that shipped, verbatim', () => {
+    expect(HTML).toContain(
+      "'<div class=\"mycoll__empty\">Creating your collection…<br>" +
+      "Your images will appear here as they’re ready.</div>'",
+    )
+    // The generic line survives, once, for the state it was written for.
+    expect(HTML.split(GENERIC_EMPTY).length - 1).toBe(1)
   })
 })

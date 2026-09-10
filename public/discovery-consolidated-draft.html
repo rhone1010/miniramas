@@ -4679,6 +4679,9 @@ whoAmI().then(function(u){ if (u) restoreResume(); });
       PIECES.length = 0;
       REAL_PIECES = true;
     }
+    /* Set before the open, so the very first paint of the empty grid already
+       carries the post-purchase wording rather than the generic one. */
+    AWAITING_PAID_HYDRATION = true;
     openMyCollection();
   }
 
@@ -5489,6 +5492,10 @@ function renderCollection(){
                     aspect:item.aspect });
       });
       if (!all.length) return null;
+      /* Real pieces exist from here, so the purchase is no longer waiting to
+         be represented. Cleared here rather than on a timer: this is the
+         one place that knows work has actually come back. */
+      AWAITING_PAID_HYDRATION = false;
       /* The demo seed goes the first time real work answers, and only then. */
       var changed = false;
       if (!REAL_PIECES){ PIECES.length = 0; REAL_PIECES = true; changed = true; }
@@ -5616,6 +5623,14 @@ function includedRemainingFor(p){
    runAll clears __RUN_LANDED -- portraits.html:7389. */
 var RUN_LANDED  = true;
 var REAL_PIECES = false;
+/* THE GAP BETWEEN PAYING AND THE FIRST TILE. Set only when the collection
+   is opened on a confirmed payment, and only until real pieces arrive.
+   While it is true the empty grid says the purchase is being worked on
+   rather than that there is nothing here -- the generic line is right for a
+   collection that is genuinely empty and wrong for one that was bought
+   four seconds ago. Cleared the moment renderCollection returns a piece,
+   which is also the moment the empty message stops being drawn at all. */
+var AWAITING_PAID_HYDRATION = false;
 var unlockSelection = {}; // key -> true
 /* ONE BOUNDARY FOR SERIES CASING. The DB stores lowercase ('portraits',
    'pets'), the filter pills carry capitalised labels ('Portraits', 'Pets'),
@@ -6047,7 +6062,14 @@ function renderMyCollectionGrid(){
   mycollGrid.innerHTML = '';
   var vis = mcVisible();
   if (!vis.length){
-    mycollGrid.innerHTML = '<div class="mycoll__empty">Nothing here yet under this view.</div>';
+    /* Two states, one slot. The generic line stays exactly as it was for a
+       collection that is genuinely empty or filtered down to nothing; the
+       post-purchase wording is used only in the window between a confirmed
+       payment and the first piece landing. Same element and same class --
+       no new rule, nothing restyled. */
+    mycollGrid.innerHTML = AWAITING_PAID_HYDRATION
+      ? '<div class="mycoll__empty">Creating your collection…<br>Your images will appear here as they’re ready.</div>'
+      : '<div class="mycoll__empty">Nothing here yet under this view.</div>';
   }
   vis.forEach(function(p){
     var el = document.createElement('div');
