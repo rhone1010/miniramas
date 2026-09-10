@@ -383,7 +383,8 @@ describe('the shipped handler uses these constants', () => {
   })
 
   it('opens from the paid branch, not from inside renderCollection', () => {
-    expect(HTML).toContain('openCollectionForPaidRun();')
+    // Takes the in-modal run when there is one; the return path passes none.
+    expect(HTML).toContain('openCollectionForPaidRun(run);')
   })
 
   it('leaves the collection poll constants alone', () => {
