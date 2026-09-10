@@ -64,7 +64,14 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     try {
       const res = await fetch(`${appUrl}/api/v1/portraits/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        /* generate returns clean output only to an authorized caller. This
+           is the server's own render of a paid portfolio, so it presents the
+           internal secret -- the same one items/render and the cron poller
+           check. Nothing else about the request changes. */
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.CRON_SECRET ?? ''}`,
+        },
         body: JSON.stringify({
           source_image_b64: portfolio.source_image,
           style_id: styleId,

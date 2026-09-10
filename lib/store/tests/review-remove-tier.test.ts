@@ -26,7 +26,9 @@ import { execSync } from 'child_process'
 import path from 'path'
 
 const FILE = path.join(process.cwd(), 'public', 'discovery-consolidated-draft.html')
-const HTML = readFileSync(FILE, 'utf8')
+// LF throughout: git checks this file out with CRLF on Windows (core.autocrlf),
+// while `git show` below returns LF. Compare content, not line endings.
+const HTML = readFileSync(FILE, 'utf8').replace(/\r\n/g, '\n')
 
 function matchBrace(src: string, open: number): number {
   let depth = 0
@@ -293,7 +295,7 @@ describe('untouched', () => {
 
   it('every shared tier function is byte-identical to main', () => {
     let main: string
-    try { main = execSync('git show origin/main:public/discovery-consolidated-draft.html', { maxBuffer: 64 << 20 }).toString() }
+    try { main = execSync('git show origin/main:public/discovery-consolidated-draft.html', { maxBuffer: 64 << 20 }).toString().replace(/\r\n/g, '\n') }
     catch { return }                                     // no git history available: skip, the behaviour tests above still hold
     for (const n of ['lockTier', 'releaseTier', 'openSlots', 'paintTier', 'updateCollectionSummary',
                      'afterSelectionChange', 'toggleSelect', 'runSize', 'showReview', 'startCheckout', 'sizeInfo']) {

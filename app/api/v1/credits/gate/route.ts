@@ -286,7 +286,43 @@ export async function POST(req: Request) {
     }
 
     let balanceAfter: number
-    if (isAdmin) {
+    /* A PORTRAITS CRAFT PAYS FOR GRANTS. /portraits/generate refuses a browser
+       render without one: a single-use grant per image, issued here in the
+       SAME transaction as the spend (issue_generation_grants, migration 031),
+       so a spend with no grants cannot exist and neither can a grant nobody
+       paid for. Admin crafts get grants too, at no cost. Every other series
+       spends exactly as before. */
+    let grants: Array<{ id: string; unit: number; preset: string }> | null = null
+    if (series === 'portraits') {
+      if (presets.length !== n) {
+        return NextResponse.json(
+          { ok: false, reason: 'presets_required', count: n, presets: presets.length }, { status: 400 })
+      }
+      const { data: issued, error: issueErr } = await db.rpc('issue_generation_grants', {
+        p_owner:    owner,
+        p_ref:      refId,
+        p_presets:  presets,
+        p_cost_per: costPer,
+        p_charge:   !isAdmin,
+      })
+      if (issueErr) {
+        return NextResponse.json(
+          { ok: false, reason: `spend_failed: ${issueErr.message}` }, { status: 500 })
+      }
+      const rows = (issued ?? []) as Array<{ grant_id: string; unit: number; preset: string; balance_after: number }>
+      if (rows.length === 0) {
+        const { data: bal } = await db
+          .from('credit_balances').select('balance').eq('owner_key', owner).maybeSingle()
+        return NextResponse.json({
+          ok: false, reason: 'insufficient_credits',
+          balance: bal?.balance ?? 0, needed: total,
+        })
+      }
+      grants = rows
+        .map((r) => ({ id: r.grant_id, unit: r.unit, preset: r.preset }))
+        .sort((a, b) => a.unit - b.unit)
+      balanceAfter = rows[0].balance_after
+    } else if (isAdmin) {
       const { data: bal } = await db
         .from('credit_balances').select('balance').eq('owner_key', owner).maybeSingle()
       balanceAfter = bal?.balance ?? 0
@@ -364,6 +400,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       ref_id: refId,          // the client holds this and sends it to /refund
+      // Portraits only: one grant per image, in the order the presets came.
+      ...(grants ? { grants } : {}),
       balance_after: balanceAfter,
       granted: n,
       spent: isAdmin ? 0 : total,

@@ -6868,7 +6868,10 @@ window.EFFECT_PREVIEWS = {
          objection and chosen to proceed. Absent on every ordinary craft. */
       /* Either the customer consented to this photograph at the upload, or
          to this one piece after it was declined at /generate. */
-      skip_redirect:         item.skipRedirect === true || SRC.skipRedirect === true
+      skip_redirect:         item.skipRedirect === true || SRC.skipRedirect === true,
+      /* The single-use grant /credits/gate issued for this image. generate
+         refuses a paid render without it (2026-09-10). */
+      grant_id:              item.grant_id || null
     };
   }
   window.__payloadFor = payloadFor;
@@ -6983,6 +6986,15 @@ window.EFFECT_PREVIEWS = {
                      'CANNOT be refunded. Apply PATCH-credits-gate-refid.md.');
       }
       items.forEach(function(q){ q.paid = true; q.ref_id = RUN_REF; });
+      /* ONE GRANT PER IMAGE. The gate issues them in the order the presets
+         were posted -- the order of `items` -- and names each by unit.
+         generate will not render a paid image without its own grant, and
+         will not render one grant twice. */
+      var grants = (data && Array.isArray(data.grants)) ? data.grants : [];
+      items.forEach(function(q, i){
+        var g = grants.filter(function(x){ return x && x.unit === i; })[0];
+        q.grant_id = (g && g.id) || null;
+      });
       if (typeof data.balance_after === 'number') setCredits(data.balance_after);
       console.log('[credits] spent ' + (items.length * CREDITS_PER_IMAGE) +
                   ' — balance now ' + data.balance_after +
@@ -7012,20 +7024,51 @@ window.EFFECT_PREVIEWS = {
      exactly: the engine can return a rejection, a redirect to another Series,
      or a piece, and treating any of them as a crash is how a gate result
      becomes a silent failure. */
+  /* SAME GRANT, BOUNDED RETRY. Ruled 2026-09-10: 2500ms x 4.
+     A paid render is one grant, and generate will only ever make one image
+     for it -- a grant it has already delivered is re-delivered, never
+     rendered again. So when a request dies on the network, sending the SAME
+     grant again cannot cost a second credit or produce a different piece:
+     it either renders (nothing reached the server), joins the render still
+     running, or gets back the image that was already made. Without this a
+     dropped connection marked a finished, paid piece as failed.
+     Only a request that produced no response, or a grant still in progress,
+     is retried; a real answer is treated exactly as before. */
+  var GENERATE_RETRY_EVERY = 2500;
+  var GENERATE_RETRY_TRIES = 4;
+  function grantRetryWait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  function generateWithGrant(payload){
+    function attempt(left){
+      return fetch(GENERATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function(res){
+        if (res.status === 409){
+          return res.json().catch(function(){ return {}; }).then(function(d){
+            if (d && d.error === 'grant_in_progress' && left > 0){
+              return grantRetryWait(GENERATE_RETRY_EVERY).then(function(){ return attempt(left - 1); });
+            }
+            throw new Error('HTTP 409' + (d && d.error ? ' ' + d.error : ''));
+          });
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      }, function(netErr){
+        if (left > 0) return grantRetryWait(GENERATE_RETRY_EVERY).then(function(){ return attempt(left - 1); });
+        throw netErr;
+      });
+    }
+    return attempt(GENERATE_RETRY_TRIES);
+  }
+
   function runQueueItem(item){
     if (item.status === 'running' || item.status === 'done') return Promise.resolve();
     var t0 = Date.now();
     item.status = 'running';
     paintRow(item);
 
-    return fetch(GENERATE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payloadFor(item))
-    }).then(function(res){
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    }).then(function(data){
+    return generateWithGrant(payloadFor(item)).then(function(data){
       if (data.status === 'intake_rejected'){
         item.status = 'rejected';
         item.intakeReject = data.intake || null;
