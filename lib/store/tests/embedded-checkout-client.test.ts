@@ -166,6 +166,8 @@ function build(opts: { selected?: number; realPieces?: boolean } = {}) {
     showCheckoutError: () => {},
     // state the paid run touches
     STRIPE_EMBED: null,
+    PAID_RUN_FOREGROUND: [],
+    canonicalSeries: (s: string) => (({ portraits: 'Portraits' } as any)[String(s).toLowerCase()] || s),
     REAL_PIECES: opts.realPieces ?? false,
     RUN_LANDED: true,
     AWAITING_PAID_HYDRATION: false,
@@ -180,6 +182,7 @@ function build(opts: { selected?: number; realPieces?: boolean } = {}) {
   const body = [
     retryConstants(),
     fn('openCollectionForPaidRun'),
+    fn('foregroundPaidRun'),
     fn('beginPaidRun'),
     fn('verifyPurchasePaid'),
     fn('closeCheckout'),
@@ -191,6 +194,7 @@ function build(opts: { selected?: number; realPieces?: boolean } = {}) {
     '  onEmbeddedCheckoutComplete: onEmbeddedCheckoutComplete, runReturnHandler: runReturnHandler,',
     '  state: function(){ return { STRIPE_EMBED: STRIPE_EMBED, REAL_PIECES: REAL_PIECES,',
     '    RUN_LANDED: RUN_LANDED, AWAITING_PAID_HYDRATION: AWAITING_PAID_HYDRATION, PIECES: PIECES,',
+    '    PAID_RUN_FOREGROUND: PAID_RUN_FOREGROUND,',
     '    SELECTED: SELECTED, POSE: POSE, ASPECT: ASPECT, SRC_B64: SRC_B64 }; } };',
   ].join('\n')
 
@@ -344,7 +348,11 @@ describe('card / Link: onComplete closes the modal and opens My Collection', () 
     expect(st.AWAITING_PAID_HYDRATION).toBe(true)
     expect(st.RUN_LANDED).toBe(true)
     expect(st.REAL_PIECES).toBe(true)
-    expect(st.PIECES).toEqual([])
+    // The demo seed is gone and the run's four crafting placeholders stand in
+    // its place, in slot order, keyed exactly as loadPortfolio will key them.
+    expect(st.PIECES.map((p: any) => p.key)).toEqual([0, 1, 2, 3].map((s) => 'pfportfolio-1:' + s))
+    expect(st.PIECES.every((p: any) => p.crafting && p.locked && p.art === null)).toBe(true)
+    expect(st.PAID_RUN_FOREGROUND).toEqual(['portfolio-1'])
   })
 
   it('does not open before the server says paid', async () => {
@@ -460,7 +468,7 @@ describe('both completion paths share one verification', () => {
 
   it('it lives in verifyPurchasePaid, and both callers call it', () => {
     expect(fn('verifyPurchasePaid')).toContain("fetch('/api/v1/checkout/' + encodeURIComponent(sessionId)")
-    expect(fn('onEmbeddedCheckoutComplete')).toContain('verifyPurchasePaid(sessionId, beginPaidRun)')
+    expect(fn('onEmbeddedCheckoutComplete')).toContain('verifyPurchasePaid(sessionId, function(){ beginPaidRun(run); })')
     expect(returnHandler()).toContain('verifyPurchasePaid(sessionId, function(){')
     expect(returnHandler()).toContain('beginPaidRun();')
   })

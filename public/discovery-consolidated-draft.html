@@ -4674,16 +4674,51 @@ var PAID_RETRY_TRIES = 4;
    collection of pieces that do not exist. REAL_PIECES is set with it so
    renderCollection does not repeat the swap; pieceLanded still reports
    every arriving piece as changed, so the grid fills normally. */
-function openCollectionForPaidRun(){
+function openCollectionForPaidRun(run){
   if (typeof openMyCollection !== 'function') return;
   if (typeof REAL_PIECES !== 'undefined' && !REAL_PIECES){
     PIECES.length = 0;
     REAL_PIECES = true;
   }
+  /* After the seed is cleared, before the panel paints: the run's crafting
+     tiles are already first in the grid on the frame the collection slides
+     in. Only the in-modal path passes a run; the return path passes nothing
+     and this is skipped, exactly as before. */
+  if (run) foregroundPaidRun(run);
   /* Set before the open, so the very first paint of the empty grid already
      carries the post-purchase wording rather than the generic one. */
   AWAITING_PAID_HYDRATION = true;
   openMyCollection();
+}
+
+/* FOREGROUND THE RUN THAT WAS JUST BOUGHT. The authority is the portfolio
+   id the portfolios route returned for this very checkout, and the effect
+   ids that checkout actually posted -- captured in startCheckout, not read
+   back from SELECTED afterwards.
+
+   Each placeholder is built exactly as loadPortfolio builds a pending item
+   -- same key 'pf' + id + ':' + slot, crafting, locked, no art -- because
+   slot N of the portfolio IS the Nth posted effect (createPortfolioCheckout
+   assigns slots in posted order). So when the poll brings the real item
+   back, pieceLanded finds the same key and replaces the tile where it
+   stands: no duplicate, no reordering, no flicker. A key already in PIECES
+   is left alone. Pushing to the end is fine; paidRunsFirst draws them
+   first regardless. */
+function foregroundPaidRun(run){
+  if (!run || !run.portfolioId) return;
+  PAID_RUN_FOREGROUND = [run.portfolioId].concat(
+    PAID_RUN_FOREGROUND.filter(function(id){ return id !== run.portfolioId; })
+  );
+  var ids = run.effectIds || [];
+  for (var slot = 0; slot < ids.length; slot++){
+    var key = 'pf' + run.portfolioId + ':' + slot;
+    var known = false;
+    for (var i = 0; i < PIECES.length; i++){ if (PIECES[i].key === key){ known = true; break; } }
+    if (known) continue;
+    PIECES.push({ key:key, portfolioId: run.portfolioId, name: ids[slot], siloName:'',
+                  series: canonicalSeries(run.series), num: slot + 1,
+                  crafting: true, locked: true, previewId: null, art: null, aspect: null });
+  }
 }
 
 /* THE PANEL OPENS HERE, NOT THREE LEVELS DOWN IN renderCollection.
@@ -4701,8 +4736,8 @@ function openCollectionForPaidRun(){
    without opening anything a second time. The assignment is a no-op
    against the default and is written out because the value is
    load-bearing, not incidental. */
-function beginPaidRun(){
-  openCollectionForPaidRun();
+function beginPaidRun(run){
+  openCollectionForPaidRun(run);
 
   if (typeof craftWhenPiecesLand === 'function'){
     RUN_LANDED = true;
@@ -5307,13 +5342,22 @@ function startCheckout(){
     /* Mount embedded checkout */
     var stripe = window.Stripe(r.data.publishableKey);
     var checkoutSessionId = r.data.sessionId;
+    /* Which run this checkout bought: the portfolio id the route just
+       created for it, and the effect ids this request posted, in slot order.
+       Held here, not re-read later, so the foreground run is the purchase
+       itself and not whatever the selection says by the time payment ends. */
+    var paidRun = {
+      portfolioId: r.data.portfolioId,
+      series:      payload.series,
+      effectIds:   payload.selectedEffectIds.slice()
+    };
     return stripe.initEmbeddedCheckout({
       clientSecret: r.data.clientSecret,
       /* Card and Link finish here and never leave the page. A method that
          must go to its provider (Klarna, Cash App Pay, Amazon Pay) does not
          call this -- it comes back on the return_url instead, to the
          portfolio_paid handler, which verifies the same way. */
-      onComplete: function(){ onEmbeddedCheckoutComplete(checkoutSessionId); }
+      onComplete: function(){ onEmbeddedCheckoutComplete(checkoutSessionId, paidRun); }
     });
   }).then(function(embed){
     if (!embed) return;
@@ -5351,13 +5395,16 @@ function startCheckout(){
    cannot be confirmed within the budget, the customer is left on Aspect
    Ratio with their selections intact, and the webhook still fulfils the
    order. */
-function onEmbeddedCheckoutComplete(sessionId){
+function onEmbeddedCheckoutComplete(sessionId, run){
   closeCheckout();
   if (!sessionId){
     console.warn('[discovery] embedded checkout completed with no session id — cannot verify; the webhook will still fulfil');
     return;
   }
-  verifyPurchasePaid(sessionId, beginPaidRun);
+  /* The run is passed through so the collection opens with it first. The
+     verification is untouched: it is still verifyPurchasePaid, and nothing
+     is foregrounded until the purchase row says paid. */
+  verifyPurchasePaid(sessionId, function(){ beginPaidRun(run); });
 }
 
 function resetCraftBtn(btn, text){
@@ -5700,6 +5747,19 @@ var REAL_PIECES = false;
    four seconds ago. Cleared the moment renderCollection returns a piece,
    which is also the moment the empty message stops being drawn at all. */
 var AWAITING_PAID_HYDRATION = false;
+/* THE RUN JUST BOUGHT IN THE MODAL, DRAWN FIRST. Portfolio ids, most recent
+   first. Empty on every page load, so ordinary hydration orders exactly as
+   it always has; filled only by an in-modal paid run (foregroundPaidRun).
+
+   Why it is needed. A reload used to sit between paying and seeing the
+   collection, and it rebuilt PIECES from empty in newest-first order, so a
+   new portfolio was always drawn first. Embedded checkout removed the
+   reload. The page now keeps the collection it hydrated at sign-in, and
+   pieceLanded appends a piece it has not seen -- so the paid run was drawn
+   last, tiles 35-38 of 38 in production on 2026-09-10, and the customer
+   saw nothing happen. mcVisible puts these portfolios at the front at
+   render time; PIECES itself is never reordered. */
+var PAID_RUN_FOREGROUND = [];
 var unlockSelection = {}; // key -> true
 /* ONE BOUNDARY FOR SERIES CASING. The DB stores lowercase ('portraits',
    'pets'), the filter pills carry capitalised labels ('Portraits', 'Pets'),
@@ -5720,12 +5780,33 @@ function canonicalSeries(s){
 
 var MC_STATE = 'all', MC_SERIES = 'all';
 function mcVisible(){
-  return PIECES.filter(function(p){
+  return paidRunsFirst(PIECES.filter(function(p){
     if (MC_SERIES !== 'all' && p.series !== MC_SERIES) return false;
     if (MC_STATE === 'purchased' && (p.locked || p.crafting)) return false;
     if (MC_STATE === 'preview' && !p.locked) return false;
     return true;
+  }));
+}
+
+/* A STABLE PARTITION, NOT A SORT. With nothing in PAID_RUN_FOREGROUND the
+   list comes back untouched -- the same array, the same order -- which is
+   every page load and every collection that was not just bought in the
+   modal. Otherwise each foregrounded portfolio's pieces move to the front,
+   most recent run first, and within a run they keep the order they hold in
+   PIECES: slot order, because the placeholders are seeded 0..N-1 and
+   pieceLanded replaces each one in place as its result arrives. Everything
+   else keeps its relative order behind them. Nothing is unshifted, so item
+   order cannot reverse, and because this runs on every paint, no later poll
+   can push the run back down. Both the grid and the lightbox read through
+   here, so they agree. */
+function paidRunsFirst(list){
+  if (!PAID_RUN_FOREGROUND.length) return list;
+  var front = [];
+  PAID_RUN_FOREGROUND.forEach(function(id){
+    list.forEach(function(p){ if (p.portfolioId === id) front.push(p); });
   });
+  var rest = list.filter(function(p){ return PAID_RUN_FOREGROUND.indexOf(p.portfolioId) === -1; });
+  return front.concat(rest);
 }
 
 var mycoll = document.getElementById('mycoll');
