@@ -19,6 +19,11 @@
 // customer's render proceeds. QA observability can never break a render.
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getUser } from '@/lib/store/auth'
+import { checkInternalAuth } from '@/lib/store/internal-auth'
+import {
+  decideGenerateAccess, openGrant, persistAndConsume, releaseGrant, type ClaimedGrant,
+} from '@/lib/store/generation-grants'
 import { createClient } from '@supabase/supabase-js'
 import { createHash, randomUUID } from 'crypto'
 import sharp from 'sharp'
@@ -130,11 +135,85 @@ async function cropSourceToFocal(b64: string, f: Focal): Promise<string> {
 // Rough per-stage cost (cents) for qa_log observability only — not billing.
 const QA_COST = { gate: 1, nb2: 5, canvasPad: 0, gptImage: 8 } as const
 
+/* ── WHO MAY GENERATE ────────────────────────────────────────────
+   Decided from credentials, never from what the body asks for.
+
+     internal   Authorization: Bearer $CRON_SECRET (checkInternalAuth) --
+                Discovery's server-side portfolio render. Clean output.
+     bake       x-liten-internal (bakeAuthorized), unchanged.
+     grant      a signed-in owner AND a single-use generation grant from the
+                /credits/gate spend for this exact craft -- Portraits in the
+                browser. Claimed before any NB2 work; consumed only once the
+                canonical result is persisted.
+     refused    everything else: no session, no grant, experimental_effect,
+                is_preview.
+
+   This route used to return a clean image to anyone who left out
+   is_preview, while the credit charge happened in a separate call it never
+   looked at. */
 export async function POST(req: NextRequest) {
+  let body: any
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'invalid_json' }, { status: 400 })
+  }
+
+  const access = decideGenerateAccess({
+    body,
+    internal: checkInternalAuth(req).ok,
+    bakeAuthorized: bakeAuthorized(req),
+  })
+  if (access.kind === 'refuse') {
+    return NextResponse.json({ error: access.error }, { status: access.status })
+  }
+
+  let grant: ClaimedGrant | null = null
+  let grantDb: ReturnType<typeof supaOrNull> = null
+  if (access.kind === 'grant') {
+    const user = await getUser().catch(() => null)
+    if (!user) return NextResponse.json({ error: 'sign_in_required' }, { status: 401 })
+    if (typeof body.grant_id !== 'string' || !body.grant_id) {
+      return NextResponse.json({ error: 'grant_required' }, { status: 403 })
+    }
+    grantDb = supaOrNull()
+    if (!grantDb) return NextResponse.json({ error: 'supabase not configured' }, { status: 500 })
+    const preset = String(body.preset_id ?? body.preset ?? '')
+    const opened = await openGrant(grantDb, { grantId: body.grant_id, ownerKey: user.id, preset })
+    if (opened.kind === 'refuse') {
+      return NextResponse.json({ error: opened.error }, { status: opened.status })
+    }
+    if (opened.kind === 'redeliver') {
+      // The canonical result for this grant already exists. Same shape as a
+      // fresh render; no NB2 work.
+      return NextResponse.json({ result: { ok: true, image_b64: opened.imageB64, redelivered: true }, redelivered: true })
+    }
+    grant = opened.grant
+  }
+
+  const outcome = { delivered: false }
+  try {
+    return await generatePortrait(req, body, grant, grantDb, outcome)
+  } finally {
+    // Anything that did not deliver -- a refusal, an intake rejection, a
+    // redirect, a failed render, a failed persist, a throw -- puts the grant
+    // back so the customer can retry it or be refunded for it.
+    if (grant && grantDb && !outcome.delivered) {
+      await releaseGrant(grantDb, grant, 'not_delivered')
+    }
+  }
+}
+
+async function generatePortrait(
+  req: NextRequest,
+  body: any,
+  grant: ClaimedGrant | null,
+  grantDb: ReturnType<typeof supaOrNull>,
+  outcome: { delivered: boolean },
+): Promise<NextResponse> {
   const t0 = Date.now()
 
   try {
-    const body = await req.json()
 
     // ── Field mapping ─────────────────────────────────────────
     let sourceImageB64: string = body.source_image_b64
@@ -155,53 +234,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // ── Experimental effects branch (portraits-experimental.ts) ───
-    // Additive path: ten "out there" materials that deliberately do NOT route
-    // through PortraitsPresetId. When experimental_effect is present we build
-    // the effect's self-contained prompt and call NB2 directly — skipping the
-    // normal preset/material/location assembly and Pass 2. No preset_id needed.
-    // Each effect carries its own setting, so no location is injected.
-    if (body.experimental_effect && isExperimentalEffect(body.experimental_effect)) {
-      const replicateApiToken = process.env.REPLICATE_API_TOKEN
-      if (!replicateApiToken) {
-        return NextResponse.json({ error: 'REPLICATE_API_TOKEN not configured' }, { status: 500 })
-      }
-      const expFraming: Framing = normalizeFraming(body.framing)
-      const expAspect: string   = ASPECT_FOR_FRAMING[expFraming]
-      const expPrompt = buildExperimentalPrompt({
-        effectId:   body.experimental_effect,
-        framing:    expFraming,
-        plaqueText: body.plaque ?? null,
-      })
-      console.log(
-        `[portraits/generate] experimental effect=${body.experimental_effect} ` +
-        `framing=${expFraming} aspect=${expAspect} prompt_chars=${expPrompt.length}`,
-      )
-      try {
-        const imageB64 = await callNB2({
-          prompt:              expPrompt,
-          sourceImageB64,
-          additionalImagesB64: body.additional_images_b64 || [],
-          styleReferenceB64s:  [],
-          aspectRatio:         expAspect,
-          replicateApiToken,
-        })
-        return NextResponse.json({
-          status:              'done',
-          image_b64:           imageB64,
-          experimental_effect: body.experimental_effect,
-          aspect_ratio:        expAspect,
-          prompt_chars:        expPrompt.length,
-          elapsed_ms:          Date.now() - t0,
-        })
-      } catch (e: any) {
-        console.error('[portraits/generate] experimental render failed:', e)
-        return NextResponse.json(
-          { error: e?.message || 'experimental render failed' },
-          { status: 500 },
-        )
-      }
-    }
+    /* The experimental-effects branch lived here: it called NB2 directly and
+       returned a clean image before the age refusal, for anyone. It had no
+       caller and is closed (2026-09-10); experimental_effect is refused before
+       this function runs. */
 
     // ── Preview-bake mode (internal-only) ─────────────────────────
     // Runs the IDENTICAL pipeline (prompts, gates, QA) and only diverts
@@ -356,29 +392,10 @@ export async function POST(req: NextRequest) {
     // ════════════════════════════════════════════════════════════
     const sb = supaOrNull()
 
-    // ════════════════════════════════════════════════════════════
-    // FREE PREVIEW — entry gate (item 2). Commercial enforcement:
-    // confirmed prior use blocks; infra hiccups allow (generous).
-    // The ledger row is written only AFTER a piece renders.
-    // ════════════════════════════════════════════════════════════
-    let previewEmail:  string | null = null
-    let previewIpHash: string | null = null
-    if (generateRequest.is_preview === true && !isBake) {
-      previewEmail = normalizeEmail(body.preview_email)
-      if (!previewEmail) {
-        return NextResponse.json({ error: 'preview_email_required' }, { status: 400 })
-      }
-      previewIpHash = clientIpHash(req)
-      if (sb) {
-        const gate = await checkPreviewAllowed(sb, previewEmail, previewIpHash)
-        if (!gate.allowed) {
-          return NextResponse.json(
-            { status: 'preview_already_used', reason: gate.reason },
-            { status: 403 },
-          )
-        }
-      }
-    }
+    /* The anonymous free-preview entry gate lived here. It is closed
+       (2026-09-10): it had no caller, and is_preview is refused before this
+       function runs. The foyer's free preview will be designed on its own.
+       */
 
     let qa: QaEntry | null = null
     let qaSettings: Awaited<ReturnType<typeof loadQaSettings>> | null = null
@@ -594,39 +611,33 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // ════════════════════════════════════════════════════════════
-    // FREE PREVIEW — exit processing (item 2). Runs AFTER Gate 2 so
-    // QA scores the clean render. Order: retain clean original →
-    // bake watermark (FAIL-CLOSED: never ship clean for free) →
-    // record the ledger row (the preview is spent only now, with a
-    // real piece in hand).
-    // ════════════════════════════════════════════════════════════
-    if (previewEmail && previewIpHash && result.ok && result.image_b64) {
-      const previewId = randomUUID()
-      let storagePath: string | null = null
-      if (sb) {
-        storagePath = await storeCleanOriginal(sb, previewId, result.image_b64)
+    /* A PAID GENERATION IS NOT FULFILLED UNTIL ITS RESULT IS PERSISTED.
+       Ruled 2026-09-10: claim -> render -> persist canonical -> consume ->
+       return. A grant-backed render that produced nothing is not delivered
+       and the grant goes back (the finally in POST). One that produced an
+       image is stored first, at a path derived from the grant alone and with
+       upsert off, so a second attempt can never replace it; only then is the
+       grant consumed. If storing fails, nothing is returned for this grant
+       and it is released into the retry/refund path -- an image the
+       customer cannot get back is not a delivered one.
+
+       The image returned is always the canonical one. If another attempt on
+       this grant stored first, that stored image is what goes back, never
+       this render's own. */
+    if (grant) {
+      if (!result.ok || !result.image_b64) {
+        return NextResponse.json({ result })
       }
-      try {
-        result.image_b64 = await bakeWatermark(result.image_b64)
-      } catch (e: any) {
-        console.error(`[portraits/generate] watermark bake FAILED — preview withheld: ${e?.message}`)
-        return NextResponse.json({ error: 'preview_processing_failed' }, { status: 500 })
+      if (!grantDb) {
+        return NextResponse.json({ error: 'result_persist_unavailable', retryable: true }, { status: 503 })
       }
-      if (sb) {
-        await recordPreview(sb, {
-          previewId,
-          email:      previewEmail,
-          ipHash:     previewIpHash,
-          series:     'portraits',
-          preset:     String(presetId),
-          resolution: typeof body.resolution === 'string' ? body.resolution : '1k',
-          storagePath,
-        })
+      const persisted = await persistAndConsume(grantDb, grant, result.image_b64)
+      if (!persisted.ok) {
+        console.error(`[portraits/generate] canonical result not persisted for grant ${grant.id}: ${persisted.reason}`)
+        return NextResponse.json({ error: 'result_persist_failed', retryable: true }, { status: 503 })
       }
-      ;(result as any).preview_id   = previewId
-      ;(result as any).watermarked  = true
-      console.log(`[portraits/generate] preview shipped id=${previewId} clean_retained=${!!storagePath}`)
+      result.image_b64 = persisted.imageB64
+      outcome.delivered = true
     }
 
     return NextResponse.json({ result })
