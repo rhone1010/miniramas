@@ -4149,6 +4149,33 @@ function removeFanItem(fanIdx, key){
     /* __REAL_PAYLOAD__ — the Review 'x' spliced SELECTED locally and told the
        server nothing, so the session kept an effect the customer had
        removed and the offer was priced on a stale count. */
+
+    /* LANDED ON A SMALLER BUNDLE: LET THE HOLD GO. Ruled 2026-09-10.
+       Removing from a held tier keeps the tier and leaves an open slot, so
+       an 8 taken down to 7, 6 or 5 still reads "x of 8 -- choose more to
+       complete your 8". That stays. But the hold never let go, so taking
+       it all the way down to 4 left "4 of 8, choose 4 more" -- a valid
+       4-pack the customer could not buy: every Next button and
+       startCheckout refuse while a slot is open, and the rail's own tier
+       marks ignore taps while a tier is held.
+
+       When the count now IS a valid bundle smaller than the held one, the
+       hold is released and Review relocks at the new size, through
+       afterSelectionChange -- the same lockTier and redraw showReview does
+       on entry. The fan is rebuilt from the new SLOTS, so no slot card is
+       built for the effect just removed.
+
+       Only here, on a Review removal. The same "valid count, tier above it"
+       state is exactly what Help me choose creates on purpose -- 4 picked,
+       8 reserved, 4 open -- so the rule belongs to this event, not to the
+       repaint. */
+    if (SELECTED.length < TIER && VALID_SIZES.indexOf(SELECTED.length) > -1){
+      releaseTier();
+      syncDiscoveryChecks();
+      afterSelectionChange();
+      return;
+    }
+
     var slotItem = { key:'slot' + si, slot:true, slotIndex:si, el:el };
     items[idx] = slotItem;
     el.classList.add('is-slot'); el.classList.remove('is-front');
