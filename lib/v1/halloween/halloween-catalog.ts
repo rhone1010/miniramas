@@ -78,10 +78,11 @@
 // all 28 filenames minus their prefix match these 28 ids exactly.
 
 export interface HalloweenEffect {
-  id:     string
-  label:  string
-  body:   string
-  avoid?: string
+  id:      string
+  label:   string
+  body:    string
+  avoid?:  string
+  framing?: string   // optional per-effect override of HALLOWEEN_MAIN_FRAMING
 }
 
 /**
@@ -98,7 +99,7 @@ export const HALLOWEEN_MAIN: Record<string, HalloweenEffect> = {
   lantern_keeper: {
     id:    'lantern_keeper',
     label: 'Lantern Keeper',
-    body: `Transform the subject into the ancient Lantern Keeper, preserving exact facial identity. Weathered gothic clothing, blackened armor and a colossal supernatural lantern burning with ghostly blue fire, spectral faces barely visible within its glass. Smoke and cold light curl around the body. Epic photoreal dark fantasy horror, haunting and powerful. cast a ghoslty pale blue light on the subject from the side. the rest of the face and body is in shadow. The lantern is 20% of the image
+    body: `Transform the subject into the ancient Lantern Keeper, preserving exact facial identity. Weathered gothic clothing, blackened armor and a colossal supernatural lantern burning with ghostly blue fire, spectral faces barely visible within its glass. Smoke and cold light curl around the body. Epic photoreal dark fantasy horror, haunting and powerful. cast a ghostly pale blue light on the subject from the side. the rest of the face and body is in shadow. The lantern is 20% of the image
 Background: A forgotten cobblestone road winds through a vast cemetery toward the gates of a ruined gothic city, illuminated only by scattered spectral lanterns. The upper third fades into deep blue-black fog, twisted trees and distant cathedral towers beneath a dim moon.
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject. Leave permanent features — freckles, scars, tattoos — untouched; remove only temporary blemishes.`,
   },
@@ -124,8 +125,7 @@ Sensuous: beautiful but restrained, direct intimate gaze, elegant bone structure
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject.
 Mysterious: controlled expression, unreadable eyes, deep shadows, partial concealment, old-world elegance, unusual stillness. They look as though they know something you don't.
 Scary: subtle predatory anatomy. a gaze that makes the beauty suddenly unsafe.
-The combination: avoid monster-face. The vampire should be 90% alluring human, 10% unmistakable predator. The fear comes from realizing what's underneath the beauty.
-Framed from the stomach to the top of the head, filling the frame.`,
+The combination: avoid monster-face. The vampire should be 90% alluring human, 10% unmistakable predator. The fear comes from realizing what's underneath the beauty.`,
   },
   harvest_god: {
     id:    'harvest_god',
@@ -137,8 +137,7 @@ The likeness is essential. Preserve the subject's facial shape, structure and na
   werewolf: {
     id:    'werewolf',
     label: 'Werewolf',
-    body: `Transform the subject into a magnificent human-werewolf hybrid while preserving recognizable facial structure and expression. Powerful but elegant, textured silver-brown fur emerging naturally across the face and body, luminous amber eyes, subtle fangs, torn dark clothing. Cinematic moonlight, adventurous supernatural fantasy, change jaw slightly and have the subject howling. Background: A moonlit forest surrounds the subject with twisted trees, drifting mist and a distant mountain ridge. A full moon anchors the upper third while the surrounding sky and forest fade darker toward the top. Do not make full animal, maintain at least 75% human
-Framed from the chest to the top of the head, filling the frame.`,
+    body: `Transform the subject into a magnificent human-werewolf hybrid while preserving recognizable facial structure and expression. Powerful but elegant, textured silver-brown fur emerging naturally across the face and body, luminous amber eyes, subtle fangs, torn dark clothing. Cinematic moonlight, adventurous supernatural fantasy, change jaw slightly and have the subject howling. Background: A moonlit forest surrounds the subject with twisted trees, drifting mist and a distant mountain ridge. A full moon anchors the upper third while the surrounding sky and forest fade darker toward the top. Do not make full animal, maintain at least 75% human`,
   },
   eclipse: {
     id:    'eclipse',
@@ -149,13 +148,14 @@ The likeness is essential. Preserve the subject's facial shape, structure and na
   ghoul: {
     id:    'ghoul',
     label: 'Ghoul',
-    body: `Transform the subject into an elegant ghoul while retaining their recognizable identity. Beautiful aged ivory bone, dark formal clothing, subtle supernatural glow within the eyes. Highly detailed cinematic fantasy, mysterious and playful rather than macabre or frightening. keep 60% likeness Background: An old cemetery stretches into blue-black fog with crooked monuments, bare trees and tiny distant lanterns. Moonlight creates depth below while the upper third gradually falls into a dark, quiet night sky. the subject wheres a worn black top hat with sash that matches its eye color. do not remove the nose.
+    body: `Transform the subject into an elegant ghoul while retaining their recognizable identity. Beautiful aged ivory bone, dark formal clothing, subtle supernatural glow within the eyes. Highly detailed cinematic fantasy, mysterious and playful rather than macabre or frightening. Background: An old cemetery stretches into blue-black fog with crooked monuments, bare trees and tiny distant lanterns. Moonlight creates depth below while the upper third gradually falls into a dark, quiet night sky. the subject wears a worn black top hat with sash that matches its eye color. do not remove the nose.
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject. Leave permanent features — freckles, scars, tattoos — untouched; remove only temporary blemishes.`,
   },
   living_cathedral: {
     id:    'living_cathedral',
     label: 'Living Cathedral',
     body: `Transform the subject into the Living Cathedral while preserving exact facial identity. Recognizable human features become ancient carved stone as monumental gothic architecture grows organically from the body: arches form the shoulders, illuminated windows glow beneath cracked stone skin, flying buttresses and gargoyles emerge from elaborate armor. Epic photoreal gothic horror, colossal and awe-inspiring. The catherdrals hand is reaching out towards us. the hand is 20% of the image. Strong use of foreshortening to make things feel massive Background: The figure rises from the center of an immense ruined medieval city as streets and buildings appear to merge physically into its cathedral body. The upper third becomes a dark storm-filled sky where towering spires, gargoyles and a pale moon disappear into clouds and mist. the face is made entirely of stone`,
+    framing: `Framed to show the full monumental scale of the transformation — the cathedral-body rising from the ruined city below — while keeping the face large, well-lit and unmistakably the clear focal point of the image. The person's identity must not be lost in the scale of the transformation.`,
   },
   gothic_witch: {
     id:    'gothic_witch',
@@ -168,6 +168,7 @@ The likeness is essential. Preserve the subject's facial shape, structure and na
     label: 'Headless Horseman',
     body: `Transform the subject into an epic Headless Horseman, armored in battered blackened steel and a shredded 18th-century riding coat, holding their severed spectral head beneath one arm, likeness unmistakable, eyes burning orange. Embers, smoke, supernatural fire, terrifying presence. Photoreal cinematic dark fantasy, monumental scale, intricate detail. The spectre is throwing the firey head at us. the face is transformed into a howling firey ball, the hair transitions to streaming deatiled volume flames, the mouth is a gaping maw of fire. the horseman is on the horse. epic level fantasy image Background: A burning jack-o'-lantern-lined road tears through a dead forest toward a ruined gothic village beneath a blood-orange moon. the thrown head is 15% of the image with the subjects face on it. Twisted branches and smoke climb into a dramatically darker upper third.
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject.`,
+    framing: `Framed as a wide cinematic composition showing the horseman mounted on the horse mid-action, with the thrown, burning head held clearly in view. The face on the thrown head is the primary likeness carrier and must remain the clear, unmistakable focal point of the image even within the wider scene.`,
   },
   swamp_creature: {
     id:    'swamp_creature',
@@ -190,8 +191,9 @@ The likeness is essential. Preserve the subject's facial shape, structure and na
   ghost_pirate: {
     id:    'ghost_pirate',
     label: 'Ghost Pirate',
-    body: `Transform the subject into a terrifying undead pirate captain, likeness unmistakable. Weathered spectral face, glowing dead eyes, rotting black ornate captains pirate hat, shredded captain's coat, tarnished gold, barnacles, seaweed and supernatural blue-green flame. Epic photoreal dark fantasy, sinister, seaworn, cinematic, intensely detailed. Background: A colossal ghost ship thrusts up on a wave from the deep in violent thunderous leap from the ocean. its torn sails glowing faintly through supernatural fog. Lightning, spectral rigging and a pale moon disappear upward into a dark storm-filled upper third. the skin is pale with holes in it that go right out the other side. the subject is visible from stomach to top of hat. the subject has a ruffled torn once white shirt.
+    body: `Transform the subject into a terrifying undead pirate captain, likeness unmistakable. Weathered spectral face, glowing dead eyes, rotting black ornate captains pirate hat, shredded captain's coat, tarnished gold, barnacles, seaweed and supernatural blue-green flame. Epic photoreal dark fantasy, sinister, seaworn, cinematic, intensely detailed. Background: A colossal ghost ship thrusts up on a wave from the deep in violent thunderous leap from the ocean. its torn sails glowing faintly through supernatural fog. Lightning, spectral rigging and a pale moon disappear upward into a dark storm-filled upper third. the skin is pale with holes in it that go right out the other side. the subject has a ruffled torn once white shirt.
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject.`,
+    framing: `Framed from the stomach to the top of the hat, filling the frame — the full pirate hat must remain visible and uncropped.`,
   },
   spider_monarch: {
     id:    'spider_monarch',
@@ -202,7 +204,7 @@ The likeness is essential. Preserve the subject's facial shape, structure and na
   dark_wizard: {
     id:    'dark_wizard',
     label: 'Dark Wizard',
-    body: `Transform the subject into an immensely powerful dark wizard, preserving exact facial identity and proportions. Weathered human face, blackened eyes with deep orange glow, ancient runic armor, shredded robes, arcane crown with pale glowing sontes, swirling shadow and violent magical energy around the hands. Epic photoreal dark fantasy horror, intimidating and monumental. USe gradient purple green pink glowing arcing energy with strong falloff as effects wrap from the shoulders to the fingertips with wispy tendrils climbing into the night. the skin is pale.
+    body: `Transform the subject into an immensely powerful dark wizard, preserving exact facial identity and proportions. Weathered human face, blackened eyes with deep orange glow, ancient runic armor, shredded robes, arcane crown with pale glowing stones, swirling shadow and violent magical energy around the hands. Epic photoreal dark fantasy horror, intimidating and monumental. USe gradient purple green pink glowing arcing energy with strong falloff as effects wrap from the shoulders to the fingertips with wispy tendrils climbing into the night. the skin is pale.
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject.`,
   },
   demon_lord: {
@@ -226,19 +228,19 @@ The likeness is essential. Preserve the subject's facial shape, structure and na
   shadow_monarch: {
     id:    'shadow_monarch',
     label: 'Shadow King / Queen',
-    body: `Transform the subject into the terrifying Shadow King or Queen while preserving exact facial identity. Recognizable human face partially consumed by living black shadow, large ornate obsidian crown. Obsidian armor with black gray gradient wispy smoke wrapping the subject and extending off image. glowing eyes and enormous tendrils of darkness forming behind the body. Epic photoreal supernatural horror, elegant, sinister, otherworldly, monumental. subjects face should be at least 20% of image. Skin should be bone white with hairline cracks. Background: A colossal black palace emerges from an endless landscape swallowed by supernatural darkness and silver fog. A pale eclipsed moon and distant towers dissolve into the dim upper third. drak hair
+    body: `Transform the subject into the terrifying Shadow King or Queen while preserving exact facial identity. Recognizable human face partially consumed by living black shadow, large ornate obsidian crown. Obsidian armor with black gray gradient wispy smoke wrapping the subject and extending off image. glowing eyes and enormous tendrils of darkness forming behind the body. Epic photoreal supernatural horror, elegant, sinister, otherworldly, monumental. subjects face should be at least 20% of image. Skin should be bone white with hairline cracks. Background: A colossal black palace emerges from an endless landscape swallowed by supernatural darkness and silver fog. A pale eclipsed moon and distant towers dissolve into the dim upper third. dark hair
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject.`,
   },
   cursed_knight: {
     id:    'cursed_knight',
     label: 'Cursed Knight',
-    body: `Transform the subject into an ancient Cursed Knight, preserving exact facial identity and proportions. Their battle-scarred black armor is fused unnaturally into the body, split by deep fractures leaking deep amber and oxblood light; corrupted runes crawl across the steel, a shattered crown rises behind the head, and spectral darkness pours from the armor. Epic photoreal gothic horror, terrifying, regal, monumental. The face is parchment paper. eyes glow with pale light. The knight is in a dynamic pose with raised sword in both hands ready to strike. the face is in rage and agony with mouth agape Background: A colossal ruined fortress and battlefield disappear beneath supernatural storm clouds, with spectral armies barely visible through smoke and ash. The upper third is dominated by a huge obscured moon, lightning and broken castle towers fading into darkness.
+    body: `Transform the subject into an ancient Cursed Knight, preserving exact facial identity and proportions. Their battle-scarred black armor is fused unnaturally into the body, split by deep fractures leaking deep amber and oxblood light; corrupted runes crawl across the steel, a shattered crown rises behind the head, and spectral darkness pours from the armor. Epic photoreal gothic horror, terrifying, regal, monumental. The face is parchment paper. eyes glow with pale light. The knight's sword is raised high, its blade extending up and out of frame; the pose stays close and upper-body so the face remains the dominant, unmistakable focal point of the image. the face is in rage and agony with mouth agape Background: A colossal ruined fortress and battlefield disappear beneath supernatural storm clouds, with spectral armies barely visible through smoke and ash. The upper third is dominated by a huge obscured moon, lightning and broken castle towers fading into darkness.
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject. Leave permanent features — freckles, scars, tattoos — untouched; remove only temporary blemishes.`,
   },
   the_ferryman: {
     id:    'the_ferryman',
     label: 'The Ferryman',
-    body: `Transform the subject into the legendary Ferryman of the dead while preserving unmistakable facial likeness. Gaunt recognizable face beneath a deep weathered hood, ancient black robes, bone ornaments, spectral lantern and skeletal staff, surrounded by cold blue-green ghost light. Epic photoreal mythic horror, ancient, ominous, hauntingly beautiful. Background: A black wooden boat crosses an endless mist-covered river while ghostly silhouettes gather along distant ruined shores. The upper third fades into darkness beneath towering cliffs and a dim spectral. pale skin, glowing eyes
+    body: `Transform the subject into the legendary Ferryman of the dead while preserving unmistakable facial likeness. Gaunt recognizable face beneath a deep weathered hood, ancient black robes, bone ornaments, spectral lantern and skeletal staff, surrounded by cold blue-green ghost light. Epic photoreal mythic horror, ancient, ominous, hauntingly beautiful. Background: A black wooden boat crosses an endless mist-covered river while ghostly silhouettes gather along distant ruined shores. The upper third fades into darkness beneath towering cliffs and a dim spectral glow. pale skin, glowing eyes
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject.`,
   },
   porcelain_doll: {
@@ -250,7 +252,7 @@ Background: An abandoned Victorian nursery contains antique toys, enormous shado
   moth_monarch: {
     id:    'moth_monarch',
     label: 'Moth King / Queen',
-    body: `Transform the subject into an ancient nocturnal Moth King or Queen, preserving exact facial identity. Their recognizable face is eerily transformed with pale powdery skin matches the moths tone, luminous eyes, delicate chitin and death's-head markings emerging across the temples. A colossal mantle of layered moth wings forms their royal silhouette, surrounded by thousands of moths. Epic photoreal dark fantasy horror, sinister, alien, majestic. cover the subject completly in moths. hands are at side. expression is eeirily queit and vacant. skin tone is the same as the moths. face should be at least 15% of the image Background: An ancient ruined palace has been completely overtaken by enormous moths, silk, cocoons and pale nocturnal vegetation. A huge cold moon burns through the dark upper third while countless moth silhouettes swarm across its surface.
+    body: `Transform the subject into an ancient nocturnal Moth King or Queen, preserving exact facial identity. Their recognizable face is eerily transformed with pale powdery skin matches the moths tone, luminous eyes, delicate chitin and death's-head markings emerging across the temples. A colossal mantle of layered moth wings forms their royal silhouette, surrounded by thousands of moths. Epic photoreal dark fantasy horror, sinister, alien, majestic. cover the subject completly in moths. hands are at side. expression is eerily quiet and vacant. skin tone is the same as the moths. face should be at least 15% of the image Background: An ancient ruined palace has been completely overtaken by enormous moths, silk, cocoons and pale nocturnal vegetation. A huge cold moon burns through the dark upper third while countless moth silhouettes swarm across its surface.
 The likeness is essential. Preserve the subject's facial shape, structure and natural asymmetry exactly, along with their micro facial gestures, imperfections and expression — all the characteristics that make this person this person. Keep hairline, hairstyle, length, direction and colour exactly as photographed; do not invent hair, prematurely grey it, or embellish it. The hair should be organically faithful, whether messy or neatly kept. Preserve the subject's real weight and build. Do not add weight, and do not age or de-age the subject. Leave permanent features — freckles, scars, tattoos — untouched; remove only temporary blemishes.`,
   },
   hollow_tree: {
@@ -288,8 +290,9 @@ export function halloweenPlatePath(id: string, gender: 'man' | 'woman'): string 
 export function buildHalloweenPrompt(id: string): string {
   const fx = HALLOWEEN_MAIN[id]
   if (!fx) throw new Error(`[halloween] unknown effect id: ${id}`)
+  const framing = fx.framing ?? HALLOWEEN_MAIN_FRAMING
   const avoid = fx.avoid ? `\n${fx.avoid}` : ''
-  return `${fx.body.trim()}\n${HALLOWEEN_MAIN_FRAMING}${avoid}`
+  return `${fx.body.trim()}\n${framing}${avoid}`
 }
 
 export function isHalloweenEffect(id: string): boolean {
