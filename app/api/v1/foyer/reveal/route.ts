@@ -2,9 +2,11 @@
 //
 // THE FOYER'S FREE PERSONAL REVEAL. Anonymous.
 //
-// GET   { available }  -- may this visitor have a free reveal right now? For
-//       the page to decide before a photograph is chosen. Read-only and not a
-//       promise; anything it cannot check is false.
+// GET   { available, reason? }  -- may this visitor have a free reveal right
+//       now? For the page to decide before a photograph is chosen. Read-only
+//       and not a promise. When not: reason 'exhausted' (the allowance is
+//       used) or 'unavailable' (it could not be checked -- fail closed; the
+//       page says so in its own words, not as a used allowance).
 //
 // POST  { image_b64, intake }  -- render one.
 //   1. The photograph must carry /foyer/intake's signed verdict for these
@@ -49,9 +51,10 @@ const reply = (body: object, status = 200) => NextResponse.json(body, { status, 
 export async function GET(req: NextRequest) {
   const secret = foyerSecret()
   const sb     = foyerDb()
-  if (!secret || !sb) return reply({ available: false })
+  if (!secret || !sb) return reply({ available: false, reason: 'unavailable' })
   const ok = await revealAvailable(sb, ipIdentity(req, secret), deviceMarker(req))
-  return reply({ available: ok === true })
+  if (ok === null) return reply({ available: false, reason: 'unavailable' })
+  return reply(ok ? { available: true } : { available: false, reason: 'exhausted' })
 }
 
 export async function POST(req: NextRequest) {

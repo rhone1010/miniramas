@@ -261,14 +261,23 @@ describe('/api/v1/foyer/reveal — one NB2 render, watermarked, allowance-accoun
     expect(replicate).toHaveLength(0)
   })
 
-  it('GET says whether a free preview is available; anything unknown is no', async () => {
+  it('GET says whether a free preview is available -- and tells a used allowance from one that cannot be checked', async () => {
     expect(await (await revealGET(req('/api/v1/foyer/reveal', { method: 'GET' }))).json()).toEqual({ available: true })
     h.rpc.mockImplementation(async () => ({ data: 3, error: null }))
-    expect(await (await revealGET(req('/api/v1/foyer/reveal', { method: 'GET' }))).json()).toEqual({ available: false })
+    expect(await (await revealGET(req('/api/v1/foyer/reveal', { method: 'GET' }))).json()).toEqual({ available: false, reason: 'exhausted' })
     h.rpc.mockImplementation(async () => ({ data: null, error: { message: 'down' } }))
-    expect(await (await revealGET(req('/api/v1/foyer/reveal', { method: 'GET' }))).json()).toEqual({ available: false })
+    expect(await (await revealGET(req('/api/v1/foyer/reveal', { method: 'GET' }))).json()).toEqual({ available: false, reason: 'unavailable' })
     delete process.env.FOYER_HMAC_SECRET
-    expect(await (await revealGET(req('/api/v1/foyer/reveal', { method: 'GET' }))).json()).toEqual({ available: false })
+    expect(await (await revealGET(req('/api/v1/foyer/reveal', { method: 'GET' }))).json()).toEqual({ available: false, reason: 'unavailable' })
+  })
+
+  it('petal_sculpture is shown as "Petal" -- display copy only; the id and its production prompt are unchanged', async () => {
+    const i = FOYER_REVEAL_EFFECTS.indexOf('petal_sculpture')
+    vi.spyOn(Math, 'random').mockReturnValue((i + 0.5) / FOYER_REVEAL_EFFECTS.length)
+    const d = await (await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: await intakeToken() } }))).json()
+    expect(d.label).toBe('Petal')
+    expect(replicate[0].body.input.prompt).toBe(buildEffectPrompt('petal_sculpture'))
+    expect(byId('petal_sculpture')!.label).toBe('Petal Sculpture')          // the registry itself is not changed
   })
 
   it('a malformed liten_anon marker is ignored, not trusted', async () => {

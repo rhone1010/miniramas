@@ -402,7 +402,7 @@ function begin(src){
      photograph was chosen), so nothing riffles -- their photograph stays on
      the card and Come Inside & Explore is the one next step. Otherwise the
      riffle runs until the real result, or a reason there is none, arrives. */
-  if (FOYER.free === false) settle('exhausted');
+  if (FOYER.free === false) settle(FOYER.why || 'unavailable');
   else STATE.riffleStart = later(startRiffle, PHOTO_BEAT);
 }
 
@@ -485,6 +485,7 @@ window.foyer = { generationReady: generationReady };
    Only a photograph the intake passed is handed to Discovery. */
 var FOYER = {
   free:    null,    /* true/false once /foyer/reveal has said; null = not yet  */
+  why:     null,    /* when free is false: 'exhausted' (used) or 'unavailable' (could not be checked) */
   intake:  null,    /* the intake request for this photograph (a promise)      */
   handoff: null,    /* the handoff write; the CTA waits for it                  */
   run:     0        /* a Try again supersedes whatever the last run left out   */
@@ -532,8 +533,11 @@ function foyerPost(url, body){
    comes inside. */
 fetch('/api/v1/foyer/reveal', { credentials:'same-origin', cache:'no-store' })
   .then(function(r){ return r.ok ? r.json() : null; })
-  .then(function(d){ FOYER.free = !!(d && d.available); })
-  .catch(function(){ FOYER.free = false; });
+  .then(function(d){
+    FOYER.free = !!(d && d.available);
+    FOYER.why  = FOYER.free ? null : (d && d.reason === 'exhausted' ? 'exhausted' : 'unavailable');
+  })
+  .catch(function(){ FOYER.free = false; FOYER.why = 'unavailable'; });
 
 /* The intake, once per photograph, and the handoff that follows from it. */
 function askIntake(){
@@ -553,11 +557,12 @@ function reveal(){
     if (run !== FOYER.run) return;
     if (!d){ FOYER.intake = null; settle('failed'); return; }       /* not reached: ask again on Try again */
     if (d.status === 'refused'){ settle('refused'); return; }
-    if (d.status !== 'ok' || FOYER.free === false){ settle('exhausted'); return; }
+    if (d.status !== 'ok'){ settle('unavailable'); return; }                /* the check could not be made */
+    if (FOYER.free === false){ settle(FOYER.why || 'unavailable'); return; }
     foyerPost('/api/v1/foyer/reveal', { image_b64: SRC.b64, intake: d.intake }).then(function(v){
       if (run !== FOYER.run) return;
       if (v && v.status === 'ok' && v.image){ generationReady({ src: v.image, label: v.label }); return; }
-      if (v && (v.status === 'exhausted' || v.status === 'unavailable')){ FOYER.free = false; settle('exhausted'); return; }
+      if (v && (v.status === 'exhausted' || v.status === 'unavailable')){ FOYER.free = false; FOYER.why = v.status; settle(v.status); return; }
       if (v && v.status === 'intake_required') FOYER.intake = null;  /* the verdict expired: look again */
       settle('failed');
     });
@@ -565,11 +570,13 @@ function reveal(){
 }
 
 /* ── WHEN THERE IS NO REVEAL ─────────────────────────────────────────────
-   It failed, the photograph was refused, or the free previews are used (or
-   cannot be checked -- the same path, no infrastructure talk). Each one
-   stops the riffle, puts THEIR photograph back on the card, says what
-   happened, and opens Come Inside & Explore. Only the used-up case makes it
-   the one pulsing next step; only a failure offers Try again.
+   It failed, the photograph was refused, the free previews are used, or
+   the free preview cannot be offered right now (the allowance or the
+   photo check could not be made -- said without infrastructure talk). Each
+   one stops the riffle, puts THEIR photograph back on the card, says what
+   happened, and opens Come Inside & Explore. When no preview is coming
+   (used, or not available) the button is the one pulsing next step; only a
+   failure offers Try again.
 
    WHERE IT IS SAID: on the card, in the result card's own caption band
    (.nm), not on the line below it. The glass gives that line one line of
@@ -581,25 +588,52 @@ function reveal(){
 var SAY = {
   failed:    'That one didn\'t come through. <button type="button" class="again" id="again">Try again</button>, or come inside and explore.',
   refused:   'We can\'t create a preview from this photo. You can still come inside and explore.',
-  exhausted: 'Your free previews are used for now. Come inside and explore what\'s possible.'
+  exhausted: 'Your free previews are used for now. Come inside and explore what\'s possible.',
+  unavailable: 'Your free preview isn\'t available right now. Come inside and explore.'
 };
 function settle(kind){
   if (STATE.result || STATE.phase === 'opening') return;
-  if (kind === 'failed' && FOYER.free === false) kind = 'exhausted';
+  if (kind === 'failed' && FOYER.free === false) kind = FOYER.why || 'unavailable';
   if (STATE.phase === 'settled' && STATE.settled === kind) return;
   stopRiffle();
   STATE.phase = 'settled'; STATE.settled = kind;
   front.innerHTML = '<img src="'+SRC.dataUrl+'"><div class="nm" role="status">'+SAY[kind]+'</div>';
   card.classList.remove('telling');
+  document.body.classList.add('telling-page');   /* the opening line goes, as it does once the riffle has run */
   tag.style.display = 'none';
   showGo();
-  if (kind === 'exhausted') go.classList.add('full');
+  if (kind === 'exhausted' || kind === 'unavailable') go.classList.add('full');
   var again = document.getElementById('again');
   if (again) again.addEventListener('click', tryAgain);
+  fitSettledCard();
 }
+
+/* SHORT PHONES, settled states only. On a phone the button is fixed near
+   the foot of the screen, and the glass only ever shows it beside the SMALL
+   result card. A settled state shows it beside the full-size card, and on a
+   short screen (375x667) the button sat over the card and the end of its
+   message. Only then is the card made smaller -- same centre, same shape,
+   just enough to end 12px above the button (the clearance the glass keeps
+   between its line and the button). Any screen with the room is left
+   exactly as the glass has it, and Try again puts the card back. The
+   button's top comes from its layout (fixed bottom offset + height), not
+   its transform, so the grown, pulsing button is measured where it sits. */
+var SETTLE_CLEAR = 12;
+function fitSettledCard(){
+  card.style.width = '';
+  if (!IS_MOBILE || STATE.phase !== 'settled') return;
+  var c = card.getBoundingClientRect();
+  var goTop = innerHeight - parseFloat(getComputedStyle(go).bottom) - go.offsetHeight;
+  var h = 2 * (goTop - SETTLE_CLEAR - (c.top + c.height / 2));
+  if (h < c.height) card.style.width = Math.floor(h * c.width / c.height) + 'px';
+}
+window.addEventListener('resize', function(){ if (STATE.phase === 'settled') fitSettledCard(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ if (STATE.phase === 'settled') fitSettledCard(); });
+
 function tryAgain(){
   if (STATE.phase !== 'settled' || STATE.settled !== 'failed') return;
   STATE.phase = 'photo'; STATE.settled = null;
+  card.style.width = '';
   tag.style.display = '';
   tag.classList.remove('wide');
   tag.innerHTML = 'Imagine yourself&hellip;';

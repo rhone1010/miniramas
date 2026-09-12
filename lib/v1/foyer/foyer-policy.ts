@@ -52,7 +52,12 @@ export function pickRevealEffect(rand: () => number = Math.random): FoyerRevealE
   return FOYER_REVEAL_EFFECTS[i]
 }
 
-/* The customer-facing name, from the registry every other surface reads. */
+/* The customer-facing name on the foyer's reveal. The registry's, except
+   where the foyer is ruled to say something else -- display copy only; the
+   effect id and its production prompt are untouched (Rich, 2026-09-12). */
+const FOYER_DISPLAY_LABELS: Partial<Record<FoyerRevealEffect, string>> = {
+  petal_sculpture: 'Petal',
+}
 export function revealLabel(effectId: string): string {
-  return byId(effectId)?.label ?? effectId
+  return FOYER_DISPLAY_LABELS[effectId as FoyerRevealEffect] ?? byId(effectId)?.label ?? effectId
 }
