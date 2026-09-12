@@ -44,9 +44,12 @@ const PAGES: Record<string, string> = {
   /* Home is the homepage as of 2026-08-08. The workshop, which used to
      sit at /, keeps /portraits — the masthead and every in-page link
      already point there, so nothing else moves. /home still resolves so
-     an old link or bookmark lands somewhere sensible. */
-  '/': '/index.html',
-  '/home': '/index.html',
+     an old link or bookmark lands somewhere sensible.
+     THE FOYER IS THE FRONT DOOR as of 2026-09-12 (Rich): the locked foyer
+     glass, made real, replaces the old homepage at both. public/index.html
+     is left in place, unrouted. */
+  '/': '/foyer.html',
+  '/home': '/foyer.html',
   '/portraits': '/portraits.html',
   '/workshop': '/portraits.html',
   /* GROUPS. Same navigation model as Portraits - four rooms where that has

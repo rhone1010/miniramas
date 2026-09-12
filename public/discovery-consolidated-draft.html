@@ -1862,6 +1862,7 @@ body.is-lboxed{ overflow:hidden }
      Loaded BEFORE the inline script so SILOS can be built synchronously.
      Regenerate with: node scripts/emit-effect-registry.js -->
 <script src="/effect-registry.js"></script>
+<script src="/foyer-handoff.js"></script>
 <script>
 /* __REGISTRY_FALLBACK__
    The tag above is the canonical path and wins whenever this page is
@@ -2891,6 +2892,20 @@ function runAnalyze(){
     return res.json();
   }).then(function(data){
     if (seq !== ANALYZE_SEQ) return null;   /* a newer photograph won */
+    return applyDetection(data);
+  }).catch(function(err){
+    /* Soft fail, portraits.html:6577. 401 signed-out lands here and is
+       the ordinary answer for a visitor, not a fault. */
+    if (seq !== ANALYZE_SEQ) return null;
+    console.log('[discovery] analyze unavailable (' + err.message + ') - toggle stays manual');
+    return null;
+  });
+}
+
+/* What a detection says about the photograph, applied. analyze's answer
+   comes through here, and so does the foyer's intake for the photograph it
+   hands over (receiveFoyerHandoff) -- the same shape, the same rules. */
+function applyDetection(data){
     ANALYZE_RESULT = data;
 
     /* BEFORE anything else. Not after the rooms have been offered and
@@ -2903,8 +2918,10 @@ function runAnalyze(){
     SUBJECT_DETECTED = want;
     if (!want) return null;                 /* gender null -> stay manual */
 
-    /* Manual wins, whenever it happened. A late answer must not undo a
-       choice the customer already made. */
+    /* Manual wins for THIS photograph. A late answer must not undo a choice
+       the customer already made about it. A new photograph clears the
+       override (acceptPhoto) -- it starts a new determination (Rich,
+       2026-09-12). */
     if (SUBJECT_FORCED) return want;
 
     SUBJECT = want;
@@ -2913,13 +2930,6 @@ function runAnalyze(){
     repaintSubject();
     paintAgeTog();
     return want;
-  }).catch(function(err){
-    /* Soft fail, portraits.html:6577. 401 signed-out lands here and is
-       the ordinary answer for a visitor, not a fault. */
-    if (seq !== ANALYZE_SEQ) return null;
-    console.log('[discovery] analyze unavailable (' + err.message + ') - toggle stays manual');
-    return null;
-  });
 }
 
 var SRC_B64 = null;          /* raw base64, no prefix — for the API */
@@ -3062,11 +3072,25 @@ photoFileInput.addEventListener('change', function(){
 
   var reader = new FileReader();
   reader.onerror = function(){ setUploadState('error', 'Your device could not read that file'); };
-  reader.onload = function(){
-    var url = String(reader.result || '');
+  reader.onload = function(){ acceptPhoto(String(reader.result || '')); };
+  reader.readAsDataURL(file);
+});
+
+/* __ACCEPT_PHOTO__
+   What the picker's reader always did with a photograph, callable by the
+   foyer handoff as well -- so the photograph a visitor chose in the foyer
+   becomes Discovery's with no second upload.
+
+   A NEW PHOTOGRAPH STARTS A NEW SUBJECT DETERMINATION (Rich, 2026-09-12):
+   the manual Men/Women override is cleared, and the photograph is examined
+   once -- by analyze, or, when `trusted` is given, by the foyer's own intake,
+   which has already looked at these exact bytes and is not asked twice.
+   `trusted` is the intake's answer in analyze's shape: { subject, gender,
+   age_group }. */
+function acceptPhoto(url, trusted){
     var comma = url.indexOf(',');
     if (url.slice(0, 5) !== 'data:' || comma < 0){
-      setUploadState('error', 'That did not read as an image'); return;
+      setUploadState('error', 'That did not read as an image'); return false;
     }
     uploadedPhotoDataUrl = url;
     detectPhotoOrientation(url);   /* __ASPECT_STEP__ default follows the photo */
@@ -3101,15 +3125,40 @@ photoFileInput.addEventListener('change', function(){
        Fired here instead, the analyze request is issued the moment
        SRC_B64 exists, in the same turn as the session call, and neither
        can suppress the other. */
-    runAnalyze();
+    SUBJECT_FORCED = false;
+    if (trusted){
+      ANALYZE_SEQ++;                  /* anything still out for an older photograph is stale */
+      applyDetection(trusted);
+    } else {
+      runAnalyze();
+    }
 
     ensureSession().then(function(sid){
       if (sid){ setUploadState('ready'); }
       else { setUploadState('error', 'Could not start a session — tap to retry'); }
     });
-  };
-  reader.readAsDataURL(file);
-});
+    return true;
+}
+
+/* __FOYER_HANDOFF__
+   Come Inside & Explore in the foyer leaves the fitted photograph and what
+   the foyer's intake detected (public/foyer-handoff.js). Taken once, here,
+   on arrival: the photograph goes in through acceptPhoto with the intake's
+   verdict, so it is not examined a second time and SUBJECT starts from the
+   foyer's answer, override cleared. The foyer's reveal, its effect and
+   anything owned are not part of it. */
+function receiveFoyerHandoff(){
+  if (!window.LitenHandoff) return Promise.resolve(false);
+  return LitenHandoff.take().then(function(h){
+    if (!h || !h.dataUrl) return false;
+    var m = h.meta || {};
+    console.log('[discovery] photograph from the foyer (' + (m.bytes || '?') + ' bytes, subject ' + (m.subject || 'none') + ')');
+    return acceptPhoto(h.dataUrl, { subject: m.subject || null, gender: m.gender || null, age_group: m.ageGroup || null });
+  }).catch(function(e){
+    console.warn('[discovery] the foyer handoff could not be read', e);
+    return false;
+  });
+}
 
 /* Retry re-opens the picker rather than replaying a failed read. */
 document.addEventListener('click', function(ev){
@@ -4647,7 +4696,9 @@ function paintMe(){
   if (nameEl) nameEl.textContent = ME && ME.email ? ME.email.split('@')[0] : 'Sign in';
   if (ME) renderCollection();
 }
-whoAmI().then(function(u){ if (u) restoreResume(); });
+/* The foyer's photograph, if one was handed over, is taken after any resume
+   so the one the visitor has just chosen is the one on the stamp. */
+whoAmI().then(function(u){ if (u) restoreResume(); receiveFoyerHandoff(); });
 
 // ── Paid-run verification — one implementation, two callers ──
 // A portfolio purchase can finish in two places, and both end here:

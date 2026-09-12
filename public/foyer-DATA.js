@@ -1,0 +1,37 @@
+var FLIPS = [
+  ['flip_01', 'as a retro robot.'],
+  ['flip_02', ''],
+  ['flip_03', 'quilted.'],
+  ['flip_04', ''],
+  ['flip_05', 'as a plushy.'],
+  ['flip_06', ''],
+  ['flip_07', 'in origami.'],
+  ['flip_08', ''],
+  ['flip_09', 'in neon.'],
+  ['flip_10', 'in Impressionism.'],
+  ['flip_11', 'in ice & frost.'],
+  ['flip_12', ''],
+  ['flip_13', 'as an Elizabethan.'],
+  ['flip_14', 'crystallized.'],
+  ['flip_15', 'as a balloon sculpture.'],
+  ['flip_16', 'in Art Nouveau.'],
+  ['flip_17', 'in Art Deco.'],
+  ['flip_18', 'in cast glass.'],
+  ['flip_19', 'as a linocut.'],
+  ['flip_20', ''],
+  ['flip_21', ''],
+  ['flip_22', ''],
+  ['flip_23', ''],
+  ['flip_24', 'in stained glass.'],
+  ['flip_25', ''],
+  ['flip_26', 'as a Victorian.'],
+  ['flip_27', ''],
+];
+var IMG = function(id){ return '/previews/foyer-flip/' + id + '.jpg'; };
+
+var REVEAL_POOL = [
+  ['flip_05','Plushy'],
+  ['flip_03','Quilted'],
+  ['flip_18','Cast Glass'],
+  ['flip_10','Impressionism'],
+];
