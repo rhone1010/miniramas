@@ -1669,7 +1669,13 @@ body.is-lboxed{ overflow:hidden }
    1920). (A container's own gap cannot use its own cqi -- it would read
    the viewport.) minmax(0,1fr) keeps the columns equal whatever the
    photograph's intrinsic size. */
-.cur-top{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+/* ROW 3 IS THE FLEXIBLE ONE (acceptance, 2026-09-13). All Effects spans
+   rows 2-3; while row 3 was auto, an opened All Effects was sized into both
+   rows and pushed the bundle (row 3) down with it. A track an item crosses
+   that is flexible takes that item's extra height instead: row 2 is sized
+   by Pick for me alone, row 3 grows under the bundle, and the bundle -- top
+   of its row -- stays exactly where it was. The left column never moves. */
+.cur-top{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:auto auto 1fr;
   column-gap:max(10px, 7cqi); row-gap:max(10px, 7cqi); align-items:start; margin:0 0 14px }
 .cur-top .photo-row{ grid-column:1; grid-row:1; margin:0; justify-content:flex-start }
 .cur-top .photo-stamp{ width:100%; aspect-ratio:1 }
@@ -1678,23 +1684,36 @@ body.is-lboxed{ overflow:hidden }
 .all-effects{ grid-column:2; grid-row:2 / span 2; justify-self:center }
 .bundle-ind{ grid-column:1; grid-row:3 }
 
-.cur-label{ display:flex; align-items:center; justify-content:center; gap:6px; margin:0 0 6px;
+.cur-label{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:4px 8px; margin:0 0 6px;
   font-family:var(--serif); font-style:italic; font-size:1.05em; color:var(--ink); line-height:1.2 }
 .cur-label--all{ margin:6px 0 0 }
-.cur-reroll{ width:24px; height:24px; padding:0; border-radius:50%; border:1px solid rgba(125,66,66,.35);
-  background:rgba(255,255,255,.55); color:var(--oxblood); font-size:.9rem; line-height:1; cursor:pointer; display:grid; place-items:center }
-.cur-reroll:hover{ border-color:var(--oxblood) }
+/* ↻ New Mix: a real, secondary action beside its label -- outlined, never
+   filled, so it does not compete with Pick for me or Review. */
+.cur-reroll{ display:inline-flex; align-items:center; gap:.3em; min-height:30px; padding:.1em .6em; border-radius:999px;
+  border:1px solid rgba(125,66,66,.55); background:transparent; color:var(--oxblood); cursor:pointer; white-space:nowrap;
+  font-family:var(--serif); font-style:italic; font-size:max(18px, 1.05em); line-height:1.1 }
+.cur-reroll__ico{ font-style:normal; font-size:.9em }
+.cur-reroll:hover, .cur-reroll:focus-visible{ border-color:var(--oxblood); background:rgba(125,66,66,.08) }
+.cur-reroll:active{ background:rgba(125,66,66,.16) }
 
 /* Curated: one page of eight at a time, the page turned with ‹ ›. */
-.curated-box{ position:relative; display:grid; grid-template-columns:12% 1fr 12%; align-items:center;
-  aspect-ratio:1.57; padding:7% 3%; border-radius:6px; background:#e4d9c9; border:1.5px solid rgba(182,138,83,.75); cursor:pointer }
+/* The page controls are the box's own left and right edges: full height,
+   so the whole edge is the target, with a hairline between them and the 8. */
+.curated-box{ position:relative; display:grid; grid-template-columns:22% 1fr 22%; align-items:stretch;
+  aspect-ratio:1.57; padding:0; border-radius:6px; background:#e4d9c9; border:1.5px solid rgba(182,138,83,.75); cursor:pointer; overflow:hidden }
+.curated-box .curated-grid{ align-self:center; padding:0 4% }
 .curated-box.active{ border-color:var(--brass); box-shadow:0 0 0 1px var(--brass) inset }
 .curated-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:3px; align-content:center }
 .curated-grid i{ display:block; aspect-ratio:var(--card-ar); border-radius:2px; background:var(--oxblood) }
 .curated-grid i.sel{ background:var(--gold-soft); box-shadow:0 0 0 1px rgba(255,255,255,.35) inset }
-.cur-page{ align-self:stretch; padding:0; border:0; background:none; color:var(--ink); font-family:var(--serif); font-size:1.3em; line-height:1; cursor:pointer; opacity:.75 }
-.cur-page:hover{ opacity:1 }
-.cur-page[aria-disabled="true"]{ opacity:.2; cursor:default }
+.cur-page{ display:grid; place-items:center; align-self:stretch; min-width:0; padding:0; border:0; background:rgba(125,66,66,.04);
+  color:var(--oxblood); cursor:pointer }
+.cur-page--prev{ border-right:1px solid rgba(182,138,83,.45) }
+.cur-page--next{ border-left:1px solid rgba(182,138,83,.45) }
+.cur-page svg{ width:58%; max-width:22px; height:auto; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round }
+.cur-page:hover:not([aria-disabled="true"]), .cur-page:focus-visible{ background:rgba(125,66,66,.13) }
+.cur-page:focus-visible{ outline:2px solid var(--gold); outline-offset:-3px }
+.cur-page[aria-disabled="true"]{ color:rgba(125,66,66,.28); background:transparent; cursor:default }
 .cur-page[hidden]{ visibility:hidden; display:block }
 .cur-dots{ display:flex; justify-content:center; gap:6px; margin:6px 0 0 }
 .cur-dots i{ width:6px; height:6px; border-radius:50%; background:rgba(88,65,42,.25) }
@@ -1710,11 +1729,17 @@ body.is-lboxed{ overflow:hidden }
 .pfm-sizes[hidden]{ display:none }
 
 /* The bundle: the one target, and its price. Display only. */
-.bundle-ind{ width:100%; aspect-ratio:2.44; display:flex; align-items:center; gap:10%; padding:0 0 0 15%;
-  border-radius:6px; background:#6a3737; color:var(--gold-soft) }
-.bundle-ind .b-n{ height:51%; aspect-ratio:1; border-radius:50%; display:grid; place-items:center;
-  background:var(--gold-soft); color:var(--oxblood); font-family:var(--serif); font-weight:700; font-size:1.15em }
-.bundle-ind .b-p{ font-family:var(--serif); font-style:italic; font-size:1.25em; color:var(--gold-soft) }
+/* The target number is the primary datum and the price a clearly readable
+   second (acceptance, 2026-09-13: both were too quiet). Same card, same
+   palette; the type is sized in cqi -- the rail's own width -- so it keeps
+   its proportion to the card at every rail width and in the sheet. */
+.bundle-ind{ width:100%; aspect-ratio:2.44; display:flex; align-items:center; gap:7%; padding:0 0 0 11%;
+  border-radius:6px; background:#6a3737; color:var(--gold-soft); overflow:hidden }
+.bundle-ind .b-n{ flex:none; height:76%; aspect-ratio:1; border-radius:50%; display:grid; place-items:center;
+  background:var(--gold-soft); color:var(--oxblood); font-family:var(--serif); font-weight:700; font-size:9.5cqi; line-height:1;
+  font-variant-numeric:lining-nums }
+.bundle-ind .b-p{ font-family:var(--serif); font-style:italic; font-size:7.4cqi; line-height:1; white-space:nowrap; color:var(--gold-soft);
+  font-variant-numeric:lining-nums }
 
 /* All Effects: ▼ over a strip when shut; ▲ over the rooms when open --
    the same button, the same place. The rooms are the minimap's own
@@ -1771,7 +1796,9 @@ body.is-lboxed{ overflow:hidden }
 @media (max-width:1024px){
   .rail{ padding-left:max(20px, calc((100vw - 520px) / 2)); padding-right:max(20px, calc((100vw - 520px) / 2)) }
   .cur-page, .ae-toggle{ min-width:44px; min-height:44px }
-  .cur-reroll{ width:44px; height:44px }
+  .curated-box{ grid-template-columns:minmax(44px,22%) 1fr minmax(44px,22%) }
+  .rail.ae-held:has(#allEffects){ height:var(--sheet-held) }
+  .cur-reroll{ min-height:44px }
   .your-collection.is-docked{ width:auto; margin:0; flex-wrap:nowrap }
   .your-collection.is-docked .your-collection__title{ display:none }
   .your-collection.is-docked .tier{ margin:0 }
@@ -1784,7 +1811,7 @@ body.is-lboxed{ overflow:hidden }
 }
 /* ── under 360px the right column goes under the left. */
 @media (max-width:359px){
-  .cur-top{ grid-template-columns:minmax(0,1fr) }
+  .cur-top{ grid-template-columns:minmax(0,1fr); grid-template-rows:none }
   .cur-top .photo-row{ grid-row:1 } .pick-for-me{ grid-row:2 } .bundle-ind{ grid-row:3 }
   .cur-right{ grid-column:1; grid-row:4 } .all-effects{ grid-column:1; grid-row:5 }
 }
@@ -1856,11 +1883,11 @@ body.is-lboxed{ overflow:hidden }
         <div class="photo-stamp"><div class="fill"><span>Start Here — Upload your Photo</span></div></div>
       </div>
       <div class="cur-right">
-        <div class="cur-label" id="curatedLabel"><span>Curated Effects</span><button class="cur-reroll" type="button" id="curReroll" data-tip="reroll" aria-label="Show different curated effects">&#8635;</button></div>
+        <div class="cur-label" id="curatedLabel"><span>Curated Effects</span><button class="cur-reroll" type="button" id="curReroll" data-tip="reroll"><span class="cur-reroll__ico" aria-hidden="true">&#8635;</span> New Mix</button></div>
         <div class="curated-box" id="curatedBox" role="group" aria-labelledby="curatedLabel">
-          <button class="cur-page cur-page--prev" type="button" data-cur-page="0" data-tip="page" aria-label="Curated effects, page 1">&#8249;</button>
+          <button class="cur-page cur-page--prev" type="button" data-cur-page="0" data-tip="page" aria-label="Curated effects, page 1"><svg viewBox="0 0 14 24" aria-hidden="true" focusable="false"><path d="M11 2.5 3 12l8 9.5"/></svg></button>
           <div class="curated-grid" id="curatedGrid"></div>
-          <button class="cur-page cur-page--next" type="button" data-cur-page="1" data-tip="page" aria-label="Curated effects, page 2">&#8250;</button>
+          <button class="cur-page cur-page--next" type="button" data-cur-page="1" data-tip="page" aria-label="Curated effects, page 2"><svg viewBox="0 0 14 24" aria-hidden="true" focusable="false"><path d="M3 2.5 11 12l-8 9.5"/></svg></button>
         </div>
         <div class="cur-dots" id="curatedDots" aria-hidden="true"><i></i><i></i></div>
         <div class="cur-label cur-label--all" id="allLabel"><span>All Effects</span></div>
@@ -2909,7 +2936,7 @@ function previewUrlFor(effectId, subject){
 function resolveEffectId(baseId, subject){
   if ((subject || SUBJECT) !== 'woman') return baseId;
   if (/_woman$/.test(baseId)) return baseId;
-  return TWIN_IDS[baseId + '_woman'] ? baseId + '_woman' : baseId;
+  return twinIds()[baseId + '_woman'] ? baseId + '_woman' : baseId;
 }
 function paintCardArt(){
   document.querySelectorAll('.card[data-effect-id]').forEach(function(card){
@@ -2973,6 +3000,43 @@ document.body.appendChild(photoFileInput);
 var ANALYZE_SEQ = 0;
 var ANALYZE_RESULT = null;   /* kept for later tasks; not fed to curator */
 var SUBJECT_DETECTED = null; /* what the photograph said, before override */
+
+/* __CURATOR_PASS2__ THE FIRST PAINT KNOWS THE SUBJECT (acceptance,
+   2026-09-13). The stage is built further down, before anything
+   asynchronous has run, and it was built before SUBJECT was even assigned
+   -- the men's previews, every time -- turning to the right set only when
+   the handoff or the resume landed, a second or more later (Preview logs:
+   47 men's previews asked for on the return from the magic link, then the
+   women's). The foyer's note and a fresh resume already say which subject
+   this visit starts with -- the intake's answer, or the customer's own
+   choice -- so the first paint is read from them. Read, never taken, and
+   nothing is examined again: acceptPhoto/restoreResume still apply the
+   subject properly when they run. If no photograph arrives after all,
+   bootSubjectSettled puts the default back. */
+var SUBJECT_FROM_BOOT = false;
+function bootSubject(){
+  var fresh = 2 * 60 * 60 * 1000, s = null;
+  function ok(v){ return v === 'man' || v === 'woman'; }
+  try {
+    var h = JSON.parse(localStorage.getItem('liten_foyer_handoff_v1') || 'null');
+    if (h && h.v === 1 && Date.now() - (h.at || 0) <= fresh && ok(h.subject)) s = h.subject;
+    if (!s){
+      var r = JSON.parse(localStorage.getItem('liten_resume_v1') || 'null');
+      if (r && r.v === 2 && Date.now() - (r.at || 0) <= fresh && ok(r.subject)) s = r.subject;
+    }
+  } catch (e){}
+  SUBJECT_FROM_BOOT = !!s;
+  return s || 'man';
+}
+var SUBJECT = bootSubject();   /* 'man' | 'woman' (__GENDER_TOGGLE__, below) */
+function bootSubjectSettled(){
+  if (!SUBJECT_FROM_BOOT) return;
+  SUBJECT_FROM_BOOT = false;
+  if (uploadedPhotoDataUrl || SUBJECT_FORCED || SUBJECT === 'man') return;
+  SUBJECT = 'man';
+  repaintSubject();
+  paintAgeTog();
+}
 
 /* ---- the photograph's own shape ---------------------------------------
    A square card cropped every tall portrait through the head. The card
@@ -3733,7 +3797,28 @@ function pickFor(v){
    opens it as the map of where you are; crossing from room to room never
    closes it, and nothing does but the customer. */
 var ALL_OPEN = false, LAST_SECTION = 'curated';
-function setAllOpen(open){ ALL_OPEN = !!open; paintAllEffects(); }
+/* In the bottom sheet (<=1024) the rail is pinned to the foot and sized by
+   its content, so an opened All Effects used to grow the whole sheet upward
+   -- every control on it, the toggle under the finger included, jumped by
+   up to 230px on a phone. The sheet now keeps the height it had and the
+   rooms scroll within it (Stage 6: "scrolling within the sheet"). The
+   height is the one it already had, measured before opening: nothing is
+   offset, nothing moves. Desktop never sees it (the rule is in the <=1024
+   block and only while the Discovery rail is showing). */
+function setAllOpen(open){
+  ALL_OPEN = !!open;
+  var rail = document.getElementById('discoveryRail');
+  if (rail){
+    if (ALL_OPEN && getComputedStyle(rail).position === 'fixed'){
+      rail.style.setProperty('--sheet-held', rail.getBoundingClientRect().height + 'px');
+      rail.classList.add('ae-held');
+    } else if (!ALL_OPEN){
+      rail.classList.remove('ae-held');
+      rail.style.removeProperty('--sheet-held');
+    }
+  }
+  paintAllEffects();
+}
 function paintAllEffects(){
   var box = document.getElementById('allEffects'), tg = document.getElementById('allToggle');
   if (!box) return;
@@ -3970,16 +4055,23 @@ SILOS.forEach(function(silo, idx){
    No photo drives this yet — detection is task 4 — so it defaults to
    'man' and only the customer moves it. SUBJECT_FORCED is what task 4
    will have to respect when it starts reading the photograph. */
-var SUBJECT = 'man';           /* 'man' | 'woman' */
+/* SUBJECT itself is declared with the detection state above (bootSubject):
+   the stage is built before this line runs, and must not be built without
+   it. It still defaults to 'man' when nothing says otherwise. */
 var SUBJECT_FORCED = false;    /* the customer has overridden it */
 
 /* Every registry id ending _woman, so resolveEffectId can tell a real
    twin from a guess. Built from the registry, never assumed. */
-var TWIN_IDS = (function(){
+/* Built on first use, not at this line: the stage is built earlier in the
+   script and, now that it can start as 'woman' (bootSubject), resolves the
+   twins before this point is reached. */
+var TWIN_IDS;
+function twinIds(){
+  if (TWIN_IDS) return TWIN_IDS;
   var out = {}, reg = window.EFFECT_REGISTRY;
   if (reg && reg.effects) reg.effects.forEach(function(e){ if (/_woman$/.test(e.id)) out[e.id] = true; });
-  return out;
-})();
+  return (TWIN_IDS = out);
+}
 
 /* Plate parity with portraits.html:8227-8233, which reads
      var f = PV.files[id]; if (f && f[0] && f[1]) return true;
@@ -5094,7 +5186,9 @@ function paintMe(){
 /* The foyer's photograph, if one was handed over, is taken after any resume
    so the one the visitor has just chosen is the one on the stamp. */
 whoAmI().then(function(u){
-  (u ? restoreResume() : Promise.resolve(false)).then(function(){ receiveFoyerHandoff(); });
+  (u ? restoreResume() : Promise.resolve(false))
+    .then(function(){ return receiveFoyerHandoff(); })
+    .then(bootSubjectSettled);
 });
 
 // ── Paid-run verification — one implementation, two callers ──
@@ -6959,7 +7053,11 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
   document.addEventListener('click', function(e){
     if (!window.matchMedia(SMALL).matches) return;
     /* __CURATOR_PASS2__ Pick for me's size, a room in All Effects, or the
-       Curated box -- each sends you to the stage, so the sheet steps aside. */
+       Curated box -- each sends you to the stage, so the sheet steps aside.
+       The box's page controls do not: they turn the page where you are, so
+       the eight can be paged back and forth without the sheet closing on
+       every tap (acceptance, 2026-09-13). */
+    if (e.target.closest && e.target.closest('.rail .cur-page')) return;
     if (e.target.closest && e.target.closest('.rail [data-pfm], .rail .ae-rooms .mm, .rail .curated-box')) {
       setTimeout(closeRail, 180);
     }

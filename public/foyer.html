@@ -141,7 +141,13 @@ input[type=file]{ display:none }
   .card{ height:var(--card-h) }
   /* Both lines below the card, one at a time in the same place: the opening
      line until a photo is chosen, then the animated line. */
-  .opening{ top:calc(var(--deck-y) + var(--card-h) / 2 + 15px); bottom:auto }
+  /* THE OPENING LINE, ONE LINE (acceptance, 2026-09-13): on desktop the
+     two sentences run as one line, with more room between it and the card
+     -- 44px on a tall screen, easing to 28px as --gap gives way on a short
+     one. Only the line before a photo; the animated line keeps its 15px,
+     and the phone keeps its two lines. */
+  .opening{ top:calc(var(--deck-y) + var(--card-h) / 2 + clamp(28px, calc(var(--gap) * .3), 44px)); bottom:auto; white-space:nowrap }
+  .opening br{ display:none }
   .tag{ top:calc(var(--deck-y) + var(--card-h) / 2 + 15px) }
   body:not(.telling-page) .tag{ visibility:hidden }
   .go{ top:calc(var(--deck-y) + var(--card-h) / 2 + var(--gap)) }
@@ -225,7 +231,7 @@ input[type=file]{ display:none }
   </div>
 
   <div class="stage">
-    <p class="opening" id="opening">We start with your photo.<br><span>And your imagination.</span></p>
+    <p class="opening" id="opening">We start with your photo. <br><span>And your imagination.</span></p>
     <div class="deck" id="deck">
       <div class="fan fan-l" id="fanL"></div>
       <div class="cardwrap">
