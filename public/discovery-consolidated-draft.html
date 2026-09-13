@@ -27,8 +27,14 @@
      1920px, extrapolated at other steps, --stage-margin-right and
      --card-ar/--cur-type/--mark-h/--photo-size/--title-icon-* are
      NEW here, didn't exist in this file before this port. */
-  --mh-h:64px;
-  --mark-h:46px;
+  /* MASTHEAD (acceptance, 2026-09-13): 30px shorter at the 1920 reference
+     (90 -> 60), and the same rule everywhere: 30px less, never below 60 --
+     the masthead's 44px controls with 8px above and below. The mark keeps
+     the same 8px clearance (--mark-h = --mh-h - 16px). --mh-h is the ONE
+     source: .shell, the rail, the stage fold and My Collection's top all
+     derive from it. The phone (<=767) is already 56px and unchanged. */
+  --mh-h:60px;
+  --mark-h:44px;
   --nav-h:80px;
   --rail-w:340px;
   --cur-type:15px;
@@ -47,7 +53,7 @@
 }
 @media (min-width:1330px){
   :root{
-    --mh-h:68px; --mark-h:50px; --rail-w:400px; --cur-type:16px;
+    --mh-h:60px; --mark-h:44px; --rail-w:400px; --cur-type:16px;
     --stage-pad-x:48px; --card-gap:20px; --nav-h:88px; --nav-gap:20px; --nav-fs:.75rem;
     --fs-brand:1.2rem; --fs-navlink:.9rem; --card-ar:.75;
     --photo-size:185px; --title-icon-badge:92px; --title-icon-img:70px;
@@ -55,7 +61,7 @@
 }
 @media (min-width:1660px){
   :root{
-    --mh-h:72px; --mark-h:55px; --rail-w:460px; --cur-type:16.5px;
+    --mh-h:60px; --mark-h:44px; --rail-w:460px; --cur-type:16.5px;
     --stage-pad-x:54px; --card-gap:22px; --nav-h:94px; --card-ar:.75;
     --photo-size:185px; --title-icon-badge:98px; --title-icon-img:75px;
   }
@@ -69,7 +75,7 @@
        algebraically, not guessed -- see chat). nav-h=84px so the
        nav bar's REAL total rendered height (nav-h + 30px padding)
        equals the requested 114px. photo-size=225px. */
-    --mh-h:90px; --mark-h:60px; --rail-w:500px; --cur-type:17px;
+    --mh-h:60px; --mark-h:44px; --rail-w:500px; --cur-type:17px;   /* masthead 90 -> 60 (2026-09-13, see :root) */
     --stage-pad-x:91.5px; --card-gap:24px; --nav-h:84px; --nav-icon:60px; --grid-cols:4;
     --fs-brand:1.3rem; --fs-navlink:.95rem; --card-ar:.75;
     --photo-size:210px; --title-icon-badge:104px; --title-icon-img:80px;
@@ -86,7 +92,7 @@
     /* Rail capped at 500px, NOT scaled wider -- past a point a
        text-heavy sidebar doesn't get more useful, just harder to
        read. Extra width goes to the grid instead (5 columns). */
-    --mh-h:92px; --mark-h:76px; --rail-w:500px; --cur-type:18px;
+    --mh-h:62px; --mark-h:46px; --rail-w:500px; --cur-type:18px;
     --stage-pad-x:80px; --card-gap:28px; --nav-h:110px; --grid-cols:5;
     --fs-brand:1.5rem; --fs-navlink:1.05rem; --card-ar:.69;
     --photo-size:210px; --title-icon-badge:110px; --title-icon-img:84px;
@@ -181,10 +187,13 @@ body{
   background-repeat:repeat; background-size:14rem 14rem;
   opacity:.045; mix-blend-mode:multiply;
 }
-.curator{ display:flex; align-items:center; gap:10px; margin-bottom:0 }
-.curator__badge{ width:50px; height:auto; display:flex; align-items:center; justify-content:center }
+/* The Curator header, 20% smaller as one composition (acceptance,
+   2026-09-13: mark 50 -> 40px, title 1.75 -> 1.4rem, gap 10 -> 8px), to give
+   the rail back its height. The divider below follows it up. */
+.curator{ display:flex; align-items:center; gap:8px; margin-bottom:0 }
+.curator__badge{ width:40px; height:auto; display:flex; align-items:center; justify-content:center }
 .curator__badge img{ width:100%; height:auto; display:block }
-.curator h3{ font-family:var(--serif); font-weight:600; font-size:1.75rem; margin:0 }
+.curator h3{ font-family:var(--serif); font-weight:600; font-size:1.4rem; margin:0 }
 .curator p{ font-size:.85em; color:#6b5f4f; margin:8px 0 18px; line-height:1.4 }
 .divider{ border:none; border-top:1px solid rgba(35,31,27,.15); margin:6px 0 10px }
 .eyebrow{ font-size:.7em; letter-spacing:.08em; text-transform:uppercase; color:#8a7a5f; margin-bottom:8px }
@@ -1681,12 +1690,26 @@ body.is-lboxed{ overflow:hidden }
 .cur-top .photo-stamp{ width:100%; aspect-ratio:1 }
 .cur-right{ grid-column:2; grid-row:1; align-self:stretch; display:flex; flex-direction:column; justify-content:space-between; min-width:0 }
 .pick-for-me{ grid-column:1; grid-row:2 }
-.all-effects{ grid-column:2; grid-row:2 / span 2; justify-self:center }
+/* The All Effects column: the box, and under it -- only while it is shut --
+   its label. Opened, the label goes (no spacer) and the box takes the
+   column. It spans rows 2-3; row 3 is the flexible one, so however tall it
+   gets, the left column is not moved (see .cur-top). */
+.ae-col{ grid-column:2; grid-row:2 / span 2; min-width:0; align-self:start; display:flex; flex-direction:column; align-items:center }
+.all-effects.is-open + .cur-label--all{ display:none }
 .bundle-ind{ grid-column:1; grid-row:3 }
 
 .cur-label{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:4px 8px; margin:0 0 6px;
   font-family:var(--serif); font-style:italic; font-size:1.05em; color:var(--ink); line-height:1.2 }
 .cur-label--all{ margin:6px 0 0 }
+/* SOURCE PHOTO TOP == CURATED EFFECTS TOP (acceptance, 2026-09-13). The
+   two share grid row 1, top-aligned, so their boxes already start on the
+   same line; trimming the label's leading above the capitals makes the
+   letters themselves start there too. (Browsers without text-box keep the
+   shared row and sit a few px lower.) */
+#curatedLabel > span{ text-box:trim-start cap alphabetic; flex-basis:100%; text-align:center }
+/* The title has the first line to itself at every width, New Mix beneath
+   it -- in the wide sheet the two used to share a line and the title was
+   centred against the taller button, 13px below the photo's top. */
 /* ↻ New Mix: a real, secondary action beside its label -- outlined, never
    filled, so it does not compete with Pick for me or Review. */
 .cur-reroll{ display:inline-flex; align-items:center; gap:.3em; min-height:30px; padding:.1em .6em; border-radius:999px;
@@ -1750,7 +1773,12 @@ body.is-lboxed{ overflow:hidden }
 .all-effects:not(.is-open) .ae-strip{ margin:auto 0 }
 .all-effects.is-open{ width:100%; padding-left:6px; padding-right:6px; padding-bottom:8px }
 .ae-toggle{ padding:2px 10px; border:0; background:none; color:var(--ink); font-size:.95em; line-height:1; cursor:pointer }
-.ae-strip{ display:grid; grid-template-columns:repeat(4,1fr); gap:3px; width:52% }
+/* THE FOUR CELLS OF A ROW, TOGETHER ~60px AT 1920 (acceptance, 2026-09-13),
+   shut strip and open rooms alike. In cqi -- the rail's own width, 308px
+   of content at 1920 -- so the same proportion holds at every rail width
+   and in the sheet: 19.5cqi across, the gap 1cqi of it. The Curated 4x2
+   box is not this and is not touched. */
+.ae-strip{ display:grid; grid-template-columns:repeat(4,1fr); gap:1cqi; width:19.5cqi }
 .ae-strip i{ display:block; aspect-ratio:var(--card-ar); border-radius:2px; background:var(--oxblood) }
 .ae-strip i:first-child{ background:var(--brass) }
 .ae-strip i.sel{ background:var(--gold-soft) }
@@ -1759,7 +1787,7 @@ body.is-lboxed{ overflow:hidden }
 .all-effects.is-open .ae-rooms{ display:flex; flex-direction:column; gap:2px }
 .ae-rooms .mm-panel{ padding:2px; gap:0 }
 .ae-rooms .mm{ width:100%; justify-content:center; gap:10%; padding:4px 2px }
-.ae-rooms .mm__grid{ width:48%; max-width:none }
+.ae-rooms .mm__grid{ width:19.5cqi; max-width:none; gap:1cqi }
 
 /* Your Collection: centred, 89% of the column, pinned to the foot. */
 .rail .your-collection{ width:89%; margin-left:auto; margin-right:auto; padding:18px 18px 20px }
@@ -1775,6 +1803,25 @@ body.is-lboxed{ overflow:hidden }
 .your-collection .btn-review.nudge-pulse{ animation:nudgePulse 1.6s ease-in-out infinite }
 .your-collection .btn-review:hover{ background:#6a3737 }
 .your-collection .btn-review:disabled{ opacity:.5; cursor:not-allowed }
+
+/* YOUR COLLECTION, COMPACT (acceptance, 2026-09-13): about 150px at 1920,
+   three elements -- the title, the progress line (start, the count riding
+   it, the target number) and Review. The price is not repeated here; the
+   bundle card above carries it. The card is smaller throughout rather than
+   clipped: its padding and gaps are in cqi, so they follow the rail, and
+   Review keeps a 44px floor and stays on one line. Desktop card only --
+   the docked bar (<=1024) lives outside .rail and keeps its own layout,
+   price included. */
+.rail .your-collection{ padding:3.4cqi 4.2cqi }
+.rail .your-collection .your-collection__title{ font-size:1.4em; line-height:1.1; margin:0 }
+.rail .your-collection .tier{ padding-top:16px; margin:1.2cqi 0 2.6cqi }
+.rail .your-collection .tier .mark .p{ display:none }
+.rail .your-collection .tier .mark .t{ width:30px; height:30px }
+.rail .your-collection .tier .mark.target{ align-items:center }
+.rail .your-collection .tier .mark.target .t{ width:32px; height:32px; font-size:1.15rem; font-variant-numeric:lining-nums }
+.rail .your-collection .tier .cnt{ top:-24px; padding:1px 7px }
+.rail .your-collection .btn-review, .rail .your-collection .btn-review.on{ min-height:44px; padding:8px 10px; white-space:nowrap;
+  font-size:max(18px, 1.1em); line-height:1.2 }
 
 /* One explanation at a time, on hover, keyboard focus or a long press. */
 .cur-tip{ position:fixed; z-index:9000; max-width:260px; padding:.55em .85em; border-radius:8px; pointer-events:none;
@@ -1813,7 +1860,7 @@ body.is-lboxed{ overflow:hidden }
 @media (max-width:359px){
   .cur-top{ grid-template-columns:minmax(0,1fr); grid-template-rows:none }
   .cur-top .photo-row{ grid-row:1 } .pick-for-me{ grid-row:2 } .bundle-ind{ grid-row:3 }
-  .cur-right{ grid-column:1; grid-row:4 } .all-effects{ grid-column:1; grid-row:5 }
+  .cur-right{ grid-column:1; grid-row:4 } .ae-col{ grid-column:1; grid-row:5 }
 }
 </style>
 </head>
@@ -1890,13 +1937,15 @@ body.is-lboxed{ overflow:hidden }
           <button class="cur-page cur-page--next" type="button" data-cur-page="1" data-tip="page" aria-label="Curated effects, page 2"><svg viewBox="0 0 14 24" aria-hidden="true" focusable="false"><path d="M3 2.5 11 12l-8 9.5"/></svg></button>
         </div>
         <div class="cur-dots" id="curatedDots" aria-hidden="true"><i></i><i></i></div>
-        <div class="cur-label cur-label--all" id="allLabel"><span>All Effects</span></div>
       </div>
       <button class="pick-for-me" id="optPickForMe" type="button" data-tip="pick" aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes">Pick for me</button>
-      <div class="all-effects" id="allEffects" role="group" aria-labelledby="allLabel">
-        <button class="ae-toggle" id="allToggle" type="button" data-tip="rooms" aria-expanded="false" aria-controls="minimap" aria-label="Show all rooms">&#9660;</button>
-        <div class="ae-strip" id="aeStrip" aria-hidden="true"></div>
-        <div class="ae-rooms" id="minimap"></div>
+      <div class="ae-col">
+        <div class="all-effects" id="allEffects" role="group" aria-labelledby="allLabel">
+          <button class="ae-toggle" id="allToggle" type="button" data-tip="rooms" aria-expanded="false" aria-controls="minimap" aria-label="Show all rooms">&#9660;</button>
+          <div class="ae-strip" id="aeStrip" aria-hidden="true"></div>
+          <div class="ae-rooms" id="minimap"></div>
+        </div>
+        <div class="cur-label cur-label--all" id="allLabel"><span>All Effects</span></div>
       </div>
       <div class="bundle-ind" id="bundleInd" data-tip="bundle" tabindex="0"></div>
     </div>
