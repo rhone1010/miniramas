@@ -14,8 +14,13 @@
 // a different control pinned to the foot of the rail, and a close that only
 // swapped the rail back, leaving the Aspect Ratio stage up underneath it.
 //
+// PASS 2 (2026-09-13): the size box and the held TIER are gone from the page.
+// The target is the one targetBundle() and Pick for me names its size in
+// togglePickSizes; the assertions below read those instead.
+//
 // These run the SHIPPED beginPaidRun, clearPurchasedSelection, releaseTier,
-// verifyPurchasePaid, onEmbeddedCheckoutComplete, confirmSize, the four rail
+// verifyPurchasePaid, onEmbeddedCheckoutComplete, targetBundle,
+// togglePickSizes, the four rail
 // builders, closeMyCollection, showDiscovery, mycollBackToDiscovery and the
 // rail's own click listener, cut out of the page by name. Only the network,
 // the DOM and the clock are stubs.
@@ -90,14 +95,13 @@ function build(opts: { selected: string[]; tier?: number }) {
     setTimeout: (f: () => void, ms: number) => setTimeout(f, ms),
     console: { log() {}, warn() {}, error() {} },
     document: {
-      getElementById: (id: string) => id === 'sizeConfirm'
-        ? sizeConfirm : null,
+      getElementById: (id: string) => id === 'pfmSizes' ? pfmSizes : id === 'optPickForMe' ? pfmBtn : null,
       querySelectorAll: () => [],
     },
     // the selection, as the page holds it
     SELECTED: opts.selected.map((k) => ({ key: k, baseId: k, name: 'E ' + k, siloName: 'Room' })),
-    TIER: opts.tier ?? opts.selected.length,
-    SLOTS: opts.selected.slice(),
+    SLOTS: opts.selected.slice(), TARGET_PICK: 0,
+    VALID_SIZES: [1, 4, 8, 16], SIZE_PRICE: { 1: 2.99, 4: 4.99, 8: 7.99, 16: 12.99 },
     FILL_MODE: false,
     // state that must survive a purchase
     POSE: 'as_photographed', ASPECT: 'landscape', SRC_B64: 'BASE64SOURCE',
@@ -112,25 +116,24 @@ function build(opts: { selected: string[]; tier?: number }) {
     syncSelect: (id: string, action: string) => { log.push('sync ' + action + ' ' + id); if (action === 'remove') removes.push(id); return Promise.resolve(null) },
     syncDiscoveryChecks: () => { log.push('repaint checks') },
     afterSelectionChange: () => { log.push('after selection change') },
-    // the size step
-    SIZE_ASK: { kind: 'pick', size: null },
     act: () => {},
   }
-  const sizeConfirm = { innerHTML: '', scrollIntoView() {} }
+  const pfmSizes = { innerHTML: '', hidden: true }
+  const pfmBtn = { setAttribute() {} }
   const body = [
     retryConstants(),
     fn('releaseTier'),
     fn('openCollectionForPaidRun'), fn('foregroundPaidRun'),
     fn('beginPaidRun'), fn('clearPurchasedSelection'),
     fn('verifyPurchasePaid'), fn('closeCheckout'), fn('onEmbeddedCheckoutComplete'),
-    fn('confirmSize'),
+    fn('targetFor'), fn('targetBundle'), fn('togglePickSizes'), fn('closePickSizes'),
     'return { onEmbeddedCheckoutComplete: onEmbeddedCheckoutComplete, beginPaidRun: beginPaidRun,',
     '  clearPurchasedSelection: clearPurchasedSelection,',
-    '  askPick: function(v){ SIZE_ASK = { kind:"pick", size:null }; confirmSize(v); return sizeConfirmEl.innerHTML; },',
-    '  state: function(){ return { SELECTED: SELECTED, TIER: TIER, SLOTS: SLOTS, FILL_MODE: FILL_MODE,',
+    '  pickSizes: function(){ pfmSizesEl.hidden = true; togglePickSizes(); return pfmSizesEl.innerHTML; },',
+    '  state: function(){ return { SELECTED: SELECTED, target: targetBundle(), SLOTS: SLOTS, FILL_MODE: FILL_MODE,',
     '    POSE: POSE, ASPECT: ASPECT, SRC_B64: SRC_B64, SESSION_ID: SESSION_ID, SUBJECT: SUBJECT }; } };',
   ].join('\n')
-  const all = { ...env, sizeConfirmEl: sizeConfirm }
+  const all = { ...env, pfmSizesEl: pfmSizes }
   sb = new Function(...Object.keys(all), body)(...Object.values(all))
   return sb
 }
@@ -157,20 +160,20 @@ describe('a confirmed purchase takes its effects out of the selection', () => {
     const st = s.state()
     expect(st.SELECTED).toEqual([])
     expect(st.SELECTED).toBe(before)             // cleared in place; nothing holds a stale copy
-    expect(st.TIER).toBe(0)                      // the size-1 hold is gone with it
+    expect(st.target).toBe(1)                    // back to the zero-count target, 1 / $2.99
     expect(st.SLOTS).toEqual([])
     expect(st.FILL_MODE).toBe(false)
   })
 
-  it('the Curator no longer says "You have 1. I’ll pick 3 more to make 4."', async () => {
+  it('Pick for me offers every size again once the purchased effect has left', async () => {
+    // The original symptom was the Curator counting the bought effect. Its
+    // Pass 2 equivalent: with the purchased 1 still selected, size 1 cannot
+    // be chosen; once the purchase clears it, every size can.
     const s = build({ selected: ['fx_amber'] })
-    // what production showed, with the purchased effect still selected
-    expect(s.askPick(4)).toContain('You have 1. I’ll pick 3 more to make 4.')
+    expect(s.pickSizes()).toMatch(/data-pfm="1" disabled/)
     s.onEmbeddedCheckoutComplete('cs_test_1', runOf(['fx_amber']))
     await flush()
-    const said = s.askPick(4)
-    expect(said).toContain('I’ll pick 4 for you.')
-    expect(said).not.toContain('You have')
+    expect(s.pickSizes()).not.toContain('disabled')
   })
 
   it('a 4-pack clears all four, and the server session is told about each', async () => {
@@ -244,7 +247,7 @@ describe('nothing is cleared until the purchase row says paid', () => {
       s.onEmbeddedCheckoutComplete('cs_test_1', runOf(['fx_amber']))
       await vi.advanceTimersByTimeAsync(20_000)
       expect(keys()).toEqual(['fx_amber'])
-      expect(s.state().TIER).toBe(1)
+      expect(s.state().target).toBe(1)
       expect(removes).toEqual([])
     })
   }
@@ -272,7 +275,7 @@ describe('nothing is cleared until the purchase row says paid', () => {
     s.clearPurchasedSelection(undefined)
     s.clearPurchasedSelection({ portfolioId: 'x', effectIds: [] })
     expect(keys()).toEqual(['fx_amber'])
-    expect(s.state().TIER).toBe(1)
+    expect(s.state().target).toBe(1)
     expect(log).toEqual([])
   })
 })

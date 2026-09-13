@@ -105,5 +105,21 @@
       .catch(function(){ return clear().then(function(){ return null; }); });
   }
 
-  window.LitenHandoff = { put: put, take: take, clear: clear };
+  /* Discovery's own resume (Pass 2): the source photograph held across the
+     Review sign-in, in the same store, under its own key. Kept, not taken:
+     the caller drops it once the work is back on screen. */
+  function putPhoto(key, dataUrl){
+    var blob = dataUrlToBlob(dataUrl);
+    return inStore('readwrite', function(s){ return s.put(blob, 'resume:' + key); });
+  }
+  function getPhoto(key){
+    return inStore('readonly', function(s){ return s.get('resume:' + key); })
+      .then(function(blob){ return blob ? blobToDataUrl(blob) : null; })
+      .catch(function(){ return null; });
+  }
+  function dropPhoto(key){
+    return inStore('readwrite', function(s){ return s.delete('resume:' + key); }).catch(function(){});
+  }
+
+  window.LitenHandoff = { put: put, take: take, clear: clear, putPhoto: putPhoto, getPhoto: getPhoto, dropPhoto: dropPhoto };
 })();
