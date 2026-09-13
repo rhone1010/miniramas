@@ -75,8 +75,8 @@ body.telling-page .opening, body.revealing .opening{ display:none }
 /* PRODUCTION: "Try again", in the card's caption band, is the band's own
    type made a real button -- italic, in the gold the phone gives the line's
    emphasis, no chrome of its own, a ring for the keyboard. */
-.nm .again{ font-family:inherit; font-size:inherit; font-weight:inherit; line-height:inherit; letter-spacing:inherit; font-style:italic; color:var(--gold-soft); background:none; border:0; padding:0; margin:0; cursor:pointer }
-.nm .again:focus-visible{ outline:2px solid var(--gold-soft); outline-offset:3px; border-radius:4px }
+.nm .again, .tag .again{ font-family:inherit; font-size:inherit; font-weight:inherit; line-height:inherit; letter-spacing:inherit; font-style:italic; color:var(--gold-soft); background:none; border:0; padding:0; margin:0; cursor:pointer }
+.nm .again:focus-visible, .tag .again:focus-visible{ outline:2px solid var(--gold-soft); outline-offset:3px; border-radius:4px }
 /* FOYER GLASS: the 14ch column is lifted, desktop and phone alike. At 14ch
    the two wider lines wrapped to 3 lines on desktop (into the button) and
    "Impossible worlds become real in our crafted images." to 5 on a phone
@@ -603,29 +603,80 @@ function settle(kind){
   tag.style.display = 'none';
   showGo();
   if (kind === 'exhausted' || kind === 'unavailable') go.classList.add('full');
-  var again = document.getElementById('again');
-  if (again) again.addEventListener('click', tryAgain);
   fitSettledCard();
 }
+/* Try again lives with the message, wherever the message is shown. */
+document.addEventListener('click', function(e){ if (e.target && e.target.closest && e.target.closest('#again')) tryAgain(); });
 
 /* SHORT PHONES, settled states only. On a phone the button is fixed near
    the foot of the screen, and the glass only ever shows it beside the SMALL
    result card. A settled state shows it beside the full-size card, and on a
    short screen (375x667) the button sat over the card and the end of its
-   message. Only then is the card made smaller -- same centre, same shape,
-   just enough to end 12px above the button (the clearance the glass keeps
-   between its line and the button). Any screen with the room is left
-   exactly as the glass has it, and Try again puts the card back. The
-   button's top comes from its layout (fixed bottom offset + height), not
-   its transform, so the grown, pulsing button is measured where it sits. */
-var SETTLE_CLEAR = 12;
-function fitSettledCard(){
+   message. Three tiers, the first that fits wins:
+
+   1 THE GLASS. The full-size card has room: nothing changes.
+   2 A SMALLER CARD, message in its caption band. Same centre, same shape,
+     just small enough to end 12px above the button (the clearance the
+     glass keeps between its line and the button) -- as long as that leaves
+     the card at least 220px wide.
+   3 ULTRA-SHORT (Rich's ruling: 320x568). Below 220px the card stops being
+     the foyer's card, so it stays at 220px and the message leaves the band:
+     it goes on the page's own line (#tag), compact (20px, the Garamond
+     floor) and centred, directly under the card, with Try again in it --
+     card, 8px, message, 12px, button. At 320x568 even that does not fit
+     above the button where the glass puts it (it would need ~80px more),
+     so the button -- still fixed -- comes down only as far as the stack
+     needs, and never so low that its grown, pulsing size leaves the screen.
+
+   Measured from layout, not transforms; re-measured when the web fonts land
+   and on resize. Try again puts everything back as the glass has it. */
+var SETTLE_CLEAR = 12;       /* message or card -> button                          */
+var SETTLE_GAP   = 8;        /* card -> message, ultra-short only                   */
+var SETTLE_TOP   = 8;        /* the card's least distance from the top of the screen */
+var SETTLE_MIN_W = 220;      /* the least card that is still the foyer's card       */
+function clearSettledFit(){
   card.style.width = '';
-  if (!IS_MOBILE || STATE.phase !== 'settled') return;
+  document.getElementById('deck').style.transform = '';
+  go.style.bottom = '';
+  ['top', 'bottom', 'fontSize', 'display'].forEach(function(p){ tag.style[p] = ''; });
+  tag.removeAttribute('role');
+  var nm = front.querySelector('.nm');
+  if (nm && STATE.phase === 'settled' && !nm.innerHTML){ nm.innerHTML = SAY[STATE.settled]; nm.hidden = false; }
+}
+function fitSettledCard(){
+  clearSettledFit();
+  if (STATE.phase !== 'settled') return;
+  tag.style.display = 'none';                                     /* tiers 1 and 2: the band speaks */
+  if (!IS_MOBILE) return;
   var c = card.getBoundingClientRect();
-  var goTop = innerHeight - parseFloat(getComputedStyle(go).bottom) - go.offsetHeight;
+  var cs = getComputedStyle(go), glassBottom = parseFloat(cs.bottom);
+  var goTop = innerHeight - glassBottom - go.offsetHeight;
   var h = 2 * (goTop - SETTLE_CLEAR - (c.top + c.height / 2));
-  if (h < c.height) card.style.width = Math.floor(h * c.width / c.height) + 'px';
+  if (h >= c.height) return;                                        /* 1 */
+  var ar = c.width / c.height;
+  if (h * ar >= SETTLE_MIN_W){ card.style.width = Math.floor(h * ar) + 'px'; return; }   /* 2 */
+
+  /* 3: ultra-short */
+  card.style.width = SETTLE_MIN_W + 'px';
+  var nm = front.querySelector('.nm');
+  if (nm){ nm.innerHTML = ''; nm.hidden = true; }
+  tag.style.display = ''; tag.style.fontSize = '1.25rem'; tag.style.bottom = 'auto'; tag.style.top = '0px';
+  tag.setAttribute('role', 'status');
+  tag.innerHTML = SAY[STATE.settled];
+  var cardH = card.getBoundingClientRect().height, msgH = tag.offsetHeight;
+  var need = SETTLE_TOP + cardH + SETTLE_GAP + msgH + SETTLE_CLEAR;  /* everything above the button */
+  if (need > goTop){
+    var safe = glassBottom - 96;                                     /* 96px: the glass's mobile button offset */
+    var least = safe + Math.max(16, Math.ceil(go.offsetHeight * 0.2) + 8);   /* room for its 1.2 growth */
+    var bottom = Math.max(least, glassBottom - (need - goTop));
+    go.style.bottom = bottom + 'px';
+    goTop = innerHeight - bottom - go.offsetHeight;
+  }
+  var cardTop = Math.max(SETTLE_TOP, goTop - SETTLE_CLEAR - msgH - SETTLE_GAP - cardH);
+  var now = card.getBoundingClientRect().top;
+  document.getElementById('deck').style.transform = 'translateY(' + (-40 + cardTop - now) + 'px)';
+  var stageTop = tag.offsetParent ? tag.offsetParent.getBoundingClientRect().top : 0;
+  tag.style.top = (cardTop + cardH + SETTLE_GAP - stageTop) + 'px';
 }
 window.addEventListener('resize', function(){ if (STATE.phase === 'settled') fitSettledCard(); });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ if (STATE.phase === 'settled') fitSettledCard(); });
@@ -633,7 +684,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(function()
 function tryAgain(){
   if (STATE.phase !== 'settled' || STATE.settled !== 'failed') return;
   STATE.phase = 'photo'; STATE.settled = null;
-  card.style.width = '';
+  clearSettledFit();
   tag.style.display = '';
   tag.classList.remove('wide');
   tag.innerHTML = 'Imagine yourself&hellip;';
