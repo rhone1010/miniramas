@@ -4859,7 +4859,7 @@ var TIPS = {
   reroll:     'Swap the ones you have not chosen for new effects. Your choices stay.',                  /* DRAFT */
   rooms:      'Each mark is a room. Tap one to go there — your selections carry across all of them.',  /* TOUR  */
   bundle:     'The collection size you are building toward, and its price.',                           /* DRAFT */
-  collection: 'Every effect you pick shows up here, with the running total and price.',               /* TOUR  */
+  collection: 'Every effect you pick is counted here, with how close you are to your bundle.',       /* TOUR (updated 2026-09-13) */
   review:     'This opens a final look at everything you picked before anything is created.'          /* TOUR  */
 };
 var tipEl = null, tipFor = null, tipPress = null, tipSwallowClick = false;
@@ -4940,7 +4940,7 @@ var TOURS = {
     { sel:'#allEffects', title:'Explore other rooms',
       text:'Each mark is a room. Tap one to go there — your selections carry across all of them.' },
     { sel:'.your-collection', title:'Your collection grows here',
-      text:'Every effect you pick shows up here, with the running total and price.' },
+      text:'Every effect you pick is counted here, with how close you are to your bundle.' },
     { sel:'#btnGoReview', title:'Review when ready',
       text:'This opens a final look at everything you picked before anything is created.' }
   ],
@@ -5230,7 +5230,7 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
 function paintMe(){
   var nameEl = document.getElementById('mhName');
   if (nameEl) nameEl.textContent = ME && ME.email ? ME.email.split('@')[0] : 'Sign in';
-  if (ME) renderCollection();
+  if (ME) renderCollection().then(refreshWhileCrafting);
 }
 /* The foyer's photograph, if one was handed over, is taken after any resume
    so the one the visitor has just chosen is the one on the stamp. */
@@ -5364,6 +5364,29 @@ function beginPaidRun(run){
   }
 }
 
+/* __CURATOR_PASS2__ THE CRAFTING TILES KEEP UP ON AN ORDINARY LOAD
+   (acceptance, 2026-09-13). The existing refresh -- craftWhenPiecesLand,
+   its own cadence and tries, unchanged -- was only ever started by
+   beginPaidRun. A page loaded while pieces were still being made read the
+   collection once and never again: on the Preview, "Crafting…" tiles stood
+   for 3h19m over pieces the server had finished two minutes later. Now
+   the load that finds unfinished pieces starts that same refresh. Lifecycle
+   only: none of its timing or limits touched, and beginPaidRun is as it
+   was. The load runs once (whoAmI -> paintMe), so the only refresh it can
+   meet is a portfolio's paid return, which starts its own -- a load on
+   that path leaves it to that. */
+var CRAFT_REFRESHING = false;
+var PAID_RETURN_PENDING = false;
+function craftRefreshDone(){ CRAFT_REFRESHING = false; }
+function refreshWhileCrafting(working){
+  if (working !== true || CRAFT_REFRESHING || PAID_RETURN_PENDING) return;
+  if (typeof craftWhenPiecesLand !== 'function') return;
+  CRAFT_REFRESHING = true;
+  /* The load has just read the collection; the refresh's first read is
+     one of its own ticks later (LAND_EVERY), not a second read at once. */
+  setTimeout(function(){ craftWhenPiecesLand(0).then(craftRefreshDone, craftRefreshDone); }, LAND_EVERY);
+}
+
 /* A CONFIRMED PURCHASE TAKES ITS EFFECTS OUT OF THE SELECTION. Card and Link
    finish in the modal and the page never reloads, so SELECTED, the tier held
    at that size and the server session all still carried the run just bought:
@@ -5441,6 +5464,9 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
   var isPaid = params.get('paid') === '1' || params.get('portfolio_paid') === '1';
   var sessionId = params.get('session_id');
   if (!isPaid || !sessionId) return;
+  /* A portfolio's paid return starts its own refresh (beginPaidRun), so this
+     load leaves it to that. An unlock returns on ?paid=1 and starts none. */
+  if (params.get('portfolio_paid') === '1') PAID_RETURN_PENDING = true;
 
   // Clean URL immediately so refresh doesn't re-trigger
   history.replaceState(null, '', location.pathname);
