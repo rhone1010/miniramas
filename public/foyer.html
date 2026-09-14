@@ -83,6 +83,14 @@ body.telling-page .opening, body.revealing .opening{ display:none }
    (off the bottom of the screen) -- in both source files. Unwrapped they
    run like every other line: one line on desktop, two on a phone. */
 .tag.wide{ max-width:none; margin-left:auto; margin-right:auto }
+/* The two cells (tagPair): a centred pair as wide as its longest phrase;
+   the fixed words against the seam, the phrase left-aligned from it. */
+.tag.two{ text-align:center }
+.tag-pair{ display:inline-grid; grid-template-columns:max-content minmax(0, max-content); column-gap:.26em; align-items:start; max-width:100%; text-align:left; vertical-align:top }
+.tag-l{ white-space:nowrap }
+.tag-r{ display:grid }
+.tag-r > span{ grid-area:1 / 1; visibility:hidden }
+.tag-r > span.on{ visibility:visible }
 /* ── actions ── */
 .acts{ display:flex; gap:14px; margin-top:26px }
 .acts.done{ display:none !important }  /* buttons vanish once a photo is chosen */
@@ -188,6 +196,12 @@ input[type=file]{ display:none }
   /* tagline overlays the card, near the lower third, over the gradient */
   .tag{ position:absolute; left:0; right:0; bottom:calc(14% + 25px); z-index:6; color:#f6ecd8; font-size:1.5rem; margin:0; padding:0 24px; text-shadow:0 1px 10px rgba(0,0,0,.5); min-height:0 }
   .tag .tail{ color:var(--gold-soft) }
+  /* Two cells on a phone: 24px, easing to the 20px floor on the narrowest,
+     so "Imagine yourself" always holds one line and the longest phrase
+     wraps to at most two inside its own cell. */
+  .tag.two{ font-size:clamp(20px, 6.2vw, 24px); padding:0 16px;
+    /* the approved top, unless two lines would run off a short screen */
+    top:min(calc(50% + clamp(260px,33vh,335px)), calc(100% - 2.7em)) }
   /* actions float over the card near the bottom */
   .acts{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(28px + env(safe-area-inset-bottom) + var(--kb,0px)); z-index:20; margin:0; gap:12px }
   .acts.done{ display:none !important }
@@ -233,18 +247,22 @@ input[type=file]{ display:none }
    in its own colour, every one AA against the ground it sits on. No
    spinner, bar, count or percentage. Reduced motion: no fades and no
    breath -- the lines change in place. */
-.reveal-status{ position:absolute; left:-30%; right:-30%; bottom:calc(100% + 5px); z-index:5; margin:0; text-align:center; pointer-events:none;
+.reveal-status{ position:absolute; left:-30%; right:-30%; bottom:calc(100% + 2px); z-index:5; margin:0; text-align:center; pointer-events:none;
   font-family:var(--serif); color:var(--ink);
   --rs-glass:#285a73; --rs-stone:#554f48; --rs-iron:#3f4a54; --rs-plushy:#8f3f5a; --rs-stained:#861c41;
   --rs-mosaic:#17595a; --rs-driftwood:#624a35; --rs-porcelain:#34507c; --rs-bronze:#744618;
   opacity:0; visibility:hidden; transition:opacity .45s ease, visibility 0s linear .45s }
 .reveal-status.on{ opacity:1; visibility:visible; transition:opacity .45s ease, visibility 0s }
-.rs-head{ margin:0; font-style:italic; font-size:20px; line-height:1.1 }
+/* Legible at a glance (correction pass, 2026-09-14): was 20px/400 with a
+   breath down to .6, and the line 18px/400 at 78% ink -- read as fine print.
+   Now 22px/500, the breath only to .85; the line 20px/500 in full ink. Still
+   inside the 49px the layout keeps between the logo and the card. */
+.rs-head{ margin:0; font-style:italic; font-weight:500; font-size:22px; line-height:1.05 }
 .reveal-status.on .rs-head{ animation:revealBreath 3.2s ease-in-out .6s infinite }
-@keyframes revealBreath{ 0%,100%{ opacity:1 } 50%{ opacity:.6 } }
+@keyframes revealBreath{ 0%,100%{ opacity:1 } 50%{ opacity:.85 } }
 /* The supporting line: the intro lines and the "Turning You Into" line
    share one cell, so the change never moves anything around it. */
-.rs-line{ display:grid; justify-items:center; margin:2px 0 0; font-size:18px; line-height:1.15; color:rgba(42,36,30,.78) }
+.rs-line{ display:grid; justify-items:center; margin:2px 0 0; font-size:20px; font-weight:500; line-height:1.08; color:var(--ink) }
 .rs-line > span{ grid-area:1 / 1; white-space:nowrap; opacity:0; transition:opacity .4s ease }
 .rs-line > span.on{ opacity:1 }
 /* "Turning You Into" + the word: the words are stacked in one cell as wide
@@ -269,7 +287,7 @@ input[type=file]{ display:none }
     color:#f6ecd8; text-shadow:0 1px 2px rgba(0,0,0,.4);
     --rs-glass:#bfe3f4; --rs-stone:#ddd6ca; --rs-iron:#d0d9e1; --rs-plushy:#f9c9cf; --rs-stained:#ffc3d3;
     --rs-mosaic:#9fe3d9; --rs-driftwood:#e8cfad; --rs-porcelain:#f0f4fb; --rs-bronze:#f7d1a2 }
-  .rs-line{ color:#f6ecd8 }
+  .rs-line{ color:#f6ecd8; font-size:clamp(18px, 5.8vw, 20px) }   /* the longest line still fits a 320 card */
 }
 @media (prefers-reduced-motion:reduce){
   .reveal-status.on .rs-head{ animation:none }
@@ -471,6 +489,29 @@ function begin(src){
   else STATE.riffleStart = later(startRiffle, PHOTO_BEAT);
 }
 
+/* THE LINE UNDER THE CARD, IN TWO CELLS (Rich, 2026-09-14). "Imagine
+   yourself" is fixed and sits against the seam; the changing phrase starts
+   from one fixed x, left-aligned. Every phrase the riffle can show sits in
+   the same cell, stacked, with only the current one visible -- so the pair
+   is always the size of its longest phrase, and neither the fixed words nor
+   the phrase's starting point can move when the phrase changes. Where the
+   screen is too narrow for the longest phrase on one line, the phrases wrap
+   inside their cell, still from the same x. The wider closing lines and the
+   settled messages use the tag as a plain line; tagPair rebuilds the pair. */
+var TAG_PHRASES = FLIPS.map(function(r){ return r[1]; }).filter(function(t, i, a){ return t && a.indexOf(t) === i; });
+function tagPair(phrase){
+  if (!tag.classList.contains('two') || !tag.querySelector('.tag-pair')){
+    tag.classList.remove('wide'); tag.classList.add('two');
+    tag.innerHTML = '<span class="tag-pair"><span class="tag-l">Imagine yourself</span><span class="tag-r">' +
+      '<span class="tail" data-p="">&hellip;</span>' +
+      TAG_PHRASES.map(function(t){ return '<span class="tail" data-p="' + t + '">' + t + '</span>'; }).join('') +
+      '</span></span>';
+  }
+  var want = phrase || '';
+  tag.querySelectorAll('.tag-r > span').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-p') === want); });
+}
+tagPair('');
+
 /* STATE 3: riffle + synced line */
 function startRiffle(){
   STATE.riffleStart = null;
@@ -497,8 +538,7 @@ function startRiffle(){
      The wider lines describe no frame; the frames keep riffling under them. */
   var flips=front.querySelectorAll('.flip'), shown=0, ticks=0, rewrites=0;
   var EVERY = Math.round(LINE_EVERY / RIFFLE_EVERY);          // frames per rewrite: 2
-  function caption(k){ var tl=FLIPS[k][1];
-    tag.innerHTML = tl ? 'Imagine yourself <span class="tail">'+tl+'</span>' : 'Imagine yourself&hellip;'; }
+  function caption(k){ tagPair(FLIPS[k][1]); }
   caption(0);                                                  // frame 0 is up; its line with it
   var iv=setInterval(function(){
     ticks++; shown = ticks % flips.length;
@@ -506,7 +546,7 @@ function startRiffle(){
     if (ticks % EVERY) return;                                 // the in-between frame: the line holds
     rewrites++;
     if (rewrites < FLIPS.length) caption(shown);
-    else { tag.classList.add('wide'); tag.textContent=WIDE[(rewrites-FLIPS.length)%WIDE.length]; }
+    else { tag.classList.remove('two'); tag.classList.add('wide'); tag.textContent=WIDE[(rewrites-FLIPS.length)%WIDE.length]; }
   }, RIFFLE_EVERY);
   STATE.riffle = { iv:iv };
 }
@@ -821,7 +861,7 @@ function tryAgain(){
   clearSettledFit();
   tag.style.display = '';
   tag.classList.remove('wide');
-  tag.innerHTML = 'Imagine yourself&hellip;';
+  tagPair('');
   STATE.riffleStart = later(startRiffle, PHOTO_BEAT);
   reveal();
 }
@@ -830,7 +870,10 @@ function tryAgain(){
    PRODUCTION: the result arrives with the Liten & Co watermark already
    baked into its pixels on the server, so the glass's CSS PREVIEW overlay
    is not laid over it -- one mark, not two. */
-function pv(src,label){ return '<img src="'+src+'"><div class="nm">'+label+'</div>'; }
+/* No caption on the card (Rich, 2026-09-14): the effect's name is no longer
+   printed across the bottom of the result -- and nothing takes its place.
+   The caption band (.nm) still carries the settled states' messages. */
+function pv(src,label){ return '<img src="'+src+'">'; }
 function revealResult(result){
   stopRiffle();
   STATE.phase = 'reveal';
