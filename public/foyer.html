@@ -220,32 +220,61 @@ input[type=file]{ display:none }
   .gc.in{ opacity:.9; transform:none }
   .nm{ font-size:1.35rem }
 }
-/* ── THE PERSISTENT STATUS (go-to-market pass 1, 2026-09-14) ──
-   One quiet line while THEIR image is actually being made: shown when the
-   real reveal request goes out (the photo has passed intake), gone the
-   moment the result arrives or any settled state takes over. Anchored to
-   the card, so it never moves with the riffle line. Desktop: in the clear
-   band between the logo and the card (the 49px the layout keeps under the
-   logo). Phone: the card is the screen, so just inside its top edge, over
-   the riffle, cream with a soft shadow. No spinner, bar, count or
-   percentage -- a slow breath at most, and none at all with reduced motion.
-   "about 30 seconds" is provisional copy; nothing is timed from it. */
-.reveal-status{ position:absolute; left:0; right:0; bottom:calc(100% + 6px); z-index:5; margin:0; text-align:center; pointer-events:none;
-  font-family:var(--serif); font-style:italic; font-size:20px; line-height:1.15; color:var(--ink);
+/* ── THE PERSISTENT STATUS (go-to-market pass 1, copy pass 2, 2026-09-14) ──
+   Shown while THEIR image is actually being made: from the moment the real
+   reveal request goes out (the photo has passed intake) until the result
+   arrives or any settled state takes over. Anchored to the card, so it
+   never moves with the riffle line. Desktop: in the clear band between the
+   logo and the card. Phone: the card is the screen, so just inside its top
+   edge, on a soft fade. A fixed header, "Crafting Your Photo", and under it
+   one slow supporting line (the sequence is in the script: about 5 seconds
+   of settled reading each, a calm .4s fade between). In the longer wait
+   "Turning You Into" holds still and only the material word changes, each
+   in its own colour, every one AA against the ground it sits on. No
+   spinner, bar, count or percentage. Reduced motion: no fades and no
+   breath -- the lines change in place. */
+.reveal-status{ position:absolute; left:-30%; right:-30%; bottom:calc(100% + 5px); z-index:5; margin:0; text-align:center; pointer-events:none;
+  font-family:var(--serif); color:var(--ink);
+  --rs-glass:#285a73; --rs-stone:#554f48; --rs-iron:#3f4a54; --rs-plushy:#8f3f5a; --rs-stained:#861c41;
+  --rs-mosaic:#17595a; --rs-driftwood:#624a35; --rs-porcelain:#34507c; --rs-bronze:#744618;
   opacity:0; visibility:hidden; transition:opacity .45s ease, visibility 0s linear .45s }
-.reveal-status small{ display:block; margin-top:3px; font-family:var(--sans); font-style:normal; font-size:12.5px; line-height:1.3; letter-spacing:.02em; color:rgba(42,36,30,.62) }
-.reveal-status.on{ opacity:1; visibility:visible; transition:opacity .45s ease, visibility 0s; animation:revealBreath 3.2s ease-in-out .6s infinite }
+.reveal-status.on{ opacity:1; visibility:visible; transition:opacity .45s ease, visibility 0s }
+.rs-head{ margin:0; font-style:italic; font-size:20px; line-height:1.1 }
+.reveal-status.on .rs-head{ animation:revealBreath 3.2s ease-in-out .6s infinite }
 @keyframes revealBreath{ 0%,100%{ opacity:1 } 50%{ opacity:.6 } }
+/* The supporting line: the intro lines and the "Turning You Into" line
+   share one cell, so the change never moves anything around it. */
+.rs-line{ display:grid; justify-items:center; margin:2px 0 0; font-size:18px; line-height:1.15; color:rgba(42,36,30,.78) }
+.rs-line > span{ grid-area:1 / 1; white-space:nowrap; opacity:0; transition:opacity .4s ease }
+.rs-line > span.on{ opacity:1 }
+/* "Turning You Into" + the word: the words are stacked in one cell as wide
+   as the widest, so the fixed words hold their place whatever the word. */
+.rs-turn{ display:inline-grid; grid-template-columns:auto auto; column-gap:.26em; align-items:baseline }
+.rs-fixed{ grid-column:1 }
+.rs-words{ grid-column:2; display:grid; justify-items:start }
+.rs-w{ grid-area:1 / 1; white-space:nowrap; opacity:0; transition:opacity .4s ease }
+.rs-w.on{ opacity:1 }
+.rs-w[data-w="glass"]{ color:var(--rs-glass) }         .rs-w[data-w="stone"]{ color:var(--rs-stone) }
+.rs-w[data-w="iron"]{ color:var(--rs-iron) }           .rs-w[data-w="plushy"]{ color:var(--rs-plushy) }
+.rs-w[data-w="stained"]{ color:var(--rs-stained) }     .rs-w[data-w="mosaic"]{ color:var(--rs-mosaic) }
+.rs-w[data-w="driftwood"]{ color:var(--rs-driftwood) } .rs-w[data-w="porcelain"]{ color:var(--rs-porcelain) }
+.rs-w[data-w="bronze"]{ color:var(--rs-bronze) }
 /* Phone: over the card's top edge, on a soft fade -- the card's own
-   bottom-gradient language, turned over -- so it reads over any riffle
-   frame, light or dark. Exactly the card's width (90vw) and top corners. */
+   bottom-gradient language, turned over -- dense enough under the second
+   line that the lightest riffle frame still holds AA. Exactly the card's
+   width (90vw) and top corners; light tones of the same materials. */
 @media (max-width:720px){
-  .reveal-status{ bottom:auto; top:0; left:5vw; right:5vw; padding:12px 12px 26px; border-radius:16px 16px 0 0;
-    background:linear-gradient(rgba(20,15,10,.66), rgba(20,15,10,.36) 58%, rgba(20,15,10,0));
-    color:#f6ecd8; text-shadow:0 1px 2px rgba(0,0,0,.4) }
-  .reveal-status small{ color:rgba(246,236,216,.88) }
+  .reveal-status{ bottom:auto; top:0; left:5vw; right:5vw; padding:12px 10px 24px; border-radius:16px 16px 0 0;
+    background:linear-gradient(rgba(20,15,10,.8), rgba(20,15,10,.66) 70%, rgba(20,15,10,0));
+    color:#f6ecd8; text-shadow:0 1px 2px rgba(0,0,0,.4);
+    --rs-glass:#bfe3f4; --rs-stone:#ddd6ca; --rs-iron:#d0d9e1; --rs-plushy:#f9c9cf; --rs-stained:#ffc3d3;
+    --rs-mosaic:#9fe3d9; --rs-driftwood:#e8cfad; --rs-porcelain:#f0f4fb; --rs-bronze:#f7d1a2 }
+  .rs-line{ color:#f6ecd8 }
 }
-@media (prefers-reduced-motion:reduce){ .reveal-status.on{ animation:none } }
+@media (prefers-reduced-motion:reduce){
+  .reveal-status.on .rs-head{ animation:none }
+  .rs-line > span, .rs-w{ transition:none }
+}
 @media (min-width:721px){ .pill{ display:none !important } }
 @media (prefers-reduced-motion:reduce){ .card,.side,.go,.fc,.cardwrap{ transition:none !important; animation:none !important } }
 </style></head><body>
@@ -271,7 +300,10 @@ input[type=file]{ display:none }
           </div>
           <div class="face back" id="back"></div>
         </div>
-        <p class="reveal-status" id="revealStatus" role="status" aria-live="polite"></p>
+        <div class="reveal-status" id="revealStatus">
+          <p class="rs-head" role="status" aria-live="polite"></p>
+          <p class="rs-line" aria-hidden="true"><span class="rs-intro"></span><span class="rs-turn"><span class="rs-fixed">Turning You Into</span><span class="rs-words"><span class="rs-w" data-w="glass">Glass</span><span class="rs-w" data-w="stone">Stone</span><span class="rs-w" data-w="iron">Iron</span><span class="rs-w" data-w="plushy">Plushy</span><span class="rs-w" data-w="stained">Stained Glass</span><span class="rs-w" data-w="mosaic">Mosaic</span><span class="rs-w" data-w="driftwood">Driftwood</span><span class="rs-w" data-w="porcelain">Porcelain</span><span class="rs-w" data-w="bronze">Bronze</span></span></span></p>
+        </div>
       </div>
       <div class="fan fan-r" id="fanR"></div>
       <div class="mgrid" id="mgrid"></div>
@@ -587,21 +619,69 @@ function askIntake(){
 
 /* THE PERSISTENT STATUS (see .reveal-status). Shown when the real reveal
    request goes out; cleared by the result (generationReady) or by any
-   settled state (settle). Filled when shown, so a screen reader hears it
-   once; emptied after it has faded. */
+   settled state (settle). The header is filled when shown, so a screen
+   reader hears it once; the supporting line is visual only.
+
+   THE SEQUENCE (copy pass 2, Rich, 2026-09-14). Each line holds, fully
+   settled, for RS_HOLD, then fades out and the next fades in over RS_FADE
+   each -- one line every 5.4s. The six intro lines run once (the first
+   ~32s); then "Turning You Into" and the materials, in order, looping only
+   the materials for as long as the render takes. In that part only the
+   word fades; "Turning You Into" stays put. Every step checks it still
+   belongs to the current showing (RS.run), so a result, a failure, Try
+   again or leaving the page can never leave a timer changing text. Reduced
+   motion: the same slow order, changed in place with no fade. */
+var RS_INTRO = ['Average wait is less than 30 seconds', 'Something Unexpected', 'Making the Improbable Visible',
+                'Possible. Improbable. Almost Here.', 'Digital Magic in Progress', 'What Else Could You Become?'];
+var RS_HOLD = 4600, RS_FADE = 400;
 var revealStatus = document.getElementById('revealStatus'), revealStatusClear = null;
+var RS = { run: 0, timer: null };
+function rsEl(sel){ return revealStatus ? revealStatus.querySelector(sel) : null; }
+function rsFade(){ return (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) ? 0 : RS_FADE; }
+/* Reduced motion keeps the same 5.4s cadence: no fades, so the hold takes their time. */
+function rsHold(){ return rsFade() ? RS_HOLD : RS_HOLD + 2 * RS_FADE; }
+function rsLater(ms, fn){ var run = RS.run; RS.timer = setTimeout(function(){ if (run === RS.run) fn(); }, ms); }
+/* Out, then the next in. With no fade the swap is one step, so no blank frame. */
+function rsStep(el, next){
+  el.classList.remove('on');
+  if (rsFade()) rsLater(rsFade(), next); else next();
+}
+function rsIntro(i){
+  var intro = rsEl('.rs-intro');
+  intro.textContent = RS_INTRO[i]; intro.classList.add('on');
+  rsLater(rsFade() + rsHold(), function(){
+    rsStep(intro, function(){ if (i + 1 < RS_INTRO.length) rsIntro(i + 1); else rsTurn(0); });
+  });
+}
+function rsTurn(i){
+  var words = revealStatus.querySelectorAll('.rs-w');
+  rsEl('.rs-turn').classList.add('on');
+  words[i].classList.add('on');
+  rsLater(rsFade() + rsHold(), function(){
+    rsStep(words[i], function(){ rsTurn((i + 1) % words.length); });   /* the materials loop; the intro never returns */
+  });
+}
+function rsReset(){
+  RS.run++; clearTimeout(RS.timer); RS.timer = null;
+  if (!revealStatus) return;
+  revealStatus.querySelectorAll('.rs-line > span, .rs-w').forEach(function(e){ e.classList.remove('on'); });
+}
 function showRevealStatus(){
   if (!revealStatus) return;
   clearTimeout(revealStatusClear);
-  revealStatus.innerHTML = 'Creating your image&hellip;<small>This usually takes about 30 seconds.</small>';
+  rsReset();
+  rsEl('.rs-head').textContent = 'Crafting Your Photo';
   revealStatus.classList.add('on');
+  rsIntro(0);                       /* every showing -- Try again included -- starts from the first line */
 }
 function hideRevealStatus(){
+  rsReset();                        /* the sequence stops now, whatever it was doing */
   if (!revealStatus || !revealStatus.classList.contains('on')) return;
   revealStatus.classList.remove('on');
   clearTimeout(revealStatusClear);
-  revealStatusClear = setTimeout(function(){ revealStatus.textContent = ''; }, 500);
+  revealStatusClear = setTimeout(function(){ rsEl('.rs-head').textContent = ''; rsEl('.rs-intro').textContent = ''; }, 500);
 }
+window.addEventListener('pagehide', rsReset);
 
 function reveal(){
   var run = ++FOYER.run;
