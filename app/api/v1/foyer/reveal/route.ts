@@ -41,6 +41,8 @@ import { foyerSecret, ipIdentity, deviceMarker, sha256Hex, verifyIntake } from '
 import { claimReveal, finalizeReveal, revealAvailable } from '@/lib/v1/foyer/foyer-allowance'
 import { pickRevealEffect } from '@/lib/v1/foyer/foyer-policy'
 import { renderFoyerReveal } from '@/lib/v1/foyer/foyer-render'
+// TEMPORARY PREVIEW TEST BYPASS — REMOVE BEFORE PR #178 MERGE (see the module)
+import { previewAllowanceBypass } from '@/lib/v1/foyer/foyer-preview-bypass'
 
 export const runtime     = 'nodejs'
 export const maxDuration = 300
@@ -52,6 +54,8 @@ export async function GET(req: NextRequest) {
   const secret = foyerSecret()
   const sb     = foyerDb()
   if (!secret || !sb) return reply({ available: false, reason: 'unavailable' })
+  // TEMPORARY PREVIEW TEST BYPASS — REMOVE BEFORE PR #178 MERGE: Preview only, no allowance read.
+  if (previewAllowanceBypass()) return reply({ available: true })
   const ok = await revealAvailable(sb, ipIdentity(req, secret), deviceMarker(req))
   if (ok === null) return reply({ available: false, reason: 'unavailable' })
   return reply(ok ? { available: true } : { available: false, reason: 'exhausted' })
@@ -78,12 +82,21 @@ export async function POST(req: NextRequest) {
     return reply({ status: 'intake_required' }, 403)   // intake never signs these; belt and braces
   }
 
-  const claim = await claimReveal(sb, ipIdentity(req, secret), deviceMarker(req))
-  if (claim.kind === 'unavailable') {
-    console.error(`[foyer/reveal] allowance unavailable — failing closed: ${claim.reason}`)
-    return reply({ status: 'unavailable' }, 503)
+  // TEMPORARY PREVIEW TEST BYPASS — REMOVE BEFORE PR #178 MERGE: on a Preview
+  // no allowance row is claimed or finalized (claimId stays null). Production
+  // runs exactly the checks below.
+  let claimId: string | null = null
+  if (previewAllowanceBypass()) {
+    console.log('[foyer/reveal] TEMPORARY PREVIEW TEST BYPASS: allowance not claimed')
+  } else {
+    const claim = await claimReveal(sb, ipIdentity(req, secret), deviceMarker(req))
+    if (claim.kind === 'unavailable') {
+      console.error(`[foyer/reveal] allowance unavailable — failing closed: ${claim.reason}`)
+      return reply({ status: 'unavailable' }, 503)
+    }
+    if (claim.kind === 'exhausted') return reply({ status: 'exhausted' }, 429)
+    claimId = claim.id
   }
-  if (claim.kind === 'exhausted') return reply({ status: 'exhausted' }, 429)
 
   const effectId = pickRevealEffect()
   const t0 = Date.now()
@@ -95,11 +108,11 @@ export async function POST(req: NextRequest) {
       ageGroup: verdict.ageGroup,
       replicateApiToken,
     })
-    await finalizeReveal(sb, claim.id, true)
+    if (claimId) await finalizeReveal(sb, claimId, true)
     console.log(`[foyer/reveal] ok effect=${effectId} preset=${r.presetId} prompt_chars=${r.promptChars} ms=${Date.now() - t0}`)
     return reply({ status: 'ok', image: r.imageDataUrl, label: r.label })
   } catch (e: any) {
-    await finalizeReveal(sb, claim.id, false)
+    if (claimId) await finalizeReveal(sb, claimId, false)
     console.error(`[foyer/reveal] render failed effect=${effectId} ms=${Date.now() - t0}: ${e?.message || e}`)
     return reply({ status: 'failed' }, 502)
   }

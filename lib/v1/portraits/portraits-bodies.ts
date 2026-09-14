@@ -428,8 +428,22 @@ The likeness is essential. Maintain micro facial gestures, imperfections, change
 
   stained_glass: {
     id:    'stained_glass',
-    body:  `Make the subject a fully 3D stained-glass sculpture, Tiffany glass meeting bronze sculpture. She faces us directly, her head upright and both eyes clearly visible. Frame her from the upper chest to the top of the head, with her head occupying roughly 30% of the image height and her eyes around the upper third. Internally lit with beautiful falloff that reveals the character of the face. likeness is important. No human skin, hair, nails or teeth. the background is a beautiful tiffany lamp style shop.`,
-    avoid: `Avoid a flat opaque mosaic, painted-on color, or a 2D stained-glass window with no dimensional form. Avoid glass without visible leading/came lines between the cells. Avoid a uniformly lit surface with no backlit glow — the inner luminosity and the dark leading are both required. Avoid muddy or desaturated glass; the cathedral-glass jewel tones must read as vivid and lit.`,
+    body:  `Transform the subject into a fully three-dimensional stained-glass portrait sculpture, combining intricate Tiffany art glass with the physical anatomy and volume of a sculpted bust.
+
+Construct the entire subject from a very large number of individually fitted pieces of real art glass: many small irregular shards, chips, slivers and fractured polygons with organic variation in shape and scale. The fragmentation is especially fine across the face, with numerous pieces describing the forehead, eyes, nose, cheeks, lips, chin and jaw. The pieces physically wrap around the curved anatomy, preserving projecting nose, recessed eyes, cheekbones, jaw, neck and shoulders. It must read as a solid 3D sculpture, never a flat mosaic.
+
+Join the glass with exceptionally fine metallic GOLD wire, approximately the visual thickness of delicate jewelry wire. The gold lines are crisp, hairline-thin and subordinate to the glass, even where many fragments meet.
+
+Use richly varied translucent cathedral, opalescent and jewel-toned art glass: ivory, pearl, amber, burgundy, wine, smoky blue, violet, rose and touches of gold. Neighboring fragments vary in translucency, marbling, texture, density and color, creating a rich handcrafted surface.
+
+Preserve a strong recognizable likeness. Turn the head only 5–10 degrees from straight-on, upright, with both eyes clearly visible.
+
+Use a medium upper-chest portrait showing the complete head, neck, shoulders and substantial upper chest with comfortable space around the subject.
+
+Use TWO distinct light sources. First, warm INTERNAL illumination glows outward through the sculpture, making individual fragments luminous at different intensities according to their color, thickness and opacity. Second, soft directional EXTERNAL light falls across the sculpture, creating reflections, highlights and sculptural shadows across the forehead, eye sockets, nose, cheeks, lips, jaw and neck. Balance both sources: internal light makes the glass glow; external light reveals its physical form. Keep beautiful falloff, darker jewel tones and recessed shadows so the face remains strongly dimensional rather than uniformly bright.
+
+Every visible part of the subject is glass and fine gold wire. Background: an atmospheric Tiffany lamp shop with softly glowing stained-glass lamps, shallow depth of field.`,
+    avoid: `Avoid thick lead, black outlines, heavy solder, raised ribs or broad seams; joints must be hairline-thin metallic gold wire. Avoid large simple facial panels, regular tiles, repetitive grids or symmetrical segmentation. Do not reduce the many-piece fractured construction. Avoid flat stained glass, mosaic-window appearance, human skin or painted surfaces. Avoid losing facial anatomy beneath the fragmentation. Avoid dim glass, flat lighting, uniform internal glow, blown highlights or washed-out colors. Both internal transmitted glow and external directional lighting must be visible. Avoid close-up framing, oversized heads, cropped hair or cropped shoulders.`,
   },
   // stained_glass: restored VERBATIM from the CENG batch files 08-02. Do not rewrite from plates.
 
