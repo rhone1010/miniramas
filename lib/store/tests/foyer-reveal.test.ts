@@ -213,6 +213,21 @@ describe('/api/v1/foyer/reveal — one NB2 render, watermarked, allowance-accoun
     expect(h.rpc.mock.calls.find(c => c[0] === 'finalize_foyer_reveal')![1]).toEqual({ p_id: 'claim-1', p_succeeded: true })
   })
 
+  it('logs where the time went (diagnostic only) -- and nothing in the response or the request changes', async () => {
+    // go-to-market pass 1, 2026-09-14: the ok line splits the render into the
+    // NB2 call and the watermark, with the whole request's time beside it.
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const res = await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: await intakeToken() } }))
+    const d = await res.json()
+    const line = log.mock.calls.map(c => String(c[0])).find(s => s.startsWith('[foyer/reveal] ok '))!
+    expect(line).toMatch(/^\[foyer\/reveal\] ok effect=\w+ preset=\w+ prompt_chars=\d+ ms=\d+ nb2_ms=\d+ mark_ms=\d+ refs=\d+ total_ms=\d+$/)
+    const n = (k: string) => +line.match(new RegExp(`${k}=(\\d+)`))![1]
+    expect(n('nb2_ms') + n('mark_ms')).toBeLessThanOrEqual(n('ms') + 1)
+    expect(n('ms')).toBeLessThanOrEqual(n('total_ms'))
+    expect(Object.keys(d).sort()).toEqual(['image', 'label', 'status'])   // no timing reaches the page
+    expect(Object.keys(replicate[0].body.input).sort()).toEqual(['aspect_ratio', 'image_input', 'output_format', 'prompt'])
+  })
+
   it('a failed render is released -- it costs the visitor nothing', async () => {
     nb2Fails = true
     const res = await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: await intakeToken() } }))

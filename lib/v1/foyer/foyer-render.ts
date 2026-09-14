@@ -40,6 +40,12 @@ export interface FoyerRevealResult {
   label:        string
   presetId:     string
   promptChars:  number
+  /* Diagnostic timing only (go-to-market pass 1, 2026-09-14): measured
+     around the calls, never fed back into them. nb2Ms is callNB2 whole --
+     the Replicate request, its wait/poll and the output download; markMs is
+     bakeWatermark plus the delivery JPEG; styleRefs is how many style plates
+     went with the request (they change what NB2 is asked to do). */
+  timing:       { nb2Ms: number; markMs: number; styleRefs: number }
 }
 
 /* The prompt exactly as generatePortraitsRender builds it for one attempt,
@@ -66,6 +72,7 @@ export async function renderFoyerReveal(input: {
   const styleRefs = shouldSendStyleRefs(input.ageGroup) ? loadStyleRefs(presetId, { subject }) : []
   const prompt   = foyerPrompt(presetId, styleRefs.length)
 
+  const tNb2  = Date.now()
   const clean = await callNB2({
     prompt,
     sourceImageB64:      input.sourceImageB64,
@@ -78,6 +85,8 @@ export async function renderFoyerReveal(input: {
   /* Fail closed: bakeWatermark throws rather than return an unmarked image,
      and so does this. The delivery JPEG is the same spec the preview bake
      writes (q82, sRGB, progressive, metadata stripped). */
+  const nb2Ms  = Date.now() - tNb2
+  const tMark  = Date.now()
   const marked = await bakeWatermark(clean)
   const jpeg = await sharp(Buffer.from(marked, 'base64'))
     .toColourspace('srgb')
@@ -89,5 +98,6 @@ export async function renderFoyerReveal(input: {
     label:        revealLabel(input.effectId),
     presetId,
     promptChars:  prompt.length,
+    timing:       { nb2Ms, markMs: Date.now() - tMark, styleRefs: styleRefs.length },
   }
 }

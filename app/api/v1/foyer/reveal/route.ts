@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const tReq = Date.now()   // diagnostic only: total_ms in the ok/failed log lines
   let body: any
   try { body = await req.json() } catch { return reply({ status: 'bad_request', error: 'invalid_json' }, 400) }
 
@@ -109,11 +110,13 @@ export async function POST(req: NextRequest) {
       replicateApiToken,
     })
     if (claimId) await finalizeReveal(sb, claimId, true)
-    console.log(`[foyer/reveal] ok effect=${effectId} preset=${r.presetId} prompt_chars=${r.promptChars} ms=${Date.now() - t0}`)
+    // ms = the render step (NB2 + watermark), as before; nb2_ms / mark_ms /
+    // refs split it -- diagnostic only (go-to-market pass 1, 2026-09-14).
+    console.log(`[foyer/reveal] ok effect=${effectId} preset=${r.presetId} prompt_chars=${r.promptChars} ms=${Date.now() - t0} nb2_ms=${r.timing.nb2Ms} mark_ms=${r.timing.markMs} refs=${r.timing.styleRefs} total_ms=${Date.now() - tReq}`)
     return reply({ status: 'ok', image: r.imageDataUrl, label: r.label })
   } catch (e: any) {
     if (claimId) await finalizeReveal(sb, claimId, false)
-    console.error(`[foyer/reveal] render failed effect=${effectId} ms=${Date.now() - t0}: ${e?.message || e}`)
+    console.error(`[foyer/reveal] render failed effect=${effectId} ms=${Date.now() - t0} total_ms=${Date.now() - tReq}: ${e?.message || e}`)
     return reply({ status: 'failed' }, 502)
   }
 }

@@ -220,6 +220,32 @@ input[type=file]{ display:none }
   .gc.in{ opacity:.9; transform:none }
   .nm{ font-size:1.35rem }
 }
+/* ── THE PERSISTENT STATUS (go-to-market pass 1, 2026-09-14) ──
+   One quiet line while THEIR image is actually being made: shown when the
+   real reveal request goes out (the photo has passed intake), gone the
+   moment the result arrives or any settled state takes over. Anchored to
+   the card, so it never moves with the riffle line. Desktop: in the clear
+   band between the logo and the card (the 49px the layout keeps under the
+   logo). Phone: the card is the screen, so just inside its top edge, over
+   the riffle, cream with a soft shadow. No spinner, bar, count or
+   percentage -- a slow breath at most, and none at all with reduced motion.
+   "about 30 seconds" is provisional copy; nothing is timed from it. */
+.reveal-status{ position:absolute; left:0; right:0; bottom:calc(100% + 6px); z-index:5; margin:0; text-align:center; pointer-events:none;
+  font-family:var(--serif); font-style:italic; font-size:20px; line-height:1.15; color:var(--ink);
+  opacity:0; visibility:hidden; transition:opacity .45s ease, visibility 0s linear .45s }
+.reveal-status small{ display:block; margin-top:3px; font-family:var(--sans); font-style:normal; font-size:12.5px; line-height:1.3; letter-spacing:.02em; color:rgba(42,36,30,.62) }
+.reveal-status.on{ opacity:1; visibility:visible; transition:opacity .45s ease, visibility 0s; animation:revealBreath 3.2s ease-in-out .6s infinite }
+@keyframes revealBreath{ 0%,100%{ opacity:1 } 50%{ opacity:.6 } }
+/* Phone: over the card's top edge, on a soft fade -- the card's own
+   bottom-gradient language, turned over -- so it reads over any riffle
+   frame, light or dark. Exactly the card's width (90vw) and top corners. */
+@media (max-width:720px){
+  .reveal-status{ bottom:auto; top:0; left:5vw; right:5vw; padding:12px 12px 26px; border-radius:16px 16px 0 0;
+    background:linear-gradient(rgba(20,15,10,.66), rgba(20,15,10,.36) 58%, rgba(20,15,10,0));
+    color:#f6ecd8; text-shadow:0 1px 2px rgba(0,0,0,.4) }
+  .reveal-status small{ color:rgba(246,236,216,.88) }
+}
+@media (prefers-reduced-motion:reduce){ .reveal-status.on{ animation:none } }
 @media (min-width:721px){ .pill{ display:none !important } }
 @media (prefers-reduced-motion:reduce){ .card,.side,.go,.fc,.cardwrap{ transition:none !important; animation:none !important } }
 </style></head><body>
@@ -245,6 +271,7 @@ input[type=file]{ display:none }
           </div>
           <div class="face back" id="back"></div>
         </div>
+        <p class="reveal-status" id="revealStatus" role="status" aria-live="polite"></p>
       </div>
       <div class="fan fan-r" id="fanR"></div>
       <div class="mgrid" id="mgrid"></div>
@@ -468,6 +495,7 @@ function stopRiffle(){
    turns, so the back face is never blank mid-turn. */
 function generationReady(result){
   if (STATE.result || STATE.phase === 'opening') return;
+  hideRevealStatus();
   STATE.result = result;
   var im = new Image(); im.src = result.src;
   var ready = im.decode ? im.decode() : Promise.resolve();
@@ -557,6 +585,24 @@ function askIntake(){
   return FOYER.intake;
 }
 
+/* THE PERSISTENT STATUS (see .reveal-status). Shown when the real reveal
+   request goes out; cleared by the result (generationReady) or by any
+   settled state (settle). Filled when shown, so a screen reader hears it
+   once; emptied after it has faded. */
+var revealStatus = document.getElementById('revealStatus'), revealStatusClear = null;
+function showRevealStatus(){
+  if (!revealStatus) return;
+  clearTimeout(revealStatusClear);
+  revealStatus.innerHTML = 'Creating your image&hellip;<small>This usually takes about 30 seconds.</small>';
+  revealStatus.classList.add('on');
+}
+function hideRevealStatus(){
+  if (!revealStatus || !revealStatus.classList.contains('on')) return;
+  revealStatus.classList.remove('on');
+  clearTimeout(revealStatusClear);
+  revealStatusClear = setTimeout(function(){ revealStatus.textContent = ''; }, 500);
+}
+
 function reveal(){
   var run = ++FOYER.run;
   (FOYER.intake || askIntake()).then(function(d){
@@ -565,6 +611,7 @@ function reveal(){
     if (d.status === 'refused'){ settle('refused'); return; }
     if (d.status !== 'ok'){ settle('unavailable'); return; }                /* the check could not be made */
     if (FOYER.free === false){ settle(FOYER.why || 'unavailable'); return; }
+    showRevealStatus();   /* the photo passed intake; their image is being made from here */
     foyerPost('/api/v1/foyer/reveal', { image_b64: SRC.b64, intake: d.intake }).then(function(v){
       if (run !== FOYER.run) return;
       if (v && v.status === 'ok' && v.image){ generationReady({ src: v.image, label: v.label }); return; }
@@ -601,6 +648,7 @@ function settle(kind){
   if (STATE.result || STATE.phase === 'opening') return;
   if (kind === 'failed' && FOYER.free === false) kind = FOYER.why || 'unavailable';
   if (STATE.phase === 'settled' && STATE.settled === kind) return;
+  hideRevealStatus();
   stopRiffle();
   STATE.phase = 'settled'; STATE.settled = kind;
   front.innerHTML = '<img src="'+SRC.dataUrl+'"><div class="nm" role="status">'+SAY[kind]+'</div>';
