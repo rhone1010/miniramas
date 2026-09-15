@@ -143,9 +143,24 @@ input[type=file]{ display:none }
      its place (card bottom + --gap - --lift), and the card's height is
      unchanged -- --gap itself is untouched, so the opening line's rule reads
      exactly as given. */
-  .stage{ --gap:clamp(75px, calc(75px + (100vh - 768px) * 0.323), 150px); --lift:34px;
-          --card-h:min(640px, max(220px, calc(100vh - 287px - var(--gap))));
-          --deck-y:clamp(calc(49px + var(--lift) + var(--card-h) / 2), calc(50% - 75px + var(--lift)), calc(100% - var(--gap) + var(--lift) - 72px - var(--card-h) / 2)) }
+  /* THE SCENE, LIFTED (Rich's Photoshop mockup, 2026-09-15). The processing
+     copy above the card is Crafting Your Image (--rs-craft), 25px, Imagine
+     Yourself As [word] (--rs-imagine), 40px, the card: --rs-room is all of
+     it. Those are the mockup's values from a screen 1060px tall up; on a
+     shorter one the four ease together to 75% at 768px, so the card is not
+     crushed to make room. The card sits --scene-up (75px) higher wherever
+     the screen leaves it free to (its centred position), never higher than
+     the copy above it needs (6px under the logo), and gives up only the
+     height that copy needs on a screen too short for both. The button keeps
+     its distance under the card (--gap - --lift), so it rises with it. */
+  .stage{ --gap:clamp(75px, calc(75px + (100vh - 768px) * 0.323), 150px); --lift:34px; --scene-up:75px;
+          --rs-craft:clamp(24px, calc(24px + (100vh - 768px) * 8 / 292), 32px);
+          --rs-gap1:clamp(18.75px, calc(18.75px + (100vh - 768px) * 6.25 / 292), 25px);
+          --rs-imagine:clamp(31.5px, calc(31.5px + (100vh - 768px) * 10.5 / 292), 42px);
+          --rs-gap2:clamp(30px, calc(30px + (100vh - 768px) * 10 / 292), 40px);
+          --rs-room:calc(var(--rs-craft) + var(--rs-gap1) + var(--rs-imagine) + var(--rs-gap2));
+          --card-h:min(640px, max(220px, calc(100vh - 210px - var(--gap) - var(--rs-room))));
+          --deck-y:clamp(calc(6px + var(--rs-room) + var(--card-h) / 2), calc(50% - 75px + var(--lift) - var(--scene-up)), calc(100% - var(--gap) + var(--lift) - 72px - var(--card-h) / 2)) }
   .deck{ top:var(--deck-y); height:var(--card-h) }
   .card{ height:var(--card-h) }
   /* Both lines below the card, one at a time in the same place: the opening
@@ -249,54 +264,54 @@ input[type=file]{ display:none }
    in its own colour, every one AA against the ground it sits on. No
    spinner, bar, count or percentage. Reduced motion: no fades and no
    breath -- the lines change in place. */
-.reveal-status{ position:absolute; left:-30%; right:-30%; bottom:calc(100% + 16px); z-index:5; margin:0; text-align:center; pointer-events:none;
-  font-family:var(--serif); color:var(--ink);
-  --rs-glass:#285a73; --rs-stone:#554f48; --rs-iron:#3f4a54; --rs-plushy:#8f3f5a; --rs-stained:#861c41;
-  --rs-mosaic:#17595a; --rs-driftwood:#624a35; --rs-porcelain:#34507c; --rs-bronze:#744618;
+/* THE PROCESSING COPY (Rich's Photoshop mockup, 2026-09-15). Two lines
+   over the card, as real spacing: Crafting Your Image (--rs-craft, 32px,
+   #c36d26, italic) -- 25px (--rs-gap1) -- Imagine Yourself As [word]
+   (--rs-imagine, 42px, oxblood) -- 40px (--rs-gap2) -- the card. Each line
+   box is exactly its font size (line-height 1), so the gaps are the gaps.
+   Wide enough (2.2x the card) for the longest word at 42px. */
+.reveal-status{ position:absolute; left:-60%; right:-60%; bottom:calc(100% + var(--rs-gap2, 40px)); z-index:5; margin:0; text-align:center; pointer-events:none;
+  font-family:var(--serif); color:var(--ox);
   opacity:0; visibility:hidden; transition:opacity .45s ease, visibility 0s linear .45s }
 .reveal-status.on{ opacity:1; visibility:visible; transition:opacity .45s ease, visibility 0s }
-/* READABLE AT A DESKTOP DISTANCE (foyer completion pass, Rich, 2026-09-14).
-   "Crafting Your Image" is the quieter header -- italic, regular weight, a
-   softer ink -- at 26px (was 22px/500). The supporting line, beginning
-   "Average Time Is Less Than 30 Seconds", is the one to read: 28px/500 in
-   full ink (was 20px). 16px of clear space to the card (was 2px): the room
-   comes from the line that used to sit under the card (--lift). */
-.rs-head{ margin:0; font-style:italic; font-weight:400; font-size:26px; line-height:1.05; color:rgba(42,36,30,.82) }
-.reveal-status.on .rs-head{ animation:revealBreath 3.2s ease-in-out .6s infinite }
-@keyframes revealBreath{ 0%,100%{ opacity:1 } 50%{ opacity:.85 } }
-/* The supporting line: the intro lines and the "Turning You Into" line
-   share one cell, so the change never moves anything around it. */
-.rs-line{ display:grid; justify-items:center; margin:4px 0 0; font-size:28px; font-weight:500; line-height:1.08; color:var(--ink) }
-.rs-line > span{ grid-area:1 / 1; white-space:nowrap; opacity:0; transition:opacity .4s ease }
-.rs-line > span.on{ opacity:1 }
-/* "Turning You Into" + the word: the words are stacked in one cell as wide
-   as the widest, so the fixed words hold their place whatever the word. */
-.rs-turn{ display:inline-grid; grid-template-columns:auto auto; column-gap:.26em; align-items:baseline }
+/* Crafting Your Image: a ripple, not a pulse -- each letter dips to .55 and
+   back in turn, so one slow wave runs through the phrase every 2s, then the
+   next. Letters stay put; only their ink changes. The phrase is read once,
+   whole (.rs-say); the letters are visual only. */
+.rs-head{ margin:0; font-style:italic; font-weight:400; font-size:var(--rs-craft, 32px); line-height:1; color:#c36d26 }
+.rs-say{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap }
+.rs-l{ animation:rsRipple 2s ease-in-out infinite; animation-delay:calc(var(--i) * 2s / var(--n)) }
+@keyframes rsRipple{ 0%, 44%, 100%{ opacity:1 } 22%{ opacity:.55 } }
+/* Imagine Yourself As [word]: "Imagine Yourself" italic, "As" and the word
+   upright, as the mockup sets them. "Imagine Yourself As" never moves: the
+   words share one cell, the width of a middling word ("Bronze", 2.75em),
+   so the line sits centred over the card for most words, as the mockup's
+   "Iron" does, and the two long ones run on to the right. The word changes over 2s --
+   out over 1.2s, the next in over 1.2s from 0.8s -- a soft fade through a
+   slight blur, never a roll. */
+.rs-line{ display:grid; justify-items:center; margin:var(--rs-gap1, 25px) 0 0; font-size:var(--rs-imagine, 42px); font-weight:500; line-height:1; color:var(--ox) }
+.rs-turn{ display:inline-grid; grid-template-columns:auto auto; column-gap:.26em; align-items:baseline; white-space:nowrap }
 .rs-fixed{ grid-column:1 }
-.rs-words{ grid-column:2; display:grid; justify-items:start }
-.rs-w{ grid-area:1 / 1; white-space:nowrap; opacity:0; transition:opacity .4s ease }
-.rs-w.on{ opacity:1 }
-.rs-w[data-w="glass"]{ color:var(--rs-glass) }         .rs-w[data-w="stone"]{ color:var(--rs-stone) }
-.rs-w[data-w="iron"]{ color:var(--rs-iron) }           .rs-w[data-w="plushy"]{ color:var(--rs-plushy) }
-.rs-w[data-w="stained"]{ color:var(--rs-stained) }     .rs-w[data-w="mosaic"]{ color:var(--rs-mosaic) }
-.rs-w[data-w="driftwood"]{ color:var(--rs-driftwood) } .rs-w[data-w="porcelain"]{ color:var(--rs-porcelain) }
-.rs-w[data-w="bronze"]{ color:var(--rs-bronze) }
+.rs-fixed em{ font-style:italic; font-weight:400 }
+.rs-words{ grid-column:2; display:grid; justify-items:start; width:2.75em }
+.rs-w{ grid-area:1 / 1; white-space:nowrap; opacity:0; filter:blur(5px); transition:opacity 1.2s ease, filter 1.2s ease }
+.rs-w.on{ opacity:1; filter:blur(0) }
 /* Phone: over the card's top edge, on a soft fade -- the card's own
    bottom-gradient language, turned over -- dense enough under the second
    line that the lightest riffle frame still holds AA. Exactly the card's
-   width (90vw) and top corners; light tones of the same materials. */
+   width (90vw) and top corners. The same hierarchy, sized to the width:
+   Crafting the smaller line (Rich's orange holds AA on the fade), Imagine
+   the larger in the fade's light ink -- oxblood would not read on it. */
 @media (max-width:720px){
   .reveal-status{ bottom:auto; top:0; left:5vw; right:5vw; padding:12px 10px 24px; border-radius:16px 16px 0 0;
     background:linear-gradient(rgba(20,15,10,.8), rgba(20,15,10,.66) 70%, rgba(20,15,10,0));
-    color:#f6ecd8; text-shadow:0 1px 2px rgba(0,0,0,.4);
-    --rs-glass:#bfe3f4; --rs-stone:#ddd6ca; --rs-iron:#d0d9e1; --rs-plushy:#f9c9cf; --rs-stained:#ffc3d3;
-    --rs-mosaic:#9fe3d9; --rs-driftwood:#e8cfad; --rs-porcelain:#f0f4fb; --rs-bronze:#f7d1a2 }
-  .rs-head{ color:rgba(246,236,216,.9); font-size:24px }
-  .rs-line{ color:#f6ecd8; font-size:clamp(18px, 5.6vw, 22px) }   /* the longest line still fits a 320 card */
+    color:#f6ecd8; text-shadow:0 1px 2px rgba(0,0,0,.4) }
+  .rs-head{ font-size:clamp(16px, 4.6vw, 20px) }
+  .rs-line{ color:#f6ecd8; margin-top:clamp(6px, 2vw, 9px); font-size:clamp(18px, 5.6vw, 24px) }   /* the longest line still fits a 320 card */
 }
 @media (prefers-reduced-motion:reduce){
-  .reveal-status.on .rs-head{ animation:none }
-  .rs-line > span, .rs-w{ transition:none }
+  .rs-l{ animation:none }
+  .rs-w{ transition:none; filter:none }
 }
 @media (min-width:721px){ .pill{ display:none !important } }
 @media (prefers-reduced-motion:reduce){ .card,.side,.go,.fc,.cardwrap{ transition:none !important; animation:none !important } }
@@ -325,7 +340,7 @@ input[type=file]{ display:none }
         </div>
         <div class="reveal-status" id="revealStatus">
           <p class="rs-head" role="status" aria-live="polite"></p>
-          <p class="rs-line" aria-hidden="true"><span class="rs-intro"></span><span class="rs-turn"><span class="rs-fixed">Turning You Into</span><span class="rs-words"><span class="rs-w" data-w="glass">Glass</span><span class="rs-w" data-w="stone">Stone</span><span class="rs-w" data-w="iron">Iron</span><span class="rs-w" data-w="plushy">Plushy</span><span class="rs-w" data-w="stained">Stained Glass</span><span class="rs-w" data-w="mosaic">Mosaic</span><span class="rs-w" data-w="driftwood">Driftwood</span><span class="rs-w" data-w="porcelain">Porcelain</span><span class="rs-w" data-w="bronze">Bronze</span></span></span></p>
+          <p class="rs-line" aria-hidden="true"><span class="rs-turn"><span class="rs-fixed"><em>Imagine Yourself</em> As</span><span class="rs-words"><span class="rs-w" data-w="glass">Glass</span><span class="rs-w" data-w="stone">Stone</span><span class="rs-w" data-w="iron">Iron</span><span class="rs-w" data-w="plushy">Plushy</span><span class="rs-w" data-w="stained">Stained Glass</span><span class="rs-w" data-w="mosaic">Mosaic</span><span class="rs-w" data-w="driftwood">Driftwood</span><span class="rs-w" data-w="porcelain">Porcelain</span><span class="rs-w" data-w="bronze">Bronze</span></span></span></p>
         </div>
       </div>
       <div class="fan fan-r" id="fanR"></div>
@@ -679,64 +694,66 @@ function askIntake(){
    settled state (settle). The header is filled when shown, so a screen
    reader hears it once; the supporting line is visual only.
 
-   THE SEQUENCE (copy pass 2, Rich, 2026-09-14). Each line holds, fully
-   settled, for RS_HOLD, then fades out and the next fades in over RS_FADE
-   each -- one line every 5.4s. The six intro lines run once (the first
-   ~32s); then "Turning You Into" and the materials, in order, looping only
-   the materials for as long as the render takes. In that part only the
-   word fades; "Turning You Into" stays put. Every step checks it still
+   THE SEQUENCE (Rich's Photoshop mockup, 2026-09-15). "Imagine Yourself
+   As" holds still from the first moment; only the word changes, one every
+   5.4s -- the cadence the copy has had since pass 2 -- through the same
+   materials, in order, for as long as the render takes. Each change takes
+   2s: the word goes out over 1.2s (the CSS transition) and the next comes
+   in RS_NEXT_IN after it starts, over 1.2s. Every step checks it still
    belongs to the current showing (RS.run), so a result, a failure, Try
    again or leaving the page can never leave a timer changing text. Reduced
-   motion: the same slow order, changed in place with no fade. */
-var RS_INTRO = ['Average Time Is Less Than 30 Seconds', 'Something Unexpected', 'Making the Improbable Visible',
-                'Possible. Improbable. Almost Here.', 'Digital Magic in Progress', 'What Else Could You Become?'];
-var RS_HOLD = 4600, RS_FADE = 400;
+   motion: the same order at the same pace, changed in place. */
+var RS_HEAD = 'Crafting Your Image';
+var RS_EVERY = 5400, RS_NEXT_IN = 800;
 var revealStatus = document.getElementById('revealStatus'), revealStatusClear = null;
 var RS = { run: 0, timer: null };
 function rsEl(sel){ return revealStatus ? revealStatus.querySelector(sel) : null; }
-function rsFade(){ return (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) ? 0 : RS_FADE; }
-/* Reduced motion keeps the same 5.4s cadence: no fades, so the hold takes their time. */
-function rsHold(){ return rsFade() ? RS_HOLD : RS_HOLD + 2 * RS_FADE; }
+function rsReduced(){ return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
 function rsLater(ms, fn){ var run = RS.run; RS.timer = setTimeout(function(){ if (run === RS.run) fn(); }, ms); }
-/* Out, then the next in. With no fade the swap is one step, so no blank frame. */
-function rsStep(el, next){
-  el.classList.remove('on');
-  if (rsFade()) rsLater(rsFade(), next); else next();
-}
-function rsIntro(i){
-  var intro = rsEl('.rs-intro');
-  intro.textContent = RS_INTRO[i]; intro.classList.add('on');
-  rsLater(rsFade() + rsHold(), function(){
-    rsStep(intro, function(){ if (i + 1 < RS_INTRO.length) rsIntro(i + 1); else rsTurn(0); });
-  });
-}
 function rsTurn(i){
-  var words = revealStatus.querySelectorAll('.rs-w');
-  rsEl('.rs-turn').classList.add('on');
+  var words = revealStatus.querySelectorAll('.rs-w'), next = (i + 1) % words.length;
   words[i].classList.add('on');
-  rsLater(rsFade() + rsHold(), function(){
-    rsStep(words[i], function(){ rsTurn((i + 1) % words.length); });   /* the materials loop; the intro never returns */
+  if (rsReduced()){ rsLater(RS_EVERY, function(){ words[i].classList.remove('on'); rsTurn(next); }); return; }   /* one step: no blank frame */
+  rsLater(RS_EVERY - RS_NEXT_IN, function(){
+    words[i].classList.remove('on');
+    rsLater(RS_NEXT_IN, function(){ rsTurn(next); });
   });
+}
+/* The header, set for the ripple: the phrase once for a screen reader, and
+   each letter in its own span with its place in the wave (--i of --n). */
+function rsHead(text){
+  var h = rsEl('.rs-head'); if (!h) return;
+  h.textContent = '';
+  if (!text) return;
+  var say = document.createElement('span'), vis = document.createElement('span');
+  say.className = 'rs-say'; say.textContent = text;
+  vis.setAttribute('aria-hidden', 'true');
+  for (var k = 0; k < text.length; k++){
+    var l = document.createElement('span');
+    l.className = 'rs-l'; l.style.setProperty('--i', k); l.style.setProperty('--n', text.length); l.textContent = text.charAt(k);
+    vis.appendChild(l);
+  }
+  h.appendChild(say); h.appendChild(vis);
 }
 function rsReset(){
   RS.run++; clearTimeout(RS.timer); RS.timer = null;
   if (!revealStatus) return;
-  revealStatus.querySelectorAll('.rs-line > span, .rs-w').forEach(function(e){ e.classList.remove('on'); });
+  revealStatus.querySelectorAll('.rs-w').forEach(function(e){ e.classList.remove('on'); });
 }
 function showRevealStatus(){
   if (!revealStatus) return;
   clearTimeout(revealStatusClear);
   rsReset();
-  rsEl('.rs-head').textContent = 'Crafting Your Image';
+  rsHead(RS_HEAD);
   revealStatus.classList.add('on');
-  rsIntro(0);                       /* every showing -- Try again included -- starts from the first line */
+  rsTurn(0);                        /* every showing -- Try again included -- starts from the first word */
 }
 function hideRevealStatus(){
   rsReset();                        /* the sequence stops now, whatever it was doing */
   if (!revealStatus || !revealStatus.classList.contains('on')) return;
   revealStatus.classList.remove('on');
   clearTimeout(revealStatusClear);
-  revealStatusClear = setTimeout(function(){ rsEl('.rs-head').textContent = ''; rsEl('.rs-intro').textContent = ''; }, 500);
+  revealStatusClear = setTimeout(function(){ rsHead(''); }, 500);
 }
 window.addEventListener('pagehide', rsReset);
 

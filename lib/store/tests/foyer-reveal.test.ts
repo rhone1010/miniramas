@@ -210,14 +210,19 @@ describe('/api/v1/foyer/reveal — one NB2 render, watermarked, allowance-accoun
     expect(brighter / (a.data.length / 3)).toBeGreaterThan(0.01)
   })
 
-  it('the foyer\'s watermark: the approved lockup, the earlier PREVIEW treatment\'s diagonal white lines, and no tiled marks', async () => {
-    // The lockup (Rich, 2026-09-14, "modified B", approved): 62% of the width,
-    // centred, its centre at 58% of the height -- unchanged by this pass.
-    expect(foyerWatermarkPlacement(848, 1264)).toEqual({ width: 526, height: 441, left: 161, top: 513, shadow: 3 })
+  it('the foyer\'s watermark: the lockup at 75%, one set of dashed white diagonal lines, and no tiled marks', async () => {
+    // The lockup (Rich, 2026-09-14, "modified B"), shrunk by 25% (Rich,
+    // 2026-09-15): 75% of the 526x441 it was, same proportion, still centred,
+    // its centre still at 58% of the height.
+    expect(foyerWatermarkPlacement(848, 1264)).toEqual({ width: 394, height: 331, left: 227, top: 568, shadow: 3 })
+    expect(394 / 526).toBeCloseTo(0.75, 2); expect(331 / 441).toBeCloseTo(0.75, 2)
     expect([LOCKUP_OPACITY, SHADOW_OPACITY]).toEqual([0.42, 0.22])
-    // The lines: the glass .wm's geometry (3px every 22px on its 442px card), white, both diagonals.
-    expect(foyerLinesGeometry(848)).toEqual({ period: 848 * 22 / 442, width: 848 * 3 / 442 })
-    expect([LINES_OPACITY, [...LINES_ANGLES]]).toEqual([0.18, [-45, 45]])
+    // The lines: the glass .wm's 3px line, 50% further apart than its 22px, dashed 6 on / 3 off (in line widths), one direction.
+    const w = 848 * 3 / 442
+    const g = foyerLinesGeometry(848), want = { period: 848 * 33 / 442, width: w, dash: 6 * w, gap: 3 * w }
+    for (const k of Object.keys(want) as (keyof typeof want)[]) expect(g[k]).toBeCloseTo(want[k], 9)
+    expect(foyerLinesGeometry(848).period / (848 * 22 / 442)).toBeCloseTo(1.5, 10)
+    expect([LINES_OPACITY, [...LINES_ANGLES]]).toEqual([0.18, [45]])
     const res = await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: await intakeToken() } }))
     const marked = Buffer.from((await res.json()).image.split(',')[1], 'base64')
     const [a, b] = await Promise.all([sharp(CLEAN).raw().toBuffer({ resolveWithObject: true }), sharp(marked).raw().toBuffer({ resolveWithObject: true })])
@@ -228,20 +233,28 @@ describe('/api/v1/foyer/reveal — one NB2 render, watermarked, allowance-accoun
     let inBox = 0
     for (let y = p.top; y < p.top + p.height; y++) for (let x = p.left; x < p.left + p.width; x++) if (Math.abs(diff(x, y)) > 90) inBox++
     expect(inBox).toBeGreaterThan(p.width * p.height * 0.05)
-    // outside the lockup only the lines: brighter, never darker, ~14 of each set crossing a row
-    let darker = 0, top = 0
-    for (let y = 0; y < p.top - 8; y += 3) for (let x = 0; x < W; x += 3) { const v = diff(x, y); if (v < -45) darker++; if (v > top) top = v }
+    // outside the lockup only the lines: brighter, never darker, white at .18 (lifts ~97, summed RGB, on this ground)
+    let darker = 0, top = 0, lit = 0, seen = 0
+    for (let y = 0; y < p.top - 8; y += 3) for (let x = 0; x < W; x += 3) { const v = diff(x, y); seen++; if (v < -45) darker++; if (v > top) top = v; if (v > 30) lit++ }
     expect(darker).toBe(0)
-    // (a row through the crossings sees the two sets merge, so count on the best row of a band)
-    let runs = 0
-    for (let y = 40; y < 100; y++) { let n = 0, prev = false; for (let x = 0; x < W; x++) { const lit = diff(x, y) > 30; if (lit && !prev) n++; prev = lit } runs = Math.max(runs, n) }
-    expect(runs).toBeGreaterThanOrEqual(24); expect(runs).toBeLessThanOrEqual(32)
-    // a crossing is no brighter than a line: white at .18 over this ground lifts ~97 (summed RGB); doubled it would be ~176
     expect(top).toBeGreaterThan(60); expect(top).toBeLessThan(130)
-    // both directions: top-left to bottom-right (as the CSS drew them) and top-right to bottom-left
-    const along = (dx: number) => { let n = 0; for (let x = 40; x < 400; x++) if (diff(x, 100) > 30 && [8, 16, 24, 32].every(k => [-1, 0, 1].some(d => diff(x + dx * k + d, 100 + k) > 30))) n++; return n }
-    expect(along(1)).toBeGreaterThan(0)
+    // far lighter than the crosshatch (~25% of the ground): one dashed set covers ~6%
+    expect(lit / seen).toBeGreaterThan(0.03); expect(lit / seen).toBeLessThan(0.10)
+    // ~9 lines cross a row (period x sqrt2 = 90px apart), a third of them in a gap at any one row
+    let runs = 0
+    for (let y = 40; y < 100; y++) { let n = 0, prev = false; for (let x = 0; x < W; x++) { const on = diff(x, y) > 30; if (on && !prev) n++; prev = on } runs = Math.max(runs, n) }
+    expect(runs).toBeGreaterThanOrEqual(5); expect(runs).toBeLessThanOrEqual(10)
+    // one direction only: down from right to left (top-right to bottom-left), never the other way
+    const along = (dx: number) => { let n = 0; for (let x = 40; x < 500; x++) if (diff(x, 100) > 30 && [6, 12].every(k => diff(x + dx * k, 100 + k) > 30)) n++; return n }
     expect(along(-1)).toBeGreaterThan(0)
+    expect(along(1)).toBe(0)
+    // dashed: walking down one line from the middle of a lit run, it goes on and off, dash then gap
+    let x0 = -1
+    for (let x = 60, s = -1; x < 500; x++) { const on = diff(x, 100) > 30; if (on && s < 0) s = x; if (!on && s >= 0) { if (x - s >= 4) { x0 = Math.round((s + x - 1) / 2); break } s = -1 } }
+    expect(x0).toBeGreaterThan(0)
+    let dashes = 0, was = true
+    for (let t = 0; t < 140 && x0 - t > 0; t++) { const on = diff(x0 - t, 100 + t) > 30; if (on && !was) dashes++; was = on }
+    expect(dashes).toBeGreaterThanOrEqual(2)
     // and the tiled Liten pattern is not the foyer's any more
     const src = readFileSync(path.join(process.cwd(), 'lib', 'v1', 'foyer', 'foyer-watermark.ts'), 'utf8')
     expect(src).not.toMatch(/litenco_watermark|bakeWatermark\(/)
