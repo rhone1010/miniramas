@@ -27,8 +27,8 @@ vi.mock('@/lib/v1/portraits/portraits-refine', () => ({
 
 import { POST as intakePOST } from '@/app/api/v1/foyer/intake/route'
 import { GET as revealGET, POST as revealPOST } from '@/app/api/v1/foyer/reveal/route'
-import { previewAllowanceBypass } from '@/lib/v1/foyer/foyer-preview-bypass'
-import { REVEALS_PER_WINDOW } from '@/lib/v1/foyer/foyer-policy'
+import { previewAllowanceBypass, previewIntakeCapBypass } from '@/lib/v1/foyer/foyer-preview-bypass'
+import { REVEALS_PER_WINDOW, INTAKES_PER_WINDOW } from '@/lib/v1/foyer/foyer-policy'
 import { signIntake, sha256Hex } from '@/lib/v1/foyer/foyer-identity'
 
 const SECRET = 'test-secret-0123456789abcdef0123456789abcdef'
@@ -102,12 +102,41 @@ beforeEach(async () => {
 afterEach(() => { delete process.env.VERCEL_ENV; vi.unstubAllGlobals(); vi.restoreAllMocks() })
 
 describe('the guard itself', () => {
-  it('is on for a Vercel Preview deployment and nowhere else', () => {
-    expect(previewAllowanceBypass({ VERCEL_ENV: 'preview' } as any)).toBe(true)
-    for (const v of ['production', 'development', 'Preview', 'PREVIEW', ' preview', '', undefined]) {
-      expect(previewAllowanceBypass({ VERCEL_ENV: v } as any)).toBe(false)
+  it('is on for a Vercel Preview deployment and nowhere else (reveal allowance and intake limit alike)', () => {
+    for (const guard of [previewAllowanceBypass, previewIntakeCapBypass]) {
+      expect(guard({ VERCEL_ENV: 'preview' } as any)).toBe(true)
+      for (const v of ['production', 'development', 'Preview', 'PREVIEW', ' preview', '', undefined]) {
+        expect(guard({ VERCEL_ENV: v } as any)).toBe(false)
+      }
+      expect(guard({} as any)).toBe(false)
     }
-    expect(previewAllowanceBypass({} as any)).toBe(false)
+  })
+})
+
+const intake = (extra: Parameters<typeof req>[1] = {}, url = '/api/v1/foyer/intake') =>
+  intakePOST(req(url, { body: { image_b64: SOURCE_B64 }, ...extra }))
+
+describe('1b · PREVIEW: the intake has no per-IP limit, and the intake itself runs in full', () => {
+  it(`well past ${INTAKES_PER_WINDOW} intakes, even with the IP already capped: every one examined and answered, no claim made`, async () => {
+    process.env.VERCEL_ENV = 'preview'
+    intakeCapped = true                                   // the store says this IP is over its limit
+    for (let i = 0; i < INTAKES_PER_WINDOW + 5; i++) {
+      const res = await intake()
+      const d = await res.json()
+      expect(res.status).toBe(200)
+      expect(d).toMatchObject({ status: 'ok', subject: 'woman', gender: 'f', age_group: 'adult' })
+      expect(typeof d.intake).toBe('string')
+    }
+    expect(h.detect).toHaveBeenCalledTimes(INTAKES_PER_WINDOW + 5)       // the face/age/gender check, every time
+    expect(rpcCalls().filter(n => n === 'claim_foyer_intake')).toEqual([])   // no claim, no intake row
+  })
+  it('the signed note it gives still carries a real render on the Preview', async () => {
+    process.env.VERCEL_ENV = 'preview'
+    intakeCapped = true
+    const d = await (await intake()).json()
+    const res = await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: d.intake } }))
+    expect(res.status).toBe(200)
+    expect(replicateBodies).toHaveLength(1)
   })
 })
 
@@ -178,13 +207,18 @@ describe('3 · the intake is the same on both', () => {
       expect((await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: note(SOURCE_B64, 'teen') } }))).status).toBe(403)
       expect(replicateBodies).toHaveLength(0)
     })
-    it(`${env}: the intake's own abuse limit still applies`, async () => {
-      process.env.VERCEL_ENV = env
+  }
+  for (const env of ['production', undefined]) {
+    it(`VERCEL_ENV=${env ?? '(unset)'}: the intake's own per-IP limit still applies`, async () => {
+      if (env) process.env.VERCEL_ENV = env
+      expect((await intake()).status).toBe(200)                          // under the limit: examined, answered
+      expect(rpcCalls().filter(n => n === 'claim_foyer_intake')).toHaveLength(1)
       intakeCapped = true
-      const res = await intakePOST(req('/api/v1/foyer/intake', { body: { image_b64: SOURCE_B64 } }))
+      const res = await intake()
       expect(res.status).toBe(429)
       expect(await res.json()).toEqual({ status: 'unavailable' })
-      expect(h.detect).not.toHaveBeenCalled()
+      expect(h.detect).toHaveBeenCalledTimes(1)                          // not examined once capped
+      expect(rpcCalls().filter(n => n === 'claim_foyer_intake')).toHaveLength(2)
     })
   }
 })
@@ -200,6 +234,14 @@ describe('4 · Production cannot be put on the Preview path', () => {
     const fourth = await revealPOST(req('/api/v1/foyer/reveal?preview=1', { body: { image_b64: SOURCE_B64, intake: note(), preview: true }, ...hints }))
     expect(fourth.status).toBe(429)
     expect(await (await revealGET(req('/api/v1/foyer/reveal?preview=1', { method: 'GET', ...hints }))).json()).toEqual({ available: false, reason: 'exhausted' })
+  })
+  it('nor the intake limit: a capped IP stays capped whatever it sends', async () => {
+    process.env.VERCEL_ENV = 'production'
+    intakeCapped = true
+    const hints = { headers: { 'x-vercel-env': 'preview', 'x-preview': '1', cookie: 'liten_anon=5b1f0a52-3c1e-4c7e-9a3f-2d8e6b7c1a90; VERCEL_ENV=preview; preview=1' } }
+    const res = await intakePOST(req('/api/v1/foyer/intake?preview=1&VERCEL_ENV=preview', { body: { image_b64: SOURCE_B64, preview: true, bypass: true, VERCEL_ENV: 'preview' }, ...hints }))
+    expect(res.status).toBe(429)
+    expect(h.detect).not.toHaveBeenCalled()
   })
 })
 

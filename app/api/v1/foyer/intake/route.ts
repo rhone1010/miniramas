@@ -28,6 +28,7 @@ import { decodeSource, foyerDb } from '@/lib/v1/foyer/foyer-source'
 import { foyerSecret, ipIdentity, deviceMarker, sha256Hex, signIntake } from '@/lib/v1/foyer/foyer-identity'
 import { claimIntake } from '@/lib/v1/foyer/foyer-allowance'
 import { INTAKE_TOKEN_TTL_MS } from '@/lib/v1/foyer/foyer-policy'
+import { previewIntakeCapBypass } from '@/lib/v1/foyer/foyer-preview-bypass'   // TEMPORARY PREVIEW TEST BYPASS — REMOVE BEFORE PR #178 MERGE
 
 export const runtime     = 'nodejs'
 export const maxDuration = 60
@@ -49,8 +50,15 @@ export async function POST(req: NextRequest) {
     return reply({ status: 'unavailable' }, 503)
   }
 
-  const cap = await claimIntake(sb, ipIdentity(req, secret), deviceMarker(req))
-  if (cap !== 'ok') return reply({ status: 'unavailable' }, cap === 'capped' ? 429 : 503)
+  // ── TEMPORARY PREVIEW TEST BYPASS — REMOVE BEFORE PR #178 MERGE ──────────
+  // On a Vercel Preview deployment only (VERCEL_ENV, set by the platform),
+  // the per-IP limit is skipped: no claim, no intake row. Everything after
+  // it -- the face/age/gender check and the refusals -- runs as always.
+  if (!previewIntakeCapBypass()) {
+    const cap = await claimIntake(sb, ipIdentity(req, secret), deviceMarker(req))
+    if (cap !== 'ok') return reply({ status: 'unavailable' }, cap === 'capped' ? 429 : 503)
+  }
+  // ── end TEMPORARY PREVIEW TEST BYPASS ─────────────────────────────────────
 
   let gender: 'f' | 'm' | null = null
   let ageGroup: string | null = null
