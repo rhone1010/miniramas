@@ -11,8 +11,10 @@
 //                  (portraits-generator.ts, "Build prompt"): the effect's whole
 //                  production body, the default pose's phrase if it has one,
 //                  and the style-plate clause only when a plate is sent.
-//   bakeWatermark  lib/store/preview.ts, the tiled Liten & Co mark baked into
-//                  the pixels.
+//   the watermark  lib/v1/foyer/foyer-watermark.ts: ONE large Liten & Co
+//                  lockup baked across the portrait (Rich, 2026-09-14). Not the
+//                  tiled pattern (lib/store/preview.ts bakeWatermark), which is
+//                  the Portraits free preview's and is unchanged.
 //
 // generatePortraitsRender itself is NOT called: it runs its own face
 // detection (the foyer's intake already did) and a scored second attempt
@@ -32,7 +34,7 @@ import {
   type PortraitsPresetId, type PortraitsSubject,
 } from '@/lib/v1/portraits/portraits-shared'
 import { loadStyleRefs } from '@/lib/v1/portraits/style-refs'
-import { bakeWatermark } from '@/lib/store/preview'
+import { bakeFoyerWatermark } from './foyer-watermark'
 import { FOYER_ASPECT, revealLabel } from './foyer-policy'
 
 export interface FoyerRevealResult {
@@ -43,7 +45,7 @@ export interface FoyerRevealResult {
   /* Diagnostic timing only (go-to-market pass 1, 2026-09-14): measured
      around the calls, never fed back into them. nb2Ms is callNB2 whole --
      the Replicate request, its wait/poll and the output download; markMs is
-     bakeWatermark plus the delivery JPEG; styleRefs is how many style plates
+     bakeFoyerWatermark plus the delivery JPEG; styleRefs is how many style plates
      went with the request (they change what NB2 is asked to do). */
   timing:       { nb2Ms: number; markMs: number; styleRefs: number }
 }
@@ -82,12 +84,12 @@ export async function renderFoyerReveal(input: {
     replicateApiToken:   input.replicateApiToken,
   })
 
-  /* Fail closed: bakeWatermark throws rather than return an unmarked image,
-     and so does this. The delivery JPEG is the same spec the preview bake
-     writes (q82, sRGB, progressive, metadata stripped). */
+  /* Fail closed: bakeFoyerWatermark throws rather than return an unmarked
+     image, and so does this. The delivery JPEG is unchanged (q82, sRGB,
+     progressive, metadata stripped) and keeps NB2's dimensions. */
   const nb2Ms  = Date.now() - tNb2
   const tMark  = Date.now()
-  const marked = await bakeWatermark(clean)
+  const marked = await bakeFoyerWatermark(clean)
   const jpeg = await sharp(Buffer.from(marked, 'base64'))
     .toColourspace('srgb')
     .jpeg({ quality: 82, progressive: true, mozjpeg: true })

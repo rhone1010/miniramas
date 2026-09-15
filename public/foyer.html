@@ -197,7 +197,7 @@ input[type=file]{ display:none }
   .tag{ position:absolute; left:0; right:0; bottom:calc(14% + 25px); z-index:6; color:#f6ecd8; font-size:1.5rem; margin:0; padding:0 24px; text-shadow:0 1px 10px rgba(0,0,0,.5); min-height:0 }
   .tag .tail{ color:var(--gold-soft) }
   /* Two cells on a phone: 24px, easing to the 20px floor on the narrowest,
-     so "Imagine yourself" always holds one line and the longest phrase
+     so "Imagine Yourself" always holds one line and the longest phrase
      wraps to at most two inside its own cell. */
   .tag.two{ font-size:clamp(20px, 6.2vw, 24px); padding:0 16px;
     /* the approved top, unless two lines would run off a short screen */
@@ -327,7 +327,7 @@ input[type=file]{ display:none }
       <div class="mgrid" id="mgrid"></div>
     </div>
 
-    <p class="tag" id="tag">Imagine yourself&hellip;</p>
+    <p class="tag" id="tag">Imagine Yourself&hellip;</p>
 
     <div class="acts" id="acts">
       <button class="pbtn pbtn--pick" id="btnUpload">
@@ -490,7 +490,7 @@ function begin(src){
 }
 
 /* THE LINE UNDER THE CARD, IN TWO CELLS (Rich, 2026-09-14). "Imagine
-   yourself" is fixed and sits against the seam; the changing phrase starts
+   Yourself" is fixed and sits against the seam; the changing phrase starts
    from one fixed x, left-aligned. Every phrase the riffle can show sits in
    the same cell, stacked, with only the current one visible -- so the pair
    is always the size of its longest phrase, and neither the fixed words nor
@@ -502,7 +502,7 @@ var TAG_PHRASES = FLIPS.map(function(r){ return r[1]; }).filter(function(t, i, a
 function tagPair(phrase){
   if (!tag.classList.contains('two') || !tag.querySelector('.tag-pair')){
     tag.classList.remove('wide'); tag.classList.add('two');
-    tag.innerHTML = '<span class="tag-pair"><span class="tag-l">Imagine yourself</span><span class="tag-r">' +
+    tag.innerHTML = '<span class="tag-pair"><span class="tag-l">Imagine Yourself</span><span class="tag-r">' +
       '<span class="tail" data-p="">&hellip;</span>' +
       TAG_PHRASES.map(function(t){ return '<span class="tail" data-p="' + t + '">' + t + '</span>'; }).join('') +
       '</span></span>';
@@ -527,8 +527,8 @@ function startRiffle(){
      one on the card. Now a single tick puts up the next frame, and every
      other tick -- the line's old 600ms cadence, so it stays readable -- the
      line is rewritten in the same step, from the frame now on the card:
-       a frame with a caption  -> "Imagine yourself <its caption>"
-       a frame without one     -> "Imagine yourself…", the opening words,
+       a frame with a caption  -> "Imagine Yourself <its caption>"
+       a frame without one     -> "Imagine Yourself…", the opening words,
                                   which describe no frame at all
      Between rewrites the line stays up for the one frame that passes. It is
      never set from any frame but the one showing. FLIPS has an odd number of

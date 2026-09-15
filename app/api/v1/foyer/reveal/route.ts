@@ -16,7 +16,8 @@
 //   3. ONE production NB2 render of one of the six foyer effects, chosen
 //      here at random, with its production prompt -- lib/v1/foyer/
 //      foyer-render.ts.
-//   4. The clean image is watermarked (bakeWatermark) and dropped. Only the
+//   4. The clean image is watermarked (bakeFoyerWatermark: one large Liten &
+//      Co lockup across the portrait) and dropped. Only the
 //      marked JPEG is returned, inline. Nothing is stored: not the source,
 //      not the result, not a preview, a portfolio item, a selection or an
 //      unlock.
