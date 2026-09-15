@@ -117,15 +117,7 @@ No added objects. No held objects, eyewear or watches. Worn necklaces, earrings 
   },
   // iron: Pre-07-03 engine body CONFIRMED GOOD 08-01. Stale-engine list is now EMPTY.
 
-  petrified_wood: {
-    id:    'petrified_wood',
-    body:  `The subject is carved from a section of petrified wood — ancient timber turned to stone, its growth rings replaced by banded agate and jasper. Deep amber, oxblood, umber and cream run in tight concentric bands through the mass, glassy and hard-polished, with occasional pockets of raw crystal where a void filled. The bands run in their own pattern across broad smooth planes and never follow the face's own lines or features.
-The carving holds this person exactly: the same face shape, the same nose, mouth and jaw, the same set of the eyes. Hair keeps its real texture, length and shape — short and tightly coiled stays short and tightly coiled — carved in the same stone. The garment carries through in petrified wood. Likeness is critical and comes before the material.
-Frame from mid-chest to the top of the head. Face should occupy 30% of the image. The subject faces us naturally, head upright, with both eyes clearly visible. Photographic and highly idealized — a real polished stone object in real light, beautifully made, the finest piece of its kind. Background: desert badlands at low sun, banded rock and scattered fossil logs, long shadows, heavily out of focus.
-Preserve natural facial character, asymmetry, lines and scars. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
-    avoid: `Avoid changing the hair — no lengthening, straightening or restyling. Avoid narrowing or refining the face. Avoid ordinary wood grain or brown timber; this is mineral, glassy and banded. Avoid banding crossing the eyes, nose or mouth. Avoid a rough unhewn edge. Avoid real skin or hair.`,
-  },
-  // petrified_wood: Fills alabaster's slot. Closes §9 item 5. The negative-example hair clause is what held the likeness.
+  // petrified_wood: RETIRED 2026-09-15 by Rich.
 
   stone: {
     id:    'stone',
@@ -139,15 +131,52 @@ The likeness is essential. Maintain micro facial gestures, imperfections, change
 
   // ── LIGHT & GLASS ───────────────────────────────────────────────
 
-  cast_glass: {
-    id:    'cast_glass',
-    body:  `The subject is cast in solid kiln-formed glass, thick and heavy, with the softly frosted matte surface of a mould, subtle bevelled edges and faint trapped bubbles. A single cool color throughout, pale sea green or smoke grey. The face is glass all the way through, its forms gracefully simplified into an exceptionally beautiful sculptural interpretation of this person's own face. Preserve what makes the face distinctive rather than making it conventionally perfect.
-Hair is cast in the same glass, preserving its real silhouette as a flowing sculptural mass. The garment carries through in cast glass. Closed mouth, expression carried in the eyes. Likeness is critical.
-Place the figure naturally beside a beautiful waterfall, surrounded by wet stone, mist and soft vegetation. Cool daylight and reflected water play across the frosted glass, creating restrained caustics and beautiful sculptural shadows. Photographic, atmospheric and highly idealized, a real glass figure existing naturally in the landscape.
-Frame her from the upper chest to the top of the head, facing us naturally with her head upright and both eyes clearly visible. Her head occupies roughly 30% of the image height. Preserve natural facial character, asymmetry, lines and scars. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
-    avoid: null,
+  // cast_glass: RETIRED 2026-09-15 by Rich.  // cast_glass: Closes §9 item 8 (cast_glass IN). SSS removed deliberately — it read as flesh. Closed mouth is required: carved teeth in translucent material read as a skull.
+
+  // ── NEW EFFECTS ADDED 2026-09-15 by Rich ──────────────────────────
+  action_figure: {
+    id:    'action_figure',
+    body:  `Transform the subject into a premium highly detailed collectible action figure, clearly a manufactured physical toy while preserving an immediately recognizable likeness. put the figure in a dramatic pose. NO TEXT. camera foreshortening, kinetic energy captured as physical 3d materials
+
+Use the subtle eye of a skilled character sculptor: preserve the distinctive proportions, expression, age, asymmetries and features that make this person recognizable. Slightly simplify and stylize the anatomy into a high-end 1:6 scale figure without becoming cartoonish.
+
+Show realistic molded and painted materials: finely sculpted face and hair, subtle paint variation, articulated neck, shoulders, elbows and wrists, with discreet visible joints. Recreate the subject's clothing as miniature fabric or finely molded costume materials appropriate to the original garment.
+
+Photograph the figure standing in a premium collector display setting, from head to pants, with enough surrounding space to clearly establish its small physical scale. Include a tasteful display base and heavily blurred hints of a collectible shop.
+
+Use beautiful product photography with soft directional light, realistic reflections and shallow depth of field. The figure should feel tangible enough to pick up: exquisitely manufactured, slightly stylized, and unmistakably this person.`,
+    avoid: `Avoid Funko proportions, giant heads, cartoon faces, dolls, mannequins or human-looking skin. Avoid turning the result into a normal photograph of the person. Avoid extreme muscularity or superhero styling unless present in the source. Avoid text, logos, weapons or invented accessories. Preserve age and likeness.`,
   },
-  // cast_glass: Closes §9 item 8 (cast_glass IN). SSS removed deliberately — it read as flesh. Closed mouth is required: carved teeth in translucent material read as a skull.
+  designer_vinyl: {
+    id:    'designer_vinyl',
+    body:  `Transform the subject into a premium limited-edition designer vinyl art figure. The result is a real manufactured collectible toy, photographed as a physical object.
+
+Preserve an unmistakable likeness through intelligent simplification and gentle caricature. Give the figure a moderately oversized sculpted head, compact body, short simplified limbs and confident toy-like proportions. Emphasize the distinctive face shape, hairstyle, expression, asymmetries and features that make this particular person recognizable rather than creating a generic cute character.
+
+The entire figure is beautifully molded vinyl with smooth sculptural geometry and subtle seams. Translate the face into clean dimensional forms: sculpted brow, nose, cheeks, jaw, ears and mouth, with inset glossy eyes. Hair becomes a single beautifully sculpted mass broken into broad graphic locks and planes. Skin is painted matte vinyl, not human skin.
+
+Translate the subject's clothing into simplified molded forms while preserving its recognizable colors, shapes and character. Small details can be sharply painted or molded into the surface.
+
+Show the complete figure standing on a simple collectible display base on a designer toy shop countertop. Behind it is a sophisticated contemporary art-toy boutique with shelves of colorful collectible figures, softly blurred into the background.
+
+Use beautiful high-end product photography, shallow depth of field and soft directional light that reveals the curves, molded geometry and subtle sheen of the vinyl. Leave generous space around the figure and make its small physical scale immediately apparent.
+
+The result should feel like an expensive numbered art toy created by an accomplished character designer and sculptor, playful, beautifully made and unmistakably the subject. NO TEXT.`,
+    avoid: `Avoid Funko-style extreme proportions, giant square heads, bobbleheads, plush materials, realistic human skin, realistic hair, dolls, action-figure joints, superhero bodies, cheap plastic, generic cartoon faces, text, logos or packaging.`,
+  },
+  mosaic_portrait: {
+    id:    'mosaic_portrait',
+    body:  `Transform the subject into an extraordinary dimensional mosaic portrait. Preserve a strong recognizable likeness, expression and natural proportions.
+
+Construct the portrait from thousands of irregular pieces of colored glass, glazed ceramic and stone. Use larger expressive fragments through the clothing and surrounding areas, becoming much finer and more intricate across the face, eyes and mouth to preserve likeness.
+
+Let the colors originate from the source photograph and expand into a rich artistic palette. Use translucent jewel-like glass, varied ceramic surfaces, occasional gold tesserae and beautiful irregular grout lines.
+
+Frame from the upper chest through the complete head with generous space around the subject. Grazing gallery light reveals the physical depth, uneven surfaces, glass reflections and handcrafted character of the mosaic.
+
+The result is a sophisticated one-of-a-kind mosaic artwork, richly detailed, tactile and unmistakably the source person. NO TEXT.`,
+    avoid: `Avoid flat printed mosaic, regular square tiles, pixel art, uniform tile sizes, thick grout, generic face or loss of likeness.`,
+  },
 
   ice: {
     id:    'ice',
@@ -303,18 +332,7 @@ Frame from the stomach to the top of the head. He faces us naturally with both e
   },
   // coral: restored VERBATIM from the CENG batch files 08-02. Do not rewrite from plates.
 
-  driftwood_resin: {
-    id:    'driftwood_resin',
-    body:  `Transform the entire figure into a contemporary sculpture combining weathered driftwood and glossy coloured epoxy resin — the live-edge resin-river aesthetic. The driftwood carries the likeness: the face and the structural planes of the head, shoulders and major contours are carved from pale, silvery, weathered driftwood with visible grain, knots, cracks and organic live edges, cut to THIS person's own brow, cheekbones, nose and jaw. Likeness is essential: keep the shape and character of the subject's face, their natural asymmetry, and the micro gestures of their expression. Keep the subject's hairline, hairstyle, length and direction carved in the same wood, and do not prematurely grey it. Do not add weight and do not age the subject.
-
-Flowing rivers and pools of translucent coloured epoxy resin run through and between the wood — deep teal, ocean blue, amber or emerald — filling the live-edge gaps, the cracks and the negative spaces, catching and refracting light. The resin is where the colour and translucency live; the wood is where the likeness lives. The whole piece is finished in a high-gloss polish so the resin reads as liquid-clear and the wood as satin-smooth.
-
-No human skin anywhere — the face, neck, forehead, ears and every visible surface are weathered driftwood, not skin. The wood grain, cracks and live edges continue across the entire face.
-
-Sculpture on a base in a coastal woodworker's studio, only a suggestion of the base visible below the figure — a wide window onto grey sea and sky, live-edge slabs leaning against the walls, clamps and resin buckets, sawdust light, heavily out of focus. Contemporary gallery presentation. Museum-quality craftsmanship. Facing the camera directly, warm natural smile, eyes to the viewer, camera at eye level. Frame from the stomach to the top of the head. No plaque. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.`,
-    avoid: `Avoid an all-wood sculpture with no resin, or an all-resin sculpture with no wood — both materials must be present and distinct. Avoid a matte or unfinished surface. Avoid resin that looks opaque or painted. Avoid driftwood so abstract the face stops being recognisable; the wood carries the likeness.`,
-  },
-  // driftwood_resin: restored VERBATIM from the CENG batch files 08-02. Do not rewrite from plates.
+  // driftwood_resin: RETIRED 2026-09-15 by Rich.
 
   fire_face: {
     id:    'fire_face',
