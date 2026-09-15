@@ -30,6 +30,10 @@ import { buildEffectPrompt } from '@/lib/v1/portraits/portraits-bodies'
 import { FOYER_REVEAL_EFFECTS, REVEALS_PER_WINDOW } from '@/lib/v1/foyer/foyer-policy'
 import { signIntake, sha256Hex } from '@/lib/v1/foyer/foyer-identity'
 import { byId } from '@/lib/v1/portraits/effect-registry'
+import { foyerWatermarkPlacement, foyerLinesGeometry, LOCKUP_OPACITY, SHADOW_OPACITY, LINES_OPACITY, LINES_ANGLES } from '@/lib/v1/foyer/foyer-watermark'
+import { bakeWatermark } from '@/lib/store/preview'
+import { readFileSync } from 'fs'
+import path from 'path'
 
 const SECRET = 'test-secret-0123456789abcdef0123456789abcdef'
 const IP = '203.0.113.7'
@@ -202,8 +206,70 @@ describe('/api/v1/foyer/reveal — one NB2 render, watermarked, allowance-accoun
     expect(b.info.height).toBe(a.info.height)
     let brighter = 0
     for (let i = 0; i < a.data.length; i += 3) if (b.data[i] - a.data[i] > 25) brighter++
-    // the white tiled mark lifts a real share of the pixels; JPEG noise alone lifts none by that much
+    // the white lockup lifts a real share of the pixels; JPEG noise alone lifts none by that much
     expect(brighter / (a.data.length / 3)).toBeGreaterThan(0.01)
+  })
+
+  it('the foyer\'s watermark: the lockup at 75%, one set of dashed white diagonal lines, and no tiled marks', async () => {
+    // The lockup (Rich, 2026-09-14, "modified B"), shrunk by 25% (Rich,
+    // 2026-09-15): 75% of the 526x441 it was, same proportion, still centred,
+    // its centre still at 58% of the height.
+    expect(foyerWatermarkPlacement(848, 1264)).toEqual({ width: 394, height: 331, left: 227, top: 568, shadow: 3 })
+    expect(394 / 526).toBeCloseTo(0.75, 2); expect(331 / 441).toBeCloseTo(0.75, 2)
+    expect([LOCKUP_OPACITY, SHADOW_OPACITY]).toEqual([0.42, 0.22])
+    // The lines: the glass .wm's 3px line, 50% further apart than its 22px, dashed 6 on / 3 off (in line widths), one direction.
+    const w = 848 * 3 / 442
+    const g = foyerLinesGeometry(848), want = { period: 848 * 33 / 442, width: w, dash: 6 * w, gap: 3 * w }
+    for (const k of Object.keys(want) as (keyof typeof want)[]) expect(g[k]).toBeCloseTo(want[k], 9)
+    expect(foyerLinesGeometry(848).period / (848 * 22 / 442)).toBeCloseTo(1.5, 10)
+    expect([LINES_OPACITY, [...LINES_ANGLES]]).toEqual([0.18, [45]])
+    const res = await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: await intakeToken() } }))
+    const marked = Buffer.from((await res.json()).image.split(',')[1], 'base64')
+    const [a, b] = await Promise.all([sharp(CLEAN).raw().toBuffer({ resolveWithObject: true }), sharp(marked).raw().toBuffer({ resolveWithObject: true })])
+    const { width: W, height: H } = a.info
+    const p = foyerWatermarkPlacement(W, H)
+    const diff = (x: number, y: number) => { const i = (y * W + x) * 3; return (b.data[i] - a.data[i]) + (b.data[i + 1] - a.data[i + 1]) + (b.data[i + 2] - a.data[i + 2]) }
+    // the lockup is there
+    let inBox = 0
+    for (let y = p.top; y < p.top + p.height; y++) for (let x = p.left; x < p.left + p.width; x++) if (Math.abs(diff(x, y)) > 90) inBox++
+    expect(inBox).toBeGreaterThan(p.width * p.height * 0.05)
+    // outside the lockup only the lines: brighter, never darker, white at .18 (lifts ~97, summed RGB, on this ground)
+    let darker = 0, top = 0, lit = 0, seen = 0
+    for (let y = 0; y < p.top - 8; y += 3) for (let x = 0; x < W; x += 3) { const v = diff(x, y); seen++; if (v < -45) darker++; if (v > top) top = v; if (v > 30) lit++ }
+    expect(darker).toBe(0)
+    expect(top).toBeGreaterThan(60); expect(top).toBeLessThan(130)
+    // far lighter than the crosshatch (~25% of the ground): one dashed set covers ~6%
+    expect(lit / seen).toBeGreaterThan(0.03); expect(lit / seen).toBeLessThan(0.10)
+    // ~9 lines cross a row (period x sqrt2 = 90px apart), a third of them in a gap at any one row
+    let runs = 0
+    for (let y = 40; y < 100; y++) { let n = 0, prev = false; for (let x = 0; x < W; x++) { const on = diff(x, y) > 30; if (on && !prev) n++; prev = on } runs = Math.max(runs, n) }
+    expect(runs).toBeGreaterThanOrEqual(5); expect(runs).toBeLessThanOrEqual(10)
+    // one direction only: down from right to left (top-right to bottom-left), never the other way
+    const along = (dx: number) => { let n = 0; for (let x = 40; x < 500; x++) if (diff(x, 100) > 30 && [6, 12].every(k => diff(x + dx * k, 100 + k) > 30)) n++; return n }
+    expect(along(-1)).toBeGreaterThan(0)
+    expect(along(1)).toBe(0)
+    // dashed: walking down one line from the middle of a lit run, it goes on and off, dash then gap
+    let x0 = -1
+    for (let x = 60, s = -1; x < 500; x++) { const on = diff(x, 100) > 30; if (on && s < 0) s = x; if (!on && s >= 0) { if (x - s >= 4) { x0 = Math.round((s + x - 1) / 2); break } s = -1 } }
+    expect(x0).toBeGreaterThan(0)
+    let dashes = 0, was = true
+    for (let t = 0; t < 140 && x0 - t > 0; t++) { const on = diff(x0 - t, 100 + t) > 30; if (on && !was) dashes++; was = on }
+    expect(dashes).toBeGreaterThanOrEqual(2)
+    // and the tiled Liten pattern is not the foyer's any more
+    const src = readFileSync(path.join(process.cwd(), 'lib', 'v1', 'foyer', 'foyer-watermark.ts'), 'utf8')
+    expect(src).not.toMatch(/litenco_watermark|bakeWatermark\(/)
+  })
+
+  it('Portraits keeps its own tiled pattern; the foyer no longer uses it', async () => {
+    // lib/store/preview.ts bakeWatermark is untouched: it still marks every corner of an image.
+    const tiled = Buffer.from(await bakeWatermark(CLEAN.toString('base64')), 'base64')
+    const [a, b] = await Promise.all([sharp(CLEAN).raw().toBuffer({ resolveWithObject: true }), sharp(tiled).raw().toBuffer({ resolveWithObject: true })])
+    const W = a.info.width, H = a.info.height
+    const corner = (x0: number, y0: number) => { let n = 0; for (let y = y0; y < y0 + 200; y++) for (let x = x0; x < x0 + 200; x++) { const i = (y * W + x) * 3; if (b.data[i] - a.data[i] > 25) n++ } return n }
+    for (const [x, y] of [[0, 0], [W - 200, 0], [0, H - 200], [W - 200, H - 200]]) expect(corner(x, y)).toBeGreaterThan(0)
+    const src = readFileSync(path.join(process.cwd(), 'lib', 'v1', 'foyer', 'foyer-render.ts'), 'utf8')
+    expect(src).not.toMatch(/from '@\/lib\/store\/preview'/)
+    expect(src).toMatch(/bakeFoyerWatermark\(clean\)/)
   })
 
   it('a successful reveal is finalized as counted', async () => {
@@ -211,6 +277,21 @@ describe('/api/v1/foyer/reveal — one NB2 render, watermarked, allowance-accoun
     const claimCall = h.rpc.mock.calls.find(c => c[0] === 'claim_foyer_reveal')![1]
     expect(claimCall).toMatchObject({ p_limit: REVEALS_PER_WINDOW, p_window: '24 hours', p_device: ANON })
     expect(h.rpc.mock.calls.find(c => c[0] === 'finalize_foyer_reveal')![1]).toEqual({ p_id: 'claim-1', p_succeeded: true })
+  })
+
+  it('logs where the time went (diagnostic only) -- and nothing in the response or the request changes', async () => {
+    // go-to-market pass 1, 2026-09-14: the ok line splits the render into the
+    // NB2 call and the watermark, with the whole request's time beside it.
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const res = await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: await intakeToken() } }))
+    const d = await res.json()
+    const line = log.mock.calls.map(c => String(c[0])).find(s => s.startsWith('[foyer/reveal] ok '))!
+    expect(line).toMatch(/^\[foyer\/reveal\] ok effect=\w+ preset=\w+ prompt_chars=\d+ ms=\d+ nb2_ms=\d+ mark_ms=\d+ refs=\d+ total_ms=\d+$/)
+    const n = (k: string) => +line.match(new RegExp(`${k}=(\\d+)`))![1]
+    expect(n('nb2_ms') + n('mark_ms')).toBeLessThanOrEqual(n('ms') + 1)
+    expect(n('ms')).toBeLessThanOrEqual(n('total_ms'))
+    expect(Object.keys(d).sort()).toEqual(['image', 'label', 'status'])   // no timing reaches the page
+    expect(Object.keys(replicate[0].body.input).sort()).toEqual(['aspect_ratio', 'image_input', 'output_format', 'prompt'])
   })
 
   it('a failed render is released -- it costs the visitor nothing', async () => {

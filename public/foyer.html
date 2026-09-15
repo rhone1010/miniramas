@@ -96,10 +96,13 @@ body.telling-page .opening, body.revealing .opening{ display:none }
    card height, clamp(250px,32vh,320px), plus 150px -- the room the animated
    line lives in. It waits at 2/3 of its final size (.77 of 1.15), grown from
    its top edge so the 150px holds, and grows on an ease-in-out curve. */
-.go{ position:absolute; left:50%; top:calc(50% + clamp(250px,32vh,320px) + 150px); font-family:var(--serif); font-style:italic; font-size:1.4rem; padding:15px 36px; border-radius:10px; background:var(--ox); color:#f6ecd8; border:1px solid var(--ox-line); cursor:pointer; pointer-events:none; opacity:0; transform-origin:center top; transform:translateX(-50%) scale(.77); transition:transform 1.1s cubic-bezier(.4,0,.2,1), opacity .5s ease; z-index:6 }
-.go.in{ opacity:1; pointer-events:auto; transform:translateX(-50%) scale(.77) }
-.go.full{ transform:translateX(-50%) scale(1.15) translateY(-10px) }
-@media(max-width:720px){ .go.in{ transform:translateX(-50%) } .go.full{ transform:translateX(-50%) scale(1.2) } }
+/* COME INSIDE & EXPLORE, 25% STRONGER (Rich, 2026-09-14): each state scaled
+   from its own value -- waiting .77 -> .9625, final 1.2 -> 1.5 on desktop;
+   1 -> 1.25 and 1.2 -> 1.5 on the phone. Same transitions, same places. */
+.go{ position:absolute; left:50%; top:calc(50% + clamp(250px,32vh,320px) + 150px); font-family:var(--serif); font-style:italic; font-size:1.4rem; padding:15px 36px; border-radius:10px; background:var(--ox); color:#f6ecd8; border:1px solid var(--ox-line); cursor:pointer; pointer-events:none; opacity:0; transform-origin:center top; transform:translateX(-50%) scale(.9625); transition:transform 1.1s cubic-bezier(.4,0,.2,1), opacity .5s ease; z-index:6 }
+.go.in{ opacity:1; pointer-events:auto; transform:translateX(-50%) scale(.9625) }
+.go.full{ transform:translateX(-50%) scale(1.4375) translateY(-10px) }
+@media(max-width:720px){ .go.in{ transform:translateX(-50%) scale(1.25) } .go.full{ transform:translateX(-50%) scale(min(1.5, var(--go-fit, 1.5))) } }
 @media(min-width:721px){ .pbtn--cam{ display:none } }
 @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(215,189,137,.6) } 70%{ box-shadow:0 0 0 14px rgba(215,189,137,0) } 100%{ box-shadow:0 0 0 0 rgba(215,189,137,0) } }
 .go::after{ content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none }
@@ -134,9 +137,35 @@ input[type=file]{ display:none }
    had (15px for either line, --gap for the button), so it all moves as one.
    The fan is scaled to match in fanReveal(). */
 @media (min-width:721px){
-  .stage{ --gap:clamp(75px, calc(75px + (100vh - 768px) * 0.323), 150px);
+  /* --LIFT (Rich, 2026-09-14): the line that rode between the card and the
+     button is gone, so the room it held moves ABOVE the card, where the
+     processing copy now lives. The card sits --lift lower, the button keeps
+     its place (card bottom + --gap - --lift), and the card's height is
+     unchanged -- --gap itself is untouched, so the opening line's rule reads
+     exactly as given. */
+  /* THE SCENE, LIFTED (Rich's Photoshop mockup, 2026-09-15; the responsive
+     correction, Rich, 2026-09-15). The whole presentation -- copy, card and
+     button -- sits --scene-up HIGHER than it did before this pass, at every
+     desktop size: 75px from a screen 1300px tall up (the mockup's), easing
+     to 15px on one 1080px tall or shorter, where the card was already as
+     high as the old status let it be. The card keeps its size (--card-h,
+     unchanged from before the pass); the button keeps its distance under it.
+     The copy fits the room left between the logo and the card: Crafting
+     Your Image (--rs-craft), --rs-gap1, Imagine Yourself As [word]
+     (--rs-imagine), --rs-gap2, the card (--rs-room is all of it) -- the
+     mockup's 32 / 25 / 42 / 40 from 1360px up, easing to 20 / 6 / 28 / 12 at
+     1080 and below, Crafting always the smaller line. The max() is only a
+     guard: the copy never runs into the logo. */
+  .stage{ --gap:clamp(75px, calc(75px + (100vh - 768px) * 0.323), 150px); --lift:34px;
+          --scene-up:clamp(15px, calc(15px + (100vh - 1080px) * 60 / 220), 75px);
+          --rs-craft:clamp(20px, calc(20px + (100vh - 1080px) * 12 / 280), 32px);
+          --rs-gap1:clamp(6px, calc(6px + (100vh - 1080px) * 19 / 280), 25px);
+          --rs-imagine:clamp(28px, calc(28px + (100vh - 1080px) * 14 / 280), 42px);
+          --rs-gap2:clamp(12px, calc(12px + (100vh - 1080px) * 28 / 280), 40px);
+          --rs-room:calc(var(--rs-craft) + var(--rs-gap1) + var(--rs-imagine) + var(--rs-gap2));
           --card-h:min(640px, max(220px, calc(100vh - 287px - var(--gap))));
-          --deck-y:clamp(calc(49px + var(--card-h) / 2), calc(50% - 75px), calc(100% - var(--gap) - 72px - var(--card-h) / 2)) }
+          --deck-y:max(calc(2px + var(--rs-room) + var(--card-h) / 2),
+                       calc(clamp(calc(49px + var(--lift) + var(--card-h) / 2), calc(50% - 75px + var(--lift)), calc(100% - var(--gap) + var(--lift) - 72px - var(--card-h) / 2)) - var(--scene-up))) }
   .deck{ top:var(--deck-y); height:var(--card-h) }
   .card{ height:var(--card-h) }
   /* Both lines below the card, one at a time in the same place: the opening
@@ -146,11 +175,18 @@ input[type=file]{ display:none }
      -- 44px on a tall screen, easing to 28px as --gap gives way on a short
      one. Only the line before a photo; the animated line keeps its 15px,
      and the phone keeps its two lines. */
-  .opening{ top:calc(var(--deck-y) + var(--card-h) / 2 + clamp(28px, calc(var(--gap) * .3), 44px)); bottom:auto; white-space:nowrap }
+  /* THE OPENING POSITION, exactly as ruled (Rich, 2026-09-14). */
+  .opening {
+    top: calc(
+      var(--deck-y) + var(--card-h) / 2 +
+      clamp(28px, calc(var(--gap) * .3), 88px)
+    );
+  }
+  .opening{ bottom:auto; white-space:nowrap }
   .opening br{ display:none }
   .tag{ top:calc(var(--deck-y) + var(--card-h) / 2 + 15px) }
   body:not(.telling-page) .tag{ visibility:hidden }
-  .go{ top:calc(var(--deck-y) + var(--card-h) / 2 + var(--gap)) }
+  .go{ top:calc(var(--deck-y) + var(--card-h) / 2 + var(--gap) - var(--lift)) }
   /* THE CTA'S FINAL STATE (Rich's DevTools mockup, 2026-09-12): 25px higher,
      optically centred at 52%, at 1.2. It is still ONE animation: the button
      waits at .77 (.in) and grows to 1.2 as the endpoint of its existing
@@ -159,7 +195,7 @@ input[type=file]{ display:none }
      nothing jumps. The waiting position (150px under the card, 50%) is
      unchanged. */
   .go{ transition:transform 1.1s cubic-bezier(.4,0,.2,1), left 1.1s cubic-bezier(.4,0,.2,1), margin-top 1.1s cubic-bezier(.4,0,.2,1), opacity .5s ease }
-  .go.full{ transform:translateX(-50%) scale(1.2) translateY(-10px); margin-top:-25px; left:52% }
+  .go.full{ transform:translateX(-50%) scale(1.5) translateY(-10px); margin-top:-25px; left:52% }
   /* THE CARD IS THE UPLOAD CONTROL -- no separate button on desktop. The
      invisible gradient layer above the card's face must not take the click
      meant for it; a keyboard focus ring, drawn inside the rounded card. */
@@ -220,6 +256,68 @@ input[type=file]{ display:none }
   .gc.in{ opacity:.9; transform:none }
   .nm{ font-size:1.35rem }
 }
+/* ── THE PERSISTENT STATUS (go-to-market pass 1, copy pass 2, 2026-09-14) ──
+   Shown while THEIR image is actually being made: from the moment the real
+   reveal request goes out (the photo has passed intake) until the result
+   arrives or any settled state takes over. Anchored to the card, so it
+   never moves with the riffle line. Desktop: in the clear band between the
+   logo and the card. Phone: the card is the screen, so just inside its top
+   edge, on a soft fade. A fixed header, "Crafting Your Image", and under it
+   one slow supporting line (the sequence is in the script: about 5 seconds
+   of settled reading each, a calm .4s fade between). In the longer wait
+   "Turning You Into" holds still and only the material word changes, each
+   in its own colour, every one AA against the ground it sits on. No
+   spinner, bar, count or percentage. Reduced motion: no fades and no
+   breath -- the lines change in place. */
+/* THE PROCESSING COPY (Rich's Photoshop mockup, 2026-09-15). Two lines
+   over the card, as real spacing: Crafting Your Image (--rs-craft, 32px,
+   #c36d26, italic) -- 25px (--rs-gap1) -- Imagine Yourself As [word]
+   (--rs-imagine, 42px, oxblood) -- 40px (--rs-gap2) -- the card. Each line
+   box is exactly its font size (line-height 1), so the gaps are the gaps.
+   Wide enough (2.2x the card) for the longest word at 42px. */
+.reveal-status{ position:absolute; left:-60%; right:-60%; bottom:calc(100% + var(--rs-gap2, 40px)); z-index:5; margin:0; text-align:center; pointer-events:none;
+  font-family:var(--serif); color:var(--ox);
+  opacity:0; visibility:hidden; transition:opacity .45s ease, visibility 0s linear .45s }
+.reveal-status.on{ opacity:1; visibility:visible; transition:opacity .45s ease, visibility 0s }
+/* Crafting Your Image: a ripple, not a pulse -- each letter dips to .55 and
+   back in turn, so one slow wave runs through the phrase every 2s, then the
+   next. Letters stay put; only their ink changes. The phrase is read once,
+   whole (.rs-say); the letters are visual only. */
+.rs-head{ margin:0; font-style:italic; font-weight:400; font-size:var(--rs-craft, 32px); line-height:1; color:#c36d26 }
+.rs-say{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap }
+.rs-l{ animation:rsRipple 2s ease-in-out infinite; animation-delay:calc(var(--i) * 2s / var(--n)) }
+@keyframes rsRipple{ 0%, 44%, 100%{ opacity:1 } 22%{ opacity:.55 } }
+/* Imagine Yourself As [word]: "Imagine Yourself" italic, "As" and the word
+   upright, as the mockup sets them. "Imagine Yourself As" never moves: the
+   words share one cell, the width of a middling word ("Bronze", 2.75em),
+   so the line sits centred over the card for most words, as the mockup's
+   "Iron" does, and the two long ones run on to the right. The word changes over 2s --
+   out over 1.2s, the next in over 1.2s from 0.8s -- a soft fade through a
+   slight blur, never a roll. */
+.rs-line{ display:grid; justify-items:center; margin:var(--rs-gap1, 25px) 0 0; font-size:var(--rs-imagine, 42px); font-weight:500; line-height:1; color:var(--ox) }
+.rs-turn{ display:inline-grid; grid-template-columns:auto auto; column-gap:.26em; align-items:baseline; white-space:nowrap }
+.rs-fixed{ grid-column:1 }
+.rs-fixed em{ font-style:italic; font-weight:400 }
+.rs-words{ grid-column:2; display:grid; justify-items:start; width:2.75em }
+.rs-w{ grid-area:1 / 1; white-space:nowrap; opacity:0; filter:blur(5px); transition:opacity 1.2s ease, filter 1.2s ease }
+.rs-w.on{ opacity:1; filter:blur(0) }
+/* Phone: over the card's top edge, on a soft fade -- the card's own
+   bottom-gradient language, turned over -- dense enough under the second
+   line that the lightest riffle frame still holds AA. Exactly the card's
+   width (90vw) and top corners. The same hierarchy, sized to the width:
+   Crafting the smaller line (Rich's orange holds AA on the fade), Imagine
+   the larger in the fade's light ink -- oxblood would not read on it. */
+@media (max-width:720px){
+  .reveal-status{ bottom:auto; top:0; left:5vw; right:5vw; padding:12px 10px 24px; border-radius:16px 16px 0 0;
+    background:linear-gradient(rgba(20,15,10,.8), rgba(20,15,10,.66) 70%, rgba(20,15,10,0));
+    color:#f6ecd8; text-shadow:0 1px 2px rgba(0,0,0,.4) }
+  .rs-head{ font-size:clamp(16px, 4.6vw, 20px) }
+  .rs-line{ color:#f6ecd8; margin-top:clamp(6px, 2vw, 9px); font-size:clamp(18px, 5.6vw, 24px) }   /* the longest line still fits a 320 card */
+}
+@media (prefers-reduced-motion:reduce){
+  .rs-l{ animation:none }
+  .rs-w{ transition:none; filter:none }
+}
 @media (min-width:721px){ .pill{ display:none !important } }
 @media (prefers-reduced-motion:reduce){ .card,.side,.go,.fc,.cardwrap{ transition:none !important; animation:none !important } }
 </style></head><body>
@@ -245,12 +343,16 @@ input[type=file]{ display:none }
           </div>
           <div class="face back" id="back"></div>
         </div>
+        <div class="reveal-status" id="revealStatus">
+          <p class="rs-head" role="status" aria-live="polite"></p>
+          <p class="rs-line" aria-hidden="true"><span class="rs-turn"><span class="rs-fixed"><em>Imagine Yourself</em> As</span><span class="rs-words"><span class="rs-w" data-w="glass">Glass</span><span class="rs-w" data-w="stone">Stone</span><span class="rs-w" data-w="iron">Iron</span><span class="rs-w" data-w="plushy">Plushy</span><span class="rs-w" data-w="stained">Stained Glass</span><span class="rs-w" data-w="mosaic">Mosaic</span><span class="rs-w" data-w="driftwood">Driftwood</span><span class="rs-w" data-w="porcelain">Porcelain</span><span class="rs-w" data-w="bronze">Bronze</span></span></span></p>
+        </div>
       </div>
       <div class="fan fan-r" id="fanR"></div>
       <div class="mgrid" id="mgrid"></div>
     </div>
 
-    <p class="tag" id="tag">Imagine yourself&hellip;</p>
+    <p class="tag" id="tag"></p>
 
     <div class="acts" id="acts">
       <button class="pbtn pbtn--pick" id="btnUpload">
@@ -330,7 +432,42 @@ var MOSAIC_MORE = ['flip_17','flip_11'];
    path (/previews/foyer-flip/<id>.jpg). Served from the site, that path is
    used as it is. Opened straight from disk, a site path points nowhere, so
    the same path is read from the repo's public/ folder beside this one. */
-function imgFor(id){ var p = IMG(id); return location.protocol === 'file:' ? '../public' + p : p; }
+/* THE FOYER'S IMAGES FOLLOW THE PHOTOGRAPH'S SUBJECT (Rich, 2026-09-14).
+   The intake already says who is in the photograph (its d.subject -- the one
+   guest-safe check; nothing asks again). A man sees the male set, a woman
+   -- or a photograph the check could not read -- the existing set. Same
+   frames, same order, same fan, same timing: only the pictures change.
+
+   Each flip resolves ONCE, here, to its canonical effect: the captions in
+   foyer-DATA.js where they name one (flip_07 origami, flip_14 crystallized,
+   flip_15 balloon_face, flip_18 cast_glass, flip_24 stained_glass, flip_26
+   victorian among them); the uncaptioned frames by their artwork, matched
+   to the effect's generation batch. All 27 effects, each once. A man's
+   picture is public/previews/foyer-flip-male/<effect>.jpg, as named there. */
+var FLIP_EFFECT = {
+  flip_01:'retro_robot',  flip_02:'reclaimed_bronze', flip_03:'quilted',       flip_04:'renaissance',
+  flip_05:'plushy',       flip_06:'petal_sculpture',  flip_07:'origami',       flip_08:'oil_impasto',
+  flip_09:'neon',         flip_10:'impressionist',    flip_11:'ice',           flip_12:'iron',
+  flip_13:'elizabethan',  flip_14:'crystallized',     flip_15:'balloon_face',  flip_16:'art_nouveau',
+  flip_17:'art_deco',     flip_18:'cast_glass',       flip_19:'linocut',       flip_20:'porcelain',
+  flip_21:'deco_twenties',flip_22:'sand_form',        flip_23:'sheet_music',   flip_24:'stained_glass',
+  flip_25:'stone',        flip_26:'victorian',        flip_27:'wild_west'
+};
+var FOYER_SUBJECT = null;   /* 'man' | 'woman' | null -- the intake's answer, once it has one */
+function imgFor(id){
+  var p = IMG(id);
+  if (FOYER_SUBJECT === 'man'){
+    if (FLIP_EFFECT[id]) p = '/previews/foyer-flip-male/' + FLIP_EFFECT[id] + '.jpg';
+    else console.error('[foyer] no effect for ' + id + ' -- no male picture to show');
+  }
+  return location.protocol === 'file:' ? '../public' + p : p;
+}
+/* The intake has answered. Remember who is in the photograph and, for a
+   man, have the fan and the phone's grid ready before they are needed. */
+function setFoyerSubject(subject){
+  FOYER_SUBJECT = (subject === 'man' || subject === 'woman') ? subject : null;
+  if (FOYER_SUBJECT === 'man') FAN.concat(MOSAIC_MORE).forEach(function(id){ (new Image()).src = imgFor(id); });
+}
 
 /* TIMING. The riffle, line, photo beat and simulated-result values are the
    source files' own. HOLD is Rich's 2 seconds. FAN_MS and SHRINK_MS match
@@ -409,8 +546,25 @@ function begin(src){
      the card and Come Inside & Explore is the one next step. Otherwise the
      riffle runs until the real result, or a reason there is none, arrives. */
   if (FOYER.free === false) settle(FOYER.why || 'unavailable');
-  else STATE.riffleStart = later(startRiffle, PHOTO_BEAT);
+  else riffleWhenSubjectKnown();
 }
+
+/* THE RIFFLE WAITS FOR THE PHOTOGRAPH'S SUBJECT (Rich, 2026-09-14). Its
+   pictures depend on who is in the photograph, and the intake's answer is
+   what says so. The riffle keeps its approved beat (PHOTO_BEAT after the
+   photograph goes up) and, if the intake has not answered by then, begins
+   the moment it does -- the photograph stays on the card meanwhile, as it
+   does for the beat. The riffle, the reveal request and the processing
+   status then start together. An intake that refuses or cannot be made
+   settles instead, as it always did. No second look: it is the same answer. */
+function riffleWhenSubjectKnown(){
+  STATE.riffleStart = later(function(){
+    STATE.riffleStart = null;
+    var answered = FOYER.intake ? FOYER.intake.then(function(){}, function(){}) : Promise.resolve();
+    answered.then(function(){ if (STATE.phase === 'photo') startRiffle(); });
+  }, PHOTO_BEAT);
+}
+
 
 /* STATE 3: riffle + synced line */
 function startRiffle(){
@@ -421,33 +575,14 @@ function startRiffle(){
   front.innerHTML='';
   FLIPS.forEach(function(r,i){ var f=document.createElement('div'); f.className='flip'+(i===0?' on':''); f.style.backgroundImage='url('+imgFor(r[0])+')'; front.appendChild(f); });
   var g=document.createElement('div'); g.className='grad'; front.appendChild(g); card.classList.add('telling');
-  /* ONE CLOCK: THE FRAME AND ITS LINE ARE ONE STATE. The source files ran
-     the frames (300ms) and the line (600ms) on separate timers with separate
-     counters, so the line described a frame two or more places away from the
-     one on the card. Now a single tick puts up the next frame, and every
-     other tick -- the line's old 600ms cadence, so it stays readable -- the
-     line is rewritten in the same step, from the frame now on the card:
-       a frame with a caption  -> "Imagine yourself <its caption>"
-       a frame without one     -> "Imagine yourself…", the opening words,
-                                  which describe no frame at all
-     Between rewrites the line stays up for the one frame that passes. It is
-     never set from any frame but the one showing. FLIPS has an odd number of
-     frames, so the second pass captions the frames the first pass skipped,
-     and every caption has appeared by the time the wider lines take over --
-     after FLIPS.length rewrites, 16.2s, when the old timer switched too.
-     The wider lines describe no frame; the frames keep riffling under them. */
-  var flips=front.querySelectorAll('.flip'), shown=0, ticks=0, rewrites=0;
-  var EVERY = Math.round(LINE_EVERY / RIFFLE_EVERY);          // frames per rewrite: 2
-  function caption(k){ var tl=FLIPS[k][1];
-    tag.innerHTML = tl ? 'Imagine yourself <span class="tail">'+tl+'</span>' : 'Imagine yourself&hellip;'; }
-  caption(0);                                                  // frame 0 is up; its line with it
+  /* NO LINE UNDER THE CARD (Rich, 2026-09-14). The riffle used to rewrite
+     "Imagine yourself <caption>" under the card on every other frame, then
+     the two wider closing lines; all of it is gone. The frames keep exactly
+     their timing: one tick, every RIFFLE_EVERY, puts up the next frame. */
+  var flips=front.querySelectorAll('.flip'), shown=0, ticks=0;
   var iv=setInterval(function(){
     ticks++; shown = ticks % flips.length;
     flips.forEach(function(f,j){ f.classList.toggle('on',j===shown); });
-    if (ticks % EVERY) return;                                 // the in-between frame: the line holds
-    rewrites++;
-    if (rewrites < FLIPS.length) caption(shown);
-    else { tag.classList.add('wide'); tag.textContent=WIDE[(rewrites-FLIPS.length)%WIDE.length]; }
   }, RIFFLE_EVERY);
   STATE.riffle = { iv:iv };
 }
@@ -468,6 +603,7 @@ function stopRiffle(){
    turns, so the back face is never blank mid-turn. */
 function generationReady(result){
   if (STATE.result || STATE.phase === 'opening') return;
+  hideRevealStatus();
   STATE.result = result;
   var im = new Image(); im.src = result.src;
   var ready = im.decode ? im.decode() : Promise.resolve();
@@ -549,6 +685,7 @@ fetch('/api/v1/foyer/reveal', { credentials:'same-origin', cache:'no-store' })
 function askIntake(){
   FOYER.intake = foyerPost('/api/v1/foyer/intake', { image_b64: SRC.b64 });
   FOYER.handoff = FOYER.intake.then(function(d){
+    if (d && d.status === 'ok') setFoyerSubject(d.subject);   /* first, before the riffle looks */
     if (d && d.status === 'ok' && window.LitenHandoff)
       return LitenHandoff.put(SRC.dataUrl, { subject:d.subject, gender:d.gender, ageGroup:d.age_group })
         .catch(function(e){ console.warn('[foyer] handoff not written', e); });
@@ -556,6 +693,74 @@ function askIntake(){
   });
   return FOYER.intake;
 }
+
+/* THE PERSISTENT STATUS (see .reveal-status). Shown when the real reveal
+   request goes out; cleared by the result (generationReady) or by any
+   settled state (settle). The header is filled when shown, so a screen
+   reader hears it once; the supporting line is visual only.
+
+   THE SEQUENCE (Rich's Photoshop mockup, 2026-09-15). "Imagine Yourself
+   As" holds still from the first moment; only the word changes, one every
+   5.4s -- the cadence the copy has had since pass 2 -- through the same
+   materials, in order, for as long as the render takes. Each change takes
+   2s: the word goes out over 1.2s (the CSS transition) and the next comes
+   in RS_NEXT_IN after it starts, over 1.2s. Every step checks it still
+   belongs to the current showing (RS.run), so a result, a failure, Try
+   again or leaving the page can never leave a timer changing text. Reduced
+   motion: the same order at the same pace, changed in place. */
+var RS_HEAD = 'Crafting Your Image';
+var RS_EVERY = 5400, RS_NEXT_IN = 800;
+var revealStatus = document.getElementById('revealStatus'), revealStatusClear = null;
+var RS = { run: 0, timer: null };
+function rsEl(sel){ return revealStatus ? revealStatus.querySelector(sel) : null; }
+function rsReduced(){ return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function rsLater(ms, fn){ var run = RS.run; RS.timer = setTimeout(function(){ if (run === RS.run) fn(); }, ms); }
+function rsTurn(i){
+  var words = revealStatus.querySelectorAll('.rs-w'), next = (i + 1) % words.length;
+  words[i].classList.add('on');
+  if (rsReduced()){ rsLater(RS_EVERY, function(){ words[i].classList.remove('on'); rsTurn(next); }); return; }   /* one step: no blank frame */
+  rsLater(RS_EVERY - RS_NEXT_IN, function(){
+    words[i].classList.remove('on');
+    rsLater(RS_NEXT_IN, function(){ rsTurn(next); });
+  });
+}
+/* The header, set for the ripple: the phrase once for a screen reader, and
+   each letter in its own span with its place in the wave (--i of --n). */
+function rsHead(text){
+  var h = rsEl('.rs-head'); if (!h) return;
+  h.textContent = '';
+  if (!text) return;
+  var say = document.createElement('span'), vis = document.createElement('span');
+  say.className = 'rs-say'; say.textContent = text;
+  vis.setAttribute('aria-hidden', 'true');
+  for (var k = 0; k < text.length; k++){
+    var l = document.createElement('span');
+    l.className = 'rs-l'; l.style.setProperty('--i', k); l.style.setProperty('--n', text.length); l.textContent = text.charAt(k);
+    vis.appendChild(l);
+  }
+  h.appendChild(say); h.appendChild(vis);
+}
+function rsReset(){
+  RS.run++; clearTimeout(RS.timer); RS.timer = null;
+  if (!revealStatus) return;
+  revealStatus.querySelectorAll('.rs-w').forEach(function(e){ e.classList.remove('on'); });
+}
+function showRevealStatus(){
+  if (!revealStatus) return;
+  clearTimeout(revealStatusClear);
+  rsReset();
+  rsHead(RS_HEAD);
+  revealStatus.classList.add('on');
+  rsTurn(0);                        /* every showing -- Try again included -- starts from the first word */
+}
+function hideRevealStatus(){
+  rsReset();                        /* the sequence stops now, whatever it was doing */
+  if (!revealStatus || !revealStatus.classList.contains('on')) return;
+  revealStatus.classList.remove('on');
+  clearTimeout(revealStatusClear);
+  revealStatusClear = setTimeout(function(){ rsHead(''); }, 500);
+}
+window.addEventListener('pagehide', rsReset);
 
 function reveal(){
   var run = ++FOYER.run;
@@ -565,6 +770,7 @@ function reveal(){
     if (d.status === 'refused'){ settle('refused'); return; }
     if (d.status !== 'ok'){ settle('unavailable'); return; }                /* the check could not be made */
     if (FOYER.free === false){ settle(FOYER.why || 'unavailable'); return; }
+    showRevealStatus();   /* the photo passed intake; their image is being made from here */
     foyerPost('/api/v1/foyer/reveal', { image_b64: SRC.b64, intake: d.intake }).then(function(v){
       if (run !== FOYER.run) return;
       if (v && v.status === 'ok' && v.image){ generationReady({ src: v.image, label: v.label }); return; }
@@ -601,6 +807,7 @@ function settle(kind){
   if (STATE.result || STATE.phase === 'opening') return;
   if (kind === 'failed' && FOYER.free === false) kind = FOYER.why || 'unavailable';
   if (STATE.phase === 'settled' && STATE.settled === kind) return;
+  hideRevealStatus();
   stopRiffle();
   STATE.phase = 'settled'; STATE.settled = kind;
   front.innerHTML = '<img src="'+SRC.dataUrl+'"><div class="nm" role="status">'+SAY[kind]+'</div>';
@@ -633,6 +840,9 @@ document.addEventListener('click', function(e){ if (e.target && e.target.closest
      above the button where the glass puts it (it would need ~80px more),
      so the button -- still fixed -- comes down only as far as the stack
      needs, and never so low that its grown, pulsing size leaves the screen.
+     Where even then the enlarged final button (x1.5) would run off the foot
+     of the screen (320x568, Rich, 2026-09-14), it grows only as far as the
+     room below its top allows (--go-fit); everywhere it fits it keeps x1.5.
 
    Measured from layout, not transforms; re-measured when the web fonts land
    and on resize. Try again puts everything back as the glass has it. */
@@ -644,6 +854,7 @@ function clearSettledFit(){
   card.style.width = '';
   document.getElementById('deck').style.transform = '';
   go.style.bottom = '';
+  go.style.removeProperty('--go-fit');
   ['top', 'bottom', 'fontSize', 'display'].forEach(function(p){ tag.style[p] = ''; });
   tag.removeAttribute('role');
   var nm = front.querySelector('.nm');
@@ -678,6 +889,7 @@ function fitSettledCard(){
     go.style.bottom = bottom + 'px';
     goTop = innerHeight - bottom - go.offsetHeight;
   }
+  go.style.setProperty('--go-fit', ((innerHeight - 8 - goTop) / go.offsetHeight).toFixed(3));   /* 8px: the edge room above */
   var cardTop = Math.max(SETTLE_TOP, goTop - SETTLE_CLEAR - msgH - SETTLE_GAP - cardH);
   var now = card.getBoundingClientRect().top;
   document.getElementById('deck').style.transform = 'translateY(' + (-40 + cardTop - now) + 'px)';
@@ -693,8 +905,8 @@ function tryAgain(){
   clearSettledFit();
   tag.style.display = '';
   tag.classList.remove('wide');
-  tag.innerHTML = 'Imagine yourself&hellip;';
-  STATE.riffleStart = later(startRiffle, PHOTO_BEAT);
+  tag.textContent = '';
+  riffleWhenSubjectKnown();
   reveal();
 }
 
@@ -702,7 +914,10 @@ function tryAgain(){
    PRODUCTION: the result arrives with the Liten & Co watermark already
    baked into its pixels on the server, so the glass's CSS PREVIEW overlay
    is not laid over it -- one mark, not two. */
-function pv(src,label){ return '<img src="'+src+'"><div class="nm">'+label+'</div>'; }
+/* No caption on the card (Rich, 2026-09-14): the effect's name is no longer
+   printed across the bottom of the result -- and nothing takes its place.
+   The caption band (.nm) still carries the settled states' messages. */
+function pv(src,label){ return '<img src="'+src+'">'; }
 function revealResult(result){
   stopRiffle();
   STATE.phase = 'reveal';

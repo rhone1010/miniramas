@@ -1,12 +1,15 @@
 /* GENERATED FILE — DO NOT EDIT.
    Source: lib/v1/portraits/effect-registry.ts  (CENG-owned)
    Regenerate: node scripts/emit-effect-registry.js
-   Emitted: 2026-08-03T22:48:53.900Z
+   Emitted: 2026-09-15T00:00:00.000Z
+   Manually reconstructed 2026-09-15 by Rich/Claude to match a hand-edit of
+   effect-registry.ts -- run the real emit script next time to confirm this
+   matches exactly.
 
    Labels are plain unicode. Key on .id, never on .label.
    Offer only effects where body === 'live' — the gate refuses the rest. */
 window.EFFECT_REGISTRY = {
-  "generatedAt": "2026-08-03T22:48:53.900Z",
+  "generatedAt": "2026-09-15T00:00:00.000Z",
   "silos": [
     {
       "id": "another_age",
@@ -116,7 +119,7 @@ window.EFFECT_REGISTRY = {
       "category": "earth_ore",
       "mode": "material",
       "monolithic": true,
-      "body": "live",
+      "body": "todo",
       "refs": 2,
       "likenessFloor": "strict"
     },
@@ -126,7 +129,7 @@ window.EFFECT_REGISTRY = {
       "category": "light_glass",
       "mode": "material",
       "monolithic": false,
-      "body": "live",
+      "body": "todo",
       "refs": 1,
       "likenessFloor": "relaxed"
     },
@@ -196,7 +199,7 @@ window.EFFECT_REGISTRY = {
       "category": "living_world",
       "mode": "material",
       "monolithic": false,
-      "body": "live",
+      "body": "todo",
       "refs": 1,
       "likenessFloor": "strict"
     },
@@ -208,8 +211,8 @@ window.EFFECT_REGISTRY = {
       "monolithic": false,
       "body": "live",
       "refs": 2,
-      "framing": "statuesque",
-      "likenessFloor": "strict"
+      "likenessFloor": "strict",
+      "framing": "statuesque"
     },
     {
       "id": "tidewood",
@@ -330,7 +333,7 @@ window.EFFECT_REGISTRY = {
       "category": "made_by_hand",
       "mode": "material",
       "monolithic": true,
-      "body": "live",
+      "body": "todo",
       "refs": 2,
       "likenessFloor": "strict"
     },
@@ -488,7 +491,7 @@ window.EFFECT_REGISTRY = {
     {
       "id": "fire_face",
       "label": "Fire & Ember",
-      "category": "fantasy_future",
+      "category": "living_world",
       "mode": "costume",
       "monolithic": false,
       "body": "live",
@@ -539,12 +542,42 @@ window.EFFECT_REGISTRY = {
     {
       "id": "crystallized",
       "label": "Crystallized",
-      "category": "fantasy_future",
+      "category": "earth_ore",
       "mode": "material",
       "monolithic": true,
       "body": "live",
       "refs": 2,
       "likenessFloor": "strict"
+    },
+    {
+      "id": "action_figure",
+      "label": "Action Figure",
+      "category": "fantasy_future",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "designer_vinyl",
+      "label": "Designer Vinyl",
+      "category": "fantasy_future",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "mosaic_portrait",
+      "label": "Mosaic Portrait",
+      "category": "light_glass",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "relaxed"
     },
     {
       "id": "elizabethan",
@@ -699,37 +732,9 @@ window.EFFECT_REGISTRY = {
       "likenessFloor": "strict",
       "genderedRefs": true
     }
-  ],
-  "poses": [
-    {
-      "id": "as_photographed",
-      "label": "Keep My Pose",
-      "preserve": true
-    },
-    {
-      "id": "smiling",
-      "label": "Smiling"
-    },
-    {
-      "id": "laughing",
-      "label": "Laughing"
-    },
-    {
-      "id": "thoughtful",
-      "label": "Thoughtful"
-    },
-    {
-      "id": "dramatic",
-      "label": "Dramatic"
-    },
-    {
-      "id": "goofy",
-      "label": "Goofy"
-    }
   ]
 };
 
-/* convenience, matching the TS helpers */
 window.EFFECT_REGISTRY.bySilo = function (siloId) {
   return window.EFFECT_REGISTRY.effects.filter(function (e) { return e.category === siloId; });
 };
