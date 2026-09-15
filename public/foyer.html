@@ -102,7 +102,7 @@ body.telling-page .opening, body.revealing .opening{ display:none }
 .go{ position:absolute; left:50%; top:calc(50% + clamp(250px,32vh,320px) + 150px); font-family:var(--serif); font-style:italic; font-size:1.4rem; padding:15px 36px; border-radius:10px; background:var(--ox); color:#f6ecd8; border:1px solid var(--ox-line); cursor:pointer; pointer-events:none; opacity:0; transform-origin:center top; transform:translateX(-50%) scale(.9625); transition:transform 1.1s cubic-bezier(.4,0,.2,1), opacity .5s ease; z-index:6 }
 .go.in{ opacity:1; pointer-events:auto; transform:translateX(-50%) scale(.9625) }
 .go.full{ transform:translateX(-50%) scale(1.4375) translateY(-10px) }
-@media(max-width:720px){ .go.in{ transform:translateX(-50%) scale(1.25) } .go.full{ transform:translateX(-50%) scale(1.5) } }
+@media(max-width:720px){ .go.in{ transform:translateX(-50%) scale(1.25) } .go.full{ transform:translateX(-50%) scale(min(1.5, var(--go-fit, 1.5))) } }
 @media(min-width:721px){ .pbtn--cam{ display:none } }
 @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(215,189,137,.6) } 70%{ box-shadow:0 0 0 14px rgba(215,189,137,0) } 100%{ box-shadow:0 0 0 0 rgba(215,189,137,0) } }
 .go::after{ content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none }
@@ -818,6 +818,9 @@ document.addEventListener('click', function(e){ if (e.target && e.target.closest
      above the button where the glass puts it (it would need ~80px more),
      so the button -- still fixed -- comes down only as far as the stack
      needs, and never so low that its grown, pulsing size leaves the screen.
+     Where even then the enlarged final button (x1.5) would run off the foot
+     of the screen (320x568, Rich, 2026-09-14), it grows only as far as the
+     room below its top allows (--go-fit); everywhere it fits it keeps x1.5.
 
    Measured from layout, not transforms; re-measured when the web fonts land
    and on resize. Try again puts everything back as the glass has it. */
@@ -829,6 +832,7 @@ function clearSettledFit(){
   card.style.width = '';
   document.getElementById('deck').style.transform = '';
   go.style.bottom = '';
+  go.style.removeProperty('--go-fit');
   ['top', 'bottom', 'fontSize', 'display'].forEach(function(p){ tag.style[p] = ''; });
   tag.removeAttribute('role');
   var nm = front.querySelector('.nm');
@@ -863,6 +867,7 @@ function fitSettledCard(){
     go.style.bottom = bottom + 'px';
     goTop = innerHeight - bottom - go.offsetHeight;
   }
+  go.style.setProperty('--go-fit', ((innerHeight - 8 - goTop) / go.offsetHeight).toFixed(3));   /* 8px: the edge room above */
   var cardTop = Math.max(SETTLE_TOP, goTop - SETTLE_CLEAR - msgH - SETTLE_GAP - cardH);
   var now = card.getBoundingClientRect().top;
   document.getElementById('deck').style.transform = 'translateY(' + (-40 + cardTop - now) + 'px)';
