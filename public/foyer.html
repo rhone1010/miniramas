@@ -210,14 +210,17 @@ input[type=file]{ display:none }
    bottom:
      34px (as it always was) -- the logo (126px) -- 48px
      Crafting Your Image (32px) -- 25px -- Imagine Yourself As [word] (42px)
-     -- 40px -- the card, 560px tall (387x560, 87.5% of the 640 card) -- 80px
+     -- 40px -- the card, 544px tall (376x544, 85% of the 442x640 card) -- 80px
      Come Inside & Explore (57px while it waits; its final state rises 40px
-     and grows, ending 40px under the card) -- 36px.
-   The fan scales with the card (fanReveal), so it fits the screen whole.
+     and grows, ending 40px under the card) -- 52px.
+   The finished fan: its six cards at 80% of the size they had here with the
+   560px card (Rich, 2026-09-15) -- --fan-k .8235 = .8 x 560 / 544, on top
+   of the fan's own scaling with the card. Angles, order, overlap and the
+   animation are unchanged; spacing shrinks with the cards.
    Scoped to that screen only: every other desktop size keeps the rule
    above until the responsive pass derives it from this baseline. */
 @media (min-width:1800px) and (max-width:2040px) and (min-height:1040px) and (max-height:1120px){
-  .stage{ --rs-craft:32px; --rs-gap1:25px; --rs-imagine:42px; --rs-gap2:40px; --card-h:560px;
+  .stage{ --rs-craft:32px; --rs-gap1:25px; --rs-imagine:42px; --rs-gap2:40px; --card-h:544px; --fan-k:.8235;
           --base-under-logo:48px; --base-to-cta:80px;
           --deck-y:calc(var(--base-under-logo) - 6px + var(--rs-room) + var(--card-h) / 2) }   /* 6px: the logo box's own bottom padding */
   .go{ top:calc(var(--deck-y) + var(--card-h) / 2 + var(--base-to-cta)) }
@@ -1010,7 +1013,11 @@ function fanReveal(){
      the cards, so the bow keeps its shape; the rotations are unchanged. */
   var SPREAD = 0.52;
   var base = cards[0].offsetWidth || 240;
-  var CW = Math.min(base * K * FAN_SCALE, (innerWidth - 48) / (2 * (3 * SPREAD + 0.709)));
+  /* --fan-k: a size the layout can set for the fan alone (the 1920x1080
+     baseline does); 1 everywhere else. Spacing and the step down the bow
+     are fractions of CW, so they shrink with the cards. */
+  var FK = parseFloat(getComputedStyle(document.querySelector('.stage')).getPropertyValue('--fan-k')) || 1;
+  var CW = Math.min(base * K * FAN_SCALE * FK, (innerWidth - 48) / (2 * (3 * SPREAD + 0.709)));
   var S = CW / base;                                        // the fan's size against its original
   cards.forEach(function(d){ d.style.width = CW + 'px'; });
   var spacing = CW * SPREAD;
