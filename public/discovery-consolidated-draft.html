@@ -3465,6 +3465,9 @@ function acceptPhoto(url, trusted){
     detectPhotoOrientation(url);   /* __ASPECT_STEP__ default follows the photo */
     SRC_B64  = url.slice(comma + 1);
     SRC_MIME = url.slice(5, url.indexOf(';') > -1 ? url.indexOf(';') : comma);
+    /* __RESUME_PHOTO_GUARD__ A resume held for want of its photograph is
+       done with once one is in: all it could put back is on the page. */
+    if (RESUME_AWAITS_PHOTO){ RESUME_AWAITS_PHOTO = false; clearResume(); }
 
     var stamp = document.querySelector('.photo-stamp');
     if (stamp){
@@ -3899,8 +3902,12 @@ function noteSection(id){
    is held (saveResume, at the moment the link is sent) and the existing
    magic link brings them back into Review with it. Disabled at 0. */
 var PENDING_REVIEW = false;
-function requestReview(){
+function requestReview(anchorEl){
   if (!SELECTED.length) return;
+  /* __RESUME_PHOTO_GUARD__ Choices can be on the page without a photograph
+     only after a resume whose photograph did not come back: no Review until
+     there is one. */
+  if (requirePhoto(anchorEl)) return;
   closePickSizes();
   if (ME){ showReview(); return; }
   PENDING_REVIEW = true;
@@ -3920,7 +3927,7 @@ document.addEventListener('click', function(e){
   if (ps){ if (!ps.disabled) pickFor(+ps.dataset.pfm); return; }
   if (c('#optPickForMe')){ togglePickSizes(); return; }
   if (c('#allToggle')){ setAllOpen(!ALL_OPEN); act(ALL_OPEN ? 'rooms opened' : 'rooms closed'); return; }
-  if (c('#btnGoReview')){ requestReview(); return; }
+  if (c('#btnGoReview')){ requestReview(c('#btnGoReview')); return; }
 });
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePickSizes(); });
 
@@ -5114,6 +5121,41 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
      again. */
   var RESUME_KEY      = 'liten_resume_v1';
   var RESUME_MAX_MS   = 2 * 60 * 60 * 1000;     /* same browser, about two hours */
+  /* __RESUME_PHOTO_GUARD__ (Rich, 2026-09-15). True while a restored
+     Discovery is on the page WITHOUT its photograph: the held resume is kept
+     until a valid photograph is in (acceptPhoto clears it then), so a
+     reload before the new upload does not lose the customer's work. */
+  var RESUME_AWAITS_PHOTO = false;
+
+  /* The photograph as saved, in a few bytes: its length and an FNV-1a sum.
+     The one that comes back must match it -- the same bytes, whole. Decoding
+     alone cannot tell: Chrome draws a JPEG cut short (a half-written store)
+     with the missing part grey and reports it decoded. */
+  function photoPrint(url){
+    var h = 0x811c9dc5;
+    for (var i = 0; i < url.length; i++){ h ^= url.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    return url.length + ':' + (h >>> 0).toString(16);
+  }
+
+  /* A restored photograph counts only if it really is one: an image data
+     URL with bytes in it, the very bytes that were saved (when the resume
+     recorded them), that the browser can decode. Missing, empty,
+     malformed, non-image, cut short and corrupt all come back false -- the
+     same as no photograph. All of it is local; nothing is sent anywhere. */
+  function validSourcePhoto(url, print){
+    if (typeof url !== 'string' || !/^data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+\/]+={0,2}$/i.test(url)) return Promise.resolve(false);
+    if (print && photoPrint(url) !== print) return Promise.resolve(false);
+    return new Promise(function(resolve){
+      var img = new Image();
+      img.onload = function(){
+        if (!(img.naturalWidth > 0 && img.naturalHeight > 0)) return resolve(false);
+        if (typeof img.decode !== 'function') return resolve(true);
+        img.decode().then(function(){ resolve(true); }, function(){ resolve(false); });
+      };
+      img.onerror = function(){ resolve(false); };
+      img.src = url;
+    });
+  }
 
   /* __RESUME_V2__ (Pass 2, 2026-09-13). The sign-in is at Review now, so
      what has to survive it is the whole working Discovery, not just a
@@ -5138,7 +5180,8 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
       page:    CURATED.page,
       target:  targetBundle(),
       pendingReview: !!PENDING_REVIEW,
-      photo:   !!uploadedPhotoDataUrl
+      photo:   !!uploadedPhotoDataUrl,
+      photoPrint: uploadedPhotoDataUrl ? photoPrint(uploadedPhotoDataUrl) : null   /* __RESUME_PHOTO_GUARD__ */
     };
     try {
       localStorage.setItem(RESUME_KEY, JSON.stringify(core));
@@ -5166,7 +5209,13 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
      goes in through acceptPhoto with the answer it already had -- it is
      not examined again -- and then the customer's own subject and
      override are put back exactly as they left them. If they were on the
-     way into Review, they arrive in Review. */
+     way into Review, they arrive in Review.
+
+     __RESUME_PHOTO_GUARD__ (Rich, 2026-09-15): only with a VALID photograph
+     (validSourcePhoto). Without one -- missing, empty, cut short, corrupt, or the store
+     unreadable -- the rest of the work still comes back, the customer stays
+     in Discovery with the photo stamp asking, the saved detection is not
+     reused, and the held resume is kept until a new photograph is in. */
   function restoreResume(){
     var raw = null;
     try { raw = localStorage.getItem(RESUME_KEY); } catch (e){ return Promise.resolve(false); }
@@ -5180,14 +5229,14 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
     var photo = (core.v === 2 && core.photo && window.LitenHandoff && LitenHandoff.getPhoto)
       ? LitenHandoff.getPhoto('source') : Promise.resolve(legacyImg);
 
-    return photo.then(function(url){
-      if (url){
-        acceptPhoto(url, core.analyze || { subject: core.subject || null });
-      }
+    return photo.then(null, function(){ return null; }).then(function(url){
+      return validSourcePhoto(url, core.photoPrint || null).then(function(ok){ return ok ? url : null; });
+    }).then(function(url){
+      var restored = !!(url && acceptPhoto(url, core.analyze || { subject: core.subject || null }));
       if (core.v === 2){
         if (core.subject === 'woman' || core.subject === 'man') SUBJECT = core.subject;
         SUBJECT_FORCED   = !!core.subjectForced;
-        SUBJECT_DETECTED = core.subjectDetected || null;
+        SUBJECT_DETECTED = restored ? (core.subjectDetected || null) : null;   /* what THAT photograph said -- only with it */
         if (validBench(core.bench)){ CURATED.bench = core.bench.slice(); CURATED.page = core.page ? 1 : 0; }
       }
       /* saveResume wrote entries in SELECTED's own shape, resolved for the
@@ -5206,8 +5255,13 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
       /* The new session learns what is chosen, as a fresh /select each. */
       ensureSession().then(function(sid){ if (sid) SELECTED.forEach(function(s){ syncSelect(s.key, 'select'); }); });
 
-      clearResume();
-      if (core.pendingReview && ME && SELECTED.length) showReview();
+      if (restored){
+        clearResume();
+        if (core.pendingReview && ME && SELECTED.length) showReview();
+      } else {
+        RESUME_AWAITS_PHOTO = true;
+        requirePhoto(null);
+      }
       return true;
     });
   }
@@ -5924,6 +5978,11 @@ function closeCheckout(){
 function startCheckout(){
   var btn = document.getElementById('btnCraft');
   if (!btn || btn.disabled) return;
+
+  /* __RESUME_PHOTO_GUARD__ (Rich, 2026-09-15). No valid source photograph,
+     no checkout -- in front of the server's own
+     portfolio_source_image_required, not instead of it. */
+  if (requirePhoto(btn) || !SRC_B64) return;
 
   /* Sign-in precedes crafting — portraits.html:9026-9031, copied. The
      routes enforce it anyway by refusing without an owner. */

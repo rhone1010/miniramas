@@ -158,6 +158,9 @@ function build(opts: { selected?: number; realPieces?: boolean } = {}) {
     ASPECT: aspectState.ASPECT,
     SUBJECT: aspectState.SUBJECT,
     SRC_B64: aspectState.SRC_B64,
+    // the photograph that source came from -- startCheckout's photo guard (requirePhoto) reads it
+    uploadedPhotoDataUrl: 'data:image/jpeg;base64,' + aspectState.SRC_B64,
+    nudge: () => {},
     aspectRatioOf: (a: string) => ({ square: '1:1', portrait: '3:4', landscape: '4:3' } as any)[a],
     SERVER_OFFER: null,
     SIZE_PRICE: { 1: 2.99, 4: 4.99, 8: 7.99, 16: 12.99 },
@@ -195,6 +198,7 @@ function build(opts: { selected?: number; realPieces?: boolean } = {}) {
     fn('startCheckout'),
     fn('onEmbeddedCheckoutComplete'),
     fn('resetCraftBtn'),
+    fn('requirePhoto'),
     'function runReturnHandler(){ ' + returnHandler() + ' }',
     'return { startCheckout: startCheckout, closeCheckout: closeCheckout,',
     '  onEmbeddedCheckoutComplete: onEmbeddedCheckoutComplete, runReturnHandler: runReturnHandler,',
