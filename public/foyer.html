@@ -204,6 +204,24 @@ input[type=file]{ display:none }
   .empty:focus-visible{ outline:2px solid var(--gold-soft); outline-offset:-8px }
 }
 
+/* THE 1920x1080 BASELINE (Rich, 2026-09-15: "work ONLY at 1920x1080").
+   The whole stack placed in the 1080px canvas, top to bottom:
+     18px  -- the logo (126px) -- 24px
+     Crafting Your Image (32px) -- 25px -- Imagine Yourself As [word] (42px)
+     -- 40px -- the card, full size (442x640) -- 64px
+     Come Inside & Explore (57px while it waits; its final state rises 40px
+     and grows, so it ends 24px under the card, as far below the card as
+     the copy starts below the logo) -- 12px.
+   Scoped to that screen only: every other desktop size keeps the rule
+   above until the responsive pass derives it from this baseline. */
+@media (min-width:1800px) and (max-width:2040px) and (min-height:1040px) and (max-height:1120px){
+  .logo{ padding-top:18px }
+  .stage{ --rs-craft:32px; --rs-gap1:25px; --rs-imagine:42px; --rs-gap2:40px; --card-h:640px;
+          --base-under-logo:24px; --base-to-cta:64px;
+          --deck-y:calc(var(--base-under-logo) - 6px + var(--rs-room) + var(--card-h) / 2) }   /* 6px: the logo box's own bottom padding */
+  .go{ top:calc(var(--deck-y) + var(--card-h) / 2 + var(--base-to-cta)) }
+}
+
 /* ═══════════ MOBILE — the card IS the screen ═══════════ */
 @media (max-width:720px){
   html,body{ height:100dvh; overflow:hidden }
