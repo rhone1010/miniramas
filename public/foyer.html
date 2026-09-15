@@ -208,11 +208,12 @@ input[type=file]{ display:none }
    card, not the type, is what gives -- "size the card for the 1920
    composition"). The whole stack placed in the 1080px canvas, top to
    bottom:
-     34px (as it always was) -- the logo (126px) -- 48px
-     Crafting Your Image (32px) -- 25px -- Imagine Yourself As [word] (42px)
-     -- 40px -- the card, 544px tall (376x544, 85% of the 442x640 card) -- 80px
-     Come Inside & Explore (57px while it waits; its final state rises 40px
-     and grows, ending 40px under the card) -- 52px.
+     34px (as it always was) -- the logo (126px) -- 63px, so the logo stands
+     on its own -- Crafting Your Image (32px) -- 15px, so the two lines read
+     as one block -- Imagine Yourself As [word] (42px) -- 40px -- the card,
+     544px tall (376x544, 85% of the 442x640 card) -- 80px -- Come Inside &
+     Explore (57px while it waits; its final state rises 40px and grows,
+     ending 40px under the card) -- 47px.
    The finished fan: its six cards at 80% of the size they had here with the
    560px card (Rich, 2026-09-15) -- --fan-k .8235 = .8 x 560 / 544, on top
    of the fan's own scaling with the card. Angles, order, overlap and the
@@ -220,8 +221,8 @@ input[type=file]{ display:none }
    Scoped to that screen only: every other desktop size keeps the rule
    above until the responsive pass derives it from this baseline. */
 @media (min-width:1800px) and (max-width:2040px) and (min-height:1040px) and (max-height:1120px){
-  .stage{ --rs-craft:32px; --rs-gap1:25px; --rs-imagine:42px; --rs-gap2:40px; --card-h:544px; --fan-k:.8235;
-          --base-under-logo:48px; --base-to-cta:80px;
+  .stage{ --rs-craft:32px; --rs-gap1:15px; --rs-imagine:42px; --rs-gap2:40px; --card-h:544px; --fan-k:.8235;
+          --base-under-logo:63px; --base-to-cta:80px;
           --deck-y:calc(var(--base-under-logo) - 6px + var(--rs-room) + var(--card-h) / 2) }   /* 6px: the logo box's own bottom padding */
   .go{ top:calc(var(--deck-y) + var(--card-h) / 2 + var(--base-to-cta)) }
 }
