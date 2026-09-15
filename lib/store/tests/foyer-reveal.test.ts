@@ -30,7 +30,7 @@ import { buildEffectPrompt } from '@/lib/v1/portraits/portraits-bodies'
 import { FOYER_REVEAL_EFFECTS, REVEALS_PER_WINDOW } from '@/lib/v1/foyer/foyer-policy'
 import { signIntake, sha256Hex } from '@/lib/v1/foyer/foyer-identity'
 import { byId } from '@/lib/v1/portraits/effect-registry'
-import { foyerWatermarkPlacement } from '@/lib/v1/foyer/foyer-watermark'
+import { foyerWatermarkPlacement, foyerLinesGeometry, LOCKUP_OPACITY, SHADOW_OPACITY, LINES_OPACITY, LINES_ANGLE } from '@/lib/v1/foyer/foyer-watermark'
 import { bakeWatermark } from '@/lib/store/preview'
 import { readFileSync } from 'fs'
 import path from 'path'
@@ -210,23 +210,37 @@ describe('/api/v1/foyer/reveal — one NB2 render, watermarked, allowance-accoun
     expect(brighter / (a.data.length / 3)).toBeGreaterThan(0.01)
   })
 
-  it('the foyer\'s watermark is ONE large Liten & Co lockup across the portrait -- no tiled pattern anywhere else', async () => {
-    // Rich, 2026-09-14 ("modified B"): 62% of the width, centred, its centre at 58% of the height.
+  it('the foyer\'s watermark: the approved lockup, the earlier PREVIEW treatment\'s diagonal white lines, and no tiled marks', async () => {
+    // The lockup (Rich, 2026-09-14, "modified B", approved): 62% of the width,
+    // centred, its centre at 58% of the height -- unchanged by this pass.
     expect(foyerWatermarkPlacement(848, 1264)).toEqual({ width: 526, height: 441, left: 161, top: 513, shadow: 3 })
+    expect([LOCKUP_OPACITY, SHADOW_OPACITY]).toEqual([0.42, 0.22])
+    // The lines: the glass .wm's geometry (3px every 22px on its 442px card), white, 45 degrees.
+    expect(foyerLinesGeometry(848)).toEqual({ period: 848 * 22 / 442, width: 848 * 3 / 442 })
+    expect([LINES_OPACITY, LINES_ANGLE]).toEqual([0.18, -45])
     const res = await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: await intakeToken() } }))
     const marked = Buffer.from((await res.json()).image.split(',')[1], 'base64')
     const [a, b] = await Promise.all([sharp(CLEAN).raw().toBuffer({ resolveWithObject: true }), sharp(marked).raw().toBuffer({ resolveWithObject: true })])
     const { width: W, height: H } = a.info
     const p = foyerWatermarkPlacement(W, H)
-    let inBox = 0, outBox = 0
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const i = (y * W + x) * 3
-      if (Math.abs(b.data[i] - a.data[i]) + Math.abs(b.data[i + 1] - a.data[i + 1]) + Math.abs(b.data[i + 2] - a.data[i + 2]) < 45) continue
-      const inside = x >= p.left - 4 && x < p.left + p.width + p.shadow + 4 && y >= p.top - 4 && y < p.top + p.height + p.shadow + 4
-      if (inside) inBox++; else outBox++
-    }
-    expect(inBox).toBeGreaterThan(p.width * p.height * 0.05)   // the lockup is really there
-    expect(outBox).toBe(0)                                     // and nothing else is: the tiled pattern is gone
+    const diff = (x: number, y: number) => { const i = (y * W + x) * 3; return (b.data[i] - a.data[i]) + (b.data[i + 1] - a.data[i + 1]) + (b.data[i + 2] - a.data[i + 2]) }
+    // the lockup is there
+    let inBox = 0
+    for (let y = p.top; y < p.top + p.height; y++) for (let x = p.left; x < p.left + p.width; x++) if (Math.abs(diff(x, y)) > 90) inBox++
+    expect(inBox).toBeGreaterThan(p.width * p.height * 0.05)
+    // outside the lockup only the lines: brighter, never darker, ~14 crossing a row
+    let darker = 0
+    for (let y = 0; y < p.top - 8; y += 3) for (let x = 0; x < W; x += 3) if (diff(x, y) < -45) darker++
+    expect(darker).toBe(0)
+    let runs = 0, prev = false
+    for (let x = 0; x < W; x++) { const lit = diff(x, 60) > 30; if (lit && !prev) runs++; prev = lit }
+    expect(runs).toBeGreaterThanOrEqual(12); expect(runs).toBeLessThanOrEqual(17)
+    // running top-left to bottom-right, as the CSS drew them
+    let x0 = -1; for (let x = 20; x < 140; x++) if (diff(x, 100) > 30) { x0 = x; break }
+    expect([8, 16, 24, 32].every(k => [-1, 0, 1].some(d => diff(x0 + k + d, 100 + k) > 30))).toBe(true)
+    // and the tiled Liten pattern is not the foyer's any more
+    const src = readFileSync(path.join(process.cwd(), 'lib', 'v1', 'foyer', 'foyer-watermark.ts'), 'utf8')
+    expect(src).not.toMatch(/litenco_watermark|bakeWatermark\(/)
   })
 
   it('Portraits keeps its own tiled pattern; the foyer no longer uses it', async () => {

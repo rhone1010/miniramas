@@ -83,14 +83,6 @@ body.telling-page .opening, body.revealing .opening{ display:none }
    (off the bottom of the screen) -- in both source files. Unwrapped they
    run like every other line: one line on desktop, two on a phone. */
 .tag.wide{ max-width:none; margin-left:auto; margin-right:auto }
-/* The two cells (tagPair): a centred pair as wide as its longest phrase;
-   the fixed words against the seam, the phrase left-aligned from it. */
-.tag.two{ text-align:center }
-.tag-pair{ display:inline-grid; grid-template-columns:max-content minmax(0, max-content); column-gap:.26em; align-items:start; max-width:100%; text-align:left; vertical-align:top }
-.tag-l{ white-space:nowrap }
-.tag-r{ display:grid }
-.tag-r > span{ grid-area:1 / 1; visibility:hidden }
-.tag-r > span.on{ visibility:visible }
 /* ── actions ── */
 .acts{ display:flex; gap:14px; margin-top:26px }
 .acts.done{ display:none !important }  /* buttons vanish once a photo is chosen */
@@ -104,10 +96,13 @@ body.telling-page .opening, body.revealing .opening{ display:none }
    card height, clamp(250px,32vh,320px), plus 150px -- the room the animated
    line lives in. It waits at 2/3 of its final size (.77 of 1.15), grown from
    its top edge so the 150px holds, and grows on an ease-in-out curve. */
-.go{ position:absolute; left:50%; top:calc(50% + clamp(250px,32vh,320px) + 150px); font-family:var(--serif); font-style:italic; font-size:1.4rem; padding:15px 36px; border-radius:10px; background:var(--ox); color:#f6ecd8; border:1px solid var(--ox-line); cursor:pointer; pointer-events:none; opacity:0; transform-origin:center top; transform:translateX(-50%) scale(.77); transition:transform 1.1s cubic-bezier(.4,0,.2,1), opacity .5s ease; z-index:6 }
-.go.in{ opacity:1; pointer-events:auto; transform:translateX(-50%) scale(.77) }
-.go.full{ transform:translateX(-50%) scale(1.15) translateY(-10px) }
-@media(max-width:720px){ .go.in{ transform:translateX(-50%) } .go.full{ transform:translateX(-50%) scale(1.2) } }
+/* COME INSIDE & EXPLORE, 25% STRONGER (Rich, 2026-09-14): each state scaled
+   from its own value -- waiting .77 -> .9625, final 1.2 -> 1.5 on desktop;
+   1 -> 1.25 and 1.2 -> 1.5 on the phone. Same transitions, same places. */
+.go{ position:absolute; left:50%; top:calc(50% + clamp(250px,32vh,320px) + 150px); font-family:var(--serif); font-style:italic; font-size:1.4rem; padding:15px 36px; border-radius:10px; background:var(--ox); color:#f6ecd8; border:1px solid var(--ox-line); cursor:pointer; pointer-events:none; opacity:0; transform-origin:center top; transform:translateX(-50%) scale(.9625); transition:transform 1.1s cubic-bezier(.4,0,.2,1), opacity .5s ease; z-index:6 }
+.go.in{ opacity:1; pointer-events:auto; transform:translateX(-50%) scale(.9625) }
+.go.full{ transform:translateX(-50%) scale(1.4375) translateY(-10px) }
+@media(max-width:720px){ .go.in{ transform:translateX(-50%) scale(1.25) } .go.full{ transform:translateX(-50%) scale(1.5) } }
 @media(min-width:721px){ .pbtn--cam{ display:none } }
 @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(215,189,137,.6) } 70%{ box-shadow:0 0 0 14px rgba(215,189,137,0) } 100%{ box-shadow:0 0 0 0 rgba(215,189,137,0) } }
 .go::after{ content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none }
@@ -142,9 +137,15 @@ input[type=file]{ display:none }
    had (15px for either line, --gap for the button), so it all moves as one.
    The fan is scaled to match in fanReveal(). */
 @media (min-width:721px){
-  .stage{ --gap:clamp(75px, calc(75px + (100vh - 768px) * 0.323), 150px);
+  /* --LIFT (Rich, 2026-09-14): the line that rode between the card and the
+     button is gone, so the room it held moves ABOVE the card, where the
+     processing copy now lives. The card sits --lift lower, the button keeps
+     its place (card bottom + --gap - --lift), and the card's height is
+     unchanged -- --gap itself is untouched, so the opening line's rule reads
+     exactly as given. */
+  .stage{ --gap:clamp(75px, calc(75px + (100vh - 768px) * 0.323), 150px); --lift:34px;
           --card-h:min(640px, max(220px, calc(100vh - 287px - var(--gap))));
-          --deck-y:clamp(calc(49px + var(--card-h) / 2), calc(50% - 75px), calc(100% - var(--gap) - 72px - var(--card-h) / 2)) }
+          --deck-y:clamp(calc(49px + var(--lift) + var(--card-h) / 2), calc(50% - 75px + var(--lift)), calc(100% - var(--gap) + var(--lift) - 72px - var(--card-h) / 2)) }
   .deck{ top:var(--deck-y); height:var(--card-h) }
   .card{ height:var(--card-h) }
   /* Both lines below the card, one at a time in the same place: the opening
@@ -154,11 +155,18 @@ input[type=file]{ display:none }
      -- 44px on a tall screen, easing to 28px as --gap gives way on a short
      one. Only the line before a photo; the animated line keeps its 15px,
      and the phone keeps its two lines. */
-  .opening{ top:calc(var(--deck-y) + var(--card-h) / 2 + clamp(28px, calc(var(--gap) * .3), 44px)); bottom:auto; white-space:nowrap }
+  /* THE OPENING POSITION, exactly as ruled (Rich, 2026-09-14). */
+  .opening {
+    top: calc(
+      var(--deck-y) + var(--card-h) / 2 +
+      clamp(28px, calc(var(--gap) * .3), 88px)
+    );
+  }
+  .opening{ bottom:auto; white-space:nowrap }
   .opening br{ display:none }
   .tag{ top:calc(var(--deck-y) + var(--card-h) / 2 + 15px) }
   body:not(.telling-page) .tag{ visibility:hidden }
-  .go{ top:calc(var(--deck-y) + var(--card-h) / 2 + var(--gap)) }
+  .go{ top:calc(var(--deck-y) + var(--card-h) / 2 + var(--gap) - var(--lift)) }
   /* THE CTA'S FINAL STATE (Rich's DevTools mockup, 2026-09-12): 25px higher,
      optically centred at 52%, at 1.2. It is still ONE animation: the button
      waits at .77 (.in) and grows to 1.2 as the endpoint of its existing
@@ -167,7 +175,7 @@ input[type=file]{ display:none }
      nothing jumps. The waiting position (150px under the card, 50%) is
      unchanged. */
   .go{ transition:transform 1.1s cubic-bezier(.4,0,.2,1), left 1.1s cubic-bezier(.4,0,.2,1), margin-top 1.1s cubic-bezier(.4,0,.2,1), opacity .5s ease }
-  .go.full{ transform:translateX(-50%) scale(1.2) translateY(-10px); margin-top:-25px; left:52% }
+  .go.full{ transform:translateX(-50%) scale(1.5) translateY(-10px); margin-top:-25px; left:52% }
   /* THE CARD IS THE UPLOAD CONTROL -- no separate button on desktop. The
      invisible gradient layer above the card's face must not take the click
      meant for it; a keyboard focus ring, drawn inside the rounded card. */
@@ -196,12 +204,6 @@ input[type=file]{ display:none }
   /* tagline overlays the card, near the lower third, over the gradient */
   .tag{ position:absolute; left:0; right:0; bottom:calc(14% + 25px); z-index:6; color:#f6ecd8; font-size:1.5rem; margin:0; padding:0 24px; text-shadow:0 1px 10px rgba(0,0,0,.5); min-height:0 }
   .tag .tail{ color:var(--gold-soft) }
-  /* Two cells on a phone: 24px, easing to the 20px floor on the narrowest,
-     so "Imagine Yourself" always holds one line and the longest phrase
-     wraps to at most two inside its own cell. */
-  .tag.two{ font-size:clamp(20px, 6.2vw, 24px); padding:0 16px;
-    /* the approved top, unless two lines would run off a short screen */
-    top:min(calc(50% + clamp(260px,33vh,335px)), calc(100% - 2.7em)) }
   /* actions float over the card near the bottom */
   .acts{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(28px + env(safe-area-inset-bottom) + var(--kb,0px)); z-index:20; margin:0; gap:12px }
   .acts.done{ display:none !important }
@@ -240,29 +242,31 @@ input[type=file]{ display:none }
    arrives or any settled state takes over. Anchored to the card, so it
    never moves with the riffle line. Desktop: in the clear band between the
    logo and the card. Phone: the card is the screen, so just inside its top
-   edge, on a soft fade. A fixed header, "Crafting Your Photo", and under it
+   edge, on a soft fade. A fixed header, "Crafting Your Image", and under it
    one slow supporting line (the sequence is in the script: about 5 seconds
    of settled reading each, a calm .4s fade between). In the longer wait
    "Turning You Into" holds still and only the material word changes, each
    in its own colour, every one AA against the ground it sits on. No
    spinner, bar, count or percentage. Reduced motion: no fades and no
    breath -- the lines change in place. */
-.reveal-status{ position:absolute; left:-30%; right:-30%; bottom:calc(100% + 2px); z-index:5; margin:0; text-align:center; pointer-events:none;
+.reveal-status{ position:absolute; left:-30%; right:-30%; bottom:calc(100% + 16px); z-index:5; margin:0; text-align:center; pointer-events:none;
   font-family:var(--serif); color:var(--ink);
   --rs-glass:#285a73; --rs-stone:#554f48; --rs-iron:#3f4a54; --rs-plushy:#8f3f5a; --rs-stained:#861c41;
   --rs-mosaic:#17595a; --rs-driftwood:#624a35; --rs-porcelain:#34507c; --rs-bronze:#744618;
   opacity:0; visibility:hidden; transition:opacity .45s ease, visibility 0s linear .45s }
 .reveal-status.on{ opacity:1; visibility:visible; transition:opacity .45s ease, visibility 0s }
-/* Legible at a glance (correction pass, 2026-09-14): was 20px/400 with a
-   breath down to .6, and the line 18px/400 at 78% ink -- read as fine print.
-   Now 22px/500, the breath only to .85; the line 20px/500 in full ink. Still
-   inside the 49px the layout keeps between the logo and the card. */
-.rs-head{ margin:0; font-style:italic; font-weight:500; font-size:22px; line-height:1.05 }
+/* READABLE AT A DESKTOP DISTANCE (foyer completion pass, Rich, 2026-09-14).
+   "Crafting Your Image" is the quieter header -- italic, regular weight, a
+   softer ink -- at 26px (was 22px/500). The supporting line, beginning
+   "Average Time Is Less Than 30 Seconds", is the one to read: 28px/500 in
+   full ink (was 20px). 16px of clear space to the card (was 2px): the room
+   comes from the line that used to sit under the card (--lift). */
+.rs-head{ margin:0; font-style:italic; font-weight:400; font-size:26px; line-height:1.05; color:rgba(42,36,30,.82) }
 .reveal-status.on .rs-head{ animation:revealBreath 3.2s ease-in-out .6s infinite }
 @keyframes revealBreath{ 0%,100%{ opacity:1 } 50%{ opacity:.85 } }
 /* The supporting line: the intro lines and the "Turning You Into" line
    share one cell, so the change never moves anything around it. */
-.rs-line{ display:grid; justify-items:center; margin:2px 0 0; font-size:20px; font-weight:500; line-height:1.08; color:var(--ink) }
+.rs-line{ display:grid; justify-items:center; margin:4px 0 0; font-size:28px; font-weight:500; line-height:1.08; color:var(--ink) }
 .rs-line > span{ grid-area:1 / 1; white-space:nowrap; opacity:0; transition:opacity .4s ease }
 .rs-line > span.on{ opacity:1 }
 /* "Turning You Into" + the word: the words are stacked in one cell as wide
@@ -287,7 +291,8 @@ input[type=file]{ display:none }
     color:#f6ecd8; text-shadow:0 1px 2px rgba(0,0,0,.4);
     --rs-glass:#bfe3f4; --rs-stone:#ddd6ca; --rs-iron:#d0d9e1; --rs-plushy:#f9c9cf; --rs-stained:#ffc3d3;
     --rs-mosaic:#9fe3d9; --rs-driftwood:#e8cfad; --rs-porcelain:#f0f4fb; --rs-bronze:#f7d1a2 }
-  .rs-line{ color:#f6ecd8; font-size:clamp(18px, 5.8vw, 20px) }   /* the longest line still fits a 320 card */
+  .rs-head{ color:rgba(246,236,216,.9); font-size:24px }
+  .rs-line{ color:#f6ecd8; font-size:clamp(18px, 5.6vw, 22px) }   /* the longest line still fits a 320 card */
 }
 @media (prefers-reduced-motion:reduce){
   .reveal-status.on .rs-head{ animation:none }
@@ -327,7 +332,7 @@ input[type=file]{ display:none }
       <div class="mgrid" id="mgrid"></div>
     </div>
 
-    <p class="tag" id="tag">Imagine Yourself&hellip;</p>
+    <p class="tag" id="tag"></p>
 
     <div class="acts" id="acts">
       <button class="pbtn pbtn--pick" id="btnUpload">
@@ -407,7 +412,42 @@ var MOSAIC_MORE = ['flip_17','flip_11'];
    path (/previews/foyer-flip/<id>.jpg). Served from the site, that path is
    used as it is. Opened straight from disk, a site path points nowhere, so
    the same path is read from the repo's public/ folder beside this one. */
-function imgFor(id){ var p = IMG(id); return location.protocol === 'file:' ? '../public' + p : p; }
+/* THE FOYER'S IMAGES FOLLOW THE PHOTOGRAPH'S SUBJECT (Rich, 2026-09-14).
+   The intake already says who is in the photograph (its d.subject -- the one
+   guest-safe check; nothing asks again). A man sees the male set, a woman
+   -- or a photograph the check could not read -- the existing set. Same
+   frames, same order, same fan, same timing: only the pictures change.
+
+   Each flip resolves ONCE, here, to its canonical effect: the captions in
+   foyer-DATA.js where they name one (flip_07 origami, flip_14 crystallized,
+   flip_15 balloon_face, flip_18 cast_glass, flip_24 stained_glass, flip_26
+   victorian among them); the uncaptioned frames by their artwork, matched
+   to the effect's generation batch. All 27 effects, each once. A man's
+   picture is public/previews/foyer-flip-male/<effect>.jpg, as named there. */
+var FLIP_EFFECT = {
+  flip_01:'retro_robot',  flip_02:'reclaimed_bronze', flip_03:'quilted',       flip_04:'renaissance',
+  flip_05:'plushy',       flip_06:'petal_sculpture',  flip_07:'origami',       flip_08:'oil_impasto',
+  flip_09:'neon',         flip_10:'impressionist',    flip_11:'ice',           flip_12:'iron',
+  flip_13:'elizabethan',  flip_14:'crystallized',     flip_15:'balloon_face',  flip_16:'art_nouveau',
+  flip_17:'art_deco',     flip_18:'cast_glass',       flip_19:'linocut',       flip_20:'porcelain',
+  flip_21:'deco_twenties',flip_22:'sand_form',        flip_23:'sheet_music',   flip_24:'stained_glass',
+  flip_25:'stone',        flip_26:'victorian',        flip_27:'wild_west'
+};
+var FOYER_SUBJECT = null;   /* 'man' | 'woman' | null -- the intake's answer, once it has one */
+function imgFor(id){
+  var p = IMG(id);
+  if (FOYER_SUBJECT === 'man'){
+    if (FLIP_EFFECT[id]) p = '/previews/foyer-flip-male/' + FLIP_EFFECT[id] + '.jpg';
+    else console.error('[foyer] no effect for ' + id + ' -- no male picture to show');
+  }
+  return location.protocol === 'file:' ? '../public' + p : p;
+}
+/* The intake has answered. Remember who is in the photograph and, for a
+   man, have the fan and the phone's grid ready before they are needed. */
+function setFoyerSubject(subject){
+  FOYER_SUBJECT = (subject === 'man' || subject === 'woman') ? subject : null;
+  if (FOYER_SUBJECT === 'man') FAN.concat(MOSAIC_MORE).forEach(function(id){ (new Image()).src = imgFor(id); });
+}
 
 /* TIMING. The riffle, line, photo beat and simulated-result values are the
    source files' own. HOLD is Rich's 2 seconds. FAN_MS and SHRINK_MS match
@@ -486,31 +526,25 @@ function begin(src){
      the card and Come Inside & Explore is the one next step. Otherwise the
      riffle runs until the real result, or a reason there is none, arrives. */
   if (FOYER.free === false) settle(FOYER.why || 'unavailable');
-  else STATE.riffleStart = later(startRiffle, PHOTO_BEAT);
+  else riffleWhenSubjectKnown();
 }
 
-/* THE LINE UNDER THE CARD, IN TWO CELLS (Rich, 2026-09-14). "Imagine
-   Yourself" is fixed and sits against the seam; the changing phrase starts
-   from one fixed x, left-aligned. Every phrase the riffle can show sits in
-   the same cell, stacked, with only the current one visible -- so the pair
-   is always the size of its longest phrase, and neither the fixed words nor
-   the phrase's starting point can move when the phrase changes. Where the
-   screen is too narrow for the longest phrase on one line, the phrases wrap
-   inside their cell, still from the same x. The wider closing lines and the
-   settled messages use the tag as a plain line; tagPair rebuilds the pair. */
-var TAG_PHRASES = FLIPS.map(function(r){ return r[1]; }).filter(function(t, i, a){ return t && a.indexOf(t) === i; });
-function tagPair(phrase){
-  if (!tag.classList.contains('two') || !tag.querySelector('.tag-pair')){
-    tag.classList.remove('wide'); tag.classList.add('two');
-    tag.innerHTML = '<span class="tag-pair"><span class="tag-l">Imagine Yourself</span><span class="tag-r">' +
-      '<span class="tail" data-p="">&hellip;</span>' +
-      TAG_PHRASES.map(function(t){ return '<span class="tail" data-p="' + t + '">' + t + '</span>'; }).join('') +
-      '</span></span>';
-  }
-  var want = phrase || '';
-  tag.querySelectorAll('.tag-r > span').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-p') === want); });
+/* THE RIFFLE WAITS FOR THE PHOTOGRAPH'S SUBJECT (Rich, 2026-09-14). Its
+   pictures depend on who is in the photograph, and the intake's answer is
+   what says so. The riffle keeps its approved beat (PHOTO_BEAT after the
+   photograph goes up) and, if the intake has not answered by then, begins
+   the moment it does -- the photograph stays on the card meanwhile, as it
+   does for the beat. The riffle, the reveal request and the processing
+   status then start together. An intake that refuses or cannot be made
+   settles instead, as it always did. No second look: it is the same answer. */
+function riffleWhenSubjectKnown(){
+  STATE.riffleStart = later(function(){
+    STATE.riffleStart = null;
+    var answered = FOYER.intake ? FOYER.intake.then(function(){}, function(){}) : Promise.resolve();
+    answered.then(function(){ if (STATE.phase === 'photo') startRiffle(); });
+  }, PHOTO_BEAT);
 }
-tagPair('');
+
 
 /* STATE 3: riffle + synced line */
 function startRiffle(){
@@ -521,32 +555,14 @@ function startRiffle(){
   front.innerHTML='';
   FLIPS.forEach(function(r,i){ var f=document.createElement('div'); f.className='flip'+(i===0?' on':''); f.style.backgroundImage='url('+imgFor(r[0])+')'; front.appendChild(f); });
   var g=document.createElement('div'); g.className='grad'; front.appendChild(g); card.classList.add('telling');
-  /* ONE CLOCK: THE FRAME AND ITS LINE ARE ONE STATE. The source files ran
-     the frames (300ms) and the line (600ms) on separate timers with separate
-     counters, so the line described a frame two or more places away from the
-     one on the card. Now a single tick puts up the next frame, and every
-     other tick -- the line's old 600ms cadence, so it stays readable -- the
-     line is rewritten in the same step, from the frame now on the card:
-       a frame with a caption  -> "Imagine Yourself <its caption>"
-       a frame without one     -> "Imagine Yourself…", the opening words,
-                                  which describe no frame at all
-     Between rewrites the line stays up for the one frame that passes. It is
-     never set from any frame but the one showing. FLIPS has an odd number of
-     frames, so the second pass captions the frames the first pass skipped,
-     and every caption has appeared by the time the wider lines take over --
-     after FLIPS.length rewrites, 16.2s, when the old timer switched too.
-     The wider lines describe no frame; the frames keep riffling under them. */
-  var flips=front.querySelectorAll('.flip'), shown=0, ticks=0, rewrites=0;
-  var EVERY = Math.round(LINE_EVERY / RIFFLE_EVERY);          // frames per rewrite: 2
-  function caption(k){ tagPair(FLIPS[k][1]); }
-  caption(0);                                                  // frame 0 is up; its line with it
+  /* NO LINE UNDER THE CARD (Rich, 2026-09-14). The riffle used to rewrite
+     "Imagine yourself <caption>" under the card on every other frame, then
+     the two wider closing lines; all of it is gone. The frames keep exactly
+     their timing: one tick, every RIFFLE_EVERY, puts up the next frame. */
+  var flips=front.querySelectorAll('.flip'), shown=0, ticks=0;
   var iv=setInterval(function(){
     ticks++; shown = ticks % flips.length;
     flips.forEach(function(f,j){ f.classList.toggle('on',j===shown); });
-    if (ticks % EVERY) return;                                 // the in-between frame: the line holds
-    rewrites++;
-    if (rewrites < FLIPS.length) caption(shown);
-    else { tag.classList.remove('two'); tag.classList.add('wide'); tag.textContent=WIDE[(rewrites-FLIPS.length)%WIDE.length]; }
   }, RIFFLE_EVERY);
   STATE.riffle = { iv:iv };
 }
@@ -649,6 +665,7 @@ fetch('/api/v1/foyer/reveal', { credentials:'same-origin', cache:'no-store' })
 function askIntake(){
   FOYER.intake = foyerPost('/api/v1/foyer/intake', { image_b64: SRC.b64 });
   FOYER.handoff = FOYER.intake.then(function(d){
+    if (d && d.status === 'ok') setFoyerSubject(d.subject);   /* first, before the riffle looks */
     if (d && d.status === 'ok' && window.LitenHandoff)
       return LitenHandoff.put(SRC.dataUrl, { subject:d.subject, gender:d.gender, ageGroup:d.age_group })
         .catch(function(e){ console.warn('[foyer] handoff not written', e); });
@@ -671,7 +688,7 @@ function askIntake(){
    belongs to the current showing (RS.run), so a result, a failure, Try
    again or leaving the page can never leave a timer changing text. Reduced
    motion: the same slow order, changed in place with no fade. */
-var RS_INTRO = ['Average wait is less than 30 seconds', 'Something Unexpected', 'Making the Improbable Visible',
+var RS_INTRO = ['Average Time Is Less Than 30 Seconds', 'Something Unexpected', 'Making the Improbable Visible',
                 'Possible. Improbable. Almost Here.', 'Digital Magic in Progress', 'What Else Could You Become?'];
 var RS_HOLD = 4600, RS_FADE = 400;
 var revealStatus = document.getElementById('revealStatus'), revealStatusClear = null;
@@ -710,7 +727,7 @@ function showRevealStatus(){
   if (!revealStatus) return;
   clearTimeout(revealStatusClear);
   rsReset();
-  rsEl('.rs-head').textContent = 'Crafting Your Photo';
+  rsEl('.rs-head').textContent = 'Crafting Your Image';
   revealStatus.classList.add('on');
   rsIntro(0);                       /* every showing -- Try again included -- starts from the first line */
 }
@@ -861,8 +878,8 @@ function tryAgain(){
   clearSettledFit();
   tag.style.display = '';
   tag.classList.remove('wide');
-  tagPair('');
-  STATE.riffleStart = later(startRiffle, PHOTO_BEAT);
+  tag.textContent = '';
+  riffleWhenSubjectKnown();
   reveal();
 }
 
