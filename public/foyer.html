@@ -143,24 +143,29 @@ input[type=file]{ display:none }
      its place (card bottom + --gap - --lift), and the card's height is
      unchanged -- --gap itself is untouched, so the opening line's rule reads
      exactly as given. */
-  /* THE SCENE, LIFTED (Rich's Photoshop mockup, 2026-09-15). The processing
-     copy above the card is Crafting Your Image (--rs-craft), 25px, Imagine
-     Yourself As [word] (--rs-imagine), 40px, the card: --rs-room is all of
-     it. Those are the mockup's values from a screen 1060px tall up; on a
-     shorter one the four ease together to 75% at 768px, so the card is not
-     crushed to make room. The card sits --scene-up (75px) higher wherever
-     the screen leaves it free to (its centred position), never higher than
-     the copy above it needs (6px under the logo), and gives up only the
-     height that copy needs on a screen too short for both. The button keeps
-     its distance under the card (--gap - --lift), so it rises with it. */
-  .stage{ --gap:clamp(75px, calc(75px + (100vh - 768px) * 0.323), 150px); --lift:34px; --scene-up:75px;
-          --rs-craft:clamp(24px, calc(24px + (100vh - 768px) * 8 / 292), 32px);
-          --rs-gap1:clamp(18.75px, calc(18.75px + (100vh - 768px) * 6.25 / 292), 25px);
-          --rs-imagine:clamp(31.5px, calc(31.5px + (100vh - 768px) * 10.5 / 292), 42px);
-          --rs-gap2:clamp(30px, calc(30px + (100vh - 768px) * 10 / 292), 40px);
+  /* THE SCENE, LIFTED (Rich's Photoshop mockup, 2026-09-15; the responsive
+     correction, Rich, 2026-09-15). The whole presentation -- copy, card and
+     button -- sits --scene-up HIGHER than it did before this pass, at every
+     desktop size: 75px from a screen 1300px tall up (the mockup's), easing
+     to 15px on one 1080px tall or shorter, where the card was already as
+     high as the old status let it be. The card keeps its size (--card-h,
+     unchanged from before the pass); the button keeps its distance under it.
+     The copy fits the room left between the logo and the card: Crafting
+     Your Image (--rs-craft), --rs-gap1, Imagine Yourself As [word]
+     (--rs-imagine), --rs-gap2, the card (--rs-room is all of it) -- the
+     mockup's 32 / 25 / 42 / 40 from 1360px up, easing to 20 / 6 / 28 / 12 at
+     1080 and below, Crafting always the smaller line. The max() is only a
+     guard: the copy never runs into the logo. */
+  .stage{ --gap:clamp(75px, calc(75px + (100vh - 768px) * 0.323), 150px); --lift:34px;
+          --scene-up:clamp(15px, calc(15px + (100vh - 1080px) * 60 / 220), 75px);
+          --rs-craft:clamp(20px, calc(20px + (100vh - 1080px) * 12 / 280), 32px);
+          --rs-gap1:clamp(6px, calc(6px + (100vh - 1080px) * 19 / 280), 25px);
+          --rs-imagine:clamp(28px, calc(28px + (100vh - 1080px) * 14 / 280), 42px);
+          --rs-gap2:clamp(12px, calc(12px + (100vh - 1080px) * 28 / 280), 40px);
           --rs-room:calc(var(--rs-craft) + var(--rs-gap1) + var(--rs-imagine) + var(--rs-gap2));
-          --card-h:min(640px, max(220px, calc(100vh - 210px - var(--gap) - var(--rs-room))));
-          --deck-y:clamp(calc(6px + var(--rs-room) + var(--card-h) / 2), calc(50% - 75px + var(--lift) - var(--scene-up)), calc(100% - var(--gap) + var(--lift) - 72px - var(--card-h) / 2)) }
+          --card-h:min(640px, max(220px, calc(100vh - 287px - var(--gap))));
+          --deck-y:max(calc(2px + var(--rs-room) + var(--card-h) / 2),
+                       calc(clamp(calc(49px + var(--lift) + var(--card-h) / 2), calc(50% - 75px + var(--lift)), calc(100% - var(--gap) + var(--lift) - 72px - var(--card-h) / 2)) - var(--scene-up))) }
   .deck{ top:var(--deck-y); height:var(--card-h) }
   .card{ height:var(--card-h) }
   /* Both lines below the card, one at a time in the same place: the opening
