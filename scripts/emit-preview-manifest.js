@@ -45,11 +45,15 @@ const IMG = /\.(jpe?g|png|webp)$/i;
    serves both subjects. _male/_female were a duplicate spelling in
    renaissance and are read here so a stray one never silently disappears. */
 function subjectOf(name) {
-  const stem = name.replace(IMG, '');
-  if (/_(man|male)$/i.test(stem)) return 'man';
-  if (/_(woman|female)$/i.test(stem)) return 'woman';
+  /* The stem is the whole name where the tree was renamed to man.jpg /
+     woman.jpg (most of it), and a suffix where it was not (1_man.jpg).
+     @2x is the same plate at twice the size, not a subject of its own. */
+  const stem = name.replace(IMG, '').replace(/@2x$/i, '');
+  if (/(^|_)(man|male)$/i.test(stem)) return 'man';
+  if (/(^|_)(woman|female)$/i.test(stem)) return 'woman';
   return 'neutral';
 }
+const isRetina = (name) => /@2x\.[a-z]+$/i.test(name);
 
 /* Lowest-numbered file wins where there are several of one subject, so the
    choice is stable across runs and obvious on disk. */
@@ -68,7 +72,7 @@ fs.readdirSync(DIR, { withFileTypes: true })
     const files = fs
       .readdirSync(path.join(DIR, d.name))
       .filter((f) => IMG.test(f))
-      .sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+      .sort((a, b) => rank(a) - rank(b) || (isRetina(a) ? 1 : 0) - (isRetina(b) ? 1 : 0) || a.localeCompare(b));
 
     if (!files.length) {
       notes.push(d.name + ' — folder is empty');
