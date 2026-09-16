@@ -117,6 +117,9 @@ export type PortraitsPresetId =
   | 'deco_twenties_woman'
   | 'samurai_woman'
   | 'elizabethan_woman'
+  | 'action_figure'
+  | 'designer_vinyl'
+  | 'mosaic_portrait'
 
 export const PRESET_LABELS: Record<PortraitsPresetId, string> = {
   bronze:               'Bronze',
@@ -182,6 +185,10 @@ export const PRESET_LABELS: Record<PortraitsPresetId, string> = {
   deco_twenties_woman:  'Deco Twenties Woman',
   samurai_woman:        'Samurai Woman',
   elizabethan_woman:    'Elizabethan Woman',
+  /* added 2026-09-15 with the registry (effect-registry.ts): labels as it has them */
+  action_figure:        'Action Figure',
+  designer_vinyl:       'Designer Vinyl',
+  mosaic_portrait:      'Mosaic Portrait',
 }
 
 // ── STYLE → MATERIALS ─────────────────────────────────────────
@@ -205,6 +212,7 @@ export const STYLE_MATERIALS: Record<PortraitsStyleId, PortraitsPresetId[]> = {
     'deco_twenties', 'victorian', 'samurai', 'wild_west',
     'persian_court', 'victorian_woman', 'renaissance_woman', 'persian_court_woman',
     'wild_west_woman', 'deco_twenties_woman', 'samurai_woman', 'elizabethan_woman',
+    'action_figure', 'designer_vinyl', 'mosaic_portrait',
   ],
   people_resolving: [
     'ebony', 'bronze', 'iron', 'stone',
