@@ -302,6 +302,8 @@ function buildRails() {
     unlockPrice: (n: number) => n * 1.99, CURATOR_HEAD_HTML: '', featuredHtml: () => '',
   }
   const body = [
+    // __ASPECT_STEP__ the Format rail swaps its own leading block in
+    fn('aspectReadyHtml'),
     fn('renderReviewRail'), fn('renderPoseRail'), fn('renderAspectRail'), fn('mcStat'), fn('renderMycollRail'),
     'return { review: renderReviewRail, pose: renderPoseRail, aspect: renderAspectRail, mycoll: renderMycollRail };',
   ].join('\n')

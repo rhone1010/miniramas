@@ -659,14 +659,42 @@ body{
   font-family:var(--sans); font-size:11px; letter-spacing:.12em; color:rgba(255,255,255,.6);
   background:repeating-linear-gradient(45deg, rgba(0,0,0,.15) 0 3px, transparent 3px 18px);
 }
-/* Crafting/wait state -- shared ring spinner. */
-.card.is-crafting .card__art{ background:linear-gradient(180deg, rgba(5,4,4,.32), rgba(9,7,7,.10) 45%, rgba(3,3,3,.38)) }
+/* __MC_GEAR__ PROCESSING (Rich, 2026-09-16). The generic ring spinner is
+   replaced by the house mark: an oxblood plate with the LITEN gear turning
+   slowly at its centre. Not a progress indicator -- it claims nothing about
+   how far along the render is, because nothing here knows. */
+.card.is-crafting .card__art{
+  background:linear-gradient(160deg, #8c4c4c, var(--oxblood) 55%, #6a3737);
+}
+.mc-gear{
+  position:absolute; top:50%; left:50%; width:44%; max-width:104px; aspect-ratio:1;
+  margin:-22% 0 0 -22%;                  /* half of width, so it centres without transform */
+  background:url(/icons/LitenCo_Gear.png) center/contain no-repeat;
+  opacity:.78; z-index:2;
+  animation:mcGearTurn 2s linear infinite;
+}
+@keyframes mcGearTurn{ to{ transform:rotate(360deg) } }
+/* The old ring is kept for anything still asking for it; My Collection no
+   longer does. */
 .card__ring{
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
   width:2.6rem; height:2.6rem; border:2.5px solid rgba(201,166,96,.22); border-top-color:rgba(201,166,96,.9);
   border-radius:50%; box-shadow:0 0 14px rgba(201,166,96,.18); animation:cardSpin 1.4s linear infinite; z-index:2;
 }
 @keyframes cardSpin{ to{ transform:translate(-50%,-50%) rotate(360deg) } }
+/* THE TURN. A piece that has just finished replaces the gear in the same
+   slot by turning over, one tile at a time as each render lands -- the grid
+   itself never moves. */
+#mycollGrid{ perspective:1100px }
+.card.is-revealing{ animation:mcFlipIn 620ms cubic-bezier(.22,.61,.36,1) both; transform-origin:50% 50% }
+@keyframes mcFlipIn{
+  0%{ transform:rotateY(88deg); opacity:.25 }
+  100%{ transform:rotateY(0deg); opacity:1 }
+}
+@media (prefers-reduced-motion:reduce){
+  .mc-gear{ animation:none }
+  .card.is-revealing{ animation:none }
+}
 
 /* ── Title card: same footprint as a photo card, occupies grid slot 1.
    Not selectable, not a check target — reads as the room's header
@@ -1419,38 +1447,63 @@ body.is-lboxed{ overflow:hidden }
    panel. Centred on stage, doubled shapes, "Shape" heading beneath. */
 .aspect-view{ display:none }
 .aspect-view.active{ display:flex }
+/* The stage's own leather ground, shared with Discovery's rooms via
+   .stage-frame on the element -- the formats hang on the same wall the
+   effects do, instead of floating on the page's parchment. */
 .aspect-floor{ flex:1; overflow-y:auto; padding:28px var(--stage-pad-x) 60px;
   display:flex; align-items:center; justify-content:center }
-.aspect-panel{
-  background:#7d4242; border:2px solid #7d4242; border-radius:14px;
-  padding:42px 48px 36px; display:flex; flex-direction:column; align-items:center; gap:24px;
+/* __ASPECT_STEP__ CHOOSE YOUR FORMAT (Rich, 2026-09-16). The oxblood panel
+   was a dialog floating on the stage. This is the stage: the heading sits on
+   the room's own ground like Review's does, and the three choices are hung
+   as framed, matted artworks rather than listed as settings. Every value here
+   is one the page already uses -- the card's border, shadow, lift and gold
+   chosen-state, the masthead's vellum, the serif scale. */
+.aspect-gallery{ display:flex; flex-direction:column; align-items:center; gap:34px; width:100%; max-width:1100px }
+.aspect-gallery__title{
+  font-family:var(--serif); font-weight:400; font-size:2.6rem; color:var(--vellum);
+  margin:0; text-align:center; letter-spacing:.01em;
+  text-shadow:0 .08rem .18rem rgba(18,12,8,.5);
 }
-.aspect-panel__title{ font-family:var(--serif); font-size:1.5rem; color:#f3ede1; margin:0; order:-1 }
-.aspect-row{ display:flex; gap:calc(var(--card-gap) * 2); align-items:flex-end; flex-wrap:wrap;
+.aspect-gallery__say{
+  font-family:var(--serif); font-size:1.35rem; color:var(--gold-soft);
+  margin:-22px 0 0; text-align:center;
+}
+.aspect-row{ display:flex; gap:calc(var(--card-gap) * 2.2); align-items:flex-end; flex-wrap:wrap;
   justify-content:center }
+/* The frame: a mat with the canvas inside it, the same border, shadow and
+   hover-lift the effect cards use. */
 .aspect-opt{
-  display:flex; flex-direction:column; align-items:center; gap:16px;
-  padding:28px 32px; border-radius:10px; cursor:pointer;
-  background:#d9ccb1; border:2px solid #7d4242;
-  transition:border-color 180ms ease, box-shadow 180ms ease, opacity 220ms ease;
+  display:flex; flex-direction:column; align-items:center; gap:18px;
+  padding:22px 22px 18px; border-radius:8px; cursor:pointer;
+  background:linear-gradient(180deg, var(--vellum-100), #ece4d4);
+  border:1px solid rgba(88,65,42,.22);
+  box-shadow:0 .8rem 1.8rem rgba(0,0,0,.45), 0 .2rem .5rem rgba(0,0,0,.3);
+  transition:transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, opacity 220ms ease;
 }
-.aspect-row.has-choice .aspect-opt{ opacity:.58 }
+.aspect-opt:hover{ transform:translateY(-.15rem); border-color:rgba(169,126,63,.42);
+  box-shadow:0 1.1rem 2.4rem rgba(0,0,0,.5), 0 .3rem .7rem rgba(0,0,0,.32) }
+.aspect-row.has-choice .aspect-opt{ opacity:.62 }
 .aspect-row.has-choice .aspect-opt.is-chosen{ opacity:1 }
-.aspect-opt.is-chosen{ border-color:rgba(201,166,96,.7);
-  box-shadow:inset 0 0 0 .16rem rgba(201,166,96,.28) }
-.aspect-shape{ border:2px solid #7d4242; border-radius:4px;
-  background:rgba(255,255,255,.03) }
-.aspect-opt.is-chosen .aspect-shape{ background:#d8b77b }
-.aspect-opt__label{ font-family:var(--serif); font-size:1.6rem; color:#7d4242; margin:0 }
-.aspect-opt__ratio{ font-family:var(--sans); font-size:18px; letter-spacing:.06em;
-  color:#7d4242; margin:0 }
-.aspect-head{ display:flex; align-items:center; gap:16px; padding:18px var(--stage-pad-x) 0 }
-.aspect-head h2{ font-family:var(--serif); font-size:1.5rem; color:#f3ede1; margin:0 }
-.aspect-head .back-btn{ font-size:1.1rem; padding:12px 24px }
+.aspect-opt.is-chosen{ border-color:var(--gold);
+  box-shadow:0 0 0 2px var(--gold), 0 1.1rem 2.4rem rgba(0,0,0,.5) }
+/* The canvas inside the mat -- an empty artwork until it is the chosen one,
+   then the stage's own oxblood, the way a hung picture reads. */
+.aspect-shape{
+  border-radius:3px; background:linear-gradient(150deg,#8a725d,#3a2b24);
+  box-shadow:inset 0 0 0 1px rgba(88,65,42,.3), inset 0 .1rem .5rem rgba(18,12,8,.45);
+  transition:background 220ms ease;
+}
+.aspect-opt.is-chosen .aspect-shape{ background:linear-gradient(150deg,#a2705f,var(--oxblood)) }
+.aspect-opt__label{ font-family:var(--serif); font-size:1.5rem; color:var(--ink); margin:0; line-height:1 }
+.aspect-opt__ratio{ font-family:var(--sans); font-size:12px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--brass); margin:0 }
 @media (max-width:767px){ .aspect-floor{ padding:14px var(--stage-pad-x)
   calc(160px + env(safe-area-inset-bottom,0px)) }
-  .aspect-panel{ padding:24px 20px 20px }
-  .aspect-opt{ padding:18px 20px; gap:10px } }
+  .aspect-gallery{ gap:22px }
+  .aspect-gallery__title{ font-size:2rem }
+  .aspect-gallery__say{ font-size:1.15rem; margin-top:-14px }
+  .aspect-row{ gap:var(--card-gap) }
+  .aspect-opt{ padding:14px 14px 12px; gap:12px } }
 /* ── Feedback panel ("Something off?") ── */
 .lcf-scarab{ width:40px; height:40px; border-radius:50%; border:1px solid rgba(215,189,137,.35); background:rgba(255,255,255,.04); display:grid; place-items:center; cursor:pointer; color:var(--lcf-gold,#b68a53); transition:background 160ms ease, transform 160ms ease }
 .lcf-scarab:hover{ background:rgba(182,138,83,.16); transform:translateY(-1px) }
@@ -1614,6 +1667,16 @@ body.is-lboxed{ overflow:hidden }
   font-size:1.1rem; color:var(--oxblood); text-align:center;
   margin-top:12px;
 }
+/* __CK_SHELL__ Our half of the payment modal: the mark, the heading, and
+   what is being bought. Stripe's form keeps its own look below the rule. */
+.ck-head{ display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:0 0 1.1rem; margin:0 0 1.2rem; border-bottom:1px solid rgba(147,111,67,.28) }
+.ck-mark{ width:104px; height:auto; fill:var(--oxblood); opacity:.92; margin:0 0 .85rem }
+.ck-title{ font-family:var(--serif); font-weight:400; font-size:1.85rem; color:var(--ink); margin:0 }
+.ck-order{ display:flex; align-items:baseline; justify-content:center; gap:.7rem; margin:.55rem 0 0 }
+.ck-order[hidden]{ display:none }
+.ck-order__size{ font-family:var(--serif); font-size:1.3rem; color:var(--ink) }
+.ck-order__price{ font-family:var(--serif); font-size:1.45rem; color:var(--oxblood) }
 #ckForm{ min-height:300px; }
 .agegate{
   position:fixed; inset:0; z-index:130;
@@ -1745,7 +1808,10 @@ body.is-lboxed{ overflow:hidden }
   color:var(--oxblood); cursor:pointer }
 .cur-page--prev{ border-right:1px solid rgba(182,138,83,.45) }
 .cur-page--next{ border-left:1px solid rgba(182,138,83,.45) }
-.cur-page svg{ width:58%; max-width:22px; height:auto; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round }
+/* Smaller carets (Rich, 2026-09-16, asked for again). The tap target keeps
+   its full width -- only the drawn glyph shrinks, and the stroke thins with
+   it so it stays the same weight of line rather than a fatter small arrow. */
+.cur-page svg{ width:38%; max-width:13px; height:auto; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round }
 .cur-page:hover:not([aria-disabled="true"]), .cur-page:focus-visible{ background:rgba(125,66,66,.13) }
 .cur-page:focus-visible{ outline:2px solid var(--gold); outline-offset:-3px }
 .cur-page[aria-disabled="true"]{ color:rgba(125,66,66,.28); background:transparent; cursor:default }
@@ -1987,17 +2053,17 @@ body.is-lboxed{ overflow:hidden }
     <main class="pose-floor" id="poseFloor"></main>
   </div>
 
-  <!-- __ASPECT_STEP__ Step 3 · the shape. After the pose, before the
-       craft commit task 6 wires. One choice per collection. -->
+  <!-- __ASPECT_STEP__ Choose Your Format. __V1_NO_POSE__ (Rich, 2026-09-16):
+       this now follows Review directly, and it is the last choice before the
+       collection is crafted. The faint step scaffolding above the stage --
+       "← Back to the pose" and "Step 3 · the shape" -- is gone; the rail
+       carries the framing now. -->
   <div class="stage-col aspect-view" id="aspectView">
-    <div class="aspect-head">
-      <button class="back-btn" id="btnBackAspect">← Back to the pose</button>
-      <h2>Step 3 · the shape</h2>
-    </div>
-    <main class="aspect-floor" id="aspectFloor">
-      <div class="aspect-panel">
+    <main class="aspect-floor stage-frame" id="aspectFloor">
+      <div class="aspect-gallery">
+        <h2 class="aspect-gallery__title">Choose Your Format</h2>
+        <p class="aspect-gallery__say">Choose the shape of your finished artwork.</p>
         <div class="aspect-row" id="aspectRow"></div>
-        <h3 class="aspect-panel__title">Shape</h3>
       </div>
     </main>
   </div>
@@ -3703,6 +3769,18 @@ function openSlots(){ return Math.max(0, targetBundle() - SELECTED.length); }
 function releaseTier(){ SLOTS = []; FILL_MODE = false; }
 function lockTier(){ SLOTS = SELECTED.map(function(x){ return x.key; }); while (SLOTS.length < targetBundle()) SLOTS.push(null); }
 function priceOf(n){ return sizeInfo(n).price; }
+/* __CK_SHELL__ What the payment modal says it is selling. Display only --
+   the amount Stripe charges comes from the session the server created, and
+   nothing here touches it. */
+function paintCheckoutHead(title, sizeText, priceText){
+  var t = document.getElementById('ckTitle'); if (t) t.textContent = title;
+  var box = document.getElementById('ckOrder');
+  var s = document.getElementById('ckOrderSize');
+  var p = document.getElementById('ckOrderPrice');
+  if (s) s.textContent = sizeText || '';
+  if (p) p.textContent = priceText || '';
+  if (box) box.hidden = !(sizeText || priceText);
+}
 function markHtml(cls, v, sub, attr){ return '<button class="mark ' + cls + '" ' + (attr||'') + '><span class="t">' + v + '</span><span class="p">' + sub + '</span></button>'; }
 /* The progress rail: start, the count riding the track toward the target,
    the target and its price. Returns whether the count is a bundle that can
@@ -5053,11 +5131,13 @@ var TOURS = {
     { sel:'#btnPoseNext', title:'Move on to shape',
       text:'Once you have picked a pose, continue to choose the shape of your images.' }
   ],
+  /* __V1_NO_POSE__ The tour follows the customer's path: the pose entry is
+     kept above but is unreachable, and this one no longer points back at it. */
   aspect: [
-    { sel:'.aspect-panel', title:'Choose a shape',
-      text:'Square, portrait or landscape — one shape for your whole collection.' },
-    { sel:'#btnBackAspect', title:'Go back',
-      text:'Return to the pose step if you want to change your mind.' }
+    { sel:'.aspect-row', title:'Choose your format',
+      text:'Square, portrait or landscape — one format for your whole collection.' },
+    { sel:'#btnCraft', title:'The last step',
+      text:'This crafts your collection in the format you picked.' }
   ]
 };
 function currentTour(){
@@ -5762,12 +5842,17 @@ function hidePoses(){
 }
 window.showPoses = showPoses;
 
-/* Entry point: the Review rail's existing Create button, the same action
-   that opens poses in portraits.html. No new copy. */
+/* Entry point: the Review rail's existing Create button.
+   __V1_NO_POSE__ (Rich, 2026-09-16): the pose step is OUT of the customer's
+   path for V1. Review goes straight to Format. Everything above -- the floor,
+   the rail, the plates, showPoses/hidePoses, POSES itself -- is left standing
+   and still works; nothing navigates to it. POSE stays null, so the checkout
+   payload sends 'as_photographed' (buildCheckoutPayload), which is Keep My
+   Pose: the source expression and posture are preserved. */
 document.addEventListener('click', function(e){
   if (e.target.closest && e.target.closest('#btnBackPose')){ hidePoses(); return; }
   var create = e.target.closest && e.target.closest('.btn-create');
-  if (create && !create.id){ showPoses(); }
+  if (create && !create.id){ showAspect(); }
 });
 
 /* The subject can change after the pose floor was drawn, so repaint the
@@ -5925,13 +6010,27 @@ function chooseAspect(id){
   logPayloadIfReady();
 }
 
+/* __ASPECT_STEP__ The rail on Format is the LAST step, not another middle
+   one, so it says so instead of repeating Review's "Ready to create" block.
+   The collection summary, the tier gauge, the price and Craft My Collection
+   are the same ones Review uses -- only the top block changes. */
+function aspectReadyHtml(){
+  return '<div class="ready-block"><h4>One Last Choice</h4>' +
+    '<p>Choose the format for your finished artwork. Your selection will be applied to your collection.</p></div>';
+}
 function renderAspectRail(){
   var sum = buildSummaryHtml();
+  /* Swap only the leading ready-block; the stat cards, the fine print and
+     everything below it stay exactly as Review built them. An empty
+     collection keeps its own warning -- it has no last choice to make. */
+  var body = sum.n > 0
+    ? sum.bodyHtml.replace(/^<div class="ready-block">[\s\S]*?<\/div>/, aspectReadyHtml())
+    : sum.bodyHtml;
   discoveryRail.innerHTML =
     '<div class="curator"><div class="curator__badge"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjciIGhlaWdodD0iNzUiIHZpZXdCb3g9IjAgMCA2NyA3NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxlbGxpcHNlIGN4PSIxOS41IiBjeT0iMzQuNSIgcng9IjE5LjUiIHJ5PSIyMS41IiBmaWxsPSIjNzYzRjQxIi8+DQo8ZyBmaWx0ZXI9InVybCgjZmlsdGVyMF9kXzI4XzMpIj4NCjxwYXRoIGQ9Ik00OS4xNTA0IDE1LjQyOTdDNDkuMDU5MiAxNi4yMjcyIDQ4LjgwODYgMTcuNDkxOSA0OC4zOTg0IDE5LjIyMzZDNDguMDExMSAyMC45MzI2IDQ3LjY4MDcgMjIuMjIwMSA0Ny40MDcyIDIzLjA4NTlMNDYuNDE2IDIzLjA1MThWMjIuMTYzMUM0Ni40MTYgMTkuNjc5NCA0Ni4xNDI2IDE4LjEyOTkgNDUuNTk1NyAxNy41MTQ2QzQ1LjA3MTYgMTYuODc2NiA0My45NDM3IDE2LjU1NzYgNDIuMjExOSAxNi41NTc2QzQxLjUwNTUgMTYuNTgwNCA0MC45NTg3IDE2LjU5MTggNDAuNTcxMyAxNi41OTE4SDM5LjMwNjZDMzguNjkxNCAxNi41NjkgMzguMjkyNiAxNi41NTc2IDM4LjExMDQgMTYuNTU3NkMzNi40OTI1IDE2LjU1NzYgMzQuNjgxIDE2Ljg3NjYgMzIuNjc1OCAxNy41MTQ2QzMwLjY3MDYgMTguMTI5OSAyOC4yNjY2IDE5LjMwMzQgMjUuNDYzOSAyMS4wMzUyQzI0LjE2NSAyMS44NTU1IDIyLjIyODIgMjMuNDczMyAxOS42NTMzIDI1Ljg4ODdDMTguNjUwNyAyNi44NDU3IDE2LjkzMDMgMjkuMDY3NCAxNC40OTIyIDMyLjU1MzdMMTMuMzMwMSAzNC42MDQ1TDExLjg2MDQgMzguMjk1OUMxMS40OTU4IDM5LjUwMzYgMTEuMjMzNyA0MC42NjU3IDExLjA3NDIgNDEuNzgyMkMxMC45Mzc1IDQyLjg5ODggMTAuODY5MSA0NC4wMzgxIDEwLjg2OTEgNDUuMjAwMkMxMC44NjkxIDQ2Ljc0OTcgMTEuMDQgNDguMjA4IDExLjM4MTggNDkuNTc1MkMxMS43MjM2IDUwLjk0MjQgMTIuMTc5NCA1MS45OTA2IDEyLjc0OSA1Mi43MTk3QzEzLjk1NjcgNTQuMjIzNiAxNS4yMzI3IDU1LjQ3NjkgMTYuNTc3MSA1Ni40Nzk1QzE3Ljk0NDMgNTcuNDU5MyAxOS41MDUyIDU4LjIyMjcgMjEuMjU5OCA1OC43Njk1QzIzLjAzNzEgNTkuMzE2NCAyNS4wODc5IDU5LjU4OTggMjcuNDEyMSA1OS41ODk4QzI5LjgwNDcgNTkuNTg5OCAzMS43NzU3IDU5LjI0OCAzMy4zMjUyIDU4LjU2NDVDMzQuODc0NyA1Ny44ODA5IDM2LjIzMDUgNTYuOTEyNCAzNy4zOTI2IDU1LjY1OTJDMzcuNzc5OSA1NS4yNDkgMzguODczNyA1My42NDI2IDQwLjY3MzggNTAuODM5OEw0MS44MDE4IDUxLjE4MTZMMzkuOTU2MSA1Ni45OTIyQzM5LjYzNyA1Ny45OTQ4IDM5LjM4NjQgNTguNzI0IDM5LjIwNDEgNTkuMTc5N0MzNy43MjMgNTkuNzI2NiAzNi4xOTYzIDYwLjEyNTMgMzQuNjI0IDYwLjM3NkMzMS42MTYyIDYwLjg1NDUgMjguNjg4MiA2MS4wOTM4IDI1LjgzOTggNjEuMDkzOEMyMS42Njk5IDYxLjA5MzggMTguNDU3IDYwLjY5NSAxNi4yMDEyIDU5Ljg5NzVDMTMuOTQ1MyA1OS4wOTk5IDExLjc0NjQgNTcuNzEgOS42MDQ0OSA1NS43Mjc1QzguMDc3OCA1NC4zMTQ4IDYuOTE1NjkgNTIuNTI2IDYuMTE4MTYgNTAuMzYxM0M1LjMyMDY0IDQ4LjE3MzggNC45MjE4OCA0Ni4xNDU4IDQuOTIxODggNDQuMjc3M0M0LjkyMTg4IDQxLjQ1MTggNS4zNTQ4MiAzOS4wNDc5IDYuMjIwNyAzNy4wNjU0QzguMDQzNjIgMzIuODcyNyAxMC4xMjg2IDI5LjU0NTkgMTIuNDc1NiAyNy4wODVDMTQuODQ1NCAyNC42MDEyIDE3LjYzNjcgMjIuNDAyMyAyMC44NDk2IDIwLjQ4ODNDMjMuMTczOCAxOS4wOTgzIDI1Ljg3NCAxNy44MTA5IDI4Ljk1MDIgMTYuNjI2QzMyLjA0OTIgMTUuNDE4MyAzNS4yMzkzIDE0LjgxNDUgMzguNTIwNSAxNC44MTQ1TDQ0LjUzNjEgMTQuNzQ2MUM0NS45OTQ1IDE0Ljc0NjEgNDcuNTMyNiAxNC45NzQgNDkuMTUwNCAxNS40Mjk3WiIgZmlsbD0iI0YwRUFFMCIvPg0KPC9nPg0KPGRlZnM+DQo8ZmlsdGVyIGlkPSJmaWx0ZXIwX2RfMjhfMyIgeD0iMi45MjE4OCIgeT0iMTIuNzQ2MSIgd2lkdGg9IjUyLjIyODUiIGhlaWdodD0iNTQuMzQ3NyIgZmlsdGVyVW5pdHM9InVzZXJTcGFjZU9uVXNlIiBjb2xvci1pbnRlcnBvbGF0aW9uLWZpbHRlcnM9InNSR0IiPg0KPGZlRmxvb2QgZmxvb2Qtb3BhY2l0eT0iMCIgcmVzdWx0PSJCYWNrZ3JvdW5kSW1hZ2VGaXgiLz4NCjxmZUNvbG9yTWF0cml4IGluPSJTb3VyY2VBbHBoYSIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDEyNyAwIiByZXN1bHQ9ImhhcmRBbHBoYSIvPg0KPGZlT2Zmc2V0IGR4PSIyIiBkeT0iMiIvPg0KPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMiIvPg0KPGZlQ29tcG9zaXRlIGluMj0iaGFyZEFscGhhIiBvcGVyYXRvcj0ib3V0Ii8+DQo8ZmVDb2xvck1hdHJpeCB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMCAwIDAgMCAwLjQ2Mjc0NSAwIDAgMCAwIDAuMjQ3MDU5IDAgMCAwIDAgMC4yNTQ5MDIgMCAwIDAgMC42NCAwIi8+DQo8ZmVCbGVuZCBtb2RlPSJub3JtYWwiIGluMj0iQmFja2dyb3VuZEltYWdlRml4IiByZXN1bHQ9ImVmZmVjdDFfZHJvcFNoYWRvd18yOF8zIi8+DQo8ZmVCbGVuZCBtb2RlPSJub3JtYWwiIGluPSJTb3VyY2VHcmFwaGljIiBpbjI9ImVmZmVjdDFfZHJvcFNoYWRvd18yOF8zIiByZXN1bHQ9InNoYXBlIi8+DQo8L2ZpbHRlcj4NCjwvZGVmcz4NCjwvc3ZnPg0K" alt="Curator"></div><h3>Curator</h3></div>' +
     '<hr class="divider">' +
     '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>' +
-    sum.bodyHtml +
+    body +
     sum.priceHtml +
     '<button class="btn-create' + ((sum.info.valid && sum.n > 0 && !openSlots()) ? ' on' : '') + '" id="btnCraft">Craft My Collection</button>' +
     '<button class="rail-startover" id="btnStartOver" type="button">Start over</button>' +
@@ -5955,9 +6054,11 @@ function showAspect(){
   var av = document.getElementById('aspectView'); if (av) av.classList.add('active');
   renderAspectRail();
 }
+/* __V1_NO_POSE__ Back from Format returns to Review, the step the customer
+   actually came from, not to the bypassed pose floor. */
 function hideAspect(){
   var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
-  showPoses();
+  showReview();
 }
 window.showAspect = showAspect;
 
@@ -6169,6 +6270,13 @@ function startCheckout(){
     var ckErr = document.getElementById('ckErr');
     if (ckErr) ckErr.textContent = '';
     embed.mount('#ckForm');
+    /* __CK_SHELL__ name what is being bought, from the numbers the rail shows.
+       Display only, and never in the way: if the heading cannot be worked out
+       the form still opens and Stripe still charges the session's own total. */
+    try {
+      var ckN = openSlots() ? targetBundle() : SELECTED.length;
+      paintCheckoutHead('Complete Your Collection', ckN + (ckN === 1 ? ' image' : ' images'), '$' + priceOf(ckN).toFixed(2));
+    } catch (e){ console.warn('[discovery] checkout heading not painted:', e); }
     var ckModal = document.getElementById('ckModal');
     if (ckModal) ckModal.classList.add('is-open');
     resetCraftBtn(btn, origText);
@@ -6246,6 +6354,14 @@ function showCheckoutError(msg){
    was the flicker, and it was worst on the tiles that had already landed
    and had the most to lose. The fresh URL is taken only when the piece
    behind it changed, or when there was no URL yet. */
+/* __MC_GEAR__ Keys that stopped crafting on this tick. The grid rebuilds
+   every tile when anything moves, so without this the finished pieces and
+   the untouched ones would be indistinguishable and all of them would turn
+   over together. Read and cleared by the tile builder. */
+var JUST_LANDED = {};
+/* Asked once; the browser keeps it current. */
+var PREFERS_STILL = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+
 function pieceLanded(piece){
   if (!piece || !piece.key) return false;
   var at = -1;
@@ -6260,7 +6376,12 @@ function pieceLanded(piece){
   /* Same piece, same state: keep the URL already on the glass. */
   if (!moved && was.art) piece.art = was.art;
   if (!moved && !was.art && piece.art) moved = true;   /* the first URL arrived */
+  var landed = was.crafting && !piece.crafting;
   PIECES[at] = piece;
+  /* __MC_GEAR__ Crafting -> done is the moment worth showing. Recorded AFTER
+     the piece is stored, and best-effort: this drives an animation, and a
+     paid piece must land whatever happens to a decoration. */
+  if (landed){ try { JUST_LANDED[piece.key] = true; } catch (e){} }
   return moved;
 }
 
@@ -6875,6 +6996,11 @@ function startUnlockCheckout(p){
       var ckErr = document.getElementById('ckErr');
       if (ckErr) ckErr.textContent = '';
       embed.mount('#ckForm');
+      /* __CK_SHELL__ the unlock flow, not the collection purchase. Same rule:
+         the heading is decoration, the form opens regardless. */
+      try {
+        paintCheckoutHead('Unlock Your Image', p.name || '1 image', '$' + (UNLOCK_PRICE_CENTS / 100).toFixed(2));
+      } catch (e){ console.warn('[discovery] unlock heading not painted:', e); }
       var ckModal = document.getElementById('ckModal');
       if (ckModal) ckModal.classList.add('is-open');
     });
@@ -7038,9 +7164,23 @@ function renderMyCollectionGrid(){
     var el = document.createElement('div');
     el.className = 'card' + (p.locked ? ' is-locked' : '') + (p.crafting ? ' is-crafting' : '') + (unlockSelection[p.key] ? ' is-selected' : '');
     if (p.crafting){
-      el.innerHTML = '<div class="card__art"><div class="card__ring"></div>' +
+      /* __MC_GEAR__ the house mark, turning, on oxblood */
+      el.innerHTML = '<div class="card__art"><div class="mc-gear" aria-hidden="true"></div>' +
         '<div class="card__content"><strong>Crafting…</strong></div></div>';
     } else {
+      /* __MC_GEAR__ This piece finished since the last paint, so it turns
+         over in place. The flag is spent here so a later repaint -- a filter
+         change, a rail rebuild -- shows it still, not flipping again. */
+      if (JUST_LANDED[p.key]){
+        delete JUST_LANDED[p.key];
+        /* Reduced motion gets the finished picture outright. The class is not
+           added at all rather than added and left un-animated -- animationend
+           never fires when the animation is none, so it would never come off. */
+        if (!PREFERS_STILL || !PREFERS_STILL.matches){
+          el.classList.add('is-revealing');
+          el.addEventListener('animationend', function(){ el.classList.remove('is-revealing'); }, { once:true });
+        }
+      }
       el.dataset.piece = p.key;
       el.innerHTML =
         '<div class="card__art"' + (p.art ? ' style="background-image:url(' + p.art + ')"' : artStyle(p.name)) + '>' +
@@ -7461,9 +7601,19 @@ LCFeedback.mount({
   }
 });
 </script>
+<!-- __CK_SHELL__ (Rich, 2026-09-16) The shell around the payment form is
+     ours; the form inside #ckForm is Stripe's and is mounted untouched. -->
 <div class="scrim ck-scrim" id="ckModal">
   <div class="ck-card">
     <button class="ck-x" id="ckX" aria-label="Close">&times;</button>
+    <header class="ck-head">
+      <svg class="ck-mark" viewBox="0 0 1821.36 1528.47" role="img" aria-label="Liten &amp; Co" focusable="false"><g><path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/></g><g><path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/><path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/><path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/><path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/><path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/><path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/><path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/></g></svg>
+      <h3 class="ck-title" id="ckTitle">Complete Your Collection</h3>
+      <div class="ck-order" id="ckOrder" hidden>
+        <span class="ck-order__size" id="ckOrderSize"></span>
+        <span class="ck-order__price" id="ckOrderPrice"></span>
+      </div>
+    </header>
     <div id="ckForm"></div>
     <div class="ck-err" id="ckErr"></div>
   </div>
