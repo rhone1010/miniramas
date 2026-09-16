@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T23:50:06.260Z",
+  "generatedAt": "2026-09-16T01:49:45.060Z",
   "base": "/previews/effects/",
   "siloBase": "/previews/silos/",
   "poseBase": "/previews/pose/",
@@ -48,29 +48,7 @@
         "woman@2x.jpg"
       ]
     },
-    "beaded": {
-      "man": "man.jpg",
-      "woman": "woman.jpg",
-      "neutral": null,
-      "all": [
-        "man.jpg",
-        "woman.jpg",
-        "man@2x.jpg",
-        "woman@2x.jpg"
-      ]
-    },
     "bronze": {
-      "man": "man.jpg",
-      "woman": "woman.jpg",
-      "neutral": null,
-      "all": [
-        "man.jpg",
-        "woman.jpg",
-        "man@2x.jpg",
-        "woman@2x.jpg"
-      ]
-    },
-    "cast_glass": {
       "man": "man.jpg",
       "woman": "woman.jpg",
       "neutral": null,
@@ -181,17 +159,6 @@
       ]
     },
     "dragon_skin": {
-      "man": "man.jpg",
-      "woman": "woman.jpg",
-      "neutral": null,
-      "all": [
-        "man.jpg",
-        "woman.jpg",
-        "man@2x.jpg",
-        "woman@2x.jpg"
-      ]
-    },
-    "driftwood_resin": {
       "man": "man.jpg",
       "woman": "woman.jpg",
       "neutral": null,
@@ -422,23 +389,15 @@
         "woman@2x.jpg"
       ]
     },
-    "petrified_wood": {
-      "man": null,
-      "woman": "woman.jpg",
-      "neutral": "1.jpg",
-      "all": [
-        "1.jpg",
-        "2.jpg",
-        "woman.jpg"
-      ]
-    },
     "plushy": {
-      "man": null,
+      "man": "man.jpg",
       "woman": "woman.jpg",
-      "neutral": "1.jpg",
+      "neutral": null,
       "all": [
-        "1.jpg",
-        "woman.jpg"
+        "man.jpg",
+        "woman.jpg",
+        "man@2x.jpg",
+        "woman@2x.jpg"
       ]
     },
     "polished_gold": {
