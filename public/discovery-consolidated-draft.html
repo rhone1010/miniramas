@@ -252,6 +252,18 @@ body{
   font-family:var(--serif); font-size:.95em; color:#fffcf6;
   text-shadow:0 .08rem .18rem rgba(18,12,8,.8), 0 .3rem .8rem rgba(18,12,8,.42);
 }
+/* The change-photo control, in the corner of the photograph itself. */
+.photo-change{
+  position:absolute; right:9px; bottom:9px; z-index:2;
+  width:34px; height:34px; padding:0; border:0; border-radius:999px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(19,13,9,.72); color:#fffcf6; cursor:pointer;
+  box-shadow:0 .1rem .4rem rgba(18,12,8,.45);
+  transition:background .18s ease, transform .18s ease;
+}
+.photo-change svg{ width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round }
+.photo-change:hover, .photo-change:focus-visible{ background:var(--oxblood); transform:scale(1.06) }
+@media (prefers-reduced-motion:reduce){ .photo-change{ transition:none } .photo-change:hover, .photo-change:focus-visible{ transform:none } }
 
 /* .cur-card removed per Rich's ruling -- there is no inset card, only
    the rail itself is a floating card. Photo/intro content sits as
@@ -3044,11 +3056,14 @@ function act(s){ LAST_ACTIONS.push(s); if (LAST_ACTIONS.length > 3) LAST_ACTIONS
 var uploadedPhotoDataUrl = null;
 function photoStampHtml(){
   if (uploadedPhotoDataUrl){
-    // Real photo present: image + bottom overlay, same treatment as
-    // effect-card titles (gradient scrim + text-shadow), not the
-    // hover-only change prompt from before.
+    /* Real photo present: the picture, and a control to change it. The
+       written overlay came off on 2026-09-16 (Rich) and the project's own
+       picture glyph took its place -- same click, same intake, tooltip
+       through the existing data-tip table. */
     return '<img src="' + uploadedPhotoDataUrl + '" alt="Your photo">' +
-      '<div class="photo-overlay"><span>Upload a different image</span></div>';
+      '<button class="photo-change" type="button" data-tip="changephoto" aria-label="Change Source Image">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 16l4.5-4.5 3.5 3.5 3-3L20 17"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>' +
+      '</button>';
   }
   // No photo yet: prompt lives INSIDE the frame itself -- oxblood
   // background, light text -- not as a separate caption above it.
@@ -3711,18 +3726,23 @@ function paintTier(el){
 function allCatalogKeys(){ var out = []; SILOS.forEach(function(silo){ silo.effects.forEach(function(e){ out.push({ key:resolveEffectId(e.id, SUBJECT), baseId:e.id, name:e.label, siloName:silo.name }); }); }); return out; }
 /* ══════════════════════════════════════════════════════════════
    __CURATED__ CURATED EFFECTS (Rich, 2026-09-13)
-   The universe is these 27 -- never Ebony, Fire Face or Mercury. A
+   The universe is these 25 -- never Ebony, Fire Face or Mercury. A
    session's bench is 16 of them, shown on the stage above the rooms one
    page of 8 at a time, with the rail's Curated box as its minimap and
    page control. The bench is stable for the session (and survives the
    Review sign-in) until the customer rerolls it. Base ids throughout;
    the subject resolves variants exactly as the rooms do.
    ══════════════════════════════════════════════════════════════ */
+/* MEMBERSHIP, 2026-09-16 (Rich): out of Curated -- crystallized,
+   petal_sculpture, ebony, deco_twenties, sand_form, porcelain; into
+   Curated -- mosaic_portrait, stained_glass, designer_vinyl,
+   action_figure, cubism, sheet_music. This is Curated membership only:
+   all six that left remain live in their own rooms and in All Effects. */
 var CURATED_UNIVERSE = [
   'reclaimed_bronze','retro_robot','stained_glass','plushy','ice','impressionist','art_deco',
-  'stone','petal_sculpture','renaissance','victorian','wild_west','neon','oil_impasto',
-  'balloon_face','sheet_music','origami','linocut','art_nouveau','crystallized','deco_twenties',
-  'elizabethan','iron','quilted','porcelain','sand_form'
+  'stone','mosaic_portrait','renaissance','victorian','wild_west','neon','oil_impasto',
+  'balloon_face','sheet_music','origami','linocut','art_nouveau','designer_vinyl','action_figure',
+  'elizabethan','iron','quilted','cubism'
 ];
 var CURATED = { bench: [], page: 0 };
 function curatedEffect(base){
@@ -3774,7 +3794,20 @@ function rerollBench(){
   CURATED.bench = bench;
   return true;
 }
+/* The dedicated Curated plates (600x894, /previews/curated) cover the
+   effects that were in the bench when that set was shot. The four that
+   joined on 2026-09-16 have no plate there, so they take the current
+   approved preview from the effects manifest instead -- same subject
+   rule either way, and card art is background-size:cover, so the
+   different aspect crops rather than distorts. */
+var CURATED_PLATES = [
+  'art_deco','art_nouveau','balloon_face','cast_glass','crystallized','deco_twenties','elizabethan','ice',
+  'impressionist','iron','linocut','neon','oil_impasto','origami','petal_sculpture','plushy','porcelain',
+  'quilted','reclaimed_bronze','renaissance','retro_robot','sand_form','sheet_music','stained_glass','stone',
+  'victorian','wild_west'
+];
 function curatedPreviewUrl(base, subject){
+  if (CURATED_PLATES.indexOf(base) < 0) return previewUrlFor(base, subject);
   return '/previews/curated/' + base + '/' + (subject === 'woman' ? 'woman' : 'man') + '.jpg';
 }
 function curatedPage(){ return CURATED.bench.slice(CURATED.page * 8, CURATED.page * 8 + 8); }
@@ -4898,6 +4931,7 @@ resetIdleTimers();
 // ══════════════════════════════════════════════════════════════
 var TIPS = {
   photo:      'Upload a clear, forward-facing photo to begin.',                                         /* TOUR  */
+  changephoto:'Change Source Image',                                                                    /* RICH 2026-09-16 */
   pick:       'Choose a collection size and I will fill it from your Curated Effects.',                /* DRAFT */
   curated:    'Sixteen effects chosen for you, eight at a time. They sit at the top of the stage.',    /* DRAFT */
   page:       'See the other eight.',                                                                   /* DRAFT */
