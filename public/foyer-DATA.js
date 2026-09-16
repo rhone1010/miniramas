@@ -16,7 +16,6 @@ var FLIPS = [
   ['flip_15', 'as a balloon sculpture.'],
   ['flip_16', 'in Art Nouveau.'],
   ['flip_17', 'in Art Deco.'],
-  ['flip_18', 'in cast glass.'],
   ['flip_19', 'as a linocut.'],
   ['flip_20', ''],
   ['flip_21', ''],

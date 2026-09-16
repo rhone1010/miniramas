@@ -1,15 +1,12 @@
 /* GENERATED FILE — DO NOT EDIT.
    Source: lib/v1/portraits/effect-registry.ts  (CENG-owned)
    Regenerate: node scripts/emit-effect-registry.js
-   Emitted: 2026-09-15T00:00:00.000Z
-   Manually reconstructed 2026-09-15 by Rich/Claude to match a hand-edit of
-   effect-registry.ts -- run the real emit script next time to confirm this
-   matches exactly.
+   Emitted: 2026-09-16T18:12:01.838Z
 
    Labels are plain unicode. Key on .id, never on .label.
    Offer only effects where body === 'live' — the gate refuses the rest. */
 window.EFFECT_REGISTRY = {
-  "generatedAt": "2026-09-15T00:00:00.000Z",
+  "generatedAt": "2026-09-16T18:12:01.838Z",
   "silos": [
     {
       "id": "another_age",
@@ -211,8 +208,8 @@ window.EFFECT_REGISTRY = {
       "monolithic": false,
       "body": "live",
       "refs": 2,
-      "likenessFloor": "strict",
-      "framing": "statuesque"
+      "framing": "statuesque",
+      "likenessFloor": "strict"
     },
     {
       "id": "tidewood",
@@ -732,9 +729,37 @@ window.EFFECT_REGISTRY = {
       "likenessFloor": "strict",
       "genderedRefs": true
     }
+  ],
+  "poses": [
+    {
+      "id": "as_photographed",
+      "label": "Keep My Pose",
+      "preserve": true
+    },
+    {
+      "id": "smiling",
+      "label": "Smiling"
+    },
+    {
+      "id": "laughing",
+      "label": "Laughing"
+    },
+    {
+      "id": "thoughtful",
+      "label": "Thoughtful"
+    },
+    {
+      "id": "dramatic",
+      "label": "Dramatic"
+    },
+    {
+      "id": "goofy",
+      "label": "Goofy"
+    }
   ]
 };
 
+/* convenience, matching the TS helpers */
 window.EFFECT_REGISTRY.bySilo = function (siloId) {
   return window.EFFECT_REGISTRY.effects.filter(function (e) { return e.category === siloId; });
 };

@@ -17,17 +17,18 @@ const MAP: Record<string, string> = Function(`return ${HTML.match(/var FLIP_EFFE
 const FLIPS: [string, string][] = Function(`${DATA.replace(/var /g, 'var ')}; return FLIPS`)()
 const FAN: string[] = Function(`return ${HTML.match(/var FAN = (\[[^\]]*\]);/)![1]}`)()
 const MOSAIC: string[] = Function(`return ${HTML.match(/var MOSAIC_MORE = (\[[^\]]*\]);/)![1]}`)()
-const CANON = ['art_deco', 'art_nouveau', 'balloon_face', 'cast_glass', 'crystallized', 'deco_twenties', 'designer_vinyl', 'elizabethan', 'ice', 'impressionist',
+const CANON = ['art_deco', 'art_nouveau', 'balloon_face', 'crystallized', 'deco_twenties', 'designer_vinyl', 'elizabethan', 'ice', 'impressionist',
   'iron', 'linocut', 'neon', 'oil_impasto', 'origami', 'plushy', 'porcelain', 'quilted', 'reclaimed_bronze', 'renaissance',
   'retro_robot', 'sand_form', 'sheet_music', 'stained_glass', 'stone', 'victorian', 'wild_west']
 
 describe('foyer flip -> canonical effect -> male picture', () => {
-  it('every flip resolves, once each, and all 27 canonical effects are covered', () => {
+  it('every flip resolves, once each, and all 26 canonical effects are covered', () => {
     expect(Object.keys(MAP).sort()).toEqual(FLIPS.map(f => f[0]).sort())
     expect(Object.values(MAP).sort()).toEqual(CANON)
   })
   it('the corrected mappings hold', () => {
-    expect(MAP).toMatchObject({ flip_07: 'origami', flip_14: 'crystallized', flip_15: 'balloon_face', flip_18: 'cast_glass', flip_24: 'stained_glass', flip_26: 'victorian' })
+    expect(MAP).toMatchObject({ flip_07: 'origami', flip_14: 'crystallized', flip_15: 'balloon_face', flip_24: 'stained_glass', flip_26: 'victorian' })
+    expect(MAP.flip_18).toBeUndefined()        // cast_glass left the deck with the effect (Rich, 2026-09-16)
   })
   it('every captioned flip agrees with its caption', () => {
     const words: Record<string, RegExp> = { retro_robot: /retro robot/, quilted: /quilted/, plushy: /plushy/, origami: /origami/, neon: /neon/,

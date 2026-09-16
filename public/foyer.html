@@ -195,7 +195,10 @@ input[type=file]{ display:none }
      nothing jumps. The waiting position (150px under the card, 50%) is
      unchanged. */
   .go{ transition:transform 1.1s cubic-bezier(.4,0,.2,1), left 1.1s cubic-bezier(.4,0,.2,1), margin-top 1.1s cubic-bezier(.4,0,.2,1), opacity .5s ease }
-  .go.full{ transform:translateX(-50%) scale(1.5) translateY(-10px); margin-top:-25px; left:52% }
+  /* left:50% -- centred on the page, as the waiting state is. It sat at 52%
+     ("optically centred") and read as off-centre against the card and the
+     fan (Rich, 2026-09-16). Size and vertical position unchanged. */
+  .go.full{ transform:translateX(-50%) scale(1.5) translateY(-10px); margin-top:-25px; left:50% }
   /* THE CARD IS THE UPLOAD CONTROL -- no separate button on desktop. The
      invisible gradient layer above the card's face must not take the click
      meant for it; a keyboard focus ring, drawn inside the rounded card. */
@@ -302,14 +305,29 @@ input[type=file]{ display:none }
   font-family:var(--serif); color:var(--ox);
   opacity:0; visibility:hidden; transition:opacity .45s ease, visibility 0s linear .45s }
 .reveal-status.on{ opacity:1; visibility:visible; transition:opacity .45s ease, visibility 0s }
-/* Crafting Your Image: a ripple, not a pulse -- each letter dips to .55 and
-   back in turn, so one slow wave runs through the phrase every 2s, then the
-   next. Letters stay put; only their ink changes. The phrase is read once,
-   whole (.rs-say); the letters are visual only. */
+/* Crafting Your Image: a ripple, not a pulse -- each letter blooms to full
+   ink and settles back in turn, so one slow wave runs through the phrase
+   every 2s, then the next. The phrase sits at .57 and is legible the whole
+   time; the wave lifts letters to 1 rather than dimming them away (Rich,
+   2026-09-16: the old dip read as faint). Letters stay put; only their ink
+   changes. The phrase is read once, whole (.rs-say); the letters are
+   visual only. */
 .rs-head{ margin:0; font-style:italic; font-weight:400; font-size:var(--rs-craft, 32px); line-height:1; color:#c36d26 }
 .rs-say{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap }
-.rs-l{ animation:rsRipple 2s ease-in-out infinite; animation-delay:calc(var(--i) * 2s / var(--n)) }
-@keyframes rsRipple{ 0%, 44%, 100%{ opacity:1 } 22%{ opacity:.55 } }
+/* THE WAIT AFTER THE UPLOAD. The mark breathes over their photograph while
+   the studio looks at it, with a line that promises nothing in particular,
+   and dissolves as the first frame turns. No spinner, no percentage.
+   Reduced motion: the same thing, held still. */
+.prep{ position:absolute; inset:0; z-index:4; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  border-radius:inherit; pointer-events:none; background:linear-gradient(rgba(20,15,10,.5), rgba(20,15,10,.62));
+  opacity:0; visibility:hidden; transition:opacity .5s ease, visibility 0s linear .5s }
+.prep.on{ opacity:1; visibility:visible; transition:opacity .5s ease, visibility 0s }
+.prep-mark{ width:132px; height:88px; fill:#f6ecd8; animation:prepBreath 3.4s ease-in-out infinite }
+.prep-say{ margin:0; font-family:var(--serif); font-style:italic; font-size:19px; color:rgba(246,236,216,.92); text-shadow:0 1px 3px rgba(0,0,0,.45) }
+@keyframes prepBreath{ 0%,100%{ opacity:.5; filter:drop-shadow(0 0 0 rgba(246,236,216,0)) } 50%{ opacity:1; filter:drop-shadow(0 0 12px rgba(246,236,216,.4)) } }
+@media(max-width:720px){ .prep-mark{ width:104px; height:69px } .prep-say{ font-size:17px } }
+.rs-l{ opacity:.57; animation:rsRipple 2s ease-in-out infinite; animation-delay:calc(var(--i) * 2s / var(--n)) }
+@keyframes rsRipple{ 0%, 44%, 100%{ opacity:.57 } 22%{ opacity:1 } }
 /* Imagine Yourself As [word]: "Imagine Yourself" italic, "As" and the word
    upright, as the mockup sets them. "Imagine Yourself As" never moves: the
    words share one cell, the width of a middling word ("Bronze", 2.75em),
@@ -338,7 +356,8 @@ input[type=file]{ display:none }
   .rs-line{ color:#f6ecd8; margin-top:clamp(6px, 2vw, 9px); font-size:clamp(18px, 5.6vw, 24px) }   /* the longest line still fits a 320 card */
 }
 @media (prefers-reduced-motion:reduce){
-  .rs-l{ animation:none }
+  .rs-l{ animation:none; opacity:1 }          /* no wave, and the phrase at full ink */
+  .prep-mark{ animation:none; opacity:.92; filter:none }
   .rs-w{ transition:none; filter:none }
 }
 @media (min-width:721px){ .pill{ display:none !important } }
@@ -365,6 +384,14 @@ input[type=file]{ display:none }
             <div class="grad"></div>
           </div>
           <div class="face back" id="back"></div>
+          <!-- THE WAIT AFTER THE UPLOAD (Rich, 2026-09-16): the seconds
+               between their photograph going up and the riffle starting,
+               filled rather than left still. Nothing is claimed about what
+               the studio is doing. It dissolves when the frames begin. -->
+          <div class="prep" id="prep" aria-hidden="true">
+            <svg class="prep-mark" viewBox="90 0 1669 1109" aria-hidden="true"><path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/></svg>
+            <p class="prep-say">Preparing your reveal…</p>
+          </div>
         </div>
         <div class="reveal-status" id="revealStatus">
           <p class="rs-head" role="status" aria-live="polite"></p>
@@ -463,16 +490,18 @@ var MOSAIC_MORE = ['flip_17','flip_11'];
 
    Each flip resolves ONCE, here, to its canonical effect: the captions in
    foyer-DATA.js where they name one (flip_07 origami, flip_14 crystallized,
-   flip_15 balloon_face, flip_18 cast_glass, flip_24 stained_glass, flip_26
-   victorian among them); the uncaptioned frames by their artwork, matched
-   to the effect's generation batch. All 27 effects, each once. A man's
-   picture is public/previews/foyer-flip-male/<effect>.jpg, as named there. */
+   flip_15 balloon_face, flip_24 stained_glass, flip_26 victorian among
+   them); the uncaptioned frames by their artwork, matched to the effect's
+   generation batch. A man's picture is
+   public/previews/foyer-flip-male/<effect>.jpg, as named there.
+   26 frames since 2026-09-16: flip_18 (cast_glass) left the deck with the
+   effect, and is not replaced yet (Rich). */
 var FLIP_EFFECT = {
   flip_01:'retro_robot',  flip_02:'reclaimed_bronze', flip_03:'quilted',       flip_04:'renaissance',
   flip_05:'plushy',       flip_06:'designer_vinyl',  flip_07:'origami',       flip_08:'oil_impasto',
   flip_09:'neon',         flip_10:'impressionist',    flip_11:'ice',           flip_12:'iron',
   flip_13:'elizabethan',  flip_14:'crystallized',     flip_15:'balloon_face',  flip_16:'art_nouveau',
-  flip_17:'art_deco',     flip_18:'cast_glass',       flip_19:'linocut',       flip_20:'porcelain',
+  flip_17:'art_deco',                                 flip_19:'linocut',       flip_20:'porcelain',
   flip_21:'deco_twenties',flip_22:'sand_form',        flip_23:'sheet_music',   flip_24:'stained_glass',
   flip_25:'stone',        flip_26:'victorian',        flip_27:'wild_west'
 };
@@ -569,7 +598,14 @@ function begin(src){
      the card and Come Inside & Explore is the one next step. Otherwise the
      riffle runs until the real result, or a reason there is none, arrives. */
   if (FOYER.free === false) settle(FOYER.why || 'unavailable');
-  else riffleWhenSubjectKnown();
+  else { prepWait(true); riffleWhenSubjectKnown(); }
+}
+
+/* The wait after the upload: on with the photograph, off as the riffle
+   takes the card (or as any settled state does). */
+function prepWait(on){
+  var el = document.getElementById('prep');
+  if (el) el.classList.toggle('on', !!on);
 }
 
 /* THE RIFFLE WAITS FOR THE PHOTOGRAPH'S SUBJECT (Rich, 2026-09-14). Its
@@ -593,6 +629,7 @@ function riffleWhenSubjectKnown(){
 function startRiffle(){
   STATE.riffleStart = null;
   if (STATE.phase !== 'photo') return;
+  prepWait(false);                    /* dissolves as the first frame turns */
   STATE.phase = 'riffle';
   document.body.classList.add('telling-page');
   front.innerHTML='';
@@ -627,6 +664,7 @@ function stopRiffle(){
 function generationReady(result){
   if (STATE.result || STATE.phase === 'opening') return;
   hideRevealStatus();
+  prepWait(false);          /* a result this early (never seen) still clears it */
   STATE.result = result;
   var im = new Image(); im.src = result.src;
   var ready = im.decode ? im.decode() : Promise.resolve();
@@ -831,6 +869,7 @@ function settle(kind){
   if (kind === 'failed' && FOYER.free === false) kind = FOYER.why || 'unavailable';
   if (STATE.phase === 'settled' && STATE.settled === kind) return;
   hideRevealStatus();
+  prepWait(false);
   stopRiffle();
   STATE.phase = 'settled'; STATE.settled = kind;
   front.innerHTML = '<img src="'+SRC.dataUrl+'"><div class="nm" role="status">'+SAY[kind]+'</div>';

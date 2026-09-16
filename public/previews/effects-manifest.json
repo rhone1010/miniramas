@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T15:28:32.616Z",
+  "generatedAt": "2026-09-16T18:14:14.143Z",
   "base": "/previews/effects/",
   "siloBase": "/previews/silos/",
   "poseBase": "/previews/pose/",
@@ -43,7 +43,9 @@
       "neutral": null,
       "all": [
         "man.jpg",
-        "woman.jpg"
+        "woman.jpg",
+        "man@2x.jpg",
+        "woman@2x.jpg"
       ]
     },
     "bronze": {
@@ -184,7 +186,9 @@
       "neutral": null,
       "all": [
         "man.jpg",
-        "woman.jpg"
+        "woman.jpg",
+        "man@2x.jpg",
+        "woman@2x.jpg"
       ]
     },
     "fire_face": {
