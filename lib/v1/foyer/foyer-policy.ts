@@ -7,14 +7,16 @@ import { byId } from '@/lib/v1/portraits/effect-registry'
 
 /* The six effects a visitor's one free reveal is drawn from. PRODUCT
    AUTHORITY -- not derived from the foyer's fan cards, its riffle frames or
-   the glass's demo REVEAL_POOL. None of the six has a _woman twin. */
+   the glass's demo REVEAL_POOL. None of the six has a _woman twin.
+   Rich, 2026-09-16: the three new effects take the places of
+   petal_sculpture, neon and quilted. */
 export const FOYER_REVEAL_EFFECTS = [
   'plushy',
-  'petal_sculpture',
   'impressionist',
-  'neon',
-  'quilted',
   'stained_glass',
+  'action_figure',
+  'designer_vinyl',
+  'mosaic_portrait',
 ] as const
 export type FoyerRevealEffect = (typeof FOYER_REVEAL_EFFECTS)[number]
 
@@ -56,7 +58,10 @@ export function pickRevealEffect(rand: () => number = Math.random): FoyerRevealE
    where the foyer is ruled to say something else -- display copy only; the
    effect id and its production prompt are untouched (Rich, 2026-09-12). */
 const FOYER_DISPLAY_LABELS: Partial<Record<FoyerRevealEffect, string>> = {
-  petal_sculpture: 'Petal',
+  /* Empty since 2026-09-16: petal_sculpture ('Petal') left the pool, and the
+     six the foyer now draws from say exactly what the registry calls them --
+     Plushy, Impressionist, Stained Glass, Action Figure, Vinyl Figure,
+     Mosaic. */
 }
 export function revealLabel(effectId: string): string {
   return FOYER_DISPLAY_LABELS[effectId as FoyerRevealEffect] ?? byId(effectId)?.label ?? effectId

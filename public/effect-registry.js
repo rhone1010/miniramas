@@ -561,7 +561,7 @@ window.EFFECT_REGISTRY = {
     },
     {
       "id": "designer_vinyl",
-      "label": "Designer Vinyl",
+      "label": "Vinyl Figure",
       "category": "fantasy_future",
       "mode": "material",
       "monolithic": false,
@@ -571,7 +571,7 @@ window.EFFECT_REGISTRY = {
     },
     {
       "id": "mosaic_portrait",
-      "label": "Mosaic Portrait",
+      "label": "Mosaic",
       "category": "light_glass",
       "mode": "material",
       "monolithic": false,

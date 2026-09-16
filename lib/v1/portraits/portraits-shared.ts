@@ -187,8 +187,8 @@ export const PRESET_LABELS: Record<PortraitsPresetId, string> = {
   elizabethan_woman:    'Elizabethan Woman',
   /* added 2026-09-15 with the registry (effect-registry.ts): labels as it has them */
   action_figure:        'Action Figure',
-  designer_vinyl:       'Designer Vinyl',
-  mosaic_portrait:      'Mosaic Portrait',
+  designer_vinyl:       'Vinyl Figure',
+  mosaic_portrait:      'Mosaic',
 }
 
 // ── STYLE → MATERIALS ─────────────────────────────────────────

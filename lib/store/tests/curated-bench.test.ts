@@ -45,10 +45,12 @@ const universeSrc = (() => {
   return HTML.slice(at + 1, matchBrace(HTML, open, '[', ']') + 1) + ';'
 })()
 
+/* 26 since 2026-09-16: cast_glass retired with the catalog change, so the
+   bench no longer draws it. */
 const AUTHORITATIVE_27 = [
   'reclaimed_bronze', 'retro_robot', 'stained_glass', 'plushy', 'ice', 'impressionist', 'art_deco', 'stone', 'petal_sculpture',
   'renaissance', 'victorian', 'wild_west', 'neon', 'oil_impasto', 'balloon_face', 'sheet_music', 'origami', 'linocut',
-  'art_nouveau', 'crystallized', 'deco_twenties', 'elizabethan', 'iron', 'cast_glass', 'quilted', 'porcelain', 'sand_form',
+  'art_nouveau', 'crystallized', 'deco_twenties', 'elizabethan', 'iron', 'quilted', 'porcelain', 'sand_form',
 ]
 
 function build(selected: string[] = []) {

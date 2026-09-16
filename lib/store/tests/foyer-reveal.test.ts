@@ -352,13 +352,29 @@ describe('/api/v1/foyer/reveal — one NB2 render, watermarked, allowance-accoun
     expect(await (await revealGET(req('/api/v1/foyer/reveal', { method: 'GET' }))).json()).toEqual({ available: false, reason: 'unavailable' })
   })
 
-  it('petal_sculpture is shown as "Petal" -- display copy only; the id and its production prompt are unchanged', async () => {
-    const i = FOYER_REVEAL_EFFECTS.indexOf('petal_sculpture')
+  /* The six the foyer draws from, and the name each is given (Rich,
+     2026-09-16). They are the registry's own labels now -- the foyer's
+     display override is empty -- and the id and prompt behind each are
+     untouched. */
+  it.each([
+    ['plushy', 'Plushy'],
+    ['impressionist', 'Impressionist'],
+    ['stained_glass', 'Stained Glass'],
+    ['action_figure', 'Action Figure'],
+    ['designer_vinyl', 'Vinyl Figure'],
+    ['mosaic_portrait', 'Mosaic'],
+  ])('%s is shown as "%s", on its own prompt', async (id, label) => {
+    const i = (FOYER_REVEAL_EFFECTS as readonly string[]).indexOf(id)
+    expect(i).toBeGreaterThanOrEqual(0)
     vi.spyOn(Math, 'random').mockReturnValue((i + 0.5) / FOYER_REVEAL_EFFECTS.length)
     const d = await (await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: await intakeToken() } }))).json()
-    expect(d.label).toBe('Petal')
-    expect(replicate[0].body.input.prompt).toBe(buildEffectPrompt('petal_sculpture'))
-    expect(byId('petal_sculpture')!.label).toBe('Petal Sculpture')          // the registry itself is not changed
+    expect(d.label).toBe(label)
+    expect(byId(id)!.label).toBe(label)                                    // the registry says the same
+    expect(replicate[0].body.input.prompt).toBe(buildEffectPrompt(id))
+  })
+
+  it('the pool is exactly the six, and nothing else', () => {
+    expect([...FOYER_REVEAL_EFFECTS]).toEqual(['plushy', 'impressionist', 'stained_glass', 'action_figure', 'designer_vinyl', 'mosaic_portrait'])
   })
 
   it('a malformed liten_anon marker is ignored, not trusted', async () => {

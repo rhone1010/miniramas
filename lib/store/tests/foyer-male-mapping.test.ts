@@ -17,8 +17,8 @@ const MAP: Record<string, string> = Function(`return ${HTML.match(/var FLIP_EFFE
 const FLIPS: [string, string][] = Function(`${DATA.replace(/var /g, 'var ')}; return FLIPS`)()
 const FAN: string[] = Function(`return ${HTML.match(/var FAN = (\[[^\]]*\]);/)![1]}`)()
 const MOSAIC: string[] = Function(`return ${HTML.match(/var MOSAIC_MORE = (\[[^\]]*\]);/)![1]}`)()
-const CANON = ['art_deco', 'art_nouveau', 'balloon_face', 'cast_glass', 'crystallized', 'deco_twenties', 'elizabethan', 'ice', 'impressionist',
-  'iron', 'linocut', 'neon', 'oil_impasto', 'origami', 'petal_sculpture', 'plushy', 'porcelain', 'quilted', 'reclaimed_bronze', 'renaissance',
+const CANON = ['art_deco', 'art_nouveau', 'balloon_face', 'cast_glass', 'crystallized', 'deco_twenties', 'designer_vinyl', 'elizabethan', 'ice', 'impressionist',
+  'iron', 'linocut', 'neon', 'oil_impasto', 'origami', 'plushy', 'porcelain', 'quilted', 'reclaimed_bronze', 'renaissance',
   'retro_robot', 'sand_form', 'sheet_music', 'stained_glass', 'stone', 'victorian', 'wild_west']
 
 describe('foyer flip -> canonical effect -> male picture', () => {
@@ -42,7 +42,7 @@ describe('foyer flip -> canonical effect -> male picture', () => {
   })
   it('the fan and the phone grid resolve too', () => {
     expect(FAN).toEqual(['flip_23', 'flip_26', 'flip_24', 'flip_13', 'flip_06', 'flip_16'])
-    expect(FAN.map(id => MAP[id])).toEqual(['sheet_music', 'victorian', 'stained_glass', 'elizabethan', 'petal_sculpture', 'art_nouveau'])
+    expect(FAN.map(id => MAP[id])).toEqual(['sheet_music', 'victorian', 'stained_glass', 'elizabethan', 'designer_vinyl', 'art_nouveau'])
     expect(MOSAIC.map(id => MAP[id])).toEqual(['art_deco', 'ice'])
   })
 })

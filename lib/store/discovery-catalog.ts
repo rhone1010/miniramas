@@ -61,13 +61,13 @@ const CANONICAL_BY_SILO: Record<SiloId, Array<string | null>> = {
     'samurai', 'wild_west', 'persian_court',
   ],
   earth_ore: [
-    'bronze', 'iron', 'stone', 'jade', 'ebony', 'reclaimed_bronze', 'petrified_wood',
+    'bronze', 'iron', 'stone', 'jade', 'ebony', 'reclaimed_bronze', 'crystallized',
   ],
   light_glass: [
-    'cast_glass', 'stained_glass', 'ice', 'mercury', 'neon', 'sea_glass', 'polished_gold',
+    'mosaic_portrait', 'stained_glass', 'ice', 'mercury', 'neon', 'sea_glass', 'polished_gold',
   ],
   living_world: [
-    'driftwood_resin', 'coral', 'tidewood', 'lichen_granite',
+    'fire_face', 'coral', 'tidewood', 'lichen_granite',
     'petal_sculpture', 'sand_form', 'sandstone',
   ],
   made_by_hand: [
@@ -83,8 +83,8 @@ const CANONICAL_BY_SILO: Record<SiloId, Array<string | null>> = {
     'art_deco', 'art_nouveau', 'daguerreotype',
   ],
   fantasy_future: [
-    'dragon_skin', 'fire_face', 'retro_robot', 'forest_guardian',
-    'clockwork', 'starfield', 'crystallized',
+    'dragon_skin', 'action_figure', 'retro_robot', 'forest_guardian',
+    'clockwork', 'starfield', 'designer_vinyl',
   ],
 }
 

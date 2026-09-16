@@ -2110,7 +2110,7 @@ if (!window.EFFECT_REGISTRY) {
    Labels are plain unicode. Key on .id, never on .label.
    Offer only effects where body === 'live' — the gate refuses the rest. */
 window.EFFECT_REGISTRY = {
-  "generatedAt": "2026-08-03T22:48:53.900Z",
+  "generatedAt": "2026-09-15T00:00:00.000Z",
   "silos": [
     {
       "id": "another_age",
@@ -2220,7 +2220,7 @@ window.EFFECT_REGISTRY = {
       "category": "earth_ore",
       "mode": "material",
       "monolithic": true,
-      "body": "live",
+      "body": "todo",
       "refs": 2,
       "likenessFloor": "strict"
     },
@@ -2230,7 +2230,7 @@ window.EFFECT_REGISTRY = {
       "category": "light_glass",
       "mode": "material",
       "monolithic": false,
-      "body": "live",
+      "body": "todo",
       "refs": 1,
       "likenessFloor": "relaxed"
     },
@@ -2300,7 +2300,7 @@ window.EFFECT_REGISTRY = {
       "category": "living_world",
       "mode": "material",
       "monolithic": false,
-      "body": "live",
+      "body": "todo",
       "refs": 1,
       "likenessFloor": "strict"
     },
@@ -2312,8 +2312,8 @@ window.EFFECT_REGISTRY = {
       "monolithic": false,
       "body": "live",
       "refs": 2,
-      "framing": "statuesque",
-      "likenessFloor": "strict"
+      "likenessFloor": "strict",
+      "framing": "statuesque"
     },
     {
       "id": "tidewood",
@@ -2434,7 +2434,7 @@ window.EFFECT_REGISTRY = {
       "category": "made_by_hand",
       "mode": "material",
       "monolithic": true,
-      "body": "live",
+      "body": "todo",
       "refs": 2,
       "likenessFloor": "strict"
     },
@@ -2592,7 +2592,7 @@ window.EFFECT_REGISTRY = {
     {
       "id": "fire_face",
       "label": "Fire & Ember",
-      "category": "fantasy_future",
+      "category": "living_world",
       "mode": "costume",
       "monolithic": false,
       "body": "live",
@@ -2643,12 +2643,42 @@ window.EFFECT_REGISTRY = {
     {
       "id": "crystallized",
       "label": "Crystallized",
-      "category": "fantasy_future",
+      "category": "earth_ore",
       "mode": "material",
       "monolithic": true,
       "body": "live",
       "refs": 2,
       "likenessFloor": "strict"
+    },
+    {
+      "id": "action_figure",
+      "label": "Action Figure",
+      "category": "fantasy_future",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "designer_vinyl",
+      "label": "Vinyl Figure",
+      "category": "fantasy_future",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "mosaic_portrait",
+      "label": "Mosaic",
+      "category": "light_glass",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "relaxed"
     },
     {
       "id": "elizabethan",
@@ -2803,34 +2833,39 @@ window.EFFECT_REGISTRY = {
       "likenessFloor": "strict",
       "genderedRefs": true
     }
-  ],
-  "poses": [
-    {
-      "id": "as_photographed",
-      "label": "Keep My Pose",
-      "preserve": true
-    },
-    {
-      "id": "smiling",
-      "label": "Smiling"
-    },
-    {
-      "id": "laughing",
-      "label": "Laughing"
-    },
-    {
-      "id": "thoughtful",
-      "label": "Thoughtful"
-    },
-    {
-      "id": "dramatic",
-      "label": "Dramatic"
-    },
-    {
-      "id": "goofy",
-      "label": "Goofy"
-    }
   ]
+};
+
+window.EFFECT_REGISTRY.bySilo = function (siloId) {
+  return window.EFFECT_REGISTRY.effects.filter(function (e) { return e.category === siloId; });
+};
+window.EFFECT_REGISTRY.offerableBySilo = function (siloId) {
+  return window.EFFECT_REGISTRY.bySilo(siloId).filter(function (e) { return e.body === 'live'; });
+};
+window.EFFECT_REGISTRY.byId = function (id) {
+  return window.EFFECT_REGISTRY.effects.filter(function (e) { return e.id === id; })[0];
+};
+
+/* Gendered costume variants sit BEHIND a tile, not on one. Another Age has
+   seven tiles and fourteen rows: victorian is the tile, victorian_woman is
+   the woman side of its toggle. Draw tiles with tilesBySilo(); resolve the
+   toggle with variantFor(). */
+window.EFFECT_REGISTRY.isVariant = function (id) {
+  return /_woman$/.test(id);
+};
+window.EFFECT_REGISTRY.tilesBySilo = function (siloId) {
+  return window.EFFECT_REGISTRY.bySilo(siloId).filter(function (e) {
+    return !window.EFFECT_REGISTRY.isVariant(e.id);
+  });
+};
+window.EFFECT_REGISTRY.offerableTilesBySilo = function (siloId) {
+  return window.EFFECT_REGISTRY.tilesBySilo(siloId).filter(function (e) {
+    return e.body === 'live';
+  });
+};
+window.EFFECT_REGISTRY.variantFor = function (id, subject) {
+  if (subject !== 'woman') return window.EFFECT_REGISTRY.byId(id);
+  return window.EFFECT_REGISTRY.byId(id + '_woman') || window.EFFECT_REGISTRY.byId(id);
 };
 
 /* convenience, matching the TS helpers */
@@ -2917,7 +2952,10 @@ function buildSilosFromRegistry(){
   return reg.silos.map(function(s){
     var effects = reg.effects.filter(function(e){
       // Skip the _woman twins: they are the same tile with the other face.
-      return e.category === s.id && !(/_woman$/.test(e.id) && ids[e.id.replace(/_woman$/, '')]);
+      // And only what is finished: a retired or unbuilt effect (body !== 'live')
+      // otherwise takes a tile and shows an empty one -- the registry's own rule,
+      // and the one bySilo() below already follows (Rich, 2026-09-16).
+      return e.category === s.id && e.body === 'live' && !(/_woman$/.test(e.id) && ids[e.id.replace(/_woman$/, '')]);
     }).map(function(e){
       return { id:e.id, label:e.label, hasVariant: !!ids[e.id + '_woman'] };
     });
@@ -2963,7 +3001,7 @@ fetch('/api/v1/discovery/catalog?series=portraits')
    below still runs and still overwrites this, so a regenerated
    manifest wins whenever the page is served.
    Regenerate with: node scripts/emit-preview-manifest.js */
-var PREVIEWS = {"generatedAt":"2026-09-16T01:49:45.060Z","base":"/previews/effects/","siloBase":"/previews/silos/","poseBase":"/previews/pose/","effects":{"action_figure":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"art_deco":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"art_nouveau":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"balloon_face":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"bronze":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"charcoal_chalk":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"chocolate":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"clockwork":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"coral":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"crystallized":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"cubism":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"daguerreotype":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"deco_twenties":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"designer_vinyl":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"dragon_skin":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"ebony":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"elizabethan":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"fire_face":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"folded_book":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"forest_guardian":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"ice":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"impressionist":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"iron":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"jade":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"lichen_granite":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"linocut":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"magic_energy":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"mercury":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"mosaic_portrait":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"neon":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"oil_impasto":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"origami":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"pencil_sketch":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"persian_court":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"petal_sculpture":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"plushy":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"polished_gold":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"porcelain":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"quilted":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"reclaimed_bronze":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"renaissance":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg"]},"retro_robot":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"samurai":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"sand_form":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"sandstone":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"sea_glass":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"sheet_music":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"stained_glass":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"starfield":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"stone":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"tidewood":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"ukiyo_e":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"victorian":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"watercolour":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"wild_west":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]}},"silos":{"another_age":{"man":"another_age_man.jpg","woman":"another_age_woman.jpg","neutral":null},"artists_gallery":{"man":"artists_gallery_man.jpg","woman":"artists_gallery_woman.jpg","neutral":null},"earth_ore":{"man":"earth_ore_man.jpg","woman":"earth_ore_woman.jpg","neutral":null},"fantasy_future":{"man":"fantasy_future_man.jpg","woman":"fantasy_future_woman.jpg","neutral":null},"ink_paper":{"man":"ink_paper_man.jpg","woman":"ink_paper_woman.jpg","neutral":null},"light_glass":{"man":"light_glass_man.jpg","woman":"light_glass_woman.jpg","neutral":null},"living_world":{"man":"living_world_man.jpg","woman":"living_world_woman.jpg","neutral":null},"made_by_hand":{"man":"made_by_hand_man.jpg","woman":"made_by_hand_woman.jpg","neutral":null}},"poses":{"dramatic":{"man":"dramatic_man.png","woman":"dramatic_woman.jpg","neutral":null},"goofy":{"man":"goofy_man.png","woman":"goofy_woman.jpg","neutral":null},"laughing":{"man":"laughing_man.png","woman":"laughing_woman.jpg","neutral":null},"smiling":{"man":"smiling_man.png","woman":"smiling_woman.jpg","neutral":null},"thoughtful":{"man":"thoughtful_man.png","woman":"thoughtful_woman.jpg","neutral":null}}};
+var PREVIEWS = {"generatedAt":"2026-09-16T15:28:32.616Z","base":"/previews/effects/","siloBase":"/previews/silos/","poseBase":"/previews/pose/","effects":{"action_figure":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"art_deco":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"art_nouveau":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"balloon_face":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg"]},"bronze":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"charcoal_chalk":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"chocolate":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"clockwork":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"coral":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"crystallized":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"cubism":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"daguerreotype":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"deco_twenties":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"designer_vinyl":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"dragon_skin":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"ebony":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"elizabethan":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg"]},"fire_face":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"folded_book":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"forest_guardian":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"ice":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"impressionist":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"iron":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"jade":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"lichen_granite":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"linocut":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"magic_energy":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"mercury":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"mosaic_portrait":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"neon":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"oil_impasto":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"origami":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"pencil_sketch":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"persian_court":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"petal_sculpture":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"plushy":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"polished_gold":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"porcelain":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"quilted":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"reclaimed_bronze":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"renaissance":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg"]},"retro_robot":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"samurai":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"sand_form":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"sandstone":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"sea_glass":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"sheet_music":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"stained_glass":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"starfield":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"stone":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"tidewood":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"ukiyo_e":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"victorian":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"watercolour":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]},"wild_west":{"man":"man.jpg","woman":"woman.jpg","neutral":null,"all":["man.jpg","woman.jpg","man@2x.jpg","woman@2x.jpg"]}},"silos":{"another_age":{"man":"another_age_man.jpg","woman":"another_age_woman.jpg","neutral":null},"artists_gallery":{"man":"artists_gallery_man.jpg","woman":"artists_gallery_woman.jpg","neutral":null},"earth_ore":{"man":"earth_ore_man.jpg","woman":"earth_ore_woman.jpg","neutral":null},"fantasy_future":{"man":"fantasy_future_man.jpg","woman":"fantasy_future_woman.jpg","neutral":null},"ink_paper":{"man":"ink_paper_man.jpg","woman":"ink_paper_woman.jpg","neutral":null},"light_glass":{"man":"light_glass_man.jpg","woman":"light_glass_woman.jpg","neutral":null},"living_world":{"man":"living_world_man.jpg","woman":"living_world_woman.jpg","neutral":null},"made_by_hand":{"man":"made_by_hand_man.jpg","woman":"made_by_hand_woman.jpg","neutral":null}},"poses":{"dramatic":{"man":"dramatic_man.png","woman":"dramatic_woman.jpg","neutral":null},"goofy":{"man":"goofy_man.png","woman":"goofy_woman.jpg","neutral":null},"laughing":{"man":"laughing_man.png","woman":"laughing_woman.jpg","neutral":null},"smiling":{"man":"smiling_man.png","woman":"smiling_woman.jpg","neutral":null},"thoughtful":{"man":"thoughtful_man.png","woman":"thoughtful_woman.jpg","neutral":null}}};
 fetch('/previews/effects-manifest.json')
   .then(function(r){ return r.ok ? r.json() : null; })
   .then(function(d){ if (d && d.effects){ PREVIEWS = d; paintCardArt(); } })
@@ -3684,7 +3722,7 @@ var CURATED_UNIVERSE = [
   'reclaimed_bronze','retro_robot','stained_glass','plushy','ice','impressionist','art_deco',
   'stone','petal_sculpture','renaissance','victorian','wild_west','neon','oil_impasto',
   'balloon_face','sheet_music','origami','linocut','art_nouveau','crystallized','deco_twenties',
-  'elizabethan','iron','cast_glass','quilted','porcelain','sand_form'
+  'elizabethan','iron','quilted','porcelain','sand_form'
 ];
 var CURATED = { bench: [], page: 0 };
 function curatedEffect(base){

@@ -158,8 +158,8 @@ export const EFFECTS: Effect[] = [
 
   // ── NEW EFFECTS ADDED 2026-09-15 by Rich ──────────────────────────
   { id:'action_figure', label:'Action Figure', category:'fantasy_future', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — added 2026-09-15.' },
-  { id:'designer_vinyl', label:'Designer Vinyl', category:'fantasy_future', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — added 2026-09-15.' },
-  { id:'mosaic_portrait', label:'Mosaic Portrait', category:'light_glass', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'relaxed', note:'NEW — added 2026-09-15.' },
+  { id:'designer_vinyl', label:'Vinyl Figure', category:'fantasy_future', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — added 2026-09-15.' },
+  { id:'mosaic_portrait', label:'Mosaic', category:'light_glass', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'relaxed', note:'NEW — added 2026-09-15.' },
   // ── Another Age ───────────────────────────────────────────────────
   { id:'elizabethan', label:'Elizabethan Portrait', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:2, likenessFloor:'strict', genderedRefs:true, note:'DECIDED: 3D render, NOT painting. The Holbein / Horenbout / Teerlinc / Toto / Penni direction is dead. Needs the thoughtful EXPRESSION_BLOCK — the mandated settled smile overrode neutral-period in one of three test outputs.' },
   { id:'renaissance', label:'Renaissance Portrait', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:4, likenessFloor:'strict', genderedRefs:true },
