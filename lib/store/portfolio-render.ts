@@ -16,7 +16,7 @@
 // convention, so it came here rather than being duplicated.
 
 import { supabaseAdmin } from '@/lib/supabase'
-import { getAppUrl } from '@/lib/store/stripe'
+import { internalBaseUrl, internalHeaders } from '@/lib/store/internal-fetch'
 import { storeCleanOriginal, makeLockedPreview, lockedPreviewPath, recordPreview, PREVIEW_BUCKET } from '@/lib/store/preview'
 import { decideRetry } from '@/lib/store/portfolio-replace'
 import { styleIdForPreset } from '@/lib/store/portraits-style-lookup'
@@ -57,7 +57,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     const purchased = portfolio.delivery === 'purchased'
 
     const styleId = styleIdForPreset(item.preset)
-    const appUrl = getAppUrl()
+    const appUrl = internalBaseUrl()
 
     let genResult: any
     let ok = false
@@ -68,10 +68,10 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
            is the server's own render of a paid portfolio, so it presents the
            internal secret -- the same one items/render and the cron poller
            check. Nothing else about the request changes. */
-        headers: {
+        headers: internalHeaders({
           'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.CRON_SECRET ?? ''}`,
-        },
+        }),
         body: JSON.stringify({
           source_image_b64: portfolio.source_image,
           style_id: styleId,
@@ -240,10 +240,15 @@ async function handleItemFailure(
     .update({ status: 'pending', attempts: decision.attemptNumber, error: reason })
     .eq('id', portfolioItemId)
 
-  const appUrl = getAppUrl()
+  /* NOTE, NOT A FIX (Rich, 2026-09-16: report only, leave alone). These
+     headers carry no Authorization, and items/render is secret-gated, so this
+     retry is refused 401 every time. A 401 is a response, not a throw, so the
+     .catch below never runs and nothing is logged. The target is corrected
+     here with the other two self-calls; the missing header is untouched. */
+  const appUrl = internalBaseUrl()
   await fetch(`${appUrl}/api/v1/portfolios/items/render`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: internalHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ portfolioItemId }),
   }).catch((err) => {
     console.error(`[portfolios/items/render] retry fetch failed for ${portfolioItemId}`, err)

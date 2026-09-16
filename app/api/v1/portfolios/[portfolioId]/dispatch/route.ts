@@ -29,7 +29,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getUser } from '@/lib/store/auth'
-import { getAppUrl } from '@/lib/store/stripe'
+import { internalBaseUrl, internalHeaders } from '@/lib/store/internal-fetch'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -99,7 +99,7 @@ export async function POST(
     return NextResponse.json({ error: 'internal_auth_not_configured' }, { status: 503 })
   }
 
-  const appUrl = getAppUrl()
+  const appUrl = internalBaseUrl()
   const startedAt = Date.now()
 
   /* All of them, at once. Each is its own invocation with its own 300s and
@@ -109,13 +109,13 @@ export async function POST(
     pending.map((item) =>
       fetch(`${appUrl}/api/v1/portfolios/items/render`, {
         method: 'POST',
-        headers: {
+        headers: internalHeaders({
           'Content-Type': 'application/json',
           /* items/render is secret-gated (checkInternalAuth). This is the
              only caller that reaches it over HTTP; the cron poller calls
              renderOnePortfolioItem in-process and needs no header. */
           Authorization: `Bearer ${process.env.CRON_SECRET ?? ''}`,
-        },
+        }),
         body: JSON.stringify({ portfolioItemId: item.id }),
       }).then(async (res) => {
         if (!res.ok) {
