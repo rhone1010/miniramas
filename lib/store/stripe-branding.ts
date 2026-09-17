@@ -63,6 +63,29 @@ export const LITEN_CHECKOUT_BRANDING: Stripe.Checkout.SessionCreateParams.Brandi
   logo:             { type: 'url', url: LITEN_LOGO_URL },
 }
 
+/* EMBEDDED CHECKOUT REFUSES `logo`. Stripe's words, verbatim, from the
+   Preview failures of 2026-09-17 03:08-03:12Z:
+
+       [api/v1/portfolios] failed You cannot set `logo` when `ui_mode` is
+       `embedded`.
+
+   The embedded form has no masthead to hang a logo on -- it is a panel
+   inside our own modal, and our modal already carries the mark. Only the
+   hosted page has somewhere to put one, so only the hosted page is sent one.
+   Every other setting is sent to both.
+
+   This is also why the retry that used to live here was worth removing: at
+   03:03:28Z it caught this very refusal and quietly created an unbranded
+   session, so the collection checkout had never once been branded and
+   nothing said so. */
+export function brandingFor(
+  uiMode: Stripe.Checkout.SessionCreateParams['ui_mode'],
+): Stripe.Checkout.SessionCreateParams.BrandingSettings {
+  if (uiMode !== 'embedded') return LITEN_CHECKOUT_BRANDING
+  const { logo, ...rest } = LITEN_CHECKOUT_BRANDING
+  return rest
+}
+
 /* ONE CALL, NO FALLBACK (Rich, 2026-09-16).
  *
  * An earlier cut of this tried the branded session and, if Stripe refused the
@@ -80,5 +103,5 @@ export async function createBrandedSession(
   stripe: Stripe,
   params: Stripe.Checkout.SessionCreateParams,
 ): Promise<Stripe.Checkout.Session> {
-  return await stripe.checkout.sessions.create({ ...params, branding_settings: LITEN_CHECKOUT_BRANDING })
+  return await stripe.checkout.sessions.create({ ...params, branding_settings: brandingFor(params.ui_mode) })
 }

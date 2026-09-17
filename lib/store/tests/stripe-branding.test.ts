@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import {
-  LITEN_CHECKOUT_BRANDING, LITEN_OXBLOOD, LITEN_LOGO_URL, createBrandedSession,
+  LITEN_CHECKOUT_BRANDING, LITEN_OXBLOOD, LITEN_LOGO_URL, brandingFor, createBrandedSession,
 } from '@/lib/store/stripe-branding'
 
 const fakeStripe = (create: any) => ({ checkout: { sessions: { create } } }) as any
@@ -57,12 +57,45 @@ describe('what we send', () => {
   })
 })
 
+/* Stripe, verbatim, on Preview 2026-09-17: "You cannot set `logo` when
+   `ui_mode` is `embedded`." Five 500s on /api/v1/portfolios said so. */
+describe('logo goes only where Stripe allows it', () => {
+  it('an embedded session carries every setting EXCEPT the logo', () => {
+    const b = brandingFor('embedded')
+    expect(b).not.toHaveProperty('logo')
+    expect(b).toEqual({
+      background_color: '#faf6ec',
+      button_color:     '#7d4242',
+      border_style:     'rounded',
+      display_name:     'LITEN & CO',
+    })
+  })
+
+  it('a hosted session keeps the logo', () => {
+    expect(brandingFor(undefined)).toEqual(LITEN_CHECKOUT_BRANDING)
+    expect(brandingFor(undefined).logo).toEqual({ type: 'url', url: LITEN_LOGO_URL })
+  })
+
+  it('stripping the logo does not mutate the shared settings', () => {
+    brandingFor('embedded')
+    expect(LITEN_CHECKOUT_BRANDING.logo).toEqual({ type: 'url', url: LITEN_LOGO_URL })
+  })
+})
+
 describe('one call, no fallback', () => {
-  it('sends the caller\'s params untouched, plus the branding', async () => {
+  it('an embedded session is created with the logo-free branding', async () => {
     const create = vi.fn().mockResolvedValue({ id: 'cs_1' })
     await createBrandedSession(fakeStripe(create), PARAMS)
     expect(create).toHaveBeenCalledTimes(1)
-    expect(create.mock.calls[0][0]).toEqual({ ...PARAMS, branding_settings: LITEN_CHECKOUT_BRANDING })
+    expect(create.mock.calls[0][0]).toEqual({ ...PARAMS, branding_settings: brandingFor('embedded') })
+    expect(create.mock.calls[0][0].branding_settings).not.toHaveProperty('logo')
+  })
+
+  it('a hosted session is created with the full branding', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'cs_h' })
+    const hosted = { mode: 'payment', line_items: [], success_url: 'https://x', cancel_url: 'https://y' } as any
+    await createBrandedSession(fakeStripe(create), hosted)
+    expect(create.mock.calls[0][0].branding_settings).toEqual(LITEN_CHECKOUT_BRANDING)
   })
 
   /* The branded->unbranded retry was removed deliberately: the real account
