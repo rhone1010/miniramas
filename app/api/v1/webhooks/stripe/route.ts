@@ -17,6 +17,7 @@ import { getStripe }                         from '@/lib/store/stripe'
 import { confirmPurchase, handlePaymentFailure } from '@/lib/store/entitlements'
 import { supabaseAdmin }                     from '@/lib/supabase'
 import { activatePortfolio }                 from '@/lib/store/portfolio-checkout'
+import { activateDiscoveryUnlock }           from '@/lib/store/discovery-unlock'
 
 // Stripe needs the raw body to validate the signature. Disable parsing.
 // In Next.js App Router, request.text() returns the raw body as a string —
@@ -75,6 +76,17 @@ async function dispatch(event: Stripe.Event): Promise<void> {
       await activatePortfolio(purchaseId).catch((err) => {
         console.error('[stripe-webhook] activatePortfolio failed', purchaseId, err)
       })
+      /* __A4_DISCOVERY_UNLOCK__ An additional $2.99 unlock confirms here.
+         The metadata only decides WHICH handler runs; it grants nothing.
+         activateDiscoveryUnlock re-reads our own rows and re-verifies
+         purchase -> entitlement -> ledger -> portfolio -> owner before it
+         makes anything spendable, and its flip is conditional so a
+         duplicate delivery changes nothing. */
+      if (session.metadata?.kind === 'discovery_unlock') {
+        await activateDiscoveryUnlock({ stripeSessionId: session.id }).catch((err) => {
+          console.error('[stripe-webhook] activateDiscoveryUnlock failed', session.id, err)
+        })
+      }
       return
     }
 

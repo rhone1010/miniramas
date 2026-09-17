@@ -7036,21 +7036,39 @@ function requestUnlock(previewId, key){
    UNLOCK_UNIT_CENTS, so this number cannot quietly drift from the button. */
 var UNLOCK_PRICE_CENTS = 299;
 
+/* __A4_PAID_UNLOCK__ (Phase 1, 2026-09-17). Discovery's own unlock checkout.
+
+   WAS: POST /api/v1/checkout with a cart body, skuId 'portrait_unlock_web'
+   and totalCents 299. That route's cart branch prices one piece at 399c from
+   the legacy VOLUME_LADDER, so it threw price_mismatch before Stripe and the
+   customer was told "the payment form could not be opened" -- a permanent
+   contract break reported as a passing network glitch. Had the price agreed,
+   the same call would have answered a HOSTED { url } that the guard below
+   rejects anyway.
+
+   NOW: the portfolio's own unlock-checkout route. Embedded, like every other
+   Discovery checkout, so the modal we already have is the modal used. The
+   price is not sent at all -- the server reads the seeded unlock_addon_1 SKU
+   and cross-checks it against Stripe, so the button and the charge cannot
+   drift. Identity is the canonical portfolioId and previewId, never the
+   display name this used to send as `preset`.
+
+   The legacy pieces cart is untouched: nothing here calls it. */
 function startUnlockCheckout(p){
+  if (!p || !p.portfolioId || !p.previewId){
+    console.warn('[discovery] unlock needs a portfolio and a preview:', p && p.key);
+    showUnlockNote('That piece cannot be unlocked yet. Try again in a moment.');
+    return Promise.resolve();
+  }
   setUnlockIntent(p.previewId, p.key);
   return Promise.all([
     loadStripeJs(),
-    fetch('/api/v1/checkout', {
+    fetch('/api/v1/portfolios/' + encodeURIComponent(p.portfolioId) + '/unlock-checkout', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       credentials:'include',
       body: JSON.stringify({
-        skuId: 'portrait_unlock_web',
-        cart: {
-          kind: 'unlock',
-          pieces: [{ preset: p.name, resolution: '1k' }],
-          totalCents: UNLOCK_PRICE_CENTS
-        },
+        previewId: p.previewId,
         returnUrl: window.location.origin + window.location.pathname
       })
     }).then(function(res){ return res.json().then(function(d){ return { status:res.status, data:d }; }); })
@@ -7059,7 +7077,9 @@ function startUnlockCheckout(p){
     if (!r.data.clientSecret || !r.data.publishableKey){
       clearUnlockIntent();
       console.warn('[discovery] unlock checkout refused:', r.data.error || r.status);
-      showUnlockNote('The payment form could not be opened. Try again in a moment.');
+      showUnlockNote(r.data.error === 'unlock_already_unlocked'
+        ? 'That image is already unlocked.'
+        : 'The payment form could not be opened. Try again in a moment.');
       return;
     }
     var stripe = window.Stripe(r.data.publishableKey);
@@ -7073,7 +7093,8 @@ function startUnlockCheckout(p){
       /* __CK_SHELL__ the unlock flow, not the collection purchase. Same rule:
          the heading is decoration, the form opens regardless. */
       try {
-        paintCheckoutHead('Unlock Your Image', p.name || '1 image', '$' + (UNLOCK_PRICE_CENTS / 100).toFixed(2));
+        paintCheckoutHead('Unlock Your Image', p.name || '1 image',
+          '$' + ((typeof r.data.priceCents === 'number' ? r.data.priceCents : UNLOCK_PRICE_CENTS) / 100).toFixed(2));
       } catch (e){ console.warn('[discovery] unlock heading not painted:', e); }
       var ckModal = document.getElementById('ckModal');
       if (ckModal) ckModal.classList.add('is-open');

@@ -26,6 +26,7 @@ import { randomUUID } from 'crypto'
 import { getUser } from '@/lib/store/auth'
 import { consumeEntitlement } from '@/lib/store/entitlements'
 import { normalizeEmail, fetchCleanOriginal } from '@/lib/store/preview'
+import { DISCOVERY_UNLOCK_LOCK } from '@/lib/store/discovery-unlock'
 
 export const runtime = 'nodejs'
 
@@ -159,8 +160,44 @@ export async function POST(req: NextRequest) {
       ? entQuery.eq('user_id', user.id)
       : entQuery.eq('guest_email', guestEmail!)
 
-    const { data: ents, error: entErr } = await entQuery
+    let { data: ents, error: entErr } = await entQuery
     if (entErr) return NextResponse.json({ error: entErr.message }, { status: 500 })
+
+    /* __A4_PAID_UNLOCK__ (Phase 1, 2026-09-17). If the portfolio's own
+       included unlocks are spent, a PAID additional unlock may pay for this
+       piece -- and only for this piece.
+
+       THIS DOES NOT WIDEN THE SCOPE ABOVE. It is strictly narrower than the
+       rule that caused 2026-09-09: that one took the oldest available
+       entitlement from ANY purchase on the account. This one takes an
+       entitlement only if the entitlement itself names this exact preview in
+       locked_variant, having been written that way by
+       createDiscoveryUnlockCheckout after checking the caller owned the
+       piece, and only once its own purchase is paid. An entitlement bound to
+       a different preview is invisible here, and an unbound one always was.
+
+       Included first, paid second: the customer spends what they already own
+       before what they bought separately. */
+    if (!ents || ents.length === 0) {
+      let boundQuery = sb
+        .from('entitlements')
+        .select('id, locked_style, locked_variant, purchase_id, purchases!inner(status)')
+        .eq('status', 'available')
+        .eq('purchases.status', 'paid')
+        .eq('locked_style', DISCOVERY_UNLOCK_LOCK)
+        .eq('locked_variant', previewId)
+        .order('created_at', { ascending: true })
+        .limit(1)
+      boundQuery = user
+        ? boundQuery.eq('user_id', user.id)
+        : boundQuery.eq('guest_email', guestEmail!)
+      const { data: bound, error: boundErr } = await boundQuery
+      if (boundErr) return NextResponse.json({ error: boundErr.message }, { status: 500 })
+      if (bound && bound.length > 0) {
+        console.log(`[portraits/unlock] paid additional unlock for preview=${previewId} entitlement=${bound[0].id}`)
+        ents = bound
+      }
+    }
 
     if (!ents || ents.length === 0) {
       // Disambiguate: pending payment vs. nothing at all — same scope.
