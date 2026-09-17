@@ -68,6 +68,59 @@ function portfolioIdFromLedgerEmail(email: string | null): string | null {
 }
 
 /**
+ * An unlock checkout this customer already has open for this exact preview,
+ * or null. Reads our own pending rows, then asks Stripe whether the session
+ * is still usable -- a row alone is not evidence that a session is open.
+ *
+ * Never throws: if Stripe cannot be asked, the caller mints a fresh session
+ * rather than failing the customer's click.
+ */
+async function findReusableSession(
+  stripe: Stripe, userId: string, previewId: string,
+): Promise<DiscoveryUnlockCheckout | null> {
+  /* Two plain reads rather than a join. This is a money path and it is read
+     by people; `purchases!inner(...)` buys nothing here except a shape that
+     is harder to check. */
+  const { data: ents, error } = await supabaseAdmin
+    .from('entitlements')
+    .select('id, purchase_id')
+    .eq('status', 'pending')
+    .eq('locked_style', DISCOVERY_UNLOCK_LOCK)
+    .eq('locked_variant', previewId)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  if (error || !ents || ents.length === 0) return null
+
+  for (const row of ents as any[]) {
+    if (!row.purchase_id) continue
+    const { data: pur } = await supabaseAdmin
+      .from('purchases')
+      .select('id, status, stripe_session_id, amount_cents, user_id')
+      .eq('id', row.purchase_id)
+      .maybeSingle()
+    if (!pur || pur.status !== 'pending' || pur.user_id !== userId || !pur.stripe_session_id) continue
+    try {
+      const s = await stripe.checkout.sessions.retrieve(pur.stripe_session_id)
+      /* Open, unpaid, and still has a secret to mount. Anything else --
+         'complete', 'expired', or a session that has since been paid -- is
+         not handed back. */
+      if (s.status === 'open' && s.payment_status !== 'paid' && s.client_secret) {
+        return {
+          clientSecret: s.client_secret,
+          sessionId:    s.id,
+          purchaseId:   pur.id,
+          priceCents:   pur.amount_cents,
+        }
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      console.warn(`[discovery-unlock] could not read session ${pur.stripe_session_id}: ${msg}`)
+    }
+  }
+  return null
+}
+
+/**
  * Create the embedded Stripe session for one additional unlock.
  *
  * Every id is checked against the database before Stripe is called, so a
@@ -140,6 +193,33 @@ export async function createDiscoveryUnlockCheckout(args: {
       `[discovery-unlock] price mismatch ${sku.id}: db=${sku.price_cents} stripe=${price.unit_amount}`,
     )
     throw new Error('unlock_price_mismatch')
+  }
+
+  /* ── 4b. REUSE BEFORE CREATE ──────────────────────────────────
+     On 2026-09-17 six sessions were minted for two intended unlocks and two
+     of them were paid -- $5.98 for one piece. The client guard released
+     before the modal opened, so every extra click made a new session, a new
+     purchase and a new pending entitlement.
+
+     The server is the authority. Before minting anything, look for a
+     checkout this customer already has open for this exact piece, and hand
+     back the same one. A session Stripe no longer considers open (expired,
+     completed, or gone) is not reused; a fresh one replaces it and the stale
+     row reaps itself when Stripe expires it.
+
+     NOT ATOMIC, AND NOT CLAIMED TO BE. Two genuinely simultaneous requests
+     could both read "none open" before either writes. Rich's ruling,
+     2026-09-17: no migration, no partial unique index, no advisory lock.
+     The residual race is accepted and parked as payment hardening. This
+     removes the observed failure -- ordinary and rapid repeat clicks -- not
+     every theoretical one. */
+  const reusable = await findReusableSession(stripe, args.userId, args.previewId)
+  if (reusable) {
+    console.log(
+      `[discovery-unlock] reusing open session ${reusable.sessionId} purchase=${reusable.purchaseId} ` +
+      `preview=${args.previewId} -- no new session, purchase or entitlement`,
+    )
+    return reusable
   }
 
   // ── 5. The session ───────────────────────────────────────────

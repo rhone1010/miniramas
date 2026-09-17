@@ -74,11 +74,29 @@ vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: { from: (n: string) => table(n) },
 }))
 
+/* A Stripe double that models session LIFECYCLE, because reuse-before-create
+   asks Stripe whether a session is still open. Without retrieve, reuse can
+   never fire and the duplicate tests would pass for the wrong reason. */
 const created: any[] = []
+const sessions: Record<string, any> = {}
+let sessionSeq = 0
 vi.mock('@/lib/store/stripe', () => ({
   getStripe: () => ({
     prices: { retrieve: async (id: string) => ({ id, unit_amount: 299 }) },
-    checkout: { sessions: { create: async (p: any) => { created.push(p); return { id: 'cs_test_unlock_1', client_secret: 'cs_secret_1' } } } },
+    checkout: {
+      sessions: {
+        create: async (p: any) => {
+          created.push(p)
+          const id = `cs_test_unlock_${++sessionSeq}`
+          sessions[id] = { id, status: 'open', payment_status: 'unpaid', client_secret: `secret_${sessionSeq}` }
+          return sessions[id]
+        },
+        retrieve: async (id: string) => {
+          if (!sessions[id]) throw new Error(`No such checkout.session: ${id}`)
+          return sessions[id]
+        },
+      },
+    },
   }),
   getAppUrl: () => 'https://litenco.com',
 }))
@@ -106,6 +124,8 @@ function seed() {
   db.skus = [{ id: DISCOVERY_UNLOCK_SKU_ID, price_cents: 299, stripe_price_id: 'price_unlock_1', active: true }]
   db.purchases = []
   db.entitlements = []
+  for (const k of Object.keys(sessions)) delete sessions[k]
+  sessionSeq = 0
 }
 beforeEach(seed)
 
@@ -140,7 +160,7 @@ describe('checkout contract', () => {
     expect(created[0].redirect_on_completion).toBe('if_required')
     expect(created[0]).not.toHaveProperty('success_url')
     expect(created[0]).not.toHaveProperty('cancel_url')
-    expect(r.clientSecret).toBe('cs_secret_1')
+    expect(r.clientSecret).toBe('secret_1')
     expect(r).not.toHaveProperty('url')
   })
 
@@ -284,5 +304,88 @@ describe('the legacy cart is not touched', () => {
     const code = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
     expect(code).not.toMatch(/createCartCheckout|VOLUME_LADDER|portrait_pieces_cart/)
     expect(code).not.toMatch(/from '\.\/checkout'/)
+  })
+})
+
+/* ── A4 DUPLICATE SESSIONS (Rich, 2026-09-17) ────────────────────────────
+   Six sessions were minted for two intended unlocks and two were paid --
+   $5.98 for one piece. The server is the authority: before minting, it hands
+   back a checkout this customer already has open for this exact preview.
+
+   NOT ATOMIC, AND NOT CLAIMED TO BE. Two genuinely simultaneous requests
+   could both read "none open" before either writes. Ruled acceptable and
+   parked as payment hardening: no migration, no partial unique index, no
+   advisory lock. These cover the OBSERVED failure. */
+describe('reuse before create', () => {
+  it('a repeated ordinary click reuses the session -- no second purchase or entitlement', async () => {
+    const first = await ok()
+    const second = await ok()
+    expect(second.sessionId).toBe(first.sessionId)
+    expect(second.purchaseId).toBe(first.purchaseId)
+    expect(db.purchases).toHaveLength(1)
+    expect(db.entitlements).toHaveLength(1)
+  })
+
+  it('rapid repeated clicks still leave one purchase and one entitlement', async () => {
+    const first = await ok()
+    const rest = await Promise.all([ok(), ok(), ok(), ok()])
+    rest.forEach(r => expect(r.purchaseId).toBe(first.purchaseId))
+    expect(db.purchases).toHaveLength(1)
+    expect(db.entitlements).toHaveLength(1)
+  })
+
+  it('Feature then Gallery, and Gallery then Feature, are one flow -- the server does not care which surface asked', async () => {
+    const fromFeature = await ok()
+    const fromGallery = await ok()
+    expect(fromGallery.sessionId).toBe(fromFeature.sessionId)
+    expect(db.purchases).toHaveLength(1)
+  })
+
+  it('abandoning the modal and retrying reuses the still-open session', async () => {
+    const first = await ok()
+    // the customer closes the modal; Stripe still has the session open
+    const retry = await ok()
+    expect(retry.sessionId).toBe(first.sessionId)
+    expect(retry.clientSecret).toBe(first.clientSecret)
+    expect(db.purchases).toHaveLength(1)
+  })
+
+  it('a stale session is replaced rather than reused', async () => {
+    const first = await ok()
+    Object.assign(sessions[first.sessionId], { status: 'expired', client_secret: null })
+    const second = await ok()
+    expect(second.purchaseId).not.toBe(first.purchaseId)   // a fresh one was minted
+    expect(db.purchases).toHaveLength(2)
+  })
+
+  it('a session already paid is not handed back as if it were open', async () => {
+    const first = await ok()
+    Object.assign(sessions[first.sessionId], { status: 'complete', payment_status: 'paid' })
+    const second = await ok()
+    expect(second.purchaseId).not.toBe(first.purchaseId)
+    expect(db.purchases).toHaveLength(2)
+  })
+
+  it('an already-unlocked preview cannot start another checkout at all', async () => {
+    await ok()
+    db.preview_ledger[0].unlocked_at = new Date().toISOString()
+    await expect(ok()).rejects.toThrow('unlock_already_unlocked')
+    expect(db.purchases).toHaveLength(1)                   // nothing new
+  })
+
+  it('reuse is per preview: a different piece gets its own checkout', async () => {
+    const a = await ok()
+    db.portfolio_items.push({ id: 'it-2', portfolio_id: PF, slot: 1, status: 'done', preview_id: 'preview-two' })
+    db.preview_ledger.push({ id: 'preview-two', email: `portfolio:${PF}:1`, unlocked_at: null })
+    const b = await createDiscoveryUnlockCheckout({ userId: USER, portfolioId: PF, previewId: 'preview-two', returnUrl: 'x' })
+    expect(b.purchaseId).not.toBe(a.purchaseId)
+    expect(db.purchases).toHaveLength(2)
+  })
+
+  it('does not claim atomic protection -- the residual race is documented, not defended', async () => {
+    const { readFileSync } = await import('fs')
+    const path = await import('path')
+    const src = readFileSync(path.join(process.cwd(), 'lib/store/discovery-unlock.ts'), 'utf8')
+    expect(src).toMatch(/NOT ATOMIC, AND NOT CLAIMED TO BE/)
   })
 })

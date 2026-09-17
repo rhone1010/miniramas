@@ -6213,6 +6213,12 @@ function closeCheckout(){
   STRIPE_EMBED = null;
   var ckForm = document.getElementById('ckForm');
   if (ckForm) ckForm.innerHTML = '';
+  /* __A4_ONE_FLOW_PER_PIECE__ An abandoned unlock modal ends its flow, so
+     the customer can ask again. The session they walked away from is still
+     open, and the server hands that same one back rather than minting a
+     second. A paid close runs finishUnlockPayment, which has already
+     released by the time this is reached. */
+  if (typeof releaseUnlockFlow === 'function' && UNLOCK_FLOW_PIECE) releaseUnlockFlow(UNLOCK_FLOW_PIECE);
 }
 
 function startCheckout(){
@@ -7083,7 +7089,17 @@ function startUnlockCheckout(p){
       return;
     }
     var stripe = window.Stripe(r.data.publishableKey);
-    return stripe.initEmbeddedCheckout({ clientSecret: r.data.clientSecret }).then(function(embed){
+    return stripe.initEmbeddedCheckout({
+      clientSecret: r.data.clientSecret,
+      /* __A4_CONFIRM__ Confirmation does not wait for a webhook. Stripe
+         delivers checkout.session.completed to PRODUCTION, and on
+         2026-09-17 that deployment ran code without the unlock handler, so
+         two paid unlocks were never activated. The deployment that served
+         this page confirms its own payment: it asks Stripe whether the
+         session is paid, then runs the same activation the webhook runs.
+         Both are idempotent, so whichever lands first wins. */
+      onComplete: function(){ finishUnlockPayment(p, r.data.sessionId); }
+    }).then(function(embed){
       STRIPE_EMBED = embed;
       var ckForm = document.getElementById('ckForm');
       if (ckForm) ckForm.innerHTML = '';
@@ -7096,14 +7112,63 @@ function startUnlockCheckout(p){
         paintCheckoutHead('Unlock Your Image', p.name || '1 image',
           '$' + ((typeof r.data.priceCents === 'number' ? r.data.priceCents : UNLOCK_PRICE_CENTS) / 100).toFixed(2));
       } catch (e){ console.warn('[discovery] unlock heading not painted:', e); }
+      /* Whose checkout is open, so an abandoned modal can end the flow. */
+      UNLOCK_FLOW_PIECE = p;
       var ckModal = document.getElementById('ckModal');
       if (ckModal) ckModal.classList.add('is-open');
     });
   }).catch(function(e){
     clearUnlockIntent();
+    releaseUnlockFlow(p);
     console.error('[discovery] unlock checkout failed:', e);
     showUnlockNote('The payment form could not be opened. Try again in a moment.');
   });
+}
+
+/* __A4_CONFIRM__ Payment finished in the modal. Close it, ask this
+   deployment to confirm with Stripe and activate, then retry the ordinary
+   unlock claim -- the same claim the included unlock uses, unchanged.
+
+   CONFIRMATION IS RETRIED, not assumed. The activation may already have been
+   done by Production's webhook; either way the claim below is what actually
+   delivers the image, and it is safe to call more than once (the ledger
+   claim is a single-winner conditional update). */
+var UNLOCK_CONFIRM_TRIES = 4, UNLOCK_CONFIRM_EVERY = 2000;
+function finishUnlockPayment(p, sessionId, n){
+  n = n || 0;
+  closeCheckout();
+  if (!sessionId || !p || !p.portfolioId){
+    releaseUnlockFlow(p);
+    showUnlockNote('Payment went through. Refresh to collect your image.');
+    return;
+  }
+  showUnlockNote('Payment received — unlocking your image…');
+  fetch('/api/v1/portfolios/' + encodeURIComponent(p.portfolioId) + '/unlock-confirm', {
+    method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+    body: JSON.stringify({ sessionId: sessionId })
+  }).then(function(res){ return res.json().then(function(d){ return { status:res.status, data:d }; }); })
+    .then(function(r){
+      if (r.data && r.data.confirmed){
+        clearUnlockNote();
+        releaseUnlockFlow(p);
+        /* Straight back into the normal path. */
+        return unlockPiece(p);
+      }
+      /* Stripe has not settled yet. Wait and ask again, the same shape the
+         portfolio purchase uses. */
+      if (n + 1 < UNLOCK_CONFIRM_TRIES){
+        return new Promise(function(res2){ setTimeout(res2, UNLOCK_CONFIRM_EVERY); })
+          .then(function(){ return finishUnlockPayment(p, sessionId, n + 1); });
+      }
+      releaseUnlockFlow(p);
+      console.warn('[discovery] unlock not confirmed after', UNLOCK_CONFIRM_TRIES, 'tries:', r.data && (r.data.reason || r.data.error));
+      showUnlockNote('Payment received. Your image will unlock shortly — refresh if it does not.');
+    })
+    .catch(function(e){
+      releaseUnlockFlow(p);
+      console.error('[discovery] unlock confirm failed:', e);
+      showUnlockNote('Payment received. Your image will unlock shortly — refresh if it does not.');
+    });
 }
 
 /* The one entry point both unlock buttons call. */
@@ -7114,6 +7179,24 @@ function startUnlockCheckout(p){
    being sent at all. Keyed by piece, so two different pieces can still be
    unlocked independently. */
 var UNLOCK_INFLIGHT = {};
+
+/* __A4_ONE_FLOW_PER_PIECE__ The one place an unlock flow ends. Held from the
+   first click until the piece unlocks, the payment finishes, or the attempt
+   gives up -- including across the checkout modal.
+
+   UNLOCK_FLOW_PIECE is the piece whose checkout is currently open, so that
+   closing the modal without paying can end the flow too. Without it an
+   abandoned modal would hold the guard forever and the customer could never
+   ask again. On the retry the server hands back the SAME still-open session
+   rather than minting another (reuse-before-create). */
+var UNLOCK_FLOW_PIECE = null;
+function releaseUnlockFlow(p){
+  var piece = p || UNLOCK_FLOW_PIECE;
+  if (piece && piece.previewId) delete UNLOCK_INFLIGHT[piece.previewId];
+  if (!p || (UNLOCK_FLOW_PIECE && piece && UNLOCK_FLOW_PIECE.previewId === piece.previewId)) {
+    UNLOCK_FLOW_PIECE = null;
+  }
+}
 
 function setUnlockBusy(key, busy){
   var card = mycollGrid && mycollGrid.querySelector('.card[data-piece="' + key + '"]');
@@ -7133,17 +7216,29 @@ function unlockPiece(p){
     console.warn('[discovery] no previewId on', p.key, '— nothing to unlock');
     return;
   }
-  if (UNLOCK_INFLIGHT[p.key]) return;
-  UNLOCK_INFLIGHT[p.key] = true;
+  /* __A4_ONE_FLOW_PER_PIECE__ Keyed on the PREVIEW, not the tile key. The
+     Feature Image, the gallery card and the lightbox are three surfaces onto
+     one piece; keying on the tile let them run three flows at once.
+
+     And the guard is held THROUGH checkout. It used to be released the
+     moment requestUnlock resolved -- which is immediately before the modal
+     opens -- so the next click sailed past it and minted another session.
+     On 2026-09-17 that produced six sessions and two payments for one piece.
+     releaseUnlockFlow is the only thing that clears it. The server refuses
+     duplicates too (reuse-before-create); this just stops the asking. */
+  if (UNLOCK_INFLIGHT[p.previewId]) return;
+  UNLOCK_INFLIGHT[p.previewId] = true;
   setUnlockBusy(p.key, true);
   clearUnlockNote();
   requestUnlock(p.previewId, p.key).then(function(result){
-    delete UNLOCK_INFLIGHT[p.key];
     /* Success already repainted; every other path has to put the control
        back, because the label was replaced with "Unlocking…". */
     if (result !== 'unlocked') { setUnlockBusy(p.key, false); renderMyCollectionGrid(); }
-    if (result === 'unlocked') return;
+    if (result === 'unlocked') { releaseUnlockFlow(p); return; }
+    /* Payment keeps the flow open: startUnlockCheckout -> the modal ->
+       finishUnlockPayment, which releases it. */
     if (result === 'needs_payment') return startUnlockCheckout(p);
+    releaseUnlockFlow(p);
     if (result === 'payment_pending'){
       showUnlockNote('Your payment is still going through. This usually takes a few seconds.');
       return;
