@@ -226,3 +226,218 @@ duplicate `buildCheckoutPayload`, `additionalAvailable`, the stale unlock
 comment, untracked working files, and the untested webhook/dispatch/cron
 paths. Plus Phase 0 **B3**: Start over still 400s (`'clear'` is not a valid
 action), visible during acceptance testing and not a new regression.
+
+---
+
+# Launch closeout swarm — findings, 2026-09-17
+
+Six parallel audits run at Rich's direction after A4 closed. Everything below
+is recorded because it existed only in a conversation that had already
+compacted once. Nothing here changed product code.
+
+Naming collision, stated once so it does not mislead: the **B1-B4** below are
+this swarm's tester-readiness blockers. They are NOT the matrix's Section B
+(Format / Mobile 9:16), and this swarm's B3 is unrelated to Phase 0's B3
+("Start over" 400s), which appears here as a should-fix in its own right.
+
+## B1-B4 — blockers to external testing
+
+**B1 · Vercel SSO — testers cannot load the page at all.** Preview 302s to
+`vercel.com/sso-api`. The only in-repo trace is `lib/store/internal-fetch.ts:75-76`
+sending `x-vercel-protection-bypass`; the protection itself is dashboard-side.
+Nothing else on this list matters until a tester can reach a page.
+
+**B2 · A signed-out visitor sees 28 fabricated demo pieces.** The nav handler
+calls `openMyCollection()` with no auth guard (`discovery-consolidated-draft.html:7027-7029`),
+and `openMyCollection` paints unconditionally (`:6921-6929`). But
+`renderCollection()` — and therefore `reconcileCollection` — runs only under
+`if (ME)` (`:5506`). So `PIECES` is still the parse-time demo seed
+(`:6812-6832`): "Renaissance Noble", a permanent "Crafting…" tile (`demo27`),
+and 28 "Unlock · $2.99" buttons that do nothing (`unlockPiece` early-returns
+with no `previewId`, `:7315-7319`).
+
+**This is the blind spot in the reconciliation fix of `2ae2f73`, not a
+pre-existing quirk that fix left alone.** That commit made the collection
+reconcile against the server; it did not make an unauthenticated visitor
+reach the server at all.
+
+**B3 · The Foyer has no entry path until a photo is chosen.** `public/foyer.html:415`
+ships `#go` as `inert` and invisible; `showGo()` fires only post-photo
+(`:592, 879, 991, 1018`). No nav, no masthead route, no skip link. A tester
+unwilling to upload on the landing page has no keyboard-reachable way in.
+
+**B4 · Portfolio checkout is not idempotent.** `resetCraftBtn` re-enables
+`#btnCraft` the moment the Stripe modal mounts (`:6355`); `closeCheckout`
+(`:6209-6215`) cancels nothing server-side; `lib/store/portfolio-checkout.ts`
+has no reuse-before-create. Abandon and re-click mints a second portfolio and
+a second Stripe session — the same fault already fixed for unlocks
+(`lib/store/discovery-unlock.ts:198-223`) and never ported to the pack path.
+
+## D1-D4 — commerce audit
+
+Verified safe, so they are not re-derived later: the 1/4/8/16 price ladder is
+a server constant and `clientPriceUsd` is compared but never used, with
+`Number(undefined)` failing closed (`portfolio-checkout.ts:56-63, 229-233`);
+included unlocks are minted server-side exactly once and survive webhook
+replay (`:312, 352-361`); the $2.99 price is cross-checked against Stripe and
+the entitlement is bound to (user, purchase, previewId), which is *narrower*
+than included-unlock scope, not wider (`discovery-unlock.ts:180-196, 263-272`);
+an already-unlocked piece cannot be charged again.
+
+**D1 · Redirect payment methods return to a dead URL. HIGH.**
+`unlock-checkout/route.ts:55-58` sets `return_url` to a bare `origin+pathname`
+with **no `?paid=1&session_id=`** — unlike the portfolio path
+(`portfolio-checkout.ts:249`). With `redirect_on_completion:'if_required'`
+(`discovery-unlock.ts:229`) a redirect method leaves the page, so
+`onComplete` never fires and `finishUnlockPayment` never runs. The customer
+returns with no query string, the return handler bails
+(`discovery-consolidated-draft.html:5739`), and `unlock-confirm` is never
+called. On a branch deployment the webhook cannot finish it either.
+
+**Customer consequence: pays $2.99 by a redirect method and the image never
+unlocks — the exact 2026-09-17 failure, reached through the one door the
+mitigation does not cover.** The stale comment at `:5732` still claims the
+unlock "returns here on ?paid=1"; it no longer does. Whether it is live
+depends on which methods are enabled — dashboard-side, not in the repo.
+
+**D2 · Concurrent clicks yield the clean original for free. MEDIUM.**
+Two simultaneous requests on a locked preview with no entitlement: A wins the
+claim (`portraits/unlock/route.ts:89-95`), finds nothing to spend, and
+releases (`:217`); B loses the claim and takes the redelivery branch
+(`:97-109`), which checks ownership only and returns `image_b64`. B receives
+the unwatermarked file having paid nothing. Needs two tabs or clients —
+`UNLOCK_INFLIGHT` guards a single page.
+
+**D3 · A double payment has no unwind. MEDIUM.** No refund code exists
+anywhere (`grep stripe.refunds` → none) and no alert fires. If the parked M2
+race ever lets two sessions be paid, the customer is charged $5.98, receives
+one image, and $2.99 strands indefinitely with nothing detecting it. This is
+M2's residue, not its trigger.
+
+**D4 · The shared database cannot express Stripe mode. MEDIUM.** `skus` has
+one `stripe_price_id` (`003:20`, `012:37`) and there is no `livemode` column
+anywhere. With Preview on the Production-linked database, either Preview
+transacts in Production's mode or the shared rows hold test ids and
+Production checkout breaks. Blast radius is bookkeeping and reconciliation —
+Stripe's key isolation prevents cross-mode fund movement. One query settles
+it.
+
+## A5 — bypass removal, prepared not executed
+
+Both guards are `VERCEL_ENV === 'preview'` in `lib/v1/foyer/foyer-preview-bypass.ts`
+(L40 `previewAllowanceBypass`, L45 `previewIntakeCapBypass`). No request input
+can set it.
+
+- **Reveal allowance** — `app/api/v1/foyer/reveal/route.ts:45-46, 58-59, 87-101`.
+  Added 34f6486. **Already on main.**
+- **Intake per-IP cap** — `app/api/v1/foyer/intake/route.ts:31, 53-61`. Added
+  13bae2c. Branch-only.
+
+**Trap, found before it cost a merge:** do NOT `git revert 34f6486` on the
+reveal route — `git apply --reverse` conflicts, because a93ad6a and b7e6baf
+later added `nb2_ms/mark_ms/total_ms` timing logs on top. It needs a hand
+edit: drop L45-46, L58-59, L87-93 and L101, unindent the `claimReveal` block,
+replace `claimId` with `claim.id` at L113/L119.
+
+**Test landmines:** `lib/store/tests/foyer-preview-bypass.test.ts` L104-114,
+L119-141 and L143-165 pass *only because* the bypass exists; the file's own
+header says to delete it with the bypass. Separately, `foyer-reveal.test.ts`
+never unsets `VERCEL_ENV` (L63), so it silently depends on CI not being a
+Preview build — removal fixes that.
+
+**Post-removal behaviour, cited:** reveal → `claim_foyer_reveal`,
+`REVEALS_PER_WINDOW = 3` (`foyer-policy.ts:24`), exhausted 429, error 503
+fail-closed. Intake → `claimIntake`, `INTAKES_PER_WINDOW = 20`
+(`foyer-policy.ts:36`), capped 429.
+
+**The scheduling consequence, stated plainly:** removal re-imposes 3 reveals
+and 20 intakes per IP per 24h on Preview, against an allowance database
+shared with production. That is survivable for Rich and hostile to a group of
+weekend testers behind one IP. A5 removal and "where do testers actually go"
+are one decision, not two.
+
+**The marker did not work.** `REMOVE BEFORE PR #178 MERGE` appears in five
+places across the module, both routes and the test file. **#178 merged
+2026-09-13.** An in-code comment is not a control; the intake-cap bypass
+carries the same marker and would ship the same way.
+
+## BrowserStack matrix
+
+**Breakpoints, read from the CSS rather than assumed.** min-width: 1330 (:54)
+· 1660 (:62) · 1920 (:69) · 2000 (:84) · 2400 (:87) · 2560 (:90). max-width:
+1659 (:1097, :1127) · 1279 (:1178, :1213) · 1100 (:1187) · 1024 (:1222, :1349
+`__A1_MYCOLL_COLS__`) · 767 (:1300, :1390, :1737 `.ck-*`) · 400 (:1354) · 359
+(:2002). Desktop-only max-height: 820, 840, 960.
+
+**Boundary pairs to test:** 1920 · 1660/1659 · 1330/1329 · 1280/1279 ·
+1101/1100 · 1025/1024 · 768/767 · 401/400 · 390 · 360/359, plus one short
+desktop (1366x768) for the max-height rules.
+
+| P | Device | Width | Why |
+|---|---|---|---|
+| P0 | iPhone 15 Pro, iOS 17 Safari | 393 | Stripe iframe, safe-area, `.ck-*` phone block |
+| P0 | Galaxy S23, Chrome | 360 | crosses the 359 rule |
+| P0 | Win11 Chrome 1366x768 | 1366 | the 1330-1659 region + short-height rules |
+| P0 | Win11 Chrome 1280 / 1279 | — | tablet-landscape floor |
+| P1 | iPad Pro 12.9 portrait | 1024 | exact bottom-sheet boundary |
+| P1 | iPad 10.2 portrait | 768 | sheet-vs-phone flip |
+| P1 | macOS Safari | 1920 | 4-column grid |
+
+**Mechanical:** `scrollWidth <= innerWidth` per stage (the `__A1_REVIEW_OVERFLOW__`
+class of bug) · `#mycollGrid` columns match `--grid-cols` · `.btn-create.on`
+single-line at 1366 · `.ck-card` inside viewport · tap targets >= 44px.
+**Rich's eyes:** Garamond sizing under the <=1659 sans swap, image fidelity,
+bottom-sheet brand feel, crafting animation.
+
+**A real iOS defect.** The viewport meta at `:7` is
+`width=device-width,initial-scale=1` — **no `viewport-fit=cover`** — while the
+stylesheet uses `env(safe-area-inset-*)` eleven times. Every safe-area
+allowance is currently inert on iPhone. One line.
+
+**What Stripe test cards do not prove:** the modal mounts and `onComplete`
+fires, and nothing more. Not webhook activation, not the self-confirm poll
+path, not real 3DS or Apple Pay sheets. Treat payment on BrowserStack as a UI
+test.
+
+## Tester readiness — should fix, not blocking
+
+"Start over" fails 100% of the time: `action:'clear'` is not in
+`VALID_ACTIONS` (`discovery/sessions/[sessionId]/select/route.ts:10,29`), so
+it falls through to `toggle` with an empty `effectId` and 400s. Not a hard
+dead end — picks can be removed one by one — but every attempt shows "That
+did not go through" after a confirm dialog.
+
+Paid, then silence: `verifyPurchasePaid` gives up after 4 x 2500ms and only
+`console.warn`s, with the modal already closed. A tester who pays during a
+slow webhook is returned to the Aspect screen with no message — and is likely
+to pay again, which compounds B4.
+
+A failed render shows as "Crafting…" forever: `crafting: i.status !== 'done'`
+maps server status `failed` to an indefinite crafting tile, and polling stops
+after 60 x 3s with no message.
+
+**COPY LAW breaches in customer-visible strings:** "Create your collection"
+and "A single effect **renders** directly" (`:5176-5177`), "before anything is
+created" (`:5170`), "Creating your collection…" (`:7452`), and the effect
+label **"Petal Sculpture"** is live in The Living World (`effect-registry.js:236`,
+`lib/v1/portraits/effect-registry.ts:119`). Banned verbs and banned
+"sculpture" reach the tester on the two screens they are asked to narrate.
+
+## Four corrections
+
+Recorded because a wrong alarm costs as much as a missed one, and because
+each of these was stated to Rich with more confidence than it deserved.
+
+1. **The `preview_ledger.ip_hash` alarm was wrong.** CC called it "potentially
+   the single biggest weekend blocker". `checkPreviewAllowed` is imported at
+   `portraits/generate/route.ts:32` and **never invoked** — closed 2026-09-10.
+   Discovery writes synthetic keys. Shared-IP testers were never blocked by it.
+2. **The `client_secret` hypothesis for M2 was wrong.** Stripe documents
+   `client_secret` as a plain nullable attribute with no presence caveat,
+   unlike `url`. The guard at `discovery-unlock.ts:107` is not the bug; the
+   residual is the read-then-write race already acknowledged at `:210-215`.
+3. **The size-16 fan-out warning was wrong.** Uncapped `Promise.allSettled`
+   was predicted to orphan children and need ~12 minutes of cron recovery.
+   Sixteen items landed in under thirty seconds, concurrent with a size-1 run.
+4. **The reconciliation fix does not cover signed-out visitors.** See B2. That
+   is a gap in `2ae2f73`, not a pre-existing quirk it declined to fix.
