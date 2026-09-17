@@ -29,9 +29,16 @@
 //   a Stripe page.
 //
 //   ui_mode 'embedded' returns a client_secret instead of a url. The form
-//   renders inside our own slide-out, styled with Stripe's appearance API,
-//   and the customer watches their balance change without the studio ever
-//   going away.
+//   renders inside our own slide-out, and the customer watches their balance
+//   change without the studio ever going away.
+//
+//   CORRECTED 2026-09-16: this used to say the form was "styled with Stripe's
+//   appearance API". It never was, and it could not be. The Appearance API
+//   belongs to Elements; this is Stripe Checkout in an iframe, whose
+//   StripeEmbeddedCheckoutOptions takes only clientSecret, fetchClientSecret,
+//   onComplete and three event callbacks. Our CSS cannot reach inside the
+//   frame either. The form is branded from the SERVER, by branding_settings
+//   on the session -- see lib/store/stripe-branding.ts.
 //
 //   WHAT DID NOT CHANGE: the price is still the SKU's, still checked against
 //   Stripe before a session exists, and the webhook still lands the credits.
@@ -43,6 +50,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe, getAppUrl } from '@/lib/store/stripe'
+import { createBrandedSession } from '@/lib/store/stripe-branding'
 import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
@@ -122,7 +130,7 @@ export async function POST(req: NextRequest) {
   // ── Session ─────────────────────────────────────────────────
   let session
   try {
-    session = await stripe.checkout.sessions.create({
+    session = await createBrandedSession(stripe, {
       mode: 'payment',
       ui_mode: 'embedded',
       line_items: [{ price: sku.stripe_price_id, quantity: 1 }],

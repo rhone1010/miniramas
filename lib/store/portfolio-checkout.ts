@@ -24,6 +24,7 @@
 // show tier context). Only createPortfolioCheckout rejects non-exact.
 
 import { getStripe, getAppUrl } from './stripe'
+import { createBrandedSession } from './stripe-branding'
 import { supabaseAdmin } from '@/lib/supabase'
 import crypto from 'crypto'
 
@@ -257,7 +258,7 @@ export async function createPortfolioCheckout(
     throw new Error(`sku_lookup_failed: ${offer.skuId} ${skuErr?.message ?? 'no stripe_price_id'}`)
   }
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await createBrandedSession(stripe, {
     mode: 'payment',
     /* PROBED BEFORE IT SHIPPED (2026-09-10, test mode, basket_discover_5).
        'if_required' keeps all five methods the hosted page offered --

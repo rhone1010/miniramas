@@ -32,6 +32,7 @@
 // preview id) is item 2's redemption side.
 
 import { getStripe, getAppUrl }   from './stripe'
+import { createBrandedSession }   from './stripe-branding'
 import { supabaseAdmin }          from '@/lib/supabase'
 import { getSku }                 from './skus'
 import { reserveEntitlement }     from './entitlements'
@@ -276,7 +277,7 @@ export async function createCartCheckout(
 
   // ── Stripe session (dynamic price_data per piece) ────────────
   const stripe = getStripe()
-  const session = await stripe.checkout.sessions.create({
+  const session = await createBrandedSession(stripe, {
     mode: 'payment',
     line_items: pieces.map((p, i) => ({
       price_data: {
