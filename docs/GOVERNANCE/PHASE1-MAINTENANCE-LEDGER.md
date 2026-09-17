@@ -181,6 +181,42 @@ carries `activateDiscoveryUnlock` — is the one that now holds.
 
 ---
 
+## A2 — CLOSED, 2026-09-17. The 1/4/8/16 ladder is complete.
+
+Matrix A2 requires "Real 1 / 4 / 8 / 16 end-to-end tests". All four sizes are
+now done on the fixed build:
+
+| size | price | included | delivery | result |
+|---|---|---|---|---|
+| 1  | $2.99  | 0 | purchased | **PASS** — born unlocked, clean image delivered |
+| 4  | $4.99  | 1 | preview   | **PASS** |
+| 8  | $7.99  | 1 | preview   | **PASS** — the A3/A4 acceptance run above |
+| 16 | $12.99 | 2 | preview   | **PASS** |
+
+Ladder read from `lib/store/portfolio-checkout.ts:59-62`.
+
+**Rich's runtime evidence for 1 + 16, run CONCURRENTLY:** most images landed
+within ~15 seconds, all under 30. Included unlocks worked. Clean,
+un-watermarked delivery worked. The $2.99 paid unlock succeeded.
+
+### What the 16-run retired, and what it did not
+
+CC flagged before the run that `dispatch/route.ts:108-127` fans out with
+`Promise.allSettled` over every pending item and **no concurrency cap** — 16
+simultaneous `items/render` POSTs under a 300s ceiling, where the comparable
+wallpapers route caps at 3. The predicted failure was orphaned children
+recovered only by cron at `MAX_ITEMS_PER_TICK = 3` every two minutes, i.e.
+~12 minutes for 16 items.
+
+**It did not happen.** Sixteen items, concurrent with a separate size-1 run,
+all landed under 30 seconds. The concern is retired **as observed**, not as
+fixed: nothing in that path changed, the cap still does not exist, and matrix
+**E4** makes render concurrency a Rich-approval item. Recorded so the next
+person to read `dispatch` finds the evidence rather than re-deriving the
+worry.
+
+---
+
 ## Standing Phase 0 parking lot
 
 Unchanged and still parked: `_recovery` phantom gitlinks and the two stale
