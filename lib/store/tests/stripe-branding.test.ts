@@ -19,10 +19,15 @@ describe('what we send', () => {
       background_color: '#faf6ec',
       button_color:     '#7d4242',
       border_style:     'rounded',
-      font_family:      'lora',
       display_name:     'LITEN & CO',
       logo:             { type: 'url', url: 'https://litenco.com/homepage/liten-and-co.png' },
     })
+  })
+
+  /* Stripe's font list has no Cormorant Garamond, so no value could match the
+     site. The typography is left as Stripe draws it (Rich, 2026-09-16). */
+  it('sets no font -- Stripe keeps its own typography', () => {
+    expect(LITEN_CHECKOUT_BRANDING).not.toHaveProperty('font_family')
   })
 
   it('the button is the product\'s own oxblood, not a near miss', () => {
@@ -47,12 +52,12 @@ describe('what we send', () => {
 
   it('adds no custom text and no custom fields', () => {
     expect(Object.keys(LITEN_CHECKOUT_BRANDING).sort()).toEqual(
-      ['background_color', 'border_style', 'button_color', 'display_name', 'font_family', 'logo'],
+      ['background_color', 'border_style', 'button_color', 'display_name', 'logo'],
     )
   })
 })
 
-describe('branding never costs a sale', () => {
+describe('one call, no fallback', () => {
   it('sends the caller\'s params untouched, plus the branding', async () => {
     const create = vi.fn().mockResolvedValue({ id: 'cs_1' })
     await createBrandedSession(fakeStripe(create), PARAMS)
@@ -60,26 +65,13 @@ describe('branding never costs a sale', () => {
     expect(create.mock.calls[0][0]).toEqual({ ...PARAMS, branding_settings: LITEN_CHECKOUT_BRANDING })
   })
 
-  it('when Stripe refuses the branding, the session is still created -- unbranded', async () => {
-    const create = vi.fn()
-      .mockRejectedValueOnce(new Error('Received unknown parameter: branding_settings'))
-      .mockResolvedValueOnce({ id: 'cs_2' })
-    const warn = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const s = await createBrandedSession(fakeStripe(create), PARAMS)
-    expect(s).toEqual({ id: 'cs_2' })
-    expect(create).toHaveBeenCalledTimes(2)
-    // the retry is the SAME sale: same mode, same line items, no branding
-    expect(create.mock.calls[1][0]).toEqual(PARAMS)
-    expect(create.mock.calls[1][0]).not.toHaveProperty('branding_settings')
-    warn.mockRestore()
-  })
-
-  it('a genuine failure still throws -- it is not swallowed into a silent no-op', async () => {
-    const create = vi.fn().mockRejectedValue(new Error('card_declined'))
-    const warn = vi.spyOn(console, 'error').mockImplementation(() => {})
-    await expect(createBrandedSession(fakeStripe(create), PARAMS)).rejects.toThrow('card_declined')
-    expect(create).toHaveBeenCalledTimes(2)
-    warn.mockRestore()
+  /* The branded->unbranded retry was removed deliberately: the real account
+     is being tested on Preview, and a refusal must be visible, not papered
+     over. One call out, one error up. */
+  it('a refusal throws and is not retried', async () => {
+    const create = vi.fn().mockRejectedValue(new Error('Received unknown parameter: branding_settings'))
+    await expect(createBrandedSession(fakeStripe(create), PARAMS)).rejects.toThrow('branding_settings')
+    expect(create).toHaveBeenCalledTimes(1)
   })
 })
 

@@ -14,11 +14,11 @@
 // where that is unset, to Stripe's own defaults -- the white surface and
 // #635BFF buttons.
 //
-// THE FONT IS A FIXED LIST. Stripe accepts one of about twenty-five named
-// families; Cormorant Garamond is not among them. 'lora' is the closest
-// serif the list offers (Rich's choice). The payment form will therefore
-// never match the site's type exactly, and that is a Stripe limit, not a
-// decision taken here.
+// NO FONT IS SET, ON PURPOSE. Stripe's font_family takes one of about
+// twenty-five named families and Cormorant Garamond is not among them, so no
+// value here could match the site's type. Rather than pick the nearest serif
+// and get a form that is neither Stripe's nor ours, the typography is left as
+// Stripe draws it (Rich, 2026-09-16).
 
 import type Stripe from 'stripe'
 
@@ -59,33 +59,26 @@ export const LITEN_CHECKOUT_BRANDING: Stripe.Checkout.SessionCreateParams.Brandi
   background_color: '#faf6ec',
   button_color:     LITEN_OXBLOOD,
   border_style:     'rounded',
-  font_family:      'lora',
   display_name:     'LITEN & CO',
   logo:             { type: 'url', url: LITEN_LOGO_URL },
 }
 
-/* BRANDING MUST NEVER COST A SALE.
+/* ONE CALL, NO FALLBACK (Rich, 2026-09-16).
  *
- * `branding_settings` is a recent parameter, and this codebase deliberately
- * does not pin an API version (stripe.ts:16) -- it takes whatever the account
- * is set to. If that version predates the parameter, Stripe rejects the whole
- * call and the customer gets no payment form at all.
+ * An earlier cut of this tried the branded session and, if Stripe refused the
+ * parameter, quietly created an unbranded one -- insurance against an account
+ * API version older than `branding_settings`. Rich removed it: the real
+ * account is about to be tested on Preview, and a guess about how it might
+ * fail does not belong in the payment path. If Stripe refuses the parameter
+ * the call throws, the caller's existing error handling reports it, and we
+ * will have learned something true instead of hiding it.
  *
- * So: try the branded session, and if Stripe refuses it, create the identical
- * session without the branding. The happy path is one call and unchanged. The
- * failure path used to be "no checkout" and is now "plain checkout", which is
- * strictly better and changes nothing about what is charged -- same mode,
- * same line_items, same metadata, same return_url.
+ * This is the only place branding is attached, so every session carries the
+ * same settings and none of them can drift.
  */
 export async function createBrandedSession(
   stripe: Stripe,
   params: Stripe.Checkout.SessionCreateParams,
 ): Promise<Stripe.Checkout.Session> {
-  try {
-    return await stripe.checkout.sessions.create({ ...params, branding_settings: LITEN_CHECKOUT_BRANDING })
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-    console.error('[stripe-branding] branded session refused, retrying unbranded:', msg)
-    return await stripe.checkout.sessions.create(params)
-  }
+  return await stripe.checkout.sessions.create({ ...params, branding_settings: LITEN_CHECKOUT_BRANDING })
 }
