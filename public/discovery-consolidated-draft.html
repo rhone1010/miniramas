@@ -654,7 +654,12 @@ body{
 .card__content span{ font-size:.75rem; color:var(--gold-soft); text-shadow:0 .06rem .14rem rgba(18,12,8,.7) }
 /* Watermarked/locked state -- shared by My Collection's un-unlocked
    pieces. */
-.card.is-locked .card__art::after{
+/* THE WATERMARK MARKS ARTWORK, NOT A WAIT (Rich, 2026-09-16). A piece being
+   crafted carries `locked` too -- it will be a locked preview once it exists
+   -- but there is no artwork under it yet, so the diagonals and the PREVIEW
+   legend were being drawn over the processing card. They belong only where
+   there is a real locked image to mark. */
+.card.is-locked:not(.is-crafting) .card__art::after{
   content:"PREVIEW"; position:absolute; inset:0; z-index:1; display:flex; align-items:center; justify-content:center;
   font-family:var(--sans); font-size:11px; letter-spacing:.12em; color:rgba(255,255,255,.6);
   background:repeating-linear-gradient(45deg, rgba(0,0,0,.15) 0 3px, transparent 3px 18px);
@@ -666,14 +671,19 @@ body{
 .card.is-crafting .card__art{
   background:linear-gradient(160deg, #8c4c4c, var(--oxblood) 55%, #6a3737);
 }
-.mc-gear{
-  position:absolute; top:50%; left:50%; width:44%; max-width:104px; aspect-ratio:1;
-  margin:-22% 0 0 -22%;                  /* half of width, so it centres without transform */
-  background:url(/icons/LitenCo_Gear.png) center/contain no-repeat;
-  opacity:.78; z-index:2;
-  animation:mcGearTurn 2s linear infinite;
+.mc-mark{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:46%; max-width:112px; height:auto; z-index:2; overflow:visible;
 }
-@keyframes mcGearTurn{ to{ transform:rotate(360deg) } }
+/* Refined linework, not a filled glyph: brass for the cog, gold for the
+   ring, the L in the same warm light. */
+.mc-mark circle, .mc-mark path{ fill:none; stroke:var(--gold-soft); vector-effect:non-scaling-stroke }
+.mc-mark__turn{ transform-origin:50px 50px; animation:mcMarkTurn 2s linear infinite }
+.mc-mark__turn circle{ stroke-width:2; opacity:.62 }
+.mc-mark__turn path{ stroke-width:2.4; stroke-linecap:round; opacity:.88 }
+.mc-mark__inner{ stroke-width:1; opacity:.38 }
+.mc-mark__l path{ fill:var(--gold-soft); stroke:none; opacity:.95 }
+@keyframes mcMarkTurn{ from{ transform:rotate(0deg) } to{ transform:rotate(360deg) } }
 /* The old ring is kept for anything still asking for it; My Collection no
    longer does. */
 .card__ring{
@@ -692,7 +702,7 @@ body{
   100%{ transform:rotateY(0deg); opacity:1 }
 }
 @media (prefers-reduced-motion:reduce){
-  .mc-gear{ animation:none }
+  .mc-mark__turn{ animation:none }
   .card.is-revealing{ animation:none }
 }
 
@@ -4521,7 +4531,10 @@ function renderReviewRail(){
     '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>' +
     sum.bodyHtml +
     sum.priceHtml +
-    '<button class="btn-create' + ((sum.info.valid && sum.n > 0 && !openSlots()) ? ' on' : '') + '">Next: Choose A Pose</button>' +
+    /* __V1_NO_POSE__ Review goes to Format, so the button says so. The pose
+       step is dormant, not deleted, and nothing in the customer's path
+       names it. */
+    '<button class="btn-create' + ((sum.info.valid && sum.n > 0 && !openSlots()) ? ' on' : '') + '">Next: Select A Shape</button>' +
     /* __START_OVER__ — always on Review, at every count, beside the
        per-card removes. Rendered here because renderReviewRail() is
        what repaints on entry AND after each remove. */
@@ -6358,6 +6371,13 @@ function showCheckoutError(msg){
    every tile when anything moves, so without this the finished pieces and
    the untouched ones would be indistinguishable and all of them would turn
    over together. Read and cleared by the tile builder. */
+/* __MC_MARK__ The processing mark, drawn rather than photographed. Every
+   coordinate is computed about the viewBox centre, so the cog is
+   symmetrical and turns true -- the raster gear it replaced was slightly
+   off-axis and wobbled. Only the outer cog turns; the inner ring and the
+   L are still. */
+var MC_MARK_HTML = '<svg class="mc-mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><g class="mc-mark__turn"><circle cx="50" cy="50" r="38"/><path d="M50 12L50 4.5"/><path d="M69 17.091L72.75 10.596"/><path d="M82.909 31L89.404 27.25"/><path d="M88 50L95.5 50"/><path d="M82.909 69L89.404 72.75"/><path d="M69 82.909L72.75 89.404"/><path d="M50 88L50 95.5"/><path d="M31 82.909L27.25 89.404"/><path d="M17.091 69L10.596 72.75"/><path d="M12 50L4.5 50"/><path d="M17.091 31L10.596 27.25"/><path d="M31 17.091L27.25 10.596"/></g><circle class="mc-mark__inner" cx="50" cy="50" r="27"/><g class="mc-mark__l" transform="translate(50 50) scale(0.018) translate(-924.5 -554.5)"><path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/></g></svg>';
+
 var JUST_LANDED = {};
 /* Asked once; the browser keeps it current. */
 var PREFERS_STILL = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -7165,7 +7185,7 @@ function renderMyCollectionGrid(){
     el.className = 'card' + (p.locked ? ' is-locked' : '') + (p.crafting ? ' is-crafting' : '') + (unlockSelection[p.key] ? ' is-selected' : '');
     if (p.crafting){
       /* __MC_GEAR__ the house mark, turning, on oxblood */
-      el.innerHTML = '<div class="card__art"><div class="mc-gear" aria-hidden="true"></div>' +
+      el.innerHTML = '<div class="card__art">' + MC_MARK_HTML +
         '<div class="card__content"><strong>Crafting…</strong></div></div>';
     } else {
       /* __MC_GEAR__ This piece finished since the last paint, so it turns
