@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Discovery — click-to-select, closed loop to Review</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,400;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
@@ -5503,7 +5503,25 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
 function paintMe(){
   var nameEl = document.getElementById('mhName');
   if (nameEl) nameEl.textContent = ME && ME.email ? ME.email.split('@')[0] : 'Sign in';
-  if (ME) renderCollection().then(refreshWhileCrafting);
+  if (ME) { renderCollection().then(refreshWhileCrafting); return; }
+  /* __B2_SIGNED_OUT_SEED__ NOBODY IS SHOWN ARTWORK THEY DO NOT OWN.
+     reconcileCollection retires the parse-time seed the moment the server
+     answers -- but the server is only ever asked under `if (ME)` above, so a
+     signed-out visitor reached none of it. Clicking My Collection called
+     openMyCollection() with no auth guard (:7027) and painted PIECES, still
+     the 28-item demo: fabricated Groups, Pets and Halloween entries, a
+     permanent "Crafting..." tile, and 28 "Unlock $2.99" buttons that do
+     nothing because the pieces have no previewId.
+
+     Signing out is the same statement the empty server response makes -- you
+     own nothing here -- so it retires the seed the same way, through the same
+     REAL_PIECES swap. Not a redesign of the signed-out collection: the panel,
+     the rail and the empty state are untouched and simply have nothing to
+     draw. Signing in runs renderCollection, which fills it. */
+  if (!REAL_PIECES){ PIECES.length = 0; REAL_PIECES = true; }
+  if (typeof renderMyCollectionGrid === 'function' && mycoll.classList.contains('is-open')){
+    renderMycollRail(); renderMyCollectionGrid();
+  }
 }
 /* The foyer's photograph, if one was handed over, is taken after any resume
    so the one the visitor has just chosen is the one on the stamp. */
@@ -5729,9 +5747,12 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
 // ── Payment confirmation by return — ?paid=1&session_id=... or ?portfolio_paid=1&session_id=... ──
 // The redirect path. For a portfolio this now means a payment method that
 // had to leave the page to finish -- card and Link complete in the modal
-// and never arrive here. An unlock (hosted, via startUnlockCheckout) still
-// returns here on ?paid=1. Clean the URL, verify server-side, then finish
-// whatever was started. Nothing is drawn here.
+// and never arrive here. The unlock is embedded too now, and reaches this
+// handler on the same ?paid=1 for the same reason: Klarna, Cash App Pay and
+// Amazon Pay leave the page. (Until __D1_REDIRECT_RETURN__ the unlock's
+// return_url carried no parameters at all, so this handler never ran for it
+// and a redirect-paid unlock was never completed.) Clean the URL, verify
+// server-side, then finish whatever was started. Nothing is drawn here.
 (function(){
   var params = new URLSearchParams(location.search);
   var isPaid = params.get('paid') === '1' || params.get('portfolio_paid') === '1';
@@ -5757,15 +5778,38 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
     var unlockIntent = (typeof readUnlockIntent === 'function') ? readUnlockIntent() : null;
     if (unlockIntent){
       clearUnlockIntent();
-      if (typeof requestUnlock === 'function'){
-        requestUnlock(unlockIntent.previewId, unlockIntent.key).then(function(result){
-          if (result === 'unlocked') return;
-          /* The webhook lands in under two seconds as a rule, but the
-             browser is back before it sometimes. */
-          if (result === 'payment_pending' || result === 'needs_payment'){
-            setTimeout(function(){ requestUnlock(unlockIntent.previewId, unlockIntent.key); }, 2500);
-          }
-        });
+      /* __D1_REDIRECT_RETURN__ ONE COMPLETION PATH, NOT TWO.
+         This branch used to call requestUnlock on its own, from the days when
+         the unlock was a hosted session the Production webhook activated. The
+         unlock is a branch-deployment embedded session now, and
+         activateDiscoveryUnlock is not on main -- so on a redirect return
+         nothing had activated the entitlement, requestUnlock answered 409
+         no_entitlement, and a customer who paid by Klarna, Cash App Pay or
+         Amazon Pay never got the image.
+
+         So the redirect return now converges on finishUnlockPayment: the same
+         unlock-confirm -> unlockPiece sequence, with the same retry budget,
+         that embedded completion has already proven twice at runtime. Stripe
+         is asked whether money moved; the answer activates; the normal unlock
+         follows. The piece is rebuilt from the intent because PIECES may not
+         be hydrated yet on a fresh page load -- portfolioId is carried in the
+         key, which is 'pf' + portfolioId + ':' + slot. */
+      var ui = unlockIntent;
+      var known = null;
+      for (var qi = 0; qi < PIECES.length; qi++){ if (PIECES[qi].key === ui.key){ known = PIECES[qi]; break; } }
+      var colon = ui.key ? ui.key.lastIndexOf(':') : -1;
+      var piece = known || {
+        key: ui.key,
+        previewId: ui.previewId,
+        portfolioId: (ui.key && ui.key.indexOf('pf') === 0 && colon > 2) ? ui.key.slice(2, colon) : null,
+        locked: true,
+      };
+      if (typeof finishUnlockPayment === 'function' && piece.portfolioId){
+        finishUnlockPayment(piece, sessionId);
+      } else if (typeof requestUnlock === 'function'){
+        /* No portfolio to confirm against -- nothing to activate, so ask
+           directly, exactly as before. */
+        requestUnlock(ui.previewId, ui.key);
       }
       return;
     }

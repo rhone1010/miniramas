@@ -52,10 +52,28 @@ export async function POST(
   /* Same open-redirect guard the portfolio checkout uses: same host, or a
      fallback we own. The unlock returns to the collection the customer is
      already looking at. */
-  const returnUrl = safeReturnBase(
+  const returnBase = safeReturnBase(
     typeof body.returnUrl === 'string' ? body.returnUrl : '',
     getAppUrl(),
   )
+
+  /* __D1_REDIRECT_RETURN__ THE PARAMETERS ARE THE WHOLE POINT OF THE RETURN.
+     `redirect_on_completion: 'if_required'` means card and Link finish inside
+     the modal and never come here -- but Klarna, Cash App Pay and Amazon Pay
+     have to leave the page, and they come back to exactly this URL. Sent bare,
+     it told the client nothing: the return handler reads `paid` and
+     `session_id`, found neither, and returned. unlock-confirm was never
+     called, and on a branch deployment the webhook cannot call it either,
+     because activateDiscoveryUnlock is not on main. The customer paid $2.99
+     and the image stayed locked -- the 2026-09-17 failure exactly, reached
+     through the one door its mitigation did not cover.
+
+     The portfolio path has always appended these (portfolio-checkout.ts:249).
+     This is the same two parameters on the same shape of URL, so redirect
+     completion converges on the embedded path's proven
+     unlock-confirm -> requestUnlock sequence instead of a second one. */
+  const returnUrl = returnBase + (returnBase.includes('?') ? '&' : '?')
+    + 'paid=1&session_id={CHECKOUT_SESSION_ID}'
 
   try {
     const result = await createDiscoveryUnlockCheckout({
