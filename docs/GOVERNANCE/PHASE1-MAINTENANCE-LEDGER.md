@@ -101,7 +101,7 @@ Production share this database; there is no test-data partition.
 
 ---
 
-## M2 · Duplicate unlock sessions — OPEN, awaiting ruling
+## M2 · Duplicate unlock sessions — PARKED PAYMENT HARDENING
 
 Six checkout sessions were created for two intended unlocks on 2026-09-17,
 and **two were carried to payment for the same piece** — $5.98 charged where
@@ -109,14 +109,19 @@ $2.99 was intended. `UNLOCK_INFLIGHT` guards the unlock *call* but nothing
 guards *checkout creation*, and the Feature Image and Gallery Image buttons
 each open their own session.
 
-Not yet ruled on. Recorded so it is not lost.
+Ruled 2026-09-17: **PARKED PAYMENT HARDENING only.** It did not reproduce on
+the passing 8-pick run — each unlock created exactly one session — but
+nothing in that path was changed, so not-reproducing is not fixed. Parked,
+not closed, and not a Section A blocker.
 
 ---
 
 ## A3 / A4 — RUNTIME ACCEPTANCE PASS, 2026-09-17
 
 Accepted by Rich from the clean Collection baseline that followed the
-database purge and commit `2ae2f73`. An 8-pick run, purchased and generated,
+database purge and commit `2ae2f73`. An **8-pick purchase — not a 4-pack**
+(the 4-pack at `9f26ce5f…` in M1 above is the earlier, pre-purge run whose
+A4 leg failed). Purchased and generated,
 then **the corrected A4 flow proved twice consecutively**: included unlock,
 then two separate $2.99 unlocks, each launching Stripe, completing payment,
 closing the modal and delivering the clean image **automatically — no console
@@ -129,6 +134,16 @@ A4 PAYMENT              = PASS
 A4 POST-PAYMENT UNLOCK  = PASS     (previously FAIL)
 A4 CLEAN DELIVERY       = PASS     (x2)
 ```
+
+### Human runtime evidence, as reported by Rich
+
+- 8 picks purchased and generated
+- collection landed successfully
+- included unlock succeeded
+- first $2.99 unlock succeeded end-to-end
+- second $2.99 unlock succeeded end-to-end
+
+**A4 is PASS and CLOSED.** The passing flow is not to be investigated further.
 
 ### Runtime evidence — Preview `miniramas-1aidba6x6`, portfolio `e2813285-c534-46dd-b881-d809f6c9a31d`
 
