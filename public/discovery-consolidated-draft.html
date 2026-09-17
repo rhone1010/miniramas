@@ -6480,7 +6480,11 @@ function loadShelf(){
   return fetch('/api/v1/portraits/pieces?product_path=discovery', { credentials:'include' })
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){
-      var rows = (d && d.pieces) || [];
+      /* RECONCILIATION HAS TO TELL SILENCE FROM EMPTINESS, so this answers
+         null when the shelf could not be read and [] when the server says
+         there is nothing on it. Only the second prunes. */
+      if (!d || !Array.isArray(d.pieces)) return null;
+      var rows = d.pieces;
       return rows.map(function(p){
         /* Owned outright: never locked, never crafting. The lock is a
            portfolio mechanic and a single has no preview to unlock. */
@@ -6490,7 +6494,7 @@ function loadShelf(){
                  art:p.image_url || null };
       });
     })
-    .catch(function(e){ console.warn('[discovery] shelf not loaded:', e); return []; });
+    .catch(function(e){ console.warn('[discovery] shelf not loaded:', e); return null; });
 }
 
 // Fetch all portfolios for the signed-in user and populate PIECES with real data.
@@ -6575,12 +6579,104 @@ function activateIfStalled(list){
   });
 }
 
+/* ---- the server is the only authority on what exists -------------------
+   __MC_RECONCILE__ (2026-09-17). THE BUG THIS CLOSES: every path into PIECES
+   added or updated, and none of them could ever take a card away.
+   renderCollection returned early on an empty answer -- `if (!results &&
+   !shelf.length) return null` and `if (!all.length) return null` -- so a
+   server saying "you own nothing" was handled identically to a server saying
+   nothing at all, and PIECES kept whatever it was already holding: the
+   parse-time seed built from SELECTED (restored from liten_resume_v1), the
+   28-item demo seed, and the crafting placeholders foregroundPaidRun pushes
+   at checkout. After thirty portfolios were deleted from the database the
+   collection still drew their cards, because no code had ever existed that
+   could remove one.
+
+   So reconciliation is subtractive as well as additive, scoped by key
+   namespace to whichever source actually answered:
+     'pf{uuid}:{slot}'  portfolio item -- pruned once GET /portfolios answered
+     'pc...'            shelf piece    -- pruned once the pieces route answered
+     anything else      seed           -- retired as soon as EITHER answered
+
+   The one thing held back is a run bought in this session's modal: the
+   webhook may still be in flight, so its portfolio is not readable yet and
+   its placeholders would be pruned a second after they were drawn. Held, not
+   resurrected. PAID_RUN_FOREGROUND is empty on every page load, so a refresh
+   protects nothing and a deleted portfolio cannot survive one. */
+/* The two key shapes, exactly as their builders write them: loadPortfolio
+   and foregroundPaidRun both use 'pf' + portfolioId + ':' + slot, and
+   loadShelf uses 'pc' + id. Matched structurally rather than by id format --
+   an id is whatever the database hands back. A seed key can collide with
+   neither: SELECTED keys are effect ids, which contain no colon and none of
+   which begins 'pc'. */
+var PORTFOLIO_KEY = /^pf.+:\d+$/;
+var SHELF_KEY     = /^pc./;
+
+function reconcileCollection(all, portfoliosKnown, shelfKnown){
+  var live = {};
+  all.forEach(function(p){ live[p.key] = true; });
+
+  var keep = [], dropped = [];
+  PIECES.forEach(function(p){
+    if (live[p.key]){ keep.push(p); return; }
+    if (PORTFOLIO_KEY.test(p.key)){
+      if (!portfoliosKnown){ keep.push(p); return; }
+      if (p.portfolioId && PAID_RUN_FOREGROUND.indexOf(p.portfolioId) >= 0){ keep.push(p); return; }
+      dropped.push(p); return;
+    }
+    if (SHELF_KEY.test(p.key)){
+      if (!shelfKnown){ keep.push(p); return; }
+      dropped.push(p); return;
+    }
+    /* Seed -- demo or a SELECTED placeholder. It never came from the server,
+       so any authoritative answer retires it; but if neither source answered
+       there is no authority here, and nothing is retired. */
+    if (!portfoliosKnown && !shelfKnown){ keep.push(p); return; }
+    dropped.push(p);
+  });
+
+  if (dropped.length){
+    console.log('[discovery] reconcile dropped ' + dropped.length +
+                ' card(s) the server no longer has');
+    /* THE CARD AND EVERYTHING HANGING OFF IT. State that outlives a dropped
+       card is what puts it back on the glass on the next tick. */
+    dropped.forEach(function(p){
+      delete unlockSelection[p.key];
+      delete JUST_LANDED[p.key];
+      if (FEATURED && FEATURED.key === p.key) FEATURED = null;
+    });
+    var livePortfolios = {};
+    keep.forEach(function(p){ if (p.portfolioId) livePortfolios[p.portfolioId] = true; });
+    Object.keys(INCLUDED_BY_PORTFOLIO).forEach(function(id){
+      if (!livePortfolios[id]) delete INCLUDED_BY_PORTFOLIO[id];
+    });
+    /* A stored intent to unlock a piece that no longer exists would reopen
+       the unlock flow against a deleted row on the next load. */
+    var intent = readUnlockIntent();
+    if (intent && intent.key && !live[intent.key]) clearUnlockIntent();
+  }
+
+  PIECES.length = 0;
+  keep.forEach(function(p){ PIECES.push(p); });
+
+  /* The seed is retired the moment any server source answers, whether or not
+     it had anything to report. That is what REAL_PIECES always meant; it was
+     merely gated on there being at least one piece to replace it with. */
+  var changed = dropped.length > 0;
+  if (!REAL_PIECES){ REAL_PIECES = true; changed = true; }
+  all.forEach(function(p){ if (pieceLanded(p)) changed = true; });
+  return changed;
+}
+
 function renderCollection(){
   return Promise.all([
     fetch('/api/v1/portfolios', { credentials:'include' })
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(d){
-        if (!d || !d.portfolios || !d.portfolios.length) return null;
+        /* null means the list could not be read; [] means the server read it
+           and the account owns none. Only the second is authoritative. */
+        if (!d || !Array.isArray(d.portfolios)) return null;
+        if (!d.portfolios.length) return [];
         activateIfStalled(d.portfolios);
         dispatchIfGenerating(d.portfolios);
         return Promise.all(d.portfolios.map(function(p){ return loadPortfolio(p.id); }));
@@ -6589,8 +6685,12 @@ function renderCollection(){
     loadShelf()
   ])
     .then(function(both){
-      var results = both[0], shelf = both[1] || [];
-      if (!results && !shelf.length) return null;
+      var results = both[0], shelf = both[1];
+      var portfoliosKnown = !!results;
+      var shelfKnown      = !!shelf;
+      /* Neither request came back: nothing is known, so nothing is pruned
+         and the glass is left exactly as it is. */
+      if (!portfoliosKnown && !shelfKnown) return null;
       var all = [];
       var n = 0;
       (results || []).forEach(function(items){
@@ -6603,22 +6703,19 @@ function renderCollection(){
                       aspect:item.aspect });
         });
       });
-      shelf.forEach(function(item){
+      (shelf || []).forEach(function(item){
         n++;
         all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
                     series:item.series, num:n, crafting:item.crafting,
                     locked:item.locked, previewId:item.previewId, art:item.art,
                     aspect:item.aspect });
       });
-      if (!all.length) return null;
+      /* ADD AND REMOVE IN ONE PLACE, against what the server just said. */
+      var changed = reconcileCollection(all, portfoliosKnown, shelfKnown);
       /* Real pieces exist from here, so the purchase is no longer waiting to
-         be represented. Cleared here rather than on a timer: this is the
-         one place that knows work has actually come back. */
-      AWAITING_PAID_HYDRATION = false;
-      /* The demo seed goes the first time real work answers, and only then. */
-      var changed = false;
-      if (!REAL_PIECES){ PIECES.length = 0; REAL_PIECES = true; changed = true; }
-      all.forEach(function(p){ if (pieceLanded(p)) changed = true; });
+         be represented. Still tied to work actually coming back: an empty
+         answer during the webhook gap must keep the post-purchase wording. */
+      if (all.length) AWAITING_PAID_HYDRATION = false;
       /* Resolved by key, never held across a landing -- portraits.html:9463.
          FEATURED pointed at the object the poll had just replaced. */
       if (FEATURED){
@@ -6639,6 +6736,11 @@ function renderCollection(){
            drawn once and left alone until the next real change. */
         renderMyCollectionGrid();
       }
+      /* Unchanged three-way answer to the poller, reported AFTER the grid has
+         been reconciled rather than instead of reconciling it: null is "no
+         pieces to report yet", which keeps a just-paid run polling across the
+         webhook gap exactly as before. */
+      if (!all.length) return null;
       return all.some(function(p){ return p.crafting; });
     })
     .catch(function(e){ console.warn('[discovery] renderCollection failed:', e); return null; });

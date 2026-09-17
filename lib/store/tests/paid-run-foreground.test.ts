@@ -58,6 +58,12 @@ function returnHandler(): string {
 }
 const retryConstants = () =>
   HTML.match(/^var PAID_RETRY_EVERY = \d+;\s*\nvar PAID_RETRY_TRIES = \d+;/m)![0]
+/* __MC_RECONCILE__ renderCollection now delegates its add/remove pass to
+   reconcileCollection, which classifies keys with these two patterns. Lifted
+   from the page for the same reason everything else here is: a copy would
+   let the harness and the shipped file drift apart. */
+const reconcileKeys = () =>
+  HTML.match(/^var PORTFOLIO_KEY = .*\r?\nvar SHELF_KEY {5}= .*$/m)![0]
 
 // -- the server, as the client sees it ----------------------------------
 
@@ -137,11 +143,12 @@ function build(opts: { realPieces?: boolean; pieces?: any[] } = {}) {
     PAID_RUN_FOREGROUND: [],
     FEATURED: null,
     STRIPE_EMBED: null,
+    unlockSelection: {}, JUST_LANDED: {}, INCLUDED_BY_PORTFOLIO: {},
   }
   const body = [
-    retryConstants(),
+    retryConstants(), reconcileKeys(),
     fn('pieceLanded'), fn('mcVisible'), fn('paidRunsFirst'),
-    fn('renderCollection'),
+    fn('reconcileCollection'), fn('renderCollection'),
     fn('openCollectionForPaidRun'), fn('foregroundPaidRun'), fn('beginPaidRun'), fn('clearPurchasedSelection'),
     fn('verifyPurchasePaid'), fn('closeCheckout'), fn('onEmbeddedCheckoutComplete'),
     'function runReturnHandler(){ ' + returnHandler() + ' }',
@@ -386,7 +393,9 @@ describe('ordinary hydration and the redirect path are untouched', () => {
     // handler reads its session id from the URL.
     server = [pending(NEW_ID, NEW_EFFECTS), ...EXISTING.map(([id, n]) => done(id, n))]
     const body = [
-      retryConstants(), fn('pieceLanded'), fn('mcVisible'), fn('paidRunsFirst'), fn('renderCollection'),
+      retryConstants(), reconcileKeys(),
+      fn('pieceLanded'), fn('mcVisible'), fn('paidRunsFirst'),
+      fn('reconcileCollection'), fn('renderCollection'),
       fn('openCollectionForPaidRun'), fn('foregroundPaidRun'), fn('beginPaidRun'), fn('clearPurchasedSelection'), fn('verifyPurchasePaid'),
       'function runReturnHandler(){ ' + returnHandler() + ' }',
       'return { run: runReturnHandler, renderCollection: renderCollection, mcVisible: mcVisible,',
@@ -407,6 +416,7 @@ describe('ordinary hydration and the redirect path are untouched', () => {
       canonicalSeries: (x: string) => x, MC_SERIES: 'all', MC_STATE: 'all',
       PIECES: [{ key: 'demo0', series: 'Portraits', crafting: false, locked: true }],
       REAL_PIECES: false, RUN_LANDED: true, AWAITING_PAID_HYDRATION: false, PAID_RUN_FOREGROUND: [], FEATURED: null,
+      unlockSelection: {}, JUST_LANDED: {}, INCLUDED_BY_PORTFOLIO: {},
     }
     const h = new Function(...Object.keys(env), body)(...Object.values(env))
     h.run()
