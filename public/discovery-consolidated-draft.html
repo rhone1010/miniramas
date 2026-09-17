@@ -1132,6 +1132,12 @@ body.is-lboxed{ overflow:hidden }
   .size-box__go, .describe-box__send, .intent-box__clear, .tier-fill-note, .mycoll__filters .lbl, .prog-line{
     font-family:var(--sans); font-style:normal; font-weight:600 }
   .btn-create{ font-size:1.05rem; padding:12px }
+  /* __A1_CTA_WRAP__ (Phase 1, 2026-09-17). The line above never reached the
+     button: .btn-create.on carries two classes and outranked it, so the
+     1.7rem display size survived down here and "Next: Select A Shape" broke
+     onto two lines in a 350px rail at 1366. This is the same value the rule
+     above already chose -- the specificity is the only thing that changes. */
+  .btn-create.on{ font-size:1.05rem }
   .btn-review{ font-size:.95rem }
   .link-back{ font-size:.9rem; font-weight:500 }
   .mc-pill, .intent-pill{ font-size:.85rem; font-weight:500 }
@@ -1233,6 +1239,22 @@ body.is-lboxed{ overflow:hidden }
     will-change:transform;
   }
   body.rail-open .rail{ transform:none; }
+
+  /* __A1_REVIEW_OVERFLOW__ (Phase 1, 2026-09-17). THE STAGE MAY NOT EXCEED
+     THE SCREEN. buildFans gives .fan-inner an explicit pixel width when a fan
+     is wider than the stage, and turns on .fan-row's overflow-x so it scrolls.
+     The Review column had no width constraint, so instead of the row
+     scrolling, the column grew to the fan's width -- and on a phone the
+     layout viewport stretches to match. That then fed back into
+     `stageWidth = fansEl.clientWidth - 40` on the next pass, so it could not
+     settle: measured 600px of viewport on a 390px screen, 210px of sideways
+     scroll, and a 558px Craft button on a 390px phone.
+
+     Constraining the column restores the invariant. The fan row keeps its own
+     overflow-x:auto and still scrolls -- every card stays reachable; only the
+     page stops growing. Desktop is untouched: this is inside the <=1024 sheet
+     block, and 1366/1920 measure identically before and after. */
+  .review-view{ max-width:100%; overflow-x:hidden; }
   .rail::before{
     content:""; position:absolute; top:7px; left:50%; transform:translateX(-50%);
     width:44px; height:4px; border-radius:2px; background:rgba(120,96,64,.34);
@@ -1307,6 +1329,25 @@ body.is-lboxed{ overflow:hidden }
   .mycoll{ top:var(--mh-h); }
   .mycoll__filters{ overflow-x:auto; }
   .lbox__nav{ min-width:48px; min-height:48px; }
+
+  /* __A1_PHONE__ (Phase 1, 2026-09-17). The processing mark is sized as a
+     share of the card so it sits right on a big tile; on a phone that share
+     left a cog too small to read as one. A floor, capped so it can never
+     outgrow the tile it sits in. (The payment modal's phone sizing lives with
+     the .ck- rules further down, which are declared after this block and
+     would otherwise win.) */
+  .mc-mark{ width:min(72%, max(46px, 46%)); }
+}
+
+/* __A1_MYCOLL_COLS__ (Phase 1, 2026-09-17). #mycollGrid pins
+   grid-template-columns:repeat(6,1fr) at every width -- deliberate for the
+   desktop stage, but it had no responsive override, so a 390px phone drew six
+   52px cards and a 768px tablet six 110px ones. Discovery's own rooms already
+   step down through --grid-cols (3 at <=1024, 2 at <=400); My Collection now
+   follows the same variable instead of its own fixed six. Desktop is
+   untouched -- the 6-across rule still governs above 1024. */
+@media (max-width:1024px){
+  #mycollGrid.stage-frame{ grid-template-columns:repeat(var(--grid-cols),1fr) }
 }
 
 /* ---- Very small: <=400, matching portraits.html's smallest step -- */
@@ -1687,6 +1728,19 @@ body.is-lboxed{ overflow:hidden }
 .ck-order[hidden]{ display:none }
 .ck-order__size{ font-family:var(--serif); font-size:1.3rem; color:var(--ink) }
 .ck-order__price{ font-family:var(--serif); font-size:1.45rem; color:var(--oxblood) }
+/* __A1_PHONE__ (Phase 1, 2026-09-17) our shell on a phone. The mark and the
+   heading were only ever sized for a desktop card: at 390 the mark stayed
+   104px on a 342px card and "Complete Your Collection" broke mid-phrase.
+   Declared here, after the rules above, because a copy in the earlier phone
+   block lost to them on source order at equal specificity.
+   Stripe's own form inside #ckForm is untouched -- this is our half only. */
+@media (max-width:767px){
+  .ck-card{ padding:1.25rem 1.1rem 1.3rem }
+  .ck-mark{ width:74px; margin-bottom:.7rem }
+  .ck-title{ font-size:1.45rem }
+  .ck-order__size{ font-size:1.1rem }
+  .ck-order__price{ font-size:1.25rem }
+}
 #ckForm{ min-height:300px; }
 .agegate{
   position:fixed; inset:0; z-index:130;
