@@ -34,8 +34,20 @@ export const LITEN_OXBLOOD = '#7d4242'
    render self-calls; this is the one place a hardcoded host is the correct
    answer rather than a shortcut.
 
-   Verified public 2026-09-16: HTTP 200, image/png, 80877 bytes. */
-export const LITEN_LOGO_URL = 'https://litenco.com/icons/liten-and-co.png'
+   WHICH LOCKUP, AND WHY NOT THE BIG ONE. There are two, and they are
+   different colourways of the same mark:
+
+     icons/liten-and-co.png     1024x860, ink rgb(255,255,255) -- for dark
+     homepage/liten-and-co.png   132x108, ink rgb(43,36,30)    -- for light
+
+   The large one is the reverse cut. On the #faf6ec ground above it is cream
+   on cream and effectively invisible, so its size is no help. This is the
+   existing asset that suits a light background; recolouring or upscaling
+   either of them would be making a brand asset, which is Rich's lane.
+
+   It is small, and Stripe may render it soft. Flagged for Rich rather than
+   fixed here. Verified public 2026-09-16: HTTP 200, image/png, 9803 bytes. */
+export const LITEN_LOGO_URL = 'https://litenco.com/homepage/liten-and-co.png'
 
 /* NO ICON. Stripe wants a square image for `icon`, and the only square mark
    we have -- icons/LitenCo_Gear.png -- is 404 on litenco.com: it lives on the

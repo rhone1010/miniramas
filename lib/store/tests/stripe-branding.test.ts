@@ -21,7 +21,7 @@ describe('what we send', () => {
       border_style:     'rounded',
       font_family:      'lora',
       display_name:     'LITEN & CO',
-      logo:             { type: 'url', url: 'https://litenco.com/icons/liten-and-co.png' },
+      logo:             { type: 'url', url: 'https://litenco.com/homepage/liten-and-co.png' },
     })
   })
 
