@@ -113,6 +113,59 @@ Not yet ruled on. Recorded so it is not lost.
 
 ---
 
+## A3 / A4 — RUNTIME ACCEPTANCE PASS, 2026-09-17
+
+Accepted by Rich from the clean Collection baseline that followed the
+database purge and commit `2ae2f73`. An 8-pick run, purchased and generated,
+then **the corrected A4 flow proved twice consecutively**: included unlock,
+then two separate $2.99 unlocks, each launching Stripe, completing payment,
+closing the modal and delivering the clean image **automatically — no console
+work, no manual intervention, no refresh**.
+
+```
+A3 INCLUDED UNLOCK      = PASS
+A4 PAYMENT LAUNCH       = PASS
+A4 PAYMENT              = PASS
+A4 POST-PAYMENT UNLOCK  = PASS     (previously FAIL)
+A4 CLEAN DELIVERY       = PASS     (x2)
+```
+
+### Runtime evidence — Preview `miniramas-1aidba6x6`, portfolio `e2813285-c534-46dd-b881-d809f6c9a31d`
+
+```
+16:35:47  [portraits/unlock] delivered preview=bfd1c9d4… ent=5d2d83ba…      included, free
+16:35:51  POST /portraits/unlock, no delivery                                correct: included spent
+16:35:53  [discovery-unlock] session cs_test_a1O62ovf… purchase=c869d13b…
+            preview=14f196e8… slot=1 299c
+16:35:59  [discovery-unlock] ACTIVATE ok ent=1441549a… preview=14f196e8…
+          [unlock-confirm]  session=cs_test_a1O62ovf… activated=true
+16:36:01  [portraits/unlock] paid additional unlock preview=14f196e8… ent=1441549a…
+          [portraits/unlock] delivered              preview=14f196e8…
+16:36:07  POST /portraits/unlock, no delivery                                correct: slot 3 unpaid
+16:36:09  [discovery-unlock] session cs_test_a1f2HlfG… purchase=64f8149b…
+            preview=75053b63… slot=3 299c
+16:36:16  [discovery-unlock] ACTIVATE ok ent=21aa4b34… preview=75053b63…
+          [unlock-confirm]  session=cs_test_a1f2HlfG… activated=true
+16:36:17  [portraits/unlock] paid additional unlock preview=75053b63… ent=21aa4b34…
+          [portraits/unlock] delivered              preview=75053b63…
+```
+
+Eight seconds from checkout to clean image, both times. The joint that had
+failed every prior attempt — `unlock-confirm` reaching a deployment that
+carries `activateDiscoveryUnlock` — is the one that now holds.
+
+### What this run does NOT prove
+
+- **The 8-pack purchase and the crafting→landed UI transition were not
+  observed by CC.** The log watcher was armed late (two earlier attempts
+  failed silently: `vercel logs` is not a live stream in this CLI, and it
+  writes to stderr). Steps 1-6 rest on Rich's runtime observation alone.
+- **M2 did not reproduce, and that is not a fix.** Each unlock created
+  exactly one session. Nothing was changed in that path; a single clean run
+  does not retire the finding. M2 stays OPEN.
+
+---
+
 ## Standing Phase 0 parking lot
 
 Unchanged and still parked: `_recovery` phantom gitlinks and the two stale
