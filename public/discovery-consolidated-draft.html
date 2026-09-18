@@ -157,6 +157,12 @@ body{
   color:#f8f4eb; font-family:var(--sans); font-size:1rem; font-weight:600; cursor:pointer;
 }
 .pill-btn svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+/* __M1_HELP_TO_TOP__ The masthead's help door. Hidden on desktop, where the
+   .tour-fab circle is still the way in; shown from 1024 down, where that
+   circle is suppressed so nothing floats over the artwork. Square rather than
+   pill so a single glyph does not sit in a wide empty capsule. */
+.mh-help{ display:none; width:44px; padding:0; justify-content:center;
+  font-family:var(--serif); font-size:1.5rem; line-height:1 }
 
 .shell{ display:grid; grid-template-columns:var(--rail-w) 1fr; margin:0 auto; height:calc(100vh - var(--mh-h)) }
 
@@ -617,6 +623,64 @@ body{
    the next card's overlap at these angles. Scoped to Review only;
    Discovery/My Collection badges keep their top-right position. */
 #reviewGrid .card__badge{ left:8px; right:auto }
+
+/* __M1_REVIEW_MOBILE__ The stacked Review. layoutFans has been skipped and
+   its inline geometry cleared, so these rules are unopposed -- no !important
+   anywhere, which is the point of clearing rather than overriding.
+
+   .rv-stack  two across: 1 and 4 selections, artwork-first.
+   .rv-list   one per row: 8 and 16, where two columns of thumbnails would be
+              neither a grid to look at nor a list to scan. */
+#reviewGrid.rv-stack{
+  display:block; justify-content:flex-start; overflow-y:auto; overflow-x:hidden;
+  padding:14px var(--stage-pad-x) calc(150px + env(safe-area-inset-bottom,0px));
+}
+#reviewGrid.rv-stack #reviewFans{ gap:var(--card-gap) }
+#reviewGrid.rv-stack .fan-row{ overflow:visible; padding:0; height:auto }
+#reviewGrid.rv-stack .fan-inner{
+  position:static; height:auto; display:grid;
+  grid-template-columns:1fr 1fr; gap:var(--card-gap);
+}
+#reviewGrid.rv-stack .card.fan-card{
+  position:static; transform:none; transition:none;
+  width:auto; height:auto; aspect-ratio:var(--card-ar,.78);
+}
+/* The lift and the raised z-index belong to a deck. A flat grid has no
+   overlap to rise out of, and the shadow only muddied the tile. */
+#reviewGrid.rv-stack .card.fan-card:hover,
+#reviewGrid.rv-stack .card.fan-card:focus-visible,
+#reviewGrid.rv-stack .card.fan-card.is-front{ box-shadow:none; z-index:auto !important }
+/* Back to the corner it occupies everywhere else: nothing overlaps here. */
+#reviewGrid.rv-stack .card__badge{ left:auto; right:8px }
+
+/* Eight and sixteen: a row each. The thumbnail keeps the artwork present,
+   the name is the thing being scanned, and the remove control sits where the
+   thumb is not. */
+#reviewGrid.rv-list .fan-inner{ grid-template-columns:1fr; gap:8px }
+#reviewGrid.rv-list .card.fan-card{
+  aspect-ratio:auto; min-height:64px; border-radius:10px;
+  display:grid; grid-template-columns:56px 1fr auto; align-items:center; gap:12px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(215,189,137,.22);
+  padding:8px 10px;
+}
+#reviewGrid.rv-list .card.fan-card .card__art{
+  position:static; width:56px; height:56px; border-radius:8px;
+  background-size:cover; background-position:center top;
+}
+#reviewGrid.rv-list .card.fan-card .card__overlay{ display:none }
+#reviewGrid.rv-list .card__content{
+  position:static; left:auto; right:auto; bottom:auto; grid-column:2;
+}
+#reviewGrid.rv-list .card__content strong{
+  font-size:1.05rem; text-shadow:none; color:#f3ede1;
+}
+#reviewGrid.rv-list .card__badge{
+  position:static; grid-column:3; width:32px; height:32px; border-radius:8px;
+  background:rgba(0,0,0,.3);
+}
+/* An empty place in the list still has to be tappable and legible. */
+#reviewGrid.rv-list .card.fan-card.is-slot{ grid-template-columns:1fr; justify-items:center }
+#reviewGrid.rv-list .card.fan-card.is-slot .card__art{ width:auto; height:auto; background:none }
 .card{
   position:relative; border-radius:8px; overflow:hidden; cursor:pointer;
   border:1px solid rgba(88,65,42,.22);
@@ -925,6 +989,25 @@ body{
 .mc-pill.on{ background:var(--gold); border-color:var(--gold); color:#2a1f14; font-style:normal }
 .mc-pill .n{ font-size:.8em; opacity:.65; margin-left:5px }
 .mycoll__empty{ grid-column:1/-1; font-family:var(--serif); font-size:1.3rem; color:#e8ddc8; opacity:.8; padding:60px 0; text-align:center }
+/* __M1_PORTFOLIO_GROUPS__ The band that says these pieces were bought
+   together. Full width of the grid at every breakpoint, because a header
+   that sits in one column is a card, not a heading. */
+.mc-group{
+  grid-column:1/-1; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  padding:14px 2px 6px; border-bottom:1px solid rgba(215,189,137,.18); margin-bottom:4px;
+}
+.mc-group__name{ font-family:var(--serif); font-size:1.25rem; color:#f3ede1 }
+.mc-group__meta{ font-family:var(--sans); font-size:.86rem; color:var(--gold-soft); letter-spacing:.02em }
+/* Only while work is arriving: the bar is the answer to "how much of what I
+   paid for is here", and it is meaningless once everything has landed. */
+.mc-group__bar{ flex:1 1 120px; min-width:80px; height:4px; border-radius:2px;
+  background:rgba(215,189,137,.18); overflow:hidden }
+.mc-group__bar i{ display:block; height:100%; background:var(--gold); transition:width 400ms ease }
+@media (max-width:767px){
+  .mc-group{ padding:12px 2px 6px }
+  .mc-group__name{ font-size:1.1rem }
+  .mc-group__meta{ font-size:.8rem }
+}
 /* My Collection-specific wash -- two-color blend, per Rich's exact
    values, scoped to this screen only (not the shared .stage-frame
    Discovery/Review also use). */
@@ -1265,30 +1348,96 @@ body.is-lboxed{ overflow:hidden }
   }
   body.rail-open .rail-scrim{ opacity:1; pointer-events:auto; }
 
-  /* The collection bar, lifted out of the rail by the shim. */
+  /* __M1_ONE_RAIL__ (Rich's design pass, 2026-09-18). ONE RAIL, NOT A PILE.
+     The bar, the Curator button and the help circle were three separate
+     fixed-position things stacked over the artwork: .your-collection docked
+     at the bottom, .rail-fab floating 96px above it, .tour-fab a 65px circle
+     at bottom-centre. The approved rail is a single row --
+
+         [ ✦ Curator ]   [ ——— 4 of 16 ]   [ Review → ]
+
+     -- so the Curator button moves INSIDE the bar (the shim appends it) and
+     help moves to the masthead. Nothing floats over the grid any more.
+
+     Deliberately NOT flex-wrap: the three parts stay on one line at every
+     width down to 360, because a rail that reflows to two rows eats the
+     artwork it is supposed to sit under. The progress column is the one that
+     gives, via min-width:0. */
   .your-collection.is-docked{
     position:fixed; left:0; right:0; bottom:0; z-index:200;
     margin:0; border-radius:0;
-    padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));
     background:var(--masthead); color:#f3ede1;
     box-shadow:0 -6px 22px rgba(0,0,0,.3);
-    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    display:flex; align-items:center; gap:10px; flex-wrap:nowrap;
   }
-  .your-collection.is-docked .tier{ flex:1 1 190px; min-width:0; padding-top:0; }
-  .your-collection.is-docked .your-collection__next{ flex:1 1 100%; order:3; margin:0; font-size:.82rem; }
-  .your-collection.is-docked .btn-review{ flex:0 0 auto; min-height:46px; padding:12px 18px; margin:0; }
+  /* The head ("Your Collection" + icon) is the sheet's title, not the rail's:
+     in a single row it is a label competing with the count beside it. */
+  .your-collection.is-docked .your-collection__head,
+  .your-collection.is-docked .your-collection__count{ display:none; }
+  .your-collection.is-docked .tier{ flex:1 1 auto; min-width:0; padding-top:0; margin:0; column-gap:6px; }
+  /* Compact, not amputated. The approved rail shows a slim progress read-out
+     rather than four 36px discs -- but the discs are CONTROLS (data-trim /
+     data-fill jump the selection to a tier), and the bar is the only place
+     they exist once it leaves the sheet. So they shrink to 22px and keep
+     working, instead of being hidden for the look of the thing. Flagged for
+     Rich: the mockup's rail may intend them gone, which would need a new home
+     for trim/fill. */
+  .your-collection.is-docked .tier .mark .t{ width:22px; height:22px; font-size:.78rem; border-width:1.5px; }
+  .your-collection.is-docked .tier .mark .p{ font-size:.58rem; }
+  .your-collection.is-docked .tier .mark{ gap:1px; }
+  /* The hint line is the rail's only wrapping element, and it is allowed to
+     vanish rather than push the row taller. */
+  .your-collection.is-docked .your-collection__next{ display:none; }
+  .your-collection.is-docked .btn-review{ flex:0 0 auto; min-height:46px; padding:12px 16px; margin:0; }
 
-  /* Curator button: opens the sheet. Same 44px floor the mobile mock used. */
-  .rail-fab{
-    position:fixed; right:14px; z-index:201;
-    bottom:calc(96px + env(safe-area-inset-bottom,0px));
-    min-width:52px; min-height:52px; padding:0 16px; border-radius:26px;
-    background:var(--oxblood); color:#f3ede1; border:1px solid rgba(215,189,137,.5);
-    font-family:var(--sans); font-weight:600; font-size:.9rem; letter-spacing:.02em;
-    box-shadow:0 6px 18px rgba(0,0,0,.3); cursor:pointer;
-    display:flex; align-items:center; gap:8px;
+  /* __M1_REVIEW_CTA__ The rail's Continue, proxied into the docked bar.
+     Styled as .btn-review's twin so the right-hand action looks the same
+     wherever the customer is in the journey. */
+  .rail-go{
+    flex:0 0 auto; min-height:46px; padding:12px 16px; margin:0;
+    border-radius:8px; cursor:pointer; white-space:nowrap;
+    font-family:var(--serif); font-size:1.05rem; font-style:italic;
+    background:#4a3a32; color:#cdbfae; border:1px solid rgba(215,189,137,.28);
   }
-  body.rail-open .rail-fab{ display:none; }
+  .rail-go.is-ready{ background:var(--oxblood); color:#f3ede1; border-color:var(--oxblood); }
+  .rail-go:disabled{ opacity:.55; cursor:not-allowed; }
+  /* On Review the tier discs describe Discovery, and the bar's own Review
+     button would send the customer where they already are. The Curator and
+     the Continue are the two things that still mean something here. */
+  body.is-review .your-collection.is-docked .btn-review,
+  body.is-review .your-collection.is-docked .tier{ display:none; }
+  body.is-review .your-collection.is-docked .rail-go{ flex:1 1 auto; }
+
+  /* Curator button. Docked INTO the rail by the shim, so it is a member of
+     the row rather than something floating above it. */
+  .rail-fab{
+    flex:0 0 auto; min-height:46px; padding:8px 14px; border-radius:23px;
+    background:rgba(255,255,255,.06); color:#f3ede1;
+    border:1px solid rgba(215,189,137,.42);
+    font-family:var(--sans); font-weight:600; font-size:.86rem; letter-spacing:.02em;
+    cursor:pointer; display:flex; align-items:center; gap:7px; white-space:nowrap;
+  }
+  .rail-fab .rail-fab__mark{ color:var(--gold-soft); font-size:1.05em; line-height:1 }
+  body.rail-open .rail-fab{ opacity:.45; }
+
+  /* __M1_HELP_TO_TOP__ The floating help circle is the masthead pill here. */
+  .tour-fab{ display:none; }
+  .mh-help{ display:flex; }
+
+  /* __M1_MAP_CLOSED__ The minimap starts closed on every touch width, not
+     just phones. It has been hidden below 767 since the sheet was built --
+     .icon-nav is the room switcher there -- and the tablet sheet was the only
+     place it still opened by default, where it pushed Pick for Me and Curated
+     below the fold on the screen whose whole job is to offer them.
+
+     PARTIAL against the approved design, and deliberately so: the mockup
+     shows a compact "Effect Map / See All" that expands in place. Building
+     that disclosure means injecting a control into a rail that five separate
+     call sites rebuild with innerHTML, which is how the .your-collection
+     double-render bug happened. Closed-by-default is the half that is
+     certainly right; the expandable map is flagged for Rich. */
+  .minimap{ display:none; }
   .icon-nav{ overflow-x:auto; -webkit-overflow-scrolling:touch; padding:10px 14px; gap:10px; }
   .icon-nav::-webkit-scrollbar{ display:none }
   .mycoll{ width:100vw; }
@@ -1312,9 +1461,23 @@ body.is-lboxed{ overflow:hidden }
   .icon-nav{ height:auto; padding:8px 12px; }
   .icon-nav__item{ flex:0 0 auto; min-height:44px; padding:6px 10px; }
 
-  /* Touch targets. .card__badge is the tick; the mobile mock used 26px
-     and a 44px control minimum, kept here. */
-  .card__badge{ width:28px; height:28px; }
+  /* __M1_QUIET_MARKS__ (Rich's design pass, 2026-09-18). Smaller, quieter,
+     checkbox-like: the approved grid puts the artwork first and the selection
+     marker second. A 28px filled disc read as a button competing with the
+     picture; a 20px rounded square reads as a checkbox and gets out of the
+     way.
+
+     The VISUAL shrinks; the TARGET does not. ::after carries a 44px hit area
+     centred on the mark, so the tap stays within guidance while the drawn
+     control is small. */
+  .card__badge{
+    width:20px; height:20px; border-radius:5px; font-size:11px;
+    border-width:1.5px; background:rgba(0,0,0,.28);
+  }
+  .card__badge::after{
+    content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:44px; height:44px;
+  }
   .card__content strong{ font-size:.9rem; }
   .help-card{ min-height:52px; }
   .btn-review, .btn-create{ min-height:48px; }
@@ -1546,15 +1709,26 @@ body.is-lboxed{ overflow:hidden }
 }
 .aspect-opt.is-chosen .aspect-shape{ background:linear-gradient(150deg,#a2705f,var(--oxblood)) }
 .aspect-opt__label{ font-family:var(--serif); font-size:1.5rem; color:var(--ink); margin:0; line-height:1 }
-.aspect-opt__ratio{ font-family:var(--sans); font-size:12px; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--brass); margin:0 }
+/* __FORMAT_INTENT__ The figure ("1:1") is gone; this says what the shape is
+   FOR. Sentence case and 16px because it is a description a customer reads,
+   not a specification label to scan -- the uppercase 12px brass treatment it
+   replaces was right for a ratio and wrong for a sentence. */
+.aspect-opt__say{ font-family:var(--sans); font-size:16px; line-height:1.35;
+  color:#6f6350; margin:0; text-align:center; max-width:19ch }
 @media (max-width:767px){ .aspect-floor{ padding:14px var(--stage-pad-x)
   calc(160px + env(safe-area-inset-bottom,0px)) }
   .aspect-gallery{ gap:22px }
   .aspect-gallery__title{ font-size:2rem }
   .aspect-gallery__say{ font-size:1.15rem; margin-top:-14px }
-  .aspect-row{ gap:var(--card-gap) }
-  .aspect-opt{ padding:14px 14px 12px; gap:12px } }
+  /* __FORMAT_INTENT__ Phone: two tiles across, as the approved mockup draws
+     them, instead of a flex row that wraps one option onto a lonely line.
+     align-items:stretch so the three tiles share a height despite the
+     shapes inside them being different sizes. */
+  .aspect-row{ display:grid; grid-template-columns:1fr 1fr; gap:var(--card-gap);
+    align-items:stretch; width:100% }
+  .aspect-opt{ padding:14px 14px 12px; gap:12px; justify-content:flex-end }
+  .aspect-opt__label{ font-size:1.25rem }
+  .aspect-opt__say{ font-size:15px } }
 /* ── Feedback panel ("Something off?") ── */
 .lcf-scarab{ width:40px; height:40px; border-radius:50%; border:1px solid rgba(215,189,137,.35); background:rgba(255,255,255,.04); display:grid; place-items:center; cursor:pointer; color:var(--lcf-gold,#b68a53); transition:background 160ms ease, transform 160ms ease }
 .lcf-scarab:hover{ background:rgba(182,138,83,.16); transform:translateY(-1px) }
@@ -2043,6 +2217,11 @@ body.is-lboxed{ overflow:hidden }
       </svg>
     </button>
     <button class="pill-btn" id="mhName" onclick="if(!ME && typeof openSignin==='function') openSignin()">Sign in</button>
+    <!-- __M1_HELP_TO_TOP__ (Rich's design pass, 2026-09-18). The same tour
+         .tour-fab starts, reached from the masthead instead of a 65px circle
+         parked over the artwork at bottom-centre. Phone and tablet only; the
+         desktop circle is unchanged and this is hidden there. -->
+    <button class="pill-btn mh-help" id="mhHelp" type="button" aria-label="Show me how this works">?</button>
     <button class="pill-btn">
       <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
       <span>Cart</span><span>0</span>
@@ -2125,8 +2304,8 @@ body.is-lboxed{ overflow:hidden }
   <div class="stage-col aspect-view" id="aspectView">
     <main class="aspect-floor stage-frame" id="aspectFloor">
       <div class="aspect-gallery">
-        <h2 class="aspect-gallery__title">Choose Your Format</h2>
-        <p class="aspect-gallery__say">Choose the shape of your finished artwork.</p>
+        <h2 class="aspect-gallery__title">Where will your portrait live?</h2>
+        <p class="aspect-gallery__say">Choose the format that fits your vision.</p>
         <div class="aspect-row" id="aspectRow"></div>
       </div>
     </main>
@@ -4599,6 +4778,17 @@ function renderReviewRail(){
   paintTier(document.getElementById('tierR'));
   fitStampThumb();
   if (ANALYZE_RESULT) focusStampThumb();
+  /* __M1_REVIEW_CTA__ This rebuild mints a fresh .btn-create, so the docked
+     rail's proxy must be re-synced against it -- otherwise every Review
+     repaint, and every card removal, leaves the phone's Continue showing the
+     previous state. restoreDiscoveryRail has always called this; Review
+     never did, because until now nothing in the rail needed re-reading.
+
+     The `typeof window` guard is not defensive noise: post-purchase-discovery
+     .test.ts lifts this function into a bare sandbox to assert the rail's
+     markup, and a bare `window` reference throws there -- a rail test failing
+     on a dock call would be a confusing way to learn that. */
+  if (typeof window !== 'undefined' && typeof window.__railDock === 'function') window.__railDock();
 }
 
 // ── Fan layout (locked spec, approved 1 Sep) ──────────────────────
@@ -4817,7 +5007,49 @@ function reviewArtReport(){
 }
 window.reviewArtReport = reviewArtReport;
 
+/* __M1_REVIEW_MOBILE__ (Rich's design pass, 2026-09-18). THE DECK IS A
+   DESKTOP IDEA. The fan is a stack of overlapping cards bowed across a row --
+   beautiful at 1440, and on a phone it became a horizontally scrolling pile
+   that answered none of the four questions Review has to answer: what did I
+   choose, how many, can I change them, what next.
+
+   The renderer is NOT forked. renderReviewGrid builds exactly the same cards,
+   with the same remove handlers and the same art resolution; only the
+   POSITIONING is skipped. layoutFans is the one place that writes the fan's
+   inline geometry, so guarding it here is enough -- and applyFanTransform
+   already no-ops without el._layout, so nothing downstream needs to know.
+
+   Below 1024 the cards flow: two across for 1 and 4, a scannable row-list at
+   8 and 16 where two columns of thumbnails would be neither. */
+function reviewIsStacked(){
+  return window.matchMedia('(max-width:1024px)').matches;
+}
+
+/* The fan's inline styles outrank any stylesheet, so a stacked Review has to
+   take them off rather than try to override them. Called whenever the layout
+   is skipped, which includes dragging a desktop window down past 1024. */
+function clearFanGeometry(){
+  (fanState.rows || []).forEach(function(r){
+    if (!r) return;
+    if (r.row){ r.row.style.height = ''; r.row.classList.remove('scrollmode'); }
+    if (r.inner){ r.inner.style.width = ''; r.inner.style.height = ''; }
+  });
+  document.querySelectorAll('#reviewGrid .fan-card').forEach(function(c){
+    c.style.transform = ''; c.style.left = ''; c.style.top = '';
+    c.style.width = ''; c.style.height = ''; c.style.zIndex = '';
+    c.classList.remove('is-front');
+    delete c._layout;
+  });
+}
+
 function layoutFans(){
+  /* Set on every layout pass, not just at render, so crossing the breakpoint
+     re-dresses a Review that is already on screen. */
+  var stacked = reviewIsStacked();
+  reviewGrid.classList.toggle('rv-stack', stacked);
+  reviewGrid.classList.toggle('rv-list', stacked && fanState.tier >= 8);
+  if (stacked){ clearFanGeometry(); return; }
+
   var ar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-ar') || .75);
   var rows = fanState.fans.length || 1;
   // Height-driven (2 Sep): tier width is a ceiling; the real width is
@@ -5288,6 +5520,13 @@ function endTour(){
 }
 
 document.getElementById('tourFab').addEventListener('click', startTour);
+/* __M1_HELP_TO_TOP__ One tour, two doors: the desktop circle and the
+   masthead pill that replaces it below 1024. Same function, so the tour
+   cannot drift between them. */
+(function(){
+  var h = document.getElementById('mhHelp');
+  if (h) h.addEventListener('click', startTour);
+})();
 window.addEventListener('resize', function(){
   if (tourOverlay.classList.contains('active')) renderTourStep();
 });
@@ -6054,10 +6293,22 @@ window.startOver = startOver;
    KNOWN LIMITATION, accepted going in: portraits/generate/route.ts:319
    sets aspect_ratio from framing and ignores a disagreeing client
    value by design. This travels request-time exactly like pose. */
+/* __FORMAT_INTENT__ (Rich's design pass, 2026-09-18). The screen asks where
+   the portrait will LIVE, so each option carries a plain description instead
+   of the figure. The ratios are unchanged and still what reaches the server:
+   this is language, not rendering.
+
+   MOBILE (9:16) IS DELIBERATELY ABSENT. The approved mockup offers it; the
+   database does not. Migration 030 constrains aspect_ratio to '1:1','3:4',
+   '4:3', and normalizeAspectChoice (portfolio-checkout.ts:85) records
+   anything else as null with a warning nobody reads -- so a customer
+   choosing Mobile would buy a portfolio with no ratio at all. Mobile is
+   matrix B2, "Native NB2 output, not crop", and arrives with Section B.
+   Rich's ruling 2026-09-18: not silently mapped, faked, cropped or nulled. */
 var ASPECTS = [
-  { id:'square',    ratio:'1:1', label:'Square',    w:132, h:132 },
-  { id:'portrait',  ratio:'3:4', label:'Portrait',  w:114, h:152 },
-  { id:'landscape', ratio:'4:3', label:'Landscape', w:152, h:114 }
+  { id:'square',    ratio:'1:1', label:'Square',    say:'Balanced for sharing and display', w:132, h:132 },
+  { id:'portrait',  ratio:'3:4', label:'Portrait',  say:'Classic vertical artwork',         w:114, h:152 },
+  { id:'landscape', ratio:'4:3', label:'Landscape', say:'Wide, cinematic artwork',          w:152, h:114 }
 ];
 var ASPECT = 'portrait';       /* the stated default until a photo says otherwise */
 var ASPECT_FORCED = false;     /* true once the customer picks one themselves */
@@ -6099,9 +6350,9 @@ function renderAspects(){
     b.innerHTML =
       '<span class="aspect-shape" style="width:' + a.w + 'px;height:' + a.h + 'px"></span>' +
       '<span class="aspect-opt__label"></span>' +
-      '<span class="aspect-opt__ratio"></span>';
+      '<span class="aspect-opt__say"></span>';
     b.querySelector('.aspect-opt__label').textContent = a.label;
-    b.querySelector('.aspect-opt__ratio').textContent = a.ratio;
+    b.querySelector('.aspect-opt__say').textContent = a.say;
     b.addEventListener('click', function(){ chooseAspect(a.id); });
     row.appendChild(b);
   });
@@ -7496,7 +7747,54 @@ function renderMyCollectionGrid(){
       ? '<div class="mycoll__empty">Creating your collection…<br>Your images will appear here as they’re ready.</div>'
       : '<div class="mycoll__empty">Nothing here yet under this view.</div>';
   }
+  /* __M1_PORTFOLIO_GROUPS__ (Rich's design pass, 2026-09-18). THE COLLECTION
+     IS THE OBJECT, NOT THE CARD. Sixteen pieces bought together used to land
+     as sixteen loose tiles among everything else the account owned, so a
+     customer had no way to see that they belonged to one another -- and while
+     a run was crafting, no way to tell how much of it had arrived.
+
+     Each portfolio now opens with a header carrying its own counts: how many
+     pieces, how many ready, how many still crafting, how many unlocks remain.
+     The cards below it are unchanged, in the same order mcVisible already
+     gives them, so paging, filtering and the unlock basket all behave exactly
+     as before.
+
+     NO DATE. The approved mockup heads each group "Created September 17,
+     2026". GET /api/v1/portfolios returns id, series, size and status --
+     created_at never reaches the browser. Rather than invent a date or fetch
+     one to decorate a header, the group is named by what it is. Flagged for
+     Rich: a date needs the route to return it.
+
+     Shelf pieces carry no portfolioId and are not a portfolio; they are left
+     ungrouped rather than gathered under a heading that would imply they were
+     bought together. */
+  var lastGroup = null;
   vis.forEach(function(p){
+    var gid = p.portfolioId || null;
+    if (gid !== lastGroup){
+      lastGroup = gid;
+      if (gid){
+        var mates = vis.filter(function(x){ return x.portfolioId === gid; });
+        var ready = mates.filter(function(x){ return !x.crafting; }).length;
+        var making = mates.length - ready;
+        var owned = mates.filter(function(x){ return !x.crafting && !x.locked; }).length;
+        var left = includedRemainingFor(p);
+        var bits = [mates.length + (mates.length === 1 ? ' piece' : ' pieces')];
+        if (making) bits.push(ready + ' of ' + mates.length + ' ready');
+        else if (owned) bits.push(owned + ' owned');
+        if (left) bits.push(left + (left === 1 ? ' unlock available' : ' unlocks available'));
+        var head = document.createElement('div');
+        head.className = 'mc-group' + (making ? ' is-making' : '');
+        head.innerHTML =
+          '<span class="mc-group__name"></span><span class="mc-group__meta"></span>' +
+          (making ? '<span class="mc-group__bar"><i style="width:' +
+              Math.round(ready / Math.max(1, mates.length) * 100) + '%"></i></span>' : '');
+        head.querySelector('.mc-group__name').textContent =
+          making ? 'Crafting your collection' : 'Your collection';
+        head.querySelector('.mc-group__meta').textContent = bits.join(' · ');
+        mycollGrid.appendChild(head);
+      }
+    }
     var el = document.createElement('div');
     el.className = 'card' + (p.locked ? ' is-locked' : '') + (p.crafting ? ' is-crafting' : '') + (unlockSelection[p.key] ? ' is-selected' : '');
     if (p.crafting){
@@ -7682,8 +7980,48 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
   fab.className = 'rail-fab';
   fab.type = 'button';
   fab.setAttribute('aria-label', 'Open the Curator panel');
-  fab.innerHTML = '<span aria-hidden="true">\u2726</span><span>Curator</span>';
+  fab.innerHTML = '<span class="rail-fab__mark" aria-hidden="true">\u2726</span><span>Curator</span>';
   document.body.appendChild(fab);
+
+  /* __M1_REVIEW_CTA__ (Rich's design pass, 2026-09-18). THE WAY FORWARD MUST
+     BE ON SCREEN. renderReviewRail puts "Next: Select A Shape" (.btn-create)
+     inside the rail -- which below 1024 is a bottom sheet that is CLOSED by
+     default. So on a phone, Review's only continuation was hidden behind a
+     Curator button that does not look like a next step. The approved rail
+     carries Continue on the right, and that is what this puts there.
+
+     A PROXY, NOT A MOVE. The rail is rebuilt with innerHTML in five places,
+     and renderReviewRail mints a fresh .btn-create every time Review repaints
+     or a card is removed. Relocating the real button would hand ownership of
+     a rebuilt element to the shim and leave the rail's own markup holding a
+     stale one -- the same fault the .your-collection re-adoption above exists
+     to undo. The proxy just forwards the click and mirrors the state, so the
+     real button stays where the renderer expects it.
+
+     Label comes from the real button so the two cannot drift; disabled state
+     follows .on, which is how the renderer already expresses "ready". */
+  var go = document.createElement('button');
+  go.className = 'rail-go';
+  go.type = 'button';
+  go.addEventListener('click', function(){
+    var real = rail.querySelector('.btn-create');
+    if (real) real.click();
+  });
+
+  function syncGo(small){
+    var real = rail.querySelector('.btn-create');
+    /* Only on a screen that docks, only when Review has actually put a
+       Continue in the rail, and only while the bar is docked to hold it. */
+    if (!small || !real || !coll.classList.contains('is-docked')){
+      if (go.parentNode) go.parentNode.removeChild(go);
+      return;
+    }
+    go.textContent = real.textContent || 'Continue';
+    var ready = real.classList.contains('on');
+    go.disabled = !ready;
+    go.classList.toggle('is-ready', ready);
+    if (go.parentNode !== coll) coll.appendChild(go);
+  }
 
   function openRail(){ document.body.classList.add('rail-open'); }
   function closeRail(){ document.body.classList.remove('rail-open'); }
@@ -7713,6 +8051,10 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
       document.body.appendChild(coll);
       coll.classList.add('is-docked');
     } else if (!small && coll.parentNode === document.body){
+      /* __M1_ONE_RAIL__ The fab rides inside the bar, so it has to come out
+         before the bar goes home -- otherwise it travels back into the rail
+         and appears inside the Curator panel it exists to open. */
+      if (fab.parentNode === coll) document.body.appendChild(fab);
       /* Re-plant the marker if a rebuild took it, rather than skipping the
          move: skipping is what left the bar in <body> for the rest of the
          session, because no later call can put it back either. */
@@ -7721,8 +8063,17 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
       coll.classList.remove('is-docked');
       closeRail();
     }
+    /* __M1_ONE_RAIL__ The Curator button is the rail's left-hand member, so
+       it is planted FIRST inside the docked bar. Re-asserted on every apply()
+       because the rail is rebuilt with innerHTML in five places and each
+       rebuild mints a fresh .your-collection -- the same reason the bar
+       itself is re-adopted above. */
+    if (small && coll.classList.contains('is-docked') && fab.parentNode !== coll){
+      coll.insertBefore(fab, coll.firstChild);
+    }
     fab.style.display = small ? '' : 'none';
     scrim.style.display = small ? '' : 'none';
+    syncGo(small);
   }
   apply();
   window.addEventListener('resize', apply);
