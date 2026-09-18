@@ -17,6 +17,7 @@ import { getStripe }                         from '@/lib/store/stripe'
 import { confirmPurchase, handlePaymentFailure } from '@/lib/store/entitlements'
 import { supabaseAdmin }                     from '@/lib/supabase'
 import { activatePortfolio }                 from '@/lib/store/portfolio-checkout'
+import { logIncident }                       from '@/lib/errors/log-incident'
 
 // Stripe needs the raw body to validate the signature. Disable parsing.
 // In Next.js App Router, request.text() returns the raw body as a string —
@@ -54,6 +55,18 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[stripe-webhook] dispatch failed:', event.type, event.id, msg)
+    // "Logged for manual review" was a console line nobody reviews. The event
+    // type and id belong in correlation, not summary: summary feeds the
+    // fingerprint, and putting an event id there would write a fresh incident
+    // row per webhook instead of one with a count.
+    await logIncident({
+      surface:   'webhook',
+      component: 'webhooks/stripe',
+      severity:  'fatal',
+      summary:   'Stripe webhook dispatch failed after the payment was accepted',
+      error:      err,
+      correlation: { event_type: event.type, event_id: event.id },
+    })
   }
 
   return NextResponse.json({ received: true })

@@ -28,6 +28,7 @@ import { NextResponse } from 'next/server'
 import { getUser } from '@/lib/store/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import { claimLaunchGrant } from '@/lib/v1/launch/claim-grant'
+import { touchIdentity } from '@/lib/v1/identity/touch-identity'
 
 export async function GET() {
   const user = await getUser()
@@ -36,6 +37,15 @@ export async function GET() {
   // The claim runs before the read, so an invited person's first ever
   // /auth/me already answers with their grant in the balance.
   await claimLaunchGrant(supabaseAdmin, user)
+
+  // SECOND EXCEPTION TO READ-ONLY, 2026-09-18: identity_map is kept current
+  // here, for the same reason the grant is claimed here — this is the read
+  // every surface makes on boot, so recording identity here is self-healing
+  // and covers restored sessions as well as fresh sign-ins. Migration 014
+  // created the table with a backfill and no writer, which is why the control
+  // panel reported 0 new customers for every window since. Idempotent on
+  // owner_key; never throws.
+  await touchIdentity(supabaseAdmin, user)
 
   let credits: number | null = null
   try {

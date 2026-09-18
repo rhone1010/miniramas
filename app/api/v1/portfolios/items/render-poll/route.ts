@@ -43,6 +43,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { checkInternalAuth } from '@/lib/store/internal-auth'
 import { renderOnePortfolioItem } from '@/lib/store/portfolio-render'
+import { logIncident } from '@/lib/errors/log-incident'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -167,6 +168,17 @@ export async function GET(req: NextRequest) {
          tick — decideRetry still governs how many real attempts it gets. */
       failed++
       console.error(`[render-poll] render threw for ${item.id}:`, err)
+      // A cron path: when this fails nobody is watching and nobody is told.
+      // item.id goes in correlation, not summary — this is inside a loop and a
+      // per-item fingerprint would flood error_log instead of counting.
+      await logIncident({
+        surface:   'engine',
+        component: 'portfolios/render-poll',
+        severity:  'error',
+        summary:   'Portfolio item render threw and was returned to pending',
+        error:      err,
+        correlation: { item_id: item.id },
+      })
       await supabaseAdmin
         .from('portfolio_items')
         .update({ status: 'pending' })

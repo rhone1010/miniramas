@@ -66,6 +66,7 @@ import {
   canFulfil,
 } from '@/lib/v1/print/db'
 import { getSku } from '@/lib/v1/print/sku-map'
+import { logIncident } from '@/lib/errors/log-incident'
 
 export const runtime = 'nodejs'
 
@@ -117,6 +118,17 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error('[print-webhook] markPaid failed:', err)
     // Don't bail — keep going and update status further down.
+    // Stripe has the money and the database does not know it. Nothing else
+    // recorded that, and the request deliberately continues past it.
+    await logIncident({
+      surface:   'webhook',
+      component: 'print/webhook.markPaid',
+      severity:  'fatal',
+      summary:   'Print order was paid at Stripe but could not be marked paid',
+      error:      err,
+      ownerKey:   order.owner_key,
+      correlation: { stripe_session_id: session.id },
+    })
   }
 
   // ── FULFILMENT GATE ────────────────────────────────────────
@@ -139,6 +151,18 @@ export async function POST(req: Request) {
     )
     await markWithheld(session.id, why).catch(err =>
       console.error('[print-webhook] markWithheld failed:', err))
+    // A paid order nobody will print. The reason goes in ownerKey and context,
+    // never in summary — summary feeds the fingerprint, so an account id there
+    // would split one recurring incident into one row per customer.
+    await logIncident({
+      surface:   'webhook',
+      component: 'print/webhook.withheld',
+      severity:  'warn',
+      summary:   'Paid print order withheld from the lab because the account is not cleared for fulfilment',
+      ownerKey:   order.owner_key,
+      correlation: { stripe_session_id: session.id },
+      context:    { reason: why, items: order.items.length, retail_total_cents: order.retail_total_cents },
+    })
     return NextResponse.json({ ok: true, withheld: true, reason: why })
   }
 
@@ -179,6 +203,18 @@ export async function POST(req: Request) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[print-webhook] asset pipeline failed:', msg)
     await markError(session.id, `asset_pipeline: ${msg}`).catch(() => {})
+    // Paid, and now it will not manufacture. The console line was the only
+    // record of that until this call.
+    await logIncident({
+      surface:   'webhook',
+      component: 'print/webhook.asset-pipeline',
+      severity:  'fatal',
+      summary:   'Paid print order failed in the asset pipeline and was not sent to the lab',
+      error:      err,
+      ownerKey:   order.owner_key,
+      correlation: { stripe_session_id: session.id },
+      context:    { items: order.items.length, retail_total_cents: order.retail_total_cents },
+    })
     return NextResponse.json({ ok: false, error: msg })
   }
 
@@ -215,6 +251,16 @@ export async function POST(req: Request) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[print-webhook] Prodigi order placement failed:', msg)
     await markError(session.id, `prodigi: ${msg}`).catch(() => {})
+    await logIncident({
+      surface:   'webhook',
+      component: 'print/webhook.prodigi',
+      severity:  'fatal',
+      summary:   'Paid print order was not accepted by Prodigi',
+      error:      err,
+      ownerKey:   order.owner_key,
+      correlation: { stripe_session_id: session.id },
+      context:    { items: prodigiItems.length, retail_total_cents: order.retail_total_cents },
+    })
     return NextResponse.json({ ok: false, error: msg })
   }
 }

@@ -60,6 +60,7 @@ import {
 } from '@/lib/v1/portraits/portraits-shared'
 
 import { classifySubject, decideRedirect } from '@/lib/shared/subject-redirect'
+import { logIncident } from '@/lib/errors/log-incident'
 import { loadQaSettings, startQaEntry, type QaEntry } from '@/lib/shared/qa-log'
 import { applyQaOverride, qaOverrideAllowed } from '@/lib/shared/qa-override'
 // NOTE: scoreIntake/scoreAesthetic + MIN_LONG_EDGE_PX currently live in
@@ -351,6 +352,16 @@ async function generatePortrait(
       }
     } catch (e) {
       console.error('[portraits/generate] age gate FAILED OPEN —', e)
+      // The comment above says the outage must not silently become a policy.
+      // A console line is silent. No image bytes go into this payload.
+      await logIncident({
+        surface:   'engine',
+        component: 'portraits/age-gate',
+        severity:  'fatal',
+        summary:   'Age gate failed open — a craft proceeded without the check',
+        error:      e,
+        series:     body.series ?? null,
+      })
     }
 
     const generateRequest: PortraitsGenerateRequest = {
@@ -634,6 +645,19 @@ async function generatePortrait(
       const persisted = await persistAndConsume(grantDb, grant, result.image_b64)
       if (!persisted.ok) {
         console.error(`[portraits/generate] canonical result not persisted for grant ${grant.id}: ${persisted.reason}`)
+        // A paid generation that produced an image and did not deliver it.
+        // grant.id goes in correlation, not summary — summary feeds the
+        // fingerprint and an id there is one incident row per craft.
+        await logIncident({
+          surface:   'route',
+          component: 'portraits/generate.persist',
+          severity:  'fatal',
+          summary:   'Paid craft produced an image that could not be persisted',
+          ownerKey:   grant.ownerKey,
+          preset:     grant.preset,
+          correlation: { grant_id: grant.id },
+          context:    { reason: persisted.reason },
+        })
         return NextResponse.json({ error: 'result_persist_failed', retryable: true }, { status: 503 })
       }
       result.image_b64 = persisted.imageB64
@@ -646,6 +670,20 @@ async function generatePortrait(
     const msg = e?.message || 'unknown error'
     const durationMs = Date.now() - t0
     console.error(`[portraits/generate] failed in ${durationMs}ms: ${msg}`)
+    // The catch-all. Wired after the specific paths above so their components
+    // win the fingerprint and this does not absorb them. qa and the signed-in
+    // user are both declared inside the try above and are out of scope here,
+    // so this carries what it can reach rather than hoisting either.
+    await logIncident({
+      surface:   'route',
+      component: 'portraits/generate',
+      severity:  'error',
+      summary:   'Craft request failed',
+      error:      e,
+      series:     body?.series ?? null,
+      ownerKey:   grant?.ownerKey ?? null,
+      context:    { duration_ms: durationMs },
+    })
     return NextResponse.json({ error: msg, duration_ms: durationMs }, { status: 500 })
   }
 }
