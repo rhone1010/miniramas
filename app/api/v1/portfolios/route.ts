@@ -10,9 +10,14 @@ export async function GET() {
   const user = await getUser()
   if (!user) return NextResponse.json({ portfolios: [] })
 
+  /* created_at added 2026-09-18. My Collection groups pieces by portfolio and
+     the approved board heads each group with the date it was made -- which
+     the browser had no way to know, because this route returned everything
+     about a portfolio except when it happened. It was already the ORDER BY,
+     so the column was being read and then dropped on the way out. */
   const { data, error } = await supabaseAdmin
     .from('portfolios')
-    .select('id, series, size, status')
+    .select('id, series, size, status, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
   if (error) {

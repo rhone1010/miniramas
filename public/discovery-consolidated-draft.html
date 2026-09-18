@@ -6298,17 +6298,19 @@ window.startOver = startOver;
    of the figure. The ratios are unchanged and still what reaches the server:
    this is language, not rendering.
 
-   MOBILE (9:16) IS DELIBERATELY ABSENT. The approved mockup offers it; the
-   database does not. Migration 030 constrains aspect_ratio to '1:1','3:4',
-   '4:3', and normalizeAspectChoice (portfolio-checkout.ts:85) records
-   anything else as null with a warning nobody reads -- so a customer
-   choosing Mobile would buy a portfolio with no ratio at all. Mobile is
-   matrix B2, "Native NB2 output, not crop", and arrives with Section B.
-   Rich's ruling 2026-09-18: not silently mapped, faked, cropped or nulled. */
+   MOBILE IS REAL, AS OF 2026-09-18. It was withheld one pass because the
+   database allowed three ratios and normalizeAspectChoice recorded anything
+   else as null -- a customer choosing Mobile would have bought a portfolio
+   with no ratio at all, silently. Section B's plumbing landed with this
+   change: migration 033 widens the constraint, PORTRAIT_OUTPUT_ASPECTS
+   carries 9:16, and a 9:16 render appends PHONE_COMPOSITION so the subject
+   sits low with a quiet upper third. Native NB2 output, not a crop of 3:4
+   and not an alias. */
 var ASPECTS = [
-  { id:'square',    ratio:'1:1', label:'Square',    say:'Balanced for sharing and display', w:132, h:132 },
-  { id:'portrait',  ratio:'3:4', label:'Portrait',  say:'Classic vertical artwork',         w:114, h:152 },
-  { id:'landscape', ratio:'4:3', label:'Landscape', say:'Wide, cinematic artwork',          w:152, h:114 }
+  { id:'portrait',  ratio:'3:4',  label:'Portrait',  say:'Classic vertical artwork',         w:114, h:152 },
+  { id:'square',    ratio:'1:1',  label:'Square',    say:'Balanced for sharing and display', w:132, h:132 },
+  { id:'landscape', ratio:'4:3',  label:'Landscape', say:'Wide, cinematic artwork',          w:152, h:114 },
+  { id:'mobile',    ratio:'9:16', label:'Mobile',    say:'Made for your phone',              w:86,  h:152 }
 ];
 var ASPECT = 'portrait';       /* the stated default until a photo says otherwise */
 var ASPECT_FORCED = false;     /* true once the customer picks one themselves */
@@ -6974,6 +6976,13 @@ function renderCollection(){
         if (!d.portfolios.length) return [];
         activateIfStalled(d.portfolios);
         dispatchIfGenerating(d.portfolios);
+        /* __M1_PORTFOLIO_GROUPS__ The list route now returns created_at, so a
+           group can be headed with the day it was made rather than a generic
+           name. Kept here, keyed by id, because loadPortfolio reads /status
+           and /status has never carried it. */
+        d.portfolios.forEach(function(p){
+          if (p && p.id && p.created_at) PORTFOLIO_MADE[p.id] = p.created_at;
+        });
         return Promise.all(d.portfolios.map(function(p){ return loadPortfolio(p.id); }));
       })
       .catch(function(e){ console.warn('[discovery] portfolios not loaded:', e); return null; }),
@@ -7129,6 +7138,20 @@ var PIECES = (SELECTED.length ? SELECTED.map(function(s, i){
 /* Included unlocks belong to a portfolio, not to the account. Keyed by
    portfolio id; a shelf piece has no portfolio and no included unlock. */
 var INCLUDED_BY_PORTFOLIO = {};
+/* __M1_PORTFOLIO_GROUPS__ portfolio id -> created_at, from the list route.
+   A collection is something the customer made on a day, and the group header
+   says so. Empty until /portfolios answers; a group with no date simply does
+   not show one rather than showing a guess. */
+var PORTFOLIO_MADE = {};
+function portfolioMadeOn(id){
+  var iso = id && PORTFOLIO_MADE[id];
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  try {
+    return d.toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' });
+  } catch (e){ return ''; }
+}
 function includedRemainingFor(p){
   if (!p || !p.portfolioId) return 0;
   var n = INCLUDED_BY_PORTFOLIO[p.portfolioId];
@@ -7789,8 +7812,10 @@ function renderMyCollectionGrid(){
           '<span class="mc-group__name"></span><span class="mc-group__meta"></span>' +
           (making ? '<span class="mc-group__bar"><i style="width:' +
               Math.round(ready / Math.max(1, mates.length) * 100) + '%"></i></span>' : '');
+        var made = portfolioMadeOn(gid);
         head.querySelector('.mc-group__name').textContent =
-          making ? 'Crafting your collection' : 'Your collection';
+          making ? 'Crafting your collection'
+                 : (made ? 'Created ' + made : 'Your collection');
         head.querySelector('.mc-group__meta').textContent = bits.join(' · ');
         mycollGrid.appendChild(head);
       }
@@ -7869,7 +7894,11 @@ function lbList(){ return mcVisible().filter(function(p){ return !p.crafting; })
 /* The three canvases a purchased master can have. Anything else -- and that
    includes every preview bundle, which stores none -- returns null and leaves
    the lightbox on the card ratio it has always used. */
-var LBOX_AR = { '1:1': '1', '3:4': '0.75', '4:3': '1.3333' };
+/* Mobile added with the fourth Format (2026-09-18). Without its entry the
+   lightbox falls back to null and a 9:16 piece is shown in whatever shape the
+   box defaults to -- the one place a native phone render would still have
+   looked like a crop. */
+var LBOX_AR = { '1:1': '1', '3:4': '0.75', '4:3': '1.3333', '9:16': '0.5625' };
 function lboxAspectFor(p){
   return (p && p.aspect && LBOX_AR[p.aspect]) || null;
 }

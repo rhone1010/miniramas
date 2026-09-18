@@ -32,6 +32,9 @@ import { buildPortraitsPrompt } from './portraits-prompt'
 import { hasBody, buildEffectPrompt } from './portraits-bodies'
 import { POSE_PHRASE, DEFAULT_POSE, isPoseId, STYLE_REF_CLAUSE } from './portraits-shared'
 import { loadStyleRefs, MAX_STYLE_REFS } from './style-refs'
+/* The phone framing clause and the ratio that earns it, from the one file
+   that owns both. Imported, never restated -- see the append below. */
+import { PHONE_COMPOSITION, WALLPAPER_ASPECT } from '../shared/render-aspect'
 import sharp from 'sharp'
 import {
   scoreSingleFaceFidelity,
@@ -225,11 +228,35 @@ export async function generatePortraitsRender(
     const posePhrase = POSE_PHRASE[poseId]
     const posed = posePhrase ? `${promptBody}\n\n${posePhrase}` : promptBody
 
+    /* ── THE PHONE CLAUSE, BORROWED NOT REWRITTEN (matrix B2/B3) ────
+       A Portrait may now be rendered at 9:16. A tall frame needs the subject
+       placed for it, or NB2 centres a bust in a phone-shaped canvas and the
+       result is a square picture with dead space above and below it.
+
+       That instruction already exists and is already Rich's. PHONE_COMPOSITION
+       was written for the wallpaper room in August, and render-aspect.ts
+       explains at length why it is a constant rather than a sentence inside
+       each body: a body says what the picture is OF, the surface says what
+       shape it comes out in, and when those share a string they argue. The
+       same fact is true here, so the same constant is used -- there is no
+       second wording that can drift from the first.
+
+       APPENDED HERE rather than inside a prompt builder, because
+       portraits-bodies.ts is authoritative and its bodies are sent VERBATIM:
+       buildEffectPrompt is the path nearly every effect takes and it composes
+       nothing. This is the layer where pose is already appended after the
+       whole body, and the only one both prompt paths pass through. Every
+       other ratio appends nothing -- MAIN_COMPOSITION's documented behaviour,
+       not a special case. */
+    const framed = req.output_aspect_ratio === WALLPAPER_ASPECT
+      ? `${posed}\n\n${PHONE_COMPOSITION}`
+      : posed
+
     // Style-reference clause. Only when a plate is actually sent — otherwise
     // it points at an image that is not there.
     const prompt = styleRefs.length > 0
-      ? `${posed}\n\n${STYLE_REF_CLAUSE}`
-      : posed
+      ? `${framed}\n\n${STYLE_REF_CLAUSE}`
+      : framed
 
     finalPromptUsed = prompt
 

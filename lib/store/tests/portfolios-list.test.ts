@@ -62,7 +62,11 @@ describe('GET /api/v1/portfolios', () => {
 
     await GET()
     expect(h.from).toHaveBeenCalledWith('portfolios')
-    expect(h.select).toHaveBeenCalledWith('id, series, size, status')
+    /* created_at added 2026-09-18: My Collection heads each portfolio group
+       with the day it was made, and this route is where the browser learns
+       it. It was already the ORDER BY -- the column was read and then
+       dropped on the way out. */
+    expect(h.select).toHaveBeenCalledWith('id, series, size, status, created_at')
     expect(h.eq).toHaveBeenCalledWith('user_id', 'b4f556b0-4003-47e6-81a9-4abe03350eac')
     expect(h.order).toHaveBeenCalledWith('created_at', { ascending: false })
   })

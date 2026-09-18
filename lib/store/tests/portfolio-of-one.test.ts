@@ -110,8 +110,8 @@ describe('the aspect step records a canvas, not a framing', () => {
 })
 
 describe('the render API accepts a canvas independently of framing', () => {
-  it('supports exactly the three the aspect step offers', () => {
-    expect([...PORTRAIT_OUTPUT_ASPECTS]).toEqual(['1:1', '3:4', '4:3'])
+  it('supports exactly the four the Format step offers', () => {
+    expect([...PORTRAIT_OUTPUT_ASPECTS]).toEqual(['1:1', '3:4', '4:3', '9:16'])
   })
 
   it('accepts 4:3, which no framing can produce', () => {
@@ -119,10 +119,18 @@ describe('the render API accepts a canvas independently of framing', () => {
     expect(Object.values(ASPECT_FOR_FRAMING)).not.toContain('4:3')
   })
 
+  /* Mobile, added 2026-09-18 with the fourth Format (matrix B2). NATIVE, not
+     a crop: 9:16 is in the accepted set, so the render is asked for a phone
+     shape directly rather than a 3:4 trimmed afterwards. */
+  it('accepts 9:16, which is Mobile, and no framing produces it either', () => {
+    expect(isPortraitOutputAspect('9:16')).toBe(true)
+    expect(Object.values(ASPECT_FOR_FRAMING)).not.toContain('9:16')
+  })
+
   it('rejects anything outside the set, including ratios NB2 itself allows', () => {
     // 16:9 is fine for landscapes; widening the Portraits set is a product
     // decision, not something the validator should quietly permit.
-    for (const a of ['16:9', '9:16', '3:2', '', 'nonsense', null, undefined, 1]) {
+    for (const a of ['16:9', '3:2', '', 'nonsense', null, undefined, 1]) {
       expect(isPortraitOutputAspect(a)).toBe(false)
     }
   })

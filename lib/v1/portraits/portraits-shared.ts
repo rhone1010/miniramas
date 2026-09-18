@@ -334,9 +334,17 @@ export const ASPECT_FOR_FRAMING: Record<Framing, string> = {
    ask it for 4:3) but because Portraits had no way to say so.
 
    These are the ratios a Portrait may be rendered on. Deliberately NOT the
-   full NB2 list: this is the set Discovery's aspect step offers -- Square,
-   Portrait, Landscape -- and widening it is a product decision. */
-export const PORTRAIT_OUTPUT_ASPECTS = ['1:1', '3:4', '4:3'] as const
+   full NB2 list: this is the set Discovery's Format step offers, and
+   widening it is a product decision.
+
+   9:16 ADDED 2026-09-18 -- matrix B2, on Rich's ruling that Mobile is a real
+   fourth format. Native, not a crop of 3:4 and not an alias: NB2 has rendered
+   9:16 for the wallpaper room since August (shared/render-aspect.ts:54). A
+   Portrait asked for 9:16 also carries PHONE_COMPOSITION, the clause that
+   puts the subject low with a quiet upper third -- reused verbatim from
+   render-aspect.ts rather than written again, because a phone screen is the
+   same fact whichever room asks about it. See portraits-prompt.ts. */
+export const PORTRAIT_OUTPUT_ASPECTS = ['1:1', '3:4', '4:3', '9:16'] as const
 export type PortraitOutputAspect = typeof PORTRAIT_OUTPUT_ASPECTS[number]
 
 export function isPortraitOutputAspect(v: unknown): v is PortraitOutputAspect {

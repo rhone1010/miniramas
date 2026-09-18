@@ -26,6 +26,7 @@
 import { getStripe, getAppUrl } from './stripe'
 import { createBrandedSession } from './stripe-branding'
 import { supabaseAdmin } from '@/lib/supabase'
+import { isPortraitOutputAspect } from '@/lib/v1/portraits/portraits-shared'
 import crypto from 'crypto'
 
 export type PortfolioSeries = 'portraits' | 'halloween' | 'groups' | 'pets'
@@ -78,12 +79,17 @@ const PORTFOLIO_SIZES: Array<{
    as output_aspect_ratio. */
 const PURCHASED_FRAMING = 'bust'
 
-/* The aspect step's three options and nothing else. An unrecognised value
-   records null rather than guessing -- null means "not captured", and the
-   render then falls through to the framing-derived aspect exactly as every
-   piece did before any of this existed. */
+/* The Format step's options and nothing else. An unrecognised value records
+   null rather than guessing -- null means "not captured", and the render then
+   falls through to the framing-derived aspect exactly as every piece did
+   before any of this existed.
+
+   THE LIST IS NO LONGER WRITTEN TWICE. It was three literals here and three
+   in PORTRAIT_OUTPUT_ASPECTS, which is how Mobile could be offered by the
+   client and silently recorded as null: two lists, one of them updated.
+   There is one list now, and it is the render's own. */
 export function normalizeAspectChoice(aspectRatio: string | null | undefined): string | null {
-  if (aspectRatio === '1:1' || aspectRatio === '3:4' || aspectRatio === '4:3') return aspectRatio
+  if (isPortraitOutputAspect(aspectRatio)) return aspectRatio
   if (aspectRatio) {
     console.warn(`[portfolio-checkout] unrecognised aspect ${aspectRatio} -- recording null`)
   }
