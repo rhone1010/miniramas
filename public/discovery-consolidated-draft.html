@@ -747,6 +747,50 @@ body{
 }
 .rv-detail__drop svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
 @media (min-width:1025px){ .rv-detail{ display:none !important } }
+
+/* __M3_PIECE_DETAIL__ Screens 6 and 7. Same skeleton as the Review detail --
+   deliberately, so a piece looks like a piece wherever it is opened -- with
+   a status badge and the actions the piece's own state allows. */
+.pc-detail{
+  position:fixed; inset:0; z-index:250; display:none;
+  background:var(--stage, #1c1512); color:#f3ede1;
+  flex-direction:column; padding-top:env(safe-area-inset-top,0px);
+}
+.pc-detail.is-open{ display:flex }
+.pc-detail__bar{ display:flex; align-items:center; gap:10px; padding:12px 14px; flex:0 0 auto }
+.pc-detail__back{
+  background:none; border:none; color:#f3ede1; cursor:pointer; padding:0;
+  font-family:var(--sans); font-size:.92rem; min-height:44px; display:flex; align-items:center;
+}
+.pc-detail__badge{
+  font-family:var(--sans); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+  padding:5px 10px; border-radius:20px; font-weight:600;
+}
+.pc-detail__badge.is-preview{ background:rgba(255,255,255,.1); color:#e8ddc8; border:1px solid rgba(215,189,137,.4) }
+.pc-detail__badge.is-owned{ background:rgba(126,157,106,.22); color:#cfe3bf; border:1px solid rgba(126,157,106,.6) }
+.pc-detail__pos{ margin-left:auto; font-family:var(--sans); font-size:.86rem; color:var(--gold-soft) }
+.pc-detail__art{
+  flex:1 1 auto; min-height:0; margin:0 14px; border-radius:12px;
+  background-size:cover; background-position:center top; background-repeat:no-repeat;
+}
+.pc-detail__foot{ flex:0 0 auto; padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px)) }
+.pc-detail__acts{ display:flex; flex-direction:column; gap:9px; margin-top:12px }
+.pc-act{
+  min-height:50px; border-radius:10px; cursor:pointer; width:100%;
+  font-family:var(--serif); font-style:italic; font-size:1.1rem;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+/* The included unlock leads when there is one: it is the thing the customer
+   has already paid for. */
+.pc-act--included{ background:var(--gold); color:#2a1f14; border:1px solid var(--gold) }
+.pc-act--buy{ background:rgba(255,255,255,.06); color:#f3ede1; border:1px solid rgba(215,189,137,.42) }
+.pc-act--own{ background:var(--oxblood); color:#f3ede1; border:1px solid var(--oxblood) }
+.pc-act--quiet{ background:rgba(255,255,255,.05); color:#e8ddc8; border:1px solid rgba(215,189,137,.28) }
+.pc-act:disabled{ opacity:.5; cursor:wait }
+.pc-detail__note{
+  font-family:var(--sans); font-size:.84rem; color:var(--gold-soft);
+  margin:10px 0 0; min-height:1.1em;
+}
 .card{
   position:relative; border-radius:8px; overflow:hidden; cursor:pointer;
   border:1px solid rgba(88,65,42,.22);
@@ -1554,19 +1598,39 @@ body.is-lboxed{ overflow:hidden }
   .rail .ae-col{ grid-area:map; min-width:0 }
   .rail .bundle-ind{ display:none }   /* the docked rail carries the count */
 
+  /* __M3_EFFECT_MAP__ Secondary to the three above it, as the board ranks
+     them: a labelled header row with the affordance on the right, and the map
+     itself closed underneath until asked for. */
+  .rail .cur-label--all{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:10px; width:100%; margin:0 0 6px;
+  }
+  .rail .ae-seeall{
+    background:none; border:none; padding:6px 0; cursor:pointer;
+    font-family:var(--sans); font-size:.8rem; letter-spacing:.02em;
+    color:var(--brass); min-height:44px; display:flex; align-items:center; gap:3px;
+  }
+  /* The caret is the desktop control and would read as a second, unlabelled
+     toggle beside See All. One door on a phone. */
+  .rail .ae-toggle{ display:none }
+  /* Open, the map is the sheet's tallest thing -- give it a ceiling so the
+     three primary concepts above never scroll out of reach. */
+  .rail .all-effects.is-open .ae-rooms{ max-height:34vh; overflow-y:auto }
+
   /* __M1_MAP_CLOSED__ The minimap starts closed on every touch width, not
      just phones. It has been hidden below 767 since the sheet was built --
      .icon-nav is the room switcher there -- and the tablet sheet was the only
      place it still opened by default, where it pushed Pick for Me and Curated
      below the fold on the screen whose whole job is to offer them.
 
-     PARTIAL against the approved design, and deliberately so: the mockup
-     shows a compact "Effect Map / See All" that expands in place. Building
-     that disclosure means injecting a control into a rail that five separate
-     call sites rebuild with innerHTML, which is how the .your-collection
-     double-render bug happened. Closed-by-default is the half that is
-     certainly right; the expandable map is flagged for Rich. */
-  .minimap{ display:none; }
+     SUPERSEDED IN PART by __M3_EFFECT_MAP__ above: closed by default is still
+     right, but the map now has the board's labelled See All affordance rather
+     than only the caret. The listener is delegated like every other rail
+     control, so the five rebuild sites need no owner of their own.
+
+     (The .minimap CLASS is not the rail's map -- the rail's is
+     .ae-rooms#minimap -- so this rule matched nothing. Left as a note rather
+     than a dead selector.) */
   .icon-nav{ overflow-x:auto; -webkit-overflow-scrolling:touch; padding:10px 14px; gap:10px; }
   .icon-nav::-webkit-scrollbar{ display:none }
   .mycoll{ width:100vw; }
@@ -2422,14 +2486,22 @@ body.is-lboxed{ overflow:hidden }
         </div>
         <div class="cur-dots" id="curatedDots" aria-hidden="true"><i></i><i></i></div>
       </div>
-      <button class="pick-for-me" id="optPickForMe" type="button" data-tip="pick" aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes">Pick for me</button>
+      <button class="pick-for-me" id="optPickForMe" type="button" data-tip="pick" aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes">Pick 4 Me</button>
       <div class="ae-col">
         <div class="all-effects" id="allEffects" role="group" aria-labelledby="allLabel">
           <button class="ae-toggle" id="allToggle" type="button" data-tip="rooms" aria-expanded="false" aria-controls="minimap" aria-label="Show all rooms">&#9660;</button>
           <div class="ae-strip" id="aeStrip" aria-hidden="true"></div>
           <div class="ae-rooms" id="minimap"></div>
         </div>
-        <div class="cur-label cur-label--all" id="allLabel"><span>All Effects</span></div>
+        <!-- __M3_EFFECT_MAP__ (Rich's board, approved copy). The label is the
+             map's own header and carries the See All affordance, so the
+             compact map has a visible way open on a phone instead of relying
+             on the bare caret above it. The caret is still there and still
+             the same control; this is a second door onto it, labelled. -->
+        <div class="cur-label cur-label--all" id="allLabel">
+          <span>Effect Map</span>
+          <button class="ae-seeall" id="aeSeeAll" type="button" aria-controls="minimap">See All <span aria-hidden="true">&#8250;</span></button>
+        </div>
       </div>
       <div class="bundle-ind" id="bundleInd" data-tip="bundle" tabindex="0"></div>
     </div>
@@ -2489,6 +2561,35 @@ body.is-lboxed{ overflow:hidden }
       </div>
     </div>
     <div class="stage-frame stage-fan" id="reviewGrid"></div>
+  </div>
+</div>
+
+<!-- __M3_PIECE_DETAIL__ (Rich's board, screens 6 and 7). One piece from My
+     Collection, in whichever of its two states it is in.
+
+     Preview: the locked art, what collection it belongs to, and the two ways
+     to own it -- the included unlock while the portfolio still has one, and
+     the $2.99 unlock. Owned: the clean art, View Full Size, and Download.
+     Both carry previous/next through the collection as it is currently
+     filtered, so the detail agrees with the grid behind it.
+
+     Make a Print is absent: Printshop is its own module and nothing here
+     accepts a Discovery piece without new architecture. Rich ruled it omitted
+     rather than invented. -->
+<div class="pc-detail" id="pcDetail" aria-hidden="true" role="dialog" aria-label="Piece">
+  <div class="pc-detail__bar">
+    <button class="pc-detail__back" id="pcBack" type="button">&larr; Back</button>
+    <span class="pc-detail__badge" id="pcBadge"></span>
+    <span class="pc-detail__pos" id="pcPos"></span>
+    <button class="rv-detail__step" id="pcPrev" type="button" aria-label="Previous piece">&#8249;</button>
+    <button class="rv-detail__step" id="pcNext" type="button" aria-label="Next piece">&#8250;</button>
+  </div>
+  <div class="pc-detail__art" id="pcArt"></div>
+  <div class="pc-detail__foot">
+    <h3 class="rv-detail__name" id="pcName"></h3>
+    <p class="rv-detail__series" id="pcCtx"></p>
+    <div class="pc-detail__acts" id="pcActs"></div>
+    <p class="pc-detail__note" id="pcNote"></p>
   </div>
 </div>
 
@@ -4460,6 +4561,14 @@ function paintAllEffects(){
     tg.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
     tg.setAttribute('aria-label', ALL_OPEN ? 'Hide the rooms' : 'Show all rooms');
   }
+  /* __M3_EFFECT_MAP__ The labelled door onto the same state. Painted here so
+     it cannot drift from the caret, and so a rail rebuild repaints both. */
+  var see = document.getElementById('aeSeeAll');
+  if (see){
+    see.innerHTML = (ALL_OPEN ? 'Show Less' : 'See All') + ' <span aria-hidden="true">' +
+      (ALL_OPEN ? '&#8249;' : '&#8250;') + '</span>';
+    see.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
+  }
   var strip = document.getElementById('aeStrip');
   if (strip){
     var room = SILOS.filter(function(s){ return s.id === ACTIVE_SILO; })[0] || SILOS[0];
@@ -4506,7 +4615,11 @@ document.addEventListener('click', function(e){
   var ps = c('[data-pfm]');
   if (ps){ if (!ps.disabled) pickFor(+ps.dataset.pfm); return; }
   if (c('#optPickForMe')){ togglePickSizes(); return; }
-  if (c('#allToggle')){ setAllOpen(!ALL_OPEN); act(ALL_OPEN ? 'rooms opened' : 'rooms closed'); return; }
+  /* __M3_EFFECT_MAP__ Both doors, one handler -- delegated like every other
+     rail control, so the five rebuild sites keep working without any of them
+     owning the listener. That is the "stable owner" the refactor needed: the
+     delegation already here, not a new module. */
+  if (c('#allToggle') || c('#aeSeeAll')){ setAllOpen(!ALL_OPEN); act(ALL_OPEN ? 'rooms opened' : 'rooms closed'); return; }
   if (c('#btnGoReview')){ requestReview(c('#btnGoReview')); return; }
 });
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePickSizes(); });
@@ -8092,6 +8205,133 @@ function downloadPiece(piece){
     });
 }
 
+/* ══ __M3_PIECE_DETAIL__ ══════════════════════════════════════════
+   Screens 6 and 7 of the board: a piece from My Collection, Preview or Owned.
+
+   It walks mcVisible() rather than PIECES, so previous/next move through what
+   the customer is actually looking at -- filter to Previews and next is the
+   next preview, which is what the grid behind it shows.
+
+   Every action is an existing one. unlockPiece is the same call both grid
+   surfaces make, so the included-unlock-then-$2.99 ordering, the in-flight
+   guard and the payment flow are not reimplemented here; downloadPiece is the
+   real download, including its fetch of the clean master when the browser
+   does not already hold it. */
+var PC_AT = -1;
+
+function pcList(){ return mcVisible().filter(function(p){ return !p.crafting; }); }
+
+function openPieceDetail(key){
+  var list = pcList(), at = -1;
+  list.forEach(function(p, i){ if (p.key === key) at = i; });
+  if (at < 0) return;
+  PC_AT = at;
+  paintPieceDetail();
+  var el = document.getElementById('pcDetail');
+  if (el){ el.classList.add('is-open'); el.setAttribute('aria-hidden', 'false'); }
+}
+
+function closePieceDetail(){
+  var el = document.getElementById('pcDetail');
+  if (el){ el.classList.remove('is-open'); el.setAttribute('aria-hidden', 'true'); }
+  PC_AT = -1;
+}
+
+function pcNote(msg){
+  var e = document.getElementById('pcNote');
+  if (e) e.textContent = msg || '';
+}
+
+function paintPieceDetail(){
+  var list = pcList();
+  if (!list.length){ closePieceDetail(); return; }
+  if (PC_AT >= list.length) PC_AT = list.length - 1;
+  if (PC_AT < 0) PC_AT = 0;
+  var p = list[PC_AT];
+  var owned = !p.locked;
+
+  var art = document.getElementById('pcArt');
+  if (art) art.style.backgroundImage = p.art ? 'url("' + p.art + '")' : '';
+
+  var badge = document.getElementById('pcBadge');
+  if (badge){
+    badge.textContent = owned ? 'Owned' : 'Preview';
+    badge.className = 'pc-detail__badge ' + (owned ? 'is-owned' : 'is-preview');
+  }
+
+  var set = function(id, t){ var e = document.getElementById(id); if (e) e.textContent = t; };
+  set('pcName', p.name || '');
+  /* Collection context, from the real created_at the list route now returns.
+     A piece with no portfolio is a single purchase and says so by saying
+     nothing about a collection it is not part of. */
+  var made = portfolioMadeOn(p.portfolioId);
+  set('pcCtx', made ? 'Part of your ' + made + ' collection' : (p.siloName || ''));
+  set('pcPos', (PC_AT + 1) + ' of ' + list.length);
+  pcNote('');
+
+  var prev = document.getElementById('pcPrev'), next = document.getElementById('pcNext');
+  if (prev) prev.disabled = PC_AT === 0;
+  if (next) next.disabled = PC_AT === list.length - 1;
+
+  var acts = document.getElementById('pcActs');
+  if (!acts) return;
+  acts.innerHTML = '';
+  var add = function(cls, label, fn){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pc-act ' + cls;
+    b.textContent = label;
+    b.addEventListener('click', fn);
+    acts.appendChild(b);
+    return b;
+  };
+
+  if (owned){
+    /* View Full Size opens the clean master the grid already holds a signed
+       URL for -- no second fetch, and no new route. */
+    add('pc-act--own', 'View Full Size', function(){
+      if (p.art) window.open(p.art, '_blank', 'noopener');
+    });
+    add('pc-act--quiet', 'Download', function(e){
+      var b = e.currentTarget;
+      b.disabled = true; pcNote('Preparing your file…');
+      downloadPiece(p).then(function(ok){
+        b.disabled = false;
+        pcNote(ok ? '' : 'That file could not be saved just now. Nothing has been charged.');
+      });
+    });
+    return;
+  }
+
+  /* Preview. The included unlock leads while the portfolio still has one --
+     it is already paid for -- and the $2.99 is what remains when it is spent.
+     unlockPiece decides which of the two actually runs; these two buttons are
+     the board's way of SAYING which, not a second decision. */
+  var left = includedRemainingFor(p);
+  if (left > 0){
+    add('pc-act--included',
+        'Use Included Unlock (' + left + ' available)',
+        function(){ closePieceDetail(); unlockPiece(p); });
+  }
+  add('pc-act--buy', 'Unlock for $' + (UNLOCK_PRICE_CENTS / 100).toFixed(2),
+      function(){ closePieceDetail(); unlockPiece(p); });
+}
+
+(function(){
+  function on(id, fn){ var e = document.getElementById(id); if (e) e.addEventListener('click', fn); }
+  function step(d){ PC_AT += d; paintPieceDetail(); }
+  on('pcBack', closePieceDetail);
+  on('pcPrev', function(){ step(-1); });
+  on('pcNext', function(){ step(1); });
+  document.addEventListener('keydown', function(e){
+    var el = document.getElementById('pcDetail');
+    if (!el || !el.classList.contains('is-open')) return;
+    if (e.key === 'Escape') closePieceDetail();
+    if (e.key === 'ArrowLeft'  && PC_AT > 0) step(-1);
+    if (e.key === 'ArrowRight' && PC_AT < pcList().length - 1) step(1);
+  });
+})();
+
 function renderMyCollectionGrid(){
   if (mycoll.classList.contains('is-open')) renderMycollRail(); // numbers live in the rail now
 
@@ -8246,6 +8486,13 @@ function renderMyCollectionGrid(){
         if (e.target.classList.contains('card__badge')) return; // handled separately
         // Click acts here (lightbox with the actions); the rail mirrors the piece.
         if (e.target.closest('.card__quick')) return;
+        /* __M3_PIECE_DETAIL__ On a phone or tablet a tap opens the board's
+           full-screen piece. The desktop lightbox is untouched and still what
+           a click does there -- openFeatured is a floating panel over a wide
+           stage, which is the wrong shape for a 360px screen. */
+        if (window.matchMedia('(max-width:1024px)').matches){
+          featurePiece(p); openPieceDetail(p.key); return;
+        }
         featurePiece(p); openFeatured(p);
       });
     }
