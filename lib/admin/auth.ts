@@ -1,26 +1,25 @@
 // admin/auth.ts
 // lib/admin/auth.ts
 //
-// Single-password admin gate for the bundle catalog. Cookie holds an
-// HMAC-signed timestamp; we verify the signature and reject anything older
-// than 7 days. There's only one admin (the operator), so no user table.
+// Single-password admin gate. The signed cookie is the whole session; there
+// is no user table or external auth service.
 
 import { cookies } from 'next/headers'
 import crypto from 'crypto'
 
-const COOKIE_NAME = 'minirama_admin'
-const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7
-const COOKIE_MAX_AGE_MS = COOKIE_MAX_AGE_SECONDS * 1000
+export const ADMIN_COOKIE_NAME = 'minirama_admin'
+export const ADMIN_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7
+const ADMIN_COOKIE_MAX_AGE_MS = ADMIN_COOKIE_MAX_AGE_SECONDS * 1000
 
 function getSecret(): string {
-  const secret = process.env.ADMIN_COOKIE_SECRET
-  if (!secret) throw new Error('ADMIN_COOKIE_SECRET is not set')
+  const secret = process.env.LITENCO_ADMIN_SESSION_SECRET
+  if (!secret) throw new Error('LITENCO_ADMIN_SESSION_SECRET is not set')
   return secret
 }
 
 function getPassword(): string {
-  const pw = process.env.ADMIN_PASSWORD
-  if (!pw) throw new Error('ADMIN_PASSWORD is not set')
+  const pw = process.env.LITENCO_ADMIN_PASSWORD
+  if (!pw) throw new Error('LITENCO_ADMIN_PASSWORD is not set')
   return pw
 }
 
@@ -49,7 +48,7 @@ function verifyToken(token: string): boolean {
   const ts = Number(payload)
   if (!Number.isFinite(ts)) return false
   const age = Date.now() - ts
-  if (age < 0 || age > COOKIE_MAX_AGE_MS) return false
+  if (age < 0 || age > ADMIN_COOKIE_MAX_AGE_MS) return false
   return true
 }
 
@@ -68,18 +67,18 @@ export function checkPassword(submitted: string): boolean {
 export async function setAdminCookie(): Promise<void> {
   const token = buildToken(Date.now())
   const store = await cookies()
-  store.set(COOKIE_NAME, token, {
+  store.set(ADMIN_COOKIE_NAME, token, {
     httpOnly: true,
     secure:   process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge:   COOKIE_MAX_AGE_SECONDS,
+    maxAge:   ADMIN_COOKIE_MAX_AGE_SECONDS,
     path:     '/',
   })
 }
 
 export async function clearAdminCookie(): Promise<void> {
   const store = await cookies()
-  store.set(COOKIE_NAME, '', {
+  store.set(ADMIN_COOKIE_NAME, '', {
     httpOnly: true,
     secure:   process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -90,7 +89,7 @@ export async function clearAdminCookie(): Promise<void> {
 
 export async function isAdmin(): Promise<boolean> {
   const store = await cookies()
-  const cookie = store.get(COOKIE_NAME)
+  const cookie = store.get(ADMIN_COOKIE_NAME)
   if (!cookie?.value) return false
   return verifyToken(cookie.value)
 }
