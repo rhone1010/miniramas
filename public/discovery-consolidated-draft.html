@@ -1537,7 +1537,21 @@ body.is-lboxed{ overflow:hidden }
   /* The hint line is the rail's only wrapping element, and it is allowed to
      vanish rather than push the row taller. */
   .your-collection.is-docked .your-collection__next{ display:none; }
-  .your-collection.is-docked .btn-review{ flex:0 0 auto; min-height:46px; padding:12px 16px; margin:0; }
+  /* __M3_RAIL_REVIEW__ THE RAIL ALWAYS HAS ITS ACTION.
+     The desktop rule is `.btn-review{ display:none } .btn-review.on{ display:block }`
+     -- "Review appears when the count sits on a tier; otherwise the instrument
+     above it is the instruction. Not greyed -- absent." That instrument is the
+     tier discs, and the board removes them from mobile, so on a phone the rule
+     left a rail with a Curator, a count and nothing to press.
+
+     Rich's board draws Review in all five states, greyed at 0 and live from 1.
+     So the docked rail shows it always and lets :disabled carry the state --
+     updateCollectionSummary already sets that from the count. Scoped to
+     .is-docked: the desktop rail keeps absent-not-greyed, and its discs. */
+  .your-collection.is-docked .btn-review{
+    display:block; flex:0 0 auto; min-height:46px; padding:12px 16px; margin:0;
+    animation:none;   /* the arrival pulse belongs to something that appears */
+  }
 
   /* __M1_REVIEW_CTA__ The rail's Continue, proxied into the docked bar.
      Styled as .btn-review's twin so the right-hand action looks the same
@@ -1685,9 +1699,15 @@ body.is-lboxed{ overflow:hidden }
   .prog-line{ display:none; }
 
   .rail{ max-height:86vh; padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px)); }
-  .your-collection.is-docked{ padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px)); gap:10px; }
-  .your-collection.is-docked .btn-review{ width:100%; order:4; }
-  .rail-fab{ bottom:calc(122px + env(safe-area-inset-bottom,0px)); }
+  .your-collection.is-docked{ padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px)); gap:9px; }
+  /* __M3_RAIL_REVIEW__ was `width:100%; order:4` -- from the wrapping rail
+     this replaced, where the action took its own line below the count. The
+     board's rail is one row, so a full-width action would push the Curator and
+     the count off it. Sized to its text, held on the right. */
+  .your-collection.is-docked .btn-review{ width:auto; order:0; padding:12px 14px; font-size:.98em }
+  .your-collection.is-docked .rail-go{ padding:12px 14px; font-size:1em }
+  /* The Curator button is no longer fixed -- it rides inside the bar. */
+  .rail-fab{ bottom:auto; }
 
   .mycoll{ top:var(--mh-h); }
   .mycoll__filters{ overflow-x:auto; }
@@ -2406,11 +2426,17 @@ body.is-lboxed{ overflow:hidden }
   .ae-rooms .mm{ min-height:44px }
   .your-collection.is-docked .btn-review{ min-height:44px }
 }
-/* ── under 360px the right column goes under the left. */
+/* ── under 360px the sheet becomes one column.
+   __M2_CURATOR_SHEET__ rewrote this block's basis: .cur-top is now laid out by
+   NAMED AREAS, so resetting only the columns and re-numbering rows would leave
+   the named placements fighting the numeric ones. The areas are restated for a
+   single column instead -- same order the old rule produced, one mechanism. */
 @media (max-width:359px){
-  .cur-top{ grid-template-columns:minmax(0,1fr); grid-template-rows:none }
-  .cur-top .photo-row{ grid-row:1 } .pick-for-me{ grid-row:2 } .bundle-ind{ grid-row:3 }
-  .cur-right{ grid-column:1; grid-row:4 } .ae-col{ grid-column:1; grid-row:5 }
+  .rail .cur-top{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:'photo' 'pick' 'curated' 'map';
+  }
+  .rail .photo-row{ align-self:start }
 }
 </style>
 </head>
@@ -2628,7 +2654,12 @@ body.is-lboxed{ overflow:hidden }
   <div class="mycoll__filters" id="mycollFilters">
     <span class="lbl">Show</span>
     <button class="mc-pill on" data-state="all">All</button>
-    <button class="mc-pill" data-state="purchased">Purchased</button>
+    <!-- __M3_PIECE_DETAIL__ The board names this state Owned, and so does the
+         badge on the piece detail. The filter said Purchased, which described
+         the same pieces by a different word -- one product, two vocabularies.
+         The data-state value is untouched: it is internal, and renaming it
+         would reach mcVisible for no gain. -->
+    <button class="mc-pill" data-state="purchased">Owned</button>
     <button class="mc-pill" data-state="preview">Previews</button>
     <span class="sep"></span>
     <button class="mc-pill on" data-series="all">All Series</button>
