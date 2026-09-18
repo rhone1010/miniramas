@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:admin": "vitest run --config vitest.admin.config.ts",
     "test:watch": "vitest",
     "bench:create": "tsx --env-file=.env.local lib/bench/bench-create.ts",
     "bench": "tsx --env-file=.env.local lib/bench/bench-runner.ts",

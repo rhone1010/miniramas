@@ -10,6 +10,10 @@ export type Overview = {
   revenue_prior_cents: number
   crafts: number
   crafts_prior: number
+  // From migration 033. Every render started in the window, successful or not
+  // — kept separate so a craft can mean a craft without losing the attempt
+  // volume that sits behind it.
+  craft_attempts?: number
   prints: number
   prints_prior: number
   customers: number
@@ -33,7 +37,14 @@ export type Engine = {
   cost_per_render: number | null
   cost_per_passed: number | null
   attributed: number
-  outcomes: { passed: number; failed: number; rejected: number; redirected: number }
+  // errored and in_progress arrive with migration 033. Optional so the panel
+  // still renders against the 017 payload, which has neither: a generator
+  // error is not a quality failure and must not be folded into one, so when
+  // the field is absent the bar is omitted rather than guessed at.
+  outcomes: {
+    passed: number; failed: number; rejected: number; redirected: number
+    errored?: number; in_progress?: number
+  }
   by_finish: Array<{
     finish: string; crafted: number; first_pct: number | null
     avg_attempts: number | null; likeness: number | null; cost_each: number | null
@@ -57,6 +68,18 @@ export type Customers = {
   crafted_only: number
   repeat: number
   credits_held: number
+  // From migration 033. Optional so the panel renders against 017 too.
+  //
+  // Lifetime totals, not a split of the balance. credit_balances holds one net
+  // integer per owner and the ledger records no consumption order, so which
+  // credits a spend drew down is genuinely unknowable — presenting an
+  // allocated "unused purchased" figure would be invented accounting. These
+  // two say only what the ledger actually records.
+  credits_purchased_ever?: number | null
+  credits_granted_ever?: number | null
+  // max(first_seen) — the most recent customer identity_map knows about.
+  // Real source-table timestamps, not the backfill run date.
+  last_known?: string | null
   people: Array<{
     owner_key: string; email: string | null; first_seen: string
     credits: number; pieces: number; prints: number
@@ -101,6 +124,9 @@ export type Controls = {
   prompts: Array<{ engine_id: string; created_at: string; score: number | null; iterations: number | null }>
 }
 
+export type SliceKey =
+  'overview'|'engine'|'marketing'|'customers'|'fulfilment'|'health'|'controls'
+
 /** Everything the panel renders, in one object. */
 export type PanelData = {
   overview:   Overview   | null
@@ -110,4 +136,10 @@ export type PanelData = {
   fulfilment: Fulfilment | null
   health:     Health     | null
   controls:   Controls   | null
+  // Why a slice is missing. A reporting function that failed is not the same
+  // fact as a business that did nothing, and the panel used to render both as
+  // an empty tab — so a broken pipeline made the numbers look bad and the
+  // system look fine. A slice that is null and absent from here returned no
+  // rows; a slice named here failed, and the message is the Postgres error.
+  failures: Partial<Record<SliceKey, string>>
 }

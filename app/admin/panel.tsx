@@ -12,8 +12,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { PanelData } from '@/lib/admin/panel-types'
+import type { PanelData, SliceKey } from '@/lib/admin/panel-types'
 import { money, num, pct, secs, delta } from '@/lib/admin/format'
+import { instrumented, wired, type MetricKey } from '@/lib/admin/instrumentation'
+
+/** What a metric reads when the events it counts are not emitted anywhere.
+ *  Never a zero: a zero is a measurement, and nothing has been measured. */
+const NOT_INSTRUMENTED = 'Not instrumented yet'
 
 type Tab = 'overview'|'engine'|'marketing'|'customers'|'fulfilment'|'health'|'controls'
 
@@ -50,7 +55,10 @@ export default function Panel({
         <div className="mh-right">
           <span className="envpill">Prodigi {env}</span>
           <button className="signout" onClick={async () => {
-            await fetch('/api/admin/auth/logout', { method: 'POST' })
+            // Navigating regardless would look signed out while the session
+            // cookie was still live.
+            const res = await fetch('/api/admin/auth/logout', { method: 'POST' })
+            if (!res.ok) { alert('Sign out failed. You are still signed in.'); return }
             router.push('/admin/login')
           }}>Sign out</button>
         </div>
@@ -81,18 +89,49 @@ export default function Panel({
 
 /* ══════════ shared pieces ══════════ */
 
-function Card({ label, value, sub, delta: dl }:{
+function Card({ label, value, sub, delta: dl, na }:{
   label:string; value:string; sub?:string
   delta?:{text:string;dir:'up'|'down'|'flat'}
+  /** Renders the value as prose rather than a figure. For anything that is
+   *  not a measurement — unavailable telemetry, an absent lab cost — so it
+   *  cannot be read at a glance as a quantity. */
+  na?:boolean
 }) {
   return (
     <div className="card">
       <h3>{label}</h3>
-      <div className="stat">{value}</div>
-      {dl   && <div className={`delta ${dl.dir}`}>{dl.text}</div>}
+      <div className={`stat${na ? ' na' : ''}`}>{value}</div>
+      {dl   && !na && <div className={`delta ${dl.dir}`}>{dl.text}</div>}
       {sub  && <div className="sublabel">{sub}</div>}
     </div>
   )
+}
+
+/** A metric card that refuses to show a number it has not measured. */
+function MetricCard({ metric, label, value, sub, delta: dl }:{
+  metric:MetricKey; label:string; value:string; sub?:string
+  delta?:{text:string;dir:'up'|'down'|'flat'}
+}) {
+  if (!instrumented(metric)) {
+    return <Card label={label} value={NOT_INSTRUMENTED} na sub={sub} />
+  }
+  return <Card label={label} value={value} sub={sub} delta={dl} />
+}
+
+/** A slice that produced nothing. Distinguishes a reporting function that
+ *  failed from a business that did nothing — the panel used to render both
+ *  as the same blank tab, so a broken pipeline read as a quiet week. */
+function Missing({ d, slice, what = '' }:{ d:PanelData; slice:SliceKey; what?:string }) {
+  const failure = d.failures?.[slice]
+  if (failure) {
+    return (
+      <div className="empty">
+        The reporting functions may not be installed.
+        <div className="sublabel">{failure}</div>
+      </div>
+    )
+  }
+  return <Empty what={what} />
 }
 
 function Note({ children }:{ children: React.ReactNode }) {
@@ -125,9 +164,24 @@ function Bar({ label, value, max, gold }:{
 
 function Overview({ d, days, router }:{ d:PanelData; days:number; router:ReturnType<typeof useRouter> }) {
   const o = d.overview
-  if (!o) return <Empty what="The reporting functions may not be installed." />
+  if (!o) return <Missing d={d} slice="overview" />
   const f = o.funnel
   const top = f.visited || 1
+
+  // The funnel is behavioural and stays behavioural — a transactional stand-in
+  // from craft_events would answer a different question. Each step below
+  // reports itself as unmeasured until its emitter exists, so five zeros can
+  // never read as total abandonment.
+  const FUNNEL: Array<[string, number, MetricKey]> = [
+    ['Visited',           f.visited,  'funnel_visited'],
+    ['Opened a Series',   f.series,   'funnel_series'],
+    ['Uploaded a photo',  f.uploaded, 'funnel_uploaded'],
+    ['Chose a finish',    f.chose,    'funnel_chose'],
+    ['Reached checkout',  f.checkout, 'funnel_checkout'],
+    ['Paid',              f.paid,     'funnel_paid'],
+  ]
+  const funnelComplete = FUNNEL.every(([, , m]) => instrumented(m))
+  const openIncidents = d.health?.open_incidents ?? 0
 
   return (
     <section>
@@ -141,53 +195,73 @@ function Overview({ d, days, router }:{ d:PanelData; days:number; router:ReturnT
 
       <div className="grid g4">
         <Card label="Revenue" value={money(o.revenue_cents)}
-              delta={delta(o.revenue_cents, o.revenue_prior_cents)} />
+              delta={delta(o.revenue_cents, o.revenue_prior_cents)}
+              sub="gross, credits and prints, includes postage" />
         <Card label="Crafts" value={num(o.crafts)}
-              delta={delta(o.crafts, o.crafts_prior)} />
+              delta={delta(o.crafts, o.crafts_prior)}
+              sub={o.craft_attempts != null
+                ? `${num(o.craft_attempts)} renders attempted`
+                : undefined} />
         <Card label="Prints ordered" value={num(o.prints)}
               delta={delta(o.prints, o.prints_prior, 'n')} />
-        <Card label="New customers" value={num(o.customers)}
-              delta={delta(o.customers, o.customers_prior, 'n')} />
+        {/* Counts identity_map.first_seen. Without a writer that table never
+            advances, and the zero would read as a quiet week rather than as
+            nobody recording. */}
+        {wired('identity_map')
+          ? <Card label="New customers" value={num(o.customers)}
+                  delta={delta(o.customers, o.customers_prior, 'n')} />
+          : <Card label="New customers" value={NOT_INSTRUMENTED} na
+                  sub="Customer tracking incomplete" />}
       </div>
 
       <div className="grid g23">
         <div className="panel">
           <div className="panelhead"><h2>Where the {days === 1 ? 'day' : 'period'} went</h2></div>
-          {f.visited === 0 ? (
-            <Empty what="Visits appear once track.js is firing on the live site." />
+          <div>
+            {FUNNEL.map(([label, val, metric]) => {
+              if (!instrumented(metric)) {
+                return (
+                  <div className="fstep" key={label}>
+                    <span className="n">{label}</span>
+                    <div className="track" />
+                    <span className="v na">{NOT_INSTRUMENTED}</span>
+                  </div>
+                )
+              }
+              // Width is capped: visits come from the browser while payment
+              // comes from the payments table, so a paid order from an
+              // untracked visit can exceed the first step.
+              const w = Math.min(100, Math.max(0.4, (val / top) * 100))
+              return (
+                <div className="fstep" key={label}>
+                  <span className="n">{label}</span>
+                  <div className="track"><div className="fill" style={{width:`${w}%`}} /></div>
+                  <span className="v">
+                    <b>{num(val)}</b>
+                    {label !== 'Visited' && ` · ${Math.min(100, Math.round((val / top) * 1000) / 10)}%`}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          {funnelComplete ? (
+            <Note>
+              Every step here is a real person who got that far and no
+              further. The widest gap is where the work is.
+            </Note>
           ) : (
-            <>
-              <div>
-                {[
-                  ['Visited', f.visited], ['Opened a Series', f.series],
-                  ['Uploaded a photo', f.uploaded], ['Chose a finish', f.chose],
-                  ['Reached checkout', f.checkout], ['Paid', f.paid],
-                ].map(([label, v]) => {
-                  const val = v as number
-                  const w = Math.max(0.4, (val / top) * 100)
-                  return (
-                    <div className="fstep" key={label as string}>
-                      <span className="n">{label as string}</span>
-                      <div className="track"><div className="fill" style={{width:`${w}%`}} /></div>
-                      <span className="v">
-                        <b>{num(val)}</b>
-                        {label !== 'Visited' && ` · ${Math.round((val / top) * 1000) / 10}%`}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-              <Note>
-                Every step here is a real person who got that far and no
-                further. The widest gap is where the work is.
-              </Note>
-            </>
+            <Note>
+              Only the steps recording anything are shown as numbers. The rest
+              are not measuring yet, so there is no drop-off to read into them.
+            </Note>
           )}
         </div>
 
         <div className="coffee needs">
           <div className="panelhead"><h2>Needs you</h2></div>
-          {o.orders_in_error === 0 && o.credits_held === 0 && (
+          {/* Must account for every row below, or the card claims nothing
+              needs attention while listing an open incident underneath it. */}
+          {o.orders_in_error === 0 && o.credits_held === 0 && openIncidents === 0 && (
             <div className="empty dark">Nothing is asking for you right now.</div>
           )}
           {o.orders_in_error > 0 && (
@@ -200,15 +274,27 @@ function Overview({ d, days, router }:{ d:PanelData; days:number; router:ReturnT
           {o.credits_held > 0 && (
             <div className="needitem">
               <span className="pill p-warn">Credits</span>
-              <div className="t">{num(o.credits_held)} credits bought but unused</div>
+              {/* "bought" claimed an allocation the ledger cannot support:
+                  promotional and purchased credits share one balance and no
+                  consumption order is recorded. Held is what is known. */}
+              <div className="t">{num(o.credits_held)} credits held and unused</div>
               <div className="sublabel">Value you hold that isn&apos;t yours yet.</div>
             </div>
           )}
-          {(d.health?.open_incidents ?? 0) > 0 && (
+          {openIncidents > 0 && (
             <div className="needitem">
               <span className="pill p-warn">Engine</span>
-              <div className="t">{d.health!.open_incidents} open {d.health!.open_incidents === 1 ? 'incident' : 'incidents'}</div>
+              <div className="t">{openIncidents} open {openIncidents === 1 ? 'incident' : 'incidents'}</div>
               <div className="sublabel">See the Health tab.</div>
+            </div>
+          )}
+          {d.failures?.overview === undefined && Object.keys(d.failures ?? {}).length > 0 && (
+            <div className="needitem">
+              <span className="pill p-bad">Reporting</span>
+              <div className="t">
+                {Object.keys(d.failures).length} reporting {Object.keys(d.failures).length === 1 ? 'function' : 'functions'} not answering
+              </div>
+              <div className="sublabel">{Object.keys(d.failures).join(', ')}. Those tabs are blank because of this, not because nothing happened.</div>
             </div>
           )}
         </div>
@@ -221,9 +307,22 @@ function Overview({ d, days, router }:{ d:PanelData; days:number; router:ReturnT
 
 function Engine({ d }:{ d:PanelData }) {
   const e = d.engine
-  if (!e) return <Empty what="" />
+  if (!e) return <Missing d={d} slice="engine" />
   const out = e.outcomes
-  const outMax = Math.max(out.passed, out.failed, out.rejected, out.redirected, 1)
+  // A generator error is not a quality refusal, so it gets its own bar rather
+  // than being folded into Failed or dropped. Both arrive with migration 033;
+  // until it is applied they are absent and the bars are omitted rather than
+  // guessed at.
+  const bars: Array<[string, number, boolean]> = [
+    ['Passed',                 out.passed,     false],
+    ['Failed quality check',   out.failed,     true],
+    ...(out.errored     != null ? [['Errored', out.errored, true] as [string,number,boolean]] : []),
+    ['Photo turned away',      out.rejected,   true],
+    ['Sent to another Series', out.redirected, true],
+    ...(out.in_progress != null ? [['Still running', out.in_progress, true] as [string,number,boolean]] : []),
+  ]
+  const outMax = Math.max(...bars.map(([, v]) => v), 1)
+  const accounted = bars.reduce((s, [, v]) => s + v, 0)
   const finishMax = Math.max(...e.by_finish.map(f => f.crafted), 1)
 
   return (
@@ -231,28 +330,43 @@ function Engine({ d }:{ d:PanelData }) {
       <div className="grid g4">
         <Card label="Renders" value={num(e.renders_all_time)} sub="all time" />
         <Card label="First-pass rate" value={pct(e.first_pass_pct)} sub="accepted without a retry" />
-        <Card label="Cost per kept piece" value={e.cost_per_kept != null ? `$${e.cost_per_kept}` : '—'} sub="every attempt included" />
-        <Card label="Renders per kept piece" value={String(e.renders_per_kept ?? '—')}
-              sub={`${num(e.renders_all_time)} renders · ${num(e.kept_pieces)} pieces`} />
+        {/* These two replace "Cost per kept piece" and "Renders per kept
+            piece", which read fields the reporting function has never
+            returned and so showed an em dash for every user in every
+            environment. The engine deliberately measures cost per passed
+            render instead — see migration 017's note. Both are estimates:
+            they derive from the QA_COST table in portraits/generate, which
+            that file marks observability only, not billing. */}
+        <Card label="Est. cost per render"
+              value={e.cost_per_render != null ? `$${e.cost_per_render}` : '—'}
+              sub="every attempt included" />
+        <Card label="Est. cost per passed render"
+              value={e.cost_per_passed != null ? `$${e.cost_per_passed}` : '—'}
+              sub={`${num(e.renders_all_time)} renders · ${num(e.kept_pieces)} pieces kept`} />
       </div>
 
       <div className="grid g2">
         <div className="panel">
           <div className="panelhead"><h2>Finishes crafted</h2><span className="readonly">Last {e.days} days</span></div>
-          {e.by_finish.length === 0 ? <Empty what="" /> : (
+          {e.by_finish.length === 0 ? <Empty what="No renders in this window." /> : (
             <div>{e.by_finish.slice(0,8).map(f =>
               <Bar key={f.finish} label={f.finish} value={f.crafted} max={finishMax} />)}</div>
           )}
         </div>
 
         <div className="panel">
-          <div className="panelhead"><h2>Where renders end</h2></div>
+          <div className="panelhead"><h2>Where renders end</h2><span className="readonly">Last {e.days} days</span></div>
           <div>
-            <Bar label="Passed"                 value={out.passed}     max={outMax} />
-            <Bar label="Failed"                 value={out.failed}     max={outMax} gold />
-            <Bar label="Photo turned away"      value={out.rejected}   max={outMax} gold />
-            <Bar label="Sent to another Series" value={out.redirected} max={outMax} gold />
+            {bars.map(([label, value, gold]) =>
+              <Bar key={label} label={label} value={value} max={outMax} gold={gold} />)}
           </div>
+          {accounted < e.renders_all_time && (
+            <Note>
+              {num(e.renders_all_time - accounted)} of {num(e.renders_all_time)} renders
+              are in none of these states. Apply migration 033 and they resolve
+              into Errored and Still running.
+            </Note>
+          )}
           {out.redirected > 0 && (
             <Note>
               {out.redirected} {out.redirected === 1 ? 'photograph belonged' : 'photographs belonged'} in
@@ -264,11 +378,11 @@ function Engine({ d }:{ d:PanelData }) {
 
       <div className="panel">
         <div className="panelhead"><h2>Cost and quality by finish</h2><span className="readonly">Last {e.days} days</span></div>
-        {e.by_finish.length === 0 ? <Empty what="" /> : (
+        {e.by_finish.length === 0 ? <Empty what="No renders in this window." /> : (
           <table>
             <thead><tr>
               <th>Finish</th><th className="num">Crafted</th><th className="num">First pass</th>
-              <th className="num">Avg attempts</th><th className="num">Likeness</th><th className="num">Cost each</th>
+              <th className="num">Avg attempts</th><th className="num">Likeness</th><th className="num">Est. cost each</th>
             </tr></thead>
             <tbody>
               {e.by_finish.map(f => (
@@ -293,23 +407,41 @@ function Engine({ d }:{ d:PanelData }) {
 
 function Marketing({ d }:{ d:PanelData }) {
   const m = d.marketing
-  if (!m) return <Empty what="" />
+  if (!m) return <Missing d={d} slice="marketing" />
   const h = m.headline
-  const noData = h.visits === 0
+  // Was keyed on visits === 0 — which is the one signal that does record, so
+  // the honest "not wired yet" notice never appeared and four empty panels
+  // read as four measured zeros.
+  const anyInstrumented = instrumented('marketing_series_views')
+    || instrumented('marketing_printshop') || instrumented('marketing_pages')
 
   return (
     <section>
       <div className="grid g4">
-        <Card label="Visits" value={num(h.visits)} sub={`${num(h.people)} distinct people`} />
-        <Card label="Series opened" value={num(h.series_views)} />
-        <Card label="Print Shop opened" value={num(h.printshop)}
-              sub={`${num(h.print_checkout)} reached checkout`} />
-        <Card label="Print intent" value={h.printshop ? `${Math.round(100*h.print_checkout/h.printshop)}%` : '—'}
+        <MetricCard metric="marketing_visits" label="Visits"
+              value={num(h.visits)} sub={`${num(h.people)} distinct people`} />
+        <MetricCard metric="marketing_series_views" label="Series opened"
+              value={num(h.series_views)} />
+        {/* The sublabel would otherwise report "0 reached checkout" from an
+            event that cannot fire while the print shop is disabled. */}
+        <MetricCard metric="marketing_printshop" label="Print Shop opened"
+              value={num(h.printshop)}
+              sub={instrumented('marketing_print_checkout')
+                ? `${num(h.print_checkout)} reached checkout`
+                : 'print checkout not instrumented'} />
+        <MetricCard metric="marketing_print_checkout" label="Print intent"
+              value={h.printshop ? `${Math.round(100*h.print_checkout/h.printshop)}%` : '—'}
               sub="opened → checkout" />
       </div>
 
-      {noData ? (
-        <div className="panel"><Empty what="Wire track() into portraits.html and this fills within a day." /></div>
+      {!anyInstrumented ? (
+        <div className="panel"><div className="empty">{NOT_INSTRUMENTED}
+          <div className="sublabel">
+            Sources, campaigns, rooms and pages all read the behavioural
+            events. None of them is emitting yet, so there is nothing here to
+            be empty about.
+          </div>
+        </div></div>
       ) : (
         <>
           <div className="grid g2">
@@ -353,7 +485,9 @@ function Marketing({ d }:{ d:PanelData }) {
           <div className="grid g2">
             <div className="panel">
               <div className="panelhead"><h2>Rooms entered</h2></div>
-              {m.rooms.length === 0 ? <Empty what="" /> : (
+              {!instrumented('marketing_rooms')
+                ? <div className="empty">{NOT_INSTRUMENTED}</div>
+                : m.rooms.length === 0 ? <Empty what="" /> : (
                 <div>{m.rooms.map(r =>
                   <Bar key={r.room} label={r.room} value={r.n}
                        max={Math.max(...m.rooms.map(x=>x.n),1)} />)}</div>
@@ -361,7 +495,9 @@ function Marketing({ d }:{ d:PanelData }) {
             </div>
             <div className="panel">
               <div className="panelhead"><h2>Pages opened</h2></div>
-              {m.pages.length === 0 ? <Empty what="" /> : (
+              {!instrumented('marketing_pages')
+                ? <div className="empty">{NOT_INSTRUMENTED}</div>
+                : m.pages.length === 0 ? <Empty what="" /> : (
                 <div>{m.pages.map(p =>
                   <Bar key={p.target} label={p.target} value={p.n}
                        max={Math.max(...m.pages.map(x=>x.n),1)} gold />)}</div>
@@ -378,18 +514,43 @@ function Marketing({ d }:{ d:PanelData }) {
 
 function Customers({ d }:{ d:PanelData }) {
   const c = d.customers
-  if (!c) return <Empty what="" />
+  if (!c) return <Missing d={d} slice="customers" />
+  // identity_map is populated by a one-shot backfill unless a writer exists,
+  // so without one every figure here describes a frozen population and must
+  // not be presented as current.
+  const current = wired('identity_map')
+  const lastKnown = c.last_known
+    ? new Date(c.last_known).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
+    : null
+  // Lifetime ledger totals, not a split of the balance: no consumption order
+  // is recorded, so which credits a spend drew down cannot be known.
+  const split = c.credits_purchased_ever != null || c.credits_granted_ever != null
+    ? `${num(c.credits_purchased_ever ?? 0)} purchased · ${num(c.credits_granted_ever ?? 0)} granted, lifetime`
+    : 'held, not yet crafted'
+
   return (
     <section>
+      {!current && (
+        <Note>
+          Customer tracking incomplete. identity_map has no writer, so these
+          figures describe the population as last recorded
+          {lastKnown ? <> — customers known through {lastKnown}</> : null} and
+          not the business today.
+        </Note>
+      )}
+
       <div className="grid g4">
-        <Card label="Known customers" value={num(c.total)} />
-        <Card label="Crafted, never bought" value={num(c.crafted_only)} />
-        <Card label="Bought more than once" value={num(c.repeat)} />
-        <Card label="Credits held" value={num(c.credits_held)} sub="bought, not yet crafted" />
+        <Card label="Known customers" value={num(c.total)}
+              sub={current ? undefined : 'as last recorded'} />
+        <Card label="Crafted, never bought" value={num(c.crafted_only)}
+              sub={current ? undefined : 'as last recorded'} />
+        <Card label="Bought more than once" value={num(c.repeat)}
+              sub={current ? undefined : 'as last recorded'} />
+        <Card label="Credits held" value={num(c.credits_held)} sub={split} />
       </div>
 
       <div className="panel">
-        <div className="panelhead"><h2>Everyone</h2><span className="readonly">{num(c.people.length)} shown</span></div>
+        <div className="panelhead"><h2>Everyone</h2><span className="readonly">{num(c.people.length)} of {num(c.total)}</span></div>
         {c.people.length === 0 ? <Empty what="" /> : (
           <table>
             <thead><tr>
@@ -420,7 +581,7 @@ function Customers({ d }:{ d:PanelData }) {
 
 function Fulfilment({ d }:{ d:PanelData }) {
   const f = d.fulfilment
-  if (!f) return <Empty what="" />
+  if (!f) return <Missing d={d} slice="fulfilment" />
   const status = (s:string) =>
     s === 'error' ? 'p-bad'
     : s === 'delivered' || s === 'shipped' ? 'p-ok'
@@ -429,11 +590,18 @@ function Fulfilment({ d }:{ d:PanelData }) {
   return (
     <section>
       <div className="grid g4">
-        <Card label="Orders" value={num(f.orders)} sub="all time" />
+        <Card label="Orders" value={num(f.orders)} sub="paid, all time" />
         <Card label="In error" value={num(f.in_error)} sub={f.in_error ? 'paid, not printed' : 'none'} />
         <Card label="Print revenue" value={money(f.retail_cents)}
-              sub={f.wholesale_cents ? `less ${money(f.wholesale_cents)} lab cost` : 'lab cost recorded when live'} />
-        <Card label="Margin" value={pct(f.margin_pct)} />
+              sub={f.wholesale_cents ? `less ${money(f.wholesale_cents)} lab cost` : 'lab cost not recorded'} />
+        {/* wholesale_cost_cents is never written — print/webhook passes null —
+            so the old margin was (retail - 0)/retail and read 100% for any
+            revenue at all. Migration 033 returns null instead of arithmetic on
+            an empty column, and null is shown as unavailable, not as profit. */}
+        {f.margin_pct == null
+          ? <Card label="Margin" value="No lab cost recorded" na
+                  sub="Nothing writes the wholesale cost yet" />
+          : <Card label="Margin" value={pct(f.margin_pct)} />}
       </div>
 
       <div className="coffee">
@@ -475,7 +643,7 @@ function Fulfilment({ d }:{ d:PanelData }) {
 
 function Health({ d }:{ d:PanelData }) {
   const h = d.health
-  if (!h) return <Empty what="" />
+  if (!h) return <Missing d={d} slice="health" />
   const maxS = Math.max(...h.hourly.map(x => x.avg_s), 1)
 
   return (
@@ -484,7 +652,10 @@ function Health({ d }:{ d:PanelData }) {
         <Card label="Typical craft time" value={secs(h.median_ms)} sub="median" />
         <Card label="Slowest 1 in 20" value={secs(h.p95_ms)} sub="95th percentile" />
         <Card label="Failure rate" value={pct(h.failure_pct)} sub={`last ${h.days} days`} />
-        <Card label="Open incidents" value={num(h.open_incidents)} />
+        {wired('error_log')
+          ? <Card label="Open incidents" value={num(h.open_incidents)} />
+          : <Card label="Open incidents" value={NOT_INSTRUMENTED} na
+                  sub="Nothing calls logIncident() yet" />}
       </div>
 
       <div className="panel">
@@ -504,7 +675,11 @@ function Health({ d }:{ d:PanelData }) {
       <div className="coffee">
         <div className="panelhead"><h2>Open incidents</h2><span className="readonly">{num(h.incidents.length)} shown</span></div>
         {h.incidents.length === 0 ? (
-          <div className="empty dark">Nothing has failed. Incidents appear here once logIncident() is wired.</div>
+          <div className="empty dark">
+            {wired('error_log')
+              ? 'Nothing has failed.'
+              : `${NOT_INSTRUMENTED}. Nothing calls logIncident() yet.`}
+          </div>
         ) : h.incidents.map(i => (
           <div className="incident" key={i.incident_id}>
             <div className="top">
@@ -534,6 +709,13 @@ function Health({ d }:{ d:PanelData }) {
 async function copyIncident(id:string) {
   try {
     const res = await fetch(`/api/admin/incidents/${id}`)
+    // A 401 or 404 is not a thrown error, and the route answers both with a
+    // plain-text body — so without this the word "unauthorized" went onto the
+    // clipboard under a message saying it had worked.
+    if (!res.ok) {
+      alert('Could not copy. The incident is also in logs/incidents/.')
+      return
+    }
     const text = await res.text()
     await navigator.clipboard.writeText(text)
     alert('Copied. Paste it into a chat with Claude.')
@@ -546,12 +728,13 @@ async function copyIncident(id:string) {
 
 function Controls({ d }:{ d:PanelData }) {
   const c = d.controls
+  const router = useRouter()
   const [rows, setRows] = useState(c?.qa_settings ?? [])
   const [flags, setFlags] = useState(c?.flags ?? [])
   const [saving, setSaving] = useState<string | null>(null)
   const [saved, setSaved] = useState<string | null>(null)
 
-  if (!c) return <Empty what="" />
+  if (!c) return <Missing d={d} slice="controls" />
 
   async function saveSeries(series:string) {
     const row = rows.find(r => r.series === series)
@@ -563,7 +746,12 @@ function Controls({ d }:{ d:PanelData }) {
     })
     setSaving(null)
     setSaved(res.ok ? series : null)
-    if (!res.ok) alert('Save failed. Nothing was changed.')
+    if (!res.ok) { alert('Save failed. Nothing was changed.'); return }
+    // This component unmounts on a tab change and re-seeds its sliders from
+    // the server payload, which is fetched once per page render. Without this
+    // refresh, leaving the tab and coming back showed the value from before
+    // the save while the database held the new one.
+    router.refresh()
   }
 
   async function saveFlag(owner_key:string, fulfilment:boolean) {
@@ -575,11 +763,17 @@ function Controls({ d }:{ d:PanelData }) {
     if (!res.ok) {
       setFlags(f => f.map(x => x.owner_key === owner_key ? {...x, fulfilment: !fulfilment} : x))
       alert('Save failed. Nothing was changed.')
+      return
     }
+    router.refresh()
   }
 
-  const set = (series:string, key:'source_strictness'|'render_strictness'|'qa_enabled', v:number|boolean) =>
+  // Clearing `saved` matters: without it the "Saved." confirmation stayed on
+  // screen beside values that had since been dragged to something else.
+  const set = (series:string, key:'source_strictness'|'render_strictness'|'qa_enabled', v:number|boolean) => {
+    setSaved(null)
     setRows(r => r.map(x => x.series === series ? {...x, [key]: v} : x))
+  }
 
   return (
     <section>
@@ -852,6 +1046,12 @@ section > .panel + .coffee, section > .coffee + .coffee{margin-top:40px}
 
 .stat{font-size:2.9rem;font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:14px;
   font-variant-numeric:tabular-nums lining-nums}
+/* Not a measurement. Set in the editorial serif at reading size so it cannot
+   be mistaken at a glance for a figure, which is the entire point — a
+   structurally unavailable metric used to render as a confident 0. Same
+   treatment .empty already uses, so nothing new enters the visual language. */
+.stat.na{font-size:1.15rem;font-weight:400;letter-spacing:0;font-family:var(--serif);
+  font-style:italic;color:var(--taupe);line-height:1.3}
 .delta{font-size:11px;font-weight:600;letter-spacing:.06em;margin-top:6px}
 .up{color:var(--ok)} .down{color:var(--bad)} .flat{color:var(--taupe)}
 .sublabel{font-size:11px;color:var(--taupe);letter-spacing:.04em;margin-top:6px}
@@ -870,6 +1070,9 @@ section > .panel + .coffee, section > .coffee + .coffee{margin-top:40px}
 .fstep .fill{height:100%;background:var(--data);border-radius:3px}
 .fstep .n{font-size:.95rem}
 .fstep .v{font-size:12px;color:var(--taupe);text-align:right;font-variant-numeric:tabular-nums}
+/* A funnel step with no emitter. Italic serif, no bar, so an unmeasured step
+   reads as unmeasured rather than as a drop to zero. */
+.fstep .v.na{font-family:var(--serif);font-style:italic;font-size:12px}
 .fstep .v b{color:var(--ink);font-size:1rem;font-weight:600}
 
 table{width:100%;border-collapse:collapse;font-size:.95rem}

@@ -24,7 +24,10 @@ export default function AdminLoginPage() {
         setError(res.status === 401 ? 'Incorrect password.' : 'Login failed.')
         return
       }
-      router.push('/admin/store')
+      // /admin/store has never existed — this page predates the control panel
+      // and was still pointing at the old bundle-catalog route, so every
+      // successful sign-in landed on a 404.
+      router.push('/admin')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error')
     } finally {
@@ -44,7 +47,7 @@ export default function AdminLoginPage() {
             mini<em>Rama</em>
             <span className="login-suffix">Admin</span>
           </div>
-          <p className="login-sub">Sign in to manage the bundle catalog.</p>
+          <p className="login-sub">Sign in to open the control panel.</p>
 
           <label className="login-label" htmlFor="pw">Password</label>
           <input
