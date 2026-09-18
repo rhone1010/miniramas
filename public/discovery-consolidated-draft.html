@@ -3506,7 +3506,10 @@ function acceptPhoto(url, trusted){
     }
 
     ensureSession().then(function(sid){
-      if (sid){ setUploadState('ready'); }
+      if (sid){ setUploadState('ready');
+        /* --- telemetry (Admin Phase 1) --- */
+        if (window.track) window.track('upload_complete', { series: 'portraits', source_photo_id: SOURCE_ASSET_ID });
+      }
       else { setUploadState('error', 'Could not start a session — tap to retry'); }
     });
     return true;
@@ -4012,6 +4015,8 @@ function toggleSelect(key, name, siloName, checkEl, cardEl){
       return;
     }
     SELECTED.push({ key:key, baseId:(cardEl && cardEl.dataset.baseId) || key, name:name, siloName:siloName });
+    /* --- telemetry (Admin Phase 1) --- */
+    if (window.track) window.track('effect_add', { series: siloName || null, preset: key });
     act('select ' + name);
     syncSelect(key, 'select');
     checkEl.classList.add('checked'); checkEl.textContent = '✓';
@@ -4254,6 +4259,8 @@ var observer = new IntersectionObserver(function(entries){
   entries.forEach(function(entry){
     if (!entry.isIntersecting) return;
     var id = entry.target.id.replace('silo-', '');
+    /* --- telemetry (Admin Phase 1) --- */
+    if (window.track && !ROOMS_SEEN[id]) window.track('series_view', { series: id });
     ACTIVE_SILO = id; ROOMS_SEEN[id] = true; maybeAsk(); paintProgressLine();
     syncAgeTogVisibility();   /* __GENDER_TOGGLE__ follows the room in view */
     navButtons.forEach(function(b){ b.classList.toggle('active', b.dataset.target === id); });
@@ -5409,6 +5416,8 @@ function foregroundPaidRun(run){
    against the default and is written out because the value is
    load-bearing, not incidental. */
 function beginPaidRun(run){
+  /* --- telemetry (Admin Phase 1) --- */
+  if (window.track) window.track('purchase_complete', { order_ref: (run && run.portfolioId) || null });
   openCollectionForPaidRun(run);
   clearPurchasedSelection(run);
 
@@ -6099,6 +6108,8 @@ function startCheckout(){
     embed.mount('#ckForm');
     var ckModal = document.getElementById('ckModal');
     if (ckModal) ckModal.classList.add('is-open');
+    /* --- telemetry (Admin Phase 1) --- */
+    if (window.track) window.track('checkout_open', { series: 'portraits', item_count: SELECTED.length });
     resetCraftBtn(btn, origText);
   }).catch(function(err){
     console.error('[discovery] embedded checkout failed:', err);
@@ -7523,6 +7534,17 @@ if (signinDone) signinDone.addEventListener('click', closeSignin);
     if (e.key === 'Escape' && ckModal && ckModal.classList.contains('is-open')) closeCheckout();
   });
 })();
+/* --- telemetry (Admin Phase 1) --- */
+document.addEventListener('click', function(e){
+  var a = e.target.closest('.masthead__nav a');
+  if (!a || !window.track) return;
+  var target = a.getAttribute('href') || ('#' + (a.id || 'unknown'));
+  window.track('nav_click', { target: target });
+});
 </script>
+<!-- Analytics. Discovery is the main craft surface and loaded none of this, so
+     every session_start figure in the control panel excluded it. Not deferred:
+     the handlers above call window.track. -->
+<script src="/track.js"></script>
 </body>
 </html>

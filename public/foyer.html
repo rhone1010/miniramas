@@ -1148,7 +1148,28 @@ document.getElementById('empty').addEventListener('click',function(){ document.g
 go.addEventListener('click',function(){
   if (go.getAttribute('aria-busy') === 'true') return;
   go.setAttribute('aria-busy','true');
+  /* --- telemetry (Admin Phase 1) --- */
+  if (window.track) window.track('nav_click', { target: '/discovery' });
   Promise.resolve(FOYER.handoff).catch(function(){}).then(function(){ location.href='/discovery'; });
 });
 
-</script></body></html>
+/* --- telemetry (Admin Phase 1) ---
+   The photograph passed intake and the reveal is starting: this is the
+   foyer's one real upload success. Guarded by the aria-busy and phase tests
+   above, so it cannot fire twice in a page load. No source_photo_id: the
+   foyer holds no opaque id for the photo at this point. */
+if (typeof reveal === 'function'){
+  var _foyerReveal = reveal;
+  reveal = function(){
+    if (window.track) window.track('upload_complete', {});
+    return _foyerReveal.apply(this, arguments);
+  };
+}
+
+</script>
+<!-- Analytics. The foyer is the front door — middleware maps / and /home here
+     — so without this every session_start figure in the control panel missed
+     the homepage entirely. Not deferred: the handlers above call window.track,
+     and a deferred script would not exist yet when they are wired. -->
+<script src="/track.js"></script>
+</body></html>

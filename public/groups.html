@@ -4938,7 +4938,7 @@ body.is-lboxed{ overflow:hidden }
   .mycoll .mc-minimap{ gap:6px }
 }
 </style>
-<script src="/track.js" defer></script>
+<script src="/track.js"></script>
 <!-- THE CONCIERGE. data-dock puts her in the corner rather than over the
      page: the workshop stays live underneath, so somebody can follow what
      she says while she is still saying it. data-attention lets her trigger
@@ -5771,6 +5771,9 @@ window.EFFECT_PREVIEWS = {
     return !!card && card.getAttribute('data-state') === 'empty';
   }
 
+  /* Set while restoreResume replays a saved queue, so a restore does not
+     report itself as a fresh choice. */
+  var TRACK_RESTORING = false;
   function addToQueue(siloId, effectId){
     /* They have moved on. The note about the last run stops standing. */
     SUB_NOTE = null;
@@ -5783,6 +5786,8 @@ window.EFFECT_PREVIEWS = {
        buildPayload. The rail still reads only siloId and effectId, so
        nothing about the row changes. */
     QUEUE.push(buildPayload(siloId, effectId));
+    /* --- telemetry (Admin Phase 1) --- */
+    if (window.track && !TRACK_RESTORING) window.track('effect_add', { series: siloId, preset: effectId });
     renderQueue();
     return true;
   }
@@ -6575,6 +6580,8 @@ window.EFFECT_PREVIEWS = {
           }
           /* ONE CALL, NOT TWO - the Groups analyze route answers the gate's
              question and prices the craft in the same breath. */
+          /* --- telemetry (Admin Phase 1) --- */
+          if (window.track) window.track('upload_complete', {});
           runAnalyze();
         });
       };
@@ -7698,6 +7705,8 @@ window.EFFECT_PREVIEWS = {
     loadBlocks().then(function(){
       renderBlocks();
       buyPanel.classList.add('is-open');
+      /* --- telemetry (Admin Phase 1) --- */
+      if (window.track && QUEUE.length) window.track('checkout_open', { item_count: QUEUE.length });
     });
   }
 
@@ -7856,6 +7865,8 @@ window.EFFECT_PREVIEWS = {
     if (location.search.indexOf('credits=1') < 0) return;
     history.replaceState(null, '', location.pathname);
     console.log('[credits] returned from checkout');
+    /* --- telemetry (Admin Phase 1) --- */
+    if (window.track) window.track('purchase_complete', {});
 
     var intent = null;
     try {
@@ -8240,6 +8251,8 @@ window.EFFECT_PREVIEWS = {
           'show you in there yet.<span class="sign">&mdash; C.</span>');
       return;
     }
+    /* --- telemetry (Admin Phase 1) --- */
+    if (window.track) window.track('series_view', { series: siloId });
     turn(siloFloor, effFloor, function(){
       paintEffects(siloId, list);
       crumbHere.textContent = silo ? silo.label : siloId;
@@ -8779,7 +8792,7 @@ window.EFFECT_PREVIEWS = {
     }
 
     core.queue.forEach(function(q){
-      if (R.byId(q.effectId)) addToQueue(q.siloId, q.effectId);
+      TRACK_RESTORING = true; if (R.byId(q.effectId)) addToQueue(q.siloId, q.effectId); TRACK_RESTORING = false;
     });
     if (core.pose) window.__POSE = core.pose;
     if (core.pose && typeof stampPose === 'function') stampPose(core.pose);
@@ -10141,6 +10154,8 @@ window.EFFECT_PREVIEWS = {
     if (!pshop) return;
     closeOtherSurfaces('print');
     renderWall();
+    /* --- telemetry (Admin Phase 1) --- */
+    if (window.track && !pshop.classList.contains('is-open')) window.track('printshop_open', {});
     pshop.classList.add('is-open');
     pshop.setAttribute('aria-hidden', 'false');
   }
@@ -11500,6 +11515,11 @@ window.EFFECT_PREVIEWS = {
   document.addEventListener('click', function(e){
     var a = e.target.closest('.mh-nav a, .mh-drawer a');
     if (!a) return;
+    /* --- telemetry (Admin Phase 1) --- */
+    if (window.track){
+      var _href = a.getAttribute('href');
+      if (_href && _href !== '#') window.track('nav_click', { target: _href });
+    }
     var go = MAST_OPENS[a.getAttribute('href')];
     if (!go) return;          /* Gallery, Help, and the Series pages */
     e.preventDefault();
