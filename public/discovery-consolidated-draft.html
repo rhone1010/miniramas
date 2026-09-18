@@ -681,6 +681,72 @@ body{
 /* An empty place in the list still has to be tappable and legible. */
 #reviewGrid.rv-list .card.fan-card.is-slot{ grid-template-columns:1fr; justify-items:center }
 #reviewGrid.rv-list .card.fan-card.is-slot .card__art{ width:auto; height:auto; background:none }
+
+/* __M2_REVIEW_HEAD__ (Rich's board). "Your Collection" with the count and
+   the price beneath it. The desktop banner keeps its icon, its sentence and
+   its Back button; below 1024 the board's two lines are what remain, because
+   a phone header that takes four lines to say two things is the reason the
+   artwork was below the fold. Clear All is deliberately absent -- its
+   endpoint 400s (Phase 0 B3) and Rich ruled it omitted rather than wired to
+   a known failure. */
+@media (max-width:1024px){
+  .review-view > div:first-child{ padding:12px var(--stage-pad-x) 0 !important }
+  .review-banner{ display:block; padding:12px 14px; }
+  .review-banner__icon, .review-banner p, .review-banner .back-btn{ display:none }
+  .review-banner h2{ font-size:1.5rem; margin:0 }
+  .review-banner__sub{
+    display:block; font-family:var(--sans); font-size:.86rem;
+    color:var(--gold-soft); margin-top:4px; letter-spacing:.02em;
+  }
+}
+.review-banner__sub{ display:none }
+
+/* __M2_REVIEW_DETAIL__ (Rich's board). Tap a piece, see it whole.
+   A full-screen layer rather than a route: Review's state -- SLOTS, the fan,
+   the rail -- stays exactly as it is underneath, so closing the detail does
+   not rebuild anything and cannot lose a selection. */
+.rv-detail{
+  position:fixed; inset:0; z-index:240; display:none;
+  background:var(--stage, #1c1512); color:#f3ede1;
+  flex-direction:column; padding-top:env(safe-area-inset-top,0px);
+}
+.rv-detail.is-open{ display:flex }
+.rv-detail__bar{
+  display:flex; align-items:center; gap:10px; padding:12px 14px; flex:0 0 auto;
+}
+.rv-detail__back{
+  background:none; border:none; color:#f3ede1; cursor:pointer;
+  font-family:var(--sans); font-size:.92rem; display:flex; align-items:center; gap:6px;
+  min-height:44px; padding:0;
+}
+.rv-detail__pos{ margin-left:auto; font-family:var(--sans); font-size:.86rem; color:var(--gold-soft) }
+.rv-detail__step{
+  width:36px; height:36px; border-radius:50%; cursor:pointer;
+  background:rgba(255,255,255,.06); border:1px solid rgba(215,189,137,.32);
+  color:#f3ede1; display:grid; place-items:center; font-size:1rem;
+}
+.rv-detail__step:disabled{ opacity:.35; cursor:not-allowed }
+.rv-detail__art{
+  flex:1 1 auto; min-height:0; background-size:cover; background-position:center top;
+  margin:0 14px; border-radius:12px;
+}
+.rv-detail__foot{ flex:0 0 auto; padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px)) }
+.rv-detail__name{ font-family:var(--serif); font-size:1.7rem; margin:0 0 2px }
+.rv-detail__series{ font-family:var(--sans); font-size:.82rem; color:var(--gold-soft); margin:0 0 8px }
+.rv-detail__say{ font-family:var(--sans); font-size:.95rem; line-height:1.4; color:#cdbfae; margin:0 0 14px }
+.rv-detail__acts{ display:flex; gap:10px; align-items:stretch }
+.rv-detail__change{
+  flex:1 1 auto; min-height:48px; border-radius:10px; cursor:pointer;
+  background:var(--oxblood); color:#f3ede1; border:1px solid var(--oxblood);
+  font-family:var(--serif); font-style:italic; font-size:1.1rem;
+}
+.rv-detail__drop{
+  flex:0 0 auto; width:52px; min-height:48px; border-radius:10px; cursor:pointer;
+  background:rgba(255,255,255,.05); border:1px solid rgba(215,189,137,.3);
+  color:#e8ddc8; display:grid; place-items:center;
+}
+.rv-detail__drop svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+@media (min-width:1025px){ .rv-detail{ display:none !important } }
 .card{
   position:relative; border-radius:8px; overflow:hidden; cursor:pointer;
   border:1px solid rgba(88,65,42,.22);
@@ -1003,6 +1069,28 @@ body{
 .mc-group__bar{ flex:1 1 120px; min-width:80px; height:4px; border-radius:2px;
   background:rgba(215,189,137,.18); overflow:hidden }
 .mc-group__bar i{ display:block; height:100%; background:var(--gold); transition:width 400ms ease }
+
+/* __M2_POST_PAYMENT__ The band that carries screens 1-4 over the live
+   collection. Full width, above every group, and it retires itself once the
+   run has settled. */
+.mc-status{
+  grid-column:1/-1; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:14px 16px; margin-bottom:10px; border-radius:12px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(215,189,137,.24);
+}
+.mc-status__name{ font-family:var(--serif); font-size:1.3rem; color:#f3ede1; flex:0 0 auto }
+.mc-status__meta{ font-family:var(--sans); font-size:.88rem; color:var(--gold-soft); flex:1 1 200px; min-width:0 }
+.mc-status__bar{ flex:1 1 140px; min-width:90px; height:5px; border-radius:3px;
+  background:rgba(215,189,137,.2); overflow:hidden }
+.mc-status__bar i{ display:block; height:100%; background:var(--gold); transition:width 400ms ease }
+.mc-status__pct{ font-family:var(--sans); font-size:.8rem; color:var(--gold-soft); flex:0 0 auto }
+.mc-status.is-done{ border-color:rgba(215,189,137,.5); background:rgba(215,189,137,.09) }
+.mc-status.is-paid .mc-status__meta{ color:#cdbfae }
+@media (max-width:767px){
+  .mc-status{ padding:12px 13px; gap:7px }
+  .mc-status__name{ font-size:1.15rem; flex:1 1 100% }
+  .mc-status__meta{ font-size:.8rem; flex:1 1 100% }
+}
 @media (max-width:767px){
   .mc-group{ padding:12px 2px 6px }
   .mc-group__name{ font-size:1.1rem }
@@ -1375,17 +1463,26 @@ body.is-lboxed{ overflow:hidden }
      in a single row it is a label competing with the count beside it. */
   .your-collection.is-docked .your-collection__head,
   .your-collection.is-docked .your-collection__count{ display:none; }
-  .your-collection.is-docked .tier{ flex:1 1 auto; min-width:0; padding-top:0; margin:0; column-gap:6px; }
-  /* Compact, not amputated. The approved rail shows a slim progress read-out
-     rather than four 36px discs -- but the discs are CONTROLS (data-trim /
-     data-fill jump the selection to a tier), and the bar is the only place
-     they exist once it leaves the sheet. So they shrink to 22px and keep
-     working, instead of being hidden for the look of the thing. Flagged for
-     Rich: the mockup's rail may intend them gone, which would need a new home
-     for trim/fill. */
-  .your-collection.is-docked .tier .mark .t{ width:22px; height:22px; font-size:.78rem; border-width:1.5px; }
-  .your-collection.is-docked .tier .mark .p{ font-size:.58rem; }
-  .your-collection.is-docked .tier .mark{ gap:1px; }
+  /* __M2_RAIL_STATES__ The tier discs are the desktop rail's. Rich's board
+     replaces them on mobile with the hairline below -- four 36px controls
+     were competing with the artwork on a 360px screen. trim/fill is
+     unchanged on desktop, where the discs still live. */
+  .your-collection.is-docked .tier{ display:none; }
+
+  /* The count, as the board draws it: a hairline that fills, the number, and
+     the target under it in smaller type. */
+  .rail-prog{ flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:9px; }
+  .rail-prog__bar{
+    flex:1 1 auto; min-width:26px; height:3px; border-radius:2px;
+    background:rgba(215,189,137,.22); overflow:hidden;
+  }
+  .rail-prog__bar i{ display:block; height:100%; width:0;
+    background:var(--gold); transition:width 260ms ease; }
+  .rail-prog__n{ flex:0 0 auto; display:flex; flex-direction:column;
+    align-items:flex-start; line-height:1; font-family:var(--sans); }
+  .rail-prog__n b{ font-size:.95rem; font-weight:700; color:#f3ede1 }
+  .rail-prog__n em{ font-size:.62rem; font-style:normal; color:var(--gold-soft); margin-top:2px }
+  .rail-prog.is-empty .rail-prog__n b{ color:#8d8175 }
   /* The hint line is the rail's only wrapping element, and it is allowed to
      vanish rather than push the row taller. */
   .your-collection.is-docked .your-collection__next{ display:none; }
@@ -1411,19 +1508,51 @@ body.is-lboxed{ overflow:hidden }
 
   /* Curator button. Docked INTO the rail by the shim, so it is a member of
      the row rather than something floating above it. */
+  /* __M2_RAIL_STATES__ The board draws the Curator as a small gold-ringed
+     disc with its name beneath -- a place to go, not a button competing with
+     Review. Stacked, so it takes the least width of the three. */
   .rail-fab{
-    flex:0 0 auto; min-height:46px; padding:8px 14px; border-radius:23px;
-    background:rgba(255,255,255,.06); color:#f3ede1;
-    border:1px solid rgba(215,189,137,.42);
-    font-family:var(--sans); font-weight:600; font-size:.86rem; letter-spacing:.02em;
-    cursor:pointer; display:flex; align-items:center; gap:7px; white-space:nowrap;
+    flex:0 0 auto; padding:0; border:none; background:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    min-width:46px; min-height:46px; justify-content:center;
+    font-family:var(--sans); color:#f3ede1; white-space:nowrap;
   }
-  .rail-fab .rail-fab__mark{ color:var(--gold-soft); font-size:1.05em; line-height:1 }
-  body.rail-open .rail-fab{ opacity:.45; }
+  .rail-fab .rail-fab__mark{
+    width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
+    border:1px solid rgba(215,189,137,.5); background:rgba(255,255,255,.05);
+    color:var(--gold-soft); font-size:.95rem; line-height:1;
+  }
+  .rail-fab span:last-child{ font-size:.62rem; letter-spacing:.04em; color:#cdbfae }
+  body.rail-open .rail-fab .rail-fab__mark{ background:var(--gold); color:#2a1f14; border-color:var(--gold) }
 
   /* __M1_HELP_TO_TOP__ The floating help circle is the masthead pill here. */
   .tour-fab{ display:none; }
   .mh-help{ display:flex; }
+
+  /* __M2_CURATOR_SHEET__ (Rich's board, 2026-09-18). The sheet the Curator
+     opens: the source photograph on the left, the two things you can ask the
+     Curator to do stacked on the right, then the map beneath.
+
+     The desktop rail is three columns of roughly equal weight. On a phone
+     that put the photograph, Pick for me, Curated and the map in a single
+     scrolling stack where nothing led -- the board's arrangement makes the
+     photograph and the two actions one glance, which is the whole of the
+     sheet's job. Achieved by re-ordering the existing markup, not by a second
+     template: .cur-top is the same element the desktop rail uses. */
+  .rail .cur-top{
+    display:grid; grid-template-columns:minmax(0,40%) minmax(0,1fr);
+    grid-template-areas:'photo pick' 'photo curated' 'map map';
+    gap:10px 12px; align-items:start;
+  }
+  /* The photograph spans both action rows, so the two buttons sit beside it
+     rather than under it -- the board's single glance. */
+  .rail .photo-row{ grid-area:photo; margin:0; align-self:stretch }
+  .rail .pick-for-me{ grid-area:pick; margin:0; width:100%; min-height:46px; border-radius:10px }
+  /* Curated keeps its preview grid, paging and dots exactly as they are;
+     only its place in the sheet changes. */
+  .rail .cur-right{ grid-area:curated; margin:0; min-width:0 }
+  .rail .ae-col{ grid-area:map; min-width:0 }
+  .rail .bundle-ind{ display:none }   /* the docked rail carries the count */
 
   /* __M1_MAP_CLOSED__ The minimap starts closed on every touch width, not
      just phones. It has been hidden below 767 since the sheet was built --
@@ -1715,20 +1844,54 @@ body.is-lboxed{ overflow:hidden }
    replaces was right for a ratio and wrong for a sentence. */
 .aspect-opt__say{ font-family:var(--sans); font-size:16px; line-height:1.35;
   color:#6f6350; margin:0; text-align:center; max-width:19ch }
-@media (max-width:767px){ .aspect-floor{ padding:14px var(--stage-pad-x)
-  calc(160px + env(safe-area-inset-bottom,0px)) }
-  .aspect-gallery{ gap:22px }
-  .aspect-gallery__title{ font-size:2rem }
-  .aspect-gallery__say{ font-size:1.15rem; margin-top:-14px }
-  /* __FORMAT_INTENT__ Phone: two tiles across, as the approved mockup draws
-     them, instead of a flex row that wraps one option onto a lonely line.
-     align-items:stretch so the three tiles share a height despite the
-     shapes inside them being different sizes. */
-  .aspect-row{ display:grid; grid-template-columns:1fr 1fr; gap:var(--card-gap);
-    align-items:stretch; width:100% }
-  .aspect-opt{ padding:14px 14px 12px; gap:12px; justify-content:flex-end }
-  .aspect-opt__label{ font-size:1.25rem }
-  .aspect-opt__say{ font-size:15px } }
+/* __M2_FORMAT_BOARD__ (Rich's board, 2026-09-18). Four choices, 2x2 on a
+   phone and a single row on desktop.
+
+   THE RAIL COLLISION. .aspect-floor is the stage for this step and the docked
+   rail is fixed over the bottom of it, so the floor has to reserve the rail's
+   height or the last row of tiles sits underneath it -- which is what the
+   previous pass shipped at 360 and 390. The reserve is generous (the rail is
+   ~66px plus the safe-area inset) and scoped to the widths that dock. */
+@media (max-width:1024px){
+  .aspect-floor{
+    padding:14px var(--stage-pad-x) calc(150px + env(safe-area-inset-bottom,0px));
+    overflow-y:auto;
+  }
+  .aspect-gallery{ gap:18px }
+  .aspect-gallery__title{ font-size:1.9rem; text-align:center }
+  .aspect-gallery__say{ font-size:1.05rem; margin-top:-10px; text-align:center }
+  /* Two across, four tiles, equal height whatever shape sits inside. */
+  .aspect-row{
+    display:grid; grid-template-columns:1fr 1fr; gap:var(--card-gap);
+    align-items:stretch; width:100%;
+  }
+  .aspect-opt{
+    padding:14px 12px 12px; gap:10px; justify-content:flex-end;
+    min-height:0; position:relative;
+  }
+  .aspect-opt__label{ font-size:1.2rem }
+  .aspect-opt__say{ font-size:14px; max-width:100% }
+  /* The board marks the choice with a radio in the tile's corner, not by
+     dimming the other three -- at four tiles that dimming read as three
+     disabled options. */
+  .aspect-row.has-choice .aspect-opt{ opacity:1 }
+  .aspect-opt::after{
+    content:""; position:absolute; top:10px; right:10px; width:20px; height:20px;
+    border-radius:50%; border:1.5px solid rgba(88,65,42,.4); background:rgba(255,255,255,.5);
+  }
+  .aspect-opt.is-chosen::after{
+    background:var(--oxblood); border-color:var(--oxblood);
+    box-shadow:inset 0 0 0 3px #faf6ec;
+  }
+  /* One height for all four, width from the shape's own ratio, so a 9:16
+     tile does not tower over a 4:3 one and pull the grid out of square. */
+  .aspect-shape{ height:92px !important; width:calc(92px * var(--ar, 1)) !important }
+}
+@media (max-width:767px){
+  .aspect-gallery__title{ font-size:1.65rem }
+  .aspect-gallery__say{ font-size:1rem }
+  .aspect-shape{ height:78px !important; width:calc(78px * var(--ar, 1)) !important }
+}
 /* ── Feedback panel ("Something off?") ── */
 .lcf-scarab{ width:40px; height:40px; border-radius:50%; border:1px solid rgba(215,189,137,.35); background:rgba(255,255,255,.04); display:grid; place-items:center; cursor:pointer; color:var(--lcf-gold,#b68a53); transition:background 160ms ease, transform 160ms ease }
 .lcf-scarab:hover{ background:rgba(182,138,83,.16); transform:translateY(-1px) }
@@ -2317,7 +2480,8 @@ body.is-lboxed{ overflow:hidden }
         <div class="review-banner__left">
           <div class="review-banner__icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></div>
           <div>
-            <h2>Your Collection · Review</h2>
+            <h2>Your Collection</h2>
+            <span class="review-banner__sub" id="reviewSub"></span>
             <p>Take a final look before we create your images.</p>
           </div>
         </div>
@@ -2325,6 +2489,30 @@ body.is-lboxed{ overflow:hidden }
       </div>
     </div>
     <div class="stage-frame stage-fan" id="reviewGrid"></div>
+  </div>
+</div>
+
+<!-- __M2_REVIEW_DETAIL__ (Rich's board). One piece, whole. Opened by tapping
+     a Review card below 1024; a layer over Review rather than a stage of its
+     own, so SLOTS, the fan and the rail underneath are untouched. -->
+<div class="rv-detail" id="rvDetail" aria-hidden="true" role="dialog" aria-label="Piece detail">
+  <div class="rv-detail__bar">
+    <button class="rv-detail__back" id="rvDetailBack" type="button">&larr; Back to Collection</button>
+    <span class="rv-detail__pos" id="rvDetailPos"></span>
+    <button class="rv-detail__step" id="rvDetailPrev" type="button" aria-label="Previous piece">&#8249;</button>
+    <button class="rv-detail__step" id="rvDetailNext" type="button" aria-label="Next piece">&#8250;</button>
+  </div>
+  <div class="rv-detail__art" id="rvDetailArt"></div>
+  <div class="rv-detail__foot">
+    <h3 class="rv-detail__name" id="rvDetailName"></h3>
+    <p class="rv-detail__series" id="rvDetailSeries"></p>
+    <p class="rv-detail__say" id="rvDetailSay"></p>
+    <div class="rv-detail__acts">
+      <button class="rv-detail__change" id="rvDetailChange" type="button">Change Effect</button>
+      <button class="rv-detail__drop" id="rvDetailDrop" type="button" aria-label="Remove from collection">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -4363,6 +4551,10 @@ function updateCollectionSummary(){
   var btn = document.getElementById('btnGoReview');
   if (btn){ btn.disabled = SELECTED.length === 0; btn.classList.remove('on'); }
   if (typeof coachUpdate === 'function') coachUpdate();
+  /* __M2_RAIL_STATES__ The docked rail carries the count and the progress
+     line, so every selection change has to reach it. The desktop rail
+     repaints itself above; this is the same repaint for the phone. */
+  if (typeof window !== 'undefined' && typeof window.__railDock === 'function') window.__railDock();
 }
 /* The upper bundle indicator: the one target and its price. */
 function paintBundle(){
@@ -4872,6 +5064,16 @@ function reviewItems(){
 }
 function renderReviewGrid(){
   var items = reviewItems();
+  /* __M2_REVIEW_HEAD__ The board's second line: how many, and what they cost.
+     Both come from the same places the rail's own summary reads, so the
+     header cannot disagree with the price the customer is about to pay. */
+  var sub = document.getElementById('reviewSub');
+  if (sub){
+    var n = SELECTED.length;
+    var price = (typeof priceOf === 'function') ? priceOf(targetBundle()) : null;
+    sub.textContent = n + (n === 1 ? ' selection' : ' selections') +
+      (price ? ' · $' + Number(price).toFixed(2) : '');
+  }
   fanState.tier = targetBundle();
   fanState.fans = buildFans(items, fanState.tier);
 
@@ -4938,6 +5140,10 @@ function renderReviewGrid(){
       card.addEventListener('blur', function(){ card._hovering = false; applyFanTransform(card); });
       card.addEventListener('click', function(e){
         if (e.target.closest('.card__badge')) return;
+        /* __M2_REVIEW_DETAIL__ On a stacked Review there is no deck to bring
+           a card to the front of, so a tap means "show me this one". The fan
+           behaviour below is untouched and still what a desktop click does. */
+        if (reviewIsStacked()){ openReviewDetail(item.key); return; }
         var wasFront = card.classList.contains('is-front');
         document.querySelectorAll('.card.fan-card.is-front').forEach(function(c){ c.classList.remove('is-front'); applyFanTransform(c); });
         if (!wasFront) card.classList.add('is-front');
@@ -5028,6 +5234,121 @@ function reviewIsStacked(){
 /* The fan's inline styles outrank any stylesheet, so a stacked Review has to
    take them off rather than try to override them. Called whenever the layout
    is skipped, which includes dragging a desktop window down past 1024. */
+/* ── __M2_REVIEW_DETAIL__ ─────────────────────────────────────────
+   The board's full-screen piece: back, position in the set, previous and
+   next, what the effect is, Change Effect, remove.
+
+   It reads reviewItems() live rather than caching a list, so a removal made
+   from inside the detail is reflected the moment it repaints -- and it closes
+   itself when the piece it was showing is the one that went. Filled places
+   only: an empty slot has nothing to show and Change Effect already means
+   "go and choose", which is what tapping the slot does on the grid. */
+var RV_DETAIL_AT = -1;
+
+function rvFilled(){
+  return reviewItems().filter(function(it){ return !it.slot; });
+}
+
+/* Removal goes through removeFanItem, the same call the card's own badge
+   makes -- it is the only thing that knows how a removal interacts with a
+   held tier, and duplicating that logic here is how the two would drift.
+   It wants the fan the piece is in, so find it. */
+function rvRemove(key){
+  for (var f = 0; f < (fanState.fans || []).length; f++){
+    if (fanState.fans[f].some(function(x){ return x.key === key; })){
+      removeFanItem(f, key);
+      return true;
+    }
+  }
+  return false;
+}
+
+function openReviewDetail(key){
+  var items = rvFilled();
+  var at = -1;
+  items.forEach(function(it, i){ if (it.key === key) at = i; });
+  if (at < 0) return;
+  RV_DETAIL_AT = at;
+  paintReviewDetail();
+  var el = document.getElementById('rvDetail');
+  if (el){ el.classList.add('is-open'); el.setAttribute('aria-hidden', 'false'); }
+}
+
+function closeReviewDetail(){
+  var el = document.getElementById('rvDetail');
+  if (el){ el.classList.remove('is-open'); el.setAttribute('aria-hidden', 'true'); }
+  RV_DETAIL_AT = -1;
+}
+
+function paintReviewDetail(){
+  var items = rvFilled();
+  if (!items.length){ closeReviewDetail(); return; }
+  if (RV_DETAIL_AT >= items.length) RV_DETAIL_AT = items.length - 1;
+  if (RV_DETAIL_AT < 0) RV_DETAIL_AT = 0;
+  var it = items[RV_DETAIL_AT];
+
+  var art = document.getElementById('rvDetailArt');
+  var url = previewUrlFor(it.baseId || it.key, SUBJECT);
+  if (art) art.style.backgroundImage = url ? 'url("' + url + '")' : '';
+
+  var set = function(id, text){ var e = document.getElementById(id); if (e) e.textContent = text; };
+  set('rvDetailName', it.name || '');
+  set('rvDetailSeries', it.siloName || 'Portraits');
+  /* The effect's own description when the registry carries one. No
+     substitute sentence when it does not -- an invented one would read as
+     product copy and it is not mine to write. */
+  var reg = (window.EFFECT_REGISTRY && window.EFFECT_REGISTRY.effects) || [];
+  var meta = null;
+  for (var i = 0; i < reg.length; i++){ if (reg[i].id === (it.baseId || it.key)){ meta = reg[i]; break; } }
+  set('rvDetailSay', (meta && (meta.blurb || meta.description)) || '');
+  set('rvDetailPos', (RV_DETAIL_AT + 1) + ' of ' + items.length);
+
+  var prev = document.getElementById('rvDetailPrev');
+  var next = document.getElementById('rvDetailNext');
+  if (prev) prev.disabled = RV_DETAIL_AT === 0;
+  if (next) next.disabled = RV_DETAIL_AT === items.length - 1;
+}
+
+(function(){
+  function step(d){
+    RV_DETAIL_AT += d;
+    paintReviewDetail();
+  }
+  function on(id, fn){
+    var e = document.getElementById(id);
+    if (e) e.addEventListener('click', fn);
+  }
+  on('rvDetailBack',  closeReviewDetail);
+  on('rvDetailPrev',  function(){ step(-1); });
+  on('rvDetailNext',  function(){ step(1); });
+  /* Change Effect is Discovery with this place held open -- the same thing
+     tapping an empty slot does, so one mechanism serves both. */
+  on('rvDetailChange', function(){
+    var it = rvFilled()[RV_DETAIL_AT];
+    closeReviewDetail();
+    if (it) rvRemove(it.key);
+    /* The place it vacated stays open, and Discovery is where it gets
+       filled -- exactly what tapping an empty slot does. */
+    FILL_MODE = true;
+    showDiscovery();
+    updateCollectionSummary();
+  });
+  on('rvDetailDrop', function(){
+    var it = rvFilled()[RV_DETAIL_AT];
+    if (!it || !rvRemove(it.key)) return;
+    /* removeFanItem repaints Review itself; the detail only has to decide
+       whether it still has anything to show. */
+    if (!rvFilled().length) closeReviewDetail(); else paintReviewDetail();
+  });
+  document.addEventListener('keydown', function(e){
+    var el = document.getElementById('rvDetail');
+    if (!el || !el.classList.contains('is-open')) return;
+    if (e.key === 'Escape') closeReviewDetail();
+    if (e.key === 'ArrowLeft'  && RV_DETAIL_AT > 0) step(-1);
+    if (e.key === 'ArrowRight' && RV_DETAIL_AT < rvFilled().length - 1) step(1);
+  });
+})();
+
 function clearFanGeometry(){
   (fanState.rows || []).forEach(function(r){
     if (!r) return;
@@ -6350,7 +6671,11 @@ function renderAspects(){
     b.setAttribute('role', 'radio');
     b.setAttribute('aria-checked', a.id === ASPECT ? 'true' : 'false');
     b.innerHTML =
-      '<span class="aspect-shape" style="width:' + a.w + 'px;height:' + a.h + 'px"></span>' +
+      /* --ar carries the shape's own proportion so a narrow breakpoint can
+         cap the HEIGHT and let the width follow, instead of overriding two
+         inline pixel values and flattening a 9:16 tile into a square. */
+      '<span class="aspect-shape" style="width:' + a.w + 'px;height:' + a.h +
+        'px;--ar:' + (a.w / a.h).toFixed(4) + '"></span>' +
       '<span class="aspect-opt__label"></span>' +
       '<span class="aspect-opt__say"></span>';
     b.querySelector('.aspect-opt__label').textContent = a.label;
@@ -7045,7 +7370,13 @@ function renderCollection(){
          pieces to report yet", which keeps a just-paid run polling across the
          webhook gap exactly as before. */
       if (!all.length) return null;
-      return all.some(function(p){ return p.crafting; });
+      var stillMaking = all.some(function(p){ return p.crafting; });
+      /* __M2_POST_PAYMENT__ The transition, caught once: this tick has pieces
+         and none of them is crafting, and the tick before it did. JUST_LANDED
+         is the per-piece equivalent and already tells us a run finished on
+         this pass. */
+      if (!stillMaking && Object.keys(JUST_LANDED).length) JUST_FINISHED = true;
+      return stillMaking;
     })
     .catch(function(e){ console.warn('[discovery] renderCollection failed:', e); return null; });
 }
@@ -7170,6 +7501,12 @@ var REAL_PIECES = false;
    four seconds ago. Cleared the moment renderCollection returns a piece,
    which is also the moment the empty message stops being drawn at all. */
 var AWAITING_PAID_HYDRATION = false;
+/* __M2_POST_PAYMENT__ True from the moment the last piece of a run lands
+   until the customer has been shown it once. The board's "Your collection is
+   ready!" is a moment, not a permanent header -- without this it would greet
+   them on every visit forever. Set by the poll that sees the last piece
+   finish; cleared by the paint that shows it. */
+var JUST_FINISHED = false;
 /* THE RUN JUST BOUGHT IN THE MODAL, DRAWN FIRST. Portfolio ids, most recent
    first. Empty on every page load, so ordinary hydration orders exactly as
    it always has; filled only by an in-modal paid run (foregroundPaidRun).
@@ -7791,6 +8128,55 @@ function renderMyCollectionGrid(){
      Shelf pieces carry no portfolioId and are not a portfolio; they are left
      ungrouped rather than gathered under a heading that would imply they were
      bought together. */
+  /* __M2_POST_PAYMENT__ (Rich's board, screens 1-4). The progression is a
+     BAND OVER THE LIVE COLLECTION, not four takeovers.
+
+     The board's own principles decide this: "let images appear as they're
+     ready" and "you can browse and unlock as images are ready". A modal
+     Creating screen would contradict both -- the customer would be held at a
+     progress bar while finished pieces sat behind it, which is the thing this
+     product was already criticised for. So screen 2's thumbnail grid IS the
+     collection, and the band above it carries what screens 1-4 say:
+
+       paid, nothing back yet   -> Payment received, collection being created
+       some back                -> Creating your collection, N of M ready
+       all back, just landed    -> Your collection is ready
+       settled                  -> nothing; the band retires itself
+
+     No order number. The board shows one, Rich ruled it illustrative, and
+     purchases.id is a uuid -- there is no order-number architecture to
+     render and none is being invented. */
+  (function(){
+    var mine = vis.filter(function(p){ return p.portfolioId; });
+    var making = mine.filter(function(p){ return p.crafting; }).length;
+    var total  = mine.length;
+    var ready  = total - making;
+    var band = null;
+    if (AWAITING_PAID_HYDRATION && !total){
+      band = { cls:'is-paid', name:'Payment received',
+               meta:'Your collection is being created. Each portrait appears here as it is ready.' };
+    } else if (making){
+      band = { cls:'is-making', name:'Creating your collection',
+               meta:ready + ' of ' + total + ' ready — you can browse and unlock as they arrive',
+               pct:Math.round(ready / Math.max(1, total) * 100) };
+    } else if (total && JUST_FINISHED){
+      band = { cls:'is-done', name:'Your collection is ready', meta:total + ' portraits' };
+    }
+    if (!band) return;
+    var el = document.createElement('div');
+    el.className = 'mc-status ' + band.cls;
+    el.innerHTML = '<span class="mc-status__name"></span><span class="mc-status__meta"></span>' +
+      (typeof band.pct === 'number'
+        ? '<span class="mc-status__bar"><i style="width:' + band.pct + '%"></i></span>' +
+          '<span class="mc-status__pct">' + band.pct + '%</span>'
+        : '');
+    el.querySelector('.mc-status__name').textContent = band.name;
+    el.querySelector('.mc-status__meta').textContent = band.meta;
+    mycollGrid.appendChild(el);
+    /* Shown once. The next paint is an ordinary collection. */
+    if (band.cls === 'is-done') JUST_FINISHED = false;
+  })();
+
   var lastGroup = null;
   vis.forEach(function(p){
     var gid = p.portfolioId || null;
@@ -8037,6 +8423,40 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
     if (real) real.click();
   });
 
+  /* __M2_RAIL_STATES__ (Rich's board, 2026-09-18). THE MIDDLE OF THE RAIL.
+     The board draws the count as a hairline that fills and a small "N / of 16"
+     beside it -- five states, 0 / 1 / 4 / 8 / 16, differing only in how far
+     the line has travelled and whether Review is live.
+
+     This replaces the tier discs on mobile, which Rich's earlier ruling kept
+     and this board supersedes. The discs are still the desktop rail's, and
+     trim/fill still works there; what is gone is four 36px controls competing
+     with the artwork on a 360px screen.
+
+     Built here rather than in the rail template because the template is
+     rebuilt by five call sites and the docked bar outlives all of them. */
+  var prog = document.createElement('div');
+  prog.className = 'rail-prog';
+  prog.innerHTML =
+    '<span class="rail-prog__bar"><i></i></span>' +
+    '<span class="rail-prog__n"><b></b><em></em></span>';
+
+  function syncProg(small){
+    if (!small || !coll.classList.contains('is-docked') || document.body.classList.contains('is-review')){
+      if (prog.parentNode) prog.parentNode.removeChild(prog);
+      return;
+    }
+    var n = (typeof SELECTED !== 'undefined' && SELECTED.length) || 0;
+    var t = (typeof targetBundle === 'function' && targetBundle()) || 16;
+    prog.querySelector('.rail-prog__bar i').style.width =
+      Math.round(Math.min(1, n / Math.max(1, t)) * 100) + '%';
+    prog.querySelector('.rail-prog__n b').textContent = String(n);
+    prog.querySelector('.rail-prog__n em').textContent = 'of ' + t;
+    prog.classList.toggle('is-empty', n === 0);
+    /* Second child: after the Curator, before the action. */
+    if (prog.parentNode !== coll) coll.insertBefore(prog, fab.nextSibling);
+  }
+
   function syncGo(small){
     var real = rail.querySelector('.btn-create');
     /* Only on a screen that docks, only when Review has actually put a
@@ -8102,6 +8522,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
     }
     fab.style.display = small ? '' : 'none';
     scrim.style.display = small ? '' : 'none';
+    syncProg(small);
     syncGo(small);
   }
   apply();

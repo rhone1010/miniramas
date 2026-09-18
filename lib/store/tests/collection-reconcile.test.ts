@@ -190,9 +190,16 @@ describe('renderCollection no longer bails out before reconciling', () => {
     expect(HTML).not.toMatch(/if \(!d \|\| !d\.portfolios \|\| !d\.portfolios\.length\) return null;/)
   })
 
+  /* The return changed shape when the post-payment band needed to know
+     whether a run had just finished (`var stillMaking = ...`). This now
+     asserts the reconcile-then-return ORDER, which is the actual invariant;
+     pinning the exact closing expression only made an unrelated edit look
+     like a regression. */
   it('reconciles before it reports to the poller', () => {
-    const tail = HTML.match(/var changed = reconcileCollection\([\s\S]*?return all\.some/)
-    expect(tail, 'reconcileCollection must run before renderCollection returns').toBeTruthy()
+    const at  = HTML.indexOf('var changed = reconcileCollection(')
+    expect(at, 'reconcileCollection must still be called').toBeGreaterThan(-1)
+    const ret = HTML.indexOf('return stillMaking', at)
+    expect(ret, 'reconcile must run before renderCollection returns').toBeGreaterThan(at)
   })
 
   it('the shelf reports an unreadable shelf as null, not as empty', () => {
