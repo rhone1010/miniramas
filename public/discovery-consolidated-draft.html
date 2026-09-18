@@ -1129,6 +1129,13 @@ body{
 .mc-status__bar i{ display:block; height:100%; background:var(--gold); transition:width 400ms ease }
 .mc-status__pct{ font-family:var(--sans); font-size:.8rem; color:var(--gold-soft); flex:0 0 auto }
 .mc-status.is-done{ border-color:rgba(215,189,137,.5); background:rgba(215,189,137,.09) }
+/* The arrival, marked once. Same band, lifted for the paint that reveals the
+   piece -- no separate element to schedule away, and reduced-motion still
+   gets the colour without the movement. */
+.mc-status.is-new{ border-color:var(--gold); background:rgba(215,189,137,.12);
+  animation:mcNewIn 420ms ease both }
+@keyframes mcNewIn{ from{ transform:translateY(-4px); opacity:.4 } to{ transform:none; opacity:1 } }
+@media (prefers-reduced-motion:reduce){ .mc-status.is-new{ animation:none } }
 .mc-status.is-paid .mc-status__meta{ color:#cdbfae }
 @media (max-width:767px){
   .mc-status{ padding:12px 13px; gap:7px }
@@ -8396,9 +8403,21 @@ function renderMyCollectionGrid(){
       band = { cls:'is-paid', name:'Payment received',
                meta:'Your collection is being created. Each portrait appears here as it is ready.' };
     } else if (making){
-      band = { cls:'is-making', name:'Creating your collection',
-               meta:ready + ' of ' + total + ' ready — you can browse and unlock as they arrive',
-               pct:Math.round(ready / Math.max(1, total) * 100) };
+      /* THE MOMENTARY ACKNOWLEDGEMENT (board screen 3). A piece finishing is
+         worth marking, and JUST_LANDED already records exactly that: the keys
+         that turned from crafting to done on this tick, set by pieceLanded and
+         read by the tile builder to animate them. Reading it here means the
+         band says "a new portrait is ready" on the same paint that reveals the
+         tile, and goes back to the count on the next one -- momentary because
+         the fact is momentary, not because of a timer to keep in sync. */
+      var landed = Object.keys(JUST_LANDED).length;
+      band = landed
+        ? { cls:'is-making is-new', name:'A new portrait is ready',
+            meta:ready + ' of ' + total + ' ready — the rest are still being crafted',
+            pct:Math.round(ready / Math.max(1, total) * 100) }
+        : { cls:'is-making', name:'Creating your collection',
+            meta:ready + ' of ' + total + ' ready — you can browse and unlock as they arrive',
+            pct:Math.round(ready / Math.max(1, total) * 100) };
     } else if (total && JUST_FINISHED){
       band = { cls:'is-done', name:'Your collection is ready', meta:total + ' portraits' };
     }

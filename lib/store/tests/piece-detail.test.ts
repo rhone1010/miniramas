@@ -145,8 +145,22 @@ describe('the post-payment states orient without trapping', () => {
   it('has all four states', () => {
     expect(band).toMatch(/Payment received/)
     expect(band).toMatch(/Creating your collection/)
+    expect(band).toMatch(/A new portrait is ready/)
     expect(band).toMatch(/Your collection is ready/)
     expect(band).toMatch(/of ' \+ total \+ ' ready/)
+  })
+
+  /* The arrival is momentary because the FACT is momentary: JUST_LANDED holds
+     the keys that turned from crafting to done on this tick and is cleared by
+     the tile builder, so the band returns to the count on the next paint with
+     no timer to keep in step. */
+  it('marks an arrival from the same signal the tiles animate from', () => {
+    expect(band).toMatch(/Object\.keys\(JUST_LANDED\)\.length/)
+  })
+
+  it('still says how many are ready while marking the arrival', () => {
+    expect(band).toMatch(/is-making is-new/)
+    expect(band).toMatch(/still being crafted/)
   })
 
   /* The band sits in the grid with the pieces, not over them: a customer can
