@@ -49,8 +49,14 @@ const TESTER_DOMAIN = 'preview.litenco.test'
 const MARKER        = 'liten_tester_id'
 const MARKER_MAX_AGE = 60 * 60 * 24 * 365
 
-/** Where a tester lands: the ordinary customer entry, nothing preloaded. */
-const ENTRY = '/discovery'
+/** Where a tester lands: the ordinary customer entry, nothing preloaded.
+ *
+ *  THE FOYER, NOT DISCOVERY (Rich, 2026-09-19). This sent testers straight to
+ *  /discovery, which skipped the front door every real customer comes through
+ *  -- so a fresh Preview opened halfway into the product. `/` is already the
+ *  Foyer (middleware PAGES: '/' -> '/foyer.html'); this just stops jumping
+ *  over it. The Foyer itself is untouched. */
+const ENTRY = '/'
 
 function notFound() {
   return new NextResponse('Not found', { status: 404 })
