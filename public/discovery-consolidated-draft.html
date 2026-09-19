@@ -656,31 +656,49 @@ body{
 /* Eight and sixteen: a row each. The thumbnail keeps the artwork present,
    the name is the thing being scanned, and the remove control sits where the
    thumb is not. */
+/* __M4_REVIEW_LIST__ THE NAME AND THE REMOVE ARE INSIDE THE ART.
+   The first attempt put a three-column grid on .card -- thumbnail, name,
+   remove -- and shipped a row with a tiny thumbnail stranded at the left of a
+   large empty card. .card has exactly ONE child: .card__art. The name and the
+   badge are nested INSIDE it (see renderReviewGrid's innerHTML), so the grid
+   had one item to place, the art took the 56px column, and the other two
+   columns held nothing while the name sat squeezed inside the thumbnail.
+
+   So the row is a flex line -- art as a fixed 56px thumb -- and the two
+   nested children are positioned against .card instead, which they can be
+   because .card is position:relative and .card__art is made static here. */
 #reviewGrid.rv-list .fan-inner{ grid-template-columns:1fr; gap:8px }
 #reviewGrid.rv-list .card.fan-card{
-  aspect-ratio:auto; min-height:64px; border-radius:10px;
-  display:grid; grid-template-columns:56px 1fr auto; align-items:center; gap:12px;
+  aspect-ratio:auto; height:auto; min-height:72px; border-radius:10px;
+  display:flex; align-items:center; gap:12px; padding:8px 10px;
   background:rgba(255,255,255,.05); border:1px solid rgba(215,189,137,.22);
-  padding:8px 10px;
+  box-shadow:none;
 }
 #reviewGrid.rv-list .card.fan-card .card__art{
-  position:static; width:56px; height:56px; border-radius:8px;
+  position:static; flex:0 0 56px; width:56px; height:56px;
+  aspect-ratio:auto; border-radius:8px;
   background-size:cover; background-position:center top;
 }
 #reviewGrid.rv-list .card.fan-card .card__overlay{ display:none }
+/* Absolute against .card, not .card__art -- the thumb is static, so this
+   resolves against the row and the name runs the row's full width. */
 #reviewGrid.rv-list .card__content{
-  position:static; left:auto; right:auto; bottom:auto; grid-column:2;
+  position:absolute; left:78px; right:54px; top:50%; bottom:auto;
+  transform:translateY(-50%);
 }
 #reviewGrid.rv-list .card__content strong{
-  font-size:1.05rem; text-shadow:none; color:#f3ede1;
+  font-size:1.05rem; line-height:1.25; text-shadow:none; color:#f3ede1;
 }
 #reviewGrid.rv-list .card__badge{
-  position:static; grid-column:3; width:32px; height:32px; border-radius:8px;
-  background:rgba(0,0,0,.3);
+  position:absolute; left:auto; right:10px; top:50%; transform:translateY(-50%);
+  width:34px; height:34px; border-radius:8px; background:rgba(0,0,0,.34);
 }
-/* An empty place in the list still has to be tappable and legible. */
-#reviewGrid.rv-list .card.fan-card.is-slot{ grid-template-columns:1fr; justify-items:center }
-#reviewGrid.rv-list .card.fan-card.is-slot .card__art{ width:auto; height:auto; background:none }
+/* An empty place is the same row height, and says what it is. */
+#reviewGrid.rv-list .card.fan-card.is-slot{ justify-content:center }
+#reviewGrid.rv-list .card.fan-card.is-slot .card__art{
+  flex:0 0 auto; width:auto; height:auto; background:none;
+  display:flex; align-items:center; gap:8px;
+}
 
 /* __M2_REVIEW_HEAD__ (Rich's board). "Your Collection" with the count and
    the price beneath it. The desktop banner keeps its icon, its sentence and
@@ -692,7 +710,15 @@ body{
 @media (max-width:1024px){
   .review-view > div:first-child{ padding:12px var(--stage-pad-x) 0 !important }
   .review-banner{ display:block; padding:12px 14px; }
-  .review-banner__icon, .review-banner p, .review-banner .back-btn{ display:none }
+  /* __M4_BACK_PATHS__ The icon and the sentence go; the way back STAYS. An
+     earlier pass hid all three together, which left Review reachable only
+     through the rail's Curator or the browser's own control. */
+  .review-banner__icon, .review-banner p{ display:none }
+  .review-banner .back-btn{
+    display:inline-flex; align-items:center; min-height:44px;
+    margin:0 0 6px; padding:0; background:none; border:none;
+    font-family:var(--sans); font-size:.86rem; color:var(--gold-soft);
+  }
   .review-banner h2{ font-size:1.5rem; margin:0 }
   .review-banner__sub{
     display:block; font-family:var(--sans); font-size:.86rem;
@@ -1129,6 +1155,23 @@ body{
 .mc-status__bar i{ display:block; height:100%; background:var(--gold); transition:width 400ms ease }
 .mc-status__pct{ font-family:var(--sans); font-size:.8rem; color:var(--gold-soft); flex:0 0 auto }
 .mc-status.is-done{ border-color:rgba(215,189,137,.5); background:rgba(215,189,137,.09) }
+.mc-status.is-stopped{ border-color:rgba(160,96,84,.6); background:rgba(160,96,84,.14) }
+/* __M4_FAILED_IS_NOT_CRAFTING__ The tile for a piece that stopped. Oxblood
+   like its crafting sibling -- it is still part of the collection -- but
+   still, because nothing is happening to it. */
+.card.is-failed .card__art{
+  aspect-ratio:var(--card-ar);
+  background:linear-gradient(160deg,#5a3130,#37211f);
+  display:flex; align-items:center; justify-content:center; text-align:center;
+}
+.card.is-failed .card__content{
+  position:static; left:auto; right:auto; bottom:auto; padding:0 12%;
+}
+.card.is-failed .card__content strong{ font-size:1.05rem; color:#f0e3d8 }
+.card.is-failed .card__content span{
+  display:block; margin-top:5px; font-family:var(--sans); font-size:.76rem;
+  color:#d6bdb4; text-shadow:none;
+}
 /* The arrival, marked once. Same band, lifted for the paint that reveals the
    piece -- no separate element to schedule away, and reduced-motion still
    gets the colour without the movement. */
@@ -1449,6 +1492,35 @@ body.is-lboxed{ overflow:hidden }
   .shell{ grid-template-columns:1fr; height:auto; min-height:calc(100vh - var(--mh-h)); }
   .stage-frame{ margin-right:0; padding-bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
 
+  /* __M4_GRID_OVERLAP__ (runtime defect, BrowserStack 2026-09-18).
+     THE SILO GRID IS HEIGHT-DRIVEN, AND A PHONE HAS NO FIXED HEIGHT TO DRIVE.
+
+     The desktop silo is one screenful: `container-type:size`, `height:100%`,
+     exactly two rows, and a card width computed from the CONTAINER'S HEIGHT --
+     `min(100%, calc((50cqh - gap/2) * --card-ar))`. Right for a stage that
+     cannot scroll, where two rows must fit whatever the viewport is.
+
+     Here the stage scrolls and a room holds six or more effects in two
+     columns, so three or more rows. The grid was still pinned to two: every
+     row past the second became implicit, while each card kept sizing itself
+     to half the CONTAINER height rather than its own row's. Cards came out
+     taller than the rows holding them and grew into the row below -- images
+     and titles appearing inside the next effect.
+
+     So below 1024 the grid becomes what it looks like: rows that take their
+     height from their contents, cards that fill their column. The container
+     query is switched off with it, so no length in here can resolve against a
+     height that no longer bounds anything. */
+  .silo-block .effect-grid{
+    height:auto; container-type:normal;
+    grid-template-rows:none; grid-auto-rows:max-content;
+    align-content:start; align-items:start; justify-items:stretch;
+  }
+  .silo-block .card, .silo-block .title-card{ width:100% }
+  /* The cell is the card's own box, and nothing inside paints outside it. */
+  .effect-grid .card{ overflow:hidden }
+  .effect-grid .card__art{ aspect-ratio:var(--card-ar); width:100% }
+
   /* Rail as a bottom sheet. Closed by default, opened by the shim's
      Curator button. */
   .rail{
@@ -1570,6 +1642,13 @@ body.is-lboxed{ overflow:hidden }
   body.is-review .your-collection.is-docked .btn-review,
   body.is-review .your-collection.is-docked .tier{ display:none; }
   body.is-review .your-collection.is-docked .rail-go{ flex:1 1 auto; }
+  /* __M4_ONE_NEXT_STEP__ Format is a later step than Review, so the rail
+     drops Review's action and Discovery's count and shows only the Curator
+     and the one thing that moves the customer forward from here. */
+  body.is-format .your-collection.is-docked .btn-review,
+  body.is-format .your-collection.is-docked .tier,
+  body.is-format .your-collection.is-docked .rail-prog{ display:none; }
+  body.is-format .your-collection.is-docked .rail-go{ flex:1 1 auto; }
 
   /* Curator button. Docked INTO the rail by the shim, so it is a member of
      the row rather than something floating above it. */
@@ -1675,6 +1754,26 @@ body.is-lboxed{ overflow:hidden }
   .icon-nav{ height:auto; padding:8px 12px; }
   .icon-nav__item{ flex:0 0 auto; min-height:44px; padding:6px 10px; }
 
+  /* __M4_GRID_OVERLAP__ THE SILO GRID IS HEIGHT-DRIVEN, AND A PHONE HAS NO
+     FIXED HEIGHT TO DRIVE IT.
+
+     The desktop silo is one screenful: `container-type:size`, `height:100%`,
+     exactly two rows, and a card width computed from the CONTAINER'S HEIGHT --
+     `min(100%, calc((50cqh - gap/2) * --card-ar))`. Right for a stage that
+     cannot scroll, where two rows must fit whatever the viewport is.
+
+     On a phone the stage scrolls and a room holds six or more effects in two
+     columns, so three or more rows. The grid was still pinned to two: every
+     row past the second became an implicit row, while each card kept sizing
+     itself to half the CONTAINER height rather than its own row's. The cards
+     came out taller than the rows holding them and grew into the row below --
+     the overlap in the screenshot, images and titles sitting inside the next
+     effect.
+
+     Below 1024 the grid becomes what it looks like: rows that take their
+     height from their contents, cards that fill their column. The container
+     query is switched off with it, so no length in here can resolve against a
+     height that no longer bounds anything. */
   /* __M1_QUIET_MARKS__ (Rich's design pass, 2026-09-18). Smaller, quieter,
      checkbox-like: the approved grid puts the artwork first and the selection
      marker second. A 28px filled disc read as a button competing with the
@@ -1948,7 +2047,14 @@ body.is-lboxed{ overflow:hidden }
     padding:14px var(--stage-pad-x) calc(150px + env(safe-area-inset-bottom,0px));
     overflow-y:auto;
   }
-  .aspect-gallery{ gap:18px }
+  .aspect-gallery{ gap:18px; align-items:stretch }
+  /* __M4_BACK_PATHS__ Left-aligned above the title, the same place Review
+     puts its own way back, so the two screens are read the same way. */
+  .aspect-gallery__back{
+    align-self:flex-start; min-height:44px; padding:0; margin:0;
+    background:none; border:none; font-family:var(--sans); font-size:.86rem;
+    color:var(--gold-soft); cursor:pointer;
+  }
   .aspect-gallery__title{ font-size:1.9rem; text-align:center }
   .aspect-gallery__say{ font-size:1.05rem; margin-top:-10px; text-align:center }
   /* Two across, four tiles, equal height whatever shape sits inside. */
@@ -2572,6 +2678,13 @@ body.is-lboxed{ overflow:hidden }
   <div class="stage-col aspect-view" id="aspectView">
     <main class="aspect-floor stage-frame" id="aspectFloor">
       <div class="aspect-gallery">
+        <!-- __M4_BACK_PATHS__ (runtime defect, BrowserStack 2026-09-18). The
+             handler for #btnBackAspect has existed since the pose step was
+             bypassed; the BUTTON never did. Format was a screen with no way
+             back that did not involve the browser's own control, which is not
+             product navigation. hideAspect returns to Review with SLOTS, the
+             selection and the chosen format all intact. -->
+        <button class="back-btn aspect-gallery__back" id="btnBackAspect" type="button">&larr; Back to Review</button>
         <h2 class="aspect-gallery__title">Where will your portrait live?</h2>
         <p class="aspect-gallery__say">Choose the format that fits your vision.</p>
         <div class="aspect-row" id="aspectRow"></div>
@@ -4728,6 +4841,31 @@ function nudge(anchorEl, text){
 // Refused because there is no photograph yet. Returns true if refused.
 function requirePhoto(anchorEl){
   if (uploadedPhotoDataUrl) return false;
+  /* __M4_NO_SOURCE_OPENS_CURATOR__ (Rich, 2026-09-18). ON A PHONE THE STAMP
+     IS INSIDE A CLOSED SHEET.
+
+     This pulses the photo stamp and says "please upload an image first",
+     which works on desktop where the stamp is in the rail beside the grid.
+     Below 1024 the rail is the Curator sheet and it starts SHUT, so the
+     message named a control the customer could not see and left them to
+     discover the Curator on their own. The nudge stays -- it is the thing
+     that explains -- and the sheet opens behind it so the upload is under
+     their thumb. */
+  /* Guarded the way PREFERS_STILL is: requirePhoto is the gate in front of
+     Review and checkout, so it must not throw where matchMedia is absent --
+     discovery-resume-contract.test.ts runs it against a bare window, and a
+     photo guard failing on a missing media API would let corrupt work
+     through. */
+  if (typeof window !== 'undefined' && window.matchMedia &&
+      window.matchMedia('(max-width:1024px)').matches){
+    document.body.classList.add('rail-open');
+    /* After the sheet has moved, or the pulse plays on an element still
+       sliding up and is missed. */
+    setTimeout(function(){
+      var s = document.querySelector('.rail .photo-stamp');
+      if (s && s.scrollIntoView) s.scrollIntoView({ block:'nearest' });
+    }, 280);
+  }
   var stamp = document.querySelector('.photo-stamp');
   if (stamp){ stamp.classList.remove('is-asking'); stamp.classList.remove('is-urgent'); void stamp.offsetWidth; stamp.classList.add('is-urgent'); setTimeout(function(){ stamp.classList.remove('is-urgent'); }, 1100); }
   if (anchorEl) nudge(anchorEl, 'Please upload an image first');
@@ -5685,7 +5823,7 @@ function showReview(){
 }
 function showDiscovery(){
   act('back to Discovery');
-  document.body.classList.remove('is-review');
+  document.body.classList.remove('is-review'); document.body.classList.remove('is-format');
   reviewView.classList.remove('active');
   var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
   var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
@@ -6651,7 +6789,7 @@ function renderPoseRail(){
 function showPoses(){
   act('open Pose');
   renderPoses();
-  document.body.classList.remove('is-review');
+  document.body.classList.remove('is-review'); document.body.classList.remove('is-format');
   if (reviewView) reviewView.classList.remove('active');
   var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
   if (discoveryView) discoveryView.classList.add('hidden');
@@ -6887,16 +7025,29 @@ function renderAspectRail(){
 function showAspect(){
   act('open Aspect');
   renderAspects();
-  document.body.classList.remove('is-review');
+  document.body.classList.remove('is-review'); document.body.classList.remove('is-format');
   var pv = document.getElementById('poseView'); if (pv) pv.classList.remove('active');
   if (reviewView) reviewView.classList.remove('active');
   if (discoveryView) discoveryView.classList.add('hidden');
   var av = document.getElementById('aspectView'); if (av) av.classList.add('active');
+  /* __M4_ONE_NEXT_STEP__ (runtime defect, BrowserStack 2026-09-18). Format
+     removes is-review, and the docked rail keyed everything off that -- so on
+     the Format stage the phone showed the count, "Review Collection" AND the
+     rail's own "Craft My Collection" at once. Three forward actions for one
+     step, two of them describing stages already behind the customer.
+
+     The stage now names itself, and the rail hides what belongs to the steps
+     before it. Cleared by every exit below, so a stale class cannot outlive
+     the screen that set it. */
+  document.body.classList.add('is-format');
   renderAspectRail();
 }
 /* __V1_NO_POSE__ Back from Format returns to Review, the step the customer
    actually came from, not to the bypassed pose floor. */
 function hideAspect(){
+  /* __M4_ONE_NEXT_STEP__ Going back to Review takes the Format rail state
+     with it, or Review inherits a rail dressed for the step just left. */
+  document.body.classList.remove('is-format');
   var av = document.getElementById('aspectView'); if (av) av.classList.remove('active');
   showReview();
 }
@@ -7478,7 +7629,7 @@ function renderCollection(){
         items.forEach(function(item){
           n++;
           all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
-                      series:item.series, num:n, crafting:item.crafting,
+                      series:item.series, num:n, crafting:item.crafting, failed:item.failed,
                       locked:item.locked, previewId:item.previewId, art:item.art,
                       aspect:item.aspect });
         });
@@ -7486,7 +7637,7 @@ function renderCollection(){
       (shelf || []).forEach(function(item){
         n++;
         all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
-                    series:item.series, num:n, crafting:item.crafting,
+                    series:item.series, num:n, crafting:item.crafting, failed:item.failed,
                     locked:item.locked, previewId:item.previewId, art:item.art,
                     aspect:item.aspect });
       });
@@ -7581,9 +7732,26 @@ function loadPortfolio(id){
        from the first waiting tile to the finished piece, where 'p'+n was a
        position that moved as rows arrived. */
     return st.items.map(function(i){
+      /* __M4_FAILED_IS_NOT_CRAFTING__ (runtime defect, BrowserStack
+         2026-09-18: eight tiles turning for ever).
+
+         This read `crafting: i.status !== 'done'`, which is true of a FAILED
+         item as well as a pending one -- so a render that had already given
+         up was drawn as one still working, and the gear turned on it until
+         the customer closed the tab. The poll gives up quietly at
+         LAND_TRIES x LAND_EVERY (60 x 3s), so after three minutes nothing was
+         asking the server any more either: the animation was the only thing
+         still moving.
+
+         Failed is now its own state. The tile says so, the band above stops
+         counting it as on its way, and nothing pretends work is in progress
+         that stopped. */
+      var itemFailed = i.status === 'failed';
       return { key:'pf' + id + ':' + i.slot, portfolioId: id,
                name:i.preset, siloName:'', series:canonicalSeries(st.series),
-               locked: !unlockedBySlot[i.slot], crafting: i.status !== 'done',
+               locked: !unlockedBySlot[i.slot],
+               crafting: i.status !== 'done' && !itemFailed,
+               failed: itemFailed,
                previewId: i.previewId, art: i.previewUrl || null,
                /* The canvas this master was rendered on. Portfolio-level, so
                   every item shares it. Null for a preview bundle and for
@@ -8427,8 +8595,13 @@ function renderMyCollectionGrid(){
   (function(){
     var mine = vis.filter(function(p){ return p.portfolioId; });
     var making = mine.filter(function(p){ return p.crafting; }).length;
+    var stopped = mine.filter(function(p){ return p.failed; }).length;
     var total  = mine.length;
-    var ready  = total - making;
+    /* __M4_FAILED_IS_NOT_CRAFTING__ A failed piece is neither ready nor on
+       its way. Counting it as either makes the band lie: as ready it inflates
+       what the customer has, as crafting it never reaches the total and the
+       bar sticks short of full for ever. */
+    var ready  = total - making - stopped;
     var band = null;
     if (AWAITING_PAID_HYDRATION && !total){
       band = { cls:'is-paid', name:'Payment received',
@@ -8449,6 +8622,12 @@ function renderMyCollectionGrid(){
         : { cls:'is-making', name:'Creating your collection',
             meta:ready + ' of ' + total + ' ready — you can browse and unlock as they arrive',
             pct:Math.round(ready / Math.max(1, total) * 100) };
+    } else if (stopped){
+      /* Nothing is in flight and something did not make it. Saying "ready"
+         over a collection with a hole in it is the lie this replaces. */
+      band = { cls:'is-stopped', name:'Some pieces did not finish',
+               meta:ready + ' of ' + total + ' ready — ' + stopped +
+                    (stopped === 1 ? ' will be remade' : ' will be remade') };
     } else if (total && JUST_FINISHED){
       band = { cls:'is-done', name:'Your collection is ready', meta:total + ' portraits' };
     }
@@ -8497,8 +8676,18 @@ function renderMyCollectionGrid(){
       }
     }
     var el = document.createElement('div');
-    el.className = 'card' + (p.locked ? ' is-locked' : '') + (p.crafting ? ' is-crafting' : '') + (unlockSelection[p.key] ? ' is-selected' : '');
-    if (p.crafting){
+    el.className = 'card' + (p.locked ? ' is-locked' : '') + (p.crafting ? ' is-crafting' : '') +
+      (p.failed ? ' is-failed' : '') + (unlockSelection[p.key] ? ' is-selected' : '');
+    if (p.failed){
+      /* __M4_FAILED_IS_NOT_CRAFTING__ A render that stopped says so. The gear
+         is for work in progress, and leaving it turning on a piece nothing is
+         working on is what produced tiles spinning for ever. No retry control
+         here: re-rendering a paid item is a server decision, and a
+         customer-facing retry would be new commerce behaviour. */
+      el.innerHTML = '<div class="card__art">' +
+        '<div class="card__content"><strong>Didn’t finish</strong>' +
+        '<span>This piece will be remade.</span></div></div>';
+    } else if (p.crafting){
       /* __MC_GEAR__ the house mark, turning, on oxblood */
       el.innerHTML = '<div class="card__art">' + MC_MARK_HTML +
         '<div class="card__content"><strong>Crafting…</strong></div></div>';
@@ -8739,7 +8928,11 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
     '<span class="rail-prog__n"><b></b><em></em></span>';
 
   function syncProg(small){
-    if (!small || !coll.classList.contains('is-docked') || document.body.classList.contains('is-review')){
+    /* The count belongs to Discovery. Review has it in the header and Format
+       is past it -- __M4_ONE_NEXT_STEP__. */
+    if (!small || !coll.classList.contains('is-docked') ||
+        document.body.classList.contains('is-review') ||
+        document.body.classList.contains('is-format')){
       if (prog.parentNode) prog.parentNode.removeChild(prog);
       return;
     }
