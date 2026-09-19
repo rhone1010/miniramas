@@ -2830,10 +2830,11 @@ body.is-lboxed{ overflow:hidden }
   #discoveryView .stage-frame{ padding-bottom:calc(var(--mcur-dock-h,100px) + 24px + env(safe-area-inset-bottom,0px)); scroll-snap-type:none }
   #discoveryView .silo-block{ height:auto }
   .rail.is-sheet:has(> .mcur){ overflow:hidden; display:flex; flex-direction:column }
-  .rail.is-sheet .mcur{ min-height:0; overflow:hidden }
+  .rail.is-sheet .mcur{ min-height:0; overflow:hidden; flex:0 1 auto }
   .rail.is-sheet .mcur::before, .rail.is-sheet .mcur__head{ flex-shrink:0 }
   .mcur__body{ min-height:0; overflow-y:auto; overscroll-behavior-y:contain }
-  .rail.is-sheet .mcur__cur .cur-label{ display:flex; justify-content:space-between; align-items:center; padding:8px; background:#e5d8c7; border-radius:6px; color:var(--oxblood) }
+  .rail.is-sheet .mcur__cur .cur-label{ display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; padding:8px; background:#e5d8c7; border-radius:6px; color:var(--oxblood) }
+  .rail.is-sheet .mcur__cur .cur-label > span{ flex:0 1 auto; font-size:22px }
   .rail.is-sheet .mcur__cur .curated-box{ aspect-ratio:auto; height:auto; min-height:0; grid-template-columns:44px minmax(0,1fr) 44px }
   .rail.is-sheet .mcur__cur .curated-grid{ display:flex; max-width:none; min-width:0; overflow-x:auto; gap:6px; padding:6px; scroll-snap-type:x proximity }
   .mcur__thumb{ flex:0 0 76px; width:76px; aspect-ratio:var(--card-ar); padding:0; border:1px solid #ded4c6; border-radius:3px; background-size:cover; background-position:center; cursor:pointer; scroll-snap-align:start; position:relative }
@@ -5114,7 +5115,7 @@ function paintAllEffects(){
 function noteSection(id){
   var fromCurated = LAST_SECTION === 'curated';
   LAST_SECTION = id;
-  if (id !== 'curated' && fromCurated && !ALL_OPEN) setAllOpen(true);
+  if (id !== 'curated' && fromCurated && !ALL_OPEN && !railIsSheet()) setAllOpen(true);
   paintCuratedRail();
   paintAllEffects();
 }
