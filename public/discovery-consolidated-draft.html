@@ -798,6 +798,9 @@ body{
 .pc-detail__art{
   flex:1 1 auto; min-height:0; margin:0 14px; border-radius:12px;
   background-size:cover; background-position:center top; background-repeat:no-repeat;
+  /* __M6_DETAIL_WATERMARK__ The mark is an ::after inset to this box, so it
+     needs to be the containing block. */
+  position:relative;
 }
 .pc-detail__foot{ flex:0 0 auto; padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px)) }
 .pc-detail__acts{ display:flex; flex-direction:column; gap:9px; margin-top:12px }
@@ -859,10 +862,34 @@ body{
    -- but there is no artwork under it yet, so the diagonals and the PREVIEW
    legend were being drawn over the processing card. They belong only where
    there is a real locked image to mark. */
-.card.is-locked:not(.is-crafting) .card__art::after{
+/* __M6_DETAIL_WATERMARK__ (mobile defect, 2026-09-18). ONE RULE, BOTH PLACES.
+
+   The mark is drawn here, not baked into the file: the gallery tile carries
+   it as a pseudo-element keyed off .is-locked. The mobile piece detail is not
+   a .card, so it matched nothing and showed the same locked preview clean --
+   a piece looked owned the moment it was opened.
+
+   The desktop lightbox never had this: openFeatured REFUSES a locked piece
+   outright, because full size is what the purchase buys. The mobile detail
+   cannot refuse -- it is where the unlock actions live -- so it must mark
+   instead. That is why this is a second SELECTOR and not a second rule: the
+   detail joins the existing declaration rather than restating it, so the two
+   surfaces cannot drift into disagreeing about what a locked piece looks
+   like. The state driving both is p.locked, which comes from the /unlocks
+   entitlement read (loadPortfolio's unlockedBySlot) -- the detail infers
+   nothing from having an image URL. */
+.card.is-locked:not(.is-crafting) .card__art::after,
+.pc-detail.is-locked .pc-detail__art::after{
   content:"PREVIEW"; position:absolute; inset:0; z-index:1; display:flex; align-items:center; justify-content:center;
   font-family:var(--sans); font-size:11px; letter-spacing:.12em; color:rgba(255,255,255,.6);
   background:repeating-linear-gradient(45deg, rgba(0,0,0,.15) 0 3px, transparent 3px 18px);
+}
+/* The detail is a far larger canvas than a tile, so the legend is sized to it
+   -- the same mark, legible at the size it is drawn. */
+.pc-detail.is-locked .pc-detail__art::after{
+  font-size:14px; letter-spacing:.2em; align-items:flex-start; padding-top:14px;
+  border-radius:12px;
+  background:repeating-linear-gradient(45deg, rgba(0,0,0,.18) 0 4px, transparent 4px 24px);
 }
 /* __MC_GEAR__ PROCESSING (Rich, 2026-09-16). The generic ring spinner is
    replaced by the house mark: an oxblood plate with the LITEN gear turning
@@ -8539,6 +8566,14 @@ function paintPieceDetail(){
 
   var art = document.getElementById('pcArt');
   if (art) art.style.backgroundImage = p.art ? 'url("' + p.art + '")' : '';
+
+  /* __M6_DETAIL_WATERMARK__ The same state the tile is drawn from, and the
+     same class the tile carries -- so the mark is decided once, by the
+     entitlement read behind p.locked, and the detail cannot conclude a piece
+     is owned merely because it has an image to show. `owned` above is
+     !p.locked; this is that value, not a second opinion about it. */
+  var shell = document.getElementById('pcDetail');
+  if (shell) shell.classList.toggle('is-locked', !owned);
 
   var badge = document.getElementById('pcBadge');
   if (badge){

@@ -28,6 +28,7 @@ iPad portrait (768, 1024), Win11 Chrome 1366x768.
 | A7 | **Tap an effect with no photo uploaded** | The message named a control inside a sheet that starts shut. **Expect the Curator sheet to open at the source area, with the nudge.** |
 | A8 | **My Collection opened from Format (after paying) and from Review** | `is-review` / `is-format` outlived their stages and the docked rail reads both. **Expect the collection's own rail, and Review's rail back when you close it from Review.** |
 | A9 | **Piece detail, Preview and Owned** | New. **Preview: badge, collection date, prev/next, "Use Included Unlock (N available)" only when the portfolio has one, "Unlock for $2.99". Owned: badge, View Full Size, Download.** Owned must offer no unlock; Preview must offer no download. |
+| A10 | **Tap a LOCKED piece in My Collection** | The mark is drawn, not baked into the file: the tile carries it as a pseudo-element keyed off `.is-locked`, and the detail was not a `.card`, so a locked preview opened **clean** — the artwork the watermark protects was handed over by the act of looking at it. The detail now joins the gallery's own declaration rather than restating it, driven by the same `p.locked` (the `/unlocks` entitlement read). **Expect: diagonals + PREVIEW in the detail, and both unlock actions still there. Then unlock it and reopen — clean, "Owned", View Full Size and Download.** Check one piece with an included unlock still available and one with a $2.99 checkout abandoned mid-flow: both must stay marked. |
 
 ## B · Needs a purchase — do once, together
 
