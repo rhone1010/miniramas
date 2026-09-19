@@ -5525,7 +5525,7 @@ function buildMinimap(){
     panels[0].prepend(curatedNav);
     var full = document.createElement('div'); full.className = 'mcur__fullmap';
     var curatedSection = document.createElement('section'); curatedSection.className = 'mcur__curated-section';
-    curatedSection.innerHTML = '<div class="mcur__roomhead"><button type="button" class="mcur__curated-title" data-curator-room="curated">Curated Effects</button><button class="cur-reroll" type="button" id="curReroll" data-tip="reroll"><span class="cur-reroll__ico" aria-hidden="true">&#8635;</span> New Mix</button></div><div class="mcur__effects" id="mcurCuratedMapEffects"></div>';
+    curatedSection.innerHTML = '<div class="mcur__roomhead"><button type="button" class="mcur__curated-title" data-curator-room="curated">Curated Effects</button></div><div class="mcur__effects" id="mcurCuratedMapEffects"></div>';
     full.appendChild(curatedSection);
     SILOS.forEach(function(silo){
       var section = document.createElement('section');
