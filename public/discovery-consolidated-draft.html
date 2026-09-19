@@ -2825,6 +2825,28 @@ body.is-lboxed{ overflow:hidden }
     flex:0 0 42%; min-height:66px; width:auto; font-family:var(--sans); font-size:16px;
   }
 }
+
+@media (max-width:1024px){
+  #discoveryView .stage-frame{ padding-bottom:calc(var(--mcur-dock-h,100px) + 24px + env(safe-area-inset-bottom,0px)); scroll-snap-type:none }
+  #discoveryView .silo-block{ height:auto }
+  .rail.is-sheet:has(> .mcur){ overflow:hidden; display:flex; flex-direction:column }
+  .rail.is-sheet .mcur{ min-height:0; overflow:hidden }
+  .rail.is-sheet .mcur::before, .rail.is-sheet .mcur__head{ flex-shrink:0 }
+  .mcur__body{ min-height:0; overflow-y:auto; overscroll-behavior-y:contain }
+  .rail.is-sheet .mcur__cur .cur-label{ display:flex; justify-content:space-between; align-items:center; padding:8px; background:#e5d8c7; border-radius:6px; color:var(--oxblood) }
+  .rail.is-sheet .mcur__cur .curated-box{ aspect-ratio:auto; height:auto; min-height:0; grid-template-columns:44px minmax(0,1fr) 44px }
+  .rail.is-sheet .mcur__cur .curated-grid{ display:flex; max-width:none; min-width:0; overflow-x:auto; gap:6px; padding:6px; scroll-snap-type:x proximity }
+  .mcur__thumb{ flex:0 0 76px; width:76px; aspect-ratio:var(--card-ar); padding:0; border:1px solid #ded4c6; border-radius:3px; background-size:cover; background-position:center; cursor:pointer; scroll-snap-align:start; position:relative }
+  .mcur__thumb.sel{ outline:2px solid var(--gold); outline-offset:-2px }
+  .mcur__thumb.sel::after{ content:'✓'; position:absolute; right:2px; top:2px; background:var(--gold); color:var(--ink) }
+  .mcur__fullmap{ display:none }
+  .mcur .all-effects.is-full .ae-rooms, .mcur .all-effects.is-full .mm-dots{ display:none }
+  .mcur .all-effects.is-full .mcur__fullmap{ display:grid; width:100%; gap:12px }
+  .mcur__roomhead{ display:flex; align-items:center; gap:8px; width:100%; padding:8px; border:1px solid #ded4c6; border-radius:6px; background:#e5d8c7; color:var(--oxblood); font:inherit; cursor:pointer }
+  .mcur__roomhead img{ width:34px; height:34px }
+  .mcur__effects{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:6px 0 }
+  .mcur__effects .mcur__thumb{ width:100%; min-width:0 }
+}
 </style>
 </head>
 <body>
@@ -4031,6 +4053,7 @@ function mobileCuratorHtml(){
       '<h3>Curator</h3>' +
       '<button class="mcur__x" id="mcurClose" type="button" aria-label="Close the Curator">&#10005;</button>' +
     '</div>' +
+    '<div class="mcur__body">' +
     '<div class="mcur__top">' +
       '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>' +
       '<div class="mcur__acts">' +
@@ -4062,6 +4085,7 @@ function mobileCuratorHtml(){
       '<button class="ae-toggle" id="allToggle" type="button" hidden aria-expanded="true" aria-controls="minimap">&#9650;</button>' +
       '<div class="ae-strip" id="aeStrip" aria-hidden="true"></div>' +
       '<div class="ae-rooms" id="minimap"></div>' +
+    '</div>' +
     '</div>' +
     '<div class="your-collection leather" data-tip="collection">' +
       '<div class="your-collection__title">Your Collection</div>' +
@@ -4943,10 +4967,21 @@ function renderCuratedStage(){
 }
 /* The rail's Curated box: the page's 8 as cells (gold = chosen), ‹ › and
    the two dots once a second page exists (brass = the page you are on). */
+function mobileEffectThumb(base){
+  var e = curatedEffect(base);
+  var button = document.createElement('button');
+  button.type = 'button'; button.className = 'mcur__thumb' + (isChosen(base) ? ' sel' : '');
+  button.dataset.curatorEffect = base;
+  button.setAttribute('aria-label', e ? e.label : base);
+  button.setAttribute('aria-pressed', isChosen(base) ? 'true' : 'false');
+  button.style.backgroundImage = 'url("' + curatedPreviewUrl(base, SUBJECT) + '")';
+  return button.outerHTML;
+}
 function paintCuratedRail(){
   var grid = document.getElementById('curatedGrid');
   if (grid){
     grid.innerHTML = curatedPage().map(function(base){
+      if (grid.closest('.mcur')) return mobileEffectThumb(base);
       var e = curatedEffect(base);
       return '<i data-key="' + base + '" title="' + (e ? e.label : '') + '"' + (isChosen(base) ? ' class="sel"' : '') + '></i>';
     }).join('');
@@ -5054,6 +5089,7 @@ function paintAllEffects(){
   if (!box) return;
   var mobile = !!box.closest('.mcur');
   box.classList.toggle('is-open', mobile || ALL_OPEN);
+  box.classList.toggle('is-full', mobile && ALL_OPEN);
   if (tg){
     tg.innerHTML = ALL_OPEN ? '&#9650;' : '&#9660;';
     tg.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
@@ -5063,10 +5099,9 @@ function paintAllEffects(){
      it cannot drift from the caret, and so a rail rebuild repaints both. */
   var see = document.getElementById('aeSeeAll');
   if (see){
-    see.innerHTML = (!mobile && ALL_OPEN ? 'Show Less' : 'See All') + ' <span aria-hidden="true">' +
-      (!mobile && ALL_OPEN ? '&#8249;' : '&#8250;') + '</span>';
-    if (mobile) see.removeAttribute('aria-expanded');
-    else see.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
+    see.innerHTML = (ALL_OPEN ? 'Show Less' : 'See All') + ' <span aria-hidden="true">' +
+      (ALL_OPEN ? '&#8249;' : '&#8250;') + '</span>';
+    see.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
   }
   var strip = document.getElementById('aeStrip');
   if (strip){
@@ -5108,9 +5143,18 @@ function requestReview(anchorEl){
 document.addEventListener('click', function(e){
   var t = e.target, c = t && t.closest ? function(s){ return t.closest(s); } : function(){ return null; };
   var pg = c('#discoveryRail .cur-page');
-  if (pg){ if (pg.getAttribute('aria-disabled') !== 'true'){ CURATED.page = +pg.dataset.curPage ? 1 : 0; act('curated page ' + (CURATED.page + 1)); paintCurated(); goCurated(); } return; }
+  if (pg){ if (pg.getAttribute('aria-disabled') !== 'true'){ CURATED.page = +pg.dataset.curPage ? 1 : 0; act('curated page ' + (CURATED.page + 1)); paintCurated(); if (!c('.mcur')) goCurated(); } return; }
   if (c('#curReroll')){ if (rerollBench()){ act('curated reroll'); paintCurated(); } return; }
-  if (c('#curatedBox')){ goCurated(); return; }
+  var thumb = c('[data-curator-effect]');
+  if (thumb){
+    var card = Array.prototype.find.call(document.querySelectorAll('#stageScroll .card'), function(el){ return el.dataset.baseId === thumb.dataset.curatorEffect; });
+    if (card) card.click();
+    paintCuratedRail(); paintMinimapSelection();
+    return;
+  }
+  var room = c('[data-curator-room]');
+  if (room){ document.getElementById('silo-' + room.dataset.curatorRoom).scrollIntoView({ behavior:'smooth', block:'start' }); return; }
+  if (c('#curatedBox')){ if (!c('.mcur')) goCurated(); return; }
   var ps = c('[data-pfm]');
   if (ps){ if (!ps.disabled) pickFor(+ps.dataset.pfm); return; }
   if (c('#optPickForMe')){ togglePickSizes(); return; }
@@ -5118,14 +5162,6 @@ document.addEventListener('click', function(e){
      rail control, so the five rebuild sites keep working without any of them
      owning the listener. That is the "stable owner" the refactor needed: the
      delegation already here, not a new module. */
-  if (c('#aeSeeAll') && c('.mcur')){
-    setAllOpen(true);
-    var firstRoom = SILOS[0] && document.getElementById('silo-' + SILOS[0].id);
-    if (firstRoom) firstRoom.scrollIntoView({ behavior:'smooth', block:'start' });
-    document.body.classList.remove('rail-open');
-    act('rooms opened');
-    return;
-  }
   if (c('#allToggle') || c('#aeSeeAll')){ setAllOpen(!ALL_OPEN); act(ALL_OPEN ? 'rooms opened' : 'rooms closed'); return; }
   /* __MCUR__ The sheet's own two controls. Curated is a disclosure here --
      the board puts it beside Pick 4 Me as an action, and the eight-cell grid
@@ -5467,6 +5503,22 @@ function buildMinimap(){
     });
     panels[idx < (mm.closest('.mcur') ? 6 : 4) ? 0 : 1].appendChild(b);
   });
+  if (mm.closest('.mcur')){
+    var full = document.createElement('div'); full.className = 'mcur__fullmap';
+    SILOS.forEach(function(silo){
+      var section = document.createElement('section');
+      var heading = document.createElement('button');
+      heading.type = 'button'; heading.className = 'mcur__roomhead'; heading.dataset.curatorRoom = silo.id;
+      var icon = document.createElement('img'); icon.src = __REAL_ICONS[silo.id] || ''; icon.alt = '';
+      heading.appendChild(icon); heading.appendChild(document.createTextNode(silo.name));
+      section.appendChild(heading);
+      var effects = document.createElement('div'); effects.className = 'mcur__effects';
+      effects.innerHTML = silo.effects.map(function(e){ return mobileEffectThumb(e.id); }).join('');
+      section.appendChild(effects); full.appendChild(section);
+    });
+    var oldFull = mm.parentNode.querySelector('.mcur__fullmap'); if (oldFull) oldFull.remove();
+    mm.parentNode.appendChild(full);
+  }
   /* __M5_COMPACT_MAP__ (Rich, 2026-09-18). The board's Effect Map is this
      minimap, read the way a phone reads things: one column per silo -- its
      swatches over its icon -- four across, two pages, two dots.
@@ -5505,6 +5557,11 @@ function buildMinimap(){
 }
 buildMinimap();
 function paintMinimapSelection(){
+  document.querySelectorAll('[data-curator-effect]').forEach(function(cell){
+    var chosen = isChosen(cell.dataset.curatorEffect);
+    cell.classList.toggle('sel', chosen); cell.setAttribute('aria-pressed', chosen ? 'true' : 'false');
+    cell.style.backgroundImage = 'url("' + curatedPreviewUrl(cell.dataset.curatorEffect, SUBJECT) + '")';
+  });
   document.querySelectorAll('.mm__grid i[data-key]').forEach(function(cell){
     cell.classList.toggle('sel', SELECTED.some(function(s){ return s.key === cell.dataset.key || s.baseId === cell.dataset.key; }));
   });
@@ -9496,7 +9553,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
        The box's page controls do not: they turn the page where you are, so
        the eight can be paged back and forth without the sheet closing on
        every tap (acceptance, 2026-09-13). */
-    if (e.target.closest && e.target.closest('.rail .cur-page')) return;
+    if (e.target.closest && e.target.closest('.rail .cur-page, .mcur #curatedBox, .mcur [data-curator-effect], .mcur [data-curator-room]')) return;
     /* Keep the mobile source-photo prompt visible when Pick cannot proceed. */
     if (rail.querySelector('.mcur') && !uploadedPhotoDataUrl && e.target.closest && e.target.closest('.rail [data-pfm]')) return;
     if (e.target.closest && e.target.closest('.rail [data-pfm], .rail .ae-rooms .mm, .rail .curated-box')) {
