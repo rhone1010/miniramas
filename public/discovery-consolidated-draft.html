@@ -2849,6 +2849,17 @@ body.is-lboxed{ overflow:hidden }
   .mcur__effects{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:6px 0 }
   .mcur__effects .mcur__thumb{ width:100%; min-width:0 }
 }
+@media (max-width:1024px){
+  .rail.is-sheet .mcur__cur:not([hidden]), .mcur__curated-section{ background:#e5d8c7; border:1px solid #ded4c6; border-radius:6px; padding:8px }
+  .rail.is-sheet .mcur__cur .cur-label, .mcur__curated-section .mcur__roomhead{ background:var(--oxblood); color:#fff8ee; border-radius:6px }
+  .rail.is-sheet .mcur__cur .cur-reroll{ color:#fff8ee; border-color:#ded4c6 }
+  .rail.is-sheet .mcur__maphead{ display:flex; justify-content:space-between; width:100%; padding:8px; margin:8px 0; border:1px solid #ded4c6; border-radius:6px; background:#eee7dc; cursor:pointer; font-family:var(--serif); text-align:left }
+  .rail.is-sheet .mcur .ae-rooms .mcur__curated-map{ grid-column:span 2; background:#e5d8c7; border-radius:6px; color:var(--oxblood); padding:6px; gap:6px; font-family:var(--serif); font-size:18px }
+  .mcur__curated-mini{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:3px; width:100% }
+  .mcur__curated-mini i{ display:block; height:18px; border-radius:2px; background:var(--oxblood) }
+  .mcur__curated-mini i.sel{ background:var(--gold-soft) }
+  .mcur:has(#mcurCuratedWrap:not([hidden])) #allEffects:not(.is-full){ display:none }
+}
 </style>
 </head>
 <body>
@@ -4079,10 +4090,9 @@ function mobileCuratorHtml(){
       '</div>' +
       '<div class="cur-dots" id="curatedDots" aria-hidden="true"><i></i><i></i></div>' +
     '</div>' +
-    '<div class="mcur__maphead">' +
-      '<span>Effect Map</span>' +
-      '<button class="ae-seeall" id="aeSeeAll" type="button" aria-controls="minimap">See All <span aria-hidden="true">&#8250;</span></button>' +
-    '</div>' +
+    '<button class="mcur__maphead" id="mcurMapToggle" type="button" aria-expanded="false" aria-controls="allEffects">' +
+      '<span>Effect Map</span><span class="ae-seeall" id="aeSeeAll">See All <span aria-hidden="true">&#8250;</span></span>' +
+    '</button>' +
     '<div class="all-effects is-open" id="allEffects" role="group" aria-label="Effect Map">' +
       '<button class="ae-toggle" id="allToggle" type="button" hidden aria-expanded="true" aria-controls="minimap">&#9650;</button>' +
       '<div class="ae-strip" id="aeStrip" aria-hidden="true"></div>' +
@@ -4969,6 +4979,17 @@ function renderCuratedStage(){
 }
 /* The rail's Curated box: the page's 8 as cells (gold = chosen), ‹ › and
    the two dots once a second page exists (brass = the page you are on). */
+function paintCuratedMap(){
+  var compact = document.getElementById('mcurCuratedMap');
+  if (compact){
+    compact.innerHTML = '<span class="mcur__curated-mini">' + Array.from({length:10}, function(_, i){
+      var base = CURATED.bench[i];
+      return '<i' + (base && isChosen(base) ? ' class="sel"' : '') + '></i>';
+    }).join('') + '</span><span>Curated</span>';
+  }
+  var full = document.getElementById('mcurCuratedMapEffects');
+  if (full) full.innerHTML = CURATED.bench.map(mobileEffectThumb).join('');
+}
 function mobileEffectThumb(base){
   var e = curatedEffect(base);
   var button = document.createElement('button');
@@ -5002,6 +5023,7 @@ function paintCuratedRail(){
   }
   var box = document.getElementById('curatedBox');
   if (box) box.classList.toggle('active', ACTIVE_SILO === 'curated');
+  paintCuratedMap();
 }
 function paintCurated(){ paintCuratedRail(); renderCuratedStage(); }
 function goCurated(){ var b = document.getElementById('silo-curated'); if (b) b.scrollIntoView({ behavior:'smooth', block:'start' }); }
@@ -5105,6 +5127,8 @@ function paintAllEffects(){
       (ALL_OPEN ? '&#8249;' : '&#8250;') + '</span>';
     see.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
   }
+  var mapToggle = document.getElementById('mcurMapToggle');
+  if (mapToggle) mapToggle.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
   var strip = document.getElementById('aeStrip');
   if (strip){
     var room = SILOS.filter(function(s){ return s.id === ACTIVE_SILO; })[0] || SILOS[0];
@@ -5164,7 +5188,7 @@ document.addEventListener('click', function(e){
      rail control, so the five rebuild sites keep working without any of them
      owning the listener. That is the "stable owner" the refactor needed: the
      delegation already here, not a new module. */
-  if (c('#allToggle') || c('#aeSeeAll')){ setAllOpen(!ALL_OPEN); act(ALL_OPEN ? 'rooms opened' : 'rooms closed'); return; }
+  if (c('#allToggle') || c('#aeSeeAll') || c('#mcurMapToggle')){ setAllOpen(!ALL_OPEN); act(ALL_OPEN ? 'rooms opened' : 'rooms closed'); return; }
   /* __MCUR__ The sheet's own two controls. Curated is a disclosure here --
      the board puts it beside Pick 4 Me as an action, and the eight-cell grid
      it opens is the same #curatedGrid the desktop rail paints. */
@@ -5503,10 +5527,22 @@ function buildMinimap(){
     b.addEventListener('click', function(){
       document.getElementById('silo-' + silo.id).scrollIntoView({ behavior:'smooth', block:'start' });
     });
-    panels[idx < (mm.closest('.mcur') ? 6 : 4) ? 0 : 1].appendChild(b);
+    panels[idx < 4 ? 0 : 1].appendChild(b);
   });
   if (mm.closest('.mcur')){
+    var curatedNav = document.createElement('button');
+    curatedNav.type = 'button'; curatedNav.id = 'mcurCuratedMap'; curatedNav.className = 'mm mcur__curated-map';
+    curatedNav.setAttribute('aria-label', 'Curated Effects');
+    curatedNav.addEventListener('click', function(){
+      var wrap = document.getElementById('mcurCuratedWrap'), toggle = document.getElementById('mcurCurated');
+      if (wrap.hidden) toggle.click();
+      wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+    panels[0].prepend(curatedNav);
     var full = document.createElement('div'); full.className = 'mcur__fullmap';
+    var curatedSection = document.createElement('section'); curatedSection.className = 'mcur__curated-section';
+    curatedSection.innerHTML = '<button type="button" class="mcur__roomhead" data-curator-room="curated">Curated Effects</button><div class="mcur__effects" id="mcurCuratedMapEffects"></div>';
+    full.appendChild(curatedSection);
     SILOS.forEach(function(silo){
       var section = document.createElement('section');
       var heading = document.createElement('button');
@@ -5520,6 +5556,7 @@ function buildMinimap(){
     });
     var oldFull = mm.parentNode.querySelector('.mcur__fullmap'); if (oldFull) oldFull.remove();
     mm.parentNode.appendChild(full);
+    paintCuratedMap();
   }
   /* __M5_COMPACT_MAP__ (Rich, 2026-09-18). The board's Effect Map is this
      minimap, read the way a phone reads things: one column per silo -- its
@@ -5559,6 +5596,7 @@ function buildMinimap(){
 }
 buildMinimap();
 function paintMinimapSelection(){
+  paintCuratedMap();
   document.querySelectorAll('[data-curator-effect]').forEach(function(cell){
     var chosen = isChosen(cell.dataset.curatorEffect);
     cell.classList.toggle('sel', chosen); cell.setAttribute('aria-pressed', chosen ? 'true' : 'false');
@@ -9555,7 +9593,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
        The box's page controls do not: they turn the page where you are, so
        the eight can be paged back and forth without the sheet closing on
        every tap (acceptance, 2026-09-13). */
-    if (e.target.closest && e.target.closest('.rail .cur-page, .mcur #curatedBox, .mcur [data-curator-effect], .mcur [data-curator-room]')) return;
+    if (e.target.closest && e.target.closest('#mcurCuratedMap, .rail .cur-page, .mcur #curatedBox, .mcur [data-curator-effect], .mcur [data-curator-room]')) return;
     /* Keep the mobile source-photo prompt visible when Pick cannot proceed. */
     if (rail.querySelector('.mcur') && !uploadedPhotoDataUrl && e.target.closest && e.target.closest('.rail [data-pfm]')) return;
     if (e.target.closest && e.target.closest('.rail [data-pfm], .rail .ae-rooms .mm, .rail .curated-box')) {
@@ -9858,7 +9896,8 @@ var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
       if (!d || !d.ok){
         clearResume();
         if (signinErr) signinErr.textContent =
-          d && d.reason === 'invalid_email' ? 'That does not look like an email address.'
+          d && d.reason === 'preview_email_disabled' ? 'Sign-in email disabled during Preview review.'
+          : d && d.reason === 'invalid_email' ? 'That does not look like an email address.'
                                             : 'The link could not be sent. Try again in a moment.';
         return;
       }
