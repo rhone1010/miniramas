@@ -1713,9 +1713,39 @@ body.is-lboxed{ overflow:hidden }
   /* The caret is the desktop control and would read as a second, unlabelled
      toggle beside See All. One door on a phone. */
   .rail .ae-toggle{ display:none }
-  /* Open, the map is the sheet's tallest thing -- give it a ceiling so the
-     three primary concepts above never scroll out of reach. */
-  .rail .all-effects.is-open .ae-rooms{ max-height:34vh; overflow-y:auto }
+  /* __M5_COMPACT_MAP__ The board's Effect Map: four silos across, two pages,
+     swipe between them. The desktop stacks the same two panels as rows and
+     needs the whole rail's height to do it -- that stacking is what made the
+     sheet an enormous scrolling control panel.
+
+     One panel per page, snapped, so a swipe lands square rather than halfway
+     between two silos. */
+  .rail .all-effects.is-open .ae-rooms{
+    display:flex; flex-wrap:nowrap; gap:0; max-height:none; overflow-x:auto;
+    scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+  }
+  .rail .ae-rooms::-webkit-scrollbar{ display:none }
+  .rail .ae-rooms .mm-panel{
+    flex:0 0 100%; scroll-snap-align:start;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:0;
+  }
+  /* A silo reads top to bottom: what is chosen in it, then which room it is. */
+  .rail .ae-rooms .mm{
+    flex-direction:column-reverse; align-items:center; gap:6px;
+    width:100%; min-height:64px; padding:6px 2px;
+  }
+  .rail .ae-rooms .mm__icon{ width:26px; height:26px }
+  /* Two rows of four: eight effects, the shape of the room itself. */
+  .rail .ae-rooms .mm__grid{
+    width:100%; max-width:46px; grid-template-columns:repeat(4,1fr); gap:2px;
+  }
+  .rail .all-effects.is-open .mm-dots{
+    display:flex; justify-content:center; gap:6px; margin-top:6px;
+    pointer-events:none;
+  }
+  .rail .mm-dots i{ width:6px; height:6px; border-radius:50%; background:rgba(120,96,64,.34);
+    transition:background 180ms ease }
+  .rail .mm-dots i.on{ background:var(--oxblood) }
 
   /* __M1_MAP_CLOSED__ The minimap starts closed on every touch width, not
      just phones. It has been hidden below 767 since the sheet was built --
@@ -2460,6 +2490,10 @@ body.is-lboxed{ overflow:hidden }
 .ae-strip i.sel{ background:var(--gold-soft) }
 .all-effects.is-open .ae-strip{ display:none }
 .ae-rooms{ display:none; width:100% }
+/* __M5_COMPACT_MAP__ The pages are a phone idea. Desktop stacks both panels
+   as rows, so there is nothing to page between and nothing to report. */
+.mm-dots{ display:none }
+.all-effects:not(.is-open) .mm-dots{ display:none !important }
 .all-effects.is-open .ae-rooms{ display:flex; flex-direction:column; gap:2px }
 .ae-rooms .mm-panel{ padding:2px; gap:0 }
 .ae-rooms .mm{ width:100%; justify-content:center; gap:10%; padding:4px 2px }
@@ -5095,6 +5129,30 @@ function buildMinimap(){
     });
     panels[idx < 4 ? 0 : 1].appendChild(b);
   });
+  /* __M5_COMPACT_MAP__ (Rich, 2026-09-18). The board's Effect Map is this
+     minimap, read the way a phone reads things: one column per silo -- its
+     swatches over its icon -- four across, two pages, two dots.
+
+     The structure was already right. buildMinimap has always emitted two
+     .mm-panel groups of four, which is exactly the board's two pages; on
+     desktop they stack as rows. So the phone does not need a second template,
+     it needs the panels laid side by side and swiped. Same buttons, same
+     data-target, same click handler, same selection painting -- nothing here
+     knows which layout it is in.
+
+     The dots are appended once and follow the scroll. */
+  var dots = document.createElement('div');
+  dots.className = 'mm-dots';
+  dots.innerHTML = '<i class="on"></i><i></i>';
+  /* Beside the scroller, not inside it: an absolutely-positioned child of a
+     scroll container anchors to the CONTENT, so dots placed within would
+     travel off-screen with the page they are meant to be reporting. */
+  if (mm.parentNode) mm.parentNode.appendChild(dots); else mm.appendChild(dots);
+  mm.addEventListener('scroll', function(){
+    var page = mm.scrollLeft > mm.clientWidth / 2 ? 1 : 0;
+    dots.children[0].classList.toggle('on', page === 0);
+    dots.children[1].classList.toggle('on', page === 1);
+  }, { passive:true });
 }
 buildMinimap();
 function paintMinimapSelection(){

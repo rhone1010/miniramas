@@ -155,3 +155,39 @@ describe('no source sends the customer to the Curator, not to look for it', () =
     expect(HTML).toMatch(/typeof window !== 'undefined' && window\.matchMedia &&/)
   })
 })
+
+describe('the Effect Map is the board\u2019s, not the desktop map squeezed in', () => {
+  /* The board's Effect Map IS this minimap, read the way a phone reads:
+     one column per silo -- swatches over icon -- four across, two pages.
+     buildMinimap has always emitted two .mm-panel groups of four, which is
+     exactly those two pages; desktop stacks them as rows, and that stacking
+     is what made the sheet an enormous scrolling panel. So there is no
+     second template: the same buttons, laid side by side and swiped. */
+  it('pages the two panels the builder already makes', () => {
+    expect(HTML).toMatch(/\.rail \.ae-rooms \.mm-panel\{[\s\S]{0,160}flex:0 0 100%/)
+    expect(HTML).toMatch(/scroll-snap-type:x mandatory/)
+    expect(HTML).toMatch(/scroll-snap-align:start/)
+  })
+
+  it('stands each silo up as swatches over its icon', () => {
+    expect(HTML).toMatch(/\.rail \.ae-rooms \.mm\{[\s\S]{0,160}flex-direction:column-reverse/)
+  })
+
+  it('reuses the same buttons, so selection and navigation are untouched', () => {
+    // one builder, one click handler, one selection painter
+    expect(HTML).toMatch(/b\.dataset\.target = silo\.id/)
+    expect(HTML).toMatch(/document\.querySelectorAll\('\.mm__grid i\[data-key\]'\)/)
+  })
+
+  /* An absolutely-positioned child of a scroll container anchors to the
+     CONTENT, so dots placed inside would travel off with the page they
+     report on. */
+  it('keeps the dots beside the scroller, not inside it', () => {
+    expect(HTML).toMatch(/mm\.parentNode\.appendChild\(dots\)/)
+  })
+
+  it('shows the dots only where there are pages to report', () => {
+    expect(HTML).toMatch(/\.mm-dots\{ display:none \}/)
+    expect(HTML).toMatch(/\.rail \.all-effects\.is-open \.mm-dots\{[\s\S]{0,120}display:flex/)
+  })
+})
