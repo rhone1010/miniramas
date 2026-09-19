@@ -117,3 +117,66 @@ describe('the Stripe webhook and the deployment that receives it', () => {
     expect(html).toMatch(/unlock-confirm/)
   })
 })
+
+/* ══ THE RENDER PATH HAS THE SAME EXPOSURE AS THE WEBHOOK ══════════
+   Added 2026-09-19, after the locked-preview watermark was restored on this
+   branch and new pieces still came out clean.
+
+   The webhook was the first place this bit (2026-09-17, $2.99 paid and
+   nothing unlocked). The render path is the second, and it is worse-behaved
+   because it fails SILENTLY: there is no error, no 409, no log. A piece
+   simply renders with whichever version of renderOnePortfolioItem the
+   deployment that claimed it happens to be running.
+
+   Two deployments claim portfolio items:
+     - the client's fast-path dispatch, on the deployment serving the page
+       (a Preview, carrying this branch)
+     - the render-poll CRON, every two minutes, three at a time, on
+       PRODUCTION -- which serves main
+   Both call renderOnePortfolioItem. So for any run longer than the fast path
+   completes, main renders a share of it, and a branch-only change to what a
+   locked derivative looks like applies to some pieces and not others.
+
+   This does not assert that the two agree -- a branch is allowed to change
+   the renderer, that is how anything ships. It asserts the thing that is
+   easy to forget: that a change to the LOCKED DERIVATIVE cannot be judged
+   from Preview alone, because Production renders too. */
+describe('the render path and the deployment that also runs it', () => {
+  const renderer = 'lib/store/portfolio-render.ts'
+
+  it('main still has the renderer the cron calls', () => {
+    expect(onMain(renderer)).toBeTruthy()
+    expect(onMain('app/api/v1/portfolios/items/render-poll/route.ts')).toBeTruthy()
+  })
+
+  it('the cron and the fast path share one renderer, so neither can drift alone', () => {
+    const poll = readFileSync(path.join(ROOT, 'app/api/v1/portfolios/items/render-poll/route.ts'), 'utf8')
+    const fast = readFileSync(path.join(ROOT, 'app/api/v1/portfolios/items/render/route.ts'), 'utf8')
+    expect(poll).toMatch(/renderOnePortfolioItem/)
+    expect(fast).toMatch(/renderOnePortfolioItem/)
+  })
+
+  /* THE ONE THAT NAMES THE CURRENT SITUATION. When the locked derivative is
+     built differently here than on main, pieces rendered by Production's
+     cron carry main's version. Not a failure to fix in code -- a fact to
+     know before judging a locked piece on Preview. */
+  it('says plainly when the locked derivative differs from main', () => {
+    const here = readFileSync(path.join(ROOT, renderer), 'utf8')
+    const there = onMain(renderer) ?? ''
+    const bakesHere = /bakeWatermark\(imageB64\)/.test(here)
+    const bakesThere = /bakeWatermark\(imageB64\)/.test(there)
+
+    if (bakesHere !== bakesThere) {
+      console.warn(
+        '[deployment-contract] the locked derivative is built differently here than on main ' +
+        `(branch bakes: ${bakesHere}, main bakes: ${bakesThere}). The render-poll cron runs on ` +
+        'PRODUCTION every two minutes, three items at a time, and claims from the same database — ' +
+        'so a share of every run is rendered by main and will NOT match what this branch produces. ' +
+        'Locked-preview appearance cannot be accepted from Preview until this is merged.',
+      )
+    }
+    // Not a failure: shipping a renderer change is exactly how this gets to
+    // main. The warning is the deliverable.
+    expect(typeof bakesHere).toBe('boolean')
+  })
+})
