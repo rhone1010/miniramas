@@ -2860,6 +2860,11 @@ body.is-lboxed{ overflow:hidden }
   .mcur__curated-mini i.sel{ background:var(--gold-soft) }
   .mcur:has(#mcurCuratedWrap:not([hidden])) #allEffects:not(.is-full){ display:none }
 }
+@media (max-width:1024px){
+  .mcur__curated-section .mcur__roomhead{ justify-content:space-between }
+  .mcur__curated-title{ padding:0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; text-align:left }
+  .mcur__curated-section .cur-reroll{ flex:none; color:#fff8ee; border-color:#ded4c6 }
+}
 </style>
 </head>
 <body>
@@ -4073,23 +4078,10 @@ function mobileCuratorHtml(){
         '<button class="pick-for-me" id="optPickForMe" type="button" data-tip="pick" ' +
           'aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 7h4c5 0 9 14 14 14h4m-4-4 4 4-4 4M3 21h4c5 0 9-14 14-14h4m-4-4 4 4-4 4"/></svg>Pick 4 Me</button>' +
         '<button class="mcur__curated" id="mcurCurated" type="button" aria-expanded="false" ' +
-          'aria-controls="mcurCuratedWrap"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M5 25 22 4C11 3 5 12 7 21c8 0 16-7 15-17M9 19l8-3M12 15l1-7"/></svg>Curated</button>' +
+          'aria-controls="mcurCuratedMapEffects"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M5 25 22 4C11 3 5 12 7 21c8 0 16-7 15-17M9 19l8-3M12 15l1-7"/></svg>Curated</button>' +
       '</div>' +
     '</div>' +
     '<div class="pfm-sizes" id="pfmSizes" hidden></div>' +
-    '<div class="mcur__cur" id="mcurCuratedWrap" hidden>' +
-      '<div class="cur-label" id="curatedLabel"><span>Curated Effects</span>' +
-        '<button class="cur-reroll" type="button" id="curReroll" data-tip="reroll">' +
-          '<span class="cur-reroll__ico" aria-hidden="true">&#8635;</span> New Mix</button></div>' +
-      '<div class="curated-box" id="curatedBox" role="group" aria-labelledby="curatedLabel">' +
-        '<button class="cur-page cur-page--prev" type="button" data-cur-page="0" data-tip="page" aria-label="Curated effects, page 1">' +
-          '<svg viewBox="0 0 14 24" aria-hidden="true" focusable="false"><path d="M11 2.5 3 12l8 9.5"/></svg></button>' +
-        '<div class="curated-grid" id="curatedGrid"></div>' +
-        '<button class="cur-page cur-page--next" type="button" data-cur-page="1" data-tip="page" aria-label="Curated effects, page 2">' +
-          '<svg viewBox="0 0 14 24" aria-hidden="true" focusable="false"><path d="M3 2.5 11 12l-8 9.5"/></svg></button>' +
-      '</div>' +
-      '<div class="cur-dots" id="curatedDots" aria-hidden="true"><i></i><i></i></div>' +
-    '</div>' +
     '<button class="mcur__maphead" id="mcurMapToggle" type="button" aria-expanded="false" aria-controls="allEffects">' +
       '<span>Effect Map</span><span class="ae-seeall" id="aeSeeAll">See All <span aria-hidden="true">&#8250;</span></span>' +
     '</button>' +
@@ -4979,6 +4971,11 @@ function renderCuratedStage(){
 }
 /* The rail's Curated box: the page's 8 as cells (gold = chosen), ‹ › and
    the two dots once a second page exists (brass = the page you are on). */
+function openCuratedMap(){
+  setAllOpen(true);
+  var section = document.querySelector('.mcur__curated-section');
+  if (section) section.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
 function paintCuratedMap(){
   var compact = document.getElementById('mcurCuratedMap');
   if (compact){
@@ -5127,6 +5124,8 @@ function paintAllEffects(){
       (ALL_OPEN ? '&#8249;' : '&#8250;') + '</span>';
     see.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
   }
+  var curatedToggle = document.getElementById('mcurCurated');
+  if (curatedToggle) curatedToggle.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
   var mapToggle = document.getElementById('mcurMapToggle');
   if (mapToggle) mapToggle.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
   var strip = document.getElementById('aeStrip');
@@ -5193,18 +5192,7 @@ document.addEventListener('click', function(e){
      the board puts it beside Pick 4 Me as an action, and the eight-cell grid
      it opens is the same #curatedGrid the desktop rail paints. */
   if (c('#mcurClose')){ document.body.classList.remove('rail-open'); return; }
-  if (c('#mcurCurated')){
-    var wrap = document.getElementById('mcurCuratedWrap');
-    var btn  = c('#mcurCurated');
-    if (wrap){
-      var open = wrap.hidden;
-      wrap.hidden = !open;
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      btn.classList.toggle('is-open', open);
-      if (open) paintCuratedRail();
-    }
-    return;
-  }
+  if (c('#mcurCurated')){ openCuratedMap(); return; }
   if (c('#btnGoReview')){ requestReview(c('#btnGoReview')); return; }
 });
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePickSizes(); });
@@ -5533,15 +5521,11 @@ function buildMinimap(){
     var curatedNav = document.createElement('button');
     curatedNav.type = 'button'; curatedNav.id = 'mcurCuratedMap'; curatedNav.className = 'mm mcur__curated-map';
     curatedNav.setAttribute('aria-label', 'Curated Effects');
-    curatedNav.addEventListener('click', function(){
-      var wrap = document.getElementById('mcurCuratedWrap'), toggle = document.getElementById('mcurCurated');
-      if (wrap.hidden) toggle.click();
-      wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
-    });
+    curatedNav.addEventListener('click', openCuratedMap);
     panels[0].prepend(curatedNav);
     var full = document.createElement('div'); full.className = 'mcur__fullmap';
     var curatedSection = document.createElement('section'); curatedSection.className = 'mcur__curated-section';
-    curatedSection.innerHTML = '<button type="button" class="mcur__roomhead" data-curator-room="curated">Curated Effects</button><div class="mcur__effects" id="mcurCuratedMapEffects"></div>';
+    curatedSection.innerHTML = '<div class="mcur__roomhead"><button type="button" class="mcur__curated-title" data-curator-room="curated">Curated Effects</button><button class="cur-reroll" type="button" id="curReroll" data-tip="reroll"><span class="cur-reroll__ico" aria-hidden="true">&#8635;</span> New Mix</button></div><div class="mcur__effects" id="mcurCuratedMapEffects"></div>';
     full.appendChild(curatedSection);
     SILOS.forEach(function(silo){
       var section = document.createElement('section');
