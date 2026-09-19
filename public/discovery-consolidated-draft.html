@@ -1722,6 +1722,15 @@ body.is-lboxed{ overflow:hidden }
   .rail .ae-col{ grid-area:map; min-width:0 }
   .rail .bundle-ind{ display:none }   /* the docked rail carries the count */
 
+  /* __M7_SHEET_ORDER__ THE LABEL GOES ABOVE THE THING IT LABELS.
+     In the markup .cur-label--all follows .all-effects, which is right for
+     the desktop rail -- the caption sits under a shut map. On the phone it
+     put "Effect Map / See All" at the very BOTTOM of the sheet, under a tall
+     mostly-empty box, so the map's own header read as a footer for the sheet.
+     .ae-col becomes a column and the label takes first place. */
+  .rail .ae-col{ display:flex; flex-direction:column }
+  .rail .cur-label--all{ order:-1 }
+
   /* __M3_EFFECT_MAP__ Secondary to the three above it, as the board ranks
      them: a labelled header row with the affordance on the right, and the map
      itself closed underneath until asked for. */
@@ -1729,6 +1738,23 @@ body.is-lboxed{ overflow:hidden }
     display:flex; align-items:baseline; justify-content:space-between;
     gap:10px; width:100%; margin:0 0 6px;
   }
+
+  /* __M7_INDICATORS_STAY_SMALL__ THESE ARE GLYPHS, NOT CONTENT.
+     .curated-grid and .ae-strip are abstract swatch grids -- one cell per
+     effect, highlighted when chosen. At the desktop rail's 300px they read as
+     a dense little indicator. Given the phone sheet's full width they became
+     large coloured rectangles that look like artwork failing to load, which
+     is what the sheet looked like in Rich's screenshot and is exactly the
+     "desktop content squeezed in" this pass was supposed to end.
+
+     Capped at roughly their desktop size and left-aligned, so they stay
+     indicators. .ae-strip also sized in cqi, a container unit with no
+     container here, which is why it drew a small row inside a tall box. */
+  .rail .curated-grid{ max-width:150px; margin:0 auto; gap:2px }
+  .rail .curated-grid i{ border-radius:2px }
+  .rail .ae-strip{ width:auto; max-width:84px; gap:2px }
+  /* The box stops stretching to whatever the grid row allows. */
+  .rail .all-effects{ min-height:0; align-self:start }
   .rail .ae-seeall{
     background:none; border:none; padding:6px 0; cursor:pointer;
     font-family:var(--sans); font-size:.8rem; letter-spacing:.02em;
