@@ -855,42 +855,39 @@ body{
   text-shadow:0 .08rem .18rem rgba(18,12,8,.8), 0 .3rem .8rem rgba(18,12,8,.42);
 }
 .card__content span{ font-size:.75rem; color:var(--gold-soft); text-shadow:0 .06rem .14rem rgba(18,12,8,.7) }
-/* Watermarked/locked state -- shared by My Collection's un-unlocked
-   pieces. */
-/* THE WATERMARK MARKS ARTWORK, NOT A WAIT (Rich, 2026-09-16). A piece being
-   crafted carries `locked` too -- it will be a locked preview once it exists
-   -- but there is no artwork under it yet, so the diagonals and the PREVIEW
-   legend were being drawn over the processing card. They belong only where
-   there is a real locked image to mark. */
-/* __M6_DETAIL_WATERMARK__ (mobile defect, 2026-09-18). ONE RULE, BOTH PLACES.
+/* __M7_ONE_MARK__ (Rich, 2026-09-19). THE MARK IS IN THE PIXELS, SO NOTHING
+   IS DRAWN OVER THEM.
 
-   The mark is drawn here, not baked into the file: the gallery tile carries
-   it as a pseudo-element keyed off .is-locked. The mobile piece detail is not
-   a .card, so it matched nothing and showed the same locked preview clean --
-   a piece looked owned the moment it was opened.
+   A diagonal hatch with the word PREVIEW used to be painted here as an
+   ::after, on tiles and (from 2026-09-18) on the mobile detail. It arrived
+   2026-09-08, one day before dfa4f99 removed the baked watermark, and for the
+   ten days between then and 2026-09-19 it was the ONLY thing marking a locked
+   piece -- which is why it looked like the product's watermark. It was never
+   meant to be.
 
-   The desktop lightbox never had this: openFeatured REFUSES a locked piece
-   outright, because full size is what the purchase buys. The mobile detail
-   cannot refuse -- it is where the unlock actions live -- so it must mark
-   instead. That is why this is a second SELECTOR and not a second rule: the
-   detail joins the existing declaration rather than restating it, so the two
-   surfaces cannot drift into disagreeing about what a locked piece looks
-   like. The state driving both is p.locked, which comes from the /unlocks
-   entitlement read (loadPortfolio's unlockedBySlot) -- the detail infers
-   nothing from having an image URL. */
-.card.is-locked:not(.is-crafting) .card__art::after,
-.pc-detail.is-locked .pc-detail__art::after{
-  content:"PREVIEW"; position:absolute; inset:0; z-index:1; display:flex; align-items:center; justify-content:center;
-  font-family:var(--sans); font-size:11px; letter-spacing:.12em; color:rgba(255,255,255,.6);
-  background:repeating-linear-gradient(45deg, rgba(0,0,0,.15) 0 3px, transparent 3px 18px);
-}
-/* The detail inherits the declaration above and adds NOTHING to it. An
-   earlier version of this change gave the detail its own size, spacing,
-   alignment and stripe pitch -- "the same mark, sized to a larger canvas",
-   which is a redesign however it is described. The only property the detail
-   needs is the corner radius, because its art box is rounded and the tile's
-   is not; everything else is the gallery's, verbatim. */
-.pc-detail.is-locked .pc-detail__art::after{ border-radius:12px }
+   bakeWatermark composites the Liten & Co pattern into the locked derivative
+   again, so leaving this in place would put a generic hatch on top of the
+   real mark. Removed rather than adjusted: two marks over one image is not a
+   thing to tune.
+
+   .is-locked is still set on both the tile and the detail. It paints nothing
+   now, and it stays because it is the state hook the lock badge and the
+   detail's Preview badge read alongside -- the state is not in question, only
+   what is drawn for it.
+
+   WHAT THIS MEANS FOR PIECES ALREADY IN STORAGE: anything rendered between
+   2026-09-09 and 2026-09-19 is a clean 512px derivative and now carries no
+   mark at all. That is not a hole this opened -- it is exactly what dfa4f99
+   designed, where the protection is the halved resolution rather than a mark:
+   "not enough to print or to pass off as the bought file". The backfill that
+   would put the real mark on them is in
+   docs/GOVERNANCE/LOCKED-WATERMARK-BACKFILL.md and has not been run.
+
+   ONE RULE THIS REPLACES, worth keeping the reasoning of: the hatch had a
+   :not(.is-crafting) guard (Rich, 2026-09-16), because a crafting piece
+   carries `locked` too and the diagonals were being drawn over the
+   processing card where there was no artwork yet. The bake cannot make that
+   mistake -- it marks pixels that exist, and a crafting card has none. */
 /* __MC_GEAR__ PROCESSING (Rich, 2026-09-16). The generic ring spinner is
    replaced by the house mark: an oxblood plate with the LITEN gear turning
    slowly at its centre. Not a progress indicator -- it claims nothing about

@@ -76,44 +76,30 @@ describe('the detail is marked from the same state the gallery is', () => {
   })
 })
 
-describe('there is one rule, not two', () => {
-  /* The detail joins the gallery's declaration. If someone writes the mark a
-     second time for the detail, these two surfaces can drift into disagreeing
-     about what a locked piece looks like. */
-  it('the detail shares the gallery selector rather than restating it', () => {
-    expect(HTML).toMatch(
-      /\.card\.is-locked:not\(\.is-crafting\) \.card__art::after,\s*\r?\n\s*\.pc-detail\.is-locked \.pc-detail__art::after\{/,
-    )
+describe('nothing is drawn over the mark', () => {
+  /* SUPERSEDED 2026-09-19. These asserted that the tile and the detail SHARED
+     a drawn hatch, which was the right invariant while that hatch was the only
+     thing marking a locked piece. bakeWatermark composites the Liten & Co
+     pattern into the locked derivative again, so a drawn hatch would now sit
+     on top of the real mark. The invariant inverts: nothing is painted over
+     locked artwork, on either surface. */
+  it('neither the tile nor the detail paints a hatch', () => {
+    expect(HTML).not.toMatch(/\.card\.is-locked[^{]*::after\{/)
+    expect(HTML).not.toMatch(/\.pc-detail\.is-locked[^{]*::after\{/)
   })
 
-  /* The detail adds no declaration of its own -- it appears only as a second
-     selector on the gallery's. There is one other `content:"PREVIEW"` in the
-     file, `.lbox__img.is-locked::after`, which predates this work and is
-     effectively unreachable because openFeatured refuses locked pieces before
-     the lightbox opens. Left alone; noted so the count below is not mistaken
-     for the defect returning. */
-  it('the detail adds no second declaration of the mark', () => {
-    /* Every rule that declares the legend, with the selector list that owns
-       it. The detail must appear only inside the gallery's rule -- never as a
-       rule of its own.
-
-       Split rather than matched: a `([^{}]+)\{[^}]*` pattern backtracks
+  it('the only PREVIEW legend left is the unreachable lightbox rule', () => {
+    /* Split rather than matched: a `([^{}]+)\{[^}]*` pattern backtracks
        catastrophically against this file, which carries base64 image data in
        its CSS. It hung the suite for two minutes before being killed. */
     const blocks = HTML.split('}')
       .filter(b => b.includes('content:"PREVIEW"'))
       .map(b => b.slice(0, b.indexOf('{')).trim())
-    expect(blocks.length).toBe(2)
-
-    const shared = blocks.find(b => b.includes('.pc-detail'))
-    expect(shared, 'the detail must share a rule, not own one').toBeTruthy()
-    expect(shared).toContain('.card.is-locked')
-
-    /* The other is the desktop lightbox's, which predates this work and is
-       effectively unreachable because openFeatured refuses locked pieces
-       before it opens. Left alone. */
-    const other = blocks.find(b => !b.includes('.pc-detail'))
-    expect(other).toContain('.lbox__img')
+    expect(blocks.length).toBe(1)
+    /* openFeatured refuses a locked piece before the lightbox opens, so this
+       rule cannot render. It predates all of this work and is left alone
+       rather than swept up as cleanup nobody asked for. */
+    expect(blocks[0]).toContain('.lbox__img')
   })
 
   it('the painter drives it from the ownership value, not from the artwork', () => {
