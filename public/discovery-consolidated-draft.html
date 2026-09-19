@@ -1543,7 +1543,7 @@ body.is-lboxed{ overflow:hidden }
   .silo-block .card, .silo-block .title-card{ width:100% }
   /* Mobile room plate spans the grid without consuming an effect cell. */
   #discoveryView .silo-block .title-card{
-    grid-column:1 / -1; aspect-ratio:auto;
+    grid-column:1 / -1; grid-row:auto; aspect-ratio:auto; min-height:78px;
     display:grid; grid-template-columns:44px minmax(0,1fr) auto;
     grid-template-rows:auto auto; column-gap:8px;
     align-items:center; text-align:left; padding:12px;
@@ -2827,8 +2827,9 @@ body.is-lboxed{ overflow:hidden }
 }
 
 @media (max-width:1024px){
-  #discoveryView .stage-frame{ padding-bottom:calc(var(--mcur-dock-h,100px) + 24px + env(safe-area-inset-bottom,0px)); scroll-snap-type:none }
-  #discoveryView .silo-block{ height:auto }
+  #discoveryView .stage-frame{ padding-bottom:calc(var(--mcur-dock-h,100px) + 24px + env(safe-area-inset-bottom,0px)); scroll-snap-type:none; scroll-behavior:auto; overflow-anchor:none }
+  #discoveryView .silo-block{ height:auto; scroll-snap-align:none; scroll-snap-stop:normal }
+  #discoveryView .silo-block .effect-grid{ height:auto; grid-auto-flow:row; grid-template-rows:none; grid-auto-rows:max-content }
   .rail.is-sheet:has(> .mcur){ overflow:hidden; display:flex; flex-direction:column }
   .rail.is-sheet .mcur{ min-height:0; overflow:hidden; flex:0 1 auto }
   .rail.is-sheet .mcur::before, .rail.is-sheet .mcur__head{ flex-shrink:0 }
@@ -5154,7 +5155,7 @@ document.addEventListener('click', function(e){
     return;
   }
   var room = c('[data-curator-room]');
-  if (room){ document.getElementById('silo-' + room.dataset.curatorRoom).scrollIntoView({ behavior:'smooth', block:'start' }); return; }
+  if (room){ document.body.classList.remove('rail-open'); document.getElementById('silo-' + room.dataset.curatorRoom).scrollIntoView({ behavior:'smooth', block:'start' }); return; }
   if (c('#curatedBox')){ if (!c('.mcur')) goCurated(); return; }
   var ps = c('[data-pfm]');
   if (ps){ if (!ps.disabled) pickFor(+ps.dataset.pfm); return; }
