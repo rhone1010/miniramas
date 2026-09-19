@@ -884,13 +884,13 @@ body{
   font-family:var(--sans); font-size:11px; letter-spacing:.12em; color:rgba(255,255,255,.6);
   background:repeating-linear-gradient(45deg, rgba(0,0,0,.15) 0 3px, transparent 3px 18px);
 }
-/* The detail is a far larger canvas than a tile, so the legend is sized to it
-   -- the same mark, legible at the size it is drawn. */
-.pc-detail.is-locked .pc-detail__art::after{
-  font-size:14px; letter-spacing:.2em; align-items:flex-start; padding-top:14px;
-  border-radius:12px;
-  background:repeating-linear-gradient(45deg, rgba(0,0,0,.18) 0 4px, transparent 4px 24px);
-}
+/* The detail inherits the declaration above and adds NOTHING to it. An
+   earlier version of this change gave the detail its own size, spacing,
+   alignment and stripe pitch -- "the same mark, sized to a larger canvas",
+   which is a redesign however it is described. The only property the detail
+   needs is the corner radius, because its art box is rounded and the tile's
+   is not; everything else is the gallery's, verbatim. */
+.pc-detail.is-locked .pc-detail__art::after{ border-radius:12px }
 /* __MC_GEAR__ PROCESSING (Rich, 2026-09-16). The generic ring spinner is
    replaced by the house mark: an oxblood plate with the LITEN gear turning
    slowly at its centre. Not a progress indicator -- it claims nothing about
