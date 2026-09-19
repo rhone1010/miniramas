@@ -191,3 +191,29 @@ describe('the Effect Map is the board\u2019s, not the desktop map squeezed in', 
     expect(HTML).toMatch(/\.rail \.all-effects\.is-open \.mm-dots\{[\s\S]{0,120}display:flex/)
   })
 })
+
+describe('a stage class never outlives its stage', () => {
+  /* is-review and is-format are set by their screens and cleared by the other
+     screens -- but My Collection is not one of those screens. Arriving there
+     from Review, or from Format after paying, left the class on <body>, and
+     the docked rail reads both: a collection opened from Format was drawn
+     with Format's rail -- no count, no Review, and a Continue proxying a
+     button no longer in the rail. */
+  it('clears both when the collection opens', () => {
+    expect(HTML).toMatch(/function openMyCollection\(\)\{[\s\S]{0,1200}classList\.remove\('is-review'\)/)
+    expect(HTML).toMatch(/function openMyCollection\(\)\{[\s\S]{0,1200}classList\.remove\('is-format'\)/)
+  })
+
+  /* And puts it back for the screen the customer returns to -- otherwise
+     Review would come back wearing Discovery's rail. */
+  it('restores the Review class on the way back', () => {
+    expect(HTML).toMatch(/if \(railBeforeMycoll === 'review'\)\{[\s\S]{0,160}classList\.add\('is-review'\)/)
+  })
+
+  it('has a clear for every screen that can set one', () => {
+    const fmtClears = (HTML.match(/classList\.remove\('is-format'\)/g) || []).length
+    const revClears = (HTML.match(/classList\.remove\('is-review'\)/g) || []).length
+    expect(fmtClears).toBeGreaterThanOrEqual(5)
+    expect(revClears).toBeGreaterThanOrEqual(4)
+  })
+})

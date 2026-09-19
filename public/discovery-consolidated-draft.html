@@ -7953,6 +7953,19 @@ var railBeforeMycoll = 'discovery';
 function openMyCollection(){
   act('open My Collection');
   railBeforeMycoll = reviewView.classList.contains('active') ? 'review' : 'discovery';
+  /* __M5_STAGE_CLASS_LEAK__ THE STAGE CLASSES BELONG TO THE STAGE.
+     is-review and is-format are set by their screens and cleared by the other
+     screens -- but My Collection is not one of those screens, so arriving
+     here from Review, or from Format after paying, left its class on <body>.
+     The docked rail reads both (__M4_ONE_NEXT_STEP__), so a collection opened
+     from Format was drawn with Format's rail: no count, no Review, and a
+     Continue proxying a button that is no longer in the rail.
+
+     railBeforeMycoll above already records where the customer came from, and
+     closeMyCollection uses it to rebuild the right rail -- so clearing here
+     costs nothing and the way back is unaffected. */
+  document.body.classList.remove('is-review');
+  document.body.classList.remove('is-format');
   mycoll.classList.add('is-open');
   mycoll.setAttribute('aria-hidden','false');
   document.getElementById('navMyCollection').classList.add('is-here');
@@ -7964,7 +7977,17 @@ function closeMyCollection(){
   mycoll.setAttribute('aria-hidden','true');
   document.getElementById('navMyCollection').classList.remove('is-here');
   unlockSelection = {};
-  if (railBeforeMycoll === 'review') renderReviewRail(); else restoreDiscoveryRail();
+  /* __M5_STAGE_CLASS_LEAK__ The class comes back with the rail it belongs to.
+     openMyCollection clears it so the collection is not drawn wearing another
+     screen's rail; this puts it back for the screen the customer returns to,
+     which railBeforeMycoll already records. Without it, Review would come
+     back with Discovery's count and Review button in the docked rail. */
+  if (railBeforeMycoll === 'review'){
+    document.body.classList.add('is-review');
+    renderReviewRail();
+  } else {
+    restoreDiscoveryRail();
+  }
 }
 /* The rail's own way out says Back to Discovery, so it goes there -- not to
    whichever rail was showing when the collection opened. closeMyCollection
