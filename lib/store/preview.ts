@@ -193,14 +193,22 @@ export async function makeLockedPreview(imageB64: string): Promise<Buffer> {
 
 // ── Baked watermark ──────────────────────────────────────────────
 //
-// STILL LIVE, on a narrower path than before. As of 2026-09-09 the portfolio
-// render path no longer bakes — the locked derivative above replaced it there
-// — but the FREE PREVIEW still does (portraits/generate/route.ts:596), and
-// that has not changed. A free preview is given away to someone who has not
-// bought anything and may never have an account, so the mark stays in its
-// pixels; a portfolio piece is already behind payment and an owner check.
+// LIVE ON BOTH PATHS AGAIN, as of 2026-09-19.
 //
-// The assets this wrote for portfolio pieces stay in place as the fallback
+// The free preview has always baked (portraits/generate/route.ts:596): it is
+// given away to someone who has not bought anything and may never have an
+// account, so the mark belongs in the pixels.
+//
+// The portfolio path stopped baking on 2026-09-09 (dfa4f99) and showed a
+// clean half-size derivative instead, on the reasoning that the bake cost
+// megabytes. It did not. bakeWatermark ended `.png()`, which re-encoded a
+// ~187 KB JPEG from NB2 into ~1.7 MB of lossless pixels; as JPEG at the same
+// quality the locked derivative uses, the marked 1K image is ~156 KB —
+// SMALLER than the master it came from. So the locked view carries the mark
+// again, at full 1K, and its protection is the watermark rather than a
+// resolution deliberately too low to keep.
+//
+// The old assets under watermarked/{series}/ stay in place as the fallback
 // for any preview whose derivative is missing, which is what the reader in
 // portfolios/[portfolioId]/status looks for second.
 
@@ -284,9 +292,27 @@ export async function bakeWatermark(imageB64: string): Promise<string> {
     Math.min(WM_TILE_MAX, Math.round((width ?? 1024) * WM_TILE_RATIO)),
   )
 
+  /* JPEG, NOT PNG. THIS ONE CALL WAS THE WHOLE COST.
+
+     The tile needs alpha; the COMPOSITE does not. Encoding the finished image
+     as PNG re-encoded a photograph that arrives from NB2 as a ~187 KB JPEG
+     into ~1.7 MB of lossless pixels, so a locked four-pack pushed several
+     megabytes of tile art at the browser. On 2026-09-09 (dfa4f99) that cost
+     was read as the price of baking, and the bake was removed from the
+     portfolio path in favour of a clean half-size derivative -- so locked
+     pieces stopped carrying the mark at all.
+
+     Measured on a real 1024 master, 2026-09-19:
+       master, jpeg q90          187 KB
+       same bytes as PNG        1655 KB   <- what this returned
+       same bytes as jpeg q82    156 KB   <- what it returns now
+
+     The watermark was never expensive; the output format was. Same quality
+     constant the locked derivative uses, so the two are directly comparable
+     and there is one number to change if that judgement moves. */
   const out = await sharp(src)
     .composite([{ input: await watermarkTile(tilePx), tile: true }])
-    .png()
+    .jpeg({ quality: LOCKED_PREVIEW_QUALITY })
     .toBuffer()
   return out.toString('base64')
 }

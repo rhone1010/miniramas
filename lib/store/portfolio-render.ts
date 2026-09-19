@@ -17,7 +17,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase'
 import { internalBaseUrl, internalHeaders } from '@/lib/store/internal-fetch'
-import { storeCleanOriginal, makeLockedPreview, lockedPreviewPath, recordPreview, PREVIEW_BUCKET } from '@/lib/store/preview'
+import { storeCleanOriginal, bakeWatermark, lockedPreviewPath, recordPreview, PREVIEW_BUCKET } from '@/lib/store/preview'
 import { decideRetry } from '@/lib/store/portfolio-replace'
 import { styleIdForPreset } from '@/lib/store/portraits-style-lookup'
 import crypto from 'crypto'
@@ -133,21 +133,29 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
        shown its derivative; if there is no derivative there is nothing this
        item is allowed to display, and the clean master is not a substitute.
        So a failure here fails the item rather than marking it done. */
+    /* THE LOCKED VIEW CARRIES THE MARK AGAIN (Rich, 2026-09-19).
+       This was makeLockedPreview -- a CLEAN 512px copy -- because the bake was
+       removed on 2026-09-09 to stop pushing megabytes of PNG at the browser.
+       That cost was one `.png()` on a JPEG source, not the price of the
+       watermark: bakeWatermark encodes JPEG now and lands below the master it
+       came from. So the protection is the mark in the pixels rather than a
+       resolution too low to be worth keeping, and the derivative stays 1K. */
     let lockedPreview: Buffer
     try {
-      lockedPreview = await makeLockedPreview(imageB64)
+      lockedPreview = Buffer.from(await bakeWatermark(imageB64), 'base64')
     } catch (e: any) {
-      console.error(`[portfolios/items/render] locked-preview build FAILED for ${portfolioItemId}`, e)
+      console.error(`[portfolios/items/render] locked-preview bake FAILED for ${portfolioItemId}`, e)
       await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'locked_preview_failed')
       return
     }
 
-    // Two objects per piece now:
+    // Two objects per piece:
     //   clean master  {series}/{previewId}.png            -- unlock, print, and
     //                                                        an unlocked tile
     //   locked view   locked/{series}/{previewId}.jpg     -- what a locked
-    //                                                        browser may see
-    // The retired bake at watermarked/{series}/{previewId}.png is no longer
+    //                                                        browser may see:
+    //                                                        watermarked, 1K
+    // The old bake at watermarked/{series}/{previewId}.png is still not
     // written; existing ones stay put as the fallback for un-backfilled rows.
     const lockedPath = lockedPreviewPath(portfolio.series, previewId)
     const { error: lockedUpErr } = await supabaseAdmin.storage
