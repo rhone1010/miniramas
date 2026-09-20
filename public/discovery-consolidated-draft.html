@@ -2939,18 +2939,17 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   .dcur__remix.is-remixing .dcur__idle{opacity:0;}
   .dcur__remix.is-remixing .dcur__busy{opacity:1;}
   .dcur #pfmSizes{margin:0;}
-  .dcur__map{border-top:1px solid var(--gold-soft);padding-top:12px;}
-  .dcur__map-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
-  .dcur__disclose{padding:4px 0;border:0;background:none;color:var(--oxblood);font:400 18px/1.2 var(--serif);cursor:pointer;white-space:nowrap;}
-  .dcur__curated-map{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;}
-  .dcur__rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px;}
-  .dcur__room{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;padding:4px 0;border:0;background:none;cursor:pointer;}
-  .dcur__blocks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;width:42px;}
-  .dcur__blocks i{height:22px;border:1px solid var(--oxblood);border-radius:3px;background:var(--oxblood);}
-  .dcur__blocks i:first-child{background:var(--brass);border-color:var(--brass);}
-  .dcur__room img{width:34px;height:34px;object-fit:contain;border-radius:50%;border:1px solid var(--gold-soft);background:var(--vellum);}
-  .dcur__room.selected .dcur__blocks i{background:var(--gold-soft);border-color:var(--gold);}
-  .dcur__room:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px;}
+  .dcur__disclose,.dcur__back{min-height:40px;padding:8px 12px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--oxblood);font:400 20px/1.2 var(--serif);cursor:pointer;}
+  .dcur__disclose{display:flex;align-items:center;justify-content:space-between;width:100%;color:var(--ink);}
+  .dcur__disclose span{font:24px/1 var(--sans);}
+  .dcur__map-body{margin-top:8px;}
+  .dcur__map-body[hidden]{display:none;}
+  .dcur__rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+  .dcur__room{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--ink);font:400 18px/1.1 var(--serif);text-align:left;cursor:pointer;}
+  .dcur__room-icon{display:grid;place-items:center;flex:0 0 28px;height:28px;border:1px solid var(--gold-soft);border-radius:4px;}
+  .dcur__room-icon img{display:block;width:24px;height:24px;object-fit:contain;}
+  .dcur__room.selected{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass);}
+  .dcur__back{margin-top:8px;border:0;background:none;padding-left:0;}
   .rail .dcur .your-collection{position:static;width:100%;margin-top:auto;padding:12px;border-radius:6px;display:flex;flex-direction:column;gap:8px;}
   .rail .dcur .your-collection__title{font:400 24px/1.2 var(--serif);text-align:center;margin:0;}
   .dcur .your-collection .dcur__count{text-align:center;color:var(--vellum);font:12px/1.4 var(--sans);}
@@ -2965,6 +2964,41 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
 @media(min-width:1660px){.dcur{--dcur-source:150px;}}
 @media(min-width:1920px){.dcur{--dcur-source:180px;}}
 @media(prefers-reduced-motion:reduce){.dcur__remix span{transition:none;}}
+/* Flip port: public/portraits.html; scoped to desktop Curated remix only. */
+@media(min-width:1025px){
+#curatedStage{
+  perspective:2200px;
+  --ease-flip:cubic-bezier(.34,.9,.28,1);
+  --flip-ms:420ms;
+  --flip-step:38ms;      /* the stagger between neighbours */
+}
+#curatedStage.is-flipping > .card{
+  transform-style:preserve-3d;
+  transform:translateY(var(--lift,0)) rotateY(var(--turn,0deg));
+  transition:transform var(--flip-ms) var(--ease-flip),
+             box-shadow 180ms ease, border-color 180ms ease;
+}
+
+#curatedStage.is-turning > *{ --turn:90deg }
+#curatedStage.is-turning > :nth-child(1){ transition-delay:0ms }
+#curatedStage.is-turning > :nth-child(2){ transition-delay:calc(var(--flip-step) * 1) }
+#curatedStage.is-turning > :nth-child(3){ transition-delay:calc(var(--flip-step) * 2) }
+#curatedStage.is-turning > :nth-child(4){ transition-delay:calc(var(--flip-step) * 3) }
+#curatedStage.is-turning > :nth-child(5){ transition-delay:calc(var(--flip-step) * 4) }
+#curatedStage.is-turning > :nth-child(6){ transition-delay:calc(var(--flip-step) * 5) }
+#curatedStage.is-turning > :nth-child(7){ transition-delay:calc(var(--flip-step) * 6) }
+#curatedStage.is-turning > :nth-child(8){ transition-delay:calc(var(--flip-step) * 7) }
+#curatedStage.is-turning > :nth-child(9){ transition-delay:calc(var(--flip-step) * 8) }
+
+/* arriving: the cards turn back into view, front row first */
+#curatedStage.is-arriving > *{ --turn:-90deg; transition-duration:0ms }
+#curatedStage.has-arrived > *{ --turn:0deg; transition-duration:var(--flip-ms) }
+
+@media (prefers-reduced-motion:reduce){
+  #curatedStage.is-flipping > .card{ transition:none }
+  #curatedStage.is-turning > *, #curatedStage.is-arriving > *, #curatedStage.has-arrived > *{ --turn:0deg }
+}
+}
 .shape-mobile-copy,.rail-back,.rail-intent{display:none;}
 @media(max-width:1024px){
   .shape-desktop-copy, .aspect-opt__say{display:none;}
@@ -5281,8 +5315,7 @@ function requestReview(anchorEl){
 document.addEventListener('click', function(e){
   var t = e.target, c = t && t.closest ? function(s){ return t.closest(s); } : function(){ return null; };
   if (c('#dcurAll')){ DESKTOP_ALL_OPEN = !DESKTOP_ALL_OPEN; paintDesktopCurator(); return; }
-  var curatedRoom = c('[data-dcur-page]');
-  if (curatedRoom){ CURATED.page = +curatedRoom.dataset.dcurPage; paintCurated(); goCurated(); return; }
+  if (c('#dcurBack')){ DESKTOP_ALL_OPEN = false; paintDesktopCurator(); goCurated(); return; }
   if (c('#dcurRemix')){ remixDesktopCurated(); return; }
   var pg = c('#discoveryRail .cur-page');
   if (pg){ if (pg.getAttribute('aria-disabled') !== 'true'){ CURATED.page = +pg.dataset.curPage ? 1 : 0; act('curated page ' + (CURATED.page + 1)); paintCurated(); if (!c('.mcur')) goCurated(); } return; }
@@ -6446,28 +6479,19 @@ function desktopCuratorHtml(){
     '<div class="dcur__source">' + source.querySelector('.photo-stamp').outerHTML + '<div class="dcur__actions">' +
     source.querySelector('#optPickForMe').outerHTML.replace('Pick 4 Me', 'Pick 4 for Me') +
     '<button type="button" class="dcur__remix" id="dcurRemix" aria-label="Curated"><span class="dcur__idle" aria-hidden="true">Curated</span><span class="dcur__busy" aria-hidden="true">Remixing…</span></button></div></div>' + source.querySelector('#pfmSizes').outerHTML +
-    '<section class="dcur__map"><div class="dcur__map-head"><h3>Effect Map</h3><button type="button" class="dcur__disclose" id="dcurAll" aria-expanded="false" aria-controls="dcurRooms">See All ›</button></div><div class="dcur__curated-map" id="dcurCuratedMap"></div><div class="dcur__rooms" id="dcurRooms"></div></section>' +
+    '<section class="dcur__map"><button type="button" class="dcur__disclose" id="dcurAll" aria-expanded="false" aria-controls="dcurMapBody">All Effects <span aria-hidden="true">›</span></button><div class="dcur__map-body" id="dcurMapBody" hidden><div class="dcur__rooms" id="dcurRooms"></div><button type="button" class="dcur__back" id="dcurBack">← Back to Curated</button></div></section>' +
     '<div class="your-collection leather" data-tip="collection"><div class="your-collection__title">Your Collection</div><div class="dcur__count" id="dcurCount"></div><div class="dcur__progress" id="dcurProgress" role="progressbar" aria-label="Your Collection" aria-valuemin="0" aria-valuemax="4"><i></i></div>' +
     source.querySelector('#bundleInd').outerHTML + source.querySelector('#btnGoReview').outerHTML + '</div></div>';
 }
-function desktopMapRooms(){ return DESKTOP_ALL_OPEN ? SILOS : SILOS.slice(0,3); }
-function desktopMapSymbol(icon, attributes, selected){
-  return '<button type="button" class="dcur__room' + (selected ? ' selected' : '') + '" ' + attributes + '><span class="dcur__blocks" aria-hidden="true"><i></i><i></i></span>' + icon + '</button>';
-}
+function desktopMapRooms(){ return SILOS; }
 function paintDesktopCurator(){
   var rooms = document.getElementById('dcurRooms'); if (!rooms) return;
   rooms.innerHTML = desktopMapRooms().map(function(silo){
     var selected = silo.effects.some(function(effect){ return isChosen(effect.id); });
-    return desktopMapSymbol(iconMarkup(silo.id), 'data-curator-room="' + silo.id + '" aria-label="' + silo.name + '"', selected);
+    return '<button type="button" class="dcur__room' + (selected ? ' selected' : '') + '" data-curator-room="' + silo.id + '" aria-label="' + silo.name + (selected ? ', contains selected effects' : '') + '"><span class="dcur__room-icon">' + iconMarkup(silo.id) + '</span><span>' + silo.name + '</span></button>';
   }).join('');
-  document.getElementById('dcurCuratedMap').innerHTML = [0,1].map(function(page){
-    var selected = CURATED.bench.slice(page * 8, page * 8 + 8).some(isChosen);
-    var icon = '<img src="/icons/curator-rail/curator_rail__' + (page === 0 ? '03' : '05') + '.png" alt="">';
-    return desktopMapSymbol(icon, 'data-dcur-page="' + page + '" aria-label="Curated Effects"', selected);
-  }).join('');
-  var all = document.getElementById('dcurAll');
-  all.setAttribute('aria-expanded', DESKTOP_ALL_OPEN ? 'true' : 'false');
-  all.textContent = DESKTOP_ALL_OPEN ? 'Show Less ‹' : 'See All ›';
+  document.getElementById('dcurMapBody').hidden = !DESKTOP_ALL_OPEN;
+  document.getElementById('dcurAll').setAttribute('aria-expanded', DESKTOP_ALL_OPEN ? 'true' : 'false');
   var n = SELECTED.length, label = n > 4 ? n + ' selected' : n + ' of 4 selected';
   document.getElementById('dcurCount').textContent = label;
   var progress = document.getElementById('dcurProgress');
@@ -6475,6 +6499,26 @@ function paintDesktopCurator(){
   progress.setAttribute('aria-valuetext', label);
   progress.querySelector('i').style.width = Math.min(100, n / 4 * 100) + '%';
 }
+/* portraits.html turn(): same 420ms / 38ms stagger and two-frame arrival. */
+function desktopCuratedTurn(from, to, after, done){
+    var FLIP = 420, STEP = 38;
+    var n = from.children.length;
+    from.classList.add('is-turning');
+    var out = FLIP + STEP * Math.max(0, n - 1);
+    setTimeout(function(){
+      from.classList.remove('is-turning');
+      after();
+      to.classList.add('is-arriving');
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          to.classList.remove('is-arriving');
+          to.classList.add('has-arrived');
+          setTimeout(function(){ to.classList.remove('has-arrived'); done(); },
+                     FLIP + STEP * Math.max(0, to.children.length - 1));
+        });
+      });
+    }, out);
+  }
 async function remixDesktopCurated(){
   var button = document.getElementById('dcurRemix');
   if (!button || button.disabled) return;
@@ -6489,8 +6533,15 @@ async function remixDesktopCurated(){
         image.src = curatedPreviewUrl(base, SUBJECT);
       });
     }));
-    paintCurated(); DESKTOP_ALL_OPEN = false; paintDesktopCurator(); goCurated();
-    await new Promise(function(resolve){ requestAnimationFrame(function(){ requestAnimationFrame(resolve); }); });
+    var grid = document.getElementById('curatedStage');
+    goCurated();
+    grid.classList.add('is-flipping');
+    await new Promise(function(resolve){
+      desktopCuratedTurn(grid, grid, function(){
+        paintCurated(); DESKTOP_ALL_OPEN = false; paintDesktopCurator();
+      }, resolve);
+    });
+    grid.classList.remove('is-flipping');
   } finally {
     button.classList.remove('is-remixing'); button.setAttribute('aria-label', 'Curated'); button.disabled = false;
   }
