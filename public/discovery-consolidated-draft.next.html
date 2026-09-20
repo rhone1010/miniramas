@@ -2896,11 +2896,28 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
 .mc-unlock-dialog-head h2{font:400 26px var(--serif);margin:0;color:var(--ink)}
 #mcUnlockDialog button[disabled]{opacity:.6;cursor:not-allowed}
 @media(max-width:1024px){
- body.mc-unlock-review #mcUnlockBalance{display:inline-flex;gap:4px;padding:8px;font:12px var(--sans)}
+ body.mc-unlock-review #mcUnlockBalance{display:none}
  #mcUnlockDialog{position:fixed;inset:auto 0 0;margin:0 auto;width:100%;max-width:100%;box-sizing:border-box;border-radius:16px 16px 0 0;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
  #mcUnlockDialog .mc-unlock-offers{grid-template-columns:1fr}
  #mcUnlockDialog .mc-unlock-offer{font-size:22px;flex-wrap:wrap}
  #mcUnlockDialog .mc-unlock-all{grid-column:1/-1}
+}
+
+
+#mcUnlockRail{display:none}
+@media(max-width:1024px){
+  body.mc-unlock-review #mcUnlockRail{
+    position:fixed; left:0; right:0; bottom:0; z-index:221;
+    margin:0; border-radius:0;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));
+    background:var(--masthead); color:#f3ede1;
+    box-shadow:0 -6px 22px rgba(0,0,0,.3);
+    display:flex; align-items:center; gap:10px; flex-wrap:nowrap;
+    box-sizing:border-box; height:calc(78px + env(safe-area-inset-bottom,0px));
+  }
+  #mcUnlockRailBalance{flex:1;min-width:0;font:400 20px var(--serif)}
+  #mcUnlockRail button{flex:0 0 auto;min-height:46px;padding:12px 16px;margin:0;border-radius:8px;cursor:pointer;white-space:nowrap;font:400 20px var(--serif);background:var(--oxblood);color:#f3ede1;border:1px solid var(--oxblood)}
+  body.mc-unlock-review #mycollGrid{padding-bottom:calc(102px + env(safe-area-inset-bottom,0px));scroll-padding-bottom:calc(102px + env(safe-area-inset-bottom,0px))}
 }
 
 </style>
@@ -2954,6 +2971,10 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
     </button>
   </div>
 </header>
+<div id="mcUnlockRail" role="region" aria-label="Collection unlocks">
+  <span id="mcUnlockRailBalance" aria-live="polite">🔒 —</span>
+  <button type="button" id="mcUnlockRailOpen" aria-haspopup="dialog">Get More Unlocks →</button>
+</div>
 
 <div class="shell">
   <!-- ── Discovery rail ── -->
@@ -8570,7 +8591,7 @@ document.addEventListener('keydown',function(e){
   next.click(); next.focus();
 });
 document.addEventListener('click',function(e){
-  if(e.target.closest('#mcUnlockBalance') || e.target.closest('[data-mc-choices]')) return mcUnlockShow();
+  if(e.target.closest('#mcUnlockBalance') || e.target.closest('#mcUnlockRailOpen') || e.target.closest('[data-mc-choices]')) return mcUnlockShow();
   var offer = e.target.closest('[data-mc-offer]');
   if(offer){
     MC_UNLOCK_CHOICE = offer.getAttribute('data-mc-offer');
@@ -8586,6 +8607,7 @@ function renderMycollRail(){
     var b = MC_UNLOCK_REVIEW.balance;
     var control = document.getElementById('mcUnlockBalance');
     control.textContent = '🔒 ' + (b ? b.total : '—');
+    document.getElementById('mcUnlockRailBalance').textContent = '🔒 ' + (b ? b.total + (b.total === 1 ? ' Unlock' : ' Unlocks') : '—');
     control.setAttribute('aria-label', b ? b.total + ' available unlocks; view packages' : 'View unlock packages; balance unavailable');
     discoveryRail.innerHTML = mcUnlockCommerceHtml() + '<div class="mc-unlock-meta">' + PIECES.filter(function(p){return !p.crafting && !p.failed && !p.locked;}).length + ' owned · ' + (MC_UNLOCK_REVIEW.lockedCount === null ? '—' : MC_UNLOCK_REVIEW.lockedCount) + ' locked</div><a class="link-back" id="mycollBackRail">← Back to Discovery</a>';
     return;
