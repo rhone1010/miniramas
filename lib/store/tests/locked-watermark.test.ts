@@ -122,7 +122,7 @@ describe('the locked path does not serve the clean image', () => {
   const render = readFileSync(path.join(process.cwd(), 'lib/store/portfolio-render.ts'), 'utf8')
 
   it('builds the locked view by baking, not by copying the master', async () => {
-    expect(render).toMatch(/lockedPreview = Buffer\.from\(await bakeWatermark\(imageB64\), 'base64'\)/)
+    expect(render).toMatch(/lockedPreview = await sharp\(Buffer\.from\(await bakeFoyerWatermark\(imageB64\), 'base64'\)\)/)
   })
 
   /* makeLockedPreview still exists and is still tested -- it is simply no
