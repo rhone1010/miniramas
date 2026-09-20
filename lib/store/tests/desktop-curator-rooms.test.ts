@@ -4,10 +4,10 @@ import { describe, it, expect } from 'vitest'
 const html = readFileSync('public/discovery-consolidated-draft.html', 'utf8')
 const code = html.slice(html.indexOf('function desktopMapRooms(){'), html.indexOf('function restoreDiscoveryRail(){'))
 function harness(selected: string[] = []) {
-  const elements = Object.fromEntries(['dcurRooms', 'dcurCount', 'dcurProgress', 'dcurSelectionCount', 'dcurMapBody', 'dcurAll'].map(id => [id, { innerHTML: '', textContent: '', hidden:false, attributes: {} as Record<string, unknown>, fill: { style: { width: '' } }, setAttribute(key: string, value: unknown) { this.attributes[key] = value }, querySelector() { return this.fill } }]))
+  const elements = Object.fromEntries(['dcurRooms', 'dcurCount', 'dcurProgress', 'dcurCuratedMap', 'dcurAll'].map(id => [id, { innerHTML: '', textContent: '', hidden:false, attributes: {} as Record<string, unknown>, fill: { style: { width: '' } }, setAttribute(key: string, value: unknown) { this.attributes[key] = value }, querySelector() { return this.fill } }]))
   const context = {
     DESKTOP_ALL_OPEN: false,
-    SILOS: [{ id: 'one', name: 'One', effects: [{ id: 'a' }, { id: 'b' }] }, { id: 'two', name: 'Two', effects: [{ id: 'c' }] }],
+    SILOS: [{ id: 'one', name: 'One', effects: [{ id: 'a' }, { id: 'b' }] }, { id: 'two', name: 'Two', effects: [{ id: 'c' }] }, ...Array.from({length:6},(_,i)=>({id:'room'+i,name:'Room '+i,effects:[]}))],
     CURATED: { bench: ['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'c', 'j', 'k', 'l', 'm', 'n', 'o', 'p'] }, SELECTED: selected,
     isChosen: (id: string) => selected.includes(id), iconMarkup: () => '<img alt="">',
     document: { getElementById: (id: string) => elements[id], querySelectorAll: () => [] },
@@ -19,8 +19,10 @@ describe('desktop progressive room map', () => {
   it('is collapsed by default and contains only ordinary rooms', () => {
     const {context,elements}=harness()
     const rooms=runInNewContext('desktopMapRooms()',context)
-    expect(rooms.map((room: {name:string})=>room.name)).toEqual(['One','Two'])
-    expect(elements.dcurMapBody.hidden).toBe(true)
+    expect(rooms.map((room: {name:string})=>room.name)).toEqual(['One','Two','Room 0'])
+    expect(elements.dcurCuratedMap.innerHTML.match(/data-dcur-page=/g)).toHaveLength(2)
+    expect(elements.dcurRooms.innerHTML.match(/<i><\/i>/g)).toHaveLength(6)
+    expect(elements.dcurCuratedMap.innerHTML).not.toMatch(/Curated [12]/)
     expect(elements.dcurAll.attributes['aria-expanded']).toBe('false')
     expect(elements.dcurRooms.innerHTML).not.toContain('data-curated-room')
     expect(elements.dcurRooms.innerHTML).not.toContain('data-curator-effect')
@@ -30,7 +32,7 @@ describe('desktop progressive room map', () => {
     const original=JSON.stringify({bench:context.CURATED.bench,selected:context.SELECTED})
     context.DESKTOP_ALL_OPEN=true
     runInNewContext('paintDesktopCurator()',context)
-    expect(elements.dcurMapBody.hidden).toBe(false)
+    expect(elements.dcurRooms.innerHTML.match(/data-curator-room=/g)).toHaveLength(8)
     expect(elements.dcurAll.attributes['aria-expanded']).toBe('true')
     expect(JSON.stringify({bench:context.CURATED.bench,selected:context.SELECTED})).toBe(original)
   })

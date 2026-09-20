@@ -2920,34 +2920,40 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   body.mc-unlock-review #mycollGrid{padding-bottom:calc(102px + env(safe-area-inset-bottom,0px));scroll-padding-bottom:calc(102px + env(safe-area-inset-bottom,0px))}
 }
 
-/* Desktop Curator: source, selection, Curated browsing, disclosed rooms, collection. */
+/* Desktop-only compact navigation; mobile keeps its existing template. */
 @media (min-width:1025px){
+  .shell:has(> #discoveryRail > .dcur){grid-template-columns:calc(var(--rail-w) - 50px) minmax(0,1fr);}
   #discoveryRail:has(> .dcur){padding:16px 20px;overflow-y:auto;}
-  .dcur{display:flex;flex-direction:column;gap:16px;min-height:100%;}
+  .dcur{--dcur-source:80px;display:flex;flex-direction:column;gap:20px;min-height:100%;}
   .dcur .curator{margin:0;padding:0 0 8px;border-bottom:1px solid var(--gold-soft);}
   .dcur h3{font:400 24px/1.2 var(--serif);margin:0;}
-  .dcur__source{display:grid;grid-template-columns:96px minmax(0,1fr);gap:16px;align-items:center;}
-  .dcur .photo-stamp{width:96px;height:96px;min-height:0;margin:0;}
+  .dcur__source{display:grid;grid-template-columns:var(--dcur-source) minmax(0,1fr);gap:12px;align-items:center;}
+  .dcur .photo-stamp{width:var(--dcur-source);height:var(--dcur-source);min-height:0;margin:0;}
   .dcur .photo-stamp .fill span{font-size:16px;line-height:1.1;}
-  .dcur #curReroll{justify-self:end;width:auto;min-height:40px;padding:8px 12px;border:1px solid var(--gold-soft);border-radius:6px;font:400 20px/1.2 var(--serif);color:var(--oxblood);}
-  .dcur__selection,.dcur__curated{border-top:1px solid var(--gold-soft);padding-top:12px;display:flex;flex-direction:column;gap:8px;}
-  .dcur__count{font:12px/1.4 var(--sans);}
-  .dcur #optPickForMe{width:100%;margin:0;height:42px;min-height:42px;aspect-ratio:auto;padding:8px;text-align:center;background:var(--oxblood);color:var(--vellum);border:1px solid var(--gold);border-radius:6px;font:400 22px/1 var(--serif);}
+  .dcur__actions{display:flex;flex-direction:column;gap:12px;min-width:0;}
+  .dcur #optPickForMe,.dcur__remix{width:100%;margin:0;min-height:52px;aspect-ratio:auto;padding:8px 6px;text-align:center;border:1px solid var(--gold);border-radius:6px;font:400 20px/1.2 var(--serif);cursor:pointer;}
+  .dcur #optPickForMe{background:var(--oxblood);color:var(--vellum);}
+  .dcur__remix{display:grid;place-items:center;background:var(--vellum);color:var(--oxblood);}
+  .dcur__remix span{grid-area:1/1;transition:opacity 180ms ease-in-out;}
+  .dcur__remix .dcur__busy{opacity:0;}
+  .dcur__remix.is-remixing .dcur__idle{opacity:0;}
+  .dcur__remix.is-remixing .dcur__busy{opacity:1;}
   .dcur #pfmSizes{margin:0;}
-  .dcur__remix,.dcur__disclose,.dcur__back{min-height:40px;padding:8px 12px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--oxblood);font:400 20px/1.2 var(--serif);cursor:pointer;}
-  .dcur__disclose{display:flex;align-items:center;justify-content:space-between;width:100%;color:var(--ink);}
-  .dcur__disclose span{font:24px/1 var(--sans);}
-  .dcur__map-body{margin-top:8px;}
-  .dcur__map-body[hidden]{display:none;}
-  .dcur__rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
-  .dcur__room{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--ink);font:400 18px/1.1 var(--serif);text-align:left;cursor:pointer;}
-  .dcur__room-icon{display:grid;place-items:center;flex:0 0 28px;height:28px;border:1px solid var(--gold-soft);border-radius:4px;}
-  .dcur__room-icon img{display:block;width:24px;height:24px;object-fit:contain;}
-  .dcur__room.selected{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass);}
-  .dcur__back{margin-top:8px;border:0;background:none;padding-left:0;}
+  .dcur__map{border-top:1px solid var(--gold-soft);padding-top:12px;}
+  .dcur__map-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
+  .dcur__disclose{padding:4px 0;border:0;background:none;color:var(--oxblood);font:400 18px/1.2 var(--serif);cursor:pointer;white-space:nowrap;}
+  .dcur__curated-map{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+  .dcur__rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px;}
+  .dcur__room{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;padding:4px 0;border:0;background:none;cursor:pointer;}
+  .dcur__blocks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;width:42px;}
+  .dcur__blocks i{height:22px;border:1px solid var(--oxblood);border-radius:3px;background:var(--oxblood);}
+  .dcur__blocks i:first-child{background:var(--brass);border-color:var(--brass);}
+  .dcur__room img{width:34px;height:34px;object-fit:contain;border-radius:50%;border:1px solid var(--gold-soft);background:var(--vellum);}
+  .dcur__room.selected .dcur__blocks i{background:var(--gold-soft);border-color:var(--gold);}
+  .dcur__room:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px;}
   .rail .dcur .your-collection{position:static;width:100%;margin-top:auto;padding:12px;border-radius:6px;display:flex;flex-direction:column;gap:8px;}
   .rail .dcur .your-collection__title{font:400 24px/1.2 var(--serif);text-align:center;margin:0;}
-  .dcur .your-collection .dcur__count{text-align:center;color:var(--vellum);}
+  .dcur .your-collection .dcur__count{text-align:center;color:var(--vellum);font:12px/1.4 var(--sans);}
   .dcur__progress{height:8px;border-radius:6px;background:var(--brass);overflow:hidden;margin:0 4px;}
   .dcur__progress i{display:block;height:100%;background:var(--gold-soft);border-radius:inherit;}
   .dcur #bundleInd{margin:0;width:100%;height:40px;min-height:40px;aspect-ratio:auto;padding:0 12px;display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:center;background:none;color:var(--gold-soft);border:1px solid var(--gold);border-radius:6px;}
@@ -2955,6 +2961,10 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   .dcur #bundleInd .b-p{font:400 22px/1 var(--serif);color:inherit;text-align:right;}
   .rail .dcur .your-collection .btn-review{min-height:42px;border-width:1px;border-radius:6px;font:400 20px/1.2 var(--serif);padding:8px;}
 }
+@media(min-width:1330px){.dcur{--dcur-source:120px;}}
+@media(min-width:1660px){.dcur{--dcur-source:150px;}}
+@media(min-width:1920px){.dcur{--dcur-source:180px;}}
+@media(prefers-reduced-motion:reduce){.dcur__remix span{transition:none;}}
 .shape-mobile-copy,.rail-back,.rail-intent{display:none;}
 @media(max-width:1024px){
   .shape-desktop-copy, .aspect-opt__say{display:none;}
@@ -5271,7 +5281,8 @@ function requestReview(anchorEl){
 document.addEventListener('click', function(e){
   var t = e.target, c = t && t.closest ? function(s){ return t.closest(s); } : function(){ return null; };
   if (c('#dcurAll')){ DESKTOP_ALL_OPEN = !DESKTOP_ALL_OPEN; paintDesktopCurator(); return; }
-  if (c('#dcurBack')){ DESKTOP_ALL_OPEN = false; paintDesktopCurator(); goCurated(); return; }
+  var curatedRoom = c('[data-dcur-page]');
+  if (curatedRoom){ CURATED.page = +curatedRoom.dataset.dcurPage; paintCurated(); goCurated(); return; }
   if (c('#dcurRemix')){ remixDesktopCurated(); return; }
   var pg = c('#discoveryRail .cur-page');
   if (pg){ if (pg.getAttribute('aria-disabled') !== 'true'){ CURATED.page = +pg.dataset.curPage ? 1 : 0; act('curated page ' + (CURATED.page + 1)); paintCurated(); if (!c('.mcur')) goCurated(); } return; }
@@ -6432,33 +6443,57 @@ var DESKTOP_ALL_OPEN = false;
 function desktopCuratorHtml(){
   var source = document.createElement('div'); source.innerHTML = DISCOVERY_RAIL_HTML;
   return '<div class="dcur">' + source.querySelector('.curator').outerHTML +
-    '<div class="dcur__source">' + source.querySelector('.photo-stamp').outerHTML + source.querySelector('#curReroll').outerHTML + '</div>' +
-    '<section class="dcur__selection"><h3>Choose your favorites</h3><div class="dcur__count" id="dcurSelectionCount"></div>' +
-    source.querySelector('#optPickForMe').outerHTML.replace('Pick 4 Me', 'Pick 4 for Me') + source.querySelector('#pfmSizes').outerHTML + '</section>' +
-    '<section class="dcur__curated"><h3>Curated Effects</h3><button type="button" class="dcur__remix" id="dcurRemix">↻ Remix Curated Effects</button></section>' +
-    '<section class="dcur__map"><button type="button" class="dcur__disclose" id="dcurAll" aria-expanded="false" aria-controls="dcurMapBody">All Effects <span aria-hidden="true">›</span></button><div class="dcur__map-body" id="dcurMapBody" hidden><div class="dcur__rooms" id="dcurRooms"></div><button type="button" class="dcur__back" id="dcurBack">← Back to Curated</button></div></section>' +
+    '<div class="dcur__source">' + source.querySelector('.photo-stamp').outerHTML + '<div class="dcur__actions">' +
+    source.querySelector('#optPickForMe').outerHTML.replace('Pick 4 Me', 'Pick 4 for Me') +
+    '<button type="button" class="dcur__remix" id="dcurRemix" aria-label="Curated"><span class="dcur__idle" aria-hidden="true">Curated</span><span class="dcur__busy" aria-hidden="true">Remixing…</span></button></div></div>' + source.querySelector('#pfmSizes').outerHTML +
+    '<section class="dcur__map"><div class="dcur__map-head"><h3>Effect Map</h3><button type="button" class="dcur__disclose" id="dcurAll" aria-expanded="false" aria-controls="dcurRooms">See All ›</button></div><div class="dcur__curated-map" id="dcurCuratedMap"></div><div class="dcur__rooms" id="dcurRooms"></div></section>' +
     '<div class="your-collection leather" data-tip="collection"><div class="your-collection__title">Your Collection</div><div class="dcur__count" id="dcurCount"></div><div class="dcur__progress" id="dcurProgress" role="progressbar" aria-label="Your Collection" aria-valuemin="0" aria-valuemax="4"><i></i></div>' +
     source.querySelector('#bundleInd').outerHTML + source.querySelector('#btnGoReview').outerHTML + '</div></div>';
 }
-function desktopMapRooms(){ return SILOS; }
+function desktopMapRooms(){ return DESKTOP_ALL_OPEN ? SILOS : SILOS.slice(0,3); }
+function desktopMapSymbol(icon, attributes, selected){
+  return '<button type="button" class="dcur__room' + (selected ? ' selected' : '') + '" ' + attributes + '><span class="dcur__blocks" aria-hidden="true"><i></i><i></i></span>' + icon + '</button>';
+}
 function paintDesktopCurator(){
   var rooms = document.getElementById('dcurRooms'); if (!rooms) return;
   rooms.innerHTML = desktopMapRooms().map(function(silo){
     var selected = silo.effects.some(function(effect){ return isChosen(effect.id); });
-    return '<button type="button" class="dcur__room' + (selected ? ' selected' : '') + '" data-curator-room="' + silo.id + '" aria-label="' + silo.name + (selected ? ', contains selected effects' : '') + '"><span class="dcur__room-icon">' + iconMarkup(silo.id) + '</span><span>' + silo.name + '</span></button>';
+    return desktopMapSymbol(iconMarkup(silo.id), 'data-curator-room="' + silo.id + '" aria-label="' + silo.name + '"', selected);
   }).join('');
-  document.getElementById('dcurMapBody').hidden = !DESKTOP_ALL_OPEN;
-  document.getElementById('dcurAll').setAttribute('aria-expanded', DESKTOP_ALL_OPEN ? 'true' : 'false');
+  document.getElementById('dcurCuratedMap').innerHTML = [0,1].map(function(page){
+    var selected = CURATED.bench.slice(page * 8, page * 8 + 8).some(isChosen);
+    var icon = '<img src="/icons/curator-rail/curator_rail__' + (page === 0 ? '03' : '05') + '.png" alt="">';
+    return desktopMapSymbol(icon, 'data-dcur-page="' + page + '" aria-label="Curated Effects"', selected);
+  }).join('');
+  var all = document.getElementById('dcurAll');
+  all.setAttribute('aria-expanded', DESKTOP_ALL_OPEN ? 'true' : 'false');
+  all.textContent = DESKTOP_ALL_OPEN ? 'Show Less ‹' : 'See All ›';
   var n = SELECTED.length, label = n > 4 ? n + ' selected' : n + ' of 4 selected';
-  document.getElementById('dcurSelectionCount').textContent = label;
   document.getElementById('dcurCount').textContent = label;
   var progress = document.getElementById('dcurProgress');
   progress.setAttribute('aria-valuenow', Math.min(4, n));
   progress.setAttribute('aria-valuetext', label);
   progress.querySelector('i').style.width = Math.min(100, n / 4 * 100) + '%';
 }
-function remixDesktopCurated(){
-  rerollBench(); paintCurated(); DESKTOP_ALL_OPEN = false; paintDesktopCurator(); goCurated();
+async function remixDesktopCurated(){
+  var button = document.getElementById('dcurRemix');
+  if (!button || button.disabled) return;
+  button.disabled = true; button.classList.add('is-remixing'); button.setAttribute('aria-label', 'Remixing…');
+  try {
+    await new Promise(function(resolve){ setTimeout(resolve, 180); });
+    rerollBench();
+    await Promise.all(curatedPage().map(function(base){
+      return new Promise(function(resolve){
+        var image = new Image(), timeout = setTimeout(resolve, 8000);
+        image.onload = image.onerror = function(){ clearTimeout(timeout); resolve(); };
+        image.src = curatedPreviewUrl(base, SUBJECT);
+      });
+    }));
+    paintCurated(); DESKTOP_ALL_OPEN = false; paintDesktopCurator(); goCurated();
+    await new Promise(function(resolve){ requestAnimationFrame(function(){ requestAnimationFrame(resolve); }); });
+  } finally {
+    button.classList.remove('is-remixing'); button.setAttribute('aria-label', 'Curated'); button.disabled = false;
+  }
 }
 function restoreDiscoveryRail(){
   /* __MCUR__ Two templates, one engine. The sheet is a different arrangement,
