@@ -2877,7 +2877,7 @@ body.is-lboxed{ overflow:hidden }
 .mc-unlock-offer:focus-visible{outline:2px solid var(--gold-soft);outline-offset:3px}
 .mc-unlock-meta{font:14px var(--sans);line-height:1.6;color:var(--brass)}
 #mcUnlockBalance{display:none}
-body.mc-unlock-review #mcUnlockBalance{display:inline-flex;gap:4px}
+body.mc-unlock-review #mcUnlockBalance{display:inline-flex;gap:4px;white-space:nowrap;flex-shrink:0;align-items:center}
 .mc-unlock-offer[aria-checked="true"]{border-color:var(--gold);background:var(--vellum)}
 .mc-unlock-radio{width:18px;height:18px;border:2px solid var(--gold);border-radius:50%;flex-shrink:0}
 .mc-unlock-offer[aria-checked="true"] .mc-unlock-radio{background:var(--gold);box-shadow:inset 0 0 0 4px var(--vellum)}
@@ -2886,7 +2886,7 @@ body.mc-unlock-review #mcUnlockBalance{display:inline-flex;gap:4px}
 .mc-unlock-primary{width:100%;border:1px solid var(--gold);border-radius:8px;padding:12px;font:400 24px var(--serif);cursor:pointer}
 .mc-unlock-wallet{text-align:center;border-top:1px solid var(--oxblood-line);margin-top:14px;padding-top:12px}
 .mc-unlock-wallet small{font:12px var(--sans)}
-body.mc-unlock-review #discoveryRail{display:flex;flex-direction:column}
+body.mc-unlock-review #discoveryRail{display:flex;flex-direction:column;padding:12px}
 body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
 #mcUnlockDialog{background:var(--vellum-100);color:var(--ink);border:1px solid var(--gold);border-radius:16px;width:min(440px,calc(100% - 32px));max-height:85dvh;padding:18px;overflow:auto}
 #mcUnlockDialog::backdrop{background:rgba(0,0,0,.6)}
@@ -8536,9 +8536,9 @@ function mcUnlockOffersHtml(){
 }
 function mcUnlockCommerceHtml(inSheet){
   var b = MC_UNLOCK_REVIEW.balance;
-  return '<section class="mc-unlock-commerce"><h3>Unlock Your Art</h3><p>' + (inSheet ? 'Choose how many unlocks you’d like, or unlock your entire collection.' : 'Turn previews into yours.<br>Use unlocks on any locked piece in your collection — anytime.') + '</p>' +
+  return '<section class="mc-unlock-commerce">' + (inSheet ? '' : '<h3>Unlock Your Art</h3>') + '<p>' + (inSheet ? 'Choose how many unlocks you’d like, or unlock your entire collection.' : 'Turn previews into yours.<br>Use unlocks on any locked piece in your collection — anytime.') + '</p>' +
     mcUnlockOffersHtml() + '<button type="button" class="mc-unlock-primary" data-mc-continue>' + (inSheet ? 'Continue' : 'Get More Unlocks') + '</button><p>Preview review · package checkout unavailable.</p>' +
-    '<div class="mc-unlock-wallet"><small>YOUR UNLOCKS</small><div class="mc-unlock-balance">' + (b ? b.total : '—') + '</div><p>' + (b ? b.reusable + ' reusable · ' + b.included + ' included<br>Included unlocks stay with their original collection.' : 'Unlock balance unavailable') + '</p></div></section>';
+    (inSheet ? '' : '<div class="mc-unlock-wallet"><small>YOUR UNLOCKS</small><div class="mc-unlock-balance">' + (b ? b.total : '—') + '</div><p>' + (b ? b.reusable + ' reusable · ' + b.included + ' included<br>Included unlocks stay with their original collection.' : 'Unlock balance unavailable') + '</p></div>') + '</section>';
 }
 function mcUnlockShow(offer){
   if (!MC_UNLOCK_REVIEW) return;
@@ -8556,10 +8556,19 @@ function mcUnlockShow(offer){
     if (!o) return;
     content = '<section class="mc-unlock-commerce"><h3>' + (offer === 'all' ? 'Unlock All of My Collection' : o.count + ' unlock' + (o.count === 1 ? '' : 's')) + '</h3><div class="mc-unlock-balance">' + mcUnlockMoney(o.cents) + '</div><p>' + (offer === 'all' ? o.count + ' locked pieces · ' + mcUnlockMoney(o.rateCents) + ' each' : 'Apply these unlocks to locked pieces when you choose.') + '</p><p>Package checkout is unavailable during this Preview review. No payment will be taken.</p><button type="button" class="mc-unlock-offer" disabled>Checkout unavailable</button><button type="button" class="link-back" data-mc-choices>Back to unlocks</button></section>';
   }
-  dialog.innerHTML = '<div class="mc-unlock-dialog-head"><h2 id="mcUnlockTitle">Unlocks</h2><button type="button" class="pill-btn" data-mc-close aria-label="Close unlocks">×</button></div>' + content;
+  dialog.innerHTML = '<div class="mc-unlock-dialog-head"><h2 id="mcUnlockTitle">Unlock Your Art</h2><button type="button" class="pill-btn" data-mc-close aria-label="Close unlocks">×</button></div>' + content;
   if (!dialog.open) dialog.showModal();
   dialog.querySelector('[data-mc-close]').focus();
 }
+document.addEventListener('keydown',function(e){
+  var current = e.target.closest('[data-mc-offer]');
+  if (!current || ['ArrowDown','ArrowRight','ArrowUp','ArrowLeft'].indexOf(e.key) < 0) return;
+  e.preventDefault();
+  var rows = Array.from(current.parentElement.querySelectorAll('[data-mc-offer]'));
+  var direction = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : -1;
+  var next = rows[(rows.indexOf(current) + direction + rows.length) % rows.length];
+  next.click(); next.focus();
+});
 document.addEventListener('click',function(e){
   if(e.target.closest('#mcUnlockBalance') || e.target.closest('[data-mc-choices]')) return mcUnlockShow();
   var offer = e.target.closest('[data-mc-offer]');
