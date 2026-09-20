@@ -2923,16 +2923,21 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
 /* Desktop Curator rooms: existing rail footprint, independent mobile template. */
 @media (min-width:1025px){
   #discoveryRail:has(> .dcur){padding:12px 16px;overflow-y:auto;}
-  .dcur{display:flex;flex-direction:column;gap:10px;min-height:100%;}
+  .dcur{display:flex;flex-direction:column;gap:6px;min-height:100%;}
   .dcur .curator{margin:0;padding:0 0 8px;border-bottom:1px solid var(--gold-soft);}
-  .dcur__source{display:grid;grid-template-columns:100px minmax(0,1fr);gap:12px;align-items:center;}
-  .dcur .photo-stamp{width:100px;height:100px;min-height:0;margin:0;}
+  .dcur__source{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:12px;align-items:center;}
+  .dcur .photo-stamp{width:100%;height:auto;aspect-ratio:1;min-height:0;margin:0;}
   .dcur .photo-stamp .fill{font-size:16px;}
-  .dcur #curReroll{width:100%;justify-content:center;font-size:20px;padding:10px 8px;}
+  .dcur #curReroll{width:100%;justify-content:center;font-size:20px;padding:8px 6px;}
   .dcur #optPickForMe{width:100%;margin:0;height:52px;min-height:52px;aspect-ratio:auto;padding:8px;text-align:center;background:var(--vellum);color:var(--brass);border-color:var(--gold);font:400 24px var(--serif);}
   .dcur #pfmSizes{margin:0;}
   .dcur__map{border-top:1px solid var(--gold-soft);padding-top:8px;}
   .dcur h3{font:400 24px var(--serif);margin:0 0 6px;}
+  .dcur__map-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+  .dcur__map-head h3{margin:0;}
+  .dcur__filters{display:flex;gap:6px;}
+  .dcur__filters button{font:400 18px var(--serif);padding:2px 12px;border:1px solid var(--gold-soft);border-radius:16px;background:var(--vellum);color:var(--oxblood);cursor:pointer;}
+  .dcur__filters button[aria-pressed="true"]{background:var(--oxblood);color:var(--vellum);}
   .dcur__rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
   .dcur__room{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60px;padding:6px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--ink);font:400 18px var(--serif);line-height:1.1;cursor:pointer;}
   .dcur__room img{width:28px;height:28px;object-fit:contain;}
@@ -2942,10 +2947,9 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   .dcur__picks{border-top:1px solid var(--gold-soft);padding-top:8px;}
   .dcur__picks-head{display:flex;align-items:center;justify-content:space-between;gap:6px;}
   .dcur__picks-head span{font:12px var(--sans);}
-  .dcur__positions{display:flex;justify-content:center;gap:16px;}
-  .dcur__positions i{width:20px;height:20px;border:1px solid var(--gold);border-radius:50%;}
-  .dcur__positions i.selected{background:var(--oxblood);}
-  .dcur #bundleInd{margin:0;width:100%;height:44px;min-height:44px;aspect-ratio:auto;padding:0 16px;justify-content:space-around;background:var(--vellum);color:var(--brass);border:1px solid var(--gold-soft);}
+  .dcur__progress{height:10px;border-radius:6px;background:var(--gold-soft);overflow:hidden;margin:6px 0;}
+  .dcur__progress i{display:block;height:100%;background:var(--oxblood);border-radius:inherit;}
+  .dcur #bundleInd{margin:0 0 16px;width:100%;height:44px;min-height:44px;aspect-ratio:auto;padding:0 16px;justify-content:space-around;background:var(--vellum);color:var(--brass);border:1px solid var(--gold-soft);}
   .dcur #bundleInd .b-n{height:auto;aspect-ratio:auto;background:none;color:inherit;font-size:22px;font-weight:400;}
   .dcur #bundleInd .b-p{font-size:26px;color:inherit;}
   .rail .dcur .your-collection{position:static;width:100%;margin-top:auto;padding:10px 12px;}
@@ -5259,6 +5263,8 @@ function requestReview(anchorEl){
    in the DOM. */
 document.addEventListener('click', function(e){
   var t = e.target, c = t && t.closest ? function(s){ return t.closest(s); } : function(){ return null; };
+  var filter = c('[data-dcur-filter]');
+  if (filter){ DESKTOP_MAP_FILTER = filter.dataset.dcurFilter; paintDesktopCurator(); return; }
   var pg = c('#discoveryRail .cur-page');
   if (pg){ if (pg.getAttribute('aria-disabled') !== 'true'){ CURATED.page = +pg.dataset.curPage ? 1 : 0; act('curated page ' + (CURATED.page + 1)); paintCurated(); if (!c('.mcur')) goCurated(); } return; }
   if (c('#curReroll')){ if (rerollBench()){ act('curated reroll'); paintCurated(); } return; }
@@ -6415,13 +6421,14 @@ function showDiscovery(){
    (DISCOVERY_RAIL_HTML, captured from the static rail at boot) -- no
    hand-kept second template. Its controls are delegated, so nothing is
    re-bound here; only what is painted from state is repainted. */
+var DESKTOP_MAP_FILTER = 'all';
 function desktopCuratorHtml(){
   var source = document.createElement('div'); source.innerHTML = DISCOVERY_RAIL_HTML;
   return '<div class="dcur">' + source.querySelector('.curator').outerHTML +
     '<div class="dcur__source">' + source.querySelector('.photo-stamp').outerHTML + source.querySelector('#curReroll').outerHTML + '</div>' +
     source.querySelector('#optPickForMe').outerHTML.replace('Pick 4 Me', 'Pick 4 for Me') + source.querySelector('#pfmSizes').outerHTML +
-    '<section class="dcur__map"><h3>Effect Map</h3><div class="dcur__rooms" id="dcurRooms"></div></section>' +
-    '<section class="dcur__picks"><div class="dcur__picks-head"><h3>Your Picks</h3><span id="dcurCount"></span></div><div class="dcur__positions" id="dcurPositions" aria-hidden="true"></div></section>' +
+    '<section class="dcur__map"><div class="dcur__map-head"><h3>Effect Map</h3><div class="dcur__filters" role="group" aria-label="Effect Map filter"><button type="button" data-dcur-filter="all">All</button><button type="button" data-dcur-filter="curated">Curated</button></div></div><div class="dcur__rooms" id="dcurRooms"></div></section>' +
+    '<section class="dcur__picks"><div class="dcur__picks-head"><h3>Your Picks</h3><span id="dcurCount"></span></div><div class="dcur__progress" id="dcurProgress" role="progressbar" aria-label="Your Picks" aria-valuemin="0" aria-valuemax="4"><i></i></div></section>' +
     source.querySelector('#bundleInd').outerHTML + source.querySelector('.your-collection').outerHTML + '</div>';
 }
 function desktopMapRooms(){
@@ -6429,7 +6436,7 @@ function desktopMapRooms(){
     return { id:'curated', name:'Curated ' + (page + 1), curatedPage:page,
       icon:'/icons/curator-rail/curator_rail__' + (page === 0 ? '03' : '05') + '.png',
       effects:CURATED.bench.slice(page * 8, page * 8 + 8).map(function(id){ return { id:id }; }) };
-  }).concat(SILOS);
+  }).concat(DESKTOP_MAP_FILTER === 'curated' ? [] : SILOS);
 }
 function paintDesktopCurator(){
   var rooms = document.getElementById('dcurRooms'); if (!rooms) return;
@@ -6438,8 +6445,13 @@ function paintDesktopCurator(){
     var curated = typeof silo.curatedPage === 'number';
     return '<button type="button" class="dcur__room' + (curated ? ' dcur__room--curated' : '') + (selected ? ' selected' : '') + '" data-curator-room="' + silo.id + '"' + (curated ? ' data-curated-room="' + silo.curatedPage + '"' : '') + ' aria-label="' + silo.name + (selected ? ', contains selected effects' : '') + '">' + (curated ? '<img src="' + silo.icon + '" alt="">' : iconMarkup(silo.id)) + '<span>' + silo.name + '</span></button>';
   }).join('');
-  document.getElementById('dcurCount').textContent = SELECTED.length + ' of 4 selected';
-  document.getElementById('dcurPositions').innerHTML = [0,1,2,3].map(function(i){ return '<i' + (i < SELECTED.length ? ' class="selected"' : '') + '></i>'; }).join('');
+  document.querySelectorAll('[data-dcur-filter]').forEach(function(button){ button.setAttribute('aria-pressed', button.dataset.dcurFilter === DESKTOP_MAP_FILTER ? 'true' : 'false'); });
+  var n = SELECTED.length, label = n > 4 ? n + ' selected' : n + ' of 4 selected';
+  document.getElementById('dcurCount').textContent = label;
+  var progress = document.getElementById('dcurProgress');
+  progress.setAttribute('aria-valuenow', Math.min(4, n));
+  progress.setAttribute('aria-valuetext', label);
+  progress.querySelector('i').style.width = Math.min(100, n / 4 * 100) + '%';
 }
 function restoreDiscoveryRail(){
   /* __MCUR__ Two templates, one engine. The sheet is a different arrangement,

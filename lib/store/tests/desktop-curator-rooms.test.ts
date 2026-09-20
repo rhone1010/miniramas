@@ -4,8 +4,9 @@ import { describe, it, expect } from 'vitest'
 const html = readFileSync('public/discovery-consolidated-draft.html', 'utf8')
 const code = html.slice(html.indexOf('function desktopMapRooms(){'), html.indexOf('function restoreDiscoveryRail(){'))
 function harness(selected: string[] = []) {
-  const elements = Object.fromEntries(['dcurRooms', 'dcurCount', 'dcurPositions'].map(id => [id, { innerHTML: '', textContent: '' }]))
+  const elements = Object.fromEntries(['dcurRooms', 'dcurCount', 'dcurProgress'].map(id => [id, { innerHTML: '', textContent: '', attributes: {} as Record<string, unknown>, fill: { style: { width: '' } }, setAttribute(key: string, value: unknown) { this.attributes[key] = value }, querySelector() { return this.fill } }]))
   const context = {
+    DESKTOP_MAP_FILTER: 'all',
     SILOS: [{ id: 'one', name: 'One', effects: [{ id: 'a' }, { id: 'b' }] }, { id: 'two', name: 'Two', effects: [{ id: 'c' }] }],
     CURATED: { bench: ['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'c', 'j', 'k', 'l', 'm', 'n', 'o', 'p'] }, SELECTED: selected,
     isChosen: (id: string) => selected.includes(id), iconMarkup: () => '<img alt="">',
@@ -38,4 +39,22 @@ describe('desktop Curator room map', () => {
     expect(after[0].effects.map((effect: {id: string}) => effect.id)).toEqual(context.CURATED.bench.slice(0, 8))
     expect(after[1].effects.map((effect: {id: string}) => effect.id)).toEqual(context.CURATED.bench.slice(8, 16))
   })
+})
+
+it('filters to the two Curated rooms without altering the collection', () => {
+  const { context, elements } = harness()
+  const bench = [...context.CURATED.bench]
+  context.DESKTOP_MAP_FILTER = 'curated'
+  runInNewContext(code + '\npaintDesktopCurator();', context)
+  expect(elements.dcurRooms.innerHTML.match(/data-curator-room=/g)).toHaveLength(2)
+  expect(context.CURATED.bench).toEqual(bench)
+  context.DESKTOP_MAP_FILTER = 'all'
+  runInNewContext(code + '\npaintDesktopCurator();', context)
+  expect(elements.dcurRooms.innerHTML.match(/data-curator-room=/g)).toHaveLength(4)
+})
+it.each([0, 1, 4, 8, 16])('shows accurate progress/count for %i picks', n => {
+  const { elements } = harness(Array.from({length:n}, (_, i) => String(i)))
+  expect(elements.dcurCount.textContent).toBe(n > 4 ? `${n} selected` : `${n} of 4 selected`)
+  expect(elements.dcurProgress.fill.style.width).toBe(`${Math.min(100, n / 4 * 100)}%`)
+  expect(elements.dcurProgress.attributes['aria-valuenow']).toBe(Math.min(4, n))
 })
