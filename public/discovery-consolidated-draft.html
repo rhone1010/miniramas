@@ -2955,6 +2955,17 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   .rail .dcur .your-collection{position:static;width:100%;margin-top:auto;padding:10px 12px;}
   .dcur .photo-stamp .fill span{font-size:16px;line-height:1.1;}
 }
+.shape-mobile-copy,.rail-back,.rail-intent{display:none;}
+@media(max-width:1024px){
+  .shape-desktop-copy, .aspect-opt__say{display:none;}
+  .shape-mobile-copy{display:inline;}
+  body.is-review .your-collection.is-docked,body.is-format .your-collection.is-docked{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;}
+  body.is-review .your-collection.is-docked .rail-fab,body.is-format .your-collection.is-docked .rail-fab{display:none;}
+  .your-collection.is-docked .rail-back{display:block;background:none;border:0;color:var(--gold-soft);font:400 20px var(--serif);padding:8px;cursor:pointer;}
+  .your-collection.is-docked .rail-intent{display:flex;grid-column:1/-1;justify-content:space-between;gap:8px;font:12px var(--sans);color:var(--gold-soft);}
+  .your-collection.is-docked .rail-go{font-size:18px;}
+  body.is-review #reviewView .stage-frame{padding-bottom:144px;}
+}
 </style>
 </head>
 <body>
@@ -3000,10 +3011,6 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
          parked over the artwork at bottom-centre. Phone and tablet only; the
          desktop circle is unchanged and this is hidden there. -->
     <button class="pill-btn mh-help" id="mhHelp" type="button" aria-label="Show me how this works">?</button>
-    <button class="pill-btn">
-      <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.5a1 1 0 0 0 1 .8h9a1 1 0 0 0 1-.8L21 7H6"/></svg>
-      <span>Cart</span><span>0</span>
-    </button>
   </div>
 </header>
 <div id="mcUnlockRail" role="region" aria-label="Collection unlocks">
@@ -3101,8 +3108,8 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
              product navigation. hideAspect returns to Review with SLOTS, the
              selection and the chosen format all intact. -->
         <button class="back-btn aspect-gallery__back" id="btnBackAspect" type="button">&larr; Back to Review</button>
-        <h2 class="aspect-gallery__title">Where will your portrait live?</h2>
-        <p class="aspect-gallery__say">Choose the format that fits your vision.</p>
+        <h2 class="aspect-gallery__title"><span class="shape-desktop-copy">Where will your portrait live?</span><span class="shape-mobile-copy">Choose a Shape</span></h2>
+        <p class="aspect-gallery__say"><span class="shape-desktop-copy">Choose the format that fits your vision.</span><span class="shape-mobile-copy">Where will your portrait live?</span></p>
         <div class="aspect-row" id="aspectRow"></div>
       </div>
     </main>
@@ -7290,6 +7297,12 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
   });
 })();
 
+function pieceDisplayName(p){
+  var raw = p && p.name;
+  var registry = window.EFFECT_REGISTRY;
+  var effect = registry && registry.effects.find(function(e){ return e.id === raw || e.label === raw; });
+  return effect ? effect.label : 'Crafted Images';
+}
 function pieceTitle(p){ return p.series + ' - ' + p.name + ' - ' + (ME && ME.email ? ME.email.split('@')[0] : '') + ' - ' + String(p.num).padStart(3,'0'); }
 
 // Checkout. Server re-resolves the offer and rejects on price_mismatch
@@ -8590,7 +8603,7 @@ function featuredHtml(){
   var locked = p.locked;
   return '<div class="mc-feat">' +
     '<div class="mc-feat__img' + (locked?' locked':'') + '" data-feat-open' + (p.art ? ' style="background-image:url(' + p.art + ')"' : artStyle(p.name)) + '></div>' +
-    '<div><div class="mc-feat__k">Selected</div><div class="mc-feat__t">' + pieceTitle(p) + '</div>' +
+    '<div><div class="mc-feat__k">Selected</div><div class="mc-feat__t">' + pieceDisplayName(p) + '</div>' +
       '<div class="mc-feat__m">' + (p.siloName||'') + '<br>Crafted ' + (p.date||'Aug 28') + '</div>' +
       '<span class="mc-feat__state">' + (locked ? 'Preview' : 'Purchased') + '</span></div>' +
     '<div class="mc-feat__acts">' +
@@ -9209,7 +9222,7 @@ function paintPieceDetail(){
   }
 
   var set = function(id, t){ var e = document.getElementById(id); if (e) e.textContent = t; };
-  set('pcName', p.name || '');
+  set('pcName', pieceDisplayName(p));
   /* Collection context, from the real created_at the list route now returns.
      A piece with no portfolio is a single purchase and says so by saying
      nothing about a collection it is not part of. */
@@ -9236,11 +9249,6 @@ function paintPieceDetail(){
   };
 
   if (owned){
-    /* View Full Size opens the clean master the grid already holds a signed
-       URL for -- no second fetch, and no new route. */
-    add('pc-act--own', 'View Full Size', function(){
-      if (p.art) window.open(p.art, '_blank', 'noopener');
-    });
     add('pc-act--quiet', 'Download', function(e){
       var b = e.currentTarget;
       b.disabled = true; pcNote('Preparing your file…');
@@ -9531,7 +9539,7 @@ function paintLightbox(){
   if (lbAr) li.style.setProperty('--lbox-ar', lbAr);
   else li.style.removeProperty('--lbox-ar');
   li.style.backgroundImage = p.art ? 'url(' + p.art + ')' : (ART[p.name] ? 'url(' + ART[p.name] + ')' : '');
-  document.getElementById('lboxName').innerHTML = pieceTitle(p) + '<span class="lbox__series">' + (p.siloName||'') + '</span>';
+  document.getElementById('lboxName').innerHTML = pieceDisplayName(p) + '<span class="lbox__series">' + (p.siloName||'') + '</span>';
   var acts;
   if (p.locked){
     var usingIncluded = includedRemainingFor(p) > 0;
@@ -9645,6 +9653,12 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
      Label comes from the real button so the two cannot drift; disabled state
      follows .on, which is how the renderer already expresses "ready". */
   var go = document.createElement('button');
+  var back = document.createElement('button');
+  back.className = 'rail-back'; back.type = 'button'; back.textContent = '← Back';
+  back.addEventListener('click', function(){
+    if (document.body.classList.contains('is-format')) hideAspect(); else showDiscovery();
+  });
+  var intent = document.createElement('div'); intent.className = 'rail-intent';
   go.className = 'rail-go';
   go.type = 'button';
   go.addEventListener('click', function(){
@@ -9698,7 +9712,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
       if (go.parentNode) go.parentNode.removeChild(go);
       return;
     }
-    go.textContent = real.textContent || 'Continue';
+    go.textContent = document.body.classList.contains('is-format') ? 'Craft My Photo →' : 'Choose A Shape →';
     var ready = real.classList.contains('on');
     go.disabled = !ready;
     go.classList.toggle('is-ready', ready);
@@ -9755,6 +9769,18 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
     }
     fab.style.display = small ? '' : 'none';
     scrim.style.display = small ? '' : 'none';
+    var reviewStep = document.body.classList.contains('is-review');
+    var shapeStep = document.body.classList.contains('is-format');
+    if (small && (reviewStep || shapeStep)){
+      coll.insertBefore(back, coll.firstChild);
+      if (reviewStep){
+        intent.innerHTML = '<span>Select your favorites</span><span>' + SELECTED.length + ' of 4 selected</span>';
+        coll.insertBefore(intent, coll.firstChild);
+      } else if (intent.parentNode) intent.remove();
+    } else {
+      if (back.parentNode) back.remove();
+      if (intent.parentNode) intent.remove();
+    }
     syncProg(small);
     syncGo(small);
     if (small && rail.querySelector('.mcur')){
