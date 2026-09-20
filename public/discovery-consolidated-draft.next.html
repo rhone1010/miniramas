@@ -2920,45 +2920,40 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   body.mc-unlock-review #mycollGrid{padding-bottom:calc(102px + env(safe-area-inset-bottom,0px));scroll-padding-bottom:calc(102px + env(safe-area-inset-bottom,0px))}
 }
 
-/* Desktop Curator rooms: existing rail footprint, independent mobile template. */
+/* Desktop Curator: source, selection, Curated browsing, disclosed rooms, collection. */
 @media (min-width:1025px){
-  #discoveryRail:has(> .dcur){padding:12px 16px;overflow-y:auto;}
-  .dcur{display:flex;flex-direction:column;gap:8px;min-height:100%;}
+  #discoveryRail:has(> .dcur){padding:16px 20px;overflow-y:auto;}
+  .dcur{display:flex;flex-direction:column;gap:16px;min-height:100%;}
   .dcur .curator{margin:0;padding:0 0 8px;border-bottom:1px solid var(--gold-soft);}
-  .dcur__source{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:12px;align-items:center;}
-  .dcur .photo-stamp{width:100%;height:auto;aspect-ratio:1;min-height:0;margin:0;}
-  .dcur .photo-stamp .fill{font-size:16px;}
-  .dcur #curReroll{width:100%;justify-content:center;font:400 20px var(--serif);line-height:1.2;min-height:44px;padding:8px 6px;border:1px solid var(--gold-soft);border-radius:6px;color:var(--oxblood);}
-  .dcur #optPickForMe{width:100%;margin:0;height:52px;min-height:52px;aspect-ratio:auto;padding:8px;text-align:center;background:var(--vellum);color:var(--brass);border:1px solid var(--gold-soft);border-radius:6px;font:400 24px var(--serif);}
-  .dcur #pfmSizes{margin:0;}
-  .dcur__map{border-top:1px solid var(--gold-soft);padding-top:8px;}
   .dcur h3{font:400 24px/1.2 var(--serif);margin:0;}
-  .dcur__map-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
-  .dcur__map-head h3{margin:0;}
-  .dcur__filters{display:flex;gap:0;overflow:hidden;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);}
-  .dcur__filters button{font:400 18px/1.2 var(--serif);min-height:30px;padding:4px 12px;border:0;border-radius:0;background:var(--vellum);color:var(--oxblood);cursor:pointer;}
-  .dcur__filters button[aria-pressed="true"]{background:var(--oxblood);color:var(--vellum);}
-  .dcur__rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
-  .dcur__room{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:64px;padding:6px;gap:2px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--ink);font:400 18px var(--serif);line-height:1.1;cursor:pointer;}
-  .dcur__room img{display:block;flex:none;width:28px;height:28px;object-fit:contain;}
-  .dcur__room span{display:block;width:100%;text-align:center;line-height:20px;}
-  .dcur__room.selected{border-color:var(--brass);box-shadow:inset 0 0 0 2px var(--brass);}
-  .dcur__room--curated{background:var(--gold-soft);border-color:var(--gold);color:var(--ink);}
-  .dcur__picks{border-top:1px solid var(--gold-soft);padding-top:8px;}
-  .dcur__picks-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
-  .dcur__picks-head span{font:12px var(--sans);}
-  .dcur__progress{height:10px;border-radius:6px;background:var(--gold-soft);overflow:hidden;margin:6px 0;}
-  .dcur__progress i{display:block;height:100%;background:var(--oxblood);border-radius:inherit;}
-  .dcur #bundleInd{margin:0 0 16px;width:100%;height:44px;min-height:44px;aspect-ratio:auto;padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:center;text-align:center;background:var(--vellum);color:var(--brass);border:1px solid var(--gold-soft);}
-  .dcur #bundleInd .b-n{height:auto;aspect-ratio:auto;background:none;color:inherit;font-size:24px;line-height:1;font-weight:400;border-right:1px solid var(--gold-soft);border-radius:0;}
-  .dcur #bundleInd .b-p{font-size:24px;line-height:1;font-style:normal;color:inherit;}
-  .rail .dcur .your-collection{position:static;width:100%;margin-top:auto;padding:12px;border-radius:6px;}
-  .rail .dcur .your-collection .your-collection__title{font:400 24px/1.2 var(--serif);text-align:center;}
-  .rail .dcur .your-collection .tier{column-gap:10px;padding-top:20px;margin:8px 0 12px;}
-  .rail .dcur .your-collection .tier .mark .t{width:32px;height:32px;font-size:18px;line-height:1;}
-  .rail .dcur .your-collection .tier .cnt{top:-24px;min-width:24px;text-align:center;font-size:12px;line-height:18px;padding:1px 6px;}
-  .rail .dcur .your-collection .btn-review{min-height:44px;border-width:1px;border-radius:6px;font:400 20px/1.2 var(--serif);padding:10px;}
+  .dcur__source{display:grid;grid-template-columns:96px minmax(0,1fr);gap:16px;align-items:center;}
+  .dcur .photo-stamp{width:96px;height:96px;min-height:0;margin:0;}
   .dcur .photo-stamp .fill span{font-size:16px;line-height:1.1;}
+  .dcur #curReroll{justify-self:end;width:auto;min-height:40px;padding:8px 12px;border:1px solid var(--gold-soft);border-radius:6px;font:400 20px/1.2 var(--serif);color:var(--oxblood);}
+  .dcur__selection,.dcur__curated{border-top:1px solid var(--gold-soft);padding-top:12px;display:flex;flex-direction:column;gap:8px;}
+  .dcur__count{font:12px/1.4 var(--sans);}
+  .dcur #optPickForMe{width:100%;margin:0;height:42px;min-height:42px;aspect-ratio:auto;padding:8px;text-align:center;background:var(--oxblood);color:var(--vellum);border:1px solid var(--gold);border-radius:6px;font:400 22px/1 var(--serif);}
+  .dcur #pfmSizes{margin:0;}
+  .dcur__remix,.dcur__disclose,.dcur__back{min-height:40px;padding:8px 12px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--oxblood);font:400 20px/1.2 var(--serif);cursor:pointer;}
+  .dcur__disclose{display:flex;align-items:center;justify-content:space-between;width:100%;color:var(--ink);}
+  .dcur__disclose span{font:24px/1 var(--sans);}
+  .dcur__map-body{margin-top:8px;}
+  .dcur__map-body[hidden]{display:none;}
+  .dcur__rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+  .dcur__room{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--ink);font:400 18px/1.1 var(--serif);text-align:left;cursor:pointer;}
+  .dcur__room-icon{display:grid;place-items:center;flex:0 0 28px;height:28px;border:1px solid var(--gold-soft);border-radius:4px;}
+  .dcur__room-icon img{display:block;width:24px;height:24px;object-fit:contain;}
+  .dcur__room.selected{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass);}
+  .dcur__back{margin-top:8px;border:0;background:none;padding-left:0;}
+  .rail .dcur .your-collection{position:static;width:100%;margin-top:auto;padding:12px;border-radius:6px;display:flex;flex-direction:column;gap:8px;}
+  .rail .dcur .your-collection__title{font:400 24px/1.2 var(--serif);text-align:center;margin:0;}
+  .dcur .your-collection .dcur__count{text-align:center;color:var(--vellum);}
+  .dcur__progress{height:8px;border-radius:6px;background:var(--brass);overflow:hidden;margin:0 4px;}
+  .dcur__progress i{display:block;height:100%;background:var(--gold-soft);border-radius:inherit;}
+  .dcur #bundleInd{margin:0;width:100%;height:40px;min-height:40px;aspect-ratio:auto;padding:0 12px;display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:center;background:none;color:var(--gold-soft);border:1px solid var(--gold);border-radius:6px;}
+  .dcur #bundleInd .b-n{height:auto;aspect-ratio:auto;display:block;background:none;color:inherit;font:400 22px/1 var(--serif);border-radius:0;}
+  .dcur #bundleInd .b-p{font:400 22px/1 var(--serif);color:inherit;text-align:right;}
+  .rail .dcur .your-collection .btn-review{min-height:42px;border-width:1px;border-radius:6px;font:400 20px/1.2 var(--serif);padding:8px;}
 }
 .shape-mobile-copy,.rail-back,.rail-intent{display:none;}
 @media(max-width:1024px){
@@ -5275,8 +5270,9 @@ function requestReview(anchorEl){
    in the DOM. */
 document.addEventListener('click', function(e){
   var t = e.target, c = t && t.closest ? function(s){ return t.closest(s); } : function(){ return null; };
-  var filter = c('[data-dcur-filter]');
-  if (filter){ DESKTOP_MAP_FILTER = filter.dataset.dcurFilter; paintDesktopCurator(); return; }
+  if (c('#dcurAll')){ DESKTOP_ALL_OPEN = !DESKTOP_ALL_OPEN; paintDesktopCurator(); return; }
+  if (c('#dcurBack')){ DESKTOP_ALL_OPEN = false; paintDesktopCurator(); goCurated(); return; }
+  if (c('#dcurRemix')){ remixDesktopCurated(); return; }
   var pg = c('#discoveryRail .cur-page');
   if (pg){ if (pg.getAttribute('aria-disabled') !== 'true'){ CURATED.page = +pg.dataset.curPage ? 1 : 0; act('curated page ' + (CURATED.page + 1)); paintCurated(); if (!c('.mcur')) goCurated(); } return; }
   if (c('#curReroll')){ if (rerollBench()){ act('curated reroll'); paintCurated(); } return; }
@@ -5288,7 +5284,6 @@ document.addEventListener('click', function(e){
     return;
   }
   var room = c('[data-curator-room]');
-  if (room && room.hasAttribute('data-curated-room')){ CURATED.page = +room.dataset.curatedRoom; paintCurated(); }
   if (room){ document.body.classList.remove('rail-open'); document.getElementById('silo-' + room.dataset.curatorRoom).scrollIntoView({ behavior:'smooth', block:'start' }); return; }
   if (c('#curatedBox')){ if (!c('.mcur')) goCurated(); return; }
   var ps = c('[data-pfm]');
@@ -6433,37 +6428,37 @@ function showDiscovery(){
    (DISCOVERY_RAIL_HTML, captured from the static rail at boot) -- no
    hand-kept second template. Its controls are delegated, so nothing is
    re-bound here; only what is painted from state is repainted. */
-var DESKTOP_MAP_FILTER = 'all';
+var DESKTOP_ALL_OPEN = false;
 function desktopCuratorHtml(){
   var source = document.createElement('div'); source.innerHTML = DISCOVERY_RAIL_HTML;
   return '<div class="dcur">' + source.querySelector('.curator').outerHTML +
     '<div class="dcur__source">' + source.querySelector('.photo-stamp').outerHTML + source.querySelector('#curReroll').outerHTML + '</div>' +
-    source.querySelector('#optPickForMe').outerHTML.replace('Pick 4 Me', 'Pick 4 for Me') + source.querySelector('#pfmSizes').outerHTML +
-    '<section class="dcur__map"><div class="dcur__map-head"><h3>Effect Map</h3><div class="dcur__filters" role="group" aria-label="Effect Map filter"><button type="button" data-dcur-filter="all">All</button><button type="button" data-dcur-filter="curated">Curated</button></div></div><div class="dcur__rooms" id="dcurRooms"></div></section>' +
-    '<section class="dcur__picks"><div class="dcur__picks-head"><h3>Your Picks</h3><span id="dcurCount"></span></div><div class="dcur__progress" id="dcurProgress" role="progressbar" aria-label="Your Picks" aria-valuemin="0" aria-valuemax="4"><i></i></div></section>' +
-    source.querySelector('#bundleInd').outerHTML + source.querySelector('.your-collection').outerHTML + '</div>';
+    '<section class="dcur__selection"><h3>Choose your favorites</h3><div class="dcur__count" id="dcurSelectionCount"></div>' +
+    source.querySelector('#optPickForMe').outerHTML.replace('Pick 4 Me', 'Pick 4 for Me') + source.querySelector('#pfmSizes').outerHTML + '</section>' +
+    '<section class="dcur__curated"><h3>Curated Effects</h3><button type="button" class="dcur__remix" id="dcurRemix">↻ Remix Curated Effects</button></section>' +
+    '<section class="dcur__map"><button type="button" class="dcur__disclose" id="dcurAll" aria-expanded="false" aria-controls="dcurMapBody">All Effects <span aria-hidden="true">›</span></button><div class="dcur__map-body" id="dcurMapBody" hidden><div class="dcur__rooms" id="dcurRooms"></div><button type="button" class="dcur__back" id="dcurBack">← Back to Curated</button></div></section>' +
+    '<div class="your-collection leather" data-tip="collection"><div class="your-collection__title">Your Collection</div><div class="dcur__count" id="dcurCount"></div><div class="dcur__progress" id="dcurProgress" role="progressbar" aria-label="Your Collection" aria-valuemin="0" aria-valuemax="4"><i></i></div>' +
+    source.querySelector('#bundleInd').outerHTML + source.querySelector('#btnGoReview').outerHTML + '</div></div>';
 }
-function desktopMapRooms(){
-  return [0,1].map(function(page){
-    return { id:'curated', name:'Curated ' + (page + 1), curatedPage:page,
-      icon:'/icons/curator-rail/curator_rail__' + (page === 0 ? '03' : '05') + '.png',
-      effects:CURATED.bench.slice(page * 8, page * 8 + 8).map(function(id){ return { id:id }; }) };
-  }).concat(DESKTOP_MAP_FILTER === 'curated' ? [] : SILOS);
-}
+function desktopMapRooms(){ return SILOS; }
 function paintDesktopCurator(){
   var rooms = document.getElementById('dcurRooms'); if (!rooms) return;
   rooms.innerHTML = desktopMapRooms().map(function(silo){
     var selected = silo.effects.some(function(effect){ return isChosen(effect.id); });
-    var curated = typeof silo.curatedPage === 'number';
-    return '<button type="button" class="dcur__room' + (curated ? ' dcur__room--curated' : '') + (selected ? ' selected' : '') + '" data-curator-room="' + silo.id + '"' + (curated ? ' data-curated-room="' + silo.curatedPage + '"' : '') + ' aria-label="' + silo.name + (selected ? ', contains selected effects' : '') + '">' + (curated ? '<img src="' + silo.icon + '" alt="">' : iconMarkup(silo.id)) + '<span>' + silo.name + '</span></button>';
+    return '<button type="button" class="dcur__room' + (selected ? ' selected' : '') + '" data-curator-room="' + silo.id + '" aria-label="' + silo.name + (selected ? ', contains selected effects' : '') + '"><span class="dcur__room-icon">' + iconMarkup(silo.id) + '</span><span>' + silo.name + '</span></button>';
   }).join('');
-  document.querySelectorAll('[data-dcur-filter]').forEach(function(button){ button.setAttribute('aria-pressed', button.dataset.dcurFilter === DESKTOP_MAP_FILTER ? 'true' : 'false'); });
+  document.getElementById('dcurMapBody').hidden = !DESKTOP_ALL_OPEN;
+  document.getElementById('dcurAll').setAttribute('aria-expanded', DESKTOP_ALL_OPEN ? 'true' : 'false');
   var n = SELECTED.length, label = n > 4 ? n + ' selected' : n + ' of 4 selected';
+  document.getElementById('dcurSelectionCount').textContent = label;
   document.getElementById('dcurCount').textContent = label;
   var progress = document.getElementById('dcurProgress');
   progress.setAttribute('aria-valuenow', Math.min(4, n));
   progress.setAttribute('aria-valuetext', label);
   progress.querySelector('i').style.width = Math.min(100, n / 4 * 100) + '%';
+}
+function remixDesktopCurated(){
+  rerollBench(); paintCurated(); DESKTOP_ALL_OPEN = false; paintDesktopCurator(); goCurated();
 }
 function restoreDiscoveryRail(){
   /* __MCUR__ Two templates, one engine. The sheet is a different arrangement,
