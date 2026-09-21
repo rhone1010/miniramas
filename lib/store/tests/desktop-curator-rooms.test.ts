@@ -4,9 +4,9 @@ import { describe, it, expect, vi } from 'vitest'
 const html = readFileSync('public/discovery-consolidated-draft.html', 'utf8')
 const code = html.slice(html.indexOf('function desktopMapRooms(){'), html.indexOf('function restoreDiscoveryRail(){'))
 function harness(selected: string[] = []) {
-  const elements = Object.fromEntries(['dcurRooms', 'dcurCount', 'dcurProgress', 'dcurMapBody', 'dcurAll'].map(id => [id, { innerHTML: '', textContent: '', hidden:false, attributes: {} as Record<string, unknown>, fill: { style: { width: '' } }, setAttribute(key: string, value: unknown) { this.attributes[key] = value }, querySelector() { return this.fill } }]))
+  const elements = Object.fromEntries(['dcurRooms', 'dcurCount', 'dcurProgress', 'dcurMapBody', 'dcurAll', 'dcurNext'].map(id => [id, { innerHTML: '', textContent: '', hidden:false, attributes: {} as Record<string, unknown>, fill: { style: { width: '' } }, setAttribute(key: string, value: unknown) { this.attributes[key] = value }, querySelector() { return this.fill } }]))
   const context = {
-    DESKTOP_ALL_OPEN: false,
+    DESKTOP_ALL_OPEN: false, VALID_SIZES:[1,4,8,16], targetFor:(n:number)=>n<=1?1:n<=4?4:n<=8?8:16,
     SILOS: [{ id: 'one', name: 'One', effects: [{ id: 'a' }, { id: 'b' }] }, { id: 'two', name: 'Two', effects: [{ id: 'c' }] }, ...Array.from({length:6},(_,i)=>({id:'room'+i,name:'Room '+i,effects:[]}))],
     CURATED: { bench: ['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'c', 'j', 'k', 'l', 'm', 'n', 'o', 'p'] }, SELECTED: selected,
     isChosen: (id: string) => selected.includes(id), iconMarkup: () => '<img alt="">',
@@ -41,11 +41,10 @@ describe('desktop progressive room map', () => {
     expect(harness(['a']).elements.dcurRooms.innerHTML.match(/ selected"/g)).toHaveLength(1)
   })
 })
-it.each([0, 1, 4, 8, 16])('shows accurate progress/count for %i picks', n => {
+it.each([0, 1, 3, 4, 7, 8, 12, 16])('shows accurate progress/count for %i picks', n => {
   const { elements } = harness(Array.from({length:n}, (_, i) => String(i)))
-  expect(elements.dcurCount.textContent).toBe(n > 4 ? `${n} selected` : `${n} of 4 selected`)
-  expect(elements.dcurProgress.fill.style.width).toBe(`${Math.min(100, n / 4 * 100)}%`)
-  expect(elements.dcurProgress.attributes['aria-valuenow']).toBe(Math.min(4, n))
+  expect(elements.dcurCount.textContent).toBe(`${n} selected`)
+  expect(elements.dcurProgress.attributes['aria-valuenow']).toBe(n)
 })
 
 it('Remix preserves selected effects and collection records using the existing reroll engine', () => {
@@ -60,42 +59,35 @@ it('Remix preserves selected effects and collection records using the existing r
 })
 
 
-it('keeps old artwork until preloaded, flips out before replacing, and finishes the arrival before resetting the button', async () => {
-  vi.useFakeTimers()
-  try {
-    const classes = () => { const values = new Set<string>(); return {add:(s:string)=>values.add(s),remove:(s:string)=>values.delete(s),contains:(s:string)=>values.has(s)} }
-    const grid = {children:Array(8).fill({}),classList:classes()}
-    const button = {disabled:false,classList:classes(),label:'Curated',setAttribute(_k:string,v:string){this.label=v}}
-    const images: {onload:()=>void}[] = []
-    const selected = [{baseId:'kept',key:'unique-original'}]
-    let stage = 'old'
-    const scope = { document:{getElementById:(id:string)=>id==='dcurRemix'?button:grid},
-      setTimeout,clearTimeout,requestAnimationFrame:(cb:()=>void)=>setTimeout(cb,16),
-      Image:class {onload=()=>{};onerror=()=>{};src='';constructor(){images.push(this)}},
-      SUBJECT:'man',SELECTED:selected,DESKTOP_ALL_OPEN:true,
-      rerollBench:vi.fn(),curatedPage:()=>Array(8).fill('effect'),curatedPreviewUrl:()=>'/preview.jpg',
-      paintCurated:()=>{stage='new'},paintDesktopCurator:vi.fn(),goCurated:vi.fn() }
-    const task = runInNewContext(code.slice(code.indexOf('function desktopCuratedTurn('))+'\nremixDesktopCurated()',scope)
-    expect(button.label).toBe('Remixing…')
-    await vi.advanceTimersByTimeAsync(180)
-    expect(stage).toBe('old')
-    expect(grid.classList.contains('is-turning')).toBe(false)
-    images.forEach(image=>image.onload())
-    await vi.advanceTimersByTimeAsync(0)
-    expect(grid.classList.contains('is-turning')).toBe(true)
-    await vi.advanceTimersByTimeAsync(685)
-    expect(stage).toBe('old')
-    await vi.advanceTimersByTimeAsync(1)
-    expect(stage).toBe('new')
-    expect(grid.classList.contains('is-arriving')).toBe(true)
-    expect(button.disabled).toBe(true)
-    await vi.advanceTimersByTimeAsync(32)
-    expect(grid.classList.contains('has-arrived')).toBe(true)
-    await vi.advanceTimersByTimeAsync(686)
-    await task
-    expect(button.label).toBe('Curated')
-    expect(button.disabled).toBe(false)
-    expect(grid.classList.contains('is-flipping')).toBe(false)
-    expect(selected).toEqual([{baseId:'kept',key:'unique-original'}])
-  } finally {vi.useRealTimers()}
+it.each([[0,1,'1 more'],[1,1,'reached'],[3,4,'1 more'],[4,4,'reached'],[7,8,'1 more'],[8,8,'reached'],[12,16,'4 more'],[16,16,'reached']])('bundle progress at %i matches the existing target %i', (n,target,copy) => {
+ const {context,elements}=harness(Array.from({length:n as number},(_,i)=>String(i)))
+ const state=runInNewContext('desktopBundleProgress('+n+')',context)
+ expect(state.message).toContain(copy)
+ expect(state.message).toContain(target+'-image bundle')
+ expect(elements.dcurProgress.innerHTML.match(/dcur__milestone/g)).toHaveLength(4)
+ expect(state.position).toBeGreaterThanOrEqual(0)
+ expect(state.position).toBeLessThanOrEqual(100)
+})
+
+it('flips only changed slots in reading order and swaps on the moving midpoint', async () => {
+ const frames: ((now:number)=>void)[]=[]
+ function card(id:string){return {dataset:{baseId:id},classList:{add(){},remove(){}},style:{transform:'',removeProperty(){this.transform=''}},replaceWith:vi.fn()}}
+ const old=[card('selected'),card('old1'),card('old2')],fresh=[card('selected'),card('new1'),card('new2')]
+ const scope={performance:{now:()=>0},matchMedia:()=>({matches:false}),requestAnimationFrame:(f:(n:number)=>void)=>frames.push(f)}
+ const animation=code.slice(code.indexOf('function portraitFlipEase'),code.indexOf('async function remixDesktopCurated'))
+ runInNewContext(animation,scope)
+ const task=runInNewContext('desktopCuratedTurn',scope)({children:old},{children:fresh})
+ function tick(now:number){frames.splice(0).forEach(f=>f(now))}
+ tick(40)
+ expect(old[0].style.transform).toBe('')
+ expect(old[0].replaceWith).not.toHaveBeenCalled()
+ tick(150)
+ expect(old[1].style.transform).not.toBe(old[2].style.transform)
+ tick(350)
+ expect(old[1].replaceWith).toHaveBeenCalledWith(fresh[1])
+ expect(fresh[1].style.transform).toContain('rotateY(-')
+ tick(1000); await task
+ expect(old[0].replaceWith).not.toHaveBeenCalled()
+ expect(old[2].replaceWith).toHaveBeenCalledWith(fresh[2])
+ expect(fresh[1].style.transform).toBe('')
 })
