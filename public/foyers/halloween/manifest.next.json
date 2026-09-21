@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "category": "halloween",
+  "status": "awaiting-assets",
+  "reference": "/foyer.html",
+  "workflow": "/halloween.html",
+  "referenceSource": {
+    "path": "source.jpg",
+    "available": false,
+    "usage": "reference-only; not a customer upload or generated result"
+  },
+  "imageSpec": {
+    "width": 800,
+    "height": 1192,
+    "format": "jpeg"
+  },
+  "transformations": [
+    {
+      "id": "flip_01",
+      "path": "flip_01.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_02",
+      "path": "flip_02.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_03",
+      "path": "flip_03.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_04",
+      "path": "flip_04.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_05",
+      "path": "flip_05.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_06",
+      "path": "flip_06.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_07",
+      "path": "flip_07.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_08",
+      "path": "flip_08.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_09",
+      "path": "flip_09.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_10",
+      "path": "flip_10.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_11",
+      "path": "flip_11.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_12",
+      "path": "flip_12.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_13",
+      "path": "flip_13.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_14",
+      "path": "flip_14.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_15",
+      "path": "flip_15.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_16",
+      "path": "flip_16.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_17",
+      "path": "flip_17.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_19",
+      "path": "flip_19.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_20",
+      "path": "flip_20.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_21",
+      "path": "flip_21.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_22",
+      "path": "flip_22.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_23",
+      "path": "flip_23.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_24",
+      "path": "flip_24.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_25",
+      "path": "flip_25.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_26",
+      "path": "flip_26.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    },
+    {
+      "id": "flip_27",
+      "path": "flip_27.jpg",
+      "available": false,
+      "effectId": null,
+      "caption": null
+    }
+  ],
+  "fan": [
+    "flip_23",
+    "flip_26",
+    "flip_24",
+    "flip_13",
+    "flip_06",
+    "flip_16"
+  ],
+  "mobileExtra": [
+    "flip_17",
+    "flip_11"
+  ]
+}
