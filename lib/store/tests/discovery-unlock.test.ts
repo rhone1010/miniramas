@@ -18,6 +18,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 type Row = Record<string, any>
 const db: Record<string, Row[]> = {}
 let failInsert: string | null = null
+let failComplete = false
+let failRetrieve = false
+const reservations: Record<string, any> = {}
+const keys: Record<string, any> = {}
 
 /* A query builder that is awaitable at any point, like supabase-js: the
    chain collects filters and `then` resolves the matching rows. Without the
@@ -71,7 +75,30 @@ function table(name: string) {
 }
 
 vi.mock('@/lib/supabase', () => ({
-  supabaseAdmin: { from: (n: string) => table(n) },
+  supabaseAdmin: { from: (n: string) => table(n), rpc: async (name: string, a: any) => {
+    if (name === 'reserve_discovery_unlock') {
+      let r = reservations[a.p_preview]
+      if (!r || (a.p_expired_attempt && r.attempt_id === a.p_expired_attempt)) {
+        r = reservations[a.p_preview] = { attempt_id: `attempt-${a.p_preview}-${Object.keys(keys).length}`,
+          created_at: new Date().toISOString(), params: a.p_params, amount_cents: a.p_amount }
+      }
+      return { data: {...r}, error: null }
+    }
+    if (name === 'complete_discovery_unlock_checkout') {
+      if (failComplete) return { data:null,error:{message:'persistence unavailable'} }
+      const r = reservations[a.p_preview]
+      if (!r || r.attempt_id !== a.p_attempt) return {data:null,error:{message:'stale'}}
+      if (!r.purchase_id) {
+        const id = `purchases-${db.purchases.length+1}`
+        db.purchases.push({ id,sku_id:'unlock_addon_1',user_id:a.p_user,status:'pending',stripe_session_id:a.p_session,amount_cents:r.amount_cents })
+        db.entitlements.push({ id:`entitlements-${db.entitlements.length+1}`,purchase_id:id,user_id:a.p_user,
+          locked_style:'discovery_unlock',locked_variant:a.p_preview,status:'pending' })
+        r.purchase_id=id; r.session_id=a.p_session
+      }
+      return {data:r.purchase_id,error:null}
+    }
+    throw new Error('Unexpected RPC '+name)
+  } },
 }))
 
 /* A Stripe double that models session LIFECYCLE, because reuse-before-create
@@ -85,13 +112,16 @@ vi.mock('@/lib/store/stripe', () => ({
     prices: { retrieve: async (id: string) => ({ id, unit_amount: 299 }) },
     checkout: {
       sessions: {
-        create: async (p: any) => {
+        create: async (p: any, options: any) => {
+          if (keys[options?.idempotencyKey]) return keys[options.idempotencyKey]
           created.push(p)
           const id = `cs_test_unlock_${++sessionSeq}`
           sessions[id] = { id, status: 'open', payment_status: 'unpaid', client_secret: `secret_${sessionSeq}` }
+          keys[options.idempotencyKey] = sessions[id]
           return sessions[id]
         },
         retrieve: async (id: string) => {
+          if (failRetrieve) throw new Error('Stripe unavailable')
           if (!sessions[id]) throw new Error(`No such checkout.session: ${id}`)
           return sessions[id]
         },
@@ -117,6 +147,9 @@ const PREVIEW = 'preview-abc'
 function seed() {
   for (const k of Object.keys(db)) delete db[k]
   failInsert = null
+  failComplete = false; failRetrieve = false
+  for (const k of Object.keys(reservations)) delete reservations[k]
+  for (const k of Object.keys(keys)) delete keys[k]
   created.length = 0
   db.portfolios = [{ id: PF, user_id: USER, series: 'portraits', purchase_id: 'pur-portfolio' }]
   db.portfolio_items = [{ id: 'it-1', portfolio_id: PF, slot: 2, status: 'done', preview_id: PREVIEW }]
@@ -312,10 +345,8 @@ describe('the legacy cart is not touched', () => {
    $5.98 for one piece. The server is the authority: before minting, it hands
    back a checkout this customer already has open for this exact preview.
 
-   NOT ATOMIC, AND NOT CLAIMED TO BE. Two genuinely simultaneous requests
-   could both read "none open" before either writes. Ruled acceptable and
-   parked as payment hardening: no migration, no partial unique index, no
-   advisory lock. These cover the OBSERVED failure. */
+   Concurrent requests now share a persisted reservation and Stripe key.
+   RPC atomicity additionally requires database integration verification. */
 describe('reuse before create', () => {
   it('a repeated ordinary click reuses the session -- no second purchase or entitlement', async () => {
     const first = await ok()
@@ -361,9 +392,8 @@ describe('reuse before create', () => {
   it('a session already paid is not handed back as if it were open', async () => {
     const first = await ok()
     Object.assign(sessions[first.sessionId], { status: 'complete', payment_status: 'paid' })
-    const second = await ok()
-    expect(second.purchaseId).not.toBe(first.purchaseId)
-    expect(db.purchases).toHaveLength(2)
+    await expect(ok()).rejects.toThrow('unlock_payment_already_completed')
+    expect(db.purchases).toHaveLength(1)
   })
 
   it('an already-unlocked preview cannot start another checkout at all', async () => {
@@ -382,10 +412,33 @@ describe('reuse before create', () => {
     expect(db.purchases).toHaveLength(2)
   })
 
-  it('does not claim atomic protection -- the residual race is documented, not defended', async () => {
-    const { readFileSync } = await import('fs')
-    const path = await import('path')
-    const src = readFileSync(path.join(process.cwd(), 'lib/store/discovery-unlock.ts'), 'utf8')
-    expect(src).toMatch(/NOT ATOMIC, AND NOT CLAIMED TO BE/)
+  it('simultaneous requests share one Stripe session, purchase and entitlement', async () => {
+    const results = await Promise.all(Array.from({length:10},()=>ok()))
+    expect(new Set(results.map(r=>r.sessionId)).size).toBe(1)
+    expect(created).toHaveLength(1)
+    expect(db.purchases).toHaveLength(1)
+    expect(db.entitlements).toHaveLength(1)
+  })
+  it('fails closed when an existing session cannot be retrieved', async () => {
+    await ok(); failRetrieve=true
+    await expect(ok()).rejects.toThrow('Stripe unavailable')
+    expect(created).toHaveLength(1)
+  })
+  it('recovers a failed local persistence without creating another Stripe session', async () => {
+    failComplete=true
+    await expect(ok()).rejects.toThrow('unlock_checkout_persist_failed')
+    expect(db.purchases).toHaveLength(0)
+    failComplete=false
+    await ok()
+    expect(created).toHaveLength(1)
+    expect(db.purchases).toHaveLength(1)
+    expect(db.entitlements).toHaveLength(1)
+  })
+  it('refuses to recreate an ambiguous checkout after Stripe key retention', async () => {
+    failComplete=true; await expect(ok()).rejects.toThrow()
+    reservations[PREVIEW].created_at = new Date(Date.now()-24*60*60*1000).toISOString()
+    failComplete=false
+    await expect(ok()).rejects.toThrow('requires_reconciliation')
+    expect(created).toHaveLength(1)
   })
 })

@@ -91,3 +91,10 @@ it('flips only changed slots in reading order and swaps on the moving midpoint',
  expect(old[2].replaceWith).toHaveBeenCalledWith(fresh[2])
  expect(fresh[1].style.transform).toBe('')
 })
+
+it('excludes unfinished display scaling without removing flip or bundle progress', () => {
+ expect(html).not.toMatch(/desktop-display|desktopDisplay|desktop-display-scale/)
+ expect(readFileSync('public/portraits.html','utf8')).not.toMatch(/desktop-display|desktopDisplay/)
+ expect(html).toContain('function portraitFlipEase')
+ expect(html).toContain('function desktopBundleProgress')
+})

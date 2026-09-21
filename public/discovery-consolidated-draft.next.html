@@ -2968,9 +2968,6 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
 @media(min-width:1025px){
   #curatedStage{perspective:2200px;}
   #curatedStage.is-flipping > .card.is-changing{transform-style:preserve-3d;transition:none;}
-  :root{--desktop-display-scale:1;}
-  body:has(.dcur) > .masthead, body:has(.dcur) > .shell{zoom:var(--desktop-display-scale);}
-  body:has(.dcur) > .shell{height:calc(100vh / var(--desktop-display-scale) - var(--mh-h));}
   .dcur__milestones{position:relative;height:46px;margin:12px 12px 0;}
   .dcur__milestones::before{content:"";position:absolute;left:0;right:0;top:10px;height:3px;background:var(--brass);}
   .dcur__milestones .dcur__fill{position:absolute;left:0;top:10px;height:3px;background:var(--gold-soft);}
@@ -6537,7 +6534,11 @@ async function remixDesktopCurated(){
     await Promise.all(curatedPage().map(function(base){
       return new Promise(function(resolve){
         var image = new Image(), timeout = setTimeout(resolve, 8000);
-        image.onload = image.onerror = function(){ clearTimeout(timeout); resolve(); };
+        image.onerror = function(){ clearTimeout(timeout); resolve(); };
+        image.onload = function(){
+          clearTimeout(timeout);
+          if (image.decode) image.decode().then(resolve, resolve); else resolve();
+        };
         image.src = curatedPreviewUrl(base, SUBJECT);
       });
     }));
@@ -10260,6 +10261,5 @@ if (signinDone) signinDone.addEventListener('click', closeSignin);
   });
 })();
 </script>
-<script src="/desktop-display.js"></script>
 </body>
 </html>
