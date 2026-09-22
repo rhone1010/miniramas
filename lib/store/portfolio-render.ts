@@ -22,6 +22,7 @@ import { decideRetry } from '@/lib/store/portfolio-replace'
 import { styleIdForPreset } from '@/lib/store/portraits-style-lookup'
 import crypto from 'crypto'
 import sharp from 'sharp'
+import { PETS_35 } from '@/lib/v1/pets/pets-catalog-35'
 import { bakeFoyerWatermark } from '@/lib/v1/foyer/foyer-watermark'
 
 export async function renderOnePortfolioItem(portfolioItemId: string): Promise<void> {
@@ -46,7 +47,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
       return
     }
 
-    if (portfolio.series !== 'portraits') {
+    if (portfolio.series !== 'portraits' && portfolio.series !== 'pets') {
       console.error(
         `[portfolios/items/render] series '${portfolio.series}' not wired - only 'portraits' ` +
         `is implemented. Item ${portfolioItemId} left in its current state.`,
@@ -58,13 +59,18 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
        nothing here counts items or tests size. */
     const purchased = portfolio.delivery === 'purchased'
 
-    const styleId = styleIdForPreset(item.preset)
+    const isPets = portfolio.series === 'pets'
+    if (isPets && !Object.hasOwn(PETS_35, item.preset)) {
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'unknown_pets_effect')
+      return
+    }
+    const styleId = isPets ? 'realistic' : styleIdForPreset(item.preset)
     const appUrl = internalBaseUrl()
 
     let genResult: any
     let ok = false
     try {
-      const res = await fetch(`${appUrl}/api/v1/portraits/generate`, {
+      const res = await fetch(`${appUrl}/api/v1/${isPets ? 'pets' : 'portraits'}/generate`, {
         method: 'POST',
         /* generate returns clean output only to an authorized caller. This
            is the server's own render of a paid portfolio, so it presents the
@@ -74,7 +80,14 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
           'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.CRON_SECRET ?? ''}`,
         }),
-        body: JSON.stringify({
+        body: JSON.stringify(isPets ? {
+          source_image_b64: portfolio.source_image,
+          style_id: 'realistic',
+          preset_id: item.preset,
+          action_id: 'as_photographed',
+          aspect_ratio: portfolio.aspect_ratio || '2:3',
+          scale: 'close_up',
+        } : {
           source_image_b64: portfolio.source_image,
           style_id: styleId,
           preset_id: item.preset,
