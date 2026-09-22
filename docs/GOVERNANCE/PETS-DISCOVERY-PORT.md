@@ -73,3 +73,9 @@ All 36 JPEGs retain the SHA-256 values recorded in `lib/store/tests/fixtures/pet
 ## Staging
 
 The seven .next page/registry/API/render files were promoted byte-for-byte. The authoritative Pets catalog replacement remains byte-identical to the supplied revised catalog.
+
+## Wallpapers compatibility snapshot (2026-09-22)
+
+The authoritative replacement Pets catalog no longer contains the legacy print-tail marker required by Wallpapers. Per Rich's approval, Wallpapers alone now imports `lib/v1/wallpapers/pets-catalog-compat.ts`, an unchanged byte copy of `lib/v1/pets/pets-catalog-35.ts` from commit cd40c7651f19b6d778352eeea4f5fd8fc9e30c3e.
+
+Source lines 1–296 → snapshot lines 1–296; identical line count and bytes. Snapshot SHA-256: 5e3fc51b9d562c62422b774b941f7b1723b903c516e6ccfac9c45d73f4585dfc. The only deviation in Wallpapers is the import path at line 48. The marker, PHONE_TAIL, derivation, labels, ordering and avoid prompts are unchanged. A regression test compares the complete derived catalog hash with the historical output (ab7b6fb00e5deb5de8a277cad3bd9dd69365998d9b4df74fe42dd3e910f074a8). This snapshot is not the active Discovery Pets catalog and must not receive the revised Pets prompts.
