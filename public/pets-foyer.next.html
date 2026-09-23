@@ -362,107 +362,6 @@ input[type=file]{ display:none }
 }
 @media (min-width:721px){ .pill{ display:none !important } }
 @media (prefers-reduced-motion:reduce){ .card,.side,.go,.fc,.cardwrap{ transition:none !important; animation:none !important } }
-</style><style id="petsSignin">
-#signinModal{
-  --ink:#231f1b;
-  --parchment:#f1ece3;      /* real --limestone */
-  --masthead:#26201a;       /* real --espresso */
-  --oxblood:#7d4242;        /* real --oxblood */
-  --oxblood-line:rgba(196,169,110,.28); /* real --card-line */
-  --gold:#b68a53;           /* real --gold */
-  --brass:#75623a;          /* real --brass */
-  --vellum:#f3ede1;
-  --vellum-100:#f8f4eb;
-  --gold-soft:#d9b876;
-  --serif:'Cormorant Garamond',Georgia,serif;
-  --sans:'Manrope',Arial,sans-serif;
-}
-/* Sign-in. Borrows the modal shell wholesale; only the field is new. */
-.signin-lbl{
-  display:block; margin:1.1em 0 .35em;
-  font:600 .68rem/1 var(--mono, ui-monospace, monospace);
-  letter-spacing:.1em; text-transform:uppercase; color:var(--vellum-300);
-}
-.signin-in{
-  width:100%; padding:.7em .8em;
-  font:400 1rem/1.2 var(--sans, system-ui, sans-serif);
-  color:var(--ink, #2a241e); background:#fff;
-  border:1px solid rgba(42,36,30,.22); border-radius:4px;
-}
-.signin-in:focus{ outline:none; border-color:var(--gold) }
-.signin-err{ min-height:1.2em; margin-top:.5em;
-  font:400 .82rem/1.3 var(--sans, system-ui, sans-serif); color:#a05a5a }
-
-.m-scrim{ display:none }
-.m-scrim.is-open{
-  display:grid; place-items:center;
-  position:fixed; top:0; right:0; bottom:0; left:0; z-index:1200;
-  background:rgba(31,27,20,.52);
-  padding:24px;
-  overflow-y:auto;
-}
-.m-card{
-  width:min(680px, 100%);
-  background:linear-gradient(180deg,#faf6ec,#f3ecdd);
-  border:1px solid rgba(147,111,67,.34);
-  border-radius:6px;
-  padding:2rem 2.2rem 1.9rem;
-  position:relative;
-  box-shadow:0 24px 60px rgba(31,27,20,.42), 0 4px 12px rgba(31,27,20,.24),
-             inset 0 1px 0 rgba(255,255,255,.75);
-}
-.m-head{ display:flex; align-items:center; gap:.7rem; }
-.m-head .m-mark{
-  width:2.4rem; height:2.4rem; flex:0 0 auto; display:block;
-}
-.m-head .m-title{
-  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
-  font-size:1.7rem; font-weight:400; color:var(--ink); letter-spacing:.01em;
-}
-.m-x{
-  position:absolute; top:1.1rem; right:1.2rem;
-  width:2rem; height:2rem; border:0; border-radius:50%;
-  background:none; color:var(--taupe, #a59478); font-size:1.4rem; line-height:1;
-  cursor:pointer; transition:color .15s, background .15s;
-}
-.m-x:hover{ color:var(--ink); background:rgba(42,36,30,.06) }
-.m-rule{
-  display:flex; align-items:center; gap:.8rem;
-  margin:1.15rem 0;
-  color:rgba(147,111,67,.5);
-}
-.m-rule::before, .m-rule::after{
-  content:""; flex:1; height:1px;
-  background:linear-gradient(90deg, transparent, rgba(147,111,67,.45), transparent);
-}
-.m-rule .m-fleuron{
-  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
-  font-size:.95rem; color:rgba(147,111,67,.75); line-height:1;
-}
-.m-say{
-  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
-  font-size:1.2rem;
-  line-height:1.4;
-  color:var(--ink);
-}
-.m-say .sig{
-  display:block; margin-top:.75rem;
-  font-size:1.15rem; color:var(--ink-soft, #5a5142); font-style:italic;
-}
-.m-safe{
-  margin-top:1.15rem;
-  font-family:var(--sans, system-ui, sans-serif);
-  font-size:.82rem; line-height:1.5; color:var(--ink-soft, #5a5142);
-}
-.m-card .signin-acts{display:flex;flex-direction:column;gap:10px;margin-top:22px}
-.m-card .btn{
-  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
-  font-style:italic; font-size:1.22rem; line-height:1.2;
-  padding:.62rem .9rem; border-radius:5px; text-align:center; cursor:pointer;
-  border:1px solid transparent; transition:filter .15s, background .15s;
-}
-.m-card .btn.fill{ background:var(--oxblood); color:var(--vellum-100) }
-.m-card .btn.fill:hover{ background:#6a3737 }
 </style></head><body>
 
 <div class="montage" id="montage"></div>
@@ -827,7 +726,7 @@ function askIntake(){
   FOYER.handoff = FOYER.intake.then(function(d){
     if (d && d.status === 'ok') setFoyerSubject(d.subject);   /* first, before the riffle looks */
     if (d && d.status === 'ok' && window.LitenHandoff)
-      return LitenHandoff.put(SRC.dataUrl, { subject:d.subject, gender:d.gender, ageGroup:d.age_group })
+      return LitenHandoff.put(SRC.dataUrl, { subject:d.subject, gender:d.gender, ageGroup:d.age_group, analysis:d.analysis })
         .catch(function(e){ console.warn('[foyer] handoff not written', e); });
     if (window.LitenHandoff) return LitenHandoff.clear();
   });
@@ -1268,11 +1167,8 @@ function pick(inp){
       fitSourceForUpload(probe, function(fitted, note){
         if (!fitted){ console.warn('[foyer] photograph too large even after fitting'); return; }
         if (note){ SRC.b64=fitted.split(',')[1]||null; SRC.dataUrl=fitted; console.log('[foyer] fitted '+note); }
-        askIntake().then(function(d){
-          if (d && d.reason === 'not_signed_in'){ openSignin(); return; }
-          begin(SRC.dataUrl);
-          reveal();
-        });
+        begin(SRC.dataUrl);
+        reveal();
       });
     };
     probe.onerror=function(){ console.warn('[foyer] the browser could not read that photograph'); };
@@ -1299,118 +1195,4 @@ go.addEventListener('click',function(){
   Promise.resolve(FOYER.handoff).catch(function(){}).then(function(){ location.href='/pets/discovery'; });
 });
 
-</script><div class="scrim m-scrim" id="signinModal" data-role="modal">
-  <div class="modal m-card">
-    <button class="m-x" id="signinX" aria-label="Close">&times;</button>
-    <div id="signinAsk">
-      <div class="m-head"><img class="m-mark" src="/icons/curator-c.svg" alt="">
-        <div class="m-title">Curator&rsquo;s Note</div></div>
-      <div class="m-rule"><span class="m-fleuron">&#10086;</span></div>
-      <div class="m-say">Before I begin &mdash; where shall I send your work?
-          I&rsquo;ll email you a link to sign in. There is no password to remember.
-          <span class="sig">&mdash;&thinsp;C.</span></div>
-      <label class="signin-lbl" for="signinEmail">Email</label>
-      <input class="signin-in" id="signinEmail" type="email" autocomplete="email"
-             placeholder="you@example.com" spellcheck="false">
-      <div class="signin-err" id="signinErr"></div>
-      <div class="signin-acts"><div class="btn fill" id="signinSend">Send the link</div></div>
-      <div class="m-safe">Nothing is charged until your piece is crafted.</div>
-    </div>
-    <div id="signinSent" hidden>
-      <div class="m-head"><img class="m-mark" src="/icons/curator-c.svg" alt="">
-        <div class="m-title">Curator&rsquo;s Note</div></div>
-      <div class="m-rule"><span class="m-fleuron">&#10086;</span></div>
-      <div class="m-say">The link is on its way to <b id="signinAddr"></b>.
-          Open it and I&rsquo;ll have everything just as you left it &mdash; the
-          link works on any device.<span class="sig">&mdash;&thinsp;C.</span></div>
-      <div class="signin-acts"><div class="btn fill" id="signinDone">Close</div></div>
-    </div>
-  </div>
-</div>
-<script>
-// ── Sign-in modal — ported verbatim from portraits.html:8931-9008.
-//    At top level, not in an IIFE: openSignin must stay callable from the
-//    masthead button and the upload gate, which sit outside this script.
-var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
-  var signinModal = document.getElementById('signinModal');
-  var signinEmail = document.getElementById('signinEmail');
-  var signinSend  = document.getElementById('signinSend');
-  var signinErr   = document.getElementById('signinErr');
-  var signinAsk   = document.getElementById('signinAsk');
-  var signinSent  = document.getElementById('signinSent');
-  var signinAddr  = document.getElementById('signinAddr');
-  var signinX     = document.getElementById('signinX');
-
-  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  function openSignin(){
-    if (!signinModal) return;
-    if (signinAsk)  signinAsk.hidden  = false;
-    if (signinSent) signinSent.hidden = true;
-    if (signinErr)  signinErr.textContent = '';
-    signinModal.classList.add('is-open');
-    if (signinEmail) setTimeout(function(){ signinEmail.focus(); }, 60);
-  }
-  function closeSignin(){
-    if (signinModal) signinModal.classList.remove('is-open');
-  }
-
-  function sendLink(){
-    if (!signinEmail || !signinSend) return;
-    var email = signinEmail.value.trim().toLowerCase();
-    if (!EMAIL_RE.test(email)){
-      if (signinErr) signinErr.textContent = 'That does not look like an email address.';
-      return;
-    }
-    signinSend.disabled = true;
-    signinSend.textContent = 'Sending';
-    if (signinErr) signinErr.textContent = '';
-
-    /* Held BEFORE the request. If the send succeeds they may leave for their
-       inbox within seconds, and on another device the tab never runs again. */
-    if (window.LitenHandoff) LitenHandoff.put(SRC.dataUrl, {});
-
-    fetch(AUTH_SIGNIN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify({ email: email, next: location.pathname })
-    }).then(function(res){
-      return res.json().catch(function(){ return { ok: false, reason: 'bad_response' }; });
-    }).then(function(d){
-      signinSend.disabled = false;
-      signinSend.textContent = 'Send the link';
-      if (!d || !d.ok){
-
-        if (signinErr) signinErr.textContent =
-          d && d.reason === 'preview_email_disabled' ? 'Sign-in email disabled during Preview review.'
-          : d && d.reason === 'invalid_email' ? 'That does not look like an email address.'
-                                            : 'The link could not be sent. Try again in a moment.';
-        return;
-      }
-      if (signinAddr) signinAddr.textContent = email;
-      if (signinAsk)  signinAsk.hidden  = true;
-      if (signinSent) signinSent.hidden = false;
-    }).catch(function(){
-
-      signinSend.disabled = false;
-      signinSend.textContent = 'Send the link';
-      if (signinErr) signinErr.textContent = 'The link could not be sent. Try again in a moment.';
-    });
-  }
-
-  if (signinSend) signinSend.addEventListener('click', sendLink);
-  if (signinEmail) signinEmail.addEventListener('keydown', function(e){
-    if (e.key === 'Enter'){ e.preventDefault(); sendLink(); }
-  });
-  if (signinX) signinX.addEventListener('click', closeSignin);
-  if (signinModal) signinModal.addEventListener('click', function(e){
-    if (e.target === signinModal) closeSignin();
-  });
-  addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && signinModal && signinModal.classList.contains('is-open')) closeSignin();
-  });
-/* Discovery's modal carries a Close button portraits' does not. */
-var signinDone = document.getElementById('signinDone');
-if (signinDone) signinDone.addEventListener('click', closeSignin);
 </script></body></html>

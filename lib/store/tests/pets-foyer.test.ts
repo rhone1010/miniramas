@@ -56,21 +56,23 @@ describe('approved Pets Foyer port', () => {
     expect(page).toContain("location.href='/pets/discovery'")
     expect(page).not.toContain("p = '/previews/foyer-flip-male/'")
   })
-  it('requires the existing Pets authentication before analysis or generation', async () => {
+  it('allows anonymous intake and reveal without consulting authentication', async () => {
     h.user.mockResolvedValue(null)
-    expect((await intake(request({ image_b64: 'source' }))).status).toBe(401)
-    expect((await reveal(request({ image_b64: 'source' }))).status).toBe(401)
-    expect(h.analyze).not.toHaveBeenCalled()
-    expect(h.render).not.toHaveBeenCalled()
+    const accepted = await (await intake(request({ image_b64: 'source' }))).json()
+    expect(accepted.status).toBe('ok')
+    expect((await reveal(request({ image_b64: 'source', intake: accepted.intake }))).status).toBe(200)
+    expect(h.user).not.toHaveBeenCalled()
+    expect(page).not.toMatch(/signinModal|openSignin|auth\/signin/)
+    expect(fs.readFileSync('public/pets.html', 'utf8')).toContain('acceptPhoto(h.dataUrl, m.analysis || {})')
   })
-  it('rejects human intake tokens and tokens from another customer', async () => {
+  it('rejects human intake tokens and tokens with an incorrect category', async () => {
     for (const key of [secret, secret + ':pets:someone-else']) {
       const token = signIntake(key, { sha: sha256Hex(Buffer.from('source')), subject: null, ageGroup: null, exp: Date.now() + 60000 })
       expect((await reveal(request({ image_b64: 'source', intake: token }))).status).toBe(403)
     }
     expect(h.render).not.toHaveBeenCalled()
   })
-  it('uses authenticated Pets analysis, then real reveal adapter and successful allowance finalization', async () => {
+  it('uses anonymous Pets analysis, then real reveal adapter and successful allowance finalization', async () => {
     const accepted = await (await intake(request({ image_b64: 'source' }))).json()
     expect(accepted.status).toBe('ok')
     expect(h.analyze).toHaveBeenCalledWith({ sourceImageB64: 'source', additionalImagesB64: [], openaiApiKey: 'test' })

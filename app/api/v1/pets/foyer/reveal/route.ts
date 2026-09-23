@@ -5,7 +5,6 @@ import { foyerSecret, ipIdentity, deviceMarker, sha256Hex, verifyIntake } from '
 import { claimReveal, finalizeReveal, revealAvailable } from '@/lib/v1/foyer/foyer-allowance'
 import { pickRevealEffect } from '@/lib/v1/foyer/foyer-policy'
 import { renderPetsFoyerReveal as renderFoyerReveal } from '@/lib/v1/pets/pets-foyer-render'
-import { getUser } from '@/lib/store/auth'
 // TEMPORARY PREVIEW TEST BYPASS — REMOVE BEFORE PR #178 MERGE (see the module)
 import { previewAllowanceBypass } from '@/lib/v1/foyer/foyer-preview-bypass'
 
@@ -27,8 +26,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getUser().catch(() => null)
-  if (!user) return reply({ status: 'unavailable', reason: 'not_signed_in' }, 401)
   const tReq = Date.now()   // diagnostic only: total_ms in the ok/failed log lines
   let body: { image_b64?: unknown; intake?: unknown }
   try { body = await req.json() } catch { return reply({ status: 'bad_request', error: 'invalid_json' }, 400) }
@@ -44,7 +41,7 @@ export async function POST(req: NextRequest) {
     return reply({ status: 'unavailable' }, 503)
   }
 
-  const verdict = verifyIntake(secret + ':pets:' + user.id, body?.intake, sha256Hex(src.bytes))
+  const verdict = verifyIntake(secret + ':pets', body?.intake, sha256Hex(src.bytes))
   if (!verdict) return reply({ status: 'intake_required' }, 403)
   if (verdict.ageGroup === 'child' || verdict.ageGroup === 'teen') {
     return reply({ status: 'intake_required' }, 403)   // intake never signs these; belt and braces

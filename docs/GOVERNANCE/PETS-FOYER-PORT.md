@@ -62,3 +62,6 @@ Original reserved flip filenames remain for the isolated asset-drop harness. The
 Targeted tests: 164 passed. New-route lint passes. Typecheck reports no Pets Foyer errors; repository-wide pre-existing errors remain. Rendered acceptance is separate from these checks.
 
 Rendered correction: copied sign-in action wrapper renamed acts → signin-acts (and its exact matching selector) to avoid the reference Foyer mobile fixed action bar and desktop display:none rules. No styling values changed.
+
+## Acceptance correction — 2026-09-23
+The prior authenticated adapter was incorrect. Removed its getUser checks, email dialog and user-bound token key. Anonymous Pets Foyer now follows Portraits allowance + byte-bound signed intake + real NB2 reveal. Pets category domain separation remains. Original Pets analysis travels with the photo in the existing one-shot handoff so Discovery does not invoke the old authenticated upload analyzer again. Downstream conversion auth remains unchanged. No artwork/catalog/Portraits files changed.

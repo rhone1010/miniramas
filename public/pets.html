@@ -4331,7 +4331,7 @@ function receiveFoyerHandoff(){
     if (!h || !h.dataUrl) return false;
     var m = h.meta || {};
     console.log('[discovery] photograph from the foyer (' + (m.bytes || '?') + ' bytes, subject ' + (m.subject || 'none') + ')');
-    return acceptPhoto(h.dataUrl);
+    return acceptPhoto(h.dataUrl, m.analysis || {});
   }).catch(function(e){
     console.warn('[discovery] the foyer handoff could not be read', e);
     return false;
