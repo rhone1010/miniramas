@@ -4486,12 +4486,7 @@ function allCatalogKeys(){ var out = []; SILOS.forEach(function(silo){ silo.effe
    Curated -- mosaic_portrait, stained_glass, designer_vinyl,
    action_figure, cubism, sheet_music. This is Curated membership only:
    all six that left remain live in their own rooms and in All Effects. */
-var CURATED_UNIVERSE = [
-  'reclaimed_bronze','retro_robot','stained_glass','plushy','ice','impressionist','art_deco',
-  'stone','mosaic_portrait','renaissance','victorian','wild_west','neon','oil_impasto',
-  'balloon_face','sheet_music','origami','linocut','art_nouveau','designer_vinyl','action_figure',
-  'elizabethan','iron','quilted','cubism'
-];
+var CURATED_UNIVERSE = window.EFFECT_REGISTRY.effects.map(function(effect){ return effect.id; });
 var CURATED = { bench: [], page: 0 };
 function curatedEffect(base){
   for (var s = 0; s < SILOS.length; s++){
@@ -4555,8 +4550,7 @@ var CURATED_PLATES = [
   'victorian','wild_west'
 ];
 function curatedPreviewUrl(base, subject){
-  if (CURATED_PLATES.indexOf(base) < 0) return previewUrlFor(base, subject);
-  return '/previews/curated/' + base + '/' + (subject === 'woman' ? 'woman' : 'man') + '.jpg';
+  return previewUrlFor(base, subject);
 }
 function curatedPage(){ return CURATED.bench.slice(CURATED.page * 8, CURATED.page * 8 + 8); }
 

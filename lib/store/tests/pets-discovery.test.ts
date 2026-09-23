@@ -39,6 +39,21 @@ describe('Pets Discovery catalog, artwork and checkout identity', () => {
     vm.runInNewContext(body.slice(0,body.indexOf('\n}')+2),context)
     expect((context as typeof context & {buildCheckoutPayload:()=>unknown}).buildCheckoutPayload()).toMatchObject({series:'pets',selectedEffectIds:[id],sourceImageRef:'source-bytes',aspect_ratio:'3:4'})
   })
+  it('makes all 36 Pets effects eligible for Curated instead of the Portraits subset',()=>{
+    const statement=page.match(/var CURATED_UNIVERSE = [^\n]+/)?.[0];
+    const context={window:{EFFECT_REGISTRY:reg}};
+    vm.runInNewContext(statement!,context);
+    expect((context as typeof context & {CURATED_UNIVERSE:string[]}).CURATED_UNIVERSE).toEqual(Object.keys(PETS_35));
+  })
+  it.each(Object.keys(PETS_35))('%s uses approved Pets artwork in the actual Curated helper', id => {
+    const preview=page.match(/function previewUrlFor\(effectId,subject\)\{[\s\S]*?\n\}/)?.[0] || page.match(/function previewUrlFor\(effectId, subject\)\{[\s\S]*?\n\}/)?.[0];
+    const curated=page.match(/function curatedPreviewUrl\(base, subject\)\{[\s\S]*?\n\}/)?.[0];
+    expect(preview).toBeTruthy(); expect(curated).toBeTruthy();
+    const context={window:{EFFECT_REGISTRY:reg}};
+    vm.runInNewContext(preview+'\n'+curated,context);
+    const helper=(context as typeof context & {curatedPreviewUrl:(id:string,subject:string|null)=>string}).curatedPreviewUrl;
+    for(const subject of [null,'man','woman']) expect(helper(id,subject)).toBe('/previews/pets/pets_'+id+'.jpg');
+  })
   it('keeps Pets sign-in on upload and never invokes the human guest analyzer', async () => {
     expect(page).not.toContain("fetch('/api/v1/foyer/intake'")
     const start=page.indexOf('function runAnalyze(){');
