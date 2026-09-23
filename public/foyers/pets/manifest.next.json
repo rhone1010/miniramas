@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "category": "pets",
-  "status": "awaiting-assets",
+  "status": "approved",
   "reference": "/foyer.html",
-  "workflow": "/pets.html",
+  "workflow": "/pets/discovery",
   "referenceSource": {
     "path": "source.jpg",
     "available": false,
@@ -19,183 +19,209 @@
       "id": "flip_01",
       "path": "flip_01.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "action_figure",
+      "caption": "Action Figure",
+      "previewPath": "/previews/pets/pets_action_figure.jpg"
     },
     {
       "id": "flip_02",
       "path": "flip_02.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "art_nouveau",
+      "caption": "Art Nouveau",
+      "previewPath": "/previews/pets/pets_art_nouveau.jpg"
     },
     {
       "id": "flip_03",
       "path": "flip_03.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "bronze",
+      "caption": "Bronze",
+      "previewPath": "/previews/pets/pets_bronze.jpg"
     },
     {
       "id": "flip_04",
       "path": "flip_04.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "clockwork",
+      "caption": "Clockwork",
+      "previewPath": "/previews/pets/pets_clockwork.jpg"
     },
     {
       "id": "flip_05",
       "path": "flip_05.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "cubism",
+      "caption": "Cubism",
+      "previewPath": "/previews/pets/pets_cubism.jpg"
     },
     {
       "id": "flip_06",
       "path": "flip_06.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "designer_vinyl",
+      "caption": "Designer Vinyl",
+      "previewPath": "/previews/pets/pets_designer_vinyl.jpg"
     },
     {
       "id": "flip_07",
       "path": "flip_07.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "driftwood_resin",
+      "caption": "Driftwood & Resin",
+      "previewPath": "/previews/pets/pets_driftwood_resin.jpg"
     },
     {
       "id": "flip_08",
       "path": "flip_08.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "elizabethan",
+      "caption": "Elizabethan",
+      "previewPath": "/previews/pets/pets_elizabethan.jpg"
     },
     {
       "id": "flip_09",
       "path": "flip_09.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "impressionist",
+      "caption": "Impressionist",
+      "previewPath": "/previews/pets/pets_impressionist.jpg"
     },
     {
       "id": "flip_10",
       "path": "flip_10.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "iron",
+      "caption": "Iron",
+      "previewPath": "/previews/pets/pets_iron.jpg"
     },
     {
       "id": "flip_11",
       "path": "flip_11.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "jade",
+      "caption": "Carved Jade",
+      "previewPath": "/previews/pets/pets_jade.jpg"
     },
     {
       "id": "flip_12",
       "path": "flip_12.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "mosaic_portrait",
+      "caption": "Mosaic",
+      "previewPath": "/previews/pets/pets_mosaic_portrait.jpg"
     },
     {
       "id": "flip_13",
       "path": "flip_13.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "neon",
+      "caption": "Neon",
+      "previewPath": "/previews/pets/pets_neon.jpg"
     },
     {
       "id": "flip_14",
       "path": "flip_14.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "oil_impasto",
+      "caption": "Impasto Oil",
+      "previewPath": "/previews/pets/pets_oil_impasto.jpg"
     },
     {
       "id": "flip_15",
       "path": "flip_15.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "pencil_sketch",
+      "caption": "Pencil Sketch",
+      "previewPath": "/previews/pets/pets_pencil_sketch.jpg"
     },
     {
       "id": "flip_16",
       "path": "flip_16.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "persian_court",
+      "caption": "Persian Court",
+      "previewPath": "/previews/pets/pets_persian_court.jpg"
     },
     {
       "id": "flip_17",
       "path": "flip_17.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "plushy",
+      "caption": "Plushy",
+      "previewPath": "/previews/pets/pets_plushy.jpg"
     },
     {
       "id": "flip_19",
       "path": "flip_19.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "porcelain",
+      "caption": "Porcelain",
+      "previewPath": "/previews/pets/pets_porcelain.jpg"
     },
     {
       "id": "flip_20",
       "path": "flip_20.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "quilted",
+      "caption": "Quilted",
+      "previewPath": "/previews/pets/pets_quilted.jpg"
     },
     {
       "id": "flip_21",
       "path": "flip_21.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "retro_robot",
+      "caption": "Retro Robot",
+      "previewPath": "/previews/pets/pets_retro_robot.jpg"
     },
     {
       "id": "flip_22",
       "path": "flip_22.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "samurai",
+      "caption": "Samurai",
+      "previewPath": "/previews/pets/pets_samurai.jpg"
     },
     {
       "id": "flip_23",
       "path": "flip_23.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "sea_glass",
+      "caption": "Sea Glass",
+      "previewPath": "/previews/pets/pets_sea_glass.jpg"
     },
     {
       "id": "flip_24",
       "path": "flip_24.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "sheet_music",
+      "caption": "Sheet Music",
+      "previewPath": "/previews/pets/pets_sheet_music.jpg"
     },
     {
       "id": "flip_25",
       "path": "flip_25.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "polished_gold",
+      "caption": "Polished Gold",
+      "previewPath": "/previews/pets/pets_polished_gold.jpg"
     },
     {
       "id": "flip_26",
       "path": "flip_26.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "origami",
+      "caption": "Origami",
+      "previewPath": "/previews/pets/pets_origami.jpg"
     },
     {
       "id": "flip_27",
       "path": "flip_27.jpg",
       "available": false,
-      "effectId": null,
-      "caption": null
+      "effectId": "stained_glass",
+      "caption": "Stained Glass",
+      "previewPath": "/previews/pets/pets_stained_glass.jpg"
     }
   ],
   "fan": [

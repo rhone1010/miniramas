@@ -4325,7 +4325,18 @@ function acceptPhoto(url, trusted){
    verdict, so it is not examined a second time and SUBJECT starts from the
    foyer's answer, override cleared. The foyer's reveal, its effect and
    anything owned are not part of it. */
-function receiveFoyerHandoff(){ return Promise.resolve(false); }
+function receiveFoyerHandoff(){
+  if (!window.LitenHandoff) return Promise.resolve(false);
+  return LitenHandoff.take().then(function(h){
+    if (!h || !h.dataUrl) return false;
+    var m = h.meta || {};
+    console.log('[discovery] photograph from the foyer (' + (m.bytes || '?') + ' bytes, subject ' + (m.subject || 'none') + ')');
+    return acceptPhoto(h.dataUrl);
+  }).catch(function(e){
+    console.warn('[discovery] the foyer handoff could not be read', e);
+    return false;
+  });
+}
 
 /* Retry re-opens the picker rather than replaying a failed read. */
 document.addEventListener('click', function(ev){
