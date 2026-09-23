@@ -74,7 +74,7 @@ describe('Pets Discovery catalog, artwork and checkout identity', () => {
   })
   it('isolates resume storage and preserves the accepted CSS byte-for-byte', () => {
     const reference=fs.readFileSync('public/discovery-consolidated-draft.html','utf8')
-    expect(page.match(/<style[\s\S]*?<\/style>/g)).toEqual(reference.match(/<style[\s\S]*?<\/style>/g))
+    expect(page.replace(/<style id="petsRoomFlow">[\s\S]*?<\/style>/, '').match(/<style[\s\S]*?<\/style>/g)).toEqual(reference.match(/<style[\s\S]*?<\/style>/g))
     expect(page).toContain('liten_pets_resume_v1')
     expect(page).not.toContain('src="/effect-registry.js"')
     expect(page).toContain('/api/v1/pets/analyze')

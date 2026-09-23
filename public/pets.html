@@ -2989,6 +2989,12 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   body.is-review #reviewView .stage-frame{padding-bottom:144px;}
 }
 </style>
+<style id="petsRoomFlow">
+@media (min-width:1025px){
+  #discoveryView .silo-block[data-pets-rows]{ height:auto }
+  #discoveryView .silo-block[data-pets-rows] .effect-grid{ height:auto; container-type:normal; grid-template-rows:repeat(var(--pets-room-rows),calc((100cqh - var(--card-gap)) / 2)) }
+}
+</style>
 </head>
 <body>
 <!-- discovery-consolidated-draft.html
@@ -4965,6 +4971,10 @@ SILOS.forEach(function(silo, idx){
   var block = document.createElement('section');
   block.className = 'silo-block';
   block.id = 'silo-' + silo.id;
+  if (silo.effects.length > 7){
+    block.dataset.petsRows = String(Math.ceil((silo.effects.length + 1) / 4));
+    block.style.setProperty('--pets-room-rows', block.dataset.petsRows);
+  }
 
   var gridEl = document.createElement('div');
   gridEl.className = 'effect-grid';
