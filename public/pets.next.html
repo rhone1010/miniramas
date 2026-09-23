@@ -9686,6 +9686,11 @@ var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
     if (signinSent) signinSent.hidden = true;
     if (signinErr)  signinErr.textContent = '';
     signinModal.classList.add('is-open');
+    // Existing keyed tester entry is used in a second tab; retain the normal resume.
+    fetch('/tester?status=1', { credentials:'same-origin', cache:'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){ if (d && d.available) saveResume(); })
+      .catch(function(){});
     if (signinEmail) setTimeout(function(){ signinEmail.focus(); }, 60);
   }
   function closeSignin(){
@@ -9720,7 +9725,7 @@ var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
       signinSend.disabled = false;
       signinSend.textContent = 'Send the link';
       if (!d || !d.ok){
-        clearResume();
+        if (!d || d.reason !== 'preview_email_disabled') clearResume();
         if (signinErr) signinErr.textContent =
           d && d.reason === 'preview_email_disabled' ? 'Sign-in email disabled during Preview review.'
           : d && d.reason === 'invalid_email' ? 'That does not look like an email address.'
