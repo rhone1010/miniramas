@@ -60,3 +60,5 @@ Reference public/foyer.html: 1220 lines. Destination public/pets-foyer.html: 141
 Original reserved flip filenames remain for the isolated asset-drop harness. The customer Foyer uses approved previewPath URLs via pets-foyer-DATA.js. No source placeholder is used.
 
 Targeted tests: 164 passed. New-route lint passes. Typecheck reports no Pets Foyer errors; repository-wide pre-existing errors remain. Rendered acceptance is separate from these checks.
+
+Rendered correction: copied sign-in action wrapper renamed acts → signin-acts (and its exact matching selector) to avoid the reference Foyer mobile fixed action bar and desktop display:none rules. No styling values changed.

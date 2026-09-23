@@ -454,7 +454,7 @@ input[type=file]{ display:none }
   font-family:var(--sans, system-ui, sans-serif);
   font-size:.82rem; line-height:1.5; color:var(--ink-soft, #5a5142);
 }
-.m-card .acts{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.m-card .signin-acts{display:flex;flex-direction:column;gap:10px;margin-top:22px}
 .m-card .btn{
   font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
   font-style:italic; font-size:1.22rem; line-height:1.2;
@@ -1313,7 +1313,7 @@ go.addEventListener('click',function(){
       <input class="signin-in" id="signinEmail" type="email" autocomplete="email"
              placeholder="you@example.com" spellcheck="false">
       <div class="signin-err" id="signinErr"></div>
-      <div class="acts"><div class="btn fill" id="signinSend">Send the link</div></div>
+      <div class="signin-acts"><div class="btn fill" id="signinSend">Send the link</div></div>
       <div class="m-safe">Nothing is charged until your piece is crafted.</div>
     </div>
     <div id="signinSent" hidden>
@@ -1323,7 +1323,7 @@ go.addEventListener('click',function(){
       <div class="m-say">The link is on its way to <b id="signinAddr"></b>.
           Open it and I&rsquo;ll have everything just as you left it &mdash; the
           link works on any device.<span class="sig">&mdash;&thinsp;C.</span></div>
-      <div class="acts"><div class="btn fill" id="signinDone">Close</div></div>
+      <div class="signin-acts"><div class="btn fill" id="signinDone">Close</div></div>
     </div>
   </div>
 </div>
