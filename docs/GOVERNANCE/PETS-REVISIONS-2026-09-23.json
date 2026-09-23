@@ -1,0 +1,125 @@
+{
+  "catalog": "lib/v1/pets/pets-catalog-35.ts",
+  "changed": [
+    "mosaic_portrait",
+    "oil_impasto",
+    "pencil_sketch",
+    "plushy",
+    "porcelain",
+    "quilted",
+    "watercolour"
+  ],
+  "unchanged": [
+    "bronze",
+    "ebony",
+    "stone",
+    "alabaster",
+    "victorian",
+    "clown",
+    "elizabethan",
+    "persian_court",
+    "impressionist",
+    "sea_glass",
+    "action_figure",
+    "designer_vinyl",
+    "ice",
+    "cubism",
+    "art_nouveau",
+    "deco_twenties",
+    "samurai",
+    "stained_glass",
+    "neon",
+    "polished_gold",
+    "driftwood_resin",
+    "origami",
+    "retro_robot",
+    "clockwork",
+    "iron",
+    "jade",
+    "art_deco",
+    "ukiyo_e",
+    "sheet_music"
+  ],
+  "assets": [
+    {
+      "id": "oil_impasto",
+      "from": "H:/pets_september_revisions/pets_impasto_revised.jpeg",
+      "to": "public/previews/pets/pets_oil_impasto.jpg",
+      "sha256": "307b0edb5296e771a9fadf4ebbb65f553f4327cb8a5a39931e682e5cf1f4bff0",
+      "bytes": 222571,
+      "width": 848,
+      "height": 1264,
+      "format": "jpeg"
+    },
+    {
+      "id": "mosaic_portrait",
+      "from": "H:/pets_september_revisions/pets_mosaic_revised.jpeg",
+      "to": "public/previews/pets/pets_mosaic_portrait.jpg",
+      "sha256": "eab85ec70d62d247d1ccc5e3de507c653f9154386da7957460b1d6a76f1c057a",
+      "bytes": 311105,
+      "width": 848,
+      "height": 1264,
+      "format": "jpeg"
+    },
+    {
+      "id": "pencil_sketch",
+      "from": "H:/pets_september_revisions/pets_pencil_revised.jpeg",
+      "to": "public/previews/pets/pets_pencil_sketch.jpg",
+      "sha256": "834b93b100a6d20049c36fedc90927e53885b4db1ad3bb394c924152a951f435",
+      "bytes": 234627,
+      "width": 848,
+      "height": 1264,
+      "format": "jpeg"
+    },
+    {
+      "id": "plushy",
+      "from": "H:/pets_september_revisions/pets_plushy_revised.jpeg",
+      "to": "public/previews/pets/pets_plushy.jpg",
+      "sha256": "692bec72599ce39298427ab9cca6d5bf61c06d6f3d784d1517b7657499d8a5ab",
+      "bytes": 146980,
+      "width": 848,
+      "height": 1264,
+      "format": "jpeg"
+    },
+    {
+      "id": "porcelain",
+      "from": "H:/pets_september_revisions/pets_porcelain_revised.jpeg",
+      "to": "public/previews/pets/pets_porcelain.jpg",
+      "sha256": "16144ab865a868efdaab54772bd86d5cf5108bbff3a16475fda2432ff3f1f7e9",
+      "bytes": 114639,
+      "width": 848,
+      "height": 1264,
+      "format": "jpeg"
+    },
+    {
+      "id": "quilted",
+      "from": "H:/pets_september_revisions/pets_quilted_revised.jpeg",
+      "to": "public/previews/pets/pets_quilted.jpg",
+      "sha256": "79bb0f38c0b92e1f022e6d5918515d5f5c8092814193d33f8e002bd3d1e918a8",
+      "bytes": 256715,
+      "width": 848,
+      "height": 1264,
+      "format": "jpeg"
+    },
+    {
+      "id": "stained_glass",
+      "from": "H:/pets_september_revisions/pets_stained_glas_revised.jpeg",
+      "to": "public/previews/pets/pets_stained_glass.jpg",
+      "sha256": "12cbcc875d1958267e67eb19d6ee50f173019261e03175fa17d0e84a1281e240",
+      "bytes": 169224,
+      "width": 848,
+      "height": 1264,
+      "format": "jpeg"
+    },
+    {
+      "id": "watercolour",
+      "from": "H:/pets_september_revisions/pets_watercolor_revised.jpeg",
+      "to": "public/previews/pets/pets_watercolour.jpg",
+      "sha256": "b8c81719753d3f0146e6fc2adff9b9bada082ce57c9ed3e49a4e7bb805bed71f",
+      "bytes": 273026,
+      "width": 848,
+      "height": 1264,
+      "format": "jpeg"
+    }
+  ]
+}

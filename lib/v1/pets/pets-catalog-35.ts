@@ -76,7 +76,7 @@ The fur, hair, feather patterns and colors are as essential to likeness as facia
   plushy: {
     id:    'plushy',
     label: 'Plushy',
-    body: `Transform the pet into an expensive handmade plush toy, preserving facial likeness, breed, build, eye color and exact markings. Use short, dense, uniform luxury plush fabric. No individual hairs, wisps, flyaways, ear tufts, furry edges, realistic whiskers or feather detail. Clean sewn silhouettes; markings appear as color patterns in fabric, never natural fur. Softly stuffed face, rounded paws, subtle seams and stitching. Nestle into teddy bears and pillows on a rumpled bed at night, warm bedside lamp, creamy bedding, cozy golden light. Clearly a plush replica, never a real animal. reduce the hair, fur and feathers to a simplified pet plushy. no real hair, fur or feathers. no text. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.`,
+    body: `make this animal into a plushy doll. maintain the characteristics that make this animal unique but make a playful simplistic childs favorite toy. simplify the details. exagerate eyes, nose, etc. no text. maintain the coloring and patten of the animal. maintain the physical position. maintain the expressiveness of the eyes and micro gestures if present of the face. use a blurred background of a comfortable home interior and beautiful wooden floors. this is a treasured family stuffed animal that seems to have some life`,
   },
 
   stone: {
@@ -131,7 +131,7 @@ Period objects may be held — a book, a scroll, a cup, prayer beads, a flower. 
   pencil_sketch: {
     id:    'pencil_sketch',
     label: 'Pencil Sketch',
-    body: `A solid sculpted bust of the animal carved entirely from graphite — hard pencil-lead grey with a burnished sheen, the surface worked in visible pencil strokes that wrap the form: crosshatching in the recesses, broad shading across the planes, edges softly smudged. Eyes and lips are graphite. No coat, no real coat. The collar carries through in the same material. A real object standing in real light, casting its own shadow. Monochrome throughout. Likeness is critical. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.
+    body: `A solid sculpture of the animal carved entirely from graphite — hard pencil-lead grey with a burnished sheen, the surface worked in visible pencil strokes that wrap the form: crosshatching in the recesses, broad shading across the planes, edges softly smudged. Eyes and lips are graphite. No coat, no real coat. The collar carries through in the same material. A real object standing in real light, casting its own shadow. Monochrome throughout. Likeness is critical. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.
 Set in a beautiful old-world artist's atelier — dark timber, plaster walls, antique easels, stacked canvases and old studies pinned around the room, a huge ribbed skylight above flooding it with soft daylight. the background is in full color`,
     avoid: `Avoid a drawing on paper, an easel-mounted picture or any flat image. Avoid a duplicated face. Avoid colour.`,
   },
@@ -146,8 +146,14 @@ Set in a beautiful old-world artist's atelier — dark timber, plaster walls, an
   oil_impasto: {
     id:    'oil_impasto',
     label: 'Impasto Oil',
-    body: `Repaint the animal in thick oil applied entirely with a palette knife on canvas — broad flat slabs of colour laid edge to edge, each stroke a single confident pass with a hard ridge where the knife lifted. No blending anywhere, no brushwork. The face is built from maybe forty knife strokes, the planes reading through colour temperature rather than line, and the likeness carried by where the warm and cool slabs meet. A rich restrained palette — the animal's own colours pushed, umber and ochre against slate and near-black. The collar in wider, looser slabs, and the background in the broadest of all, blocked in around the head. Likeness is critical; the animal reads clearly at a distance. A flat canvas standing on a wooden easel, raking light across the surface so the paint's thickness casts its own small shadows. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. Preserve natural facial character, asymmetry and expression. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.`,
-    avoid: `Avoid a three-dimensional sculpture or a bust — this is flat paint on a canvas. Avoid brushwork or blended gradients. Avoid a smooth photographic face. Avoid broken dabs and short strokes; every mark is a wide knife slab.`,
+    body: `Create a museum-quality impasto oil portrait of the animal on a real canvas, painted with exceptional palette-knife craftsmanship. The animal portrait must occupy at least 80% of the canvas, with the head and upper body large, commanding and immediately recognizable. For horses or other very large animals, concentrate on the head, neck and upper chest rather than shrinking the animal to fit.
+
+Build the painting from confident palette-knife strokes and thick sculptural oil paint. Use broad, decisive slabs across large planes, but allow finer, more controlled knife work around the eyes, muzzle and essential identifying features. Preserve the sophistication and complexity of a masterful finished painting rather than reducing the animal to a few crude geometric pieces. Rich ridges of paint catch raking light and cast tiny physical shadows.
+
+THE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their distinctive pattern, placement, proportion and relationships, translating them into beautifully judged passages of paint. Use the animal's natural palette as the foundation, enriched with restrained umber, ochre, slate, warm and cool neutrals. Preserve expression, breed, age, natural asymmetry and character.
+
+The canvas stands on a wooden easel in a beautiful old-world artist's atelier — dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. A huge ribbed industrial skylight of aged iron and glass floods the studio with soft dramatic daylight. Atmospheric, romantic, slightly dusty and collected over generations. Keep the atelier visible and beautiful but secondary to the large painting. Shallow depth of field. NO TEXT.`,
+    avoid: `Avoid a three-dimensional sculpture or bust. Avoid crude low-detail block painting, simplistic geometric patches, smooth photographic fur, blended airbrush gradients or tiny broken dabs. This is a highly accomplished palette-knife oil painting on canvas.`,
   },
 
   sea_glass: {
@@ -196,18 +202,16 @@ The result should feel like an expensive commissioned art object of a beloved an
   mosaic_portrait: {
     id:    'mosaic_portrait',
     label: 'Mosaic',
-    body: `Transform the animals into an extraordinary dimensional mosaic artwork while preserving their recognizable character, markings and composition.
+    body: `Transform the animal into an extraordinary museum-quality mosaic artwork built completely from thousands of individually placed tesserae. The animal must unmistakably read as handcrafted mosaic, never as a realistic animal with mosaic lines drawn over it.
 
-Construct the animals from thousands of small irregular pieces of colored glass, glazed ceramic and stone. Use larger expressive fragments across broad areas, becoming much finer and more intricate around faces, eyes and other identifying features. Let fur, feathers and scales emerge through the direction, color, shape and rhythm of the tesserae.
+Simplify fur, feathers, scales and complex coat detail into intentional fields and flowing rhythms of small irregular glass, ceramic and stone pieces. Use larger expressive tesserae across broad body areas and increasingly fine, intricate pieces around the eyes, face and other identifying features. Every piece has its own edge, thickness, slight angle and handmade irregularity, separated by visible but refined grout.
 
-The markings and colors are the likeness. Preserve their pattern, placement, proportion and relationships as carefully as facial structure. Translate them into the mosaic material rather than reproducing literal fur, feathers or scales.
+THE MARKINGS AND COLORS ARE THE LIKENESS. Preserve the distinctive map, placement, proportion and relationships of the animal's colors and markings, but translate them completely into mosaic material. Let the direction, color and rhythm of the tesserae describe anatomy and character instead of literal fur or scales.
 
-Let the colors originate from the source photograph and expand into a rich artistic palette. Use translucent jewel-like glass, varied ceramic surfaces, occasional gold tesserae and beautiful irregular grout lines.
+Use a rich palette derived from the source animal, expanded with translucent jewel-like glass, glazed ceramic, natural stone and occasional restrained gold tesserae. The surface should be tactile and physically dimensional, with grazing gallery light revealing uneven planes, tiny reflections and handcrafted depth.
 
-Preserve the animals, their relative scale, poses and arrangement. Their individual likenesses should emerge naturally through the mosaic craftsmanship.
-
-Grazing gallery light reveals physical depth, uneven surfaces, glass reflections and handcrafted character. The result is a sophisticated one-of-a-kind mosaic artwork, richly detailed, tactile and unmistakably based on the source. NO TEXT.`,
-    avoid: `Avoid realistic fur, feathers or scales with mosaic lines over them. Avoid large fitted panels, regular tiles, pixel art or loss of likeness.`,
+Preserve the animal's pose, expression and recognizable character. If multiple animals or objects appear, simplify them into the same coherent mosaic language rather than rendering anything realistically. Sophisticated one-of-a-kind fine art, richly crafted and unmistakably based on the source. NO TEXT.`,
+    avoid: `Avoid realistic fur, feathers or scales beneath mosaic lines. Avoid large fitted panels, regular square tiles, pixel art, printed textures, photographic surfaces or loss of the animal's distinctive markings.`,
   },
 
   ice: {
@@ -291,7 +295,18 @@ new york diner open in behind the neon window sign`,
   porcelain: {
     id:    'porcelain',
     label: 'Porcelain',
-    body: `the sculpture should be the full size of the animal. Model the pet entirely in fine glazed porcelain, preserving its natural colors and exact markings as hand-painted underglaze beneath a clear glassy finish. No default blue-and-white palette. Pet likeness, breed, build, age, facial structure, eye color and marking placement are critical. Fine crazing, glaze pooling in hollows, subtle handmade irregularity, tiny chip, raw biscuit at foot. Collar/tags remain in porcelain. Potter's shelf, soft north light. Real fired object, never a real animal. Place the porcelain in a delicate wooden shipping box with antique travel labels. the insde of the box has fine straw positioned around the sculpture to protect it in transit. its a grandmothers treasure passed on. the background is a fine china shop at night. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.`,
+    body: `Reimagine the pet as an exquisite designer porcelain collectible — unmistakably a crafted figurine rather than a real animal with a glossy surface.
+
+Preserve the pet's distinctive character, breed and expression while gently stylizing the form: slightly simplified anatomy, softened sculptural planes, a subtly larger and more expressive head and eyes, elegant rounded paws and beautifully modeled features. Make it charming and collectible without becoming cartoonish.
+
+The entire figurine is fine fired porcelain with a luminous glazed surface. Natural colors and markings are recreated as sophisticated hand-painted underglaze. THE MARKINGS AND COLORS ARE THE LIKENESS — preserve their distinctive pattern, placement and relationships. Eyes are jewel-like painted and glazed porcelain, not biological eyes. Show subtle evidence of craftsmanship: fine crazing, glaze pooling, delicate sculpted edges and slight handmade irregularity.
+
+Present the figurine nestled in pale natural packing straw inside a beautiful simple wooden keepsake box, suggesting a treasured object carefully stored and passed through a family.
+
+Keep everything surrounding the pet LIGHT, WARM AND NEUTRAL — ivory, cream, pale wood and soft straw. The background is heavily blurred into luminous creamy bokeh with only subtle suggestions of an elegant home and fine china. No dark cabinets or visual clutter.
+
+The porcelain pet dominates the image, beautifully lit with soft window light and immediately recognizable as a precious designer collectible. Sweet, sophisticated, tactile and full of personality. NO TEXT.`,
+    avoid: `Avoid photorealistic living-animal anatomy, realistic fur, biological eyes, dark backgrounds, busy china displays, cartoon proportions, cheap ceramic souvenirs or blue-and-white porcelain styling.`,
   },
 
   retro_robot: {
@@ -338,8 +353,20 @@ Place the animal inside an intimate old Swiss watchmaker's workshop, warm, clutt
   watercolour: {
     id:    'watercolour',
     label: 'Watercolour',
-    body: `Rebuild the animal as a three-dimensional bust painted in watercolour — a solid object with real volume, not a picture on paper. rotate the animal 20 degrees left. The whole form is soft transparent washes: the face, coat, shoulders and withers and collar modelled in light and shade, with hard edges where a wash dried against itself and the white of the surface left bare at the brightest points. The paint is still wet. Colour runs down the shoulders and withers and the front of the collar in fine coloured rivulets and drips, gathering in bright pools of red, ochre and violet on the round white board the bust stands on. Colours natural to this animal's complexion and clothing, transparent and luminous, granulating in the low spots. Likeness is critical. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.`,
-    avoid: `Avoid a flat painting or anything on paper — this is a solid object standing on a board. Avoid opaque or body colour. Avoid a photographic face. Avoid a bright white modern gallery; the room is an old cluttered atelier.`,
+    body: `Create an extraordinary contemporary watercolor portrait from the source, worthy of a major watercolor exhibition. Preserve the animals' poses, interaction, expressions and unmistakable identities, but interpret the photograph boldly rather than simply reproducing it.
+
+Paint on exceptionally heavy, medium-gray watercolor paper with a deep pronounced tooth and luxurious handmade texture. The gray paper remains clearly visible throughout the artwork, acting as a sophisticated midtone rather than an empty background.
+
+Make the animals large and commanding, filling most of the sheet and occasionally extending beyond its edges.
+
+Use dramatic contrast between control and freedom. Paint the eyes, expressions and a handful of identifying features with breathtaking precision, then allow the rest to dissolve into loose transparent washes, wet-on-wet blooms, granulation, pigment explosions, backruns, splashes and long spontaneous drips.
+
+THE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their essential placement and relationships, but simplify them into confident gestures and washes. Let natural colors transition selectively into luminous cobalt, turquoise, violet, quinacridone, ochre and burnt sienna while remaining recognizable.
+
+Leave substantial areas of gray paper exposed. Let some edges disappear completely into water and pigment while others snap into exquisite focus. Use the heavy tooth to catch pigment unevenly, creating beautiful granulation and dry-brush texture.
+
+Show just enough of the physical sheet to reveal a few natural deckled edges and a soft shadow beneath the exceptionally thick paper, without pulling attention away from the artwork. The painting should dominate the frame. Museum-quality contemporary watercolor, expressive, sophisticated and unmistakably handmade. NO TEXT.`,
+    avoid: `Avoid white paper, smooth paper, sculpture, ceramic, opaque paint, evenly rendered watercolor, coloring-book outlines, uniform detail, literal photographic reproduction, timid pastel washes or digital illustration.`,
   },
 
   sheet_music: {
@@ -351,8 +378,20 @@ Place the animal inside an intimate old Swiss watchmaker's workshop, warm, clutt
   quilted: {
     id:    'quilted',
     label: 'Quilted',
-    body: `The animal is sewn from quilted fabric — panels of patterned cotton pieced together and stitched, with visible seams, running stitch lines and the soft puff of batting between the layers. The face is quilted cloth throughout: pieced panels shaped to the brow, cheeks and jaw, the stitching following the planes rather than the features. Eyes and muzzle are embroidered in thread. Hair is cut and layered fabric in the real style and length. A folk palette of faded indigo, madder red, ochre and cream, prints small and repeating, the cloth softly worn. The collar carries through in pieced quilt. Likeness is critical. Idealized and beautiful. Photographic — a real object photographed in real light, not an illustration. Background: a quilter's room — a frame, folded bolts, a window with soft daylight, heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.`,
-    avoid: `Avoid real skin or hair. Avoid a flat printed quilt or wall hanging — this is dimensional and sewn. Avoid a rag doll or novelty toy. Avoid stitching that traces the wrinkles of the face.`,
+    body: `Reimagine the entire source image as an extraordinary museum-quality art quilt made as a thick luxurious queen-size duvet.
+
+Interpret EVERYTHING depicted in the source through the same textile language. Animals, toys, yarn, furniture, plants and every other object become simplified designed shapes constructed from fabric. Nothing within the pictured scene remains realistic or dimensional outside the quilt.
+
+Simplify complex forms, textures and animal markings into intentional groups of color and strong graphic shapes. Preserve the distinctive patterns, expressions, poses and relationships that make the animals recognizable, while allowing an accomplished textile artist to interpret and simplify them.
+
+Construct the image from exquisitely selected cotton, linen, velvet, woven and patterned fabrics using sophisticated piecing, appliqué, embroidery and quilting. Visible seams, layered fabric edges, intricate hand stitching and flowing quilting lines unify the entire composition. Generous batting creates rich dimensional relief and makes the duvet visibly thick, soft and substantial.
+
+The craftsmanship is exceptional — a one-of-a-kind contemporary fiber artwork worthy of a major museum or textile gallery, with sophisticated color harmony, extraordinary material choices and beautiful handmade detail.
+
+Display the large queen-size duvet hanging vertically from an elegant minimal textile display, its substantial thickness, stitched border, gentle folds and weight clearly visible. The quilt fills most of the frame.
+
+The surrounding gallery or refined interior is LIGHT, neutral and HEAVILY BLURRED into soft luminous bokeh. Beautiful diffused natural light reveals the fabric, stitching and relief while keeping all attention on the quilt. NO TEXT.`,
+    avoid: `Avoid realistic objects within the quilt, literal yarn or props sitting on its surface, realistic fur, photographic textures, printed photographs, separate stuffed animals, thin blankets, crude patchwork or hobby-craft quality.`,
   },
 }
 
