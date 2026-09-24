@@ -8340,7 +8340,7 @@ function renderMycollRail(){
          them cannot be right for any of them. */
       mcStat('unlock', featuredIncluded, 'included unlock' + (featuredIncluded===1?'':'s') + ' left',
         '<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>') +
-    '</div>' + featuredHtml() + basket +
+    '</div>' + basket +
     '<a class="link-back" id="mycollBackRail">← Back to Discovery</a>';
 }
 discoveryRail.addEventListener('click', function(e){
@@ -8460,6 +8460,7 @@ function requestUnlock(previewId, key){
       for (var ci = 0; ci < PIECES.length; ci++){ if (PIECES[ci].key === key){ confirmed = PIECES[ci]; break; } }
       if (confirmed){
         confirmed.locked = false;
+        confirmed.art = 'data:image/png;base64,' + out.data.image_b64;
         if (confirmed.portfolioId && INCLUDED_BY_PORTFOLIO[confirmed.portfolioId] > 0){
           INCLUDED_BY_PORTFOLIO[confirmed.portfolioId] -= 1;
         }
