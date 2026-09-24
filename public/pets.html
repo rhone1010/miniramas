@@ -4775,6 +4775,24 @@ function noteSection(id){
    is held (saveResume, at the moment the link is sent) and the existing
    magic link brings them back into Review with it. Disabled at 0. */
 var PENDING_REVIEW = false;
+function refreshPreviewTesterSession(){
+  return fetch('/tester?status=1', { credentials:'same-origin', cache:'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){ return d && d.available ? whoAmI() : null; })
+    .catch(function(){ return null; });
+}
+function resumePreviewReview(){
+  if (!PENDING_REVIEW) return;
+  refreshPreviewTesterSession().then(function(user){
+    if (!user || !PENDING_REVIEW) return;
+    closeSignin();
+    showReview();
+  });
+}
+window.addEventListener('focus', resumePreviewReview);
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'visible') resumePreviewReview();
+});
 function requestReview(anchorEl){
   if (!SELECTED.length) return;
   /* __RESUME_PHOTO_GUARD__ Choices can be on the page without a photograph
@@ -4785,7 +4803,11 @@ function requestReview(anchorEl){
   if (ME){ showReview(); return; }
   PENDING_REVIEW = true;
   act('review asks for sign-in');
-  openSignin();
+  refreshPreviewTesterSession().then(function(user){
+    if (!PENDING_REVIEW) return;
+    if (user){ PENDING_REVIEW = false; showReview(); return; }
+    openSignin();
+  });
 }
 
 /* One listener for every Curator control, whichever copy of the rail is
