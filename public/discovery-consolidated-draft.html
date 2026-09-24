@@ -3027,7 +3027,7 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
       </svg>
     </button>
     <button class="pill-btn" id="mcUnlockBalance" type="button" aria-label="Available unlocks" aria-haspopup="dialog">🔒 —</button>
-    <button class="pill-btn" id="mhName" onclick="if(!ME && typeof openSignin==='function') openSignin()">Sign in</button>
+    <button class="pill-btn" id="mhName" onclick="onAuthButton()">Sign in</button>
     <!-- __M1_HELP_TO_TOP__ (Rich's design pass, 2026-09-18). The same tour
          .tour-fab starts, reached from the masthead instead of a 65px circle
          parked over the artwork at bottom-centre. Phone and tablet only; the
@@ -7071,9 +7071,28 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
 
 /* Discovery's own masthead + collection paint, which portraits does in
    paintCredits(). Kept as its own step so whoAmI stays portraits' shape. */
+function onAuthButton(){
+  if (!ME){ if (typeof openSignin === 'function') openSignin(); return; }
+  var button = document.getElementById('mhName');
+  if (!button || button.disabled) return;
+  button.disabled = true;
+  fetch('/api/v1/auth/signout', { method:'POST', credentials:'same-origin' })
+    .then(function(response){
+      if (!response.ok) throw new Error('signout_failed');
+      return response.json();
+    }).then(function(result){
+      if (!result || !result.ok) throw new Error('signout_failed');
+      clearResume();
+      location.reload();
+    }).catch(function(error){
+      button.disabled = false;
+      console.warn('[signout] failed:', error.message || error);
+    });
+}
+
 function paintMe(){
   var nameEl = document.getElementById('mhName');
-  if (nameEl) nameEl.textContent = ME && ME.email ? ME.email.split('@')[0] : 'Sign in';
+  if (nameEl) nameEl.textContent = ME ? 'Sign out' : 'Sign in';
   if (ME) { renderCollection().then(refreshWhileCrafting); return; }
   /* __B2_SIGNED_OUT_SEED__ NOBODY IS SHOWN ARTWORK THEY DO NOT OWN.
      reconcileCollection retires the parse-time seed the moment the server
