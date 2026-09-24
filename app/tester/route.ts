@@ -91,7 +91,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ available: !!expected }, { headers: { 'Cache-Control': 'no-store' } })
   }
   const supplied = new URL(req.url).searchParams.get('k') || ''
-  if (!expected || !supplied || !keyMatches(supplied, expected)) return notFound()
+  const automationExpected = process.env.CODEX_TESTER_ACCESS_KEY || ''
+  const automationSupplied = req.headers.get('x-codex-tester-access-key') || ''
+  const existingAuthorized = !!expected && !!supplied && keyMatches(supplied, expected)
+  const automationAuthorized = !!automationExpected && !!automationSupplied && keyMatches(automationSupplied, automationExpected)
+  if (!existingAuthorized && !automationAuthorized) return notFound()
 
   const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
