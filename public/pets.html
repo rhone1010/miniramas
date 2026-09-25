@@ -1255,19 +1255,6 @@ body{
 .mc-back{ display:block; width:100%; margin-top:auto; padding:13px; border-radius:8px; cursor:pointer;
   background:var(--oxblood); color:#e6ddcd; border:1px solid var(--oxblood-line); font-family:var(--serif); font-size:1.35rem }
 .mc-back:hover{ background:#6a3737 }
-/* Featured piece (3 Sep): tap a tile, it lands here with its facts and
-   one action. The lightbox is for looking; this is for acting. */
-.mc-feat{ margin-top:14px; padding:14px; border-radius:10px; background:linear-gradient(180deg,#4a2a2a,#3a1f1f); color:#f3ede1; display:grid; grid-template-columns:96px 1fr; gap:14px; align-items:start }
-.mc-feat__img{ aspect-ratio:var(--card-ar); border-radius:6px; background:linear-gradient(150deg,#8a725d,#3a2b24); background-size:cover; background-position:center 30%; position:relative; cursor:pointer }
-.mc-feat__img.locked::after{ content:""; position:absolute; inset:0; border-radius:6px; background:repeating-linear-gradient(45deg, rgba(0,0,0,.18) 0 3px, transparent 3px 14px) }
-.mc-feat__k{ font-family:var(--sans); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold-soft) }
-.mc-feat__t{ font-family:var(--serif); font-size:1.15rem; line-height:1.2; margin:2px 0 4px }
-.mc-feat__m{ font-family:var(--sans); font-size:.72rem; color:#d7c8b2; line-height:1.5 }
-.mc-feat__state{ display:inline-block; margin-top:6px; font-family:var(--sans); font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:3px 8px; border-radius:999px; background:rgba(215,189,137,.18); color:var(--gold-soft) }
-.mc-feat__acts{ grid-column:1 / -1; display:grid; gap:6px }
-.mc-feat__acts .go{ font-family:var(--serif); font-size:1.15rem; padding:11px; border-radius:8px; border:none; cursor:pointer; background:var(--gold); color:#2a1f14 }
-.mc-feat__acts .go.ox{ background:var(--oxblood); color:#f3ede1 }
-.mc-feat__acts .lnk{ font-family:var(--sans); font-size:.78rem; color:var(--gold-soft); background:none; border:none; cursor:pointer; text-decoration:underline; padding:4px }
 .mc-stat__bar{ flex:0 0 100%; height:4px; border-radius:2px; background:rgba(88,65,42,.15); margin-top:8px; overflow:hidden } .mc-stat__bar i{ display:block; height:100%; background:var(--oxblood) }
 .mc-stat{ flex-wrap:wrap } .mc-stat--preview .mc-stat__bar i{ background:var(--oxblood) } .mc-stat--crafted .mc-stat__bar i{ background:var(--brass) }
 #mycollGrid .card.is-featured{ box-shadow:0 0 0 2px var(--gold), 0 .6rem 1.2rem rgba(0,0,0,.4) }
@@ -8035,30 +8022,7 @@ function loadPortfolio(id){
   }).catch(function(e){ console.warn('[discovery] portfolio load failed:', e); return null; });
 }
 
-var PIECES = (SELECTED.length ? SELECTED.map(function(s, i){
-  return { key:s.key, name:s.name, siloName:s.siloName, series:'Portraits', num:i+1, crafting:false, locked:true };
-}) : [
-  // Demo seed across the five release Series, mixed purchased/preview,
-  // one still crafting -- enough to fill rows and show every state.
-  // [name, room, series, locked] -- all twelve plated effects, repeated
-  // across series the way a real collection repeats favourites.
-  ['Renaissance Noble','Another Age','Portraits',false], ['Baroque Masterpiece','Another Age','Portraits',false],
-  ['Quartzite','Earth & Ore','Portraits',true], ['Stained Glass','Light & Glass','Portraits',true],
-  ['Frost & Ice','Light & Glass','Portraits',false], ['Impressionist','The Artists Gallery','Portraits',true],
-  ['Driftwood & Resin','The Living World','Groups',true], ['Living Reef','The Living World','Groups',false],
-  ['Watercolour','The Artists Gallery','Groups',true], ['Clockwork','Fantasy & Future','Groups',false],
-  ['Oil Impasto','The Artists Gallery','Pets',true], ['Pencil Sketch','The Artists Gallery','Pets',true],
-  ['Renaissance Noble','Another Age','Pets',true], ['Quartzite','Earth & Ore','Pets',false],
-  ['Stained Glass','Light & Glass','Pets',true], ['Living Reef','The Living World','Pets',true],
-  ['Impressionist','The Artists Gallery','Portraits',false], ['Watercolour','The Artists Gallery','Portraits',false],
-  ['Frost & Ice','Light & Glass','Halloween',true], ['Clockwork','Fantasy & Future','Halloween',true],
-  ['Driftwood & Resin','The Living World','Halloween',false], ['Pencil Sketch','The Artists Gallery','Halloween',true],
-  ['Oil Impasto','The Artists Gallery','Wallpapers',true], ['Baroque Masterpiece','Another Age','Wallpapers',true],
-  ['Living Reef','The Living World','Wallpapers',true], ['Stained Glass','Light & Glass','Wallpapers',false],
-  ['Clockwork','Fantasy & Future','Portraits',true], ['Renaissance Noble','Another Age','Portraits',null]
-].map(function(r, i){
-  return { key:'demo'+i, name:r[0], siloName:r[1], series:r[2], num:i+1, crafting:(r[3]===null), locked:(r[3]===null ? true : r[3]) };
-}));
+var PIECES = [];
 /* Included unlocks belong to a portfolio, not to the account. Keyed by
    portfolio id; a shelf piece has no portfolio and no included unlock. */
 var INCLUDED_BY_PORTFOLIO = {};
@@ -8235,20 +8199,6 @@ function featurePiece(p){
   var tile = mycollGrid.querySelector('.card[data-piece="' + p.key + '"]'); if (tile) tile.classList.add('is-featured');
   renderMycollRail();
 }
-function featuredHtml(){
-  var p = FEATURED; if (!p) return '<div class="mc-feat" style="grid-template-columns:1fr"><div class="mc-feat__m" style="text-align:center;padding:10px 0">Tap a piece to see its details here.</div></div>';
-  var locked = p.locked;
-  return '<div class="mc-feat">' +
-    '<div class="mc-feat__img' + (locked?' locked':'') + '" data-feat-open' + (p.art ? ' style="background-image:url(' + p.art + ')"' : artStyle(p.name)) + '></div>' +
-    '<div><div class="mc-feat__k">Selected</div><div class="mc-feat__t">' + pieceDisplayName(p) + '</div>' +
-      '<div class="mc-feat__m">' + (p.siloName||'') + '<br>Crafted ' + (p.date||'Aug 28') + '</div>' +
-      '<span class="mc-feat__state">' + (locked ? 'Preview' : 'Purchased') + '</span></div>' +
-    '<div class="mc-feat__acts">' +
-      (locked ? '<button class="go" data-feat-unlock>' + (includedRemainingFor(p) > 0 ? 'Unlock \u00b7 uses your included unlock' : 'Unlock this favourite \u00b7 $2.99') + '</button>'
-              : '<button class="go ox" data-feat-dl>Download</button>') +
-      '<button class="lnk" data-feat-open>View full size</button>' +
-    '</div></div>';
-}
 
 // Offers are fetched only from a Preview-only, read-only review endpoint.
 // No checkout, grant, or unlock request is made by this presentation.
@@ -8364,9 +8314,6 @@ function renderMycollRail(){
 }
 discoveryRail.addEventListener('click', function(e){
   if (e.target.closest('#mycollBackRail')) return mycollBackToDiscovery();
-  if (e.target.closest('[data-feat-open]') && FEATURED){ openFeatured(FEATURED); return; }
-  if (e.target.closest('[data-feat-unlock]') && FEATURED){ unlockPiece(FEATURED); return; }
-  if (e.target.closest('[data-feat-dl]') && FEATURED){ downloadPiece(FEATURED); return; }
   if (e.target.closest('#mycollUnlockCancel')){ unlockSelection = {}; renderMyCollectionGrid(); renderUnlockBar(); return; }
   if (e.target.closest('#mycollUnlockBuy')){
     /* THIS USED TO UNLOCK NOTHING AND SHOW EVERYTHING. It set p.locked=false
@@ -8664,10 +8611,6 @@ function setUnlockBusy(key, busy){
   var card = mycollGrid && mycollGrid.querySelector('.card[data-piece="' + key + '"]');
   var btn = card && card.querySelector('.card__quick[data-quick="unlock"]');
   if (btn){ btn.disabled = busy; if (busy) btn.textContent = 'Unlocking…'; }
-  if (FEATURED && FEATURED.key === key){
-    var feat = document.querySelector('[data-feat-unlock]');
-    if (feat){ feat.disabled = busy; if (busy) feat.textContent = 'Unlocking…'; }
-  }
 }
 
 function unlockPiece(p){
@@ -9185,9 +9128,8 @@ function paintLightbox(){
       (usingIncluded ? 'Use included unlock' : 'Unlock this favorite \u00b7 $2.99') + '</button>';
   } else {
     acts = '<button class="mc-act is-fill" data-lb="dl">Download</button>' +
-           '<button class="mc-act" data-lb="pr">Send to Print Shop</button>' +
-           '<button class="mc-act" data-lb="post">Post to Community</button>' +
-           '<button class="mc-act" data-lb="re">Craft this again</button>';
+           '<button class="mc-act" hidden data-lb="pr">Send to Print Shop</button>' +
+           '<button class="mc-act" data-lb="post">Post to Community</button>' ;
   }
   document.getElementById('lboxActs').innerHTML = acts;
 }
