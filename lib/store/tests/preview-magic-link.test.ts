@@ -25,7 +25,7 @@ const request = (path: string) => new NextRequest('https://review.example.com' +
   body: JSON.stringify({ email: 'review@example.com', next: '/discovery-consolidated-draft.html' }),
 })
 describe.each([['signin', signin], ['invite', invite]] as const)('%s Preview email guard', (name, handler) => {
-  it.each(['preview', 'development', ''])('blocks %s before constructing an auth client or changing cookies', async env => {
+  it.each(name === 'signin' ? ['development', ''] : ['preview', 'development', ''])('blocks %s before constructing an auth client or changing cookies', async env => {
     vi.stubEnv('VERCEL_ENV', env)
     const response = await handler(request('/api/v1/' + name))
     expect(response.status).toBe(403)
@@ -34,11 +34,11 @@ describe.each([['signin', signin], ['invite', invite]] as const)('%s Preview ema
     expect(h.client).not.toHaveBeenCalled()
     expect(h.cookies).not.toHaveBeenCalled()
   })
-  it('retains the Production magic-link path', async () => {
-    vi.stubEnv('VERCEL_ENV', 'production')
+  it.each(name === 'signin' ? ['production', 'preview'] : ['production'])('retains the %s magic-link path', async env => {
+    vi.stubEnv('VERCEL_ENV', env)
     const response = await handler(request('/api/v1/' + name))
     expect(response.status).toBe(200)
     expect(h.otp).toHaveBeenCalledTimes(1)
-    expect(h.otp).toHaveBeenCalledWith(expect.objectContaining({ email: 'review@example.com', options: { emailRedirectTo: expect.stringContaining('/auth/callback?next=') } }))
+    expect(h.otp).toHaveBeenCalledWith(expect.objectContaining({ email: 'review@example.com', options: { emailRedirectTo: 'https://review.example.com/auth/callback?next=%2Fdiscovery-consolidated-draft.html' } }))
   })
 })

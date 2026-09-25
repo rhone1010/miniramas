@@ -17,8 +17,8 @@ import { createServerClient }        from '@supabase/ssr'
 import { cookies }                   from 'next/headers'
 
 export async function POST(req: NextRequest) {
-  // Temporary review guard: never send auth email outside Production.
-  if (process.env.VERCEL_ENV !== 'production') {
+  // Use the existing magic-link flow on deployed Production and Preview.
+  if (process.env.VERCEL_ENV !== 'production' && process.env.VERCEL_ENV !== 'preview') {
     return NextResponse.json({ ok: false, reason: 'preview_email_disabled', message: 'Sign-in email disabled during Preview review.' }, { status: 403 })
   }
   let email = ''
