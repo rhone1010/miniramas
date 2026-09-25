@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { COLLECTION_UNLOCK_KIND, fulfillCollectionUnlocks } from '@/lib/store/collection-unlocks'
 import { getStripe }                         from '@/lib/store/stripe'
 import { confirmPurchase, handlePaymentFailure } from '@/lib/store/entitlements'
 import { supabaseAdmin }                     from '@/lib/supabase'
@@ -64,6 +65,10 @@ async function dispatch(event: Stripe.Event): Promise<void> {
     case 'checkout.session.async_payment_succeeded': {
       const session = event.data.object as Stripe.Checkout.Session
       if (session.payment_status !== 'paid') return
+      if (session.metadata?.kind === COLLECTION_UNLOCK_KIND) {
+        await fulfillCollectionUnlocks(session.id)
+        return
+      }
       const chargeId =
         (typeof session.payment_intent === 'string'
           ? session.payment_intent

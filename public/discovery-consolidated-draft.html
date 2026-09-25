@@ -7103,6 +7103,8 @@ function paintMe(){
 /* The foyer's photograph, if one was handed over, is taken after any resume
    so the one the visitor has just chosen is the one on the stamp. */
 whoAmI().then(function(u){
+  var walletSession = new URLSearchParams(location.search).get('collection_unlock_session') || sessionStorage.getItem('liten_collection_unlock_session');
+  if (u && walletSession) mcUnlockConfirm(walletSession);
   (u ? restoreResume() : Promise.resolve(false))
     .then(function(){ return receiveFoyerHandoff(); })
     .then(bootSubjectSettled);
@@ -8514,6 +8516,9 @@ function portfolioMadeOn(id){
     return d.toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' });
   } catch (e){ return ''; }
 }
+function reusableUnlocksAvailable(){
+  return !!(MC_UNLOCK_REVIEW && MC_UNLOCK_REVIEW.balance && MC_UNLOCK_REVIEW.balance.reusable > 0);
+}
 function includedRemainingFor(p){
   if (!p || !p.portfolioId) return 0;
   var n = INCLUDED_BY_PORTFOLIO[p.portfolioId];
@@ -8674,23 +8679,22 @@ function featurePiece(p){
   renderMycollRail();
 }
 
-// Offers are fetched only from a Preview-only, read-only review endpoint.
-// No checkout, grant, or unlock request is made by this presentation.
+// The accepted Collection interface uses the shared checkout and redemption paths.
 var MC_UNLOCK_REVIEW = null;
-var MC_UNLOCK_FETCHING = false;
+var MC_UNLOCK_FETCHING = null;
 var MC_UNLOCK_RETURN_FOCUS = null;
 var MC_UNLOCK_CHOICE = '1';
 function mcUnlockMoney(cents){ return '$' + (cents / 100).toFixed(2); }
 function mcUnlockRefresh(){
-  if (MC_UNLOCK_FETCHING) return;
-  MC_UNLOCK_FETCHING = true;
-  fetch('/api/v1/collection/unlock-review', {credentials:'same-origin', cache:'no-store'})
+  if (MC_UNLOCK_FETCHING) return MC_UNLOCK_FETCHING.then(function(){ return mcUnlockRefresh(); });
+  MC_UNLOCK_FETCHING = fetch('/api/v1/collection/unlocks', {credentials:'same-origin', cache:'no-store'})
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){
-      MC_UNLOCK_REVIEW = d && d.uiOnly === true && d.checkoutEnabled === false ? d : null;
-      if (mycoll.classList.contains('is-open')) renderMycollRail();
+      MC_UNLOCK_REVIEW = d && d.checkoutEnabled === true ? d : null;
+      if (mycoll.classList.contains('is-open')) { renderMycollRail(); renderMyCollectionGrid(); }
     }).catch(function(){ MC_UNLOCK_REVIEW = null; })
-    .finally(function(){ MC_UNLOCK_FETCHING = false; });
+    .finally(function(){ MC_UNLOCK_FETCHING = null; });
+  return MC_UNLOCK_FETCHING;
 }
 function mcUnlockOffersHtml(){
   var d = MC_UNLOCK_REVIEW;
@@ -8703,9 +8707,65 @@ function mcUnlockOffersHtml(){
 function mcUnlockCommerceHtml(inSheet){
   var b = MC_UNLOCK_REVIEW.balance;
   return '<section class="mc-unlock-commerce">' + (inSheet ? '' : '<h3>Unlock Your Art</h3>') + '<p>' + (inSheet ? 'Choose how many unlocks you’d like, or unlock your entire collection.' : 'Turn previews into yours.<br>Use unlocks on any locked piece in your collection — anytime.') + '</p>' +
-    mcUnlockOffersHtml() + '<button type="button" class="mc-unlock-primary" data-mc-continue>' + (inSheet ? 'Continue' : 'Get More Unlocks') + '</button><p>Preview review · package checkout unavailable.</p>' +
+    mcUnlockOffersHtml() + '<button type="button" class="mc-unlock-primary" data-mc-continue>' + (inSheet ? 'Continue' : 'Get More Unlocks') + '</button>' +
     (inSheet ? '' : '<div class="mc-unlock-wallet"><small>YOUR UNLOCKS</small><div class="mc-unlock-balance">' + (b ? b.total : '—') + '</div><p>' + (b ? b.reusable + ' reusable · ' + b.included + ' included<br>Included unlocks stay with their original collection.' : 'Unlock balance unavailable') + '</p></div>') + '</section>';
 }
+var MC_UNLOCK_BUSY = false;
+function mcUnlockCheckout(offer){
+  if (MC_UNLOCK_BUSY || !MC_UNLOCK_REVIEW) return;
+  if (!ME){ openSignin(); return; }
+  if (offer === 'all') return mcUnlockShow(offer);
+  var chosen = MC_UNLOCK_REVIEW.offers.find(function(o){ return String(o.count) === offer; });
+  if (!chosen) return;
+  MC_UNLOCK_BUSY = true;
+  var dialog = document.getElementById('mcUnlockDialog');
+  if (dialog && dialog.open) dialog.close();
+  return Promise.all([loadStripeJs(), fetch('/api/v1/collection/unlocks', {
+    method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
+    body:JSON.stringify({count:chosen.count, returnPath:location.pathname})
+  }).then(function(r){ return r.json(); })]).then(function(out){
+    var d = out[1];
+    if (!d.clientSecret || !d.publishableKey || !d.sessionId) throw new Error('checkout_unavailable');
+    sessionStorage.setItem('liten_collection_unlock_session', d.sessionId);
+    closeCheckout();
+    return window.Stripe(d.publishableKey).initEmbeddedCheckout({
+      clientSecret:d.clientSecret,
+      onComplete:function(){ mcUnlockConfirm(d.sessionId); }
+    }).then(function(embed){
+      STRIPE_EMBED = embed;
+      var err = document.getElementById('ckErr');
+      if (err) err.textContent = '';
+      embed.mount('#ckForm');
+      paintCheckoutHead('Unlock Your Art', chosen.count + ' Unlock' + (chosen.count === 1 ? '' : 's'), mcUnlockMoney(d.priceCents));
+      document.getElementById('ckModal').classList.add('is-open');
+    });
+  }).catch(function(){
+    showUnlockNote('The payment form could not be opened. Try again in a moment.');
+  }).finally(function(){ MC_UNLOCK_BUSY = false; });
+}
+function mcUnlockConfirm(sessionId, n){
+  n = n || 0;
+  closeCheckout();
+  openMyCollection();
+  return fetch('/api/v1/collection/unlocks', {
+    method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
+    body:JSON.stringify({sessionId:sessionId})
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (!d.confirmed) throw new Error('payment_unconfirmed');
+    sessionStorage.removeItem('liten_collection_unlock_session');
+    var url = new URL(location.href);
+    url.searchParams.delete('collection_unlock_session');
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+    clearUnlockNote();
+    return renderCollection().then(function(){ return mcUnlockRefresh(); });
+  }).catch(function(){
+    if (n + 1 < UNLOCK_CONFIRM_TRIES) return new Promise(function(resolve){
+      setTimeout(resolve, UNLOCK_CONFIRM_EVERY);
+    }).then(function(){ return mcUnlockConfirm(sessionId, n + 1); });
+    showUnlockNote('Your payment is still going through. This usually takes a few seconds.');
+  });
+}
+
 function mcUnlockShow(offer){
   if (!MC_UNLOCK_REVIEW) return;
   var dialog = document.getElementById('mcUnlockDialog');
@@ -8743,7 +8803,7 @@ document.addEventListener('click',function(e){
     document.querySelectorAll('[data-mc-offer]').forEach(function(b){ b.setAttribute('aria-checked',String(b.getAttribute('data-mc-offer') === MC_UNLOCK_CHOICE)); });
     return;
   }
-  if(e.target.closest('[data-mc-continue]')) mcUnlockShow(MC_UNLOCK_CHOICE);
+  if(e.target.closest('[data-mc-continue]')) mcUnlockCheckout(MC_UNLOCK_CHOICE);
 });
 
 function renderMycollRail(){
@@ -8901,12 +8961,13 @@ function requestUnlock(previewId, key){
       if (confirmed){
         confirmed.locked = false;
         confirmed.art = 'data:image/png;base64,' + out.data.image_b64;
-        if (confirmed.portfolioId && INCLUDED_BY_PORTFOLIO[confirmed.portfolioId] > 0){
+        if (!out.data.reusable && !out.data.redelivered && confirmed.portfolioId && INCLUDED_BY_PORTFOLIO[confirmed.portfolioId] > 0){
           INCLUDED_BY_PORTFOLIO[confirmed.portfolioId] -= 1;
         }
       }
       renderMyCollectionGrid();
       renderCollection();
+      mcUnlockRefresh();
       return 'unlocked';
     }
     if (out.status === 409) return 'needs_payment';
@@ -9325,7 +9386,7 @@ function paintPieceDetail(){
         'Use Included Unlock (' + left + ' available)',
         function(){ closePieceDetail(); unlockPiece(p); });
   }
-  add('pc-act--buy', 'Unlock for $' + (UNLOCK_PRICE_CENTS / 100).toFixed(2),
+  add('pc-act--buy', reusableUnlocksAvailable() ? 'Unlock' : 'Unlock for $' + (UNLOCK_PRICE_CENTS / 100).toFixed(2),
       function(){ closePieceDetail(); unlockPiece(p); });
 }
 
@@ -9515,7 +9576,7 @@ function renderMyCollectionGrid(){
       el.innerHTML =
         '<div class="card__art"' + (p.art ? ' style="background-image:url(' + p.art + ')"' : artStyle(p.name)) + '>' +
           '<div class="card__overlay"></div>' +
-          (p.locked ? '<button class="card__quick" data-quick="unlock">' + (includedRemainingFor(p) > 0 ? 'Unlock \u00b7 included' : 'Unlock \u00b7 $2.99') + '</button>'
+          (p.locked ? '<button class="card__quick" data-quick="unlock">' + (includedRemainingFor(p) > 0 ? 'Unlock \u00b7 included' : reusableUnlocksAvailable() ? 'Unlock' : 'Unlock \u00b7 $2.99') + '</button>'
                     : '<button class="card__quick dl" data-quick="dl">Download</button>') +
           (p.locked ? '<div class="card__badge' + (unlockSelection[p.key]?' on':'') + '" data-key="' + p.key + '">' + (unlockSelection[p.key]?'✓':'🔒') + '</div>' : '') +
         '</div>'; // no title on the tile -- the image is the identification
@@ -9599,7 +9660,7 @@ function paintLightbox(){
   if (p.locked){
     var usingIncluded = includedRemainingFor(p) > 0;
     acts = '<button class="mc-act is-fill" data-lb="unlock">' +
-      (usingIncluded ? 'Use included unlock' : 'Unlock this favorite \u00b7 $2.99') + '</button>';
+      (usingIncluded ? 'Use included unlock' : reusableUnlocksAvailable() ? 'Unlock' : 'Unlock this favorite \u00b7 $2.99') + '</button>';
   } else {
     acts = '<button class="mc-act is-fill" data-lb="dl">Download</button>' +
            '<button class="mc-act" hidden data-lb="pr">Send to Print Shop</button>' +

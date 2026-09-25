@@ -75,6 +75,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'clean_unavailable' }, { status: 404 })
     }
 
+    // Reusable Collection credits use an atomic entitlement + ownership transaction.
+    // The RPC leaves included/bound unlocks on the unchanged legacy path below.
+    if (user) {
+      const { data: redeemed, error: walletError } = await sb.rpc('redeem_collection_unlock', {
+        p_user: user.id, p_preview: previewId,
+      })
+      if (walletError) return NextResponse.json({ error: 'unlock_wallet_unavailable' }, { status: 503 })
+      if (redeemed === 'unlocked' || redeemed === 'already_unlocked') {
+        return NextResponse.json({ image_b64: cleanB64, preview_id: previewId, reusable: redeemed === 'unlocked' })
+      }
+    }
+
     /* ── CLAIM THE UNLOCK BEFORE SPENDING ANYTHING ─────────────────
        unlocked_at was selected above and never read, so a retry, a
        double-click or a refresh consumed a SECOND entitlement for an image
