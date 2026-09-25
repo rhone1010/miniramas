@@ -7105,6 +7105,8 @@ function paintMe(){
 whoAmI().then(function(u){
   var walletSession = new URLSearchParams(location.search).get('collection_unlock_session') || sessionStorage.getItem('liten_collection_unlock_session');
   if (u && walletSession) mcUnlockConfirm(walletSession);
+  var setSession = new URLSearchParams(location.search).get('collection_unlock_set_session') || sessionStorage.getItem('liten_collection_unlock_set_session');
+  if (u && setSession) mcUnlockConfirm(setSession, 0, true);
   (u ? restoreResume() : Promise.resolve(false))
     .then(function(){ return receiveFoyerHandoff(); })
     .then(bootSubjectSettled);
@@ -8714,54 +8716,57 @@ var MC_UNLOCK_BUSY = false;
 function mcUnlockCheckout(offer){
   if (MC_UNLOCK_BUSY || !MC_UNLOCK_REVIEW) return;
   if (!ME){ openSignin(); return; }
-  if (offer === 'all') return mcUnlockShow(offer);
-  var chosen = MC_UNLOCK_REVIEW.offers.find(function(o){ return String(o.count) === offer; });
+  var isSet = offer === 'all';
+  if (isSet && !MC_UNLOCK_REVIEW.allCheckoutEnabled) return mcUnlockShow(offer);
+  var chosen = isSet ? MC_UNLOCK_REVIEW.all : MC_UNLOCK_REVIEW.offers.find(function(o){ return String(o.count) === offer; });
   if (!chosen) return;
   MC_UNLOCK_BUSY = true;
   var dialog = document.getElementById('mcUnlockDialog');
   if (dialog && dialog.open) dialog.close();
-  return Promise.all([loadStripeJs(), fetch('/api/v1/collection/unlocks', {
+  return Promise.all([loadStripeJs(), fetch('/api/v1/collection/unlocks' + (isSet ? '/all' : ''), {
     method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
     body:JSON.stringify({count:chosen.count, returnPath:location.pathname})
   }).then(function(r){ return r.json(); })]).then(function(out){
     var d = out[1];
+    if (d.confirmed && d.sessionId) return mcUnlockConfirm(d.sessionId, 0, isSet);
     if (!d.clientSecret || !d.publishableKey || !d.sessionId) throw new Error('checkout_unavailable');
-    sessionStorage.setItem('liten_collection_unlock_session', d.sessionId);
+    sessionStorage.setItem(isSet ? 'liten_collection_unlock_set_session' : 'liten_collection_unlock_session', d.sessionId);
     closeCheckout();
     return window.Stripe(d.publishableKey).initEmbeddedCheckout({
       clientSecret:d.clientSecret,
-      onComplete:function(){ mcUnlockConfirm(d.sessionId); }
+      onComplete:function(){ mcUnlockConfirm(d.sessionId, 0, isSet); }
     }).then(function(embed){
       STRIPE_EMBED = embed;
       var err = document.getElementById('ckErr');
       if (err) err.textContent = '';
       embed.mount('#ckForm');
-      paintCheckoutHead('Unlock Your Art', chosen.count + ' Unlock' + (chosen.count === 1 ? '' : 's'), mcUnlockMoney(d.priceCents));
+      paintCheckoutHead(isSet ? 'Unlock All of My Collection' : 'Unlock Your Art', (d.count || chosen.count) + ' Unlock' + ((d.count || chosen.count) === 1 ? '' : 's'), mcUnlockMoney(d.priceCents));
       document.getElementById('ckModal').classList.add('is-open');
     });
   }).catch(function(){
     showUnlockNote('The payment form could not be opened. Try again in a moment.');
+    if (isSet) mcUnlockRefresh();
   }).finally(function(){ MC_UNLOCK_BUSY = false; });
 }
-function mcUnlockConfirm(sessionId, n){
+function mcUnlockConfirm(sessionId, n, isSet){
   n = n || 0;
   closeCheckout();
   openMyCollection();
-  return fetch('/api/v1/collection/unlocks', {
+  return fetch('/api/v1/collection/unlocks' + (isSet ? '/all' : ''), {
     method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
     body:JSON.stringify({sessionId:sessionId})
   }).then(function(r){ return r.json(); }).then(function(d){
     if (!d.confirmed) throw new Error('payment_unconfirmed');
-    sessionStorage.removeItem('liten_collection_unlock_session');
+    sessionStorage.removeItem(isSet ? 'liten_collection_unlock_set_session' : 'liten_collection_unlock_session');
     var url = new URL(location.href);
-    url.searchParams.delete('collection_unlock_session');
+    url.searchParams.delete(isSet ? 'collection_unlock_set_session' : 'collection_unlock_session');
     history.replaceState(null, '', url.pathname + url.search + url.hash);
     clearUnlockNote();
     return renderCollection().then(function(){ return mcUnlockRefresh(); });
   }).catch(function(){
     if (n + 1 < UNLOCK_CONFIRM_TRIES) return new Promise(function(resolve){
       setTimeout(resolve, UNLOCK_CONFIRM_EVERY);
-    }).then(function(){ return mcUnlockConfirm(sessionId, n + 1); });
+    }).then(function(){ return mcUnlockConfirm(sessionId, n + 1, isSet); });
     showUnlockNote('Your payment is still going through. This usually takes a few seconds.');
   });
 }

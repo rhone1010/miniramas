@@ -13,7 +13,9 @@ export async function GET() {
     if (error) throw new Error('unlock_wallet_unavailable')
     const user = await getUser()
     const summary = user ? await collectionUnlockSummary(user.id) : { balance: null, lockedCount: null, all: null }
+    const { error: setError } = await supabaseAdmin.from('collection_unlock_sets').select('attempt_id').limit(0)
     return NextResponse.json({ checkoutEnabled: true,
+      allCheckoutEnabled: !setError,
       offers: COLLECTION_UNLOCK_OFFERS.map(({ count, cents }) => ({ count, cents })),
       ...summary,
     }, { headers: { 'Cache-Control': 'private, no-store' } })

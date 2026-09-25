@@ -27,6 +27,17 @@ for (const file of ['discovery-consolidated-draft', 'pets']) {
     return { ctx, init, embed, storage }
   }
   describe(`${file} wallet wiring`, () => {
+    it('routes Unlock All through its distinct set checkout and confirmation', async () => {
+      const { ctx, init } = make()
+      ctx.MC_UNLOCK_REVIEW.all = { count: 20, rateCents: 159, cents: 3180 }
+      ctx.MC_UNLOCK_REVIEW.allCheckoutEnabled = true
+      await ctx.mcUnlockCheckout('all')
+      expect(ctx.fetch.mock.calls[0][0]).toBe('/api/v1/collection/unlocks/all')
+      expect(JSON.parse(ctx.fetch.mock.calls[0][1].body).count).toBe(20)
+      ctx.fetch.mockResolvedValue({ json: async () => ({ confirmed: true }) })
+      await init.mock.calls[0][0].onComplete()
+      expect(ctx.fetch.mock.calls[1][0]).toBe('/api/v1/collection/unlocks/all')
+    })
     it('submits the selected bundle to the shared checkout and mounts the existing shell', async () => {
       const { ctx, init, embed } = make()
       await ctx.mcUnlockCheckout('3')
