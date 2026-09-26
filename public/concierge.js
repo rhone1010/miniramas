@@ -93,6 +93,7 @@
   var helpContext = null;
   var busy = false;
   var veil = null, log = null, input = null, send = null, seeds = null;
+  var questionMarkup = '';
   var mode = 'ask';          /* 'ask' | 'message' | 'sent' */
 
   function narrow(){
@@ -261,6 +262,7 @@
       '</div>';
     document.body.appendChild(veil);
 
+    questionMarkup = veil.querySelector('.cx-ask').innerHTML;
     log   = veil.querySelector('.cx-log');
     input = veil.querySelector('.cx-ask input');
     send  = veil.querySelector('.cx-send');
@@ -635,7 +637,22 @@
     });
   }
 
+  function restoreQuestion() {
+    if (mode === 'ask' || busy) return;
+    var ask = veil.querySelector('.cx-ask');
+    if (!ask) {
+      ask = document.createElement('div'); ask.className = 'cx-ask';
+      veil.querySelector('.cx').insertBefore(ask, veil.querySelector('.cx-foot'));
+    }
+    ask.innerHTML = questionMarkup;
+    input = ask.querySelector('input'); send = ask.querySelector('.cx-send');
+    send.addEventListener('click', submit);
+    input.addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); submit(); } });
+    mode = 'ask';
+  }
+
   function startMessage() {
+    if (busy) return;
     mode = 'message';
     bubble('con',
       'Of course. Write what you need and I will pass it to the studio \u2014 ' +
@@ -723,8 +740,8 @@
   /* What a page is allowed to ask of her. Deliberately small. */
   window.Concierge = {
     open:  open,
-    openForHelp: function(context) { helpContext=context; open(); },
-    message: function() { open(); if (mode !== 'message') startMessage(); },
+    openForHelp: function(context) { open(); restoreQuestion(); if(!busy)helpContext=context; },
+    message: function() { open(); if(mode === 'sent')restoreQuestion(); if (mode !== 'message') startMessage(); },
     close: close,
     acted: acted,
     point: function (sel) { return point(sel); },
