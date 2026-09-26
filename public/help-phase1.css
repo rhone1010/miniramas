@@ -21,3 +21,6 @@
 .q-body p + p{ margin-top:.7rem }
 .q-body a{ color:var(--oxblood) }
 
+
+/* Keep Collection actions on Collection while Help occupies the stage. */
+body:has(#helpStage.is-open) #mcUnlockRail{ display:none }

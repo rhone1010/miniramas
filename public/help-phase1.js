@@ -12,7 +12,7 @@ function button(text,action){return '<button class="ac-second" type="button" dat
 function card(title,copy,action){return '<div class="ac-card"><h3>'+esc(title)+'</h3><p class="note">'+esc(copy)+'</p><div class="ac-acts">'+button(title,action)+'</div></div>'}
 function chat(topic,caseId){window.Concierge.openForHelp({topic:topic,caseId:caseId||null})}
 function close(){epoch++;stage.classList.remove('is-open');stage.setAttribute('aria-hidden','true');if(location.pathname==='/help')history.replaceState({},'','/discovery')}
-function open(){var acct=document.getElementById('acct');if(acct){acct.classList.remove('is-open');acct.setAttribute('aria-hidden','true')}stage.classList.add('is-open');stage.setAttribute('aria-hidden','false');landing()}
+function open(){if(typeof closeMyCollection==='function')closeMyCollection();var acct=document.getElementById('acct');if(acct){acct.classList.remove('is-open');acct.setAttribute('aria-hidden','true')}stage.classList.add('is-open');stage.setAttribute('aria-hidden','false');landing()}
 function header(title){return '<div class="ac-head"><h2>'+esc(title)+'</h2><div class="ac-acts">'+button('Help','home')+button('Ask Concierge','chat')+'</div></div>'}
 function landing(){epoch++;main.innerHTML='<div class="ac-head"><h2>How can we help?</h2></div><div class="ac-cards">'+
  card('Learn & Explore','Get more from Liten & Co','learn')+card('Support','Something not working?','support')+card('Make It Right','Not happy with your artwork?','remedy')+'</div><div class="ac-acts">'+button('Ask Concierge','chat')+'</div>'}
@@ -74,7 +74,7 @@ main.addEventListener('click',function(e){
  if(a==='home')landing();else if(a==='learn')learn();else if(a==='support')support();else if(a==='remedy')remedy();
  else if(a==='chat')chat('Help');else if(a.startsWith('topic:'))chat(a.slice(6));else if(a.startsWith('case:'))chat('Make It Right',a.slice(5));
  else if(a==='message'){chat('Support');window.Concierge.message()}
- else if(a==='signin'){close();if(typeof openSignin==='function')openSignin()}
+ else if(a==='signin'){if(typeof openSignin==='function')openSignin()}
  else if(a==='bug'){close();if(window.LCFeedback)window.LCFeedback.open()}
 });
 document.getElementById('helpClose').addEventListener('click',close);
