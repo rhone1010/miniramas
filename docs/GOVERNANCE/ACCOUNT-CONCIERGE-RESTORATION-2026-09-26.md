@@ -45,3 +45,5 @@ Preview verification: authenticated Account renders live balance and purchases; 
 Final discovery-consolidated-draft.html: 10963 lines. Account CSS destination 3022–3350, 329 lines including mobile adapters.
 
 Final pets.html: 10494 lines. Account CSS destination 3022–3350, 329 lines including mobile adapters.
+
+Canonical-width adapter: .acct .ac-card and .acct .ac-pair use min-width:0 so the copied grids fit the narrower canonical panel/mobile viewport rather than growing to purchase-label intrinsic width. Existing typography, gaps, card styling and grid proportions are unchanged.
