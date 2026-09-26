@@ -7112,7 +7112,15 @@ whoAmI().then(function(u){
   if (u && setSession) mcUnlockConfirm(setSession, 0, true);
   (u ? restoreResume() : Promise.resolve(false))
     .then(function(){ return receiveFoyerHandoff(); })
-    .then(bootSubjectSettled);
+    .then(bootSubjectSettled)
+    .then(function(){
+      var returnUrl = new URL(location.href);
+      if (u && returnUrl.searchParams.get('auth_collection') === '1') {
+        openMyCollection();
+        returnUrl.searchParams.delete('auth_collection');
+        history.replaceState(null, '', returnUrl.pathname + returnUrl.search + returnUrl.hash);
+      }
+    });
 });
 
 // ── Paid-run verification — one implementation, two callers ──
@@ -10155,7 +10163,8 @@ LCFeedback.mount({
       <input class="signin-in" id="signinEmail" type="email" autocomplete="email"
              placeholder="you@example.com" spellcheck="false">
       <div class="signin-err" id="signinErr"></div>
-      <div class="acts"><div class="btn fill" id="signinSend">Send the link</div></div>
+      <div class="acts"><div class="btn fill" id="signinSend">Continue with email</div></div>
+      <div class="acts"><div class="btn fill" id="signinGoogle" role="button" tabindex="0">Continue with Google</div></div>
       <div class="m-safe">Nothing is charged until your piece is crafted.</div>
     </div>
     <div id="signinSent" hidden>
@@ -10199,6 +10208,33 @@ var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
     if (typeof PENDING_REVIEW !== 'undefined') PENDING_REVIEW = false;
   }
 
+  function signinReturnPath(){
+    var next = new URL(location.href);
+    if (mycoll.classList.contains('is-open')) next.searchParams.set('auth_collection', '1');
+    return next.pathname + next.search + next.hash;
+  }
+  function signinWithGoogle(){
+    saveResume();
+    fetch(AUTH_SIGNIN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ provider: 'google', next: signinReturnPath() })
+    }).then(function(res){ return res.json(); }).then(function(d){
+      if (d && d.ok && d.url) { location.assign(d.url); return; }
+      if (signinErr) signinErr.textContent = 'Try again';
+    }).catch(function(){
+      if (signinErr) signinErr.textContent = 'Try again';
+    });
+  }
+  var signinGoogle = document.getElementById('signinGoogle');
+  if (signinGoogle) {
+    signinGoogle.addEventListener('click', signinWithGoogle);
+    signinGoogle.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); signinWithGoogle(); }
+    });
+  }
+
   function sendLink(){
     if (!signinEmail || !signinSend) return;
     var email = signinEmail.value.trim().toLowerCase();
@@ -10218,12 +10254,12 @@ var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ email: email, next: location.pathname })
+      body: JSON.stringify({ email: email, next: signinReturnPath() })
     }).then(function(res){
       return res.json().catch(function(){ return { ok: false, reason: 'bad_response' }; });
     }).then(function(d){
       signinSend.disabled = false;
-      signinSend.textContent = 'Send the link';
+      signinSend.textContent = 'Continue with email';
       if (!d || !d.ok){
         clearResume();
         if (signinErr) signinErr.textContent =
@@ -10238,7 +10274,7 @@ var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
     }).catch(function(){
       clearResume();
       signinSend.disabled = false;
-      signinSend.textContent = 'Send the link';
+      signinSend.textContent = 'Continue with email';
       if (signinErr) signinErr.textContent = 'The link could not be sent. Try again in a moment.';
     });
   }

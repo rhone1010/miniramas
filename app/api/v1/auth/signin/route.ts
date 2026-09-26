@@ -21,17 +21,19 @@ export async function POST(req: NextRequest) {
   if (process.env.VERCEL_ENV !== 'production' && process.env.VERCEL_ENV !== 'preview') {
     return NextResponse.json({ ok: false, reason: 'preview_email_disabled', message: 'Sign-in email disabled during Preview review.' }, { status: 403 })
   }
+  let provider = ''
   let email = ''
   let next  = '/portraits.html'
   try {
     const body = await req.json()
+    provider = body.provider === 'google' ? 'google' : ''
     email = typeof body.email === 'string' ? body.email.trim() : ''
     if (typeof body.next === 'string' && body.next.startsWith('/')) next = body.next
   } catch {
     // fall through to validation
   }
 
-  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+  if (provider !== 'google' && (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))) {
     return NextResponse.json({ ok: false, reason: 'invalid_email' }, { status: 400 })
   }
 
@@ -52,7 +54,17 @@ export async function POST(req: NextRequest) {
   })
 
   const origin          = new URL(req.url).origin
+  // Only return to this application's origin.
+  if (new URL(next, origin).origin !== origin) next = '/discovery'
   const emailRedirectTo  = `${origin}/auth/callback?next=${encodeURIComponent(next)}`
+  if (provider === 'google') {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: emailRedirectTo, skipBrowserRedirect: true },
+    })
+    if (error || !data.url) return NextResponse.json({ ok: false, reason: 'oauth_failed' }, { status: 500 })
+    return NextResponse.json({ ok: true, url: data.url })
+  }
   const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo } })
   if (error) {
     return NextResponse.json({ ok: false, reason: 'otp_failed', message: error.message }, { status: 500 })
