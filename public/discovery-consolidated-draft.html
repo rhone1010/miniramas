@@ -3013,6 +3013,12 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   .mh-mobile-existing,.masthead__right .mh-ask,#mhName,#mcUnlockBalance,#tourFab{display:none!important}
   .masthead__right .mh-series-menu{left:auto;right:0;transform:none}
 }
+
+/* Compact Collection information; reuse the existing status-band tokens. */
+.mc-info__cell{ flex:1 1 200px; min-width:0 }
+@media (min-width:1025px){
+  #signinModal .m-card{ width:min(calc(680px * 2 / 3), 100%) }
+}
 </style>
 </head>
 <body>
@@ -9491,76 +9497,33 @@ function renderMyCollectionGrid(){
      Shelf pieces carry no portfolioId and are not a portfolio; they are left
      ungrouped rather than gathered under a heading that would imply they were
      bought together. */
-  /* __M2_POST_PAYMENT__ (Rich's board, screens 1-4). The progression is a
-     BAND OVER THE LIVE COLLECTION, not four takeovers.
-
-     The board's own principles decide this: "let images appear as they're
-     ready" and "you can browse and unlock as images are ready". A modal
-     Creating screen would contradict both -- the customer would be held at a
-     progress bar while finished pieces sat behind it, which is the thing this
-     product was already criticised for. So screen 2's thumbnail grid IS the
-     collection, and the band above it carries what screens 1-4 say:
-
-       paid, nothing back yet   -> Payment received, collection being created
-       some back                -> Creating your collection, N of M ready
-       all back, just landed    -> Your collection is ready
-       settled                  -> nothing; the band retires itself
-
-     No order number. The board shows one, Rich ruled it illustrative, and
-     purchases.id is a uuid -- there is no order-number architecture to
-     render and none is being invented. */
+  /* Collection information uses the existing artwork and wallet state. */
   (function(){
-    var mine = vis.filter(function(p){ return p.portfolioId; });
-    var making = mine.filter(function(p){ return p.crafting; }).length;
-    var stopped = mine.filter(function(p){ return p.failed; }).length;
-    var total  = mine.length;
-    /* __M4_FAILED_IS_NOT_CRAFTING__ A failed piece is neither ready nor on
-       its way. Counting it as either makes the band lie: as ready it inflates
-       what the customer has, as crafting it never reaches the total and the
-       bar sticks short of full for ever. */
-    var ready  = total - making - stopped;
-    var band = null;
-    if (AWAITING_PAID_HYDRATION && !total){
-      band = { cls:'is-paid', name:'Payment received',
-               meta:'Your collection is being created. Each portrait appears here as it is ready.' };
-    } else if (making){
-      /* THE MOMENTARY ACKNOWLEDGEMENT (board screen 3). A piece finishing is
-         worth marking, and JUST_LANDED already records exactly that: the keys
-         that turned from crafting to done on this tick, set by pieceLanded and
-         read by the tile builder to animate them. Reading it here means the
-         band says "a new portrait is ready" on the same paint that reveals the
-         tile, and goes back to the count on the next one -- momentary because
-         the fact is momentary, not because of a timer to keep in sync. */
-      var landed = Object.keys(JUST_LANDED).length;
-      band = landed
-        ? { cls:'is-making is-new', name:'A new portrait is ready',
-            meta:ready + ' of ' + total + ' ready — the rest are still being crafted',
-            pct:Math.round(ready / Math.max(1, total) * 100) }
-        : { cls:'is-making', name:'Creating your collection',
-            meta:ready + ' of ' + total + ' ready — you can browse and unlock as they arrive',
-            pct:Math.round(ready / Math.max(1, total) * 100) };
-    } else if (stopped){
-      /* Nothing is in flight and something did not make it. Saying "ready"
-         over a collection with a hole in it is the lie this replaces. */
-      band = { cls:'is-stopped', name:'Some pieces did not finish',
-               meta:ready + ' of ' + total + ' ready — ' + stopped +
-                    (stopped === 1 ? ' will be remade' : ' will be remade') };
-    } else if (total && JUST_FINISHED){
-      band = { cls:'is-done', name:'Your collection is ready', meta:total + ' portraits' };
-    }
-    if (!band) return;
-    var el = document.createElement('div');
-    el.className = 'mc-status ' + band.cls;
-    el.innerHTML = '<span class="mc-status__name"></span><span class="mc-status__meta"></span>' +
-      (typeof band.pct === 'number'
-        ? '<span class="mc-status__bar"><i style="width:' + band.pct + '%"></i></span>' +
-          '<span class="mc-status__pct">' + band.pct + '%</span>'
-        : '');
-    el.querySelector('.mc-status__name').textContent = band.name;
-    el.querySelector('.mc-status__meta').textContent = band.meta;
-    mycollGrid.appendChild(el);
-    /* Shown once. The next paint is an ordinary collection. */
-    if (band.cls === 'is-done') JUST_FINISHED = false;
+    var making = PIECES.filter(function(p){ return p.crafting && !p.failed; });
+    var active = PIECES.filter(function(p){
+      return making.some(function(m){ return m.portfolioId === p.portfolioId; });
+    });
+    var ready = PIECES.filter(function(p){ return !p.crafting && !p.failed; }).length;
+    var activeReady = active.filter(function(p){ return !p.crafting && !p.failed; }).length;
+    var review = MC_UNLOCK_REVIEW || MC_UNLOCK_SHELL;
+    var cells = [
+      ['CRAFTING', making.length, making.length ? activeReady + ' of ' + active.length + ' ready' : ''],
+      ['IN YOUR COLLECTION', ready, ''],
+      ['LOCKED', review.lockedCount === null ? '—' : review.lockedCount, ''],
+      ['UNLOCKS', review.balance ? review.balance.total : '—', '']
+    ];
+    var band = document.createElement('div');
+    band.className = 'mc-status mc-info';
+    cells.forEach(function(cell){
+      var el = document.createElement('div');
+      el.className = 'mc-info__cell';
+      el.innerHTML = '<span class="mc-status__meta"></span> <span class="mc-status__name"></span><div class="mc-status__meta"></div>';
+      el.children[0].textContent = cell[0];
+      el.children[1].textContent = cell[1];
+      el.children[2].textContent = cell[2];
+      band.appendChild(el);
+    });
+    mycollGrid.insertBefore(band, mycollGrid.firstChild);
   })();
 
   var lastGroup = null;
@@ -9589,7 +9552,7 @@ function renderMyCollectionGrid(){
           making ? 'Crafting your collection'
                  : (made ? 'Created ' + made : 'Your collection');
         head.querySelector('.mc-group__meta').textContent = bits.join(' · ');
-        mycollGrid.appendChild(head);
+        if (!making) mycollGrid.appendChild(head);
       }
     }
     var el = document.createElement('div');
