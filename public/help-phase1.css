@@ -23,4 +23,5 @@
 
 
 /* Keep Collection actions on Collection while Help occupies the stage. */
-body:has(#helpStage.is-open) #mcUnlockRail{ display:none }
+body:has(#helpStage.is-open) #mcUnlockRail,
+body:has(#helpStage.is-open) .your-collection.is-docked{ display:none }
