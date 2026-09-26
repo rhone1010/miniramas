@@ -127,7 +127,7 @@ const PAGES: Record<string, string> = {
   '/account': '/discovery-consolidated-draft.html',
   '/collection': '/portraits.html',
   '/print': '/portraits.html',
-  '/help': '/help.html',
+  '/help': '/discovery-consolidated-draft.html',
 };
 
 export const config = {

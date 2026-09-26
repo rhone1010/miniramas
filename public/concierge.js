@@ -90,6 +90,7 @@
   var GOLD = '#b68a53';
 
   var history = [];
+  var helpContext = null;
   var busy = false;
   var veil = null, log = null, input = null, send = null, seeds = null;
   var mode = 'ask';          /* 'ask' | 'message' | 'sent' */
@@ -310,7 +311,7 @@
     bubble('con',
       'Good day. Ask me anything about how Liten & Co works \u2014 finishes, ' +
       'photographs, Collection Unlocks, what becomes of your picture. I can answer ' +
-      'questions, though I cannot look at your account.');
+      'questions and help you contact the studio.');
 
     seeds.innerHTML = '';
     (window.CONCIERGE_SEEDS || [
@@ -325,8 +326,8 @@
     });
 
     foot(WANT_MSG
-      ? 'For anything to do with your own account, I can take a message.'
-      : 'For anything to do with your own account, the Help page has the desk.');
+      ? 'For anything to do with your own account, I can take a message. <a href="/help">Help</a> · <a href="/help#make-it-right">Make It Right</a>'
+      : '<a href="/help">Help</a> · <a href="/help#make-it-right">Make It Right</a>');
   }
 
   function foot(html) {
@@ -578,7 +579,7 @@
     fetch('/api/v1/concierge', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ messages: history.slice(-20) }),
+      body: JSON.stringify({ messages: history.slice(-20), help: helpContext }),
     })
       .then(function (r) { return r.json().catch(function () { return null; }); })
       .then(function (d) {
@@ -638,7 +639,7 @@
     mode = 'message';
     bubble('con',
       'Of course. Write what you need and I will pass it to the studio \u2014 ' +
-      'somebody reads every one of these, and you will hear back at the ' +
+      'you will hear back at the ' +
       'address on your account.');
 
     var ask = veil.querySelector('.cx-ask');
@@ -694,7 +695,7 @@
         if (d && d.ok) {
           mode = 'sent';
           bubble('con',
-            'Sent. Somebody will come back to you \u2014 usually the same day.');
+            'Your message has been recorded. Reference: ' + d.ref);
           veil.querySelector('.cx-ask').remove();
           foot('');
         } else if (d && d.reason === 'need_email') {
@@ -722,6 +723,8 @@
   /* What a page is allowed to ask of her. Deliberately small. */
   window.Concierge = {
     open:  open,
+    openForHelp: function(context) { helpContext=context; open(); },
+    message: function() { open(); if (mode !== 'message') startMessage(); },
     close: close,
     acted: acted,
     point: function (sel) { return point(sel); },

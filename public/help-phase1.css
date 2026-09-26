@@ -1,0 +1,23 @@
+.q{ border-bottom:1px solid var(--hairline) }
+.q:first-of-type{ border-top:1px solid var(--hairline) }
+.q-btn{
+  display:flex; align-items:baseline; gap:1rem;
+  width:100%; text-align:left; padding:1.15rem 0;
+  font-family:var(--serif); font-size:1.5rem; line-height:1.3; color:var(--ink);
+  list-style:none;
+}
+.q-btn::-webkit-details-marker{ display:none }
+.q-btn:hover{ color:var(--oxblood) }
+.q-btn .mk{
+  flex:none; width:1em; font-family:var(--sans); font-size:1rem;
+  color:var(--brass); transition:transform .18s ease;
+}
+.q[open] .q-btn .mk{ transform:rotate(45deg) }
+.q-body{ padding:0 0 1.5rem 2rem; max-width:64ch }
+.q-body p{
+  font-family:var(--serif); font-size:1.3125rem; line-height:1.5;
+  color:var(--ink-soft);
+}
+.q-body p + p{ margin-top:.7rem }
+.q-body a{ color:var(--oxblood) }
+
