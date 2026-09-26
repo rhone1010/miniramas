@@ -3296,20 +3296,20 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   color:rgba(60,48,34,.45); word-break:break-all;
 }
 
-.acct .mc-head{
+:where(.acct) .mc-head{
   display:flex; align-items:center; gap:.6em;
   padding-bottom:.5em;
   border-bottom:1px solid rgba(196,169,110,.18);
 }
-.acct .mc-title{
+:where(.acct) .mc-title{
   font-family:var(--serif); font-style:italic; font-size:1.7rem;
   color:var(--series);
 }
-.acct .mc-n{
+:where(.acct) .mc-n{
   font-family:var(--sans); font-size:.8rem; letter-spacing:.09em;
   text-transform:uppercase; color:rgba(233,222,200,.42);
 }
-.acct .mc-close{
+:where(.acct) .mc-close{
   /* was margin-left:auto, which threw it to the far right — the corner
      furthest from the workshop it returns to. */
   margin-right:.5em;
@@ -3321,13 +3321,33 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   color:rgba(243,237,225,.82); cursor:pointer;
   transition:background 160ms ease, color 160ms ease;
 }
-.acct .mc-close:hover{ background:rgba(196,169,110,.14); color:#fff }
-.acct .mc-close svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.6 }
+:where(.acct) .mc-close:hover{ background:rgba(196,169,110,.14); color:#fff }
+:where(.acct) .mc-close svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.6 }
 
 
 .acct{ --ink-soft:#5a5248; --limestone:#f1ece3; --ls-wash:.42; --ls-tile:900px; --vellum-100:#f8f4eb; --series:var(--gold) }
 @media (max-width:1024px){ .acct{ left:0 } }
 
+
+@media (max-width:767px){
+  :where(.acct) .mc-head{
+    flex-wrap:wrap; gap:.4em .6em;
+    padding-bottom:.6em;
+  }
+  :where(.acct) .mc-close{
+    order:-1; width:100%; height:44px; margin-right:0;
+    justify-content:center;
+  }
+  :where(.acct) .mc-title{ font-size:1.5rem }
+  :where(.acct) .mc-n{ font-size:.72rem }
+  .ac-row, .acct .row{
+    flex-direction:column; align-items:flex-start; gap:.25em;
+  }
+  .ac-row .v, .acct .row .v{
+    text-align:left; white-space:normal; max-width:100%;
+  }
+  .ac-acts .ac-buy{ width:100%; min-height:44px }
+}
 </style>
 <script>
 window.CONCIERGE_POINTS = [
