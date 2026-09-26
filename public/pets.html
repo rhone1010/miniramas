@@ -8237,7 +8237,7 @@ function mcUnlockOffersHtml(){
   return '<div class="mc-unlock-offers" role="radiogroup" aria-label="Unlock packages">' + html + '</div>';
 }
 function mcUnlockCta(inSheet){
-  if (MC_UNLOCK_CHOICE === 'all') return inSheet ? 'Continue' : 'Get More Unlocks';
+  if (MC_UNLOCK_CHOICE === 'all' && MC_UNLOCK_REVIEW && MC_UNLOCK_REVIEW.all) return inSheet ? 'Continue' : 'Get More Unlocks';
   var offer = MC_UNLOCK_REVIEW && MC_UNLOCK_REVIEW.offers.find(function(o){ return String(o.count) === MC_UNLOCK_CHOICE; });
   return offer ? 'Purchase ' + offer.count + ' Unlocks · ' + mcUnlockMoney(offer.cents) : 'Purchase Unlocks';
 }
