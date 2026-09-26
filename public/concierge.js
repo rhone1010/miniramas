@@ -309,7 +309,7 @@
   function greet() {
     bubble('con',
       'Good day. Ask me anything about how Liten & Co works \u2014 finishes, ' +
-      'photographs, prints, what becomes of your picture. I can answer ' +
+      'photographs, Collection Unlocks, what becomes of your picture. I can answer ' +
       'questions, though I cannot look at your account.');
 
     seeds.innerHTML = '';

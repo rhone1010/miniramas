@@ -1455,7 +1455,6 @@ body.is-lboxed{ overflow:hidden }
   .masthead{ padding:0 18px }
   .masthead__nav{ gap:14px } .masthead__nav a{ font-size:1.02em } .mh-series-btn{ font-size:1.1em }
   .masthead__right{ gap:6px; font-size:.78rem } .masthead__right .pill-btn{ padding:6px 10px }
-  .masthead__right .mh-ask{ display:none }
   :root{ --stage-pad-x:32px; --card-gap:16px }
   .rail{ margin:16px; padding:16px 22px }
   .your-collection{ padding:10px 14px }
@@ -3010,7 +3009,7 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
 .mh-series-menu[hidden]{display:none}
 @media (min-width:1025px){
   .mh-desktop-only{display:flex}
-  .mh-mobile-existing,.masthead__right .mh-ask,#mhName,#mcUnlockBalance,#tourFab{display:none!important}
+  .mh-mobile-existing,#mhName,#mcUnlockBalance,#tourFab{display:none!important}
   .masthead__right .mh-series-menu{left:auto;right:0;transform:none}
 }
 
@@ -3020,6 +3019,315 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   .mc-info__cell{ flex:1 1 0 }
   #signinModal .m-card{ width:min(calc(680px * 2 / 3), 100%) }
 }
+.acct{
+  position:fixed; z-index:220;
+  top:var(--mh-h); bottom:0; right:0;
+  left:var(--rail-w);
+  display:flex; flex-direction:column;
+  padding:clamp(16px,1.2vw,26px) clamp(14px,1vw,22px) 0;
+  isolation:isolate;
+  background-color:var(--limestone);
+  background-image:
+    radial-gradient(circle at 8% 0%, rgba(255,255,255,.4), transparent 44%),
+    radial-gradient(circle at 94% 96%, rgba(118,82,45,.04), transparent 46%),
+    linear-gradient(0deg,
+      rgba(241,236,227,var(--ls-wash)), rgba(241,236,227,var(--ls-wash))),
+    url("/textures/limestone.jpg");
+  background-repeat:no-repeat,no-repeat,repeat,repeat;
+  background-size:auto,auto,auto,var(--ls-tile) var(--ls-tile);
+  border-left:1px solid rgba(137,105,67,.24);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), -1.2rem 0 2.4rem rgba(46,32,18,.18);
+  transform:translateX(101%);
+  transition:transform .72s cubic-bezier(.16,1,.3,1);
+  overflow:hidden;
+}
+.acct.is-open{ transform:translateX(0) }
+.acct::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:url("/textures/noise.png");
+  background-repeat:repeat; background-size:14rem 14rem;
+  opacity:.045; mix-blend-mode:multiply;
+}
+.acct > *{ position:relative; z-index:1 }
+.acct .mc-head{ border-bottom-color:rgba(137,105,67,.22) }
+.acct .mc-close{ color:var(--ink-soft) }
+.acct .mc-close:hover{ color:var(--oxblood) }
+.acct .mc-title{ color:var(--ink) }
+.acct .mc-n{ color:var(--ink-soft) }
+
+
+/* ---- the account, as cards ----------------------------------------------
+   Five cards on two columns. The sidebar is gone: five sections behind five
+   clicks was hiding four of them, and a customer opening their account wants
+   the balance, what they have spent and where their prints are at once. */
+.ac-head{ margin-bottom:clamp(14px,1.2vw,24px) }
+.ac-head h2{
+  font-family:var(--serif); font-size:clamp(1.9rem,2.2vw,2.6rem);
+  font-weight:400; color:var(--ink); line-height:1.1;
+}
+.ac-head p{
+  font-family:var(--sans); font-size:.88rem; color:var(--ink-soft);
+  margin-top:.3em;
+}
+.ac-cards{
+  display:grid; gap:clamp(12px,1.1vw,20px);
+  grid-template-columns:1.35fr 1fr;
+  align-items:start;
+  padding-bottom:2rem;
+}
+@media (max-width:1279px){ .ac-cards{ grid-template-columns:1fr } }
+.ac-card{
+  padding:clamp(16px,1.3vw,26px);
+  border-radius:10px;
+  background:rgba(255,255,255,.5);
+  border:1px solid rgba(137,105,67,.22);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65), 0 .4rem 1.2rem rgba(59,41,25,.07);
+}
+.ac-card h3{
+  display:flex; align-items:center; gap:.5em;
+  font-family:var(--serif); font-size:1.45rem; font-weight:400; color:var(--ink);
+}
+.ac-card h3 img{ width:1.3em; height:1.3em; object-fit:contain }
+.ac-card > p.note{
+  font-family:var(--sans); font-size:.78rem; color:var(--ink-soft);
+  margin:.25em 0 1em;
+}
+/* Credits spans the left column; the pair under it share it. */
+.ac-credits{ grid-column:1; grid-row:1 }
+.ac-you{ grid-column:2; grid-row:1 }
+.ac-pair{ grid-column:1; grid-row:2; display:grid; gap:inherit;
+  grid-template-columns:1fr 1fr }
+.ac-prints{ grid-column:2; grid-row:2 }
+@media (max-width:1279px){
+  .ac-credits,.ac-you,.ac-pair,.ac-prints{ grid-column:1; grid-row:auto }
+  .ac-pair{ grid-template-columns:1fr }
+}
+@media (max-width:900px){ .ac-pair{ grid-template-columns:1fr } }
+
+/* the balance */
+.ac-balance{ position:relative; display:flex; align-items:flex-start; gap:1.4em }
+.ac-balance .fig{ flex:1; min-width:0 }
+.ac-balance .n{
+  font-family:var(--serif); font-size:clamp(3rem,4.4vw,4.4rem); line-height:.95;
+  color:var(--oxblood); font-variant-numeric:tabular-nums;
+}
+.ac-balance .u{
+  font-family:var(--serif); font-size:1.15rem; color:var(--ink); margin-top:.1em;
+}
+/* The coin, quietly behind the number. */
+.ac-balance .seal{
+  width:clamp(74px,7vw,116px); height:auto; flex:0 0 auto;
+  opacity:.5; align-self:center;
+}
+.ac-acts{ display:flex; gap:.6em; flex-wrap:wrap; margin-top:1.2em }
+.ac-acts button{
+  padding:.7em 1.4em; border-radius:8px; cursor:pointer;
+  font-family:var(--serif); font-style:italic; font-size:1.15rem;
+}
+.ac-buy{ border:0; background:var(--oxblood); color:var(--vellum-100) }
+.ac-second{
+  background:transparent; border:1px solid rgba(137,105,67,.34); color:var(--ink);
+}
+.ac-second:hover{ background:rgba(125,66,66,.07); border-color:var(--oxblood) }
+.ac-second:disabled{ opacity:.45; cursor:default }
+
+/* rows — activity, purchases, prints */
+.ac-list{ margin-top:.2em }
+.ac-item{
+  display:flex; align-items:center; gap:.8em;
+  padding:.6em 0; border-bottom:1px solid rgba(137,105,67,.14);
+}
+.ac-item:last-child{ border-bottom:0 }
+.ac-item .ic{
+  width:38px; height:38px; flex:0 0 auto;
+  display:flex; align-items:center; justify-content:center;
+}
+.ac-item .ic img{ max-width:100%; max-height:100%; object-fit:contain }
+.ac-item .body{ flex:1; min-width:0 }
+.ac-item .t{
+  font-family:var(--sans); font-size:.86rem; color:var(--ink);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.ac-item .s{
+  font-family:var(--sans); font-size:.74rem; color:var(--ink-soft); margin-top:.15em;
+}
+.ac-item .v{
+  font-family:var(--sans); font-size:.9rem; color:var(--ink);
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.ac-item .v.is-out{ color:var(--oxblood) }
+.ac-item .v.is-in{ color:#4a6141 }
+
+/* your details */
+.ac-row{
+  display:flex; align-items:baseline; gap:1em;
+  padding:.65em 0; border-bottom:1px solid rgba(137,105,67,.14);
+  font-family:var(--sans); font-size:.86rem;
+}
+.ac-row .k{ flex:0 0 34%; color:var(--ink-soft) }
+.ac-row .v{ flex:1; min-width:0; color:var(--ink); word-break:break-word }
+.ac-out{
+  width:100%; margin-top:1.2em; padding:.7em;
+  border:0; border-radius:8px; background:var(--oxblood);
+  font-family:var(--serif); font-style:italic; font-size:1.15rem;
+  color:var(--vellum-100); cursor:pointer;
+}
+
+/* the one nudge on this page, and only when it is true */
+.ac-nudge{
+  display:flex; align-items:center; gap:1em; flex-wrap:wrap;
+  padding:.9em 1.1em; margin-bottom:1em; border-radius:8px;
+  background:rgba(196,169,110,.12); border:1px solid rgba(196,169,110,.3);
+  font-family:var(--sans); font-size:.84rem; color:var(--ink); line-height:1.45;
+}
+.ac-nudge button{
+  margin-left:auto; padding:.55em 1.1em; border:0; border-radius:7px;
+  background:var(--oxblood); color:var(--vellum-100); cursor:pointer;
+  font-family:var(--serif); font-style:italic; font-size:1.05rem;
+  white-space:nowrap;
+}
+.ac-gap{
+  font-family:var(--sans); font-size:.78rem; color:rgba(60,48,34,.5);
+  padding:.8em 0; line-height:1.5;
+}
+
+/* ---- the two columns ---------------------------------------------------- */
+.ac-body{ flex:1; min-height:0; display:flex; gap:clamp(16px,1.6vw,32px); overflow:hidden }
+.ac-side{
+  flex:0 0 17%; min-width:150px;
+  display:flex; flex-direction:column; gap:.15em;
+  padding-top:.4em;
+}
+.ac-nav{
+  display:block; width:100%; text-align:left;
+  padding:.6em .8em; border:0; border-radius:5px; background:transparent;
+  font-family:var(--serif); font-size:1.1875rem; line-height:1.2;
+  color:var(--ink-soft); cursor:pointer;
+  transition:background .2s ease, color .2s ease;
+}
+.ac-nav:hover{ background:rgba(125,66,66,.07); color:var(--ink) }
+.ac-nav.is-on{ background:rgba(125,66,66,.1); color:var(--oxblood) }
+.ac-nav:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+
+.ac-main{ flex:1; min-width:0; overflow-y:auto; padding-bottom:2rem }
+.ac-sec{ margin-bottom:2.2rem }
+.ac-sec[hidden]{ display:none }
+.ac-h{
+  font-family:var(--serif); font-size:1.5rem; color:var(--ink);
+  margin-bottom:.15em;
+}
+.ac-sub{
+  font-family:var(--sans); font-size:.82rem; color:var(--ink-soft);
+  margin-bottom:1em; line-height:1.5;
+}
+
+/* ---- the balance -------------------------------------------------------- */
+.ac-bal{
+  display:flex; align-items:center; gap:1.4em; flex-wrap:wrap;
+  padding:1.4em 1.6em; border-radius:10px;
+  background:rgba(255,255,255,.6);
+  border:1px solid rgba(137,105,67,.28);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+.ac-bal .n{
+  font-family:var(--serif); font-size:3rem; line-height:1;
+  color:var(--ink); font-variant-numeric:tabular-nums;
+}
+.ac-bal .u{ font-family:var(--sans); font-size:.82rem; color:var(--ink-soft) }
+.ac-bal .sp{ flex:1 }
+.ac-buy{
+  padding:.7em 1.4em; border:0; border-radius:8px; background:var(--oxblood);
+  font-family:var(--serif); font-style:italic; font-size:1.2rem;
+  color:var(--vellum-100); cursor:pointer;
+}
+
+/* ---- rows: the ledger, purchases, orders -------------------------------- */
+.ac-rows{ border-top:1px solid rgba(137,105,67,.18) }
+.ac-row{
+  display:flex; align-items:baseline; gap:1em;
+  padding:.7em .2em;
+  border-bottom:1px solid rgba(137,105,67,.14);
+  font-family:var(--sans); font-size:.86rem; color:var(--ink-soft);
+}
+.ac-row .what{ flex:1; min-width:0; color:var(--ink) }
+.ac-row .when{ flex:0 0 auto; font-size:.78rem }
+.ac-row .amt{
+  flex:0 0 5.5em; text-align:right; font-variant-numeric:tabular-nums;
+  color:var(--ink);
+}
+.ac-row .amt.is-out{ color:var(--oxblood) }
+.ac-row .amt.is-in{ color:#4a6141 }
+.ac-row .bal{
+  flex:0 0 6em; text-align:right; font-size:.78rem;
+  font-variant-numeric:tabular-nums;
+}
+.ac-tag{
+  display:inline-block; padding:.1em .5em; border-radius:999px;
+  font-size:.68rem; letter-spacing:.04em;
+  background:rgba(137,105,67,.14); color:var(--ink-soft);
+}
+.ac-tag.is-live{ background:rgba(74,97,65,.16); color:#3f5637 }
+.ac-tag.is-held{ background:rgba(125,66,66,.12); color:var(--oxblood) }
+.ac-empty{
+  font-family:var(--serif); font-style:italic; font-size:1.1rem;
+  color:rgba(60,48,34,.5); padding:1.2em 0;
+}
+
+/* ---- the notice about fulfilment ---------------------------------------- */
+.ac-note{
+  display:flex; gap:.7em; align-items:flex-start;
+  padding:.9em 1.1em; margin-bottom:1.2em; border-radius:8px;
+  background:rgba(125,66,66,.07);
+  border:1px solid rgba(125,66,66,.24);
+  font-family:var(--sans); font-size:.84rem; line-height:1.5;
+  color:var(--ink);
+}
+
+/* ---- the door out ------------------------------------------------------- */
+.ac-out{
+  padding:.65em 1.3em; border-radius:8px; cursor:pointer;
+  background:transparent; border:1px solid rgba(137,105,67,.34);
+  font-family:var(--serif); font-style:italic; font-size:1.15rem;
+  color:var(--ink);
+}
+.ac-out:hover{ background:rgba(125,66,66,.08); border-color:var(--oxblood) }
+.ac-id{
+  font-family:var(--mono, ui-monospace, monospace); font-size:.72rem;
+  color:rgba(60,48,34,.45); word-break:break-all;
+}
+
+.acct .mc-head{
+  display:flex; align-items:center; gap:.6em;
+  padding-bottom:.5em;
+  border-bottom:1px solid rgba(196,169,110,.18);
+}
+.acct .mc-title{
+  font-family:var(--serif); font-style:italic; font-size:1.7rem;
+  color:var(--series);
+}
+.acct .mc-n{
+  font-family:var(--sans); font-size:.8rem; letter-spacing:.09em;
+  text-transform:uppercase; color:rgba(233,222,200,.42);
+}
+.acct .mc-close{
+  /* was margin-left:auto, which threw it to the far right — the corner
+     furthest from the workshop it returns to. */
+  margin-right:.5em;
+  display:inline-flex; align-items:center; gap:.45em;
+  height:38px; padding:0 .9em;
+  border:1px solid rgba(196,169,110,.3); border-radius:6px;
+  background:rgba(255,255,255,.03);
+  font-family:var(--serif); font-style:italic; font-size:1.15rem;
+  color:rgba(243,237,225,.82); cursor:pointer;
+  transition:background 160ms ease, color 160ms ease;
+}
+.acct .mc-close:hover{ background:rgba(196,169,110,.14); color:#fff }
+.acct .mc-close svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.6 }
+
+
+.acct{ --ink-soft:#5a5248; --limestone:#f1ece3; --ls-wash:.42; --ls-tile:900px; --vellum-100:#f8f4eb; --series:var(--gold) }
+@media (max-width:1024px){ .acct{ left:0 } }
+
 </style>
 <style id="petsRoomFlow">
 @media (min-width:1025px){
@@ -3027,6 +3335,31 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   #discoveryView .silo-block[data-pets-rows] .effect-grid{ height:auto; container-type:normal; grid-template-rows:repeat(var(--pets-room-rows),calc((100cqh - var(--card-gap)) / 2)) }
 }
 </style>
+<script>
+window.CONCIERGE_POINTS = [
+  { sel:'.photo-stamp',    phrases:['photograph','photo','upload','picture','image'] },
+  { sel:'#optPickForMe',   phrases:['Pick 4 for Me','suggest effects'] },
+  { sel:'#discoveryRail',        phrases:['To Be Crafted','the rail'] },
+  { sel:'#btnCraft',      phrases:['Craft button','press Craft','Craft'] },
+  { sel:'#mcUnlockRailOpen', phrases:['unlocks','unlock','balance','buy more'] },
+  { sel:'#mhSeriesBtn', phrases:['Series'] },
+  { sel:'#navMyCollection', phrases:['My Collection','collection'] },
+  { sel:'.masthead a[href="/community"]',  phrases:['Community','the board'] },
+  { sel:'#mhIdentityMenu a[href="/account"]',    phrases:['account'] },
+  { sel:'#mhSignOut',  phrases:['sign out','signed out'] },
+];
+
+/* What she opens with, here. The generic three are about the company; in
+   the workshop the questions people actually have are about this screen. */
+window.CONCIERGE_SEEDS = [
+  'How do I start?',
+  'What makes a good photograph?',
+  'How do Collection Unlocks work?'
+];
+
+
+</script>
+<script src="/concierge.js" defer data-dock data-attention></script>
 </head>
 <body>
 <!-- discovery-consolidated-draft.html
@@ -3062,7 +3395,8 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   </nav>
   <div class="masthead__right">
     <button class="pill-btn mh-desktop-only" id="mhDesktopHelp" type="button" onclick="startTour()">? Help</button>
-    <button class="mh-ask" aria-label="Ask the Concierge">
+    <button class="mh-ask" id="mhAskBtn" type="button" data-concierge
+            aria-label="Ask the Concierge">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8Z"/><path d="M8.6 11h6.8"/><path d="M8.6 14.4h4.2"/></svg>
     </button>
     <button class="lcf-scarab" id="mhScarab" type="button" aria-label="Something off? Tell the studio" title="Something off? Tell the studio">
@@ -3885,7 +4219,7 @@ function paintCardArt(){
 // per CENG §11 -- order is preserved by insertion order here). ──
 var SELECTED = []; // array of { key, name, siloName }
 var LAST_ACTIONS = [];
-function act(s){ LAST_ACTIONS.push(s); if (LAST_ACTIONS.length > 3) LAST_ACTIONS.shift(); }
+function act(s){ document.dispatchEvent(new Event('concierge:acted')); LAST_ACTIONS.push(s); if (LAST_ACTIONS.length > 3) LAST_ACTIONS.shift(); }
 
 // ── Real photo upload. Stored as a data URL so it survives the
 // Discovery<->Review innerHTML swaps (those regenerate the rail from
@@ -6695,6 +7029,7 @@ function paintMe(){
 /* The foyer's photograph, if one was handed over, is taken after any resume
    so the one the visitor has just chosen is the one on the stamp. */
 whoAmI().then(function(u){
+  if (location.pathname === '/account') setTimeout(function(){ if(window.__showAccount) window.__showAccount(); }, 0);
   var walletSession = new URLSearchParams(location.search).get('collection_unlock_session') || sessionStorage.getItem('liten_collection_unlock_session');
   if (u && walletSession) mcUnlockConfirm(walletSession);
   var setSession = new URLSearchParams(location.search).get('collection_unlock_set_session') || sessionStorage.getItem('liten_collection_unlock_set_session');
@@ -9902,6 +10237,238 @@ if (signinDone) signinDone.addEventListener('click', closeSignin);
   }
 })();
 document.getElementById('mhSignOut').addEventListener('click', function(e){ e.preventDefault(); onAuthButton(); });
+</script>
+  <section class="acct" id="acct" aria-hidden="true" aria-label="Your account">
+    <div class="mc-head">
+      <button class="mc-close" id="acClose" type="button">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>
+        Back to the workshop
+      </button>
+      <span class="mc-title">Your Account</span>
+      <span class="mc-n" id="acWho"></span>
+    </div>
+
+    <!-- Cards, not a sidebar. Five sections behind five clicks was hiding
+         four of them. -->
+    <div class="ac-main" id="acMain"></div>
+  </section>
+
+
+<script>
+(function(){
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  var ACCOUNT_URL = '/api/v1/account';
+  var ACCT   = null;      /* the last read, or null */
+  var AC_SEC = 'credits';
+  var acct   = document.getElementById('acct');
+
+  function acMoney(c){ return '$' + ((c || 0) / 100).toFixed(2); }
+  function acDate(s){
+    if (!s) return '';
+    var d = new Date(s);
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
+  }
+
+  /* The ledger's own words, not ours. `reason` is what the database
+     recorded; this only makes it readable. */
+  var AC_REASON = { unlock: 'Collection piece unlocked' };
+
+  function showAccount(){
+    if (!acct) return;
+    if (!ME){ openSignin(); return; }
+    ACCT = null;
+    if (mycoll.classList.contains('is-open')) closeMyCollection();
+    acct.classList.add('is-open');
+    acct.setAttribute('aria-hidden', 'false');
+    renderAccount();
+    loadAccount();
+  }
+  function hideAccount(){
+    if (!acct) return;
+    acct.classList.remove('is-open');
+    acct.setAttribute('aria-hidden', 'true');
+    if (location.pathname === '/account') history.replaceState({}, '', '/discovery');
+  }
+
+  function loadAccount(){
+    return fetch(ACCOUNT_URL, { credentials:'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (!d || !d.user) return null;
+        ACCT = d;
+        renderAccount();
+        return d;
+      })
+      .catch(function(e){
+        console.warn('[account] not loaded:', e.message || e);
+        return null;
+      });
+  }
+
+  function acRows(rows, render){
+    if (!rows) return '<p class="ac-empty">This could not be read just now.</p>';
+    if (!rows.length) return '<p class="ac-empty">Nothing here yet.</p>';
+    return '<div class="ac-rows">' + rows.map(render).join('') + '</div>';
+  }
+
+  /* ---- the coins ----------------------------------------------------------
+     public/icons/acount/ — spelled that way on disk, and used verbatim
+     rather than quietly corrected into a 404.
+
+     Sized by the purchase, because a hundred credits should not look like
+     ten. */
+  var COIN = '/icons/acount/';
+  function coinFor(n){
+    if (n >= 100) return COIN + 'credits_big_stack.png';
+    if (n >= 50)  return COIN + 'credits_small_stack.png';
+    if (n >= 20)  return COIN + 'credits_2_coins.png';
+    return COIN + 'litenco_credit.png';
+  }
+
+  function acItem(icon, title, sub, value, cls){
+    return '<div class="ac-item">' +
+      '<span class="ic">' + (icon ? '<img src="' + esc(icon) + '" alt="">' : '') + '</span>' +
+      '<span class="body"><span class="t">' + esc(title) + '</span>' +
+        (sub ? '<span class="s">' + esc(sub) + '</span>' : '') + '</span>' +
+      (value ? '<span class="v' + (cls ? ' ' + cls : '') + '">' + esc(value) + '</span>' : '') +
+    '</div>';
+  }
+
+  /* A section that could not be read says so. A section that is genuinely
+     empty says that instead — they are different facts and a customer can
+     tell them apart. */
+  function acRows(rows, render, empty){
+    if (!rows) return '<p class="ac-gap">This could not be read just now.</p>';
+    if (!rows.length) return '<p class="ac-gap">' + esc(empty) + '</p>';
+    return '<div class="ac-list">' + rows.map(render).join('') + '</div>';
+  }
+
+  function acCardCredits(){
+    var bal = ACCT && ACCT.unlocks ? ACCT.unlocks.reusable : null;
+
+    return '<div class="ac-card ac-credits">' +
+      '<h3>Collection Unlocks</h3>' +
+      '<div class="ac-balance">' +
+        '<span class="fig">' +
+          '<span class="n">' + (bal == null ? '\u2014' : bal) + '</span>' +
+          '<span class="u" style="display:block">' +
+            (bal === 1 ? 'reusable unlock available' : 'reusable unlocks available') + '</span>' +
+          '<p class="note" style="margin-top:.7em">Use one unlock on one locked Collection piece.<br>' +
+            'Reusable unlocks never expire.</p>' +
+        '</span>' +
+        '<img class="seal" src="' + COIN + 'litenco_credit.png" alt="">' +
+      '</div>' +
+      '<div class="ac-acts">' +
+        '<button class="ac-buy" id="acBuy" type="button">Purchase Unlocks</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function acCardYou(){
+    var u = ACCT ? ACCT.user : null;
+    return '<div class="ac-card ac-you">' +
+      '<h3>Your details</h3>' +
+      '<p class="note">Sign in with Google or an email link. There is no password to remember ' +
+        'or to lose.</p>' +
+      '<div class="ac-row"><span class="k">Email</span>' +
+        '<span class="v">' + esc((u && u.email) || '\u2014') + '</span></div>' +
+      (u && u.since
+        ? '<div class="ac-row"><span class="k">With the studio since</span>' +
+          '<span class="v">' + esc(acDate(u.since)) + '</span></div>'
+        : '') +
+      /* Shown, not edited here. One form for an address, in the place it
+         is used — two would eventually disagree with each other. */
+      '<button class="ac-out" id="acOut" type="button">Sign out</button>' +
+    '</div>';
+  }
+
+  function acCardActivity(){
+    var rows = ACCT ? ACCT.ledger : null;
+    return '<div class="ac-card">' +
+      '<h3>Activity</h3>' +
+      '<p class="note">Reusable unlocks spent on your Collection.</p>' +
+      acRows(rows, function(r){
+        var out = r.delta < 0;
+        return acItem(
+          coinFor(Math.abs(r.delta)),
+          AC_REASON[r.reason] || r.reason,
+          acDate(r.created_at),
+          (out ? '' : '+') + r.delta,
+          out ? 'is-out' : 'is-in');
+      }, 'Nothing yet.') +
+    '</div>';
+  }
+
+  function acCardPurchases(){
+    var rows = ACCT ? ACCT.purchases : null;
+    return '<div class="ac-card">' +
+      '<h3>Purchases</h3>' +
+      '<p class="note">Your purchases. A checkout closed before paying ' +
+        'shows as unfinished and was never charged.</p>' +
+      acRows(rows, function(r){
+        var label = r.label || r.sku_id || 'Purchase';
+        return acItem(
+          null,
+          label,
+          acDate(r.created_at) + (r.status === 'paid' ? '' : ' \u00b7 unfinished'),
+          acMoney(r.amount_cents), '');
+      }, 'Nothing bought yet.') +
+    '</div>';
+  }
+
+  function renderAccount(){
+    var main = document.getElementById('acMain');
+    var who  = document.getElementById('acWho');
+    if (!main) return;
+    if (who) who.textContent = (ACCT && ACCT.user && ACCT.user.email) || '';
+    main.innerHTML =
+      '<div class="ac-head"><h2>Your Account</h2>' +
+        '<p>Manage your unlocks, your work and your details.</p></div>' +
+      '<div class="ac-cards">' +
+        acCardCredits() +
+        acCardYou() +
+        '<div class="ac-pair">' + acCardActivity() + acCardPurchases() + '</div>' +
+      '</div>';
+  }
+
+
+  /* The section nav is gone with the sidebar. */
+
+  var acMainEl = document.getElementById('acMain');
+  if (acMainEl) acMainEl.addEventListener('click', function(e){
+    if (e.target.closest('#acBuy')){
+      hideAccount();
+      openMyCollection();
+      return;
+    }
+    if (e.target.closest('#acOut')){
+      onAuthButton();
+    }
+  });
+
+  var acCloseBtn = document.getElementById('acClose');
+  if (acCloseBtn) acCloseBtn.addEventListener('click', hideAccount);
+
+  window.__showAccount = showAccount;
+
+
+  document.addEventListener('click', function(e){
+    var link = e.target.closest('a[href="/account"]');
+    if (!link) return;
+    e.preventDefault();
+    var menu = document.getElementById('mhIdentityMenu');
+    if (menu) menu.setAttribute('hidden','');
+    document.getElementById('mhIdentity').setAttribute('aria-expanded','false');
+    showAccount();
+  });
+  document.getElementById('navMyCollection').addEventListener('click', hideAccount);
+  addEventListener('keydown', function(e){ if(e.key === 'Escape') hideAccount(); });
+
+})();
 </script>
 </body>
 </html>
