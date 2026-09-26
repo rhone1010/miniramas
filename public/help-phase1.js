@@ -78,7 +78,7 @@ main.addEventListener('click',function(e){
  else if(a==='bug'){close();if(window.LCFeedback)window.LCFeedback.open()}
 });
 document.getElementById('helpClose').addEventListener('click',close);
-document.addEventListener('click',function(e){var a=e.target.closest('a[href="/help"],a[href="/help#make-it-right"]');if(a){e.preventDefault();window.Concierge.close();open();if(a.hash)remedy()}});
+document.addEventListener('click',function(e){if(e.target.closest('#navMyCollection,a[href="/account"]'))close();var a=e.target.closest('a[href="/help"],a[href="/help#make-it-right"]');if(a){e.preventDefault();window.Concierge.close();open();if(a.hash)remedy()}});
 addEventListener('keydown',function(e){if(e.key==='Escape')close()});
 window.LitenHelp={open:open,close:close,remedy:function(){open();remedy()}};
 var mobileHelp=document.getElementById('mhHelp');if(mobileHelp)mobileHelp.addEventListener('click',function(e){e.stopImmediatePropagation();open()},true);
