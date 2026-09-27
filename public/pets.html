@@ -9338,11 +9338,11 @@ function paintPieceDetail(){
   };
 
   if (owned){
-    if (p.previewId){
+    if (printEntranceCandidate(p)){
       var printButton = add('pc-act--quiet', 'Send to Print Shop', function(){
         window.location.assign('/print?test_piece=' + encodeURIComponent(p.previewId));
       });
-      printButton.hidden = true; printButton.style.display = 'none';
+      printButton.disabled = true;
       verifyPrintEntrance(p, printButton);
     }
     add('pc-act--quiet', 'Download', function(e){
@@ -9579,12 +9579,35 @@ function lboxAspectFor(p){
   return (p && p.aspect && LBOX_AR[p.aspect]) || null;
 }
 
+function printEntranceCandidate(p){
+  return location.hostname === 'miniramas-git-codex-canonical-2026-09-24-litenco.vercel.app' && p && !p.locked && p.previewId && p.aspect === '1:1';
+}
 function verifyPrintEntrance(p, button){
-  if (!button || !p || p.locked || !p.previewId) return;
-  fetch('/api/v1/print/source?eligibility=1&piece=' + encodeURIComponent(p.previewId), { credentials:'same-origin', cache:'no-store' })
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(result){ if (button.isConnected && result && result.eligible) { button.hidden = false; button.style.removeProperty('display'); } })
-    .catch(function(){});
+  if (!button || !printEntranceCandidate(p)) return;
+  button.hidden = false; button.style.removeProperty('display');
+  button.disabled = true; button.textContent = 'Send to Print Shop · Checking…';
+  var controller = new AbortController();
+  var timer = setTimeout(function(){ controller.abort(); }, 15000);
+  fetch('/api/v1/print/source?eligibility=1&piece=' + encodeURIComponent(p.previewId), { credentials:'same-origin', cache:'no-store', signal:controller.signal })
+    .then(function(r){ return r.json(); })
+    .then(function(result){
+      if (!button.isConnected) return;
+      if (result && result.eligible){ button.disabled = false; button.textContent = 'Send to Print Shop'; return; }
+      var errors = {
+        sign_in_required:'Sign in required',
+        owned_artwork_required:'Ownership could not be verified',
+        clean_original_unavailable:'Clean artwork unavailable',
+        square_artwork_required:'Square artwork required',
+        portfolio_artwork_required:'Artwork unavailable for printing',
+        artwork_not_found:'Artwork not found',
+        preview_only:'Sandbox unavailable',
+        prodigi_sandbox_required:'Sandbox unavailable',
+        stripe_test_mode_required:'Sandbox unavailable'
+      };
+      button.textContent = 'Send to Print Shop · ' + (result && errors[result.error] || 'Unavailable');
+    })
+    .catch(function(){ if (button.isConnected) button.textContent = 'Send to Print Shop · Could not verify availability'; })
+    .finally(function(){ clearTimeout(timer); });
 }
 function paintLightbox(){
   var list = lbList(); var p = list[LB_AT];
@@ -9607,7 +9630,7 @@ function paintLightbox(){
       (usingIncluded ? 'Use included unlock' : reusableUnlocksAvailable() ? 'Unlock' : 'Unlock this favorite \u00b7 $2.99') + '</button>';
   } else {
     acts = '<button class="mc-act is-fill" data-lb="dl">Download</button>' +
-           '<button class="mc-act" style="display:none" ' + 'hidden ' + 'data-lb="pr">Send to Print Shop</button>' +
+           (printEntranceCandidate(p) ? '<button class="mc-act" disabled data-lb="pr">Send to Print Shop · Checking…</button>' : '') +
            '<button class="mc-act" data-lb="post">Post to Community</button>' ;
   }
   document.getElementById('lboxActs').innerHTML = acts;
@@ -9660,7 +9683,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
      were replaced. Same real call as the card and the featured pane. */
   if (b.dataset.lb === 'unlock'){ unlockPiece(p); return; }
   if (b.dataset.lb === 'dl'){ downloadPiece(p); return; }
-  if (b.dataset.lb === 'pr' && !p.locked && p.previewId && !b.hidden){
+  if (b.dataset.lb === 'pr' && !p.locked && p.previewId && !b.hidden && !b.disabled){
     window.location.assign('/print?test_piece=' + encodeURIComponent(p.previewId)); return;
   }
   // Print Shop / Post / Craft again: not wired in the checkpoint
