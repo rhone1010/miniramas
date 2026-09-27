@@ -6631,7 +6631,7 @@ window.EFFECT_PREVIEWS = {
     }).then(function(r){
       if(seq!==SRC.seq)return null;
       if(r.st!==200){LitenSubjectGate.pending=false;return r;}
-      return LitenSubjectGate.review(r.d,SRC.dataUrl,'groups').then(function(ok){return ok?r:null;});
+      return LitenSubjectGate.review(r.d,SRC.dataUrl,'groups').then(function(ok){if(ok)SRC.skipRedirect=LitenSubjectGate.skipRedirect;return ok?r:null;});
     }).then(function(r){
       if (!r || seq !== SRC.seq) return;
       var data = r.d;

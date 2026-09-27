@@ -9806,6 +9806,11 @@ function paintPieceDetail(){
   };
 
   if (owned){
+    if (new URLSearchParams(location.search).get('print_test') === '1' && p.previewId){
+      add('pc-act--quiet', 'Send to Print Shop', function(){
+        window.location.assign('/print?test_piece=' + encodeURIComponent(p.previewId));
+      });
+    }
     add('pc-act--quiet', 'Download', function(e){
       var b = e.currentTarget;
       b.disabled = true; pcNote('Preparing your file…');
