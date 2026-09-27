@@ -58,7 +58,7 @@ body:has(#helpStage.is-open) .your-collection.is-docked{ display:none }
 #helpMain .help-steps{ display:flex; flex-wrap:wrap; gap:1rem; padding:1rem; margin:1.2rem 0; border:1px solid rgba(137,105,67,.22); border-radius:8px; list-style:none }
 #helpMain .help-steps li{ font-family:var(--serif); font-size:1.05rem; display:flex; align-items:center; gap:.5rem }
 #helpMain .help-step-number{ border-radius:50%; width:1.8em; height:1.8em; display:inline-grid; place-items:center; background:rgba(137,105,67,.1) }
-#helpMain [aria-current="step"] .help-step-number{ background:var(--espresso); color:var(--vellum-100) }
+#helpMain [aria-current="step"] .help-step-number{ background:var(--masthead); color:var(--vellum-100) }
 #helpMain .help-artwork{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:.6rem; margin:1rem 0 }
 #helpMain .help-art{ padding:0; border:2px solid transparent; border-radius:8px; background:transparent; overflow:hidden; cursor:pointer }
 #helpMain .help-art img{ width:100%; aspect-ratio:1; object-fit:cover; display:block }
@@ -70,6 +70,10 @@ body:has(#helpStage.is-open) .your-collection.is-docked{ display:none }
 #helpMain .help-review th,#helpMain .help-review td{ padding:.7rem; border-bottom:1px solid rgba(137,105,67,.14); text-align:left; vertical-align:top; overflow-wrap:anywhere }
 #helpMain .help-review th{ font-weight:400; width:35% }
 #helpMain .help-controls{ display:flex; justify-content:space-between; gap:1rem; margin-top:1.4rem }
+#helpMain .ac-second{
+  padding:.7em 1.4em; border-radius:8px; cursor:pointer;
+  font-family:var(--serif); font-style:italic; font-size:1.15rem;
+}
 @media(max-width:900px){
  #helpMain .help-paths,#helpMain .help-library{ grid-template-columns:repeat(2,minmax(0,1fr)) }
  #helpMain .help-ask{ flex-wrap:wrap }
