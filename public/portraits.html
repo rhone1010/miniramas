@@ -4977,6 +4977,8 @@ body.is-lboxed{ overflow:hidden }
 html.print-destination .rooms > :not(#yourPrints){display:none!important}
 html.print-destination #yourPrints{display:block}
 html.print-destination .ps-wall{display:block}
+html.print-destination .ps-fams{grid-template-columns:1fr}
+html.print-destination .ps-fly > .mc-title{position:sticky;top:0;background:var(--limestone);z-index:2}
 html.print-destination #psGrid{display:grid;grid-template-columns:1fr;gap:.8rem}
 html.print-destination .ps-pc img{object-fit:contain}
 html.print-destination .ps-fly .mc-title{display:block;margin:0 0 22px}
@@ -10659,7 +10661,7 @@ window.EFFECT_PREVIEWS = {
       var rooms=document.querySelector('.rooms');if(!rooms)return;
       rail=document.createElement('section');rail.id='yourPrints';rail.className='room room--curator';rooms.appendChild(rail);
     }
-    rail.innerHTML='<div class="cur"><div class="cur-head"><span class="cur-title">Your Prints</span></div><div id="printRailItems"></div><button type="button" class="ps-or-add" id="printRailAdd">+ Add another artwork</button></div>';
+    rail.innerHTML='<div class="cur"><div class="cur-head"><span class="cur-title">Your Prints</span></div><div id="printRailItems"></div><button type="button" class="ps-add" id="printRailAdd">+ Add another artwork</button></div>';
     var list=document.getElementById('printRailItems');
     ORDER.forEach(function(line){
       var card=document.createElement('button');card.type='button';card.className='ps-pc'+(PS_PIECE&&PS_PIECE.id===line.pieceId?' is-on':'');
@@ -10777,6 +10779,7 @@ window.EFFECT_PREVIEWS = {
     /* The form is rebuilt on every render, so the saved address has to be
        put back each time — into empty fields only. */
     if (typeof fillAddressForm === 'function') fillAddressForm();
+    var checkoutButton=document.getElementById('psCo');if(checkoutButton)checkoutButton.disabled=!PS_SHIP||!addrComplete(addrValues());
   }
 
   /* One name for it, so nothing has to know which panel it lives in. */
@@ -10836,7 +10839,7 @@ window.EFFECT_PREVIEWS = {
   function closePrintPayment(){
     if (printEmbed){ printEmbed.destroy(); printEmbed = null; }
     document.getElementById('ckModal').classList.remove('is-open');
-    var b=document.getElementById('psCo');if(b)b.disabled=!PS_SHIP||!addrComplete(addrValues());
+    var b=document.getElementById('psCo');if(b){b.disabled=!PS_SHIP||!addrComplete(addrValues());b.textContent='Checkout';}
   }
   function openPrintPayment(d){
     var load = loadStripeJs();
@@ -11430,7 +11433,7 @@ window.EFFECT_PREVIEWS = {
               '<div><span>' + psEsc(o.shippingMethod || 'Shipping') + '</span>' +
                 '<span>' + psMoney(o.shippingCents) + '</span></div>' +
               (o.taxCents ? '<div><span>Tax</span><span>' + psMoney(o.taxCents) + '</span></div>' : '') +
-              '<div class="sum"><span>Total paid</span><span>' +
+              '<div class="sum"><span>' + (o.paidAt ? 'Total paid' : 'Total') + '</span><span>' +
                 psMoney(o.totalCents) + '</span></div>' +
             '</div>' +
           '</div>' +

@@ -10766,7 +10766,7 @@ window.EFFECT_PREVIEWS = {
 
     var OPEN = {
       '/collection': function(){ if (typeof showCollection === 'function') showCollection(); },
-      '/print':      function(){ if (typeof showPrintShop === 'function') showPrintShop(); },
+      '/print':      function(){ window.location.assign('/print'); },
       '/account':    function(){ if (typeof showAccount === 'function') showAccount(); }
     };
 
@@ -11490,7 +11490,7 @@ window.EFFECT_PREVIEWS = {
      fails honestly. */
   var MAST_OPENS = {
     '/collection': function(){ if (typeof showCollection === 'function') showCollection(); },
-    '/print':      function(){ if (typeof showPrintShop === 'function') showPrintShop(); },
+    '/print':      function(){ window.location.assign('/print'); },
     '/account':    function(){ if (typeof showAccount === 'function') showAccount(); }
   };
 
