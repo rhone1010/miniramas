@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getUser } from '@/lib/store/auth'
-import { ownedSquarePreview, requireSandboxPrint } from '@/lib/v1/print/owned-source'
+import { ownedSquarePreview, ownedSquareSource, requireSandboxPrint } from '@/lib/v1/print/owned-source'
 import { canFulfil } from '@/lib/v1/print/db'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getStripe } from '@/lib/v1/print/stripe-client'
@@ -26,6 +26,11 @@ export async function GET(req:Request){
     }
     requireSandboxPrint()
     const id=new URL(req.url).searchParams.get('piece')||''
+    if(new URL(req.url).searchParams.has('eligibility')){
+      if(!await canFulfil(user.id))return NextResponse.json({eligible:false},{headers:{'Cache-Control':'private, no-store'}})
+      await ownedSquareSource(user.id,id)
+      return NextResponse.json({eligible:true},{headers:{'Cache-Control':'private, no-store'}})
+    }
     return NextResponse.json({piece:await ownedSquarePreview(user.id,id),fulfilment:await canFulfil(user.id)},
       {headers:{'Cache-Control':'private, no-store'}})
   }catch(e){return NextResponse.json({error:e instanceof Error?e.message:'print_source_unavailable'},{status:409})}

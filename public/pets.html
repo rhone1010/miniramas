@@ -9338,10 +9338,12 @@ function paintPieceDetail(){
   };
 
   if (owned){
-    if (new URLSearchParams(location.search).get('print_test') === '1' && p.previewId){
-      add('pc-act--quiet', 'Send to Print Shop', function(){
+    if (p.previewId){
+      var printButton = add('pc-act--quiet', 'Send to Print Shop', function(){
         window.location.assign('/print?test_piece=' + encodeURIComponent(p.previewId));
       });
+      printButton.hidden = true; printButton.style.display = 'none';
+      verifyPrintEntrance(p, printButton);
     }
     add('pc-act--quiet', 'Download', function(e){
       var b = e.currentTarget;
@@ -9577,6 +9579,13 @@ function lboxAspectFor(p){
   return (p && p.aspect && LBOX_AR[p.aspect]) || null;
 }
 
+function verifyPrintEntrance(p, button){
+  if (!button || !p || p.locked || !p.previewId) return;
+  fetch('/api/v1/print/source?eligibility=1&piece=' + encodeURIComponent(p.previewId), { credentials:'same-origin', cache:'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(result){ if (button.isConnected && result && result.eligible) { button.hidden = false; button.style.removeProperty('display'); } })
+    .catch(function(){});
+}
 function paintLightbox(){
   var list = lbList(); var p = list[LB_AT];
   if (!p) return;
@@ -9598,10 +9607,11 @@ function paintLightbox(){
       (usingIncluded ? 'Use included unlock' : reusableUnlocksAvailable() ? 'Unlock' : 'Unlock this favorite \u00b7 $2.99') + '</button>';
   } else {
     acts = '<button class="mc-act is-fill" data-lb="dl">Download</button>' +
-           '<button class="mc-act" ' + (new URLSearchParams(location.search).get('print_test') === '1' && p.previewId ? '' : 'hidden ') + 'data-lb="pr">Send to Print Shop</button>' +
+           '<button class="mc-act" style="display:none" ' + 'hidden ' + 'data-lb="pr">Send to Print Shop</button>' +
            '<button class="mc-act" data-lb="post">Post to Community</button>' ;
   }
   document.getElementById('lboxActs').innerHTML = acts;
+  verifyPrintEntrance(p, document.querySelector('#lboxActs [data-lb="pr"]'));
 }
 function openFeatured(p){
   if (!p) return;
@@ -9650,7 +9660,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
      were replaced. Same real call as the card and the featured pane. */
   if (b.dataset.lb === 'unlock'){ unlockPiece(p); return; }
   if (b.dataset.lb === 'dl'){ downloadPiece(p); return; }
-  if (b.dataset.lb === 'pr' && !p.locked && p.previewId && new URLSearchParams(location.search).get('print_test') === '1'){
+  if (b.dataset.lb === 'pr' && !p.locked && p.previewId && !b.hidden){
     window.location.assign('/print?test_piece=' + encodeURIComponent(p.previewId)); return;
   }
   // Print Shop / Post / Craft again: not wired in the checkpoint
