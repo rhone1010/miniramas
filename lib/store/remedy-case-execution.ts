@@ -91,10 +91,21 @@ export async function executeRemedyCase(userId:string,caseId:string) {
 
 // Customer projection: payment fingerprints, source hashes, evidence reasons,
 // allocation keys and Stripe IDs never leave the server.
+function refundBreakdown(c:any) {
+ if(c.status!=='resolved'||c.authorized_remedy!=='refund'||!Array.isArray(c.refund_allocations))return []
+ const totals=new Map<string,number>()
+ for(const a of c.refund_allocations){
+  if(!['craft','unlock'].includes(a.component)||!Number.isSafeInteger(a.eligibleCents)||a.eligibleCents<=0)return []
+  const label=a.component==='craft'?'Craft value':String(a.key).startsWith('set:')?'Unlock All':'Unlock'
+  totals.set(label,(totals.get(label)||0)+a.eligibleCents)
+ }
+ if([...totals.values()].reduce((sum,n)=>sum+n,0)!==c.authorized_amount_cents)return []
+ return [...totals].map(([label,amountCents])=>({label,amountCents}))
+}
 export function customerRemedyCase(row:any) {
  const c=row.context.case
  return {id:row.id,caseNumber:row.case_number,artwork:c.artwork,issue:c.issue,requested_remedy:c.requested_remedy,
   authorized_remedy:c.authorized_remedy||null,status:c.status||'requested',scope:c.scope||'artwork',
-  amountCents:c.authorized_amount_cents||0,created_at:c.created_at||row.created_at,updated_at:c.updated_at,
+  amountCents:c.authorized_amount_cents||0,refundBreakdown:refundBreakdown(c),created_at:c.created_at||row.created_at,updated_at:c.updated_at,
   replacement:c.replacement?{portfolioId:c.replacement.portfolio_id}:null}
 }

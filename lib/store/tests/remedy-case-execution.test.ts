@@ -41,3 +41,25 @@ it('customer projection excludes payment identities, model evidence and allocati
  const result=customerRemedyCase(h.rows[0]);expect(result.caseNumber).toBe(42)
  expect(JSON.stringify(result)).not.toMatch(/secret|identity_keys|source_hash|refund_allocations|evidence/)
 })
+it('explains the completed Case 3 amount without disclosing transaction identifiers',()=>{
+ Object.assign(h.rows[0].context.case,{status:'resolved',authorized_remedy:'refund',authorized_amount_cents:424,
+  refund_allocations:[{component:'craft',key:'craft:private:2',eligibleCents:125,purchaseId:'private'},{component:'unlock',key:'unlock:private',eligibleCents:299,chargeId:'private'}]})
+ const result=customerRemedyCase(h.rows[0])
+ expect(result.refundBreakdown).toEqual([{label:'Craft value',amountCents:125},{label:'Unlock',amountCents:299}])
+ expect(JSON.stringify(result)).not.toContain('private')
+})
+it('labels Unlock All separately and omits a free included unlock',()=>{
+ Object.assign(h.rows[0].context.case,{status:'resolved',authorized_remedy:'refund',authorized_amount_cents:125,
+  refund_allocations:[{component:'craft',key:'craft:private:0',eligibleCents:125}]})
+ expect(customerRemedyCase(h.rows[0]).refundBreakdown).toEqual([{label:'Craft value',amountCents:125}])
+ h.rows[0].context.case.authorized_amount_cents=304
+ h.rows[0].context.case.refund_allocations.push({component:'unlock',key:'set:private',eligibleCents:179})
+ expect(customerRemedyCase(h.rows[0]).refundBreakdown[1]).toEqual({label:'Unlock All',amountCents:179})
+})
+it('does not present pending or inconsistent allocations as refunded',()=>{
+ Object.assign(h.rows[0].context.case,{status:'executing',authorized_remedy:'refund',authorized_amount_cents:125,
+  refund_allocations:[{component:'craft',eligibleCents:125}]})
+ expect(customerRemedyCase(h.rows[0]).refundBreakdown).toEqual([])
+ h.rows[0].context.case.status='resolved';h.rows[0].context.case.authorized_amount_cents=126
+ expect(customerRemedyCase(h.rows[0]).refundBreakdown).toEqual([])
+})
