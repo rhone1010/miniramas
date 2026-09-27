@@ -93,6 +93,7 @@ body:has(#helpStage.is-open) .your-collection.is-docked{ display:none }
 /* Visual 1 presentation and Visual 2 steps; scoped PNG exception approved. */
 #helpMain .help-icon{flex:none;display:block;margin:0 auto .6rem;color:#593b25}
 #helpMain .help-path{padding:1.6rem 1.4rem}
+#helpMain .help-path h3,#helpMain .help-path p{margin:0}
 #helpMain .help-path .help-icon{width:54px;height:54px}
 #helpMain .help-path p{max-width:25ch;font-size:1.375rem}
 #helpMain .help-ask>.help-icon{margin:0}

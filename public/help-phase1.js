@@ -93,6 +93,7 @@ main.addEventListener('click',function(e){
  else if(a==='bug'){close();if(window.LCFeedback)window.LCFeedback.open()}
 });
 document.getElementById('helpClose').addEventListener('click',close);
+var collectionStage=document.getElementById('mycoll');if(collectionStage)new MutationObserver(function(){if(stage.classList.contains('is-open')&&collectionStage.classList.contains('is-open'))closeMyCollection()}).observe(collectionStage,{attributes:true,attributeFilter:['class']});
 document.addEventListener('click',function(e){if(e.target.closest('#navMyCollection,a[href="/account"]'))close();var a=e.target.closest('a[href="/help"],a[href="/help#make-it-right"]');if(a){e.preventDefault();open();if(a.hash)remedy()}});
 addEventListener('keydown',function(e){if(e.key==='Escape'){var modal=document.getElementById('includedUnlockConfirm');if(includedResolve&&modal){modal.querySelector('[data-included="cancel"]').click();return}close()}});
 function caseTitle(c){if(c.status==='resolved'&&c.authorized_remedy==='refund')return 'Refund issued · $'+(c.amountCents/100).toFixed(2);if(c.authorized_remedy==='redo'&&['executing','resolved'].includes(c.status))return 'Redo approved';if(c.status==='awaiting_photo')return 'New photo requested';if(c.status==='reviewing')return 'We’re reviewing your request';return 'We’ve got it.'}
