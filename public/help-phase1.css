@@ -25,3 +25,93 @@
 /* Keep Collection actions on Collection while Help occupies the stage. */
 body:has(#helpStage.is-open) #mcUnlockRail,
 body:has(#helpStage.is-open) .your-collection.is-docked{ display:none }
+
+/* Approved Help Experience reference: centered stage, three paths and library. */
+#helpMain{ width:100%; max-width:1100px; margin-inline:auto }
+#helpMain .help-intro{ text-align:center; margin:1.4rem auto 2rem }
+#helpMain .help-intro h2{ font-family:var(--serif); font-size:clamp(2.4rem,3.2vw,3.6rem); font-weight:400; line-height:1.1 }
+#helpMain .help-intro p{ font-family:var(--serif); font-size:1.375rem; line-height:1.45; margin-top:.4rem }
+#helpMain .help-paths{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(12px,1.1vw,20px) }
+#helpMain .help-path{ text-align:center; display:flex; flex-direction:column; align-items:center; gap:1rem }
+#helpMain .help-path h3{ justify-content:center; font-size:1.8rem }
+#helpMain .help-path p{ font-family:var(--serif); font-size:1.25rem; line-height:1.4; flex:1 }
+#helpMain .help-icon{ width:48px; height:48px; color:var(--ink) }
+#helpMain .help-action{ min-width:10rem; border:1px solid rgba(137,105,67,.28); border-radius:8px; padding:.7em 1.4em; font-family:var(--serif); font-size:1.15rem; cursor:pointer; color:var(--vellum-100); background:var(--oxblood) }
+#helpMain .help-action[data-help="learn"]{ background:#4a6b4a }
+#helpMain .help-action[data-help="support"]{ background:var(--coffee-700,#332620) }
+#helpMain .help-ask{ display:flex; align-items:center; gap:1.4rem; margin-top:1.2rem }
+#helpMain .help-ask .help-copy{ flex:1 }
+#helpMain .help-ask p{ font-family:var(--serif); font-size:1.15rem; line-height:1.4 }
+#helpMain .help-question{ display:flex; gap:.6rem; align-items:center }
+#helpMain .help-question input{ min-width:0; padding:.7em 1em; border:1px solid rgba(137,105,67,.28); border-radius:8px; font:inherit; background:rgba(255,255,255,.7) }
+#helpMain .help-library{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.6rem }
+#helpMain .help-library .ac-card{ padding:1rem }
+#helpMain .help-library h3{ font-size:1.25rem; margin-bottom:.8rem }
+#helpMain .help-topic{ display:block; width:100%; text-align:left; padding:.6em .3em; border:0; border-bottom:1px solid rgba(137,105,67,.14); background:transparent; font-family:var(--serif); font-size:1.1rem; cursor:pointer }
+#helpMain .help-topic[aria-current="true"]{ color:var(--oxblood); background:rgba(125,66,66,.07) }
+#helpMain .help-reading{ max-width:64ch; margin:1.4rem auto; font-family:var(--serif); font-size:1.375rem; line-height:1.5 }
+#helpMain .help-reading h3{ font-size:1.8rem; margin-bottom:.5rem }
+#helpMain .help-support{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem }
+#helpMain .help-support button{ color:var(--ink); cursor:pointer; font:inherit; text-align:center }
+#helpMain .help-support h3{ justify-content:center }
+#helpMain .help-support p{ font-family:var(--serif); font-size:1.15rem; line-height:1.4; margin-top:.5rem }
+#helpMain .help-steps{ display:flex; flex-wrap:wrap; gap:1rem; padding:1rem; margin:1.2rem 0; border:1px solid rgba(137,105,67,.22); border-radius:8px; list-style:none }
+#helpMain .help-steps li{ font-family:var(--serif); font-size:1.05rem; display:flex; align-items:center; gap:.5rem }
+#helpMain .help-step-number{ border-radius:50%; width:1.8em; height:1.8em; display:inline-grid; place-items:center; background:rgba(137,105,67,.1) }
+#helpMain [aria-current="step"] .help-step-number{ background:var(--espresso); color:var(--vellum-100) }
+#helpMain .help-artwork{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:.6rem; margin:1rem 0 }
+#helpMain .help-art{ padding:0; border:2px solid transparent; border-radius:8px; background:transparent; overflow:hidden; cursor:pointer }
+#helpMain .help-art img{ width:100%; aspect-ratio:1; object-fit:cover; display:block }
+#helpMain .help-art[aria-pressed="true"]{ border-color:var(--gold) }
+#helpMain .help-selected{ width:120px; border-radius:8px; display:block; margin-bottom:1rem }
+#helpMain .help-choice{ display:flex; gap:.7rem; align-items:center; padding:1rem; border:1px solid rgba(137,105,67,.22); border-radius:8px; margin:.6rem 0; font-family:var(--serif); font-size:1.2rem; cursor:pointer }
+#helpMain .help-choice:has(input:checked){ border-color:var(--oxblood); background:rgba(125,66,66,.07) }
+#helpMain .help-review{ width:100%; border-collapse:collapse; font-family:var(--serif); font-size:1.15rem }
+#helpMain .help-review th,#helpMain .help-review td{ padding:.7rem; border-bottom:1px solid rgba(137,105,67,.14); text-align:left; vertical-align:top; overflow-wrap:anywhere }
+#helpMain .help-review th{ font-weight:400; width:35% }
+#helpMain .help-controls{ display:flex; justify-content:space-between; gap:1rem; margin-top:1.4rem }
+@media(max-width:900px){
+ #helpMain .help-paths,#helpMain .help-library{ grid-template-columns:repeat(2,minmax(0,1fr)) }
+ #helpMain .help-ask{ flex-wrap:wrap }
+ #helpMain .help-support{ grid-template-columns:repeat(2,minmax(0,1fr)) }
+ #helpMain .help-artwork{ grid-template-columns:repeat(3,minmax(0,1fr)) }
+}
+@media(max-width:600px){
+ #helpMain .help-paths,#helpMain .help-library{ grid-template-columns:1fr }
+ #helpMain .help-question{ width:100% } #helpMain .help-question input{ flex:1 }
+ #helpMain .help-artwork{ grid-template-columns:repeat(3,minmax(0,1fr)) }
+}
+
+#helpMain .help-subtitle{ font-family:var(--serif); font-size:1.375rem; line-height:1.45; margin-bottom:1rem }
+#helpMain .help-details{ display:block; margin-top:1rem; font-family:var(--serif); font-size:1.375rem }
+#helpMain .help-details textarea{ display:block; width:100%; min-height:7rem; padding:1rem; margin-top:.5rem; border:1px solid var(--hairline); border-radius:8px; font:inherit; color:var(--ink); background:var(--vellum-100) }
+.help-case-scroll{ overflow-x:auto }
+.help-case-table{ width:100%; border-collapse:collapse; font-family:var(--serif); font-size:1.25rem }
+.help-case-table th,.help-case-table td{ padding:.7rem; border-bottom:1px solid var(--hairline); text-align:left; font-weight:400; vertical-align:top }
+#includedUnlockConfirm .m-card{ width:min(calc(680px * 2 / 3),100%) }
+
+/* Visual 1 presentation and Visual 2 steps; scoped PNG exception approved. */
+#helpMain .help-icon{flex:none;display:block;margin:0 auto .6rem;color:#593b25}
+#helpMain .help-path{padding:1.6rem 1.4rem}
+#helpMain .help-path .help-icon{width:54px;height:54px}
+#helpMain .help-path p{max-width:25ch;font-size:1.375rem}
+#helpMain .help-ask>.help-icon{margin:0}
+#helpMain .help-ask p,#helpMain .help-support p{font-size:1.25rem}
+#helpMain .help-library h3{justify-content:center;font-size:1.4rem}
+#helpMain .help-library .help-icon,#helpMain .help-support .help-icon{width:34px;height:34px}
+#helpMain .help-support button{padding:1.5rem}
+#helpMain .help-question .help-action,#helpMain .help-controls [data-help="continue"]{background:#4a6b4a}
+#helpMain .help-selection{display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,2fr);gap:1.5rem;align-items:start}
+#helpMain .help-selection .help-selected{width:100%;max-height:360px;object-fit:contain}
+#helpMain .help-choice .help-icon{width:28px;height:28px;margin:0}
+#helpMain .help-choice{font-size:1.375rem}
+#helpMain .help-steps{justify-content:space-between;background:rgba(255,255,255,.35)}
+#helpMain .help-steps li{font-size:1.125rem}
+#helpMain .help-review{font-size:1.375rem}
+#helpMain .help-outcome{max-width:640px;margin-inline:auto}
+#helpMain .help-outcome>.help-icon{margin:0 0 1rem}
+#includedUnlockConfirm .help-icon{width:38px;height:38px;display:block;margin:0 auto 1rem;color:#593b25}
+#includedUnlockConfirm .m-head,#includedUnlockConfirm .m-say{text-align:center}
+#includedUnlockConfirm .acts{justify-content:center}
+#includedUnlockConfirm [data-included="use"]{background:#4a6b4a;border-color:#4a6b4a}
+@media(max-width:600px){#helpMain .help-selection{grid-template-columns:1fr}#helpMain .help-selection .help-selected{max-width:180px}#helpMain .help-ask{gap:.8rem}#helpMain .help-ask .help-copy{min-width:180px}}

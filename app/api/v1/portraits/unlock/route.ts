@@ -75,16 +75,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'clean_unavailable' }, { status: 404 })
     }
 
-    // Reusable Collection credits use an atomic entitlement + ownership transaction.
-    // The RPC leaves included/bound unlocks on the unchanged legacy path below.
+    // Included, bound and wallet unlocks share one atomic ownership transaction.
     if (user) {
-      const { data: redeemed, error: walletError } = await sb.rpc('redeem_collection_unlock', {
+      const { data: redeemed, error: walletError } = await sb.rpc('redeem_collection_unlock_v2', {
         p_user: user.id, p_preview: previewId,
+        p_confirm_cross: typeof body.confirm_included === 'string' ? body.confirm_included : null,
       })
       if (walletError) return NextResponse.json({ error: 'unlock_wallet_unavailable' }, { status: 503 })
-      if (redeemed === 'unlocked' || redeemed === 'already_unlocked') {
-        return NextResponse.json({ image_b64: cleanB64, preview_id: previewId, reusable: redeemed === 'unlocked' })
+      if (redeemed?.status === 'confirm_included') {
+        return NextResponse.json({ confirmation: 'included_crossover', entitlementId: redeemed.entitlementId }, { status: 409 })
       }
+      if (redeemed?.status === 'no_entitlement') return NextResponse.json({ error: 'no_entitlement' }, { status: 409 })
+      if (redeemed?.status === 'unlocked' || redeemed?.status === 'already_unlocked') {
+        return NextResponse.json({ image_b64: cleanB64, preview_id: previewId,
+          reusable: redeemed.reusable === true, redelivered: redeemed.status === 'already_unlocked',
+          originPortfolioId: redeemed.originPortfolioId || null })
+      }
+      if (redeemed?.status !== 'legacy') return NextResponse.json({error:'unlock_wallet_unavailable'},{status:503})
     }
 
     /* ── CLAIM THE UNLOCK BEFORE SPENDING ANYTHING ─────────────────

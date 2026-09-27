@@ -42,7 +42,7 @@ export async function GET(
   if (ownErr) return NextResponse.json({ error: 'entitlements_query_failed' }, { status: 500 })
 
   const includedTotal = portfolio.free_unlocks ?? 0
-  const includedRemaining = (ownEnts ?? []).filter((e) => e.status === 'available').length
+  const includedRemaining = includedTotal > 0 ? (ownEnts ?? []).filter((e) => e.status === 'available').length : 0
 
   // ── Additional entitlements from OTHER purchases ───────────────
   const { data: otherEnts, error: otherErr } = await supabaseAdmin

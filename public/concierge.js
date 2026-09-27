@@ -115,7 +115,7 @@
       'padding:4vh 4vw;background:rgba(30,24,18,.52);backdrop-filter:blur(3px);',
       'font-size:16px}',
     '.cx-veil *{box-sizing:border-box}',
-    '.cx-veil[hidden]{display:none}',
+    '.cx-veil[hidden]{display:none!important}',
 
     /* The dock has no backdrop and does not fill the screen, so it needs
        pointer-events off on the shell itself — otherwise an invisible
@@ -144,7 +144,7 @@
     '.cx-log{flex:1 1 auto;min-height:170px;overflow-y:auto;padding:1.15em;',
       'display:flex;flex-direction:column;gap:.85em}',
     '.cx-veil.is-dock .cx-log{min-height:130px}',
-    '.cx-msg{max-width:86%;font-family:Georgia,serif;font-size:1.12em;line-height:1.45}',
+    '.cx-msg{max-width:86%;font-family:Georgia,serif;font-size:1.25em;line-height:1.45}',
     '.cx-msg.you{align-self:flex-end;background:#e9dec8;color:#2a241e;',
       'padding:.75em 1em;border-radius:14px 14px 4px 14px}',
     '.cx-msg.con{align-self:flex-start;color:#2a241e;background:#fff;',
@@ -741,6 +741,7 @@
   window.Concierge = {
     open:  open,
     openForHelp: function(context) { open(); restoreQuestion(); if(!busy)helpContext=context; },
+    askFromHelp: function(text) { open(); restoreQuestion(); if(!busy){ helpContext={topic:'Help'}; ask(text); } },
     message: function() { open(); if(mode === 'sent')restoreQuestion(); if (mode !== 'message') startMessage(); },
     close: close,
     acted: acted,

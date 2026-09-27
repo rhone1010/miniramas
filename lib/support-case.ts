@@ -17,8 +17,11 @@ async function read(query: any) {
 export async function verifyCase(userId: string, input: any) {
   if (!ISSUES.includes(input?.issue) || !REMEDIES.includes(input?.remedy)) throw new CaseError('invalid_case')
   const art = input?.artwork
+  const scope = input?.scope || 'artwork'
+  if (!['artwork','batch'].includes(scope)) throw new CaseError('invalid_scope')
   if (!art || !uuid.test(art.id)) throw new CaseError('invalid_artwork')
   let artwork: any
+  let batch: any = null
   const links = new Map<string, Set<string>>()
   const link = (id: string | null, role: string) => {
     if (!id) return
@@ -27,7 +30,7 @@ export async function verifyCase(userId: string, input: any) {
   }
   if (art.kind === 'portfolio') {
     if (!uuid.test(art.portfolioId)) throw new CaseError('invalid_artwork')
-    const portfolio = await read(db.from('portfolios').select('id,series,purchase_id')
+    const portfolio = await read(db.from('portfolios').select('id,series,purchase_id,size')
       .eq('id', art.portfolioId).eq('user_id', userId).maybeSingle())
     if (!portfolio) throw new CaseError('artwork_not_found', 404)
     const item = await read(db.from('portfolio_items').select('slot,preset,status,preview_id')
@@ -35,6 +38,14 @@ export async function verifyCase(userId: string, input: any) {
     if (!item || item.status !== 'done') throw new CaseError('artwork_not_found', 404)
     artwork = { kind: 'portfolio', id: item.preview_id, portfolioId: portfolio.id,
       slot: item.slot, preset: item.preset, series: portfolio.series }
+    if (scope === 'batch') {
+      if (![8,16].includes(portfolio.size)) throw new CaseError('invalid_batch')
+      const items = await read(db.from('portfolio_items').select('slot,preset,status,preview_id')
+        .eq('portfolio_id',portfolio.id).order('slot'))
+      batch = { portfolioId:portfolio.id, size:portfolio.size,
+        artwork:(items||[]).filter((i:any)=>i.status==='done'&&i.preview_id)
+          .map((i:any)=>({id:i.preview_id,slot:i.slot,preset:i.preset})) }
+    }
     link(portfolio.purchase_id, 'craft')
     const entitlements = await read(db.from('entitlements').select('purchase_id')
       .eq('user_id', userId).eq('locked_variant', art.id).eq('status', 'consumed'))
@@ -43,6 +54,7 @@ export async function verifyCase(userId: string, input: any) {
       .eq('user_id', userId).contains('preview_ids', [art.id]))
     for (const set of sets || []) if (set.fulfilled_at) link(set.purchase_id, 'collection_set')
   } else if (art.kind === 'piece') {
+    if (scope === 'batch') throw new CaseError('invalid_batch')
     const piece = await read(db.from('collection_pieces').select('id,series,preset')
       .eq('id', art.id).eq('owner_key', userId).maybeSingle())
     if (!piece) throw new CaseError('artwork_not_found', 404)
@@ -53,7 +65,7 @@ export async function verifyCase(userId: string, input: any) {
   const purchases = links.size ? await read(db.from('purchases')
     .select('id,sku_id,status,amount_cents,created_at').eq('user_id', userId).in('id', [...links.keys()])) : []
   const now = new Date().toISOString()
-  return { version: 1, kind: 'make_it_right', customer_id: userId, artwork,
+  return { version: 1, kind: 'make_it_right', customer_id: userId, artwork, scope, batch,
     purchases: (purchases || []).map((p: any) => ({ ...p, roles: [...links.get(p.id)!] })),
     purchase_context: purchases?.length ? 'verified_links' : 'requires_review',
     issue: input.issue, requested_remedy: input.remedy, status: 'requested',

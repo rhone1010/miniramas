@@ -17,6 +17,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase'
 import { internalBaseUrl, internalHeaders } from '@/lib/store/internal-fetch'
+import { sendRemedyCaseEmails } from '@/lib/store/remedy-email'
 import { storeCleanOriginal, lockedPreviewPath, recordPreview, PREVIEW_BUCKET, LOCKED_PREVIEW_QUALITY } from '@/lib/store/preview'
 import { decideRetry } from '@/lib/store/portfolio-replace'
 import { styleIdForPreset } from '@/lib/store/portraits-style-lookup'
@@ -39,7 +40,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
 
     const { data: portfolio, error: portfolioErr } = await supabaseAdmin
       .from('portfolios')
-      .select('id, series, source_image, delivery, pose, framing, subject, aspect_ratio')
+      .select('id, user_id, composition, series, source_image, delivery, pose, framing, subject, aspect_ratio')
       .eq('id', item.portfolio_id)
       .maybeSingle()
     if (portfolioErr || !portfolio) {
@@ -58,6 +59,13 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     /* Read once, used three times below. The column is the authority --
        nothing here counts items or tests size. */
     const purchased = portfolio.delivery === 'purchased'
+    let compositionPurchased = purchased
+    if (portfolio.composition?.remedy?.original_portfolio_id) {
+      const {data:original,error:originalError}=await supabaseAdmin.from('portfolios').select('delivery')
+        .eq('id',portfolio.composition.remedy.original_portfolio_id).eq('user_id',portfolio.user_id).maybeSingle()
+      if(originalError||!original)throw new Error('remedy_original_missing')
+      compositionPurchased=original.delivery==='purchased'
+    }
 
     const isPets = portfolio.series === 'pets'
     if (isPets && !Object.hasOwn(PETS_35, item.preset)) {
@@ -102,7 +110,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
           /* Framing is 'bust' for every size. Discovery has no framing step
              and all three of its aspect choices use the Bust composition
              block, so this is the literal value 4/8/16 have always sent. */
-          framing: purchased ? (portfolio.framing || 'bust') : 'bust',
+          framing: compositionPurchased ? (portfolio.framing || 'bust') : 'bust',
           scale: 'close_up',
           /* THE CANVAS, CARRIED SEPARATELY FROM THE COMPOSITION. Only a
              purchased portfolio sends it, so a preview bundle's request is
@@ -114,11 +122,11 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
              (portraits.html:6742). output_aspect_ratio is a new field
              nothing else sends. Absent -> the route's existing
              ASPECT_FOR_FRAMING behaviour, unchanged. */
-          ...(purchased && portfolio.aspect_ratio
+          ...(compositionPurchased && portfolio.aspect_ratio
             ? { output_aspect_ratio: portfolio.aspect_ratio }
             : {}),
-          ...(purchased && portfolio.pose    ? { pose: portfolio.pose }       : {}),
-          ...(purchased && portfolio.subject ? { subject: portfolio.subject } : {}),
+          ...(compositionPurchased && portfolio.pose    ? { pose: portfolio.pose }       : {}),
+          ...(compositionPurchased && portfolio.subject ? { subject: portfolio.subject } : {}),
         }),
       })
       genResult = await res.json()
@@ -231,6 +239,14 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
       .eq('id', portfolioItemId)
 
     await maybeFlipReady(portfolio.id)
+    if (portfolio.composition?.remedy?.case_id) {
+      try {
+        const {data:remedy,error:remedyError}=await supabaseAdmin.rpc('refresh_make_it_right_case',{
+          p_case:portfolio.composition.remedy.case_id,p_user:portfolio.user_id,
+        })
+        if(!remedyError&&remedy)await sendRemedyCaseEmails(remedy)
+      } catch { console.warn('[remedy] completion notification awaits reconciliation') }
+    }
     console.log(`[portfolios/items/render] done item=${portfolioItemId} preview=${previewId}`)
   } catch (e: any) {
     console.error(`[portfolios/items/render] top-level failure for ${portfolioItemId}:`, e)

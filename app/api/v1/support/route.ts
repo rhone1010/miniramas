@@ -31,8 +31,27 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getUser } from '@/lib/store/auth'
 import { CaseError, verifyCase } from '@/lib/support-case'
+import { authorizeRemedyCase, executeRemedyCase, readRemedyCase, customerRemedyCase } from '@/lib/store/remedy-case-execution'
+import { sendRemedyCaseEmails } from '@/lib/store/remedy-email'
+import { hashRemedyIdentity, readRemedySource } from '@/lib/store/remedy-evidence'
+import sharp from 'sharp'
 
 export const runtime = 'nodejs'
+export const maxDuration = 300
+
+async function caseReceipt(user:{id:string,email?:string|null},id:string) {
+  let row=await readRemedyCase(user.id,id)
+  try {
+    row=await authorizeRemedyCase(user,id)
+    row=await executeRemedyCase(user.id,id)
+  } catch {
+    // Durable receipt survives dependency/transport failure; a retry uses the
+    // same case and allocation, never a fresh financial request.
+    row=await readRemedyCase(user.id,id)
+  }
+  await sendRemedyCaseEmails(row).catch(()=>{})
+  return {ok:true,ref:row.id,saved:true,caseNumber:row.case_number,case:customerRemedyCase(row)}
+}
 
 const MAX_BODY    = 4000
 const MAX_SUBJECT = 160
@@ -79,9 +98,9 @@ export async function POST(req: Request) {
       if (prior) {
         const c = prior.context?.case
         if (c?.artwork?.id !== caseContext.artwork.id || c?.issue !== caseContext.issue ||
-            c?.requested_remedy !== caseContext.requested_remedy || prior.body !== message)
+            c?.requested_remedy !== caseContext.requested_remedy || (c.scope||'artwork') !== caseContext.scope || prior.body !== message)
           throw new CaseError('request_conflict', 409)
-        return NextResponse.json({ ok:true, ref:prior.id, saved:true, status:'requested' })
+        return NextResponse.json(await caseReceipt(user!,prior.id))
       }
     }
 
@@ -124,8 +143,9 @@ export async function POST(req: Request) {
     if (insErr || !row?.id) {
       return NextResponse.json({ ok:false, reason:'record_failed' }, { status:503 })
     }
+    const receipt = caseContext ? await caseReceipt(user!,row.id) : {ok:true,ref:row.id,saved:true}
     // Durable receipt is independent of notification availability.
-    if (!key || !to) return NextResponse.json({ ok:true, ref:row.id, saved:true, notification:'unavailable' })
+    if (!key || !to) return NextResponse.json({ ...receipt, notification:'unavailable' })
 
     /* Context worth having before reading the message: who, how much is
        in their account, and where they were standing. */
@@ -162,10 +182,10 @@ export async function POST(req: Request) {
       console.error('[support] resend failed', res?.status, detail?.slice(0, 300))
       /* The row is written, so nothing the customer typed is lost — but
          they must not be told it arrived when it has not. */
-      return NextResponse.json({ ok:true, ref:row.id, saved:true, notification:'failed' })
+      return NextResponse.json({ ...receipt, notification:'failed' })
     }
 
-    return NextResponse.json({ ok: true, ref: row?.id ?? null })
+    return NextResponse.json(receipt)
   } catch (e: any) {
     if (e instanceof CaseError) return NextResponse.json({ ok:false, reason:e.message }, { status:e.status })
     console.error('[support] fatal:', e?.message || e)
@@ -178,10 +198,43 @@ export async function GET() {
   const user = await getUser()
   if (!user) return NextResponse.json({ ok:false, reason:'auth_required' }, { status:401 })
   const { data, error } = await supabaseAdmin.from('support_messages')
-    .select('id,context,created_at,handled_at').eq('user_id', user.id)
+    .select('id,user_id,reply_to,case_number,context,created_at,handled_at').eq('user_id', user.id)
     .order('created_at', { ascending:false }).limit(50)
   if (error) return NextResponse.json({ ok:false, reason:'case_unavailable' }, { status:503 })
-  return NextResponse.json({ ok:true, cases:(data || []).filter(r => r.context?.case?.version === 1)
-    .map(r => ({ id:r.id, ...r.context.case, status:r.handled_at ? 'handled' : 'requested',
-      updated_at:r.handled_at || r.created_at })) }, { headers:{ 'Cache-Control':'no-store' } })
+  const cases=[]
+  for(const original of (data||[]).filter(r=>r.context?.case?.version===1)) {
+    let row=original
+    if(row.context.case.authorized_remedy){
+      const refreshed=await supabaseAdmin.rpc('refresh_make_it_right_case',{p_case:row.id,p_user:user.id})
+      if(!refreshed.error&&refreshed.data)row=refreshed.data
+      await sendRemedyCaseEmails(row).catch(()=>{})
+    }
+    cases.push(customerRemedyCase(row))
+  }
+  return NextResponse.json({ok:true,cases},{headers:{'Cache-Control':'no-store'}})
+}
+
+// Resume only the authenticated customer's durable case, including the approved
+// better-photo action. No client-supplied decision, amount or purchase is accepted.
+export async function PATCH(req:Request) {
+  const user=await getUser()
+  if(!user)return NextResponse.json({ok:false,reason:'auth_required'},{status:401})
+  const body=await req.json().catch(()=>null)
+  if(!/^[0-9a-f-]{36}$/i.test(body?.caseId||'')||!['resume','source_photo'].includes(body?.action))
+    return NextResponse.json({ok:false,reason:'invalid_case'},{status:400})
+  try {
+    const row=await readRemedyCase(user.id,body.caseId)
+    if(body.action==='source_photo'){
+      if(row.context.case.authorized_remedy!=='source_photo')throw new Error('photo_not_authorized')
+      const raw=String(body.source||'').replace(/^data:image\/(?:jpeg|png|webp);base64,/,'')
+      if(raw.length>4000000||!raw||!/^[A-Za-z0-9+/=\r\n]+$/.test(raw))throw new Error('invalid_photo')
+      const bytes=Buffer.from(raw,'base64'),meta=await sharp(bytes,{limitInputPixels:40000000}).metadata()
+      if(!['jpeg','png','webp'].includes(meta.format||''))throw new Error('invalid_photo')
+      const source=await readRemedySource(user.id,row.context.case.artwork)
+      if(source?.sourceHash===hashRemedyIdentity(bytes.toString('base64')))throw new Error('better_photo_required')
+      const result=await supabaseAdmin.rpc('start_make_it_right_redo',{p_case:row.id,p_user:user.id,p_source:bytes.toString('base64')})
+      if(result.error)throw new Error('redo_unavailable')
+    }
+    return NextResponse.json(await caseReceipt(user,body.caseId))
+  }catch{return NextResponse.json({ok:false,reason:'case_action_unavailable'},{status:409})}
 }

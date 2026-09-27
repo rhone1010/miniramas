@@ -4,83 +4,116 @@
 var shell = "  <section class=\"acct\" id=\"helpStage\" aria-hidden=\"true\" aria-label=\"Help\">\n    <div class=\"mc-head\">\n      <button class=\"mc-close\" id=\"helpClose\" type=\"button\">\n        <svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M10 3 5 8l5 5\"/></svg>\n        Back to the workshop\n      </button>\n      <span class=\"mc-title\">Help</span>\n      <span class=\"mc-n\" id=\"helpWho\"></span>\n    </div>\n\n    <!-- Cards, not a sidebar. Five sections behind five clicks was hiding\n         four of them. -->\n    <div class=\"ac-main\" id=\"helpMain\"></div>\n  </section>";
 document.body.insertAdjacentHTML('beforeend', shell);
 var stage=document.getElementById('helpStage'), main=document.getElementById('helpMain');
-var artwork=[], selected=null, requestId=null, epoch=0, busy=false;
+var artwork=[], selected=null, requestId=null, epoch=0, busy=false, step=1, issue='', remedyChoice='', details='', cases=[], scope='artwork', currentCase=null, poll=null, dispatched={}, showAllArtwork=false;
 var issues={likeness:"Doesn't look like the subject",details:'Important details are wrong',quality:'Poor-quality result',other:'Something else'};
-var remedies={redo:'Redo Artwork',refund:"I'd prefer a refund",contact:'Talk to us'};
+var remedies={redo:'Redo this artwork',refund:"I'd prefer a refund",contact:'Talk to us'};
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function button(text,action){return '<button class="ac-second" type="button" data-help="'+action+'">'+esc(text)+'</button>'}
-function card(title,copy,action){return '<div class="ac-card"><h3>'+esc(title)+'</h3><p class="note">'+esc(copy)+'</p><div class="ac-acts">'+button(title,action)+'</div></div>'}
+var helpIcons={"book":"<path d=\"M24 10C18 5 9 5 3 8v31c8-3 15-2 21 2 6-4 13-5 21-2V8c-6-3-15-3-21 2v31M7 12v22c6-1 10 0 13 2M28 12c4-2 8-2 13-1\"/>","support":"<circle cx=\"24\" cy=\"24\" r=\"20\" fill=\"#dcc6a0\"/><circle cx=\"24\" cy=\"24\" r=\"11\" fill=\"#faf6ee\"/><path d=\"m9 10 8 7m14 14 8 7M10 39l7-8m14-14 8-8\" stroke-width=\"5\"/>","heart":"<path d=\"M24 42 6 24C-5 11 13-3 24 10 35-3 53 11 42 24Z\" fill=\"#e6a18e\"/>","spark":"<path d=\"M24 2c2 17 5 20 20 22-15 2-18 5-20 22C22 29 19 26 4 24 19 22 22 19 24 2Z\"/>","compass":"<circle cx=\"24\" cy=\"24\" r=\"19\"/><path d=\"m32 14-5 14-13 6 6-14Z\" fill=\"#dcc6a0\"/>","art":"<rect x=\"5\" y=\"5\" width=\"38\" height=\"38\" rx=\"4\"/><circle cx=\"16\" cy=\"16\" r=\"4\"/><path d=\"m6 36 12-13 9 9 6-7 10 11\"/>","account":"<circle cx=\"24\" cy=\"12\" r=\"8\"/><path d=\"M9 41v-7c0-14 30-14 30 0v7Z\"/>","star":"<path d=\"m24 3 6 14 15 1-12 10 4 16-13-9-13 9 4-16L3 18l15-1Z\" fill=\"#dcc6a0\"/>","payment":"<rect x=\"4\" y=\"8\" width=\"40\" height=\"31\" rx=\"4\"/><path d=\"M4 17h40M10 30h9m5 0h5\"/>","download":"<path d=\"M24 3v27m-9-9 9 9 9-9M7 30v12h34V30\"/>","gear":"<path d=\"m20 4 8 0 2 6 6 3 6-1 4 7-5 5 0 6 3 5-6 6-6-3-6 1-4 5-8-3v-6l-4-5-6-1v-8l6-3 3-5Z\"/><circle cx=\"24\" cy=\"24\" r=\"7\"/>","bug":"<path d=\"M16 13h16v17c0 14-16 14-16 0Zm2-7 6 7 6-7M7 17l9 5m16 0 9-5M6 29h10m16 0h10M8 42l9-7m14 0 9 7M24 14v27\"/>","chat":"<path d=\"M42 22c0 11-9 17-20 17l-13 6 3-12C-3 16 11 3 24 5c11 0 18 6 18 17Z\"/><path d=\"M14 22h2m7 0h2m7 0h2\"/>","check":"<circle cx=\"24\" cy=\"24\" r=\"21\" fill=\"#4a6b4a\" stroke=\"#4a6b4a\"/><path d=\"m13 24 8 8 15-17\" stroke=\"#faf6ee\"/>","redo":"<path d=\"M8 18a18 18 0 1 1-1 17M8 5v13h13\"/>"};
+function icon(name){return '<svg class="help-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+helpIcons[name]+'</svg>'}
+function artLabel(p){return typeof pieceDisplayName==='function'?pieceDisplayName({name:p.preset}):'Crafted Images'}
+function button(text,action,primary){return '<button class="'+(primary?'help-action':'ac-second')+'" type="button" data-help="'+esc(action)+'">'+esc(text)+'</button>'}
 function chat(topic,caseId){window.Concierge.openForHelp({topic:topic,caseId:caseId||null})}
-function close(){epoch++;stage.classList.remove('is-open');stage.setAttribute('aria-hidden','true');if(location.pathname==='/help')history.replaceState({},'','/discovery')}
-function open(){if(typeof closeMyCollection==='function')closeMyCollection();var acct=document.getElementById('acct');if(acct){acct.classList.remove('is-open');acct.setAttribute('aria-hidden','true')}stage.classList.add('is-open');stage.setAttribute('aria-hidden','false');landing()}
-function header(title){return '<div class="ac-head"><h2>'+esc(title)+'</h2><div class="ac-acts">'+button('Help','home')+button('Ask Concierge','chat')+'</div></div>'}
-function landing(){epoch++;main.innerHTML='<div class="ac-head"><h2>How can we help?</h2></div><div class="ac-cards">'+
- card('Learn & Explore','Get more from Liten & Co','learn')+card('Support','Something not working?','support')+card('Make It Right','Not happy with your artwork?','remedy')+'</div><div class="ac-acts">'+button('Ask Concierge','chat')+'</div>'}
-var faqs=[
- ['Photography guidance','Use a clear photograph where the subject is easy to see. The Curator will help you choose once you are inside.'],
- ['Crafting','Upload a photograph, choose a finish, and we craft a portrait from it. Portraits and Pets have their own existing effect selections in their workshops.'],
- ['Collection Unlocks','Reusable unlocks are account-level credits used on locked eligible Collection pieces, one unlock per piece, and never expire. Packages: 1 for $2.99, 3 for $7.99, 5 for $12.99, 10 for $19.99. Included unlocks stay with their original collection.'],
- ['Unlock All of My Collection','10–19 locked pieces: $1.79 each. 20+ locked pieces: $1.59 each. This purchases the specific eligible locked set included at checkout and creates no reusable credits.'],
- ['My Collection','An unlocked piece is owned and its clean artwork is available to download. Already-owned pieces are excluded from Unlock All.'],
- ['Printing','Print Shop is not available yet.'],
- ['Accounts','Sign in with Google or an email link. There is no password to remember.'],
- ['What if I don’t like what I get?','Select artwork → identify issue → select requested resolution. Redo Artwork, I’d prefer a refund, or Talk to us. Requests are reviewed; submitting a request does not redo artwork or issue a refund.']
-];
-function learn(){epoch++;main.innerHTML=header('Learn & Explore')+'<div class="ac-card">'+faqs.map(function(f){return '<details class="q" name="help-faq"><summary class="q-btn"><span class="mk">✦</span>'+esc(f[0])+'</summary><div class="q-body"><p>'+esc(f[1])+'</p><div class="ac-acts">'+button('Ask Concierge','chat')+'</div></div></details>'}).join('')+'</div>'}
-function support(){epoch++;main.innerHTML=header('Support')+'<div class="ac-card"><h3>Something not working?</h3><div class="ac-acts">'+['Payments','Missing artwork','Sign-in','Downloads','Technical issues'].map(function(s){return button(s,'topic:'+s)}).join('')+button('Bug Report','bug')+button('Talk to us','message')+'</div></div>'}
+function close(){epoch++;clearTimeout(poll);stage.classList.remove('is-open');stage.setAttribute('aria-hidden','true');if(location.pathname==='/help')history.replaceState({},'','/discovery')}
+function open(){if(typeof closeMyCollection==='function')closeMyCollection();var acct=document.getElementById('acct');if(acct){acct.classList.remove('is-open');acct.setAttribute('aria-hidden','true')}window.Concierge.close();stage.classList.add('is-open');stage.setAttribute('aria-hidden','false');landing()}
+function header(title,copy){return '<div class="ac-acts">'+button('‹ Help','home')+'</div><div class="ac-head"><h2>'+esc(title)+'</h2></div>'+(copy?'<p class="help-subtitle">'+esc(copy)+'</p>':'')}
+function askBand(){return '<div class="ac-card help-ask">'+icon('spark')+'<div class="help-copy"><h3>Ask Concierge</h3><p>Have a question? Just ask. Our Concierge can help you find answers, troubleshoot issues, or connect you with the studio.</p></div><form class="help-question" id="helpQuestion"><input aria-label="Ask a question" placeholder="Ask a question…" maxlength="2000" required><button class="help-action" type="submit">Ask</button></form></div>'}
+function landing(){epoch++;main.innerHTML='<div class="help-intro"><h2>How can we help?</h2><p>Find an answer, fix a problem, or let us make something right.</p></div><div class="help-paths">'+
+ '<div class="ac-card help-path">'+icon('book')+'<h3>Learn &amp; Explore</h3><p>Learn how Liten &amp; Co works and get more from your artwork.</p>'+button('Explore →','learn',true)+'</div>'+
+ '<div class="ac-card help-path">'+icon('support')+'<h3>Support</h3><p>Something not working? We’ll help get you moving again.</p>'+button('Get support →','support',true)+'</div>'+
+ '<div class="ac-card help-path">'+icon('heart')+'<h3>Make It Right</h3><p>Not happy with something we created? Let us make it right.</p>'+button('Let’s fix it →','remedy',true)+'</div></div>'+askBand()}
+var library=[['Getting Started',['Photography guidance','Choosing a series','Crafting your artwork']],['Your Artwork',['My Collection','Collection Unlocks','Unlock All']],['Orders & Account',['Printing','Your account','Sign-in']],['Results & Satisfaction',["What if I don't like what I get?"]]];
+var guidance={
+ 'Photography guidance':'Use a clear photograph where the subject is easy to see. The Curator will help you choose once you are inside.',
+ 'Choosing a series':'Crafted Portraits · Crafted Pets · Crafted Groups · Crafted Halloween',
+ 'Crafting your artwork':'Upload a photograph, choose a finish, and we craft a portrait from it. Portraits and Pets have their own existing effect selections in their workshops.',
+ 'My Collection':'An unlocked piece is owned and its clean artwork is available to download. Already-owned pieces are excluded from Unlock All.',
+ 'Collection Unlocks':'Reusable unlocks are account-level credits used on locked eligible Collection pieces, one unlock per piece, and never expire. Packages: 1 for $2.99, 3 for $7.99, 5 for $12.99, 10 for $19.99. Included unlocks are usable across eligible artwork in your Collection.',
+ 'Unlock All':'10–19 locked pieces: $1.79 each. 20+ locked pieces: $1.59 each. This purchases the specific eligible locked set included at checkout and creates no reusable credits.',
+ 'Printing':'Print Shop is not available yet.',
+ 'Your account':'Manage your unlocks, your work and your details. Sign in with Google or an email link. There is no password to remember or to lose. Support & Remedies shows your cases, requested resolution and status.',
+ 'Sign-in':'Sign in with Google or an email link. There is no password to remember.',
+ "What if I don't like what I get?":'Select artwork → identify issue → select requested resolution. Every customer receives one Make It Right remedy with no questions asked. The customer may choose: Redo or Refund. Concierge may execute an eligible monetary refund up to $50, never exceeding the actual eligible amount paid. Redo is complimentary. After the first unconditional remedy, Concierge performs an evidence review. A complaint covering an entire 8- or 16-piece batch triggers Batch Review, not an automatic full refund.'
+};
+function learn(topic){epoch++;topic=topic||'Photography guidance';main.innerHTML=header('Learn & Explore','Guides, tips and answers to help you get more from Liten & Co.')+'<div class="help-library">'+library.map(function(group,index){return '<div class="ac-card">'+icon(['compass','art','account','star'][index])+'<h3>'+esc(group[0])+'</h3>'+group[1].map(function(name){return '<button type="button" class="help-topic" data-help="guide:'+esc(name)+'" aria-current="'+(name===topic)+'">'+esc(name)+'</button>'}).join('')+'</div>'}).join('')+'</div><article class="ac-card help-reading"><h3>'+esc(topic)+'</h3><p>'+esc(guidance[topic])+'</p><div class="ac-acts">'+(topic==='Your account'?'<a class="ac-second" href="/account">Account</a>':'')+(topic==="What if I don't like what I get?"?button('Let’s fix it →','remedy',true):button('Ask Concierge','topic:'+topic))+'</div></article>'}
+var supportTiles=[['Payments','Billing, charges and receipts'],['Missing artwork','Can’t find your art? We’ll help locate it.'],['Sign-in','Account access and login issues'],['Downloads','Saving and downloading your artwork'],['Technical issues','Errors, bugs and something not working'],['Report a bug','Tell us what happened']];
+function support(){epoch++;main.innerHTML=header('Support','Something not working? We’re here to help.')+'<div class="help-support">'+supportTiles.map(function(t,index){return '<button class="ac-card" type="button" data-help="'+(t[0]==='Report a bug'?'bug':'topic:'+esc(t[0]))+'">'+icon(['payment','art','account','download','gear','bug'][index])+'<h3>'+esc(t[0])+'</h3><p>'+esc(t[1])+'</p></button>'}).join('')+'</div><div class="ac-card help-ask">'+icon('chat')+'<div class="help-copy"><h3>Still need help?</h3><p>Chat with our Concierge or send a message to the studio. We’ll make sure you get the help you need.</p></div>'+button('Ask Concierge →','chat',true)+button('Talk to us','message')+'</div>'}
 async function json(url,options){var r=await fetch(url,Object.assign({credentials:'same-origin',cache:'no-store'},options||{}));var d=await r.json();if(!r.ok)throw new Error(d.reason||d.error||'unavailable');return d}
-function receipt(c){return '<div class="ac-row"><span class="what">'+esc(issues[c.issue])+' · '+esc(remedies[c.requested_remedy])+'</span><span>'+esc(c.status)+'</span></div><p class="ac-gap">'+esc(c.id)+'</p>'}
+function progress(){return '<ol class="help-steps">'+['Select artwork','What’s not right?','How can we help?','Review & submit'].map(function(label,i){return '<li'+(step===i+1?' aria-current="step"':'')+'><span class="help-step-number">'+(i+1)+'</span>'+label+'</li>'}).join('')+'</ol>'}
+function selectedImage(){return selected?'<img class="help-selected" src="'+esc(selected.image||'')+'" alt="'+esc(selected.label)+'">':''}
+function controls(){return '<div class="help-controls">'+button('Back',step===1?'home':'back')+(step<4?button('Continue →','continue',true):'<button class="help-action" type="submit">Submit request</button>')+'</div>'}
+function showStep(){
+ epoch++;main.innerHTML=header('Make It Right','Not happy with something we created? Let’s make it right.')+progress();
+ if(step===1){main.insertAdjacentHTML('beforeend','<div class="ac-card"><h3>Which artwork isn’t right?</h3><p class="help-subtitle">Select the artwork you’d like help with from your Collection.</p>'+(artwork.length>10&&!showAllArtwork?button('View all','view-all'):'')+'<div class="help-artwork">'+(showAllArtwork?artwork:artwork.slice(0,10)).map(function(p,i){return '<button class="help-art" type="button" data-help="art:'+i+'" aria-label="'+esc(p.label)+'" aria-pressed="'+(selected===p)+'"><img src="'+esc(p.image||'')+'" alt="" loading="lazy"></button>'}).join('')+'</div>'+(!artwork.length?'<p>Nothing here yet.</p>':'')+(selected&&[8,16].includes(selected.batchSize)?button('Batch Review','batch'):'')+controls()+'</div>');return}
+ var content='';
+ if(step===2)content='<div class="help-selection">'+selectedImage()+'<div><h3>What’s not right?</h3>'+Object.keys(issues).map(function(k){return '<label class="help-choice"><input type="radio" name="issue" value="'+k+'" required'+(issue===k?' checked':'')+'> '+esc(issues[k])+'</label>'}).join('')+'<label class="help-details">Add details (optional)<textarea id="helpDetails" name="details" maxlength="500" placeholder="Tell us more about what’s not right…">'+esc(details)+'</textarea></label></div></div>';
+ if(step===3)content='<div class="help-selection">'+selectedImage()+'<div><h3>How would you like us to make it right?</h3>'+Object.keys(remedies).map(function(k){return '<label class="help-choice"><input type="radio" name="remedy" value="'+k+'" required'+(remedyChoice===k?' checked':'')+'> '+icon({redo:'redo',refund:'payment',contact:'chat'}[k])+'<span>'+esc(remedies[k])+'</span></label>'}).join('')+'</div></div>';
+ if(step===4)content='<h3>Review your request</h3>'+selectedImage()+'<table class="help-review"><tbody><tr><th>Artwork</th><td>'+esc(selected.label)+'</td></tr><tr><th>Issue</th><td>'+esc(issues[issue])+'</td></tr><tr><th>Requested resolution</th><td>'+esc(remedies[remedyChoice])+'</td></tr><tr><th>Additional details</th><td>'+esc(details)+'</td></tr></tbody></table>'+button('Edit','edit');
+ main.insertAdjacentHTML('beforeend','<form id="helpRequest" class="ac-card">'+content+controls()+'<p id="helpResult" role="status"></p></form>');
+}
 async function remedy(){
- var ticket=++epoch;selected=null;requestId=null;
+ var ticket=++epoch;selected=null;requestId=null;step=1;issue='';remedyChoice='';details='';scope='artwork';showAllArtwork=false;
  main.innerHTML=header('Make It Right')+'<p class="ac-gap" role="status">Loading…</p>';
  try{
   var account=await json('/api/v1/account');if(!account.user)throw new Error('auth_required');
   var lists=await Promise.all([json('/api/v1/portfolios'),json('/api/v1/portraits/pieces?all=1'),json('/api/v1/support')]);
   var portfolios=await Promise.all(lists[0].portfolios.map(function(p){return json('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/status')}));
-  if(ticket!==epoch)return;
-  artwork=[];
-  portfolios.forEach(function(p){p.items.forEach(function(i){if(i.status==='done'&&i.previewId)artwork.push({kind:'portfolio',id:i.previewId,portfolioId:p.portfolioId,label:p.series+' · '+i.preset+' · '+(i.slot+1),image:i.previewUrl})})});
-  (lists[1].pieces||[]).forEach(function(p){artwork.push({kind:'piece',id:p.id,label:p.label||p.series+' · '+p.preset,image:p.image_url})});
-  main.innerHTML=header('Make It Right')+'<div class="ac-card"><h3>Select artwork</h3>'+(!artwork.length?'<p class="ac-gap">Nothing here yet.</p>':'<select class="ac-nav" id="helpArtwork" aria-label="Select artwork"><option value="">Select artwork</option>'+artwork.map(function(p,i){return '<option value="'+i+'">'+esc(p.label)+'</option>'}).join('')+'</select><div id="helpSelected"></div>')+
-   '<div class="ac-acts">'+button('Talk to us','message')+'</div></div><div id="helpCaseForm"></div><div class="ac-card"><h3>Make It Right</h3>'+(lists[2].cases||[]).map(receipt).join('')+'</div>';
+  if(ticket!==epoch)return;artwork=[];cases=lists[2].cases||[];
+  portfolios.forEach(function(p){p.items.forEach(function(i){if(i.status==='done'&&i.previewId)artwork.push({kind:'portfolio',id:i.previewId,portfolioId:p.portfolioId,batchSize:p.items.length,label:artLabel(i),image:i.previewUrl})})});
+  (lists[1].pieces||[]).forEach(function(p){artwork.push({kind:'piece',id:p.id,label:p.label||p.series+' · '+p.preset,image:p.image_url})});showStep();
  }catch(e){if(ticket!==epoch)return;main.innerHTML=header('Make It Right')+'<p class="ac-gap">'+(e.message==='auth_required'?'Sign in with Google or an email link.':'This could not be read just now.')+'</p><div class="ac-acts">'+button('Sign In','signin')+button('Talk to us','message')+'</div>'}
 }
-function selectArtwork(value){
- selected=value===''?null:artwork[Number(value)];requestId=null;
- document.getElementById('helpSelected').innerHTML=selected?'<div class="ac-item"><span class="ic"><img src="'+esc(selected.image||'')+'" alt=""></span><span class="body"><span class="t">'+esc(selected.label)+'</span></span></div>':'';
- document.getElementById('helpCaseForm').innerHTML=selected?'<form id="helpRequest" class="ac-card"><h3>Identify issue</h3><div class="ac-acts">'+Object.keys(issues).map(function(k){return '<label class="ac-nav"><input type="radio" name="issue" value="'+k+'" required> '+esc(issues[k])+'</label>'}).join('')+'</div><div class="describe-box open"><textarea id="helpDetails" maxlength="4000" aria-label="What do you need?" placeholder="What do you need?"></textarea></div><h3>Select requested resolution</h3><div class="ac-acts">'+Object.keys(remedies).map(function(k){return '<label class="ac-nav"><input type="radio" name="remedy" value="'+k+'" required> '+esc(remedies[k])+'</label>'}).join('')+'</div><p class="ac-gap">Requests are reviewed; submitting a request does not redo artwork or issue a refund.</p><div class="ac-acts"><button class="ac-buy" type="submit">Send</button></div><p id="helpResult" class="ac-gap" role="status"></p></form>':'';
-}
-main.addEventListener('change',function(e){requestId=null;if(e.target.id==='helpArtwork')selectArtwork(e.target.value)});
-main.addEventListener('input',function(){requestId=null});
+function nextStep(){if(step===1&&!selected)return;var form=document.getElementById('helpRequest');if(form&&!form.reportValidity())return;if(step<4){step++;showStep()}}
+main.addEventListener('change',function(e){if(busy)return;requestId=null;if(e.target.name==='issue')issue=e.target.value;if(e.target.name==='remedy')remedyChoice=e.target.value});
+main.addEventListener('input',function(e){if(e.target.id==='helpDetails'){details=e.target.value;requestId=null}});
 main.addEventListener('submit',async function(e){
- if(e.target.id!=='helpRequest')return;e.preventDefault();if(busy||!selected)return;
- var form=e.target, values=new FormData(form), output=document.getElementById('helpResult');
- var issue=values.get('issue'),remedyChoice=values.get('remedy');
- requestId=requestId||crypto.randomUUID();busy=true;
+ if(e.target.id==='helpQuestion'){e.preventDefault();window.Concierge.askFromHelp(e.target.querySelector('input').value);return}
+ if(e.target.id==='helpPhoto'){e.preventDefault();if(busy||!currentCase)return;var file=e.target.querySelector('input').files[0];if(!file||file.size>3000000){document.getElementById('helpPhotoResult').textContent='This could not be read just now. Please try again.';return}var photoTicket=epoch;busy=true;try{var data=await new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(){resolve(reader.result)};reader.onerror=reject;reader.readAsDataURL(file)});var photoResult=await json('/api/v1/support',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({caseId:currentCase.id,action:'source_photo',source:data})});if(photoTicket===epoch)showCase(photoResult.case)}catch(err){if(photoTicket===epoch)document.getElementById('helpPhotoResult').textContent='This could not be read just now. Please try again.'}finally{busy=false}return}
+ if(e.target.id!=='helpRequest')return;e.preventDefault();if(busy||!selected)return;if(step<4){nextStep();return}
+ var form=e.target,output=document.getElementById('helpResult'),ticket=epoch;requestId=requestId||crypto.randomUUID();busy=true;
  var fields=Array.from(form.elements);fields.forEach(function(f){f.disabled=true});
- var picker=document.getElementById('helpArtwork');picker.disabled=true;
  try{
-  var d=await json('/api/v1/support',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-   subject:'Make It Right',message:document.getElementById('helpDetails').value.trim()||issues[issue],context:{page:location.pathname},
-   case:{requestId:requestId,artwork:{kind:selected.kind,id:selected.id,portfolioId:selected.portfolioId},issue:issue,remedy:remedyChoice}
-  })});
-  if(!d.ok)throw new Error(d.reason);output.textContent='Request received · '+d.ref;
-  output.insertAdjacentHTML('afterend','<div class="ac-acts">'+button('Ask Concierge','case:'+d.ref)+'</div>');
- }catch(e){output.textContent=e.message==='too_many'?'That is a few messages in a short while — give us a chance to answer the first ones.':'This could not be read just now. Please try again.';fields.forEach(function(f){f.disabled=false})}
- finally{busy=false;picker.disabled=false}
+  var d=await json('/api/v1/support',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:'Make It Right',message:details.trim()||issues[issue],context:{page:location.pathname},case:{requestId:requestId,artwork:{kind:selected.kind,id:selected.id,portfolioId:selected.portfolioId},scope:scope,issue:issue,remedy:remedyChoice}})});
+  if(!d.ok)throw new Error(d.reason);if(ticket!==epoch)return;
+  showCase(d.case);
+ }catch(e){if(ticket===epoch){output.textContent=e.message==='too_many'?'That is a few messages in a short while — give us a chance to answer the first ones.':'This could not be read just now. Please try again.';fields.forEach(function(f){f.disabled=false})}}
+ finally{busy=false}
 });
 main.addEventListener('click',function(e){
- var b=e.target.closest('[data-help]');if(!b)return;var a=b.dataset.help;
+ var b=e.target.closest('[data-help]');if(!b)return;var a=b.dataset.help;if(busy)return;
  if(a==='home')landing();else if(a==='learn')learn();else if(a==='support')support();else if(a==='remedy')remedy();
  else if(a==='chat')chat('Help');else if(a.startsWith('topic:'))chat(a.slice(6));else if(a.startsWith('case:'))chat('Make It Right',a.slice(5));
+ else if(a.startsWith('guide:'))learn(a.slice(6));else if(a.startsWith('art:')){selected=artwork[Number(a.slice(4))];requestId=null;scope='artwork';showStep()}
+ else if(a==='view-all'){showAllArtwork=true;showStep()}
+ else if(a==='batch'){scope='batch';requestId=null;step=2;showStep()}
+ else if(a==='collection'){close();if(typeof openMyCollection==='function')openMyCollection()}
+ else if(a==='resume'){resumeCase()}
+ else if(a==='continue')nextStep();else if(a==='back'){step--;showStep()}else if(a==='edit'){step=2;showStep()}
  else if(a==='message'){chat('Support');window.Concierge.message()}
  else if(a==='signin'){if(typeof openSignin==='function')openSignin()}
  else if(a==='bug'){close();if(window.LCFeedback)window.LCFeedback.open()}
 });
 document.getElementById('helpClose').addEventListener('click',close);
-document.addEventListener('click',function(e){if(e.target.closest('#navMyCollection,a[href="/account"]'))close();var a=e.target.closest('a[href="/help"],a[href="/help#make-it-right"]');if(a){e.preventDefault();window.Concierge.close();open();if(a.hash)remedy()}});
-addEventListener('keydown',function(e){if(e.key==='Escape')close()});
-window.LitenHelp={open:open,close:close,remedy:function(){open();remedy()}};
+document.addEventListener('click',function(e){if(e.target.closest('#navMyCollection,a[href="/account"]'))close();var a=e.target.closest('a[href="/help"],a[href="/help#make-it-right"]');if(a){e.preventDefault();open();if(a.hash)remedy()}});
+addEventListener('keydown',function(e){if(e.key==='Escape'){var modal=document.getElementById('includedUnlockConfirm');if(includedResolve&&modal){modal.querySelector('[data-included="cancel"]').click();return}close()}});
+function caseTitle(c){if(c.status==='resolved'&&c.authorized_remedy==='refund')return 'Refund issued · $'+(c.amountCents/100).toFixed(2);if(c.authorized_remedy==='redo'&&['executing','resolved'].includes(c.status))return 'Redo approved';if(c.status==='awaiting_photo')return 'New photo requested';if(c.status==='reviewing')return 'We’re reviewing your request';return 'We’ve got it.'}
+function showCase(c){
+ if(!c)return;currentCase=c;clearTimeout(poll);var ticket=++epoch;
+ var copy=c.status==='resolved'&&c.authorized_remedy==='refund'?'Returned to the original payment method.':c.authorized_remedy==='redo'&&c.status==='executing'?'New artwork is being crafted.':c.authorized_remedy==='redo'&&c.status==='resolved'?'Your new artwork is in your Collection.':c.status==='awaiting_photo'?'Complimentary retry is waiting for a better source photograph.':c.status==='reviewing'?'Our Concierge is reviewing your artwork, original photo, and effect details to find the best way to help you.':'';
+ main.innerHTML=header('Make It Right')+'<div class="ac-card help-outcome">'+icon(c.status==='resolved'||c.authorized_remedy==='redo'?'check':c.status==='reviewing'?'art':'chat')+'<h3>'+esc(caseTitle(c))+'</h3>'+selectedImage()+'<p>Case #'+esc(c.caseNumber)+'</p><p class="help-subtitle">'+esc(copy)+'</p>'+(c.status==='awaiting_photo'?'<form id="helpPhoto"><label class="help-details">Upload a new photo<input type="file" accept="image/jpeg,image/png,image/webp" required></label><button class="help-action" type="submit">Continue →</button><p id="helpPhotoResult" role="status"></p></form>':'')+'<div class="ac-acts">'+button('Ask Concierge','case:'+c.id)+button('View my Collection →','collection')+'<a class="ac-second" href="/account">View my Account →</a>'+(['requested','authorized'].includes(c.status)?button('Continue →','resume',true):'')+'</div></div>';
+ if(c.replacement&&c.status==='executing'&&!dispatched[c.replacement.portfolioId]){dispatched[c.replacement.portfolioId]=true;json('/api/v1/portfolios/'+encodeURIComponent(c.replacement.portfolioId)+'/dispatch',{method:'POST'}).catch(function(){})}
+ if(c.status==='executing')poll=setTimeout(async function(){if(ticket!==epoch)return;try{var d=c.authorized_remedy==='refund'?await json('/api/v1/support',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({caseId:c.id,action:'resume'})}):await json('/api/v1/support');var updated=d.case||(d.cases||[]).find(function(x){return x.id===c.id});if(ticket===epoch&&updated)showCase(updated)}catch(err){}},4000);
+}
+async function resumeCase(){if(busy||!currentCase)return;var ticket=epoch;busy=true;try{var d=await json('/api/v1/support',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({caseId:currentCase.id,action:'resume'})});if(ticket===epoch)showCase(d.case)}catch(err){if(ticket===epoch)main.insertAdjacentHTML('beforeend','<p role="status">This could not be read just now. Please try again.</p>')}finally{busy=false}}
+var includedResolve=null;
+function confirmIncluded(){return new Promise(function(resolve){if(includedResolve){resolve(false);return}includedResolve=resolve;var modal=document.getElementById('includedUnlockConfirm');if(!modal){document.body.insertAdjacentHTML('beforeend','<div class="scrim m-scrim" id="includedUnlockConfirm" data-role="modal"><div class="modal m-card"><button class="m-x" data-included="cancel" aria-label="Close">&times;</button><div class="m-head">'+icon('account')+'<div class="m-title">Use one of your included unlocks?</div></div><div class="m-say">This unlock came with another collection. You can use it here instead.</div><div class="acts"><button class="btn fill" data-included="use" type="button">Use Unlock</button><button class="btn" data-included="cancel" type="button">Cancel</button></div></div></div>');modal=document.getElementById('includedUnlockConfirm');modal.addEventListener('click',function(e){var b=e.target.closest('[data-included]');if(b||e.target===modal){modal.classList.remove('is-open');var done=includedResolve;includedResolve=null;if(done)done(!!b&&b.dataset.included==='use')}})}modal.classList.add('is-open');modal.querySelector('[data-included="use"]').focus()})}
+window.LitenHelp={open:open,close:close,confirmIncluded:confirmIncluded,remedy:function(){open();remedy()}};
+var accountMain=document.getElementById('acMain'), accountRequest=0;
+async function accountCases(){
+ if(!accountMain||!accountMain.children.length||accountMain.querySelector('#acSupportRemedies'))return;
+ var panel=document.createElement('div');panel.className='ac-card';panel.id='acSupportRemedies';panel.innerHTML='<h3>Support &amp; Remedies</h3><p class="ac-gap">Loading…</p>';accountMain.appendChild(panel);var ticket=++accountRequest;
+ try{var d=await json('/api/v1/support');if(ticket!==accountRequest||!panel.isConnected)return;var rows=d.cases||[];panel.innerHTML='<h3>Support &amp; Remedies</h3>'+(rows.length?'<div class="help-case-scroll"><table class="help-case-table"><thead><tr><th>Date</th><th>Case #</th><th>Artwork</th><th>Issue</th><th>Resolution</th><th>Status</th></tr></thead><tbody>'+rows.map(function(c,i){return '<tr><td>'+esc(new Date(c.created_at).toLocaleDateString())+'</td><td><button class="ac-second" data-case-index="'+i+'">#'+esc(c.caseNumber)+'</button></td><td>'+esc(artLabel(c.artwork))+'</td><td>'+esc(issues[c.issue])+'</td><td>'+esc(c.authorized_remedy?caseTitle(c):remedies[c.requested_remedy])+'</td><td>'+esc(c.status==='resolved'?'Resolved':['requested','authorized'].includes(c.status)?'Received':'Reviewing')+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="ac-gap">Nothing here yet.</p>');panel.addEventListener('click',function(e){var b=e.target.closest('[data-case-index]');if(!b)return;var c=rows[Number(b.dataset.caseIndex)];selected=null;open();showCase(c)})}catch(e){if(panel.isConnected)panel.innerHTML='<h3>Support &amp; Remedies</h3><p class="ac-gap">This could not be read just now.</p>'}
+}
+if(accountMain){new MutationObserver(accountCases).observe(accountMain,{childList:true});accountCases()}
 var mobileHelp=document.getElementById('mhHelp');if(mobileHelp)mobileHelp.addEventListener('click',function(e){e.stopImmediatePropagation();open()},true);
 if(location.pathname==='/help'){open();if(location.hash==='#make-it-right')remedy()}
 })();
