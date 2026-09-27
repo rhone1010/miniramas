@@ -115,5 +115,6 @@ async function accountCases(){
 }
 if(accountMain){new MutationObserver(accountCases).observe(accountMain,{childList:true});accountCases()}
 var mobileHelp=document.getElementById('mhHelp');if(mobileHelp)mobileHelp.addEventListener('click',function(e){e.stopImmediatePropagation();open()},true);
-if(location.pathname==='/help'){open();if(location.hash==='#make-it-right')remedy()}
+function enterHelp(){if(location.pathname==='/help'){open();if(location.hash==='#make-it-right')remedy()}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enterHelp,{once:true});else enterHelp();
 })();
