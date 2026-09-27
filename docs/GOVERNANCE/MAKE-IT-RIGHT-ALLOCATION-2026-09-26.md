@@ -44,7 +44,7 @@ Paths below are relative to `D:/lanes/canonical-2026-09-24`; all counts measured
 - Renderer: `lib/store/portfolio-render.ts` lines 1–301 → `lib/store/portfolio-render.remedies.next.ts` lines 1–317. Reads remedy linkage, preserves original generation composition separately from owned delivery, and refreshes/emails the linked case on completion (§6, §8, §12, §14). Existing generation and technical retry machinery retained.
 - Per-portfolio allowance response: `app/api/v1/portfolios/[portfolioId]/unlocks/route.ts` lines 1–92 → `app/api/v1/portfolios/[portfolioId]/unlocks/route.remedies.next.ts` lines 1–92. Complimentary replacement with zero included allowance does not duplicate the original portfolio's displayed allowance (§10–11).
 
-Final Help controller: 119 lines; CSS: 117 lines. The existing serialized shell remains 15/15 source lines and the first 27 CSS lines remain unchanged. All newly reconstructed sections are authorized by the explicit scoped PNG exception.
+Final Help controller: 121 lines; CSS: 122 lines. The existing serialized shell remains 15/15 source lines and the first 27 CSS lines remain unchanged. All newly reconstructed sections are authorized by the explicit scoped PNG exception. The final Preview fixes defer direct Help entry until Concierge loads, preserve the Curator rail against background Collection restoration, remove inherited landing-card margins, and apply existing Account button styling to Help step controls.
 
 Unrelated existing dirty `.next` files were preserved. Historical lanes were not edited.
 
@@ -66,9 +66,15 @@ Draft to live promotion copies entire files without line-count changes. TypeScri
 - `app/api/v1/portraits/unlock/route.remedies.next.ts` lines 1–337 → `app/api/v1/portraits/unlock/route.ts` lines 1–337; 337 in / 337 out.
 - `app/api/v1/portfolios/[portfolioId]/unlocks/route.remedies.next.ts` lines 1–92 → `app/api/v1/portfolios/[portfolioId]/unlocks/route.ts` lines 1–92; 92 in / 92 out.
 - `public/concierge.remedies.next.js` lines 1–751 → `public/concierge.js` lines 1–751; 751 in / 751 out.
-- `public/help-phase1.remedies.next.js` lines 1–119 → `public/help-phase1.js` lines 1–119; 119 in / 119 out.
-- `public/help-phase1.remedies.next.css` lines 1–117 → `public/help-phase1.css` lines 1–117; 117 in / 117 out.
+- `public/help-phase1.remedies.next.js` lines 1–121 → `public/help-phase1.js` lines 1–121; 121 in / 121 out.
+- `public/help-phase1.remedies.next.css` lines 1–122 → `public/help-phase1.css` lines 1–122; 122 in / 122 out. Control declarations at lines 73–74 copy Portraits lines 3124–3125 unchanged; 2 in / 2 out, with a Help-scoped selector under the approved visual implementation authority.
 - `public/discovery-consolidated-draft.remedies.next.html` lines 1–10973 → `public/discovery-consolidated-draft.html` lines 1–10973; 10973 in / 10973 out.
 - `public/pets.remedies.next.html` lines 1–10504 → `public/pets.html` lines 1–10504; 10504 in / 10504 out.
 
 Focused post-merge verification: 7 test files / 50 tests passed. In-memory Help/Concierge and request-step checks passed. Unrelated pre-existing drafts remain excluded. Real remedy execution, email delivery and included-credit consumption are reserved for acceptance.
+
+## Canonical Preview verification
+
+Application commit `ffe5780` deployed successfully to canonical Preview. Verified desktop Help landing with the Curator rail preserved; structured Learn & Explore; all six Support tiles; the single existing Concierge opening and closing; authenticated Collection artwork selection; issue → requested remedy → review with the correct artwork and no submission; existing Account case #1 shown in Support & Remedies; shared Pets Help entry; and the 390px mobile Help canvas without horizontal overflow. No refunds, unlock consumption, case submission, or generation was initiated by these checks. Production was not deployed. Migrations 038–040 were not rerun.
+
+One existing Account menu transition did not complete during the Help check; direct `/account` navigation worked and displayed case history. Logged without broader navigation investigation. Real remedy outcomes, customer emails, concurrency, and included-unlock consumption await acceptance; these are not claimed as live-tested.
