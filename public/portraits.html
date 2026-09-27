@@ -10750,7 +10750,7 @@ window.EFFECT_PREVIEWS = {
     if (btn){ btn.disabled = true; btn.textContent = 'One moment\u2026'; }
     /* Kept for next time. Not awaited — the print is what they came for
        and a slow write must not hold up a checkout. */
-    if (typeof saveAddress === 'function') saveAddress();
+    if (!PRINT_TEST_PIECE && typeof saveAddress === 'function') saveAddress();
     var back = window.location.origin + window.location.pathname;
     fetch(PRINT_CO_URL, {
       method:'POST',
@@ -10833,7 +10833,7 @@ window.EFFECT_PREVIEWS = {
       else {
         var q = e.target.closest('[data-q]');
         if (!q) return;
-        if (q.dataset.q === '+') ORDER[at].copies += 1;
+        if (q.dataset.q === '+') ORDER[at].copies = PRINT_TEST_PIECE ? 1 : ORDER[at].copies + 1;
         else if (ORDER[at].copies > 1) ORDER[at].copies -= 1;
         else ORDER.splice(at, 1);
       }

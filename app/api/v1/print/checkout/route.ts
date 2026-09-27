@@ -106,6 +106,9 @@ export async function POST(req: Request) {
       if (body.items.length !== 1 || body.items[0].size !== '8x8' || body.items[0].finish !== 'fine_art' || body.items[0].copies !== 1) throw new Error('single_8x8_fine_art_required')
       if (!await canFulfil(ownerKey)) throw new Error('fulfilment_permission_required')
       const origin = new URL(req.url).origin
+      const printHooks = (await getStripe().webhookEndpoints.list({ limit: 100 })).data
+        .filter(h => h.status === 'enabled' && new URL(h.url).pathname === '/api/v1/print/webhook' && (h.enabled_events.includes('*') || h.enabled_events.includes('checkout.session.completed')))
+      if (!printHooks.length || printHooks.some(h => new URL(h.url).origin !== origin)) throw new Error('print_webhook_preview_required')
       if ([body.successUrl, body.cancelUrl].some(url => new URL(url).origin !== origin)) throw new Error('invalid_return_url')
       const piece = await ownedSquarePreview(ownerKey, body.items[0].renderId)
       body.items[0].renderUrl = piece.art

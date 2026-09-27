@@ -115,24 +115,21 @@ export const MAX_SUBJECTS = 15
 export const TYPICAL_MAX  = 12
 
 // ═══════════════════════════════════════════════════════════════
-// AGE GATING — RULE AGREED, NOT BUILT
-// ═══════════════════════════════════════════════════════════════
-//
-// Portraits refuses any minor. Groups cannot use that rule: a family
-// portrait with children in it is the product, and refusing it refuses the
-// silo. Rich's ruling, 2026-08-10:
-//
-//   refuse when the set is a lone minor, or all minors
-//   allow when an adult is present
-//
-// This needs PER-FACE age from analyze. The existing `age_group` field
-// describes the hero subject only, so a group with an adult in front reads
-// `adult` and passes regardless of who else is in the frame — and a photo
-// of one child would also need to be caught by the same detection.
-//
-// PARKED PENDING LEGAL REVIEW, which Rich is initiating. The consent
-// question sits with the uploading adult and is not an engine decision.
-// Do not build this gate until that comes back.
+// AGE GATING — approved 2026-09-27
+// Adult-containing families and all-adult groups pass. Only a confidently
+// all-minor set is refused; unknown or low-confidence ages remain uncertain.
+export type GroupsAgeClass = 'infant' | 'child' | 'teen' | 'adult' | 'elder' | 'unknown'
+export interface GroupsAgeEvidence { age_class: GroupsAgeClass; age_confidence: number }
+export function groupsAgeDecision(faces: GroupsAgeEvidence[]): 'allowed' | 'blocked' | 'uncertain' {
+  if (faces.some(f => (f.age_class === 'adult' || f.age_class === 'elder') && f.age_confidence >= 7)) return 'allowed'
+  if (faces.length && faces.every(f => ['infant','child','teen'].includes(f.age_class) && f.age_confidence >= 7)) return 'blocked'
+  return 'uncertain'
+}
+export function groupsAgeEvidence(face: any): GroupsAgeEvidence {
+  const age = ['infant','child','teen','adult','elder'].includes(face?.age_class) ? face.age_class : 'unknown'
+  const confidence = typeof face?.age_confidence === 'number' && Number.isFinite(face.age_confidence) ? Math.max(0, Math.min(10, face.age_confidence)) : 0
+  return { age_class: age, age_confidence: confidence }
+}
 
 // ═══════════════════════════════════════════════════════════════
 // REQUEST AND RESULT

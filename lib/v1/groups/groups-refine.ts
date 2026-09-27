@@ -9,7 +9,7 @@
 //                                 sliding 70/30 above that).
 
 import OpenAI from 'openai'
-import type { PerFigureScore } from './groups-shared'
+import { groupsAgeEvidence, type GroupsAgeEvidence, type PerFigureScore } from './groups-shared'
 
 // ── WHAT WAS REMOVED, 2026-08-11 ───────────────────────────────────────
 //
@@ -76,13 +76,16 @@ METHOD — enumerate hero subjects, then count:
    • Faces near the edges of the frame — INCLUDE only if they appear to be part of the intentional group
    • Crowds and spectators — ALWAYS EXCLUDE, no matter how visible
 
+For multiple source photographs, enumerate the intended subjects across the full set. Deduplicate the same person. Include only subjects intended for the artwork, never an incidental background adult.
+Return age_class "unknown" when age is genuinely uncertain, especially near 18, and age_confidence from 0 to 10 for every person. Do not invent certainty.
+
 Age classes: "infant" (under ~2 yrs), "child" (~2–12 yrs), "teen" (~13–17 yrs), "adult" (18+), "elder" (visibly senior).
 
 Respond with ONLY a JSON object — no preamble, no commentary:
 {
   "faces": [
     { "position": "<short — e.g. 'front center', 'left foreground', 'held in mother's arms'>",
-      "age_class": "infant" | "child" | "teen" | "adult" | "elder" },
+      "age_class": "infant" | "child" | "teen" | "adult" | "elder" | "unknown", "age_confidence": 0 },
     ...
   ],
   "subject_count_estimate": <integer — must equal the length of faces[]>,
@@ -93,18 +96,20 @@ Respond with ONLY a JSON object — no preamble, no commentary:
 
 export async function detectFaceVisibility(input: {
   sourceImageB64: string
+  additionalImagesB64?: string[]
   openaiApiKey:   string
-}): Promise<{ face_visible: boolean; subject_count_estimate: number; reason: string }> {
+}): Promise<{ face_visible: boolean; subject_count_estimate: number; reason: string; faces: GroupsAgeEvidence[] }> {
   const openai = new OpenAI({ apiKey: input.openaiApiKey })
 
   const response = await openai.chat.completions.create({
     model:           'gpt-4o',
-    max_tokens:      600,
+    max_tokens:      1600,
     response_format: { type: 'json_object' },
     messages: [{
       role: 'user',
       content: [
         { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${input.sourceImageB64}`, detail: 'high' } },
+        ...(input.additionalImagesB64 || []).map(b64 => ({ type: 'image_url' as const, image_url: { url: `data:image/jpeg;base64,${b64}`, detail: 'high' as const } })),
         { type: 'text', text: FACE_VISIBILITY_PROMPT },
       ],
     }],
@@ -119,12 +124,13 @@ export async function detectFaceVisibility(input: {
     const reportedCount = Number(parsed.subject_count_estimate) || 0
     const finalCount = Math.max(enumeratedCount, reportedCount)
     return {
+      faces:                  [...facesArr.map(groupsAgeEvidence), ...(reportedCount > enumeratedCount ? [groupsAgeEvidence(null)] : [])],
       face_visible:           Boolean(parsed.face_visible),
       subject_count_estimate: Math.max(1, Math.min(20, finalCount || 1)),
       reason:                 String(parsed.reason || 'no reason given').slice(0, 200),
     }
   } catch {
-    return { face_visible: true, subject_count_estimate: 2, reason: 'detection parse failed' }
+    return { face_visible: true, subject_count_estimate: 2, reason: 'detection parse failed', faces: [] }
   }
 }
 
@@ -294,7 +300,9 @@ const SOURCE_SET_PROMPT = `You are evaluating one or more source photographs tha
 For EACH photograph (in the order they were provided), return:
 - "sharpness": "good" | "fair" | "poor"
 - "lighting":  "good" | "fair" | "poor"
-- "faces": array of detected faces, each with:
+- "faces": array of intended subject faces (exclude background bystanders), each with:
+    - "age_class": "infant" | "child" | "teen" | "adult" | "elder" | "unknown" (adult = 18+, teen = under 18). Use unknown for uncertain ages; do not confidently classify near the boundary.
+    - "age_confidence": confidence from 0 to 10 in that age class
     - "face_index": 0-based within this photo
     - "size_pct":   the face's bounding box shorter side as a PERCENTAGE of the photograph's shorter side (integer 1-100)
 - "concerns": short array of free-form notes about any issues (occlusion, motion blur, heavy compression, etc.) — use [] if none
@@ -321,7 +329,7 @@ Respond with ONLY valid JSON in this shape (no markdown, no preamble):
   "verdict": "green"
 }`
 
-export interface SourceFaceSize {
+export interface SourceFaceSize extends GroupsAgeEvidence {
   face_index: number
   size_pct:   number      // shorter side as % of photo's shorter side
   size_px:    number      // computed: size_pct * min(photo_w, photo_h) / 100
@@ -385,7 +393,7 @@ export async function analyzeSourceSet(input: {
 
   const response = await openai.chat.completions.create({
     model:           'gpt-4o',
-    max_tokens:      900,
+    max_tokens:      2200,
     response_format: { type: 'json_object' },
     messages:        [{ role: 'user', content }],
   })
@@ -415,7 +423,7 @@ export async function analyzeSourceSet(input: {
       const pct = Math.max(0, Math.min(100, Number(f.size_pct) || 0))
       const px  = Math.round((pct / 100) * photoShortSide)
       if (px > 0 && (smallestPx === null || px < smallestPx)) smallestPx = px
-      return { face_index: Number(f.face_index) || 0, size_pct: pct, size_px: px }
+      return { ...groupsAgeEvidence(f), face_index: Number(f.face_index) || 0, size_pct: pct, size_px: px }
     })
     return {
       photo_index: i,

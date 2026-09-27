@@ -57,6 +57,7 @@ import { analyzeSourceSet } from '@/lib/v1/groups/groups-refine'
 import { getUser } from '@/lib/store/auth'
 import {
   groupsCreditCost,
+  groupsAgeDecision,
   MAX_SOURCE_IMAGES,
   MIN_SUBJECTS,
   MAX_SUBJECTS,
@@ -128,6 +129,11 @@ export async function POST(req: NextRequest) {
       openaiApiKey,
     })
 
+    const evidence = result.per_photo.flatMap(p => p.faces)
+    const complete = result.per_photo.length === sources.length && evidence.length >= result.total_subjects
+    const agePolicy = groupsAgeDecision(complete ? evidence : [...evidence, { age_class: 'unknown', age_confidence: 0 }])
+    if (agePolicy === 'blocked') return NextResponse.json({ ok: false, code: 'age_restricted', age_policy: agePolicy }, { status: 403 })
+
     // ── The count, and the price that follows ──
     //
     // Clamped to the range the silo actually supports. A zero here means
@@ -189,6 +195,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ routing: await analyzeUploadRouting(sources[0], sources.length > 1 ? result.total_subjects : undefined),
       ok: !nothingToCraft,
+      age_policy: agePolicy,
 
       /** Authoritative for pricing. The generator re-counts during its own
        *  pre-flight and logs any disagreement; the two use the same vision

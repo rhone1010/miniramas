@@ -65,6 +65,7 @@ import {
   MAX_ATTEMPTS_GROUPS,
   MAX_SOURCE_IMAGES,
   groupsCreditCost,
+  groupsAgeDecision,
   type GroupsGenerateRequest,
   type GroupsGenerateResult,
   type GroupsAttempt,
@@ -166,7 +167,7 @@ export async function generateGroupsRender(
   //
   // No separate analyze route exists for this silo and none is needed —
   // the call is already being made and already paid for.
-  if (effect.intake === 'group_photo' && !req.skip_scoring) {
+  { // All Groups inputs use the existing pre-flight for the approved age policy.
     if (!input.openaiApiKey) {
       // Refused, not proceeded. Without this call there is no count, and
       // without a count the craft would be framed, scored and PRICED on a
@@ -182,10 +183,14 @@ export async function generateGroupsRender(
     try {
       const vis = await detectFaceVisibility({
         sourceImageB64: sources[0],
+        additionalImagesB64: sources.slice(1),
         openaiApiKey:   input.openaiApiKey,
       })
 
-      if (!vis.face_visible) {
+      if (groupsAgeDecision(vis.faces) === 'blocked') {
+        return fatal({ msg: 'age_restricted', req, prompt: provisionalPrompt, t0, code: 'age_restricted', retryable: false })
+      }
+      if (effect.intake === 'group_photo' && !req.skip_scoring && !vis.face_visible) {
         console.log(`[groups] pre-flight refused: ${vis.reason}`)
         return {
           ...emptyResult(req, provisionalPrompt, t0),
@@ -200,13 +205,13 @@ export async function generateGroupsRender(
         }
       }
 
-      if (vis.subject_count_estimate !== detectedCount) {
+      if (effect.intake === 'group_photo' && !req.skip_scoring && vis.subject_count_estimate !== detectedCount) {
         console.warn(
           `[groups] subject_count ${detectedCount} sent, ` +
           `${vis.subject_count_estimate} detected — using detected`,
         )
       }
-      detectedCount = vis.subject_count_estimate
+      if (effect.intake === 'group_photo' && !req.skip_scoring) detectedCount = vis.subject_count_estimate
 
     } catch (e: any) {
       // A vision call that ERRORED is different from one that was never
