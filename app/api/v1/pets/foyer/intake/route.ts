@@ -1,3 +1,4 @@
+import { analyzeUploadRouting } from '@/lib/shared/upload-routing'
 // Pets Foyer intake: anonymous Pets analysis and shared Foyer allowance.
 // Signed notes are bound to this category, exact source bytes.
 import { NextRequest, NextResponse } from 'next/server'
@@ -50,5 +51,5 @@ export async function POST(req: NextRequest) {
   const intake = signIntake(secret + ':pets', {
     sha: sha256Hex(src.bytes), subject, ageGroup, exp: Date.now() + INTAKE_TOKEN_TTL_MS,
   })
-  return reply({ status: 'ok', subject, gender, age_group: ageGroup, analysis, intake })
+  return reply({ status: 'ok', subject, gender, age_group: ageGroup, analysis, intake, routing: await analyzeUploadRouting(src.b64) })
 }

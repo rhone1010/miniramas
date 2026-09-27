@@ -1,3 +1,4 @@
+import { analyzeUploadRouting } from '@/lib/shared/upload-routing'
 // app/api/v1/groups/analyze/route.ts
 //
 // ONE GATE, AT ANALYZE. Written 2026-08-19.
@@ -186,7 +187,7 @@ export async function POST(req: NextRequest) {
       `advisories=${advisories.map(a => a.kind).join(',') || '-'}`,
     )
 
-    return NextResponse.json({
+    return NextResponse.json({ routing: await analyzeUploadRouting(sources[0], sources.length > 1 ? result.total_subjects : undefined),
       ok: !nothingToCraft,
 
       /** Authoritative for pricing. The generator re-counts during its own

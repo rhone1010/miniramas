@@ -4944,6 +4944,9 @@ body.is-lboxed{ overflow:hidden }
      she says while she is still saying it. data-attention lets her trigger
      pulse when a person is plainly moving around and getting nowhere. -->
 <script src="/concierge.js" defer data-dock data-attention></script>
+<link rel="stylesheet" href="/upload-routing.css">
+<script src="/upload-routing.js"></script>
+<script src="/foyer-handoff.js"></script>
 </head>
 <body>
 
@@ -6239,6 +6242,10 @@ window.EFFECT_PREVIEWS = {
      There is no curate-effects route either. The Curator does not recommend
      seven effects for a group photograph, so the button that asked for them
      is gone from this page rather than pointed at nothing. */
+  if(window.LitenHandoff)LitenHandoff.take().then(function(h){
+    if(!h||!h.dataUrl)return;
+    return fetch(h.dataUrl).then(function(r){return r.blob();}).then(function(b){onSourceFiles([new File([b],'source.jpg',{type:b.type})]);});
+  });
   var ANALYZE_URL        = '/api/v1/groups/analyze';
   var GENERATE_URL       = '/api/v1/groups/generate';
   /* MY COLLECTION IS NOT A SERIES. This route is where every piece the
@@ -6516,6 +6523,7 @@ window.EFFECT_PREVIEWS = {
       PRICE = null;
       /* A different photograph asks the question again. */
       SRC.skipRedirect = false;
+      LitenSubjectGate.reset();
 
       var thumb = document.getElementById('curThumb');
       if (thumb) thumb.src = url;
@@ -6610,6 +6618,7 @@ window.EFFECT_PREVIEWS = {
      the stale response is discarded rather than speaking over the new one. */
   function runAnalyze(){
     var seq = SRC.seq = SRC.seq + 1;
+    LitenSubjectGate.pending=true;
     if (!SRC.t0) SRC.t0 = Date.now();
     return fetch(ANALYZE_URL, {
       method: 'POST',
@@ -6620,7 +6629,11 @@ window.EFFECT_PREVIEWS = {
          A 4xx or 5xx is - the studio never looked. */
       return res.json().then(function(d){ return { st: res.status, d: d || {} }; });
     }).then(function(r){
-      if (seq !== SRC.seq) return;
+      if(seq!==SRC.seq)return null;
+      if(r.st!==200){LitenSubjectGate.pending=false;return r;}
+      return LitenSubjectGate.review(r.d,SRC.dataUrl,'groups').then(function(ok){return ok?r:null;});
+    }).then(function(r){
+      if (!r || seq !== SRC.seq) return;
       var data = r.d;
       /* OPEN DOORS · CUI 42 · open doors glass · 2026-08-25. Unsigned, the analyze routes
          answer 401 { ok:false, reason:'not_signed_in' } - the moment of
@@ -6660,6 +6673,7 @@ window.EFFECT_PREVIEWS = {
       /* Soft fail. The floor the customer is already looking at is the
          fallback; they can still craft, and the gate will price it. */
       if (seq !== SRC.seq) return;
+      LitenSubjectGate.pending=false;
       SRC.analyze = SRC.analyze || {};
       curatorEnterEffects();
     });
@@ -7481,6 +7495,7 @@ window.EFFECT_PREVIEWS = {
   /* Resolves TRUE only when the credits cleared and the work began, so a
      caller waiting on a webhook can tell "not yet" from "done". */
   function runAll(opts){
+    if(LitenSubjectGate.pending || LitenSubjectGate.blocked)return;
     var quiet = !!(opts && opts.quiet);
     if (BUSY) return Promise.resolve(false);
     var pending = QUEUE.filter(function(q){ return q.status === 'pending'; });

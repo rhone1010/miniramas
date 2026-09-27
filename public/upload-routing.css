@@ -1,0 +1,242 @@
+.upload-routing-shell .m-scrim .btn{font-style:italic;font-size:20px;padding:10px 18px;border-radius:7px;cursor:pointer;background:linear-gradient(180deg,#8a6c38,#6f5629);color:#fbf1d6;border:1px solid rgba(60,44,20,.55);text-shadow:0 1px 0 rgba(40,28,12,.5);box-shadow:inset 0 1px 0 rgba(255,244,210,.35), inset 0 -1px 2px rgba(40,28,12,.4), 0 2px 6px rgba(42,30,18,.28);transition:filter .15s}
+.upload-routing-shell .m-scrim .btn:hover{filter:brightness(1.10)}
+.upload-routing-shell .m-scrim .btn.fill{background:var(--oxblood);color:var(--vellum)}
+.upload-routing-shell .m-scrim .btn.fill:hover{background:#6a3737}
+.upload-routing-shell .m-scrim .btn.ghost{border:1px solid rgba(60,44,20,.5);color:#fbf1d6;text-shadow:0 1px 0 rgba(40,28,12,.5)}
+.upload-routing-shell .m-scrim .redirect-cta .btn{margin-top:12px}
+
+
+.upload-routing-shell .m-scrim .modal{width:min(440px, calc(100vw - 48px));max-width:100%;/* the grid's auto track made 100% self-referential - beta #3, the
+   card off a 412 screen. CUI 41A, 27 Aug 2026. */background:linear-gradient(180deg,#faf6ec,#f1e8d7);
+border:1px solid rgba(147,111,67,.4);border-radius:5px;padding:30px 30px 28px;position:relative;
+box-shadow:0 24px 60px rgba(31,27,20,.4),0 4px 12px rgba(31,27,20,.24),inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 26px rgba(137,101,62,.04);
+transform:translateY(14px) scale(.97);opacity:0;transition:transform .26s cubic-bezier(.32,.72,.32,1),opacity .2s}
+
+.upload-routing-shell .m-scrim .mclose{position:absolute;top:16px;right:18px;width:30px;height:30px;border-radius:50%;
+border:1px solid var(--hairline);background:rgba(250,246,236,.7);color:var(--ink-soft);
+font-family:var(--serif);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.upload-routing-shell .m-scrim .mclose:hover{background:#fff}
+.upload-routing-shell .m-scrim .pieceframe{position:relative;border-radius:4px;overflow:hidden;height:130px;background:var(--panel);
+border:1px solid var(--hairline);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.upload-routing-shell .m-scrim .pieceframe .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.32;filter:grayscale(.3)}
+.upload-routing-shell .m-scrim .pieceframe.deferred .art{opacity:.2}
+.upload-routing-shell .m-scrim .pieceframe.reject .art{opacity:.5;filter:none}
+.upload-routing-shell .m-scrim .pieceframe.reject.blur .art{filter:blur(3px)}
+.upload-routing-shell .m-scrim .pieceframe.reject.dim .art{filter:brightness(.5)}
+.upload-routing-shell .m-scrim .interrupt-line{position:absolute;left:0;right:0;top:50%;height:1px;background:repeating-linear-gradient(90deg,var(--oxblood) 0 7px,transparent 7px 15px);opacity:.7}
+.upload-routing-shell .m-scrim .craft-shimmer{position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(243,237,225,.55),transparent);animation:shim 2.1s linear infinite}
+.upload-routing-shell .m-scrim .piece-badge{position:relative;z-index:2;font-style:italic;font-size:17px;color:var(--ink-soft);background:rgba(250,246,236,.85);padding:5px 12px;border-radius:99px;border:1px solid var(--hairline)}
+.upload-routing-shell .m-scrim .safe{display:flex;align-items:center;gap:9px;margin:18px 0 2px;font-family:var(--sans);font-size:13px;color:var(--sage);letter-spacing:.01em}
+.upload-routing-shell .m-scrim .safe svg{width:16px;height:16px;flex-shrink:0}
+.upload-routing-shell .m-scrim .safe.warn{color:var(--brass)}
+.upload-routing-shell .m-scrim .acts{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.upload-routing-shell .m-scrim .m-modal .btn{font-family:var(--serif);font-style:italic;font-size:21px;text-align:center;padding:13px 18px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:.15s}
+.upload-routing-shell .m-scrim .m-modal .btn.fill{background:var(--oxblood);color:var(--vellum)}
+.upload-routing-shell .m-scrim .m-modal .btn.fill:hover{background:#6a3737}
+/* `--sage` is not a token in this file. The background dropped and the
+   cream text stayed, so "Keep me posted" was cream on cream. A light
+   label takes an oxblood ground. */
+.upload-routing-shell .m-scrim .m-modal .btn.sage{background:var(--oxblood);color:var(--vellum-100)}
+.upload-routing-shell .m-scrim .m-modal .btn.sage:hover{background:#6a3737}
+.upload-routing-shell .m-scrim .m-modal .btn.ghost{background:transparent;color:var(--oxblood);border-color:rgba(125,66,66,.42)}
+.upload-routing-shell .m-scrim .m-modal .btn.ghost:hover{background:rgba(125,66,66,.06)}
+.upload-routing-shell .m-scrim .state{display:none}
+.upload-routing-shell .m-scrim .state.active{display:block}
+.upload-routing-shell .m-scrim .btn{font-size:26px}
+
+/* an unset photograph leaves the frame empty rather than broken */
+.upload-routing-shell #intakeModal img[data-role="their-photo"]:not([src]),
+.upload-routing-shell #intakeModal img[data-role="their-photo"][src=""]{ visibility:hidden }
+
+/* the modal ships closed */
+/* THE OVERLAY. Corrected 2026-08-01.
+
+   This was written as `` — a descendant
+   selector — while the markup puts both classes on one element:
+   <div class="scrim m-scrim" id="intakeModal">. There is no .scrim inside a
+   .m-scrim anywhere in this file, so the rule carrying position, inset,
+   z-index and the backdrop matched nothing, and every modal since r02 opened
+   as an ordinary block at the bottom of the page. It rendered; it was simply
+   never over anything.
+
+   It also keyed on `.show`, and the script has only ever written `.is-open`.
+
+   The card rule `.m-scrim .modal` is untouched — the card really is a child,
+   so that selector was always right, which is why the modals were correctly
+   styled and invisible at the same time. */
+/* ===================================================================
+   THE CURATOR'S NOTE — the shell every modal wears
+   ===================================================================
+   Built to Rich's mockup, 2026-08-01.
+
+   s82 and s84 wrote markup against .m-cur, .m-cur-mark, .m-cur-say, .m-safe
+   and .m-x, none of which had a rule anywhere. The card rendered at browser
+   defaults: a bare letter C, sans body copy in a Garamond product, buttons
+   stacked at full width. Written here, once, so every modal shares it.
+
+   Garamond runs about a third smaller than sans at the same size, so the
+   body sits at 1.28rem — under that it reads as fine print, which is the
+   recurring fault in this file. */
+
+/* The intake states call the card .m-modal; the note calls it .m-card. One
+   card, both names, rather than a second set of rules that will drift. */
+.upload-routing-shell .m-modal,
+.upload-routing-shell .m-card{
+  /* 680, ruled 2026-08-01. At 560 the Curator's three sentences broke to
+     six lines and read as a wall rather than a note. */
+  width:min(680px, 100%);
+  background:linear-gradient(180deg,#faf6ec,#f3ecdd);
+  border:1px solid rgba(147,111,67,.34);
+  border-radius:6px;
+  padding:2rem 2.2rem 1.9rem;
+  position:relative;
+  box-shadow:0 24px 60px rgba(31,27,20,.42), 0 4px 12px rgba(31,27,20,.24),
+             inset 0 1px 0 rgba(255,255,255,.75);
+}
+
+/* header — mark, title, close */
+.upload-routing-shell .m-modal .m-head,
+.upload-routing-shell .m-head{ display:flex; align-items:center; gap:.7rem; }
+/* The studio's own mark, the same file the Curator panel has used since s72.
+   s89 drew a letter C in a disc from the mockup without checking whether one
+   already existed. It did, six inches to the left of where I was working.
+
+   No disc, no ground: the mark carries its own. */
+.upload-routing-shell .m-head .m-mark{
+  width:2.4rem; height:2.4rem; flex:0 0 auto; display:block;
+}
+.upload-routing-shell .m-head .m-title{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.7rem; font-weight:400; color:var(--ink); letter-spacing:.01em;
+}
+.upload-routing-shell .m-modal .m-x,
+.upload-routing-shell .m-x{
+  position:absolute; top:1.1rem; right:1.2rem;
+  width:2rem; height:2rem; border:0; border-radius:50%;
+  background:none; color:var(--taupe); font-size:1.4rem; line-height:1;
+  cursor:pointer; transition:color .15s, background .15s;
+}
+.upload-routing-shell .m-x:hover{ color:var(--ink); background:rgba(42,36,30,.06) }
+
+/* the divided rule, with its fleuron */
+.upload-routing-shell .m-modal .m-rule,
+.upload-routing-shell .m-rule{
+  display:flex; align-items:center; gap:.8rem;
+  margin:1.15rem 0;
+  color:rgba(147,111,67,.5);
+}
+.upload-routing-shell .m-rule::before, .upload-routing-shell .m-rule::after{
+  content:""; flex:1; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(147,111,67,.45), transparent);
+}
+.upload-routing-shell .m-rule .m-fleuron{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:.95rem; color:rgba(147,111,67,.75); line-height:1;
+}
+.upload-routing-shell .m-rule--plain{ margin:1.3rem 0 1.15rem }
+.upload-routing-shell .m-rule--plain::before, .upload-routing-shell .m-rule--plain::after{ background:rgba(147,111,67,.28) }
+
+/* the letter */
+/* Rich's, verbatim. */
+.upload-routing-shell .m-modal .m-say,
+.upload-routing-shell .m-say{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.2rem;
+  line-height:1.4;
+  color:var(--ink);
+}
+.upload-routing-shell .m-say .sig{
+  display:block; margin-top:.75rem;
+  font-size:1.15rem; color:var(--ink-soft); font-style:italic;
+}
+
+/* the evidence, and the answer to it, side by side */
+/* The photograph is the evidence, so it is shown whole. The frame was a
+   fixed column cropping to fill, which showed a bride from collarbone to
+   waist while the note described three women — the one thing the customer
+   needed to see was the thing being cut away.
+
+   The width holds; the height follows the image. `align-items:flex-start`
+   rather than `stretch`, or the frame is forced to the height of the
+   buttons beside it and we are cropping again. */
+.upload-routing-shell .m-body{ display:flex; gap:1.1rem; align-items:flex-start }
+/* THE PREVIEW, ruled 2026-08-01: width locked, height follows the
+   photograph, 9:16 the ceiling. Nothing is cropped — the photograph is the
+   evidence the note is discussing, and a frame that crops it argues with the
+   sentence beside it.
+
+   Stated once for both vocabularies. `.pieceframe` is what the eight r02
+   intake states use and it was a fixed 130px cropping to fill, so a portrait
+   showed its middle with the top of the head cut away while the Curator
+   talked about the face. */
+.upload-routing-shell .m-body .m-photo,
+.upload-routing-shell .m-scrim .modal .pieceframe{
+  flex:0 0 46%;
+  border-radius:4px; overflow:hidden;
+  border:1px solid rgba(147,111,67,.32);
+  background:var(--vellum-300);
+  box-shadow:0 2px 8px rgba(31,27,20,.16);
+  /* Anything taller than 9:16 was refused at the upload, so the frame never
+     needs to be. */
+  max-height:calc((680px - 4.4rem) * 0.46 * 16 / 9);
+  /* .pieceframe was authored as a flex row to centre a fixed-height crop.
+     Both of those are gone. */
+  height:auto; display:block; position:relative;
+}
+.upload-routing-shell .m-body .m-photo img,
+.upload-routing-shell .m-scrim .modal .pieceframe img,
+.upload-routing-shell .m-scrim .modal .pieceframe .art{ width:100%; height:auto; display:block; object-fit:unset }
+.upload-routing-shell .m-body .acts{ flex:1; display:flex; flex-direction:column; gap:.6rem; justify-content:center; margin:0 }
+
+/* actions — serif pills with real weight, never micro-links */
+.upload-routing-shell .m-card .btn{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-style:italic; font-size:1.22rem; line-height:1.2;
+  padding:.62rem .9rem; border-radius:5px; text-align:center; cursor:pointer;
+  border:1px solid transparent; transition:filter .15s, background .15s;
+}
+.upload-routing-shell .m-card .btn.fill{ background:var(--oxblood); color:var(--vellum-100) }
+.upload-routing-shell .m-card .btn.fill:hover{ background:#6a3737 }
+.upload-routing-shell .m-card .btn.ghost{
+  background:linear-gradient(180deg,#8a6c38,#6f5629); color:#fbf1d6;
+  border-color:rgba(60,44,20,.5); text-shadow:0 1px 0 rgba(40,28,12,.45);
+}
+.upload-routing-shell .m-card .btn.ghost:hover{ filter:brightness(1.1) }
+
+/* the quiet part — the caution, and anything about money */
+.upload-routing-shell .m-modal .m-safe,
+.upload-routing-shell .m-safe{
+  margin-top:1.15rem;
+  font-family:var(--sans, system-ui, sans-serif);
+  font-size:.82rem; line-height:1.5; color:var(--ink-soft);
+}
+
+
+.upload-routing-shell .m-scrim{ display:none }
+.upload-routing-shell .m-scrim.is-open{
+  display:grid; place-items:center;
+  /* top/right/bottom/left rather than the `inset` shorthand: the boot gate
+     asks the cascade what it computed, and inset is not resolved everywhere
+     that asks. A rule that cannot be verified is how this fault survived. */
+  position:fixed; top:0; right:0; bottom:0; left:0; z-index:1200;
+  background:rgba(31,27,20,.52);
+  padding:24px;
+  overflow-y:auto;
+}
+/* A tall modal — the eight intake states, the five credit blocks — must be
+   able to scroll rather than centre itself off the top of the window. */
+.upload-routing-shell .m-scrim.is-open > .modal{
+  margin:auto;
+  /* The card is authored closed — `.m-scrim .modal` ends with
+     transform:translateY(14px) scale(.97); opacity:0 — and the rule that
+     opened it was `.m-scrim .scrim.show .modal`, which s87 removed as
+     unmatchable. It was unmatchable. It was also the only thing that ever
+     set the card visible, so the backdrop appeared over a transparent card
+     and Rich saw the screen dim and nothing arrive.
+
+     Re-hung on the class the script actually writes. The transition on the
+     card is left alone: it still rises and fades in, which is what the
+     transform was written for. */
+  transform:none;
+  opacity:1;
+}

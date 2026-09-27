@@ -1,3 +1,4 @@
+import { analyzeUploadRouting } from '@/lib/shared/upload-routing'
 // app/api/v1/pets/analyze/route.ts
 //
 // Analyzer endpoint for the Pets silo. Mirrors the Portraits analyze
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
       `smallest_head_px=${result.smallest_head_min_dim_px ?? 'n/a'}`,
     )
 
-    return NextResponse.json({ ok: true, ...result }, { status: 200 })
+    return NextResponse.json({ routing: await analyzeUploadRouting(sourceImageB64), ok: true, ...result }, { status: 200 })
   } catch (err: any) {
     console.error(`[pets/analyze] failed: ${err?.message || err}`)
     return NextResponse.json(

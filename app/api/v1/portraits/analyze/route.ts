@@ -1,3 +1,4 @@
+import { analyzeUploadRouting } from '@/lib/shared/upload-routing'
 // app/api/v1/portraits/analyze/route.ts
 //
 // Source analysis endpoint. Evaluates the uploaded photo(s) BEFORE render
@@ -115,7 +116,7 @@ export async function POST(req: NextRequest) {
       (result.recommendation ? `, rec="${result.recommendation}"` : ''),
     )
 
-    return NextResponse.json({
+    return NextResponse.json({ routing: await analyzeUploadRouting(source_image_b64),
       result,
 
       // Top level so the card does not have to reach into `result`, and so

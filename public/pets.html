@@ -3381,6 +3381,8 @@ window.CONCIERGE_SEEDS = [
 
 </script>
 <script src="/concierge.js" defer data-dock data-attention></script>
+<link rel="stylesheet" href="/upload-routing.css">
+<script src="/upload-routing.js"></script>
 </head>
 <body>
 <!-- discovery-consolidated-draft.html
@@ -4394,6 +4396,7 @@ function runAnalyze(){
     return Promise.resolve(null);
   }
   var seq = ++ANALYZE_SEQ;
+  LitenSubjectGate.pending=true;
   /* Logged on ENTRY, before the request, so the network tab and the
      console agree about whether the call was even attempted. */
   console.log('[discovery] analyze -> POST /api/v1/pets/analyze (' + SRC_B64.length + ' b64 chars, seq ' + seq + ')');
@@ -4412,11 +4415,17 @@ function runAnalyze(){
     return res.json();
   }).then(function(data){
     if (seq !== ANALYZE_SEQ) return null;   /* a newer photograph won */
-    return applyDetection(data);
+    if(data.age_group==='child'||data.age_group==='teen'){LitenSubjectGate.pending=false;return applyDetection(data);}
+    return LitenSubjectGate.review(data,uploadedPhotoDataUrl,'pets').then(function(ok){
+      if(seq!==ANALYZE_SEQ)return null;
+      if(!ok){SRC_B64=null;return null;}
+      return applyDetection(data);
+    });
   }).catch(function(err){
     /* Soft fail, portraits.html:6577. 401 signed-out lands here and is
        the ordinary answer for a visitor, not a fault. */
     if (seq !== ANALYZE_SEQ) return null;
+    LitenSubjectGate.pending=false;
     console.log('[discovery] analyze unavailable (' + err.message + ') - toggle stays manual');
     return null;
   });
@@ -4654,7 +4663,16 @@ var SRC = { b64:null, dataUrl:null };
    The check could not be made: nothing is accepted. */
 var GUEST_INTAKE_SEQ = 0;
 function takeNewPhoto(url){
-  acceptPhoto(url);
+  if(ME){acceptPhoto(url);return;}
+  var seq=++GUEST_INTAKE_SEQ;
+  fetch('/api/v1/pets/foyer/intake',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:url.split(',')[1]||''})})
+    .then(function(r){return r.json();}).then(function(d){
+      if(seq!==GUEST_INTAKE_SEQ||!d||d.status!=='ok')return;
+      return LitenSubjectGate.review(d,url,'pets').then(function(ok){
+        if(!ok||seq!==GUEST_INTAKE_SEQ)return;
+        acceptPhoto(url,Object.assign({},d.analysis||{},{routing:d.routing,skipRedirect:LitenSubjectGate.skipRedirect}));
+      });
+    }).catch(function(){setUploadState('idle');});
 }
 
 /* __ACCEPT_PHOTO__
@@ -4669,6 +4687,8 @@ function takeNewPhoto(url){
    `trusted` is the intake's answer in analyze's shape: { subject, gender,
    age_group }. */
 function acceptPhoto(url, trusted){
+    LitenSubjectGate.reset();
+    if(trusted){LitenSubjectGate.routing=trusted.routing||null;LitenSubjectGate.skipRedirect=!!trusted.skipRedirect;}
     var comma = url.indexOf(',');
     if (url.slice(0, 5) !== 'data:' || comma < 0){
       setUploadState('error', 'That did not read as an image'); return false;
@@ -4737,7 +4757,10 @@ function receiveFoyerHandoff(){
     if (!h || !h.dataUrl) return false;
     var m = h.meta || {};
     console.log('[discovery] photograph from the foyer (' + (m.bytes || '?') + ' bytes, subject ' + (m.subject || 'none') + ')');
-    return acceptPhoto(h.dataUrl, m.analysis || {});
+    return LitenSubjectGate.review(m,h.dataUrl,'pets').then(function(ok){
+      if(!ok)return false;
+      return acceptPhoto(h.dataUrl,Object.assign({},m.analysis||{},{routing:m.routing,skipRedirect:LitenSubjectGate.skipRedirect}));
+    });
   }).catch(function(e){
     console.warn('[discovery] the foyer handoff could not be read', e);
     return false;
@@ -6897,6 +6920,7 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
       subject:         SUBJECT,
       subjectForced:   !!SUBJECT_FORCED,
       subjectDetected: SUBJECT_DETECTED || null,
+      routing: LitenSubjectGate.routing, skipRedirect:LitenSubjectGate.skipRedirect,
       analyze: ANALYZE_RESULT ? { subject: ANALYZE_RESULT.subject || null, gender: ANALYZE_RESULT.gender || null, age_group: ANALYZE_RESULT.age_group || null } : null,
       bench:   CURATED.bench.slice(),
       page:    CURATED.page,
@@ -6954,7 +6978,7 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
     return photo.then(null, function(){ return null; }).then(function(url){
       return validSourcePhoto(url, core.photoPrint || null).then(function(ok){ return ok ? url : null; });
     }).then(function(url){
-      var restored = !!(url && acceptPhoto(url, core.analyze || { subject: core.subject || null }));
+      var restored = !!(url && acceptPhoto(url, Object.assign({},core.analyze || { subject: core.subject || null },{routing:core.routing,skipRedirect:core.skipRedirect})));
       if (core.v === 2){
         if (core.subject === 'woman' || core.subject === 'man') SUBJECT = core.subject;
         SUBJECT_FORCED   = !!core.subjectForced;
@@ -7760,6 +7784,7 @@ function buildCheckoutPayload(){
     aspect_ratio: aspectRatioOf(ASPECT),  /* __ASPECT_STEP__ request-time; route:319 lets framing win */
     subject: SUBJECT || null,
     sourceImageRef: SRC_B64 || '',
+    skip_redirect: LitenSubjectGate.skipRedirect,
     returnUrl: window.location.origin + window.location.pathname,
     clientPriceUsd: (SERVER_OFFER && typeof SERVER_OFFER.priceUsd === 'number') ? SERVER_OFFER.priceUsd : null
   };
@@ -7840,6 +7865,7 @@ function closeCheckout(){
 }
 
 function startCheckout(){
+  if(LitenSubjectGate.pending || LitenSubjectGate.blocked)return;
   var btn = document.getElementById('btnCraft');
   if (!btn || btn.disabled) return;
 
@@ -7888,6 +7914,7 @@ function startCheckout(){
     aspect_ratio: aspectRatioOf(ASPECT),
     subject: SUBJECT || null,
     sourceImageRef: SRC_B64 || '',
+    skip_redirect: LitenSubjectGate.skipRedirect,
     returnUrl: window.location.origin + window.location.pathname,
     /* SERVER_OFFER is built from the SESSION's count, not SELECTED.length
        (discovery-session.ts:178). The two drift, and an unguarded read sent

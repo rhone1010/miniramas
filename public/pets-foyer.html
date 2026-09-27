@@ -362,7 +362,9 @@ input[type=file]{ display:none }
 }
 @media (min-width:721px){ .pill{ display:none !important } }
 @media (prefers-reduced-motion:reduce){ .card,.side,.go,.fc,.cardwrap{ transition:none !important; animation:none !important } }
-</style></head><body>
+</style><link rel="stylesheet" href="/upload-routing.css">
+<script src="/upload-routing.js"></script>
+</head><body>
 
 <div class="montage" id="montage"></div>
 <div class="wrap">
@@ -722,11 +724,19 @@ fetch('/api/v1/pets/foyer/reveal', { credentials:'same-origin', cache:'no-store'
 
 /* The intake, once per photograph, and the handoff that follows from it. */
 function askIntake(){
-  FOYER.intake = foyerPost('/api/v1/pets/foyer/intake', { image_b64: SRC.b64 });
+  var photo=SRC.dataUrl;
+  LitenSubjectGate.reset();
+  FOYER.intake = foyerPost('/api/v1/pets/foyer/intake', { image_b64: SRC.b64 }).then(function(d){
+    if(photo!==SRC.dataUrl || !d || d.status!=='ok')return d;
+    return LitenSubjectGate.review(d,photo,'pets').then(function(ok){
+      if(!ok || photo!==SRC.dataUrl)return {status:'unavailable'};
+      d.routingAccepted='pets';d.skipRedirect=LitenSubjectGate.skipRedirect;return d;
+    });
+  });
   FOYER.handoff = FOYER.intake.then(function(d){
     if (d && d.status === 'ok') setFoyerSubject(d.subject);   /* first, before the riffle looks */
     if (d && d.status === 'ok' && window.LitenHandoff)
-      return LitenHandoff.put(SRC.dataUrl, { subject:d.subject, gender:d.gender, ageGroup:d.age_group, analysis:d.analysis })
+      return LitenHandoff.put(SRC.dataUrl, { subject:d.subject, gender:d.gender, routing:d.routing, routingAccepted:d.routingAccepted, skipRedirect:d.skipRedirect, ageGroup:d.age_group, analysis:d.analysis })
         .catch(function(e){ console.warn('[foyer] handoff not written', e); });
     if (window.LitenHandoff) return LitenHandoff.clear();
   });

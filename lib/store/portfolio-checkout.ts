@@ -164,6 +164,7 @@ export interface CreatePortfolioCheckoutArgs {
   pose?: string | null
   aspectRatio?: string | null
   subject?: string | null
+  skipRedirect?: boolean
 }
 
 export interface CreatePortfolioCheckoutResult {
@@ -317,6 +318,7 @@ export async function createPortfolioCheckout(
       status: 'pending',
       free_unlocks: offer.includedUnlocks,
       source_image: args.sourceImageRef,
+      composition: { skip_redirect: args.skipRedirect === true },
       /* The one place a size becomes a kind. Everything downstream reads
          this column instead of counting items. */
       delivery: offer.delivery,

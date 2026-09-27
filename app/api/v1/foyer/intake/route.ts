@@ -1,3 +1,4 @@
+import { analyzeUploadRouting } from '@/lib/shared/upload-routing'
 // app/api/v1/foyer/intake/route.ts
 //
 // POST { image_b64 }  -- the foyer's photo intake. Anonymous.
@@ -82,5 +83,5 @@ export async function POST(req: NextRequest) {
   const intake = signIntake(secret, {
     sha: sha256Hex(src.bytes), subject, ageGroup, exp: Date.now() + INTAKE_TOKEN_TTL_MS,
   })
-  return reply({ status: 'ok', subject, gender, age_group: ageGroup, intake })
+  return reply({ status: 'ok', subject, gender, age_group: ageGroup, intake, routing: await analyzeUploadRouting(src.b64) })
 }

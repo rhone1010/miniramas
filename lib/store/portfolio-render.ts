@@ -110,6 +110,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
           /* Framing is 'bust' for every size. Discovery has no framing step
              and all three of its aspect choices use the Bust composition
              block, so this is the literal value 4/8/16 have always sent. */
+          skip_redirect: portfolio.composition?.skip_redirect === true,
           framing: compositionPurchased ? (portfolio.framing || 'bust') : 'bust',
           scale: 'close_up',
           /* THE CANVAS, CARRIED SEPARATELY FROM THE COMPOSITION. Only a

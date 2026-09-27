@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
     const result = await createPortfolioCheckout({
       userId: user.id,
       series: series as PortfolioSeries,
+      skipRedirect: body.skip_redirect === true,
       selectedEffectIds: Array.isArray(body.selectedEffectIds) ? body.selectedEffectIds : [],
       sourceImageRef: typeof body.sourceImageRef === 'string' ? body.sourceImageRef : '',
       returnUrl: typeof body.returnUrl === 'string' ? body.returnUrl : '',

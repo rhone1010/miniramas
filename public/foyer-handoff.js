@@ -84,6 +84,10 @@
         subject:  info && info.subject  || null,
         gender:   info && info.gender   || null,
         ageGroup: info && info.ageGroup || null,
+        analysis: info && info.analysis || null,
+        routing: info && info.routing || null,
+        routingAccepted: info && info.routingAccepted || null,
+        skipRedirect: !!(info && info.skipRedirect),
         type: blob.type, bytes: blob.size
       }));
     });
