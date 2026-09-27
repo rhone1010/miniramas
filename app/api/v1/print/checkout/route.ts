@@ -49,13 +49,15 @@ import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/v1/print/stripe-client'
 import { getQuote, type ShippingMethod } from '@/lib/v1/print/prodigi-client'
 import { getSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
-import { createPrintOrder, type ShippingAddress } from '@/lib/v1/print/db'
+import { ownedSquarePreview, requireSandboxPrint } from '@/lib/v1/print/owned-source'
+import { createPrintOrder, canFulfil, type ShippingAddress } from '@/lib/v1/print/db'
 import { getUser } from '@/lib/store/auth'
 import type Stripe from 'stripe'
 
 export const runtime = 'nodejs'
 
 interface CheckoutBody {
+  testPrint?: boolean
   items: Array<{
     renderId:  string
     renderUrl: string
@@ -95,6 +97,21 @@ export async function POST(req: Request) {
   const addr = body.shippingAddress
   if (!addr.name || !addr.line1 || !addr.city || !addr.postcode || !addr.countryCode) {
     return NextResponse.json({ error: 'Address missing required fields' }, { status: 400 })
+  }
+
+  if (body.testPrint) {
+    if (!ownerKey) return NextResponse.json({ error: 'sign_in_required' }, { status: 401 })
+    try {
+      requireSandboxPrint()
+      if (body.items.length !== 1 || body.items[0].size !== '8x8' || body.items[0].finish !== 'fine_art' || body.items[0].copies !== 1) throw new Error('single_8x8_fine_art_required')
+      if (!await canFulfil(ownerKey)) throw new Error('fulfilment_permission_required')
+      const origin = new URL(req.url).origin
+      if ([body.successUrl, body.cancelUrl].some(url => new URL(url).origin !== origin)) throw new Error('invalid_return_url')
+      const piece = await ownedSquarePreview(ownerKey, body.items[0].renderId)
+      body.items[0].renderUrl = piece.art
+    } catch (err) {
+      return NextResponse.json({ error: err instanceof Error ? err.message : 'print_unavailable' }, { status: 409 })
+    }
   }
 
   // Resolve SKUs + compute retail subtotal
@@ -193,6 +210,7 @@ export async function POST(req: Request) {
       cancel_url:           body.cancelUrl,
       metadata: {
         merchant_ref: merchantRef,
+        ...(body.testPrint ? { print_test: 'square_8x8' } : {}),
       },
     })
   } catch (err) {

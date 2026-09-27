@@ -10351,6 +10351,10 @@ window.EFFECT_PREVIEWS = {
      still be waiting for them next week. If that is wrong it is a
      column, not a redesign. */
   var PS_SENT  = {};
+  var PRINT_TEST_PIECE = new URLSearchParams(location.search).get('test_piece');
+  if (PRINT_TEST_PIECE) {
+    PRINT_FAMILIES = [Object.assign({}, PRINT_FAMILIES[0], { sizes: [PRINT_FAMILIES[0].sizes[0]] })];
+  }
 
   function sendToPrintShop(list){
     (list || []).forEach(function(p){ if (p && printable(p)) PS_SENT[p.id] = true; });
@@ -10373,7 +10377,7 @@ window.EFFECT_PREVIEWS = {
      added later inherits the rule instead of inheriting a Print button
      nobody meant to give it. */
   function printable(p){
-    if (true) return false;  /* PRINT SHOP DISABLED -- coming soon. Rich, 2026-08-25 */
+    if (!PRINT_TEST_PIECE || !p || !p.printTestVerified) return false;  /* General Print Shop remains hidden. */
     if (!p) return false;
     if (/wallpaper/i.test(String(p.series || ''))) return false;
     return !!(p.art && p.serverId && String(p.art).indexOf('data:') !== 0);
@@ -10525,6 +10529,7 @@ window.EFFECT_PREVIEWS = {
 
   function addToOrder(){
     if (!PS_PIECE || !printable(PS_PIECE)) return;
+    if (PRINT_TEST_PIECE) { ORDER = []; PS_QTY = 1; }
     var o = currentSize();
     if (!o) return;
     /* The same piece may be ordered at more than one size, so a line is
@@ -10705,6 +10710,7 @@ window.EFFECT_PREVIEWS = {
       headers:{ 'Content-Type':'application/json' },
       credentials:'same-origin',
       body: JSON.stringify({
+        testPrint: !!PRINT_TEST_PIECE,
         items: ORDER.map(function(l){
           return { size:l.size, finish:l.finish, copies:l.copies }; }),
         destination: { countryCode:a.countryCode, postcode:a.postcode }
@@ -10762,7 +10768,7 @@ window.EFFECT_PREVIEWS = {
         },
         shippingMethod: PS_METHOD || 'Budget',
         successUrl: back + '?print=1&session={CHECKOUT_SESSION_ID}',
-        cancelUrl:  back + '?print=0'
+        cancelUrl:  back + '?print=0' + (PRINT_TEST_PIECE ? '&test_piece=' + encodeURIComponent(PRINT_TEST_PIECE) : '')
       })
     }).then(function(r){ return r.json(); }).then(function(d){
       if (d && d.checkoutUrl){ window.location.href = d.checkoutUrl; return; }
@@ -10799,7 +10805,7 @@ window.EFFECT_PREVIEWS = {
     if (sz){ PS_SIZE = parseInt(sz.dataset.size, 10) || 0; renderFly(); return; }
     var q = e.target.closest('[data-q2]');
     if (q){
-      if (q.dataset.q2 === '+') PS_QTY = Math.min(PS_QTY + 1, 20);
+      if (q.dataset.q2 === '+') PS_QTY = Math.min(PS_QTY + 1, PRINT_TEST_PIECE ? 1 : 20);
       else PS_QTY = Math.max(PS_QTY - 1, 1);
       renderFly(); return;
     }
@@ -10860,6 +10866,14 @@ window.EFFECT_PREVIEWS = {
   if (psCloseBtn) psCloseBtn.addEventListener('click', hidePrintShop);
 
   window.__showPrintShop = showPrintShop;
+  if (PRINT_TEST_PIECE) window.addEventListener('load', function(){
+    fetch('/api/v1/print/source?piece=' + encodeURIComponent(PRINT_TEST_PIECE), { credentials:'same-origin' })
+      .then(function(r){ return r.json(); }).then(function(d){
+        if (!d.piece) { console.warn('[print] source unavailable:', d.error); return; }
+        PIECES.push(d.piece); PS_PIECE = d.piece;
+        sendToPrintShop([d.piece]); showPrintShop();
+      }).catch(function(e){ console.warn('[print] source unavailable:', e.message); });
+  });
 
   /* ---- THE STEP FLOW · phones ---------------------------------------
      One room at a time. The Curator card is step one and leaves when a

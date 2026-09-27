@@ -65,6 +65,7 @@ import {
   markWithheld,
   canFulfil,
 } from '@/lib/v1/print/db'
+import { ownedSquareSource, requireSandboxPrint } from '@/lib/v1/print/owned-source'
 import { getSku } from '@/lib/v1/print/sku-map'
 
 export const runtime = 'nodejs'
@@ -111,6 +112,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, deduped: true, status: order.status })
   }
 
+  const squareTest = session.metadata?.print_test === 'square_8x8'
+  if (squareTest) {
+    try {
+      requireSandboxPrint()
+      if (session.livemode || session.payment_status !== 'paid') throw new Error('paid_test_checkout_required')
+      if (!order.owner_key || order.items.length !== 1 || order.items[0].size !== '8x8' || order.items[0].finish !== 'fine_art' || order.items[0].copies !== 1) throw new Error('single_8x8_fine_art_required')
+    } catch (err) {
+      return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : 'sandbox_required' }, { status: 409 })
+    }
+  }
+
   // ── Mark paid ──────────────────────────────────────────────
   try {
     await markPaid(session.id, session.payment_intent as string)
@@ -154,10 +166,15 @@ export async function POST(req: Request) {
     for (const item of order.items) {
       console.log(`[print-webhook] preparing asset for renderId=${item.renderId} size=${item.size}`)
       // 1. Fetch source render
-      const res = await fetch(item.renderUrl)
-      if (!res.ok) throw new Error(`fetch render ${item.renderUrl} → ${res.status}`)
-      const buf      = Buffer.from(await res.arrayBuffer())
-      const sourceB64 = buf.toString('base64')
+      let sourceB64: string
+      if (squareTest) {
+        const source = await ownedSquareSource(order.owner_key!, item.renderId)
+        sourceB64 = source.bytes.toString('base64')
+      } else {
+        const res = await fetch(item.renderUrl)
+        if (!res.ok) throw new Error('fetch render failed: ' + res.status)
+        sourceB64 = Buffer.from(await res.arrayBuffer()).toString('base64')
+      }
 
       // 2. Upscale + upload + signed URL
       const asset = await preparePrintAsset({
