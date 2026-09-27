@@ -29,3 +29,7 @@ All paths relative to `D:/lanes/canonical-2026-09-24`, dated 2026-09-27. This is
 - `lib/store/tests/remedy-case-execution.test.ts`: 43 baseline lines → 65 lines. `.polish.next.test.ts` lines 1–65 copied to live lines 1–65, 65 in / 65 out.
 
 53 focused tests pass. Script parsing and in-memory Help/navigation/request flow checks pass. Browser visual acceptance uses canonical Preview only. No database/configuration changes, migrations, new refunds, unlock consumption, or generation were performed. Existing unrelated dirty drafts remain untouched.
+
+## Preview verification
+
+On deployed Preview, Case #3 displays Craft value $1.25, Unlock $2.99, Total refunded $4.24. Learn & Explore and Support show the approved Back to Help and HELP · SECTION identity. At 1920×1080, the 292-artwork selector has five columns, a 514px gallery with approximately 165px rows, and controls ending at y=1046 inside the viewport. Selecting the final artwork retains gallery scroll position (~9768px) while Help page scroll remains zero. At 390×844, the existing three-column breakpoint is preserved, the gallery is 297px high, and controls end at y=824. No remedy was submitted. The final heading adjustment preserves the original responsive clamp while multiplying all its values by 1.125.

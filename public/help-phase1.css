@@ -145,7 +145,7 @@ body:has(#helpStage.is-open) .your-collection.is-docked{ display:none }
 @media(min-width:1025px){
  #helpMain .help-intro h2{font-size:clamp(2.7rem,3.6vw,4.05rem)}
  #helpMain .help-path h3,#helpMain .help-reading h3{font-size:2.025rem}
- #helpMain .ac-head h2{font-size:2.475rem}
+ #helpMain .ac-head h2{font-size:clamp(2.1375rem,2.475vw,2.925rem)}
  #helpMain .help-intro p,#helpMain .help-path p,#helpMain .help-subtitle,#helpMain .help-reading,#helpMain .help-details,#helpMain .help-choice,#helpMain .help-review,#helpMain .help-refund-breakdown{font-size:1.547rem}
  #helpMain .help-ask p,#helpMain .help-support p{font-size:1.406rem}
  #helpMain .help-action,#helpMain .ac-second{font-size:1.294rem}
