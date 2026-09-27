@@ -1,3 +1,4 @@
+import type { PrintOrderRow } from '@/lib/v1/print/db'
 // app/api/v1/print/order/route.ts
 //
 // GET — read one print order back, for the receipt shown after payment.
@@ -33,6 +34,7 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { ownedSquarePreview } from '@/lib/v1/print/owned-source'
 import { getUser } from '@/lib/store/auth'
 
 export const runtime = 'nodejs'
@@ -77,7 +79,7 @@ export async function GET(req: Request) {
       )
       .eq('stripe_session_id', sessionId)
       .eq('owner_key', ownerKey)
-      .maybeSingle()
+      .maybeSingle<PrintOrderRow>()
 
     if (error) {
       console.warn('[print/order] read failed:', error.message)
@@ -111,6 +113,10 @@ export async function GET(req: Request) {
       }
     }
 
+    for (const id of renderIds) {
+      if (artById[id]) continue;
+      try { const source = await ownedSquarePreview(ownerKey, id); artById[id] = source.art; labelById[id] = source.name; } catch { /* Keep the receipt readable if its artwork is unavailable. */ }
+    }
     return NextResponse.json({
       ok: true,
       order: {
@@ -124,6 +130,7 @@ export async function GET(req: Request) {
         subtotalCents: order.retail_subtotal_cents,
         shippingCents: order.retail_shipping_cents,
         totalCents:    order.retail_total_cents,
+        taxCents: Math.max(0,order.retail_total_cents-order.retail_subtotal_cents-order.retail_shipping_cents),
         trackingNumber: order.tracking_number,
         trackingUrl:   order.tracking_url,
         placedAt:      order.placed_at,

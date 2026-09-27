@@ -58,6 +58,7 @@ export const runtime = 'nodejs'
 
 interface CheckoutBody {
   testPrint?: boolean
+  embedded?: boolean
   items: Array<{
     renderId:  string
     renderUrl: string
@@ -209,8 +210,7 @@ export async function POST(req: Request) {
       payment_method_types: ['card'],
       line_items:           lineItems,
       customer_email:       body.email,
-      success_url:          body.successUrl,
-      cancel_url:           body.cancelUrl,
+      ...(body.embedded ? {ui_mode:'embedded' as const, return_url:body.successUrl, redirect_on_completion:'if_required' as const} : {success_url:body.successUrl,cancel_url:body.cancelUrl}),
       metadata: {
         merchant_ref: merchantRef,
         ...(body.testPrint ? { print_test: 'square_8x8' } : {}),
@@ -250,6 +250,9 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     checkoutUrl: session.url,
+    clientSecret: body.embedded ? session.client_secret : undefined,
+    publishableKey: body.embedded ? process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY : undefined,
+    totalCents: retailTotalCents,
     sessionId:   session.id,
   })
 }

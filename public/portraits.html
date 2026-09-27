@@ -4917,7 +4917,72 @@ body.is-lboxed{ overflow:hidden }
      she says while she is still saying it. data-attention lets her trigger
      pulse when a person is plainly moving around and getting nowhere. -->
 <script src="/concierge.js" defer data-dock data-attention></script>
-</head>
+<style>
+.ck-scrim{ display:none }
+.ck-scrim.is-open{
+  display:grid; place-items:center;
+  position:fixed; top:0; right:0; bottom:0; left:0; z-index:1200;
+  background:rgba(31,27,20,.52);
+  padding:24px;
+  overflow-y:auto;
+}
+.ck-card{
+  width:min(520px, 100%);
+  background:linear-gradient(180deg,#faf6ec,#f3ecdd);
+  border:1px solid rgba(147,111,67,.34);
+  border-radius:6px;
+  padding:1.5rem 1.8rem 1.6rem;
+  position:relative;
+  box-shadow:0 24px 60px rgba(31,27,20,.42), 0 4px 12px rgba(31,27,20,.24),
+             inset 0 1px 0 rgba(255,255,255,.75);
+}
+.ck-x{
+  position:absolute; top:1.1rem; right:1.2rem;
+  width:2rem; height:2rem; border:0; border-radius:50%;
+  background:none; color:var(--taupe, #a59478); font-size:1.4rem; line-height:1;
+  cursor:pointer; transition:color .15s, background .15s; z-index:2;
+}
+.ck-x:hover{ color:var(--ink); background:rgba(42,36,30,.06) }
+.ck-err{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.1rem; color:var(--oxblood); text-align:center;
+  margin-top:12px;
+}
+/* __CK_SHELL__ Our half of the payment modal: the mark, the heading, and
+   what is being bought. Stripe's form keeps its own look below the rule. */
+.ck-head{ display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:0 0 1.1rem; margin:0 0 1.2rem; border-bottom:1px solid rgba(147,111,67,.28) }
+.ck-mark{ width:104px; height:auto; fill:var(--oxblood); opacity:.92; margin:0 0 .85rem }
+.ck-title{ font-family:var(--serif); font-weight:400; font-size:1.85rem; color:var(--ink); margin:0 }
+.ck-order{ display:flex; align-items:baseline; justify-content:center; gap:.7rem; margin:.55rem 0 0 }
+.ck-order[hidden]{ display:none }
+.ck-order__size{ font-family:var(--serif); font-size:1.3rem; color:var(--ink) }
+.ck-order__price{ font-family:var(--serif); font-size:1.45rem; color:var(--oxblood) }
+/* __A1_PHONE__ (Phase 1, 2026-09-17) our shell on a phone. The mark and the
+   heading were only ever sized for a desktop card: at 390 the mark stayed
+   104px on a 342px card and "Complete Your Collection" broke mid-phrase.
+   Declared here, after the rules above, because a copy in the earlier phone
+   block lost to them on source order at equal specificity.
+   Stripe's own form inside #ckForm is untouched -- this is our half only. */
+@media (max-width:767px){
+  .ck-card{ padding:1.25rem 1.1rem 1.3rem }
+  .ck-mark{ width:74px; margin-bottom:.7rem }
+  .ck-title{ font-size:1.45rem }
+  .ck-order__size{ font-size:1.1rem }
+  .ck-order__price{ font-size:1.25rem }
+}
+#ckForm{ min-height:300px; }
+</style>
+<script>if(location.pathname==='/print')document.documentElement.classList.add('print-destination');</script><style>
+html.print-destination .rooms > :not(#yourPrints){display:none!important}
+html.print-destination #yourPrints{display:block}
+html.print-destination .ps-wall{display:block}
+html.print-destination #psGrid{display:grid;grid-template-columns:1fr;gap:.8rem}
+html.print-destination .ps-pc img{object-fit:contain}
+html.print-destination .ps-fly .mc-title{display:block;margin:0 0 22px}
+html.print-destination #yourPrints .ps-pc{width:100%;margin-bottom:.8rem}
+html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:none!important}
+</style></head>
 <body>
 
 <div class="ground" aria-hidden="true"></div>
@@ -4949,7 +5014,8 @@ body.is-lboxed{ overflow:hidden }
          order of the thought: what the studio can do, what other people
          did with it, what you have done with it. -->
     <a href="/community">Community</a>
-    <a href="/collection">My Collection</a>
+    <a href="/discovery?print_pick=1">My Collection</a>
+    <a href="/print">Print Shop</a>
     <a href="/account">Account</a>
     <!-- PRINT SHOP AND HELP LEFT THIS BAR. Print Shop is an action on a
          piece, not a place - it already has its button in My Collection,
@@ -5260,7 +5326,7 @@ body.is-lboxed{ overflow:hidden }
          order is gone: an order you cannot see while you build it is an
          order you lose track of. -->
     <div class="ps-body" id="psWallBody">
-      <div class="ps-wall" id="psGrid"></div>
+      <section class="ps-wall"><h3 class="mc-title">Your artwork</h3><div id="psGrid"></div></section>
       <aside class="ps-fly" id="psFly" hidden></aside>
       <aside class="ps-order" id="psOrder"></aside>
     </div>
@@ -10339,6 +10405,7 @@ window.EFFECT_PREVIEWS = {
   var PS_FAM   = 0;       /* which family is open */
   var PS_SIZE  = 0;       /* which size within it */
   var PS_QTY   = 1;
+  var PS_QUOTE_SEQ = 0;
   var PS_SHIP  = null;    /* the last quote, or null when it is stale */
   var PS_SHIP_OPTS = [];  /* every method Prodigi offered for this basket */
   var PS_METHOD = null;   /* the one chosen. null until a quote lands. */
@@ -10498,6 +10565,7 @@ window.EFFECT_PREVIEWS = {
 
     var size = currentSize();
     f.innerHTML =
+      '<h3 class="mc-title">Make your print</h3>' +
       '<div class="ps-fly-head">' +
         '<img src="' + esc(PS_PIECE.art) + '" alt="">' +
         /* The family's note is the photograph's caption now. Saying it
@@ -10584,7 +10652,25 @@ window.EFFECT_PREVIEWS = {
      The shipping choices stay. The mockup said "calculated at checkout";
      we have live Prodigi quotes with five named methods and real prices,
      and ruled to keep them. */
+  function renderPrintRail(){
+    if(location.pathname!=='/print')return;
+    var rail=document.getElementById('yourPrints');
+    if(!rail){
+      var rooms=document.querySelector('.rooms');if(!rooms)return;
+      rail=document.createElement('section');rail.id='yourPrints';rail.className='room room--curator';rooms.appendChild(rail);
+    }
+    rail.innerHTML='<div class="cur"><div class="cur-head"><span class="cur-title">Your Prints</span></div><div id="printRailItems"></div><button type="button" class="ps-or-add" id="printRailAdd">+ Add another artwork</button></div>';
+    var list=document.getElementById('printRailItems');
+    ORDER.forEach(function(line){
+      var card=document.createElement('button');card.type='button';card.className='ps-pc'+(PS_PIECE&&PS_PIECE.id===line.pieceId?' is-on':'');
+      card.innerHTML='<img src="'+esc(line.art)+'" alt=""><div class="nm">'+esc(line.name||'Crafted Image')+'</div>';
+      card.onclick=function(){PS_PIECE=PIECES.find(function(p){return p.id===line.pieceId;})||PS_PIECE;renderWall();};list.appendChild(card);
+    });
+    document.getElementById('printRailAdd').onclick=function(){window.location.assign('/discovery?print_pick=1');};
+  }
+
   function renderOrder(){
+    renderPrintRail();
     var o = document.getElementById('psOrder');
     if (!o) return;
     var n = document.getElementById('psN');
@@ -10592,7 +10678,7 @@ window.EFFECT_PREVIEWS = {
 
     var count = orderCount();
     var head =
-      '<div class="ps-or-h">Your Print Order' +
+      '<div class="ps-or-h">Your order' +
         (count ? '<span class="n">' + count + (count === 1 ? ' print' : ' prints') +
                  '</span>' : '') +
       '</div>';
@@ -10701,8 +10787,9 @@ window.EFFECT_PREVIEWS = {
      order or the destination changes, and held null in between so a stale
      number can never reach a total. */
   function askQuote(){
+    var seq = ++PS_QUOTE_SEQ;
     var a = addrValues();
-    if (!ORDER.length || !a.countryCode || !a.postcode){ PS_SHIP = null; return; }
+    if (!ORDER.length || !addrComplete(a)){ PS_SHIP = null; renderCart(); return; }
     var want = JSON.stringify([ORDER.map(function(l){
       return [l.size, l.finish, l.copies]; }), a.countryCode, a.postcode]);
     fetch(QUOTE_URL, {
@@ -10718,6 +10805,7 @@ window.EFFECT_PREVIEWS = {
            this basket to this country, and the customer chooses. */
       })
     }).then(function(r){ return r.json(); }).then(function(d){
+      if (seq !== PS_QUOTE_SEQ) return;
       if (!d || d.error || !Array.isArray(d.shipping) || !d.shipping.length){
         console.warn('[print] quote failed:', (d && d.error) || 'no shipping');
         PS_SHIP = null; PS_SHIP_OPTS = []; PS_METHOD = null; renderCart(); return;
@@ -10738,8 +10826,32 @@ window.EFFECT_PREVIEWS = {
       PS_SHIP = kept || PS_SHIP_OPTS[0];
       renderCart();
     }).catch(function(e){
+      if (seq !== PS_QUOTE_SEQ) return;
       console.warn('[print] quote failed:', e.message || e);
       PS_SHIP = null; renderCart();
+    });
+  }
+
+  var printEmbed = null;
+  function closePrintPayment(){
+    if (printEmbed){ printEmbed.destroy(); printEmbed = null; }
+    document.getElementById('ckModal').classList.remove('is-open');
+    var b=document.getElementById('psCo');if(b)b.disabled=!PS_SHIP||!addrComplete(addrValues());
+  }
+  function openPrintPayment(d){
+    var load = loadStripeJs();
+    return load.then(function(){
+      return window.Stripe(d.publishableKey).initEmbeddedCheckout({clientSecret:d.clientSecret,onComplete:function(){
+        window.location.assign('/print?print=1&session='+encodeURIComponent(d.sessionId));
+      }});
+    }).then(function(embed){
+      printEmbed=embed;embed.mount('#ckForm');
+      document.getElementById('ckTitle').textContent='Your order';
+      document.getElementById('ckOrder').hidden=false;
+      document.getElementById('ckOrderSize').textContent='8 × 8″ · Fine Art Print';
+      document.getElementById('ckOrderPrice').textContent=money(d.totalCents);
+      document.getElementById('ckModal').classList.add('is-open');
+      document.getElementById('ckX').onclick=closePrintPayment;
     });
   }
 
@@ -10757,6 +10869,8 @@ window.EFFECT_PREVIEWS = {
       headers:{ 'Content-Type':'application/json' },
       credentials:'same-origin',
       body: JSON.stringify({
+        testPrint: !!PRINT_TEST_PIECE,
+        embedded: true,
         items: ORDER.map(function(l){
           return { renderId:l.renderId, renderUrl:l.art,
                    size:l.size, finish:l.finish, copies:l.copies }; }),
@@ -10771,7 +10885,7 @@ window.EFFECT_PREVIEWS = {
         cancelUrl:  back + '?print=0' + (PRINT_TEST_PIECE ? '&test_piece=' + encodeURIComponent(PRINT_TEST_PIECE) : '')
       })
     }).then(function(r){ return r.json(); }).then(function(d){
-      if (d && d.checkoutUrl){ window.location.href = d.checkoutUrl; return; }
+      if (d && d.clientSecret && d.publishableKey) return openPrintPayment(d);
       console.warn('[print] checkout failed:', (d && d.error) || 'no url');
       if (btn){ btn.disabled = false; btn.textContent = 'Checkout'; }
     }).catch(function(e){
@@ -10815,7 +10929,7 @@ window.EFFECT_PREVIEWS = {
   var psCartEl = document.getElementById('psOrder');
   if (psCartEl) psCartEl.addEventListener('click', function(e){
     /* Back to the gallery to choose another piece. */
-    if (e.target.closest('#psAddMore')){
+    if (e.target.closest('#psAddMore')){ window.location.assign('/discovery?print_pick=1'); return;
       PS_PIECE = null;
       renderWall();
       var g = document.getElementById('psGrid');
@@ -10856,16 +10970,21 @@ window.EFFECT_PREVIEWS = {
   /* A quote on every keystroke would hammer Prodigi. This waits for the
      typing to stop. */
   var psQuoteTimer = null;
-  if (psCartEl) psCartEl.addEventListener('input', function(){
-    PS_SHIP = null;
-    clearTimeout(psQuoteTimer);
-    psQuoteTimer = setTimeout(askQuote, 600);
-  });
+  function shippingChanged(e){
+    if (!e.target.closest('.ps-addr')) return;
+    ++PS_QUOTE_SEQ; PS_SHIP = null; PS_SHIP_OPTS = [];
+    var button = document.getElementById('psCo'); if (button) button.disabled = true;
+    var rows = document.querySelectorAll('#psOrder .ps-or-row b');
+    if (rows[1]) rows[1].textContent = '—'; if (rows[2]) rows[2].textContent = '—';
+    clearTimeout(psQuoteTimer); psQuoteTimer = setTimeout(askQuote, 600);
+  }
+  if (psCartEl){ psCartEl.addEventListener('input', shippingChanged); psCartEl.addEventListener('change', shippingChanged); }
 
   var psCloseBtn = document.getElementById('psClose');
   if (psCloseBtn) psCloseBtn.addEventListener('click', hidePrintShop);
 
   window.__showPrintShop = showPrintShop;
+  if(location.pathname==='/print' && !PRINT_TEST_PIECE && !new URLSearchParams(location.search).has('session')) window.location.replace('/discovery?print_pick=1');
   if (PRINT_TEST_PIECE) window.addEventListener('load', function(){
     fetch('/api/v1/print/source?piece=' + encodeURIComponent(PRINT_TEST_PIECE), { credentials:'same-origin' })
       .then(function(r){ return r.json(); }).then(function(d){
@@ -11239,6 +11358,8 @@ window.EFFECT_PREVIEWS = {
   }
 
   function psReceiptSay(o){
+    if (o.status === 'created') return ['Confirming your payment.', 'Your order status will update here.'];
+    if (o.status === 'shipped') return ['Your order has shipped.', 'Your print is on its way.'];
     if (o.status === 'placed') {
       return ['Your order is with the lab.',
               'It is being made now. We will email you when it ships.'];
@@ -11277,8 +11398,8 @@ window.EFFECT_PREVIEWS = {
       var art = it.art
         ? '<img src="' + psEsc(it.art) + '" alt="">'
         : '';
-      var spec = [it.size, it.finish].filter(Boolean).join(' \u00b7 ');
-      if (it.copies > 1) spec += ' \u00b7 ' + it.copies + ' copies';
+      var spec = [it.size === '8x8' ? '8 × 8″' : it.size, it.finish === 'fine_art' ? 'Fine Art Print' : it.finish].filter(Boolean).join(' \u00b7 ');
+      spec += ' \u00b7 Quantity: ' + it.copies;
       return '<div class="ps-rc-item">' +
                '<div class="ps-rc-art">' + art + '</div>' +
                '<div class="ps-rc-meta">' +
@@ -11294,9 +11415,7 @@ window.EFFECT_PREVIEWS = {
         '<p class="ps-rc-eyebrow">Your order</p>' +
         '<h2>' + psEsc(say[0]) + '</h2>' +
         '<p class="ps-rc-say">' + psEsc(say[1]) + '</p>' +
-        (o.prodigiId
-          ? '<p class="ps-rc-ref">Lab reference ' + psEsc(o.prodigiId) + '</p>'
-          : '<p class="ps-rc-ref"></p>') +
+        '<p class="ps-rc-ref"></p>' +
         '<div class="ps-rc-rule"></div>' +
         items +
         '<div class="ps-rc-cols">' +
@@ -11307,30 +11426,31 @@ window.EFFECT_PREVIEWS = {
           '<div>' +
             '<p class="ps-rc-h3">Total</p>' +
             '<div class="ps-rc-tot">' +
-              '<div><span>Pieces</span><span>' + psMoney(o.subtotalCents) + '</span></div>' +
+              '<div><span>Print subtotal</span><span>' + psMoney(o.subtotalCents) + '</span></div>' +
               '<div><span>' + psEsc(o.shippingMethod || 'Shipping') + '</span>' +
                 '<span>' + psMoney(o.shippingCents) + '</span></div>' +
-              '<div class="sum"><span>Paid</span><span>' +
+              (o.taxCents ? '<div><span>Tax</span><span>' + psMoney(o.taxCents) + '</span></div>' : '') +
+              '<div class="sum"><span>Total paid</span><span>' +
                 psMoney(o.totalCents) + '</span></div>' +
             '</div>' +
           '</div>' +
         '</div>' +
-        (o.status === 'error' && o.errorMessage
-          ? '<p class="ps-rc-note">' + psEsc(o.errorMessage) + '</p>' : '') +
+        '' +
         '<div class="ps-rc-acts">' +
+          '<button class="ps-rc-btn ghost" type="button" data-rc="view">View Order</button>' +
           '<button class="ps-rc-btn" type="button" data-rc="close">' +
-            'Back to the studio</button>' +
+            'Back to My Collection</button>' +
           '<button class="ps-rc-btn ghost" type="button" data-rc="shop">' +
-            'Order another print</button>' +
+            'Print Another</button>' +
         '</div>' +
       '</div>';
 
     el.addEventListener('click', function(e){
       var b = e.target.closest && e.target.closest('[data-rc]');
       if (!b) return;
-      psReceiptShow(false);
-      if (b.getAttribute('data-rc') === 'close' &&
-          typeof hidePrintShop === 'function') hidePrintShop();
+      if(b.getAttribute('data-rc') === 'view'){ window.location.reload(); return; }
+      window.location.assign('/discovery?print_pick=1'); return;
+
     });
   }
 
@@ -11358,7 +11478,7 @@ window.EFFECT_PREVIEWS = {
       }).then(function(r){ return r.json(); });
 
     pending.then(function(d){
-      if (d && d.ok && d.order) { psReceiptPaint(d.order); return; }
+      if (d && d.ok && d.order) { psReceiptPaint(d.order); if(['created','paid'].indexOf(d.order.status)>=0) setTimeout(function(){ window.location.reload(); },5000); return; }
       psReceiptMount().innerHTML =
         '<div class="ps-rc-in"><p class="ps-rc-eyebrow">Your order</p>' +
         '<h2>Your payment went through.</h2>' +
@@ -11370,7 +11490,7 @@ window.EFFECT_PREVIEWS = {
 
     try {
       var clean = window.location.pathname + window.location.hash;
-      window.history.replaceState({}, '', clean);
+      window.history.replaceState({}, '', window.location.pathname + '?print=1&session=' + encodeURIComponent(session));
     } catch (_) {}
   })();
 
@@ -12479,5 +12599,21 @@ document.addEventListener('click', function(e){
 </script>
 
 <script src="/welcome.js" defer></script>
+<div class="scrim ck-scrim" id="ckModal">
+  <div class="ck-card">
+    <button class="ck-x" id="ckX" aria-label="Close">&times;</button>
+    <header class="ck-head">
+      <svg class="ck-mark" viewBox="0 0 1821.36 1528.47" role="img" aria-label="Liten &amp; Co" focusable="false"><g><path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/></g><g><path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/><path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/><path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/><path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/><path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/><path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/><path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/></g></svg>
+      <h3 class="ck-title" id="ckTitle">Complete Your Collection</h3>
+      <div class="ck-order" id="ckOrder" hidden>
+        <span class="ck-order__size" id="ckOrderSize"></span>
+        <span class="ck-order__price" id="ckOrderPrice"></span>
+      </div>
+    </header>
+    <div id="ckForm"></div>
+    <div class="ck-err" id="ckErr"></div>
+  </div>
+</div>
+
 </body>
 </html>

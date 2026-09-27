@@ -3414,6 +3414,7 @@ window.CONCIERGE_SEEDS = [
     </div>
     <a href="/community">Community</a>
     <a id="navMyCollection" style="cursor:pointer">My Collection</a>
+    <a href="/print">Print Shop</a>
     <a class="mh-mobile-existing" href="/account">Account</a>
   </nav>
   <div class="masthead__right">
@@ -10568,5 +10569,6 @@ document.getElementById('mhSignOut').addEventListener('click', function(e){ e.pr
 </script>
 <link rel="stylesheet" href="/help-phase1.css">
 <script src="/help-phase1.js"></script>
+<script>window.addEventListener('load',function(){if(new URLSearchParams(location.search).has('print_pick'))openMyCollection();});</script>
 </body>
 </html>
