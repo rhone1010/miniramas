@@ -1,0 +1,62 @@
+/* Rich's approved Print Shop mockup, 2026-09-27. Existing commerce controls. */
+html.print-destination .rooms{display:none!important}
+html.print-destination .pshop{left:0;padding:24px 3.5vw;overflow-y:auto}
+html.print-destination .ps-body{display:grid;grid-template-columns:minmax(0,3.2fr) minmax(0,4.3fr) minmax(0,2.5fr);gap:24px;margin:20px 0 0;overflow:visible;flex:none;align-items:start}
+html.print-destination .ps-wall,html.print-destination .ps-fly,html.print-destination .ps-order{min-width:0;max-width:none;max-height:none;width:auto;overflow:visible;align-self:start}
+html.print-destination .ps-wall{padding:0;display:block}
+html.print-destination .ps-wall > .mc-title{display:none}
+html.print-destination #psGrid{display:block}
+html.print-destination .ps-pc{border-radius:6px;aspect-ratio:1;margin:0;box-shadow:none}
+html.print-destination .ps-pc img{object-fit:contain}
+.print-art-title{font:400 28px var(--serif);color:var(--ink);margin:14px 0 4px}
+.print-art-origin{font:14px var(--sans);color:var(--ink-soft);margin:0 0 14px}
+.print-filmstrip{display:flex;align-items:center;gap:10px;margin:14px 0}
+.print-filmstrip button{width:58px;height:58px;padding:2px;border:1px solid var(--oxblood);border-radius:6px;background:transparent;cursor:pointer}
+.print-filmstrip img{width:100%;height:100%;object-fit:contain;border-radius:4px}
+.print-filmstrip span{font:14px var(--sans);color:var(--ink-soft)}
+.print-add-art{width:100%;padding:12px;border:1px solid var(--oxblood);border-radius:8px;background:transparent;color:var(--oxblood);font:400 20px var(--serif);cursor:pointer}
+html.print-destination .ps-fly,html.print-destination .ps-order{background:rgba(250,247,239,.88);border:1px solid rgba(137,105,67,.2);border-radius:8px;padding:22px;box-shadow:0 4px 18px rgba(46,32,18,.06);color:var(--ink)}
+html.print-destination .ps-fly > .mc-title{position:static;background:none;font:400 32px var(--serif);margin:0 0 18px}
+html.print-destination .ps-fly-head{display:none}
+html.print-destination .ps-step{font:400 23px var(--serif);color:var(--ink);margin:20px 0 12px}
+html.print-destination .ps-step b{background:none;color:inherit;font:inherit;padding:0;display:inline}
+html.print-destination .ps-step b::after{content:'.'}
+html.print-destination .ps-fams{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+html.print-destination .ps-fam{max-width:240px;padding:8px;text-align:left;border-radius:6px}
+html.print-destination .ps-fam .nm{font:400 23px var(--serif);display:block;margin:10px 4px}
+html.print-destination .ps-fam .fr{font:14px var(--sans);display:block;margin:8px 4px}
+html.print-destination .ps-finish{margin:0}
+html.print-destination .ps-finish img{width:100%;height:130px;object-fit:cover}
+html.print-destination .ps-finish figcaption{font:14px/1.4 var(--sans);padding:10px 4px}
+html.print-destination .ps-size{min-width:130px;padding:16px;font-size:22px}
+html.print-destination .ps-add{position:static;margin:22px 0 0;border-radius:6px;font-size:22px}
+html.print-destination .ps-or-h{font:400 30px var(--serif);color:var(--ink)}
+html.print-destination .ps-or-sub{display:none}
+html.print-destination .ps-or-line{background:transparent;border:0;border-bottom:1px solid rgba(137,105,67,.18);padding:18px 0}
+html.print-destination .ps-or-line .ti{color:var(--ink);font:400 22px var(--serif)}
+html.print-destination .ps-or-line .pf,html.print-destination .ps-or-line .lp,html.print-destination .ps-or-line .ps-qty{color:var(--ink-soft);font-size:14px}
+html.print-destination .ps-or-add{color:var(--oxblood);border-color:var(--oxblood);font:400 20px var(--serif);padding:10px}
+html.print-destination .ps-or-foot{position:static;background:none;padding:18px 0 0;margin:18px 0 0;border-top:1px solid rgba(137,105,67,.2)}
+html.print-destination .ps-or-row,html.print-destination .ps-or-row b{color:var(--ink-soft);font:14px/1.5 var(--sans)}
+html.print-destination .ps-or-row.is-total,html.print-destination .ps-or-row.is-total b{font:400 28px var(--serif);color:var(--ink)}
+html.print-destination .ps-or-go{background:var(--oxblood);color:var(--vellum-100);border-radius:6px;font:400 23px var(--serif)}
+html.print-destination .ps-or-safe{color:var(--ink-soft);font-size:12px}
+.print-address{margin-top:22px;color:var(--ink)}
+.print-address summary{font:400 23px var(--serif);cursor:pointer;list-style:none;display:flex;justify-content:space-between}
+.print-address summary span{font-size:19px;color:var(--oxblood);text-decoration:underline}
+.print-destination-summary{font:14px/1.5 var(--sans);margin:12px 0;color:var(--ink-soft)}
+html.print-destination .ps-addr input,html.print-destination .ps-addr select{background:rgba(255,255,255,.7);color:var(--ink);border:1px solid rgba(137,105,67,.3);font-size:14px}
+html.print-destination .ps-ship-opt,html.print-destination .ps-or-lab{color:var(--ink-soft)}
+html.print-destination .ps-rc{background:transparent!important;position:relative;inset:auto;width:100%;min-height:100%;padding:24px 0}
+html.print-destination .ps-rc-in{max-width:860px;margin:0 auto;background:rgba(250,247,239,.94);border:1px solid rgba(137,105,67,.2);border-radius:8px;padding:32px;box-shadow:0 8px 30px rgba(46,32,18,.1)}
+html.print-destination .ps-rc h2,html.print-destination .ps-rc-say,html.print-destination .ps-rc-eyebrow{text-align:center;max-width:none}
+html.print-destination .ps-rc-item{margin:20px 0;padding:0 0 18px}
+html.print-destination .ps-rc-acts{justify-content:center;margin-top:28px}
+.print-status{display:flex;margin:26px 0;gap:8px;list-style:none;padding:0}
+.print-status li{flex:1;text-align:center;font:13px/1.4 var(--sans);color:var(--ink-soft)}
+.print-status li::before{content:'';display:block;margin:0 auto 8px;width:18px;height:18px;border:1px solid var(--brass);border-radius:50%}
+.print-status li.reached::before{background:#3f6143;border-color:#3f6143}
+html.print-destination.receipt-view #psWallBody,html.print-destination.receipt-view #psSay{display:none}
+html.print-destination .ck-card{width:min(560px,100%)}
+@media(max-width:1100px){html.print-destination .ps-body{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}html.print-destination .ps-order{grid-column:1/-1}}
+@media(max-width:767px){html.print-destination .pshop{padding:16px}html.print-destination .ps-body{grid-template-columns:1fr;gap:18px}html.print-destination .ps-order{grid-column:auto}html.print-destination .ps-rc-in{padding:20px}.print-status{gap:4px}.print-status li{font-size:12px}}
