@@ -8784,7 +8784,10 @@ function reconcileCollection(all, portfoliosKnown, shelfKnown){
 
 function renderCollection(){
   return Promise.all([
-    fetch('/api/v1/portfolios', { credentials:'include' })
+    fetch('/api/v1/foyer/adopt', { method:'POST', credentials:'include' })
+      .then(function(r){ if (!r.ok && r.status !== 401) console.warn('[foyer] adoption will retry on next Collection refresh'); })
+      .catch(function(){ console.warn('[foyer] adoption will retry on next Collection refresh'); })
+      .then(function(){ return fetch('/api/v1/portfolios', { credentials:'include' }); })
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(d){
         /* null means the list could not be read; [] means the server read it

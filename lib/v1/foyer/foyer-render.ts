@@ -21,10 +21,8 @@
 // (MAX_ATTEMPTS = 2) -- aesthetic QA and a retry policy the foyer's fast
 // reveal is ruled not to have. No Gate 1, no Gate 2.
 //
-// THE CLEAN IMAGE NEVER LEAVES THIS FUNCTION. callNB2 fetches Replicate's
-// output URL server-side and hands back bytes; the URL is never returned. The
-// clean bytes are watermarked and dropped -- not stored, not logged, not
-// returned. What comes back is the marked JPEG only.
+// Clean bytes are retained privately through the server callback before watermarking.
+// The returned browser result remains the marked JPEG only.
 
 import sharp from 'sharp'
 import { callNB2 } from '@/lib/v1/portraits/portraits-generator'
@@ -68,6 +66,7 @@ export async function renderFoyerReveal(input: {
   subject:           PortraitsSubject | null
   ageGroup:          string | null
   replicateApiToken: string
+  retainClean: (clean: string, preset: string) => Promise<void>
 }): Promise<FoyerRevealResult> {
   const subject  = input.subject ?? undefined
   const presetId = resolvePresetForSubject(input.effectId as PortraitsPresetId, subject)
@@ -89,6 +88,7 @@ export async function renderFoyerReveal(input: {
      progressive, metadata stripped) and keeps NB2's dimensions. */
   const nb2Ms  = Date.now() - tNb2
   const tMark  = Date.now()
+  await input.retainClean(clean, presetId)
   const marked = await bakeFoyerWatermark(clean)
   const jpeg = await sharp(Buffer.from(marked, 'base64'))
     .toColourspace('srgb')

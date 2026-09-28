@@ -3,6 +3,10 @@
     {
       "path": "/api/v1/portfolios/items/render-poll",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/v1/foyer/cleanup",
+      "schedule": "17 * * * *"
     }
   ]
 }

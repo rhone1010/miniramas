@@ -1,5 +1,6 @@
 // Pets adapter of the existing Foyer reveal; allowance, delivery and finalization unchanged.
 import { NextRequest, NextResponse } from 'next/server'
+import { retainFoyerClean, finishFoyerClaim, cleanupFoyerResults, signResultClaim, RESULT_CLAIM_SECONDS, RESULT_COOKIE_PREFIX } from '@/lib/v1/foyer/foyer-result-claim'
 import { decodeSource, foyerDb } from '@/lib/v1/foyer/foyer-source'
 import { foyerSecret, ipIdentity, deviceMarker, sha256Hex, verifyIntake } from '@/lib/v1/foyer/foyer-identity'
 import { claimReveal, finalizeReveal, revealAvailable } from '@/lib/v1/foyer/foyer-allowance'
@@ -18,6 +19,7 @@ export async function GET(req: NextRequest) {
   const secret = foyerSecret()
   const sb     = foyerDb()
   if (!secret || !sb) return reply({ available: false, reason: 'unavailable' })
+  await cleanupFoyerResults(sb).catch(() => console.warn('[foyer] cleanup deferred'))
   // TEMPORARY PREVIEW TEST BYPASS — REMOVE BEFORE PR #178 MERGE: Preview only, no allowance read.
   if (previewAllowanceBypass()) return reply({ available: true })
   const ok = await revealAvailable(sb, ipIdentity(req, secret), deviceMarker(req))
@@ -66,16 +68,26 @@ export async function POST(req: NextRequest) {
   const effectId = pickRevealEffect()
   const t0 = Date.now()
   try {
+    let resultClaim: Awaited<ReturnType<typeof retainFoyerClean>> | undefined
     const r = await renderFoyerReveal({
       sourceImageB64: src.b64,
       effectId,
       replicateApiToken,
+      retainClean: async (clean, preset) => {
+        resultClaim = await retainFoyerClean(sb, { series: 'pets', clean, preset, source: src.b64, subject: verdict.subject, ageGroup: verdict.ageGroup })
+      },
     })
+    if (!resultClaim) throw new Error('foyer_result_missing')
+    await finishFoyerClaim(sb, resultClaim, r.imageDataUrl)
     if (claimId) await finalizeReveal(sb, claimId, true)
     // ms = the render step (NB2 + watermark), as before; nb2_ms / mark_ms /
     // refs split it -- diagnostic only (go-to-market pass 1, 2026-09-14).
     console.log(`[foyer/reveal] ok effect=${effectId} preset=${r.presetId} prompt_chars=${r.promptChars} ms=${Date.now() - t0} nb2_ms=${r.timing.nb2Ms} mark_ms=${r.timing.markMs} refs=${r.timing.styleRefs} total_ms=${Date.now() - tReq}`)
-    return reply({ status: 'ok', image: r.imageDataUrl, label: r.label })
+    const response = reply({ status: 'ok', image: r.imageDataUrl, label: r.label })
+    response.cookies.set(RESULT_COOKIE_PREFIX + resultClaim.id, signResultClaim(secret, resultClaim.id, resultClaim.expires), {
+      httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: RESULT_CLAIM_SECONDS,
+    })
+    return response
   } catch (e: unknown) {
     if (claimId) await finalizeReveal(sb, claimId, false)
     console.error(`[foyer/reveal] render failed effect=${effectId} ms=${Date.now() - t0} total_ms=${Date.now() - tReq}: ${e instanceof Error ? e.message : String(e)}`)

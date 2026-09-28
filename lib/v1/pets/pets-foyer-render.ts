@@ -28,6 +28,7 @@ export async function renderPetsFoyerReveal(input: {
   sourceImageB64: string
   effectId: string
   replicateApiToken: string
+  retainClean: (clean: string, preset: string) => Promise<void>
 }): Promise<FoyerRevealResult> {
   const presetId = input.effectId
   const styleRefs: string[] = []
@@ -48,6 +49,7 @@ export async function renderPetsFoyerReveal(input: {
      progressive, metadata stripped) and keeps NB2's dimensions. */
   const nb2Ms  = Date.now() - tNb2
   const tMark  = Date.now()
+  await input.retainClean(clean, presetId)
   const marked = await bakeFoyerWatermark(clean)
   const jpeg = await sharp(Buffer.from(marked, 'base64'))
     .toColourspace('srgb')
