@@ -5319,7 +5319,7 @@ html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:n
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>
         Back to My Collection
       </button>
-      <span class="mc-title" id="psTitle">Print Shop</span>
+      <div class="print-page-identity"><span class="print-eyebrow">PRINT SHOP</span><h1 id="psTitle">Bring your artwork home.</h1></div>
       <span class="mc-n" id="psN"></span>
     </div>
     <p class="mc-say" id="psSay"></p>
@@ -10478,47 +10478,36 @@ window.EFFECT_PREVIEWS = {
   function psView(){ }
 
   /* ---- the wall ---------------------------------------------------------- */
+  var PRINT_COLLECTION = [], PRINT_COLLECTION_STATE='loading', PRINT_SELECTION_SEQ=0;
+  function printCollectionGallery(){
+    var gallery=document.getElementById('printCollectionGallery');if(!gallery)return;
+    gallery.innerHTML=PRINT_COLLECTION.map(function(p){
+      var selected=PS_PIECE&&PS_PIECE.id===p.id,inOrder=ORDER.some(function(l){return l.pieceId===p.id;});
+      return '<button type="button" class="print-collection-thumb'+(selected?' is-selected':'')+(inOrder?' is-in-order':'')+'" data-print-candidate="'+esc(p.id)+'" aria-pressed="'+!!selected+'" aria-label="'+esc(effectLabel(p.name))+(inOrder?' — In your order':'')+'"><img loading="lazy" src="'+esc(p.art)+'" alt=""><span>'+ (inOrder?'In your order':selected?'Selected':esc(effectLabel(p.name)))+'</span></button>';
+    }).join('');
+    gallery.querySelectorAll('img').forEach(function(img){img.onload=function(){if(img.naturalWidth!==img.naturalHeight)img.parentElement.remove();};if(img.complete&&img.naturalWidth&&img.naturalWidth!==img.naturalHeight)img.parentElement.remove();});
+    var status=document.getElementById('printGalleryStatus');if(status)status.textContent=PRINT_COLLECTION_STATE==='loading'?'Checking My Collection…':PRINT_COLLECTION_STATE==='error'?'My Collection is unavailable.':!PRINT_COLLECTION.length?'No eligible artwork in My Collection.':'';
+  }
+  function loadPrintCollection(){
+    function read(url){return fetch(url,{credentials:'same-origin',cache:'no-store'}).then(function(r){if(!r.ok)throw Error('collection_unavailable');return r.json();});}
+    read('/api/v1/portfolios').then(async function(d){
+      var portfolios=(d.portfolios||[]).filter(function(p){return p.series==='portraits'||p.series==='pets';}),at=0;
+      await Promise.all([0,1,2].map(async function(){while(at<portfolios.length){var p=portfolios[at++];var both=await Promise.all([read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/status'),read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/unlocks')]);
+        var st=both[0],un=both[1],owned={};(un.items||[]).forEach(function(i){owned[i.slot]=i.unlocked;});
+        if(st.aspectRatio && st.aspectRatio!=='1:1')continue;
+        (st.items||[]).forEach(function(i){if(i.status==='done'&&owned[i.slot]&&i.previewId&&i.previewUrl&&!PRINT_COLLECTION.some(function(x){return x.id===i.previewId;}))PRINT_COLLECTION.push({id:i.previewId,name:i.preset,art:i.previewUrl});});
+      }}));
+      PRINT_COLLECTION_STATE='ready';printCollectionGallery();
+    }).catch(function(){PRINT_COLLECTION_STATE='error';printCollectionGallery();});
+  }
   function renderWall(){
-    var g = document.getElementById('psGrid');
-    var say = document.getElementById('psSay');
-    var n = document.getElementById('psN');
-    if (!g) return;
-    /* Only what was sent. */
-    var list = PIECES.filter(function(p){
-      return p.art && !p.crafting && PS_SENT[p.id];
-    });
-    /* A count of pieces the customer already knows they have told them
-       nothing. Say what to do instead. */
-    if (n) n.textContent = '';
-    if (say){
-      say.textContent = list.length
-        ? 'Make your print'
-        : 'Nothing here yet. Send a piece over from My Collection and it ' +
-          'will be waiting for you.';
-    }
-    g.innerHTML = '';
-    list.forEach(function(p){
-      var ok = printable(p);
-      var el = document.createElement('article');
-      el.className = 'ps-pc' + (ok ? '' : ' is-waiting') +
-                     (PS_PIECE && PS_PIECE.id === p.id ? ' is-on' : '');
-      el.dataset.pieceId = p.id;
-      var inOrder = ORDER.some(function(l){ return l.pieceId === p.id; });
-      el.innerHTML =
-        (ok ? (inOrder ? '<span class="tag">In your order</span>' : '')
-            : '<span class="tag">saving\u2026</span>') +
-        '<img src="' + esc(p.art) + '" alt="" loading="lazy">' +
-        '<div class="nm">' + esc(effectLabel(p.name) || 'Crafted Image') + '</div>';
-      g.appendChild(el);
-    });
-    if(location.pathname==='/print' && PS_PIECE){
-      var detail=document.createElement('div');
-      detail.innerHTML='<h3 class="print-art-title">'+esc(effectLabel(PS_PIECE.name)||'Crafted Image')+'</h3><p class="print-art-origin">From My Collection</p><div class="print-filmstrip">'+list.map(function(p){return '<button type="button" data-piece-id="'+esc(p.id)+'" aria-label="'+esc(effectLabel(p.name))+'"><img src="'+esc(p.art)+'" alt=""></button>';}).join('')+'<span>'+list.length+' print'+(list.length===1?'':'s')+'</span></div><button type="button" class="print-add-art" id="printAddArtwork">+ Add another artwork from My Collection</button>';
-      g.appendChild(detail);
-      document.getElementById('printAddArtwork').onclick=function(){location.assign('/discovery?print_pick=1');};
-    }
-    renderFly();
-    renderOrder();
+    var g=document.getElementById('psGrid');if(!g)return;
+    var scroll=document.getElementById('printCollectionGallery');var top=scroll?scroll.scrollTop:0;
+    var p=PS_PIECE;
+    g.innerHTML=(p?'<article class="ps-pc is-on"><img src="'+esc(p.art)+'" alt="'+esc(effectLabel(p.name))+'"></article><h3 class="print-art-title">'+esc(effectLabel(p.name))+'</h3><p class="print-art-origin">From My Collection · Selected'+(ORDER.some(function(l){return l.pieceId===p.id;})?' · In your order':'')+'</p>':'')+
+      '<h3 class="print-gallery-heading">Select more artwork to print</h3><p id="printGalleryStatus" role="status"></p><div id="printCollectionGallery" class="print-collection-gallery" aria-label="My Collection artwork"></div>';
+    printCollectionGallery();document.getElementById('printCollectionGallery').scrollTop=top;
+    renderFly();renderOrder();
   }
 
   /* ---- the flyout -------------------------------------------------------- */
@@ -10699,7 +10688,7 @@ window.EFFECT_PREVIEWS = {
 
     var a = addrValues();
     var editor=document.getElementById('psAddressEdit');
-    var editorOpen=editor ? editor.open : !addrComplete(a);
+    var editorOpen=editor ? editor.open : false;
     var lines = ORDER.map(function(l){
       var fam = null, sz = null;
       PRINT_FAMILIES.forEach(function(f){
@@ -10738,7 +10727,7 @@ window.EFFECT_PREVIEWS = {
       '<p class="ps-or-sub">Review your pieces and complete your purchase.</p>' +
       lines +
       '<button class="ps-or-add" id="psAddMore" type="button">+ Add another piece</button>' +
-      '<details class="print-address" id="psAddressEdit"'+(editorOpen?' open':'')+'><summary>Shipping to <span>Edit</span></summary>' +
+      '<details class="print-address" id="psAddressEdit"'+(editorOpen?' open':'')+'><summary>Ships to <span>— Edit</span></summary>' +
       '<div class="ps-addr">' +
         '<input class="wide" id="psEmail" type="email" placeholder="Email for the receipt" value="' +
           esc(a.email || (ME && ME.email) || '') + '">' +
@@ -10787,10 +10776,15 @@ window.EFFECT_PREVIEWS = {
     if (sel) sel.value = a.countryCode || 'US';
     /* The form is rebuilt on every render, so the saved address has to be
        put back each time — into empty fields only. */
-    if (typeof fillAddressForm === 'function') fillAddressForm();
+    if (!editor && typeof fillAddressForm === 'function') fillAddressForm();
     var destination=addrValues();
-    document.getElementById('printDestinationSummary').textContent=[destination.name,destination.line1,destination.line2,destination.city,destination.state,destination.postcode,destination.countryCode].filter(Boolean).join(', ');
-    document.getElementById('printAddressDone').onclick=function(){if(addrComplete(addrValues()))document.getElementById('psAddressEdit').open=false;};
+    document.getElementById('printDestinationSummary').textContent=[destination.name,destination.city,destination.state,destination.postcode].filter(Boolean).join(', ');
+    document.getElementById('printAddressDone').onclick=function(){
+      var inputs=document.querySelectorAll('#psOrder .ps-addr input');
+      for(var i=0;i<inputs.length;i++){var input=inputs[i];input.required=['psEmail','psName','psL1','psCity','psZip'].indexOf(input.id)>=0;if(!input.reportValidity())return;}
+      if(!addrComplete(addrValues()))return;
+      clearTimeout(psQuoteTimer);document.getElementById('psAddressEdit').open=false;askQuote();
+    };
     var checkoutButton=document.getElementById('psCo');if(checkoutButton)checkoutButton.disabled=!PS_SHIP||!addrComplete(addrValues());
   }
 
@@ -10917,6 +10911,18 @@ window.EFFECT_PREVIEWS = {
   /* ---- the handlers ------------------------------------------------------ */
   var psGrid = document.getElementById('psGrid');
   if (psGrid) psGrid.addEventListener('click', function(e){
+    var candidate=e.target.closest('[data-print-candidate]');
+    if(candidate){
+      var seq=++PRINT_SELECTION_SEQ;candidate.disabled=true;
+      var status=document.getElementById('printGalleryStatus');if(status)status.textContent='Checking artwork…';
+      fetch('/api/v1/print/source?piece='+encodeURIComponent(candidate.dataset.printCandidate),{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+        if(seq!==PRINT_SELECTION_SEQ)return;
+        if(!d.piece||!d.fulfilment)throw Error('unavailable');
+        PS_PIECE=d.piece;PS_OPT=0;PS_FAM=0;PS_SIZE=0;PS_QTY=1;
+        if(!PIECES.some(function(p){return p.id===d.piece.id;}))PIECES.push(d.piece);
+        renderWall();
+      }).catch(function(){if(seq===PRINT_SELECTION_SEQ){candidate.disabled=false;if(status)status.textContent='This artwork is unavailable for printing.';}});return;
+    }
     var card = e.target.closest('[data-piece-id]'); if (!card) return;
     if (card.classList.contains('is-waiting')) return;
     var id = card.dataset.pieceId;
@@ -10949,7 +10955,7 @@ window.EFFECT_PREVIEWS = {
   var psCartEl = document.getElementById('psOrder');
   if (psCartEl) psCartEl.addEventListener('click', function(e){
     /* Back to the gallery to choose another piece. */
-    if (e.target.closest('#psAddMore')){ window.location.assign('/discovery?print_pick=1'); return;
+    if (e.target.closest('#psAddMore')){ document.getElementById('printCollectionGallery').scrollIntoView({block:'nearest'}); return;
       PS_PIECE = null;
       renderWall();
       var g = document.getElementById('psGrid');
@@ -11010,7 +11016,7 @@ window.EFFECT_PREVIEWS = {
       .then(function(r){ return r.json(); }).then(function(d){
         if (!d.piece) { console.warn('[print] source unavailable:', d.error); return; }
         PIECES.push(d.piece); PS_PIECE = d.piece;
-        sendToPrintShop([d.piece]); showPrintShop();
+        sendToPrintShop([d.piece]); showPrintShop(); loadPrintCollection();
       }).catch(function(e){ console.warn('[print] source unavailable:', e.message); });
   });
 

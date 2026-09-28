@@ -66,3 +66,60 @@ html.print-destination .ps-or-empty{color:var(--ink-soft)}
 html.print-destination .ps-pc .nm{display:none}
 html.print-destination #psSay{display:none}
 html.print-destination .ps-rc{overflow:visible;max-height:none}
+
+/* Round 2: atelier field, compact commerce surfaces, bounded Collection picker. */
+:root{--ui-serif-interactive-desktop:1.6rem}
+html.print-destination .pshop{background:radial-gradient(ellipse at 28% 15%,var(--vellum-100),transparent 65%),linear-gradient(125deg,var(--vellum-300),var(--taupe));padding:18px 3vw}
+html.print-destination .mc-head{align-items:center;gap:24px;padding-bottom:12px}
+.print-page-identity{display:flex;flex-direction:column;gap:3px}
+.print-eyebrow{font:12px var(--sans);letter-spacing:.2em;color:var(--brass)}
+.print-page-identity h1{font:400 38px/1.05 var(--serif);margin:0;color:var(--ink)}
+html.print-destination .ps-body{gap:20px;margin-top:14px;grid-template-columns:minmax(0,3.2fr) minmax(0,4fr) minmax(0,2.8fr)}
+html.print-destination #psGrid>.ps-pc{height:210px;width:100%;aspect-ratio:auto;background:rgba(248,244,235,.6);border:1px solid var(--brass);padding:6px}
+html.print-destination #psGrid>.ps-pc img{height:100%;width:100%;object-fit:contain}
+.print-art-title{font-size:25px;margin:10px 0 2px}
+.print-art-origin{font-size:12px;margin-bottom:12px}
+.print-gallery-heading{font:400 25px/1.1 var(--serif);margin:12px 0 8px}
+#printGalleryStatus{font:12px var(--sans);color:var(--ink-soft);margin:4px 0}
+.print-collection-gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:min-content;gap:8px;max-height:240px;overflow-y:auto;overscroll-behavior:contain;padding:4px;scrollbar-gutter:stable}
+.print-collection-thumb{position:relative;min-width:0;padding:3px;aspect-ratio:1;border:2px solid transparent;border-radius:7px;background:var(--vellum-100);cursor:pointer}
+.print-collection-thumb img{display:block;width:100%;height:100%;object-fit:cover;border-radius:4px}
+.print-collection-thumb span{position:absolute;bottom:3px;left:3px;right:3px;padding:3px 2px;background:rgba(42,36,30,.82);color:var(--vellum-100);font:10px/1.2 var(--sans);max-height:30px;overflow:hidden}
+.print-collection-thumb.is-selected{border-color:var(--oxblood);box-shadow:0 0 0 1px var(--oxblood)}
+.print-collection-thumb.is-in-order span{background:var(--oxblood)}
+.print-collection-thumb:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+html.print-destination .ps-fly,html.print-destination .ps-order{padding:18px;background:var(--vellum-100);box-shadow:0 6px 20px rgba(42,36,30,.12)}
+html.print-destination .ps-fly>.mc-title{font-size:30px;margin-bottom:10px}
+html.print-destination .ps-step{margin:13px 0 8px}
+html.print-destination .ps-fams{display:block}
+html.print-destination .ps-fam{display:grid;grid-template-columns:140px 1fr;grid-template-rows:1fr auto;column-gap:12px;max-width:none;width:100%;border-radius:12px;padding:10px;background:var(--vellum-200)}
+html.print-destination .ps-fam .ps-finish{grid-row:1/3}
+html.print-destination .ps-finish img{height:94px;border-radius:6px}
+html.print-destination .ps-finish figcaption{font-size:12px;padding:5px 0}
+html.print-destination .ps-fam .nm{align-self:end;margin:0}
+html.print-destination .ps-fam .fr{margin:8px 0;align-self:start}
+html.print-destination .ps-fam.is-on,html.print-destination .ps-size.is-on{border:2px solid var(--oxblood);box-shadow:inset 0 0 0 2px var(--vellum-100);background:var(--vellum-200)}
+html.print-destination .ps-size{padding:10px 18px;border-radius:24px;min-width:140px}
+html.print-destination .ps-add{margin-top:14px;padding:10px;background:transparent;color:var(--oxblood);border:1px solid var(--oxblood)}
+html.print-destination .ps-or-h{font-size:29px}
+html.print-destination .ps-or-line{padding:10px 0;gap:10px}
+html.print-destination .ps-or-line>img{width:52px;height:52px}
+html.print-destination .ps-or-line .ti{font-size:22px;line-height:1.1}
+html.print-destination .ps-or-line .foot{margin-top:4px}
+html.print-destination .ps-or-line .ps-qty{height:28px}
+html.print-destination .ps-or-add{display:none}
+.print-address{margin-top:12px}
+.print-address summary{font-size:22px;line-height:1.2}
+.print-destination-summary{font-size:13px;line-height:1.4;margin:6px 0 8px}
+.print-address[open]{max-height:210px;overflow-y:auto;overscroll-behavior:contain}
+html.print-destination .ps-or-foot{padding-top:10px;margin-top:10px}
+html.print-destination .ps-or-row{margin:4px 0;line-height:1.2}
+html.print-destination .ps-or-row.is-total{padding-top:8px;margin-top:8px}
+html.print-destination .ps-or-go{padding:12px;margin-top:10px}
+html.print-destination .ps-or-safe{margin-top:7px;line-height:1.3}
+@media(min-width:768px){
+ .ui-serif-interactive,html.print-destination .mc-close,html.print-destination .mh-nav a,html.print-destination #mhSeriesBtn,html.print-destination .mh-out,html.print-destination .ps-add,html.print-destination .ps-or-go,html.print-destination .ps-size .nm,html.print-destination .ps-fam .nm,html.print-destination .ps-rc-btn,html.print-destination .print-add-art,html.print-destination .print-address summary,html.print-destination .print-address summary span{font-size:var(--ui-serif-interactive-desktop)}
+}
+@media(min-width:1500px){html.print-destination #psGrid>.ps-pc{height:250px}.print-collection-gallery{max-height:280px}}
+@media(max-width:1100px){html.print-destination .ps-body{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}}
+@media(max-width:767px){html.print-destination .ps-body{grid-template-columns:1fr}html.print-destination .mc-head{align-items:flex-start;flex-direction:column;gap:10px}.print-page-identity h1{font-size:32px}html.print-destination .ps-fam{grid-template-columns:120px 1fr}.print-collection-gallery{max-height:230px}}
