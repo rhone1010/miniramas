@@ -125,3 +125,12 @@ html.print-destination .ps-or-safe{margin-top:7px;line-height:1.3}
 @media(max-width:767px){html.print-destination .ps-body{grid-template-columns:1fr}html.print-destination .mc-head{align-items:flex-start;flex-direction:column;gap:10px}.print-page-identity h1{font-size:32px}html.print-destination .ps-fam{grid-template-columns:120px 1fr}.print-collection-gallery{max-height:230px}}
 
 html.print-destination .ps-or-line .ps-qty button,html.print-destination .ps-or-line .ps-qty span,html.print-destination .ps-rm{color:var(--ink)}
+
+/* Four server-catalog families, within the accepted configuration panel. */
+html.print-destination .ps-fams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html.print-destination .ps-fam{display:block;min-width:0}
+html.print-destination .ps-finish img{height:76px}
+html.print-destination .ps-fam .nm{margin-top:8px}
+html.print-destination .ps-fly{max-height:calc(100dvh - 190px);overflow-y:auto}
+.print-order-items{max-height:180px;overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:767px){html.print-destination .ps-fly{max-height:none;overflow:visible}}

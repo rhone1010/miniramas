@@ -10377,30 +10377,8 @@ window.EFFECT_PREVIEWS = {
      twenty-four is not a choice, it is a wall.
 
      Where the map carries no `family`, the finish stands in for one. */
-  var PRINT_FAMILIES = [
-    { id:"fine_art", label:"Fine Art Print", note:"Enhanced matte art paper, 200gsm",
-      sizes:[{ size:"8x8", finish:"fine_art", cents:2900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"fine_art", cents:4400, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"fine_art", cents:5400, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"fine_art", cents:6400, label:"20 \u00d7 20\u2033" }] },
-    { id:"premium", label:"Premium Fine Art", note:"Heavyweight fine art paper, museum grade",
-      sizes:[{ size:"8x8", finish:"premium", cents:3900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"premium", cents:5400, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"premium", cents:6900, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"premium", cents:8400, label:"20 \u00d7 20\u2033" }] },
-    { id:"canvas", label:"Gallery Canvas", note:"Stretched canvas, ready to hang",
-      sizes:[{ size:"8x8", finish:"canvas", cents:5900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"canvas", cents:6900, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"canvas", cents:8900, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"canvas", cents:11900, label:"20 \u00d7 20\u2033" }] },
-    { id:"framed_canvas", label:"Framed Canvas", note:"Stretched canvas in a solid frame",
-      sizes:[{ size:"8x8", finish:"framed_canvas", cents:7900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"framed_canvas", cents:9900, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"framed_canvas", cents:12900, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"framed_canvas", cents:16900, label:"20 \u00d7 20\u2033" }] },
-    { id:"framed", label:"Classic Frame", note:"Framed behind glaze, ready to hang",
-      sizes:[{ size:"8x8", finish:"framed", cents:8900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"framed", cents:9900, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"framed", cents:11900, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"framed", cents:13900, label:"20 \u00d7 20\u2033" }] },
-    { id:"matted", label:"Matted Frame", note:"Framed with a mount, behind glaze",
-      sizes:[{ size:"8x8", finish:"matted", cents:9400, label:"8 \u00d7 8\u2033 frame \u00b7 6 \u00d7 6\u2033 picture" }, { size:"12x12", finish:"matted", cents:10900, label:"12 \u00d7 12\u2033 frame \u00b7 9 \u00d7 9\u2033 picture" }, { size:"16x16", finish:"matted", cents:12900, label:"16 \u00d7 16\u2033 frame \u00b7 12 \u00d7 12\u2033 picture" }, { size:"20x20", finish:"matted", cents:14900, label:"20 \u00d7 20\u2033 frame \u00b7 16 \u00d7 16\u2033 picture" }] }
-  ];
-
-  /* Kept flat as well: the cart, the quote and the checkout all speak in
-     size+finish and none of them needs to know about families. */
-  var PRINT_OPTS = [
-    { size:"8x10", finish:"unframed", cents:2800, label:"8 \u00d7 10\u2033", note:"Enhanced matte art paper" },
-    { size:"12x16", finish:"unframed", cents:4800, label:"12 \u00d7 16\u2033", note:"Enhanced matte art paper" },
-    { size:"18x24", finish:"unframed", cents:6800, label:"18 \u00d7 24\u2033", note:"Enhanced matte art paper" },
-    { size:"12x16", finish:"framed", cents:11800, label:"12 \u00d7 16\u2033", note:"Framed, ready to hang" }
-  ];
-
+  var PRINT_FAMILIES = [];
+  var PRINT_CONFIG = {};
   var ORDER    = [];      /* {lid, pieceId, renderId, name, art, size, finish, copies, cents} */
   var PS_PIECE = null;    /* the piece open in the flyout */
   var PS_OPT   = 0;
@@ -10421,9 +10399,7 @@ window.EFFECT_PREVIEWS = {
      column, not a redesign. */
   var PS_SENT  = {};
   var PRINT_TEST_PIECE = new URLSearchParams(location.search).get('test_piece');
-  if (PRINT_TEST_PIECE) {
-    PRINT_FAMILIES = [Object.assign({}, PRINT_FAMILIES[0], { sizes: [PRINT_FAMILIES[0].sizes[0]] })];
-  }
+
 
   function sendToPrintShop(list){
     (list || []).forEach(function(p){ if (p && printable(p)) PS_SENT[p.id] = true; });
@@ -10478,6 +10454,11 @@ window.EFFECT_PREVIEWS = {
   function psView(){ }
 
   /* ---- the wall ---------------------------------------------------------- */
+  function selectPrintSource(d){
+    if(PS_PIECE && PRINT_FAMILIES.length)PRINT_CONFIG[PS_PIECE.id]={family:currentFamily().id,size:currentSize().size,qty:PS_QTY};
+    PS_PIECE=d.piece;PRINT_FAMILIES=d.catalog||[];PS_FAM=0;PS_SIZE=0;PS_QTY=1;
+    var saved=PRINT_CONFIG[PS_PIECE.id];if(saved){var f=PRINT_FAMILIES.findIndex(function(x){return x.id===saved.family;});if(f>=0){PS_FAM=f;var z=currentFamily().sizes.findIndex(function(x){return x.size===saved.size;});PS_SIZE=Math.max(0,z);PS_QTY=saved.qty;}}
+  }
   var PRINT_COLLECTION = [], PRINT_COLLECTION_STATE='loading', PRINT_SELECTION_SEQ=0;
   function printCollectionGallery(){
     var gallery=document.getElementById('printCollectionGallery');if(!gallery)return;
@@ -10485,7 +10466,7 @@ window.EFFECT_PREVIEWS = {
       var selected=PS_PIECE&&PS_PIECE.id===p.id,inOrder=ORDER.some(function(l){return l.pieceId===p.id;});
       return '<button type="button" class="print-collection-thumb'+(selected?' is-selected':'')+(inOrder?' is-in-order':'')+'" data-print-candidate="'+esc(p.id)+'" aria-pressed="'+!!selected+'" aria-label="'+esc(effectLabel(p.name))+(inOrder?' — In your order':'')+'"><img loading="lazy" src="'+esc(p.art)+'" alt=""><span>'+ (inOrder?'In your order':selected?'Selected':esc(effectLabel(p.name)))+'</span></button>';
     }).join('');
-    gallery.querySelectorAll('img').forEach(function(img){img.onload=function(){if(img.naturalWidth!==img.naturalHeight)img.parentElement.remove();};if(img.complete&&img.naturalWidth&&img.naturalWidth!==img.naturalHeight)img.parentElement.remove();});
+    gallery.querySelectorAll('img').forEach(function(img){img.onload=function(){if(!(img.naturalWidth===img.naturalHeight||img.naturalWidth*3===img.naturalHeight*2||img.naturalWidth*2===img.naturalHeight*3))img.parentElement.remove();};if(img.complete&&img.naturalWidth&&!(img.naturalWidth===img.naturalHeight||img.naturalWidth*3===img.naturalHeight*2||img.naturalWidth*2===img.naturalHeight*3))img.parentElement.remove();});
     var status=document.getElementById('printGalleryStatus');if(status)status.textContent=PRINT_COLLECTION_STATE==='loading'?'Checking My Collection…':PRINT_COLLECTION_STATE==='error'?'My Collection is unavailable.':!PRINT_COLLECTION.length?'No eligible artwork in My Collection.':'';
   }
   function loadPrintCollection(){
@@ -10494,7 +10475,7 @@ window.EFFECT_PREVIEWS = {
       var portfolios=(d.portfolios||[]).filter(function(p){return p.series==='portraits'||p.series==='pets';}),at=0;
       await Promise.all([0,1,2].map(async function(){while(at<portfolios.length){var p=portfolios[at++];var both=await Promise.all([read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/status'),read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/unlocks')]);
         var st=both[0],un=both[1],owned={};(un.items||[]).forEach(function(i){owned[i.slot]=i.unlocked;});
-        if(st.aspectRatio && st.aspectRatio!=='1:1')continue;
+        if(st.aspectRatio && ['1:1','2:3','3:2'].indexOf(st.aspectRatio)<0)continue;
         (st.items||[]).forEach(function(i){if(i.status==='done'&&owned[i.slot]&&i.previewId&&i.previewUrl&&!PRINT_COLLECTION.some(function(x){return x.id===i.previewId;}))PRINT_COLLECTION.push({id:i.previewId,name:i.preset,art:i.previewUrl});});
       }}));
       PRINT_COLLECTION_STATE='ready';printCollectionGallery();
@@ -10540,7 +10521,7 @@ window.EFFECT_PREVIEWS = {
   function renderFly(){
     var f = document.getElementById('psFly');
     if (!f) return;
-    if (!PS_PIECE){ f.hidden = true; f.innerHTML = ''; return; }
+    if (!PS_PIECE || !PRINT_FAMILIES.length){ f.hidden = true; f.innerHTML = ''; return; }
     f.hidden = false;
 
     var fams = PRINT_FAMILIES.map(function(fam, i){
@@ -10593,7 +10574,7 @@ window.EFFECT_PREVIEWS = {
 
   function addToOrder(){
     if (!PS_PIECE || !printable(PS_PIECE)) return;
-    if (PRINT_TEST_PIECE) { ORDER = []; PS_QTY = 1; }
+
     var o = currentSize();
     if (!o) return;
     /* The same piece may be ordered at more than one size, so a line is
@@ -10602,7 +10583,7 @@ window.EFFECT_PREVIEWS = {
     ORDER.forEach(function(l, i){
       if (l.pieceId === PS_PIECE.id && l.size === o.size && l.finish === o.finish) at = i;
     });
-    if (at >= 0){ ORDER[at].copies += PS_QTY; }
+    if (at >= 0){ ORDER[at].copies = Math.min(20,ORDER[at].copies + PS_QTY); }
     else {
       ORDER.push({
         lid:      'l' + (++PS_LID),
@@ -10613,6 +10594,7 @@ window.EFFECT_PREVIEWS = {
         size:     o.size,
         finish:   o.finish,
         copies:   PS_QTY,
+        optionLabel:o.label, familyLabel:currentFamily().label,
         cents:    o.cents
       });
     }
@@ -10703,8 +10685,8 @@ window.EFFECT_PREVIEWS = {
         '<img src="' + esc(l.art) + '" alt="">' +
         '<div class="info">' +
           '<div class="ti">' + esc(effectLabel(l.name) || 'Crafted Image') + '</div>' +
-          '<div class="pf">' + esc((sz && sz.label) || l.size) + ' \u00b7 ' +
-            esc((fam && fam.label) || l.finish) + '</div>' +
+          '<div class="pf">' + esc(l.optionLabel || (sz && sz.label) || l.size) + ' \u00b7 ' +
+            esc(l.familyLabel || (fam && fam.label) || l.finish) + '</div>' +
           '<div class="foot">' +
             '<div class="ps-qty">' +
               '<button type="button" data-q="-">\u2212</button>' +
@@ -10725,7 +10707,7 @@ window.EFFECT_PREVIEWS = {
 
     o.innerHTML = head +
       '<p class="ps-or-sub">Review your pieces and complete your purchase.</p>' +
-      lines +
+      '<div class="print-order-items">'+lines+'</div>' +
       '<button class="ps-or-add" id="psAddMore" type="button">+ Add another piece</button>' +
       '<details class="print-address" id="psAddressEdit"'+(editorOpen?' open':'')+'><summary>Ships to <span>— Edit</span></summary>' +
       '<div class="ps-addr">' +
@@ -10862,7 +10844,7 @@ window.EFFECT_PREVIEWS = {
       printEmbed=embed;embed.mount('#ckForm');
       document.getElementById('ckTitle').textContent='Your order';
       document.getElementById('ckOrder').hidden=false;
-      document.getElementById('ckOrderSize').textContent='8 × 8″ · Fine Art Print';
+      document.getElementById('ckOrderSize').textContent=ORDER.map(function(l){return l.optionLabel+' · '+l.familyLabel+' × '+l.copies;}).join(' / ');
       document.getElementById('ckOrderPrice').textContent=money(d.totalCents);
       document.getElementById('ckModal').classList.add('is-open');
       document.getElementById('ckX').onclick=closePrintPayment;
@@ -10918,7 +10900,7 @@ window.EFFECT_PREVIEWS = {
       fetch('/api/v1/print/source?piece='+encodeURIComponent(candidate.dataset.printCandidate),{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
         if(seq!==PRINT_SELECTION_SEQ)return;
         if(!d.piece||!d.fulfilment)throw Error('unavailable');
-        PS_PIECE=d.piece;PS_OPT=0;PS_FAM=0;PS_SIZE=0;PS_QTY=1;
+        selectPrintSource(d);PS_OPT=0;
         if(!PIECES.some(function(p){return p.id===d.piece.id;}))PIECES.push(d.piece);
         renderWall();
       }).catch(function(){if(seq===PRINT_SELECTION_SEQ){candidate.disabled=false;if(status)status.textContent='This artwork is unavailable for printing.';}});return;
@@ -10945,11 +10927,11 @@ window.EFFECT_PREVIEWS = {
     if (sz){ PS_SIZE = parseInt(sz.dataset.size, 10) || 0; renderFly(); return; }
     var q = e.target.closest('[data-q2]');
     if (q){
-      if (q.dataset.q2 === '+') PS_QTY = Math.min(PS_QTY + 1, PRINT_TEST_PIECE ? 1 : 20);
+      if (q.dataset.q2 === '+') PS_QTY = Math.min(PS_QTY + 1, 20);
       else PS_QTY = Math.max(PS_QTY - 1, 1);
       renderFly(); return;
     }
-    if (e.target.closest('#psAdd')) addToOrder();
+    if (e.target.closest('#psAdd')) { addToOrder(); askQuote(); }
   });
 
   var psCartEl = document.getElementById('psOrder');
@@ -10973,7 +10955,7 @@ window.EFFECT_PREVIEWS = {
       else {
         var q = e.target.closest('[data-q]');
         if (!q) return;
-        if (q.dataset.q === '+') ORDER[at].copies = PRINT_TEST_PIECE ? 1 : ORDER[at].copies + 1;
+        if (q.dataset.q === '+') ORDER[at].copies = Math.min(20,ORDER[at].copies + 1);
         else if (ORDER[at].copies > 1) ORDER[at].copies -= 1;
         else ORDER.splice(at, 1);
       }
@@ -11015,7 +10997,7 @@ window.EFFECT_PREVIEWS = {
     fetch('/api/v1/print/source?piece=' + encodeURIComponent(PRINT_TEST_PIECE), { credentials:'same-origin' })
       .then(function(r){ return r.json(); }).then(function(d){
         if (!d.piece) { console.warn('[print] source unavailable:', d.error); return; }
-        PIECES.push(d.piece); PS_PIECE = d.piece;
+        PIECES.push(d.piece); selectPrintSource(d);
         sendToPrintShop([d.piece]); showPrintShop(); loadPrintCollection();
       }).catch(function(e){ console.warn('[print] source unavailable:', e.message); });
   });
@@ -11425,7 +11407,7 @@ window.EFFECT_PREVIEWS = {
       var art = it.art
         ? '<img src="' + psEsc(it.art) + '" alt="">'
         : '';
-      var spec = [it.size === '8x8' ? '8 × 8″' : it.size, it.finish === 'fine_art' ? 'Fine Art Print' : it.finish].filter(Boolean).join(' \u00b7 ');
+      var spec = [it.sizeLabel || it.size, it.familyLabel || it.finish].filter(Boolean).join(' \u00b7 ');
       spec += ' \u00b7 Quantity: ' + it.copies;
       return '<div class="ps-rc-item">' +
                '<div class="ps-rc-art">' + art + '</div>' +

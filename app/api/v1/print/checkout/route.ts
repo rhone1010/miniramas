@@ -45,11 +45,12 @@
 //   made. It is recorded with a null owner and withheld at the webhook, which
 //   is the same protection one step later and no money lost either way.
 
+import {printPlan} from '@/lib/v1/print/geometry'
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/v1/print/stripe-client'
 import { getQuote, type ShippingMethod } from '@/lib/v1/print/prodigi-client'
-import { getSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
-import { ownedSquarePreview, requireSandboxPrint } from '@/lib/v1/print/owned-source'
+import { getLaunchSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
+import { ownedPrintPreview, requireSandboxPrint } from '@/lib/v1/print/owned-source'
 import { createPrintOrder, canFulfil, type ShippingAddress } from '@/lib/v1/print/db'
 import { getUser } from '@/lib/store/auth'
 import type Stripe from 'stripe'
@@ -95,6 +96,8 @@ export async function POST(req: Request) {
   if (!body.email || !body.shippingAddress || !body.successUrl || !body.cancelUrl) {
     return NextResponse.json({ error: 'Missing email/address/urls' }, { status: 400 })
   }
+  if(process.env.VERCEL_ENV==='preview')body.testPrint=true
+  const labels=new Map<string,{sizeLabel:string;familyLabel:string}>()
   const addr = body.shippingAddress
   if (!addr.name || !addr.line1 || !addr.city || !addr.postcode || !addr.countryCode) {
     return NextResponse.json({ error: 'Address missing required fields' }, { status: 400 })
@@ -104,15 +107,14 @@ export async function POST(req: Request) {
     if (!ownerKey) return NextResponse.json({ error: 'sign_in_required' }, { status: 401 })
     try {
       requireSandboxPrint()
-      if (body.items.length !== 1 || body.items[0].size !== '8x8' || body.items[0].finish !== 'fine_art' || body.items[0].copies !== 1) throw new Error('single_8x8_fine_art_required')
+      if(body.items.some(i=>!Number.isInteger(i.copies)||i.copies<1||i.copies>20))throw new Error('invalid_print_quantity')
       if (!await canFulfil(ownerKey)) throw new Error('fulfilment_permission_required')
       const origin = new URL(req.url).origin
       const printHooks = (await getStripe().webhookEndpoints.list({ limit: 100 })).data
         .filter(h => h.status === 'enabled' && new URL(h.url).pathname === '/api/v1/print/webhook' && (h.enabled_events.includes('*') || h.enabled_events.includes('checkout.session.completed')))
       if (!printHooks.length || printHooks.some(h => new URL(h.url).origin !== origin)) throw new Error('print_webhook_preview_required')
       if ([body.successUrl, body.cancelUrl].some(url => new URL(url).origin !== origin)) throw new Error('invalid_return_url')
-      const piece = await ownedSquarePreview(ownerKey, body.items[0].renderId)
-      body.items[0].renderUrl = piece.art
+      for(const item of body.items){const piece=await ownedPrintPreview(ownerKey,item.renderId);printPlan(piece.width,piece.height,getLaunchSku(item.size,item.finish));item.renderUrl=piece.art;const entry=getLaunchSku(item.size,item.finish);labels.set(item.renderId+':'+item.size+':'+item.finish,{sizeLabel:piece.width>piece.height?entry.imageHeightIn+' × '+entry.imageWidthIn+'″':entry.label,familyLabel:entry.familyLabel})}
     } catch (err) {
       return NextResponse.json({ error: err instanceof Error ? err.message : 'print_unavailable' }, { status: 409 })
     }
@@ -129,12 +131,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'copies must be >= 1' }, { status: 400 })
     }
     let entry
-    try { entry = getSku(item.size, item.finish) }
+    try { entry = getLaunchSku(item.size, item.finish) }
     catch (err) {
       return NextResponse.json({ error: err instanceof Error ? err.message : 'Bad SKU' }, { status: 400 })
     }
     retailSubtotalCents += entry.retailCents * item.copies
     dbItems.push({
+      ...labels.get(item.renderId+':'+item.size+':'+item.finish),
       renderId:    item.renderId,
       renderUrl:   item.renderUrl,
       size:        item.size,
@@ -157,6 +160,7 @@ export async function POST(req: Request) {
       items: dbItems.map(i => ({
         sku:    i.sku,
         copies: i.copies,
+        attributes:getLaunchSku(i.size,i.finish).attributes,
         assets: [{ printArea: 'default' }],
       })),
     })
@@ -177,13 +181,13 @@ export async function POST(req: Request) {
 
   // ── Build Stripe line items ─────────────────────────────────
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = dbItems.map(i => {
-    const entry = getSku(i.size, i.finish)
+    const entry = getLaunchSku(i.size, i.finish)
     return {
       price_data: {
         currency: 'usd',
         product_data: {
           name: entry.description,
-          description: i.finish === 'framed' ? 'Framed, ready to hang' : 'Unframed',
+          description: entry.familyNote,
         },
         unit_amount: entry.retailCents,
       },
@@ -213,7 +217,7 @@ export async function POST(req: Request) {
       ...(body.embedded ? {ui_mode:'embedded' as const, return_url:body.successUrl, redirect_on_completion:'if_required' as const} : {success_url:body.successUrl,cancel_url:body.cancelUrl}),
       metadata: {
         merchant_ref: merchantRef,
-        ...(body.testPrint ? { print_test: 'square_8x8' } : {}),
+        ...(body.testPrint ? { print_test: 'catalog_v2' } : {}),
       },
     })
   } catch (err) {

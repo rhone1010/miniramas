@@ -65,7 +65,7 @@ import {
   markWithheld,
   canFulfil,
 } from '@/lib/v1/print/db'
-import { ownedSquareSource, requireSandboxPrint } from '@/lib/v1/print/owned-source'
+import { ownedPrintSource, requireSandboxPrint } from '@/lib/v1/print/owned-source'
 import { getSku } from '@/lib/v1/print/sku-map'
 
 export const runtime = 'nodejs'
@@ -112,12 +112,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, deduped: true, status: order.status })
   }
 
-  const squareTest = session.metadata?.print_test === 'square_8x8'
+  const squareTest = ['square_8x8','catalog_v2'].includes(session.metadata?.print_test || '')
   if (squareTest) {
     try {
       requireSandboxPrint()
       if (session.livemode || session.payment_status !== 'paid') throw new Error('paid_test_checkout_required')
-      if (!order.owner_key || order.items.length !== 1 || order.items[0].size !== '8x8' || order.items[0].finish !== 'fine_art' || order.items[0].copies !== 1) throw new Error('single_8x8_fine_art_required')
+      if (!order.owner_key || !order.items.length || order.items.some(i=>!Number.isInteger(i.copies)||i.copies<1||i.copies>20)) throw new Error('invalid_print_order')
     } catch (err) {
       return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : 'sandbox_required' }, { status: 409 })
     }
@@ -158,6 +158,7 @@ export async function POST(req: Request) {
   const prodigiItems: Array<{
     sku:    string
     copies: number
+    attributes?: Record<string,string>
     sizing: 'fillPrintArea' | 'fitPrintArea' | 'stretchToPrintArea'
     assets: Array<{ printArea: string; url: string }>
   }> = []
@@ -168,7 +169,7 @@ export async function POST(req: Request) {
       // 1. Fetch source render
       let sourceB64: string
       if (squareTest) {
-        const source = await ownedSquareSource(order.owner_key!, item.renderId)
+        const source = await ownedPrintSource(order.owner_key!, item.renderId)
         sourceB64 = source.bytes.toString('base64')
       } else {
         const res = await fetch(item.renderUrl)
@@ -188,6 +189,7 @@ export async function POST(req: Request) {
       prodigiItems.push({
         sku:    skuEntry.sku,
         copies: item.copies,
+        attributes:skuEntry.attributes,
         sizing: skuEntry.defaultSizing,
         assets: [{ printArea: 'default', url: asset.signedUrl }],
       })

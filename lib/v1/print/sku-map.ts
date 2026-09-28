@@ -51,7 +51,7 @@
 //     optimisation — no order can be fulfilled at the stated quality
 //     without it.
 
-export type PrintSize = '8x8' | '12x12' | '16x16' | '20x20'
+export type PrintSize = '8x8' | '12x12' | '16x16' | '20x20' | '8x12' | '12x18' | '16x24' | '20x30'
 
 export type PrintFinish =
   | 'fine_art'
@@ -62,6 +62,7 @@ export type PrintFinish =
   | 'matted'
 
 export interface SkuEntry {
+  attributes?: Record<string, string>
   sku:         string
   description: string
 
@@ -402,3 +403,26 @@ export function maxRequiredPx(): number {
 
 /** Smallest, cheapest valid SKU — used by the smoke-test script. */
 export const TEST_SKU = SKU_MAP.fine_art['8x8']!.sku
+
+// Approved launch expansion; exact Prodigi Products API variants verified 2026-09-27.
+SKU_MAP.fine_art['8x12']={sku:"GLOBAL-FAP-8X12",description:FAMILY_LABEL.fine_art+' 8 × 12″',family:'fine_art',familyLabel:FAMILY_LABEL.fine_art,familyNote:FAMILY_NOTE.fine_art,label:'8 × 12″',imageWidthIn:8,imageHeightIn:12,requiredPx:{w:2400,h:3600},defaultSizing:'fitPrintArea',retailCents:2900,attributes:{"paperType":"EMA","substrateWeight":"200gsm"}}
+SKU_MAP.fine_art['12x18']={sku:"GLOBAL-FAP-12X18",description:FAMILY_LABEL.fine_art+' 12 × 18″',family:'fine_art',familyLabel:FAMILY_LABEL.fine_art,familyNote:FAMILY_NOTE.fine_art,label:'12 × 18″',imageWidthIn:12,imageHeightIn:18,requiredPx:{w:3600,h:5400},defaultSizing:'fitPrintArea',retailCents:4400,attributes:{"paperType":"EMA","substrateWeight":"200gsm"}}
+SKU_MAP.fine_art['16x24']={sku:"GLOBAL-FAP-16X24",description:FAMILY_LABEL.fine_art+' 16 × 24″',family:'fine_art',familyLabel:FAMILY_LABEL.fine_art,familyNote:FAMILY_NOTE.fine_art,label:'16 × 24″',imageWidthIn:16,imageHeightIn:24,requiredPx:{w:4800,h:7200},defaultSizing:'fitPrintArea',retailCents:5900,attributes:{"paperType":"EMA","substrateWeight":"200gsm"}}
+SKU_MAP.fine_art['20x30']={sku:"GLOBAL-FAP-20X30",description:FAMILY_LABEL.fine_art+' 20 × 30″',family:'fine_art',familyLabel:FAMILY_LABEL.fine_art,familyNote:FAMILY_NOTE.fine_art,label:'20 × 30″',imageWidthIn:20,imageHeightIn:30,requiredPx:{w:6000,h:9000},defaultSizing:'fitPrintArea',retailCents:7900,attributes:{"paperType":"EMA","substrateWeight":"200gsm"}}
+SKU_MAP.premium['8x12']={sku:"GLOBAL-HPR-8X12",description:FAMILY_LABEL.premium+' 8 × 12″',family:'premium',familyLabel:FAMILY_LABEL.premium,familyNote:FAMILY_NOTE.premium,label:'8 × 12″',imageWidthIn:8,imageHeightIn:12,requiredPx:{w:2400,h:3600},defaultSizing:'fitPrintArea',retailCents:3900,attributes:{"paperType":"HPR","substrateWeight":"308gsm"}}
+SKU_MAP.premium['12x18']={sku:"GLOBAL-HPR-12X18",description:FAMILY_LABEL.premium+' 12 × 18″',family:'premium',familyLabel:FAMILY_LABEL.premium,familyNote:FAMILY_NOTE.premium,label:'12 × 18″',imageWidthIn:12,imageHeightIn:18,requiredPx:{w:3600,h:5400},defaultSizing:'fitPrintArea',retailCents:5400,attributes:{"paperType":"HPR","substrateWeight":"308gsm"}}
+SKU_MAP.premium['16x24']={sku:"GLOBAL-HPR-16X24",description:FAMILY_LABEL.premium+' 16 × 24″',family:'premium',familyLabel:FAMILY_LABEL.premium,familyNote:FAMILY_NOTE.premium,label:'16 × 24″',imageWidthIn:16,imageHeightIn:24,requiredPx:{w:4800,h:7200},defaultSizing:'fitPrintArea',retailCents:7400,attributes:{"paperType":"HPR","substrateWeight":"308gsm"}}
+SKU_MAP.premium['20x30']={sku:"GLOBAL-HPR-20X30",description:FAMILY_LABEL.premium+' 20 × 30″',family:'premium',familyLabel:FAMILY_LABEL.premium,familyNote:FAMILY_NOTE.premium,label:'20 × 30″',imageWidthIn:20,imageHeightIn:30,requiredPx:{w:6000,h:9000},defaultSizing:'fitPrintArea',retailCents:9900,attributes:{"paperType":"HPR","substrateWeight":"308gsm"}}
+SKU_MAP.canvas['8x12']={sku:"GLOBAL-CAN-8X12",description:FAMILY_LABEL.canvas+' 8 × 12″',family:'canvas',familyLabel:FAMILY_LABEL.canvas,familyNote:FAMILY_NOTE.canvas,label:'8 × 12″',imageWidthIn:8,imageHeightIn:12,requiredPx:{w:2454,h:3654},defaultSizing:'fitPrintArea',retailCents:5900,attributes:{"edge":"38mm","frame":"38mm standard stretcher bar","paperType":"Standard canvas (SC)","substrateWeight":"400gsm","wrap":"MirrorWrap"}}
+SKU_MAP.canvas['12x18']={sku:"GLOBAL-CAN-12X18",description:FAMILY_LABEL.canvas+' 12 × 18″',family:'canvas',familyLabel:FAMILY_LABEL.canvas,familyNote:FAMILY_NOTE.canvas,label:'12 × 18″',imageWidthIn:12,imageHeightIn:18,requiredPx:{w:3654,h:5454},defaultSizing:'fitPrintArea',retailCents:7900,attributes:{"edge":"38mm","frame":"38mm standard stretcher bar","paperType":"Standard canvas (SC)","substrateWeight":"400gsm","wrap":"MirrorWrap"}}
+SKU_MAP.canvas['16x24']={sku:"GLOBAL-CAN-16X24",description:FAMILY_LABEL.canvas+' 16 × 24″',family:'canvas',familyLabel:FAMILY_LABEL.canvas,familyNote:FAMILY_NOTE.canvas,label:'16 × 24″',imageWidthIn:16,imageHeightIn:24,requiredPx:{w:4854,h:7254},defaultSizing:'fitPrintArea',retailCents:10900,attributes:{"edge":"38mm","frame":"38mm standard stretcher bar","paperType":"Standard canvas (SC)","substrateWeight":"400gsm","wrap":"MirrorWrap"}}
+SKU_MAP.canvas['20x30']={sku:"GLOBAL-CAN-20X30",description:FAMILY_LABEL.canvas+' 20 × 30″',family:'canvas',familyLabel:FAMILY_LABEL.canvas,familyNote:FAMILY_NOTE.canvas,label:'20 × 30″',imageWidthIn:20,imageHeightIn:30,requiredPx:{w:6054,h:9054},defaultSizing:'fitPrintArea',retailCents:13900,attributes:{"edge":"38mm","frame":"38mm standard stretcher bar","paperType":"Standard canvas (SC)","substrateWeight":"400gsm","wrap":"MirrorWrap"}}
+SKU_MAP.framed['8x12']={sku:"GLOBAL-CFP-8X12",description:FAMILY_LABEL.framed+' 8 × 12″',family:'framed',familyLabel:FAMILY_LABEL.framed,familyNote:FAMILY_NOTE.framed,label:'8 × 12″',imageWidthIn:8,imageHeightIn:12,requiredPx:{w:2400,h:3600},defaultSizing:'fitPrintArea',retailCents:8900,attributes:{"frame":"Classic","color":"black","glaze":"Acrylic / Perspex","mount":"No mount / Mat","paperType":"EMA","substrateWeight":"200gsm"}}
+SKU_MAP.framed['12x18']={sku:"GLOBAL-CFP-12X18",description:FAMILY_LABEL.framed+' 12 × 18″',family:'framed',familyLabel:FAMILY_LABEL.framed,familyNote:FAMILY_NOTE.framed,label:'12 × 18″',imageWidthIn:12,imageHeightIn:18,requiredPx:{w:3600,h:5400},defaultSizing:'fitPrintArea',retailCents:10900,attributes:{"frame":"Classic","color":"black","glaze":"Acrylic / Perspex","mount":"No mount / Mat","paperType":"EMA","substrateWeight":"200gsm"}}
+SKU_MAP.framed['16x24']={sku:"GLOBAL-CFP-16X24",description:FAMILY_LABEL.framed+' 16 × 24″',family:'framed',familyLabel:FAMILY_LABEL.framed,familyNote:FAMILY_NOTE.framed,label:'16 × 24″',imageWidthIn:16,imageHeightIn:24,requiredPx:{w:4800,h:7200},defaultSizing:'fitPrintArea',retailCents:13900,attributes:{"frame":"Classic","color":"black","glaze":"Acrylic / Perspex","mount":"No mount / Mat","paperType":"EMA","substrateWeight":"200gsm"}}
+SKU_MAP.framed['20x30']={sku:"GLOBAL-CFP-20X30",description:FAMILY_LABEL.framed+' 20 × 30″',family:'framed',familyLabel:FAMILY_LABEL.framed,familyNote:FAMILY_NOTE.framed,label:'20 × 30″',imageWidthIn:20,imageHeightIn:30,requiredPx:{w:6000,h:9000},defaultSizing:'fitPrintArea',retailCents:17900,attributes:{"frame":"Classic","color":"black","glaze":"Acrylic / Perspex","mount":"No mount / Mat","paperType":"EMA","substrateWeight":"200gsm"}}
+
+export const LAUNCH_FAMILIES: PrintFinish[] = ['fine_art','premium','canvas','framed']
+for(const entry of Object.values(SKU_MAP.canvas)){if(entry)entry.attributes={wrap:'MirrorWrap'}}
+for(const entry of Object.values(SKU_MAP.framed)){if(entry)entry.attributes={color:'black'}}
+export function getLaunchSku(size:PrintSize,finish:PrintFinish):SkuEntry {if(!LAUNCH_FAMILIES.includes(finish))throw new Error('print_product_unavailable');return getSku(size,finish)}

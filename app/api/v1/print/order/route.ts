@@ -34,7 +34,7 @@ import type { PrintOrderRow } from '@/lib/v1/print/db'
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { ownedSquarePreview } from '@/lib/v1/print/owned-source'
+import { ownedPrintPreview } from '@/lib/v1/print/owned-source'
 import { getUser } from '@/lib/store/auth'
 
 export const runtime = 'nodejs'
@@ -115,7 +115,7 @@ export async function GET(req: Request) {
 
     for (const id of renderIds) {
       if (artById[id]) continue;
-      try { const source = await ownedSquarePreview(ownerKey, id); artById[id] = source.art; labelById[id] = source.name; } catch { /* Keep the receipt readable if its artwork is unavailable. */ }
+      try { const source = await ownedPrintPreview(ownerKey, id); artById[id] = source.art; labelById[id] = source.name; } catch { /* Keep the receipt readable if its artwork is unavailable. */ }
     }
     return NextResponse.json({
       ok: true,
@@ -138,6 +138,7 @@ export async function GET(req: Request) {
         shippedAt:     order.shipped_at,
         items: items.map((it: any) => ({
           size:        it?.size ?? null,
+          sizeLabel: it?.sizeLabel ?? null, familyLabel: it?.familyLabel ?? null,
           finish:      it?.finish ?? null,
           copies:      Number(it?.copies) || 1,
           retailCents: Number(it?.retailCents) || 0,
