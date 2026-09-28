@@ -134,3 +134,10 @@ html.print-destination .ps-fam .nm{margin-top:8px}
 html.print-destination .ps-fly{max-height:calc(100dvh - 190px);overflow-y:auto}
 .print-order-items{max-height:180px;overflow-y:auto;overscroll-behavior:contain}
 @media(max-width:767px){html.print-destination .ps-fly{max-height:none;overflow:visible}}
+
+/* Product-object imagery: full composition, consistent near-square cards. */
+html.print-destination .ps-fam{display:flex;flex-direction:column;height:100%}
+html.print-destination .ps-finish{width:100%;aspect-ratio:4/5;overflow:hidden}
+html.print-destination .ps-finish img{width:100%;height:100%;object-fit:contain}
+html.print-destination .ps-material{display:block;font:14px/1.4 var(--sans);color:var(--ink-soft);margin:8px 0}
+html.print-destination .ps-fam .fr{margin-top:auto;padding-top:8px}

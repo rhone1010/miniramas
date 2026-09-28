@@ -5600,13 +5600,14 @@ html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:n
    `files` shows no photograph, which is the honest state until one is
    shot. Nothing builds a path from a family name and hopes. */
 window.FINISH_ART = {
-  "base": "/previews/finishes/",
+  "base": "/",
   "files": {
-    "canvas": "canvas.jpg",
-    "fine_art": "fine_art.jpg",
+    "canvas": "print/mirror_wrap.png",
+    "fine_art": "previews/finishes/fine_art.jpg",
     "framed_canvas": "framed_canvas.jpg",
     "matted": "matted.jpg",
-    "premium": "premium.jpg"
+    "premium": "previews/finishes/premium.jpg",
+    "framed": "print/classic-frame-no-mount.jpg"
   }
 };
 
@@ -9078,6 +9079,7 @@ window.EFFECT_PREVIEWS = {
      recent. A queue rebuilt from last week would be a surprise, not a
      courtesy. */
   function restoreResume(){
+    if(new URLSearchParams(location.search).get('print')==='1' && new URLSearchParams(location.search).has('session'))return false;
     var raw = null, img = null;
     try {
       raw = localStorage.getItem(RESUME_KEY);
@@ -10510,7 +10512,7 @@ window.EFFECT_PREVIEWS = {
     if (!file) return '';
     return '<figure class="ps-finish">' +
       '<img src="' + esc(FA.base + file) + '" alt="" loading="lazy">' +
-      (fam.note ? '<figcaption>' + esc(fam.note) + '</figcaption>' : '') +
+      '' +
       '</figure>';
   }
 
@@ -10528,6 +10530,7 @@ window.EFFECT_PREVIEWS = {
       return '<button class="ps-fam' + (i === PS_FAM ? ' is-on' : '') +
         '" type="button" data-fam="' + i + '">' +
         finishArt(fam) + '<span class="nm">' + esc(fam.label) + '</span>' +
+        '<span class="ps-material">' + esc(fam.note || '') + '</span>' +
         '<span class="fr">From ' + money(fromPrice(fam)) + '</span>' +
         '</button>';
     }).join('');
@@ -10993,7 +10996,7 @@ window.EFFECT_PREVIEWS = {
 
   window.__showPrintShop = showPrintShop;
   if(location.pathname==='/print' && !PRINT_TEST_PIECE && !new URLSearchParams(location.search).has('session')) window.location.replace('/discovery?print_pick=1');
-  if (PRINT_TEST_PIECE) window.addEventListener('load', function(){
+  if (PRINT_TEST_PIECE && !new URLSearchParams(location.search).has('session')) window.addEventListener('load', function(){
     fetch('/api/v1/print/source?piece=' + encodeURIComponent(PRINT_TEST_PIECE), { credentials:'same-origin' })
       .then(function(r){ return r.json(); }).then(function(d){
         if (!d.piece) { console.warn('[print] source unavailable:', d.error); return; }
@@ -11391,6 +11394,30 @@ window.EFFECT_PREVIEWS = {
             'get an email the moment it does.'];
   }
 
+  var psReceiptOrder=null, psReceiptTimer=null, psReceiptBusy=false, psReceiptPolls=0;
+  function psReceiptSchedule(){
+    clearTimeout(psReceiptTimer);
+    if(psReceiptOrder && ['created','paid'].indexOf(psReceiptOrder.status)>=0 && psReceiptPolls<24)
+      psReceiptTimer=setTimeout(psReceiptRefresh,5000);
+  }
+  function psReceiptRefresh(){
+    clearTimeout(psReceiptTimer);
+    if(psReceiptBusy || !psReceiptOrder)return;
+    if(document.hidden){psReceiptPolls++;psReceiptSchedule();return;}
+    psReceiptBusy=true;psReceiptPolls++;
+    var session=new URLSearchParams(location.search).get('session');
+    fetch('/api/v1/print/order?status_only=1&session='+encodeURIComponent(session),{credentials:'same-origin',cache:'no-store'})
+      .then(function(r){return r.json();}).then(function(d){
+        if(!d || !d.ok || !d.order)return;
+        Object.assign(psReceiptOrder,d.order);
+        var el=psReceiptEl,say=psReceiptSay(psReceiptOrder);if(!el)return;
+        el.querySelector('h2').textContent=say[0];el.querySelector('.ps-rc-say').textContent=say[1];
+        el.querySelector('.sum span').textContent=psReceiptOrder.paidAt?'Total paid':'Total';
+        el.querySelectorAll('.print-status li').forEach(function(li,i){var o=psReceiptOrder;var reached=i===0?!!o.paidAt||['paid','placed','shipped'].indexOf(o.status)>=0:i<3?['placed','shipped'].indexOf(o.status)>=0:o.status==='shipped';li.classList.toggle('reached',reached);});
+      }).catch(function(){}).finally(function(){psReceiptBusy=false;psReceiptSchedule();});
+  }
+  window.addEventListener('pagehide',function(){clearTimeout(psReceiptTimer);psReceiptPolls=24;});
+
   function psReceiptPaint(o){
     var el = psReceiptMount();
     if (!el) return;
@@ -11457,7 +11484,7 @@ window.EFFECT_PREVIEWS = {
     el.addEventListener('click', function(e){
       var b = e.target.closest && e.target.closest('[data-rc]');
       if (!b) return;
-      if(b.getAttribute('data-rc') === 'view'){ window.location.reload(); return; }
+      if(b.getAttribute('data-rc') === 'view'){ psReceiptRefresh(); return; }
       window.location.assign('/discovery?print_pick=1'); return;
 
     });
@@ -11487,7 +11514,7 @@ window.EFFECT_PREVIEWS = {
       }).then(function(r){ return r.json(); });
 
     pending.then(function(d){
-      if (d && d.ok && d.order) { psReceiptPaint(d.order); if(['created','paid'].indexOf(d.order.status)>=0) setTimeout(function(){ window.location.reload(); },5000); return; }
+      if (d && d.ok && d.order) { psReceiptOrder=d.order; psReceiptPaint(d.order); psReceiptSchedule(); return; }
       psReceiptMount().innerHTML =
         '<div class="ps-rc-in"><p class="ps-rc-eyebrow">Your order</p>' +
         '<h2>Your order</h2>' +

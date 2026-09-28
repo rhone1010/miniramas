@@ -34,7 +34,7 @@ import type { PrintOrderRow } from '@/lib/v1/print/db'
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { ownedPrintPreview } from '@/lib/v1/print/owned-source'
+import { PREVIEW_BUCKET } from '@/lib/store/preview'
 import { getUser } from '@/lib/store/auth'
 
 export const runtime = 'nodejs'
@@ -69,10 +69,11 @@ export async function GET(req: Request) {
     const ownerKey = await resolveOwner(url.searchParams.get('guest_key'))
     if (!ownerKey) return NextResponse.json({ ok: false, reason: 'no_owner' })
 
+    const statusOnly = url.searchParams.get('status_only') === '1'
     const { data: order, error } = await sb
       .from('print_orders')
       .select(
-        'id, status, prodigi_order_id, error_message, customer_email, ' +
+        statusOnly ? 'id,status,paid_at,placed_at,shipped_at' : 'id, status, prodigi_order_id, error_message, customer_email, ' +
         'shipping_address, shipping_method, items, ' +
         'retail_subtotal_cents, retail_shipping_cents, retail_total_cents, ' +
         'tracking_number, tracking_url, created_at, paid_at, placed_at, shipped_at',
@@ -86,6 +87,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, reason: 'read_failed' })
     }
     if (!order) return NextResponse.json({ ok: false, reason: 'not_found' })
+
+    if (statusOnly) return NextResponse.json({ok:true,order:{status:order.status,paidAt:order.paid_at,placedAt:order.placed_at,shippedAt:order.shipped_at}}, {headers:{'Cache-Control':'private, no-store'}})
 
     // Fresh signed URLs for whatever is being made.
     const items = Array.isArray(order.items) ? order.items : []
@@ -115,7 +118,11 @@ export async function GET(req: Request) {
 
     for (const id of renderIds) {
       if (artById[id]) continue;
-      try { const source = await ownedPrintPreview(ownerKey, id); artById[id] = source.art; labelById[id] = source.name; } catch { /* Keep the receipt readable if its artwork is unavailable. */ }
+      // The owner-scoped persisted order establishes access. Sign its preview without re-running print eligibility or image analysis.
+      const {data: preview} = await sb.from('preview_ledger').select('storage_path').eq('id',id).maybeSingle()
+      if(preview?.storage_path){const {data:signed}=await sb.storage.from(PREVIEW_BUCKET).createSignedUrl(preview.storage_path,SIGNED_URL_TTL);if(signed?.signedUrl)artById[id]=signed.signedUrl}
+      const {data:item}=await sb.from('portfolio_items').select('preset').eq('preview_id',id).maybeSingle()
+      if(item?.preset)labelById[id]=item.preset
     }
     return NextResponse.json({
       ok: true,
