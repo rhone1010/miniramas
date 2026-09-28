@@ -24,8 +24,9 @@ export function compositionPlan(w:number,h:number,targetW:number,targetH:number)
   return {...assessment,width,height,padding:{left:Math.floor(dx/2),right:dx-Math.floor(dx/2),top:Math.floor(dy/2),bottom:dy-Math.floor(dy/2)}}
 }
 export function requiredUpscale(w:number,h:number,targetW:number,targetH:number) {
-  const scale=Math.max(targetW/w,targetH/h)
-  if (scale<=1) return 0
+  if(w>=targetW && h>=targetH)return 0
+  // Two pixels of headroom on both axes absorb provider integer rounding.
+  const scale=Math.max((targetW+2)/w,(targetH+2)/h)
   if (scale>10) throw new Error('print_resolution_unavailable')
   return scale
 }

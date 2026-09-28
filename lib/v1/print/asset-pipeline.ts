@@ -1,6 +1,6 @@
 import sharp from 'sharp'
 import {outpaint} from '../shared/outpaint'
-import {printPlan,finishPrintPixels,requiredUpscale} from './geometry'
+import {printPlan,finishPrintPixels,requiredUpscale,compositionPlan} from './geometry'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { getSku, type PrintSize, type PrintFinish } from './sku-map'
 
@@ -163,6 +163,12 @@ export async function preparePrintAsset(input: {
     working=await upscale(await sharp(working).toColourspace('srgb').jpeg({quality:95}).toBuffer(),scale)
     const enlarged=await sharp(working).metadata()
     if(enlarged.width!<plan.front.w||enlarged.height!<plan.front.h)throw new Error('print_upscale_resolution_shortfall')
+    // Provider output is integer-rounded. Restore only that pixel-scale ratio error
+    // with external reflection before the strict aspect-preserving final downsample.
+    const expectedW=prepared.width!*scale,expectedH=prepared.height!*scale
+    if(Math.abs(enlarged.width!-expectedW)>1.01||Math.abs(enlarged.height!-expectedH)>1.01)throw new Error('print_upscale_dimensions_changed')
+    const rounded=compositionPlan(enlarged.width!,enlarged.height!,plan.front.w,plan.front.h)
+    if(rounded.width!==enlarged.width||rounded.height!==enlarged.height)working=await sharp(working).extend({...rounded.padding,extendWith:'mirror'}).png().toBuffer()
     upscaled=true
   }
   const pixels=await finishPrintPixels(working,plan)

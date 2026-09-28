@@ -35,22 +35,23 @@ export async function GET(
   if (portfolio.user_id !== user.id) return NextResponse.json({ error: 'wrong_owner' }, { status: 403 })
 
   // ── Entitlements from THIS portfolio's purchase ────────────────
-  const { data: ownEnts, error: ownErr } = await supabaseAdmin
+  const { data: ownEnts, error: ownErr } = portfolio.purchase_id ? await supabaseAdmin
     .from('entitlements')
     .select('id, status')
-    .eq('purchase_id', portfolio.purchase_id)
+    .eq('purchase_id', portfolio.purchase_id) : { data: [], error: null }
   if (ownErr) return NextResponse.json({ error: 'entitlements_query_failed' }, { status: 500 })
 
   const includedTotal = portfolio.free_unlocks ?? 0
   const includedRemaining = includedTotal > 0 ? (ownEnts ?? []).filter((e) => e.status === 'available').length : 0
 
   // ── Additional entitlements from OTHER purchases ───────────────
-  const { data: otherEnts, error: otherErr } = await supabaseAdmin
+  let otherQuery = supabaseAdmin
     .from('entitlements')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', user.id)
     .eq('status', 'available')
-    .neq('purchase_id', portfolio.purchase_id)
+  if(portfolio.purchase_id)otherQuery=otherQuery.neq('purchase_id', portfolio.purchase_id)
+  const { data: otherEnts, error: otherErr } = await otherQuery
   if (otherErr) return NextResponse.json({ error: 'additional_entitlements_query_failed' }, { status: 500 })
   const additionalAvailable = otherEnts ?? 0
 

@@ -31,6 +31,7 @@
 //   one thing that needs a human's attention will be buried under the thing
 //   that is working as designed.
 
+import { notifyPrintOrder } from './order-email'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { PrintSize, PrintFinish } from './sku-map'
 
@@ -219,6 +220,7 @@ export async function markWithheld(sessionId: string, reason: string): Promise<v
     })
     .eq('stripe_session_id', sessionId)
   if (error) throw new Error(`markWithheld: ${error.message}`)
+  await notifyPrintOrder(sessionId)
 }
 
 export async function markPaid(sessionId: string, paymentIntentId: string): Promise<void> {
@@ -231,6 +233,7 @@ export async function markPaid(sessionId: string, paymentIntentId: string): Prom
     })
     .eq('stripe_session_id', sessionId)
   if (error) throw new Error(`markPaid: ${error.message}`)
+  await notifyPrintOrder(sessionId)
 }
 
 export async function markPlaced(input: {
@@ -249,6 +252,7 @@ export async function markPlaced(input: {
     .update(update)
     .eq('stripe_session_id', input.sessionId)
   if (error) throw new Error(`markPlaced: ${error.message}`)
+  await notifyPrintOrder(input.sessionId)
 }
 
 export async function markError(sessionId: string, message: string): Promise<void> {
@@ -260,6 +264,7 @@ export async function markError(sessionId: string, message: string): Promise<voi
     })
     .eq('stripe_session_id', sessionId)
   if (error) throw new Error(`markError: ${error.message}`)
+  await notifyPrintOrder(sessionId)
 }
 
 export async function updateShipping(input: {
@@ -281,4 +286,6 @@ export async function updateShipping(input: {
     .update(update)
     .eq('prodigi_order_id', input.prodigiOrderId)
   if (error) throw new Error(`updateShipping: ${error.message}`)
+  const order=await getPrintOrderByProdigiId(input.prodigiOrderId)
+  if(order)await notifyPrintOrder(order.stripe_session_id)
 }

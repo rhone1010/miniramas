@@ -51,6 +51,8 @@
 //   Password-gating the Print Shop is NOT this protection. That controls who
 //   reaches the button; this controls whether the button reaches Prodigi.
 
+import { notifyPrintOrder } from '@/lib/v1/print/order-email'
+import { supabaseAdmin } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import type Stripe from 'stripe'
@@ -91,6 +93,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // A verified Stripe refund event is notification evidence, never a refund command.
+  if(event.type==='charge.refunded'){
+    const charge=event.data.object as Stripe.Charge
+    if(process.env.VERCEL_ENV==='preview' && charge.livemode)return NextResponse.json({error:'test_refund_required'},{status:409})
+    const intent=typeof charge.payment_intent==='string'?charge.payment_intent:charge.payment_intent?.id
+    if(!intent)return NextResponse.json({ok:true,ignored:true})
+    const {data:order,error}=await supabaseAdmin.from('print_orders').select('stripe_session_id').eq('stripe_payment_intent',intent).maybeSingle()
+    if(error)return NextResponse.json({error:'order_lookup_failed'},{status:500})
+    if(order)for(const refund of charge.refunds?.data||[]){if(refund.status==='succeeded')await notifyPrintOrder(order.stripe_session_id,{id:refund.id,amount:refund.amount})}
+    return NextResponse.json({ok:true})
+  }
   // We only care about successful checkout completion for the print flow.
   if (event.type !== 'checkout.session.completed') {
     console.log(`[print-webhook] ignoring event type: ${event.type}`)
@@ -109,6 +122,7 @@ export async function POST(req: Request) {
   }
   if (order.status !== 'created') {
     console.log(`[print-webhook] session ${session.id} already at status=${order.status}, skipping`)
+    await notifyPrintOrder(session.id)
     return NextResponse.json({ ok: true, deduped: true, status: order.status })
   }
 

@@ -16,7 +16,7 @@ beforeEach(()=>{
      state.steps.push('upscale');const {input}=JSON.parse(options.body)
      expect(input.face_enhance).toBe(false)
      const src=Buffer.from(input.image.split(',')[1],'base64'),meta=await sharp(src).metadata()
-     enlarged=await sharp(src).resize(Math.round(meta.width!*input.scale),Math.round(meta.height!*input.scale)).png().toBuffer()
+     enlarged=await sharp(src).resize(Math.floor(meta.width!*input.scale),Math.floor(meta.height!*input.scale)).png().toBuffer()
      return {ok:true,json:async()=>({output:'https://example.test/upscaled',status:'succeeded'})}
    }
    return {ok:true,arrayBuffer:async()=>enlarged}
@@ -26,7 +26,7 @@ async function source(w:number,h:number){return (await sharp({create:{width:w,he
 it('outpaints before minimum fractional upscale, then prepares exact landscape dimensions',async()=>{
  const input=await source(1200,900)
  const result=await preparePrintAsset({imageB64:input,renderId:'test',size:'8x12',finish:'fine_art'})
- expect(state.steps).toEqual(['outpaint','upscale']);expect(result.scale).toBe(8/3)
+ expect(state.steps).toEqual(['outpaint','upscale']);expect(result.scale).toBe(2402/900)
  expect([result.width,result.height]).toEqual([3600,2400])
  expect(state.outpaint.mock.calls[0][0].padding).toEqual({left:75,right:75,up:0,down:0})
  const meta=await sharp(state.uploaded).metadata();expect([meta.width,meta.height]).toEqual([3600,2400])
@@ -63,4 +63,18 @@ it('sends only the approved Stability edge inputs and settings',async()=>{
   return {ok:true,arrayBuffer:async()=>image} as Response
  })
  expect((await outpaint({image,width:1200,height:900,stabilityApiKey:'test',mode:'print',padding:{left:75,right:75,up:0,down:0}})).outpainted).toBe(true)
+})
+
+it('covers actual Balloon rounding and reaches exactly 3600 by 2400',async()=>{
+ const result=await preparePrintAsset({imageB64:await source(1200,896),renderId:'balloon-rounding',size:'8x12',finish:'fine_art'})
+ expect(result.scale).toBe(2402/896);expect(result.scale).toBeLessThan(3)
+ expect(state.outpaint.mock.calls[0][0].padding).toEqual({left:72,right:72,up:0,down:0})
+ const md=await sharp(state.uploaded).metadata();expect([md.width,md.height]).toEqual([3600,2400])
+})
+it('still rejects undersized provider output without uploading',async()=>{
+ const small=await sharp({create:{width:3599,height:2400,channels:3,background:'red'}}).png().toBuffer()
+ vi.mocked(fetch).mockImplementation(async(url)=>String(url).includes('/predictions')?{ok:true,json:async()=>({status:'succeeded',output:'https://example.test/output'})} as Response:{ok:true,arrayBuffer:async()=>small} as unknown as Response)
+ state.uploaded=Buffer.alloc(0)
+ await expect(preparePrintAsset({imageB64:await source(1200,896),renderId:'short',size:'8x12',finish:'fine_art'})).rejects.toThrow('print_upscale_resolution_shortfall')
+ expect(state.uploaded.length).toBe(0)
 })

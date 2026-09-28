@@ -10470,18 +10470,18 @@ window.EFFECT_PREVIEWS = {
       return '<button type="button" class="print-collection-thumb'+(selected?' is-selected':'')+(inOrder?' is-in-order':'')+'" data-print-candidate="'+esc(p.id)+'" aria-pressed="'+!!selected+'" aria-label="'+esc(effectLabel(p.name))+(inOrder?' — In your order':'')+'"><img loading="lazy" src="'+esc(p.art)+'" alt=""><span>'+ (inOrder?'In your order':selected?'Selected':esc(effectLabel(p.name)))+'</span></button>';
     }).join('');
     gallery.querySelectorAll('img').forEach(function(img){function check(){var r=img.naturalWidth/img.naturalHeight;var t=r>1?1.5:2/3;if(Math.min(Math.max(r,1/r)-1,Math.max(r/t,t/r)-1)>0.20+1e-10)img.parentElement.remove();}img.onload=check;if(img.complete&&img.naturalWidth)check();});
-    var status=document.getElementById('printGalleryStatus');if(status)status.textContent=PRINT_COLLECTION_STATE==='loading'?'Checking My Collection…':PRINT_COLLECTION_STATE==='error'?'My Collection is unavailable.':!PRINT_COLLECTION.length?'No eligible artwork in My Collection.':'';
+    var status=document.getElementById('printGalleryStatus');if(status)status.textContent=PRINT_COLLECTION_STATE==='loading'?'Checking My Collection…':PRINT_COLLECTION_STATE==='partial'?'Some artwork is unavailable.':PRINT_COLLECTION_STATE==='error'?'My Collection is unavailable.':!PRINT_COLLECTION.length?'No eligible artwork in My Collection.':'';
   }
   function loadPrintCollection(){
     function read(url){return fetch(url,{credentials:'same-origin',cache:'no-store'}).then(function(r){if(!r.ok)throw Error('collection_unavailable');return r.json();});}
     read('/api/v1/portfolios').then(async function(d){
-      var portfolios=(d.portfolios||[]).filter(function(p){return p.series==='portraits'||p.series==='pets';}),at=0;
-      await Promise.all([0,1,2].map(async function(){while(at<portfolios.length){var p=portfolios[at++];var both=await Promise.all([read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/status'),read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/unlocks')]);
+      var portfolios=(d.portfolios||[]).filter(function(p){return p.series==='portraits'||p.series==='pets';}),at=0,failed=0;
+      await Promise.all([0,1,2].map(async function(){while(at<portfolios.length){var p=portfolios[at++];try{var both=await Promise.all([read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/status'),read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/unlocks')]);
         var st=both[0],un=both[1],owned={};(un.items||[]).forEach(function(i){owned[i.slot]=i.unlocked;});
 
         (st.items||[]).forEach(function(i){if(i.status==='done'&&owned[i.slot]&&i.previewId&&i.previewUrl&&!PRINT_COLLECTION.some(function(x){return x.id===i.previewId;}))PRINT_COLLECTION.push({id:i.previewId,name:i.preset,art:i.previewUrl});});
-      }}));
-      PRINT_COLLECTION_STATE='ready';printCollectionGallery();
+      }catch{failed++;}}}));
+      PRINT_COLLECTION_STATE=failed?(PRINT_COLLECTION.length?'partial':'error'):'ready';printCollectionGallery();
     }).catch(function(){PRINT_COLLECTION_STATE='error';printCollectionGallery();});
   }
   function renderWall(){
