@@ -5317,7 +5317,7 @@ html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:n
     <div class="mc-head">
       <button class="mc-close" id="psClose" type="button">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>
-        Back to the workshop
+        Back to My Collection
       </button>
       <span class="mc-title" id="psTitle">Print Shop</span>
       <span class="mc-n" id="psN"></span>
@@ -10492,7 +10492,7 @@ window.EFFECT_PREVIEWS = {
     if (n) n.textContent = '';
     if (say){
       say.textContent = list.length
-        ? 'Choose a piece, a size, and how it should be framed.'
+        ? 'Make your print'
         : 'Nothing here yet. Send a piece over from My Collection and it ' +
           'will be waiting for you.';
     }
@@ -10738,7 +10738,6 @@ window.EFFECT_PREVIEWS = {
       '<p class="ps-or-sub">Review your pieces and complete your purchase.</p>' +
       lines +
       '<button class="ps-or-add" id="psAddMore" type="button">+ Add another piece</button>' +
-      '<p class="print-destination-summary" id="printDestinationSummary"></p>' +
       '<details class="print-address" id="psAddressEdit"'+(editorOpen?' open':'')+'><summary>Shipping to <span>Edit</span></summary>' +
       '<div class="ps-addr">' +
         '<input class="wide" id="psEmail" type="email" placeholder="Email for the receipt" value="' +
@@ -10769,7 +10768,7 @@ window.EFFECT_PREVIEWS = {
                 '</span></button>';
             }).join('') + '</div>'
         : '') +
-      '<button type="button" class="print-add-art" id="printAddressDone">Done</button></details>' +
+      '<button type="button" class="print-add-art" id="printAddressDone">Done</button></details><p class="print-destination-summary" id="printDestinationSummary"></p>' +
       '<div class="ps-or-foot">' +
         '<div class="ps-or-tot">' +
           '<div class="ps-or-row">Prints (' + count + ')<b>' + money(sub) + '</b></div>' +

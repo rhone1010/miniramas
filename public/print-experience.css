@@ -60,3 +60,9 @@ html.print-destination.receipt-view #psWallBody,html.print-destination.receipt-v
 html.print-destination .ck-card{width:min(560px,100%)}
 @media(max-width:1100px){html.print-destination .ps-body{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}html.print-destination .ps-order{grid-column:1/-1}}
 @media(max-width:767px){html.print-destination .pshop{padding:16px}html.print-destination .ps-body{grid-template-columns:1fr;gap:18px}html.print-destination .ps-order{grid-column:auto}html.print-destination .ps-rc-in{padding:20px}.print-status{gap:4px}.print-status li{font-size:12px}}
+
+html.print-destination .ps-or-foot{box-shadow:none}
+html.print-destination .ps-or-empty{color:var(--ink-soft)}
+html.print-destination .ps-pc .nm{display:none}
+html.print-destination #psSay{display:none}
+html.print-destination .ps-rc{overflow:visible;max-height:none}
