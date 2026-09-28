@@ -55,7 +55,7 @@ const CREATIVITY = '0.35'
 
 const DEFAULT_TIMEOUT_MS = 60_000
 
-export type OutpaintMode = 'aspect' | 'margin'
+export type OutpaintMode = 'aspect' | 'margin' | 'print'
 
 export interface OutpaintInput {
   /** The render as it came back from NB2. */
@@ -66,6 +66,8 @@ export interface OutpaintInput {
   height: number
   stabilityApiKey: string
   mode: OutpaintMode
+  /** Explicit centered print-composition extension; existing modes are unchanged. */
+  padding?: Pad
   /** mode 'aspect' only. Defaults to the phone shape. */
   targetRatio?: number
   /** mode 'margin' only. Share of the long edge. Defaults to 8%. */
@@ -138,7 +140,9 @@ export async function outpaint(
   }
 
   const computed =
-    mode === 'aspect'
+    mode === 'print'
+      ? input.padding || { skip: 'missing_print_padding' }
+      : mode === 'aspect'
       ? padForAspect(width, height, targetRatio)
       : padForMargin(width, height, margin)
 
@@ -146,6 +150,7 @@ export async function outpaint(
     return { image, outpainted: false, reason: computed.skip }
   }
 
+  if (Object.values(computed).some(n => !Number.isInteger(n) || n < 0)) return { image, outpainted: false, reason: 'invalid_padding' }
   const over = Math.max(
     computed.up,
     computed.down,
@@ -157,7 +162,7 @@ export async function outpaint(
   }
 
   const form = new FormData()
-  form.append('image', new Blob([image], { type: 'image/jpeg' }), 'render.jpg')
+  form.append('image', new Blob([new Uint8Array(image)], { type: 'image/jpeg' }), 'render.jpg')
   if (computed.up) form.append('up', String(computed.up))
   if (computed.down) form.append('down', String(computed.down))
   if (computed.left) form.append('left', String(computed.left))

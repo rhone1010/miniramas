@@ -3039,6 +3039,7 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   background:rgba(255,255,255,.55); border:1px solid rgba(137,105,67,.24);
   transition:border-color .2s ease, background .2s ease;
 }
+.ps-size:disabled{ opacity:.45; cursor:not-allowed }
 .ps-size:hover{ border-color:rgba(125,66,66,.45) }
 .ps-size.is-on{ border-color:var(--oxblood); background:rgba(125,66,66,.07) }
 .ps-size .nm{ font-family:var(--serif); font-size:1.0625rem; color:var(--ink) }
@@ -10458,8 +10459,8 @@ window.EFFECT_PREVIEWS = {
   /* ---- the wall ---------------------------------------------------------- */
   function selectPrintSource(d){
     if(PS_PIECE && PRINT_FAMILIES.length)PRINT_CONFIG[PS_PIECE.id]={family:currentFamily().id,size:currentSize().size,qty:PS_QTY};
-    PS_PIECE=d.piece;PRINT_FAMILIES=d.catalog||[];PS_FAM=0;PS_SIZE=0;PS_QTY=1;
-    var saved=PRINT_CONFIG[PS_PIECE.id];if(saved){var f=PRINT_FAMILIES.findIndex(function(x){return x.id===saved.family;});if(f>=0){PS_FAM=f;var z=currentFamily().sizes.findIndex(function(x){return x.size===saved.size;});PS_SIZE=Math.max(0,z);PS_QTY=saved.qty;}}
+    PS_PIECE=d.piece;PRINT_FAMILIES=d.catalog||[];PS_FAM=0;PS_SIZE=firstPrintSize();PS_QTY=1;
+    var saved=PRINT_CONFIG[PS_PIECE.id];if(saved){var f=PRINT_FAMILIES.findIndex(function(x){return x.id===saved.family;});if(f>=0){PS_FAM=f;var z=currentFamily().sizes.findIndex(function(x){return x.size===saved.size;});PS_SIZE=z>=0&&currentFamily().sizes[z].compatibility!=='unavailable'?z:firstPrintSize();PS_QTY=saved.qty;}}
   }
   var PRINT_COLLECTION = [], PRINT_COLLECTION_STATE='loading', PRINT_SELECTION_SEQ=0;
   function printCollectionGallery(){
@@ -10468,7 +10469,7 @@ window.EFFECT_PREVIEWS = {
       var selected=PS_PIECE&&PS_PIECE.id===p.id,inOrder=ORDER.some(function(l){return l.pieceId===p.id;});
       return '<button type="button" class="print-collection-thumb'+(selected?' is-selected':'')+(inOrder?' is-in-order':'')+'" data-print-candidate="'+esc(p.id)+'" aria-pressed="'+!!selected+'" aria-label="'+esc(effectLabel(p.name))+(inOrder?' — In your order':'')+'"><img loading="lazy" src="'+esc(p.art)+'" alt=""><span>'+ (inOrder?'In your order':selected?'Selected':esc(effectLabel(p.name)))+'</span></button>';
     }).join('');
-    gallery.querySelectorAll('img').forEach(function(img){img.onload=function(){if(!(img.naturalWidth===img.naturalHeight||img.naturalWidth*3===img.naturalHeight*2||img.naturalWidth*2===img.naturalHeight*3))img.parentElement.remove();};if(img.complete&&img.naturalWidth&&!(img.naturalWidth===img.naturalHeight||img.naturalWidth*3===img.naturalHeight*2||img.naturalWidth*2===img.naturalHeight*3))img.parentElement.remove();});
+    gallery.querySelectorAll('img').forEach(function(img){function check(){var r=img.naturalWidth/img.naturalHeight;var t=r>1?1.5:2/3;if(Math.min(Math.max(r,1/r)-1,Math.max(r/t,t/r)-1)>0.20+1e-10)img.parentElement.remove();}img.onload=check;if(img.complete&&img.naturalWidth)check();});
     var status=document.getElementById('printGalleryStatus');if(status)status.textContent=PRINT_COLLECTION_STATE==='loading'?'Checking My Collection…':PRINT_COLLECTION_STATE==='error'?'My Collection is unavailable.':!PRINT_COLLECTION.length?'No eligible artwork in My Collection.':'';
   }
   function loadPrintCollection(){
@@ -10477,7 +10478,7 @@ window.EFFECT_PREVIEWS = {
       var portfolios=(d.portfolios||[]).filter(function(p){return p.series==='portraits'||p.series==='pets';}),at=0;
       await Promise.all([0,1,2].map(async function(){while(at<portfolios.length){var p=portfolios[at++];var both=await Promise.all([read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/status'),read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/unlocks')]);
         var st=both[0],un=both[1],owned={};(un.items||[]).forEach(function(i){owned[i.slot]=i.unlocked;});
-        if(st.aspectRatio && ['1:1','2:3','3:2'].indexOf(st.aspectRatio)<0)continue;
+
         (st.items||[]).forEach(function(i){if(i.status==='done'&&owned[i.slot]&&i.previewId&&i.previewUrl&&!PRINT_COLLECTION.some(function(x){return x.id===i.previewId;}))PRINT_COLLECTION.push({id:i.previewId,name:i.preset,art:i.previewUrl});});
       }}));
       PRINT_COLLECTION_STATE='ready';printCollectionGallery();
@@ -10498,6 +10499,7 @@ window.EFFECT_PREVIEWS = {
      each one narrows the next. Asking all twenty-four at once is what
      s101 did and it does not survive the real catalogue. */
   function currentFamily(){ return PRINT_FAMILIES[PS_FAM] || PRINT_FAMILIES[0]; }
+  function firstPrintSize(){var f=currentFamily();if(!f)return 0;var n=f.sizes.findIndex(function(s){return s.compatibility==='recommended';});return n>=0?n:Math.max(0,f.sizes.findIndex(function(s){return s.compatibility!=='unavailable';}));}
   function currentSize(){
     var fam = currentFamily();
     return fam && (fam.sizes[PS_SIZE] || fam.sizes[0]);
@@ -10517,7 +10519,7 @@ window.EFFECT_PREVIEWS = {
   }
 
   function fromPrice(fam){
-    return fam.sizes.reduce(function(m, s){ return Math.min(m, s.cents); }, Infinity);
+    return fam.sizes.reduce(function(m, s){ return s.compatibility==='unavailable'?m:Math.min(m, s.cents); }, Infinity);
   }
 
   function renderFly(){
@@ -10538,7 +10540,7 @@ window.EFFECT_PREVIEWS = {
     var fam = currentFamily();
     var sizes = fam.sizes.map(function(s, i){
       return '<button class="ps-size' + (i === PS_SIZE ? ' is-on' : '') +
-        '" type="button" data-size="' + i + '">' +
+        '" type="button" data-size="' + i + '"' + (s.compatibility==='unavailable'?' disabled':'') + '>' +
         '<span class="nm">' + esc(s.label) + '</span>' +
         '<span class="pr">' + money(s.cents) + '</span>' +
         '</button>';
@@ -10557,6 +10559,7 @@ window.EFFECT_PREVIEWS = {
       '<div class="ps-fams">' + fams + '</div>' +
       '<div class="ps-step"><b>2</b> Choose a size</div>' +
       '<div class="ps-sizes">' + sizes + '</div>' +
+      (size&&size.compatibility==='extension'?'<p class="ps-material">Liten &amp; Co will extend the artwork for printing.</p>':'') +
       '<div class="ps-step"><b>3</b> Quantity</div>' +
       '<div class="ps-qrow">' +
         '<div class="ps-qty">' +
@@ -10579,7 +10582,7 @@ window.EFFECT_PREVIEWS = {
     if (!PS_PIECE || !printable(PS_PIECE)) return;
 
     var o = currentSize();
-    if (!o) return;
+    if (!o || o.compatibility==='unavailable') return;
     /* The same piece may be ordered at more than one size, so a line is
        keyed by piece AND option rather than by piece alone. */
     var at = -1;
@@ -10923,11 +10926,11 @@ window.EFFECT_PREVIEWS = {
       PS_FAM = parseInt(fam.dataset.fam, 10) || 0;
       /* A family may not carry the size that was chosen in the last one,
          so the size resets rather than pointing at nothing. */
-      PS_SIZE = 0;
+      PS_SIZE = firstPrintSize();
       renderFly(); return;
     }
     var sz = e.target.closest('[data-size]');
-    if (sz){ PS_SIZE = parseInt(sz.dataset.size, 10) || 0; renderFly(); return; }
+    if (sz && !sz.disabled){ PS_SIZE = parseInt(sz.dataset.size, 10) || 0; renderFly(); return; }
     var q = e.target.closest('[data-q2]');
     if (q){
       if (q.dataset.q2 === '+') PS_QTY = Math.min(PS_QTY + 1, 20);

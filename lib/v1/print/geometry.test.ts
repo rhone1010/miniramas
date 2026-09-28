@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest'
 import sharp from 'sharp'
-import {artworkFormat,printPlan,finishPrintPixels,catalogFor} from './geometry'
+import {artworkFormat,printPlan,finishPrintPixels,catalogFor,aspectCompatibility,compositionPlan,requiredUpscale} from './geometry'
 import {getLaunchSku,SKU_MAP,type PrintSize} from './sku-map'
 
 describe('native print composition and external MirrorWrap',()=>{
@@ -29,6 +29,26 @@ describe('native print composition and external MirrorWrap',()=>{
     const {front}=await finishPrintPixels(src,printPlan(24,36,e));const {data,info}=await sharp(front).raw().toBuffer({resolveWithObject:true});expect([info.width,info.height]).toEqual([48,72]);expect(data[0]).toBe(255);expect(data[data.length-info.channels+1]).toBeGreaterThan(240)
   })
   it('checks original resolution on both axes and skips unnecessary upscale',()=>{const e=getLaunchSku('8x12','canvas');expect(printPlan(2400,3600,e).upscale).toBe(false);expect(printPlan(1200,1800,e).upscale).toBe(true);expect(printPlan(3600,2400,e).upscale).toBe(false)})
-  it('rejects incompatible ratios and upscale distortion',async()=>{expect(artworkFormat(1024,1280)).toBeNull();expect(()=>printPlan(1024,1024,getLaunchSku('8x12','fine_art'))).toThrow();const src=await sharp({create:{width:25,height:36,channels:3,background:'red'}}).png().toBuffer();await expect(finishPrintPixels(src,printPlan(24,36,getLaunchSku('8x12','fine_art')))).rejects.toThrow('upscale_changed_aspect')})
-  it('serves only four families from canonical prices; preserves hidden data',()=>{for(const [w,h]of [[1024,1024],[1024,1536],[1536,1024]]){const families=catalogFor(w,h);expect(families.map(f=>f!.id)).toEqual(['fine_art','premium','canvas','framed']);expect(families.every(f=>f!.sizes.length===4)).toBe(true)}expect(getLaunchSku('20x30','canvas').retailCents).toBe(13900);expect(()=>getLaunchSku('8x8','matted')).toThrow();expect(SKU_MAP.matted['8x8']).toBeTruthy();expect(SKU_MAP.framed_canvas['8x8']).toBeTruthy()})
+  it('rejects incompatible ratios and upscale distortion',async()=>{expect(artworkFormat(2048,900)).toBeNull();expect(()=>printPlan(1024,1024,getLaunchSku('8x12','fine_art'))).toThrow();const src=await sharp({create:{width:25,height:36,channels:3,background:'red'}}).png().toBuffer();await expect(finishPrintPixels(src,printPlan(2400,3600,getLaunchSku('8x12','fine_art')))).rejects.toThrow('upscale_changed_aspect')})
+  it('serves only four families from canonical prices; preserves hidden data',()=>{for(const [w,h]of [[1024,1024],[1024,1536],[1536,1024]]){const families=catalogFor(w,h);expect(families.map(f=>f!.id)).toEqual(['fine_art','premium','canvas','framed']);expect(families.every(f=>f!.sizes.length===8&&f!.sizes.filter(s=>s.compatibility!=='unavailable').length===4)).toBe(true)}expect(getLaunchSku('20x30','canvas').retailCents).toBe(13900);expect(()=>getLaunchSku('8x8','matted')).toThrow();expect(SKU_MAP.matted['8x8']).toBeTruthy();expect(SKU_MAP.framed_canvas['8x8']).toBeTruthy()})
+})
+
+it('applies the approved extension boundaries and minimum fractional upscale',()=>{
+ expect(aspectCompatibility(100,100,102,100).compatibility).toBe('recommended')
+ expect(aspectCompatibility(100,100,103,100).compatibility).toBe('extension')
+ expect(aspectCompatibility(100,100,120,100).compatibility).toBe('extension')
+ expect(aspectCompatibility(100,100,121,100).compatibility).toBe('unavailable')
+ expect(compositionPlan(1200,900,3600,2400)).toMatchObject({width:1350,height:900,padding:{left:75,right:75,top:0,bottom:0},compatibility:'extension'})
+ expect(compositionPlan(900,1200,2400,3600)).toMatchObject({width:900,height:1350,padding:{left:0,right:0,top:75,bottom:75}})
+ expect(requiredUpscale(1350,900,3600,2400)).toBe(8/3)
+ expect(requiredUpscale(4050,2700,3600,2400)).toBe(0)
+ expect(()=>requiredUpscale(10,10,1200,1200)).toThrow('print_resolution_unavailable')
+ for(const [w,h] of [[1,1],[2,3],[3,2],[3,4],[4,3],[9,16],[16,9]])expect(artworkFormat(w,h)).not.toBeNull()
+})
+
+it('blocks provider limits before checkout and mutes unsupported sizes',()=>{
+ expect(()=>printPlan(4000,3000,getLaunchSku('8x12','fine_art'))).toThrow('print_outpaint_dimensions_unavailable')
+ expect(catalogFor(4000,3000)).toEqual([])
+ expect(catalogFor(1200,900)[0]!.sizes.find(s=>s.size==='8x8')!.compatibility).toBe('unavailable')
+ expect(catalogFor(1200,900)[0]!.sizes.find(s=>s.size==='8x12')!.compatibility).toBe('extension')
 })
