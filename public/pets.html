@@ -9635,7 +9635,8 @@ function paintLightbox(){
   } else {
     acts = '<button class="mc-act is-fill" data-lb="dl">Download</button>' +
            (printEntranceCandidate(p) ? '<button class="mc-act" disabled data-lb="pr">Send to Print Shop · Checking…</button>' : '') +
-           '<button class="mc-act" data-lb="post">Post to Community</button>' ;
+           '<button class="mc-act" data-lb="post">Post to Community</button>' +
+           '<button class="mc-act" data-lb="help">Need help with this piece?</button>' ;
   }
   document.getElementById('lboxActs').innerHTML = acts;
   verifyPrintEntrance(p, document.querySelector('#lboxActs [data-lb="pr"]'));
@@ -9687,6 +9688,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
      were replaced. Same real call as the card and the featured pane. */
   if (b.dataset.lb === 'unlock'){ unlockPiece(p); return; }
   if (b.dataset.lb === 'dl'){ downloadPiece(p); return; }
+  if (b.dataset.lb === 'help' && !p.locked){ window.location.assign('/help'); return; }
   if (b.dataset.lb === 'pr' && !p.locked && p.previewId && !b.hidden && !b.disabled){
     window.location.assign('/print?test_piece=' + encodeURIComponent(p.previewId)); return;
   }
