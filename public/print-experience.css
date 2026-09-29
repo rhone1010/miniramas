@@ -235,17 +235,18 @@ html.print-destination .print-config-product .ps-finish{width:100%;max-width:non
 html.print-destination .print-config-product .ps-finish img{width:100%;height:100%;max-height:230px;object-fit:contain}
 html.print-destination .print-config-product .print-selected-finish{margin:12px 0 0;font-size:1.8rem;line-height:1.1;text-align:center}
 html.print-destination .print-selected-description{display:-webkit-box;margin:6px auto 0;overflow:hidden;color:var(--ink-soft);font:14px/1.35 var(--sans);text-align:center;-webkit-box-orient:vertical;-webkit-line-clamp:2}
-html.print-destination .print-config-stage .print-quantity-label{margin:18px 0 0;padding-top:16px;border-top:1px solid rgba(137,105,67,.2);font-size:1.65rem;text-align:center}
+html.print-destination .print-config-stage .print-quantity-label{margin:18px 0 0;padding-top:16px;border-top:1px solid rgba(137,105,67,.2);font-size:1.65rem;display:flex;justify-content:center;width:100%}
 html.print-destination .print-config-choice .ps-qrow{display:flex;justify-content:center;margin:10px 0 0}
-html.print-destination .print-config-stage .ps-qty{width:150px;height:44px;margin:0}
-html.print-destination .print-config-stage .ps-qty button{width:44px;min-width:44px;height:42px}
-html.print-destination .print-config-stage .ps-qty span{flex:1;min-width:0;height:42px}
+html.print-destination .print-config-stage .ps-qty span{flex:1;min-width:0;height:28px}
+html.print-destination .print-config-stage .ps-qty button,html.print-destination .print-config-stage .ps-qty span{min-width:44px;height:44px;font-size:1.3rem;color:var(--ink)}
+html.print-destination .print-config-stage .ps-qty{width:150px;height:36px;margin:0}
+html.print-destination .print-config-stage .ps-qty button{width:32px;min-width:32px;height:32px}
 html.print-destination .print-config-sizes>.ps-step{margin:0;font-size:2rem;line-height:1.1;text-align:left}
 html.print-destination .print-config-stage .ps-sizes{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
 html.print-destination .print-config-stage .ps-size{min-height:82px;padding:10px;border-radius:12px}
 html.print-destination .print-config-stage .ps-size .nm{font-size:1.6rem}
 html.print-destination .print-config-stage .ps-size .pr{display:block;margin-top:5px}
 html.print-destination .print-config-stage .ps-size:disabled{opacity:.32}
-html.print-destination .print-config-sizes .ps-add{position:static;width:100%;min-width:0;height:58px;margin:20px 0 0;padding:0 18px;border-radius:8px;box-shadow:none;font-size:1.7rem}
+html.print-destination .print-config-sizes .ps-add{position:static;width:100%;min-width:0;height:58px;margin:20px 0 0;padding:0 18px;border-radius:8px;box-shadow:none;font-size:1.4rem}
 html.print-destination .print-config-sizes .ps-add .amt{margin-left:8px;padding-left:18px;border-left:1px solid rgba(250,247,239,.55)}
 @media(max-width:680px){html.print-destination .print-config-stage{padding:20px}html.print-destination .print-config-columns{grid-template-columns:1fr}html.print-destination .print-config-choice{padding-right:0}html.print-destination .print-config-sizes{margin-top:24px;padding:24px 0 0;border-top:1px solid rgba(137,105,67,.22);border-left:0}}
