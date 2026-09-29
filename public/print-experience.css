@@ -251,18 +251,22 @@ html.print-destination .print-config-sizes .ps-add {
     font-size: 1.4rem;
 }
 
-html.print-destination .print-config-stage .ps-qty span {
-    flex: 1;
-    min-width: 0;
-    height: 28px;
-}
-
 html.print-destination .print-config-stage .ps-qty button,
 html.print-destination .print-config-stage .ps-qty span {
     min-width: 44px;
     height: 44px;
     font-size: 1.3rem;
     color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+html.print-destination .print-config-stage .ps-qty span {
+    flex: 1;
+    min-width: 0;
+    height: 28px;
 }
 
 html.print-destination .print-config-stage .ps-qty {
