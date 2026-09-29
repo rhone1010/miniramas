@@ -181,3 +181,14 @@ html.print-destination .print-collection-gallery::-webkit-scrollbar-thumb:hover{
 html.print-destination .print-collection-gallery::-webkit-scrollbar-button{display:none;width:0;height:0}
 @media(max-width:767px){html.print-destination .print-stage-window{height:660px}html.print-destination .print-collection-gallery{height:230px;max-height:230px}}
 @media(prefers-reduced-motion:reduce){html.print-destination .print-stage-track{transition:none}}
+
+/* Supplied final product photography and compact two-row Collection window. */
+html.print-destination .print-stage-window{height:660px}
+html.print-destination .print-config-product{float:right;width:32%;height:150px;margin:0 0 12px 16px}
+html.print-destination .print-config-product .ps-finish{height:100%;aspect-ratio:auto}
+html.print-destination .print-config-product img{width:100%;height:100%;object-fit:contain}
+html.print-destination .print-selected-finish{margin:16px 0}
+html.print-destination .print-config-stage .ps-sizes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+html.print-destination .print-config-stage .ps-size{min-width:0;padding:8px}
+html.print-destination .print-config-stage .ps-qrow{clear:both}
+@media(min-width:768px){html.print-destination .print-collection-gallery{grid-auto-rows:calc((100cqw - 29px)/3);height:calc((100cqw - 29px)*2/3 + 16px);max-height:calc((100cqw - 29px)*2/3 + 16px)}html.print-destination .print-collection-thumb{aspect-ratio:auto;height:100%}}

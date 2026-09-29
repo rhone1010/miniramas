@@ -5603,12 +5603,12 @@ html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:n
 window.FINISH_ART = {
   "base": "/",
   "files": {
-    "canvas": "print/gallery_canvas.png",
-    "fine_art": "print/fine_art.png",
+    "canvas": "print/gallery_canvas.jpg",
+    "fine_art": "print/fine_art_print.png",
     "framed_canvas": "previews/finishes/framed_canvas.jpg",
     "matted": "previews/finishes/matted.jpg",
-    "premium": "print/fine_art.png",
-    "framed": "print/classic-frame-no-mount.jpg"
+    "premium": "print/premium_fine_art_print.png",
+    "framed": "print/classic_frame.png"
   }
 };
 
@@ -10565,7 +10565,7 @@ window.EFFECT_PREVIEWS = {
         '<div><h3>' + esc(PS_PIECE.name || 'Crafted Image') + '</h3></div>' +
       '</div>' +
       '<div class="print-stage-window"><div class="print-stage-track"><section class="print-finish-stage"><div class="ps-fams">' + fams + '</div></section><section class="print-config-stage">' +
-      '<button type="button" class="print-back-finishes ui-serif-interactive" data-back-finishes>← Back to finishes</button><h3 class="print-selected-finish">'+esc(fam.label)+'</h3>' +
+      '<button type="button" class="print-back-finishes ui-serif-interactive" data-back-finishes>← Back to finishes</button><h3 class="print-selected-finish">'+esc(fam.label)+'</h3><div class="print-config-product">'+finishArt(fam)+'</div>' +
       '<div class="ps-step"><b>2</b> Choose a size</div>' +
       '<div class="ps-sizes">' + sizes + '</div>' +
       (size&&size.compatibility==='extension'?'<p class="ps-material">Liten &amp; Co will extend the artwork for printing.</p>':'') +
