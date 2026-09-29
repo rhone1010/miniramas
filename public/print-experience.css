@@ -160,3 +160,24 @@ html.print-destination .print-order-column{min-width:0;align-self:start}
 html.print-destination .ps-order{padding:18px;max-height:none;height:auto}
 @media(max-width:1100px){html.print-destination .ps-body{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:24px}html.print-destination .print-order-column{grid-column:1/-1}html.print-destination .print-order-column>.mc-title{margin-bottom:16px}}
 @media(max-width:767px){html.print-destination .ps-body{grid-template-columns:1fr;gap:24px}html.print-destination .print-order-column{grid-column:auto}html.print-destination .ps-wall>.mc-title,html.print-destination .ps-fly>.mc-title,html.print-destination .print-order-column>.mc-title{font-size:28px;margin-bottom:18px}html.print-destination #psGrid>.ps-pc{height:210px}html.print-destination .print-collection-gallery{max-height:230px}}
+
+/* Finish selection and configuration share one horizontal stage. */
+html.print-destination .print-stage-window{overflow:hidden;height:700px}
+html.print-destination .print-stage-track{display:flex;width:200%;height:100%;transition:transform 240ms ease}
+html.print-destination .ps-fly.is-configuring .print-stage-track{transform:translateX(-50%)}
+html.print-destination .print-finish-stage,html.print-destination .print-config-stage{flex:0 0 50%;min-width:0;box-sizing:border-box;height:100%;padding:2px}
+html.print-destination .print-config-stage{overflow-y:auto;overscroll-behavior:contain}
+html.print-destination .ps-fams{height:100%;grid-template-rows:repeat(2,minmax(0,1fr))}
+html.print-destination .ps-fam .ps-finish{flex:1;min-height:0;aspect-ratio:auto}
+html.print-destination .ps-finish img{object-fit:contain}
+html.print-destination .print-back-finishes{font:400 var(--ui-serif-interactive-desktop) var(--serif);color:var(--oxblood);background:transparent;border:1px solid var(--oxblood);border-radius:8px;padding:.5rem .8rem;cursor:pointer}
+html.print-destination .print-selected-finish{font:400 30px var(--serif);color:var(--ink);margin:24px 0}
+html.print-destination .ps-wall{container-type:inline-size}
+html.print-destination .print-collection-gallery{height:calc(100cqw - 8px);max-height:calc(100cqw - 8px);scrollbar-width:thin;scrollbar-color:var(--oxblood) transparent}
+html.print-destination .print-collection-gallery::-webkit-scrollbar{width:5px}
+html.print-destination .print-collection-gallery::-webkit-scrollbar-track{background:linear-gradient(to right,transparent 2px,var(--oxblood) 2px,var(--oxblood) 3px,transparent 3px)}
+html.print-destination .print-collection-gallery::-webkit-scrollbar-thumb{background:var(--oxblood);border-radius:4px}
+html.print-destination .print-collection-gallery::-webkit-scrollbar-thumb:hover{background:var(--ink)}
+html.print-destination .print-collection-gallery::-webkit-scrollbar-button{display:none;width:0;height:0}
+@media(max-width:767px){html.print-destination .print-stage-window{height:660px}html.print-destination .print-collection-gallery{height:230px;max-height:230px}}
+@media(prefers-reduced-motion:reduce){html.print-destination .print-stage-track{transition:none}}

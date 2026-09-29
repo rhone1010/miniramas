@@ -5603,11 +5603,11 @@ html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:n
 window.FINISH_ART = {
   "base": "/",
   "files": {
-    "canvas": "print/mirror_wrap.png",
-    "fine_art": "previews/finishes/fine_art.jpg",
+    "canvas": "print/gallery_canvas.png",
+    "fine_art": "print/fine_art.png",
     "framed_canvas": "previews/finishes/framed_canvas.jpg",
     "matted": "previews/finishes/matted.jpg",
-    "premium": "previews/finishes/premium.jpg",
+    "premium": "print/fine_art.png",
     "framed": "print/classic-frame-no-mount.jpg"
   }
 };
@@ -10459,7 +10459,7 @@ window.EFFECT_PREVIEWS = {
   /* ---- the wall ---------------------------------------------------------- */
   function selectPrintSource(d){
     if(PS_PIECE && PRINT_FAMILIES.length)PRINT_CONFIG[PS_PIECE.id]={family:currentFamily().id,size:currentSize().size,qty:PS_QTY};
-    PS_PIECE=d.piece;PRINT_FAMILIES=d.catalog||[];PS_FAM=0;PS_SIZE=firstPrintSize();PS_QTY=1;
+    PS_CONFIGURE=false;PS_PIECE=d.piece;PRINT_FAMILIES=d.catalog||[];PS_FAM=0;PS_SIZE=firstPrintSize();PS_QTY=1;
     var saved=PRINT_CONFIG[PS_PIECE.id];if(saved){var f=PRINT_FAMILIES.findIndex(function(x){return x.id===saved.family;});if(f>=0){PS_FAM=f;var z=currentFamily().sizes.findIndex(function(x){return x.size===saved.size;});PS_SIZE=z>=0&&currentFamily().sizes[z].compatibility!=='unavailable'?z:firstPrintSize();PS_QTY=saved.qty;}}
   }
   var PRINT_COLLECTION = [], PRINT_COLLECTION_STATE='loading', PRINT_SELECTION_SEQ=0;
@@ -10522,6 +10522,15 @@ window.EFFECT_PREVIEWS = {
     return fam.sizes.reduce(function(m, s){ return s.compatibility==='unavailable'?m:Math.min(m, s.cents); }, Infinity);
   }
 
+  var PS_CONFIGURE = false;
+  function showPrintStage(configure){
+    PS_CONFIGURE = configure;
+    var f=document.getElementById('psFly');
+    f.classList.toggle('is-configuring',configure);
+    f.querySelector('.mc-title').textContent=configure?'Configure Your Print':'Select Your Finish';
+    f.querySelector('.print-finish-stage').inert=configure;
+    f.querySelector('.print-config-stage').inert=!configure;
+  }
   function renderFly(){
     var f = document.getElementById('psFly');
     if (!f) return;
@@ -10555,7 +10564,8 @@ window.EFFECT_PREVIEWS = {
            twice on one panel is saying it once, badly. */
         '<div><h3>' + esc(PS_PIECE.name || 'Crafted Image') + '</h3></div>' +
       '</div>' +
-      '<div class="ps-fams">' + fams + '</div>' +
+      '<div class="print-stage-window"><div class="print-stage-track"><section class="print-finish-stage"><div class="ps-fams">' + fams + '</div></section><section class="print-config-stage">' +
+      '<button type="button" class="print-back-finishes ui-serif-interactive" data-back-finishes>← Back to finishes</button><h3 class="print-selected-finish">'+esc(fam.label)+'</h3>' +
       '<div class="ps-step"><b>2</b> Choose a size</div>' +
       '<div class="ps-sizes">' + sizes + '</div>' +
       (size&&size.compatibility==='extension'?'<p class="ps-material">Liten &amp; Co will extend the artwork for printing.</p>':'') +
@@ -10574,7 +10584,8 @@ window.EFFECT_PREVIEWS = {
          museum-grade inks". Those are claims about manufacturing and I do
          not know which are true of Prodigi's Enhanced Matte Art. Someone
          who knows what the goods are writes it. */
-      '<div class="ps-made" id="psMade"></div>';
+      '<div class="ps-made" id="psMade"></div></section></div></div>';
+    showPrintStage(PS_CONFIGURE);
   }
 
   function addToOrder(){
@@ -10605,6 +10616,7 @@ window.EFFECT_PREVIEWS = {
     }
     PS_SHIP = null;   /* the order changed; the quote is no longer true */
     PS_QTY = 1;
+    PS_CONFIGURE = false;
     renderWall();
   }
 
@@ -10920,13 +10932,15 @@ window.EFFECT_PREVIEWS = {
 
   var psFly = document.getElementById('psFly');
   if (psFly) psFly.addEventListener('click', function(e){
+    if(e.target.closest('[data-back-finishes]')){showPrintStage(false);psFly.querySelector('[data-fam].is-on').focus({preventScroll:true});return;}
     var fam = e.target.closest('[data-fam]');
     if (fam){
       PS_FAM = parseInt(fam.dataset.fam, 10) || 0;
       /* A family may not carry the size that was chosen in the last one,
          so the size resets rather than pointing at nothing. */
       PS_SIZE = firstPrintSize();
-      renderFly(); return;
+      renderFly();
+      requestAnimationFrame(function(){showPrintStage(true);psFly.querySelector('[data-back-finishes]').focus({preventScroll:true});}); return;
     }
     var sz = e.target.closest('[data-size]');
     if (sz && !sz.disabled){ PS_SIZE = parseInt(sz.dataset.size, 10) || 0; renderFly(); return; }
