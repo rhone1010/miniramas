@@ -57,8 +57,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/v1/print/stripe-client'
-import { preparePrintAsset } from '@/lib/v1/print/asset-pipeline'
-import { createOrder as createProdigiOrder } from '@/lib/v1/print/prodigi-client'
+import { prepareAndPlacePrint } from '@/lib/v1/print/fulfillment'
 import {
   getPrintOrderBySessionId,
   markPaid,
@@ -67,8 +66,7 @@ import {
   markWithheld,
   canFulfil,
 } from '@/lib/v1/print/db'
-import { ownedPrintSource, requireSandboxPrint } from '@/lib/v1/print/owned-source'
-import { getSku } from '@/lib/v1/print/sku-map'
+import { requireSandboxPrint } from '@/lib/v1/print/owned-source'
 
 export const runtime = 'nodejs'
 
@@ -168,86 +166,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, withheld: true, reason: why })
   }
 
-  // ── Asset pipeline per item ────────────────────────────────
-  const prodigiItems: Array<{
-    sku:    string
-    copies: number
-    attributes?: Record<string,string>
-    sizing: 'fillPrintArea' | 'fitPrintArea' | 'stretchToPrintArea'
-    assets: Array<{ printArea: string; url: string }>
-  }> = []
-
   try {
-    for (const item of order.items) {
-      console.log(`[print-webhook] preparing asset for renderId=${item.renderId} size=${item.size}`)
-      // 1. Fetch source render
-      let sourceB64: string
-      if (squareTest) {
-        const source = await ownedPrintSource(order.owner_key!, item.renderId)
-        sourceB64 = source.bytes.toString('base64')
-      } else {
-        const res = await fetch(item.renderUrl)
-        if (!res.ok) throw new Error('fetch render failed: ' + res.status)
-        sourceB64 = Buffer.from(await res.arrayBuffer()).toString('base64')
-      }
-
-      // 2. Upscale + upload + signed URL
-      const asset = await preparePrintAsset({
-        imageB64: sourceB64,
-        renderId: item.renderId,
-        size:     item.size,
-        finish:   item.finish,
-      })
-
-      const skuEntry = getSku(item.size, item.finish)
-      prodigiItems.push({
-        sku:    skuEntry.sku,
-        copies: item.copies,
-        attributes:skuEntry.attributes,
-        sizing: skuEntry.defaultSizing,
-        assets: [{ printArea: 'default', url: asset.signedUrl }],
-      })
-    }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error('[print-webhook] asset pipeline failed:', msg)
-    await markError(session.id, `asset_pipeline: ${msg}`).catch(() => {})
-    return NextResponse.json({ ok: false, error: msg })
-  }
-
-  // ── Place Prodigi order ────────────────────────────────────
-  try {
-    const prodigiRes = await createProdigiOrder({
-      shippingMethod:    order.shipping_method as 'Budget' | 'Standard' | 'Express' | 'Overnight',
-      idempotencyKey:    session.id,                      // dedupe duplicate webhook firings
-      merchantReference: order.prodigi_merchant_ref || session.id,
-      recipient: {
-        name:  order.shipping_address.name,
-        email: order.customer_email,
-        address: {
-          line1:           order.shipping_address.line1,
-          line2:           order.shipping_address.line2,
-          postalOrZipCode: order.shipping_address.postcode,
-          countryCode:     order.shipping_address.countryCode.toUpperCase(),
-          townOrCity:      order.shipping_address.city,
-          stateOrCounty:   order.shipping_address.state,
-        },
-      },
-      items: prodigiItems,
-    })
-
-    await markPlaced({
-      sessionId:      session.id,
-      prodigiOrderId: prodigiRes.order.id,
-      wholesaleCents: null,  // could derive from a re-quote if needed
-    })
-
-    console.log(`[print-webhook] placed at Prodigi: ${prodigiRes.order.id} for session ${session.id}`)
-    return NextResponse.json({ ok: true, prodigiOrderId: prodigiRes.order.id })
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error('[print-webhook] Prodigi order placement failed:', msg)
-    await markError(session.id, `prodigi: ${msg}`).catch(() => {})
-    return NextResponse.json({ ok: false, error: msg })
+    const prodigiOrderId=await prepareAndPlacePrint(order,squareTest)
+    await markPlaced({sessionId:session.id,prodigiOrderId,wholesaleCents:null})
+    return NextResponse.json({ok:true,prodigiOrderId})
+  }catch(err){
+    const msg=err instanceof Error?err.message:String(err)
+    await markError(session.id,msg).catch(()=>{})
+    return NextResponse.json({ok:false,error:msg})
   }
 }
