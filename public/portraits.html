@@ -5329,9 +5329,9 @@ html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:n
          order is gone: an order you cannot see while you build it is an
          order you lose track of. -->
     <div class="ps-body" id="psWallBody">
-      <section class="ps-wall"><h3 class="mc-title">Your artwork</h3><div id="psGrid"></div></section>
+      <section class="ps-wall"><h3 class="mc-title">Your Artwork</h3><div id="psGrid"></div></section>
       <aside class="ps-fly" id="psFly" hidden></aside>
-      <aside class="ps-order" id="psOrder"></aside>
+      <section class="print-order-column"><h3 class="mc-title">Your Order</h3><aside class="ps-order" id="psOrder"></aside></section>
     </div>
   </section>
 
@@ -10548,14 +10548,13 @@ window.EFFECT_PREVIEWS = {
 
     var size = currentSize();
     f.innerHTML =
-      '<h3 class="mc-title">Make your print</h3>' +
+      '<h3 class="mc-title">Select Your Finish</h3>' +
       '<div class="ps-fly-head">' +
         '<img src="' + esc(PS_PIECE.art) + '" alt="">' +
         /* The family's note is the photograph's caption now. Saying it
            twice on one panel is saying it once, badly. */
         '<div><h3>' + esc(PS_PIECE.name || 'Crafted Image') + '</h3></div>' +
       '</div>' +
-      '<div class="ps-step"><b>1</b> Choose a finish</div>' +
       '<div class="ps-fams">' + fams + '</div>' +
       '<div class="ps-step"><b>2</b> Choose a size</div>' +
       '<div class="ps-sizes">' + sizes + '</div>' +
