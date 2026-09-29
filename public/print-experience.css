@@ -192,3 +192,24 @@ html.print-destination .print-config-stage .ps-sizes{display:grid;grid-template-
 html.print-destination .print-config-stage .ps-size{min-width:0;padding:8px}
 html.print-destination .print-config-stage .ps-qrow{clear:both}
 @media(min-width:768px){html.print-destination .print-collection-gallery{grid-auto-rows:calc((100cqw - 29px)/3);height:calc((100cqw - 29px)*2/3 + 16px);max-height:calc((100cqw - 29px)*2/3 + 16px)}html.print-destination .print-collection-thumb{aspect-ratio:auto;height:100%}}
+
+/* Configuration and order surfaces; finish selection remains unchanged. */
+html.print-destination .print-config-stage{padding:16px 20px;background:linear-gradient(135deg,var(--vellum-200),var(--vellum-300));border:1px solid rgba(125,62,65,.32);border-radius:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+html.print-destination .print-back-finishes{border-color:transparent;padding:4px 0;margin-bottom:12px;text-align:left}
+html.print-destination .print-config-product{float:none;width:auto;height:auto;margin:0;padding:10px;background:rgba(250,247,239,.5);border:1px solid rgba(137,105,67,.28);border-radius:6px;text-align:center}
+html.print-destination .print-config-product .ps-finish{height:105px;max-width:220px;margin:0 auto;border:0;background:transparent}
+html.print-destination .print-config-product .print-selected-finish{font-size:28px;line-height:1.1;margin:6px 0 0}
+html.print-destination .print-config-stage .print-quantity-label{font-size:28px;margin:12px 0 6px}
+html.print-destination .print-config-stage .ps-qrow{margin:0 0 12px}
+html.print-destination .print-config-stage .ps-qty{height:44px;border:1px solid var(--brass);background:var(--vellum-100);border-radius:8px}
+html.print-destination .print-config-stage .ps-qty button,html.print-destination .print-config-stage .ps-qty span{min-width:44px;height:44px;font-size:var(--ui-serif-interactive-desktop);color:var(--ink)}
+html.print-destination .print-config-stage .ps-step{margin:10px 0 6px}
+html.print-destination .print-config-stage .ps-add{width:50%;min-width:220px;margin:12px 0 0;padding:10px 12px;background:var(--oxblood);color:var(--vellum-100);border-radius:6px}
+html.print-destination .print-config-stage .ps-add .amt{color:inherit}
+html.print-destination .ps-order{background:linear-gradient(145deg,var(--vellum-100),var(--vellum-200));border:1px solid rgba(125,62,65,.28);box-shadow:0 5px 16px rgba(42,36,30,.1)}
+html.print-destination .ps-or-h{padding-bottom:12px;border-bottom:1px solid rgba(137,105,67,.2)}
+html.print-destination .ps-or-empty{margin:16px 0 4px;padding:0 0 0 14px;border-left:2px solid var(--brass);font:400 22px/1.4 var(--serif)}
+html.print-destination .ps-or-line{padding:10px 8px;background:rgba(255,255,255,.2);border-radius:6px}
+html.print-destination .ps-order .print-address{padding:10px 0;border-bottom:1px solid rgba(137,105,67,.18)}
+html.print-destination .ps-or-row.is-total{border-top:1px solid rgba(125,62,65,.3);padding-top:10px;color:var(--oxblood)}
+@media(max-width:767px){html.print-destination .print-config-stage{padding:14px}html.print-destination .print-config-stage .ps-add{width:100%;min-width:0}}
