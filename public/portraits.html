@@ -10566,12 +10566,8 @@ window.EFFECT_PREVIEWS = {
       '</div>' +
       '<div class="print-stage-window"><div class="print-stage-track"><section class="print-finish-stage"><div class="ps-fams">' + fams + '</div></section><section class="print-config-stage">' +
       '<button type="button" class="print-back-finishes ui-serif-interactive" data-back-finishes>← Back to finishes</button>' +
-      '<div class="print-config-columns"><div class="print-config-sizes">' +
-        '<div class="ps-step">Choose a size</div>' +
-        '<div class="ps-sizes">' + sizes + '</div>' +
-        (size&&size.compatibility==='extension'?'<p class="ps-material">Liten &amp; Co will extend the artwork for printing.</p>':'') +
-      '</div><div class="print-config-choice">' +
-        '<div class="print-config-product">'+finishArt(fam)+'<h3 class="print-selected-finish">'+esc(fam.label)+'</h3></div>' +
+      '<div class="print-config-columns"><div class="print-config-choice">' +
+        '<div class="print-config-product">'+finishArt(fam)+'<h3 class="print-selected-finish">'+esc(fam.label)+'</h3><p class="print-selected-description">'+esc(fam.note || '')+'</p></div>' +
         '<div class="ps-step print-quantity-label">Quantity</div>' +
         '<div class="ps-qrow">' +
           '<div class="ps-qty">' +
@@ -10580,6 +10576,10 @@ window.EFFECT_PREVIEWS = {
             '<button type="button" data-q2="+">+</button>' +
           '</div>' +
         '</div>' +
+      '</div><div class="print-config-sizes">' +
+        '<div class="ps-step">Choose a size</div>' +
+        '<div class="ps-sizes">' + sizes + '</div>' +
+        (size&&size.compatibility==='extension'?'<p class="ps-material">Liten &amp; Co will extend the artwork for printing.</p>':'') +
         '<button class="ps-add" id="psAdd" type="button">Add to your order' +
           '<span class="amt">' + money((size ? size.cents : 0) * PS_QTY) + '</span>' +
         '</button>' +
