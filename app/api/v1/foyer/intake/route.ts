@@ -61,9 +61,10 @@ export async function POST(req: NextRequest) {
   }
   // ── end TEMPORARY PREVIEW TEST BYPASS ─────────────────────────────────────
 
+  const routing = await analyzeUploadRouting(src.b64)
   let gender: 'f' | 'm' | null = null
   let ageGroup: string | null = null
-  try {
+  if (routing?.decisions.portraits.redirectSeries !== 'pets') try {
     const det = await detectFaceVisibility({
       sourceImageB64: src.b64,
       openaiApiKey:   process.env.OPENAI_API_KEY || '',
@@ -83,5 +84,5 @@ export async function POST(req: NextRequest) {
   const intake = signIntake(secret, {
     sha: sha256Hex(src.bytes), subject, ageGroup, exp: Date.now() + INTAKE_TOKEN_TTL_MS,
   })
-  return reply({ status: 'ok', subject, gender, age_group: ageGroup, intake, routing: await analyzeUploadRouting(src.b64) })
+  return reply({ status: 'ok', subject, gender, age_group: ageGroup, intake, routing })
 }
