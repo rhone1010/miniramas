@@ -688,6 +688,7 @@ window.foyer = { generationReady: generationReady };
                             image never reaches this page.
 
    Only a photograph the intake passed is handed to Discovery. */
+LitenSubjectGate.foyer = 'portraits';
 var FOYER = {
   free:    null,    /* true/false once /foyer/reveal has said; null = not yet  */
   why:     null,    /* when free is false: 'exhausted' (used) or 'unavailable' (could not be checked) */
@@ -751,7 +752,7 @@ function askIntake(){
   FOYER.intake = foyerPost('/api/v1/foyer/intake', { image_b64: SRC.b64 }).then(function(d){
     if(photo!==SRC.dataUrl || !d || d.status!=='ok')return d;
     return LitenSubjectGate.review(d,photo,'portraits').then(function(ok){
-      if(!ok || photo!==SRC.dataUrl)return {status:'unavailable'};
+      if(!ok || photo!==SRC.dataUrl)return {status:'routing_cancelled'};
       d.routingAccepted='portraits';d.skipRedirect=LitenSubjectGate.skipRedirect;return d;
     });
   });
@@ -838,6 +839,7 @@ function reveal(){
   (FOYER.intake || askIntake()).then(function(d){
     if (run !== FOYER.run) return;
     if (!d){ FOYER.intake = null; settle('failed'); return; }       /* not reached: ask again on Try again */
+    if (d.status === 'routing_cancelled'){ FOYER.intake = null; settle('failed'); return; }
     if (d.status === 'refused'){ settle('refused'); return; }
     if (d.status !== 'ok'){ settle('unavailable'); return; }                /* the check could not be made */
     if (FOYER.free === false){ settle(FOYER.why || 'unavailable'); return; }
@@ -1226,5 +1228,15 @@ go.addEventListener('click',function(){
   go.setAttribute('aria-busy','true');
   Promise.resolve(FOYER.handoff).catch(function(){}).then(function(){ location.href='/discovery'; });
 });
+
+/* Resume the fitted photograph from the other series' existing handoff. */
+if (new URLSearchParams(location.search).get('foyerFrom') === 'pets') {
+  LitenHandoff.take('pets').then(function(handoff){
+    if (!handoff || STATE.phase !== 'opening') return;
+    SRC.dataUrl = handoff.dataUrl; SRC.b64 = handoff.dataUrl.split(',')[1] || null;
+    begin(SRC.dataUrl);
+    reveal();
+  });
+}
 
 </script></body></html>

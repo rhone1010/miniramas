@@ -26,10 +26,16 @@
   var META_KEY   = 'liten_pets_foyer_handoff_v1';
   var MAX_AGE_MS = 2 * 60 * 60 * 1000;
 
-  function openDb(){
+  function handoffDb(series){
+    return series==='portraits' ? 'liten-handoff' : series==='pets' ? 'liten-pets-handoff' : DB_NAME;
+  }
+  function handoffMeta(series){
+    return series==='portraits' ? 'liten_foyer_handoff_v1' : series==='pets' ? 'liten_pets_foyer_handoff_v1' : META_KEY;
+  }
+  function openDb(series){
     return new Promise(function(resolve, reject){
       if (!window.indexedDB) { reject(new Error('indexedDB unavailable')); return; }
-      var rq = indexedDB.open(DB_NAME, 1);
+      var rq = indexedDB.open(handoffDb(series), 1);
       rq.onupgradeneeded = function(){ rq.result.createObjectStore(STORE); };
       rq.onsuccess = function(){ resolve(rq.result); };
       rq.onerror   = function(){ reject(rq.error); };
@@ -38,8 +44,8 @@
 
   /* One request in one transaction; resolves with its result once the
      transaction has committed. */
-  function inStore(mode, act){
-    return openDb().then(function(db){
+  function inStore(mode, act, series){
+    return openDb(series).then(function(db){
       return new Promise(function(resolve, reject){
         var t = db.transaction(STORE, mode), out;
         var rq = act(t.objectStore(STORE));
@@ -69,9 +75,9 @@
     });
   }
 
-  function clear(){
-    try { localStorage.removeItem(META_KEY); } catch (e){}
-    return inStore('readwrite', function(s){ return s.delete(PHOTO_KEY); }).catch(function(){});
+  function clear(series){
+    try { localStorage.removeItem(handoffMeta(series)); } catch (e){}
+    return inStore('readwrite', function(s){ return s.delete(PHOTO_KEY); }, series).catch(function(){});
   }
 
   /* Foyer. The photograph first, then the note that points at it, so the
@@ -91,19 +97,19 @@
   }
 
   /* Discovery. Resolves { dataUrl, meta } once, or null. */
-  function take(){
+  function take(series){
     var meta = null;
-    try { meta = JSON.parse(localStorage.getItem(META_KEY) || 'null'); } catch (e){}
+    try { meta = JSON.parse(localStorage.getItem(handoffMeta(series)) || 'null'); } catch (e){}
     if (!meta || meta.v !== 1) return Promise.resolve(null);
-    if (Date.now() - (meta.at || 0) > MAX_AGE_MS) return clear().then(function(){ return null; });
-    return inStore('readonly', function(s){ return s.get(PHOTO_KEY); })
+    if (Date.now() - (meta.at || 0) > MAX_AGE_MS) return clear(series).then(function(){ return null; });
+    return inStore('readonly', function(s){ return s.get(PHOTO_KEY); }, series)
       .then(function(blob){
-        return clear().then(function(){
+        return clear(series).then(function(){
           if (!blob) return null;
           return blobToDataUrl(blob).then(function(url){ return { dataUrl: url, meta: meta }; });
         });
       })
-      .catch(function(){ return clear().then(function(){ return null; }); });
+      .catch(function(){ return clear(series).then(function(){ return null; }); });
   }
 
   /* Discovery's own resume (Pass 2): the source photograph held across the
