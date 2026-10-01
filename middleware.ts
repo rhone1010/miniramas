@@ -58,6 +58,12 @@ const PAGES: Record<string, string> = {
      and 404s, which is the exact fault the Portraits menu comment above
      was written about. */
   '/groups': '/groups.html',
+  /* GROUPS FOYER, 1 Oct 2026. Its own file, same pattern as Pets'
+     /pets -> pets-foyer.html with Discovery nested at /pets/discovery --
+     except /groups already was Discovery before this route existed, so
+     the Foyer gets its own path instead of displacing it. Its CTA goes
+     to /groups, unchanged above. */
+  '/groups/foyer': '/groups-foyer.html',
   /* PETS AND HALLOWEEN, 21 August. Both files exist and both are wired to
      their own engines -- pets/analyze and pets/generate for one,
      portraits/analyze plus halloween/generate for the other.
