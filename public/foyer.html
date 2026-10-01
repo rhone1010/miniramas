@@ -1005,25 +1005,24 @@ function fanReveal(){
   /* 4-CARD SQUARE FAN (Rich, Sep 2026). Two cards per side, square aspect.
      Inner cards emerge from behind the hero; outer cards follow.
 
-     GEOMETRY CORRECTION (Rich, 1 Oct 2026). The approved mockup is
-     essentially upright, compact and overlapping -- not the wider,
-     more rotated bow this started as. Same formula, three constants
-     changed:
-       ROT      14deg outward splay -> 4deg: "essentially upright".
-       SPREAD   0.72 card-widths/step -> 0.46: less than one card-width
-                apart, so inner overlaps behind the hero and outer
-                overlaps behind inner, not side by side with daylight
-                between them.
-       yStep    was positive (outer stepped DOWN the bow, below inner).
-                Now negative: outer steps UP, above inner -- "outer pair
-                sits higher than inner pair", per the reference. */
-  var SPREAD = 0.46;
+     GEOMETRY CORRECTION (Rich, 1 Oct 2026, pass 2). Pass 1 over-corrected:
+     0.46 spread put inner behind enough of the hero to reduce it to a
+     narrow strip. Two constants only, same formula:
+       ROT      4deg outward splay -> 0: zero rotation on all four.
+       SPREAD   0.46 -> 0.95 card-widths/step: substantially wider, so
+                inner reads as a clearly visible card overlapping the
+                hero's edge, and outer overlaps inner's edge the same
+                way -- never a narrow sliver, never daylight between
+                them either.
+     yStep is unchanged from pass 1 -- outer already steps UP, above
+     inner, which is correct and confirmed. */
+  var SPREAD = 0.95;
   var base = cards[0].offsetWidth || 240;
   var CW = Math.min(base * K * FAN_SCALE, (innerWidth - 48) / (2 * (2 * SPREAD + 0.62)));
   var S = CW / base;                                        // the fan's size against its original
   cards.forEach(function(d){ d.style.width = CW + 'px'; });
   var spacing = CW * SPREAD;
-  var ROT = [2,4];                                          // outward splay per step -- essentially upright
+  var ROT = [0,0];                                          // zero rotation on all four flankers
   function place(d){ var o=d._o;
     var x = o.side * (spacing * o.step);                    // horizontal offset from centre
     var yStep = -16 * o.step * S;                           // vertical step UP the bow -- outer sits higher
