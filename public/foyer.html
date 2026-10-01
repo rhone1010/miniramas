@@ -375,6 +375,9 @@ input[type=file]{ display:none }
 
 <script src="foyer-DATA.js"></script>
 <script src="/foyer-handoff.js"></script>
+<!-- The Groups catalogue, for the riffle/montage pool below — the same
+     generated file groups.html reads, not a second hand-kept list. -->
+<script src="/groups-registry.js"></script>
 <script>
 var IS_MOBILE=matchMedia('(max-width:720px)').matches;
 
@@ -432,6 +435,16 @@ var WIDE = ['Your photo, imagined hundreds of ways.','Impossible worlds become r
    These are Groups preview paths, not Foyer flip IDs. */
 var FAN = ['groups_stained_glass_faces','groups_plushy','groups_art_nouveau_faces','groups_clockwork'];
 var FAN_IMG = function(id){ return '/previews/groups/' + id + '.jpg'; };
+/* RIFFLE / MONTAGE POOL — Rich's correction, September 2026: the
+   processing riffle and the faded background montage showed legacy
+   Portraits flip imagery (FLIPS/imgFor below, from foyer-DATA.js). Both
+   now cycle the real Groups catalogue instead — the same generated
+   registry groups.html reads (/groups-registry.js, loaded above), never
+   a second hand-kept list. Falls back to FAN itself if the registry
+   script did not load. */
+var RIFFLE_POOL = (window.GROUPS_REGISTRY && window.GROUPS_REGISTRY.effects
+  ? window.GROUPS_REGISTRY.effects.map(function(e){ return 'groups_' + e.id; })
+  : FAN.slice());
 /* MOBILE MOSAIC — two additional Groups previews below the four fan cards,
    filling a 2×3 grid on phone. Neither is in FAN or REVEAL_POOL. */
 var MOSAIC_MORE = ['groups_impressionist','groups_watercolor'];
@@ -500,8 +513,8 @@ var FAN_SCALE     = 1.5;     /* the six fan cards, against their earlier size */
 (function(){ var m=document.getElementById('montage'); if(!m) return;
   var spots=IS_MOBILE?[[-6,4,150],[70,2,150],[-8,60,150],[74,58,150]]
                      :[[2,6,220],[80,2,240],[-2,52,230],[82,50,240],[16,64,200],[64,66,210]];
-  spots.forEach(function(sp,i){ var t=document.createElement('div'); t.className='tile'; var id=FLIPS[i%FLIPS.length][0];
-    t.style.cssText='left:'+sp[0]+'%;top:'+sp[1]+'%;width:'+sp[2]+'px;height:'+(sp[2]/.75)+'px;background-image:url('+imgFor(id)+')'; m.appendChild(t); });
+  spots.forEach(function(sp,i){ var t=document.createElement('div'); t.className='tile'; var id=RIFFLE_POOL[i%RIFFLE_POOL.length];
+    t.style.cssText='left:'+sp[0]+'%;top:'+sp[1]+'%;width:'+sp[2]+'px;height:'+(sp[2]/.75)+'px;background-image:url('+FAN_IMG(id)+')'; m.appendChild(t); });
 })();
 
 /* DESKTOP HAS ONE PHOTO ACTION. The stylesheet already hides the camera
@@ -581,7 +594,7 @@ function startRiffle(){
   STATE.phase = 'riffle';
   document.body.classList.add('telling-page');
   front.innerHTML='';
-  FLIPS.forEach(function(r,i){ var f=document.createElement('div'); f.className='flip'+(i===0?' on':''); f.style.backgroundImage='url('+imgFor(r[0])+')'; front.appendChild(f); });
+  RIFFLE_POOL.forEach(function(id,i){ var f=document.createElement('div'); f.className='flip'+(i===0?' on':''); f.style.backgroundImage='url('+FAN_IMG(id)+')'; front.appendChild(f); });
   var g=document.createElement('div'); g.className='grad'; front.appendChild(g); card.classList.add('telling');
   /* NO LINE UNDER THE CARD (Rich, 2026-09-14). The riffle used to rewrite
      "Imagine yourself <caption>" under the card on every other frame, then
@@ -990,20 +1003,30 @@ function fanReveal(){
      the outward rotations are angles and do not scale. */
   var K = Math.min(1, (card.offsetHeight || CARD_MAX_H) / CARD_MAX_H);
   /* 4-CARD SQUARE FAN (Rich, Sep 2026). Two cards per side, square aspect.
-     Inner cards emerge from behind the hero; outer cards follow. The spread
-     is wider than 6-card (fewer cards to fill the width), and the rotation
-     is gentler. The fan is never wider than the screen: two steps plus the
-     outer card's turned half-width each side, 24px clear. */
-  var SPREAD = 0.72;
+     Inner cards emerge from behind the hero; outer cards follow.
+
+     GEOMETRY CORRECTION (Rich, 1 Oct 2026). The approved mockup is
+     essentially upright, compact and overlapping -- not the wider,
+     more rotated bow this started as. Same formula, three constants
+     changed:
+       ROT      14deg outward splay -> 4deg: "essentially upright".
+       SPREAD   0.72 card-widths/step -> 0.46: less than one card-width
+                apart, so inner overlaps behind the hero and outer
+                overlaps behind inner, not side by side with daylight
+                between them.
+       yStep    was positive (outer stepped DOWN the bow, below inner).
+                Now negative: outer steps UP, above inner -- "outer pair
+                sits higher than inner pair", per the reference. */
+  var SPREAD = 0.46;
   var base = cards[0].offsetWidth || 240;
   var CW = Math.min(base * K * FAN_SCALE, (innerWidth - 48) / (2 * (2 * SPREAD + 0.62)));
   var S = CW / base;                                        // the fan's size against its original
   cards.forEach(function(d){ d.style.width = CW + 'px'; });
   var spacing = CW * SPREAD;
-  var ROT = [5,14];                                         // outward splay per step
+  var ROT = [2,4];                                          // outward splay per step -- essentially upright
   function place(d){ var o=d._o;
     var x = o.side * (spacing * o.step);                    // horizontal offset from centre
-    var yStep = 30 * o.step * S;                            // vertical step down the bow
+    var yStep = -16 * o.step * S;                           // vertical step UP the bow -- outer sits higher
     var rot = o.side * ROT[o.step-1];                       // outward rotation
     d.style.transform = 'translate(-50%,-50%) translate('+x+'px,'+yStep+'px) rotate('+rot+'deg) scale(1)';
     d.style.opacity = '1';
