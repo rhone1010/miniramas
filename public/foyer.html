@@ -39,7 +39,21 @@
 }
 /* card + side cards */
 .cardwrap{ perspective:1600px; position:relative; z-index:4 }
-.card{ position:relative; height:clamp(500px,64vh,640px); width:auto; aspect-ratio:var(--ar); z-index:4; transform-style:preserve-3d; transition:transform 1.5s cubic-bezier(.45,.05,.25,1) }
+/* RESPONSIVE CORRECTION (Rich, 1 Oct 2026). 64vh alone sized the hero
+   from viewport HEIGHT only. On a wide-but-short desktop viewport
+   (1660x1000, 1440x900, 1300x900) the hero could render wider than the
+   fan's own width budget assumed -- fanReveal()'s layoutHW independently
+   clamps to (innerWidth-48)/2.70, so CSS and JS could disagree on the
+   hero's width, and the fan's locked proportions (0.61/1.04 hero-widths)
+   would land relative to the wrong reference size.
+
+   Folding that same width budget into the height clamp makes CSS and JS
+   agree on one hero width always -- card.offsetWidth in fanReveal()
+   already reflects it, so no JS change was needed. At every width wide
+   enough that 64vh was already the binding term (2560x1440, 1920x1080,
+   and the originally-accepted wide desktop view), min() still resolves
+   to 64vh and this is a no-op -- the accepted composition is unchanged. */
+.card{ position:relative; height:clamp(500px, min(64vh, (100vw - 48px) / 2.70), 640px); width:auto; aspect-ratio:var(--ar); z-index:4; transform-style:preserve-3d; transition:transform 1.5s cubic-bezier(.45,.05,.25,1) }
 .card.flipped{ transform:rotateY(180deg) }
 .card.flipping{ animation:flipDepth 1.5s cubic-bezier(.45,.05,.25,1) }
 @keyframes flipDepth{ 0%{ scale:1 } 50%{ scale:.9 } 100%{ scale:1 } }
