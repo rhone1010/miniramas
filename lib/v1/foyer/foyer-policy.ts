@@ -40,10 +40,20 @@ export const INTAKE_WINDOW      = '24 hours'
    seconds later. */
 export const INTAKE_TOKEN_TTL_MS = 15 * 60 * 1000
 
-/* The foyer card is .69 wide per 1 tall; its riffle and fan frames were all
-   rendered at 2:3 so they sit in it uncropped. The reveal lands in the same
-   card. */
+/* The Pets foyer card is .69 wide per 1 tall; its riffle and fan frames
+   were all rendered at 2:3 so they sit in it uncropped. The reveal lands
+   in the same card. Pets' own render path (lib/v1/pets/pets-foyer-render.ts)
+   imports this directly — do not repoint it without a Pets-specific
+   ruling; the Groups correction below does not touch Pets. */
 export const FOYER_ASPECT = '2:3'
+
+/* public/foyer.html — now the Groups-context foyer, its fan cards four
+   square Groups previews (stained_glass_faces, plushy, art_nouveau_faces,
+   clockwork). Rich's correction: the free generated hero is 1:1 square,
+   not 2:3. Foyer-specific — the generated hero's prompt pool and the
+   paid Groups generation path (3:2 default, lib/v1/shared/render-aspect.ts)
+   are unaffected. */
+export const GROUPS_FOYER_HERO_ASPECT = '1:1'
 
 /* Anything larger than the Portraits fit ceiling (~3.3MB of file, ~4.4MB of
    base64) did not come from the foyer's own fitting and is refused unread. */

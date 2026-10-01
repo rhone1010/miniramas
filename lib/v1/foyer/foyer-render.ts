@@ -33,7 +33,7 @@ import {
 } from '@/lib/v1/portraits/portraits-shared'
 import { loadStyleRefs } from '@/lib/v1/portraits/style-refs'
 import { bakeFoyerWatermark } from './foyer-watermark'
-import { FOYER_ASPECT, revealLabel } from './foyer-policy'
+import { GROUPS_FOYER_HERO_ASPECT, revealLabel } from './foyer-policy'
 
 export interface FoyerRevealResult {
   imageDataUrl: string        // data:image/jpeg;base64, -- watermarked
@@ -79,7 +79,7 @@ export async function renderFoyerReveal(input: {
     sourceImageB64:      input.sourceImageB64,
     additionalImagesB64: [],
     styleReferenceB64s:  styleRefs,
-    aspectRatio:         FOYER_ASPECT,
+    aspectRatio:         GROUPS_FOYER_HERO_ASPECT,
     replicateApiToken:   input.replicateApiToken,
   })
 

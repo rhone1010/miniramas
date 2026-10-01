@@ -7,7 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{ --ox:#7d4242; --ox-line:#6a3737; --gold:#b68a53; --gold-soft:#d7bd89; --ink:#2a241e; --beige:#e9e1d3; --limestone:#f1ece3;
-  --serif:'Cormorant Garamond',Georgia,serif; --sans:Manrope,system-ui,sans-serif; --ar:.69 }
+  --serif:'Cormorant Garamond',Georgia,serif; --sans:Manrope,system-ui,sans-serif;
+  /* The free generated hero is 1:1 square (Rich's correction, September
+     2026 — was .69, matched to the Pets-era riffle/fan frames' 2:3). The
+     four surrounding Groups preview cards (.fc) are already aspect-ratio:1
+     and unaffected by this. */
+  --ar:1 }
 *{ box-sizing:border-box } html,body{ height:100% } body{ margin:0; font-family:var(--sans); color:var(--ink); overflow-x:hidden;
   background:var(--beige); min-height:100% }
 /* ── muted montage background ── */
@@ -55,7 +60,7 @@
    positioned by JS. Bow follows Review (centre highest); rotation is an
    outward splay. All motion is transform/opacity on one curve. ── */
 .fan{ display:contents }                       /* wrappers are inert; cards self-position */
-.fc{ position:absolute; left:50%; top:50%; width:clamp(200px,16vw,268px); aspect-ratio:var(--ar);
+.fc{ position:absolute; left:50%; top:50%; width:clamp(200px,16vw,268px); aspect-ratio:1;
   border-radius:12px; overflow:hidden; z-index:2;
   box-shadow:0 1rem 2.4rem rgba(52,30,25,.32); border:1px solid rgba(215,189,137,.4); background:#3a2b24;
   opacity:0; transform:translate(-50%,-50%) translate(0px,0px) rotate(0deg) scale(.8);   /* collapsed 'from' at centre, behind the result */
@@ -195,39 +200,13 @@ input[type=file]{ display:none }
      nothing jumps. The waiting position (150px under the card, 50%) is
      unchanged. */
   .go{ transition:transform 1.1s cubic-bezier(.4,0,.2,1), left 1.1s cubic-bezier(.4,0,.2,1), margin-top 1.1s cubic-bezier(.4,0,.2,1), opacity .5s ease }
-  /* left:50% -- centred on the page, as the waiting state is. It sat at 52%
-     ("optically centred") and read as off-centre against the card and the
-     fan (Rich, 2026-09-16). Size and vertical position unchanged. */
-  .go.full{ transform:translateX(-50%) scale(1.5) translateY(-10px); margin-top:-25px; left:50% }
+  .go.full{ transform:translateX(-50%) scale(1.5) translateY(-10px); margin-top:-25px; left:52% }
   /* THE CARD IS THE UPLOAD CONTROL -- no separate button on desktop. The
      invisible gradient layer above the card's face must not take the click
      meant for it; a keyboard focus ring, drawn inside the rounded card. */
-  #acts{ display:none !important }
+  .acts{ display:none !important }
   .face .grad{ pointer-events:none }
   .empty:focus-visible{ outline:2px solid var(--gold-soft); outline-offset:-8px }
-}
-
-/* THE 1920x1080 BASELINE (Rich, 2026-09-15: "work ONLY at 1920x1080"; the
-   card, not the type, is what gives -- "size the card for the 1920
-   composition"). The whole stack placed in the 1080px canvas, top to
-   bottom:
-     34px (as it always was) -- the logo (126px) -- 63px, so the logo stands
-     on its own -- Crafting Your Image (32px) -- 15px, so the two lines read
-     as one block -- Imagine Yourself As [word] (42px) -- 40px -- the card,
-     544px tall (376x544, 85% of the 442x640 card) -- 80px -- Come Inside &
-     Explore (57px while it waits; its final state rises 40px and grows,
-     ending 40px under the card) -- 47px.
-   The finished fan: its six cards at 80% of the size they had here with the
-   560px card (Rich, 2026-09-15) -- --fan-k .8235 = .8 x 560 / 544, on top
-   of the fan's own scaling with the card. Angles, order, overlap and the
-   animation are unchanged; spacing shrinks with the cards.
-   Scoped to that screen only: every other desktop size keeps the rule
-   above until the responsive pass derives it from this baseline. */
-@media (min-width:1800px) and (max-width:2040px) and (min-height:1040px) and (max-height:1120px){
-  .stage{ --rs-craft:32px; --rs-gap1:15px; --rs-imagine:42px; --rs-gap2:40px; --card-h:544px; --fan-k:.8235;
-          --base-under-logo:63px; --base-to-cta:80px;
-          --deck-y:calc(var(--base-under-logo) - 6px + var(--rs-room) + var(--card-h) / 2) }   /* 6px: the logo box's own bottom padding */
-  .go{ top:calc(var(--deck-y) + var(--card-h) / 2 + var(--base-to-cta)) }
 }
 
 /* ═══════════ MOBILE — the card IS the screen ═══════════ */
@@ -276,7 +255,7 @@ input[type=file]{ display:none }
   .mgrid{ display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(3,calc(100% / 3)); grid-auto-rows:calc(100% / 3); gap:0; position:fixed; inset:0; z-index:1; padding:0; margin:0 }
   .mgrid .gc{ border-radius:0 !important; border:0 !important; margin:0 }
   .mgrid .gc{ overflow:hidden } .mgrid .gc img{ display:block; width:100%; height:100%; object-fit:cover }
-  .gc{ aspect-ratio:var(--ar); border-radius:10px; overflow:hidden; opacity:0; transform:scale(.92);
+  .gc{ aspect-ratio:1; border-radius:10px; overflow:hidden; opacity:0; transform:scale(.92);
     box-shadow:0 .6rem 1.4rem rgba(20,12,10,.4); border:1px solid rgba(215,189,137,.3);
     transition:opacity .5s ease, transform .5s cubic-bezier(.16,.8,.3,1) }
   .gc.in{ opacity:.9; transform:none }
@@ -305,29 +284,14 @@ input[type=file]{ display:none }
   font-family:var(--serif); color:var(--ox);
   opacity:0; visibility:hidden; transition:opacity .45s ease, visibility 0s linear .45s }
 .reveal-status.on{ opacity:1; visibility:visible; transition:opacity .45s ease, visibility 0s }
-/* Crafting Your Image: a ripple, not a pulse -- each letter blooms to full
-   ink and settles back in turn, so one slow wave runs through the phrase
-   every 2s, then the next. The phrase sits at .57 and is legible the whole
-   time; the wave lifts letters to 1 rather than dimming them away (Rich,
-   2026-09-16: the old dip read as faint). Letters stay put; only their ink
-   changes. The phrase is read once, whole (.rs-say); the letters are
-   visual only. */
+/* Crafting Your Image: a ripple, not a pulse -- each letter dips to .55 and
+   back in turn, so one slow wave runs through the phrase every 2s, then the
+   next. Letters stay put; only their ink changes. The phrase is read once,
+   whole (.rs-say); the letters are visual only. */
 .rs-head{ margin:0; font-style:italic; font-weight:400; font-size:var(--rs-craft, 32px); line-height:1; color:#c36d26 }
 .rs-say{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap }
-/* THE WAIT AFTER THE UPLOAD. The mark breathes over their photograph while
-   the studio looks at it, with a line that promises nothing in particular,
-   and dissolves as the first frame turns. No spinner, no percentage.
-   Reduced motion: the same thing, held still. */
-.prep{ position:absolute; inset:0; z-index:4; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
-  border-radius:inherit; pointer-events:none; background:linear-gradient(rgba(20,15,10,.5), rgba(20,15,10,.62));
-  opacity:0; visibility:hidden; transition:opacity .5s ease, visibility 0s linear .5s }
-.prep.on{ opacity:1; visibility:visible; transition:opacity .5s ease, visibility 0s }
-.prep-mark{ width:132px; height:88px; fill:#f6ecd8; animation:prepBreath 3.4s ease-in-out infinite }
-.prep-say{ margin:0; font-family:var(--serif); font-style:italic; font-size:19px; color:rgba(246,236,216,.92); text-shadow:0 1px 3px rgba(0,0,0,.45) }
-@keyframes prepBreath{ 0%,100%{ opacity:.5; filter:drop-shadow(0 0 0 rgba(246,236,216,0)) } 50%{ opacity:1; filter:drop-shadow(0 0 12px rgba(246,236,216,.4)) } }
-@media(max-width:720px){ .prep-mark{ width:104px; height:69px } .prep-say{ font-size:17px } }
-.rs-l{ opacity:.57; animation:rsRipple 2s ease-in-out infinite; animation-delay:calc(var(--i) * 2s / var(--n)) }
-@keyframes rsRipple{ 0%, 44%, 100%{ opacity:.57 } 22%{ opacity:1 } }
+.rs-l{ animation:rsRipple 2s ease-in-out infinite; animation-delay:calc(var(--i) * 2s / var(--n)) }
+@keyframes rsRipple{ 0%, 44%, 100%{ opacity:1 } 22%{ opacity:.55 } }
 /* Imagine Yourself As [word]: "Imagine Yourself" italic, "As" and the word
    upright, as the mockup sets them. "Imagine Yourself As" never moves: the
    words share one cell, the width of a middling word ("Bronze", 2.75em),
@@ -356,15 +320,12 @@ input[type=file]{ display:none }
   .rs-line{ color:#f6ecd8; margin-top:clamp(6px, 2vw, 9px); font-size:clamp(18px, 5.6vw, 24px) }   /* the longest line still fits a 320 card */
 }
 @media (prefers-reduced-motion:reduce){
-  .rs-l{ animation:none; opacity:1 }          /* no wave, and the phrase at full ink */
-  .prep-mark{ animation:none; opacity:.92; filter:none }
+  .rs-l{ animation:none }
   .rs-w{ transition:none; filter:none }
 }
 @media (min-width:721px){ .pill{ display:none !important } }
 @media (prefers-reduced-motion:reduce){ .card,.side,.go,.fc,.cardwrap{ transition:none !important; animation:none !important } }
-</style><link rel="stylesheet" href="/upload-routing.css">
-<script src="/upload-routing.js"></script>
-</head><body>
+</style></head><body>
 
 <div class="montage" id="montage"></div>
 <div class="wrap">
@@ -386,14 +347,6 @@ input[type=file]{ display:none }
             <div class="grad"></div>
           </div>
           <div class="face back" id="back"></div>
-          <!-- THE WAIT AFTER THE UPLOAD (Rich, 2026-09-16): the seconds
-               between their photograph going up and the riffle starting,
-               filled rather than left still. Nothing is claimed about what
-               the studio is doing. It dissolves when the frames begin. -->
-          <div class="prep" id="prep" aria-hidden="true">
-            <svg class="prep-mark" viewBox="90 0 1669 1109" aria-hidden="true"><path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/></svg>
-            <p class="prep-say">Preparing your reveal…</p>
-          </div>
         </div>
         <div class="reveal-status" id="revealStatus">
           <p class="rs-head" role="status" aria-live="polite"></p>
@@ -474,11 +427,14 @@ var IS_MOBILE=matchMedia('(max-width:720px)').matches;
    does not carry, and they stay exactly as both source files have them. */
 /* WIDER promise, after the tails run */
 var WIDE = ['Your photo, imagined hundreds of ways.','Impossible worlds become real in our crafted images.'];
-/* FAN / GRID — 6 showcase cards shown after the hold (Rich's picks). */
-var FAN = ['flip_23','flip_26','flip_24','flip_13','flip_06','flip_16'];
-/* MOBILE MOSAIC, a fourth row below the six. Neither is in FAN or REVEAL_POOL,
-   so the mosaic never repeats itself or the result. */
-var MOSAIC_MORE = ['flip_17','flip_11'];
+/* FAN — 4 Groups preview cards shown after the hold (Rich's picks, Sep 2026).
+   Order: [left_inner, left_outer, right_inner, right_outer].
+   These are Groups preview paths, not Foyer flip IDs. */
+var FAN = ['groups_stained_glass_faces','groups_plushy','groups_art_nouveau_faces','groups_clockwork'];
+var FAN_IMG = function(id){ return '/previews/groups/' + id + '.jpg'; };
+/* MOBILE MOSAIC — two additional Groups previews below the four fan cards,
+   filling a 2×3 grid on phone. Neither is in FAN or REVEAL_POOL. */
+var MOSAIC_MORE = ['groups_impressionist','groups_watercolor'];
 
 /* IMAGES. IMG() from foyer-DATA.js is the mapping, and it returns a site
    path (/previews/foyer-flip/<id>.jpg). Served from the site, that path is
@@ -492,18 +448,16 @@ var MOSAIC_MORE = ['flip_17','flip_11'];
 
    Each flip resolves ONCE, here, to its canonical effect: the captions in
    foyer-DATA.js where they name one (flip_07 origami, flip_14 crystallized,
-   flip_15 balloon_face, flip_24 stained_glass, flip_26 victorian among
-   them); the uncaptioned frames by their artwork, matched to the effect's
-   generation batch. A man's picture is
-   public/previews/foyer-flip-male/<effect>.jpg, as named there.
-   26 frames since 2026-09-16: flip_18 (cast_glass) left the deck with the
-   effect, and is not replaced yet (Rich). */
+   flip_15 balloon_face, flip_18 cast_glass, flip_24 stained_glass, flip_26
+   victorian among them); the uncaptioned frames by their artwork, matched
+   to the effect's generation batch. All 27 effects, each once. A man's
+   picture is public/previews/foyer-flip-male/<effect>.jpg, as named there. */
 var FLIP_EFFECT = {
   flip_01:'retro_robot',  flip_02:'reclaimed_bronze', flip_03:'quilted',       flip_04:'renaissance',
-  flip_05:'plushy',       flip_06:'designer_vinyl',  flip_07:'origami',       flip_08:'oil_impasto',
+  flip_05:'plushy',       flip_06:'petal_sculpture',  flip_07:'origami',       flip_08:'oil_impasto',
   flip_09:'neon',         flip_10:'impressionist',    flip_11:'ice',           flip_12:'iron',
   flip_13:'elizabethan',  flip_14:'crystallized',     flip_15:'balloon_face',  flip_16:'art_nouveau',
-  flip_17:'art_deco',                                 flip_19:'linocut',       flip_20:'porcelain',
+  flip_17:'art_deco',     flip_18:'cast_glass',       flip_19:'linocut',       flip_20:'porcelain',
   flip_21:'deco_twenties',flip_22:'sand_form',        flip_23:'sheet_music',   flip_24:'stained_glass',
   flip_25:'stone',        flip_26:'victorian',        flip_27:'wild_west'
 };
@@ -520,7 +474,7 @@ function imgFor(id){
    man, have the fan and the phone's grid ready before they are needed. */
 function setFoyerSubject(subject){
   FOYER_SUBJECT = (subject === 'man' || subject === 'woman') ? subject : null;
-  if (FOYER_SUBJECT === 'man') FAN.concat(MOSAIC_MORE).forEach(function(id){ (new Image()).src = imgFor(id); });
+  if (FOYER_SUBJECT === 'man') FAN.concat(MOSAIC_MORE).forEach(function(id){ (new Image()).src = FAN_IMG(id); });
 }
 
 /* TIMING. The riffle, line, photo beat and simulated-result values are the
@@ -600,14 +554,7 @@ function begin(src){
      the card and Come Inside & Explore is the one next step. Otherwise the
      riffle runs until the real result, or a reason there is none, arrives. */
   if (FOYER.free === false) settle(FOYER.why || 'unavailable');
-  else { prepWait(true); riffleWhenSubjectKnown(); }
-}
-
-/* The wait after the upload: on with the photograph, off as the riffle
-   takes the card (or as any settled state does). */
-function prepWait(on){
-  var el = document.getElementById('prep');
-  if (el) el.classList.toggle('on', !!on);
+  else riffleWhenSubjectKnown();
 }
 
 /* THE RIFFLE WAITS FOR THE PHOTOGRAPH'S SUBJECT (Rich, 2026-09-14). Its
@@ -631,7 +578,6 @@ function riffleWhenSubjectKnown(){
 function startRiffle(){
   STATE.riffleStart = null;
   if (STATE.phase !== 'photo') return;
-  prepWait(false);                    /* dissolves as the first frame turns */
   STATE.phase = 'riffle';
   document.body.classList.add('telling-page');
   front.innerHTML='';
@@ -666,7 +612,6 @@ function stopRiffle(){
 function generationReady(result){
   if (STATE.result || STATE.phase === 'opening') return;
   hideRevealStatus();
-  prepWait(false);          /* a result this early (never seen) still clears it */
   STATE.result = result;
   var im = new Image(); im.src = result.src;
   var ready = im.decode ? im.decode() : Promise.resolve();
@@ -688,7 +633,6 @@ window.foyer = { generationReady: generationReady };
                             image never reaches this page.
 
    Only a photograph the intake passed is handed to Discovery. */
-LitenSubjectGate.foyer = 'portraits';
 var FOYER = {
   free:    null,    /* true/false once /foyer/reveal has said; null = not yet  */
   why:     null,    /* when free is false: 'exhausted' (used) or 'unavailable' (could not be checked) */
@@ -747,19 +691,11 @@ fetch('/api/v1/foyer/reveal', { credentials:'same-origin', cache:'no-store' })
 
 /* The intake, once per photograph, and the handoff that follows from it. */
 function askIntake(){
-  var photo=SRC.dataUrl;
-  LitenSubjectGate.reset();
-  FOYER.intake = foyerPost('/api/v1/foyer/intake', { image_b64: SRC.b64 }).then(function(d){
-    if(photo!==SRC.dataUrl || !d || d.status!=='ok')return d;
-    return LitenSubjectGate.review(d,photo,'portraits').then(function(ok){
-      if(!ok || photo!==SRC.dataUrl)return {status:'routing_cancelled'};
-      d.routingAccepted='portraits';d.skipRedirect=LitenSubjectGate.skipRedirect;return d;
-    });
-  });
+  FOYER.intake = foyerPost('/api/v1/foyer/intake', { image_b64: SRC.b64 });
   FOYER.handoff = FOYER.intake.then(function(d){
     if (d && d.status === 'ok') setFoyerSubject(d.subject);   /* first, before the riffle looks */
     if (d && d.status === 'ok' && window.LitenHandoff)
-      return LitenHandoff.put(SRC.dataUrl, { subject:d.subject, gender:d.gender, routing:d.routing, routingAccepted:d.routingAccepted, skipRedirect:d.skipRedirect, ageGroup:d.age_group })
+      return LitenHandoff.put(SRC.dataUrl, { subject:d.subject, gender:d.gender, ageGroup:d.age_group })
         .catch(function(e){ console.warn('[foyer] handoff not written', e); });
     if (window.LitenHandoff) return LitenHandoff.clear();
   });
@@ -839,7 +775,6 @@ function reveal(){
   (FOYER.intake || askIntake()).then(function(d){
     if (run !== FOYER.run) return;
     if (!d){ FOYER.intake = null; settle('failed'); return; }       /* not reached: ask again on Try again */
-    if (d.status === 'routing_cancelled'){ FOYER.intake = null; settle('failed'); return; }
     if (d.status === 'refused'){ settle('refused'); return; }
     if (d.status !== 'ok'){ settle('unavailable'); return; }                /* the check could not be made */
     if (FOYER.free === false){ settle(FOYER.why || 'unavailable'); return; }
@@ -881,7 +816,6 @@ function settle(kind){
   if (kind === 'failed' && FOYER.free === false) kind = FOYER.why || 'unavailable';
   if (STATE.phase === 'settled' && STATE.settled === kind) return;
   hideRevealStatus();
-  prepWait(false);
   stopRiffle();
   STATE.phase = 'settled'; STATE.settled = kind;
   front.innerHTML = '<img src="'+SRC.dataUrl+'"><div class="nm" role="status">'+SAY[kind]+'</div>';
@@ -1042,9 +976,10 @@ function invite(){
    rotate and scale each interpolate on their own. */
 function fanReveal(){
   var L=document.getElementById('fanL'), R=document.getElementById('fanR'); L.innerHTML=''; R.innerHTML='';
-  var left=FAN.slice(0,3), right=FAN.slice(3,6);           // [inner,mid,outer]
+  /* 4 cards: [left_inner, left_outer, right_inner, right_outer] */
+  var left=FAN.slice(0,2), right=FAN.slice(2,4);           // [inner,outer]
   var order = [];
-  left.forEach(function(id,k){ order.push({id:id, side:-1, step:k+1}); });   // step 1 inner .. 3 outer
+  left.forEach(function(id,k){ order.push({id:id, side:-1, step:k+1}); });   // step 1 inner, 2 outer
   right.forEach(function(id,k){ order.push({id:id, side: 1, step:k+1}); });
   var cards=[];
   order.forEach(function(o){ var d=fanCard(o.id); (o.side<0?L:R).appendChild(d); d._o=o; d.setAttribute('data-flip',o.id); cards.push(d); });
@@ -1054,46 +989,38 @@ function fanReveal(){
      all take the same factor, so the composition keeps its proportions;
      the outward rotations are angles and do not scale. */
   var K = Math.min(1, (card.offsetHeight || CARD_MAX_H) / CARD_MAX_H);
-  /* 1.5x THE FAN (Rich, 2026-09-11). The cards are FAN_SCALE times their
-     earlier size. Centre to centre they now step 0.52 of a card width
-     (was 0.62 of the smaller card): in pixels the fan still opens wider
-     than before, each card shows about half its width past its inner
-     neighbour, and the inner pair clear the result card by ~45% of their
-     width -- a fan, not a pile. The fan is never wider than the screen:
-     three steps plus the outer card's turned half-width (0.709 of a card
-     width at 19deg) each side, 24px clear. The vertical step scales with
-     the cards, so the bow keeps its shape; the rotations are unchanged. */
-  var SPREAD = 0.52;
+  /* 4-CARD SQUARE FAN (Rich, Sep 2026). Two cards per side, square aspect.
+     Inner cards emerge from behind the hero; outer cards follow. The spread
+     is wider than 6-card (fewer cards to fill the width), and the rotation
+     is gentler. The fan is never wider than the screen: two steps plus the
+     outer card's turned half-width each side, 24px clear. */
+  var SPREAD = 0.72;
   var base = cards[0].offsetWidth || 240;
-  /* --fan-k: a size the layout can set for the fan alone (the 1920x1080
-     baseline does); 1 everywhere else. Spacing and the step down the bow
-     are fractions of CW, so they shrink with the cards. */
-  var FK = parseFloat(getComputedStyle(document.querySelector('.stage')).getPropertyValue('--fan-k')) || 1;
-  var CW = Math.min(base * K * FAN_SCALE * FK, (innerWidth - 48) / (2 * (3 * SPREAD + 0.709)));
+  var CW = Math.min(base * K * FAN_SCALE, (innerWidth - 48) / (2 * (2 * SPREAD + 0.62)));
   var S = CW / base;                                        // the fan's size against its original
   cards.forEach(function(d){ d.style.width = CW + 'px'; });
   var spacing = CW * SPREAD;
-  var ROT = [6,12,19];                                      // outward splay per step
+  var ROT = [5,14];                                         // outward splay per step
   function place(d){ var o=d._o;
     var x = o.side * (spacing * o.step);                    // horizontal offset from centre
-    var yStep = 26 * o.step * S;                            // vertical step down the bow
+    var yStep = 30 * o.step * S;                            // vertical step down the bow
     var rot = o.side * ROT[o.step-1];                       // outward rotation
     d.style.transform = 'translate(-50%,-50%) translate('+x+'px,'+yStep+'px) rotate('+rot+'deg) scale(1)';
     d.style.opacity = '1';
     d.style.zIndex = String(3 - o.step);                    // inner cards above outer, all below card(z4)
   }
-  /* inner pair first, then outward -- the stack opens from the middle */
+  /* inner pair first, then outer -- the stack opens from the middle */
   var seq = cards.slice().sort(function(a,b){ return a._o.step - b._o.step || a._o.side - b._o.side; });
   cards.forEach(function(d){ d.getBoundingClientRect(); });    // commit the collapsed start frame
   /* The last card to leave also starts the CTA's growth, in the same step:
-     both run 1.1s on the same curve, so the button reaches 1.2 exactly as the
+     both run 1.1s on the same curve, so the button reaches full exactly as the
      fan completes. */
   requestAnimationFrame(function(){ seq.forEach(function(d,i){ later(function(){
     place(d);
     if (i === seq.length - 1) go.classList.add('full');
   }, FAN_STAGGER*i); }); });
 }
-function fanCard(id){ var d=document.createElement('div'); d.className='fc'; d.innerHTML='<img src="'+imgFor(id)+'">'; return d; }
+function fanCard(id){ var d=document.createElement('div'); d.className='fc'; d.innerHTML='<img src="'+FAN_IMG(id)+'">'; return d; }
 
 /* mobile: result eases down to centre, 2x3 grid backfills sequentially.
    The beginning and end are the source's: the card as it was, and the card
@@ -1119,7 +1046,7 @@ function gridReveal(){
   }); });
 
   var g=document.getElementById('mgrid'); g.innerHTML='';
-  FAN.concat(MOSAIC_MORE).forEach(function(id,i){ var c=document.createElement('div'); c.className='gc'; c.setAttribute('data-flip',id); c.innerHTML='<img src="'+imgFor(id)+'">'; g.appendChild(c);
+  FAN.concat(MOSAIC_MORE).forEach(function(id,i){ var c=document.createElement('div'); c.className='gc'; c.setAttribute('data-flip',id); c.innerHTML='<img src="'+FAN_IMG(id)+'">'; g.appendChild(c);
     later(function(){ c.classList.add('in'); }, 120*i); });
 }
 
@@ -1228,15 +1155,5 @@ go.addEventListener('click',function(){
   go.setAttribute('aria-busy','true');
   Promise.resolve(FOYER.handoff).catch(function(){}).then(function(){ location.href='/discovery'; });
 });
-
-/* Resume the fitted photograph from the other series' existing handoff. */
-if (new URLSearchParams(location.search).get('foyerFrom') === 'pets') {
-  LitenHandoff.take('pets').then(function(handoff){
-    if (!handoff || STATE.phase !== 'opening') return;
-    SRC.dataUrl = handoff.dataUrl; SRC.b64 = handoff.dataUrl.split(',')[1] || null;
-    begin(SRC.dataUrl);
-    reveal();
-  });
-}
 
 </script></body></html>
