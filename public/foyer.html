@@ -996,40 +996,51 @@ function fanReveal(){
   right.forEach(function(id,k){ order.push({id:id, side: 1, step:k+1}); });
   var cards=[];
   order.forEach(function(o){ var d=fanCard(o.id); (o.side<0?L:R).appendChild(d); d._o=o; d.setAttribute('data-flip',o.id); cards.push(d); });
-  /* SHORT VIEWPORTS: the whole fan scales with the result card. K is the
-     card's height against the design's 640px -- 1 on a tall screen, so the
-     fan is exactly as designed there. Width, spacing and the vertical step
-     all take the same factor, so the composition keeps its proportions;
-     the outward rotations are angles and do not scale. */
-  var K = Math.min(1, (card.offsetHeight || CARD_MAX_H) / CARD_MAX_H);
   /* 4-CARD SQUARE FAN (Rich, Sep 2026). Two cards per side, square aspect.
      Inner cards emerge from behind the hero; outer cards follow.
 
-     GEOMETRY CORRECTION (Rich, 1 Oct 2026, pass 2). Pass 1 over-corrected:
-     0.46 spread put inner behind enough of the hero to reduce it to a
-     narrow strip. Two constants only, same formula:
-       ROT      4deg outward splay -> 0: zero rotation on all four.
-       SPREAD   0.46 -> 0.95 card-widths/step: substantially wider, so
-                inner reads as a clearly visible card overlapping the
-                hero's edge, and outer overlaps inner's edge the same
-                way -- never a narrow sliver, never daylight between
-                them either.
-     yStep is unchanged from pass 1 -- outer already steps UP, above
-     inner, which is correct and confirmed. */
-  var SPREAD = 0.95;
-  var base = cards[0].offsetWidth || 240;
-  var CW = Math.min(base * K * FAN_SCALE, (innerWidth - 48) / (2 * (2 * SPREAD + 0.62)));
-  var S = CW / base;                                        // the fan's size against its original
+     GEOMETRY CORRECTION (Rich, 1 Oct 2026, pass 3) -- calculated from
+     Rich's stated relationships, not tuned by eye:
+       - inner card: 65-70% of its own width visible outside the hero
+       - outer card: 65-70% of its own width visible outside the inner
+       - total five-card span: ~2.6-2.8x the hero width
+       - zero rotation on all four
+     Passes 1-2 tuned SPREAD against the fan card's own intrinsic CSS
+     size (base * FAN_SCALE), which has no fixed relationship to the
+     hero at all -- there was no width that formula could hit Rich's
+     numbers at. This anchors every measurement to the hero's own
+     rendered width (HW) instead.
+
+     Solving the three relationships at once (30-35% overlap -> midpoint
+     32.5%; 2.6-2.8x span -> midpoint 2.70x) gives CW = 0.63*HW, inner
+     centre at 0.610*HW from the composition's centre, outer centre at
+     1.036*HW. Checked against the targets: inner and outer both land at
+     67.5% visible (inside 65-70%); total span 2*1.036 + 0.63 = 2.70*HW
+     (inside 2.6-2.8). */
+  var HW = card.offsetWidth || card.offsetHeight || CARD_MAX_H;   // hero's own rendered width (square)
+  var CW_RATIO   = 0.63;    // flanking card width, as a fraction of HW
+  var X_INNER    = 0.610;   // inner centre, in hero-widths from composition centre
+  var X_OUTER    = 1.036;   // outer centre, in hero-widths from composition centre
+  var SPAN_RATIO = 2.70;    // total span this geometry produces, in hero-widths
+
+  /* SHORT / NARROW VIEWPORTS: the whole fan scales down together so the
+     span still fits, via one anchor (layoutHW) rather than the hero's
+     real size -- the hero itself is never touched. */
+  var layoutHW = Math.min(HW, (innerWidth - 48) / SPAN_RATIO);
+  var CW = layoutHW * CW_RATIO;
   cards.forEach(function(d){ d.style.width = CW + 'px'; });
-  var spacing = CW * SPREAD;
-  var ROT = [0,0];                                          // zero rotation on all four flankers
+
+  var Y_INNER_PX = 20;      // inner centre sits slightly below hero centre
+  var Y_GAP_PX   = 70;      // outer sits this far above inner (Rich: 60-80px, midpoint)
+  var yScale = layoutHW / HW;
+  var Y = [Y_INNER_PX * yScale, (Y_INNER_PX - Y_GAP_PX) * yScale];   // [inner, outer]
+  var X = [X_INNER, X_OUTER];
   function place(d){ var o=d._o;
-    var x = o.side * (spacing * o.step);                    // horizontal offset from centre
-    var yStep = -16 * o.step * S;                           // vertical step UP the bow -- outer sits higher
-    var rot = o.side * ROT[o.step-1];                       // outward rotation
-    d.style.transform = 'translate(-50%,-50%) translate('+x+'px,'+yStep+'px) rotate('+rot+'deg) scale(1)';
+    var x = o.side * (X[o.step-1] * layoutHW);              // horizontal offset from centre
+    var yStep = Y[o.step-1];                                // vertical centre: inner below hero's, outer above inner's
+    d.style.transform = 'translate(-50%,-50%) translate('+x+'px,'+yStep+'px) rotate(0deg) scale(1)';
     d.style.opacity = '1';
-    d.style.zIndex = String(3 - o.step);                    // inner cards above outer, all below card(z4)
+    d.style.zIndex = String(3 - o.step);                    // outer(1) < inner(2) < hero(z4)
   }
   /* inner pair first, then outer -- the stack opens from the middle */
   var seq = cards.slice().sort(function(a,b){ return a._o.step - b._o.step || a._o.side - b._o.side; });
