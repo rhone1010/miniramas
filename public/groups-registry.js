@@ -2,21 +2,18 @@
    Source: lib/v1/groups/groups-effects.ts  (CENG-owned)
    Rooms:  scripts/emit-groups-registry.js  (the ROOMS table in that file)
    Regenerate: node scripts/emit-groups-registry.js
-   Emitted: 2026-08-24T21:14:01.060Z
+   Emitted: 2026-10-01T04:19:30.924Z
 
    THE ROOMS ARE NOT IN THE SOURCE. groups-effects.ts is a flat catalogue
    with no grouping field and should not gain one - which room an effect
    sits in is a glass decision and does not belong in the engine's file.
-   The five rooms and their membership are Rich's ruling of 24 August 2026
-   and live in the emitter.
+   The seven rooms and their membership are Rich's assignment and live
+   in the emitter.
 
-   "Another Time" is gone. It held six costume effects and all six were
-   removed on 23 August: each re-dressed the whole group and had to guess
-   everybody's sex to do it, and nothing in the pipeline knows who is who.
-
-   SEVEN PER ROOM, MAXIMUM. groups.html slices each room at CAP = 7 and
-   appends an upsell card as the eighth slot, so a room with eight members
-   silently loses one. The emitter refuses rather than let that ship.
+   SIX PER ROOM, MAXIMUM. September catalog: 7 silos x 6 effects = 42.
+   groups.html slices each room at CAP and appends an upsell card as
+   the next slot, so a room exceeding CAP silently loses effects. The
+   emitter refuses rather than let that ship.
 
    INTAKE IS THE ONE FIELD THAT CHANGES THE UPLOADER.
      group_photo  one photograph containing everybody
@@ -31,274 +28,474 @@
 
    Labels are plain unicode. Key on .id, never on .label. */
 window.GROUPS_REGISTRY = {
-  "generatedAt": "2026-08-24T21:14:01.060Z",
+  "generatedAt": "2026-10-01T04:19:30.924Z",
   "silos": [
     {
-      "id": "cast_carved",
-      "label": "Cast & Carved",
-      "line": "Here are the Cast & Carved effects. Weight in the hand, and the honesty of real material."
+      "id": "portrait_collections",
+      "label": "Portrait Collections",
+      "line": "Separate portraits, brought together beautifully."
+    },
+    {
+      "id": "crafted_collections",
+      "label": "Crafted Collections",
+      "line": "Individual moments, composed into something new."
+    },
+    {
+      "id": "sculpted",
+      "label": "Sculpted",
+      "line": "Form, weight and extraordinary materials."
+    },
+    {
+      "id": "material_magic",
+      "label": "Material Magic",
+      "line": "Familiar faces, transformed by the unexpected."
     },
     {
       "id": "made_by_hand",
       "label": "Made by Hand",
-      "line": "Here are the Made by Hand effects. Softer work, with the maker's hand still on it."
+      "line": "Cut, folded, stitched and carefully crafted."
     },
     {
-      "id": "painted_printed",
-      "label": "Painted & Printed",
-      "line": "Here are the Painted & Printed effects. Pressed, printed, and drawn."
+      "id": "artists_studio",
+      "label": "The Artist's Studio",
+      "line": "Drawing, painting and printmaking reimagined."
     },
     {
-      "id": "light_lit",
-      "label": "Light & Lit",
-      "line": "Here are the Light & Lit effects. Glass and gas, lit from somewhere inside."
-    },
-    {
-      "id": "grown_gathered",
-      "label": "Grown & Gathered",
-      "line": "Here are the Grown & Gathered effects. Gathered from somewhere, and still half wild."
+      "id": "curiosities",
+      "label": "Curiosities",
+      "line": "For when ordinary simply won't do."
     }
   ],
   "effects": [
     {
+      "id": "art_nouveau_faces",
+      "label": "Art Nouveau Portraits",
+      "category": "portrait_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "charcoal_faces",
+      "label": "Charcoal Portraits",
+      "category": "portrait_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "colored_pencil_faces",
+      "label": "Colored Pencil Portraits",
+      "category": "portrait_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "impasto_faces",
+      "label": "Impasto Portraits",
+      "category": "portrait_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "impressionist_faces",
+      "label": "Impressionist Portraits",
+      "category": "portrait_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "watercolor_faces",
+      "label": "Watercolor Portraits",
+      "category": "portrait_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "layered_paper_faces",
+      "label": "Layered Paper Portraits",
+      "category": "crafted_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "mosaic_faces",
+      "label": "Mosaic Portraits",
+      "category": "crafted_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "stained_glass_faces",
+      "label": "Stained Glass Portraits",
+      "category": "crafted_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "ukiyo_faces",
+      "label": "Ukiyo-e Portraits",
+      "category": "crafted_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ],
+      "faces": true
+    },
+    {
+      "id": "family_mosaic",
+      "label": "Family Mosaic",
+      "category": "crafted_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "layered_paper",
+      "label": "Layered Paper",
+      "category": "crafted_collections",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
       "id": "bronze",
       "label": "Bronze",
-      "category": "cast_carved",
+      "category": "sculpted",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "reclaimed_bronze",
-      "label": "Reclaimed Bronze",
-      "category": "cast_carved",
+      "id": "gold",
+      "label": "Gold",
+      "category": "sculpted",
       "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "ebony",
-      "label": "Ebony",
-      "category": "cast_carved",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "stone",
-      "label": "Stone",
-      "category": "cast_carved",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "polished_gold",
-      "label": "Polished Gold",
-      "category": "cast_carved",
-      "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
       "id": "silver",
       "label": "Silver",
-      "category": "cast_carved",
+      "category": "sculpted",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "jade",
+      "label": "Jade",
+      "category": "sculpted",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "stone",
+      "label": "Stone",
+      "category": "sculpted",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "lichen_granite",
+      "label": "Lichen Granite",
+      "category": "sculpted",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "ice",
+      "label": "Frost & Ice",
+      "category": "material_magic",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "sea_glass",
+      "label": "Sea Glass",
+      "category": "material_magic",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "porcelain",
+      "label": "Porcelain",
+      "category": "material_magic",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "wax",
+      "label": "Wax",
+      "category": "material_magic",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
       "id": "chocolate",
       "label": "Chocolate",
-      "category": "cast_carved",
+      "category": "material_magic",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "plushy",
-      "label": "Plushy",
-      "category": "made_by_hand",
+      "id": "petal",
+      "label": "Petal Sculpture",
+      "category": "material_magic",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "carved",
+      "label": "Carved",
+      "category": "made_by_hand",
+      "intake": "multi_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
       "id": "quilted",
       "label": "Quilted",
       "category": "made_by_hand",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
       "id": "origami",
       "label": "Origami",
       "category": "made_by_hand",
       "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "layered_paper",
-      "label": "Layered Paper",
-      "category": "made_by_hand",
-      "intake": "multi_photo",
       "body": "live",
-      "expectedPhotos": 5
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "clockwork",
-      "label": "Clockwork",
+      "id": "plushy",
+      "label": "Plushy",
       "category": "made_by_hand",
       "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "retro_robot",
-      "label": "Atomic-Age Robot",
-      "category": "made_by_hand",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "balloon_face",
-      "label": "Balloon",
-      "category": "made_by_hand",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "cubism",
-      "label": "Cubism",
-      "category": "painted_printed",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "art_nouveau",
-      "label": "Art Nouveau",
-      "category": "painted_printed",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "ukiyo_e",
-      "label": "Ukiyo-e",
-      "category": "painted_printed",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "impressionist",
-      "label": "Impressionist",
-      "category": "painted_printed",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "watercolour",
-      "label": "Watercolour",
-      "category": "painted_printed",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "linocut",
-      "label": "Linocut",
-      "category": "painted_printed",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "pencil_sketch",
-      "label": "Pencil Sketch",
-      "category": "painted_printed",
-      "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
       "id": "stained_glass",
       "label": "Stained Glass",
-      "category": "light_lit",
+      "category": "made_by_hand",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "sea_glass",
-      "label": "Sea Glass",
-      "category": "light_lit",
+      "id": "sheet_music",
+      "label": "Sheet Music",
+      "category": "made_by_hand",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "neon",
-      "label": "Neon",
-      "category": "light_lit",
+      "id": "art_nouveau",
+      "label": "Art Nouveau",
+      "category": "artists_studio",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "ice",
-      "label": "Frost & Ice",
-      "category": "light_lit",
+      "id": "impressionist",
+      "label": "Impressionist",
+      "category": "artists_studio",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "porcelain",
-      "label": "Porcelain",
-      "category": "light_lit",
+      "id": "watercolor",
+      "label": "Watercolor",
+      "category": "artists_studio",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "wax",
-      "label": "Wax",
-      "category": "light_lit",
+      "id": "linocut",
+      "label": "Linocut",
+      "category": "artists_studio",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "petal_sculpture",
-      "label": "Petal Sculpture",
-      "category": "grown_gathered",
+      "id": "ukiyo_e",
+      "label": "Ukiyo-e",
+      "category": "artists_studio",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "lichen_granite",
-      "label": "Lichen Granite",
-      "category": "grown_gathered",
+      "id": "colored_pencil",
+      "label": "Colored Pencil",
+      "category": "artists_studio",
       "intake": "group_photo",
-      "body": "live"
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "art_deco",
+      "label": "Art Deco",
+      "category": "curiosities",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "balloon",
+      "label": "Balloon",
+      "category": "curiosities",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "clockwork",
+      "label": "Clockwork",
+      "category": "curiosities",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
       "id": "driftwood_resin",
       "label": "Driftwood & Resin",
-      "category": "grown_gathered",
+      "category": "curiosities",
       "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "sand_form",
-      "label": "Sand Form",
-      "category": "grown_gathered",
-      "intake": "group_photo",
-      "body": "live"
-    },
-    {
-      "id": "family_impressionism",
-      "label": "Family Impressionism",
-      "category": "grown_gathered",
-      "intake": "multi_photo",
       "body": "live",
-      "expectedPhotos": 5
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "family_mosaic",
-      "label": "The Family Mosaic",
-      "category": "grown_gathered",
-      "intake": "multi_photo",
-      "body": "live"
+      "id": "neon",
+      "label": "Neon",
+      "category": "curiosities",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     },
     {
-      "id": "carved_family",
-      "label": "Carved Family",
-      "category": "grown_gathered",
-      "intake": "multi_photo",
-      "body": "live"
+      "id": "retro_robot",
+      "label": "Atomic-Age Robot",
+      "category": "curiosities",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
     }
   ],
   "poses": []
@@ -343,6 +540,17 @@ window.EFFECT_REGISTRY.plateFor = function (id) {
   return window.EFFECT_REGISTRY.PLATE_DIR + 'groups_' + e.id + '.jpg';
 };
 
+/* Formats supported by an effect. Default ['3:2'] when absent. */
+window.EFFECT_REGISTRY.formatsFor = function (id) {
+  var e = window.EFFECT_REGISTRY.byId(id);
+  return (e && e.formats) || ['3:2'];
+};
+/* Whether Mobile (9:16) is allowed for a given effect + group count.
+   Central rule — mirrors lib/v1/groups/groups-shared.ts mobileFormatAllowed. */
+window.EFFECT_REGISTRY.mobileAllowed = function (id, groupCount) {
+  return groupCount <= 3 && window.EFFECT_REGISTRY.formatsFor(id).indexOf('9:16') >= 0;
+};
+
 /* Intake, asked of an effect id. The uploader is the only caller. */
 window.EFFECT_REGISTRY.intakeFor = function (id) {
   var e = window.EFFECT_REGISTRY.byId(id);
@@ -350,4 +558,11 @@ window.EFFECT_REGISTRY.intakeFor = function (id) {
 };
 window.EFFECT_REGISTRY.isMultiPhoto = function (id) {
   return window.EFFECT_REGISTRY.intakeFor(id) === 'multi_photo';
+};
+
+/* Faces — explicit flag from the catalogue, never inferred from the id.
+   Faces effects use the shared 3-8 portrait-panel layout. */
+window.EFFECT_REGISTRY.isFaces = function (id) {
+  var e = window.EFFECT_REGISTRY.byId(id);
+  return !!(e && e.faces);
 };

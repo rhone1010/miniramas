@@ -81,8 +81,6 @@ import { createClient } from '@supabase/supabase-js'
 import { getUser }      from '@/lib/store/auth'
 import { PRESET_LABELS }        from '@/lib/v1/portraits/portraits-shared'
 import { isExperimentalEffect } from '@/lib/v1/portraits/portraits-experimental'
-import { groupsCreditCost }     from '@/lib/v1/groups/groups-shared'
-import { isGroupsEffectId }     from '@/lib/v1/groups/groups-effects'
 
 export const runtime = 'nodejs'
 
@@ -140,26 +138,18 @@ function priceFor(series: string, subjectCount: unknown, count: number):
     return { ok: true, cost: Math.floor(total / n), total, subjects: null }
   }
 
-  if (series !== 'groups') {
-    return { ok: true, cost: CREDITS_PER_IMAGE, subjects: null }
+  // ── GROUPS DOES NOT USE THE CREDIT GATE, SEPTEMBER 2026 ──
+  //
+  // Groups moved to its own entitlement-based commerce path. A Groups
+  // craft consumes one groups_craft entitlement directly in the generate
+  // route. The credit gate must not accept Groups crafts — doing so
+  // would charge the generic credit balance and bypass the Groups
+  // entitlement check.
+  if (series === 'groups') {
+    return { ok: false, reason: 'groups_uses_entitlements' }
   }
 
-  const n = Math.floor(Number(subjectCount))
-  if (!Number.isFinite(n) || n < 1) {
-    // Groups without a count has no price. Refusing is correct: charging the
-    // smallest band and rendering a twelve-person craft is a loss with no
-    // record of why.
-    return { ok: false, reason: 'subject_count_required' }
-  }
-  if (n > MAX_SUBJECTS) {
-    return { ok: false, reason: 'too_many_subjects', detail: MAX_SUBJECTS }
-  }
-
-  const cost = Math.floor(Number(groupsCreditCost(n)))
-  if (!Number.isFinite(cost) || cost <= 0) {
-    return { ok: false, reason: 'price_unavailable' }
-  }
-  return { ok: true, cost, subjects: n }
+  return { ok: true, cost: CREDITS_PER_IMAGE, subjects: null }
 }
 
 /** Can the engine actually render this preset?
@@ -168,12 +158,12 @@ function priceFor(series: string, subjectCount: unknown, count: number):
  *  customer could pick an effect with no prompt behind it, pay ten credits,
  *  and receive a 400. Money must not move for work that cannot be done.
  *
- *  Portraits and Groups are wired. Another Series returns true rather than
- *  blocking a craft this route cannot judge — better to let it through than
- *  to refuse work that would have succeeded.
+ *  Portraits is wired. Groups uses its own entitlement path and does not
+ *  pass through this gate. Another Series returns true rather than
+ *  blocking a craft this route cannot judge.
  */
 function canRender(series: string, preset: string): boolean {
-  if (series === 'groups') return isGroupsEffectId(preset)
+  if (series === 'groups') return false  // Groups uses entitlement path, not credit gate
   if (series !== 'portraits') return true
   if (preset in PRESET_LABELS) return true
   try { if (isExperimentalEffect(preset)) return true } catch { /* seam unwired */ }

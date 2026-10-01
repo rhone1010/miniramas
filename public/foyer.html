@@ -55,7 +55,7 @@
    positioned by JS. Bow follows Review (centre highest); rotation is an
    outward splay. All motion is transform/opacity on one curve. ── */
 .fan{ display:contents }                       /* wrappers are inert; cards self-position */
-.fc{ position:absolute; left:50%; top:50%; width:clamp(200px,16vw,268px); aspect-ratio:var(--ar);
+.fc{ position:absolute; left:50%; top:50%; width:clamp(200px,16vw,268px); aspect-ratio:1;
   border-radius:12px; overflow:hidden; z-index:2;
   box-shadow:0 1rem 2.4rem rgba(52,30,25,.32); border:1px solid rgba(215,189,137,.4); background:#3a2b24;
   opacity:0; transform:translate(-50%,-50%) translate(0px,0px) rotate(0deg) scale(.8);   /* collapsed 'from' at centre, behind the result */
@@ -250,7 +250,7 @@ input[type=file]{ display:none }
   .mgrid{ display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(3,calc(100% / 3)); grid-auto-rows:calc(100% / 3); gap:0; position:fixed; inset:0; z-index:1; padding:0; margin:0 }
   .mgrid .gc{ border-radius:0 !important; border:0 !important; margin:0 }
   .mgrid .gc{ overflow:hidden } .mgrid .gc img{ display:block; width:100%; height:100%; object-fit:cover }
-  .gc{ aspect-ratio:var(--ar); border-radius:10px; overflow:hidden; opacity:0; transform:scale(.92);
+  .gc{ aspect-ratio:1; border-radius:10px; overflow:hidden; opacity:0; transform:scale(.92);
     box-shadow:0 .6rem 1.4rem rgba(20,12,10,.4); border:1px solid rgba(215,189,137,.3);
     transition:opacity .5s ease, transform .5s cubic-bezier(.16,.8,.3,1) }
   .gc.in{ opacity:.9; transform:none }
@@ -422,11 +422,14 @@ var IS_MOBILE=matchMedia('(max-width:720px)').matches;
    does not carry, and they stay exactly as both source files have them. */
 /* WIDER promise, after the tails run */
 var WIDE = ['Your photo, imagined hundreds of ways.','Impossible worlds become real in our crafted images.'];
-/* FAN / GRID — 6 showcase cards shown after the hold (Rich's picks). */
-var FAN = ['flip_23','flip_26','flip_24','flip_13','flip_06','flip_16'];
-/* MOBILE MOSAIC, a fourth row below the six. Neither is in FAN or REVEAL_POOL,
-   so the mosaic never repeats itself or the result. */
-var MOSAIC_MORE = ['flip_17','flip_11'];
+/* FAN — 4 Groups preview cards shown after the hold (Rich's picks, Sep 2026).
+   Order: [left_inner, left_outer, right_inner, right_outer].
+   These are Groups preview paths, not Foyer flip IDs. */
+var FAN = ['groups_stained_glass_faces','groups_plushy','groups_art_nouveau_faces','groups_clockwork'];
+var FAN_IMG = function(id){ return '/previews/groups/' + id + '.jpg'; };
+/* MOBILE MOSAIC — two additional Groups previews below the four fan cards,
+   filling a 2×3 grid on phone. Neither is in FAN or REVEAL_POOL. */
+var MOSAIC_MORE = ['groups_impressionist','groups_watercolor'];
 
 /* IMAGES. IMG() from foyer-DATA.js is the mapping, and it returns a site
    path (/previews/foyer-flip/<id>.jpg). Served from the site, that path is
@@ -466,7 +469,7 @@ function imgFor(id){
    man, have the fan and the phone's grid ready before they are needed. */
 function setFoyerSubject(subject){
   FOYER_SUBJECT = (subject === 'man' || subject === 'woman') ? subject : null;
-  if (FOYER_SUBJECT === 'man') FAN.concat(MOSAIC_MORE).forEach(function(id){ (new Image()).src = imgFor(id); });
+  if (FOYER_SUBJECT === 'man') FAN.concat(MOSAIC_MORE).forEach(function(id){ (new Image()).src = FAN_IMG(id); });
 }
 
 /* TIMING. The riffle, line, photo beat and simulated-result values are the
@@ -968,9 +971,10 @@ function invite(){
    rotate and scale each interpolate on their own. */
 function fanReveal(){
   var L=document.getElementById('fanL'), R=document.getElementById('fanR'); L.innerHTML=''; R.innerHTML='';
-  var left=FAN.slice(0,3), right=FAN.slice(3,6);           // [inner,mid,outer]
+  /* 4 cards: [left_inner, left_outer, right_inner, right_outer] */
+  var left=FAN.slice(0,2), right=FAN.slice(2,4);           // [inner,outer]
   var order = [];
-  left.forEach(function(id,k){ order.push({id:id, side:-1, step:k+1}); });   // step 1 inner .. 3 outer
+  left.forEach(function(id,k){ order.push({id:id, side:-1, step:k+1}); });   // step 1 inner, 2 outer
   right.forEach(function(id,k){ order.push({id:id, side: 1, step:k+1}); });
   var cards=[];
   order.forEach(function(o){ var d=fanCard(o.id); (o.side<0?L:R).appendChild(d); d._o=o; d.setAttribute('data-flip',o.id); cards.push(d); });
@@ -980,42 +984,38 @@ function fanReveal(){
      all take the same factor, so the composition keeps its proportions;
      the outward rotations are angles and do not scale. */
   var K = Math.min(1, (card.offsetHeight || CARD_MAX_H) / CARD_MAX_H);
-  /* 1.5x THE FAN (Rich, 2026-09-11). The cards are FAN_SCALE times their
-     earlier size. Centre to centre they now step 0.52 of a card width
-     (was 0.62 of the smaller card): in pixels the fan still opens wider
-     than before, each card shows about half its width past its inner
-     neighbour, and the inner pair clear the result card by ~45% of their
-     width -- a fan, not a pile. The fan is never wider than the screen:
-     three steps plus the outer card's turned half-width (0.709 of a card
-     width at 19deg) each side, 24px clear. The vertical step scales with
-     the cards, so the bow keeps its shape; the rotations are unchanged. */
-  var SPREAD = 0.52;
+  /* 4-CARD SQUARE FAN (Rich, Sep 2026). Two cards per side, square aspect.
+     Inner cards emerge from behind the hero; outer cards follow. The spread
+     is wider than 6-card (fewer cards to fill the width), and the rotation
+     is gentler. The fan is never wider than the screen: two steps plus the
+     outer card's turned half-width each side, 24px clear. */
+  var SPREAD = 0.72;
   var base = cards[0].offsetWidth || 240;
-  var CW = Math.min(base * K * FAN_SCALE, (innerWidth - 48) / (2 * (3 * SPREAD + 0.709)));
+  var CW = Math.min(base * K * FAN_SCALE, (innerWidth - 48) / (2 * (2 * SPREAD + 0.62)));
   var S = CW / base;                                        // the fan's size against its original
   cards.forEach(function(d){ d.style.width = CW + 'px'; });
   var spacing = CW * SPREAD;
-  var ROT = [6,12,19];                                      // outward splay per step
+  var ROT = [5,14];                                         // outward splay per step
   function place(d){ var o=d._o;
     var x = o.side * (spacing * o.step);                    // horizontal offset from centre
-    var yStep = 26 * o.step * S;                            // vertical step down the bow
+    var yStep = 30 * o.step * S;                            // vertical step down the bow
     var rot = o.side * ROT[o.step-1];                       // outward rotation
     d.style.transform = 'translate(-50%,-50%) translate('+x+'px,'+yStep+'px) rotate('+rot+'deg) scale(1)';
     d.style.opacity = '1';
     d.style.zIndex = String(3 - o.step);                    // inner cards above outer, all below card(z4)
   }
-  /* inner pair first, then outward -- the stack opens from the middle */
+  /* inner pair first, then outer -- the stack opens from the middle */
   var seq = cards.slice().sort(function(a,b){ return a._o.step - b._o.step || a._o.side - b._o.side; });
   cards.forEach(function(d){ d.getBoundingClientRect(); });    // commit the collapsed start frame
   /* The last card to leave also starts the CTA's growth, in the same step:
-     both run 1.1s on the same curve, so the button reaches 1.2 exactly as the
+     both run 1.1s on the same curve, so the button reaches full exactly as the
      fan completes. */
   requestAnimationFrame(function(){ seq.forEach(function(d,i){ later(function(){
     place(d);
     if (i === seq.length - 1) go.classList.add('full');
   }, FAN_STAGGER*i); }); });
 }
-function fanCard(id){ var d=document.createElement('div'); d.className='fc'; d.innerHTML='<img src="'+imgFor(id)+'">'; return d; }
+function fanCard(id){ var d=document.createElement('div'); d.className='fc'; d.innerHTML='<img src="'+FAN_IMG(id)+'">'; return d; }
 
 /* mobile: result eases down to centre, 2x3 grid backfills sequentially.
    The beginning and end are the source's: the card as it was, and the card
@@ -1041,7 +1041,7 @@ function gridReveal(){
   }); });
 
   var g=document.getElementById('mgrid'); g.innerHTML='';
-  FAN.concat(MOSAIC_MORE).forEach(function(id,i){ var c=document.createElement('div'); c.className='gc'; c.setAttribute('data-flip',id); c.innerHTML='<img src="'+imgFor(id)+'">'; g.appendChild(c);
+  FAN.concat(MOSAIC_MORE).forEach(function(id,i){ var c=document.createElement('div'); c.className='gc'; c.setAttribute('data-flip',id); c.innerHTML='<img src="'+FAN_IMG(id)+'">'; g.appendChild(c);
     later(function(){ c.classList.add('in'); }, 120*i); });
 }
 

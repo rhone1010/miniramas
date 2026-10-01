@@ -19,7 +19,7 @@
 // truth for the catalog. This file holds only what the pipeline needs to
 // run and score.
 
-import type { GroupsEffectId } from './groups-effects'
+import { GROUPS_DEFAULT_FORMATS, type GroupsEffectId, type GroupsFormat } from './groups-effects'
 
 // ═══════════════════════════════════════════════════════════════
 // SCORING — per-figure likeness, size-tiered
@@ -153,6 +153,10 @@ export interface GroupsGenerateRequest {
   /** From analyze. Drives the framing clause AND the scoring rule, so a
    *  wrong count here is a wrong piece scored against the wrong bar. */
   subject_count:     number
+  /** Generation format. Defaults to '3:2' (landscape). '9:16' (Mobile)
+   *  requires groupCount <= 3 AND effect approval — validated by the
+   *  generator before any render is paid for. */
+  format?:           GroupsFormat
   /** Skips scoring and retries. Internal shoots only — never a customer
    *  path, because an unscored group render is exactly what the gate
    *  exists to catch. */
@@ -189,6 +193,8 @@ export interface GroupsGenerateResult {
   prompt_used:    string
   effect:         GroupsEffectId
   subject_count:  number
+  /** The generation format actually used ('3:2' or '9:16'). */
+  format:         GroupsFormat
   /** Every attempt in order. The last is the one returned. */
   attempts:       GroupsAttempt[]
   /** True when a render passed the gate. False WITH an image present means
@@ -237,5 +243,35 @@ export function groupsCreditCost(subjectCount: number): number {
  * it — grep before removing.
  */
 export const MAX_ATTEMPTS_GROUPS = 4
+
+// ═══════════════════════════════════════════════════════════════
+// FORMAT ELIGIBILITY
+// ═══════════════════════════════════════════════════════════════
+//
+// Mobile (9:16) requires BOTH conditions:
+//   1. group count <= 3 people
+//   2. the effect explicitly lists '9:16' in its formats
+//
+// At launch all effects are 3:2 only. Rich approves 9:16 per effect.
+
+/**
+ * Whether a Mobile (9:16) generation is allowed for this combination of
+ * group size and effect capability. Central rule — consumed by the
+ * generator (server) and the UI (client mirror).
+ */
+export function mobileFormatAllowed(
+  groupCount: number,
+  effectFormats: GroupsFormat[] | undefined,
+): boolean {
+  return groupCount <= 3 && (effectFormats ?? GROUPS_DEFAULT_FORMATS).includes('9:16')
+}
+
+/**
+ * Resolve the actual aspect ratio string for an NB2 call from a Groups
+ * format token.
+ */
+export function groupsFormatToAspect(format: GroupsFormat): string {
+  return format === '9:16' ? '9:16' : '3:2'
+}
 
 export type { GroupsEffectId }

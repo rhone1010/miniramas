@@ -3,7 +3,7 @@
 // Orchestrator for the Groups silo. REWRITTEN 2026-08-11.
 //
 //   Pre-flight   face visibility on the source, before anything is spent
-//   Stage 1      NB2 generate at MAIN_ASPECT
+//   Stage 1      NB2 generate at the resolved format (3:2 or 9:16)
 //   Stage 2      per-figure likeness score
 //                -> retry from Stage 1, up to four attempts
 //   Stage 3      Stability outpaint, margin mode, every render
@@ -54,7 +54,9 @@
 import {
   buildGroupsPrompt,
   GROUPS_EFFECTS,
+  GROUPS_DEFAULT_FORMATS,
   type GroupsEffectId,
+  type GroupsFormat,
 } from './groups-effects'
 import {
   scorePerFigureFidelity,
@@ -64,7 +66,6 @@ import {
   evaluateGroupScores,
   MAX_ATTEMPTS_GROUPS,
   MAX_SOURCE_IMAGES,
-  groupsCreditCost,
   type GroupsGenerateRequest,
   type GroupsGenerateResult,
   type GroupsAttempt,
@@ -72,7 +73,10 @@ import {
   type PerFigureScore,
 } from './groups-shared'
 import { outpaintMargin } from '../shared/outpaint'
-import { MAIN_ASPECT } from '../shared/render-aspect'
+import {
+  mobileFormatAllowed,
+  groupsFormatToAspect,
+} from './groups-shared'
 
 const SYNC_WAIT_SECONDS = 60
 const POLL_MAX_ATTEMPTS = 30
@@ -134,12 +138,21 @@ export async function generateGroupsRender(
     ? sources.length
     : req.subject_count
 
+  // ── Format ──
+  //
+  // Defaults to 3:2 (landscape). A client may request 9:16 (Mobile),
+  // but only if the group is small enough AND the effect supports it.
+  // Validated after detection sets the authoritative count; at this
+  // point we take the requested value and gate it below.
+  const requestedFormat: GroupsFormat = req.format === '9:16' ? '9:16' : '3:2'
+
   // Provisional, for the error paths BELOW the pre-flight only. The real
   // prompt cannot be built until the count is known, because the framing
   // clause is chosen from it. Never sent to NB2.
   const provisionalPrompt = buildGroupsPrompt({
     effectId:     req.effect_id,
     subjectCount: detectedCount,
+    format:       requestedFormat,
   })
 
   // ── Pre-flight ──
@@ -188,7 +201,7 @@ export async function generateGroupsRender(
       if (!vis.face_visible) {
         console.log(`[groups] pre-flight refused: ${vis.reason}`)
         return {
-          ...emptyResult(req, provisionalPrompt, t0),
+          ...emptyResult(req, provisionalPrompt, t0, requestedFormat),
           ok:      true,
           passed:  false,
           failure: {
@@ -219,17 +232,39 @@ export async function generateGroupsRender(
     }
   }
 
+  // ── Validate format against the authoritative count ──
+  //
+  // 9:16 requires groupCount <= 3 AND effect support. If either fails,
+  // fall back to 3:2 rather than refusing — the craft is still valid in
+  // landscape, and a refusal after pre-flight has already spent a vision
+  // call.
+  let resolvedFormat: GroupsFormat = requestedFormat
+  if (requestedFormat === '9:16') {
+    const effectFormats = effect.formats ?? GROUPS_DEFAULT_FORMATS
+    if (!mobileFormatAllowed(detectedCount, effectFormats)) {
+      console.warn(
+        `[groups] 9:16 requested but not allowed ` +
+        `(count=${detectedCount}, formats=${effectFormats.join(',')}) — falling back to 3:2`,
+      )
+      resolvedFormat = '3:2'
+    }
+  }
+
   // Built after detection, because the framing clause is chosen from the
   // count and the count is not known until the pre-flight has run.
   const finalPrompt = buildGroupsPrompt({
     effectId:     req.effect_id,
     subjectCount: detectedCount,
+    format:       resolvedFormat,
   })
+
+  const aspectRatio = groupsFormatToAspect(resolvedFormat)
 
   console.log(
     `[groups] effect=${req.effect_id} intake=${effect.intake} ` +
     `subjects=${detectedCount} sources=${sources.length} ` +
-    `credits=${groupsCreditCost(detectedCount)} chars=${finalPrompt.length}`,
+    `format=${resolvedFormat} aspect=${aspectRatio} ` +
+    `chars=${finalPrompt.length}`,
   )
 
   // ── The attempt loop ──
@@ -247,7 +282,7 @@ export async function generateGroupsRender(
       imageB64 = await callNB2({
         prompt: finalPrompt,
         sourceImagesB64:   sources,
-        aspectRatio:       groupsAspect(sources[0]),
+        aspectRatio,
         replicateApiToken: input.replicateApiToken,
       })
     } catch (e: any) {
@@ -328,7 +363,7 @@ export async function generateGroupsRender(
 
   if (!finalB64) {
     return {
-      ...emptyResult(req, finalPrompt, t0),
+      ...emptyResult(req, finalPrompt, t0, resolvedFormat),
       ok:       false,
       attempts,
       failure:  {
@@ -406,6 +441,7 @@ export async function generateGroupsRender(
     prompt_used:   finalPrompt,
     effect:        req.effect_id,
     subject_count: detectedCount,
+    format:        resolvedFormat,
     attempts,
     passed,
     failure:       passed ? null : describeFailure(best, attempts.length),
@@ -477,6 +513,7 @@ function emptyResult(
   req: GroupsGenerateRequest,
   prompt: string,
   t0: number,
+  format: GroupsFormat = '3:2',
 ): GroupsGenerateResult {
   return {
     ok:            true,
@@ -484,6 +521,7 @@ function emptyResult(
     prompt_used:   prompt,
     effect:        req.effect_id,
     subject_count: req.subject_count,
+    format,
     attempts:      [],
     passed:        false,
     failure:       null,
@@ -516,68 +554,8 @@ function fatal(args: {
  *  rather than reading the buffer itself. */
 
 // ═══════════════════════════════════════════════════════════════
-// ASPECT
+// JPEG DIMENSIONS — kept for outpaint, which needs width/height
 // ═══════════════════════════════════════════════════════════════
-
-/**
- * The three ratios a Groups piece may come out in, widest last.
- *
- * Rich's band, 23 August: 1:1 to 4:3, with 5:4 allowed, and NOT 16:9 -
- * the gallery renders at 1:1 and a very wide piece has nowhere to live
- * yet. My Collection crops its tiles to square; the full-size view shows
- * the true shape.
- */
-const GROUPS_RATIOS: Array<{ label: string; value: number }> = [
-  { label: '1:1', value: 1 },
-  { label: '5:4', value: 1.25 },
-  { label: '4:3', value: 4 / 3 },
-]
-
-/**
- * Snaps the source photograph's shape to the nearest allowed ratio.
- *
- * WHY THIS EXISTS AT ALL. Production sent MAIN_ASPECT ('1:1') on every
- * render. A square output of a landscape source is not a crop - NB2
- * recomposes to fit, and a wide group becomes separate stacked figures
- * because that is what fits a square. Proved 23 August: the same prompt
- * with the aspect field omitted came back as one coherent piece.
- *
- * PORTRAIT AND SQUARE SOURCES GET 1:1. The band is landscape only and
- * Rich has not ruled on a portrait group photo. 1:1 is what production
- * already sent, so it is the conservative answer. Do not add 3:4 without
- * him.
- *
- * ANYTHING WIDER THAN 4:3 IS CAPPED, not passed through.
- *
- * Falls back to MAIN_ASPECT when the dimensions cannot be read - a
- * source we cannot measure is not a reason to fail a craft.
- */
-function groupsAspect(sourceB64: string): string {
-  let dims: { width: number; height: number } | null = null
-  try {
-    dims = readJpegDimensions(Buffer.from(sourceB64, 'base64'))
-  } catch {
-    dims = null
-  }
-
-  if (!dims || !dims.width || !dims.height) {
-    console.warn('[groups] source dimensions unreadable, falling back to MAIN_ASPECT')
-    return MAIN_ASPECT
-  }
-
-  const ratio = dims.width / dims.height
-  if (ratio <= 1) return '1:1'
-
-  let best = GROUPS_RATIOS[0]
-  for (const r of GROUPS_RATIOS) {
-    if (Math.abs(ratio - r.value) < Math.abs(ratio - best.value)) best = r
-  }
-
-  console.log(
-    `[groups] source ${dims.width}x${dims.height} (${ratio.toFixed(3)}) -> ${best.label}`,
-  )
-  return best.label
-}
 
 function readJpegDimensions(
   buf: Buffer,
@@ -621,16 +599,11 @@ async function callNB2(input: {
   replicateApiToken: string
 }): Promise<string> {
 
-  // ── THE ASPECT IS SENT, AS OF 2026-08-20 ─────────────────────────────
+  // ── THE ASPECT IS FORMAT-DRIVEN, AS OF GROUPS LAUNCH ────────────────
   //
-  // It was not sent at all before. NB2 took its default, which follows the
-  // source photograph — so a Groups piece came out whatever shape the
-  // customer's snapshot happened to be, and nothing in the engine had an
-  // opinion about it.
-  //
-  // From lib/v1/shared/render-aspect.ts, so the day it becomes a customer
-  // choice this line does not change: MAIN_ASPECT stops being a constant
-  // and starts being a default.
+  // Was source-derived (snap to nearest of 1:1/5:4/4:3) before the format
+  // architecture. Now the format ('3:2' or '9:16') determines the aspect
+  // directly, validated by mobileFormatAllowed before reaching here.
   const body: any = {
     input: {
       prompt:        input.prompt,

@@ -6,7 +6,7 @@
 // interface lives here too so the application chat can swap in a real impl
 // without changing call sites.
 
-export type SkuKind = 'single' | 'bundle'
+export type SkuKind = 'single' | 'bundle' | 'credits' | 'groups'
 
 export interface Sku {
   id:            string

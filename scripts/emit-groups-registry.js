@@ -26,29 +26,24 @@
 // So ROOMS below is the single place room membership is written down.
 // Rich's ruling, 24 August 2026.
 //
-// ---- SEVEN PER ROOM ---------------------------------------------------------
+// ---- SIX PER ROOM -----------------------------------------------------------
 //
-// groups.html slices each room at CAP = 7 and appends an upsell card as the
-// eighth grid slot. A room with eight members silently loses whichever sorts
-// last. The counts below are 7/7/7/6/7 and this script REFUSES to emit if any
-// room exceeds seven - the failure is invisible on the page, so it has to be
-// caught here.
+// September catalog: 7 silos × 6 effects = 42. groups.html slices each room
+// at CAP and appends an upsell card as the next grid slot. A room with more
+// members than CAP silently loses the extras. This script REFUSES to emit if
+// any room exceeds CAP.
 //
 // ---- PLATES DERIVE FROM THE ID ----------------------------------------------
 //
 // Every plate is public/previews/groups/groups_<id>.jpg. No lookup table.
 // If a plate 404s the fix is the filename on disk, never a row in here.
-// Five files currently do not match their id and must be renamed:
-//   groups_gold -> groups_polished_gold        groups_watercolor -> groups_watercolour
-//   groups_granite_lichen -> groups_lichen_granite
-//   groups_driftwood -> groups_driftwood_resin groups_mosaic -> groups_family_mosaic
 
 const fs   = require('fs');
 const path = require('path');
 
 const SRC = path.join(process.cwd(), 'lib', 'v1', 'groups', 'groups-effects.ts');
 const OUT = path.join(process.cwd(), 'public', 'groups-registry.js');
-const CAP = 7;
+const CAP = 6;
 
 function die(msg) { console.error('\n[emit-groups] FAILED: ' + msg + '\n'); process.exit(1); }
 
@@ -58,40 +53,50 @@ const src = fs.readFileSync(SRC, 'utf8');
 // ---- THE ROOMS --------------------------------------------------------------
 // Labels and Curator lines locked by Rich, 24 August 2026.
 //
-// "Another Time" is gone. It held all six costume effects and every one of
-// them was removed - each re-dressed the whole group and had to guess
-// everybody's sex to do it, which nothing in the pipeline knows.
+// ROOMS — 7 silos × 6 effects = 42 for the September catalog.
+// Rich's final assignment, September 2026.
 const ROOMS = [
   {
-    id: 'cast_carved',
-    label: 'Cast & Carved',
-    line: 'Here are the Cast & Carved effects. Weight in the hand, and the honesty of real material.',
-    members: ['bronze', 'reclaimed_bronze', 'ebony', 'stone', 'polished_gold', 'silver', 'chocolate'],
+    id: 'portrait_collections',
+    label: 'Portrait Collections',
+    line: 'Separate portraits, brought together beautifully.',
+    members: ['art_nouveau_faces', 'charcoal_faces', 'colored_pencil_faces', 'impasto_faces', 'impressionist_faces', 'watercolor_faces'],
+  },
+  {
+    id: 'crafted_collections',
+    label: 'Crafted Collections',
+    line: 'Individual moments, composed into something new.',
+    members: ['layered_paper_faces', 'mosaic_faces', 'stained_glass_faces', 'ukiyo_faces', 'family_mosaic', 'layered_paper'],
+  },
+  {
+    id: 'sculpted',
+    label: 'Sculpted',
+    line: 'Form, weight and extraordinary materials.',
+    members: ['bronze', 'gold', 'silver', 'jade', 'stone', 'lichen_granite'],
+  },
+  {
+    id: 'material_magic',
+    label: 'Material Magic',
+    line: 'Familiar faces, transformed by the unexpected.',
+    members: ['ice', 'sea_glass', 'porcelain', 'wax', 'chocolate', 'petal'],
   },
   {
     id: 'made_by_hand',
     label: 'Made by Hand',
-    line: "Here are the Made by Hand effects. Softer work, with the maker's hand still on it.",
-    members: ['plushy', 'quilted', 'origami', 'layered_paper', 'clockwork', 'retro_robot', 'balloon_face'],
+    line: 'Cut, folded, stitched and carefully crafted.',
+    members: ['carved', 'quilted', 'origami', 'plushy', 'stained_glass', 'sheet_music'],
   },
   {
-    id: 'painted_printed',
-    label: 'Painted & Printed',
-    line: 'Here are the Painted & Printed effects. Pressed, printed, and drawn.',
-    members: ['cubism', 'art_nouveau', 'ukiyo_e', 'impressionist', 'watercolour', 'linocut', 'pencil_sketch'],
+    id: 'artists_studio',
+    label: "The Artist's Studio",
+    line: 'Drawing, painting and printmaking reimagined.',
+    members: ['art_nouveau', 'impressionist', 'watercolor', 'linocut', 'ukiyo_e', 'colored_pencil'],
   },
   {
-    id: 'light_lit',
-    label: 'Light & Lit',
-    line: 'Here are the Light & Lit effects. Glass and gas, lit from somewhere inside.',
-    members: ['stained_glass', 'sea_glass', 'neon', 'ice', 'porcelain', 'wax'],
-  },
-  {
-    id: 'grown_gathered',
-    label: 'Grown & Gathered',
-    line: 'Here are the Grown & Gathered effects. Gathered from somewhere, and still half wild.',
-    members: ['petal_sculpture', 'lichen_granite', 'driftwood_resin', 'sand_form',
-              'family_impressionism', 'family_mosaic', 'carved_family'],
+    id: 'curiosities',
+    label: 'Curiosities',
+    line: 'For when ordinary simply won\'t do.',
+    members: ['art_deco', 'balloon', 'clockwork', 'driftwood_resin', 'neon', 'retro_robot'],
   },
 ];
 
@@ -115,6 +120,17 @@ function num(block, key) {
   const mm = block.match(new RegExp(`\\b${key}\\s*:\\s*(-?\\d+)`));
   return mm ? parseInt(mm[1], 10) : undefined;
 }
+function arr(block, key) {
+  const mm = block.match(new RegExp(`\\b${key}\\s*:\\s*\\[([^\\]]*?)\\]`));
+  if (!mm) return undefined;
+  const items = mm[1].match(/'([^']*)'/g);
+  return items ? items.map(s => s.replace(/'/g, '')) : [];
+}
+
+function bool(block, key) {
+  const mm = block.match(new RegExp(`\\b${key}\\s*:\\s*(true|false)`));
+  return mm ? mm[1] === 'true' : undefined;
+}
 
 const catalogue = entries.map(e => {
   const o = {
@@ -124,6 +140,11 @@ const catalogue = entries.map(e => {
   };
   const exp = num(e.block, 'expectedSubjects');
   if (exp !== undefined) o.expectedPhotos = exp;
+  const fmts = arr(e.block, 'formats');
+  // Default to ['3:2'] when absent — canonical landscape format.
+  o.formats = fmts && fmts.length ? fmts : ['3:2'];
+  const f = bool(e.block, 'faces');
+  if (f) o.faces = true;
   return o;
 });
 
@@ -165,8 +186,9 @@ const effects = [];
 ROOMS.forEach(r => {
   r.members.forEach(id => {
     const e = byId[id];
-    const row = { id: e.id, label: e.label, category: r.id, intake: e.intake, body: 'live' };
+    const row = { id: e.id, label: e.label, category: r.id, intake: e.intake, body: 'live', formats: e.formats };
     if (e.expectedPhotos !== undefined) row.expectedPhotos = e.expectedPhotos;
+    if (e.faces) row.faces = true;
     effects.push(row);
   });
 });
@@ -188,16 +210,13 @@ const js =
    THE ROOMS ARE NOT IN THE SOURCE. groups-effects.ts is a flat catalogue
    with no grouping field and should not gain one - which room an effect
    sits in is a glass decision and does not belong in the engine's file.
-   The five rooms and their membership are Rich's ruling of 24 August 2026
-   and live in the emitter.
+   The seven rooms and their membership are Rich's assignment and live
+   in the emitter.
 
-   "Another Time" is gone. It held six costume effects and all six were
-   removed on 23 August: each re-dressed the whole group and had to guess
-   everybody's sex to do it, and nothing in the pipeline knows who is who.
-
-   SEVEN PER ROOM, MAXIMUM. groups.html slices each room at CAP = 7 and
-   appends an upsell card as the eighth slot, so a room with eight members
-   silently loses one. The emitter refuses rather than let that ship.
+   SIX PER ROOM, MAXIMUM. September catalog: 7 silos x 6 effects = 42.
+   groups.html slices each room at CAP and appends an upsell card as
+   the next slot, so a room exceeding CAP silently loses effects. The
+   emitter refuses rather than let that ship.
 
    INTAKE IS THE ONE FIELD THAT CHANGES THE UPLOADER.
      group_photo  one photograph containing everybody
@@ -252,6 +271,17 @@ window.EFFECT_REGISTRY.plateFor = function (id) {
   return window.EFFECT_REGISTRY.PLATE_DIR + 'groups_' + e.id + '.jpg';
 };
 
+/* Formats supported by an effect. Default ['3:2'] when absent. */
+window.EFFECT_REGISTRY.formatsFor = function (id) {
+  var e = window.EFFECT_REGISTRY.byId(id);
+  return (e && e.formats) || ['3:2'];
+};
+/* Whether Mobile (9:16) is allowed for a given effect + group count.
+   Central rule — mirrors lib/v1/groups/groups-shared.ts mobileFormatAllowed. */
+window.EFFECT_REGISTRY.mobileAllowed = function (id, groupCount) {
+  return groupCount <= 3 && window.EFFECT_REGISTRY.formatsFor(id).indexOf('9:16') >= 0;
+};
+
 /* Intake, asked of an effect id. The uploader is the only caller. */
 window.EFFECT_REGISTRY.intakeFor = function (id) {
   var e = window.EFFECT_REGISTRY.byId(id);
@@ -259,6 +289,13 @@ window.EFFECT_REGISTRY.intakeFor = function (id) {
 };
 window.EFFECT_REGISTRY.isMultiPhoto = function (id) {
   return window.EFFECT_REGISTRY.intakeFor(id) === 'multi_photo';
+};
+
+/* Faces — explicit flag from the catalogue, never inferred from the id.
+   Faces effects use the shared 3-8 portrait-panel layout. */
+window.EFFECT_REGISTRY.isFaces = function (id) {
+  var e = window.EFFECT_REGISTRY.byId(id);
+  return !!(e && e.faces);
 };
 `;
 

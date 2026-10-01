@@ -55,7 +55,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { analyzeSourceSet } from '@/lib/v1/groups/groups-refine'
 import { getUser } from '@/lib/store/auth'
 import {
-  groupsCreditCost,
   MAX_SOURCE_IMAGES,
   MIN_SUBJECTS,
   MAX_SUBJECTS,
@@ -137,8 +136,6 @@ export async function POST(req: NextRequest) {
       Math.min(result.total_subjects || 0, MAX_SUBJECTS),
     )
 
-    const creditCost = groupsCreditCost(subjectCount)
-
     // ── Advisories ──
     //
     // Every one of these is something to SAY, not something to stop on.
@@ -181,7 +178,7 @@ export async function POST(req: NextRequest) {
 
     console.log(
       `[groups/analyze] ${Date.now() - t0}ms — photos=${result.photo_count} ` +
-      `subjects=${result.total_subjects} credits=${creditCost} ` +
+      `subjects=${result.total_subjects} ` +
       `verdict=${result.verdict} smallest_face=${px ?? '-'} ` +
       `advisories=${advisories.map(a => a.kind).join(',') || '-'}`,
     )
@@ -193,7 +190,6 @@ export async function POST(req: NextRequest) {
        *  pre-flight and logs any disagreement; the two use the same vision
        *  pass, so they should not differ. */
       subject_count: subjectCount,
-      credit_cost:   creditCost,
 
       /** green | yellow | red, from the analyzer. Advisory in every case
        *  except nothing_to_craft below. */

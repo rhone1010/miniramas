@@ -21,7 +21,7 @@ import type { Sku } from './types'
 interface SkuRow {
   id:               string
   display_name:     string
-  kind:             'single' | 'bundle' | 'credits'
+  kind:             'single' | 'bundle' | 'credits' | 'groups'
   count:            number
   price_cents:      number
   stripe_price_id:  string

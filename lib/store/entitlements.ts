@@ -11,6 +11,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase'
 import type { Entitlement, EntitlementStatus } from './types'
+import { groupsEntitlementRows, includedUnlocksForPackage } from '@/lib/v1/groups/groups-commerce'
 
 const REFUND_DAILY_CAP = 10
 
@@ -381,6 +382,70 @@ export async function confirmPurchase(args: {
       `[confirmPurchase] credits +${sku.count} owner=${owner} balance=${balance} session=${args.stripeSessionId}`,
     )
     return { purchaseId: existing.id, entitlementIds: [] }
+  }
+
+  // ── Groups — craft entitlements + included unlocks ──────────
+  //
+  // A Groups package grants `count` craft entitlements (locked_style =
+  // 'groups_craft') plus 0/1/2/4 global unlock entitlements (locked_style
+  // = null). This reuses the existing entitlements table and the existing
+  // consume_entitlement_atomic() function — no Groups-specific tables.
+  //
+  // Included unlock count is derived from GROUPS_PACKAGES in code, not
+  // stored in the DB. The SKU's `count` field holds the craft count.
+  //
+  // Idempotent: if entitlements already exist for this purchase, the
+  // insert is skipped (same guard as the charge-id check above).
+  if (sku?.kind === 'groups') {
+    const owner = existing.user_id
+    if (!owner) {
+      console.error(
+        '[confirmPurchase] groups purchase has no owner',
+        existing.id, args.stripeSessionId,
+      )
+      return { purchaseId: existing.id, entitlementIds: [] }
+    }
+
+    // Check idempotency: entitlements may already exist from a webhook replay
+    const { data: existingEnts } = await supabaseAdmin
+      .from('entitlements')
+      .select('id')
+      .eq('purchase_id', existing.id)
+      .limit(1)
+
+    if (existingEnts && existingEnts.length > 0) {
+      // Already granted — return what exists
+      const { data: allEnts } = await supabaseAdmin
+        .from('entitlements')
+        .select('id')
+        .eq('purchase_id', existing.id)
+      return { purchaseId: existing.id, entitlementIds: (allEnts ?? []).map((e) => e.id) }
+    }
+
+    const rows = groupsEntitlementRows({
+      purchaseId: existing.id,
+      userId:     owner,
+      count:      sku.count,
+    })
+
+    const { error: insertErr } = await supabaseAdmin
+      .from('entitlements')
+      .insert(rows)
+    if (insertErr) {
+      throw new Error(`groups_entitlement_insert_failed: ${insertErr.message}`)
+    }
+
+    const unlocks = includedUnlocksForPackage(sku.count)
+    console.log(
+      `[confirmPurchase] groups +${sku.count} crafts +${unlocks} unlocks ` +
+      `owner=${owner} session=${args.stripeSessionId}`,
+    )
+
+    const { data: grantedEnts } = await supabaseAdmin
+      .from('entitlements')
+      .select('id')
+      .eq('purchase_id', existing.id)
+    return { purchaseId: existing.id, entitlementIds: (grantedEnts ?? []).map((e) => e.id) }
   }
 
   // ── Entitlements — singles and bundles, unchanged ──────────

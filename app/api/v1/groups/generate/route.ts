@@ -66,15 +66,17 @@ import { getUser } from '@/lib/store/auth'
 import { generateGroupsRender } from '@/lib/v1/groups/groups-generator'
 import {
   GROUPS_EFFECTS,
+  MIN_FACES_SUBJECTS,
+  MAX_FACES_SUBJECTS,
   type GroupsEffectId,
 } from '@/lib/v1/groups/groups-effects'
 import {
-  groupsCreditCost,
   MAX_SOURCE_IMAGES,
   MIN_SUBJECTS,
   MAX_SUBJECTS,
   type GroupsGenerateRequest,
 } from '@/lib/v1/groups/groups-shared'
+import { GROUPS_CRAFT_STYLE } from '@/lib/v1/groups/groups-commerce'
 
 export const runtime = 'nodejs'
 
@@ -146,6 +148,28 @@ export async function POST(req: NextRequest) {
 
     const effect = GROUPS_EFFECTS[effectId]
 
+    // ── Multi-photo source count ──
+    //
+    // multi_photo effects require 3–8 individual photographs: one per
+    // person. Fewer than 3 is not a composition; more than 8 exceeds the
+    // layout grid. Faces effects enforce the same 3–8 range via the
+    // layout clause. Refused before any render is paid for.
+    if (effect.intake === 'multi_photo') {
+      const min = effect.faces ? MIN_FACES_SUBJECTS : 3
+      const max = effect.faces ? MAX_FACES_SUBJECTS : 8
+      if (sources.length < min || sources.length > max) {
+        return NextResponse.json(
+          {
+            error: `multi_photo effects require ${min}–${max} source images`,
+            got:   sources.length,
+            min,
+            max,
+          },
+          { status: 400 },
+        )
+      }
+    }
+
     // ── Subject count ──
     //
     // THE ROUTE DOES NOT DECIDE THIS.
@@ -191,25 +215,85 @@ export async function POST(req: NextRequest) {
       console.warn('[groups/generate] STABILITY_API_KEY missing — piece will crop at the frame edge')
     }
 
-    // Who this craft belongs to, and which charge. The ref_id is minted by
-    // the credit gate and passed through so a retry — and later a refund —
-    // can name the charge it answers to. Without one, no token: an
-    // unnameable free render is one nothing can reconcile.
+    // ── Identity ──
     const user     = await getUser().catch(() => null)
     const ownerKey = user?.id ?? null
     const refId    = typeof body.ref_id === 'string' ? body.ref_id.trim().slice(0, 64) : null
+
+    // ── Authorization ──
+    //
+    // Groups does NOT use the generic credit economy. A paid Groups craft
+    // consumes one entitlement with locked_style = 'groups_craft' from
+    // the existing entitlements table.
+    //
+    // Three paths:
+    //   1. Internal shoot (skip_scoring + internal) — no entitlement needed
+    //   2. Valid retry token — no additional entitlement consumed
+    //   3. Paid craft — one groups_craft entitlement consumed atomically
+    //
+    // The retry check runs BEFORE entitlement consumption, so a retry
+    // that changes the input (new photograph for some_figures, different
+    // effect for most_figures) is free. The retry token is issued at the
+    // end of a generation that failed the likeness gate.
+    const isInternal = body.skip_scoring === true && body.internal === true
+    let isRetry = false
+    let consumedEntitlementId: string | null = null
+
+    if (!isInternal && ownerKey) {
+      // Check retry first — a valid retry skips entitlement consumption
+      if (refId) {
+        const retryResult = await checkRetryToken({
+          ownerKey,
+          refId,
+          effectId,
+          sourceCount: sources.length,
+        })
+        if (retryResult?.allowed) {
+          isRetry = true
+          console.log(
+            `[groups/generate] retry authorized ref=${refId} reason=${retryResult.reason}`,
+          )
+        }
+      }
+
+      if (!isRetry) {
+        // Consume one groups_craft entitlement
+        const consumed = await consumeGroupsCraftEntitlement(ownerKey)
+        if (!consumed) {
+          return NextResponse.json(
+            { error: 'no_groups_crafts', reason: 'no available Groups craft entitlement' },
+            { status: 402 },
+          )
+        }
+        consumedEntitlementId = consumed.entitlementId
+        console.log(
+          `[groups/generate] entitlement consumed id=${consumed.entitlementId} remaining=${consumed.remaining}`,
+        )
+      }
+    } else if (!isInternal && !ownerKey) {
+      return NextResponse.json(
+        { error: 'not_signed_in' },
+        { status: 401 },
+      )
+    }
+
+    // Format: '3:2' (landscape, default) or '9:16' (Mobile). Validated
+    // by the generator against group count and effect capability.
+    const format = body.format === '9:16' ? '9:16' : '3:2'
 
     const generateRequest: GroupsGenerateRequest = {
       source_images_b64: sources,
       effect_id:         effectId,
       subject_count:     subjectCountHint,
+      format,
       // Internal shoots only. A customer render is never unscored.
-      skip_scoring:      body.skip_scoring === true && body.internal === true,
+      skip_scoring:      isInternal,
     }
 
     console.log(
       `[groups/generate] start effect=${effectId} intake=${effect.intake} ` +
-      `hint=${subjectCountHint} sources=${sources.length}`,
+      `hint=${subjectCountHint} sources=${sources.length} format=${format} ` +
+      `retry=${isRetry} entitlement=${consumedEntitlementId ?? '-'}`,
     )
 
     const result = await generateGroupsRender({
@@ -221,15 +305,11 @@ export async function POST(req: NextRequest) {
 
     const durationMs = Date.now() - t0
 
-    // The count the engine settled on, and the price that follows from it.
-    // Echoed so a mismatch with what the credit gate charged shows up in a
-    // log rather than in the ledger.
-    const creditCost = groupsCreditCost(result.subject_count)
-
     console.log(
       `[groups/generate] done in ${durationMs}ms — ok=${result.ok} ` +
       `passed=${result.passed} subjects=${result.subject_count} ` +
-      `credits=${creditCost} attempts=${result.attempts.length} ` +
+      `format=${result.format} ` +
+      `attempts=${result.attempts.length} ` +
       `outpainted=${result.outpainted} ` +
       `failure=${result.failure?.kind ?? '-'}`,
     )
@@ -238,7 +318,7 @@ export async function POST(req: NextRequest) {
     // missed the bar is a 200 with passed:false — see the header.
     if (!result.ok) {
       return NextResponse.json(
-        { result, credit_cost: creditCost },
+        { result },
         { status: 500 },
       )
     }
@@ -268,7 +348,12 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    return NextResponse.json({ result, credit_cost: creditCost, retry })
+    return NextResponse.json({
+      result,
+      retry,
+      entitlement_consumed: consumedEntitlementId,
+      is_retry: isRetry,
+    })
 
   } catch (e: any) {
     const msg = e?.message || 'unknown error'
@@ -329,4 +414,96 @@ async function issueRetryToken(args: {
     available: true,
     change:    args.reason === 'some_figures' ? 'add_photograph' : 'change_effect',
   }
+}
+
+// ─── ENTITLEMENT-BASED AUTHORIZATION ──────────────────────────────
+//
+// Groups does not use credits. One craft = one entitlement consumed.
+// Flat rate, regardless of subject count or intake type.
+
+function svcClient() {
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+  return createClient(url, key, { auth: { persistSession: false } })
+}
+
+/** Consume one groups_craft entitlement. Returns the entitlement id
+ *  and remaining count, or null if none available. FIFO by created_at. */
+async function consumeGroupsCraftEntitlement(
+  ownerKey: string,
+): Promise<{ entitlementId: string; remaining: number } | null> {
+
+  const db = svcClient()
+  if (!db) return null
+
+  // Find the oldest available groups_craft entitlement
+  const { data: available, error: findErr } = await db
+    .from('entitlements')
+    .select('id')
+    .eq('user_id', ownerKey)
+    .eq('status', 'available')
+    .eq('locked_style', GROUPS_CRAFT_STYLE)
+    .order('created_at', { ascending: true })
+    .limit(1)
+
+  if (findErr || !available?.length) return null
+
+  const entId = available[0].id
+
+  // Consume atomically via the existing function (migration 003).
+  // style = GROUPS_CRAFT_STYLE matches the locked_style guard.
+  const { data: consumed, error: consumeErr } = await db.rpc(
+    'consume_entitlement_atomic',
+    {
+      p_entitlement_id: entId,
+      p_job_id:         null,
+      p_style:          GROUPS_CRAFT_STYLE,
+      p_variant:        null,
+      p_user_id:        ownerKey,
+      p_guest_email:    null,
+    },
+  )
+
+  if (consumeErr || !consumed?.length) return null
+
+  // Count remaining
+  const { count } = await db
+    .from('entitlements')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', ownerKey)
+    .eq('status', 'available')
+    .eq('locked_style', GROUPS_CRAFT_STYLE)
+
+  return { entitlementId: entId, remaining: count ?? 0 }
+}
+
+/** Check whether a valid retry token exists for this craft. A valid
+ *  retry skips entitlement consumption entirely. */
+async function checkRetryToken(args: {
+  ownerKey:    string
+  refId:       string
+  effectId:    string
+  sourceCount: number
+}): Promise<{ allowed: boolean; reason: string } | null> {
+
+  const db = svcClient()
+  if (!db) return null
+
+  const { data, error } = await db.rpc('redeem_groups_retry', {
+    p_owner:        args.ownerKey,
+    p_ref_id:       args.refId,
+    p_effect_id:    args.effectId,
+    p_source_count: args.sourceCount,
+  })
+
+  if (error) {
+    // Not fatal — the craft proceeds as a paid craft
+    console.warn(`[groups/generate] retry check failed: ${error.message}`)
+    return null
+  }
+
+  const row = Array.isArray(data) ? data[0] : data
+  if (!row) return null
+  return { allowed: row.allowed === true, reason: row.reason ?? '' }
 }

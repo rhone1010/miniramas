@@ -84,10 +84,9 @@
   --mark-h:60px;        /* the L mark, measured by height — its width follows */
 
   /* ROOMS — every proportion inside the stage, declared once */
-  /* TRIMMED 2026-08-20 so the cards can be square. The plates are
-     1180x1180 and a .78 card was cropping a fifth of every one -
-     which on a group photograph is whoever is standing at the edge.
-     Narrowing these three is what pays for the width. */
+  /* TRIMMED 2026-08-20 for the cards. Narrowing these three is what
+     pays for the width. Groups cards are 1:1 square
+     preview assets). */
   --spine-w:clamp(300px, 20%, 460px);   /* rail + curator together · Portraits’ value · CUI 42D */
 
   --queue-w:clamp(220px, 14.5%, 330px);   /* To Be Crafted · Portraits’ value · CUI 42D */
@@ -99,9 +98,10 @@
   /* THE FLOOR — 12 columns, because 12 divides by 2, 3, 4 and 6.
      Any row shape is a span change, never a new grid. */
   --card-gap:clamp(14px, 1.1vw, 26px);
-  /* SQUARE. The plates are square; .78 was inherited from the
-     portraits clone, where it is correct and here it was not. */
-  --card-ratio:.78;   /* CUI 42C-r2 · plates are 4:5, token matches Portraits */
+  /* SQUARE. Groups preview plates are 1:1 square.
+     Silo cards, effect cards, and flip presentation all
+     inherit this single token. */
+  --card-ratio:1;
   --card-type:clamp(16px, 1vw, 26px);   /* the title; the count follows at .72em */
   /* The Curator has its own scale. It cannot ride the full root ramp: the
      panel does not widen as fast as the type does, so at 2560 a 30px serif
@@ -1290,9 +1290,8 @@ body{
 .floor{
   display:grid;
   grid-template-columns:repeat(8, minmax(0,1fr));
-  /* Portraits' rows, verbatim · CUI 42E. The content-sized rows above
-     existed to keep a SQUARE card; the card is .78 now and Portraits'
-     stretched rows are the ruling. */
+  /* Two equal rows, stretched to fill. Card aspect-ratio governs the
+     card shape within each cell. */
   grid-template-rows:repeat(2, minmax(0,1fr));
   gap:var(--card-gap);
   align-content:stretch;
@@ -3564,15 +3563,15 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   .crumb-here{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 
   /* ---- the card takes its size from the column ----------------------- */
-  /* On a canvas the row sets the height and the ratio gives the width.
-     With rows sized by content that is circular — the row asks the card,
-     the card asks the row — and it resolves to a card a screen tall.
-     Here the column sets the width and the ratio gives the height. */
+  /* On desktop the row sets the height and the ratio gives the width.
+     On phone the column sets the width and the ratio gives the height.
+     Square cards (1:1) produce equal-sided cards on phone — the
+     full preview image is visible without cropping. */
   .silo-card, .fx-card, .pose-card, .floor > *{
     height:auto !important;
     width:100% !important;
     max-width:none !important;
-    aspect-ratio:var(--card-ratio, .78);
+    aspect-ratio:var(--card-ratio, 1);
   }
   .floor{ grid-auto-rows:auto }
 
@@ -4117,7 +4116,9 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
 @media (max-width:1919px){ .mc-latest{ grid-template-columns:420px minmax(0,1fr) } }
 .mc-feat{
   position:relative; isolation:isolate; overflow:hidden;
-  aspect-ratio:1;
+  /* Groups generates 3:2 landscape. Matches the generated output so the
+     featured piece displays without cropping. */
+  aspect-ratio:3/2;
   border:1px solid rgba(196,169,110,.24);
   border-radius:6px;
   background:#241c16;
@@ -4799,7 +4800,7 @@ body.is-lboxed{ overflow:hidden }
   }
 
   /* 4 · and the pose card fits its own words. Three lines of type and an
-        icon do not fit a .78 ratio at this width. */
+        icon need a taller shape than the landscape card ratio. */
   .face--poses .silo-card{ aspect-ratio:1 / 1.15 }
   .face--poses .silo-card__content{ padding:1.1em .55em .5em }
   .face--poses .silo-card__title{ font-size:.86em; line-height:1.1 }
@@ -9547,7 +9548,8 @@ window.EFFECT_PREVIEWS = {
         series:    'groups',
         preset:    item.effectId,
         mode:      item.mode || null,
-        meta:      { likeness: item.likeness_score, silo: item.siloId }
+        meta:      { likeness: item.likeness_score, silo: item.siloId,
+                     format: (item.result && item.result.format) || '3:2' }
       })
     }).then(function(r){ return r.json(); }).then(function(d){
       if (!d || !d.ok || !d.piece) {
