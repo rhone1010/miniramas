@@ -6008,6 +6008,14 @@ window.EFFECT_PREVIEWS = {
     bySilo:function(){ return [] }, offerableBySilo:function(){ return [] },
     byId:function(){ return null } };
 
+  /* Hoisted up from the Your-Collection-progress code below: renderQueue()
+     runs during boot, well before that code's own place in the file, and a
+     `var` is only USABLE once its assignment line has executed — the
+     declaration hoists but the value does not. Reading it from here, before
+     boot, left it undefined and threw inside collectionProgress(), which
+     killed the rest of this script before renderSilos() ever ran. */
+  var VALID_SIZES = [1, 4, 8, 16];
+
   function siloById(id){
     for (var i = 0; i < R.silos.length; i++) if (R.silos[i].id === id) return R.silos[i];
     return null;
@@ -8078,10 +8086,10 @@ window.EFFECT_PREVIEWS = {
 
   /* ---- Your Collection progress — ported from public/pets.html's
      targetFor()/desktopBundleProgress(), math unchanged. VALID_SIZES is
-     the same four tier sizes in both products; n is QUEUE.length here
+     the same four tier sizes in both products (declared near the
+     registry, above — see the comment there); n is QUEUE.length here
      (crafts chosen), not Pets' SELECTED.length (images chosen), and the
      message says "craft package" rather than "image bundle". */
-  var VALID_SIZES = [1, 4, 8, 16];
   function targetFor(n){ return n <= 1 ? 1 : n <= 4 ? 4 : n <= 8 ? 8 : 16; }
   function collectionProgress(n){
     var target = targetFor(n), index = VALID_SIZES.indexOf(target);
