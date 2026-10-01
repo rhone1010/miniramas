@@ -84,10 +84,9 @@
   --mark-h:60px;        /* the L mark, measured by height — its width follows */
 
   /* ROOMS — every proportion inside the stage, declared once */
-  /* TRIMMED 2026-08-20 so the cards can be square. The plates are
-     1180x1180 and a .78 card was cropping a fifth of every one -
-     which on a group photograph is whoever is standing at the edge.
-     Narrowing these three is what pays for the width. */
+  /* TRIMMED 2026-08-20 for the cards. Narrowing these three is what
+     pays for the width. Groups cards are 1:1 square
+     preview assets). */
   --spine-w:clamp(300px, 20%, 460px);   /* rail + curator together · Portraits’ value · CUI 42D */
 
   --queue-w:clamp(220px, 14.5%, 330px);   /* To Be Crafted · Portraits’ value · CUI 42D */
@@ -99,9 +98,10 @@
   /* THE FLOOR — 12 columns, because 12 divides by 2, 3, 4 and 6.
      Any row shape is a span change, never a new grid. */
   --card-gap:clamp(14px, 1.1vw, 26px);
-  /* SQUARE. The plates are square; .78 was inherited from the
-     portraits clone, where it is correct and here it was not. */
-  --card-ratio:.78;   /* CUI 42C-r2 · plates are 4:5, token matches Portraits */
+  /* SQUARE. Groups preview plates are 1:1 square.
+     Silo cards, effect cards, and flip presentation all
+     inherit this single token. */
+  --card-ratio:1;
   --card-type:clamp(16px, 1vw, 26px);   /* the title; the count follows at .72em */
   /* The Curator has its own scale. It cannot ride the full root ramp: the
      panel does not widen as fast as the type does, so at 2560 a 30px serif
@@ -1237,6 +1237,120 @@ body{
 /* No photograph, nothing to suggest against. */
 .cur[data-state="empty"] .cur-seven{ display:none }
 
+/* ---- Pick 4 for Me / Curated — Rich's reference, September 2026 -------
+   Two doors into the same ten curated effects (see openCurated() in the
+   script). Same oxblood-outline-to-fill language as .cur-seven above, so
+   this reads as one family of panel buttons rather than a new one. */
+.cur-modebar{
+  display:flex; gap:.6em;
+  margin-top:clamp(14px,1.1vw,22px);
+}
+.cur-mode{
+  flex:1 1 0; min-width:0;
+  height:44px; border-radius:4px;
+  font-family:var(--serif); font-size:1.0625rem; line-height:1;
+  color:var(--oxblood);
+  background:rgba(125,66,66,.05);
+  border:1px solid rgba(125,66,66,.34);
+  cursor:pointer;
+  transition:background .3s var(--ease-nav), border-color .3s var(--ease-nav),
+             color .3s var(--ease-nav);
+}
+.cur-mode:hover{ border-color:var(--oxblood) }
+.cur-mode:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.cur-mode.is-active{
+  background:var(--oxblood); border-color:var(--oxblood); color:var(--vellum-100);
+}
+.cur[data-state="empty"] .cur-modebar{ display:none }
+
+/* A plain nav row back to room-browsing — the same silo floor the Curated
+   doors leave, named so it is not mistaken for a third mode. */
+.cur-allfx{
+  display:flex; align-items:center; justify-content:space-between;
+  width:100%; margin-top:.6em;
+  height:40px; padding:0 .9em; border-radius:4px;
+  font-family:var(--serif); font-size:1rem;
+  color:var(--ink); background:transparent;
+  border:1px solid rgba(88,65,42,.22);
+  cursor:pointer;
+  transition:border-color .3s var(--ease-nav), background .3s var(--ease-nav);
+}
+.cur-allfx:hover{ border-color:rgba(169,126,63,.42); background:rgba(125,66,66,.04) }
+.cur-allfx svg{ width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; opacity:.6 }
+.cur[data-state="empty"] .cur-allfx{ display:none }
+
+/* ---- the package tiles — real SKUs, loadBlocks(), never priced here --
+   Same tile shape as the buy panel's .buy-block, narrowed to sit in the
+   sidebar column. */
+.cur-packages{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:.5em;
+  margin-top:clamp(14px,1.1vw,22px);
+}
+.cur-packages .buy-block{
+  padding:.6em .3em; border-radius:4px;
+  background:rgba(125,66,66,.05); border:1px solid rgba(125,66,66,.34);
+  color:var(--oxblood); text-align:center; cursor:pointer;
+  transition:background .2s var(--ease-nav), border-color .2s var(--ease-nav);
+}
+.cur-packages .buy-block:hover{ border-color:var(--oxblood) }
+.cur-packages .buy-block .buy-block__n{ font-family:var(--serif); font-size:1.15rem; line-height:1.1 }
+.cur-packages .buy-block .buy-block__p{ font-family:var(--sans); font-size:.78rem; opacity:.8; margin-top:.15em }
+.cur[data-state="empty"] .cur-packages{ display:none }
+
+/* ---- Your Collection — ported from public/pets.html's desktopCuratorHtml()
+   .dcur__milestones/__fill/__position/__count/__next and .your-collection/
+   .btn-review, same class names, re-skinned to this panel's warm-vellum
+   ground instead of Pets' dark .dcur ground. The math (desktopBundleProgress)
+   is ported unchanged in the script — only n (QUEUE.length, not
+   SELECTED.length) and the tier set's prices differ. */
+.your-collection{
+  margin-top:clamp(14px,1.1vw,22px);
+  padding:clamp(14px,1.4vw,20px);
+  border-radius:clamp(.5rem,.6vw,.8rem);
+  background:rgba(125,66,66,.06);
+  border:1px solid rgba(125,66,66,.2);
+}
+.your-collection__title{
+  font-family:var(--serif); font-size:1.15rem; text-align:center; color:var(--ink);
+}
+.dcur__count{
+  text-align:center; color:var(--ink-soft); font-family:var(--sans); font-size:.78rem;
+  margin-top:.3em;
+}
+.dcur__milestones{ position:relative; height:46px; margin:12px 4px 0 }
+.dcur__milestones::before{
+  content:""; position:absolute; left:0; right:0; top:10px; height:3px;
+  background:rgba(88,65,42,.22);
+}
+.dcur__milestones .dcur__fill{
+  position:absolute; left:0; top:10px; height:3px; background:var(--oxblood);
+}
+.dcur__milestone{
+  position:absolute; top:6px; transform:translateX(-50%);
+  text-align:center; color:var(--ink-soft); font-family:var(--serif); font-size:.9rem;
+}
+.dcur__milestone::before{
+  content:""; display:block; width:10px; height:10px; margin:0 auto 6px;
+  border:1px solid var(--oxblood); border-radius:50%; background:var(--vellum-200);
+}
+.dcur__milestone.reached::before{ background:var(--oxblood) }
+.dcur__position{
+  position:absolute; top:4px; width:14px; height:14px;
+  border:2px solid var(--oxblood); border-radius:50%; background:var(--vellum-200);
+  transform:translateX(-50%);
+}
+.dcur__next{ text-align:center; color:var(--ink-soft); font-family:var(--serif); font-size:1rem; margin:0 0 .6em }
+.btn-review{
+  display:block; width:100%; min-height:46px; padding:.7em;
+  border-radius:4px; border:1px solid var(--oxblood);
+  background:var(--oxblood); color:var(--vellum);
+  font-family:var(--serif); font-size:1.1rem; cursor:pointer;
+  transition:background .2s var(--ease-nav);
+}
+.btn-review:hover{ background:#6a3737 }
+.btn-review:disabled{ opacity:.5; cursor:not-allowed }
+.cur[data-state="empty"] .your-collection{ display:none }
+
 /* ---- the letter · one opening quote, never a closing one -------------- */
 .cur-letter{
   position:relative;
@@ -1290,9 +1404,8 @@ body{
 .floor{
   display:grid;
   grid-template-columns:repeat(8, minmax(0,1fr));
-  /* Portraits' rows, verbatim · CUI 42E. The content-sized rows above
-     existed to keep a SQUARE card; the card is .78 now and Portraits'
-     stretched rows are the ruling. */
+  /* Two equal rows, stretched to fill. Card aspect-ratio governs the
+     card shape within each cell. */
   grid-template-rows:repeat(2, minmax(0,1fr));
   gap:var(--card-gap);
   align-content:stretch;
@@ -1445,6 +1558,15 @@ body{
   letter-spacing:.08em; text-transform:uppercase;
   color:rgba(239,205,148,.96);
 }
+
+/* ---- the Curated card-turn, ported from public/pets.html's
+   desktopCuratedTurn/remixDesktopCurated (itself borrowed from
+   portraits.html's own flip geometry) — the actual Curated/Pick-4
+   cycling mechanism in the developed series, not the Foyer riffle this
+   replaced. perspective on the floor, preserve-3d + no CSS transition on
+   a card mid-turn (the script drives the transform every frame). */
+#effectFloor{ perspective:2200px }
+#effectFloor.is-flipping > .silo-card.is-changing{ transform-style:preserve-3d; transition:none }
 
 /* the card's own ground shows through wherever the art has not loaded, so a
    missing file reads as unfinished rather than as a broken image. */
@@ -2450,6 +2572,80 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
 .m-scrim .state{ display:none }
 .m-scrim .state.active{ display:block }
 .m-scrim .mclose{ cursor:pointer }
+
+/* ---- the multi-photo wall ----------------------------------------------
+   Its own scrim rather than .m-scrim: that class's .modal is capped at
+   440px (five credit blocks' width, long before this page), and a 3x3
+   grid of anything readable needs more. Overlay mechanics copied from
+   .m-scrim.is-open verbatim — same fixed inset, same backdrop, same
+   place-items:center — so this behaves like every other modal on the
+   page even though it does not share its class. */
+.pw-scrim{ display:none }
+.pw-scrim.is-open{
+  display:grid; place-items:center;
+  position:fixed; top:0; right:0; bottom:0; left:0; z-index:1200;
+  background:rgba(31,27,20,.52);
+  padding:24px;
+  overflow-y:auto;
+}
+.pw-modal{
+  width:min(760px, calc(100vw - 48px));
+  max-width:100%;
+  background:var(--vellum-200);
+  border:1px solid rgba(88,65,42,.22);
+  border-radius:clamp(.6rem,.7vw,1rem);
+  box-shadow:0 1.6rem 3.4rem rgba(15,9,7,.35), 0 .4rem 1rem rgba(0,0,0,.2);
+  padding:clamp(20px,2.4vw,32px);
+  margin:auto;
+}
+.pw-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:clamp(10px,1.1vw,16px);
+}
+.pw-slot{
+  position:relative; isolation:isolate; overflow:hidden;
+  aspect-ratio:4/3;
+  border-radius:clamp(.4rem,.5vw,.6rem);
+  cursor:pointer;
+}
+/* Empty — the dashed invitation, same gesture as .cur-slot's plus. */
+.pw-slot:not(.has-photo){
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5em;
+  background:rgba(125,66,66,.9);
+  border:1px dashed rgba(230,210,180,.55);
+  color:var(--vellum-100);
+}
+.pw-slot:not(.has-photo):hover{ background:rgba(125,66,66,1); border-color:var(--gold) }
+.pw-slot:not(.has-photo):focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.pw-slot-plus{
+  display:flex; align-items:center; justify-content:center;
+  width:2.2em; height:2.2em; border-radius:50%;
+  border:1px solid rgba(230,210,180,.6);
+  font-size:1.1rem; line-height:1;
+}
+.pw-slot-t{ font-family:var(--serif); font-size:.85rem; letter-spacing:.02em; }
+/* Filled — the photograph, and a quiet way to take it back out. */
+.pw-slot.has-photo{ border:1px solid rgba(88,65,42,.22); background:#241c16 }
+.pw-slot img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover }
+.pw-slot-x{
+  position:absolute; top:.4em; right:.4em; z-index:1;
+  display:flex; align-items:center; justify-content:center;
+  width:1.7em; height:1.7em; border-radius:50%;
+  background:rgba(26,18,12,.72); color:var(--vellum-100);
+  border:1px solid rgba(255,255,255,.25);
+  font-size:1rem; line-height:1; cursor:pointer;
+}
+.pw-slot-x:hover{ background:var(--oxblood) }
+.pw-close{
+  display:block; margin:clamp(18px,2vw,28px) auto 0;
+  min-width:160px; height:46px; padding:0 1.6em; border-radius:4px;
+  font-family:var(--serif); font-size:1.1rem;
+  background:var(--oxblood); color:var(--vellum);
+  border:1px solid var(--oxblood); cursor:pointer;
+  transition:background .2s var(--ease-nav);
+}
+.pw-close:hover{ background:#6a3737 }
 
 
 /* ======================================================================
@@ -3564,15 +3760,15 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   .crumb-here{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 
   /* ---- the card takes its size from the column ----------------------- */
-  /* On a canvas the row sets the height and the ratio gives the width.
-     With rows sized by content that is circular — the row asks the card,
-     the card asks the row — and it resolves to a card a screen tall.
-     Here the column sets the width and the ratio gives the height. */
+  /* On desktop the row sets the height and the ratio gives the width.
+     On phone the column sets the width and the ratio gives the height.
+     Square cards (1:1) produce equal-sided cards on phone — the
+     full preview image is visible without cropping. */
   .silo-card, .fx-card, .pose-card, .floor > *{
     height:auto !important;
     width:100% !important;
     max-width:none !important;
-    aspect-ratio:var(--card-ratio, .78);
+    aspect-ratio:var(--card-ratio, 1);
   }
   .floor{ grid-auto-rows:auto }
 
@@ -4117,7 +4313,9 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
 @media (max-width:1919px){ .mc-latest{ grid-template-columns:420px minmax(0,1fr) } }
 .mc-feat{
   position:relative; isolation:isolate; overflow:hidden;
-  aspect-ratio:1;
+  /* Groups generates 3:2 landscape. Matches the generated output so the
+     featured piece displays without cropping. */
+  aspect-ratio:3/2;
   border:1px solid rgba(196,169,110,.24);
   border-radius:6px;
   background:#241c16;
@@ -4799,7 +4997,7 @@ body.is-lboxed{ overflow:hidden }
   }
 
   /* 4 · and the pose card fits its own words. Three lines of type and an
-        icon do not fit a .78 ratio at this width. */
+        icon need a taller shape than the landscape card ratio. */
   .face--poses .silo-card{ aspect-ratio:1 / 1.15 }
   .face--poses .silo-card__content{ padding:1.1em .55em .5em }
   .face--poses .silo-card__title{ font-size:.86em; line-height:1.1 }
@@ -4944,9 +5142,6 @@ body.is-lboxed{ overflow:hidden }
      she says while she is still saying it. data-attention lets her trigger
      pulse when a person is plainly moving around and getting nowhere. -->
 <script src="/concierge.js" defer data-dock data-attention></script>
-<link rel="stylesheet" href="/upload-routing.css">
-<script src="/upload-routing.js"></script>
-<script src="/foyer-handoff.js"></script>
 </head>
 <body>
 
@@ -4980,7 +5175,6 @@ body.is-lboxed{ overflow:hidden }
          did with it, what you have done with it. -->
     <a href="/community">Community</a>
     <a href="/collection">My Collection</a>
-    <a href="/print">Print Shop</a>
     <a href="/account">Account</a>
     <!-- PRINT SHOP AND HELP LEFT THIS BAR. Print Shop is an action on a
          piece, not a place - it already has its button in My Collection,
@@ -5024,7 +5218,6 @@ body.is-lboxed{ overflow:hidden }
     <a href="/gallery">Gallery</a>
     <a href="/community">Community</a>
     <a href="/collection">My Collection</a>
-    <a href="/print">Print Shop</a>
     <a href="/account">Account</a>
     <a href="#" data-concierge>Ask the Concierge</a>
     <!-- CUI 41A, 23 Aug 2026. The way out, on a phone. The real
@@ -5091,6 +5284,38 @@ body.is-lboxed{ overflow:hidden }
                  does rather than something that happens to them. -->
             <button class="lg-go-on" id="lgGoOn" type="button">Choose effects &rarr;</button>
           </div>
+        </div>
+
+        <!-- CURATED / PICK 4 — Rich's reference, September 2026. Ten
+             effects, cross-cutting the rooms (scripts/emit-groups-registry.js
+             CURATED). "Pick 4 for Me" auto-chooses four and queues them;
+             "Curated" opens the same ten for browsing. Both reuse the
+             existing effects floor and turn() flip — see openCurated(). -->
+        <div class="cur-modebar">
+          <button class="cur-mode" id="curPick4Btn" type="button" data-mode="pick4">Pick 4 for Me</button>
+          <button class="cur-mode" id="curCuratedBtn" type="button" data-mode="curated">Curated</button>
+        </div>
+        <button class="cur-allfx" id="curAllFxBtn" type="button">
+          <span>All Effects</span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+        </button>
+
+        <!-- GROUPS PACKAGE / COLLECTION PANEL — ported from public/pets.html's
+             desktopCuratorHtml(): the package tiles are #bundleInd's row
+             (re-skinned, Groups' real SKUs via loadBlocks() rather than
+             Pets' hardcoded SIZE_PRICE), and the progress readout is
+             .dcur__milestones/__fill/__position/__count/__next verbatim,
+             same class names, fed Groups' QUEUE.length and real
+             GROUPS_PACKAGES tiers (1/4/8/16 — identical VALID_SIZES to
+             Pets') instead of Pets' image count. See
+             paintCollectionProgress() / renderPackageTiles(). -->
+        <div class="cur-packages" id="curPackages"></div>
+        <div class="your-collection" id="curCollection">
+          <div class="your-collection__title">Your Collection</div>
+          <div class="dcur__count" id="curCollCount"></div>
+          <div class="dcur__milestones" id="curCollMilestones" role="progressbar" aria-label="Package progress" aria-valuemin="0" aria-valuemax="16"></div>
+          <div class="dcur__next" id="curCollNext"></div>
+          <button class="btn-review" id="curReviewBtn" type="button">Review Collection &rarr;</button>
         </div>
 
         <div class="cur-letter">
@@ -5222,8 +5447,8 @@ body.is-lboxed{ overflow:hidden }
        aria-labelledby="ageGateH">
     <div class="agegate-card">
       <h3 id="ageGateH">We can't craft from this photograph</h3>
-      <p>Groups containing at least one adult may include minors. Normal family photographs with children are allowed.</p>
-      <p>A lone minor is not allowed. An all-minor group is not allowed.</p>
+      <p>Liten &amp; Co crafts portraits of adults. We are not able to work
+        from photographs of children.</p>
       <p>Nothing has been crafted and nothing has been charged.</p>
       <button id="ageGateGo" type="button">Choose a different photograph</button>
       <button class="agegate-more" id="ageGateMore" type="button"
@@ -5234,7 +5459,17 @@ body.is-lboxed{ overflow:hidden }
       <!-- Rich's words, locked 2026-08-05. One place. If this changes it
            changes here. -->
       <div class="agegate-policy" id="ageGatePolicy">
-        <p>All-adult groups are allowed.</p>
+        <h4>Portraits of adults only, for now</h4>
+        <p>Liten &amp; Co currently creates portraits of adults 18 and over.</p>
+        <p>We&rsquo;re taking a little more time to understand the evolving
+          policies and usage rights surrounding the transformation of images
+          and likenesses of people under 18, both in the U.S. and
+          internationally.</p>
+        <p>For now, photos of anyone we believe to be under 18 will be
+          declined before anything is crafted or charged.</p>
+        <p>We hope to offer this in future as the policies and protections
+          around younger subjects become clearer. We&rsquo;ll keep you
+          posted.</p>
 
         <h4>A note about your photos</h4>
         <p>Your photograph is used only to create your Liten &amp; Co pieces.
@@ -5514,6 +5749,26 @@ body.is-lboxed{ overflow:hidden }
   </div>
 </div>
 
+<!-- MULTI-PHOTO WALL — Rich's reference, September 2026. One photograph per
+     person for the multi_photo effects (3 to 9; see MULTI_PHOTO_MIN/MAX).
+     Not a new upload mechanism: every slot opens the same file picker
+     onSourceFiles already reads, and the picker replaces the whole set, the
+     way it always has — see renderPhotoWall(). A filled slot can be
+     individually removed, which is new and safe: it is array removal
+     followed by the existing runAnalyze(), nothing the intake pipeline
+     did not already do on every photograph change. -->
+<div class="scrim pw-scrim" id="photoWallModal" data-role="modal">
+  <div class="pw-modal" role="dialog" aria-modal="true" aria-label="Your photographs">
+    <!-- Its own input, not srcFile. srcFile's change handler always
+         REPLACES the whole set (onSourceFiles -> onSourceLoaded) and that
+         is correct everywhere else it fires; an empty wall slot means
+         ADD one, which needs its own listener that merges instead. -->
+    <input type="file" id="pwAddFile" accept="image/*" multiple hidden>
+    <div class="pw-grid" id="photoWallGrid"></div>
+    <button class="pw-close" id="photoWallClose" type="button">Close</button>
+  </div>
+</div>
+
 <div class="readout" id="readout" hidden>
   <button class="readout-tab" id="readoutTab" type="button">Metrics<i></i></button>
   <table>
@@ -5668,19 +5923,29 @@ window.EFFECT_PREVIEWS = {
     posing:   'Go back to the effects any time to add more.',
     full:     'Ten is the most I can craft in one go.'
   };
-  /* GROUPS IS BANDED, NOT FLAT. 10 / 15 / 25 / 40 by how many people the
-     engine counts - and it counts them, we do not. The number below is the
-     smallest band and is only ever a placeholder for the button before a
-     photograph has been looked at. The moment analyze answers, PRICE holds
-     the real figure and every reader takes it from creditsPerImage().
+  /* GROUPS IS FLAT-RATE (September 2026). There are no credit bands. One
+     craft = one groups_craft entitlement, regardless of subject count or
+     intake type. The generate route checks and consumes the entitlement
+     (and gives it back if the render fails or misses the likeness gate —
+     see app/api/v1/groups/generate/route.ts); the client reads balance
+     to gate the Craft button and to tell a shortfall from any other
+     refusal. */
+  var CRAFTS_REMAINING = null;        /* groups_craft entitlements available */
+  var UNLOCKS_REMAINING = null;       /* global unlock entitlements available */
 
-     Never restate the bands here. groupsCreditCost() in groups-shared.ts is
-     the one place they live; analyze returns what it computed. A price in
-     two places is a price that will disagree with itself. */
-  var CREDITS_PER_IMAGE = 10, BASE_USD = 4.99;
-  var PRICE = null;                    /* credit_cost from /groups/analyze */
-  function creditsPerImage(){
-    return (typeof PRICE === 'number' && PRICE > 0) ? PRICE : CREDITS_PER_IMAGE;
+  /** Fetch the customer's Groups craft + unlock balance. Called on page
+   *  load and after each purchase/craft cycle. */
+  function refreshGroupsBalance(){
+    return fetch('/api/v1/groups/balance', { credentials:'same-origin' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.ok){
+          CRAFTS_REMAINING = d.crafts;
+          UNLOCKS_REMAINING = d.unlocks;
+        }
+        return d;
+      })
+      .catch(function(){ return { ok: false }; });
   }
   var tbc = document.getElementById('tbc');
   var tbcList = document.getElementById('tbcList');
@@ -5743,7 +6008,8 @@ window.EFFECT_PREVIEWS = {
     tbcList.dataset.n = n;
     tbc.classList.toggle('has-items', n > 0);
     tbcN.textContent = n ? n : '';
-    tbcTotal.textContent = (n * creditsPerImage()) + ' credits';
+    tbcTotal.textContent = n + (n === 1 ? ' craft' : ' crafts');
+    if (typeof paintCollectionProgress === 'function') paintCollectionProgress();
     if (UPSELL_CTX && effFloor.querySelector('.is-upsell')) repaintUpsell(UPSELL_CTX.silo, UPSELL_CTX.list);
     /* The button names the press, and which press depends on the floor.
        One writer for that label — see labelGo(). */
@@ -5766,6 +6032,17 @@ window.EFFECT_PREVIEWS = {
     return !!card && card.getAttribute('data-state') === 'empty';
   }
 
+  /* multi_photo effects want one photograph per person: 3 to 9 of them
+     (widened from 3-8, Rich's correction, September 2026 — 9 lays out as
+     a balanced 3×3). Mirrors app/api/v1/groups/generate/route.ts, which
+     refuses outside this range rather than slicing — a wrong count there
+     is a wrong price and a missing face, so the glass checks first and
+     the route checks again regardless. Checked here, at the point of
+     choosing the effect, because that is where the customer can still do
+     something about it — add or drop a photograph — rather than at
+     Craft, after they have committed to this piece. */
+  var MULTI_PHOTO_MIN = 3, MULTI_PHOTO_MAX = 9;
+
   function addToQueue(siloId, effectId){
     /* They have moved on. The note about the last run stops standing. */
     SUB_NOTE = null;
@@ -5774,6 +6051,19 @@ window.EFFECT_PREVIEWS = {
        to have filled. */
     if (phoneNeedsPhoto()){ openNeedPhoto(); return false; }
     if (QUEUE.length >= QUEUE_CAP){ openCap(); return false; }
+    var effect = R.byId(effectId);
+    if (effect && effect.intake === 'multi_photo'){
+      var have = (SRC.b64s || []).length;
+      if (have < MULTI_PHOTO_MIN || have > MULTI_PHOTO_MAX){
+        say('This one wants a photograph of each person — ' +
+            MULTI_PHOTO_MIN + ' to ' + MULTI_PHOTO_MAX + ' of them. ' +
+            (have ? ('You have ' + have + '.') : 'Add theirs one at a time.'));
+        /* The wall, not just the sentence — the fix is adding or removing
+           a photograph, and that is what it is for. */
+        if (typeof openPhotoWall === 'function') openPhotoWall();
+        return false;
+      }
+    }
     /* Was: two fields, enough to paint a row. Now the whole item — see
        buildPayload. The rail still reads only siloId and effectId, so
        nothing about the row changes. */
@@ -5897,13 +6187,13 @@ window.EFFECT_PREVIEWS = {
     return a.detected_age_group || null;
   }
 
-  function isUnderage(){ return !!(SRC && SRC.analyze && SRC.analyze.age_policy === 'blocked'); }
+  function isUnderage(){ return !!UNDER_18[ageFromPhoto()]; }
 
   function openAgeGate(){
     if (!ageGate) return;
     /* The photograph goes. Leaving it in the panel beside a refusal is an
        invitation to try the same file again. */
-    SRC.b64 = null; SRC.b64s = []; SRC.dataUrl = null; SRC.analyze = {};
+    SRC.b64 = null; SRC.dataUrl = null; SRC.analyze = {};
     SRC.subject = null; SRC.gender = null; SRC.age_group = null;
     QUEUE.length = 0;
     if (typeof renderQueue === 'function') renderQueue();
@@ -5926,7 +6216,7 @@ window.EFFECT_PREVIEWS = {
      shape as __openIntake and for the same reason — a refusal nobody can
      look at is a refusal nobody has judged. */
   window.__ageCheck = function(bracket){
-    SRC.analyze = { age_policy: bracket === 'blocked' ? 'blocked' : 'uncertain' };
+    SRC.age_group = bracket || null;
     if (isUnderage()){ openAgeGate(); return 'refused'; }
     return 'passed';
   };
@@ -6003,6 +6293,9 @@ window.EFFECT_PREVIEWS = {
   var curSay  = document.getElementById('curSay');
   var curSlot = document.getElementById('curSlot');
   var curChange = document.getElementById('curChange');
+  var curPick4Btn   = document.getElementById('curPick4Btn');
+  var curCuratedBtn = document.getElementById('curCuratedBtn');
+  var curAllFxBtn   = document.getElementById('curAllFxBtn');
 
   var SAY = {
     empty:  'Bring me a <span class="hl">portrait</span> and I&rsquo;ll choose the effects ' +
@@ -6234,10 +6527,6 @@ window.EFFECT_PREVIEWS = {
      There is no curate-effects route either. The Curator does not recommend
      seven effects for a group photograph, so the button that asked for them
      is gone from this page rather than pointed at nothing. */
-  if(window.LitenHandoff)LitenHandoff.take().then(function(h){
-    if(!h||!h.dataUrl)return;
-    return fetch(h.dataUrl).then(function(r){return r.blob();}).then(function(b){onSourceFiles([new File([b],'source.jpg',{type:b.type})]);});
-  });
   var ANALYZE_URL        = '/api/v1/groups/analyze';
   var GENERATE_URL       = '/api/v1/groups/generate';
   /* MY COLLECTION IS NOT A SERIES. This route is where every piece the
@@ -6249,8 +6538,6 @@ window.EFFECT_PREVIEWS = {
   var ARCHIVE_ICON =
     '<svg viewBox="0 0 24 24" aria-hidden="true">' +
     '<path d="M3 7h18v3H3zM5 10v9h14v-9M10 14h4" stroke-linecap="round"/></svg>';
-  var CREDITS_GATE_URL   = '/api/v1/credits/gate';
-  var CREDITS_REFUND_URL = '/api/v1/credits/refund';
   var PURCHASE_URL       = '/api/v1/credits/purchase';
   var SKUS_URL           = '/api/v1/skus';
   var AUTH_ME_URL        = '/api/v1/auth/me';
@@ -6464,13 +6751,16 @@ window.EFFECT_PREVIEWS = {
   var FIT_MAX_B64  = 3300000;          /* ~4.4MB once base64'd */
   var FIT_QUALITY  = [0.9, 0.82, 0.74, 0.66];
 
-  function fitSourceForUpload(probe, done){
+  /* origB64/origDataUrl rather than reading SRC directly: every photo in
+     a multi_photo intake needs this same fit, not only SRC.b64/SRC.dataUrl
+     (the first), so the check and the no-op fallback take whichever
+     photo's own current bytes are being asked about. */
+  function fitSourceForUpload(probe, origB64, origDataUrl, done){
     var w = probe.naturalWidth, h = probe.naturalHeight;
-    var b64len = (SRC.b64 || '').length;
-    var oversize = b64len * 0.75;      /* bytes, near enough */
+    var oversize = (origB64 || '').length * 0.75;      /* bytes, near enough */
 
     if (Math.max(w, h) <= FIT_MAX_EDGE && oversize <= FIT_MAX_B64){
-      done(SRC.dataUrl, null);         /* nothing to do, and nothing done */
+      done(origDataUrl, null);         /* nothing to do, and nothing done */
       return;
     }
 
@@ -6480,7 +6770,7 @@ window.EFFECT_PREVIEWS = {
     var c = document.createElement('canvas');
     c.width = cw; c.height = ch;
     var ctx = c.getContext('2d');
-    if (!ctx){ done(SRC.dataUrl, null); return; }   /* no canvas, no change */
+    if (!ctx){ done(origDataUrl, null); return; }   /* no canvas, no change */
     /* Browsers have applied EXIF rotation on decode since 2020 and this
        draws what was decoded, so a phone portrait stays upright. */
     ctx.drawImage(probe, 0, 0, cw, ch);
@@ -6488,7 +6778,7 @@ window.EFFECT_PREVIEWS = {
     for (var i = 0; i < FIT_QUALITY.length; i++){
       var out;
       try { out = c.toDataURL('image/jpeg', FIT_QUALITY[i]); }
-      catch (e){ done(SRC.dataUrl, null); return; }  /* tainted canvas */
+      catch (e){ done(origDataUrl, null); return; }  /* tainted canvas */
       var bytes = (out.length - out.indexOf(',') - 1) * 0.75;
       if (bytes <= FIT_MAX_B64){
         done(out, w + '\u00d7' + h + ' \u2192 ' + cw + '\u00d7' + ch +
@@ -6498,6 +6788,39 @@ window.EFFECT_PREVIEWS = {
       }
     }
     done(null);
+  }
+
+  /* Every photograph in a multi_photo intake needs fitting, not only the
+     first \u2014 a second or third photo over the wire limit 413s exactly as
+     the first would, and multi_photo sends all of them in one request.
+     Runs after the first (fitted inline below, where it is already being
+     probed for the 9:16 check), one at a time, each through the same
+     fitSourceForUpload the first uses \u2014 no second fitting algorithm. */
+  function fitRemainingSources(done){
+    var i = 1;
+    function next(){
+      if (i >= SRC.dataUrls.length){ done(); return; }
+      var idx = i;
+      var p = new Image();
+      p.onload = function(){
+        fitSourceForUpload(p, SRC.b64s[idx], SRC.dataUrls[idx], function(fitted, note){
+          if (fitted){
+            SRC.dataUrls[idx] = fitted;
+            SRC.b64s[idx] = fitted.split(',')[1] || null;
+            if (note) console.log('[intake] photo ' + (idx + 1) + ': ' + note);
+          } else {
+            /* Could not get this one under the ceiling on its own. Left
+               as sent \u2014 generate refuses with a clear reason naming
+               the request, which beats a craft that silently fails. */
+            console.warn('[intake] photo ' + (idx + 1) + ' could not be fit under the wire limit');
+          }
+          i++; next();
+        });
+      };
+      p.onerror = function(){ i++; next(); };   /* unreadable photo: skip it, not the rest */
+      p.src = SRC.dataUrls[idx];
+    }
+    next();
   }
 
   function onSourceFile(file){ if (file) onSourceFiles([file]); }
@@ -6512,10 +6835,8 @@ window.EFFECT_PREVIEWS = {
       SRC.dims = null; SRC.flags = null; SRC.analyze = null;
       SRC.gate = null;  SRC.recs = null;  SRC.gateFp = null;
       SRC.overridden = false;
-      PRICE = null;
       /* A different photograph asks the question again. */
       SRC.skipRedirect = false;
-      LitenSubjectGate.reset();
 
       var thumb = document.getElementById('curThumb');
       if (thumb) thumb.src = url;
@@ -6557,7 +6878,7 @@ window.EFFECT_PREVIEWS = {
            point where the dimensions are known and the first before any
            route is called, so analyze and the gate see exactly what generate
            will. */
-        fitSourceForUpload(probe, function(fitted, note){
+        fitSourceForUpload(probe, SRC.b64, SRC.dataUrl, function(fitted, note){
           if (!fitted){
             /* Four passes and still too heavy. Better to say so than to send
                something that will be refused three times over. */
@@ -6567,15 +6888,21 @@ window.EFFECT_PREVIEWS = {
             return;
           }
           if (note){
-            SRC.b64     = fitted.split(',')[1] || null;
-            SRC.dataUrl = fitted;
+            SRC.b64        = fitted.split(',')[1] || null;
+            SRC.dataUrl    = fitted;
+            SRC.dataUrls[0] = fitted;
+            SRC.b64s[0]     = SRC.b64;
             var th = document.getElementById('curThumb');
             if (th) th.src = fitted;
-            console.log('[intake] ' + note);
+            console.log('[intake] photo 1: ' + note);
           }
-          /* ONE CALL, NOT TWO - the Groups analyze route answers the gate's
-             question and prices the craft in the same breath. */
-          runAnalyze();
+          /* The rest of a multi_photo intake, fitted the same way, before
+             analyze sees any of it. */
+          fitRemainingSources(function(){
+            /* ONE CALL, NOT TWO - the Groups analyze route answers the
+               gate's question and prices the craft in the same breath. */
+            runAnalyze();
+          });
         });
       };
       /* A file the browser cannot decode is a fault in itself, and state 8
@@ -6588,6 +6915,111 @@ window.EFFECT_PREVIEWS = {
   if (srcFile) srcFile.addEventListener('change', function(){
     onSourceFiles(srcFile.files);
     srcFile.value = '';           /* same file twice must still fire change */
+  });
+
+  /* ==================================================================
+     THE MULTI-PHOTO WALL · Rich's reference, September 2026
+     ==================================================================
+     A grid of what SRC.dataUrls already holds — multi_photo intake has
+     taken an array since before this wall existed (onSourceLoaded has
+     always written SRC.dataUrls/SRC.b64s), so this is a window onto
+     existing state, not a new data model.
+
+     ADDING is its own input (#pwAddFile, above) with its own listener
+     below, because srcFile's existing change handler replaces the whole
+     set — correct for the main "Add your photograph" door, wrong for an
+     empty wall slot that means "one more", not "start over".
+
+     REMOVING is plain array splice + the existing onSourceLoaded/
+     runAnalyze — nothing the intake pipeline did not already do on every
+     photograph change. */
+
+  var photoWallModal = document.getElementById('photoWallModal');
+  var photoWallGrid   = document.getElementById('photoWallGrid');
+  var photoWallClose  = document.getElementById('photoWallClose');
+  var pwAddFile        = document.getElementById('pwAddFile');
+
+  function renderPhotoWall(){
+    if (!photoWallGrid) return;
+    photoWallGrid.innerHTML = '';
+    var urls = SRC.dataUrls || [];
+    /* At least enough slots to offer the minimum a multi_photo effect
+       needs, never more than the wall's own ceiling. */
+    var n = Math.max(MULTI_PHOTO_MIN, Math.min(urls.length + 1, MULTI_PHOTO_MAX));
+    for (var i = 0; i < n; i++){
+      (function(i){
+        var url = urls[i];
+        var slot = document.createElement('div');
+        slot.className = 'pw-slot' + (url ? ' has-photo' : '');
+        if (url){
+          slot.innerHTML =
+            '<img src="' + esc(url) + '" alt="">' +
+            /* Not offered on the last photograph — see the handler below
+               for why removing down to zero does not work here. A
+               button that would silently do nothing is worse than no
+               button. */
+            (urls.length > 1
+              ? '<button type="button" class="pw-slot-x" aria-label="Remove this photograph">&times;</button>'
+              : '');
+          var xBtn = slot.querySelector('.pw-slot-x');
+          if (xBtn) xBtn.addEventListener('click', function(e){
+            e.stopPropagation();
+            var cur = SRC.dataUrls || [];
+            if (cur.length <= 1) return;
+            var next = cur.slice();
+            next.splice(i, 1);
+            onSourceLoaded(next);
+            renderPhotoWall();
+          });
+        } else {
+          slot.tabIndex = 0;
+          slot.setAttribute('role', 'button');
+          slot.setAttribute('aria-label', 'Add a photograph');
+          slot.innerHTML =
+            '<span class="pw-slot-plus">+</span><span class="pw-slot-t">Add a photograph</span>';
+          var open = function(){ if (pwAddFile) pwAddFile.click(); };
+          slot.addEventListener('click', open);
+          slot.addEventListener('keydown', function(e){
+            if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
+          });
+        }
+        photoWallGrid.appendChild(slot);
+      })(i);
+    }
+  }
+
+  function openPhotoWall(){
+    if (!photoWallModal) return;
+    renderPhotoWall();
+    photoWallModal.classList.add('is-open');
+  }
+  function closePhotoWall(){
+    if (photoWallModal) photoWallModal.classList.remove('is-open');
+  }
+  window.__openPhotoWall = openPhotoWall;
+
+  if (photoWallClose) photoWallClose.addEventListener('click', closePhotoWall);
+  if (photoWallModal) photoWallModal.addEventListener('click', function(e){
+    if (e.target === photoWallModal) closePhotoWall();
+  });
+  addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && photoWallModal && photoWallModal.classList.contains('is-open')) closePhotoWall();
+  });
+
+  if (pwAddFile) pwAddFile.addEventListener('change', function(){
+    var list = [].slice.call(pwAddFile.files || []).filter(Boolean);
+    pwAddFile.value = '';
+    if (!list.length) return;
+    var have = (SRC.dataUrls || []).slice();
+    if (have.length + list.length > MAX_PHOTOS){
+      offerTooManyPhotos(have.length + list.length);
+      return;
+    }
+    readAll(list, function(urls){
+      if (!urls.length) return;
+      onSourceLoaded(have.concat(urls));
+      renderPhotoWall();
+    });
   });
 
   /* CUI 41A, 24 Aug 2026. The camera lands in the same intake as an
@@ -6610,7 +7042,6 @@ window.EFFECT_PREVIEWS = {
      the stale response is discarded rather than speaking over the new one. */
   function runAnalyze(){
     var seq = SRC.seq = SRC.seq + 1;
-    LitenSubjectGate.pending=true;
     if (!SRC.t0) SRC.t0 = Date.now();
     return fetch(ANALYZE_URL, {
       method: 'POST',
@@ -6621,12 +7052,7 @@ window.EFFECT_PREVIEWS = {
          A 4xx or 5xx is - the studio never looked. */
       return res.json().then(function(d){ return { st: res.status, d: d || {} }; });
     }).then(function(r){
-      if(seq!==SRC.seq)return null;
-      if(r.d && r.d.code==='age_restricted'){LitenSubjectGate.pending=false;LitenSubjectGate.blocked=true;openAgeGate();return null;}
-      if(r.st!==200){LitenSubjectGate.pending=false;return r;}
-      return LitenSubjectGate.review(r.d,SRC.dataUrl,'groups').then(function(ok){if(ok)SRC.skipRedirect=LitenSubjectGate.skipRedirect;return ok?r:null;});
-    }).then(function(r){
-      if (!r || seq !== SRC.seq) return;
+      if (seq !== SRC.seq) return;
       var data = r.d;
       /* OPEN DOORS · CUI 42 · open doors glass · 2026-08-25. Unsigned, the analyze routes
          answer 401 { ok:false, reason:'not_signed_in' } - the moment of
@@ -6641,13 +7067,12 @@ window.EFFECT_PREVIEWS = {
       console.log('[timing] analyze answered in ' + (Date.now() - SRC.t0) + 'ms');
       SRC.analyze = data;
 
-      /* THE PRICE, BEFORE ANYTHING IS CHOSEN AND LONG BEFORE ANYTHING IS
-         CHARGED. This is the whole reason the route exists. */
+      /* Still authoritative for the generate route's pre-flight count, and
+         logged for a mismatch. It stopped being a price input in September
+         2026 — Groups is flat-rate per craft, not banded by subject count
+         (see groups-commerce.ts), so there is no credit_cost on this
+         response any more and nothing here computes one. */
       if (typeof data.subject_count === 'number') SRC.subjectCount = data.subject_count;
-      if (typeof data.credit_cost === 'number'){
-        PRICE = data.credit_cost;
-        console.log('[price] ' + SRC.subjectCount + ' subjects, ' + PRICE + ' credits each');
-      }
 
       /* THE ONE STOP. Not a quality verdict - an absence. No usable face was
          found in any photograph, and no number of attempts fixes that. */
@@ -6666,7 +7091,6 @@ window.EFFECT_PREVIEWS = {
       /* Soft fail. The floor the customer is already looking at is the
          fallback; they can still craft, and the gate will price it. */
       if (seq !== SRC.seq) return;
-      LitenSubjectGate.pending=false;
       SRC.analyze = SRC.analyze || {};
       curatorEnterEffects();
     });
@@ -6897,11 +7321,6 @@ window.EFFECT_PREVIEWS = {
 
   var BUSY = false;
 
-  /* The reference the gate gave this run. Declared here, above spendCredits
-     and refundCredits both, because a var assigned below its reader hoists
-     the name and never the value — the fault that shipped s63 inert. */
-  var RUN_REF = null;
-
   /* A declined piece, held until the run finishes. Declared here, above both
      the writer and the reader — a var assigned below its reader hoists the
      name and never the value, which is how s63 shipped inert. */
@@ -6926,92 +7345,42 @@ window.EFFECT_PREVIEWS = {
      customer does something new, and adding a finish is what clears it. */
   var SUB_NOTE = null;
 
-  /* ---- /credits/gate -----------------------------------------------------
-     b2 8366. Returns true only if the credits actually moved. Everything
-     downstream depends on that being honest, so a bad response is a false
-     and never an optimistic true.
-
-     THE SHORTFALL IS NOT HANDLED HERE. b2 called alert(). Item 1.3 is the
-     purchase screen and it is unbuilt; inventing its contract in this lane
-     is exactly what __openPaywall was left undone to avoid. So a shortfall
-     raises __openPaywall if something has provided one, and otherwise says
-     so on the button and stops. Nothing is crafted and nothing is charged. */
-  /* `quiet` is for the retries after a purchase. The gate is asked the
-     same question and answers honestly; what changes is that a refusal
-     does not throw the buy panel back at a customer who has just paid. */
-  function spendCredits(items, quiet){
-    return fetch(CREDITS_GATE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        count:    items.length,
-        /* The band, from analyze. The gate computes its own figure with
-           groupsCreditCost() and refuses if this disagrees - so sending it
-           is a check, not an instruction. */
-        cost_per:      creditsPerImage(),
-        subject_count: SRC.subjectCount || null,
-        series:        'groups',
-        presets:       items.map(function(q){ return q.preset || null; })
-      })
-    }).then(function(res){
-      return res.json().catch(function(){ return { ok: false, reason: 'bad_response' }; });
-    }).then(function(data){
-      if (!data.ok){
-        var needed = data.needed != null ? data.needed : items.length * creditsPerImage();
+  /* ---- the entitlement check ----------------------------------------------
+     Replaces the credits gate. Groups never spends from the shared credit
+     pool — the generate route consumes one groups_craft entitlement per
+     craft (and gives it back if the render fails or misses the likeness
+     gate, server-side — see app/api/v1/groups/generate/route.ts). This is
+     a pre-check only, so the paywall opens BEFORE a customer without
+     enough crafts left sits through a multi-minute render the server
+     would refuse at the end anyway. The server's 402 on
+     /api/v1/groups/generate remains the real authority. */
+  function checkCraftsAvailable(items, quiet){
+    return refreshGroupsBalance().then(function(d){
+      if (!d.ok){
+        if (!quiet) groupsNotice('unreachable', 0, items.length);
+        return false;
+      }
+      if (CRAFTS_REMAINING != null && CRAFTS_REMAINING < items.length){
         if (!quiet){
-          /* THE SHOP OPENS FOR A SHORTFALL AND NOTHING ELSE. It used to open
-             on any refusal at all, so a gate saying no for a reason that had
-             nothing to do with money produced a panel reading "this craft
-             needs 50 credits, your balance is 537, your pieces are held while
-             you decide" -- two sentences that contradict each other, and no
-             way out except pressing Craft again and seeing it a second time.
-
-             Reported on /halloween 21 August with 537 credits in hand. The
-             cause there was a wrong series in the gate body, fixed above; this
-             is the class of fault rather than that one instance. */
-          var balance = data.balance || 0;
-          var short   = data.reason === 'insufficient' ||
-                        data.reason === 'insufficient_credits' ||
-                        (typeof data.balance === 'number' && data.balance < needed);
-          if (short && typeof window.__openPaywall === 'function'){
-            window.__openPaywall({ needed: needed, balance: balance, reason: data.reason });
+          if (typeof window.__openPaywall === 'function'){
+            window.__openPaywall({ needed: items.length, balance: CRAFTS_REMAINING, reason: 'insufficient_crafts' });
           }
-          creditsNotice(data.reason, balance, needed);
+          groupsNotice('insufficient_crafts', CRAFTS_REMAINING, items.length);
         }
         return false;
       }
-      /* The gate names the charge. Keep it: the refund route matches a
-         ledger row on this and refuses without it.
-
-         Held per RUN, not per item — one gate call charges for the whole
-         payload and writes one ref_id across its rows, so one refund
-         reverses it. */
-      RUN_REF = (data && typeof data.ref_id === 'string' && data.ref_id) ? data.ref_id : null;
-      if (!RUN_REF && !data.admin){
-        console.warn('[credits] the gate returned no ref_id — a failed craft ' +
-                     'CANNOT be refunded. Apply PATCH-credits-gate-refid.md.');
-      }
-      items.forEach(function(q){ q.paid = true; q.ref_id = RUN_REF; });
-      if (typeof data.balance_after === 'number') setCredits(data.balance_after);
-      console.log('[credits] spent ' + (items.length * creditsPerImage()) +
-                  ' — balance now ' + data.balance_after +
-                  (data.admin ? ' (admin, no charge)' : '') +
-                  (RUN_REF ? ' — ref ' + RUN_REF : ''));
       return true;
-    }).catch(function(){
-      if (!quiet) creditsNotice('unreachable', 0, items.length * creditsPerImage());
-      return false;
     });
   }
 
   /* Said on the button, not in an alert and not in the Curator's letter.
      Money is the studio's second register — see the voice bible §2 — and
      these are placeholders in it until the Curator lane rules. */
-  function creditsNotice(reason, balance, needed){
+  function groupsNotice(reason, balance, needed){
     if (!tbcGoSub) return;
     tbcGoSub.textContent =
       reason === 'no_owner'             ? 'Sign in to craft'
-    : reason === 'insufficient_credits' ? (balance + ' credits \u00b7 this needs ' + needed)
+    : reason === 'insufficient_crafts'  ? (balance + (balance === 1 ? ' craft' : ' crafts') + ' left \u00b7 this needs ' + needed)
     : reason === 'unreachable'          ? 'Could not reach the studio'
     :                                     'This craft could not be started';
   }
@@ -7155,70 +7524,11 @@ window.EFFECT_PREVIEWS = {
      b2 8456. The stagger is not politeness — firing ten at once trips
      Replicate's per-minute burst limit and the tenth fails for a reason that
      looks like a bad photograph. */
-  /* ---- /credits/refund ---------------------------------------------------
-     Charged, nothing delivered. The credits go back.
-
-     Called for failed, rejected and redirected — every end state where no
-     piece reached the customer — and never for done.
-
-     THE SHAPE IS A GUESS. Nothing documents this route's request body, so it
-     mirrors /credits/gate, which is the likeliest and is still not knowledge.
-     Both the body sent and the response received are logged in full: one
-     craft against a refused preset will tell you whether this is right, and
-     until someone has read that line it is not proven. */
-  function refundCredits(items){
-    if (!items.length) return Promise.resolve(false);
-
-    /* No reference, no call. The route refuses without one, and a round trip
-       to be told what we already know helps nobody. The credits are recorded
-       as owed either way, which is the part that matters. */
-    var ref = RUN_REF || items[0].ref_id || null;
-    if (!ref){
-      console.error('[credits] ' + (items.length * creditsPerImage()) +
-                    ' credits are owed and CANNOT be reclaimed — the charge was ' +
-                    'never given a reference. Apply PATCH-credits-gate-refid.md.');
-      return Promise.resolve(false);
-    }
-
-    var body = {
-      count:    items.length,
-      cost_per: creditsPerImage(),
-      ref_id:   ref,
-      series:   'groups',
-      reason:   'craft_failed',
-      presets:  items.map(function(q){ return q.preset || null; })
-    };
-    console.log('[credits] refund requested', JSON.stringify(body));
-    return fetch(CREDITS_REFUND_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    }).then(function(res){
-      var st = res.status;
-      return res.json().catch(function(){ return { ok: false, reason: 'bad_response' }; })
-               .then(function(d){ return { st: st, d: d }; });
-    }).then(function(r){
-      var data = r.d;
-      console.log('[credits] refund response', r.st, JSON.stringify(data));
-      if (data && data.ok){
-        items.forEach(function(q){ q.refunded = true; });
-        /* `already` means a refund against this reference was written before —
-           a replayed call, not a second payout. The route's idempotency
-           guarantee, and it reads as success here because it is one. */
-        if (data.already) console.log('[credits] already refunded against ' + ref);
-        return true;
-      }
-      /* Loud. A refund that silently fails is the original fault wearing a
-         different coat. */
-      console.error('[credits] REFUND FAILED — ' + (items.length * creditsPerImage()) +
-                    ' credits are owed and were not returned', data);
-      return false;
-    }).catch(function(e){
-      console.error('[credits] REFUND UNREACHABLE — ' + (items.length * creditsPerImage()) +
-                    ' credits are owed', e);
-      return false;
-    });
-  }
+  /* There is no /credits/refund call for Groups. The entitlement that a
+     failed or likeness-missed craft would have spent is restored by the
+     generate route itself, server-side, before it answers — see
+     app/api/v1/groups/generate/route.ts. The glass finds out the same way
+     it finds out about everything else here: refreshGroupsBalance(). */
 
   /* ==================================================================
      THE STUDIO DECLINES, AND OFFERS A WAY THROUGH
@@ -7485,14 +7795,36 @@ window.EFFECT_PREVIEWS = {
     labelGo();
   }
 
-  /* Resolves TRUE only when the credits cleared and the work began, so a
-     caller waiting on a webhook can tell "not yet" from "done". */
+  /* Resolves TRUE only when the entitlement check cleared and the work
+     began, so a caller waiting on a webhook can tell "not yet" from
+     "done". */
   function runAll(opts){
-    if(LitenSubjectGate.pending || LitenSubjectGate.blocked)return;
     var quiet = !!(opts && opts.quiet);
     if (BUSY) return Promise.resolve(false);
     var pending = QUEUE.filter(function(q){ return q.status === 'pending'; });
     if (!pending.length || !SRC.b64) return Promise.resolve(false);
+
+    /* A re-check, not just addToQueue's — the photograph can change after
+       an effect is queued (a photo removed, a different one chosen) and
+       the route refuses outside 3-9 regardless of when the mismatch
+       happened. */
+    var have = (SRC.b64s || []).length;
+    var offender = null;
+    pending.forEach(function(q){
+      if (offender) return;
+      var e = R.byId(q.effectId);
+      if (e && e.intake === 'multi_photo' &&
+          (have < MULTI_PHOTO_MIN || have > MULTI_PHOTO_MAX)) offender = q;
+    });
+    if (offender){
+      if (!quiet){
+        say('This one wants a photograph of each person — ' +
+            MULTI_PHOTO_MIN + ' to ' + MULTI_PHOTO_MAX + ' of them. ' +
+            (have ? ('You have ' + have + '.') : 'Add theirs one at a time.'));
+        if (typeof openPhotoWall === 'function') openPhotoWall();
+      }
+      return Promise.resolve(false);
+    }
 
     BUSY = true;
     /* A new run. The next piece to land is this run's first, whatever the
@@ -7500,56 +7832,53 @@ window.EFFECT_PREVIEWS = {
     window.__RUN_LANDED = false;
     SHORT_HELD.length = 0;
     labelBusy();
-    return spendCredits(pending, quiet).then(function(paid){
-      if (!paid){ BUSY = false; labelBusy(); return false; }
-      /* The credits have cleared, so the work is certain. Show them where it
-         will appear, with a place already held for every piece. */
+    return checkCraftsAvailable(pending, quiet).then(function(ok){
+      if (!ok){ BUSY = false; labelBusy(); return false; }
+      /* The balance cleared, so the work is certain enough to show. Each
+         craft still consumes its own entitlement server-side as it runs \u2014
+         this just means the studio does not start work it already knows
+         it cannot finish. */
       openWaiting(pending);
       return craftPending().then(function(){
+        return refreshGroupsBalance();
+      }).then(function(){
         BUSY = false;
         labelBusy();
-        /* Anything that was paid for and did not become a piece is refunded.
-           'redirected' counts: the studio declined the work, so it keeps
-           none of the money. */
-        /* Charged, and either nothing arrived or what arrived did not hold
-           the likeness. Both are refunded. `passed === false` is the second
-           kind: the piece is in their collection AND the credits go back. */
-        var owed = QUEUE.filter(function(q){
-          return q.paid && !q.refunded &&
-                 (q.status === 'failed' || q.status === 'rejected' ||
-                  q.status === 'redirected' || q.passed === false);
+        /* Nothing arrived, or what arrived did not hold the likeness.
+           Neither cost the customer an entitlement \u2014 the generate route
+           restores it server-side in both cases \u2014 so there is no refund
+           call here, only the bookkeeping: a tile that never became a
+           piece is withdrawn, and the note says what happened. */
+        var ended = QUEUE.filter(function(q){
+          return q.status === 'failed' || q.status === 'rejected' ||
+                 q.status === 'redirected' || q.passed === false;
         });
-        withdrawWaiting(owed);
+        withdrawWaiting(ended.filter(function(q){ return q.passed !== false; }));
         /* After the run settles, so the offer does not appear over pieces
            that are still arriving. */
         if (PENDING_REDIRECT){
           var it = PENDING_REDIRECT; PENDING_REDIRECT = null;
           setTimeout(function(){ openRedirect(it); }, 260);
         }
-        if (!owed.length){ clearFinished(); return; }
-        return refundCredits(owed).then(function(ok){
-          clearFinished();
-          if (!tbcGoSub) return;
-          var n = owed.length;
-          /* Sticky: clearFinished() flips the floor back and labelGo() runs
-             again on that timer, so writing the element directly meant the
-             line was gone in half a second. */
-          /* SHORT_HELD pieces are still in the collection, so 'did not
-             hold' has to mean something different from 'never arrived'.
-             Placeholder wording - the Curator's line here is Rich's. */
-          var kept = SHORT_HELD.length;
-          SUB_NOTE = ok
-            ? (kept
-                ? (kept === 1
-                    ? 'One is not as close a likeness as it should be \u00b7 it is yours, and those credits are back'
-                    : kept + ' are not as close a likeness as they should be \u00b7 they are yours, and those credits are back')
-                : (n === 1 ? 'One did not hold \u00b7 those credits are back'
-                           : n + ' did not hold \u00b7 those credits are back'))
-            : (n === 1 ? 'One did not hold \u00b7 we are settling the credits'
-                       : n + ' did not hold \u00b7 we are settling the credits');
-          SHORT_HELD.length = 0;
-          tbcGoSub.textContent = SUB_NOTE;
-        });
+        if (!ended.length){ clearFinished(); return; }
+        clearFinished();
+        if (!tbcGoSub) return;
+        var n = ended.length;
+        /* Sticky: clearFinished() flips the floor back and labelGo() runs
+           again on that timer, so writing the element directly meant the
+           line was gone in half a second. */
+        /* SHORT_HELD pieces are still in the collection, so 'did not
+           hold' has to mean something different from 'never arrived'.
+           Placeholder wording - the Curator's line here is Rich's. */
+        var kept = SHORT_HELD.length;
+        SUB_NOTE = kept
+          ? (kept === 1
+              ? 'One is not as close a likeness as it should be \u00b7 it is yours, and that craft is back'
+              : kept + ' are not as close a likeness as they should be \u00b7 they are yours, and those crafts are back')
+          : (n === 1 ? 'One did not hold \u00b7 that craft is back'
+                     : n + ' did not hold \u00b7 those crafts are back');
+        SHORT_HELD.length = 0;
+        tbcGoSub.textContent = SUB_NOTE;
       }).then(function(){ return true; });
     });
   }
@@ -7594,19 +7923,21 @@ window.EFFECT_PREVIEWS = {
   function usd(cents){ return '$' + (cents / 100).toFixed(2); }
 
   /* ---- the blocks --------------------------------------------------------
-     Fetched once and held. Five rows; the route marks which is recommended
-     and the price is whatever the row says. */
+     Fetched once and held. Four rows — the Groups packages (1/4/8/16
+     crafts; see groups-commerce.ts), never the generic credits blocks.
+     Groups never reads or writes the shared credit pool, and this panel
+     is the purchase surface for Groups, so it offers nothing else. */
   function loadBlocks(){
     if (BLOCKS) return Promise.resolve(BLOCKS);
     return fetch(SKUS_URL, { credentials: 'same-origin' })
       .then(function(r){ return r.json(); })
       .then(function(d){
         BLOCKS = ((d && d.skus) || [])
-          .filter(function(s){ return s.kind === 'credits' && s.active !== false; })
+          .filter(function(s){ return s.kind === 'groups' && s.active !== false; })
           .sort(function(a, b){ return a.count - b.count; });
         var bad = BLOCKS.filter(function(s){ return !priceOf(s); });
         if (bad.length){
-          console.error('[credits] ' + bad.length + ' blocks came back with no price — ' +
+          console.error('[groups] ' + bad.length + ' packages came back with no price — ' +
                         'the panel cannot show what it cannot price', bad);
           BLOCKS = BLOCKS.filter(function(s){ return priceOf(s); });
         }
@@ -7630,13 +7961,13 @@ window.EFFECT_PREVIEWS = {
   }
 
   function blockRow(s){
-    /* WAS: how many images this block buys. On Groups a block buys a
-       different number depending on the size of the party, so the honest
-       unit is the credit. Divided by the smallest band so the figure is a
-       ceiling rather than a promise. */
-    var images = Math.round(s.count / CREDITS_PER_IMAGE);
-    var cents  = priceOf(s);
-    var each   = cents / images;
+    /* s.count is the craft count straight off the row \u2014 1, 4, 8 or 16.
+       s.includedUnlocks is server-derived (skus.ts, from
+       groups-commerce.ts) so this never recomputes the package table. */
+    var crafts  = s.count;
+    var cents   = priceOf(s);
+    var each    = cents / crafts;
+    var unlocks = s.includedUnlocks || 0;
     var el = document.createElement('button');
     el.type = 'button';
     el.className = 'buy-block' + (s.recommended ? ' is-pick' : '');
@@ -7645,11 +7976,13 @@ window.EFFECT_PREVIEWS = {
 
     var n = document.createElement('div');
     n.className = 'buy-block__n';
-    n.textContent = s.count + ' credits';
+    n.textContent = crafts + (crafts === 1 ? ' craft' : ' crafts');
 
     var i = document.createElement('div');
     i.className = 'buy-block__i';
-    i.textContent = images === 1 ? 'one piece' : images + ' pieces';
+    i.textContent = unlocks
+      ? (unlocks === 1 ? '+ 1 included unlock' : '+ ' + unlocks + ' included unlocks')
+      : 'no included unlocks';
 
     var p = document.createElement('div');
     p.className = 'buy-block__p';
@@ -7676,6 +8009,77 @@ window.EFFECT_PREVIEWS = {
     (BLOCKS || []).forEach(function(s){ buyList.appendChild(blockRow(s)); });
   }
 
+  /* ---- the persistent sidebar package tiles ------------------------------
+     Rich's reference. Same SKUs, same loadBlocks()/priceOf() the slide-out
+     panel uses — never a second price source — narrowed to a count and a
+     price for the sidebar's width. Clicking one opens the same Stripe
+     flow beginPurchase() already drives; this only adds the door. */
+  function packageTile(s){
+    var el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'buy-block' + (s.recommended ? ' is-pick' : '');
+    el.dataset.sku = s.id;
+    var n = document.createElement('div');
+    n.className = 'buy-block__n';
+    n.textContent = s.count;
+    var p = document.createElement('div');
+    p.className = 'buy-block__p';
+    p.textContent = usd(priceOf(s));
+    el.appendChild(n); el.appendChild(p);
+    el.addEventListener('click', function(){
+      if (buyPanel) buyPanel.classList.add('is-open');
+      beginPurchase(s);
+    });
+    return el;
+  }
+  function renderPackageTiles(){
+    var box = document.getElementById('curPackages');
+    if (!box) return;
+    loadBlocks().then(function(){
+      box.innerHTML = '';
+      (BLOCKS || []).forEach(function(s){ box.appendChild(packageTile(s)); });
+    });
+  }
+
+  /* ---- Your Collection progress — ported from public/pets.html's
+     targetFor()/desktopBundleProgress(), math unchanged. VALID_SIZES is
+     the same four tier sizes in both products; n is QUEUE.length here
+     (crafts chosen), not Pets' SELECTED.length (images chosen), and the
+     message says "craft package" rather than "image bundle". */
+  var VALID_SIZES = [1, 4, 8, 16];
+  function targetFor(n){ return n <= 1 ? 1 : n <= 4 ? 4 : n <= 8 ? 8 : 16; }
+  function collectionProgress(n){
+    var target = targetFor(n), index = VALID_SIZES.indexOf(target);
+    var lower = index > 0 ? VALID_SIZES[index - 1] : 0;
+    var position = index > 0
+      ? ((index - 1) + (n - lower) / (target - lower)) / (VALID_SIZES.length - 1) * 100
+      : 0;
+    return {
+      position: Math.min(100, Math.max(0, position)),
+      message: n === target
+        ? target + '-craft package reached'
+        : (target - n) + ' more to the ' + target + '-craft package'
+    };
+  }
+  function paintCollectionProgress(){
+    var milestones = document.getElementById('curCollMilestones');
+    if (!milestones) return;
+    var count = document.getElementById('curCollCount');
+    var next  = document.getElementById('curCollNext');
+    var n = QUEUE.length;
+    if (count) count.textContent = n + (n === 1 ? ' craft chosen' : ' crafts chosen');
+    var state = collectionProgress(n);
+    milestones.setAttribute('aria-valuenow', n);
+    milestones.setAttribute('aria-valuetext', n + ' chosen. ' + state.message);
+    milestones.innerHTML = '<i class="dcur__fill" style="width:' + state.position + '%"></i>' +
+      VALID_SIZES.map(function(size, i){
+        return '<span class="dcur__milestone' + (n >= size ? ' reached' : '') + '" style="left:' +
+          (i / (VALID_SIZES.length - 1) * 100) + '%">' + size + '</span>';
+      }).join('') +
+      '<i class="dcur__position" style="left:' + state.position + '%"></i>';
+    if (next) next.textContent = state.message;
+  }
+
   /* ---- the shortfall -----------------------------------------------------
      Money is the studio's second register — plain, unsigned, no charm. The
      Curator does not sell; the studio states a number. */
@@ -7690,18 +8094,19 @@ window.EFFECT_PREVIEWS = {
     /* Two reasons to be here, and they are not the same sentence.
 
        Short mid-craft: what is missing, and that the work is held.
-       Opened deliberately from the masthead or the Account page: what a
-       credit is and what the balance is. Saying "this craft needs 0
-       credits" to somebody who just wanted to buy more is nonsense, and
-       it is what both of those doors used to say. */
+       Opened deliberately: what a craft package buys and what the
+       balance is. Saying "this craft needs 0 crafts" to somebody who
+       just wanted to buy more is nonsense, and it is what the credits
+       version of this used to say. */
     if (buySay){
       var browsing = !SHORT || !SHORT.needed;
-      var bal = (SHORT && SHORT.balance) || CREDITS || 0;
+      var bal = (SHORT && SHORT.balance != null) ? SHORT.balance : (CRAFTS_REMAINING || 0);
       buySay.textContent = browsing
-        ? 'Ten credits craft one piece, and they do not expire. You have ' +
-          bal + '.'
-        : 'This craft needs ' + SHORT.needed + ' credits. Your balance is ' +
-          bal + '. Your pieces are held while you decide.';
+        ? 'One craft is one entitlement, and they do not expire. You have ' +
+          bal + (bal === 1 ? ' craft.' : ' crafts.')
+        : 'This needs ' + SHORT.needed + (SHORT.needed === 1 ? ' craft' : ' crafts') +
+          '. You have ' + bal + (bal === 1 ? ' craft' : ' crafts') +
+          '. Your pieces are held while you decide.';
     }
     loadBlocks().then(function(){
       renderBlocks();
@@ -7748,7 +8153,7 @@ window.EFFECT_PREVIEWS = {
     if (buyErr) buyErr.textContent = '';
     if (buyList) buyList.hidden = true;
     if (buyBack) buyBack.hidden = false;
-    if (buySay) buySay.textContent = sku.count + ' credits \u00b7 ' + usd(priceOf(sku));
+    if (buySay) buySay.textContent = sku.count + (sku.count === 1 ? ' craft' : ' crafts') + ' \u00b7 ' + usd(priceOf(sku));
 
     /* Their work is held before the payment begins. The return is a fresh
        page load, exactly as the magic link is, and the same machinery
@@ -7816,9 +8221,9 @@ window.EFFECT_PREVIEWS = {
     buyBack.hidden = true;
     if (buySay && SHORT){
       buySay.textContent = (!SHORT || !SHORT.needed)
-        ? 'Ten credits craft one piece, and they do not expire.'
-        : 'This craft needs ' + SHORT.needed + ' credits. Your balance is ' +
-          (SHORT.balance || 0) + '.';
+        ? 'One craft is one entitlement, and they do not expire.'
+        : 'This needs ' + SHORT.needed + (SHORT.needed === 1 ? ' craft' : ' crafts') +
+          '. You have ' + (SHORT.balance || 0) + '.';
     }
   });
   addEventListener('keydown', function(e){
@@ -7879,7 +8284,7 @@ window.EFFECT_PREVIEWS = {
     if (tbcGoSub){
       SUB_NOTE = intent
         ? 'Payment received \u00b7 the studio is starting'
-        : 'Your credits are on their way';
+        : 'Your crafts are on their way';
     }
     if (typeof labelGo === 'function') labelGo();
 
@@ -7887,12 +8292,14 @@ window.EFFECT_PREVIEWS = {
     whoAmI().then(function(u){
       if (!u) return;
       var back = (typeof restoreResume === 'function') ? restoreResume() : false;
-      if (!intent || !back) return;
-      /* They pressed Craft. Finish what they started. */
-      return craftWhenCreditsLand(0).then(function(began){
-        if (began || !tbcGoSub) return;
-        SUB_NOTE = 'Your credits are taking a moment \u00b7 press Craft when they land';
-        if (typeof labelGo === 'function') labelGo();
+      return refreshGroupsBalance().then(function(){
+        if (!intent || !back){ if (typeof labelGo === 'function') labelGo(); return; }
+        /* They pressed Craft. Finish what they started. */
+        return craftWhenCreditsLand(0).then(function(began){
+          if (began || !tbcGoSub) return;
+          SUB_NOTE = 'Your crafts are taking a moment \u00b7 press Craft when they land';
+          if (typeof labelGo === 'function') labelGo();
+        });
       });
     });
   })();
@@ -8071,7 +8478,7 @@ window.EFFECT_PREVIEWS = {
     var left = list.filter(function(e){ return !inQueue(silo, e.id); });
     var addN = Math.min(left.length, room);
     var total = have + addN;
-    var credits = addN * creditsPerImage();
+    var crafts = addN + (addN === 1 ? ' craft' : ' crafts');
 
     var a = document.createElement('article');
     a.className = 'silo-card is-upsell';
@@ -8109,7 +8516,7 @@ window.EFFECT_PREVIEWS = {
         '<h3 class="up-title">' + title + '</h3>' +
         '<p class="up-sub">' + sub + '</p>' +
         '<p class="up-save">' + addN + ' effects</p>' +
-        '<span class="up-cta">Add all ' + addN + ' &middot; ' + credits + ' credits</span>' +
+        '<span class="up-cta">Add all ' + addN + ' &middot; ' + crafts + '</span>' +
         '<p class="up-tier">' + (total >= 10 ? 'A full studio' : 'The Series') + '</p>' +
       '</div>';
 
@@ -8264,6 +8671,189 @@ window.EFFECT_PREVIEWS = {
       workshop.classList.remove('workshop-view--effects');
       workshop.classList.add('workshop-view--silos');
     });
+    [curPick4Btn, curCuratedBtn].forEach(function(b){ if (b) b.classList.remove('is-active'); });
+  }
+
+  /* ==================================================================
+     CURATED / PICK 4 FOR ME · Rich's reference, September 2026
+     ==================================================================
+     Ten effects, cross-cutting the rooms (R.curated_ids, baked from
+     scripts/emit-groups-registry.js CURATED — see that file for the
+     membership and the ruling not to reorder it).
+
+     Both doors land on the SAME floor paintEffects already uses —
+     effFloor, the same turn() flip, the same card, the same click
+     handler that adds/removes from the queue. Nothing here is a new
+     interaction; it is the existing room floor painted from a
+     different list. */
+
+  /* ---- the card-turn, ported verbatim from public/pets.html's
+     portraitFlipEase/desktopCuratedTurn (itself borrowed from
+     portraits.html's own flip geometry) — the actual Curated/Pick-4
+     cycling mechanism already live in the developed series, used here
+     unchanged rather than the Foyer riffle this replaces. */
+  function portraitFlipEase(x){
+    var lo = 0, hi = 1, t = x;
+    for (var i = 0; i < 20; i++){
+      t = (lo + hi) / 2;
+      var bx = 3*(1-t)*(1-t)*t*.34 + 3*(1-t)*t*t*.28 + t*t*t;
+      if (bx < x) lo = t; else hi = t;
+    }
+    return 3*(1-t)*(1-t)*t*.9 + 3*(1-t)*t*t + t*t*t;
+  }
+
+  /* grid: the live container whose current children are the "old" cards.
+     prepared: a detached container holding the replacement cards, same
+     length, same order. Flips each pair in place via replaceWith at the
+     90deg point, so the swap never shows an empty card. */
+  function curatedTurn(grid, prepared){
+    var oldCards = Array.from(grid.children), newCards = Array.from(prepared.children);
+    var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return Promise.all(oldCards.map(function(card, index){
+      var replacement = newCards[index];
+      if (!replacement) return Promise.resolve();
+      return new Promise(function(resolve){
+        if (reduced){ card.replaceWith(replacement); resolve(); return; }
+        card.classList.add('is-changing'); replacement.classList.add('is-changing');
+        var start = performance.now() + index * 50, swapped = false, current = card;
+        function frame(now){
+          var elapsed = now - start;
+          if (elapsed < 0){ requestAnimationFrame(frame); return; }
+          var progress = Math.min(1, elapsed / 840), angle = portraitFlipEase(progress) * 180;
+          if (angle >= 90 && !swapped){
+            replacement.style.transform = 'translateY(0) rotateY(' + (angle - 180) + 'deg)';
+            card.replaceWith(replacement); current = replacement; swapped = true;
+          }
+          current.style.transform = 'translateY(0) rotateY(' + (swapped ? angle - 180 : angle) + 'deg)';
+          if (progress < 1) requestAnimationFrame(frame);
+          else { current.style.removeProperty('transform'); current.classList.remove('is-changing'); resolve(); }
+        }
+        requestAnimationFrame(frame);
+      });
+    }));
+  }
+
+  /* Ported from public/pets.html's shuffled(). */
+  function shuffled(list){
+    var a = list.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  /* Each curated card carries the room it actually belongs to
+     (R.byId(id).category), not a fabricated "curated" room id — so
+     picking the same effect from its own room or from here keys to the
+     exact same queue entry (keyOf is siloId + '::' + effectId) and the
+     two can never show as separately selected. */
+  function paintCuratedCards(ids){
+    var wrap = document.createElement('div');
+    ids.forEach(function(id){
+      var e = R.byId(id);
+      if (!e) return;
+      var siloId = e.category || '';
+      var el = effectCard(siloId, e);
+      if (inQueue(siloId, e.id)) el.classList.add('is-selected');
+      wrap.appendChild(el);
+    });
+    return wrap;
+  }
+
+  /* A few shuffled passes of the same ten (curatedTurn, chained — the
+     existing single card-turn used several times, not a new animation),
+     landing on the real order. "Cycle through candidates before
+     settling" per Rich, built from the one physical flip Pets already
+     has for its own Curated remix. */
+  var CURATED_CYCLE_ROUNDS = 3;
+
+  function curatedReveal(finalIds, onSettled){
+    effFloor.innerHTML = '';
+    Array.from(paintCuratedCards(shuffled(finalIds)).children).forEach(function(el){
+      effFloor.appendChild(el);
+    });
+    effFloor.dataset.count = finalIds.length;
+    effFloor.classList.add('is-flipping');
+
+    function round(n){
+      var ids = n < CURATED_CYCLE_ROUNDS ? shuffled(finalIds) : finalIds;
+      return curatedTurn(effFloor, paintCuratedCards(ids)).then(function(){
+        if (n < CURATED_CYCLE_ROUNDS) return round(n + 1);
+        effFloor.classList.remove('is-flipping');
+        if (onSettled) onSettled();
+      });
+    }
+    round(0);
+  }
+
+  /* Four at random from the ten. No ranking among them is implied or
+     known, so there is nothing truer to pick by. */
+  function pickFour(ids){
+    var pool = ids.slice(), out = [];
+    while (pool.length && out.length < 4){
+      out.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    }
+    return out;
+  }
+
+  var CURATED_SAY = {
+    pick4:   'Four, picked for you from the Curated set. Swap any you like ' +
+             '&mdash; add or remove, same as anywhere else.' +
+             '<span class="sign">&mdash; C.</span>',
+    curated: 'Ten effects, picked across every room. The same as choosing ' +
+             'by room, just gathered in one place.' +
+             '<span class="sign">&mdash; C.</span>'
+  };
+
+  function openCurated(mode){
+    var ids = (R.curated_ids || []).slice();
+    if (!ids.length) return;
+
+    /* NOTHING CAN BE CHOSEN WITHOUT A PHOTOGRAPH — the same rule the
+       effects floor already enforces (see the effFloor click handler).
+       Browsing stays open on every other door; this one can add to the
+       queue on its own (Pick 4), so it holds here too. */
+    if (!hasSource()){
+      if (phoneNeedsPhoto()){ openNeedPhoto(); return; }
+      askForPhoto(true);
+      return;
+    }
+
+    /* Chosen now, applied to the queue only once the turn settles — the
+       whole point of the animation is that the four are not known-visible
+       until it lands on them. */
+    var picks = mode === 'pick4' ? pickFour(ids) : null;
+
+    function settlePick4(){
+      if (!picks) return;
+      picks.forEach(function(id){
+        var e = R.byId(id);
+        if (!e || !addToQueue(e.category, id)) return;
+        var card = effFloor.querySelector('.silo-card[data-effect-id="' + id + '"]');
+        if (card) card.classList.add('is-selected');
+      });
+    }
+
+    function paint(){
+      crumbHere.textContent = mode === 'pick4' ? 'Pick 4 for Me' : 'Curated';
+      say(CURATED_SAY[mode] || CURATED_SAY.curated);
+      workshop.classList.remove('workshop-view--silos');
+      workshop.classList.add('workshop-view--effects');
+      curatedReveal(ids, mode === 'pick4' ? settlePick4 : null);
+    }
+
+    if (workshop.classList.contains('workshop-view--silos')){
+      turn(siloFloor, effFloor, paint);
+    } else if (workshop.classList.contains('workshop-view--effects')){
+      /* Already here — Pick 4 after Curated, or vice versa. No room-flip
+         to reuse between two effects views, so this repaints in place. */
+      paint();
+    }
+
+    [curPick4Btn, curCuratedBtn].forEach(function(b){
+      if (b) b.classList.toggle('is-active', b.dataset.mode === mode);
+    });
   }
 
   /* ==================================================================
@@ -8338,7 +8928,13 @@ window.EFFECT_PREVIEWS = {
   function labelGo(){
     if (!tbcGoVerb || !tbcGoN || !tbcGoSub) return;
     var n = QUEUE.length;
-    var credits = (n * creditsPerImage()) + ' credits';
+    /* Flat-rate entitlements, not a price. N queued = N crafts, one
+       entitlement each — see checkCraftsAvailable(). When the balance is
+       already known and short, say so here rather than wait for the
+       press to discover it. */
+    var crafts = (CRAFTS_REMAINING != null && CRAFTS_REMAINING < n)
+      ? (CRAFTS_REMAINING + (CRAFTS_REMAINING === 1 ? ' craft' : ' crafts') + ' left · this needs ' + n)
+      : (n + (n === 1 ? ' craft' : ' crafts'));
     /* renderQueue() runs during init, ABOVE the line that assigns `workshop`.
        var hoists the declaration and never the value, so this is read as
        undefined on the first pass and reading .classList off it threw —
@@ -8349,12 +8945,12 @@ window.EFFECT_PREVIEWS = {
        always run the craft directly. The label had not caught up: it
        promised a second step that never came and then charged.
 
-       One label now, and the sub-line is the price - which is the
-       thing worth saying to somebody about to spend. */
+       One label now, and the sub-line says what this run will spend -
+       which is the thing worth saying to somebody about to press it. */
     var inPose = false;
     tbcGoVerb.textContent = 'Craft';
     tbcGoN.textContent    = n === 1 ? 'this piece' : ('all ' + n);
-    tbcGoSub.textContent  = credits;
+    tbcGoSub.textContent  = crafts;
     /* A standing note outranks the step line. See SUB_NOTE — this exists so
        a message about money survives the floor flipping back, which calls
        this function again on a timer. */
@@ -8615,18 +9211,21 @@ window.EFFECT_PREVIEWS = {
       mhCreditsBtn.setAttribute('aria-label', 'Sign in');
       return;
     }
-    /* Signed in, but the balance could not be read. Still show nothing
-       rather than a zero — the original reasoning holds. */
-    if (CREDITS == null){ mhCreditsBtn.hidden = true; return; }
-    if (uSpan) uSpan.textContent = 'credits';
+    /* GROUPS NEVER SHOWS THE GENERIC CREDIT BALANCE — the masthead pill
+       reads CRAFTS_REMAINING (groups_craft entitlements; see
+       refreshGroupsBalance()), not CREDITS. Signed in, but the balance
+       could not be read yet. Still show nothing rather than a zero — the
+       original reasoning holds. */
+    if (CRAFTS_REMAINING == null){ mhCreditsBtn.hidden = true; return; }
+    if (uSpan) uSpan.textContent = 'crafts';
     /* A balance is present, so the unit label may be dropped on a narrow
        screen. The signed-out branch above returns before this and never
        carries the class. */
     mhCreditsBtn.classList.add('has-balance');
     mhCreditsBtn.hidden = false;
-    mhCreditsCount.textContent = String(CREDITS);
+    mhCreditsCount.textContent = String(CRAFTS_REMAINING);
     mhCreditsBtn.setAttribute('aria-label',
-      CREDITS + (CREDITS === 1 ? ' credit' : ' credits') + ' \u00b7 buy more');
+      CRAFTS_REMAINING + (CRAFTS_REMAINING === 1 ? ' craft' : ' crafts') + ' \u00b7 buy more');
   }
 
   function setCredits(n){
@@ -8718,7 +9317,7 @@ window.EFFECT_PREVIEWS = {
       return;
     }
     if (typeof window.__openPaywall === 'function'){
-      window.__openPaywall({ needed: 0, balance: CREDITS || 0, reason: 'browse' });
+      window.__openPaywall({ needed: 0, balance: CRAFTS_REMAINING || 0, reason: 'browse' });
     }
   });
 
@@ -8952,6 +9551,21 @@ window.EFFECT_PREVIEWS = {
        empty list rather than an error, so this is safe either way. */
     if (typeof loadPieces === 'function') loadPieces();
     if (typeof loadAddress === 'function') loadAddress();
+    /* Signed out, the balance route answers 401 and CRAFTS_REMAINING
+       stays null — labelGo() and checkCraftsAvailable() both already
+       treat null as "unknown, don't block on it", so this is safe either
+       way. */
+    if (u) refreshGroupsBalance().then(function(){ labelGo(); paintCredits(); });
+  });
+  renderPackageTiles();
+  paintCollectionProgress();
+
+  /* Review Collection — the sidebar's door onto the same action the rail's
+     own Craft button already runs. Not a second path: a click here is a
+     click there. */
+  var curReviewBtn = document.getElementById('curReviewBtn');
+  if (curReviewBtn) curReviewBtn.addEventListener('click', function(){
+    if (tbcGo) tbcGo.click();
   });
 
   /* GROUPS HAS NO POSE STEP. Portraits puts one card flip between the
@@ -9555,7 +10169,8 @@ window.EFFECT_PREVIEWS = {
         series:    'groups',
         preset:    item.effectId,
         mode:      item.mode || null,
-        meta:      { likeness: item.likeness_score, silo: item.siloId }
+        meta:      { likeness: item.likeness_score, silo: item.siloId,
+                     format: (item.result && item.result.format) || '3:2' }
       })
     }).then(function(r){ return r.json(); }).then(function(d){
       if (!d || !d.ok || !d.piece) {
@@ -10766,7 +11381,7 @@ window.EFFECT_PREVIEWS = {
 
     var OPEN = {
       '/collection': function(){ if (typeof showCollection === 'function') showCollection(); },
-      '/print':      function(){ window.location.assign('/print'); },
+      '/print':      function(){ if (typeof showPrintShop === 'function') showPrintShop(); },
       '/account':    function(){ if (typeof showAccount === 'function') showAccount(); }
     };
 
@@ -11450,8 +12065,11 @@ window.EFFECT_PREVIEWS = {
   var acMainEl = document.getElementById('acMain');
   if (acMainEl) acMainEl.addEventListener('click', function(e){
     if (e.target.closest('#acBuy')){
+      /* This panel sells Groups packages (see openBuy()), so the balance
+         it opens to is CRAFTS_REMAINING, not the account's generic
+         credits — the same correction as the masthead pill. */
       if (typeof window.__openPaywall === 'function'){
-        window.__openPaywall({ needed: 0, balance: (ACCT && ACCT.credits && ACCT.credits.balance) || 0,
+        window.__openPaywall({ needed: 0, balance: CRAFTS_REMAINING || 0,
                                reason: 'browse' });
       }
       return;
@@ -11490,7 +12108,7 @@ window.EFFECT_PREVIEWS = {
      fails honestly. */
   var MAST_OPENS = {
     '/collection': function(){ if (typeof showCollection === 'function') showCollection(); },
-    '/print':      function(){ window.location.assign('/print'); },
+    '/print':      function(){ if (typeof showPrintShop === 'function') showPrintShop(); },
     '/account':    function(){ if (typeof showAccount === 'function') showAccount(); }
   };
 
@@ -11538,6 +12156,13 @@ window.EFFECT_PREVIEWS = {
     var c = e.target.closest('.silo-card'); if (c){ e.preventDefault(); openSilo(c); }
   });
   renderSilos();
+
+  if (curPick4Btn) curPick4Btn.addEventListener('click', function(){ openCurated('pick4'); });
+  if (curCuratedBtn) curCuratedBtn.addEventListener('click', function(){ openCurated('curated'); });
+  if (curAllFxBtn) curAllFxBtn.addEventListener('click', function(){
+    [curPick4Btn, curCuratedBtn].forEach(function(b){ if (b) b.classList.remove('is-active'); });
+    if (workshop.classList.contains('workshop-view--effects')) backToSilos();
+  });
 
   /* the whole card is the target — the badge is an affordance, not the only
      place a click lands. */
@@ -11891,7 +12516,7 @@ window.CONCIERGE_POINTS = [
 window.CONCIERGE_SEEDS = [
   'How do I start?',
   'What makes a good photograph?',
-  'How many credits does a craft cost?'
+  'How many crafts come in a package?'
 ];
 
 /* ---- PROGRESS IS MEASURED, NOT ASSUMED --------------------------------

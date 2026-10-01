@@ -17,11 +17,12 @@
 
 import { supabaseAdmin } from '@/lib/supabase'
 import type { Sku } from './types'
+import { includedUnlocksForPackage } from '@/lib/v1/groups/groups-commerce'
 
 interface SkuRow {
   id:               string
   display_name:     string
-  kind:             'single' | 'bundle' | 'credits'
+  kind:             'single' | 'bundle' | 'credits' | 'groups'
   count:            number
   price_cents:      number
   stripe_price_id:  string
@@ -31,14 +32,15 @@ interface SkuRow {
 
 function rowToSku(row: SkuRow): Sku {
   return {
-    id:            row.id,
-    displayName:   row.display_name,
-    kind:          row.kind,
-    count:         row.count,
-    priceCents:    row.price_cents,
-    stripePriceId: row.stripe_price_id,
-    active:        row.active,
-    recommended:   row.recommended === true,
+    id:              row.id,
+    displayName:     row.display_name,
+    kind:            row.kind,
+    count:           row.count,
+    priceCents:      row.price_cents,
+    stripePriceId:   row.stripe_price_id,
+    active:          row.active,
+    recommended:     row.recommended === true,
+    includedUnlocks: row.kind === 'groups' ? includedUnlocksForPackage(row.count) : undefined,
   }
 }
 
