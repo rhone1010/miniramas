@@ -1722,6 +1722,28 @@ body{
 }
 .crumb-sep{ display:none }
 
+/* ---- Curated's page of 4 — same dark pill as crumb-back, same chevron */
+.curated-page{ display:inline-flex; align-items:center; gap:.5em }
+.curated-page[hidden]{ display:none }
+.curated-page__btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:32px; height:32px; border-radius:4px;
+  color:var(--vellum-200);
+  background:linear-gradient(180deg,#2f2420 0%, #241b17 100%);
+  border:1px solid rgba(196,169,110,.26);
+  cursor:pointer;
+  transition:background .3s var(--ease-nav), border-color .3s var(--ease-nav);
+}
+.curated-page__btn:hover{ background:linear-gradient(180deg,#3a2c26 0%, #2c211c 100%); border-color:var(--gold) }
+.curated-page__btn:disabled{ opacity:.35; cursor:default }
+.curated-page__btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.curated-page__btn svg{ width:10px; height:10px }
+.curated-page__btn path{ fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round }
+.curated-page__n{
+  font-family:var(--serif); font-size:1.05rem; color:var(--vellum-300);
+  min-width:3.5ch; text-align:center;
+}
+
 .crumb-here{ transition:opacity .5s var(--ease-nav) .1s }
 .workshop-view--effects .crumb-here{ opacity:1 }
 .workshop-view--silos .crumb-back{
@@ -5338,6 +5360,19 @@ body.is-lboxed{ overflow:hidden }
       </button>
       <span class="crumb-sep">&rsaquo;</span>
       <span class="crumb-here" id="crumbHere"></span>
+      <!-- Curated's page of 4, from the 10-effect membership — same
+           prev/next-chevron language as crumb-back's own icon, not a
+           new control. Pick 4 for Me has no paging: it is always
+           exactly its four picks. -->
+      <span class="curated-page" id="curatedPageNav" hidden>
+        <button class="curated-page__btn" id="curatedPrevBtn" type="button" aria-label="Previous four">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>
+        </button>
+        <span class="curated-page__n" id="curatedPageN"></span>
+        <button class="curated-page__btn" id="curatedNextBtn" type="button" aria-label="Next four">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+        </button>
+      </span>
     </div>
 
     <div class="deck" id="deck">
@@ -8711,7 +8746,10 @@ window.EFFECT_PREVIEWS = {
     var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     return Promise.all(oldCards.map(function(card, index){
       var replacement = newCards[index];
-      if (!replacement) return Promise.resolve();
+      /* Curated's last page can hold fewer than four (10 does not divide
+         by four) — an old card with no replacement has nothing to turn
+         into, so it is simply removed rather than left stranded. */
+      if (!replacement){ card.remove(); return Promise.resolve(); }
       return new Promise(function(resolve){
         if (reduced){ card.replaceWith(replacement); resolve(); return; }
         card.classList.add('is-changing'); replacement.classList.add('is-changing');
@@ -8761,23 +8799,32 @@ window.EFFECT_PREVIEWS = {
     return wrap;
   }
 
-  /* A few shuffled passes of the same ten (curatedTurn, chained — the
-     existing single card-turn used several times, not a new animation),
-     landing on the real order. "Cycle through candidates before
-     settling" per Rich, built from the one physical flip Pets already
-     has for its own Curated remix. */
+  /* A few shuffled passes (curatedTurn, chained — the existing single
+     card-turn used several times, not a new animation) landing on the
+     real order. "Cycle through candidates before settling" per Rich,
+     built from the one physical flip Pets already has for its own
+     Curated remix.
+
+     displayIds is what is SHOWN (Curated: the current page of 4 from
+     the 10-effect membership; Pick 4 for Me: the four it is about to
+     pick) — the decoy frames during the cycle are drawn from poolIds
+     (the full 10), same idea as Pets' own remix pulling decoys from a
+     wider bench than the page it settles on. */
   var CURATED_CYCLE_ROUNDS = 3;
 
-  function curatedReveal(finalIds, onSettled){
+  function curatedReveal(displayIds, poolIds, onSettled){
+    var decoyPool = poolIds.length > displayIds.length ? poolIds : displayIds;
     effFloor.innerHTML = '';
-    Array.from(paintCuratedCards(shuffled(finalIds)).children).forEach(function(el){
+    Array.from(paintCuratedCards(shuffled(decoyPool).slice(0, displayIds.length)).children).forEach(function(el){
       effFloor.appendChild(el);
     });
-    effFloor.dataset.count = finalIds.length;
+    effFloor.dataset.count = displayIds.length;
     effFloor.classList.add('is-flipping');
 
     function round(n){
-      var ids = n < CURATED_CYCLE_ROUNDS ? shuffled(finalIds) : finalIds;
+      var ids = n < CURATED_CYCLE_ROUNDS
+        ? shuffled(decoyPool).slice(0, displayIds.length)
+        : displayIds;
       return curatedTurn(effFloor, paintCuratedCards(ids)).then(function(){
         if (n < CURATED_CYCLE_ROUNDS) return round(n + 1);
         effFloor.classList.remove('is-flipping');
@@ -8787,7 +8834,7 @@ window.EFFECT_PREVIEWS = {
     round(0);
   }
 
-  /* Four at random from the ten. No ranking among them is implied or
+  /* Four at random from the pool. No ranking among them is implied or
      known, so there is nothing truer to pick by. */
   function pickFour(ids){
     var pool = ids.slice(), out = [];
@@ -8801,14 +8848,37 @@ window.EFFECT_PREVIEWS = {
     pick4:   'Four, picked for you from the Curated set. Swap any you like ' +
              '&mdash; add or remove, same as anywhere else.' +
              '<span class="sign">&mdash; C.</span>',
-    curated: 'Ten effects, picked across every room. The same as choosing ' +
-             'by room, just gathered in one place.' +
+    curated: 'Ten effects, picked across every room, four at a time ' +
+             '&mdash; the same as choosing by room, just gathered in one place.' +
              '<span class="sign">&mdash; C.</span>'
   };
 
+  /* Curated pages 4 at a time through the 10-effect membership — the
+     same idea as Pets' own bench/page split (16 drawn, 8 shown), scaled
+     to Groups' smaller set. Pick 4 for Me has no page: it is always
+     exactly the four it picked. */
+  var CURATED_PAGE_SIZE = 4;
+  var CURATED_PAGE = 0;
+  var curatedPageNav  = document.getElementById('curatedPageNav');
+  var curatedPageN    = document.getElementById('curatedPageN');
+  var curatedPrevBtn  = document.getElementById('curatedPrevBtn');
+  var curatedNextBtn  = document.getElementById('curatedNextBtn');
+
+  function curatedPageCount(poolLen){ return Math.max(1, Math.ceil(poolLen / CURATED_PAGE_SIZE)); }
+  function paintCuratedPageNav(poolLen){
+    if (!curatedPageNav) return;
+    var pages = curatedPageCount(poolLen);
+    curatedPageNav.hidden = pages <= 1;
+    if (curatedPageN) curatedPageN.textContent = (CURATED_PAGE + 1) + ' / ' + pages;
+    if (curatedPrevBtn) curatedPrevBtn.disabled = CURATED_PAGE <= 0;
+    if (curatedNextBtn) curatedNextBtn.disabled = CURATED_PAGE >= pages - 1;
+  }
+
+  var CURATED_MODE = null;   /* 'curated' | 'pick4' | null — which door is open */
+
   function openCurated(mode){
-    var ids = (R.curated_ids || []).slice();
-    if (!ids.length) return;
+    var pool = (R.curated_ids || []).slice();
+    if (!pool.length) return;
 
     /* NOTHING CAN BE CHOSEN WITHOUT A PHOTOGRAPH — the same rule the
        effects floor already enforces (see the effFloor click handler).
@@ -8820,14 +8890,21 @@ window.EFFECT_PREVIEWS = {
       return;
     }
 
-    /* Chosen now, applied to the queue only once the turn settles — the
-       whole point of the animation is that the four are not known-visible
-       until it lands on them. */
-    var picks = mode === 'pick4' ? pickFour(ids) : null;
+    CURATED_MODE = mode;
+    if (mode === 'curated' && curatedPageNav) curatedPageNav.hidden = curatedPageCount(pool.length) <= 1;
+    else if (curatedPageNav) curatedPageNav.hidden = true;
 
+    var displayIds = mode === 'pick4'
+      ? pickFour(pool)
+      : pool.slice(CURATED_PAGE * CURATED_PAGE_SIZE, CURATED_PAGE * CURATED_PAGE_SIZE + CURATED_PAGE_SIZE);
+
+    /* Pick 4's picks are applied to the queue only once the turn
+       settles — the whole point of the animation is that the four are
+       not known-visible until it lands on them. Curated adds nothing on
+       its own; browsing it is free, same as any room. */
     function settlePick4(){
-      if (!picks) return;
-      picks.forEach(function(id){
+      if (mode !== 'pick4') return;
+      displayIds.forEach(function(id){
         var e = R.byId(id);
         if (!e || !addToQueue(e.category, id)) return;
         var card = effFloor.querySelector('.silo-card[data-effect-id="' + id + '"]');
@@ -8840,14 +8917,16 @@ window.EFFECT_PREVIEWS = {
       say(CURATED_SAY[mode] || CURATED_SAY.curated);
       workshop.classList.remove('workshop-view--silos');
       workshop.classList.add('workshop-view--effects');
-      curatedReveal(ids, mode === 'pick4' ? settlePick4 : null);
+      if (mode === 'curated') paintCuratedPageNav(pool.length);
+      curatedReveal(displayIds, pool, mode === 'pick4' ? settlePick4 : null);
     }
 
     if (workshop.classList.contains('workshop-view--silos')){
       turn(siloFloor, effFloor, paint);
     } else if (workshop.classList.contains('workshop-view--effects')){
-      /* Already here — Pick 4 after Curated, or vice versa. No room-flip
-         to reuse between two effects views, so this repaints in place. */
+      /* Already here — Pick 4 after Curated, a page turn, or vice versa.
+         No room-flip to reuse between two effects views, so this
+         repaints in place. */
       paint();
     }
 
@@ -8855,6 +8934,17 @@ window.EFFECT_PREVIEWS = {
       if (b) b.classList.toggle('is-active', b.dataset.mode === mode);
     });
   }
+
+  function turnCuratedPage(delta){
+    var pool = (R.curated_ids || []).slice();
+    var pages = curatedPageCount(pool.length);
+    var next = CURATED_PAGE + delta;
+    if (next < 0 || next >= pages) return;
+    CURATED_PAGE = next;
+    openCurated('curated');
+  }
+  if (curatedPrevBtn) curatedPrevBtn.addEventListener('click', function(){ turnCuratedPage(-1); });
+  if (curatedNextBtn) curatedNextBtn.addEventListener('click', function(){ turnCuratedPage(1); });
 
   /* ==================================================================
      THE POSE · the last card flip before the paywall
