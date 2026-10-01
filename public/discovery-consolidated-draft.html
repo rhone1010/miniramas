@@ -3013,6 +3013,23 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   .masthead__right .mh-series-menu{left:auto;right:0;transform:none}
 }
 
+/* Readiness packet 1: expose existing navigation and separate bundle labels. */
+@media(max-width:767px){
+  :root{--mh-h:calc(56px + 44px + 44px);}
+  .masthead{grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px auto;}
+  .masthead__brand{grid-column:1;grid-row:1;}
+  .masthead__right{grid-column:2;grid-row:1;}
+  .masthead__nav{display:grid;grid-column:1/-1;grid-row:2;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:0 12px;}
+  .masthead__nav > .mh-series{display:flex;}
+  .masthead__nav > a,.masthead__nav .mh-series-btn{min-height:44px;box-sizing:border-box;display:flex;align-items:center;font-size:20px;}
+  .masthead__nav > .mh-mobile-existing{display:none;}
+  .masthead__nav .mh-series-menu{left:0;transform:none;min-width:0;width:max-content;max-width:calc(100vw - 24px);}
+}
+@media(max-width:1024px){
+  .your-collection.is-docked .dcur__milestones{display:flex;justify-content:space-between;gap:12px;grid-column:1/-1;}
+  .your-collection.is-docked .dcur__milestone{position:static;transform:none;}
+}
+
 /* Compact Collection information; reuse the existing status-band tokens. */
 .mc-info__cell{ flex:1 1 200px; min-width:0 }
 @media (min-width:1025px){
@@ -4896,6 +4913,7 @@ function applyDetection(data){
        certainly not after a charge — refusing then would mean taking
        money for something we were never going to make. */
     if (isUnderage()){ openAgeGate(); return null; }
+    holdActiveSource(uploadedPhotoDataUrl, data);
 
     focusStampThumb();
     var want = subjectFromPhoto(data);
@@ -4998,6 +5016,7 @@ function setUploadState(st, err){
     if (typeof setUploadState === 'function') setUploadState('idle');
     if (typeof renderQueue === 'function') renderQueue();
     if (typeof clearResume === 'function') clearResume();
+    clearActiveSource();
     if (typeof curatorState === 'function') curatorState('empty', SAY.empty);
     /* Shut, every time. A customer who read it once should not have the
        whole statement in their face on a second refusal. */
@@ -5183,6 +5202,7 @@ function acceptPhoto(url, trusted){
       setUploadState('error', 'That did not read as an image'); return false;
     }
     uploadedPhotoDataUrl = url;
+    holdActiveSource(url, trusted);
     detectPhotoOrientation(url);   /* __ASPECT_STEP__ default follows the photo */
     SRC_B64  = url.slice(comma + 1);
     SRC_MIME = url.slice(5, url.indexOf(';') > -1 ? url.indexOf(';') : comma);
@@ -7379,6 +7399,32 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
      The small part goes to localStorage; the photograph goes to IndexedDB
      (foyer-handoff.js, the store the foyer's handoff already uses), so a
      large one no longer falls out on the quota. */
+  /* Reuse the foyer photo store for this tab's active source, including guests. */
+  function holdActiveSource(url, trusted){
+    if (!url || !window.LitenHandoff) return;
+    var key = RESUME_KEY + '_active';
+    var meta = { at:Date.now(), photoPrint:photoPrint(url), trusted:trusted ? Object.assign({}, trusted, {routing:LitenSubjectGate.routing, skipRedirect:LitenSubjectGate.skipRedirect}) : null };
+    LitenHandoff.putPhoto('active-source', url).then(function(){
+      if (uploadedPhotoDataUrl === url) sessionStorage.setItem(key, JSON.stringify(meta));
+    }).catch(function(e){ console.warn('[source] could not hold photograph', e); });
+  }
+  function clearActiveSource(){
+    try { sessionStorage.removeItem(RESUME_KEY + '_active'); } catch(e){}
+    if (window.LitenHandoff) LitenHandoff.dropPhoto('active-source');
+  }
+  function recoverActiveSource(){
+    if (uploadedPhotoDataUrl || !window.LitenHandoff) return Promise.resolve(false);
+    var meta;
+    try { meta = JSON.parse(sessionStorage.getItem(RESUME_KEY + '_active') || 'null'); } catch(e){}
+    if (!meta || Date.now() - meta.at > RESUME_MAX_MS){ clearActiveSource(); return Promise.resolve(false); }
+    return LitenHandoff.getPhoto('active-source').then(function(url){
+      return validSourcePhoto(url, meta.photoPrint).then(function(ok){
+        if (!ok){ clearActiveSource(); return false; }
+        return acceptPhoto(url, meta.trusted);
+      });
+    }).catch(function(){ return false; });
+  }
+
   function saveResume(){
     var core = {
       v:      2,
@@ -7508,6 +7554,8 @@ function onAuthButton(){
     }).then(function(result){
       if (!result || !result.ok) throw new Error('signout_failed');
       clearResume();
+      uploadedPhotoDataUrl = null;
+      clearActiveSource();
       location.reload();
     }).catch(function(error){
       button.disabled = false;
@@ -7550,6 +7598,7 @@ whoAmI().then(function(u){
   if (u && setSession) mcUnlockConfirm(setSession, 0, true);
   (u ? restoreResume() : Promise.resolve(false))
     .then(function(){ return receiveFoyerHandoff(); })
+    .then(function(){ return recoverActiveSource(); })
     .then(bootSubjectSettled)
     .then(function(){
       var returnUrl = new URL(location.href);
@@ -9497,7 +9546,7 @@ function startUnlockCheckout(p){
       /* __CK_SHELL__ the unlock flow, not the collection purchase. Same rule:
          the heading is decoration, the form opens regardless. */
       try {
-        paintCheckoutHead('Unlock Your Image', p.name || '1 image',
+        paintCheckoutHead('Unlock Your Image', pieceDisplayName(p),
           '$' + ((typeof r.data.priceCents === 'number' ? r.data.priceCents : UNLOCK_PRICE_CENTS) / 100).toFixed(2));
       } catch (e){ console.warn('[discovery] unlock heading not painted:', e); }
       /* Whose checkout is open, so an abandoned modal can end the flow. */
