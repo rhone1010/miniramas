@@ -5238,13 +5238,13 @@ body.is-lboxed{ overflow:hidden }
   #workshop .face{height:100%;position:relative;}
   #workshop .face--silos,#workshop .face--poses{display:none;}
   #workshop .face--effects{display:block;opacity:1;visibility:visible;transform:none;pointer-events:auto;}
-  #workshop .floor{container-type:size;height:100%;min-height:0;overflow:visible;padding:0;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));align-items:center;justify-items:center;gap:var(--card-gap);}
-  #workshop .floor > *{grid-column:auto;grid-row:auto;justify-self:center;aspect-ratio:1;width:100%;max-height:100%;}
+  #workshop .floor{container-type:size;height:100%;min-height:0;overflow:visible;padding:0;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,max-content);align-content:center;align-items:center;justify-items:center;gap:var(--card-gap);}
+  #workshop .floor > *{grid-column:auto;grid-row:auto;justify-self:center;aspect-ratio:1;width:min(100%,calc((100cqh - var(--card-gap))/2));height:auto;max-height:100%;}
   #workshop .floor[data-count="1"]{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);}
   #workshop .floor[data-count="1"] > *{width:min(100%,500px);}
   #workshop .floor[data-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr));max-width:740px;margin:auto;}
   #workshop .floor[data-count="6"]{grid-template-columns:repeat(3,minmax(0,1fr));}
-  #workshop .floor[data-count="1"] .silo-card{width:min(100%,500px,100cqh);} #workshop .floor[data-count="16"] .silo-card{width:min(100%,calc((100cqh - 3 * var(--card-gap))/4));} #workshop .floor[data-count="16"]{grid-template-rows:repeat(4,minmax(0,1fr));max-width:900px;margin:auto;}
+  #workshop .floor[data-count="1"] .silo-card{width:min(100%,500px,100cqh);} #workshop .floor[data-count="16"] > *{width:min(100%,calc((100cqh - 3 * var(--card-gap))/4));} #workshop .floor[data-count="16"]{grid-template-rows:repeat(4,max-content);max-width:900px;margin:auto;}
   #workshop .silo-card{height:auto;width:min(100%,calc((100cqh - var(--card-gap))/2));aspect-ratio:1;border-radius:2px;border:1px solid var(--gold-soft);}
   #workshop .silo-card__content,#workshop .silo-card__overlay{opacity:0;}
   #workshop .silo-card:hover .silo-card__content,#workshop .silo-card:focus-visible .silo-card__content,
@@ -5273,6 +5273,33 @@ body.is-lboxed{ overflow:hidden }
 .cur-packages .buy-block{min-width:0;} #effectFloor.is-flipping{pointer-events:none;} #groupsPackageInfo[hidden]{display:none;} #groupsPackageInfo{font:24px/1.5 var(--serif);padding:20px;margin-bottom:12px;}
 .pw-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
 </style>
+<style id="groupsDiscoveryVisualFit">
+@media(min-width:1025px){
+ .stage{width:100%;margin:0;padding:0;min-height:0;}
+ .rooms{grid-template-columns:calc(var(--rail-w) - 50px) minmax(0,1fr);}
+ .room--curator{display:block;}
+ .cur{grid-column:auto;width:100%;padding:0;overflow:visible;min-height:100%;}
+ .cur > *{flex-shrink:0;}
+ .cur-photo{margin:0;}
+ .cur-thumb img{max-height:22vh;}
+ .cur-thumb .cur-change{display:none;}
+ .cur-mode{min-height:52px;font:400 20px/1.2 var(--serif);}
+ #curPick4Btn{background:var(--oxblood);color:var(--vellum);}
+ .cur-allfx{min-height:42px;font:400 20px/1.2 var(--serif);}
+ .cur-packages{margin-top:0;margin-bottom:12px;}
+ .cur-packages .buy-block{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:58px;}
+ #curCollection{flex:none;margin-top:auto;}
+ #curCollection .dcur__milestones{height:46px;min-height:46px;margin:12px 12px 0;}
+ #curCollection .dcur__next{font:18px/1.2 var(--serif);margin:0 0 8px;}
+ #curCollection .dcur__count{font:12px/1.4 var(--sans);color:var(--vellum);}
+ #groupsPackageInfo{display:block;aspect-ratio:auto;min-height:120px;background:var(--oxblood);color:var(--gold-soft);border:1px solid var(--gold-soft);border-radius:6px;text-align:center;}
+ #groupsPackageInfo[hidden]{display:none;}
+ .cur[data-state="empty"] .cur-modebar{display:grid;}
+ .cur[data-state="empty"] .cur-allfx{display:flex;}
+ .cur[data-state="empty"] .cur-packages{display:grid;}
+ .cur[data-state="empty"] #curCollection{display:flex;}
+}
+</style>
 </head>
 <body>
 
@@ -5295,17 +5322,14 @@ body.is-lboxed{ overflow:hidden }
         <a href="/groups" role="menuitem">Crafted Groups</a>
         <a href="/halloween" role="menuitem">Crafted Halloween</a>
       </div>
-        <!-- One line, one door - the sub-rooms left the menu, Rich's
-             ruling 25 Aug 2026. Everything happens in the main room. -->
-        <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
-      </div>
+
     </div>
     <a href="/gallery">Gallery</a>
     <!-- THE BOARD. Between Gallery and My Collection because that is the
          order of the thought: what the studio can do, what other people
          did with it, what you have done with it. -->
-    <a href="/community">Community</a><a href="/print">Print Shop</a>
-    <a href="/collection">My Collection</a>
+    <a href="/community">Community</a>
+    <a href="/collection">My Collection</a><a href="/print">Print Shop</a>
     <a href="/account">Account</a>
     <!-- PRINT SHOP AND HELP LEFT THIS BAR. Print Shop is an action on a
          piece, not a place - it already has its button in My Collection,
@@ -5347,8 +5371,8 @@ body.is-lboxed{ overflow:hidden }
     <a href="/groups" class="on">Groups</a>
     <a href="/wallpapers">Mobile Wallpapers</a>
     <a href="/gallery">Gallery</a>
-    <a href="/community">Community</a><a href="/print">Print Shop</a>
-    <a href="/collection">My Collection</a>
+    <a href="/community">Community</a>
+    <a href="/collection">My Collection</a><a href="/print">Print Shop</a>
     <a href="/account">Account</a>
     <a href="#" data-concierge>Ask the Concierge</a>
     <!-- CUI 41A, 23 Aug 2026. The way out, on a phone. The real
@@ -5805,19 +5829,19 @@ body.is-lboxed{ overflow:hidden }
   </div>
 </div>
 
-<aside class="buy" id="buyPanel" aria-label="Buy credits">
+<aside class="buy" id="buyPanel" aria-label="Buy Crafts">
   <div class="buy-card">
     <button class="buy-x" id="buyX" aria-label="Close">&times;</button>
     <div class="buy-head">
       <img class="buy-mark" src="/icons/curator-c.svg" alt="">
-      <span class="buy-title">Credits</span>
+      <span class="buy-title">Crafts</span>
     </div>
     <p class="buy-say" id="buySay"></p>
     <div class="buy-err" id="buyErr"></div>
     <div class="buy-list" id="buyList"></div>
     <div class="buy-form" id="buyForm"></div>
     <button class="buy-back" id="buyBack" hidden>&larr; Choose a different block</button>
-    <div class="buy-fine">Credits do not expire. Ten credits craft one piece.</div>
+    <div class="buy-fine">Crafts do not expire. One Craft crafts one piece.</div>
   </div>
 </aside>
 
@@ -9735,6 +9759,8 @@ window.EFFECT_PREVIEWS = {
        way. */
     if (u) refreshGroupsBalance().then(function(){ labelGo(); paintCredits(); });
   });
+  var sourceThumb = document.getElementById('curThumb');
+  if(sourceThumb){sourceThumb.tabIndex=0;sourceThumb.setAttribute('role','button');sourceThumb.setAttribute('aria-label','Use different photographs');sourceThumb.addEventListener('click',function(){document.getElementById('curChange').click();});sourceThumb.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();sourceThumb.click();}});}
   renderPackageTiles();
   paintCollectionProgress();
 

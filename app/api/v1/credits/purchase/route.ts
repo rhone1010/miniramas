@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   }
   if (!sku)          return NextResponse.json({ error: 'sku_not_found' }, { status: 404 })
   if (!sku.active)   return NextResponse.json({ error: 'sku_inactive' }, { status: 404 })
-  if (sku.kind !== 'credits') {
+  if (sku.kind !== 'credits' && sku.kind !== 'groups') {
     // A single or bundle reaching this route means the caller is wired to the
     // wrong path. Refuse rather than half-fulfil.
     return NextResponse.json({ error: 'sku_not_credits' }, { status: 400 })
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
       return_url: appendQuery(base, 'credits=1&session_id={CHECKOUT_SESSION_ID}'),
       client_reference_id: ownerKey,
       metadata: {
-        kind:      'credits',
+        kind:      sku.kind,    // 'credits' or 'groups'
         skuId:     sku.id,
         credits:   String(sku.count),
         ownerKey,
