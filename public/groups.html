@@ -5379,6 +5379,7 @@ body.is-lboxed{ overflow:hidden }
 @media(min-width:1025px){
  #photoWallModal .pw-modal{margin-left:min(calc(var(--rail-w) - 50px),calc(100vw - 808px));margin-right:auto;}
  #curatedPageNav{order:-1;}
+ #workshop{padding-bottom:calc(60px + 65px);}
 }
 #crumbBack.is-filling{display:inline-flex;}
 </style>
@@ -12458,6 +12459,7 @@ window.EFFECT_PREVIEWS = {
   var GROUPS_FLOOR_SILO = null;
   function paintGroupsModeControl(){
     if(crumbBack) crumbBack.classList.toggle('is-filling',GROUPS_FILL_SLOT !== null);
+    document.getElementById('crumbLabel').textContent = GROUPS_FILL_SLOT !== null ? 'Back to Review' : 'All effects';
     var map = document.getElementById('groupsRoomMap');
     if(map) map.hidden = GROUPS_REVIEW || GROUPS_PICK_ACTIVE || CURATED_MODE === 'curated';
     document.getElementById('curPackages').hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
