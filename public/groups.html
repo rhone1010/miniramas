@@ -5517,7 +5517,7 @@ body.is-lboxed{ overflow:hidden }
         </div>
 
         <div class="cur-photo">
-          <input type="file" id="srcFile" accept="image/*" multiple hidden>
+          <input type="file" id="srcFile" accept="image/*" hidden>
           <!-- CUI 41A, 24 Aug 2026. The camera. capture opens the
                native camera app on a phone; its own flip control
                covers front/rear. Ignored on a desktop, where this
@@ -5532,7 +5532,7 @@ body.is-lboxed{ overflow:hidden }
           <button class="cur-camera" id="curCamera" type="button">Take a photo</button>
           <div class="cur-thumb">
             <img id="curThumb" src="/previews/silos/artists_gallery.jpg" alt="Your photograph">
-            <button class="cur-change" id="curChange" type="button">+ Add Photos <span id="groupsPhotoCount" aria-label="Photographs loaded">0</span></button>
+            <button class="cur-change" id="curChange" type="button">Change Photograph</button>
             <!-- Phones only, hidden by default in CSS. The way on from the
                  photograph, so that leaving this step is something a person
                  does rather than something that happens to them. -->
@@ -6015,17 +6015,7 @@ body.is-lboxed{ overflow:hidden }
      individually removed, which is new and safe: it is array removal
      followed by the existing runAnalyze(), nothing the intake pipeline
      did not already do on every photograph change. -->
-<div class="scrim pw-scrim" id="photoWallModal" data-role="modal">
-  <div class="pw-modal" role="dialog" aria-modal="true" aria-label="Your photographs">
-    <!-- Its own input, not srcFile. srcFile's change handler always
-         REPLACES the whole set (onSourceFiles -> onSourceLoaded) and that
-         is correct everywhere else it fires; an empty wall slot means
-         ADD one, which needs its own listener that merges instead. -->
-    <input type="file" id="pwAddFile" accept="image/*" multiple hidden>
-    <div class="pw-grid" id="photoWallGrid"></div>
-    <button class="pw-close" id="photoWallClose" type="button">Close</button>
-  </div>
-</div>
+
 
 <div class="readout" id="readout" hidden>
   <button class="readout-tab" id="readoutTab" type="button">Metrics<i></i></button>
@@ -6709,7 +6699,7 @@ window.EFFECT_PREVIEWS = {
      replacement. Open the picker; the photograph stands until a new one
      actually lands, and onSourceFile moves the Curator when it does. */
   if (curChange) curChange.addEventListener('click', function(){
-    openPhotoWall();
+    if (srcFile) srcFile.click();
   });
 
   /* ---- the Curator is the way back ---------------------------------------
@@ -6961,7 +6951,7 @@ window.EFFECT_PREVIEWS = {
      customer paid for five faces and got four. Refused here too, before a
      byte is uploaded, because being told at the door beats being told
      after a wait. */
-  var MAX_PHOTOS = 14;
+  var MAX_PHOTOS = 1;
 
   /* Read every file the customer chose, in the order they chose them, and
      keep going if one of them will not decode. A single unreadable file
@@ -6978,7 +6968,7 @@ window.EFFECT_PREVIEWS = {
   }
 
   function onSourceFiles(files){
-    var list = [].slice.call(files || []).filter(Boolean);
+    var list = [].slice.call(files || []).filter(Boolean).slice(0,1);
     if (!list.length) return;
     if (list.length > MAX_PHOTOS){
       console.log('[intake] refused ' + list.length + ' photographs - the ceiling is ' + MAX_PHOTOS);
@@ -7085,10 +7075,10 @@ window.EFFECT_PREVIEWS = {
   function onSourceFile(file){ if (file) onSourceFiles([file]); }
 
   function onSourceLoaded(urls){
+    urls = urls.slice(0,1);
     (function(){
       var url = urls[0];
       SRC.dataUrls = urls;
-      document.getElementById('groupsPhotoCount').textContent = urls.length;
       SRC.b64s = urls.map(function(u){ return u.split(',')[1] || null; }).filter(Boolean);
       SRC.b64 = SRC.b64s[0] || null;
       SRC.dataUrl = url;
@@ -7193,94 +7183,6 @@ window.EFFECT_PREVIEWS = {
      REMOVING is plain array splice + the existing onSourceLoaded/
      runAnalyze — nothing the intake pipeline did not already do on every
      photograph change. */
-
-  var photoWallModal = document.getElementById('photoWallModal');
-  var photoWallGrid   = document.getElementById('photoWallGrid');
-  var photoWallClose  = document.getElementById('photoWallClose');
-  var pwAddFile        = document.getElementById('pwAddFile');
-
-  function renderPhotoWall(){
-    if (!photoWallGrid) return;
-    photoWallGrid.innerHTML = '';
-    var urls = SRC.dataUrls || [];
-    /* At least enough slots to offer the minimum a multi_photo effect
-       needs, never more than the wall's own ceiling. */
-    var n = MULTI_PHOTO_MAX;
-    for (var i = 0; i < n; i++){
-      (function(i){
-        var url = urls[i];
-        var slot = document.createElement('div');
-        slot.className = 'pw-slot' + (url ? ' has-photo' : '');
-        if (url){
-          slot.innerHTML =
-            '<img src="' + esc(url) + '" alt="">' +
-            /* Not offered on the last photograph — see the handler below
-               for why removing down to zero does not work here. A
-               button that would silently do nothing is worse than no
-               button. */
-            (urls.length > 1
-              ? '<button type="button" class="pw-slot-x" aria-label="Remove this photograph">&times;</button>'
-              : '');
-          var xBtn = slot.querySelector('.pw-slot-x');
-          if (xBtn) xBtn.addEventListener('click', function(e){
-            e.stopPropagation();
-            var cur = SRC.dataUrls || [];
-            if (cur.length <= 1) return;
-            var next = cur.slice();
-            next.splice(i, 1);
-            onSourceLoaded(next);
-            renderPhotoWall();
-          });
-        } else {
-          slot.tabIndex = 0;
-          slot.setAttribute('role', 'button');
-          slot.setAttribute('aria-label', 'Add a photograph');
-          slot.innerHTML =
-            '<span class="pw-slot-plus">+</span><span class="pw-slot-t">Add a photograph</span>';
-          var open = function(){ if (pwAddFile) pwAddFile.click(); };
-          slot.addEventListener('click', open);
-          slot.addEventListener('keydown', function(e){
-            if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
-          });
-        }
-        photoWallGrid.appendChild(slot);
-      })(i);
-    }
-  }
-
-  function openPhotoWall(){
-    if (!photoWallModal) return;
-    renderPhotoWall();
-    photoWallModal.classList.add('is-open');
-  }
-  function closePhotoWall(){
-    if (photoWallModal) photoWallModal.classList.remove('is-open');
-  }
-  window.__openPhotoWall = openPhotoWall;
-
-  if (photoWallClose) photoWallClose.addEventListener('click', closePhotoWall);
-  if (photoWallModal) photoWallModal.addEventListener('click', function(e){
-    if (e.target === photoWallModal) closePhotoWall();
-  });
-  addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && photoWallModal && photoWallModal.classList.contains('is-open')) closePhotoWall();
-  });
-
-  if (pwAddFile) pwAddFile.addEventListener('change', function(){
-    var list = [].slice.call(pwAddFile.files || []).filter(Boolean);
-    pwAddFile.value = '';
-    if (!list.length) return;
-    var have = (SRC.dataUrls || []).slice();
-    if (have.length + list.length > MAX_PHOTOS){
-      offerTooManyPhotos(have.length + list.length);
-      return;
-    }
-    readAll(list, function(urls){
-      if (!urls.length) return;
-      onSourceLoaded(have.concat(urls));
-      renderPhotoWall();
-    });
-  });
 
   /* CUI 41A, 24 Aug 2026. The camera lands in the same intake as an
      upload. One handler, two doors. */
@@ -7543,7 +7445,7 @@ window.EFFECT_PREVIEWS = {
        with the one the customer was priced at, that log line is where it
        shows. */
     return {
-      source_images_b64:     R.byId(item.effectId).intake === 'multi_photo' ? SRC.b64s : [SRC.b64],
+      source_images_b64:     [SRC.b64],
       effect_id:             item.preset,
       subject_count:         SRC.subjectCount || null,
       /* Gate 0 is passed only when the customer has been shown the studio's
@@ -8072,28 +7974,6 @@ window.EFFECT_PREVIEWS = {
       return QUEUE.find(function(q){ return keyOf(q.siloId,q.effectId) === item.key; });
     }).filter(function(q){ return q && q.status === 'pending'; });
     if (!pending.length || !SRC.b64) return Promise.resolve(false);
-
-    /* A re-check, not just addToQueue's — the photograph can change after
-       an effect is queued (a photo removed, a different one chosen) and
-       the route refuses outside 3-9 regardless of when the mismatch
-       happened. */
-    var have = (SRC.b64s || []).length;
-    var offender = null;
-    pending.forEach(function(q){
-      if (offender) return;
-      var e = R.byId(q.effectId);
-      if (e && e.intake === 'multi_photo' &&
-          (have < MULTI_PHOTO_MIN || have > MULTI_PHOTO_MAX)) offender = q;
-    });
-    if (offender){
-      if (!quiet){
-        say('This one wants a photograph of each person — ' +
-            MULTI_PHOTO_MIN + ' to ' + MULTI_PHOTO_MAX + ' of them. ' +
-            (have ? ('You have ' + have + '.') : 'Add theirs one at a time.'));
-        if (typeof openPhotoWall === 'function') openPhotoWall();
-      }
-      return Promise.resolve(false);
-    }
 
     BUSY = true;
     /* A new run. The next piece to land is this run's first, whatever the
@@ -9908,7 +9788,7 @@ window.EFFECT_PREVIEWS = {
     if (u) refreshGroupsBalance().then(function(){ labelGo(); paintCredits(); });
   });
   var sourceThumb = document.getElementById('curThumb');
-  if(sourceThumb){sourceThumb.tabIndex=0;sourceThumb.setAttribute('role','button');sourceThumb.setAttribute('aria-label','＋ Add More Photos');sourceThumb.addEventListener('click',function(){document.getElementById('curChange').click();});sourceThumb.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();sourceThumb.click();}});}
+  if(sourceThumb){sourceThumb.tabIndex=0;sourceThumb.setAttribute('role','button');sourceThumb.setAttribute('aria-label','Change Photograph');sourceThumb.addEventListener('click',function(){document.getElementById('curChange').click();});sourceThumb.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();sourceThumb.click();}});}
   renderPackageTiles();
   paintCollectionProgress();
 

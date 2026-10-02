@@ -296,7 +296,7 @@ No lettering or text.`,
     label: 'Art Nouveau',
     intake: 'multi_photo',
     faces: true,
-    body: `Create an elegant multi-panel Art Nouveau artwork from 3–8 supplied portraits, one independent portrait for each person. Include every person exactly once. Never blend identities.
+    body: `Create an elegant multi-panel Art Nouveau artwork from the people in the single supplied group photograph, one independent portrait for each person. Include every person exactly once. Never blend identities.
 
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle, natural asymmetry and distinctive facial structure. Render each with confident dark outlines, graceful period linework and softly printed color. Surround each portrait with restrained flowers, whiplash vines and a circular ornamental motif. Ornament frames the face, never obscures it.
 
@@ -331,7 +331,7 @@ Award-winning fine-art photography. Monumental, tactile, timeless and unmistakab
     id: 'carved',
     label: 'Carved',
     intake: 'multi_photo',
-    body: `Create a single extraordinary hand-carved walnut family artwork from the supplied individual portraits. Treat each person independently for likeness, then compose them naturally within one continuous sculptural slab.
+    body: `Create a single extraordinary hand-carved walnut family artwork from the people in the single supplied group photograph. Treat each person independently for likeness, then compose them naturally within one continuous sculptural slab.
 Likeness is essential. Preserve each person's distinctive facial structure, expression, age and hairstyle while translating them completely into carved wood.
 The people themselves are entirely walnut. Faces, lips, eyelids, hair, necks, clothing and every visible surface are carved from the same solid timber, with natural grain flowing continuously through the features. There is no skin, real hair or fabric anywhere.
 Keep faces finely detailed and recognizable, while hair, clothing and surrounding forms become more expressive and deeply carved. Let beautiful variations of heartwood, sapwood, knots and figuring create natural shifts in tone across the composition.
@@ -345,7 +345,7 @@ World-class contemporary wood sculpture, elegant and handcrafted. No text.`,
     label: 'Charcoal Portraits',
     intake: 'multi_photo',
     faces: true,
-    body: `Create a designed multi-panel charcoal portrait collection from 3–8 supplied portraits, one independent portrait per person. Include everyone exactly once. Never blend identities.
+    body: `Create a designed multi-panel charcoal portrait collection from the people in the single supplied group photograph, one independent portrait per person. Include everyone exactly once. Never blend identities.
 
 Each portrait occupies its own equal-sized rectangular panel. Show matching head-and-shoulders portraits at identical scale, with faces large and consistently positioned. Preserve identity, expression, age, hairstyle, natural asymmetry and distinctive facial structure.
 
@@ -394,7 +394,7 @@ Tactile, dimensional, slightly rough and visibly hand-sketched. NO TEXT.`,
     label: 'Colored Pencil Portraits',
     intake: 'multi_photo',
     faces: true,
-    body: `Create a modernist multi-panel colored-pencil portrait collection from 3–8 supplied portraits, one independent portrait per person. Include everyone exactly once. Never blend identities.
+    body: `Create a modernist multi-panel colored-pencil portrait collection from the people in the single supplied group photograph, one independent portrait per person. Include everyone exactly once. Never blend identities.
 
 Preserve identity, expression, age, hairstyle, natural asymmetry and distinctive facial structure. Render faces with exceptional detail using many layers of fine artist's colored pencil: precise eyes, subtle skin tones, fine directional hatching, crosshatching and richly layered color. From the face outward, progressively loosen the drawing. Hair, shoulders and clothing dissolve into increasingly open, energetic strokes, broken contours and untouched paper.
 
@@ -417,13 +417,13 @@ Detailed at the center, beautifully unfinished at the edges. Contemporary fine-a
     id: 'family_mosaic',
     label: 'Family Mosaic',
     intake: 'multi_photo',
-    body: `Create a single extraordinary dimensional mosaic portrait from the supplied individual photographs. Treat each person independently for likeness, then bring them together within one unified artwork.
+    body: `Create a single extraordinary dimensional mosaic portrait from the people in the single supplied group photograph. Treat each person independently for likeness, then bring them together within one unified artwork.
 
 Give each person their own softly defined area of the composition, arranged naturally across the piece at complementary scales. Do not blend identities or invent interactions between people.
 
 Construct the artwork from thousands of irregular pieces of colored glass, glazed ceramic and stone, using larger expressive fragments through clothing and backgrounds and much finer pieces across faces to preserve recognizable likeness.
 
-Let colors originate from each person's source photograph, then flow outward and intermingle across the composition, gradually connecting the separate portraits into one continuous mosaic.
+Let colors originate from each person's appearance in the source group photograph, then flow outward and intermingle across the composition, gradually connecting the separate portraits into one continuous mosaic.
 
 Rich translucent glass, occasional gold tesserae, beautiful irregular grout lines and grazing gallery light revealing the physical depth of the surface.
 
@@ -452,7 +452,7 @@ One family, multiple moments, one handcrafted artwork. No frames, dividing lines
     label: 'Oil Impasto',
     intake: 'multi_photo',
     faces: true,
-    body: `Create an elegant multi-panel oil impasto artwork from 3–8 supplied portraits, one independent portrait for each person. Include every person exactly once. Never blend identities.
+    body: `Create an elegant multi-panel oil impasto artwork from the people in the single supplied group photograph, one independent portrait for each person. Include every person exactly once. Never blend identities.
 
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and distinctive facial structure. Paint each entirely with a palette knife using broad flat slabs of thick oil paint laid edge to edge. No blending or brushwork. Faces are built from confident knife strokes, with likeness carried by the meeting of warm and cool color planes. Hair and clothing use broader, looser slabs.
 
@@ -466,7 +466,7 @@ Keep the complete arrangement within the central 90% of the canvas. Museum-quali
     id: 'impressionist',
     label: 'Impressionist',
     intake: 'group_photo',
-    body: `Create one extraordinary group artwork from 3–8 supplied portraits, with each person sculpted entirely from exceptionally thick Impressionist oil paint. Include every person exactly once. Preserve identity, expression, age and hairstyle. Never blend identities.
+    body: `Create one extraordinary group artwork from the people in the single supplied group photograph, with each person sculpted entirely from exceptionally thick Impressionist oil paint. Include every person exactly once. Preserve identity, expression, age and hairstyle. Never blend identities.
 
 Compose the group naturally with balanced spacing, depth and subtle overlap. Keep all subjects within the central 90% of the canvas with clear background visible on all sides. No subject may touch or cross an image edge.
 
@@ -480,7 +480,7 @@ One cohesive, monumental artwork. Tactile, sophisticated and unmistakably handma
     label: 'Impressionist Portraits',
     intake: 'multi_photo',
     faces: true,
-    body: `Create an elegant multi-panel artwork from 3–8 supplied portraits, one independent portrait for each person. Include every person exactly once. Never blend identities.
+    body: `Create an elegant multi-panel artwork from the people in the single supplied group photograph, one independent portrait for each person. Include every person exactly once. Never blend identities.
 
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and distinctive facial structure. Render each in dimensional Impressionist oil paint with bold palette-knife strokes, rich broken color and tactile impasto.
 
@@ -506,7 +506,7 @@ Place the sculpture in a Japanese temple garden at night with softly illuminated
     id: 'layered_paper',
     label: 'Layered Paper',
     intake: 'multi_photo',
-    body: `Create one unified three-dimensional paper sculpture from 3–8 supplied portraits. Include every person exactly once and preserve identity, expression, age and hairstyle.
+    body: `Create one unified three-dimensional paper sculpture from the people in the single supplied group photograph. Include every person exactly once and preserve identity, expression, age and hairstyle.
 
 Every visible part of every person is physically constructed from individually cut layers of heavyweight colored paper. Build the subjects with dramatically more layers than the surrounding scene. Faces use dozens of fine, closely stacked contour-cut layers to sculpt cheeks, brows, noses, lips and jawlines with real dimensional depth. Hair and clothing use dense overlapping layers with clearly visible cut edges and separation. No drawn, painted or printed facial features.
 
@@ -520,7 +520,7 @@ Strong grazing light creates real shadows between paper layers. Keep all subject
     label: 'Layered Paper Portraits',
     intake: 'multi_photo',
     faces: true,
-    body: `Create an elegant multi-panel layered-paper artwork from 3–8 supplied portraits, one independent portrait per person. Include everyone exactly once. Never blend identities.
+    body: `Create an elegant multi-panel layered-paper artwork from the people in the single supplied group photograph, one independent portrait per person. Include everyone exactly once. Never blend identities.
 
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and facial structure. Physically sculpt every portrait from dozens of contour-cut layers of heavyweight colored paper. Faces use many fine closely stacked layers defining brows, cheeks, noses, lips and jawlines; hair and clothing use broader overlapping pieces. Clearly show paper thickness, cut edges and separation between layers. No drawn, painted or printed facial features.
 
@@ -553,7 +553,7 @@ Grazing light creates real shadows between layers. Contemporary handcrafted pape
     label: 'Mosaic',
     intake: 'multi_photo',
     faces: true,
-    body: `Create an elegant multi-panel mosaic artwork from 3–8 supplied portraits, one independent portrait for each person. Include every person exactly once. Never blend identities.
+    body: `Create an elegant multi-panel mosaic artwork from the people in the single supplied group photograph, one independent portrait for each person. Include every person exactly once. Never blend identities.
 
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and distinctive facial structure. Construct each portrait from thousands of irregular pieces of colored glass, glazed ceramic and stone, using very fine pieces across faces to preserve recognizable likeness.
 
@@ -687,7 +687,7 @@ One magnificent solid 3D artwork, never separate figures or a flat mosaic. NO TE
     label: 'Stained Glass',
     intake: 'multi_photo',
     faces: true,
-    body: `Create a luminous multi-panel stained-glass artwork from 3–8 supplied portraits, one independent portrait per person. Include everyone exactly once. Never blend identities.
+    body: `Create a luminous multi-panel stained-glass artwork from the people in the single supplied group photograph, one independent portrait per person. Include everyone exactly once. Never blend identities.
 
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and distinctive facial structure. Construct every face, eye, lip, hair and garment from hundreds of individually fitted pieces of translucent art glass joined by hairline-thin metallic gold wire. Use especially fine pieces across faces for likeness. No real skin or hair.
 
@@ -730,7 +730,7 @@ Handcrafted, tactile and unmistakably woodblock while fully dimensional. NO TEXT
     label: 'Ukiyo-e Portraits',
     intake: 'multi_photo',
     faces: true,
-    body: `Create an elegant multi-panel ukiyo-e artwork from 3–8 supplied portraits, one independent portrait for each person. Include every person exactly once. Never blend identities.
+    body: `Create an elegant multi-panel ukiyo-e artwork from the people in the single supplied group photograph, one independent portrait for each person. Include every person exactly once. Never blend identities.
 
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle, natural asymmetry and distinctive facial structure. Render each as a traditional Japanese woodblock print with confident dark key-block lines, fine carved marks, subtle woodgrain and visible registration between colors. Hair follows each person's real style. Use restrained indigo, ochre, muted rose and warm cream.
 
@@ -760,7 +760,7 @@ Physical, dimensional, wet, luminous and unmistakably watercolor. No real skin, 
     label: 'Watercolor Portraits',
     intake: 'multi_photo',
     faces: true,
-    body: `Create an elegant multi-panel watercolor portrait collection from 3–8 supplied portraits, one independent portrait per person. Include everyone exactly once. Never blend identities.
+    body: `Create an elegant multi-panel watercolor portrait collection from the people in the single supplied group photograph, one independent portrait per person. Include everyone exactly once. Never blend identities.
 
 Preserve identity, expression, age, hairstyle, natural asymmetry and distinctive facial structure. Faces are beautifully detailed with layered transparent washes, subtle granulation and precise features. From the face outward, progressively loosen the painting: hair, shoulders and clothing dissolve into wet-on-wet washes, pigment blooms, broken edges, drips and untouched watercolor paper.
 

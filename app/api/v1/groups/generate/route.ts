@@ -66,12 +66,9 @@ import { getUser } from '@/lib/store/auth'
 import { generateGroupsRender } from '@/lib/v1/groups/groups-generator'
 import {
   GROUPS_EFFECTS,
-  MIN_FACES_SUBJECTS,
-  MAX_FACES_SUBJECTS,
   type GroupsEffectId,
 } from '@/lib/v1/groups/groups-effects'
 import {
-  MAX_SOURCE_IMAGES,
   MIN_SUBJECTS,
   MAX_SUBJECTS,
   type GroupsGenerateRequest,
@@ -119,18 +116,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (sources.length > MAX_SOURCE_IMAGES) {
-      // Refused rather than sliced. The old ceiling silently truncated
-      // multi-photo composites and the render came back missing a person
-      // with no error at all — the customer paid for five faces and got
-      // four. Better to say no.
-      return NextResponse.json(
-        {
-          error: `too many source images: ${sources.length}`,
-          max:   MAX_SOURCE_IMAGES,
-        },
-        { status: 400 },
-      )
+    if (sources.length !== 1) {
+      return NextResponse.json({ error: 'one source image required' }, { status: 400 })
     }
 
     // ── Effect ──
@@ -147,29 +134,6 @@ export async function POST(req: NextRequest) {
     }
 
     const effect = GROUPS_EFFECTS[effectId]
-
-    // ── Multi-photo source count ──
-    //
-    // multi_photo effects require 3–9 individual photographs: one per
-    // person. Fewer than 3 is not a composition; more than 9 exceeds the
-    // layout grid (the balanced 3×3 at 9). Faces effects enforce the same
-    // 3–9 range via the layout clause. Refused before any render is paid
-    // for. Widened from 3–8 to 3–9 — Rich's correction, September 2026.
-    if (effect.intake === 'multi_photo') {
-      const min = effect.faces ? MIN_FACES_SUBJECTS : 3
-      const max = effect.faces ? MAX_FACES_SUBJECTS : 9
-      if (sources.length < min || sources.length > max) {
-        return NextResponse.json(
-          {
-            error: `multi_photo effects require ${min}–${max} source images`,
-            got:   sources.length,
-            min,
-            max,
-          },
-          { status: 400 },
-        )
-      }
-    }
 
     // ── Subject count ──
     //

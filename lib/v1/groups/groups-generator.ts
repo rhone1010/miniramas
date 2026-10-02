@@ -108,7 +108,10 @@ export async function generateGroupsRender(
     })
   }
 
-  const sources = req.source_images_b64.slice(0, MAX_SOURCE_IMAGES)
+  const sources = req.source_images_b64
+  if (sources.length !== 1) {
+    return fatal({ msg: 'one source image required', req, prompt: '', t0, code: 'invalid_sources', retryable: false })
+  }
   if (!sources.length) {
     return fatal({
       msg: 'no source images', req, prompt: '', t0,
@@ -131,16 +134,13 @@ export async function generateGroupsRender(
   // The count the prompt and the scorer will actually use. Replaced by the
   // pre-flight estimate below for group_photo; for multi_photo the
   // photographs ARE the count and nothing can be more right than that.
-  let detectedCount = effect.intake === 'multi_photo'
-    ? sources.length
-    : req.subject_count
+  let detectedCount = req.subject_count
 
   // Provisional, for the error paths BELOW the pre-flight only. The real
   // prompt cannot be built until the count is known, because the framing
   // clause is chosen from it. Never sent to NB2.
   const provisionalPrompt = buildGroupsPrompt({
     effectId:     req.effect_id,
-    subjectCount: detectedCount,
   })
 
   // ── Pre-flight ──
@@ -190,7 +190,7 @@ export async function generateGroupsRender(
       if (groupsAgeDecision(vis.faces) === 'blocked') {
         return fatal({ msg: 'age_restricted', req, prompt: provisionalPrompt, t0, code: 'age_restricted', retryable: false })
       }
-      if (effect.intake === 'group_photo' && !req.skip_scoring && !vis.face_visible) {
+      if (!req.skip_scoring && !vis.face_visible) {
         console.log(`[groups] pre-flight refused: ${vis.reason}`)
         return {
           ...emptyResult(req, provisionalPrompt, t0),
@@ -205,13 +205,13 @@ export async function generateGroupsRender(
         }
       }
 
-      if (effect.intake === 'group_photo' && !req.skip_scoring && vis.subject_count_estimate !== detectedCount) {
+      if (!req.skip_scoring && vis.subject_count_estimate !== detectedCount) {
         console.warn(
           `[groups] subject_count ${detectedCount} sent, ` +
           `${vis.subject_count_estimate} detected — using detected`,
         )
       }
-      if (effect.intake === 'group_photo' && !req.skip_scoring) detectedCount = vis.subject_count_estimate
+      if (!req.skip_scoring) detectedCount = vis.subject_count_estimate
 
     } catch (e: any) {
       // A vision call that ERRORED is different from one that was never
