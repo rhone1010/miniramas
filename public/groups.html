@@ -5353,6 +5353,7 @@ body.is-lboxed{ overflow:hidden }
  #curatedPageNav{flex:0 0 auto;justify-content:center;gap:16px;padding:12px 0;}
  #curatedPageNav .cur-mode{width:150px;min-height:44px;}
 }
+#crumbBack{display:none;}
 #curatedPageNav[hidden],#groupsPickFloater[hidden]{display:none;}
 #groupsPickFloater{position:absolute;z-index:8;left:50%;top:50%;transform:translate(-50%,-50%);width:min(740px,90%);padding:24px;background:var(--vellum);border:1px solid var(--gold-soft);border-radius:6px;box-shadow:0 12px 36px #0006;text-align:center;}
 #groupsPickFloor{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px;}
@@ -9080,6 +9081,7 @@ window.EFFECT_PREVIEWS = {
       return;
     }
 
+    if(mode === 'pick4' && GROUPS_REVIEW) showGroupsDiscovery();
     GROUPS_REVIEW = false; document.getElementById('groupsReviewActions').hidden = true;
     CURATED_BUSY = true;
     [curPick4Btn,curCuratedBtn,curAllFxBtn,curReviewBtn].forEach(function(b){if(b)b.disabled=true;});
@@ -12438,6 +12440,7 @@ window.EFFECT_PREVIEWS = {
   function dismissGroupsPick(){
     GROUPS_PICK_ACTIVE = false;
     document.getElementById('groupsPickFloater').hidden = true;
+    Array.from(effFloor.querySelectorAll('.silo-card')).forEach(function(card){card.classList.toggle('is-selected',inQueue(card.dataset.siloId,card.dataset.effectId));});
     paintGroupsModeControl();
   }
   document.getElementById('groupsPickClose').addEventListener('click',dismissGroupsPick);
