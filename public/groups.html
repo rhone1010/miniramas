@@ -8277,7 +8277,7 @@ window.EFFECT_PREVIEWS = {
      message says "craft package" rather than "image bundle". */
   function targetFor(n){ return n <= 1 ? 1 : n <= 4 ? 4 : n <= 8 ? 8 : 16; }
   function collectionProgress(n){
-    var target = targetFor(n), index = VALID_SIZES.indexOf(target);
+    var target = targetBundle(), index = VALID_SIZES.indexOf(target);
     var lower = index > 0 ? VALID_SIZES[index - 1] : 0;
     var position = index > 0
       ? ((index - 1) + (n - lower) / (target - lower)) / (VALID_SIZES.length - 1) * 100
@@ -12425,7 +12425,7 @@ window.EFFECT_PREVIEWS = {
   function selectedReviewItems(){
     return QUEUE.map(function(q){ return {key:keyOf(q.siloId,q.effectId),siloId:q.siloId,effectId:q.effectId}; });
   }
-  function lockTier(){ SLOTS = selectedReviewItems().map(function(x){ return x.key; }); while (SLOTS.length < targetBundle()) SLOTS.push(null); }
+  function lockTier(){ var keys = selectedReviewItems().map(function(x){ return x.key; }); SLOTS = SLOTS.filter(function(k){return k && keys.indexOf(k)>=0;}); keys.forEach(function(k){if(SLOTS.indexOf(k)<0) SLOTS.push(k);}); while (SLOTS.length < targetBundle()) SLOTS.push(null); }
   function reviewItems(){
     var SELECTED = selectedReviewItems(), t = targetBundle();
     var filled = SLOTS.filter(function(k){ return !!k; });
