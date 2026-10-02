@@ -5345,20 +5345,25 @@ body.is-lboxed{ overflow:hidden }
 .pw-slot-x:hover{color:var(--vellum);}
 .pw-close{font:400 22px/1.2 var(--serif);border-color:var(--gold-soft);}
 </style>
-<style id="groupsAuthorityCorrection">
+<style id="groupsRevisedAuthority">
 @media(min-width:1025px){
- #workshop{position:relative;}
- #workshop .floor[data-count="6"]{max-width:1002px;margin-inline:auto;grid-template-columns:repeat(3,minmax(0,1fr));gap:42px;}
- #workshop .floor[data-count="6"] > .silo-card{max-width:306px;width:min(100%,calc((100cqh - 42px)/2));}
- #curatedPageNav{flex:0 0 auto;justify-content:center;gap:16px;padding:12px 0;}
- #curatedPageNav .cur-mode{flex:0 0 150px;width:150px;min-height:44px;background:var(--oxblood);color:var(--vellum);border:1px solid var(--gold-soft);}
+ #workshop .floor[data-count="6"]{max-width:1344px;margin-inline:auto;grid-template-columns:repeat(3,minmax(0,1fr));gap:56px;}
+ #workshop .floor[data-count="6"] > .silo-card{max-width:410px;width:min(100%,calc((100cqh - 56px)/2));}
+ #curatedPageNav{flex:0 0 auto;justify-content:center;gap:0;padding:12px 0;}
+ #curatedPageNav .cur-mode{flex:0 0 48px;width:48px;min-height:44px;padding:0;background:transparent;color:var(--vellum);border:1px solid var(--gold-soft);font:32px/1 var(--serif);border-radius:0;}
+ #curatedPageNav .cur-mode:disabled{background:var(--vellum);color:var(--oxblood);opacity:1;}
+ #curatedPageNav .cur-mode:first-child{border-radius:4px 0 0 4px;}
+ #curatedPageNav .cur-mode:last-child{border-radius:0 4px 4px 0;}
+ .cur-modebar{display:flex!important;flex-direction:row!important;gap:12px;}
+ .cur-modebar .cur-mode{flex:1;min-width:0;}
+ #curPick4Btn:not(.is-active){background:var(--vellum);color:var(--oxblood);}
+ #curAllFxBtn.is-active{background:var(--oxblood);color:var(--vellum);}
+ #groupsPackageInfo{font:22px/1.2 var(--serif);padding:8px;}
+ #groupsPackageInfo small{display:block;font:16px/1.2 var(--serif);}
+ #curPackages .buy-block.is-active{background:var(--vellum);border-color:var(--oxblood);}
 }
+#curPackages[hidden],#curatedPageNav[hidden]{display:none;}
 #crumbBack{display:none;}
-#curatedPageNav[hidden],#groupsPickFloater[hidden]{display:none;}
-#groupsPickFloater{position:absolute;z-index:8;left:50%;top:50%;transform:translate(-50%,-50%);width:min(740px,90%);padding:24px;background:var(--vellum);border:1px solid var(--gold-soft);border-radius:6px;box-shadow:0 12px 36px #0006;text-align:center;}
-#groupsPickFloor{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px;}
-#groupsPickFloor .silo-card{width:100%;height:auto;aspect-ratio:1;}
-#groupsPickClose{width:150px;}
 </style>
 </head>
 <body>
@@ -5493,7 +5498,7 @@ body.is-lboxed{ overflow:hidden }
           <button class="cur-camera" id="curCamera" type="button">Take a photo</button>
           <div class="cur-thumb">
             <img id="curThumb" src="/previews/silos/artists_gallery.jpg" alt="Your photograph">
-            <button class="cur-change" id="curChange" type="button">+ Add More Photos <span id="groupsPhotoCount" aria-label="Photographs loaded">0</span></button>
+            <button class="cur-change" id="curChange" type="button">+ Add Photos <span id="groupsPhotoCount" aria-label="Photographs loaded">0</span></button>
             <!-- Phones only, hidden by default in CSS. The way on from the
                  photograph, so that leaving this step is something a person
                  does rather than something that happens to them. -->
@@ -5507,7 +5512,7 @@ body.is-lboxed{ overflow:hidden }
              "Curated" opens the same ten for browsing. Both reuse the
              existing effects floor and turn() flip — see openCurated(). -->
         <div class="cur-modebar">
-          <button class="cur-mode" id="curPick4Btn" type="button" data-mode="pick4">Pick 4 for Me</button>
+          <button class="cur-mode" id="curPick4Btn" type="button" data-mode="pick4">Pick 4 Me</button>
           <button class="cur-mode" id="curAllFxBtn" type="button"><span>Curated</span></button>
         </div>
 
@@ -5521,7 +5526,7 @@ body.is-lboxed{ overflow:hidden }
              GROUPS_PACKAGES tiers (1/4/8/16 — identical VALID_SIZES to
              Pets') instead of Pets' image count. See
              paintCollectionProgress() / renderPackageTiles(). -->
-        <div class="cur-packages" id="curPackages"></div><div class="bundle-ind" id="groupsPackageInfo" hidden></div><div id="groupsPickInfo" hidden>4 Crafted Images · 1 included unlock</div><div class="dcur__rooms" id="groupsRoomMap" hidden></div>
+        <div class="cur-packages" id="curPackages"></div><div class="bundle-ind" id="groupsPackageInfo" hidden></div><div class="dcur__rooms" id="groupsRoomMap" hidden></div>
         <div class="your-collection leather" id="curCollection">
           <div class="your-collection__title">Your Collection</div>
           <div class="dcur__count" id="curCollCount"></div>
@@ -5567,10 +5572,10 @@ body.is-lboxed{ overflow:hidden }
       </div>
     </div>
       <div class="curated-page" id="curatedPageNav" hidden>
-        <button class="cur-mode" id="curatedPrevBtn" type="button">Page 1</button>
-        <button class="cur-mode" id="curatedNextBtn" type="button">Page 2</button>
+        <button class="cur-mode" id="curatedPrevBtn" type="button">1</button>
+        <button class="cur-mode" id="curatedNextBtn" type="button">2</button>
       </div>
-      <div id="groupsPickFloater" hidden><div id="groupsPickFloor"></div><button class="cur-mode" id="groupsPickClose" type="button">Close</button></div>
+
     </section>
 
     <aside class="room room--queue">
@@ -8247,10 +8252,10 @@ window.EFFECT_PREVIEWS = {
     p.textContent = usd(priceOf(s));
     el.appendChild(n); el.appendChild(p);
     el.addEventListener('click', function(){
+      if(QUEUE.length > s.count) return;
       GROUPS_TARGET = s.count;
       paintCollectionProgress();
-      var info = document.getElementById('groupsPackageInfo');
-      if(info){ info.hidden = false; info.textContent = s.count + ' Crafts — ' + usd(priceOf(s)) + ' · ' + (s.includedUnlocks || 0) + ' included unlocks'; }
+      paintGroupsModeControl();
       if(GROUPS_REVIEW) renderGroupsReview();
     });
     return el;
@@ -8305,6 +8310,10 @@ window.EFFECT_PREVIEWS = {
     var bn = document.getElementById('groupsBundleCount'), bp = document.getElementById('groupsBundlePrice');
     if(bn) bn.textContent = target;
     if(bp) bp.textContent = sku ? usd(priceOf(sku)) : '';
+    Array.from(document.querySelectorAll('#curPackages .buy-block')).forEach(function(b){var p=(BLOCKS||[]).find(function(x){return x.id===b.dataset.sku;});b.classList.toggle('is-active',!!p && p.count===target);b.disabled=!!p && p.count<n;});
+    var info=document.getElementById('groupsPackageInfo');
+    if(info && sku) info.innerHTML=target+' Crafts - '+usd(priceOf(sku))+'<br>'+ (sku.includedUnlocks||0)+' Unlock'+(sku.includedUnlocks===1?'':'s')+' Included<small>(removed watermark)</small>';
+    paintGroupsModeControl();
     var review = document.getElementById('curReviewBtn'); if(review) review.disabled = !n;
   }
 
@@ -9062,7 +9071,7 @@ window.EFFECT_PREVIEWS = {
   }
 
   var GROUPS_PICK_ACTIVE = false;
-  function groupsCuratedIds(){ return (R.curated_ids || []).concat(['colored_pencil','ukiyo_e']).filter(function(id,i,a){return a.indexOf(id)===i;}); }
+  function groupsCuratedIds(){ return ['art_nouveau_faces','carved','colored_pencil','driftwood_resin','impasto_faces','layered_paper','mosaic_faces','plushy','stained_glass_faces','stone','ukiyo_e','wax']; }
   var CURATED_MODE = null;   /* 'curated' | 'pick4' | null — which door is open */
 
   var CURATED_BUSY = false;
@@ -9087,13 +9096,15 @@ window.EFFECT_PREVIEWS = {
     [curPick4Btn,curCuratedBtn,curAllFxBtn,curReviewBtn].forEach(function(b){if(b)b.disabled=true;});
     GROUPS_PICK_ACTIVE = mode === 'pick4';
     if(mode === 'curated') CURATED_MODE = mode;
-    document.getElementById('groupsPickFloater').hidden = !GROUPS_PICK_ACTIVE;
+    if(GROUPS_PICK_ACTIVE) GROUPS_TARGET = 4;
     paintGroupsModeControl();
     if (mode === 'curated' && curatedPageNav) curatedPageNav.hidden = curatedPageCount(pool.length) <= 1;
-    else if (curatedPageNav) curatedPageNav.hidden = CURATED_MODE !== 'curated';
+    else if (curatedPageNav) curatedPageNav.hidden = true;
 
+    var picks = QUEUE.map(function(q){return q.effectId;});
+    if(mode === 'pick4') shuffled(pool).forEach(function(id){if(picks.length < 4 && picks.indexOf(id)<0) picks.push(id);});
     var displayIds = mode === 'pick4'
-      ? pickFour(pool)
+      ? picks.concat(shuffled(pool).filter(function(id){return picks.indexOf(id)<0;})).slice(0,6)
       : pool.slice(CURATED_PAGE * CURATED_PAGE_SIZE, CURATED_PAGE * CURATED_PAGE_SIZE + CURATED_PAGE_SIZE);
 
     /* Pick 4's picks are applied to the queue only once the turn
@@ -9103,13 +9114,14 @@ window.EFFECT_PREVIEWS = {
     function settlePick4(){
       CURATED_BUSY = false;
       [curPick4Btn,curCuratedBtn,curAllFxBtn,curReviewBtn].forEach(function(b){if(b)b.disabled=false;});
-      if (mode !== 'pick4'){ paintCollectionProgress(); return; }
-      displayIds.forEach(function(id){
+      if (mode !== 'pick4'){ paintCollectionProgress(); paintGroupsModeControl(); return; }
+      picks.forEach(function(id){
         var e = R.byId(id);
         if (QUEUE.length >= 4 || !e || !addToQueue(e.category, id)) return;
-        var card = document.getElementById('groupsPickFloor').querySelector('.silo-card[data-effect-id="' + id + '"]');
+        var card = effFloor.querySelector('.silo-card[data-effect-id="' + id + '"]');
         if (card) card.classList.add('is-selected');
       });
+      paintCollectionProgress(); paintGroupsModeControl();
     }
 
     function paint(){
@@ -9118,7 +9130,7 @@ window.EFFECT_PREVIEWS = {
       workshop.classList.remove('workshop-view--silos');
       workshop.classList.add('workshop-view--effects');
       if (mode === 'curated') paintCuratedPageNav(pool.length);
-      curatedReveal(displayIds, pool, settlePick4, mode === 'pick4' ? document.getElementById('groupsPickFloor') : effFloor);
+      curatedReveal(displayIds, pool, settlePick4);
     }
 
     if (workshop.classList.contains('workshop-view--silos')){
@@ -12428,22 +12440,16 @@ window.EFFECT_PREVIEWS = {
   var GROUPS_FLOOR_SILO = null;
   function paintGroupsModeControl(){
     var map = document.getElementById('groupsRoomMap');
-    if(map) map.hidden = GROUPS_REVIEW;
-    var info = document.getElementById('groupsPickInfo');
-    if(info) info.hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
-    if(curPick4Btn) curPick4Btn.disabled = CURATED_BUSY || GROUPS_FILL_SLOT !== null;
-    if (curAllFxBtn){
-      curAllFxBtn.querySelector('span').textContent = CURATED_MODE === 'curated' ? 'All Effects' : 'Curated';
-      curAllFxBtn.classList.toggle('is-active', !!CURATED_MODE);
+    if(map) map.hidden = GROUPS_REVIEW || GROUPS_PICK_ACTIVE || CURATED_MODE === 'curated';
+    document.getElementById('curPackages').hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
+    document.getElementById('groupsPackageInfo').hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
+    if(curPick4Btn){curPick4Btn.disabled = CURATED_BUSY || GROUPS_FILL_SLOT !== null || QUEUE.length > 4;curPick4Btn.classList.toggle('is-active',GROUPS_PICK_ACTIVE);}
+    if(curAllFxBtn){
+      curAllFxBtn.querySelector('span').textContent = CURATED_MODE === 'curated' ? 'Curated' : 'All Effects';
+      curAllFxBtn.classList.toggle('is-active',!GROUPS_PICK_ACTIVE && !GROUPS_REVIEW);
     }
   }
-  function dismissGroupsPick(){
-    GROUPS_PICK_ACTIVE = false;
-    document.getElementById('groupsPickFloater').hidden = true;
-    Array.from(effFloor.querySelectorAll('.silo-card')).forEach(function(card){card.classList.toggle('is-selected',inQueue(card.dataset.siloId,card.dataset.effectId));});
-    paintGroupsModeControl();
-  }
-  document.getElementById('groupsPickClose').addEventListener('click',dismissGroupsPick);
+  function dismissGroupsPick(){ GROUPS_PICK_ACTIVE = false; paintGroupsModeControl(); }
   function clearGroupsMode(){
     CURATED_MODE = null;
     dismissGroupsPick();
@@ -12534,8 +12540,9 @@ window.EFFECT_PREVIEWS = {
   if (curPick4Btn) curPick4Btn.addEventListener('click', function(){ openCurated('pick4'); });
   if (curCuratedBtn) curCuratedBtn.addEventListener('click', function(){ openCurated('curated'); });
   if (curAllFxBtn) curAllFxBtn.addEventListener('click', function(){
-    dismissGroupsPick();
-    if(CURATED_MODE === 'curated') showGroupsDiscovery();
+    var wasPick = GROUPS_PICK_ACTIVE; dismissGroupsPick();
+    if(wasPick && CURATED_MODE === 'curated') openCurated('curated');
+    else if(wasPick || CURATED_MODE === 'curated'){ GROUPS_FLOOR_SILO = R.silos[0].id; showGroupsDiscovery(); }
     else { CURATED_PAGE = 0; openCurated('curated'); }
   });
 
@@ -12567,7 +12574,6 @@ window.EFFECT_PREVIEWS = {
       return;
     }
 
-    dismissGroupsPick();
     var effectId = c.dataset.effectId, siloId = c.dataset.siloId;
     if(GROUPS_FILL_SLOT !== null){
       if(inQueue(siloId,effectId)) return;
