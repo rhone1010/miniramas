@@ -6233,6 +6233,8 @@ window.EFFECT_PREVIEWS = {
        buildPayload. The rail still reads only siloId and effectId, so
        nothing about the row changes. */
     QUEUE.push(buildPayload(siloId, effectId));
+    var card = effFloor.querySelector('[data-effect-id="' + effectId + '"]');
+    if (card && card.dataset.siloId === siloId) card.classList.add('is-selected');
     renderQueue();
     return true;
   }
