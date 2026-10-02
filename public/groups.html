@@ -5498,11 +5498,11 @@ body.is-lboxed{ overflow:hidden }
            new control. Pick 4 for Me has no paging: it is always
            exactly its four picks. -->
       <span class="curated-page" id="curatedPageNav" hidden>
-        <button class="curated-page__btn" id="curatedPrevBtn" type="button" aria-label="Previous four">
+        <button class="curated-page__btn" id="curatedPrevBtn" type="button" aria-label="Previous">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>
         </button>
         <span class="curated-page__n" id="curatedPageN"></span>
-        <button class="curated-page__btn" id="curatedNextBtn" type="button" aria-label="Next four">
+        <button class="curated-page__btn" id="curatedNextBtn" type="button" aria-label="Next">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
         </button>
       </span>
@@ -9576,15 +9576,7 @@ window.EFFECT_PREVIEWS = {
     if (Date.now() - (core.at || 0) > 2 * 60 * 60 * 1000){ clearResume(); return false; }
 
     if (img){
-      SRC.dataUrl = img;
-      SRC.b64 = img.split(',')[1] || null;
-      var thumb = document.getElementById('curThumb');
-      if (thumb) thumb.src = img;
-      curatorState('photo', SAY.photo);
-      /* The routes were never told about this photograph — this browser is a
-         different session from the one that uploaded it. */
-      runAnalyze();
-      precheckSourceGate();
+      onSourceLoaded([img]);
     }
 
     core.queue.forEach(function(q){
