@@ -7542,7 +7542,7 @@ window.EFFECT_PREVIEWS = {
        with the one the customer was priced at, that log line is where it
        shows. */
     return {
-      source_images_b64:     SRC.b64s,
+      source_images_b64:     R.byId(item.effectId).intake === 'multi_photo' ? SRC.b64s : [SRC.b64],
       effect_id:             item.preset,
       subject_count:         SRC.subjectCount || null,
       /* Gate 0 is passed only when the customer has been shown the studio's
@@ -8002,8 +8002,7 @@ window.EFFECT_PREVIEWS = {
     renderCollection();
   }
 
-  function craftPending(){
-    var pending = QUEUE.filter(function(q){ return q.status === 'pending'; });
+  function craftPending(pending){
     if (!pending.length) return Promise.resolve();
     var chain = Promise.resolve(), promises = [];
     pending.forEach(function(item, i){
@@ -8068,7 +8067,9 @@ window.EFFECT_PREVIEWS = {
     if(!guardCollection()) return Promise.resolve(false);
     var quiet = !!(opts && opts.quiet);
     if (BUSY) return Promise.resolve(false);
-    var pending = QUEUE.filter(function(q){ return q.status === 'pending'; });
+    var pending = reviewItems().filter(function(item){ return !item.slot; }).map(function(item){
+      return QUEUE.find(function(q){ return keyOf(q.siloId,q.effectId) === item.key; });
+    }).filter(function(q){ return q && q.status === 'pending'; });
     if (!pending.length || !SRC.b64) return Promise.resolve(false);
 
     /* A re-check, not just addToQueue's — the photograph can change after
@@ -8106,7 +8107,7 @@ window.EFFECT_PREVIEWS = {
          this just means the studio does not start work it already knows
          it cannot finish. */
       openWaiting(pending);
-      return craftPending().then(function(){
+      return craftPending(pending).then(function(){
         return refreshGroupsBalance();
       }).then(function(){
         BUSY = false;
@@ -9171,8 +9172,7 @@ window.EFFECT_PREVIEWS = {
       });
       paintCollectionProgress(); paintGroupsModeControl();
       dismissGroupsPick();
-      if(CURATED_MODE === 'curated') openCurated('curated');
-      else showGroupsDiscovery();
+      if(CURATED_MODE === 'curated') paintCuratedPageNav(groupsCuratedIds().length);
     }
 
     function paint(){
