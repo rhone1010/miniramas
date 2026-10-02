@@ -5383,6 +5383,21 @@ body.is-lboxed{ overflow:hidden }
 }
 #crumbBack.is-filling{display:inline-flex;}
 </style>
+<style id="groupsCollectionMilestones">
+#curCollection .dcur__milestones{height:60px;min-height:60px;}
+#curCollection .dcur__milestone{font-size:22px;top:0;}
+#curCollection .dcur__milestone::before{width:18px;height:18px;}
+#curCollection .dcur__milestone.is-current::before{background:var(--gold-soft);box-shadow:0 0 0 2px var(--vellum);}
+#curCollection .dcur__milestone.is-next::before{background:var(--oxblood);border:2px solid var(--gold-soft);}
+#curCollection .dcur__milestone.is-current,#curCollection .dcur__milestone.is-next{color:var(--vellum);}
+#curCollection.is-ready .dcur__position{display:none;}
+#groupsBundleSummary{min-height:44px;opacity:.5;justify-content:center;gap:8px;flex-wrap:wrap;text-align:center;}
+#groupsBundleSummary.is-active{opacity:1;background:var(--gold-soft);color:var(--oxblood);}
+#curReviewBtn.is-ready{min-height:60px;font-size:28px;background:var(--gold-soft);color:var(--oxblood);border-color:var(--gold-soft);}
+#groupsReviewCraft[aria-disabled="true"]{opacity:.5;}
+#groupsReviewAccess[hidden],#curAllFxBtn[hidden]{display:none!important;}
+.groups-unlock-count{display:inline-grid;place-items:center;min-width:36px;height:36px;margin:8px 4px 0;border:1px solid var(--gold-soft);border-radius:50%;background:var(--gold-soft);color:var(--oxblood);font:400 28px/1 var(--serif);}
+</style>
 </head>
 <body>
 
@@ -5531,7 +5546,7 @@ body.is-lboxed{ overflow:hidden }
              "Curated" opens the same ten for browsing. Both reuse the
              existing effects floor and turn() flip — see openCurated(). -->
         <div class="cur-modebar">
-          <button class="cur-mode" id="curPick4Btn" type="button" data-mode="pick4">Pick 4 Me</button>
+          <button class="cur-mode" id="curPick4Btn" type="button" data-mode="pick4">Pick for Me</button>
           <button class="cur-mode" id="curAllFxBtn" type="button"><span>Curated</span></button>
         </div>
 
@@ -5551,7 +5566,7 @@ body.is-lboxed{ overflow:hidden }
           <div class="dcur__count" id="curCollCount"></div>
           <div class="dcur__milestones" id="curCollMilestones" role="progressbar" aria-label="Package progress" aria-valuemin="0" aria-valuemax="16"></div>
           <div class="dcur__next" id="curCollNext"></div>
-          <div id="groupsBundleSummary"><span id="groupsBundleCount"></span><span id="groupsBundlePrice"></span></div><button class="btn-review" id="curReviewBtn" type="button">Review Collection &rarr;</button>
+          <div id="groupsBundleSummary"><span id="groupsBundleCount"></span><span id="groupsBundlePrice"></span></div><button class="btn-review" id="curReviewBtn" type="button">Review Collection &rarr;</button><button class="btn-review" id="groupsReviewAccess" type="button" hidden>Review Collection &rarr;</button>
         </div>
 
         <div class="cur-letter">
@@ -8042,7 +8057,15 @@ window.EFFECT_PREVIEWS = {
   /* Resolves TRUE only when the entitlement check cleared and the work
      began, so a caller waiting on a webhook can tell "not yet" from
      "done". */
+  function validCollection(){ return VALID_SIZES.indexOf(QUEUE.length) >= 0; }
+  function guardCollection(){
+    if(validCollection()) return true;
+    var next = targetFor(QUEUE.length);
+    window.alert('Groups are crafted in collections of 1, 4, 8, or 16. Complete your collection first. Add '+(next-QUEUE.length)+' more to reach your '+next+'-Craft collection.');
+    return false;
+  }
   function runAll(opts){
+    if(!guardCollection()) return Promise.resolve(false);
     var quiet = !!(opts && opts.quiet);
     if (BUSY) return Promise.resolve(false);
     var pending = QUEUE.filter(function(q){ return q.status === 'pending'; });
@@ -8276,6 +8299,7 @@ window.EFFECT_PREVIEWS = {
       paintCollectionProgress();
       paintGroupsModeControl();
       if(GROUPS_REVIEW) renderGroupsReview();
+      else if(GROUPS_PICK_ACTIVE) openCurated('pick4');
     });
     return el;
   }
@@ -8296,7 +8320,7 @@ window.EFFECT_PREVIEWS = {
      message says "craft package" rather than "image bundle". */
   function targetFor(n){ return n <= 1 ? 1 : n <= 4 ? 4 : n <= 8 ? 8 : 16; }
   function collectionProgress(n){
-    var target = targetBundle(), index = VALID_SIZES.indexOf(target);
+    var target = targetFor(n), index = VALID_SIZES.indexOf(target);
     var lower = index > 0 ? VALID_SIZES[index - 1] : 0;
     var position = index > 0
       ? ((index - 1) + (n - lower) / (target - lower)) / (VALID_SIZES.length - 1) * 100
@@ -8304,8 +8328,8 @@ window.EFFECT_PREVIEWS = {
     return {
       position: Math.min(100, Math.max(0, position)),
       message: n === target
-        ? target + '-craft package reached'
-        : (target - n) + ' more to the ' + target + '-craft package'
+        ? target + '-Craft package reached'
+        : (target - n) + ' more to the ' + target + '-Craft package'
     };
   }
   function paintCollectionProgress(){
@@ -8313,27 +8337,32 @@ window.EFFECT_PREVIEWS = {
     if (!milestones) return;
     var count = document.getElementById('curCollCount');
     var next  = document.getElementById('curCollNext');
-    var n = QUEUE.length;
+    var n = QUEUE.length, ready = VALID_SIZES.indexOf(n) >= 0;
+    document.getElementById('curCollection').classList.toggle('is-ready',ready);
     if (count) count.textContent = n + (n === 1 ? ' craft chosen' : ' crafts chosen');
     var state = collectionProgress(n);
     milestones.setAttribute('aria-valuenow', n);
     milestones.setAttribute('aria-valuetext', n + ' chosen. ' + state.message);
     milestones.innerHTML = '<i class="dcur__fill" style="width:' + state.position + '%"></i>' +
       VALID_SIZES.map(function(size, i){
-        return '<span class="dcur__milestone' + (n >= size ? ' reached' : '') + '" style="left:' +
+        return '<span class="dcur__milestone' + (n >= size ? ' reached' : '') + (size === targetFor(n) ? (ready ? ' is-current' : ' is-next') : '') + '" style="left:' +
           (i / (VALID_SIZES.length - 1) * 100) + '%">' + size + '</span>';
       }).join('') +
       '<i class="dcur__position" style="left:' + state.position + '%"></i>';
     if (next) next.textContent = state.message;
     var target = targetBundle(), sku = (BLOCKS || []).find(function(s){ return s.count === target; });
     var bn = document.getElementById('groupsBundleCount'), bp = document.getElementById('groupsBundlePrice');
-    if(bn) bn.textContent = target;
-    if(bp) bp.textContent = sku ? usd(priceOf(sku)) : '';
+    var reachedSku = (BLOCKS || []).find(function(s){return s.count === n;});
+    if(bn) bn.textContent = ready ? n + (n === 1 ? ' Craft' : ' Crafts') : '';
+    if(bp) bp.textContent = ready && reachedSku ? usd(priceOf(reachedSku)) + (reachedSku.includedUnlocks ? ' · ' + reachedSku.includedUnlocks + (reachedSku.includedUnlocks === 1 ? ' Unlock Included' : ' Unlocks Included') : '') : '';
+    document.getElementById('groupsBundleSummary').classList.toggle('is-active',ready);
     Array.from(document.querySelectorAll('#curPackages .buy-block')).forEach(function(b){var p=(BLOCKS||[]).find(function(x){return x.id===b.dataset.sku;});b.classList.toggle('is-active',!!p && p.count===target);b.disabled=!!p && p.count<n;});
     var info=document.getElementById('groupsPackageInfo');
-    if(info && sku) info.innerHTML=target+' Crafts - '+usd(priceOf(sku))+'<br>'+ (sku.includedUnlocks||0)+' Unlock'+(sku.includedUnlocks===1?'':'s')+' Included<small>(removed watermark)</small>';
+    if(info && sku) info.innerHTML=target+(target === 1 ? ' Craft' : ' Crafts')+' · '+usd(priceOf(sku))+'<br><span class="groups-unlock-count">'+(sku.includedUnlocks||0)+'</span> '+(sku.includedUnlocks===1?'Unlock Included':'Unlocks Included');
     paintGroupsModeControl();
-    var review = document.getElementById('curReviewBtn'); if(review) review.disabled = !n;
+    var review = document.getElementById('curReviewBtn');
+    if(review){ review.disabled = false; review.textContent = ready ? 'Craft →' : 'Review Collection →'; review.classList.toggle('is-ready',ready); }
+    document.getElementById('groupsReviewAccess').hidden = !ready;
   }
 
   /* ---- the shortfall -----------------------------------------------------
@@ -9141,6 +9170,9 @@ window.EFFECT_PREVIEWS = {
         if (card) card.classList.add('is-selected');
       });
       paintCollectionProgress(); paintGroupsModeControl();
+      dismissGroupsPick();
+      if(CURATED_MODE === 'curated') openCurated('curated');
+      else showGroupsDiscovery();
     }
 
     function paint(){
@@ -9851,8 +9883,9 @@ window.EFFECT_PREVIEWS = {
      click there. */
   var curReviewBtn = document.getElementById('curReviewBtn');
   if (curReviewBtn) curReviewBtn.addEventListener('click', function(){
-    showGroupsReview();
+    if(validCollection()) tbcGo.click(); else showGroupsReview();
   });
+  document.getElementById('groupsReviewAccess').addEventListener('click',showGroupsReview);
 
   /* GROUPS HAS NO POSE STEP. Portraits puts one card flip between the
      effects and the charge; the Groups bodies carry their own arrangement
@@ -9864,6 +9897,7 @@ window.EFFECT_PREVIEWS = {
      removing the two hundred lines that draw it. The floor never enters
      that view, so nothing of it is ever seen. */
   if (tbcGo) tbcGo.addEventListener('click', function(){
+    if(!guardCollection()) return;
     if (true){
       /* Was: a named hook that did not exist, which is where the flow
          stopped. Now the run. Credits move inside runAll before anything
@@ -12466,6 +12500,7 @@ window.EFFECT_PREVIEWS = {
     document.getElementById('groupsPackageInfo').hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
     if(curPick4Btn){curPick4Btn.disabled = CURATED_BUSY || GROUPS_FILL_SLOT !== null;curPick4Btn.classList.toggle('is-active',GROUPS_PICK_ACTIVE);}
     if(curAllFxBtn){
+      curAllFxBtn.hidden = GROUPS_PICK_ACTIVE;
       curAllFxBtn.querySelector('span').textContent = CURATED_MODE === 'curated' ? 'Curated' : 'All Effects';
       curAllFxBtn.classList.toggle('is-active',!GROUPS_PICK_ACTIVE && !GROUPS_REVIEW);
     }
@@ -12507,7 +12542,8 @@ window.EFFECT_PREVIEWS = {
       effFloor.appendChild(el);
     });
     effFloor.dataset.count = targetBundle();
-    document.getElementById('groupsReviewCraft').disabled = QUEUE.length !== targetBundle();
+    document.getElementById('groupsReviewCraft').disabled = false;
+    document.getElementById('groupsReviewCraft').setAttribute('aria-disabled',String(!validCollection()));
   }
   function showGroupsDiscovery(){
     GROUPS_REVIEW = false;
@@ -12554,13 +12590,20 @@ window.EFFECT_PREVIEWS = {
     GROUPS_FILL_SLOT = null;
     renderGroupsReview();
   });
-  document.getElementById('groupsReviewCraft').addEventListener('click',function(){ if(QUEUE.length === targetBundle() && tbcGo) tbcGo.click(); });
+  document.getElementById('groupsReviewCraft').addEventListener('click',function(){ if(tbcGo) tbcGo.click(); });
   document.getElementById('tourFab').addEventListener('click',function(){ if(window.LitenHelp) window.LitenHelp.open(); });
   paintGroupsRooms();
   renderSilos();
   showGroupsDiscovery();
 
-  if (curPick4Btn) curPick4Btn.addEventListener('click', function(){ openCurated('pick4'); });
+  if (curPick4Btn) curPick4Btn.addEventListener('click', function(){
+    if(CURATED_BUSY) return;
+    if(!hasSource()){ if(phoneNeedsPhoto()) openNeedPhoto(); else askForPhoto(true); return; }
+    if(GROUPS_REVIEW) showGroupsDiscovery();
+    GROUPS_PICK_ACTIVE = true;
+    if(curatedPageNav) curatedPageNav.hidden = true;
+    paintCollectionProgress();
+  });
   if (curCuratedBtn) curCuratedBtn.addEventListener('click', function(){ openCurated('curated'); });
   if (curAllFxBtn) curAllFxBtn.addEventListener('click', function(){
     var wasPick = GROUPS_PICK_ACTIVE; dismissGroupsPick();
