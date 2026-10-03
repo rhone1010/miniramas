@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
   // Embedded sessions take ONE url and no cancel. Closing the slide-out is
   // the cancel: the session expires by itself and the pending row is simply
   // never confirmed.
-  const base = safeReturn(body.returnUrl, appUrl)
+  const base = sku.kind === 'groups' ? `${req.nextUrl.origin}/groups` : safeReturn(body.returnUrl, appUrl)
 
   // ── Session ─────────────────────────────────────────────────
   let session
@@ -133,6 +133,7 @@ export async function POST(req: NextRequest) {
     session = await createBrandedSession(stripe, {
       mode: 'payment',
       ui_mode: 'embedded',
+      ...(sku.kind === 'groups' ? { redirect_on_completion: 'if_required' as const } : {}),
       line_items: [{ price: sku.stripe_price_id, quantity: 1 }],
       return_url: appendQuery(base, 'credits=1&session_id={CHECKOUT_SESSION_ID}'),
       client_reference_id: ownerKey,
