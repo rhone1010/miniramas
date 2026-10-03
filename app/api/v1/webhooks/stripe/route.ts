@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { handlePrintWebhook } from '@/lib/v1/print/webhook-handler'
 import { COLLECTION_SET_KIND, fulfillCollectionSet } from '@/lib/store/collection-unlock-set'
 import { COLLECTION_UNLOCK_KIND, fulfillCollectionUnlocks } from '@/lib/store/collection-unlocks'
 import { getStripe }                         from '@/lib/store/stripe'
@@ -50,6 +51,10 @@ export async function POST(req: NextRequest) {
 
   // Acknowledge only after fulfillment succeeds.
   try {
+    if (event.type === 'checkout.session.completed' &&
+        ['catalog_v2', 'square_8x8'].includes((event.data.object as Stripe.Checkout.Session).metadata?.print_test || '')) {
+      return await handlePrintWebhook(event)
+    }
     await dispatch(event)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
