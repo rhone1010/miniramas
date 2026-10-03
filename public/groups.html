@@ -5398,6 +5398,63 @@ body.is-lboxed{ overflow:hidden }
 #groupsReviewAccess[hidden],#curAllFxBtn[hidden]{display:none!important;}
 .groups-unlock-count{display:inline-grid;place-items:center;min-width:36px;height:36px;margin:8px 4px 0;border:1px solid var(--gold-soft);border-radius:50%;background:var(--gold-soft);color:var(--oxblood);font:400 28px/1 var(--serif);}
 </style>
+<style>
+/* ── Checkout modal (embedded Stripe) ────────────────────────── */
+.ck-scrim{ display:none }
+.ck-scrim.is-open{
+  display:grid; place-items:center;
+  position:fixed; top:0; right:0; bottom:0; left:0; z-index:1200;
+  background:rgba(31,27,20,.52);
+  padding:24px;
+  overflow-y:auto;
+}
+.ck-card{
+  width:min(520px, 100%);
+  background:linear-gradient(180deg,#faf6ec,#f3ecdd);
+  border:1px solid rgba(147,111,67,.34);
+  border-radius:6px;
+  padding:1.5rem 1.8rem 1.6rem;
+  position:relative;
+  box-shadow:0 24px 60px rgba(31,27,20,.42), 0 4px 12px rgba(31,27,20,.24),
+             inset 0 1px 0 rgba(255,255,255,.75);
+}
+.ck-x{
+  position:absolute; top:1.1rem; right:1.2rem;
+  width:2rem; height:2rem; border:0; border-radius:50%;
+  background:none; color:var(--taupe, #a59478); font-size:1.4rem; line-height:1;
+  cursor:pointer; transition:color .15s, background .15s; z-index:2;
+}
+.ck-x:hover{ color:var(--ink); background:rgba(42,36,30,.06) }
+.ck-err{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.1rem; color:var(--oxblood); text-align:center;
+  margin-top:12px;
+}
+/* __CK_SHELL__ Our half of the payment modal: the mark, the heading, and
+   what is being bought. Stripe's form keeps its own look below the rule. */
+.ck-head{ display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:0 0 1.1rem; margin:0 0 1.2rem; border-bottom:1px solid rgba(147,111,67,.28) }
+.ck-mark{ width:104px; height:auto; fill:var(--oxblood); opacity:.92; margin:0 0 .85rem }
+.ck-title{ font-family:var(--serif); font-weight:400; font-size:1.85rem; color:var(--ink); margin:0 }
+.ck-order{ display:flex; align-items:baseline; justify-content:center; gap:.7rem; margin:.55rem 0 0 }
+.ck-order[hidden]{ display:none }
+.ck-order__size{ font-family:var(--serif); font-size:1.3rem; color:var(--ink) }
+.ck-order__price{ font-family:var(--serif); font-size:1.45rem; color:var(--oxblood) }
+/* __A1_PHONE__ (Phase 1, 2026-09-17) our shell on a phone. The mark and the
+   heading were only ever sized for a desktop card: at 390 the mark stayed
+   104px on a 342px card and "Complete Your Collection" broke mid-phrase.
+   Declared here, after the rules above, because a copy in the earlier phone
+   block lost to them on source order at equal specificity.
+   Stripe's own form inside #ckForm is untouched -- this is our half only. */
+@media (max-width:767px){
+  .ck-card{ padding:1.25rem 1.1rem 1.3rem }
+  .ck-mark{ width:74px; margin-bottom:.7rem }
+  .ck-title{ font-size:1.45rem }
+  .ck-order__size{ font-size:1.1rem }
+  .ck-order__price{ font-size:1.25rem }
+}
+#ckForm{ min-height:300px; }
+</style>
 </head>
 <body>
 
@@ -5918,6 +5975,23 @@ body.is-lboxed{ overflow:hidden }
   </div>
 </div>
 
+<!-- __CK_SHELL__ (Rich, 2026-09-16) The shell around the payment form is
+     ours; the form inside #ckForm is Stripe's and is mounted untouched. -->
+<div class="scrim ck-scrim" id="ckModal">
+  <div class="ck-card">
+    <button class="ck-x" id="ckX" aria-label="Close">&times;</button>
+    <header class="ck-head">
+      <svg class="ck-mark" viewBox="0 0 1821.36 1528.47" role="img" aria-label="Liten &amp; Co" focusable="false"><g><path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/></g><g><path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/><path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/><path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/><path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/><path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/><path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/><path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/></g></svg>
+      <h3 class="ck-title" id="ckTitle">Complete Your Collection</h3>
+      <div class="ck-order" id="ckOrder" hidden>
+        <span class="ck-order__size" id="ckOrderSize"></span>
+        <span class="ck-order__price" id="ckOrderPrice"></span>
+      </div>
+    </header>
+    <div id="ckForm"></div>
+    <div class="ck-err" id="ckErr"></div>
+  </div>
+</div>
 <aside class="buy" id="buyPanel" aria-label="Buy Crafts">
   <div class="buy-card">
     <button class="buy-x" id="buyX" aria-label="Close">&times;</button>
@@ -8319,6 +8393,70 @@ window.EFFECT_PREVIEWS = {
     });
   }
 
+function paintCheckoutHead(title, sizeText, priceText){
+  var t = document.getElementById('ckTitle'); if (t) t.textContent = title;
+  var box = document.getElementById('ckOrder');
+  var s = document.getElementById('ckOrderSize');
+  var p = document.getElementById('ckOrderPrice');
+  if (s) s.textContent = sizeText || '';
+  if (p) p.textContent = priceText || '';
+  if (box) box.hidden = !(sizeText || priceText);
+}
+function closeCheckout(){
+  var ckModal = document.getElementById('ckModal');
+  if (ckModal) ckModal.classList.remove('is-open');
+  if (STRIPE_EMBED && STRIPE_EMBED.destroy){ try { STRIPE_EMBED.destroy(); } catch(e){} }
+  STRIPE_EMBED = null;
+  var ckForm = document.getElementById('ckForm');
+  if (ckForm) ckForm.innerHTML = '';
+  /* __A4_ONE_FLOW_PER_PIECE__ An abandoned unlock modal ends its flow, so
+     the customer can ask again. The session they walked away from is still
+     open, and the server hands that same one back rather than minting a
+     second. A paid close runs finishUnlockPayment, which has already
+     released by the time this is reached. */
+  if (typeof releaseUnlockFlow === 'function' && typeof UNLOCK_FLOW_PIECE !== 'undefined' && UNLOCK_FLOW_PIECE) releaseUnlockFlow(UNLOCK_FLOW_PIECE);
+}
+
+var PAID_RETRY_EVERY = 2500;
+var PAID_RETRY_TRIES = 4;
+function verifyPurchasePaid(sessionId, onPaid, triesLeft){
+  if (triesLeft === undefined) triesLeft = PAID_RETRY_TRIES;
+  return fetch('/api/v1/checkout/' + encodeURIComponent(sessionId), { credentials:'include' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      var status = d && d.purchase ? d.purchase.status : null;
+      /* NO CONFIRMATION MODAL. My Collection opens with the crafting tiles
+         already in it, and that is the confirmation -- a panel saying the
+         same thing over the top of it was one confirmation too many.
+         Removed 2026-09-06. */
+      if (status === 'paid'){
+        onPaid();
+        return;
+      }
+
+      /* A DEFINITE NO IS FINAL. failed and refunded are terminal in the
+         purchases check constraint, so there is nothing to wait for and
+         the collection must not be presented as a successful purchase. */
+      if (status === 'failed' || status === 'refunded'){
+        console.warn('[discovery] purchase ' + status + ' — not opening the collection');
+        return;
+      }
+
+      /* 'pending', or no row yet. Ask again, a bounded number of times. */
+      if (triesLeft > 0){
+        setTimeout(function(){ verifyPurchasePaid(sessionId, onPaid, triesLeft - 1); }, PAID_RETRY_EVERY);
+      } else {
+        console.warn('[discovery] payment still unconfirmed after ' +
+          (PAID_RETRY_TRIES * PAID_RETRY_EVERY / 1000) + 's — leaving the collection closed');
+      }
+    })
+    .catch(function(){
+      // Network error — don't alarm, payment may still land via webhook.
+      // Same budget as a pending answer; a dropped request is not a no.
+      if (triesLeft > 0) setTimeout(function(){ verifyPurchasePaid(sessionId, onPaid, triesLeft - 1); }, PAID_RETRY_EVERY);
+    });
+}
+
   function beginPurchase(sku, fixedBundle){
     if (!ME || !ME.id){
       if (buyErr) buyErr.textContent = 'Sign in first and I will bring you straight back.';
@@ -8328,8 +8466,10 @@ window.EFFECT_PREVIEWS = {
     if (buyList) buyList.hidden = true;
     if (buyBack) buyBack.hidden = !!fixedBundle;
     if (fixedBundle){
-      if (buyForm) buyForm.innerHTML = '';
-      if (buyPanel) buyPanel.classList.add('is-open');
+      closeCheckout();
+      document.getElementById('ckErr').textContent = '';
+      paintCheckoutHead('Complete Your Collection', sku.count + (sku.count === 1 ? ' image' : ' images'), usd(priceOf(sku)));
+      document.getElementById('ckModal').classList.add('is-open');
     }
     if (buySay) buySay.textContent = sku.count + (sku.count === 1 ? ' craft' : ' crafts') + ' \u00b7 ' + usd(priceOf(sku));
 
@@ -8374,10 +8514,18 @@ window.EFFECT_PREVIEWS = {
         throw new Error('no_publishable_key');
       }
       var stripe = window.Stripe(d.publishableKey);
-      return stripe.initEmbeddedCheckout({ clientSecret: d.clientSecret });
+      return stripe.initEmbeddedCheckout({
+        clientSecret: d.clientSecret,
+        onComplete: function(){
+          if (fixedBundle) closeCheckout(); else closeBuy();
+          verifyPurchasePaid(d.sessionId, function(){
+            if (fixedBundle) craftWhenCreditsLand(0); else refreshGroupsBalance();
+          });
+        }
+      });
     }).then(function(embed){
       STRIPE_EMBED = embed;
-      embed.mount('#buyForm');
+      embed.mount(fixedBundle ? '#ckForm' : '#buyForm');
     }).catch(function(e){
       if (buyList) buyList.hidden = !!fixedBundle;
       if (buyBack) buyBack.hidden = true;
@@ -8386,9 +8534,23 @@ window.EFFECT_PREVIEWS = {
           ? 'The studio is not set up to take payment yet.'
           : 'The payment form could not be opened. Try again in a moment.';
       }
+      if (fixedBundle && buyErr) document.getElementById('ckErr').textContent = buyErr.textContent;
       console.error('[credits] embedded checkout failed', e);
     });
   }
+
+// ── Checkout modal DOM binding ────────────────────────────────────────
+(function(){
+  var ckX     = document.getElementById('ckX');
+  var ckModal = document.getElementById('ckModal');
+  if (ckX) ckX.addEventListener('click', closeCheckout);
+  if (ckModal) ckModal.addEventListener('click', function(e){
+    if (e.target === ckModal) closeCheckout();
+  });
+  addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && ckModal && ckModal.classList.contains('is-open')) closeCheckout();
+  });
+})();
 
   if (buyX)    buyX.addEventListener('click', closeBuy);
   if (buyBack) buyBack.addEventListener('click', function(){
@@ -9548,7 +9710,9 @@ window.EFFECT_PREVIEWS = {
     var core = {
       at:    Date.now(),
       queue: QUEUE.map(function(q){ return { siloId: q.siloId, effectId: q.effectId }; }),
-      pose:  window.__POSE || null
+      pose:  window.__POSE || null,
+      capacity: targetBundle(),
+      slots: SLOTS.slice()
     };
     try {
       localStorage.setItem(RESUME_KEY, JSON.stringify(core));
@@ -9593,9 +9757,11 @@ window.EFFECT_PREVIEWS = {
       onSourceLoaded([img]);
     }
 
+    GROUPS_TARGET = VALID_SIZES.indexOf(core.capacity) >= 0 ? core.capacity : targetFor(core.queue.length);
     core.queue.forEach(function(q){
       if (R.byId(q.effectId)) addToQueue(q.siloId, q.effectId);
     });
+    if (Array.isArray(core.slots)) SLOTS = core.slots.slice();
     if (core.pose) window.__POSE = core.pose;
     if (core.pose && typeof stampPose === 'function') stampPose(core.pose);
 
