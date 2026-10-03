@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   }
   if (!sku)          return NextResponse.json({ error: 'sku_not_found' }, { status: 404 })
   if (!sku.active)   return NextResponse.json({ error: 'sku_inactive' }, { status: 404 })
-  if (sku.kind !== 'credits' && sku.kind !== 'groups') {
+  if (sku.kind !== 'credits') {
     // A single or bundle reaching this route means the caller is wired to the
     // wrong path. Refuse rather than half-fulfil.
     return NextResponse.json({ error: 'sku_not_credits' }, { status: 400 })
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
   // Embedded sessions take ONE url and no cancel. Closing the slide-out is
   // the cancel: the session expires by itself and the pending row is simply
   // never confirmed.
-  const base = sku.kind === 'groups' ? `${req.nextUrl.origin}/groups` : safeReturn(body.returnUrl, appUrl)
+  const base = safeReturn(body.returnUrl, appUrl)
 
   // ── Session ─────────────────────────────────────────────────
   let session
@@ -133,7 +133,6 @@ export async function POST(req: NextRequest) {
     session = await createBrandedSession(stripe, {
       mode: 'payment',
       ui_mode: 'embedded',
-      ...(sku.kind === 'groups' ? { redirect_on_completion: 'if_required' as const } : {}),
       line_items: [{ price: sku.stripe_price_id, quantity: 1 }],
       return_url: appendQuery(base, 'credits=1&session_id={CHECKOUT_SESSION_ID}'),
       client_reference_id: ownerKey,

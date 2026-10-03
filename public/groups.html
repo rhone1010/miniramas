@@ -5157,6 +5157,19 @@ body.is-lboxed{ overflow:hidden }
   .mycoll .mc-grid{ padding-top:2px }
   .mycoll .mc-minimap{ gap:6px }
 }
+.pc-act{
+  min-height:50px; border-radius:10px; cursor:pointer; width:100%;
+  font-family:var(--serif); font-style:italic; font-size:1.1rem;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+/* The included unlock leads when there is one: it is the thing the customer
+   has already paid for. */
+.pc-act--included{ background:var(--gold); color:#2a1f14; border:1px solid var(--gold) }
+.pc-act--buy{ background:rgba(255,255,255,.06); color:#f3ede1; border:1px solid rgba(215,189,137,.42) }
+.pc-act--own{ background:var(--oxblood); color:#f3ede1; border:1px solid var(--oxblood) }
+.pc-act--quiet{ background:rgba(255,255,255,.05); color:#e8ddc8; border:1px solid rgba(215,189,137,.28) }
+.pc-act:disabled{ opacity:.5; cursor:wait }
+
 </style>
 <script src="/track.js" defer></script>
 <!-- THE CONCIERGE. data-dock puts her in the corner rather than over the
@@ -6257,18 +6270,7 @@ window.EFFECT_PREVIEWS = {
 
   /** Fetch the customer's Groups craft + unlock balance. Called on page
    *  load and after each purchase/craft cycle. */
-  function refreshGroupsBalance(){
-    return fetch('/api/v1/groups/balance', { credentials:'same-origin' })
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (d.ok){
-          CRAFTS_REMAINING = d.crafts;
-          UNLOCKS_REMAINING = d.unlocks;
-        }
-        return d;
-      })
-      .catch(function(){ return { ok: false }; });
-  }
+  function refreshGroupsBalance(){ return Promise.resolve({ ok:true }); }
   var tbc = document.getElementById('tbc');
   var tbcList = document.getElementById('tbcList');
   var tbcN = document.getElementById('tbcN');
@@ -8048,71 +8050,17 @@ window.EFFECT_PREVIEWS = {
     return false;
   }
   function runAll(opts){
-    if(!guardCollection()) return Promise.resolve(false);
-    var quiet = !!(opts && opts.quiet);
-    if (BUSY) return Promise.resolve(false);
-    var pending = reviewItems().filter(function(item){ return !item.slot; }).map(function(item){
-      return QUEUE.find(function(q){ return keyOf(q.siloId,q.effectId) === item.key; });
-    }).filter(function(q){ return q && q.status === 'pending'; });
-    if (!pending.length || !SRC.b64) return Promise.resolve(false);
-
-    BUSY = true;
-    /* A new run. The next piece to land is this run's first, whatever the
-       collection already holds. */
-    window.__RUN_LANDED = false;
-    SHORT_HELD.length = 0;
-    labelBusy();
-    return checkCraftsAvailable(pending, quiet).then(function(ok){
-      if (!ok){ BUSY = false; labelBusy(); return false; }
-      /* The balance cleared, so the work is certain enough to show. Each
-         craft still consumes its own entitlement server-side as it runs \u2014
-         this just means the studio does not start work it already knows
-         it cannot finish. */
-      openWaiting(pending);
-      return craftPending(pending).then(function(){
-        return refreshGroupsBalance();
-      }).then(function(){
-        BUSY = false;
-        labelBusy();
-        /* Nothing arrived, or what arrived did not hold the likeness.
-           Neither cost the customer an entitlement \u2014 the generate route
-           restores it server-side in both cases \u2014 so there is no refund
-           call here, only the bookkeeping: a tile that never became a
-           piece is withdrawn, and the note says what happened. */
-        var ended = QUEUE.filter(function(q){
-          return q.status === 'failed' || q.status === 'rejected' ||
-                 q.status === 'redirected' || q.passed === false;
-        });
-        withdrawWaiting(ended.filter(function(q){ return q.passed !== false; }));
-        /* After the run settles, so the offer does not appear over pieces
-           that are still arriving. */
-        if (PENDING_REDIRECT){
-          var it = PENDING_REDIRECT; PENDING_REDIRECT = null;
-          setTimeout(function(){ openRedirect(it); }, 260);
-        }
-        if (!ended.length){ clearFinished(); return; }
-        clearFinished();
-        if (!tbcGoSub) return;
-        var n = ended.length;
-        /* Sticky: clearFinished() flips the floor back and labelGo() runs
-           again on that timer, so writing the element directly meant the
-           line was gone in half a second. */
-        /* SHORT_HELD pieces are still in the collection, so 'did not
-           hold' has to mean something different from 'never arrived'.
-           Placeholder wording - the Curator's line here is Rich's. */
-        var kept = SHORT_HELD.length;
-        SUB_NOTE = kept
-          ? (kept === 1
-              ? 'One is not as close a likeness as it should be \u00b7 it is yours, and that craft is back'
-              : kept + ' are not as close a likeness as they should be \u00b7 they are yours, and those crafts are back')
-          : (n === 1 ? 'One did not hold \u00b7 that craft is back'
-                     : n + ' did not hold \u00b7 those crafts are back');
-        SHORT_HELD.length = 0;
-        tbcGoSub.textContent = SUB_NOTE;
-      }).then(function(){ return true; });
-    });
-  }
-  window.__runAll = runAll;
+    if (!guardCollection() || BUSY || !SRC.b64) return Promise.resolve(false);
+    if (!ME || !ME.id){ groupsNotice('no_owner'); return Promise.resolve(false); }
+    BUSY = true; labelBusy();
+    return loadBlocks().then(function(blocks){
+      var sku = blocks.find(function(block){ return block.count === QUEUE.length; });
+      if (!sku) throw new Error('portfolio_invalid_size');
+      return beginPurchase(sku, true);
+    }).then(function(){ return true; }).catch(function(e){
+      console.error('[portfolio]', e); groupsNotice('unreachable'); return false;
+    }).then(function(result){ BUSY = false; labelBusy(); return result; });
+  }  window.__runAll = runAll;
   window.__BUSY   = function(){ return BUSY; };
 
 
@@ -8331,36 +8279,7 @@ window.EFFECT_PREVIEWS = {
   /* ---- the shortfall -----------------------------------------------------
      Money is the studio's second register — plain, unsigned, no charm. The
      Curator does not sell; the studio states a number. */
-  function openBuy(short){
-    SHORT = short || null;
-    if (!buyPanel) return;
-    if (buyErr) buyErr.textContent = '';
-    if (buyForm) buyForm.innerHTML = '';
-    if (buyList) buyList.hidden = false;
-    if (buyBack) buyBack.hidden = true;
-
-    /* Two reasons to be here, and they are not the same sentence.
-
-       Short mid-craft: what is missing, and that the work is held.
-       Opened deliberately: what a craft package buys and what the
-       balance is. Saying "this craft needs 0 crafts" to somebody who
-       just wanted to buy more is nonsense, and it is what the credits
-       version of this used to say. */
-    if (buySay){
-      var browsing = !SHORT || !SHORT.needed;
-      var bal = (SHORT && SHORT.balance != null) ? SHORT.balance : (CRAFTS_REMAINING || 0);
-      buySay.textContent = browsing
-        ? 'One craft is one entitlement, and they do not expire. You have ' +
-          bal + (bal === 1 ? ' craft.' : ' crafts.')
-        : 'This needs ' + SHORT.needed + (SHORT.needed === 1 ? ' craft' : ' crafts') +
-          '. You have ' + bal + (bal === 1 ? ' craft' : ' crafts') +
-          '. Your pieces are held while you decide.';
-    }
-    loadBlocks().then(function(){
-      renderBlocks();
-      buyPanel.classList.add('is-open');
-    });
-  }
+  function openBuy(){ showGroupsReview(); }
 
   function closeBuy(){
     if (buyPanel) buyPanel.classList.remove('is-open');
@@ -8458,6 +8377,10 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
 }
 
   function beginPurchase(sku, fixedBundle){
+    if (!fixedBundle || !validCollection() || sku.count !== QUEUE.length) return Promise.resolve(false);
+    var effectIds = reviewItems().filter(function(item){return !item.slot;}).map(function(item){
+      return QUEUE.find(function(q){return keyOf(q.siloId,q.effectId)===item.key;}).effectId;
+    });
     if (!ME || !ME.id){
       if (buyErr) buyErr.textContent = 'Sign in first and I will bring you straight back.';
       return;
@@ -8487,22 +8410,19 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
       console.warn('[intent] could not hold the craft intent', e);
     }
 
-    Promise.all([
+    return Promise.all([
       loadStripeJs(),
-      fetch(PURCHASE_URL, {
+      fetch('/api/v1/portfolios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({
-          skuId:     sku.id,
-          ownerKey:  ME.id,
-          /* THE FLAG TRAVELS WITH THEM. Was the bare path, and
-             afterPurchase's first line is a test for credits=1 -- so it
-             returned immediately, restoreResume() never ran, and a
-             customer who had just paid landed on an empty floor with
-             their queue still sitting in localStorage unread.
-             printCheckout below has always done this correctly. */
-          returnUrl: location.origin + location.pathname + '?credits=1'
+          series: 'groups',
+          selectedEffectIds: effectIds,
+          sourceImageRef: SRC.b64,
+          clientPriceUsd: priceOf(sku) / 100,
+          aspect_ratio: '3:2',
+          returnUrl: location.origin + location.pathname
         })
       }).then(function(r){ return r.json(); })
     ]).then(function(out){
@@ -8513,13 +8433,14 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
       if (!d.publishableKey){
         throw new Error('no_publishable_key');
       }
+      try { sessionStorage.setItem('liten_groups_paid_portfolio', JSON.stringify({id:d.portfolioId,effectIds:effectIds})); } catch(e){}
       var stripe = window.Stripe(d.publishableKey);
       return stripe.initEmbeddedCheckout({
         clientSecret: d.clientSecret,
         onComplete: function(){
           if (fixedBundle) closeCheckout(); else closeBuy();
           verifyPurchasePaid(d.sessionId, function(){
-            if (fixedBundle) craftWhenCreditsLand(0); else refreshGroupsBalance();
+            beginGroupsPaidRun(d.portfolioId, effectIds);
           });
         }
       });
@@ -8606,44 +8527,19 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
   }
 
   (function afterPurchase(){
-    if (location.search.indexOf('credits=1') < 0) return;
-    history.replaceState(null, '', location.pathname);
-    console.log('[credits] returned from checkout');
-
-    var intent = null;
-    try {
-      var raw = localStorage.getItem(INTENT_KEY);
-      if (raw) intent = JSON.parse(raw);
-    } catch (e){ intent = null; }
-    /* An hour-old intent is a different visit, not this one. */
-    if (intent && Date.now() - (intent.at || 0) > 60 * 60 * 1000){
-      clearIntent(); intent = null;
-    }
-
-    if (typeof closeBuy === 'function') closeBuy();
-    if (tbcGoSub){
-      SUB_NOTE = intent
-        ? 'Payment received \u00b7 the studio is starting'
-        : 'Your crafts are on their way';
-    }
-    if (typeof labelGo === 'function') labelGo();
-
-    if (typeof whoAmI !== 'function') return;
+    var params = new URLSearchParams(location.search);
+    if (params.get('portfolio_paid') !== '1' || !params.get('session_id')) return;
+    var sessionId = params.get('session_id');
     whoAmI().then(function(u){
       if (!u) return;
-      var back = (typeof restoreResume === 'function') ? restoreResume() : false;
-      return refreshGroupsBalance().then(function(){
-        if (!intent || !back){ if (typeof labelGo === 'function') labelGo(); return; }
-        /* They pressed Craft. Finish what they started. */
-        return craftWhenCreditsLand(0).then(function(began){
-          if (began || !tbcGoSub) return;
-          SUB_NOTE = 'Your crafts are taking a moment \u00b7 press Craft when they land';
-          if (typeof labelGo === 'function') labelGo();
-        });
+      verifyPurchasePaid(sessionId, function(){
+        history.replaceState(null, '', location.pathname);
+        var id = null;
+        try { id = JSON.parse(sessionStorage.getItem('liten_groups_paid_portfolio') || 'null'); } catch(e){}
+        beginGroupsPaidRun(id && id.id, id && id.effectIds);
       });
     });
   })();
-
   /* ---- a craft that was tried and refused ---------------------------------
      The same four states speak before a craft and after one, and until
      now they said the same thing in both cases: "Nothing has been
@@ -10303,9 +10199,95 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
      Rebuilt on every change of featured piece, so clicks are delegated
      rather than bound - a rebuilt row drops bound listeners, which is
      the note left on the old static row. */
+  function paintPortfolioActions(p, acts){
+    var owned = !p.locked;
+  acts.innerHTML = '';
+  var add = function(cls, label, fn){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pc-act ' + cls;
+    b.textContent = label;
+    b.addEventListener('click', fn);
+    acts.appendChild(b);
+    return b;
+  };
+
+  if (owned){
+    if (printEntranceCandidate(p)){
+      var printButton = add('pc-act--quiet', 'Send to Print Shop', function(){
+        window.location.assign('/print?test_piece=' + encodeURIComponent(p.previewId));
+      });
+      printButton.disabled = true;
+      verifyPrintEntrance(p, printButton);
+    }
+    add('pc-act--quiet', 'Download', function(e){
+      var b = e.currentTarget;
+      b.disabled = true; pcNote('Preparing your file…');
+      downloadPiece(p).then(function(ok){
+        b.disabled = false;
+        pcNote(ok ? '' : 'That file could not be saved just now. Nothing has been charged.');
+      });
+    });
+    return;
+  }
+
+  /* Preview. The included unlock leads while the portfolio still has one --
+     it is already paid for -- and the $2.99 is what remains when it is spent.
+     unlockPiece decides which of the two actually runs; these two buttons are
+     the board's way of SAYING which, not a second decision. */
+  var left = includedRemainingFor(p);
+  if (left > 0){
+    add('pc-act--included',
+        'Use Included Unlock (' + left + ' available)',
+        function(){ closeLightbox(); unlockPiece(p); });
+  }
+  add('pc-act--buy', reusableUnlocksAvailable() ? 'Unlock' : 'Unlock for $' + (UNLOCK_PRICE_CENTS / 100).toFixed(2),
+      function(){ closeLightbox(); unlockPiece(p); });
+  }
+function includedRemainingFor(p){
+  if (!p || !p.portfolioId) return 0;
+  var n = INCLUDED_BY_PORTFOLIO[p.portfolioId];
+  return typeof n === 'number' ? n : 0;
+}
+function printEntranceCandidate(p){
+  return location.hostname === 'miniramas-git-codex-canonical-2026-09-24-litenco.vercel.app' && p && !p.locked && p.previewId && ['1:1','2:3','3:2','3:4','4:3','9:16','16:9'].indexOf(p.aspect)>=0;
+}
+function verifyPrintEntrance(p, button){
+  if (!button || !printEntranceCandidate(p)) return;
+  button.hidden = false; button.style.removeProperty('display');
+  button.disabled = true; button.textContent = 'Send to Print Shop · Checking…';
+  var controller = new AbortController();
+  var timer = setTimeout(function(){ controller.abort(); }, 15000);
+  fetch('/api/v1/print/source?eligibility=1&piece=' + encodeURIComponent(p.previewId), { credentials:'same-origin', cache:'no-store', signal:controller.signal })
+    .then(function(r){ return r.json(); })
+    .then(function(result){
+      if (!button.isConnected) return;
+      if (result && result.eligible){ button.disabled = false; button.textContent = 'Send to Print Shop'; return; }
+      var errors = {
+        sign_in_required:'Sign in required',
+        owned_artwork_required:'Ownership could not be verified',
+        clean_original_unavailable:'Clean artwork unavailable',
+        square_artwork_required:'Square artwork required',
+        portfolio_artwork_required:'Artwork unavailable for printing',
+        artwork_not_found:'Artwork not found',
+        preview_only:'Sandbox unavailable',
+        prodigi_sandbox_required:'Sandbox unavailable',
+        stripe_test_mode_required:'Sandbox unavailable'
+      };
+      button.textContent = 'Send to Print Shop · ' + (result && errors[result.error] || 'Unavailable');
+    })
+    .catch(function(){ if (button.isConnected) button.textContent = 'Send to Print Shop · Could not verify availability'; })
+    .finally(function(){ clearTimeout(timer); });
+}
+function reusableUnlocksAvailable(){
+  return !!(MC_UNLOCK_REVIEW && MC_UNLOCK_REVIEW.balance && MC_UNLOCK_REVIEW.balance.reusable > 0);
+}
+
+  function pcNote(msg){ showUnlockNote(msg); }
   function paintFeatActs(p){
     var box = document.getElementById('mcActs');
     if (!box || !p) return;
+    if (p.portfolioId){ paintPortfolioActions(p, box); return; }
     var acts = '<button class="mc-act is-fill" data-fa="dl" type="button">Download</button>';
     /* A wallpaper offers Download and nothing else. */
     if (printable(p)){
@@ -10535,6 +10517,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
   })();
 
   function showCollection(){
+    mcUnlockRefresh();
     closeOtherSurfaces('collection');
     if (!mycoll) return;
     renderCollection();
@@ -10607,7 +10590,510 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
      get it back. Soft on every failure — the route answers { pieces: [] }
      rather than an error, and an empty collection must never stop the
      workshop from opening. */
+  var INCLUDED_BY_PORTFOLIO = {};
+  var mycollGrid = document.getElementById('mcGrid');
+  function canonicalSeries(s){ return SERIES_LABEL[String(s).toLowerCase()] || s; }
+function pieceDisplayName(p){
+  var raw = p && p.name;
+  var registry = window.EFFECT_REGISTRY;
+  var effect = registry && registry.effects.find(function(e){ return e.id === raw || e.label === raw; });
+  return effect ? effect.label : 'Crafted Images';
+}
+
+  function pieceTitle(p){ return p.name; }
+  function renderMyCollectionGrid(){ renderCollection(); }
+  var MC_UNLOCK_REVIEW=null, MC_UNLOCK_FETCHING=null;
+function mcUnlockRefresh(){
+  if (MC_UNLOCK_FETCHING) return MC_UNLOCK_FETCHING.then(function(){ return mcUnlockRefresh(); });
+  MC_UNLOCK_FETCHING = fetch('/api/v1/collection/unlocks', {credentials:'same-origin', cache:'no-store'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      MC_UNLOCK_REVIEW = d && d.checkoutEnabled === true ? d : null;
+      if (mycoll.classList.contains('is-open')) { renderMyCollectionGrid(); }
+    }).catch(function(){ MC_UNLOCK_REVIEW = null; })
+    .finally(function(){ MC_UNLOCK_FETCHING = null; });
+  return MC_UNLOCK_FETCHING;
+}
+
+  function refreshPaidPortfolios(){
+    return fetch('/api/v1/portfolios', { credentials:'include' })
+      .then(function(r){ if(!r.ok) throw new Error('portfolio_list_failed'); return r.json(); })
+      .then(function(d){
+        var list = (d.portfolios || []).filter(function(p){return p.series === 'groups';});
+        dispatchIfGenerating(list);
+        return Promise.all(list.map(function(p){ return loadPortfolio(p.id); }));
+      }).then(function(results){
+        var working = false;
+        results.forEach(function(items){
+          (items || []).forEach(function(p){
+            p.id = p.key;
+            p.name = pieceDisplayName(p);
+            working = working || p.crafting;
+            var at = PIECES.findIndex(function(old){return old.id === p.id;});
+            if(at < 0) PIECES.push(p); else PIECES[at] = p;
+          });
+        });
+        renderCollection();
+        if(lbox && lbox.classList.contains('is-open')) paintLightbox();
+        return working;
+      }).catch(function(e){console.warn('[portfolio]',e);return null;});
+  }
+  var LAND_TRIES = 60, LAND_EVERY = 3000, GROUPS_PAID_POLL = null;
+  function craftWhenPiecesLand(n){
+    if (GROUPS_PAID_POLL) return GROUPS_PAID_POLL;
+    function poll(at){
+      return refreshPaidPortfolios().then(function(working){
+        if(working === false || at >= LAND_TRIES) return;
+        return new Promise(function(resolve){setTimeout(resolve, LAND_EVERY);}).then(function(){return poll(at+1);});
+      });
+    }
+    GROUPS_PAID_POLL = poll(n || 0).then(function(){GROUPS_PAID_POLL=null;});
+    return GROUPS_PAID_POLL;
+  }
+  function beginGroupsPaidRun(id, effectIds){
+    QUEUE.forEach(function(q){ if((effectIds || []).indexOf(q.effectId)>=0) q.status='done'; });
+    clearFinished();
+    clearIntent();
+    if (typeof saveResume === 'function') saveResume();
+    showCollection();
+    craftWhenPiecesLand(0);
+  }
+var DISPATCH_ASKED = {};
+
+function dispatchIfGenerating(list){
+  (list || []).forEach(function(p){
+    if (!p || p.status !== 'generating' || DISPATCH_ASKED[p.id]) return;
+    DISPATCH_ASKED[p.id] = true;
+    fetch('/api/v1/portfolios/' + encodeURIComponent(p.id) + '/dispatch', {
+      method:'POST', credentials:'include'
+    }).then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (d) console.log('[discovery] dispatch ' + p.id + ':', JSON.stringify(d));
+      })
+      .catch(function(e){
+        /* Cron picks up whatever this missed. */
+        console.warn('[discovery] dispatch call failed:', e);
+      });
+  });
+}
+
+function loadPortfolio(id){
+  if (!id) return Promise.resolve(null);
+  return Promise.all([
+    fetch('/api/v1/portfolios/' + encodeURIComponent(id) + '/status').then(function(r){ return r.ok ? r.json() : null; }),
+    fetch('/api/v1/portfolios/' + encodeURIComponent(id) + '/unlocks').then(function(r){ return r.ok ? r.json() : null; })
+  ]).then(function(both){
+    var st = both[0], un = both[1];
+    if (!st) return null;
+    var unlockedBySlot = {};
+    if (un && un.items) un.items.forEach(function(i){ unlockedBySlot[i.slot] = i.unlocked; });
+    /* PER PORTFOLIO, NOT ONE GLOBAL. renderCollection runs loadPortfolio for
+       every portfolio in parallel, and this used to assign to a single
+       global — so the last fetch to resolve won, in a non-deterministic
+       order. With three portfolios the rail showed some other portfolio's
+       count and never moved when you spent this one's unlock. */
+    if (un && typeof un.includedRemaining === 'number') INCLUDED_BY_PORTFOLIO[id] = un.includedRemaining;
+    /* portraits.html:7031 -- the id is the queue item's, and it is what
+       land() replaces on. Portfolio + slot is the same thing here: stable
+       from the first waiting tile to the finished piece, where 'p'+n was a
+       position that moved as rows arrived. */
+    return st.items.map(function(i){
+      /* __M4_FAILED_IS_NOT_CRAFTING__ (runtime defect, BrowserStack
+         2026-09-18: eight tiles turning for ever).
+
+         This read `crafting: i.status !== 'done'`, which is true of a FAILED
+         item as well as a pending one -- so a render that had already given
+         up was drawn as one still working, and the gear turned on it until
+         the customer closed the tab. The poll gives up quietly at
+         LAND_TRIES x LAND_EVERY (60 x 3s), so after three minutes nothing was
+         asking the server any more either: the animation was the only thing
+         still moving.
+
+         Failed is now its own state. The tile says so, the band above stops
+         counting it as on its way, and nothing pretends work is in progress
+         that stopped. */
+      var itemFailed = i.status === 'failed';
+      return { key:'pf' + id + ':' + i.slot, portfolioId: id,
+               name:i.preset, siloName:'', series:canonicalSeries(st.series),
+               locked: !unlockedBySlot[i.slot],
+               crafting: i.status !== 'done' && !itemFailed,
+               failed: itemFailed,
+               previewId: i.previewId, art: i.previewUrl || null,
+               /* The canvas this master was rendered on. Portfolio-level, so
+                  every item shares it. Null for a preview bundle and for
+                  anything predating migration 030. */
+               aspect: st.aspectRatio || null };
+    });
+  }).catch(function(e){ console.warn('[discovery] portfolio load failed:', e); return null; });
+}
+
+var UNLOCK_INTENT_KEY = 'liten_unlock_intent_v1';
+/* previewId -> clean image_b64, for the download the unlock just paid for.
+   Held in memory only: these are the customer's finished pieces and they
+   do not belong in localStorage. */
+var UNLOCKED_ART = {};
+
+function setUnlockIntent(previewId, key){
+  try { localStorage.setItem(UNLOCK_INTENT_KEY, JSON.stringify({ previewId:previewId, key:key, at:Date.now() })); } catch (e){}
+}
+function readUnlockIntent(){
+  try {
+    var raw = localStorage.getItem(UNLOCK_INTENT_KEY);
+    if (!raw) return null;
+    var it = JSON.parse(raw);
+    if (!it || !it.previewId) return null;
+    if (Date.now() - (it.at || 0) > 60 * 60 * 1000){ clearUnlockIntent(); return null; }
+    return it;
+  } catch (e){ return null; }
+}
+function clearUnlockIntent(){
+  try { localStorage.removeItem(UNLOCK_INTENT_KEY); } catch (e){}
+}
+
+/* PLACEHOLDER COPY — Rich to finalize Curator voice. Same convention the
+   payment confirmation above already uses. */
+function showUnlockNote(msg){
+  var bar = document.getElementById('mycollUnlockNote');
+  if (!bar){
+    bar = document.createElement('div');
+    bar.id = 'mycollUnlockNote';
+    bar.style.cssText = 'font-family:var(--serif);font-size:1.15rem;color:var(--oxblood);text-align:center;margin:10px 0;padding:8px 12px;background:rgba(125,66,66,.12);border-radius:8px;';
+    if (mycollGrid && mycollGrid.parentNode) mycollGrid.parentNode.insertBefore(bar, mycollGrid);
+  }
+  bar.textContent = msg;
+}
+function clearUnlockNote(){
+  var bar = document.getElementById('mycollUnlockNote');
+  if (bar) bar.remove();
+}
+
+/* Ask for the clean original. Resolves to a status string so the caller
+   can tell "done" from "pay first" from "something went wrong". */
+function requestUnlock(previewId, key, confirmIncluded){
+  return fetch('/api/v1/portraits/unlock', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    credentials:'include',
+    body: JSON.stringify({ preview_id: previewId, confirm_included: confirmIncluded || null })
+  }).then(function(r){
+    return r.json().then(function(d){ return { status:r.status, data:d }; });
+  }).then(function(out){
+    if (out.status === 200 && out.data && out.data.image_b64){
+      UNLOCKED_ART[previewId] = out.data.image_b64;
+      clearUnlockNote();
+      /* POST-CONFIRMATION, NOT OPTIMISTIC. Nothing moves until the server has
+         said yes; this runs on a 200 that already carries the clean bytes.
+
+         It used to wait for renderCollection() before anything changed on
+         screen — a full re-read of every portfolio, eight requests for a
+         collection of three, on top of an unlock call that downloads the
+         clean original. Three seconds of a card that looked untouched, which
+         reads as a click that did not land.
+
+         Only the confirmed piece changes, and only its own portfolio's
+         allowance. renderCollection still runs underneath to reconcile with
+         the server; it is no longer what the customer is waiting for. */
+      var confirmed = null;
+      for (var ci = 0; ci < PIECES.length; ci++){ if (PIECES[ci].key === key){ confirmed = PIECES[ci]; break; } }
+      if (confirmed){
+        confirmed.locked = false;
+        confirmed.art = 'data:image/png;base64,' + out.data.image_b64;
+        var includedOrigin = out.data.originPortfolioId;
+        if (!out.data.redelivered && includedOrigin && INCLUDED_BY_PORTFOLIO[includedOrigin] > 0){
+          INCLUDED_BY_PORTFOLIO[includedOrigin] -= 1;
+        }
+      }
+      renderMyCollectionGrid();
+      refreshPaidPortfolios();
+      mcUnlockRefresh();
+      return 'unlocked';
+    }
+    if (out.status === 409 && out.data && out.data.confirmation === 'included_crossover'){
+      return window.LitenHelp.confirmIncluded().then(function(yes){
+        return yes ? requestUnlock(previewId, key, out.data.entitlementId) : 'cancelled';
+      });
+    }
+    if (out.status === 409) return 'needs_payment';
+    if (out.status === 402) return 'payment_pending';
+    console.warn('[discovery] unlock refused:', (out.data && out.data.error) || out.status);
+    return 'failed';
+  }).catch(function(e){
+    console.warn('[discovery] unlock failed:', e);
+    return 'failed';
+  });
+}
+
+/* $2.99, one piece, through the cart/unlock path that already exists
+   (checkout/route.ts:6 — createCartCheckout, kind 'unlock'). No new
+   checkout route. The total is checked server-side against
+   UNLOCK_UNIT_CENTS, so this number cannot quietly drift from the button. */
+var UNLOCK_PRICE_CENTS = 299;
+
+/* __A4_PAID_UNLOCK__ (Phase 1, 2026-09-17). Discovery's own unlock checkout.
+
+   WAS: POST /api/v1/checkout with a cart body, skuId 'portrait_unlock_web'
+   and totalCents 299. That route's cart branch prices one piece at 399c from
+   the legacy VOLUME_LADDER, so it threw price_mismatch before Stripe and the
+   customer was told "the payment form could not be opened" -- a permanent
+   contract break reported as a passing network glitch. Had the price agreed,
+   the same call would have answered a HOSTED { url } that the guard below
+   rejects anyway.
+
+   NOW: the portfolio's own unlock-checkout route. Embedded, like every other
+   Discovery checkout, so the modal we already have is the modal used. The
+   price is not sent at all -- the server reads the seeded unlock_addon_1 SKU
+   and cross-checks it against Stripe, so the button and the charge cannot
+   drift. Identity is the canonical portfolioId and previewId, never the
+   display name this used to send as `preset`.
+
+   The legacy pieces cart is untouched: nothing here calls it. */
+function startUnlockCheckout(p){
+  if (!p || !p.portfolioId || !p.previewId){
+    console.warn('[discovery] unlock needs a portfolio and a preview:', p && p.key);
+    showUnlockNote('That piece cannot be unlocked yet. Try again in a moment.');
+    return Promise.resolve();
+  }
+  setUnlockIntent(p.previewId, p.key);
+  return Promise.all([
+    loadStripeJs(),
+    fetch('/api/v1/portfolios/' + encodeURIComponent(p.portfolioId) + '/unlock-checkout', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'include',
+      body: JSON.stringify({
+        previewId: p.previewId,
+        returnUrl: window.location.origin + window.location.pathname
+      })
+    }).then(function(res){ return res.json().then(function(d){ return { status:res.status, data:d }; }); })
+  ]).then(function(out){
+    var r = out[1];
+    if (!r.data.clientSecret || !r.data.publishableKey){
+      clearUnlockIntent();
+      console.warn('[discovery] unlock checkout refused:', r.data.error || r.status);
+      showUnlockNote(r.data.error === 'unlock_already_unlocked'
+        ? 'That image is already unlocked.'
+        : 'The payment form could not be opened. Try again in a moment.');
+      return;
+    }
+    var stripe = window.Stripe(r.data.publishableKey);
+    return stripe.initEmbeddedCheckout({
+      clientSecret: r.data.clientSecret,
+      /* __A4_CONFIRM__ Confirmation does not wait for a webhook. Stripe
+         delivers checkout.session.completed to PRODUCTION, and on
+         2026-09-17 that deployment ran code without the unlock handler, so
+         two paid unlocks were never activated. The deployment that served
+         this page confirms its own payment: it asks Stripe whether the
+         session is paid, then runs the same activation the webhook runs.
+         Both are idempotent, so whichever lands first wins. */
+      onComplete: function(){ finishUnlockPayment(p, r.data.sessionId); }
+    }).then(function(embed){
+      STRIPE_EMBED = embed;
+      var ckForm = document.getElementById('ckForm');
+      if (ckForm) ckForm.innerHTML = '';
+      var ckErr = document.getElementById('ckErr');
+      if (ckErr) ckErr.textContent = '';
+      embed.mount('#ckForm');
+      /* __CK_SHELL__ the unlock flow, not the collection purchase. Same rule:
+         the heading is decoration, the form opens regardless. */
+      try {
+        paintCheckoutHead('Unlock Your Image', pieceDisplayName(p),
+          '$' + ((typeof r.data.priceCents === 'number' ? r.data.priceCents : UNLOCK_PRICE_CENTS) / 100).toFixed(2));
+      } catch (e){ console.warn('[discovery] unlock heading not painted:', e); }
+      /* Whose checkout is open, so an abandoned modal can end the flow. */
+      UNLOCK_FLOW_PIECE = p;
+      var ckModal = document.getElementById('ckModal');
+      if (ckModal) ckModal.classList.add('is-open');
+    });
+  }).catch(function(e){
+    clearUnlockIntent();
+    releaseUnlockFlow(p);
+    console.error('[discovery] unlock checkout failed:', e);
+    showUnlockNote('The payment form could not be opened. Try again in a moment.');
+  });
+}
+
+/* __A4_CONFIRM__ Payment finished in the modal. Close it, ask this
+   deployment to confirm with Stripe and activate, then retry the ordinary
+   unlock claim -- the same claim the included unlock uses, unchanged.
+
+   CONFIRMATION IS RETRIED, not assumed. The activation may already have been
+   done by Production's webhook; either way the claim below is what actually
+   delivers the image, and it is safe to call more than once (the ledger
+   claim is a single-winner conditional update). */
+var UNLOCK_CONFIRM_TRIES = 4, UNLOCK_CONFIRM_EVERY = 2000;
+function finishUnlockPayment(p, sessionId, n){
+  n = n || 0;
+  closeCheckout();
+  if (!sessionId || !p || !p.portfolioId){
+    releaseUnlockFlow(p);
+    showUnlockNote('Payment went through. Refresh to collect your image.');
+    return;
+  }
+  showUnlockNote('Payment received — unlocking your image…');
+  fetch('/api/v1/portfolios/' + encodeURIComponent(p.portfolioId) + '/unlock-confirm', {
+    method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+    body: JSON.stringify({ sessionId: sessionId })
+  }).then(function(res){ return res.json().then(function(d){ return { status:res.status, data:d }; }); })
+    .then(function(r){
+      if (r.data && r.data.confirmed){
+        clearUnlockNote();
+        releaseUnlockFlow(p);
+        /* Straight back into the normal path. */
+        return unlockPiece(p);
+      }
+      /* Stripe has not settled yet. Wait and ask again, the same shape the
+         portfolio purchase uses. */
+      if (n + 1 < UNLOCK_CONFIRM_TRIES){
+        return new Promise(function(res2){ setTimeout(res2, UNLOCK_CONFIRM_EVERY); })
+          .then(function(){ return finishUnlockPayment(p, sessionId, n + 1); });
+      }
+      releaseUnlockFlow(p);
+      console.warn('[discovery] unlock not confirmed after', UNLOCK_CONFIRM_TRIES, 'tries:', r.data && (r.data.reason || r.data.error));
+      showUnlockNote('Payment received. Your image will unlock shortly — refresh if it does not.');
+    })
+    .catch(function(e){
+      releaseUnlockFlow(p);
+      console.error('[discovery] unlock confirm failed:', e);
+      showUnlockNote('Payment received. Your image will unlock shortly — refresh if it does not.');
+    });
+}
+
+/* The one entry point both unlock buttons call. */
+/* One unlock at a time per piece. Without this every click during the
+   round trip fired another POST /portraits/unlock and another full
+   renderCollection, so impatience made it slower. The ledger claim already
+   stops a second request from spending a second entitlement — this stops it
+   being sent at all. Keyed by piece, so two different pieces can still be
+   unlocked independently. */
+var UNLOCK_INFLIGHT = {};
+
+/* __A4_ONE_FLOW_PER_PIECE__ The one place an unlock flow ends. Held from the
+   first click until the piece unlocks, the payment finishes, or the attempt
+   gives up -- including across the checkout modal.
+
+   UNLOCK_FLOW_PIECE is the piece whose checkout is currently open, so that
+   closing the modal without paying can end the flow too. Without it an
+   abandoned modal would hold the guard forever and the customer could never
+   ask again. On the retry the server hands back the SAME still-open session
+   rather than minting another (reuse-before-create). */
+var UNLOCK_FLOW_PIECE = null;
+function releaseUnlockFlow(p){
+  var piece = p || UNLOCK_FLOW_PIECE;
+  if (piece && piece.previewId) delete UNLOCK_INFLIGHT[piece.previewId];
+  if (!p || (UNLOCK_FLOW_PIECE && piece && UNLOCK_FLOW_PIECE.previewId === piece.previewId)) {
+    UNLOCK_FLOW_PIECE = null;
+  }
+}
+
+function setUnlockBusy(key, busy){
+  var card = mycollGrid && mycollGrid.querySelector('.card[data-piece="' + key + '"]');
+  var btn = card && card.querySelector('.card__quick[data-quick="unlock"]');
+  if (btn){ btn.disabled = busy; if (busy) btn.textContent = 'Unlocking…'; }
+}
+
+function unlockPiece(p){
+  if (!p || !p.locked) return;
+  if (!p.previewId){
+    /* A demo seed tile, or a single bought outright — neither has a
+       preview to unlock. */
+    console.warn('[discovery] no previewId on', p.key, '— nothing to unlock');
+    return;
+  }
+  /* __A4_ONE_FLOW_PER_PIECE__ Keyed on the PREVIEW, not the tile key. The
+     Feature Image, the gallery card and the lightbox are three surfaces onto
+     one piece; keying on the tile let them run three flows at once.
+
+     And the guard is held THROUGH checkout. It used to be released the
+     moment requestUnlock resolved -- which is immediately before the modal
+     opens -- so the next click sailed past it and minted another session.
+     On 2026-09-17 that produced six sessions and two payments for one piece.
+     releaseUnlockFlow is the only thing that clears it. The server refuses
+     duplicates too (reuse-before-create); this just stops the asking. */
+  if (UNLOCK_INFLIGHT[p.previewId]) return;
+  UNLOCK_INFLIGHT[p.previewId] = true;
+  setUnlockBusy(p.key, true);
+  clearUnlockNote();
+  requestUnlock(p.previewId, p.key).then(function(result){
+    /* Success already repainted; every other path has to put the control
+       back, because the label was replaced with "Unlocking…". */
+    if (result !== 'unlocked') { setUnlockBusy(p.key, false); renderMyCollectionGrid(); }
+    if (result === 'unlocked') { releaseUnlockFlow(p); return; }
+    /* Payment keeps the flow open: startUnlockCheckout -> the modal ->
+       finishUnlockPayment, which releases it. */
+    if (result === 'needs_payment') return startUnlockCheckout(p);
+    releaseUnlockFlow(p);
+    if (result === 'cancelled') return;
+    if (result === 'payment_pending'){
+      showUnlockNote('Your payment is still going through. This usually takes a few seconds.');
+      return;
+    }
+    showUnlockNote('That unlock could not be completed. Nothing has been charged.');
+  });
+}
+
+function saveBlobAs(url, name){
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = safeFileName(name);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  /* Revoked late: Safari reads the blob after the click returns. */
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 20000);
+}
+
+function downloadPortfolioPiece(piece){
+  if (!piece || piece.locked) return Promise.resolve(false);
+
+  if (piece.previewId){
+    var held = UNLOCKED_ART[piece.previewId];
+    if (held){
+      return fetch('data:image/png;base64,' + held)
+        .then(function(r){ return r.blob(); })
+        .then(function(blob){
+          saveBlobAs(URL.createObjectURL(blob), pieceTitle(piece));
+          return true;
+        })
+        .catch(function(e){ console.warn('[download] failed:', e.message || e); return false; });
+    }
+    return fetch('/api/v1/portraits/unlock', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'include',
+      body: JSON.stringify({ preview_id: piece.previewId })
+    }).then(function(r){ return r.json(); }).then(function(d){
+      if (!d || !d.image_b64) throw new Error((d && d.error) || 'no image returned');
+      UNLOCKED_ART[piece.previewId] = d.image_b64;
+      return fetch('data:image/png;base64,' + d.image_b64).then(function(r){ return r.blob(); });
+    }).then(function(blob){
+      saveBlobAs(URL.createObjectURL(blob), pieceTitle(piece));
+      return true;
+    }).catch(function(e){
+      console.warn('[download] failed:', e.message || e);
+      showUnlockNote('That file could not be saved just now. Nothing has been charged.');
+      return false;
+    });
+  }
+
+  if (!piece.art) return Promise.resolve(false);
+  return fetch(piece.art)
+    .then(function(r){
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.blob();
+    })
+    .then(function(blob){
+      saveBlobAs(URL.createObjectURL(blob), pieceTitle(piece));
+      return true;
+    })
+    .catch(function(e){
+      console.warn('[download] failed:', e.message || e);
+      return false;
+    });
+}
+
+
   function loadPieces(){
+    craftWhenPiecesLand(0);
     /* ?all=1 — an archived piece is still printable, so the client holds
        both and the view decides what to show. */
     return fetch(PIECES_URL + '?all=1', { credentials:'same-origin' })
@@ -10687,6 +11173,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
   }
 
   function downloadPiece(piece){
+    if (piece && piece.portfolioId) return downloadPortfolioPiece(piece);
     if (!piece || !piece.art) return Promise.resolve(false);
     return fetch(piece.art)
       .then(function(r){
@@ -10756,6 +11243,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
     var list = lbList(); var p = list[LB_AT];
     if (!p) return;
     lboxImg.src = p.art || '';
+    if(p.portfolioId){ lboxName.textContent=p.name; paintPortfolioActions(p,lboxActs); return; }
     lboxName.innerHTML = esc(p.name) + '<span class="lbox__series">' + esc(p.series) + '</span>';
     /* The re-render offer lives HERE and not on the tile. Rejecting a piece is
        a considered act, taken while looking at it properly — not a hover. */

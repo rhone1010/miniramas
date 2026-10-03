@@ -71,7 +71,7 @@ export async function POST(
   /* Same series guard the poller uses: renderOnePortfolioItem returns early
      for anything but portraits, so dispatching them would claim rows the
      render cannot advance. */
-  if (portfolio.series !== 'portraits' && portfolio.series !== 'pets') {
+  if (portfolio.series !== 'portraits' && portfolio.series !== 'pets' && portfolio.series !== 'groups') {
     return NextResponse.json(
       { dispatched: 0, reason: 'series_not_wired', series: portfolio.series },
       { status: 200 },

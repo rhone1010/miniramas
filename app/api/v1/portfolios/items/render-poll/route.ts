@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
     .from('portfolios')
     .select('id')
     .eq('status', 'generating')
-    .in('series', ['portraits', 'pets'])
+    .in('series', ['portraits', 'pets', 'groups'])
   if (portfolioErr) {
     console.error('[render-poll] portfolio query failed:', portfolioErr.message)
     return NextResponse.json({ error: 'portfolio_query_failed' }, { status: 500 })
