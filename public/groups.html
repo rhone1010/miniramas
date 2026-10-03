@@ -7517,6 +7517,7 @@ window.EFFECT_PREVIEWS = {
      would refuse at the end anyway. The server's 402 on
      /api/v1/groups/generate remains the real authority. */
   function checkCraftsAvailable(items, quiet){
+    var collectionCount = QUEUE.length;
     return refreshGroupsBalance().then(function(d){
       if (!d.ok){
         if (!quiet) groupsNotice('unreachable', 0, items.length);
@@ -7524,10 +7525,16 @@ window.EFFECT_PREVIEWS = {
       }
       if (CRAFTS_REMAINING != null && CRAFTS_REMAINING < items.length){
         if (!quiet){
-          if (typeof window.__openPaywall === 'function'){
-            window.__openPaywall({ needed: items.length, balance: CRAFTS_REMAINING, reason: 'insufficient_crafts' });
-          }
           groupsNotice('insufficient_crafts', CRAFTS_REMAINING, items.length);
+          return loadBlocks().then(function(blocks){
+            var sku = blocks.find(function(block){ return block.count === collectionCount; });
+            if (!sku || VALID_SIZES.indexOf(collectionCount) === -1){
+              groupsNotice('unreachable', 0, items.length);
+              return false;
+            }
+            beginPurchase(sku, true);
+            return false;
+          });
         }
         return false;
       }
@@ -8312,14 +8319,18 @@ window.EFFECT_PREVIEWS = {
     });
   }
 
-  function beginPurchase(sku){
+  function beginPurchase(sku, fixedBundle){
     if (!ME || !ME.id){
       if (buyErr) buyErr.textContent = 'Sign in first and I will bring you straight back.';
       return;
     }
     if (buyErr) buyErr.textContent = '';
     if (buyList) buyList.hidden = true;
-    if (buyBack) buyBack.hidden = false;
+    if (buyBack) buyBack.hidden = !!fixedBundle;
+    if (fixedBundle){
+      if (buyForm) buyForm.innerHTML = '';
+      if (buyPanel) buyPanel.classList.add('is-open');
+    }
     if (buySay) buySay.textContent = sku.count + (sku.count === 1 ? ' craft' : ' crafts') + ' \u00b7 ' + usd(priceOf(sku));
 
     /* Their work is held before the payment begins. The return is a fresh
@@ -8368,7 +8379,7 @@ window.EFFECT_PREVIEWS = {
       STRIPE_EMBED = embed;
       embed.mount('#buyForm');
     }).catch(function(e){
-      if (buyList) buyList.hidden = false;
+      if (buyList) buyList.hidden = !!fixedBundle;
       if (buyBack) buyBack.hidden = true;
       if (buyErr){
         buyErr.textContent = (e && e.message === 'no_publishable_key')
@@ -9797,7 +9808,7 @@ window.EFFECT_PREVIEWS = {
      click there. */
   var curReviewBtn = document.getElementById('curReviewBtn');
   if (curReviewBtn) curReviewBtn.addEventListener('click', function(){
-    if(validCollection()) tbcGo.click(); else showGroupsReview();
+    showGroupsReview();
   });
   document.getElementById('groupsReviewAccess').addEventListener('click',showGroupsReview);
 
