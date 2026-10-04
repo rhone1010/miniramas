@@ -7,7 +7,7 @@ const source=html.slice(html.indexOf('  var ASPECT = null;'),html.indexOf('  fun
 function setup(count:number){
  const dom=new JSDOM(html)
  let crafts=0, reviews=0
- const ctx:any={document:dom.window.document,SRC:{subjectCount:count},QUEUE:['a','b','c','d'],guardCollection:()=>true,paintGroupsModeControl:()=>{},loadBlocks:()=>Promise.resolve([]),saveResume:()=>{},tbcGo:{click:()=>crafts++},showGroupsReview:()=>reviews++}
+ const ctx:any={document:dom.window.document,SRC:{subjectCount:count},QUEUE:['a','b','c','d'],BLOCKS:[],targetBundle:()=>4,reviewItems:()=>[],effectLabel:(id:string)=>id,guardCollection:()=>true,paintGroupsModeControl:()=>{},loadBlocks:()=>Promise.resolve([]),saveResume:()=>{},tbcGo:{click:()=>crafts++},showGroupsReview:()=>reviews++}
  runInNewContext(source,ctx)
  return {ctx,doc:dom.window.document,crafts:()=>crafts,reviews:()=>reviews}
 }

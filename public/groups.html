@@ -5638,6 +5638,33 @@ body.groups-shapes #groupsExplore,body.groups-shapes #groupsRoomMap,body.groups-
 #groupsShapeCraft{width:auto;}
 #groupsShapeCraft:disabled{opacity:.45;cursor:default;}
 @media(max-width:720px){#groupsShapes{padding:18px 8px 60px;}#groupsShapes .aspect-row{gap:8px;}#groupsShapes .aspect-opt{padding:8px;gap:8px;}#groupsShapes .aspect-shape{height:62px!important;width:calc(62px * var(--ar))!important;}#groupsShapes .aspect-opt__label{font-size:20px;}#groupsShapes .aspect-opt__say{font-size:16px;}}
+
+#groupsRoomMap .dcur__room{flex-direction:column;text-align:center;font-size:16px;gap:6px;}
+#groupsRoomMap .dcur__room img{width:66px;height:66px;}
+#workshop .silo-card__content,#workshop .silo-card__overlay{opacity:1;}
+#workshop .silo-card.is-selected .silo-card__add{transform:scale(1.5);transform-origin:bottom right;}
+body.groups-catalog #workshop .floor{container-type:normal;height:auto;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:auto;align-content:start;padding:var(--card-gap);}
+body.groups-catalog #workshop .floor > .silo-card{width:100%;max-height:none;scroll-margin-top:var(--card-gap);}
+body.groups-catalog #workshop .face--effects{height:auto;}
+body.groups-catalog #deck{overflow-y:scroll;scrollbar-gutter:stable;scrollbar-color:var(--gold-soft) var(--oxblood);}
+body.groups-catalog #deck::-webkit-scrollbar{width:10px;}
+body.groups-catalog #deck::-webkit-scrollbar-track{background:var(--oxblood);}
+body.groups-catalog #deck::-webkit-scrollbar-thumb{background:var(--gold-soft);border-radius:6px;}
+body.groups-cart .room--curator{background:linear-gradient(180deg,var(--vellum-100),#ece4d4);}
+body.groups-cart .cur-change,body.groups-cart .cur-modebar,body.groups-cart #groupsExplore,body.groups-cart #curPackages,body.groups-cart #groupsPackageInfo,body.groups-cart #curCollection{display:none!important;}
+#groupsShapeRail .your-collection__title{color:var(--ink);}
+#groupsCartEffects{list-style:none;padding:0;margin:12px 0;font:400 22px/1.35 var(--serif);color:var(--ink);}
+#groupsShapeSummary{white-space:pre-line;}
+#groupsCartBack{margin-top:18px;}
+body.groups-shapes{height:auto;overflow-y:auto;}
+body.groups-shapes .stage,body.groups-shapes .rooms{height:auto;min-height:calc(100dvh - var(--mh-h));overflow:visible;}
+body.groups-shapes #workshop{overflow:visible;}
+body.groups-shapes #groupsShapes{display:block;flex:none;overflow:visible;padding-bottom:100px;}
+body.groups-shapes #groupsShapes .aspect-gallery{overflow:visible;flex:none;gap:18px;}
+body.groups-shapes #groupsShapes > .groups-forward{max-width:1100px;margin:auto;padding-top:28px;}
+#groupsShapeCraft{min-height:60px;font:400 28px var(--serif);padding:16px 28px;}
+#groupsShapeCraft:disabled{opacity:1;background:var(--vellum);color:var(--brass);border-color:var(--gold-soft);cursor:not-allowed;}
+@media(max-width:767px){body.groups-catalog #workshop .floor{grid-template-columns:repeat(2,minmax(0,1fr));}}
 </style>
 <style id="groupsSharedMasthead">
 .mh-right > .mh-desktop-only{display:none}
@@ -5843,8 +5870,12 @@ body.groups-shapes #groupsExplore,body.groups-shapes #groupsRoomMap,body.groups-
              "Curated" opens the same ten for browsing. Both reuse the
              existing effects floor and turn() flip — see openCurated(). -->
         <div id="groupsShapeRail" hidden>
-          <div class="ready-block"><h4>One Last Choice</h4><p>Choose the format for your finished artwork. Your selection will be applied to your collection.</p></div>
+          <div class="your-collection__title">Your Collection</div>
+          <p id="groupsCartCount"></p>
+          <ol id="groupsCartEffects"></ol>
           <p id="groupsShapeSummary"></p>
+          <p id="groupsCartFormat" hidden></p>
+          <button class="btn-review" id="groupsCartBack" type="button">← Back to Discovery</button>
         </div>
         <div id="groupsExplore"><div class="your-collection__title">Explore Styles</div><div class="dcur__rooms" id="groupsRoomMap" hidden></div></div>
         <div class="cur-modebar">
@@ -5885,7 +5916,7 @@ body.groups-shapes #groupsExplore,body.groups-shapes #groupsRoomMap,body.groups-
     <!-- CUI 41A, 23 Aug 2026. Phone only. Filled from #mhSeriesLabel so
          a Series rename stays one edit. -->
     <h1 class="room-name" id="roomName"></h1>
-    <div id="groupsJourney" aria-label="Creation progress"><span data-step="choose" aria-current="step">1 Choose</span> · <span data-step="review">2 Review</span> · <span data-step="format">3 Format</span></div>
+
     <div class="crumb">
       <button class="crumb-back" id="crumbBack" type="button">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg><span id="crumbLabel">All effects</span>
@@ -5899,7 +5930,7 @@ body.groups-shapes #groupsExplore,body.groups-shapes #groupsRoomMap,body.groups-
       <div class="aspect-gallery">
         <button class="crumb-back" id="btnBackAspect" type="button">&larr; Back to Review</button>
         <h2 class="aspect-gallery__title">Where will your artwork live?</h2>
-        <p class="aspect-gallery__say">Choose the format that fits your vision.</p>
+
         <div class="aspect-row" id="aspectRow"></div>
       </div>
       <div class="groups-forward"><button class="btn-review" id="groupsShapeCraft" type="button" disabled>Craft My Collection</button></div>
@@ -13311,10 +13342,12 @@ function downloadPortfolioPiece(piece){
     document.getElementById('groupsExplore').hidden = GROUPS_REVIEW || GROUPS_PICK_ACTIVE;
     document.getElementById('curPackages').hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
     document.getElementById('groupsPackageInfo').hidden = (!GROUPS_PICK_ACTIVE && !QUEUE.length) || GROUPS_REVIEW;
-    document.querySelectorAll('#groupsJourney [data-step]').forEach(function(step){
-      if(step.dataset.step === (document.body.classList.contains('groups-shapes') ? 'format' : GROUPS_REVIEW ? 'review' : 'choose')) step.setAttribute('aria-current','step');
-      else step.removeAttribute('aria-current');
-    });
+    var cart = GROUPS_REVIEW || document.body.classList.contains('groups-shapes');
+    document.body.classList.toggle('groups-cart',cart);
+    document.body.classList.toggle('groups-catalog',!cart && !GROUPS_PICK_ACTIVE);
+    document.querySelector('#cur .cur-photo').inert = cart;
+    document.getElementById('groupsShapeRail').hidden = !cart;
+    if(cart) paintGroupsCart();
     if(curPick4Btn){curPick4Btn.disabled = CURATED_BUSY || GROUPS_FILL_SLOT !== null;curPick4Btn.classList.toggle('is-active',GROUPS_PICK_ACTIVE);}
     if(curAllFxBtn){
       curAllFxBtn.hidden = GROUPS_PICK_ACTIVE;
@@ -13322,7 +13355,7 @@ function downloadPortfolioPiece(piece){
       curAllFxBtn.classList.toggle('is-active',!GROUPS_PICK_ACTIVE && !GROUPS_REVIEW);
     }
   }
-  function dismissGroupsPick(){ GROUPS_PICK_ACTIVE = false; paintGroupsModeControl(); }
+  function dismissGroupsPick(){ var wasPick = GROUPS_PICK_ACTIVE; GROUPS_PICK_ACTIVE = false; paintGroupsModeControl(); if(wasPick && !CURATED_BUSY && !GROUPS_REVIEW) paintGroupsCatalog(); }
   function clearGroupsMode(){
     CURATED_MODE = null;
     dismissGroupsPick();
@@ -13386,6 +13419,7 @@ function chooseAspect(id){
     el.setAttribute('aria-checked', on ? 'true' : 'false');
   });
   document.getElementById('groupsShapeCraft').disabled = false;
+  paintGroupsCart();
   saveResume();
 }
 
@@ -13401,7 +13435,7 @@ function chooseAspect(id){
     renderAspects();
     loadBlocks().then(function(blocks){
       var sku=blocks.find(function(b){return b.count===QUEUE.length;});
-      if(sku)document.getElementById('groupsShapeSummary').textContent=sku.count+' watermarked previews · '+(sku.includedUnlocks||0)+' included unlock'+(sku.includedUnlocks===1?'':'s')+' · '+usd(priceOf(sku));
+      paintGroupsCart();
     });
   }
   function hideAspect(){
@@ -13414,6 +13448,24 @@ function chooseAspect(id){
     if(groupsShapeAllowed(SRC.subjectCount,ASPECT)&&tbcGo)tbcGo.click();
   });
 
+  function paintGroupsCart(){
+    var box=document.getElementById('groupsCartEffects');
+    box.innerHTML='';
+    reviewItems().filter(function(item){return !item.slot;}).forEach(function(item){
+      var li=document.createElement('li');li.textContent=effectLabel(item.effectId);box.appendChild(li);
+    });
+    document.getElementById('groupsCartCount').textContent=QUEUE.length+(QUEUE.length===1?' artwork':' artworks');
+    var sku=(BLOCKS||[]).find(function(b){return b.count===targetBundle();});
+    if(sku) document.getElementById('groupsShapeSummary').textContent=sku.count+(sku.count===1?' Craft':' Crafts')+' · '+usd(priceOf(sku))+'\n'+(sku.includedUnlocks||0)+(sku.includedUnlocks===1?' Unlock Included':' Unlocks Included');
+    var format=document.getElementById('groupsCartFormat'),isFormat=document.body.classList.contains('groups-shapes');
+    var choice=ASPECTS.find(function(a){return a.id===ASPECT;});
+    format.hidden=!isFormat||!choice;
+    format.textContent=isFormat&&choice?'Format · '+choice.label:'';
+    document.getElementById('groupsCartBack').textContent=isFormat?'← Back to Review':'← Back to Discovery';
+  }
+  document.getElementById('groupsCartBack').addEventListener('click',function(){
+    if(document.body.classList.contains('groups-shapes'))showGroupsReview();else showGroupsDiscovery();
+  });
   function showGroupsReview(){
     hideAspect();
     GROUPS_FILL_SLOT = null;
@@ -13432,6 +13484,7 @@ function chooseAspect(id){
   function renderGroupsReview(){
     if (!GROUPS_REVIEW || !effFloor) return;
     effFloor.innerHTML = '';
+    paintGroupsCart();
     var items = reviewItems();
     GROUPS_REVIEW_PAGE = items.length > 8 ? GROUPS_REVIEW_PAGE : 0;
     document.getElementById('groupsReviewPages').hidden = items.length <= 8;
@@ -13462,40 +13515,42 @@ function chooseAspect(id){
     var siloId = GROUPS_FLOOR_SILO || R.silos[0].id;
     GROUPS_FLOOR_SILO = siloId;
     Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId === siloId));});
-    paintEffects(siloId, siloList(siloId));
+    paintGroupsCatalog();
     crumbHere.textContent = siloLabel(siloId);
     workshop.classList.remove('workshop-view--silos'); workshop.classList.add('workshop-view--effects');
   }
-  var GROUPS_REQUESTED_SILO = null, GROUPS_SILO_BUSY = false;
   var GROUPS_SILO_ICONS = {portrait_collections:'living_world',crafted_collections:'artists_gallery',sculpted:'earth_ore',material_magic:'light_glass',made_by_hand:'made_by_hand',artists_studio:'ink_paper',curiosities:'fantasy_future'};
-  function showGroupsSilo(siloId){
-    GROUPS_REQUESTED_SILO = siloId;
-    if(GROUPS_SILO_BUSY) return;
-    if(CURATED_BUSY || siloId === GROUPS_FLOOR_SILO) return;
-      GROUPS_SILO_BUSY = true;
-      CURATED_BUSY = true;
-      var rooms = document.getElementById('groupsRoomMap');
-      GROUPS_REVIEW = false;
-      document.getElementById('groupsReviewActions').hidden = true; document.getElementById('groupsReviewFooter').hidden = true;
-      clearGroupsMode();
-      GROUPS_FLOOR_SILO = siloId;
-      Array.from(rooms.children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId === siloId));});
-      document.getElementById('groupsRoomMap').hidden=false;
-      var list = siloList(siloId);
-      UPSELL_CTX = null;
-      effFloor.classList.add('is-flipping');
-      curatedTurn(effFloor,paintCuratedCards(list.map(function(effect){return effect.id;}))).then(function(){
-        effFloor.classList.remove('is-flipping');
-        CURATED_BUSY = false;
-        GROUPS_SILO_BUSY = false;
-        paintGroupsModeControl();
-        if(GROUPS_REQUESTED_SILO !== GROUPS_FLOOR_SILO) showGroupsSilo(GROUPS_REQUESTED_SILO);
+  function paintGroupsCatalog(){
+    effFloor.innerHTML = '';
+    R.silos.forEach(function(silo){
+      siloList(silo.id).forEach(function(effect){
+        var card = effectCard(silo.id,effect);
+        if(inQueue(silo.id,effect.id)) card.classList.add('is-selected');
+        effFloor.appendChild(card);
       });
-      effFloor.dataset.count = list.length;
-      workshop.classList.remove('workshop-view--silos'); workshop.classList.add('workshop-view--effects');
-      crumbHere.textContent = siloLabel(siloId);
-      if(curatedPageNav) curatedPageNav.hidden = true;
+    });
+    effFloor.dataset.count = effFloor.children.length;
+    UPSELL_CTX = null;
   }
+  function showGroupsSilo(siloId){
+    if(CURATED_BUSY) return;
+    GROUPS_FLOOR_SILO = siloId;
+    if(GROUPS_REVIEW || GROUPS_PICK_ACTIVE) showGroupsDiscovery();
+    var card = effFloor.querySelector('[data-silo-id="'+siloId+'"]');
+    if(card) card.scrollIntoView({block:'start',behavior:'auto'});
+    Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId === siloId));});
+    crumbHere.textContent = siloLabel(siloId);
+  }
+  function trackGroupsCatalog(){
+    if(!document.body.classList.contains('groups-catalog')) return;
+    var top=document.getElementById('deck').getBoundingClientRect().top;
+    var cards=Array.from(effFloor.children),current=cards.find(function(card){return card.getBoundingClientRect().bottom>top;});
+    if(!current) return;
+    GROUPS_FLOOR_SILO=current.dataset.siloId;
+    Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId===GROUPS_FLOOR_SILO));});
+    crumbHere.textContent=siloLabel(GROUPS_FLOOR_SILO);
+  }
+  document.getElementById('deck').addEventListener('scroll',trackGroupsCatalog,{passive:true});
   function paintGroupsRooms(){
     var rooms = document.getElementById('groupsRoomMap');
     rooms.innerHTML = R.silos.map(function(silo){
