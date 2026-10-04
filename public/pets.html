@@ -7127,6 +7127,11 @@ whoAmI().then(function(u){
   if (u && walletSession) mcUnlockConfirm(walletSession);
   var setSession = new URLSearchParams(location.search).get('collection_unlock_set_session') || sessionStorage.getItem('liten_collection_unlock_set_session');
   if (u && setSession) mcUnlockConfirm(setSession, 0, true);
+  if (location.pathname === '/collection'){
+    document.title = 'Liten & Co — My Collection';
+    openMyCollection();
+    return;
+  }
   (u ? restoreResume() : Promise.resolve(false))
     .then(function(){ return receiveFoyerHandoff(); })
     .then(function(){ return recoverActiveSource(); })
@@ -8647,6 +8652,7 @@ var mycollGrid = document.getElementById('mycollGrid');
 
 var railBeforeMycoll = 'discovery';
 function openMyCollection(){
+  if (location.pathname !== '/collection'){ try { sessionStorage.setItem('liten_collection_return', '/pets/discovery'); } catch (_) {} location.assign('/collection'); return; }
   mcUnlockRefresh();
   act('open My Collection');
   railBeforeMycoll = reviewView.classList.contains('active') ? 'review' : 'discovery';
@@ -8670,6 +8676,13 @@ function openMyCollection(){
   renderMyCollectionGrid();
 }
 function closeMyCollection(){
+  if (location.pathname === '/collection'){
+    var returnPath = '/discovery';
+    try { returnPath = sessionStorage.getItem('liten_collection_return') || returnPath; } catch (_) {}
+    if (['/discovery', '/pets/discovery', '/groups'].indexOf(returnPath) < 0) returnPath = '/discovery';
+    location.assign(returnPath);
+    return;
+  }
   document.body.classList.remove('mc-unlock-review');
   var unlockDialog = document.getElementById('mcUnlockDialog');
   if (unlockDialog && unlockDialog.open) unlockDialog.close();
@@ -8883,6 +8896,7 @@ discoveryRail.addEventListener('click', function(e){
   }
 });
 document.getElementById('navMyCollection').addEventListener('click', function(){
+  if (location.pathname === '/collection'){ openMyCollection(); return; }
   if (mycoll.classList.contains('is-open')) closeMyCollection(); else openMyCollection();
 });
 

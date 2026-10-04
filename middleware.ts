@@ -131,7 +131,7 @@ const PAGES: Record<string, string> = {
      floor wondering where their collection went. See
      scripts/patch-portraits-panel-boot.py. */
   '/account': '/discovery-consolidated-draft.html',
-  '/collection': '/portraits.html',
+  '/collection': '/pets.html',
   '/print': '/portraits.html',
   '/help': '/discovery-consolidated-draft.html',
 };

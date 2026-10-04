@@ -9822,12 +9822,7 @@ window.EFFECT_PREVIEWS = {
   })();
 
   function showCollection(){
-    closeOtherSurfaces('collection');
-    if (!mycoll) return;
-    renderCollection();
-    mycoll.classList.add('is-open');
-    mycoll.setAttribute('aria-hidden', 'false');
-    if (typeof markLinks === 'function') markLinks(true);
+    try { sessionStorage.setItem('liten_collection_return', '/discovery'); } catch (_) {} location.assign('/collection');
   }
   function hideCollection(){
     if (!mycoll) return;

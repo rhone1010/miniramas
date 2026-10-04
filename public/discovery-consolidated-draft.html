@@ -9116,6 +9116,7 @@ var mycollGrid = document.getElementById('mycollGrid');
 
 var railBeforeMycoll = 'discovery';
 function openMyCollection(){
+  if (location.pathname !== '/collection'){ try { sessionStorage.setItem('liten_collection_return', '/discovery'); } catch (_) {} location.assign('/collection'); return; }
   mcUnlockRefresh();
   act('open My Collection');
   railBeforeMycoll = reviewView.classList.contains('active') ? 'review' : 'discovery';
