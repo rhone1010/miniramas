@@ -12,7 +12,7 @@ export async function ownedPrintSource(userId: string, previewId: string, db = s
   const {data:portfolio,error:pfError}=await db.from('portfolios').select('id,series').eq('id',match[1]).eq('user_id',userId).maybeSingle()
   const {data:item,error:itemError}=await db.from('portfolio_items').select('preview_id,preset,status').eq('portfolio_id',match[1]).eq('preview_id',previewId).eq('slot',Number(match[2])).maybeSingle()
   if(pfError||itemError||!portfolio||item?.status!=='done')throw new Error('owned_artwork_required')
-  if(!['portraits','pets'].includes(portfolio.series))throw new Error('square_artwork_required')
+  if(!['portraits','pets','groups'].includes(portfolio.series))throw new Error('square_artwork_required')
   const b64=await fetchCleanOriginal(db,ledger.storage_path)
   if(!b64)throw new Error('clean_original_unavailable')
   const bytes=Buffer.from(b64,'base64'),md=await sharp(bytes).metadata()
