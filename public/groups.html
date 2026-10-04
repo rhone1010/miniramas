@@ -5371,7 +5371,14 @@ body.is-lboxed{ overflow:hidden }
 #groupsReviewActions[hidden],#groupsReviewFooter[hidden],#groupsReviewPages[hidden]{display:none;}
 .groups-forward{display:flex;align-self:stretch;justify-content:flex-end;padding:12px var(--stage-pad-x);}
 .groups-forward .btn-review{width:auto;min-height:60px;font-size:28px;background:var(--gold-soft);color:var(--oxblood);border-color:var(--gold-soft);}
-#groupsReviewPages{position:static;transform:none;margin:auto;}
+#groupsReviewFooter{position:relative;flex:none;}
+#groupsReviewPages{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;display:flex;gap:0;border:2px solid var(--gold-soft);border-radius:6px;overflow:hidden;}
+#groupsReviewPages .cur-mode{min-width:60px;min-height:44px;font:400 28px var(--serif);border:0;border-radius:0;background:var(--oxblood);color:var(--gold-soft);}
+#groupsReviewPages .cur-mode.is-active{background:var(--gold-soft);color:var(--oxblood);}
+#groupsJourney{flex:none;text-align:center;padding:8px;font:400 20px var(--serif);color:var(--gold-soft);}
+#groupsJourney [aria-current="step"]{color:var(--vellum);border-bottom:1px solid var(--gold-soft);}
+#groupsPackageInfo.is-ready{box-shadow:0 0 0 2px var(--gold-soft);}
+@media(max-width:1024px){#groupsReviewPages{position:static;transform:none;width:max-content;margin:auto;}}
 #groupsReviewActions button{font:400 22px var(--serif);padding:12px 24px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--oxblood);color:var(--vellum);cursor:pointer;}
 #groupsReviewActions button:disabled{opacity:.5;cursor:not-allowed;}
 #groupsBundleSummary{display:flex;justify-content:space-between;padding:8px 12px;border:1px solid var(--gold-soft);border-radius:6px;color:var(--gold-soft);font:22px var(--serif);}
@@ -5606,8 +5613,9 @@ body.is-lboxed{ overflow:hidden }
   color:#6f6350; margin:0; text-align:center; max-width:19ch }
 
 #groupsShapes[hidden],#groupsShapeRail[hidden]{display:none!important}
-#groupsShapes{padding:28px var(--stage-pad-x) 60px;overflow:auto;}
-#groupsShapes .aspect-gallery{margin:auto;}
+#groupsShapes{padding:28px var(--stage-pad-x) 60px;display:flex;flex:1;min-height:0;flex-direction:column;overflow:hidden;}
+#groupsShapes .aspect-gallery{margin:0 auto;min-height:0;overflow:auto;flex:1;}
+#groupsShapes > .groups-forward{flex:none;padding:12px 0;}
 #groupsShapes .aspect-row{width:100%;max-width:760px;}
 #groupsShapes .aspect-opt{min-width:0;justify-content:flex-end;}
 #groupsShapes .aspect-shape{max-width:100%;}
@@ -5619,7 +5627,7 @@ body.groups-shapes .cur-modebar,body.groups-shapes #curPackages,body.groups-shap
 body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-shapes #groupsReviewAccess{display:none!important}
 #groupsShapeRail{padding-top:18px;}
 #groupsShapeRail p{font:16px/1.5 var(--sans);}
-#groupsShapeCraft{width:100%;}
+#groupsShapeCraft{width:auto;}
 #groupsShapeCraft:disabled{opacity:.45;cursor:default;}
 @media(max-width:720px){#groupsShapes{padding:18px 8px 60px;}#groupsShapes .aspect-row{gap:8px;}#groupsShapes .aspect-opt{padding:8px;gap:8px;}#groupsShapes .aspect-shape{height:62px!important;width:calc(62px * var(--ar))!important;}#groupsShapes .aspect-opt__label{font-size:20px;}#groupsShapes .aspect-opt__say{font-size:16px;}}
 </style>
@@ -5795,10 +5803,7 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
   <div class="rooms">
     <section class="room room--curator">
       <div class="cur" id="cur" data-state="empty">
-        <div class="cur-head">
-          <img class="cur-mark" src="/icons/curator-c.svg" alt="">
-          <span class="cur-title">Curator</span>
-        </div>
+
 
         <div class="cur-photo">
           <input type="file" id="srcFile" accept="image/*" hidden>
@@ -5854,7 +5859,7 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
           <div class="dcur__count" id="curCollCount"></div>
           <div class="dcur__milestones" id="curCollMilestones" role="progressbar" aria-label="Package progress" aria-valuemin="0" aria-valuemax="16"></div>
           <div class="dcur__next" id="curCollNext"></div>
-          <div id="groupsBundleSummary"><span id="groupsBundleCount"></span><span id="groupsBundlePrice"></span></div><button class="btn-review" id="curReviewBtn" type="button">Review Collection &rarr;</button><button class="btn-review" id="groupsReviewAccess" type="button" hidden>Review Collection &rarr;</button>
+          <button class="btn-review" id="curReviewBtn" type="button">Review Collection &rarr;</button><button class="btn-review" id="groupsReviewAccess" type="button" hidden>Review Collection &rarr;</button>
         </div>
 
         <div class="cur-letter">
@@ -5871,6 +5876,7 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
     <!-- CUI 41A, 23 Aug 2026. Phone only. Filled from #mhSeriesLabel so
          a Series rename stays one edit. -->
     <h1 class="room-name" id="roomName"></h1>
+    <div id="groupsJourney" aria-label="Creation progress"><span data-step="choose" aria-current="step">1 Choose</span> · <span data-step="review">2 Review</span> · <span data-step="format">3 Format</span></div>
     <div class="crumb">
       <button class="crumb-back" id="crumbBack" type="button">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg><span id="crumbLabel">All effects</span>
@@ -5886,8 +5892,8 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
         <h2 class="aspect-gallery__title">Where will your artwork live?</h2>
         <p class="aspect-gallery__say">Choose the format that fits your vision.</p>
         <div class="aspect-row" id="aspectRow"></div>
-        <div class="groups-forward"><button class="btn-review" id="groupsShapeCraft" type="button" disabled>Craft My Collection</button></div>
       </div>
+      <div class="groups-forward"><button class="btn-review" id="groupsShapeCraft" type="button" disabled>Craft My Collection</button></div>
     </main>
     <div id="groupsReviewActions" hidden><button type="button" id="groupsReviewBack">Back to Discovery</button><button type="button" id="groupsReviewClear">Clear Selection</button></div><div class="deck" id="deck">
       <div class="face face--silos">
@@ -5903,8 +5909,8 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
       </div>
     </div>
       <div id="groupsReviewFooter" hidden>
-        <div class="curated-page" id="groupsReviewPages" hidden><button class="cur-mode" id="groupsReviewPage1" type="button">‹ 1–8</button><button class="cur-mode" id="groupsReviewPage2" type="button">9–16 ›</button></div>
-        <div class="groups-forward"><button class="btn-review" type="button" id="groupsReviewCraft">Craft</button></div>
+        <div class="curated-page" id="groupsReviewPages" hidden><button class="cur-mode" id="groupsReviewPage1" type="button">1</button><button class="cur-mode" id="groupsReviewPage2" type="button">2</button></div>
+        <div class="groups-forward"><button class="btn-review" type="button" id="groupsReviewCraft">Choose Format →</button></div>
       </div>
       <div class="curated-page" id="curatedPageNav" hidden>
         <button class="cur-mode" id="curatedPrevBtn" type="button">1</button>
@@ -8499,14 +8505,15 @@ window.EFFECT_PREVIEWS = {
       '<i class="dcur__position" style="left:' + state.position + '%"></i>';
     if (next) next.textContent = state.message;
     var target = targetBundle(), sku = (BLOCKS || []).find(function(s){ return s.count === target; });
-    var bn = document.getElementById('groupsBundleCount'), bp = document.getElementById('groupsBundlePrice');
-    var reachedSku = (BLOCKS || []).find(function(s){return s.count === n;});
-    if(bn) bn.textContent = ready ? n + (n === 1 ? ' Craft' : ' Crafts') : '';
-    if(bp) bp.textContent = ready && reachedSku ? usd(priceOf(reachedSku)) + (reachedSku.includedUnlocks ? ' · ' + reachedSku.includedUnlocks + (reachedSku.includedUnlocks === 1 ? ' Unlock Included' : ' Unlocks Included') : '') : '';
-    document.getElementById('groupsBundleSummary').classList.toggle('is-active',ready);
     Array.from(document.querySelectorAll('#curPackages .buy-block')).forEach(function(b){var p=(BLOCKS||[]).find(function(x){return x.id===b.dataset.sku;});b.classList.toggle('is-active',!!p && p.count===target);b.disabled=!!p && p.count<n;});
     var info=document.getElementById('groupsPackageInfo');
-    if(info && sku) info.innerHTML=target+(target === 1 ? ' Craft' : ' Crafts')+' · '+usd(priceOf(sku))+'<br><span class="groups-unlock-count">'+(sku.includedUnlocks||0)+'</span> '+(sku.includedUnlocks===1?'Unlock Included':'Unlocks Included');
+    var rewardTarget = GROUPS_PICK_ACTIVE ? target : targetFor(n);
+    var rewardSku = (BLOCKS || []).find(function(s){return s.count === rewardTarget;});
+    if(info && rewardSku){
+      info.classList.toggle('is-ready',ready);
+      info.innerHTML=rewardTarget+(rewardTarget === 1 ? ' Craft' : ' Crafts')+' · '+usd(priceOf(rewardSku))+'<br><span class="groups-unlock-count">'+(rewardSku.includedUnlocks||0)+'</span> '+(rewardSku.includedUnlocks===1?'Unlock Included':'Unlocks Included');
+      if(next && !ready && n > 1) next.textContent=n+' crafts chosen · '+(rewardTarget-n)+' more to reach '+rewardTarget+' Crafts · '+(rewardSku.includedUnlocks||0)+' Unlocks';
+    }
     paintGroupsModeControl();
     var review = document.getElementById('curReviewBtn');
     if(review){ review.disabled = false; review.textContent = 'Review Collection →'; review.classList.toggle('is-ready',ready); }
@@ -13296,7 +13303,11 @@ function downloadPortfolioPiece(piece){
     var map = document.getElementById('groupsRoomMap');
     if(map) map.hidden = GROUPS_REVIEW || GROUPS_PICK_ACTIVE || CURATED_MODE === 'curated';
     document.getElementById('curPackages').hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
-    document.getElementById('groupsPackageInfo').hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
+    document.getElementById('groupsPackageInfo').hidden = (!GROUPS_PICK_ACTIVE && !QUEUE.length) || GROUPS_REVIEW;
+    document.querySelectorAll('#groupsJourney [data-step]').forEach(function(step){
+      if(step.dataset.step === (document.body.classList.contains('groups-shapes') ? 'format' : GROUPS_REVIEW ? 'review' : 'choose')) step.setAttribute('aria-current','step');
+      else step.removeAttribute('aria-current');
+    });
     if(curPick4Btn){curPick4Btn.disabled = CURATED_BUSY || GROUPS_FILL_SLOT !== null;curPick4Btn.classList.toggle('is-active',GROUPS_PICK_ACTIVE);}
     if(curAllFxBtn){
       curAllFxBtn.hidden = GROUPS_PICK_ACTIVE;
@@ -13376,6 +13387,7 @@ function chooseAspect(id){
     if(!guardCollection())return;
     ASPECT=null;
     document.body.classList.add('groups-shapes');
+    paintGroupsModeControl();
     document.getElementById('groupsShapes').hidden=false;
     document.getElementById('groupsReviewFooter').hidden=true;
     document.getElementById('groupsShapeRail').hidden=false;
