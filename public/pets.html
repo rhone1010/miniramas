@@ -8498,6 +8498,7 @@ function loadPortfolio(id){
   ]).then(function(both){
     var st = both[0], un = both[1];
     if (!st) return null;
+    if (st.status === 'pending') return [];
     var unlockedBySlot = {};
     if (un && un.items) un.items.forEach(function(i){ unlockedBySlot[i.slot] = i.unlocked; });
     /* PER PORTFOLIO, NOT ONE GLOBAL. renderCollection runs loadPortfolio for
@@ -8652,7 +8653,7 @@ var mycollGrid = document.getElementById('mycollGrid');
 
 var railBeforeMycoll = 'discovery';
 function openMyCollection(){
-  if (location.pathname !== '/collection'){ try { sessionStorage.setItem('liten_collection_return', '/pets/discovery'); } catch (_) {} location.assign('/collection'); return; }
+  if (location.pathname !== '/collection'){ try { sessionStorage.setItem('liten_collection_return', '/pets/discovery'); } catch (_) {} location.assign('/collection?from=pets'); return; }
   mcUnlockRefresh();
   act('open My Collection');
   railBeforeMycoll = reviewView.classList.contains('active') ? 'review' : 'discovery';
@@ -8679,6 +8680,8 @@ function closeMyCollection(){
   if (location.pathname === '/collection'){
     var returnPath = '/discovery';
     try { returnPath = sessionStorage.getItem('liten_collection_return') || returnPath; } catch (_) {}
+    var origins = {portraits:'/discovery',pets:'/pets/discovery',groups:'/groups'};
+    returnPath = origins[new URLSearchParams(location.search).get('from')] || returnPath;
     if (['/discovery', '/pets/discovery', '/groups'].indexOf(returnPath) < 0) returnPath = '/discovery';
     location.assign(returnPath);
     return;
@@ -8711,7 +8714,7 @@ function closeMyCollection(){
    through closeMyCollection alone, unchanged. */
 function mycollBackToDiscovery(){
   closeMyCollection();
-  showDiscovery();
+  if (location.pathname !== '/collection') showDiscovery();
 }
 // The rail is this screen's control surface (same pattern as Review):
 // Back to Discovery, the collection's numbers, and the unlock basket.

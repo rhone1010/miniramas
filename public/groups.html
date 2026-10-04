@@ -5703,7 +5703,7 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
          order of the thought: what the studio can do, what other people
          did with it, what you have done with it. -->
     <a href="/community">Community</a>
-    <a href="/collection">My Collection</a><a href="/print">Print Shop</a>
+    <a href="/collection?from=groups">My Collection</a><a href="/print">Print Shop</a>
     <a href="/account">Account</a>
     <!-- PRINT SHOP AND HELP LEFT THIS BAR. Print Shop is an action on a
          piece, not a place - it already has its button in My Collection,
@@ -5752,7 +5752,7 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
     <a href="/wallpapers">Mobile Wallpapers</a>
     <a href="/gallery">Gallery</a>
     <a href="/community">Community</a>
-    <a href="/collection">My Collection</a><a href="/print">Print Shop</a>
+    <a href="/collection?from=groups">My Collection</a><a href="/print">Print Shop</a>
     <a href="/account">Account</a>
     <a href="#" data-concierge>Ask the Concierge</a>
     <!-- CUI 41A, 23 Aug 2026. The way out, on a phone. The real
@@ -10735,7 +10735,7 @@ function reusableUnlocksAvailable(){
   })();
 
   function showCollection(){
-    try { sessionStorage.setItem('liten_collection_return', '/groups'); } catch (_) {} location.assign('/collection');
+    try { sessionStorage.setItem('liten_collection_return', '/groups'); } catch (_) {} location.assign('/collection?from=groups');
   }
   function hideCollection(){
     if (!mycoll) return;
@@ -13836,7 +13836,7 @@ window.CONCIERGE_POINTS = [
   { sel:'#mhCreditsBtn', phrases:['credits','credit','balance','buy more'] },
   { sel:'#mhCartBtn',  phrases:['cart','basket'] },
   { sel:'#mhSeriesBtn', phrases:['Series'] },
-  { sel:'.mh-nav a[href="/collection"]', phrases:['My Collection','collection'] },
+  { sel:'.mh-nav a[href="/collection?from=groups"]', phrases:['My Collection','collection'] },
   { sel:'.mh-nav a[href="/community"]',  phrases:['Community','the board'] },
   { sel:'.mh-nav a[href="/gallery"]',    phrases:['gallery'] },
   { sel:'.mh-nav a[href="/account"]',    phrases:['account'] },

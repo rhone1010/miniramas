@@ -9822,7 +9822,7 @@ window.EFFECT_PREVIEWS = {
   })();
 
   function showCollection(){
-    try { sessionStorage.setItem('liten_collection_return', '/discovery'); } catch (_) {} location.assign('/collection');
+    try { sessionStorage.setItem('liten_collection_return', '/discovery'); } catch (_) {} location.assign('/collection?from=portraits');
   }
   function hideCollection(){
     if (!mycoll) return;
