@@ -125,7 +125,7 @@ export function isGroupsFormat(value: unknown): value is GroupsFormat {
 export function groupsFormatAllowed(count: number, format: GroupsFormat): boolean {
   if (!Number.isFinite(count) || count <= 0) return false
   if (count <= 3) return ['9:16', '2:3', '1:1'].includes(format)
-  if (count <= 9) return format !== '9:16'
+  if (count <= 6) return format !== '9:16'
   return ['4:3', '3:2', '16:9'].includes(format)
 }
 

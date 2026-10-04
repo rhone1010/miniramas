@@ -12,7 +12,7 @@ function setup(count:number){
  return {ctx,doc:dom.window.document,crafts:()=>crafts,reviews:()=>reviews}
 }
 describe('Groups Shapes actual browser handlers',()=>{
- for(const [count,allowed] of [[3,['2:3','1:1','9:16']],[4,['4:3','3:2','16:9','2:3','1:1']],[10,['4:3','3:2','16:9']]] as const){
+ for(const [count,allowed] of [[3,['2:3','1:1','9:16']],[4,['4:3','3:2','16:9','2:3','1:1']],[6,['4:3','3:2','16:9','2:3','1:1']],[7,['4:3','3:2','16:9']],[8,['4:3','3:2','16:9']],[10,['4:3','3:2','16:9']]] as const){
  it(`${count} people: six visible, eligible unselected, explicit choice required`,()=>{
  const {ctx,doc,crafts}=setup(count);ctx.showAspect()
  const cards=Array.from(doc.querySelectorAll('#aspectRow button')) as any[]

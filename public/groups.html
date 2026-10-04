@@ -13325,7 +13325,7 @@ function downloadPortfolioPiece(piece){
   function groupsShapeAllowed(count,ratio){
     if(!Number.isFinite(count)||count<=0)return false;
     if(count<=3)return ['9:16','2:3','1:1'].indexOf(ratio)>=0;
-    if(count<=9)return ['2:3','1:1','4:3','3:2','16:9'].indexOf(ratio)>=0;
+    if(count<=6)return ['2:3','1:1','4:3','3:2','16:9'].indexOf(ratio)>=0;
     return ['4:3','3:2','16:9'].indexOf(ratio)>=0;
   }
 function renderAspects(){

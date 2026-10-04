@@ -4,7 +4,7 @@ const h=vi.hoisted(()=>({detect:vi.fn(),score:vi.fn()}))
 vi.mock('./groups-refine',()=>({detectFaceVisibility:h.detect,scorePerFigureFidelity:h.score}))
 vi.mock('../shared/outpaint',()=>({outpaintMargin:vi.fn()}))
 import {generateGroupsRender} from './groups-generator'
-const cases=[{count:3,allowed:['9:16','2:3','1:1']},{count:4,allowed:['2:3','1:1','4:3','3:2','16:9']},{count:10,allowed:['4:3','3:2','16:9']}]
+const cases=[{count:3,allowed:['9:16','2:3','1:1']},{count:4,allowed:['2:3','1:1','4:3','3:2','16:9']},{count:6,allowed:['2:3','1:1','4:3','3:2','16:9']},{count:7,allowed:['4:3','3:2','16:9']},{count:8,allowed:['4:3','3:2','16:9']},{count:10,allowed:['4:3','3:2','16:9']}]
 beforeEach(()=>{vi.resetAllMocks();h.score.mockResolvedValue([{figure_index:1,score:10,reason:'test'}])})
 afterEach(()=>vi.unstubAllGlobals())
 for(const c of cases)describe(c.count+' people',()=>{
