@@ -5368,7 +5368,10 @@ body.is-lboxed{ overflow:hidden }
 .groups-review-slot{display:grid;place-content:center;gap:12px;aspect-ratio:1;background:none;border:2px dashed var(--gold-soft);color:var(--gold-soft);cursor:pointer;font:16px var(--sans);}
 .groups-review-slot .slot-plus{font:40px var(--serif);text-align:center;}
 #groupsReviewActions{display:flex;gap:12px;justify-content:center;padding:12px;}
-#groupsReviewActions[hidden]{display:none;}
+#groupsReviewActions[hidden],#groupsReviewFooter[hidden],#groupsReviewPages[hidden]{display:none;}
+.groups-forward{display:flex;justify-content:flex-end;padding:12px var(--stage-pad-x);}
+.groups-forward .btn-review{width:auto;min-height:60px;font-size:28px;background:var(--gold-soft);color:var(--oxblood);border-color:var(--gold-soft);}
+#groupsReviewPages{position:static;transform:none;margin:auto;}
 #groupsReviewActions button{font:400 22px var(--serif);padding:12px 24px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--oxblood);color:var(--vellum);cursor:pointer;}
 #groupsReviewActions button:disabled{opacity:.5;cursor:not-allowed;}
 #groupsBundleSummary{display:flex;justify-content:space-between;padding:8px 12px;border:1px solid var(--gold-soft);border-radius:6px;color:var(--gold-soft);font:22px var(--serif);}
@@ -5495,7 +5498,7 @@ body.is-lboxed{ overflow:hidden }
 #curCollection.is-ready .dcur__position{display:none;}
 #groupsBundleSummary{min-height:44px;opacity:.5;justify-content:center;gap:8px;flex-wrap:wrap;text-align:center;}
 #groupsBundleSummary.is-active{opacity:1;background:var(--gold-soft);color:var(--oxblood);}
-#curReviewBtn.is-ready{min-height:60px;font-size:28px;background:var(--gold-soft);color:var(--oxblood);border-color:var(--gold-soft);}
+#curReviewBtn{min-height:60px;font-size:28px;background:var(--gold-soft);color:var(--oxblood);border-color:var(--gold-soft);}
 #groupsReviewCraft[aria-disabled="true"]{opacity:.5;}
 #groupsReviewAccess[hidden],#curAllFxBtn[hidden]{display:none!important;}
 .groups-unlock-count{display:inline-grid;place-items:center;min-width:36px;height:36px;margin:8px 4px 0;border:1px solid var(--gold-soft);border-radius:50%;background:var(--gold-soft);color:var(--oxblood);font:400 28px/1 var(--serif);}
@@ -5829,7 +5832,6 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
         <div id="groupsShapeRail" hidden>
           <div class="ready-block"><h4>One Last Choice</h4><p>Choose the format for your finished artwork. Your selection will be applied to your collection.</p></div>
           <p id="groupsShapeSummary"></p>
-          <button class="btn-review" id="groupsShapeCraft" type="button" disabled>Craft My Collection</button>
         </div>
         <div class="cur-modebar">
           <button class="cur-mode" id="curPick4Btn" type="button" data-mode="pick4">Pick for Me</button>
@@ -5884,9 +5886,10 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
         <h2 class="aspect-gallery__title">Where will your artwork live?</h2>
         <p class="aspect-gallery__say">Choose the format that fits your vision.</p>
         <div class="aspect-row" id="aspectRow"></div>
+        <div class="groups-forward"><button class="btn-review" id="groupsShapeCraft" type="button" disabled>Craft My Collection</button></div>
       </div>
     </main>
-    <div id="groupsReviewActions" hidden><button type="button" id="groupsReviewBack">Back to Discovery</button><button type="button" id="groupsReviewClear">Clear Selection</button><button type="button" id="groupsReviewCraft">Craft</button></div><div class="deck" id="deck">
+    <div id="groupsReviewActions" hidden><button type="button" id="groupsReviewBack">Back to Discovery</button><button type="button" id="groupsReviewClear">Clear Selection</button></div><div class="deck" id="deck">
       <div class="face face--silos">
       <!-- Rendered from EFFECT_REGISTRY.silos. Eight hand-written articles
            lived here and meant a silo rename was a CUI build. -->
@@ -5899,6 +5902,10 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
         <div class="floor face-floor" id="poseFloor" data-count="6"></div>
       </div>
     </div>
+      <div id="groupsReviewFooter" hidden>
+        <div class="curated-page" id="groupsReviewPages" hidden><button class="cur-mode" id="groupsReviewPage1" type="button">‹ 1–8</button><button class="cur-mode" id="groupsReviewPage2" type="button">9–16 ›</button></div>
+        <div class="groups-forward"><button class="btn-review" type="button" id="groupsReviewCraft">Craft</button></div>
+      </div>
       <div class="curated-page" id="curatedPageNav" hidden>
         <button class="cur-mode" id="curatedPrevBtn" type="button">1</button>
         <button class="cur-mode" id="curatedNextBtn" type="button">2</button>
@@ -6611,12 +6618,13 @@ window.EFFECT_PREVIEWS = {
     /* Before the cap, because a person with no photograph has no queue
        to have filled. */
     if (phoneNeedsPhoto()){ openNeedPhoto(); return false; }
-    if (QUEUE.length >= targetBundle()) return false;
+    if (QUEUE.length >= 16) return false;
     /* Multi-photo sufficiency is checked by runAll; choosing an effect is not a Craft. */
     /* Was: two fields, enough to paint a row. Now the whole item — see
        buildPayload. The rail still reads only siloId and effectId, so
        nothing about the row changes. */
     QUEUE.push(buildPayload(siloId, effectId));
+    GROUPS_TARGET = Math.max(targetBundle(), targetFor(QUEUE.length));
     var card = effFloor.querySelector('[data-effect-id="' + effectId + '"]');
     if (card && card.dataset.siloId === siloId) card.classList.add('is-selected');
     renderQueue();
@@ -8501,8 +8509,8 @@ window.EFFECT_PREVIEWS = {
     if(info && sku) info.innerHTML=target+(target === 1 ? ' Craft' : ' Crafts')+' · '+usd(priceOf(sku))+'<br><span class="groups-unlock-count">'+(sku.includedUnlocks||0)+'</span> '+(sku.includedUnlocks===1?'Unlock Included':'Unlocks Included');
     paintGroupsModeControl();
     var review = document.getElementById('curReviewBtn');
-    if(review){ review.disabled = false; review.textContent = ready ? 'Craft →' : 'Review Collection →'; review.classList.toggle('is-ready',ready); }
-    document.getElementById('groupsReviewAccess').hidden = !ready;
+    if(review){ review.disabled = false; review.textContent = 'Review Collection →'; review.classList.toggle('is-ready',ready); }
+    document.getElementById('groupsReviewAccess').hidden = true;
   }
 
   /* ---- the shortfall -----------------------------------------------------
@@ -9320,7 +9328,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
     }
 
     if(mode === 'pick4' && GROUPS_REVIEW) showGroupsDiscovery();
-    GROUPS_REVIEW = false; document.getElementById('groupsReviewActions').hidden = true;
+    GROUPS_REVIEW = false; document.getElementById('groupsReviewActions').hidden = true; document.getElementById('groupsReviewFooter').hidden = true;
     CURATED_BUSY = true;
     [curPick4Btn,curCuratedBtn,curAllFxBtn,curReviewBtn].forEach(function(b){if(b)b.disabled=true;});
     GROUPS_PICK_ACTIVE = mode === 'pick4';
@@ -13264,7 +13272,7 @@ function downloadPortfolioPiece(piece){
     if (e.key !== 'Enter' && e.key !== ' ') return;
     var c = e.target.closest('.silo-card'); if (c){ e.preventDefault(); openSilo(c); }
   });
-  var GROUPS_REVIEW = false, GROUPS_TARGET = 0, SLOTS = [], GROUPS_FILL_SLOT = null;
+  var GROUPS_REVIEW = false, GROUPS_TARGET = 0, SLOTS = [], GROUPS_FILL_SLOT = null, GROUPS_REVIEW_PAGE = 0;
   function targetBundle(){ return GROUPS_TARGET || 1; }
   function selectedReviewItems(){
     return QUEUE.map(function(q){ return {key:keyOf(q.siloId,q.effectId),siloId:q.siloId,effectId:q.effectId}; });
@@ -13369,6 +13377,7 @@ function chooseAspect(id){
     ASPECT=null;
     document.body.classList.add('groups-shapes');
     document.getElementById('groupsShapes').hidden=false;
+    document.getElementById('groupsReviewFooter').hidden=true;
     document.getElementById('groupsShapeRail').hidden=false;
     renderAspects();
     loadBlocks().then(function(blocks){
@@ -13392,6 +13401,7 @@ function chooseAspect(id){
     clearGroupsMode();
     GROUPS_TARGET = targetBundle(); GROUPS_REVIEW = true;
     document.getElementById('groupsReviewActions').hidden = false;
+    document.getElementById('groupsReviewFooter').hidden = false;
     paintGroupsModeControl();
     workshop.classList.remove('workshop-view--silos');
     workshop.classList.add('workshop-view--effects');
@@ -13403,7 +13413,14 @@ function chooseAspect(id){
   function renderGroupsReview(){
     if (!GROUPS_REVIEW || !effFloor) return;
     effFloor.innerHTML = '';
-    reviewItems().forEach(function(item){
+    var items = reviewItems();
+    GROUPS_REVIEW_PAGE = items.length > 8 ? GROUPS_REVIEW_PAGE : 0;
+    document.getElementById('groupsReviewPages').hidden = items.length <= 8;
+    document.getElementById('groupsReviewPage1').classList.toggle('is-active',GROUPS_REVIEW_PAGE === 0);
+    document.getElementById('groupsReviewPage2').classList.toggle('is-active',GROUPS_REVIEW_PAGE === 1);
+    document.getElementById('groupsReviewPage1').setAttribute('aria-pressed',String(GROUPS_REVIEW_PAGE === 0));
+    document.getElementById('groupsReviewPage2').setAttribute('aria-pressed',String(GROUPS_REVIEW_PAGE === 1));
+    items.slice(GROUPS_REVIEW_PAGE * 8, GROUPS_REVIEW_PAGE * 8 + 8).forEach(function(item){
       if (item.slot){
         var slot = document.createElement('button');
         slot.type = 'button'; slot.className = 'groups-review-slot';
@@ -13415,13 +13432,13 @@ function chooseAspect(id){
       el.classList.add('is-selected');
       effFloor.appendChild(el);
     });
-    effFloor.dataset.count = targetBundle();
-    document.getElementById('groupsReviewCraft').disabled = false;
+    effFloor.dataset.count = Math.min(8,targetBundle());
+    document.getElementById('groupsReviewCraft').disabled = !validCollection();
     document.getElementById('groupsReviewCraft').setAttribute('aria-disabled',String(!validCollection()));
   }
   function showGroupsDiscovery(){
     GROUPS_REVIEW = false;
-    document.getElementById('groupsReviewActions').hidden = true;
+    document.getElementById('groupsReviewActions').hidden = true; document.getElementById('groupsReviewFooter').hidden = true;
     clearGroupsMode();
     var siloId = GROUPS_FLOOR_SILO || R.silos[0].id;
     Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId === siloId));});
@@ -13438,7 +13455,7 @@ function chooseAspect(id){
       var button = event.target.closest('[data-silo-id]'); if (!button || CURATED_BUSY || button.dataset.siloId === GROUPS_FLOOR_SILO) return;
       CURATED_BUSY = true;
       GROUPS_REVIEW = false;
-      document.getElementById('groupsReviewActions').hidden = true;
+      document.getElementById('groupsReviewActions').hidden = true; document.getElementById('groupsReviewFooter').hidden = true;
       clearGroupsMode();
       GROUPS_FLOOR_SILO = button.dataset.siloId;
       Array.from(rooms.children).forEach(function(b){b.setAttribute('aria-pressed',String(b === button));});
@@ -13457,6 +13474,8 @@ function chooseAspect(id){
       if(curatedPageNav) curatedPageNav.hidden = true;
     });
   }
+  document.getElementById('groupsReviewPage1').addEventListener('click',function(){GROUPS_REVIEW_PAGE=0;renderGroupsReview();});
+  document.getElementById('groupsReviewPage2').addEventListener('click',function(){GROUPS_REVIEW_PAGE=1;renderGroupsReview();});
   document.getElementById('groupsReviewBack').addEventListener('click',showGroupsDiscovery);
   document.getElementById('groupsReviewClear').addEventListener('click',function(){
     GROUPS_TARGET = targetBundle();
