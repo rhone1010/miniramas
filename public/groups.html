@@ -5557,6 +5557,69 @@ body.is-lboxed{ overflow:hidden }
 }
 #ckForm{ min-height:300px; }
 </style>
+<style id="groups-shapes-style">
+.aspect-gallery{ display:flex; flex-direction:column; align-items:center; gap:34px; width:100%; max-width:1100px }
+.aspect-gallery__title{
+  font-family:var(--serif); font-weight:400; font-size:2.6rem; color:var(--vellum);
+  margin:0; text-align:center; letter-spacing:.01em;
+  text-shadow:0 .08rem .18rem rgba(18,12,8,.5);
+}
+.aspect-gallery__say{
+  font-family:var(--serif); font-size:1.35rem; color:var(--gold-soft);
+  margin:-22px 0 0; text-align:center;
+}
+.aspect-row{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:calc(var(--card-gap) * 2.2); align-items:stretch;
+  justify-content:center }
+/* The frame: a mat with the canvas inside it, the same border, shadow and
+   hover-lift the effect cards use. */
+.aspect-opt{
+  display:flex; flex-direction:column; align-items:center; gap:18px;
+  padding:22px 22px 18px; border-radius:8px; cursor:pointer;
+  background:linear-gradient(180deg, var(--vellum-100), #ece4d4);
+  border:1px solid rgba(88,65,42,.22);
+  box-shadow:0 .8rem 1.8rem rgba(0,0,0,.45), 0 .2rem .5rem rgba(0,0,0,.3);
+  transition:transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, opacity 220ms ease;
+}
+.aspect-opt:hover{ transform:translateY(-.15rem); border-color:rgba(169,126,63,.42);
+  box-shadow:0 1.1rem 2.4rem rgba(0,0,0,.5), 0 .3rem .7rem rgba(0,0,0,.32) }
+.aspect-opt:disabled{ opacity:.45; cursor:default; pointer-events:none }
+
+.aspect-opt.is-chosen{ border-color:var(--gold);
+  box-shadow:0 0 0 2px var(--gold), 0 1.1rem 2.4rem rgba(0,0,0,.5) }
+/* The canvas inside the mat -- an empty artwork until it is the chosen one,
+   then the stage's own oxblood, the way a hung picture reads. */
+.aspect-shape{
+  border-radius:3px; background:linear-gradient(150deg,#8a725d,#3a2b24);
+  box-shadow:inset 0 0 0 1px rgba(88,65,42,.3), inset 0 .1rem .5rem rgba(18,12,8,.45);
+  transition:background 220ms ease;
+}
+.aspect-opt.is-chosen .aspect-shape{ background:linear-gradient(150deg,#a2705f,var(--oxblood)) }
+.aspect-opt__label{ font-family:var(--serif); font-size:1.5rem; color:var(--ink); margin:0; line-height:1 }
+/* __FORMAT_INTENT__ The figure ("1:1") is gone; this says what the shape is
+   FOR. Sentence case and 16px because it is a description a customer reads,
+   not a specification label to scan -- the uppercase 12px brass treatment it
+   replaces was right for a ratio and wrong for a sentence. */
+.aspect-opt__say{ font-family:var(--sans); font-size:16px; line-height:1.35;
+  color:#6f6350; margin:0; text-align:center; max-width:19ch }
+
+#groupsShapes[hidden],#groupsShapeRail[hidden]{display:none!important}
+#groupsShapes{padding:28px var(--stage-pad-x) 60px;overflow:auto;}
+#groupsShapes .aspect-gallery{margin:auto;}
+#groupsShapes .aspect-row{width:100%;max-width:760px;}
+#groupsShapes .aspect-opt{min-width:0;justify-content:flex-end;}
+#groupsShapes .aspect-shape{max-width:100%;}
+#groupsShapes .aspect-opt:not(:disabled) .aspect-shape{background:linear-gradient(150deg,#a2705f,var(--oxblood));}
+#groupsShapes .aspect-opt.is-chosen{box-shadow:0 0 0 2px var(--gold),0 0 22px var(--gold-soft);}
+#groupsShapes .aspect-opt__ratio{font:12px var(--sans);color:#6f6350;}
+body.groups-shapes #deck,body.groups-shapes #groupsReviewActions,body.groups-shapes .crumb,
+body.groups-shapes .cur-modebar,body.groups-shapes #curPackages,body.groups-shapes #groupsPackageInfo,
+body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-shapes #groupsReviewAccess{display:none!important}
+#groupsShapeRail{padding-top:18px;}
+#groupsShapeRail p{font:16px/1.5 var(--sans);}
+#groupsShapeCraft{width:100%;}
+#groupsShapeCraft:disabled{opacity:.45;cursor:default;}
+@media(max-width:720px){#groupsShapes{padding:18px 8px 60px;}#groupsShapes .aspect-row{gap:8px;}#groupsShapes .aspect-opt{padding:8px;gap:8px;}#groupsShapes .aspect-shape{height:62px!important;width:calc(62px * var(--ar))!important;}#groupsShapes .aspect-opt__label{font-size:20px;}#groupsShapes .aspect-opt__say{font-size:16px;}}
+</style>
 </head>
 <body>
 
@@ -5704,6 +5767,11 @@ body.is-lboxed{ overflow:hidden }
              CURATED). "Pick 4 for Me" auto-chooses four and queues them;
              "Curated" opens the same ten for browsing. Both reuse the
              existing effects floor and turn() flip — see openCurated(). -->
+        <div id="groupsShapeRail" hidden>
+          <div class="ready-block"><h4>One Last Choice</h4><p>Choose the format for your finished artwork. Your selection will be applied to your collection.</p></div>
+          <p id="groupsShapeSummary"></p>
+          <button class="btn-review" id="groupsShapeCraft" type="button" disabled>Craft My Collection</button>
+        </div>
         <div class="cur-modebar">
           <button class="cur-mode" id="curPick4Btn" type="button" data-mode="pick4">Pick for Me</button>
           <button class="cur-mode" id="curAllFxBtn" type="button"><span>Curated</span></button>
@@ -5751,6 +5819,14 @@ body.is-lboxed{ overflow:hidden }
 
     </div>
 
+    <main id="groupsShapes" hidden>
+      <div class="aspect-gallery">
+        <button class="crumb-back" id="btnBackAspect" type="button">&larr; Back to Review</button>
+        <h2 class="aspect-gallery__title">Where will your artwork live?</h2>
+        <p class="aspect-gallery__say">Choose the format that fits your vision.</p>
+        <div class="aspect-row" id="aspectRow"></div>
+      </div>
+    </main>
     <div id="groupsReviewActions" hidden><button type="button" id="groupsReviewBack">Back to Discovery</button><button type="button" id="groupsReviewClear">Clear Selection</button><button type="button" id="groupsReviewCraft">Craft</button></div><div class="deck" id="deck">
       <div class="face face--silos">
       <!-- Rendered from EFFECT_REGISTRY.silos. Eight hand-written articles
@@ -7410,6 +7486,7 @@ window.EFFECT_PREVIEWS = {
          (see groups-commerce.ts), so there is no credit_cost on this
          response any more and nothing here computes one. */
       if (typeof data.subject_count === 'number') SRC.subjectCount = data.subject_count;
+      if(document.body.classList.contains('groups-shapes')) renderAspects();
 
       /* THE ONE STOP. Not a quality verdict - an absence. No usable face was
          found in any photograph, and no number of attempts fixes that. */
@@ -8476,6 +8553,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
 }
 
   function beginPurchase(sku, fixedBundle){
+    if(!groupsShapeAllowed(SRC.subjectCount,ASPECT)){showAspect();return Promise.resolve(false);}
     if (!fixedBundle || !validCollection() || sku.count !== QUEUE.length) return Promise.resolve(false);
     var effectIds = reviewItems().filter(function(item){return !item.slot;}).map(function(item){
       return QUEUE.find(function(q){return keyOf(q.siloId,q.effectId)===item.key;}).effectId;
@@ -8520,7 +8598,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
           selectedEffectIds: effectIds,
           sourceImageRef: SRC.b64,
           clientPriceUsd: priceOf(sku) / 100,
-          aspect_ratio: '3:2',
+          aspect_ratio: ASPECT,
           returnUrl: location.origin + location.pathname
         })
       }).then(function(r){ return r.json(); })
@@ -9707,6 +9785,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
       queue: QUEUE.map(function(q){ return { siloId: q.siloId, effectId: q.effectId }; }),
       pose:  window.__POSE || null,
       capacity: targetBundle(),
+      aspect: ASPECT,
       slots: SLOTS.slice()
     };
     try {
@@ -9757,6 +9836,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
       if (R.byId(q.effectId)) addToQueue(q.siloId, q.effectId);
     });
     if (Array.isArray(core.slots)) SLOTS = core.slots.slice();
+    ASPECT = core.aspect || null;
     if (core.pose) window.__POSE = core.pose;
     if (core.pose && typeof stampPose === 'function') stampPose(core.pose);
 
@@ -13196,7 +13276,90 @@ function downloadPortfolioPiece(piece){
     if(curatedPageNav) curatedPageNav.hidden=true;
     paintGroupsModeControl();
   }
+  var ASPECT = null;
+  var ASPECT_FORCED = false;
+  var ASPECTS = [
+    {id:'4:3',ratio:'4:3',label:'Classic',say:'A traditional landscape frame',w:152,h:114},
+    {id:'3:2',ratio:'3:2',label:'Landscape',say:'Room for the whole group',w:152,h:152*2/3},
+    {id:'16:9',ratio:'16:9',label:'Wide',say:'A panoramic presentation',w:152,h:152*9/16},
+    {id:'2:3',ratio:'2:3',label:'Portrait',say:'Classic vertical artwork',w:152*2/3,h:152},
+    {id:'1:1',ratio:'1:1',label:'Square',say:'Balance for sharing and display',w:132,h:132},
+    {id:'9:16',ratio:'9:16',label:'Mobile',say:'Made for your phone',w:152*9/16,h:152}
+  ];
+  function groupsShapeAllowed(count,ratio){
+    if(!Number.isFinite(count)||count<=0)return false;
+    if(count<=3)return ['9:16','2:3','1:1'].indexOf(ratio)>=0;
+    if(count<=9)return ['2:3','1:1','4:3','3:2','16:9'].indexOf(ratio)>=0;
+    return ['4:3','3:2','16:9'].indexOf(ratio)>=0;
+  }
+function renderAspects(){
+  var row = document.getElementById('aspectRow'); if (!row) return;
+  row.innerHTML = '';
+  ASPECTS.forEach(function(a){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'aspect-opt' + (a.id === ASPECT ? ' is-chosen' : '');
+    b.dataset.aspect = a.id;
+    b.disabled = !groupsShapeAllowed(SRC.subjectCount,a.id);
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', a.id === ASPECT ? 'true' : 'false');
+    b.innerHTML =
+      /* --ar carries the shape's own proportion so a narrow breakpoint can
+         cap the HEIGHT and let the width follow, instead of overriding two
+         inline pixel values and flattening a 9:16 tile into a square. */
+      '<span class="aspect-shape" style="width:' + a.w + 'px;height:' + a.h +
+        'px;--ar:' + (a.w / a.h).toFixed(4) + '"></span>' +
+      '<span class="aspect-opt__label"></span>' +
+      '<span class="aspect-opt__say"></span><span class="aspect-opt__ratio"></span>';
+    b.querySelector('.aspect-opt__label').textContent = a.label;
+    b.querySelector('.aspect-opt__say').textContent = a.say;
+    b.querySelector('.aspect-opt__ratio').textContent = a.ratio;
+    b.addEventListener('click', function(){ chooseAspect(a.id); });
+    row.appendChild(b);
+  });
+  row.setAttribute('role', 'radiogroup');
+  document.getElementById('groupsShapeCraft').disabled = !groupsShapeAllowed(SRC.subjectCount,ASPECT);
+}
+
+/* Radio behaviour: exactly one, always one. */
+function chooseAspect(id){
+  if(!groupsShapeAllowed(SRC.subjectCount,id))return;
+  ASPECT = id;
+  ASPECT_FORCED = true;
+  document.querySelectorAll('#aspectRow .aspect-opt').forEach(function(el){
+    var on = el.dataset.aspect === id;
+    el.classList.toggle('is-chosen', on);
+    el.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  document.getElementById('groupsShapeCraft').disabled = false;
+  saveResume();
+}
+
+
+  function showAspect(){
+    if(!guardCollection())return;
+    ASPECT=null;
+    document.body.classList.add('groups-shapes');
+    document.getElementById('groupsShapes').hidden=false;
+    document.getElementById('groupsShapeRail').hidden=false;
+    renderAspects();
+    loadBlocks().then(function(blocks){
+      var sku=blocks.find(function(b){return b.count===QUEUE.length;});
+      if(sku)document.getElementById('groupsShapeSummary').textContent=sku.count+' watermarked previews · '+(sku.includedUnlocks||0)+' included unlock'+(sku.includedUnlocks===1?'':'s')+' · '+usd(priceOf(sku));
+    });
+  }
+  function hideAspect(){
+    document.body.classList.remove('groups-shapes');
+    document.getElementById('groupsShapes').hidden=true;
+    document.getElementById('groupsShapeRail').hidden=true;
+  }
+  document.getElementById('btnBackAspect').addEventListener('click',function(){hideAspect();showGroupsReview();});
+  document.getElementById('groupsShapeCraft').addEventListener('click',function(){
+    if(groupsShapeAllowed(SRC.subjectCount,ASPECT)&&tbcGo)tbcGo.click();
+  });
+
   function showGroupsReview(){
+    hideAspect();
     GROUPS_FILL_SLOT = null;
     clearGroupsMode();
     GROUPS_TARGET = targetBundle(); GROUPS_REVIEW = true;
@@ -13273,7 +13436,7 @@ function downloadPortfolioPiece(piece){
     GROUPS_FILL_SLOT = null;
     renderGroupsReview();
   });
-  document.getElementById('groupsReviewCraft').addEventListener('click',function(){ if(tbcGo) tbcGo.click(); });
+  document.getElementById('groupsReviewCraft').addEventListener('click',showAspect);
   document.getElementById('tourFab').addEventListener('click',function(){ if(window.LitenHelp) window.LitenHelp.open(); });
   paintGroupsRooms();
   renderSilos();

@@ -66,6 +66,7 @@ import { checkInternalAuth } from '@/lib/store/internal-auth'
 import { generateGroupsRender } from '@/lib/v1/groups/groups-generator'
 import {
   GROUPS_EFFECTS,
+  isGroupsFormat,
   type GroupsEffectId,
 } from '@/lib/v1/groups/groups-effects'
 import {
@@ -186,7 +187,8 @@ export async function POST(req: NextRequest) {
 
     // Format: '3:2' (landscape, default) or '9:16' (Mobile). Validated
     // by the generator against group count and effect capability.
-    const format = body.format === '9:16' ? '9:16' : '3:2'
+    if (!isGroupsFormat(body.format)) return NextResponse.json({ error: 'format_not_allowed' }, { status: 400 })
+    const format = body.format
 
     const generateRequest: GroupsGenerateRequest = {
       source_images_b64: sources,
@@ -214,7 +216,7 @@ export async function POST(req: NextRequest) {
     console.log(
       `[groups/generate] done in ${durationMs}ms — ok=${result.ok} ` +
       `passed=${result.passed} subjects=${result.subject_count} ` +
-      `format=${result.format} ` +
+      `format=${format} ` +
       `attempts=${result.attempts.length} ` +
       `outpainted=${result.outpainted} ` +
       `failure=${result.failure?.kind ?? '-'}`,

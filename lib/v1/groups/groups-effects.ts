@@ -117,7 +117,17 @@ export type GroupsIntake = 'group_photo' | 'multi_photo'
 
 /** Supported generation formats. 3:2 landscape is canonical/default.
  *  9:16 Mobile requires both effect approval AND groupCount <= 3. */
-export type GroupsFormat = '3:2' | '9:16'
+export const GROUPS_FORMATS = ['9:16', '2:3', '1:1', '4:3', '3:2', '16:9'] as const
+export type GroupsFormat = typeof GROUPS_FORMATS[number]
+export function isGroupsFormat(value: unknown): value is GroupsFormat {
+  return typeof value === 'string' && (GROUPS_FORMATS as readonly string[]).includes(value)
+}
+export function groupsFormatAllowed(count: number, format: GroupsFormat): boolean {
+  if (!Number.isFinite(count) || count <= 0) return false
+  if (count <= 3) return ['9:16', '2:3', '1:1'].includes(format)
+  if (count <= 9) return format !== '9:16'
+  return ['4:3', '3:2', '16:9'].includes(format)
+}
 
 /** The canonical default when an effect omits `formats`. */
 export const GROUPS_DEFAULT_FORMATS: GroupsFormat[] = ['3:2']
@@ -844,9 +854,9 @@ export function buildGroupsPrompt(input: {
   // Format-specific composition, appended last. Carries the NO TEXT
   // directive so it does not have to be written into every effect body.
   const fmt = input.format ?? '3:2'
-  if (fmt === '9:16') {
+  if (fmt === '9:16' || fmt === '2:3') {
     parts.push(GROUPS_MOBILE_COMPOSITION)
-  } else {
+  } else if (fmt !== '1:1') {
     parts.push(GROUPS_LANDSCAPE_COMPOSITION)
   }
 

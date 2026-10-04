@@ -1,3 +1,4 @@
+import { isGroupsFormat } from '@/lib/v1/groups/groups-effects'
 // lib/store/portfolio-checkout.ts
 // Fixed-size Portfolio pricing. Reuses four live Stripe SKUs
 // (single, basket_discover_5, basket_discover_10, basket_discover_20)
@@ -236,6 +237,7 @@ export async function createPortfolioCheckout(
     throw new Error('portfolio_empty_selection')
   }
   if (!args.sourceImageRef) throw new Error('portfolio_source_image_required')
+  if (args.series === 'groups' && !isGroupsFormat(args.aspectRatio)) throw new Error('format_not_allowed')
 
   const count = args.selectedEffectIds.length
   if (!VALID_COUNTS.has(count)) {
@@ -336,7 +338,7 @@ export async function createPortfolioCheckout(
       pose: args.pose ?? null,
       framing: PURCHASED_FRAMING,
       aspect_ratio: args.series === 'groups'
-        ? (args.aspectRatio === '9:16' ? '9:16' : '3:2')
+        ? args.aspectRatio
         : normalizeAspectChoice(args.aspectRatio),
       subject: args.subject ?? null,
     })

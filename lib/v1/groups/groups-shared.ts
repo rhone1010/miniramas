@@ -19,7 +19,7 @@
 // truth for the catalog. This file holds only what the pipeline needs to
 // run and score.
 
-import type { GroupsEffectId } from './groups-effects'
+import type { GroupsEffectId, GroupsFormat } from './groups-effects'
 
 // ═══════════════════════════════════════════════════════════════
 // SCORING — per-figure likeness, size-tiered
@@ -150,6 +150,7 @@ export interface GroupsGenerateRequest {
   /** From analyze. Drives the framing clause AND the scoring rule, so a
    *  wrong count here is a wrong piece scored against the wrong bar. */
   subject_count:     number
+  format?:           GroupsFormat
   /** Skips scoring and retries. Internal shoots only — never a customer
    *  path, because an unscored group render is exactly what the gate
    *  exists to catch. */

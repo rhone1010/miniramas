@@ -54,6 +54,8 @@
 import {
   buildGroupsPrompt,
   GROUPS_EFFECTS,
+  groupsFormatAllowed,
+  isGroupsFormat,
   type GroupsEffectId,
 } from './groups-effects'
 import {
@@ -135,6 +137,7 @@ export async function generateGroupsRender(
   // pre-flight estimate below for group_photo; for multi_photo the
   // photographs ARE the count and nothing can be more right than that.
   let detectedCount = req.subject_count
+  let countDetected = false
 
   // Provisional, for the error paths BELOW the pre-flight only. The real
   // prompt cannot be built until the count is known, because the framing
@@ -211,7 +214,8 @@ export async function generateGroupsRender(
           `${vis.subject_count_estimate} detected — using detected`,
         )
       }
-      if (!req.skip_scoring) detectedCount = vis.subject_count_estimate
+      detectedCount = vis.subject_count_estimate
+      countDetected = true
 
     } catch (e: any) {
       // A vision call that ERRORED is different from one that was never
@@ -224,11 +228,16 @@ export async function generateGroupsRender(
     }
   }
 
+  if (!isGroupsFormat(req.format) || (countDetected && !groupsFormatAllowed(detectedCount, req.format))) {
+    return fatal({ msg: 'format_not_allowed', req, prompt: provisionalPrompt, t0, code: 'format_not_allowed', retryable: false })
+  }
+
   // Built after detection, because the framing clause is chosen from the
   // count and the count is not known until the pre-flight has run.
   const finalPrompt = buildGroupsPrompt({
     effectId:     req.effect_id,
     subjectCount: detectedCount,
+    format: req.format,
   })
 
   console.log(
@@ -252,7 +261,7 @@ export async function generateGroupsRender(
       imageB64 = await callNB2({
         prompt: finalPrompt,
         sourceImagesB64:   sources,
-        aspectRatio:       groupsAspect(sources[0]),
+        aspectRatio:       req.format,
         replicateApiToken: input.replicateApiToken,
       })
     } catch (e: any) {
