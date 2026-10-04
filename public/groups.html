@@ -6268,14 +6268,8 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
       <label class="signin-lbl" for="signinEmail">Email</label>
       <input class="signin-in" id="signinEmail" type="email" autocomplete="email"
              placeholder="you@example.com" spellcheck="false">
-      <!-- CUI 41A, 25 Aug 2026. The coupon, not the wall. Optional; an
-           empty field is the common case and costs nothing. DRAFT copy. -->
-      <label class="signin-lbl signin-lbl-opt" for="signinCode">Have an invite code?
-        <span class="signin-opt">50 credits on us &middot; optional</span></label>
-      <input class="signin-in" id="signinCode" type="text" autocomplete="off"
-             autocapitalize="characters" spellcheck="false" placeholder="">
       <div class="signin-err" id="signinErr"></div>
-      <div class="acts"><div class="btn fill" id="signinSend">Send the link</div></div>
+      <div class="acts"><div class="btn fill" id="signinSend">Continue with email</div></div>
       <div class="acts"><div class="btn fill" id="signinGoogle" role="button" tabindex="0">Continue with Google</div></div>
       <div class="m-safe">Nothing is charged until your piece is crafted.</div>
     </div>
@@ -9980,7 +9974,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
              second POST. Copy is Rich's locked pass · CUI 42 · copy pass r2 · 2026-08-25 */
           saveResume();
           signinSend.disabled = false;
-          signinSend.textContent = 'Send the link';
+          signinSend.textContent = 'Continue with email';
           if (signinAddr) signinAddr.textContent = email;
           if (signinAsk)  signinAsk.hidden  = true;
           if (signinSent) signinSent.hidden = false;
@@ -9997,12 +9991,12 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
           return;
         }
         signinSend.disabled = false;
-        signinSend.textContent = 'Send the link';
+        signinSend.textContent = 'Continue with email';
         if (signinErr) signinErr.textContent =
           'That code wasn\u2019t recognised. Check it, or leave it blank and come in anyway.';
       }).catch(function(){
         signinSend.disabled = false;
-        signinSend.textContent = 'Send the link';
+        signinSend.textContent = 'Continue with email';
         if (signinErr) signinErr.textContent =
           'The code couldn\u2019t be checked just now. Leave it blank and come in anyway.';
       });
@@ -10027,7 +10021,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
       return res.json().catch(function(){ return { ok: false, reason: 'bad_response' }; });
     }).then(function(d){
       signinSend.disabled = false;
-      signinSend.textContent = 'Send the link';
+      signinSend.textContent = 'Continue with email';
       if (!d || !d.ok){
         clearResume();
         if (signinErr) signinErr.textContent =
@@ -10041,7 +10035,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
     }).catch(function(){
       clearResume();
       signinSend.disabled = false;
-      signinSend.textContent = 'Send the link';
+      signinSend.textContent = 'Continue with email';
       if (signinErr) signinErr.textContent = 'The link could not be sent. Try again in a moment.';
     });
   }
