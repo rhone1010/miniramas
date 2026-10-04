@@ -5684,7 +5684,7 @@ body.groups-shapes #groupsShapes > .groups-forward{max-width:1100px;margin:auto;
 #curCollection .dcur__milestone,.groups-number,.groups-unlock-count,#groupsReviewPages .cur-mode{font-size:18px;}
 #cur .btn-review,#groupsReviewActions button,#groupsCartBack{font:400 1.1rem var(--serif);min-height:48px;border-radius:6px;border-width:1px;padding:12px 24px;}
 #curReviewBtn,.groups-forward .btn-review,#groupsShapeCraft{font:400 1.1rem var(--serif);min-height:60px;padding:12px 24px;border-radius:6px;border-width:1px;}
-body.groups-cart .room--curator{background:linear-gradient(rgba(166,158,145,.68),rgba(166,158,145,.68)),url('/textures/polished-marble.jpg') center/cover;}
+body.groups-cart .room--curator{background:linear-gradient(rgba(239,232,219,.72),rgba(239,232,219,.72)),url('/textures/weathered-concrete-surface.jpg') center/cover;}
 body.groups-cart #cur{display:flex;flex-direction:column;min-height:100%;}
 body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
 #groupsShapeRail[hidden]{display:none!important;}
@@ -5699,6 +5699,15 @@ body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
 #groupsShapes .aspect-gallery__title{font:400 2rem var(--serif);}
 #groupsShapes .aspect-opt__label{font:400 1.5rem var(--serif);}
 #groupsShapes .aspect-opt__say{font:400 14px/1.4 var(--sans);}
+#groupsShapeRail .your-collection__title{font-size:30px;}
+#groupsCartEffects li{font-size:20px;padding:6px 0;border-bottom:1px solid rgba(126,104,69,.2);}
+.groups-source-caption{font:400 12px var(--sans);letter-spacing:.08em;color:var(--brass);margin:8px 0;}
+.groups-cart-package{align-items:baseline;gap:12px;margin-bottom:8px;}
+.groups-cart-package > :first-child{font:400 13px var(--sans);}
+.groups-cart-package > :last-child{font:400 16px var(--sans);}
+#groupsCartBack,#groupsReviewActions button,#groupsShapeCraft,#groupsReviewCraft{font-size:18px;}
+#groupsReviewClear{background:transparent!important;color:var(--gold-soft);min-height:44px!important;}
+#groupsReviewCraft{min-height:60px;min-width:240px;background:var(--gold-soft);color:var(--oxblood);}
 </style>
 <style id="groupsSharedMasthead">
 .mh-right > .mh-desktop-only{display:none}
@@ -5904,6 +5913,7 @@ body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
              "Curated" opens the same ten for browsing. Both reuse the
              existing effects floor and turn() flip — see openCurated(). -->
         <div id="groupsShapeRail" hidden>
+          <p class="groups-source-caption">SOURCE PHOTOGRAPH</p>
           <div class="your-collection__title">Your Collection</div>
           <p id="groupsCartCount"></p>
           <ol id="groupsCartEffects"></ol>
@@ -13378,7 +13388,7 @@ function downloadPortfolioPiece(piece){
     document.getElementById('groupsPackageInfo').hidden = (!GROUPS_PICK_ACTIVE && !QUEUE.length) || GROUPS_REVIEW;
     var cart = GROUPS_REVIEW || document.body.classList.contains('groups-shapes');
     document.body.classList.toggle('groups-cart',cart);
-    document.body.classList.toggle('groups-catalog',!cart && !GROUPS_PICK_ACTIVE);
+    document.body.classList.toggle('groups-catalog',!cart);
     document.querySelector('#cur .cur-photo').inert = cart;
     document.getElementById('groupsShapeRail').hidden = !cart;
     if(cart) paintGroupsCart();
@@ -13492,9 +13502,10 @@ function chooseAspect(id){
     var sku=(BLOCKS||[]).find(function(b){return b.count===targetBundle();});
     if(sku){
       var summary=document.getElementById('groupsShapeSummary');summary.innerHTML='';
-      var line=document.createElement('span'),quantity=document.createElement('span'),price=document.createElement('span'),unlocks=document.createElement('span');
-      line.className='groups-cart-package';quantity.textContent=sku.count+(sku.count===1?' Craft':' Crafts');price.textContent=usd(priceOf(sku));line.appendChild(quantity);line.appendChild(price);
-      unlocks.textContent=(sku.includedUnlocks||0)+(sku.includedUnlocks===1?' Unlock Included':' Unlocks Included');summary.appendChild(line);summary.appendChild(unlocks);
+      [['Collection',sku.count+(sku.count===1?' Craft':' Crafts')],['Included Unlocks',String(sku.includedUnlocks||0)],['Total',usd(priceOf(sku))]].forEach(function(item){
+        var row=document.createElement('span'),label=document.createElement('span'),value=document.createElement('span');
+        row.className='groups-cart-package';label.textContent=item[0];value.textContent=item[1];row.appendChild(label);row.appendChild(value);summary.appendChild(row);
+      });
     }
     var format=document.getElementById('groupsCartFormat'),isFormat=document.body.classList.contains('groups-shapes');
     var choice=ASPECTS.find(function(a){return a.id===ASPECT;});
@@ -13516,7 +13527,7 @@ function chooseAspect(id){
     workshop.classList.remove('workshop-view--silos');
     workshop.classList.add('workshop-view--effects');
     if (curatedPageNav) curatedPageNav.hidden = true;
-    crumbHere.textContent = 'Your Collection';
+    crumbHere.textContent = 'Review Your Collection';
     UPSELL_CTX = null;
     renderGroupsReview();
   }
