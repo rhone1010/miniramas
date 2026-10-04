@@ -5444,6 +5444,14 @@ body.is-lboxed{ overflow:hidden }
 #groupsPhotoCount{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 3px;margin-left:4px;border-radius:999px;background:var(--vellum);color:var(--oxblood);font:12px/1 var(--sans);}
 #groupsPickInfo{font:18px/1.3 var(--serif);color:var(--oxblood);padding:8px 0;text-align:center;}
 #groupsPickInfo[hidden]{display:none;}
+#groupsExplore[hidden]{display:none!important;}
+#groupsExplore{margin-top:12px;}
+#groupsExplore > .your-collection__title{color:var(--ink);}
+#groupsRoomMap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+#groupsRoomMap[hidden]{display:none;}
+#groupsRoomMap .dcur__room{display:flex;align-items:center;gap:8px;min-height:60px;padding:6px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--ink);font:400 18px/1.1 var(--serif);text-align:left;cursor:pointer;}
+#groupsRoomMap .dcur__room img{width:44px;height:44px;object-fit:contain;flex:none;}
+.cur-modebar #curPick4Btn{width:100%;}
 #groupsRoomMap .dcur__room[aria-pressed="true"]{background:var(--oxblood);color:var(--vellum);}
 .pw-modal{background:var(--vellum);border:1px solid var(--gold-soft);border-radius:6px;padding:24px;}
 .pw-grid{gap:16px;}
@@ -5624,7 +5632,7 @@ body.is-lboxed{ overflow:hidden }
 #groupsShapes .aspect-opt__ratio{font:12px var(--sans);color:#6f6350;}
 body.groups-shapes #deck,body.groups-shapes #groupsReviewActions,body.groups-shapes .crumb,
 body.groups-shapes .cur-modebar,body.groups-shapes #curPackages,body.groups-shapes #groupsPackageInfo,
-body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-shapes #groupsReviewAccess{display:none!important}
+body.groups-shapes #groupsExplore,body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-shapes #groupsReviewAccess{display:none!important}
 #groupsShapeRail{padding-top:18px;}
 #groupsShapeRail p{font:16px/1.5 var(--sans);}
 #groupsShapeCraft{width:auto;}
@@ -5838,9 +5846,10 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
           <div class="ready-block"><h4>One Last Choice</h4><p>Choose the format for your finished artwork. Your selection will be applied to your collection.</p></div>
           <p id="groupsShapeSummary"></p>
         </div>
+        <div id="groupsExplore"><div class="your-collection__title">Explore Styles</div><div class="dcur__rooms" id="groupsRoomMap" hidden></div></div>
         <div class="cur-modebar">
           <button class="cur-mode" id="curPick4Btn" type="button" data-mode="pick4">Pick for Me</button>
-          <button class="cur-mode" id="curAllFxBtn" type="button"><span>Curated</span></button>
+
         </div>
 
 
@@ -5853,7 +5862,7 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
              GROUPS_PACKAGES tiers (1/4/8/16 — identical VALID_SIZES to
              Pets') instead of Pets' image count. See
              paintCollectionProgress() / renderPackageTiles(). -->
-        <div class="cur-packages" id="curPackages"></div><div class="bundle-ind" id="groupsPackageInfo" hidden></div><div class="dcur__rooms" id="groupsRoomMap" hidden></div>
+        <div class="cur-packages" id="curPackages"></div><div class="bundle-ind" id="groupsPackageInfo" hidden></div>
         <div class="your-collection leather" id="curCollection">
           <div class="your-collection__title">Your Collection</div>
           <div class="dcur__count" id="curCollCount"></div>
@@ -5912,10 +5921,7 @@ body.groups-shapes #groupsRoomMap,body.groups-shapes #curReviewBtn,body.groups-s
         <div class="curated-page" id="groupsReviewPages" hidden><button class="cur-mode" id="groupsReviewPage1" type="button">1</button><button class="cur-mode" id="groupsReviewPage2" type="button">2</button></div>
         <div class="groups-forward"><button class="btn-review" type="button" id="groupsReviewCraft">Choose Format →</button></div>
       </div>
-      <div class="curated-page" id="curatedPageNav" hidden>
-        <button class="cur-mode" id="curatedPrevBtn" type="button">1</button>
-        <button class="cur-mode" id="curatedNextBtn" type="button">2</button>
-      </div>
+
 
     </section>
 
@@ -13301,7 +13307,8 @@ function downloadPortfolioPiece(piece){
     if(crumbBack) crumbBack.classList.toggle('is-filling',GROUPS_FILL_SLOT !== null);
     document.getElementById('crumbLabel').textContent = GROUPS_FILL_SLOT !== null ? 'Back to Review' : 'All effects';
     var map = document.getElementById('groupsRoomMap');
-    if(map) map.hidden = GROUPS_REVIEW || GROUPS_PICK_ACTIVE || CURATED_MODE === 'curated';
+    if(map) map.hidden = GROUPS_REVIEW || GROUPS_PICK_ACTIVE;
+    document.getElementById('groupsExplore').hidden = GROUPS_REVIEW || GROUPS_PICK_ACTIVE;
     document.getElementById('curPackages').hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
     document.getElementById('groupsPackageInfo').hidden = (!GROUPS_PICK_ACTIVE && !QUEUE.length) || GROUPS_REVIEW;
     document.querySelectorAll('#groupsJourney [data-step]').forEach(function(step){
@@ -13453,37 +13460,50 @@ function chooseAspect(id){
     document.getElementById('groupsReviewActions').hidden = true; document.getElementById('groupsReviewFooter').hidden = true;
     clearGroupsMode();
     var siloId = GROUPS_FLOOR_SILO || R.silos[0].id;
+    GROUPS_FLOOR_SILO = siloId;
     Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId === siloId));});
     paintEffects(siloId, siloList(siloId));
     crumbHere.textContent = siloLabel(siloId);
     workshop.classList.remove('workshop-view--silos'); workshop.classList.add('workshop-view--effects');
   }
-  function paintGroupsRooms(){
-    var rooms = document.getElementById('groupsRoomMap');
-    rooms.innerHTML = R.silos.map(function(silo){
-      return '<button type="button" class="dcur__room" data-silo-id="' + silo.id + '"><span>' + esc(silo.label) + '</span></button>';
-    }).join('');
-    rooms.addEventListener('click',function(event){
-      var button = event.target.closest('[data-silo-id]'); if (!button || CURATED_BUSY || button.dataset.siloId === GROUPS_FLOOR_SILO) return;
+  var GROUPS_REQUESTED_SILO = null, GROUPS_SILO_BUSY = false;
+  var GROUPS_SILO_ICONS = {portrait_collections:'living_world',crafted_collections:'artists_gallery',sculpted:'earth_ore',material_magic:'light_glass',made_by_hand:'made_by_hand',artists_studio:'ink_paper',curiosities:'fantasy_future'};
+  function showGroupsSilo(siloId){
+    GROUPS_REQUESTED_SILO = siloId;
+    if(GROUPS_SILO_BUSY) return;
+    if(CURATED_BUSY || siloId === GROUPS_FLOOR_SILO) return;
+      GROUPS_SILO_BUSY = true;
       CURATED_BUSY = true;
+      var rooms = document.getElementById('groupsRoomMap');
       GROUPS_REVIEW = false;
       document.getElementById('groupsReviewActions').hidden = true; document.getElementById('groupsReviewFooter').hidden = true;
       clearGroupsMode();
-      GROUPS_FLOOR_SILO = button.dataset.siloId;
-      Array.from(rooms.children).forEach(function(b){b.setAttribute('aria-pressed',String(b === button));});
+      GROUPS_FLOOR_SILO = siloId;
+      Array.from(rooms.children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId === siloId));});
       document.getElementById('groupsRoomMap').hidden=false;
-      var list = siloList(button.dataset.siloId);
+      var list = siloList(siloId);
       UPSELL_CTX = null;
       effFloor.classList.add('is-flipping');
       curatedTurn(effFloor,paintCuratedCards(list.map(function(effect){return effect.id;}))).then(function(){
         effFloor.classList.remove('is-flipping');
         CURATED_BUSY = false;
+        GROUPS_SILO_BUSY = false;
         paintGroupsModeControl();
+        if(GROUPS_REQUESTED_SILO !== GROUPS_FLOOR_SILO) showGroupsSilo(GROUPS_REQUESTED_SILO);
       });
       effFloor.dataset.count = list.length;
       workshop.classList.remove('workshop-view--silos'); workshop.classList.add('workshop-view--effects');
-      crumbHere.textContent = siloLabel(button.dataset.siloId);
+      crumbHere.textContent = siloLabel(siloId);
       if(curatedPageNav) curatedPageNav.hidden = true;
+  }
+  function paintGroupsRooms(){
+    var rooms = document.getElementById('groupsRoomMap');
+    rooms.innerHTML = R.silos.map(function(silo){
+      return '<button type="button" class="dcur__room" data-silo-id="' + silo.id + '"><img src="/icons/discovery-filters/' + GROUPS_SILO_ICONS[silo.id] + '.png" alt=""><span>' + esc(silo.label) + '</span></button>';
+    }).join('');
+    rooms.addEventListener('click',function(event){
+      var button = event.target.closest('[data-silo-id]');
+      if(button) showGroupsSilo(button.dataset.siloId);
     });
   }
   document.getElementById('groupsReviewPage1').addEventListener('click',function(){GROUPS_REVIEW_PAGE=0;renderGroupsReview();});
@@ -13509,13 +13529,7 @@ function chooseAspect(id){
     if(curatedPageNav) curatedPageNav.hidden = true;
     paintCollectionProgress();
   });
-  if (curCuratedBtn) curCuratedBtn.addEventListener('click', function(){ openCurated('curated'); });
-  if (curAllFxBtn) curAllFxBtn.addEventListener('click', function(){
-    var wasPick = GROUPS_PICK_ACTIVE; dismissGroupsPick();
-    if(wasPick && CURATED_MODE === 'curated') openCurated('curated');
-    else if(wasPick || CURATED_MODE === 'curated'){ GROUPS_FLOOR_SILO = R.silos[0].id; showGroupsDiscovery(); }
-    else { CURATED_PAGE = 0; openCurated('curated'); }
-  });
+
 
   /* the whole card is the target — the badge is an affordance, not the only
      place a click lands. */
