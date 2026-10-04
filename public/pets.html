@@ -9640,7 +9640,7 @@ function lbList(){ return mcVisible().filter(function(p){ return !p.crafting; })
    lightbox falls back to null and a 9:16 piece is shown in whatever shape the
    box defaults to -- the one place a native phone render would still have
    looked like a crop. */
-var LBOX_AR = { '1:1': '1', '3:4': '0.75', '4:3': '1.3333', '9:16': '0.5625' };
+var LBOX_AR = { '1:1': '1', '3:4': '0.75', '4:3': '1.3333', '9:16': '0.5625', '2:3': '0.6667', '3:2': '1.5', '16:9': '1.7778' };
 function lboxAspectFor(p){
   return (p && p.aspect && LBOX_AR[p.aspect]) || null;
 }
