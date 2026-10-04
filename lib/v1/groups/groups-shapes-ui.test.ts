@@ -7,7 +7,7 @@ const source=html.slice(html.indexOf('  var ASPECT = null;'),html.indexOf('  fun
 function setup(count:number){
  const dom=new JSDOM(html)
  let crafts=0, reviews=0
- const ctx:any={document:dom.window.document,SRC:{subjectCount:count},QUEUE:['a','b','c','d'],BLOCKS:[],targetBundle:()=>4,reviewItems:()=>[],effectLabel:(id:string)=>id,guardCollection:()=>true,paintGroupsModeControl:()=>{},loadBlocks:()=>Promise.resolve([]),saveResume:()=>{},tbcGo:{click:()=>crafts++},showGroupsReview:()=>reviews++}
+ const ctx:any={document:dom.window.document,SRC:{subjectCount:count},QUEUE:['a','b','c','d'],BLOCKS:[],targetBundle:()=>4,reviewItems:()=>[],effectLabel:(id:string)=>id,guardCollection:()=>true,paintGroupsModeControl:()=>{},loadBlocks:()=>Promise.resolve([]),saveResume:()=>{},tbcGo:{click:()=>crafts++},showGroupsReview:()=>{reviews++;dom.window.document.getElementById('groupsShapes').hidden=true}}
  runInNewContext(source,ctx)
  return {ctx,doc:dom.window.document,crafts:()=>crafts,reviews:()=>reviews}
 }
@@ -30,7 +30,7 @@ describe('Groups Shapes actual browser handlers',()=>{
  })
  }
  it('Back preserves source and selections',()=>{
- const {ctx,doc,reviews}=setup(4);ctx.showAspect();ctx.chooseAspect('3:2');doc.getElementById('btnBackAspect').click()
+ const {ctx,doc,reviews}=setup(4);ctx.showAspect();ctx.chooseAspect('3:2');doc.getElementById('groupsCartBack').click()
  expect(reviews()).toBe(1);expect(ctx.QUEUE).toEqual(['a','b','c','d']);expect(ctx.SRC.subjectCount).toBe(4);expect(doc.getElementById('groupsShapes').hidden).toBe(true)
  })
 })

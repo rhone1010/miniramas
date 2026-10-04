@@ -5668,6 +5668,38 @@ body.groups-shapes #groupsShapes > .groups-forward{max-width:1100px;margin:auto;
 #groupsShapeCraft:disabled{opacity:1;background:var(--vellum);color:var(--brass);border-color:var(--gold-soft);cursor:not-allowed;}
 @media(max-width:767px){body.groups-catalog #workshop .floor{grid-template-columns:repeat(2,minmax(0,1fr));}}
 </style>
+
+<style id="groupsVisualSystem">
+#workshop .crumb{justify-content:center;}
+#workshop .crumb-here{font:400 2rem var(--serif);color:var(--gold-soft);background:none;border:0;}
+#workshop .silo-card__overlay{
+  position:absolute; inset:0; z-index:1;
+  background:linear-gradient(180deg, transparent 42%, rgba(19,13,9,.18) 58%, rgba(19,13,9,.88) 100%);
+}
+#workshop .silo-card__content{position:absolute;z-index:2;left:7%;right:7%;bottom:7%;padding:0 36px 0 0;background:none;}
+#workshop .silo-card__title{display:block;font-family:var(--serif);font-size:1.1rem;font-weight:400;color:#fffcf6;text-shadow:0 .08rem .18rem rgba(18,12,8,.8), 0 .3rem .8rem rgba(18,12,8,.42);}
+#workshop .silo-card__add{width:30px;height:30px;font:18px/1 var(--sans);background:var(--vellum);border:2px solid var(--gold-soft);color:var(--oxblood);transform:none;}
+#workshop .silo-card.is-selected .silo-card__add{background:var(--gold-soft);color:var(--oxblood);transform:none;}
+#curCollection .dcur__count,#curCollection .dcur__next{display:none;}
+#curCollection .dcur__milestone,.groups-number,.groups-unlock-count,#groupsReviewPages .cur-mode{font-size:18px;}
+#cur .btn-review,#groupsReviewActions button,#groupsCartBack{font:400 1.1rem var(--serif);min-height:48px;border-radius:6px;border-width:1px;padding:12px 24px;}
+#curReviewBtn,.groups-forward .btn-review,#groupsShapeCraft{font:400 1.1rem var(--serif);min-height:60px;padding:12px 24px;border-radius:6px;border-width:1px;}
+body.groups-cart .room--curator{background:linear-gradient(rgba(166,158,145,.68),rgba(166,158,145,.68)),url('/textures/polished-marble.jpg') center/cover;}
+body.groups-cart #cur{display:flex;flex-direction:column;min-height:100%;}
+body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
+#groupsShapeRail[hidden]{display:none!important;}
+#groupsShapeRail .your-collection__title{font:400 1.5rem var(--serif);text-align:left;margin-top:18px;}
+#groupsCartCount,#groupsShapeSummary,#groupsCartFormat{font:400 14px/1.5 var(--sans);}
+#groupsCartEffects{counter-reset:artwork;margin:12px 0;padding:0;display:grid;gap:6px;}
+#groupsCartEffects li{counter-increment:artwork;display:flex;gap:12px;font:400 1.1rem/1.25 var(--serif);}
+#groupsCartEffects li::before{content:counter(artwork,decimal-leading-zero);font:400 12px/1.8 var(--sans);color:var(--brass);min-width:20px;}
+#groupsShapeSummary{border-top:1px solid var(--brass);padding-top:12px;}
+.groups-cart-package{display:flex;justify-content:space-between;margin-bottom:4px;}
+#groupsCartBack{margin-top:auto;background:var(--oxblood);color:var(--vellum);}
+#groupsShapes .aspect-gallery__title{font:400 2rem var(--serif);}
+#groupsShapes .aspect-opt__label{font:400 1.5rem var(--serif);}
+#groupsShapes .aspect-opt__say{font:400 14px/1.4 var(--sans);}
+</style>
 <style id="groupsSharedMasthead">
 .mh-right > .mh-desktop-only{display:none}
 @media (min-width:1025px){
@@ -5855,7 +5887,7 @@ body.groups-shapes #groupsShapes > .groups-forward{max-width:1100px;margin:auto;
             <span class="cur-slot-s">One picture with everybody in it. Four effects want one picture per person &mdash; you can add those here too.</span>
           </div>
           <!-- CUI 41A, 24 Aug 2026. The other way in. -->
-          <button class="cur-camera" id="curCamera" type="button">Take a photo</button>
+
           <div class="cur-thumb">
             <img id="curThumb" src="/previews/silos/artists_gallery.jpg" alt="Your photograph">
             <button class="cur-change" id="curChange" type="button">Change Photograph</button>
@@ -5930,14 +5962,14 @@ body.groups-shapes #groupsShapes > .groups-forward{max-width:1100px;margin:auto;
 
     <main id="groupsShapes" hidden>
       <div class="aspect-gallery">
-        <button class="crumb-back" id="btnBackAspect" type="button">&larr; Back to Review</button>
+
         <h2 class="aspect-gallery__title">Where will your artwork live?</h2>
 
         <div class="aspect-row" id="aspectRow"></div>
       </div>
       <div class="groups-forward"><button class="btn-review" id="groupsShapeCraft" type="button" disabled>Craft My Collection</button></div>
     </main>
-    <div id="groupsReviewActions" hidden><button type="button" id="groupsReviewBack">Back to Discovery</button><button type="button" id="groupsReviewClear">Clear Selection</button></div><div class="deck" id="deck">
+    <div id="groupsReviewActions" hidden><button type="button" id="groupsReviewClear">Clear Selection</button></div><div class="deck" id="deck">
       <div class="face face--silos">
       <!-- Rendered from EFFECT_REGISTRY.silos. Eight hand-written articles
            lived here and meant a silo rename was a CUI build. -->
@@ -13445,7 +13477,7 @@ function chooseAspect(id){
     document.getElementById('groupsShapes').hidden=true;
     document.getElementById('groupsShapeRail').hidden=true;
   }
-  document.getElementById('btnBackAspect').addEventListener('click',function(){hideAspect();showGroupsReview();});
+
   document.getElementById('groupsShapeCraft').addEventListener('click',function(){
     if(groupsShapeAllowed(SRC.subjectCount,ASPECT)&&tbcGo)tbcGo.click();
   });
@@ -13458,7 +13490,12 @@ function chooseAspect(id){
     });
     document.getElementById('groupsCartCount').textContent=QUEUE.length+(QUEUE.length===1?' artwork':' artworks');
     var sku=(BLOCKS||[]).find(function(b){return b.count===targetBundle();});
-    if(sku) document.getElementById('groupsShapeSummary').textContent=sku.count+(sku.count===1?' Craft':' Crafts')+' · '+usd(priceOf(sku))+'\n'+(sku.includedUnlocks||0)+(sku.includedUnlocks===1?' Unlock Included':' Unlocks Included');
+    if(sku){
+      var summary=document.getElementById('groupsShapeSummary');summary.innerHTML='';
+      var line=document.createElement('span'),quantity=document.createElement('span'),price=document.createElement('span'),unlocks=document.createElement('span');
+      line.className='groups-cart-package';quantity.textContent=sku.count+(sku.count===1?' Craft':' Crafts');price.textContent=usd(priceOf(sku));line.appendChild(quantity);line.appendChild(price);
+      unlocks.textContent=(sku.includedUnlocks||0)+(sku.includedUnlocks===1?' Unlock Included':' Unlocks Included');summary.appendChild(line);summary.appendChild(unlocks);
+    }
     var format=document.getElementById('groupsCartFormat'),isFormat=document.body.classList.contains('groups-shapes');
     var choice=ASPECTS.find(function(a){return a.id===ASPECT;});
     format.hidden=!isFormat||!choice;
@@ -13518,7 +13555,7 @@ function chooseAspect(id){
     GROUPS_FLOOR_SILO = siloId;
     Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId === siloId));});
     paintGroupsCatalog();
-    crumbHere.textContent = siloLabel(siloId);
+    crumbHere.textContent = 'Choose An Effect';
     workshop.classList.remove('workshop-view--silos'); workshop.classList.add('workshop-view--effects');
   }
   var GROUPS_SILO_ICONS = {portrait_collections:'living_world',crafted_collections:'artists_gallery',sculpted:'earth_ore',material_magic:'light_glass',made_by_hand:'made_by_hand',artists_studio:'ink_paper',curiosities:'fantasy_future'};
@@ -13541,7 +13578,7 @@ function chooseAspect(id){
     var card = effFloor.querySelector('[data-silo-id="'+siloId+'"]');
     if(card) card.scrollIntoView({block:'start',behavior:'auto'});
     Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId === siloId));});
-    crumbHere.textContent = siloLabel(siloId);
+    crumbHere.textContent = 'Choose An Effect';
   }
   function trackGroupsCatalog(){
     if(!document.body.classList.contains('groups-catalog')) return;
@@ -13550,7 +13587,7 @@ function chooseAspect(id){
     if(!current) return;
     GROUPS_FLOOR_SILO=current.dataset.siloId;
     Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId===GROUPS_FLOOR_SILO));});
-    crumbHere.textContent=siloLabel(GROUPS_FLOOR_SILO);
+    crumbHere.textContent='Choose An Effect';
   }
   document.getElementById('deck').addEventListener('scroll',trackGroupsCatalog,{passive:true});
   function paintGroupsRooms(){
@@ -13565,7 +13602,7 @@ function chooseAspect(id){
   }
   document.getElementById('groupsReviewPage1').addEventListener('click',function(){GROUPS_REVIEW_PAGE=0;renderGroupsReview();});
   document.getElementById('groupsReviewPage2').addEventListener('click',function(){GROUPS_REVIEW_PAGE=1;renderGroupsReview();});
-  document.getElementById('groupsReviewBack').addEventListener('click',showGroupsDiscovery);
+
   document.getElementById('groupsReviewClear').addEventListener('click',function(){
     GROUPS_TARGET = targetBundle();
     QUEUE.slice().forEach(function(q){removeFromQueue(q.siloId,q.effectId);});
