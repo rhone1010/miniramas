@@ -5640,13 +5640,13 @@ body.groups-shapes #groupsExplore,body.groups-shapes #groupsRoomMap,body.groups-
 @media(max-width:720px){#groupsShapes{padding:18px 8px 60px;}#groupsShapes .aspect-row{gap:8px;}#groupsShapes .aspect-opt{padding:8px;gap:8px;}#groupsShapes .aspect-shape{height:62px!important;width:calc(62px * var(--ar))!important;}#groupsShapes .aspect-opt__label{font-size:20px;}#groupsShapes .aspect-opt__say{font-size:16px;}}
 
 #groupsRoomMap .dcur__room{flex-direction:column;text-align:center;font-size:16px;gap:6px;}
-#groupsRoomMap .dcur__room img{width:44px;height:44px;}
+#groupsRoomMap .dcur__room img{width:34px;height:34px;}
 #workshop .silo-card__content,#workshop .silo-card__overlay{opacity:1;}
 #workshop .silo-card.is-selected .silo-card__add{transform:scale(1.5);transform-origin:bottom right;}
 body.groups-catalog #workshop .floor{container-type:normal;height:auto;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:auto;align-content:start;padding:var(--card-gap);}
-body.groups-catalog #workshop .floor > .silo-card{width:100%;max-height:none;scroll-margin-top:var(--card-gap);}
+body.groups-catalog #workshop .floor > .silo-card{width:min(100%,calc((100cqh - 3 * var(--card-gap))/2));max-height:none;scroll-margin-top:var(--card-gap);}
 body.groups-catalog #workshop .face--effects{height:auto;}
-body.groups-catalog #deck{overflow-y:scroll;scrollbar-gutter:stable;scrollbar-color:var(--gold-soft) var(--oxblood);}
+body.groups-catalog #deck{container-type:size;overflow-y:scroll;scrollbar-gutter:stable;scrollbar-color:var(--gold-soft) var(--oxblood);}
 body.groups-catalog #deck::-webkit-scrollbar{width:10px;}
 body.groups-catalog #deck::-webkit-scrollbar-track{background:var(--oxblood);}
 body.groups-catalog #deck::-webkit-scrollbar-thumb{background:var(--gold-soft);border-radius:6px;}
@@ -5656,6 +5656,8 @@ body.groups-cart .cur-change,body.groups-cart .cur-modebar,body.groups-cart #gro
 #groupsCartEffects{list-style:none;padding:0;margin:12px 0;font:400 22px/1.35 var(--serif);color:var(--ink);}
 #groupsShapeSummary{white-space:pre-line;}
 #groupsCartBack{margin-top:18px;}
+#cur,#groupsReviewPages,#groupsShapes{font-variant-numeric:lining-nums;}
+.groups-number,.groups-unlock-count,#curCollection .dcur__milestone,#groupsReviewPages .cur-mode,#curPackages .buy-block{font-family:var(--sans);font-variant-numeric:lining-nums tabular-nums;}
 body.groups-shapes{height:auto;overflow-y:auto;}
 body.groups-shapes .stage,body.groups-shapes .rooms{height:auto;min-height:calc(100dvh - var(--mh-h));overflow:visible;}
 body.groups-shapes #workshop{overflow:visible;}
@@ -5877,7 +5879,7 @@ body.groups-shapes #groupsShapes > .groups-forward{max-width:1100px;margin:auto;
           <p id="groupsCartFormat" hidden></p>
           <button class="btn-review" id="groupsCartBack" type="button">← Back to Discovery</button>
         </div>
-        <div id="groupsExplore"><div class="your-collection__title">Explore Styles</div><div class="dcur__rooms" id="groupsRoomMap" hidden></div></div>
+        <div id="groupsExplore"><div class="dcur__rooms" id="groupsRoomMap" hidden></div></div>
         <div class="cur-modebar">
           <button class="cur-mode" id="curPick4Btn" type="button" data-mode="pick4">Pick for Me</button>
 
@@ -8548,7 +8550,7 @@ window.EFFECT_PREVIEWS = {
     var rewardSku = (BLOCKS || []).find(function(s){return s.count === rewardTarget;});
     if(info && rewardSku){
       info.classList.toggle('is-ready',ready);
-      info.innerHTML=rewardTarget+(rewardTarget === 1 ? ' Craft' : ' Crafts')+' · '+usd(priceOf(rewardSku))+'<br><span class="groups-unlock-count">'+(rewardSku.includedUnlocks||0)+'</span> '+(rewardSku.includedUnlocks===1?'Unlock Included':'Unlocks Included');
+      info.innerHTML='<span class="groups-number">'+rewardTarget+'</span>'+(rewardTarget === 1 ? ' Craft' : ' Crafts')+' · <span class="groups-number">'+usd(priceOf(rewardSku))+'</span><br><span class="groups-unlock-count">'+(rewardSku.includedUnlocks||0)+'</span> '+(rewardSku.includedUnlocks===1?'Unlock Included':'Unlocks Included');
       if(next && !ready && n > 1) next.textContent=n+' crafts chosen · '+(rewardTarget-n)+' more to reach '+rewardTarget+' Crafts · '+(rewardSku.includedUnlocks||0)+' Unlocks';
     }
     paintGroupsModeControl();
