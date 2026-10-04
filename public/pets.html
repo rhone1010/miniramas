@@ -4,6 +4,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>if(location.pathname === '/collection') document.documentElement.classList.add('shared-collection-entry');</script>
+<style>
+html.shared-collection-entry #discoveryView{visibility:hidden!important;}
+html.shared-collection-entry body:not(.mc-unlock-review) #discoveryRail{visibility:hidden!important;}
+html.shared-collection-entry .mycoll{transition:none;}
+</style>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Discovery — click-to-select, closed loop to Review</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
