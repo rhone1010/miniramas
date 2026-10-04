@@ -5708,6 +5708,20 @@ body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
 #groupsCartBack,#groupsReviewActions button,#groupsShapeCraft,#groupsReviewCraft{font-size:18px;}
 #groupsReviewClear{background:transparent!important;color:var(--gold-soft);min-height:44px!important;}
 #groupsReviewCraft{min-height:60px;min-width:240px;background:var(--gold-soft);color:var(--oxblood);}
+#cur #curReviewBtn,#cur #groupsCartBack,#groupsReviewCraft,#groupsShapeCraft{
+  font: 500 1.6rem var(--serif);
+  min-height: 48px;
+  border-radius: 6px;
+  border-width: 1px;
+  padding: 12px 24px;
+}
+#groupsReviewClear{
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.25rem;
+  line-height: 1;
+  min-height: 48px!important;
+  padding: 0 1.5rem;
+}
 </style>
 <style id="groupsSharedMasthead">
 .mh-right > .mh-desktop-only{display:none}
@@ -9447,9 +9461,12 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
         if (card) card.classList.add('is-selected');
       });
       paintCollectionProgress(); paintGroupsModeControl();
-      dismissGroupsPick();
+      GROUPS_PICK_ACTIVE = false;
+      paintGroupsModeControl();
       if(CURATED_MODE === 'curated') paintCuratedPageNav(groupsCuratedIds().length);
     }
+
+    if(mode === 'pick4'){ settlePick4(); return; }
 
     function paint(){
       if(mode === 'curated') crumbHere.textContent = 'Curated';
