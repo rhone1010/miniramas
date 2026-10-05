@@ -5776,6 +5776,8 @@ body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
 @media (prefers-reduced-motion:reduce){ .lcf-panel, .lcf-scrim{ transition:none } }
 .mh-right .mh-series-menu{left:auto;right:0;transform:none}
 </style>
+<link rel="stylesheet" href="/collection-manifest.css">
+<link rel="stylesheet" href="/groups-photo-control.css">
 </head>
 <body>
 
@@ -5913,7 +5915,7 @@ body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
 
           <div class="cur-thumb">
             <img id="curThumb" src="/previews/silos/artists_gallery.jpg" alt="Your photograph">
-            <button class="cur-change" id="curChange" type="button">Change Photograph</button>
+            <button class="photo-change" id="curChange" type="button" aria-label="Change Photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 16l4.5-4.5 3.5 3.5 3-3L20 17"/><circle cx="15.5" cy="8.5" r="1.5"/></svg></button>
             <!-- Phones only, hidden by default in CSS. The way on from the
                  photograph, so that leaving this step is something a person
                  does rather than something that happens to them. -->

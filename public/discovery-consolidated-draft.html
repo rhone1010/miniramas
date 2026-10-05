@@ -1748,17 +1748,13 @@ body.is-lboxed{ overflow:hidden }
   .mcur__top .photo-row{ margin:0 }
   .mcur__acts{ display:flex; flex-direction:column; gap:10px; justify-content:center }
   .mcur .pick-for-me{ width:100%; margin:0; min-height:52px; border-radius:10px }
-  .mcur__curated{
-    width:100%; min-height:52px; border-radius:10px; cursor:pointer;
-    background:var(--vellum-100); border:1px solid rgba(182,138,83,.5);
-    color:var(--ink); font-family:var(--serif); font-style:italic; font-size:1.15rem;
-  }
-  .mcur__curated.is-open{ background:var(--brass); border-color:var(--brass); color:#fff }
+
+
 
   /* Curated opens in place and keeps its own grid, paging and reroll. */
   .mcur__cur{ display:flex; flex-direction:column; gap:6px }
-  .mcur__cur .curated-box{ grid-template-columns:44px 1fr 44px }
-  .mcur__cur .curated-grid{ max-width:none; gap:4px; padding:6px 4px }
+
+
 
   .mcur__maphead{
     display:flex; align-items:baseline; justify-content:space-between; gap:10px;
@@ -1840,8 +1836,8 @@ body.is-lboxed{ overflow:hidden }
      Capped at roughly their desktop size and left-aligned, so they stay
      indicators. .ae-strip also sized in cqi, a container unit with no
      container here, which is why it drew a small row inside a tall box. */
-  .rail .curated-grid{ max-width:150px; margin:0 auto; gap:2px }
-  .rail .curated-grid i{ border-radius:2px }
+
+
   .rail .ae-strip{ width:auto; max-width:84px; gap:2px }
   /* The box stops stretching to whatever the grid row allows. */
   .rail .all-effects{ min-height:0; align-self:start }
@@ -2553,45 +2549,41 @@ body.is-lboxed{ overflow:hidden }
    same line; trimming the label's leading above the capitals makes the
    letters themselves start there too. (Browsers without text-box keep the
    shared row and sit a few px lower.) */
-#curatedLabel > span{ text-box:trim-start cap alphabetic; flex-basis:100%; text-align:center }
+
 /* The title has the first line to itself at every width, New Mix beneath
    it -- in the wide sheet the two used to share a line and the title was
    centred against the taller button, 13px below the photo's top. */
 /* ↻ New Mix: a real, secondary action beside its label -- outlined, never
    filled, so it does not compete with Pick for me or Review. */
-.cur-reroll{ display:inline-flex; align-items:center; gap:.3em; min-height:30px; padding:.1em .6em; border-radius:999px;
-  border:1px solid rgba(125,66,66,.55); background:transparent; color:var(--oxblood); cursor:pointer; white-space:nowrap;
-  font-family:var(--serif); font-style:italic; font-size:max(18px, 1.05em); line-height:1.1 }
-.cur-reroll__ico{ font-style:normal; font-size:.9em }
-.cur-reroll:hover, .cur-reroll:focus-visible{ border-color:var(--oxblood); background:rgba(125,66,66,.08) }
-.cur-reroll:active{ background:rgba(125,66,66,.16) }
+
+
+
+
 
 /* Curated: one page of eight at a time, the page turned with ‹ ›. */
 /* The page controls are the box's own left and right edges: full height,
    so the whole edge is the target, with a hairline between them and the 8. */
-.curated-box{ position:relative; display:grid; grid-template-columns:22% 1fr 22%; align-items:stretch;
-  aspect-ratio:1.57; padding:0; border-radius:6px; background:#e4d9c9; border:1.5px solid rgba(182,138,83,.75); cursor:pointer; overflow:hidden }
-.curated-box .curated-grid{ align-self:center; padding:0 4% }
-.curated-box.active{ border-color:var(--brass); box-shadow:0 0 0 1px var(--brass) inset }
-.curated-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:3px; align-content:center }
-.curated-grid i{ display:block; aspect-ratio:var(--card-ar); border-radius:2px; background:var(--oxblood) }
-.curated-grid i.sel{ background:var(--gold-soft); box-shadow:0 0 0 1px rgba(255,255,255,.35) inset }
-.cur-page{ display:grid; place-items:center; align-self:stretch; min-width:0; padding:0; border:0; background:rgba(125,66,66,.04);
-  color:var(--oxblood); cursor:pointer }
-.cur-page--prev{ border-right:1px solid rgba(182,138,83,.45) }
-.cur-page--next{ border-left:1px solid rgba(182,138,83,.45) }
+
+
+
+
+
+
+
+
+
 /* Smaller carets (Rich, 2026-09-16, asked for again). The tap target keeps
    its full width -- only the drawn glyph shrinks, and the stroke thins with
    it so it stays the same weight of line rather than a fatter small arrow. */
-.cur-page svg{ width:38%; max-width:13px; height:auto; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round }
-.cur-page:hover:not([aria-disabled="true"]), .cur-page:focus-visible{ background:rgba(125,66,66,.13) }
-.cur-page:focus-visible{ outline:2px solid var(--gold); outline-offset:-3px }
-.cur-page[aria-disabled="true"]{ color:rgba(125,66,66,.28); background:transparent; cursor:default }
-.cur-page[hidden]{ visibility:hidden; display:block }
-.cur-dots{ display:flex; justify-content:center; gap:6px; margin:6px 0 0 }
-.cur-dots i{ width:6px; height:6px; border-radius:50%; background:rgba(88,65,42,.25) }
-.cur-dots i.on{ background:var(--brass) }
-.cur-dots[hidden]{ display:none }
+
+
+
+
+
+
+
+
+
 
 /* Pick for me: the column's width, 3.4:1, italic serif. */
 .pick-for-me{ width:100%; aspect-ratio:3.4; min-height:44px; padding:0 0 0 15%; text-align:left;
@@ -2682,11 +2674,11 @@ body.is-lboxed{ overflow:hidden }
   background:#2a1414; color:#f8f4eb; font-family:var(--serif); font-size:1rem; line-height:1.35;
   box-shadow:0 .5rem 1.4rem rgba(0,0,0,.3); opacity:0; transition:opacity .15s ease }
 .cur-tip.is-up{ opacity:1 }
-.rail button:focus-visible, .bundle-ind:focus-visible, .curated-box:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
+.rail button:focus-visible, .bundle-ind:focus-visible{ outline:2px solid var(--gold); outline-offset:2px }
 @media (prefers-reduced-motion:reduce){ .nudge-pulse, .your-collection .btn-review.nudge-pulse{ animation:none; box-shadow:0 0 0 3px rgba(201,166,96,.6) } }
 
 /* The Curated section of the stage: the same fold as a room. */
-.curated-block .effect-grid{ align-content:start }
+
 
 /* ── ≤1279: the 300px rail keeps its own 16px margin; the floor holds. */
 @media (max-width:1279px){ .rail{ padding-left:22px; padding-right:22px } }
@@ -2696,10 +2688,10 @@ body.is-lboxed{ overflow:hidden }
    control is a 44px target; the Collection docks as one row. */
 @media (max-width:1024px){
   .rail{ padding-left:max(20px, calc((100vw - 520px) / 2)); padding-right:max(20px, calc((100vw - 520px) / 2)) }
-  .cur-page, .ae-toggle{ min-width:44px; min-height:44px }
-  .curated-box{ grid-template-columns:minmax(44px,22%) 1fr minmax(44px,22%) }
+  .ae-toggle{ min-width:44px; min-height:44px }
+
   .rail.ae-held:has(#allEffects){ height:var(--sheet-held) }
-  .cur-reroll{ min-height:44px }
+
   .your-collection.is-docked{ width:auto; margin:0; flex-wrap:nowrap }
   .your-collection.is-docked .your-collection__title{ display:none }
   .your-collection.is-docked .tier{ margin:0 }
@@ -2718,7 +2710,7 @@ body.is-lboxed{ overflow:hidden }
 @media (max-width:359px){
   .rail .cur-top{
     grid-template-columns:minmax(0,1fr);
-    grid-template-areas:'photo' 'pick' 'curated' 'map';
+    grid-template-areas:'photo' 'pick' 'map';
   }
   .rail .photo-row{ align-self:start }
 }
@@ -2767,8 +2759,7 @@ body.is-lboxed{ overflow:hidden }
   .rail.is-sheet .mcur .photo-stamp .fill span{ font-size:22px; font-weight:400; padding:12px }
   .rail.is-sheet .mcur .photo-change{ right:4px; bottom:4px; width:34px; height:34px }
   .rail.is-sheet .mcur__acts{ gap:14px; justify-content:center }
-  .rail.is-sheet .mcur .pick-for-me,
-  .rail.is-sheet .mcur__curated{
+  .rail.is-sheet .mcur .pick-for-me{
     display:flex; align-items:center; justify-content:center; gap:12px;
     min-height:76px; aspect-ratio:auto; padding:10px 8px; border-radius:8px;
     font-family:var(--serif); font-size:24px; font-weight:400; font-style:normal;
@@ -2777,15 +2768,13 @@ body.is-lboxed{ overflow:hidden }
   .rail.is-sheet .mcur .pick-for-me{
     background:var(--oxblood); border:1px solid #895555; color:#fff8ee;
   }
-  .rail.is-sheet .mcur__curated{
-    background:#f0eae1; border:1px solid #d8cbb9; color:var(--oxblood);
-  }
+
   .rail.is-sheet .mcur__acts svg{ width:28px; height:28px; flex:none; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round }
-  .rail.is-sheet .mcur__curated.is-open{ background:#e5d8c7 }
+
   .rail.is-sheet .mcur__cur[hidden]{ display:none }
   .rail.is-sheet .mcur__cur:not([hidden]),
   .rail.is-sheet .mcur .pfm-sizes:not([hidden]){ margin:12px 0; padding-bottom:12px; border-bottom:1px solid #ded4c6 }
-  .rail.is-sheet .mcur__cur .curated-grid{ max-width:150px }
+
   .rail.is-sheet .mcur__maphead{ min-height:48px; align-items:center; font-size:23px; color:var(--oxblood) }
   .rail.is-sheet .mcur__maphead .ae-seeall{ font-size:14px; font-weight:600; color:var(--oxblood); gap:8px }
   .rail.is-sheet .mcur .all-effects{ width:100%; aspect-ratio:auto; padding:0; gap:0; align-self:stretch }
@@ -2825,8 +2814,8 @@ body.is-lboxed{ overflow:hidden }
   .mcur__body{ min-height:0; overflow-y:auto; overscroll-behavior-y:contain }
   .rail.is-sheet .mcur__cur .cur-label{ display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; padding:8px; background:#e5d8c7; border-radius:6px; color:var(--oxblood) }
   .rail.is-sheet .mcur__cur .cur-label > span{ flex:0 1 auto; font-size:22px }
-  .rail.is-sheet .mcur__cur .curated-box{ aspect-ratio:auto; height:auto; min-height:0; grid-template-columns:44px minmax(0,1fr) 44px }
-  .rail.is-sheet .mcur__cur .curated-grid{ display:flex; max-width:none; min-width:0; overflow-x:auto; gap:6px; padding:6px; scroll-snap-type:x proximity }
+
+
   .mcur__thumb{ flex:0 0 76px; width:76px; aspect-ratio:var(--card-ar); padding:0; border:1px solid #ded4c6; border-radius:3px; background-size:cover; background-position:center; cursor:pointer; scroll-snap-align:start; position:relative }
   .mcur__thumb.sel{ outline:2px solid var(--gold); outline-offset:-2px }
   .mcur__thumb.sel::after{ content:'✓'; position:absolute; right:2px; top:2px; background:var(--gold); color:var(--ink) }
@@ -2839,20 +2828,20 @@ body.is-lboxed{ overflow:hidden }
   .mcur__effects .mcur__thumb{ width:100%; min-width:0 }
 }
 @media (max-width:1024px){
-  .rail.is-sheet .mcur__cur:not([hidden]), .mcur__curated-section{ background:#e5d8c7; border:1px solid #ded4c6; border-radius:6px; padding:8px }
-  .rail.is-sheet .mcur__cur .cur-label, .mcur__curated-section .mcur__roomhead{ background:var(--oxblood); color:#fff8ee; border-radius:6px }
-  .rail.is-sheet .mcur__cur .cur-reroll{ color:#fff8ee; border-color:#ded4c6 }
+  .rail.is-sheet .mcur__cur:not([hidden]){ background:#e5d8c7; border:1px solid #ded4c6; border-radius:6px; padding:8px }
+  .rail.is-sheet .mcur__cur .cur-label{ background:var(--oxblood); color:#fff8ee; border-radius:6px }
+
   .rail.is-sheet .mcur__maphead{ display:flex; justify-content:space-between; width:100%; padding:8px; margin:8px 0; border:1px solid #ded4c6; border-radius:6px; background:#eee7dc; cursor:pointer; font-family:var(--serif); text-align:left }
-  .rail.is-sheet .mcur .ae-rooms .mcur__curated-map{ grid-column:span 2; background:#e5d8c7; border-radius:6px; color:var(--oxblood); padding:6px; gap:6px; font-family:var(--serif); font-size:18px }
-  .mcur__curated-mini{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:3px; width:100% }
-  .mcur__curated-mini i{ display:block; height:18px; border-radius:2px; background:var(--oxblood) }
-  .mcur__curated-mini i.sel{ background:var(--gold-soft) }
+
+
+
+
   .mcur:has(#mcurCuratedWrap:not([hidden])) #allEffects:not(.is-full){ display:none }
 }
 @media (max-width:1024px){
-  .mcur__curated-section .mcur__roomhead{ justify-content:space-between }
-  .mcur__curated-title{ padding:0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; text-align:left }
-  .mcur__curated-section .cur-reroll{ flex:none; color:#fff8ee; border-color:#ded4c6 }
+
+
+
 }
 
 /* Preview-only unlock commerce, scoped to My Collection. */
@@ -2920,17 +2909,17 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   .dcur .photo-stamp{width:var(--dcur-source);height:var(--dcur-source);min-height:0;margin:0;}
   .dcur .photo-stamp .fill span{font-size:16px;line-height:1.1;}
   .dcur__actions{display:flex;flex-direction:column;gap:12px;min-width:0;}
-  .dcur #optPickForMe,.dcur__remix{width:100%;margin:0;min-height:52px;aspect-ratio:auto;padding:8px 6px;text-align:center;border:1px solid var(--gold);border-radius:6px;font:400 20px/1.2 var(--serif);cursor:pointer;}
+  .dcur #optPickForMe{width:100%;margin:0;min-height:52px;aspect-ratio:auto;padding:8px 6px;text-align:center;border:1px solid var(--gold);border-radius:6px;font:400 20px/1.2 var(--serif);cursor:pointer;}
   .dcur #optPickForMe{background:var(--oxblood);color:var(--vellum);}
-  .dcur__remix{display:grid;place-items:center;background:var(--vellum);color:var(--oxblood);}
-  .dcur__remix span{grid-area:1/1;transition:opacity 180ms ease-in-out;}
-  .dcur__remix .dcur__busy{opacity:0;}
-  .dcur__remix.is-remixing .dcur__idle{opacity:0;}
-  .dcur__remix.is-remixing .dcur__busy{opacity:1;}
+
+
+
+
+
   .dcur #pfmSizes{margin:0;}
-  .dcur__disclose,.dcur__back{min-height:40px;padding:8px 12px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--oxblood);font:400 20px/1.2 var(--serif);cursor:pointer;}
-  .dcur__disclose{display:flex;align-items:center;justify-content:space-between;width:100%;color:var(--ink);}
-  .dcur__disclose span{font:24px/1 var(--sans);}
+
+
+
   .dcur__map-body{margin-top:8px;}
   .dcur__map-body[hidden]{display:none;}
   .dcur__rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
@@ -2938,7 +2927,7 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
   .dcur__room-icon{display:grid;place-items:center;flex:0 0 28px;height:28px;border:1px solid var(--gold-soft);border-radius:4px;}
   .dcur__room-icon img{display:block;width:24px;height:24px;object-fit:contain;}
   .dcur__room.selected{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass);}
-  .dcur__back{margin-top:8px;border:0;background:none;padding-left:0;}
+
   .rail .dcur .your-collection{position:static;width:100%;margin-top:auto;padding:12px;border-radius:6px;display:flex;flex-direction:column;gap:8px;}
   .rail .dcur .your-collection__title{font:400 24px/1.2 var(--serif);text-align:center;margin:0;}
   .dcur .your-collection .dcur__count{text-align:center;color:var(--vellum);font:12px/1.4 var(--sans);}
@@ -2952,11 +2941,11 @@ body.mc-unlock-review #mycollBackRail{margin-top:auto;padding-top:18px}
 @media(min-width:1330px){.dcur{--dcur-source:120px;}}
 @media(min-width:1660px){.dcur{--dcur-source:150px;}}
 @media(min-width:1920px){.dcur{--dcur-source:180px;}}
-@media(prefers-reduced-motion:reduce){.dcur__remix span{transition:none;}}
+@media(prefers-reduced-motion:reduce){}
 /* Portraits geometry/easing; each changed card crosses its own midpoint. */
 @media(min-width:1025px){
-  #curatedStage{perspective:2200px;}
-  #curatedStage.is-flipping > .card.is-changing{transform-style:preserve-3d;transition:none;}
+
+
   .dcur__milestones{position:relative;height:46px;margin:12px 12px 0;}
   .dcur__milestones::before{content:"";position:absolute;left:0;right:0;top:10px;height:3px;background:var(--brass);}
   .dcur__milestones .dcur__fill{position:absolute;left:0;top:10px;height:3px;background:var(--gold-soft);}
@@ -3394,6 +3383,8 @@ window.CONCIERGE_SEEDS = [
 <script src="/concierge.js" defer data-dock data-attention></script>
 <link rel="stylesheet" href="/upload-routing.css">
 <script src="/upload-routing.js"></script>
+<link rel="stylesheet" href="/creation-consistency.css">
+<link rel="stylesheet" href="/collection-manifest.css">
 </head>
 <body>
 <!-- discovery-consolidated-draft.html
@@ -3487,16 +3478,7 @@ window.CONCIERGE_SEEDS = [
       <div class="photo-row">
         <div class="photo-stamp"><div class="fill"><span>Start Here — Upload your Photo</span></div></div>
       </div>
-      <div class="cur-right">
-        <div class="cur-label" id="curatedLabel"><span>Curated Effects</span><button class="cur-reroll" type="button" id="curReroll" data-tip="reroll"><span class="cur-reroll__ico" aria-hidden="true">&#8635;</span> New Mix</button></div>
-        <div class="curated-box" id="curatedBox" role="group" aria-labelledby="curatedLabel">
-          <button class="cur-page cur-page--prev" type="button" data-cur-page="0" data-tip="page" aria-label="Curated effects, page 1"><svg viewBox="0 0 14 24" aria-hidden="true" focusable="false"><path d="M11 2.5 3 12l8 9.5"/></svg></button>
-          <div class="curated-grid" id="curatedGrid"></div>
-          <button class="cur-page cur-page--next" type="button" data-cur-page="1" data-tip="page" aria-label="Curated effects, page 2"><svg viewBox="0 0 14 24" aria-hidden="true" focusable="false"><path d="M3 2.5 11 12l-8 9.5"/></svg></button>
-        </div>
-        <div class="cur-dots" id="curatedDots" aria-hidden="true"><i></i><i></i></div>
-      </div>
-      <button class="pick-for-me" id="optPickForMe" type="button" data-tip="pick" aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes">Pick 4 Me</button>
+      <button class="pick-for-me" id="optPickForMe" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes">Pick 4 Me</button>
       <div class="ae-col">
         <div class="all-effects" id="allEffects" role="group" aria-labelledby="allLabel">
           <button class="ae-toggle" id="allToggle" type="button" data-tip="rooms" aria-expanded="false" aria-controls="minimap" aria-label="Show all rooms">&#9660;</button>
@@ -4611,7 +4593,7 @@ var DISCOVERY_RAIL_HTML = document.getElementById('discoveryRail').innerHTML;
    changes: paintCuratedRail fills #curatedGrid, paintAllEffects fills
    #aeStrip and reads #allEffects, buildMinimap fills #minimap, fitStampThumb
    measures .photo-stamp, the delegated rail click handler reaches
-   #optPickForMe, #curReroll, .cur-page, #allToggle, #aeSeeAll and .mm by
+   #optPickForMe, .cur-page, #allToggle, #aeSeeAll and .mm by
    selector. This is presentation only. */
 function mobileCuratorHtml(){
   return '' +
@@ -4625,10 +4607,8 @@ function mobileCuratorHtml(){
     '<div class="mcur__top">' +
       '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>' +
       '<div class="mcur__acts">' +
-        '<button class="pick-for-me" id="optPickForMe" type="button" data-tip="pick" ' +
+        '<button class="pick-for-me" id="optPickForMe" type="button" ' +
           'aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 7h4c5 0 9 14 14 14h4m-4-4 4 4-4 4M3 21h4c5 0 9-14 14-14h4m-4-4 4 4-4 4"/></svg>Pick 4 Me</button>' +
-        '<button class="mcur__curated" id="mcurCurated" type="button" aria-expanded="false" ' +
-          'aria-controls="mcurCuratedMapEffects"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M5 25 22 4C11 3 5 12 7 21c8 0 16-7 15-17M9 19l8-3M12 15l1-7"/></svg>Curated</button>' +
       '</div>' +
     '</div>' +
     '<div class="pfm-sizes" id="pfmSizes" hidden></div>' +
@@ -5428,7 +5408,7 @@ function paintTier(el){
    ids, so the plate lookup needs baseId while the payload needs key. */
 function allCatalogKeys(){ var out = []; SILOS.forEach(function(silo){ silo.effects.forEach(function(e){ out.push({ key:resolveEffectId(e.id, SUBJECT), baseId:e.id, name:e.label, siloName:silo.name }); }); }); return out; }
 /* ══════════════════════════════════════════════════════════════
-   __CURATED__ CURATED EFFECTS (Rich, 2026-09-13)
+   __CURATED__ PICK_POOL EFFECTS (Rich, 2026-09-13)
    The universe is these 25 -- never Ebony, Fire Face or Mercury. A
    session's bench is 16 of them, shown on the stage above the rooms one
    page of 8 at a time, with the rail's Curated box as its minimap and
@@ -5441,14 +5421,14 @@ function allCatalogKeys(){ var out = []; SILOS.forEach(function(silo){ silo.effe
    Curated -- mosaic_portrait, stained_glass, designer_vinyl,
    action_figure, cubism, sheet_music. This is Curated membership only:
    all six that left remain live in their own rooms and in All Effects. */
-var CURATED_UNIVERSE = [
+var PICK_UNIVERSE = [
   'reclaimed_bronze','retro_robot','stained_glass','plushy','ice','impressionist','art_deco',
   'stone','mosaic_portrait','renaissance','victorian','wild_west','neon','oil_impasto',
   'balloon_face','sheet_music','origami','linocut','art_nouveau','designer_vinyl','action_figure',
   'elizabethan','iron','quilted','cubism'
 ];
-var CURATED = { bench: [], page: 0 };
-function curatedEffect(base){
+var PICK_POOL = { bench: [] };
+function recommendationEffect(base){
   for (var s = 0; s < SILOS.length; s++){
     for (var i = 0; i < SILOS[s].effects.length; i++){
       var e = SILOS[s].effects[i];
@@ -5466,37 +5446,17 @@ function isChosen(base){ return SELECTED.some(function(s){ return s.baseId === b
 function validBench(b){
   if (!Array.isArray(b) || b.length !== 16) return false;
   var seen = {};
-  return b.every(function(id){ var ok = CURATED_UNIVERSE.indexOf(id) > -1 && !seen[id] && !!curatedEffect(id); seen[id] = true; return ok; });
+  return b.every(function(id){ var ok = PICK_UNIVERSE.indexOf(id) > -1 && !seen[id] && !!recommendationEffect(id); seen[id] = true; return ok; });
 }
 function drawBench(){
-  CURATED.bench = shuffled(CURATED_UNIVERSE.filter(function(id){ return !!curatedEffect(id); })).slice(0, 16);
-  CURATED.page = 0;
-}
+  PICK_POOL.bench = shuffled(PICK_UNIVERSE.filter(function(id){ return !!recommendationEffect(id); })).slice(0, 16);
+  }
 /* REROLL: only the OPEN places change. A chosen effect never leaves the
    bench. New arrivals come first from the effects not on the bench at
    all; only when those run out does an effect just rerolled away come
    back -- and then never into the place it just left. Nothing is barred
    for good: a later reroll may bring any of them back. */
-function rerollBench(){
-  var bench = CURATED.bench.slice(), open = [], was = {}, used = {};
-  bench.forEach(function(id, i){ if (isChosen(id)) used[id] = true; else { open.push(i); was[i] = id; } });
-  if (!open.length) return false;
-  var fresh = shuffled(CURATED_UNIVERSE.filter(function(id){ return bench.indexOf(id) < 0 && !!curatedEffect(id); }));
-  var back = shuffled(open.map(function(i){ return was[i]; }));
-  open.forEach(function(i){
-    var pick = null;
-    while (fresh.length && !pick){ var f = fresh.shift(); if (!used[f]) pick = f; }
-    for (var pass = 0; !pick && pass < 2; pass++){
-      for (var k = 0; k < back.length; k++){
-        if (!used[back[k]] && (pass === 1 || back[k] !== was[i])){ pick = back.splice(k, 1)[0]; break; }
-      }
-    }
-    bench[i] = pick || was[i];
-    used[bench[i]] = true;
-  });
-  CURATED.bench = bench;
-  return true;
-}
+
 /* The dedicated Curated plates (600x894, /previews/curated) cover the
    effects that were in the bench when that set was shot. The four that
    joined on 2026-09-16 have no plate there, so they take the current
@@ -5509,90 +5469,31 @@ var CURATED_PLATES = [
   'quilted','reclaimed_bronze','renaissance','retro_robot','sand_form','sheet_music','stained_glass','stone',
   'victorian','wild_west'
 ];
-function curatedPreviewUrl(base, subject){
+function recommendationPreviewUrl(base, subject){
   if (CURATED_PLATES.indexOf(base) < 0) return previewUrlFor(base, subject);
   return '/previews/curated/' + base + '/' + (subject === 'woman' ? 'woman' : 'man') + '.jpg';
 }
-function curatedPage(){ return CURATED.bench.slice(CURATED.page * 8, CURATED.page * 8 + 8); }
+
 
 /* The stage's Curated section: the current page's 8, as ordinary cards. */
-function renderCuratedStage(prepared){
-  var grid = prepared || document.getElementById('curatedStage'); if (!grid) return;
-  grid.innerHTML = '';
-  curatedPage().forEach(function(base){
-    var e = curatedEffect(base); if (!e) return;
-    var card = document.createElement('div');
-    card.className = 'card';
-    card.dataset.curated = '1';
-    card.dataset.baseId = base;
-    card.dataset.key = base;
-    card.dataset.effectId = resolveEffectId(base, SUBJECT);
-    if (e.hasVariant) card.dataset.hasVariant = '1';
-    card.innerHTML =
-      '<div class="card__art" style="background-image:url(' + curatedPreviewUrl(base, SUBJECT) + ')"><div class="card__overlay"></div><div class="card__badge"></div>' +
-        '<div class="card__content"><strong>' + e.label + '</strong></div></div>';
-    var checkEl = card.querySelector('.card__badge');
-    card.addEventListener('click', function(){ toggleSelect(card.dataset.effectId || base, e.label, e.siloName, checkEl, card); });
-    grid.appendChild(card);
-  });
-  if (!prepared && typeof syncDiscoveryChecks === 'function') syncDiscoveryChecks();
-}
+
 /* The rail's Curated box: the page's 8 as cells (gold = chosen), ‹ › and
    the two dots once a second page exists (brass = the page you are on). */
-function openCuratedMap(){
-  setAllOpen(true);
-  var section = document.querySelector('.mcur__curated-section');
-  if (section) section.scrollIntoView({ behavior:'smooth', block:'nearest' });
-}
-function paintCuratedMap(){
-  var compact = document.getElementById('mcurCuratedMap');
-  if (compact){
-    compact.innerHTML = '<span class="mcur__curated-mini">' + Array.from({length:10}, function(_, i){
-      var base = CURATED.bench[i];
-      return '<i' + (base && isChosen(base) ? ' class="sel"' : '') + '></i>';
-    }).join('') + '</span><span>Curated</span>';
-  }
-  var full = document.getElementById('mcurCuratedMapEffects');
-  if (full) full.innerHTML = CURATED.bench.map(mobileEffectThumb).join('');
-}
+
+
 function mobileEffectThumb(base){
-  var e = curatedEffect(base);
+  var e = recommendationEffect(base);
   var button = document.createElement('button');
   button.type = 'button'; button.className = 'mcur__thumb' + (isChosen(base) ? ' sel' : '');
   button.dataset.curatorEffect = base;
   button.setAttribute('aria-label', e ? e.label : base);
   button.setAttribute('aria-pressed', isChosen(base) ? 'true' : 'false');
-  button.style.backgroundImage = 'url("' + curatedPreviewUrl(base, SUBJECT) + '")';
+  button.style.backgroundImage = 'url("' + recommendationPreviewUrl(base, SUBJECT) + '")';
   return button.outerHTML;
 }
-function paintCuratedRail(){
-  paintDesktopCurator();
-  var grid = document.getElementById('curatedGrid');
-  if (grid){
-    grid.innerHTML = curatedPage().map(function(base){
-      if (grid.closest('.mcur')) return mobileEffectThumb(base);
-      var e = curatedEffect(base);
-      return '<i data-key="' + base + '" title="' + (e ? e.label : '') + '"' + (isChosen(base) ? ' class="sel"' : '') + '></i>';
-    }).join('');
-  }
-  var two = CURATED.bench.length > 8;
-  document.querySelectorAll('#discoveryRail .cur-page').forEach(function(b){
-    var p = +b.dataset.curPage;
-    b.hidden = !two;
-    b.setAttribute('aria-disabled', CURATED.page === p ? 'true' : 'false');
-  });
-  var dots = document.getElementById('curatedDots');
-  if (dots){
-    dots.hidden = !two;
-    var d = dots.querySelectorAll('i');
-    for (var i = 0; i < d.length; i++) d[i].classList.toggle('on', i === CURATED.page);
-  }
-  var box = document.getElementById('curatedBox');
-  if (box) box.classList.toggle('active', ACTIVE_SILO === 'curated');
-  paintCuratedMap();
-}
-function paintCurated(){ paintCuratedRail(); renderCuratedStage(); }
-function goCurated(){ var b = document.getElementById('silo-curated'); if (b) b.scrollIntoView({ behavior:'smooth', block:'start' }); }
+
+
+
 
 /* A bench that survived a Review sign-in is used as it was, before
    anything is drawn -- never silently replaced by a new one. */
@@ -5600,10 +5501,10 @@ function goCurated(){ var b = document.getElementById('silo-curated'); if (b) b.
   try {
     var c = JSON.parse(localStorage.getItem('liten_resume_v1') || 'null');
     if (c && c.v === 2 && Date.now() - (c.at || 0) <= 2 * 60 * 60 * 1000 && validBench(c.bench)){
-      CURATED.bench = c.bench.slice(); CURATED.page = c.page ? 1 : 0;
+      PICK_POOL.bench = c.bench.slice();
     }
   } catch (e){}
-  if (!CURATED.bench.length) drawBench();
+  if (!PICK_POOL.bench.length) drawBench();
 })();
 
 /* ── PICK FOR ME (Rich, 2026-09-13). The customer names the size -- 1,
@@ -5631,10 +5532,10 @@ function pickFor(v){
   if (requirePhoto(document.getElementById('optPickForMe'))) return;
   closePickSizes();
   TARGET_PICK = v;
-  for (var i = 0; i < CURATED.bench.length && SELECTED.length < v; i++){
-    var base = CURATED.bench[i];
+  for (var i = 0; i < PICK_POOL.bench.length && SELECTED.length < v; i++){
+    var base = PICK_POOL.bench[i];
     if (isChosen(base)) continue;
-    var e = curatedEffect(base); if (!e) continue;
+    var e = recommendationEffect(base); if (!e) continue;
     var key = resolveEffectId(base, SUBJECT);
     SELECTED.push({ key:key, baseId:base, name:e.label, siloName:e.siloName });
     syncSelect(key, 'select');
@@ -5651,7 +5552,7 @@ function pickFor(v){
    the same place -- closes it. Moving from Curated down into the rooms
    opens it as the map of where you are; crossing from room to room never
    closes it, and nothing does but the customer. */
-var ALL_OPEN = false, LAST_SECTION = 'curated';
+var ALL_OPEN = false, LAST_SECTION = SILOS[0].id;
 /* In the bottom sheet (<=1024) the rail is pinned to the foot and sized by
    its content, so an opened All Effects used to grow the whole sheet upward
    -- every control on it, the toggle under the finger included, jumped by
@@ -5693,8 +5594,6 @@ function paintAllEffects(){
       (ALL_OPEN ? '&#8249;' : '&#8250;') + '</span>';
     see.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
   }
-  var curatedToggle = document.getElementById('mcurCurated');
-  if (curatedToggle) curatedToggle.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
   var mapToggle = document.getElementById('mcurMapToggle');
   if (mapToggle) mapToggle.setAttribute('aria-expanded', ALL_OPEN ? 'true' : 'false');
   var strip = document.getElementById('aeStrip');
@@ -5706,10 +5605,8 @@ function paintAllEffects(){
   }
 }
 function noteSection(id){
-  var fromCurated = LAST_SECTION === 'curated';
   LAST_SECTION = id;
-  if (id !== 'curated' && fromCurated && !ALL_OPEN && !railIsSheet()) setAllOpen(true);
-  paintCuratedRail();
+  paintDesktopCurator();
   paintAllEffects();
 }
 
@@ -5736,22 +5633,15 @@ function requestReview(anchorEl){
    in the DOM. */
 document.addEventListener('click', function(e){
   var t = e.target, c = t && t.closest ? function(s){ return t.closest(s); } : function(){ return null; };
-  if (c('#dcurAll')){ DESKTOP_ALL_OPEN = !DESKTOP_ALL_OPEN; paintDesktopCurator(); return; }
-  if (c('#dcurBack')){ DESKTOP_ALL_OPEN = false; paintDesktopCurator(); goCurated(); return; }
-  if (c('#dcurRemix')){ remixDesktopCurated(); return; }
-  var pg = c('#discoveryRail .cur-page');
-  if (pg){ if (pg.getAttribute('aria-disabled') !== 'true'){ CURATED.page = +pg.dataset.curPage ? 1 : 0; act('curated page ' + (CURATED.page + 1)); paintCurated(); if (!c('.mcur')) goCurated(); } return; }
-  if (c('#curReroll')){ if (rerollBench()){ act('curated reroll'); paintCurated(); } return; }
   var thumb = c('[data-curator-effect]');
   if (thumb){
     var card = Array.prototype.find.call(document.querySelectorAll('#stageScroll .card'), function(el){ return el.dataset.baseId === thumb.dataset.curatorEffect; });
     if (card) card.click();
-    paintCuratedRail(); paintMinimapSelection();
+    paintDesktopCurator(); paintMinimapSelection();
     return;
   }
   var room = c('[data-curator-room]');
   if (room){ document.body.classList.remove('rail-open'); document.getElementById('silo-' + room.dataset.curatorRoom).scrollIntoView({ behavior:'smooth', block:'start' }); return; }
-  if (c('#curatedBox')){ if (!c('.mcur')) goCurated(); return; }
   var ps = c('[data-pfm]');
   if (ps){ if (!ps.disabled) pickFor(+ps.dataset.pfm); return; }
   if (c('#optPickForMe')){ togglePickSizes(); return; }
@@ -5764,7 +5654,6 @@ document.addEventListener('click', function(e){
      the board puts it beside Pick 4 Me as an action, and the eight-cell grid
      it opens is the same #curatedGrid the desktop rail paints. */
   if (c('#mcurClose')){ document.body.classList.remove('rail-open'); return; }
-  if (c('#mcurCurated')){ openCuratedMap(); return; }
   if (c('#btnGoReview')){ requestReview(c('#btnGoReview')); return; }
 });
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePickSizes(); });
@@ -5798,7 +5687,7 @@ function sizeInfo(count){
 
 function updateCollectionSummary(){
   paintMinimapSelection();
-  paintCuratedRail();
+  paintDesktopCurator();
   paintAllEffects();
   paintBundle();
   paintTier(document.getElementById('tierD'));
@@ -5900,18 +5789,6 @@ function toggleSelect(key, name, siloName, checkEl, cardEl){
 var nav = document.getElementById('iconNav');
 var stage = document.getElementById('stageScroll');
 
-/* __CURATED__ The Curated section sits above the rooms: one page of the
-   bench, 8 cards, the same fold as a room (8 cards fill its 4x2 exactly;
-   the rail's Curated label names it, so there is no title card). */
-(function(){
-  var block = document.createElement('section');
-  block.className = 'silo-block curated-block';
-  block.id = 'silo-curated';
-  block.setAttribute('aria-label', 'Curated Effects');
-  block.innerHTML = '<div class="effect-grid" id="curatedStage"></div>';
-  stage.appendChild(block);
-  renderCuratedStage();
-})();
 
 SILOS.forEach(function(silo, idx){
   var btn = document.createElement('button');
@@ -6057,7 +5934,7 @@ function repaintSubject(){
     var art = c.querySelector('.card__art');
     /* __CURATED__ Curated cards show the Curated sets: the NB2 man and
        woman previews, by the subject, for every one of the 27. */
-    var next = c.dataset.curated ? curatedPreviewUrl(base, SUBJECT) : previewUrlFor(base, SUBJECT);
+    var next = previewUrlFor(base, SUBJECT);
     if (art && next) art.style.backgroundImage = 'url(' + next + ')';
     var resolved = resolveEffectId(base, SUBJECT);
     var wasSelected = SELECTED.some(function(s){ return s.key === c.dataset.effectId; });
@@ -6072,7 +5949,7 @@ function repaintSubject(){
   if (typeof repaintPosePlates === 'function') repaintPosePlates();   /* __POSE_STEP__ */
 }
 
-var ACTIVE_SILO = 'curated';   /* __CURATED__ the stage opens on Curated */
+var ACTIVE_SILO = SILOS[0].id;
 function buildMinimap(){
   var mm = document.getElementById('minimap'); if (!mm) return;
   mm.innerHTML = '';
@@ -6090,15 +5967,7 @@ function buildMinimap(){
     panels[idx < 4 ? 0 : 1].appendChild(b);
   });
   if (mm.closest('.mcur')){
-    var curatedNav = document.createElement('button');
-    curatedNav.type = 'button'; curatedNav.id = 'mcurCuratedMap'; curatedNav.className = 'mm mcur__curated-map';
-    curatedNav.setAttribute('aria-label', 'Curated Effects');
-    curatedNav.addEventListener('click', openCuratedMap);
-    panels[0].prepend(curatedNav);
     var full = document.createElement('div'); full.className = 'mcur__fullmap';
-    var curatedSection = document.createElement('section'); curatedSection.className = 'mcur__curated-section';
-    curatedSection.innerHTML = '<div class="mcur__roomhead"><button type="button" class="mcur__curated-title" data-curator-room="curated">Curated Effects</button></div><div class="mcur__effects" id="mcurCuratedMapEffects"></div>';
-    full.appendChild(curatedSection);
     SILOS.forEach(function(silo){
       var section = document.createElement('section');
       var heading = document.createElement('button');
@@ -6112,7 +5981,6 @@ function buildMinimap(){
     });
     var oldFull = mm.parentNode.querySelector('.mcur__fullmap'); if (oldFull) oldFull.remove();
     mm.parentNode.appendChild(full);
-    paintCuratedMap();
   }
   /* __M5_COMPACT_MAP__ (Rich, 2026-09-18). The board's Effect Map is this
      minimap, read the way a phone reads things: one column per silo -- its
@@ -6152,11 +6020,10 @@ function buildMinimap(){
 }
 buildMinimap();
 function paintMinimapSelection(){
-  paintCuratedMap();
   document.querySelectorAll('[data-curator-effect]').forEach(function(cell){
     var chosen = isChosen(cell.dataset.curatorEffect);
     cell.classList.toggle('sel', chosen); cell.setAttribute('aria-pressed', chosen ? 'true' : 'false');
-    cell.style.backgroundImage = 'url("' + curatedPreviewUrl(cell.dataset.curatorEffect, SUBJECT) + '")';
+    cell.style.backgroundImage = 'url("' + recommendationPreviewUrl(cell.dataset.curatorEffect, SUBJECT) + '")';
   });
   document.querySelectorAll('.mm__grid i[data-key]').forEach(function(cell){
     cell.classList.toggle('sel', SELECTED.some(function(s){ return s.key === cell.dataset.key || s.baseId === cell.dataset.key; }));
@@ -6194,7 +6061,6 @@ var observer = new IntersectionObserver(function(entries){
     noteSection(id);   /* __CURATED__ Curated -> the rooms opens All Effects */
   });
 }, { root: stage, rootMargin: '0px 0px -70% 0px', threshold: 0 });
-observer.observe(document.getElementById('silo-curated'));
 SILOS.forEach(function(s){ observer.observe(document.getElementById('silo-' + s.id)); });
 
 /* __GENDER_TOGGLE__ — markup from portraits.html:5053-5056, mounted into the
@@ -6894,14 +6760,13 @@ function showDiscovery(){
    (DISCOVERY_RAIL_HTML, captured from the static rail at boot) -- no
    hand-kept second template. Its controls are delegated, so nothing is
    re-bound here; only what is painted from state is repainted. */
-var DESKTOP_ALL_OPEN = false;
 function desktopCuratorHtml(){
   var source = document.createElement('div'); source.innerHTML = DISCOVERY_RAIL_HTML;
   return '<div class="dcur">' + source.querySelector('.curator').outerHTML +
     '<div class="dcur__source">' + source.querySelector('.photo-stamp').outerHTML + '<div class="dcur__actions">' +
     source.querySelector('#optPickForMe').outerHTML.replace('Pick 4 Me', 'Pick 4 for Me') +
-    '<button type="button" class="dcur__remix" id="dcurRemix" aria-label="Curated"><span class="dcur__idle" aria-hidden="true">Curated</span><span class="dcur__busy" aria-hidden="true">Remixing…</span></button></div></div>' + source.querySelector('#pfmSizes').outerHTML +
-    '<section class="dcur__map"><button type="button" class="dcur__disclose" id="dcurAll" aria-expanded="false" aria-controls="dcurMapBody">All Effects <span aria-hidden="true">›</span></button><div class="dcur__map-body" id="dcurMapBody" hidden><div class="dcur__rooms" id="dcurRooms"></div><button type="button" class="dcur__back" id="dcurBack">← Back to Curated</button></div></section>' +
+    '</div></div>' + source.querySelector('#pfmSizes').outerHTML +
+    '<section class="dcur__map"><div class="dcur__map-body" id="dcurMapBody"><div class="dcur__rooms" id="dcurRooms"></div></div></section>' +
     '<div class="your-collection leather" data-tip="collection"><div class="your-collection__title">Your Collection</div><div class="dcur__count" id="dcurCount"></div><div class="dcur__milestones" id="dcurProgress" role="progressbar" aria-label="Bundle progress" aria-valuemin="0" aria-valuemax="16"></div><div class="dcur__next" id="dcurNext"></div>' +
     source.querySelector('#bundleInd').outerHTML + source.querySelector('#btnGoReview').outerHTML + '</div></div>';
 }
@@ -6912,8 +6777,6 @@ function paintDesktopCurator(){
     var selected = silo.effects.some(function(effect){ return isChosen(effect.id); });
     return '<button type="button" class="dcur__room' + (selected ? ' selected' : '') + '" data-curator-room="' + silo.id + '" aria-label="' + silo.name + (selected ? ', contains selected effects' : '') + '"><span class="dcur__room-icon">' + iconMarkup(silo.id) + '</span><span>' + silo.name + '</span></button>';
   }).join('');
-  document.getElementById('dcurMapBody').hidden = !DESKTOP_ALL_OPEN;
-  document.getElementById('dcurAll').setAttribute('aria-expanded', DESKTOP_ALL_OPEN ? 'true' : 'false');
   var n = SELECTED.length, label = n + ' selected';
   document.getElementById('dcurCount').textContent = label;
   var progress = document.getElementById('dcurProgress');
@@ -6933,69 +6796,9 @@ function desktopBundleProgress(n){
 }
 /* portraits.html: 2200px perspective, rotateY geometry, 420ms per half,
    cubic-bezier(.34,.9,.28,1). One continuous curve removes the old shared hold. */
-function portraitFlipEase(x){
-  var lo = 0, hi = 1, t = x;
-  for (var i = 0; i < 20; i++){
-    t = (lo + hi) / 2;
-    var bx = 3*(1-t)*(1-t)*t*.34 + 3*(1-t)*t*t*.28 + t*t*t;
-    if (bx < x) lo = t; else hi = t;
-  }
-  return 3*(1-t)*(1-t)*t*.9 + 3*(1-t)*t*t + t*t*t;
-}
-function desktopCuratedTurn(grid, prepared){
-  var oldCards = Array.from(grid.children), newCards = Array.from(prepared.children);
-  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return Promise.all(oldCards.map(function(card, index){
-    var replacement = newCards[index];
-    if (!replacement || card.dataset.baseId === replacement.dataset.baseId) return Promise.resolve();
-    return new Promise(function(resolve){
-      if (reduced){ card.replaceWith(replacement); resolve(); return; }
-      card.classList.add('is-changing'); replacement.classList.add('is-changing');
-      var start = performance.now() + index * 50, swapped = false, current = card;
-      function frame(now){
-        var elapsed = now - start;
-        if (elapsed < 0){ requestAnimationFrame(frame); return; }
-        var progress = Math.min(1, elapsed / 840), angle = portraitFlipEase(progress) * 180;
-        if (angle >= 90 && !swapped){
-          replacement.style.transform = 'translateY(0) rotateY(' + (angle - 180) + 'deg)';
-          card.replaceWith(replacement); current = replacement; swapped = true;
-        }
-        current.style.transform = 'translateY(0) rotateY(' + (swapped ? angle - 180 : angle) + 'deg)';
-        if (progress < 1) requestAnimationFrame(frame);
-        else { current.style.removeProperty('transform'); current.classList.remove('is-changing'); resolve(); }
-      }
-      requestAnimationFrame(frame);
-    });
-  }));
-}
-async function remixDesktopCurated(){
-  var button = document.getElementById('dcurRemix');
-  if (!button || button.disabled) return;
-  button.disabled = true; button.classList.add('is-remixing'); button.setAttribute('aria-label', 'Remixing…');
-  try {
-    await new Promise(function(resolve){ setTimeout(resolve, 180); });
-    rerollBench();
-    await Promise.all(curatedPage().map(function(base){
-      return new Promise(function(resolve){
-        var image = new Image(), timeout = setTimeout(resolve, 8000);
-        image.onerror = function(){ clearTimeout(timeout); resolve(); };
-        image.onload = function(){
-          clearTimeout(timeout);
-          if (image.decode) image.decode().then(resolve, resolve); else resolve();
-        };
-        image.src = curatedPreviewUrl(base, SUBJECT);
-      });
-    }));
-    var grid = document.getElementById('curatedStage'), prepared = document.createElement('div');
-    renderCuratedStage(prepared);
-    goCurated(); grid.classList.add('is-flipping');
-    await desktopCuratedTurn(grid, prepared);
-    grid.classList.remove('is-flipping');
-    DESKTOP_ALL_OPEN = false; paintDesktopCurator();
-  } finally {
-    button.classList.remove('is-remixing'); button.setAttribute('aria-label', 'Curated'); button.disabled = false;
-  }
-}
+
+
+
 function restoreDiscoveryRail(){
   /* __MCUR__ Two templates, one engine. The sheet is a different arrangement,
      not the rail at a different width, so it is different markup -- and every
@@ -7085,10 +6888,6 @@ resetIdleTimers();
 var TIPS = {
   photo:      'Upload a clear, forward-facing photo to begin.',                                         /* TOUR  */
   changephoto:'Change Source Image',                                                                    /* RICH 2026-09-16 */
-  pick:       'Choose a collection size and I will fill it from your Curated Effects.',                /* DRAFT */
-  curated:    'Sixteen effects chosen for you, eight at a time. They sit at the top of the stage.',    /* DRAFT */
-  page:       'See the other eight.',                                                                   /* DRAFT */
-  reroll:     'Swap the ones you have not chosen for new effects. Your choices stay.',                  /* DRAFT */
   rooms:      'Each mark is a room. Tap one to go there — your selections carry across all of them.',  /* TOUR  */
   bundle:     'The collection size you are building toward, and its price.',                           /* DRAFT */
   collection: 'Every effect you pick is counted here, with how close you are to your bundle.',       /* TOUR (updated 2026-09-13) */
@@ -7098,7 +6897,6 @@ var tipEl = null, tipFor = null, tipPress = null, tipSwallowClick = false;
 function applyTips(){
   var stamp = document.querySelector('#discoveryRail .photo-stamp');
   if (stamp){ stamp.setAttribute('data-tip', 'photo'); stamp.setAttribute('tabindex', '0'); stamp.setAttribute('role', 'button'); stamp.setAttribute('aria-label', 'Your photograph'); }
-  var box = document.getElementById('curatedBox'); if (box){ box.setAttribute('data-tip', 'curated'); box.setAttribute('tabindex', '0'); }
   var sr = document.getElementById('curTipsSR');
   if (!sr){
     sr = document.createElement('div'); sr.id = 'curTipsSR'; sr.hidden = true;
@@ -7437,8 +7235,7 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
       subjectDetected: SUBJECT_DETECTED || null,
       routing: LitenSubjectGate.routing, skipRedirect:LitenSubjectGate.skipRedirect,
       analyze: ANALYZE_RESULT ? { subject: ANALYZE_RESULT.subject || null, gender: ANALYZE_RESULT.gender || null, age_group: ANALYZE_RESULT.age_group || null } : null,
-      bench:   CURATED.bench.slice(),
-      page:    CURATED.page,
+      bench:   PICK_POOL.bench.slice(),
       target:  targetBundle(),
       pendingReview: !!PENDING_REVIEW,
       photo:   !!uploadedPhotoDataUrl,
@@ -7498,7 +7295,7 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
         if (core.subject === 'woman' || core.subject === 'man') SUBJECT = core.subject;
         SUBJECT_FORCED   = !!core.subjectForced;
         SUBJECT_DETECTED = restored ? (core.subjectDetected || null) : null;   /* what THAT photograph said -- only with it */
-        if (validBench(core.bench)){ CURATED.bench = core.bench.slice(); CURATED.page = core.page ? 1 : 0; }
+        if (validBench(core.bench)){ PICK_POOL.bench = core.bench.slice(); }
       }
       /* saveResume wrote entries in SELECTED's own shape, resolved for the
          subject they were chosen under -- they go back in directly. */
@@ -7510,7 +7307,7 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
 
       repaintSubject();
       paintAgeTog();
-      paintCurated();
+      paintDesktopCurator();
       syncDiscoveryChecks();
       afterSelectionChange();
       /* The new session learns what is chosen, as a fresh /select each. */
@@ -10433,10 +10230,10 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
        The box's page controls do not: they turn the page where you are, so
        the eight can be paged back and forth without the sheet closing on
        every tap (acceptance, 2026-09-13). */
-    if (e.target.closest && e.target.closest('#mcurCuratedMap, .rail .cur-page, .mcur #curatedBox, .mcur [data-curator-effect], .mcur [data-curator-room]')) return;
+    if (e.target.closest && e.target.closest('.mcur [data-curator-effect], .mcur [data-curator-room]')) return;
     /* Keep the mobile source-photo prompt visible when Pick cannot proceed. */
     if (rail.querySelector('.mcur') && !uploadedPhotoDataUrl && e.target.closest && e.target.closest('.rail [data-pfm]')) return;
-    if (e.target.closest && e.target.closest('.rail [data-pfm], .rail .ae-rooms .mm, .rail .curated-box')) {
+    if (e.target.closest && e.target.closest('.rail [data-pfm], .rail .ae-rooms .mm')) {
       setTimeout(closeRail, 180);
     }
   });
@@ -11088,5 +10885,6 @@ document.getElementById('mhSignOut').addEventListener('click', function(e){ e.pr
 <link rel="stylesheet" href="/help-phase1.css">
 <script src="/help-phase1.js"></script>
 <script>window.addEventListener('load',function(){if(new URLSearchParams(location.search).has('print_pick'))openMyCollection();});</script>
+<script src="/creation-consistency.js"></script>
 </body>
 </html>
