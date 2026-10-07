@@ -1,3 +1,5 @@
+import { handlePrintWebhook } from '@/lib/v1/print/webhook-handler'
+import { COLLECTION_UNLOCK_KIND, fulfillCollectionUnlocks } from '@/lib/store/collection-unlocks'
 // stripe-webhook-route.ts
 // app/api/v1/webhooks/stripe/route.ts
 //
@@ -48,6 +50,7 @@ export async function POST(req: NextRequest) {
 
   // Acknowledge only after fulfillment succeeds.
   try {
+    if (event.type === 'checkout.session.completed' && (event.data.object as Stripe.Checkout.Session).metadata?.print_source === 'collection_v1') return handlePrintWebhook(event)
     await dispatch(event)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
@@ -64,6 +67,10 @@ async function dispatch(event: Stripe.Event): Promise<void> {
     case 'checkout.session.async_payment_succeeded': {
       const session = event.data.object as Stripe.Checkout.Session
       if (session.payment_status !== 'paid') return
+      if (session.metadata?.kind === COLLECTION_UNLOCK_KIND) {
+        await fulfillCollectionUnlocks(session.id)
+        return
+      }
       const chargeId =
         (typeof session.payment_intent === 'string'
           ? session.payment_intent

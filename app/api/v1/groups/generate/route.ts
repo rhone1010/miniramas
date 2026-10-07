@@ -61,20 +61,20 @@
 // they never got.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { getUser } from '@/lib/store/auth'
+import { checkInternalAuth } from '@/lib/store/internal-auth'
+
 import { generateGroupsRender } from '@/lib/v1/groups/groups-generator'
 import {
   GROUPS_EFFECTS,
+  isGroupsFormat,
   type GroupsEffectId,
 } from '@/lib/v1/groups/groups-effects'
 import {
-  groupsCreditCost,
-  MAX_SOURCE_IMAGES,
   MIN_SUBJECTS,
   MAX_SUBJECTS,
   type GroupsGenerateRequest,
 } from '@/lib/v1/groups/groups-shared'
+
 
 export const runtime = 'nodejs'
 
@@ -93,6 +93,8 @@ export async function POST(req: NextRequest) {
   const t0 = Date.now()
 
   try {
+    const auth = checkInternalAuth(req)
+    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
     const body = await req.json()
 
     // ── Sources ──
@@ -117,18 +119,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (sources.length > MAX_SOURCE_IMAGES) {
-      // Refused rather than sliced. The old ceiling silently truncated
-      // multi-photo composites and the render came back missing a person
-      // with no error at all — the customer paid for five faces and got
-      // four. Better to say no.
-      return NextResponse.json(
-        {
-          error: `too many source images: ${sources.length}`,
-          max:   MAX_SOURCE_IMAGES,
-        },
-        { status: 400 },
-      )
+    if (sources.length !== 1) {
+      return NextResponse.json({ error: 'one source image required' }, { status: 400 })
     }
 
     // ── Effect ──
@@ -191,25 +183,26 @@ export async function POST(req: NextRequest) {
       console.warn('[groups/generate] STABILITY_API_KEY missing — piece will crop at the frame edge')
     }
 
-    // Who this craft belongs to, and which charge. The ref_id is minted by
-    // the credit gate and passed through so a retry — and later a refund —
-    // can name the charge it answers to. Without one, no token: an
-    // unnameable free render is one nothing can reconcile.
-    const user     = await getUser().catch(() => null)
-    const ownerKey = user?.id ?? null
-    const refId    = typeof body.ref_id === 'string' ? body.ref_id.trim().slice(0, 64) : null
+    const isInternal = body.skip_scoring === true && body.internal === true
+
+    // Format: '3:2' (landscape, default) or '9:16' (Mobile). Validated
+    // by the generator against group count and effect capability.
+    if (!isGroupsFormat(body.format)) return NextResponse.json({ error: 'format_not_allowed' }, { status: 400 })
+    const format = body.format
 
     const generateRequest: GroupsGenerateRequest = {
       source_images_b64: sources,
       effect_id:         effectId,
       subject_count:     subjectCountHint,
+      format,
       // Internal shoots only. A customer render is never unscored.
-      skip_scoring:      body.skip_scoring === true && body.internal === true,
+      skip_scoring:      isInternal,
     }
 
     console.log(
       `[groups/generate] start effect=${effectId} intake=${effect.intake} ` +
-      `hint=${subjectCountHint} sources=${sources.length}`,
+      `hint=${subjectCountHint} sources=${sources.length} format=${format} ` +
+      `portfolio_item=${body.portfolio_item_id ?? '-'}`,
     )
 
     const result = await generateGroupsRender({
@@ -218,57 +211,18 @@ export async function POST(req: NextRequest) {
       openaiApiKey,
       stabilityApiKey,
     })
-
     const durationMs = Date.now() - t0
-
-    // The count the engine settled on, and the price that follows from it.
-    // Echoed so a mismatch with what the credit gate charged shows up in a
-    // log rather than in the ledger.
-    const creditCost = groupsCreditCost(result.subject_count)
 
     console.log(
       `[groups/generate] done in ${durationMs}ms — ok=${result.ok} ` +
       `passed=${result.passed} subjects=${result.subject_count} ` +
-      `credits=${creditCost} attempts=${result.attempts.length} ` +
+      `format=${format} ` +
+      `attempts=${result.attempts.length} ` +
       `outpainted=${result.outpainted} ` +
       `failure=${result.failure?.kind ?? '-'}`,
     )
 
-    // A render that never happened is a 500. A render that happened and
-    // missed the bar is a 200 with passed:false — see the header.
-    if (!result.ok) {
-      return NextResponse.json(
-        { result, credit_cost: creditCost },
-        { status: 500 },
-      )
-    }
-
-    // ── Issue the retry token ──
-    //
-    // Only for the two failure kinds a changed input can actually fix.
-    // face_not_visible fired before any render and cost nothing, so there
-    // is nothing to compensate; no_figures and render_failed are not
-    // fixable by a better photograph of the same people.
-    let retry: { available: boolean; change: string } | null = null
-
-    if (
-      !result.passed &&
-      result.image_b64 &&
-      refId &&
-      ownerKey &&
-      (result.failure?.kind === 'some_figures' || result.failure?.kind === 'most_figures')
-    ) {
-      retry = await issueRetryToken({
-        ownerKey,
-        refId,
-        effectId,
-        subjectCount: result.subject_count,
-        sourceCount:  sources.length,
-        reason:       result.failure.kind,
-      })
-    }
-
-    return NextResponse.json({ result, credit_cost: creditCost, retry })
+    return NextResponse.json({ result }, { status: result.ok ? 200 : 500 })
 
   } catch (e: any) {
     const msg = e?.message || 'unknown error'
@@ -278,55 +232,5 @@ export async function POST(req: NextRequest) {
       { error: msg, duration_ms: durationMs },
       { status: 500 },
     )
-  }
-}
-
-// ─── RETRY TOKEN ────────────────────────────────────────────────
-//
-// One row per charge, enforced by a unique index on ref_id rather than by
-// this function remembering to check. A second failed craft is a second
-// ref_id and earns its own token; a second failure on the SAME craft does
-// not.
-
-async function issueRetryToken(args: {
-  ownerKey:     string
-  refId:        string
-  effectId:     string
-  subjectCount: number
-  sourceCount:  number
-  reason:       'some_figures' | 'most_figures'
-}): Promise<{ available: boolean; change: string } | null> {
-
-  const url = process.env.SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) return null
-
-  const db = createClient(url, key, { auth: { persistSession: false } })
-
-  const { error } = await db.from('groups_retry_tokens').insert({
-    owner_key:     args.ownerKey,
-    ref_id:        args.refId,
-    effect_id:     args.effectId,
-    subject_count: args.subjectCount,
-    source_count:  args.sourceCount,
-    reason:        args.reason,
-  })
-
-  if (error) {
-    // A duplicate is not a fault: this craft already earned its one token.
-    // Anything else is logged and the offer is simply not made.
-    if (!/duplicate|unique/i.test(error.message)) {
-      console.error(`[groups/generate] retry token insert failed ref=${args.refId}: ${error.message}`)
-    }
-    return null
-  }
-
-  console.log(`[groups/generate] retry token issued ref=${args.refId} reason=${args.reason}`)
-
-  // What the customer has to change. The glass turns this into an
-  // affordance; the Curator turns it into a sentence.
-  return {
-    available: true,
-    change:    args.reason === 'some_figures' ? 'add_photograph' : 'change_effect',
   }
 }

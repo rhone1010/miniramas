@@ -1,0 +1,12 @@
+.photo-change{
+  position:absolute; right:9px; bottom:9px; z-index:2;
+  width:34px; height:34px; padding:0; border:0; border-radius:999px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(19,13,9,.72); color:#fffcf6; cursor:pointer;
+  box-shadow:0 .1rem .4rem rgba(18,12,8,.45);
+  transition:background .18s ease, transform .18s ease;
+}
+.photo-change svg{ width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round }
+.photo-change:hover, .photo-change:focus-visible{ background:var(--oxblood); transform:scale(1.06) }
+@media (prefers-reduced-motion:reduce){ .photo-change{ transition:none } .photo-change:hover, .photo-change:focus-visible{ transform:none } }
+body.groups-cart .photo-change{display:none!important;}

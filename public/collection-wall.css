@@ -1,0 +1,79 @@
+.pcm-scrim{
+  position:fixed; inset:0; z-index:140;
+  display:none; align-items:center; justify-content:center; padding:1.5rem;
+  background:rgba(20,14,10,.72);
+}
+.pcm-scrim.is-open{ display:flex }
+.pcm-card{
+  width:min(92vw,560px); max-height:88vh; overflow:auto;
+  padding:30px 32px 26px; border-radius:8px;
+  background:linear-gradient(180deg,#3a2c26 0%, #2c211c 100%);
+  border:1px solid rgba(196,169,110,.26);
+  box-shadow:0 30px 70px -24px rgba(20,12,8,.8), inset 0 1px 0 rgba(255,255,255,.06);
+  color:var(--vellum-200);
+}
+.pcm-h{
+  font-family:var(--serif); font-size:1.9rem; line-height:1.15;
+  color:var(--series); margin:0 0 .3em;
+}
+.pcm-sub{
+  font-family:var(--serif); font-size:1.22rem; line-height:1.45;
+  color:rgba(243,237,225,.82); margin:0 0 22px;
+}
+.pcm-art{
+  width:132px; aspect-ratio:1; float:left; margin:0 20px 14px 0;
+  border-radius:6px; object-fit:cover;
+  border:1px solid rgba(196,169,110,.24); background:rgba(0,0,0,.25);
+}
+.pcm-field{ clear:both; margin:0 0 18px }
+.pcm-field label{
+  display:block; margin:0 0 .45em;
+  font-family:var(--sans); font-size:.82rem; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--brass);
+}
+.pcm-field input{
+  width:100%; height:48px; padding:0 14px;
+  font-family:var(--serif); font-size:1.22rem; color:var(--vellum-200);
+  background:rgba(0,0,0,.22); border:1px solid rgba(196,169,110,.3);
+  border-radius:6px; outline:none;
+}
+.pcm-field input:focus{ border-color:var(--gold) }
+/* THE CONSENT IS A LABEL AROUND THE BOX, so the words are the target.
+   A 16px square is a small thing to ask somebody to hit before they
+   agree to something in public. */
+.pcm-consent{
+  display:flex; gap:12px; align-items:flex-start; cursor:pointer;
+  padding:14px 16px; margin:0 0 20px; border-radius:6px;
+  background:rgba(0,0,0,.18); border:1px solid rgba(196,169,110,.18);
+}
+.pcm-consent input{ width:20px; height:20px; margin-top:.18em; flex:0 0 auto; cursor:pointer }
+.pcm-consent span{
+  font-family:var(--serif); font-size:1.1rem; line-height:1.45;
+  color:rgba(243,237,225,.86);
+}
+.pcm-acts{ display:flex; gap:12px; justify-content:flex-end; align-items:center }
+.pcm-b{
+  padding:.55em 1.25em; border-radius:6px; cursor:pointer;
+  font-family:var(--serif); font-style:italic; font-size:1.18rem;
+  border:1px solid rgba(196,169,110,.34);
+  background:rgba(255,255,255,.03); color:rgba(243,237,225,.88);
+  transition:background 160ms ease, color 160ms ease;
+}
+.pcm-b:hover{ background:rgba(196,169,110,.16); color:#fff }
+.pcm-b.is-fill{
+  background:linear-gradient(180deg, var(--oxblood) 0%, #6a3737 100%);
+  border-color:rgba(196,169,110,.4); color:#fff;
+}
+.pcm-b[disabled]{ opacity:.45; cursor:default }
+.pcm-b[disabled]:hover{ background:rgba(255,255,255,.03); color:rgba(243,237,225,.88) }
+/* Sized so the card does not jump when a refusal arrives. */
+.pcm-say{
+  clear:both; min-height:1.5em; margin:0 0 14px;
+  font-family:var(--serif); font-size:1.1rem; line-height:1.4;
+  color:#e0a5a5;
+}
+.pcm-say.is-good{ color:var(--series) }
+
+/* Shared viewer shell: resolve the donor's palette and float on phones. */
+.pcm-scrim{--series:var(--gold-soft);--vellum-200:#f3ede1;z-index:2147482200;}
+.pcm-consent{clear:both;}

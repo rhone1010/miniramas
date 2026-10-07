@@ -23,6 +23,7 @@ import { styleIdForPreset } from '@/lib/store/portraits-style-lookup'
 import crypto from 'crypto'
 import sharp from 'sharp'
 import { PETS_35 } from '@/lib/v1/pets/pets-catalog-35'
+import { GROUPS_EFFECTS } from '@/lib/v1/groups/groups-effects'
 import { bakeFoyerWatermark } from '@/lib/v1/foyer/foyer-watermark'
 
 export async function renderOnePortfolioItem(portfolioItemId: string): Promise<void> {
@@ -47,7 +48,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
       return
     }
 
-    if (portfolio.series !== 'portraits' && portfolio.series !== 'pets') {
+    if (portfolio.series !== 'portraits' && portfolio.series !== 'pets' && portfolio.series !== 'groups') {
       console.error(
         `[portfolios/items/render] series '${portfolio.series}' not wired - only 'portraits' ` +
         `is implemented. Item ${portfolioItemId} left in its current state.`,
@@ -60,17 +61,22 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     const purchased = portfolio.delivery === 'purchased'
 
     const isPets = portfolio.series === 'pets'
+    const isGroups = portfolio.series === 'groups'
+    if (isGroups && !Object.hasOwn(GROUPS_EFFECTS, item.preset)) {
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'unknown_groups_effect')
+      return
+    }
     if (isPets && !Object.hasOwn(PETS_35, item.preset)) {
       await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'unknown_pets_effect')
       return
     }
-    const styleId = isPets ? 'realistic' : styleIdForPreset(item.preset)
+    const styleId = isPets || isGroups ? 'realistic' : styleIdForPreset(item.preset)
     const appUrl = internalBaseUrl()
 
     let genResult: any
     let ok = false
     try {
-      const res = await fetch(`${appUrl}/api/v1/${isPets ? 'pets' : 'portraits'}/generate`, {
+      const res = await fetch(`${appUrl}/api/v1/${isGroups ? 'groups' : isPets ? 'pets' : 'portraits'}/generate`, {
         method: 'POST',
         /* generate returns clean output only to an authorized caller. This
            is the server's own render of a paid portfolio, so it presents the
@@ -80,7 +86,12 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
           'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.CRON_SECRET ?? ''}`,
         }),
-        body: JSON.stringify(isPets ? {
+        body: JSON.stringify(isGroups ? {
+          source_image_b64: portfolio.source_image,
+          effect_id: item.preset,
+          format: portfolio.aspect_ratio || '3:2',
+          portfolio_item_id: item.id,
+        } : isPets ? {
           source_image_b64: portfolio.source_image,
           style_id: 'realistic',
           preset_id: item.preset,

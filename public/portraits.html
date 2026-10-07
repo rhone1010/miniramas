@@ -3039,6 +3039,7 @@ border:1px solid var(--hairline);display:flex;align-items:center;justify-content
   background:rgba(255,255,255,.55); border:1px solid rgba(137,105,67,.24);
   transition:border-color .2s ease, background .2s ease;
 }
+.ps-size:disabled{ opacity:.45; cursor:not-allowed }
 .ps-size:hover{ border-color:rgba(125,66,66,.45) }
 .ps-size.is-on{ border-color:var(--oxblood); background:rgba(125,66,66,.07) }
 .ps-size .nm{ font-family:var(--serif); font-size:1.0625rem; color:var(--ink) }
@@ -4917,6 +4918,77 @@ body.is-lboxed{ overflow:hidden }
      she says while she is still saying it. data-attention lets her trigger
      pulse when a person is plainly moving around and getting nowhere. -->
 <script src="/concierge.js" defer data-dock data-attention></script>
+<style>
+.ck-scrim{ display:none }
+.ck-scrim.is-open{
+  display:grid; place-items:center;
+  position:fixed; top:0; right:0; bottom:0; left:0; z-index:1200;
+  background:rgba(31,27,20,.52);
+  padding:24px;
+  overflow-y:auto;
+}
+.ck-card{
+  width:min(520px, 100%);
+  background:linear-gradient(180deg,#faf6ec,#f3ecdd);
+  border:1px solid rgba(147,111,67,.34);
+  border-radius:6px;
+  padding:1.5rem 1.8rem 1.6rem;
+  position:relative;
+  box-shadow:0 24px 60px rgba(31,27,20,.42), 0 4px 12px rgba(31,27,20,.24),
+             inset 0 1px 0 rgba(255,255,255,.75);
+}
+.ck-x{
+  position:absolute; top:1.1rem; right:1.2rem;
+  width:2rem; height:2rem; border:0; border-radius:50%;
+  background:none; color:var(--taupe, #a59478); font-size:1.4rem; line-height:1;
+  cursor:pointer; transition:color .15s, background .15s; z-index:2;
+}
+.ck-x:hover{ color:var(--ink); background:rgba(42,36,30,.06) }
+.ck-err{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.1rem; color:var(--oxblood); text-align:center;
+  margin-top:12px;
+}
+/* __CK_SHELL__ Our half of the payment modal: the mark, the heading, and
+   what is being bought. Stripe's form keeps its own look below the rule. */
+.ck-head{ display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:0 0 1.1rem; margin:0 0 1.2rem; border-bottom:1px solid rgba(147,111,67,.28) }
+.ck-mark{ width:104px; height:auto; fill:var(--oxblood); opacity:.92; margin:0 0 .85rem }
+.ck-title{ font-family:var(--serif); font-weight:400; font-size:1.85rem; color:var(--ink); margin:0 }
+.ck-order{ display:flex; align-items:baseline; justify-content:center; gap:.7rem; margin:.55rem 0 0 }
+.ck-order[hidden]{ display:none }
+.ck-order__size{ font-family:var(--serif); font-size:1.3rem; color:var(--ink) }
+.ck-order__price{ font-family:var(--serif); font-size:1.45rem; color:var(--oxblood) }
+/* __A1_PHONE__ (Phase 1, 2026-09-17) our shell on a phone. The mark and the
+   heading were only ever sized for a desktop card: at 390 the mark stayed
+   104px on a 342px card and "Complete Your Collection" broke mid-phrase.
+   Declared here, after the rules above, because a copy in the earlier phone
+   block lost to them on source order at equal specificity.
+   Stripe's own form inside #ckForm is untouched -- this is our half only. */
+@media (max-width:767px){
+  .ck-card{ padding:1.25rem 1.1rem 1.3rem }
+  .ck-mark{ width:74px; margin-bottom:.7rem }
+  .ck-title{ font-size:1.45rem }
+  .ck-order__size{ font-size:1.1rem }
+  .ck-order__price{ font-size:1.25rem }
+}
+#ckForm{ min-height:300px; }
+</style>
+<script>if(location.pathname==='/print')document.documentElement.classList.add('print-destination');</script><style>
+@media(max-width:767px){
+html.print-destination .rooms > :not(#yourPrints){display:none!important}
+html.print-destination #yourPrints{display:block}
+html.print-destination .ps-wall{display:block}
+html.print-destination .ps-fams{grid-template-columns:1fr}
+html.print-destination .ps-fly > .mc-title{position:sticky;top:0;background:var(--limestone);z-index:2}
+html.print-destination #psGrid{display:grid;grid-template-columns:1fr;gap:.8rem}
+html.print-destination .ps-pc img{object-fit:contain}
+html.print-destination .ps-fly .mc-title{display:block;margin:0 0 22px}
+html.print-destination #yourPrints .ps-pc{width:100%;margin-bottom:.8rem}
+html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:none!important}
+}
+</style><link rel="stylesheet" href="/print-experience.css" media="(max-width:767px)"><link rel="stylesheet" href="/print-phone.css">
+<script src="/print-phone.js"></script>
 </head>
 <body>
 
@@ -4950,6 +5022,7 @@ body.is-lboxed{ overflow:hidden }
          did with it, what you have done with it. -->
     <a href="/community">Community</a>
     <a href="/collection">My Collection</a>
+    <a href="/print">Print Shop</a>
     <a href="/account">Account</a>
     <!-- PRINT SHOP AND HELP LEFT THIS BAR. Print Shop is an action on a
          piece, not a place - it already has its button in My Collection,
@@ -5532,13 +5605,14 @@ body.is-lboxed{ overflow:hidden }
    `files` shows no photograph, which is the honest state until one is
    shot. Nothing builds a path from a family name and hopes. */
 window.FINISH_ART = {
-  "base": "/previews/finishes/",
+  "base": "/",
   "files": {
-    "canvas": "canvas.jpg",
-    "fine_art": "fine_art.jpg",
-    "framed_canvas": "framed_canvas.jpg",
-    "matted": "matted.jpg",
-    "premium": "premium.jpg"
+    "canvas": "print/gallery_canvas.jpg",
+    "fine_art": "print/fine_art_print.png",
+    "framed_canvas": "previews/finishes/framed_canvas.jpg",
+    "matted": "previews/finishes/matted.jpg",
+    "premium": "print/premium_fine_art_print.png",
+    "framed": "print/classic_frame.png"
   }
 };
 
@@ -9010,6 +9084,7 @@ window.EFFECT_PREVIEWS = {
      recent. A queue rebuilt from last week would be a surprise, not a
      courtesy. */
   function restoreResume(){
+    if(new URLSearchParams(location.search).get('print')==='1' && new URLSearchParams(location.search).has('session'))return false;
     var raw = null, img = null;
     try {
       raw = localStorage.getItem(RESUME_KEY);
@@ -9751,12 +9826,7 @@ window.EFFECT_PREVIEWS = {
   })();
 
   function showCollection(){
-    closeOtherSurfaces('collection');
-    if (!mycoll) return;
-    renderCollection();
-    mycoll.classList.add('is-open');
-    mycoll.setAttribute('aria-hidden', 'false');
-    if (typeof markLinks === 'function') markLinks(true);
+    try { sessionStorage.setItem('liten_collection_return', '/discovery'); } catch (_) {} location.assign('/collection?from=portraits');
   }
   function hideCollection(){
     if (!mycoll) return;
@@ -10309,36 +10379,15 @@ window.EFFECT_PREVIEWS = {
      twenty-four is not a choice, it is a wall.
 
      Where the map carries no `family`, the finish stands in for one. */
-  var PRINT_FAMILIES = [
-    { id:"fine_art", label:"Fine Art Print", note:"Enhanced matte art paper, 200gsm",
-      sizes:[{ size:"8x8", finish:"fine_art", cents:2900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"fine_art", cents:4400, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"fine_art", cents:5400, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"fine_art", cents:6400, label:"20 \u00d7 20\u2033" }] },
-    { id:"premium", label:"Premium Fine Art", note:"Heavyweight fine art paper, museum grade",
-      sizes:[{ size:"8x8", finish:"premium", cents:3900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"premium", cents:5400, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"premium", cents:6900, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"premium", cents:8400, label:"20 \u00d7 20\u2033" }] },
-    { id:"canvas", label:"Gallery Canvas", note:"Stretched canvas, ready to hang",
-      sizes:[{ size:"8x8", finish:"canvas", cents:5900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"canvas", cents:6900, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"canvas", cents:8900, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"canvas", cents:11900, label:"20 \u00d7 20\u2033" }] },
-    { id:"framed_canvas", label:"Framed Canvas", note:"Stretched canvas in a solid frame",
-      sizes:[{ size:"8x8", finish:"framed_canvas", cents:7900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"framed_canvas", cents:9900, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"framed_canvas", cents:12900, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"framed_canvas", cents:16900, label:"20 \u00d7 20\u2033" }] },
-    { id:"framed", label:"Classic Frame", note:"Framed behind glaze, ready to hang",
-      sizes:[{ size:"8x8", finish:"framed", cents:8900, label:"8 \u00d7 8\u2033" }, { size:"12x12", finish:"framed", cents:9900, label:"12 \u00d7 12\u2033" }, { size:"16x16", finish:"framed", cents:11900, label:"16 \u00d7 16\u2033" }, { size:"20x20", finish:"framed", cents:13900, label:"20 \u00d7 20\u2033" }] },
-    { id:"matted", label:"Matted Frame", note:"Framed with a mount, behind glaze",
-      sizes:[{ size:"8x8", finish:"matted", cents:9400, label:"8 \u00d7 8\u2033 frame \u00b7 6 \u00d7 6\u2033 picture" }, { size:"12x12", finish:"matted", cents:10900, label:"12 \u00d7 12\u2033 frame \u00b7 9 \u00d7 9\u2033 picture" }, { size:"16x16", finish:"matted", cents:12900, label:"16 \u00d7 16\u2033 frame \u00b7 12 \u00d7 12\u2033 picture" }, { size:"20x20", finish:"matted", cents:14900, label:"20 \u00d7 20\u2033 frame \u00b7 16 \u00d7 16\u2033 picture" }] }
-  ];
-
-  /* Kept flat as well: the cart, the quote and the checkout all speak in
-     size+finish and none of them needs to know about families. */
-  var PRINT_OPTS = [
-    { size:"8x10", finish:"unframed", cents:2800, label:"8 \u00d7 10\u2033", note:"Enhanced matte art paper" },
-    { size:"12x16", finish:"unframed", cents:4800, label:"12 \u00d7 16\u2033", note:"Enhanced matte art paper" },
-    { size:"18x24", finish:"unframed", cents:6800, label:"18 \u00d7 24\u2033", note:"Enhanced matte art paper" },
-    { size:"12x16", finish:"framed", cents:11800, label:"12 \u00d7 16\u2033", note:"Framed, ready to hang" }
-  ];
-
+  var PRINT_FAMILIES = [];
+  var PRINT_CONFIG = {};
   var ORDER    = [];      /* {lid, pieceId, renderId, name, art, size, finish, copies, cents} */
   var PS_PIECE = null;    /* the piece open in the flyout */
   var PS_OPT   = 0;
   var PS_FAM   = 0;       /* which family is open */
   var PS_SIZE  = 0;       /* which size within it */
   var PS_QTY   = 1;
+  var PS_QUOTE_SEQ = 0;
   var PS_SHIP  = null;    /* the last quote, or null when it is stale */
   var PS_SHIP_OPTS = [];  /* every method Prodigi offered for this basket */
   var PS_METHOD = null;   /* the one chosen. null until a quote lands. */
@@ -10351,6 +10400,8 @@ window.EFFECT_PREVIEWS = {
      still be waiting for them next week. If that is wrong it is a
      column, not a redesign. */
   var PS_SENT  = {};
+  var PRINT_PIECE = new URLSearchParams(location.search).get('piece');
+
 
   function sendToPrintShop(list){
     (list || []).forEach(function(p){ if (p && printable(p)) PS_SENT[p.id] = true; });
@@ -10373,7 +10424,7 @@ window.EFFECT_PREVIEWS = {
      added later inherits the rule instead of inheriting a Print button
      nobody meant to give it. */
   function printable(p){
-    if (true) return false;  /* PRINT SHOP DISABLED -- coming soon. Rich, 2026-08-25 */
+    if (!p || !p.printVerified) return false;
     if (!p) return false;
     if (/wallpaper/i.test(String(p.series || ''))) return false;
     return !!(p.art && p.serverId && String(p.art).indexOf('data:') !== 0);
@@ -10405,41 +10456,41 @@ window.EFFECT_PREVIEWS = {
   function psView(){ }
 
   /* ---- the wall ---------------------------------------------------------- */
+  function selectPrintSource(d){
+    if(PS_PIECE && PRINT_FAMILIES.length)PRINT_CONFIG[PS_PIECE.id]={family:currentFamily().id,size:currentSize().size,qty:PS_QTY};
+    PS_CONFIGURE=false;PS_PIECE=d.piece;PRINT_FAMILIES=d.catalog||[];PS_FAM=0;PS_SIZE=firstPrintSize();PS_QTY=1;
+    var saved=PRINT_CONFIG[PS_PIECE.id];if(saved){var f=PRINT_FAMILIES.findIndex(function(x){return x.id===saved.family;});if(f>=0){PS_FAM=f;var z=currentFamily().sizes.findIndex(function(x){return x.size===saved.size;});PS_SIZE=z>=0&&currentFamily().sizes[z].compatibility!=='unavailable'?z:firstPrintSize();PS_QTY=saved.qty;}}
+  }
+  var PRINT_COLLECTION = [], PRINT_COLLECTION_STATE='loading', PRINT_SELECTION_SEQ=0;
+  function printCollectionGallery(){
+    var gallery=document.getElementById('printCollectionGallery');if(!gallery)return;
+    gallery.innerHTML=PRINT_COLLECTION.map(function(p){
+      var selected=PS_PIECE&&PS_PIECE.id===p.id,inOrder=ORDER.some(function(l){return l.pieceId===p.id;});
+      return '<button type="button" class="print-collection-thumb'+(selected?' is-selected':'')+(inOrder?' is-in-order':'')+'" data-print-candidate="'+esc(p.id)+'" aria-pressed="'+!!selected+'" aria-label="'+esc(effectLabel(p.name))+(inOrder?' — In your order':'')+'"><img loading="lazy" src="'+esc(p.art)+'" alt=""><span>'+ (inOrder?'In your order':selected?'Selected':esc(effectLabel(p.name)))+'</span></button>';
+    }).join('');
+    gallery.querySelectorAll('img').forEach(function(img){function check(){var r=img.naturalWidth/img.naturalHeight;var t=r>1?1.5:2/3;if(Math.min(Math.max(r,1/r)-1,Math.max(r/t,t/r)-1)>0.20+1e-10)img.parentElement.remove();}img.onload=check;if(img.complete&&img.naturalWidth)check();});
+    var status=document.getElementById('printGalleryStatus');if(status)status.textContent=PRINT_COLLECTION_STATE==='loading'?'Checking My Collection…':PRINT_COLLECTION_STATE==='partial'?'Some artwork is unavailable.':PRINT_COLLECTION_STATE==='error'?'My Collection is unavailable.':!PRINT_COLLECTION.length?'No eligible artwork in My Collection.':'';
+  }
+  function loadPrintCollection(){
+    function read(url){return fetch(url,{credentials:'same-origin',cache:'no-store'}).then(function(r){if(!r.ok)throw Error('collection_unavailable');return r.json();});}
+    read('/api/v1/portfolios').then(async function(d){
+      var portfolios=(d.portfolios||[]).filter(function(p){return p.series==='portraits'||p.series==='pets'||(matchMedia('(max-width:767px)').matches&&p.series==='groups');}),at=0,failed=0;
+      await Promise.all([0,1,2].map(async function(){while(at<portfolios.length){var p=portfolios[at++];try{var both=await Promise.all([read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/status'),read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/unlocks')]);
+        var st=both[0],un=both[1],owned={};(un.items||[]).forEach(function(i){owned[i.slot]=i.unlocked;});
+
+        (st.items||[]).forEach(function(i){if(i.status==='done'&&owned[i.slot]&&i.previewId&&i.previewUrl&&!PRINT_COLLECTION.some(function(x){return x.id===i.previewId;}))PRINT_COLLECTION.push({id:i.previewId,name:i.preset,art:i.previewUrl,series:p.series,createdAt:p.created_at});});
+      }catch{failed++;}}}));
+      PRINT_COLLECTION_STATE=failed?(PRINT_COLLECTION.length?'partial':'error'):'ready';printCollectionGallery();
+    }).catch(function(){PRINT_COLLECTION_STATE='error';printCollectionGallery();});
+  }
   function renderWall(){
-    var g = document.getElementById('psGrid');
-    var say = document.getElementById('psSay');
-    var n = document.getElementById('psN');
-    if (!g) return;
-    /* Only what was sent. */
-    var list = PIECES.filter(function(p){
-      return p.art && !p.crafting && PS_SENT[p.id];
-    });
-    /* A count of pieces the customer already knows they have told them
-       nothing. Say what to do instead. */
-    if (n) n.textContent = '';
-    if (say){
-      say.textContent = list.length
-        ? 'Choose a piece, a size, and how it should be framed.'
-        : 'Nothing here yet. Send a piece over from My Collection and it ' +
-          'will be waiting for you.';
-    }
-    g.innerHTML = '';
-    list.forEach(function(p){
-      var ok = printable(p);
-      var el = document.createElement('article');
-      el.className = 'ps-pc' + (ok ? '' : ' is-waiting') +
-                     (PS_PIECE && PS_PIECE.id === p.id ? ' is-on' : '');
-      el.dataset.pieceId = p.id;
-      var inOrder = ORDER.some(function(l){ return l.pieceId === p.id; });
-      el.innerHTML =
-        (ok ? (inOrder ? '<span class="tag">In your order</span>' : '')
-            : '<span class="tag">saving\u2026</span>') +
-        '<img src="' + esc(p.art) + '" alt="" loading="lazy">' +
-        '<div class="nm">' + esc(p.name || 'Crafted Image') + '</div>';
-      g.appendChild(el);
-    });
-    renderFly();
-    renderOrder();
+    var g=document.getElementById('psGrid');if(!g)return;
+    var scroll=document.getElementById('printCollectionGallery');var top=scroll?scroll.scrollTop:0;
+    var p=PS_PIECE;
+    g.innerHTML=(p?'<article class="ps-pc is-on"><img src="'+esc(p.art)+'" alt="'+esc(effectLabel(p.name))+'"></article><h3 class="print-art-title">'+esc(effectLabel(p.name))+'</h3><p class="print-art-origin">From My Collection · Selected'+(ORDER.some(function(l){return l.pieceId===p.id;})?' · In your order':'')+'</p>':'')+
+      '<h3 class="print-gallery-heading">Select more artwork to print</h3><p id="printGalleryStatus" role="status"></p><div id="printCollectionGallery" class="print-collection-gallery" aria-label="My Collection artwork"></div>';
+    printCollectionGallery();document.getElementById('printCollectionGallery').scrollTop=top;
+    renderFly();renderOrder();
   }
 
   /* ---- the flyout -------------------------------------------------------- */
@@ -10447,6 +10498,7 @@ window.EFFECT_PREVIEWS = {
      each one narrows the next. Asking all twenty-four at once is what
      s101 did and it does not survive the real catalogue. */
   function currentFamily(){ return PRINT_FAMILIES[PS_FAM] || PRINT_FAMILIES[0]; }
+  function firstPrintSize(){var f=currentFamily();if(!f)return 0;var n=f.sizes.findIndex(function(s){return s.compatibility==='recommended';});return n>=0?n:Math.max(0,f.sizes.findIndex(function(s){return s.compatibility!=='unavailable';}));}
   function currentSize(){
     var fam = currentFamily();
     return fam && (fam.sizes[PS_SIZE] || fam.sizes[0]);
@@ -10461,24 +10513,34 @@ window.EFFECT_PREVIEWS = {
     if (!file) return '';
     return '<figure class="ps-finish">' +
       '<img src="' + esc(FA.base + file) + '" alt="" loading="lazy">' +
-      (fam.note ? '<figcaption>' + esc(fam.note) + '</figcaption>' : '') +
+      '' +
       '</figure>';
   }
 
   function fromPrice(fam){
-    return fam.sizes.reduce(function(m, s){ return Math.min(m, s.cents); }, Infinity);
+    return fam.sizes.reduce(function(m, s){ return s.compatibility==='unavailable'?m:Math.min(m, s.cents); }, Infinity);
   }
 
+  var PS_CONFIGURE = false;
+  function showPrintStage(configure){
+    PS_CONFIGURE = configure;
+    var f=document.getElementById('psFly');
+    f.classList.toggle('is-configuring',configure);
+    f.querySelector('.mc-title').textContent=configure?'Configure Your Print':'Select Your Finish';
+    f.querySelector('.print-finish-stage').inert=configure;
+    f.querySelector('.print-config-stage').inert=!configure;
+  }
   function renderFly(){
     var f = document.getElementById('psFly');
     if (!f) return;
-    if (!PS_PIECE){ f.hidden = true; f.innerHTML = ''; return; }
+    if (!PS_PIECE || !PRINT_FAMILIES.length){ f.hidden = true; f.innerHTML = ''; return; }
     f.hidden = false;
 
     var fams = PRINT_FAMILIES.map(function(fam, i){
       return '<button class="ps-fam' + (i === PS_FAM ? ' is-on' : '') +
         '" type="button" data-fam="' + i + '">' +
-        '<span class="nm">' + esc(fam.label) + '</span>' +
+        finishArt(fam) + '<span class="nm">' + esc(fam.label) + '</span>' +
+        '<span class="ps-material">' + esc(fam.note || '') + '</span>' +
         '<span class="fr">From ' + money(fromPrice(fam)) + '</span>' +
         '</button>';
     }).join('');
@@ -10486,7 +10548,7 @@ window.EFFECT_PREVIEWS = {
     var fam = currentFamily();
     var sizes = fam.sizes.map(function(s, i){
       return '<button class="ps-size' + (i === PS_SIZE ? ' is-on' : '') +
-        '" type="button" data-size="' + i + '">' +
+        '" type="button" data-size="' + i + '"' + (s.compatibility==='unavailable'?' disabled':'') + '>' +
         '<span class="nm">' + esc(s.label) + '</span>' +
         '<span class="pr">' + money(s.cents) + '</span>' +
         '</button>';
@@ -10494,46 +10556,53 @@ window.EFFECT_PREVIEWS = {
 
     var size = currentSize();
     f.innerHTML =
+      '<h3 class="mc-title">Select Your Finish</h3>' +
       '<div class="ps-fly-head">' +
         '<img src="' + esc(PS_PIECE.art) + '" alt="">' +
         /* The family's note is the photograph's caption now. Saying it
            twice on one panel is saying it once, badly. */
         '<div><h3>' + esc(PS_PIECE.name || 'Crafted Image') + '</h3></div>' +
       '</div>' +
-      '<div class="ps-step"><b>1</b> Choose your finish</div>' +
-      '<div class="ps-fams">' + fams + '</div>' +
-      finishArt(fam) +
-      '<div class="ps-step"><b>2</b> Select size</div>' +
-      '<div class="ps-sizes">' + sizes + '</div>' +
-      '<div class="ps-step"><b>3</b> Quantity</div>' +
-      '<div class="ps-qrow">' +
-        '<div class="ps-qty">' +
-          '<button type="button" data-q2="-">\u2212</button>' +
-          '<span>' + PS_QTY + '</span>' +
-          '<button type="button" data-q2="+">+</button>' +
+      '<div class="print-stage-window"><div class="print-stage-track"><section class="print-finish-stage"><div class="ps-fams">' + fams + '</div></section><section class="print-config-stage">' +
+      '<button type="button" class="print-back-finishes ui-serif-interactive" data-back-finishes>← Back to finishes</button>' +
+      '<div class="print-config-columns"><div class="print-config-choice">' +
+        '<div class="print-config-product">'+finishArt(fam)+'<h3 class="print-selected-finish">'+esc(fam.label)+'</h3><p class="print-selected-description">'+esc(fam.note || '')+'</p></div>' +
+        '<div class="ps-step print-quantity-label">Quantity</div>' +
+        '<div class="ps-qrow">' +
+          '<div class="ps-qty">' +
+            '<button type="button" data-q2="-">\u2212</button>' +
+            '<span>' + PS_QTY + '</span>' +
+            '<button type="button" data-q2="+">+</button>' +
+          '</div>' +
         '</div>' +
-      '</div>' +
-      '<button class="ps-add" id="psAdd" type="button">Add to your order' +
-        '<span class="amt">' + money((size ? size.cents : 0) * PS_QTY) + '</span>' +
-      '</button>' +
+      '</div><div class="print-config-sizes">' +
+        '<div class="ps-step">Choose a size</div>' +
+        '<div class="ps-sizes">' + sizes + '</div>' +
+        (size&&size.compatibility==='extension'?'<p class="ps-material">Liten &amp; Co will extend the artwork for printing.</p>':'') +
+        '<button class="ps-add" id="psAdd" type="button">Add to your order' +
+          '<span class="amt">' + money((size ? size.cents : 0) * PS_QTY) + '</span>' +
+        '</button>' +
+      '</div></div>' +
       /* Space held for a line about the goods — "archival papers,
          museum-grade inks". Those are claims about manufacturing and I do
          not know which are true of Prodigi's Enhanced Matte Art. Someone
          who knows what the goods are writes it. */
-      '<div class="ps-made" id="psMade"></div>';
+      '<div class="ps-made" id="psMade"></div></section></div></div>';
+    showPrintStage(PS_CONFIGURE);
   }
 
   function addToOrder(){
     if (!PS_PIECE || !printable(PS_PIECE)) return;
+
     var o = currentSize();
-    if (!o) return;
+    if (!o || o.compatibility==='unavailable') return;
     /* The same piece may be ordered at more than one size, so a line is
        keyed by piece AND option rather than by piece alone. */
     var at = -1;
     ORDER.forEach(function(l, i){
       if (l.pieceId === PS_PIECE.id && l.size === o.size && l.finish === o.finish) at = i;
     });
-    if (at >= 0){ ORDER[at].copies += PS_QTY; }
+    if (at >= 0){ ORDER[at].copies = Math.min(20,ORDER[at].copies + PS_QTY); }
     else {
       ORDER.push({
         lid:      'l' + (++PS_LID),
@@ -10544,11 +10613,13 @@ window.EFFECT_PREVIEWS = {
         size:     o.size,
         finish:   o.finish,
         copies:   PS_QTY,
+        optionLabel:o.label, familyLabel:currentFamily().label,
         cents:    o.cents
       });
     }
     PS_SHIP = null;   /* the order changed; the quote is no longer true */
     PS_QTY = 1;
+    PS_CONFIGURE = false;
     renderWall();
   }
 
@@ -10579,7 +10650,25 @@ window.EFFECT_PREVIEWS = {
      The shipping choices stay. The mockup said "calculated at checkout";
      we have live Prodigi quotes with five named methods and real prices,
      and ruled to keep them. */
+  function renderPrintRail(){
+    if(location.pathname!=='/print')return;
+    var rail=document.getElementById('yourPrints');
+    if(!rail){
+      var rooms=document.querySelector('.rooms');if(!rooms)return;
+      rail=document.createElement('section');rail.id='yourPrints';rail.className='room room--curator';rooms.appendChild(rail);
+    }
+    rail.innerHTML='<div class="cur"><div class="cur-head"><span class="cur-title">Your Prints</span></div><div id="printRailItems"></div><button type="button" class="ps-add" id="printRailAdd">+ Add another artwork</button></div>';
+    var list=document.getElementById('printRailItems');
+    ORDER.forEach(function(line){
+      var card=document.createElement('button');card.type='button';card.className='ps-pc'+(PS_PIECE&&PS_PIECE.id===line.pieceId?' is-on':'');
+      card.innerHTML='<img src="'+esc(line.art)+'" alt=""><div class="nm">'+esc(line.name||'Crafted Image')+'</div>';
+      card.onclick=function(){PS_PIECE=PIECES.find(function(p){return p.id===line.pieceId;})||PS_PIECE;renderWall();};list.appendChild(card);
+    });
+    document.getElementById('printRailAdd').onclick=function(){window.location.assign('/collection');};
+  }
+
   function renderOrder(){
+
     var o = document.getElementById('psOrder');
     if (!o) return;
     var n = document.getElementById('psN');
@@ -10587,7 +10676,7 @@ window.EFFECT_PREVIEWS = {
 
     var count = orderCount();
     var head =
-      '<div class="ps-or-h">Your Print Order' +
+      '<div class="ps-or-h">Your order' +
         (count ? '<span class="n">' + count + (count === 1 ? ' print' : ' prints') +
                  '</span>' : '') +
       '</div>';
@@ -10600,6 +10689,8 @@ window.EFFECT_PREVIEWS = {
     }
 
     var a = addrValues();
+    var editor=document.getElementById('psAddressEdit');
+    var editorOpen=editor ? editor.open : false;
     var lines = ORDER.map(function(l){
       var fam = null, sz = null;
       PRINT_FAMILIES.forEach(function(f){
@@ -10613,9 +10704,9 @@ window.EFFECT_PREVIEWS = {
       return '<div class="ps-or-line" data-lid="' + l.lid + '">' +
         '<img src="' + esc(l.art) + '" alt="">' +
         '<div class="info">' +
-          '<div class="ti">' + esc(l.name || 'Crafted Image') + '</div>' +
-          '<div class="pf">' + esc((sz && sz.label) || l.size) + ' \u00b7 ' +
-            esc((fam && fam.label) || l.finish) + '</div>' +
+          '<div class="ti">' + esc(effectLabel(l.name) || 'Crafted Image') + '</div>' +
+          '<div class="pf">' + esc(l.optionLabel || (sz && sz.label) || l.size) + ' \u00b7 ' +
+            esc(l.familyLabel || (fam && fam.label) || l.finish) + '</div>' +
           '<div class="foot">' +
             '<div class="ps-qty">' +
               '<button type="button" data-q="-">\u2212</button>' +
@@ -10636,9 +10727,9 @@ window.EFFECT_PREVIEWS = {
 
     o.innerHTML = head +
       '<p class="ps-or-sub">Review your pieces and complete your purchase.</p>' +
-      lines +
+      '<div class="print-order-items">'+lines+'</div>' +
       '<button class="ps-or-add" id="psAddMore" type="button">+ Add another piece</button>' +
-      '<div class="ps-or-lab">Where it goes</div>' +
+      '<details class="print-address" id="psAddressEdit"'+(editorOpen?' open':'')+'><summary>Ships to <span>— Edit</span></summary>' +
       '<div class="ps-addr">' +
         '<input class="wide" id="psEmail" type="email" placeholder="Email for the receipt" value="' +
           esc(a.email || (ME && ME.email) || '') + '">' +
@@ -10668,6 +10759,7 @@ window.EFFECT_PREVIEWS = {
                 '</span></button>';
             }).join('') + '</div>'
         : '') +
+      '<button type="button" class="print-add-art" id="printAddressDone">Done</button></details><p class="print-destination-summary" id="printDestinationSummary"></p>' +
       '<div class="ps-or-foot">' +
         '<div class="ps-or-tot">' +
           '<div class="ps-or-row">Prints (' + count + ')<b>' + money(sub) + '</b></div>' +
@@ -10685,19 +10777,34 @@ window.EFFECT_PREVIEWS = {
     if (sel) sel.value = a.countryCode || 'US';
     /* The form is rebuilt on every render, so the saved address has to be
        put back each time — into empty fields only. */
-    if (typeof fillAddressForm === 'function') fillAddressForm();
+    if (!editor && typeof fillAddressForm === 'function') fillAddressForm();
+    var destination=addrValues();
+    document.getElementById('printDestinationSummary').textContent=[destination.name,destination.city,destination.state,destination.postcode].filter(Boolean).join(', ');
+    document.getElementById('printAddressDone').onclick=function(){
+      var inputs=document.querySelectorAll('#psOrder .ps-addr input');
+      for(var i=0;i<inputs.length;i++){var input=inputs[i];input.required=['psEmail','psName','psL1','psCity','psZip'].indexOf(input.id)>=0;if(!input.reportValidity())return;}
+      if(!addrComplete(addrValues()))return;
+      clearTimeout(psQuoteTimer);document.getElementById('psAddressEdit').open=false;askQuote();
+    };
+    var checkoutButton=document.getElementById('psCo');if(checkoutButton)checkoutButton.disabled=!PS_SHIP||!addrComplete(addrValues());
   }
 
   /* One name for it, so nothing has to know which panel it lives in. */
-  function renderCart(){ renderOrder(); }
+  function renderCart(){
+    var active=document.activeElement, id=active&&active.id, start=active&&active.selectionStart, end=active&&active.selectionEnd;
+    renderOrder();
+    var restored=id&&document.getElementById(id);
+    if(restored){restored.focus({preventScroll:true});if(typeof start==='number' && restored.setSelectionRange)try{restored.setSelectionRange(start,end);}catch(e){}}
+  }
 
 
   /* The shipping is Prodigi's answer, never ours. Asked for whenever the
      order or the destination changes, and held null in between so a stale
      number can never reach a total. */
   function askQuote(){
+    var seq = ++PS_QUOTE_SEQ;
     var a = addrValues();
-    if (!ORDER.length || !a.countryCode || !a.postcode){ PS_SHIP = null; return; }
+    if (!ORDER.length || !addrComplete(a)){ PS_SHIP = null; renderCart(); return; }
     var want = JSON.stringify([ORDER.map(function(l){
       return [l.size, l.finish, l.copies]; }), a.countryCode, a.postcode]);
     fetch(QUOTE_URL, {
@@ -10712,6 +10819,7 @@ window.EFFECT_PREVIEWS = {
            this basket to this country, and the customer chooses. */
       })
     }).then(function(r){ return r.json(); }).then(function(d){
+      if (seq !== PS_QUOTE_SEQ) return;
       if (!d || d.error || !Array.isArray(d.shipping) || !d.shipping.length){
         console.warn('[print] quote failed:', (d && d.error) || 'no shipping');
         PS_SHIP = null; PS_SHIP_OPTS = []; PS_METHOD = null; renderCart(); return;
@@ -10732,8 +10840,32 @@ window.EFFECT_PREVIEWS = {
       PS_SHIP = kept || PS_SHIP_OPTS[0];
       renderCart();
     }).catch(function(e){
+      if (seq !== PS_QUOTE_SEQ) return;
       console.warn('[print] quote failed:', e.message || e);
       PS_SHIP = null; renderCart();
+    });
+  }
+
+  var printEmbed = null;
+  function closePrintPayment(){
+    if (printEmbed){ printEmbed.destroy(); printEmbed = null; }
+    document.getElementById('ckModal').classList.remove('is-open');
+    var b=document.getElementById('psCo');if(b){b.disabled=!PS_SHIP||!addrComplete(addrValues());b.textContent='Checkout';}
+  }
+  function openPrintPayment(d){
+    var load = loadStripeJs();
+    return load.then(function(){
+      return window.Stripe(d.publishableKey).initEmbeddedCheckout({clientSecret:d.clientSecret,onComplete:function(){
+        window.location.assign('/print?print=1&session='+encodeURIComponent(d.sessionId));
+      }});
+    }).then(function(embed){
+      printEmbed=embed;embed.mount('#ckForm');
+      document.getElementById('ckTitle').textContent='Your order';
+      document.getElementById('ckOrder').hidden=false;
+      document.getElementById('ckOrderSize').textContent=ORDER.map(function(l){return l.optionLabel+' · '+l.familyLabel+' × '+l.copies;}).join(' / ');
+      document.getElementById('ckOrderPrice').textContent=money(d.totalCents);
+      document.getElementById('ckModal').classList.add('is-open');
+      document.getElementById('ckX').onclick=closePrintPayment;
     });
   }
 
@@ -10746,11 +10878,12 @@ window.EFFECT_PREVIEWS = {
        and a slow write must not hold up a checkout. */
     if (typeof saveAddress === 'function') saveAddress();
     var back = window.location.origin + window.location.pathname;
-    fetch(PRINT_CO_URL, {
+    return fetch(PRINT_CO_URL, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       credentials:'same-origin',
       body: JSON.stringify({
+        embedded: true,
         items: ORDER.map(function(l){
           return { renderId:l.renderId, renderUrl:l.art,
                    size:l.size, finish:l.finish, copies:l.copies }; }),
@@ -10762,10 +10895,10 @@ window.EFFECT_PREVIEWS = {
         },
         shippingMethod: PS_METHOD || 'Budget',
         successUrl: back + '?print=1&session={CHECKOUT_SESSION_ID}',
-        cancelUrl:  back + '?print=0'
+        cancelUrl:  back + '?print=0' + (PRINT_PIECE ? '&piece=' + encodeURIComponent(PRINT_PIECE) : '')
       })
     }).then(function(r){ return r.json(); }).then(function(d){
-      if (d && d.checkoutUrl){ window.location.href = d.checkoutUrl; return; }
+      if (d && d.clientSecret && d.publishableKey) return openPrintPayment(d);
       console.warn('[print] checkout failed:', (d && d.error) || 'no url');
       if (btn){ btn.disabled = false; btn.textContent = 'Checkout'; }
     }).catch(function(e){
@@ -10777,7 +10910,19 @@ window.EFFECT_PREVIEWS = {
   /* ---- the handlers ------------------------------------------------------ */
   var psGrid = document.getElementById('psGrid');
   if (psGrid) psGrid.addEventListener('click', function(e){
-    var card = e.target.closest('.ps-pc'); if (!card) return;
+    var candidate=e.target.closest('[data-print-candidate]');
+    if(candidate){
+      var seq=++PRINT_SELECTION_SEQ;candidate.disabled=true;
+      var status=document.getElementById('printGalleryStatus');if(status)status.textContent='Checking artwork…';
+      fetch('/api/v1/print/source?piece='+encodeURIComponent(candidate.dataset.printCandidate),{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+        if(seq!==PRINT_SELECTION_SEQ)return;
+        if(!d.piece||!d.fulfilment)throw Error('unavailable');
+        selectPrintSource(d);PS_OPT=0;
+        if(!PIECES.some(function(p){return p.id===d.piece.id;}))PIECES.push(d.piece);
+        renderWall();
+      }).catch(function(){if(seq===PRINT_SELECTION_SEQ){candidate.disabled=false;if(status)status.textContent='This artwork is unavailable for printing.';}});return;
+    }
+    var card = e.target.closest('[data-piece-id]'); if (!card) return;
     if (card.classList.contains('is-waiting')) return;
     var id = card.dataset.pieceId;
     PS_PIECE = PIECES.filter(function(p){ return p.id === id; })[0] || null;
@@ -10787,29 +10932,31 @@ window.EFFECT_PREVIEWS = {
 
   var psFly = document.getElementById('psFly');
   if (psFly) psFly.addEventListener('click', function(e){
+    if(e.target.closest('[data-back-finishes]')){showPrintStage(false);psFly.querySelector('[data-fam].is-on').focus({preventScroll:true});return;}
     var fam = e.target.closest('[data-fam]');
     if (fam){
       PS_FAM = parseInt(fam.dataset.fam, 10) || 0;
       /* A family may not carry the size that was chosen in the last one,
          so the size resets rather than pointing at nothing. */
-      PS_SIZE = 0;
-      renderFly(); return;
+      PS_SIZE = firstPrintSize();
+      renderFly();
+      requestAnimationFrame(function(){showPrintStage(true);psFly.querySelector('[data-back-finishes]').focus({preventScroll:true});}); return;
     }
     var sz = e.target.closest('[data-size]');
-    if (sz){ PS_SIZE = parseInt(sz.dataset.size, 10) || 0; renderFly(); return; }
+    if (sz && !sz.disabled){ PS_SIZE = parseInt(sz.dataset.size, 10) || 0; renderFly(); return; }
     var q = e.target.closest('[data-q2]');
     if (q){
       if (q.dataset.q2 === '+') PS_QTY = Math.min(PS_QTY + 1, 20);
       else PS_QTY = Math.max(PS_QTY - 1, 1);
       renderFly(); return;
     }
-    if (e.target.closest('#psAdd')) addToOrder();
+    if (e.target.closest('#psAdd')) { addToOrder(); askQuote(); }
   });
 
   var psCartEl = document.getElementById('psOrder');
   if (psCartEl) psCartEl.addEventListener('click', function(e){
     /* Back to the gallery to choose another piece. */
-    if (e.target.closest('#psAddMore')){
+    if (e.target.closest('#psAddMore')){ document.getElementById('printCollectionGallery').scrollIntoView({block:'nearest'}); return;
       PS_PIECE = null;
       renderWall();
       var g = document.getElementById('psGrid');
@@ -10827,7 +10974,7 @@ window.EFFECT_PREVIEWS = {
       else {
         var q = e.target.closest('[data-q]');
         if (!q) return;
-        if (q.dataset.q === '+') ORDER[at].copies += 1;
+        if (q.dataset.q === '+') ORDER[at].copies = Math.min(20,ORDER[at].copies + 1);
         else if (ORDER[at].copies > 1) ORDER[at].copies -= 1;
         else ORDER.splice(at, 1);
       }
@@ -10850,16 +10997,91 @@ window.EFFECT_PREVIEWS = {
   /* A quote on every keystroke would hammer Prodigi. This waits for the
      typing to stop. */
   var psQuoteTimer = null;
-  if (psCartEl) psCartEl.addEventListener('input', function(){
-    PS_SHIP = null;
-    clearTimeout(psQuoteTimer);
-    psQuoteTimer = setTimeout(askQuote, 600);
-  });
+  function shippingChanged(e){
+    if (!e.target.closest('.ps-addr')) return;
+    ++PS_QUOTE_SEQ; PS_SHIP = null; PS_SHIP_OPTS = [];
+    var button = document.getElementById('psCo'); if (button) button.disabled = true;
+    var rows = document.querySelectorAll('#psOrder .ps-or-row b');
+    if (rows[1]) rows[1].textContent = '—'; var total=document.querySelector('#psOrder .is-total b'); if(total)total.textContent='—';
+    clearTimeout(psQuoteTimer); psQuoteTimer = setTimeout(askQuote, 600);
+  }
+  if (psCartEl){ psCartEl.addEventListener('input', shippingChanged); psCartEl.addEventListener('change', shippingChanged); }
 
   var psCloseBtn = document.getElementById('psClose');
-  if (psCloseBtn) psCloseBtn.addEventListener('click', hidePrintShop);
+  if (psCloseBtn) psCloseBtn.addEventListener('click', function(){if(location.pathname==='/print')location.assign('/collection');else hidePrintShop();});
+
+  /* Phone presentation bridge: existing catalogue, eligibility, quote and Stripe operations. */
+  if (window.initPrintPhone && location.pathname === '/print') {
+    var phonePrintNotify = function(){}, phonePrintQueued=false, phonePrintLine=null, phonePrintPayment=null;
+    function phonePrintChanged(){if(phonePrintQueued)return;phonePrintQueued=true;queueMicrotask(function(){phonePrintQueued=false;phonePrintNotify();});}
+    var phoneOriginalWall=renderWall, phoneOriginalCart=renderCart, phoneOriginalGallery=printCollectionGallery;
+    renderWall=function(){phoneOriginalWall();phonePrintChanged();};
+    renderCart=function(){phoneOriginalCart();phonePrintChanged();};
+    printCollectionGallery=function(){phoneOriginalGallery();document.querySelectorAll("#printCollectionGallery img").forEach(function(img){img.addEventListener("load",phonePrintChanged);});phonePrintChanged();};
+    var phoneOriginalClosePayment=closePrintPayment;
+    closePrintPayment=function(){phoneOriginalClosePayment();phonePrintChanged();};
+    function phoneArtworkLabel(piece){
+      if(!piece)return '';
+      var label=effectLabel(piece.name)||'';
+      if(/_\d+$/.test(label))return label;
+      var peers=PRINT_COLLECTION.filter(function(p){return String(effectLabel(p.name)||'').replace(/_\d+$/,'')===label;});
+      if(!peers.some(function(p){return p.id===piece.id;}))peers.push(piece);
+      var used=new Set(peers.map(function(p){var m=String(effectLabel(p.name)||'').match(/_(\d+)$/);return m?Number(m[1]):0;}));
+      peers=peers.filter(function(p){return !/_\d+$/.test(effectLabel(p.name)||'');}).sort(function(a,b){return (Date.parse(a.createdAt||a.created_at)||0)-(Date.parse(b.createdAt||b.created_at)||0)||String(a.id).localeCompare(String(b.id));});
+      var ordinal=0;
+      for(var i=0;i<peers.length;i++){do{ordinal++;}while(used.has(ordinal));if(peers[i].id===piece.id)return label+'_'+String(ordinal).padStart(2,'0');}
+      return label;
+    }
+    window.initPrintPhone({
+      money:money,label:effectLabel,artworkLabel:phoneArtworkLabel,finishArt:finishArt,fromPrice:fromPrice,
+      ratio:function(w,h){function gcd(a,b){return b?gcd(b,a%b):a;}var d=gcd(w,h);return w/d+':'+h/d;},
+      subscribe:function(fn){phonePrintNotify=fn;},
+      state:function(){var a=addrValues(),country=document.getElementById('psCountry');return {
+        piece:PS_PIECE?Object.assign({},PRINT_COLLECTION.find(function(p){return p.id===PS_PIECE.id;})||{},PS_PIECE):null,families:PRINT_FAMILIES,family:PS_FAM,size:PS_SIZE,quantity:PS_QTY,
+        collection:PRINT_COLLECTION.filter(function(p){return Array.from(document.querySelectorAll("#printCollectionGallery [data-print-candidate]")).some(function(el){return el.dataset.printCandidate===p.id;});}),collectionMessage:document.getElementById('printGalleryStatus')?.textContent||'',
+        address:a,countryName:a.name&&country?country.options[country.selectedIndex]?.text:'',shipping:PS_SHIP,
+        checkoutReady:!!(ORDER.length&&PS_SHIP&&addrComplete(a)&&!printEmbed&&!phonePrintPayment)
+      };},
+      selectArtwork:async function(id){
+        var seq=++PRINT_SELECTION_SEQ;
+        var r=await fetch('/api/v1/print/source?piece='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});
+        var d=await r.json();if(seq!==PRINT_SELECTION_SEQ)return;
+        if(!r.ok||!d.piece||!d.fulfilment||!printable(d.piece))throw Error('unavailable');
+        var metadata=PRINT_COLLECTION.find(function(p){return p.id===id;});
+        if(metadata){d.piece.createdAt=d.piece.createdAt||metadata.createdAt;d.piece.series=d.piece.series||metadata.series;}
+        selectPrintSource(d);PS_OPT=0;if(!PIECES.some(function(p){return p.id===d.piece.id;}))PIECES.push(d.piece);renderWall();
+      },
+      chooseFinish:function(i){
+        if(!PRINT_FAMILIES[i])return;
+        var old=currentSize();PS_FAM=i;
+        var kept=currentFamily().sizes.findIndex(function(s){return s.size===old?.size&&s.compatibility!=='unavailable';});
+        PS_SIZE=kept>=0?kept:firstPrintSize();
+      },
+      chooseSize:function(i){var s=currentFamily()?.sizes[i];if(s&&s.compatibility!=='unavailable')PS_SIZE=i;},
+      prepareReview:function(){
+        var s=currentSize();if(!s||s.compatibility==='unavailable'||!printable(PS_PIECE))return;
+        if(phonePrintLine)ORDER=ORDER.filter(function(l){return l.lid!==phonePrintLine;});
+        var qty=PS_QTY;addToOrder();PS_QTY=qty;
+        var line=ORDER.find(function(l){return l.pieceId===PS_PIECE.id&&l.size===s.size&&l.finish===s.finish;});phonePrintLine=line?.lid;
+        askQuote();
+      },
+      checkout:function(){
+        if(phonePrintPayment||printEmbed)return phonePrintPayment||Promise.resolve();
+        phonePrintPayment=Promise.resolve(printCheckout()).finally(function(){phonePrintPayment=null;phonePrintChanged();});return phonePrintPayment;
+      }
+    });
+  }
 
   window.__showPrintShop = showPrintShop;
+  if(location.pathname==='/print' && !PRINT_PIECE && !new URLSearchParams(location.search).has('session')) window.addEventListener('load',function(){showPrintShop();renderWall();loadPrintCollection();});
+  if (PRINT_PIECE && !new URLSearchParams(location.search).has('session')) window.addEventListener('load', function(){
+    fetch('/api/v1/print/source?piece=' + encodeURIComponent(PRINT_PIECE), { credentials:'same-origin' })
+      .then(function(r){ return r.json(); }).then(function(d){
+        if (!d.piece || !d.fulfilment) { console.warn('[print] source unavailable:', d.error); return; }
+        PIECES.push(d.piece); selectPrintSource(d);
+        sendToPrintShop([d.piece]); showPrintShop(); loadPrintCollection();
+      }).catch(function(e){ console.warn('[print] source unavailable:', e.message); });
+  });
 
   /* ---- THE STEP FLOW · phones ---------------------------------------
      One room at a time. The Curator card is step one and leaves when a
@@ -12397,11 +12619,8 @@ document.addEventListener('click', function(e){
       .then(function(d){
         busy = false;
         if (d && d.ok){
-          /* Ten live pieces earns a craft. The route says so; saying it
-             here is the only place the customer finds out. */
-          tell(d.earned
-            ? 'It is on the board - and that is ten, so a craft is on us.'
-            : 'It is on the board.', true);
+
+          tell('It is on the board.', true);
           go.textContent = 'Posted';
           go.disabled = true;
           setTimeout(shut, 1800);
@@ -12465,5 +12684,21 @@ document.addEventListener('click', function(e){
 </script>
 
 <script src="/welcome.js" defer></script>
+<div class="scrim ck-scrim" id="ckModal">
+  <div class="ck-card">
+    <button class="ck-x" id="ckX" aria-label="Close">&times;</button>
+    <header class="ck-head">
+      <svg class="ck-mark" viewBox="0 0 1821.36 1528.47" role="img" aria-label="Liten &amp; Co" focusable="false"><g><path d="M172.56,1026.32c59.81,48.06,167.33,108.29,234.49,43.34,7.51-7.31,14.09-15.71,19.67-24.61,14.26-22.72,27.44-46.14,40.28-69.82,83.98-157.75,157.81-319.91,244.49-476.7C801.63,337.72,965.34,47.14,1154.78,4.06c88.2-19.98,141.96,35.8,143.68,122.23,1.12,95.19-39.97,192.18-84.39,273.81-93.21,165.69-234.35,310.02-411.93,383.69-5.71,2.42-21.1,8.7-27.03,11.13-178.31,73.57-367.14,118.04-552.95,166.23-11.79,3.35-23.39,6.86-34.14,10.6-9.16,3.31-17.04,6.06-24.62,10.66-.25.17-.32.22,0-.08.14-.14.41-.4.72-.77,7.93-8.72,8.56-25.97.32-35.04,14.34,10.4,36.07,17.08,55.77,20.74,34.75,6.27,69.19,6.14,105.17,4.33,176.62-12.72,347.97-58.86,523.64-86.29,130.65-20.98,263.65-37.6,396.19-24.79,49.45,5.65,103.1,14.17,152.36,21.46,97.36,15.3,195.97,32.36,291.93,54.87,24.85,5.93,49.69,12.09,74.04,19.77-12.49-2.61-25.05-4.79-37.62-6.84-50.29-8.14-100.85-14.43-151.47-20.13-62.17-7.05-127.74-13.25-190-18.63-43.03-3.55-89.66-7.6-132.88-10.53-31.08-1.82-62.18-1.67-93.37-.24-151.37,7.7-299.78,41.98-447.26,75.18-99.09,22.36-201.57,47.15-301.96,62.43-86.59,12.25-198.26,24.95-278.16-18.32-12.4-6.79-25.28-16.07-33.28-29.59-10.83-17.98-9.36-40.69,2.8-57.12,7.02-10.09,18.48-18.14,28.49-23.56,10.25-5.6,21.37-10.08,31.7-13.92,57.8-20.47,128.2-36.9,187.44-53.11,139.82-37.08,278.41-79.27,411.88-134.93,163.21-65.41,293.58-197.81,380.71-348.59,34.61-61.51,64.82-128.9,75.25-198.55,2.93-23.14,4.66-49.37-4.84-69.61-3.72-7.21-8.08-10.62-16.07-12.07-12.64-2.13-26.56,1.43-38.98,4.9-88.91,27.75-170.29,121.13-227.41,192.8-155.4,200.75-270.39,428.27-400.72,645.65-30.08,49.42-59.98,99.34-95.82,144.97-74.38,87.72-191.88,22.29-259.39-40.51h0Z"/></g><g><path d="M0,1316.29h23.54v186.85h117.41v21.75H0v-208.6Z"/><path d="M244.95,1316.29h23.54v208.6h-23.54v-208.6Z"/><path d="M443.42,1338.04h-70.33v-21.75h164.2v21.75h-70.33v186.85h-23.54v-186.85Z"/><path d="M639.79,1316.29h150.79v21.46h-127.25v71.22h113.84v21.46h-113.84v73.01h128.74v21.46h-152.28v-208.6Z"/><path d="M899.05,1316.29h22.05l131.42,167.18v-167.18h22.95v208.6h-18.77l-134.7-171.05v171.05h-22.95v-208.6Z"/><path d="M1333.83,1421.18v-.6c0-59,44.4-107.88,105.49-107.88,37.85,0,60.79,13.11,81.36,33.08l-16.09,17.28c-17.88-16.69-36.95-28.61-65.56-28.61-46.19,0-80.76,37.55-80.76,85.53v.6c0,48.28,34.57,86.12,80.76,86.12,28.61,0,47.38-11.03,67.35-30.1l15.5,15.2c-21.46,22.05-45.89,36.65-83.44,36.65-60.2,0-104.6-47.38-104.6-107.28Z"/><path d="M1608.59,1421.18v-.6c0-57.51,43.21-107.88,106.69-107.88s106.09,49.77,106.09,107.28v.6c0,57.51-43.21,107.88-106.69,107.88s-106.09-49.77-106.09-107.28ZM1796.92,1421.18v-.6c0-47.38-34.57-86.12-82.25-86.12s-81.65,38.14-81.65,85.53v.6c0,47.38,34.57,86.12,82.25,86.12s81.65-38.14,81.65-85.53Z"/></g></svg>
+      <h3 class="ck-title" id="ckTitle">Complete Your Collection</h3>
+      <div class="ck-order" id="ckOrder" hidden>
+        <span class="ck-order__size" id="ckOrderSize"></span>
+        <span class="ck-order__price" id="ckOrderPrice"></span>
+      </div>
+    </header>
+    <div id="ckForm"></div>
+    <div class="ck-err" id="ckErr"></div>
+  </div>
+</div>
+
 </body>
 </html>

@@ -41,7 +41,7 @@
 
 import { NextResponse } from 'next/server'
 import { getQuote, type ShippingMethod } from '@/lib/v1/print/prodigi-client'
-import { getSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
+import { getLaunchSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
 
 export const runtime = 'nodejs'
 
@@ -86,12 +86,12 @@ export async function POST(req: Request) {
 
   // ── Resolve SKUs + compute retail subtotal from our locked map ────────────
   let retailSubtotalCents = 0
-  const prodigiItems: Array<{ sku: string; copies: number; assets: Array<{ printArea: string }> }> = []
+  const prodigiItems: Array<{ sku: string; copies: number; attributes?: Record<string,string>; assets: Array<{ printArea: string }> }> = []
 
   for (const item of body.items) {
     let entry
     try {
-      entry = getSku(item.size, item.finish)
+      entry = getLaunchSku(item.size, item.finish)
     } catch (err) {
       return NextResponse.json(
         { error: err instanceof Error ? err.message : 'Bad SKU' },
@@ -105,6 +105,7 @@ export async function POST(req: Request) {
     prodigiItems.push({
       sku:    entry.sku,
       copies: item.copies,
+      attributes:entry.attributes,
       assets: [{ printArea: 'default' }],
     })
   }

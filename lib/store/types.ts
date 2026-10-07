@@ -6,7 +6,7 @@
 // interface lives here too so the application chat can swap in a real impl
 // without changing call sites.
 
-export type SkuKind = 'single' | 'bundle'
+export type SkuKind = 'single' | 'bundle' | 'credits' | 'groups'
 
 export interface Sku {
   id:            string
@@ -16,6 +16,11 @@ export interface Sku {
   priceCents:    number
   stripePriceId: string
   active:        boolean
+  recommended?:  boolean
+  /** Groups packages only — included global unlock entitlements the
+   *  package grants alongside its crafts. Derived server-side from
+   *  `count` by groups-commerce.ts so the client never computes it. */
+  includedUnlocks?: number
 }
 
 export type PurchaseStatus = 'pending' | 'paid' | 'failed' | 'refunded'

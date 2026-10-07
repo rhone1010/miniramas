@@ -1,0 +1,9 @@
+/* Groups cur-mode palette and focus ring; Pets rollover background. Existing type and dimensions stay. */
+#groupsPackageInfo[hidden]{display:none!important;}
+#discoveryRail #optPickForMe,#cur #curPick4Btn{color:var(--oxblood);background:rgba(125,66,66,.05);border-color:rgba(125,66,66,.34);}
+#discoveryRail #optPickForMe:hover,#discoveryRail #optPickForMe:focus-visible,#cur #curPick4Btn:hover,#cur #curPick4Btn:focus-visible,
+#pfmSizes [data-pfm]:hover,#pfmSizes [data-pfm]:focus-visible,#curPackages .buy-block:hover,#curPackages .buy-block:focus-visible{border-color:var(--oxblood);background:#ede4d6;}
+#discoveryRail #optPickForMe:focus-visible,#cur #curPick4Btn:focus-visible,#pfmSizes [data-pfm]:focus-visible,#curPackages .buy-block:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+#discoveryRail #optPickForMe.is-active,#cur #curPick4Btn.is-active,#pfmSizes [data-pfm].is-active,#curPackages .buy-block.is-active{background:var(--oxblood);border-color:var(--oxblood);color:var(--vellum-100,var(--vellum));}
+
+#pfmSizes [data-pfm].is-active b,#pfmSizes [data-pfm].is-active span{color:inherit;}

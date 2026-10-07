@@ -1,61 +1,18 @@
-// app/api/v1/print/checkout/route.ts
-//
-// POST /api/v1/print/checkout
-//
-// Creates a Stripe Checkout Session and persists a corresponding `print_orders`
-// row (status='created'). Returns the Checkout URL for the cart UI to redirect to.
-//
-// Stripe Checkout collects the payment; address + email arrive here from your
-// own UI (the spec already collects them client-side). When payment completes,
-// Stripe sends a webhook to /api/v1/print/webhook, which runs the asset pipeline
-// and places the Prodigi order.
-//
-// Request body:
-// {
-//   items: [{
-//     renderId:  'render_abc123',     // your stable render identifier
-//     renderUrl: 'https://...',        // publicly fetchable source URL
-//     size:      '12x16',
-//     finish:    'unframed',
-//     copies:    1
-//   }],
-//   email: 'customer@example.com',
-//   shippingAddress: { name, line1, line2?, city, state?, postcode, countryCode },
-//   shippingMethod?: 'Budget' | 'Standard' | 'Express' | 'Overnight',
-//   successUrl: 'https://yourapp.com/thanks?session={CHECKOUT_SESSION_ID}',
-//   cancelUrl:  'https://yourapp.com/cart'
-// }
-//
-// Response:
-// { checkoutUrl: 'https://checkout.stripe.com/...', sessionId: 'cs_test_...' }
-//
-// CUI V24 · 2026-08-01 · the order now records who placed it.
-//
-//   The row carried only customer_email. An email is not an account: two
-//   accounts can share one, and a customer can type a different address at
-//   checkout than the one they signed in with. So there was no way for the
-//   webhook to ask whose fulfilment flag applied, and every paid order went
-//   to Prodigi regardless of who placed it.
-//
-//   owner_key is resolved from the session here and written to the row.
-//   Migration 012 adds the column; the webhook reads it.
-//
-//   AN UNSIGNED ORDER IS STILL ACCEPTED. Refusing at checkout would be a
-//   change to who can buy a print, and that is a product decision nobody has
-//   made. It is recorded with a null owner and withheld at the webhook, which
-//   is the same protection one step later and no money lost either way.
-
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/v1/print/stripe-client'
 import { getQuote, type ShippingMethod } from '@/lib/v1/print/prodigi-client'
-import { getSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
+import { getLaunchSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
 import { createPrintOrder, type ShippingAddress } from '@/lib/v1/print/db'
 import { getUser } from '@/lib/store/auth'
+import { ownedPrintPreview } from '@/lib/v1/print/owned-source'
+import { printPlan } from '@/lib/v1/print/geometry'
+import { canFulfil } from '@/lib/v1/print/db'
 import type Stripe from 'stripe'
 
 export const runtime = 'nodejs'
 
 interface CheckoutBody {
+  embedded?: boolean
   items: Array<{
     renderId:  string
     renderUrl: string
@@ -71,13 +28,10 @@ interface CheckoutBody {
 }
 
 export async function POST(req: Request) {
-  // Who is placing this. Never fatal — see the header note. A null owner is
-  // recorded honestly and withheld at the webhook rather than refused here.
-  const ownerKey = await getUser().then(u => u?.id ?? null).catch(() => null)
-  if (!ownerKey) {
-    console.warn('[checkout] no signed-in account — this order cannot be fulfilled')
-  }
-
+  const user = await getUser().catch(() => null)
+  if (!user) return NextResponse.json({ error: 'sign_in_required' }, { status: 401 })
+  const ownerKey = user.id
+  if (!await canFulfil(ownerKey)) return NextResponse.json({ error: 'fulfilment_not_allowed' }, { status: 403 })
   let body: CheckoutBody
   try {
     body = await req.json()
@@ -101,21 +55,26 @@ export async function POST(req: Request) {
   const dbItems = []
   let retailSubtotalCents = 0
   for (const item of body.items) {
-    if (!item.renderId || !item.renderUrl) {
+    if (!item.renderId) {
       return NextResponse.json({ error: 'item.renderId and item.renderUrl required' }, { status: 400 })
     }
-    if (!item.copies || item.copies < 1) {
+    if (!Number.isInteger(item.copies) || item.copies < 1 || item.copies > 20) {
       return NextResponse.json({ error: 'copies must be >= 1' }, { status: 400 })
     }
     let entry
-    try { entry = getSku(item.size, item.finish) }
+    let source
+    try {
+      entry = getLaunchSku(item.size, item.finish)
+      source = await ownedPrintPreview(ownerKey, item.renderId)
+      printPlan(source.width, source.height, entry)
+    }
     catch (err) {
       return NextResponse.json({ error: err instanceof Error ? err.message : 'Bad SKU' }, { status: 400 })
     }
     retailSubtotalCents += entry.retailCents * item.copies
     dbItems.push({
       renderId:    item.renderId,
-      renderUrl:   item.renderUrl,
+      renderUrl:   source.art,
       size:        item.size,
       finish:      item.finish,
       copies:      item.copies,
@@ -136,6 +95,7 @@ export async function POST(req: Request) {
       items: dbItems.map(i => ({
         sku:    i.sku,
         copies: i.copies,
+        attributes: getLaunchSku(i.size, i.finish).attributes,
         assets: [{ printArea: 'default' }],
       })),
     })
@@ -156,7 +116,7 @@ export async function POST(req: Request) {
 
   // ── Build Stripe line items ─────────────────────────────────
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = dbItems.map(i => {
-    const entry = getSku(i.size, i.finish)
+    const entry = getLaunchSku(i.size, i.finish)
     return {
       price_data: {
         currency: 'usd',
@@ -181,6 +141,7 @@ export async function POST(req: Request) {
   }
 
   // ── Create Stripe Checkout Session ──────────────────────────
+  if (body.embedded && !process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) return NextResponse.json({ error: 'stripe_not_configured' }, { status: 503 })
   const stripe = getStripe()
   let session: Stripe.Checkout.Session
   try {
@@ -189,10 +150,10 @@ export async function POST(req: Request) {
       payment_method_types: ['card'],
       line_items:           lineItems,
       customer_email:       body.email,
-      success_url:          body.successUrl,
-      cancel_url:           body.cancelUrl,
+      ...(body.embedded ? { ui_mode: 'embedded' as const, redirect_on_completion: 'if_required' as const, return_url: new URL('/print', req.url).href + '?print=1&session={CHECKOUT_SESSION_ID}' } : { success_url: new URL('/print', req.url).href + '?print=1&session={CHECKOUT_SESSION_ID}', cancel_url: new URL('/print', req.url).href }),
       metadata: {
         merchant_ref: merchantRef,
+        print_source: 'collection_v1',
       },
     })
   } catch (err) {
@@ -218,6 +179,7 @@ export async function POST(req: Request) {
       prodigiMerchantRef:  merchantRef,
     })
   } catch (err) {
+    await stripe.checkout.sessions.expire(session.id).catch(() => {})
     // Stripe session was created but DB persist failed. Worst case: customer pays
     // but webhook can't find a matching row — we'd see this in logs and resolve manually.
     console.error('[checkout] DB persist failed:', err, 'session=', session.id)
@@ -228,6 +190,9 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({
+    totalCents: retailTotalCents,
+    clientSecret: session.client_secret,
+    publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY,
     checkoutUrl: session.url,
     sessionId:   session.id,
   })

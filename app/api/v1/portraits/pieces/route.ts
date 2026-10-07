@@ -160,6 +160,7 @@ export async function GET(req: Request) {
       .from('collection_pieces')
       .select('id, series, preset, label, mode, image_path, source_path, meta, created_at, archived, archived_at')
       .eq('owner_key', ownerKey)
+      .is('meta->>community_preview_id', null)
       .eq('product_path', productPath)
 
     if (!wantAll) q = q.eq('archived', wantArchived)

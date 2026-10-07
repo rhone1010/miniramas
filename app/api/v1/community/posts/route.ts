@@ -1,3 +1,4 @@
+import { wallPortfolioPiece } from '@/lib/community/wall-portfolio'
 // app/api/v1/community/posts/route.ts
 //
 // GET  - the board. Public, signed out, no account needed.
@@ -293,9 +294,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}))
     const pieceId: string = String(body?.piece_id || '')
+    const previewId: string = String(body?.preview_id || '')
     const consent = body?.consent === true
 
-    if (!pieceId) {
+    if ((!pieceId && !previewId) || (pieceId && previewId)) {
       return NextResponse.json({ ok: false, reason: 'no_piece' }, { status: 400 })
     }
     if (!consent) {
@@ -316,13 +318,14 @@ export async function POST(req: NextRequest) {
     // THE PIECE MUST BE THEIRS. Scoped in the query itself rather than read
     // and then checked - a fetch followed by an if is two steps that can be
     // separated by a refactor, and this one must not be.
-    const { data: piece } = await db
+    const { data: savedPiece } = previewId ? { data: null } : await db
       .from('collection_pieces')
       .select('id, owner_key, series, preset, image_path, archived')
       .eq('id', pieceId)
       .eq('owner_key', me)
       .maybeSingle()
 
+    const piece = previewId ? await wallPortfolioPiece(db, me, previewId) : savedPiece
     if (!piece) {
       // Deliberately the same answer as a piece that does not exist. Telling
       // somebody a piece is real but not theirs is a way to enumerate other
@@ -391,19 +394,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Ten live pieces earns a craft. The function is idempotent per threshold
-    // and returns 0 almost every time, so it is safe to call after every
-    // post rather than counting in here and getting it wrong.
-    //
-    // KNOWN ABSENT, 2026-08-23. community_award_posts does not exist in the
-    // live database - 020_community_reward.sql was written and never applied.
-    // The error is discarded, so the award silently never fires. Deferred
-    // with the hearts work; both need one reconciling migration.
-    let earned = 0
-    const { data: award } = await db.rpc('community_award_posts', { p_owner: me })
-    if (typeof award === 'number') earned = award
+    return NextResponse.json({ ok: true, id: post.id, shareable })
 
-    return NextResponse.json({ ok: true, id: post.id, earned, shareable })
   } catch (e) {
     console.error('[community/posts] POST threw:', (e as Error).message)
     return NextResponse.json({ ok: false, reason: 'failed' }, { status: 500 })

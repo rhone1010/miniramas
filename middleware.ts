@@ -124,7 +124,7 @@ const PAGES: Record<string, string> = {
      panel it was asked for, or this lands somebody on the workshop
      floor wondering where their collection went. See
      scripts/patch-portraits-panel-boot.py. */
-  '/collection': '/portraits.html',
+  '/collection': '/pets.html',
   '/account': '/portraits.html',
   '/print': '/portraits.html',
   '/help': '/help.html',

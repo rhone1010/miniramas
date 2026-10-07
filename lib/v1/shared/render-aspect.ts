@@ -70,6 +70,30 @@ export const PHONE_COMPOSITION =
   'with the upper third quiet and progressively darker where a clock and ' +
   'date will sit. Do not include phone elements.'
 
+// ── GROUPS FORMAT COMPOSITION ────────────────────────────────────────
+//
+// Groups launches with 3:2 landscape as canonical format. These small
+// clauses are appended ONCE after the effect body, same pattern as
+// PHONE_COMPOSITION for wallpapers. The effect bodies are Rich's text
+// and stay untouched.
+
+/**
+ * Appended for every Groups generation in 3:2 landscape format.
+ * Keeps figures from being stacked or shrunk to fit a wide frame.
+ */
+export const GROUPS_LANDSCAPE_COMPOSITION =
+  'Compose naturally across the horizontal frame. Preserve comfortable ' +
+  'spacing between figures and useful facial scale. NO TEXT.'
+
+/**
+ * Appended for Groups Mobile (9:16), only when <=3 people AND the effect
+ * supports it. Keeps figures from being excessively shrunk or
+ * unnaturally stacked to fill a tall frame.
+ */
+export const GROUPS_MOBILE_COMPOSITION =
+  'Compose naturally within a tall vertical frame. Do not shrink faces ' +
+  'excessively or unnaturally stack subjects. NO TEXT.'
+
 /**
  * What main appends. Nothing.
  *

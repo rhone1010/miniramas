@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createPortfolioCheckout, type PortfolioSeries } from '@/lib/store/portfolio-checkout'
 import { PETS_35 } from '@/lib/v1/pets/pets-catalog-35'
+import { GROUPS_EFFECTS } from '@/lib/v1/groups/groups-effects'
 import { getUser } from '@/lib/store/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
@@ -55,13 +56,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'unknown_pets_effect' }, { status: 400 })
   }
 
+  if (series === 'groups' && (!Array.isArray(body.selectedEffectIds) ||
+      new Set(body.selectedEffectIds).size !== body.selectedEffectIds.length ||
+      body.selectedEffectIds.some((id: unknown) => typeof id !== 'string' || !Object.hasOwn(GROUPS_EFFECTS, id)))) {
+    return NextResponse.json({ error: 'unknown_groups_effect' }, { status: 400 })
+  }
+
   try {
     const result = await createPortfolioCheckout({
       userId: user.id,
       series: series as PortfolioSeries,
       selectedEffectIds: Array.isArray(body.selectedEffectIds) ? body.selectedEffectIds : [],
       sourceImageRef: typeof body.sourceImageRef === 'string' ? body.sourceImageRef : '',
-      returnUrl: typeof body.returnUrl === 'string' ? body.returnUrl : '',
+      returnUrl: series === 'groups' ? `${req.nextUrl.origin}/groups` : typeof body.returnUrl === 'string' ? body.returnUrl : '',
       clientPriceUsd: Number(body.clientPriceUsd),
       /* THE CLIENT ALWAYS SENT THESE. This route read five fields and
          dropped the rest on the floor, so the pose step chose a pose that

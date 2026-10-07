@@ -1,3 +1,4 @@
+import { isGroupsFormat } from '@/lib/v1/groups/groups-effects'
 // lib/store/portfolio-checkout.ts
 // Fixed-size Portfolio pricing. Reuses four live Stripe SKUs
 // (single, basket_discover_5, basket_discover_10, basket_discover_20)
@@ -28,6 +29,7 @@ import { createBrandedSession } from './stripe-branding'
 import { supabaseAdmin } from '@/lib/supabase'
 import { isPortraitOutputAspect } from '@/lib/v1/portraits/portraits-shared'
 import crypto from 'crypto'
+import { GROUPS_PACKAGES, type GroupsPackageCount } from '@/lib/v1/groups/groups-commerce'
 
 export type PortfolioSeries = 'portraits' | 'halloween' | 'groups' | 'pets'
 
@@ -104,7 +106,16 @@ const VALID_COUNTS = new Set(PORTFOLIO_SIZES.map((s) => s.count))
  * the user would reach if they filled up to the next size. For count 0,
  * returns a null-tier empty offer.
  */
-export function resolveSelectionOffer(count: number): SelectionOffer {
+export function resolveSelectionOffer(count: number, series?: PortfolioSeries): SelectionOffer {
+  if (series === 'groups') {
+    const size = [1, 4, 8, 16].find(n => n >= count) ?? 16
+    const pkg = GROUPS_PACKAGES[size as GroupsPackageCount]
+    return count <= 0
+      ? { count, tier: null, skuId: null, priceUsd: 0, includedUnlocks: 0, delivery: 'preview' }
+      : { count, tier: PORTFOLIO_SIZES.find(s => s.count === size)!.tier,
+          skuId: pkg.skuId, priceUsd: pkg.priceCents / 100,
+          includedUnlocks: pkg.includedUnlocks, delivery: count === 1 ? 'purchased' : 'preview' }
+  }
   if (count <= 0) {
     return { count, tier: null, skuId: null, priceUsd: 0, includedUnlocks: 0, delivery: 'preview' }
   }
@@ -225,13 +236,14 @@ export async function createPortfolioCheckout(
     throw new Error('portfolio_empty_selection')
   }
   if (!args.sourceImageRef) throw new Error('portfolio_source_image_required')
+  if (args.series === 'groups' && !isGroupsFormat(args.aspectRatio)) throw new Error('format_not_allowed')
 
   const count = args.selectedEffectIds.length
   if (!VALID_COUNTS.has(count)) {
     throw new Error(`portfolio_invalid_size: got ${count}, must be one of ${[...VALID_COUNTS].join(', ')}`)
   }
 
-  const offer = resolveSelectionOffer(count)
+  const offer = resolveSelectionOffer(count, args.series)
   const serverCents = Math.round(offer.priceUsd * 100)
   const clientCents = Math.round(args.clientPriceUsd * 100)
   if (clientCents !== serverCents) {
@@ -240,7 +252,8 @@ export async function createPortfolioCheckout(
 
   const appUrl = getAppUrl()
   const stripe = getStripe()
-  const base = safeReturnBase(args.returnUrl, appUrl)
+  // Groups returnUrl is set from the request origin by the authenticated route.
+  const base = args.series === 'groups' ? args.returnUrl : safeReturnBase(args.returnUrl, appUrl)
   /* ONE URL, NO CANCEL. An embedded session takes a single return_url in
      place of success_url and cancel_url -- the same shape credits/purchase
      already ships. Closing the modal is the cancel: the session expires by
@@ -322,7 +335,9 @@ export async function createPortfolioCheckout(
       delivery: offer.delivery,
       pose: args.pose ?? null,
       framing: PURCHASED_FRAMING,
-      aspect_ratio: normalizeAspectChoice(args.aspectRatio),
+      aspect_ratio: args.series === 'groups'
+        ? args.aspectRatio
+        : normalizeAspectChoice(args.aspectRatio),
       subject: args.subject ?? null,
     })
     .select()

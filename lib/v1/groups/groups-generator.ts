@@ -54,6 +54,8 @@
 import {
   buildGroupsPrompt,
   GROUPS_EFFECTS,
+  groupsFormatAllowed,
+  isGroupsFormat,
   type GroupsEffectId,
 } from './groups-effects'
 import {
@@ -107,7 +109,10 @@ export async function generateGroupsRender(
     })
   }
 
-  const sources = req.source_images_b64.slice(0, MAX_SOURCE_IMAGES)
+  const sources = req.source_images_b64
+  if (sources.length !== 1) {
+    return fatal({ msg: 'one source image required', req, prompt: '', t0, code: 'invalid_sources', retryable: false })
+  }
   if (!sources.length) {
     return fatal({
       msg: 'no source images', req, prompt: '', t0,
@@ -139,7 +144,6 @@ export async function generateGroupsRender(
   // clause is chosen from it. Never sent to NB2.
   const provisionalPrompt = buildGroupsPrompt({
     effectId:     req.effect_id,
-    subjectCount: detectedCount,
   })
 
   // ── Pre-flight ──
@@ -219,11 +223,16 @@ export async function generateGroupsRender(
     }
   }
 
+  if (!isGroupsFormat(req.format) || !groupsFormatAllowed(detectedCount, req.format)) {
+    return fatal({ msg: 'format_not_allowed', req, prompt: provisionalPrompt, t0, code: 'format_not_allowed', retryable: false })
+  }
+
   // Built after detection, because the framing clause is chosen from the
   // count and the count is not known until the pre-flight has run.
   const finalPrompt = buildGroupsPrompt({
     effectId:     req.effect_id,
     subjectCount: detectedCount,
+    format: req.format,
   })
 
   console.log(
@@ -247,7 +256,7 @@ export async function generateGroupsRender(
       imageB64 = await callNB2({
         prompt: finalPrompt,
         sourceImagesB64:   sources,
-        aspectRatio:       groupsAspect(sources[0]),
+        aspectRatio:       req.format,
         replicateApiToken: input.replicateApiToken,
       })
     } catch (e: any) {
