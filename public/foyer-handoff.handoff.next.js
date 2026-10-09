@@ -1,0 +1,141 @@
+/* public/foyer-handoff.js
+   ─────────────────────────────────────────────────────────────────────────
+   THE FOYER → DISCOVERY HANDOFF. One photograph, one trip, no second upload.
+
+   The foyer fits the visitor's photograph once (the Portraits fitting) and
+   has it examined once (/api/v1/foyer/intake: face, age, gender). When they
+   choose Come Inside & Explore, Discovery opens with that same photograph
+   and the subject the intake detected -- not the foyer's generated reveal,
+   not its effect, nothing owned, selected or unlocked.
+
+     the photograph   IndexedDB, as a Blob -- the fitted bytes exactly. A
+                      phone photograph as base64 can overrun localStorage on
+                      its own; a Blob in IndexedDB does not, and is not
+                      re-encoded on the way through.
+     what it says     localStorage, a few dozen bytes: subject, gender, age
+                      group, when.
+
+   Same origin, same browser, nothing sent to a server. Discovery takes it
+   ONCE and it is gone; one older than the resume lifetime (~2h) is dropped
+   unread. The foyer writes it only for a photograph the intake passed.
+   ───────────────────────────────────────────────────────────────────────── */
+(function(){
+  var SERIES = (document.currentScript && document.currentScript.getAttribute('data-series')) || 'portraits';
+  var DB_NAME    = 'liten-handoff';
+  var STORE      = 'photos';
+  var PHOTO_KEY  = 'foyer-source';
+  var META_KEY   = 'liten_foyer_handoff_v1';
+  var MAX_AGE_MS = 2 * 60 * 60 * 1000;
+
+  function handoffDb(series){
+    series = series || SERIES;
+    return series==='pets' ? 'liten-pets-handoff' : DB_NAME;
+  }
+  function handoffMeta(series){
+    series = series || SERIES;
+    return series==='groups' ? 'liten_groups_foyer_handoff_v1' : series==='pets' ? 'liten_pets_foyer_handoff_v1' : META_KEY;
+  }
+  function photoKey(key, series){
+    return (series || SERIES)==='groups' ? 'groups:' + key : key;
+  }
+  function openDb(series){
+    return new Promise(function(resolve, reject){
+      if (!window.indexedDB) { reject(new Error('indexedDB unavailable')); return; }
+      var rq = indexedDB.open(handoffDb(series), 1);
+      rq.onupgradeneeded = function(){ rq.result.createObjectStore(STORE); };
+      rq.onsuccess = function(){ resolve(rq.result); };
+      rq.onerror   = function(){ reject(rq.error); };
+    });
+  }
+
+  /* One request in one transaction; resolves with its result once the
+     transaction has committed. */
+  function inStore(mode, act, series){
+    return openDb(series).then(function(db){
+      return new Promise(function(resolve, reject){
+        var t = db.transaction(STORE, mode), out;
+        var rq = act(t.objectStore(STORE));
+        rq.onsuccess = function(){ out = rq.result; };
+        t.oncomplete = function(){ db.close(); resolve(out); };
+        t.onerror = t.onabort = function(){ db.close(); reject(t.error); };
+      });
+    });
+  }
+
+  function dataUrlToBlob(dataUrl){
+    var comma = dataUrl.indexOf(',');
+    var semi  = dataUrl.indexOf(';');
+    var type  = dataUrl.slice(5, semi > -1 && semi < comma ? semi : comma);
+    var bin   = atob(dataUrl.slice(comma + 1));
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: type });
+  }
+
+  function blobToDataUrl(blob){
+    return new Promise(function(resolve, reject){
+      var rd = new FileReader();
+      rd.onload  = function(){ resolve(String(rd.result || '')); };
+      rd.onerror = function(){ reject(rd.error); };
+      rd.readAsDataURL(blob);
+    });
+  }
+
+  function clear(series){
+    try { localStorage.removeItem(handoffMeta(series)); } catch (e){}
+    return inStore('readwrite', function(s){ return s.delete(photoKey(PHOTO_KEY, series)); }, series).catch(function(){});
+  }
+
+  /* Foyer. The photograph first, then the note that points at it, so the
+     note never exists without the photograph behind it. */
+  function put(dataUrl, info){
+    var blob = dataUrlToBlob(dataUrl);
+    return inStore('readwrite', function(s){ return s.put(blob, photoKey(PHOTO_KEY)); }).then(function(){
+      localStorage.setItem(handoffMeta(), JSON.stringify({
+        v: 1, at: Date.now(),
+        subject:  info && info.subject  || null,
+        gender:   info && info.gender   || null,
+        ageGroup: info && info.ageGroup || null,
+        analysis: info && info.analysis || null,
+        routing: info && info.routing || null,
+        routingAccepted: info && info.routingAccepted || null,
+        skipRedirect: !!(info && info.skipRedirect),
+        type: blob.type, bytes: blob.size
+      }));
+    });
+  }
+
+  /* Discovery. Resolves { dataUrl, meta } once, or null. */
+  function take(series){
+    var meta = null;
+    try { meta = JSON.parse(localStorage.getItem(handoffMeta(series)) || 'null'); } catch (e){}
+    if (!meta || meta.v !== 1) return Promise.resolve(null);
+    if (Date.now() - (meta.at || 0) > MAX_AGE_MS) return clear(series).then(function(){ return null; });
+    return inStore('readonly', function(s){ return s.get(photoKey(PHOTO_KEY, series)); }, series)
+      .then(function(blob){
+        return clear(series).then(function(){
+          if (!blob) return null;
+          return blobToDataUrl(blob).then(function(url){ return { dataUrl: url, meta: meta }; });
+        });
+      })
+      .catch(function(){ return clear(series).then(function(){ return null; }); });
+  }
+
+  /* Discovery's own resume (Pass 2): the source photograph held across the
+     Review sign-in, in the same store, under its own key. Kept, not taken:
+     the caller drops it once the work is back on screen. */
+  function putPhoto(key, dataUrl){
+    var blob = dataUrlToBlob(dataUrl);
+    return inStore('readwrite', function(s){ return s.put(blob, photoKey('resume:' + key)); });
+  }
+  function getPhoto(key){
+    return inStore('readonly', function(s){ return s.get(photoKey('resume:' + key)); })
+      .then(function(blob){ return blob ? blobToDataUrl(blob) : null; })
+      .catch(function(){ return null; });
+  }
+  function dropPhoto(key){
+    return inStore('readwrite', function(s){ return s.delete(photoKey('resume:' + key)); }).catch(function(){});
+  }
+
+  window.LitenHandoff = { put: put, take: take, clear: clear, putPhoto: putPhoto, getPhoto: getPhoto, dropPhoto: dropPhoto };
+})();

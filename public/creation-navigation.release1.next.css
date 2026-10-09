@@ -1,0 +1,4 @@
+@media(max-width:767px){
+ .ux-menu-toggle[hidden]{display:none!important;}
+ .release1-masthead-back:not([hidden]){display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;color:#efc57d!important;background:none;cursor:pointer;font:400 24px var(--serif);}
+}

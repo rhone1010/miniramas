@@ -1,0 +1,113 @@
+/* Directed Groups phone Discovery composition; other stages/series unchanged. */
+#phoneGroupsSilo{display:none;}
+@media(max-width:767px){
+ html:has(body.groups-catalog),body.groups-catalog{overflow:clip!important;}
+ body.groups-catalog .rooms{position:fixed!important;left:16px;right:16px;width:auto!important;margin:0!important;top:56px;bottom:calc(76px + env(safe-area-inset-bottom));height:auto!important;}
+ body.groups-catalog #workshop{height:100%!important;min-height:0!important;}
+ body.groups-catalog #phoneGroupsSilo{display:block;position:relative;flex:none;margin:0 28px 12px 16px;z-index:901;}
+ #phoneGroupsSilo .dcur__room{display:flex;align-items:center;gap:8px;min-height:60px;padding:6px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--ink);font:400 18px/1.1 var(--serif);text-align:left;cursor:pointer;}
+ #phoneGroupsSilo .dcur__room img{width:44px;height:44px;object-fit:contain;flex:none;}
+ #phoneGroupsSilo .dcur__room[aria-pressed="true"]{background:var(--oxblood);color:var(--vellum);}
+ #phoneGroupsSilo .dcur__room{flex-direction:column;text-align:center;font-size:16px;gap:6px;}
+ #phoneGroupsSilo .dcur__room img{width:34px;height:34px;}
+ #phoneGroupsSilo .dcur__room{font-size:18px;padding:8px;}
+ #phoneGroupsSilo .dcur__room img{width:24px;height:24px;}
+ #phoneGroupsSilo summary{list-style:none;}
+ #phoneGroupsSilo summary::-webkit-details-marker{display:none;}
+ #phoneGroupsRooms{position:absolute;left:0;right:0;top:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:6px;background:var(--vellum);max-height:calc(var(--ux-vh,100dvh) - 260px);overflow:auto;}
+ #phoneGroupsSilo:not([open]) #phoneGroupsRooms{display:none;}
+ body.groups-catalog #workshop .floor{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:none!important;gap:28px!important;padding:0 0 var(--phone-silo-tail,16px) 16px!important;max-width:none!important;}
+ body.groups-catalog #workshop .floor>.silo-card{width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;aspect-ratio:4/3!important;scroll-margin-top:0!important;}
+ body.groups-catalog #deck{scrollbar-width:none!important;scrollbar-gutter:auto!important;}
+ body.groups-catalog #deck::-webkit-scrollbar{display:none!important;width:0!important;}
+ html:has(body.groups-catalog),body.groups-catalog{scrollbar-width:none!important;}
+ html:has(body.groups-catalog)::-webkit-scrollbar,body.groups-catalog::-webkit-scrollbar{display:none!important;width:0!important;}
+}
+/* Rich's Groups Discovery bottom-bar and rectangle-stack reference, 2026-10-06. */
+@media(max-width:767px){
+ body.groups-catalog .phone-folds{top:178px;bottom:calc(76px + env(safe-area-inset-bottom));width:20px;gap:12px;}
+ body.groups-catalog .phone-folds button{width:20px;height:24px;min-height:24px;flex:0 0 24px;border:0;border-radius:0;background:#764446;opacity:1;}
+ body.groups-catalog .phone-folds button.current{background:#efc57d;opacity:1;box-shadow:0 0 6px #efc57d;}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-dock{grid-template-columns:44px minmax(0,1fr) 96px;gap:12px;border-top:0;background:#362424;}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-curator{position:relative;width:44px;height:44px;font-size:0;display:grid;place-items:center;}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-curator::before{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);content:'✦';display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#efc57d;color:#362424;font:24px/1 var(--sans,Manrope,sans-serif);}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-progress{height:44px;gap:0;--milestone-inset:clamp(0px,calc((100vw - 320px)*16/106),16px);}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-steps{align-items:center;justify-content:space-between;width:calc(100% - 2*var(--milestone-inset));margin-inline:auto;}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-steps::before{display:none;}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-steps span{box-sizing:border-box;flex:0 0 26px;width:26px;min-width:26px;height:26px;display:grid;place-items:center;border:1px solid var(--gold);border-radius:50%;font:400 14px/1 var(--sans,Manrope,sans-serif);color:#b6b1a0;background:#362424;}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-steps .reached,body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-steps .current{background:#362424;border-color:#efc57d;color:#efc57d;box-shadow:0 0 8px var(--gold);}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-count{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-disclosure{display:none;top:35px;bottom:auto;right:auto;transform:translateX(-50%);font-size:14px;line-height:16px;color:#efc57d;}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-progress:has(.current:nth-child(1)) .phone-disclosure{left:calc(var(--milestone-inset) + 13px);}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-progress:has(.current:nth-child(2)) .phone-disclosure{left:calc((100% - 2*var(--milestone-inset) - 26px)/3 + var(--milestone-inset) + 13px);}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-progress:has(.current:nth-child(3)) .phone-disclosure{left:calc((100% - 2*var(--milestone-inset) - 26px)*2/3 + var(--milestone-inset) + 13px);}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-progress:has(.current:nth-child(4)) .phone-disclosure{left:calc(100% - var(--milestone-inset) - 13px);}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-dock .phone-forward{position:relative;isolation:isolate;width:96px;height:44px;min-height:44px;padding:0;border:0;border-radius:4px;background:none;color:#ffffff;font:400 18px/1 var(--serif);}
+ body:is(.groups-catalog,.groups-cart:not(.groups-shapes)) .phone-dock .phone-forward::before{content:'';position:absolute;inset:7px 0;border-radius:4px;background:#764446;z-index:-1;}
+}
+
+/* Rich's mobile Review mockup: image-only two-column stage. */
+@media(max-width:767px){
+ body.groups-cart:not(.groups-shapes){overflow:clip!important;}
+ body.groups-cart:not(.groups-shapes) .rooms{position:fixed!important;left:16px;right:16px;top:76px;bottom:calc(76px + env(safe-area-inset-bottom));width:auto!important;height:auto!important;margin:0!important;}
+ body.groups-cart:not(.groups-shapes) #workshop{height:100%!important;min-height:0!important;background:transparent!important;}
+ body.groups-cart:not(.groups-shapes) #workshop .crumb{flex:none;min-height:44px;height:44px;margin:0 auto!important;padding:0 8px!important;width:min(100%,280px);font-size:26px;}
+ body.groups-cart:not(.groups-shapes) #crumbHere{font:400 clamp(20px,6vw,26px)/1.15 var(--serif);padding:0;overflow:visible;white-space:nowrap;}
+ body.groups-cart:not(.groups-shapes) #groupsReviewActions{flex:none;padding:8px 0 24px;}
+ body.groups-cart:not(.groups-shapes) #groupsReviewClear{min-height:44px!important;padding:8px 16px!important;}
+ body.groups-cart:not(.groups-shapes) #deck{flex:0 1 auto!important;min-height:0;height:auto!important;overflow-y:auto;scrollbar-width:none;}
+ body.groups-cart:not(.groups-shapes) #deck::-webkit-scrollbar{display:none;}
+ body.groups-cart:not(.groups-shapes) .face--effects{height:auto!important;min-height:0!important;}
+ body.groups-cart:not(.groups-shapes) #effectFloor{height:auto!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-rows:auto;gap:12px 8px!important;padding:0 0 4px!important;align-content:start;}
+ body.groups-cart:not(.groups-shapes) #effectFloor>.silo-card,body.groups-cart:not(.groups-shapes) #effectFloor>.groups-review-slot{width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:max(64px,calc((100dvh - 366px - env(safe-area-inset-bottom))/4))!important;aspect-ratio:3/2!important;border:3px solid #f3ede1!important;border-radius:0!important;box-sizing:border-box;}
+ body.groups-cart:not(.groups-shapes) #effectFloor .silo-card__image{opacity:1!important;filter:none!important;transform:none!important;}
+ body.groups-cart:not(.groups-shapes) #effectFloor .silo-card__overlay,body.groups-cart:not(.groups-shapes) #effectFloor .silo-card__add{display:none!important;}
+ body.groups-cart:not(.groups-shapes) #effectFloor .silo-card__content{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);}
+ body.groups-cart:not(.groups-shapes) #groupsReviewFooter:not([hidden]){flex:none;padding:8px 0 12px!important;}
+ body.groups-cart:not(.groups-shapes) #groupsReviewFooter:has(#groupsReviewPages[hidden]){display:none!important;}
+ body.groups-cart:not(.groups-shapes) #groupsReviewPages{width:max-content;border:1px solid #764446;border-radius:4px;}
+ body.groups-cart:not(.groups-shapes) #groupsReviewPages .cur-mode{min-width:44px;min-height:32px!important;height:32px;background:#f3ede1!important;color:#764446!important;font:400 16px var(--sans);}
+ body.groups-cart:not(.groups-shapes) #groupsReviewPages .cur-mode.is-active{background:#764446!important;color:#ffffff!important;}
+ body.groups-cart:not(.groups-shapes) .phone-utility .uxphone-back{display:none!important;}
+ body.groups-cart:not(.groups-shapes) .phone-utility .phone-curator{min-height:44px;}
+}
+
+/* Rich's mobile Format mockup: effect count and one centered Craft action. */
+.phone-format-count{display:none;}
+@media(max-width:767px){
+ body.groups-shapes{overflow:clip!important;}
+ body.groups-shapes .rooms{min-height:0!important;position:fixed!important;left:16px;right:16px;top:76px;bottom:calc(76px + env(safe-area-inset-bottom));width:auto!important;height:auto!important;margin:0!important;}
+ body.groups-shapes #workshop{height:100%!important;min-height:0!important;background:transparent!important;}
+ body.groups-shapes #groupsShapes{height:100%!important;min-height:0!important;flex:1 1 auto!important;overflow:auto!important;padding:0 12px 20px!important;box-sizing:border-box;scrollbar-width:none;}
+ body.groups-shapes #groupsShapes .aspect-gallery{height:100%!important;min-height:0!important;padding:0!important;gap:16px;box-sizing:border-box;overflow:visible;}
+ body.groups-shapes .phone-format-count{display:block;flex:none;align-self:center;width:max-content;max-width:100%;padding:4px 12px;border:1px solid #764446;border-radius:3px;color:#764446;font:400 20px/1.2 var(--serif);text-align:center;}
+ body.groups-shapes #groupsShapes .aspect-gallery__title{flex:none;font:400 clamp(20px,5.8vw,26px)/1.15 var(--serif);margin:0!important;text-align:center;}
+ body.groups-shapes #groupsShapes .aspect-row{flex:1;min-height:0;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(150px,1fr));gap:8px;}
+ body.groups-shapes #groupsShapes .aspect-opt{min-height:0;padding:10px 8px;gap:8px;justify-content:center;}
+ body.groups-shapes #groupsShapes .aspect-shape{height:clamp(44px,7dvh,62px)!important;width:calc(clamp(44px,7dvh,62px) * var(--ar))!important;flex-shrink:0;}
+ body.groups-shapes #groupsShapes .aspect-opt__label{font:400 22px/1 var(--serif);}
+ body.groups-shapes #groupsShapes .aspect-opt__say{font:400 14px/1.35 var(--sans);}
+ body.groups-shapes .phone-dock:not([hidden]){grid-template-columns:1fr;justify-items:center;gap:0;min-height:76px;border-top:0;background:#362424;}
+ body.groups-shapes .phone-dock .phone-utility,body.groups-shapes .phone-dock .phone-progress{display:none!important;}
+ body.groups-shapes .phone-dock .phone-forward{width:144px;height:44px;min-height:44px;padding:0;border:0;border-radius:4px;background:#764446;color:#ffffff;font:400 24px/1 var(--serif);text-transform:uppercase;}
+}
+
+/* Rich's October 8 corrections: phone presentation only. */
+@media(max-width:767px){
+ body:has(#workshop) .acct:not(.is-open),
+ body:has(#workshop) .pshop:not(.is-open),
+ body:has(#workshop) .buy:not(.is-open) .buy-card,
+ body:has(#workshop) .lcf-panel:not(.open){box-shadow:none!important;}
+ body.groups-catalog .phone-dock .phone-curator::before{width:39px;height:39px;font-size:36px;}
+ body.groups-catalog .phone-dock .phone-steps{width:calc(100% - 2*var(--milestone-inset) - 8px);}
+ body.groups-cart{background:linear-gradient(rgba(247,242,233,.62),rgba(247,242,233,.62)),url('/textures/limestone.jpg') center/cover no-repeat fixed!important;}
+ body.groups-cart .stage,body.groups-cart .rooms,body.groups-cart #workshop,
+ body.groups-cart #deck,body.groups-cart .face--effects,body.groups-cart #groupsShapes,
+ body.groups-cart .aspect-gallery{background:transparent!important;}
+}
+
+/* Approved mobile room-map trigger: same details/summary and room map. */
+@media(max-width:767px){
+ #phoneGroupsSilo>summary{width:100%;box-sizing:border-box;justify-content:center;align-items:center;}
+ #phoneGroupsSilo .phone-effects-map{width:24px;height:24px;flex:none;}
+}

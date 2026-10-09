@@ -4985,7 +4985,9 @@ html.print-destination .ps-pc img{object-fit:contain}
 html.print-destination .ps-fly .mc-title{display:block;margin:0 0 22px}
 html.print-destination #yourPrints .ps-pc{width:100%;margin-bottom:.8rem}
 html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:none!important}
-</style><link rel="stylesheet" href="/print-experience.css"></head>
+</style><link rel="stylesheet" href="/print-experience.css"><link rel="stylesheet" href="/print-phone.next.css">
+<script src="/print-phone.next.js"></script>
+</head>
 <body>
 
 <div class="ground" aria-hidden="true"></div>
@@ -10470,11 +10472,11 @@ window.EFFECT_PREVIEWS = {
   function loadPrintCollection(){
     function read(url){return fetch(url,{credentials:'same-origin',cache:'no-store'}).then(function(r){if(!r.ok)throw Error('collection_unavailable');return r.json();});}
     read('/api/v1/portfolios').then(async function(d){
-      var portfolios=(d.portfolios||[]).filter(function(p){return p.series==='portraits'||p.series==='pets';}),at=0,failed=0;
+      var portfolios=(d.portfolios||[]).filter(function(p){return p.series==='portraits'||p.series==='pets'||(matchMedia('(max-width:767px)').matches&&p.series==='groups');}),at=0,failed=0;
       await Promise.all([0,1,2].map(async function(){while(at<portfolios.length){var p=portfolios[at++];try{var both=await Promise.all([read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/status'),read('/api/v1/portfolios/'+encodeURIComponent(p.id)+'/unlocks')]);
         var st=both[0],un=both[1],owned={};(un.items||[]).forEach(function(i){owned[i.slot]=i.unlocked;});
 
-        (st.items||[]).forEach(function(i){if(i.status==='done'&&owned[i.slot]&&i.previewId&&i.previewUrl&&!PRINT_COLLECTION.some(function(x){return x.id===i.previewId;}))PRINT_COLLECTION.push({id:i.previewId,name:i.preset,art:i.previewUrl});});
+        (st.items||[]).forEach(function(i){if(i.status==='done'&&owned[i.slot]&&i.previewId&&i.previewUrl&&!PRINT_COLLECTION.some(function(x){return x.id===i.previewId;}))PRINT_COLLECTION.push({id:i.previewId,name:i.preset,art:i.previewUrl,series:p.series,createdAt:p.created_at});});
       }catch{failed++;}}}));
       PRINT_COLLECTION_STATE=failed?(PRINT_COLLECTION.length?'partial':'error'):'ready';printCollectionGallery();
     }).catch(function(){PRINT_COLLECTION_STATE='error';printCollectionGallery();});
@@ -10876,7 +10878,7 @@ window.EFFECT_PREVIEWS = {
        and a slow write must not hold up a checkout. */
     if (!PRINT_TEST_PIECE && typeof saveAddress === 'function') saveAddress();
     var back = window.location.origin + window.location.pathname;
-    fetch(PRINT_CO_URL, {
+    return fetch(PRINT_CO_URL, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       credentials:'same-origin',
@@ -11008,6 +11010,68 @@ window.EFFECT_PREVIEWS = {
 
   var psCloseBtn = document.getElementById('psClose');
   if (psCloseBtn) psCloseBtn.addEventListener('click', function(){if(location.pathname==='/print')location.assign('/discovery?print_pick=1');else hidePrintShop();});
+
+  /* Phone presentation bridge: existing catalogue, eligibility, quote and Stripe operations. */
+  if (window.initPrintPhone && location.pathname === '/print') {
+    var phonePrintNotify = function(){}, phonePrintQueued=false, phonePrintLine=null, phonePrintPayment=null;
+    function phonePrintChanged(){if(phonePrintQueued)return;phonePrintQueued=true;queueMicrotask(function(){phonePrintQueued=false;phonePrintNotify();});}
+    var phoneOriginalWall=renderWall, phoneOriginalCart=renderCart, phoneOriginalGallery=printCollectionGallery;
+    renderWall=function(){phoneOriginalWall();phonePrintChanged();};
+    renderCart=function(){phoneOriginalCart();phonePrintChanged();};
+    printCollectionGallery=function(){phoneOriginalGallery();document.querySelectorAll("#printCollectionGallery img").forEach(function(img){img.addEventListener("load",phonePrintChanged);});phonePrintChanged();};
+    var phoneOriginalClosePayment=closePrintPayment;
+    closePrintPayment=function(){phoneOriginalClosePayment();phonePrintChanged();};
+    function phoneArtworkLabel(piece){
+      if(!piece)return '';
+      var label=effectLabel(piece.name)||'';
+      if(/_\d+$/.test(label))return label;
+      var peers=PRINT_COLLECTION.filter(function(p){return String(effectLabel(p.name)||'').replace(/_\d+$/,'')===label;});
+      if(!peers.some(function(p){return p.id===piece.id;}))peers.push(piece);
+      var used=new Set(peers.map(function(p){var m=String(effectLabel(p.name)||'').match(/_(\d+)$/);return m?Number(m[1]):0;}));
+      peers=peers.filter(function(p){return !/_\d+$/.test(effectLabel(p.name)||'');}).sort(function(a,b){return (Date.parse(a.createdAt||a.created_at)||0)-(Date.parse(b.createdAt||b.created_at)||0)||String(a.id).localeCompare(String(b.id));});
+      var ordinal=0;
+      for(var i=0;i<peers.length;i++){do{ordinal++;}while(used.has(ordinal));if(peers[i].id===piece.id)return label+'_'+String(ordinal).padStart(2,'0');}
+      return label;
+    }
+    window.initPrintPhone({
+      money:money,label:effectLabel,artworkLabel:phoneArtworkLabel,finishArt:finishArt,fromPrice:fromPrice,
+      ratio:function(w,h){function gcd(a,b){return b?gcd(b,a%b):a;}var d=gcd(w,h);return w/d+':'+h/d;},
+      subscribe:function(fn){phonePrintNotify=fn;},
+      state:function(){var a=addrValues(),country=document.getElementById('psCountry');return {
+        piece:PS_PIECE?Object.assign({},PRINT_COLLECTION.find(function(p){return p.id===PS_PIECE.id;})||{},PS_PIECE):null,families:PRINT_FAMILIES,family:PS_FAM,size:PS_SIZE,quantity:PS_QTY,
+        collection:PRINT_COLLECTION.filter(function(p){return Array.from(document.querySelectorAll("#printCollectionGallery [data-print-candidate]")).some(function(el){return el.dataset.printCandidate===p.id;});}),collectionMessage:document.getElementById('printGalleryStatus')?.textContent||'',
+        address:a,countryName:a.name&&country?country.options[country.selectedIndex]?.text:'',shipping:PS_SHIP,
+        checkoutReady:!!(ORDER.length&&PS_SHIP&&addrComplete(a)&&!printEmbed&&!phonePrintPayment)
+      };},
+      selectArtwork:async function(id){
+        var seq=++PRINT_SELECTION_SEQ;
+        var r=await fetch('/api/v1/print/source?piece='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});
+        var d=await r.json();if(seq!==PRINT_SELECTION_SEQ)return;
+        if(!r.ok||!d.piece||!d.fulfilment||!printable(d.piece))throw Error('unavailable');
+        var metadata=PRINT_COLLECTION.find(function(p){return p.id===id;});
+        if(metadata){d.piece.createdAt=d.piece.createdAt||metadata.createdAt;d.piece.series=d.piece.series||metadata.series;}
+        selectPrintSource(d);PS_OPT=0;if(!PIECES.some(function(p){return p.id===d.piece.id;}))PIECES.push(d.piece);renderWall();
+      },
+      chooseFinish:function(i){
+        if(!PRINT_FAMILIES[i])return;
+        var old=currentSize();PS_FAM=i;
+        var kept=currentFamily().sizes.findIndex(function(s){return s.size===old?.size&&s.compatibility!=='unavailable';});
+        PS_SIZE=kept>=0?kept:firstPrintSize();
+      },
+      chooseSize:function(i){var s=currentFamily()?.sizes[i];if(s&&s.compatibility!=='unavailable')PS_SIZE=i;},
+      prepareReview:function(){
+        var s=currentSize();if(!s||s.compatibility==='unavailable'||!printable(PS_PIECE))return;
+        if(phonePrintLine)ORDER=ORDER.filter(function(l){return l.lid!==phonePrintLine;});
+        var qty=PS_QTY;addToOrder();PS_QTY=qty;
+        var line=ORDER.find(function(l){return l.pieceId===PS_PIECE.id&&l.size===s.size&&l.finish===s.finish;});phonePrintLine=line?.lid;
+        askQuote();
+      },
+      checkout:function(){
+        if(phonePrintPayment||printEmbed)return phonePrintPayment||Promise.resolve();
+        phonePrintPayment=Promise.resolve(printCheckout()).finally(function(){phonePrintPayment=null;phonePrintChanged();});return phonePrintPayment;
+      }
+    });
+  }
 
   window.__showPrintShop = showPrintShop;
   if(location.pathname==='/print' && !PRINT_TEST_PIECE && !new URLSearchParams(location.search).has('session')) window.location.replace('/discovery?print_pick=1');

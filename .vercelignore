@@ -25,3 +25,15 @@ public/actionmini.html
 
 # --- local logs ---
 *.log
+
+# Isolated deep-review Preview: offline source batches and scratch outputs only.
+/wallpaper-batch/
+/source-pool/
+/portrait-batch/
+/_calibration/
+/preview-sources/
+/_test_source_aug3/
+/LitenBench/
+/preview-matrix/
+/_scratch/
+/archive/

@@ -362,8 +362,15 @@ input[type=file]{ display:none }
 }
 @media (min-width:721px){ .pill{ display:none !important } }
 @media (prefers-reduced-motion:reduce){ .card,.side,.go,.fc,.cardwrap{ transition:none !important; animation:none !important } }
+/* Skip: approved adaptation of the Foyer Try again text control. */
+.foyer-skip{ position:fixed; right:calc(28px + env(safe-area-inset-right)); bottom:calc(28px + env(safe-area-inset-bottom) + var(--kb,0px)); z-index:30; font-family:var(--serif); font-size:1.3rem; font-weight:400; line-height:1.25; letter-spacing:inherit; font-style:italic; color:var(--ink); background:none; border:0; padding:.5rem .8rem; margin:0; cursor:pointer; opacity:.72 }
+.foyer-skip:hover,.foyer-skip:focus-visible{ opacity:1 }
+.foyer-skip:focus-visible{ outline:2px solid var(--gold-soft); outline-offset:3px; border-radius:4px }
+.foyer-skip:disabled{ cursor:wait }
+@media(max-width:720px){ .foyer-skip{ color:var(--gold-soft) } }
 </style><link rel="stylesheet" href="/upload-routing.css">
-<script src="/upload-routing.js"></script>
+<script src="/upload-routing.deep-review.next.js"></script>
+<link rel="stylesheet" href="/foyer-agegate.deep-review.next.css">
 </head><body>
 
 <div class="montage" id="montage"></div>
@@ -415,13 +422,14 @@ input[type=file]{ display:none }
         Take a photo</button>
     </div>
     <button class="go" id="go" inert>Come Inside &amp; Explore</button>
+    <button class="foyer-skip" id="foyerSkip" type="button">Skip</button>
 
     <input type="file" id="file" accept="image/*"><input type="file" id="cam" accept="image/*" capture="user">
   </div>
 </div>
 
 <script src="foyer-DATA.js"></script>
-<script src="/foyer-handoff.js"></script>
+<script src="/foyer-handoff.handoff.next.js" data-series="portraits"></script>
 <script>
 var IS_MOBILE=matchMedia('(max-width:720px)').matches;
 
@@ -840,7 +848,7 @@ function reveal(){
     if (run !== FOYER.run) return;
     if (!d){ FOYER.intake = null; settle('failed'); return; }       /* not reached: ask again on Try again */
     if (d.status === 'routing_cancelled'){ FOYER.intake = null; settle('failed'); return; }
-    if (d.status === 'refused'){ settle('refused'); return; }
+    if (d.status === 'refused'){ settle('refused'); if(d.code === 'age_restricted') openFoyerAgeGate(); return; }
     if (d.status !== 'ok'){ settle('unavailable'); return; }                /* the check could not be made */
     if (FOYER.free === false){ settle(FOYER.why || 'unavailable'); return; }
     showRevealStatus();   /* the photo passed intake; their image is being made from here */
@@ -1191,23 +1199,26 @@ function gridReveal(){
 function pick(inp){
   var f=inp.files[0]; if(!f) return;
   if (STATE.phase !== 'opening') return;
+  foyerSkip.disabled=true;
   var r=new FileReader();
   r.onload=function(){
     var url=String(r.result||'');
-    if (url.slice(0,11) !== 'data:image/') { console.warn('[foyer] not an image'); return; }
+    if (url.slice(0,11) !== 'data:image/') { console.warn('[foyer] not an image'); foyerSkip.disabled=false; return; }
     SRC.dataUrl=url; SRC.b64=url.split(',')[1]||null;
     var probe=new Image();
     probe.onload=function(){
       fitSourceForUpload(probe, function(fitted, note){
-        if (!fitted){ console.warn('[foyer] photograph too large even after fitting'); return; }
+        if (!fitted){ console.warn('[foyer] photograph too large even after fitting'); foyerSkip.disabled=false; return; }
         if (note){ SRC.b64=fitted.split(',')[1]||null; SRC.dataUrl=fitted; console.log('[foyer] fitted '+note); }
         begin(SRC.dataUrl);
         reveal();
+        foyerSkip.disabled=false;
       });
     };
-    probe.onerror=function(){ console.warn('[foyer] the browser could not read that photograph'); };
+    probe.onerror=function(){ console.warn('[foyer] the browser could not read that photograph'); foyerSkip.disabled=false; };
     probe.src=url;
   };
+  r.onerror=function(){ foyerSkip.disabled=false; };
   r.readAsDataURL(f);
 }
 var btnUpload=document.getElementById('btnUpload');
@@ -1223,20 +1234,75 @@ document.getElementById('empty').addEventListener('click',function(){ document.g
    the subject the intake detected (foyer-handoff.js) -- never the reveal,
    its effect, or anything owned. A photograph still being examined is
    waited for (seconds): only one the intake passed is handed over. */
-go.addEventListener('click',function(){
-  if (go.getAttribute('aria-busy') === 'true') return;
-  go.setAttribute('aria-busy','true');
+function continueFoyer(button){
+  if (button.getAttribute('aria-busy') === 'true') return;
+  button.setAttribute('aria-busy','true');
   Promise.resolve(FOYER.handoff).catch(function(){}).then(function(){ location.href='/discovery'; });
-});
+}
+go.addEventListener('click',function(){ continueFoyer(go); });
+var foyerSkip=document.getElementById('foyerSkip');
+if(foyerSkip) foyerSkip.addEventListener('click',function(){ continueFoyer(foyerSkip); });
 
 /* Resume the fitted photograph from the other series' existing handoff. */
 if (new URLSearchParams(location.search).get('foyerFrom') === 'pets') {
+  foyerSkip.disabled=true;
   LitenHandoff.take('pets').then(function(handoff){
     if (!handoff || STATE.phase !== 'opening') return;
     SRC.dataUrl = handoff.dataUrl; SRC.b64 = handoff.dataUrl.split(',')[1] || null;
     begin(SRC.dataUrl);
     reveal();
-  });
+  }).finally(function(){ foyerSkip.disabled=false; });
 }
 
-</script></body></html>
+</script>  <div class="agegate" id="ageGate" role="alertdialog" aria-modal="true"
+       aria-labelledby="ageGateH">
+    <div class="agegate-card">
+      <h3 id="ageGateH">We can't craft from this photograph</h3>
+      <p>Liten &amp; Co crafts portraits of adults. We are not able to work
+        from photographs of children.</p>
+      <p>Nothing has been crafted and nothing has been charged.</p>
+      <button id="ageGateGo" type="button">Choose a different photograph</button>
+      <button class="agegate-more" id="ageGateMore" type="button"
+              aria-expanded="false" aria-controls="ageGatePolicy">
+        Why we do this
+      </button>
+
+      <!-- Rich's words, locked 2026-08-05. One place. If this changes it
+           changes here. -->
+      <div class="agegate-policy" id="ageGatePolicy">
+        <h4>Portraits of adults only, for now</h4>
+        <p>Liten &amp; Co currently creates portraits of adults 18 and over.</p>
+        <p>We&rsquo;re taking a little more time to understand the evolving
+          policies and usage rights surrounding the transformation of images
+          and likenesses of people under 18, both in the U.S. and
+          internationally.</p>
+        <p>For now, photos of anyone we believe to be under 18 will be
+          declined before anything is crafted or charged.</p>
+        <p>We hope to offer this in future as the policies and protections
+          around younger subjects become clearer. We&rsquo;ll keep you
+          posted.</p>
+
+        <h4>A note about your photos</h4>
+        <p>Your photograph is used only to create your Liten &amp; Co pieces.
+          We don&rsquo;t sell them, use them to train AI models, or share
+          them with others.</p>
+      </div>
+    </div>
+  </div>
+<script>
+function openFoyerAgeGate(){
+  var gate=document.getElementById('ageGate'),more=document.getElementById('ageGateMore');
+  document.getElementById('ageGatePolicy').classList.remove('is-open');
+  more.textContent='Why we do this';more.setAttribute('aria-expanded','false');
+  gate.classList.add('is-open');document.getElementById('ageGateGo').focus();
+}
+document.getElementById('ageGateMore').addEventListener('click',function(){
+  var p=document.getElementById('ageGatePolicy'),open=p.classList.toggle('is-open');
+  this.setAttribute('aria-expanded',open?'true':'false');this.textContent=open?'Close':'Why we do this';
+});
+document.getElementById('ageGateGo').addEventListener('click',function(){
+  document.getElementById('ageGate').classList.remove('is-open');
+  document.querySelector('input[type="file"]').click();
+});
+</script>
+</body></html>

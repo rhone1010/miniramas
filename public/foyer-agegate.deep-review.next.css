@@ -1,0 +1,74 @@
+.agegate{
+  position:fixed; inset:0; z-index:130;
+  display:none; align-items:center; justify-content:center;
+  padding:1.5rem;
+  background:rgba(20,14,10,.72);
+  backdrop-filter:blur(3px);
+}
+.agegate.is-open{ display:flex }
+.agegate-card{
+  width:min(440px,100%);
+  padding:1.8rem 1.9rem 1.6rem;
+  border-radius:10px;
+  background:var(--vellum-100);
+  border:1px solid rgba(137,105,67,.3);
+  box-shadow:0 1.4rem 3rem rgba(28,18,10,.4);
+}
+.agegate-card h3{
+  font-family:var(--serif); font-weight:400; font-size:1.5rem;
+  color:var(--ink); margin-bottom:.5em;
+}
+.agegate-card p{
+  font-family:var(--sans); font-size:.9rem; line-height:1.6;
+  color:var(--ink-soft);
+}
+.agegate-card p + p{ margin-top:.7em }
+/* the full statement, behind one link */
+.agegate-more{
+  display:block; width:100%; margin-top:1rem;
+  background:none; border:0; padding:0; cursor:pointer;
+  font-family:var(--serif); font-style:italic; font-size:1.02rem;
+  color:var(--oxblood); text-align:left;
+}
+.agegate-more:hover{ text-decoration:underline }
+.agegate-policy{
+  display:none; margin-top:1rem; padding-top:1rem;
+  border-top:1px solid rgba(137,105,67,.24);
+  max-height:38vh; overflow-y:auto;
+}
+.agegate-policy.is-open{ display:block }
+.agegate-policy h4{
+  font-family:var(--serif); font-weight:400; font-size:1.15rem;
+  color:var(--ink); margin-bottom:.4em;
+}
+.agegate-policy h4 + p{ margin-top:0 }
+.agegate-policy p{
+  font-family:var(--sans); font-size:.84rem; line-height:1.6;
+  color:var(--ink-soft); margin-top:.6em;
+}
+.agegate-policy h4:not(:first-child){ margin-top:1.1em }
+.agegate-card button{
+  width:100%; margin-top:1.4rem; padding:.8em;
+  border:0; border-radius:8px; background:var(--oxblood);
+  font-family:var(--serif); font-style:italic; font-size:1.2rem;
+  color:var(--vellum-100); cursor:pointer;
+}
+
+
+.agegate{--ink-soft:#5a5248;--vellum-100:#f8f4eb;--oxblood:#7d4242;}
+
+/* Bound status/actions, leaving decorative montage tiles free to bleed. */
+.reveal-status{left:50%;right:auto;width:min(100vw - 32px,1290px);transform:translateX(-50%);}
+.agegate-card{max-height:calc(100dvh - 48px);overflow-y:auto;}
+@media(max-width:720px){
+  .acts{left:16px;right:80px;transform:none;bottom:calc(20px + env(safe-area-inset-bottom) + var(--kb,0px));gap:8px;}
+  .acts .pbtn{width:auto;flex:1;min-width:0;min-height:60px;padding:8px;}
+  .foyer-skip{right:8px;bottom:calc(20px + env(safe-area-inset-bottom) + var(--kb,0px));min-height:60px;box-sizing:border-box;}
+  .go{left:16px;right:80px;width:auto;transform:none;bottom:calc(20px + env(safe-area-inset-bottom) + var(--kb,0px));min-height:60px;padding:12px;}
+  .empty{display:flex;flex-direction:column;justify-content:center;gap:24px;}
+  .empty .fs-logo{position:static;flex:none;}
+  .empty .fs-logo img{width:min(150px,30vw);}
+  .reveal-status{width:calc(100vw - 32px);}
+  .rs-turn{max-width:100%;white-space:normal;}
+}
+@media(max-width:720px){.go.in,.go.full{transform:none;left:16px;margin-top:0;white-space:normal;}}

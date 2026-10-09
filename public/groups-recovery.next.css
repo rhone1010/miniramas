@@ -1,0 +1,251 @@
+/* Groups recovery only. Existing design tokens and controls are retained. */
+body.groups-shapes #tourFab,body.groups-shapes #mhDesktopHelp,body.groups-shapes #mhHelp{display:none!important;}
+@media(min-width:768px){
+ body.groups-cart #groupsShapeSummary,body.groups-cart #groupsCartCount{font-size:22px;line-height:1.3;}
+ #curCollection{margin-top:auto;}
+ body.groups-shapes #groupsShapeRail{display:flex;flex-direction:column;flex:1;}
+ body.groups-shapes #groupsCartBack{margin-top:auto;}
+}
+@media(max-width:767px){
+ #tourOverlay{z-index:2147482300;}
+ #tourTip{box-sizing:border-box;max-width:calc(100vw - 40px);}
+ .phone-curator{font-size:0!important;}
+}
+
+/* Existing Print Shop masthead declarations, desktop only. */
+@media(min-width:768px){
+.mh{
+  position:sticky; top:0; z-index:60;
+  height:var(--mh-h);
+  background:var(--espresso);
+  border-bottom:1px solid var(--card-line);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  padding-inline:var(--stage-gutter);
+}
+.mh-series{ position:relative; display:flex; align-items:center;
+  margin-right:var(--series-gap) }
+.mh-series-btn{
+  display:inline-flex; align-items:center; gap:.34em;
+  font-family:var(--serif); font-size:1.8em; font-weight:400; line-height:1;
+  color:var(--series); padding:10px 0; cursor:pointer; white-space:nowrap;
+  transition:color .16s ease;
+}
+.mh-series-btn:hover{ color:#e6d2a8 }
+.mh-series-btn .caret{
+  width:.52em; height:.52em; flex:0 0 auto;
+  margin-top:.14em; opacity:.72;
+  transform-origin:50% 45%;
+  transition:transform .22s cubic-bezier(.22,.7,.3,1), opacity .16s ease;
+}
+.mh-series-btn .caret path{
+  fill:none; stroke:currentColor; stroke-width:1.35;
+  stroke-linecap:round; stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+.mh-series-btn:hover .caret{ opacity:1 }
+.mh-series-btn[aria-expanded="true"] .caret{ transform:rotate(180deg); opacity:1 }
+.mh-series-menu{
+  position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%);
+  min-width:16em;
+  background:linear-gradient(180deg,#2a1f1b 0%, #221915 100%);
+  border:1px solid var(--card-line);
+  border-radius:var(--r-card);
+  box-shadow:0 22px 48px -20px rgba(20,12,8,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  padding:20px;
+  display:flex; flex-direction:column;
+  z-index:70;
+}
+.mh-series-menu a{
+  display:flex; align-items:center; justify-content:space-between; gap:1.2em;
+  font-family:var(--serif); font-size:1.45em; font-weight:400; line-height:1.1;
+  color:var(--vellum-200); text-decoration:none; white-space:nowrap;
+  padding:.52em .7em; border-radius:6px;
+  transition:background .14s ease, color .14s ease;
+}
+.mh-series-menu a:hover,
+.mh-series-menu a:focus-visible{
+  background:linear-gradient(180deg, rgba(215,189,137,.16), rgba(215,189,137,.09));
+  color:var(--series); outline:none;
+}
+.mh-series-menu a[aria-current="page"]{ color:var(--series) }
+.mh-series-menu a[aria-current="page"]::after{
+  content:""; width:5px; height:5px; border-radius:50%; background:var(--series);
+}
+.mh-series-menu a.sub{
+  font-size:1.15em; padding-left:1.9em; color:var(--vellum-300, var(--vellum-200));
+}
+.mh-series-menu a.sub::before{
+  content:""; position:absolute; left:1.05em;
+  width:1px; height:1.05em;
+  background:linear-gradient(180deg, transparent, rgba(215,189,137,.42));
+}
+.mh-series-menu a.sub{ position:relative }
+.mh-series-menu .sep{
+  height:1px; margin:6px 8px;
+  background:linear-gradient(90deg, transparent, rgba(215,189,137,.28), transparent);
+}
+.mh-logo{
+  justify-self:start; text-decoration:none;
+  display:inline-flex; align-items:center;
+  color:var(--vellum-100);              /* the mark inherits this */
+}
+.mh-mark{
+  height:var(--mark-h); width:auto; flex:0 0 auto;
+  display:block; overflow:visible;
+}
+.mh-mark path{ fill:currentColor }
+.mh-nav{ justify-self:center; display:flex; align-items:center; gap:32px }
+.mh-nav a{
+  position:relative; text-decoration:none; white-space:nowrap;
+  font-family:var(--serif); font-size:1.5em; font-weight:400; line-height:1;
+  color:var(--vellum-300); padding:10px 0;
+  transition:color .16s ease;
+}
+.mh-nav a:hover{ color:var(--vellum-100) }
+.mh-nav a.on{ color:var(--gold) }
+.mh-nav a.on::after{
+  content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
+  background:var(--gold);
+}
+.mh-right{ justify-self:end; display:flex; align-items:center; gap:12px }
+.mh-out{
+  font-family:var(--serif); font-style:italic; font-size:1.0625rem;
+  color:var(--vellum-300); opacity:.62; padding:6px 4px;
+  cursor:pointer; background:none; border:none; white-space:nowrap;
+  transition:opacity .16s ease, color .16s ease;
+}
+.mh-out:hover{ opacity:1; color:var(--vellum-100) }
+.mh-credits,.mh-cart{
+  display:flex; align-items:center; gap:10px;
+  height:44px; padding:0 16px;
+  border-radius:var(--r-card);
+  background:var(--coffee-700);
+  border:1px solid var(--card-line);
+  color:var(--vellum-100);
+  font-family:var(--sans); font-size:1rem; font-weight:600;
+  cursor:pointer;
+  transition:background .16s ease, border-color .16s ease;
+}
+.mh-credits:hover,.mh-cart:hover{ background:#40302a; border-color:var(--gold) }
+.mh-credits .v,.mh-cart .cnt{ font-variant-numeric:tabular-nums }
+.mh-credits .u{ font-weight:400; color:var(--vellum-300) }
+.mh-cart svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+.mh-cart .cnt{
+  min-width:24px; height:24px; padding:0 6px; border-radius:50%;
+  display:grid; place-items:center;
+  background:var(--oxblood); color:#fff;
+  font-family:var(--sans); font-size:0.875rem; font-weight:600;
+}
+.mh-cart .cnt[data-empty="true"]{ background:rgba(233,222,200,.22); color:var(--vellum-300) }
+.mh-menu{
+  display:none; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:var(--r-card);
+  background:var(--coffee-700); border:1px solid var(--card-line);
+  color:var(--vellum-100); cursor:pointer;
+}
+.mh-menu svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+.mh-ask{
+  display:flex; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:var(--r-card);
+  background:rgba(243,237,225,.10);
+  border:1px solid rgba(243,237,225,.34);
+  color:var(--vellum-100); cursor:pointer;
+  transition:background .16s ease, border-color .16s ease, color .16s ease;
+}
+.mh-ask:hover{ background:rgba(243,237,225,.20); border-color:var(--gold); color:#fff }
+.mh-ask svg{
+  width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.6;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+@media (max-width:1400px){.mh-ask{ width:34px; height:34px }
+.mh-ask svg{ width:18px; height:18px }
+}
+.mh-drawer{
+  position:absolute; top:var(--mh-h); left:0; right:0;
+  background:var(--espresso); border-bottom:1px solid var(--card-line);
+  padding:12px 0 20px; display:flex; flex-direction:column;
+}
+.mh-drawer a{
+  text-decoration:none; color:var(--vellum-300);
+  font-family:var(--serif); font-size:1.8em; font-weight:400;
+  padding:12px var(--stage-gutter);
+}
+.mh-drawer a.on{ color:var(--gold) }
+@media (max-width:1600px){.mh-nav{ gap:24px; font-size:.92em }
+}
+@media (max-width:1400px){.mh-nav{ gap:16px; font-size:.85em }
+.mh-credits,.mh-cart{ height:34px; padding:0 .7em; font-size:.9em }
+}
+.mh-credits .who{
+  max-width:11ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  color:var(--vellum-300); font-weight:400;
+}
+.mh-credits .who:after{
+  content:'\00b7'; padding:0 .1em 0 .45em; opacity:.55;
+}
+@media (max-width:1320px){.mh-nav{ gap:11px; font-size:.8em }
+#mhSeriesLabel .mh-crafted{ display:none }
+.mh-credits .who{ max-width:8ch }
+.mh-series-btn{ font-size:.9em }
+.mh-credits .u{ display:none }
+}
+@media (max-width:1199px){.mh{ grid-template-columns:auto 1fr auto }
+.mh-nav{ display:none }
+.mh-menu{ display:flex; justify-self:start; margin-left:12px }
+}
+@media (max-width:767px){.mh-credits.has-balance .u{ display:none }
+.mh-credits .who{ max-width:7ch }
+}
+@media (max-width:767px){.mh{
+    height:auto; min-height:56px;
+    padding-block:6px;
+    column-gap:8px;
+  }
+.mh-mark{ font-size:.9em }
+}
+@media (max-width:767px){.mh-menu{ display:flex !important; margin-left:0 }
+.mh-nav{ display:none !important }
+.mh-credits .who{ display:none !important }
+.mh-out{ display:none !important }
+.mh-right{ gap:8px }
+.mh-credits{ order:1 }
+.mh-ask{ order:2 }
+.mh-cart{ order:3 }
+.mh-cart .lbl{ display:none }
+.mh-credits, .mh-cart{ padding:0 11px; gap:7px }
+.mh-series-btn{ max-width:34vw }
+}
+@media (max-width:400px){.mh-mark{ font-size:.82em }
+}
+.mh-nav a.is-open, .mh-drawer a.is-open{ color:var(--series, #d7bd89) }
+
+/* Print destination utility visibility, applied to Groups. */
+#mhCreditsBtn,#mhCartBtn{display:none!important}
+}
+
+/* print-experience.css: interactive desktop type token and masthead selectors. */
+@media(min-width:768px){.mh-nav a,#mhSeriesBtn,.mh-out{font-size:1.6rem;}}
+
+/* Keep the Groups auth/mobile controls in the DOM; desktop composition matches Print. */
+@media(min-width:768px){.mh-right>#mhDesktopHelp,.mh-right>#mhScarab,.mh-right>#mhName,.mh-right>.mh-series{display:none!important;}}
+@media(max-width:767px){.ux-menu-panel #mhDesktopHelp{display:block!important;}}
+
+@media(max-width:767px){body.ux-groups-curator .cur[data-state="empty"] .cur-modebar{display:flex;}}
+
+/* Format: one shared rail-derived footer inset, without changing six cards. */
+@media(min-width:768px){
+ body.groups-shapes #btnStartOver{display:none!important;}
+ body.groups-shapes #workshop{padding-bottom:0!important;}
+ body.groups-shapes #groupsShapes{padding-bottom:var(--groups-footer-inset,46px)!important;}
+ body.groups-shapes #groupsShapes>.groups-forward{padding-bottom:0!important;}
+}
+
+/* Rich: desktop Discovery rail floor and approved Print Shop logo clearance. */
+@media(min-width:768px){
+ body.groups-catalog #cur{height:100%;min-height:0;}
+ body.groups-catalog #groupsExplore{flex:0 1 auto;min-height:0;overflow-y:auto;}
+ body.groups-catalog #curCollection{margin-top:auto;}
+ .mh .mh-mark{height:44px;width:auto;}
+}

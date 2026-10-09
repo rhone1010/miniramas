@@ -11,7 +11,7 @@
 <!-- CUI 42A · 2026-08-24 -->
 <html lang="en">
 <head>
-<script>
+<script src="/foyer-handoff.handoff.next.js" data-series="groups"></script><script>
 /* THE RECEIPT PRIMER · runs before anything else on the page.
    Coming back from Stripe, the receipt used to wait for 400KB of markup to
    parse and every script to boot before it so much as asked the server what
@@ -5265,9 +5265,9 @@ body.is-lboxed{ overflow:hidden }
      page: the workshop stays live underneath, so somebody can follow what
      she says while she is still saying it. data-attention lets her trigger
      pulse when a person is plainly moving around and getting nowhere. -->
-<script src="/concierge.js" defer data-dock data-attention></script>
+<script src="/concierge.mobile-ux.next.js" defer data-dock data-attention></script>
 <style id="groupsDiscoveryPort">
-@media(min-width:1025px){
+@media(min-width:768px){
 #workshop{
   position:relative; isolation:isolate;
   flex:1; overflow-y:auto; padding:28px var(--stage-pad-x) 60px; margin-right:var(--stage-margin-right); scroll-behavior:smooth;
@@ -5319,7 +5319,7 @@ body.is-lboxed{ overflow:hidden }
 .bundle-ind{ grid-column:1; grid-row:3 }
 /* Groups Discovery: approved flat mockups, 2026-10-01.
    Tokens and surface treatments come from Pets; geometry is the approved Groups delta. */
-@media(min-width:1025px){
+@media(min-width:768px){
   :root{--rail-w:340px;--stage-pad-x:40px;--stage-margin-right:0px;--grid-cols:4;--card-ar:1;--gold-soft:#d9b876;--mh-h:60px;}
   .rooms{width:100%;max-width:none;margin:0;gap:0;height:calc(100dvh - var(--mh-h));grid-template-columns:var(--rail-w) minmax(0,1fr);grid-template-rows:minmax(0,1fr);grid-template-areas:"curator workshop";}
   .room--curator{margin:25px;padding:20px;overflow-y:auto;}
@@ -5355,10 +5355,10 @@ body.is-lboxed{ overflow:hidden }
   .your-collection{padding:12px;border-radius:6px;display:flex;flex-direction:column;gap:8px;}
   .your-collection__title{font:400 24px/1.2 var(--serif);color:var(--gold-soft);}
   .your-collection .dcur__count,.your-collection .dcur__next,.your-collection .dcur__milestone{color:var(--gold-soft);}
-  .mh{height:60px;grid-template-columns:auto minmax(0,1fr) auto;gap:24px;padding:8px 4%;}
-  .mh-nav{justify-content:center;gap:24px;font-size:20px;}
-  .mh-series-btn{font-size:24px;}
-  .mh-nav > a[href="/gallery"],.mh-nav > a[href="/account"],.mh-cart{display:none;}
+  
+  
+  
+  
 }
 @media(min-width:1330px){:root{--rail-w:400px;--stage-pad-x:48px;}}
 @media(min-width:1660px){:root{--rail-w:460px;--stage-pad-x:54px;}}
@@ -5386,7 +5386,7 @@ body.is-lboxed{ overflow:hidden }
 .pw-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
 </style>
 <style id="groupsDiscoveryVisualFit">
-@media(min-width:1025px){
+@media(min-width:768px){
  .stage{width:100%;margin:0;padding:0;min-height:0;}
  .rooms{grid-template-columns:calc(var(--rail-w) - 50px) minmax(0,1fr);}
  .room--curator{display:block;}
@@ -5414,7 +5414,7 @@ body.is-lboxed{ overflow:hidden }
 </style>
 <style id="groupsDiscoveryRefinement">
 /* Groups density/state refinement; 1920 composition is the desktop cap. */
-@media(min-width:1025px){
+@media(min-width:768px){
  .stage{max-width:none;width:100%;margin-inline:auto;}
  .rooms{height:calc(100dvh - var(--mh-h));}
  #curCollection{padding:12px;gap:4px;}
@@ -5426,7 +5426,7 @@ body.is-lboxed{ overflow:hidden }
 @media(min-width:1920px){
  :root{font-size:16px;}
  :root{--card-gap:21.12px;}
- .mh{padding-inline:76.8px;}
+ 
  .cur-thumb img{max-height:237.6px;}
 }
 .cur-allfx{justify-content:center;text-align:center;border-radius:4px;}
@@ -5466,7 +5466,7 @@ body.is-lboxed{ overflow:hidden }
 .pw-close{font:400 22px/1.2 var(--serif);border-color:var(--gold-soft);}
 </style>
 <style id="groupsRevisedAuthority">
-@media(min-width:1025px){
+@media(min-width:768px){
  #workshop .floor[data-count="6"]{max-width:1344px;margin-inline:auto;grid-template-columns:repeat(3,minmax(0,1fr));gap:56px;}
  #workshop .floor[data-count="6"] > .silo-card{max-width:410px;width:min(100%,calc((100cqh - 56px)/2));}
  #curatedPageNav{flex:0 0 auto;justify-content:center;gap:0;padding:12px 0;}
@@ -5496,7 +5496,7 @@ body.is-lboxed{ overflow:hidden }
 }
 #workshop .silo-card{box-shadow:0 .7rem 1.5rem rgba(52,36,25,.14),
              0 .15rem .4rem rgba(52,36,25,.08);}
-@media(min-width:1025px){
+@media(min-width:768px){
  #photoWallModal .pw-modal{margin-left:min(calc(var(--rail-w) - 50px),calc(100vw - 808px));margin-right:auto;}
  #curatedPageNav{order:-1;}
  #workshop{padding-bottom:calc(60px + 65px);}
@@ -5725,7 +5725,7 @@ body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
 </style>
 <style id="groupsSharedMasthead">
 .mh-right > .mh-desktop-only{display:none}
-@media (min-width:1025px){
+@media (min-width:768px){
   .mh-right > .mh-desktop-only{display:flex}
   #mhName{display:none!important}
 }
@@ -5776,11 +5776,50 @@ body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
 @media (prefers-reduced-motion:reduce){ .lcf-panel, .lcf-scrim{ transition:none } }
 .mh-right .mh-series-menu{left:auto;right:0;transform:none}
 </style>
-<link rel="stylesheet" href="/collection-manifest.css">
+<link rel="stylesheet" href="/collection-manifest.groups-deep-review.next.css">
 <link rel="stylesheet" href="/groups-photo-control.css">
+<style>
+.tour-overlay{
+  display:none; position:fixed; inset:0; z-index:260; pointer-events:none;
+}
+.tour-overlay.active{ display:block }
+.tour-spotlight{
+  position:fixed; z-index:211; border-radius:8px; pointer-events:none;
+  box-shadow:0 0 0 9999px rgba(10,7,5,.72);
+  transition:top 260ms ease, left 260ms ease, width 260ms ease, height 260ms ease;
+}
+.tour-spotlight.no-target{ box-shadow:0 0 0 9999px rgba(10,7,5,.72); inset:0; width:auto; height:auto }
+.tour-tip{
+  position:fixed; z-index:212; max-width:340px; background:var(--vellum-100,#f8f4eb);
+  border:1px solid rgba(196,169,110,.4); border-radius:8px; padding:16px 18px;
+  box-shadow:0 12px 28px rgba(0,0,0,.35); font-size:.9rem; color:var(--ink); line-height:1.4;
+  pointer-events:auto;
+}
+.tour-tip h4{ font-family:var(--serif); font-size:1.1rem; margin:0 0 6px; color:var(--oxblood) }
+.tour-tip .tour-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:14px }
+.tour-tip .tour-step-count{ font-size:.75rem; color:#8a7a5f }
+.tour-tip button{
+  font-family:var(--serif); font-size:.95rem; border:1px solid var(--oxblood); border-radius:16px;
+  padding:6px 14px; cursor:pointer; background:transparent; color:var(--oxblood);
+}
+.tour-tip button.primary{ background:var(--oxblood); color:#f3ede1 }
+.tour-tip .tour-skip{ border:none; color:#8a7a5f; font-size:.8rem; text-decoration:underline; padding:0 }
+</style>
+<link rel="stylesheet" href="/creation-deep-review.next.css">
+<link rel="stylesheet" href="/pick-package.deep-review.next.css?v=3">
+<script src="/pick-package.deep-review.next.js?v=3"></script>
+<link rel="stylesheet" href="/mobile-ux.next.css">
+<link rel="stylesheet" href="/phone-ux.next.css">
+<link rel="stylesheet" href="/groups-phone-silo.next.css">
+<link rel="stylesheet" href="/creation-navigation.release1.next.css">
+<link rel="stylesheet" href="/groups-recovery.next.css">
 </head>
 <body>
 
+<div class="tour-overlay" id="tourOverlay">
+  <div class="tour-spotlight" id="tourSpotlight"></div>
+  <div class="tour-tip" id="tourTip"></div>
+</div>
 <button class="tour-fab" id="tourFab" aria-label="Show me how this works">?</button>
 <div class="ground" aria-hidden="true"></div>
 
@@ -5844,6 +5883,7 @@ body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
         <a href="/account" role="menuitem">Account</a>
         <a href="#" id="mhSignOut" role="menuitem">Sign Out</a>
       </div>
+  </div>
   </div>
   <style>
 /* CUI 41A, 23 Aug 2026. Ruled by Rich: no name in any masthead on a
@@ -6855,6 +6895,9 @@ window.EFFECT_PREVIEWS = {
 
   function openAgeGate(){
     if (!ageGate) return;
+    SRC.seq++;
+    SRC.b64s = []; SRC.dataUrls = [];
+    clearActiveSource();
     /* The photograph goes. Leaving it in the panel beside a refusal is an
        invitation to try the same file again. */
     SRC.b64 = null; SRC.dataUrl = null; SRC.analyze = {};
@@ -7113,9 +7156,7 @@ window.EFFECT_PREVIEWS = {
      also threw away the photograph before the customer had chosen a
      replacement. Open the picker; the photograph stands until a new one
      actually lands, and onSourceFile moves the Curator when it does. */
-  if (curChange) curChange.addEventListener('click', function(){
-    if (srcFile) srcFile.click();
-  });
+  if (curChange) curChange.addEventListener('click', pickSource);
 
   /* ---- the Curator is the way back ---------------------------------------
      Ruled 2026-08-03. Not the whole panel: it holds two buttons of its own
@@ -7359,7 +7400,11 @@ window.EFFECT_PREVIEWS = {
   /* ---- the file ---------------------------------------------------------- */
   var srcFile = document.getElementById('srcFile');
 
-  function pickSource(){ if (srcFile) srcFile.click(); }
+  function pickSource(){
+    if (!ME) { saveResume(); sessionStorage.setItem('groups-source-intent','1'); openSignin(); return; }
+    sessionStorage.removeItem('groups-source-intent');
+    if (srcFile) srcFile.click();
+  }
 
   /* THE CEILING IS FOURTEEN. The generate route refuses more, and it
      REFUSES rather than slicing - the old engine truncated silently and a
@@ -7566,6 +7611,7 @@ window.EFFECT_PREVIEWS = {
           fitRemainingSources(function(){
             /* ONE CALL, NOT TWO - the Groups analyze route answers the
                gate's question and prices the craft in the same breath. */
+            holdActiveSource(SRC.dataUrl);
             runAnalyze();
           });
         });
@@ -7639,6 +7685,10 @@ window.EFFECT_PREVIEWS = {
          Anchored on the response shape, per CENG. */
       if (r.st === 401 && data && data.reason === 'not_signed_in'){
         if (typeof openSignin === 'function') openSignin();
+        return;
+      }
+      if (data && data.code === 'age_restricted'){
+        openAgeGate();
         return;
       }
       console.log('[timing] analyze answered in ' + (Date.now() - SRC.t0) + 'ms');
@@ -8390,7 +8440,7 @@ window.EFFECT_PREVIEWS = {
     return false;
   }
   function runAll(opts){
-    if (!guardCollection() || BUSY || !SRC.b64) return Promise.resolve(false);
+    if (!guardCollection() || BUSY || !SRC.b64 || !ASPECT_FORCED || !groupsShapeAllowed(SRC.subjectCount,ASPECT)) return Promise.resolve(false);
     if (!ME || !ME.id){ groupsNotice('no_owner'); return Promise.resolve(false); }
     BUSY = true; labelBusy();
     return loadBlocks().then(function(blocks){
@@ -8604,8 +8654,9 @@ window.EFFECT_PREVIEWS = {
     var target = targetBundle(), sku = (BLOCKS || []).find(function(s){ return s.count === target; });
     Array.from(document.querySelectorAll('#curPackages .buy-block')).forEach(function(b){var p=(BLOCKS||[]).find(function(x){return x.id===b.dataset.sku;});b.classList.toggle('is-active',!!p && p.count===target);b.disabled=!!p && p.count<n;});
     var info=document.getElementById('groupsPackageInfo');
-    var rewardTarget = GROUPS_PICK_ACTIVE ? target : targetFor(n);
+    var rewardTarget = window.groupsPickPackage ? window.groupsPickPackage.view().target : (GROUPS_PICK_ACTIVE ? target : targetFor(n));
     var rewardSku = (BLOCKS || []).find(function(s){return s.count === rewardTarget;});
+    if(window.groupsPickPackage)window.groupsPickPackage.decorate();
     if(info && rewardSku){
       info.classList.toggle('is-ready',ready);
       info.innerHTML='<span class="groups-number">'+rewardTarget+'</span>'+(rewardTarget === 1 ? ' Craft' : ' Crafts')+' · <span class="groups-number">'+usd(priceOf(rewardSku))+'</span><br><span class="groups-unlock-count">'+(rewardSku.includedUnlocks||0)+'</span> '+(rewardSku.includedUnlocks===1?'Unlock Included':'Unlocks Included');
@@ -9412,6 +9463,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
   }
 
   var GROUPS_PICK_ACTIVE = false;
+  window.groupsPickPackage=window.LitenPickPackage({main:'#curPick4Btn',choices:'#curPackages .buy-block',count:function(){return QUEUE.length;},target:function(){return GROUPS_PICK_ACTIVE ? targetBundle() : targetFor(QUEUE.length);},size:function(el){var sku=(BLOCKS||[]).find(function(s){return s.id===el.dataset.sku;});return sku?sku.count:null;},open:function(){return GROUPS_PICK_ACTIVE;},repaint:paintCollectionProgress});
   function groupsCuratedIds(){ return ['art_nouveau_faces','carved','colored_pencil','driftwood_resin','impasto_faces','layered_paper','mosaic_faces','plushy','stained_glass_faces','stone','ukiyo_e','wax']; }
   var CURATED_MODE = null;   /* 'curated' | 'pick4' | null — which door is open */
 
@@ -9806,7 +9858,8 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
      localStorage, not sessionStorage: the link usually opens a new tab, and
      sessionStorage does not survive that. */
 
-  var RESUME_KEY      = 'liten_resume_v1';
+  var RESUME_KEY      = 'liten_groups_resume_v1';
+  var RESUME_MAX_MS   = 2 * 60 * 60 * 1000;
 
   var ME = null;                 /* { id, email } once known */
   var PENDING_CRAFT = false;     /* they pressed Craft and we stopped them */
@@ -9828,7 +9881,12 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
 
   function paintCredits(){
   var identity = document.getElementById('mhIdentity');
-  if (identity) identity.textContent = ME ? (ME.email || 'Account') + ' ▾' : 'Sign In';
+  if (identity){
+    var fullIdentity = ME ? (ME.email || 'Account') : 'Sign In';
+    identity.textContent = (ME && fullIdentity.length > 15 ? fullIdentity.slice(0,15) + '…' : fullIdentity) + (ME ? ' ▾' : '');
+    identity.title = fullIdentity;
+    identity.setAttribute('aria-label', fullIdentity);
+  }
   var nameEl = document.getElementById('mhName');
   if (nameEl) nameEl.textContent = ME ? 'Sign out' : 'Sign in';
   }
@@ -9928,12 +9986,83 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
      and the pose still survive and only the photograph must be chosen
      again. Losing one of the three is recoverable; losing all three is the
      failure this whole mechanism exists to prevent. */
+  function photoPrint(url){
+    var h = 0x811c9dc5;
+    for (var i = 0; i < url.length; i++){ h ^= url.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    return url.length + ':' + (h >>> 0).toString(16);
+  }
+
+  /* A restored photograph counts only if it really is one: an image data
+     URL with bytes in it, the very bytes that were saved (when the resume
+     recorded them), that the browser can decode. Missing, empty,
+     malformed, non-image, cut short and corrupt all come back false -- the
+     same as no photograph. All of it is local; nothing is sent anywhere. */
+  function validSourcePhoto(url, print){
+    if (typeof url !== 'string' || !/^data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+\/]+={0,2}$/i.test(url)) return Promise.resolve(false);
+    if (print && photoPrint(url) !== print) return Promise.resolve(false);
+    return new Promise(function(resolve){
+      var img = new Image();
+      img.onload = function(){
+        if (!(img.naturalWidth > 0 && img.naturalHeight > 0)) return resolve(false);
+        if (typeof img.decode !== 'function') return resolve(true);
+        img.decode().then(function(){ resolve(true); }, function(){ resolve(false); });
+      };
+      img.onerror = function(){ resolve(false); };
+      img.src = url;
+    });
+  }
+
+  function holdActiveSource(url, trusted){
+    if (!url || !window.LitenHandoff) return;
+    var key = RESUME_KEY + '_active';
+    var meta = { at:Date.now(), photoPrint:photoPrint(url), trusted:trusted || null };
+    LitenHandoff.putPhoto('active-source', url).then(function(){
+      if (SRC.dataUrl === url) sessionStorage.setItem(key, JSON.stringify(meta));
+    }).catch(function(e){ console.warn('[source] could not hold photograph', e); });
+  }
+  function clearActiveSource(){
+    try { sessionStorage.removeItem(RESUME_KEY + '_active'); } catch(e){}
+    if (window.LitenHandoff) LitenHandoff.dropPhoto('active-source');
+  }
+  function recoverActiveSource(){
+    if (SRC.dataUrl || !window.LitenHandoff) return Promise.resolve(false);
+    var meta;
+    try { meta = JSON.parse(sessionStorage.getItem(RESUME_KEY + '_active') || 'null'); } catch(e){}
+    if (!meta || Date.now() - meta.at > RESUME_MAX_MS){ clearActiveSource(); return Promise.resolve(false); }
+    return LitenHandoff.getPhoto('active-source').then(function(url){
+      return validSourcePhoto(url, meta.photoPrint).then(function(ok){
+        if (!ok){ clearActiveSource(); return false; }
+        onSourceLoaded([url]); return true;
+      });
+    }).catch(function(){ return false; });
+  }
+
+  function receiveFoyerHandoff(){
+    if (!window.LitenHandoff) return Promise.resolve(false);
+    var from = new URLSearchParams(location.search).get('foyerFrom');
+    return LitenHandoff.take(from==='portraits' || from==='pets' ? from : undefined).then(function(h){
+      if (!h || !h.dataUrl) return false;
+      return validSourcePhoto(h.dataUrl).then(function(ok){
+        if (!ok) return false;
+        onSourceLoaded([h.dataUrl]);
+        return true;
+      });
+    }).catch(function(e){
+      console.warn('[discovery] the foyer handoff could not be read', e);
+      return false;
+    });
+  }
+
   function saveResume(){
     var core = {
+      v:     2,
+      photoPrint: SRC.dataUrl ? photoPrint(SRC.dataUrl) : null,
+      stage: document.body.classList.contains('groups-shapes') ? 'format' : (GROUPS_REVIEW ? 'review' : 'discovery'),
       at:    Date.now(),
       queue: QUEUE.map(function(q){ return { siloId: q.siloId, effectId: q.effectId }; }),
       pose:  window.__POSE || null,
       capacity: targetBundle(),
+      category: GROUPS_FLOOR_SILO,
       aspect: ASPECT,
       slots: SLOTS.slice()
     };
@@ -9943,14 +10072,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
       console.warn('[resume] could not hold the finishes', e);
       return;
     }
-    try {
-      localStorage.setItem(RESUME_KEY + '_img', SRC.dataUrl || '');
-    } catch (e){
-      /* Quota. Expected on large photographs and not an error — the finishes
-         are already safe and the Curator asks for the photograph again. */
-      try { localStorage.removeItem(RESUME_KEY + '_img'); } catch (e2){}
-      console.warn('[resume] photograph too large to hold — it will be asked for again');
-    }
+    holdActiveSource(SRC.dataUrl);
   }
 
   function clearResume(){
@@ -9968,29 +10090,49 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
     try {
       raw = localStorage.getItem(RESUME_KEY);
       img = localStorage.getItem(RESUME_KEY + '_img');
-    } catch (e){ return false; }
-    if (!raw) return false;
+      if (!raw){
+        var legacy = JSON.parse(localStorage.getItem('liten_resume_v1') || 'null');
+        if (legacy && Array.isArray(legacy.queue) && legacy.queue.length && legacy.queue.every(function(q){ return q && typeof q.siloId === 'string' && typeof q.effectId === 'string'; })){
+          raw = JSON.stringify(legacy);
+          img = localStorage.getItem('liten_resume_v1_img');
+          localStorage.removeItem('liten_resume_v1');
+          localStorage.removeItem('liten_resume_v1_img');
+        }
+      }
+    } catch (e){ return Promise.resolve(false); }
+    if (!raw) return Promise.resolve(false);
 
     var core;
-    try { core = JSON.parse(raw); } catch (e){ clearResume(); return false; }
-    if (!core || !core.queue || !core.queue.length){ clearResume(); return false; }
-    if (Date.now() - (core.at || 0) > 2 * 60 * 60 * 1000){ clearResume(); return false; }
+    try { core = JSON.parse(raw); } catch (e){ clearResume(); return Promise.resolve(false); }
+    if (!core || !core.queue || (!core.queue.length && !core.photoPrint && !img && sessionStorage.getItem('groups-source-intent') !== '1')){ clearResume(); return Promise.resolve(false); }
+    if (Date.now() - (core.at || 0) > 2 * 60 * 60 * 1000){ clearResume(); return Promise.resolve(false); }
 
-    if (img){
-      onSourceLoaded([img]);
-    }
+    var photo = core.v === 2 ? LitenHandoff.getPhoto('active-source') : Promise.resolve(img);
+    return photo.then(function(url){
+      return validSourcePhoto(url, core.photoPrint).then(function(ok){ return ok ? url : null; });
+    }).then(function(url){
+    img = url;
+    if (img) onSourceLoaded([img]);
 
+    if(core.category && R.silos.some(function(silo){return silo.id === core.category;})) GROUPS_FLOOR_SILO = core.category;
     GROUPS_TARGET = VALID_SIZES.indexOf(core.capacity) >= 0 ? core.capacity : targetFor(core.queue.length);
     core.queue.forEach(function(q){
       if (R.byId(q.effectId)) addToQueue(q.siloId, q.effectId);
     });
     if (Array.isArray(core.slots)) SLOTS = core.slots.slice();
-    ASPECT = core.aspect || null;
+    ASPECT = core.aspect || null; ASPECT_FORCED = !!ASPECT;
     if (core.pose) window.__POSE = core.pose;
     if (core.pose && typeof stampPose === 'function') stampPose(core.pose);
 
     clearResume();
 
+    if (img && QUEUE.length && (core.stage === 'review' || core.stage === 'format')){
+      showGroupsReview();
+      if (core.stage === 'format' && validCollection()){
+        showAspect();
+        if (core.aspect) chooseAspect(core.aspect);
+      }
+    }
     if (!img && QUEUE.length){
       /* Say the one true thing: the finishes are here, the photograph is not.
          Placeholder until the Curator lane rules the line. */
@@ -9998,6 +10140,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
       labelGo();
     }
     return true;
+    });
   }
 
   /* ---- the panel ---------------------------------------------------------
@@ -10079,7 +10222,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ email: email, code: inviteCode })
+        body: JSON.stringify({ email: email, code: inviteCode, next: signinReturnPath() })
       }).then(function(res){
         return res.json().catch(function(){ return { ok:false }; });
       }).then(function(d){
@@ -10131,7 +10274,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ email: email, next: location.pathname })
+      body: JSON.stringify({ email: email, next: signinReturnPath() })
     }).then(function(res){
       return res.json().catch(function(){ return { ok: false, reason: 'bad_response' }; });
     }).then(function(d){
@@ -10160,6 +10303,8 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
     if (e.key === 'Enter'){ e.preventDefault(); sendLink(); }
   });
   if (signinX) signinX.addEventListener('click', closeSignin);
+var signinDone = document.getElementById('signinDone');
+if (signinDone) signinDone.addEventListener('click', closeSignin);
   if (signinModal) signinModal.addEventListener('click', function(e){
     if (e.target === signinModal) closeSignin();
   });
@@ -10171,7 +10316,14 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
      Ask who this is, and if they have just come back from their email, give
      them their work. */
   whoAmI().then(function(u){
-    if (u) restoreResume();
+    (u ? restoreResume() : Promise.resolve(false))
+      .then(function(){ return receiveFoyerHandoff(); })
+      .then(function(){ return recoverActiveSource(); }).then(function(){
+        if(u && sessionStorage.getItem('groups-source-intent') === '1'){
+          if(matchMedia('(max-width:767px)').matches) document.body.classList.add('ux-groups-curator');
+          (hasSource() ? curChange : curSlot).focus();
+        }
+      });
       var returnUrl = new URL(location.href);
       if (u && returnUrl.searchParams.get('auth_collection') === '1') {
         showCollection();
@@ -13404,14 +13556,14 @@ function downloadPortfolioPiece(piece){
     if(map) map.hidden = GROUPS_REVIEW || GROUPS_PICK_ACTIVE;
     document.getElementById('groupsExplore').hidden = GROUPS_REVIEW || GROUPS_PICK_ACTIVE;
     document.getElementById('curPackages').hidden = !GROUPS_PICK_ACTIVE || GROUPS_REVIEW;
-    document.getElementById('groupsPackageInfo').hidden = (!GROUPS_PICK_ACTIVE && !QUEUE.length) || GROUPS_REVIEW;
+    document.getElementById('groupsPackageInfo').hidden = (window.groupsPickPackage ? !window.groupsPickPackage.view().visible : (!GROUPS_PICK_ACTIVE && !QUEUE.length)) || GROUPS_REVIEW;
     var cart = GROUPS_REVIEW || document.body.classList.contains('groups-shapes');
     document.body.classList.toggle('groups-cart',cart);
     document.body.classList.toggle('groups-catalog',!cart);
     document.querySelector('#cur .cur-photo').inert = cart;
     document.getElementById('groupsShapeRail').hidden = !cart;
     if(cart) paintGroupsCart();
-    if(curPick4Btn){curPick4Btn.disabled = CURATED_BUSY || GROUPS_FILL_SLOT !== null;curPick4Btn.classList.toggle('is-active',GROUPS_PICK_ACTIVE);}
+    if(curPick4Btn){curPick4Btn.disabled = CURATED_BUSY || GROUPS_FILL_SLOT !== null;curPick4Btn.classList.toggle('is-active',window.groupsPickPackage ? window.groupsPickPackage.view().active : GROUPS_PICK_ACTIVE);}
     if(curAllFxBtn){
       curAllFxBtn.hidden = GROUPS_PICK_ACTIVE;
       curAllFxBtn.querySelector('span').textContent = CURATED_MODE === 'curated' ? 'Curated' : 'All Effects';
@@ -13419,6 +13571,9 @@ function downloadPortfolioPiece(piece){
     }
   }
   function dismissGroupsPick(){ var wasPick = GROUPS_PICK_ACTIVE; GROUPS_PICK_ACTIVE = false; paintGroupsModeControl(); if(wasPick && !CURATED_BUSY && !GROUPS_REVIEW) paintGroupsCatalog(); }
+  document.addEventListener('click',function(e){
+    if(GROUPS_PICK_ACTIVE && !e.target.closest('#curPick4Btn,#curPackages,#groupsPackageInfo')) dismissGroupsPick();
+  });
   function clearGroupsMode(){
     CURATED_MODE = null;
     dismissGroupsPick();
@@ -13439,7 +13594,7 @@ function downloadPortfolioPiece(piece){
   function groupsShapeAllowed(count,ratio){
     if(!Number.isFinite(count)||count<=0)return false;
     if(count<=3)return ['9:16','2:3','1:1'].indexOf(ratio)>=0;
-    if(count<=6)return ['2:3','1:1','4:3','3:2','16:9'].indexOf(ratio)>=0;
+    if(count<=9)return ['2:3','1:1','4:3','3:2','16:9'].indexOf(ratio)>=0;
     return ['4:3','3:2','16:9'].indexOf(ratio)>=0;
   }
 function renderAspects(){
@@ -13489,7 +13644,7 @@ function chooseAspect(id){
 
   function showAspect(){
     if(!guardCollection())return;
-    ASPECT=null;
+    if(!groupsShapeAllowed(SRC.subjectCount,ASPECT))ASPECT=null;
     document.body.classList.add('groups-shapes');
     paintGroupsModeControl();
     document.getElementById('groupsShapes').hidden=false;
@@ -13535,6 +13690,7 @@ function chooseAspect(id){
   document.getElementById('groupsCartBack').addEventListener('click',function(){
     if(document.body.classList.contains('groups-shapes'))showGroupsReview();else showGroupsDiscovery();
   });
+  window.PhoneGroupsState=function(){var n=QUEUE.length,sku=(BLOCKS||[]).find(function(s){return s.count===n;});return {n:n,sizes:(BLOCKS||[]).map(function(s){return s.count;}).sort(function(a,b){return a-b;}),price:sku?priceOf(sku)/100:null,unlocks:sku?sku.includedUnlocks:null,stage:document.body.classList.contains('groups-shapes')?'format':GROUPS_REVIEW?'review':'discovery'};};
   function showGroupsReview(){
     hideAspect();
     GROUPS_FILL_SLOT = null;
@@ -13591,7 +13747,10 @@ function chooseAspect(id){
   var GROUPS_SILO_ICONS = {portrait_collections:'living_world',crafted_collections:'artists_gallery',sculpted:'earth_ore',material_magic:'light_glass',made_by_hand:'made_by_hand',artists_studio:'ink_paper',curiosities:'fantasy_future'};
   function paintGroupsCatalog(){
     effFloor.innerHTML = '';
+    var phoneSilo = window.matchMedia('(max-width:767px)').matches;
+    if(phoneSilo && !GROUPS_FLOOR_SILO) GROUPS_FLOOR_SILO = R.silos[0].id;
     R.silos.forEach(function(silo){
+      if(phoneSilo && silo.id !== GROUPS_FLOOR_SILO) return;
       siloList(silo.id).forEach(function(effect){
         var card = effectCard(silo.id,effect);
         if(inQueue(silo.id,effect.id)) card.classList.add('is-selected');
@@ -13599,19 +13758,26 @@ function chooseAspect(id){
       });
     });
     effFloor.dataset.count = effFloor.children.length;
+    paintPhoneGroupsSilo();
     UPSELL_CTX = null;
   }
   function showGroupsSilo(siloId){
     if(CURATED_BUSY) return;
     GROUPS_FLOOR_SILO = siloId;
     if(GROUPS_REVIEW || GROUPS_PICK_ACTIVE) showGroupsDiscovery();
+    if(window.matchMedia('(max-width:767px)').matches){
+      paintGroupsCatalog();
+      document.getElementById('deck').scrollTop = 0;
+      var chooser = document.getElementById('phoneGroupsSilo');
+      if(chooser) chooser.open = false;
+    }
     var card = effFloor.querySelector('[data-silo-id="'+siloId+'"]');
     if(card) card.scrollIntoView({block:'start',behavior:'auto'});
     Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId === siloId));});
     crumbHere.textContent = 'Choose An Effect';
   }
   function trackGroupsCatalog(){
-    if(!document.body.classList.contains('groups-catalog')) return;
+    if(window.matchMedia('(max-width:767px)').matches || !document.body.classList.contains('groups-catalog')) return;
     var top=document.getElementById('deck').getBoundingClientRect().top;
     var cards=Array.from(effFloor.children),current=cards.find(function(card){return card.getBoundingClientRect().bottom>top;});
     if(!current) return;
@@ -13620,6 +13786,35 @@ function chooseAspect(id){
     crumbHere.textContent='Choose An Effect';
   }
   document.getElementById('deck').addEventListener('scroll',trackGroupsCatalog,{passive:true});
+  // Phone chooser reuses the existing room buttons and authoritative floor silo.
+  function sizePhoneGroupsTail(){
+    var card = effFloor.querySelector('.silo-card');
+    if(card && window.matchMedia('(max-width:767px)').matches && !GROUPS_REVIEW) effFloor.style.setProperty('--phone-silo-tail',Math.max(16,document.getElementById('deck').clientHeight-card.offsetHeight)+'px');
+  }
+  function paintPhoneGroupsSilo(){
+    var rooms = document.getElementById('groupsRoomMap');
+    if(!rooms || !rooms.children.length) return;
+    var chooser = document.getElementById('phoneGroupsSilo');
+    if(!chooser){
+      chooser = document.createElement('details'); chooser.id = 'phoneGroupsSilo';
+      var summary = document.createElement('summary'); summary.className = 'dcur__room';
+      var list = rooms.cloneNode(true); list.id = 'phoneGroupsRooms'; list.hidden = false;
+      chooser.append(summary,list); document.getElementById('deck').before(chooser);
+      list.addEventListener('click',function(event){
+        var button = event.target.closest('[data-silo-id]');
+        if(button){showGroupsSilo(button.dataset.siloId);chooser.open=false;summary.focus();}
+      });
+      chooser.addEventListener('keydown',function(event){if(event.key==='Escape'){chooser.open=false;summary.focus();}});
+      new ResizeObserver(sizePhoneGroupsTail).observe(document.getElementById('deck'));
+    }
+    var siloId = GROUPS_FLOOR_SILO || R.silos[0].id;
+    requestAnimationFrame(sizePhoneGroupsTail);
+    chooser.querySelector('summary').innerHTML = '<svg class="phone-effects-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2V5Z"/><path d="M9 3v16M15 5v16"/></svg><span>Explore All Effects</span>';
+    chooser.querySelectorAll('[data-silo-id]').forEach(function(button){button.setAttribute('aria-pressed',String(button.dataset.siloId===siloId));});
+  }
+  window.matchMedia('(max-width:767px)').addEventListener('change',function(){
+    if(!GROUPS_REVIEW && !document.body.classList.contains('groups-shapes')) paintGroupsCatalog();
+  });
   function paintGroupsRooms(){
     var rooms = document.getElementById('groupsRoomMap');
     rooms.innerHTML = R.silos.map(function(silo){
@@ -13633,6 +13828,13 @@ function chooseAspect(id){
   document.getElementById('groupsReviewPage1').addEventListener('click',function(){GROUPS_REVIEW_PAGE=0;renderGroupsReview();});
   document.getElementById('groupsReviewPage2').addEventListener('click',function(){GROUPS_REVIEW_PAGE=1;renderGroupsReview();});
 
+  document.addEventListener('click',function(e){
+    if(!e.target.closest || !e.target.closest('#btnStartOver'))return;
+    window.DeepReviewConfirm(function(){
+      QUEUE.slice().forEach(function(q){removeFromQueue(q.siloId,q.effectId);});
+      GROUPS_TARGET=1;SLOTS=[];GROUPS_FILL_SLOT=null;clearResume();showGroupsDiscovery();return true;
+    });
+  });
   document.getElementById('groupsReviewClear').addEventListener('click',function(){
     GROUPS_TARGET = targetBundle();
     QUEUE.slice().forEach(function(q){removeFromQueue(q.siloId,q.effectId);});
@@ -13640,8 +13842,104 @@ function chooseAspect(id){
     renderGroupsReview();
   });
   document.getElementById('groupsReviewCraft').addEventListener('click',showAspect);
-  document.getElementById('tourFab').addEventListener('click',function(){ if(window.LitenHelp) window.LitenHelp.open(); });
+var TOURS={
+ discovery:[
+  {sel:'#curSlot',drawer:true,title:'Your photograph',text:'We combine your source photograph with the effects you choose.'},
+  {sel:'#effectFloor .silo-card',drawer:false,title:'Choose your effects',text:'Tap a card to add it. Tap again to remove it. Your choices stay with you as you explore categories.'},
+  {sel:'#curPick4Btn',drawer:true,title:'Pick for Me',text:'Choose effects yourself, or let Pick for Me choose 1, 4, 8 or 16 for you.'},
+  {sel:'.your-collection',phone:'.phone-progress',drawer:false,title:'Build your collection',text:'Craft collections of 1, 4, 8 or 16 effects. The milestones show your progress.'},
+  {sel:'#curReviewBtn',phone:'.phone-forward',drawer:false,title:'Review your choices',text:'Check your selection in Review, then choose a format before crafting.'}
+ ],
+ review:[
+  {sel:'#groupsCartEffects',title:'A final look',text:'Every effect you pick is counted here, with how close you are to your bundle.'},
+  {sel:'#groupsCartBack',title:'Or go back',text:'Return to the rooms and keep picking. Nothing is lost.'}
+ ],
+ aspect:[{sel:'#groupsShapeCraft',title:'The last step',text:'This crafts your collection in the format you picked.'}]
+};
+function currentTour(){return document.body.classList.contains('groups-shapes')?TOURS.aspect:GROUPS_REVIEW?TOURS.review:TOURS.discovery;}
+var TOUR_STEPS=TOURS.discovery;
+var tourIdx = 0, tourDrawerWasOpen = false;
+var tourOverlay = document.getElementById('tourOverlay');
+var tourSpotlight = document.getElementById('tourSpotlight');
+var tourTip = document.getElementById('tourTip');
+
+function placeSpotlight(target){
+  if (!target){
+    tourSpotlight.classList.add('no-target');
+    tourSpotlight.style.top = tourSpotlight.style.left = tourSpotlight.style.width = tourSpotlight.style.height = '';
+    return;
+  }
+  tourSpotlight.classList.remove('no-target');
+  var r = target.getBoundingClientRect();
+  var pad = 6;
+  tourSpotlight.style.top = (r.top - pad) + 'px';
+  tourSpotlight.style.left = (r.left - pad) + 'px';
+  tourSpotlight.style.width = (r.width + pad*2) + 'px';
+  tourSpotlight.style.height = (r.height + pad*2) + 'px';
+}
+
+function placeTip(target){
+  var tipRect = tourTip.getBoundingClientRect();
+  if (!target){
+    tourTip.style.top = '50%'; tourTip.style.left = '50%';
+    tourTip.style.transform = 'translate(-50%,-50%)';
+    return;
+  }
+  tourTip.style.transform = 'none';
+  var r = target.getBoundingClientRect();
+  var top = r.bottom + 16;
+  if (top + tipRect.height > window.innerHeight - 20) top = Math.max(20, r.top - tipRect.height - 16);
+  var left = Math.min(Math.max(20, r.left), window.innerWidth - tipRect.width - 20);
+  top = Math.min(Math.max(20,top),Math.max(20,window.innerHeight-tipRect.height-20));
+  tourTip.style.top = top + 'px';
+  tourTip.style.left = left + 'px';
+}
+
+function renderTourStep(){
+  var step = TOUR_STEPS[tourIdx];
+  if (step.before) step.before();
+  var phone=matchMedia('(max-width:767px)').matches;
+  if(phone && typeof step.drawer==='boolean') document.body.classList.toggle('ux-groups-curator',step.drawer);
+  var sel = (phone && step.phone) || step.selAfterBefore || step.sel;
+  var target = sel ? document.querySelector(sel) : null;
+  if(target)target.scrollIntoView({block:"nearest",inline:"nearest",behavior:"instant"});
+  placeSpotlight(target);
+  tourTip.innerHTML =
+    '<h4>' + step.title + '</h4><div>' + step.text + '</div>' +
+    '<div class="tour-actions">' +
+      '<button class="tour-skip" id="tourSkip">Skip tour</button>' +
+      '<span class="tour-step-count">' + (tourIdx+1) + ' of ' + TOUR_STEPS.length + '</span>' +
+      '<button class="primary" id="tourNext">' + (tourIdx === TOUR_STEPS.length-1 ? 'Done' : 'Next') + '</button>' +
+    '</div>';
+  placeTip(target);
+  document.getElementById('tourSkip').addEventListener('click', endTour);
+  document.getElementById('tourNext').addEventListener('click', function(){
+    if (tourIdx === TOUR_STEPS.length-1){ endTour(); return; }
+    tourIdx++;
+    renderTourStep();
+  });
+}
+
+function startTour(){
+  tourDrawerWasOpen=document.body.classList.contains('ux-groups-curator');
+  TOUR_STEPS = currentTour().filter(function(st){ return !st.sel || document.querySelector(st.sel); });
+  if (!TOUR_STEPS.length) return;
+  tourIdx = 0;
+  tourOverlay.classList.add('active');
+  renderTourStep();
+}
+function endTour(){
+  tourOverlay.classList.remove('active');
+  if(matchMedia('(max-width:767px)').matches)document.body.classList.toggle('ux-groups-curator',tourDrawerWasOpen);
+}
+addEventListener('keydown',function(e){if(e.key==='Escape' && tourOverlay.classList.contains('active'))endTour();});
+
+  document.getElementById('tourFab').addEventListener('click',startTour);
+  var desktopHelp=document.getElementById('mhDesktopHelp');if(desktopHelp)desktopHelp.onclick=startTour;
+  var mobileHelp=document.getElementById('mhHelp');if(mobileHelp)mobileHelp.onclick=startTour;
+  window.addEventListener('resize',function(){if(tourOverlay.classList.contains('active'))renderTourStep();});
   paintGroupsRooms();
+  paintPhoneGroupsSilo();
   renderSilos();
   showGroupsDiscovery();
 
@@ -14512,5 +14810,9 @@ document.addEventListener('click', function(e){
 
 LCFeedback.mount({ trigger: '#mhScarab', endpoint: '/api/v1/feedback', context: function(){ return { series: 'Groups', screen: document.body.classList.contains('is-review') ? 'review' : 'discovery' }; } });
 </script>
+<script src="/groups-recovery-controls.next.js"></script>
+<script src="/mobile-ux.next.js"></script>
+<script src="/groups-recovery-phone.next.js"></script>
+<script src="/creation-navigation.release1.next.js"></script>
 </body>
 </html>

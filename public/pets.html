@@ -3392,11 +3392,17 @@ window.CONCIERGE_SEEDS = [
 
 
 </script>
-<script src="/concierge.js" defer data-dock data-attention></script>
+<script src="/concierge.mobile-ux.next.js" defer data-dock data-attention></script>
 <link rel="stylesheet" href="/upload-routing.css">
-<script src="/upload-routing.js"></script>
+<script src="/upload-routing.deep-review.next.js"></script>
 <link rel="stylesheet" href="/creation-consistency.css">
 <link rel="stylesheet" href="/collection-manifest.css">
+<link rel="stylesheet" href="/creation-deep-review.next.css">
+<link rel="stylesheet" href="/pick-package.deep-review.next.css?v=3">
+<script src="/pick-package.deep-review.next.js?v=3"></script>
+<link rel="stylesheet" href="/mobile-ux.next.css">
+<link rel="stylesheet" href="/phone-ux.next.css">
+<link rel="stylesheet" href="/collection-design.next.css?v=20261006">
 </head>
 <body>
 <!-- discovery-consolidated-draft.html
@@ -3490,7 +3496,7 @@ window.CONCIERGE_SEEDS = [
       <div class="photo-row">
         <div class="photo-stamp"><div class="fill"><span>Start Here — Upload your Photo</span></div></div>
       </div>
-      <button class="pick-for-me" id="optPickForMe" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes">Pick 4 Me</button>
+      <button class="pick-for-me" id="optPickForMe" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes">Pick for Me</button>
       <div class="ae-col">
         <div class="all-effects" id="allEffects" role="group" aria-labelledby="allLabel">
           <button class="ae-toggle" id="allToggle" type="button" data-tip="rooms" aria-expanded="false" aria-controls="minimap" aria-label="Show all rooms">&#9660;</button>
@@ -3550,7 +3556,7 @@ window.CONCIERGE_SEEDS = [
              product navigation. hideAspect returns to Review with SLOTS, the
              selection and the chosen format all intact. -->
         <button class="back-btn aspect-gallery__back" id="btnBackAspect" type="button">&larr; Back to Review</button>
-        <h2 class="aspect-gallery__title"><span class="shape-desktop-copy">Where will your portrait live?</span><span class="shape-mobile-copy">Choose a Shape</span></h2>
+        <h2 class="aspect-gallery__title"><span class="shape-desktop-copy">Where will your portrait live?</span><span class="shape-mobile-copy">Choose Format</span></h2>
         <p class="aspect-gallery__say"><span class="shape-desktop-copy">Choose the format that fits your vision.</span><span class="shape-mobile-copy">Where will your portrait live?</span></p>
         <div class="aspect-row" id="aspectRow"></div>
       </div>
@@ -3714,7 +3720,7 @@ window.CONCIERGE_SEEDS = [
      Loaded BEFORE the inline script so SILOS can be built synchronously.
      Regenerate with: node scripts/emit-effect-registry.js -->
 <script src="/pets-registry.js"></script>
-<script src="/pets-discovery-handoff.js"></script>
+<script src="/foyer-handoff.handoff.next.js" data-series="pets"></script>
 <script>
 if (!window.EFFECT_REGISTRY) {
 /* GENERATED FILE - DO NOT EDIT BY HAND.
@@ -4162,7 +4168,7 @@ function mobileCuratorHtml(){
       '<div class="photo-row"><div class="photo-stamp">' + photoStampHtml() + '</div></div>' +
       '<div class="mcur__acts">' +
         '<button class="pick-for-me" id="optPickForMe" type="button" ' +
-          'aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 7h4c5 0 9 14 14 14h4m-4-4 4 4-4 4M3 21h4c5 0 9-14 14-14h4m-4-4 4 4-4 4"/></svg>Pick 4 Me</button>' +
+          'aria-haspopup="true" aria-expanded="false" aria-controls="pfmSizes"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 7h4c5 0 9 14 14 14h4m-4-4 4 4-4 4M3 21h4c5 0 9-14 14-14h4m-4-4 4 4-4 4"/></svg>Pick for Me</button>' +
       '</div>' +
     '</div>' +
     '<div class="pfm-sizes" id="pfmSizes" hidden></div>' +
@@ -5711,7 +5717,7 @@ function renderReviewRail(){
     /* __V1_NO_POSE__ Review goes to Format, so the button says so. The pose
        step is dormant, not deleted, and nothing in the customer's path
        names it. */
-    '<button class="btn-create' + ((sum.info.valid && sum.n > 0 && !openSlots()) ? ' on' : '') + '">Next: Select A Shape</button>' +
+    '<button class="btn-create' + ((sum.info.valid && sum.n > 0 && !openSlots()) ? ' on' : '') + '">Choose Format</button>' +
     /* __START_OVER__ — always on Review, at every count, beside the
        per-card removes. Rendered here because renderReviewRail() is
        what repaints on entry AND after each remove. */
@@ -6775,6 +6781,7 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
       bench:   PICK_POOL.bench.slice(),
       target:  targetBundle(),
       pendingReview: !!PENDING_REVIEW,
+      stage: document.body.classList.contains('is-format') ? 'format' : (document.body.classList.contains('is-review') ? 'review' : 'discovery'),
       photo:   !!uploadedPhotoDataUrl,
       photoPrint: uploadedPhotoDataUrl ? photoPrint(uploadedPhotoDataUrl) : null   /* __RESUME_PHOTO_GUARD__ */
     };
@@ -6852,7 +6859,13 @@ var AUTH_ME_URL     = '/api/v1/auth/me';
 
       if (restored){
         clearResume();
-        if (core.pendingReview && ME && SELECTED.length) showReview();
+        if (ME && SELECTED.length && (core.stage === 'review' || core.stage === 'format' || core.pendingReview)){
+          showReview();
+          if (core.stage === 'format' && !openSlots() && VALID_SIZES.indexOf(SELECTED.length) >= 0){
+            showAspect();
+            if (core.aspect) chooseAspect(core.aspect);
+          }
+        }
       } else {
         RESUME_AWAITS_PHOTO = true;
         requirePhoto(null);
@@ -6899,7 +6912,12 @@ function onAuthButton(){
 
 function paintMe(){
   var identity = document.getElementById('mhIdentity');
-  if (identity) identity.textContent = ME ? (ME.email || 'Account') + ' ▾' : 'Sign In';
+  if (identity){
+    var fullIdentity = ME ? (ME.email || 'Account') : 'Sign In';
+    identity.textContent = (ME && fullIdentity.length > 15 ? fullIdentity.slice(0,15) + '…' : fullIdentity) + (ME ? ' ▾' : '');
+    identity.title = fullIdentity;
+    identity.setAttribute('aria-label', fullIdentity);
+  }
   var nameEl = document.getElementById('mhName');
   if (nameEl) nameEl.textContent = ME ? 'Sign out' : 'Sign in';
   if (ME) { renderCollection().then(refreshWhileCrafting); return; }
@@ -7427,6 +7445,7 @@ function clearServerSelection(){
 function startOver(){
   return clearServerSelection().then(function(d){
     SELECTED = [];
+    if (typeof clearResume === 'function') clearResume();
     releaseTier();                 /* SLOTS [], FILL_MODE false; target back to 1 */
     POSE = 'as_photographed';      /* clean slate on the pose too */
     ASPECT = defaultAspect();      /* back to what the photograph implies */
@@ -7447,18 +7466,7 @@ function startOver(){
 }
 
 /* Simple two-step confirm, no overlay. Destructive to up to 16 picks. */
-function askStartOver(){
-  var box = document.getElementById('startOverConfirm'); if (!box) return;
-  var n = SELECTED.length;
-  box.innerHTML =
-    '<div class="startover-confirm">' +
-      '<p>Clear ' + n + ' selected effect' + (n === 1 ? '' : 's') + '? Your photograph stays.</p>' +
-      '<div class="startover-confirm__row">' +
-        '<button class="so-yes" id="soYes" type="button">Yes, start over</button>' +
-        '<button class="so-no" id="soNo" type="button">Keep them</button>' +
-      '</div>' +
-    '</div>';
-}
+function askStartOver(){window.DeepReviewConfirm(startOver);}
 document.addEventListener('click', function(e){
   if (!e.target.closest) return;
   if (e.target.closest('#btnStartOver')){ askStartOver(); return; }
@@ -7589,12 +7597,14 @@ function renderAspectRail(){
     '<button class="rail-startover" id="btnStartOver" type="button">Start over</button>' +
     '<div id="startOverConfirm"></div>' +
     '<a class="link-back" id="btnBackRail">← Back to Discovery</a>';
-  document.getElementById('btnBackRail').addEventListener('click', showDiscovery);
+  document.getElementById('btnBackRail').textContent = '← Back to Review';
+  document.getElementById('btnBackRail').addEventListener('click', hideAspect);
   var craft = document.getElementById('btnCraft');
   if (craft) craft.addEventListener('click', startCheckout);
   paintTier(document.getElementById('tierR'));
   fitStampThumb();
   if (ANALYZE_RESULT) focusStampThumb();
+  if (typeof window.__railDock === 'function') window.__railDock();
 }
 
 function showAspect(){
@@ -7990,7 +8000,7 @@ function loadShelf(){
       return rows.map(function(p){
         /* Owned outright: never locked, never crafting. The lock is a
            portfolio mechanic and a single has no preview to unlock. */
-        return { key:'pc' + p.id, name:p.preset || p.label, siloName:'',
+        return { key:'pc' + p.id, serverId:p.id, createdAt:p.created_at, name:p.preset || p.label, siloName:'',
                  series:canonicalSeries(p.series),
                  crafting:false, locked:false, previewId:null,
                  art:p.image_url || null };
@@ -8212,7 +8222,7 @@ function renderCollection(){
           all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
                       series:item.series, num:n, crafting:item.crafting, failed:item.failed,
                       locked:item.locked, previewId:item.previewId, art:item.art,
-                      aspect:item.aspect });
+                      aspect:item.aspect, serverId:item.serverId, createdAt:item.createdAt });
         });
       });
       (shelf || []).forEach(function(item){
@@ -8220,7 +8230,7 @@ function renderCollection(){
         all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
                     series:item.series, num:n, crafting:item.crafting, failed:item.failed,
                     locked:item.locked, previewId:item.previewId, art:item.art,
-                    aspect:item.aspect });
+                    aspect:item.aspect, serverId:item.serverId, createdAt:item.createdAt });
       });
       /* ADD AND REMOVE IN ONE PLACE, against what the server just said. */
       var changed = reconcileCollection(all, portfoliosKnown, shelfKnown);
@@ -9452,7 +9462,7 @@ function lboxAspectFor(p){
 }
 
 function printEntranceCandidate(p){
-  return location.hostname === 'miniramas-git-codex-canonical-2026-09-24-litenco.vercel.app' && p && !p.locked && p.previewId && ['1:1','2:3','3:2','3:4','4:3','9:16','16:9'].indexOf(p.aspect)>=0;
+  return ['miniramas-git-codex-canonical-2026-09-24-litenco.vercel.app','localhost','127.0.0.1','[::1]'].indexOf(location.hostname)>=0 && p && !p.locked && p.previewId && ['1:1','2:3','3:2','3:4','4:3','9:16','16:9'].indexOf(p.aspect)>=0;
 }
 function verifyPrintEntrance(p, button){
   if (!button || !printEntranceCandidate(p)) return;
@@ -9672,7 +9682,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
       if (go.parentNode) go.parentNode.removeChild(go);
       return;
     }
-    go.textContent = document.body.classList.contains('is-format') ? 'Craft My Photo →' : 'Choose A Shape →';
+    go.textContent = document.body.classList.contains('is-format') ? 'Craft My Collection →' : 'Choose Format →';
     var ready = real.classList.contains('on');
     go.disabled = !ready;
     go.classList.toggle('is-ready', ready);
@@ -9734,7 +9744,7 @@ document.getElementById('lboxActs').addEventListener('click', function(e){
     if (small && (reviewStep || shapeStep)){
       coll.insertBefore(back, coll.firstChild);
       if (reviewStep){
-        intent.innerHTML = '<span>Select your favorites</span><span>' + SELECTED.length + ' of 4 selected</span>';
+        intent.innerHTML = '<span>Select your favorites</span><span>' + SELECTED.length + ' of ' + targetBundle() + ' selected</span>';
         coll.insertBefore(intent, coll.firstChild);
       } else if (intent.parentNode) intent.remove();
     } else {
@@ -10078,7 +10088,7 @@ var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
       body: JSON.stringify({ provider: 'google', next: signinReturnPath() })
     }).then(function(res){ return res.json(); }).then(function(d){
       if (d && d.ok && d.url) { location.assign(d.url); return; }
-      if (signinErr) signinErr.textContent = 'Try again';
+      if (signinErr) signinErr.textContent = d && d.reason === 'preview_email_disabled' ? 'Sign-in email disabled during Preview review.' : 'Try again';
     }).catch(function(){
       if (signinErr) signinErr.textContent = 'Try again';
     });
@@ -10128,7 +10138,7 @@ var AUTH_SIGNIN_URL = '/api/v1/auth/signin';
       if (signinAsk)  signinAsk.hidden  = true;
       if (signinSent) signinSent.hidden = false;
     }).catch(function(){
-      clearResume();
+
       signinSend.disabled = false;
       signinSend.textContent = 'Continue with email';
       if (signinErr) signinErr.textContent = 'The link could not be sent. Try again in a moment.';
@@ -10443,6 +10453,10 @@ document.getElementById('mhSignOut').addEventListener('click', function(e){ e.pr
 <link rel="stylesheet" href="/help-phase1.css">
 <script src="/help-phase1.js"></script>
 <script>window.addEventListener('load',function(){if(new URLSearchParams(location.search).has('print_pick'))openMyCollection();});</script>
-<script src="/creation-consistency.js"></script>
+<script src="/creation-consistency.deep-review.next.js?v=3"></script>
+<script src="/creation-deep-review.next.js"></script>
+<script src="/mobile-ux.next.js"></script>
+<script src="/phone-ux.next.js"></script>
+<script src="/collection-design.next.js?v=20261006" defer></script>
 </body>
 </html>
