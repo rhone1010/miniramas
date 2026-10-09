@@ -42,6 +42,10 @@ describe('Collection unlock API', () => {
     expect((await post({ count: 3, cents: 1, returnPath: '/pets/discovery' })).status).toBe(200)
     expect(h.create).toHaveBeenCalledWith('owner', 3, 'https://litenco.com/pets/discovery?collection_unlock_session={CHECKOUT_SESSION_ID}')
   })
+  it('returns a Groups unlock to the Groups Collection, not Portraits Discovery', async () => {
+    expect((await post({ count: 3, returnPath: '/collection?from=groups' })).status).toBe(200)
+    expect(h.create).toHaveBeenCalledWith('owner', 3, 'https://litenco.com/collection?from=groups&collection_unlock_session={CHECKOUT_SESSION_ID}')
+  })
   it('does not accept an external return URL or unsupported quantity', async () => {
     await post({ count: 3, returnPath: 'https://evil.example/' })
     expect(h.create.mock.calls[0][2]).toMatch(/^https:\/\/litenco.com\/discovery\?/)

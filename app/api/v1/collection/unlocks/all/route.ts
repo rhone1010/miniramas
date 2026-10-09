@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(await fulfillCollectionSet(body.sessionId, user.id))
     }
     if (!Number.isInteger(body.count) || body.count < 10) return NextResponse.json({ error: 'invalid_unlock_quantity' }, { status: 400 })
-    const returnPath = ['/pets/discovery', '/discovery'].includes(body.returnPath) ? body.returnPath : '/discovery'
-    const returnUrl = `${new URL(request.url).origin}${returnPath}?collection_unlock_set_session={CHECKOUT_SESSION_ID}`
+    const returnPath = ['/pets/discovery', '/discovery', '/collection', '/collection?from=portraits', '/collection?from=pets', '/collection?from=groups'].includes(body.returnPath) ? body.returnPath : '/discovery'
+    const returnUrl = `${new URL(request.url).origin}${returnPath}${returnPath.includes('?') ? '&' : '?'}collection_unlock_set_session={CHECKOUT_SESSION_ID}`
     if (!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) throw new Error('stripe_not_configured')
     return NextResponse.json({ ...await createCollectionSetCheckout(user.id, body.count, returnUrl),
       publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY })

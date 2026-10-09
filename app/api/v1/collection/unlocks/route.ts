@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
     }
     const url = new URL(request.url)
     const returnPath = typeof body.returnPath === 'string' &&
-      ['/pets/discovery', '/discovery'].includes(body.returnPath) ? body.returnPath : '/discovery'
-    const returnUrl = `${url.origin}${returnPath}?collection_unlock_session={CHECKOUT_SESSION_ID}`
+      ['/pets/discovery', '/discovery', '/collection', '/collection?from=portraits', '/collection?from=pets', '/collection?from=groups'].includes(body.returnPath) ? body.returnPath : '/discovery'
+    const returnUrl = `${url.origin}${returnPath}${returnPath.includes('?') ? '&' : '?'}collection_unlock_session={CHECKOUT_SESSION_ID}`
     if (!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) throw new Error('stripe_not_configured')
     return NextResponse.json({ ...await createCollectionUnlockCheckout(user.id, body.count, returnUrl),
       publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY })

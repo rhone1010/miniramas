@@ -7199,7 +7199,7 @@ function verifyPurchasePaid(sessionId, onPaid, triesLeft){
   if (params.get('portfolio_paid') === '1') PAID_RETURN_PENDING = true;
 
   // Clean URL immediately so refresh doesn't re-trigger
-  history.replaceState(null, '', location.pathname);
+  history.replaceState(null, '', location.pathname + (location.pathname === '/collection' && /^(portraits|pets|groups)$/.test(params.get('from') || '') ? '?from=' + params.get('from') : ''));
 
   /* THE URL IS GONE, SO THE CLOSURE IS THE STATE. replaceState above erases
      portfolio_paid and session_id one line after they are read, which is
@@ -8595,7 +8595,7 @@ function mcUnlockCheckout(offer){
   if (dialog && dialog.open) dialog.close();
   return Promise.all([loadStripeJs(), fetch('/api/v1/collection/unlocks' + (isSet ? '/all' : ''), {
     method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
-    body:JSON.stringify({count:chosen.count, returnPath:location.pathname})
+    body:JSON.stringify({count:chosen.count, returnPath:(function(){ if (location.pathname !== '/collection') return location.pathname; var from = new URLSearchParams(location.search).get('from'); if (!/^(portraits|pets|groups)$/.test(from || '')) { var stored = ''; try { stored = sessionStorage.getItem('liten_collection_return') || ''; } catch (_) {} from = {'/groups':'groups','/pets/discovery':'pets','/discovery':'portraits'}[stored] || ''; } return from ? '/collection?from=' + from : '/collection'; })()})
   }).then(function(r){ return r.json(); })]).then(function(out){
     var d = out[1];
     if (d.confirmed && d.sessionId) return mcUnlockConfirm(d.sessionId, 0, isSet);

@@ -5057,6 +5057,32 @@ html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:n
    this reaches the rest without needing to find seven of them. */
 @media (max-width:767px){ [data-r6-hidden]{ display:none !important } }
 </style>
+<script>
+/* This file also hosts /print for every series. Its exits used to name the
+   Portraits Discovery outright, so Back from a Groups or Pets piece landed
+   in the wrong series. On /print the series is the one the visitor left
+   (recorded by the series host before it opened My Collection); anywhere
+   else this page is Portraits and nothing changes. */
+window.litenSeriesExit = (function(){
+  var series = 'portraits';
+  if (location.pathname === '/print') {
+    try {
+      series = {'/groups':'groups','/pets/discovery':'pets','/discovery':'portraits'}[sessionStorage.getItem('liten_collection_return')] || 'portraits';
+    } catch (_) {}
+  }
+  var back = {portraits:'/discovery?print_pick=1', pets:'/pets/discovery?print_pick=1', groups:'/collection?from=groups'};
+  var coll = {portraits:'/collection', pets:'/collection?from=pets', groups:'/collection?from=groups'};
+  var home = {portraits:'/portraits', pets:'/pets', groups:'/groups'};
+  return { series:series, back:back[series], collection:coll[series], home:home[series] };
+})();
+document.addEventListener('DOMContentLoaded', function(){
+  var x = window.litenSeriesExit;
+  var a = document.querySelector('.mh-nav a[href="/discovery?print_pick=1"]');
+  if (a) a.setAttribute('href', x.back);
+  var b = document.querySelector('#mhDrawer a[href="/collection"]');
+  if (b) b.setAttribute('href', x.collection);
+});
+</script>
 <nav class="mh-drawer" id="mhDrawer" hidden>
     <a href="/portraits" class="on">Portraits</a>
     <a href="/groups">Groups</a>
@@ -9025,7 +9051,7 @@ window.EFFECT_PREVIEWS = {
     mhSignOut.disabled = true;
     fetch('/api/v1/auth/signout', { method:'POST', credentials:'same-origin' })
       .catch(function(){})
-      .then(function(){ location.href = '/portraits'; });
+      .then(function(){ location.href = window.litenSeriesExit.home; });
   });
 
   /* The masthead is a way to buy, not only a readout. */
@@ -10662,7 +10688,7 @@ window.EFFECT_PREVIEWS = {
       card.innerHTML='<img src="'+esc(line.art)+'" alt=""><div class="nm">'+esc(line.name||'Crafted Image')+'</div>';
       card.onclick=function(){PS_PIECE=PIECES.find(function(p){return p.id===line.pieceId;})||PS_PIECE;renderWall();};list.appendChild(card);
     });
-    document.getElementById('printRailAdd').onclick=function(){window.location.assign('/discovery?print_pick=1');};
+    document.getElementById('printRailAdd').onclick=function(){window.location.assign(window.litenSeriesExit.back);};
   }
 
   function renderOrder(){
@@ -11009,7 +11035,7 @@ window.EFFECT_PREVIEWS = {
   if (psCartEl){ psCartEl.addEventListener('input', shippingChanged); psCartEl.addEventListener('change', shippingChanged); }
 
   var psCloseBtn = document.getElementById('psClose');
-  if (psCloseBtn) psCloseBtn.addEventListener('click', function(){if(location.pathname==='/print')location.assign('/discovery?print_pick=1');else hidePrintShop();});
+  if (psCloseBtn) psCloseBtn.addEventListener('click', function(){if(location.pathname==='/print')location.assign(window.litenSeriesExit.back);else hidePrintShop();});
 
   /* Phone presentation bridge: existing catalogue, eligibility, quote and Stripe operations. */
   if (window.initPrintPhone && location.pathname === '/print') {
@@ -11074,7 +11100,7 @@ window.EFFECT_PREVIEWS = {
   }
 
   window.__showPrintShop = showPrintShop;
-  if(location.pathname==='/print' && !PRINT_TEST_PIECE && !new URLSearchParams(location.search).has('session')) window.location.replace('/discovery?print_pick=1');
+  if(location.pathname==='/print' && !PRINT_TEST_PIECE && !new URLSearchParams(location.search).has('session')) window.location.replace(window.litenSeriesExit.back);
   if (PRINT_TEST_PIECE && !new URLSearchParams(location.search).has('session')) window.addEventListener('load', function(){
     fetch('/api/v1/print/source?piece=' + encodeURIComponent(PRINT_TEST_PIECE), { credentials:'same-origin' })
       .then(function(r){ return r.json(); }).then(function(d){
@@ -11564,7 +11590,7 @@ window.EFFECT_PREVIEWS = {
       var b = e.target.closest && e.target.closest('[data-rc]');
       if (!b) return;
       if(b.getAttribute('data-rc') === 'view'){ psReceiptRefresh(); return; }
-      window.location.assign('/discovery?print_pick=1'); return;
+      window.location.assign(window.litenSeriesExit.back); return;
 
     });
   }
