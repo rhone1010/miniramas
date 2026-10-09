@@ -1,0 +1,40 @@
+/* RAIL BOTTOM -- one bottom edge for Groups, Pets and Portraits (non-mobile).
+   Reference: the rail's content-box bottom, 46px above the viewport
+   (25px rail margin + 1px border + 20px padding). Every Rail Bottom control
+   -- Back to Discovery / Back to Review, the Your Collection card, and the
+   stage's Choose Format / Craft -- ends on that line. Start over travels with
+   the bottom control: it takes the auto margin and sits 10px above it.
+   Phones (max-width:767px) are untouched: every rule below starts at 768px. */
+
+/* ---- Groups: rail, Start over and Review's forward action (768px and up) ---- */
+@media (min-width:768px){
+  #cur > .deep-startover{margin-top:auto !important;margin-bottom:10px !important;}
+  #cur > #curCollection{margin-top:auto;}
+  #cur > .deep-startover + #curCollection{margin-top:0 !important;}
+  #groupsShapeRail > .deep-startover{margin-top:auto !important;margin-bottom:10px !important;}
+  #groupsShapeRail > .deep-startover + #groupsCartBack{margin-top:0 !important;}
+  body.groups-cart:not(.groups-shapes) #workshop{padding-bottom:46px !important;}
+  body.groups-cart:not(.groups-shapes) #groupsReviewFooter .groups-forward{padding-bottom:0 !important;}
+}
+
+/* ---- Pets / Portraits: rail container, bottom group and stage forward action (1025px and up) ---- */
+@media (min-width:1025px){
+  body.groups-cart #discoveryRail{height:calc(100dvh - var(--mh-h) - 50px) !important;max-height:calc(100dvh - var(--mh-h) - 50px) !important;padding-bottom:20px !important;}
+  #discoveryRail:has(> .dcur){padding-bottom:20px !important;}
+  .dcur{--rb-gap:20px;gap:var(--rb-gap) !important;}
+  .dcur > .deep-startover{margin-top:auto !important;margin-bottom:calc(10px - var(--rb-gap)) !important;}
+  .dcur > .your-collection{margin-top:auto;}
+  .dcur > .deep-startover + .your-collection{margin-top:0 !important;}
+  body.groups-cart #groupsShapeRail{display:flex !important;flex-direction:column;flex:1 1 auto;max-height:none !important;}
+  body.groups-cart #groupsShapeRail > .deep-startover{margin-top:auto !important;margin-bottom:10px !important;}
+  body.groups-cart #groupsCartBack{margin-top:auto !important;}
+  body.groups-cart #groupsShapeRail > .deep-startover + #groupsCartBack{margin-top:0 !important;}
+  body.is-review #reviewView,body.is-format #aspectView,body.groups-cart #reviewView,body.groups-cart #aspectView{padding-bottom:46px !important;}
+  body.groups-cart #groupsReviewFooter .groups-forward,#reviewView > .groups-forward,#aspectView > .groups-forward{padding-bottom:0 !important;}
+}
+@media (min-width:1025px) and (max-width:1659px){.dcur{--rb-gap:12px;}}
+/* At 1025-1279 the rail's outer margin is 16px, not 25px; the padding makes up the difference. */
+@media (min-width:1025px) and (max-width:1279px){
+  body.groups-cart #discoveryRail{height:calc(100dvh - var(--mh-h) - 32px) !important;max-height:calc(100dvh - var(--mh-h) - 32px) !important;padding-bottom:29px !important;}
+  #discoveryRail:has(> .dcur){padding-bottom:29px !important;}
+}

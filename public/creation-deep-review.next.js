@@ -26,8 +26,8 @@ function mount(){
  if(review&&!back||!review&&!collection)return;
  if(!button){button=document.createElement('button');button.className='deep-startover';button.id='btnStartOver';button.type='button';button.textContent='Start over';}
  if(review){
-  var anchor=back.closest('#groupsShapeRail')||back;
-  if(anchor.nextElementSibling!==button)anchor.after(button);
+  if(window.matchMedia('(min-width:768px)').matches){if(back.previousElementSibling!==button)back.before(button);}
+  else{var anchor=back.closest('#groupsShapeRail')||back;if(anchor.nextElementSibling!==button)anchor.after(button);}
  }else if(collection.previousElementSibling!==button)collection.before(button);
 }
 new MutationObserver(mount).observe(rail,{childList:true,subtree:true});
