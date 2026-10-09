@@ -7733,7 +7733,7 @@ function closeCheckout(){
 
 function startCheckout(){
   if(LitenSubjectGate.pending || LitenSubjectGate.blocked)return;
-  var btn = document.getElementById('btnCraft');
+  var btn = document.getElementById('btnCraft') || document.getElementById('groupsShapeCraft');
   if (!btn || btn.disabled) return;
 
   /* __RESUME_PHOTO_GUARD__ (Rich, 2026-09-15). No valid source photograph,
@@ -7916,7 +7916,7 @@ function showCheckoutError(msg){
   el.id = 'checkoutError';
   el.style.cssText = 'color:var(--oxblood);font-family:var(--serif);font-size:1.1rem;text-align:center;margin:12px 0 0;padding:8px 12px;background:rgba(125,66,66,.12);border-radius:8px;';
   el.textContent = msg;
-  var craft = document.getElementById('btnCraft');
+  var craft = document.getElementById('btnCraft') || document.getElementById('groupsShapeCraft');
   if (craft && craft.parentNode) craft.parentNode.insertBefore(el, craft.nextSibling);
 }
 
