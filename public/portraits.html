@@ -4987,7 +4987,7 @@ html.print-destination #yourPrints .ps-pc{width:100%;margin-bottom:.8rem}
 html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:none!important}
 </style><link rel="stylesheet" href="/print-experience.css"><link rel="stylesheet" href="/print-phone.next.css">
 <script src="/print-phone.next.js"></script>
-</head>
+<link rel="stylesheet" href="/masthead-menus.next.css?v=20261010"><script src="/masthead-menus.next.js?v=20261010" defer></script></head>
 <body>
 
 <div class="ground" aria-hidden="true"></div>
@@ -4998,7 +4998,7 @@ html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:n
     <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg>
   </button>
   <nav class="mh-nav">
-    <div class="mh-series">
+    <div class="mh-series mh-fm-legacy">
       <button class="mh-series-btn" id="mhSeriesBtn" aria-expanded="false" aria-haspopup="true">
         <span id="mhSeriesLabel"><span class="mh-crafted">Crafted </span>Portraits</span>
         <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
@@ -5014,14 +5014,17 @@ html.print-destination #mhCreditsBtn,html.print-destination #mhCartBtn{display:n
         <a href="/wallpapers" role="menuitem">Mobile Wallpapers</a>
       </div>
     </div>
-    <a href="/gallery">Gallery</a>
+    <a class="mh-fm-legacy" href="/gallery">Gallery</a>
     <!-- THE BOARD. Between Gallery and My Collection because that is the
          order of the thought: what the studio can do, what other people
          did with it, what you have done with it. -->
-    <a href="/community">Community</a>
+    <div class="mh-fm mh-fm-create mh-series"><button class="mh-series-btn" id="mhFmCreateBtn" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mhFmCreateMenu">Create <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg></button><div class="mh-series-menu" id="mhFmCreateMenu" role="menu" hidden><a href="/" role="menuitem">Portraits</a><a href="/groups" role="menuitem">Groups</a><a href="/pets" role="menuitem">Pets</a></div></div>
+    <a class="mh-fm-legacy" href="/community">Community</a>
     <a href="/discovery?print_pick=1">My Collection</a>
     <a href="/print">Print Shop</a>
-    <a href="/account">Account</a>
+    <div class="mh-fm mh-fm-more mh-series"><button class="mh-series-btn" id="mhFmMoreBtn" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mhFmMoreMenu">More <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg></button><div class="mh-series-menu" id="mhFmMoreMenu" role="menu" hidden><a href="/gallery" role="menuitem">Gallery</a><a href="/community" role="menuitem">Community</a><a href="#" role="menuitem" data-fm="help">Help</a><a href="#" role="menuitem" data-fm="feedback">Feedback</a></div></div>
+    <div class="mh-fm mh-fm-account mh-series"><button class="mh-series-btn" id="mhFmAccountBtn" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mhFmAccountMenu">Account <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg></button><div class="mh-series-menu" id="mhFmAccountMenu" role="menu" hidden><a href="/account" role="menuitem">Account</a><a href="/account" role="menuitem" data-fm-orders>Orders</a><a href="#" role="menuitem" data-fm="signout">Sign out</a></div></div>
+    <a class="mh-fm-legacy" href="/account">Account</a>
     <!-- PRINT SHOP AND HELP LEFT THIS BAR. Print Shop is an action on a
          piece, not a place - it already has its button in My Collection,
          which is where somebody is actually looking at the thing they
@@ -9177,6 +9180,7 @@ window.EFFECT_PREVIEWS = {
     if (signinModal) signinModal.classList.remove('is-open');
     PENDING_CRAFT = false;
   }
+  window.openSignin = openSignin;   /* the masthead's Account menu opens this same sign-in */
 
   function sendLink(){
     if (!signinEmail || !signinSend) return;

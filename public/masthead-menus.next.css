@@ -1,0 +1,24 @@
+/* FIVE-MENU MASTHEAD: Create | My Collection | Print Shop | More | Account.
+   Shared by Groups, Portraits, Pets (which also hosts My Collection) and the
+   Print Shop host. The dropdowns reuse the pages' own .mh-series / .mh-series-btn /
+   .mh-series-menu styling, so colors and type are the existing LITEN masthead.
+   It replaces the old desktop nav only where that nav shows (1025px and up on the
+   .masthead pages, 1200px and up on the .mh pages); below those widths nothing here
+   applies and the existing tablet, drawer and phone navigation is unchanged. The old
+   items stay in the markup, hidden, because the page scripts bind to them. */
+.mh-fm,.masthead__nav > .mh-fm,.mh-nav > .mh-fm{display:none !important}
+@media (min-width:1025px){
+  .masthead .mh-fm,.masthead .masthead__nav > .mh-fm{display:flex !important;position:relative;align-items:center}
+  .masthead .mh-fm-legacy{display:none !important}
+  .masthead #mhDesktopHelp,.masthead #mhScarab,.masthead .masthead__right > .mh-series:has(#mhIdentity){display:none !important}
+}
+@media (min-width:1200px){
+  .mh .mh-fm,.mh .mh-nav > .mh-fm{display:flex !important;position:relative;align-items:center;margin-right:0 !important}
+  .mh .mh-fm-legacy{display:none !important}
+  .mh #mhDesktopHelp,.mh #mhScarab,.mh .mh-right > .mh-series:has(#mhIdentity),.mh .mh-right > #mhSignOut{display:none !important}
+}
+/* While a menu is open the bar rises above full-screen panels (My Collection is z-index 100),
+   which otherwise cover the dropdown. Modals and the lightbox stay above it. */
+.masthead:has(.mh-fm .mh-series-menu:not([hidden])),.mh:has(.mh-fm .mh-series-menu:not([hidden])){z-index:120 !important}
+.mh-fm .mh-series-menu a[aria-current="page"]{color:var(--series, #d7bd89)}
+.mh-fm .mh-series-menu[hidden]{display:none}

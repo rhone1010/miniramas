@@ -3403,7 +3403,7 @@ window.CONCIERGE_SEEDS = [
 <link rel="stylesheet" href="/mobile-ux.next.css">
 <link rel="stylesheet" href="/phone-ux.next.css">
 <link rel="stylesheet" href="/collection-design.next.css?v=20261006"><link rel="stylesheet" href="/rail-bottom.next.css?v=20261009">
-</head>
+<link rel="stylesheet" href="/masthead-menus.next.css?v=20261010"><script src="/masthead-menus.next.js?v=20261010" defer></script></head>
 <body>
 <!-- discovery-consolidated-draft.html
      ONE file for desktop, tablet and mobile. Composed from
@@ -3421,7 +3421,7 @@ window.CONCIERGE_SEEDS = [
       <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
     </button>
     <a class="mh-mobile-existing" href="/gallery">Gallery</a>
-    <div class="mh-series mh-desktop-only">
+    <div class="mh-series mh-desktop-only mh-fm-legacy">
       <button class="mh-series-btn" id="mhSeriesBtn" aria-expanded="false" aria-haspopup="true">Crafted
         <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>
       </button>
@@ -3432,9 +3432,12 @@ window.CONCIERGE_SEEDS = [
         <a href="/halloween" role="menuitem">Crafted Halloween</a>
       </div>
     </div>
-    <a href="/community">Community</a>
+    <div class="mh-fm mh-fm-create mh-series"><button class="mh-series-btn" id="mhFmCreateBtn" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mhFmCreateMenu">Create <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg></button><div class="mh-series-menu" id="mhFmCreateMenu" role="menu" hidden><a href="/" role="menuitem">Portraits</a><a href="/groups" role="menuitem">Groups</a><a href="/pets" role="menuitem">Pets</a></div></div>
+    <a class="mh-fm-legacy" href="/community">Community</a>
     <a id="navMyCollection" style="cursor:pointer">My Collection</a>
     <a href="/print">Print Shop</a>
+    <div class="mh-fm mh-fm-more mh-series"><button class="mh-series-btn" id="mhFmMoreBtn" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mhFmMoreMenu">More <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg></button><div class="mh-series-menu" id="mhFmMoreMenu" role="menu" hidden><a href="/gallery" role="menuitem">Gallery</a><a href="/community" role="menuitem">Community</a><a href="#" role="menuitem" data-fm="help">Help</a><a href="#" role="menuitem" data-fm="feedback">Feedback</a></div></div>
+    <div class="mh-fm mh-fm-account mh-series"><button class="mh-series-btn" id="mhFmAccountBtn" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mhFmAccountMenu">Account <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg></button><div class="mh-series-menu" id="mhFmAccountMenu" role="menu" hidden><a href="/account" role="menuitem">Account</a><a href="/account" role="menuitem" data-fm-orders>Orders</a><a href="#" role="menuitem" data-fm="signout">Sign out</a></div></div>
     <a class="mh-mobile-existing" href="/account">Account</a>
   </nav>
   <div class="masthead__right">
@@ -10261,7 +10264,12 @@ document.getElementById('mhSignOut').addEventListener('click', function(e){ e.pr
     if (!acct) return;
     if (!ME){ openSignin(); return; }
     ACCT = null;
-    if (mycoll.classList.contains('is-open')) closeMyCollection();
+    if (mycoll.classList.contains('is-open')){
+      /* On /collection closeMyCollection() leaves for the series Discovery before the
+         panel can open, so Account from My Collection went nowhere. /account hosts it. */
+      if (location.pathname === '/collection'){ location.assign('/account'); return; }
+      closeMyCollection();
+    }
     acct.classList.add('is-open');
     acct.setAttribute('aria-hidden', 'false');
     renderAccount();

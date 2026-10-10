@@ -75,7 +75,7 @@ body.mc-designed #mycollGrid>.card:focus-visible{outline:3px solid #efc57d;outli
 .mc-mobile-back{display:none;}
 @media(max-width:767px){
  body.mc-designed #mycollGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
- body.mc-designed #mycollGrid>.card{padding:0!important;border-width:1px!important;}
+ body.mc-designed #mycollGrid>.card{border-width:1px!important;}
  body.mc-designed #mycollGrid .card__art{background-size:contain!important;background-repeat:no-repeat!important;}
  body.mc-designed .mc-mobile-back{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:none;color:#efc57d;font:400 24px var(--serif);cursor:pointer;}
  body.mc-designed .masthead>.ux-menu-toggle,body.mc-designed #masthead>.ux-menu-toggle{display:none!important;}
