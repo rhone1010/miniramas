@@ -32,6 +32,12 @@
   body.is-review #reviewView,body.is-format #aspectView,body.groups-cart #reviewView,body.groups-cart #aspectView{padding-bottom:46px !important;}
   body.groups-cart #groupsReviewFooter .groups-forward,#reviewView > .groups-forward,#aspectView > .groups-forward{padding-bottom:0 !important;}
 }
+/* Portraits Format: the card group is centered in the stage exactly as Pets already does
+   (the same two rules from creation-deep-review.next.css, which Portraits does not load). */
+@media (min-width:1025px){
+  body.is-format #aspectFloor{align-items:center;}
+  body.is-format #aspectView .aspect-gallery{margin:auto;}
+}
 @media (min-width:1025px) and (max-width:1659px){.dcur{--rb-gap:12px;}}
 /* At 1025-1279 the rail's outer margin is 16px, not 25px; the padding makes up the difference. */
 @media (min-width:1025px) and (max-width:1279px){
