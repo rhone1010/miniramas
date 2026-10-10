@@ -40,14 +40,14 @@
 }
 /* Portraits / Pets Format: when four cards no longer fit across the stage (1025-1399px
    wide, or wherever the rail and gaps squeeze it) the fourth wrapped under the Craft
-   footer and was clipped. Below 900px of gallery width the row becomes the approved
+   footer and was clipped. At 920px of gallery width or less the row becomes the approved
    2x2 board the page already uses at 1024px and under -- same card styling, shorter
    shapes -- instead of wrapping. The gallery's own width decides, so it is exact at
    every viewport width and height. Phones and tablets keep their own rules. */
 @media (min-width:1025px){
   body.is-format #aspectView .aspect-gallery{container-type:inline-size;}
 }
-@container (max-width:900px){
+@container (max-width:920px){
   body.is-format #aspectView .aspect-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--card-gap);align-items:stretch;width:100%;}
   body.is-format #aspectView .aspect-opt{padding:14px 12px 12px;gap:10px;justify-content:flex-end;min-height:0;position:relative;}
   body.is-format #aspectView .aspect-opt__label{font-size:1.2rem;}
