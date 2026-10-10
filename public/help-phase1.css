@@ -159,3 +159,36 @@ body:has(#helpStage.is-open) .your-collection.is-docked{ display:none }
 }
 @media(max-width:900px){#helpMain .help-gallery-card>.help-artwork{grid-auto-rows:calc((100% - .6rem) / 2)}}
 @media(max-width:600px){#helpStage .mc-head{gap:.4rem;padding:.5rem 0}#helpStage .mc-title{font-size:1.125rem}#helpMain.help-select-artwork .help-steps{gap:.4rem;padding:.5rem}#helpMain.help-select-artwork .help-steps li{font-size:1rem}#helpMain.help-select-artwork .help-subtitle{font-size:1.125rem;line-height:1.2}#helpMain .help-gallery-card{padding:.7rem}}
+/* Help landing refinement (owner brief 2026-10-10): intro, three paths, Ask Concierge, then the guidance as
+   expandable sections. Layout only; the cards, Concierge and every word of the guidance are unchanged. */
+/* Its own clean content area: the stage spans the full width below the masthead, so no strip of the
+   Creation rail shows along the left edge. */
+#helpStage{left:0 !important;border-left:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+/* The floating ? sat on top of the Concierge panel; it is redundant on Help, and unchanged everywhere else. */
+body:has(#helpStage.is-open) .tour-fab,body:has(#helpStage.is-open) #tourFab{display:none !important}
+#helpMain .help-intro{margin:.8rem auto 1.5rem}
+#helpMain .help-guide{max-width:68ch;margin:2.8rem auto 3.5rem;font-family:var(--serif);color:var(--ink)}
+#helpMain .help-guide h3{font-size:1.75rem;line-height:1.2;font-weight:400;margin:0 0 .8rem}
+#helpMain .help-guide p{font-size:1.2rem;line-height:1.6;margin:0 0 1rem;color:var(--ink-soft)}
+#helpMain .help-guide .help-guide-lead{margin-bottom:1.4rem}
+#helpMain .help-guide .help-guide-close{margin:1.6rem 0 0}
+/* Expandable questions: the existing FAQ pattern (hairline rules, plus mark that turns to a cross when open),
+   under their own class names because host pages already use .q for something else. */
+#helpMain .help-faq{border-bottom:1px solid var(--hairline,rgba(137,105,67,.28))}
+#helpMain .help-faq:first-of-type{border-top:1px solid var(--hairline,rgba(137,105,67,.28))}
+#helpMain .help-faq-q{display:flex;align-items:baseline;gap:1rem;width:100%;padding:.9rem 0;cursor:pointer;font-family:var(--serif);font-size:1.35rem;line-height:1.3;color:var(--ink);list-style:none}
+#helpMain .help-faq-q::-webkit-details-marker{display:none}
+#helpMain .help-faq-q:hover{color:var(--oxblood)}
+#helpMain .help-faq-q:focus-visible{outline:2px solid var(--oxblood);outline-offset:2px}
+#helpMain .help-faq-mk{flex:none;width:1em;font-family:var(--sans);font-size:1rem;color:var(--brass,#b68a53);transition:transform .18s ease}
+#helpMain .help-faq[open] .help-faq-mk{transform:rotate(45deg)}
+#helpMain .help-faq-a{padding:0 0 1.2rem 2rem}
+#helpMain .help-faq-a ul{margin:0;padding-left:1.2rem}
+#helpMain .help-faq-a li{font-size:1.2rem;line-height:1.55;margin:.35rem 0}
+@media(max-width:600px){
+ #helpMain .help-guide{margin:2rem auto 2.5rem}
+ #helpMain .help-guide h3{font-size:1.5rem}
+ #helpMain .help-guide p,#helpMain .help-faq-a li{font-size:1.1rem}
+ #helpMain .help-faq-q{font-size:1.2rem}
+ #helpMain .help-faq-a{padding-left:1.4rem}
+}
