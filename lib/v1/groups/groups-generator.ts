@@ -82,7 +82,7 @@ const POLL_MAX_ATTEMPTS = 30
 const POLL_DELAY_MS     = 2000
 
 const REPLICATE_URL =
-  'https://api.replicate.com/v1/models/google/nano-banana-2/predictions'
+  'https://api.replicate.com/v1/models/google/nano-banana-2.1/predictions'
 
 export interface GenerateGroupsInput {
   request:           GroupsGenerateRequest

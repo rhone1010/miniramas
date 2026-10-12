@@ -159,14 +159,14 @@ describe('/api/v1/foyer/intake — the one safety check', () => {
 })
 
 describe('/api/v1/foyer/reveal — one NB2 render, watermarked, allowance-accounted', () => {
-  it('renders on google/nano-banana-2 (never Lite) with the production prompt unchanged, at 2:3', async () => {
+  it('renders on google/nano-banana-2.1 (never Lite) with the production prompt unchanged, at 2:3', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.99)          // the last of the six
     const res = await revealPOST(req('/api/v1/foyer/reveal', { body: { image_b64: SOURCE_B64, intake: await intakeToken() } }))
     const d = await res.json()
     expect(res.status).toBe(200)
     expect(replicate).toHaveLength(1)
     const call = replicate[0]
-    expect(call.url).toBe('https://api.replicate.com/v1/models/google/nano-banana-2/predictions')
+    expect(call.url).toBe('https://api.replicate.com/v1/models/google/nano-banana-2.1/predictions')
     expect(call.url).not.toContain('lite')
     const effect = FOYER_REVEAL_EFFECTS[FOYER_REVEAL_EFFECTS.length - 1]
     expect(call.body.input.prompt).toBe(buildEffectPrompt(effect))

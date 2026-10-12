@@ -30,7 +30,7 @@ import { refineHouse } from './houses-refine'
 import type { GenerateRequest, GenerateResult } from './houses-shared'
 
 const REPLICATE_URL =
-  'https://api.replicate.com/v1/models/google/nano-banana-2/predictions'
+  'https://api.replicate.com/v1/models/google/nano-banana-2.1/predictions'
 
 // Sync timeout for Replicate `Prefer: wait` header. NB2 typically returns
 // in 25–40s for action-minis; houses should be similar.

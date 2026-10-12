@@ -106,7 +106,7 @@ const MAX_RATE_LIMIT_RETRIES = 3
 const BASE_RETRY_DELAY_MS    = 2000
 
 const REPLICATE_URL =
-  'https://api.replicate.com/v1/models/google/nano-banana-2/predictions'
+  'https://api.replicate.com/v1/models/google/nano-banana-2.1/predictions'
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES

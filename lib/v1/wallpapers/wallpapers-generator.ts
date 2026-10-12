@@ -65,7 +65,7 @@ const POLL_DELAY_MS     = 2000
 const MAX_SOURCE_IMAGES = 14
 
 const REPLICATE_URL =
-  'https://api.replicate.com/v1/models/google/nano-banana-2/predictions'
+  'https://api.replicate.com/v1/models/google/nano-banana-2.1/predictions'
 
 export interface WallpaperGenerateRequest {
   source_image_b64?:      string

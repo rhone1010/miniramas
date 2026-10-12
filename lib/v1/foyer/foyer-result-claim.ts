@@ -41,7 +41,7 @@ export async function retainFoyerClean(sb: SupabaseClient, input: {
     expires_at: new Date(expires).toISOString(),
     metadata: { subject: input.subject ?? null, age_group: input.ageGroup ?? null,
       aspect_ratio: '2:3', width: dimensions.width, height: dimensions.height,
-      model: 'google/nano-banana-2', generated_at: new Date().toISOString() },
+      model: 'google/nano-banana-2.1', generated_at: new Date().toISOString() },
   })
   if (error) throw new Error('foyer_result_record_failed')
   const png = await original.png().toBuffer()

@@ -140,7 +140,7 @@ async function callNanoBanana(input: {
   const dataUri = `data:image/png;base64,${input.sourceB64}`
 
   const res = await fetchWithRateLimitRetry(
-    'https://api.replicate.com/v1/models/google/nano-banana-2/predictions',
+    'https://api.replicate.com/v1/models/google/nano-banana-2.1/predictions',
     {
       method: 'POST',
       headers: {

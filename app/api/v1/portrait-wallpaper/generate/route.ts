@@ -23,7 +23,7 @@ import { buildPortraitsPrompt } from '@/lib/v1/portraits/portraits-prompt'
 import type { PortraitsPresetId } from '@/lib/v1/portraits/portraits-shared'
 
 const REPLICATE_URL =
-  'https://api.replicate.com/v1/models/google/nano-banana-2/predictions'
+  'https://api.replicate.com/v1/models/google/nano-banana-2.1/predictions'
 const SYNC_WAIT_SECONDS = 60
 const POLL_MAX_ATTEMPTS = 30
 const POLL_DELAY_MS     = 2000
