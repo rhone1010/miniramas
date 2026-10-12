@@ -5,10 +5,11 @@ body.mc-designed #mycoll{position:fixed!important;inset:var(--mh-h,68px) 0 0!imp
 body.mc-designed #mycollFilters,body.mc-designed .mc-info,body.mc-designed .mc-group{display:none!important;}
 .mc-design-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;flex:none;background:var(--vellum,#f3ede1);color:#302a22;}
 .mc-design-head h1{font:400 clamp(24px,6vw,30px)/1.2 var(--serif);margin:0;white-space:nowrap;}
-.mc-filter-open{display:flex;align-items:center;gap:8px;border:1px solid #a68b6d;border-radius:7px;background:transparent;color:#554638;padding:8px 12px;min-height:40px;font:400 18px var(--serif);}
-.mc-filter-open svg{width:19px;height:19px;}
+.mc-filter-open{display:flex;align-items:center;gap:10px;border:1px solid #aa6268;border-radius:8px;background:#74313a;color:#f3e6ce;padding:10px 20px;min-height:48px;font:400 22px var(--serif);cursor:pointer;}
+.mc-filter-open:hover,.mc-filter-open:focus-visible{background:#7d3a43;}
+.mc-filter-open svg{width:24px;height:24px;}
 body.mc-designed #mycollGrid{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-rows:max-content!important;align-content:start!important;gap:16px!important;flex:1!important;min-height:0!important;height:auto!important;width:100%!important;max-width:none!important;margin:0!important;padding:54px 22px!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-gutter:auto!important;box-sizing:border-box;}
-body.mc-designed #mycollGrid>.card{width:100%!important;height:auto!important;min-height:0!important;aspect-ratio:1!important;max-width:none!important;margin:0!important;padding:5px!important;border:1px solid #e6e1d5!important;border-radius:0!important;background:#f3ede1!important;box-shadow:0 3px 8px #0004!important;}
+body.mc-designed #mycollGrid>.card{width:100%!important;height:auto!important;min-height:0!important;aspect-ratio:1!important;max-width:none!important;margin:0!important;padding:5px!important;border:2px solid #e6e1d5!important;border-radius:0!important;background:#f3ede1!important;box-shadow:0 3px 8px #0004!important;}
 body.mc-designed #mycollGrid .card__art{width:100%!important;height:100%!important;aspect-ratio:1!important;background-size:cover!important;background-position:center!important;border-radius:0!important;}
 body.mc-designed #mycollGrid .card__overlay,body.mc-designed #mycollGrid .card__quick,body.mc-designed #mycollGrid .card__badge{display:none!important;}
 body.mc-designed #mycollGrid .mycoll__empty{grid-column:1/-1;}
@@ -75,8 +76,7 @@ body.mc-designed #mycollGrid>.card:focus-visible{outline:3px solid #efc57d;outli
 .mc-mobile-back{display:none;}
 @media(max-width:767px){
  body.mc-designed #mycollGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
- body.mc-designed #mycollGrid>.card{border-width:1px!important;}
- body.mc-designed #mycollGrid .card__art{background-size:contain!important;background-repeat:no-repeat!important;}
+ body.mc-designed #mycollGrid .card__art{background-size:cover!important;background-repeat:no-repeat!important;}
  body.mc-designed .mc-mobile-back{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:none;color:#efc57d;font:400 24px var(--serif);cursor:pointer;}
  body.mc-designed .masthead>.ux-menu-toggle,body.mc-designed #masthead>.ux-menu-toggle{display:none!important;}
 }

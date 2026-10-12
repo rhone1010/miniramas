@@ -584,6 +584,25 @@ body{
   background-repeat:repeat; background-size:13rem 13rem;
   opacity:.12; mix-blend-mode:soft-light;
 }
+/* DISCOVERY STAGE BACKGROUND (owner correction, 2026-10-11): the dark leather belongs to the whole stage column,
+   not just the scrolling frame inside it, so no beige limestone shows above or around the cards. Same layers and
+   image as .stage-frame (written out once as /textures/stage-leather.jpg). The Curator rail keeps its own parchment. */
+@media (min-width:1025px){
+  #discoveryView{
+    background-color:#2a1414;
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(255,255,255,.045), transparent 42%),
+      radial-gradient(circle at 82% 84%, rgba(255,255,255,.025), transparent 48%),
+      linear-gradient(180deg, rgba(255,255,255,.018), rgba(0,0,0,.04)),
+      linear-gradient(0deg, rgba(90,42,42,.5), rgba(90,42,42,.5)),
+      url("/textures/stage-leather.jpg");
+    background-repeat:no-repeat,no-repeat,no-repeat,repeat,repeat;
+    background-size:auto,auto,auto,auto,800px 800px;
+    background-position:center,center,center,center,center;
+  }
+  #discoveryView .stage-frame,#discoveryView #consistencyDiscoveryHeading{ background:transparent }
+  #discoveryView .stage-frame::before{ display:none }
+}
 .effect-grid{ display:grid; grid-template-columns:repeat(var(--grid-cols),1fr); grid-auto-rows:max-content; gap:var(--card-gap); align-content:start; align-items:start }
 /* Review screen only: 8 across so a 16-selection fits in two rows
    without scrolling. Scoped to #reviewGrid via custom-property

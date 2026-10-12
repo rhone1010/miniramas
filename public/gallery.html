@@ -12,6 +12,13 @@
      finishes is restated in this file: a finish added to
      effect-registry.ts appears here after the emit, with no edit. -->
 <script src="/effect-registry.js"></script>
+<script>window.GALLERY_REGISTRIES = { portraits: window.EFFECT_REGISTRY };</script>
+<!-- Pets and Groups ship their own registries; each also writes window.EFFECT_REGISTRY, so each is captured
+     the moment it loads and the page reads them from GALLERY_REGISTRIES, never from the shared global. -->
+<script src="/pets-registry.js"></script>
+<script>window.GALLERY_REGISTRIES.pets = window.PETS_REGISTRY;</script>
+<script src="/groups-registry.js"></script>
+<script>window.GALLERY_REGISTRIES.groups = window.GROUPS_REGISTRY;</script>
 <!-- The Concierge, shared with the workshop and the help page. -->
 <script src="/concierge.js" defer></script>
 
@@ -249,6 +256,21 @@ body{
 .jump a.on, .jump button.on{
   background:var(--gold); color:var(--espresso); border-color:var(--gold);
 }
+/* SERIES -> SILO FILTERS (owner correction, 2026-10-11). The Series row sits above the room pills and is the same
+   pill; the room pills are filters now. Pets and Groups have one plate per effect, so their tiles run in a single
+   wide grid (same tile, same caption) instead of the two sitter columns. */
+.jump-series{ padding-bottom:0 }
+/* A centred row that overflows pushes its first pills off the left edge where they cannot be scrolled to. Auto margins
+   on the ends centre the row when it fits and let it scroll from its start when it does not. */
+.jump-in{ justify-content:flex-start }
+.jump-in > :first-child{ margin-left:auto }
+.jump-in > :last-child{ margin-right:auto }
+.jump button{ cursor:pointer; font-family:var(--serif) }
+.tiles.tiles--wide{ grid-template-columns:repeat(4,minmax(0,1fr)); max-width:none }
+@media (max-width:1100px){ .tiles.tiles--wide{ grid-template-columns:repeat(3,minmax(0,1fr)) } }
+@media (max-width:767px){ .tiles.tiles--wide{ grid-template-columns:repeat(2,minmax(0,1fr)) } }
+/* A row that overflows fades at its ends so more pills are plainly there; the wheel scrolls it (see the script). */
+.jump-in.is-scroll{ -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%); mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%) }
 
 /* ---- A SILO ---------------------------------------------------------- */
 .silo{ padding:clamp(38px,3.6vw,64px) 0; border-bottom:1px solid var(--hairline) }
@@ -405,7 +427,7 @@ body{
   </section>
 </div>
 
-<nav class="jump" aria-label="Rooms"><div class="jump-in" id="jump"></div></nav>
+<nav class="jump" aria-label="Series and rooms"><div class="jump-in jump-series" id="series" role="group" aria-label="Series"></div><div class="jump-in" id="jump" role="group" aria-label="Rooms"></div></nav>
 
 <main class="stage" id="gallery"></main>
 
@@ -421,8 +443,9 @@ body{
 (function(){
   'use strict';
 
-  var gallery = document.getElementById('gallery');
-  var jump    = document.getElementById('jump');
+  var gallery   = document.getElementById('gallery');
+  var jump      = document.getElementById('jump');
+  var seriesBar = document.getElementById('series');
 
   function notice(msg){
     var p = document.createElement('p');
@@ -432,142 +455,207 @@ body{
     gallery.appendChild(p);
   }
 
-  /* ── THE CATALOGUE ──────────────────────────────────────────────────
-     window.EFFECT_REGISTRY is emitted by scripts/emit-effect-registry.js
-     from effect-registry.ts. Lowercase keys — silos, effects, poses. */
-  var R = window.EFFECT_REGISTRY;
-  if (!R || !R.silos || !R.effects || !R.effects.length){
+  /* ── THE CATALOGUES ─────────────────────────────────────────────────
+     Three active series, each from its own emitted registry (Portraits:
+     effect-registry.js, Pets: pets-registry.js, Groups: groups-registry.js).
+     Nothing about a finish is restated here. All three registries write
+     window.EFFECT_REGISTRY and their helpers read it when called, so each
+     was captured as it loaded and is pointed at only around a helper call.
+     Halloween and the retired series are not offered. */
+  var REG = window.GALLERY_REGISTRIES || {};
+  var SERIES = [
+    { id:'portraits', label:'Portraits', reg:REG.portraits, workshop:'/portraits' },
+    { id:'pets',      label:'Pets',      reg:REG.pets,      workshop:'/pets/discovery' },
+    { id:'groups',    label:'Groups',    reg:REG.groups,    workshop:'/groups' }
+  ].filter(function(s){ return s.reg && s.reg.silos && s.reg.effects && s.reg.effects.length; });
+  if (!SERIES.length){
     notice('The catalogue did not load. <code>/effect-registry.js</code> is ' +
            'missing or empty — run <code>node scripts/emit-effect-registry.js</code>.');
     return;
   }
+  function using(reg, fn){
+    var keep = window.EFFECT_REGISTRY;
+    window.EFFECT_REGISTRY = reg;
+    try { return fn(); } finally { window.EFFECT_REGISTRY = keep; }
+  }
+  function seriesById(id){ return SERIES.filter(function(s){ return s.id === id; })[0]; }
 
-  /* ── THE PLATES ─────────────────────────────────────────────────────
-     Fetched rather than inlined. portraits.html inlines its copy because
-     the first paint of a room must not wait on a request; this page is a
-     scroll, and one request at the top costs nothing worth having. */
-  fetch('/previews/effects-manifest.json', { cache:'no-cache' })
+  /* One tile per finish. The `_woman` ids are CRAFT routes, not finishes
+     (Portraits only); Pets and Groups have no variants. */
+  function offerable(s){
+    return s.reg.effects.filter(function(e){
+      return e.body === 'live' && !using(s.reg, function(){ return s.reg.isVariant ? s.reg.isVariant(e.id) : /_woman$/.test(e.id); });
+    });
+  }
+
+  /* ── THE PORTRAITS PLATES ───────────────────────────────────────────
+     Fetched rather than inlined; one request at the top of a scroll costs
+     nothing worth having. Pets and Groups need no manifest: their registry
+     names the plate (PLATE_DIR + plateFor). */
+  var manifest = null, manifestFailed = false;
+  var manifestReady = fetch('/previews/effects-manifest.json', { cache:'no-cache' })
     .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(draw)
-    .catch(function(){
+    .then(function(M){ manifest = M; })
+    .catch(function(){ manifestFailed = true; });
+
+  function portraitSources(id, which){
+    var M = manifest || {};
+    var base = M.base || '/previews/effects/';
+    var a = (M.effects || {})[id];
+    var small = null, big = null;
+    if (a){
+      var name = a[which] || a.neutral || null;
+      small = name ? base + id + '/' + name : null;
+      /* The 900px plate built for this page, with the manifest plate as the fall-back. */
+      big = a[which] ? base + id + '/' + which + '@2x.jpg' : null;
+    }
+    return [big, small].filter(Boolean);
+  }
+  function plainSources(s, id){
+    var u = using(s.reg, function(){ return s.reg.plateFor ? s.reg.plateFor(id) : ''; });
+    return u ? [u] : [];
+  }
+
+  function tile(e, sources, href){
+    var a = document.createElement('a');
+    a.className = 'tile';
+    a.href = href;
+
+    var box = document.createElement('div');
+    box.className = 'tile-img';
+
+    if (sources.length){
+      var img = document.createElement('img');
+      img.alt = e.label + ', crafted';
+      img.loading  = 'lazy';
+      img.decoding = 'async';
+      /* One retry on the next source, then the empty state. */
+      var at = 0;
+      img.addEventListener('error', function(){
+        if (at + 1 < sources.length){ at++; img.src = sources[at]; return; }
+        img.remove();
+        box.classList.add('is-empty');
+      });
+      img.src = sources[0];
+      box.appendChild(img);
+    } else {
+      box.classList.add('is-empty');
+    }
+
+    var cap = document.createElement('div');
+    cap.className = 'tile-cap';
+    /* textContent, never innerHTML: the registries emit plain unicode. */
+    var nm = document.createElement('b');
+    nm.textContent = e.label;
+    cap.appendChild(nm);
+
+    a.appendChild(box);
+    a.appendChild(cap);
+    return a;
+  }
+
+  function grid(cls){ var g = document.createElement('div'); g.className = cls; return g; }
+  function column(list, heading, build){
+    var col = document.createElement('div');
+    var h = document.createElement('div');
+    h.className = 'subject-head';
+    h.textContent = heading;
+    var g = grid('tiles');
+    list.forEach(function(e){ g.appendChild(build(e)); });
+    col.appendChild(h);
+    col.appendChild(g);
+    return col;
+  }
+
+  /* ── STATE: Series -> Silo ──────────────────────────────────────────── */
+  function silosOf(s){
+    var list = offerable(s);
+    return s.reg.silos.filter(function(silo){
+      return list.some(function(e){ return e.category === silo.id; });
+    });
+  }
+  var params = new URLSearchParams(location.search);
+  var cur = { series: seriesById(params.get('series')) ? params.get('series') : SERIES[0].id, silo: params.get('silo') || 'all' };
+  /* Older links to #silo-<id> still land on that room. */
+  var hashSilo = /^#silo-(.+)$/.exec(location.hash || '');
+  if (hashSilo && !params.get('silo')) cur.silo = hashSilo[1];
+
+  function pill(label, on, onClick, extra){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.className = on ? 'on' : '';
+    b.setAttribute('aria-pressed', String(!!on));
+    if (extra) Object.keys(extra).forEach(function(k){ b.setAttribute(k, extra[k]); });
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function setUrl(){
+    var q = new URLSearchParams();
+    if (cur.series !== SERIES[0].id) q.set('series', cur.series);
+    if (cur.silo !== 'all') q.set('silo', cur.silo);
+    var qs = q.toString();
+    try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '')); } catch (_) {}
+  }
+
+  /* Rows that overflow: fade the ends, keep the chosen pill in view, and let the mouse wheel scroll them sideways. */
+  function fit(row){
+    var over = row.scrollWidth > row.clientWidth + 1;
+    row.classList.toggle('is-scroll', over);
+    var on = row.querySelector('button.on');
+    if (over && on) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
+  }
+  [seriesBar, jump].forEach(function(row){
+    row.addEventListener('wheel', function(e){
+      if (row.scrollWidth <= row.clientWidth + 1 || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      var next = row.scrollLeft + e.deltaY;
+      if (next < 0 || next > row.scrollWidth - row.clientWidth) return;   /* at an end: let the page scroll */
+      row.scrollLeft = next; e.preventDefault();
+    }, { passive:false });
+  });
+  addEventListener('resize', function(){ fit(seriesBar); fit(jump); });
+
+  function choose(next, scroll){
+    if (next.series !== undefined && next.series !== cur.series){ cur.series = next.series; cur.silo = 'all'; }
+    if (next.silo !== undefined) cur.silo = next.silo;
+    render();
+    setUrl();
+    if (scroll){
+      var top = gallery.getBoundingClientRect().top + window.pageYOffset - 204;
+      if (window.pageYOffset > top) window.scrollTo(0, Math.max(0, top));
+    }
+  }
+
+  function render(){
+    var s = seriesById(cur.series);
+    var silos = silosOf(s);
+    if (cur.silo !== 'all' && !silos.some(function(x){ return x.id === cur.silo; })) cur.silo = 'all';
+
+    seriesBar.innerHTML = '';
+    SERIES.forEach(function(x){
+      seriesBar.appendChild(pill(x.label, x.id === cur.series, function(){ choose({ series:x.id }, true); }, { 'data-series':x.id }));
+    });
+    jump.innerHTML = '';
+    jump.appendChild(pill('All', cur.silo === 'all', function(){ choose({ silo:'all' }, true); }, { 'data-silo':'all' }));
+    silos.forEach(function(silo){
+      jump.appendChild(pill(silo.label, cur.silo === silo.id, function(){ choose({ silo:silo.id }, true); }, { 'data-silo':silo.id }));
+    });
+
+    fit(seriesBar); fit(jump);
+
+    if (s.id === 'portraits' && manifestFailed){
       notice('The photographs did not load. ' +
              '<code>/previews/effects-manifest.json</code> is missing — run ' +
              '<code>node scripts/emit-preview-manifest.js</code>.');
-    });
-
-  function draw(M){
-    var base = M.base || '/previews/effects/';
-    var art  = M.effects || {};
-
-    /* Whole filenames come out of the manifest, because the extension
-       varies by tree and by sitter. Nothing here builds a path from an id
-       and hopes. Where a sitter's plate is unshot, the neutral serves; if
-       there is no neutral either, the tile says so rather than showing
-       the other sitter. */
-    function plate(id, which){
-      var a = art[id];
-      if (!a) return null;
-      var name = a[which] || a.neutral || null;
-      return name ? base + id + '/' + name : null;
+      return;
     }
 
-    /* THE GALLERY ASKS FOR THE BIG PLATE FIRST. Built 2026-08-09 by
-       scripts/build-gallery-plates.py at 900px, because a tile drawn 430
-       CSS pixels wide is 860 real ones on the 2x displays most people
-       are using, and the 390s were softening.
-
-       Not in the manifest on purpose: the manifest is written by the
-       preview build and knows about man.jpg and woman.jpg. Rather than
-       teach two build scripts about each other, the tile asks for @2x
-       and falls back to the manifest plate if it is not there — which is
-       also what happens for the four effects whose source was too small
-       to build. */
-    function bigPlate(id, which){
-      var a = art[id];
-      if (!a || !a[which]) return null;      /* no plate for this sitter */
-      return base + id + '/' + which + '@2x.jpg';
-    }
-
-    /* The `_woman` ids are CRAFT routes, not finishes — Another Age
-       carries seven so a woman's craft reaches a woman's body. They have
-       no plates of their own and printing them would draw that room
-       twice. One tile per finish. */
-    function isVariant(id){
-      return R.isVariant ? R.isVariant(id) : /_woman$/.test(id);
-    }
-
-    var offerable = R.effects.filter(function(e){
-      return e.body === 'live' && !isVariant(e.id);
-    });
-
-    function tile(e, which){
-      var small = plate(e.id, which);
-      var big   = bigPlate(e.id, which);
-
-      var a = document.createElement('a');
-      a.className = 'tile';
-      a.href = '/portraits?effect=' + encodeURIComponent(e.id);
-
-      var box = document.createElement('div');
-      box.className = 'tile-img';
-
-      if (big || small){
-        var img = document.createElement('img');
-        img.alt = e.label + ', crafted';
-        img.loading  = 'lazy';
-        img.decoding = 'async';
-        /* One retry, then the empty state. The first miss falls back to
-           the 390; a second miss means there is genuinely nothing on disk
-           and the tile says so rather than leaving a grey hole with no
-           explanation. */
-        var tried = false;
-        img.addEventListener('error', function(){
-          if (!tried && small && img.getAttribute('src') !== small){
-            tried = true;
-            img.src = small;
-            return;
-          }
-          img.remove();
-          box.classList.add('is-empty');
-        });
-        img.src = big || small;
-        box.appendChild(img);
-      } else {
-        box.classList.add('is-empty');
-      }
-
-      var cap = document.createElement('div');
-      cap.className = 'tile-cap';
-      /* Labels go in through textContent, never innerHTML — the registry
-         emits plain unicode, so "Charcoal & Chalk" would become &amp;amp;
-         on a second pass. */
-      var nm = document.createElement('b');
-      nm.textContent = e.label;
-      cap.appendChild(nm);
-
-      a.appendChild(box);
-      a.appendChild(cap);
-      return a;
-    }
-
-    function column(list, which, heading){
-      var col  = document.createElement('div');
-      var h    = document.createElement('div');
-      h.className = 'subject-head';
-      h.textContent = heading;
-      var grid = document.createElement('div');
-      grid.className = 'tiles';
-      list.forEach(function(e){ grid.appendChild(tile(e, which)); });
-      col.appendChild(h);
-      col.appendChild(grid);
-      return col;
-    }
-
+    var all = offerable(s);
     gallery.innerHTML = '';
-    jump.innerHTML    = '';
-
-    R.silos.forEach(function(silo){
-      var list = offerable.filter(function(e){ return e.category === silo.id; });
+    silos.forEach(function(silo){
+      if (cur.silo !== 'all' && cur.silo !== silo.id) return;
+      var list = all.filter(function(e){ return e.category === silo.id; });
       if (!list.length) return;
 
       var sec = document.createElement('section');
@@ -578,45 +666,32 @@ body{
       head.className = 'silo-head';
       head.innerHTML = '<h2></h2><p></p>';
       head.querySelector('h2').textContent = silo.label;
-      /* The Curator's line, with its "Here are the ... finishes." opener
-         trimmed. She is speaking to someone standing in the room, and
-         this page is not the room. */
+      /* The Curator's line, with its "Here are the ... finishes." opener trimmed. */
       head.querySelector('p').textContent =
-        String(silo.line || '').replace(/^Here are (the )?[^.]*finishes\.\s*/i, '');
+        String(silo.line || '').replace(/^Here are (the )?[^.]*(finishes|effects)\.\s*/i, '');
       sec.appendChild(head);
 
-      var subjects = document.createElement('div');
-      subjects.className = 'subjects';
-      subjects.appendChild(column(list, 'man',   'Men'));
-      subjects.appendChild(column(list, 'woman', 'Women'));
-      sec.appendChild(subjects);
-
+      var href = function(e){ return s.workshop + '?effect=' + encodeURIComponent(e.id); };
+      if (s.id === 'portraits'){
+        var subjects = document.createElement('div');
+        subjects.className = 'subjects';
+        subjects.appendChild(column(list, 'Men',   function(e){ return tile(e, portraitSources(e.id, 'man'),   href(e)); }));
+        subjects.appendChild(column(list, 'Women', function(e){ return tile(e, portraitSources(e.id, 'woman'), href(e)); }));
+        sec.appendChild(subjects);
+      } else {
+        var g = grid('tiles tiles--wide');
+        list.forEach(function(e){ g.appendChild(tile(e, plainSources(s, e.id), href(e))); });
+        sec.appendChild(g);
+      }
       gallery.appendChild(sec);
-
-      var a = document.createElement('a');
-      a.href = '#silo-' + silo.id;
-      a.textContent = silo.label;
-      jump.appendChild(a);
     });
-
-    /* Which room is current — the one whose top has passed the sticky
-       apparatus above it. Marked on the pill, which inverts. */
-    var pills = Array.prototype.slice.call(jump.querySelectorAll('a'));
-    function mark(){
-      var cur = pills[0];
-      pills.forEach(function(p){
-        var el = document.querySelector(p.getAttribute('href'));
-        if (el && el.getBoundingClientRect().top <= 170) cur = p;
-      });
-      pills.forEach(function(p){ p.classList.toggle('on', p === cur); });
-    }
-    addEventListener('scroll', mark, { passive:true });
-    mark();
 
     if (!gallery.children.length){
       notice('The catalogue loaded, but no finish is marked <code>live</code>.');
     }
   }
+
+  manifestReady.then(render);
 })();
 </script>
 <script>
