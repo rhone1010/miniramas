@@ -9,7 +9,7 @@ body.mc-designed #mycollFilters,body.mc-designed .mc-info,body.mc-designed .mc-g
 .mc-filter-open:hover,.mc-filter-open:focus-visible{background:#7d3a43;}
 .mc-filter-open svg{width:24px;height:24px;}
 body.mc-designed #mycollGrid{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-rows:max-content!important;align-content:start!important;gap:16px!important;flex:1!important;min-height:0!important;height:auto!important;width:100%!important;max-width:none!important;margin:0!important;padding:54px 22px!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-gutter:auto!important;box-sizing:border-box;}
-body.mc-designed #mycollGrid>.card{width:100%!important;height:auto!important;min-height:0!important;aspect-ratio:1!important;max-width:none!important;margin:0!important;padding:5px!important;border:2px solid #e6e1d5!important;border-radius:0!important;background:#f3ede1!important;box-shadow:0 3px 8px #0004!important;}
+body.mc-designed #mycollGrid>.card{width:100%!important;height:auto!important;min-height:0!important;aspect-ratio:1!important;max-width:none!important;margin:0!important;border:2px solid #e6e1d5!important;border-radius:0!important;box-shadow:0 3px 8px #0004!important;}
 body.mc-designed #mycollGrid .card__art{width:100%!important;height:100%!important;aspect-ratio:1!important;background-size:cover!important;background-position:center!important;border-radius:0!important;}
 body.mc-designed #mycollGrid .card__overlay,body.mc-designed #mycollGrid .card__quick,body.mc-designed #mycollGrid .card__badge{display:none!important;}
 body.mc-designed #mycollGrid .mycoll__empty{grid-column:1/-1;}
