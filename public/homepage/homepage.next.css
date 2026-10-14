@@ -1,0 +1,221 @@
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400; font-display: swap; src: url('/homepage/assets/fonts/cormorant-garamond-regular.ttf') format('truetype'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400; font-display: swap; src: url('/homepage/assets/fonts/cormorant-garamond-italic.ttf') format('truetype'); }
+@font-face { font-family: 'Manrope'; font-style: normal; font-weight: 400; font-display: swap; src: url('/homepage/assets/fonts/manrope-regular.ttf') format('truetype'); }
+@font-face { font-family: 'Manrope'; font-style: normal; font-weight: 600; font-display: swap; src: url('/homepage/assets/fonts/manrope-semibold.ttf') format('truetype'); }
+:root {
+  --ink: #2a241e;
+  --ink-soft: #5a5248;
+  --vellum: #f3ede1;
+  --limestone: #f1ece3;
+  --oxblood: #7d4242;
+  --brass: #75623a;
+  --espresso: #26201a;
+  --hairline: rgba(123,92,58,.20);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Manrope', sans-serif;
+  --header-height: 76px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; scroll-padding-top: var(--header-height); }
+body { margin: 0; color: var(--ink); background: var(--limestone); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+a { color: inherit; }
+button { font: inherit; }
+a:focus-visible, button:focus-visible, main:focus-visible { outline: 3px solid var(--oxblood); outline-offset: 5px; }
+.hp-header { position: sticky; top: 0; z-index: 10; min-height: 76px; padding: 12px 4%; display: flex; align-items: center; justify-content: space-between; gap: 22px; background: var(--limestone); border-bottom: 1px solid var(--hairline); }
+.hp-mark { flex-shrink: 0; font-family: var(--serif); font-size: 31px; text-decoration: none; letter-spacing: .02em; }
+.hp-mark span { font-style: italic; color: var(--oxblood); }
+.hp-header nav { display: flex; gap: 12px; flex-wrap: wrap; }
+.hp-header nav a { display: inline-flex; align-items: center; min-height: 44px; padding: .5rem .8rem; border: 1px solid var(--hairline); border-radius: 999px; text-decoration: none; font: italic 22px/1 var(--serif); }
+.hp-header nav a:hover, .hp-header nav a[aria-current="location"] { background: var(--oxblood); border-color: var(--oxblood); color: var(--vellum); }
+.hp-wrap { width: 92%; max-width: 1620px; margin-inline: auto; }
+.hp-eyebrow { margin: 0 0 8px; color: var(--brass); font-size: 12px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
+h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 400; text-wrap: balance; }
+h1, h2 { font-size: clamp(36px, 3.4vw, 58px); line-height: 1.04; }
+.hp-intro-detail > p, .hp-rotation-copy > p { margin: 0 0 14px; font: 400 22px/1.3 var(--serif); color: var(--ink-soft); }
+.hp-cta { display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: .65rem 1.2rem; min-height: 44px; border: 1px solid var(--oxblood); border-radius: 999px; font: italic 22px/1.15 var(--serif); text-decoration: none; color: var(--vellum); background: var(--oxblood); }
+.hp-cta:hover { background: var(--espresso); border-color: var(--espresso); }
+.hp-slide + .hp-slide { margin-top: 28px; }
+.hp-carousel.is-ready .hp-slide { margin-top: 0; }
+.hp-triptych { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+figure { margin: 0; min-width: 0; }
+.hp-triptych img { display: block; width: 100%; aspect-ratio: 1; height: auto; object-fit: contain; border-radius: 8px; }
+.hp-rotation-copy h3 { font-size: clamp(30px, 2.4vw, 40px); line-height: 1.05; margin-bottom: 12px; }
+.hp-rotation-copy .hp-cta { color: var(--oxblood); background: transparent; }
+.hp-rotation-copy .hp-cta:hover { color: var(--vellum); background: var(--oxblood); }
+.hp-controls { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.hp-controls button { min-height: 44px; min-width: 44px; padding: .5rem .8rem; border: 1px solid var(--oxblood); border-radius: 999px; background: transparent; color: var(--oxblood); cursor: pointer; font: italic 20px/1 var(--serif); }
+.hp-controls button:hover { background: var(--oxblood); color: var(--vellum); }
+.hp-controls button:disabled { cursor: default; }
+.hp-controls [data-position] { color: var(--brass); font-size: 12px; min-width: 32px; text-align: center; }
+.hp-controls .hp-pause { min-width: 142px; }
+.hp-gifts { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); align-items: start; gap: 14px; }
+.hp-gifts img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; background: var(--vellum); border-radius: 8px; }
+.hp-gifts figcaption { margin-top: 8px; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
+.hp-availability { margin-top: 18px; margin-bottom: 0; font: 400 22px/1.3 var(--serif); color: var(--ink-soft); }
+.hp-skip { position: fixed; top: 8px; left: 8px; z-index: 20; padding: 12px 22px; background: var(--vellum); color: var(--oxblood); transform: translateY(-180%); }
+.hp-skip:focus { transform: none; }
+.hp-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (min-width: 1200px) and (min-height: 900px) and (prefers-reduced-motion: no-preference) {
+  html { scroll-snap-type: y proximity; }
+  .hp-chapter { scroll-snap-align: start; }
+}
+
+
+@media (max-width: 700px) {
+  :root { --header-height: 126px; }
+  .hp-header { flex-direction: column; gap: 6px; padding: 8px 3%; }
+  .hp-mark { font-size: 28px; }
+  .hp-header nav { justify-content: center; gap: 6px; }
+  .hp-header nav a { font-size: 18px; padding: .5rem .65rem; }
+  h1, h2 { font-size: clamp(36px, 8vw, 48px); }
+  .hp-triptych { gap: 8px; }
+  .hp-rotation-copy h3 { font-size: 32px; }
+  .hp-controls { flex-wrap: wrap; }
+  .hp-gifts { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+  .hp-gifts figure:last-child { grid-column: 1 / -1; max-width: 70%; justify-self: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; scroll-snap-type: none; }
+}
+
+/* Hero copy stays inside the image; each composition has its own placement. */
+.hp-section { padding-bottom: 22px; border-bottom: 1px solid var(--hairline); background: linear-gradient(rgba(241,236,227,.92),rgba(241,236,227,.92)),url('/homepage/assets/textures/limestone.jpg'); }
+.hp-beauty { position: relative; width: 100%; isolation: isolate; overflow: clip; background: var(--espresso); }
+.hp-beauty > picture > img { display: block; width: 100%; height: auto; }
+.hp-intro { position: absolute; z-index: 1; margin: 0; padding: 0; display: grid; gap: 16px; }
+.hp-intro::before { content: ''; position: absolute; z-index: -1; inset: -36px -42px; pointer-events: none; background: radial-gradient(ellipse at center, rgba(243,237,225,.95) 0%, rgba(243,237,225,.87) 48%, rgba(243,237,225,0) 74%); }
+.hp-intro h1, .hp-intro h2 { font-size: clamp(36px, 3.35vw, 58px); }
+.hp-intro-detail > p { font-size: 26px; line-height: 1.2; margin-bottom: 18px; }
+#groups .hp-intro { left: 4%; top: 14%; width: 30%; }
+#pets .hp-intro { left: 4%; top: 12%; width: 29%; }
+#portraits .hp-intro { left: 4%; top: 16%; width: 30%; color: var(--vellum); }
+#portraits .hp-intro::before { background: radial-gradient(ellipse at center, rgba(38,32,26,.82) 0%, rgba(38,32,26,.64) 45%, rgba(38,32,26,0) 74%); }
+#portraits .hp-intro p { color: var(--vellum); }
+#holiday-gifts .hp-intro { left: 61%; top: 15%; width: 35%; color: var(--vellum); gap: 12px; }
+#holiday-gifts .hp-intro::before { background: radial-gradient(ellipse at center, rgba(38,32,26,.86) 0%, rgba(38,32,26,.66) 50%, rgba(38,32,26,0) 76%); }
+#holiday-gifts .hp-intro p { color: var(--vellum); }
+#holiday-gifts .hp-intro h2 { font-size: clamp(36px, 2.5vw, 48px); }
+.hp-carousel, .hp-gifts { padding-top: 18px; }
+.hp-slide { display: grid; grid-template-columns: 1fr; gap: 18px; }
+.hp-triptych { max-width: none; }
+.hp-rotation-copy { display: grid; grid-template-columns: 1fr 1.25fr auto; align-items: center; gap: 24px; }
+.hp-rotation-copy h3, .hp-rotation-copy > p { margin: 0; }
+.hp-rotation-copy > p { font-size: 24px; }
+.hp-controls { margin-top: 12px; }
+@media (max-width: 1100px) {
+  .hp-intro { gap: 12px; }
+  .hp-intro h1, .hp-intro h2 { font-size: 36px; }
+  .hp-intro-detail > p { font-size: 22px; }
+  .hp-intro .hp-cta { font-size: 20px; padding-inline: .8rem; }
+  .hp-rotation-copy { grid-template-columns: 1fr 1fr; gap: 14px 22px; }
+  .hp-rotation-copy .hp-cta { justify-self: start; }
+}
+@media (max-width: 900px) {
+  .hp-beauty { min-height: 560px; display: grid; }
+  .hp-beauty > picture > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 36% center; }
+  #groups .hp-intro, #pets .hp-intro, #portraits .hp-intro, #holiday-gifts .hp-intro { position: relative; align-self: start; left: auto; top: auto; width: min(70%, 450px); margin: 36px 0 150px 5%; }
+  #holiday-gifts .hp-intro { margin-left: auto; margin-right: 5%; }
+  #pets .hp-beauty > picture > img { object-position: 30% center; }
+  #portraits .hp-beauty > picture > img { object-position: 32% center; }
+  #holiday-gifts .hp-beauty > picture > img { object-position: 68% center; }
+}
+@media (max-width: 700px) {
+  .hp-beauty { min-height: 560px; }
+  #groups .hp-intro, #pets .hp-intro, #portraits .hp-intro, #holiday-gifts .hp-intro { width: 88%; margin: 32px 6% 160px; }
+  .hp-intro::before { inset: -26px -20px; }
+  .hp-intro h1, .hp-intro h2, #holiday-gifts .hp-intro h2 { font-size: 40px; }
+  .hp-intro-detail > p { font-size: 24px; }
+  .hp-intro .hp-cta { font-size: 22px; }
+  .hp-rotation-copy { grid-template-columns: 1fr; gap: 14px; }
+  .hp-carousel, .hp-gifts { padding-top: 14px; }
+}
+
+/* Each hero and artwork gallery is a separate, naturally scrolling chapter. */
+.hp-section { padding-bottom: 0; }
+.hp-chapter { scroll-snap-stop: normal; }
+.hp-fold { display: flex; justify-content: center; margin-top: 28px; }
+.hp-hero-chapter > .hp-fold { margin-top: 0; padding: 24px 4% 32px; }
+.hp-advance { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 44px; padding: .5rem .9rem; border: 1px solid var(--hairline); border-radius: 999px; color: var(--oxblood); background: transparent; font: italic 20px/1.2 var(--serif); text-decoration: none; }
+.hp-advance:hover { border-color: var(--oxblood); background: var(--vellum); }
+.hp-advance:focus-visible { outline: 3px solid var(--oxblood); outline-offset: 5px; }
+.hp-art-chapter { padding-top: 32px; padding-bottom: 40px; }
+.hp-gift-chapter { padding-top: 32px; padding-bottom: 40px; }
+.hp-gift-chapter .hp-gifts { padding-top: 0; }
+@media (min-width: 1000px) {
+  .hp-hero-chapter > .hp-fold { padding-top: 32px; padding-bottom: 56px; }
+  .hp-art-chapter, .hp-gift-chapter { padding-top: 64px; padding-bottom: 72px; }
+  .hp-art-chapter .hp-slide { gap: 48px; }
+  .hp-art-chapter .hp-controls { margin-top: 36px; }
+  .hp-art-chapter > .hp-fold, .hp-gift-chapter > .hp-fold { margin-top: 56px; }
+  .hp-gift-chapter .hp-availability { margin-top: 36px; }
+}
+@media (max-width: 700px) {
+  .hp-hero-chapter > .hp-fold { padding-top: 18px; padding-bottom: 24px; }
+  .hp-art-chapter, .hp-gift-chapter { padding-top: 14px; padding-bottom: 28px; }
+  .hp-fold { margin-top: 24px; }
+}
+
+/* Mobile compositions and native horizontal galleries. */
+.hp-beauty > picture { display: block; }
+.hp-mobile-gallery { display: none; }
+.hp-gift-controls { display: none; }
+.hp-advance { min-width: 44px; min-height: 48px; padding: .6rem 1.1rem; border-color: var(--oxblood); background: var(--vellum); font-size: 24px; }
+.hp-advance:hover { color: var(--vellum); background: var(--oxblood); border-color: var(--oxblood); }
+.hp-advance:focus-visible { outline: 3px solid var(--oxblood); outline-offset: 5px; box-shadow: 0 0 0 2px var(--vellum); }
+.hp-chevron { display: inline-block; flex: 0 0 10px; width: 10px; height: 10px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin: -5px 2px 0 0; }
+.hp-chevron-up { transform: rotate(225deg); margin-top: 5px; }
+@media (max-width: 900px) {
+  html { scroll-snap-type: none; }
+  .hp-header { flex-direction: column; padding: 6px 3%; gap: 4px; min-height: 0; }
+  .hp-mark { font-size: 26px; line-height: 1.1; }
+  .hp-header nav { display: grid; grid-template-columns: repeat(4,auto); justify-content: center; gap: 6px; width: 100%; }
+  .hp-header nav a { justify-content: center; font-size: 18px; min-height: 44px; padding: .45rem .6rem; white-space: nowrap; }
+  .hp-beauty { display: block; min-height: 0; background: transparent; overflow: visible; }
+  .hp-beauty > picture { width: 100%; max-width: 540px; margin-inline: auto; }
+  .hp-beauty > picture > img { position: static; display: block; width: 100%; height: auto; aspect-ratio: 941 / 1672; object-fit: contain; }
+  #groups .hp-intro, #pets .hp-intro, #portraits .hp-intro, #holiday-gifts .hp-intro { position: static; width: 92%; max-width: 640px; margin: 0 auto; padding: 28px 0 12px; color: var(--ink); gap: 18px; }
+  .hp-intro::before { display: none; }
+  #portraits .hp-intro p, #holiday-gifts .hp-intro p { color: var(--ink-soft); }
+  .hp-intro h1, .hp-intro h2, #holiday-gifts .hp-intro h2 { font-size: clamp(36px, 8vw, 46px); }
+  .hp-intro-detail > p { font-size: 26px; line-height: 1.3; }
+  .hp-intro .hp-cta { font-size: 22px; }
+  .hp-art-chapter { max-width: 640px; }
+  .hp-mobile-gallery { display: flex; width: 100%; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--oxblood) var(--vellum); }
+  .hp-mobile-gallery > figure { flex: 0 0 100%; width: 100%; scroll-snap-align: start; }
+  .hp-mobile-gallery img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; border-radius: 8px; }
+  .hp-mobile-gallery:focus-visible, .hp-gifts:focus-visible { outline: 3px solid var(--oxblood); outline-offset: 4px; }
+  .hp-carousel.is-ready .hp-triptych { display: none; }
+  .hp-carousel.is-ready .hp-slide { margin-top: 24px; }
+  .hp-rotation-copy { grid-template-columns: 1fr; gap: 16px; }
+  .hp-rotation-copy h3 { font-size: 34px; }
+  .hp-rotation-copy > p { font-size: 26px; line-height: 1.3; }
+  .hp-carousel .hp-controls { justify-content: center; margin-top: 24px; }
+  .hp-controls [data-position] { font: 500 14px/1.2 var(--sans); min-width: 48px; }
+  .hp-controls button { min-width: 48px; min-height: 48px; font-size: 24px; }
+  .hp-carousel .hp-pause { display: none; }
+  .hp-gifts { display: flex; gap: 0; max-width: 640px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--oxblood) var(--vellum); align-items: start; }
+  .hp-gifts > figure, .hp-gifts figure:last-child { flex: 0 0 100%; width: 100%; max-width: none; scroll-snap-align: start; }
+  .hp-gifts img { height: auto; aspect-ratio: auto; object-fit: contain; }
+  .hp-gifts figcaption { font-size: 14px; }
+  .hp-gift-controls { display: flex; justify-content: center; margin-top: 24px; }
+  .hp-availability { max-width: 640px; font-size: 24px; }
+  .hp-advance { font-size: 22px; }
+}
+/* Mobile hero copy occupies the lower photograph, above separate chapter controls. */
+@media (max-width: 900px) {
+  .hp-beauty { max-width: 540px; margin-inline: auto; }
+  #groups .hp-intro, #pets .hp-intro, #portraits .hp-intro, #holiday-gifts .hp-intro { position: absolute; left: 22px; right: 22px; top: auto; bottom: 24px; width: auto; max-width: none; margin: 0; padding: 0; gap: 14px; color: var(--vellum); }
+  .hp-intro::before, #portraits .hp-intro::before, #holiday-gifts .hp-intro::before { display: block; inset: -32px -22px -24px; background: linear-gradient(to bottom, rgba(38,32,26,0), rgba(38,32,26,.78) 18%, rgba(38,32,26,.88)); }
+  .hp-intro .hp-eyebrow, #portraits .hp-intro .hp-eyebrow, #holiday-gifts .hp-intro .hp-eyebrow { color: var(--vellum); margin-bottom: 10px; }
+  .hp-intro h1, .hp-intro h2, #holiday-gifts .hp-intro h2 { font-size: clamp(30px, 8vw, 40px); line-height: 1.1; text-wrap: wrap; }
+  .hp-intro-detail > p, #portraits .hp-intro-detail > p, #holiday-gifts .hp-intro-detail > p { color: var(--vellum); font-size: clamp(22px, 5.2vw, 26px); line-height: 1.25; margin-bottom: 18px; }
+  .hp-intro .hp-cta { font-size: 20px; min-height: 44px; padding: .5rem .8rem; }
+  .hp-intro .hp-cta:focus-visible { outline-color: var(--vellum); }
+  #pets .hp-intro { bottom: 24px; }
+  #holiday-gifts .hp-intro { bottom: 24px; }
+}
+/* Keep narrow-desktop hero CTAs inside the image just above the mobile breakpoint. */
+@media (min-width: 901px) and (max-width: 960px) {
+  #groups .hp-intro, #pets .hp-intro, #portraits .hp-intro { top: auto; bottom: 20px; }
+}
