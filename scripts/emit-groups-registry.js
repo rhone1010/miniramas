@@ -28,7 +28,7 @@
 //
 // ---- SIX PER ROOM -----------------------------------------------------------
 //
-// September catalog: 7 silos × 6 effects = 42. groups.html slices each room
+// Each room holds at most CAP effects; the counts are whatever ROOMS and the catalogue say. groups.html slices each room
 // at CAP and appends an upsell card as the next grid slot. A room with more
 // members than CAP silently loses the extras. This script REFUSES to emit if
 // any room exceeds CAP.
@@ -53,7 +53,7 @@ const src = fs.readFileSync(SRC, 'utf8');
 // ---- THE ROOMS --------------------------------------------------------------
 // Labels and Curator lines locked by Rich, 24 August 2026.
 //
-// ROOMS — 7 silos × 6 effects = 42 for the September catalog.
+// ROOMS — seven rooms of 6, plus Toys (2). Counts are derived from this table.
 // Rich's final assignment, September 2026.
 const ROOMS = [
   {
@@ -97,6 +97,11 @@ const ROOMS = [
     label: 'Curiosities',
     line: 'For when ordinary simply won\'t do.',
     members: ['art_deco', 'balloon', 'clockwork', 'driftwood_resin', 'neon', 'retro_robot'],
+  },  {
+    id: 'toys',
+    label: 'Toys',
+    line: 'Collectible figures, made from your people.',
+    members: ['action_figures', 'designer_vinyl'],
   },
 ];
 
@@ -242,10 +247,10 @@ const js =
    THE ROOMS ARE NOT IN THE SOURCE. groups-effects.ts is a flat catalogue
    with no grouping field and should not gain one - which room an effect
    sits in is a glass decision and does not belong in the engine's file.
-   The seven rooms and their membership are Rich's assignment and live
+   The rooms and their membership are Rich's assignment and live
    in the emitter.
 
-   SIX PER ROOM, MAXIMUM. September catalog: 7 silos x 6 effects = 42.
+   SIX PER ROOM, MAXIMUM. Counts come from the rooms table, not a constant.
    groups.html slices each room at CAP and appends an upsell card as
    the next slot, so a room exceeding CAP silently loses effects. The
    emitter refuses rather than let that ship.

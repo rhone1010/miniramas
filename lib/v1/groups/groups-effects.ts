@@ -133,6 +133,7 @@ export function groupsFormatAllowed(count: number, format: GroupsFormat): boolea
 export const GROUPS_DEFAULT_FORMATS: GroupsFormat[] = ['3:2']
 
 export type GroupsEffectId =
+  | 'action_figures'
   | 'art_deco'
   | 'art_nouveau'
   | 'art_nouveau_faces'
@@ -144,6 +145,7 @@ export type GroupsEffectId =
   | 'clockwork'
   | 'colored_pencil'
   | 'colored_pencil_faces'
+  | 'designer_vinyl'
   | 'driftwood_resin'
   | 'family_mosaic'
   | 'gold'
@@ -264,6 +266,22 @@ export const MAX_FACES_SUBJECTS = 9
 // ───────────────────────────────────────────────────────────────────────
 
 export const GROUPS_EFFECTS: Record<GroupsEffectId, GroupsEffect> = {
+
+  action_figures: {
+    id: 'action_figures',
+    label: 'Action Figures',
+    intake: 'group_photo',
+    body: `Transform the group into a premium highly detailed collectible action figures, clearly manufactured physical toys while preserving an immediately recognizable likeness. put the figures in a dramatic pose. NO TEXT. camera foreshortening, kinetic energy captured as physical 3d materials
+
+Use the subtle eye of a skilled character sculptor: preserve the distinctive proportions, expression, age, asymmetries and features that make this person recognizable. Slightly simplify and stylize the anatomy into a high-end 1:6 scale figure without becoming cartoonish.
+
+Show realistic molded and painted materials: finely sculpted face and hair, subtle paint variation, articulated neck, shoulders, elbows and wrists, with discreet visible joints. Recreate the subject's clothing as miniature fabric or finely molded costume materials appropriate to the original garment.
+
+Photograph the figures standing in a premium collector display setting, from head to pants, with enough surrounding space to clearly establish its small physical scale. Include a tasteful display base and heavily blurred hints of a collectible shop.
+
+Use beautiful product photography with soft directional light, realistic reflections and shallow depth of field. The figure should feel tangible enough to pick up: exquisitely manufactured, slightly stylized, and unmistakably this person.`,
+    avoid: `Avoid Funko proportions, giant heads, cartoon faces, dolls, mannequins or human-looking skin. Avoid turning the result into a normal photograph of the person. Avoid extreme muscularity or superhero styling unless present in the source. Avoid text, logos, weapons or invented accessories. Preserve age and likeness.`,
+  },
 
   art_deco: {
     id: 'art_deco',
@@ -414,6 +432,26 @@ For five portraits in 1:1, use exactly two centered rows: three equal panels abo
 
 Detailed at the center, beautifully unfinished at the edges. Contemporary fine-art drawing. NO TEXT.`,
     avoid: `Avoid photorealism, smooth digital rendering, cartoon styling, fully rendered edges, unequal panels or merged identities.`,
+  },
+
+  designer_vinyl: {
+    id: 'designer_vinyl',
+    label: 'Designer Vinyl',
+    intake: 'group_photo',
+    body: `Transform the subjects into premium limited-edition designer vinyl art figures. The result is real manufactured collectible toys, photographed as physical objects.
+
+Preserve an unmistakable likeness through intelligent simplification and gentle caricature. Give the figures  moderately oversized sculpted heads, compact body, short simplified limbs and confident toy-like proportions. Emphasize the distinctive face shapes, hairstyles, expression, asymmetries and features that make these particular people recognizable rather than creating a generic cute characters.
+
+The entire group is beautifully with each figure molded vinyl with smooth sculptural geometry and subtle seams. Translate the face into clean dimensional forms: sculpted brow, nose, cheeks, jaw, ears and mouth, with inset glossy eyes. Hair becomes a single beautifully sculpted mass broken into broad graphic locks and planes. Skin is painted matte vinyl, not human skin.
+
+Translate the subjects clothing into simplified molded forms while preserving its recognizable colors, shapes and character. Small details can be sharply painted or molded into the surfaces.
+
+Show the completed figures standing on a simple collectible display base on a designer toy shop countertop. Behind it is a sophisticated contemporary art-toy boutique with shelves of colorful collectible figures, softly blurred into the background.
+
+Use beautiful high-end product photography, shallow depth of field and soft directional light that reveals the curves, molded geometry and subtle sheen of the vinyl. Leave generous space around the figure and make its small physical scale immediately apparent.
+
+The result should feel like an expensive numbered art toy created by an accomplished character designer and sculptor, playful, beautifully made and unmistakably the subject. NO TEXT.`,
+    avoid: `Avoid Funko-style extreme proportions, giant square heads, bobbleheads, plush materials, realistic human skin, realistic hair, dolls, action-figure joints, superhero bodies, cheap plastic, generic cartoon faces, text, logos or packaging.`,
   },
 
   driftwood_resin: {

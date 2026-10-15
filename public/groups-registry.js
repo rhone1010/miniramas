@@ -2,15 +2,15 @@
    Source: lib/v1/groups/groups-effects.ts  (CENG-owned)
    Rooms:  scripts/emit-groups-registry.js  (the ROOMS table in that file)
    Regenerate: node scripts/emit-groups-registry.js
-   Emitted: 2026-10-01T18:30:51.016Z
+   Emitted: 2026-10-15T23:10:44.284Z
 
    THE ROOMS ARE NOT IN THE SOURCE. groups-effects.ts is a flat catalogue
    with no grouping field and should not gain one - which room an effect
    sits in is a glass decision and does not belong in the engine's file.
-   The seven rooms and their membership are Rich's assignment and live
+   The rooms and their membership are Rich's assignment and live
    in the emitter.
 
-   SIX PER ROOM, MAXIMUM. September catalog: 7 silos x 6 effects = 42.
+   SIX PER ROOM, MAXIMUM. Counts come from the rooms table, not a constant.
    groups.html slices each room at CAP and appends an upsell card as
    the next slot, so a room exceeding CAP silently loses effects. The
    emitter refuses rather than let that ship.
@@ -28,7 +28,7 @@
 
    Labels are plain unicode. Key on .id, never on .label. */
 window.GROUPS_REGISTRY = {
-  "generatedAt": "2026-10-01T18:30:51.016Z",
+  "generatedAt": "2026-10-15T23:10:44.284Z",
   "silos": [
     {
       "id": "portrait_collections",
@@ -64,6 +64,11 @@ window.GROUPS_REGISTRY = {
       "id": "curiosities",
       "label": "Curiosities",
       "line": "For when ordinary simply won't do."
+    },
+    {
+      "id": "toys",
+      "label": "Toys",
+      "line": "Collectible figures, made from your people."
     }
   ],
   "effects": [
@@ -491,6 +496,26 @@ window.GROUPS_REGISTRY = {
       "id": "retro_robot",
       "label": "Atomic-Age Robot",
       "category": "curiosities",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "action_figures",
+      "label": "Action Figures",
+      "category": "toys",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "designer_vinyl",
+      "label": "Designer Vinyl",
+      "category": "toys",
       "intake": "group_photo",
       "body": "live",
       "formats": [
