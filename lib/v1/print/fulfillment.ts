@@ -1,12 +1,27 @@
-import {preparePrintAsset} from './asset-pipeline'
 import {createOrder as createProdigiOrder} from './prodigi-client'
-import {ownedPrintSource} from './owned-source'
 import {getSku} from './sku-map'
 import type {PrintOrderRow} from './db'
+import {assetRuntime} from './upscale/runtime'
+import {AssetsNotReadyError,enqueueOrderJobs,summarizeJobs} from './upscale/orders'
+import {sha256} from './upscale/checks'
+import {PipelineInactiveError,pipelineState} from './upscale/pipeline'
 export class PlacementUncertainError extends Error {}
-/** Shared preparation and placement path; caller persists the result. */
+export {AssetsNotReadyError,PipelineInactiveError}
+
+const SIGNED_URL_SECONDS = 7 * 24 * 60 * 60   // Prodigi fetches within minutes; matches the previous asset URLs
+
+/**
+ * Shared placement path; the caller persists the result.
+ *
+ * THE PICTURES ARE NO LONGER MADE HERE. Upscaling, inspection and any human review happen in the queued,
+ * resumable jobs (./upscale/process.ts), outside the Stripe request. This function:
+ *   1. makes sure every order line has a job (idempotent),
+ *   2. refuses unless EVERY job is approved (AssetsNotReadyError otherwise),
+ *   3. re-reads each approved file and checks its hash against the job record before trusting it,
+ *   4. only then places the Prodigi order, with the same idempotency key and items as before.
+ * Nothing unapproved can reach Prodigi from here.
+ */
 export async function prepareAndPlacePrint(order:PrintOrderRow,squareTest:boolean,beforePlacement?:()=>Promise<void>):Promise<string>{
-  // ── Asset pipeline per item ────────────────────────────────
   const prodigiItems: Array<{
     sku:    string
     copies: number
@@ -15,27 +30,22 @@ export async function prepareAndPlacePrint(order:PrintOrderRow,squareTest:boolea
     assets: Array<{ printArea: string; url: string }>
   }> = []
 
-  try {
-    for (const item of order.items) {
-      console.log(`[print-webhook] preparing asset for renderId=${item.renderId} size=${item.size}`)
-      // 1. Fetch source render
-      let sourceB64: string
-      if (squareTest) {
-        const source = await ownedPrintSource(order.owner_key!, item.renderId)
-        sourceB64 = source.bytes.toString('base64')
-      } else {
-        const res = await fetch(item.renderUrl)
-        if (!res.ok) throw new Error('fetch render failed: ' + res.status)
-        sourceB64 = Buffer.from(await res.arrayBuffer()).toString('base64')
-      }
+  // Nothing starts, not even creating jobs, while the pipeline is off or not ready (retry and approval paths come here too).
+  const gate = await pipelineState()
+  if (!gate.active) throw new PipelineInactiveError(gate)
+  const rt = assetRuntime()
+  const jobs = await enqueueOrderJobs(rt.store, order, squareTest)
+  const summary = summarizeJobs(jobs, order.items.length)
+  if (summary.state !== 'approved') throw new AssetsNotReadyError(summary.state, summary.detail)
 
-      // 2. Upscale + upload + signed URL
-      const asset = await preparePrintAsset({
-        imageB64: sourceB64,
-        renderId: item.renderId,
-        size:     item.size,
-        finish:   item.finish,
-      })
+  try {
+    for (let i = 0; i < order.items.length; i++) {
+      const item = order.items[i], job = jobs[i]
+      console.log(`[print-fulfil] approved asset for renderId=${item.renderId} size=${item.size} job=${job.id}`)
+      if (!job.final_path || !job.final_sha256) throw new Error('approved_job_without_file')
+      const bytes = await rt.storage.get(job.final_path)
+      if (sha256(bytes) !== job.final_sha256) throw new Error('asset_hash_mismatch')
+      const signedUrl = await rt.storage.signedUrl(job.final_path, SIGNED_URL_SECONDS)
 
       const skuEntry = getSku(item.size, item.finish)
       prodigiItems.push({
@@ -43,12 +53,12 @@ export async function prepareAndPlacePrint(order:PrintOrderRow,squareTest:boolea
         copies: item.copies,
         attributes:skuEntry.attributes,
         sizing: skuEntry.defaultSizing,
-        assets: [{ printArea: 'default', url: asset.signedUrl }],
+        assets: [{ printArea: 'default', url: signedUrl }],
       })
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error('[print-webhook] asset pipeline failed:', msg)
+    console.error('[print-fulfil] asset verification failed:', msg)
     throw new Error(`asset_pipeline: ${msg}`)
   }
 

@@ -1,25 +1,32 @@
 import {beforeEach,it,expect,vi} from 'vitest'
 import sharp from 'sharp'
-const state=vi.hoisted(()=>({uploaded:Buffer.alloc(0),steps:[] as string[],outpaint:vi.fn()}))
+const state=vi.hoisted(()=>({uploaded:Buffer.alloc(0),steps:[] as string[],targets:[] as number[],outpaint:vi.fn()}))
 vi.mock('../shared/outpaint',()=>({outpaint:state.outpaint}))
 vi.mock('@supabase/supabase-js',()=>({createClient:()=>({storage:{from:()=>({upload:async(_p:string,b:Buffer)=>{state.uploaded=b;return {error:null}},createSignedUrl:async()=>({data:{signedUrl:'private-test-url'},error:null})})}})}))
 import {preparePrintAsset} from './asset-pipeline'
 beforeEach(()=>{
- state.steps=[];state.outpaint.mockReset();vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL','https://example.test');vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY','test');vi.stubEnv('REPLICATE_API_TOKEN','test')
+ state.steps=[];state.targets=[];state.outpaint.mockReset();vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL','https://example.test');vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY','test');vi.stubEnv('REPLICATE_API_TOKEN','test')
  state.outpaint.mockImplementation(async(input)=>{
    state.steps.push('outpaint')
    return {outpainted:true,image:await sharp(input.image).extend({left:input.padding.left,right:input.padding.right,top:input.padding.up,bottom:input.padding.down,background:'blue'}).png().toBuffer()}
  })
  let enlarged:Buffer
  vi.stubGlobal('fetch',vi.fn(async(url,options)=>{
-   if(String(url).includes('/predictions')){
+   const u=String(url)
+   if(u.endsWith('/predictions')&&options?.method==='POST'){
      state.steps.push('upscale');const {input}=JSON.parse(options.body)
-     expect(input.face_enhance).toBe(false)
-     const src=Buffer.from(input.image.split(',')[1],'base64'),meta=await sharp(src).metadata()
-     enlarged=await sharp(src).resize(Math.floor(meta.width!*input.scale),Math.floor(meta.height!*input.scale)).png().toBuffer()
-     return {ok:true,json:async()=>({output:'https://example.test/upscaled',status:'succeeded'})}
+     // The provider receives a URL to the prepared artwork, with enhancement off and a megapixel target.
+     expect(input.image).toBe('private-test-url');expect(input.upscale_mode).toBe('target')
+     expect(input.enhance_details).toBe(false);expect(input.enhance_realism).toBe(false);expect(input.disable_safety_checker).toBe(false)
+     expect(input.output_format).toBe('jpg');expect(input.output_quality).toBe(95)
+     const src=state.uploaded,meta=await sharp(src).metadata()
+     const s=Math.sqrt(input.target*1e6/(meta.width!*meta.height!))
+     state.targets.push(input.target)
+     enlarged=await sharp(src).resize(Math.round(meta.width!*s),Math.round(meta.height!*s)).png().toBuffer()
+     return {ok:true,status:201,json:async()=>({id:'p1'})}
    }
-   return {ok:true,arrayBuffer:async()=>enlarged}
+   if(u.endsWith('/predictions/p1'))return {ok:true,status:200,json:async()=>({status:'succeeded',output:'https://example.test/upscaled'})}
+   return {ok:true,status:200,arrayBuffer:async()=>enlarged}
  }))
 })
 async function source(w:number,h:number){return (await sharp({create:{width:w,height:h,channels:3,background:'red'}}).png().toBuffer()).toString('base64')}
@@ -73,8 +80,9 @@ it('covers actual Balloon rounding and reaches exactly 3600 by 2400',async()=>{
 })
 it('still rejects undersized provider output without uploading',async()=>{
  const small=await sharp({create:{width:3599,height:2400,channels:3,background:'red'}}).png().toBuffer()
- vi.mocked(fetch).mockImplementation(async(url)=>String(url).includes('/predictions')?{ok:true,json:async()=>({status:'succeeded',output:'https://example.test/output'})} as Response:{ok:true,arrayBuffer:async()=>small} as unknown as Response)
+ vi.mocked(fetch).mockImplementation(async(url,options)=>{const u=String(url);if(u.endsWith('/predictions'))return {ok:true,status:201,json:async()=>({id:'p1'})} as unknown as Response;if(u.endsWith('/predictions/p1'))return {ok:true,status:200,json:async()=>({status:'succeeded',output:'https://example.test/output'})} as unknown as Response;return {ok:true,status:200,arrayBuffer:async()=>small} as unknown as Response})
  state.uploaded=Buffer.alloc(0)
  await expect(preparePrintAsset({imageB64:await source(1200,896),renderId:'short',size:'8x12',finish:'fine_art'})).rejects.toThrow('print_upscale_resolution_shortfall')
- expect(state.uploaded.length).toBe(0)
+ // Only the prepared INPUT was uploaded for the provider; the print file itself was never produced or uploaded.
+ expect((await sharp(state.uploaded).metadata()).width).toBeLessThan(3000)
 })

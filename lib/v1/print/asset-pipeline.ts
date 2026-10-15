@@ -3,13 +3,12 @@ import {outpaint} from '../shared/outpaint'
 import {printPlan,finishPrintPixels,requiredUpscale,compositionPlan} from './geometry'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { getSku, type PrintSize, type PrintFinish } from './sku-map'
+import { REFERENCE_PPI, computeTarget, validateOutput, type Dim } from './upscale/target'
+import { DEFAULT_SETTINGS, type UpscaleSettings } from './upscale/settings'
+import { makeProvider, ProviderError, type UpscaleProvider } from './upscale/providers'
 
 const BUCKET                = 'print-assets'
 const SIGNED_URL_EXPIRY_SEC = 7 * 24 * 60 * 60   // 7 days; Prodigi fetches within minutes
-
-
-const REPLICATE_MODEL = 'nightmareai/real-esrgan'
-const REPLICATE_URL   = `https://api.replicate.com/v1/models/${REPLICATE_MODEL}/predictions`
 
 /* Print quality, not thumbnail quality. */
 const JPEG_QUALITY = 92
@@ -32,61 +31,14 @@ function supabase(): SupabaseClient {
 }
 
 // ── THE UPSCALE ───────────────────────────────────────────────
-/**
- * Real-ESRGAN, synchronous. `Prefer: wait` holds the connection until the
- * prediction finishes, which at these sizes is seconds — measured at 1.8s for
- * 4× on 2026-08-03. No queue, no job row, no second round trip.
- *
- * face_enhance is deliberately OFF. Most of this catalogue is bronze, stone,
- * glass and impasto; a face model applied to a bronze bust recovers skin
- * texture that was never meant to be there and undoes the effect.
- */
-async function upscale(inputBuf: Buffer, scale: number): Promise<Buffer> {
-  const token = process.env.REPLICATE_API_TOKEN
-  if (!token) throw new Error('Missing REPLICATE_API_TOKEN in env')
-
-  const dataUri = 'data:image/jpeg;base64,' + inputBuf.toString('base64')
-  const t0 = Date.now()
-
-  const res = await fetch(REPLICATE_URL, {
-    method: 'POST',
-    headers: {
-      Authorization:  `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      Prefer:         'wait',
-    },
-    body: JSON.stringify({
-      input: {
-        image:        dataUri,
-        scale:        scale,
-        face_enhance: false,
-      },
-    }),
-  })
-
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Replicate upscale failed (${res.status}): ${err.slice(0, 300)}`)
-  }
-
-  const body = await res.json()
-  if (body.status === 'failed' || body.error) {
-    throw new Error(`Replicate upscale failed: ${body.error || 'unknown'}`)
-  }
-
-  // The model returns a single URL.
-  const out = Array.isArray(body.output) ? body.output[0] : body.output
-  if (typeof out !== 'string' || !out) {
-    throw new Error('Replicate returned no image — status=' + body.status)
-  }
-
-  const img = await fetch(out)
-  if (!img.ok) throw new Error(`could not fetch the upscaled image: ${img.status}`)
-  const buf = Buffer.from(await img.arrayBuffer())
-
-  console.log(`[asset-pipeline] upscaled ${scale}× in ${Date.now() - t0}ms — ${buf.length} bytes (png)`)
-  return buf
-}
+// prunaai/p-image-upscale (Replicate or Pruna direct) replaced Real-ESRGAN. The provider call itself
+// lives in ./upscale/providers.ts and is driven by the job processor in ./upscale/process.ts, which
+// saves every step so a crash never repeats a paid call. This file keeps the geometry that
+// must not change: aspect correction, bleed, canvas wrap, exact final dimensions.
+//
+// Enhancement is OFF by default (settings.enhance_details / enhance_realism). Most of this catalogue is
+// bronze, stone, glass and impasto; a realism or face model applied to a bronze bust recovers skin
+// texture that was never meant to be there and undoes the effect.
 
 // ── UPLOAD + SIGN ─────────────────────────────────────────────
 async function uploadAndSign(buf: Buffer, path: string): Promise<string> {
@@ -116,35 +68,38 @@ async function uploadAndSign(buf: Buffer, path: string): Promise<string> {
   return data.signedUrl
 }
 
-// ── ORCHESTRATOR ──────────────────────────────────────────────
+// ── STEP 1: THE ASPECT-CORRECTED ARTWORK ──────────────────────
+export interface Composition {
+  entry:        ReturnType<typeof getSku>
+  plan:         ReturnType<typeof printPlan>
+  /** The artwork after any outpaint or reflection, at the print's exact aspect. This is what is upscaled, and what QA compares against. */
+  working:      Buffer
+  width:        number
+  height:       number
+  /** Linear enlargement still needed to reach the requested PPI; 0 when the artwork is already big enough. */
+  scale:        number
+  /** The picture area the upscaled result must reach, at the requested PPI. */
+  requiredFront: Dim
+  outpainted:   boolean
+}
+
 /**
- * Call this from the print webhook once payment confirms.
- *
- * @param imageB64  The crafted piece as base64 (no data: prefix)
- * @param renderId  Stable identifier — the storage key
- * @param size      '8x8' | '12x12' | '16x16' | '20x20'
- * @param finish    the SKU family
+ * Original -> aspect-correct artwork. Extends by outpaint only inside the approved boundaries
+ * (geometry.ts), otherwise by reflection. Never crops, never distorts, never touches the original pixels.
  */
-export async function preparePrintAsset(input: {
+export async function prepareComposition(input: {
   imageB64: string
-  renderId: string
   size:     PrintSize
   finish:   PrintFinish
-}): Promise<{
-  signedUrl:   string
-  width:       number
-  height:      number
-  upscaled:    boolean
-  scale:       number
-  storagePath: string
-}> {
-  const { imageB64, renderId, size, finish } = input
+  ppi?:     number
+}): Promise<Composition> {
+  const { imageB64, size, finish } = input
+  const ppi = input.ppi ?? REFERENCE_PPI
   const entry = getSku(size, finish)
   const original=await sharp(Buffer.from(imageB64,'base64')).rotate().toBuffer()
   const meta=await sharp(original).metadata()
   const plan=printPlan(meta.width||0,meta.height||0,entry)
-  const path=`${renderId}/aspect-v3-${finish}-${size}.jpg`
-  let working=original, scale=0, upscaled=false
+  let working=original, outpainted=false
   const c=plan.composition
   if(c.compatibility==='extension'){
     if(meta.width!*meta.height!>9437184)throw new Error('print_outpaint_input_too_large')
@@ -154,34 +109,100 @@ export async function preparePrintAsset(input: {
     if(returned.width!==c.width||returned.height!==c.height)throw new Error('print_outpaint_dimensions_changed')
     // Keep the complete original composition; generated pixels belong only outside it.
     working=await sharp(result.image).composite([{input:original,left:c.padding.left,top:c.padding.top}]).png().toBuffer()
+    outpainted=true
   }else if(c.width!==meta.width||c.height!==meta.height){
     working=await sharp(original).extend({...c.padding,extendWith:'mirror'}).png().toBuffer()
   }
   const prepared=await sharp(working).metadata()
-  scale=requiredUpscale(prepared.width!,prepared.height!,plan.front.w,plan.front.h)
-  if(scale){
-    working=await upscale(await sharp(working).toColourspace('srgb').jpeg({quality:95}).toBuffer(),scale)
+  const requiredFront:Dim={w:Math.round(plan.front.w*ppi/REFERENCE_PPI),h:Math.round(plan.front.h*ppi/REFERENCE_PPI)}
+  const scale=requiredUpscale(prepared.width!,prepared.height!,requiredFront.w,requiredFront.h)
+  return { entry, plan, working, width: prepared.width!, height: prepared.height!, scale, requiredFront, outpainted }
+}
+
+/** The artwork encoded for the upscaler: sRGB JPEG, q95, as before. */
+export async function encodeForUpscale(working: Buffer): Promise<Buffer> {
+  return sharp(working).toColourspace('srgb').jpeg({quality:95}).toBuffer()
+}
+
+// ── STEP 2: UPSCALED (OR NATIVE) ARTWORK -> THE PRINT FILE ─────
+export interface FinishedAsset {
+  /** The picture area only, before any canvas wrap. QA compares this against the aspect-corrected artwork. */
+  front:  Buffer
+  /** The exact file Prodigi receives, as encoded JPEG. */
+  jpeg:   Buffer
+  width:  number
+  height: number
+}
+
+export async function finishPrintAsset(input: {
+  /** The provider's output, or the aspect-corrected artwork itself when no upscale was needed. */
+  image:         Buffer
+  composition:   Pick<Composition,'plan'|'width'|'height'|'requiredFront'>
+  upscaled:      boolean
+  targetMp?:     number
+}): Promise<FinishedAsset> {
+  const { composition, upscaled } = input
+  const { plan } = composition
+  let working = input.image
+  if (upscaled) {
     const enlarged=await sharp(working).metadata()
-    if(enlarged.width!<plan.front.w||enlarged.height!<plan.front.h)throw new Error('print_upscale_resolution_shortfall')
+    const check=validateOutput({w:enlarged.width||0,h:enlarged.height||0},{w:composition.width,h:composition.height},composition.requiredFront,input.targetMp ?? 128)
+    // A short result is the one failure that must never be papered over by resampling.
+    if(check.errors.includes('output_below_required_resolution')||check.errors.includes('output_unreadable'))throw new Error('print_upscale_resolution_shortfall')
+    if(check.errors.includes('output_aspect_changed'))throw new Error('print_upscale_dimensions_changed')
     // Provider output is integer-rounded. Restore only that pixel-scale ratio error
     // with external reflection before the strict aspect-preserving final downsample.
-    const expectedW=prepared.width!*scale,expectedH=prepared.height!*scale
-    if(Math.abs(enlarged.width!-expectedW)>1.01||Math.abs(enlarged.height!-expectedH)>1.01)throw new Error('print_upscale_dimensions_changed')
     const rounded=compositionPlan(enlarged.width!,enlarged.height!,plan.front.w,plan.front.h)
     if(rounded.width!==enlarged.width||rounded.height!==enlarged.height)working=await sharp(working).extend({...rounded.padding,extendWith:'mirror'}).png().toBuffer()
-    upscaled=true
   }
   const pixels=await finishPrintPixels(working,plan)
   const jpeg=await sharp(pixels.output).toColourspace('srgb').jpeg({quality:JPEG_QUALITY,chromaSubsampling:'4:4:4',progressive:false,mozjpeg:true}).toBuffer()
-  const print={buf:jpeg,w:plan.final.w,h:plan.final.h}
-  const signedUrl = await uploadAndSign(print.buf, path)
+  return { front: pixels.front, jpeg, width: plan.final.w, height: plan.final.h }
+}
 
-  return {
-    signedUrl,
-    width:  print.w,
-    height: print.h,
-    upscaled,
-    scale,
-    storagePath: path,
+// ── ORCHESTRATOR (synchronous; scripts and tests) ─────────────
+/**
+ * One-shot preparation without a job record: composition, one provider call, finish, upload.
+ *
+ * THE LIVE PATH DOES NOT USE THIS. Paid orders go through the resumable job processor
+ * (./upscale/process.ts), which saves the prediction id so a crash cannot repeat a paid call.
+ * This remains for scripts and for the geometry tests; it holds no state and is not crash-safe.
+ */
+export async function preparePrintAsset(input: {
+  imageB64: string
+  renderId: string
+  size:     PrintSize
+  finish:   PrintFinish
+}, deps: { provider?: UpscaleProvider; settings?: UpscaleSettings; pollMs?: number; maxPolls?: number } = {}): Promise<{
+  signedUrl:   string
+  width:       number
+  height:      number
+  upscaled:    boolean
+  scale:       number
+  storagePath: string
+}> {
+  const { renderId, size, finish } = input
+  const settings = deps.settings ?? DEFAULT_SETTINGS
+  const comp = await prepareComposition({ imageB64: input.imageB64, size, finish, ppi: settings.target_ppi })
+  const path=`${renderId}/aspect-v3-${finish}-${size}.jpg`
+  let image = comp.working, upscaled = false, targetMp: number | undefined
+  if(comp.scale){
+    const provider = deps.provider ?? makeProvider(settings.provider)
+    targetMp = computeTarget(comp.plan, settings.target_ppi, settings.max_megapixels).targetMp
+    const url = await uploadAndSign(await encodeForUpscale(comp.working), `${renderId}/prepared-${finish}-${size}.jpg`)
+    const { id } = await provider.start({ imageUrl: url, targetMp, settings })
+    let out: string | undefined
+    for (let i = 0; i < (deps.maxPolls ?? 120); i++) {
+      const s = await provider.poll(id)
+      if (s.status === 'succeeded' && s.outputUrl) { out = s.outputUrl; break }
+      if (s.status === 'failed' || s.status === 'canceled') throw new ProviderError('rejected', `upscale ${s.status}: ${s.error || 'unknown'}`, false)
+      await new Promise(r => setTimeout(r, deps.pollMs ?? 2000))
+    }
+    if (!out) throw new ProviderError('unavailable', 'upscale did not finish in time', true)
+    image = await provider.download(out)
+    upscaled = true
   }
+  const finished = await finishPrintAsset({ image, composition: comp, upscaled, targetMp })
+  const signedUrl = await uploadAndSign(finished.jpeg, path)
+  return { signedUrl, width: finished.width, height: finished.height, upscaled, scale: comp.scale, storagePath: path }
 }

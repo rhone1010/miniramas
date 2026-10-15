@@ -2,11 +2,12 @@ import { notifyPrintOrder } from '@/lib/v1/print/order-email'
 import { supabaseAdmin } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
-import { prepareAndPlacePrint } from '@/lib/v1/print/fulfillment'
+import { assetRuntime } from '@/lib/v1/print/upscale/runtime'
+import { enqueueOrderJobs } from '@/lib/v1/print/upscale/orders'
+import { pipelineHoldReason, pipelineState } from '@/lib/v1/print/upscale/pipeline'
 import {
   getPrintOrderBySessionId,
   markPaid,
-  markPlaced,
   markError,
   markWithheld,
   canFulfil,
@@ -89,10 +90,24 @@ export async function handlePrintWebhook(event: Stripe.Event) {
     return NextResponse.json({ ok: true, withheld: true, reason: why })
   }
 
+  // The pictures are prepared OUTSIDE this request: queued, resumable jobs (upscale, inspection, any human
+  // review) run from the asset poller, and the Prodigi order is placed only when every one is approved
+  // (lib/v1/print/complete.ts). Doing that work here put a multi-minute paid pipeline inside Stripe's
+  // response window and left no record if the function was killed mid-way. This only records the work.
+  // THE ACTIVATION GATE. Everything above (payment record, sandbox verification, account clearance) has already
+  // run and is not affected by the flag. If the pipeline is off or not ready, the order is withheld VISIBLY (existing
+  // 'withheld' status and notices), with the reason and the picture source recorded, and nothing is started. It is
+  // picked up by lib/v1/print/complete.ts when the pipeline is activated.
+  const pipeline=await pipelineState()
+  if(!pipeline.active){
+    const why=pipelineHoldReason(pipeline,squareTest?'owned':'url')
+    console.warn(`[print-webhook] pipeline inactive (${pipeline.reason}) — order held. session=${session.id}`)
+    await markWithheld(session.id,why).catch(err=>console.error('[print-webhook] markWithheld failed:',err))
+    return NextResponse.json({ok:true,withheld:true,reason:why})
+  }
   try {
-    const prodigiOrderId=await prepareAndPlacePrint(order,squareTest)
-    await markPlaced({sessionId:session.id,prodigiOrderId,wholesaleCents:null})
-    return NextResponse.json({ok:true,prodigiOrderId})
+    await enqueueOrderJobs(assetRuntime().store, order, squareTest)
+    return NextResponse.json({ok:true,queued:true})
   }catch(err){
     const msg=err instanceof Error?err.message:String(err)
     await markError(session.id,msg).catch(()=>{})

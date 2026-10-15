@@ -11,6 +11,7 @@
 import { NextResponse } from 'next/server'
 import { isAdmin } from '@/lib/admin/auth'
 import { supabaseAdmin } from '@/lib/supabase'
+import { validatePatch, validateScope } from '@/lib/v1/print/upscale/settings'
 
 export const runtime = 'nodejs'
 
@@ -72,6 +73,42 @@ export async function POST(req: Request) {
       console.error('[admin/settings] flag update failed', error.message)
       return NextResponse.json({ error: 'update_failed' }, { status: 500 })
     }
+    return NextResponse.json({ ok: true })
+  }
+
+  /* Print upscale configuration (migration 046): a complete 'global' row plus optional 'family:<finish>'
+     and 'sku:<SKU>' overrides. Validated strictly; unknown keys are refused, never ignored. Provider API
+     keys are environment variables and cannot be set here. Every change is kept by the history trigger. */
+  if (kind === 'print_upscale') {
+    const scope = body.scope
+    if (!validateScope(scope)) return NextResponse.json({ error: 'invalid_scope' }, { status: 400 })
+    const checked = validatePatch(body.patch, scope)
+    if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: 400 })
+
+    const { data: current, error: readErr } = await supabaseAdmin
+      .from('print_upscale_settings').select('version').eq('scope', scope).maybeSingle()
+    if (readErr) {
+      console.error('[admin/settings] upscale read failed', readErr.message)
+      return NextResponse.json({ error: 'update_failed' }, { status: 500 })
+    }
+    if (!current && scope === 'global') return NextResponse.json({ error: 'global_row_missing' }, { status: 409 })
+
+    const { error } = await supabaseAdmin
+      .from('print_upscale_settings')
+      .upsert({ scope, ...checked.value, version: (current?.version ?? 0) + 1, updated_at: new Date().toISOString(), updated_by: 'control-panel' },
+              { onConflict: 'scope' })
+    if (error) {
+      console.error('[admin/settings] upscale update failed', error.message)
+      return NextResponse.json({ error: 'update_failed' }, { status: 500 })
+    }
+    return NextResponse.json({ ok: true })
+  }
+
+  if (kind === 'print_upscale_clear') {
+    const scope = body.scope
+    if (!validateScope(scope) || scope === 'global') return NextResponse.json({ error: 'invalid_scope' }, { status: 400 })
+    const { error } = await supabaseAdmin.from('print_upscale_settings').delete().eq('scope', scope)
+    if (error) return NextResponse.json({ error: 'update_failed' }, { status: 500 })
     return NextResponse.json({ ok: true })
   }
 

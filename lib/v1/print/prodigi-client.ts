@@ -14,10 +14,23 @@
 const SANDBOX_BASE = 'https://api.sandbox.prodigi.com/v4.0'
 const LIVE_BASE    = 'https://api.prodigi.com/v4.0'
 
+/**
+ * Raised when a Vercel Preview deployment is configured to reach Prodigi's LIVE API.
+ * A Preview is never allowed to: it fails closed, it does not switch to sandbox credentials or endpoints.
+ */
+export class ProdigiLiveBlockedError extends Error {
+  readonly code = 'prodigi_live_blocked_in_preview'
+  constructor() { super('prodigi_live_blocked_in_preview'); this.name = 'ProdigiLiveBlockedError' }
+}
+
 // ── ENV ──────────────────────────────────────────────────────
+// EVERY Prodigi operation resolves its endpoint and key here (call() and getEnv() are the only users), so this
+// is the one place the Preview guard lives. Production is untouched: outside Preview, PRODIGI_ENV alone decides.
 function getConfig() {
   const env    = (process.env.PRODIGI_ENV || 'sandbox').toLowerCase()
   const isLive = env === 'live'
+  // Checked first, before any key is read, whatever PRODIGI_ENV or the keys say.
+  if (isLive && (process.env.VERCEL_ENV || '').toLowerCase() === 'preview') throw new ProdigiLiveBlockedError()
   const baseUrl = isLive ? LIVE_BASE : SANDBOX_BASE
   const apiKey  = isLive
     ? process.env.PRODIGI_KEY_LIVE

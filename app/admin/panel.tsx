@@ -14,6 +14,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { PanelData } from '@/lib/admin/panel-types'
 import { money, num, pct, secs, delta } from '@/lib/admin/format'
+import PrintAssets from './print-assets'
 
 type Tab = 'overview'|'engine'|'marketing'|'customers'|'fulfilment'|'health'|'controls'
 
@@ -467,6 +468,8 @@ function Fulfilment({ d }:{ d:PanelData }) {
           </Note>
         )}
       </div>
+
+      <PrintAssets />
     </section>
   )
 }
