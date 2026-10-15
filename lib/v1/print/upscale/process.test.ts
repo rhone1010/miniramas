@@ -207,6 +207,13 @@ describe('resumption, single flight, snapshots', () => {
     const dead = await runJob(r2.deps, (await enqueue(r2)).id)
     expect(r2.provider.starts).toBe(3); expect(dead.job).toMatchObject({ status: 'failed', error: 'provider_submit_attempts_exhausted' })
   })
+  it('a prediction that succeeds with no image fails at once instead of polling until the budget runs out', async () => {
+    const r = await rig(); r.provider.poll = async () => ({ status: 'succeeded' as const }); let polls = 0; const real = r.provider.poll; r.provider.poll = async (id: string) => { polls++; return real(id) }
+    const { job } = await runJob(r.deps, (await enqueue(r)).id)
+    expect(job).toMatchObject({ status: 'failed' }); expect(job!.error).toMatch(/^prediction_succeeded_without_output:pred1/)
+    expect(polls).toBe(1); expect(r.provider.starts).toBe(1)                       // one paid call, never repeated by itself
+    expect(r.deps.onAttention).toHaveBeenCalledTimes(1)
+  })
   it('only one worker runs a job at a time', async () => {
     const r = await rig(); const j = await enqueue(r)
     const [a, b] = await Promise.all([runJob(r.deps, j.id), runJob(r.deps, j.id)])

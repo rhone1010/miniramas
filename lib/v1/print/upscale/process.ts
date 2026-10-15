@@ -257,6 +257,9 @@ async function awaitUpscale(deps: ProcessDeps, job: AssetJob, save: Save, clock:
       if (e instanceof ProviderError && e.retryable) { if (clock.now() - clock.started > clock.budget) return 'waiting'; await clock.sleep(clock.poll); continue }
       return fail(save, 'poll_failed:' + (e instanceof Error ? e.message : ''))
     }
+    // The provider says it finished but returned no image (seen on Replicate: a succeeded prediction with a null output).
+    // Polling on would spin until the time budget, run after run. It is paid and over: stop and let a person decide.
+    if (st.status === 'succeeded' && !st.outputUrl) return fail(save, 'prediction_succeeded_without_output:' + job.prediction_id)
     if (st.status === 'succeeded' && st.outputUrl) {
       const bytes = await provider.download(st.outputUrl)
       const md = await sharp(bytes).metadata()
