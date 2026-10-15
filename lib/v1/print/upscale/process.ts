@@ -329,7 +329,8 @@ async function inspect(deps: ProcessDeps, job: AssetJob, save: Save): Promise<St
   } else {
     reasons.push('qa_disabled')       // never auto-approve without an inspection
   }
-  for (const w of job.warnings) if (w.code === 'source_quality_below_floor') reasons.push(w.code)
+  // Native source PPI is diagnostic only (job.warnings keeps it). The approval judges the FINISHED file: deterministic
+  // validation already passed to reach this stage, and the inspection verdict above decides the rest.
   if (s.human_approval === 'all') reasons.push('human_approval_required')
   if (job.possible_duplicate) reasons.push('possible_duplicate_charge')
   await save({ qa, qa_verdict: verdict, status: reasons.length ? 'review' : 'approved', review_reason: reasons.length ? reasons.join(',') : null },

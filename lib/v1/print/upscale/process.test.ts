@@ -103,11 +103,25 @@ describe('happy path', () => {
 })
 
 describe('what sends a job to a person', () => {
-  it('source-quality shortfall is a warning that requires review', async () => {
+  it('low native source PPI alone never holds an otherwise approved print; the PPI stays on the job as a diagnostic', async () => {
     const r = await rig({ sourceSize: [600, 600] }); const j = await enqueue(r)
     const { job } = await runJob(r.deps, j.id)
-    expect(job!.status).toBe('review'); expect(job!.review_reason).toContain('source_quality_below_floor')
-    expect(job!.warnings[0].detail).toMatch(/75 PPI/); expect(r.deps.onAttention).toHaveBeenCalledTimes(1); expect(job!.notified_at).toBeTruthy()
+    expect(job!.status).toBe('approved'); expect(job!.review_reason).toBeNull()
+    expect(job!.warnings.find(w => w.code === 'source_quality_below_floor')?.detail).toMatch(/75 PPI/)
+    expect(r.deps.onAttention).not.toHaveBeenCalled()
+  })
+  it('low native source PPI does not override genuine problems: defect, uncertain and QA outage still hold, without naming the PPI', async () => {
+    for (const [verdict, reason] of [['uncertain', 'qa_uncertain'], ['defect', 'qa_defect'], ['error', 'qa_unavailable']] as const) {
+      const r = await rig({ sourceSize: [600, 600] }); r.inspect.mockResolvedValue({ ...PASS, verdict }); const j = await enqueue(r)
+      const { job } = await runJob(r.deps, j.id)
+      expect(job!.status).toBe('review'); expect(job!.review_reason).toBe(reason)
+    }
+  })
+  it('low native source PPI does not hide an invalid output: a too-small result is still held', async () => {
+    const r = await rig({ sourceSize: [600, 600] })
+    r.provider.start = async () => { r.provider.starts++; r.provider.outputs.set('small', await sharp(await noise(1000, 1000)).png().toBuffer()); return { id: 'small' } }
+    const { job } = await runJob(r.deps, (await enqueue(r)).id)
+    expect(job!.status).toBe('review'); expect(job!.review_reason).toContain('output_below_required_resolution'); expect(job!.review_reason).not.toContain('source_quality')
   })
   it('uncertain and defective inspections, and inspection outages, are never auto-approved', async () => {
     for (const [verdict, reason] of [['uncertain', 'qa_uncertain'], ['defect', 'qa_defect'], ['error', 'qa_unavailable']] as const) {

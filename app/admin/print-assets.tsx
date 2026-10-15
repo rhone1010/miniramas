@@ -30,14 +30,14 @@ const FIELDS: Array<{ key: string; label: string; kind: 'select' | 'int' | 'bool
   { key: 'enhance_details', label: 'Enhance details', kind: 'bool' },
   { key: 'enhance_realism', label: 'Enhance realism', kind: 'bool' },
   { key: 'disable_safety_checker', label: 'Disable safety checker', kind: 'bool' },
-  { key: 'min_source_ppi', label: 'Minimum real detail (PPI)', kind: 'int', min: 0, max: 600 },
+  { key: 'min_source_ppi', label: 'Low-detail warning level (PPI, informational)', kind: 'int', min: 0, max: 600 },
   { key: 'qa_enabled', label: 'Automatic inspection', kind: 'bool' },
   { key: 'human_approval', label: 'Human approval', kind: 'select', options: ['flagged', 'all'] },
 ]
 
 const REASON: Record<string, string> = {
   qa_uncertain: 'Inspection could not confirm the enlargement matches', qa_defect: 'Inspection found a defect', qa_unavailable: 'Inspection could not run',
-  qa_disabled: 'Automatic inspection is off', source_quality_below_floor: 'Less real detail than the minimum for this size',
+  qa_disabled: 'Automatic inspection is off', source_quality_below_floor: 'Low native detail for this size (informational)',
   human_approval_required: 'Set to hold every job', possible_duplicate_charge: 'A provider call may have been charged twice',
   submit_state_unresolved: 'Could not confirm whether the upscale was requested',
 }

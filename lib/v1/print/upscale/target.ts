@@ -83,7 +83,7 @@ export interface SourceQuality { sourcePpi: number; belowFloor: boolean; floor: 
 /**
  * Real detail: the aspect-corrected artwork's pixels over the inches it will cover.
  * Upscaling adds pixels, never information, so this is the honest measure of how soft
- * the print will be. A shortfall is a WARNING that routes the job to a person.
+ * the print will be. A shortfall is recorded as diagnostic metadata only; it never holds a job.
  */
 export function sourceQuality(input: Dim, front: Dim, minSourcePpi: number): SourceQuality {
   const inchesW = front.w / REFERENCE_PPI, inchesH = front.h / REFERENCE_PPI

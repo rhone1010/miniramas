@@ -6,7 +6,7 @@ vi.mock('../db', () => ({ getPrintOrderById: async () => s.order, markWithheld: 
 vi.mock('../owned-source', () => ({ ownedPrintSource: vi.fn() }))
 import { notifyAttention } from './runtime'
 
-const job = (over: Record<string, unknown> = {}) => ({ id: '40000000-0000-4000-8000-000000000001', order_id: 'o1', item_index: 1, sku: 'GLOBAL-CAN-8X8', status: 'review', review_reason: 'qa_uncertain,source_quality_below_floor', error: null, warnings: [{ code: 'source_quality_below_floor', detail: '61 PPI' }], ...over }) as any
+const job = (over: Record<string, unknown> = {}) => ({ id: '40000000-0000-4000-8000-000000000001', order_id: 'o1', item_index: 1, sku: 'GLOBAL-CAN-8X8', status: 'review', review_reason: 'qa_uncertain', error: null, warnings: [{ code: 'source_quality_below_floor', detail: '61 PPI' }], ...over }) as any
 
 beforeEach(() => {
   s.order = { id: 'o1', status: 'paid', stripe_session_id: 'cs_1', owner_key: '20000000-0000-4000-8000-000000000001', customer_email: 'c@example.test', prodigi_merchant_ref: 'LIT-1001' }
@@ -19,12 +19,12 @@ describe('a job needing a person is routed through the existing Concierge record
     const { t, row } = s.inserted[0]
     expect(t).toBe('support_messages')
     expect(row).toMatchObject({ id: job().id, user_id: '20000000-0000-4000-8000-000000000001', reply_to: 'c@example.test', subject: 'Print artwork needs review: order LIT-1001' })
-    expect(row.body).toContain('Print file 2 of order LIT-1001'); expect(row.body).toContain('less real detail'); expect(row.body).toContain('Nothing has been sent to the print lab')
+    expect(row.body).toContain('Print file 2 of order LIT-1001'); expect(row.body).toContain('could not confirm'); expect(row.body).not.toMatch(/real detail|native detail/); expect(row.body).toContain('Nothing has been sent to the print lab')
     expect(row.context).toMatchObject({ kind: 'print_asset_review', order_id: 'o1', job_id: job().id, item_index: 1, sku: 'GLOBAL-CAN-8X8', status: 'review' })
   })
   it('holds a review order with the existing withheld status, which sends the existing notices', async () => {
     await notifyAttention(job())
-    expect(s.markWithheld).toHaveBeenCalledWith('cs_1', 'asset_review:qa_uncertain,source_quality_below_floor'); expect(s.markError).not.toHaveBeenCalled()
+    expect(s.markWithheld).toHaveBeenCalledWith('cs_1', 'asset_review:qa_uncertain'); expect(s.markError).not.toHaveBeenCalled()
   })
   it('marks an order whose file could not be made as an error', async () => {
     await notifyAttention(job({ status: 'failed', error: 'invalid_file:wrong_dimensions', review_reason: null }))

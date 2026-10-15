@@ -28,7 +28,7 @@ const reasonText = (reason: string) => reason.split(',').map(r => ({
   qa_defect: 'the visual inspection found a defect in the enlargement',
   qa_unavailable: 'the visual inspection could not run',
   qa_disabled: 'automatic inspection is switched off',
-  source_quality_below_floor: 'the artwork has less real detail than the minimum for this print size',
+  source_quality_below_floor: 'the artwork has low native detail for this print size (informational only)',
   human_approval_required: 'every job is set to wait for a person',
   possible_duplicate_charge: 'a provider call may have been charged twice',
   submit_state_unresolved: 'it could not be confirmed whether the upscale was already requested',
