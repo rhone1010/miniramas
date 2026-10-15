@@ -77,11 +77,14 @@ it.skipIf(!PGlite)('migration 046 runs, seeds the approved defaults, and enforce
       has_function_privilege('anon','lease_print_asset_job(uuid,integer,uuid)','execute') anon_lease,
       has_function_privilege('authenticated','enqueue_print_asset_job(uuid,integer,text,text,text,text,text,integer)','execute') auth_enqueue,
       has_function_privilege('authenticated','review_print_asset_job(uuid,text,text,text)','execute') auth_review,
+      has_function_privilege('service_role','enqueue_print_asset_job(uuid,integer,text,text,text,text,text,integer)','execute') svc_enqueue,
+      has_function_privilege('service_role','lease_print_asset_job(uuid,integer,uuid)','execute') svc_lease,
+      has_function_privilege('service_role','review_print_asset_job(uuid,text,text,text)','execute') svc_review,
       has_table_privilege('anon','print_asset_jobs','select') anon_jobs,
       has_table_privilege('authenticated','print_upscale_settings','select') auth_settings,
       has_table_privilege('service_role','print_asset_jobs','update') svc_jobs,
       has_table_privilege('service_role','print_upscale_settings','insert') svc_settings`)).rows[0]
-    expect(priv).toEqual({ anon_lease: false, auth_enqueue: false, auth_review: false, anon_jobs: false, auth_settings: false, svc_jobs: true, svc_settings: true })
+    expect(priv).toEqual({ anon_lease: false, auth_enqueue: false, auth_review: false, svc_enqueue: true, svc_lease: true, svc_review: true, anon_jobs: false, auth_settings: false, svc_jobs: true, svc_settings: true })
     const rls = (await db.query("select relname, relrowsecurity from pg_class where relname in ('print_asset_jobs','print_upscale_settings','print_upscale_settings_history') order by relname")).rows
     expect(rls.every((r: any) => r.relrowsecurity)).toBe(true); expect(rls).toHaveLength(3)
   } finally { await db.close() }

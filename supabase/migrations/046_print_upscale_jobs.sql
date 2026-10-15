@@ -224,5 +224,11 @@ revoke all on function public.enqueue_print_asset_job(uuid,integer,text,text,tex
 revoke all on function public.lease_print_asset_job(uuid,integer,uuid) from public, anon, authenticated;
 revoke all on function public.review_print_asset_job(uuid,text,text,text) from public, anon, authenticated;
 revoke all on function public.print_upscale_settings_audit() from public, anon, authenticated;
+-- The app calls these as service_role. Revoking from PUBLIC removed that access, and this project does not grant it back
+-- by default (verified 2026-10-15 on the live database: service_role could execute none of them), so grant it explicitly.
+-- The trigger function needs no grant: it runs only as a trigger, and is security definer.
+grant execute on function public.enqueue_print_asset_job(uuid,integer,text,text,text,text,text,integer) to service_role;
+grant execute on function public.lease_print_asset_job(uuid,integer,uuid) to service_role;
+grant execute on function public.review_print_asset_job(uuid,text,text,text) to service_role;
 
 commit;
