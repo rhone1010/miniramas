@@ -6,6 +6,7 @@ import { canFulfil } from '@/lib/v1/print/db'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getStripe } from '@/lib/v1/print/stripe-client'
 import { getProduct } from '@/lib/v1/print/prodigi-client'
+import { printDiagnostics } from '@/lib/v1/print/upscale/diagnostics'
 
 export async function GET(req:Request){
   const user=await getUser()
@@ -22,7 +23,9 @@ export async function GET(req:Request){
       return NextResponse.json({preview:true,prodigiMode:(process.env.PRODIGI_ENV||'sandbox').toLowerCase(),
         stripeMode:process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')?'test':'not_test',
         upscaleConfigured:!!process.env.REPLICATE_API_TOKEN,signingSecretConfigured:!!(process.env.STRIPE_PRINT_WEBHOOK_SECRET||process.env.STRIPE_WEBHOOK_SECRET),
-        assetBucket:!bucket.error,orderTable:!orders.error,fulfilment:await canFulfil(user.id),productVerified,webhooks},
+        assetBucket:!bucket.error,orderTable:!orders.error,fulfilment:await canFulfil(user.id),productVerified,webhooks,
+        // Environment, pipeline flag and readiness, Prodigi and Stripe mode, credential presence. No values (upscale/diagnostics.ts).
+        ...await printDiagnostics()},
         {headers:{'Cache-Control':'private, no-store'}})
     }
     requireSandboxPrint()
