@@ -4,7 +4,7 @@ Date: 2026-10-15. Inspection and sandbox verification only. No orders, no paid g
 Sources read: Codex's `public/gift-wizard/INTEGRATION.next.txt` and `REPORT.next.txt` (the October 15 handoff in the repo), `domain.next.ts`; the canonical Print Shop code (`sku-map.ts`, `geometry.ts`, `prodigi-client.ts`, `asset-pipeline.ts`, `upscale/*`, `owned-source.ts`, checkout route); `lib/store/preview.ts`, `collection-unlocks.ts`.
 Data: `prodigi-catalog-verified-2026-10-15.json` (this folder). Contracts: `gift-wizard-contracts.proposed.ts` (types only, type-checks, imported by nothing).
 
-If a separate, longer handoff document exists beyond Codex's INTEGRATION/REPORT files, it was not found on disk; reconcile this report against it.
+The handoff used is Codex's `INTEGRATION.next.txt` (revised 17:26) and `contracts.next.ts`. No other handoff document was found on disk; if a separate one exists, reconcile this report against it.
 
 ## 1. Verified now (Prodigi sandbox, read-only)
 
@@ -43,20 +43,28 @@ Sandbox wholesale and shipping (US, one copy): fine art $8 to $20, premium $9 to
 | Paid six-pack Stripe product, verified-payment entitlement, restore | Missing (do not reuse `discovery_unlock_1`, also $2.99, which is a digital unlock) |
 | One digital unlock per physically purchased artwork | Missing. Printing currently requires the preview to be already unlocked (`owned-source.ts` demands `unlocked_at`); a physical purchase grants nothing |
 | Product-specific composition shown to the customer before checkout | Missing (see conflict 3) |
-| Gift Wizard UI | Codex, fixture-only, intentionally disconnected |
+| Gift Wizard UI and its typed seams (`contracts.next.ts`, three document events) | Codex, fixture-only, no network adapters, intentionally disconnected |
 
 ## 3. Conflicts and dependencies
 
-1. **Flow order.** Your flow is Photo, Choose Gift, Create Art, Checkout. Codex built Photo, Create Art, Choose Gift, Checkout. Choosing products first is feasible, but the generation request must then carry the chosen products so the art is generated at a geometry that suits them.
-2. **Free batches.** Codex's handoff allows one included batch and gates the second behind payment. Your rule is two free batches. The fixture adapter and `PreviewPurchaseHandoff` need `freeBatches: 2`.
-3. **Compositions happen after payment, unapproved.** `prepareComposition` extends the artwork with Stability outpaint (or mirror for canvas wrap) during fulfilment. Your rule requires customer approval of product-specific compositions before checkout, so composition must move earlier, be stored, and be the file fulfilment uses. This is the largest change.
-4. **Crop.** Codex's handoff carries a crop (zoom, x, y) per line, which the Print Shop cannot execute and which can remove subjects. Your rule forbids automatic cropping. The contract replaces crop with composition kinds that only add content, never remove it.
-5. **Geometry assumptions.** `printPlan` assumes every SKU is portrait-defined and swaps width and height for landscape art. That is **unverified against Prodigi** (no sandbox order has placed a landscape file on a portrait SKU) and wrong for the landscape-defined framed-canvas rectangles. It also rejects any non-canvas SKU whose final size differs from its picture (matted frames). The canonical table must carry the orientation Prodigi defines per SKU, and a sandbox order should prove rotation.
-6. **Extension limits.** Current rules allow up to 20% extension (and a 9.4 MP outpaint input cap). A square artwork on a 2:3 print is 50%, so it is **unavailable** today, and it is the same for the mug (2.4:1) and card spread (2.8:1). Offering those products needs a recompose layout decision, not just code.
-7. **Ownership and clean masters.** Checkout needs a signed-in owner and an owned, unlocked preview. Gift Wizard's guest-friendly session conflicts with that, and the clean master must stay server-only.
-8. **Unlock accounting.** Existing unlock credits are separate entitlements; the new unlock must not consume them, and must be granted once per artwork per paid order.
-9. **Prodigi API limit.** 30 calls per 30 seconds; catalog checks must be throttled and cached.
-10. **Mug and cards ship internationally** from GB labs (116 countries for the mug), so shipping, delivery time and tax need a product decision before launch.
+Codex rewrote its handoff while this report was being prepared (17:26 to 17:27, after my first read). The revised `INTEGRATION.next.txt` and the new `public/gift-wizard/contracts.next.ts` now follow your flow and rules, so three conflicts from my first pass no longer apply: flow order (now Photo, Choose Gift, Create Art, Checkout), two free fixture batches with the paid $2.99 offer only after the second, and per-line "contain" compositions with no crop. This report and the proposed contracts reconcile against the revised version.
+
+1. **Compositions happen after payment, unapproved.** `prepareComposition` extends artwork with Stability outpaint (or mirror for canvas wrap) during fulfilment. Your rule requires customer approval of product-specific compositions before checkout. Composition must move earlier, be stored, and be the file fulfilment uses. This is the largest change. Codex's `Composition` (approval flag, `productionAssetId: null`) is the UI half of that.
+2. **Geometry assumptions.** `printPlan` assumes every SKU is portrait-defined and swaps width and height for landscape art. That is **unverified against Prodigi** (no sandbox order has placed a landscape file on a portrait SKU) and wrong for the landscape-defined framed-canvas rectangles. It also rejects any non-canvas SKU whose final size differs from its picture (matted frames). The canonical table must carry the orientation Prodigi defines per SKU, and one sandbox order should prove rotation.
+3. **Extension limits.** Rules allow up to 20% extension and a 9.4 MP outpaint input. A square artwork on a 2:3 print is 50%, so it is **unavailable** today; the mug (2.4:1) and card spread (2.8:1) are further out. Codex shows a square sample fully visible with space around it ("not a synthesized portrait composition"), which the backend cannot yet produce. Offering rectangles from a square master needs a decision (section 6), not just code.
+4. **Generation geometry.** `BatchRequest.geometries` lists every chosen product's geometry, but a batch is six artworks, each generated at one aspect. Which aspect is generated when products differ must be decided; the proposal is one master artwork per effect with per-product compositions derived from it.
+5. **Source analysis.** Codex's `SourceAnalysis` (series supported or not) is a fixture, not computer vision. A real server-side analysis step is needed; the existing Foyer intake runs vision analysis but is not a standalone upload endpoint, and retention of the original photo is unverified (Codex lists the findings).
+6. **Registry counts.** Codex reads `/effect-registry.js`, `/groups-registry.js`, `/pets-registry.js` and reports 55/42/36. Groups will show 44 once the pending Toys silo (pushed to Preview as `1ec5d29`) is live; nothing in the wizard hardcodes the count.
+7. **Free-preview ledger.** The existing ledger allows one preview per email or IP; the two-free-sixes policy needs a new session and batch ledger. Do not bypass the existing intake and safety rules.
+8. **Paid six-pack versus digital unlock.** Both cost $2.99. The existing Stripe offer `discovery_unlock_1` is a digital unlock; the six-pack needs its own product and verified-payment entitlement.
+9. **Ownership and clean masters.** Checkout needs a signed-in owner and an owned, unlocked preview (`owned-source.ts` requires `unlocked_at`). A guest wizard conflicts with that, and a physical purchase must be able to print a not-yet-unlocked artwork and then grant its one unlock. Clean masters stay server-only.
+10. **Unlock accounting.** One unlock per artwork per paid physical order, regardless of quantity or product count, and it must not consume existing unlock credits.
+11. **Prodigi API limit.** 30 calls per 30 seconds; catalog checks must be throttled and cached.
+12. **Mug and cards ship internationally** from GB labs (the mug to 116 countries), so shipping, delivery time and tax need a product decision.
+
+### Name alignment with Codex
+
+Codex's names are kept where they exist (`Series`, `Geometry`, `GiftLine`/`lineId`, `Composition`, `BatchRequest`, `effectIds`, `sourceRef`, `desktopCheckout`). The proposed file adds only server concerns: ids, idempotency, entitlements, approval records, authoritative totals and the stale-catalog guard.
 
 ## 4. Reuse
 
@@ -76,7 +84,7 @@ Stripe checkout and webhook, the Prodigi client and its Preview guards, the Prun
 
 ## 6. Open decisions for you
 
-- Confirm choosing products before generation, and which aspect the preview batch is generated at when products differ (recommended: one master artwork, with product compositions derived from it and approved by the customer).
+- Confirm which aspect the preview batch is generated at when products differ (recommended: one master artwork, with product compositions derived from it and approved by the customer).
 - Whether 2:3 prints from a square artwork are offered with an approved extension, or only same-shape products are offered.
 - Mug and card: ship from GB internationally, composition layout, price.
 - Retail prices for framed-canvas and matted rectangles if they should launch.

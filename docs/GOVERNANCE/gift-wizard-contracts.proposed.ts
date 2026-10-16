@@ -4,6 +4,8 @@
 // For review before any backend work. Companion to GIFT-WIZARD-PRINT-INTEGRATION-2026-10-15.md.
 //
 // Flow: Your Photo -> Choose Your Gift -> Create Art -> Checkout.
+// Names that Codex already owns in public/gift-wizard/contracts.next.ts are kept (Series, Geometry, GiftLine, Composition,
+// BatchRequest, effectIds, sourceRef, lineId). This file adds only the SERVER side: ids, entitlements, approvals, totals.
 // Every price, count and geometry below is SERVER-OWNED. The browser sends ids and choices; it never sends proof of
 // payment, a clean image URL, a price, a pixel size or a free-batch count.
 
@@ -75,12 +77,17 @@ export const GIFT_POLICY = {
   unlocksPerPhysicalArtwork: 1,    // one digital unlock per artwork bought physically, regardless of quantity or product count
 } as const
 
+export type Series = 'portraits' | 'groups' | 'pets'
+/** Same shape as Codex's Geometry. requiredPx is the whole lab file; image inches the picture. */
+export interface Geometry { key: string; widthIn: number; heightIn: number; requiredPx: Px }
+
 export interface GiftSession {
   sessionId: string
   /** Server-owned reference to the uploaded photo; the wizard never sees a storage path or clean URL. */
   sourceRef: string | null
-  /** Product choices made BEFORE generation (the revised flow). */
-  chosenProducts: Array<{ productId: string }>
+  series: Series | null            // from server-side source analysis, not a customer question
+  /** Product lines chosen BEFORE generation (the revised flow); lineId is the wizard's GiftLine.id. */
+  lines: Array<{ lineId: string; productId: string; size: string; copies: number }>
   batchesUsed: number
   freeBatchesRemaining: number     // GIFT_POLICY.freeBatches - free batches used
   paidBatchesAvailable: number     // verified purchases not yet consumed
@@ -95,7 +102,14 @@ export interface PreviewRef {
   artworkAspect: number            // geometry this artwork was generated in
 }
 
-export interface BatchRequest { sessionId: string; idempotencyKey: string }   // idempotencyKey makes a retry return the same batch
+/** Superset of Codex's BatchRequest. The server re-derives geometries from lines and ignores any client-sent geometry. */
+export interface BatchRequest {
+  sessionId: string; sourceRef: string; series: Series
+  effectIds: string[]              // exactly six, validated against the live registry for that series
+  geometries: Geometry[]           // informational from the client; the server derives them
+  batchIndex: number
+  idempotencyKey: string           // a retry returns the same batch and fills only what is missing
+}
 export type BatchResponse =
   | { status: 'ok'; batchIndex: number; kind: 'free' | 'paid'; previews: PreviewRef[]; freeBatchesRemaining: number; paidBatchesAvailable: number }
   | { status: 'partial'; batchIndex: number; previews: PreviewRef[]; missing: number; retryable: true }   // retry fills only the missing ones, charges nothing, duplicates nothing
@@ -126,10 +140,12 @@ export interface CompositionPlan {
 }
 
 /** POST /api/v1/gift/compositions: one request prepares every chosen product from the ONE selected artwork. */
-export interface CompositionRequest { sessionId: string; previewId: string; productIds: string[] }
+export interface CompositionRequest { sessionId: string; previewId: string; lineIds: string[] }
 export interface ProductComposition {
-  compositionId: string            // per (previewId, productId); the approved file is derived from this, never regenerated at fulfilment
+  compositionId: string            // per (previewId, lineId); the approved file is derived from this, never regenerated at fulfilment
+  lineId: string
   productId: string
+  productionAssetId: string | null // null until the print job for the approved composition exists
   plan: CompositionPlan
   previewUrl: string | null        // watermarked, product-shaped preview of the composition for the customer to approve
   status: 'ready' | 'needs_approval' | 'approved' | 'failed'
@@ -141,7 +157,9 @@ export interface ApproveCompositionRequest { sessionId: string; compositionId: s
 // ───────────────────────── 4. Checkout (extends the existing /api/v1/print/checkout) ─────────────────────────
 
 export interface GiftCheckoutLine {
+  lineId: string
   productId: string                // server resolves sku, attributes, price from the canonical table; client values ignored
+  size: string
   compositionId: string            // must be 'approved' for this previewId + productId
   copies: number                   // 1..20
 }
