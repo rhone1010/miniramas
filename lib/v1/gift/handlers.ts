@@ -1,0 +1,71 @@
+// lib/v1/gift/handlers.ts
+//
+// The HTTP layer of the Gift Wizard API, kept out of the route files so it is tested with injected dependencies.
+// Every handler needs a signed-in user; every response is no-store; errors are the stable codes in types.ts.
+
+import { NextResponse } from 'next/server'
+import type Stripe from 'stripe'
+import { createSession, deleteSessionNow, getBatchView, getSessionView, purgeExpired, retryBatch, setLines, startBatch, GiftError, type GiftDeps } from './service'
+import { PackError, createPackCheckout, fulfillPack, packReturnUrl } from './pack'
+import { PACK_PRICE_CENTS } from './policy'
+
+const NO_STORE = { 'Cache-Control': 'no-store' }
+const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: NO_STORE })
+export type Authed = { id: string }
+
+export function fail(e: unknown): NextResponse {
+  if (e instanceof GiftError) {
+    return json(e.code === 'payment_required' ? { error: e.code, amountCents: PACK_PRICE_CENTS, currency: 'USD' } : { error: e.code }, e.status)
+  }
+  if (e instanceof PackError) return json({ error: e.code }, e.code === 'invalid_return_path' ? 400 : e.code === 'pack_purchase_not_found' ? 404 : e.code === 'pack_payment_mismatch' ? 409 : 503)
+  console.error('[gift] unexpected failure:', e instanceof Error ? e.message : e)
+  return json({ error: 'gift_unavailable' }, 500)
+}
+export const signInRequired = () => json({ error: 'sign_in_required' }, 401)
+const body = async (req: Request) => { try { return await req.json() } catch { return null } }
+
+export async function createSessionH(req: Request, user: Authed, deps: GiftDeps) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try { return json(await createSession(deps, { userId: user.id, imageB64: b.image_b64 }), 201) } catch (e) { return fail(e) }
+}
+export async function getSessionH(user: Authed, deps: GiftDeps, id: string) {
+  try { return json(await getSessionView(deps, user.id, id)) } catch (e) { return fail(e) }
+}
+export async function setLinesH(req: Request, user: Authed, deps: GiftDeps, id: string) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try { return json(await setLines(deps, user.id, id, b.lines)) } catch (e) { return fail(e) }
+}
+export async function startBatchH(req: Request, user: Authed, deps: GiftDeps, id: string) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try {
+    const out = await startBatch(deps, user.id, id, { idempotencyKey: b.idempotencyKey, effectIds: b.effectIds })
+    return json(out.complete ? { status: 'ok', batch: out.batch, session: out.session } : { status: 'partial', batch: out.batch, session: out.session, retryAfterSeconds: 5 }, out.complete ? 200 : 202)
+  } catch (e) { return fail(e) }
+}
+export async function getBatchH(user: Authed, deps: GiftDeps, id: string, n: string) {
+  try { return json(await getBatchView(deps, user.id, id, Number(n))) } catch (e) { return fail(e) }
+}
+export async function retryBatchH(user: Authed, deps: GiftDeps, id: string, n: string) {
+  try {
+    const out = await retryBatch(deps, user.id, id, Number(n))
+    return json(out.complete ? { status: 'ok', batch: out.batch, session: out.session } : { status: 'partial', batch: out.batch, session: out.session, retryAfterSeconds: 5 }, out.complete ? 200 : 202)
+  } catch (e) { return fail(e) }
+}
+export async function deleteSessionH(user: Authed, deps: GiftDeps, id: string) {
+  try { await deleteSessionNow(deps, user.id, id); return new NextResponse(null, { status: 204, headers: NO_STORE }) } catch (e) { return fail(e) }
+}
+export async function packCheckoutH(req: Request, user: Authed, stripe: Stripe, publishableKey: string | undefined) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try {
+    if (!publishableKey) throw new PackError('pack_payment_unavailable')
+    const out = await createPackCheckout(stripe, user.id, packReturnUrl(new URL(req.url).origin, b.returnPath))
+    return json({ ...out, publishableKey })
+  } catch (e) { return fail(e) }
+}
+export async function packConfirmH(req: Request, user: Authed, deps: { stripe: Stripe; store: GiftDeps['store'] }) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try { return json(await fulfillPack(deps, b.stripeSessionId, user.id)) } catch (e) { return fail(e) }
+}
+export async function cleanupH(deps: GiftDeps) {
+  try { return json(await purgeExpired(deps)) } catch (e) { return fail(e) }
+}

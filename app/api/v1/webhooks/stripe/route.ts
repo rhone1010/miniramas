@@ -15,6 +15,9 @@ import Stripe from 'stripe'
 import { handlePrintWebhook } from '@/lib/v1/print/webhook-handler'
 import { COLLECTION_SET_KIND, fulfillCollectionSet } from '@/lib/store/collection-unlock-set'
 import { COLLECTION_UNLOCK_KIND, fulfillCollectionUnlocks } from '@/lib/store/collection-unlocks'
+import { PACK_KIND } from '@/lib/v1/gift/policy'
+import { fulfillPack } from '@/lib/v1/gift/pack'
+import { supabaseGiftStore } from '@/lib/v1/gift/store'
 import { getStripe }                         from '@/lib/store/stripe'
 import { confirmPurchase, handlePaymentFailure } from '@/lib/store/entitlements'
 import { supabaseAdmin }                     from '@/lib/supabase'
@@ -77,6 +80,12 @@ async function dispatch(event: Stripe.Event): Promise<void> {
       }
       if (session.metadata?.kind === COLLECTION_UNLOCK_KIND) {
         await fulfillCollectionUnlocks(session.id)
+        return
+      }
+      /* Gift Wizard preview pack ($2.99 for six). The metadata only selects the handler; fulfillPack re-retrieves the
+         session from Stripe and verifies kind, owner, amount, currency and line item before it records anything. */
+      if (session.metadata?.kind === PACK_KIND) {
+        await fulfillPack({ stripe: getStripe(), store: supabaseGiftStore(supabaseAdmin) }, session.id)
         return
       }
       const chargeId =

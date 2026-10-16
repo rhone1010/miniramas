@@ -1,0 +1,122 @@
+// lib/v1/gift/types.ts
+//
+// THE GIFT WIZARD API CONTRACT. Types only, dependency-free apart from the catalog contract: Codex can copy this file.
+// Names follow Codex's contracts.next.ts where one exists (Series, sourceRef, lineId, effectIds, BatchRequest).
+//
+// EVERYTHING HERE IS SERVER-OWNED. The browser sends: a photo, product choices, optional effect picks and an idempotency
+// key. It never sends proof of payment, a price, a batch count, a free-batch flag or a clean-image URL, and none of those
+// is accepted if sent. Clean masters never appear in any shape below.
+//
+// Auth: every endpoint requires a signed-in account (401 { error: 'sign_in_required' }) and only ever sees that
+// account's sessions (404 { error: 'session_not_found' } for anyone else's, indistinguishable from a missing one).
+
+import type { Orientation } from '../print/catalog-types'
+
+export const GIFT_CONTRACT_VERSION = 1
+
+export type Series = 'portraits' | 'pets' | 'groups'
+export type PreviewStatus = 'pending' | 'generating' | 'ready' | 'failed'
+export type BatchKind = 'free' | 'paid'
+
+/** What the source photo was identified as. Never a customer question. */
+export interface SourceView {
+  sourceRef: string                   // opaque id for this session's photo; not a path or URL
+  width: number
+  height: number
+  series: Series
+  /** Groups only: how many people were counted. */
+  peopleCount: number | null
+}
+
+/** A product the customer chose BEFORE art exists. productId and size come from the canonical catalog (/api/v1/print/catalog). */
+export interface GiftLine { lineId: string; productId: string; size: string; copies: number }
+
+/** The geometry a line will eventually print at, from the catalog. Informational: the server derives it. */
+export interface LineGeometry { lineId: string; productId: string; pictureAspect: number; orientation: Orientation; requiredPx: { w: number; h: number } }
+
+export interface PreviewView {
+  previewId: string
+  slot: number                        // 1..6 within its batch
+  effectId: string
+  status: PreviewStatus
+  /** Signed, short-lived URL of the BAKED-WATERMARK preview. Present only when status is 'ready'. */
+  url: string | null
+  width: number | null
+  height: number | null
+  retryable: boolean                  // failed and attempts remain
+}
+
+export interface BatchView {
+  batchIndex: number                  // 1-based within the session
+  kind: BatchKind
+  complete: boolean                   // all six previews ready
+  previews: PreviewView[]             // always six, in slot order
+}
+
+/** What the customer's next batch would cost, decided by the server from verified records. */
+export type NextBatch =
+  | { kind: 'free' }
+  | { kind: 'paid'; packAvailable: true }
+  | { kind: 'payment_required'; amountCents: 299; currency: 'USD' }
+  | { kind: 'blocked'; reason: 'previous_batch_incomplete' | 'no_effects_remaining' | 'session_expired' }
+
+export interface SessionView {
+  contractVersion: typeof GIFT_CONTRACT_VERSION
+  sessionId: string
+  source: SourceView
+  lines: GiftLine[]
+  geometries: LineGeometry[]
+  /** The aspect every preview master is generated at, decided by the server from the series (and people count). */
+  masterAspect: string
+  batches: BatchView[]
+  usedEffectIds: string[]
+  entitlement: { freeBatchesTotal: 2; freeBatchesUsed: number; paidPacksAvailable: number }
+  nextBatch: NextBatch
+  expiresAt: string
+  catalogVersion: string
+}
+
+// ── requests and responses ─────────────────────────────────────────────
+
+/** POST /api/v1/gift/sessions  { image_b64 }  -> 201 SessionView */
+export interface CreateSessionRequest { image_b64: string }
+export type CreateSessionError =
+  | 'image_b64_required' | 'image_too_large' | 'image_not_base64' | 'image_unreadable'   // 400, source validation (shared with the Foyer)
+  | 'sign_in_required'                                                                     // 401
+  | 'age_restricted'                                                                       // 403, nothing is stored
+  | 'unsupported_subject'                                                                  // 422, not a person, group or pet
+  | 'analysis_unavailable'                                                                 // 503, retry
+
+/** PUT /api/v1/gift/sessions/{id}/lines  { lines }  -> 200 SessionView. Replaces the selection. Launch products only. */
+export interface SetLinesRequest { lines: Array<{ lineId: string; productId: string; copies: number }> }
+export type SetLinesError = 'invalid_lines' | 'product_not_available' | 'invalid_quantity' | 'duplicate_line' | 'catalog_unavailable'
+
+/** POST /api/v1/gift/sessions/{id}/batches. Reserves the next batch (free or paid) and generates it. */
+export interface BatchRequest {
+  /** 8..80 characters, unique per intended batch. Repeating it returns the SAME batch and never charges or generates twice. */
+  idempotencyKey: string
+  /** 0..6 effects the customer picked (hybrid selection). The server fills the rest, never repeating an effect used in this session. */
+  effectIds?: string[]
+}
+export type BatchResponse =
+  | { status: 'ok'; batch: BatchView; session: SessionView }
+  | { status: 'partial'; batch: BatchView; session: SessionView; retryAfterSeconds: number }   // some previews failed or are still rendering: POST .../retry
+export type BatchError =
+  | 'invalid_idempotency_key' | 'invalid_effect_selection' | 'effect_already_used' | 'not_enough_effects'   // 400
+  | 'session_not_found'                                                                                       // 404
+  | 'payment_required'                                                                                        // 402 { error, amountCents: 299, currency: 'USD' }
+  | 'previous_batch_incomplete' | 'session_expired'                                                           // 409
+  | 'generation_unavailable'                                                                                  // 503
+
+/** GET /api/v1/gift/sessions/{id}/batches/{n} -> BatchView.   POST .../{n}/retry -> BatchResponse (only failed or unfinished previews run). */
+
+/** POST /api/v1/gift/preview-pack/checkout { returnPath } -> embedded Stripe Checkout for ONE six-preview pack ($2.99).
+ *  returnPath must be one of GIFT_RETURN_PATHS; the server builds the full return URL on its own origin. */
+export const GIFT_RETURN_PATHS = ['/gift-wizard', '/gift-wizard.next.html'] as const
+export interface PackCheckoutRequest { returnPath: typeof GIFT_RETURN_PATHS[number] }
+export interface PackCheckoutResponse { clientSecret: string; stripeSessionId: string; amountCents: 299; publishableKey: string }
+/** Payment is only ever recorded by the signed Stripe webhook (or POST /preview-pack/confirm re-verifying with Stripe). */
+export interface PackConfirmRequest { stripeSessionId: string }
+export interface PackConfirmResponse { confirmed: boolean; paidPacksAvailable: number }
+
+/** DELETE /api/v1/gift/sessions/{id} -> 204. Removes the source photo, masters, previews and rows now. */

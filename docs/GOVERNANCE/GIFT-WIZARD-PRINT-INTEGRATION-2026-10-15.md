@@ -100,3 +100,53 @@ Built (read-only, additive; `sku-map.ts`, `geometry.ts`, checkout and prices unt
 - `lib/v1/print/catalog.test.ts`: 19 tests, including a check against the verified inventory file.
 
 Not decided or not built: the extension rule is still the existing 20% limit, so a square master reports 2:3 products as `unavailable` until the composition phase defines larger controlled extensions; `rotatedFile` (landscape art on a portrait SKU) is marked unverified; Prodigi publishes no safe-area specification (`safeArea: null`); sessions, batches, payment, compositions and checkout adaptation are not started.
+
+## 8. Implemented 2026-10-15: Gift Wizard sessions and preview batches (backend)
+
+Contract: `lib/v1/gift/types.ts` (types only, `GIFT_CONTRACT_VERSION = 1`; copy for Codex). It supersedes the session and batch shapes in `gift-wizard-contracts.proposed.ts`; composition and checkout shapes there remain proposals. Not built, as instructed: composition approval, checkout adaptation, the artwork unlock grant.
+
+Endpoints (all require a signed-in account; `no-store`; another user's session reads as `session_not_found`):
+
+| Method and path | Purpose |
+|---|---|
+| `POST /api/v1/gift/sessions` `{ image_b64 }` | Validate the photo with the Foyer's `decodeSource`, classify the series (existing classifier), apply the existing age checks, store a re-encoded JPEG (EXIF stripped), return `SessionView` (201) |
+| `GET /api/v1/gift/sessions/{id}` | `SessionView`: source, lines, geometries, batches with signed watermarked URLs, used effects, entitlement, `nextBatch` |
+| `PUT /api/v1/gift/sessions/{id}/lines` | Persist product choices (launch products only; size and geometry from the canonical catalog) |
+| `POST /api/v1/gift/sessions/{id}/batches` `{ idempotencyKey, effectIds? }` | Reserve the next batch (free, free, then a verified paid pack) and generate it; 200 ok, 202 partial |
+| `GET /api/v1/gift/sessions/{id}/batches/{n}` | `BatchView` (always six previews) |
+| `POST /api/v1/gift/sessions/{id}/batches/{n}/retry` | Run only failed or unfinished previews; no new charge |
+| `DELETE /api/v1/gift/sessions/{id}` | Delete photo, masters, previews and rows now |
+| `POST /api/v1/gift/preview-pack/checkout` `{ returnPath }` | Embedded Stripe Checkout, $2.99, inline price, kind `gift_preview_pack` |
+| `POST /api/v1/gift/preview-pack/confirm` `{ stripeSessionId }` | Re-verify with Stripe (same fulfilment as the webhook) |
+| `GET /api/v1/gift/cleanup` (internal auth) | Retention sweep |
+| Stripe webhook | Additive branch: `metadata.kind === 'gift_preview_pack'` runs verified fulfilment |
+
+Rules enforced in the database (migration `047_gift_wizard_sessions.sql`, **not applied**): batches 1 and 2 free; later batches consume one paid pack taken `for update skip locked`; a pack exists only through `gift_fulfill_preview_pack` (idempotent on the Stripe session id); six distinct effects per batch and an effect never twice per session; reservation idempotent per key; no new batch while an earlier one has unfinished previews; per-preview lease with a three-attempt cap; ready previews are never claimed again; packs belong to the user and survive sessions. `migration-047.test.ts` runs all of this against real Postgres (PGlite).
+
+Reuse: the existing private `previews` bucket (under `gift/`), `decodeSource`, `analyzeUploadRouting`, `detectFaceVisibility`, `analyzeSourceSet`/`groupsAgeDecision`, the series `generate` routes via the same internal self-call paid portfolios use (NB2.1 prompts, gates and secrets unchanged), `bakeFoyerWatermark` (fails closed), the Stripe client and branded embedded checkout, the internal-auth cron guard. Discovery unlock pricing and entitlements are untouched. No second generation, storage or commerce stack.
+
+Hybrid selection: the customer sends 0 to 6 effects; the server returns six: picks first in order, then unused live effects in fill order (Portraits silo order with gendered variants collapsed; Pets Discovery order intersected with the engine; Groups single-photograph effects in catalog order, since the Groups room order lives in a generated browser file).
+
+Master aspect (server-chosen): Portraits 1:1, Pets 2:3, Groups 2:3 for up to 3 people and 3:2 otherwise (Groups only allows some formats per head count).
+
+### Retention (PROPOSED, needs your approval)
+
+| Data | Rule |
+|---|---|
+| Source photo | Stored as a re-encoded JPEG without EXIF; deleted with the session |
+| Clean masters, watermarked previews, session/batch/preview rows | Session expires 7 days after the last activity, never later than 30 days from creation; the sweep deletes objects first, then rows (a storage failure leaves the rows to retry) |
+| Pinned sessions | `pinned_at` is set by the future checkout phase when an artwork enters an order; the sweep never touches them and the order's own retention applies |
+| Paid preview packs | Financial records: never deleted by the sweep; belong to the user, so unused packs are restored in any later session |
+| Customer deletion | `DELETE` removes everything for that session immediately unless pinned |
+
+Existing comparison: Foyer results live 2 hours; portfolio source images have no expiry; those are unchanged.
+
+### Dependencies and gaps
+
+- Apply migration 047 (and create the sweep schedule: `vercel.json` cron for `/api/v1/gift/cleanup`, not added).
+- `CRON_SECRET`, `OPENAI_API_KEY`, `REPLICATE_API_TOKEN`, Stripe keys and `NEXT_PUBLIC_STRIPE_PUBLIC_KEY` must be present (the readiness diagnostic does not cover Gift yet).
+- The live path is **untested**: analysis, NB2.1 generation, watermark and Stripe are exercised only through injected fakes. Needs one approved paid run on Preview.
+- A batch generates inside its request (up to 300 s, three renders at a time). A timed-out request leaves unfinished previews; the retry endpoint, or repeating the key, resumes them. There is no background poller yet.
+- Sessions require sign-in. If anonymous trial is wanted, an owner-token design is needed plus per-IP limits on free previews (cost exposure).
+- Groups fill order ignores the room order; Pets and Groups aspect choices are untested against live routes.
+- Source analysis costs OpenAI calls at upload; the free allowance is two batches per session, so a cost cap per account is not yet enforced.
