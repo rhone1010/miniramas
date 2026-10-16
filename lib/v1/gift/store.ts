@@ -15,13 +15,34 @@ export interface SessionRec {
   series: Series | null; analysis: { peopleCount?: number | null; [k: string]: unknown }
   lines: GiftLine[]; master_aspect: string | null
   created_at: string; last_activity_at: string; expires_at: string; pinned_at: string | null
+  // 048: the purchase-before-generation flow
+  order_id: string | null; free_batches_granted: number; artwork_preview_id: string | null; approved_at: string | null
+  refund_requested_at: string | null; refunded_at: string | null; unlock_portfolio_id: string | null
+  disclosure_version: string | null; disclosure_accepted_at: string | null
+}
+export interface OrderInfo {
+  id: string; status: string; paid_at: string | null; stripe_session_id: string; stripe_payment_intent: string | null
+  retail_total_cents: number; retail_shipping_cents: number; items: Array<{ renderId: string; size: string; finish: string; copies: number; sku: string; retailCents: number }>
+  prodigi_order_id: string | null; placed_at: string | null
+  customer_email?: string; prodigi_merchant_ref?: string | null
+}
+export interface OrderLineRec { order_id: string; line_index: number; session_id: string; line_id: string; product_id: string; sku: string; copies: number; corrections_used: number }
+export interface CompositionRec {
+  id: string; session_id: string; line_id: string; preview_id: string; attempt: 1 | 2; status: 'ready' | 'approved' | 'failed' | 'superseded'
+  composed_path: string | null; preview_path: string | null; width: number | null; height: number | null; plan: Record<string, unknown>
+  created_at: string; approved_at: string | null
 }
 export interface BatchRec { id: string; session_id: string; user_id: string; batch_index: number; kind: BatchKind; pack_id: string | null; idempotency_key: string; effect_ids: string[]; created_at: string }
 export interface PreviewRec {
   id: string; batch_id: string; session_id: string; slot: number; effect_id: string; status: PreviewStatus; attempts: number
   lease_until: string | null; master_path: string | null; preview_path: string | null; width: number | null; height: number | null; error: string | null
 }
-export type StoreErrorCode = 'session_not_found' | 'session_expired' | 'payment_required' | 'previous_batch_incomplete' | 'effect_already_used' | 'six_distinct_effects_required'
+export type StoreErrorCode =
+  | 'session_not_found' | 'session_expired' | 'payment_required' | 'previous_batch_incomplete' | 'effect_already_used' | 'six_distinct_effects_required'
+  | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit' | 'line_not_found'
+  | 'artwork_not_selected' | 'compositions_not_approved' | 'order_has_no_lines' | 'order_not_paid' | 'refund_not_available_after_manufacturing'
+  | 'session_already_has_order' | 'order_not_found' | 'order_session_mismatch' | 'order_not_payable'
+const STORE_ERROR = /session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable/
 export class StoreError extends Error { constructor(public code: StoreErrorCode) { super(code) } }
 
 export interface GiftStore {
@@ -37,6 +58,26 @@ export interface GiftStore {
   fulfillPack(userId: string, stripeSessionId: string, amountCents: number): Promise<string>
   expiredSessions(nowIso: string, limit: number): Promise<SessionRec[]>
   deleteSession(id: string): Promise<void>
+
+  // ── 048 ──
+  linkOrder(sessionId: string, userId: string, orderId: string, disclosureVersion: string): Promise<void>
+  getOrder(orderId: string): Promise<OrderInfo | null>
+  orderByStripeSession(stripeSessionId: string): Promise<OrderInfo | null>
+  orderByPaymentIntent(paymentIntent: string): Promise<OrderInfo | null>
+  /** The gift session an order belongs to, or null when it is not a gift order. No user filter: server callers only. */
+  sessionForOrder(orderId: string): Promise<SessionRec | null>
+  confirmOrder(i: { sessionId: string; orderId: string; userId: string; stripeSessionId: string; paymentIntent: string; lines: Array<{ lineId: string; productId: string; sku: string; copies: number }> }): Promise<'confirmed' | 'already'>
+  orderLines(orderId: string): Promise<OrderLineRec[]>
+  selectArtwork(sessionId: string, userId: string, previewId: string): Promise<void>
+  listCompositions(sessionId: string): Promise<CompositionRec[]>
+  insertComposition(rec: Omit<CompositionRec, 'id' | 'created_at' | 'approved_at'>): Promise<CompositionRec>
+  patchComposition(id: string, patch: Partial<Pick<CompositionRec, 'status' | 'approved_at'>>): Promise<void>
+  useCorrection(sessionId: string, userId: string, lineId: string): Promise<void>
+  approveOrder(i: { sessionId: string; userId: string; portfolioId: string; cleanPath: string; sourceImage: string }): Promise<'approved' | 'already'>
+  requestRefund(i: { sessionId: string; userId: string; reason: string }): Promise<string>
+  declineRefund(orderId: string): Promise<void>
+  applyRefund(i: { orderId: string; refundId: string; amountCents: number; full: boolean }): Promise<'cancelled' | 'recorded_partial' | 'already' | 'refunded_after_placement' | 'not_gift_order'>
+  releaseSession(orderId: string): Promise<void>
 }
 
 // ── Supabase ────────────────────────────────────────────────────────────
@@ -44,10 +85,12 @@ export interface GiftStore {
 export function supabaseGiftStore(db: any): GiftStore {
   const one = async (q: any) => { const { data, error } = await q; if (error) throw new Error(error.message); return data }
   const fromRpc = (e: any): never => {
-    const m = /session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required/.exec(String(e?.message ?? ''))
+    const m = STORE_ERROR.exec(String(e?.message ?? ''))
     if (m) throw new StoreError(m[0] as StoreErrorCode)
     throw new Error(String(e?.message ?? 'gift_store_error'))
   }
+  const rpc = async (fn: string, args: Record<string, unknown>) => { const { data, error } = await db.rpc(fn, args); if (error) fromRpc(error); return data }
+  const ORDER_COLS = 'id,status,paid_at,stripe_session_id,stripe_payment_intent,retail_total_cents,retail_shipping_cents,items,prodigi_order_id,placed_at,customer_email,prodigi_merchant_ref'
   return {
     async createSession(rec) { await one(db.from('gift_sessions').insert(rec)) },
     async getSession(id, userId) { return await one(db.from('gift_sessions').select('*').eq('id', id).eq('user_id', userId).neq('status', 'deleted').maybeSingle()) },
@@ -90,17 +133,47 @@ export function supabaseGiftStore(db: any): GiftStore {
       return (await one(db.from('gift_sessions').select('*').eq('status', 'active').is('pinned_at', null).lt('expires_at', nowIso).limit(limit))) ?? []
     },
     async deleteSession(id) { await one(db.from('gift_sessions').delete().eq('id', id)) },
+
+    async linkOrder(sessionId, userId, orderId, v) { await rpc('gift_link_order', { p_session: sessionId, p_user: userId, p_order: orderId, p_version: v }) },
+    async getOrder(orderId) { return await one(db.from('print_orders').select(ORDER_COLS).eq('id', orderId).maybeSingle()) },
+    async orderByStripeSession(id) { return await one(db.from('print_orders').select(ORDER_COLS).eq('stripe_session_id', id).maybeSingle()) },
+    async orderByPaymentIntent(pi) { return await one(db.from('print_orders').select(ORDER_COLS).eq('stripe_payment_intent', pi).maybeSingle()) },
+    async sessionForOrder(orderId) { return await one(db.from('gift_sessions').select('*').eq('order_id', orderId).maybeSingle()) },
+    async confirmOrder(i) {
+      return (await rpc('gift_confirm_order', { p_session: i.sessionId, p_order: i.orderId, p_user: i.userId, p_stripe_session: i.stripeSessionId, p_intent: i.paymentIntent, p_lines: i.lines })) as 'confirmed' | 'already'
+    },
+    async orderLines(orderId) { return (await one(db.from('gift_order_lines').select('*').eq('order_id', orderId).order('line_index'))) ?? [] },
+    async selectArtwork(sessionId, userId, previewId) { await rpc('gift_select_artwork', { p_session: sessionId, p_user: userId, p_preview: previewId }) },
+    async listCompositions(sessionId) { return (await one(db.from('gift_compositions').select('*').eq('session_id', sessionId).order('created_at'))) ?? [] },
+    async insertComposition(rec) { return await one(db.from('gift_compositions').insert(rec).select('*').single()) },
+    async patchComposition(id, patch) { await one(db.from('gift_compositions').update(patch).eq('id', id)) },
+    async useCorrection(sessionId, userId, lineId) { await rpc('gift_use_correction', { p_session: sessionId, p_user: userId, p_line: lineId }) },
+    async approveOrder(i) {
+      return (await rpc('gift_approve_order', { p_session: i.sessionId, p_user: i.userId, p_portfolio: i.portfolioId, p_clean_path: i.cleanPath, p_source_image: i.sourceImage })) as 'approved' | 'already'
+    },
+    async requestRefund(i) { return (await rpc('gift_request_refund', { p_session: i.sessionId, p_user: i.userId, p_reason: i.reason.slice(0, 1000), p_message: null })) as string },
+    async declineRefund(orderId) { await rpc('gift_decline_refund', { p_order: orderId }) },
+    async applyRefund(i) { return (await rpc('gift_apply_refund', { p_order: i.orderId, p_refund_id: i.refundId, p_amount: i.amountCents, p_full: i.full })) as any },
+    async releaseSession(orderId) { await rpc('gift_release_session', { p_order: orderId }) },
   }
 }
 
 // ── Memory (tests) ──────────────────────────────────────────────────────
+// Mirrors the rules of migrations 047 and 048 (which migration-047/048.test.ts run against real Postgres) so the service
+// is tested without a database. `orders` stands in for print_orders.
 
-export function memoryGiftStore(clock: () => number = Date.now): GiftStore & { sessions: Map<string, SessionRec>; batches: BatchRec[]; previews: PreviewRec[]; packs: Array<{ id: string; user_id: string; stripe_session_id: string; amount_cents: number; status: 'paid' | 'consumed' }> } {
+export type MemoryPack = { id: string; user_id: string; stripe_session_id: string; amount_cents: number; status: 'paid' | 'consumed' }
+export type MemoryPortfolio = { id: string; user_id: string; series: string | null; origin: 'gift'; preview_id: string; clean_path: string; unlocked: boolean; source_image: string }
+
+export function memoryGiftStore(clock: () => number = Date.now) {
   const sessions = new Map<string, SessionRec>(), batches: BatchRec[] = [], previews: PreviewRec[] = []
-  const packs: Array<{ id: string; user_id: string; stripe_session_id: string; amount_cents: number; status: 'paid' | 'consumed' }> = []
+  const packs: MemoryPack[] = [], orders = new Map<string, OrderInfo>(), lines: OrderLineRec[] = [], compositions: CompositionRec[] = []
+  const portfolios: MemoryPortfolio[] = [], refunds = new Map<string, { order_id: string; amount: number }>()
+  const refundRequests = new Map<string, { id: string; session_id: string; status: 'requested' | 'refunded' | 'declined' }>()
   const iso = (ms = clock()) => new Date(ms).toISOString()
-  return {
-    sessions, batches, previews, packs,
+  const orderOf = (s: SessionRec) => (s.order_id ? orders.get(s.order_id) ?? null : null)
+  const owned = (id: string, userId: string) => { const s = sessions.get(id); if (!s || s.user_id !== userId) throw new StoreError('session_not_found'); return s }
+  const store: GiftStore = {
     async createSession(rec) { sessions.set(rec.id, structuredClone(rec)) },
     async getSession(id, userId) { const s = sessions.get(id); return s && s.user_id === userId && s.status !== 'deleted' ? structuredClone(s) : null },
     async patchSession(id, userId, patch) { const s = sessions.get(id); if (s && s.user_id === userId) Object.assign(s, structuredClone(patch)) },
@@ -109,17 +182,21 @@ export function memoryGiftStore(clock: () => number = Date.now): GiftStore & { s
         .map(batch => ({ batch: structuredClone(batch), previews: previews.filter(p => p.batch_id === batch.id).sort((a, b) => a.slot - b.slot).map(p => structuredClone(p)) }))
     },
     async reserveBatch({ sessionId, userId, key, effects }) {
-      const s = sessions.get(sessionId)
-      if (!s || s.user_id !== userId) throw new StoreError('session_not_found')
-      if (s.status !== 'active' || Date.parse(s.expires_at) < clock()) throw new StoreError('session_expired')
+      const s = owned(sessionId, userId)
+      if (s.status !== 'active' || (Date.parse(s.expires_at) < clock() && !s.pinned_at)) throw new StoreError('session_expired')
       const same = batches.find(b => b.session_id === sessionId && b.idempotency_key === key)
       if (same) return { batch: structuredClone(same), reused: true }
+      if (s.refunded_at) throw new StoreError('order_refunded')
+      if (s.refund_requested_at) throw new StoreError('refund_pending')
+      const o = orderOf(s)
+      if (!o || !o.paid_at || ['created', 'cancelled'].includes(o.status)) throw new StoreError('order_payment_required')
       if (effects.length !== 6 || new Set(effects).size !== 6) throw new StoreError('six_distinct_effects_required')
       if (previews.some(p => p.session_id === sessionId && effects.includes(p.effect_id))) throw new StoreError('effect_already_used')
       if (previews.some(p => p.session_id === sessionId && p.status !== 'ready')) throw new StoreError('previous_batch_incomplete')
+      if (o.status !== 'awaiting_artwork') throw new StoreError('order_not_awaiting_artwork')
       const n = batches.filter(b => b.session_id === sessionId).length
       let kind: BatchKind = 'free', packId: string | null = null
-      if (n >= FREE_BATCHES) {
+      if (n >= s.free_batches_granted) {
         const pack = packs.find(p => p.user_id === userId && p.status === 'paid')
         if (!pack) throw new StoreError('payment_required')
         kind = 'paid'; packId = pack.id; pack.status = 'consumed'
@@ -127,7 +204,8 @@ export function memoryGiftStore(clock: () => number = Date.now): GiftStore & { s
       const batch: BatchRec = { id: randomUUID(), session_id: sessionId, user_id: userId, batch_index: n + 1, kind, pack_id: packId, idempotency_key: key, effect_ids: [...effects], created_at: iso() }
       batches.push(batch)
       effects.forEach((effect_id, i) => previews.push({ id: randomUUID(), batch_id: batch.id, session_id: sessionId, slot: i + 1, effect_id, status: 'pending', attempts: 0, lease_until: null, master_path: null, preview_path: null, width: null, height: null, error: null }))
-      s.last_activity_at = iso(); s.expires_at = iso(Math.min(Date.parse(s.created_at) + 30 * 864e5, Math.max(Date.parse(s.expires_at), clock() + 7 * 864e5)))
+      s.last_activity_at = iso()
+      if (!s.pinned_at) s.expires_at = iso(Math.min(Date.parse(s.created_at) + 30 * 864e5, Math.max(Date.parse(s.expires_at), clock() + 7 * 864e5)))
       return { batch: structuredClone(batch), reused: false }
     },
     async claimPreview(previewId, userId) {
@@ -148,8 +226,105 @@ export function memoryGiftStore(clock: () => number = Date.now): GiftStore & { s
     async expiredSessions(nowIso, limit) { return [...sessions.values()].filter(s => s.status === 'active' && !s.pinned_at && s.expires_at < nowIso).slice(0, limit).map(s => structuredClone(s)) },
     async deleteSession(id) {
       sessions.delete(id)
-      for (let i = batches.length - 1; i >= 0; i--) if (batches[i].session_id === id) batches.splice(i, 1)
-      for (let i = previews.length - 1; i >= 0; i--) if (previews[i].session_id === id) previews.splice(i, 1)
+      for (const list of [batches, previews, lines, compositions] as Array<Array<{ session_id: string }>>) for (let i = list.length - 1; i >= 0; i--) if (list[i].session_id === id) list.splice(i, 1)
     },
+
+    async linkOrder(sessionId, userId, orderId, v) {
+      const s = owned(sessionId, userId)
+      if (s.order_id && s.order_id !== orderId) throw new StoreError('session_already_has_order')
+      if ([...sessions.values()].some(x => x.id !== sessionId && x.order_id === orderId)) throw new Error('order_already_linked')
+      s.order_id = orderId; s.disclosure_version = v; s.disclosure_accepted_at ??= iso(); s.last_activity_at = iso()
+    },
+    async getOrder(id) { const o = orders.get(id); return o ? structuredClone(o) : null },
+    async orderByStripeSession(id) { const o = [...orders.values()].find(x => x.stripe_session_id === id); return o ? structuredClone(o) : null },
+    async orderByPaymentIntent(pi) { const o = [...orders.values()].find(x => x.stripe_payment_intent === pi); return o ? structuredClone(o) : null },
+    async sessionForOrder(orderId) { const s = [...sessions.values()].find(x => x.order_id === orderId); return s ? structuredClone(s) : null },
+    async confirmOrder(i) {
+      const s = owned(i.sessionId, i.userId)
+      if (s.order_id !== i.orderId) throw new StoreError('session_not_found')
+      const o = orders.get(i.orderId); if (!o) throw new StoreError('order_not_found')
+      if (o.stripe_session_id !== i.stripeSessionId) throw new StoreError('order_session_mismatch')
+      if (o.status === 'created') {
+        o.status = 'awaiting_artwork'; o.stripe_payment_intent = i.paymentIntent; o.paid_at = iso()
+        s.free_batches_granted = 2; s.pinned_at ??= iso(); s.last_activity_at = iso()
+        i.lines.forEach((l, idx) => { if (!lines.some(x => x.order_id === o.id && x.line_index === idx)) lines.push({ order_id: o.id, line_index: idx, session_id: s.id, line_id: l.lineId, product_id: l.productId, sku: l.sku, copies: l.copies, corrections_used: 0 }) })
+        return 'confirmed'
+      }
+      if (o.status === 'cancelled') throw new StoreError('order_not_payable')
+      return 'already'
+    },
+    async orderLines(orderId) { return lines.filter(l => l.order_id === orderId).sort((a, b) => a.line_index - b.line_index).map(l => structuredClone(l)) },
+    async selectArtwork(sessionId, userId, previewId) {
+      const s = owned(sessionId, userId); const o = orderOf(s)
+      if (!o) throw new StoreError('order_payment_required')
+      if (o.status !== 'awaiting_artwork') throw new StoreError('order_not_awaiting_artwork')
+      if (s.refunded_at) throw new StoreError('order_refunded')
+      if (s.refund_requested_at) throw new StoreError('refund_pending')
+      if (!previews.some(p => p.id === previewId && p.session_id === sessionId && p.status === 'ready')) throw new StoreError('preview_not_ready')
+      for (const c of compositions) if (c.session_id === sessionId && c.preview_id !== previewId && (c.status === 'ready' || c.status === 'approved')) c.status = 'superseded'
+      s.artwork_preview_id = previewId; s.last_activity_at = iso()
+    },
+    async listCompositions(sessionId) { return compositions.filter(c => c.session_id === sessionId).map(c => structuredClone(c)) },
+    async insertComposition(rec) {
+      if (compositions.some(c => c.session_id === rec.session_id && c.line_id === rec.line_id && c.preview_id === rec.preview_id && c.attempt === rec.attempt)) throw new Error('composition_exists')
+      const c: CompositionRec = { ...structuredClone(rec), id: randomUUID(), created_at: iso(), approved_at: null }; compositions.push(c); return structuredClone(c)
+    },
+    async patchComposition(id, patch) { const c = compositions.find(x => x.id === id); if (c) Object.assign(c, patch) },
+    async useCorrection(sessionId, userId, lineId) {
+      owned(sessionId, userId)
+      const l = lines.find(x => x.session_id === sessionId && x.line_id === lineId)
+      if (!l) throw new StoreError('line_not_found')
+      if (l.corrections_used >= 1) throw new StoreError('correction_limit')
+      l.corrections_used += 1
+    },
+    async approveOrder(i) {
+      const s = owned(i.sessionId, i.userId)
+      if (!s.order_id) throw new StoreError('order_payment_required')
+      if (s.refunded_at) throw new StoreError('order_refunded')
+      if (s.refund_requested_at) throw new StoreError('refund_pending')
+      const o = orders.get(s.order_id)!
+      if (o.status !== 'awaiting_artwork') { if (s.approved_at) return 'already'; throw new StoreError('order_not_awaiting_artwork') }
+      if (!s.artwork_preview_id) throw new StoreError('artwork_not_selected')
+      const ls = lines.filter(l => l.order_id === s.order_id)
+      if (!ls.length) throw new StoreError('order_has_no_lines')
+      if (ls.some(l => !compositions.some(c => c.session_id === s.id && c.line_id === l.line_id && c.preview_id === s.artwork_preview_id && c.status === 'approved'))) throw new StoreError('compositions_not_approved')
+      if (!s.unlock_portfolio_id) {
+        if (!previews.some(p => p.id === s.artwork_preview_id && p.session_id === s.id && p.status === 'ready')) throw new StoreError('preview_not_ready')
+        portfolios.push({ id: i.portfolioId, user_id: i.userId, series: s.series, origin: 'gift', preview_id: s.artwork_preview_id, clean_path: i.cleanPath, unlocked: true, source_image: i.sourceImage })
+        s.unlock_portfolio_id = i.portfolioId
+      }
+      o.status = 'paid'; s.approved_at = iso(); s.last_activity_at = iso()
+      return 'approved'
+    },
+    async requestRefund(i) {
+      const s = owned(i.sessionId, i.userId); const o = orderOf(s)
+      if (!o || !o.paid_at || o.status === 'created') throw new StoreError('order_not_paid')
+      if (o.status === 'cancelled' || s.refunded_at) throw new StoreError('order_refunded')
+      if (o.prodigi_order_id || o.placed_at || ['placed', 'in_production', 'shipped', 'delivered'].includes(o.status)) throw new StoreError('refund_not_available_after_manufacturing')
+      let r = refundRequests.get(o.id)
+      if (r && r.status === 'requested') return r.id
+      if (r) r.status = 'requested'; else { r = { id: randomUUID(), session_id: s.id, status: 'requested' }; refundRequests.set(o.id, r) }
+      s.refund_requested_at = iso(); s.last_activity_at = iso()
+      return r.id
+    },
+    async declineRefund(orderId) {
+      const r = refundRequests.get(orderId); if (r && r.status === 'requested') r.status = 'declined'
+      const s = [...sessions.values()].find(x => x.order_id === orderId); if (s && !s.refunded_at) s.refund_requested_at = null
+    },
+    async applyRefund(i) {
+      const s = [...sessions.values()].find(x => x.order_id === i.orderId); if (!s) return 'not_gift_order'
+      if (refunds.has(i.refundId)) return 'already'
+      refunds.set(i.refundId, { order_id: i.orderId, amount: i.amountCents })
+      if (!i.full) return 'recorded_partial'
+      const o = orders.get(i.orderId)!
+      s.refunded_at = iso(); s.refund_requested_at = null
+      const r = refundRequests.get(i.orderId); if (r) r.status = 'refunded'
+      if (o.prodigi_order_id || ['placed', 'in_production', 'shipped', 'delivered'].includes(o.status)) return 'refunded_after_placement'
+      if (['awaiting_artwork', 'paid', 'withheld', 'error'].includes(o.status)) o.status = 'cancelled'
+      s.pinned_at = null; s.expires_at = iso(clock() + 7 * 864e5)
+      return 'cancelled'
+    },
+    async releaseSession(orderId) { const s = [...sessions.values()].find(x => x.order_id === orderId); if (s?.pinned_at) { s.pinned_at = null; s.expires_at = iso(clock() + 7 * 864e5) } },
   }
+  return Object.assign(store, { sessions, batches, previews, packs, orders, lines, compositions, portfolios, refunds, refundRequests })
 }

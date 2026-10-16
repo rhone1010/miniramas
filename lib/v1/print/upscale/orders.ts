@@ -5,6 +5,7 @@
 
 import { getSku } from '../sku-map'
 import type { PrintOrderRow } from '../db'
+import { isGiftOrder } from '../../gift/order-kind'
 import { isWorking, type AssetJob, type JobStore } from './store'
 
 export type OrderAssetState = 'approved' | 'pending' | 'review' | 'rejected' | 'failed'
@@ -18,12 +19,15 @@ export class AssetsNotReadyError extends Error {
 
 /** Idempotent. The same order enqueued twice yields the same jobs, so a retried webhook cannot double the work. */
 export async function enqueueOrderJobs(store: JobStore, order: PrintOrderRow, squareTest: boolean): Promise<AssetJob[]> {
+  // A Gift Wizard order whose artwork is not yet approved has no picture to prepare: nothing may be queued, whoever asks.
+  if (order.status === 'awaiting_artwork') throw new Error('order_awaiting_artwork')
+  const kind = isGiftOrder(order) ? 'gift' : squareTest ? 'owned' : 'url'
   const jobs: AssetJob[] = []
   for (let i = 0; i < order.items.length; i++) {
     const item = order.items[i]
     jobs.push(await store.enqueue({
       order_id: order.id, item_index: i, render_id: item.renderId, sku: getSku(item.size, item.finish).sku,
-      size: item.size, finish: item.finish, source_kind: squareTest ? 'owned' : 'url',
+      size: item.size, finish: item.finish, source_kind: kind,
     }))
   }
   return jobs

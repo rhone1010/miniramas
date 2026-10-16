@@ -25,7 +25,7 @@ export interface AssetJob {
   sku: string
   size: string
   finish: string
-  source_kind: 'owned' | 'url'
+  source_kind: 'owned' | 'url' | 'gift'
   status: JobStatus
   lease_token: string | null
   lease_until: string | null
@@ -78,7 +78,7 @@ export type JobPatch = Partial<Omit<AssetJob, 'id' | 'order_id' | 'item_index' |
 
 export interface NewJob {
   order_id: string; item_index: number; revision?: number
-  render_id: string; sku: string; size: string; finish: string; source_kind: 'owned' | 'url'
+  render_id: string; sku: string; size: string; finish: string; source_kind: 'owned' | 'url' | 'gift'
 }
 
 export interface JobStore {

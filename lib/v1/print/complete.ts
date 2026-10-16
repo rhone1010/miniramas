@@ -21,6 +21,10 @@ import { assetRuntime } from './upscale/runtime'
 import { isPipelineHold, pipelineState, sourceOfHold } from './upscale/pipeline'
 import { requireSandboxPrint } from './owned-source'
 import { verifyRetryPayment } from './retry'
+import { isGiftOrder } from '../gift/order-kind'
+import { giftOrderRecheck, verifyGiftPayment } from '../gift/orders'
+import { supabaseGiftStore } from '../gift/store'
+import { getStripe } from '@/lib/store/stripe'
 
 export type CompleteResult =
   | { status: 'placed'; prodigiOrderId: string }
@@ -34,14 +38,26 @@ function waitingForAssets(order: { status: string; error_message: string | null 
   return false
 }
 
-const RECHECK_REFUSALS = /^(order_no_longer_eligible|fulfilment_not_cleared|order_refunded|refund_check_unavailable)$/
+const RECHECK_REFUSALS = /^(order_no_longer_eligible|fulfilment_not_cleared|order_refunded|refund_check_unavailable|refund_pending|artwork_not_approved|gift_[a-z_]+)$/
 
 /** Throws one of the RECHECK_REFUSALS. Shared by queuing and placing so a refunded or uncleared order never costs money. */
 async function recheck(orderId: string, ownerKey: string | null) {
   if (!(await canFulfil(ownerKey))) throw new Error('fulfilment_not_cleared')
+  // Gift Wizard orders: approved by the customer, no refund requested or made, and the payment re-verified with Stripe.
+  const gift = await giftGate(orderId)
+  if (gift) await verifyGiftPayment(getStripe(), gift, { testModeOnly: process.env.VERCEL_ENV === 'preview' })
   const refunded = await db.from('print_order_notifications').select('id').eq('order_id', orderId).eq('kind', 'refunded').limit(1)
   if (refunded.error) throw new Error('refund_check_unavailable')
   if (refunded.data?.length) throw new Error('order_refunded')
+}
+
+/** Null for an ordinary order. For a gift order: throws unless it is approved and unrefunded; returns the order for payment re-verification. */
+async function giftGate(orderId: string) {
+  const order = await getPrintOrderById(orderId)
+  if (!order || !isGiftOrder(order)) return null
+  await giftOrderRecheck(supabaseGiftStore(db), orderId)
+  if (process.env.VERCEL_ENV === 'preview') requireSandboxPrint()
+  return order
 }
 
 export async function completePrintOrder(orderId: string): Promise<CompleteResult> {
@@ -58,12 +74,13 @@ export async function completePrintOrder(orderId: string): Promise<CompleteResul
   const jobs = await rt.store.listForOrder(order.id)
   if (!jobs.length) {
     // Paid while the pipeline was off (or not ready): queue it now, after the same checks, never twice (enqueue is idempotent).
-    if (!isPipelineHold(order.error_message)) return { status: 'skipped', reason: 'no_jobs' }
+    // Gift orders are never queued by a webhook (the picture did not exist at payment); approval is what makes them ready.
+    if (!isPipelineHold(order.error_message) && !isGiftOrder(order)) return { status: 'skipped', reason: 'no_jobs' }
     try { await recheck(order.id, order.owner_key) } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
       return RECHECK_REFUSALS.test(msg) ? { status: 'blocked', reason: msg } : { status: 'blocked', reason: 'recheck_failed' }
     }
-    await enqueueOrderJobs(rt.store, order, sourceOfHold(order.error_message) === 'owned')
+    await enqueueOrderJobs(rt.store, order, !isGiftOrder(order) && sourceOfHold(order.error_message) === 'owned')
     return { status: 'pending', reason: 'queued_after_activation' }
   }
   const sandbox = jobs.some(j => j.source_kind === 'owned')
@@ -87,5 +104,7 @@ export async function completePrintOrder(orderId: string): Promise<CompleteResul
     return { status: 'blocked', reason: msg }
   }
   await markPlaced({ sessionId: order.stripe_session_id, prodigiOrderId, wholesaleCents: null })
+  // The Gift Wizard session no longer needs to be held once the order is with the lab: it expires after a short grace period.
+  if (isGiftOrder(order)) await supabaseGiftStore(db).releaseSession(order.id).catch(e => console.error('[complete] gift session release deferred:', e instanceof Error ? e.message : e))
   return { status: 'placed', prodigiOrderId }
 }

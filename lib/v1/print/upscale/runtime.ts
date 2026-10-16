@@ -76,6 +76,7 @@ export function productionDeps(orderCache = new Map<string, PrintOrderRow | null
       const order = await orderOf(job.order_id)
       if (!order) throw new Error('order_missing')
       if (job.source_kind === 'owned') return (await ownedPrintSource(order.owner_key!, job.render_id)).bytes
+      if (job.source_kind === 'gift') return (await import('../../gift/print-source')).loadApprovedComposition(order, job)
       const item = order.items[job.item_index]
       const res = await fetch(item.renderUrl)
       if (!res.ok) throw new Error('fetch render failed: ' + res.status)

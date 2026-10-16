@@ -8,6 +8,9 @@ import type Stripe from 'stripe'
 import { createSession, deleteSessionNow, getBatchView, getSessionView, purgeExpired, retryBatch, setLines, startBatch, GiftError, type GiftDeps } from './service'
 import { PackError, createPackCheckout, fulfillPack, packReturnUrl } from './pack'
 import { PACK_PRICE_CENTS } from './policy'
+import { createGiftCheckout, confirmGiftOrder, type GiftOrderDeps } from './orders'
+import { approveComposition, approveOrder, correctLine, ensureCompositions, selectArtwork } from './compose'
+import { requestRefund, type ConciergePort } from './refund'
 
 const NO_STORE = { 'Cache-Control': 'no-store' }
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: NO_STORE })
@@ -68,4 +71,38 @@ export async function packConfirmH(req: Request, user: Authed, deps: { stripe: S
 }
 export async function cleanupH(deps: GiftDeps) {
   try { return json(await purgeExpired(deps)) } catch (e) { return fail(e) }
+}
+
+// ── purchase before generation ─────────────────────────────────────────
+
+export async function checkoutH(req: Request, user: Authed, deps: GiftOrderDeps & { gift: GiftDeps }, id: string) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try { return json(await createGiftCheckout(deps, { user, sessionId: id, origin: new URL(req.url).origin, body: b })) } catch (e) { return fail(e) }
+}
+export async function orderConfirmH(req: Request, user: Authed, deps: { stripe: Stripe; store: GiftDeps['store'] }, gift: GiftDeps) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try {
+    const out = await confirmGiftOrder(deps, b.stripeSessionId, user.id)
+    return json({ confirmed: out.confirmed, ...(out.sessionId ? { session: await getSessionView(gift, user.id, out.sessionId) } : {}) })
+  } catch (e) { return fail(e) }
+}
+export async function selectArtworkH(req: Request, user: Authed, deps: GiftDeps, id: string) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try { return json(await selectArtwork(deps, user.id, id, b.previewId)) } catch (e) { return fail(e) }
+}
+export async function compositionsH(user: Authed, deps: GiftDeps, id: string) {
+  try { return json(await ensureCompositions(deps, user.id, id)) } catch (e) { return fail(e) }
+}
+export async function correctH(user: Authed, deps: GiftDeps, id: string, lineId: string) {
+  try { return json(await correctLine(deps, user.id, id, lineId)) } catch (e) { return fail(e) }
+}
+export async function approveCompositionH(user: Authed, deps: GiftDeps, id: string, compositionId: string) {
+  try { return json(await approveComposition(deps, user.id, id, compositionId)) } catch (e) { return fail(e) }
+}
+export async function approveOrderH(user: Authed, deps: GiftDeps, id: string) {
+  try { return json(await approveOrder(deps, user.id, id)) } catch (e) { return fail(e) }
+}
+export async function refundRequestH(req: Request, user: Authed, deps: GiftDeps & { concierge: ConciergePort }, id: string) {
+  const b = (await body(req)) ?? {}
+  try { return json(await requestRefund(deps, user.id, id, b.reason), 201) } catch (e) { return fail(e) }
 }

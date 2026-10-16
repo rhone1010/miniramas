@@ -21,14 +21,33 @@ export type GiftErrorCode =
   | 'invalid_lines' | 'product_not_available' | 'invalid_quantity' | 'duplicate_line'
   | 'invalid_idempotency_key' | 'invalid_effect_selection' | 'effect_already_used' | 'not_enough_effects'
   | 'session_not_found' | 'payment_required' | 'previous_batch_incomplete' | 'session_expired' | 'generation_unavailable'
+  // purchase before generation (migration 048)
+  | 'disclosure_required' | 'no_lines' | 'invalid_address' | 'invalid_email' | 'product_not_available_for_artwork' | 'fulfilment_unavailable'
+  | 'shipping_quote_failed' | 'order_already_paid' | 'order_persist_failed' | 'checkout_unavailable' | 'lines_locked'
+  | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit'
+  | 'compositions_not_approved' | 'artwork_not_selected' | 'refund_not_available_after_manufacturing' | 'order_not_paid' | 'line_not_found'
+  | 'composition_failed' | 'composition_not_found' | 'order_has_no_lines' | 'order_not_found' | 'order_not_payable' | 'session_already_has_order'
+  | 'order_session_mismatch' | 'invalid_refund_request' | 'payment_not_confirmed' | 'session_retained'
 const STATUS: Partial<Record<GiftErrorCode, number>> = {
   image_b64_required: 400, image_too_large: 400, image_not_base64: 400, image_unreadable: 400, age_restricted: 403, unsupported_subject: 422, analysis_unavailable: 503,
   invalid_lines: 400, product_not_available: 409, invalid_quantity: 400, duplicate_line: 400, invalid_idempotency_key: 400, invalid_effect_selection: 400,
   effect_already_used: 400, not_enough_effects: 409, session_not_found: 404, payment_required: 402, previous_batch_incomplete: 409, session_expired: 409, generation_unavailable: 503,
+  disclosure_required: 400, no_lines: 400, invalid_address: 400, invalid_email: 400, product_not_available_for_artwork: 409, fulfilment_unavailable: 409,
+  shipping_quote_failed: 502, order_already_paid: 409, order_persist_failed: 500, checkout_unavailable: 503, lines_locked: 409,
+  order_payment_required: 402, order_refunded: 409, refund_pending: 409, order_not_awaiting_artwork: 409, preview_not_ready: 409, correction_limit: 409,
+  compositions_not_approved: 409, artwork_not_selected: 409, refund_not_available_after_manufacturing: 409, order_not_paid: 409, line_not_found: 404,
+  composition_failed: 502, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
+  order_session_mismatch: 409, invalid_refund_request: 400, payment_not_confirmed: 409, session_retained: 409,
 }
 export class GiftError extends Error {
   readonly status: number
   constructor(public code: GiftErrorCode) { super(code); this.status = STATUS[code] ?? 400 }
+}
+
+/** Rules enforced in the database arrive as StoreError; the API speaks GiftError. */
+export function fromStoreError(e: unknown): never {
+  if (e instanceof StoreError) throw new GiftError((e.code === 'six_distinct_effects_required' ? 'invalid_effect_selection' : e.code) as GiftErrorCode)
+  throw e
 }
 
 export interface GiftStorage {
@@ -50,6 +69,10 @@ export interface GiftDeps {
   generate(input: { series: Series; sourceB64: string; effectId: string; aspect: string; userId: string; peopleCount: number | null }): Promise<{ imageB64: string }>
   /** Baked-watermark customer preview (JPEG) from the clean master. Must fail rather than return an unmarked image. */
   watermark(masterB64: string): Promise<Buffer>
+  /** One product composition of the selected master: background extension only, never a crop (compose.ts). */
+  compose?(input: { masterB64: string; size: import('../print/sku-map').PrintSize; finish: import('../print/sku-map').PrintFinish }): Promise<{ image: Buffer; width: number; height: number; fit: 'exact' | 'resample' | 'extend'; outpainted: boolean }>
+  /** Release an approved order to the existing fulfilment pipeline (completePrintOrder). Failure is deferred, never fatal. */
+  kick?(orderId: string): Promise<unknown>
   clock?: () => number
   newId?: () => string
 }
@@ -84,12 +107,14 @@ export async function createSession(deps: GiftDeps, input: { userId: string; ima
     source_width: jpeg.info.width, source_height: jpeg.info.height, series: analysis.series, analysis: { peopleCount: analysis.peopleCount },
     lines: [], master_aspect: masterAspectFor(analysis.series, analysis.peopleCount),
     created_at: iso(t), last_activity_at: iso(t), expires_at: iso(t + RETENTION.sessionIdleDays * DAY), pinned_at: null,
+    order_id: null, free_batches_granted: 0, artwork_preview_id: null, approved_at: null, refund_requested_at: null, refunded_at: null,
+    unlock_portfolio_id: null, disclosure_version: null, disclosure_accepted_at: null,
   }
   try { await deps.store.createSession(rec) } catch (e) { await deps.storage.remove([path]).catch(() => {}); throw e }
   return buildView(deps, rec)
 }
 
-async function owned(deps: GiftDeps, userId: string, sessionId: string): Promise<SessionRec> {
+export async function owned(deps: GiftDeps, userId: string, sessionId: string): Promise<SessionRec> {
   const rec = typeof sessionId === 'string' && /^[0-9a-f-]{36}$/i.test(sessionId) ? await deps.store.getSession(sessionId, userId) : null
   if (!rec) throw new GiftError('session_not_found')
   return rec
@@ -102,6 +127,7 @@ export async function getSessionView(deps: GiftDeps, userId: string, sessionId: 
 /** Replaces the product selection. Only launch products are accepted; geometry comes from the canonical catalog. */
 export async function setLines(deps: GiftDeps, userId: string, sessionId: string, lines: unknown): Promise<SessionView> {
   const rec = await owned(deps, userId, sessionId)
+  if (rec.order_id) throw new GiftError('lines_locked')            // once an order exists the purchased products are frozen
   if (!Array.isArray(lines) || lines.length > 20) throw new GiftError('invalid_lines')
   const catalog = new Map(allProducts().map(p => [p.productId, p]))
   const seen = new Set<string>(), out: GiftLine[] = []
@@ -146,7 +172,7 @@ export async function startBatch(deps: GiftDeps, userId: string, sessionId: stri
     try { effects = fillEffects(rec.series, req.effectIds, used) }
     catch (e) { if (e instanceof EffectSelectionError) throw new GiftError(e.code); throw e }
     try { batchRec = (await deps.store.reserveBatch({ sessionId: rec.id, userId, key: req.idempotencyKey, effects })).batch }
-    catch (e) { if (e instanceof StoreError) throw new GiftError(e.code === 'six_distinct_effects_required' ? 'invalid_effect_selection' : e.code); throw e }
+    catch (e) { fromStoreError(e) }
   }
   return runBatch(deps, userId, rec, batchRec.batch_index)
 }
@@ -206,6 +232,9 @@ export async function getBatchView(deps: GiftDeps, userId: string, sessionId: st
 async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> {
   const all = await deps.store.listBatches(rec.id)
   const packs = await deps.store.paidPackCount(rec.user_id)
+  const order = rec.order_id ? await deps.store.getOrder(rec.order_id) : null
+  const comps = rec.order_id ? await deps.store.listCompositions(rec.id) : []
+  const orderLines = rec.order_id ? await deps.store.orderLines(rec.order_id) : []
   const batches: BatchView[] = []
   for (const { batch, previews } of all) {
     const views: PreviewView[] = []
@@ -222,20 +251,52 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     return p ? [{ lineId: l.lineId, productId: p.productId, pictureAspect: p.requirements.pictureAspect, orientation: p.requirements.skuOrientation, requiredPx: p.requirements.finalPx }] : []
   })
   const incomplete = batches.some(b => !b.complete)
-  const expired = rec.status !== 'active' || Date.parse(rec.expires_at) < now(deps)
+  const expired = rec.status !== 'active' || (Date.parse(rec.expires_at) < now(deps) && !rec.pinned_at)
+  const paid = !!order?.paid_at && !['created', 'cancelled'].includes(order.status)
   let nextBatch: NextBatch
   if (expired) nextBatch = { kind: 'blocked', reason: 'session_expired' }
+  else if (rec.refunded_at) nextBatch = { kind: 'blocked', reason: 'order_refunded' }
+  else if (rec.refund_requested_at) nextBatch = { kind: 'blocked', reason: 'refund_pending' }
+  else if (!paid) nextBatch = { kind: 'blocked', reason: 'order_payment_required' }
+  else if (order!.status !== 'awaiting_artwork') nextBatch = { kind: 'blocked', reason: 'order_not_awaiting_artwork' }
   else if (incomplete) nextBatch = { kind: 'blocked', reason: 'previous_batch_incomplete' }
   else if (rec.series && remainingEffectCount(rec.series, used) < BATCH_SIZE) nextBatch = { kind: 'blocked', reason: 'no_effects_remaining' }
-  else if (batches.length < FREE_BATCHES) nextBatch = { kind: 'free' }
+  else if (batches.length < rec.free_batches_granted) nextBatch = { kind: 'free' }
   else if (packs > 0) nextBatch = { kind: 'paid', packAvailable: true }
   else nextBatch = { kind: 'payment_required', amountCents: PACK_PRICE_CENTS as 299, currency: 'USD' }
   return {
     contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id,
     source: { sourceRef: rec.id, width: rec.source_width, height: rec.source_height, series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null },
     lines: rec.lines, geometries, masterAspect: rec.master_aspect ?? '', batches, usedEffectIds: used,
-    entitlement: { freeBatchesTotal: 2, freeBatchesUsed: Math.min(FREE_BATCHES, batches.filter(b => b.kind === 'free').length), paidPacksAvailable: packs },
+    entitlement: { freeBatchesTotal: rec.free_batches_granted, freeBatchesUsed: batches.filter(b => b.kind === 'free').length, paidPacksAvailable: packs },
     nextBatch, expiresAt: rec.expires_at, catalogVersion: catalogVersion(catalog),
+    order: orderView(rec, order),
+    artworkPreviewId: rec.artwork_preview_id,
+    compositions: await Promise.all(orderLines.map(async l => {
+      const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort((a, b) => b.attempt - a.attempt)[0]
+      return {
+        lineId: l.line_id, productId: l.product_id, status: (mine ? (mine.status === 'approved' ? 'approved' : 'ready') : 'none') as 'none' | 'ready' | 'approved',
+        compositionId: mine?.id ?? null, attempt: mine?.attempt ?? 0, correctionsRemaining: Math.max(0, 1 - l.corrections_used),
+        previewUrl: mine?.preview_path ? await deps.storage.signedUrl(mine.preview_path, 3600) : null, width: mine?.width ?? null, height: mine?.height ?? null,
+        fit: ((mine?.plan as { fit?: string } | undefined)?.fit ?? null) as 'exact' | 'resample' | 'extend' | null,
+      }
+    })),
+  }
+}
+
+function orderView(rec: SessionRec, order: Awaited<ReturnType<GiftDeps['store']['getOrder']>>): SessionView['order'] {
+  const state: SessionView['order']['state'] =
+    rec.refunded_at ? 'refunded'
+    : rec.refund_requested_at ? 'refund_requested'
+    : !order ? 'none'
+    : order.status === 'created' ? 'checkout_open'
+    : order.status === 'awaiting_artwork' ? 'awaiting_artwork'
+    : order.status === 'cancelled' ? 'cancelled'
+    : ['placed', 'in_production', 'shipped', 'delivered'].includes(order.status) ? 'with_lab'
+    : 'approved'
+  return {
+    orderId: rec.order_id, state, freeBatchesGranted: rec.free_batches_granted, approvedAt: rec.approved_at, unlockPortfolioId: rec.unlock_portfolio_id,
+    totalCents: order?.retail_total_cents ?? null, disclosureVersion: rec.disclosure_version,
   }
 }
 
@@ -250,7 +311,7 @@ async function removeObjects(deps: GiftDeps, rec: SessionRec): Promise<void> {
 /** The customer deleting their own session: objects first, then rows, so a storage failure leaves the rows to retry. */
 export async function deleteSessionNow(deps: GiftDeps, userId: string, sessionId: string): Promise<void> {
   const rec = await owned(deps, userId, sessionId)
-  if (rec.pinned_at) throw new GiftError('session_expired')     // attached to an order: the order's retention applies
+  if (rec.pinned_at) throw new GiftError('session_retained')     // a paid order is waiting on this session: retained until resolved
   await removeObjects(deps, rec)
   await deps.store.deleteSession(rec.id)
 }

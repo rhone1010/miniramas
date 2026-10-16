@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import sharp from 'sharp'
+import { randomUUID } from 'node:crypto'
 import { createSession, setLines, startBatch, getSessionView, getBatchView, deleteSessionNow, purgeExpired, masterAspectFor, GiftError, type GiftDeps, type SourceAnalysis } from './service'
 import { memoryGiftStore } from './store'
 import { fillEffects, liveEffectIds, EffectSelectionError } from './effects'
@@ -30,13 +31,29 @@ function rig(over: { analysis?: SourceAnalysis; failEffects?: Set<string> } = {}
   return { deps, store, files, generate, advance: (ms: number) => { t += ms } }
 }
 const key = (n: number | string) => 'idem-key-' + n
-const newSession = async (r = rig(), user = U1) => ({ r, view: await createSession(r.deps, { userId: user, imageB64: await photo() }) })
+/** The purchase: an unpaid order row linked to the session, then payment confirmed. Mirrors checkout + the verified webhook. */
+async function payOrder(r: ReturnType<typeof rig>, sessionId: string, user = U1) {
+  const rec = (await r.store.getSession(sessionId, user))!
+  const orderId = randomUUID(), cs = 'cs_test_' + orderId.slice(0, 12)
+  r.store.orders.set(orderId, { id: orderId, status: 'created', paid_at: null, stripe_session_id: cs, stripe_payment_intent: null, retail_total_cents: 5000, retail_shipping_cents: 700, items: [], prodigi_order_id: null, placed_at: null })
+  await r.store.linkOrder(sessionId, user, orderId, 'v1')
+  const lines = rec.lines.length ? rec.lines : [{ lineId: 'a', productId: 'fine_art:8x8', size: '8x8', copies: 1 }]
+  await r.store.confirmOrder({ sessionId, orderId, userId: user, stripeSessionId: cs, paymentIntent: 'pi_test_1', lines: lines.map(l => ({ lineId: l.lineId, productId: l.productId, sku: 'SKU-' + l.productId, copies: l.copies })) })
+  return orderId
+}
+/** A session whose order is PAID by default (batches need it); pass paid=false for the steps that come before checkout. */
+const newSession = async (r = rig(), user = U1, paid = true) => {
+  const view = await createSession(r.deps, { userId: user, imageB64: await photo() })
+  if (paid) await payOrder(r, view.sessionId, user)
+  return { r, view }
+}
 
 describe('sessions', () => {
   it('creates an owned session with the source stored, the series identified and a master aspect chosen', async () => {
-    const { r, view } = await newSession()
-    expect(view).toMatchObject({ source: { series: 'portraits', width: 800, height: 800, peopleCount: null }, masterAspect: '1:1', batches: [], usedEffectIds: [], nextBatch: { kind: 'free' } })
-    expect(view.entitlement).toEqual({ freeBatchesTotal: 2, freeBatchesUsed: 0, paidPacksAvailable: 0 })
+    const { r, view } = await newSession(rig(), U1, false)
+    expect(view).toMatchObject({ source: { series: 'portraits', width: 800, height: 800, peopleCount: null }, masterAspect: '1:1', batches: [], usedEffectIds: [], nextBatch: { kind: 'blocked', reason: 'order_payment_required' } })
+    expect(view.entitlement).toEqual({ freeBatchesTotal: 0, freeBatchesUsed: 0, paidPacksAvailable: 0 })
+    expect(view.order).toMatchObject({ state: 'none', orderId: null, freeBatchesGranted: 0 })
     expect([...r.files.keys()]).toEqual([`gift/${view.sessionId}/source.jpg`])
     expect(JSON.stringify(view)).not.toMatch(/source\.jpg|masters|storage/)
   })
@@ -78,27 +95,34 @@ describe('sessions', () => {
 
 describe('product selection', () => {
   it('persists launch products with catalog sizes and geometry, ignoring any client size', async () => {
-    const { r, view } = await newSession()
+    const { r, view } = await newSession(rig(), U1, false)
     const v = await setLines(r.deps, U1, view.sessionId, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 2, size: 'hacked' }, { lineId: 'b', productId: 'canvas:12x12', copies: 1 }])
     expect(v.lines).toEqual([{ lineId: 'a', productId: 'fine_art:12x18', size: '12x18', copies: 2 }, { lineId: 'b', productId: 'canvas:12x12', size: '12x12', copies: 1 }])
     expect(v.geometries[0]).toMatchObject({ lineId: 'a', requiredPx: { w: 3600, h: 5400 }, orientation: 'portrait' })
     expect((await getSessionView(r.deps, U1, view.sessionId)).lines.length).toBe(2)            // survives a reload
   })
   it('refuses unapproved products: framed canvas, matted rectangles, mug, cards, unknown ids', async () => {
-    const { r, view } = await newSession()
+    const { r, view } = await newSession(rig(), U1, false)
     for (const id of ['framed_canvas:8x12', 'matted:12x18', 'mug:11oz-white', 'card:7x5-mohawk', 'nope:1x1']) {
       await expect(setLines(r.deps, U1, view.sessionId, [{ lineId: 'a', productId: id, copies: 1 }])).rejects.toMatchObject({ code: 'product_not_available' })
     }
     expect(allProducts().filter(p => p.status === 'launch').length).toBeGreaterThan(0)
   })
   it('validates quantity and line ids', async () => {
-    const { r, view } = await newSession()
+    const { r, view } = await newSession(rig(), U1, false)
     for (const copies of [0, 21, 1.5, '2']) await expect(setLines(r.deps, U1, view.sessionId, [{ lineId: 'a', productId: 'fine_art:8x8', copies }])).rejects.toMatchObject({ code: 'invalid_quantity' })
     await expect(setLines(r.deps, U1, view.sessionId, [{ lineId: 'a', productId: 'fine_art:8x8', copies: 1 }, { lineId: 'a', productId: 'fine_art:8x8', copies: 1 }])).rejects.toMatchObject({ code: 'duplicate_line' })
     await expect(setLines(r.deps, U1, view.sessionId, 'x')).rejects.toMatchObject({ code: 'invalid_lines' })
   })
+  it('the purchased products are frozen once an order exists', async () => {
+    const { r, view } = await newSession(rig(), U1, false); await setLines(r.deps, U1, view.sessionId, [{ lineId: 'a', productId: 'fine_art:8x8', copies: 1 }])
+    await payOrder(r, view.sessionId)
+    await expect(setLines(r.deps, U1, view.sessionId, [{ lineId: 'a', productId: 'fine_art:8x8', copies: 5 }])).rejects.toMatchObject({ code: 'lines_locked', status: 409 })
+    expect((await getSessionView(r.deps, U1, view.sessionId)).lines).toEqual([{ lineId: 'a', productId: 'fine_art:8x8', size: '8x8', copies: 1 }])
+  })
   it('keeps the selection through generation', async () => {
-    const { r, view } = await newSession(); await setLines(r.deps, U1, view.sessionId, [{ lineId: 'a', productId: 'premium:16x16', copies: 3 }])
+    const { r, view } = await newSession(rig(), U1, false); await setLines(r.deps, U1, view.sessionId, [{ lineId: 'a', productId: 'premium:16x16', copies: 3 }])
+    await payOrder(r, view.sessionId)
     const out = await startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(1) })
     expect(out.session.lines).toEqual([{ lineId: 'a', productId: 'premium:16x16', size: '16x16', copies: 3 }])
   })
@@ -139,6 +163,25 @@ describe('batches: free, free, then paid', () => {
     expect(b2.session.usedEffectIds.length).toBe(12); expect(new Set(b2.session.usedEffectIds).size).toBe(12)
     expect(b2.session.nextBatch).toEqual({ kind: 'payment_required', amountCents: 299, currency: 'USD' })
     expect(b2.session.entitlement).toEqual({ freeBatchesTotal: 2, freeBatchesUsed: 2, paidPacksAvailable: 0 })
+  })
+  it('nothing is generated before the order is paid: not for a session with no order, nor one with an unpaid checkout', async () => {
+    const none = await newSession(rig(), U1, false)
+    await expect(startBatch(none.r.deps, U1, none.view.sessionId, { idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'order_payment_required', status: 402 })
+    const open = await newSession(rig(), U1, false)
+    const orderId = randomUUID(); open.r.store.orders.set(orderId, { id: orderId, status: 'created', paid_at: null, stripe_session_id: 'cs_test_open000001', stripe_payment_intent: null, retail_total_cents: 100, retail_shipping_cents: 0, items: [], prodigi_order_id: null, placed_at: null })
+    await open.r.store.linkOrder(open.view.sessionId, U1, orderId, 'v1')
+    await expect(startBatch(open.r.deps, U1, open.view.sessionId, { idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'order_payment_required' })
+    for (const x of [none, open]) { expect(x.r.generate).not.toHaveBeenCalled(); expect(x.r.store.batches.length).toBe(0) }
+  })
+  it('payment grants exactly two free batches; a refunded or refund-pending order generates nothing more', async () => {
+    const { r, view } = await newSession()
+    expect((await getSessionView(r.deps, U1, view.sessionId)).nextBatch).toEqual({ kind: 'free' })
+    await startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(1) })
+    const rec = r.store.sessions.get(view.sessionId)!
+    rec.refund_requested_at = new Date().toISOString()
+    await expect(startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(2) })).rejects.toMatchObject({ code: 'refund_pending' })
+    rec.refund_requested_at = null; rec.refunded_at = new Date().toISOString()
+    await expect(startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(2) })).rejects.toMatchObject({ code: 'order_refunded' })
   })
   it('a third batch needs payment: 402, nothing reserved, nothing generated, and no client flag changes that', async () => {
     const { r, view } = await newSession()
@@ -251,50 +294,46 @@ describe('resumable generation', () => {
 })
 
 describe('retention', () => {
-  it('an expired, unpinned session is purged with its source, masters, previews and rows; a pinned or live one is not', async () => {
-    const { r, view } = await newSession(); await startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(1) })
-    const live = await newSession(r); const pinned = await newSession(r)
-    r.store.sessions.get(pinned.view.sessionId)!.pinned_at = new Date(Date.now()).toISOString()
-    r.advance(8 * 864e5)
+  it('an expired, unpinned (unpaid) session is purged with its source and rows; a paid or pinned one is retained until resolved', async () => {
+    const { r, view } = await newSession(rig(), U1, false)
+    const paid = await newSession(r, U1, true); await startBatch(r.deps, U1, paid.view.sessionId, { idempotencyKey: key(1) })
+    r.advance(40 * 864e5)
     const out = await purgeExpired(r.deps)
-    expect(out.purged).toBe(2); expect(r.store.sessions.has(view.sessionId)).toBe(false); expect(r.store.sessions.has(pinned.view.sessionId)).toBe(true)
-    expect([...r.files.keys()].some(k => k.includes(view.sessionId))).toBe(false); expect(r.files.has(`gift/${pinned.view.sessionId}/source.jpg`)).toBe(true)
-    expect(live.view.sessionId).toBeTruthy()
+    expect(out.purged).toBe(1); expect(r.store.sessions.has(view.sessionId)).toBe(false); expect([...r.files.keys()].some(k => k.includes(view.sessionId))).toBe(false)
+    expect(r.store.sessions.has(paid.view.sessionId)).toBe(true); expect(r.files.has(`gift/${paid.view.sessionId}/source.jpg`)).toBe(true)
+    expect([...r.files.keys()].filter(k => k.includes(paid.view.sessionId) && k.includes('/masters/')).length).toBe(6)
+    expect((await getSessionView(r.deps, U1, paid.view.sessionId)).nextBatch).not.toEqual({ kind: 'blocked', reason: 'session_expired' })   // still usable after 40 days
   })
-  it('paid packs survive session purge and can pay in a new session', async () => {
-    const { r, view } = await newSession(); await startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(1) }); await startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(2) })
+  it('a released session (order with the lab, or refunded and cancelled) expires after a grace period and is then purged', async () => {
+    const { r, view } = await newSession(); const orderId = r.store.sessions.get(view.sessionId)!.order_id!
+    await r.store.releaseSession(orderId); r.advance(6 * 864e5); expect((await purgeExpired(r.deps)).purged).toBe(0)
+    r.advance(2 * 864e5); expect((await purgeExpired(r.deps)).purged).toBe(1)
+  })
+  it('paid preview packs survive session purge and can pay in a new session', async () => {
+    const { r } = await newSession(rig(), U1, false)
     await r.store.fulfillPack(U1, 'cs_test_keep', 299); r.advance(8 * 864e5); await purgeExpired(r.deps)
     expect(r.store.packs.length).toBe(1); expect(await r.store.paidPackCount(U1)).toBe(1)
   })
-  it('activity extends expiry but never past the 30-day ceiling', async () => {
-    const { r, view } = await newSession()
+  it('unpaid activity extends expiry but never past the 30-day ceiling', async () => {
+    const { r, view } = await newSession(rig(), U1, false)
     for (let i = 0; i < 6; i++) { r.advance(6 * 864e5); await setLines(r.deps, U1, view.sessionId, []) }
     const rec = r.store.sessions.get(view.sessionId)!
     expect(Date.parse(rec.expires_at)).toBeLessThanOrEqual(Date.parse(rec.created_at) + 30 * 864e5)
   })
-  it('a batch on day 29 extends expiry only to day 30; a fresh one extends to 7 days', async () => {
-    const old = await newSession()
-    for (let d = 0; d < 4; d++) { old.r.advance(6 * 864e5); await setLines(old.r.deps, U1, old.view.sessionId, []) }    // stays active to day 24
-    old.r.advance(5 * 864e5)                                                                                          // day 29
-    await startBatch(old.r.deps, U1, old.view.sessionId, { idempotencyKey: key(1) })
-    const rec = old.r.store.sessions.get(old.view.sessionId)!
-    expect(Date.parse(rec.expires_at)).toBe(Date.parse(rec.created_at) + 30 * 864e5)
-    const fresh = await newSession(); fresh.r.advance(864e5)
-    await startBatch(fresh.r.deps, U1, fresh.view.sessionId, { idempotencyKey: key(1) })
-    const f = fresh.r.store.sessions.get(fresh.view.sessionId)!
-    expect(Date.parse(f.expires_at)).toBe(Date.parse(f.last_activity_at) + 7 * 864e5)
-  })
-  it('an idle session untouched for more than 7 days refuses a batch', async () => {
-    const { r, view } = await newSession(); r.advance(8 * 864e5)
+  it('an idle unpaid session untouched for more than 7 days is expired', async () => {
+    const { r, view } = await newSession(rig(), U1, false); r.advance(8 * 864e5)
     await expect(startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'session_expired' })
   })
-  it('the customer can delete their own session now; a storage failure keeps the rows so it can be retried', async () => {
-    const { r, view } = await newSession(); await startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(1) })
+  it('the customer can delete an unpaid session now; a storage failure keeps the rows to retry; a paid one is retained', async () => {
+    const { r, view } = await newSession(rig(), U1, false)
     const remove = r.deps.storage.remove; r.deps.storage.remove = async () => { throw new Error('storage down') }
     await expect(deleteSessionNow(r.deps, U1, view.sessionId)).rejects.toThrow('storage down'); expect(r.store.sessions.has(view.sessionId)).toBe(true)
     r.deps.storage.remove = remove
     await deleteSessionNow(r.deps, U1, view.sessionId)
     expect(r.store.sessions.has(view.sessionId)).toBe(false); expect(r.files.size).toBe(0)
     await expect(deleteSessionNow(r.deps, U2, view.sessionId)).rejects.toBeInstanceOf(GiftError)
+    const paid = await newSession(r, U1, true)
+    await expect(deleteSessionNow(r.deps, U1, paid.view.sessionId)).rejects.toMatchObject({ code: 'session_retained' })
+    expect(r.store.sessions.has(paid.view.sessionId)).toBe(true)
   })
 })

@@ -48,6 +48,8 @@ export async function prepareAndPlacePrint(order:PrintOrderRow,squareTest:boolea
       const signedUrl = await rt.storage.signedUrl(job.final_path, SIGNED_URL_SECONDS)
 
       const skuEntry = getSku(item.size, item.finish)
+      // The product that was SOLD is the product that is placed: a catalog change after payment must never alter an order.
+      if (item.sku && item.sku !== skuEntry.sku) throw new Error(`item_sku_changed:${item.sku}`)
       prodigiItems.push({
         sku:    skuEntry.sku,
         copies: item.copies,

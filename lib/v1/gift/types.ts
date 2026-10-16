@@ -58,7 +58,7 @@ export type NextBatch =
   | { kind: 'free' }
   | { kind: 'paid'; packAvailable: true }
   | { kind: 'payment_required'; amountCents: 299; currency: 'USD' }
-  | { kind: 'blocked'; reason: 'previous_batch_incomplete' | 'no_effects_remaining' | 'session_expired' }
+  | { kind: 'blocked'; reason: 'order_payment_required' | 'order_not_awaiting_artwork' | 'order_refunded' | 'refund_pending' | 'previous_batch_incomplete' | 'no_effects_remaining' | 'session_expired' }
 
 export interface SessionView {
   contractVersion: typeof GIFT_CONTRACT_VERSION
@@ -70,10 +70,41 @@ export interface SessionView {
   masterAspect: string
   batches: BatchView[]
   usedEffectIds: string[]
-  entitlement: { freeBatchesTotal: 2; freeBatchesUsed: number; paidPacksAvailable: number }
+  /** freeBatchesTotal is 0 until the product order is paid, then 2 (two free six-image batches per paid order). */
+  entitlement: { freeBatchesTotal: number; freeBatchesUsed: number; paidPacksAvailable: number }
   nextBatch: NextBatch
   expiresAt: string
   catalogVersion: string
+  order: OrderView
+  /** The one selected artwork (a preview id), or null. */
+  artworkPreviewId: string | null
+  /** One entry per purchased line, once the order is paid. */
+  compositions: CompositionView[]
+}
+
+export type OrderState = 'none' | 'checkout_open' | 'awaiting_artwork' | 'approved' | 'with_lab' | 'refund_requested' | 'refunded' | 'cancelled'
+export interface OrderView {
+  orderId: string | null
+  state: OrderState
+  freeBatchesGranted: number
+  approvedAt: string | null
+  /** The My Collection piece created at approval (the one digital unlock), or null. */
+  unlockPortfolioId: string | null
+  totalCents: number | null
+  disclosureVersion: string | null
+}
+/** Product-specific composition of the selected artwork for one purchased line. Nothing is manufactured until every line is approved. */
+export interface CompositionView {
+  lineId: string
+  productId: string
+  status: 'none' | 'ready' | 'approved'
+  compositionId: string | null
+  attempt: number                      // 1, or 2 after the free correction
+  correctionsRemaining: number         // 1 until the free correction is used; further changes go to Concierge
+  previewUrl: string | null            // signed, watermarked, product-shaped
+  width: number | null
+  height: number | null
+  fit: 'exact' | 'resample' | 'extend' | null
 }
 
 // ── requests and responses ─────────────────────────────────────────────
@@ -120,3 +151,42 @@ export interface PackConfirmRequest { stripeSessionId: string }
 export interface PackConfirmResponse { confirmed: boolean; paidPacksAvailable: number }
 
 /** DELETE /api/v1/gift/sessions/{id} -> 204. Removes the source photo, masters, previews and rows now. */
+
+// ── purchase before generation (migration 048) ──────────────────────────
+
+/** The disclosure the customer must see and accept before paying. The server records the version and refuses without it. */
+export interface Disclosure { version: string; text: string }
+
+/** POST /api/v1/gift/sessions/{id}/checkout -> embedded Stripe Checkout for the selected products (catalog prices, a Prodigi shipping quote). */
+export interface GiftCheckoutRequest {
+  email: string
+  shippingAddress: { name: string; line1: string; line2?: string; city: string; state?: string; postcode: string; countryCode: string }
+  shippingMethod?: 'Budget' | 'Standard' | 'Express' | 'Overnight'
+  /** Must be literally true: the customer saw the Disclosure. */
+  disclosureAccepted: true
+  returnPath: '/gift-wizard' | '/gift-wizard.next.html'
+}
+export interface GiftCheckoutResponse {
+  clientSecret: string
+  stripeSessionId: string
+  publishableKey: string
+  totals: { itemsCents: number; shippingCents: number; totalCents: number }
+  disclosure: Disclosure
+}
+export type GiftCheckoutError =
+  | 'disclosure_required' | 'no_lines' | 'invalid_email' | 'invalid_address' | 'product_not_available' | 'product_not_available_for_artwork'
+  | 'fulfilment_unavailable' | 'shipping_quote_failed' | 'order_already_paid' | 'checkout_unavailable' | 'session_not_found'
+
+/** POST /api/v1/gift/orders/confirm { stripeSessionId } -> re-verifies with Stripe (the webhook runs the same code). Idempotent. */
+export interface OrderConfirmRequest { stripeSessionId: string }
+export interface OrderConfirmResponse { confirmed: boolean; session?: SessionView }
+
+/** POST /api/v1/gift/sessions/{id}/artwork { previewId } -> SessionView. Picks THE artwork; may be changed until approval. */
+export interface SelectArtworkRequest { previewId: string }
+/** POST /api/v1/gift/sessions/{id}/compositions -> SessionView. Prepares one composition per purchased line from the selected artwork. */
+/** POST /api/v1/gift/sessions/{id}/compositions/{lineId}/correct -> SessionView. The ONE free correction per line; 409 correction_limit afterwards (contact Concierge). */
+/** POST /api/v1/gift/sessions/{id}/compositions/{compositionId}/approve -> SessionView. */
+/** POST /api/v1/gift/sessions/{id}/approve -> SessionView. Every line approved: creates the unlocked My Collection piece and releases the order to production. */
+/** POST /api/v1/gift/sessions/{id}/refund-request { reason } -> Concierge request for a full refund; blocks generation and approval until resolved. */
+export interface RefundRequestBody { reason?: string }
+export interface RefundRequestResponse { requestId: string; state: 'requested'; message: string }

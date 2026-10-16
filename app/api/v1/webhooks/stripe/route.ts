@@ -18,6 +18,8 @@ import { COLLECTION_UNLOCK_KIND, fulfillCollectionUnlocks } from '@/lib/store/co
 import { PACK_KIND } from '@/lib/v1/gift/policy'
 import { fulfillPack } from '@/lib/v1/gift/pack'
 import { supabaseGiftStore } from '@/lib/v1/gift/store'
+import { GIFT_ORDER_KIND, confirmGiftOrder } from '@/lib/v1/gift/orders'
+import { applyVerifiedRefunds } from '@/lib/v1/gift/refund'
 import { getStripe }                         from '@/lib/store/stripe'
 import { confirmPurchase, handlePaymentFailure } from '@/lib/store/entitlements'
 import { supabaseAdmin }                     from '@/lib/supabase'
@@ -88,6 +90,12 @@ async function dispatch(event: Stripe.Event): Promise<void> {
         await fulfillPack({ stripe: getStripe(), store: supabaseGiftStore(supabaseAdmin) }, session.id)
         return
       }
+      /* Gift Wizard product order (purchase before generation). confirmGiftOrder re-retrieves the session from Stripe and verifies it
+         against our own order rows before moving the order to awaiting_artwork and granting the two free batches. */
+      if (session.metadata?.kind === GIFT_ORDER_KIND) {
+        await confirmGiftOrder({ stripe: getStripe(), store: supabaseGiftStore(supabaseAdmin) }, session.id)
+        return
+      }
       const chargeId =
         (typeof session.payment_intent === 'string'
           ? session.payment_intent
@@ -110,6 +118,13 @@ async function dispatch(event: Stripe.Event): Promise<void> {
           throw new Error(`unlock_activation_failed: ${result.reason}`)
         }
       }
+      return
+    }
+
+    /* A refund on a Gift Wizard order. The event is only a pointer: the charge and its refunds are re-read from Stripe, and only
+       succeeded refunds are applied (once per Stripe refund id). Orders that are not gift orders are ignored here. */
+    case 'charge.refunded': {
+      await applyVerifiedRefunds({ stripe: getStripe(), store: supabaseGiftStore(supabaseAdmin) }, event.data.object as Stripe.Charge)
       return
     }
 

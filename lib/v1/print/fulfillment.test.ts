@@ -77,3 +77,10 @@ for(const [reason,problems] of [['disabled',[]],['not_ready',['migration_046_not
   await expect(prepareAndPlacePrint(order,true,check)).rejects.toBeInstanceOf(PipelineInactiveError)
   expect(fresh.jobs.size).toBe(0);expect(storage.files.size).toBe(0);expect(check).not.toHaveBeenCalled();expect(s.place).not.toHaveBeenCalled()
 })
+
+it('never places a different product than the one that was sold: a changed catalog SKU stops the order',async()=>{
+  await seed('approved')
+  const changed={...order,items:order.items.map((i:any)=>({...i,sku:'GLOBAL-FAP-8X8'}))}
+  await expect(prepareAndPlacePrint(changed,true)).rejects.toThrow('asset_pipeline: item_sku_changed:GLOBAL-FAP-8X8')
+  expect(s.place).not.toHaveBeenCalled()
+})

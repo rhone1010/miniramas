@@ -39,6 +39,7 @@ export type PrintOrderStatus =
   | 'created'
   | 'paid'
   | 'withheld'     // paid, deliberately not sent — the account cannot fulfil
+  | 'awaiting_artwork' // Gift Wizard: paid, the customer has not yet created and approved their artwork; invisible to fulfilment
   | 'placed'
   | 'in_production'
   | 'shipped'

@@ -21,6 +21,9 @@ import { analyzeSourceSet } from '@/lib/v1/groups/groups-refine'
 import { groupsAgeDecision, groupsAgeEvidence, MAX_SUBJECTS, MIN_SUBJECTS } from '@/lib/v1/groups/groups-shared'
 import { bakeFoyerWatermark } from '@/lib/v1/foyer/foyer-watermark'
 import { supabaseGiftStore } from './store'
+import { composeWithPrintShop } from './compose'
+import type { GiftOrderDeps } from './orders'
+import type { ConciergePort } from './refund'
 import type { GiftDeps, GiftStorage, SourceAnalysis } from './service'
 
 export function supabaseGiftStorage(db: any = supabaseAdmin): GiftStorage {
@@ -84,5 +87,40 @@ export async function watermarkPreview(masterB64: string): Promise<Buffer> {
 }
 
 export function giftDeps(): GiftDeps {
-  return { store: supabaseGiftStore(supabaseAdmin), storage: supabaseGiftStorage(), analyze: analyzeSource, generate: generateMaster, watermark: watermarkPreview }
+  return {
+    store: supabaseGiftStore(supabaseAdmin), storage: supabaseGiftStorage(), analyze: analyzeSource, generate: generateMaster, watermark: watermarkPreview,
+    compose: composeWithPrintShop,
+    // Release an approved order to the existing fulfilment pipeline now rather than waiting for the poller (crons run on Production only).
+    kick: async orderId => (await import('@/lib/v1/print/complete')).completePrintOrder(orderId),
+  }
+}
+
+/** Concierge is the existing support_messages record. Idempotent on id (a repeat is a no-op). */
+export function conciergePort(db: any = supabaseAdmin): ConciergePort {
+  return {
+    async create(row) {
+      const { error } = await db.from('support_messages').insert(row)
+      if (error && error.code !== '23505') throw new Error('concierge_record_failed: ' + error.message)
+    },
+  }
+}
+
+/** Checkout dependencies: the existing Stripe client, Prodigi quote and print_orders helpers. Preview requires Stripe test mode and the Prodigi sandbox. */
+export async function giftOrderDeps(): Promise<GiftOrderDeps & { gift: GiftDeps }> {
+  const [{ getStripe }, prodigi, printDb, owned] = await Promise.all([
+    import('@/lib/store/stripe'), import('@/lib/v1/print/prodigi-client'), import('@/lib/v1/print/db'), import('@/lib/v1/print/owned-source'),
+  ])
+  return {
+    gift: giftDeps(), store: supabaseGiftStore(supabaseAdmin), stripe: getStripe(),
+    printOrders: {
+      async create(i) { const row = await printDb.createPrintOrder(i); return { id: row.id } },
+      async replaceStripeSession(orderId, stripeSessionId) {
+        const { error } = await supabaseAdmin.from('print_orders').update({ stripe_session_id: stripeSessionId, updated_at: new Date().toISOString() }).eq('id', orderId).eq('status', 'created')
+        if (error) throw new Error('replace_stripe_session_failed: ' + error.message)
+      },
+    },
+    quote: prodigi.getQuote, canFulfil: printDb.canFulfil,
+    requireSandbox: process.env.VERCEL_ENV === 'preview' ? owned.requireSandboxPrint : undefined,
+    publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY,
+  }
 }
