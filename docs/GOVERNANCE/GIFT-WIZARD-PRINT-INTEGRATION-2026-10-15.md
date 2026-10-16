@@ -88,3 +88,15 @@ Stripe checkout and webhook, the Prodigi client and its Preview guards, the Prun
 - Whether 2:3 prints from a square artwork are offered with an approved extension, or only same-shape products are offered.
 - Mug and card: ship from GB internationally, composition layout, price.
 - Retail prices for framed-canvas and matted rectangles if they should launch.
+
+## 7. Implemented 2026-10-15: canonical catalog and geometry layer
+
+Decisions approved: one master artwork per effect, multiple approved product compositions, controlled background extension, never distort, silently crop or regenerate the subject, verified Prodigi geometry, Prodigi quotes for shipping, framed-canvas and matted rectangles disabled pending retail prices, mug and 7x5 Mohawk card not activated until prices and composition behavior are approved.
+
+Built (read-only, additive; `sku-map.ts`, `geometry.ts`, checkout and prices untouched):
+- `lib/v1/print/catalog-types.ts`: dependency-free stable contract (copy verbatim for Codex). `CATALOG_CONTRACT_VERSION = 1`. It supersedes the catalog part of `gift-wizard-contracts.proposed.ts` (`CanonicalProduct`, `CatalogResponse`); the session, batch, composition and checkout shapes there remain proposals.
+- `lib/v1/print/catalog.ts`: all 55 verified SKUs. Sellable products derive from `SKU_MAP` so price, SKU and attributes cannot drift; others are disabled entries with Prodigi's sandbox pixels. Corrects framed-canvas geometry (8x12 is landscape-defined 3654x2454; picture = area minus 54 px wrap).
+- `GET /api/v1/print/catalog[?width=&height=]`: public, read-only, no Prodigi call, no cost data. With artwork pixels it adds `artworkFit` (exact, resample within 2%, extend within 20%, unavailable) and `selectable`.
+- `lib/v1/print/catalog.test.ts`: 19 tests, including a check against the verified inventory file.
+
+Not decided or not built: the extension rule is still the existing 20% limit, so a square master reports 2:3 products as `unavailable` until the composition phase defines larger controlled extensions; `rotatedFile` (landscape art on a portrait SKU) is marked unverified; Prodigi publishes no safe-area specification (`safeArea: null`); sessions, batches, payment, compositions and checkout adaptation are not started.
