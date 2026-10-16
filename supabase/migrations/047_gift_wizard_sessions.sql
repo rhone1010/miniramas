@@ -7,6 +7,8 @@
 --
 -- THE RULES THESE TABLES ENFORCE
 --   * A session belongs to ONE signed-in user. Every function takes the user and refuses another owner's session.
+--   * (Superseded by 048, which must be applied right after this one: free batches then come from the PAID product order, two per
+--     order, and generation needs a paid order. Until 048 is applied nothing in the app calls these functions.)
 --   * Batches 1 and 2 of a session are free. Every later batch consumes one PAID pack. A pack exists only after the
 --     Stripe webhook verified payment (gift_fulfill_preview_pack); there is no way to create a paid pack from a client.
 --   * A batch is exactly six previews with six DISTINCT effects, and an effect is never used twice in a session.
