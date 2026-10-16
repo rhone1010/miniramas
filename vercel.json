@@ -11,6 +11,10 @@
     {
       "path": "/api/v1/print/assets/poll",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/v1/gift/cleanup",
+      "schedule": "37 3 * * *"
     }
   ]
 }

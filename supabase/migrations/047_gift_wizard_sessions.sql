@@ -142,7 +142,9 @@ begin
   if v_pack is not null then
     update public.gift_preview_packs set status = 'consumed', consumed_at = now(), consumed_batch_id = v_batch where id = v_pack;
   end if;
-  update public.gift_sessions set last_activity_at = now(), expires_at = greatest(expires_at, now() + interval '7 days') where id = p_session;
+  -- Retention: activity extends expiry to 7 days ahead, but never past 30 days from creation.
+  update public.gift_sessions set last_activity_at = now(),
+    expires_at = least(created_at + interval '30 days', greatest(expires_at, now() + interval '7 days')) where id = p_session;
   return query select v_batch, n + 1, v_kind, false;
 end $$;
 
@@ -179,6 +181,12 @@ end $$;
 revoke all on function public.gift_reserve_batch(uuid, uuid, text, text[], int)    from public;
 revoke all on function public.gift_claim_preview(uuid, uuid, int, int)             from public;
 revoke all on function public.gift_fulfill_preview_pack(uuid, text, int)           from public;
+-- Supabase can grant new objects to anon and authenticated through default privileges, which `revoke ... from public`
+-- does not undo. Remove them explicitly so only the service role has any access, whatever the project's defaults are.
+revoke all on function public.gift_reserve_batch(uuid, uuid, text, text[], int)    from anon, authenticated;
+revoke all on function public.gift_claim_preview(uuid, uuid, int, int)             from anon, authenticated;
+revoke all on function public.gift_fulfill_preview_pack(uuid, text, int)           from anon, authenticated;
+revoke all on public.gift_sessions, public.gift_preview_packs, public.gift_batches, public.gift_previews from anon, authenticated;
 grant execute on function public.gift_reserve_batch(uuid, uuid, text, text[], int) to service_role;
 grant execute on function public.gift_claim_preview(uuid, uuid, int, int)          to service_role;
 grant execute on function public.gift_fulfill_preview_pack(uuid, text, int)        to service_role;

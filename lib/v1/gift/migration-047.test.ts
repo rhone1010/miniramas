@@ -17,6 +17,8 @@ it.skipIf(!PGlite)('migration 047 enforces ownership, the free-then-paid policy,
   const db = new PGlite()
   try {
     await db.exec('create role anon; create role authenticated; create role service_role;')
+    // Simulate Supabase's default privileges, which hand every new public object to the browser roles.
+    await db.exec('alter default privileges in schema public grant all on tables to anon, authenticated, service_role; alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;')
     await db.exec(fs.readFileSync('supabase/migrations/047_gift_wizard_sessions.sql', 'utf8'))
     const q = async (sql: string, p: any[] = []) => (await db.query(sql, p)).rows
     const bad = async (sql: string, p: any[] = []) => { try { await db.query(sql, p); return null } catch (e: any) { return String(e.message) } }
@@ -103,6 +105,38 @@ it.skipIf(!PGlite)('migration 047 enforces ownership, the free-then-paid policy,
 
     // ── a paid batch must carry a pack, a free one must not
     expect(await bad(`insert into gift_batches(session_id,user_id,batch_index,kind,idempotency_key,effect_ids) values ($1,$2,9,'paid','key-nopack-1', array['a','b','c','d','e','f'])`, [s1, U1])).toBeTruthy()
+
+    // ── retention: activity extends expiry to 7 days ahead but never past 30 days from creation
+    const s4 = (await q(`insert into gift_sessions(user_id, source_sha256, source_width, source_height, series, created_at, expires_at) values ($1,'abc',10,10,'pets', now() - interval '29 days', now() + interval '1 day') returning id`, [U1]))[0].id
+    await reserve(s4, U1, 'key-s4-batch-1', eff(6, 300))
+    const e4 = (await q(`select (expires_at <= created_at + interval '30 days') as capped, (expires_at > now() + interval '23 hours') as extended from gift_sessions where id=$1`, [s4]))[0]
+    expect(e4).toEqual({ capped: true, extended: true })                         // 29 days old: extended, but only to day 30
+    const s5 = await mkSession(U1)
+    await reserve(s5, U1, 'key-s5-batch-1', eff(6, 400))
+    expect((await q(`select (expires_at > now() + interval '6 days 23 hours') as seven from gift_sessions where id=$1`, [s5]))[0].seven).toBe(true)
+
+    // ── deleting a session removes its batches and previews but never a paid pack
+    const packsBefore = (await q('select count(*)::int n from gift_preview_packs'))[0].n
+    await q('delete from gift_sessions where id=$1', [s1])
+    expect((await q('select count(*)::int n from gift_batches where session_id=$1', [s1]))[0].n).toBe(0)
+    expect((await q('select count(*)::int n from gift_previews where session_id=$1', [s1]))[0].n).toBe(0)
+    expect((await q('select count(*)::int n from gift_preview_packs'))[0].n).toBe(packsBefore)
+
+    // ── the migration can be applied twice (a re-run is harmless)
+    await db.exec(fs.readFileSync('supabase/migrations/047_gift_wizard_sessions.sql', 'utf8'))
+
+    // ── permissions: the browser roles can neither read the tables nor call the functions; RLS is on for all four
+    for (const t of ['gift_sessions', 'gift_batches', 'gift_previews', 'gift_preview_packs']) {
+      expect((await q('select relrowsecurity r from pg_class where relname=$1', [t]))[0].r, t).toBe(true)
+    }
+    for (const role of ['anon', 'authenticated']) {
+      await db.exec('set role ' + role)
+      expect(await bad('select * from gift_sessions'), role + ' read').toMatch(/permission denied/)
+      expect(await bad('select * from gift_preview_packs'), role + ' read packs').toMatch(/permission denied/)
+      expect(await bad('select gift_fulfill_preview_pack($1,$2,$3)', [U1, 'cs_test_forged', 299]), role + ' forge a pack').toMatch(/permission denied/)
+      expect(await bad('select * from gift_reserve_batch($1,$2,$3,$4)', [s5, U1, 'key-forged-01', eff(6, 500)]), role + ' reserve').toMatch(/permission denied/)
+      await db.exec('reset role')
+    }
 
     // ── the service role can call the functions
     await db.exec('set role service_role')

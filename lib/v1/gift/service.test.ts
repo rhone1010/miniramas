@@ -272,6 +272,22 @@ describe('retention', () => {
     const rec = r.store.sessions.get(view.sessionId)!
     expect(Date.parse(rec.expires_at)).toBeLessThanOrEqual(Date.parse(rec.created_at) + 30 * 864e5)
   })
+  it('a batch on day 29 extends expiry only to day 30; a fresh one extends to 7 days', async () => {
+    const old = await newSession()
+    for (let d = 0; d < 4; d++) { old.r.advance(6 * 864e5); await setLines(old.r.deps, U1, old.view.sessionId, []) }    // stays active to day 24
+    old.r.advance(5 * 864e5)                                                                                          // day 29
+    await startBatch(old.r.deps, U1, old.view.sessionId, { idempotencyKey: key(1) })
+    const rec = old.r.store.sessions.get(old.view.sessionId)!
+    expect(Date.parse(rec.expires_at)).toBe(Date.parse(rec.created_at) + 30 * 864e5)
+    const fresh = await newSession(); fresh.r.advance(864e5)
+    await startBatch(fresh.r.deps, U1, fresh.view.sessionId, { idempotencyKey: key(1) })
+    const f = fresh.r.store.sessions.get(fresh.view.sessionId)!
+    expect(Date.parse(f.expires_at)).toBe(Date.parse(f.last_activity_at) + 7 * 864e5)
+  })
+  it('an idle session untouched for more than 7 days refuses a batch', async () => {
+    const { r, view } = await newSession(); r.advance(8 * 864e5)
+    await expect(startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'session_expired' })
+  })
   it('the customer can delete their own session now; a storage failure keeps the rows so it can be retried', async () => {
     const { r, view } = await newSession(); await startBatch(r.deps, U1, view.sessionId, { idempotencyKey: key(1) })
     const remove = r.deps.storage.remove; r.deps.storage.remove = async () => { throw new Error('storage down') }

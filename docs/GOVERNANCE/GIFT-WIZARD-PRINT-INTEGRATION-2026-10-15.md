@@ -150,3 +150,11 @@ Existing comparison: Foyer results live 2 hours; portfolio source images have no
 - Sessions require sign-in. If anonymous trial is wanted, an owner-token design is needed plus per-IP limits on free previews (cost exposure).
 - Groups fill order ignores the room order; Pets and Groups aspect choices are untested against live routes.
 - Source analysis costs OpenAI calls at upload; the free allowance is two batches per session, so a cost cap per account is not yet enforced.
+
+## 9. Preview preparation (2026-10-16)
+
+- **Retention** is enforced in both layers: 7 days from the last activity, never past 30 days from creation (found and fixed: the SQL extension ignored the 30-day ceiling), paid packs untouched. Tests cover day-29 extension, idle expiry, purge, pinned sessions and pack survival.
+- **Cron:** `/api/v1/gift/cleanup` daily at 03:37 UTC added to `vercel.json`. Vercel runs crons on Production deployments only, so on Preview the sweep must be triggered by hand with the `CRON_SECRET` bearer.
+- **Migration 047 hardening:** it now explicitly revokes anon and authenticated (Supabase default privileges can grant them access, which `revoke ... from public` does not remove). The PGlite test simulates those defaults. It also re-applies cleanly.
+- **Verification SQL:** `gift-047-preflight-and-verify.sql` (read-only; Part A before applying, Part B after). It was run against PGlite here, not the live project.
+- **Free allocation across sessions:** see the report; a durable per-user ledger is the simplest guard and needs a decision on its window.

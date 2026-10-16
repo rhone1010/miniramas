@@ -127,7 +127,7 @@ export function memoryGiftStore(clock: () => number = Date.now): GiftStore & { s
       const batch: BatchRec = { id: randomUUID(), session_id: sessionId, user_id: userId, batch_index: n + 1, kind, pack_id: packId, idempotency_key: key, effect_ids: [...effects], created_at: iso() }
       batches.push(batch)
       effects.forEach((effect_id, i) => previews.push({ id: randomUUID(), batch_id: batch.id, session_id: sessionId, slot: i + 1, effect_id, status: 'pending', attempts: 0, lease_until: null, master_path: null, preview_path: null, width: null, height: null, error: null }))
-      s.last_activity_at = iso(); s.expires_at = iso(Math.max(Date.parse(s.expires_at), clock() + 7 * 864e5))
+      s.last_activity_at = iso(); s.expires_at = iso(Math.min(Date.parse(s.created_at) + 30 * 864e5, Math.max(Date.parse(s.expires_at), clock() + 7 * 864e5)))
       return { batch: structuredClone(batch), reused: false }
     },
     async claimPreview(previewId, userId) {
