@@ -158,3 +158,24 @@ Existing comparison: Foyer results live 2 hours; portfolio source images have no
 - **Migration 047 hardening:** it now explicitly revokes anon and authenticated (Supabase default privileges can grant them access, which `revoke ... from public` does not remove). The PGlite test simulates those defaults. It also re-applies cleanly.
 - **Verification SQL:** `gift-047-preflight-and-verify.sql` (read-only; Part A before applying, Part B after). It was run against PGlite here, not the live project.
 - **Free allocation across sessions:** see the report; a durable per-user ledger is the simplest guard and needs a decision on its window.
+
+## 10. Revised sequence: pay for products first, then create art (analysis only, 2026-10-16)
+
+Photo, Choose Gift, **Checkout**, Create Art (two free batches per paid order, then $2.99), Approve (artwork and each product composition), Fulfilment (Pruna, QA, Prodigi). Nothing here is implemented.
+
+Minimum changes
+1. **Order model.** New `print_orders.status` value `awaiting_artwork` (enum add). The existing poller, `completePrintOrder`, retry and admin paths only look at `paid`, `withheld` and `error`, so an order in the new state is invisible to every fulfilment path. An atomic conditional update `awaiting_artwork -> paid` (only after all approvals) hands the order to the existing pipeline, which keeps the account gate, refund recheck, upscale, QA, review and Prodigi idempotency unchanged.
+2. **Gift checkout.** A server-built Stripe session from the session's saved lines (catalog price, Prodigi quote, no artwork URL). The existing print checkout refuses to start without owned artwork, so this is a separate route that reuses `createPrintOrder`, `getQuote` and the Stripe client. Order items keep sku, size, finish, copies, price; lines become immutable once an order exists.
+3. **Payment webhook.** A `gift_order` kind in the Stripe webhook: verify with Stripe, mark paid, set `awaiting_artwork`, link `gift_sessions.order_id` (unique), grant 2 free batches, pin the session. The current print webhook would enqueue jobs immediately, which must not happen for these orders.
+4. **Batches.** `gift_reserve_batch` must require a paid, unrefunded linked order and use the order's granted free batches (0 before payment) instead of a constant 2. Packs stay per user.
+5. **Compositions.** Per line: derive the product-shaped artwork from the selected master (existing outpaint limits), store it, show a watermarked preview, record approval. This is the deferred composition phase and is now on the critical path.
+6. **Print source.** New job `source_kind = 'gift'` (extend the 046 check constraint, `JobStore`, `enqueueOrderJobs`, `loadSource`, hold-reason helpers). The job reads the approved composition by (order, line) from a mapping table; the existing `url` kind trusts a client URL and `owned` needs a portfolio piece. Because the composition already has the product's aspect, the existing composition step adds nothing.
+7. **Approval action.** One atomic function checks: order paid and not refunded, artwork selected, every line approved, unlock granted once; then moves the order to `paid`. Nothing reaches Prodigi before it.
+8. **Digital unlock.** Once per paid order, without touching `entitlements`: write the unlock directly, as purchased single pieces are born unlocked (`recordPreview` with `unlockedAt`).
+9. **Cannot find artwork.** An unresolved flag with a support record (the `notifyAttention` pattern) and an admin action list; the order stays `awaiting_artwork`; no automatic manufacture or refund.
+10. **Retention.** Pin the session at payment instead of at selection; add a retention rule for paid-but-unresolved sessions.
+11. **Small fix.** Fulfilment currently re-derives the SKU from size and finish; it should use the SKU and attributes stored on the order, so a catalog change cannot alter a purchased product.
+
+Conflicts to resolve: the print checkout and webhook assume artwork exists at payment; the 7/30-day session retention conflicts with paid orders waiting for art; composition outpaint is a paid call made before the customer is committed to approving; the unlock currently means a portfolio piece, and a gift artwork is not one.
+
+Decisions needed: what counts as a qualifying order; where the unlock lives (recommended: a My Collection piece born unlocked); unresolved-artwork policy and timing (reminders, who decides, refund terms, how long to hold); a cap on composition regenerations per line; checkout disclosure that the product is personalized and sold before the art is seen.
