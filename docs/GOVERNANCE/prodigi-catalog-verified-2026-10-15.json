@@ -1,0 +1,2815 @@
+{
+ "verifiedAt": "2026-10-15",
+ "source": "Prodigi SANDBOX GET /Products/{sku} and POST /Quotes (one copy and two copies, US destination). Read-only; no orders. Sandbox figures, not a live availability or price promise.",
+ "products": [
+  {
+   "sku": "GLOBAL-FAP-8X8",
+   "inLaunchMapFile": true,
+   "description": "EMA, Enhanced Matte Art Paper, 200gsm, 20x20cm / 8x8\"",
+   "productDimensions": {
+    "width": 8,
+    "height": 8,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2400,
+     "h": 2400
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 2900,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "8.00",
+    "budgetShipping": "6.85",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "10.75",
+    "twoCopiesBudgetShipping": "6.85"
+   }
+  },
+  {
+   "sku": "GLOBAL-FAP-12X12",
+   "inLaunchMapFile": true,
+   "description": "EMA, Enhanced Matte Art Paper, 200gsm, 30x30cm / 12x12\"",
+   "productDimensions": {
+    "width": 12,
+    "height": 12,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3600,
+     "h": 3600
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 4400,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "13.00",
+    "budgetShipping": "6.85",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "11.85",
+    "twoCopiesBudgetShipping": "6.85"
+   }
+  },
+  {
+   "sku": "GLOBAL-FAP-16X16",
+   "inLaunchMapFile": true,
+   "description": "EMA, Enhanced Matte Art Paper, 200gsm, 40x40cm / 16x16\"",
+   "productDimensions": {
+    "width": 16,
+    "height": 16,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4800,
+     "h": 4800
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 5400,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "14.00",
+    "budgetShipping": "7.10",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "12.28",
+    "twoCopiesBudgetShipping": "7.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-FAP-20X20",
+   "inLaunchMapFile": true,
+   "description": "EMA, Enhanced Matte Art Paper, 200gsm, 50x50cm / 20x20\"",
+   "productDimensions": {
+    "width": 20,
+    "height": 20,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6000,
+     "h": 6000
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 6400,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "16.00",
+    "budgetShipping": "7.10",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "12.95",
+    "twoCopiesBudgetShipping": "7.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-FAP-8X12",
+   "inLaunchMapFile": true,
+   "description": "EMA, Enhanced Matte Art Paper, 200gsm, 20x30cm / 8x12\"",
+   "productDimensions": {
+    "width": 8,
+    "height": 12,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2400,
+     "h": 3600
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 2900,
+   "quoteAttributesUsed": {
+    "paperType": "EMA",
+    "substrateWeight": "200gsm"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "11.00",
+    "budgetShipping": "6.85",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "11.85",
+    "twoCopiesBudgetShipping": "6.85"
+   }
+  },
+  {
+   "sku": "GLOBAL-FAP-12X18",
+   "inLaunchMapFile": true,
+   "description": "EMA, Enhanced Matte Art Paper, 200gsm, 30x45cm / 12x18\"",
+   "productDimensions": {
+    "width": 12,
+    "height": 18,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3600,
+     "h": 5400
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 4400,
+   "quoteAttributesUsed": {
+    "paperType": "EMA",
+    "substrateWeight": "200gsm"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "14.00",
+    "budgetShipping": "7.10",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "12.95",
+    "twoCopiesBudgetShipping": "7.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-FAP-16X24",
+   "inLaunchMapFile": true,
+   "description": "EMA, Enhanced Matte Art Paper, 200gsm, 40x60cm / 16x24\"",
+   "productDimensions": {
+    "width": 16,
+    "height": 24,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4800,
+     "h": 7200
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 5900,
+   "quoteAttributesUsed": {
+    "paperType": "EMA",
+    "substrateWeight": "200gsm"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "15.00",
+    "budgetShipping": "7.10",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "12.95",
+    "twoCopiesBudgetShipping": "7.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-FAP-20X30",
+   "inLaunchMapFile": true,
+   "description": "EMA, Enhanced Matte Art Paper, 200gsm, 50x75cm / 20x30\"",
+   "productDimensions": {
+    "width": 20,
+    "height": 30,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6000,
+     "h": 9000
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 7900,
+   "quoteAttributesUsed": {
+    "paperType": "EMA",
+    "substrateWeight": "200gsm"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "20.00",
+    "budgetShipping": "12.65",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "14.00",
+    "twoCopiesBudgetShipping": "12.65"
+   }
+  },
+  {
+   "sku": "GLOBAL-HPR-8X8",
+   "inLaunchMapFile": true,
+   "description": "Hahnem\u00c3\u00bchle Photo Rag, 20x20 cm / 8x8\"",
+   "productDimensions": {
+    "width": 8,
+    "height": 8,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2400,
+     "h": 2400
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "HPR"
+    ],
+    "substrateWeight": [
+     "308gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 3900,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "9.00",
+    "budgetShipping": "6.85",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "10.75",
+    "twoCopiesBudgetShipping": "6.85"
+   }
+  },
+  {
+   "sku": "GLOBAL-HPR-12X12",
+   "inLaunchMapFile": true,
+   "description": "Hahnem\u00c3\u00bchle Photo Rag, 30x30 cm / 12x12\"",
+   "productDimensions": {
+    "width": 12,
+    "height": 12,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3600,
+     "h": 3600
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "HPR"
+    ],
+    "substrateWeight": [
+     "308gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 5400,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "12.00",
+    "budgetShipping": "6.85",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "11.85",
+    "twoCopiesBudgetShipping": "6.85"
+   }
+  },
+  {
+   "sku": "GLOBAL-HPR-16X16",
+   "inLaunchMapFile": true,
+   "description": "Hahnem\u00c3\u00bchle Photo Rag, 40x40 cm / 16x16\"",
+   "productDimensions": {
+    "width": 16,
+    "height": 16,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4800,
+     "h": 4800
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "HPR"
+    ],
+    "substrateWeight": [
+     "308gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 6900,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "18.00",
+    "budgetShipping": "7.10",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "12.28",
+    "twoCopiesBudgetShipping": "7.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-HPR-20X20",
+   "inLaunchMapFile": true,
+   "description": "Hahnem\u00c3\u00bchle Photo Rag, 50x50 cm / 20x20\"",
+   "productDimensions": {
+    "width": 20,
+    "height": 20,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6000,
+     "h": 6000
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "HPR"
+    ],
+    "substrateWeight": [
+     "308gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 8400,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "23.00",
+    "budgetShipping": "7.10",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "12.95",
+    "twoCopiesBudgetShipping": "7.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-HPR-8X12",
+   "inLaunchMapFile": true,
+   "description": "Hahnem\u00c3\u00bchle Photo Rag, 20x30 cm / 8x12\"",
+   "productDimensions": {
+    "width": 8,
+    "height": 12,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2400,
+     "h": 3600
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "HPR"
+    ],
+    "substrateWeight": [
+     "308gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 3900,
+   "quoteAttributesUsed": {
+    "paperType": "HPR",
+    "substrateWeight": "308gsm"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "11.00",
+    "budgetShipping": "6.85",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "11.85",
+    "twoCopiesBudgetShipping": "6.85"
+   }
+  },
+  {
+   "sku": "GLOBAL-HPR-12X18",
+   "inLaunchMapFile": true,
+   "description": "Hahnem\u00c3\u00bchle Photo Rag, 30x45 cm / 12x18\"",
+   "productDimensions": {
+    "width": 12,
+    "height": 18,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3600,
+     "h": 5400
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "HPR"
+    ],
+    "substrateWeight": [
+     "308gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 5400,
+   "quoteAttributesUsed": {
+    "paperType": "HPR",
+    "substrateWeight": "308gsm"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "17.00",
+    "budgetShipping": "7.10",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "12.95",
+    "twoCopiesBudgetShipping": "7.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-HPR-16X24",
+   "inLaunchMapFile": true,
+   "description": "Hahnem\u00c3\u00bchle Photo Rag, 40x60 cm / 16x24\"",
+   "productDimensions": {
+    "width": 16,
+    "height": 24,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4800,
+     "h": 7200
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "HPR"
+    ],
+    "substrateWeight": [
+     "308gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 7400,
+   "quoteAttributesUsed": {
+    "paperType": "HPR",
+    "substrateWeight": "308gsm"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "20.00",
+    "budgetShipping": "7.10",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "12.95",
+    "twoCopiesBudgetShipping": "7.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-HPR-20X30",
+   "inLaunchMapFile": true,
+   "description": "Hahnem\u00c3\u00bchle Photo Rag, 50x75 cm / 20x30\"",
+   "productDimensions": {
+    "width": 20,
+    "height": 30,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6000,
+     "h": 9000
+    }
+   },
+   "attributeOptions": {
+    "paperType": [
+     "HPR"
+    ],
+    "substrateWeight": [
+     "308gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 237,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 9900,
+   "quoteAttributesUsed": {
+    "paperType": "HPR",
+    "substrateWeight": "308gsm"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "32.00",
+    "budgetShipping": "12.65",
+    "budgetCarrier": "UPS Mail Innovations",
+    "budgetLab": "US",
+    "standardShipping": "14.00",
+    "twoCopiesBudgetShipping": "12.65"
+   }
+  },
+  {
+   "sku": "GLOBAL-CAN-8X8",
+   "inLaunchMapFile": true,
+   "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 8x8\" / 20x20cm",
+   "productDimensions": {
+    "width": 8,
+    "height": 8,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2454,
+     "h": 2454
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "38mm standard stretcher bar"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 4,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 5900,
+   "quoteAttributesUsed": {
+    "wrap": "MirrorWrap"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "20.00",
+    "budgetShipping": "14.00",
+    "budgetCarrier": "USPS Priority Mail",
+    "budgetLab": "US",
+    "standardShipping": "21.55",
+    "twoCopiesBudgetShipping": "21.00"
+   }
+  },
+  {
+   "sku": "GLOBAL-CAN-12X12",
+   "inLaunchMapFile": true,
+   "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 12x12\" / 31x31cm",
+   "productDimensions": {
+    "width": 12,
+    "height": 12,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3654,
+     "h": 3654
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "38mm standard stretcher bar"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 4,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 6900,
+   "quoteAttributesUsed": {
+    "wrap": "MirrorWrap"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "24.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-CAN-16X16",
+   "inLaunchMapFile": true,
+   "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 16x16\" / 41x41cm",
+   "productDimensions": {
+    "width": 16,
+    "height": 16,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4854,
+     "h": 4854
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "38mm standard stretcher bar"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 4,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 8900,
+   "quoteAttributesUsed": {
+    "wrap": "MirrorWrap"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "32.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-CAN-20X20",
+   "inLaunchMapFile": true,
+   "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 20x20\" / 51x51cm",
+   "productDimensions": {
+    "width": 20,
+    "height": 20,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6054,
+     "h": 6054
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "38mm standard stretcher bar"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 4,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 11900,
+   "quoteAttributesUsed": {
+    "wrap": "MirrorWrap"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "42.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-CAN-8X12",
+   "inLaunchMapFile": true,
+   "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 8x12\" / 20x30cm",
+   "productDimensions": {
+    "width": 8,
+    "height": 12,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2454,
+     "h": 3654
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "38mm standard stretcher bar"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 4,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 5900,
+   "quoteAttributesUsed": {
+    "wrap": "MirrorWrap"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "20.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-CAN-12X18",
+   "inLaunchMapFile": true,
+   "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 12x18\" / 30x46cm",
+   "productDimensions": {
+    "width": 12,
+    "height": 18,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3654,
+     "h": 5454
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "38mm standard stretcher bar"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 4,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 7900,
+   "quoteAttributesUsed": {
+    "wrap": "MirrorWrap"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "29.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-CAN-16X24",
+   "inLaunchMapFile": true,
+   "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 16x24\" / 41x61cm",
+   "productDimensions": {
+    "width": 16,
+    "height": 24,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4854,
+     "h": 7254
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "38mm standard stretcher bar"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 4,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 10900,
+   "quoteAttributesUsed": {
+    "wrap": "MirrorWrap"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "40.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-CAN-20X30",
+   "inLaunchMapFile": true,
+   "description": "Stretched Canvas on a 38mm Standard Stretcher Bar, 20x30\" / 51x76cm",
+   "productDimensions": {
+    "width": 20,
+    "height": 30,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6054,
+     "h": 9054
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "38mm standard stretcher bar"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 4,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 13900,
+   "quoteAttributesUsed": {
+    "wrap": "MirrorWrap"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "50.00",
+    "budgetShipping": "32.35",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "32.35",
+    "twoCopiesBudgetShipping": "48.35"
+   }
+  },
+  {
+   "sku": "GLOBAL-FRA-CAN-8X8",
+   "inLaunchMapFile": true,
+   "description": "Global float framed canvas on premium stretcher bars, 8x8\" / 20x20  cm",
+   "productDimensions": {
+    "width": 8,
+    "height": 8,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2454,
+     "h": 2454
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 24,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 7900,
+   "quoteAttributesUsed": {
+    "color": "black",
+    "wrap": "Black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "30.00",
+    "budgetShipping": "14.00",
+    "budgetCarrier": "USPS Priority Mail",
+    "budgetLab": "US",
+    "standardShipping": "21.55",
+    "twoCopiesBudgetShipping": "21.00"
+   }
+  },
+  {
+   "sku": "GLOBAL-FRA-CAN-12X12",
+   "inLaunchMapFile": true,
+   "description": "Global float framed canvas on premium stretcher bars, 12x12\" / 30x30  cm",
+   "productDimensions": {
+    "width": 12,
+    "height": 12,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3654,
+     "h": 3654
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 24,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 9900,
+   "quoteAttributesUsed": {
+    "color": "black",
+    "wrap": "Black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "40.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-FRA-CAN-16X16",
+   "inLaunchMapFile": true,
+   "description": "Global float framed canvas on premium stretcher bars, 16x16\" / 41x41  cm",
+   "productDimensions": {
+    "width": 16,
+    "height": 16,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4854,
+     "h": 4854
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 24,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 12900,
+   "quoteAttributesUsed": {
+    "color": "black",
+    "wrap": "Black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "52.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-FRA-CAN-20X20",
+   "inLaunchMapFile": true,
+   "description": "Global float framed canvas on premium stretcher bars, 20x20\" / 51x51  cm",
+   "productDimensions": {
+    "width": 20,
+    "height": 20,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6054,
+     "h": 6054
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 24,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 16900,
+   "quoteAttributesUsed": {
+    "color": "black",
+    "wrap": "Black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "70.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFP-8X8",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 20x20cm/8x8\"",
+   "productDimensions": {
+    "width": 20,
+    "height": 20,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2400,
+     "h": 2400
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "No mount / Mat"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 8900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "35.00",
+    "budgetShipping": "14.00",
+    "budgetCarrier": "USPS Priority Mail",
+    "budgetLab": "US",
+    "standardShipping": "21.55",
+    "twoCopiesBudgetShipping": "21.00"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFP-12X12",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 30x30cm/12x12\"",
+   "productDimensions": {
+    "width": 30,
+    "height": 30,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3600,
+     "h": 3600
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "No mount / Mat"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 9900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "38.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFP-16X16",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 40x40cm/16x16\"",
+   "productDimensions": {
+    "width": 40,
+    "height": 40,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4800,
+     "h": 4800
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "No mount / Mat"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 11900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "46.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFP-20X20",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 50x50cm/20x20\"",
+   "productDimensions": {
+    "width": 50,
+    "height": 50,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6000,
+     "h": 6000
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "No mount / Mat"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 13900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "52.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFP-8X12",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 20x30cm/8x12\"",
+   "productDimensions": {
+    "width": 21,
+    "height": 30,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2400,
+     "h": 3600
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "No mount / Mat"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 8900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "37.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFP-12X18",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 30x45cm/12x18\"",
+   "productDimensions": {
+    "width": 30,
+    "height": 45,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3600,
+     "h": 5400
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "No mount / Mat"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 10900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "44.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFP-16X24",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 40x60cm/16x24\"",
+   "productDimensions": {
+    "width": 40,
+    "height": 60,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4800,
+     "h": 7200
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "No mount / Mat"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 13900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "50.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFP-20X30",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, No Mount / No Mat, Perspex Glaze, 50x75cm/20x30\"",
+   "productDimensions": {
+    "width": 50,
+    "height": 75,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6000,
+     "h": 9000
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "No mount / Mat"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 17900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "65.00",
+    "budgetShipping": "32.35",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "32.35",
+    "twoCopiesBudgetShipping": "48.35"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFPM-8X8",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 20x20cm/8x8\"",
+   "productDimensions": {
+    "width": 20.32,
+    "height": 20.32,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 1800,
+     "h": 1800
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 9400,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "38.00",
+    "budgetShipping": "14.00",
+    "budgetCarrier": "USPS Priority Mail",
+    "budgetLab": "US",
+    "standardShipping": "21.55",
+    "twoCopiesBudgetShipping": "21.00"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFPM-12X12",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 30x30cm/12x12\"",
+   "productDimensions": {
+    "width": 30,
+    "height": 30,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2700,
+     "h": 2700
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 10900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "44.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFPM-16X16",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 40x40cm/16x16\"",
+   "productDimensions": {
+    "width": 40,
+    "height": 40,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3600,
+     "h": 3600
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 12900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "50.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFPM-20X20",
+   "inLaunchMapFile": true,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 50x50cm/20x20\"",
+   "productDimensions": {
+    "width": 50,
+    "height": 50,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4800,
+     "h": 4800
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": true,
+   "retailCentsInMap": 14900,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "60.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-FRA-CAN-8X12",
+   "inLaunchMapFile": false,
+   "description": "Global float framed canvas on premium stretcher bars, 8x12\" / 20x30  cm",
+   "productDimensions": {
+    "width": 8,
+    "height": 12,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3654,
+     "h": 2454
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 24,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {
+    "color": "black",
+    "wrap": "Black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "34.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-FRA-CAN-12X18",
+   "inLaunchMapFile": false,
+   "description": "Global float framed canvas on premium stretcher bars, 12x18\" / 30x46  cm",
+   "productDimensions": {
+    "width": 12,
+    "height": 18,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3654,
+     "h": 5454
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 24,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {
+    "color": "black",
+    "wrap": "Black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "48.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-FRA-CAN-16X24",
+   "inLaunchMapFile": false,
+   "description": "Global float framed canvas on premium stretcher bars, 16x24\" / 41x61  cm",
+   "productDimensions": {
+    "width": 16,
+    "height": 24,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4854,
+     "h": 7254
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 24,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {
+    "color": "black",
+    "wrap": "Black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "64.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-FRA-CAN-20X30",
+   "inLaunchMapFile": false,
+   "description": "Global float framed canvas on premium stretcher bars, 20x30\" / 51x76  cm",
+   "productDimensions": {
+    "width": 20,
+    "height": 30,
+    "units": "in"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6054,
+     "h": 9054
+    }
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "variants": 24,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {
+    "color": "black",
+    "wrap": "Black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "87.00",
+    "budgetShipping": "32.35",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "32.35",
+    "twoCopiesBudgetShipping": "48.35"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFPM-8X12",
+   "inLaunchMapFile": false,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 20x30cm/8x12\"",
+   "productDimensions": {
+    "width": 20.32,
+    "height": 30.48,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 1800,
+     "h": 3000
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 236,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "40.00",
+    "budgetShipping": "24.80",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "24.80",
+    "twoCopiesBudgetShipping": "35.80"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFPM-12X18",
+   "inLaunchMapFile": false,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 30x45cm/12x18\"",
+   "productDimensions": {
+    "width": 30.48,
+    "height": 45.72,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2418,
+     "h": 4218
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "50.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFPM-16X24",
+   "inLaunchMapFile": false,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 40x60cm/16x24\"",
+   "productDimensions": {
+    "width": 40.64,
+    "height": 60.96,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 3618,
+     "h": 6018
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "60.00",
+    "budgetShipping": "25.90",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "25.90",
+    "twoCopiesBudgetShipping": "37.90"
+   }
+  },
+  {
+   "sku": "GLOBAL-CFPM-20X30",
+   "inLaunchMapFile": false,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 50x75cm/20x30\"",
+   "productDimensions": {
+    "width": 50.8,
+    "height": 75,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4800,
+     "h": 7800
+    }
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "variants": 8,
+   "shipsToUS": true,
+   "countries": 233,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {
+    "color": "black"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "70.00",
+    "budgetShipping": "32.35",
+    "budgetCarrier": "UPS Ground Shipping",
+    "budgetLab": "US",
+    "standardShipping": "32.35",
+    "twoCopiesBudgetShipping": "48.35"
+   }
+  },
+  {
+   "sku": "GLOBAL-GRE-MOH-7X5-BLA",
+   "inLaunchMapFile": false,
+   "description": "(Mail2Me: SELF SEND) A single - 7x5\" greetings card printed on Mohawk 324gsm card - dropshipped in a biodegradable OPP bag with a blank kraft envelope for posting yourself",
+   "productDimensions": {
+    "width": 17.8,
+    "height": 12.7,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6118,
+     "h": 2161
+    }
+   },
+   "attributeOptions": {
+    "finish": [
+     "matte"
+    ],
+    "paperType": [
+     "Mohawk Superfine"
+    ],
+    "style": [
+     "Single"
+    ],
+    "substrateWeight": [
+     "324gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 234,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "2.25",
+    "budgetShipping": "6.45",
+    "budgetCarrier": "USPS First Class Post",
+    "budgetLab": "US",
+    "standardShipping": "9.70",
+    "twoCopiesBudgetShipping": "6.45"
+   }
+  },
+  {
+   "sku": "GLOBAL-GRE-MOH-7X5-DIR",
+   "inLaunchMapFile": false,
+   "description": "(Mail4Me: DIRECT DELIVERY) A single 7x5\" greetings card printed on Mohawk 324gsm card - sent direct to recipient in an addressed kraft envelope",
+   "productDimensions": {
+    "width": 17.8,
+    "height": 12.7,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6118,
+     "h": 2161
+    }
+   },
+   "attributeOptions": {
+    "finish": [
+     "matte"
+    ],
+    "paperType": [
+     "Mohawk Superfine"
+    ],
+    "style": [
+     "Single, Direct to recipient"
+    ],
+    "substrateWeight": [
+     "324gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 230,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "1.19",
+    "budgetShipping": "6.55",
+    "budgetCarrier": "FedEx P2P UnTrak",
+    "budgetLab": "GB",
+    "standardShipping": "14.50",
+    "twoCopiesBudgetShipping": "13.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-GRE-GLOS-6X4-BLA",
+   "inLaunchMapFile": false,
+   "description": "(Mail2Me: SELF SEND) A single - 6x4\" gloss coated greetings card - dropshipped in a biodegradable OPP bag with a blank kraft envelope for posting yourself",
+   "productDimensions": {
+    "width": 15.2,
+    "height": 10.2,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4937,
+     "h": 1854
+    }
+   },
+   "attributeOptions": {
+    "finish": [
+     "gloss"
+    ],
+    "paperType": [
+     "Fine art card"
+    ],
+    "style": [
+     "Single"
+    ],
+    "substrateWeight": [
+     "280gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 232,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "0.99",
+    "budgetShipping": "9.20",
+    "budgetCarrier": "Direct Link Level 3",
+    "budgetLab": "GB",
+    "standardShipping": "15.82",
+    "twoCopiesBudgetShipping": "9.20"
+   }
+  },
+  {
+   "sku": "GLOBAL-GRE-GLOS-6X4-DIR",
+   "inLaunchMapFile": false,
+   "description": "(Mail4Me: DIRECT DELIVERY) A single 6x4\" gloss coated greetings card - sent direct to recipient in an addressed kraft envelope",
+   "productDimensions": {
+    "width": 15.2,
+    "height": 10.2,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 4937,
+     "h": 1854
+    }
+   },
+   "attributeOptions": {
+    "finish": [
+     "gloss"
+    ],
+    "paperType": [
+     "Fine art card"
+    ],
+    "style": [
+     "Single, Direct to recipient"
+    ],
+    "substrateWeight": [
+     "280gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 230,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "0.79",
+    "budgetShipping": "6.55",
+    "budgetCarrier": "FedEx P2P UnTrak",
+    "budgetLab": "GB",
+    "standardShipping": "14.50",
+    "twoCopiesBudgetShipping": "13.10"
+   }
+  },
+  {
+   "sku": "GLOBAL-GRE-GLOS-7X5-BLA",
+   "inLaunchMapFile": false,
+   "description": "(Mail2Me: SELF SEND) A single - 7x5\" gloss coated greetings card - dropshipped in a biodegradable OPP bag with a blank kraft envelope for posting yourself",
+   "productDimensions": {
+    "width": 17.8,
+    "height": 12.7,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6118,
+     "h": 2161
+    }
+   },
+   "attributeOptions": {
+    "finish": [
+     "gloss"
+    ],
+    "paperType": [
+     "Fine art card"
+    ],
+    "style": [
+     "Single"
+    ],
+    "substrateWeight": [
+     "280gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 232,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "1.06",
+    "budgetShipping": "9.20",
+    "budgetCarrier": "Direct Link Level 3",
+    "budgetLab": "GB",
+    "standardShipping": "15.82",
+    "twoCopiesBudgetShipping": "9.20"
+   }
+  },
+  {
+   "sku": "GLOBAL-GRE-GLOS-6X6-BLA",
+   "inLaunchMapFile": false,
+   "description": "(Mail2Me: SELF SEND) A single - 5.5x5.5\" square gloss coated greetings card - dropshipped in a biodegradable OPP bag with a blank kraft envelope for posting yourself",
+   "productDimensions": {
+    "width": 14,
+    "height": 14,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 6732,
+     "h": 1712
+    }
+   },
+   "attributeOptions": {
+    "finish": [
+     "gloss"
+    ],
+    "paperType": [
+     "Fine art card"
+    ],
+    "style": [
+     "Single"
+    ],
+    "substrateWeight": [
+     "280gsm"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 232,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {},
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "0.99",
+    "budgetShipping": "9.20",
+    "budgetCarrier": "Direct Link Level 3",
+    "budgetLab": "GB",
+    "standardShipping": "15.82",
+    "twoCopiesBudgetShipping": "9.20"
+   }
+  },
+  {
+   "sku": "GLOBAL-MUG-W",
+   "inLaunchMapFile": false,
+   "description": "11oz White Ceramic Photo Mug [full image wrap with top-to-bottom printing]",
+   "productDimensions": {
+    "width": 22.86,
+    "height": 9.483,
+    "units": "cm"
+   },
+   "printAreaPx": {
+    "default": {
+     "w": 2670,
+     "h": 1110
+    }
+   },
+   "attributeOptions": {
+    "color": [
+     "white"
+    ],
+    "size": [
+     "313ml / 11oz"
+    ]
+   },
+   "variants": 1,
+   "shipsToUS": true,
+   "countries": 116,
+   "matchesSkuMapRequiredPx": null,
+   "retailCentsInMap": null,
+   "quoteAttributesUsed": {
+    "color": "white",
+    "size": "313ml / 11oz"
+   },
+   "sandboxQuoteUS_USD": {
+    "wholesaleItem": "5.63",
+    "budgetShipping": "6.55",
+    "budgetCarrier": "Royal Mail DSA",
+    "budgetLab": "GB",
+    "standardShipping": "6.45",
+    "twoCopiesBudgetShipping": "7.88"
+   }
+  }
+ ]
+}
