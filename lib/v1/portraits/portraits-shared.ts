@@ -120,6 +120,10 @@ export type PortraitsPresetId =
   | 'action_figure'
   | 'designer_vinyl'
   | 'mosaic_portrait'
+  | 'marionettes_portrait'
+  | 'nesting_dolls_portrait'
+  | 'paper_puppets_portrait'
+  | 'tin_windup_portrait'
 
 export const PRESET_LABELS: Record<PortraitsPresetId, string> = {
   bronze:               'Bronze',
@@ -189,6 +193,11 @@ export const PRESET_LABELS: Record<PortraitsPresetId, string> = {
   action_figure:        'Action Figure',
   designer_vinyl:       'Vinyl Figure',
   mosaic_portrait:      'Mosaic',
+  /* Toys silo, 2026-10-16 */
+  marionettes_portrait:   'Marionettes',
+  nesting_dolls_portrait: 'Nesting Dolls',
+  paper_puppets_portrait: 'Paper Puppets',
+  tin_windup_portrait:    'Tin Wind-Ups',
 }
 
 // ── STYLE → MATERIALS ─────────────────────────────────────────
@@ -213,6 +222,7 @@ export const STYLE_MATERIALS: Record<PortraitsStyleId, PortraitsPresetId[]> = {
     'persian_court', 'victorian_woman', 'renaissance_woman', 'persian_court_woman',
     'wild_west_woman', 'deco_twenties_woman', 'samurai_woman', 'elizabethan_woman',
     'action_figure', 'designer_vinyl', 'mosaic_portrait',
+    'marionettes_portrait', 'nesting_dolls_portrait', 'paper_puppets_portrait', 'tin_windup_portrait',
   ],
   people_resolving: [
     'ebony', 'bronze', 'iron', 'stone',

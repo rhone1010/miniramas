@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T18:14:14.143Z",
+  "generatedAt": "2026-10-17T01:45:29.516Z",
   "base": "/previews/effects/",
   "siloBase": "/previews/silos/",
   "poseBase": "/previews/pose/",
@@ -301,6 +301,17 @@
         "woman@2x.jpg"
       ]
     },
+    "marionettes_portrait": {
+      "man": "man.jpg",
+      "woman": "woman.jpg",
+      "neutral": null,
+      "all": [
+        "man.jpg",
+        "woman.jpg",
+        "man@2x.jpg",
+        "woman@2x.jpg"
+      ]
+    },
     "mercury": {
       "man": "man.jpg",
       "woman": "woman.jpg",
@@ -334,6 +345,17 @@
         "woman@2x.jpg"
       ]
     },
+    "nesting_dolls_portrait": {
+      "man": "man.jpg",
+      "woman": "woman.jpg",
+      "neutral": null,
+      "all": [
+        "man.jpg",
+        "woman.jpg",
+        "man@2x.jpg",
+        "woman@2x.jpg"
+      ]
+    },
     "oil_impasto": {
       "man": "man.jpg",
       "woman": "woman.jpg",
@@ -346,6 +368,17 @@
       ]
     },
     "origami": {
+      "man": "man.jpg",
+      "woman": "woman.jpg",
+      "neutral": null,
+      "all": [
+        "man.jpg",
+        "woman.jpg",
+        "man@2x.jpg",
+        "woman@2x.jpg"
+      ]
+    },
+    "paper_puppets_portrait": {
       "man": "man.jpg",
       "woman": "woman.jpg",
       "neutral": null,
@@ -553,6 +586,17 @@
       ]
     },
     "tidewood": {
+      "man": "man.jpg",
+      "woman": "woman.jpg",
+      "neutral": null,
+      "all": [
+        "man.jpg",
+        "woman.jpg",
+        "man@2x.jpg",
+        "woman@2x.jpg"
+      ]
+    },
+    "tin_windup_portrait": {
       "man": "man.jpg",
       "woman": "woman.jpg",
       "neutral": null,

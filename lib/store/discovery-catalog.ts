@@ -27,6 +27,7 @@
 import { SILOS } from '@/lib/v1/portraits/effect-registry'
 
 export type SiloId =
+  | 'toys'
   | 'earth_ore' | 'light_glass' | 'living_world' | 'made_by_hand'
   | 'artists_gallery' | 'ink_paper' | 'fantasy_future' | 'another_age'
 
@@ -46,7 +47,7 @@ export interface SiloBoundary {
 
 // Silo order matches effect-registry.ts's SILOS array order exactly.
 const SILO_ORDER: SiloId[] = [
-  'another_age', 'earth_ore', 'light_glass', 'living_world',
+  'toys', 'another_age', 'earth_ore', 'light_glass', 'living_world',
   'made_by_hand', 'artists_gallery', 'ink_paper', 'fantasy_future',
 ]
 
@@ -56,6 +57,10 @@ const SILO_ORDER: SiloId[] = [
 // entry, per spec section 4 ("do not expose an extra selectable effect
 // count").
 const CANONICAL_BY_SILO: Record<SiloId, Array<string | null>> = {
+  toys: [
+    'marionettes_portrait', 'nesting_dolls_portrait', 'paper_puppets_portrait', 'tin_windup_portrait',
+    'retro_robot', 'action_figure', 'designer_vinyl', 'plushy',
+  ],
   another_age: [
     'elizabethan', 'renaissance', 'deco_twenties', 'victorian',
     'samurai', 'wild_west', 'persian_court',
@@ -71,7 +76,7 @@ const CANONICAL_BY_SILO: Record<SiloId, Array<string | null>> = {
     'petal_sculpture', 'sand_form', 'sandstone',
   ],
   made_by_hand: [
-    'plushy', 'chocolate', 'balloon_face', 'quilted', 'origami', 'porcelain',
+    'chocolate', 'balloon_face', 'quilted', 'origami', 'porcelain',
     null, // beaded - confirmed dead this session, not reused
   ],
   artists_gallery: [
@@ -83,8 +88,8 @@ const CANONICAL_BY_SILO: Record<SiloId, Array<string | null>> = {
     'art_deco', 'art_nouveau', 'daguerreotype',
   ],
   fantasy_future: [
-    'dragon_skin', 'action_figure', 'retro_robot', 'forest_guardian',
-    'clockwork', 'starfield', 'designer_vinyl',
+    'dragon_skin', 'forest_guardian',
+    'clockwork', 'starfield',
   ],
 }
 

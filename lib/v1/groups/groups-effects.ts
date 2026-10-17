@@ -158,9 +158,12 @@ export type GroupsEffectId =
   | 'layered_paper_faces'
   | 'lichen_granite'
   | 'linocut'
+  | 'marionettes'
   | 'mosaic_faces'
   | 'neon'
+  | 'nesting_dolls'
   | 'origami'
+  | 'paper_puppets'
   | 'petal'
   | 'plushy'
   | 'porcelain'
@@ -172,6 +175,7 @@ export type GroupsEffectId =
   | 'stained_glass'
   | 'stained_glass_faces'
   | 'stone'
+  | 'tin_windup'
   | 'ukiyo_e'
   | 'ukiyo_faces'
   | 'watercolor'
@@ -452,6 +456,70 @@ Use beautiful high-end product photography, shallow depth of field and soft dire
 
 The result should feel like an expensive numbered art toy created by an accomplished character designer and sculptor, playful, beautifully made and unmistakably the subject. NO TEXT.`,
     avoid: `Avoid Funko-style extreme proportions, giant square heads, bobbleheads, plush materials, realistic human skin, realistic hair, dolls, action-figure joints, superhero bodies, cheap plastic, generic cartoon faces, text, logos or packaging.`,
+  },
+
+  marionettes: {
+  id: 'marionettes',
+  label: 'Marionettes',
+  intake: 'group_photo',
+  body: `Transform the group into exquisite handcrafted wooden marionettes, preserving recognizable facial likenesses, ages, hairstyles, clothing, and proportions. NO TEXT.
+
+Render each person as a masterfully carved and hand-painted wooden puppet with expressive sculpted faces, articulated wooden limbs, delicate joints, and fine strings extending upward to traditional wooden control bars. Recreate their clothing in beautifully tailored miniature fabrics with authentic folds and textures.
+
+Arrange the characters in lively, natural poses within an enchanting vintage puppet theater. Create a richly detailed theatrical backdrop with layered painted scenery, ornate curtains, and handcrafted stage elements.
+
+Show every character full-body at consistent scale, occupying roughly 75% of the image height. Fill the frame with the theatrical world, emphasizing physical depth and craftsmanship.
+
+Museum-quality marionette artistry, warm theatrical lighting, rich colors, intricate wood grain, and exceptional tactile detail.`,
+  avoid: `Avoid cartoon faces, plastic dolls, realistic human skin, tangled strings, exaggerated proportions, cropped figures, distorted likenesses, modern stages, or text.`,
+  },
+
+  nesting_dolls: {
+  id: 'nesting_dolls',
+  label: 'Nesting Dolls',
+  intake: 'group_photo',
+  body: `Transform the group into an exquisite collection of handcrafted Russian nesting dolls, preserving recognizable facial likenesses, ages, hairstyles, expressions, and clothing. NO TEXT.
+
+Render each person as a beautifully turned wooden matryoshka doll with traditional rounded silhouettes, delicately hand-painted portraits, intricate decorative patterns, glossy lacquer, and subtle natural wood grain. Adapt their original clothing into richly detailed painted designs following each doll's curved surface.
+
+Arrange the dolls as a coordinated family collection, varying their sizes naturally while keeping every person clearly visible. Include a few opened nesting shells revealing their hollow wooden interiors and authentic craftsmanship.
+
+Create a charming setting inspired by traditional Russian folk art, with layered floral ornamentation, carved wooden surfaces, and warm decorative details.
+
+Premium artisan craftsmanship, sophisticated colors, delicate brushwork, beautiful directional lighting, and exceptional tactile realism.`,
+  avoid: `Avoid cartoon faces, plastic materials, realistic human bodies, generic identical faces, excessive size differences, hidden characters, distorted likenesses, packaging, or text.`,
+  },
+
+  paper_puppets: {
+  id: 'paper_puppets',
+  label: 'Paper Puppets',
+  intake: 'group_photo',
+  body: `Transform the group into exquisite articulated paper puppets within a richly layered 3D paper-cut landscape, crafted by a master paper artist. NO TEXT.
+
+Preserve recognizable facial likenesses, ages, expressions, hairstyles, clothing, and relative proportions. Render full-body characters with overlapping paper limbs connected by small antique brass rivets at shoulders, elbows, hips, and knees. Faces and hair feature delicate layered paper construction, visible cut edges, and subtle dimensional contours.
+
+Create a charming outdoor scene with a house, leafy tree, hedges, mailbox, and sculpted clouds against a blue sky. Every element is handcrafted from premium textured papers with intricate cutwork, embossed details, dimensional layering, and natural shadows.
+
+Characters dominate the foreground at consistent scale, occupying roughly 75% of the image height. Arrange everyone on the same visual plane. The composition fills the frame edge to edge, viewed straight on with convincing physical depth.
+
+Museum-quality craftsmanship, sophisticated colors, beautiful directional lighting, and exceptional tactile detail.`,
+  avoid: `Avoid cartoon styling, flat illustration, sculpted figurine faces, plastic materials, shadow boxes, frames, cropped figures, disproportionate character sizes, distorted likenesses, or text.`,
+  },
+
+  tin_windup: {
+  id: 'tin_windup',
+  label: 'Tin Wind-Ups',
+  intake: 'group_photo',
+  body: `Transform the group into exquisite early 1900s lithographed tin wind-up toys, preserving recognizable facial likenesses, ages, hairstyles, clothing, and proportions. NO TEXT.
+
+Render each person as a beautifully manufactured antique mechanical toy with stamped sheet-metal bodies, colorful lithographed surfaces, folded seams, tiny rivets, articulated limbs, and visible brass winding keys. Capture the charm of rare Edwardian-era clockwork collectibles with expressive poses and authentic period craftsmanship.
+
+Create a whimsical turn-of-the-century streetscape behind them, constructed entirely from dimensional cutout tin buildings, storefronts, streetlamps, trees, and decorative architectural details. Layer the metal scenery to create convincing theatrical depth.
+
+Arrange the figures prominently in the foreground at consistent scale, full-body and occupying roughly 75% of the image height. Fill the frame edge to edge, viewed straight on.
+
+Museum-quality antique toy craftsmanship, rich enamel colors, subtle patina, intricate lithographic detailing, beautiful directional lighting, and tangible metallic surfaces.`,
+  avoid: `Avoid modern robots, plastic toys, cartoon faces, oversized heads, excessive rust, realistic human skin, display cases, frames, cropped figures, distorted likenesses, or text.`,
   },
 
   driftwood_resin: {

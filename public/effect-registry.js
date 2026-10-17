@@ -1,13 +1,18 @@
 /* GENERATED FILE — DO NOT EDIT.
    Source: lib/v1/portraits/effect-registry.ts  (CENG-owned)
    Regenerate: node scripts/emit-effect-registry.js
-   Emitted: 2026-09-16T18:12:01.838Z
+   Emitted: 2026-10-17T01:45:29.329Z
 
    Labels are plain unicode. Key on .id, never on .label.
    Offer only effects where body === 'live' — the gate refuses the rest. */
 window.EFFECT_REGISTRY = {
-  "generatedAt": "2026-09-16T18:12:01.838Z",
+  "generatedAt": "2026-10-17T01:45:29.329Z",
   "silos": [
+    {
+      "id": "toys",
+      "label": "Toys",
+      "line": "Here are the Toys finishes. Made to be picked up, wound up and played with."
+    },
     {
       "id": "another_age",
       "label": "Another Age",
@@ -50,6 +55,87 @@ window.EFFECT_REGISTRY = {
     }
   ],
   "effects": [
+    {
+      "id": "marionettes_portrait",
+      "label": "Marionettes",
+      "category": "toys",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "nesting_dolls_portrait",
+      "label": "Nesting Dolls",
+      "category": "toys",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "paper_puppets_portrait",
+      "label": "Paper Puppets",
+      "category": "toys",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "tin_windup_portrait",
+      "label": "Tin Wind-Ups",
+      "category": "toys",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "retro_robot",
+      "label": "Atomic Age Robot",
+      "category": "toys",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "action_figure",
+      "label": "Action Figure",
+      "category": "toys",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "designer_vinyl",
+      "label": "Vinyl Figure",
+      "category": "toys",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "plushy",
+      "label": "Plushy",
+      "category": "toys",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 1,
+      "likenessFloor": "relaxed",
+      "genderedRefs": true
+    },
     {
       "id": "bronze",
       "label": "Bronze",
@@ -260,17 +346,6 @@ window.EFFECT_REGISTRY = {
       "body": "live",
       "refs": 2,
       "likenessFloor": "strict"
-    },
-    {
-      "id": "plushy",
-      "label": "Plushy",
-      "category": "made_by_hand",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 1,
-      "likenessFloor": "relaxed",
-      "genderedRefs": true
     },
     {
       "id": "chocolate",
@@ -497,16 +572,6 @@ window.EFFECT_REGISTRY = {
       "skipStaging": true
     },
     {
-      "id": "retro_robot",
-      "label": "Atomic Age Robot",
-      "category": "fantasy_future",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 2,
-      "likenessFloor": "strict"
-    },
-    {
       "id": "forest_guardian",
       "label": "Forest Guardian",
       "category": "fantasy_future",
@@ -544,26 +609,6 @@ window.EFFECT_REGISTRY = {
       "monolithic": true,
       "body": "live",
       "refs": 2,
-      "likenessFloor": "strict"
-    },
-    {
-      "id": "action_figure",
-      "label": "Action Figure",
-      "category": "fantasy_future",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 0,
-      "likenessFloor": "strict"
-    },
-    {
-      "id": "designer_vinyl",
-      "label": "Vinyl Figure",
-      "category": "fantasy_future",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 0,
       "likenessFloor": "strict"
     },
     {

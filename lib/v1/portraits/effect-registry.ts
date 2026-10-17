@@ -15,6 +15,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SiloId =
+  | 'toys'
   | 'earth_ore'
   | 'light_glass'
   | 'living_world'
@@ -69,6 +70,8 @@ export interface Effect {
 // ── SILOS ────────────────────────────────────────────────────────────────────
 
 export const SILOS: Silo[] = [
+  { id:'toys',            label:'Toys',
+    line:'Here are the Toys finishes. Made to be picked up, wound up and played with.' },
   { id:'another_age',     label:'Another Age',
     line:'Here are the Another Age finishes. A sitting in a century not your own.' },
   { id:'earth_ore',       label:'Earth & Ore',
@@ -93,6 +96,15 @@ export const SILOS: Silo[] = [
 // 56 slots. See EFFECTS-REVISION-2026-07-29.md for adds/drops/moves and reasons.
 
 export const EFFECTS: Effect[] = [
+  // ── Toys (first silo; the four newest first, then the four moved here 2026-10-16) ──────────────
+  { id:'marionettes_portrait', label:'Marionettes', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — Toys silo, 2026-10-16. Preview plates: public/previews/effects/marionettes_portrait/.' },
+  { id:'nesting_dolls_portrait', label:'Nesting Dolls', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — Toys silo, 2026-10-16.' },
+  { id:'paper_puppets_portrait', label:'Paper Puppets', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — Toys silo, 2026-10-16.' },
+  { id:'tin_windup_portrait', label:'Tin Wind-Ups', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — Toys silo, 2026-10-16. Preview plates come from the tin_wind_up photographs.' },
+  { id:'retro_robot', label:'Atomic Age Robot', category:'toys', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'strict', note:'Ref cleanup required before use: both plates carry garbled signage (crop it out — refs outrank text); the plates disagree on clothing (pick fabric-garment-in-metal); rename 1_girl.jpg -> 2_woman.jpg and do not add an age axis.' },
+  { id:'action_figure', label:'Action Figure', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — added 2026-09-15.' },
+  { id:'designer_vinyl', label:'Vinyl Figure', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — added 2026-09-15.' },
+  { id:'plushy', label:'Plushy', category:'toys', mode:'material', monolithic:false, body:'live', refs:1, likenessFloor:'relaxed', genderedRefs:true },
   // ── Earth & Ore ───────────────────────────────────────────────────
   { id:'bronze', label:'Bronze', category:'earth_ore', mode:'material', monolithic:true, body:'live', refs:1, likenessFloor:'strict' },
   { id:'iron', label:'Iron', category:'earth_ore', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict' },
@@ -121,7 +133,6 @@ export const EFFECTS: Effect[] = [
   { id:'sandstone', label:'Sandstone', category:'living_world', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
 
   // ── Made by Hand ──────────────────────────────────────────────────
-  { id:'plushy', label:'Plushy', category:'made_by_hand', mode:'material', monolithic:false, body:'live', refs:1, likenessFloor:'relaxed', genderedRefs:true },
   { id:'chocolate', label:'Chocolate', category:'made_by_hand', mode:'material', monolithic:true, body:'live', refs:1, likenessFloor:'strict', genderedRefs:true },
   { id:'balloon_face', label:'Balloon', category:'made_by_hand', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'relaxed', genderedRefs:true, note:'Replaces the unwritten `origami` slot 2026-07-30 — Folded Paper overlapped folded_book too heavily. Refs already shot.' },
   { id:'quilted', label:'Quilted', category:'made_by_hand', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
@@ -150,15 +161,12 @@ export const EFFECTS: Effect[] = [
   // ── Fantasy & Future ──────────────────────────────────────────────
   { id:'dragon_skin', label:'Dragon Skin', category:'fantasy_future', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'strict' },
   { id:'fire_face', label:'Fire & Ember', category:'living_world', mode:'costume', monolithic:false, body:'live', refs:2, likenessFloor:'strict', skipStaging:true, note:'MOVED from fantasy_future to living_world 2026-09-15 by Rich. FOLDER RENAME REQUIRED: public/style-refs/portraits/fire-face -> fire_face. A hyphen loads zero refs, silently. skipStaging — refs are lit by the fire, conflicting with the mandated gallery key. First costume effect whose refs are photoreal people rather than sculpture: check register against the gallery line.' },
-  { id:'retro_robot', label:'Atomic Age Robot', category:'fantasy_future', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'strict', note:'Ref cleanup required before use: both plates carry garbled signage (crop it out — refs outrank text); the plates disagree on clothing (pick fabric-garment-in-metal); rename 1_girl.jpg -> 2_woman.jpg and do not add an age axis.' },
   { id:'forest_guardian', label:'Forest Guardian', category:'fantasy_future', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
   { id:'clockwork', label:'Clockwork', category:'fantasy_future', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
   { id:'starfield', label:'Starfield', category:'fantasy_future', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
   { id:'crystallized', label:'Crystallized', category:'earth_ore', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'MOVED from fantasy_future to earth_ore 2026-09-15 by Rich.' },
 
   // ── NEW EFFECTS ADDED 2026-09-15 by Rich ──────────────────────────
-  { id:'action_figure', label:'Action Figure', category:'fantasy_future', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — added 2026-09-15.' },
-  { id:'designer_vinyl', label:'Vinyl Figure', category:'fantasy_future', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — added 2026-09-15.' },
   { id:'mosaic_portrait', label:'Mosaic', category:'light_glass', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'relaxed', note:'NEW — added 2026-09-15.' },
   // ── Another Age ───────────────────────────────────────────────────
   { id:'elizabethan', label:'Elizabethan Portrait', category:'another_age', mode:'costume', monolithic:false, body:'live', refs:2, likenessFloor:'strict', genderedRefs:true, note:'DECIDED: 3D render, NOT painting. The Holbein / Horenbout / Teerlinc / Toto / Penni direction is dead. Needs the thoughtful EXPRESSION_BLOCK — the mandated settled smile overrode neutral-period in one of three test outputs.' },

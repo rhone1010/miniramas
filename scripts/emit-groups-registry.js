@@ -53,9 +53,15 @@ const src = fs.readFileSync(SRC, 'utf8');
 // ---- THE ROOMS --------------------------------------------------------------
 // Labels and Curator lines locked by Rich, 24 August 2026.
 //
-// ROOMS — seven rooms of 6, plus Toys (2). Counts are derived from this table.
+// ROOMS — eight rooms of 6, Toys first (the four newest, then the two before them). Counts are derived from this table.
 // Rich's final assignment, September 2026.
 const ROOMS = [
+  {
+    id: 'toys',
+    label: 'Toys',
+    line: 'Collectible figures, made from your people.',
+    members: ['marionettes', 'nesting_dolls', 'paper_puppets', 'tin_windup', 'action_figures', 'designer_vinyl'],
+  },
   {
     id: 'portrait_collections',
     label: 'Portrait Collections',
@@ -97,13 +103,7 @@ const ROOMS = [
     label: 'Curiosities',
     line: 'For when ordinary simply won\'t do.',
     members: ['art_deco', 'balloon', 'clockwork', 'driftwood_resin', 'neon', 'retro_robot'],
-  },  {
-    id: 'toys',
-    label: 'Toys',
-    line: 'Collectible figures, made from your people.',
-    members: ['action_figures', 'designer_vinyl'],
-  },
-];
+  },];
 
 // ---- CURATED (THE PICK-4 / FLIP SET) ---------------------------------------
 //

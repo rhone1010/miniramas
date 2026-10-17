@@ -2,7 +2,7 @@
    Source: lib/v1/groups/groups-effects.ts  (CENG-owned)
    Rooms:  scripts/emit-groups-registry.js  (the ROOMS table in that file)
    Regenerate: node scripts/emit-groups-registry.js
-   Emitted: 2026-10-15T23:10:44.284Z
+   Emitted: 2026-10-17T01:45:29.418Z
 
    THE ROOMS ARE NOT IN THE SOURCE. groups-effects.ts is a flat catalogue
    with no grouping field and should not gain one - which room an effect
@@ -28,8 +28,13 @@
 
    Labels are plain unicode. Key on .id, never on .label. */
 window.GROUPS_REGISTRY = {
-  "generatedAt": "2026-10-15T23:10:44.284Z",
+  "generatedAt": "2026-10-17T01:45:29.418Z",
   "silos": [
+    {
+      "id": "toys",
+      "label": "Toys",
+      "line": "Collectible figures, made from your people."
+    },
     {
       "id": "portrait_collections",
       "label": "Portrait Collections",
@@ -64,14 +69,69 @@ window.GROUPS_REGISTRY = {
       "id": "curiosities",
       "label": "Curiosities",
       "line": "For when ordinary simply won't do."
-    },
-    {
-      "id": "toys",
-      "label": "Toys",
-      "line": "Collectible figures, made from your people."
     }
   ],
   "effects": [
+    {
+      "id": "marionettes",
+      "label": "Marionettes",
+      "category": "toys",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "nesting_dolls",
+      "label": "Nesting Dolls",
+      "category": "toys",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "paper_puppets",
+      "label": "Paper Puppets",
+      "category": "toys",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "tin_windup",
+      "label": "Tin Wind-Ups",
+      "category": "toys",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "action_figures",
+      "label": "Action Figures",
+      "category": "toys",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
+    {
+      "id": "designer_vinyl",
+      "label": "Designer Vinyl",
+      "category": "toys",
+      "intake": "group_photo",
+      "body": "live",
+      "formats": [
+        "3:2"
+      ]
+    },
     {
       "id": "art_nouveau_faces",
       "label": "Art Nouveau",
@@ -496,26 +556,6 @@ window.GROUPS_REGISTRY = {
       "id": "retro_robot",
       "label": "Atomic-Age Robot",
       "category": "curiosities",
-      "intake": "group_photo",
-      "body": "live",
-      "formats": [
-        "3:2"
-      ]
-    },
-    {
-      "id": "action_figures",
-      "label": "Action Figures",
-      "category": "toys",
-      "intake": "group_photo",
-      "body": "live",
-      "formats": [
-        "3:2"
-      ]
-    },
-    {
-      "id": "designer_vinyl",
-      "label": "Designer Vinyl",
-      "category": "toys",
       "intake": "group_photo",
       "body": "live",
       "formats": [

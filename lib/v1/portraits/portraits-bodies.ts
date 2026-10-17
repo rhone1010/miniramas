@@ -178,6 +178,62 @@ The result is a sophisticated one-of-a-kind mosaic artwork, richly detailed, tac
     avoid: `Avoid flat printed mosaic, regular square tiles, pixel art, uniform tile sizes, thick grout, generic face or loss of likeness.`,
   },
 
+  marionettes_portrait: {
+    id:    'marionettes_portrait',
+    body:  `Transform the person into an exquisite handcrafted wooden marionette, preserving recognizable facial likeness, age, hairstyle, clothing, and proportions. NO TEXT.
+
+Render the person as a masterfully carved and hand-painted wooden puppet with an expressive sculpted face, articulated wooden limbs, delicate joints, and fine strings extending upward to a traditional wooden control bar. Recreate the clothing in beautifully tailored miniature fabrics with authentic folds and textures.
+
+Arrange the character in a lively, natural pose within an enchanting vintage puppet theater. Create a richly detailed theatrical backdrop with layered painted scenery, ornate curtains, and handcrafted stage elements.
+
+Show the character full-body, occupying roughly 75% of the image height. Fill the frame with the theatrical world, emphasizing physical depth and craftsmanship.
+
+Museum-quality marionette artistry, warm theatrical lighting, rich colors, intricate wood grain, and exceptional tactile detail.`,
+    avoid: `Avoid cartoon faces, plastic dolls, realistic human skin, tangled strings, exaggerated proportions, cropped figures, distorted likeness, modern stages, or text.`,
+  },
+
+  nesting_dolls_portrait: {
+    id:    'nesting_dolls_portrait',
+    body:  `Transform the person into an exquisite handcrafted Russian nesting doll, preserving recognizable facial likeness, age, hairstyle, expression, and clothing. NO TEXT.
+
+Render the person as a beautifully turned wooden matryoshka doll with a traditional rounded silhouette, delicately hand-painted portrait, intricate decorative patterns, glossy lacquer, and subtle natural wood grain. Adapt the original clothing into richly detailed painted designs following the doll's curved surface.
+
+Present a single complete nesting doll with its upper shell lifted slightly to reveal the hollow wooden interior and authentic nesting construction.
+
+Create a charming setting inspired by traditional Russian folk art, with layered floral ornamentation, carved wooden surfaces, and warm decorative details.
+
+Premium artisan craftsmanship, sophisticated colors, delicate brushwork, beautiful directional lighting, and exceptional tactile realism.`,
+    avoid: `Avoid cartoon faces, plastic materials, realistic human bodies, generic facial features, additional people or dolls, distorted likeness, packaging, or text.`,
+  },
+
+  paper_puppets_portrait: {
+    id:    'paper_puppets_portrait',
+    body:  `Transform the person into an exquisite articulated paper puppet within a richly layered 3D paper-cut landscape, crafted by a master paper artist. NO TEXT.
+
+Preserve recognizable facial likeness, age, expression, hairstyle, clothing, and proportions. Render a full-body character with overlapping paper limbs connected by small antique brass rivets at shoulders, elbows, hips, and knees. Face and hair feature delicate layered paper construction, visible cut edges, and subtle dimensional contours.
+
+Create a charming outdoor scene with a house, leafy tree, hedges, mailbox, and sculpted clouds against a blue sky. Every element is handcrafted from premium textured papers with intricate cutwork, embossed details, dimensional layering, and natural shadows.
+
+The character dominates the foreground, occupying roughly 75% of the image height. The composition fills the frame edge to edge, viewed straight on with convincing physical depth.
+
+Museum-quality craftsmanship, sophisticated colors, beautiful directional lighting, and exceptional tactile detail.`,
+    avoid: `Avoid cartoon styling, flat illustration, sculpted figurine faces, plastic materials, shadow boxes, frames, cropped figures, distorted likeness, or text.`,
+  },
+
+  tin_windup_portrait: {
+    id:    'tin_windup_portrait',
+    body:  `Transform the person into an exquisite early 1900s lithographed tin wind-up toy, preserving recognizable facial likeness, age, hairstyle, clothing, and proportions. NO TEXT.
+
+Render the person as a beautifully manufactured antique mechanical toy with a stamped sheet-metal body, colorful lithographed surfaces, folded seams, tiny rivets, articulated limbs, and a visible brass winding key. Capture the charm of rare Edwardian-era clockwork collectibles with an expressive pose and authentic period craftsmanship.
+
+Create a whimsical turn-of-the-century streetscape behind the figure, constructed entirely from dimensional cutout tin buildings, storefronts, streetlamps, trees, and decorative architectural details. Layer the metal scenery to create convincing theatrical depth.
+
+Arrange the figure prominently in the foreground, full-body and occupying roughly 75% of the image height. Fill the frame edge to edge, viewed straight on.
+
+Museum-quality antique toy craftsmanship, rich enamel colors, subtle patina, intricate lithographic detailing, beautiful directional lighting, and tangible metallic surfaces.`,
+    avoid: `Avoid modern robots, plastic toys, cartoon faces, oversized heads, excessive rust, realistic human skin, display cases, frames, cropped figures, distorted likeness, or text.`,
+  },
+
   ice: {
     id:    'ice',
     body:  `Transform the entire clothed figure into a softly sculpted form of dense snow and translucent ice, with milky crystalline depth, compacted snowy surfaces, soft frost and occasional clearer icy edges. Increase opacity and softness so the facial structure is beautifully defined rather than glass-like; preserve the subject's likeness precisely with no visible skin. Frame her from the upper chest to the top of the head, facing us naturally with her head upright and both eyes clearly visible. Her head occupies roughly 30% of the image height. Set against an icy cliff with hanging icicles, deep blue glacial shadows and a snow-covered edge catching warm sunlight; golden light falls across one side of the sculpture while cold blue-white light shapes the other, creating a dramatic warm/cool contrast. The subject's own garment carries through in the same material. Keep a clear catchlight in the eyes. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings. No real eye color.`,
