@@ -11,18 +11,24 @@ import { PRESET_LABELS, STYLE_MATERIALS } from './portraits-shared'
 import { getPortraitsCatalogMap, getPortraitsSiloBoundaries } from '../../store/discovery-catalog'
 import { liveEffectIds, fillEffects } from '../gift/effects'
 
-const NEW = ['marionettes_portrait', 'nesting_dolls_portrait', 'paper_puppets_portrait', 'tin_windup_portrait']
+const NEW = ['marionettes_portrait', 'nesting_dolls_portrait', 'paper_puppets_portrait', 'tin_windup_portrait']       // the four new effects: prompts, labels, plates
+const NEW_TOYS = ['marionettes_portrait', 'nesting_dolls_portrait', 'tin_windup_portrait']                          // the three that are in Toys (Paper Puppets lives in Made by Hand)
 const MOVED = ['retro_robot', 'action_figure', 'designer_vinyl', 'plushy']
-const TOYS = [...NEW, ...MOVED]
+const TOYS = [...NEW_TOYS, ...MOVED]
 const LABELS: Record<string, string> = { marionettes_portrait: 'Marionettes', nesting_dolls_portrait: 'Nesting Dolls', paper_puppets_portrait: 'Paper Puppets', tin_windup_portrait: 'Tin Wind-Ups', retro_robot: 'Atomic Age Robot', action_figure: 'Action Figure', designer_vinyl: 'Vinyl Figure', plushy: 'Plushy' }
 
 const browser = () => { const c: any = { window: {} }; vm.runInNewContext(fs.readFileSync('public/effect-registry.js', 'utf8'), c); return c.window.EFFECT_REGISTRY }
 
 describe('registry', () => {
-  it('Toys is the first silo and holds exactly the eight approved effects, the newest first', () => {
+  it('Toys is the first silo and holds exactly the seven approved effects, the newest first', () => {
     expect(SILOS[0]).toMatchObject({ id: 'toys', label: 'Toys' })
     expect(EFFECTS.filter(e => e.category === 'toys').map(e => e.id)).toEqual(TOYS)
     for (const e of EFFECTS.filter(x => x.category === 'toys')) { expect(e.label).toBe(LABELS[e.id]); expect(isOfferable(e)).toBe(true) }
+  })
+  it('Paper Puppets is in Made by Hand, after that silo\'s existing effects, and in no other silo', () => {
+    expect(EFFECTS.filter(e => e.id === 'paper_puppets_portrait').map(e => e.category)).toEqual(['made_by_hand'])
+    const mbh = EFFECTS.filter(e => e.category === 'made_by_hand').map(e => e.id); expect(mbh[mbh.length - 1]).toBe('paper_puppets_portrait')
+    expect(mbh.slice(0, -1)).toEqual(['chocolate', 'balloon_face', 'quilted', 'origami', 'porcelain', 'beaded'])      // unchanged and in their old order (beaded is the retired row)
   })
   it('the four moved effects are in no other silo, and nothing else changed category', () => {
     for (const id of MOVED) expect(EFFECTS.filter(e => e.id === id).map(e => e.category)).toEqual(['toys'])
@@ -68,14 +74,15 @@ describe('what the browser and the server read', () => {
     expect(r.effects.map((e: any) => [e.id, e.category, e.label, e.body])).toEqual(EFFECTS.map(e => [e.id, e.category, e.label, e.body]))
     expect(r.offerableTilesBySilo('toys').map((e: any) => e.id)).toEqual(TOYS)
   })
-  it('Discovery silo counts update: Toys 8 live, Made by Hand and Fantasy & Future lose what moved', () => {
+  it('Discovery silo counts update: Toys 7 live (two full rows of four with its header tile), Made by Hand gains Paper Puppets, Fantasy & Future loses what moved', () => {
     const live = (silo: string) => EFFECTS.filter(e => e.category === silo && isOfferable(e)).length
-    expect(live('toys')).toBe(8); expect(live('fantasy_future')).toBe(4); expect(live('made_by_hand')).toBe(5)
+    expect(live('toys')).toBe(7); expect(live('fantasy_future')).toBe(4); expect(live('made_by_hand')).toBe(6)
   })
-  it('the server catalog (catalog API, Curator) lists Toys first with the same eight, and the moved effects only once', () => {
+  it('the server catalog (catalog API, Curator) lists Toys first with the same seven, Paper Puppets in Made by Hand, and the moved effects only once', () => {
     const map = getPortraitsCatalogMap(), silos = getPortraitsSiloBoundaries()
-    expect(silos[0]).toMatchObject({ siloId: 'toys', startIndex: 0, endIndex: 7 })
-    expect(map.slice(0, 8).map(m => m.effectId)).toEqual(TOYS)
+    expect(silos[0]).toMatchObject({ siloId: 'toys', startIndex: 0, endIndex: 6 })
+    expect(map.slice(0, 7).map(m => m.effectId)).toEqual(TOYS)
+    expect(map.filter(m => m.effectId === 'paper_puppets_portrait').map(m => m.siloId)).toEqual(['made_by_hand'])
     for (const id of MOVED) expect(map.filter(m => m.effectId === id).map(m => m.siloId)).toEqual(['toys'])
     const ids = map.map(m => m.effectId); expect(new Set(ids).size).toBe(ids.length)
   })
@@ -95,10 +102,22 @@ describe('what the browser and the server read', () => {
   })
 })
 
+describe('Portraits Discovery page', () => {
+  const html = fs.readFileSync('public/discovery-consolidated-draft.html', 'utf8')
+  it('every silo icon falls back to the real file, so a silo added after the icons were embedded (Toys) never shows a broken image', () => {
+    expect(html).toContain('function iconUrl(siloId){ return __REAL_ICONS[siloId] || iconSrc(siloId); }')
+    expect(html).not.toContain("__REAL_ICONS[silo.id]||''"); expect(html).not.toContain("__REAL_ICONS[silo.id] || ''")
+  })
+  it('the Toys icon is the supplied artwork', () => {
+    const a = fs.readFileSync('public/icons/discovery-filters/toys.png'), b = fs.readFileSync('public/icons/discovery-filters/fantasy_future.png')
+    expect(a.equals(b)).toBe(false); expect(a.length).toBeGreaterThan(60_000)
+  })
+})
+
 describe('Gift Wizard', () => {
   it('server-side silo order puts Toys first, so the auto-filled slots start with the newest Toys', () => {
     const live = liveEffectIds('portraits')
-    expect(live.slice(0, 8)).toEqual(TOYS)
+    expect(live.slice(0, 7)).toEqual(TOYS)
     expect(fillEffects('portraits', [], [])).toEqual(TOYS.slice(0, 6))
     expect(fillEffects('portraits', ['tin_windup_portrait'], [])[0]).toBe('tin_windup_portrait')
   })

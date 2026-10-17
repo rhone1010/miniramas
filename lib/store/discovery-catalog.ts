@@ -58,7 +58,7 @@ const SILO_ORDER: SiloId[] = [
 // count").
 const CANONICAL_BY_SILO: Record<SiloId, Array<string | null>> = {
   toys: [
-    'marionettes_portrait', 'nesting_dolls_portrait', 'paper_puppets_portrait', 'tin_windup_portrait',
+    'marionettes_portrait', 'nesting_dolls_portrait', 'tin_windup_portrait',
     'retro_robot', 'action_figure', 'designer_vinyl', 'plushy',
   ],
   another_age: [
@@ -77,7 +77,7 @@ const CANONICAL_BY_SILO: Record<SiloId, Array<string | null>> = {
   ],
   made_by_hand: [
     'chocolate', 'balloon_face', 'quilted', 'origami', 'porcelain',
-    null, // beaded - confirmed dead this session, not reused
+    'paper_puppets_portrait', // took the place of beaded (dead), 2026-10-17
   ],
   artists_gallery: [
     'impressionist', 'watercolour', 'charcoal_chalk', 'sheet_music',

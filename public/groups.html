@@ -13747,7 +13747,7 @@ function chooseAspect(id){
     crumbHere.textContent = 'Choose An Effect';
     workshop.classList.remove('workshop-view--silos'); workshop.classList.add('workshop-view--effects');
   }
-  var GROUPS_SILO_ICONS = {portrait_collections:'living_world',crafted_collections:'artists_gallery',sculpted:'earth_ore',material_magic:'light_glass',made_by_hand:'made_by_hand',artists_studio:'ink_paper',curiosities:'fantasy_future',toys:'fantasy_future'};
+  var GROUPS_SILO_ICONS = {portrait_collections:'living_world',crafted_collections:'artists_gallery',sculpted:'earth_ore',material_magic:'light_glass',made_by_hand:'made_by_hand',artists_studio:'ink_paper',curiosities:'fantasy_future',toys:'toys'};
   function paintGroupsCatalog(){
     effFloor.innerHTML = '';
     var phoneSilo = window.matchMedia('(max-width:767px)').matches;
@@ -13782,7 +13782,11 @@ function chooseAspect(id){
   function trackGroupsCatalog(){
     if(window.matchMedia('(max-width:767px)').matches || !document.body.classList.contains('groups-catalog')) return;
     var top=document.getElementById('deck').getBoundingClientRect().top;
-    var cards=Array.from(effFloor.children),current=cards.find(function(card){return card.getBoundingClientRect().bottom>top;});
+    /* A card counts as the one on screen only once at least EDGE px of it show. The deck scrolls to a whole pixel while the
+       cards have fractional heights (356.9px), so after a room button scrolls its room to the top the PREVIOUS room's last row can
+       still end a fraction of a pixel below the top edge. The strict `bottom > top` test then picked that room: the highlight sat
+       one room early, for whichever rooms rounded the wrong way (more of them now that Toys adds a room). */
+    var EDGE=8,cards=Array.from(effFloor.children),current=cards.find(function(card){return card.getBoundingClientRect().bottom>top+EDGE;});
     if(!current) return;
     GROUPS_FLOOR_SILO=current.dataset.siloId;
     Array.from(document.getElementById('groupsRoomMap').children).forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.siloId===GROUPS_FLOOR_SILO));});

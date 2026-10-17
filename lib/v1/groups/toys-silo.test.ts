@@ -62,6 +62,17 @@ describe('the emitted browser registry', () => {
   })
 })
 
+describe('the Groups page', () => {
+  const html = fs.readFileSync('public/groups.html', 'utf8')
+  it('highlights the room on screen with a tolerance, so fractional card heights cannot light the previous room (real-browser repro: 3 of 8 rooms were one early before this)', () => {
+    expect(html).toContain('card.getBoundingClientRect().bottom>top+EDGE')
+    expect(html).not.toMatch(/card\.getBoundingClientRect\(\)\.bottom>top;/)
+  })
+  it('the Toys room uses its own icon, and that icon file exists', () => {
+    expect(html).toContain("toys:'toys'"); expect(fs.existsSync('public/icons/discovery-filters/toys.png')).toBe(true)
+  })
+})
+
 describe('Gift Wizard', () => {
   it('single-photograph Groups effects include all four new ones', () => { for (const id of NEW) expect(liveEffectIds('groups')).toContain(id) })
   it('a hybrid pick of a new effect is honoured', () => { expect(fillEffects('groups', ['tin_windup'], [])[0]).toBe('tin_windup') })

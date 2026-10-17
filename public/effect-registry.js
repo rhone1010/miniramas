@@ -1,12 +1,12 @@
 /* GENERATED FILE — DO NOT EDIT.
    Source: lib/v1/portraits/effect-registry.ts  (CENG-owned)
    Regenerate: node scripts/emit-effect-registry.js
-   Emitted: 2026-10-17T01:45:29.329Z
+   Emitted: 2026-10-17T15:03:31.283Z
 
    Labels are plain unicode. Key on .id, never on .label.
    Offer only effects where body === 'live' — the gate refuses the rest. */
 window.EFFECT_REGISTRY = {
-  "generatedAt": "2026-10-17T01:45:29.329Z",
+  "generatedAt": "2026-10-17T15:03:31.283Z",
   "silos": [
     {
       "id": "toys",
@@ -68,16 +68,6 @@ window.EFFECT_REGISTRY = {
     {
       "id": "nesting_dolls_portrait",
       "label": "Nesting Dolls",
-      "category": "toys",
-      "mode": "material",
-      "monolithic": false,
-      "body": "live",
-      "refs": 0,
-      "likenessFloor": "strict"
-    },
-    {
-      "id": "paper_puppets_portrait",
-      "label": "Paper Puppets",
       "category": "toys",
       "mode": "material",
       "monolithic": false,
@@ -407,6 +397,16 @@ window.EFFECT_REGISTRY = {
       "monolithic": true,
       "body": "todo",
       "refs": 2,
+      "likenessFloor": "strict"
+    },
+    {
+      "id": "paper_puppets_portrait",
+      "label": "Paper Puppets",
+      "category": "made_by_hand",
+      "mode": "material",
+      "monolithic": false,
+      "body": "live",
+      "refs": 0,
       "likenessFloor": "strict"
     },
     {

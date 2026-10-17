@@ -96,10 +96,9 @@ export const SILOS: Silo[] = [
 // 56 slots. See EFFECTS-REVISION-2026-07-29.md for adds/drops/moves and reasons.
 
 export const EFFECTS: Effect[] = [
-  // ── Toys (first silo; the four newest first, then the four moved here 2026-10-16) ──────────────
+  // ── Toys (first silo; seven: the three newest first, then the four moved here 2026-10-16) ───────
   { id:'marionettes_portrait', label:'Marionettes', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — Toys silo, 2026-10-16. Preview plates: public/previews/effects/marionettes_portrait/.' },
   { id:'nesting_dolls_portrait', label:'Nesting Dolls', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — Toys silo, 2026-10-16.' },
-  { id:'paper_puppets_portrait', label:'Paper Puppets', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — Toys silo, 2026-10-16.' },
   { id:'tin_windup_portrait', label:'Tin Wind-Ups', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — Toys silo, 2026-10-16. Preview plates come from the tin_wind_up photographs.' },
   { id:'retro_robot', label:'Atomic Age Robot', category:'toys', mode:'material', monolithic:false, body:'live', refs:2, likenessFloor:'strict', note:'Ref cleanup required before use: both plates carry garbled signage (crop it out — refs outrank text); the plates disagree on clothing (pick fabric-garment-in-metal); rename 1_girl.jpg -> 2_woman.jpg and do not add an age axis.' },
   { id:'action_figure', label:'Action Figure', category:'toys', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — added 2026-09-15.' },
@@ -139,6 +138,7 @@ export const EFFECTS: Effect[] = [
   { id:'origami', label:'Origami', category:'made_by_hand', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
   { id:'porcelain', label:'Porcelain', category:'made_by_hand', mode:'material', monolithic:true, body:'live', refs:2, likenessFloor:'strict', note:'added 2026-08-02' },
   { id:'beaded', label:'Beaded', category:'made_by_hand', mode:'material', monolithic:true, body:'todo', refs:2, likenessFloor:'strict', note:'body status fixed 2026-09-15 -- was still live despite the body having been CUT from portraits-bodies.ts on 2026-08-21. This row was the stale half that comment flagged as never done.' },
+  { id:'paper_puppets_portrait', label:'Paper Puppets', category:'made_by_hand', mode:'material', monolithic:false, body:'live', refs:0, likenessFloor:'strict', note:'NEW — Made by Hand, 2026-10-17 (it was in Toys; Toys is seven).' },
 
   // ── The Artists Gallery ───────────────────────────────────────────
   { id:'impressionist', label:'Impressionist', category:'artists_gallery', mode:'material', monolithic:false, body:'live', refs:1, likenessFloor:'strict', note:'Polychrome, hue-lock exempt. Specifies a ROUND plinth, unlike Earth & Ore\u2019s dark block. Artists tails bake their own staging — LOCATION is a no-op.' },
