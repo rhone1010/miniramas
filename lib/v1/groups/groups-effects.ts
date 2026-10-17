@@ -608,6 +608,8 @@ One cohesive, monumental artwork. Tactile, sophisticated and unmistakably handma
     faces: true,
     body: `Create an elegant multi-panel artwork from the people in the single supplied group photograph, one independent portrait for each person. Include every person exactly once. Never blend identities.
 
+fill the entire canvas with the panels. no seperation between panels and to the edge.
+
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and distinctive facial structure. Render each in dimensional Impressionist oil paint with bold palette-knife strokes, rich broken color and tactile impasto.
 
 Arrange as a triptych, quadriptych or corresponding multi-panel composition. Keep the complete arrangement within the central 90% of the canvas with clear space on all sides. No portrait may touch an image edge.
@@ -648,6 +650,8 @@ Strong grazing light creates real shadows between paper layers. Keep all subject
     faces: true,
     body: `Create an elegant multi-panel layered-paper artwork from the people in the single supplied group photograph, one independent portrait per person. Include everyone exactly once. Never blend identities.
 
+fill the entire canvas with the panels. small borders (20 pixels between panels, and 50 pixels around perimeter)
+
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and facial structure. Physically sculpt every portrait from dozens of contour-cut layers of heavyweight colored paper. Faces use many fine closely stacked layers defining brows, cheeks, noses, lips and jawlines; hair and clothing use broader overlapping pieces. Clearly show paper thickness, cut edges and separation between layers. No drawn, painted or printed facial features.
 
 For five portraits in a 1:1 image, arrange three evenly across the top and two centered beneath, all the same size. Keep the arrangement within the central 90%.
@@ -680,6 +684,8 @@ Grazing light creates real shadows between layers. Contemporary handcrafted pape
     intake: 'multi_photo',
     faces: true,
     body: `Create an elegant multi-panel mosaic artwork from the people in the single supplied group photograph, one independent portrait for each person. Include every person exactly once. Never blend identities.
+
+fill the entire canvas with the panels. no padding or spaces between panels or edge of the canvas
 
 Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and distinctive facial structure. Construct each portrait from thousands of irregular pieces of colored glass, glazed ceramic and stone, using very fine pieces across faces to preserve recognizable likeness.
 
@@ -817,9 +823,13 @@ One magnificent solid 3D artwork, never separate figures or a flat mosaic. NO TE
     faces: true,
     body: `Create a luminous multi-panel stained-glass artwork from the people in the single supplied group photograph, one independent portrait per person. Include everyone exactly once. Never blend identities.
 
-Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and distinctive facial structure. Construct every face, eye, lip, hair and garment from hundreds of individually fitted pieces of translucent art glass joined by hairline-thin metallic gold wire. Use especially fine pieces across faces for likeness. No real skin or hair.
+Show matching head-and-shoulders portraits at consistent scale. Preserve identity, expression, age, hairstyle and distinctive facial structure. Construct every face, eye, lip, hair and garment from hundreds of individually fitted pieces of translucent art glass joined by hairline-thin metallic gold wire. Use especially fine pieces across faces for likeness. No real skin or hair. 
 
-Give each portrait a sophisticated jewel-toned glass palette with warm internal illumination and darker leading defining the forms.
+the borders and spaces between panels should be no larger than 10 pixels. 
+
+Give each portrait a sophisticated jewel-toned glass palette with warm internal illumination and medium leading defining the forms. the faces should be made up of dozens of fine glass pieces held together with gold wire. 
+
+The background panels behind the faces should be made of dozens of rich but muted palette colors in lighter tones with some brighter colors mixed in (10%)
 
 For five portraits in a 1:1 image, arrange three evenly across the top and two centered beneath, all the same size. Keep the arrangement within the central 90%.
 
