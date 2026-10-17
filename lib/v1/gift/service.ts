@@ -319,7 +319,10 @@ function orderView(rec: SessionRec, order: Awaited<ReturnType<GiftDeps['store'][
     : order.status === 'awaiting_artwork' ? 'awaiting_artwork'
     : order.status === 'cancelled' ? 'cancelled'
     : ['placed', 'in_production', 'shipped', 'delivered'].includes(order.status) ? 'with_lab'
-    : 'approved'
+    // 'approved' means the customer approved the artwork and the order was released: paid (or held or errored afterwards) WITH an approval time.
+    // Any other status, or one of those without an approval, is unexpected and is reported as such instead of being mistaken for approval.
+    : ['paid', 'withheld', 'error'].includes(order.status) && rec.approved_at ? 'approved'
+    : 'needs_attention'
   return {
     orderId: rec.order_id, state, freeBatchesGranted: rec.free_batches_granted, approvedAt: rec.approved_at, unlockPortfolioId: rec.unlock_portfolio_id,
     totalCents: order?.retail_total_cents ?? null, disclosureVersion: rec.disclosure_version,

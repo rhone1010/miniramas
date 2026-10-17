@@ -6,6 +6,9 @@
 
 export const GIFT_RENDER_PREFIX = 'gift:'
 
+/** Stripe metadata.kind of a Gift Wizard product order. */
+export const GIFT_ORDER_KIND = 'gift_order'
+
 export const giftRenderId = (sessionId: string, lineId: string) => `${GIFT_RENDER_PREFIX}${sessionId}:${lineId}`
 
 export function parseGiftRenderId(renderId: string): { sessionId: string; lineId: string } | null {

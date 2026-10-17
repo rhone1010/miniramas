@@ -23,7 +23,8 @@ import { StoreError, type GiftStore, type OrderInfo } from './store'
 import { giftRenderId, parseGiftRenderId } from './order-kind'
 import { GIFT_RETURN_PATHS, type Disclosure, type GiftCheckoutRequest, type GiftCheckoutResponse } from './types'
 
-export const GIFT_ORDER_KIND = 'gift_order'
+export { GIFT_ORDER_KIND } from './order-kind'
+import { GIFT_ORDER_KIND } from './order-kind'
 
 /** Shown before payment, passed to Stripe Checkout as its submit message, and recorded by version when the customer accepts. */
 export const DISCLOSURE: Disclosure = {

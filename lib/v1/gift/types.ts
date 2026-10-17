@@ -110,7 +110,8 @@ export interface SessionView {
   compositions: CompositionView[]
 }
 
-export type OrderState = 'none' | 'checkout_open' | 'awaiting_artwork' | 'approved' | 'with_lab' | 'refund_requested' | 'refunded' | 'cancelled'
+/** 'needs_attention': the order is in a state the Gift flow does not expect (for example paid by another path before confirmation, so no batches were granted). Never shown as 'approved'; a person must look. */
+export type OrderState = 'none' | 'checkout_open' | 'awaiting_artwork' | 'approved' | 'with_lab' | 'refund_requested' | 'refunded' | 'cancelled' | 'needs_attention'
 export interface OrderView {
   orderId: string | null
   state: OrderState
