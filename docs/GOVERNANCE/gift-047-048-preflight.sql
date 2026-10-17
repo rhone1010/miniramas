@@ -23,12 +23,12 @@ need(tbl, col, types) as (values
   ('print_orders', 'retail_total_cents', 'integer|bigint'), ('print_orders', 'retail_shipping_cents', 'integer|bigint'),
   ('print_orders', 'customer_email', 'text|character varying'), ('print_orders', 'items', 'jsonb|json'), ('print_orders', 'updated_at', 'timestamp with time zone'),
   ('portfolios', 'id', 'uuid'), ('portfolios', 'purchase_id', 'uuid'), ('portfolios', 'user_id', 'uuid'), ('portfolios', 'series', 'text|character varying'),
-  ('portfolios', 'size', 'integer|smallint|bigint'), ('portfolios', 'status', 'text|character varying'), ('portfolios', 'free_unlocks', 'integer|smallint|bigint'),
+  ('portfolios', 'size', 'integer|smallint|bigint'), ('portfolios', 'status', 'text|character varying|USER-DEFINED'), ('portfolios', 'free_unlocks', 'integer|smallint|bigint'),
   ('portfolios', 'source_image', 'text|character varying'), ('portfolios', 'composition', 'jsonb|json'), ('portfolios', 'delivery', 'text|character varying'),
   ('portfolios', 'pose', 'text|character varying'), ('portfolios', 'framing', 'text|character varying'), ('portfolios', 'subject', 'text|character varying'),
   ('portfolios', 'aspect_ratio', 'text|character varying'), ('portfolios', 'origin', 'text|character varying'),
   ('portfolio_items', 'portfolio_id', 'uuid'), ('portfolio_items', 'slot', 'integer|smallint|bigint'), ('portfolio_items', 'preset', 'text|character varying'),
-  ('portfolio_items', 'status', 'text|character varying'), ('portfolio_items', 'preview_id', 'uuid'),
+  ('portfolio_items', 'status', 'text|character varying|USER-DEFINED'), ('portfolio_items', 'preview_id', 'uuid'),
   ('preview_ledger', 'id', 'uuid'), ('preview_ledger', 'email', 'text|character varying'), ('preview_ledger', 'ip_hash', 'text|character varying'),
   ('preview_ledger', 'series', 'text|character varying'), ('preview_ledger', 'preset', 'text|character varying'), ('preview_ledger', 'resolution', 'text|character varying'),
   ('preview_ledger', 'storage_path', 'text|character varying'), ('preview_ledger', 'unlocked_at', 'timestamp with time zone'),
@@ -51,6 +51,8 @@ must_allow(tbl, name_like, literal, why) as (values
   ('portfolios', '%aspect%', '1:1', 'Portraits masters are 1:1'),
   ('portfolio_items', '%status%', 'done', 'the adopted piece is inserted with status done'),
   ('preview_ledger', '%series%', 'groups', 'a Groups preview is recorded with series groups')),
+-- status columns may be enums; then the label 048 inserts must exist in that enum
+enum_must(tbl, col, label) as (values ('portfolios', 'status', 'ready'), ('portfolio_items', 'status', 'done')),
 checks(ord, check_name, result, detail) as (
 
   -- ═══ A. the database and the role that will run the migrations ═══
@@ -90,6 +92,17 @@ checks(ord, check_name, result, detail) as (
          else 'FAIL: type is ' || c.data_type || ', expected ' || replace(n.types, '|', ' or ') end,
     coalesce(c.data_type, '')
     from need n left join information_schema.columns c on c.table_schema = 'public' and c.table_name = n.tbl and c.column_name = n.col
+
+  -- ═══ C2. where a status column is an enum, the value 048 inserts must be one of its labels ═══
+  union all
+  select 35, 'status label ' || m.label || ' exists for ' || m.tbl || '.' || m.col,
+    case when c.column_name is null then 'FAIL: column missing'
+         when c.data_type <> 'USER-DEFINED' then 'PASS'
+         when exists (select 1 from pg_enum e join pg_type t on t.oid = e.enumtypid where t.typname = c.udt_name and e.enumlabel = m.label) then 'PASS'
+         else 'FAIL: enum ' || c.udt_name || ' has no label ' || m.label end,
+    coalesce(c.data_type, '') || coalesce(' ' || c.udt_name || ': ' || (select string_agg(e.enumlabel, ', ' order by e.enumsortorder) from pg_enum e join pg_type t on t.oid = e.enumtypid where t.typname = c.udt_name), '')
+    from enum_must m
+    left join information_schema.columns c on c.table_schema = 'public' and c.table_name = m.tbl and c.column_name = m.col
 
   -- ═══ D. 048's inserts must not hit a NOT NULL column they do not supply ═══
   union all
