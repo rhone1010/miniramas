@@ -380,3 +380,20 @@ describe('the HTTP layer', () => {
     expect(fs.readFileSync('lib/v1/gift/handlers.ts', 'utf8')).toMatch(/searchParams\.get\('compositionId'\)/)
   })
 })
+
+describe('a mockup failure is diagnosable from the server log, and never leaks to the browser', () => {
+  it('logs the stage, template, SKU and the real error text for a renderer failure, while the response stays the stable mockup_failed', async () => {
+    const r = rig(); const { sid } = await ready(r, [L12]); const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    r.render.mockRejectedValueOnce(Object.assign(new Error("ENOENT: no such file or directory, open '/var/task/public/gift-wizard/catalog.next.json'"), { code: 'ENOENT' }))
+    await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_failed', status: 502 })
+    const line = spy.mock.calls.map(c => String(c[0])).find(l => l.includes('[gift/mockup]'))!
+    expect(line).toContain('renderer failed'); expect(line).toContain('template=fine-art'); expect(line).toContain('sku=GLOBAL-FAP-12X18'); expect(line).toContain('ENOENT'); expect(line).toContain('catalog.next.json')
+    expect(line).not.toMatch(/base64|\.png|gift\/[0-9a-f-]{36}\//); spy.mockRestore()
+  })
+  it('names the watermark and signing stages too', async () => {
+    const r = rig(); const { sid } = await ready(r, [L12]); const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    r.watermark.mockRejectedValueOnce(new Error('wm boom')); await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_failed' })
+    r.deps.storage.signedUrl = async () => null; await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_failed' })
+    const lines = spy.mock.calls.map(c => String(c[0])).filter(l => l.includes('[gift/mockup]')); expect(lines.some(l => l.includes('watermark failed') && l.includes('wm boom'))).toBe(true); expect(lines.some(l => l.includes('sign failed'))).toBe(true); spy.mockRestore()
+  })
+})

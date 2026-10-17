@@ -70,3 +70,23 @@ describe('the renderer revision matches the interface the bridge was tested agai
   }, 120_000)
   it('refuses a template id that is not a plain name', async () => { await expect(realMockupRenderer.revision('../x')).rejects.toThrow('bad_template_id') })
 })
+
+describe('the catalog the adapter reads on every render', () => {
+  it('is read through literal paths in mockup-real.ts so the bundler ships it (Turbopack dropped it from the includes alone, which made every Preview render fail with ENOENT)', () => {
+    const src = fs.readFileSync(path.join(ROOT, 'lib/v1/gift/mockup-real.ts'), 'utf8')
+    expect(src).toContain("path.join(process.cwd(), 'public', 'gift-wizard', 'catalog.next.json')")
+    expect(listed.has('public/gift-wizard/catalog.next.json')).toBe(true)
+  })
+  it('is part of the renderer revision: changing the catalog changes the revision, and the revision is cached per tools directory', async () => {
+    const os = await import('node:os'), tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gift-rev-'))
+    try {
+      for (const f of manifest.files) { fs.mkdirSync(path.dirname(path.join(tmp, f.path)), { recursive: true }); fs.copyFileSync(path.join(ROOT, f.path), path.join(tmp, f.path)) }
+      process.env.GIFT_MOCKUP_TOOLS_DIR = tmp
+      const before = await realMockupRenderer.revision('fine-art')
+      fs.appendFileSync(path.join(tmp, 'public/gift-wizard/catalog.next.json'), ' ')
+      process.env.GIFT_MOCKUP_TOOLS_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'gift-rev2-'))
+      for (const f of manifest.files) { fs.mkdirSync(path.dirname(path.join(process.env.GIFT_MOCKUP_TOOLS_DIR, f.path)), { recursive: true }); fs.copyFileSync(path.join(tmp, f.path), path.join(process.env.GIFT_MOCKUP_TOOLS_DIR, f.path)) }
+      expect(await realMockupRenderer.revision('fine-art')).not.toBe(before)
+    } finally { delete process.env.GIFT_MOCKUP_TOOLS_DIR }
+  })
+})

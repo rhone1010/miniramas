@@ -42,17 +42,25 @@ const revisions = new Map<string, Promise<string>>()
 /** Renderer code + template manifest + every file in the template directory: any change gives a new revision. Computed once per process per template. */
 function revisionOf(templateId: string): Promise<string> {
   if (!/^[a-z0-9-]+$/.test(templateId)) return Promise.reject(new Error('bad_template_id'))
-  let p = revisions.get(templateId)
+  const key = root() + '|' + templateId
+  let p = revisions.get(key)
   if (!p) {
     p = (async () => {
       const tools = path.join(root(), 'tools/product-mockup'), dir = path.join(root(), 'public/gift-wizard/mockup-templates', templateId)
       const parts: string[] = []
       for (const f of ['compositor.next.cjs', 'frame-finish.next.cjs', 'gift-visualization-adapter.next.cjs']) parts.push(f + ':' + sha(await fs.readFile(path.join(tools, f))))
       for (const f of (await fs.readdir(dir)).sort()) parts.push(f + ':' + sha(await fs.readFile(path.join(dir, f))))
+      // The adapter reads public/gift-wizard/catalog.next.json on EVERY render, so it is part of what the picture depends on, and it must be in the
+      // deployed function. Turbopack's trace did not ship it from outputFileTracingIncludes alone (every render then failed with ENOENT on it: the
+      // first Preview mockup attempt), so it is read here through a literal path the bundler's own analysis sees. The env override is for local validation.
+      const catalog = process.env.GIFT_MOCKUP_TOOLS_DIR
+        ? await fs.readFile(path.join(process.env.GIFT_MOCKUP_TOOLS_DIR, 'public', 'gift-wizard', 'catalog.next.json'))
+        : await fs.readFile(path.join(process.cwd(), 'public', 'gift-wizard', 'catalog.next.json'))
+      parts.push('catalog.next.json:' + sha(catalog))
       return sha(parts.join('|')).slice(0, 32)
     })()
-    p.catch(() => revisions.delete(templateId))
-    revisions.set(templateId, p)
+    p.catch(() => revisions.delete(key))
+    revisions.set(key, p)
   }
   return p
 }

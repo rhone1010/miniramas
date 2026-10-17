@@ -99,6 +99,13 @@ const storedOf = (c: CompositionRec): StoredMockup | null => {
 }
 const mockupPath = (sessionId: string, key: string) => `gift/${sessionId}/mockups/${key}.jpg`
 
+/** Log the real cause of a mockup failure (server log only: never in the response, never any artwork, only the error text and ids). */
+function fail(stage: string, e: unknown, ctx: { templateId?: string; sku?: string; lineId?: string }): GiftError {
+  const err = e as { name?: string; code?: string; message?: string }
+  console.error(`[gift/mockup] ${stage} failed template=${ctx.templateId ?? '-'} sku=${ctx.sku ?? '-'} line=${ctx.lineId ?? '-'}: ${err?.name ?? 'Error'}${err?.code ? ' ' + err.code : ''}: ${String(err?.message ?? e).slice(0, 500)}`)
+  return new GiftError('mockup_failed')
+}
+
 /** Remove a composition's stored mockup file (best effort): used when a correction supersedes it. The rows are kept; the file is only a cache. */
 export async function removeMockupFile(deps: GiftDeps, c: CompositionRec): Promise<void> {
   const m = storedOf(c)
@@ -169,17 +176,17 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   if (!artwork) throw new GiftError('generation_unavailable')
   let out: Awaited<ReturnType<MockupRenderer['render']>>
   try { out = await deps.mockup.render({ templateId, productFamily: product.family, size: product.size, sku: product.sku, artworkId: comp.id, artwork: await pictureArea(artwork, product) }) }
-  catch { throw new GiftError('mockup_failed') }
+  catch (e) { throw fail('renderer', e, { templateId, sku: product.sku, lineId: line.line_id }) }
   // The renderer reads its own catalog; if that disagrees with what was purchased, the mockup would show the wrong product. Refuse it.
   if (out.configuration.sku !== product.sku || out.configuration.requiredPx.w !== product.requirements.finalPx.w || out.configuration.requiredPx.h !== product.requirements.finalPx.h) throw new GiftError('mockup_configuration_mismatch')
   let marked: Buffer
-  try { marked = await deps.watermark(out.png.toString('base64')) } catch { throw new GiftError('mockup_failed') }        // fails closed: no unmarked mockup is ever stored
+  try { marked = await deps.watermark(out.png.toString('base64')) } catch (e) { throw fail('watermark', e, { templateId, sku: product.sku, lineId: line.line_id }) }        // fails closed: no unmarked mockup is ever stored
   const path = mockupPath(rec.id, identityKey)
   await deps.storage.put(path, marked, 'image/jpeg')
   const stored: StoredMockup = { identityKey, path, templateId, templateRevision, visualizationKey: out.visualizationKey, width: out.width, height: out.height, crop: out.crop, createdAt: new Date((deps.clock ?? Date.now)()).toISOString() }
   await deps.store.patchComposition(comp.id, { plan: { ...comp.plan, artworkSha256: sourceHash, mockup: stored } })
   if (hit && hit.path !== path) { try { await deps.storage.remove([hit.path]) } catch { /* cleanup removes it with the session */ } }
   const signed = await sign(path)
-  if (!signed) throw new GiftError('mockup_failed')
+  if (!signed) throw fail('sign', new Error('signed_url_unavailable'), { templateId, sku: product.sku, lineId: line.line_id })
   return { ...base, ...signed, width: out.width, height: out.height, cached: false, crop: out.crop }
 }
