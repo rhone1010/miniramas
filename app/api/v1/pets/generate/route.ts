@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { generatePetsRender } from '@/lib/v1/pets/pets-generator'
+import { checkInternalAuth } from '@/lib/store/internal-auth'
 import { isPetExperimentalEffect } from '@/lib/v1/pets/pets-experimental'
 import { PETS_35 } from '@/lib/v1/pets/pets-catalog-35'
 import {
@@ -119,6 +120,7 @@ export async function POST(req: NextRequest) {
     action_id:             actionId,
     scale,
     aspect_ratio:          typeof body.aspect_ratio === 'string' ? body.aspect_ratio : undefined,
+    adaptation:            body.adaptation === 'favorite' && checkInternalAuth(req).ok ? 'favorite' : undefined,   // internal only (Gift Wizard)
     refinements:           body.refinements,
     notes:                 typeof body.notes === 'string' ? body.notes : undefined,
     refinement_tweak:      typeof body.refinement_tweak === 'string' ? body.refinement_tweak : undefined,

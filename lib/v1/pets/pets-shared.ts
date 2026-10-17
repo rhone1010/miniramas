@@ -247,6 +247,8 @@ export interface PetsGenerateRequest {
   action_id?:             ActionId
   scale?:                 Scale
   aspect_ratio?:          string
+  /** Server-internal (Gift Wizard): additional_images_b64[0] is the customer's approved artwork to adapt to this frame. */
+  adaptation?:            'favorite'
   refinements?:           PetsRefinements
   notes?:                 string
   refinement_tweak?:      string

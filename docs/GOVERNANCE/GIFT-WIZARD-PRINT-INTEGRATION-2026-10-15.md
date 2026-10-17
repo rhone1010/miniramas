@@ -204,3 +204,36 @@ Remaining gaps
 - Preview cron does not run (Vercel runs crons on Production only): approval kicks `completePrintOrder` directly, and the print poller must be triggered by hand on Preview.
 - Composition outpaint is a paid Stability call made before the customer commits to approving; it is bounded by one initial composition per line per selected artwork plus one correction, but changing the artwork repeats it.
 - Shipping tax and international duties are not handled.
+
+## 12. Mixed-aspect projects and product-specific compositions (2026-10-17)
+
+Codex's audit of Preview `6e38ba3` found that checkout validated every product against one fixed series master aspect and compositions
+were one per line, extension-only. Both were true (nothing existed to resolve them) and are fixed here.
+
+- **Checkout** (`orders.ts`): a product is validated on its OWN geometry (`composition-plan.ts planFor`), so a 12 x 18 print and an 8 x 8 canvas
+  can be bought together. Refused only when no bounded way exists to make its shape (`product_not_available_for_artwork`).
+- **Plans** (`composition-plan.ts`, `aspects.ts`): `deterministic` (the selected artwork already fits, or bounded extension up to 20%) or
+  `generated` (a separate NB2.1 generation of the same effect at the nearest ratio the series route admits, then bounded extension to the exact
+  shape if that ratio is not exact). Deterministic extension is always preferred when it can preserve the artwork. The six artistic previews per batch are unchanged and independent of what was bought.
+- **Deduplication** (`compose.ts`): products with the same picture shape (`geometryKey`, e.g. `a667` for 2:3, `a1000` for square) are composed ONCE;
+  each line keeps its own composition record, approval, free correction and print job. A correction gets files of its own and never changes what
+  another line approved. Idempotent and resumable per requirement.
+- **NB2.1 ratios** (verified read-only against the model schema, 2026-10-17): 1:1, 1:4, 1:8, 2:3, 3:2, 3:4, 4:1, 4:3, 4:5, 5:4, 8:1, 9:16, 16:9, 21:9;
+  resolutions 1K/2K/4K. **The routes admit fewer**, and one is widened for products only: Portraits now accepts 2:3, 3:2, 4:5, 5:4, 16:9 and 21:9 IN ADDITION to
+  Discovery's 1:1, 3:4, 4:3, 9:16, but only from the server's internal call that sets `product_composition: true` (Discovery's choices, defaults
+  and the route's answer to everyone else are unchanged). Groups stays limited by head count; Pets passes any ratio. A 2:3 Portraits print is
+  therefore generated at exactly 2:3, with no extension.
+- **Favorite as reference** (`lib/v1/shared/favorite-adaptation.ts`): for Portraits and Pets a product-specific generation sends the customer's
+  photograph first and the selected favorite second (`image_input`), plus a clause naming the two roles (same effect, same subject and likeness,
+  extend the surroundings, never crop/stretch/distort/add/remove/restyle). The clause is appended only when the internal call asks for it and an
+  image is really sent; effect prompts are untouched. **Groups cannot**: its route needs exactly one source image, so Groups regenerates from the
+  photograph (`photo_regeneration`). Whether NB2.1 actually keeps the favorite faithful is UNVERIFIED (no paid call was made); that is why every
+  generated composition is a new, separate picture the customer must approve, and each line keeps its one free correction.
+- **Provenance** (migration 049): every composition and correction records `generation_mode` (`none` | `favorite_reference` | `photo_regeneration`),
+  `generation_aspect`, exact `nb21_calls`/`outpaint_calls` (0 on rows that reuse a shared composition), `cost_usd_est` (null unless
+  `GIFT_NB21_COST_USD`/`GIFT_OUTPAINT_COST_USD` are set) and the source artwork (`preview_id`, the selected favorite).
+- **21:9 mug**: a 21:9 composition maps to 2670 x 1110 by scaling to height (2590 x 1110) and adding 80 px of background across the width
+  (3.09% extension, no distortion, no crop). Mugs and cards remain disabled.
+- **Migration 049** (not applied): `gift_compositions.geometry_key`, `method`, `source_composition_id`, `generation_mode`, `generation_aspect`,
+  `nb21_calls`, `outpaint_calls`, `cost_usd_est`, three checks and an index. `gift-049-preflight-and-verify.sql`.
+- **Cleanup fix**: composition files were not removed when a session was purged; they now are (each shared path once).

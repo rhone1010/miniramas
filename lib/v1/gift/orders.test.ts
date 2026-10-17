@@ -108,10 +108,20 @@ describe('gift checkout', () => {
     const c = rig(); c.quote.mockRejectedValue(new Error('prodigi down')); await expect(checkout(c, await sessionWithLines(c))).rejects.toMatchObject({ code: 'shipping_quote_failed', status: 502 })
     for (const x of [a, b, c]) { expect(x.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(x.store.orders.size).toBe(0) }
   })
-  it('a product the artwork this session makes cannot fit is refused before payment (a square portrait master cannot make a 2:3 print)', async () => {
-    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }])
-    await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'product_not_available_for_artwork', status: 409 })
-    expect(r.store.orders.size).toBe(0)
+  it('mixed shapes are purchasable: a 12 x 18 print with an 8 x 8 canvas in one project, priced from the catalog, with the order lines frozen', async () => {
+    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:8x8', copies: 2 }])
+    const out = await checkout(r, sid)
+    expect(out.totals).toEqual({ itemsCents: 4400 + 2 * 5900, shippingCents: 685, totalCents: 4400 + 2 * 5900 + 685 })
+    const order = [...r.store.orders.values()][0]
+    expect(order.items.map(i => [i.sku, i.copies, i.retailCents])).toEqual([['GLOBAL-FAP-12X18', 1, 4400], ['GLOBAL-CAN-8X8', 2, 5900]])
+    expect((r.quote.mock.calls[0][0] as any).items.map((i: any) => i.sku)).toEqual(['GLOBAL-FAP-12X18', 'GLOBAL-CAN-8X8'])
+  })
+  it('a series master of one shape no longer limits what can be bought: the same 12 x 18 print is accepted for a Pets or a Groups project', async () => {
+    for (const series of ['pets', 'groups'] as const) {
+      const r = rig(); r.gift.analyze = async () => ({ status: 'supported', series, peopleCount: series === 'groups' ? 4 : null })
+      const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }])
+      expect((await checkout(r, sid)).totals.itemsCents).toBe(4400)
+    }
   })
   it('an open unpaid checkout is reused, not duplicated; a fresh Stripe session replaces an expired one on the same order', async () => {
     const r = rig(); const sid = await sessionWithLines(r)

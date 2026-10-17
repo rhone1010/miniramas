@@ -75,11 +75,14 @@ describe('compositions', () => {
       { l: 'a', p: 'fine_art:8x8', s: 'ready', a: 1, c: 1, f: 'exact' }, { l: 'b', p: 'canvas:12x12', s: 'ready', a: 1, c: 1, f: 'exact' }])
     for (const c of v.compositions) expect(c.previewUrl).toMatch(/^https:\/\/signed\.test\/gift\/.+\/compositions\/.+\.jpg$/)
     expect(JSON.stringify(v)).not.toMatch(/\.png|masters/)
-    expect(r.compose.mock.calls.map(c => [c[0].finish, c[0].size])).toEqual([['fine_art', '8x8'], ['canvas', '12x12']])
+    // Both products are square, so they share ONE composition (composed once, by the first line); each line still has its own record.
+    expect(r.compose.mock.calls.map(c => [c[0].finish, c[0].size])).toEqual([['fine_art', '8x8']])
+    expect(r.store.compositions.length).toBe(2); expect(new Set(r.store.compositions.map(c => c.composed_path)).size).toBe(1)
     expect(r.store.compositions.every(c => c.preview_id === previews[2].previewId)).toBe(true)
   })
-  it('is idempotent and resumable: only lines without a composition are made, a failed line is retried on its own', async () => {
-    const r = rig({ failCompose: new Set(['canvas:12x12']) }); const { sid, previews } = await paid(r); await selectArtwork(r.deps, U1, sid, previews[0].previewId)
+  it('is idempotent and resumable: only requirements without a composition are made, a failed one is retried on its own', async () => {
+    const r = rig({ failCompose: new Set(['fine_art:12x18']) })
+    const { sid, previews } = await paid(r, [{ lineId: 'a', productId: 'fine_art:8x8', copies: 1 }, { lineId: 'b', productId: 'fine_art:12x18', copies: 1 }]); await selectArtwork(r.deps, U1, sid, previews[0].previewId)
     await expect(ensureCompositions(r.deps, U1, sid)).rejects.toMatchObject({ code: 'composition_failed' })
     expect(r.store.compositions.length).toBe(1); const calls = r.compose.mock.calls.length
     const v = await ensureCompositions(r.deps, U1, sid)

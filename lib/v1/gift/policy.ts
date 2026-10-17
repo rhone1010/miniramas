@@ -17,6 +17,18 @@ export const MAX_PREVIEW_ATTEMPTS = 3
 export const PREVIEW_LEASE_SECONDS = 300
 export const MAX_PARALLEL_RENDERS = 3
 
+/**
+ * Paid calls are counted exactly; their cost is an ESTIMATE, and only when a unit price is configured (Replicate's price for NB2.1 is
+ * not in the codebase and has not been verified). Set GIFT_NB21_COST_USD and GIFT_OUTPAINT_COST_USD to record dollars; until then the
+ * recorded cost is null, never a guess.
+ */
+export function estimateCompositionCost(calls: { nb21: number; outpaint: number }, env: Record<string, string | undefined> = process.env): number | null {
+  const unit = (k: string) => { const v = Number(env[k]); return env[k] !== undefined && env[k] !== '' && Number.isFinite(v) && v >= 0 ? v : null }
+  const nb = unit('GIFT_NB21_COST_USD'), op = unit('GIFT_OUTPAINT_COST_USD')
+  if ((calls.nb21 > 0 && nb === null) || (calls.outpaint > 0 && op === null)) return null
+  return Math.round((calls.nb21 * (nb ?? 0) + calls.outpaint * (op ?? 0)) * 1e4) / 1e4
+}
+
 /** Per-line quantity limit, shared with the Print Shop checkout. */
 export const MAX_COPIES = 20
 

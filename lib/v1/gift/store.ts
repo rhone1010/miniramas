@@ -30,6 +30,12 @@ export interface OrderLineRec { order_id: string; line_index: number; session_id
 export interface CompositionRec {
   id: string; session_id: string; line_id: string; preview_id: string; attempt: 1 | 2; status: 'ready' | 'approved' | 'failed' | 'superseded'
   composed_path: string | null; preview_path: string | null; width: number | null; height: number | null; plan: Record<string, unknown>
+  /** 049: the requirement this row satisfies; rows with the same key and artwork share files. */
+  geometry_key: string | null; method: 'deterministic' | 'generated'; source_composition_id: string | null
+  /** 049: how it was made. 'none' = adapted from the selected artwork; 'favorite_reference' = NB2.1 given the approved artwork as a reference;
+   *  'photo_regeneration' = NB2.1 from the customer's photograph only (a series that cannot take a reference). The artwork it was made FROM is preview_id. */
+  generation_mode: 'none' | 'photo_regeneration' | 'favorite_reference'; generation_aspect: string | null
+  nb21_calls: number; outpaint_calls: number; cost_usd_est: number | null
   created_at: string; approved_at: string | null
 }
 export interface BatchRec { id: string; session_id: string; user_id: string; batch_index: number; kind: BatchKind; pack_id: string | null; idempotency_key: string; effect_ids: string[]; created_at: string }

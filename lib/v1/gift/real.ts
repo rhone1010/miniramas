@@ -63,12 +63,17 @@ export async function analyzeSource({ b64 }: { b64: string; bytes: Buffer }): Pr
 }
 
 /** ONE render through the series' own generate route. Returns the CLEAN master; throws on any refusal or failure. */
-export async function generateMaster(i: { series: 'portraits' | 'pets' | 'groups'; sourceB64: string; effectId: string; aspect: string; peopleCount: number | null }): Promise<{ imageB64: string }> {
+export async function generateMaster(i: { series: 'portraits' | 'pets' | 'groups'; sourceB64: string; effectId: string; aspect: string; peopleCount: number | null; productComposition?: boolean; referenceB64?: string }): Promise<{ imageB64: string }> {
+  // The approved artwork rides as the SECOND image. Groups cannot take one (its route requires exactly one source image).
+  const ref = i.referenceB64 && i.series !== 'groups' ? { additional_images_b64: [i.referenceB64], adaptation: 'favorite' as const } : {}
   const body = i.series === 'groups'
     ? { source_image_b64: i.sourceB64, effect_id: i.effectId, format: i.aspect, ...(i.peopleCount ? { subject_count: i.peopleCount } : {}), }
     : i.series === 'pets'
-      ? { source_image_b64: i.sourceB64, style_id: 'realistic', preset_id: i.effectId, action_id: 'as_photographed', aspect_ratio: i.aspect, scale: 'close_up' }
-      : { source_image_b64: i.sourceB64, style_id: styleIdForPreset(i.effectId), preset_id: i.effectId, skip_redirect: true, framing: 'bust', scale: 'close_up' }
+      ? { source_image_b64: i.sourceB64, style_id: 'realistic', preset_id: i.effectId, action_id: 'as_photographed', aspect_ratio: i.aspect, scale: 'close_up', ...ref }
+      : { source_image_b64: i.sourceB64, style_id: styleIdForPreset(i.effectId), preset_id: i.effectId, skip_redirect: true, framing: 'bust', scale: 'close_up',
+          // Preview batches send none of this and keep the framing-derived square. A product composition names its ratio (the route
+          // admits the extra ratios only from this internal call).
+          ...(i.productComposition ? { output_aspect_ratio: i.aspect, product_composition: true } : {}), ...ref }
   const res = await fetch(`${internalBaseUrl()}/api/v1/${i.series}/generate`, {
     method: 'POST',
     headers: internalHeaders({ 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.CRON_SECRET ?? ''}` }),

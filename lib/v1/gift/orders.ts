@@ -12,7 +12,8 @@
 
 import type Stripe from 'stripe'
 import { createBrandedSession } from '@/lib/store/stripe-branding'
-import { allProducts, fitFor } from '../print/catalog'
+import { allProducts } from '../print/catalog'
+import { planFor } from './composition-plan'
 import type { PrintOrderItem, ShippingAddress } from '../print/db'
 import type { QuoteRequest, QuoteResponse } from '../print/prodigi-client'
 import type { PrintFinish, PrintSize } from '../print/sku-map'
@@ -52,12 +53,6 @@ export interface GiftOrderDeps {
   now?: () => number
 }
 
-/** Aspect ratio string to nominal pixels, only to ask the catalog how a product fits the artwork this session will produce. */
-function masterDims(aspect: string | null): { width: number; height: number } {
-  const m = /^(\d+):(\d+)$/.exec(aspect ?? '')
-  return m ? { width: Number(m[1]) * 512, height: Number(m[2]) * 512 } : { width: 1024, height: 1024 }
-}
-
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const orderReturnUrl = (origin: string, returnPath: unknown): string => {
   if (typeof returnPath !== 'string' || !(GIFT_RETURN_PATHS as readonly string[]).includes(returnPath)) throw new GiftError('checkout_unavailable')
@@ -88,11 +83,13 @@ export async function createGiftCheckout(
 
   // Server-owned lines: catalog price, SKU and attributes. A product the artwork this session makes cannot fit is refused now.
   const catalog = new Map(allProducts().map(p => [p.productId, p]))
-  const dims = masterDims(rec.master_aspect)
+  const planCtx = { series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }
   const lines = rec.lines.map(l => {
     const p = catalog.get(l.productId)
     if (!p || p.status !== 'launch' || p.retailCents === null) throw new GiftError('product_not_available')
-    if (fitFor(dims, p).fit === 'unavailable') throw new GiftError('product_not_available_for_artwork')
+    // Mixed shapes are normal (a 12 x 18 print with an 8 x 8 canvas). A product is refused only when NO bounded way exists to make
+    // its shape: neither the artwork's own shape nor any aspect ratio the series can generate gets within the 20% extension limit.
+    if (!planFor(p, planCtx)) throw new GiftError('product_not_available_for_artwork')
     return { line: l, product: p }
   })
   const itemsCents = lines.reduce((n, x) => n + x.product.retailCents! * x.line.copies, 0)

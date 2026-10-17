@@ -56,7 +56,7 @@ import type {
 } from '@/lib/v1/portraits/portraits-shared'
 import {
   normalizeFraming, ASPECT_FOR_FRAMING, isResolutionTier,
-  isPortraitOutputAspect, PORTRAIT_OUTPUT_ASPECTS,
+  isPortraitOutputAspect, isPortraitProductAspect, PORTRAIT_OUTPUT_ASPECTS,
 } from '@/lib/v1/portraits/portraits-shared'
 
 import { classifySubject, decideRedirect } from '@/lib/shared/subject-redirect'
@@ -291,7 +291,11 @@ async function generatePortrait(
        framing-derived value exactly as before. Note this is NOT
        body.aspect_ratio -- portraits.html sends that as '1:1' on every
        request and depends on it being discarded (portraits.html:6742). */
-    const outputAspect = isPortraitOutputAspect(body.output_aspect_ratio)
+    /* PRODUCT COMPOSITIONS: the server's own internal call (CRON_SECRET) may ask for NB2.1's other verified ratios by saying
+       product_composition: true. Everyone else, and every request that does not say so, gets exactly the answer it always got. */
+    const internalCall = checkInternalAuth(req).ok
+    const productComposition = internalCall && body.product_composition === true
+    const outputAspect = isPortraitOutputAspect(body.output_aspect_ratio) || (productComposition && isPortraitProductAspect(body.output_aspect_ratio))
       ? body.output_aspect_ratio
       : null
     if (body.output_aspect_ratio && !outputAspect) {
@@ -368,6 +372,8 @@ async function generatePortrait(
       resolution,
       aspect_ratio:           aspectForFraming,   // framing wins unless output_aspect_ratio said otherwise; body.aspect_ratio still ignored
       output_aspect_ratio:    outputAspect ?? undefined,
+      product_composition:    productComposition || undefined,
+      adaptation:             internalCall && body.adaptation === 'favorite' ? 'favorite' : undefined,
       refinements:            body.refinements || undefined,
       notes:                  body.notes || undefined,
       refinement_tweak:       body.refinement_tweak || undefined,

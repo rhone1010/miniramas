@@ -32,7 +32,27 @@ export interface SourceView {
 export interface GiftLine { lineId: string; productId: string; size: string; copies: number }
 
 /** The geometry a line will eventually print at, from the catalog. Informational: the server derives it. */
-export interface LineGeometry { lineId: string; productId: string; pictureAspect: number; orientation: Orientation; requiredPx: { w: number; h: number } }
+/**
+ * The authoritative geometry a purchased line needs, from the canonical catalog, plus how the server will make it. Available as soon as
+ * the products are chosen (before checkout), so the page can say what will happen and render the right mockup shape.
+ */
+export interface LineGeometry {
+  lineId: string
+  productId: string
+  pictureAspect: number               // width / height of the picture area
+  orientation: Orientation
+  requiredPx: { w: number; h: number }   // the whole lab file, in the orientation Prodigi defines
+  picturePx: { w: number; h: number }    // the picture inside it (canvas wrap excluded)
+  wrapPx: { left: number; right: number; top: number; bottom: number }
+  /** Lines with the same key share ONE composition (and its files); each keeps its own approval, correction and print job. */
+  geometryKey: string
+  sharedWithLineIds: string[]            // the OTHER lines with this key
+  /** 'deterministic': the selected artwork is adapted (never cropped or distorted). 'generated': a separate NB2.1 generation of the same effect at generationAspect, then bounded extension. */
+  method: 'deterministic' | 'generated'
+  fit: 'exact' | 'resample' | 'extend'
+  extensionFraction: number
+  generationAspect: string | null        // NB2.1 ratio requested for 'generated', else null
+}
 
 export interface PreviewView {
   previewId: string
@@ -97,6 +117,17 @@ export interface OrderView {
 export interface CompositionView {
   lineId: string
   productId: string
+  /** Same as LineGeometry.geometryKey/method/generationAspect/sharedWithLineIds, so one object per line is enough to render a mockup. */
+  geometryKey: string | null
+  method: 'deterministic' | 'generated' | null
+  generationAspect: string | null
+  sharedWithLineIds: string[]
+  picturePx: { w: number; h: number } | null
+  /** 'none': adapted from the selected artwork. 'favorite_reference': a new NB2.1 generation that was given the selected artwork as a reference.
+   *  'photo_regeneration': a new generation from the customer's photograph (Groups). A new generation is NOT identical to the selected artwork: the customer approves what they see. */
+  generationMode: 'none' | 'favorite_reference' | 'photo_regeneration' | null
+  /** The artwork this composition is made from: the selected favorite. */
+  sourceArtworkId: string | null
   status: 'none' | 'ready' | 'approved'
   compositionId: string | null
   attempt: number                      // 1, or 2 after the free correction

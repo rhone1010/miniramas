@@ -9,6 +9,7 @@
 import { randomUUID, createHash } from 'node:crypto'
 import sharp from 'sharp'
 import { allProducts, catalogVersion } from '../print/catalog'
+import { planFor, type PlanContext } from './composition-plan'
 import { decodeSource } from '../foyer/foyer-source'
 import { BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, MAX_PARALLEL_RENDERS, PACK_PRICE_CENTS, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
@@ -66,7 +67,7 @@ export interface GiftDeps {
   /** Existing classifier, face/age check and (Groups) people count; see real.ts. */
   analyze(input: { b64: string; bytes: Buffer }): Promise<SourceAnalysis>
   /** ONE NB2.1 render of the selected effect through the existing series generate route; returns the CLEAN master. */
-  generate(input: { series: Series; sourceB64: string; effectId: string; aspect: string; userId: string; peopleCount: number | null }): Promise<{ imageB64: string }>
+  generate(input: { series: Series; sourceB64: string; effectId: string; aspect: string; userId: string; peopleCount: number | null; productComposition?: boolean; referenceB64?: string }): Promise<{ imageB64: string }>
   /** Baked-watermark customer preview (JPEG) from the clean master. Must fail rather than return an unmarked image. */
   watermark(masterB64: string): Promise<Buffer>
   /** One product composition of the selected master: background extension only, never a crop (compose.ts). */
@@ -246,10 +247,18 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   }
   const used = all.flatMap(b => b.previews.map(p => p.effect_id))
   const catalog = allProducts()
-  const geometries: LineGeometry[] = rec.lines.flatMap(l => {
+  const planCtx: PlanContext = { series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }
+  const planned = rec.lines.flatMap(l => {
     const p = catalog.find(x => x.productId === l.productId)
-    return p ? [{ lineId: l.lineId, productId: p.productId, pictureAspect: p.requirements.pictureAspect, orientation: p.requirements.skuOrientation, requiredPx: p.requirements.finalPx }] : []
+    const plan = p && rec.series ? planFor(p, planCtx) : null
+    return p && plan ? [{ l, p, plan }] : []
   })
+  const sharing = (key: string, lineId: string) => planned.filter(x => x.plan.geometryKey === key && x.l.lineId !== lineId).map(x => x.l.lineId)
+  const geometries: LineGeometry[] = planned.map(({ l, p, plan }) => ({
+    lineId: l.lineId, productId: p.productId, pictureAspect: p.requirements.pictureAspect, orientation: p.requirements.skuOrientation, requiredPx: p.requirements.finalPx,
+    picturePx: p.requirements.picturePx, wrapPx: p.requirements.wrapPx, geometryKey: plan.geometryKey, sharedWithLineIds: sharing(plan.geometryKey, l.lineId),
+    method: plan.method, fit: plan.fit, extensionFraction: plan.extensionFraction, generationAspect: plan.generationAspect,
+  }))
   const incomplete = batches.some(b => !b.complete)
   const expired = rec.status !== 'active' || (Date.parse(rec.expires_at) < now(deps) && !rec.pinned_at)
   const paid = !!order?.paid_at && !['created', 'cancelled'].includes(order.status)
@@ -274,8 +283,12 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     artworkPreviewId: rec.artwork_preview_id,
     compositions: await Promise.all(orderLines.map(async l => {
       const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort((a, b) => b.attempt - a.attempt)[0]
+      const g = geometries.find(x => x.lineId === l.line_id)
+      const catalogProduct = catalog.find(x => x.productId === l.product_id)
       return {
-        lineId: l.line_id, productId: l.product_id, status: (mine ? (mine.status === 'approved' ? 'approved' : 'ready') : 'none') as 'none' | 'ready' | 'approved',
+        lineId: l.line_id, productId: l.product_id, geometryKey: mine?.geometry_key ?? g?.geometryKey ?? null, method: (mine?.method ?? g?.method ?? null) as 'deterministic' | 'generated' | null,
+        generationAspect: g?.generationAspect ?? null, sharedWithLineIds: g?.sharedWithLineIds ?? [], picturePx: catalogProduct?.requirements.picturePx ?? null,
+        generationMode: (mine?.generation_mode ?? null) as 'none' | 'favorite_reference' | 'photo_regeneration' | null, sourceArtworkId: mine ? mine.preview_id : null, status: (mine ? (mine.status === 'approved' ? 'approved' : 'ready') : 'none') as 'none' | 'ready' | 'approved',
         compositionId: mine?.id ?? null, attempt: mine?.attempt ?? 0, correctionsRemaining: Math.max(0, 1 - l.corrections_used),
         previewUrl: mine?.preview_path ? await deps.storage.signedUrl(mine.preview_path, 3600) : null, width: mine?.width ?? null, height: mine?.height ?? null,
         fit: ((mine?.plan as { fit?: string } | undefined)?.fit ?? null) as 'exact' | 'resample' | 'extend' | null,
@@ -304,8 +317,10 @@ function orderView(rec: SessionRec, order: Awaited<ReturnType<GiftDeps['store'][
 
 async function removeObjects(deps: GiftDeps, rec: SessionRec): Promise<void> {
   const all = await deps.store.listBatches(rec.id)
-  const paths = [rec.source_path, ...all.flatMap(b => b.previews.flatMap(p => [p.master_path, p.preview_path]))].filter((x): x is string => !!x)
-  if (paths.length) await deps.storage.remove(paths)
+  const comps = await deps.store.listCompositions(rec.id)
+  const paths = [rec.source_path, ...all.flatMap(b => b.previews.flatMap(p => [p.master_path, p.preview_path])), ...comps.flatMap(c => [c.composed_path, c.preview_path])]
+    .filter((x): x is string => !!x)
+  if (paths.length) await deps.storage.remove([...new Set(paths)])         // shared compositions point at the same files: remove each once
 }
 
 /** The customer deleting their own session: objects first, then rows, so a storage failure leaves the rows to retry. */

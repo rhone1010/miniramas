@@ -116,7 +116,7 @@ describe('the job source', () => {
     store.sessions.set(SID, { id: SID, user_id: U1, status: 'active', order_id: 'o1', approved_at: new Date().toISOString(), refund_requested_at: null, refunded_at: null, artwork_preview_id: 'p1' } as any)
     store.lines.push({ order_id: 'o1', line_index: 0, session_id: SID, line_id: 'a', product_id: 'fine_art:8x8', sku: 'GLOBAL-FAP-8X8', copies: 1, corrections_used: 0 })
     const img = await sharp({ create: { width: 64, height: 64, channels: 3, background: '#fff' } }).png().toBuffer(); files.set('c/ok.png', img)
-    store.compositions.push({ id: 'c1', session_id: SID, line_id: 'a', preview_id: 'p1', attempt: 1, status: 'approved', composed_path: 'c/ok.png', preview_path: 'c/ok.jpg', width: 64, height: 64, plan: {}, created_at: '', approved_at: '' })
+    store.compositions.push({ id: 'c1', session_id: SID, line_id: 'a', preview_id: 'p1', attempt: 1, status: 'approved', composed_path: 'c/ok.png', preview_path: 'c/ok.jpg', width: 64, height: 64, plan: {}, geometry_key: 'a1000', method: 'deterministic', source_composition_id: null, created_at: '', approved_at: '' })
     return { store, storage, files, img }
   }
   const job = { render_id: giftRenderId(SID, 'a'), item_index: 0 }

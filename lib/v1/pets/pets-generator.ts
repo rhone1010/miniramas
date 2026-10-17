@@ -32,6 +32,7 @@ import {
 } from './pets-experimental'
 import type { PetCoatProfile, PetFeatureProfile } from './pets-refine'
 import { expandPetImage } from './pets-expand'
+import { applyFavoriteAdaptation } from '../shared/favorite-adaptation'
 import {
   scorePetFidelity,
   scoreMultiPetFidelity,
@@ -223,7 +224,7 @@ export async function generatePetsRender(
       `style=${styleId} ${isExperimental ? `curiosity=${experimentalEffect}` : `preset=${presetId} environment=${environmentId}`}`,
     )
 
-    const prompt = catalogEffect
+    const basePrompt = catalogEffect
       // Whole body, plus its avoid clause. Nothing appended: the framing,
       // the markings rule and the horse conditional are all inside it,
       // which is what makes any one of these testable on its own in a
@@ -242,6 +243,8 @@ export async function generatePetsRender(
           coatNote,
           featureNote,
         })
+    // Gift Wizard product composition: the approved artwork rides as an additional image, and this says what it is.
+    const prompt = applyFavoriteAdaptation(basePrompt, { adaptation: req.adaptation, referenceImages: (req.additional_images_b64 || []).length })
     finalPromptUsed = prompt
 
     console.log(

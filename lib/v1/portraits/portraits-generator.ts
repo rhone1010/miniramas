@@ -31,6 +31,7 @@
 import { buildPortraitsPrompt } from './portraits-prompt'
 import { hasBody, buildEffectPrompt } from './portraits-bodies'
 import { POSE_PHRASE, DEFAULT_POSE, isPoseId, STYLE_REF_CLAUSE } from './portraits-shared'
+import { applyFavoriteAdaptation } from '../shared/favorite-adaptation'
 import { loadStyleRefs, MAX_STYLE_REFS } from './style-refs'
 /* The phone framing clause and the ratio that earns it, from the one file
    that owns both. Imported, never restated -- see the append below. */
@@ -248,9 +249,12 @@ export async function generatePortraitsRender(
        whole body, and the only one both prompt paths pass through. Every
        other ratio appends nothing -- MAIN_COMPOSITION's documented behaviour,
        not a special case. */
-    const framed = req.output_aspect_ratio === WALLPAPER_ASPECT
+    const framedForShape = req.output_aspect_ratio === WALLPAPER_ASPECT
       ? `${posed}\n\n${PHONE_COMPOSITION}`
       : posed
+    // Gift Wizard product composition: the approved artwork is sent as the second image, and this says what the two images are.
+    // Added only when asked for AND an image is really sent; every other request gets framedForShape unchanged.
+    const framed = applyFavoriteAdaptation(framedForShape, { adaptation: req.adaptation, referenceImages: (req.additional_images_b64 || []).length })
 
     // Style-reference clause. Only when a plate is actually sent — otherwise
     // it points at an image that is not there.

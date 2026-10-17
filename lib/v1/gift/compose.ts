@@ -16,14 +16,13 @@ import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
 import { lockedPreviewPath } from '@/lib/store/preview'
 import type { PrintFinish, PrintSize } from '../print/sku-map'
+import { allProducts, type CanonicalProduct } from '../print/catalog'
+import { groupLines, planFor, type CompositionPlan, type PlanContext } from './composition-plan'
+import { supportsFavoriteReference } from './aspects'
+import { estimateCompositionCost } from './policy'
 import { GiftError, fromStoreError, getSessionView, owned, type GiftDeps } from './service'
 import type { CompositionRec, PreviewRec, SessionRec } from './store'
 import type { SessionView } from './types'
-
-const compositionPaths = (sessionId: string, previewId: string, lineId: string, attempt: number) => ({
-  image: `gift/${sessionId}/compositions/${previewId}-${lineId}-${attempt}.png`,
-  preview: `gift/${sessionId}/compositions/${previewId}-${lineId}-${attempt}.jpg`,
-})
 
 async function selectedPreview(deps: GiftDeps, rec: SessionRec): Promise<PreviewRec> {
   if (!rec.artwork_preview_id) throw new GiftError('artwork_not_selected')
@@ -44,21 +43,79 @@ export async function selectArtwork(deps: GiftDeps, userId: string, sessionId: s
   return getSessionView(deps, userId, sessionId)
 }
 
-async function composeOne(deps: GiftDeps, rec: SessionRec, preview: PreviewRec, line: { line_id: string; product_id: string }, attempt: 1 | 2, master: Buffer): Promise<CompositionRec> {
-  if (!deps.compose) throw new GiftError('composition_failed')
-  const [family, size] = line.product_id.split(':')
-  const made = await deps.compose({ masterB64: master.toString('base64'), size: size as PrintSize, finish: family as PrintFinish })
-  const marked = await deps.watermark(made.image.toString('base64'))                // customer view of a clean composition: watermarked, fails closed
-  const paths = compositionPaths(rec.id, preview.id, line.line_id, attempt)
-  await deps.storage.put(paths.image, made.image, 'image/png')
-  await deps.storage.put(paths.preview, marked, 'image/jpeg')
-  return deps.store.insertComposition({
-    session_id: rec.id, line_id: line.line_id, preview_id: preview.id, attempt, status: 'ready', composed_path: paths.image, preview_path: paths.preview,
-    width: made.width, height: made.height, plan: { fit: made.fit, outpainted: made.outpainted },
-  })
+interface GroupFiles {
+  image: string; preview: string; width: number; height: number; fit: 'exact' | 'resample' | 'extend'; outpainted: boolean
+  generationMode: CompositionRec['generation_mode']; nb21Calls: number
+}
+type LineInfo = { line_id: string; product_id: string }
+
+const productOf = (line: LineInfo): CanonicalProduct => {
+  const p = allProducts().find(x => x.productId === line.product_id)
+  if (!p) throw new GiftError('product_not_available')
+  return p
+}
+const ctxOf = (rec: SessionRec): PlanContext => ({ series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' })
+const planOf = (rec: SessionRec, line: LineInfo): CompositionPlan => {
+  const plan = planFor(productOf(line), ctxOf(rec))
+  if (!plan) throw new GiftError('product_not_available_for_artwork')
+  return plan
 }
 
-/** One composition per purchased line, from the selected artwork. Idempotent: lines that already have one are untouched. */
+/**
+ * Compose ONE picture for a composition requirement and store its clean file and its watermarked preview. The expensive step
+ * (a deterministic adaptation, or an NB2.1 generation plus bounded extension) runs here, once per requirement, never per line.
+ *   deterministic  the selected artwork is adapted to the product's shape
+ *   generated      the same effect is generated again from the customer's own photograph at the nearest supported ratio, then
+ *                  bounded extension finishes the exact shape (the customer approves what they actually see)
+ * `slot` names the files: a shared group uses the key, a line's own correction uses its line id, so a correction can never
+ * overwrite what other lines share.
+ */
+async function composeGroup(deps: GiftDeps, rec: SessionRec, preview: PreviewRec, representative: LineInfo, plan: CompositionPlan, master: Buffer, slot: string): Promise<GroupFiles> {
+  if (!deps.compose) throw new GiftError('composition_failed')
+  const product = productOf(representative)
+  let source = master
+  let generationMode: GroupFiles['generationMode'] = 'none'
+  if (plan.method === 'generated') {
+    if (!rec.source_path || !rec.series) throw new GiftError('generation_unavailable')
+    const photo = await deps.storage.get(rec.source_path)
+    if (!photo) throw new GiftError('generation_unavailable')
+    // The customer's approved artwork goes along as a reference wherever the series' route can take one (Portraits, Pets); Groups
+    // regenerates from the photograph alone. Either way the result is a NEW generation that the customer sees and approves.
+    const useReference = supportsFavoriteReference(rec.series)
+    const out = await deps.generate({
+      series: rec.series, sourceB64: photo.toString('base64'), effectId: preview.effect_id, aspect: plan.generationAspect!, userId: rec.user_id,
+      peopleCount: rec.analysis.peopleCount ?? null, productComposition: true, ...(useReference ? { referenceB64: master.toString('base64') } : {}),
+    })
+    source = Buffer.from(out.imageB64, 'base64')
+    generationMode = useReference ? 'favorite_reference' : 'photo_regeneration'
+  }
+  const made = await deps.compose({ masterB64: source.toString('base64'), size: product.size as PrintSize, finish: product.family as PrintFinish })
+  const marked = await deps.watermark(made.image.toString('base64'))              // the customer's view of a clean composition: watermarked, fails closed
+  const base = `gift/${rec.id}/compositions/${preview.id}-${slot}`
+  await deps.storage.put(`${base}.png`, made.image, 'image/png')
+  await deps.storage.put(`${base}.jpg`, marked, 'image/jpeg')
+  return { image: `${base}.png`, preview: `${base}.jpg`, width: made.width, height: made.height, fit: made.fit, outpainted: made.outpainted, generationMode, nb21Calls: generationMode === 'none' ? 0 : 1 }
+}
+
+/** `paid` is true only for the row that CREATED the files: rows that reuse a shared composition cost nothing of their own. */
+const recordFor = (rec: SessionRec, preview: PreviewRec, line: LineInfo, attempt: 1 | 2, plan: CompositionPlan, f: GroupFiles, sourceId: string | null, paid: boolean) => {
+  const nb21 = paid ? f.nb21Calls : 0, outpaint = paid && f.outpainted ? 1 : 0
+  return {
+    session_id: rec.id, line_id: line.line_id, preview_id: preview.id, attempt, status: 'ready' as const, composed_path: f.image, preview_path: f.preview,
+    width: f.width, height: f.height, geometry_key: plan.geometryKey, method: plan.method, source_composition_id: sourceId,
+    generation_mode: f.generationMode, generation_aspect: plan.method === 'generated' ? plan.generationAspect : null,
+    nb21_calls: nb21, outpaint_calls: outpaint, cost_usd_est: estimateCompositionCost({ nb21, outpaint }),
+    plan: { fit: f.fit, outpainted: f.outpainted, method: plan.method, geometryKey: plan.geometryKey, generationAspect: plan.generationAspect, targetAspect: plan.targetAspect,
+            generationMode: f.generationMode, sourceArtworkId: preview.id, correction: attempt === 2 } as Record<string, unknown>,
+  }
+}
+
+/**
+ * One composition RECORD per purchased line, but one COMPOSITION per distinct requirement: products whose picture shapes match
+ * share files (a 12 x 18 print and a 12 x 18 frame cost one composition), while each line keeps its own approval, its own free
+ * correction and its own print job. Idempotent and resumable: a requirement that already has files is reused, a failed one is
+ * retried on its own, and nothing that succeeded is made twice.
+ */
 export async function ensureCompositions(deps: GiftDeps, userId: string, sessionId: string): Promise<SessionView> {
   const rec = await owned(deps, userId, sessionId)
   if (!rec.order_id) throw new GiftError('order_payment_required')
@@ -71,19 +128,32 @@ export async function ensureCompositions(deps: GiftDeps, userId: string, session
   if (!lines.length) throw new GiftError('order_has_no_lines')
   const comps = await deps.store.listCompositions(rec.id)
   const missing = lines.filter(l => !active(comps, l.line_id, preview.id))
-  if (missing.length) {
-    const master = await deps.storage.get(preview.master_path!)
-    if (!master) throw new GiftError('generation_unavailable')
-    let failed = 0
-    for (const l of missing) {
-      try { await composeOne(deps, rec, preview, l, 1, master) } catch { failed++ }
+  if (!missing.length) return getSessionView(deps, userId, sessionId)
+
+  const groups = groupLines(missing.map(l => ({ line: l, product: productOf(l) })), ctxOf(rec))
+  const master = await deps.storage.get(preview.master_path!)
+  if (!master) throw new GiftError('generation_unavailable')
+  let failed = 0
+  for (const g of groups) {
+    // Files already made for this requirement and this artwork (by another line, or an earlier call) are reused.
+    const existing = comps.find(c => c.preview_id === preview.id && c.geometry_key === g.geometryKey && c.attempt === 1 && c.composed_path && c.preview_path && c.status !== 'failed')
+    let files: GroupFiles | null = existing ? { image: existing.composed_path!, preview: existing.preview_path!, width: existing.width ?? 0, height: existing.height ?? 0, fit: ((existing.plan as { fit?: GroupFiles['fit'] }).fit ?? 'exact'), outpainted: !!(existing.plan as { outpainted?: boolean }).outpainted, generationMode: existing.generation_mode, nb21Calls: 0 } : null
+    if (!files) {
+      try { files = await composeGroup(deps, rec, preview, g.items[0].line, g.plan, master, g.geometryKey) } catch { failed++; continue }
     }
-    if (failed) throw new GiftError('composition_failed')                  // the ones that worked are kept; calling again fills only the rest
+    let creatorId: string | null = existing?.id ?? null
+    for (const it of g.items) {
+      try {
+        const row = await deps.store.insertComposition(recordFor(rec, preview, it.line, 1, g.plan, files, creatorId, creatorId === null))
+        creatorId ??= row.id
+      } catch { /* a concurrent call already recorded this line: the unique key makes the repeat harmless */ }
+    }
   }
+  if (failed) throw new GiftError('composition_failed')                  // finished groups are kept; calling again fills only the rest
   return getSessionView(deps, userId, sessionId)
 }
 
-/** The ONE free correction for a line: another composition of the same artwork, which replaces the first. */
+/** The ONE free correction for a line: a new composition of its own (never touching what other lines share) that replaces its first. */
 export async function correctLine(deps: GiftDeps, userId: string, sessionId: string, lineId: string): Promise<SessionView> {
   const rec = await owned(deps, userId, sessionId)
   if (!rec.order_id) throw new GiftError('order_payment_required')
@@ -99,7 +169,10 @@ export async function correctLine(deps: GiftDeps, userId: string, sessionId: str
   if (line.corrections_used >= 1 || current.attempt >= 2) throw new GiftError('correction_limit')       // the rest goes to Concierge
   const master = await deps.storage.get(preview.master_path!)
   if (!master) throw new GiftError('generation_unavailable')
-  try { await composeOne(deps, rec, preview, line, 2, master) } catch (e) { if (e instanceof GiftError) throw e; throw new GiftError('composition_failed') }
+  const plan = planOf(rec, line)
+  let files: GroupFiles
+  try { files = await composeGroup(deps, rec, preview, line, plan, master, `${lineId}-2`) } catch (e) { if (e instanceof GiftError) throw e; throw new GiftError('composition_failed') }
+  try { await deps.store.insertComposition(recordFor(rec, preview, line, 2, plan, files, null, true)) } catch (e) { fromStoreError(e); throw new GiftError('composition_failed') }
   try { await deps.store.useCorrection(rec.id, userId, lineId) } catch (e) { fromStoreError(e) }
   await deps.store.patchComposition(current.id, { status: 'superseded' })
   return getSessionView(deps, userId, sessionId)

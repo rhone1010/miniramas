@@ -357,6 +357,15 @@ export const ASPECT_FOR_FRAMING: Record<Framing, string> = {
 export const PORTRAIT_OUTPUT_ASPECTS = ['1:1', '3:4', '4:3', '9:16'] as const
 export type PortraitOutputAspect = typeof PORTRAIT_OUTPUT_ASPECTS[number]
 
+/* PRODUCT COMPOSITIONS (Gift Wizard) may use NB2.1's other verified ratios (read from the model's schema, 2026-10-17). They are
+   accepted ONLY from the server's own internal call that says product_composition: true (route.ts). Discovery's four ratios above, the
+   route's answer to everyone else and every default aspect are unchanged. */
+export const PORTRAIT_PRODUCT_ASPECTS = [...PORTRAIT_OUTPUT_ASPECTS, '2:3', '3:2', '4:5', '5:4', '16:9', '21:9'] as const
+export type PortraitProductAspect = typeof PORTRAIT_PRODUCT_ASPECTS[number]
+export function isPortraitProductAspect(v: unknown): v is PortraitProductAspect {
+  return typeof v === 'string' && (PORTRAIT_PRODUCT_ASPECTS as readonly string[]).includes(v)
+}
+
 export function isPortraitOutputAspect(v: unknown): v is PortraitOutputAspect {
   return typeof v === 'string' && (PORTRAIT_OUTPUT_ASPECTS as readonly string[]).includes(v)
 }
@@ -690,7 +699,11 @@ export interface PortraitsGenerateRequest {
      Nothing existing sends output_aspect_ratio, so nothing existing
      changes. Absent → the framing-derived aspect, byte for byte.
      Validated against PORTRAIT_OUTPUT_ASPECTS at the route. */
-  output_aspect_ratio?:    PortraitOutputAspect
+  output_aspect_ratio?:    PortraitOutputAspect | PortraitProductAspect
+  /** Server-internal (Gift Wizard): lets output_aspect_ratio be any PORTRAIT_PRODUCT_ASPECTS ratio. Never set by Discovery. */
+  product_composition?:    boolean
+  /** Server-internal: additional_images_b64[0] is the customer's approved artwork to adapt to this frame (shared/favorite-adaptation.ts). */
+  adaptation?:             'favorite'
   // Resolution tier → realized as a post-render resize to outputDimensions().
   // Absent → no resize (native NB2 size; preserves legacy caller behavior).
   resolution?:             ResolutionTier
