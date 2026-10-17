@@ -29,6 +29,21 @@ export function estimateCompositionCost(calls: { nb21: number; outpaint: number 
   return Math.round((calls.nb21 * (nb ?? 0) + calls.outpaint * (op ?? 0)) * 1e4) / 1e4
 }
 
+/**
+ * How far a product-specific adaptation has been validated, so nothing treats it as more than it is.
+ *   not_applicable  the selected artwork is adapted deterministically (background only, no generation)
+ *   provisional     Portraits and Pets favorite-reference generation: six calibration cases (2026-10-17) kept subject, effect and
+ *                   composition well, with the background re-rendered and the subject sometimes scaled; awaiting the owner's verdict
+ *   unvalidated     Groups photo regeneration: the calibration showed the composition drifting (new room, scale and framing), and the
+ *                   Groups route cannot take the favorite as a reference. NOT production-validated; the customer approval is the only control
+ * Metadata only: it changes no behaviour.
+ */
+export type AdaptationValidation = 'not_applicable' | 'provisional' | 'unvalidated'
+export function adaptationValidationFor(series: 'portraits' | 'pets' | 'groups' | null, method: 'deterministic' | 'generated' | null): AdaptationValidation {
+  if (method !== 'generated' || !series) return 'not_applicable'
+  return series === 'groups' ? 'unvalidated' : 'provisional'
+}
+
 /** Per-line quantity limit, shared with the Print Shop checkout. */
 export const MAX_COPIES = 20
 

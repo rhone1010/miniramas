@@ -32,10 +32,18 @@ export const extensionBetween = (a: number, b: number): number => Math.max(a / b
 /**
  * Whether the customer's approved artwork can ride along as a reference image for a product-specific generation.
  *   portraits, pets  yes: the routes already forward additional images to NB2.1's image_input, and the adaptation clause says what they are
- *   groups           no: the Groups route and generator require exactly ONE source image (and count people across sources), so a
- *                    second image would be refused or counted as another person. Groups regenerate from the customer's photograph.
+ *   groups           implemented through a SEPARATE internal field (the photograph stays the single counted source) but gated by
+ *                    GROUPS_FAVORITE_REFERENCE_ENABLED below; false today, so Groups regenerate from the customer's photograph.
  */
-export const supportsFavoriteReference = (series: Series): boolean => series === 'portraits' || series === 'pets'
+export const supportsFavoriteReference = (series: Series): boolean => series === 'portraits' || series === 'pets' || (series === 'groups' && GROUPS_FAVORITE_REFERENCE_ENABLED)
+
+/**
+ * Groups favorite-reference generation is IMPLEMENTED (groups-generator.ts: an internal-only favorite image, the same adaptation clause, no
+ * margin outpaint for product compositions) but is OFF in the Gift flow. The owner's decision (2026-10-17): Groups adaptation stays marked
+ * unvalidated until a calibration shows acceptable fidelity, and a successful API response is not that evidence. Until this is switched on
+ * by an approved change, Groups product compositions behave exactly as they did (a regeneration from the photograph, with the existing outpaint).
+ */
+export const GROUPS_FAVORITE_REFERENCE_ENABLED = false
 
 /** The ratios a generation for this series (and head count, for Groups) may request through the existing routes. */
 export function routeAspects(series: Series, peopleCount: number | null): string[] {

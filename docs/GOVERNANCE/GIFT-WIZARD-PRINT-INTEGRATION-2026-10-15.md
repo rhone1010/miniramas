@@ -237,3 +237,7 @@ were one per line, extension-only. Both were true (nothing existed to resolve th
 - **Migration 049** (not applied): `gift_compositions.geometry_key`, `method`, `source_composition_id`, `generation_mode`, `generation_aspect`,
   `nb21_calls`, `outpaint_calls`, `cost_usd_est`, three checks and an index. `gift-049-preflight-and-verify.sql`.
 - **Cleanup fix**: composition files were not removed when a session was purged; they now are (each shared path once).
+
+## 13. Product mockup bridge, frozen purchased geometry and composition identity (2026-10-17)
+
+See GIFT-VISUALIZATION-BRIDGE-HANDOFF-2026-10-17.md: one authenticated server-owned mockup endpoint over the existing Node/Sharp compositor, a per-line geometry snapshot frozen at checkout (no migration), a stable rendering identity with automatic invalidation, correction findings and the Groups adaptation findings. Uncommitted; the renderer files and a build-tracing change are still needed before it runs on Preview.

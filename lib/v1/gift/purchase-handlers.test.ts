@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { purchasedItems } from './test-order'
 import sharp from 'sharp'
 import { checkoutH, orderConfirmH, selectArtworkH, compositionsH, correctH, approveCompositionH, approveOrderH, refundRequestH } from './handlers'
 import { createSession, setLines, startBatch, type GiftDeps } from './service'
@@ -29,7 +30,7 @@ async function paidSession(r: ReturnType<typeof rig>) {
   const v = await createSession(r.deps, { userId: U1, imageB64: photo })
   await setLines(r.deps, U1, v.sessionId, [{ lineId: 'a', productId: 'fine_art:8x8', copies: 1 }])
   const orderId = randomUUID(), cs = 'cs_test_' + orderId.slice(0, 12)
-  r.store.orders.set(orderId, { id: orderId, status: 'created', paid_at: null, stripe_session_id: cs, stripe_payment_intent: null, retail_total_cents: 5000, retail_shipping_cents: 700, items: [], prodigi_order_id: null, placed_at: null, customer_email: 'a@example.test' })
+  r.store.orders.set(orderId, { id: orderId, status: 'created', paid_at: null, stripe_session_id: cs, stripe_payment_intent: null, retail_total_cents: 5000, retail_shipping_cents: 700, items: purchasedItems([{ lineId: 'a', productId: 'fine_art:8x8', copies: 1 }]), prodigi_order_id: null, placed_at: null, customer_email: 'a@example.test' })
   await r.store.linkOrder(v.sessionId, U1, orderId, 'v1')
   await r.store.confirmOrder({ sessionId: v.sessionId, orderId, userId: U1, stripeSessionId: cs, paymentIntent: 'pi_1', lines: [{ lineId: 'a', productId: 'fine_art:8x8', sku: 'GLOBAL-FAP-8X8', copies: 1 }] })
   const b = await startBatch(r.deps, U1, v.sessionId, { idempotencyKey: 'idem-key-1' })

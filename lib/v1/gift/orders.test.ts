@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
+import { catalogVersion } from '../print/catalog'
 import { createGiftCheckout, confirmGiftOrder, verifyGiftPayment, giftOrderRecheck, DISCLOSURE, GIFT_ORDER_KIND, type GiftOrderDeps, type PrintOrdersPort } from './orders'
 import { createSession, setLines, startBatch, getSessionView, type GiftDeps } from './service'
 import { memoryGiftStore } from './store'
@@ -115,6 +116,14 @@ describe('gift checkout', () => {
     const order = [...r.store.orders.values()][0]
     expect(order.items.map(i => [i.sku, i.copies, i.retailCents])).toEqual([['GLOBAL-FAP-12X18', 1, 4400], ['GLOBAL-CAN-8X8', 2, 5900]])
     expect((r.quote.mock.calls[0][0] as any).items.map((i: any) => i.sku)).toEqual(['GLOBAL-FAP-12X18', 'GLOBAL-CAN-8X8'])
+  })
+  it('freezes each purchased line geometry on the order item at checkout: SKU, picture and final pixels, wrap, attributes and the catalog version', async () => {
+    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:8x8', copies: 2 }])
+    await checkout(r, sid); const order = [...r.store.orders.values()][0]
+    const frozen = order.items.map(i => (i as any).frozen)
+    expect(frozen.map((f: any) => [f.snapshotVersion, f.catalogVersion, f.product.productId, f.product.sku])).toEqual([[1, catalogVersion(), 'fine_art:12x18', 'GLOBAL-FAP-12X18'], [1, catalogVersion(), 'canvas:8x8', 'GLOBAL-CAN-8X8']])
+    expect(frozen[1].product.attributes).toEqual({ wrap: 'MirrorWrap' }); expect(frozen[1].product.requirements.picturePx).toEqual({ w: 2400, h: 2400 }); expect(frozen[1].product.requirements.finalPx).toEqual({ w: 2454, h: 2454 })
+    expect(frozen[0].product.requirements.picturePx).toEqual({ w: 3600, h: 5400 }); expect(Date.parse(frozen[0].frozenAt)).toBeGreaterThan(0)
   })
   it('a series master of one shape no longer limits what can be bought: the same 12 x 18 print is accepted for a Pets or a Groups project', async () => {
     for (const series of ['pets', 'groups'] as const) {

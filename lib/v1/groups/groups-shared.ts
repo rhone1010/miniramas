@@ -155,6 +155,13 @@ export interface GroupsGenerateRequest {
    *  path, because an unscored group render is exactly what the gate
    *  exists to catch. */
   skip_scoring?:     boolean
+  /** Server-internal (Gift Wizard product composition). The customer's approved artwork, sent to the model AFTER the photograph. The photograph
+   *  stays the only source that is counted, age-checked and scored. Never set by any browser path. */
+  favorite_reference_b64?: string
+  /** 'favorite': add the adaptation clause (shared/favorite-adaptation.ts); only takes effect when favorite_reference_b64 is present. */
+  adaptation?:       'favorite'
+  /** Server-internal: this render is a product composition, so the Stage 3 margin outpaint is skipped (the Gift composer does bounded extension). */
+  product_composition?: boolean
 }
 
 /**

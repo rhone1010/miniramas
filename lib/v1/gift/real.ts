@@ -22,6 +22,8 @@ import { groupsAgeDecision, groupsAgeEvidence, MAX_SUBJECTS, MIN_SUBJECTS } from
 import { bakeFoyerWatermark } from '@/lib/v1/foyer/foyer-watermark'
 import { supabaseGiftStore } from './store'
 import { composeWithPrintShop } from './compose'
+import { realMockupRenderer } from './mockup-real'
+import { GROUPS_FAVORITE_REFERENCE_ENABLED } from './aspects'
 import type { GiftOrderDeps } from './orders'
 import type { ConciergePort } from './refund'
 import type { GiftDeps, GiftStorage, SourceAnalysis } from './service'
@@ -62,18 +64,27 @@ export async function analyzeSource({ b64 }: { b64: string; bytes: Buffer }): Pr
   }
 }
 
-/** ONE render through the series' own generate route. Returns the CLEAN master; throws on any refusal or failure. */
-export async function generateMaster(i: { series: 'portraits' | 'pets' | 'groups'; sourceB64: string; effectId: string; aspect: string; peopleCount: number | null; productComposition?: boolean; referenceB64?: string }): Promise<{ imageB64: string }> {
-  // The approved artwork rides as the SECOND image. Groups cannot take one (its route requires exactly one source image).
+export interface GenerateInput { series: 'portraits' | 'pets' | 'groups'; sourceB64: string; effectId: string; aspect: string; peopleCount: number | null; productComposition?: boolean; referenceB64?: string }
+
+/** The request body for the series' generate route. Pure, so tests pin exactly what is sent. */
+export function generateBody(i: GenerateInput, groupsReference: boolean = GROUPS_FAVORITE_REFERENCE_ENABLED): Record<string, unknown> {
+  // The approved artwork rides as the SECOND image. Groups send it through their own internal field, and only when enabled (aspects.ts).
   const ref = i.referenceB64 && i.series !== 'groups' ? { additional_images_b64: [i.referenceB64], adaptation: 'favorite' as const } : {}
-  const body = i.series === 'groups'
-    ? { source_image_b64: i.sourceB64, effect_id: i.effectId, format: i.aspect, ...(i.peopleCount ? { subject_count: i.peopleCount } : {}), }
+  return i.series === 'groups'
+    ? { source_image_b64: i.sourceB64, effect_id: i.effectId, format: i.aspect, ...(i.peopleCount ? { subject_count: i.peopleCount } : {}),
+        ...(groupsReference && i.productComposition ? { product_composition: true } : {}),
+        ...(groupsReference && i.referenceB64 ? { favorite_reference_b64: i.referenceB64, adaptation: 'favorite' as const } : {}) }
     : i.series === 'pets'
       ? { source_image_b64: i.sourceB64, style_id: 'realistic', preset_id: i.effectId, action_id: 'as_photographed', aspect_ratio: i.aspect, scale: 'close_up', ...ref }
       : { source_image_b64: i.sourceB64, style_id: styleIdForPreset(i.effectId), preset_id: i.effectId, skip_redirect: true, framing: 'bust', scale: 'close_up',
           // Preview batches send none of this and keep the framing-derived square. A product composition names its ratio (the route
           // admits the extra ratios only from this internal call).
           ...(i.productComposition ? { output_aspect_ratio: i.aspect, product_composition: true } : {}), ...ref }
+}
+
+/** ONE render through the series' own generate route. Returns the CLEAN master; throws on any refusal or failure. */
+export async function generateMaster(i: GenerateInput): Promise<{ imageB64: string }> {
+  const body = generateBody(i)
   const res = await fetch(`${internalBaseUrl()}/api/v1/${i.series}/generate`, {
     method: 'POST',
     headers: internalHeaders({ 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.CRON_SECRET ?? ''}` }),
@@ -95,6 +106,7 @@ export function giftDeps(): GiftDeps {
   return {
     store: supabaseGiftStore(supabaseAdmin), storage: supabaseGiftStorage(), analyze: analyzeSource, generate: generateMaster, watermark: watermarkPreview,
     compose: composeWithPrintShop,
+    mockup: realMockupRenderer,
     // Release an approved order to the existing fulfilment pipeline now rather than waiting for the poller (crons run on Production only).
     kick: async orderId => (await import('@/lib/v1/print/complete')).completePrintOrder(orderId),
   }

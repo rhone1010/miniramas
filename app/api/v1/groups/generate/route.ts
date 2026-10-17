@@ -197,6 +197,10 @@ export async function POST(req: NextRequest) {
       format,
       // Internal shoots only. A customer render is never unscored.
       skip_scoring:      isInternal,
+      // Gift Wizard product composition (this whole route is internal: checkInternalAuth above). Absent on every other call.
+      ...(typeof body.favorite_reference_b64 === 'string' && body.favorite_reference_b64.length > 100 ? { favorite_reference_b64: body.favorite_reference_b64 } : {}),
+      ...(body.adaptation === 'favorite' ? { adaptation: 'favorite' as const } : {}),
+      ...(body.product_composition === true ? { product_composition: true } : {}),
     }
 
     console.log(

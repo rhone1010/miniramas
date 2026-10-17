@@ -52,6 +52,14 @@ export interface LineGeometry {
   fit: 'exact' | 'resample' | 'extend'
   extensionFraction: number
   generationAspect: string | null        // NB2.1 ratio requested for 'generated', else null
+  /** The Prodigi SKU this line sells (frozen once purchased). */
+  sku: string | null
+  /** 'catalog': not purchased yet, today's catalog. 'frozen': the snapshot taken at checkout. 'legacy_catalog': an order that predates snapshots, resolved from today's catalog ONLY because the SKU still matches. */
+  geometrySource: 'catalog' | 'frozen' | 'legacy_catalog'
+  /** The catalog version the snapshot was taken at; null when not purchased or legacy. */
+  frozenCatalogVersion: string | null
+  /** 'unvalidated' for Groups photo regeneration (see policy.ts). Treat it as unverified until it is cleared. */
+  adaptationValidation: 'not_applicable' | 'provisional' | 'unvalidated'
 }
 
 export interface PreviewView {
@@ -123,6 +131,9 @@ export interface CompositionView {
   generationAspect: string | null
   sharedWithLineIds: string[]
   picturePx: { w: number; h: number } | null
+  sku: string | null
+  geometrySource: 'catalog' | 'frozen' | 'legacy_catalog'
+  adaptationValidation: 'not_applicable' | 'provisional' | 'unvalidated'
   /** 'none': adapted from the selected artwork. 'favorite_reference': a new NB2.1 generation that was given the selected artwork as a reference.
    *  'photo_regeneration': a new generation from the customer's photograph (Groups). A new generation is NOT identical to the selected artwork: the customer approves what they see. */
   generationMode: 'none' | 'favorite_reference' | 'photo_regeneration' | null
@@ -221,3 +232,38 @@ export interface SelectArtworkRequest { previewId: string }
 /** POST /api/v1/gift/sessions/{id}/refund-request { reason } -> Concierge request for a full refund; blocks generation and approval until resolved. */
 export interface RefundRequestBody { reason?: string }
 export interface RefundRequestResponse { requestId: string; state: 'requested'; message: string }
+
+/**
+ * GET /api/v1/gift/sessions/{id}/lines/{lineId}/mockup[?compositionId=...] : the watermarked product mockup of a purchased line's CURRENT
+ * composition, rendered server-side by the existing Node/Sharp compositor. A visualization only: it authorizes no purchase, approval or fulfilment.
+ * `compositionId`, if sent, is the composition the page is showing; a different current one answers 409 stale_composition.
+ * identityKey is the stable rendering identity (never a URL): the page may cache by it, and it changes whenever the artwork, composition,
+ * attempt, template revision or frozen product configuration changes. `url` is signed and expires at urlExpiresAt; call again to refresh it.
+ */
+export interface MockupView {
+  contractVersion: 1
+  sessionId: string
+  lineId: string
+  productId: string
+  sku: string
+  compositionId: string
+  attempt: number
+  compositionStatus: 'ready' | 'approved'
+  sourceArtworkId: string
+  templateId: string
+  templateRevision: string
+  identityKey: string
+  geometrySource: 'frozen' | 'legacy_catalog'
+  frozenCatalogVersion: string | null
+  url: string
+  urlExpiresAt: string
+  width: number
+  height: number
+  /** true when an existing mockup with the same identity was re-signed and nothing was rendered. */
+  cached: boolean
+  watermarked: true
+  productionPrintFile: false
+  purchaseAuthorization: false
+  /** Crop and calibration metadata from the compositor (never a browser crop control). */
+  crop: Record<string, unknown> | null
+}

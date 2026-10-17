@@ -22,7 +22,7 @@ export interface SessionRec {
 }
 export interface OrderInfo {
   id: string; status: string; paid_at: string | null; stripe_session_id: string; stripe_payment_intent: string | null
-  retail_total_cents: number; retail_shipping_cents: number; items: Array<{ renderId: string; size: string; finish: string; copies: number; sku: string; retailCents: number }>
+  retail_total_cents: number; retail_shipping_cents: number; items: Array<{ renderId: string; size: string; finish: string; copies: number; sku: string; retailCents: number; frozen?: unknown }>
   prodigi_order_id: string | null; placed_at: string | null
   customer_email?: string; prodigi_merchant_ref?: string | null
 }
@@ -77,7 +77,7 @@ export interface GiftStore {
   selectArtwork(sessionId: string, userId: string, previewId: string): Promise<void>
   listCompositions(sessionId: string): Promise<CompositionRec[]>
   insertComposition(rec: Omit<CompositionRec, 'id' | 'created_at' | 'approved_at'>): Promise<CompositionRec>
-  patchComposition(id: string, patch: Partial<Pick<CompositionRec, 'status' | 'approved_at'>>): Promise<void>
+  patchComposition(id: string, patch: Partial<Pick<CompositionRec, 'status' | 'approved_at' | 'plan'>>): Promise<void>
   useCorrection(sessionId: string, userId: string, lineId: string): Promise<void>
   approveOrder(i: { sessionId: string; userId: string; portfolioId: string; cleanPath: string; sourceImage: string }): Promise<'approved' | 'already'>
   requestRefund(i: { sessionId: string; userId: string; reason: string }): Promise<string>

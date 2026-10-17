@@ -67,6 +67,20 @@ export function planFor(product: CanonicalProduct, ctx: PlanContext): Compositio
   return { geometryKey: key, targetAspect: target, method: 'generated', fit: classify(gen.extensionFraction), extensionFraction: gen.extensionFraction, generationAspect: gen.aspect, generationExtensionFraction: gen.extensionFraction }
 }
 
+/**
+ * The plan the ONE included correction uses (customer-initiated only; nothing here runs on its own).
+ *   generated line      the plan stays: the correction is one new generation (the favorite as the reference where the series takes one)
+ *   deterministic line  falls back to ONE generated adaptation at the nearest ratio the series can generate within the 20% bound, because
+ *                       recomposing the same artwork the same way could never change what the customer objected to
+ *   null                a deterministic line no series ratio can reach: the caller keeps the old recomposition rather than refuse
+ */
+export function correctionPlanFor(product: CanonicalProduct, ctx: PlanContext, plan: CompositionPlan): CompositionPlan | null {
+  if (plan.method === 'generated') return plan
+  const gen = generationAspectFor(ctx.series, ctx.peopleCount, product.requirements.pictureAspect)
+  if (!gen) return null
+  return { ...plan, method: 'generated', fit: classify(gen.extensionFraction), extensionFraction: gen.extensionFraction, generationAspect: gen.aspect, generationExtensionFraction: gen.extensionFraction }
+}
+
 /** Group purchased lines by composition requirement, in first-seen order. */
 export function groupLines<T extends { product: CanonicalProduct }>(items: T[], ctx: PlanContext): Array<{ geometryKey: string; plan: CompositionPlan; items: T[] }> {
   const groups = new Map<string, { geometryKey: string; plan: CompositionPlan; items: T[] }>()

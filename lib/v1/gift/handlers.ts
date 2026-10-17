@@ -11,6 +11,7 @@ import { PACK_PRICE_CENTS } from './policy'
 import { createGiftCheckout, confirmGiftOrder, type GiftOrderDeps } from './orders'
 import { approveComposition, approveOrder, correctLine, ensureCompositions, selectArtwork } from './compose'
 import { requestRefund, type ConciergePort } from './refund'
+import { getLineMockup } from './mockup'
 
 const NO_STORE = { 'Cache-Control': 'no-store' }
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: NO_STORE })
@@ -105,4 +106,9 @@ export async function approveOrderH(user: Authed, deps: GiftDeps, id: string) {
 export async function refundRequestH(req: Request, user: Authed, deps: GiftDeps & { concierge: ConciergePort }, id: string) {
   const b = (await body(req)) ?? {}
   try { return json(await requestRefund(deps, user.id, id, b.reason), 201) } catch (e) { return fail(e) }
+}
+
+// GET /api/v1/gift/sessions/{id}/lines/{lineId}/mockup?compositionId=...  (see MockupView in types.ts)
+export async function mockupH(req: Request, user: Authed, deps: GiftDeps, id: string, lineId: string) {
+  try { return json(await getLineMockup(deps, user.id, id, lineId, new URL(req.url).searchParams.get('compositionId') ?? undefined)) } catch (e) { return fail(e) }
 }

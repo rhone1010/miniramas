@@ -75,6 +75,7 @@ import {
   type PerFigureScore,
 } from './groups-shared'
 import { outpaintMargin } from '../shared/outpaint'
+import { applyFavoriteAdaptation } from '../shared/favorite-adaptation'
 import { MAIN_ASPECT } from '../shared/render-aspect'
 
 const SYNC_WAIT_SECONDS = 60
@@ -234,11 +235,17 @@ export async function generateGroupsRender(
 
   // Built after detection, because the framing clause is chosen from the
   // count and the count is not known until the pre-flight has run.
-  const finalPrompt = buildGroupsPrompt({
+  const promptBody = buildGroupsPrompt({
     effectId:     req.effect_id,
     subjectCount: detectedCount,
     format: req.format,
   })
+
+  // Gift Wizard product composition: the approved artwork follows the photograph as a second image, with the shared adaptation clause. The
+  // photograph (sources[0]) stays the only image that is counted, age-checked and scored; effect prompts are untouched.
+  const reference = req.favorite_reference_b64 ? [req.favorite_reference_b64] : []
+  const finalPrompt = applyFavoriteAdaptation(promptBody, { adaptation: req.adaptation, referenceImages: reference.length })
+  const nb2Images = [...sources, ...reference]
 
   console.log(
     `[groups] effect=${req.effect_id} intake=${effect.intake} ` +
@@ -260,7 +267,7 @@ export async function generateGroupsRender(
     try {
       imageB64 = await callNB2({
         prompt: finalPrompt,
-        sourceImagesB64:   sources,
+        sourceImagesB64:   nb2Images,
         aspectRatio:       req.format,
         replicateApiToken: input.replicateApiToken,
       })
@@ -378,7 +385,9 @@ export async function generateGroupsRender(
   let outpaintSkip: string | null = null
   let outB64 = finalB64
 
-  if (input.stabilityApiKey) {
+  if (req.product_composition) {
+    outpaintSkip = 'product_composition'                 // the Gift composer does bounded extension; no margin is invented here
+  } else if (input.stabilityApiKey) {
     try {
       const buf  = Buffer.from(finalB64, 'base64')
       const dims = readJpegDimensions(buf)

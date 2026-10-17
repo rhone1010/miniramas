@@ -7,6 +7,7 @@ import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
 import { createSession, setLines, startBatch, getSessionView, purgeExpired, type GiftDeps } from './service'
 import { memoryGiftStore } from './store'
+import { purchasedItems, purchasedLines } from './test-order'
 import { selectArtwork, ensureCompositions, correctLine, approveComposition, approveOrder } from './compose'
 import { planFor, groupLines, geometryKeyFor, masterDims } from './composition-plan'
 import { estimateCompositionCost } from './policy'
@@ -48,9 +49,9 @@ async function project(r: ReturnType<typeof rig>, lines: Line[]) {
   const view = await createSession(r.deps, { userId: U1, imageB64: photo })
   await setLines(r.deps, U1, view.sessionId, lines)
   const orderId = randomUUID(), cs = 'cs_test_' + orderId.slice(0, 12)
-  r.store.orders.set(orderId, { id: orderId, status: 'created', paid_at: null, stripe_session_id: cs, stripe_payment_intent: null, retail_total_cents: 9000, retail_shipping_cents: 700, items: [], prodigi_order_id: null, placed_at: null })
+  r.store.orders.set(orderId, { id: orderId, status: 'created', paid_at: null, stripe_session_id: cs, stripe_payment_intent: null, retail_total_cents: 9000, retail_shipping_cents: 700, items: purchasedItems(lines), prodigi_order_id: null, placed_at: null })
   await r.store.linkOrder(view.sessionId, U1, orderId, 'v1')
-  await r.store.confirmOrder({ sessionId: view.sessionId, orderId, userId: U1, stripeSessionId: cs, paymentIntent: 'pi_1', lines: lines.map(l => ({ lineId: l.lineId, productId: l.productId, sku: 'SKU-' + l.lineId, copies: l.copies })) })
+  await r.store.confirmOrder({ sessionId: view.sessionId, orderId, userId: U1, stripeSessionId: cs, paymentIntent: 'pi_1', lines: purchasedLines(lines) })
   const b = await startBatch(r.deps, U1, view.sessionId, { idempotencyKey: 'idem-key-1' })
   return { sid: view.sessionId, orderId, previews: b.batch.previews }
 }

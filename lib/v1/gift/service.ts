@@ -10,8 +10,9 @@ import { randomUUID, createHash } from 'node:crypto'
 import sharp from 'sharp'
 import { allProducts, catalogVersion } from '../print/catalog'
 import { planFor, type PlanContext } from './composition-plan'
+import { resolveFrozenProduct } from './frozen'
 import { decodeSource } from '../foyer/foyer-source'
-import { BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, MAX_PARALLEL_RENDERS, PACK_PRICE_CENTS, RETENTION, STORAGE } from './policy'
+import { adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, MAX_PARALLEL_RENDERS, PACK_PRICE_CENTS, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
 import { StoreError, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
 import { GIFT_CONTRACT_VERSION, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
@@ -27,6 +28,8 @@ export type GiftErrorCode =
   | 'shipping_quote_failed' | 'order_already_paid' | 'order_persist_failed' | 'checkout_unavailable' | 'lines_locked'
   | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit'
   | 'compositions_not_approved' | 'artwork_not_selected' | 'refund_not_available_after_manufacturing' | 'order_not_paid' | 'line_not_found'
+  // product mockup and frozen geometry
+  | 'geometry_snapshot_invalid' | 'geometry_snapshot_unavailable' | 'stale_composition' | 'mockup_failed' | 'mockup_renderer_unavailable' | 'mockup_configuration_mismatch'
   | 'composition_failed' | 'composition_not_found' | 'order_has_no_lines' | 'order_not_found' | 'order_not_payable' | 'session_already_has_order'
   | 'order_session_mismatch' | 'invalid_refund_request' | 'payment_not_confirmed' | 'session_retained'
 const STATUS: Partial<Record<GiftErrorCode, number>> = {
@@ -39,6 +42,7 @@ const STATUS: Partial<Record<GiftErrorCode, number>> = {
   compositions_not_approved: 409, artwork_not_selected: 409, refund_not_available_after_manufacturing: 409, order_not_paid: 409, line_not_found: 404,
   composition_failed: 502, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
   order_session_mismatch: 409, invalid_refund_request: 400, payment_not_confirmed: 409, session_retained: 409,
+  geometry_snapshot_invalid: 409, geometry_snapshot_unavailable: 409, stale_composition: 409, mockup_failed: 502, mockup_renderer_unavailable: 503, mockup_configuration_mismatch: 409,
 }
 export class GiftError extends Error {
   readonly status: number
@@ -72,6 +76,8 @@ export interface GiftDeps {
   watermark(masterB64: string): Promise<Buffer>
   /** One product composition of the selected master: background extension only, never a crop (compose.ts). */
   compose?(input: { masterB64: string; size: import('../print/sku-map').PrintSize; finish: import('../print/sku-map').PrintFinish }): Promise<{ image: Buffer; width: number; height: number; fit: 'exact' | 'resample' | 'extend'; outpainted: boolean }>
+  /** The existing Node/Sharp product-mockup compositor behind one server-owned boundary (mockup.ts). Absent: the mockup endpoint answers 503. */
+  mockup?: import('./mockup').MockupRenderer
   /** Release an approved order to the existing fulfilment pipeline (completePrintOrder). Failure is deferred, never fatal. */
   kick?(orderId: string): Promise<unknown>
   clock?: () => number
@@ -248,16 +254,22 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   const used = all.flatMap(b => b.previews.map(p => p.effect_id))
   const catalog = allProducts()
   const planCtx: PlanContext = { series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }
+  // Once the order exists, geometry comes from the snapshot frozen at checkout, never from today's catalog (see frozen.ts).
+  const orderItems = order?.items ?? []
   const planned = rec.lines.flatMap(l => {
-    const p = catalog.find(x => x.productId === l.productId)
+    const ol = orderLines.find(x => x.line_id === l.lineId)
+    const fr = ol ? resolveFrozenProduct(orderItems, ol, catalog) : null
+    if (fr && !fr.ok) return []                                     // an unusable snapshot is never replaced by a guess; compositions refuse it
+    const p = fr ? fr.product : catalog.find(x => x.productId === l.productId)
     const plan = p && rec.series ? planFor(p, planCtx) : null
-    return p && plan ? [{ l, p, plan }] : []
+    return p && plan ? [{ l, p, plan, source: (fr ? fr.source : 'catalog') as 'catalog' | 'frozen' | 'legacy_catalog', frozenVersion: fr && fr.ok ? fr.catalogVersion : null }] : []
   })
   const sharing = (key: string, lineId: string) => planned.filter(x => x.plan.geometryKey === key && x.l.lineId !== lineId).map(x => x.l.lineId)
-  const geometries: LineGeometry[] = planned.map(({ l, p, plan }) => ({
+  const geometries: LineGeometry[] = planned.map(({ l, p, plan, source, frozenVersion }) => ({
     lineId: l.lineId, productId: p.productId, pictureAspect: p.requirements.pictureAspect, orientation: p.requirements.skuOrientation, requiredPx: p.requirements.finalPx,
     picturePx: p.requirements.picturePx, wrapPx: p.requirements.wrapPx, geometryKey: plan.geometryKey, sharedWithLineIds: sharing(plan.geometryKey, l.lineId),
     method: plan.method, fit: plan.fit, extensionFraction: plan.extensionFraction, generationAspect: plan.generationAspect,
+    sku: p.sku, geometrySource: source, frozenCatalogVersion: frozenVersion, adaptationValidation: adaptationValidationFor(rec.series, plan.method),
   }))
   const incomplete = batches.some(b => !b.complete)
   const expired = rec.status !== 'active' || (Date.parse(rec.expires_at) < now(deps) && !rec.pinned_at)
@@ -284,10 +296,11 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     compositions: await Promise.all(orderLines.map(async l => {
       const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort((a, b) => b.attempt - a.attempt)[0]
       const g = geometries.find(x => x.lineId === l.line_id)
-      const catalogProduct = catalog.find(x => x.productId === l.product_id)
+      const gp = planned.find(x => x.l.lineId === l.line_id)
       return {
         lineId: l.line_id, productId: l.product_id, geometryKey: mine?.geometry_key ?? g?.geometryKey ?? null, method: (mine?.method ?? g?.method ?? null) as 'deterministic' | 'generated' | null,
-        generationAspect: g?.generationAspect ?? null, sharedWithLineIds: g?.sharedWithLineIds ?? [], picturePx: catalogProduct?.requirements.picturePx ?? null,
+        generationAspect: mine?.generation_aspect ?? g?.generationAspect ?? null, sharedWithLineIds: g?.sharedWithLineIds ?? [], picturePx: gp?.p.requirements.picturePx ?? null,
+        sku: gp?.p.sku ?? null, geometrySource: gp?.source ?? 'catalog', adaptationValidation: adaptationValidationFor(rec.series, (mine?.method ?? g?.method ?? null) as 'deterministic' | 'generated' | null),
         generationMode: (mine?.generation_mode ?? null) as 'none' | 'favorite_reference' | 'photo_regeneration' | null, sourceArtworkId: mine ? mine.preview_id : null, status: (mine ? (mine.status === 'approved' ? 'approved' : 'ready') : 'none') as 'none' | 'ready' | 'approved',
         compositionId: mine?.id ?? null, attempt: mine?.attempt ?? 0, correctionsRemaining: Math.max(0, 1 - l.corrections_used),
         previewUrl: mine?.preview_path ? await deps.storage.signedUrl(mine.preview_path, 3600) : null, width: mine?.width ?? null, height: mine?.height ?? null,
@@ -318,7 +331,7 @@ function orderView(rec: SessionRec, order: Awaited<ReturnType<GiftDeps['store'][
 async function removeObjects(deps: GiftDeps, rec: SessionRec): Promise<void> {
   const all = await deps.store.listBatches(rec.id)
   const comps = await deps.store.listCompositions(rec.id)
-  const paths = [rec.source_path, ...all.flatMap(b => b.previews.flatMap(p => [p.master_path, p.preview_path])), ...comps.flatMap(c => [c.composed_path, c.preview_path])]
+  const paths = [rec.source_path, ...all.flatMap(b => b.previews.flatMap(p => [p.master_path, p.preview_path])), ...comps.flatMap(c => [c.composed_path, c.preview_path, (c.plan as { mockup?: { path?: string } }).mockup?.path])]
     .filter((x): x is string => !!x)
   if (paths.length) await deps.storage.remove([...new Set(paths)])         // shared compositions point at the same files: remove each once
 }

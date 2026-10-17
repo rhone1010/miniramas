@@ -12,7 +12,8 @@
 
 import type Stripe from 'stripe'
 import { createBrandedSession } from '@/lib/store/stripe-branding'
-import { allProducts } from '../print/catalog'
+import { allProducts, catalogVersion } from '../print/catalog'
+import { freezeLine } from './frozen'
 import { planFor } from './composition-plan'
 import type { PrintOrderItem, ShippingAddress } from '../print/db'
 import type { QuoteRequest, QuoteResponse } from '../print/prodigi-client'
@@ -84,6 +85,7 @@ export async function createGiftCheckout(
   // Server-owned lines: catalog price, SKU and attributes. A product the artwork this session makes cannot fit is refused now.
   const catalog = new Map(allProducts().map(p => [p.productId, p]))
   const planCtx = { series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }
+  const frozenVersion = catalogVersion()
   const lines = rec.lines.map(l => {
     const p = catalog.get(l.productId)
     if (!p || p.status !== 'launch' || p.retailCents === null) throw new GiftError('product_not_available')
@@ -136,6 +138,7 @@ export async function createGiftCheckout(
       const items: PrintOrderItem[] = lines.map(x => ({
         renderId: giftRenderId(rec.id, x.line.lineId), renderUrl: '', size: x.product.size as PrintSize, finish: x.product.family as PrintFinish,
         copies: x.line.copies, sku: x.product.sku, retailCents: x.product.retailCents!,
+        frozen: freezeLine(x.product, (deps.now ?? Date.now)(), frozenVersion),
       }))
       const order = await deps.printOrders.create({
         stripeSessionId: session.id, ownerKey: input.user.id, customerEmail: b.email, shippingAddress: address, items,

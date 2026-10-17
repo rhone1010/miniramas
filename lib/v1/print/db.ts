@@ -55,6 +55,8 @@ export interface PrintOrderItem {
   copies:      number
   sku:         string
   retailCents: number
+  /** Gift Wizard: the purchased product's frozen geometry snapshot (lib/v1/gift/frozen.ts). Absent on every other order. */
+  frozen?:     unknown
 }
 
 export interface ShippingAddress {
