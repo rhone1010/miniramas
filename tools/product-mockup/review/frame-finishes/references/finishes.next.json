@@ -1,0 +1,135 @@
+{
+  "source": "https://www.prodigi.com/products/wall-art/framed-prints/classic-frames/",
+  "checkedAt": "2026-10-16",
+  "method": "Median RGB of central 50% of supplier photographic swatch. Approximate display reference, not manufacturer colorimetric specification.",
+  "finishes": [
+    {
+      "id": "black",
+      "label": "Black",
+      "referenceUrl": "https://www.prodigi.com/img/products/swatches/frame-classic-black.png",
+      "referenceFile": "black.png",
+      "sha256": "f94f05746a08bb8827e2c34102abae65b9fe07ebc26212c3e0205a756a79237e",
+      "sampleRGB": [
+        29,
+        29,
+        27
+      ],
+      "referenceDimensions": [
+        100,
+        100
+      ]
+    },
+    {
+      "id": "white",
+      "label": "White",
+      "referenceUrl": "https://www.prodigi.com/img/products/swatches/frame-classic-white.png",
+      "referenceFile": "white.png",
+      "sha256": "6ba879bbeb37588315a06f337e31f4069896af83df4132bbb7af5efa2e4728e2",
+      "sampleRGB": [
+        245,
+        245,
+        245
+      ],
+      "referenceDimensions": [
+        100,
+        100
+      ]
+    },
+    {
+      "id": "natural",
+      "label": "Natural",
+      "referenceUrl": "https://www.prodigi.com/img/products/swatches/frame-classic-natural.jpg",
+      "referenceFile": "natural.jpg",
+      "sha256": "b0ea338c6c89a84674b5ba461c7c4ce01430b353ec07d7b7abedd4f7a8a0b376",
+      "sampleRGB": [
+        216,
+        199,
+        175
+      ],
+      "referenceDimensions": [
+        100,
+        100
+      ]
+    },
+    {
+      "id": "antique-silver",
+      "label": "Antique Silver",
+      "referenceUrl": "https://www.prodigi.com/img/products/swatches/frame-classic-antique-silver.jpg",
+      "referenceFile": "antique-silver.jpg",
+      "sha256": "5662d7fc8c9ff015c22ad835a4dce36a93e86d70706ef7e29d969c521533c600",
+      "sampleRGB": [
+        219,
+        218,
+        213
+      ],
+      "referenceDimensions": [
+        100,
+        100
+      ]
+    },
+    {
+      "id": "brown",
+      "label": "Brown",
+      "referenceUrl": "https://www.prodigi.com/img/products/swatches/frame-classic-brown.png",
+      "referenceFile": "brown.png",
+      "sha256": "d51c3a8cd6acf572baff422f0eb609c7c2e926f3ebd8e5dec1e388a7a99c9be2",
+      "sampleRGB": [
+        96,
+        61,
+        41
+      ],
+      "referenceDimensions": [
+        100,
+        100
+      ]
+    },
+    {
+      "id": "antique-gold",
+      "label": "Antique Gold",
+      "referenceUrl": "https://www.prodigi.com/img/products/swatches/frame-classic-antique-gold.jpg",
+      "referenceFile": "antique-gold.jpg",
+      "sha256": "eaf46eb88d38e9c7c2d9537472773971a4d121b7733ab28036733f390dad29f1",
+      "sampleRGB": [
+        201,
+        160,
+        69
+      ],
+      "referenceDimensions": [
+        100,
+        100
+      ]
+    },
+    {
+      "id": "dark-grey",
+      "label": "Dark Grey",
+      "referenceUrl": "https://www.prodigi.com/img/products/swatches/frame-classic-dark-grey.png",
+      "referenceFile": "dark-grey.png",
+      "sha256": "05fcf769e9a18d3def56e0a882381a7cfe59265de13af63a108933bd041e2702",
+      "sampleRGB": [
+        89,
+        103,
+        112
+      ],
+      "referenceDimensions": [
+        100,
+        100
+      ]
+    },
+    {
+      "id": "light-grey",
+      "label": "Light Grey",
+      "referenceUrl": "https://www.prodigi.com/img/products/swatches/frame-classic-light-grey.png",
+      "referenceFile": "light-grey.png",
+      "sha256": "6dd2dd460cde999a063e4b267a5cc83d71982478c3235232d7faea8521b007f7",
+      "sampleRGB": [
+        193,
+        192,
+        182
+      ],
+      "referenceDimensions": [
+        100,
+        100
+      ]
+    }
+  ]
+}

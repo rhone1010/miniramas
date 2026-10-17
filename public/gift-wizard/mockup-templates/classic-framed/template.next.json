@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "id": "classic-framed",
+  "productId": "framed",
+  "status": "awaiting-visual-approval",
+  "sourceImage": "source.png",
+  "artworkMask": "artwork-mask.png",
+  "backgroundMask": "background-mask.png",
+  "frameFinishMask": "frame-mask.png",
+  "dimensions": [
+    1264,
+    848
+  ],
+  "maskConvention": "white selects; black excludes; grayscale is antialiased coverage",
+  "cornerOrder": [
+    "topLeft",
+    "topRight",
+    "bottomRight",
+    "bottomLeft"
+  ],
+  "cornersPixels": [
+    [
+      123.48768503189046,
+      375.7712632922902
+    ],
+    [
+      776.0556195993338,
+      125.1400917834817
+    ],
+    [
+      1134.7874002173457,
+      356.9525415493015
+    ],
+    [
+      470.9976186732633,
+      688.5822948978062
+    ]
+  ],
+  "cornersNormalized": [
+    [
+      0.0977733056467858,
+      0.4436496615021136
+    ],
+    [
+      0.6144541722876752,
+      0.14774509065346128
+    ],
+    [
+      0.8984856692140505,
+      0.42143157207709736
+    ],
+    [
+      0.3729197297492187,
+      0.8129661096786377
+    ]
+  ],
+  "coordinateConvention": "pixel centers; normalized x/(width-1), y/(height-1)",
+  "surfaceAspectRatio": null,
+  "aspectNote": "Physical aspect cannot be recovered from a single uncalibrated photograph. Caller must supply selected product geometry; demo uses 18:12 landscape for review. No production geometry is changed.",
+  "textureMode": "linear-light per-channel multiply with blank photograph; exact source retained outside artwork mask",
+  "sourceArchiveSha256": "89e1d9207099b77d4499ac4b7d9be2a19985a4ef75829cc43240818f7e0109f2",
+  "calibration": {
+    "method": "Intersections of least-squares mask boundary lines, excluding corner 5% and using threshold 128",
+    "edgeRmsPixels": [
+      0.22950211525967806,
+      0.3046296011998447,
+      0.4251518586193482,
+      0.43126808370824155
+    ]
+  },
+  "perspective": {
+    "unitToImage": [
+      794.9122290150904,
+      292.8593834044722,
+      123.48768503189046,
+      -227.67794802563847,
+      232.91380960775842,
+      375.7712632922902,
+      0.1834202225365461,
+      -0.11603147886573995,
+      1
+    ],
+    "imageToUnit": [
+      0.0010980505408424352,
+      -0.0012198529848021498,
+      0.32278997779332713,
+      0.001177816246080501,
+      0.0030666780607444084,
+      -1.2978152906181095,
+      -0.00006474091369287923,
+      0.0005795768965275731,
+      1
+    ],
+    "direction": "unit artwork rectangle to image pixel centers; row-major 3x3"
+  }
+}

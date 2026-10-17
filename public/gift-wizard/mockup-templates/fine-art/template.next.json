@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "id": "fine-art",
+  "productId": "fine_art",
+  "status": "awaiting-visual-approval",
+  "sourceImage": "source.png",
+  "artworkMask": "artwork-mask.png",
+  "backgroundMask": "background-mask.png",
+  "dimensions": [
+    1264,
+    848
+  ],
+  "cornerOrder": [
+    "topLeft",
+    "topRight",
+    "bottomRight",
+    "bottomLeft"
+  ],
+  "maskConvention": "white selects; black excludes; alpha multiplies coverage",
+  "coordinateConvention": "pixel centers; normalized x/(width-1), y/(height-1)",
+  "sources": {
+    "source.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\Fine Art Print - Image.png",
+      "sha256": "4454f5b892170fe85cb8b0a8a2546545d3ae40466d26f7434b64283d6c8c1daa"
+    },
+    "artwork-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\Fine Art Print - Product BW.png",
+      "sha256": "1d937794cd3fefb7f73877506c4270f19daefc47bfb9825787144a6ae8523483"
+    },
+    "background-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\Fine Art Print -  Background BW.png",
+      "sha256": "fc7b9510e61399deb18e72d1b0a857e6751c6ecf98a7c68d5da7908c66002104"
+    }
+  },
+  "surfaceAspectRatio": null,
+  "aspectNote": "Caller supplies verified selected product widthIn/heightIn; physical photograph aspect is subject to visual review. No production geometry is altered.",
+  "cornersPixels": [
+    [
+      96.31650317906534,
+      333.08095788848016
+    ],
+    [
+      800.8863444148387,
+      88.98898604334045
+    ],
+    [
+      1172.4914775263355,
+      396.13702976317495
+    ],
+    [
+      402.5072498630793,
+      754.5664407814253
+    ]
+  ],
+  "cornersNormalized": [
+    [
+      0.07626009752895117,
+      0.39324788416585615
+    ],
+    [
+      0.6341142869476157,
+      0.10506373794963453
+    ],
+    [
+      0.9283384620161009,
+      0.46769425001555487
+    ],
+    [
+      0.31869140923442546,
+      0.8908694696356851
+    ]
+  ],
+  "calibration": {
+    "method": "Intersections of least-squares mask boundary lines, excluding corner 5% and using threshold 128",
+    "edgeRmsPixels": [
+      0.829338922009989,
+      0.5365780175083105,
+      1.2505261573054853,
+      0.5141557442300042
+    ]
+  },
+  "perspective": {
+    "unitToImage": [
+      844.4980197580678,
+      238.0558562689074,
+      96.31650317906534,
+      -228.54411438393092,
+      293.7553568615548,
+      333.08095788848016,
+      0.1747166492450708,
+      -0.16927618182848642,
+      1
+    ],
+    "imageToUnit": [
+      0.0011575496549368182,
+      -0.0008409091357932975,
+      0.16859968542755754,
+      0.0009479533510555408,
+      0.0027362609962275214,
+      -1.0026999856068963,
+      -0.000041777273227148267,
+      0.0006101046404529786,
+      1
+    ]
+  }
+}

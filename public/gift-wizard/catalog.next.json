@@ -1,0 +1,869 @@
+{
+  "source": "lib/v1/print/sku-map.ts",
+  "builtAt": "2026-10-15",
+  "maxUploadBytes": 3375000,
+  "products": [
+    {
+      "id": "fine_art",
+      "label": "Fine Art Print",
+      "image": "./assets/product-fine_art.jpg",
+      "available": true,
+      "options": [
+        {
+          "sku": "GLOBAL-FAP-8X8",
+          "description": "Enhanced Matte Art, 200gsm, 8×8\"",
+          "family": "fine_art",
+          "familyLabel": "Fine Art Print",
+          "familyNote": "Enhanced matte art paper, 200gsm",
+          "label": "8 × 8″",
+          "imageWidthIn": 8,
+          "imageHeightIn": 8,
+          "requiredPx": {
+            "w": 2400,
+            "h": 2400
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 2900,
+          "size": "8x8",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-FAP-12X12",
+          "description": "Enhanced Matte Art, 200gsm, 12×12\"",
+          "family": "fine_art",
+          "familyLabel": "Fine Art Print",
+          "familyNote": "Enhanced matte art paper, 200gsm",
+          "label": "12 × 12″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 3600,
+            "h": 3600
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 4400,
+          "size": "12x12",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-FAP-16X16",
+          "description": "Enhanced Matte Art, 200gsm, 16×16\"",
+          "family": "fine_art",
+          "familyLabel": "Fine Art Print",
+          "familyNote": "Enhanced matte art paper, 200gsm",
+          "label": "16 × 16″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 16,
+          "requiredPx": {
+            "w": 4800,
+            "h": 4800
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 5400,
+          "size": "16x16",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-FAP-20X20",
+          "description": "Enhanced Matte Art, 200gsm, 20×20\"",
+          "family": "fine_art",
+          "familyLabel": "Fine Art Print",
+          "familyNote": "Enhanced matte art paper, 200gsm",
+          "label": "20 × 20″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 20,
+          "requiredPx": {
+            "w": 6000,
+            "h": 6000
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 6400,
+          "size": "20x20",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-FAP-8X12",
+          "description": "Fine Art Print 8 × 12″",
+          "family": "fine_art",
+          "familyLabel": "Fine Art Print",
+          "familyNote": "Enhanced matte art paper, 200gsm",
+          "label": "8 × 12″",
+          "imageWidthIn": 8,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 2400,
+            "h": 3600
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 2900,
+          "attributes": {
+            "paperType": "EMA",
+            "substrateWeight": "200gsm"
+          },
+          "size": "8x12",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-FAP-12X18",
+          "description": "Fine Art Print 12 × 18″",
+          "family": "fine_art",
+          "familyLabel": "Fine Art Print",
+          "familyNote": "Enhanced matte art paper, 200gsm",
+          "label": "12 × 18″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 18,
+          "requiredPx": {
+            "w": 3600,
+            "h": 5400
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 4400,
+          "attributes": {
+            "paperType": "EMA",
+            "substrateWeight": "200gsm"
+          },
+          "size": "12x18",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-FAP-16X24",
+          "description": "Fine Art Print 16 × 24″",
+          "family": "fine_art",
+          "familyLabel": "Fine Art Print",
+          "familyNote": "Enhanced matte art paper, 200gsm",
+          "label": "16 × 24″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 24,
+          "requiredPx": {
+            "w": 4800,
+            "h": 7200
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 5900,
+          "attributes": {
+            "paperType": "EMA",
+            "substrateWeight": "200gsm"
+          },
+          "size": "16x24",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-FAP-20X30",
+          "description": "Fine Art Print 20 × 30″",
+          "family": "fine_art",
+          "familyLabel": "Fine Art Print",
+          "familyNote": "Enhanced matte art paper, 200gsm",
+          "label": "20 × 30″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 30,
+          "requiredPx": {
+            "w": 6000,
+            "h": 9000
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 7900,
+          "attributes": {
+            "paperType": "EMA",
+            "substrateWeight": "200gsm"
+          },
+          "size": "20x30",
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "id": "premium",
+      "label": "Premium Fine Art Print",
+      "image": "./assets/product-premium.png",
+      "available": true,
+      "options": [
+        {
+          "sku": "GLOBAL-HPR-8X8",
+          "description": "Heavyweight fine art paper, 8×8\"",
+          "family": "premium",
+          "familyLabel": "Premium Fine Art",
+          "familyNote": "Heavyweight fine art paper, museum grade",
+          "label": "8 × 8″",
+          "imageWidthIn": 8,
+          "imageHeightIn": 8,
+          "requiredPx": {
+            "w": 2400,
+            "h": 2400
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 3900,
+          "size": "8x8",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-HPR-12X12",
+          "description": "Heavyweight fine art paper, 12×12\"",
+          "family": "premium",
+          "familyLabel": "Premium Fine Art",
+          "familyNote": "Heavyweight fine art paper, museum grade",
+          "label": "12 × 12″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 3600,
+            "h": 3600
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 5400,
+          "size": "12x12",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-HPR-16X16",
+          "description": "Heavyweight fine art paper, 16×16\"",
+          "family": "premium",
+          "familyLabel": "Premium Fine Art",
+          "familyNote": "Heavyweight fine art paper, museum grade",
+          "label": "16 × 16″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 16,
+          "requiredPx": {
+            "w": 4800,
+            "h": 4800
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 6900,
+          "size": "16x16",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-HPR-20X20",
+          "description": "Heavyweight fine art paper, 20×20\"",
+          "family": "premium",
+          "familyLabel": "Premium Fine Art",
+          "familyNote": "Heavyweight fine art paper, museum grade",
+          "label": "20 × 20″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 20,
+          "requiredPx": {
+            "w": 6000,
+            "h": 6000
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 8400,
+          "size": "20x20",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-HPR-8X12",
+          "description": "Premium Fine Art 8 × 12″",
+          "family": "premium",
+          "familyLabel": "Premium Fine Art",
+          "familyNote": "Heavyweight fine art paper, museum grade",
+          "label": "8 × 12″",
+          "imageWidthIn": 8,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 2400,
+            "h": 3600
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 3900,
+          "attributes": {
+            "paperType": "HPR",
+            "substrateWeight": "308gsm"
+          },
+          "size": "8x12",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-HPR-12X18",
+          "description": "Premium Fine Art 12 × 18″",
+          "family": "premium",
+          "familyLabel": "Premium Fine Art",
+          "familyNote": "Heavyweight fine art paper, museum grade",
+          "label": "12 × 18″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 18,
+          "requiredPx": {
+            "w": 3600,
+            "h": 5400
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 5400,
+          "attributes": {
+            "paperType": "HPR",
+            "substrateWeight": "308gsm"
+          },
+          "size": "12x18",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-HPR-16X24",
+          "description": "Premium Fine Art 16 × 24″",
+          "family": "premium",
+          "familyLabel": "Premium Fine Art",
+          "familyNote": "Heavyweight fine art paper, museum grade",
+          "label": "16 × 24″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 24,
+          "requiredPx": {
+            "w": 4800,
+            "h": 7200
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 7400,
+          "attributes": {
+            "paperType": "HPR",
+            "substrateWeight": "308gsm"
+          },
+          "size": "16x24",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-HPR-20X30",
+          "description": "Premium Fine Art 20 × 30″",
+          "family": "premium",
+          "familyLabel": "Premium Fine Art",
+          "familyNote": "Heavyweight fine art paper, museum grade",
+          "label": "20 × 30″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 30,
+          "requiredPx": {
+            "w": 6000,
+            "h": 9000
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 9900,
+          "attributes": {
+            "paperType": "HPR",
+            "substrateWeight": "308gsm"
+          },
+          "size": "20x30",
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "id": "framed",
+      "label": "Classic Framed Print",
+      "image": "./assets/product-framed.jpg",
+      "available": true,
+      "options": [
+        {
+          "sku": "GLOBAL-CFP-8X8",
+          "description": "Classic frame, EMA 200gsm, perspex glaze, 8×8\"",
+          "family": "framed",
+          "familyLabel": "Classic Frame",
+          "familyNote": "Framed behind glaze, ready to hang",
+          "label": "8 × 8″",
+          "imageWidthIn": 8,
+          "imageHeightIn": 8,
+          "requiredPx": {
+            "w": 2400,
+            "h": 2400
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 8900,
+          "attributes": {
+            "color": "black"
+          },
+          "size": "8x8",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-CFP-12X12",
+          "description": "Classic frame, EMA 200gsm, perspex glaze, 12×12\"",
+          "family": "framed",
+          "familyLabel": "Classic Frame",
+          "familyNote": "Framed behind glaze, ready to hang",
+          "label": "12 × 12″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 3600,
+            "h": 3600
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 9900,
+          "attributes": {
+            "color": "black"
+          },
+          "size": "12x12",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-CFP-16X16",
+          "description": "Classic frame, EMA 200gsm, perspex glaze, 16×16\"",
+          "family": "framed",
+          "familyLabel": "Classic Frame",
+          "familyNote": "Framed behind glaze, ready to hang",
+          "label": "16 × 16″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 16,
+          "requiredPx": {
+            "w": 4800,
+            "h": 4800
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 11900,
+          "attributes": {
+            "color": "black"
+          },
+          "size": "16x16",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-CFP-20X20",
+          "description": "Classic frame, EMA 200gsm, perspex glaze, 20×20\"",
+          "family": "framed",
+          "familyLabel": "Classic Frame",
+          "familyNote": "Framed behind glaze, ready to hang",
+          "label": "20 × 20″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 20,
+          "requiredPx": {
+            "w": 6000,
+            "h": 6000
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 13900,
+          "attributes": {
+            "color": "black"
+          },
+          "size": "20x20",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-CFP-8X12",
+          "description": "Classic Frame 8 × 12″",
+          "family": "framed",
+          "familyLabel": "Classic Frame",
+          "familyNote": "Framed behind glaze, ready to hang",
+          "label": "8 × 12″",
+          "imageWidthIn": 8,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 2400,
+            "h": 3600
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 8900,
+          "attributes": {
+            "color": "black"
+          },
+          "size": "8x12",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-CFP-12X18",
+          "description": "Classic Frame 12 × 18″",
+          "family": "framed",
+          "familyLabel": "Classic Frame",
+          "familyNote": "Framed behind glaze, ready to hang",
+          "label": "12 × 18″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 18,
+          "requiredPx": {
+            "w": 3600,
+            "h": 5400
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 10900,
+          "attributes": {
+            "color": "black"
+          },
+          "size": "12x18",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-CFP-16X24",
+          "description": "Classic Frame 16 × 24″",
+          "family": "framed",
+          "familyLabel": "Classic Frame",
+          "familyNote": "Framed behind glaze, ready to hang",
+          "label": "16 × 24″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 24,
+          "requiredPx": {
+            "w": 4800,
+            "h": 7200
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 13900,
+          "attributes": {
+            "color": "black"
+          },
+          "size": "16x24",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-CFP-20X30",
+          "description": "Classic Frame 20 × 30″",
+          "family": "framed",
+          "familyLabel": "Classic Frame",
+          "familyNote": "Framed behind glaze, ready to hang",
+          "label": "20 × 30″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 30,
+          "requiredPx": {
+            "w": 6000,
+            "h": 9000
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 17900,
+          "attributes": {
+            "color": "black"
+          },
+          "size": "20x30",
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "id": "matted",
+      "label": "Matted Frame",
+      "image": "./assets/product-matted.jpg",
+      "available": false,
+      "options": [
+        {
+          "sku": "GLOBAL-CFPM-8X8",
+          "description": "Classic frame with mount, perspex glaze, 8×8\" frame",
+          "family": "matted",
+          "familyLabel": "Matted Frame",
+          "familyNote": "Framed with a mount, behind glaze",
+          "label": "8 × 8″ frame · 6 × 6″ picture",
+          "imageWidthIn": 6,
+          "imageHeightIn": 6,
+          "requiredPx": {
+            "w": 1800,
+            "h": 1800
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 9400,
+          "size": "8x8",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-CFPM-12X12",
+          "description": "Classic frame with mount, perspex glaze, 12×12\" frame",
+          "family": "matted",
+          "familyLabel": "Matted Frame",
+          "familyNote": "Framed with a mount, behind glaze",
+          "label": "12 × 12″ frame · 9 × 9″ picture",
+          "imageWidthIn": 9,
+          "imageHeightIn": 9,
+          "requiredPx": {
+            "w": 2700,
+            "h": 2700
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 10900,
+          "size": "12x12",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-CFPM-16X16",
+          "description": "Classic frame with mount, perspex glaze, 16×16\" frame",
+          "family": "matted",
+          "familyLabel": "Matted Frame",
+          "familyNote": "Framed with a mount, behind glaze",
+          "label": "16 × 16″ frame · 12 × 12″ picture",
+          "imageWidthIn": 12,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 3600,
+            "h": 3600
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 12900,
+          "size": "16x16",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-CFPM-20X20",
+          "description": "Classic frame with mount, perspex glaze, 20×20\" frame",
+          "family": "matted",
+          "familyLabel": "Matted Frame",
+          "familyNote": "Framed with a mount, behind glaze",
+          "label": "20 × 20″ frame · 16 × 16″ picture",
+          "imageWidthIn": 16,
+          "imageHeightIn": 16,
+          "requiredPx": {
+            "w": 4800,
+            "h": 4800
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 14900,
+          "size": "20x20",
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "id": "canvas",
+      "label": "Gallery Canvas",
+      "image": "./assets/product-canvas.jpg",
+      "available": true,
+      "options": [
+        {
+          "sku": "GLOBAL-CAN-8X8",
+          "description": "Stretched canvas, 8×8\"",
+          "family": "canvas",
+          "familyLabel": "Gallery Canvas",
+          "familyNote": "Stretched canvas, ready to hang",
+          "label": "8 × 8″",
+          "imageWidthIn": 8,
+          "imageHeightIn": 8,
+          "requiredPx": {
+            "w": 2454,
+            "h": 2454
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 5900,
+          "attributes": {
+            "wrap": "MirrorWrap"
+          },
+          "size": "8x8",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-CAN-12X12",
+          "description": "Stretched canvas, 12×12\"",
+          "family": "canvas",
+          "familyLabel": "Gallery Canvas",
+          "familyNote": "Stretched canvas, ready to hang",
+          "label": "12 × 12″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 3654,
+            "h": 3654
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 6900,
+          "attributes": {
+            "wrap": "MirrorWrap"
+          },
+          "size": "12x12",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-CAN-16X16",
+          "description": "Stretched canvas, 16×16\"",
+          "family": "canvas",
+          "familyLabel": "Gallery Canvas",
+          "familyNote": "Stretched canvas, ready to hang",
+          "label": "16 × 16″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 16,
+          "requiredPx": {
+            "w": 4854,
+            "h": 4854
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 8900,
+          "attributes": {
+            "wrap": "MirrorWrap"
+          },
+          "size": "16x16",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-CAN-20X20",
+          "description": "Stretched canvas, 20×20\"",
+          "family": "canvas",
+          "familyLabel": "Gallery Canvas",
+          "familyNote": "Stretched canvas, ready to hang",
+          "label": "20 × 20″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 20,
+          "requiredPx": {
+            "w": 6054,
+            "h": 6054
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 11900,
+          "attributes": {
+            "wrap": "MirrorWrap"
+          },
+          "size": "20x20",
+          "compatible": true
+        },
+        {
+          "sku": "GLOBAL-CAN-8X12",
+          "description": "Gallery Canvas 8 × 12″",
+          "family": "canvas",
+          "familyLabel": "Gallery Canvas",
+          "familyNote": "Stretched canvas, ready to hang",
+          "label": "8 × 12″",
+          "imageWidthIn": 8,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 2454,
+            "h": 3654
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 5900,
+          "attributes": {
+            "wrap": "MirrorWrap"
+          },
+          "size": "8x12",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-CAN-12X18",
+          "description": "Gallery Canvas 12 × 18″",
+          "family": "canvas",
+          "familyLabel": "Gallery Canvas",
+          "familyNote": "Stretched canvas, ready to hang",
+          "label": "12 × 18″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 18,
+          "requiredPx": {
+            "w": 3654,
+            "h": 5454
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 7900,
+          "attributes": {
+            "wrap": "MirrorWrap"
+          },
+          "size": "12x18",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-CAN-16X24",
+          "description": "Gallery Canvas 16 × 24″",
+          "family": "canvas",
+          "familyLabel": "Gallery Canvas",
+          "familyNote": "Stretched canvas, ready to hang",
+          "label": "16 × 24″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 24,
+          "requiredPx": {
+            "w": 4854,
+            "h": 7254
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 10900,
+          "attributes": {
+            "wrap": "MirrorWrap"
+          },
+          "size": "16x24",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-CAN-20X30",
+          "description": "Gallery Canvas 20 × 30″",
+          "family": "canvas",
+          "familyLabel": "Gallery Canvas",
+          "familyNote": "Stretched canvas, ready to hang",
+          "label": "20 × 30″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 30,
+          "requiredPx": {
+            "w": 6054,
+            "h": 9054
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 13900,
+          "attributes": {
+            "wrap": "MirrorWrap"
+          },
+          "size": "20x30",
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "id": "framed_canvas",
+      "label": "Framed Canvas",
+      "image": "./assets/product-framed_canvas.jpg",
+      "available": false,
+      "options": [
+        {
+          "sku": "GLOBAL-FRA-CAN-8X8",
+          "description": "Framed stretched canvas, 8×8\"",
+          "family": "framed_canvas",
+          "familyLabel": "Framed Canvas",
+          "familyNote": "Stretched canvas in a solid frame",
+          "label": "8 × 8″",
+          "imageWidthIn": 8,
+          "imageHeightIn": 8,
+          "requiredPx": {
+            "w": 2454,
+            "h": 2454
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 7900,
+          "size": "8x8",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-FRA-CAN-12X12",
+          "description": "Framed stretched canvas, 12×12\"",
+          "family": "framed_canvas",
+          "familyLabel": "Framed Canvas",
+          "familyNote": "Stretched canvas in a solid frame",
+          "label": "12 × 12″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 12,
+          "requiredPx": {
+            "w": 3654,
+            "h": 3654
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 9900,
+          "size": "12x12",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-FRA-CAN-16X16",
+          "description": "Framed stretched canvas, 16×16\"",
+          "family": "framed_canvas",
+          "familyLabel": "Framed Canvas",
+          "familyNote": "Stretched canvas in a solid frame",
+          "label": "16 × 16″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 16,
+          "requiredPx": {
+            "w": 4854,
+            "h": 4854
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 12900,
+          "size": "16x16",
+          "compatible": false
+        },
+        {
+          "sku": "GLOBAL-FRA-CAN-20X20",
+          "description": "Framed stretched canvas, 20×20\"",
+          "family": "framed_canvas",
+          "familyLabel": "Framed Canvas",
+          "familyNote": "Stretched canvas in a solid frame",
+          "label": "20 × 20″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 20,
+          "requiredPx": {
+            "w": 6054,
+            "h": 6054
+          },
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 16900,
+          "size": "20x20",
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "id": "mug",
+      "label": "11 oz Ceramic Mug",
+      "image": "./assets/product-mug.jpg",
+      "available": false,
+      "options": []
+    },
+    {
+      "id": "card",
+      "label": "Greeting Card",
+      "image": "./assets/product-card.jpg",
+      "available": false,
+      "options": []
+    }
+  ]
+}

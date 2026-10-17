@@ -1,0 +1,198 @@
+{
+  "purpose": "The exact files the Gift Wizard mockup bridge needs at run time (traced by rendering the six purchasable templates). Nothing else is bundled.",
+  "source": "Codex tree E:/Dev/liten-co (untracked working files at 7d3eb40), copied 2026-10-17 and hash-verified; awaiting Codex confirmation",
+  "templates": [
+    "classic-framed",
+    "fine-art",
+    "gallery-canvas",
+    "gallery-canvas-square",
+    "premium-fine-art",
+    "square-framed"
+  ],
+  "interface": {
+    "adapterExports": [
+      "composeCatalogItem",
+      "composeTemplateVisualTest",
+      "registry",
+      "resolveCatalogTemplate"
+    ],
+    "call": "composeCatalogItem({ line: { productId: <family>, size }, artwork: Buffer, artworkId, allowCrop: false }) -> { png, metadata, visualizationKey, identity.configuration { sku, requiredPx } }"
+  },
+  "files": [
+    {
+      "path": "public/gift-wizard/catalog.next.json",
+      "bytes": 26199,
+      "sha256": "74b74f25d5ebde654aed447244067491ee4a177aff717f6fb282555e066005d6"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/classic-framed/artwork-mask.png",
+      "bytes": 43530,
+      "sha256": "0dcad1014463479364f4de4c011afa54f8aff33f56d068618a4eae414ac195db"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/classic-framed/background-mask.png",
+      "bytes": 59788,
+      "sha256": "561ebd39eca7f56a92acbe27ddb37ed59a14c8b5e94e793def952fa02d959a43"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/classic-framed/frame-mask.png",
+      "bytes": 82538,
+      "sha256": "fa2d7c3bef55edea5ef0108b2b2dfc7d427215cf3eb4884c2bd7ee9041c2c471"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/classic-framed/source.png",
+      "bytes": 498370,
+      "sha256": "6a6975bdca664fae16be2d921341a7b641113cff2735b3416dc7647ab91392ae"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/classic-framed/template.next.json",
+      "bytes": 2464,
+      "sha256": "6ab0f69ce2625afacd3e263d60c1d28664fd1477815e2d5fe0adbf8bd1d2077f"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/fine-art/artwork-mask.png",
+      "bytes": 64562,
+      "sha256": "1d937794cd3fefb7f73877506c4270f19daefc47bfb9825787144a6ae8523483"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/fine-art/background-mask.png",
+      "bytes": 61945,
+      "sha256": "fc7b9510e61399deb18e72d1b0a857e6751c6ecf98a7c68d5da7908c66002104"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/fine-art/source.png",
+      "bytes": 455982,
+      "sha256": "4454f5b892170fe85cb8b0a8a2546545d3ae40466d26f7434b64283d6c8c1daa"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/fine-art/template.next.json",
+      "bytes": 2777,
+      "sha256": "ba1924aca997a9daaa77329b708749b868e433f568545d4607147f19d13eaece"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas-square/artwork-mask.png",
+      "bytes": 46669,
+      "sha256": "208dafc270dc4a83c6602892c9b9b7d088c9e6798606a814f2d4851b6ce4d19d"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas-square/background-mask.png",
+      "bytes": 52625,
+      "sha256": "219e8cb944b74c6a57608e8df681a64bcd34ed5a5b80e0e9aadc79a352db27c6"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas-square/left-mask.png",
+      "bytes": 39668,
+      "sha256": "bb681cea6fb602e66554f43a043e7fb9720c870d7e5920b6a408255e29700e09"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas-square/right-mask.png",
+      "bytes": 38128,
+      "sha256": "f1d3a6ff7ddcc3215c9233cbe3a5fec1504acc554834947ad24e4c8f136d5085"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas-square/source.png",
+      "bytes": 520404,
+      "sha256": "407db2669e91cec910413e9f28a9af76e6d81d37e58442e11e129da16c8d1146"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas-square/template.next.json",
+      "bytes": 6406,
+      "sha256": "124fa926979a78fa4dee6733dbd54da0fcbb2ef5b4fb209f75cddd3c45833998"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas/artwork-mask.png",
+      "bytes": 31574,
+      "sha256": "ec8f10fdb648d023b300cd9e97dfbf5452530242dfc02bd08f7de24f92a8e10c"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas/background-mask.png",
+      "bytes": 41368,
+      "sha256": "a67b5039c925fd967924073e44595526ee80293a7b62e9488c3b33e9c7ee63b3"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas/left-mask.png",
+      "bytes": 20637,
+      "sha256": "f16fef2dca893431d9c974ac9e698601c1c0292656e8ecac30cb5388313ddf96"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas/right-mask.png",
+      "bytes": 21379,
+      "sha256": "bc14f3313e55762466a8a35fc68104709155cb975cca984232810d5951978ece"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas/source.png",
+      "bytes": 594641,
+      "sha256": "89c5dd586e7eb5c7bd99e75a18ca3b58c9ab54220fbc007304e918ca1845f35e"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/gallery-canvas/template.next.json",
+      "bytes": 6357,
+      "sha256": "4efdea528f033ad6bfcf87ecd17288d5f52d9db7f69177267496dfa57f64cad3"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/premium-fine-art/artwork-mask.png",
+      "bytes": 38920,
+      "sha256": "149d8d956b05ad1e7d63973e0be3f2bf27c233be7cef2099f065927987f91f60"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/premium-fine-art/background-mask.png",
+      "bytes": 41386,
+      "sha256": "069b557a036ccb4fb78e9293843503bf0a700716c7cca369266d6a977b0d7717"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/premium-fine-art/source.png",
+      "bytes": 494418,
+      "sha256": "0217cdd76772360e248a2bbac508da317c13902ad67119007158d407ee81a1e3"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/premium-fine-art/template.next.json",
+      "bytes": 3710,
+      "sha256": "f94e778fe8a42970fbed52d49c3f2a782f09079ab5c23ade4d12e00fe28d1ab3"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/square-framed/artwork-mask.png",
+      "bytes": 40775,
+      "sha256": "d64ae7cc82f6c63923e6ecdbceabe6c1319d3a24da749d15e2910ea1f73add6b"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/square-framed/background-mask.png",
+      "bytes": 50636,
+      "sha256": "a505db34c21540c966eb61cb0b71c26261a313da7120decde8376ec60a68e103"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/square-framed/frame-mask.png",
+      "bytes": 68487,
+      "sha256": "5d799769104bf4d49108ce2b9703eee058fa0a5bc50ddd1392668175726441a9"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/square-framed/source.png",
+      "bytes": 556841,
+      "sha256": "ae7a34fd8c029d422e057bc7725b11a641ea1982e8bcb7a87b5728f699e47ea4"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/square-framed/template.next.json",
+      "bytes": 4032,
+      "sha256": "3b0347c9b5562f83c4ccc42428da4bb22fdf971e15ec35bc4a0cdaf5cb4f2c3c"
+    },
+    {
+      "path": "tools/product-mockup/compositor.next.cjs",
+      "bytes": 13121,
+      "sha256": "253c87e7edd145880f296ff1601228b07bfd7088d76cd498e93b59967c884dfc"
+    },
+    {
+      "path": "tools/product-mockup/frame-finish.next.cjs",
+      "bytes": 2489,
+      "sha256": "c88c31cf25a57a4009ec9ae30c7b8cc7857132723e4d4dcc4d8948320c5800f9"
+    },
+    {
+      "path": "tools/product-mockup/gift-visualization-adapter.next.cjs",
+      "bytes": 5633,
+      "sha256": "87b67db77f619f617340bd9615239b19e87986ca7195516c31f55bb2ad027af8"
+    },
+    {
+      "path": "tools/product-mockup/review/frame-finishes/references/finishes.next.json",
+      "bytes": 3764,
+      "sha256": "1886829cbe9e43c5d7097dcb355bc54400ecb5bfa9ebb3e6a307165853a8eee7"
+    }
+  ]
+}

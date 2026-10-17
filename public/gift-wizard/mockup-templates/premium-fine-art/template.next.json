@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "id": "premium-fine-art",
+  "productId": "premium",
+  "status": "awaiting-visual-approval",
+  "sourceImage": "source.png",
+  "artworkMask": "artwork-mask.png",
+  "backgroundMask": "background-mask.png",
+  "dimensions": [
+    1264,
+    848
+  ],
+  "cornerOrder": [
+    "topLeft",
+    "topRight",
+    "bottomRight",
+    "bottomLeft"
+  ],
+  "cornersPixels": [
+    [
+      94.56616032675083,
+      298.146355272826
+    ],
+    [
+      596.7219882215145,
+      127.37988118333382
+    ],
+    [
+      1169.5711874972114,
+      450.2972121617256
+    ],
+    [
+      635.2979163389415,
+      716.8311815445093
+    ]
+  ],
+  "cornersNormalized": [
+    [
+      0.07487423620487002,
+      0.35200278072352537
+    ],
+    [
+      0.4724639653376995,
+      0.1503894701101934
+    ],
+    [
+      0.9260262767198824,
+      0.5316377947600066
+    ],
+    [
+      0.5030070596507851,
+      0.8463178058376732
+    ]
+  ],
+  "maskConvention": "white selects; black excludes; alpha multiplies coverage; artwork mask controls clipping",
+  "coordinateConvention": "pixel centers; normalized x/(width-1),y/(height-1); off-image corners may be negative",
+  "sources": {
+    "source.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\Premium Fine Art Print - Image.png",
+      "sha256": "0217cdd76772360e248a2bbac508da317c13902ad67119007158d407ee81a1e3"
+    },
+    "artwork-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\Premium Fine Art Print - print bw.png",
+      "sha256": "149d8d956b05ad1e7d63973e0be3f2bf27c233be7cef2099f065927987f91f60"
+    },
+    "background-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\Premium Fine Art Print - background bw.png",
+      "sha256": "069b557a036ccb4fb78e9293843503bf0a700716c7cca369266d6a977b0d7717"
+    }
+  },
+  "calibration": {
+    "method": "Least-squares fits of four visible boundary segments, excluding their end 10%; intersections recover corners. All four corners are within the photograph; no off-image corner extrapolation.",
+    "edgeRmsPixels": [
+      0.27946952095237193,
+      0.2689078537714369,
+      0.4523881300375012,
+      1.455124339024736
+    ],
+    "edgeLinesYEqualsAxPlusB": [
+      [
+        -0.3400666976333082,
+        330.3051571230061
+      ],
+      [
+        0.5637039056468688,
+        -208.99463416249876
+      ],
+      [
+        -0.4988719888699567,
+        1033.7635165934564
+      ],
+      [
+        0.7742930235120945,
+        224.92443707149658
+      ]
+    ],
+    "visibleSegmentXRange": [
+      [
+        151,
+        544
+      ],
+      [
+        652,
+        1106
+      ],
+      [
+        686,
+        1110
+      ],
+      [
+        155,
+        578
+      ]
+    ],
+    "extrapolatedCornerIndices": []
+  },
+  "maskAudit": {
+    "maxComplementDifference": 255,
+    "meanComplementDifference": 0.4083286064007643,
+    "pixelsWithComplementDifferenceOver16": 5674
+  },
+  "surfaceAspectRatio": null,
+  "aspectNote": "Selected catalog dimensions required. All four corners are visible; calibrated geometry awaits visual approval. Use only as display mockup, never as production print geometry.",
+  "perspective": {
+    "unitToImage": [
+      580.332152294413,
+      413.30171442931174,
+      94.56616032675083,
+      -154.07848351777474,
+      274.900587534488,
+      298.146355272826,
+      0.13100962582700887,
+      -0.2005831253425566,
+      1
+    ],
+    "imageToUnit": [
+      0.001499470862212911,
+      -0.0019365677032856402,
+      0.43558140051236366,
+      0.0008652595678752623,
+      0.002544381951826011,
+      -0.8404224803788314,
+      -0.00002288864824004583,
+      0.0007640690941585771,
+      1
+    ]
+  }
+}

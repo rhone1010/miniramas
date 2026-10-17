@@ -1,0 +1,250 @@
+{
+  "version": 1,
+  "id": "gallery-canvas-square",
+  "productId": "canvas",
+  "status": "awaiting-visual-approval",
+  "sourceImage": "source.png",
+  "artworkMask": "artwork-mask.png",
+  "backgroundMask": "background-mask.png",
+  "dimensions": [
+    1264,
+    848
+  ],
+  "cornerOrder": [
+    "topLeft",
+    "topRight",
+    "bottomRight",
+    "bottomLeft"
+  ],
+  "cornersPixels": [
+    [
+      123.84695346723115,
+      341.22944581320144
+    ],
+    [
+      630.3558864622197,
+      103.68489994383282
+    ],
+    [
+      1147.1008868847707,
+      343.5316127060752
+    ],
+    [
+      635.4996733201548,
+      666.2717682359737
+    ]
+  ],
+  "cornersNormalized": [
+    [
+      0.09805776204848071,
+      0.4028682949388447
+    ],
+    [
+      0.4990941302155342,
+      0.12241428564797263
+    ],
+    [
+      0.9082350648335477,
+      0.4055863196057558
+    ],
+    [
+      0.5031668038956095,
+      0.7866254642691543
+    ]
+  ],
+  "sides": [
+    {
+      "id": "left",
+      "mask": "left-mask.png",
+      "frontEdge": "u=0",
+      "cornersPixels": [
+        [
+          123.84695346723115,
+          341.22944581320144
+        ],
+        [
+          635.4996733201548,
+          666.2717682359737
+        ],
+        [
+          636.5176716907645,
+          731.6212857929332
+        ],
+        [
+          129.6479830246714,
+          397.9495284560482
+        ]
+      ],
+      "cornersNormalized": [
+        [
+          0.09805776204848071,
+          0.4028682949388447
+        ],
+        [
+          0.5031668038956095,
+          0.7866254642691543
+        ],
+        [
+          0.5039728200243583,
+          0.8637795581970876
+        ],
+        [
+          0.10265081791343736,
+          0.4698341540213084
+        ]
+      ],
+      "perspective": {
+        "unitToImage": [
+          395.9283695385431,
+          7.071857446349799,
+          123.84695346723115,
+          203.7143804128354,
+          60.62084027394786,
+          341.22944581320144,
+          -0.1820997793905716,
+          0.009802141608849575,
+          1
+        ],
+        "imageToUnit": [
+          0.0025387344278788053,
+          -0.0002596483074143304,
+          -0.22581487650983637,
+          -0.011783773002453719,
+          0.018548967598726752,
+          -4.870069547417259,
+          0.0005778091909045687,
+          -0.00022910150659996657,
+          1
+        ]
+      },
+      "displayDepthFraction": 0.08160875686572999
+    },
+    {
+      "id": "right",
+      "mask": "right-mask.png",
+      "frontEdge": "v=1",
+      "cornersPixels": [
+        [
+          635.4996733201548,
+          666.2717682359737
+        ],
+        [
+          1147.1008868847707,
+          343.5316127060752
+        ],
+        [
+          1139.7905007294073,
+          402.41597879708564
+        ],
+        [
+          636.5176716907645,
+          731.6212857929332
+        ]
+      ],
+      "cornersNormalized": [
+        [
+          0.5031668038956095,
+          0.7866254642691543
+        ],
+        [
+          0.9082350648335477,
+          0.4055863196057558
+        ],
+        [
+          0.9024469522798158,
+          0.4751074129835722
+        ],
+        [
+          0.5039728200243583,
+          0.8637795581970876
+        ]
+      ],
+      "perspective": {
+        "unitToImage": [
+          764.1850521140989,
+          13.587253948658695,
+          635.4996733201548,
+          -247.09682337622792,
+          79.79677540456221,
+          666.2717682359737,
+          0.2201932205243388,
+          0.019746907489090818,
+          1
+        ],
+        "imageToUnit": [
+          0.001035797485409329,
+          -0.000016135393065593305,
+          -0.647498406734471,
+          0.0061209901597003135,
+          0.009702870684864782,
+          -10.354636055055282,
+          -0.0003489462105485317,
+          -0.00018804878562909863,
+          1
+        ]
+      },
+      "displayDepthFraction": 0.08194206122178893
+    }
+  ],
+  "calibration": {
+    "method": "Front boundary line intersections; side lower contours fitted excluding end folds; short far-end boundaries fitted x(y). Shared front corners enforce common joins.",
+    "frontEdgeRmsPixels": [
+      0.14144618203218934,
+      0.13624489325893996,
+      0.15402985171413955,
+      0.1549062408118116
+    ],
+    "sideLowerEdgeRmsPixels": [
+      0.24097270814950048,
+      0.24219487638215098
+    ]
+  },
+  "maskConvention": "White selects; black excludes. Exact source copies. Runtime overlaps normalized; silhouette constrains exterior.",
+  "wrapDepthMode": "display-only apparent projected depth, derived from masks; not millimeters or production geometry",
+  "sources": {
+    "source.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium square gallery-wrapped canvas print - image.png",
+      "sha256": "407db2669e91cec910413e9f28a9af76e6d81d37e58442e11e129da16c8d1146"
+    },
+    "artwork-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium square gallery-wrapped canvas print - print bw.png",
+      "sha256": "208dafc270dc4a83c6602892c9b9b7d088c9e6798606a814f2d4851b6ce4d19d"
+    },
+    "left-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium square gallery-wrapped canvas print - left side.png",
+      "sha256": "bb681cea6fb602e66554f43a043e7fb9720c870d7e5920b6a408255e29700e09"
+    },
+    "right-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium square gallery-wrapped canvas print - right side.png",
+      "sha256": "f1d3a6ff7ddcc3215c9233cbe3a5fec1504acc554834947ad24e4c8f136d5085"
+    },
+    "background-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium square gallery-wrapped canvas print - background bw.png",
+      "sha256": "219e8cb944b74c6a57608e8df681a64bcd34ed5a5b80e0e9aadc79a352db27c6"
+    }
+  },
+  "perspective": {
+    "unitToImage": [
+      597.8409865591899,
+      412.3240946122854,
+      123.84695346723115,
+      -222.5216753943793,
+      220.9040174732621,
+      341.22944581320144,
+      0.14488966554558436,
+      -0.15630004138585604,
+      1
+    ],
+    "imageToUnit": [
+      0.0012252812659993033,
+      -0.0019287288118682716,
+      0.5063917116632789,
+      0.001215112676737464,
+      0.002590947407824032,
+      -1.0345955512362925,
+      0.000012391568832634774,
+      0.0006844180595511987,
+      1
+    ]
+  }
+}

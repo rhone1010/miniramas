@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "id": "square-framed",
+  "productId": "framed",
+  "status": "awaiting-visual-approval",
+  "sourceImage": "source.png",
+  "artworkMask": "artwork-mask.png",
+  "backgroundMask": "background-mask.png",
+  "frameMask": "frame-mask.png",
+  "dimensions": [
+    1264,
+    848
+  ],
+  "cornerOrder": [
+    "topLeft",
+    "topRight",
+    "bottomRight",
+    "bottomLeft"
+  ],
+  "cornersPixels": [
+    [
+      138.22192701066837,
+      338.9748925624425
+    ],
+    [
+      663.9226190236733,
+      134.3395162577682
+    ],
+    [
+      1128.7021532306742,
+      378.31212451912825
+    ],
+    [
+      599.317228108191,
+      675.2142642615513
+    ]
+  ],
+  "cornersNormalized": [
+    [
+      0.10943937213829641,
+      0.4002064847254339
+    ],
+    [
+      0.5256711156165268,
+      0.15860627657351617
+    ],
+    [
+      0.8936675797550865,
+      0.44664949766130846
+    ],
+    [
+      0.47451878710070544,
+      0.7971833108164714
+    ]
+  ],
+  "maskConvention": "white selects; black excludes; alpha multiplies coverage; artwork mask controls clipping",
+  "coordinateConvention": "pixel centers; normalized x/(width-1),y/(height-1); off-image corners may be negative",
+  "sources": {
+    "source.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium square framed fine art print - image.png",
+      "sha256": "ae7a34fd8c029d422e057bc7725b11a641ea1982e8bcb7a87b5728f699e47ea4"
+    },
+    "artwork-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium square framed fine art print - print bw.png",
+      "sha256": "d64ae7cc82f6c63923e6ecdbceabe6c1319d3a24da749d15e2910ea1f73add6b"
+    },
+    "background-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium square framed fine art print - background bw.png",
+      "sha256": "a505db34c21540c966eb61cb0b71c26261a313da7120decde8376ec60a68e103"
+    },
+    "frame-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium square framed fine art print - frame BW.png",
+      "sha256": "5d799769104bf4d49108ce2b9703eee058fa0a5bc50ddd1392668175726441a9"
+    }
+  },
+  "calibration": {
+    "method": "Least-squares fits of four visible boundary segments, excluding their end 10%; intersections recover corners. All four corners are within the photograph; no off-image corner extrapolation.",
+    "edgeRmsPixels": [
+      0.3260450828077627,
+      0.27824073851733117,
+      0.4128937685677294,
+      0.47822570304493145
+    ],
+    "edgeLinesYEqualsAxPlusB": [
+      [
+        -0.38926213987105035,
+        392.7794556477154
+      ],
+      [
+        0.5249211514392991,
+        -214.16750938673337
+      ],
+      [
+        -0.5608435859289521,
+        1011.337487582749
+      ],
+      [
+        0.7292188207053395,
+        238.18086195210338
+      ]
+    ],
+    "visibleSegmentXRange": [
+      [
+        192,
+        607
+      ],
+      [
+        707,
+        1081
+      ],
+      [
+        653,
+        1076
+      ],
+      [
+        187,
+        553
+      ]
+    ],
+    "extrapolatedCornerIndices": []
+  },
+  "maskAudit": {
+    "maxComplementDifference": 255,
+    "meanComplementDifference": 20.80063384433962,
+    "pixelsWithComplementDifferenceOver16": 90619
+  },
+  "surfaceAspectRatio": 1,
+  "aspectNote": "Selected catalog dimensions required. All four corners are visible; calibrated geometry awaits visual approval. Use only as display mockup, never as production print geometry.",
+  "perspective": {
+    "unitToImage": [
+      644.3714203695836,
+      362.8744783413995,
+      138.22192701066837,
+      -180.62328847307816,
+      225.5799455020905,
+      338.9748925624425,
+      0.17874180658446157,
+      -0.16388786797630978,
+      1
+    ],
+    "imageToUnit": [
+      0.00133301414375862,
+      -0.0018280029339742738,
+      0.43539531446496665,
+      0.0011437235623943025,
+      0.002938183412271175,
+      -1.1540580812650194,
+      -0.00005082294006298276,
+      0.0008082731620207391,
+      1
+    ]
+  }
+}
