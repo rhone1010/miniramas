@@ -1,0 +1,3 @@
+# The mockup renderer bundle is verified by SHA-256 (tools/product-mockup/renderer-manifest.json): keep its bytes exactly as committed, whatever the platform.
+tools/product-mockup/** -text
+public/gift-wizard/** -text
