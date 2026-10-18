@@ -205,7 +205,7 @@
       document.documentElement.style.setProperty('--header-height', header.getBoundingClientRect().height + 'px');
     }).observe(header);
   }
-  const links = Array.from(document.querySelectorAll('.hp-header nav a'));
+  const links = Array.from(document.querySelectorAll('.hp-header:not(.liten-masthead) nav a'));
   if ('IntersectionObserver' in window) {
     const sections = Array.from(document.querySelectorAll('.hp-section'));
     const visibility = new Map();

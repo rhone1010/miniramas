@@ -8,23 +8,12 @@
 <link rel="icon" href="/favicon.ico">
 <link rel="stylesheet" href="/homepage/homepage.next.css">
 <script src="/homepage/homepage.next.js" defer></script>
-<link rel="stylesheet" href="/mobile-navigation.next.css"><script src="/mobile-navigation.next.js" defer></script>
+<link rel="stylesheet" href="/shared-masthead.next.css"><script src="/shared-masthead.next.js" defer></script>
 </head>
 <body>
 <a class="hp-skip" href="#main">Skip to content</a>
-<!-- Shared masthead integration point (isolated preview only): replace this header
-     when the shared component is approved. Preserve section anchors #groups,
-     #pets, #portraits and #holiday-gifts plus the preceding skip link.
-     homepage.next.css owns .hp-header/.hp-mark styles and --header-height.
-     homepage.next.js binds header anchor scrolling, observes header height for
-     scroll offsets, and updates aria-current on .hp-header nav a. Adapt those
-     three hooks together if shared markup changes; avoid duplicate handlers.
-     Keep shared styles scoped and recheck sticky offsets, focus, mobile navigation,
-     and reduced motion. No global navigation or root route is wired here. -->
-<header class="hp-header">
-  <a class="hp-mark" href="#groups" aria-label="LITEN &amp; Co homepage">LITEN <span>&amp;</span> Co</a>
-  <nav aria-label="Homepage sections"><a href="#groups">Groups</a><a href="#pets">Pets</a><a href="#portraits">Portraits</a><a href="#holiday-gifts">Holiday Gifts</a></nav>
-</header>
+
+<header class="hp-header liten-masthead"></header>
 <main id="main" tabindex="-1">
   <section class="hp-section" id="groups" aria-labelledby="groups-title">
     <div class="hp-chapter hp-hero-chapter" id="groups-hero" tabindex="-1" role="region" aria-labelledby="groups-title">
@@ -133,7 +122,6 @@
     </div>
     <div class="hp-gallery-cta"><a class="hp-cta" href="/gifts.next.html">Explore the Gift Collection<span aria-hidden="true"> ↗</span></a></div>
     <p class="hp-availability hp-wrap">Mugs and cards shown in the images are not available to purchase.</p>
-      <div class="hp-fold"><a class="hp-advance" href="#groups-hero">Back to Groups<span class="hp-chevron hp-chevron-up" aria-hidden="true"></span></a></div>
     </div>
   </section>
 </main>

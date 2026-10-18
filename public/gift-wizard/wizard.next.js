@@ -43,7 +43,7 @@ function rail(title, copy) { $('left').innerHTML = (view === 'effects' ? '' : '<
 function render() {
     $('error').hidden = true;
     $('error').textContent = '';
-    $('status').textContent = busy ? 'Preparing your previews…' : '';
+    $('status').textContent = busy && stage() === 3 && !!live?.session && purchased(live.session) ? 'Preparing your previews…' : '';
     $('screen').dataset.view = view;
     $('left').classList.toggle('effects-rail', view === 'effects');
     $('workspace').setAttribute('aria-busy', String(busy));

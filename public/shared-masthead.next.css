@@ -1,0 +1,82 @@
+/* Canonical Print Shop geometry and menu rules, scoped to the three entry surfaces. */
+.liten-masthead{
+  height:var(--mh-h); background:var(--masthead); display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center;
+  padding:0 min(5%,100px); color:#f3ede1; position:sticky; top:0; z-index:30;
+}
+.liten-masthead .masthead__brand{ justify-self:start; display:flex; align-items:center; gap:12px; text-decoration:none }
+.liten-masthead .mh-mark{ height:var(--mark-h); width:auto; display:block; flex:0 0 auto; color:#f3ede1 }
+.liten-masthead .mh-mark path{ fill:currentColor }
+.liten-masthead .masthead__nav{ justify-self:center; display:flex; align-items:center; gap:32px }
+.liten-masthead .masthead__nav a{
+  position:relative; text-decoration:none; white-space:nowrap;
+  font-family:var(--serif); font-size:1.5em; font-weight:400; line-height:1;
+  color:var(--vellum-300,#e9dec8); padding:10px 0;
+}
+.liten-masthead .masthead__nav a.active{ color:var(--gold) }
+/* Ruled 2 Sep: the nav marks the current screen (My Collection) --
+   there is no screen title. Gold, with a hairline under. */
+.liten-masthead .masthead__nav a.is-here{ color:var(--gold) }
+.liten-masthead .masthead__nav a.is-here::after{ content:""; position:absolute; left:0; right:0; bottom:2px; height:1px; background:var(--gold) }
+.liten-masthead .mh-series-btn{
+  display:inline-flex; align-items:center; gap:.34em; background:none; border:none; cursor:pointer;
+  font-family:var(--serif); font-size:1.8em; font-weight:400; line-height:1;
+  color:var(--series,#d7bd89); padding:10px 0; white-space:nowrap;
+}
+.liten-masthead .mh-series-btn .caret{ width:.52em; height:.52em; flex:0 0 auto; margin-top:.14em; opacity:.72 }
+.liten-masthead .mh-series-btn .caret path{ fill:none; stroke:currentColor; stroke-width:1.35; stroke-linecap:round; stroke-linejoin:round }
+
+.liten-masthead .mh-series{ --card-line:rgba(196,169,110,.28); --r-card:8px; --vellum-200:#f3ecdd; position:relative; display:flex; align-items:center;
+  margin-right:var(--series-gap) }
+.liten-masthead .mh-series-menu{
+  position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%);
+  min-width:16em;
+  background:linear-gradient(180deg,#2a1f1b 0%, #221915 100%);
+  border:1px solid var(--card-line);
+  border-radius:var(--r-card);
+  box-shadow:0 22px 48px -20px rgba(20,12,8,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  padding:20px;
+  display:flex; flex-direction:column;
+  z-index:70;
+}
+.liten-masthead .mh-series-menu :is(a,button){
+  display:flex; align-items:center; justify-content:space-between; gap:1.2em;
+  font-family:var(--serif); font-size:1.45em; font-weight:400; line-height:1.1;
+  color:var(--vellum-200); text-decoration:none; white-space:nowrap;
+  padding:.52em .7em; border-radius:6px;
+  transition:background .14s ease, color .14s ease;
+}
+.liten-masthead .mh-series-menu :is(a,button):hover,
+.liten-masthead .mh-series-menu :is(a,button):focus-visible{
+  background:linear-gradient(180deg, rgba(215,189,137,.16), rgba(215,189,137,.09));
+  color:var(--series); outline:none;
+}
+
+
+.liten-masthead{--mh-h:60px;--mark-h:44px;--masthead:#26201a;--serif:'Cormorant Garamond',Cormorant,Georgia,serif;--gold:#b68a53;--series:#d7bd89;font-size:16px;box-sizing:border-box;min-height:0;gap:0;border:0;z-index:120}
+.liten-masthead .masthead__nav{grid-column:2;flex-wrap:nowrap}
+.liten-masthead .masthead__nav>a{border:0;border-radius:0;background:none;font-style:normal}
+.liten-masthead .mh-series-menu :is(a,button){border:0;background:none;text-align:left;cursor:pointer;min-height:44px}
+.liten-masthead .mh-series-menu[hidden],.liten-masthead .mh-menu{display:none}
+.liten-masthead [aria-current],.liten-masthead .mh-series:has([aria-current])>.mh-series-btn{color:var(--series)}
+.liten-masthead .mh-series:last-child .mh-series-menu{left:auto;right:0;transform:none}
+.liten-masthead .preview-note{display:none}
+@media(min-width:2200px){.liten-masthead{--mh-h:62px;--mark-h:46px}}
+@media(max-width:1000px){
+.liten-masthead{height:64px;min-height:64px;padding:8px 20px;display:flex;flex-direction:row;justify-content:space-between;position:relative;--mark-h:48px}
+.liten-masthead .mh-menu{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:8px;background:#332620;border:1px solid rgba(196,169,110,.28);color:#f8f4eb;cursor:pointer}
+.liten-masthead .mh-menu svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6}
+.liten-masthead .masthead__nav{display:none;position:absolute;top:100%;left:0;right:0;background:#26201a;padding:12px 20px 20px;max-height:calc(100dvh - 64px);overflow-y:auto;gap:0;align-items:stretch}
+.liten-masthead .masthead__nav[data-open]{display:flex;flex-direction:column}
+.liten-masthead .mh-series{display:block;margin:0}
+.liten-masthead .mh-series-btn,.liten-masthead .masthead__nav>a{width:100%;min-height:48px;font-size:26px;text-align:left}
+.liten-masthead .mh-series-menu,.liten-masthead .mh-series:last-child .mh-series-menu{position:static;transform:none;min-width:0;box-shadow:none;padding:12px;width:auto}
+.liten-masthead .mh-series-menu :is(a,button){font-size:24px;white-space:normal}
+}
+
+/* Retain the approved light logo and compact control geometry on the dark masthead. */
+.liten-masthead .masthead__brand img{filter:brightness(0) invert(1)}
+.liten-masthead .mh-series-menu :is(a,button){font-style:normal}
+.liten-masthead .mh-menu{padding:0;flex-shrink:0}
+.liten-masthead .mh-menu svg{flex-shrink:0}
+@media(max-width:1000px){.liten-masthead .masthead__nav{width:100%;margin:0;box-sizing:border-box;justify-self:stretch}}

@@ -1,6 +1,5 @@
 /* Two-fold Gifts introduction, using the existing homepage design system. */
 html:has(.gifts-page){scroll-snap-type:none}
-.gifts-page .hp-header nav a[aria-current="page"]{background:var(--oxblood);border-color:var(--oxblood);color:var(--vellum)}
 .gift-hero{background:var(--vellum)}
 .gift-hero-photo picture,.gift-hero-photo img{display:block;width:100%;height:auto}
 .gift-fold-copy{display:flex;align-items:center;justify-content:space-between;gap:32px;padding-block:28px}
@@ -26,9 +25,6 @@ html:has(.gifts-page){scroll-snap-type:none}
  .gift-proof{padding-top:32px}
 }
 @media(max-width:600px){
- .gifts-page .hp-header{position:relative;align-items:flex-start;flex-direction:column;gap:8px;padding:12px 6%}
- .gifts-page .hp-header nav{gap:6px}
- .gifts-page .hp-header nav a{font-size:18px;padding:.5rem .7rem}
  .gift-fold-copy p{font-size:22px}
  .gift-proof-images{grid-template-columns:1fr 1fr;gap:12px;align-items:start}
  .gift-proof-images img{aspect-ratio:1;object-fit:cover}
