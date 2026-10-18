@@ -19,7 +19,13 @@ Status: implemented and tested on the in-memory store; NOT deployed. Migration 0
 4. Checkout must send disclosure `2026-10-18-2` (held, separate) and the page must show the exact text from the response.
 5. Do not enable `GIFT_COMPOSITIONS_BEFORE_PAYMENT` until the page does steps 1-2; with it off the old order (checkout, then compose) still works.
 
-## Not done / decisions needed
-- The included correction for a DRAFT composition is not implemented (`correct` is paid-only). Decide whether a customer may regenerate before paying and how often.
-- COST EXPOSURE: composing before payment spends NB2.1 on customers who may never buy. Compositions are one per line and favorite and are reused, but switching among 12 favorites generates more. Recommend a per-session cap on draft compositions (not implemented; needs a number).
-- Draft mockups show the catalog product as of now; checkout then freezes it. If the catalog geometry changed in between, the composition fails the shape check and checkout asks for review again.
+## Corrections (final)
+- ONE included correction per product (line), counted across the purchase boundary. `POST .../compositions/:ref/correct` now works on a draft and on a paid order awaiting approval. A draft correction is an attempt-2 composition row; the paid order line starts at 0 but the row keeps the entitlement spent (`correctionsRemaining` is 0 before and after payment). Changing the favorite does not give another one.
+- Technical repairs (operator-only) never use it. After a repair the line is `ready` again and `correctionsRemaining` is unchanged.
+- No cap is placed on product compositions: one per selected product, compatible compositions are shared and reused (same shape + artwork), including after switching the favorite away and back.
+
+## Switch
+`GIFT_COMPOSITIONS_BEFORE_PAYMENT` now defaults ON (set `0` to disable). Checkout therefore returns 409 `compositions_not_approved` until every line is approved: the backend and the page that reviews compositions before checkout MUST deploy together. Backend and frontend must also ship disclosure `2026-10-18-2` with identical text.
+
+## Decisions left
+- Draft mockups show the catalog product as of now; checkout then freezes it. If the catalog geometry changed in between, the composition fails the shape check and the customer is asked to review again.
