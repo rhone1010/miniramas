@@ -34,12 +34,14 @@ export function printPlan(w:number,h:number,entry:SkuEntry) {
   const format=artworkFormat(w,h)
   const front={w:Math.round(entry.imageWidthIn*300),h:Math.round(entry.imageHeightIn*300)}
   const final={...entry.requiredPx}
-  if(w>h){[front.w,front.h]=[front.h,front.w];[final.w,final.h]=[final.h,final.w]}
+  // The SKU's own orientation is the reference: a portrait-defined SKU turns for a landscape picture (as always), and a landscape-DEFINED SKU (the framed canvas 8x12,
+  // 3654 x 2454) turns for a portrait one. Every entry that existed before is portrait-defined or square, so nothing changes for them.
+  if(w!==h&&entry.requiredPx.w!==entry.requiredPx.h&&(w>h)!==(entry.requiredPx.w>entry.requiredPx.h)){[front.w,front.h]=[front.h,front.w];[final.w,final.h]=[final.h,final.w]}
   const composition=compositionPlan(w,h,front.w,front.h)
   if(!format||composition.compatibility==='unavailable')throw new Error('incompatible_print_aspect')
   if(composition.compatibility==='extension' && (w*h>9437184 || Math.max(...Object.values(composition.padding))>2000))throw new Error('print_outpaint_dimensions_unavailable')
   const dx=final.w-front.w,dy=final.h-front.h
-  if(dx<0||dy<0||(entry.family!=='canvas'&&(dx||dy)))throw new Error('invalid_print_dimensions')
+  if(dx<0||dy<0||(entry.family!=='canvas'&&entry.family!=='framed_canvas'&&(dx||dy)))throw new Error('invalid_print_dimensions')
   const scale=requiredUpscale(composition.width,composition.height,front.w,front.h)
   return {format,front,final,composition,upscale:scale>0,scale,
     extension:{left:Math.floor(dx/2),right:dx-Math.floor(dx/2),top:Math.floor(dy/2),bottom:dy-Math.floor(dy/2)}}

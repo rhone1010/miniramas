@@ -18,8 +18,12 @@ import { createHash } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import type { MockupRenderer } from './mockup'
+import { getProductBySku } from '../print/catalog'
 
 interface Adapter {
+  composeTemplateVisualTest(i: { templateId: string; artwork: Buffer; artworkId: string; targetGeometry?: { widthIn: number; heightIn: number }; allowCrop?: boolean }): Promise<{
+    png: Buffer; metadata: Record<string, any>; visualizationKey: string
+  }>
   composeCatalogItem(i: { line: { productId: string; size: string }; artwork: Buffer; artworkId: string; allowCrop?: boolean }): Promise<{
     png: Buffer; metadata: Record<string, any>; visualizationKey: string; identity: { configuration: { sku: string; requiredPx: { w: number; h: number } } }
   }>
@@ -69,6 +73,16 @@ export const realMockupRenderer: MockupRenderer = {
   revision: revisionOf,
   async render(i) {
     const a = loadAdapter()
+    // The mug and the card are not in the adapter's catalog snapshot (Codex's catalog.next.json lists no options for them), so they go through its template entry
+    // with the geometry the backend knows (card front 5 x 7 in; the mug's wrap geometry is built in by the adapter). The SKU and pixel contract come from OUR catalog.
+    if (i.productFamily === 'mug' || i.productFamily === 'card') {
+      const p = getProductBySku(i.sku)
+      if (!p) throw new Error('unknown_sku')
+      const r = await a.composeTemplateVisualTest({ templateId: i.templateId, artwork: i.artwork, artworkId: i.artworkId, ...(i.productFamily === 'card' ? { targetGeometry: { widthIn: 5, heightIn: 7 } } : {}), allowCrop: false })
+      const m = r.metadata
+      return { png: r.png, width: m.width, height: m.height, visualizationKey: r.visualizationKey, configuration: { sku: p.sku, requiredPx: { ...p.requirements.finalPx } },
+        crop: m.fit ? { fit: m.fit, allowCrop: false, surfaceAspectRatio: m.surfaceAspectRatio ?? null, geometryReport: m.geometryReport ?? null } : null }
+    }
     // The adapter chooses the template from the family and the (square or rectangular) catalog geometry and reads its SKU, attributes and
     // pixel requirements from its own catalog; mockup.ts compares those with the frozen purchase and refuses a mismatch.
     const r = await a.composeCatalogItem({ line: { productId: i.productFamily, size: i.size }, artwork: i.artwork, artworkId: i.artworkId, allowCrop: false })

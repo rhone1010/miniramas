@@ -253,6 +253,7 @@ export async function approveOrder(deps: GiftDeps, userId: string, sessionId: st
 
 /** A real composition, via the existing Print Shop step: extends by outpaint or mirror inside geometry.ts limits, never crops. */
 export async function composeWithPrintShop(i: { masterB64: string; size: PrintSize; finish: PrintFinish }) {
+  if (i.finish === 'mug' || i.finish === 'card') return composePanelWithPrintShop(i)
   const { prepareComposition } = await import('../print/asset-pipeline')
   const original = await sharp(Buffer.from(i.masterB64, 'base64')).rotate().metadata()
   const c = await prepareComposition({ imageB64: i.masterB64, size: i.size, finish: i.finish })
@@ -363,4 +364,16 @@ export async function repairLine(deps: GiftDeps, input: { operator: string; user
     try { await deps.store.releaseRepair(ids.sessionId, ids.lineId, token) } catch { /* it expires on its own */ }
     fromStoreError(e)
   }
+}
+
+/**
+ * The mug and the card: the composition is the PANEL picture (a 1:1 face panel, or the 5:7 card front), at the panel's exact shape, extended by outpaint inside the
+ * approved bound or by reflection and never cropped. The wrap and the spread are built around it later (print file and mockup both use product-layout.ts).
+ */
+async function composePanelWithPrintShop(i: { masterB64: string; size: PrintSize; finish: PrintFinish }) {
+  const { preparePanelComposition } = await import('../print/asset-pipeline')
+  const { CARD, MUG } = await import('../print/production-profiles')
+  const panel = i.finish === 'mug' ? { w: MUG.panel.w, h: MUG.panel.h } : { w: CARD.frontTrim.w, h: CARD.frontTrim.h }
+  const c = await preparePanelComposition({ imageB64: i.masterB64, panel })
+  return { image: await sharp(c.working).png().toBuffer(), width: c.width, height: c.height, fit: c.fit, outpainted: c.outpainted }
 }

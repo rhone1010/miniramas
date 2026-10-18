@@ -239,13 +239,14 @@ describe('what the renderer is shown', () => {
 })
 
 describe('templates: only the approved, purchasable products have one', () => {
-  it('prints, premium, black frames and MirrorWrap canvas map to the approved templates; mugs, cards and every disabled family map to nothing', () => {
+  it('prints, premium, black frames and MirrorWrap canvas map to the approved templates; the mug and the 7 x 5 Mohawk card map to the visual-test templates; matted frame, framed canvas and every other card variant map to nothing', () => {
     expect(templateFor(getProduct('fine_art:12x18')!)).toBe('fine-art'); expect(templateFor(getProduct('premium:16x24')!)).toBe('premium-fine-art')
     expect(templateFor(getProduct('framed:12x18')!)).toBe('classic-framed'); expect(templateFor(getProduct('framed:8x8')!)).toBe('square-framed')
     expect(templateFor(getProduct('canvas:12x18')!)).toBe('gallery-canvas'); expect(templateFor(getProduct('canvas:8x8')!)).toBe('gallery-canvas-square')
-    for (const p of allProducts().filter(x => x.kind === 'mug' || x.kind === 'greeting_card' || x.status === 'disabled')) expect(templateFor(p), p.productId).toBeNull()
+    expect(templateFor(getProduct('mug:11oz')!)).toBe('ceramic-mug'); expect(templateFor(getProduct('card:7x5')!)).toBe('greeting-card')
+    for (const p of allProducts().filter(x => x.status === 'disabled' && !['mug:11oz', 'card:7x5'].includes(x.productId))) expect(templateFor(p), p.productId).toBeNull()
   })
-  it('mugs and cards stay disabled and unpriced', () => {
+  it('the mug and the card stay disabled and unpriced until the owner approves a price', () => {
     for (const p of allProducts().filter(x => x.kind === 'mug' || x.kind === 'greeting_card')) { expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull() }
   })
 })

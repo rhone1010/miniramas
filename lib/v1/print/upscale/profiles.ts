@@ -6,13 +6,9 @@
 //   finish    enlarged artwork -> the exact file the lab receives, and its required dimensions
 //   qaRegion  the file        -> the part that is the PICTURE (so inspection ignores wrap, bleed and borders)
 //
-// ONLY ONE PROFILE EXISTS: the flat-print family already sold (fine art, premium, canvas, classic frame), whose
-// geometry is in geometry.ts. Mugs (a wrap-around print area) and greeting cards (a flat spread with a front
-// panel) have different shapes, bleeds and QA regions. Their numbers are NOT encoded here: the sandbox Products
-// API returned print areas of 2670x1110 (mug) and 6118x2161 (7x5 card spread), but which part of a card sheet is
-// the front, and how a mug wrap should treat a square picture, are unverified product decisions. Adding either is
-// one new profile registered below plus tests; the processor, the job table, the settings, the review queue and
-// the order gate need no change. Until then those SKUs fail loudly ('no_artwork_profile') and never reach a lab.
+// THREE PROFILES: the flat prints (fine art, premium, canvas, classic frame, and the Gift Shop's matted frame and framed canvas), whose geometry is in
+// geometry.ts; the 11 oz mug wrap and the 7 x 5 card spread (gift-profiles.ts), whose layouts and their sources are in production-profiles.ts. Any other
+// SKU fails loudly ('no_artwork_profile') and never reaches a lab.
 
 import sharp from 'sharp'
 import { getSku, type PrintFinish, type PrintSize } from '../sku-map'
@@ -20,6 +16,7 @@ import { printPlan } from '../geometry'
 import { finishPrintAsset, prepareComposition } from '../asset-pipeline'
 import type { AssetJob } from './store'
 import type { Dim, TargetPlan } from './target'
+import { cardSpreadProfile, mugWrapProfile } from './gift-profiles'
 
 export interface PreparedArtwork {
   /** The artwork in the product's exact shape (after any outpaint or reflection). This is the QA reference. */
@@ -75,6 +72,8 @@ export const flatPrintProfile: ArtworkProfile = {
 
 type Matcher = (job: AssetJob) => boolean
 const registry: Array<{ match: Matcher; profile: ArtworkProfile }> = [
+  { match: job => job.finish === 'mug' && job.size === '11oz', profile: mugWrapProfile },
+  { match: job => job.finish === 'card' && job.size === '7x5', profile: cardSpreadProfile },
   { match: job => ['fine_art', 'premium', 'canvas', 'framed', 'framed_canvas', 'matted'].includes(job.finish) && /^\d+x\d+$/.test(job.size), profile: flatPrintProfile },
 ]
 

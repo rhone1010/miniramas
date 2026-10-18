@@ -5,12 +5,14 @@
 // prices and attributes stay exactly as they are) and adds the products sku-map.ts does not carry, as DISABLED entries
 // with the geometry Prodigi's sandbox returned on 2026-10-15 (docs/GOVERNANCE/prodigi-catalog-verified-2026-10-15.json).
 //
-// Nothing here enables a product. Only the four launch families in LAUNCH_FAMILIES are 'launch'. Framed-canvas and
-// matted rectangles wait for approved retail prices; the mug and the 7x5 Mohawk card wait for approved prices and
-// composition behavior. getLaunchSku() and the checkout route are untouched.
+// Only the four launch families in LAUNCH_FAMILIES are 'launch' for the Print Shop. The four Gift Shop products (matted frame, framed canvas, photo mug,
+// 7 x 5 card) are fully built and stay visible; gift-enablement.ts says when each may be sold, and the catalog reports the first open item as its
+// disabledReason. getLaunchSku() and the checkout route are untouched.
 
 import { createHash } from 'node:crypto'
-import { SKU_MAP, LAUNCH_FAMILIES, type PrintFinish, type PrintSize, type SkuEntry } from './sku-map'
+import { SKU_MAP, LAUNCH_FAMILIES, GIFT_PRODUCT_FAMILIES, type PrintFinish, type PrintSize, type SkuEntry } from './sku-map'
+import { GIFT_ENABLED_FAMILIES, GIFT_MOCKUP_READY, GIFT_PRODUCT_HOLDS } from './gift-enablement'
+import { CARD, MUG, PRODUCTION_SPECS } from './production-profiles'
 import { aspectCompatibility } from './geometry'
 import {
   CATALOG_CONTRACT_VERSION,
@@ -65,77 +67,59 @@ function requirements(final: Px, picture: Px, orientation: Orientation, rotatabl
 type Disabled = { status: 'disabled'; reason: DisabledReason }
 const LAUNCH = { status: 'launch' as const, reason: null }
 
+/** A file made of a PICTURE panel inside a larger layout (the mug wrap, the card spread): no canvas wrap, the panel is a rectangle in the file. */
+function layoutRequirements(final: Px, picture: Px, orientation: Orientation): CanonicalProduct['requirements'] {
+  return { ppi: PPI, finalPx: { ...final }, picturePx: { ...picture }, wrapPx: { ...NO_SIDES }, pictureAspect: Math.round((picture.w / picture.h) * 1e6) / 1e6, skuOrientation: orientation, rotatedFile: null, safeArea: null }
+}
+
+const GIFT_PROFILE: Record<string, CanonicalProduct['artworkProfile']> = { matted: 'flat_print', framed_canvas: 'flat_print', mug: 'mug_wrap', card: 'card_spread' }
+
+/** Whether a Gift Shop product may be sold, and if not, the first thing still open (gift-enablement.ts). */
+function giftState(family: ProductFamily, productId: string, e: SkuEntry): Disabled | typeof LAUNCH {
+  const hold = GIFT_PRODUCT_HOLDS[productId]
+  if (hold) return { status: 'disabled', reason: hold }
+  if (e.retailApproved === false) return { status: 'disabled', reason: 'retail_price_pending' }
+  if (!GIFT_ENABLED_FAMILIES.includes(family)) return { status: 'disabled', reason: 'not_launched' }
+  if (!GIFT_MOCKUP_READY.includes(family)) return { status: 'disabled', reason: 'mockup_template_pending' }
+  return LAUNCH
+}
+
 /** Products sku-map.ts sells or lists: derived from it, so prices, attributes and SKUs cannot drift. */
 function fromSkuMap(finish: PrintFinish, size: PrintSize, e: SkuEntry): CanonicalProduct {
   const family = (finish === 'framed' ? 'framed' : finish) as ProductFamily
   const launch = LAUNCH_FAMILIES.includes(finish)
+  const gift = GIFT_PRODUCT_FAMILIES.includes(finish)
+  const productId = `${family}:${size}`
   const picture: Px = { w: Math.round(e.imageWidthIn * PPI), h: Math.round(e.imageHeightIn * PPI) }
-  const state: Disabled | typeof LAUNCH = launch ? LAUNCH : { status: 'disabled', reason: 'not_launched' }
+  const state: Disabled | typeof LAUNCH = launch ? LAUNCH : gift ? giftState(family, productId, e) : { status: 'disabled', reason: 'not_launched' }
+  const final = { ...e.requiredPx }
+  const reqs = finish === 'mug' ? layoutRequirements(final, { ...MUG.panel }, 'wrap')
+    : finish === 'card' ? layoutRequirements(final, { w: CARD.frontTrim.w, h: CARD.frontTrim.h }, 'spread')
+    : requirements(final, picture, orientationOf(e.requiredPx), launch)
   return {
-    productId: `${family}:${size}`, kind: KIND[family], family, familyLabel: e.familyLabel, size, label: e.label, note: e.familyNote, sku: e.sku,
-    attributes: { ...(e.attributes ?? {}) }, unexposedOptions: UNEXPOSED[family], retailCents: e.retailCents,
-    status: state.status, disabledReason: state.reason, artworkProfile: launch ? 'flat_print' : null,
-    requirements: requirements({ ...e.requiredPx }, picture, orientationOf(e.requiredPx), true),
+    productId, kind: KIND[family], family, familyLabel: e.familyLabel, size, label: e.label, note: e.familyNote, sku: e.sku,
+    attributes: { ...(e.attributes ?? {}) }, unexposedOptions: UNEXPOSED[family], retailCents: e.retailApproved === false ? null : e.retailCents,
+    status: state.status, disabledReason: state.reason, artworkProfile: launch ? 'flat_print' : gift ? GIFT_PROFILE[family] : null,
+    requirements: reqs, production: gift ? structuredClone(PRODUCTION_SPECS[family as 'matted' | 'framed_canvas' | 'mug' | 'card']) : null,
   }
 }
 
 /**
- * Verified products that sku-map.ts does not carry. Pixel sizes are Prodigi's printAreaSizes (sandbox, 2026-10-15).
- * FRA-CAN-8X12 is landscape-DEFINED (3654 x 2454); the other framed-canvas rectangles are portrait. The canvas wrap
- * is 27 px per side, so the picture is the area minus 54.
+ * Verified products that sku-map.ts does not carry: the OTHER card variants only (direct delivery, gloss, 6x4, 6x6). They stay disabled and are not launch candidates.
+ * (Matted frame, framed canvas, the mug and the 7 x 5 Mohawk self-send card are in sku-map.ts now.)
  */
-const FRAMED_CANVAS_RECT: Array<[PrintSize, string, Px]> = [
-  ['8x12', 'GLOBAL-FRA-CAN-8X12', { w: 3654, h: 2454 }],
-  ['12x18', 'GLOBAL-FRA-CAN-12X18', { w: 3654, h: 5454 }],
-  ['16x24', 'GLOBAL-FRA-CAN-16X24', { w: 4854, h: 7254 }],
-  ['20x30', 'GLOBAL-FRA-CAN-20X30', { w: 6054, h: 9054 }],
-]
-/** Mounted frames: Prodigi's print area is the picture inside the mount (the mount widths are not uniform). */
-const MATTED_RECT: Array<[PrintSize, string, Px]> = [
-  ['8x12', 'GLOBAL-CFPM-8X12', { w: 1800, h: 3000 }],
-  ['12x18', 'GLOBAL-CFPM-12X18', { w: 2418, h: 4218 }],
-  ['16x24', 'GLOBAL-CFPM-16X24', { w: 3618, h: 6018 }],
-  ['20x30', 'GLOBAL-CFPM-20X30', { w: 4800, h: 7800 }],
-]
-
-function framedCanvasRect(size: PrintSize, sku: string, area: Px): CanonicalProduct {
-  const picture = { w: area.w - 54, h: area.h - 54 }
-  return {
-    productId: `framed_canvas:${size}`, kind: 'framed_canvas', family: 'framed_canvas', familyLabel: FAMILY_LABEL.framed_canvas, size, label: sizeLabel(size),
-    note: FAMILY_NOTE.framed_canvas, sku, attributes: { color: 'black', wrap: 'MirrorWrap' }, unexposedOptions: UNEXPOSED.framed_canvas, retailCents: null,
-    status: 'disabled', disabledReason: 'retail_price_pending', artworkProfile: null,
-    requirements: requirements(area, picture, orientationOf(area), false),
-  }
-}
-function mattedRect(size: PrintSize, sku: string, area: Px): CanonicalProduct {
-  return {
-    productId: `matted:${size}`, kind: 'matted_frame', family: 'matted', familyLabel: FAMILY_LABEL.matted, size, label: sizeLabel(size),
-    note: FAMILY_NOTE.matted, sku, attributes: { color: 'black' }, unexposedOptions: UNEXPOSED.matted, retailCents: null,
-    status: 'disabled', disabledReason: 'retail_price_pending', artworkProfile: null,
-    requirements: requirements(area, area, orientationOf(area), false),
-  }
-}
-
-function mugAndCards(): CanonicalProduct[] {
-  const spread = (productId: string, sku: string, size: string, label: string, note: string, px: Px, reason: DisabledReason, finish: string): CanonicalProduct => ({
+function otherCards(): CanonicalProduct[] {
+  const spread = (productId: string, sku: string, size: string, label: string, note: string, px: Px, finish: string): CanonicalProduct => ({
     productId, kind: 'greeting_card', family: 'card', familyLabel: FAMILY_LABEL.card, size, label, note, sku, attributes: {}, unexposedOptions: { finish: [finish] },
-    retailCents: null, status: 'disabled', disabledReason: reason, artworkProfile: null,
-    // A card file is a flat SPREAD; which part is the front panel is an unapproved composition decision.
-    requirements: requirements(px, px, 'spread', false),
+    retailCents: null, status: 'disabled', disabledReason: 'not_a_launch_candidate', artworkProfile: null, production: null,
+    requirements: layoutRequirements(px, px, 'spread'),
   })
-  const mug: CanonicalProduct = {
-    productId: 'mug:11oz-white', kind: 'mug', family: 'mug', familyLabel: FAMILY_LABEL.mug, size: '11oz', label: '11 oz White Mug', note: FAMILY_NOTE.mug,
-    sku: 'GLOBAL-MUG-W', attributes: { color: 'white', size: '313ml / 11oz' }, unexposedOptions: {}, retailCents: null, status: 'disabled',
-    disabledReason: 'composition_behavior_pending', artworkProfile: null, requirements: requirements({ w: 2670, h: 1110 }, { w: 2670, h: 1110 }, 'wrap', false),
-  }
   return [
-    mug,
-    spread('card:7x5-mohawk', 'GLOBAL-GRE-MOH-7X5-BLA', '7x5', 'Greeting Card 7 × 5″ (Mohawk)', FAMILY_NOTE.card, { w: 6118, h: 2161 }, 'composition_behavior_pending', 'matte'),
-    spread('card:7x5-mohawk-direct', 'GLOBAL-GRE-MOH-7X5-DIR', '7x5', 'Greeting Card 7 × 5″ (Mohawk, sent direct)', FAMILY_NOTE.card, { w: 6118, h: 2161 }, 'not_a_launch_candidate', 'matte'),
-    spread('card:6x4-gloss', 'GLOBAL-GRE-GLOS-6X4-BLA', '6x4', 'Greeting Card 6 × 4″ (Gloss)', 'Gloss coated card', { w: 4937, h: 1854 }, 'not_a_launch_candidate', 'gloss'),
-    spread('card:6x4-gloss-direct', 'GLOBAL-GRE-GLOS-6X4-DIR', '6x4', 'Greeting Card 6 × 4″ (Gloss, sent direct)', 'Gloss coated card', { w: 4937, h: 1854 }, 'not_a_launch_candidate', 'gloss'),
-    spread('card:7x5-gloss', 'GLOBAL-GRE-GLOS-7X5-BLA', '7x5', 'Greeting Card 7 × 5″ (Gloss)', 'Gloss coated card', { w: 6118, h: 2161 }, 'not_a_launch_candidate', 'gloss'),
-    spread('card:6x6-gloss', 'GLOBAL-GRE-GLOS-6X6-BLA', '6x6', 'Greeting Card 6 × 6″ (Gloss)', 'Gloss coated card', { w: 6732, h: 1712 }, 'not_a_launch_candidate', 'gloss'),
+    spread('card:7x5-mohawk-direct', 'GLOBAL-GRE-MOH-7X5-DIR', '7x5', 'Greeting Card 7 × 5″ (Mohawk, sent direct)', FAMILY_NOTE.card, { w: 6118, h: 2161 }, 'matte'),
+    spread('card:6x4-gloss', 'GLOBAL-GRE-GLOS-6X4-BLA', '6x4', 'Greeting Card 6 × 4″ (Gloss)', 'Gloss coated card', { w: 4937, h: 1854 }, 'gloss'),
+    spread('card:6x4-gloss-direct', 'GLOBAL-GRE-GLOS-6X4-DIR', '6x4', 'Greeting Card 6 × 4″ (Gloss, sent direct)', 'Gloss coated card', { w: 4937, h: 1854 }, 'gloss'),
+    spread('card:7x5-gloss', 'GLOBAL-GRE-GLOS-7X5-BLA', '7x5', 'Greeting Card 7 × 5″ (Gloss)', 'Gloss coated card', { w: 6118, h: 2161 }, 'gloss'),
+    spread('card:6x6-gloss', 'GLOBAL-GRE-GLOS-6X6-BLA', '6x6', 'Greeting Card 6 × 6″ (Gloss)', 'Gloss coated card', { w: 6732, h: 1712 }, 'gloss'),
   ]
 }
 
@@ -147,10 +131,7 @@ function build(): CanonicalProduct[] {
   for (const finish of Object.keys(SKU_MAP) as PrintFinish[]) {
     for (const [size, e] of Object.entries(SKU_MAP[finish]) as Array<[PrintSize, SkuEntry]>) list.push(fromSkuMap(finish, size, e))
   }
-  // Rectangles that sku-map.ts does not carry (it carries rectangles only for the four launch families).
-  for (const [size, sku, area] of FRAMED_CANVAS_RECT) if (!list.some(p => p.sku === sku)) list.push(framedCanvasRect(size, sku, area))
-  for (const [size, sku, area] of MATTED_RECT) if (!list.some(p => p.sku === sku)) list.push(mattedRect(size, sku, area))
-  for (const p of mugAndCards()) if (!list.some(x => x.sku === p.sku)) list.push(p)
+  for (const p of otherCards()) if (!list.some(x => x.sku === p.sku)) list.push(p)
   return list.sort((a, b) => FAMILY_ORDER.indexOf(a.family) - FAMILY_ORDER.indexOf(b.family) || SIZE_ORDER.indexOf(a.size) - SIZE_ORDER.indexOf(b.size) || a.productId.localeCompare(b.productId))
 }
 
@@ -180,7 +161,8 @@ export function catalogResponse(artwork?: { width: number; height: number } | nu
   const valid = !!artwork && Number.isFinite(artwork.width) && Number.isFinite(artwork.height) && artwork.width > 0 && artwork.height > 0
   const products: CatalogProduct[] = base.map(p => {
     const artworkFit = valid ? fitFor(artwork!, p) : undefined
-    return { ...p, ...(artworkFit ? { artworkFit } : {}), selectable: p.status === 'launch' && (!artworkFit || artworkFit.fit !== 'unavailable') }
+    const { production: _internal, ...customerFacing } = p        // the production spec names suppliers and open questions: it is for engineering and the frozen order, never the public catalog
+    return { ...customerFacing, ...(artworkFit ? { artworkFit } : {}), selectable: p.status === 'launch' && (!artworkFit || artworkFit.fit !== 'unavailable') }
   })
   return {
     contractVersion: CATALOG_CONTRACT_VERSION, catalogVersion: catalogVersion(base), fitRules: { ...FIT_RULES },
