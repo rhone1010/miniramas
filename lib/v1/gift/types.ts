@@ -98,8 +98,14 @@ export interface SessionView {
   masterAspect: string
   batches: BatchView[]
   usedEffectIds: string[]
-  /** freeBatchesTotal is 0 until the product order is paid, then 2 (two free six-image batches per paid order). */
-  entitlement: { freeBatchesTotal: number; freeBatchesUsed: number; paidPacksAvailable: number }
+  /**
+   * PREVIEWS BEFORE PURCHASE. The first six and the second six previews are FREE with no product purchase (freeBatchesTotal is always 2, a server
+   * constant); each further six is a verified $2.99 pack (paidPacksAvailable counts the account's unused packs). Free batches are server-controlled and
+   * cannot be repeated by recreating a session: freeAvailable is false once this session's two are used (freeBlockedReason 'session_limit') or when an
+   * account limit applies ('photo_limit' for the same photograph, 'daily_limit', 'lifetime_limit'); the customer can then buy a pack. A product purchase
+   * grants no previews.
+   */
+  entitlement: { freeBatchesTotal: number; freeBatchesUsed: number; paidPacksAvailable: number; freeAvailable: boolean; freeBlockedReason: 'session_limit' | 'photo_limit' | 'daily_limit' | 'lifetime_limit' | null }
   nextBatch: NextBatch
   expiresAt: string
   catalogVersion: string
@@ -115,6 +121,7 @@ export type OrderState = 'none' | 'checkout_open' | 'awaiting_artwork' | 'approv
 export interface OrderView {
   orderId: string | null
   state: OrderState
+  /** Always 2: the free previews are no longer granted by payment (see entitlement). Kept so existing readers keep working. */
   freeBatchesGranted: number
   approvedAt: string | null
   /** The My Collection piece created at approval (the one digital unlock), or null. */

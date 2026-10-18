@@ -183,6 +183,6 @@ describe('orderView no longer mistakes an unexpected state for approval', () => 
   it('the exact failed-run situation (paid by another path, nothing granted) reads needs_attention with 0 batches, never approved', async () => {
     await setup(); order().status = 'paid'; order().paid_at = new Date().toISOString()
     const v = await getSessionView(deps, U1, sid)
-    expect(v.order).toMatchObject({ state: 'needs_attention', freeBatchesGranted: 0, approvedAt: null }); expect(v.nextBatch).toMatchObject({ kind: 'blocked' })
+    expect(v.order).toMatchObject({ state: 'needs_attention', approvedAt: null }); expect(v.nextBatch).toMatchObject({ kind: 'blocked', reason: 'order_not_awaiting_artwork' })     // free previews no longer depend on payment, so nothing is lost
   })
 })

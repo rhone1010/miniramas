@@ -29,7 +29,7 @@ export type GiftErrorCode =
   | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit'
   | 'compositions_not_approved' | 'artwork_not_selected' | 'refund_not_available_after_manufacturing' | 'order_not_paid' | 'line_not_found'
   // product mockup and frozen geometry
-  | 'disclosure_version_required' | 'disclosure_version_mismatch'
+  | 'disclosure_version_required' | 'disclosure_version_mismatch' | 'rate_limited'
   | 'geometry_snapshot_invalid' | 'geometry_snapshot_unavailable' | 'stale_composition' | 'mockup_failed' | 'mockup_renderer_unavailable' | 'mockup_configuration_mismatch'
   | 'composition_failed' | 'composition_not_found' | 'order_has_no_lines' | 'order_not_found' | 'order_not_payable' | 'session_already_has_order'
   | 'order_session_mismatch' | 'invalid_refund_request' | 'payment_not_confirmed' | 'session_retained'
@@ -43,7 +43,7 @@ const STATUS: Partial<Record<GiftErrorCode, number>> = {
   compositions_not_approved: 409, artwork_not_selected: 409, refund_not_available_after_manufacturing: 409, order_not_paid: 409, line_not_found: 404,
   composition_failed: 502, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
   order_session_mismatch: 409, invalid_refund_request: 400, payment_not_confirmed: 409, session_retained: 409,
-  disclosure_version_required: 400, disclosure_version_mismatch: 409,
+  disclosure_version_required: 400, disclosure_version_mismatch: 409, rate_limited: 429,
   geometry_snapshot_invalid: 409, geometry_snapshot_unavailable: 409, stale_composition: 409, mockup_failed: 502, mockup_renderer_unavailable: 503, mockup_configuration_mismatch: 409,
 }
 export class GiftError extends Error {
@@ -100,6 +100,8 @@ export function masterAspectFor(series: Series, peopleCount: number | null): str
 export async function createSession(deps: GiftDeps, input: { userId: string; imageB64: unknown }): Promise<SessionView> {
   const src = await decodeSource(input.imageB64)
   if ('error' in src) throw new GiftError(src.error as GiftErrorCode)
+  // Count this attempt BEFORE the paid analysis runs. The ledger has no link to sessions, so deleting or recreating sessions cannot reset it.
+  try { await deps.store.recordSessionAttempt(input.userId, createHash('sha256').update(src.bytes).digest('hex')) } catch (e) { fromStoreError(e) }
   let analysis: SourceAnalysis
   try { analysis = await deps.analyze({ b64: src.b64, bytes: src.bytes }) } catch { throw new GiftError('analysis_unavailable') }
   if (analysis.status === 'age_restricted') throw new GiftError('age_restricted')     // nothing has been stored
@@ -274,24 +276,24 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     sku: p.sku, geometrySource: source, frozenCatalogVersion: frozenVersion, adaptationValidation: adaptationValidationFor(rec.series, plan.method),
   }))
   const incomplete = batches.some(b => !b.complete)
+  const free = await deps.store.freeStatus(rec.id, rec.user_id)            // FREE previews: a server-controlled allocation, independent of any purchase (migration 050)
   const expired = rec.status !== 'active' || (Date.parse(rec.expires_at) < now(deps) && !rec.pinned_at)
   const paid = !!order?.paid_at && !['created', 'cancelled'].includes(order.status)
   let nextBatch: NextBatch
   if (expired) nextBatch = { kind: 'blocked', reason: 'session_expired' }
   else if (rec.refunded_at) nextBatch = { kind: 'blocked', reason: 'order_refunded' }
   else if (rec.refund_requested_at) nextBatch = { kind: 'blocked', reason: 'refund_pending' }
-  else if (!paid) nextBatch = { kind: 'blocked', reason: 'order_payment_required' }
-  else if (order!.status !== 'awaiting_artwork') nextBatch = { kind: 'blocked', reason: 'order_not_awaiting_artwork' }
+  else if (order && !['created', 'awaiting_artwork', 'cancelled'].includes(order.status)) nextBatch = { kind: 'blocked', reason: 'order_not_awaiting_artwork' }     // generation needs no purchase, but ends at approval
   else if (incomplete) nextBatch = { kind: 'blocked', reason: 'previous_batch_incomplete' }
   else if (rec.series && remainingEffectCount(rec.series, used) < BATCH_SIZE) nextBatch = { kind: 'blocked', reason: 'no_effects_remaining' }
-  else if (batches.length < rec.free_batches_granted) nextBatch = { kind: 'free' }
+  else if (free.available) nextBatch = { kind: 'free' }
   else if (packs > 0) nextBatch = { kind: 'paid', packAvailable: true }
   else nextBatch = { kind: 'payment_required', amountCents: PACK_PRICE_CENTS as 299, currency: 'USD' }
   return {
     contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id,
     source: { sourceRef: rec.id, width: rec.source_width, height: rec.source_height, series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null },
     lines: rec.lines, geometries, masterAspect: rec.master_aspect ?? '', batches, usedEffectIds: used,
-    entitlement: { freeBatchesTotal: rec.free_batches_granted, freeBatchesUsed: batches.filter(b => b.kind === 'free').length, paidPacksAvailable: packs },
+    entitlement: { freeBatchesTotal: FREE_BATCHES, freeBatchesUsed: free.used, paidPacksAvailable: packs, freeAvailable: free.available, freeBlockedReason: free.reason },
     nextBatch, expiresAt: rec.expires_at, catalogVersion: catalogVersion(catalog),
     order: orderView(rec, order),
     artworkPreviewId: rec.artwork_preview_id,
@@ -326,7 +328,7 @@ function orderView(rec: SessionRec, order: Awaited<ReturnType<GiftDeps['store'][
     : ['paid', 'withheld', 'error'].includes(order.status) && rec.approved_at ? 'approved'
     : 'needs_attention'
   return {
-    orderId: rec.order_id, state, freeBatchesGranted: rec.free_batches_granted, approvedAt: rec.approved_at, unlockPortfolioId: rec.unlock_portfolio_id,
+    orderId: rec.order_id, state, freeBatchesGranted: FREE_BATCHES, approvedAt: rec.approved_at, unlockPortfolioId: rec.unlock_portfolio_id,
     totalCents: order?.retail_total_cents ?? null, disclosureVersion: rec.disclosure_version,
   }
 }

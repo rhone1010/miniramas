@@ -4,12 +4,13 @@ import { randomUUID } from 'node:crypto'
 import { catalogVersion } from '../print/catalog'
 import { createGiftCheckout, confirmGiftOrder, verifyGiftPayment, giftOrderRecheck, DISCLOSURE, GIFT_ORDER_KIND, type GiftOrderDeps, type PrintOrdersPort } from './orders'
 import { createSession, setLines, startBatch, getSessionView, type GiftDeps } from './service'
+import { selectArtwork } from './compose'
 import { memoryGiftStore } from './store'
 import { giftRenderId, isGiftOrder, parseGiftRenderId } from './order-kind'
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '10000000-0000-4000-8000-000000000002'
 const ADDRESS = { name: 'Ada Lovelace', line1: '1 Main St', city: 'Sonoma', state: 'CA', postcode: '95476', countryCode: 'us' }
-const BODY = { email: 'ada@example.test', shippingAddress: ADDRESS, disclosureAccepted: true as const, disclosureVersion: '2026-10-17-1', returnPath: '/gift-wizard' as const }
+const BODY = { email: 'ada@example.test', shippingAddress: ADDRESS, disclosureAccepted: true as const, disclosureVersion: '2026-10-18-1', returnPath: '/gift-wizard' as const }
 
 function rig(over: { shippingAmount?: string; canFulfil?: boolean; sandbox?: boolean } = {}) {
   const store = memoryGiftStore()
@@ -53,9 +54,11 @@ function rig(over: { shippingAmount?: string; canFulfil?: boolean; sandbox?: boo
   const pay = (id: string, intent = 'pi_test_1') => { const s = sessions.get(id); s.payment_status = 'paid'; s.status = 'complete'; s.payment_intent = intent }
   return { deps, store, stripe, sessions, quote, pay, gift }
 }
-async function sessionWithLines(r: ReturnType<typeof rig>, lines = [{ lineId: 'a', productId: 'fine_art:8x8', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 2 }], user = U1) {
+/** Previews first: the customer has generated the free previews and saved a favorite (unless `favorite` is false) before choosing gifts. */
+async function sessionWithLines(r: ReturnType<typeof rig>, lines = [{ lineId: 'a', productId: 'fine_art:8x8', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 2 }], user = U1, favorite = true) {
   const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
   const view = await createSession(r.gift, { userId: user, imageB64: photo })
+  if (favorite) { const b = await startBatch(r.gift, user, view.sessionId, { idempotencyKey: 'pre-purchase-1' }); await selectArtwork(r.gift, user, view.sessionId, b.batch.previews[0].previewId) }
   if (lines.length) await setLines(r.gift, user, view.sessionId, lines)
   return view.sessionId
 }
@@ -83,7 +86,7 @@ describe('gift checkout', () => {
     const p = r.stripe.checkout.sessions.create.mock.calls[0][0]
     expect(p).toMatchObject({ mode: 'payment', ui_mode: 'embedded', customer_email: 'ada@example.test', custom_text: { submit: { message: DISCLOSURE.text } }, metadata: { kind: GIFT_ORDER_KIND, giftSessionId: sid, userId: U1, disclosure: DISCLOSURE.version } })
     expect(p.return_url).toBe('https://x.test/gift-wizard?gift_order_session={CHECKOUT_SESSION_ID}')
-    expect(DISCLOSURE.text).toMatch(/created after payment/); expect(DISCLOSURE.text).toMatch(/Nothing is printed or manufactured until you approve your final artwork/); expect(DISCLOSURE.text.length).toBeLessThan(1200)
+    expect(DISCLOSURE.text).toMatch(/first twelve personalized artwork previews are free/); expect(DISCLOSURE.text).toMatch(/Nothing is printed or manufactured until you approve your gifts/); expect(DISCLOSURE.text.length).toBeLessThan(1200)
     expect(out.totals.totalCents).toBe(r.sessions.get(out.stripeSessionId).amount_total)
   })
   it('records the version of the disclosure the customer accepted, and refuses without acceptance', async () => {
@@ -159,7 +162,7 @@ describe('payment verification', () => {
     const r = rig(); const { sid, out } = await paidOrder(r)
     expect(await confirmGiftOrder(r.deps, out.stripeSessionId)).toMatchObject({ confirmed: false })
     expect([...r.store.orders.values()][0].status).toBe('created'); expect((await r.store.getSession(sid, U1))!.free_batches_granted).toBe(0)
-    await expect(startBatch(r.gift, U1, sid, { idempotencyKey: 'idem-key-1' })).rejects.toMatchObject({ code: 'order_payment_required' })
+    expect((await getSessionView(r.gift, U1, sid)).nextBatch).toEqual({ kind: 'free' })        // an unpaid checkout takes nothing away: the free previews do not depend on payment
   })
   it('verified payment moves the order to awaiting_artwork, freezes the lines, grants two free batches and retains the session', async () => {
     const r = rig(); const { sid, out } = await paidOrder(r); r.pay(out.stripeSessionId)
@@ -318,39 +321,52 @@ describe('checkout session reuse and replacement', () => {
 })
 
 // ── the disclosure: exact wording, and the version the page displayed must be submitted and must be current ──
-const APPROVED_TEXT = `Your artwork is personalized and created after payment. Your purchase includes two sets of six artwork previews. After exploring your previews, you'll select your favorite and review how it looks on each purchased product.
+const APPROVED_TEXT = `Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.
 
-Additional sets of six previews are available for $2.99.
+Once you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.
 
-Nothing is printed or manufactured until you approve your final artwork. If you're not satisfied after reviewing your included previews, you may request a full refund through Concierge.`
+After payment, you'll review how your artwork looks on each purchased product and approve the final composition before production begins.
 
-describe('purchase disclosure 2026-10-17-1', () => {
+Nothing is printed or manufactured until you approve your gifts.`
+
+describe('previews before purchase: checkout needs a saved favorite', () => {
+  it('refuses checkout until the customer has chosen a favorite, before any quote, Stripe session or order; works once one is saved', async () => {
+    const r = rig(); const sid = await sessionWithLines(r, undefined, U1, false)
+    await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'artwork_not_selected', status: 409 })
+    expect(r.quote).not.toHaveBeenCalled(); expect(r.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(r.store.orders.size).toBe(0)
+    const b = await startBatch(r.gift, U1, sid, { idempotencyKey: 'late-favorite-1' }); await selectArtwork(r.gift, U1, sid, b.batch.previews[1].previewId)
+    const out = await checkout(r, sid); expect(out.stripeSessionId).toMatch(/^cs_test_gift/)
+    expect((await getSessionView(r.gift, U1, sid)).artworkPreviewId).toBe(b.batch.previews[1].previewId)         // the favorite is kept through checkout
+  })
+})
+
+describe('purchase disclosure 2026-10-18-1', () => {
   const order = (r: ReturnType<typeof rig>) => [...r.store.orders.values()][0]
   it('is exactly the approved wording and version, and the same text goes to Stripe and back to the page', async () => {
-    expect(DISCLOSURE).toEqual({ version: '2026-10-17-1', text: APPROVED_TEXT })
+    expect(DISCLOSURE).toEqual({ version: '2026-10-18-1', text: APPROVED_TEXT })
     const r = rig(); const sid = await sessionWithLines(r); const out = await checkout(r, sid)
     expect(out.disclosure).toEqual(DISCLOSURE); expect(r.sessions.get(out.stripeSessionId).params.custom_text.submit.message).toBe(APPROVED_TEXT)
-    expect(r.sessions.get(out.stripeSessionId).metadata.disclosure).toBe('2026-10-17-1'); expect(APPROVED_TEXT.length).toBeLessThan(1200)       // Stripe's limit for the submit message
+    expect(r.sessions.get(out.stripeSessionId).metadata.disclosure).toBe('2026-10-18-1'); expect(APPROVED_TEXT.length).toBeLessThan(1200)       // Stripe's limit for the submit message
   })
   it('requires the version with the acceptance: missing, empty, non-string, stale and invented versions are refused before any quote, Stripe session or order', async () => {
     const r = rig(); const sid = await sessionWithLines(r)
     const { disclosureVersion: _v, ...noVersion } = BODY
     for (const body of [noVersion, { ...BODY, disclosureVersion: '' }, { ...BODY, disclosureVersion: 20261017 }, { ...BODY, disclosureVersion: null }]) await expect(checkout(r, sid, body)).rejects.toMatchObject({ code: 'disclosure_version_required', status: 400 })
-    for (const v of ['2026-10-16-1', '2026-10-18-1', 'latest', ' 2026-10-17-1']) await expect(checkout(r, sid, { ...BODY, disclosureVersion: v })).rejects.toMatchObject({ code: 'disclosure_version_mismatch', status: 409 })
+    for (const v of ['2026-10-16-1', '2026-10-17-1', '2026-10-19-1', 'latest', ' 2026-10-18-1']) await expect(checkout(r, sid, { ...BODY, disclosureVersion: v })).rejects.toMatchObject({ code: 'disclosure_version_mismatch', status: 409 })
     await expect(checkout(r, sid, { ...BODY, disclosureAccepted: false })).rejects.toMatchObject({ code: 'disclosure_required' })
     expect(r.quote).not.toHaveBeenCalled(); expect(r.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(r.store.orders.size).toBe(0)
   })
   it('a stale version is refused even when an open session exists: that session is neither reused nor replaced, and the order is untouched', async () => {
     const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid); const before = JSON.stringify(order(r))
-    await expect(checkout(r, sid, { ...BODY, disclosureVersion: '2026-10-16-1' })).rejects.toMatchObject({ code: 'disclosure_version_mismatch' })
+    await expect(checkout(r, sid, { ...BODY, disclosureVersion: '2026-10-17-1' })).rejects.toMatchObject({ code: 'disclosure_version_mismatch' })
     expect(r.stripe.checkout.sessions.create).toHaveBeenCalledTimes(1); expect(r.sessions.get(a.stripeSessionId).status).toBe('open'); expect(JSON.stringify(order(r))).toBe(before)
     expect((await checkout(r, sid)).stripeSessionId).toBe(a.stripeSessionId)                                 // the current version still reuses it
   })
   it('an open session created under an older disclosure is not reused (it would show the old wording at payment): it is replaced and expired', async () => {
     const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid)
-    r.sessions.get(a.stripeSessionId).metadata.disclosure = '2026-10-16-1'
+    r.sessions.get(a.stripeSessionId).metadata.disclosure = '2026-10-17-1'
     const b2 = await checkout(r, sid)
-    expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(r.sessions.get(a.stripeSessionId).status).toBe('expired'); expect(r.sessions.get(b2.stripeSessionId).metadata.disclosure).toBe('2026-10-17-1')
+    expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(r.sessions.get(a.stripeSessionId).status).toBe('expired'); expect(r.sessions.get(b2.stripeSessionId).metadata.disclosure).toBe('2026-10-18-1')
   })
   it('existing acceptance timestamps and version records are preserved: a replacement checkout never rewrites what the session recorded when its order was first created', async () => {
     const r = rig(); const sid = await sessionWithLines(r); await checkout(r, sid)
@@ -360,7 +376,7 @@ describe('purchase disclosure 2026-10-17-1', () => {
   })
   it('the first checkout records the accepted version and a timestamp on the session; nothing else about refunds, prices or entitlements changed', async () => {
     const r = rig(); const sid = await sessionWithLines(r); const out = await checkout(r, sid)
-    const rec = (await r.store.getSession(sid, U1))!; expect(rec.disclosure_version).toBe('2026-10-17-1'); expect(rec.disclosure_accepted_at).toBeTruthy()
+    const rec = (await r.store.getSession(sid, U1))!; expect(rec.disclosure_version).toBe('2026-10-18-1'); expect(rec.disclosure_accepted_at).toBeTruthy()
     expect(out.totals.shippingCents).toBe(685); expect(out.totals.totalCents).toBe(out.totals.itemsCents + 685)
     r.pay(out.stripeSessionId); await confirmGiftOrder(r.deps, out.stripeSessionId, U1); expect((await r.store.getSession(sid, U1))!.free_batches_granted).toBe(2)
   })

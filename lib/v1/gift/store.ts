@@ -6,7 +6,7 @@
 // The memory implementation mirrors those rules for the service tests.
 
 import { randomUUID } from 'node:crypto'
-import { FREE_BATCHES } from './policy'
+import { FREE_PREVIEWS, SESSION_ATTEMPTS, type FreeBlockReason } from './policy'
 import type { BatchKind, GiftLine, PreviewStatus, Series } from './types'
 
 export interface SessionRec {
@@ -49,8 +49,8 @@ export type StoreErrorCode =
   | 'session_not_found' | 'session_expired' | 'payment_required' | 'previous_batch_incomplete' | 'effect_already_used' | 'six_distinct_effects_required'
   | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit' | 'line_not_found'
   | 'artwork_not_selected' | 'compositions_not_approved' | 'order_has_no_lines' | 'order_not_paid' | 'refund_not_available_after_manufacturing'
-  | 'session_already_has_order' | 'order_not_found' | 'order_session_mismatch' | 'order_not_payable'
-const STORE_ERROR = /session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable/
+  | 'session_already_has_order' | 'order_not_found' | 'order_session_mismatch' | 'order_not_payable' | 'rate_limited'
+const STORE_ERROR = /session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable|rate_limited/
 export class StoreError extends Error { constructor(public code: StoreErrorCode) { super(code) } }
 
 export interface GiftStore {
@@ -59,6 +59,10 @@ export interface GiftStore {
   patchSession(id: string, userId: string, patch: Partial<Pick<SessionRec, 'lines' | 'master_aspect' | 'source_path' | 'expires_at' | 'last_activity_at'>>): Promise<void>
   listBatches(sessionId: string): Promise<Array<{ batch: BatchRec; previews: PreviewRec[] }>>
   reserveBatch(i: { sessionId: string; userId: string; key: string; effects: string[] }): Promise<{ batch: BatchRec; reused: boolean }>
+  /** Count one photo-analysis attempt for this account and photograph, or throw StoreError('rate_limited') (migration 051). Call BEFORE the paid analysis. */
+  recordSessionAttempt(userId: string, sha256: string): Promise<void>
+  /** Whether this session may take another FREE batch and, if not, why (migration 050). Read-only. */
+  freeStatus(sessionId: string, userId: string): Promise<{ available: boolean; used: number; reason: FreeBlockReason | null }>
   claimPreview(previewId: string, userId: string): Promise<PreviewRec | null>
   markReady(previewId: string, r: { master_path: string; preview_path: string; width: number; height: number }): Promise<void>
   markFailed(previewId: string, error: string): Promise<void>
@@ -109,11 +113,20 @@ export function supabaseGiftStore(db: any): GiftStore {
       return batches.map(batch => ({ batch, previews: previews.filter(p => p.batch_id === batch.id) }))
     },
     async reserveBatch({ sessionId, userId, key, effects }) {
-      const { data, error } = await db.rpc('gift_reserve_batch', { p_session: sessionId, p_user: userId, p_key: key, p_effects: effects, p_free: FREE_BATCHES })
+      const { data, error } = await db.rpc('gift_reserve_batch', { p_session: sessionId, p_user: userId, p_key: key, p_effects: effects, ...FREE_ARGS })
       if (error) fromRpc(error)
       const row = Array.isArray(data) ? data[0] : data
       const batch: BatchRec = await one(db.from('gift_batches').select('*').eq('id', row.o_batch_id).single())
       return { batch, reused: !!row.o_reused }
+    },
+    async recordSessionAttempt(userId, sha) {
+      await rpc('gift_record_session_attempt', { p_user: userId, p_sha: sha, p_hour_cap: SESSION_ATTEMPTS.perAccountHour, p_day_cap: SESSION_ATTEMPTS.perAccountDay, p_photo_cap: SESSION_ATTEMPTS.perPhotoDay })
+    },
+    async freeStatus(sessionId, userId) {
+      const { data, error } = await db.rpc('gift_free_status', { p_session: sessionId, p_user: userId, ...FREE_ARGS })
+      if (error) fromRpc(error)
+      const row = Array.isArray(data) ? data[0] : data
+      return { available: !!row?.o_available, used: Number(row?.o_used_in_session ?? 0), reason: (row?.o_reason ?? null) as FreeBlockReason | null }
     },
     async claimPreview(previewId, userId) {
       const { data, error } = await db.rpc('gift_claim_preview', { p_preview: previewId, p_user: userId })
@@ -173,16 +186,36 @@ export function supabaseGiftStore(db: any): GiftStore {
 export type MemoryPack = { id: string; user_id: string; stripe_session_id: string; amount_cents: number; status: 'paid' | 'consumed' }
 export type MemoryPortfolio = { id: string; user_id: string; series: string | null; origin: 'gift'; preview_id: string; clean_path: string; unlocked: boolean; source_image: string }
 
+const FREE_ARGS = { p_session_cap: FREE_PREVIEWS.perSession, p_photo_cap: FREE_PREVIEWS.perAccountPhoto, p_24h_cap: FREE_PREVIEWS.perAccount24h, p_total_cap: FREE_PREVIEWS.perAccountLifetime }
+
 export function memoryGiftStore(clock: () => number = Date.now) {
   const sessions = new Map<string, SessionRec>(), batches: BatchRec[] = [], previews: PreviewRec[] = []
   const packs: MemoryPack[] = [], orders = new Map<string, OrderInfo>(), lines: OrderLineRec[] = [], compositions: CompositionRec[] = []
+  const attempts: Array<{ user_id: string; sha: string; at: number }> = []
+  const freeGrants: Array<{ user_id: string; source_sha256: string; session_id: string | null; batch_id: string; at: number }> = []     // the free-batch ledger: survives session deletion
   const portfolios: MemoryPortfolio[] = [], refunds = new Map<string, { order_id: string; amount: number }>()
   const refundRequests = new Map<string, { id: string; session_id: string; status: 'requested' | 'refunded' | 'declined' }>()
   const iso = (ms = clock()) => new Date(ms).toISOString()
   const orderOf = (s: SessionRec) => (s.order_id ? orders.get(s.order_id) ?? null : null)
   const owned = (id: string, userId: string) => { const s = sessions.get(id); if (!s || s.user_id !== userId) throw new StoreError('session_not_found'); return s }
+  const freeOf = (s: SessionRec): { available: boolean; used: number; reason: FreeBlockReason | null } => {
+    const used = batches.filter(b => b.session_id === s.id && b.kind === 'free').length
+    const mine = freeGrants.filter(g => g.user_id === s.user_id)
+    if (used >= FREE_PREVIEWS.perSession) return { available: false, used, reason: 'session_limit' }
+    if (mine.filter(g => g.source_sha256 === s.source_sha256).length >= FREE_PREVIEWS.perAccountPhoto) return { available: false, used, reason: 'photo_limit' }
+    if (mine.filter(g => clock() - g.at < 864e5).length >= FREE_PREVIEWS.perAccount24h) return { available: false, used, reason: 'daily_limit' }
+    if (mine.length >= FREE_PREVIEWS.perAccountLifetime) return { available: false, used, reason: 'lifetime_limit' }
+    return { available: true, used, reason: null }
+  }
   const store: GiftStore = {
     async createSession(rec) { sessions.set(rec.id, structuredClone(rec)) },
+    async freeStatus(sessionId, userId) { return freeOf(owned(sessionId, userId)) },
+    async recordSessionAttempt(userId, sha) {                                       // the ledger survives session deletion
+      const mine = attempts.filter(a => a.user_id === userId)
+      if (mine.filter(a => clock() - a.at < 3600_000).length >= SESSION_ATTEMPTS.perAccountHour || mine.filter(a => clock() - a.at < 864e5).length >= SESSION_ATTEMPTS.perAccountDay ||
+          mine.filter(a => a.sha === sha && clock() - a.at < 864e5).length >= SESSION_ATTEMPTS.perPhotoDay) throw new StoreError('rate_limited')
+      attempts.push({ user_id: userId, sha, at: clock() })
+    },
     async getSession(id, userId) { const s = sessions.get(id); return s && s.user_id === userId && s.status !== 'deleted' ? structuredClone(s) : null },
     async patchSession(id, userId, patch) { const s = sessions.get(id); if (s && s.user_id === userId) Object.assign(s, structuredClone(patch)) },
     async listBatches(sessionId) {
@@ -197,20 +230,20 @@ export function memoryGiftStore(clock: () => number = Date.now) {
       if (s.refunded_at) throw new StoreError('order_refunded')
       if (s.refund_requested_at) throw new StoreError('refund_pending')
       const o = orderOf(s)
-      if (!o || !o.paid_at || ['created', 'cancelled'].includes(o.status)) throw new StoreError('order_payment_required')
+      if (o && !['created', 'awaiting_artwork', 'cancelled'].includes(o.status)) throw new StoreError('order_not_awaiting_artwork')      // generation needs no order, but not after approval
       if (effects.length !== 6 || new Set(effects).size !== 6) throw new StoreError('six_distinct_effects_required')
       if (previews.some(p => p.session_id === sessionId && effects.includes(p.effect_id))) throw new StoreError('effect_already_used')
       if (previews.some(p => p.session_id === sessionId && p.status !== 'ready')) throw new StoreError('previous_batch_incomplete')
-      if (o.status !== 'awaiting_artwork') throw new StoreError('order_not_awaiting_artwork')
       const n = batches.filter(b => b.session_id === sessionId).length
       let kind: BatchKind = 'free', packId: string | null = null
-      if (n >= s.free_batches_granted) {
+      if (!freeOf(s).available) {
         const pack = packs.find(p => p.user_id === userId && p.status === 'paid')
         if (!pack) throw new StoreError('payment_required')
         kind = 'paid'; packId = pack.id; pack.status = 'consumed'
       }
       const batch: BatchRec = { id: randomUUID(), session_id: sessionId, user_id: userId, batch_index: n + 1, kind, pack_id: packId, idempotency_key: key, effect_ids: [...effects], created_at: iso() }
       batches.push(batch)
+      if (kind === 'free') freeGrants.push({ user_id: userId, source_sha256: s.source_sha256, session_id: sessionId, batch_id: batch.id, at: clock() })
       effects.forEach((effect_id, i) => previews.push({ id: randomUUID(), batch_id: batch.id, session_id: sessionId, slot: i + 1, effect_id, status: 'pending', attempts: 0, lease_until: null, master_path: null, preview_path: null, width: null, height: null, error: null }))
       s.last_activity_at = iso()
       if (!s.pinned_at) s.expires_at = iso(Math.min(Date.parse(s.created_at) + 30 * 864e5, Math.max(Date.parse(s.expires_at), clock() + 7 * 864e5)))
@@ -264,8 +297,7 @@ export function memoryGiftStore(clock: () => number = Date.now) {
     async orderLines(orderId) { return lines.filter(l => l.order_id === orderId).sort((a, b) => a.line_index - b.line_index).map(l => structuredClone(l)) },
     async selectArtwork(sessionId, userId, previewId) {
       const s = owned(sessionId, userId); const o = orderOf(s)
-      if (!o) throw new StoreError('order_payment_required')
-      if (o.status !== 'awaiting_artwork') throw new StoreError('order_not_awaiting_artwork')
+      if (o && !['created', 'awaiting_artwork', 'cancelled'].includes(o.status)) throw new StoreError('order_not_awaiting_artwork')       // saved before any order, or while one awaits; not after approval
       if (s.refunded_at) throw new StoreError('order_refunded')
       if (s.refund_requested_at) throw new StoreError('refund_pending')
       if (!previews.some(p => p.id === previewId && p.session_id === sessionId && p.status === 'ready')) throw new StoreError('preview_not_ready')

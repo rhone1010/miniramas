@@ -28,8 +28,8 @@ import { GIFT_ORDER_KIND } from './order-kind'
 
 /** Shown before payment, passed to Stripe Checkout as its submit message, and recorded by version when the customer accepts. */
 export const DISCLOSURE: Disclosure = {
-  version: '2026-10-17-1',
-  text: "Your artwork is personalized and created after payment. Your purchase includes two sets of six artwork previews. After exploring your previews, you'll select your favorite and review how it looks on each purchased product.\n\nAdditional sets of six previews are available for $2.99.\n\nNothing is printed or manufactured until you approve your final artwork. If you're not satisfied after reviewing your included previews, you may request a full refund through Concierge.",
+  version: '2026-10-18-1',
+  text: "Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.\n\nOnce you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.\n\nAfter payment, you'll review how your artwork looks on each purchased product and approve the final composition before production begins.\n\nNothing is printed or manufactured until you approve your gifts.",
 }
 
 export interface PrintOrdersPort {
@@ -92,6 +92,8 @@ export async function createGiftCheckout(
   if (existing?.paid_at && existing.status !== 'created') throw new GiftError('order_already_paid')
 
   if (!rec.lines.length) throw new GiftError('no_lines')
+  // The customer must have seen their artwork and chosen a favorite BEFORE paying: previews first, then gifts, then checkout.
+  if (!rec.artwork_preview_id) throw new GiftError('artwork_not_selected')
   if (deps.requireSandbox) { try { deps.requireSandbox() } catch { throw new GiftError('checkout_unavailable') } }
   if (!(await deps.canFulfil(input.user.id))) throw new GiftError('fulfilment_unavailable')
 

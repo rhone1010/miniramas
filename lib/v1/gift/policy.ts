@@ -5,6 +5,24 @@
 
 /** APPROVED: first six previews free, second six free, every further six $2.99 after verified payment. */
 export const FREE_BATCHES = 2
+
+/**
+ * PREVIEWS BEFORE PURCHASE (migration 050). The first six and the second six previews are free with no product purchase; every further six is a
+ * verified $2.99 pack. Free batches are SERVER-CONTROLLED: each is recorded in a ledger that outlives the session, and these caps are enforced in the
+ * database under the session lock, so recreating a session (or deleting and recreating it) cannot repeat a free allocation.
+ *   perSession          free batches per session
+ *   perAccountPhoto     free batches per account for the same photograph, across all sessions, deleted ones included
+ *   perAccount24h       free batches per account in any rolling 24 hours
+ *   perAccountLifetime  free batches per account, ever
+ * The last three are proposed limits, not previously approved numbers.
+ */
+export const FREE_PREVIEWS = { perSession: FREE_BATCHES, perAccountPhoto: 2, perAccount24h: 6, perAccountLifetime: 20 } as const
+/**
+ * Photo analysis (session creation) is paid work, so every attempt is counted BEFORE the analysis runs, in a ledger that deletion cannot reset
+ * (migration 051). Per account: 10 per hour and 30 per 24 hours; per account and photograph: 5 per 24 hours.
+ */
+export const SESSION_ATTEMPTS = { perAccountHour: 10, perAccountDay: 30, perPhotoDay: 5 } as const
+export type FreeBlockReason = 'session_limit' | 'photo_limit' | 'daily_limit' | 'lifetime_limit'
 export const BATCH_SIZE = 6
 export const PACK_PRICE_CENTS = 299
 export const PACK_CURRENCY = 'usd'

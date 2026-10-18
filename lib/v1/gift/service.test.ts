@@ -51,9 +51,9 @@ const newSession = async (r = rig(), user = U1, paid = true) => {
 describe('sessions', () => {
   it('creates an owned session with the source stored, the series identified and a master aspect chosen', async () => {
     const { r, view } = await newSession(rig(), U1, false)
-    expect(view).toMatchObject({ source: { series: 'portraits', width: 800, height: 800, peopleCount: null }, masterAspect: '1:1', batches: [], usedEffectIds: [], nextBatch: { kind: 'blocked', reason: 'order_payment_required' } })
-    expect(view.entitlement).toEqual({ freeBatchesTotal: 0, freeBatchesUsed: 0, paidPacksAvailable: 0 })
-    expect(view.order).toMatchObject({ state: 'none', orderId: null, freeBatchesGranted: 0 })
+    expect(view).toMatchObject({ source: { series: 'portraits', width: 800, height: 800, peopleCount: null }, masterAspect: '1:1', batches: [], usedEffectIds: [], nextBatch: { kind: 'free' } })
+    expect(view.entitlement).toEqual({ freeBatchesTotal: 2, freeBatchesUsed: 0, paidPacksAvailable: 0, freeAvailable: true, freeBlockedReason: null })       // previews first: free, no purchase
+    expect(view.order).toMatchObject({ state: 'none', orderId: null, freeBatchesGranted: 2 })
     expect([...r.files.keys()]).toEqual([`gift/${view.sessionId}/source.jpg`])
     expect(JSON.stringify(view)).not.toMatch(/source\.jpg|masters|storage/)
   })
@@ -162,16 +162,17 @@ describe('batches: free, free, then paid', () => {
     expect(b2.batch).toMatchObject({ batchIndex: 2, kind: 'free' })
     expect(b2.session.usedEffectIds.length).toBe(12); expect(new Set(b2.session.usedEffectIds).size).toBe(12)
     expect(b2.session.nextBatch).toEqual({ kind: 'payment_required', amountCents: 299, currency: 'USD' })
-    expect(b2.session.entitlement).toEqual({ freeBatchesTotal: 2, freeBatchesUsed: 2, paidPacksAvailable: 0 })
+    expect(b2.session.entitlement).toEqual({ freeBatchesTotal: 2, freeBatchesUsed: 2, paidPacksAvailable: 0, freeAvailable: false, freeBlockedReason: 'session_limit' })
   })
-  it('nothing is generated before the order is paid: not for a session with no order, nor one with an unpaid checkout', async () => {
+  it('generation needs no purchase: a session with no order and one with an unpaid checkout both get free batches, and approval ends generation', async () => {
     const none = await newSession(rig(), U1, false)
-    await expect(startBatch(none.r.deps, U1, none.view.sessionId, { idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'order_payment_required', status: 402 })
+    expect((await startBatch(none.r.deps, U1, none.view.sessionId, { idempotencyKey: key(1) })).batch.kind).toBe('free')
     const open = await newSession(rig(), U1, false)
     const orderId = randomUUID(); open.r.store.orders.set(orderId, { id: orderId, status: 'created', paid_at: null, stripe_session_id: 'cs_test_open000001', stripe_payment_intent: null, retail_total_cents: 100, retail_shipping_cents: 0, items: [], prodigi_order_id: null, placed_at: null })
     await open.r.store.linkOrder(open.view.sessionId, U1, orderId, 'v1')
-    await expect(startBatch(open.r.deps, U1, open.view.sessionId, { idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'order_payment_required' })
-    for (const x of [none, open]) { expect(x.r.generate).not.toHaveBeenCalled(); expect(x.r.store.batches.length).toBe(0) }
+    expect((await startBatch(open.r.deps, U1, open.view.sessionId, { idempotencyKey: key(1) })).batch.kind).toBe('free')
+    open.r.store.orders.get(orderId)!.status = 'paid'                                                                  // released to fulfilment (approved): no more generation
+    await expect(startBatch(open.r.deps, U1, open.view.sessionId, { idempotencyKey: key(2) })).rejects.toMatchObject({ code: 'order_not_awaiting_artwork' })
   })
   it('payment grants exactly two free batches; a refunded or refund-pending order generates nothing more', async () => {
     const { r, view } = await newSession()

@@ -61,10 +61,10 @@ describe('selecting the artwork', () => {
     await expect(selectArtwork(r.deps, U1, sid, other.previews[0].previewId)).rejects.toMatchObject({ code: 'preview_not_ready' })
     await expect(selectArtwork(r.deps, U2, sid, previews[0].previewId)).rejects.toMatchObject({ code: 'session_not_found' })
   })
-  it('needs a paid order', async () => {
+  it('needs a ready preview of this session (no purchase is needed to save a favorite)', async () => {
     const r = rig(); const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
     const v = await createSession(r.deps, { userId: U1, imageB64: photo })
-    await expect(selectArtwork(r.deps, U1, v.sessionId, randomUUID())).rejects.toMatchObject({ code: 'order_payment_required' })
+    await expect(selectArtwork(r.deps, U1, v.sessionId, randomUUID())).rejects.toMatchObject({ code: 'preview_not_ready' })
   })
 })
 
