@@ -124,6 +124,37 @@ export async function encodeForUpscale(working: Buffer): Promise<Buffer> {
   return sharp(working).toColourspace('srgb').jpeg({quality:95}).toBuffer()
 }
 
+/**
+ * The same step for the products whose picture is a PANEL inside a larger layout (the mug's face panel, the card's front): the artwork is made the exact
+ * shape of the panel, by outpaint inside the approved bound or by reflection, never by cropping or distortion. The layout around the panel is built
+ * later, from the finished panel (product-layout.ts), so only the panel is ever upscaled.
+ */
+export async function preparePanelComposition(input: { imageB64: string; panel: Dim; ppi?: number }): Promise<{
+  working: Buffer; width: number; height: number; scale: number; requiredFront: Dim; outpainted: boolean; fit: 'exact' | 'resample' | 'extend'
+}> {
+  const ppi = input.ppi ?? REFERENCE_PPI
+  const original = await sharp(Buffer.from(input.imageB64, 'base64')).rotate().toBuffer()
+  const meta = await sharp(original).metadata()
+  const c = compositionPlan(meta.width || 0, meta.height || 0, input.panel.w, input.panel.h)
+  if (c.compatibility === 'unavailable') throw new Error('incompatible_print_aspect')
+  if (c.compatibility === 'extension' && (meta.width! * meta.height! > 9437184 || Math.max(...Object.values(c.padding)) > 2000)) throw new Error('print_outpaint_dimensions_unavailable')
+  let working = original, outpainted = false
+  if (c.compatibility === 'extension') {
+    const result = await outpaint({ image: await sharp(original).jpeg({ quality: 95 }).toBuffer(), width: meta.width!, height: meta.height!, stabilityApiKey: process.env.STABILITY_API_KEY || '', mode: 'print', padding: { left: c.padding.left, right: c.padding.right, up: c.padding.top, down: c.padding.bottom } })
+    if (!result.outpainted) throw new Error('print_outpaint_failed:' + result.reason)
+    const returned = await sharp(result.image).metadata()
+    if (returned.width !== c.width || returned.height !== c.height) throw new Error('print_outpaint_dimensions_changed')
+    working = await sharp(result.image).composite([{ input: original, left: c.padding.left, top: c.padding.top }]).png().toBuffer()   // the original pixels stay; generated pixels only outside them
+    outpainted = true
+  } else if (c.width !== meta.width || c.height !== meta.height) {
+    working = await sharp(original).extend({ ...c.padding, extendWith: 'mirror' }).png().toBuffer()
+  }
+  const prepared = await sharp(working).metadata()
+  const requiredFront: Dim = { w: Math.round(input.panel.w * ppi / REFERENCE_PPI), h: Math.round(input.panel.h * ppi / REFERENCE_PPI) }
+  const scale = requiredUpscale(prepared.width!, prepared.height!, requiredFront.w, requiredFront.h)
+  return { working, width: prepared.width!, height: prepared.height!, scale, requiredFront, outpainted, fit: c.compatibility === 'recommended' ? (c.width === meta.width && c.height === meta.height ? 'exact' : 'resample') : 'extend' }
+}
+
 // ── STEP 2: UPSCALED (OR NATIVE) ARTWORK -> THE PRINT FILE ─────
 export interface FinishedAsset {
   /** The picture area only, before any canvas wrap. QA compares this against the aspect-corrected artwork. */

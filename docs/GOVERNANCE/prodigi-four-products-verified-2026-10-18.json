@@ -1,0 +1,2035 @@
+{
+ "verifiedAt": "2026-10-18",
+ "source": "Prodigi SANDBOX GET /Products/{sku} and POST /Quotes (US destination). Read-only: no order was created. Sandbox figures, not a live availability or price promise.",
+ "products": {
+  "GLOBAL-CFPM-8X8": {
+   "family": "matted",
+   "httpProduct": 200,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 20x20cm/8x8\"",
+   "productDimensions": {
+    "width": 20.32,
+    "height": 20.32,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 8,
+   "printAreaForChosenAttributes": {
+    "w": 1800,
+    "h": 1800
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "38.00",
+    "shipping": "14.00",
+    "lab": null,
+    "carrier": "USPS"
+   }
+  },
+  "GLOBAL-CFPM-12X12": {
+   "family": "matted",
+   "httpProduct": 200,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 30x30cm/12x12\"",
+   "productDimensions": {
+    "width": 30,
+    "height": 30,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 8,
+   "printAreaForChosenAttributes": {
+    "w": 2700,
+    "h": 2700
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "44.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-16X16": {
+   "family": "matted",
+   "httpProduct": 200,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 40x40cm/16x16\"",
+   "productDimensions": {
+    "width": 40,
+    "height": 40,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 8,
+   "printAreaForChosenAttributes": {
+    "w": 3600,
+    "h": 3600
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "50.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-20X20": {
+   "family": "matted",
+   "httpProduct": 200,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 50x50cm/20x20\"",
+   "productDimensions": {
+    "width": 50,
+    "height": 50,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 8,
+   "printAreaForChosenAttributes": {
+    "w": 4800,
+    "h": 4800
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "60.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-8X12": {
+   "family": "matted",
+   "httpProduct": 200,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 20x30cm/8x12\"",
+   "productDimensions": {
+    "width": 20.32,
+    "height": 30.48,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 8,
+   "printAreaForChosenAttributes": {
+    "w": 1800,
+    "h": 3000
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "40.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-12X18": {
+   "family": "matted",
+   "httpProduct": 200,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 30x45cm/12x18\"",
+   "productDimensions": {
+    "width": 30.48,
+    "height": 45.72,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 8,
+   "printAreaForChosenAttributes": {
+    "w": 2418,
+    "h": 4218
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "50.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-16X24": {
+   "family": "matted",
+   "httpProduct": 200,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 40x60cm/16x24\"",
+   "productDimensions": {
+    "width": 40.64,
+    "height": 60.96,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 8,
+   "printAreaForChosenAttributes": {
+    "w": 3618,
+    "h": 6018
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "60.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-20X30": {
+   "family": "matted",
+   "httpProduct": 200,
+   "description": "Classic Frame, EMA 200gsm Fine Art Print, Mounted / Matted, Perspex Glaze, 50x75cm/20x30\"",
+   "productDimensions": {
+    "width": 50.8,
+    "height": 75,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "frame": [
+     "Classic"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "dark grey",
+     "gold",
+     "light grey",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "glaze": [
+     "Acrylic / Perspex"
+    ],
+    "mount": [
+     "2.4mm"
+    ],
+    "mountColor": [
+     "Snow white"
+    ],
+    "paperType": [
+     "EMA"
+    ],
+    "substrateWeight": [
+     "200gsm"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 8,
+   "printAreaForChosenAttributes": {
+    "w": 4800,
+    "h": 7800
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "70.00",
+    "shipping": "32.35",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-8X8": {
+   "family": "framed_canvas",
+   "httpProduct": 200,
+   "description": "Global float framed canvas on premium stretcher bars, 8x8\" / 20x20  cm",
+   "productDimensions": {
+    "width": 8,
+    "height": 8,
+    "units": "in"
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 24,
+   "printAreaForChosenAttributes": {
+    "w": 2454,
+    "h": 2454
+   },
+   "printAreaByWrap": {
+    "Black": {
+     "w": 2454,
+     "h": 2454
+    },
+    "ImageWrap": {
+     "w": 3345,
+     "h": 3345
+    },
+    "MirrorWrap": {
+     "w": 2454,
+     "h": 2454
+    },
+    "White": {
+     "w": 2454,
+     "h": 2454
+    }
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black",
+     "wrap": "MirrorWrap"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "30.00",
+    "shipping": "14.00",
+    "lab": null,
+    "carrier": "USPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-12X12": {
+   "family": "framed_canvas",
+   "httpProduct": 200,
+   "description": "Global float framed canvas on premium stretcher bars, 12x12\" / 30x30  cm",
+   "productDimensions": {
+    "width": 12,
+    "height": 12,
+    "units": "in"
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 24,
+   "printAreaForChosenAttributes": {
+    "w": 3654,
+    "h": 3654
+   },
+   "printAreaByWrap": {
+    "Black": {
+     "w": 3654,
+     "h": 3654
+    },
+    "ImageWrap": {
+     "w": 4545,
+     "h": 4545
+    },
+    "MirrorWrap": {
+     "w": 3654,
+     "h": 3654
+    },
+    "White": {
+     "w": 3654,
+     "h": 3654
+    }
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black",
+     "wrap": "MirrorWrap"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "40.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-16X16": {
+   "family": "framed_canvas",
+   "httpProduct": 200,
+   "description": "Global float framed canvas on premium stretcher bars, 16x16\" / 41x41  cm",
+   "productDimensions": {
+    "width": 16,
+    "height": 16,
+    "units": "in"
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 24,
+   "printAreaForChosenAttributes": {
+    "w": 4854,
+    "h": 4854
+   },
+   "printAreaByWrap": {
+    "Black": {
+     "w": 4854,
+     "h": 4854
+    },
+    "ImageWrap": {
+     "w": 5745,
+     "h": 5745
+    },
+    "MirrorWrap": {
+     "w": 4854,
+     "h": 4854
+    },
+    "White": {
+     "w": 4854,
+     "h": 4854
+    }
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black",
+     "wrap": "MirrorWrap"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "52.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-20X20": {
+   "family": "framed_canvas",
+   "httpProduct": 200,
+   "description": "Global float framed canvas on premium stretcher bars, 20x20\" / 51x51  cm",
+   "productDimensions": {
+    "width": 20,
+    "height": 20,
+    "units": "in"
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 24,
+   "printAreaForChosenAttributes": {
+    "w": 6054,
+    "h": 6054
+   },
+   "printAreaByWrap": {
+    "Black": {
+     "w": 6054,
+     "h": 6054
+    },
+    "ImageWrap": {
+     "w": 6945,
+     "h": 6945
+    },
+    "MirrorWrap": {
+     "w": 6054,
+     "h": 6054
+    },
+    "White": {
+     "w": 6054,
+     "h": 6054
+    }
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black",
+     "wrap": "MirrorWrap"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "70.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-8X12": {
+   "family": "framed_canvas",
+   "httpProduct": 200,
+   "description": "Global float framed canvas on premium stretcher bars, 8x12\" / 20x30  cm",
+   "productDimensions": {
+    "width": 8,
+    "height": 12,
+    "units": "in"
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 24,
+   "printAreaForChosenAttributes": {
+    "w": 3654,
+    "h": 2454
+   },
+   "printAreaByWrap": {
+    "Black": {
+     "w": 3654,
+     "h": 2454
+    },
+    "ImageWrap": {
+     "w": 4545,
+     "h": 3345
+    },
+    "MirrorWrap": {
+     "w": 3654,
+     "h": 2454
+    },
+    "White": {
+     "w": 3654,
+     "h": 2454
+    }
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black",
+     "wrap": "MirrorWrap"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "34.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-12X18": {
+   "family": "framed_canvas",
+   "httpProduct": 200,
+   "description": "Global float framed canvas on premium stretcher bars, 12x18\" / 30x46  cm",
+   "productDimensions": {
+    "width": 12,
+    "height": 18,
+    "units": "in"
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 24,
+   "printAreaForChosenAttributes": {
+    "w": 3654,
+    "h": 5454
+   },
+   "printAreaByWrap": {
+    "Black": {
+     "w": 3654,
+     "h": 5454
+    },
+    "ImageWrap": {
+     "w": 4545,
+     "h": 6345
+    },
+    "MirrorWrap": {
+     "w": 3654,
+     "h": 5454
+    },
+    "White": {
+     "w": 3654,
+     "h": 5454
+    }
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black",
+     "wrap": "MirrorWrap"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "48.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-16X24": {
+   "family": "framed_canvas",
+   "httpProduct": 200,
+   "description": "Global float framed canvas on premium stretcher bars, 16x24\" / 41x61  cm",
+   "productDimensions": {
+    "width": 16,
+    "height": 24,
+    "units": "in"
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 24,
+   "printAreaForChosenAttributes": {
+    "w": 4854,
+    "h": 7254
+   },
+   "printAreaByWrap": {
+    "Black": {
+     "w": 4854,
+     "h": 7254
+    },
+    "ImageWrap": {
+     "w": 5745,
+     "h": 8145
+    },
+    "MirrorWrap": {
+     "w": 4854,
+     "h": 7254
+    },
+    "White": {
+     "w": 4854,
+     "h": 7254
+    }
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black",
+     "wrap": "MirrorWrap"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "64.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-20X30": {
+   "family": "framed_canvas",
+   "httpProduct": 200,
+   "description": "Global float framed canvas on premium stretcher bars, 20x30\" / 51x76  cm",
+   "productDimensions": {
+    "width": 20,
+    "height": 30,
+    "units": "in"
+   },
+   "attributeOptions": {
+    "edge": [
+     "38mm"
+    ],
+    "frame": [
+     "Float frame, 38mm standard stretcher bar"
+    ],
+    "color": [
+     "black",
+     "brown",
+     "gold",
+     "natural",
+     "silver",
+     "white"
+    ],
+    "paperType": [
+     "Standard canvas (SC)"
+    ],
+    "substrateWeight": [
+     "400gsm"
+    ],
+    "wrap": [
+     "Black",
+     "ImageWrap",
+     "MirrorWrap",
+     "White"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 24,
+   "printAreaForChosenAttributes": {
+    "w": 6054,
+    "h": 9054
+   },
+   "printAreaByWrap": {
+    "Black": {
+     "w": 6054,
+     "h": 9054
+    },
+    "ImageWrap": {
+     "w": 6945,
+     "h": 9945
+    },
+    "MirrorWrap": {
+     "w": 6054,
+     "h": 9054
+    },
+    "White": {
+     "w": 6054,
+     "h": 9054
+    }
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "black",
+     "wrap": "MirrorWrap"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "87.00",
+    "shipping": "32.35",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-MUG-W": {
+   "family": "mug",
+   "httpProduct": 200,
+   "description": "11oz White Ceramic Photo Mug [full image wrap with top-to-bottom printing]",
+   "productDimensions": {
+    "width": 22.86,
+    "height": 9.483,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "color": [
+     "white"
+    ],
+    "size": [
+     "313ml / 11oz"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 1,
+   "printAreaForChosenAttributes": {
+    "w": 2670,
+    "h": 1110
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {
+     "color": "white",
+     "size": "313ml / 11oz"
+    },
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "5.65",
+    "shipping": "6.58",
+    "lab": null,
+    "carrier": "royalmail"
+   }
+  },
+  "GLOBAL-GRE-MOH-7X5-BLA": {
+   "family": "card",
+   "httpProduct": 200,
+   "description": "(Mail2Me: SELF SEND) A single - 7x5\" greetings card printed on Mohawk 324gsm card - dropshipped in a biodegradable OPP bag with a blank kraft envelope for posting yourself",
+   "productDimensions": {
+    "width": 17.8,
+    "height": 12.7,
+    "units": "cm"
+   },
+   "attributeOptions": {
+    "finish": [
+     "matte"
+    ],
+    "paperType": [
+     "Mohawk Superfine"
+    ],
+    "style": [
+     "Single"
+    ],
+    "substrateWeight": [
+     "324gsm"
+    ]
+   },
+   "printAreas": {
+    "default": {
+     "required": true
+    }
+   },
+   "variants": 1,
+   "printAreaForChosenAttributes": {
+    "w": 6118,
+    "h": 2161
+   },
+   "shipsToUS": true,
+   "quoteWithChosenAttributes": {
+    "attributes": {},
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "2.25",
+    "shipping": "6.45",
+    "lab": null,
+    "carrier": "USPS"
+   }
+  }
+ },
+ "negativeControls": {
+  "framed_canvas: no attributes": {
+   "http": 400,
+   "outcome": "ValidationFailed",
+   "items": null,
+   "shipping": null,
+   "lab": null,
+   "carrier": null,
+   "failures": {
+    "items[0].attributes": [
+     {
+      "code": "MissingRequiredAttributes",
+      "missingItems": {
+       "attributes": [
+        {
+         "name": "wrap",
+         "validValues": [
+          "White",
+          "MirrorWrap",
+          "ImageWrap",
+          "Black"
+         ]
+        },
+        {
+         "name": "color",
+         "validValues": [
+          "white",
+          "silver",
+          "natural",
+          "gold",
+          "brown",
+          "black"
+         ]
+        }
+       ]
+      },
+      "providedValue": {}
+     }
+    ]
+   }
+  },
+  "framed_canvas: color only (no wrap)": {
+   "http": 400,
+   "outcome": "ValidationFailed",
+   "items": null,
+   "shipping": null,
+   "lab": null,
+   "carrier": null,
+   "failures": {
+    "items[0].attributes": [
+     {
+      "code": "MissingRequiredAttributes",
+      "missingItems": {
+       "attributes": [
+        {
+         "name": "wrap",
+         "validValues": [
+          "White",
+          "MirrorWrap",
+          "ImageWrap",
+          "Black"
+         ]
+        }
+       ]
+      },
+      "providedValue": {
+       "color": "black"
+      }
+     }
+    ]
+   }
+  },
+  "framed_canvas: wrap MirrorWrap": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "30.00",
+   "shipping": "14.00",
+   "lab": null,
+   "carrier": "USPS"
+  },
+  "framed_canvas: wrap Black": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "30.00",
+   "shipping": "14.00",
+   "lab": null,
+   "carrier": "USPS"
+  },
+  "framed_canvas: wrap ImageWrap": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "30.00",
+   "shipping": "14.00",
+   "lab": null,
+   "carrier": "USPS"
+  },
+  "framed_canvas: wrap White": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "30.00",
+   "shipping": "14.00",
+   "lab": null,
+   "carrier": "USPS"
+  },
+  "framed_canvas: color black": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "48.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "framed_canvas: color brown": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "48.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "framed_canvas: color gold": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "48.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "framed_canvas: color natural": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "48.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "framed_canvas: color silver": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "48.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "framed_canvas: color white": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "48.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "framed_canvas: color purple": {
+   "http": 400,
+   "outcome": "ValidationFailed",
+   "items": null,
+   "shipping": null,
+   "lab": null,
+   "carrier": null,
+   "failures": {
+    "items[0].attributes[0]": [
+     {
+      "code": "MustBeInAllowedValues",
+      "allowedValues": {
+       "name": "color",
+       "values": [
+        "white",
+        "silver",
+        "natural",
+        "gold",
+        "brown",
+        "black"
+       ]
+      },
+      "providedValue": {
+       "key": "color",
+       "value": "purple"
+      }
+     }
+    ]
+   }
+  },
+  "matted: no attributes": {
+   "http": 400,
+   "outcome": "ValidationFailed",
+   "items": null,
+   "shipping": null,
+   "lab": null,
+   "carrier": null,
+   "failures": {
+    "items[0].attributes": [
+     {
+      "code": "MissingRequiredAttributes",
+      "missingItems": {
+       "attributes": [
+        {
+         "name": "color",
+         "validValues": [
+          "white",
+          "silver",
+          "natural",
+          "light grey",
+          "gold",
+          "dark grey",
+          "brown",
+          "black"
+         ]
+        }
+       ]
+      },
+      "providedValue": {}
+     }
+    ]
+   }
+  },
+  "matted: color black + mountColor Snow white": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "38.00",
+   "shipping": "14.00",
+   "lab": null,
+   "carrier": "USPS"
+  },
+  "matted: color black + mountColor Black": {
+   "http": 200,
+   "outcome": "NotAvailable",
+   "items": null,
+   "shipping": null,
+   "lab": null,
+   "carrier": null
+  },
+  "matted: color black": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "50.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "matted: color brown": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "50.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "matted: color dark grey": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "50.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "matted: color gold": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "50.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "matted: color light grey": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "50.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "matted: color natural": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "50.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "matted: color silver": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "50.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "matted: color white": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "50.00",
+   "shipping": "25.90",
+   "lab": null,
+   "carrier": "UPS"
+  },
+  "mug: no attributes": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "5.65",
+   "shipping": "6.58",
+   "lab": null,
+   "carrier": "royalmail"
+  },
+  "mug: color + size": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "5.65",
+   "shipping": "6.58",
+   "lab": null,
+   "carrier": "royalmail"
+  },
+  "card: no attributes": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "2.25",
+   "shipping": "6.45",
+   "lab": null,
+   "carrier": "USPS"
+  },
+  "card: finish matte": {
+   "http": 200,
+   "outcome": "CreatedWithIssues",
+   "items": "2.25",
+   "shipping": "6.45",
+   "lab": null,
+   "carrier": "USPS"
+  }
+ },
+ "pricing": {
+  "GLOBAL-CFPM-8X8": {
+   "family": "matted",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "38.00",
+    "shipping": "14.00",
+    "lab": null,
+    "carrier": "USPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "38.00",
+    "shipping": "21.55",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "76.00",
+    "shipping": "21.00",
+    "lab": null,
+    "carrier": "USPS"
+   }
+  },
+  "GLOBAL-CFPM-12X12": {
+   "family": "matted",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "44.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "44.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "88.00",
+    "shipping": "35.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-16X16": {
+   "family": "matted",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "50.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "50.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "100.00",
+    "shipping": "35.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-20X20": {
+   "family": "matted",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "60.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "60.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "120.00",
+    "shipping": "37.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-8X12": {
+   "family": "matted",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "40.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "40.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "80.00",
+    "shipping": "35.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-12X18": {
+   "family": "matted",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "50.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "50.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "100.00",
+    "shipping": "37.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-16X24": {
+   "family": "matted",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "60.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "60.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "120.00",
+    "shipping": "37.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-CFPM-20X30": {
+   "family": "matted",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "70.00",
+    "shipping": "32.35",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "70.00",
+    "shipping": "32.35",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "140.00",
+    "shipping": "48.35",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-8X8": {
+   "family": "framed_canvas",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "30.00",
+    "shipping": "14.00",
+    "lab": null,
+    "carrier": "USPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "30.00",
+    "shipping": "21.55",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "60.00",
+    "shipping": "21.00",
+    "lab": null,
+    "carrier": "USPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-12X12": {
+   "family": "framed_canvas",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "40.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "40.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "80.00",
+    "shipping": "35.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-16X16": {
+   "family": "framed_canvas",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "52.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "52.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "104.00",
+    "shipping": "35.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-20X20": {
+   "family": "framed_canvas",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "70.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "70.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "140.00",
+    "shipping": "37.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-8X12": {
+   "family": "framed_canvas",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "34.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "34.00",
+    "shipping": "24.80",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "68.00",
+    "shipping": "35.80",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-12X18": {
+   "family": "framed_canvas",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "48.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "48.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "96.00",
+    "shipping": "37.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-16X24": {
+   "family": "framed_canvas",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "64.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "64.00",
+    "shipping": "25.90",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "128.00",
+    "shipping": "37.90",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-FRA-CAN-20X30": {
+   "family": "framed_canvas",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "87.00",
+    "shipping": "32.35",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "87.00",
+    "shipping": "32.35",
+    "lab": null,
+    "carrier": "UPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "174.00",
+    "shipping": "48.35",
+    "lab": null,
+    "carrier": "UPS"
+   }
+  },
+  "GLOBAL-MUG-W": {
+   "family": "mug",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "5.65",
+    "shipping": "6.58",
+    "lab": null,
+    "carrier": "royalmail"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "10.00",
+    "shipping": "6.45",
+    "lab": null,
+    "carrier": "USPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "11.30",
+    "shipping": "7.91",
+    "lab": null,
+    "carrier": "royalmail"
+   }
+  },
+  "GLOBAL-GRE-MOH-7X5-BLA": {
+   "family": "card",
+   "budget1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "2.25",
+    "shipping": "6.45",
+    "lab": null,
+    "carrier": "USPS"
+   },
+   "standard1": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "2.25",
+    "shipping": "9.70",
+    "lab": null,
+    "carrier": "USPS"
+   },
+   "budget2": {
+    "http": 200,
+    "outcome": "CreatedWithIssues",
+    "items": "4.50",
+    "shipping": "6.45",
+    "lab": null,
+    "carrier": "USPS"
+   }
+  }
+ }
+}

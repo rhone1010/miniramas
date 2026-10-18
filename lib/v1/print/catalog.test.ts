@@ -51,7 +51,7 @@ describe('existing Print Shop behaviour and pricing are preserved', () => {
   })
   it('the launch set is exactly fine art, premium, canvas and classic frame, and every sku-map entry appears with its price', () => {
     expect(new Set(allProducts().filter(p => p.status === 'launch').map(p => p.family))).toEqual(new Set(['fine_art', 'premium', 'canvas', 'framed']))
-    for (const e of allSkus()) expect(getProductBySku(e.sku)?.retailCents).toBe(e.retailCents)
+    for (const e of allSkus()) expect(getProductBySku(e.sku)?.retailCents).toBe(e.retailApproved === false ? null : e.retailCents)
   })
   it('picture and final sizes agree with printPlan on every launch product', () => {
     for (const p of allProducts().filter(x => x.status === 'launch')) {
@@ -66,14 +66,14 @@ describe('nothing unapproved is enabled', () => {
   it('framed-canvas and matted rectangles stay disabled, with no price, pending retail approval', () => {
     const rects = allProducts().filter(x => (x.family === 'framed_canvas' || x.family === 'matted') && ['8x12', '12x18', '16x24', '20x30'].includes(x.size))
     expect(rects.length).toBe(8)
-    for (const p of rects) { expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull(); expect(p.disabledReason).toBe('retail_price_pending') }
+    for (const p of rects) { expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull(); expect(p.disabledReason).toBe(p.productId === 'framed_canvas:8x12' ? 'orientation_unverified' : 'retail_price_pending') }
   })
-  it('the mug and the 7x5 Mohawk card are disabled launch candidates with no price and no artwork profile', () => {
-    for (const id of ['mug:11oz-white', 'card:7x5-mohawk']) {
-      const p = getProduct(id)!; expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull(); expect(p.disabledReason).toBe('composition_behavior_pending'); expect(p.artworkProfile).toBeNull()
+  it('the mug and the 7x5 Mohawk card are built, visible, priced at nothing until approved, and disabled; each has its own artwork profile', () => {
+    for (const [id, profile] of [['mug:11oz', 'mug_wrap'], ['card:7x5', 'card_spread']] as const) {
+      const p = getProduct(id)!; expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull(); expect(p.disabledReason).toBe('retail_price_pending'); expect(p.artworkProfile).toBe(profile)
     }
-    expect(getProduct('mug:11oz-white')!.requirements.finalPx).toEqual({ w: 2670, h: 1110 })
-    expect(getProduct('card:7x5-mohawk')!.requirements.finalPx).toEqual({ w: 6118, h: 2161 })
+    expect(getProduct('mug:11oz')!.requirements.finalPx).toEqual({ w: 2670, h: 1110 }); expect(getProduct('mug:11oz')!.requirements.picturePx).toEqual({ w: 910, h: 910 })
+    expect(getProduct('card:7x5')!.requirements.finalPx).toEqual({ w: 6118, h: 2161 }); expect(getProduct('card:7x5')!.requirements.picturePx).toEqual({ w: 1500, h: 2100 })
   })
   it('every disabled product has a reason, every launch product has none, and nothing disabled is ever selectable', () => {
     for (const p of catalogResponse({ width: 2048, height: 2048 }).products) {

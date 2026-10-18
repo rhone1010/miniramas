@@ -23,6 +23,8 @@ export type DisabledReason =
   | 'retail_price_pending'            // verified SKU, no approved retail price
   | 'composition_behavior_pending'    // launch candidate whose artwork placement is not approved
   | 'not_a_launch_candidate'          // verified SKU that is not planned for sale
+  | 'mockup_template_pending'         // built and priced, but no approved product mockup template exists yet
+  | 'orientation_unverified'          // one product whose Prodigi print-area orientation contradicts its listed size
 
 export type ProductStatus = 'launch' | 'disabled'
 
@@ -47,6 +49,16 @@ export interface PrintRequirements {
   safeArea: null
 }
 
+export interface ProductionSpec {
+  profile: 'flat_print' | 'mug_wrap' | 'card_spread'
+  /** Facts from Prodigi's API or its own templates. */
+  verified: Record<string, unknown>
+  /** LITEN composition decisions: not Prodigi specifications. */
+  policy: Record<string, unknown>
+  /** What Prodigi does not publish. Never turned into a number. */
+  unverified: string[]
+}
+
 export interface CanonicalProduct {
   /** Stable id, e.g. 'fine_art:12x18'. Never a Prodigi SKU; the wizard and orders use this. */
   productId: string
@@ -65,8 +77,10 @@ export interface CanonicalProduct {
   retailCents: number | null
   status: ProductStatus
   disabledReason: DisabledReason | null
-  /** 'flat_print' has an artwork profile today. Mugs and cards have none until their composition behavior is approved. */
-  artworkProfile: 'flat_print' | null
+  /** How the lab file is produced: flat prints (incl. matted frame and framed canvas), the mug wrap, the card spread. null for products with no profile. */
+  artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null
+  /** The production specification: what Prodigi verified, what LITEN decided, what is still unverified. null for the launch families (their geometry is the whole story). */
+  production?: ProductionSpec | null
   requirements: PrintRequirements
 }
 

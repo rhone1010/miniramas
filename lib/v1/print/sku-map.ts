@@ -52,6 +52,7 @@
 //     without it.
 
 export type PrintSize = '8x8' | '12x12' | '16x16' | '20x20' | '8x12' | '12x18' | '16x24' | '20x30'
+  | '11oz' | '7x5'           // Gift Shop only: the 11 oz mug and the 7 x 5 card (see GIFT_PRODUCT_FAMILIES below)
 
 export type PrintFinish =
   | 'fine_art'
@@ -60,6 +61,8 @@ export type PrintFinish =
   | 'framed_canvas'
   | 'framed'
   | 'matted'
+  | 'mug'                    // Gift Shop only
+  | 'card'                   // Gift Shop only
 
 export interface SkuEntry {
   attributes?: Record<string, string>
@@ -93,6 +96,11 @@ export interface SkuEntry {
 
   /** Locked retail, USD cents. */
   retailCents: number
+  /**
+   * false = no APPROVED price exists yet: retailCents is a placeholder (0) and the catalog reports the price as null, so nothing can be sold.
+   * Removing this flag is part of approving a price (docs/GOVERNANCE/GIFT-FOUR-PRODUCTS-2026-10-18.md has the proposed schedule).
+   */
+  retailApproved?: false
 }
 
 const FAMILY_LABEL: Record<PrintFinish, string> = {
@@ -102,6 +110,8 @@ const FAMILY_LABEL: Record<PrintFinish, string> = {
   framed_canvas: 'Framed Canvas',
   framed:        'Classic Frame',
   matted:        'Matted Frame',
+  mug:           'Photo Mug',
+  card:          'Greeting Card',
 }
 
 const FAMILY_NOTE: Record<PrintFinish, string> = {
@@ -111,9 +121,13 @@ const FAMILY_NOTE: Record<PrintFinish, string> = {
   framed_canvas: 'Stretched canvas in a solid frame',
   framed:        'Framed behind glaze, ready to hang',
   matted:        'Framed with a mount, behind glaze',
+  mug:           '11 oz white ceramic mug with a full image wrap',
+  card:          '7 x 5 inch card on Mohawk 324gsm stock',
 }
 
 export const SKU_MAP: Record<PrintFinish, Partial<Record<PrintSize, SkuEntry>>> = {
+  mug: {},     // filled in below (Gift Shop)
+  card: {},
   fine_art: {
     '8x8': {
       sku: 'GLOBAL-FAP-8X8',
@@ -425,4 +439,32 @@ SKU_MAP.framed['20x30']={sku:"GLOBAL-CFP-20X30",description:FAMILY_LABEL.framed+
 export const LAUNCH_FAMILIES: PrintFinish[] = ['fine_art','premium','canvas','framed']
 for(const entry of Object.values(SKU_MAP.canvas)){if(entry)entry.attributes={wrap:'MirrorWrap'}}
 for(const entry of Object.values(SKU_MAP.framed)){if(entry)entry.attributes={color:'black'}}
+// ── GIFT SHOP PRODUCTS BEYOND THE FOUR LAUNCH FAMILIES ─────────────────────────────────────────────────────────────
+// Matted Frame and Framed Canvas (rectangles), the 11 oz Photo Mug and the 7 x 5 Mohawk Greeting Card. Every number below is from Prodigi's
+// SANDBOX on 2026-10-18 (Products API variant printAreaSizes; Quotes for the attribute contract) or from Prodigi's own downloadable templates
+// (mug, card): docs/GOVERNANCE/GIFT-FOUR-PRODUCTS-2026-10-18.md. They are NOT in LAUNCH_FAMILIES, so the Print Shop never offers them; the Gift
+// Wizard enables them through gift-enablement.ts only when a price is approved. Prices here are placeholders (retailApproved: false).
+for (const e of Object.values(SKU_MAP.matted)) if (e) e.attributes = { color: 'black' }                 // required by Quotes: color. mountColor has one value (Snow white) and is applied by Prodigi.
+for (const e of Object.values(SKU_MAP.framed_canvas)) if (e) e.attributes = { color: 'black', wrap: 'MirrorWrap' }   // required by Quotes: color AND wrap. MirrorWrap's print area equals Black/White (not ImageWrap's larger one).
+const giftSku = (finish: PrintFinish, size: PrintSize, e: Omit<SkuEntry, 'family' | 'familyLabel' | 'familyNote' | 'defaultSizing' | 'retailCents' | 'retailApproved'>): SkuEntry =>
+  ({ ...e, family: finish, familyLabel: FAMILY_LABEL[finish], familyNote: FAMILY_NOTE[finish], defaultSizing: 'fitPrintArea', retailCents: 0, retailApproved: false })
+// Mounted frames: Prodigi's print area is the picture inside the mount (uniform border per size: 1 in at 8x12, ~1.97 in at 12x18 and 16x24, 2 in at 20x30).
+SKU_MAP.matted['8x12']  = giftSku('matted', '8x12',  { sku: 'GLOBAL-CFPM-8X12',  description: 'Classic frame with mount, perspex glaze, 8×12" frame',  label: '8 × 12″ frame · 6 × 10″ picture',   imageWidthIn: 6,     imageHeightIn: 10,    requiredPx: { w: 1800, h: 3000 }, attributes: { color: 'black' } })
+SKU_MAP.matted['12x18'] = giftSku('matted', '12x18', { sku: 'GLOBAL-CFPM-12X18', description: 'Classic frame with mount, perspex glaze, 12×18" frame', label: '12 × 18″ frame · 8 × 14″ picture',  imageWidthIn: 8.06,  imageHeightIn: 14.06, requiredPx: { w: 2418, h: 4218 }, attributes: { color: 'black' } })
+SKU_MAP.matted['16x24'] = giftSku('matted', '16x24', { sku: 'GLOBAL-CFPM-16X24', description: 'Classic frame with mount, perspex glaze, 16×24" frame', label: '16 × 24″ frame · 12 × 20″ picture', imageWidthIn: 12.06, imageHeightIn: 20.06, requiredPx: { w: 3618, h: 6018 }, attributes: { color: 'black' } })
+SKU_MAP.matted['20x30'] = giftSku('matted', '20x30', { sku: 'GLOBAL-CFPM-20X30', description: 'Classic frame with mount, perspex glaze, 20×30" frame', label: '20 × 30″ frame · 16 × 26″ picture', imageWidthIn: 16,    imageHeightIn: 26,    requiredPx: { w: 4800, h: 7800 }, attributes: { color: 'black' } })
+// Framed canvas: the file is the picture plus 27 px of wrap on every side (final = picture + 54). 8x12 is landscape-DEFINED by Prodigi (3654 x 2454) although its listed
+// product size is 8 wide x 12 tall: that contradiction is unresolved (see gift-enablement.ts) and the entry follows the print area Prodigi returns.
+SKU_MAP.framed_canvas['8x12']  = giftSku('framed_canvas', '8x12',  { sku: 'GLOBAL-FRA-CAN-8X12',  description: 'Framed stretched canvas, 8×12"',  label: '8 × 12″',  imageWidthIn: 12, imageHeightIn: 8,  requiredPx: { w: 3654, h: 2454 }, attributes: { color: 'black', wrap: 'MirrorWrap' } })
+SKU_MAP.framed_canvas['12x18'] = giftSku('framed_canvas', '12x18', { sku: 'GLOBAL-FRA-CAN-12X18', description: 'Framed stretched canvas, 12×18"', label: '12 × 18″', imageWidthIn: 12, imageHeightIn: 18, requiredPx: { w: 3654, h: 5454 }, attributes: { color: 'black', wrap: 'MirrorWrap' } })
+SKU_MAP.framed_canvas['16x24'] = giftSku('framed_canvas', '16x24', { sku: 'GLOBAL-FRA-CAN-16X24', description: 'Framed stretched canvas, 16×24"', label: '16 × 24″', imageWidthIn: 16, imageHeightIn: 24, requiredPx: { w: 4854, h: 7254 }, attributes: { color: 'black', wrap: 'MirrorWrap' } })
+SKU_MAP.framed_canvas['20x30'] = giftSku('framed_canvas', '20x30', { sku: 'GLOBAL-FRA-CAN-20X30', description: 'Framed stretched canvas, 20×30"', label: '20 × 30″', imageWidthIn: 20, imageHeightIn: 30, requiredPx: { w: 6054, h: 9054 }, attributes: { color: 'black', wrap: 'MirrorWrap' } })
+// Mug: a full 360-degree wrap, 22.86 x 9.483 cm, 2670 x 1110 px at 300 dpi (Prodigi's template: the seam and handle are at the two EDGES of the file).
+SKU_MAP.mug['11oz'] = giftSku('mug', '11oz', { sku: 'GLOBAL-MUG-W', description: '11 oz white ceramic photo mug, full wrap', label: '11 oz White Mug', imageWidthIn: 8.9, imageHeightIn: 3.7, requiredPx: { w: 2670, h: 1110 }, attributes: { color: 'white', size: '313ml / 11oz' } })
+// Card: one flat file holding two 10 x 7 in sheets (outer, inner); the self-send SKU. The inner sheet stays blank. The front panel is the right half of the first sheet.
+SKU_MAP.card['7x5'] = giftSku('card', '7x5', { sku: 'GLOBAL-GRE-MOH-7X5-BLA', description: '7 x 5 in Mohawk 324gsm greeting card (self send)', label: 'Greeting Card 7 × 5″ (Mohawk)', imageWidthIn: 5, imageHeightIn: 7, requiredPx: { w: 6118, h: 2161 }, attributes: {} })
+
+/** The Gift Shop families that are not Print Shop products. */
+export const GIFT_PRODUCT_FAMILIES: PrintFinish[] = ['matted', 'framed_canvas', 'mug', 'card']
+
 export function getLaunchSku(size:PrintSize,finish:PrintFinish):SkuEntry {if(!LAUNCH_FAMILIES.includes(finish))throw new Error('print_product_unavailable');return getSku(size,finish)}

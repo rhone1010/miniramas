@@ -26,6 +26,7 @@ import sharp from 'sharp'
 import { GiftError, owned, type GiftDeps } from './service'
 import { compositionFitsProduct } from './frozen'
 import { scopeOf } from './scope'
+import { mockupInputFor } from '../print/product-layout'
 import type { CanonicalProduct } from '../print/catalog'
 import { byNewest, type CompositionRec, type SessionRec } from './store'
 import type { MockupView } from './types'
@@ -64,6 +65,9 @@ export function templateFor(p: CanonicalProduct): string | null {
     case 'premium': return 'premium-fine-art'
     case 'framed': return p.attributes.color === 'black' ? (square ? 'square-framed' : 'classic-framed') : null     // black only; other finishes are visual tests
     case 'canvas': return p.attributes.wrap === 'MirrorWrap' ? (square ? 'gallery-canvas-square' : 'gallery-canvas') : null
+    case 'mug': return p.sku === 'GLOBAL-MUG-W' ? 'ceramic-mug' : null               // Codex's calibrated visual-test templates (handle on the right, front-facing portrait card); approval is tracked in gift-enablement.ts
+    case 'card': return p.sku === 'GLOBAL-GRE-MOH-7X5-BLA' ? 'greeting-card' : null            // only the launch variant: the other card SKUs have no template
+    // matted frame and framed canvas: no template exists yet, so there is no mockup and the product cannot be reviewed (see the contract document)
     default: return null
   }
 }
@@ -85,6 +89,12 @@ export async function pictureArea(artwork: Buffer, product: CanonicalProduct): P
   const left = Math.round(wrapPx.left * k), top = Math.round(wrapPx.top * k)
   const width = Math.min(meta.width - left, Math.round(picturePx.w * k)), height = Math.min(meta.height - top, Math.round(picturePx.h * k))
   return sharp(artwork).extract({ left, top, width, height }).png().toBuffer()
+}
+
+/** What the renderer is shown: the picture area of a flat or wrapped product, the full wrap for the mug, the front picture for the card. */
+export async function mockupArtwork(artwork: Buffer, product: CanonicalProduct): Promise<Buffer> {
+  if (product.family === 'mug' || product.family === 'card') return mockupInputFor(product.family, artwork)
+  return pictureArea(artwork, product)
 }
 
 const sha = (data: string | Buffer) => createHash('sha256').update(data).digest('hex')
@@ -191,7 +201,7 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   const artwork = clean ?? await deps.storage.get(comp.composed_path!)                       // CLEAN: memory only, handed to the renderer, never returned
   if (!artwork) throw new GiftError('generation_unavailable')
   let out: Awaited<ReturnType<MockupRenderer['render']>>
-  try { out = await deps.mockup.render({ templateId, productFamily: product.family, size: product.size, sku: product.sku, artworkId: comp.id, artwork: await pictureArea(artwork, product) }) }
+  try { out = await deps.mockup.render({ templateId, productFamily: product.family, size: product.size, sku: product.sku, artworkId: comp.id, artwork: await mockupArtwork(artwork, product) }) }
   catch (e) { throw fail('renderer', e, { templateId, sku: product.sku, lineId: line.line_id }) }
   // The renderer reads its own catalog; if that disagrees with what was purchased, the mockup would show the wrong product. Refuse it.
   if (out.configuration.sku !== product.sku || out.configuration.requiredPx.w !== product.requirements.finalPx.w || out.configuration.requiredPx.h !== product.requirements.finalPx.h) throw new GiftError('mockup_configuration_mismatch')

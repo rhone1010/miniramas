@@ -17,18 +17,19 @@ describe('artwork profiles', () => {
   it('the existing flat-print products resolve to the flat-print profile', () => {
     for (const finish of ['fine_art', 'premium', 'canvas', 'framed']) expect(profileFor(job({ finish })).id).toBe('flat_print')
   })
-  it('mugs and cards have no profile yet: they fail closed, never guessed', () => {
-    expect(() => profileFor(job({ sku: 'GLOBAL-MUG-W', finish: 'mug', size: '11oz' }))).toThrow(NoProfileError)
-    expect(() => profileFor(job({ sku: 'GLOBAL-GRE-MOH-7X5-BLA', finish: 'card', size: '7x5' }))).toThrow('no_artwork_profile:GLOBAL-GRE-MOH-7X5-BLA')
+  it('the mug and the 7 x 5 Mohawk card have their own profiles; every other card or mug variant still fails closed, never guessed', () => {
+    expect(profileFor(job({ sku: 'GLOBAL-MUG-W', finish: 'mug', size: '11oz' })).id).toBe('mug_wrap'); expect(profileFor(job({ sku: 'GLOBAL-GRE-MOH-7X5-BLA', finish: 'card', size: '7x5' })).id).toBe('card_spread')
+    expect(() => profileFor(job({ sku: 'GLOBAL-GRE-GLOS-6X4-BLA', finish: 'card', size: '6x4' }))).toThrow('no_artwork_profile:GLOBAL-GRE-GLOS-6X4-BLA')
+    expect(() => profileFor(job({ sku: 'GLOBAL-MUG-15', finish: 'mug', size: '15oz' }))).toThrow(NoProfileError)
   })
   it('a job for an unsupported product fails before any provider call or storage write', async () => {
     const store = memoryJobStore(), storage = memoryStorage(), start = vi.fn()
-    const j = await store.enqueue({ order_id: 'o', item_index: 0, render_id: 'r', sku: 'GLOBAL-MUG-W', size: '11oz', finish: 'mug', source_kind: 'url' })
+    const j = await store.enqueue({ order_id: 'o', item_index: 0, render_id: 'r', sku: 'GLOBAL-GRE-GLOS-6X4-BLA', size: '6x4', finish: 'card', source_kind: 'url' })
     const { job: done } = await runJob({
       store, storage, loadSource: async () => Buffer.from('x'), loadSettings: async () => ({ settings: DEFAULT_SETTINGS, version: 1, sources: ['global'] }),
       provider: () => ({ name: 'replicate', start, poll: vi.fn(), download: vi.fn() }) as any, inspect: vi.fn() as any,
     }, j.id)
-    expect(done).toMatchObject({ status: 'failed', error: 'no_artwork_profile:GLOBAL-MUG-W' }); expect(start).not.toHaveBeenCalled(); expect(storage.files.size).toBe(0)
+    expect(done).toMatchObject({ status: 'failed', error: 'no_artwork_profile:GLOBAL-GRE-GLOS-6X4-BLA' }); expect(start).not.toHaveBeenCalled(); expect(storage.files.size).toBe(0)
   })
   it('a new product family is added by registering one profile, and the processor needs no change', async () => {
     const calls: string[] = []
