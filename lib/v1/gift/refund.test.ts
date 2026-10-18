@@ -3,7 +3,7 @@ import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
 import { createSession, setLines, startBatch, type GiftDeps } from './service'
 import { memoryGiftStore } from './store'
-import { requestRefund, applyVerifiedRefunds, declineRefund, REFUND_CUSTOMER_MESSAGE, type ConciergePort } from './refund'
+import { requestRefund, applyVerifiedRefunds, declineRefund, REFUND_CUSTOMER_MESSAGE, REFUND_POLICY_TEXT, type ConciergePort } from './refund'
 import { selectArtwork } from './compose'
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '10000000-0000-4000-8000-000000000002'
@@ -46,6 +46,16 @@ describe('the refund request (Concierge)', () => {
     expect(r.messages.get(out.requestId)).toMatchObject({ user_id: U1, reply_to: 'ada@example.test', subject: 'Gift Wizard refund request: order gift-ref-1', context: { kind: 'gift_refund_request', order_id: orderId, session_id: sid, total_cents: TOTAL, batches: 1 } })
     expect(r.messages.get(out.requestId).body).toMatch(/none of the twelve feel right/); expect(r.messages.get(out.requestId).body).toMatch(/Nothing has been sent to the print lab/)
     expect(r.store.sessions.get(sid)!.refund_requested_at).toBeTruthy(); expect(r.store.orders.get(orderId)!.status).toBe('awaiting_artwork')
+  })
+  it('states the approved policy: previews come before purchase, refund until manufacturing, nothing automatic, no dissatisfaction-with-previews basis', async () => {
+    const r = rig(); const { sid } = await paid(r)
+    const out = await requestRefund(r.deps, U1, sid, '')
+    const body: string = r.messages.get(out.requestId).body
+    expect(body).toMatch(/full refund of the physical-product purchase/); expect(body).toMatch(/until the order enters manufacturing/)
+    expect(body).toMatch(/first twelve previews are free and came before the purchase/); expect(body).toMatch(/issued in Stripe by a person/)
+    expect(body).not.toMatch(/dissatisfied|included previews|recorded automatically\.$/)
+    expect(REFUND_POLICY_TEXT).toBe('After purchase, you may request a full refund of your gifts through Concierge until your order enters manufacturing. Once manufacturing begins, this refund is no longer available.')
+    expect(REFUND_CUSTOMER_MESSAGE).not.toMatch(/dissatisfied|automatic refund/i)
   })
   it('is idempotent: asking again returns the same request and creates no second message', async () => {
     const r = rig(); const { sid } = await paid(r)

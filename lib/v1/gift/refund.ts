@@ -1,9 +1,11 @@
 // lib/v1/gift/refund.ts
 //
-// REFUNDS. The approved policy: a customer dissatisfied after reviewing their included previews may request a full refund of
-// the physical-product purchase. The request goes to Concierge (the existing support_messages record); nothing is manufactured
-// while it is open; the refund itself is issued by a person in Stripe, and this system only RECORDS it after verifying it with
-// Stripe. Both halves are idempotent.
+// REFUNDS. The approved policy (previews come BEFORE purchase: the first twelve are free): after purchasing physical products a customer
+// may request a full refund of that purchase through Concierge until the order enters manufacturing (is placed with the print lab). Once
+// manufacturing begins that pre-production eligibility ends. Eligibility does not depend on the previews. The request goes to Concierge
+// (the existing support_messages record); nothing is manufactured while it is open; the refund itself is issued by a person in Stripe, and
+// this system only RECORDS it after verifying it with Stripe. Both halves are idempotent. No refund is ever automatic. Pack purchases
+// ($2.99 per six previews) are separate payments and are not part of this refund.
 //
 //   request   POST .../refund-request   -> gift_request_refund (migration 048) + one Concierge message keyed by the request id.
 //                                          While open, selection, composition, approval, generation and release to fulfilment all refuse.
@@ -22,6 +24,10 @@ export interface ConciergePort {
   create(row: { id: string; user_id: string | null; reply_to: string; subject: string; body: string; context: Record<string, unknown> }): Promise<void>
 }
 
+/** The customer-facing statement of the policy. Shown at checkout (it is the last paragraph of the purchase disclosure) and wherever refunds are explained. */
+export const REFUND_POLICY_TEXT =
+  'After purchase, you may request a full refund of your gifts through Concierge until your order enters manufacturing. Once manufacturing begins, this refund is no longer available.'
+
 export const REFUND_CUSTOMER_MESSAGE =
   'Your refund request has been sent to Concierge. Nothing will be printed or manufactured while it is reviewed, and you will hear from us by email.'
 
@@ -37,9 +43,10 @@ export async function requestRefund(deps: GiftDeps & { concierge: ConciergePort 
   await deps.concierge.create({
     id: requestId, user_id: userId, reply_to: order?.customer_email ?? '',
     subject: `Gift Wizard refund request: order ${ref}`,
-    body: `The customer asks for a full refund of order ${ref} ($${((order?.retail_total_cents ?? 0) / 100).toFixed(2)}).` +
-      ` They generated ${batches.length} preview batch${batches.length === 1 ? '' : 'es'}.${why ? ` Their words: ${why}` : ''}` +
-      ' Nothing has been sent to the print lab and nothing will be while this is open. A full refund is issued in Stripe and then recorded automatically.',
+    body: `The customer asks for a full refund of the physical-product purchase, order ${ref} ($${((order?.retail_total_cents ?? 0) / 100).toFixed(2)}).` +
+      ' Policy: a full refund may be requested until the order enters manufacturing; this order has not been placed with the print lab.' +
+      ` The first twelve previews are free and came before the purchase (preview batches generated: ${batches.length}).${why ? ` Their words: ${why}` : ''}` +
+      ' Nothing has been sent to the print lab and nothing will be while this is open. A full refund is issued in Stripe by a person and then recorded automatically after Stripe verifies it.',
     context: { kind: 'gift_refund_request', request_id: requestId, order_id: rec.order_id, session_id: rec.id, total_cents: order?.retail_total_cents ?? null, batches: batches.length },
   })
   return { requestId, state: 'requested', message: REFUND_CUSTOMER_MESSAGE }
