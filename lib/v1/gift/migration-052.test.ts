@@ -90,6 +90,19 @@ it.skipIf(!PGlite)('migration 052: repair_seq uniqueness, history kept, the atom
     // the customer's correction entitlement is not part of any of this
     expect(await q('select 1 from gift_order_lines where corrections_used <> 0')).toEqual([])
 
+
+    // a DRAFT (no order yet, or an order still unpaid) can be repaired too; a paid-and-released order cannot
+    for (const st of [null, 'created', 'awaiting_artwork', 'placed'] as const) {
+      const ds = (await q(`insert into gift_sessions(user_id, source_sha256, source_width, source_height, series, expires_at) values ($1,'sha-d',10,10,'groups', now() + interval '7 days') returning id`, [U1]))[0].id
+      if (st) { const o2 = (await q(`insert into print_orders(stripe_session_id, status) values ($1,$2) returning id`, ['cs_' + st, st]))[0].id; await q('update gift_sessions set order_id=$2 where id=$1', [ds, o2]) }
+      const od = (await q(`insert into gift_compositions(session_id, line_id, preview_id, attempt, composed_path, preview_path) values ($1,'a',$2,1,'o','o') returning id`, [ds, P1]))[0].id
+      const nd = (await q(`insert into gift_compositions(session_id, line_id, preview_id, attempt, composed_path, preview_path, repair_seq) values ($1,'a',$2,1,'n','n',1) returning id`, [ds, P1]))[0].id
+      const td = (await q('select gift_claim_repair($1,$2,$3,$4) as t', [ds, 'a', od, 'op@x']))[0].t
+      const done = await bad('select gift_complete_repair($1,$2,$3,$4,$5)', [ds, 'a', td, od, nd])
+      if (st === 'placed') { expect(done).toMatch(/order_not_awaiting_artwork/); expect((await q('select status from gift_compositions where id=$1', [od]))[0].status).toBe('ready') }
+      else { expect(done).toBeNull(); expect((await q('select status from gift_compositions where id=$1', [od]))[0].status).toBe('superseded') }
+    }
+
     // approval is refused once the order is approved, even holding a valid claim
     const t3 = await claim(fresh); await q('update gift_sessions set approved_at = now() where id=$1', [s])
     expect(await bad('select gift_complete_repair($1,$2,$3,$4,$5)', [s, 'a', t3, fresh, fresh])).toMatch(/order_not_awaiting_artwork/)

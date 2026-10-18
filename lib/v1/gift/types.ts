@@ -265,7 +265,7 @@ export interface MockupView {
   templateId: string
   templateRevision: string
   identityKey: string
-  geometrySource: 'frozen' | 'legacy_catalog'
+  geometrySource: 'catalog' | 'frozen' | 'legacy_catalog'          // 'catalog' = a draft (before payment); the other two are the purchased product
   frozenCatalogVersion: string | null
   url: string
   urlExpiresAt: string

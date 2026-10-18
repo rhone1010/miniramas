@@ -12,7 +12,7 @@
 --                                  starting the same paid generation. A claim expires (default 15 minutes) so a crashed process cannot block a line forever.
 --   gift_claim_repair              take the claim: returns its token, or null when someone else holds an unexpired one. Atomic (one row, one conflict target).
 --   gift_release_repair            drop a claim you hold (a failed attempt); a wrong token does nothing.
---   gift_complete_repair           in ONE transaction: check the claim token, check the order still awaits approval, supersede the old composition (history
+--   gift_complete_repair           in ONE transaction: check the claim token, check the line is still open (a draft before payment, or a paid order awaiting approval), supersede the old composition (history
 --                                  kept, reason recorded) and drop the claim. Refuses once the order is approved or released.
 -- Additive and idempotent. Changes no existing function, row or permission. Service role only.
 
@@ -74,9 +74,12 @@ begin
   if not found then raise exception 'session_not_found'; end if;
   if s.refunded_at is not null then raise exception 'order_refunded'; end if;
   if s.refund_requested_at is not null then raise exception 'refund_pending'; end if;
-  if s.order_id is null or s.approved_at is not null then raise exception 'order_not_awaiting_artwork'; end if;
-  select status::text into ost from public.print_orders where id = s.order_id for update;
-  if ost is distinct from 'awaiting_artwork' then raise exception 'order_not_awaiting_artwork'; end if;
+  -- Open states: a DRAFT (no order yet, or an order still unpaid, 'created') and a paid order awaiting artwork approval. Never after approval or release.
+  if s.approved_at is not null then raise exception 'order_not_awaiting_artwork'; end if;
+  if s.order_id is not null then
+    select status::text into ost from public.print_orders where id = s.order_id for update;
+    if ost is null or ost not in ('created', 'awaiting_artwork') then raise exception 'order_not_awaiting_artwork'; end if;
+  end if;
 
   select * into cl from public.gift_repair_claims where session_id = p_session and line_id = p_line for update;
   if not found or cl.token <> p_token then raise exception 'repair_claim_lost'; end if;

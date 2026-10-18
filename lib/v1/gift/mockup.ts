@@ -24,7 +24,8 @@
 import { createHash } from 'node:crypto'
 import sharp from 'sharp'
 import { GiftError, owned, type GiftDeps } from './service'
-import { compositionFitsProduct, resolveFrozenProduct } from './frozen'
+import { compositionFitsProduct } from './frozen'
+import { scopeOf } from './scope'
 import type { CanonicalProduct } from '../print/catalog'
 import { byNewest, type CompositionRec, type SessionRec } from './store'
 import type { MockupView } from './types'
@@ -135,14 +136,15 @@ export const mockupPaths = (comps: CompositionRec[]): string[] => comps.flatMap(
 export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: string, lineId: unknown, expectCompositionId?: unknown): Promise<MockupView> {
   const rec: SessionRec = await owned(deps, userId, sessionId)
   if (typeof lineId !== 'string' || !lineId || lineId.length > 64) throw new GiftError('line_not_found')
-  if (!rec.order_id) throw new GiftError('order_payment_required')
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (rec.refund_requested_at) throw new GiftError('refund_pending')
   if (!deps.mockup) throw new GiftError('mockup_renderer_unavailable')
-  const order = await deps.store.getOrder(rec.order_id)
-  if (!order || !order.paid_at || order.status === 'created' || order.status === 'cancelled') throw new GiftError('order_not_paid')
-  const line = (await deps.store.orderLines(rec.order_id)).find(l => l.line_id === lineId && l.order_id === rec.order_id && l.session_id === rec.id)
-  if (!line) throw new GiftError('line_not_found')
+  // Before payment (a draft) the mockup shows the reviewed composition on the product as the catalog describes it now; after payment, on the frozen purchased product.
+  const scope = await scopeOf(deps, rec)
+  if (scope.phase === 'purchased' && (!scope.order!.paid_at || scope.order!.status === 'cancelled')) throw new GiftError('order_not_paid')
+  const ls = scope.lines.find(x => x.line.line_id === lineId)
+  if (!ls) throw new GiftError('line_not_found')
+  const line = ls.line
   if (!rec.artwork_preview_id) throw new GiftError('artwork_not_selected')
 
   const comp = (await deps.store.listCompositions(rec.id))
@@ -152,21 +154,20 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   // A page that is showing an older composition (before a correction or a new favorite) is told so, and is given the current one in the error.
   if (typeof expectCompositionId === 'string' && expectCompositionId && expectCompositionId !== comp.id) throw new GiftError('stale_composition')
 
-  const resolved = resolveFrozenProduct(order.items, line)
-  if (!resolved.ok) throw new GiftError(resolved.reason)
-  const product = resolved.product
+  const resolved = { source: ls.source, catalogVersion: ls.catalogVersion }
+  const product = ls.product
   const templateId = templateFor(product)
   if (!templateId) throw new GiftError('product_not_available')
   if (!compositionFitsProduct(comp, product)) throw new GiftError('composition_geometry_mismatch')       // e.g. a landscape file for a portrait product: refused before any rendering
 
-  const paid = !!order.paid_at && order.status !== 'created' && order.status !== 'cancelled'        // verified payment (the order only leaves 'created' after Stripe has been checked)
+  const paid = scope.phase === 'purchased' && !!scope.order!.paid_at && scope.order!.status !== 'cancelled'        // verified payment: a draft (no paid order) is watermarked; a purchased line gets the clean mockup
   const artworkSha256 = typeof (comp.plan as { artworkSha256?: unknown }).artworkSha256 === 'string' ? (comp.plan as { artworkSha256: string }).artworkSha256 : null
   const clean = artworkSha256 ? null : await deps.storage.get(comp.composed_path!)         // an older row without a recorded hash: hash it once, then remember
   if (!artworkSha256 && !clean) throw new GiftError('generation_unavailable')
   const sourceHash = artworkSha256 ?? sha(clean!)
   const templateRevision = await deps.mockup.revision(templateId)
   const identityKey = mockupIdentityKey({
-    orderId: rec.order_id, lineId: line.line_id, lineIndex: line.line_index, compositionId: comp.id, attempt: comp.attempt, sourceArtworkId: comp.preview_id, artworkSha256: sourceHash,
+    orderId: rec.order_id ?? `draft:${rec.id}`, lineId: line.line_id, lineIndex: line.line_index, compositionId: comp.id, attempt: comp.attempt, sourceArtworkId: comp.preview_id, artworkSha256: sourceHash,
     templateId, templateRevision, product, geometrySource: resolved.source, frozenCatalogVersion: resolved.catalogVersion, clean: paid,
   })
 

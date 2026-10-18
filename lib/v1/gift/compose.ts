@@ -18,6 +18,7 @@ import { lockedPreviewPath } from '@/lib/store/preview'
 import type { PrintFinish, PrintSize } from '../print/sku-map'
 import type { CanonicalProduct } from '../print/catalog'
 import { compositionFitsProduct, resolveFrozenProduct } from './frozen'
+import { requireOpen, scopeOf } from './scope'
 import { removeMockupFile } from './mockup'
 import { correctionPlanFor, groupLines, planFor, type CompositionPlan, type PlanContext } from './composition-plan'
 import { supportsFavoriteReference } from './aspects'
@@ -130,19 +131,17 @@ const recordFor = (rec: SessionRec, preview: PreviewRec, line: LineInfo, attempt
  */
 export async function ensureCompositions(deps: GiftDeps, userId: string, sessionId: string): Promise<SessionView> {
   const rec = await owned(deps, userId, sessionId)
-  if (!rec.order_id) throw new GiftError('order_payment_required')
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (rec.refund_requested_at) throw new GiftError('refund_pending')
-  const order = await deps.store.getOrder(rec.order_id)
-  if (!order || order.status !== 'awaiting_artwork') throw new GiftError('order_not_awaiting_artwork')
+  const scope = await scopeOf(deps, rec); requireOpen(scope)            // a DRAFT (reviewed before payment) or a paid order still awaiting artwork approval
   const preview = await selectedPreview(deps, rec)
-  const lines = await deps.store.orderLines(rec.order_id)
+  const lines = scope.lines.map(x => x.line)
   if (!lines.length) throw new GiftError('order_has_no_lines')
   const comps = await deps.store.listCompositions(rec.id)
   const missing = lines.filter(l => !active(comps, l.line_id, preview.id))
   if (!missing.length) return getSessionView(deps, userId, sessionId)
 
-  const products = frozenProducts(order, lines)
+  const products = new Map(scope.lines.map(x => [x.line.line_id, x.product]))
   const groups = groupLines(missing.map(l => ({ line: l, product: products.get(l.line_id)! })), ctxOf(rec))
   const master = await deps.storage.get(preview.master_path!)
   if (!master) throw new GiftError('generation_unavailable')
@@ -157,7 +156,9 @@ export async function ensureCompositions(deps: GiftDeps, userId: string, session
     let creatorId: string | null = existing?.id ?? null
     for (const it of g.items) {
       try {
-        const row = await deps.store.insertComposition(recordFor(rec, preview, it.line, 1, g.plan, files, creatorId, creatorId === null))
+        // A superseded first attempt for this line and artwork may exist (the favorite was switched away and back, or the product changed): the new row takes the next repair_seq.
+        const priorSeq = comps.filter(c => c.line_id === it.line.line_id && c.preview_id === preview.id && c.attempt === 1).map(c => c.repair_seq ?? 0)
+        const row = await deps.store.insertComposition({ ...recordFor(rec, preview, it.line, 1, g.plan, files, creatorId, creatorId === null, { sku: it.product.sku }), ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}) })
         creatorId ??= row.id
       } catch { /* a concurrent call already recorded this line: the unique key makes the repeat harmless */ }
     }
@@ -188,7 +189,7 @@ export async function correctLine(deps: GiftDeps, userId: string, sessionId: str
   const fallback = basePlan.method === 'deterministic' && plan.method === 'generated'
   let files: GroupFiles
   try { files = await composeGroup(deps, rec, preview, product, plan, master, `${lineId}-2`) } catch (e) { if (e instanceof GiftError) throw e; throw new GiftError('composition_failed') }
-  try { await deps.store.insertComposition(recordFor(rec, preview, line, 2, plan, files, null, true, fallback ? { correctionFallbackFrom: 'deterministic' } : undefined)) } catch (e) { fromStoreError(e); throw new GiftError('composition_failed') }
+  try { await deps.store.insertComposition(recordFor(rec, preview, line, 2, plan, files, null, true, { sku: product.sku, ...(fallback ? { correctionFallbackFrom: 'deterministic' } : {}) })) } catch (e) { fromStoreError(e); throw new GiftError('composition_failed') }
   try { await deps.store.useCorrection(rec.id, userId, lineId) } catch (e) { fromStoreError(e) }
   await deps.store.patchComposition(current.id, { status: 'superseded' })
   await removeMockupFile(deps, current)                          // the superseded composition's mockup is stale: its file goes, a new identity renders the new one
@@ -202,9 +203,10 @@ export async function approveComposition(deps: GiftDeps, userId: string, session
   if (!rec.artwork_preview_id) throw new GiftError('artwork_not_selected')
   const comp = (await deps.store.listCompositions(rec.id)).find(c => c.id === compositionId)
   if (!comp || comp.preview_id !== rec.artwork_preview_id || comp.status === 'superseded' || comp.status === 'failed') throw new GiftError('composition_not_found')
-  const order = rec.order_id ? await deps.store.getOrder(rec.order_id) : null
-  const line = order ? (await deps.store.orderLines(rec.order_id!)).find(l => l.line_id === comp.line_id) : null
-  if (order && line) { const r = resolveFrozenProduct(order.items, line); if (r.ok && !compositionFitsProduct(comp, r.product)) throw new GiftError('composition_geometry_mismatch') }
+  const scope = await scopeOf(deps, rec); requireOpen(scope)                // approving a reviewed composition works before payment and after it, never once the order is approved
+  const ls = scope.lines.find(x => x.line.line_id === comp.line_id)
+  if (!ls) throw new GiftError('line_not_found')
+  if (!compositionFitsProduct(comp, ls.product)) throw new GiftError('composition_geometry_mismatch')
   if (comp.status === 'ready') await deps.store.patchComposition(comp.id, { status: 'approved', approved_at: new Date((deps.clock ?? Date.now)()).toISOString() })
   return getSessionView(deps, userId, sessionId)
 }
@@ -286,15 +288,14 @@ export const REPAIR_CLAIM_MS = 15 * 60 * 1000
 export async function repairLine(deps: GiftDeps, input: { operator: string; userId: string; sessionId: string; lineId: string; dryRun?: boolean }): Promise<RepairResult> {
   if (typeof input.operator !== 'string' || !input.operator.trim() || input.operator.length > 100) throw new Error('operator_required')
   const rec = await owned(deps, input.userId, input.sessionId)
-  if (!rec.order_id) throw new GiftError('order_payment_required')
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (rec.refund_requested_at) throw new GiftError('refund_pending')
-  const order = await deps.store.getOrder(rec.order_id)
-  if (!order || order.status !== 'awaiting_artwork' || rec.approved_at) throw new GiftError('order_not_awaiting_artwork')
+  if (rec.approved_at) throw new GiftError('order_not_awaiting_artwork')
+  const scope = await scopeOf(deps, rec); requireOpen(scope)                // a DRAFT composition (before payment) or a purchased one still awaiting approval
   const preview = await selectedPreview(deps, rec)
-  const line = (await deps.store.orderLines(rec.order_id)).find(l => l.line_id === input.lineId)
-  if (!line) throw new GiftError('line_not_found')
-  const product = frozenProducts(order, [line]).get(line.line_id)!
+  const ls = scope.lines.find(x => x.line.line_id === input.lineId)
+  if (!ls) throw new GiftError('line_not_found')
+  const line = ls.line, product = ls.product
   const mineOf = async () => (await deps.store.listCompositions(rec.id)).filter(c => c.line_id === line.line_id && c.preview_id === preview.id)
   const liveOf = (rows: CompositionRec[]) => rows.filter(c => c.status === 'ready' || c.status === 'approved').sort(byNewest)
   const now = () => (deps.clock ?? Date.now)()
@@ -351,7 +352,7 @@ export async function repairLine(deps: GiftDeps, input: { operator: string; user
       try { files = await composeGroup(deps, rec, preview, product, plan, master, slot) } catch (e) { if (e instanceof GiftError) throw e; throw new GiftError('composition_failed') }
     }
     const row = await deps.store.insertComposition({
-      ...recordFor(rec, preview, line, current.attempt, plan, files, null, true, { repair: { of: current.id, seq, operator: input.operator, reason: 'geometry_mismatch', at: new Date(now()).toISOString(), ...(reusedFiles ? { reusedFiles: true } : {}) } }),
+      ...recordFor(rec, preview, line, current.attempt, plan, files, null, true, { sku: product.sku, repair: { of: current.id, seq, operator: input.operator, reason: 'geometry_mismatch', at: new Date(now()).toISOString(), ...(reusedFiles ? { reusedFiles: true } : {}) } }),
       repair_seq: seq,
     })
     await deps.store.completeRepair({ ...ids, token, oldId: current.id, newId: row.id, note: { repairedBy: input.operator }, nowMs: now() })

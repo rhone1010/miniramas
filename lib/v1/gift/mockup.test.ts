@@ -126,10 +126,10 @@ describe('authorization', () => {
     const r = rig(); const mine = await ready(r, [L12]); const other = await ready(r, [{ lineId: 'zz', productId: 'canvas:8x8', copies: 1 }], {}); void other
     await expect(getLineMockup(r.deps, U1, mine.sid, 'zz')).rejects.toMatchObject({ code: 'line_not_found' })
   })
-  it('needs a paid order: no order, an unpaid order and a refunded order all refuse; a refund request blocks it', async () => {
+  it('before payment there is no line to show; after payment a refund request or a refund blocks it', async () => {
     const r = rig(); const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
     const v = await createSession(r.deps, { userId: U1, imageB64: photo })
-    await expect(getLineMockup(r.deps, U1, v.sessionId, 'a')).rejects.toMatchObject({ code: 'order_payment_required' })
+    await expect(getLineMockup(r.deps, U1, v.sessionId, 'a')).rejects.toMatchObject({ code: 'line_not_found' })        // no order and no chosen lines: nothing to show (a draft with lines is covered below)
     const p = await ready(r, [L12]); const rec = r.store.sessions.get(p.sid)!
     rec.refund_requested_at = new Date().toISOString(); await expect(getLineMockup(r.deps, U1, p.sid, 'a')).rejects.toMatchObject({ code: 'refund_pending' })
     rec.refund_requested_at = null; rec.refunded_at = new Date().toISOString(); await expect(getLineMockup(r.deps, U1, p.sid, 'a')).rejects.toMatchObject({ code: 'order_refunded' })
@@ -620,5 +620,21 @@ describe('repair under concurrency and interruption', () => {
     const gen = r.generate.mock.calls.length
     await repairLine(r.deps, { operator: OP, userId: U1, sessionId: p.sid, lineId: 'a' })
     expect(r.store.compositions.filter(c => c.line_id === 'b').map(c => [c.status, c.width])).toEqual([['ready', 1575]]); expect(r.generate.mock.calls.length).toBe(gen + 1)
+  })
+})
+
+describe('draft compositions (reviewed before payment, no order yet)', () => {
+  it('shows a draft composition on the catalog product, repairs a defective one with no order, and releases nothing', async () => {
+    const r = rig({ series: 'groups', people: 4 }); const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
+    const v = await createSession(r.deps, { userId: U1, imageB64: photo }); await setLines(r.deps, U1, v.sessionId, [L12])
+    const b = await startBatch(r.deps, U1, v.sessionId, { idempotencyKey: 'idem-key-1' }); await selectArtwork(r.deps, U1, v.sessionId, b.batch.previews[0].previewId)
+    await ensureCompositions(r.deps, U1, v.sessionId); expect(r.store.orders.size).toBe(0)
+    const m = await getLineMockup(r.deps, U1, v.sessionId, 'a'); expect(m).toMatchObject({ geometrySource: 'catalog', frozenCatalogVersion: null, sku: 'GLOBAL-FAP-12X18', watermarked: true, productionPrintFile: false })
+    Object.assign(r.store.compositions[0], { width: 1575, height: 1050 })
+    await expect(getLineMockup(r.deps, U1, v.sessionId, 'a')).rejects.toMatchObject({ code: 'composition_geometry_mismatch' })
+    const out = await repairLine(r.deps, { operator: 'ops@liten.test', userId: U1, sessionId: v.sessionId, lineId: 'a' }) as any
+    expect(out).toMatchObject({ status: 'repaired', repairSeq: 1 }); expect((await getLineMockup(r.deps, U1, v.sessionId, 'a')).compositionId).toBe(out.compositionId)
+    expect(r.store.compositions.map(c => [c.status, c.repair_seq ?? 0])).toEqual([['superseded', 0], ['ready', 1]])
+    await expect(approveOrder(r.deps, U1, v.sessionId)).rejects.toMatchObject({ code: 'order_payment_required' })
   })
 })

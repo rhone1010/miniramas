@@ -10,7 +10,7 @@ import { randomUUID, createHash } from 'node:crypto'
 import sharp from 'sharp'
 import { allProducts, catalogVersion } from '../print/catalog'
 import { planFor, type PlanContext } from './composition-plan'
-import { resolveFrozenProduct } from './frozen'
+import { draftOrderLines, resolveFrozenProduct } from './frozen'
 import { decodeSource } from '../foyer/foyer-source'
 import { adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, MAX_PARALLEL_RENDERS, PACK_PRICE_CENTS, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
@@ -151,6 +151,12 @@ export async function setLines(deps: GiftDeps, userId: string, sessionId: string
     if (!Number.isInteger(l.copies) || l.copies < 1 || l.copies > MAX_COPIES) throw new GiftError('invalid_quantity')
     out.push({ lineId: l.lineId, productId: p.productId, size: p.size, copies: l.copies })   // size is the catalog's, never the client's
   }
+  // A composition belongs to a line AND its product: when a line is removed or its product changes, its reviewed composition (and approval) no longer applies.
+  const before = new Map(rec.lines.map(l => [l.lineId, l.productId]))
+  for (const c of await deps.store.listCompositions(rec.id)) {
+    if ((c.status !== 'ready' && c.status !== 'approved') || out.find(l => l.lineId === c.line_id)?.productId === before.get(c.line_id)) continue
+    await deps.store.patchComposition(c.id, { status: 'superseded', plan: { ...c.plan, supersededReason: 'line_changed' } })
+  }
   const t = now(deps)
   const patch = { lines: out, last_activity_at: iso(t), expires_at: extend(rec, t) }
   await deps.store.patchSession(rec.id, userId, patch)
@@ -244,7 +250,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   const all = await deps.store.listBatches(rec.id)
   const packs = await deps.store.paidPackCount(rec.user_id)
   const order = rec.order_id ? await deps.store.getOrder(rec.order_id) : null
-  const comps = rec.order_id ? await deps.store.listCompositions(rec.id) : []
+  const comps = await deps.store.listCompositions(rec.id)         // drafts (reviewed before payment) have compositions too
   const orderLines = rec.order_id ? await deps.store.orderLines(rec.order_id) : []
   const batches: BatchView[] = []
   for (const { batch, previews } of all) {
@@ -297,7 +303,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     nextBatch, expiresAt: rec.expires_at, catalogVersion: catalogVersion(catalog),
     order: orderView(rec, order),
     artworkPreviewId: rec.artwork_preview_id,
-    compositions: await Promise.all(orderLines.map(async l => {
+    compositions: await Promise.all((orderLines.length ? orderLines : draftOrderLines(rec, catalog)).map(async l => {
       const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort(byNewest)[0]
       const g = geometries.find(x => x.lineId === l.line_id)
       const gp = planned.find(x => x.l.lineId === l.line_id)

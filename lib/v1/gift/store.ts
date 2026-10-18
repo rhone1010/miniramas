@@ -335,7 +335,7 @@ export function memoryGiftStore(clock: () => number = Date.now) {
     async completeRepair(i) {
       const s = sessions.get(i.sessionId); if (!s) throw new StoreError('session_not_found')
       if (s.refunded_at) throw new StoreError('order_refunded'); if (s.refund_requested_at) throw new StoreError('refund_pending')
-      if (!s.order_id || s.approved_at || orders.get(s.order_id)?.status !== 'awaiting_artwork') throw new StoreError('order_not_awaiting_artwork')
+      if (s.approved_at || (s.order_id && !['created', 'awaiting_artwork'].includes(orders.get(s.order_id)?.status ?? ''))) throw new StoreError('order_not_awaiting_artwork')       // a draft, or a paid order awaiting approval
       const key = i.sessionId + ':' + i.lineId, held = repairClaims.get(key)
       if (!held || held.token !== i.token) throw new StoreError('repair_claim_lost')
       const o = compositions.find(x => x.id === i.oldId && x.session_id === i.sessionId && x.line_id === i.lineId), n = compositions.find(x => x.id === i.newId && x.session_id === i.sessionId && x.line_id === i.lineId)

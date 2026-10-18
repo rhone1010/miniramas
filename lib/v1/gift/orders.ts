@@ -13,13 +13,13 @@
 import type Stripe from 'stripe'
 import { createBrandedSession } from '@/lib/store/stripe-branding'
 import { allProducts, catalogVersion } from '../print/catalog'
-import { freezeLine } from './frozen'
+import { compositionFitsProduct, freezeLine, type CompositionPin } from './frozen'
 import { planFor } from './composition-plan'
 import type { PrintOrderItem, ShippingAddress } from '../print/db'
 import type { QuoteRequest, QuoteResponse } from '../print/prodigi-client'
 import type { PrintFinish, PrintSize } from '../print/sku-map'
 import { GiftError, owned, type GiftDeps } from './service'
-import { StoreError, type GiftStore, type OrderInfo } from './store'
+import { StoreError, byNewest, type GiftStore, type OrderInfo } from './store'
 import { giftRenderId, parseGiftRenderId } from './order-kind'
 import { GIFT_RETURN_PATHS, type Disclosure, type GiftCheckoutRequest, type GiftCheckoutResponse } from './types'
 
@@ -60,6 +60,12 @@ export interface GiftOrderDeps {
   /** Preview only: Stripe test mode and the Prodigi sandbox must be in force. Throws when they are not. */
   requireSandbox?: () => void
   publishableKey: string | undefined
+  /**
+   * The approved journey reviews product-specific compositions BEFORE payment. When true, checkout refuses unless every line has an APPROVED composition of the
+   * selected artwork that fits the product about to be frozen, and records exactly those compositions on the order. Off until the page sends customers through
+   * that review (GIFT_COMPOSITIONS_BEFORE_PAYMENT=1), so the current flow is unchanged in the meantime.
+   */
+  requireReviewedCompositions?: boolean
   now?: () => number
 }
 
@@ -109,6 +115,18 @@ export async function createGiftCheckout(
     if (!planFor(p, planCtx)) throw new GiftError('product_not_available_for_artwork')
     return { line: l, product: p }
   })
+  // Reviewed compositions: the exact approved composition of each line is what the customer pays for. A line whose composition is missing, not approved (a repair
+  // makes the replacement 'ready' until re-approved), of another artwork, or the wrong shape or SKU for the product being frozen, stops checkout before any quote or Stripe session.
+  const pins = new Map<string, CompositionPin>()
+  if (deps.requireReviewedCompositions) {
+    const comps = await deps.gift.store.listCompositions(rec.id)
+    for (const x of lines) {
+      const c = comps.filter(k => k.line_id === x.line.lineId && k.preview_id === rec.artwork_preview_id && k.status === 'approved').sort(byNewest)[0]
+      if (!c || !compositionFitsProduct(c, x.product)) throw new GiftError('compositions_not_approved')
+      pins.set(x.line.lineId, { compositionId: c.id, previewId: c.preview_id, attempt: c.attempt, repairSeq: c.repair_seq ?? 0, artworkSha256: typeof c.plan.artworkSha256 === 'string' ? c.plan.artworkSha256 : null,
+        width: c.width, height: c.height, sku: x.product.sku, approvedAt: c.approved_at })
+    }
+  }
   const itemsCents = lines.reduce((n, x) => n + x.product.retailCents! * x.line.copies, 0)
 
   let shippingCents: number
@@ -134,12 +152,14 @@ export async function createGiftCheckout(
     return {
       renderId, renderUrl: '', size: x.product.size as PrintSize, finish: x.product.family as PrintFinish,
       copies: x.line.copies, sku: x.product.sku, retailCents: x.product.retailCents!,
-      frozen: kept && kept.renderId === renderId && kept.sku === x.product.sku && kept.frozen ? kept.frozen : freezeLine(x.product, (deps.now ?? Date.now)(), frozenVersion),
+      frozen: { ...((kept && kept.renderId === renderId && kept.sku === x.product.sku && kept.frozen ? kept.frozen : freezeLine(x.product, (deps.now ?? Date.now)(), frozenVersion)) as object),
+                ...(pins.has(x.line.lineId) ? { composition: pins.get(x.line.lineId) } : { composition: undefined }) },
     }
   })
   const sameAsStored = !!existing && (existing.customer_email ?? '').toLowerCase() === b.email.toLowerCase() && addressKey(existing.shipping_address) === addressKey(address) &&
     existing.shipping_method === shippingMethod && existing.retail_shipping_cents === shippingCents && existing.retail_total_cents === totalCents &&
-    existing.items.length === items.length && items.every((it, i) => { const e = existing.items[i]; return e.renderId === it.renderId && e.sku === it.sku && e.copies === it.copies && e.retailCents === it.retailCents })
+    existing.items.length === items.length && items.every((it, i) => { const e = existing.items[i]; return e.renderId === it.renderId && e.sku === it.sku && e.copies === it.copies && e.retailCents === it.retailCents &&
+      (e.frozen as { composition?: CompositionPin } | undefined)?.composition?.compositionId === (it.frozen as { composition?: CompositionPin }).composition?.compositionId })
 
   // Reuse the open Stripe session of an unpaid order ONLY when products, address, shipping method and quote, and total all still match.
   let prior: Stripe.Checkout.Session | null = null

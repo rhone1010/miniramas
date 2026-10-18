@@ -15,10 +15,16 @@
 // Pure functions, no I/O, so Codex can copy this file and tests run without a database.
 
 import { allProducts, catalogVersion, type CanonicalProduct } from '../print/catalog'
+import type { OrderLineRec, SessionRec } from './store'
 
 export const FROZEN_SNAPSHOT_VERSION = 1
 
+/** The customer-reviewed composition a line was sold with (recorded at checkout when compositions are reviewed before payment). Audit and identity: after a repair the live composition may be a successor. */
+export interface CompositionPin { compositionId: string; previewId: string; attempt: number; repairSeq: number; artworkSha256: string | null; width: number | null; height: number | null; sku: string | null; approvedAt: string | null }
+
 export interface FrozenLine {
+  /** Present only on orders sold after compositions were reviewed before payment. */
+  composition?: CompositionPin
   snapshotVersion: typeof FROZEN_SNAPSHOT_VERSION
   /** ISO time the snapshot was taken (checkout). */
   frozenAt: string
@@ -37,10 +43,20 @@ export function freezeLine(product: CanonicalProduct, nowMs: number, version: st
  * extension). Orientation is part of that: a landscape file never stands in for a portrait product. Unknown dimensions are not a mismatch
  * (older rows); a known wrong shape is.
  */
-export function compositionFitsProduct(c: { width: number | null; height: number | null }, product: CanonicalProduct): boolean {
+export function compositionFitsProduct(c: { width: number | null; height: number | null; plan?: Record<string, unknown> }, product: CanonicalProduct): boolean {
+  const recorded = c.plan?.sku                                  // a composition made for another SKU (the line's product changed) is not this product's, even at the same shape
+  if (typeof recorded === 'string' && recorded !== product.sku) return false
   if (!c.width || !c.height) return true
   const a = c.width / c.height, { finalPx, picturePx } = product.requirements
   return [finalPx, picturePx].some(t => Math.abs(a / (t.w / t.h) - 1) <= 0.02)
+}
+
+/** The session's chosen lines as order-line records, before any order exists (a DRAFT): the same line ids the paid order will carry. */
+export function draftOrderLines(rec: Pick<SessionRec, 'id' | 'order_id' | 'lines'>, catalog: CanonicalProduct[] = allProducts()): OrderLineRec[] {
+  return rec.lines.flatMap((l, i) => {
+    const p = catalog.find(x => x.productId === l.productId && x.status === 'launch')
+    return p ? [{ order_id: rec.order_id ?? '', line_index: i, session_id: rec.id, line_id: l.lineId, product_id: p.productId, sku: p.sku, copies: l.copies, corrections_used: 0 }] : []
+  })
 }
 
 export type GeometrySource = 'frozen' | 'legacy_catalog'

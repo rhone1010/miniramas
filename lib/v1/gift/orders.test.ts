@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
 import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
-import { catalogVersion } from '../print/catalog'
+import { allProducts, catalogVersion } from '../print/catalog'
 import { createGiftCheckout, confirmGiftOrder, verifyGiftPayment, giftOrderRecheck, DISCLOSURE, GIFT_ORDER_KIND, type GiftOrderDeps, type PrintOrdersPort } from './orders'
 import { createSession, setLines, startBatch, getSessionView, type GiftDeps } from './service'
-import { selectArtwork } from './compose'
+import { selectArtwork, ensureCompositions, approveComposition, approveOrder, repairLine } from './compose'
 import { memoryGiftStore } from './store'
 import { giftRenderId, isGiftOrder, parseGiftRenderId } from './order-kind'
 
@@ -383,5 +383,85 @@ describe('purchase disclosure 2026-10-18-2', () => {
     const rec = (await r.store.getSession(sid, U1))!; expect(rec.disclosure_version).toBe('2026-10-18-2'); expect(rec.disclosure_accepted_at).toBeTruthy()
     expect(out.totals.shippingCents).toBe(685); expect(out.totals.totalCents).toBe(out.totals.itemsCents + 685)
     r.pay(out.stripeSessionId); await confirmGiftOrder(r.deps, out.stripeSessionId, U1); expect((await r.store.getSession(sid, U1))!.free_batches_granted).toBe(2)
+  })
+})
+
+describe('compositions reviewed before payment (the approved journey)', () => {
+  const reviewedRig = () => {
+    const r = rig(); r.deps.requireReviewedCompositions = true
+    r.gift.compose = vi.fn(async (i: { size: string; finish: string }) => {
+      const p = allProducts().find(x => x.size === i.size && (x.family as string) === i.finish)!, w = 256, h = Math.round(256 * p.requirements.picturePx.h / p.requirements.picturePx.w)
+      return { image: await sharp({ create: { width: w, height: h, channels: 3, background: '#036' } }).png().toBuffer(), width: w, height: h, fit: 'exact' as const, outpainted: false }
+    })
+    return r
+  }
+  const reviewed = async (r: ReturnType<typeof rig>) => {
+    const sid = await sessionWithLines(r); await ensureCompositions(r.gift, U1, sid)
+    for (const c of r.store.compositions) await approveComposition(r.gift, U1, sid, c.id)
+    return sid
+  }
+  const pins = (r: ReturnType<typeof rig>) => [...r.store.orders.values()][0].items.map(i => (i.frozen as any).composition?.compositionId)
+
+  it('is off by default: the current flow (checkout, then compose) is unchanged', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); await checkout(r, sid)
+    expect([...r.store.orders.values()][0].items.every(i => (i.frozen as any).composition === undefined)).toBe(true)
+  })
+  it('when on, refuses before any quote or Stripe session unless every line has an APPROVED composition of the selected artwork', async () => {
+    const r = reviewedRig(); const sid = await sessionWithLines(r)
+    await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })              // none yet
+    await ensureCompositions(r.gift, U1, sid)
+    await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })              // composed and shown, not yet approved
+    await approveComposition(r.gift, U1, sid, r.store.compositions[0].id)
+    await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })              // one of two
+    expect(r.quote).not.toHaveBeenCalled(); expect(r.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(r.store.orders.size).toBe(0)
+  })
+  it('records exactly the approved compositions on the order, keeps them through payment, and approval-to-manufacture still needs payment', async () => {
+    const r = reviewedRig(); const sid = await reviewed(r); const ids = r.store.compositions.map(c => c.id)
+    await expect(approveOrder(r.gift, U1, sid)).rejects.toMatchObject({ code: 'order_payment_required' })      // approved artwork alone releases nothing
+    const out = await checkout(r, sid)
+    expect(pins(r)).toEqual(ids)
+    const pin = ([...r.store.orders.values()][0].items[0].frozen as any)
+    expect(pin.composition).toMatchObject({ compositionId: ids[0], previewId: r.store.compositions[0].preview_id, attempt: 1, repairSeq: 0, sku: pin.product.sku }); expect(pin.product.sku).toBeTruthy()   // the geometry snapshot is still there beside it
+    await expect(approveOrder(r.gift, U1, sid)).rejects.toBeTruthy()                                            // an unpaid order cannot be approved either
+    r.pay(out.stripeSessionId); await confirmGiftOrder({ stripe: r.stripe, store: r.store }, out.stripeSessionId, U1)
+    const v = await getSessionView(r.gift, U1, sid)
+    expect(v.compositions.map(c => [c.compositionId, c.status])).toEqual(ids.map(id => [id, 'approved']))      // identity and approval survive payment
+    expect(r.store.compositions.map(c => c.id)).toEqual(ids)                                                    // nothing was recomposed or replaced
+    expect((await approveOrder(r.gift, U1, sid)).order.state).toBe('approved')                                  // then the explicit order approval, only now
+  })
+  it('a repair of a draft composition makes its replacement "ready": checkout waits for re-approval, then pins the replacement under a new Stripe session', async () => {
+    const r = reviewedRig(); const sid = await reviewed(r); const first = await checkout(r, sid); const oldIds = pins(r)
+    expect((await checkout(r, sid)).stripeSessionId).toBe(first.stripeSessionId)                                // unchanged: the open session is reused
+    const bad = r.store.compositions.find(c => c.line_id === 'a')!; Object.assign(bad, { width: 1575, height: 1050 })
+    const fixed = await repairLine(r.gift, { operator: 'ops@liten.test', userId: U1, sessionId: sid, lineId: 'a' }) as any
+    expect(fixed.status).toBe('repaired')                                                                       // works while the order is only 'created' (unpaid)
+    await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })
+    await approveComposition(r.gift, U1, sid, fixed.compositionId)
+    const again = await checkout(r, sid)
+    expect(again.stripeSessionId).not.toBe(first.stripeSessionId); expect(r.sessions.get(first.stripeSessionId).status).toBe('expired')
+    expect(pins(r)).toEqual([fixed.compositionId, oldIds[1]])                                                   // the replacement for line a; line b is the composition it always had
+    expect(r.store.compositions.find(c => c.id === bad.id)).toMatchObject({ status: 'superseded', plan: { supersededReason: 'geometry_defect' } })
+  })
+  it('a composition for another product or the wrong shape is never pinned', async () => {
+    const r = reviewedRig(); const sid = await reviewed(r)
+    Object.assign(r.store.compositions[0], { width: 1575, height: 1050 })
+    await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })
+    Object.assign(r.store.compositions[0], { width: 256, height: 256, plan: { ...r.store.compositions[0].plan, sku: 'SOME-OTHER-SKU' } })
+    await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })
+  })
+  it('changing a chosen product retires that line\'s composition and approval; the other line keeps its own', async () => {
+    const r = reviewedRig(); const sid = await reviewed(r); const keep = r.store.compositions.find(c => c.line_id === 'b')!.id
+    await setLines(r.gift, U1, sid, [{ lineId: 'a', productId: 'fine_art:12x12', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 2 }])
+    expect(r.store.compositions.find(c => c.line_id === 'a')).toMatchObject({ status: 'superseded', plan: { supersededReason: 'line_changed' } }); expect(r.store.compositions.find(c => c.id === keep)!.status).toBe('approved')
+    await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })
+    const v = await ensureCompositions(r.gift, U1, sid)                                                          // a new composition for line a only, as the next repair_seq
+    expect(v.compositions.map(c => [c.lineId, c.status])).toEqual([['a', 'ready'], ['b', 'approved']]); expect(r.store.compositions.filter(c => c.line_id === 'a').map(c => c.repair_seq ?? 0)).toEqual([0, 1])
+  })
+  it('switching the favorite away and back reuses the stored composition files and pays for nothing', async () => {
+    const r = reviewedRig(); const sid = await sessionWithLines(r); await ensureCompositions(r.gift, U1, sid); const made = (r.gift.compose as any).mock.calls.length
+    const batch = (await getSessionView(r.gift, U1, sid)).batches[0].previews, first = batch[0].previewId
+    await selectArtwork(r.gift, U1, sid, batch[1].previewId); await selectArtwork(r.gift, U1, sid, first)
+    const v = await ensureCompositions(r.gift, U1, sid)
+    expect(v.compositions.every(c => c.status === 'ready' && c.sourceArtworkId === first)).toBe(true); expect((r.gift.compose as any).mock.calls.length).toBe(made)
   })
 })

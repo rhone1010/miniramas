@@ -1,0 +1,25 @@
+# Gift: compositions reviewed BEFORE payment (backend contract for Codex)
+
+Journey: Upload -> Effects -> 6+6 free previews -> Select products -> Generate/review product-specific artwork -> Approve -> Checkout -> Submit order.
+Status: implemented and tested on the in-memory store; NOT deployed. Migration 052 is still NOT applied. Checkout enforcement is OFF by default.
+
+## What changed (minimum)
+- A composition now exists for a DRAFT line: the session's chosen lines, products from the current catalog, no order needed. Same rows, same line ids, same endpoints; after payment they continue as the purchased composition (geometry from the checkout snapshot).
+  - `POST .../compositions` (ensure), `POST .../compositions/:ref/approve`, `GET .../lines/:lineId/mockup` work with no order and with an unpaid order; after payment, as before (only while the order awaits artwork approval).
+  - Still paid-only: `.../correct` (the included correction is tracked on the paid order line), the final order approval (`approve`), and everything that releases to the lab. Approving compositions before payment releases nothing.
+- Session view: `compositions[]` is now populated for a draft (one entry per chosen line). `geometries[].geometrySource` is `catalog` before checkout, `frozen`/`legacy_catalog` after. Mockup `geometrySource` can be `catalog`, `frozen` or `legacy_catalog`; `frozenCatalogVersion` is null for a draft.
+- Compositions record the SKU they were made for. Changing a line's product (`PUT lines`) or removing a line supersedes that line's composition and approval; other lines keep theirs. Switching the favorite away and back reuses the stored files (no new paid call).
+- Checkout (`requireReviewedCompositions`, env `GIFT_COMPOSITIONS_BEFORE_PAYMENT=1`, default off): refuses with 409 `compositions_not_approved` unless every line has an APPROVED composition of the selected artwork that fits the product being frozen; records those exact compositions on the order (`items[i].frozen.composition`: compositionId, previewId, attempt, repairSeq, artworkSha256, width, height, sku, approvedAt). A different set of compositions replaces the open Stripe session like any other change.
+- Repair (`repairLine`, operator-only): works for a draft (no order, or unpaid) and for a purchased composition awaiting approval; never after the order is approved/released. The replacement is `ready` (not approved): the customer re-approves it. The correction entitlement is never touched. Migration 052's `gift_complete_repair` was widened to the same states.
+
+## What Codex needs
+1. Call ensure/approve/mockup before checkout (no order). Show `compositions[].status` (`ready` -> approve -> `approved`) and the mockup per line.
+2. Handle 409 `compositions_not_approved` at checkout (go back to review) and 409 `composition_geometry_mismatch` on mockup/approve (technical recovery; an operator repairs it, the page offers nothing).
+3. After a repair the line returns to `ready` with a new `compositionId`; a page holding the old id gets 409 `stale_composition` from the mockup route. The customer approves the new one.
+4. Checkout must send disclosure `2026-10-18-2` (held, separate) and the page must show the exact text from the response.
+5. Do not enable `GIFT_COMPOSITIONS_BEFORE_PAYMENT` until the page does steps 1-2; with it off the old order (checkout, then compose) still works.
+
+## Not done / decisions needed
+- The included correction for a DRAFT composition is not implemented (`correct` is paid-only). Decide whether a customer may regenerate before paying and how often.
+- COST EXPOSURE: composing before payment spends NB2.1 on customers who may never buy. Compositions are one per line and favorite and are reused, but switching among 12 favorites generates more. Recommend a per-session cap on draft compositions (not implemented; needs a number).
+- Draft mockups show the catalog product as of now; checkout then freezes it. If the catalog geometry changed in between, the composition fails the shape check and checkout asks for review again.

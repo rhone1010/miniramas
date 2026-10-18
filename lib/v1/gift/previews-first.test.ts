@@ -28,7 +28,7 @@ function rig() {
     analyze: async () => ({ status: 'supported', series: 'portraits', peopleCount: null }),
     kick: vi.fn(async () => ({})),
   }
-  return { deps, store, files, generate, clock }
+  return { deps, store, files, generate, compose, clock }
 }
 let shade = 0
 /** A photograph of its own: the stored source is hashed, so a different colour is a different photograph. */
@@ -137,14 +137,16 @@ describe('the favorite is chosen and saved before buying, and survives the purch
     await selectArtwork(r.deps, U1, sid, b1.batch.previews[0].previewId); expect((await view(r, sid)).artworkPreviewId).toBe(b1.batch.previews[0].previewId)
     await expect(selectArtwork(r.deps, U2, sid, b1.batch.previews[0].previewId)).rejects.toMatchObject({ code: 'session_not_found' })
   })
-  it('the SAME artwork is the one composed after payment: payment, products and confirmation never reset or change the selection', async () => {
+  it('the SAME artwork is the one composed, reviewed before payment and kept after it: payment, products and confirmation never reset the selection or the reviewed composition', async () => {
     const r = rig(); const sid = await session(r); const b1 = await batch(r, sid, 1); const fav = b1.batch.previews[3].previewId
     await selectArtwork(r.deps, U1, sid, fav); await setLines(r.deps, U1, sid, LINE)
-    await expect(ensureCompositions(r.deps, U1, sid)).rejects.toMatchObject({ code: 'order_payment_required' })        // no composition work before payment
+    const draft = await ensureCompositions(r.deps, U1, sid)                                              // the approved journey: composed and reviewed BEFORE payment
+    expect(draft.compositions.map(c => [c.lineId, c.sourceArtworkId, c.status])).toEqual([['a', fav, 'ready']])
+    const reviewed = draft.compositions[0].compositionId!; await approveComposition(r.deps, U1, sid, reviewed); const made = r.compose.mock.calls.length
     await pay(r, sid)
     expect((await view(r, sid)).artworkPreviewId).toBe(fav)
-    const v = await ensureCompositions(r.deps, U1, sid)
-    expect(v.compositions.map(c => [c.lineId, c.sourceArtworkId, c.status])).toEqual([['a', fav, 'ready']])
+    const v = await ensureCompositions(r.deps, U1, sid)                                                  // nothing is composed again: the reviewed composition IS the purchased one
+    expect(v.compositions.map(c => [c.lineId, c.compositionId, c.sourceArtworkId, c.status])).toEqual([['a', reviewed, fav, 'approved']]); expect(r.compose.mock.calls.length).toBe(made)
   })
   it('before payment only the favorite is chosen: no product composition or print file exists until a purchased line has been composed from it', async () => {
     const r = rig(); const sid = await session(r); const b1 = await batch(r, sid, 1); await selectArtwork(r.deps, U1, sid, b1.batch.previews[0].previewId)
