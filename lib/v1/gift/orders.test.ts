@@ -9,7 +9,7 @@ import { giftRenderId, isGiftOrder, parseGiftRenderId } from './order-kind'
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '10000000-0000-4000-8000-000000000002'
 const ADDRESS = { name: 'Ada Lovelace', line1: '1 Main St', city: 'Sonoma', state: 'CA', postcode: '95476', countryCode: 'us' }
-const BODY = { email: 'ada@example.test', shippingAddress: ADDRESS, disclosureAccepted: true as const, returnPath: '/gift-wizard' as const }
+const BODY = { email: 'ada@example.test', shippingAddress: ADDRESS, disclosureAccepted: true as const, disclosureVersion: '2026-10-17-1', returnPath: '/gift-wizard' as const }
 
 function rig(over: { shippingAmount?: string; canFulfil?: boolean; sandbox?: boolean } = {}) {
   const store = memoryGiftStore()
@@ -28,6 +28,7 @@ function rig(over: { shippingAmount?: string; canFulfil?: boolean; sandbox?: boo
       sessions: {
         create: vi.fn(async (p: any) => { const id = 'cs_test_gift' + String(++n).padStart(8, '0'); const s = { id, status: 'open', client_secret: 'secret_' + id, payment_status: 'unpaid', mode: 'payment', currency: 'usd', metadata: p.metadata, params: p, amount_total: p.line_items.reduce((t: number, l: any) => t + l.price_data.unit_amount * l.quantity, 0), payment_intent: null }; sessions.set(id, s); return s }),
         retrieve: vi.fn(async (id: string) => { const s = sessions.get(id); if (!s) throw new Error('no such session'); return s }),
+        expire: vi.fn(async (id: string) => { const s = sessions.get(id); if (!s) throw new Error('no such session'); if (s.status === 'complete') throw new Error('already complete'); s.status = 'expired'; return s }),
         listLineItems: vi.fn(async (id: string) => ({ has_more: false, data: sessions.get(id).params.line_items.map((l: any) => ({ amount_total: l.price_data.unit_amount * l.quantity })) })),
       },
     },
@@ -35,10 +36,14 @@ function rig(over: { shippingAmount?: string; canFulfil?: boolean; sandbox?: boo
   const printOrders: PrintOrdersPort = {
     async create(i) {
       const id = randomUUID()
-      store.orders.set(id, { id, status: 'created', paid_at: null, stripe_session_id: i.stripeSessionId, stripe_payment_intent: null, retail_total_cents: i.retailTotalCents, retail_shipping_cents: i.retailShippingCents, items: i.items as any, prodigi_order_id: null, placed_at: null })
+      store.orders.set(id, { id, status: 'created', paid_at: null, stripe_session_id: i.stripeSessionId, stripe_payment_intent: null, retail_total_cents: i.retailTotalCents, retail_shipping_cents: i.retailShippingCents, items: i.items as any, prodigi_order_id: null, placed_at: null,
+        customer_email: i.customerEmail, shipping_address: i.shippingAddress as any, shipping_method: i.shippingMethod, prodigi_merchant_ref: i.prodigiMerchantRef })
       return { id }
     },
-    async replaceStripeSession(orderId, sid) { store.orders.get(orderId)!.stripe_session_id = sid },
+    async updateUnpaid(orderId, i) {
+      const o = store.orders.get(orderId)!; if (o.status !== 'created') return false
+      Object.assign(o, { stripe_session_id: i.stripeSessionId, customer_email: i.customerEmail, shipping_address: i.shippingAddress as any, shipping_method: i.shippingMethod, items: i.items as any, retail_shipping_cents: i.retailShippingCents, retail_total_cents: i.retailTotalCents }); return true
+    },
   }
   const quote = vi.fn(async (_req: unknown) => ({ outcome: 'Ok', quotes: [{ costSummary: { shipping: { amount: over.shippingAmount ?? '6.85', currency: 'USD' } } }] }) as any)
   const deps: GiftOrderDeps & { gift: GiftDeps } = {
@@ -78,7 +83,7 @@ describe('gift checkout', () => {
     const p = r.stripe.checkout.sessions.create.mock.calls[0][0]
     expect(p).toMatchObject({ mode: 'payment', ui_mode: 'embedded', customer_email: 'ada@example.test', custom_text: { submit: { message: DISCLOSURE.text } }, metadata: { kind: GIFT_ORDER_KIND, giftSessionId: sid, userId: U1, disclosure: DISCLOSURE.version } })
     expect(p.return_url).toBe('https://x.test/gift-wizard?gift_order_session={CHECKOUT_SESSION_ID}')
-    expect(DISCLOSURE.text).toMatch(/created after you pay/); expect(DISCLOSURE.text).toMatch(/Nothing is printed or manufactured until you approve/); expect(DISCLOSURE.text.length).toBeLessThan(1200)
+    expect(DISCLOSURE.text).toMatch(/created after payment/); expect(DISCLOSURE.text).toMatch(/Nothing is printed or manufactured until you approve your final artwork/); expect(DISCLOSURE.text.length).toBeLessThan(1200)
     expect(out.totals.totalCents).toBe(r.sessions.get(out.stripeSessionId).amount_total)
   })
   it('records the version of the disclosure the customer accepted, and refuses without acceptance', async () => {
@@ -235,5 +240,128 @@ describe('fulfilment-time re-verification', () => {
     rec.refund_requested_at = new Date().toISOString(); await expect(giftOrderRecheck(r.store, orderId)).rejects.toThrow('refund_pending')
     rec.refund_requested_at = null; rec.refunded_at = new Date().toISOString(); await expect(giftOrderRecheck(r.store, orderId)).rejects.toThrow('order_refunded')
     await expect(giftOrderRecheck(r.store, 'not-a-gift-order')).resolves.toBeUndefined()           // other orders are unaffected
+  })
+})
+
+// ── checkout session consistency: reuse only when everything matches; otherwise replace safely and persist what was actually sold ──
+describe('checkout session reuse and replacement', () => {
+  const quoteOf = (amount: string) => ({ outcome: 'Ok', quotes: [{ costSummary: { shipping: { amount, currency: 'USD' } } }] }) as any
+  const order = (r: ReturnType<typeof rig>) => [...r.store.orders.values()][0]
+
+  it('reuses the open session only while products, address, shipping method, quote and total all still match', async () => {
+    const r = rig(); const sid = await sessionWithLines(r)
+    const a = await checkout(r, sid), again = await checkout(r, sid, { ...BODY, email: 'ADA@example.test', shippingAddress: { ...ADDRESS, countryCode: 'US', line1: ' 1 Main St ' } })
+    expect(again.stripeSessionId).toBe(a.stripeSessionId); expect(r.stripe.checkout.sessions.create).toHaveBeenCalledTimes(1)   // trivial case/space differences are the same details
+  })
+  it.each([
+    ['a different address', { shippingAddress: { ...ADDRESS, line1: '99 Other Rd' } }],
+    ['a different postcode', { shippingAddress: { ...ADDRESS, postcode: '90210' } }],
+    ['a different country', { shippingAddress: { ...ADDRESS, countryCode: 'gb' } }],
+    ['a different email', { email: 'other@example.test' }],
+    ['a different shipping method', { shippingMethod: 'Express' as const }],
+  ])('%s replaces the session, and the order then carries what was actually sold', async (_name, change) => {
+    const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid)
+    const b2 = await checkout(r, sid, { ...BODY, ...change })
+    expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(r.store.orders.size).toBe(1)
+    expect(order(r)).toMatchObject({ stripe_session_id: b2.stripeSessionId, retail_total_cents: b2.totals.totalCents, retail_shipping_cents: b2.totals.shippingCents })
+    const want = { ...BODY, ...change }; expect(order(r).customer_email).toBe(want.email); expect((order(r).shipping_address as any).postcode).toBe(want.shippingAddress.postcode)
+    expect(order(r).shipping_method).toBe((change as any).shippingMethod ?? 'Budget')
+    expect(r.sessions.get(a.stripeSessionId).status).toBe('expired')                         // the replaced session can no longer be paid
+  })
+  it('a changed shipping quote or total replaces the session and persists the new quote, which the payment is then verified against', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid)
+    r.quote.mockResolvedValueOnce(quoteOf('9.50'))
+    const b2 = await checkout(r, sid)
+    expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(b2.totals.shippingCents).toBe(950); expect(order(r).retail_shipping_cents).toBe(950); expect(order(r).retail_total_cents).toBe(b2.totals.totalCents)
+    r.pay(b2.stripeSessionId)
+    expect(await confirmGiftOrder(r.deps, b2.stripeSessionId, U1)).toMatchObject({ confirmed: true })       // amount and line items match the UPDATED order
+    expect(order(r).status).toBe('awaiting_artwork')
+  })
+  it('a stale confirmation for the replaced session is refused and grants nothing; the current session confirms once with two batches, whatever the deliveries', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid); const b2 = await checkout(r, sid, { ...BODY, email: 'new@example.test' })
+    r.pay(a.stripeSessionId)                                                                  // the old session is "completed" at Stripe in the fake: it must still not count
+    await expect(confirmGiftOrder(r.deps, a.stripeSessionId, U1)).rejects.toMatchObject({ code: 'order_not_found' })
+    expect((await r.store.getSession(sid, U1))!.free_batches_granted).toBe(0); expect(order(r).status).toBe('created')
+    r.pay(b2.stripeSessionId)
+    for (let i = 0; i < 3; i++) await confirmGiftOrder(r.deps, b2.stripeSessionId)            // duplicate webhooks
+    await confirmGiftOrder(r.deps, b2.stripeSessionId, U1)                                    // and the browser
+    expect((await r.store.getSession(sid, U1))!.free_batches_granted).toBe(2); expect(order(r).status).toBe('awaiting_artwork'); expect(r.store.lines.length).toBe(2)
+    await expect(confirmGiftOrder(r.deps, a.stripeSessionId)).rejects.toMatchObject({ code: 'order_not_found' })   // still refused after the order is paid
+  })
+  it('a session already paid at Stripe (confirmation pending) is never replaced: the caller must confirm', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid); r.pay(a.stripeSessionId); r.sessions.get(a.stripeSessionId).status = 'complete'
+    await expect(checkout(r, sid, { ...BODY, email: 'late@example.test' })).rejects.toMatchObject({ code: 'order_already_paid' })
+    expect(r.stripe.checkout.sessions.create).toHaveBeenCalledTimes(1); expect(order(r).stripe_session_id).toBe(a.stripeSessionId); expect(order(r).customer_email).toBe(BODY.email)
+  })
+  it('an order paid while a replacement was being prepared is left untouched, and the unused new session is expired', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid)
+    const real = r.deps.printOrders.updateUnpaid; r.deps.printOrders.updateUnpaid = async (id, i) => { order(r).status = 'awaiting_artwork'; return real(id, i) }
+    await expect(checkout(r, sid, { ...BODY, email: 'race@example.test' })).rejects.toMatchObject({ code: 'order_already_paid' })
+    expect(order(r).stripe_session_id).toBe(a.stripeSessionId); expect(order(r).customer_email).toBe(BODY.email)
+    const unused = [...r.sessions.values()].find(s => s.id !== a.stripeSessionId)!; expect(unused.status).toBe('expired')
+  })
+  it('frozen product geometry from the first checkout is kept across a replacement, never re-taken from a newer catalog', async () => {
+    let t = Date.parse('2026-10-17T10:00:00Z'); const r = rig(); r.deps.now = () => t
+    const sid = await sessionWithLines(r); await checkout(r, sid); const first = (order(r).items[0] as any).frozen.frozenAt
+    t += 3600_000; await checkout(r, sid, { ...BODY, email: 'later@example.test' })
+    expect((order(r).items[0] as any).frozen.frozenAt).toBe(first); expect((order(r).items[1] as any).frozen.snapshotVersion).toBe(1)
+  })
+  it('the merchant reference and the order id stay the same across replacements (one order, one Prodigi reference)', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid); const ref = order(r).prodigi_merchant_ref; const id = order(r).id
+    const b2 = await checkout(r, sid, { ...BODY, shippingMethod: 'Standard' })
+    expect([order(r).id, order(r).prodigi_merchant_ref, r.sessions.get(b2.stripeSessionId).metadata.merchant_ref]).toEqual([id, ref, ref]); expect(a.stripeSessionId).not.toBe(b2.stripeSessionId)
+  })
+  it('an unpaid session that Stripe expired is replaced on the same order', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid); r.sessions.get(a.stripeSessionId).status = 'expired'
+    const b2 = await checkout(r, sid); expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(r.store.orders.size).toBe(1); expect(order(r).stripe_session_id).toBe(b2.stripeSessionId)
+  })
+})
+
+// ── the disclosure: exact wording, and the version the page displayed must be submitted and must be current ──
+const APPROVED_TEXT = `Your artwork is personalized and created after payment. Your purchase includes two sets of six artwork previews. After exploring your previews, you'll select your favorite and review how it looks on each purchased product.
+
+Additional sets of six previews are available for $2.99.
+
+Nothing is printed or manufactured until you approve your final artwork. If you're not satisfied after reviewing your included previews, you may request a full refund through Concierge.`
+
+describe('purchase disclosure 2026-10-17-1', () => {
+  const order = (r: ReturnType<typeof rig>) => [...r.store.orders.values()][0]
+  it('is exactly the approved wording and version, and the same text goes to Stripe and back to the page', async () => {
+    expect(DISCLOSURE).toEqual({ version: '2026-10-17-1', text: APPROVED_TEXT })
+    const r = rig(); const sid = await sessionWithLines(r); const out = await checkout(r, sid)
+    expect(out.disclosure).toEqual(DISCLOSURE); expect(r.sessions.get(out.stripeSessionId).params.custom_text.submit.message).toBe(APPROVED_TEXT)
+    expect(r.sessions.get(out.stripeSessionId).metadata.disclosure).toBe('2026-10-17-1'); expect(APPROVED_TEXT.length).toBeLessThan(1200)       // Stripe's limit for the submit message
+  })
+  it('requires the version with the acceptance: missing, empty, non-string, stale and invented versions are refused before any quote, Stripe session or order', async () => {
+    const r = rig(); const sid = await sessionWithLines(r)
+    const { disclosureVersion: _v, ...noVersion } = BODY
+    for (const body of [noVersion, { ...BODY, disclosureVersion: '' }, { ...BODY, disclosureVersion: 20261017 }, { ...BODY, disclosureVersion: null }]) await expect(checkout(r, sid, body)).rejects.toMatchObject({ code: 'disclosure_version_required', status: 400 })
+    for (const v of ['2026-10-16-1', '2026-10-18-1', 'latest', ' 2026-10-17-1']) await expect(checkout(r, sid, { ...BODY, disclosureVersion: v })).rejects.toMatchObject({ code: 'disclosure_version_mismatch', status: 409 })
+    await expect(checkout(r, sid, { ...BODY, disclosureAccepted: false })).rejects.toMatchObject({ code: 'disclosure_required' })
+    expect(r.quote).not.toHaveBeenCalled(); expect(r.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(r.store.orders.size).toBe(0)
+  })
+  it('a stale version is refused even when an open session exists: that session is neither reused nor replaced, and the order is untouched', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid); const before = JSON.stringify(order(r))
+    await expect(checkout(r, sid, { ...BODY, disclosureVersion: '2026-10-16-1' })).rejects.toMatchObject({ code: 'disclosure_version_mismatch' })
+    expect(r.stripe.checkout.sessions.create).toHaveBeenCalledTimes(1); expect(r.sessions.get(a.stripeSessionId).status).toBe('open'); expect(JSON.stringify(order(r))).toBe(before)
+    expect((await checkout(r, sid)).stripeSessionId).toBe(a.stripeSessionId)                                 // the current version still reuses it
+  })
+  it('an open session created under an older disclosure is not reused (it would show the old wording at payment): it is replaced and expired', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid)
+    r.sessions.get(a.stripeSessionId).metadata.disclosure = '2026-10-16-1'
+    const b2 = await checkout(r, sid)
+    expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(r.sessions.get(a.stripeSessionId).status).toBe('expired'); expect(r.sessions.get(b2.stripeSessionId).metadata.disclosure).toBe('2026-10-17-1')
+  })
+  it('existing acceptance timestamps and version records are preserved: a replacement checkout never rewrites what the session recorded when its order was first created', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); await checkout(r, sid)
+    const rec = r.store.sessions.get(sid)!; rec.disclosure_version = '2026-10-16-1'; rec.disclosure_accepted_at = '2026-10-16T09:00:00.000Z'      // a session created under the previous wording
+    await checkout(r, sid, { ...BODY, email: 'later@example.test' })
+    expect([rec.disclosure_version, rec.disclosure_accepted_at]).toEqual(['2026-10-16-1', '2026-10-16T09:00:00.000Z'])
+  })
+  it('the first checkout records the accepted version and a timestamp on the session; nothing else about refunds, prices or entitlements changed', async () => {
+    const r = rig(); const sid = await sessionWithLines(r); const out = await checkout(r, sid)
+    const rec = (await r.store.getSession(sid, U1))!; expect(rec.disclosure_version).toBe('2026-10-17-1'); expect(rec.disclosure_accepted_at).toBeTruthy()
+    expect(out.totals.shippingCents).toBe(685); expect(out.totals.totalCents).toBe(out.totals.itemsCents + 685)
+    r.pay(out.stripeSessionId); await confirmGiftOrder(r.deps, out.stripeSessionId, U1); expect((await r.store.getSession(sid, U1))!.free_batches_granted).toBe(2)
   })
 })

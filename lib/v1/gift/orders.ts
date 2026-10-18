@@ -28,10 +28,8 @@ import { GIFT_ORDER_KIND } from './order-kind'
 
 /** Shown before payment, passed to Stripe Checkout as its submit message, and recorded by version when the customer accepts. */
 export const DISCLOSURE: Disclosure = {
-  version: '2026-10-16-1',
-  text: 'Your artwork is personalized and is created after you pay. You will review six previews, and a second six at no additional cost, ' +
-    'then choose one artwork and approve how it looks on each product. Nothing is printed or manufactured until you approve. ' +
-    'If you are not satisfied after reviewing your included previews, you may request a full refund of your purchase through Concierge.',
+  version: '2026-10-17-1',
+  text: "Your artwork is personalized and created after payment. Your purchase includes two sets of six artwork previews. After exploring your previews, you'll select your favorite and review how it looks on each purchased product.\n\nAdditional sets of six previews are available for $2.99.\n\nNothing is printed or manufactured until you approve your final artwork. If you're not satisfied after reviewing your included previews, you may request a full refund through Concierge.",
 }
 
 export interface PrintOrdersPort {
@@ -39,8 +37,18 @@ export interface PrintOrdersPort {
     stripeSessionId: string; ownerKey: string; customerEmail: string; shippingAddress: ShippingAddress; items: PrintOrderItem[]
     retailSubtotalCents: number; retailShippingCents: number; retailTotalCents: number; shippingMethod: string; prodigiMerchantRef: string
   }): Promise<{ id: string }>
-  replaceStripeSession(orderId: string, stripeSessionId: string): Promise<void>
+  /**
+   * Re-sell an UNPAID order with new details: replaces its Stripe session, address, quote, totals and items in one update that applies only while the
+   * order is still 'created'. Returns false when it no longer is (it was paid in the meantime), so nothing is overwritten after payment.
+   */
+  updateUnpaid(orderId: string, i: {
+    stripeSessionId: string; customerEmail: string; shippingAddress: ShippingAddress; items: PrintOrderItem[]
+    retailSubtotalCents: number; retailShippingCents: number; retailTotalCents: number; shippingMethod: string
+  }): Promise<boolean>
 }
+
+/** The same address, ignoring case of the country code and stray spaces. */
+const addressKey = (a: object | null | undefined) => JSON.stringify(['name', 'line1', 'line2', 'city', 'state', 'postcode'].map(k => String((a as Record<string, unknown> | null | undefined)?.[k] ?? '').trim()).concat(String((a as Record<string, unknown> | null | undefined)?.countryCode ?? '').trim().toUpperCase()))
 
 export interface GiftOrderDeps {
   store: GiftStore
@@ -68,6 +76,10 @@ export async function createGiftCheckout(
   const rec = await owned(deps.gift, input.user.id, input.sessionId)
   const b = input.body
   if (b.disclosureAccepted !== true) throw new GiftError('disclosure_required')
+  // The page must say WHICH disclosure the customer accepted. A missing or different version (a page loaded before the wording changed) is refused here,
+  // before any quote, any Stripe session is created or reused, and any order is touched: the customer must see and accept the current text.
+  if (typeof b.disclosureVersion !== 'string' || !b.disclosureVersion) throw new GiftError('disclosure_version_required')
+  if (b.disclosureVersion !== DISCLOSURE.version) throw new GiftError('disclosure_version_mismatch')
   if (typeof b.email !== 'string' || !EMAIL.test(b.email)) throw new GiftError('invalid_email')
   const a = b.shippingAddress
   if (!a || !['name', 'line1', 'city', 'postcode'].every(k => typeof (a as any)[k] === 'string' && (a as any)[k].trim()) || !/^[A-Za-z]{2}$/.test(a.countryCode ?? '')) throw new GiftError('invalid_address')
@@ -111,16 +123,33 @@ export async function createGiftCheckout(
   const totalCents = itemsCents + shippingCents
   const totals = { itemsCents, shippingCents, totalCents }
 
-  // Reuse the open Stripe session of an unpaid order.
+  if (!deps.publishableKey) throw new GiftError('checkout_unavailable')
+
+  // The order as it would be sold NOW. A frozen geometry snapshot taken at the first checkout is kept, never re-taken from a newer catalog.
+  const merchantRef = existing?.prodigi_merchant_ref || `gift-${(deps.now ?? Date.now)()}-${rec.id.slice(0, 8)}`
+  const items: PrintOrderItem[] = lines.map((x, i) => {
+    const renderId = giftRenderId(rec.id, x.line.lineId), kept = existing?.items?.[i]
+    return {
+      renderId, renderUrl: '', size: x.product.size as PrintSize, finish: x.product.family as PrintFinish,
+      copies: x.line.copies, sku: x.product.sku, retailCents: x.product.retailCents!,
+      frozen: kept && kept.renderId === renderId && kept.sku === x.product.sku && kept.frozen ? kept.frozen : freezeLine(x.product, (deps.now ?? Date.now)(), frozenVersion),
+    }
+  })
+  const sameAsStored = !!existing && (existing.customer_email ?? '').toLowerCase() === b.email.toLowerCase() && addressKey(existing.shipping_address) === addressKey(address) &&
+    existing.shipping_method === shippingMethod && existing.retail_shipping_cents === shippingCents && existing.retail_total_cents === totalCents &&
+    existing.items.length === items.length && items.every((it, i) => { const e = existing.items[i]; return e.renderId === it.renderId && e.sku === it.sku && e.copies === it.copies && e.retailCents === it.retailCents })
+
+  // Reuse the open Stripe session of an unpaid order ONLY when products, address, shipping method and quote, and total all still match.
+  let prior: Stripe.Checkout.Session | null = null
   if (existing && existing.status === 'created') {
-    const prior = await deps.stripe.checkout.sessions.retrieve(existing.stripe_session_id).catch(() => null)
-    if (prior && prior.status === 'open' && prior.client_secret && existing.retail_total_cents === totalCents && deps.publishableKey) {
+    prior = await deps.stripe.checkout.sessions.retrieve(existing.stripe_session_id).catch(() => null)
+    // Paid at Stripe but not yet recorded: never replace it (that would orphan a real payment). The caller confirms instead.
+    if (prior && (prior.payment_status === 'paid' || prior.status === 'complete')) throw new GiftError('order_already_paid')
+    // A session created under an older disclosure still shows that wording at payment, so it is not reused: it is replaced (and expired) like any other change.
+    if (prior && prior.status === 'open' && prior.client_secret && sameAsStored && prior.metadata?.disclosure === DISCLOSURE.version && deps.publishableKey) {
       return { clientSecret: prior.client_secret, stripeSessionId: prior.id, publishableKey: deps.publishableKey, totals, disclosure: DISCLOSURE }
     }
   }
-  if (!deps.publishableKey) throw new GiftError('checkout_unavailable')
-
-  const merchantRef = `gift-${(deps.now ?? Date.now)()}-${rec.id.slice(0, 8)}`
   const session = await createBrandedSession(deps.stripe, {
     mode: 'payment', ui_mode: 'embedded', redirect_on_completion: 'if_required', return_url: returnUrl, customer_email: b.email,
     line_items: [
@@ -134,13 +163,15 @@ export async function createGiftCheckout(
 
   try {
     if (existing) {
-      await deps.printOrders.replaceStripeSession(existing.id, session.id)
+      // Persist the address, quote, totals and the new session identity together, only while the order is still unpaid. From here the previous Stripe
+      // session no longer maps to the order, so a stale confirmation for it is refused (order_not_found), and it is expired so it cannot be paid.
+      const ok = await deps.printOrders.updateUnpaid(existing.id, {
+        stripeSessionId: session.id, customerEmail: b.email, shippingAddress: address, items,
+        retailSubtotalCents: itemsCents, retailShippingCents: shippingCents, retailTotalCents: totalCents, shippingMethod,
+      })
+      if (!ok) { await deps.stripe.checkout.sessions.expire(session.id).catch(() => {}); throw new GiftError('order_already_paid') }
+      if (prior && prior.status === 'open') await deps.stripe.checkout.sessions.expire(prior.id).catch(e => console.warn('[gift/checkout] could not expire the replaced Stripe session:', prior!.id, e instanceof Error ? e.message : e))
     } else {
-      const items: PrintOrderItem[] = lines.map(x => ({
-        renderId: giftRenderId(rec.id, x.line.lineId), renderUrl: '', size: x.product.size as PrintSize, finish: x.product.family as PrintFinish,
-        copies: x.line.copies, sku: x.product.sku, retailCents: x.product.retailCents!,
-        frozen: freezeLine(x.product, (deps.now ?? Date.now)(), frozenVersion),
-      }))
       const order = await deps.printOrders.create({
         stripeSessionId: session.id, ownerKey: input.user.id, customerEmail: b.email, shippingAddress: address, items,
         retailSubtotalCents: itemsCents, retailShippingCents: shippingCents, retailTotalCents: totalCents, shippingMethod, prodigiMerchantRef: merchantRef,
@@ -148,6 +179,7 @@ export async function createGiftCheckout(
       await deps.store.linkOrder(rec.id, input.user.id, order.id, DISCLOSURE.version)
     }
   } catch (e) {
+    if (e instanceof GiftError) throw e
     if (e instanceof StoreError) throw new GiftError(e.code as any)
     console.error('[gift/checkout] order persistence failed:', e instanceof Error ? e.message : e, 'stripe=', session.id)
     throw new GiftError('order_persist_failed')

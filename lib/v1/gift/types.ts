@@ -207,6 +207,10 @@ export interface GiftCheckoutRequest {
   shippingMethod?: 'Budget' | 'Standard' | 'Express' | 'Overnight'
   /** Must be literally true: the customer saw the Disclosure. */
   disclosureAccepted: true
+  /** The version of the Disclosure the page displayed (Disclosure.version from the previous checkout response, or the version your build was approved with).
+   *  Required: a missing version answers 400 disclosure_version_required, a different one 409 disclosure_version_mismatch (reload to show the current text).
+   *  Checked before any Stripe session is created or reused. */
+  disclosureVersion: string
   returnPath: '/gift-wizard' | '/gift-wizard.next.html'
 }
 export interface GiftCheckoutResponse {
@@ -217,7 +221,7 @@ export interface GiftCheckoutResponse {
   disclosure: Disclosure
 }
 export type GiftCheckoutError =
-  | 'disclosure_required' | 'no_lines' | 'invalid_email' | 'invalid_address' | 'product_not_available' | 'product_not_available_for_artwork'
+  | 'disclosure_required' | 'disclosure_version_required' | 'disclosure_version_mismatch' | 'no_lines' | 'invalid_email' | 'invalid_address' | 'product_not_available' | 'product_not_available_for_artwork'
   | 'fulfilment_unavailable' | 'shipping_quote_failed' | 'order_already_paid' | 'checkout_unavailable' | 'session_not_found'
 
 /** POST /api/v1/gift/orders/confirm { stripeSessionId } -> re-verifies with Stripe (the webhook runs the same code). Idempotent. */

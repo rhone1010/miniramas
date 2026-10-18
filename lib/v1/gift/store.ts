@@ -25,6 +25,8 @@ export interface OrderInfo {
   retail_total_cents: number; retail_shipping_cents: number; items: Array<{ renderId: string; size: string; finish: string; copies: number; sku: string; retailCents: number; frozen?: unknown }>
   prodigi_order_id: string | null; placed_at: string | null
   customer_email?: string; prodigi_merchant_ref?: string | null
+  /** What an unpaid order was last quoted and sold with; checkout reuses its Stripe session only when ALL of this still matches. */
+  shipping_address?: Record<string, unknown> | null; shipping_method?: string | null
 }
 export interface OrderLineRec { order_id: string; line_index: number; session_id: string; line_id: string; product_id: string; sku: string; copies: number; corrections_used: number }
 export interface CompositionRec {
@@ -96,7 +98,7 @@ export function supabaseGiftStore(db: any): GiftStore {
     throw new Error(String(e?.message ?? 'gift_store_error'))
   }
   const rpc = async (fn: string, args: Record<string, unknown>) => { const { data, error } = await db.rpc(fn, args); if (error) fromRpc(error); return data }
-  const ORDER_COLS = 'id,status,paid_at,stripe_session_id,stripe_payment_intent,retail_total_cents,retail_shipping_cents,items,prodigi_order_id,placed_at,customer_email,prodigi_merchant_ref'
+  const ORDER_COLS = 'id,status,paid_at,stripe_session_id,stripe_payment_intent,retail_total_cents,retail_shipping_cents,items,prodigi_order_id,placed_at,customer_email,prodigi_merchant_ref,shipping_address,shipping_method'
   return {
     async createSession(rec) { await one(db.from('gift_sessions').insert(rec)) },
     async getSession(id, userId) { return await one(db.from('gift_sessions').select('*').eq('id', id).eq('user_id', userId).neq('status', 'deleted').maybeSingle()) },

@@ -131,9 +131,13 @@ export async function giftOrderDeps(): Promise<GiftOrderDeps & { gift: GiftDeps 
     gift: giftDeps(), store: supabaseGiftStore(supabaseAdmin), stripe: getStripe(),
     printOrders: {
       async create(i) { const row = await printDb.createPrintOrder(i); return { id: row.id } },
-      async replaceStripeSession(orderId, stripeSessionId) {
-        const { error } = await supabaseAdmin.from('print_orders').update({ stripe_session_id: stripeSessionId, updated_at: new Date().toISOString() }).eq('id', orderId).eq('status', 'created')
-        if (error) throw new Error('replace_stripe_session_failed: ' + error.message)
+      async updateUnpaid(orderId, i) {
+        const { data, error } = await supabaseAdmin.from('print_orders').update({
+          stripe_session_id: i.stripeSessionId, customer_email: i.customerEmail, shipping_address: i.shippingAddress, items: i.items, retail_subtotal_cents: i.retailSubtotalCents,
+          retail_shipping_cents: i.retailShippingCents, retail_total_cents: i.retailTotalCents, shipping_method: i.shippingMethod, updated_at: new Date().toISOString(),
+        }).eq('id', orderId).eq('status', 'created').select('id')
+        if (error) throw new Error('update_unpaid_order_failed: ' + error.message)
+        return (data?.length ?? 0) === 1
       },
     },
     quote: prodigi.getQuote, canFulfil: printDb.canFulfil,
