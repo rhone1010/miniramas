@@ -346,6 +346,7 @@ async function loadMockups(){
  await Promise.all(live.session.compositions.filter(c=>c.compositionId&&c.sourceArtworkId===live.session!.artworkPreviewId).map(c=>live.mockup(c.lineId).catch(()=>null)));
 }
 function serverMockup(l:GiftLine){
+ if(live?.compositionIssues.has(l.id))return "<section role=\"status\" data-composition-state=\"repair-required\"><h3>We're preparing your artwork for this gift</h3><p>Your artwork needs a small adjustment to fit this product correctly. We're taking care of it.</p><p>Your selected artwork and purchase are safe. No action is needed right now.</p></section>"+secondary('check-composition-'+l.id,'Check Again');
  const m=live?.mockups.get(l.id);
  return m&&Date.parse(m.urlExpiresAt)>Date.now()?photo(m.url,giftOption(l,products).product.label):'<p role="status">This product preview could not load.</p>'+secondary('refresh-mockups','Try again');
 }
@@ -413,20 +414,21 @@ function adaptServerView(){
   if(incomplete){$('right').insertAdjacentHTML('beforeend',secondary('retry-batch','Try again'));$('retry-batch').onclick=()=>void serverAction(async()=>{const r=await live!.api.retryBatch(live!.id,incomplete.batchIndex);return r.session},'review')}
  }
  if(view==='compositions'){
+  document.querySelectorAll<HTMLButtonElement>('[id^="check-composition-"]').forEach(b=>{b.disabled=busy;b.onclick=()=>void serverAction(()=>live!.api.restore(live!.id),'compositions')});
   if(orderReviewExample){
    $('right').querySelectorAll('p.small').forEach(el=>el.textContent='');
-   $('screen').querySelectorAll('.cart-line').forEach((el,i)=>{const c=s.compositions.find(c=>c.lineId===session.lines[i]?.id);const note=el.querySelector('.small');if(note)note.textContent=c?.status||''});
+   $('screen').querySelectorAll('.cart-line').forEach((el,i)=>{const c=s.compositions.find(c=>c.lineId===session.lines[i]?.id);const note=el.querySelector('.small');if(note)note.textContent=live!.compositionIssues.has(session.lines[i]?.id)?'Awaiting server verification':c?.status||''});
   }
-  if($('refresh-mockups'))$('refresh-mockups').onclick=()=>void serverAction(()=>s.compositions.some(c=>c.lineId===session.lines[productReviewIndex]?.id&&c.compositionId)?live!.api.restore(live!.id):live!.api.compose(live!.id),'compositions');
+  if($('refresh-mockups'))$('refresh-mockups').onclick=()=>void serverAction(()=>live!.compositionIssues.size||s.compositions.some(c=>c.lineId===session.lines[productReviewIndex]?.id&&c.compositionId)?live!.api.restore(live!.id):live!.api.compose(live!.id),'compositions');
   if(!orderReviewExample&&session.lines.length){
    const line=session.lines[productReviewIndex],c=s.compositions.find(c=>c.lineId===line?.id);
    const label=$('right').querySelector('h3');
-   if(label?.nextElementSibling)label.nextElementSibling.textContent=c?.status||'';
+   if(label?.nextElementSibling)label.nextElementSibling.textContent=live!.compositionIssues.has(line.id)?'Awaiting server verification':c?.status||'';
    const correction=$('right').querySelector('button') as HTMLButtonElement|null;
-   if(correction){correction.disabled=!c?.compositionId||!c.correctionsRemaining||s.order.state!=='awaiting_artwork';correction.onclick=()=>void serverAction(()=>live!.api.correct(live!.id,line.id),'compositions')}
+   if(correction){correction.disabled=live!.compositionIssues.has(line.id)||!c?.compositionId||!c.correctionsRemaining||s.order.state!=='awaiting_artwork';correction.onclick=()=>void serverAction(()=>live!.api.correct(live!.id,line.id),'compositions')}
    const m=live!.mockups.get(line.id);
    if(m){const img=$('screen').querySelector('img');if(img)img.addEventListener('error',()=>{live!.mockups.delete(line.id);render()},{once:true})}
-   primaryLive(()=>void serverAction(()=>live!.api.approveComposition(live!.id,c!.compositionId!),'compositions'),!c?.compositionId||c.status!=='ready'||!m||!(Date.parse(m.urlExpiresAt)>Date.now())||s.order.state!=='awaiting_artwork');
+   primaryLive(()=>void serverAction(()=>live!.api.approveComposition(live!.id,c!.compositionId!),'compositions'),live!.compositionIssues.has(line.id)||!c?.compositionId||c.status!=='ready'||!m||!(Date.parse(m.urlExpiresAt)>Date.now())||s.order.state!=='awaiting_artwork');
   }
  }
 }
