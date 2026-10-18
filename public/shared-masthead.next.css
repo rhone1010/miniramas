@@ -46,6 +46,7 @@
   padding:.52em .7em; border-radius:6px;
   transition:background .14s ease, color .14s ease;
 }
+.liten-masthead .mh-series-menu [aria-current="page"],
 .liten-masthead .mh-series-menu :is(a,button):hover,
 .liten-masthead .mh-series-menu :is(a,button):focus-visible{
   background:linear-gradient(180deg, rgba(215,189,137,.16), rgba(215,189,137,.09));
