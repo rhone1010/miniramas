@@ -26,7 +26,7 @@ import sharp from 'sharp'
 import { GiftError, owned, type GiftDeps } from './service'
 import { compositionFitsProduct, resolveFrozenProduct } from './frozen'
 import type { CanonicalProduct } from '../print/catalog'
-import type { CompositionRec, SessionRec } from './store'
+import { byNewest, type CompositionRec, type SessionRec } from './store'
 import type { MockupView } from './types'
 
 export const MOCKUP_CONTRACT_VERSION = 1
@@ -147,7 +147,7 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
 
   const comp = (await deps.store.listCompositions(rec.id))
     .filter(c => c.line_id === line.line_id && c.preview_id === rec.artwork_preview_id && (c.status === 'ready' || c.status === 'approved') && c.composed_path)
-    .sort((a, b) => b.attempt - a.attempt)[0]
+    .sort(byNewest)[0]
   if (!comp) throw new GiftError('composition_not_found')
   // A page that is showing an older composition (before a correction or a new favorite) is told so, and is given the current one in the error.
   if (typeof expectCompositionId === 'string' && expectCompositionId && expectCompositionId !== comp.id) throw new GiftError('stale_composition')

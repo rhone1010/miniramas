@@ -14,7 +14,7 @@ import { resolveFrozenProduct } from './frozen'
 import { decodeSource } from '../foyer/foyer-source'
 import { adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, MAX_PARALLEL_RENDERS, PACK_PRICE_CENTS, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
-import { StoreError, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
+import { StoreError, byNewest, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
 import { GIFT_CONTRACT_VERSION, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
 
 export type GiftErrorCode =
@@ -31,7 +31,7 @@ export type GiftErrorCode =
   // product mockup and frozen geometry
   | 'disclosure_version_required' | 'disclosure_version_mismatch' | 'rate_limited'
   | 'geometry_snapshot_invalid' | 'geometry_snapshot_unavailable' | 'stale_composition' | 'mockup_failed' | 'mockup_renderer_unavailable' | 'mockup_configuration_mismatch'
-  | 'composition_failed' | 'composition_geometry_mismatch' | 'composition_not_found' | 'order_has_no_lines' | 'order_not_found' | 'order_not_payable' | 'session_already_has_order'
+  | 'composition_failed' | 'composition_geometry_mismatch' | 'repair_claim_lost' | 'repair_not_consistent' | 'composition_not_found' | 'order_has_no_lines' | 'order_not_found' | 'order_not_payable' | 'session_already_has_order'
   | 'order_session_mismatch' | 'invalid_refund_request' | 'payment_not_confirmed' | 'session_retained'
 const STATUS: Partial<Record<GiftErrorCode, number>> = {
   image_b64_required: 400, image_too_large: 400, image_not_base64: 400, image_unreadable: 400, age_restricted: 403, unsupported_subject: 422, analysis_unavailable: 503,
@@ -41,7 +41,7 @@ const STATUS: Partial<Record<GiftErrorCode, number>> = {
   shipping_quote_failed: 502, order_already_paid: 409, order_persist_failed: 500, checkout_unavailable: 503, lines_locked: 409,
   order_payment_required: 402, order_refunded: 409, refund_pending: 409, order_not_awaiting_artwork: 409, preview_not_ready: 409, correction_limit: 409,
   compositions_not_approved: 409, artwork_not_selected: 409, refund_not_available_after_manufacturing: 409, order_not_paid: 409, line_not_found: 404,
-  composition_failed: 502, composition_geometry_mismatch: 409, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
+  composition_failed: 502, composition_geometry_mismatch: 409, repair_claim_lost: 409, repair_not_consistent: 409, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
   order_session_mismatch: 409, invalid_refund_request: 400, payment_not_confirmed: 409, session_retained: 409,
   disclosure_version_required: 400, disclosure_version_mismatch: 409, rate_limited: 429,
   geometry_snapshot_invalid: 409, geometry_snapshot_unavailable: 409, stale_composition: 409, mockup_failed: 502, mockup_renderer_unavailable: 503, mockup_configuration_mismatch: 409,
@@ -298,7 +298,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     order: orderView(rec, order),
     artworkPreviewId: rec.artwork_preview_id,
     compositions: await Promise.all(orderLines.map(async l => {
-      const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort((a, b) => b.attempt - a.attempt)[0]
+      const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort(byNewest)[0]
       const g = geometries.find(x => x.lineId === l.line_id)
       const gp = planned.find(x => x.l.lineId === l.line_id)
       return {

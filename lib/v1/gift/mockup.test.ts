@@ -6,7 +6,7 @@ import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
 import { createSession, setLines, startBatch, getSessionView, purgeExpired, type GiftDeps } from './service'
 import { memoryGiftStore } from './store'
-import { selectArtwork, ensureCompositions, correctLine, approveComposition, approveOrder } from './compose'
+import { selectArtwork, ensureCompositions, correctLine, approveComposition, approveOrder, repairLine, REPAIR_CLAIM_MS } from './compose'
 import fs from 'node:fs'
 import { mockupH } from './handlers'
 import { getLineMockup, mockupIdentityKey, pictureArea, templateFor, MOCKUP_URL_SECONDS, MOCKUP_MAX_EDGE, type MockupRenderer } from './mockup'
@@ -470,5 +470,155 @@ describe('clean mockups after verified payment', () => {
     const r = rig(); const { sid } = await ready(r, [L12]); await getLineMockup(r.deps, U1, sid, 'a')
     expect(r.store.compositions[0].status).toBe('ready')                                                  // viewing approves nothing
     await expect(approveOrder(r.deps, U1, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })
+
+describe('operator repair of a composition that fails the frozen-product shape check', () => {
+  const OP = 'operator@liten.test'
+  /** A groups session of four (landscape master, so portrait/square lines are generated) with a Fine Art Print and a canvas, the print's composition defective. */
+  async function defective() {
+    const r = rig({ series: 'groups', people: 4 }); const p = await ready(r, [L12, C8])
+    const bad = r.store.compositions.find(c => c.line_id === 'a')!, good = r.store.compositions.find(c => c.line_id === 'b')!
+    await getLineMockup(r.deps, U1, p.sid, 'a'); const oldMockup = (bad.plan as any).mockup.path
+    await approveComposition(r.deps, U1, p.sid, good.id)                                                      // the canvas is properly approved
+    Object.assign(bad, { width: 1575, height: 1050, status: 'approved' })                                     // the print's composition is the defective one, and was "approved"
+    return { r, ...p, bad, good, oldMockup }
+  }
+  it('replaces only the defective composition: old row superseded with its history kept, new row portrait and "ready" at the same attempt, correction untouched', async () => {
+    const { r, sid, orderId, bad, good, oldMockup } = await defective(); const gen = r.generate.mock.calls.length
+    const out = await repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a' }) as any
+    expect(out).toMatchObject({ status: 'repaired', supersededCompositionId: bad.id, repairSeq: 1, nb21Calls: 1 }); expect(r.generate.mock.calls.length).toBe(gen + 1)
+    expect(r.generate.mock.calls.at(-1)![0]).toMatchObject({ aspect: '2:3' })
+    const old = r.store.compositions.find(c => c.id === bad.id)!, fresh = r.store.compositions.find(c => c.id === out.compositionId)!
+    expect(old).toMatchObject({ status: 'superseded', width: 1575, height: 1050, composed_path: bad.composed_path }); expect(old.plan).toMatchObject({ supersededReason: 'geometry_defect', supersededBy: fresh.id })
+    expect(r.files.has(old.composed_path!)).toBe(true)                                                       // audit: the defective file is kept
+    expect(fresh).toMatchObject({ status: 'ready', approved_at: null, attempt: 1, repair_seq: 1, method: 'generated', preview_id: old.preview_id }); expect(fresh.width!).toBeLessThan(fresh.height!)
+    expect(fresh.plan).toMatchObject({ repair: { of: bad.id, seq: 1, operator: OP, reason: 'geometry_mismatch' } })
+    expect(r.files.has(oldMockup)).toBe(false)                                                               // the old mockup is gone
+    expect((await r.store.orderLines(orderId)).map(l => [l.line_id, l.corrections_used])).toEqual([['a', 0], ['b', 0]])
+    expect(r.store.compositions.find(c => c.id === good.id)).toMatchObject({ status: 'approved' })         // another line's approval is untouched
+    await expect(getLineMockup(r.deps, U1, sid, 'a', bad.id)).rejects.toMatchObject({ code: 'stale_composition' })
+    expect((await getLineMockup(r.deps, U1, sid, 'a')).compositionId).toBe(fresh.id); expect((await getLineMockup(r.deps, U1, sid, 'b')).compositionId).toBe(good.id)   // Canvas control unaffected
+    const v = (await getSessionView(r.deps, U1, sid)).compositions.find(c => c.lineId === 'a')!
+    expect([v.compositionId, v.status, v.correctionsRemaining]).toEqual([fresh.id, 'ready', 1])
+    await expect(approveOrder(r.deps, U1, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })        // the customer must approve what they now see
+  })
+  it('is idempotent: a repeat generates nothing, and two simultaneous calls start one paid generation', async () => {
+    const { r, sid } = await defective(); const gen = r.generate.mock.calls.length
+    const [a, b] = await Promise.all([repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a' }), repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a' })])
+    expect([a.status, b.status].sort()).toEqual(['in_progress', 'repaired']); expect(r.generate.mock.calls.length).toBe(gen + 1)
+    expect((await repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a' })).status).toBe('not_needed'); expect(r.generate.mock.calls.length).toBe(gen + 1)
+    expect(r.store.compositions.filter(c => c.line_id === 'a').map(c => c.status).sort()).toEqual(['ready', 'superseded'])
+  })
+  it('repairs only a defect: a fitting composition (the canvas) is "not_needed" and nothing changes', async () => {
+    const { r, sid, good } = await defective(); const gen = r.generate.mock.calls.length, n = r.store.compositions.length
+    expect(await repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'b' })).toEqual({ status: 'not_needed', lineId: 'b', compositionId: good.id })
+    expect(r.generate.mock.calls.length).toBe(gen); expect(r.store.compositions.length).toBe(n); expect(r.store.compositions.find(c => c.id === good.id)!.status).toBe('approved')
+  })
+  it('a dry run reports the plan and the paid call it would make and changes nothing', async () => {
+    const { r, sid, bad } = await defective(); const gen = r.generate.mock.calls.length, snapshot = JSON.stringify(r.store.compositions)
+    expect(await repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a', dryRun: true })).toMatchObject({ status: 'would_repair', compositionId: bad.id, nb21Calls: 1, repairSeq: 1, plan: { method: 'generated', generationAspect: '2:3' } })
+    expect(r.generate.mock.calls.length).toBe(gen); expect(JSON.stringify(r.store.compositions)).toBe(snapshot)
+  })
+  it('a failed generation releases the claim, stores nothing, and the retry succeeds', async () => {
+    const { r, sid, bad } = await defective(); r.generate.mockRejectedValueOnce(new Error('upstream down'))
+    await expect(repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a' })).rejects.toBeTruthy()
+    const after = r.store.compositions.find(c => c.id === bad.id)!; expect(after.status).toBe('approved'); expect((after.plan as any).repairClaim).toBeUndefined(); expect(r.store.compositions.filter(c => c.line_id === 'a').length).toBe(1)
+    expect((await repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a' })).status).toBe('repaired')
+  })
+  it('the included correction is still available afterwards and supersedes the repaired composition', async () => {
+    const { r, sid } = await defective(); const out = await repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a' }) as any
+    await correctLine(r.deps, U1, sid, 'a')
+    const rows = r.store.compositions.filter(c => c.line_id === 'a'); expect(rows.map(c => [c.attempt, c.repair_seq ?? 0, c.status])).toEqual([[1, 0, 'superseded'], [1, 1, 'superseded'], [2, 0, 'ready']])
+    expect(rows.find(c => c.id === out.compositionId)!.status).toBe('superseded')
+  })
+  it('refuses unless the order still awaits approval, an operator is named, the customer owns the session and the line exists', async () => {
+    const { r, sid, orderId } = await defective()
+    await expect(repairLine(r.deps, { operator: ' ', userId: U1, sessionId: sid, lineId: 'a' })).rejects.toThrow('operator_required')
+    await expect(repairLine(r.deps, { operator: OP, userId: '10000000-0000-4000-8000-000000000009', sessionId: sid, lineId: 'a' })).rejects.toMatchObject({ code: 'session_not_found' })
+    await expect(repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'zzz' })).rejects.toMatchObject({ code: 'line_not_found' })
+    r.store.orders.get(orderId)!.status = 'paid'
+    await expect(repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a' })).rejects.toMatchObject({ code: 'order_not_awaiting_artwork' })
+    expect(r.store.compositions.find(c => c.line_id === 'a')!.status).toBe('approved')
+  })
+  it('is never exposed as a customer action: no handler, route or page references it', () => {
+    const files: string[] = []
+    const walk = (d: string) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = d + '/' + e.name; if (e.isDirectory()) { if (!['node_modules', '.next'].includes(e.name)) walk(f) } else if (/\.(ts|tsx|js)$/.test(e.name)) files.push(f) } }
+    walk('app'); walk('lib/v1/gift'); files.push(...fs.readdirSync('public/gift-wizard').filter(f => /\.(js|ts)$/.test(f)).map(f => 'public/gift-wizard/' + f))
+    const users = files.filter(f => !/\.test\.ts$/.test(f) && fs.readFileSync(f, 'utf8').includes('repairLine'))
+    expect(users).toEqual(['lib/v1/gift/compose.ts'])
+  })
+})
+
+describe('repair under concurrency and interruption', () => {
+  const OP = 'operator@liten.test'
+  async function defective() {
+    const r = rig({ series: 'groups', people: 4 }); const p = await ready(r, [L12, C8])
+    const bad = r.store.compositions.find(c => c.line_id === 'a')!
+    Object.assign(bad, { width: 1575, height: 1050 })
+    let t = Date.parse('2026-10-18T12:00:00Z'); r.deps.clock = () => t
+    return { r, ...p, bad, advance: (ms: number) => { t += ms } }
+  }
+  const run = (r: ReturnType<typeof rig>, sid: string, extra: object = {}) => repairLine(r.deps, { operator: OP, userId: U1, sessionId: sid, lineId: 'a', ...extra })
+  const corrections = async (r: ReturnType<typeof rig>, orderId: string) => (await r.store.orderLines(orderId)).map(l => l.corrections_used)
+
+  it('five simultaneous calls: one wins the database claim, one paid generation, one replacement row', async () => {
+    const { r, sid, bad } = await defective(); const gen = r.generate.mock.calls.length
+    const out = await Promise.all([run(r, sid), run(r, sid), run(r, sid), run(r, sid), run(r, sid)])
+    expect(out.map(o => o.status).sort()).toEqual(['in_progress', 'in_progress', 'in_progress', 'in_progress', 'repaired']); expect(r.generate.mock.calls.length).toBe(gen + 1)
+    expect(r.store.compositions.filter(c => c.line_id === 'a').map(c => [c.id === bad.id, c.status, c.repair_seq ?? 0])).toEqual([[true, 'superseded', 0], [false, 'ready', 1]])
+  })
+  it('a reader that looked before another repair finished does not repeat it (state is re-read after winning the claim)', async () => {
+    const { r, sid } = await defective(); const stale = structuredClone(await r.store.listCompositions(sid))
+    await run(r, sid); const gen = r.generate.mock.calls.length, n = r.store.compositions.length
+    vi.spyOn(r.store, 'listCompositions').mockResolvedValueOnce(stale)                                      // the second process's first read is from before the repair
+    const second = await run(r, sid)
+    expect(second.status).toBe('not_needed'); expect(r.generate.mock.calls.length).toBe(gen); expect(r.store.compositions.length).toBe(n)
+  })
+  it('interrupted after the paid generation but before the row is stored: the retry reuses the stored files and pays nothing more', async () => {
+    const { r, sid, orderId } = await defective(); const gen = r.generate.mock.calls.length, real = r.store.insertComposition.bind(r.store)
+    r.store.insertComposition = vi.fn(async () => { throw new Error('connection reset') }) as any
+    await expect(run(r, sid)).rejects.toBeTruthy(); expect(r.generate.mock.calls.length).toBe(gen + 1)
+    expect([...r.files.keys()].filter(k => k.includes('-a-r1')).length).toBe(2)                              // the replacement's files are on storage
+    expect(r.store.compositions.filter(c => c.line_id === 'a').length).toBe(1)
+    r.store.insertComposition = real
+    const out = await run(r, sid) as any
+    expect(out).toMatchObject({ status: 'repaired', reusedFiles: true, nb21Calls: 0 }); expect(r.generate.mock.calls.length).toBe(gen + 1)
+    expect(r.store.compositions.find(c => c.id === out.compositionId)!.plan).toMatchObject({ repair: { reusedFiles: true } })
+    expect(await corrections(r, orderId)).toEqual([0, 0])
+  })
+  it('a process that dies holding the claim blocks a retry only until the claim expires, then reuses its files', async () => {
+    const { r, sid, advance } = await defective(); const gen = r.generate.mock.calls.length, real = r.store.insertComposition.bind(r.store), release = r.store.releaseRepair.bind(r.store)
+    r.store.insertComposition = vi.fn(async () => { throw new Error('killed') }) as any; r.store.releaseRepair = vi.fn(async () => {}) as any       // it never got to release
+    await expect(run(r, sid)).rejects.toBeTruthy()
+    r.store.insertComposition = real; r.store.releaseRepair = release
+    expect((await run(r, sid)).status).toBe('in_progress'); expect(r.generate.mock.calls.length).toBe(gen + 1)
+    advance(REPAIR_CLAIM_MS + 1000)
+    expect(await run(r, sid)).toMatchObject({ status: 'repaired', reusedFiles: true }); expect(r.generate.mock.calls.length).toBe(gen + 1)
+  })
+  it('interrupted after the replacement is stored but before the old row is retired: the retry finishes retiring it and generates nothing', async () => {
+    const { r, sid, bad } = await defective(); const gen = r.generate.mock.calls.length, real = r.store.completeRepair.bind(r.store)
+    r.store.completeRepair = vi.fn(async () => { throw new Error('connection reset') }) as any
+    await expect(run(r, sid)).rejects.toBeTruthy()
+    const [oldRow, fresh] = [r.store.compositions.find(c => c.id === bad.id)!, r.store.compositions.find(c => c.line_id === 'a' && (c.repair_seq ?? 0) === 1)!]
+    expect([oldRow.status, fresh.status]).toEqual(['ready', 'ready'])                                        // both live for a moment: the newest (the replacement) is what the line uses
+    expect((await getLineMockup(r.deps, U1, sid, 'a')).compositionId).toBe(fresh.id)
+    r.store.completeRepair = real
+    expect(await run(r, sid)).toMatchObject({ status: 'not_needed', compositionId: fresh.id }); expect(r.generate.mock.calls.length).toBe(gen + 1)
+    expect(r.store.compositions.find(c => c.id === bad.id)).toMatchObject({ status: 'superseded', plan: { supersededReason: 'geometry_defect', supersededBy: fresh.id } })
+  })
+  it('completion refuses a lost claim and an order that is no longer awaiting approval, changing nothing', async () => {
+    const { r, sid, orderId, bad } = await defective()
+    const token = (await r.store.claimRepair({ sessionId: sid, lineId: 'a', compositionId: bad.id, operator: OP, ttlMs: REPAIR_CLAIM_MS, nowMs: r.deps.clock!() }))!
+    const fresh = await r.store.insertComposition({ ...bad, repair_seq: 1, status: 'ready', width: 1050, height: 1575 } as any)
+    await expect(r.store.completeRepair({ sessionId: sid, lineId: 'a', token: 'not-the-token', oldId: bad.id, newId: fresh.id, note: {}, nowMs: r.deps.clock!() })).rejects.toMatchObject({ code: 'repair_claim_lost' })
+    r.store.orders.get(orderId)!.status = 'paid'
+    await expect(r.store.completeRepair({ sessionId: sid, lineId: 'a', token, oldId: bad.id, newId: fresh.id, note: {}, nowMs: r.deps.clock!() })).rejects.toMatchObject({ code: 'order_not_awaiting_artwork' })
+    expect(r.store.compositions.find(c => c.id === bad.id)!.status).toBe('ready')
+  })
+  it('only the targeted line is touched; a second defective line is left alone until it is named', async () => {
+    const r = rig({ series: 'groups', people: 4 }); const p = await ready(r, [L12, { lineId: 'b', productId: 'fine_art:16x24', copies: 1 }])
+    for (const c of r.store.compositions) Object.assign(c, { width: 1575, height: 1050 })
+    const gen = r.generate.mock.calls.length
+    await repairLine(r.deps, { operator: OP, userId: U1, sessionId: p.sid, lineId: 'a' })
+    expect(r.store.compositions.filter(c => c.line_id === 'b').map(c => [c.status, c.width])).toEqual([['ready', 1575]]); expect(r.generate.mock.calls.length).toBe(gen + 1)
   })
 })

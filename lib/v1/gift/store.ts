@@ -39,18 +39,23 @@ export interface CompositionRec {
   generation_mode: 'none' | 'photo_regeneration' | 'favorite_reference'; generation_aspect: string | null
   nb21_calls: number; outpaint_calls: number; cost_usd_est: number | null
   created_at: string; approved_at: string | null
+  /** 052 (operator repair of a geometry defect): 0/absent for every ordinary row; a repair replacement carries 1, 2, ... beside the row it replaces, which is kept for audit. */
+  repair_seq?: number
 }
+/** The current composition of a line: the highest attempt, and within it the latest repair. */
+export const byNewest = (a: Pick<CompositionRec, 'attempt' | 'repair_seq'>, b: Pick<CompositionRec, 'attempt' | 'repair_seq'>) => b.attempt - a.attempt || (b.repair_seq ?? 0) - (a.repair_seq ?? 0)
 export interface BatchRec { id: string; session_id: string; user_id: string; batch_index: number; kind: BatchKind; pack_id: string | null; idempotency_key: string; effect_ids: string[]; created_at: string }
 export interface PreviewRec {
   id: string; batch_id: string; session_id: string; slot: number; effect_id: string; status: PreviewStatus; attempts: number
   lease_until: string | null; master_path: string | null; preview_path: string | null; width: number | null; height: number | null; error: string | null
 }
 export type StoreErrorCode =
+  | 'repair_claim_lost' | 'repair_not_consistent' | 'composition_not_found'
   | 'session_not_found' | 'session_expired' | 'payment_required' | 'previous_batch_incomplete' | 'effect_already_used' | 'six_distinct_effects_required'
   | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit' | 'line_not_found'
   | 'artwork_not_selected' | 'compositions_not_approved' | 'order_has_no_lines' | 'order_not_paid' | 'refund_not_available_after_manufacturing'
   | 'session_already_has_order' | 'order_not_found' | 'order_session_mismatch' | 'order_not_payable' | 'rate_limited'
-const STORE_ERROR = /session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable|rate_limited/
+const STORE_ERROR = /repair_claim_lost|repair_not_consistent|composition_not_found|session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable|rate_limited/
 export class StoreError extends Error { constructor(public code: StoreErrorCode) { super(code) } }
 
 export interface GiftStore {
@@ -84,6 +89,11 @@ export interface GiftStore {
   listCompositions(sessionId: string): Promise<CompositionRec[]>
   insertComposition(rec: Omit<CompositionRec, 'id' | 'created_at' | 'approved_at'>): Promise<CompositionRec>
   patchComposition(id: string, patch: Partial<Pick<CompositionRec, 'status' | 'approved_at' | 'plan'>>): Promise<void>
+  /** 052, operator repair. The claim is database-atomic: one live claim per (session, line). Returns its token, or null when another holds an unexpired one. */
+  claimRepair(i: { sessionId: string; lineId: string; compositionId: string; operator: string; ttlMs: number; nowMs: number }): Promise<string | null>
+  releaseRepair(sessionId: string, lineId: string, token: string): Promise<void>
+  /** One transaction: the claim must still be ours and the order must still await approval; the old composition is superseded (history kept) and the claim dropped. */
+  completeRepair(i: { sessionId: string; lineId: string; token: string; oldId: string; newId: string; note: Record<string, unknown>; nowMs: number }): Promise<void>
   useCorrection(sessionId: string, userId: string, lineId: string): Promise<void>
   approveOrder(i: { sessionId: string; userId: string; portfolioId: string; cleanPath: string; sourceImage: string }): Promise<'approved' | 'already'>
   requestRefund(i: { sessionId: string; userId: string; reason: string }): Promise<string>
@@ -166,8 +176,11 @@ export function supabaseGiftStore(db: any): GiftStore {
     async orderLines(orderId) { return (await one(db.from('gift_order_lines').select('*').eq('order_id', orderId).order('line_index'))) ?? [] },
     async selectArtwork(sessionId, userId, previewId) { await rpc('gift_select_artwork', { p_session: sessionId, p_user: userId, p_preview: previewId }) },
     async listCompositions(sessionId) { return (await one(db.from('gift_compositions').select('*').eq('session_id', sessionId).order('created_at'))) ?? [] },
-    async insertComposition(rec) { return await one(db.from('gift_compositions').insert(rec).select('*').single()) },
+    async insertComposition(rec) { const { repair_seq, ...row } = rec; return await one(db.from('gift_compositions').insert(repair_seq ? { ...row, repair_seq } : row).select('*').single()) },     // repair_seq exists only after migration 052; ordinary rows never send it
     async patchComposition(id, patch) { await one(db.from('gift_compositions').update(patch).eq('id', id)) },
+    async claimRepair(i) { const t = await rpc('gift_claim_repair', { p_session: i.sessionId, p_line: i.lineId, p_composition: i.compositionId, p_operator: i.operator, p_ttl_seconds: Math.round(i.ttlMs / 1000) }); return typeof t === 'string' ? t : null },
+    async releaseRepair(sessionId, lineId, token) { await rpc('gift_release_repair', { p_session: sessionId, p_line: lineId, p_token: token }) },
+    async completeRepair(i) { await rpc('gift_complete_repair', { p_session: i.sessionId, p_line: i.lineId, p_token: i.token, p_old: i.oldId, p_new: i.newId, p_note: i.note }) },
     async useCorrection(sessionId, userId, lineId) { await rpc('gift_use_correction', { p_session: sessionId, p_user: userId, p_line: lineId }) },
     async approveOrder(i) {
       return (await rpc('gift_approve_order', { p_session: i.sessionId, p_user: i.userId, p_portfolio: i.portfolioId, p_clean_path: i.cleanPath, p_source_image: i.sourceImage })) as 'approved' | 'already'
@@ -195,6 +208,7 @@ export function memoryGiftStore(clock: () => number = Date.now) {
   const freeGrants: Array<{ user_id: string; source_sha256: string; session_id: string | null; batch_id: string; at: number }> = []     // the free-batch ledger: survives session deletion
   const portfolios: MemoryPortfolio[] = [], refunds = new Map<string, { order_id: string; amount: number }>()
   const refundRequests = new Map<string, { id: string; session_id: string; status: 'requested' | 'refunded' | 'declined' }>()
+  const repairClaims = new Map<string, { token: string; expiresAt: number }>()
   const iso = (ms = clock()) => new Date(ms).toISOString()
   const orderOf = (s: SessionRec) => (s.order_id ? orders.get(s.order_id) ?? null : null)
   const owned = (id: string, userId: string) => { const s = sessions.get(id); if (!s || s.user_id !== userId) throw new StoreError('session_not_found'); return s }
@@ -306,10 +320,29 @@ export function memoryGiftStore(clock: () => number = Date.now) {
     },
     async listCompositions(sessionId) { return compositions.filter(c => c.session_id === sessionId).map(c => structuredClone(c)) },
     async insertComposition(rec) {
-      if (compositions.some(c => c.session_id === rec.session_id && c.line_id === rec.line_id && c.preview_id === rec.preview_id && c.attempt === rec.attempt)) throw new Error('composition_exists')
+      if (compositions.some(c => c.session_id === rec.session_id && c.line_id === rec.line_id && c.preview_id === rec.preview_id && c.attempt === rec.attempt && (c.repair_seq ?? 0) === (rec.repair_seq ?? 0))) throw new Error('composition_exists')
       const c: CompositionRec = { ...structuredClone(rec), id: randomUUID(), created_at: iso(), approved_at: null }; compositions.push(c); return structuredClone(c)
     },
     async patchComposition(id, patch) { const c = compositions.find(x => x.id === id); if (c) Object.assign(c, patch) },
+    async claimRepair(i) {
+      const c = compositions.find(x => x.id === i.compositionId && x.session_id === i.sessionId && x.line_id === i.lineId && (x.status === 'ready' || x.status === 'approved'))
+      if (!c) throw new StoreError('composition_not_found')
+      const key = i.sessionId + ':' + i.lineId, held = repairClaims.get(key)
+      if (held && held.expiresAt > i.nowMs) return null                                  // synchronous check-and-set: atomic, like the database's single INSERT ... ON CONFLICT
+      const token = randomUUID(); repairClaims.set(key, { token, expiresAt: i.nowMs + Math.max(30_000, i.ttlMs) }); return token
+    },
+    async releaseRepair(sessionId, lineId, token) { const key = sessionId + ':' + lineId; if (repairClaims.get(key)?.token === token) repairClaims.delete(key) },
+    async completeRepair(i) {
+      const s = sessions.get(i.sessionId); if (!s) throw new StoreError('session_not_found')
+      if (s.refunded_at) throw new StoreError('order_refunded'); if (s.refund_requested_at) throw new StoreError('refund_pending')
+      if (!s.order_id || s.approved_at || orders.get(s.order_id)?.status !== 'awaiting_artwork') throw new StoreError('order_not_awaiting_artwork')
+      const key = i.sessionId + ':' + i.lineId, held = repairClaims.get(key)
+      if (!held || held.token !== i.token) throw new StoreError('repair_claim_lost')
+      const o = compositions.find(x => x.id === i.oldId && x.session_id === i.sessionId && x.line_id === i.lineId), n = compositions.find(x => x.id === i.newId && x.session_id === i.sessionId && x.line_id === i.lineId)
+      if (!o || !n || o.id === n.id || (n.repair_seq ?? 0) <= 0 || n.status !== 'ready' || n.preview_id !== o.preview_id || n.attempt !== o.attempt) throw new StoreError('repair_not_consistent')
+      if (o.status === 'ready' || o.status === 'approved') { o.status = 'superseded'; o.plan = { ...o.plan, ...i.note, supersededReason: 'geometry_defect', supersededBy: n.id, supersededAt: iso(i.nowMs) } }
+      repairClaims.delete(key)
+    },
     async useCorrection(sessionId, userId, lineId) {
       owned(sessionId, userId)
       const l = lines.find(x => x.session_id === sessionId && x.line_id === lineId)

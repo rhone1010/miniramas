@@ -23,7 +23,7 @@ import { correctionPlanFor, groupLines, planFor, type CompositionPlan, type Plan
 import { supportsFavoriteReference } from './aspects'
 import { estimateCompositionCost } from './policy'
 import { GiftError, fromStoreError, getSessionView, owned, type GiftDeps } from './service'
-import type { CompositionRec, OrderLineRec, PreviewRec, SessionRec } from './store'
+import { StoreError, byNewest, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
 import type { SessionView } from './types'
 
 async function selectedPreview(deps: GiftDeps, rec: SessionRec): Promise<PreviewRec> {
@@ -35,7 +35,7 @@ async function selectedPreview(deps: GiftDeps, rec: SessionRec): Promise<Preview
 }
 
 const active = (comps: CompositionRec[], lineId: string, previewId: string) =>
-  comps.filter(c => c.line_id === lineId && c.preview_id === previewId && (c.status === 'ready' || c.status === 'approved')).sort((a, b) => b.attempt - a.attempt)[0]
+  comps.filter(c => c.line_id === lineId && c.preview_id === previewId && (c.status === 'ready' || c.status === 'approved')).sort(byNewest)[0]
 
 /** Pick THE artwork. Allowed until approval; supersedes compositions of any previously selected artwork. */
 export async function selectArtwork(deps: GiftDeps, userId: string, sessionId: string, previewId: unknown): Promise<SessionView> {
@@ -257,4 +257,109 @@ export async function composeWithPrintShop(i: { masterB64: string; size: PrintSi
   const image = await sharp(c.working).png().toBuffer()
   const fit = c.plan.composition.compatibility === 'extension' ? 'extend' : c.width === original.width && c.height === original.height ? 'exact' : 'resample'
   return { image, width: c.width, height: c.height, fit: fit as 'exact' | 'resample' | 'extend', outpainted: c.outpainted }
+}
+
+// ── OPERATOR REPAIR ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+export type RepairResult =
+  | { status: 'not_needed'; lineId: string; compositionId: string }
+  | { status: 'in_progress'; lineId: string; compositionId: string }
+  | { status: 'would_repair'; lineId: string; compositionId: string; plan: { method: CompositionPlan['method']; generationAspect: string | null; fit: CompositionPlan['fit'] }; nb21Calls: number; repairSeq: number }
+  | { status: 'repaired'; lineId: string; supersededCompositionId: string; compositionId: string; repairSeq: number; nb21Calls: number; reusedFiles: boolean }
+
+export const REPAIR_CLAIM_MS = 15 * 60 * 1000
+
+/**
+ * OPERATOR-ONLY (no route, handler or page calls this; scripts/gift-repair-line.ts runs it, as a dry run unless told otherwise). Replaces ONE
+ * line's composition when, and only when, the stored file fails the frozen-product shape check (a LITEN-side geometry defect). Targeted: it
+ * never looks at, changes or repairs any other line.
+ *   - inputs are the saved favorite and the frozen purchased product; the order, lines, prices, correction counts and other compositions are untouched
+ *   - the defective row is SUPERSEDED in the same database transaction that releases the claim (gift_complete_repair): its files and plan stay
+ *     for audit. The replacement is a new row, same attempt, repair_seq n + 1, 'ready' (never 'approved'): the customer approves what they now see
+ *   - the claim is the database's (gift_claim_repair): one live claim per line across every serverless process, expiring after 15 minutes. After
+ *     winning it the state is re-read, so a repair that finished a moment earlier is not repeated
+ *   - interruption: the replacement's files have a fixed path, so a retry after a crash REUSES them instead of paying for a second generation; a
+ *     replacement stored but not yet completed is finished by the next call (the old row is retired) without generating anything
+ *   - allowed only while the order awaits artwork approval; completion re-checks that inside the transaction
+ *   - dryRun reports the plan and the paid calls it would make, and changes nothing
+ */
+export async function repairLine(deps: GiftDeps, input: { operator: string; userId: string; sessionId: string; lineId: string; dryRun?: boolean }): Promise<RepairResult> {
+  if (typeof input.operator !== 'string' || !input.operator.trim() || input.operator.length > 100) throw new Error('operator_required')
+  const rec = await owned(deps, input.userId, input.sessionId)
+  if (!rec.order_id) throw new GiftError('order_payment_required')
+  if (rec.refunded_at) throw new GiftError('order_refunded')
+  if (rec.refund_requested_at) throw new GiftError('refund_pending')
+  const order = await deps.store.getOrder(rec.order_id)
+  if (!order || order.status !== 'awaiting_artwork' || rec.approved_at) throw new GiftError('order_not_awaiting_artwork')
+  const preview = await selectedPreview(deps, rec)
+  const line = (await deps.store.orderLines(rec.order_id)).find(l => l.line_id === input.lineId)
+  if (!line) throw new GiftError('line_not_found')
+  const product = frozenProducts(order, [line]).get(line.line_id)!
+  const mineOf = async () => (await deps.store.listCompositions(rec.id)).filter(c => c.line_id === line.line_id && c.preview_id === preview.id)
+  const liveOf = (rows: CompositionRec[]) => rows.filter(c => c.status === 'ready' || c.status === 'approved').sort(byNewest)
+  const now = () => (deps.clock ?? Date.now)()
+  const claimFor = (c: CompositionRec) => deps.store.claimRepair({ sessionId: rec.id, lineId: line.line_id, compositionId: c.id, operator: input.operator, ttlMs: REPAIR_CLAIM_MS, nowMs: now() })
+  const ids = { sessionId: rec.id, lineId: line.line_id }
+
+  const rows = await mineOf(), live = liveOf(rows), current = live[0]
+  if (!current) throw new GiftError('composition_not_found')
+
+  if (compositionFitsProduct(current, product)) {
+    // A repair interrupted after its replacement was stored: finish retiring the defective rows. Nothing is generated.
+    if (!input.dryRun) for (const stale of live.slice(1).filter(c => !compositionFitsProduct(c, product))) {
+      const token = await claimFor(stale); if (!token) continue
+      try { await deps.store.completeRepair({ ...ids, token, oldId: stale.id, newId: current.id, note: { finishedBy: input.operator }, nowMs: now() }); await removeMockupFile(deps, stale) }
+      catch (e) { await deps.store.releaseRepair(ids.sessionId, ids.lineId, token); fromStoreError(e) }
+    }
+    return { status: 'not_needed', lineId: line.line_id, compositionId: current.id }
+  }
+
+  const plan = planOf(rec, product)
+  const nb21Calls = plan.method === 'generated' ? 1 : 0
+  const seqOf = (all: CompositionRec[]) => Math.max(0, ...all.map(c => c.repair_seq ?? 0)) + 1
+  if (input.dryRun) return { status: 'would_repair', lineId: line.line_id, compositionId: current.id, plan: { method: plan.method, generationAspect: plan.generationAspect, fit: plan.fit }, nb21Calls, repairSeq: seqOf(rows) }
+
+  let token: string | null
+  try { token = await claimFor(current) }
+  catch (e) {                                                  // the row we read was retired by a repair that finished meanwhile: that is the answer, not an error
+    const latest = e instanceof StoreError && e.code === 'composition_not_found' ? liveOf(await mineOf())[0] : undefined
+    if (latest && compositionFitsProduct(latest, product)) return { status: 'not_needed', lineId: line.line_id, compositionId: latest.id }
+    fromStoreError(e)
+  }
+  if (!token) return { status: 'in_progress', lineId: line.line_id, compositionId: current.id }
+  try {
+    // Won the claim: look again. Another process may have finished (and released) between our first read and our claim.
+    const again = await mineOf(), now2 = liveOf(again)[0]
+    if (!now2) throw new GiftError('composition_not_found')
+    if (now2.id !== current.id && compositionFitsProduct(now2, product)) { await deps.store.releaseRepair(ids.sessionId, ids.lineId, token); return { status: 'not_needed', lineId: line.line_id, compositionId: now2.id } }
+    const seq = seqOf(again), slot = `${line.line_id}-r${seq}`, base = `gift/${rec.id}/compositions/${preview.id}-${slot}`
+
+    // A previous attempt may have stored the replacement's files and died before recording them: reuse them, do not pay again.
+    let files: GroupFiles | null = null
+    const [img, prv] = [await deps.storage.get(base + '.png'), await deps.storage.get(base + '.jpg')]
+    if (img && prv) {
+      const m = await sharp(img).metadata()
+      if (m.width && m.height && compositionFitsProduct({ width: m.width, height: m.height }, product)) {
+        files = { image: base + '.png', preview: base + '.jpg', width: m.width, height: m.height, fit: plan.fit, outpainted: false, nb21Calls: 0, sha256: createHash('sha256').update(img).digest('hex'),
+                  generationMode: plan.method === 'generated' ? (supportsFavoriteReference(rec.series!) ? 'favorite_reference' : 'photo_regeneration') : 'none' }
+      }
+    }
+    const reusedFiles = !!files
+    if (!files) {
+      const master = await deps.storage.get(preview.master_path!)
+      if (!master) throw new GiftError('generation_unavailable')
+      try { files = await composeGroup(deps, rec, preview, product, plan, master, slot) } catch (e) { if (e instanceof GiftError) throw e; throw new GiftError('composition_failed') }
+    }
+    const row = await deps.store.insertComposition({
+      ...recordFor(rec, preview, line, current.attempt, plan, files, null, true, { repair: { of: current.id, seq, operator: input.operator, reason: 'geometry_mismatch', at: new Date(now()).toISOString(), ...(reusedFiles ? { reusedFiles: true } : {}) } }),
+      repair_seq: seq,
+    })
+    await deps.store.completeRepair({ ...ids, token, oldId: current.id, newId: row.id, note: { repairedBy: input.operator }, nowMs: now() })
+    await removeMockupFile(deps, current)
+    return { status: 'repaired', lineId: line.line_id, supersededCompositionId: current.id, compositionId: row.id, repairSeq: seq, nb21Calls: files.nb21Calls, reusedFiles }
+  } catch (e) {
+    // Drop the claim so a retry need not wait for it to expire. A stored replacement is never undone: the next call retires the old row.
+    try { await deps.store.releaseRepair(ids.sessionId, ids.lineId, token) } catch { /* it expires on its own */ }
+    fromStoreError(e)
+  }
 }
