@@ -32,6 +32,17 @@ export function freezeLine(product: CanonicalProduct, nowMs: number, version: st
   return { snapshotVersion: FROZEN_SNAPSHOT_VERSION, frozenAt: new Date(nowMs).toISOString(), catalogVersion: version, product: structuredClone(product) }
 }
 
+/**
+ * Whether a composed file has the shape of the PURCHASED product (its frozen final or picture area, within the 2% the lab accepts without
+ * extension). Orientation is part of that: a landscape file never stands in for a portrait product. Unknown dimensions are not a mismatch
+ * (older rows); a known wrong shape is.
+ */
+export function compositionFitsProduct(c: { width: number | null; height: number | null }, product: CanonicalProduct): boolean {
+  if (!c.width || !c.height) return true
+  const a = c.width / c.height, { finalPx, picturePx } = product.requirements
+  return [finalPx, picturePx].some(t => Math.abs(a / (t.w / t.h) - 1) <= 0.02)
+}
+
 export type GeometrySource = 'frozen' | 'legacy_catalog'
 export type ResolvedProduct =
   | { ok: true; source: GeometrySource; product: CanonicalProduct; catalogVersion: string | null; frozenAt: string | null }

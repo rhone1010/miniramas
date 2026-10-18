@@ -10,7 +10,7 @@ import { selectArtwork, ensureCompositions, correctLine, approveComposition } fr
 import fs from 'node:fs'
 import { mockupH } from './handlers'
 import { getLineMockup, mockupIdentityKey, pictureArea, templateFor, MOCKUP_URL_SECONDS, type MockupRenderer } from './mockup'
-import { freezeLine, resolveFrozenProduct } from './frozen'
+import { compositionFitsProduct, freezeLine, resolveFrozenProduct } from './frozen'
 import { adaptationValidationFor } from './policy'
 import { correctionPlanFor, planFor } from './composition-plan'
 import { purchasedItems, purchasedLines } from './test-order'
@@ -351,7 +351,7 @@ describe('adaptation validation is metadata only', () => {
     expect(adaptationValidationFor('pets', 'generated')).toBe('provisional'); expect(adaptationValidationFor('groups', 'deterministic')).toBe('not_applicable'); expect(adaptationValidationFor(null, null)).toBe('not_applicable')
   })
   it('the order view carries it on both the geometry and the composition', async () => {
-    const r = rig({ series: 'groups', people: 4 }); const { sid } = await ready(r, [L12])
+    const r = rig({ series: 'groups', people: 2 }); const { sid } = await ready(r, [L12])         // two people: a 2:3 master, so a 2:3 product is a direct adaptation
     const v = await getSessionView(r.deps, U1, sid)
     expect(v.geometries[0]).toMatchObject({ method: 'deterministic', adaptationValidation: 'not_applicable' })
     const r2 = rig(); const p = await ready(r2, [L12]); const v2 = await getSessionView(r2.deps, U1, p.sid)
@@ -395,5 +395,38 @@ describe('a mockup failure is diagnosable from the server log, and never leaks t
     r.watermark.mockRejectedValueOnce(new Error('wm boom')); await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_failed' })
     r.deps.storage.signedUrl = async () => null; await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_failed' })
     const lines = spy.mock.calls.map(c => String(c[0])).filter(l => l.includes('[gift/mockup]')); expect(lines.some(l => l.includes('watermark failed') && l.includes('wm boom'))).toBe(true); expect(lines.some(l => l.includes('sign failed'))).toBe(true); spy.mockRestore()
+  })
+})
+
+describe('the purchased orientation is fixed (landscape artwork, portrait product)', () => {
+  it('plans a landscape master for a portrait product as a generation at the product orientation, never a turned deterministic fit', () => {
+    const ctx = { series: 'groups' as const, peopleCount: 4, masterAspect: '3:2' }
+    const plan = planFor(getProduct('fine_art:12x18')!, ctx)!
+    expect([plan.method, plan.generationAspect, plan.targetAspect]).toEqual(['generated', '2:3', 0.666667])
+    expect(planFor(getProduct('fine_art:12x18')!, { ...ctx, peopleCount: 2, masterAspect: '2:3' })!.method).toBe('deterministic')
+  })
+  it('a landscape master and a portrait Fine Art Print: the composition is portrait, matches the frozen geometry, and the mockup renders', async () => {
+    const r = rig({ series: 'groups', people: 4 }); const { sid } = await ready(r, [L12])
+    const c = r.store.compositions[0]; expect(c.method).toBe('generated'); expect(c.width!).toBeLessThan(c.height!)
+    const m = await getLineMockup(r.deps, U1, sid, 'a'); expect(m.sku).toBe('GLOBAL-FAP-12X18'); expect(r.render).toHaveBeenCalledTimes(1)
+  })
+  it('a landscape file already stored for a portrait product (the Preview failure) is refused with 409 before any rendering, and cannot be approved', async () => {
+    const r = rig(); const { sid } = await ready(r, [L12])
+    Object.assign(r.store.compositions[0], { width: 1575, height: 1050 })        // the shape found on Preview
+    await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'composition_geometry_mismatch', status: 409 })
+    expect(r.render).not.toHaveBeenCalled(); expect(r.watermark.mock.calls.length).toBeGreaterThan(0)
+    await expect(approveComposition(r.deps, U1, sid, r.store.compositions[0].id)).rejects.toMatchObject({ code: 'composition_geometry_mismatch' })
+    expect(r.store.compositions[0].status).toBe('ready')
+  })
+  it('a compositor that returns the wrong shape stores nothing', async () => {
+    const r = rig(); const p = await project(r, [L12]); await selectArtwork(r.deps, p.user, p.sid, p.previews[0].previewId)
+    r.compose.mockImplementationOnce(async () => ({ image: await sharp({ create: { width: 300, height: 200, channels: 3, background: '#111' } }).png().toBuffer(), width: 300, height: 200, fit: 'extend' as const, outpainted: false }))
+    await expect(ensureCompositions(r.deps, p.user, p.sid)).rejects.toMatchObject({ code: 'composition_failed' })
+    expect(r.store.compositions.length).toBe(0); expect([...r.files.keys()].some(k => k.includes('/compositions/'))).toBe(false)
+  })
+  it('compositionFitsProduct compares the stored shape with the frozen final or picture area, and does not guess for rows without dimensions', () => {
+    const fa = getProduct('fine_art:12x18')!, canvas = getProduct('canvas:12x12')!
+    expect(compositionFitsProduct({ width: 1050, height: 1575 }, fa)).toBe(true); expect(compositionFitsProduct({ width: 1575, height: 1050 }, fa)).toBe(false)
+    expect(compositionFitsProduct({ width: 1000, height: 1000 }, canvas)).toBe(true); expect(compositionFitsProduct({ width: null, height: null }, fa)).toBe(true)
   })
 })

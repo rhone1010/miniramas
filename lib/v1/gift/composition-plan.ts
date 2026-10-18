@@ -15,7 +15,7 @@
 // A group is composed once and its files are shared; each purchased line still keeps its own composition record, approval,
 // correction allowance and print job.
 
-import { fitFor, type CanonicalProduct } from '../print/catalog'
+import type { CanonicalProduct } from '../print/catalog'
 import { MAX_EXTENSION, extensionBetween, generationAspectFor, ratioOf } from './aspects'
 import type { Series } from './types'
 
@@ -54,13 +54,20 @@ export const geometryKeyFor = (product: CanonicalProduct): string => 'a' + Math.
 
 const classify = (extension: number): CompositionFit => extension <= 1e-6 ? 'exact' : extension <= 0.02 + 1e-10 ? 'resample' : 'extend'
 
-/** The plan for one product, or null when no bounded way to make this product's shape exists for this series. */
+/**
+ * The plan for one product, or null when no bounded way to make this product's shape exists for this series.
+ * THE PURCHASED ORIENTATION IS FIXED. The Print Shop catalog lets a landscape artwork "turn" a portrait product (the customer picks the
+ * orientation there by uploading it). Here the customer already bought a specific SKU whose frozen geometry is portrait or landscape, so
+ * a master of the opposite orientation is never turned into it: it is far outside the 20% bound, and the plan becomes a generation at the
+ * product's own orientation. (Found on Preview: a landscape master was composed as a landscape file for a portrait Fine Art Print.)
+ */
 export function planFor(product: CanonicalProduct, ctx: PlanContext): CompositionPlan | null {
   const target = product.requirements.pictureAspect
   const key = geometryKeyFor(product)
-  const direct = fitFor(masterDims(ctx.masterAspect), product)
-  if (direct.fit !== 'unavailable') {
-    return { geometryKey: key, targetAspect: target, method: 'deterministic', fit: direct.fit, extensionFraction: direct.extensionFraction, generationAspect: null, generationExtensionFraction: null }
+  const extension = extensionBetween(ratioOf(ctx.masterAspect), target)
+  if (extension <= MAX_EXTENSION + 1e-10) {
+    const fraction = Math.round(extension * 1e4) / 1e4
+    return { geometryKey: key, targetAspect: target, method: 'deterministic', fit: classify(extension), extensionFraction: fraction, generationAspect: null, generationExtensionFraction: null }
   }
   const gen = generationAspectFor(ctx.series, ctx.peopleCount, target)
   if (!gen) return null

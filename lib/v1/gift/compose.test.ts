@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { createSession, setLines, startBatch, getSessionView, type GiftDeps } from './service'
 import { memoryGiftStore } from './store'
 import { purchasedItems, purchasedLines } from './test-order'
+import { allProducts } from '../print/catalog'
 import { selectArtwork, ensureCompositions, correctLine, approveComposition, approveOrder } from './compose'
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '10000000-0000-4000-8000-000000000002'
@@ -14,7 +15,9 @@ function rig(over: { failCompose?: Set<string> } = {}) {
   const compose = vi.fn(async (i: { size: string; finish: string; masterB64: string }) => {
     const key = i.finish + ':' + i.size
     if (over.failCompose?.has(key)) { over.failCompose.delete(key); throw new Error('outpaint_failed') }
-    return { image: await sharp(Buffer.from(i.masterB64, 'base64')).png().toBuffer(), width: 512, height: 512, fit: 'exact' as const, outpainted: false }
+    const p = allProducts().find(x => x.size === i.size && (x.family as string) === i.finish)!         // a compositor returns the shape of the product it was asked for
+    const w = 512, h = Math.round(512 * p.requirements.picturePx.h / p.requirements.picturePx.w)
+    return { image: await sharp({ create: { width: w, height: h, channels: 3, background: '#3a6' } }).png().toBuffer(), width: w, height: h, fit: 'exact' as const, outpainted: false }
   })
   const kick = vi.fn(async (_orderId: string) => ({ status: 'pending' }))
   const deps: GiftDeps = {

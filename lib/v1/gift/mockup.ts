@@ -24,7 +24,7 @@
 import { createHash } from 'node:crypto'
 import sharp from 'sharp'
 import { GiftError, owned, type GiftDeps } from './service'
-import { resolveFrozenProduct } from './frozen'
+import { compositionFitsProduct, resolveFrozenProduct } from './frozen'
 import type { CanonicalProduct } from '../print/catalog'
 import type { CompositionRec, SessionRec } from './store'
 import type { MockupView } from './types'
@@ -144,6 +144,7 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   const product = resolved.product
   const templateId = templateFor(product)
   if (!templateId) throw new GiftError('product_not_available')
+  if (!compositionFitsProduct(comp, product)) throw new GiftError('composition_geometry_mismatch')       // e.g. a landscape file for a portrait product: refused before any rendering
 
   const artworkSha256 = typeof (comp.plan as { artworkSha256?: unknown }).artworkSha256 === 'string' ? (comp.plan as { artworkSha256: string }).artworkSha256 : null
   const clean = artworkSha256 ? null : await deps.storage.get(comp.composed_path!)         // an older row without a recorded hash: hash it once, then remember

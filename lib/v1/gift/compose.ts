@@ -17,7 +17,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { lockedPreviewPath } from '@/lib/store/preview'
 import type { PrintFinish, PrintSize } from '../print/sku-map'
 import type { CanonicalProduct } from '../print/catalog'
-import { resolveFrozenProduct } from './frozen'
+import { compositionFitsProduct, resolveFrozenProduct } from './frozen'
 import { removeMockupFile } from './mockup'
 import { correctionPlanFor, groupLines, planFor, type CompositionPlan, type PlanContext } from './composition-plan'
 import { supportsFavoriteReference } from './aspects'
@@ -101,6 +101,7 @@ async function composeGroup(deps: GiftDeps, rec: SessionRec, preview: PreviewRec
     generationMode = useReference ? 'favorite_reference' : 'photo_regeneration'
   }
   const made = await deps.compose({ masterB64: source.toString('base64'), size: product.size as PrintSize, finish: product.family as PrintFinish })
+  if (!compositionFitsProduct(made, product)) throw new GiftError('composition_geometry_mismatch')      // never store a file of the wrong shape for what was bought
   const marked = await deps.watermark(made.image.toString('base64'))              // the customer's view of a clean composition: watermarked, fails closed
   const base = `gift/${rec.id}/compositions/${preview.id}-${slot}`
   await deps.storage.put(`${base}.png`, made.image, 'image/png')
@@ -148,7 +149,7 @@ export async function ensureCompositions(deps: GiftDeps, userId: string, session
   let failed = 0
   for (const g of groups) {
     // Files already made for this requirement and this artwork (by another line, or an earlier call) are reused.
-    const existing = comps.find(c => c.preview_id === preview.id && c.geometry_key === g.geometryKey && c.attempt === 1 && c.composed_path && c.preview_path && c.status !== 'failed')
+    const existing = comps.find(c => c.preview_id === preview.id && c.geometry_key === g.geometryKey && c.attempt === 1 && c.composed_path && c.preview_path && c.status !== 'failed' && compositionFitsProduct(c, g.items[0].product))
     let files: GroupFiles | null = existing ? { image: existing.composed_path!, preview: existing.preview_path!, width: existing.width ?? 0, height: existing.height ?? 0, fit: ((existing.plan as { fit?: GroupFiles['fit'] }).fit ?? 'exact'), outpainted: !!(existing.plan as { outpainted?: boolean }).outpainted, generationMode: existing.generation_mode, nb21Calls: 0, sha256: typeof (existing.plan as { artworkSha256?: unknown }).artworkSha256 === 'string' ? (existing.plan as { artworkSha256: string }).artworkSha256 : '' } : null
     if (!files) {
       try { files = await composeGroup(deps, rec, preview, g.items[0].product, g.plan, master, g.geometryKey) } catch { failed++; continue }
@@ -201,6 +202,9 @@ export async function approveComposition(deps: GiftDeps, userId: string, session
   if (!rec.artwork_preview_id) throw new GiftError('artwork_not_selected')
   const comp = (await deps.store.listCompositions(rec.id)).find(c => c.id === compositionId)
   if (!comp || comp.preview_id !== rec.artwork_preview_id || comp.status === 'superseded' || comp.status === 'failed') throw new GiftError('composition_not_found')
+  const order = rec.order_id ? await deps.store.getOrder(rec.order_id) : null
+  const line = order ? (await deps.store.orderLines(rec.order_id!)).find(l => l.line_id === comp.line_id) : null
+  if (order && line) { const r = resolveFrozenProduct(order.items, line); if (r.ok && !compositionFitsProduct(comp, r.product)) throw new GiftError('composition_geometry_mismatch') }
   if (comp.status === 'ready') await deps.store.patchComposition(comp.id, { status: 'approved', approved_at: new Date((deps.clock ?? Date.now)()).toISOString() })
   return getSessionView(deps, userId, sessionId)
 }
@@ -220,7 +224,12 @@ export async function approveOrder(deps: GiftDeps, userId: string, sessionId: st
   const lines = await deps.store.orderLines(rec.order_id)
   if (!lines.length) throw new GiftError('order_has_no_lines')
   const comps = await deps.store.listCompositions(rec.id)
-  if (lines.some(l => active(comps, l.line_id, preview.id)?.status !== 'approved')) throw new GiftError('compositions_not_approved')   // checked again, atomically, in the database
+  if (lines.some(l => active(comps, l.line_id, preview.id)?.status !== 'approved')) throw new GiftError('compositions_not_approved')
+  const orderRow = await deps.store.getOrder(rec.order_id)
+  if (orderRow) for (const l of lines) {                          // nothing of the wrong shape for the purchased product is ever released to the lab
+    const r = resolveFrozenProduct(orderRow.items, l), c = active(comps, l.line_id, preview.id)
+    if (r.ok && c && !compositionFitsProduct(c, r.product)) throw new GiftError('composition_geometry_mismatch')
+  }   // checked again, atomically, in the database
 
   // The piece must outlive the session, so the clean master and its watermarked view are copied to where My Collection reads them.
   const series = rec.series!
