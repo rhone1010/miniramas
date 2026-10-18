@@ -12,10 +12,10 @@ const money=(n:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency
 const asset=(s:string)=>new URL(s,import.meta.url).href;
 let session=newSession(),view:View='photo',history:View[]=[],products:Product[]=[],fixtures:Preview[]=[],registries={} as Record<Series,Registry>,manifest:any;
 let shoppingFavoriteId:string|null=null;
-// Exact approved disclosure from lib/v1/gift/orders.ts at 7e49aaf.
+// Exact approved disclosure from lib/v1/gift/orders.ts, version 2026-10-18-3.
 let disclosure={
-  version: '2026-10-18-1',
-  text: "Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.\n\nOnce you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.\n\nAfter payment, you'll review how your artwork looks on each purchased product and approve the final composition before production begins.\n\nNothing is printed or manufactured until you approve your gifts.",
+  version: '2026-10-18-3',
+  text: "Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.\n\nOnce you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.\n\nAfter payment, we'll prepare your artwork for each product. You'll review a clean preview of how it looks on each gift and approve each one before production begins.\n\nNothing is printed or manufactured until you've approved your gifts and submitted your order.\n\nAfter purchasing physical gifts, you may request a full refund through Concierge until your order is submitted to our print partner. Once submitted, the order is no longer eligible for this refund.\n\nAdditional artwork preview packs are separate purchases and are not included in physical-product refunds.",
 };
 function checkoutReady(){return !!live?.session?.artworkPreviewId&&['none','checkout_open'].includes(live.session.order.state)&&deliveryValid(session)&&disclosureAccepted&&session.lines.length>0&&!busy}
 let sourceURL='',busy=false,limit=0,silo='all',effectFocus='',artFocus='',compareId='',activeProduct='',size='',copies=1,editId:string|null=null,batchIndex=0;

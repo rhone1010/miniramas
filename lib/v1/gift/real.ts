@@ -104,6 +104,7 @@ export async function watermarkPreview(masterB64: string): Promise<Buffer> {
 
 export function giftDeps(): GiftDeps {
   return {
+    draftCompositions: process.env.GIFT_COMPOSITIONS_BEFORE_PAYMENT === '1',
     store: supabaseGiftStore(supabaseAdmin), storage: supabaseGiftStorage(), analyze: analyzeSource, generate: generateMaster, watermark: watermarkPreview,
     compose: composeWithPrintShop,
     mockup: realMockupRenderer,
@@ -129,7 +130,7 @@ export async function giftOrderDeps(): Promise<GiftOrderDeps & { gift: GiftDeps 
   ])
   return {
     gift: giftDeps(), store: supabaseGiftStore(supabaseAdmin), stripe: getStripe(),
-    requireReviewedCompositions: process.env.GIFT_COMPOSITIONS_BEFORE_PAYMENT !== '0',      // the approved journey; '0' switches it off
+    requireReviewedCompositions: process.env.GIFT_COMPOSITIONS_BEFORE_PAYMENT === '1',      // off: the approved journey is checkout, then compose, review, approve
     printOrders: {
       async create(i) { const row = await printDb.createPrintOrder(i); return { id: row.id } },
       async updateUnpaid(orderId, i) {

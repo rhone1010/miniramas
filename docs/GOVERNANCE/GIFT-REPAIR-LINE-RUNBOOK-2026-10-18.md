@@ -32,8 +32,8 @@ Note: the line id the script takes is the wizard's `line_id` for that order line
 ## Deployment sequence (one combined protected Preview push)
 1. Owner approves; commit the repair branch (migration 052, verify SQL, code, script, tests).
 2. Owner runs `docs/GOVERNANCE/gift-052-preflight-and-verify.sql` (expect FAIL-free, "not applied yet"), applies `052_gift_composition_repair.sql` in the Supabase SQL Editor, runs the verify file again (every row PASS). 052 is additive; the currently deployed code is unaffected by it.
-3. Assemble ONE fast-forward: current Preview tip + held backend disclosure commit (`7e64b82`, version 2026-10-18-2) + Codex's `2435f57` and `002153d` + the repair commit; run the Gift, print and wizard-UI suites on the combined tree. Backend and frontend disclosure version and exact text must be identical in that single push.
+3. Assemble ONE fast-forward: current Preview tip + held backend disclosure commit (`7e64b82`, version 2026-10-18-3) + Codex's `2435f57` and `002153d` + the repair commit; run the Gift, print and wizard-UI suites on the combined tree. Backend and frontend disclosure version and exact text must be identical in that single push.
 4. Push to `codex/canonical-2026-09-24` only; confirm the `miniramas` Vercel deployment completes.
-5. Smoke (read-only): Canvas line mockup 200; Fine Art Print mockup 409 `composition_geometry_mismatch`; checkout accepts `2026-10-18-2` only.
+5. Smoke (read-only): Canvas line mockup 200; Fine Art Print mockup 409 `composition_geometry_mismatch`; checkout accepts `2026-10-18-3` only.
 6. Dry-run the script on the Fine Art line; review the plan.
 7. With approval: `--execute` once; confirm the new row is `ready`, the old `superseded`, `corrections_used` still 0, other line unchanged, Fine Art mockup 200; customer approves the replacement through the normal flow.

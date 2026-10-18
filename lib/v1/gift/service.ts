@@ -68,6 +68,8 @@ export type SourceAnalysis =
   | { status: 'unsupported' }
   | { status: 'age_restricted' }
 export interface GiftDeps {
+  /** Compose product artwork before payment (a draft). Off in the approved journey: checkout, then compose. See scope.ts. */
+  draftCompositions?: boolean
   store: GiftStore
   storage: GiftStorage
   /** Existing classifier, face/age check and (Groups) people count; see real.ts. */
@@ -303,7 +305,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     nextBatch, expiresAt: rec.expires_at, catalogVersion: catalogVersion(catalog),
     order: orderView(rec, order),
     artworkPreviewId: rec.artwork_preview_id,
-    compositions: await Promise.all((orderLines.length ? orderLines : draftOrderLines(rec, catalog)).map(async l => {
+    compositions: await Promise.all((orderLines.length || !deps.draftCompositions ? orderLines : draftOrderLines(rec, catalog)).map(async l => {
       const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort(byNewest)[0]
       const g = geometries.find(x => x.lineId === l.line_id)
       const gp = planned.find(x => x.l.lineId === l.line_id)

@@ -1,6 +1,6 @@
 // lib/v1/gift/scope.ts
 //
-// WHICH PRODUCTS A COMPOSITION IS FOR, before and after payment. The approved journey reviews product-specific artwork BEFORE checkout, so a
+// WHICH PRODUCTS A COMPOSITION IS FOR, before and after payment. Composing before payment is an OPTIONAL capability (deps.draftCompositions, env GIFT_COMPOSITIONS_BEFORE_PAYMENT=1), off in the approved journey (checkout, then compose). With it on, a
 // composition exists while the session only has its chosen lines (a DRAFT: geometry from today's catalog, nothing frozen yet) and continues,
 // with the same composition rows and the same line ids, after payment (PURCHASED: geometry from the snapshot frozen at checkout). Checkout checks the
 // reviewed compositions against the product it is about to freeze and records them on the order (orders.ts), so the customer pays for exactly
@@ -23,6 +23,9 @@ export interface Scope { phase: Phase; order: OrderInfo | null; lines: LineScope
 export async function scopeOf(deps: GiftDeps, rec: SessionRec): Promise<Scope> {
   const order = rec.order_id ? await deps.store.getOrder(rec.order_id) : null
   if (!order || order.status === 'created') {
+    // The approved journey composes AFTER the Stripe test checkout. Composing before payment (a draft) exists but is OFF unless deps.draftCompositions is set,
+    // so an unpaid customer can neither spend generation nor see a composition: the original rules apply.
+    if (!deps.draftCompositions) throw new GiftError(order ? 'order_not_paid' : 'order_payment_required')
     const catalog = allProducts()
     return { phase: 'draft', order, lines: draftOrderLines(rec, catalog).map(line => ({ line, product: catalog.find(p => p.productId === line.product_id)!, source: 'catalog' as const, catalogVersion: null })) }
   }

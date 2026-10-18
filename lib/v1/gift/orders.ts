@@ -28,8 +28,8 @@ import { GIFT_ORDER_KIND } from './order-kind'
 
 /** Shown before payment, passed to Stripe Checkout as its submit message, and recorded by version when the customer accepts. */
 export const DISCLOSURE: Disclosure = {
-  version: '2026-10-18-2',
-  text: "Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.\n\nOnce you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.\n\nAfter payment, you'll review how your artwork looks on each purchased product and approve the final composition before production begins.\n\nNothing is printed or manufactured until you approve your gifts.\n\nAfter purchasing physical gifts, you may request a full refund through Concierge until your order is submitted to our print partner. Once submitted, the order is no longer eligible for this refund.\n\nAdditional artwork preview packs are separate purchases and are not included in physical-product refunds.",
+  version: '2026-10-18-3',
+  text: "Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.\n\nOnce you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.\n\nAfter payment, we'll prepare your artwork for each product. You'll review a clean preview of how it looks on each gift and approve each one before production begins.\n\nNothing is printed or manufactured until you've approved your gifts and submitted your order.\n\nAfter purchasing physical gifts, you may request a full refund through Concierge until your order is submitted to our print partner. Once submitted, the order is no longer eligible for this refund.\n\nAdditional artwork preview packs are separate purchases and are not included in physical-product refunds.",
 }
 
 export interface PrintOrdersPort {

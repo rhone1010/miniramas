@@ -10,7 +10,7 @@ import { giftRenderId, isGiftOrder, parseGiftRenderId } from './order-kind'
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '10000000-0000-4000-8000-000000000002'
 const ADDRESS = { name: 'Ada Lovelace', line1: '1 Main St', city: 'Sonoma', state: 'CA', postcode: '95476', countryCode: 'us' }
-const BODY = { email: 'ada@example.test', shippingAddress: ADDRESS, disclosureAccepted: true as const, disclosureVersion: '2026-10-18-2', returnPath: '/gift-wizard' as const }
+const BODY = { email: 'ada@example.test', shippingAddress: ADDRESS, disclosureAccepted: true as const, disclosureVersion: '2026-10-18-3', returnPath: '/gift-wizard' as const }
 
 function rig(over: { shippingAmount?: string; canFulfil?: boolean; sandbox?: boolean } = {}) {
   const store = memoryGiftStore()
@@ -86,7 +86,7 @@ describe('gift checkout', () => {
     const p = r.stripe.checkout.sessions.create.mock.calls[0][0]
     expect(p).toMatchObject({ mode: 'payment', ui_mode: 'embedded', customer_email: 'ada@example.test', custom_text: { submit: { message: DISCLOSURE.text } }, metadata: { kind: GIFT_ORDER_KIND, giftSessionId: sid, userId: U1, disclosure: DISCLOSURE.version } })
     expect(p.return_url).toBe('https://x.test/gift-wizard?gift_order_session={CHECKOUT_SESSION_ID}')
-    expect(DISCLOSURE.text).toMatch(/first twelve personalized artwork previews are free/); expect(DISCLOSURE.text).toMatch(/Nothing is printed or manufactured until you approve your gifts/); expect(DISCLOSURE.text.length).toBeLessThan(1200)
+    expect(DISCLOSURE.text).toMatch(/first twelve personalized artwork previews are free/); expect(DISCLOSURE.text).toMatch(/Nothing is printed or manufactured until you've approved your gifts and submitted your order/); expect(DISCLOSURE.text.length).toBeLessThan(1200)
     expect(out.totals.totalCents).toBe(r.sessions.get(out.stripeSessionId).amount_total)
   })
   it('records the version of the disclosure the customer accepted, and refuses without acceptance', async () => {
@@ -325,9 +325,9 @@ const APPROVED_TEXT = `Your first twelve personalized artwork previews are free,
 
 Once you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.
 
-After payment, you'll review how your artwork looks on each purchased product and approve the final composition before production begins.
+After payment, we'll prepare your artwork for each product. You'll review a clean preview of how it looks on each gift and approve each one before production begins.
 
-Nothing is printed or manufactured until you approve your gifts.
+Nothing is printed or manufactured until you've approved your gifts and submitted your order.
 
 After purchasing physical gifts, you may request a full refund through Concierge until your order is submitted to our print partner. Once submitted, the order is no longer eligible for this refund.
 
@@ -344,19 +344,19 @@ describe('previews before purchase: checkout needs a saved favorite', () => {
   })
 })
 
-describe('purchase disclosure 2026-10-18-2', () => {
+describe('purchase disclosure 2026-10-18-3', () => {
   const order = (r: ReturnType<typeof rig>) => [...r.store.orders.values()][0]
   it('is exactly the approved wording and version, and the same text goes to Stripe and back to the page', async () => {
-    expect(DISCLOSURE).toEqual({ version: '2026-10-18-2', text: APPROVED_TEXT })
+    expect(DISCLOSURE).toEqual({ version: '2026-10-18-3', text: APPROVED_TEXT })
     const r = rig(); const sid = await sessionWithLines(r); const out = await checkout(r, sid)
     expect(out.disclosure).toEqual(DISCLOSURE); expect(r.sessions.get(out.stripeSessionId).params.custom_text.submit.message).toBe(APPROVED_TEXT)
-    expect(r.sessions.get(out.stripeSessionId).metadata.disclosure).toBe('2026-10-18-2'); expect(APPROVED_TEXT.length).toBeLessThan(1200)       // Stripe's limit for the submit message
+    expect(r.sessions.get(out.stripeSessionId).metadata.disclosure).toBe('2026-10-18-3'); expect(APPROVED_TEXT.length).toBeLessThan(1200)       // Stripe's limit for the submit message
   })
   it('requires the version with the acceptance: missing, empty, non-string, stale and invented versions are refused before any quote, Stripe session or order', async () => {
     const r = rig(); const sid = await sessionWithLines(r)
     const { disclosureVersion: _v, ...noVersion } = BODY
     for (const body of [noVersion, { ...BODY, disclosureVersion: '' }, { ...BODY, disclosureVersion: 20261017 }, { ...BODY, disclosureVersion: null }]) await expect(checkout(r, sid, body)).rejects.toMatchObject({ code: 'disclosure_version_required', status: 400 })
-    for (const v of ['2026-10-16-1', '2026-10-17-1', '2026-10-18-1', '2026-10-19-1', 'latest', ' 2026-10-18-2']) await expect(checkout(r, sid, { ...BODY, disclosureVersion: v })).rejects.toMatchObject({ code: 'disclosure_version_mismatch', status: 409 })
+    for (const v of ['2026-10-16-1', '2026-10-17-1', '2026-10-18-1', '2026-10-18-2', '2026-10-19-1', 'latest', ' 2026-10-18-3']) await expect(checkout(r, sid, { ...BODY, disclosureVersion: v })).rejects.toMatchObject({ code: 'disclosure_version_mismatch', status: 409 })
     await expect(checkout(r, sid, { ...BODY, disclosureAccepted: false })).rejects.toMatchObject({ code: 'disclosure_required' })
     expect(r.quote).not.toHaveBeenCalled(); expect(r.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(r.store.orders.size).toBe(0)
   })
@@ -370,7 +370,7 @@ describe('purchase disclosure 2026-10-18-2', () => {
     const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid)
     r.sessions.get(a.stripeSessionId).metadata.disclosure = '2026-10-17-1'
     const b2 = await checkout(r, sid)
-    expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(r.sessions.get(a.stripeSessionId).status).toBe('expired'); expect(r.sessions.get(b2.stripeSessionId).metadata.disclosure).toBe('2026-10-18-2')
+    expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(r.sessions.get(a.stripeSessionId).status).toBe('expired'); expect(r.sessions.get(b2.stripeSessionId).metadata.disclosure).toBe('2026-10-18-3')
   })
   it('existing acceptance timestamps and version records are preserved: a replacement checkout never rewrites what the session recorded when its order was first created', async () => {
     const r = rig(); const sid = await sessionWithLines(r); await checkout(r, sid)
@@ -380,7 +380,7 @@ describe('purchase disclosure 2026-10-18-2', () => {
   })
   it('the first checkout records the accepted version and a timestamp on the session; nothing else about refunds, prices or entitlements changed', async () => {
     const r = rig(); const sid = await sessionWithLines(r); const out = await checkout(r, sid)
-    const rec = (await r.store.getSession(sid, U1))!; expect(rec.disclosure_version).toBe('2026-10-18-2'); expect(rec.disclosure_accepted_at).toBeTruthy()
+    const rec = (await r.store.getSession(sid, U1))!; expect(rec.disclosure_version).toBe('2026-10-18-3'); expect(rec.disclosure_accepted_at).toBeTruthy()
     expect(out.totals.shippingCents).toBe(685); expect(out.totals.totalCents).toBe(out.totals.itemsCents + 685)
     r.pay(out.stripeSessionId); await confirmGiftOrder(r.deps, out.stripeSessionId, U1); expect((await r.store.getSession(sid, U1))!.free_batches_granted).toBe(2)
   })
@@ -388,7 +388,7 @@ describe('purchase disclosure 2026-10-18-2', () => {
 
 describe('compositions reviewed before payment (the approved journey)', () => {
   const reviewedRig = () => {
-    const r = rig(); r.deps.requireReviewedCompositions = true
+    const r = rig(); r.deps.requireReviewedCompositions = true; r.gift.draftCompositions = true         // the optional compose-before-payment capability, enabled for these tests
     r.gift.compose = vi.fn(async (i: { size: string; finish: string }) => {
       const p = allProducts().find(x => x.size === i.size && (x.family as string) === i.finish)!, w = 256, h = Math.round(256 * p.requirements.picturePx.h / p.requirements.picturePx.w)
       return { image: await sharp({ create: { width: w, height: h, channels: 3, background: '#036' } }).png().toBuffer(), width: w, height: h, fit: 'exact' as const, outpainted: false }

@@ -137,10 +137,12 @@ describe('the favorite is chosen and saved before buying, and survives the purch
     await selectArtwork(r.deps, U1, sid, b1.batch.previews[0].previewId); expect((await view(r, sid)).artworkPreviewId).toBe(b1.batch.previews[0].previewId)
     await expect(selectArtwork(r.deps, U2, sid, b1.batch.previews[0].previewId)).rejects.toMatchObject({ code: 'session_not_found' })
   })
-  it('the SAME artwork is the one composed, reviewed before payment and kept after it: payment, products and confirmation never reset the selection or the reviewed composition', async () => {
+  it('with the optional draft capability on, the SAME artwork is composed and reviewed before payment and kept after it: payment, products and confirmation never reset the selection or the reviewed composition', async () => {
     const r = rig(); const sid = await session(r); const b1 = await batch(r, sid, 1); const fav = b1.batch.previews[3].previewId
     await selectArtwork(r.deps, U1, sid, fav); await setLines(r.deps, U1, sid, LINE)
-    const draft = await ensureCompositions(r.deps, U1, sid)                                              // the approved journey: composed and reviewed BEFORE payment
+    await expect(ensureCompositions(r.deps, U1, sid)).rejects.toMatchObject({ code: 'order_payment_required' })        // the approved journey: checkout first, then compose
+    r.deps.draftCompositions = true                                                                          // the optional capability: composed and reviewed BEFORE payment
+    const draft = await ensureCompositions(r.deps, U1, sid)
     expect(draft.compositions.map(c => [c.lineId, c.sourceArtworkId, c.status])).toEqual([['a', fav, 'ready']])
     const reviewed = draft.compositions[0].compositionId!; await approveComposition(r.deps, U1, sid, reviewed); const made = r.compose.mock.calls.length
     await pay(r, sid)

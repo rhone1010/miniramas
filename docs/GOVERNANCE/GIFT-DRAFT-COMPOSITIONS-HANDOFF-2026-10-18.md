@@ -16,7 +16,7 @@ Status: implemented and tested on the in-memory store; NOT deployed. Migration 0
 1. Call ensure/approve/mockup before checkout (no order). Show `compositions[].status` (`ready` -> approve -> `approved`) and the mockup per line.
 2. Handle 409 `compositions_not_approved` at checkout (go back to review) and 409 `composition_geometry_mismatch` on mockup/approve (technical recovery; an operator repairs it, the page offers nothing).
 3. After a repair the line returns to `ready` with a new `compositionId`; a page holding the old id gets 409 `stale_composition` from the mockup route. The customer approves the new one.
-4. Checkout must send disclosure `2026-10-18-2` (held, separate) and the page must show the exact text from the response.
+4. Checkout sends disclosure `2026-10-18-3` and the page shows the exact text.
 5. Do not enable `GIFT_COMPOSITIONS_BEFORE_PAYMENT` until the page does steps 1-2; with it off the old order (checkout, then compose) still works.
 
 ## Corrections (final)
@@ -24,8 +24,8 @@ Status: implemented and tested on the in-memory store; NOT deployed. Migration 0
 - Technical repairs (operator-only) never use it. After a repair the line is `ready` again and `correctionsRemaining` is unchanged.
 - No cap is placed on product compositions: one per selected product, compatible compositions are shared and reused (same shape + artwork), including after switching the favorite away and back.
 
-## Switch
-`GIFT_COMPOSITIONS_BEFORE_PAYMENT` now defaults ON (set `0` to disable). Checkout therefore returns 409 `compositions_not_approved` until every line is approved: the backend and the page that reviews compositions before checkout MUST deploy together. Backend and frontend must also ship disclosure `2026-10-18-2` with identical text.
+## Switch (final)
+The approved customer sequence is: Photo, Effects, 6+6 free previews, Favorite, Select products, Stripe test checkout, Generate product compositions, Clean product mockup review, Individual approval; manufacturing release is a separate explicit action. Composing BEFORE payment (everything above about drafts) is therefore an optional capability that is OFF: it turns on only with `GIFT_COMPOSITIONS_BEFORE_PAYMENT=1` (both `draftCompositions` and `requireReviewedCompositions`). With it off, compose/approve/correct/mockup need a paid order exactly as before, and checkout does not look at compositions. Disclosure `2026-10-18-3` describes this sequence.
 
 ## Decisions left
 - Draft mockups show the catalog product as of now; checkout then freezes it. If the catalog geometry changed in between, the composition fails the shape check and the customer is asked to review again.

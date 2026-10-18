@@ -126,10 +126,10 @@ describe('authorization', () => {
     const r = rig(); const mine = await ready(r, [L12]); const other = await ready(r, [{ lineId: 'zz', productId: 'canvas:8x8', copies: 1 }], {}); void other
     await expect(getLineMockup(r.deps, U1, mine.sid, 'zz')).rejects.toMatchObject({ code: 'line_not_found' })
   })
-  it('before payment there is no line to show; after payment a refund request or a refund blocks it', async () => {
+  it('needs a paid order: no order refuses; after payment a refund request or a refund blocks it', async () => {
     const r = rig(); const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
     const v = await createSession(r.deps, { userId: U1, imageB64: photo })
-    await expect(getLineMockup(r.deps, U1, v.sessionId, 'a')).rejects.toMatchObject({ code: 'line_not_found' })        // no order and no chosen lines: nothing to show (a draft with lines is covered below)
+    await expect(getLineMockup(r.deps, U1, v.sessionId, 'a')).rejects.toMatchObject({ code: 'order_payment_required' })
     const p = await ready(r, [L12]); const rec = r.store.sessions.get(p.sid)!
     rec.refund_requested_at = new Date().toISOString(); await expect(getLineMockup(r.deps, U1, p.sid, 'a')).rejects.toMatchObject({ code: 'refund_pending' })
     rec.refund_requested_at = null; rec.refunded_at = new Date().toISOString(); await expect(getLineMockup(r.deps, U1, p.sid, 'a')).rejects.toMatchObject({ code: 'order_refunded' })
@@ -470,6 +470,9 @@ describe('clean mockups after verified payment', () => {
     const r = rig(); const { sid } = await ready(r, [L12]); await getLineMockup(r.deps, U1, sid, 'a')
     expect(r.store.compositions[0].status).toBe('ready')                                                  // viewing approves nothing
     await expect(approveOrder(r.deps, U1, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })
+  })
+})
+
 
 describe('operator repair of a composition that fails the frozen-product shape check', () => {
   const OP = 'operator@liten.test'
@@ -625,7 +628,7 @@ describe('repair under concurrency and interruption', () => {
 
 describe('draft compositions (reviewed before payment, no order yet)', () => {
   it('shows a draft composition on the catalog product, repairs a defective one with no order, and releases nothing', async () => {
-    const r = rig({ series: 'groups', people: 4 }); const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
+    const r = rig({ series: 'groups', people: 4 }); r.deps.draftCompositions = true; const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
     const v = await createSession(r.deps, { userId: U1, imageB64: photo }); await setLines(r.deps, U1, v.sessionId, [L12])
     const b = await startBatch(r.deps, U1, v.sessionId, { idempotencyKey: 'idem-key-1' }); await selectArtwork(r.deps, U1, v.sessionId, b.batch.previews[0].previewId)
     await ensureCompositions(r.deps, U1, v.sessionId); expect(r.store.orders.size).toBe(0)
