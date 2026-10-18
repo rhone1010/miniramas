@@ -1,0 +1,36 @@
+/* Two-fold Gifts introduction, using the existing homepage design system. */
+html:has(.gifts-page){scroll-snap-type:none}
+.gifts-page .hp-header nav a[aria-current="page"]{background:var(--oxblood);border-color:var(--oxblood);color:var(--vellum)}
+.gift-hero{background:var(--vellum)}
+.gift-hero-photo picture,.gift-hero-photo img{display:block;width:100%;height:auto}
+.gift-fold-copy{display:flex;align-items:center;justify-content:space-between;gap:32px;padding-block:28px}
+.gift-fold-copy h1,.gift-fold-copy h2{font-size:clamp(36px,3.4vw,58px)}
+.gift-fold-copy p{font:24px/1.35 var(--serif);color:var(--ink-soft);margin:12px 0 0}
+.gift-fold-copy .hp-cta{flex-shrink:0;min-height:48px;font-size:24px}
+.gift-availability{font:12px/1.5 var(--sans);color:var(--ink-soft);padding-bottom:16px;margin-block:0}
+.gift-proof{padding-top:40px;padding-bottom:16px}
+.gift-proof-images{display:grid;grid-template-columns:1.66fr 1.2fr;gap:24px;align-items:center}
+.gift-proof-images img{display:block;width:100%;height:auto;object-fit:contain}
+.gift-footer{padding-block:20px;display:flex;align-items:center;justify-content:space-between;gap:24px;border-top:1px solid var(--hairline)}
+.gift-footer p{font:22px var(--serif);color:var(--ink-soft)}
+@media(min-width:1001px){
+ .gift-hero-photo img{max-height:calc(100svh - 300px);object-fit:contain}
+ .gift-proof-images{height:calc(100svh - 330px);min-height:220px}
+ .gift-proof-images figure{height:100%;min-height:0}
+ .gift-proof-images img{height:100%;max-height:100%}
+}
+@media(max-width:1000px){
+ .gift-hero-photo picture{max-width:540px;margin-inline:auto}
+ .gift-fold-copy{align-items:flex-start;flex-direction:column;gap:24px;padding-block:28px}
+ .gift-proof-images{gap:16px}
+ .gift-proof{padding-top:32px}
+}
+@media(max-width:600px){
+ .gifts-page .hp-header{position:relative;align-items:flex-start;flex-direction:column;gap:8px;padding:12px 6%}
+ .gifts-page .hp-header nav{gap:6px}
+ .gifts-page .hp-header nav a{font-size:18px;padding:.5rem .7rem}
+ .gift-fold-copy p{font-size:22px}
+ .gift-proof-images{grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+ .gift-proof-images img{aspect-ratio:1;object-fit:cover}
+ .gift-footer{align-items:flex-start;flex-direction:column;gap:0}
+}

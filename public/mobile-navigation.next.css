@@ -1,0 +1,36 @@
+/* Existing community masthead controls: community.html 259–265 and 281–292. */
+.liten-mobile-navigation{display:none}
+@media(max-width:1000px){
+.mh-menu{
+  display:none; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:var(--r-card);
+  background:var(--coffee-700); border:1px solid var(--card-line);
+  color:var(--vellum-100); cursor:pointer;
+}
+.mh-menu svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6 }
+.mh-drawer{
+  position:absolute; top:var(--mh-h); left:0; right:0;
+  background:var(--espresso); border-bottom:1px solid var(--card-line);
+  padding:12px 0 20px; display:flex; flex-direction:column;
+  z-index:59;
+}
+.mh-drawer a{
+  text-decoration:none; color:var(--vellum-300);
+  font-family:var(--serif); font-size:1.8em; font-weight:400;
+  padding:12px var(--stage-gutter);
+}
+.mh-drawer a.on{ color:var(--gold) }
+.hp-header>*,.gift-header>*{display:none!important}
+.hp-header,.gifts-page .hp-header,.gift-header,body:has(#screen) .gift-header{height:64px;min-height:64px;padding:8px 20px;display:block;position:relative;z-index:60}
+.hp-header>.liten-mobile-navigation,.gift-header>.liten-mobile-navigation{display:flex!important;align-items:center;justify-content:space-between;height:48px;--r-card:8px;--coffee-700:#332620;--card-line:rgba(196,169,110,.28);--vellum-100:#f8f4eb;--vellum-300:#e9dec8;--gold:#b68a53;--espresso:#26201a;--mh-h:100%;--stage-gutter:20px;--serif:'Cormorant Garamond',Georgia,serif}
+.liten-mobile-navigation .mh-menu{display:flex;flex-shrink:0;padding:0}
+.liten-mobile-navigation>a{display:flex;align-items:center;min-height:44px}
+.liten-mobile-navigation img{display:block;width:80px;height:48px;object-fit:contain;filter:none}
+.gift-header .liten-mobile-navigation{--serif:Cormorant,Georgia,serif}
+.gift-header .liten-mobile-navigation img{filter:brightness(0) invert(1)}
+.liten-mobile-navigation .mh-drawer{display:flex;gap:0;align-items:stretch;max-height:calc(100dvh - 64px);overflow-y:auto}
+.liten-mobile-navigation .mh-drawer[hidden]{display:none}
+.liten-mobile-navigation .mh-drawer a{display:block;text-align:left;border:0;border-radius:0;background:transparent;font-style:normal;font-size:24px;min-height:48px;line-height:1.2}
+.liten-mobile-navigation .mh-drawer a[aria-current]{color:var(--gold)}
+.liten-mobile-navigation :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+}

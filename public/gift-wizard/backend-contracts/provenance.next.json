@@ -1,0 +1,32 @@
+[
+  {
+    "commit": "8bbcff8c9522066c567f506fec1bd7d8f6a51c09",
+    "source": "lib/v1/gift/types.ts",
+    "destination": "public\\gift-wizard\\backend-contracts\\gift\\types.ts",
+    "sourceLines": [
+      1,
+      270
+    ],
+    "destinationLines": [
+      1,
+      270
+    ],
+    "sha256": "82e703dad5696a2523436aec6e3d590a93a371981025cb05ce1f2527c021ea23",
+    "deviations": []
+  },
+  {
+    "commit": "8bbcff8c9522066c567f506fec1bd7d8f6a51c09",
+    "source": "lib/v1/print/catalog-types.ts",
+    "destination": "public\\gift-wizard\\backend-contracts\\print\\catalog-types.ts",
+    "sourceLines": [
+      1,
+      97
+    ],
+    "destinationLines": [
+      1,
+      97
+    ],
+    "sha256": "4a9365ae8fa60a221be8d04a4e5215d82384fbde41ed3a69340515758555f725",
+    "deviations": []
+  }
+]

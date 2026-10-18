@@ -44,6 +44,15 @@ function scrollToPurchases(){
   })();
 }
 function init(){
+  // Reuse the existing series menu items on desktop and mobile.
+  document.querySelectorAll('.mh-series-menu').forEach(function(panel){
+    var source = panel.querySelector('a[href="/groups"]');
+    if (!source || panel.querySelector('a[href="/gifts.next.html"]')) return;
+    var gift = source.cloneNode(true);
+    gift.removeAttribute('id'); gift.removeAttribute('aria-current');
+    gift.href = '/gifts.next.html'; gift.textContent = 'Gifts';
+    panel.appendChild(gift);
+  });
   var path = location.pathname;
   var here = path === '/groups' ? '/groups' : /^\/pets/.test(path) ? '/pets' : (path === '/' || path === '/discovery' || path === '/portraits') ? '/' : '';
   [].slice.call(document.querySelectorAll('.mh-fm .mh-series-btn')).forEach(function(btn){
