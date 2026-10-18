@@ -10,7 +10,7 @@ import { giftRenderId, isGiftOrder, parseGiftRenderId } from './order-kind'
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '10000000-0000-4000-8000-000000000002'
 const ADDRESS = { name: 'Ada Lovelace', line1: '1 Main St', city: 'Sonoma', state: 'CA', postcode: '95476', countryCode: 'us' }
-const BODY = { email: 'ada@example.test', shippingAddress: ADDRESS, disclosureAccepted: true as const, disclosureVersion: '2026-10-18-1', returnPath: '/gift-wizard' as const }
+const BODY = { email: 'ada@example.test', shippingAddress: ADDRESS, disclosureAccepted: true as const, disclosureVersion: '2026-10-18-2', returnPath: '/gift-wizard' as const }
 
 function rig(over: { shippingAmount?: string; canFulfil?: boolean; sandbox?: boolean } = {}) {
   const store = memoryGiftStore()
@@ -327,7 +327,11 @@ Once you've chosen your favorite artwork, you can select and purchase the gifts 
 
 After payment, you'll review how your artwork looks on each purchased product and approve the final composition before production begins.
 
-Nothing is printed or manufactured until you approve your gifts.`
+Nothing is printed or manufactured until you approve your gifts.
+
+After purchasing physical gifts, you may request a full refund through Concierge until your order is submitted to our print partner. Once submitted, the order is no longer eligible for this refund.
+
+Additional artwork preview packs are separate purchases and are not included in physical-product refunds.`
 
 describe('previews before purchase: checkout needs a saved favorite', () => {
   it('refuses checkout until the customer has chosen a favorite, before any quote, Stripe session or order; works once one is saved', async () => {
@@ -340,19 +344,19 @@ describe('previews before purchase: checkout needs a saved favorite', () => {
   })
 })
 
-describe('purchase disclosure 2026-10-18-1', () => {
+describe('purchase disclosure 2026-10-18-2', () => {
   const order = (r: ReturnType<typeof rig>) => [...r.store.orders.values()][0]
   it('is exactly the approved wording and version, and the same text goes to Stripe and back to the page', async () => {
-    expect(DISCLOSURE).toEqual({ version: '2026-10-18-1', text: APPROVED_TEXT })
+    expect(DISCLOSURE).toEqual({ version: '2026-10-18-2', text: APPROVED_TEXT })
     const r = rig(); const sid = await sessionWithLines(r); const out = await checkout(r, sid)
     expect(out.disclosure).toEqual(DISCLOSURE); expect(r.sessions.get(out.stripeSessionId).params.custom_text.submit.message).toBe(APPROVED_TEXT)
-    expect(r.sessions.get(out.stripeSessionId).metadata.disclosure).toBe('2026-10-18-1'); expect(APPROVED_TEXT.length).toBeLessThan(1200)       // Stripe's limit for the submit message
+    expect(r.sessions.get(out.stripeSessionId).metadata.disclosure).toBe('2026-10-18-2'); expect(APPROVED_TEXT.length).toBeLessThan(1200)       // Stripe's limit for the submit message
   })
   it('requires the version with the acceptance: missing, empty, non-string, stale and invented versions are refused before any quote, Stripe session or order', async () => {
     const r = rig(); const sid = await sessionWithLines(r)
     const { disclosureVersion: _v, ...noVersion } = BODY
     for (const body of [noVersion, { ...BODY, disclosureVersion: '' }, { ...BODY, disclosureVersion: 20261017 }, { ...BODY, disclosureVersion: null }]) await expect(checkout(r, sid, body)).rejects.toMatchObject({ code: 'disclosure_version_required', status: 400 })
-    for (const v of ['2026-10-16-1', '2026-10-17-1', '2026-10-19-1', 'latest', ' 2026-10-18-1']) await expect(checkout(r, sid, { ...BODY, disclosureVersion: v })).rejects.toMatchObject({ code: 'disclosure_version_mismatch', status: 409 })
+    for (const v of ['2026-10-16-1', '2026-10-17-1', '2026-10-18-1', '2026-10-19-1', 'latest', ' 2026-10-18-2']) await expect(checkout(r, sid, { ...BODY, disclosureVersion: v })).rejects.toMatchObject({ code: 'disclosure_version_mismatch', status: 409 })
     await expect(checkout(r, sid, { ...BODY, disclosureAccepted: false })).rejects.toMatchObject({ code: 'disclosure_required' })
     expect(r.quote).not.toHaveBeenCalled(); expect(r.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(r.store.orders.size).toBe(0)
   })
@@ -366,7 +370,7 @@ describe('purchase disclosure 2026-10-18-1', () => {
     const r = rig(); const sid = await sessionWithLines(r); const a = await checkout(r, sid)
     r.sessions.get(a.stripeSessionId).metadata.disclosure = '2026-10-17-1'
     const b2 = await checkout(r, sid)
-    expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(r.sessions.get(a.stripeSessionId).status).toBe('expired'); expect(r.sessions.get(b2.stripeSessionId).metadata.disclosure).toBe('2026-10-18-1')
+    expect(b2.stripeSessionId).not.toBe(a.stripeSessionId); expect(r.sessions.get(a.stripeSessionId).status).toBe('expired'); expect(r.sessions.get(b2.stripeSessionId).metadata.disclosure).toBe('2026-10-18-2')
   })
   it('existing acceptance timestamps and version records are preserved: a replacement checkout never rewrites what the session recorded when its order was first created', async () => {
     const r = rig(); const sid = await sessionWithLines(r); await checkout(r, sid)
@@ -376,7 +380,7 @@ describe('purchase disclosure 2026-10-18-1', () => {
   })
   it('the first checkout records the accepted version and a timestamp on the session; nothing else about refunds, prices or entitlements changed', async () => {
     const r = rig(); const sid = await sessionWithLines(r); const out = await checkout(r, sid)
-    const rec = (await r.store.getSession(sid, U1))!; expect(rec.disclosure_version).toBe('2026-10-18-1'); expect(rec.disclosure_accepted_at).toBeTruthy()
+    const rec = (await r.store.getSession(sid, U1))!; expect(rec.disclosure_version).toBe('2026-10-18-2'); expect(rec.disclosure_accepted_at).toBeTruthy()
     expect(out.totals.shippingCents).toBe(685); expect(out.totals.totalCents).toBe(out.totals.itemsCents + 685)
     r.pay(out.stripeSessionId); await confirmGiftOrder(r.deps, out.stripeSessionId, U1); expect((await r.store.getSession(sid, U1))!.free_batches_granted).toBe(2)
   })

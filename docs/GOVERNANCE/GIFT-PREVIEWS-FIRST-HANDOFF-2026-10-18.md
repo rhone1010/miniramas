@@ -73,17 +73,19 @@ Limits (approved): 2 free batches per session; 2 per photograph across sessions;
 
 **Photo analysis rate limit (migration 051).** Every session-creation attempt is counted BEFORE the paid analysis runs, in a ledger with no link to sessions (deleting or recreating sessions cannot reset it) and atomically per account: 10 per hour and 30 per 24 hours per account, and 5 per 24 hours per account and photograph. Failed analyses (unsupported subject, outage) count; an invalid or oversized upload refused by validation does not. Over the limit: `429 { error: 'rate_limited' }` and no analysis is run. The numbers are `SESSION_ATTEMPTS` in `policy.ts` (function parameters, no migration needed to change them).
 
-**Disclosure `2026-10-18-1`** (authoritative: `DISCLOSURE` in `lib/v1/gift/orders.ts`; the page must send this version): "Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.
+**Disclosure `2026-10-18-2`** (authoritative: `DISCLOSURE` in `lib/v1/gift/orders.ts`; the page must send this version): "Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.
 
 Once you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.
 
 After payment, you'll review how your artwork looks on each purchased product and approve the final composition before production begins.
 
-Nothing is printed or manufactured until you approve your gifts." Stale or missing versions are refused (`400 disclosure_version_required`, `409 disclosure_version_mismatch`) before any Stripe session is created or reused; sessions already recorded under older versions keep their records.
+Nothing is printed or manufactured until you approve your gifts.\n\nAfter purchasing physical gifts, you may request a full refund through Concierge until your order is submitted to our print partner. Once submitted, the order is no longer eligible for this refund.
+
+Additional artwork preview packs are separate purchases and are not included in physical-product refunds." Stale or missing versions are refused (`400 disclosure_version_required`, `409 disclosure_version_mismatch`) before any Stripe session is created or reused; sessions already recorded under older versions keep their records.
 
 **Refund behavior that conflicts with the new sequence (reported; nothing changed):**
-1. The refund policy text in `lib/v1/gift/refund.ts` and the Concierge message describe eligibility as "dissatisfied after reviewing their included previews". Previews now come BEFORE payment, so that trigger no longer describes the customer's situation.
+1. RESOLVED: refund wording now follows the approved policy (full refund through Concierge until the order is submitted to Prodigi; $2.99 preview packs excluded; My Collection artwork stays unlocked). The same text is the last paragraphs of disclosure `2026-10-18-2` (`REFUND_POLICY_TEXT` in `refund.ts`). Backend and frontend must ship that version and exact text together.
 2. The new disclosure no longer mentions refunds at all (the previous one did), so customers are not told one exists.
 3. The implementation itself is unchanged and unconditional: a refund can be requested once an order is paid and until it is placed with the lab (`refund_not_available_after_manufacturing` afterwards); nothing ties it to previews.
 
-**Contract for Codex:** see section 4 for entitlement and nextBatch; add: `POST /api/v1/gift/sessions` may answer `429 rate_limited`; checkout `disclosureVersion` must be `2026-10-18-1`.
+**Contract for Codex:** see section 4 for entitlement and nextBatch; add: `POST /api/v1/gift/sessions` may answer `429 rate_limited`; checkout `disclosureVersion` must be `2026-10-18-2`.

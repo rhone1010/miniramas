@@ -51,10 +51,10 @@ describe('the refund request (Concierge)', () => {
     const r = rig(); const { sid } = await paid(r)
     const out = await requestRefund(r.deps, U1, sid, '')
     const body: string = r.messages.get(out.requestId).body
-    expect(body).toMatch(/full refund of the physical-product purchase/); expect(body).toMatch(/until the order enters manufacturing/)
+    expect(body).toMatch(/full refund of the physical-product purchase/); expect(body).toMatch(/until the order is submitted to the print partner/)
     expect(body).toMatch(/first twelve previews are free and came before the purchase/); expect(body).toMatch(/issued in Stripe by a person/)
     expect(body).not.toMatch(/dissatisfied|included previews|recorded automatically\.$/)
-    expect(REFUND_POLICY_TEXT).toBe('After purchase, you may request a full refund of your gifts through Concierge until your order enters manufacturing. Once manufacturing begins, this refund is no longer available.')
+    expect(REFUND_POLICY_TEXT).toBe('After purchasing physical gifts, you may request a full refund through Concierge until your order is submitted to our print partner. Once submitted, the order is no longer eligible for this refund.\n\nAdditional artwork preview packs are separate purchases and are not included in physical-product refunds.')
     expect(REFUND_CUSTOMER_MESSAGE).not.toMatch(/dissatisfied|automatic refund/i)
   })
   it('is idempotent: asking again returns the same request and creates no second message', async () => {
