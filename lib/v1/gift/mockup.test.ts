@@ -6,10 +6,10 @@ import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
 import { createSession, setLines, startBatch, getSessionView, purgeExpired, type GiftDeps } from './service'
 import { memoryGiftStore } from './store'
-import { selectArtwork, ensureCompositions, correctLine, approveComposition } from './compose'
+import { selectArtwork, ensureCompositions, correctLine, approveComposition, approveOrder } from './compose'
 import fs from 'node:fs'
 import { mockupH } from './handlers'
-import { getLineMockup, mockupIdentityKey, pictureArea, templateFor, MOCKUP_URL_SECONDS, type MockupRenderer } from './mockup'
+import { getLineMockup, mockupIdentityKey, pictureArea, templateFor, MOCKUP_URL_SECONDS, MOCKUP_MAX_EDGE, type MockupRenderer } from './mockup'
 import { compositionFitsProduct, freezeLine, resolveFrozenProduct } from './frozen'
 import { adaptationValidationFor } from './policy'
 import { correctionPlanFor, planFor } from './composition-plan'
@@ -71,17 +71,17 @@ const L12 = { lineId: 'a', productId: 'fine_art:12x18', copies: 1 }, C8 = { line
 const mockupFiles = (r: ReturnType<typeof rig>) => [...r.files.keys()].filter(k => k.includes('/mockups/'))
 
 describe('the mockup response', () => {
-  it('returns a watermarked, signed product mockup for the current composition, with the identity and an explicit non-authorization', async () => {
+  it('returns a CLEAN (unwatermarked), signed product mockup for a paid line, with the identity and an explicit non-authorization', async () => {
     const r = rig(); const { sid, orderId } = await ready(r, [L12])
     const wm = r.watermark.mock.calls.length
     const m = await getLineMockup(r.deps, U1, sid, 'a')
     const comp = r.store.compositions[0]
     expect(m).toMatchObject({ contractVersion: 1, lineId: 'a', productId: 'fine_art:12x18', sku: 'GLOBAL-FAP-12X18', compositionId: comp.id, attempt: 1, compositionStatus: 'ready', sourceArtworkId: comp.preview_id,
-      templateId: 'fine-art', geometrySource: 'frozen', frozenCatalogVersion: 'test-catalog', cached: false, watermarked: true, productionPrintFile: false, purchaseAuthorization: false, width: 300, height: 200 })
+      templateId: 'fine-art', geometrySource: 'frozen', frozenCatalogVersion: 'test-catalog', cached: false, watermarked: false, productionPrintFile: false, purchaseAuthorization: false, width: 300, height: 200 })
     expect(m.url).toMatch(/^https:\/\/signed\.test\/gift\/.+\/mockups\/[0-9a-f]{64}\.jpg\?ttl=900$/); expect(m.identityKey).toMatch(/^[0-9a-f]{64}$/)
     expect(Date.parse(m.urlExpiresAt)).toBeGreaterThan(Date.now()); expect(MOCKUP_URL_SECONDS).toBe(900)
-    expect(await sharp(r.files.get(`gift/${sid}/mockups/${m.identityKey}.jpg`)!).metadata()).toMatchObject({ format: 'jpeg' })      // stored as a watermarked JPEG
-    expect(r.watermark.mock.calls.length).toBe(wm + 1); expect(orderId).toBeTruthy()
+    expect(await sharp(r.files.get(`gift/${sid}/mockups/${m.identityKey}.jpg`)!).metadata()).toMatchObject({ format: 'jpeg' })      // stored as a JPEG
+    expect(r.watermark.mock.calls.length).toBe(wm); expect(orderId).toBeTruthy()                                       // paid: nothing is watermarked
   })
   it('hands the renderer the CLEAN composed artwork in memory and never returns or stores a clean file next to the mockup', async () => {
     const r = rig(); const { sid } = await ready(r, [L12])
@@ -94,7 +94,7 @@ describe('the mockup response', () => {
     const r = rig(); const { sid } = await ready(r, [L12])
     const wm = r.watermark.mock.calls.length
     const a = await getLineMockup(r.deps, U1, sid, 'a'), b = await getLineMockup(r.deps, U1, sid, 'a')
-    expect(r.render).toHaveBeenCalledTimes(1); expect(r.watermark.mock.calls.length).toBe(wm + 1); expect([a.cached, b.cached]).toEqual([false, true]); expect(b.identityKey).toBe(a.identityKey)
+    expect(r.render).toHaveBeenCalledTimes(1); expect(r.watermark.mock.calls.length).toBe(wm); expect([a.cached, b.cached]).toEqual([false, true]); expect(b.identityKey).toBe(a.identityKey)
     expect(mockupFiles(r).length).toBe(1)
   })
   it('concurrent calls are safe: the same identity, one stored file', async () => {
@@ -184,8 +184,9 @@ describe('invalidation and retry', () => {
     r.state.mismatch = true; await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_configuration_mismatch' }); expect(mockupFiles(r).length).toBe(0)
     r.state.mismatch = false; expect((await getLineMockup(r.deps, U1, sid, 'a')).cached).toBe(false); expect(mockupFiles(r).length).toBe(1)
   })
-  it('the watermark fails closed: no mockup is stored or returned unmarked', async () => {
-    const r = rig(); const { sid } = await ready(r, [L12]); r.watermark.mockRejectedValueOnce(new Error('wm'))
+  it('an image that cannot be encoded is a 502 and nothing is stored', async () => {
+    const r = rig(); const { sid } = await ready(r, [L12]); const p = getProduct('fine_art:12x18')!
+    r.render.mockResolvedValueOnce({ png: Buffer.from('not an image'), width: 300, height: 200, visualizationKey: 'vk', configuration: { sku: p.sku, requiredPx: p.requirements.finalPx }, crop: { fit: 'cover', allowCrop: false } })
     await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_failed' }); expect(mockupFiles(r).length).toBe(0)
   })
   it('without a renderer the endpoint says so (503) and nothing else changes', async () => {
@@ -201,11 +202,11 @@ describe('invalidation and retry', () => {
 
 describe('the identity is a pure function of what the picture depends on', () => {
   const p = getProduct('fine_art:12x18')!
-  const base = { orderId: 'o', lineId: 'a', lineIndex: 0, compositionId: 'c1', attempt: 1, sourceArtworkId: 'p1', artworkSha256: 'h', templateId: 'fine-art', templateRevision: 'r', product: p, geometrySource: 'frozen', frozenCatalogVersion: 'v' }
+  const base = { orderId: 'o', lineId: 'a', lineIndex: 0, compositionId: 'c1', attempt: 1, sourceArtworkId: 'p1', artworkSha256: 'h', templateId: 'fine-art', templateRevision: 'r', product: p, geometrySource: 'frozen', frozenCatalogVersion: 'v', clean: true }
   it('is stable for the same inputs and changes with each input', () => {
     const k = mockupIdentityKey(base); expect(mockupIdentityKey({ ...base })).toBe(k)
     for (const change of [{ orderId: 'o2' }, { lineId: 'b' }, { lineIndex: 1 }, { compositionId: 'c2' }, { attempt: 2 }, { sourceArtworkId: 'p2' }, { artworkSha256: 'h2' }, { templateId: 'premium-fine-art' }, { templateRevision: 'r2' },
-      { product: getProduct('fine_art:8x12')! }, { product: { ...p, attributes: { ...p.attributes, paperType: 'X' } } }, { geometrySource: 'legacy_catalog' }, { frozenCatalogVersion: 'v2' }]) {
+      { product: getProduct('fine_art:8x12')! }, { product: { ...p, attributes: { ...p.attributes, paperType: 'X' } } }, { geometrySource: 'legacy_catalog' }, { frozenCatalogVersion: 'v2' }, { clean: false }]) {
       expect(mockupIdentityKey({ ...base, ...change } as any), JSON.stringify(Object.keys(change))).not.toBe(k)
     }
   })
@@ -364,7 +365,7 @@ describe('the HTTP layer', () => {
   it('answers 200 no-store with the MockupView for the owner, passing the expected composition id through', async () => {
     const r = rig(); const { sid } = await ready(r, [L12])
     const ok = await mockupH(req(), { id: U1 }, r.deps, sid, 'a'); expect(ok.status).toBe(200); expect(ok.headers.get('Cache-Control')).toBe('no-store')
-    const body = await ok.json(); expect(body).toMatchObject({ lineId: 'a', watermarked: true, purchaseAuthorization: false })
+    const body = await ok.json(); expect(body).toMatchObject({ lineId: 'a', watermarked: false, purchaseAuthorization: false })
     const stale = await mockupH(req('?compositionId=00000000-0000-4000-8000-000000000000'), { id: U1 }, r.deps, sid, 'a'); expect([stale.status, (await stale.json()).error]).toEqual([409, 'stale_composition'])
     const good = await mockupH(req('?compositionId=' + body.compositionId), { id: U1 }, r.deps, sid, 'a'); expect(good.status).toBe(200)
   })
@@ -390,11 +391,12 @@ describe('a mockup failure is diagnosable from the server log, and never leaks t
     expect(line).toContain('renderer failed'); expect(line).toContain('template=fine-art'); expect(line).toContain('sku=GLOBAL-FAP-12X18'); expect(line).toContain('ENOENT'); expect(line).toContain('catalog.next.json')
     expect(line).not.toMatch(/base64|\.png|gift\/[0-9a-f-]{36}\//); spy.mockRestore()
   })
-  it('names the watermark and signing stages too', async () => {
-    const r = rig(); const { sid } = await ready(r, [L12]); const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    r.watermark.mockRejectedValueOnce(new Error('wm boom')); await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_failed' })
+  it('names the encode and signing stages too', async () => {
+    const r = rig(); const { sid } = await ready(r, [L12]); const spy = vi.spyOn(console, 'error').mockImplementation(() => {}); const p = getProduct('fine_art:12x18')!
+    r.render.mockResolvedValueOnce({ png: Buffer.from('not an image'), width: 300, height: 200, visualizationKey: 'vk', configuration: { sku: p.sku, requiredPx: p.requirements.finalPx }, crop: { fit: 'cover', allowCrop: false } })
+    await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_failed' })
     r.deps.storage.signedUrl = async () => null; await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'mockup_failed' })
-    const lines = spy.mock.calls.map(c => String(c[0])).filter(l => l.includes('[gift/mockup]')); expect(lines.some(l => l.includes('watermark failed') && l.includes('wm boom'))).toBe(true); expect(lines.some(l => l.includes('sign failed'))).toBe(true); spy.mockRestore()
+    const lines = spy.mock.calls.map(c => String(c[0])).filter(l => l.includes('[gift/mockup]')); expect(lines.some(l => l.includes('encode failed'))).toBe(true); expect(lines.some(l => l.includes('sign failed'))).toBe(true); spy.mockRestore()
   })
 })
 
@@ -428,5 +430,45 @@ describe('the purchased orientation is fixed (landscape artwork, portrait produc
     const fa = getProduct('fine_art:12x18')!, canvas = getProduct('canvas:12x12')!
     expect(compositionFitsProduct({ width: 1050, height: 1575 }, fa)).toBe(true); expect(compositionFitsProduct({ width: 1575, height: 1050 }, fa)).toBe(false)
     expect(compositionFitsProduct({ width: 1000, height: 1000 }, canvas)).toBe(true); expect(compositionFitsProduct({ width: null, height: null }, fa)).toBe(true)
+  })
+})
+
+describe('clean mockups after verified payment', () => {
+  it('the 6+6 free previews stay watermarked: producing a clean mockup never touches the watermark path or the preview files', async () => {
+    const r = rig(); const { sid } = await ready(r, [L12]); const marked = r.watermark.mock.calls.length
+    expect(marked).toBeGreaterThanOrEqual(6)                                                             // the batch of six was watermarked when it was generated
+    await getLineMockup(r.deps, U1, sid, 'a'); expect(r.watermark.mock.calls.length).toBe(marked)
+    const view = await getSessionView(r.deps, U1, sid); expect(view.batches[0].previews.every(p => p.status === 'ready' && !!p.url)).toBe(true)
+    for (const p of r.store.previews) expect(p.preview_path).toMatch(/preview/)                          // the customer-facing preview path, not the master
+  })
+  it('delivers a bounded product scene as a JPEG, never the production-resolution file, the clean composition or a master URL', async () => {
+    const r = rig(); const { sid } = await ready(r, [L12]); const p = getProduct('fine_art:12x18')!
+    r.render.mockResolvedValueOnce({ png: await sharp({ create: { width: 4000, height: 2600, channels: 3, background: '#cba' } }).png().toBuffer(), width: 4000, height: 2600, visualizationKey: 'vk',
+      configuration: { sku: p.sku, requiredPx: p.requirements.finalPx }, crop: { fit: 'cover', allowCrop: false } })
+    const m = await getLineMockup(r.deps, U1, sid, 'a'); const meta = await sharp(r.files.get(`gift/${sid}/mockups/${m.identityKey}.jpg`)!).metadata()
+    expect(meta.format).toBe('jpeg'); expect(Math.max(meta.width!, meta.height!)).toBeLessThanOrEqual(MOCKUP_MAX_EDGE); expect(MOCKUP_MAX_EDGE).toBeLessThan(p.requirements.finalPx.h)
+    expect(m.url).toMatch(/\/mockups\/[0-9a-f]{64}\.jpg\?ttl=900$/); expect(JSON.stringify(m)).not.toMatch(/composed_path|master|compositions\/|\.png/)
+    expect(m).toMatchObject({ watermarked: false, productionPrintFile: false, purchaseAuthorization: false, width: 4000 })
+  })
+  it('is only for the owner of a paid, unrefunded line: strangers, unpaid orders, other lines, and refund states get no image', async () => {
+    const r = rig(); const { sid, orderId } = await ready(r, [L12]); const calls = r.render.mock.calls.length
+    await expect(getLineMockup(r.deps, '10000000-0000-4000-8000-000000000002', sid, 'a')).rejects.toMatchObject({ code: 'session_not_found' })
+    await expect(getLineMockup(r.deps, U1, sid, 'zzz')).rejects.toMatchObject({ code: 'line_not_found' })
+    const rec = r.store.sessions.get(sid)!
+    rec.refund_requested_at = new Date().toISOString(); await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'refund_pending' }); rec.refund_requested_at = null
+    rec.refunded_at = new Date().toISOString(); await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'order_refunded' }); rec.refunded_at = null
+    const order = r.store.orders.get(orderId)!; order.status = 'created'; order.paid_at = null
+    await expect(getLineMockup(r.deps, U1, sid, 'a')).rejects.toMatchObject({ code: 'order_not_paid' })
+    expect(r.render.mock.calls.length).toBe(calls); expect(mockupFiles(r).length).toBe(0)                  // nothing rendered or stored for any of them
+  })
+  it('a watermarked and a clean mockup never share an identity, so a cached one is never served in the other state', () => {
+    const p = getProduct('fine_art:12x18')!
+    const base = { orderId: 'o', lineId: 'a', lineIndex: 0, compositionId: 'c1', attempt: 1, sourceArtworkId: 'p1', artworkSha256: 'h', templateId: 'fine-art', templateRevision: 'r', product: p, geometrySource: 'frozen', frozenCatalogVersion: 'v' }
+    expect(mockupIdentityKey({ ...base, clean: true })).not.toBe(mockupIdentityKey({ ...base, clean: false }))
+  })
+  it('the composition approval and release safeguards are unchanged by seeing a clean mockup', async () => {
+    const r = rig(); const { sid } = await ready(r, [L12]); await getLineMockup(r.deps, U1, sid, 'a')
+    expect(r.store.compositions[0].status).toBe('ready')                                                  // viewing approves nothing
+    await expect(approveOrder(r.deps, U1, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })
   })
 })

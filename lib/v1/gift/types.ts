@@ -273,7 +273,8 @@ export interface MockupView {
   height: number
   /** true when an existing mockup with the same identity was re-signed and nothing was rendered. */
   cached: boolean
-  watermarked: true
+  /** false for a purchased line (verified payment): the clean product mockup. true is the watermarked view (the free previews, and any unpaid view). */
+  watermarked: boolean
   productionPrintFile: false
   purchaseAuthorization: false
   /** Crop and calibration metadata from the compositor (never a browser crop control). */

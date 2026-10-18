@@ -62,7 +62,7 @@ export class GiftBackend {
  approveOrder(_id:string):Promise<SessionView>{return this.block('sandbox_final_release')}
  async mockup(id:string,lineId:string,compositionId:string,signal?:AbortSignal):Promise<MockupView>{
   const v=await this.request<MockupView>('GET',sessionPath(id)+'/lines/'+segment(lineId)+'/mockup?compositionId='+segment(compositionId),undefined,signal);
-  if(!v||v.contractVersion!==1||v.sessionId!==id||v.lineId!==lineId||v.compositionId!==compositionId||v.watermarked!==true||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!/^https:\/\//.test(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['frozen','legacy_catalog'].includes(v.geometrySource))throw new GiftApiError('invalid_mockup_response',0);
+  if(!v||v.contractVersion!==1||v.sessionId!==id||v.lineId!==lineId||v.compositionId!==compositionId||typeof v.watermarked!=='boolean'||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!/^https:\/\//.test(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['frozen','legacy_catalog'].includes(v.geometrySource))throw new GiftApiError('invalid_mockup_response',0);
   return v;
  }
  private block<T>(reason:string):Promise<T>{return Promise.reject(new GiftApiError('integration_blocked',0,{reason}))}

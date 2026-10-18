@@ -1,6 +1,6 @@
 // lib/v1/gift/mockup.ts
 //
-// THE SERVER-OWNED PRODUCT MOCKUP BOUNDARY. One authenticated call turns a purchased line's CURRENT composition into a watermarked
+// THE SERVER-OWNED PRODUCT MOCKUP BOUNDARY. One authenticated call turns a purchased line's CURRENT composition into a CLEAN (paid) or watermarked
 // product mockup, using the existing Node/Sharp compositor (Codex's tools/product-mockup adapter) behind the MockupRenderer port.
 //
 //   * The browser sends a session id and a line id, and optionally the composition id it is currently showing. Nothing else: no
@@ -31,6 +31,17 @@ import type { MockupView } from './types'
 
 export const MOCKUP_CONTRACT_VERSION = 1
 export const MOCKUP_URL_SECONDS = 900
+/** The longest edge of a delivered mockup. A mockup is a picture of the product in a scene, never the production file; this keeps it so. */
+export const MOCKUP_MAX_EDGE = 1800
+
+/**
+ * The customer's view after VERIFIED payment: the rendered product scene, clean (no watermark), as a JPEG no larger than MOCKUP_MAX_EDGE. It is derived
+ * from the renderer's scene image only; the clean composition, the master and the print file are never returned, linked or stored under this path.
+ * The 6+6 free artistic previews and every unpaid view stay watermarked (deps.watermark).
+ */
+export async function cleanMockupJpeg(png: Buffer): Promise<Buffer> {
+  return sharp(png).resize({ width: MOCKUP_MAX_EDGE, height: MOCKUP_MAX_EDGE, fit: 'inside', withoutEnlargement: true }).toColourspace('srgb').jpeg({ quality: 90 }).toBuffer()
+}
 
 /** The renderer port. The real one wraps the existing adapter (mockup-real.ts); tests inject a fake. */
 export interface MockupRenderer {
@@ -80,6 +91,8 @@ const sha = (data: string | Buffer) => createHash('sha256').update(data).digest(
 export interface MockupIdentityInput {
   orderId: string; lineId: string; lineIndex: number; compositionId: string; attempt: number; sourceArtworkId: string; artworkSha256: string
   templateId: string; templateRevision: string; product: CanonicalProduct; geometrySource: string; frozenCatalogVersion: string | null
+  /** clean (paid) and watermarked (unpaid) are different files: a payment must never be served the cached watermarked one, nor the reverse. */
+  clean: boolean
 }
 /** The stable rendering identity. Key order is fixed, so the same inputs always give the same key. */
 export function mockupIdentityKey(i: MockupIdentityInput): string {
@@ -88,7 +101,7 @@ export function mockupIdentityKey(i: MockupIdentityInput): string {
     v: MOCKUP_CONTRACT_VERSION, orderId: i.orderId, lineId: i.lineId, lineIndex: i.lineIndex, compositionId: i.compositionId, attempt: i.attempt,
     sourceArtworkId: i.sourceArtworkId, artworkSha256: i.artworkSha256, templateId: i.templateId, templateRevision: i.templateRevision,
     productId: i.product.productId, sku: i.product.sku, finalPx: r.finalPx, picturePx: r.picturePx, wrapPx: r.wrapPx, orientation: r.skuOrientation,
-    attributes: Object.fromEntries(Object.entries(i.product.attributes).sort()), geometrySource: i.geometrySource, frozenCatalogVersion: i.frozenCatalogVersion,
+    attributes: Object.fromEntries(Object.entries(i.product.attributes).sort()), geometrySource: i.geometrySource, frozenCatalogVersion: i.frozenCatalogVersion, variant: i.clean ? 'clean' : 'watermarked',
   }))
 }
 
@@ -146,6 +159,7 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   if (!templateId) throw new GiftError('product_not_available')
   if (!compositionFitsProduct(comp, product)) throw new GiftError('composition_geometry_mismatch')       // e.g. a landscape file for a portrait product: refused before any rendering
 
+  const paid = !!order.paid_at && order.status !== 'created' && order.status !== 'cancelled'        // verified payment (the order only leaves 'created' after Stripe has been checked)
   const artworkSha256 = typeof (comp.plan as { artworkSha256?: unknown }).artworkSha256 === 'string' ? (comp.plan as { artworkSha256: string }).artworkSha256 : null
   const clean = artworkSha256 ? null : await deps.storage.get(comp.composed_path!)         // an older row without a recorded hash: hash it once, then remember
   if (!artworkSha256 && !clean) throw new GiftError('generation_unavailable')
@@ -153,14 +167,14 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   const templateRevision = await deps.mockup.revision(templateId)
   const identityKey = mockupIdentityKey({
     orderId: rec.order_id, lineId: line.line_id, lineIndex: line.line_index, compositionId: comp.id, attempt: comp.attempt, sourceArtworkId: comp.preview_id, artworkSha256: sourceHash,
-    templateId, templateRevision, product, geometrySource: resolved.source, frozenCatalogVersion: resolved.catalogVersion,
+    templateId, templateRevision, product, geometrySource: resolved.source, frozenCatalogVersion: resolved.catalogVersion, clean: paid,
   })
 
   const base = {
     contractVersion: MOCKUP_CONTRACT_VERSION as typeof MOCKUP_CONTRACT_VERSION, sessionId: rec.id, lineId: line.line_id, productId: product.productId, sku: product.sku,
     compositionId: comp.id, attempt: comp.attempt, compositionStatus: comp.status as 'ready' | 'approved', sourceArtworkId: comp.preview_id,
     templateId, templateRevision, identityKey, geometrySource: resolved.source, frozenCatalogVersion: resolved.catalogVersion,
-    watermarked: true as const, productionPrintFile: false as const, purchaseAuthorization: false as const,
+    watermarked: !paid, productionPrintFile: false as const, purchaseAuthorization: false as const,
   }
   const sign = async (path: string) => {
     const url = await deps.storage.signedUrl(path, MOCKUP_URL_SECONDS)
@@ -181,7 +195,7 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   // The renderer reads its own catalog; if that disagrees with what was purchased, the mockup would show the wrong product. Refuse it.
   if (out.configuration.sku !== product.sku || out.configuration.requiredPx.w !== product.requirements.finalPx.w || out.configuration.requiredPx.h !== product.requirements.finalPx.h) throw new GiftError('mockup_configuration_mismatch')
   let marked: Buffer
-  try { marked = await deps.watermark(out.png.toString('base64')) } catch (e) { throw fail('watermark', e, { templateId, sku: product.sku, lineId: line.line_id }) }        // fails closed: no unmarked mockup is ever stored
+  try { marked = paid ? await cleanMockupJpeg(out.png) : await deps.watermark(out.png.toString('base64')) } catch (e) { throw fail(paid ? 'encode' : 'watermark', e, { templateId, sku: product.sku, lineId: line.line_id }) }        // fails closed: no unmarked mockup is ever stored
   const path = mockupPath(rec.id, identityKey)
   await deps.storage.put(path, marked, 'image/jpeg')
   const stored: StoredMockup = { identityKey, path, templateId, templateRevision, visualizationKey: out.visualizationKey, width: out.width, height: out.height, crop: out.crop, createdAt: new Date((deps.clock ?? Date.now)()).toISOString() }
