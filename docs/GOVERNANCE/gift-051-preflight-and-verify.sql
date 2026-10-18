@@ -13,7 +13,7 @@ select check_name, result, detail from (
   select 30, 'function gift_record_session_attempt exists (AFTER 051)',
          case when exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'gift_record_session_attempt') then 'PASS' else 'NOTE: not yet' end, ''
   union all
-  select 40, 'attempt ledger rows', 'NOTE', case when to_regclass('public.gift_session_attempts') is null then 'table missing' else (select count(*)::text || ' rows' from public.gift_session_attempts) end
+  select 40, 'attempt ledger rows', 'NOTE', case when to_regclass('public.gift_session_attempts') is null then 'table missing' else (xpath('/row/c/text()', query_to_xml('select count(*) as c from public.gift_session_attempts', false, true, '')))[1]::text || ' rows' end
   union all
   select 50, 'browser roles cannot read or call it (AFTER 051)',
          case when to_regclass('public.gift_session_attempts') is null then 'NOTE: not yet'

@@ -27,8 +27,16 @@ it.skipIf(!PGlite)('migration 050: free previews without an order, the caps, the
       alter table portfolios add constraint portfolios_origin_purchase_check check ((origin = 'discovery' and purchase_id is not null) or origin = 'foyer');
       create table portfolio_items(id uuid primary key default gen_random_uuid(), portfolio_id uuid, slot int, preset text, status text, preview_id uuid);
       create table preview_ledger(id uuid primary key, email text unique, ip_hash text, series text, preset text, resolution text, storage_path text, unlocked_at timestamptz);`)
-    for (const m of ['046_print_upscale_jobs', '047_gift_wizard_sessions', '048_gift_orders', '049_gift_composition_geometry', '050_gift_previews_before_purchase']) await db.exec(fs.readFileSync(`supabase/migrations/${m}.sql`, 'utf8'))
+    for (const m of ['046_print_upscale_jobs', '047_gift_wizard_sessions', '048_gift_orders', '049_gift_composition_geometry']) await db.exec(fs.readFileSync(`supabase/migrations/${m}.sql`, 'utf8'))
     const q = async (sql: string, p: any[] = []) => (await db.query(sql, p)).rows
+    // the owner's read-only verify file must RUN before the migration (the new table does not exist yet) and again after it
+    const verify = fs.readFileSync('docs/GOVERNANCE/gift-050-preflight-and-verify.sql', 'utf8')
+    const pre = await q(verify)
+    expect(pre.find((r: any) => r.check_name.startsWith('047, 048 and 049'))!.result).toBe('PASS'); expect(pre.find((r: any) => r.check_name === '050 state')!.detail).toBe('not applied yet')
+    expect(pre.find((r: any) => r.check_name.startsWith('free-grant ledger'))!.detail).toBe('table missing'); expect(pre.some((r: any) => String(r.result).startsWith('FAIL'))).toBe(false)
+    await db.exec(fs.readFileSync('supabase/migrations/050_gift_previews_before_purchase.sql', 'utf8'))
+    const post = await q(verify)
+    expect(post.filter((r: any) => String(r.result).startsWith('FAIL') || String(r.result).startsWith('NOTE: not yet')).length).toBe(0); expect(post.find((r: any) => r.check_name.startsWith('free-grant ledger'))!.detail).toBe('0 rows')
     const bad = async (sql: string, p: any[] = []) => { try { await db.query(sql, p); return null } catch (e: any) { return String(e.message) } }
     const session = async (user: string, sha: string) => (await q(`insert into gift_sessions(user_id, source_sha256, source_width, source_height, series, expires_at) values ($1,$2,10,10,'portraits', now() + interval '7 days') returning id`, [user, sha]))[0].id
     const reserve = (s: string, user: string, key: string, effects: string[], caps: number[] = [2, 2, 6, 20]) =>

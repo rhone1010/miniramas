@@ -14,8 +14,12 @@ it.skipIf(!PGlite)('migration 051 counts attempts per account and photograph bef
     await db.exec(`create role anon; create role authenticated; create role service_role;
       alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
       alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;`)
-    await db.exec(fs.readFileSync('supabase/migrations/051_gift_session_rate_limit.sql', 'utf8'))
+    await db.exec('create table gift_sessions(id uuid primary key)')                                                  // stand-in so the verify file's 047 check passes
     const q = async (sql: string, p: any[] = []) => (await db.query(sql, p)).rows
+    const verify = fs.readFileSync('docs/GOVERNANCE/gift-051-preflight-and-verify.sql', 'utf8')
+    const pre = await q(verify); expect(pre.find((r: any) => r.check_name.startsWith('attempt ledger'))!.detail).toBe('table missing'); expect(pre.some((r: any) => String(r.result).startsWith('FAIL'))).toBe(false)
+    await db.exec(fs.readFileSync('supabase/migrations/051_gift_session_rate_limit.sql', 'utf8'))
+    const post = await q(verify); expect(post.filter((r: any) => String(r.result).startsWith('FAIL') || String(r.result).startsWith('NOTE: not yet')).length).toBe(0)
     const bad = async (sql: string, p: any[] = []) => { try { await db.query(sql, p); return null } catch (e: any) { return String(e.message) } }
     const rec = (user: string, sha: string, caps: number[] = [10, 30, 5]) => q('select gift_record_session_attempt($1,$2,$3,$4,$5)', [user, sha, ...caps])
     const count = async (user: string) => (await q('select count(*)::int as n from gift_session_attempts where user_id=$1', [user]))[0].n

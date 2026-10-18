@@ -13,7 +13,7 @@ select check_name, result, detail from (
   union all
   select 20, '050 state', 'NOTE', case when to_regclass('public.gift_free_grants') is not null then 'applied' else 'not applied yet' end
   union all
-  select 30, 'free-grant ledger rows (they outlive sessions)', 'NOTE', case when to_regclass('public.gift_free_grants') is null then 'table missing' else (select count(*)::text || ' rows' from public.gift_free_grants) end
+  select 30, 'free-grant ledger rows (they outlive sessions)', 'NOTE', case when to_regclass('public.gift_free_grants') is null then 'table missing' else (xpath('/row/c/text()', query_to_xml('select count(*) as c from public.gift_free_grants', false, true, '')))[1]::text || ' rows' end
   union all
   select 40, 'gift_reserve_batch overloads (expected 1 AFTER 050: the 5-argument version is dropped)',
          case when (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'gift_reserve_batch') = 1
