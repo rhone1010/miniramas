@@ -137,3 +137,6 @@ body:has(#screen[data-view="effects"]) .right-rail .context-image,body:has(#scre
 #left #gift-disclosure h3{color:var(--ivory)}
 #left #gift-disclosure p{font-size:22px;line-height:1.3}
 body:has(#screen[data-view="checkout"]) .left-rail .tagline{padding-top:20px}
+
+/* Six-stage journey: reuse existing mobile spacing and controls in two rows. */
+@media(max-width:1000px){.progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));row-gap:12px}.progress li:nth-child(3):after{display:none}}

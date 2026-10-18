@@ -1,4 +1,4 @@
-/** Prepared frontend transport only. Authenticated calls only. Final release and provisional-disclosure checkout remain blocked. */
+/** Prepared frontend transport only. Authenticated calls only. Final manufacturing release remains blocked. */
 import type {SessionView,BatchView,BatchRequest,BatchResponse,SetLinesRequest,GiftCheckoutRequest,GiftCheckoutResponse,OrderConfirmRequest,OrderConfirmResponse,PackCheckoutRequest,PackCheckoutResponse,PackConfirmRequest,PackConfirmResponse,SelectArtworkRequest,RefundRequestBody,RefundRequestResponse,MockupView} from './backend-contracts/gift/types';
 import type {CatalogResponse} from './backend-contracts/print/catalog-types';
 export type Transport=(url:string,init:RequestInit)=>Promise<Response>;
@@ -9,10 +9,11 @@ const record=(v:unknown):v is Record<string,any>=>!!v&&typeof v==='object'&&!Arr
 export function assertSession(v:unknown):asserts v is SessionView {
  if(!record(v)||v.contractVersion!==1||typeof v.sessionId!=='string'||!record(v.order)||!record(v.entitlement)||!record(v.nextBatch)||!Array.isArray(v.lines)||!Array.isArray(v.batches)||!Array.isArray(v.compositions))throw new GiftApiError('invalid_session_response',0);
  for(const n of [v.entitlement.freeBatchesTotal,v.entitlement.freeBatchesUsed,v.entitlement.paidPacksAvailable,v.order.freeBatchesGranted])if(!Number.isInteger(n)||n<0)throw new GiftApiError('invalid_entitlement_response',0);
+ if(typeof v.entitlement.freeAvailable!=='boolean'||![null,'session_limit','photo_limit','daily_limit','lifetime_limit'].includes(v.entitlement.freeBlockedReason))throw new GiftApiError('invalid_entitlement_response',0);
  if(!['free','paid','payment_required','blocked'].includes(v.nextBatch.kind)||!Array.isArray(v.geometries)||typeof v.expiresAt!=='string')throw new GiftApiError('invalid_session_response',0);
  if(!['none','checkout_open','awaiting_artwork','approved','with_lab','refund_requested','refunded','cancelled','needs_attention'].includes(v.order.state))throw new GiftApiError('invalid_order_state',0);
 }
-export const integrationBlocks=Object.freeze(['approved_disclosure','sandbox_final_release','mug_card_profiles'] as const);
+export const integrationBlocks=Object.freeze(['sandbox_final_release','mug_card_profiles'] as const);
 export class GiftBackend {
  constructor(private readonly transport:Transport){}
  private async request<T>(method:string,url:string,body?:unknown,signal?:AbortSignal):Promise<T>{
@@ -22,6 +23,9 @@ export class GiftBackend {
   return value as T;
  }
  private async session(method:string,url:string,body?:unknown,signal?:AbortSignal){const result=await this.request<unknown>(method,url,body,signal);assertSession(result);return result}
+ // Existing payload types are retained; no new endpoint or entitlement response is guessed.
+ prePurchaseBatch(id:string,b:BatchRequest):Promise<BatchResponse>{return this.startBatch(id,b)}
+ prePurchaseFavorite(id:string,b:SelectArtworkRequest):Promise<SessionView>{return this.selectArtwork(id,b)}
  create(image_b64:string,signal?:AbortSignal){return this.session('POST','/api/v1/gift/sessions',{image_b64},signal)}
  restore(id:string,signal?:AbortSignal){return this.session('GET',sessionPath(id),undefined,signal)}
  async catalog(signal?:AbortSignal){const v=await this.request<CatalogResponse>('GET','/api/v1/print/catalog',undefined,signal);if(v.contractVersion!==1||!Array.isArray(v.products))throw new GiftApiError('invalid_catalog_response',0);return v}
@@ -32,7 +36,12 @@ export class GiftBackend {
  async confirmPack(b:PackConfirmRequest,signal?:AbortSignal){const v=await this.request<PackConfirmResponse>('POST','/api/v1/gift/preview-pack/confirm',{stripeSessionId:b.stripeSessionId},signal);if(typeof v.confirmed!=='boolean'||!Number.isInteger(v.paidPacksAvailable)||v.paidPacksAvailable<0)throw new GiftApiError('invalid_pack_response',0);return v}
  refund(id:string,b:RefundRequestBody,signal?:AbortSignal){return this.request<RefundRequestResponse>('POST',sessionPath(id)+'/refund-request',{reason:b.reason},signal)}
  // Exact authoritative requests retained as types; held capabilities emit no request until CC/design reconciliation.
- checkout(_id:string,_b:GiftCheckoutRequest):Promise<GiftCheckoutResponse>{return this.block('approved_disclosure')}
+ async checkout(id:string,b:GiftCheckoutRequest):Promise<GiftCheckoutResponse>{
+  if(b.disclosureAccepted!==true||!b.disclosureVersion)throw new GiftApiError('disclosure_required',0);
+  const v=await this.request<GiftCheckoutResponse>('POST',sessionPath(id)+'/checkout',b);
+  if(!v.publishableKey?.startsWith('pk_test_')||!v.stripeSessionId?.startsWith('cs_test_')||!v.clientSecret||!v.disclosure?.version||typeof v.disclosure.text!=='string'||!v.totals||![v.totals.itemsCents,v.totals.shippingCents,v.totals.totalCents].every(n=>Number.isInteger(n)&&n>=0))throw new GiftApiError('test_checkout_required',0);
+  return v;
+ }
  startBatch(id:string,b:BatchRequest):Promise<BatchResponse>{return this.request('POST',sessionPath(id)+'/batches',{idempotencyKey:b.idempotencyKey,effectIds:b.effectIds})}
  retryBatch(id:string,n:number):Promise<BatchResponse>{if(!Number.isInteger(n)||n<1)throw new GiftApiError('invalid_batch_index',0);return this.request('POST',sessionPath(id)+'/batches/'+n+'/retry')}
  async packCheckout(b:PackCheckoutRequest):Promise<PackCheckoutResponse>{

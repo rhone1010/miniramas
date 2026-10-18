@@ -11,7 +11,7 @@ import * as live from '../../public/gift-wizard/live.next';
 const local=JSON.parse(fs.readFileSync('public/gift-wizard/catalog.next.json','utf8'));
 function project(orderState='awaiting_artwork'){
  const opt=local.products.find((p:any)=>p.id==='framed').options.find((o:any)=>o.size==='12x18');
- return {contractVersion:1,sessionId:'project',source:{sourceRef:'source',series:'portraits',width:768,height:768,peopleCount:null},lines:[{lineId:'line',productId:'framed:12x18',size:'12x18',copies:1}],geometries:[{lineId:'line',productId:'framed:12x18',sku:opt.sku,requiredPx:opt.requiredPx}],batches:[],usedEffectIds:[],entitlement:{freeBatchesTotal:2,freeBatchesUsed:0,paidPacksAvailable:0},nextBatch:{kind:'free'},expiresAt:'2099-01-01',catalogVersion:'test',order:{orderId:'order',state:orderState,freeBatchesGranted:2,approvedAt:null,unlockPortfolioId:null,totalCents:12300,disclosureVersion:'v1'},artworkPreviewId:null,compositions:[]};
+ return {contractVersion:1,sessionId:'project',source:{sourceRef:'source',series:'portraits',width:768,height:768,peopleCount:null},lines:[{lineId:'line',productId:'framed:12x18',size:'12x18',copies:1}],geometries:[{lineId:'line',productId:'framed:12x18',sku:opt.sku,requiredPx:opt.requiredPx}],batches:[],usedEffectIds:[],entitlement:{freeBatchesTotal:2,freeBatchesUsed:0,paidPacksAvailable:0,freeAvailable:true,freeBlockedReason:null},nextBatch:{kind:'free'},expiresAt:'2099-01-01',catalogVersion:'test',order:{orderId:'order',state:orderState,freeBatchesGranted:2,approvedAt:null,unlockPortfolioId:null,totalCents:12300,disclosureVersion:'v1'},artworkPreviewId:null,compositions:[]};
 }
 const catalog={contractVersion:1,products:local.products.flatMap((p:any)=>p.options.map((o:any)=>({productId:p.id+':'+o.size,family:p.id,status:p.available?'launch':'disabled',selectable:p.available,sku:o.sku,size:o.size,label:o.label,retailCents:o.retailCents,attributes:o.attributes,requirements:{picturePx:{w:o.imageWidthIn*300,h:o.imageHeightIn*300},ppi:300,finalPx:o.requiredPx}})))};
 async function boot(query:string,response:any=project(),status=200){
@@ -19,20 +19,20 @@ async function boot(query:string,response:any=project(),status=200){
  const win=dom.window as any,calls:string[]=[];
  win.matchMedia=()=>({matches:query.includes('mobile=1'),addEventListener(){}});win.ResizeObserver=class{observe(){}disconnect(){}};win.scrollTo=()=>{};win.structuredClone=structuredClone;win.AbortController=AbortController;win.Response=Response;
  win.require=(name:string)=>name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
- win.fetch=async(url:string)=>{calls.push(String(url));const data=String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?[]:{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
+ win.fetch=async(url:string,init:any={})=>{calls.push(String(url));if(response.route&&String(url).includes('/api/v1/gift/')){const routed=await response.route(String(url),init);if(routed)return new Response(JSON.stringify(routed),{status:200})}const data=String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?JSON.parse(fs.readFileSync('public/gift-wizard/fixtures.next.json','utf8')):{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
  let code=fs.readFileSync('public/gift-wizard/wizard.next.ts','utf8').replace('import.meta.url',"'https://liten.invalid/gift-wizard/wizard.next.js'").replace('await import(path);',"window.EFFECT_REGISTRY={silos:[{id:'first',label:'First'}],effects:[{id:'jade',label:'Jade',category:'first',body:'live'}]};").replace(/start\(\);\s*$/,"globalThis.started=start();globalThis.navigate=go;");
  win.Error=Error;win.exports={};vm.runInContext(ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,dom.getInternalVMContext());
  await win.started;return {dom,win,calls};
 }
 test('fixture layout stays offline even with a project or Stripe query',async()=>{const {win,calls,dom}=await boot('layoutReview=payment-verified&sessionId=project&paid=true&redirect_status=succeeded');assert.ok(win.document.body.textContent.includes('LAYOUT REVIEW'));assert.equal(calls.some(x=>x.includes('/api/v1/gift/')),false);assert.equal(win.document.getElementById('primary').disabled,true);dom.window.close()});
-test('redirect claims do not unlock an unpaid server project',async()=>{const {win,dom}=await boot('sessionId=project&paid=true&redirect_status=succeeded',project('checkout_open'));assert.equal(win.document.getElementById('primary').textContent.includes('Choose Your Effects'),false);win.navigate('effects');assert.equal(win.document.getElementById('screen').dataset.view,'payment');dom.window.close()});
+test('redirect claims do not establish payment; server free allocation enables effects',async()=>{const {win,dom}=await boot('sessionId=project&paid=true&redirect_status=succeeded',project('checkout_open'));assert.equal(win.document.getElementById('primary').textContent.includes('Choose Your Effects'),false);win.navigate('effects');assert.equal(win.document.getElementById('screen').dataset.view,'effects');assert.equal(win.document.getElementById('primary').disabled,false);dom.window.close()});
 test('needs_attention remains blocked and visible',async()=>{const {win,dom}=await boot('sessionId=project',project('needs_attention'));assert.equal(win.document.getElementById('primary').textContent,'Concierge');win.navigate('effects');assert.equal(win.document.getElementById('screen').dataset.view,'payment');dom.window.close()});
 test('verified restoration uses server products, total and generation permission',async()=>{const {win,calls,dom}=await boot('sessionId=project');assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.ok(calls.includes('/api/v1/print/catalog'));assert.equal(calls.some(x=>x.includes('fixtures.next')),false);assert.equal(win.document.getElementById('primary').disabled,false);assert.ok(win.document.getElementById('right').textContent.includes('$123.00'));win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'effects');assert.equal(win.document.getElementById('primary').disabled,false);dom.window.close()});
 test('authentication failure never shows confirmation',async()=>{const {win,dom}=await boot('sessionId=project',{error:'sign_in_required'},401);assert.ok(win.document.getElementById('screen').textContent.includes('Sign in'));assert.equal(win.document.getElementById('primary').disabled,false);dom.window.close()});
 test('configuration mismatch fails restoration without exposing create art',async()=>{const s=project();s.geometries[0].sku='bad';const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('error').textContent,'purchased_configuration_mismatch');win.navigate('effects');assert.equal(win.document.getElementById('screen').dataset.view,'payment');dom.window.close()});
 
 test('mobile restoration retains the same payment gate and effects action',async()=>{const {win,dom}=await boot('sessionId=project&mobile=1');win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'effects');assert.ok(win.document.querySelector('.mobile-bottom-action'));assert.equal(win.document.getElementById('primary').disabled,false);dom.window.close()});
-test('checkout disclosure stays blocked in live mode',async()=>{const {win,dom}=await boot('sessionId=project',project('checkout_open'));win.navigate('checkout');assert.equal(win.document.getElementById('primary').disabled,true);dom.window.close()});
+test('checkout requires a saved favorite',async()=>{const {win,dom}=await boot('sessionId=project',project('checkout_open'));win.navigate('checkout');assert.equal(win.document.getElementById('screen').dataset.view,'effects');dom.window.close()});
 
 test('product approval uses the authenticated mockup and final release stays disabled',async()=>{
  const s:any=project();s.artworkPreviewId='preview';s.compositions=[{lineId:'line',productId:'framed:12x18',sourceArtworkId:'preview',compositionId:'comp',attempt:1,status:'ready',sku:s.geometries[0].sku,correctionsRemaining:1}];
@@ -44,7 +44,7 @@ test('product approval uses the authenticated mockup and final release stays dis
  win.document.getElementById('order-example').click();assert.equal(win.document.getElementById('primary').textContent,'Approve My Gifts →');assert.equal(win.document.getElementById('primary').disabled,true);
  assert.equal(calls.some(x=>x.endsWith('/approve')),false);dom.window.close();
 });
-test('disclosure checkbox cannot enable a live payment handoff',async()=>{const {win,dom}=await boot('sessionId=project',project('checkout_open'));win.navigate('checkout');const box=win.document.getElementById('disclosure');box.checked=true;box.dispatchEvent(new win.Event('change'));assert.equal(win.document.getElementById('primary').disabled,true);dom.window.close()});
+test('checkout requires valid delivery and explicit acceptance with a saved favorite',async()=>{const s=artworkProject();s.order.state='checkout_open';const {win,dom}=await boot('sessionId=project',s);win.navigate('checkout');assert.equal(win.document.getElementById('primary').disabled,true);for(const [id,value] of Object.entries({email:'test@example.com',name:'Test Person',line1:'1 Test Street',city:'Test',state:'CA',postcode:'90001',countryCode:'US'})){const input=win.document.getElementById(id);input.value=value;input.dispatchEvent(new win.Event('input'))}assert.equal(win.document.getElementById('primary').disabled,true);const box=win.document.getElementById('disclosure');box.checked=true;box.dispatchEvent(new win.Event('change'));assert.equal(win.document.getElementById('primary').disabled,false);const authoritative=fs.readFileSync('lib/v1/gift/orders.ts','utf8').match(/text: "(.*)",/)[1].replace(/\\n/g,'\n');assert.equal([...win.document.querySelectorAll('#gift-disclosure p')].map((p:any)=>p.textContent).join('\n\n'),authoritative);dom.window.close()});
 
 test('actual Stripe return parameter is verified by server before restoring its project',async()=>{const s:any=project();s.confirmation={confirmed:true,session:project()};const {win,calls,dom}=await boot('gift_order_session=cs_test',s);assert.ok(calls.includes('/api/v1/gift/orders/confirm'));assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(win.document.getElementById('primary').disabled,false);dom.window.close()});
 test('unconfirmed Stripe return stays pending and can retry without granting access',async()=>{const s:any=project();s.confirmation={confirmed:false};const {win,calls,dom}=await boot('gift_order_session=cs_test',s);assert.equal(calls.includes('/api/v1/gift/sessions/project'),false);assert.ok(win.document.getElementById('screen').textContent.includes('Checking your payment'));win.navigate('effects');assert.equal(win.document.getElementById('screen').dataset.view,'payment');dom.window.close()});
@@ -69,7 +69,7 @@ function artworkProject(){
 }
 test('restored favorite in first batch reaches its existing mockup with no writes',async()=>{
  const {win,calls,dom}=await boot('sessionId=project',artworkProject());
- win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'effects');assert.equal(win.document.querySelector('[data-effect="jade"]').disabled,true);
+ win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'compositions');win.navigate('effects');assert.equal(win.document.querySelector('[data-effect="jade"]').disabled,true);
  win.document.getElementById('existing-previews').click();assert.equal(win.document.querySelector('[data-art="favorite"]').getAttribute('aria-pressed'),'true');
  win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'compositions');assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/signed-product.png');
  assert.equal(calls.some(x=>/\/(artwork|compositions|batches|approve)$/.test(x)),false);dom.window.close();
@@ -92,4 +92,62 @@ test('mixed-aspect purchased lines retain individual mockups and navigation neve
 });
 test('expired or stale mockups cannot unlock individual approval',async()=>{
  for(const change of [{urlExpiresAt:'2000-01-01'},{compositionId:'old-comp'}]){const s=artworkProject();Object.assign(s.mockup,change);const {win,dom}=await boot('sessionId=project',s);win.navigate('compositions');assert.equal(win.document.getElementById('primary').disabled,true);assert.equal(win.document.querySelector('#screen img'),null);dom.window.close()}
+});
+
+test('preview-first fixture journey keeps favorite separate from product photography',async()=>{
+ const {win,dom,calls}=await boot('layoutReview=effects&mobile=1');
+ assert.equal(win.document.querySelectorAll('.progress li').length,6);
+ assert.equal(win.document.querySelector('.progress [aria-current]').textContent,'Choose Effects');
+ win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'review');
+ win.document.querySelector('[data-art]').click();win.document.getElementById('primary').click();
+ assert.equal(win.document.getElementById('screen').dataset.view,'products');
+ assert.equal(win.document.querySelectorAll('[data-product]').length,8);assert.equal(win.document.querySelectorAll('[data-product]:disabled').length,4);
+ const reference=win.document.querySelector('#right img').src;assert.ok(reference.includes('preview-1.jpg'));
+ win.document.querySelector('[data-product="fine_art"]').click();assert.ok(win.document.querySelector('#right img').src.includes('product-fine_art'));
+ win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'cart');
+ assert.ok(win.document.querySelector('.cart-thumbnail img').src.includes('product-'));
+ win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'checkout');
+ assert.ok(win.document.getElementById('gift-disclosure').textContent.includes('first twelve personalized artwork previews are free'));
+ assert.equal(calls.some(x=>x.includes('/api/v1/gift/')),false);dom.window.close();
+});
+test('legacy allocation responses fail closed',async()=>{
+ const s:any=project('none');delete s.entitlement.freeAvailable;
+ const {win,dom,calls}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('error').textContent,'invalid_entitlement_response');assert.equal(calls.some(x=>x.endsWith('/batches')),false);dom.window.close();
+});
+
+test('unpaid free batches use the server allocation and retain batch idempotency',async()=>{
+ const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];const bodies:any[]=[];
+ s.route=(url:string,init:any)=>{if(url.endsWith('/batches')){bodies.push(JSON.parse(init.body));s.entitlement.freeBatchesUsed++;s.entitlement.freeAvailable=s.entitlement.freeBatchesUsed<2;s.entitlement.freeBlockedReason=s.entitlement.freeAvailable?null:'session_limit';s.nextBatch=s.entitlement.freeAvailable?{kind:'free'}:{kind:'payment_required',amountCents:299,currency:'USD'};s.batches=artworkProject().batches.slice(0,s.entitlement.freeBatchesUsed);return {status:'ok',batch:s.batches.at(-1),session:s}}};
+ const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.querySelectorAll('[data-art]').length,6);win.document.getElementById('another-batch').click();await new Promise(r=>setTimeout(r,20));assert.equal(bodies.length,2);assert.notEqual(bodies[0].idempotencyKey,bodies[1].idempotencyKey);assert.equal(win.document.getElementById('another-batch').textContent,'Six More · $2.99');assert.equal(s.order.orderId,null);dom.window.close();
+});
+
+test('favorite persists before shopping without requesting a composition',async()=>{
+ const s=artworkProject();s.order.state='none';s.order.orderId=null;s.artworkPreviewId=null;s.compositions=[];s.mockup=null;let saved='';
+ s.route=(url:string,init:any)=>{if(url.endsWith('/artwork')){saved=JSON.parse(init.body).previewId;s.artworkPreviewId=saved;return s}};
+ const {win,dom,calls}=await boot('sessionId=project',s);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.ok(saved);assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(calls.some(x=>x.endsWith('/compositions')),false);dom.window.close();
+});
+
+test('checkout adapter sends current disclosure and delivery to test checkout only',async()=>{
+ const requests:any[]=[];const api=new backend.GiftBackend(async(url,init)=>{requests.push({url,body:JSON.parse(String(init.body))});return Response.json({clientSecret:'secret',stripeSessionId:'cs_test_1',publishableKey:'pk_test_1',totals:{itemsCents:100,shippingCents:20,totalCents:120},disclosure:{version:'2026-10-18-1',text:'authoritative'}})});
+ const body:any={email:'test@example.com',shippingAddress:{name:'Test',line1:'1 Street',city:'City',postcode:'12345',countryCode:'US'},disclosureAccepted:true,disclosureVersion:'2026-10-18-1',returnPath:'/gift-wizard.next.html'};
+ await api.checkout('project',body);assert.deepEqual(requests[0].body,body);await assert.rejects(api.checkout('project',{...body,disclosureAccepted:false}),/disclosure_required/);assert.equal(requests.length,1);await assert.rejects(api.approveOrder('project'),/integration_blocked/);
+});
+
+test('server allocation caps, refunds and manufacturing states prevent free generation',()=>{
+ for(const state of ['none','checkout_open','awaiting_artwork']){const s:any=project(state);assert.equal(live.canCraft(s),true);s.entitlement.freeAvailable=false;assert.equal(live.canCraft(s),false)}
+ for(const state of ['needs_attention','approved','with_lab','refund_requested','refunded','cancelled'])assert.equal(live.canCraft(project(state) as any),false);
+});
+
+async function fillCheckout(win:any){for(const [id,value] of Object.entries({email:'test@example.com',name:'Test Person',line1:'1 Test Street',city:'Test',state:'CA',postcode:'90001',countryCode:'US'})){const el=win.document.getElementById(id);el.value=value;el.dispatchEvent(new win.Event('input'))}const box=win.document.getElementById('disclosure');box.checked=true;box.dispatchEvent(new win.Event('change'))}
+
+test('embedded product checkout mounts only after acceptance and confirms even with a restored project',async()=>{
+ const s=artworkProject();s.order.state='checkout_open';let posted:any,completed:any,confirms=0;
+ s.route=(url:string,init:any)=>{if(url.endsWith('/checkout')){posted=JSON.parse(init.body);return {clientSecret:'secret',stripeSessionId:'cs_test_1',publishableKey:'pk_test_1',totals:{itemsCents:100,shippingCents:20,totalCents:120},disclosure:{version:'2026-10-18-1',text:fs.readFileSync('lib/v1/gift/orders.ts','utf8').match(/text: "(.*)",/)[1].replace(/\\n/g,'\n')}}}if(url.endsWith('/orders/confirm')){confirms++;s.order.state='awaiting_artwork';return {confirmed:true,session:s}}};
+ const {win,dom,calls}=await boot('sessionId=project',s);win.Stripe=()=>({initEmbeddedCheckout:async(options:any)=>{completed=options.onComplete;return {mount(el:any){el.textContent='Stripe test checkout'},destroy(){}}}});
+ win.navigate('checkout');await fillCheckout(win);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(posted.disclosureVersion,'2026-10-18-1');assert.equal(posted.disclosureAccepted,true);assert.ok(win.document.getElementById('screen').textContent.includes('Stripe test checkout'));assert.equal(confirms,0);await completed();assert.equal(confirms,1);assert.equal(win.document.getElementById('primary').textContent,'Review Your Gifts →');assert.equal(calls.some(x=>x.endsWith('/approve')),false);dom.window.close();
+});
+
+test('changed server disclosure must be displayed and accepted again before mounting Stripe',async()=>{
+ const s=artworkProject();s.order.state='checkout_open';s.route=(url:string)=>url.endsWith('/checkout')?{clientSecret:'secret',stripeSessionId:'cs_test_1',publishableKey:'pk_test_1',totals:{itemsCents:100,shippingCents:20,totalCents:120},disclosure:{version:'new-version',text:'Exact replacement server text.'}}:null;
+ const {win,dom}=await boot('sessionId=project',s);let mounted=false;win.Stripe=()=>{mounted=true};win.navigate('checkout');await fillCheckout(win);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(mounted,false);assert.equal(win.document.querySelector('#gift-disclosure p').textContent,'Exact replacement server text.');assert.equal(win.document.getElementById('disclosure').checked,false);assert.equal(win.document.getElementById('primary').disabled,true);dom.window.close();
 });

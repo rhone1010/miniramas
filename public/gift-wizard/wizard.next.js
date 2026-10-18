@@ -7,6 +7,13 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<'
 const money = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n / 100);
 const asset = (s) => new URL(s, import.meta.url).href;
 let session = newSession(), view = 'photo', history = [], products = [], fixtures = [], registries = {}, manifest;
+let shoppingFavoriteId = null;
+// Exact approved disclosure from lib/v1/gift/orders.ts at 7e49aaf.
+let disclosure = {
+    version: '2026-10-18-1',
+    text: "Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.\n\nOnce you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.\n\nAfter payment, you'll review how your artwork looks on each purchased product and approve the final composition before production begins.\n\nNothing is printed or manufactured until you approve your gifts.",
+};
+function checkoutReady() { return !!live?.session?.artworkPreviewId && ['none', 'checkout_open'].includes(live.session.order.state) && deliveryValid(session) && disclosureAccepted && session.lines.length > 0 && !busy; }
 let sourceURL = '', busy = false, limit = 0, silo = 'all', effectFocus = '', artFocus = '', compareId = '', activeProduct = '', size = '', copies = 1, editId = null, batchIndex = 0;
 const params = new URLSearchParams(location.search), fixtureSeries = ['portraits', 'groups', 'pets'].includes(params.get('fixtureSeries') || '') ? params.get('fixtureSeries') : 'portraits';
 const fail = params.get('fixtureFailure');
@@ -15,17 +22,25 @@ function error(s) { $('error').hidden = false; $('error').textContent = s; }
 function registry() { return registries[session.source?.series || fixtureSeries]; }
 function effects() { return liveEffects(registry()); }
 function currentArt() { return session.batches.flat().find(p => p.id === artFocus) || session.batches[batchIndex]?.[0]; }
-function favorite() { return session.batches.flat().find(p => p.id === session.favoriteId); }
-function stage() { return view === 'photo' ? 0 : ['products', 'configuration', 'cart'].includes(view) ? 1 : ['effects', 'review', 'focus', 'compare', 'more', 'compositions'].includes(view) ? 3 : 2; }
+function favorite() { return session.batches.flat().find(p => p.id === (shoppingFavoriteId || session.favoriteId)); }
+function stage() { return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
 function go(v, record = true) { if (busy)
     return; if (live?.session && purchased(live.session) && ['photo', 'products', 'configuration', 'cart', 'checkout'].includes(v)) {
     view = 'payment';
     render();
     return;
-} if (['effects', 'review', 'focus', 'compare', 'more', 'compositions'].includes(v) && !layoutReview && !(live?.session && purchased(live.session))) {
+} if (live?.session && ['needs_attention', 'refund_requested', 'refunded', 'cancelled'].includes(live.session.order.state)) {
+    view = 'payment';
+    render();
+    return;
+} if (v === 'compositions' && !layoutReview && !(live?.session && purchased(live.session))) {
     paymentState = 'pending';
     v = 'payment';
-} ; if (record && view !== v)
+} if (['effects', 'review', 'focus', 'compare', 'more'].includes(v) && !layoutReview && !session.source) {
+    v = live || params.has('gift_order_session') ? 'payment' : 'photo';
+} if (v === 'checkout' && serverMode && !live?.session?.artworkPreviewId)
+    v = session.batches.length ? 'review' : 'effects'; if (['review', 'focus', 'compare'].includes(v) && !session.batches.length)
+    v = 'effects'; if (record && view !== v)
     history.push(view); view = v; render(); $('screen').scrollTop = 0; if (v === 'checkout')
     $('screen').parentElement.scrollTop = 0; $('workspace').focus({ preventScroll: true }); window.scrollTo(0, 0); }
 function back() { if (busy)
@@ -43,7 +58,7 @@ function rail(title, copy) { $('left').innerHTML = (view === 'effects' ? '' : '<
 function render() {
     $('error').hidden = true;
     $('error').textContent = '';
-    $('status').textContent = busy && stage() === 3 && !!live?.session && purchased(live.session) ? 'Preparing your previews…' : '';
+    $('status').textContent = busy && view === 'effects' && !!live?.session ? 'Preparing your previews…' : layoutReview ? 'Layout review · sample artwork · no payment or order' : '';
     $('screen').dataset.view = view;
     $('left').classList.toggle('effects-rail', view === 'effects');
     $('workspace').setAttribute('aria-busy', String(busy));
@@ -159,7 +174,7 @@ function renderPhoto() {
     $('photo').onchange = e => { const el = e.target, f = el.files?.[0]; el.value = ''; if (f)
         upload(f); };
     document.querySelectorAll('[name=recipient]').forEach(el => el.onchange = () => { session.recipient = el.value; render(); });
-    primary('Next: Choose Your Gift', () => go('products'), !session.recipient || session.source?.status !== 'supported');
+    primary('Choose Effects', () => go('effects'), !session.recipient || session.source?.status !== 'supported');
 }
 async function upload(file) {
     if (live?.session && purchased(live.session))
@@ -237,14 +252,14 @@ function renderProducts() {
     const o = p.options.find(o => o.size === size);
     if (view === 'products') {
         $('screen').innerHTML = '<h2>1. Choose a Product</h2><div class="grid product-grid">' + products.map(p => '<article class="product ' + (p.id === activeProduct ? 'active' : '') + '">' + photo(asset(p.image), p.label) + '<h3>' + esc(p.label) + '</h3><p class="small">' + (p.available ? 'From ' + money(Math.min(...p.options.map(o => o.retailCents))) : 'Not currently available') + '</p><button data-product="' + p.id + '" ' + (!p.available ? 'disabled' : '') + '>Choose This Gift</button></article>').join('') + '</div>';
-        $('right').innerHTML = session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '';
+        $('right').innerHTML = (favorite() ? '<h3>Selected artwork</h3>' + photo(asset(favorite().url), favorite().label, 'context-image') : '') + (session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '');
         document.querySelectorAll('[data-product]').forEach(b => b.onclick = () => chooseProduct(b.dataset.product));
         if ($('view-cart'))
             $('view-cart').onclick = () => go('cart');
         return;
     }
     $('screen').innerHTML = '<div class="product-config"><h2>2. Choose a Size</h2><div class="sizes">' + p.options.map(o => '<button data-size="' + o.size + '" aria-pressed="' + (size === o.size) + '">' + esc(o.label) + '</button>').join('') + '</div>' + field('copies', 'Quantity', String(copies), 'type="number" min="1" max="20" step="1"') + '<p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p></div>';
-    $('right').innerHTML = '<h3>YOUR SELECTION</h3>' + (favorite() ? mockup({ id: editId || 'draft', productId: p.id, size, copies }) : photo(asset(p.image), p.label, 'context-image')) + '<h2>' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><p>' + esc(o.familyNote || '') + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>' + (favorite() ? '' : '<p class="small">Product photograph. Your selected artwork will appear after preview review.</p>') + (session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '');
+    $('right').innerHTML = '<h3>YOUR SELECTION</h3>' + photo(asset(p.image), p.label, 'context-image') + (favorite() ? '<h3>Selected artwork</h3>' + photo(asset(favorite().url), favorite().label, 'context-image') : '') + '<h2>' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><p>' + esc(o.familyNote || '') + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>' + '<p class="small">Product photograph. Product-specific artwork will be prepared after payment.</p>' + (session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '');
     document.querySelectorAll('[data-product]').forEach(b => b.onclick = () => chooseProduct(b.dataset.product));
     document.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { size = b.dataset.size; render(); });
     $('copies').oninput = e => copies = Number(e.target.value);
@@ -266,7 +281,7 @@ function renderProducts() {
         error('Choose a quantity from 1 to 20.');
     } });
 }
-function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (favorite() ? mockup(l) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
+function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
 function bindCart() {
     document.querySelectorAll('[data-qty]').forEach(b => b.onclick = () => { const l = session.lines.find(l => l.id === b.dataset.qty); l.copies += Number(b.dataset.delta); render(); });
     document.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const l = session.lines.find(l => l.id === b.dataset.edit); activeProduct = l.productId; size = l.size; copies = l.copies; editId = l.id; go('configuration'); });
@@ -319,8 +334,15 @@ function renderEffects() {
         $('right').insertAdjacentHTML('beforeend', secondary('existing-previews', 'Return to My Art'));
         $('existing-previews').onclick = () => go('review');
     }
-    $('right').insertAdjacentHTML('beforeend', '<p class="small">Two batches of six are included per verified purchased project. Additional batches: $2.99 per six. Preview access has not been verified here.</p>');
-    primary('Craft My Six Previews', generate, true);
+    $('right').insertAdjacentHTML('beforeend', '<p class="small">Your first two sets of six artwork previews are free. No product purchase is required. Additional sets of six: $2.99. Preview access is verified by the server.</p>');
+    primary('Craft My Six Previews', () => { if (layoutReview) {
+        session.batches = [fixtures];
+        batchIndex = 0;
+        artFocus = fixtures[0]?.id || '';
+        go('review');
+    }
+    else
+        void generate(); }, !layoutReview);
 }
 async function generate() { if (live) {
     const s = live.session;
@@ -328,14 +350,14 @@ async function generate() { if (live) {
         return;
     await serverAction(async () => { const r = await live.api.startBatch(live.id, { ...(batchIntent || (batchIntent = { idempotencyKey: crypto.randomUUID(), effectIds: [...session.effectIds] })) }); batchIntent = null; return r.session; }, 'review');
     return;
-} error('Personalized previews require server-verified payment and preview access. No batch has been used.'); }
+} error('Preview access must be verified by the server.'); }
 function renderArt() {
     rail('Your Previews<br>Are Ready', '<p>You can favorite the ones you love, request variations, or try again with different effects.</p>');
     const art = currentArt(), batch = session.batches[batchIndex];
     if (!compareId || !batch.some(p => p.id === compareId) || compareId === art.id)
         compareId = (batch.find(p => p.id !== art.id) || art).id;
     if (view === 'review')
-        $('screen').innerHTML = '<h2>Your Six Previews</h2><div class="grid">' + batch.map(p => '<button class="tile" data-art="' + p.id + '" aria-pressed="' + (session.favoriteId === p.id) + '">' + photo(asset(p.url), p.label + ' watermarked artwork') + '<span>' + esc(p.label) + '</span></button>').join('') + '</div>';
+        $('screen').innerHTML = '<h2>Your Six Previews</h2><div class="grid">' + batch.map(p => '<button class="tile" data-art="' + p.id + '" aria-pressed="' + ((shoppingFavoriteId || session.favoriteId) === p.id) + '">' + photo(asset(p.url), p.label + ' watermarked artwork') + '<span>' + esc(p.label) + '</span></button>').join('') + '</div>';
     else if (view === 'focus')
         $('screen').innerHTML = '<h2>' + esc(art.label) + '</h2>' + photo(asset(art.url), art.label + ' watermarked artwork') + '<div class="row">' + secondary('prev-art', '← Previous') + secondary('next-art', 'Next →') + '</div>';
     else
@@ -360,7 +382,14 @@ function renderArt() {
         $('another-batch').onclick = generate;
     if ($('more'))
         $('more').onclick = () => go('more');
-    primary('Use This Artwork', () => { if (live) {
+    primary('Use This Artwork', () => { if (!live) {
+        shoppingFavoriteId = art.id;
+        go('products');
+        return;
+    } if (live.session && !purchased(live.session)) {
+        void serverAction(() => live.api.selectArtwork(live.id, { previewId: art.id }), 'products');
+        return;
+    } if (live) {
         if (live.session?.artworkPreviewId === art.id && live.session.lines.every(l => live.session.compositions.some(c => c.lineId === l.lineId && c.productId === l.productId && c.sourceArtworkId === art.id && c.compositionId && ['ready', 'approved'].includes(c.status)))) {
             go('compositions');
             return;
@@ -430,22 +459,22 @@ function renderCheckout() {
         $(key).oninput = e => { const v = e.target.value; if (key === 'email')
             session.email = v;
         else
-            session.address[key] = key === 'countryCode' ? v.toUpperCase() : v; $('primary').disabled = serverMode || !deliveryValid(session) || !disclosureAccepted; };
+            session.address[key] = key === 'countryCode' ? v.toUpperCase() : v; $('primary').disabled = serverMode ? !checkoutReady() : !deliveryValid(session) || !disclosureAccepted; };
     $('ship-self').onclick = () => { session.shipTo = 'self'; render(); };
     $('ship-recipient').onclick = () => { session.shipTo = 'recipient'; render(); };
     $('edit-gifts').onclick = () => go('cart');
-    // PROVISIONAL DISCLOSURE: user-supplied review copy, not legally approved. Never submit this acceptance to live checkout.
-    $('screen').insertAdjacentHTML('beforeend', "<section id=\"gift-disclosure\"><h3>Your gift, made just for you</h3><p>Your purchase includes your selected products and twelve personalized artwork previews, created in two sets of six.</p><p>After payment, you'll explore artistic styles, choose your favorite, and review how your artwork looks on each gift before production begins.</p><p>Need more inspiration? Additional sets of six previews are available for $2.99.</p><label class=\"radio\"><input id=\"disclosure\" type=\"checkbox\" " + (disclosureAccepted ? 'checked' : '') + "><span>I understand the purchase-before-generation terms in Your gift, made just for you.</span></label></section>");
+    // The exact server disclosure is displayed; acceptance stays beneath delivery.
+    $('screen').insertAdjacentHTML('beforeend', '<section id="gift-disclosure"><h3>Your gift, made just for you</h3>' + disclosure.text.split('\n\n').map(p => '<p>' + esc(p) + '</p>').join('') + '<label class="radio"><input id="disclosure" type="checkbox" ' + (disclosureAccepted ? 'checked' : '') + '><span>I understand that product-specific compositions are prepared after payment and that I must approve them before production.</span></label></section>');
     // Keep the explanation intact in the left rail and acceptance beneath delivery.
     const explanation = $('gift-disclosure'), acceptance = $('disclosure').closest('label');
     $('screen').append(acceptance);
     $('filters').before(explanation);
     $('disclosure').setAttribute('required', '');
     $('disclosure').setAttribute('aria-describedby', 'gift-disclosure');
-    $('disclosure').onchange = e => { disclosureAccepted = e.target.checked; $('primary').disabled = serverMode || !deliveryValid(session) || !disclosureAccepted; };
+    $('disclosure').onchange = e => { disclosureAccepted = e.target.checked; $('primary').disabled = serverMode ? !checkoutReady() : !deliveryValid(session) || !disclosureAccepted; };
     primary('Continue to Payment', () => { paymentState = 'blocked'; go('payment'); }, !deliveryValid(session) || !disclosureAccepted || !session.lines.length);
 }
-const layoutViews = ['checkout', 'payment-loading', 'payment-pending', 'payment-failed', 'payment-verified', 'auth', 'restoring', 'restore-failed', 'effects', 'gallery', 'gallery-second', 'approval', 'approval-second', 'approval-final', 'approval-loading', 'approval-failed'];
+const layoutViews = ['photo', 'products', 'configuration', 'cart', 'checkout', 'payment-loading', 'payment-pending', 'payment-failed', 'payment-verified', 'auth', 'restoring', 'restore-failed', 'effects', 'gallery', 'gallery-second', 'approval', 'approval-second', 'approval-final', 'approval-loading', 'approval-failed'];
 const layoutName = params.get('layoutReview') || '';
 const layoutReview = layoutViews.some(v => v === layoutName);
 let disclosureAccepted = false, paymentState = 'blocked';
@@ -473,13 +502,18 @@ async function retryRestoration() {
             if (live.id !== id)
                 throw new GiftApiError('session_identity_mismatch', 0);
         }
-        if (!live) {
+        if (params.has('gift_order_session')) {
             const api = new GiftBackend((url, init) => fetch(url, init));
             const confirmation = await api.confirmOrder({ stripeSessionId: params.get('gift_order_session') }, signal);
             if (!confirmation.confirmed || !confirmation.session)
                 throw new GiftApiError('payment_pending', 409);
+            if (live && live.id !== confirmation.session.sessionId)
+                throw new GiftApiError('session_identity_mismatch', 0);
             live = new LiveGift(api, confirmation.session.sessionId);
+            params.delete('gift_order_session');
         }
+        if (!live)
+            throw new GiftApiError('gift_project_reference_required', 0);
         await live.restore(signal);
         return live.session;
     });
@@ -490,7 +524,7 @@ async function retryRestoration() {
             applyServer(state.value);
             await loadMockups();
             paymentState = purchased(state.value) ? 'payment-verified' : 'pending';
-            view = state.value.order.state === 'none' ? (session.lines.length ? 'cart' : 'products') : 'payment';
+            view = state.value.order.state === 'none' ? (session.batches.length ? 'review' : 'effects') : 'payment';
             render();
         }
         catch (e) {
@@ -510,14 +544,14 @@ async function retryRestoration() {
 function renderPayment() {
     if (paymentState === 'payment-verified') {
         rail('Your<br>Gift', '<p>Now comes the creative part.</p>');
-        $('screen').innerHTML = '<h2>Your gift is on its way to becoming something special.</h2><p class="small">LAYOUT REVIEW — the confirmation copy below is a presentation example. No payment or preview entitlement has been verified.</p><p>Your purchase is confirmed. Now comes the creative part.</p><p>Explore our artistic collections and discover how your photo can be transformed. Your first twelve previews are included.</p><div class="grid product-grid">' + session.lines.map(l => { const { product: p } = giftOption(l, products); return '<article class="product">' + photo(asset(p.image), p.label + ' example product') + '<h3>' + esc(p.label) + '</h3></article>'; }).join('') + '</div>';
+        $('screen').innerHTML = '<h2>Your gift is on its way to becoming something special.</h2><p class="small">LAYOUT REVIEW — the confirmation copy below is a presentation example. No payment or preview entitlement has been verified.</p><p>Your purchase is confirmed. Review your personalized gifts before production.</p><p>Your selected artwork will be prepared for each purchased product. Review each composition before final approval.</p><div class="grid product-grid">' + session.lines.map(l => { const { product: p } = giftOption(l, products); return '<article class="product">' + photo(asset(p.image), p.label + ' example product') + '<h3>' + esc(p.label) + '</h3></article>'; }).join('') + '</div>';
         $('right').innerHTML = '<h2>Your purchased products</h2><p class="small">Example selections — purchase not verified.</p>' + session.lines.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="summary-item">' + photo(asset(p.image), p.label) + '<div><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '</p></div></div>'; }).join('') + '<p class="small">Order confirmation reference will appear when provided by the authenticated backend.</p><h3>Two included sets of six previews</h3><p class="small">Included access awaits server confirmation.</p><p>Production begins only after final artwork approval.</p>';
-        primary('Choose Your Effects', () => { }, true);
+        primary('Review Your Gifts', () => { }, true);
         return;
     }
     const states = {
         blocked: ['Payment is not available in this preview', 'Your products and delivery information remain here. No payment has been submitted.', 'Return to Checkout'],
-        'payment-loading': ['Opening secure checkout', 'Checkout is loading. Artwork remains locked until the server confirms payment.', 'Checkout loading'],
+        'payment-loading': ['Opening secure checkout', 'Checkout is loading. Product compositions require confirmed payment.', 'Checkout loading'],
         pending: ['Checking your payment', 'Returning from Stripe does not confirm payment. Your purchased project must be restored and checked by the server.', 'Check payment status'],
         'payment-pending': ['Checking your payment', 'Returning from Stripe does not confirm payment. Your purchased project must be restored and checked by the server.', 'Check payment status'],
         'payment-failed': ['Payment could not be confirmed', 'Check the payment status before trying another payment. Your gift selections remain here.', 'Check payment status'],
@@ -540,11 +574,20 @@ function renderPayment() {
 function initializeLayoutReview() {
     if (!layoutReview)
         return;
-    document.querySelector('.preview-note').textContent = 'Layout review · no payment or order';
+    document.querySelector('.preview-note').textContent = 'Layout review · sample artwork · no payment or order';
+    session.source = { status: 'supported', series: fixtureSeries, sourceRef: 'layout-photo', fixture: true };
+    session.recipient = recipientOptions[0];
     // Draft sample lines only. Never set purchased status, order identity or entitlements.
-    session.lines = ['framed', 'canvas'].map((id, i) => { const p = products.find(p => p.id === id); return { id: 'layout-' + i, productId: id, size: p.options.find(o => o.size === '12x18')?.size || p.options[0].size, copies: 1 }; });
-    if (layoutName === 'checkout') {
-        view = 'checkout';
+    session.lines = (['photo', 'effects', 'gallery', 'gallery-second', 'products'].includes(layoutName) ? [] : ['framed', 'canvas']).map((id, i) => { const p = products.find(p => p.id === id); return { id: 'layout-' + i, productId: id, size: p.options.find(o => o.size === '12x18')?.size || p.options[0].size, copies: 1 }; });
+    if (['products', 'configuration', 'cart', 'checkout'].includes(layoutName)) {
+        session.batches = [fixtures];
+        artFocus = fixtures[0]?.id || '';
+        shoppingFavoriteId = artFocus;
+        view = layoutName;
+        return;
+    }
+    if (layoutName === 'photo') {
+        view = 'photo';
         return;
     }
     if (layoutName === 'effects') {
@@ -626,6 +669,7 @@ function applyServer(s) {
     session.source = { status: 'supported', series: s.source.series, sourceRef: s.source.sourceRef, fixture: false };
     session.lines = lines;
     session.favoriteId = s.artworkPreviewId;
+    shoppingFavoriteId = null;
     session.effectIds = session.effectIds.filter(id => !s.usedEffectIds.includes(id));
     session.batches = s.batches.filter(b => b.previews.some(p => p.status === 'ready' && p.url)).map(b => b.previews.filter(p => p.status === 'ready' && p.url && p.width && p.height).map(p => ({ id: p.previewId, url: p.url, label: effects().find(e => e.id === p.effectId)?.label || p.effectId, width: p.width, height: p.height, watermark: 'baked', fixture: false })));
     const retained = session.batches.findIndex(b => b.some(p => p.id === artFocus));
@@ -692,13 +736,13 @@ function adaptServerView() {
             return;
         }
     }
-    if (view === 'more' && live?.session && purchased(live.session)) {
+    if (view === 'more' && live?.session) {
         $('right').querySelectorAll('p').forEach(el => el.remove());
-        primaryLive(() => void openPack(), live.session.order.state !== 'awaiting_artwork' || live.session.nextBatch.kind !== 'payment_required');
+        primaryLive(() => void openPack(), !['none', 'checkout_open', 'awaiting_artwork'].includes(live.session.order.state) || live.session.nextBatch.kind !== 'payment_required');
         $('primary').textContent = 'Six More · $2.99';
     }
     if (view === 'checkout') {
-        primaryLive(() => { }, true);
+        primaryLive(() => void openCheckout(), !checkoutReady());
         const d = $('right').querySelector('dl');
         if (d && live?.session?.order.totalCents !== null && live?.session?.order.totalCents !== undefined)
             d.lastElementChild.textContent = money(live.session.order.totalCents);
@@ -723,7 +767,13 @@ function adaptServerView() {
         if (s.entitlement.freeBatchesTotal !== 2)
             $('screen').querySelectorAll('p').forEach(el => { if (el.textContent?.includes('first twelve'))
                 el.textContent = ''; });
-        primaryLive(() => go('effects'), s.order.state !== 'awaiting_artwork');
+        primaryLive(() => { if (!s.artworkPreviewId) {
+            go(session.batches.length ? 'review' : 'effects');
+            return;
+        } if (s.lines.every(l => s.compositions.some(c => c.lineId === l.lineId && c.sourceArtworkId === s.artworkPreviewId && c.compositionId && ['ready', 'approved'].includes(c.status)))) {
+            go('compositions');
+            return;
+        } void serverAction(() => live.api.compose(live.id), 'compositions'); }, s.order.state !== 'awaiting_artwork');
     }
     else if (view === 'payment') {
         $('primary').onclick = () => void retryRestoration();
@@ -737,8 +787,11 @@ function adaptServerView() {
         }
     }
     if (view === 'effects') {
+        $('right').insertAdjacentHTML('beforeend', '<p class="small" role="status">' + esc(s.nextBatch.kind === 'free' ? 'Free · Six Previews' : s.nextBatch.kind === 'paid' ? 'Six previews available' : s.nextBatch.kind === 'payment_required' ? 'Six More · $2.99' : s.nextBatch.reason) + '</p>');
         document.querySelectorAll('[data-effect]').forEach(b => { b.disabled = s.usedEffectIds.includes(b.dataset.effect); });
-        primaryLive(() => void generate(), !canCraft(s));
+        primaryLive(() => s.nextBatch.kind === 'payment_required' ? go('more') : void generate(), !canCraft(s) && s.nextBatch.kind !== 'payment_required');
+        if (s.nextBatch.kind === 'payment_required')
+            $('primary').textContent = 'Six More · $2.99';
     }
     if (['effects', 'review', 'focus', 'compare'].includes(view)) {
         $('right').querySelectorAll('p.small').forEach(el => { if (/Sample artwork|photo is not transformed|has not been verified/.test(el.textContent || ''))
@@ -795,9 +848,71 @@ function primaryLive(fn, disabled) { const b = $('primary'); if (b) {
     b.onclick = fn;
     b.disabled = busy || disabled;
 } }
+let embeddedOrder = null;
+async function openCheckout() {
+    if (!live || !checkoutReady())
+        return;
+    busy = true;
+    render();
+    try {
+        const r = await live.api.checkout(live.id, { email: session.email, shippingAddress: { ...session.address }, disclosureAccepted: true, disclosureVersion: disclosure.version, returnPath: '/gift-wizard.next.html' });
+        sessionStorage.setItem('liten-gift-order:' + live.id, r.stripeSessionId);
+        if (r.disclosure.version !== disclosure.version || r.disclosure.text !== disclosure.text) {
+            disclosure = r.disclosure;
+            disclosureAccepted = false;
+            busy = false;
+            render();
+            error('disclosure_version_mismatch');
+            return;
+        }
+        disclosure = r.disclosure;
+        if (!window.Stripe)
+            await new Promise((resolve, reject) => { const script = document.createElement('script'); script.src = 'https://js.stripe.com/v3/'; script.onload = () => resolve(); script.onerror = () => reject(new GiftApiError('checkout_unavailable', 0)); document.head.append(script); });
+        embeddedOrder?.destroy();
+        embeddedOrder = await window.Stripe(r.publishableKey).initEmbeddedCheckout({ clientSecret: r.clientSecret, onComplete: async () => {
+                embeddedOrder?.destroy();
+                embeddedOrder = null;
+                busy = false;
+                params.set('gift_order_session', r.stripeSessionId);
+                view = 'payment';
+                for (let i = 0; i < 10; i++) {
+                    await retryRestoration();
+                    if (paymentState !== 'pending')
+                        break;
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                }
+            } });
+        $('screen').replaceChildren();
+        const mount = document.createElement('div');
+        $('screen').append(mount);
+        embeddedOrder.mount(mount);
+        const d = $('right').querySelector('dl');
+        if (d)
+            d.innerHTML = '<dt>Products</dt><dd>' + money(r.totals.itemsCents) + '</dd><dt>Shipping</dt><dd>' + money(r.totals.shippingCents) + '</dd><dt>Total</dt><dd>' + money(r.totals.totalCents) + '</dd>';
+    }
+    catch (e) {
+        busy = false;
+        if (e instanceof GiftApiError && e.code === 'order_already_paid') {
+            const id = sessionStorage.getItem('liten-gift-order:' + live.id);
+            if (id)
+                params.set('gift_order_session', id);
+            view = 'payment';
+            await retryRestoration();
+            return;
+        }
+        if (e instanceof GiftApiError && e.code === 'disclosure_version_mismatch')
+            disclosureAccepted = false;
+        if (e instanceof GiftApiError && e.status === 401) {
+            paymentState = 'auth';
+            view = 'payment';
+        }
+        render();
+        error(e instanceof Error ? e.message : 'request_failed');
+    }
+}
 let embeddedPack = null;
 async function openPack() {
-    if (!live?.session || !purchased(live.session) || busy)
+    if (!live?.session || !['none', 'checkout_open', 'awaiting_artwork'].includes(live.session.order.state) || live.session.nextBatch.kind !== 'payment_required' || busy)
         return;
     busy = true;
     render();

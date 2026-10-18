@@ -2,7 +2,7 @@
 import {GiftBackend,GiftApiError,assertSession} from './backend.next.js';
 import type {SessionView,MockupView} from './backend-contracts/gift/types';
 export function purchased(s:SessionView){return !!s.order.orderId&&['awaiting_artwork','approved','with_lab'].includes(s.order.state)}
-export function canCraft(s:SessionView){return purchased(s)&&s.order.state==='awaiting_artwork'&&Date.parse(s.expiresAt)>Date.now()&&(s.nextBatch.kind==='free'||s.nextBatch.kind==='paid')}
+export function canCraft(s:SessionView){return ['none','checkout_open','awaiting_artwork'].includes(s.order.state)&&Date.parse(s.expiresAt)>Date.now()&&((s.nextBatch.kind==='free'&&s.entitlement.freeAvailable)||(s.nextBatch.kind==='paid'&&s.entitlement.paidPacksAvailable>0))}
 export class LiveGift {
  private value:SessionView|null=null;private epoch=0;
  readonly mockups=new Map<string,MockupView>();

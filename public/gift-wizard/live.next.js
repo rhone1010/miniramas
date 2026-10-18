@@ -1,7 +1,7 @@
 /** Authenticated state boundary. A URL selects a project; it never proves payment. */
 import { GiftApiError, assertSession } from './backend.next.js';
 export function purchased(s) { return !!s.order.orderId && ['awaiting_artwork', 'approved', 'with_lab'].includes(s.order.state); }
-export function canCraft(s) { return purchased(s) && s.order.state === 'awaiting_artwork' && Date.parse(s.expiresAt) > Date.now() && (s.nextBatch.kind === 'free' || s.nextBatch.kind === 'paid'); }
+export function canCraft(s) { return ['none', 'checkout_open', 'awaiting_artwork'].includes(s.order.state) && Date.parse(s.expiresAt) > Date.now() && ((s.nextBatch.kind === 'free' && s.entitlement.freeAvailable) || (s.nextBatch.kind === 'paid' && s.entitlement.paidPacksAvailable > 0)); }
 export class LiveGift {
     api;
     id;

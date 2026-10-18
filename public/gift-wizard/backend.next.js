@@ -19,12 +19,14 @@ export function assertSession(v) {
     for (const n of [v.entitlement.freeBatchesTotal, v.entitlement.freeBatchesUsed, v.entitlement.paidPacksAvailable, v.order.freeBatchesGranted])
         if (!Number.isInteger(n) || n < 0)
             throw new GiftApiError('invalid_entitlement_response', 0);
+    if (typeof v.entitlement.freeAvailable !== 'boolean' || ![null, 'session_limit', 'photo_limit', 'daily_limit', 'lifetime_limit'].includes(v.entitlement.freeBlockedReason))
+        throw new GiftApiError('invalid_entitlement_response', 0);
     if (!['free', 'paid', 'payment_required', 'blocked'].includes(v.nextBatch.kind) || !Array.isArray(v.geometries) || typeof v.expiresAt !== 'string')
         throw new GiftApiError('invalid_session_response', 0);
     if (!['none', 'checkout_open', 'awaiting_artwork', 'approved', 'with_lab', 'refund_requested', 'refunded', 'cancelled', 'needs_attention'].includes(v.order.state))
         throw new GiftApiError('invalid_order_state', 0);
 }
-export const integrationBlocks = Object.freeze(['approved_disclosure', 'sandbox_final_release', 'mug_card_profiles']);
+export const integrationBlocks = Object.freeze(['sandbox_final_release', 'mug_card_profiles']);
 export class GiftBackend {
     transport;
     constructor(transport) {
@@ -52,6 +54,9 @@ export class GiftBackend {
         return value;
     }
     async session(method, url, body, signal) { const result = await this.request(method, url, body, signal); assertSession(result); return result; }
+    // Existing payload types are retained; no new endpoint or entitlement response is guessed.
+    prePurchaseBatch(id, b) { return this.startBatch(id, b); }
+    prePurchaseFavorite(id, b) { return this.selectArtwork(id, b); }
     create(image_b64, signal) { return this.session('POST', '/api/v1/gift/sessions', { image_b64 }, signal); }
     restore(id, signal) { return this.session('GET', sessionPath(id), undefined, signal); }
     async catalog(signal) { const v = await this.request('GET', '/api/v1/print/catalog', undefined, signal); if (v.contractVersion !== 1 || !Array.isArray(v.products))
@@ -67,7 +72,14 @@ export class GiftBackend {
         throw new GiftApiError('invalid_pack_response', 0); return v; }
     refund(id, b, signal) { return this.request('POST', sessionPath(id) + '/refund-request', { reason: b.reason }, signal); }
     // Exact authoritative requests retained as types; held capabilities emit no request until CC/design reconciliation.
-    checkout(_id, _b) { return this.block('approved_disclosure'); }
+    async checkout(id, b) {
+        if (b.disclosureAccepted !== true || !b.disclosureVersion)
+            throw new GiftApiError('disclosure_required', 0);
+        const v = await this.request('POST', sessionPath(id) + '/checkout', b);
+        if (!v.publishableKey?.startsWith('pk_test_') || !v.stripeSessionId?.startsWith('cs_test_') || !v.clientSecret || !v.disclosure?.version || typeof v.disclosure.text !== 'string' || !v.totals || ![v.totals.itemsCents, v.totals.shippingCents, v.totals.totalCents].every(n => Number.isInteger(n) && n >= 0))
+            throw new GiftApiError('test_checkout_required', 0);
+        return v;
+    }
     startBatch(id, b) { return this.request('POST', sessionPath(id) + '/batches', { idempotencyKey: b.idempotencyKey, effectIds: b.effectIds }); }
     retryBatch(id, n) { if (!Number.isInteger(n) || n < 1)
         throw new GiftApiError('invalid_batch_index', 0); return this.request('POST', sessionPath(id) + '/batches/' + n + '/retry'); }

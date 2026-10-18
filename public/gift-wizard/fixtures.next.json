@@ -1,0 +1,56 @@
+[
+  {
+    "id": "fixture-1",
+    "url": "./assets/preview-1.jpg",
+    "label": "Sample 1",
+    "width": 768,
+    "height": 768,
+    "watermark": "baked",
+    "fixture": true
+  },
+  {
+    "id": "fixture-2",
+    "url": "./assets/preview-2.jpg",
+    "label": "Sample 2",
+    "width": 768,
+    "height": 768,
+    "watermark": "baked",
+    "fixture": true
+  },
+  {
+    "id": "fixture-3",
+    "url": "./assets/preview-3.jpg",
+    "label": "Sample 3",
+    "width": 768,
+    "height": 768,
+    "watermark": "baked",
+    "fixture": true
+  },
+  {
+    "id": "fixture-4",
+    "url": "./assets/preview-4.jpg",
+    "label": "Sample 4",
+    "width": 768,
+    "height": 768,
+    "watermark": "baked",
+    "fixture": true
+  },
+  {
+    "id": "fixture-5",
+    "url": "./assets/preview-5.jpg",
+    "label": "Sample 5",
+    "width": 768,
+    "height": 768,
+    "watermark": "baked",
+    "fixture": true
+  },
+  {
+    "id": "fixture-6",
+    "url": "./assets/preview-6.jpg",
+    "label": "Sample 6",
+    "width": 768,
+    "height": 768,
+    "watermark": "baked",
+    "fixture": true
+  }
+]
