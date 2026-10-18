@@ -163,8 +163,9 @@ function renderArt(){
  document.querySelectorAll<HTMLButtonElement>('[data-art]').forEach(b=>b.onclick=()=>{artFocus=b.dataset.art!;go('focus')});
  if($('prev-art')){const cycle=(n:number)=>{const i=batch.findIndex(p=>p.id===artFocus);artFocus=batch[(i+n+batch.length)%batch.length].id;render()};$('prev-art').onclick=()=>cycle(-1);$('next-art').onclick=()=>cycle(1)}
  if($('compare-choice'))$('compare-choice').onchange=e=>{compareId=(e.target as HTMLSelectElement).value;render()};
+ if(session.batches.length>1){$('screen').insertAdjacentHTML('beforeend','<nav class="sizes" aria-label="Your Six Previews">'+session.batches.map((_,i)=>'<button data-batch="'+i+'" aria-pressed="'+(i===batchIndex)+'">'+(i+1)+'</button>').join('')+'</nav>');document.querySelectorAll<HTMLButtonElement>('[data-batch]').forEach(b=>b.onclick=()=>{batchIndex=Number(b.dataset.batch);artFocus=session.batches[batchIndex].find(p=>p.id===session.favoriteId)?.id||session.batches[batchIndex][0].id;go('review')})}
  $('gallery').onclick=()=>go('review');$('compare').onclick=()=>go('compare');$('chooser').onclick=()=>go('effects');if($('another-batch'))$('another-batch').onclick=generate;if($('more'))$('more').onclick=()=>go('more');
- primary('Use This Artwork',()=>{if(live){if(live.session?.artworkPreviewId===art.id&&live.session.compositions.some(c=>c.sourceArtworkId===art.id&&c.compositionId)){go('compositions');return}if(live.session?.artworkPreviewId!==art.id&&live.session?.compositions.some(c=>c.status==='approved')&&!confirm('Changing the artwork requires reviewing your product compositions again. Change artwork?'))return;void serverAction(async()=>{const selected=await live.api.selectArtwork(live.id,{previewId:art.id});live.accept(selected);applyServer(selected);view='compositions';return live.api.compose(live.id)},'compositions');return}if(session.favoriteId&&session.favoriteId!==art.id&&session.compositions.some(c=>c.approved)&&!confirm('Changing the artwork requires reviewing your product compositions again. Change artwork?'))return;if(session.favoriteId!==art.id)session.compositions=[];session.favoriteId=art.id;prepareCompositions()});
+ primary('Use This Artwork',()=>{if(live){if(live.session?.artworkPreviewId===art.id&&live.session.lines.every(l=>live!.session!.compositions.some(c=>c.lineId===l.lineId&&c.productId===l.productId&&c.sourceArtworkId===art.id&&c.compositionId&&['ready','approved'].includes(c.status)))){go('compositions');return}if(live.session?.artworkPreviewId!==art.id&&live.session?.compositions.some(c=>c.status==='approved')&&!confirm('Changing the artwork requires reviewing your product compositions again. Change artwork?'))return;void serverAction(async()=>{const selected=live.session?.artworkPreviewId===art.id?live.session:await live.api.selectArtwork(live.id,{previewId:art.id});live.accept(selected);applyServer(selected);view='compositions';return live.api.compose(live.id)},'compositions');return}if(session.favoriteId&&session.favoriteId!==art.id&&session.compositions.some(c=>c.approved)&&!confirm('Changing the artwork requires reviewing your product compositions again. Change artwork?'))return;if(session.favoriteId!==art.id)session.compositions=[];session.favoriteId=art.id;prepareCompositions()});
 }
 function renderMore(){
  rail('Create Art','<p>Six more possibilities for your gift.</p>');
@@ -315,8 +316,12 @@ function applyServer(s:SessionView){
  });
  session.sessionId=s.sessionId;session.source={status:'supported',series:s.source.series,sourceRef:s.source.sourceRef,fixture:false};
  session.lines=lines;session.favoriteId=s.artworkPreviewId;
+ session.effectIds=session.effectIds.filter(id=>!s.usedEffectIds.includes(id));
  session.batches=s.batches.filter(b=>b.previews.some(p=>p.status==='ready'&&p.url)).map(b=>b.previews.filter(p=>p.status==='ready'&&p.url&&p.width&&p.height).map(p=>({id:p.previewId,url:p.url!,label:effects().find(e=>e.id===p.effectId)?.label||p.effectId,width:p.width!,height:p.height!,watermark:'baked' as const,fixture:false})));
- batchIndex=Math.max(0,session.batches.length-1);artFocus=session.batches[batchIndex]?.[0]?.id||'';
+ const retained=session.batches.findIndex(b=>b.some(p=>p.id===artFocus));
+ const selected=session.batches.findIndex(b=>b.some(p=>p.id===s.artworkPreviewId));
+ batchIndex=retained>=0?retained:selected>=0?selected:Math.max(0,session.batches.length-1);
+ artFocus=session.batches[batchIndex]?.find(p=>p.id===artFocus)?.id||session.batches[batchIndex]?.find(p=>p.id===s.artworkPreviewId)?.id||session.batches[batchIndex]?.[0]?.id||'';
 }
 async function serverAction(action:()=>Promise<SessionView>,next:View){
  if(!live||busy)return;busy=true;render();let failure='';
@@ -360,10 +365,10 @@ function adaptServerView(){
  if(view==='payment'&&paymentState==='payment-verified'){
   $('screen').querySelector('.small')?.remove();
   $('right').querySelectorAll('.small').forEach(el=>el.remove());
-  $('right').querySelectorAll('h3').forEach(el=>el.textContent=String(s.entitlement.freeBatchesTotal)+' × 6');
+  $('right').querySelectorAll('h3').forEach(el=>{if(el.textContent==='Two included sets of six previews')el.textContent=String(s.entitlement.freeBatchesTotal)+' × 6'});
   if(s.order.totalCents!==null)$('right').insertAdjacentHTML('beforeend','<p>'+money(s.order.totalCents)+'</p>');
   if(s.entitlement.freeBatchesTotal!==2)$('screen').querySelectorAll('p').forEach(el=>{if(el.textContent?.includes('first twelve'))el.textContent=''});
-  primaryLive(()=>go(session.batches.length?'review':'effects'),s.order.state!=='awaiting_artwork');
+  primaryLive(()=>go('effects'),s.order.state!=='awaiting_artwork');
  }else if(view==='payment'){
   $('primary').onclick=()=>void retryRestoration();
   if(!['auth','restoring'].includes(paymentState))($('primary') as HTMLButtonElement).disabled=false;
@@ -373,7 +378,10 @@ function adaptServerView(){
    primaryLive(()=>location.assign('/help'),false);$('primary').textContent='Concierge';
   }
  }
- if(view==='effects')primaryLive(()=>void generate(),!canCraft(s));
+ if(view==='effects'){
+  document.querySelectorAll<HTMLButtonElement>('[data-effect]').forEach(b=>{b.disabled=s.usedEffectIds.includes(b.dataset.effect!)});
+  primaryLive(()=>void generate(),!canCraft(s));
+ }
  if(['effects','review','focus','compare'].includes(view)){
   $('right').querySelectorAll('p.small').forEach(el=>{if(/Sample artwork|photo is not transformed|has not been verified/.test(el.textContent||''))el.textContent=''});
  }
