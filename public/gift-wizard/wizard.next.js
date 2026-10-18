@@ -348,7 +348,16 @@ async function generate() { if (live) {
     const s = live.session;
     if (!s || !canCraft(s))
         return;
-    await serverAction(async () => { const r = await live.api.startBatch(live.id, { ...(batchIntent || (batchIntent = { idempotencyKey: crypto.randomUUID(), effectIds: [...session.effectIds] })) }); batchIntent = null; return r.session; }, 'review');
+    await serverAction(async () => { try {
+        const r = await live.api.startBatch(live.id, { ...(batchIntent || (batchIntent = { idempotencyKey: crypto.randomUUID(), effectIds: [...session.effectIds] })) });
+        batchIntent = null;
+        return r.session;
+    }
+    catch (e) {
+        if (e instanceof GiftApiError && e.status === 400)
+            batchIntent = null;
+        throw e;
+    } }, 'review');
     return;
 } error('Preview access must be verified by the server.'); }
 function renderArt() {

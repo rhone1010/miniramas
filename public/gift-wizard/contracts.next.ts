@@ -1,6 +1,6 @@
 import type {Product,Option,Preview,Address} from './domain.next.js';
 export type Series='portraits'|'groups'|'pets';
-export interface Effect {id:string;label:string;category:string;body:string}
+export interface Effect {id:string;label:string;category:string;body:string;intake?:'group_photo'|'multi_photo'}
 export interface Registry {silos:Array<{id:string;label:string}>;effects:Effect[]}
 export interface SourceAnalysis {status:'supported'|'unsupported';series:Series|null;sourceRef:string;fixture:boolean;reason?:string}
 export interface Geometry {key:string;widthIn:number;heightIn:number;requiredPx:{w:number;h:number}}
@@ -11,7 +11,7 @@ export interface BatchRequest {sourceRef:string;series:Series;effectIds:string[]
 export interface GiftSession {sessionId:string;recipient:string;source:SourceAnalysis|null;lines:GiftLine[];effectIds:string[];batches:Preview[][];reviewedBatches:number;favoriteId:string|null;compositions:Composition[];email:string;shipTo:'self'|'recipient';address:Address}
 export const recipientOptions=['Myself','My partner or spouse','A family member','A friend','Someone else'];
 export function newSession():GiftSession{return {sessionId:'gift-dev-'+crypto.randomUUID(),recipient:'',source:null,lines:[],effectIds:[],batches:[],reviewedBatches:0,favoriteId:null,compositions:[],email:'',shipTo:'self',address:{name:'',line1:'',line2:'',city:'',state:'',postcode:'',countryCode:''}}}
-export function liveEffects(r:Registry){const ids=new Set(r.effects.map(e=>e.id));return r.silos.flatMap(s=>r.effects.filter(e=>e.category===s.id&&e.body==='live'&&!(e.id.endsWith('_woman')&&ids.has(e.id.slice(0,-6)))))}
+export function liveEffects(r:Registry){const ids=new Set(r.effects.map(e=>e.id));return r.silos.flatMap(s=>r.effects.filter(e=>e.category===s.id&&e.body==='live'&&e.intake!=='multi_photo'&&!(e.id.endsWith('_woman')&&ids.has(e.id.slice(0,-6)))))}
 export function sixEffects(manual:string[],r:Registry){const all=liveEffects(r).map(e=>e.id);if(manual.length>6||new Set(manual).size!==manual.length||manual.some(id=>!all.includes(id)))throw Error('invalid_effect_selection');return [...manual,...all.filter(id=>!manual.includes(id))].slice(0,6)}
 export function giftOption(line:GiftLine,products:Product[]){const p=products.find(p=>p.id===line.productId),o=p?.options.find(o=>o.size===line.size) as CatalogOption|undefined;if(!p?.available||!o||!Number.isInteger(line.copies)||line.copies<1||line.copies>20||!(o.imageWidthIn>0&&o.imageHeightIn>0&&o.requiredPx?.w>0&&o.requiredPx?.h>0))throw Error('invalid_product_configuration');return {product:p,option:o}}
 export function geometryFor(o:CatalogOption):Geometry{return {key:o.imageWidthIn+':'+o.imageHeightIn,widthIn:o.imageWidthIn,heightIn:o.imageHeightIn,requiredPx:{...o.requiredPx}}}

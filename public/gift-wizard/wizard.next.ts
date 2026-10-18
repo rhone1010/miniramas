@@ -159,7 +159,7 @@ function renderEffects(){
  if(session.batches.length){$('right').insertAdjacentHTML('beforeend',secondary('existing-previews','Return to My Art'));$('existing-previews').onclick=()=>go('review')}
  $('right').insertAdjacentHTML('beforeend','<p class="small">Your first two sets of six artwork previews are free. No product purchase is required. Additional sets of six: $2.99. Preview access is verified by the server.</p>');primary('Craft My Six Previews',()=>{if(layoutReview){session.batches=[fixtures];batchIndex=0;artFocus=fixtures[0]?.id||'';go('review')}else void generate()},!layoutReview);
 }
-async function generate(){if(live){const s=live.session;if(!s||!canCraft(s))return;await serverAction(async()=>{const r=await live.api.startBatch(live.id,{...(batchIntent||(batchIntent={idempotencyKey:crypto.randomUUID(),effectIds:[...session.effectIds]}))});batchIntent=null;return r.session},'review');return}error('Preview access must be verified by the server.')}
+async function generate(){if(live){const s=live.session;if(!s||!canCraft(s))return;await serverAction(async()=>{try{const r=await live.api.startBatch(live.id,{...(batchIntent||(batchIntent={idempotencyKey:crypto.randomUUID(),effectIds:[...session.effectIds]}))});batchIntent=null;return r.session}catch(e){if(e instanceof GiftApiError&&e.status===400)batchIntent=null;throw e}},'review');return}error('Preview access must be verified by the server.')}
 function renderArt(){
  rail('Your Previews<br>Are Ready','<p>You can favorite the ones you love, request variations, or try again with different effects.</p>');
  const art=currentArt()!,batch=session.batches[batchIndex];if(!compareId||!batch.some(p=>p.id===compareId)||compareId===art.id)compareId=(batch.find(p=>p.id!==art.id)||art).id;
