@@ -14,7 +14,7 @@ import { draftOrderLines, resolveFrozenProduct } from './frozen'
 import { decodeSource } from '../foyer/foyer-source'
 import { adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, MAX_PARALLEL_RENDERS, PACK_PRICE_CENTS, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
-import { StoreError, byNewest, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
+import { StoreError, byNewest, correctionUsed, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
 import { GIFT_CONTRACT_VERSION, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
 
 export type GiftErrorCode =
@@ -312,7 +312,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
         generationAspect: mine?.generation_aspect ?? g?.generationAspect ?? null, sharedWithLineIds: g?.sharedWithLineIds ?? [], picturePx: gp?.p.requirements.picturePx ?? null,
         sku: gp?.p.sku ?? null, geometrySource: gp?.source ?? 'catalog', adaptationValidation: adaptationValidationFor(rec.series, (mine?.method ?? g?.method ?? null) as 'deterministic' | 'generated' | null),
         generationMode: (mine?.generation_mode ?? null) as 'none' | 'favorite_reference' | 'photo_regeneration' | null, sourceArtworkId: mine ? mine.preview_id : null, status: (mine ? (mine.status === 'approved' ? 'approved' : 'ready') : 'none') as 'none' | 'ready' | 'approved',
-        compositionId: mine?.id ?? null, attempt: mine?.attempt ?? 0, correctionsRemaining: Math.max(0, 1 - l.corrections_used),
+        compositionId: mine?.id ?? null, attempt: mine?.attempt ?? 0, correctionsRemaining: correctionUsed(comps, l) ? 0 : 1,
         previewUrl: mine?.preview_path ? await deps.storage.signedUrl(mine.preview_path, 3600) : null, width: mine?.width ?? null, height: mine?.height ?? null,
         fit: ((mine?.plan as { fit?: string } | undefined)?.fit ?? null) as 'exact' | 'resample' | 'extend' | null,
       }

@@ -42,6 +42,14 @@ export interface CompositionRec {
   /** 052 (operator repair of a geometry defect): 0/absent for every ordinary row; a repair replacement carries 1, 2, ... beside the row it replaces, which is kept for audit. */
   repair_seq?: number
 }
+/**
+ * Whether a line's ONE included correction is spent. It is a property of the LINE across the purchase boundary: a correction made on a draft
+ * (before payment, when there is no order line to count on) is an attempt-2 composition row, and the paid order line starts its counter at 0, so the
+ * rows themselves are the record. A technical repair never creates an attempt-2 row for a first attempt and never counts.
+ */
+export const correctionUsed = (comps: Array<Pick<CompositionRec, 'line_id' | 'attempt'>>, line: Pick<OrderLineRec, 'line_id' | 'corrections_used'>): boolean =>
+  line.corrections_used >= 1 || comps.some(c => c.line_id === line.line_id && c.attempt === 2)
+
 /** The current composition of a line: the highest attempt, and within it the latest repair. */
 export const byNewest = (a: Pick<CompositionRec, 'attempt' | 'repair_seq'>, b: Pick<CompositionRec, 'attempt' | 'repair_seq'>) => b.attempt - a.attempt || (b.repair_seq ?? 0) - (a.repair_seq ?? 0)
 export interface BatchRec { id: string; session_id: string; user_id: string; batch_index: number; kind: BatchKind; pack_id: string | null; idempotency_key: string; effect_ids: string[]; created_at: string }

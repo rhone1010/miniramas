@@ -24,7 +24,7 @@ import { correctionPlanFor, groupLines, planFor, type CompositionPlan, type Plan
 import { supportsFavoriteReference } from './aspects'
 import { estimateCompositionCost } from './policy'
 import { GiftError, fromStoreError, getSessionView, owned, type GiftDeps } from './service'
-import { StoreError, byNewest, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
+import { StoreError, byNewest, correctionUsed, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
 import type { SessionView } from './types'
 
 async function selectedPreview(deps: GiftDeps, rec: SessionRec): Promise<PreviewRec> {
@@ -170,27 +170,27 @@ export async function ensureCompositions(deps: GiftDeps, userId: string, session
 /** The ONE free correction for a line: a new composition of its own (never touching what other lines share) that replaces its first. */
 export async function correctLine(deps: GiftDeps, userId: string, sessionId: string, lineId: string): Promise<SessionView> {
   const rec = await owned(deps, userId, sessionId)
-  if (!rec.order_id) throw new GiftError('order_payment_required')
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (rec.refund_requested_at) throw new GiftError('refund_pending')
-  const order = await deps.store.getOrder(rec.order_id)
-  if (!order || order.status !== 'awaiting_artwork') throw new GiftError('order_not_awaiting_artwork')
+  const scope = await scopeOf(deps, rec); requireOpen(scope)            // before payment (a draft) or after it, while the order awaits approval
   const preview = await selectedPreview(deps, rec)
-  const line = (await deps.store.orderLines(rec.order_id)).find(l => l.line_id === lineId)
-  if (!line) throw new GiftError('line_not_found')
-  const current = active(await deps.store.listCompositions(rec.id), lineId, preview.id)
+  const ls = scope.lines.find(x => x.line.line_id === lineId)
+  if (!ls) throw new GiftError('line_not_found')
+  const line = ls.line
+  const comps = await deps.store.listCompositions(rec.id)
+  const current = active(comps, lineId, preview.id)
   if (!current) throw new GiftError('composition_not_found')
-  if (line.corrections_used >= 1 || current.attempt >= 2) throw new GiftError('correction_limit')       // the rest goes to Concierge
+  if (correctionUsed(comps, line) || current.attempt >= 2) throw new GiftError('correction_limit')       // ONE per product, counted across the purchase boundary; the rest goes to Concierge
   const master = await deps.storage.get(preview.master_path!)
   if (!master) throw new GiftError('generation_unavailable')
-  const product = frozenProducts(order, [line]).get(line.line_id)!
+  const product = ls.product
   const basePlan = planOf(rec, product)
   const plan = correctionPlanFor(product, ctxOf(rec), basePlan) ?? basePlan                // a deterministic line gets one generated adaptation when one is reachable
   const fallback = basePlan.method === 'deterministic' && plan.method === 'generated'
   let files: GroupFiles
   try { files = await composeGroup(deps, rec, preview, product, plan, master, `${lineId}-2`) } catch (e) { if (e instanceof GiftError) throw e; throw new GiftError('composition_failed') }
   try { await deps.store.insertComposition(recordFor(rec, preview, line, 2, plan, files, null, true, { sku: product.sku, ...(fallback ? { correctionFallbackFrom: 'deterministic' } : {}) })) } catch (e) { fromStoreError(e); throw new GiftError('composition_failed') }
-  try { await deps.store.useCorrection(rec.id, userId, lineId) } catch (e) { fromStoreError(e) }
+  if (scope.phase === 'purchased') { try { await deps.store.useCorrection(rec.id, userId, lineId) } catch (e) { fromStoreError(e) } }        // a draft has no order line; its attempt-2 row is the record
   await deps.store.patchComposition(current.id, { status: 'superseded' })
   await removeMockupFile(deps, current)                          // the superseded composition's mockup is stale: its file goes, a new identity renders the new one
   return getSessionView(deps, userId, sessionId)

@@ -129,7 +129,7 @@ export async function giftOrderDeps(): Promise<GiftOrderDeps & { gift: GiftDeps 
   ])
   return {
     gift: giftDeps(), store: supabaseGiftStore(supabaseAdmin), stripe: getStripe(),
-    requireReviewedCompositions: process.env.GIFT_COMPOSITIONS_BEFORE_PAYMENT === '1',
+    requireReviewedCompositions: process.env.GIFT_COMPOSITIONS_BEFORE_PAYMENT !== '0',      // the approved journey; '0' switches it off
     printOrders: {
       async create(i) { const row = await printDb.createPrintOrder(i); return { id: row.id } },
       async updateUnpaid(orderId, i) {

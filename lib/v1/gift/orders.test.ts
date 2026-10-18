@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { allProducts, catalogVersion } from '../print/catalog'
 import { createGiftCheckout, confirmGiftOrder, verifyGiftPayment, giftOrderRecheck, DISCLOSURE, GIFT_ORDER_KIND, type GiftOrderDeps, type PrintOrdersPort } from './orders'
 import { createSession, setLines, startBatch, getSessionView, type GiftDeps } from './service'
-import { selectArtwork, ensureCompositions, approveComposition, approveOrder, repairLine } from './compose'
+import { selectArtwork, ensureCompositions, approveComposition, approveOrder, repairLine, correctLine } from './compose'
 import { memoryGiftStore } from './store'
 import { giftRenderId, isGiftOrder, parseGiftRenderId } from './order-kind'
 
@@ -463,5 +463,23 @@ describe('compositions reviewed before payment (the approved journey)', () => {
     await selectArtwork(r.gift, U1, sid, batch[1].previewId); await selectArtwork(r.gift, U1, sid, first)
     const v = await ensureCompositions(r.gift, U1, sid)
     expect(v.compositions.every(c => c.status === 'ready' && c.sourceArtworkId === first)).toBe(true); expect((r.gift.compose as any).mock.calls.length).toBe(made)
+  })
+
+  it('ONE included correction per product, counted across the purchase boundary: used on the draft, still spent after payment, and a technical repair never uses it', async () => {
+    const r = reviewedRig(); const sid = await sessionWithLines(r); await ensureCompositions(r.gift, U1, sid)
+    const remaining = async (line: string) => (await getSessionView(r.gift, U1, sid)).compositions.find(c => c.lineId === line)!.correctionsRemaining
+    expect([await remaining('a'), await remaining('b')]).toEqual([1, 1])
+    await correctLine(r.gift, U1, sid, 'a')                                                                    // before payment: line a's correction
+    expect(r.store.compositions.filter(c => c.line_id === 'a').map(c => [c.attempt, c.status])).toEqual([[1, 'superseded'], [2, 'ready']])
+    expect([await remaining('a'), await remaining('b')]).toEqual([0, 1])
+    await expect(correctLine(r.gift, U1, sid, 'a')).rejects.toMatchObject({ code: 'correction_limit' })
+    for (const c of r.store.compositions.filter(k => k.status === 'ready')) await approveComposition(r.gift, U1, sid, c.id)
+    const out = await checkout(r, sid); r.pay(out.stripeSessionId); await confirmGiftOrder({ stripe: r.stripe, store: r.store }, out.stripeSessionId, U1)
+    expect([await remaining('a'), await remaining('b')]).toEqual([0, 1])                                       // the paid order line starts at 0, the entitlement is not reset
+    await expect(correctLine(r.gift, U1, sid, 'a')).rejects.toMatchObject({ code: 'correction_limit' })
+    // a technical repair of line b does not touch b's correction
+    Object.assign(r.store.compositions.find(c => c.line_id === 'b' && c.status !== 'superseded')!, { width: 1575, height: 1050 })
+    expect((await repairLine(r.gift, { operator: 'ops@liten.test', userId: U1, sessionId: sid, lineId: 'b' })).status).toBe('repaired')
+    expect(await remaining('b')).toBe(1); await correctLine(r.gift, U1, sid, 'b'); expect(await remaining('b')).toBe(0)       // b's one correction is still available after the repair
   })
 })
