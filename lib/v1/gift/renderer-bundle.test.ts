@@ -24,7 +24,8 @@ describe('the renderer bundle is exactly what the manifest says', () => {
     for (const f of manifest.files) { expect(fs.statSync(path.join(ROOT, f.path)).size, f.path).toBe(f.bytes); expect(sha(f.path), f.path).toBe(f.sha256) }
   })
   it('nothing else is in the renderer or template directories: no reports, screenshots, fixtures or mug/card templates', () => {
-    const onDisk = [...walk('tools/product-mockup'), ...walk('public/gift-wizard')].filter(p => p !== 'tools/product-mockup/renderer-manifest.json')
+    // public/gift-wizard also holds the wizard front end now, so only the renderer's own folders are checked: tools/product-mockup and the template directories.
+    const onDisk = [...walk('tools/product-mockup'), ...walk('public/gift-wizard/mockup-templates'), 'public/gift-wizard/catalog.next.json'].filter(p => p !== 'tools/product-mockup/renderer-manifest.json')
     expect(onDisk.sort()).toEqual([...listed].sort())
     expect(onDisk.some(p => /ceramic-mug|greeting-card|\.md$|review\/(?!frame-finishes\/references)/.test(p))).toBe(false)
     expect(manifest.files.reduce((n, f) => n + f.bytes, 0)).toBeLessThan(5_000_000)
