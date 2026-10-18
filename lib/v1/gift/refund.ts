@@ -24,7 +24,7 @@ export interface ConciergePort {
   create(row: { id: string; user_id: string | null; reply_to: string; subject: string; body: string; context: Record<string, unknown> }): Promise<void>
 }
 
-/** The customer-facing statement of the policy. Shown at checkout (it is the last paragraph of the purchase disclosure) and wherever refunds are explained. */
+/** The customer-facing statement of the policy. Intended as the last paragraph of the purchase disclosure (pending a disclosure version bump) and for wherever refunds are explained. */
 export const REFUND_POLICY_TEXT =
   'After purchase, you may request a full refund of your gifts through Concierge until your order enters manufacturing. Once manufacturing begins, this refund is no longer available.'
 
