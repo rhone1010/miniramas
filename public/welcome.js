@@ -29,6 +29,8 @@
       'opacity:0;transition:opacity .45s ease;cursor:pointer}' +
     '.lw-scrim.is-in{opacity:1}' +
     '.lw-card{max-width:680px;width:100%;padding:44px 48px 40px;' +
+      /* fit the screen, scroll the rest - the phone shear, 27 Aug */
+      'position:relative;max-height:88dvh;overflow:auto;' +
       'background:#f3ede1;border:1px solid rgba(117,98,58,.35);' +
       'border-radius:8px;box-shadow:0 24px 64px rgba(0,0,0,.35);' +
       'cursor:default;text-align:center}' +
@@ -46,7 +48,17 @@
       'padding:.55rem 1.6rem;border-radius:999px;border:1.5px solid #7d4242;' +
       'font:italic 600 1.15rem/1 "Cormorant Garamond",serif;color:#7d4242;' +
       'background:transparent;cursor:pointer;transition:background .3s,color .3s}' +
-    '.lw-in:hover{background:#7d4242;color:#f3ede1}';
+    '.lw-in:hover{background:#7d4242;color:#f3ede1}' +
+    '.lw-x{position:absolute;top:8px;right:12px;font-size:26px;' +
+      'line-height:1;padding:6px 10px;background:none;border:none;' +
+      'color:#7d4242;cursor:pointer}' +
+    '@media(max-width:640px){' +
+      '.lw-card{padding:26px 20px 24px}' +
+      '.lw-card .lw-img{width:140px;height:140px}' +
+      '.lw-card h2{font-size:1.8rem}' +
+      '.lw-card .lw-open{font-size:1.2rem}' +
+      '.lw-card p{font-size:1.12rem}' +
+      '.lw-card .lw-note{font-size:.95rem}}';
   document.head.appendChild(css);
 
   var scrim = document.createElement('div');
@@ -55,6 +67,7 @@
   scrim.setAttribute('aria-label', 'Welcome to Liten and Co');
   scrim.innerHTML =
     '<div class="lw-card">' +
+      '<button class="lw-x" type="button" aria-label="Close">&times;</button>' +
       '<img class="lw-img" src="/welcome/rich_welcome.jpg" alt="">' +
       '<h2>Welcome to Liten &amp; Co.</h2>' +
       '<div class="lw-open">We\u2019re officially open.</div>' +
