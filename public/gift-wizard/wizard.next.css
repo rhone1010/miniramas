@@ -140,3 +140,44 @@ body:has(#screen[data-view="checkout"]) .left-rail .tagline{padding-top:20px}
 
 /* Six-stage journey: reuse existing mobile spacing and controls in two rows. */
 @media(max-width:1000px){.progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));row-gap:12px}.progress li:nth-child(3):after{display:none}}
+/* Step 4 product carousel only — review candidate. Other steps retain their approved grid. */
+body:has(#screen[data-view="products"]) #workspace{grid-template-columns:240px minmax(0,1fr) 260px}
+body:has(#screen[data-view="products"]) .left-rail{padding:32px 24px}
+body:has(#screen[data-view="products"]) .left-rail h1{font-size:42px}
+body:has(#screen[data-view="products"]) .left-rail p{font-size:22px}
+body:has(#screen[data-view="products"]) .left-rail .eyebrow{font-size:12px;letter-spacing:2px}
+body:has(#screen[data-view="products"]) .left-rail .tagline{font-size:24px}
+.gift-product-selectors{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px}
+.gift-product-selectors button{font-size:20px;padding:10px 14px;min-height:44px}
+.gift-product-selectors button[aria-pressed="true"]{background:var(--forest);color:var(--ivory);border-color:var(--forest)}
+.gift-feature{display:grid;grid-template-columns:minmax(0,550px) minmax(180px,1fr);gap:32px;align-items:center}
+.gift-feature-media{min-width:0;touch-action:pan-y}
+.gift-feature-image{display:block;width:100%;aspect-ratio:1264/848;object-fit:contain}
+.gift-feature-details{min-width:0}.gift-feature-details h2{font-size:36px}.gift-feature-price{font-size:18px}
+.gift-feature-details .primary{font-size:24px;clip-path:none;border-radius:4px;min-height:56px;margin-top:12px}
+.gift-carousel-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px}
+.gift-carousel-controls button{font-size:22px;min-height:44px}.gift-carousel-controls span{white-space:nowrap;font-size:14px}
+@media(max-width:1300px) and (min-width:1001px){body:has(#screen[data-view="products"]) #workspace{grid-template-columns:200px minmax(0,1fr) 220px}.gift-feature{gap:20px}.gift-feature-details h2{font-size:30px}}
+@media(max-width:1000px){
+body:has(#screen[data-view="products"]) #workspace{grid-template-columns:minmax(0,1fr)}
+body:has(#screen[data-view="products"]) .left-rail{padding:20px 24px}
+body:has(#screen[data-view="products"]) .left-rail h1{font-size:38px}
+.gift-product-selectors{flex-wrap:nowrap;overflow-x:auto;padding:4px 3px 12px;margin-bottom:20px;scroll-padding-inline:3px;scrollbar-width:thin}
+.gift-product-selectors button{flex:none;font-size:20px;white-space:nowrap}
+.gift-feature{grid-template-columns:minmax(0,1fr);gap:24px}.gift-feature-media{width:100%;max-width:550px;margin:auto}
+.gift-feature-details h2{font-size:32px;margin-bottom:12px}.gift-feature-details .primary{margin-top:4px}
+.gift-carousel-controls{gap:8px;margin-top:16px}.gift-carousel-controls button{font-size:20px;padding:10px 14px}
+}
+
+/* Approved Step 4 final layout; all other steps retain their rails. */
+body:has(#screen[data-view="products"]) #workspace{grid-template-columns:minmax(0,1fr);height:auto}
+body:has(#screen[data-view="products"]) .left-rail,body:has(#screen[data-view="configuration"]) .left-rail{display:none}
+body:has(#screen[data-view="configuration"]) #workspace{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+body:has(#screen:is([data-view="products"],[data-view="configuration"])) #status,body:has(#screen:is([data-view="products"],[data-view="configuration"])) .preview-note{display:none}
+body:has(#screen[data-view="products"]) .center{width:100%;max-width:1200px;margin:auto}
+body:has(#screen[data-view="products"]) .right-rail{width:100%;max-width:1200px;margin:auto;border-left:0;border-top:1px solid var(--line);flex-direction:row;align-items:center;justify-content:space-between;overflow:visible}
+.gift-product-selectors{flex-wrap:nowrap;overflow-x:auto;padding:4px 3px 12px;scroll-padding-inline:3px;scrollbar-width:thin}
+.gift-product-selectors button{flex:none;white-space:nowrap}
+.gift-favorite{display:flex;align-items:center;gap:16px;text-align:left;font-size:22px}
+.gift-favorite-thumb{width:56px;height:56px;object-fit:contain}
+@media(max-width:1000px){body:has(#screen[data-view="configuration"]) #workspace{grid-template-columns:minmax(0,1fr)}body:has(#screen[data-view="products"]) .right-rail{flex-wrap:wrap}.gift-favorite{font-size:20px}}

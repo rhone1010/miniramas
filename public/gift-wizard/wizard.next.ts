@@ -12,6 +12,7 @@ const money=(n:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency
 const asset=(s:string)=>new URL(s,import.meta.url).href;
 let session=newSession(),view:View='photo',history:View[]=[],products:Product[]=[],fixtures:Preview[]=[],registries={} as Record<Series,Registry>,manifest:any;
 let shoppingFavoriteId:string|null=null;
+let featuredProduct='';
 // Exact approved disclosure from lib/v1/gift/orders.ts, version 2026-10-18-3.
 let disclosure={
   version: '2026-10-18-3',
@@ -110,15 +111,29 @@ async function upload(file:File){
  }catch(e){busy=false;render();error(e instanceof Error?e.message:'This photograph could not be opened.')}finally{if(candidate)URL.revokeObjectURL(candidate)}
 }
 function chooseProduct(id:string){activeProduct=id;const p=products.find(p=>p.id===id)!;size=p.options[0].size;copies=1;editId=null;go('configuration')}
+function renderProductCarousel(){
+ const index=Math.max(0,products.findIndex(p=>p.id===(featuredProduct||activeProduct))),p=products[index];featuredProduct=p.id;
+ const canChoose=p.available&&p.options.length>0;
+ $('screen').innerHTML='<section class="gift-carousel" aria-roledescription="carousel" aria-label="Choose Your Gift"><div class="gift-product-selectors" aria-label="Products">'+products.map(item=>'<button type="button" data-feature="'+esc(item.id)+'" aria-pressed="'+(item.id===p.id)+'">'+esc(item.label)+'</button>').join('')+'</div><div class="gift-feature"><div class="gift-feature-media" id="gift-swipe">'+photo(asset(p.image),p.label,'gift-feature-image')+'<div class="gift-carousel-controls"><button type="button" id="gift-previous" aria-label="Previous product">← Previous</button><span aria-live="polite" aria-atomic="true">'+(index+1)+' / '+products.length+'</span><button type="button" id="gift-next" aria-label="Next product">Next →</button></div></div><div class="gift-feature-details" aria-live="polite" aria-atomic="true"><h2>'+esc(p.label)+'</h2><p class="gift-feature-price">'+(canChoose?'From '+money(Math.min(...p.options.map(o=>o.retailCents))):'Not currently available')+'</p><button class="primary" id="choose-featured" data-product="'+esc(p.id)+'" '+(!canChoose?'disabled':'')+'>Choose This Gift</button></div></div></section>';
+ const show=(id:string,focus?:string)=>{featuredProduct=id;renderProductCarousel();if(focus)document.querySelector<HTMLButtonElement>(focus)?.focus({preventScroll:true});const selected=document.querySelector<HTMLButtonElement>('[data-feature="'+featuredProduct+'"]');if(selected&&typeof selected.scrollIntoView==='function')selected.scrollIntoView({block:'nearest',inline:'nearest'});};
+ const move=(delta:number,focus?:string)=>show(products[(index+delta+products.length)%products.length].id,focus);
+ $('gift-previous').onclick=()=>move(-1,'#gift-previous');$('gift-next').onclick=()=>move(1,'#gift-next');
+ document.querySelectorAll<HTMLButtonElement>('[data-feature]').forEach(b=>{b.onclick=()=>show(b.dataset.feature!,'[data-feature="'+b.dataset.feature+'"]');b.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=(index+(e.key==='ArrowRight'?1:-1)+products.length)%products.length;show(products[n].id,'[data-feature="'+products[n].id+'"]');}};});
+ $('choose-featured').onclick=()=>{if(canChoose)chooseProduct(p.id);};
+ let touch:{x:number;y:number}|null=null;const swipe=$('gift-swipe');
+ swipe.addEventListener('touchstart',e=>{touch=e.touches.length===1?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;},{passive:true});
+ swipe.addEventListener('touchend',e=>{if(!touch||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-touch.x,dy=e.changedTouches[0].clientY-touch.y;touch=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5)move(dx<0?1:-1);},{passive:true});
+ swipe.addEventListener('touchcancel',()=>{touch=null;},{passive:true});
+}
 function renderProducts(){
  rail('Choose<br>Your Gift','<p>Bring your art to life in a format that fits your space and style.</p>');
  if(!activeProduct)activeProduct=products.find(p=>p.available)!.id;
  const p=products.find(p=>p.id===activeProduct)!;if(!p.options.some(o=>o.size===size))size=p.options[0].size;
  const o=p.options.find(o=>o.size===size) as CatalogOption;
  if(view==='products'){
- $('screen').innerHTML='<h2>1. Choose a Product</h2><div class="grid product-grid">'+products.map(p=>'<article class="product '+(p.id===activeProduct?'active':'')+'">'+photo(asset(p.image),p.label)+'<h3>'+esc(p.label)+'</h3><p class="small">'+(p.available?'From '+money(Math.min(...p.options.map(o=>o.retailCents))):'Not currently available')+'</p><button data-product="'+p.id+'" '+(!p.available?'disabled':'')+'>Choose This Gift</button></article>').join('')+'</div>';
- $('right').innerHTML=(favorite()?'<h3>Selected artwork</h3>'+photo(asset(favorite()!.url),favorite()!.label,'context-image'):'')+(session.lines.length?secondary('view-cart','Your gifts ('+session.lines.length+')'):'');
- document.querySelectorAll<HTMLButtonElement>('[data-product]').forEach(b=>b.onclick=()=>chooseProduct(b.dataset.product!));
+ renderProductCarousel();
+ $('right').innerHTML=(favorite()?'<button type="button" id="shopping-favorite" class="gift-favorite">'+photo(asset(favorite()!.url),favorite()!.label,'gift-favorite-thumb')+'<span>Selected artwork<br>Change Artwork</span></button>':'')+(session.lines.length?secondary('view-cart','Your gifts ('+session.lines.length+')'):'');
+ if($('shopping-favorite'))$('shopping-favorite').onclick=()=>go('review');
  if($('view-cart'))$('view-cart').onclick=()=>go('cart');
  return;
  }
@@ -126,6 +141,7 @@ function renderProducts(){
  $('right').innerHTML='<h3>YOUR SELECTION</h3>'+photo(asset(p.image),p.label,'context-image')+(favorite()?'<h3>Selected artwork</h3>'+photo(asset(favorite()!.url),favorite()!.label,'context-image'):'')+'<h2>'+esc(p.label)+'</h2><p>'+esc(o.label)+' · '+money(o.retailCents)+'</p><p>'+esc(o.familyNote||'')+'</p><p class="small">'+esc(Object.entries(o.attributes||{}).map(([k,v])=>k+': '+v).join(' · '))+'</p>'+'<p class="small">Product photograph. Product-specific artwork will be prepared after payment.</p>'+(session.lines.length?secondary('view-cart','Your gifts ('+session.lines.length+')'):'');
  document.querySelectorAll<HTMLButtonElement>('[data-product]').forEach(b=>b.onclick=()=>chooseProduct(b.dataset.product!));
  document.querySelectorAll<HTMLButtonElement>('[data-size]').forEach(b=>b.onclick=()=>{size=b.dataset.size!;render()});
+ $('screen').prepend($('back'));
  $('copies').oninput=e=>copies=Number((e.target as HTMLInputElement).value);
  if($('view-cart'))$('view-cart').onclick=()=>go('cart');
  primary(editId?'Update This Gift':'Add to Cart',()=>{try{const line={id:editId||crypto.randomUUID(),productId:p.id,size,copies};giftOption(line,products);const n=session.lines.findIndex(l=>l.id===line.id);if(n>=0)session.lines[n]=line;else session.lines.push(line);session.compositions=session.compositions.filter(c=>c.lineId!==line.id);editId=null;go('cart')}catch{error('Choose a quantity from 1 to 20.')}});
