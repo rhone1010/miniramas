@@ -60,6 +60,25 @@ describe('a failed render is retried, with authorization', () => {
   })
 })
 
+describe('a failure for good is dated, and never lost to a missing column', () => {
+  it('records when the item failed (the automatic recovery backoff counts from it)', async () => {
+    world({ attempts: 3 })
+    await renderOnePortfolioItem('item-1')
+    expect(itemRow().status).toBe('failed'); expect(Date.now() - Date.parse(itemRow().failed_at)).toBeLessThan(60_000)
+  })
+  it('if migration 053 has not been applied (no failed_at column) the failure is still recorded, without it', async () => {
+    world({ attempts: 3 })
+    h.fake.fault({ op: 'update', table: 'portfolio_items', match: patch => 'failed_at' in patch, message: 'column portfolio_items.failed_at does not exist' })
+    await renderOnePortfolioItem('item-1')
+    expect(itemRow()).toMatchObject({ status: 'failed', attempts: 4 }); expect(itemRow().failed_at).toBeUndefined()
+  })
+  it('an unexpected error is dated too, with its message kept', async () => {
+    h.generate = { ok: true }; h.clean.mockRejectedValue(new Error('storage exploded'))
+    await renderOnePortfolioItem('item-1')
+    expect(itemRow()).toMatchObject({ status: 'failed', error: 'storage exploded' }); expect(itemRow().failed_at).toBeTruthy()
+  })
+})
+
 describe('a retry never touches an item it does not hold', () => {
   it('already done or already failed: nothing is generated, nothing is written', async () => {
     for (const status of ['done', 'failed']) {

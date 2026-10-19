@@ -39,6 +39,20 @@ function whileHeld(query: any, held: Held): any {
   const q = query.eq('status', 'rendering')
   return held.stamp ? q.eq('rendering_started_at', held.stamp) : q
 }
+/**
+ * Mark an item failed FOR GOOD and record when (failed_at, migration 053): the automatic recovery's two-hour backoff counts from it, and an item with no failure
+ * time is never recovered. If the column does not exist yet (the migration is applied separately) the write is repeated without it, so a failure is never lost
+ * to a missing column.
+ */
+async function writeFailed(portfolioItemId: string, held: Held | null, patch: Record<string, unknown>): Promise<{ data: any; error: any }> {
+  const run = (p: Record<string, unknown>) => {
+    const q = supabaseAdmin.from('portfolio_items').update(p).eq('id', portfolioItemId)
+    return (held ? whileHeld(q, held) : q.in('status', ['pending', 'rendering'])).select('id')
+  }
+  const first = await run({ ...patch, failed_at: new Date().toISOString() })
+  if (first?.error && /failed_at/i.test(String(first.error.message ?? first.error))) return await run(patch)
+  return first
+}
 const touched = (data: unknown): boolean => !Array.isArray(data) || data.length > 0         // an unreadable answer is not proof of a lost claim
 
 export async function renderOnePortfolioItem(portfolioItemId: string): Promise<void> {
@@ -290,14 +304,12 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     console.log(`[portfolios/items/render] done item=${portfolioItemId} preview=${previewId}`)
   } catch (e: any) {
     console.error(`[portfolios/items/render] top-level failure for ${portfolioItemId}:`, e)
-    const failedNow = supabaseAdmin
-      .from('portfolio_items')
-      .update({ status: 'failed', error: e?.message || 'unhandled_error' })
-      .eq('id', portfolioItemId)
     /* A try/catch, not `.catch(...)`: the Supabase builder is a thenable with no `.catch`, so the old form threw a TypeError from INSIDE this handler. The error
        then escaped to the caller, which put the item back to 'pending', so a render that failed for a lasting reason was re-rendered (and billed) again and again. */
     try {
-      const { error } = await (held ? whileHeld(failedNow, held) : failedNow.in('status', ['pending', 'rendering']))        // never turns a finished item into a failed one
+      // never turns a finished item into a failed one (writeFailed is conditional on the claim). The message is recorded as before; recovery treats it as transient
+      // only when it names a network or provider condition (render-recovery.ts), so an unexpected error is not retried automatically.
+      const { error } = await writeFailed(portfolioItemId, held, { status: 'failed', error: e?.message || 'unhandled_error' })
       if (error) console.error(`[portfolios/items/render] ALSO failed to write error to DB for ${portfolioItemId}:`, error.message ?? error)
     } catch (dbErr: any) {
       console.error(`[portfolios/items/render] ALSO failed to write error to DB for ${portfolioItemId}:`, dbErr)
@@ -312,10 +324,7 @@ async function handleItemFailure(
   const decision = decideRetry(currentAttempts)
 
   if (!decision.shouldRetry) {
-    const { data } = await whileHeld(supabaseAdmin
-      .from('portfolio_items')
-      .update({ status: 'failed', attempts: decision.attemptNumber, error: reason })
-      .eq('id', portfolioItemId), held).select('id')
+    const { data } = await writeFailed(portfolioItemId, held, { status: 'failed', attempts: decision.attemptNumber, error: reason })
     if (touched(data)) await maybeFlipReady(portfolioId)
     return
   }

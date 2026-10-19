@@ -11,7 +11,7 @@ type Row = Record<string, any>
 type Filter = (r: Row) => boolean
 
 export type Fault =
-  | { op: 'update'; table: string; match?: (patch: Row) => boolean }
+  | { op: 'update'; table: string; match?: (patch: Row) => boolean; message?: string }
   | { op: 'upload' }
   | { op: 'download' }
 
@@ -38,8 +38,9 @@ export function fakeSupabase(init: { tables?: Record<string, Row[]>; objects?: R
       const rows = (tables[table] ??= [])
       const hit = rows.filter((r) => filters.every((f) => f(r)))
       if (mode === 'update') {
-        if (takeFault((f) => f.op === 'update' && f.table === table && (!f.match || f.match(patch!)))) {
-          return { data: null, error: { message: 'injected update failure' } }
+        let injected: Fault | undefined
+        if (takeFault((f) => { const hit = f.op === 'update' && f.table === table && (!f.match || f.match(patch!)); if (hit) injected = f; return hit })) {
+          return { data: null, error: { message: (injected as { message?: string } | undefined)?.message ?? 'injected update failure' } }
         }
         for (const r of hit) Object.assign(r, patch)
         return { data: wantRows ? hit.map((r) => ({ ...r })) : null, error: null }
@@ -52,6 +53,7 @@ export function fakeSupabase(init: { tables?: Record<string, Row[]>; objects?: R
       eq: (c: string, v: any) => { filters.push((r) => r[c] === v); return b },
       in: (c: string, vs: any[]) => { filters.push((r) => vs.includes(r[c])); return b },
       lt: (c: string, v: any) => { filters.push((r) => r[c] != null && r[c] < v); return b },
+      is: (c: string, v: any) => { filters.push((r) => (v === null ? r[c] == null : r[c] === v)); return b },
       order: () => b,
       limit: (n: number) => { limitN = n; return b },
       maybeSingle: async () => { const { data, error } = run(); return { data: data?.[0] ?? null, error } },

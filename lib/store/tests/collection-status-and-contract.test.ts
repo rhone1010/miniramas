@@ -51,6 +51,19 @@ describe.each(PAGES)('%s: what a Collection tile claims', file => {
     if (file.endsWith('pets.html')) expect(t).toEqual([])
     else expect(t.map(x => [x.crafting, x.queued, x.failed])).toEqual([[true, true, false], [true, true, false]])
   })
+  it('carries what the server says about recovery onto the piece, and says nothing it cannot back', async () => {
+    const src = text(file)
+    const ctx: any = { console, canonicalSeries: (x: string) => x, setTimeout, INCLUDED_BY_PORTFOLIO: {}, fetch: (url: string) => Promise.resolve({ ok: true, json: async () => url.endsWith('/status')
+      ? { status: 'ready', series: 'pets', aspectRatio: null, items: [{ slot: 0, preset: 'a', status: 'failed', previewId: null, previewUrl: null, recovery: 'scheduled' }, { slot: 1, preset: 'b', status: 'failed', previewId: null, previewUrl: null, recovery: null }, { slot: 2, preset: 'c', status: 'rendering', previewId: null, previewUrl: null, recovery: 'in_progress' }] }
+      : { items: [], includedRemaining: 0 } }) }
+    vm.runInNewContext(fn(src, 'loadPortfolio') + '\n' + fn(src, 'mcRecoveryNote') + '\nthis.loadPortfolio = loadPortfolio; this.note = mcRecoveryNote', ctx)
+    const t = await ctx.loadPortfolio('pf1') as Array<{ recovery: string | null; failed: boolean }>
+    expect(t.map(x => x.recovery)).toEqual(['scheduled', null, 'in_progress'])
+    expect(ctx.note(t[0])).toBe('We’ll try this piece again automatically.'); expect(ctx.note(t[1])).toBe('We couldn’t finish this piece. Please contact us.'); expect(ctx.note({})).toBe('We couldn’t finish this piece. Please contact us.')
+  })
+  it('no longer promises "This piece will be remade" (nothing remade it), and says "Trying again" only while a recovery is under way', () => {
+    const s = text(file); expect(s).not.toContain('This piece will be remade'); expect(s).toContain('Trying again…'); expect(s).toContain('mcRecoveryNote(p)')
+  })
   it('the tile wording distinguishes queued from rendering', () => {
     const s = text(file); expect(s).toContain('Waiting to start…'); expect(s).toContain('Crafting…')
   })

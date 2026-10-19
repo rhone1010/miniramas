@@ -80,7 +80,7 @@ describe('a failed render is not a crafting one', () => {
   })
 
   it('carries the state into the pieces the grid draws', () => {
-    const copies = HTML.match(/crafting:item\.crafting, queued:item\.queued, failed:item\.failed,/g) || []
+    const copies = HTML.match(/crafting:item\.crafting, queued:item\.queued, recovery:item\.recovery, failed:item\.failed,/g) || []
     expect(copies.length).toBe(2)
   })
 

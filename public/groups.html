@@ -10915,9 +10915,9 @@ function reusableUnlocksAvailable(){
       card.dataset.piece = p.key || p.id;
 
       if (p.failed){
-        card.innerHTML = '<div class="mc-modern-art mc-modern-state"><strong>Didn’t finish</strong><span>This piece will be remade.</span></div>';
+        card.innerHTML = '<div class="mc-modern-art mc-modern-state"><strong>Didn’t finish</strong><span>' + mcRecoveryNote(p) + '</span></div>';
       } else if (p.crafting){
-        card.innerHTML = '<div class="mc-modern-art mc-modern-state"><strong>' + (p.queued ? 'Waiting to start…' : 'Crafting…') + '</strong><span>' + (p.queued ? 'In the queue' : 'On the bench') + '</span></div>';
+        card.innerHTML = '<div class="mc-modern-art mc-modern-state"><strong>' + (p.recovery === 'in_progress' ? 'Trying again…' : p.queued ? 'Waiting to start…' : 'Crafting…') + '</strong><span>' + (p.queued ? 'In the queue' : 'On the bench') + '</span></div>';
       } else {
         var art = document.createElement('div');
         art.className = 'mc-modern-art';
@@ -11159,6 +11159,14 @@ function dispatchIfGenerating(list){
   });
 }
 
+/* __MC_RECOVERY_NOTE__ What a piece that did not finish may say, from what the server reports (status route: item.recovery). It used to say "This piece will be
+   remade", which nothing did. 'scheduled' = an automatic second try is coming; anything else = nothing automatic is coming, so it says that and points to support. */
+function mcRecoveryNote(p){
+  return p && p.recovery === 'scheduled'
+    ? 'We’ll try this piece again automatically.'
+    : 'We couldn’t finish this piece. Please contact us.';
+}
+
 function loadPortfolio(id){
   if (!id) return Promise.resolve(null);
   return Promise.all([
@@ -11215,6 +11223,7 @@ function loadPortfolio(id){
                locked: !unlockedBySlot[i.slot],
                crafting: tile === 'rendering' || tile === 'queued',
                queued: tile === 'queued',
+               recovery: i.recovery || null,
                failed: itemFailed || tile === 'failed',
                previewId: i.previewId, art: i.previewUrl || null,
                /* The canvas this master was rendered on. Portfolio-level, so
