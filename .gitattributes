@@ -1,3 +1,6 @@
 # The mockup renderer bundle is verified by SHA-256 (tools/product-mockup/renderer-manifest.json): keep its bytes exactly as committed, whatever the platform.
 tools/product-mockup/** -text
 public/gift-wizard/** -text
+# The customer scene renderer (tools/product-scenes) is hashed in tools/product-scenes/bundle.next.json and in the mockup cache revision: byte-exact on every platform.
+tools/product-scenes/** -text
+tools/catalog-samples/scene-replacement-review.next.cjs -text

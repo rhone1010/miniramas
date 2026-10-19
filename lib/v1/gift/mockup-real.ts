@@ -18,6 +18,7 @@ import { createHash } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import type { MockupRenderer } from './mockup'
+import type { SceneDescription, SceneRenderer } from './scenes'
 import { getProductBySku } from '../print/catalog'
 
 interface Adapter {
@@ -69,7 +70,48 @@ function revisionOf(templateId: string): Promise<string> {
   return p
 }
 
+// ── THE PHOTOGRAPHIC CUSTOMER SCENES ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// tools/product-scenes/adapter.next.cjs (Codex) wraps the same approved clean-replacement compositor. It accepts only an explicit scene id, a product family
+// and the in-memory picture, and has no network, storage, payment or approval capability. Which scene may show a purchased configuration, and the picture it is
+// given, are decided in scenes.ts; this wrapper only calls it. The scene files are shipped by outputFileTracingIncludes (next.config.js).
+interface SceneAdapter {
+  describeScene(sceneId: string): SceneDescription
+  revision(sceneId: string): string
+  renderScene(i: { sceneId: string; productFamily: string; artworkId: string; artwork: Buffer }): Promise<{ png: Buffer; width: number; height: number; templateRevision: string; visualizationKey: string; metadata: Record<string, unknown> }>
+}
+let sceneAdapter: SceneAdapter | null = null
+function loadSceneAdapter(): SceneAdapter {
+  if (sceneAdapter) return sceneAdapter
+  const { createRequire } = (process as unknown as { getBuiltinModule(id: string): typeof import('node:module') }).getBuiltinModule('node:module')
+  sceneAdapter = createRequire(path.join(root(), 'package.json'))(path.join(root(), 'tools/product-scenes/adapter.next.cjs')) as SceneAdapter
+  return sceneAdapter
+}
+const sceneDescriptions = new Map<string, SceneDescription>()
+const sceneRevisions = new Map<string, Promise<string>>()
+export const realSceneRenderer: SceneRenderer = {
+  describe(sceneId) {
+    const key = root() + '|' + sceneId
+    let d = sceneDescriptions.get(key)
+    if (!d) { d = loadSceneAdapter().describeScene(sceneId); sceneDescriptions.set(key, d) }
+    return d
+  },
+  /** Renderer code, the shared compositor, the inventory, the scene manifest and every scene asset (the adapter hashes them all). Once per process per scene; a failure is not cached. */
+  revision(sceneId) {
+    const key = root() + '|' + sceneId
+    let p = sceneRevisions.get(key)
+    if (!p) {
+      p = (async () => loadSceneAdapter().revision(sceneId))()
+      p.catch(() => sceneRevisions.delete(key))
+      sceneRevisions.set(key, p)
+    }
+    return p
+  },
+  render: i => loadSceneAdapter().renderScene(i),
+}
+
+
 export const realMockupRenderer: MockupRenderer = {
+  scenes: realSceneRenderer,
   revision: revisionOf,
   async render(i) {
     const a = loadAdapter()

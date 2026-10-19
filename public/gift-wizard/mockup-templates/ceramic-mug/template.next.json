@@ -1,0 +1,50 @@
+{
+  "id": "ceramic-mug",
+  "productId": "mug",
+  "status": "visual-ready-shared-builder-pending",
+  "dimensions": [
+    1264,
+    848
+  ],
+  "sourceImage": "source.png",
+  "artworkMask": "artwork-mask.png",
+  "backgroundMask": "background-mask.png",
+  "sources": {
+    "source.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium 11 oz white ceramic mug - image.png",
+      "sha256": "61849b73a8f0c84b71a04c72e94b09f320f92fa5973f644e646868ea1e38f32a"
+    },
+    "artwork-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium 11 oz white ceramic mug - print bw.png",
+      "sha256": "c761561b9c4fdb66f37feecbd3f44c5d6e8990fb1ba89876f9efac2792f85155"
+    },
+    "background-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium 11 oz white ceramic mug - background bw.png",
+      "sha256": "f576cf98c7619c6d644d6b9e06211b6e99373053fb7344813fc34726536d5b58"
+    }
+  },
+  "mapping": {
+    "type": "cylindrical",
+    "centerX": 605.5,
+    "radiusX": 237.5,
+    "top": {
+      "edgeY": 152.50614138014555,
+      "ellipseDepth": 29.778273290472598,
+      "rmsPixels": 0.34873516370202373
+    },
+    "bottom": {
+      "edgeY": 654.3568041859725,
+      "ellipseDepth": 76.75650577957028,
+      "rmsPixels": 3.397940157378789
+    },
+    "assumedWrapAngleRadians": 6.283185307179586,
+    "assumption": "360 degree cylinder; verified production seam and handle at wrap edges. Backend supplies a face-centered rolled wrap; rotationTurns remains 0. Physical unprinted rim unspecified by Prodigi."
+  },
+  "wrapGeometry": {
+    "widthPx": 2670,
+    "heightPx": 1110,
+    "source": "GIFT-FOUR-PRODUCTS-CODEX-CONTRACT-2026-10-18.md; verified Prodigi template"
+  },
+  "productionPrintFile": false,
+  "visualReview": "Cylindrical mapping unchanged; 100px outside-only cosine transition demonstrated in product-layout.visual.next.ts. Picture pixels and geometry unchanged. CC must adopt same builder for print and mockup before enabling purchase."
+}

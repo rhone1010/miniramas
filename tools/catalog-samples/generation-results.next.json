@@ -1,0 +1,314 @@
+{
+  "capUSD": 2,
+  "unitUSD": 0.0504,
+  "model": "google/nano-banana-2.1",
+  "priceVerified": "2026-10-19",
+  "calls": [
+    {
+      "id": "pets-premium",
+      "started": "2026-10-19T12:03:18.573Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "ed81dead336c54f8cb01ffdc847f0d2317d20df8dfea992b5b7f15c803e67b53",
+      "sourceSha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+      "styleReferenceCount": 0,
+      "predictionId": "q5ynxnbkfsrmt0d1ag5rp4wc1c",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 22.378801049,
+        "resolution_target": "2K",
+        "total_time": 22.443884344
+      },
+      "completed": "2026-10-19T12:03:41.481884344Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "pets-card",
+      "started": "2026-10-19T12:03:42.087Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "81dbb321cfb1c7d422bd37981ebbce0c44f78824a476884be87f388324dfab7a",
+      "sourceSha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+      "styleReferenceCount": 0,
+      "predictionId": "myjdwdyf2srmr0d1ag5s24semm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 23.239676063,
+        "resolution_target": "2K",
+        "total_time": 23.273468226
+      },
+      "completed": "2026-10-19T12:04:05.759468226Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "groups-fine_art",
+      "started": "2026-10-19T12:04:06.840Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "6360bab28c4eb1c8f852efdd35f44a1b949b4e67e076207753db5d5a339877b3",
+      "sourceSha256": "384f0d90ed2db527b4a0932c91888772102510a4f1cadf76700bf22214e6113a",
+      "styleReferenceCount": 0,
+      "predictionId": "dfhew6sevnrmw0d1ag689qvybr",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 23.766536883,
+        "resolution_target": "2K",
+        "total_time": 23.784833522
+      },
+      "completed": "2026-10-19T12:04:30.789833522Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "groups-premium",
+      "started": "2026-10-19T12:04:31.382Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "e87397c0bac68000fa69d82a4680a0c340a797544f899be6d89036ae7e73de0e",
+      "sourceSha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+      "styleReferenceCount": 0,
+      "predictionId": "qddb7k4emsrmy0d1ag6aa34f0m",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 22.590589258,
+        "resolution_target": "2K",
+        "total_time": 22.610563301
+      },
+      "completed": "2026-10-19T12:04:54.136563301Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "groups-framed",
+      "started": "2026-10-19T12:04:54.675Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "4aeb002ed521a667e746559332afb759e087c86bad6c4b8240a4924e98ca6c20",
+      "sourceSha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+      "styleReferenceCount": 0,
+      "predictionId": "f8kb9cqa6nrmy0d1ag6ba6vt8r",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 25.039429914,
+        "resolution_target": "2K",
+        "total_time": 25.057259838
+      },
+      "completed": "2026-10-19T12:05:20.022259838Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "groups-canvas",
+      "started": "2026-10-19T12:05:20.561Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "46d633acba026dffd21b17dd7d5d9d92e491cf4db004ac06aee873e0f35ecbf8",
+      "sourceSha256": "0ec6e986c7df97968793062a572c4f0a8d70d6e114e45d613f3e2a3d92759cab",
+      "styleReferenceCount": 0,
+      "predictionId": "5dszsa2g9srmy0d1ag6sdzcs2g",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 21.283908067,
+        "resolution_target": "2K",
+        "total_time": 21.316903796
+      },
+      "completed": "2026-10-19T12:05:42.418903796Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "groups-card",
+      "started": "2026-10-19T12:05:42.984Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "9546b2049c0a555d460c8fba12dee085036cc3fb5856b6b12762a134fd2d0acd",
+      "sourceSha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+      "styleReferenceCount": 0,
+      "predictionId": "yhd553d7adrmr0d1ag6tnnjc44",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 21.168815366,
+        "resolution_target": "2K",
+        "total_time": 21.18869766
+      },
+      "completed": "2026-10-19T12:06:04.56769766Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "portraits-premium",
+      "started": "2026-10-19T12:06:05.459Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "5768430c2f011982e08037f670b56da8db5f1ef36697ecd82f824a0f45ace760",
+      "sourceSha256": "94641985e4b89c1e98c786329ecaf4be73cbe15aabdc27fe7f23a7451644a2f5",
+      "styleReferenceCount": 0,
+      "predictionId": "5k81j4036hrmr0d1ag784n5wwm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 23.735396748,
+        "resolution_target": "2K",
+        "total_time": 23.864522972
+      },
+      "completed": "2026-10-19T12:06:30.764522972Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "portraits-framed",
+      "started": "2026-10-19T12:06:31.344Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "a7f33dee219bb9cabebd37f246dd11fa0b97f28e947c04013b12f777aa94e4f8",
+      "sourceSha256": "34f0591d130b5c54aca179e8ff6c0fce6b2f6ece5520bde7bc534492cdaa89b8",
+      "styleReferenceCount": 0,
+      "predictionId": "t01rc0k415rmr0d1ag79dpjtpg",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 24.666065481,
+        "resolution_target": "2K",
+        "total_time": 24.691581792
+      },
+      "completed": "2026-10-19T12:06:56.380581792Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "portraits-canvas",
+      "started": "2026-10-19T12:06:56.925Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "b837767a309101d8784d8b3e50464d908536405fe7280a7b81ac73a3bac40913",
+      "sourceSha256": "40df58cb356cd6d912c25317e09c5dc7f43a9d9dfc7858b8fdb4be68d26ce95e",
+      "styleReferenceCount": 0,
+      "predictionId": "5bk7pjp8a9rmt0d1ag783dvmfg",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 27.75342147,
+        "resolution_target": "2K",
+        "total_time": 27.783239218
+      },
+      "completed": "2026-10-19T12:07:25.145239218Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "portraits-card",
+      "started": "2026-10-19T12:07:25.798Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "23c7b8cbf8b7862f8e9610c46fbbb5527d2e10167649c5b1c187fa46c80b7ef3",
+      "sourceSha256": "34f0591d130b5c54aca179e8ff6c0fce6b2f6ece5520bde7bc534492cdaa89b8",
+      "styleReferenceCount": 0,
+      "predictionId": "nhzg1fhs0nrmt0d1ag7vnc691g",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 24.362153521,
+        "resolution_target": "2K",
+        "total_time": 24.393776392
+      },
+      "completed": "2026-10-19T12:07:50.606776392Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "pets-matted",
+      "started": "2026-10-19T13:12:41.528Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "9b63a4d7d482f7fb0dda9a63d553ff3cfbeb617b60798e349f067e23ef71fe1d",
+      "sourceSha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+      "styleReferenceCount": 0,
+      "predictionId": "gry4xmftg1rmy0d1ah589s12yg",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 24.532169773,
+        "resolution_target": "2K",
+        "total_time": 24.612272201
+      },
+      "completed": "2026-10-19T13:13:06.980272201Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "groups-matted",
+      "started": "2026-10-19T13:13:07.571Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "81549ab4cc37518959c36e3b93abdf49b10143c85e006f58f890c59bb6c4dd8f",
+      "sourceSha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+      "styleReferenceCount": 0,
+      "predictionId": "ea8xwqjyj1rmt0d1ah5tx0drdm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 28.421817719,
+        "resolution_target": "2K",
+        "total_time": 28.445251009
+      },
+      "completed": "2026-10-19T13:13:36.429251009Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "portraits-matted",
+      "started": "2026-10-19T13:13:36.931Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "76ba2b275a3fe663534fa1ef33bc0e114a508f04bb159e1ba552cdd264d83a72",
+      "sourceSha256": "40df58cb356cd6d912c25317e09c5dc7f43a9d9dfc7858b8fdb4be68d26ce95e",
+      "styleReferenceCount": 0,
+      "predictionId": "5hxzdxpgsxrmw0d1ah5t1e2bsm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 20.466457567,
+        "resolution_target": "2K",
+        "total_time": 20.496221631
+      },
+      "completed": "2026-10-19T13:13:57.727221631Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "pets-mug",
+      "started": "2026-10-19T13:16:08.897Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "958a4bc1964bb246ae06e6407d7088b5a075a6b0b2cf40e1d5639b56e9ff3eb1",
+      "sourceSha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+      "styleReferenceCount": 0,
+      "predictionId": "dy9pgys48drmr0d1ah7a9dq4tg",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 38.300240842,
+        "resolution_target": "2K",
+        "total_time": 38.371787421
+      },
+      "completed": "2026-10-19T13:16:48.038787421Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "groups-mug",
+      "started": "2026-10-19T13:16:48.542Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "0ee6144dc413ac2f17eaa819e0c3c6cda1d063092fafd12cdf86bd515c152ee3",
+      "sourceSha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+      "styleReferenceCount": 0,
+      "predictionId": "gp57hg5xk1rmt0d1ah78ht0q4g",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 22.524133771,
+        "resolution_target": "2K",
+        "total_time": 22.551063036
+      },
+      "completed": "2026-10-19T13:17:11.471063036Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "portraits-mug",
+      "started": "2026-10-19T13:17:12.107Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "39734721a7020176a7c6a4959c05a45f7991213b514e55c56601231cccdd27dd",
+      "sourceSha256": "94641985e4b89c1e98c786329ecaf4be73cbe15aabdc27fe7f23a7451644a2f5",
+      "styleReferenceCount": 0,
+      "predictionId": "4dm124rws1rmy0d1ah7rt1r128",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 21.995734165000002,
+        "resolution_target": "2K",
+        "total_time": 22.103714368
+      },
+      "completed": "2026-10-19T13:17:35.391714368Z",
+      "modelChargeUSD": 0.0504
+    }
+  ]
+}

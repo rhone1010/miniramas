@@ -78,3 +78,25 @@ The old "This piece will be remade" is gone. The raw error never leaves the serv
 3. Set on the deployment that should recover: `RENDER_RECOVERY_COST_USD=<cost of one render in USD>` and `RENDER_RECOVERY_ENABLED=1` (Production cron only; Preview has no cron). Optionally `RENDER_RECOVERY_DAILY_CEILING_USD` to lower the $5.
 4. Until step 3 nothing recovers. The code is safe before step 2: the failure write falls back when `failed_at` does not exist, the status route's extra read simply fails, and the sweep is off.
 Existing failures stay failed forever (no failure time). To recover one on purpose, re-queue it by hand (the SQL in `collection-recovery-readonly.sql` lists the candidates); the operator script only recovers items that failed after the migration.
+
+## RENDER_RECOVERY_COST_USD = 0.31 (2026-10-19)
+
+No invoice or billing record is available to this codebase, so the figure is the application's own cost model, the worst case per render attempt (one call of `renderOnePortfolioItem` = one `/generate` call):
+
+| Stage | Price (¢) | Source |
+|---|---|---|
+| NB2 image generation, per attempt | 5 | `COST_CENTS.nb2_generation` (`lib/bench/bench-shared.ts`) and `QA_COST.nb2` (`app/api/v1/portraits/generate/route.ts`) |
+| likeness/fidelity score, per attempt | 1 | `COST_CENTS.gpt4o_mini_score` |
+| subject classify + intake gates, detection, aesthetic score (once each) | 1 each | `QA_COST.gate`; the portraits route charges gates for classify, intake and aesthetic, plus detection |
+| Stability outpaint (Realistic/Resolving, Groups when it expands) | 4 | `COST_CENTS.stability_outpaint` |
+| gpt-image refine / face swap | 8 / 1 | both OFF in the current pipeline config; not counted |
+
+Internal attempts inside one generate call: Portraits 2 (`MAX_ATTEMPTS`), Pets 2, **Groups 4** (`MAX_ATTEMPTS_GROUPS`).
+
+* Portraits / Pets: 3 gates/detection (classify, intake, detection) 3 + 2 x (5 + 1) = 12 + aesthetic 1 + outpaint 4 = **20¢** (28¢ if the refine pass were switched on).
+* Groups: detection 1 + 4 x (5 + 1) = 24 + classify/intake 2 + aesthetic 1 + outpaint 4 = **31¢**.
+* Worst case over the three: **$0.31 per render attempt**, so `RENDER_RECOVERY_COST_USD=0.31`.
+
+The sweep reserves a whole cycle up front: (3 retries + the first render) = 4 attempts x $0.31 = **$1.24 per recovery**. With the $5 daily ceiling that is 4 recoveries a day (4 x $1.24 = $4.96; the fifth is refused until the next UTC day).
+This overstates the usual cost (most transient failures stop at the first stage and never reach four full attempts), which is the point of a ceiling.
+The model states it is accurate to about 20%; before relying on the number, run `render-cost-measure-readonly.sql` (qa_log's recorded cost per request: average, 95th percentile and maximum per series) and compare a few days with the provider invoices. If the measured maximum for Groups is below 31¢ the figure can be lowered; if above, raised. NOT set anywhere: recovery stays off.

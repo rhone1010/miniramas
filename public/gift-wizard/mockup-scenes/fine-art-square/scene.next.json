@@ -1,0 +1,55 @@
+{
+  "id": "fine-art-square",
+  "family": "fine_art",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "fine art print square.png",
+  "artworkMask": "fine art print square - art bw.png",
+  "cornersPixels": [
+    [
+      260,
+      203
+    ],
+    [
+      994,
+      203
+    ],
+    [
+      994,
+      989
+    ],
+    [
+      260,
+      989
+    ]
+  ],
+  "maskBounds": {
+    "x0": 260,
+    "y0": 203,
+    "x1": 994,
+    "y1": 989
+  },
+  "assets": [
+    {
+      "file": "fine art print square - art bw.png",
+      "sha256": "db53fd4e70915e0e6d16f4b3febdd81d6769bf9130bf0198d45205ec1624eefa",
+      "bytes": 63516
+    },
+    {
+      "file": "fine art print square - background bw.png",
+      "sha256": "08011029d87f373ce2f0c3fbe29988e4852697cd08cd51a1ef4201c2cd733273",
+      "bytes": 63452
+    },
+    {
+      "file": "fine art print square.png",
+      "sha256": "fcff637318f3bffc48179aeba5b5f341b52437cdca6f468e9f6077ed5ec585fe",
+      "bytes": 1795381
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false
+}

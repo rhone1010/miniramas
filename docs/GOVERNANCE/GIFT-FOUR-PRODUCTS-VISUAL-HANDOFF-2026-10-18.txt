@@ -1,0 +1,49 @@
+FOUR-PRODUCT VISUAL HANDOFF — 2026-10-18
+Base: CC 0f62c45, feat/gift-four-products.
+Isolated worktree: E:/Dev/_recovery-staging/four-product-mockups
+Branch: codex/four-product-mockups-isolated
+No push/deployment, paid generation, orders or fulfillment.
+
+STATUS (NOT four production approvals)
+Matted Frame: square/rectangular candidates inherit existing Classic Frame perspective and imagery unchanged. All 8 verified frame/picture dimensions tested. Full picture retained, 3% backend safety assumption preserved in metadata; no new crop. Visible mount overlap is unpublished and the mount opening remains provisional. Candidate needs mount-edge/bevel visual refinement/approval. IDs matted-frame and matted-frame-square. No live mapping enabled.
+Framed Canvas: evaluated all 7 non-held sizes. The simple flat-panel adaptation FAILED visual inspection: broad reflected strips and an empty corner do not represent a real float canvas. Status blocked-side-plane-calibration. IDs framed-canvas and framed-canvas-square are diagnostic candidates only. Do NOT add this family to GIFT_MOCKUP_READY. 8x12 remains blocked. Existing frame photograph and front-plane calibration are reusable, but additional product-specific side-plane masks/projection, frame-profile occlusion, recessed gap and cavity shadow layer are needed. Float-gap and overlap measurements remain unpublished. The test-only 0.125-inch gap is an illustrative parameter, not verified geometry. No completely new source asset set is requested.
+Mug: existing cylindrical renderer installed; 2670x1110 wrap, 1335x555 mockup input, handle right, already rolled by backend, rotation remains zero. 100px vertical margins retained. Separate product-layout.visual.next.ts candidate feathers OUTSIDE the two complete picture panels, removing the hard wash transition without cropping subjects. Every pixel inside both panels is regression-tested unchanged. Production product-layout.ts is untouched; CC must review/adopt the shared builder change for BOTH print and mockup, not mockup alone. Rim size remains a visual approximation.
+Card: existing calibrated portrait front installed and visually checked. Only card:7x5 Mohawk self-send; backend builds spread/fold/bleed and supplies 750x1050 front. Front placement passes. 36px safety remains backend-owned. Review source is existing groups-out/master_bronze_2x3.png, with small mirrored side extension to 5:7 solely for offline proof (no paid composition). The regression fallback uses white padding and does not represent a production composition.
+
+CATALOG / CC DEPENDENCIES
+All eight Wizard cards remain visible. Four new families remain available:false and backend selectable:false.
+Snapshot now includes 8 matted, 8 framed_canvas, 1 mug and 1 card option with authoritative SKU/pixel requirements and disabled reasons. No pricing invented or purchasing enabled.
+Mug/card bridge calls work with existing template IDs ceramic-mug and greeting-card. Their PNG assets are copied byte-identically from the existing E:/Dev/liten-co test templates; manifests have updated verified notes.
+Derived frame candidates are OFFLINE ONLY via composeTemplateVisualTest({templateId, artwork, artworkId, size, floatGapIn}). composeCatalogItem still supports the existing approved families only. Before production mapping, CC and Codex must add derived-family catalog routing, size-aware invocation, preserve identity.configuration {sku,requiredPx}, and include derived helper + referenced base assets in mockup-real revision/cache hashing. Current backend revisionOf does not hash derived helper or referenced base directories. Do not enable a family merely because a candidate is bundled.
+Retain GIFT_ENABLED_FAMILIES / GIFT_MOCKUP_READY gating until price approval, visual approval and mappings are complete. Existing auth, clean-paid mockups, repair/correction/approval and fulfillment controls untouched.
+
+VALIDATION
+14/14 Vitest renderer/catalog/candidate checks passed.
+29/29 node:test Wizard integration checks passed.
+Next.js 16.2 webpack production build passed using inert credentials. Existing build config skips type validation; this is not a claim of full TypeScript success.
+Actual generated mockup route route.js.nft.json includes all 48 manifest files (5,088,563 bytes); none missing.
+All six original template directories, compositor.next.cjs and frame-finish.next.cjs are unchanged from 0f62c45.
+Browser verified eight cards and disabled new-family actions at 1660 and 390. Mobile document width390 equals viewport390. No layout code changed.
+
+EVIDENCE (offline; not authenticated customer approvals)
+E:/Dev/_recovery-staging/frontend-deploy-review/four-products/wizard-desktop-1660.png
+E:/Dev/_recovery-staging/frontend-deploy-review/four-products/wizard-mobile-390.png
+E:/Dev/_recovery-staging/frontend-deploy-review/four-products/matted-8x8.png
+E:/Dev/_recovery-staging/frontend-deploy-review/four-products/matted-12x18.png
+E:/Dev/_recovery-staging/frontend-deploy-review/four-products/framed_canvas-8x8.png (REJECTED prototype)
+E:/Dev/_recovery-staging/frontend-deploy-review/four-products/mug-transition-candidate.png
+E:/Dev/_recovery-staging/frontend-deploy-review/four-products/greeting-card.png
+
+FIDELITY
+No approved UI markup/CSS copied or changed. Six image/mask binaries for mug/card match original bytes.
+Product-layout candidate source lib/v1/print/product-layout.ts lines1-75 (2026-10-18) -> lib/v1/print/product-layout.visual.next.ts lines1-87: 75 lines in,87 out. Only source line35 replaced with outside-only feather block (destination35-47), authorized by mug transition improvement. Card/QA/rolling functions remain unchanged. Candidate is not imported by production.
+
+CHANGED FILE GROUPS
+public/gift-wizard/catalog.next.json
+public/gift-wizard/mockup-templates/{ceramic-mug,greeting-card}/*
+public/gift-wizard/mockup-templates/{matted-frame,matted-frame-square,framed-canvas,framed-canvas-square}/template.next.json
+tools/product-mockup/{derived-frame.next.cjs,gift-visualization-adapter.next.cjs,renderer-manifest.json}
+lib/v1/print/product-layout.visual.next.ts
+lib/v1/gift/{renderer-bundle.test.ts,four-product-visuals.test.ts,derived-frame-visuals.test.ts,mug-transition-visual.test.ts}
+next.config.js
+This handoff.

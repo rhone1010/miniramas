@@ -1,0 +1,55 @@
+{
+  "id": "gallery-canvas-landscape",
+  "family": "canvas",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "wrapped canvas landscape.png",
+  "artworkMask": "wrapped canvas landscape - artwork bw.png",
+  "cornersPixels": [
+    [
+      139,
+      180
+    ],
+    [
+      1101,
+      180
+    ],
+    [
+      1101,
+      913
+    ],
+    [
+      139,
+      913
+    ]
+  ],
+  "maskBounds": {
+    "x0": 139,
+    "y0": 180,
+    "x1": 1101,
+    "y1": 913
+  },
+  "assets": [
+    {
+      "file": "wrapped canvas landscape - artwork bw.png",
+      "sha256": "abce16a92bea1d834a9ea8c8fe0a6936a9c0dd2bd5908b1187672c291e91c8df",
+      "bytes": 38100
+    },
+    {
+      "file": "wrapped canvas landscape- background bw.png",
+      "sha256": "5ac180784f6733bb1a83caf3e51be95cfc5411314dabb3d498da086f6690c386",
+      "bytes": 38103
+    },
+    {
+      "file": "wrapped canvas landscape.png",
+      "sha256": "a3ce4ec76b22c0c290975d0a3dceee801cc79576ec21afb44e6ea36c3139ce21",
+      "bytes": 2112081
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false
+}

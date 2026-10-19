@@ -1,0 +1,2179 @@
+{
+  "version": 1,
+  "created": "2026-10-18",
+  "registryRoot": "E:/Dev/_recovery-staging/vw-push",
+  "registryRevision": "a438b46",
+  "rendererRevision": "34f5d775783c9bf8b56724894f5ba9436c676312",
+  "paidExecutionAuthorized": false,
+  "generationPolicy": "Use current production series routes and prompt builders unchanged; no prompt text authored here. Batch renders local files only.",
+  "pricing": {
+    "provider": "Replicate google/nano-banana-2.1",
+    "url": "https://replicate.com/google/nano-banana-2.1",
+    "checked": "2026-10-18",
+    "perOutputUSD": {
+      "1K": 0.0336,
+      "2K": 0.0504,
+      "4K": 0.1134
+    },
+    "proposedResolution": "2K",
+    "newArtworkCalls": 20,
+    "unblockedNewArtworkCalls": 11,
+    "modelOnlyEstimateUSD": 1.008,
+    "unblockedModelOnlyEstimateUSD": 0.5544,
+    "additional": "17 successful authorized2K calls=$0.8568 cumulative.6 new calls this pass=$0.3024. No retries or auxiliary paid calls."
+  },
+  "rows": [
+    {
+      "id": "pets-fine_art",
+      "series": "pets",
+      "effectId": "plushy",
+      "effectLabel": "Plushy",
+      "source": {
+        "path": "H:/litenco_pets/pet_11.jpg",
+        "exists": true,
+        "width": 1024,
+        "height": 1536,
+        "sha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+        "choiceReason": "Expressive full dog; existing approved-effect output available.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "fine_art:12x18",
+      "family": "fine_art",
+      "size": "12x18",
+      "templateId": "fine-art",
+      "pictureAspect": [
+        2,
+        3
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:/Nb2.1 Output/pets/2x3/plushy__pet_11.jpg",
+        "sha256": "7d5b67f226158c3a32fd3123b7d2521c0d4374b5e39f3fb1c18bc5429029e913",
+        "dimensions": [
+          1696,
+          2528
+        ],
+        "provenance": {
+          "log": "E:/Nb2.1 Output/nb21_manifest_log.csv",
+          "predictionId": "dbsde53k6hrmr0d16c1sp10qsw",
+          "promptSha256": "395136d8b6b074daa4e24b8f6545c988dc61524fd031e43ad7fa926f0961b0f1",
+          "timestamp": "2026-10-12 19:07:34",
+          "currentPromptEquivalence": "Historical production batch; full prompt equivalence to current registry not asserted"
+        },
+        "visualReview": "Inspected 2026-10-18: requested subject/effect present, no additional crop authorized."
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
+          "sha256": "70054f084e6499b33fc402ce7978067b808f3304832f13c2942cae2c5250bea7"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-prompt.ts",
+          "sha256": "7d93a87cb44962e1be2a8847774f2fb2ca9535651997ced4acd35388df7c49a6"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-generator.ts",
+          "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
+        }
+      ],
+      "status": "ready-offline-render",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-scene-composed.png",
+          "sha256": "c049a9796b2d23dfd49585759fb70d29d1f8f3ace514d66882005affea28f058",
+          "dimensions": [
+            2202,
+            2358
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-generated.png",
+          "sourceHash": "1c118338f4eb7047cdad5fac5fab5f0b09148a89508a7c32f1c5e467501b5a97",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "fine-art-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-scene-minimal.png",
+        "sha256": "67db1a25b60267397926d530762e415f83e8ad20fe5eb08becb42185e4a9e8a3",
+        "dimensions": [
+          2048,
+          2194
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-generated.png",
+        "sourceHash": "1c118338f4eb7047cdad5fac5fab5f0b09148a89508a7c32f1c5e467501b5a97",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "fine-art-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "77dacd0aca026c8add74d99015f8717a172294685d48428eb84f4914403d79d3"
+      }
+    },
+    {
+      "id": "pets-premium",
+      "series": "pets",
+      "effectId": "watercolour",
+      "effectLabel": "Watercolour",
+      "source": {
+        "path": "H:/litenco_pets/pet_15.jpg",
+        "exists": true,
+        "width": 1024,
+        "height": 1536,
+        "sha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+        "choiceReason": "Clear cat face and paws for painterly detail.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "premium:12x18",
+      "family": "premium",
+      "size": "12x18",
+      "templateId": "premium-fine-art",
+      "pictureAspect": [
+        2,
+        3
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-premium-generated.png",
+        "sha256": "b4a00ccd2708fb34d861ee156c6f2f5c290fec76594061fe1ba8c13cb4318d16",
+        "dimensions": [
+          1696,
+          2528
+        ],
+        "provenance": {
+          "predictionId": "q5ynxnbkfsrmt0d1ag5rp4wc1c",
+          "promptSha256": "ed81dead336c54f8cb01ffdc847f0d2317d20df8dfea992b5b7f15c803e67b53",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-premium-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
+          "sha256": "70054f084e6499b33fc402ce7978067b808f3304832f13c2942cae2c5250bea7"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-prompt.ts",
+          "sha256": "7d93a87cb44962e1be2a8847774f2fb2ca9535651997ced4acd35388df7c49a6"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-generator.ts",
+          "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-premium-scene-composed.png",
+          "sha256": "407d6fb35ca8c30f51a108102f1375d8f1fc93c18faa51e75f586df3d6743f1e",
+          "dimensions": [
+            2433,
+            3060
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-premium-generated.png",
+          "sourceHash": "b4a00ccd2708fb34d861ee156c6f2f5c290fec76594061fe1ba8c13cb4318d16",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "premium-fine-art",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-premium-scene-minimal.png",
+        "sha256": "46f430c0aa71f28546109433a673714cc247291935dd72bfb6c8b6cdb1e5a6ce",
+        "dimensions": [
+          2011,
+          2528
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-premium-generated.png",
+        "sourceHash": "b4a00ccd2708fb34d861ee156c6f2f5c290fec76594061fe1ba8c13cb4318d16",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "premium-fine-art",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "1502255a321eb3e9b1a33593032337eab2d052471c4a3ca895716b737c0b9e75"
+      }
+    },
+    {
+      "id": "pets-framed",
+      "series": "pets",
+      "effectId": "stone",
+      "effectLabel": "Stone",
+      "source": {
+        "path": "H:/litenco_pets/pet_15.jpg",
+        "exists": true,
+        "width": 1024,
+        "height": 1536,
+        "sha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+        "choiceReason": "Full cat pose and existing stone output available.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "framed:12x18",
+      "family": "framed",
+      "size": "12x18",
+      "templateId": "classic-framed",
+      "pictureAspect": [
+        2,
+        3
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:/Nb2.1 Output/pets/2x3/stone__pet_15.jpg",
+        "sha256": "c7f55e3c8508163e63a87c53a95fdef8c1d4cc977998fa038131f6efbe9ddf6a",
+        "dimensions": [
+          1696,
+          2528
+        ],
+        "provenance": {
+          "log": "E:/Nb2.1 Output/nb21_manifest_log.csv",
+          "predictionId": "3rq0f2v8x5rmy0d16bysmm7pqg",
+          "promptSha256": "bc97ed9c66745c3a822374ce6e7c29fcc06858ffa142bc8a0bd3d88fc39c425e",
+          "timestamp": "2026-10-12 19:00:56",
+          "currentPromptEquivalence": "Historical production batch; full prompt equivalence to current registry not asserted"
+        },
+        "visualReview": "Inspected 2026-10-18: requested subject/effect present, no additional crop authorized."
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
+          "sha256": "70054f084e6499b33fc402ce7978067b808f3304832f13c2942cae2c5250bea7"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-prompt.ts",
+          "sha256": "7d93a87cb44962e1be2a8847774f2fb2ca9535651997ced4acd35388df7c49a6"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-generator.ts",
+          "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
+        }
+      ],
+      "status": "ready-offline-render",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed-scene-composed.png",
+          "sha256": "ced34bc8619998d0e5658b961870909fe6f96ba165b03b29200c9ce5698f61d5",
+          "dimensions": [
+            3006,
+            2013
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed-generated.png",
+          "sourceHash": "f1e880e4d714a760f20dfe3a04aaad69d5b8f4a37e69f03d09093bf6fe7205e9",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "classic-framed",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed-scene-minimal.png",
+        "sha256": "483d7ca81f65b106820fe2ed78485a7852725d9d5ceb034e27b5798a822f7376",
+        "dimensions": [
+          2533,
+          1696
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed-generated.png",
+        "sourceHash": "f1e880e4d714a760f20dfe3a04aaad69d5b8f4a37e69f03d09093bf6fe7205e9",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "classic-framed",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "9140fc03990acd6aa01584c26880f077725f7f99de870ab528a760eef63ecbed"
+      }
+    },
+    {
+      "id": "pets-matted",
+      "series": "pets",
+      "effectId": "mosaic_portrait",
+      "effectLabel": "Mosaic",
+      "source": {
+        "path": "H:/litenco_pets/pet_11.jpg",
+        "exists": true,
+        "width": 1024,
+        "height": 1536,
+        "sha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+        "choiceReason": "Recognizable dog ears and markings.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "matted:8x8",
+      "family": "matted",
+      "size": "8x8",
+      "templateId": "matted-frame-square",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-matted-generated.png",
+        "sha256": "89d0b0ebe2c89e366513ada81648b0fac5f2617de718cc5a037a37ec0342ec75",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "gry4xmftg1rmy0d1ah589s12yg",
+          "promptSha256": "9b63a4d7d482f7fb0dda9a63d553ff3cfbeb617b60798e349f067e23ef71fe1d",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-matted-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
+          "sha256": "70054f084e6499b33fc402ce7978067b808f3304832f13c2942cae2c5250bea7"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-prompt.ts",
+          "sha256": "7d93a87cb44962e1be2a8847774f2fb2ca9535651997ced4acd35388df7c49a6"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-generator.ts",
+          "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-matted-scene-composed.png",
+          "sha256": "db8ebc226b8013416daa506b50ee23bd6504eb8f18712b93e9a6fe4a18fa8925",
+          "dimensions": [
+            2068,
+            2115
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-matted-generated.png",
+          "sourceHash": "89d0b0ebe2c89e366513ada81648b0fac5f2617de718cc5a037a37ec0342ec75",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "matted-frame-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-matted-scene-minimal.png",
+        "sha256": "39234332689f2cb881d1627c47dc413c53a0e6c2fcbc6523f540d95f9da18e12",
+        "dimensions": [
+          2048,
+          2095
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-matted-generated.png",
+        "sourceHash": "89d0b0ebe2c89e366513ada81648b0fac5f2617de718cc5a037a37ec0342ec75",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "matted-frame-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "123e727e660006c2bd2ed015349d3e4895b16a57d1c5a1badc6939de10ed96a1"
+      }
+    },
+    {
+      "id": "pets-canvas",
+      "series": "pets",
+      "effectId": "stained_glass",
+      "effectLabel": "Stained Glass",
+      "source": {
+        "path": "H:/litenco_pets/pet_05.jpg",
+        "exists": true,
+        "width": 1024,
+        "height": 1536,
+        "sha256": "2f2463d99ba18c4d813a904fbf13be0626255f1496c11ebce6f0c27a06d12ba2",
+        "choiceReason": "Horse head suits deliberate bust; existing output available.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "canvas:8x8",
+      "family": "canvas",
+      "size": "8x8",
+      "templateId": "gallery-canvas-square",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:/Nb2.1 Output/pets/1x1/stained_glass__pet_05.jpg",
+        "sha256": "72407cb40cdc572cbd951136f095866f69c7b01203880b064310aefd3ef10875",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "log": "E:/Nb2.1 Output/nb21_manifest_log.csv",
+          "predictionId": "mj3mn6w26hrmr0d16c5bp04kaw",
+          "promptSha256": "9bff06d664bccb52610a3997bdaa0145a5a7d85335d57827df1cf34f6d817e6d",
+          "timestamp": "2026-10-12 19:15:12",
+          "currentPromptEquivalence": "Historical production batch; full prompt equivalence to current registry not asserted"
+        },
+        "visualReview": "Inspected 2026-10-18: requested subject/effect present, no additional crop authorized."
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
+          "sha256": "70054f084e6499b33fc402ce7978067b808f3304832f13c2942cae2c5250bea7"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-prompt.ts",
+          "sha256": "7d93a87cb44962e1be2a8847774f2fb2ca9535651997ced4acd35388df7c49a6"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-generator.ts",
+          "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
+        }
+      ],
+      "status": "ready-offline-render",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-canvas-scene-composed.png",
+          "sha256": "ae638ce61949d1941411353fd52e1fec9f3c361ea702cfcefa0b0d4bb29d2b21",
+          "dimensions": [
+            2568,
+            2523
+          ],
+          "sourcePath": "E:/Nb2.1 Output/pets/1x1/stained_glass__pet_05.jpg",
+          "sourceHash": "72407cb40cdc572cbd951136f095866f69c7b01203880b064310aefd3ef10875",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "gallery-canvas-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-canvas-scene-minimal.png",
+        "sha256": "8bad196a0be2cf287c3c1807d8c0e8b976a88d1a15916ae5dd70bf6529fbbb9b",
+        "dimensions": [
+          2085,
+          2048
+        ],
+        "sourcePath": "E:/Nb2.1 Output/pets/1x1/stained_glass__pet_05.jpg",
+        "sourceHash": "72407cb40cdc572cbd951136f095866f69c7b01203880b064310aefd3ef10875",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "gallery-canvas-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "f9835a46d65d6c0af1fc2c3fe4549a5e1d06760d16e1660c59ab0123120db807"
+      }
+    },
+    {
+      "id": "pets-framed_canvas",
+      "series": "pets",
+      "effectId": "action_figure",
+      "effectLabel": "Action Figure",
+      "source": {
+        "path": "H:/litenco_pets/pet_11.jpg",
+        "exists": true,
+        "width": 1024,
+        "height": 1536,
+        "sha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+        "choiceReason": "Full dog anatomy visible for jointed figure.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "framed_canvas:8x8",
+      "family": "framed_canvas",
+      "size": "8x8",
+      "templateId": "framed-canvas-square",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": null,
+      "templateHold": "float-canvas-side-plane-calibration",
+      "artwork": null,
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
+          "sha256": "70054f084e6499b33fc402ce7978067b808f3304832f13c2942cae2c5250bea7"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-prompt.ts",
+          "sha256": "7d93a87cb44962e1be2a8847774f2fb2ca9535651997ced4acd35388df7c49a6"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-generator.ts",
+          "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
+        }
+      ],
+      "status": "template-blocked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed_canvas-scene-composed.png",
+          "sha256": "8dee3402d5a485a1be9dc7d836edfb9b06ca4895961060c34bc9c461c2012c86",
+          "dimensions": [
+            2185,
+            2180
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed_canvas-generated.png",
+          "sourceHash": "6bdd7114e391047a79c0fc8b187f47a9f15f2c86589ce67987d59832ae486937",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "framed-canvas",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed_canvas-scene-minimal.png",
+        "sha256": "7e74d0e5b32aa69a234e430c36aa88c11b929b3f253c1dbeacbb19b0d28fa986",
+        "dimensions": [
+          2053,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed_canvas-generated.png",
+        "sourceHash": "6bdd7114e391047a79c0fc8b187f47a9f15f2c86589ce67987d59832ae486937",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "framed-canvas",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "ebd97b99cfd5bf3df8d722d10e121d20b1f676ce3ff0057685081bc284f30a74"
+      }
+    },
+    {
+      "id": "pets-mug",
+      "series": "pets",
+      "effectId": "impressionist",
+      "effectLabel": "Impressionist",
+      "source": {
+        "path": "H:/litenco_pets/pet_15.jpg",
+        "exists": true,
+        "width": 1024,
+        "height": 1536,
+        "sha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+        "choiceReason": "Cat face and fur patterns remain identifiable on mug face.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "mug:11oz",
+      "family": "mug",
+      "size": "11oz",
+      "templateId": "ceramic-mug",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": "Generate square 910x910 visible picture; backend builds 2670x1110 full wrap, with 100px vertical margin. Do not stretch square picture to full wrap.",
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-mug-generated.png",
+        "sha256": "a3848bd51255710c0f1c8d68bfb6f38afc49466e1b0ea5d15eea8a08f587456c",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "dy9pgys48drmr0d1ah7a9dq4tg",
+          "promptSha256": "958a4bc1964bb246ae06e6407d7088b5a075a6b0b2cf40e1d5639b56e9ff3eb1",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-mug-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
+          "sha256": "70054f084e6499b33fc402ce7978067b808f3304832f13c2942cae2c5250bea7"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-prompt.ts",
+          "sha256": "7d93a87cb44962e1be2a8847774f2fb2ca9535651997ced4acd35388df7c49a6"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-generator.ts",
+          "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-mug-scene-composed.png",
+          "sha256": "b8967ed467003810f91cedc36e3f65a017d08c18dea04f867aa69af3ef4712f3",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-mug-generated.png",
+          "sourceHash": "a3848bd51255710c0f1c8d68bfb6f38afc49466e1b0ea5d15eea8a08f587456c",
+          "fit": "exact",
+          "outpainted": false,
+          "sceneId": "ceramic-mug",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-mug-scene-minimal.png",
+        "sha256": "b8967ed467003810f91cedc36e3f65a017d08c18dea04f867aa69af3ef4712f3",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-mug-generated.png",
+        "sourceHash": "a3848bd51255710c0f1c8d68bfb6f38afc49466e1b0ea5d15eea8a08f587456c",
+        "fit": "exact",
+        "outpainted": false,
+        "sceneId": "ceramic-mug",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "b8967ed467003810f91cedc36e3f65a017d08c18dea04f867aa69af3ef4712f3"
+      }
+    },
+    {
+      "id": "pets-card",
+      "series": "pets",
+      "effectId": "sheet_music",
+      "effectLabel": "Sheet Music",
+      "source": {
+        "path": "H:/litenco_pets/pet_11.jpg",
+        "exists": true,
+        "width": 1024,
+        "height": 1536,
+        "sha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+        "choiceReason": "Clear dog silhouette suits notation texture.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "card:7x5",
+      "family": "card",
+      "size": "7x5",
+      "templateId": "greeting-card",
+      "pictureAspect": [
+        5,
+        7
+      ],
+      "generationAspect": "3:4",
+      "geometryNote": "5:7 front; NB2.1 lacks exact 5:7. Approved production adaptation needed after the nearest supported generation ratio; no crop or guessed extension.",
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-card-front.png",
+        "sha256": "773d6653a9c5d2916f5217185cd8801d4729bd6f00f2902753d90ce82cf88392",
+        "dimensions": [
+          1795,
+          2513
+        ],
+        "provenance": {
+          "predictionId": "myjdwdyf2srmr0d1ag5s24semm",
+          "promptSha256": "81dbb321cfb1c7d422bd37981ebbce0c44f78824a476884be87f388324dfab7a",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-card-generated.png",
+          "adaptation": {
+            "method": "bounded-mirror-extension",
+            "extension": 0.04533333333333345,
+            "compatibility": "extension",
+            "width": 1795,
+            "height": 2513,
+            "padding": {
+              "left": 1,
+              "right": 2,
+              "top": 56,
+              "bottom": 57
+            },
+            "croppedPixels": 0,
+            "authority": "lib/v1/gift/four-product-visuals.test.ts and lib/v1/print/geometry.ts"
+          }
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
+          "sha256": "70054f084e6499b33fc402ce7978067b808f3304832f13c2942cae2c5250bea7"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-prompt.ts",
+          "sha256": "7d93a87cb44962e1be2a8847774f2fb2ca9535651997ced4acd35388df7c49a6"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-generator.ts",
+          "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-card-scene-composed.png",
+          "sha256": "60a9e2008f67d548b19197fb932391cd4a09362d30cc86906843f456801d8e34",
+          "dimensions": [
+            2093,
+            2933
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-card-front.png",
+          "sourceHash": "773d6653a9c5d2916f5217185cd8801d4729bd6f00f2902753d90ce82cf88392",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "greeting-card",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-card-scene-minimal.png",
+        "sha256": "0a301aac503aa6be1763231b04901489fe0f8877e71a88cba7533ea736453af0",
+        "dimensions": [
+          1795,
+          2516
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-card-front.png",
+        "sourceHash": "773d6653a9c5d2916f5217185cd8801d4729bd6f00f2902753d90ce82cf88392",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "greeting-card",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "773d6653a9c5d2916f5217185cd8801d4729bd6f00f2902753d90ce82cf88392"
+      }
+    },
+    {
+      "id": "groups-fine_art",
+      "series": "groups",
+      "effectId": "action_figures",
+      "effectLabel": "Action Figures",
+      "source": {
+        "path": "H:/litenco groups/images/liten_groups__02_01.jpg",
+        "exists": true,
+        "width": 379,
+        "height": 252,
+        "sha256": "384f0d90ed2db527b4a0932c91888772102510a4f1cadf76700bf22214e6113a",
+        "choiceReason": "Five separated wedding subjects.",
+        "qualityCaution": "Low-resolution source; inspect likeness before publication"
+      },
+      "subjectCount": 5,
+      "productId": "fine_art:12x18",
+      "family": "fine_art",
+      "size": "12x18",
+      "templateId": "fine-art",
+      "pictureAspect": [
+        2,
+        3
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-fine_art-generated.png",
+        "sha256": "4dcbac84dfdd9e46c87801a9f8419f48cf8f26cc2adf91a28029b404b9305a5e",
+        "dimensions": [
+          1696,
+          2528
+        ],
+        "provenance": {
+          "predictionId": "dfhew6sevnrmw0d1ag689qvybr",
+          "promptSha256": "6360bab28c4eb1c8f852efdd35f44a1b949b4e67e076207753db5d5a339877b3",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-fine_art-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
+          "sha256": "b92c973ab0b4864dba14e4d59931c675c56ada8a0de1ad5851de947b2858d4a1"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-generator.ts",
+          "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-scene-composed.png",
+          "sha256": "047d45096b4154288b02621551d5c27bd33b4a24ec3cb9a7295ab86348fb1c86",
+          "dimensions": [
+            2202,
+            2358
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-generated.png",
+          "sourceHash": "df418cd216d5ce3223f6534211b074b45c3e9d3e29f9dcc8648a6547aab488b8",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "fine-art-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-scene-minimal.png",
+        "sha256": "1ece6a5e218bd426780e9ad654e9421db55f969c00265c85d68b217f21b04b1f",
+        "dimensions": [
+          2048,
+          2194
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-generated.png",
+        "sourceHash": "df418cd216d5ce3223f6534211b074b45c3e9d3e29f9dcc8648a6547aab488b8",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "fine-art-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "2eee75acfa095f34fc4c71eb8e26fee7f3b19f0433b827bcac670c019a64a01b"
+      }
+    },
+    {
+      "id": "groups-premium",
+      "series": "groups",
+      "effectId": "impressionist_faces",
+      "effectLabel": "Impressionist Portraits",
+      "source": {
+        "path": "H:/litenco groups/images/liten_groups__02_03.jpg",
+        "exists": true,
+        "width": 385,
+        "height": 252,
+        "sha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+        "choiceReason": "Three clear faces; current Faces registry supports this group input.",
+        "qualityCaution": "Low-resolution source; inspect likeness before publication"
+      },
+      "subjectCount": 3,
+      "productId": "premium:12x18",
+      "family": "premium",
+      "size": "12x18",
+      "templateId": "premium-fine-art",
+      "pictureAspect": [
+        2,
+        3
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-premium-generated.png",
+        "sha256": "3d8a19714db78e3b871057a8873711875acf154ddc3e3477131383e6739546b6",
+        "dimensions": [
+          1696,
+          2528
+        ],
+        "provenance": {
+          "predictionId": "qddb7k4emsrmy0d1ag6aa34f0m",
+          "promptSha256": "e87397c0bac68000fa69d82a4680a0c340a797544f899be6d89036ae7e73de0e",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-premium-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
+          "sha256": "b92c973ab0b4864dba14e4d59931c675c56ada8a0de1ad5851de947b2858d4a1"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-generator.ts",
+          "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-premium-scene-composed.png",
+          "sha256": "1ff538c53a3991ad34c244c33a2d66379700b4be7c304b448d7dcbdbcfdc5547",
+          "dimensions": [
+            2433,
+            3060
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-premium-generated.png",
+          "sourceHash": "3d8a19714db78e3b871057a8873711875acf154ddc3e3477131383e6739546b6",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "premium-fine-art",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-premium-scene-minimal.png",
+        "sha256": "b6f2240de9df0db4e064e34036e53159d6ba01bc523d18a6ccd182bbeb64e05c",
+        "dimensions": [
+          2011,
+          2528
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-premium-generated.png",
+        "sourceHash": "3d8a19714db78e3b871057a8873711875acf154ddc3e3477131383e6739546b6",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "premium-fine-art",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "dd61dbaef0bee2c45c393d7da1749cab16fd76e5b391fbf4589b2d56af033603"
+      }
+    },
+    {
+      "id": "groups-framed",
+      "series": "groups",
+      "effectId": "stone",
+      "effectLabel": "Stone",
+      "source": {
+        "path": "H:/litenco groups/images/liten_groups__02_03.jpg",
+        "exists": true,
+        "width": 385,
+        "height": 252,
+        "sha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+        "choiceReason": "Three unobscured faces suit tall product.",
+        "qualityCaution": "Low-resolution source; inspect likeness before publication"
+      },
+      "subjectCount": 3,
+      "productId": "framed:12x18",
+      "family": "framed",
+      "size": "12x18",
+      "templateId": "classic-framed",
+      "pictureAspect": [
+        2,
+        3
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-framed-generated.png",
+        "sha256": "720b2482b0472660a878b608d1a731d89f87a349c2a918b7e2b2fecb1ed1774c",
+        "dimensions": [
+          1696,
+          2528
+        ],
+        "provenance": {
+          "predictionId": "f8kb9cqa6nrmy0d1ag6ba6vt8r",
+          "promptSha256": "4aeb002ed521a667e746559332afb759e087c86bad6c4b8240a4924e98ca6c20",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-framed-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
+          "sha256": "b92c973ab0b4864dba14e4d59931c675c56ada8a0de1ad5851de947b2858d4a1"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-generator.ts",
+          "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed-scene-composed.png",
+          "sha256": "93f24ffa074fe1d1ac25c4e4c59e15df038098b2635fcb91f9155d3075caf1d7",
+          "dimensions": [
+            3006,
+            2013
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed-generated.png",
+          "sourceHash": "df8e70c8eecd38d5912f9bcbf72e9c989ffce39ad038d89420feb9f17768e4e7",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "classic-framed",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed-scene-minimal.png",
+        "sha256": "4f5fab79a7142a00d301ede7dc8d867c4fe6bd3856f3207e468d4e3ee2e1a2de",
+        "dimensions": [
+          2533,
+          1696
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed-generated.png",
+        "sourceHash": "df8e70c8eecd38d5912f9bcbf72e9c989ffce39ad038d89420feb9f17768e4e7",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "classic-framed",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "cce494852a98edbdaf80275641c8b311a33ab91bb7b8fbd27bcde7f33da95797"
+      }
+    },
+    {
+      "id": "groups-matted",
+      "series": "groups",
+      "effectId": "mosaic_faces",
+      "effectLabel": "Mosaic",
+      "source": {
+        "path": "H:/litenco groups/images/liten_groups__02_03.jpg",
+        "exists": true,
+        "width": 385,
+        "height": 252,
+        "sha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+        "choiceReason": "Three clear faces for independent panels.",
+        "qualityCaution": "Low-resolution source; inspect likeness before publication"
+      },
+      "subjectCount": 3,
+      "productId": "matted:8x8",
+      "family": "matted",
+      "size": "8x8",
+      "templateId": "matted-frame-square",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-matted-generated.png",
+        "sha256": "221ace899201092bc30d5aaccbd351bfdcb756edcbe068c90215d121309d3ae8",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "ea8xwqjyj1rmt0d1ah5tx0drdm",
+          "promptSha256": "81549ab4cc37518959c36e3b93abdf49b10143c85e006f58f890c59bb6c4dd8f",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-matted-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
+          "sha256": "b92c973ab0b4864dba14e4d59931c675c56ada8a0de1ad5851de947b2858d4a1"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-generator.ts",
+          "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-matted-scene-composed.png",
+          "sha256": "6e8e0c2d4f90f8c2f0edae895b069af23e534949a5ad1f1f2163fce1fd104d45",
+          "dimensions": [
+            2068,
+            2115
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-matted-generated.png",
+          "sourceHash": "221ace899201092bc30d5aaccbd351bfdcb756edcbe068c90215d121309d3ae8",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "matted-frame-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-matted-scene-minimal.png",
+        "sha256": "14b8c4ae37789a247535fa49d4bec04d1601805e429cc435c1868fcf36f10318",
+        "dimensions": [
+          2048,
+          2095
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-matted-generated.png",
+        "sourceHash": "221ace899201092bc30d5aaccbd351bfdcb756edcbe068c90215d121309d3ae8",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "matted-frame-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "ee3c7f52007ef157c07cee891fa4ad6046d01ea64070d13d601bf7f6009f7738"
+      }
+    },
+    {
+      "id": "groups-canvas",
+      "series": "groups",
+      "effectId": "jade",
+      "effectLabel": "Jade",
+      "source": {
+        "path": "H:/litenco groups/images/source_groups_19.jpeg",
+        "exists": true,
+        "width": 1200,
+        "height": 896,
+        "sha256": "0ec6e986c7df97968793062a572c4f0a8d70d6e114e45d613f3e2a3d92759cab",
+        "choiceReason": "Seven-person family arrangement suits square composition; includes child.",
+        "qualityCaution": null
+      },
+      "subjectCount": 7,
+      "productId": "canvas:8x8",
+      "family": "canvas",
+      "size": "8x8",
+      "templateId": "gallery-canvas-square",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-canvas-generated.png",
+        "sha256": "13e50715db9f55e1789b519956bb1611f4e96b48a5c446158e594b4d16386b25",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "5dszsa2g9srmy0d1ag6sdzcs2g",
+          "promptSha256": "46d633acba026dffd21b17dd7d5d9d92e491cf4db004ac06aee873e0f35ecbf8",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-canvas-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
+          "sha256": "b92c973ab0b4864dba14e4d59931c675c56ada8a0de1ad5851de947b2858d4a1"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-generator.ts",
+          "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-canvas-scene-composed.png",
+          "sha256": "785c8da33e645752750ced9f14cba504b0465ed01c84f2ccdbda17ad626452fd",
+          "dimensions": [
+            2568,
+            2523
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-canvas-generated.png",
+          "sourceHash": "13e50715db9f55e1789b519956bb1611f4e96b48a5c446158e594b4d16386b25",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "gallery-canvas-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-canvas-scene-minimal.png",
+        "sha256": "ffe5f175a8e60e518e2bad78db6f83cb9b357ac3196a4fdb7e3cce99fb8b3bfe",
+        "dimensions": [
+          2085,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-canvas-generated.png",
+        "sourceHash": "13e50715db9f55e1789b519956bb1611f4e96b48a5c446158e594b4d16386b25",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "gallery-canvas-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "09df1758f989f7bd713a50c620fcb9774c07f3c1d616fc820e6cb4313089abb3"
+      }
+    },
+    {
+      "id": "groups-framed_canvas",
+      "series": "groups",
+      "effectId": "silver",
+      "effectLabel": "Silver",
+      "source": {
+        "path": "H:/litenco groups/images/liten_groups__02_01.jpg",
+        "exists": true,
+        "width": 379,
+        "height": 252,
+        "sha256": "384f0d90ed2db527b4a0932c91888772102510a4f1cadf76700bf22214e6113a",
+        "choiceReason": "Separated wedding figures for metallic treatment.",
+        "qualityCaution": "Low-resolution source; inspect likeness before publication"
+      },
+      "subjectCount": 5,
+      "productId": "framed_canvas:8x8",
+      "family": "framed_canvas",
+      "size": "8x8",
+      "templateId": "framed-canvas-square",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": null,
+      "templateHold": "float-canvas-side-plane-calibration",
+      "artwork": null,
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
+          "sha256": "b92c973ab0b4864dba14e4d59931c675c56ada8a0de1ad5851de947b2858d4a1"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-generator.ts",
+          "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
+        }
+      ],
+      "status": "template-blocked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed_canvas-scene-composed.png",
+          "sha256": "f14ffbf923d3624274b388937c8f5ee6a5e322d3014bce98acbc357df5f8a183",
+          "dimensions": [
+            2185,
+            2180
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed_canvas-generated.png",
+          "sourceHash": "4398aeb3043f66668147fbe5e5c106d361b51bc680552a86d2420d84f828b0a7",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "framed-canvas",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed_canvas-scene-minimal.png",
+        "sha256": "7700737c9ef0e97b686adae97fc35eceb267c103e8ab9c7ef14bbc2246115153",
+        "dimensions": [
+          2053,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed_canvas-generated.png",
+        "sourceHash": "4398aeb3043f66668147fbe5e5c106d361b51bc680552a86d2420d84f828b0a7",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "framed-canvas",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "d2fab4baedc6b444871d2fcb60cd331cde08148eb3f57f38822d54a9166bd4f9"
+      }
+    },
+    {
+      "id": "groups-mug",
+      "series": "groups",
+      "effectId": "sheet_music",
+      "effectLabel": "Sheet Music",
+      "source": {
+        "path": "H:/litenco groups/images/liten_groups__02_03.jpg",
+        "exists": true,
+        "width": 385,
+        "height": 252,
+        "sha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+        "choiceReason": "Three-person source keeps faces readable on mug face.",
+        "qualityCaution": "Low-resolution source; inspect likeness before publication"
+      },
+      "subjectCount": 3,
+      "productId": "mug:11oz",
+      "family": "mug",
+      "size": "11oz",
+      "templateId": "ceramic-mug",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": "Generate square 910x910 visible picture; backend builds 2670x1110 full wrap, with 100px vertical margin. Do not stretch square picture to full wrap.",
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-mug-generated.png",
+        "sha256": "e23852c988e7bb76f96333458f08890aedb7346213023f1681f1703487a91de6",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "gp57hg5xk1rmt0d1ah78ht0q4g",
+          "promptSha256": "0ee6144dc413ac2f17eaa819e0c3c6cda1d063092fafd12cdf86bd515c152ee3",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-mug-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
+          "sha256": "b92c973ab0b4864dba14e4d59931c675c56ada8a0de1ad5851de947b2858d4a1"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-generator.ts",
+          "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-mug-scene-composed.png",
+          "sha256": "ea1a6257b0a5f9b046d67751d6f5661736d4fe5fa9d12244c9bcea3fbe33ba3e",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-mug-generated.png",
+          "sourceHash": "e23852c988e7bb76f96333458f08890aedb7346213023f1681f1703487a91de6",
+          "fit": "exact",
+          "outpainted": false,
+          "sceneId": "ceramic-mug",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-mug-scene-minimal.png",
+        "sha256": "ea1a6257b0a5f9b046d67751d6f5661736d4fe5fa9d12244c9bcea3fbe33ba3e",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-mug-generated.png",
+        "sourceHash": "e23852c988e7bb76f96333458f08890aedb7346213023f1681f1703487a91de6",
+        "fit": "exact",
+        "outpainted": false,
+        "sceneId": "ceramic-mug",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "ea1a6257b0a5f9b046d67751d6f5661736d4fe5fa9d12244c9bcea3fbe33ba3e"
+      }
+    },
+    {
+      "id": "groups-card",
+      "series": "groups",
+      "effectId": "marionettes",
+      "effectLabel": "Marionettes",
+      "source": {
+        "path": "H:/litenco groups/images/liten_groups__02_03.jpg",
+        "exists": true,
+        "width": 385,
+        "height": 252,
+        "sha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+        "choiceReason": "Three seated subjects; no invented hidden-leg source requirement.",
+        "qualityCaution": "Low-resolution source; inspect likeness before publication"
+      },
+      "subjectCount": 3,
+      "productId": "card:7x5",
+      "family": "card",
+      "size": "7x5",
+      "templateId": "greeting-card",
+      "pictureAspect": [
+        5,
+        7
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": "5:7 front; NB2.1 lacks exact 5:7. Approved production adaptation needed after the nearest supported generation ratio; no crop or guessed extension.",
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-card-front.png",
+        "sha256": "af23b5e0d03d86ecdfe82c0f2a4b41ea9b158f626531cb7c6e67622a492ad322",
+        "dimensions": [
+          1810,
+          2534
+        ],
+        "provenance": {
+          "predictionId": "yhd553d7adrmr0d1ag6tnnjc44",
+          "promptSha256": "9546b2049c0a555d460c8fba12dee085036cc3fb5856b6b12762a134fd2d0acd",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-card-generated.png",
+          "adaptation": {
+            "method": "bounded-mirror-extension",
+            "extension": 0.06469002695417791,
+            "compatibility": "extension",
+            "width": 1810,
+            "height": 2534,
+            "padding": {
+              "left": 57,
+              "right": 57,
+              "top": 3,
+              "bottom": 3
+            },
+            "croppedPixels": 0,
+            "authority": "lib/v1/gift/four-product-visuals.test.ts and lib/v1/print/geometry.ts"
+          }
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
+          "sha256": "b92c973ab0b4864dba14e4d59931c675c56ada8a0de1ad5851de947b2858d4a1"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-generator.ts",
+          "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-card-scene-composed.png",
+          "sha256": "e3a0a628248a7c69e38cd041afcc2283c5c12cb61192f38180bd74da9382715c",
+          "dimensions": [
+            2093,
+            2933
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-card-front.png",
+          "sourceHash": "af23b5e0d03d86ecdfe82c0f2a4b41ea9b158f626531cb7c6e67622a492ad322",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "greeting-card",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-card-scene-minimal.png",
+        "sha256": "8be0e5a9b12a62d0da8073a158299b316461fa98010d73aecbf3b1221123a1df",
+        "dimensions": [
+          1810,
+          2537
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-card-front.png",
+        "sourceHash": "af23b5e0d03d86ecdfe82c0f2a4b41ea9b158f626531cb7c6e67622a492ad322",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "greeting-card",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "af23b5e0d03d86ecdfe82c0f2a4b41ea9b158f626531cb7c6e67622a492ad322"
+      }
+    },
+    {
+      "id": "portraits-fine_art",
+      "series": "portraits",
+      "effectId": "mosaic_portrait",
+      "effectLabel": "Mosaic",
+      "source": {
+        "path": "H:/minramas/source-pool/P-98123987.jpg",
+        "exists": true,
+        "width": 772,
+        "height": 1025,
+        "sha256": "f661fb100f867d2a99d58a2efe67b221d6358d18612bd46f709dce4848e5e9bb",
+        "choiceReason": "Matching logged mosaic output available.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "fine_art:12x18",
+      "family": "fine_art",
+      "size": "12x18",
+      "templateId": "fine-art",
+      "pictureAspect": [
+        2,
+        3
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:/Nb2.1 Output/portraits/2x3/mosaic__P-98123987.jpg",
+        "sha256": "8108dc466c59d059d53539dcaef8eb30f9a502932544338d28bf6393f1e11a05",
+        "dimensions": [
+          1696,
+          2528
+        ],
+        "provenance": {
+          "log": "E:/Nb2.1 Output/nb21_manifest_log.csv",
+          "predictionId": "32kefks0bdrmw0d16bfsfp5bhc",
+          "promptSha256": "1274b091bfe97502baf61a8762c33b2aaf5d3580102d8f674b691dd492416040",
+          "timestamp": "2026-10-12 18:27:50",
+          "currentPromptEquivalence": "Historical production batch; full prompt equivalence to current registry not asserted"
+        },
+        "visualReview": "Inspected 2026-10-18: requested subject/effect present, no additional crop authorized."
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
+          "sha256": "785d41df84a9c51c56722d787952f622c175fe5ab6a35ea855cd606d5ea4d981"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-bodies.ts",
+          "sha256": "1c1d697e97670bb16934d3f3c725da21a7d8b1afede86671ee0c7130cca3fee9"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-prompt.ts",
+          "sha256": "36a03ebe8ebb5cd517cf4f6ed249d87be67fe04d9444498715349b54dc6b5b2b"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-generator.ts",
+          "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
+        }
+      ],
+      "status": "ready-offline-render",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-scene-composed.png",
+          "sha256": "5b3ccd894012ad1681f16c1c72efa10c1f49a7833d8a469b646bd4b07daa1e21",
+          "dimensions": [
+            2202,
+            2358
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-generated.png",
+          "sourceHash": "462c5b2f075267095c0f348441fa8df01260eba0cb40b1fc8b0605bc0f0e8548",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "fine-art-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-scene-minimal.png",
+        "sha256": "78d3dcafb0238ee095616a603f7e1a9ec94b702538c6249b209df6f5b3576266",
+        "dimensions": [
+          2048,
+          2194
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-generated.png",
+        "sourceHash": "462c5b2f075267095c0f348441fa8df01260eba0cb40b1fc8b0605bc0f0e8548",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "fine-art-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "a92fdf82697ab44e251d9225ea6525b2ca2b37d5f350ef63f6c10fa44148f09a"
+      }
+    },
+    {
+      "id": "portraits-premium",
+      "series": "portraits",
+      "effectId": "stained_glass",
+      "effectLabel": "Stained Glass",
+      "source": {
+        "path": "H:/minramas/source-pool/P_821398712.png",
+        "exists": true,
+        "width": 1122,
+        "height": 1402,
+        "sha256": "94641985e4b89c1e98c786329ecaf4be73cbe15aabdc27fe7f23a7451644a2f5",
+        "choiceReason": "Clear frontal face and dark hair.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "premium:12x18",
+      "family": "premium",
+      "size": "12x18",
+      "templateId": "premium-fine-art",
+      "pictureAspect": [
+        2,
+        3
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-premium-generated.png",
+        "sha256": "919de756037172d6b30a0932e4a97ef714a85f206ffaf8845c2a83f97768d1c6",
+        "dimensions": [
+          1696,
+          2528
+        ],
+        "provenance": {
+          "predictionId": "5k81j4036hrmr0d1ag784n5wwm",
+          "promptSha256": "5768430c2f011982e08037f670b56da8db5f1ef36697ecd82f824a0f45ace760",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-premium-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
+          "sha256": "785d41df84a9c51c56722d787952f622c175fe5ab6a35ea855cd606d5ea4d981"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-bodies.ts",
+          "sha256": "1c1d697e97670bb16934d3f3c725da21a7d8b1afede86671ee0c7130cca3fee9"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-prompt.ts",
+          "sha256": "36a03ebe8ebb5cd517cf4f6ed249d87be67fe04d9444498715349b54dc6b5b2b"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-generator.ts",
+          "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-premium-scene-composed.png",
+          "sha256": "ddffb95c5ea8ef9be2fb7e778e6d296e734853e7779ebf351b4792ee4789fb52",
+          "dimensions": [
+            2433,
+            3060
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-premium-generated.png",
+          "sourceHash": "919de756037172d6b30a0932e4a97ef714a85f206ffaf8845c2a83f97768d1c6",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "premium-fine-art",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-premium-scene-minimal.png",
+        "sha256": "869499973c607af8930f83e8419f5017e9db197dcd7cf09374fa69c0c00b133d",
+        "dimensions": [
+          2011,
+          2528
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-premium-generated.png",
+        "sourceHash": "919de756037172d6b30a0932e4a97ef714a85f206ffaf8845c2a83f97768d1c6",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "premium-fine-art",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "b52ff620e6bfaa4d60a58ba34a83bd745477e9b6bef1a57f7d52965c8a228cce"
+      }
+    },
+    {
+      "id": "portraits-framed",
+      "series": "portraits",
+      "effectId": "stone",
+      "effectLabel": "Quartzite",
+      "source": {
+        "path": "E:/Dev/_recovery-staging/calibration/assets/photo_portrait.jpg",
+        "exists": true,
+        "width": 768,
+        "height": 1376,
+        "sha256": "34f0591d130b5c54aca179e8ff6c0fce6b2f6ece5520bde7bc534492cdaa89b8",
+        "choiceReason": "Natural face detail; registry label Quartzite.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "framed:12x18",
+      "family": "framed",
+      "size": "12x18",
+      "templateId": "classic-framed",
+      "pictureAspect": [
+        2,
+        3
+      ],
+      "generationAspect": "2:3",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-framed-generated.png",
+        "sha256": "d7e7efcddb48da693ae884f0b5f5a12fc1fa1cf878e31b6d82f6e7d9c47f1ba9",
+        "dimensions": [
+          1696,
+          2528
+        ],
+        "provenance": {
+          "predictionId": "t01rc0k415rmr0d1ag79dpjtpg",
+          "promptSha256": "a7f33dee219bb9cabebd37f246dd11fa0b97f28e947c04013b12f777aa94e4f8",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-framed-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
+          "sha256": "785d41df84a9c51c56722d787952f622c175fe5ab6a35ea855cd606d5ea4d981"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-bodies.ts",
+          "sha256": "1c1d697e97670bb16934d3f3c725da21a7d8b1afede86671ee0c7130cca3fee9"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-prompt.ts",
+          "sha256": "36a03ebe8ebb5cd517cf4f6ed249d87be67fe04d9444498715349b54dc6b5b2b"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-generator.ts",
+          "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed-scene-composed.png",
+          "sha256": "abb3403fdbb4344277e45812bae997a5b36de8de40facec20fb94d6a12057a01",
+          "dimensions": [
+            3006,
+            2013
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed-generated.png",
+          "sourceHash": "92281dc86ae5d826b0e5af1f1d7d782b1cf93cd65064a911eed84855d25a8f5e",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "classic-framed",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed-scene-minimal.png",
+        "sha256": "741cd7d9c1bb112c5f98a10f0833a90d51c264a4f07d25703d09b23eb49102f1",
+        "dimensions": [
+          2533,
+          1696
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed-generated.png",
+        "sourceHash": "92281dc86ae5d826b0e5af1f1d7d782b1cf93cd65064a911eed84855d25a8f5e",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "classic-framed",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "6c4093a4fee520ff7a69b2312e980f8c9f9b47d30460873991dbdfcb5a30878e"
+      }
+    },
+    {
+      "id": "portraits-matted",
+      "series": "portraits",
+      "effectId": "jade",
+      "effectLabel": "Carved Jade",
+      "source": {
+        "path": "H:/minramas/source-pool/batch_woman_001.jpg",
+        "exists": true,
+        "width": 1145,
+        "height": 1374,
+        "sha256": "40df58cb356cd6d912c25317e09c5dc7f43a9d9dfc7858b8fdb4be68d26ce95e",
+        "choiceReason": "Clear face and hair silhouette.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "matted:8x8",
+      "family": "matted",
+      "size": "8x8",
+      "templateId": "matted-frame-square",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-matted-generated.png",
+        "sha256": "4efd8a67144bac1730d4dff449099b250546b3f1188303b21cd3c847183b35b6",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "5hxzdxpgsxrmw0d1ah5t1e2bsm",
+          "promptSha256": "76ba2b275a3fe663534fa1ef33bc0e114a508f04bb159e1ba552cdd264d83a72",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-matted-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
+          "sha256": "785d41df84a9c51c56722d787952f622c175fe5ab6a35ea855cd606d5ea4d981"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-bodies.ts",
+          "sha256": "1c1d697e97670bb16934d3f3c725da21a7d8b1afede86671ee0c7130cca3fee9"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-prompt.ts",
+          "sha256": "36a03ebe8ebb5cd517cf4f6ed249d87be67fe04d9444498715349b54dc6b5b2b"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-generator.ts",
+          "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-matted-scene-composed.png",
+          "sha256": "ccc3ef009ef32e96b19fa59ebb18e0424ea38ecbe376eee5cff488e3d9c434da",
+          "dimensions": [
+            2068,
+            2115
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-matted-generated.png",
+          "sourceHash": "4efd8a67144bac1730d4dff449099b250546b3f1188303b21cd3c847183b35b6",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "matted-frame-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-matted-scene-minimal.png",
+        "sha256": "af01a39d0f3e7400d793720cf6af7b8122fac7feb81aeb6872db52f6ac509c4f",
+        "dimensions": [
+          2048,
+          2095
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-matted-generated.png",
+        "sourceHash": "4efd8a67144bac1730d4dff449099b250546b3f1188303b21cd3c847183b35b6",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "matted-frame-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "2ca84496ee524a7dab98901c16f2912b09020296f6490c12d1f77dc2ee239ba4"
+      }
+    },
+    {
+      "id": "portraits-canvas",
+      "series": "portraits",
+      "effectId": "plushy",
+      "effectLabel": "Plushy",
+      "source": {
+        "path": "H:/minramas/source-pool/batch_woman_001.jpg",
+        "exists": true,
+        "width": 1145,
+        "height": 1374,
+        "sha256": "40df58cb356cd6d912c25317e09c5dc7f43a9d9dfc7858b8fdb4be68d26ce95e",
+        "choiceReason": "Warm expression for fabric figure.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "canvas:8x8",
+      "family": "canvas",
+      "size": "8x8",
+      "templateId": "gallery-canvas-square",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-canvas-generated.png",
+        "sha256": "789b0ad8c08f8fe06a94e036fd792c94dfa09ee10eb1488f14f3bcad86ecfc95",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "5bk7pjp8a9rmt0d1ag783dvmfg",
+          "promptSha256": "b837767a309101d8784d8b3e50464d908536405fe7280a7b81ac73a3bac40913",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-canvas-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
+          "sha256": "785d41df84a9c51c56722d787952f622c175fe5ab6a35ea855cd606d5ea4d981"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-bodies.ts",
+          "sha256": "1c1d697e97670bb16934d3f3c725da21a7d8b1afede86671ee0c7130cca3fee9"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-prompt.ts",
+          "sha256": "36a03ebe8ebb5cd517cf4f6ed249d87be67fe04d9444498715349b54dc6b5b2b"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-generator.ts",
+          "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-canvas-scene-composed.png",
+          "sha256": "7b6b5f47f3b1891e8a79923e0f22c5109be8305996731b36d40e31d6b82155af",
+          "dimensions": [
+            2568,
+            2523
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-canvas-generated.png",
+          "sourceHash": "789b0ad8c08f8fe06a94e036fd792c94dfa09ee10eb1488f14f3bcad86ecfc95",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "gallery-canvas-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-canvas-scene-minimal.png",
+        "sha256": "cb4ca0543ef0a60006acd9eb021aab786d8902cba89f3cb91cc7517ae44ae04a",
+        "dimensions": [
+          2085,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-canvas-generated.png",
+        "sourceHash": "789b0ad8c08f8fe06a94e036fd792c94dfa09ee10eb1488f14f3bcad86ecfc95",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "gallery-canvas-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "8ce7f759bb84ad8262b202199aa3b7162caef04a1d64f60d18ccb75e8c0b297a"
+      }
+    },
+    {
+      "id": "portraits-framed_canvas",
+      "series": "portraits",
+      "effectId": "action_figure",
+      "effectLabel": "Action Figure",
+      "source": {
+        "path": "H:/minramas/source-pool/P_821398712.png",
+        "exists": true,
+        "width": 1122,
+        "height": 1402,
+        "sha256": "94641985e4b89c1e98c786329ecaf4be73cbe15aabdc27fe7f23a7451644a2f5",
+        "choiceReason": "Clear face for toy identity; production prompt controls body.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "framed_canvas:8x8",
+      "family": "framed_canvas",
+      "size": "8x8",
+      "templateId": "framed-canvas-square",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": null,
+      "templateHold": "float-canvas-side-plane-calibration",
+      "artwork": null,
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
+          "sha256": "785d41df84a9c51c56722d787952f622c175fe5ab6a35ea855cd606d5ea4d981"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-bodies.ts",
+          "sha256": "1c1d697e97670bb16934d3f3c725da21a7d8b1afede86671ee0c7130cca3fee9"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-prompt.ts",
+          "sha256": "36a03ebe8ebb5cd517cf4f6ed249d87be67fe04d9444498715349b54dc6b5b2b"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-generator.ts",
+          "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
+        }
+      ],
+      "status": "template-blocked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed_canvas-scene-composed.png",
+          "sha256": "643af82d2c7fb46ac29c638c9d762d9a204424f2f9d956cd085ea7361bb28fc0",
+          "dimensions": [
+            2185,
+            2180
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed_canvas-generated.png",
+          "sourceHash": "d3158dfef97bd6ec1ec1427717ec4162944e02a6c9ca1a018c11bfb3e3914ced",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "framed-canvas",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed_canvas-scene-minimal.png",
+        "sha256": "0dc9d0883a3eea208c8c179bbbf0fd6b600cbdd8166d0f3cecbc46fc4d2f6de3",
+        "dimensions": [
+          2053,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed_canvas-generated.png",
+        "sourceHash": "d3158dfef97bd6ec1ec1427717ec4162944e02a6c9ca1a018c11bfb3e3914ced",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "framed-canvas",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "198e3889e4fe4b6979945339075805905755fbf9e3946ffa13a81c5676e5a681"
+      }
+    },
+    {
+      "id": "portraits-mug",
+      "series": "portraits",
+      "effectId": "designer_vinyl",
+      "effectLabel": "Vinyl Figure",
+      "source": {
+        "path": "H:/minramas/source-pool/P_821398712.png",
+        "exists": true,
+        "width": 1122,
+        "height": 1402,
+        "sha256": "94641985e4b89c1e98c786329ecaf4be73cbe15aabdc27fe7f23a7451644a2f5",
+        "choiceReason": "Clear face for stylized figure.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "mug:11oz",
+      "family": "mug",
+      "size": "11oz",
+      "templateId": "ceramic-mug",
+      "pictureAspect": [
+        1,
+        1
+      ],
+      "generationAspect": "1:1",
+      "geometryNote": "Generate square 910x910 visible picture; backend builds 2670x1110 full wrap, with 100px vertical margin. Do not stretch square picture to full wrap.",
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-mug-generated.png",
+        "sha256": "c0d470857c070a0a8d7f755a28288772e69b9c29a48f684c2ca84c617c331b5b",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "4dm124rws1rmy0d1ah7rt1r128",
+          "promptSha256": "39734721a7020176a7c6a4959c05a45f7991213b514e55c56601231cccdd27dd",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-mug-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
+          "sha256": "785d41df84a9c51c56722d787952f622c175fe5ab6a35ea855cd606d5ea4d981"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-bodies.ts",
+          "sha256": "1c1d697e97670bb16934d3f3c725da21a7d8b1afede86671ee0c7130cca3fee9"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-prompt.ts",
+          "sha256": "36a03ebe8ebb5cd517cf4f6ed249d87be67fe04d9444498715349b54dc6b5b2b"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-generator.ts",
+          "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-mug-scene-composed.png",
+          "sha256": "e091b32f7484aba8fc57e6e7ba6ee6ac457c5a48efc7f91ae2a7e0c5e2c1522b",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-mug-generated.png",
+          "sourceHash": "c0d470857c070a0a8d7f755a28288772e69b9c29a48f684c2ca84c617c331b5b",
+          "fit": "exact",
+          "outpainted": false,
+          "sceneId": "ceramic-mug",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-mug-scene-minimal.png",
+        "sha256": "e091b32f7484aba8fc57e6e7ba6ee6ac457c5a48efc7f91ae2a7e0c5e2c1522b",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-mug-generated.png",
+        "sourceHash": "c0d470857c070a0a8d7f755a28288772e69b9c29a48f684c2ca84c617c331b5b",
+        "fit": "exact",
+        "outpainted": false,
+        "sceneId": "ceramic-mug",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "e091b32f7484aba8fc57e6e7ba6ee6ac457c5a48efc7f91ae2a7e0c5e2c1522b"
+      }
+    },
+    {
+      "id": "portraits-card",
+      "series": "portraits",
+      "effectId": "sheet_music",
+      "effectLabel": "Sheet Music",
+      "source": {
+        "path": "E:/Dev/_recovery-staging/calibration/assets/photo_portrait.jpg",
+        "exists": true,
+        "width": 768,
+        "height": 1376,
+        "sha256": "34f0591d130b5c54aca179e8ff6c0fce6b2f6ece5520bde7bc534492cdaa89b8",
+        "choiceReason": "Clear face against simple setting.",
+        "qualityCaution": null
+      },
+      "subjectCount": 1,
+      "productId": "card:7x5",
+      "family": "card",
+      "size": "7x5",
+      "templateId": "greeting-card",
+      "pictureAspect": [
+        5,
+        7
+      ],
+      "generationAspect": "3:4",
+      "geometryNote": "5:7 front; NB2.1 lacks exact 5:7. Approved production adaptation needed after the nearest supported generation ratio; no crop or guessed extension.",
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-card-front.png",
+        "sha256": "55fbfadbddba85b23e65001f12d0a80775df93dd48cd4cc4b0c72584dbc3fff9",
+        "dimensions": [
+          1795,
+          2513
+        ],
+        "provenance": {
+          "predictionId": "nhzg1fhs0nrmt0d1ag7vnc691g",
+          "promptSha256": "23c7b8cbf8b7862f8e9610c46fbbb5527d2e10167649c5b1c187fa46c80b7ef3",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-card-generated.png",
+          "adaptation": {
+            "method": "bounded-mirror-extension",
+            "extension": 0.04533333333333345,
+            "compatibility": "extension",
+            "width": 1795,
+            "height": 2513,
+            "padding": {
+              "left": 1,
+              "right": 2,
+              "top": 56,
+              "bottom": 57
+            },
+            "croppedPixels": 0,
+            "authority": "lib/v1/gift/four-product-visuals.test.ts and lib/v1/print/geometry.ts"
+          }
+        },
+        "visualReview": "2026-10-19: visually inspected generated artwork and calibrated mockup; subject boundaries retained; no crop"
+      },
+      "promptSources": [
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
+          "sha256": "785d41df84a9c51c56722d787952f622c175fe5ab6a35ea855cd606d5ea4d981"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-bodies.ts",
+          "sha256": "1c1d697e97670bb16934d3f3c725da21a7d8b1afede86671ee0c7130cca3fee9"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-prompt.ts",
+          "sha256": "36a03ebe8ebb5cd517cf4f6ed249d87be67fe04d9444498715349b54dc6b5b2b"
+        },
+        {
+          "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/portraits-generator.ts",
+          "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
+        }
+      ],
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-card-scene-composed.png",
+          "sha256": "3b6c6d66652b49896b7fbbd0f62e5de1c37a2d8a506e97da13fd1b0f0941b561",
+          "dimensions": [
+            2093,
+            2933
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-card-front.png",
+          "sourceHash": "55fbfadbddba85b23e65001f12d0a80775df93dd48cd4cc4b0c72584dbc3fff9",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "greeting-card",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-card-scene-minimal.png",
+        "sha256": "a596c7228a7aab7fcbdb4df470338c5871da965bbe086d4501ed2e252a30c473",
+        "dimensions": [
+          1795,
+          2516
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-card-front.png",
+        "sourceHash": "55fbfadbddba85b23e65001f12d0a80775df93dd48cd4cc4b0c72584dbc3fff9",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "greeting-card",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "55fbfadbddba85b23e65001f12d0a80775df93dd48cd4cc4b0c72584dbc3fff9"
+      }
+    }
+  ],
+  "executionSummary": {
+    "date": "2026-10-19",
+    "calls": 17,
+    "modelChargesUSD": 0.8568,
+    "budgetUSD": 2,
+    "reusedArtwork": 4,
+    "renderedMockups": 21,
+    "templateHeld": 3
+  }
+}

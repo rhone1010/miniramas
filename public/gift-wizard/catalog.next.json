@@ -536,8 +536,12 @@
           },
           "defaultSizing": "fitPrintArea",
           "retailCents": 9400,
+          "attributes": {
+            "color": "black"
+          },
           "size": "8x8",
-          "compatible": false
+          "compatible": false,
+          "disabledReason": "not_launched"
         },
         {
           "sku": "GLOBAL-CFPM-12X12",
@@ -554,8 +558,12 @@
           },
           "defaultSizing": "fitPrintArea",
           "retailCents": 10900,
+          "attributes": {
+            "color": "black"
+          },
           "size": "12x12",
-          "compatible": false
+          "compatible": false,
+          "disabledReason": "not_launched"
         },
         {
           "sku": "GLOBAL-CFPM-16X16",
@@ -572,8 +580,12 @@
           },
           "defaultSizing": "fitPrintArea",
           "retailCents": 12900,
+          "attributes": {
+            "color": "black"
+          },
           "size": "16x16",
-          "compatible": false
+          "compatible": false,
+          "disabledReason": "not_launched"
         },
         {
           "sku": "GLOBAL-CFPM-20X20",
@@ -590,8 +602,104 @@
           },
           "defaultSizing": "fitPrintArea",
           "retailCents": 14900,
+          "attributes": {
+            "color": "black"
+          },
           "size": "20x20",
-          "compatible": false
+          "compatible": false,
+          "disabledReason": "not_launched"
+        },
+        {
+          "sku": "GLOBAL-CFPM-8X12",
+          "description": "Classic frame with mount, perspex glaze, 8×12\" frame",
+          "label": "8 × 12″ frame · 6 × 10″ picture",
+          "imageWidthIn": 6,
+          "imageHeightIn": 10,
+          "requiredPx": {
+            "w": 1800,
+            "h": 3000
+          },
+          "attributes": {
+            "color": "black"
+          },
+          "family": "matted",
+          "familyLabel": "Matted Frame",
+          "familyNote": "Framed with a mount, behind glaze",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "8x12",
+          "compatible": false,
+          "disabledReason": "retail_price_pending"
+        },
+        {
+          "sku": "GLOBAL-CFPM-12X18",
+          "description": "Classic frame with mount, perspex glaze, 12×18\" frame",
+          "label": "12 × 18″ frame · 8 × 14″ picture",
+          "imageWidthIn": 8.06,
+          "imageHeightIn": 14.06,
+          "requiredPx": {
+            "w": 2418,
+            "h": 4218
+          },
+          "attributes": {
+            "color": "black"
+          },
+          "family": "matted",
+          "familyLabel": "Matted Frame",
+          "familyNote": "Framed with a mount, behind glaze",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "12x18",
+          "compatible": false,
+          "disabledReason": "retail_price_pending"
+        },
+        {
+          "sku": "GLOBAL-CFPM-16X24",
+          "description": "Classic frame with mount, perspex glaze, 16×24\" frame",
+          "label": "16 × 24″ frame · 12 × 20″ picture",
+          "imageWidthIn": 12.06,
+          "imageHeightIn": 20.06,
+          "requiredPx": {
+            "w": 3618,
+            "h": 6018
+          },
+          "attributes": {
+            "color": "black"
+          },
+          "family": "matted",
+          "familyLabel": "Matted Frame",
+          "familyNote": "Framed with a mount, behind glaze",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "16x24",
+          "compatible": false,
+          "disabledReason": "retail_price_pending"
+        },
+        {
+          "sku": "GLOBAL-CFPM-20X30",
+          "description": "Classic frame with mount, perspex glaze, 20×30\" frame",
+          "label": "20 × 30″ frame · 16 × 26″ picture",
+          "imageWidthIn": 16,
+          "imageHeightIn": 26,
+          "requiredPx": {
+            "w": 4800,
+            "h": 7800
+          },
+          "attributes": {
+            "color": "black"
+          },
+          "family": "matted",
+          "familyLabel": "Matted Frame",
+          "familyNote": "Framed with a mount, behind glaze",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "20x30",
+          "compatible": false,
+          "disabledReason": "retail_price_pending"
         }
       ]
     },
@@ -792,8 +900,13 @@
           },
           "defaultSizing": "fitPrintArea",
           "retailCents": 7900,
+          "attributes": {
+            "color": "black",
+            "wrap": "MirrorWrap"
+          },
           "size": "8x8",
-          "compatible": false
+          "compatible": false,
+          "disabledReason": "not_launched"
         },
         {
           "sku": "GLOBAL-FRA-CAN-12X12",
@@ -810,8 +923,13 @@
           },
           "defaultSizing": "fitPrintArea",
           "retailCents": 9900,
+          "attributes": {
+            "color": "black",
+            "wrap": "MirrorWrap"
+          },
           "size": "12x12",
-          "compatible": false
+          "compatible": false,
+          "disabledReason": "not_launched"
         },
         {
           "sku": "GLOBAL-FRA-CAN-16X16",
@@ -828,8 +946,13 @@
           },
           "defaultSizing": "fitPrintArea",
           "retailCents": 12900,
+          "attributes": {
+            "color": "black",
+            "wrap": "MirrorWrap"
+          },
           "size": "16x16",
-          "compatible": false
+          "compatible": false,
+          "disabledReason": "not_launched"
         },
         {
           "sku": "GLOBAL-FRA-CAN-20X20",
@@ -846,8 +969,109 @@
           },
           "defaultSizing": "fitPrintArea",
           "retailCents": 16900,
+          "attributes": {
+            "color": "black",
+            "wrap": "MirrorWrap"
+          },
           "size": "20x20",
-          "compatible": false
+          "compatible": false,
+          "disabledReason": "not_launched"
+        },
+        {
+          "sku": "GLOBAL-FRA-CAN-8X12",
+          "description": "Framed stretched canvas, 8×12\"",
+          "label": "8 × 12″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 8,
+          "requiredPx": {
+            "w": 3654,
+            "h": 2454
+          },
+          "attributes": {
+            "color": "black",
+            "wrap": "MirrorWrap"
+          },
+          "family": "framed_canvas",
+          "familyLabel": "Framed Canvas",
+          "familyNote": "Stretched canvas in a solid frame",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "8x12",
+          "compatible": false,
+          "disabledReason": "orientation_unverified"
+        },
+        {
+          "sku": "GLOBAL-FRA-CAN-12X18",
+          "description": "Framed stretched canvas, 12×18\"",
+          "label": "12 × 18″",
+          "imageWidthIn": 12,
+          "imageHeightIn": 18,
+          "requiredPx": {
+            "w": 3654,
+            "h": 5454
+          },
+          "attributes": {
+            "color": "black",
+            "wrap": "MirrorWrap"
+          },
+          "family": "framed_canvas",
+          "familyLabel": "Framed Canvas",
+          "familyNote": "Stretched canvas in a solid frame",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "12x18",
+          "compatible": false,
+          "disabledReason": "retail_price_pending"
+        },
+        {
+          "sku": "GLOBAL-FRA-CAN-16X24",
+          "description": "Framed stretched canvas, 16×24\"",
+          "label": "16 × 24″",
+          "imageWidthIn": 16,
+          "imageHeightIn": 24,
+          "requiredPx": {
+            "w": 4854,
+            "h": 7254
+          },
+          "attributes": {
+            "color": "black",
+            "wrap": "MirrorWrap"
+          },
+          "family": "framed_canvas",
+          "familyLabel": "Framed Canvas",
+          "familyNote": "Stretched canvas in a solid frame",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "16x24",
+          "compatible": false,
+          "disabledReason": "retail_price_pending"
+        },
+        {
+          "sku": "GLOBAL-FRA-CAN-20X30",
+          "description": "Framed stretched canvas, 20×30\"",
+          "label": "20 × 30″",
+          "imageWidthIn": 20,
+          "imageHeightIn": 30,
+          "requiredPx": {
+            "w": 6054,
+            "h": 9054
+          },
+          "attributes": {
+            "color": "black",
+            "wrap": "MirrorWrap"
+          },
+          "family": "framed_canvas",
+          "familyLabel": "Framed Canvas",
+          "familyNote": "Stretched canvas in a solid frame",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "20x30",
+          "compatible": false,
+          "disabledReason": "retail_price_pending"
         }
       ]
     },
@@ -856,14 +1080,61 @@
       "label": "11 oz Ceramic Mug",
       "image": "./assets/product-mug.jpg",
       "available": false,
-      "options": []
+      "options": [
+        {
+          "sku": "GLOBAL-MUG-W",
+          "description": "11 oz white ceramic photo mug, full wrap",
+          "label": "11 oz White Mug",
+          "imageWidthIn": 8.9,
+          "imageHeightIn": 3.7,
+          "requiredPx": {
+            "w": 2670,
+            "h": 1110
+          },
+          "attributes": {
+            "color": "white",
+            "size": "313ml / 11oz"
+          },
+          "family": "mug",
+          "familyLabel": "Photo Mug",
+          "familyNote": "11 oz white ceramic mug with a full image wrap",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "11oz",
+          "compatible": false,
+          "disabledReason": "retail_price_pending"
+        }
+      ]
     },
     {
       "id": "card",
       "label": "Greeting Card",
       "image": "./assets/product-card.jpg",
       "available": false,
-      "options": []
+      "options": [
+        {
+          "sku": "GLOBAL-GRE-MOH-7X5-BLA",
+          "description": "7 x 5 in Mohawk 324gsm greeting card (self send)",
+          "label": "Greeting Card 7 × 5″ (Mohawk)",
+          "imageWidthIn": 5,
+          "imageHeightIn": 7,
+          "requiredPx": {
+            "w": 6118,
+            "h": 2161
+          },
+          "attributes": {},
+          "family": "card",
+          "familyLabel": "Greeting Card",
+          "familyNote": "7 x 5 inch card on Mohawk 324gsm stock",
+          "defaultSizing": "fitPrintArea",
+          "retailCents": 0,
+          "retailApproved": false,
+          "size": "7x5",
+          "compatible": false,
+          "disabledReason": "retail_price_pending"
+        }
+      ]
     }
   ]
 }

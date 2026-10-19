@@ -2,7 +2,12 @@
 const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const {composeProductMockup,loadTemplate}=require('./compositor.next.cjs');
 const {composeFrameFinish}=require('./frame-finish.next.cjs');
+const {composeDerivedFrame}=require('./derived-frame.next.cjs');
 const registry=Object.freeze({
+ 'matted-frame':Object.freeze({productId:'matted',mapping:'perspective-mat',derived:true}),
+ 'matted-frame-square':Object.freeze({productId:'matted',mapping:'perspective-mat',derived:true}),
+ 'framed-canvas':Object.freeze({productId:'framed_canvas',mapping:'perspective-float',derived:true}),
+ 'framed-canvas-square':Object.freeze({productId:'framed_canvas',mapping:'perspective-float',derived:true}),
  'fine-art':Object.freeze({productId:'fine_art',mapping:'perspective'}),
  'premium-fine-art':Object.freeze({productId:'premium',mapping:'perspective'}),
  'classic-framed':Object.freeze({productId:'framed',mapping:'perspective',shape:'rectangular',frame:true}),
@@ -42,8 +47,9 @@ async function composeCatalogItem({line,artwork,artworkId,allowCrop=false,output
  return renderResolved({...resolved,artwork,artworkId,allowCrop,outputPath,finish:resolved.attributes.color,configuration:{sku:resolved.sku,attributes:resolved.attributes,requiredPx:resolved.requiredPx}});
 }
 // Offline fixture tests only. Deliberately separate from catalog resolution; never used as availability authorization.
-async function composeTemplateVisualTest({templateId,artwork,artworkId,targetGeometry,allowCrop=false,finish,outputPath}){
+async function composeTemplateVisualTest({templateId,artwork,artworkId,targetGeometry,allowCrop=false,finish,outputPath,size,floatGapIn}){
  const r=registry[templateId];if(!r)throw Error('unknown_template');
+ if(r.derived)return composeDerivedFrame({templateId,artwork,artworkId,size,floatGapIn,outputPath});
  if(finish&&!r.frame)throw Error('finish_requires_frame');
  if(r.shape==='square'&&(!targetGeometry||targetGeometry.widthIn!==targetGeometry.heightIn))throw Error('square_geometry_required');
  if(r.shape==='rectangular'&&(!targetGeometry||targetGeometry.widthIn===targetGeometry.heightIn))throw Error('rectangular_geometry_required');

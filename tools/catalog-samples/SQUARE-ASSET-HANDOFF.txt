@@ -1,0 +1,22 @@
+APPROVED SQUARE ASSET INTEGRATION — SOURCE BLOCKERS — 2026-10-19
+Base: latest fetched Preview1f9f338, already incorporated into this worktree.
+Archive:H:/liteneco art files/litenco product image alphas 2-assets.zip
+10 masters and24 masks, all1254x1254, preserved byte-for-byte. Runtime-candidate folders: public/gift-wizard/mockup-scenes. Each scene manifest records source filename, SHA256, bytes and measured mask bounds. No mask normalization.
+
+NOT FINISHED / NOT WIRED LIVE
+The existing customer renderer, catalog and Step4 remain unchanged. No production geometry or purchase availability changed. New assets are not in the runtime tracing inventory until replacement lighting and calibration are verified. No final serverless-build or finished-mockup claim.
+
+SPECIFIC BLOCKERS
+1. matted frame landscape.png visibly shows an unframed wrapped canvas with canvas-detail inset. It has no mat or frame; its mask describes that canvas. It cannot truthfully replace a landscape Matted Frame. User clarification requested.
+2. Every main artwork area contains a baked coastal painting. Existing calibrated renderer multiplies source RGB by new artwork, which would retain that painting. Direct replacement removes it but also removes original lighting and texture inside the selected region. Need neutral artwork-surface masters or separate lighting/texture layers. None exist in the supplied34 files. User clarification requested. Do not infer an illumination field from painted colour and claim it is original scene lighting.
+3. New mug is hanging sideways with handle above; old mug is upright, handle right. Its calibrated pixel coordinates are inapplicable. Existing cylindrical mapping math is reusable, but new silhouette/axis calibration and neutral surface are required. Do not apply the old coordinates or a flat quadrilateral and call it calibrated cylinder rendering.
+4. Square canvas dimensions are scene dimensions, not proof that the visible print opening is square. Measured mask ratios include fine-art0.934, premium0.795, classic1.493, mat-square0.978, canvas-landscape1.312, canvas-square1.018, card0.714. Do not change SKU geometry to match these bounds or distort customer subjects.
+
+INDEPENDENT WORK COMPLETE
+34 assets organized and hash-verified. Eight flat-surface replacement diagnostics rendered with existing Pets, Groups and Portraits artwork. Existing homography math reused; no extra inset mapping. Contain placement retains aspect and every subject, leaving white padding for mismatches. These images intentionally demonstrate the unresolved illumination loss; they are not approved catalog samples. Mug and wrong-product mat-landscape appear as ORIGINAL ONLY on contact sheet.
+2 focused asset tests pass: dimensions/hashes, every protected pixel unchanged. Original alpha and soft edges retained; coverage is read from mask luminance flattened on black.
+Diagnostic output:E:/Dev/_recovery-staging/frontend-deploy-review/four-products/approved-square-20261019/diagnostic-contact-sheet.png
+No paid calls, orders, generation, deployment or manufacturing.
+
+NEXT ACTION
+Supply intended landscape mat master/masks and neutral artwork planes or separate lighting layers. Resume scene-specific calibration, all10 real renders, catalog integration, browser screenshots and serverless tracing after source correction. Existing runtime remains usable meanwhile.

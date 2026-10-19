@@ -1,0 +1,15 @@
+{
+  "id": "framed-canvas-square",
+  "productId": "framed_canvas",
+  "baseTemplate": "square-framed",
+  "status": "blocked-side-plane-calibration",
+  "calibration": "Classic frame front-plane calibration retained; canvas side planes are NOT calibrated.",
+  "layer": "38mm canvas depth, MirrorWrap sides, recessed float gap",
+  "safetyMargin": null,
+  "unverified": [
+    "float gap and frame overlap",
+    "frame profile differs from Classic photograph"
+  ],
+  "productionPrintFile": false,
+  "visualReview": "Rejected flat-panel prototype: reflected bands and empty corner do not represent a float canvas. Requires product-specific side-plane masks, frame-profile/occlusion and cavity shadow layer; existing photograph and front calibration remain reusable."
+}

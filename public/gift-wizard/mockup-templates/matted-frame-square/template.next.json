@@ -1,0 +1,14 @@
+{
+  "id": "matted-frame-square",
+  "productId": "matted",
+  "baseTemplate": "square-framed",
+  "status": "visual-validation-ready",
+  "calibration": "Inherited unchanged from square-framed",
+  "layer": "size-dependent Snow white mount",
+  "safetyMargin": 0.03,
+  "unverified": [
+    "visible opening overlap"
+  ],
+  "productionPrintFile": false,
+  "visualReview": "Size-dependent Snow white mount with 2.4mm soft opening edge. Whole picture retained; 3% safety guide preserved. Visible under-mount overlap remains provisional."
+}

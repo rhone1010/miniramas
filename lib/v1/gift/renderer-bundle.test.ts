@@ -18,26 +18,31 @@ const sha = (p: string) => createHash('sha256').update(fs.readFileSync(path.join
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/product-mockup/renderer-manifest.json'), 'utf8')) as { templates: string[]; files: Array<{ path: string; bytes: number; sha256: string }> }
 const walk = (dir: string): string[] => fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(dir + '/' + e.name) : [dir + '/' + e.name])
 const listed = new Set(manifest.files.map(f => f.path))
+// The customer scene renderer (tools/product-scenes) records its own runtime files with hashes; they are traced for the same route.
+const sceneBundle = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/product-scenes/bundle.next.json'), 'utf8')) as { files: Array<{ path: string; bytes: number; sha256: string }> }
 
 describe('the renderer bundle is exactly what the manifest says', () => {
   it('every file matches its recorded size and SHA-256', () => {
     for (const f of manifest.files) { expect(fs.statSync(path.join(ROOT, f.path)).size, f.path).toBe(f.bytes); expect(sha(f.path), f.path).toBe(f.sha256) }
   })
-  it('nothing else is in the renderer or template directories: no reports, screenshots, fixtures or mug/card templates', () => {
+  it('nothing else is in the renderer or template directories: no reports, screenshots or fixtures', () => {
     // public/gift-wizard also holds the wizard front end now, so only the renderer's own folders are checked: tools/product-mockup and the template directories.
     const onDisk = [...walk('tools/product-mockup'), ...walk('public/gift-wizard/mockup-templates'), 'public/gift-wizard/catalog.next.json'].filter(p => p !== 'tools/product-mockup/renderer-manifest.json')
     expect(onDisk.sort()).toEqual([...listed].sort())
-    expect(onDisk.some(p => /ceramic-mug|greeting-card|\.md$|review\/(?!frame-finishes\/references)/.test(p))).toBe(false)
-    expect(manifest.files.reduce((n, f) => n + f.bytes, 0)).toBeLessThan(5_000_000)
+    expect(onDisk.some(p => /\.md$|review\/(?!frame-finishes\/references)/.test(p))).toBe(false)
+    expect(manifest.files.reduce((n, f) => n + f.bytes, 0)).toBeLessThan(8_000_000)
   })
-  it('the serverless tracing list in next.config.js covers exactly these files and only for the mockup route', () => {
+  it('the customer scene files match their recorded size and SHA-256', () => {
+    for (const f of sceneBundle.files) { expect(fs.statSync(path.join(ROOT, f.path)).size, f.path).toBe(f.bytes); expect(sha(f.path), f.path).toBe(f.sha256) }
+  })
+  it('the serverless tracing list in next.config.js covers exactly the renderer files and the customer scene files, and only for the mockup route', () => {
     const cfg = createRequire(path.join(ROOT, 'package.json'))('./next.config.js')
     const routes = Object.keys(cfg.outputFileTracingIncludes); expect(routes).toEqual(['/api/v1/gift/sessions/[id]/lines/[lineId]/mockup'])
     const traced = (cfg.outputFileTracingIncludes[routes[0]] as string[]).flatMap(g => {
       const p = g.replace(/^\.\//, '')
       return p.endsWith('/*') ? fs.readdirSync(path.join(ROOT, p.slice(0, -2))).map(f => p.slice(0, -2) + '/' + f) : [p]
     })
-    expect(traced.sort()).toEqual([...listed].sort())
+    expect(traced.sort()).toEqual([...new Set([...listed, ...sceneBundle.files.map(f => f.path)])].sort())
   })
 })
 
@@ -45,7 +50,7 @@ describe('the renderer revision matches the interface the bridge was tested agai
   const adapter = createRequire(path.join(ROOT, 'package.json'))('./tools/product-mockup/gift-visualization-adapter.next.cjs')
   it('exports the functions the bridge calls and routes the six purchasable templates (plus the two disabled, test-only ones)', () => {
     expect(Object.keys(adapter).sort()).toEqual(['composeCatalogItem', 'composeTemplateVisualTest', 'registry', 'resolveCatalogTemplate'])
-    expect(Object.keys(adapter.registry).sort()).toEqual([...manifest.templates, 'ceramic-mug', 'greeting-card'].sort())
+    expect(Object.keys(adapter.registry).sort()).toEqual([...manifest.templates].sort())
     for (const t of ['ceramic-mug', 'greeting-card']) expect(adapter.registry[t].testOnly).toBe(true)
   })
   it("its catalog agrees with the canonical catalog on SKU and lab-file pixels for every purchasable product, so the bridge's per-render check never trips", () => {

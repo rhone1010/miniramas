@@ -1,0 +1,65 @@
+{
+  "id": "matted-frame-square",
+  "family": "matted",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "matted frame square.png",
+  "artworkMask": "matted frame square - art bw.png",
+  "cornersPixels": [
+    [
+      336,
+      332
+    ],
+    [
+      908,
+      332
+    ],
+    [
+      908,
+      917
+    ],
+    [
+      336,
+      917
+    ]
+  ],
+  "maskBounds": {
+    "x0": 336,
+    "y0": 332,
+    "x1": 908,
+    "y1": 917
+  },
+  "assets": [
+    {
+      "file": "matted frame square - art bw.png",
+      "sha256": "09a8da198d90e65985be1970427d3be0b2710f17aeea10b059ba4b5449079f4a",
+      "bytes": 36481
+    },
+    {
+      "file": "matted frame square - bagrkound bw.png",
+      "sha256": "91fef4519e2fb385cc4b9e1a4e78e5b030bd30cadcc141c980f306da51d46e53",
+      "bytes": 36571
+    },
+    {
+      "file": "matted frame square - frame bw .png",
+      "sha256": "aa89ff9833268f0fbc3efb85b2a9195a7a860bf21cc9aef718a5078835d9ea8f",
+      "bytes": 36504
+    },
+    {
+      "file": "matted frame square - matte bw.png",
+      "sha256": "97e515879293ce00f05c9342047ef790c2bed187dc73860c05b7978402ff53c1",
+      "bytes": 36515
+    },
+    {
+      "file": "matted frame square.png",
+      "sha256": "a4e2128eb0a744d0239bf25cefeaa715756d1abb7287fc2c59f1d6a346d1169d",
+      "bytes": 1351872
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false
+}

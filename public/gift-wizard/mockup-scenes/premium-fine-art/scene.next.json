@@ -1,0 +1,55 @@
+{
+  "id": "premium-fine-art",
+  "family": "premium",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "premium fine art print.png",
+  "artworkMask": "premium fine art print - art bw.png",
+  "cornersPixels": [
+    [
+      220,
+      103
+    ],
+    [
+      1031,
+      103
+    ],
+    [
+      1031,
+      1123
+    ],
+    [
+      220,
+      1123
+    ]
+  ],
+  "maskBounds": {
+    "x0": 220,
+    "y0": 103,
+    "x1": 1031,
+    "y1": 1123
+  },
+  "assets": [
+    {
+      "file": "premium fine art print - art bw.png",
+      "sha256": "37a66929b657b70ef5dd2d963ba1361e6156009b2d229315928f79dfe58148f1",
+      "bytes": 40676
+    },
+    {
+      "file": "premium fine art print - background bw.png",
+      "sha256": "4eb4806aedd1a5a177ff72a4d9085a1a81d91d3154f22714df61437a5c91c610",
+      "bytes": 40686
+    },
+    {
+      "file": "premium fine art print.png",
+      "sha256": "b1f40212adb202388f21f6d2c0c5abd0283edc7490e02ff1e9e3eb9a39fcaa39",
+      "bytes": 1780943
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false
+}

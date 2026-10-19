@@ -1,0 +1,57 @@
+{
+  "sourceArchive": "litenco product image alphas 2-assets.zip",
+  "masters": 10,
+  "masks": 24,
+  "scenes": [
+    {
+      "id": "fine-art-square",
+      "family": "fine_art",
+      "status": "clean-replacement-review"
+    },
+    {
+      "id": "premium-fine-art",
+      "family": "premium",
+      "status": "clean-replacement-review"
+    },
+    {
+      "id": "classic-framed",
+      "family": "framed",
+      "status": "clean-replacement-review"
+    },
+    {
+      "id": "matted-frame-square",
+      "family": "matted",
+      "status": "clean-replacement-review"
+    },
+    {
+      "id": "matted-frame-landscape",
+      "family": "canvas",
+      "status": "clean-replacement-review"
+    },
+    {
+      "id": "gallery-canvas-square",
+      "family": "canvas",
+      "status": "clean-replacement-review"
+    },
+    {
+      "id": "gallery-canvas-landscape",
+      "family": "canvas",
+      "status": "clean-replacement-review"
+    },
+    {
+      "id": "framed-canvas",
+      "family": "framed_canvas",
+      "status": "clean-replacement-review"
+    },
+    {
+      "id": "ceramic-mug",
+      "family": "mug",
+      "status": "clean-replacement-review"
+    },
+    {
+      "id": "greeting-card",
+      "family": "card",
+      "status": "clean-replacement-review"
+    }
+  ]
+}
