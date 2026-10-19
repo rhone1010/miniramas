@@ -27,17 +27,53 @@ import { PETS_35 } from '@/lib/v1/pets/pets-catalog-35'
 import { GROUPS_EFFECTS } from '@/lib/v1/groups/groups-effects'
 import { bakeFoyerWatermark } from '@/lib/v1/foyer/foyer-watermark'
 
+/**
+ * WHO MAY MOVE AN ITEM. Both callers claim an item ('pending' -> 'rendering', stamping rendering_started_at) before they render it, and the cron poller
+ * hands a stale claim to a NEW invocation after ten minutes. So by the time a render finishes (or fails) the row may belong to someone else, or be done.
+ * Every write this invocation makes to the item is therefore conditional on the row still being the one IT claimed: still 'rendering', and still carrying
+ * the claim stamp it read. A write that matches nothing is a lost claim: it changes nothing and starts nothing, so a finished item is never reset,
+ * overwritten or rendered (and billed) a second time by a late retry.
+ */
+interface Held { stamp: string | null }
+function whileHeld(query: any, held: Held): any {
+  const q = query.eq('status', 'rendering')
+  return held.stamp ? q.eq('rendering_started_at', held.stamp) : q
+}
+/**
+ * Mark an item failed FOR GOOD and record when (failed_at, migration 053): the automatic recovery's two-hour backoff counts from it, and an item with no failure
+ * time is never recovered. If the column does not exist yet (the migration is applied separately) the write is repeated without it, so a failure is never lost
+ * to a missing column.
+ */
+async function writeFailed(portfolioItemId: string, held: Held | null, patch: Record<string, unknown>): Promise<{ data: any; error: any }> {
+  const run = (p: Record<string, unknown>) => {
+    const q = supabaseAdmin.from('portfolio_items').update(p).eq('id', portfolioItemId)
+    return (held ? whileHeld(q, held) : q.in('status', ['pending', 'rendering'])).select('id')
+  }
+  const first = await run({ ...patch, failed_at: new Date().toISOString() })
+  if (first?.error && /failed_at/i.test(String(first.error.message ?? first.error))) return await run(patch)
+  return first
+}
+const touched = (data: unknown): boolean => !Array.isArray(data) || data.length > 0         // an unreadable answer is not proof of a lost claim
+
 export async function renderOnePortfolioItem(portfolioItemId: string): Promise<void> {
+  let held: Held | null = null
   try {
     const { data: item, error: itemErr } = await supabaseAdmin
       .from('portfolio_items')
-      .select('id, portfolio_id, slot, preset, status, attempts')
+      .select('id, portfolio_id, slot, preset, status, attempts, rendering_started_at')
       .eq('id', portfolioItemId)
       .maybeSingle()
     if (itemErr || !item) {
       console.error(`[portfolios/items/render] portfolio_item not found: ${portfolioItemId}`)
       return
     }
+    /* A finished or given-up item is never rendered again from here: whatever asked for this render is late. (Re-making a failed item is a decision for a
+       person, with the record in front of them: see the retry notes in docs/GOVERNANCE.) */
+    if (item.status === 'done' || item.status === 'failed') {
+      console.warn(`[portfolios/items/render] ${portfolioItemId} is already ${item.status}: not rendered again`)
+      return
+    }
+    held = { stamp: typeof item.rendering_started_at === 'string' && item.rendering_started_at ? item.rendering_started_at : null }
 
     const { data: portfolio, error: portfolioErr } = await supabaseAdmin
       .from('portfolios')
@@ -71,11 +107,11 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     const isPets = portfolio.series === 'pets'
     const isGroups = portfolio.series === 'groups'
     if (isGroups && !Object.hasOwn(GROUPS_EFFECTS, item.preset)) {
-      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'unknown_groups_effect')
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'unknown_groups_effect', held)
       return
     }
     if (isPets && !Object.hasOwn(PETS_35, item.preset)) {
-      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'unknown_pets_effect')
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'unknown_pets_effect', held)
       return
     }
     const styleId = isPets || isGroups ? 'realistic' : styleIdForPreset(item.preset)
@@ -156,7 +192,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
 
     if (!ok) {
       await handleItemFailure(portfolioItemId, portfolio.id, item.attempts,
-        genResult?.error || genResult?.status || 'generate_failed')
+        genResult?.error || genResult?.status || 'generate_failed', held)
       return
     }
 
@@ -181,7 +217,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
         .toColourspace('srgb').jpeg({ quality: LOCKED_PREVIEW_QUALITY, progressive: true, mozjpeg: true }).toBuffer()
     } catch (e: any) {
       console.error(`[portfolios/items/render] locked-preview bake FAILED for ${portfolioItemId}`, e)
-      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'locked_preview_failed')
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'locked_preview_failed', held)
       return
     }
 
@@ -202,7 +238,7 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
       })
     if (lockedUpErr) {
       console.error(`[portfolios/items/render] locked-preview upload FAILED for ${portfolioItemId}:`, lockedUpErr.message)
-      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'locked_preview_upload_failed')
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'locked_preview_upload_failed', held)
       return
     }
 
@@ -241,14 +277,20 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     })
     if (!ledgered) {
       console.error(`[portfolios/items/render] ledger write failed for ${portfolioItemId} — not marking done`)
-      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'ledger_write_failed')
+      await handleItemFailure(portfolioItemId, portfolio.id, item.attempts, 'ledger_write_failed', held)
       return
     }
 
-    await supabaseAdmin
+    const { data: finished } = await whileHeld(supabaseAdmin
       .from('portfolio_items')
       .update({ status: 'done', preview_id: previewId })
-      .eq('id', portfolioItemId)
+      .eq('id', portfolioItemId), held).select('id')
+    if (!touched(finished)) {
+      /* The claim was lost while this render ran (a stale reclaim handed the item to another invocation, or it already finished). This picture is the
+         duplicate: it is not attached to the item, so the finished one is never overwritten. */
+      console.warn(`[portfolios/items/render] claim on ${portfolioItemId} was lost: discarding the duplicate render (preview ${previewId})`)
+      return
+    }
 
     await maybeFlipReady(portfolio.id)
     if (portfolio.composition?.remedy?.case_id) {
@@ -262,46 +304,58 @@ export async function renderOnePortfolioItem(portfolioItemId: string): Promise<v
     console.log(`[portfolios/items/render] done item=${portfolioItemId} preview=${previewId}`)
   } catch (e: any) {
     console.error(`[portfolios/items/render] top-level failure for ${portfolioItemId}:`, e)
-    await supabaseAdmin
-      .from('portfolio_items')
-      .update({ status: 'failed', error: e?.message || 'unhandled_error' })
-      .eq('id', portfolioItemId)
-      .catch((dbErr: any) => {
-        console.error(`[portfolios/items/render] ALSO failed to write error to DB for ${portfolioItemId}:`, dbErr)
-      })
+    /* A try/catch, not `.catch(...)`: the Supabase builder is a thenable with no `.catch`, so the old form threw a TypeError from INSIDE this handler. The error
+       then escaped to the caller, which put the item back to 'pending', so a render that failed for a lasting reason was re-rendered (and billed) again and again. */
+    try {
+      // never turns a finished item into a failed one (writeFailed is conditional on the claim). The message is recorded as before; recovery treats it as transient
+      // only when it names a network or provider condition (render-recovery.ts), so an unexpected error is not retried automatically.
+      const { error } = await writeFailed(portfolioItemId, held, { status: 'failed', error: e?.message || 'unhandled_error' })
+      if (error) console.error(`[portfolios/items/render] ALSO failed to write error to DB for ${portfolioItemId}:`, error.message ?? error)
+    } catch (dbErr: any) {
+      console.error(`[portfolios/items/render] ALSO failed to write error to DB for ${portfolioItemId}:`, dbErr)
+    }
   }
 }
 
 /** Retry SAME effect, per product spec section 13. No substitution. */
 async function handleItemFailure(
-  portfolioItemId: string, portfolioId: string, currentAttempts: number, reason: string,
+  portfolioItemId: string, portfolioId: string, currentAttempts: number, reason: string, held: Held,
 ): Promise<void> {
   const decision = decideRetry(currentAttempts)
 
   if (!decision.shouldRetry) {
-    await supabaseAdmin
-      .from('portfolio_items')
-      .update({ status: 'failed', attempts: decision.attemptNumber, error: reason })
-      .eq('id', portfolioItemId)
-    await maybeFlipReady(portfolioId)
+    const { data } = await writeFailed(portfolioItemId, held, { status: 'failed', attempts: decision.attemptNumber, error: reason })
+    if (touched(data)) await maybeFlipReady(portfolioId)
     return
   }
 
-  await supabaseAdmin
+  /* Back to the queue, but only if this invocation still holds the item. If it does not (finished, failed, or handed to another render), there is
+     nothing to retry and nothing to start. */
+  const { data: requeued } = await whileHeld(supabaseAdmin
     .from('portfolio_items')
     .update({ status: 'pending', attempts: decision.attemptNumber, error: reason })
-    .eq('id', portfolioItemId)
+    .eq('id', portfolioItemId), held).select('id')
+  if (!touched(requeued)) {
+    console.warn(`[portfolios/items/render] ${portfolioItemId} is no longer held by this render: no retry started`)
+    return
+  }
 
-  /* NOTE, NOT A FIX (Rich, 2026-09-16: report only, leave alone). These
-     headers carry no Authorization, and items/render is secret-gated, so this
-     retry is refused 401 every time. A 401 is a response, not a throw, so the
-     .catch below never runs and nothing is logged. The target is corrected
-     here with the other two self-calls; the missing header is untouched. */
+  /* THE RETRY CARRIES THE INTERNAL SECRET. items/render is secret-gated (checkInternalAuth), and this call used to send no Authorization, so every retry
+     was refused 401, silently (a 401 is a response, not a throw). It now presents the same secret the dispatch route and the generate call present, and a
+     refusal is logged. The claim in items/render ('pending' -> 'rendering', one winner) is what keeps a concurrent dispatch or cron tick from rendering
+     the same item twice. Without the secret the item simply stays 'pending' for the cron poller, which is the recovery path. */
+  const secret = process.env.CRON_SECRET
+  if (!secret) {
+    console.error(`[portfolios/items/render] CRON_SECRET not set: ${portfolioItemId} stays pending for the cron poller`)
+    return
+  }
   const appUrl = internalBaseUrl()
   await fetch(`${appUrl}/api/v1/portfolios/items/render`, {
     method: 'POST',
-    headers: internalHeaders({ 'Content-Type': 'application/json' }),
+    headers: internalHeaders({ 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` }),
     body: JSON.stringify({ portfolioItemId }),
+  }).then((res) => {
+    if (res && res.ok === false) console.error(`[portfolios/items/render] retry for ${portfolioItemId} was refused: HTTP ${res.status}`)
   }).catch((err) => {
     console.error(`[portfolios/items/render] retry fetch failed for ${portfolioItemId}`, err)
   })

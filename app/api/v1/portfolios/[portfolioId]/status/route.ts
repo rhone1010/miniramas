@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getUser } from '@/lib/store/auth'
 import { PREVIEW_BUCKET } from '@/lib/store/preview'
+import { recoveryStateFor, type RecoveryState } from '@/lib/store/render-recovery'
 
 const SIGNED_URL_TTL = 60 * 60 * 24   // 24h — a browsing session's worth
 
@@ -35,6 +36,17 @@ export async function GET(
   if (itemsErr) return NextResponse.json({ error: 'portfolio_items_query_failed' }, { status: 500 })
 
   const doneCount = (items ?? []).filter((i) => i.status === 'done').length
+
+  /* WHAT A CUSTOMER MAY BE TOLD about a piece that did not finish: whether an automatic second try is coming or under way (render-recovery.ts). Read from the columns
+     migration 053 adds; until it is applied the read fails, nothing is claimed, and every piece simply carries no promise. The raw error is never sent. */
+  const recoveryBySlot = new Map<number, RecoveryState>()
+  if ((items ?? []).some((i) => i.status === 'failed' || i.status === 'pending' || i.status === 'rendering')) {
+    const { data: extra, error: extraErr } = await supabaseAdmin
+      .from('portfolio_items')
+      .select('slot, status, error, preview_id, recovery_count, failed_at')
+      .eq('portfolio_id', portfolio.id)
+    if (!extraErr) for (const e of extra ?? []) recoveryBySlot.set(e.slot, recoveryStateFor(e, portfolio.status))
+  }
 
   /* WHICH PIECES ARE PAID FOR. Same read the unlocks route performs
      (unlocks/route.ts:66-77): preview_ledger.unlocked_at is what the unlock
@@ -94,6 +106,8 @@ export async function GET(
       previewUrl,
       unlocked,
       attempts: i.attempts ?? 0,
+      /* 'scheduled' | 'in_progress' | null: whether an automatic second try is coming or under way. */
+      recovery: recoveryBySlot.get(i.slot) ?? null,
     }
   }))
 

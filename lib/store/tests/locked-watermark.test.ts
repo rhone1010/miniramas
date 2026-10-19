@@ -137,7 +137,7 @@ describe('the locked path does not serve the clean image', () => {
      master is never the substitute. */
   it('fails the item when the bake fails', () => {
     expect(render).toMatch(/locked-preview bake FAILED/)
-    expect(render).toMatch(/handleItemFailure\(portfolioItemId, portfolio\.id, item\.attempts, 'locked_preview_failed'\)/)
+    expect(render).toMatch(/handleItemFailure\(portfolioItemId, portfolio\.id, item\.attempts, 'locked_preview_failed', held\)/)
   })
 
   it('still writes it to the locked prefix as a jpeg', () => {

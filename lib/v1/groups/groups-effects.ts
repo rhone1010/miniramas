@@ -199,7 +199,7 @@ export interface GroupsEffect {
    *  intake needs a rule for counts either side of this — refuse, or
    *  compose to what arrived. Rich's ruling, not yet made. */
   expectedSubjects?: number
-  /** When true, the effect uses the shared 3–9 portrait-panel Faces
+  /** When true, the effect uses the shared 2–9 portrait-panel Faces
    *  layout. Explicit — do not infer from the _faces suffix. */
   faces?: boolean
   /** When false, the prompt builder skips the runtime framing clause.
@@ -231,7 +231,7 @@ export function framingClause(subjectCount: number): string {
 
 // ───────────────────────────────────────────────────────────────────────
 // FACES / PORTRAIT-COLLECTION LAYOUT — shared by all effects with
-// faces: true. Accepts 3–9 individual source portraits.
+// faces: true. Accepts 2–9 individual source portraits.
 //
 // From the Groups Generation Governance, September 2026. 9 widened from
 // the original 8-subject ceiling by the same authority, with the balanced
@@ -240,6 +240,8 @@ export function framingClause(subjectCount: number): string {
 
 export function facesLayoutClause(subjectCount: number): string {
   switch (subjectCount) {
+    case 2:
+      return 'Arrange two equal portrait panels side by side in one centered row.'
     case 3:
       return 'Arrange three equal portrait panels in one centered row.'
     case 4:
@@ -255,14 +257,14 @@ export function facesLayoutClause(subjectCount: number): string {
     case 9:
       return 'Arrange nine equal portrait panels in a balanced 3×3 grid.'
     default:
-      throw new Error(`Faces effects require 3–9 subjects; received ${subjectCount}`)
+      throw new Error(`Faces effects require 2–9 subjects; received ${subjectCount}`)
   }
 }
 
 export const FACES_LAYOUT_FINISH =
   'All portraits are the same size and scale. Fill the canvas with the arrangement, leaving only a narrow outer margin. No large empty areas.'
 
-export const MIN_FACES_SUBJECTS = 3
+export const MIN_FACES_SUBJECTS = 2
 export const MAX_FACES_SUBJECTS = 9
 
 // ───────────────────────────────────────────────────────────────────────
@@ -974,7 +976,7 @@ export function buildGroupsPrompt(input: {
   if (effect.avoid) parts.push(effect.avoid)
 
   if (effect.faces && input.subjectCount) {
-    // Faces / portrait-collection: shared panel layout for 3–9 subjects.
+    // Faces / portrait-collection: shared panel layout for 2–9 subjects.
     parts.push(facesLayoutClause(input.subjectCount))
     parts.push(FACES_LAYOUT_FINISH)
   } else if (effect.intake === 'group_photo' && effect.runtimeFraming !== false && input.subjectCount) {

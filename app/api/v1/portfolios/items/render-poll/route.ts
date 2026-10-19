@@ -43,6 +43,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { checkInternalAuth } from '@/lib/store/internal-auth'
 import { renderOnePortfolioItem } from '@/lib/store/portfolio-render'
+import { recoverFailedRenders, type SweepSummary } from '@/lib/store/render-recovery'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -94,6 +95,13 @@ export async function GET(req: NextRequest) {
     console.warn(`[render-poll] reclaimed ${reclaimed} item(s) stranded at 'rendering' for over ${STALE_RENDERING_MS / 1000}s`)
   }
 
+  /* BOUNDED AUTOMATIC RECOVERY (migration 053), off unless RENDER_RECOVERY_ENABLED=1. A render that failed for a transient reason, with no artwork, in a paid and
+     activated portfolio, at least two hours ago, gets ONE more cycle. The database claims each recovery atomically and enforces the $5 daily ceiling (render-recovery.ts);
+     a claimed item is 'pending' in a 'generating' portfolio, so the scan below renders it. Failures recorded before the migration have no failure time and are never touched. */
+  let recovery: SweepSummary | null = null
+  try { recovery = await recoverFailedRenders(supabaseAdmin, { limit: 2 }) } catch (err) { console.error('[render-poll] recovery sweep failed:', err) }
+  if (recovery?.enabled) console.log('[render-poll] recovery', JSON.stringify(recovery))
+
   /* Two queries rather than one embedded join. PostgREST can filter on an
      embedded resource, but the embed is named after the foreign key and this
      schema has no migration in the repo to name it from. Two plain queries
@@ -110,7 +118,7 @@ export async function GET(req: NextRequest) {
 
   const portfolioIds = (portfolios ?? []).map((p) => p.id)
   if (portfolioIds.length === 0) {
-    return NextResponse.json({ reclaimed, scanned: 0, claimed: 0, rendered: 0, skipped: 0 })
+    return NextResponse.json({ reclaimed, recovery, scanned: 0, claimed: 0, rendered: 0, skipped: 0 })
   }
 
   const { data: items, error: itemsErr } = await supabaseAdmin
@@ -175,7 +183,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const summary = { reclaimed, scanned, claimed, rendered, failed, skipped, ms: Date.now() - startedAt }
+  const summary = { reclaimed, recovery, scanned, claimed, rendered, failed, skipped, ms: Date.now() - startedAt }
   console.log('[render-poll]', JSON.stringify(summary))
   return NextResponse.json(summary)
 }

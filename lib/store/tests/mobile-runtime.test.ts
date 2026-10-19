@@ -76,11 +76,11 @@ describe('a failed render is not a crafting one', () => {
      moving. */
   it('reads failed as its own state', () => {
     expect(HTML).toMatch(/var itemFailed = i\.status === 'failed'/)
-    expect(HTML).toMatch(/crafting: i\.status !== 'done' && !itemFailed/)
+    expect(HTML).toMatch(/crafting: tile === 'rendering' \|\| tile === 'queued'/); expect(HTML).toMatch(/failed: itemFailed \|\| tile === 'failed'/)
   })
 
   it('carries the state into the pieces the grid draws', () => {
-    const copies = HTML.match(/crafting:item\.crafting, failed:item\.failed,/g) || []
+    const copies = HTML.match(/crafting:item\.crafting, queued:item\.queued, recovery:item\.recovery, failed:item\.failed,/g) || []
     expect(copies.length).toBe(2)
   })
 
