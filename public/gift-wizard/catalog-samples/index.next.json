@@ -3,64 +3,64 @@
   "series": {
     "pets": {
       "fine_art": {
-        "desktop": "/gift-wizard/catalog-samples/pets-fine_art-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/pets-fine_art-mobile.webp",
-        "placeholder": false,
-        "templateId": "fine-art",
-        "status": "rendered",
-        "reason": null
+        "desktop": "/gift-wizard/catalog-samples/pets-fine_art-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/pets-fine_art-scene-mobile.webp",
+        "placeholder": true,
+        "templateId": "fine-art-square",
+        "status": "placeholder",
+        "reason": "product_regeneration_required"
       },
       "premium": {
-        "desktop": "/gift-wizard/catalog-samples/pets-premium-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/pets-premium-mobile.webp",
-        "placeholder": false,
+        "desktop": "/gift-wizard/catalog-samples/pets-premium-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/pets-premium-scene-mobile.webp",
+        "placeholder": true,
         "templateId": "premium-fine-art",
-        "status": "rendered",
-        "reason": null
+        "status": "placeholder",
+        "reason": "paid_extension_required"
       },
       "framed": {
-        "desktop": "/gift-wizard/catalog-samples/pets-framed-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/pets-framed-mobile.webp",
-        "placeholder": false,
+        "desktop": "/gift-wizard/catalog-samples/pets-framed-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/pets-framed-scene-mobile.webp",
+        "placeholder": true,
         "templateId": "classic-framed",
-        "status": "rendered",
-        "reason": null
+        "status": "placeholder",
+        "reason": "product_regeneration_required"
       },
       "matted": {
-        "desktop": "/gift-wizard/catalog-samples/pets-matted-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/pets-matted-mobile.webp",
-        "placeholder": false,
+        "desktop": "/gift-wizard/catalog-samples/pets-matted-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/pets-matted-scene-mobile.webp",
+        "placeholder": true,
         "templateId": "matted-frame-square",
-        "status": "rendered",
-        "reason": null
+        "status": "placeholder",
+        "reason": "paid_extension_required"
       },
       "canvas": {
-        "desktop": "/gift-wizard/catalog-samples/pets-canvas-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/pets-canvas-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/pets-canvas-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/pets-canvas-scene-mobile.webp",
         "placeholder": false,
         "templateId": "gallery-canvas-square",
         "status": "rendered",
         "reason": null
       },
       "framed_canvas": {
-        "desktop": "/gift-wizard/catalog-samples/pets-framed_canvas-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/pets-framed_canvas-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/pets-framed_canvas-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/pets-framed_canvas-scene-mobile.webp",
         "placeholder": true,
-        "templateId": "framed-canvas-square",
-        "status": "gap",
-        "reason": "float-canvas-side-plane-calibration"
+        "templateId": "framed-canvas",
+        "status": "placeholder",
+        "reason": "assigned_artwork_missing"
       },
       "mug": {
-        "desktop": "/gift-wizard/catalog-samples/pets-mug-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/pets-mug-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/pets-mug-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/pets-mug-scene-mobile.webp",
         "placeholder": false,
         "templateId": "ceramic-mug",
         "status": "rendered",
         "reason": null
       },
       "card": {
-        "desktop": "/gift-wizard/catalog-samples/pets-card-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/pets-card-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/pets-card-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/pets-card-scene-mobile.webp",
         "placeholder": false,
         "templateId": "greeting-card",
         "status": "rendered",
@@ -69,64 +69,64 @@
     },
     "groups": {
       "fine_art": {
-        "desktop": "/gift-wizard/catalog-samples/groups-fine_art-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/groups-fine_art-mobile.webp",
-        "placeholder": false,
-        "templateId": "fine-art",
-        "status": "rendered",
-        "reason": null
+        "desktop": "/gift-wizard/catalog-samples/groups-fine_art-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/groups-fine_art-scene-mobile.webp",
+        "placeholder": true,
+        "templateId": "fine-art-square",
+        "status": "placeholder",
+        "reason": "product_regeneration_required"
       },
       "premium": {
-        "desktop": "/gift-wizard/catalog-samples/groups-premium-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/groups-premium-mobile.webp",
-        "placeholder": false,
+        "desktop": "/gift-wizard/catalog-samples/groups-premium-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/groups-premium-scene-mobile.webp",
+        "placeholder": true,
         "templateId": "premium-fine-art",
-        "status": "rendered",
-        "reason": null
+        "status": "placeholder",
+        "reason": "paid_extension_required"
       },
       "framed": {
-        "desktop": "/gift-wizard/catalog-samples/groups-framed-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/groups-framed-mobile.webp",
-        "placeholder": false,
+        "desktop": "/gift-wizard/catalog-samples/groups-framed-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/groups-framed-scene-mobile.webp",
+        "placeholder": true,
         "templateId": "classic-framed",
-        "status": "rendered",
-        "reason": null
+        "status": "placeholder",
+        "reason": "product_regeneration_required"
       },
       "matted": {
-        "desktop": "/gift-wizard/catalog-samples/groups-matted-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/groups-matted-mobile.webp",
-        "placeholder": false,
+        "desktop": "/gift-wizard/catalog-samples/groups-matted-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/groups-matted-scene-mobile.webp",
+        "placeholder": true,
         "templateId": "matted-frame-square",
-        "status": "rendered",
-        "reason": null
+        "status": "placeholder",
+        "reason": "paid_extension_required"
       },
       "canvas": {
-        "desktop": "/gift-wizard/catalog-samples/groups-canvas-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/groups-canvas-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/groups-canvas-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/groups-canvas-scene-mobile.webp",
         "placeholder": false,
         "templateId": "gallery-canvas-square",
         "status": "rendered",
         "reason": null
       },
       "framed_canvas": {
-        "desktop": "/gift-wizard/catalog-samples/groups-framed_canvas-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/groups-framed_canvas-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/groups-framed_canvas-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/groups-framed_canvas-scene-mobile.webp",
         "placeholder": true,
-        "templateId": "framed-canvas-square",
-        "status": "gap",
-        "reason": "float-canvas-side-plane-calibration"
+        "templateId": "framed-canvas",
+        "status": "placeholder",
+        "reason": "assigned_artwork_missing"
       },
       "mug": {
-        "desktop": "/gift-wizard/catalog-samples/groups-mug-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/groups-mug-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/groups-mug-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/groups-mug-scene-mobile.webp",
         "placeholder": false,
         "templateId": "ceramic-mug",
         "status": "rendered",
         "reason": null
       },
       "card": {
-        "desktop": "/gift-wizard/catalog-samples/groups-card-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/groups-card-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/groups-card-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/groups-card-scene-mobile.webp",
         "placeholder": false,
         "templateId": "greeting-card",
         "status": "rendered",
@@ -135,64 +135,64 @@
     },
     "portraits": {
       "fine_art": {
-        "desktop": "/gift-wizard/catalog-samples/portraits-fine_art-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/portraits-fine_art-mobile.webp",
-        "placeholder": false,
-        "templateId": "fine-art",
-        "status": "rendered",
-        "reason": null
+        "desktop": "/gift-wizard/catalog-samples/portraits-fine_art-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/portraits-fine_art-scene-mobile.webp",
+        "placeholder": true,
+        "templateId": "fine-art-square",
+        "status": "placeholder",
+        "reason": "product_regeneration_required"
       },
       "premium": {
-        "desktop": "/gift-wizard/catalog-samples/portraits-premium-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/portraits-premium-mobile.webp",
-        "placeholder": false,
+        "desktop": "/gift-wizard/catalog-samples/portraits-premium-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/portraits-premium-scene-mobile.webp",
+        "placeholder": true,
         "templateId": "premium-fine-art",
-        "status": "rendered",
-        "reason": null
+        "status": "placeholder",
+        "reason": "paid_extension_required"
       },
       "framed": {
-        "desktop": "/gift-wizard/catalog-samples/portraits-framed-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/portraits-framed-mobile.webp",
-        "placeholder": false,
+        "desktop": "/gift-wizard/catalog-samples/portraits-framed-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/portraits-framed-scene-mobile.webp",
+        "placeholder": true,
         "templateId": "classic-framed",
-        "status": "rendered",
-        "reason": null
+        "status": "placeholder",
+        "reason": "product_regeneration_required"
       },
       "matted": {
-        "desktop": "/gift-wizard/catalog-samples/portraits-matted-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/portraits-matted-mobile.webp",
-        "placeholder": false,
+        "desktop": "/gift-wizard/catalog-samples/portraits-matted-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/portraits-matted-scene-mobile.webp",
+        "placeholder": true,
         "templateId": "matted-frame-square",
-        "status": "rendered",
-        "reason": null
+        "status": "placeholder",
+        "reason": "paid_extension_required"
       },
       "canvas": {
-        "desktop": "/gift-wizard/catalog-samples/portraits-canvas-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/portraits-canvas-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/portraits-canvas-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/portraits-canvas-scene-mobile.webp",
         "placeholder": false,
         "templateId": "gallery-canvas-square",
         "status": "rendered",
         "reason": null
       },
       "framed_canvas": {
-        "desktop": "/gift-wizard/catalog-samples/portraits-framed_canvas-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/portraits-framed_canvas-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/portraits-framed_canvas-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/portraits-framed_canvas-scene-mobile.webp",
         "placeholder": true,
-        "templateId": "framed-canvas-square",
-        "status": "gap",
-        "reason": "float-canvas-side-plane-calibration"
+        "templateId": "framed-canvas",
+        "status": "placeholder",
+        "reason": "assigned_artwork_missing"
       },
       "mug": {
-        "desktop": "/gift-wizard/catalog-samples/portraits-mug-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/portraits-mug-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/portraits-mug-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/portraits-mug-scene-mobile.webp",
         "placeholder": false,
         "templateId": "ceramic-mug",
         "status": "rendered",
         "reason": null
       },
       "card": {
-        "desktop": "/gift-wizard/catalog-samples/portraits-card-desktop.webp",
-        "mobile": "/gift-wizard/catalog-samples/portraits-card-mobile.webp",
+        "desktop": "/gift-wizard/catalog-samples/portraits-card-scene-desktop.webp",
+        "mobile": "/gift-wizard/catalog-samples/portraits-card-scene-mobile.webp",
         "placeholder": false,
         "templateId": "greeting-card",
         "status": "rendered",
