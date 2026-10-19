@@ -109,7 +109,7 @@ async function upload(file:File){
  if(fail==='unsupported')throw Error('This photograph is not supported. Please choose another.');
  if(serverMode){
   const api=new GiftBackend((url,init)=>fetch(url,init)),created=await api.create(read.b64);
-  live=new LiveGift(api,created.sessionId);live.accept(created);session=newSession();await syncCatalog();applyServer(created);restorationComplete=true;await sourcePhoto(created.sessionId,file);
+  live=new LiveGift(api,created.sessionId);live.accept(created);session=newSession();await syncCatalog();applyServer(created);restorationComplete=true;
   const u=new URL(location.href);u.searchParams.set('sessionId',created.sessionId);window.history.replaceState(null,'',u);
   if(sourceURL)URL.revokeObjectURL(sourceURL);sourceURL=candidate;candidate='';history=[];busy=false;analyzingSource=false;render();return;
  }
@@ -205,12 +205,24 @@ function settleGeneration(){
 function scheduleGenerationRead(){
  clearTimeout(generationTimer);
  const s=live?.session,b=s?.batches.find(b=>b.batchIndex===generationBatch);
- if(!generationBatch||!s||generationReadError||(!generationRequestPending&&b&&!b.previews.some(p=>p.status==='pending'||p.status==='generating')))return;
- generationTimer=setTimeout(()=>void refreshGeneration(),3000);
+ if(!generationBatch||!s||generationReadError||b?.generation==='failed'||b?.generation==='stalled'||(!generationRequestPending&&b&&!b.previews.some(p=>p.status==='pending'||p.status==='generating')))return;
+ generationTimer=setTimeout(()=>void refreshGeneration().then(()=>resumeStalledBatches()),5000);
+}
+const resumedBatches=new Set<string>();
+async function resumeStalledBatches(){
+ const owner=live;if(!owner?.session||generationRequestPending)return;
+ for(const b of owner.session.batches){
+  const key=owner.id+':'+b.batchIndex;
+  if(b.generation!=='stalled'||resumedBatches.has(key))continue;
+  resumedBatches.add(key);generationRequestPending=true;
+  try{const r=await owner.api.retryBatch(owner.id,b.batchIndex);if(live!==owner)return;owner.accept(r.session);applyServer(r.session);generationReadError=''}
+  catch(e){if(live!==owner)return;generationReadError=e instanceof Error?e.message:'request_failed'}
+  finally{generationRequestPending=false;if(live===owner){settleGeneration();render();scheduleGenerationRead()}}
+ }
 }
 async function refreshGeneration(){
  if(!live||!generationBatch)return;
- try{const s=await live.api.restore(live.id);live.accept(s);applyServer(s);generationReadError='';settleGeneration();render();scheduleGenerationRead()}
+ try{const owner=live,s=await owner.api.restore(owner.id);if(live!==owner)return;owner.accept(s);applyServer(s);generationReadError='';settleGeneration();render();scheduleGenerationRead()}
  catch(e){generationReadError=e instanceof Error?e.message:'request_failed';clearTimeout(generationTimer);if(e instanceof GiftApiError&&e.status===401){live.clear();paymentState='auth';view='payment'}render();error(generationReadError)}
 }
 function renderGeneration(){
@@ -219,12 +231,12 @@ function renderGeneration(){
  $('screen').innerHTML='<h2>Your Six Previews</h2><div class="grid">'+Array.from({length:6},(_,i)=>{
   const p=b?.previews.find(p=>p.slot===i+1),label=p?effects().find(e=>e.id===p.effectId)?.label||p.effectId:'';
   if(p?.status==='ready'&&p.url)return '<div class="tile">'+photo(p.url,label+' watermarked artwork')+'<span>'+esc(label)+'</span></div>';
-  const working=p?.status==='generating',failed=p?.status==='failed';
+  const working=p?.status==='generating'&&(!b?.generation||b.generation==='running'),failed=p?.status==='failed'||b?.generation==='failed';
   return '<div class="tile card '+(working?'is-crafting':failed?'is-failed':'')+'"><div class="card__art">'+(working?MC_MARK_HTML:'')+'</div><span role="status">'+(working?'Crafting…':failed?'Didn’t finish':'Waiting to start…')+'</span></div>';
  }).join('')+'</div>';
  $('right').innerHTML='<h2>Your Six Previews</h2>'+(generationReadError?'<p role="alert">'+esc(generationReadError)+'</p>':'')+secondary('check-generation','Check Again');
  $('check-generation').onclick=()=>void refreshGeneration();
- if(b?.previews.some(p=>p.status==='failed'&&p.retryable)&&!b.previews.some(p=>p.status==='pending'||p.status==='generating')){
+ if(b?.generation==='stalled'||(b?.generation!=='failed'&&b?.previews.some(p=>p.status==='failed'&&p.retryable)&&!b.previews.some(p=>p.status==='pending'||p.status==='generating'))){
   $('right').insertAdjacentHTML('beforeend',secondary('retry-generation','Try again'));
   $('retry-generation').onclick=async()=>{if(generationRequestPending||!live)return;generationRequestPending=true;try{const r=await live.api.retryBatch(live.id,b.batchIndex);live.accept(r.session);applyServer(r.session);generationReadError=''}catch(e){generationReadError=e instanceof Error?e.message:'request_failed'}finally{generationRequestPending=false;settleGeneration();render();scheduleGenerationRead()}};
  }
@@ -300,36 +312,23 @@ const layoutViews=['photo','products','configuration','cart','checkout','payment
 const layoutName=params.get('layoutReview')||'';
 const layoutReview=layoutViews.some(v=>v===layoutName);
 let disclosureAccepted=false,paymentState='blocked';
-const restoration=new RequestSlot<SessionView>();
+const restoration=new RequestSlot<SessionView|null>();
 const serverMode=!layoutReview&&params.get('fixture')!=='1';
-// Cache only the customer's uploaded source, never generated artwork or entitlements.
-// Reads happen only after this session has passed authenticated server restoration.
-async function sourcePhoto(id:string,file?:Blob):Promise<Blob|null>{
- if(typeof indexedDB==='undefined')return null;
- return new Promise(resolve=>{try{
-  const open=indexedDB.open('liten-gift-source',1);open.onupgradeneeded=()=>open.result.createObjectStore('photos');open.onerror=()=>resolve(null);
-  open.onsuccess=()=>{const db=open.result;const tx=db.transaction('photos',file?'readwrite':'readonly'),store=tx.objectStore('photos');const request=file?store.put(file,id):store.get(id);let result:Blob|null=null;
-   request.onsuccess=()=>{if(!file&&request.result instanceof Blob)result=request.result};tx.oncomplete=()=>{db.close();resolve(result)};tx.onerror=tx.onabort=()=>{db.close();resolve(null)};
-  };
- }catch{resolve(null)}});
-}
 // Navigation hints only; authentication and all artwork/payment data are restored from the server.
 const resumeKey='liten-gift-resume';
 function readResume(){try{return JSON.parse(sessionStorage.getItem(resumeKey)||'null')}catch{return null}}
-const savedResume=serverMode?readResume():null;
-if(serverMode&&!params.has('sessionId')&&!params.has('gift_order_session')&&!params.has('gift_pack_session')&&typeof savedResume?.sessionId==='string')params.set('sessionId',savedResume.sessionId);
+
 let restorationComplete=false;
 function rememberView(){
  if(!serverMode||!restorationComplete||!live?.session)return;
  try{sessionStorage.setItem(resumeKey,JSON.stringify({sessionId:live.id,view,effectIds:session.effectIds,recipient:session.recipient,silo,mobileSilo,artFocus,batchIndex,featuredProduct,productReviewIndex,history,generationBatch,batchIntent}))}catch{}
 }
 function restoreView(s:SessionView){
- const hint=savedResume?.sessionId===s.sessionId?savedResume:null;
+ const savedResume=readResume(),hint=savedResume?.sessionId===s.sessionId?savedResume:null;
  restorationComplete=true;
  const u=new URL(location.href);u.searchParams.set('sessionId',s.sessionId);window.history.replaceState(null,'',u);
  const incomplete=s.batches.find(b=>!b.complete);
- if(incomplete)generationBatch=incomplete.batchIndex;
- else if(Number.isInteger(hint?.generationBatch)&&hint.generationBatch===s.batches.length+1)generationBatch=hint.generationBatch;
+ generationBatch=incomplete?.batchIndex??null;
  if(generationBatch){view='review';if(hint?.batchIntent&&typeof hint.batchIntent.idempotencyKey==='string'&&Array.isArray(hint.batchIntent.effectIds))batchIntent=hint.batchIntent;scheduleGenerationRead()}
  if(!hint)return;
  session.effectIds=Array.isArray(hint.effectIds)?hint.effectIds.filter((id:unknown)=>typeof id==='string'&&effects().some(e=>e.id===id)&&!s.usedEffectIds.includes(id)).slice(0,6):[];
@@ -345,11 +344,12 @@ function restoreView(s:SessionView){
  if(generationBatch)view='review';else if(allowed.includes(hint.view))go(hint.view,false);
 }
 window.addEventListener('pagehide',()=>{rememberView();clearTimeout(generationTimer)});
-window.addEventListener('pageshow',()=>{if(generationBatch)void refreshGeneration()});
+window.addEventListener('pageshow',e=>{if(e.persisted&&serverMode){view='payment';void retryRestoration()}});
 let live=serverMode&&params.get('sessionId')?new LiveGift(new GiftBackend((url,init)=>fetch(url,init)),params.get('sessionId')!):null;
 async function retryRestoration(){
+ restorationComplete=false;clearTimeout(generationTimer);
  paymentState='restoring';render();
- if(!live&&!params.get('gift_order_session')&&!params.get('gift_pack_session')){paymentState='restore-failed';render();return}
+ let suggestedView:View|null=null;
  await restoration.run(async signal=>{
   if(params.has('gift_pack_session')){
    const pack=params.get('gift_pack_session')!,id=sessionStorage.getItem('liten-gift-pack:'+pack);
@@ -367,12 +367,18 @@ async function retryRestoration(){
    live=new LiveGift(api,confirmation.session.sessionId);
    params.delete('gift_order_session');
   }
-  if(!live)throw new GiftApiError('gift_project_reference_required',0);
+  if(!live){
+   const api=new GiftBackend((url,init)=>fetch(url,init)),latest=await api.restoreLatest(signal);
+   if(!latest.current)return null;
+   live=new LiveGift(api,latest.current.sessionId);
+   const step=latest.resume!.suggestedStep;suggestedView=step==='previews'?'review':step==='order'?'payment':step;
+  }
   await live.restore(signal);return live.session!;
  });
  const state=restoration.state;
  if(state.status==='ready'){
-  try{await syncCatalog();applyServer(state.value);const storedPhoto=await sourcePhoto(state.value.sessionId);if(storedPhoto&&!sourceURL)sourceURL=URL.createObjectURL(storedPhoto);await loadMockups();paymentState=purchased(state.value)?'payment-verified':'pending';view=state.value.order.state==='none'?(session.batches.length?'review':'effects'):'payment';restoreView(state.value);render()}
+  if(!state.value){live=null;session=newSession();sourceURL='';generationBatch=null;restorationComplete=false;view='photo';await syncCatalog();render();return}
+  try{await syncCatalog();applyServer(state.value);await loadMockups();paymentState=purchased(state.value)?'payment-verified':'pending';view=state.value.order.state==='none'?(session.batches.length?'review':'effects'):'payment';if(suggestedView)view=suggestedView;restoreView(state.value);render();void resumeStalledBatches()}
   catch(e){live?.clear();paymentState='restore-failed';render();error(e instanceof Error?e.message:'request_failed')}
  }else{restorationComplete=false;paymentState=state.status==='failed'&&state.httpStatus===401?'auth':state.status==='failed'&&state.code==='payment_pending'?'pending':'restore-failed';render();if(state.status==='failed')error(state.code)}
 
@@ -420,9 +426,7 @@ async function start(){try{
  for(const [series,path] of [['portraits','/effect-registry.js'],['groups','/groups-registry.js'],['pets','/pets-registry.js']] as const){await import(path);registries[series]=window.EFFECT_REGISTRY}
  initializeLayoutReview();render();
  if(serverMode){
-  if(live||params.has('gift_order_session')||params.has('gift_pack_session')){view='payment';await retryRestoration()}
-  else try{await new GiftBackend((url,init)=>fetch(url,init)).authenticated();await syncCatalog();render()}
-  catch(e){view='payment';paymentState=e instanceof GiftApiError&&e.status===401?'auth':'restore-failed';render()}
+  view='payment';await retryRestoration();
  }
  }catch{error('This page could not load. Please reload to try again.')}}
 
@@ -434,6 +438,7 @@ async function syncCatalog(){
 }
 
 function applyServer(s:SessionView){
+ sourceURL=s.source.photoUrl||(session.sessionId===s.sessionId?sourceURL:'');
  const lines=s.lines.map(l=>{
   const split=l.productId.lastIndexOf(':'),family=l.productId.slice(0,split);
   const p=products.find(p=>p.id===family),o=p?.options.find(o=>o.size===l.size) as CatalogOption|undefined;

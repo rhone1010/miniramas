@@ -1,7 +1,4 @@
 export class GiftApiError extends Error {
-    code;
-    status;
-    details;
     constructor(code, status, details = null) {
         super(code);
         this.code = code;
@@ -28,7 +25,6 @@ export function assertSession(v) {
 }
 export const integrationBlocks = Object.freeze(['sandbox_final_release', 'mug_card_profiles']);
 export class GiftBackend {
-    transport;
     constructor(transport) {
         this.transport = transport;
     }
@@ -59,6 +55,18 @@ export class GiftBackend {
     prePurchaseFavorite(id, b) { return this.selectArtwork(id, b); }
     create(image_b64, signal) { return this.session('POST', '/api/v1/gift/sessions', { image_b64 }, signal); }
     restore(id, signal) { return this.session('GET', sessionPath(id), undefined, signal); }
+    async restoreLatest(signal) {
+        const v = await this.request('GET', '/api/v1/gift/sessions', undefined, signal);
+        if (!v || v.contractVersion !== 1 || !Array.isArray(v.recent) || (v.current === null ? v.resume !== null : !v.resume))
+            throw new GiftApiError('invalid_restore_response', 0);
+        if (v.current) {
+            assertSession(v.current);
+            const r = v.resume;
+            if (r.sessionId !== v.current.sessionId || !['effects', 'previews', 'products', 'cart', 'checkout', 'compositions', 'order'].includes(r.suggestedStep) || ![r.resumeBatches, r.runningBatches].every(a => Array.isArray(a) && a.every(n => Number.isInteger(n) && n > 0)))
+                throw new GiftApiError('invalid_restore_response', 0);
+        }
+        return v;
+    }
     async catalog(signal) { const v = await this.request('GET', '/api/v1/print/catalog', undefined, signal); if (v.contractVersion !== 1 || !Array.isArray(v.products))
         throw new GiftApiError('invalid_catalog_response', 0); return v; }
     setLines(id, b, signal) { return this.session('PUT', sessionPath(id) + '/lines', { lines: b.lines.map(l => ({ lineId: l.lineId, productId: l.productId, copies: l.copies })) }, signal); }

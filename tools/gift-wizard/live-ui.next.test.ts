@@ -19,7 +19,7 @@ async function boot(query:string,response:any=project(),status=200){
  const win=dom.window as any,calls:string[]=[];
  win.matchMedia=()=>({matches:query.includes('mobile=1'),addEventListener(){}});win.ResizeObserver=class{observe(){}disconnect(){}};win.scrollTo=()=>{};win.structuredClone=structuredClone;win.AbortController=AbortController;win.Response=Response;
  win.require=(name:string)=>name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
- win.fetch=async(url:string,init:any={})=>{calls.push(String(url));if(response.route&&String(url).includes('/api/v1/gift/')){const routed=await response.route(String(url),init);if(routed)return routed instanceof Response?routed:new Response(JSON.stringify(routed),{status:200})}const data=String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog-samples/index.next')?JSON.parse(fs.readFileSync('public/gift-wizard/catalog-samples/index.next.json','utf8')):String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?JSON.parse(fs.readFileSync('public/gift-wizard/fixtures.next.json','utf8')):{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
+ win.fetch=async(url:string,init:any={})=>{calls.push(String(url));if(response.route&&String(url).includes('/api/v1/gift/')){const routed=await response.route(String(url),init);if(routed)return routed instanceof Response?routed:new Response(JSON.stringify(routed),{status:200})}const data=String(url)==='/api/v1/gift/sessions'&&init.method==='GET'?(response.latestResponse||{contractVersion:1,current:response.resume?response:null,resume:response.resume?{sessionId:response.sessionId,suggestedStep:'previews',resumeBatches:[],runningBatches:[]}:null,recent:[]}):String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog-samples/index.next')?JSON.parse(fs.readFileSync('public/gift-wizard/catalog-samples/index.next.json','utf8')):String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?JSON.parse(fs.readFileSync('public/gift-wizard/fixtures.next.json','utf8')):{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
  let code=fs.readFileSync('public/gift-wizard/wizard.next.ts','utf8').replace('import.meta.url',"'https://liten.invalid/gift-wizard/wizard.next.js'").replace('await import(path);',"window.EFFECT_REGISTRY={silos:[{id:'first',label:'First'}],effects:[{id:'jade',label:'Jade',category:'first',body:'live'}]};").replace(/start\(\);\s*$/,"globalThis.started=start();globalThis.navigate=go;");
  if(response.resume)win.sessionStorage.setItem("liten-gift-resume",JSON.stringify(response.resume));
  win.Error=Error;win.exports={};vm.runInContext(ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,dom.getInternalVMContext());
@@ -52,7 +52,7 @@ test('unconfirmed Stripe return stays pending and can retry without granting acc
 
 test('stable direct URL is live and never loads fixture artwork',async()=>{
  const {win,calls,dom}=await boot('');
- assert.ok(calls.includes('/api/v1/auth/me'));assert.ok(calls.includes('/api/v1/print/catalog'));
+ assert.ok(calls.includes('/api/v1/gift/sessions'));assert.ok(calls.includes('/api/v1/print/catalog'));
  assert.equal(calls.some(x=>x.includes('fixtures.next')),false);
  assert.equal(win.document.getElementById('screen').dataset.view,'photo');dom.window.close();
 });
@@ -250,4 +250,37 @@ test('generation SVG and animation/background remain exact Collection ports',()=
  assert.ok(source.includes(donor.split(/\r?\n/).find(x=>x.startsWith('var MC_MARK_HTML ='))!));
  const block=donor.slice(donor.indexOf('.card.is-crafting .card__art{'),donor.indexOf('/* The old ring is kept'));
  assert.ok(css.replace(/\r/g,'').includes(block.replace(/\r/g,'')));
+});
+
+function latest(s:any,step='previews'){return {contractVersion:1,current:s,resume:s?{sessionId:s.sessionId,suggestedStep:step,resumeBatches:s.batches.filter((b:any)=>b.generation==='stalled').map((b:any)=>b.batchIndex),runningBatches:s.batches.filter((b:any)=>b.generation==='running').map((b:any)=>b.batchIndex)}:null,recent:[]}}
+test('server latest session overrides stale local identity and restores signed source without IndexedDB',async()=>{
+ const s:any=project('none');s.source.photoUrl='https://liten.invalid/signed-source.jpg';s.resume={sessionId:'old-project',view:'checkout'};s.latestResponse=latest({...s},'effects');
+ const {win,calls,dom}=await boot('',s);assert.ok(calls.includes('/api/v1/gift/sessions'));assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.some(x=>x.endsWith('/old-project')),false);assert.equal(win.document.getElementById('screen').dataset.view,'effects');win.navigate('photo');assert.ok([...win.document.images].some((i:any)=>i.src===s.source.photoUrl));dom.window.close();
+});
+test('no active server session ignores remembered project and returns to Photo',async()=>{
+ const s:any=project('none');s.resume={sessionId:'project',view:'focus'};s.latestResponse=latest(null);
+ const {win,dom,calls}=await boot('',s);assert.equal(win.document.getElementById('screen').dataset.view,'photo');assert.equal(calls.includes('/api/v1/gift/sessions/project'),false);dom.window.close();
+});
+test('latest restoration validates response identity before using any artwork',async()=>{
+ const s:any=project();s.latestResponse=latest({...s});s.latestResponse.resume.sessionId='wrong';
+ const {win,dom}=await boot('',s);assert.equal(win.document.getElementById('error').textContent,'invalid_restore_response');assert.equal(win.document.querySelector('#screen img'),null);dom.window.close();
+});
+test('stalled restoration resumes unfinished batch once, never reserves a batch, and Check Again only reads',async()=>{
+ const s:any=workingProject();s.batches[0].generation='stalled';let retries=0;s.route=(url:string)=>{if(url.endsWith('/retry')){retries++;return {session:s,batch:s.batches[0],status:'partial'}}};
+ const {win,calls,dom}=await boot('sessionId=project',s);await new Promise(r=>setTimeout(r,20));assert.equal(retries,1);assert.equal(win.document.querySelectorAll('.mc-mark').length,0);assert.equal(win.document.querySelectorAll('#screen img').length,1);
+ win.document.getElementById('check-generation').click();await new Promise(r=>setTimeout(r,20));assert.equal(retries,1);assert.equal(calls.some(x=>x.endsWith('/batches')),false);dom.window.close();
+});
+test('running and exhausted batches never auto-retry; exhausted stale generating slots stop spinning',async()=>{
+ for(const generation of ['running','failed']){const s:any=workingProject();s.batches[0].generation=generation;const {win,dom,calls}=await boot('sessionId=project',s);assert.equal(win.document.querySelectorAll('.mc-mark').length,generation==='running'?1:0);assert.equal(calls.some(x=>x.endsWith('/retry')),false);dom.window.close()}
+});
+test('Back cache reauthenticates and replaces expired source URL while preserving effect selection',async()=>{
+ const s:any=project('none');s.source.photoUrl='https://liten.invalid/first-source.jpg';const {win,dom,calls}=await boot('sessionId=project',s);win.document.querySelector('[data-effect="jade"]').click();win.dispatchEvent(new win.PageTransitionEvent('pagehide'));s.source.photoUrl='https://liten.invalid/refreshed-source.jpg';win.dispatchEvent(new win.PageTransitionEvent('pageshow',{persisted:true}));await new Promise(r=>setTimeout(r,30));assert.equal(calls.filter(x=>x==='/api/v1/gift/sessions/project').length,2);assert.equal(win.document.querySelector('[data-effect="jade"]').getAttribute('aria-pressed'),'true');win.navigate('photo');assert.ok([...win.document.images].some((i:any)=>i.src===s.source.photoUrl));dom.window.close();
+});
+test('Back cache authentication failure conceals restored artwork',async()=>{
+ const s:any=artworkProject();const {win,dom}=await boot('sessionId=project',s);win.navigate('review');s.route=()=>new Response(JSON.stringify({error:'sign_in_required'}),{status:401});win.dispatchEvent(new win.PageTransitionEvent('pageshow',{persisted:true}));await new Promise(r=>setTimeout(r,30));assert.equal(win.document.querySelector('#screen img'),null);assert.ok(win.document.getElementById('screen').textContent.includes('Sign in'));dom.window.close();
+});
+
+test('failed stalled recovery exposes explicit retry without looping or changing finished artwork',async()=>{
+ const s:any=workingProject();s.batches[0].generation='stalled';let attempts=0;s.route=(url:string)=>url.endsWith('/retry')?(attempts++,new Response(JSON.stringify({error:'temporarily_unavailable'}),{status:503})):null;
+ const {win,dom}=await boot('sessionId=project',s);await new Promise(r=>setTimeout(r,20));assert.equal(attempts,1);assert.equal(win.document.querySelectorAll('#screen img').length,1);assert.ok(win.document.getElementById('retry-generation'));win.document.getElementById('retry-generation').click();await new Promise(r=>setTimeout(r,20));assert.equal(attempts,2);dom.window.close();
 });

@@ -1,5 +1,5 @@
 /** Prepared frontend transport only. Authenticated calls only. Final manufacturing release remains blocked. */
-import type {SessionView,BatchView,BatchRequest,BatchResponse,SetLinesRequest,GiftCheckoutRequest,GiftCheckoutResponse,OrderConfirmRequest,OrderConfirmResponse,PackCheckoutRequest,PackCheckoutResponse,PackConfirmRequest,PackConfirmResponse,SelectArtworkRequest,RefundRequestBody,RefundRequestResponse,MockupView} from './backend-contracts/gift/types';
+import type {RestoreResponse,SessionView,BatchView,BatchRequest,BatchResponse,SetLinesRequest,GiftCheckoutRequest,GiftCheckoutResponse,OrderConfirmRequest,OrderConfirmResponse,PackCheckoutRequest,PackCheckoutResponse,PackConfirmRequest,PackConfirmResponse,SelectArtworkRequest,RefundRequestBody,RefundRequestResponse,MockupView} from './backend-contracts/gift/types';
 import type {CatalogResponse} from './backend-contracts/print/catalog-types';
 export type Transport=(url:string,init:RequestInit)=>Promise<Response>;
 export class GiftApiError extends Error {constructor(public code:string,public status:number,public details:unknown=null){super(code)}}
@@ -28,6 +28,12 @@ export class GiftBackend {
  prePurchaseFavorite(id:string,b:SelectArtworkRequest):Promise<SessionView>{return this.selectArtwork(id,b)}
  create(image_b64:string,signal?:AbortSignal){return this.session('POST','/api/v1/gift/sessions',{image_b64},signal)}
  restore(id:string,signal?:AbortSignal){return this.session('GET',sessionPath(id),undefined,signal)}
+ async restoreLatest(signal?:AbortSignal):Promise<RestoreResponse>{
+  const v=await this.request<RestoreResponse>('GET','/api/v1/gift/sessions',undefined,signal);
+  if(!v||v.contractVersion!==1||!Array.isArray(v.recent)||(v.current===null?v.resume!==null:!v.resume))throw new GiftApiError('invalid_restore_response',0);
+  if(v.current){assertSession(v.current);const r=v.resume!;if(r.sessionId!==v.current.sessionId||!['effects','previews','products','cart','checkout','compositions','order'].includes(r.suggestedStep)||![r.resumeBatches,r.runningBatches].every(a=>Array.isArray(a)&&a.every(n=>Number.isInteger(n)&&n>0)))throw new GiftApiError('invalid_restore_response',0)}
+  return v;
+ }
  async catalog(signal?:AbortSignal){const v=await this.request<CatalogResponse>('GET','/api/v1/print/catalog',undefined,signal);if(v.contractVersion!==1||!Array.isArray(v.products))throw new GiftApiError('invalid_catalog_response',0);return v}
  setLines(id:string,b:SetLinesRequest,signal?:AbortSignal){return this.session('PUT',sessionPath(id)+'/lines',{lines:b.lines.map(l=>({lineId:l.lineId,productId:l.productId,copies:l.copies}))},signal)}
  async confirmOrder(b:OrderConfirmRequest,signal?:AbortSignal){const v=await this.request<OrderConfirmResponse>('POST','/api/v1/gift/orders/confirm',{stripeSessionId:b.stripeSessionId},signal);if(typeof v.confirmed!=='boolean'||(v.confirmed&&!v.session))throw new GiftApiError('invalid_confirmation_response',0);if(v.session)assertSession(v.session);return v}
