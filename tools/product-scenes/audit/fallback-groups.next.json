@@ -1,0 +1,87 @@
+{
+  "fine_art | square | 1:1 | {} | shape_needs_extension | fine-art": [
+    "fine_art:8x8",
+    "fine_art:12x12",
+    "fine_art:16x16",
+    "fine_art:20x20"
+  ],
+  "fine_art | portrait | 2:3 | {\"paperType\":\"EMA\",\"substrateWeight\":\"200gsm\"} | orientation_not_photographed | fine-art": [
+    "fine_art:8x12",
+    "fine_art:12x18",
+    "fine_art:16x24",
+    "fine_art:20x30"
+  ],
+  "premium | square | 1:1 | {} | orientation_not_photographed | premium-fine-art": [
+    "premium:8x8",
+    "premium:12x12",
+    "premium:16x16",
+    "premium:20x20"
+  ],
+  "premium | portrait | 2:3 | {\"paperType\":\"HPR\",\"substrateWeight\":\"308gsm\"} | shape_needs_extension | premium-fine-art": [
+    "premium:8x12",
+    "premium:12x18",
+    "premium:16x24",
+    "premium:20x30"
+  ],
+  "canvas | portrait | 2:3 | {\"wrap\":\"MirrorWrap\"} | orientation_not_photographed | gallery-canvas": [
+    "canvas:8x12",
+    "canvas:12x18",
+    "canvas:16x24",
+    "canvas:20x30"
+  ],
+  "framed | square | 1:1 | {\"color\":\"black\"} | configuration_not_photographed | square-framed": [
+    "framed:8x8",
+    "framed:12x12",
+    "framed:16x16",
+    "framed:20x20"
+  ],
+  "framed | portrait | 2:3 | {\"color\":\"black\"} | configuration_not_photographed | classic-framed": [
+    "framed:8x12",
+    "framed:12x18",
+    "framed:16x24",
+    "framed:20x30"
+  ],
+  "matted | square | 1:1 | {\"color\":\"black\"} | configuration_not_photographed | NO FALLBACK": [
+    "matted:8x8",
+    "matted:12x12",
+    "matted:16x16",
+    "matted:20x20"
+  ],
+  "matted | portrait | 3:5 | {\"color\":\"black\"} | configuration_not_photographed | NO FALLBACK": [
+    "matted:8x12"
+  ],
+  "matted | portrait | 403:703 | {\"color\":\"black\"} | configuration_not_photographed | NO FALLBACK": [
+    "matted:12x18"
+  ],
+  "matted | portrait | 603:1003 | {\"color\":\"black\"} | configuration_not_photographed | NO FALLBACK": [
+    "matted:16x24"
+  ],
+  "matted | portrait | 8:13 | {\"color\":\"black\"} | configuration_not_photographed | NO FALLBACK": [
+    "matted:20x30"
+  ],
+  "framed_canvas | square | 1:1 | {\"color\":\"black\",\"wrap\":\"MirrorWrap\"} | configuration_not_photographed | NO FALLBACK": [
+    "framed_canvas:8x8",
+    "framed_canvas:12x12",
+    "framed_canvas:16x16",
+    "framed_canvas:20x20"
+  ],
+  "framed_canvas | landscape | 3:2 | {\"color\":\"black\",\"wrap\":\"MirrorWrap\"} | configuration_not_photographed | NO FALLBACK": [
+    "framed_canvas:8x12"
+  ],
+  "framed_canvas | portrait | 2:3 | {\"color\":\"black\",\"wrap\":\"MirrorWrap\"} | configuration_not_photographed | NO FALLBACK": [
+    "framed_canvas:12x18",
+    "framed_canvas:16x24",
+    "framed_canvas:20x30"
+  ],
+  "card | landscape | 6118:2161 | {} | configuration_not_photographed | NO FALLBACK": [
+    "card:7x5-gloss",
+    "card:7x5-mohawk-direct"
+  ],
+  "card | landscape | 4937:1854 | {} | configuration_not_photographed | NO FALLBACK": [
+    "card:6x4-gloss",
+    "card:6x4-gloss-direct"
+  ],
+  "card | landscape | 1683:428 | {} | configuration_not_photographed | NO FALLBACK": [
+    "card:6x6-gloss"
+  ]
+}

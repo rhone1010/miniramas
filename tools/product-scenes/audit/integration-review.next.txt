@@ -1,0 +1,40 @@
+PREVIEW INTEGRATION REVIEW — 2026-10-19
+Base: origin/codex/canonical-2026-09-24 = 1f9f338.
+Isolated branch: codex/preview-scenes-navigation. Existing CC worktree untouched.
+
+MERGE
+Merged 33edacd with its required approved catalog/renderer ancestry, then 3875c10. Both merges clean; no conflicts or conflict resolutions. This preserves CC's backend code verbatim. The ancestry also contains CC's e95a72e cost-model documentation; no backend behavior was removed. Final follow-up contains only audit evidence and a directional regression test. Before a future push, fetch Preview again; if advanced, merge that tip and rerun these tests. Do not force-push. No push/deploy performed.
+
+ORIENTATION
+Visually inspected CC's real-art fallback images for Fine Art 12x18, Classic Frame12x18 and Canvas12x18, then rendered an asymmetric four-colour TOP-arrow fixture. Fine Art portrait corner offset1 puts its short top edge on photographed corners1->2; the long portrait axis follows the long sheet. Colour sampling proves no reflection, quadrant swap or cropping. Its sideways appearance is the fixed lay-flat camera composition, not an erroneous image rotation. Changing offset to0 merely to make a face upright would map portrait width to the long edge. No genuine portrait orientation defect found; no approved calibration/photo changed. The test locks this behavior and keeps manufacturing geometry12x18.
+Square Fine Art/Premium still use legacy rectangular photographs; this is a pre-existing physical-shape presentation limitation, not cured by rotating artwork. Correct square scenes are listed below. No claim that every historical fallback exactly depicts every SKU's proportions.
+
+COVERAGE
+55 canonical products:6 scene matches (4 square MirrorWrap canvases,white11oz mug,7x5 Mohawk self-send card).
+49 no-scene products are NOT49 usable fallbacks:28 have templateFor mappings;21 have none (8matted,8framed canvas,5nonlaunchcards). Disabled products remain disabled.
+Full SKU, physical picture/final pixels, wrap, finish, orientation, selected scene/refusal and fallback are in sku-coverage.next.json. Grouped inventory: fallback-groups.next.json.
+
+GROUPS / REQUIRED COMPATIBLE SCENE VARIANTS
+Fine Art:4square1:1 +4portrait2:3 (2variants). Current square opening734:786 differs7.1%; noportrait photograph.
+Premium:4square1:1 +4portrait2:3 (2variants). Current portrait811:1020 differs19.3% from2:3; no square photograph.
+Classic Frame:black,4square1:1 +4portrait2:3 (2variants). Supplied landscape frame and inset visibly show light wood, not black. Neither orientation matches these SKUs.
+Gallery Canvas:4portrait2:3 MirrorWrap (1variant). Existing square scene already covers4square SKUs. Landscape scene cannot be rotated into a portrait product while keeping its scene/inset unchanged.
+Matted Frame:black/snow-white mount,8SKUs. Need square75%-opening (8x8,12x12,16x16),square80%-opening(20x20),portrait6x10 within8x12,portrait8.06x14.06 within12x18,portrait16x26 within20x30 (5variant classes). 16x24's12.06x20.06 picture can potentially share the8x12 class: opening ratio differs0.2%,relative mount proportions differ<0.4%. Verify frame-profile scale and mount boundaries before assigning; otherwise add a separate16x24 variant. Current supplied matted frame is light wood,not black,and572:585 fails2% even for square. Matching picture ratio alone cannot certify mount proportions.
+Framed Canvas:black+MirrorWrap,square4SKUs and portrait2:3 threeSKUs (2variants). Existing scene is natural brown wood; recolouring/substitution is not authorized. 8x12 is an additional HELD landscape3:2 configuration with unresolved Prodigi orientation; do not commission/map until CC resolves it.
+Thus14 required geometry/finish/mount classes for the eight product families' non-held configurations, potentially15 if16x24 matted cannot share the verified border/profile geometry. Plus1held framed-canvas landscape variant only after orientation resolution. These are scene/calibration requirements,not authorization to create photography or enable SKUs.
+The5other card SKUs are not currently supported launch products. 7x5 Mohawk direct could potentially reuse the existing front photograph after CC supplies/validates its front-panel mapping. Gloss7x5,Gloss6x4(direct/self-send),Gloss6x6 need verified front-panel dimensions and finish evidence first; do NOT treat their full-spread picturePx ratios as card-front aspect. No unrelated card activation.
+
+SAFE REUSE
+Already6verified scene matches. No additional current photograph is safely routable merely by changing the facts table. Classic and matted visibly wood finishes,framed-canvas brown wood; preserve black SKU restrictions. All size sharing above is subject to actual frame/mat/depth proportions,not ratio alone. Existing square Fine Art photography could only be reused if a separately verified physical-plane calibration proves square; changing masks,ratio assumptions or2% tolerance to force a match is not approved. Preserve all current catalog visuals.
+
+TRACING / TESTS
+next.config.js includes exact union of legacy renderer manifest and48scene runtime dependencies (47additional paths; shared compositor deduplicated). File sizes/SHA256 verified; original34photographic/mask files unchanged. Scene code/manifest/image changes enter renderer revision keys. No reports/tests/fixtures traced. Vercel output function bundle cannot be claimed tested without build/deploy; static trace + filesystem/runtime renderer validation pass.
+120Vitest tests:scenes14,authenticatedmockup88,e2e8,bundle10.
+11Node tests:navigation7,sceneadapter3,directionalorientation1.
+35Wizard tests and8catalog/inset/assets tests. Total174.
+Authentication,stale composition,correction identity,clean/watermarked policy,cache invalidation and fallbacks tested with in-memory dependencies only. No live GET mockup invoked (it can write cache records). No paid generation,customer-order/database writes,orProdigi.
+
+VISUAL EVIDENCE
+E:/Dev/_recovery-staging/frontend-deploy-review/integration-audit-20261019/fine-art-12x18-directional.png
+E:/Dev/_recovery-staging/frontend-deploy-review/integration-audit-20261019/portrait-source.png
+E:/Dev/_recovery-staging/frontend-deploy-review/integration-audit-20261019/clean/ (new fixture mockups,not live customer screenshots)

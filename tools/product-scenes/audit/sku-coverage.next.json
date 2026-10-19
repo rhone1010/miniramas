@@ -1,0 +1,1671 @@
+[
+  {
+    "id": "fine_art:8x8",
+    "sku": "GLOBAL-FAP-8X8",
+    "family": "fine_art",
+    "size": "8x8",
+    "orientation": "square",
+    "attributes": {},
+    "picture": {
+      "w": 2400,
+      "h": 2400
+    },
+    "final": {
+      "w": 2400,
+      "h": 2400
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "shape_needs_extension"
+    },
+    "fallback": "fine-art"
+  },
+  {
+    "id": "fine_art:12x12",
+    "sku": "GLOBAL-FAP-12X12",
+    "family": "fine_art",
+    "size": "12x12",
+    "orientation": "square",
+    "attributes": {},
+    "picture": {
+      "w": 3600,
+      "h": 3600
+    },
+    "final": {
+      "w": 3600,
+      "h": 3600
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "shape_needs_extension"
+    },
+    "fallback": "fine-art"
+  },
+  {
+    "id": "fine_art:16x16",
+    "sku": "GLOBAL-FAP-16X16",
+    "family": "fine_art",
+    "size": "16x16",
+    "orientation": "square",
+    "attributes": {},
+    "picture": {
+      "w": 4800,
+      "h": 4800
+    },
+    "final": {
+      "w": 4800,
+      "h": 4800
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "shape_needs_extension"
+    },
+    "fallback": "fine-art"
+  },
+  {
+    "id": "fine_art:20x20",
+    "sku": "GLOBAL-FAP-20X20",
+    "family": "fine_art",
+    "size": "20x20",
+    "orientation": "square",
+    "attributes": {},
+    "picture": {
+      "w": 6000,
+      "h": 6000
+    },
+    "final": {
+      "w": 6000,
+      "h": 6000
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "shape_needs_extension"
+    },
+    "fallback": "fine-art"
+  },
+  {
+    "id": "fine_art:8x12",
+    "sku": "GLOBAL-FAP-8X12",
+    "family": "fine_art",
+    "size": "8x12",
+    "orientation": "portrait",
+    "attributes": {
+      "paperType": "EMA",
+      "substrateWeight": "200gsm"
+    },
+    "picture": {
+      "w": 2400,
+      "h": 3600
+    },
+    "final": {
+      "w": 2400,
+      "h": 3600
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "fine-art"
+  },
+  {
+    "id": "fine_art:12x18",
+    "sku": "GLOBAL-FAP-12X18",
+    "family": "fine_art",
+    "size": "12x18",
+    "orientation": "portrait",
+    "attributes": {
+      "paperType": "EMA",
+      "substrateWeight": "200gsm"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 5400
+    },
+    "final": {
+      "w": 3600,
+      "h": 5400
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "fine-art"
+  },
+  {
+    "id": "fine_art:16x24",
+    "sku": "GLOBAL-FAP-16X24",
+    "family": "fine_art",
+    "size": "16x24",
+    "orientation": "portrait",
+    "attributes": {
+      "paperType": "EMA",
+      "substrateWeight": "200gsm"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 7200
+    },
+    "final": {
+      "w": 4800,
+      "h": 7200
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "fine-art"
+  },
+  {
+    "id": "fine_art:20x30",
+    "sku": "GLOBAL-FAP-20X30",
+    "family": "fine_art",
+    "size": "20x30",
+    "orientation": "portrait",
+    "attributes": {
+      "paperType": "EMA",
+      "substrateWeight": "200gsm"
+    },
+    "picture": {
+      "w": 6000,
+      "h": 9000
+    },
+    "final": {
+      "w": 6000,
+      "h": 9000
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "fine-art"
+  },
+  {
+    "id": "premium:8x8",
+    "sku": "GLOBAL-HPR-8X8",
+    "family": "premium",
+    "size": "8x8",
+    "orientation": "square",
+    "attributes": {},
+    "picture": {
+      "w": 2400,
+      "h": 2400
+    },
+    "final": {
+      "w": 2400,
+      "h": 2400
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "premium-fine-art"
+  },
+  {
+    "id": "premium:12x12",
+    "sku": "GLOBAL-HPR-12X12",
+    "family": "premium",
+    "size": "12x12",
+    "orientation": "square",
+    "attributes": {},
+    "picture": {
+      "w": 3600,
+      "h": 3600
+    },
+    "final": {
+      "w": 3600,
+      "h": 3600
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "premium-fine-art"
+  },
+  {
+    "id": "premium:16x16",
+    "sku": "GLOBAL-HPR-16X16",
+    "family": "premium",
+    "size": "16x16",
+    "orientation": "square",
+    "attributes": {},
+    "picture": {
+      "w": 4800,
+      "h": 4800
+    },
+    "final": {
+      "w": 4800,
+      "h": 4800
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "premium-fine-art"
+  },
+  {
+    "id": "premium:20x20",
+    "sku": "GLOBAL-HPR-20X20",
+    "family": "premium",
+    "size": "20x20",
+    "orientation": "square",
+    "attributes": {},
+    "picture": {
+      "w": 6000,
+      "h": 6000
+    },
+    "final": {
+      "w": 6000,
+      "h": 6000
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "premium-fine-art"
+  },
+  {
+    "id": "premium:8x12",
+    "sku": "GLOBAL-HPR-8X12",
+    "family": "premium",
+    "size": "8x12",
+    "orientation": "portrait",
+    "attributes": {
+      "paperType": "HPR",
+      "substrateWeight": "308gsm"
+    },
+    "picture": {
+      "w": 2400,
+      "h": 3600
+    },
+    "final": {
+      "w": 2400,
+      "h": 3600
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "shape_needs_extension"
+    },
+    "fallback": "premium-fine-art"
+  },
+  {
+    "id": "premium:12x18",
+    "sku": "GLOBAL-HPR-12X18",
+    "family": "premium",
+    "size": "12x18",
+    "orientation": "portrait",
+    "attributes": {
+      "paperType": "HPR",
+      "substrateWeight": "308gsm"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 5400
+    },
+    "final": {
+      "w": 3600,
+      "h": 5400
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "shape_needs_extension"
+    },
+    "fallback": "premium-fine-art"
+  },
+  {
+    "id": "premium:16x24",
+    "sku": "GLOBAL-HPR-16X24",
+    "family": "premium",
+    "size": "16x24",
+    "orientation": "portrait",
+    "attributes": {
+      "paperType": "HPR",
+      "substrateWeight": "308gsm"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 7200
+    },
+    "final": {
+      "w": 4800,
+      "h": 7200
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "shape_needs_extension"
+    },
+    "fallback": "premium-fine-art"
+  },
+  {
+    "id": "premium:20x30",
+    "sku": "GLOBAL-HPR-20X30",
+    "family": "premium",
+    "size": "20x30",
+    "orientation": "portrait",
+    "attributes": {
+      "paperType": "HPR",
+      "substrateWeight": "308gsm"
+    },
+    "picture": {
+      "w": 6000,
+      "h": 9000
+    },
+    "final": {
+      "w": 6000,
+      "h": 9000
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "shape_needs_extension"
+    },
+    "fallback": "premium-fine-art"
+  },
+  {
+    "id": "canvas:8x8",
+    "sku": "GLOBAL-CAN-8X8",
+    "family": "canvas",
+    "size": "8x8",
+    "orientation": "square",
+    "attributes": {
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 2400,
+      "h": 2400
+    },
+    "final": {
+      "w": 2454,
+      "h": 2454
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "launch",
+    "scene": {
+      "scene": {
+        "sceneId": "gallery-canvas-square",
+        "fit": "resample",
+        "extension": 0.017836,
+        "inputKind": "scene-composition"
+      },
+      "reason": null
+    },
+    "fallback": "gallery-canvas-square"
+  },
+  {
+    "id": "canvas:12x12",
+    "sku": "GLOBAL-CAN-12X12",
+    "family": "canvas",
+    "size": "12x12",
+    "orientation": "square",
+    "attributes": {
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 3600
+    },
+    "final": {
+      "w": 3654,
+      "h": 3654
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "launch",
+    "scene": {
+      "scene": {
+        "sceneId": "gallery-canvas-square",
+        "fit": "resample",
+        "extension": 0.017836,
+        "inputKind": "scene-composition"
+      },
+      "reason": null
+    },
+    "fallback": "gallery-canvas-square"
+  },
+  {
+    "id": "canvas:16x16",
+    "sku": "GLOBAL-CAN-16X16",
+    "family": "canvas",
+    "size": "16x16",
+    "orientation": "square",
+    "attributes": {
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 4800
+    },
+    "final": {
+      "w": 4854,
+      "h": 4854
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "launch",
+    "scene": {
+      "scene": {
+        "sceneId": "gallery-canvas-square",
+        "fit": "resample",
+        "extension": 0.017836,
+        "inputKind": "scene-composition"
+      },
+      "reason": null
+    },
+    "fallback": "gallery-canvas-square"
+  },
+  {
+    "id": "canvas:20x20",
+    "sku": "GLOBAL-CAN-20X20",
+    "family": "canvas",
+    "size": "20x20",
+    "orientation": "square",
+    "attributes": {
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 6000,
+      "h": 6000
+    },
+    "final": {
+      "w": 6054,
+      "h": 6054
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "launch",
+    "scene": {
+      "scene": {
+        "sceneId": "gallery-canvas-square",
+        "fit": "resample",
+        "extension": 0.017836,
+        "inputKind": "scene-composition"
+      },
+      "reason": null
+    },
+    "fallback": "gallery-canvas-square"
+  },
+  {
+    "id": "canvas:8x12",
+    "sku": "GLOBAL-CAN-8X12",
+    "family": "canvas",
+    "size": "8x12",
+    "orientation": "portrait",
+    "attributes": {
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 2400,
+      "h": 3600
+    },
+    "final": {
+      "w": 2454,
+      "h": 3654
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "gallery-canvas"
+  },
+  {
+    "id": "canvas:12x18",
+    "sku": "GLOBAL-CAN-12X18",
+    "family": "canvas",
+    "size": "12x18",
+    "orientation": "portrait",
+    "attributes": {
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 5400
+    },
+    "final": {
+      "w": 3654,
+      "h": 5454
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "gallery-canvas"
+  },
+  {
+    "id": "canvas:16x24",
+    "sku": "GLOBAL-CAN-16X24",
+    "family": "canvas",
+    "size": "16x24",
+    "orientation": "portrait",
+    "attributes": {
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 7200
+    },
+    "final": {
+      "w": 4854,
+      "h": 7254
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "gallery-canvas"
+  },
+  {
+    "id": "canvas:20x30",
+    "sku": "GLOBAL-CAN-20X30",
+    "family": "canvas",
+    "size": "20x30",
+    "orientation": "portrait",
+    "attributes": {
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 6000,
+      "h": 9000
+    },
+    "final": {
+      "w": 6054,
+      "h": 9054
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "orientation_not_photographed"
+    },
+    "fallback": "gallery-canvas"
+  },
+  {
+    "id": "framed:8x8",
+    "sku": "GLOBAL-CFP-8X8",
+    "family": "framed",
+    "size": "8x8",
+    "orientation": "square",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 2400,
+      "h": 2400
+    },
+    "final": {
+      "w": 2400,
+      "h": 2400
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": "square-framed"
+  },
+  {
+    "id": "framed:12x12",
+    "sku": "GLOBAL-CFP-12X12",
+    "family": "framed",
+    "size": "12x12",
+    "orientation": "square",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 3600
+    },
+    "final": {
+      "w": 3600,
+      "h": 3600
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": "square-framed"
+  },
+  {
+    "id": "framed:16x16",
+    "sku": "GLOBAL-CFP-16X16",
+    "family": "framed",
+    "size": "16x16",
+    "orientation": "square",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 4800
+    },
+    "final": {
+      "w": 4800,
+      "h": 4800
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": "square-framed"
+  },
+  {
+    "id": "framed:20x20",
+    "sku": "GLOBAL-CFP-20X20",
+    "family": "framed",
+    "size": "20x20",
+    "orientation": "square",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 6000,
+      "h": 6000
+    },
+    "final": {
+      "w": 6000,
+      "h": 6000
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": "square-framed"
+  },
+  {
+    "id": "framed:8x12",
+    "sku": "GLOBAL-CFP-8X12",
+    "family": "framed",
+    "size": "8x12",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 2400,
+      "h": 3600
+    },
+    "final": {
+      "w": 2400,
+      "h": 3600
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": "classic-framed"
+  },
+  {
+    "id": "framed:12x18",
+    "sku": "GLOBAL-CFP-12X18",
+    "family": "framed",
+    "size": "12x18",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 5400
+    },
+    "final": {
+      "w": 3600,
+      "h": 5400
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": "classic-framed"
+  },
+  {
+    "id": "framed:16x24",
+    "sku": "GLOBAL-CFP-16X24",
+    "family": "framed",
+    "size": "16x24",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 7200
+    },
+    "final": {
+      "w": 4800,
+      "h": 7200
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": "classic-framed"
+  },
+  {
+    "id": "framed:20x30",
+    "sku": "GLOBAL-CFP-20X30",
+    "family": "framed",
+    "size": "20x30",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 6000,
+      "h": 9000
+    },
+    "final": {
+      "w": 6000,
+      "h": 9000
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "launch",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": "classic-framed"
+  },
+  {
+    "id": "matted:8x8",
+    "sku": "GLOBAL-CFPM-8X8",
+    "family": "matted",
+    "size": "8x8",
+    "orientation": "square",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 1800,
+      "h": 1800
+    },
+    "final": {
+      "w": 1800,
+      "h": 1800
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "matted:12x12",
+    "sku": "GLOBAL-CFPM-12X12",
+    "family": "matted",
+    "size": "12x12",
+    "orientation": "square",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 2700,
+      "h": 2700
+    },
+    "final": {
+      "w": 2700,
+      "h": 2700
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "matted:16x16",
+    "sku": "GLOBAL-CFPM-16X16",
+    "family": "matted",
+    "size": "16x16",
+    "orientation": "square",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 3600
+    },
+    "final": {
+      "w": 3600,
+      "h": 3600
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "matted:20x20",
+    "sku": "GLOBAL-CFPM-20X20",
+    "family": "matted",
+    "size": "20x20",
+    "orientation": "square",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 4800
+    },
+    "final": {
+      "w": 4800,
+      "h": 4800
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "matted:8x12",
+    "sku": "GLOBAL-CFPM-8X12",
+    "family": "matted",
+    "size": "8x12",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 1800,
+      "h": 3000
+    },
+    "final": {
+      "w": 1800,
+      "h": 3000
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "matted:12x18",
+    "sku": "GLOBAL-CFPM-12X18",
+    "family": "matted",
+    "size": "12x18",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 2418,
+      "h": 4218
+    },
+    "final": {
+      "w": 2418,
+      "h": 4218
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "matted:16x24",
+    "sku": "GLOBAL-CFPM-16X24",
+    "family": "matted",
+    "size": "16x24",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 3618,
+      "h": 6018
+    },
+    "final": {
+      "w": 3618,
+      "h": 6018
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "matted:20x30",
+    "sku": "GLOBAL-CFPM-20X30",
+    "family": "matted",
+    "size": "20x30",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 7800
+    },
+    "final": {
+      "w": 4800,
+      "h": 7800
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "framed_canvas:8x8",
+    "sku": "GLOBAL-FRA-CAN-8X8",
+    "family": "framed_canvas",
+    "size": "8x8",
+    "orientation": "square",
+    "attributes": {
+      "color": "black",
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 2400,
+      "h": 2400
+    },
+    "final": {
+      "w": 2454,
+      "h": 2454
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "framed_canvas:12x12",
+    "sku": "GLOBAL-FRA-CAN-12X12",
+    "family": "framed_canvas",
+    "size": "12x12",
+    "orientation": "square",
+    "attributes": {
+      "color": "black",
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 3600
+    },
+    "final": {
+      "w": 3654,
+      "h": 3654
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "framed_canvas:16x16",
+    "sku": "GLOBAL-FRA-CAN-16X16",
+    "family": "framed_canvas",
+    "size": "16x16",
+    "orientation": "square",
+    "attributes": {
+      "color": "black",
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 4800
+    },
+    "final": {
+      "w": 4854,
+      "h": 4854
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "framed_canvas:20x20",
+    "sku": "GLOBAL-FRA-CAN-20X20",
+    "family": "framed_canvas",
+    "size": "20x20",
+    "orientation": "square",
+    "attributes": {
+      "color": "black",
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 6000,
+      "h": 6000
+    },
+    "final": {
+      "w": 6054,
+      "h": 6054
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "framed_canvas:8x12",
+    "sku": "GLOBAL-FRA-CAN-8X12",
+    "family": "framed_canvas",
+    "size": "8x12",
+    "orientation": "landscape",
+    "attributes": {
+      "color": "black",
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 2400
+    },
+    "final": {
+      "w": 3654,
+      "h": 2454
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "framed_canvas:12x18",
+    "sku": "GLOBAL-FRA-CAN-12X18",
+    "family": "framed_canvas",
+    "size": "12x18",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black",
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 3600,
+      "h": 5400
+    },
+    "final": {
+      "w": 3654,
+      "h": 5454
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "framed_canvas:16x24",
+    "sku": "GLOBAL-FRA-CAN-16X24",
+    "family": "framed_canvas",
+    "size": "16x24",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black",
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 4800,
+      "h": 7200
+    },
+    "final": {
+      "w": 4854,
+      "h": 7254
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "framed_canvas:20x30",
+    "sku": "GLOBAL-FRA-CAN-20X30",
+    "family": "framed_canvas",
+    "size": "20x30",
+    "orientation": "portrait",
+    "attributes": {
+      "color": "black",
+      "wrap": "MirrorWrap"
+    },
+    "picture": {
+      "w": 6000,
+      "h": 9000
+    },
+    "final": {
+      "w": 6054,
+      "h": 9054
+    },
+    "wrap": {
+      "left": 27,
+      "right": 27,
+      "top": 27,
+      "bottom": 27
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "mug:11oz",
+    "sku": "GLOBAL-MUG-W",
+    "family": "mug",
+    "size": "11oz",
+    "orientation": "wrap",
+    "attributes": {
+      "color": "white",
+      "size": "313ml / 11oz"
+    },
+    "picture": {
+      "w": 910,
+      "h": 910
+    },
+    "final": {
+      "w": 2670,
+      "h": 1110
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": {
+        "sceneId": "ceramic-mug",
+        "fit": "exact",
+        "extension": 0,
+        "inputKind": "rolled-full-wrap"
+      },
+      "reason": null
+    },
+    "fallback": "ceramic-mug"
+  },
+  {
+    "id": "card:7x5",
+    "sku": "GLOBAL-GRE-MOH-7X5-BLA",
+    "family": "card",
+    "size": "7x5",
+    "orientation": "portrait",
+    "attributes": {},
+    "picture": {
+      "w": 1500,
+      "h": 2100
+    },
+    "final": {
+      "w": 6118,
+      "h": 2161
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": {
+        "sceneId": "greeting-card",
+        "fit": "resample",
+        "extension": 0.000956,
+        "inputKind": "scene-composition"
+      },
+      "reason": null
+    },
+    "fallback": "greeting-card"
+  },
+  {
+    "id": "card:7x5-gloss",
+    "sku": "GLOBAL-GRE-GLOS-7X5-BLA",
+    "family": "card",
+    "size": "7x5",
+    "orientation": "landscape",
+    "attributes": {},
+    "picture": {
+      "w": 6118,
+      "h": 2161
+    },
+    "final": {
+      "w": 6118,
+      "h": 2161
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "card:7x5-mohawk-direct",
+    "sku": "GLOBAL-GRE-MOH-7X5-DIR",
+    "family": "card",
+    "size": "7x5",
+    "orientation": "landscape",
+    "attributes": {},
+    "picture": {
+      "w": 6118,
+      "h": 2161
+    },
+    "final": {
+      "w": 6118,
+      "h": 2161
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "card:6x4-gloss",
+    "sku": "GLOBAL-GRE-GLOS-6X4-BLA",
+    "family": "card",
+    "size": "6x4",
+    "orientation": "landscape",
+    "attributes": {},
+    "picture": {
+      "w": 4937,
+      "h": 1854
+    },
+    "final": {
+      "w": 4937,
+      "h": 1854
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "card:6x4-gloss-direct",
+    "sku": "GLOBAL-GRE-GLOS-6X4-DIR",
+    "family": "card",
+    "size": "6x4",
+    "orientation": "landscape",
+    "attributes": {},
+    "picture": {
+      "w": 4937,
+      "h": 1854
+    },
+    "final": {
+      "w": 4937,
+      "h": 1854
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  },
+  {
+    "id": "card:6x6-gloss",
+    "sku": "GLOBAL-GRE-GLOS-6X6-BLA",
+    "family": "card",
+    "size": "6x6",
+    "orientation": "landscape",
+    "attributes": {},
+    "picture": {
+      "w": 6732,
+      "h": 1712
+    },
+    "final": {
+      "w": 6732,
+      "h": 1712
+    },
+    "wrap": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0
+    },
+    "status": "disabled",
+    "scene": {
+      "scene": null,
+      "reason": "configuration_not_photographed"
+    },
+    "fallback": null
+  }
+]
