@@ -1,0 +1,55 @@
+{
+  "id": "ceramic-mug",
+  "family": "mug",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "Mug.png",
+  "artworkMask": "Mug - art bw.png",
+  "cornersPixels": [
+    [
+      414,
+      314
+    ],
+    [
+      877,
+      503
+    ],
+    [
+      717,
+      914
+    ],
+    [
+      255,
+      729
+    ]
+  ],
+  "maskBounds": {
+    "x0": 255,
+    "y0": 314,
+    "x1": 877,
+    "y1": 914
+  },
+  "assets": [
+    {
+      "file": "Mug - art bw.png",
+      "sha256": "66a391928e65015da729b425b492567f208dfae4b3e434582337aa0df1129248",
+      "bytes": 56181
+    },
+    {
+      "file": "Mug - background bw.png",
+      "sha256": "e62ab6fedcfd1f1d05e216bae25bd435f9f30771b05f6744179accd9c73b3855",
+      "bytes": 56338
+    },
+    {
+      "file": "Mug.png",
+      "sha256": "556d4260e370106cf67bafa1f8d1bfa451b9e7e6b87be3e57f062ba4abed8350",
+      "bytes": 1277117
+    }
+  ],
+  "status": "blocked-new-cylinder-calibration",
+  "lighting": "No separate illumination layer supplied; original painted pixels must not be multiplied into replacement artwork.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false
+}

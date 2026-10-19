@@ -1,0 +1,60 @@
+{
+  "id": "classic-framed",
+  "family": "framed",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "Classic Framed Print.png",
+  "artworkMask": "Classic Framed Print - art bw.png",
+  "cornersPixels": [
+    [
+      127,
+      212
+    ],
+    [
+      1129,
+      212
+    ],
+    [
+      1129,
+      883
+    ],
+    [
+      127,
+      883
+    ]
+  ],
+  "maskBounds": {
+    "x0": 127,
+    "y0": 212,
+    "x1": 1129,
+    "y1": 883
+  },
+  "assets": [
+    {
+      "file": "Classic Framed Print - art bw.png",
+      "sha256": "3dfe055a0448c0818d59da5f1b10afccb04672d24f4bd0b7de760bb51d874455",
+      "bytes": 36479
+    },
+    {
+      "file": "Classic Framed Print - background bw.png",
+      "sha256": "8a6a0962be187ca5285684f231747bb3667bda0bf11468d6291c70736089b6b6",
+      "bytes": 36484
+    },
+    {
+      "file": "Classic Framed Print - frame bw.png",
+      "sha256": "f664512759830bf34339872913c135e01e519eb864cc0bf81e9f343720fe0b32",
+      "bytes": 36495
+    },
+    {
+      "file": "Classic Framed Print.png",
+      "sha256": "c5785bc6ab5407e2bc552fb5cd3a4f882dac1593bbf0ad7db7735747d00fd7e6",
+      "bytes": 1911911
+    }
+  ],
+  "status": "replacement-review",
+  "lighting": "No separate illumination layer supplied; original painted pixels must not be multiplied into replacement artwork.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false
+}

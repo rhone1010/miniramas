@@ -1,0 +1,55 @@
+{
+  "id": "matted-frame-landscape",
+  "family": "matted",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "matted frame landscape.png",
+  "artworkMask": "matted frame landscape - art bw.png",
+  "cornersPixels": [
+    [
+      100,
+      223
+    ],
+    [
+      1152,
+      223
+    ],
+    [
+      1152,
+      1015
+    ],
+    [
+      100,
+      1015
+    ]
+  ],
+  "maskBounds": {
+    "x0": 100,
+    "y0": 223,
+    "x1": 1152,
+    "y1": 1015
+  },
+  "assets": [
+    {
+      "file": "matted frame landscape - art bw.png",
+      "sha256": "b4360aa1c31a2e575d895804a571ab0d49e937d6b1c1bed501124d4448884e0d",
+      "bytes": 36490
+    },
+    {
+      "file": "matted frame landscape - background bw.png",
+      "sha256": "eea1879759ebf73e926a99746273d0bf9183e26f3f959da15673dc3eeb8e09ce",
+      "bytes": 36496
+    },
+    {
+      "file": "matted frame landscape.png",
+      "sha256": "17281c7f2a96157c015b6685accdb1e18ed7ed85858cf4fe67b0c32fb6edd899",
+      "bytes": 1859108
+    }
+  ],
+  "status": "blocked-wrong-product-master",
+  "lighting": "No separate illumination layer supplied; original painted pixels must not be multiplied into replacement artwork.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false
+}

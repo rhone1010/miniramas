@@ -1,0 +1,55 @@
+{
+  "id": "gallery-canvas-square",
+  "family": "canvas",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "wrapped canvas square.png",
+  "artworkMask": "wrapped canvas square - art bw.png",
+  "cornersPixels": [
+    [
+      192,
+      158
+    ],
+    [
+      1048,
+      158
+    ],
+    [
+      1048,
+      999
+    ],
+    [
+      192,
+      999
+    ]
+  ],
+  "maskBounds": {
+    "x0": 192,
+    "y0": 158,
+    "x1": 1048,
+    "y1": 999
+  },
+  "assets": [
+    {
+      "file": "wrapped canvas square - art bw.png",
+      "sha256": "3f7e924ba5318d4dc25a6e3b1590f00518229ec7165a32dcd672a28a785cbe97",
+      "bytes": 36486
+    },
+    {
+      "file": "wrapped canvas square - background bw.png",
+      "sha256": "1e0965573da655b579595a2a4e19517987c2b22e1f9aed046db7921b5bd35631",
+      "bytes": 36491
+    },
+    {
+      "file": "wrapped canvas square.png",
+      "sha256": "6a52f68f93582cce3e48d1a7dc20a73c5ff68590490297bd9c6cdc21e43069bd",
+      "bytes": 2116739
+    }
+  ],
+  "status": "replacement-review",
+  "lighting": "No separate illumination layer supplied; original painted pixels must not be multiplied into replacement artwork.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false
+}
