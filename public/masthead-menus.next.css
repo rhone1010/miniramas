@@ -22,8 +22,3 @@
 .masthead:has(.mh-fm .mh-series-menu:not([hidden])),.mh:has(.mh-fm .mh-series-menu:not([hidden])){z-index:120 !important}
 .mh-fm .mh-series-menu a[aria-current="page"]{color:var(--series, #d7bd89)}
 .mh-fm .mh-series-menu[hidden]{display:none}
-
-/* Discovery uses an exposed two-column mobile menu: reserve its added Gifts row. */
-@media(max-width:767px){
-  :root:has(.masthead):not(:has(#mhMenuBtn)){--mh-h:calc(56px + 44px + 44px + 44px);}
-}

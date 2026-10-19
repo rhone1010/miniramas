@@ -5807,13 +5807,15 @@ body.groups-cart #groupsShapeRail{display:flex;flex:1;flex-direction:column;}
 </style>
 <link rel="stylesheet" href="/creation-deep-review.next.css">
 <link rel="stylesheet" href="/pick-package.deep-review.next.css?v=3">
-<script src="/pick-package.deep-review.next.js?v=3"></script>
+<script src="/discovery-pick.review.next.js"></script>
 <link rel="stylesheet" href="/mobile-ux.next.css">
 <link rel="stylesheet" href="/phone-ux.next.css">
 <link rel="stylesheet" href="/groups-phone-silo.next.css">
 <link rel="stylesheet" href="/creation-navigation.release1.next.css">
 <link rel="stylesheet" href="/groups-recovery.next.css"><link rel="stylesheet" href="/rail-bottom.next.css?v=20261009">
-<link rel="stylesheet" href="/masthead-menus.next.css?v=20261010"><script src="/masthead-menus.next.js?v=20261010" defer></script></head>
+<link rel="stylesheet" href="/masthead-menus.next.css?v=20261010"><script src="/masthead-menus.next.js?v=20261010" defer></script><link rel="stylesheet" href="/site-masthead.next.css">
+<link rel="stylesheet" href="/discovery-pick.review.next.css">
+</head>
 <body>
 
 <div class="tour-overlay" id="tourOverlay">
@@ -13602,6 +13604,7 @@ function downloadPortfolioPiece(piece){
   document.addEventListener('click',function(e){
     if(GROUPS_PICK_ACTIVE && !e.target.closest('#curPick4Btn,#curPackages,#groupsPackageInfo')) dismissGroupsPick();
   });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape' && GROUPS_PICK_ACTIVE){dismissGroupsPick();curPick4Btn.focus();}});
   function clearGroupsMode(){
     CURATED_MODE = null;
     dismissGroupsPick();
@@ -13977,6 +13980,7 @@ addEventListener('keydown',function(e){if(e.key==='Escape' && tourOverlay.classL
 
   if (curPick4Btn) curPick4Btn.addEventListener('click', function(){
     if(CURATED_BUSY) return;
+    if(GROUPS_PICK_ACTIVE){ dismissGroupsPick(); return; }
     if(!hasSource()){ if(phoneNeedsPhoto()) openNeedPhoto(); else askForPhoto(true); return; }
     if(GROUPS_REVIEW) showGroupsDiscovery();
     GROUPS_PICK_ACTIVE = true;
@@ -14846,5 +14850,6 @@ LCFeedback.mount({ trigger: '#mhScarab', endpoint: '/api/v1/feedback', context: 
 <script src="/mobile-ux.next.js"></script>
 <script src="/groups-recovery-phone.next.js"></script>
 <script src="/creation-navigation.release1.next.js"></script>
+<script src="/site-masthead.next.js"></script>
 </body>
 </html>

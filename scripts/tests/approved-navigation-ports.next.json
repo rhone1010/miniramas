@@ -1,0 +1,56 @@
+[
+  {
+    "source": "E:\\Dev\\_recovery-staging\\approved-frontend-preview-20261017\\public\\discovery-mobile.review.next.css",
+    "destination": "E:\\Dev\\_recovery-staging\\preview-scenes-navigation\\public\\discovery-mobile.review.next.css",
+    "linesIn": 133,
+    "linesOut": 133,
+    "deviations": [],
+    "date": "2026-10-19",
+    "sha256": "aa1ea9458d98a2889793e13f999cdf6875edbe864a79b87e11be8bd14afd6f7f"
+  },
+  {
+    "source": "E:\\Dev\\_recovery-staging\\approved-frontend-preview-20261017\\public\\discovery-mobile.review.next.js",
+    "destination": "E:\\Dev\\_recovery-staging\\preview-scenes-navigation\\public\\discovery-mobile.review.next.js",
+    "linesIn": 29,
+    "linesOut": 29,
+    "deviations": [],
+    "date": "2026-10-19",
+    "sha256": "eec7b25e26e34f002d52536f3281459a583c80f1b5d02cba674823891f013ac0"
+  },
+  {
+    "source": "E:\\Dev\\_recovery-staging\\approved-frontend-preview-20261017\\public\\discovery-phone-controls.review.next.css",
+    "destination": "E:\\Dev\\_recovery-staging\\preview-scenes-navigation\\public\\discovery-phone-controls.review.next.css",
+    "linesIn": 63,
+    "linesOut": 63,
+    "deviations": [],
+    "date": "2026-10-19",
+    "sha256": "191e9b25477cb20bd6d04cd0613f79f0739517f77ffbd0885f8a93b6545d8e6a"
+  },
+  {
+    "source": "E:\\Dev\\_recovery-staging\\approved-frontend-preview-20261017\\public\\discovery-phone-controls.review.next.js",
+    "destination": "E:\\Dev\\_recovery-staging\\preview-scenes-navigation\\public\\discovery-phone-controls.review.next.js",
+    "linesIn": 74,
+    "linesOut": 74,
+    "deviations": [],
+    "date": "2026-10-19",
+    "sha256": "d5678c33bca37e697c4ff32ded4a750dfcd35616561c2f041e5d89935c967f8b"
+  },
+  {
+    "source": "E:\\Dev\\_recovery-staging\\approved-frontend-preview-20261017\\public\\discovery-pick.review.next.css",
+    "destination": "E:\\Dev\\_recovery-staging\\preview-scenes-navigation\\public\\discovery-pick.review.next.css",
+    "linesIn": 5,
+    "linesOut": 5,
+    "deviations": [],
+    "date": "2026-10-19",
+    "sha256": "4234f03b1c473f6837ccde09413819044aa780a65cd6dc4dd7c199f4e0cf8472"
+  },
+  {
+    "source": "E:\\Dev\\_recovery-staging\\approved-frontend-preview-20261017\\public\\discovery-pick.review.next.js",
+    "destination": "E:\\Dev\\_recovery-staging\\preview-scenes-navigation\\public\\discovery-pick.review.next.js",
+    "linesIn": 31,
+    "linesOut": 31,
+    "deviations": [],
+    "date": "2026-10-19",
+    "sha256": "9fef04b513c22471016cf60efcfbad14fb905381185efb2069c4ac14575dc61c"
+  }
+]

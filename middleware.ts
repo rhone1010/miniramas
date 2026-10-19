@@ -50,7 +50,7 @@ const PAGES: Record<string, string> = {
      is left in place, unrouted. */
   '/': '/foyer.html',
   '/home': '/foyer.html',
-  '/portraits': '/portraits.html',
+  '/portraits': '/discovery-consolidated-draft.html',
   '/workshop': '/portraits.html',
   /* GROUPS. Same navigation model as Portraits - four rooms where that has
      eight, and everything below the rooms identical. The Series menu on

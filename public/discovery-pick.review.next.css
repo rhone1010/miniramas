@@ -1,0 +1,4 @@
+/* Explicit picker presentation. No selection, pricing or generation changes. */
+#discoveryRail:has(#pfmSizes:not([hidden])) .dcur__map,
+#discoveryRail:has(#pfmSizes:not([hidden])) #allEffects,
+#discoveryRail:has(#pfmSizes:not([hidden])) .mcur__maphead{display:none!important;}

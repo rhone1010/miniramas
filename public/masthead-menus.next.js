@@ -44,23 +44,15 @@ function scrollToPurchases(){
   })();
 }
 function init(){
-  // Use the existing link styling in each desktop menu and mobile drawer.
-  document.querySelectorAll('.mh-nav,.masthead__nav,#mhDrawer').forEach(function(panel){
-    if (panel.querySelector(':scope > a[href="/gift-wizard.next.html"]')) return;
-    var source = panel.querySelector(':scope > a[href="/print"],:scope > a[href="/groups"],:scope > a[href="/collection"],:scope > a[href="/discovery?print_pick=1"]');
-    if (!source) return;
+  // Reuse the existing series menu items on desktop and mobile.
+  document.querySelectorAll('.mh-series-menu').forEach(function(panel){
+    var source = panel.querySelector('a[href="/groups"]');
+    if (!source || panel.querySelector('a[href="/gifts.next.html"]')) return;
     var gift = source.cloneNode(true);
-    Array.from(gift.attributes).forEach(function(attribute){ if (attribute.name !== 'class') gift.removeAttribute(attribute.name); });
-    gift.classList.remove('on','is-open','mh-fm-legacy');
-    gift.href = '/gift-wizard.next.html'; gift.textContent = 'Gifts';
-    panel.insertBefore(gift,source);
+    gift.removeAttribute('id'); gift.removeAttribute('aria-current');
+    gift.href = '/gifts.next.html'; gift.textContent = 'Gifts';
+    panel.appendChild(gift);
   });
-  var drawer = $('mhDrawer');
-  if (drawer && !drawer.querySelector('a[href="/pets"]')) {
-    var pets = document.querySelector('#mhFmCreateMenu a[href="/pets"]');
-    var groups = drawer.querySelector('a[href="/groups"]');
-    if (pets && groups) { var petLink = pets.cloneNode(true); petLink.removeAttribute('role'); groups.after(petLink); }
-  }
   var path = location.pathname;
   var here = path === '/groups' ? '/groups' : /^\/pets/.test(path) ? '/pets' : (path === '/' || path === '/discovery' || path === '/portraits') ? '/portraits' : '';
   [].slice.call(document.querySelectorAll('.mh-fm .mh-series-btn')).forEach(function(btn){

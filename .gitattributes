@@ -4,3 +4,6 @@ public/gift-wizard/** -text
 # The customer scene renderer (tools/product-scenes) is hashed in tools/product-scenes/bundle.next.json and in the mockup cache revision: byte-exact on every platform.
 tools/product-scenes/** -text
 tools/catalog-samples/scene-replacement-review.next.cjs -text
+
+# Approved Discovery ports are checked byte-for-byte against their review sources.
+public/discovery-*.review.next.* -text
