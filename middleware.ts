@@ -73,7 +73,7 @@ const PAGES: Record<string, string> = {
      /pets/portraits and /pets/halloween join it. Adding those two now
      would put a room in the Series menu that opens onto nothing, which is
      the fault the Portraits menu comment above was written about. */
-  '/pets': '/pets-foyer.html',
+  '/pets': '/pets.html',
   /* THE TWO PET ROOMS. Rich ruled /pets becomes a two-card chooser with
      these behind it. Until that exists /pets serves the Portraits room
      directly, so somebody clicking Pets in the menu lands somewhere real
@@ -82,7 +82,7 @@ const PAGES: Record<string, string> = {
      /pets/portraits is mapped now, ahead of the chooser, so that when the
      chooser lands only the /pets line above changes and both rooms are
      already addressable. Same shape /wallpapers already uses. */
-  '/pets/portraits': '/pets-foyer.html',
+  '/pets/portraits': '/pets.html',
   '/pets/discovery': '/pets.html',
   '/pets/halloween': '/pets-halloween.html',
   '/halloween': '/halloween.html',
@@ -191,6 +191,14 @@ function target(url: URL) {
 }
 
 function route(req: NextRequest, url: URL) {
+  // Explicit Foyer photo handoffs keep their existing intake/reveal behavior.
+  // Ordinary series entry is direct, preserving query context without a redirect/history hop.
+  const entryPath = url.pathname.replace(/\/+$/, '') || '/';
+  if (['/pets', '/pets/portraits', '/portraits', '/groups'].includes(entryPath)) {
+    const direct = new URL(url.toString());
+    direct.pathname = (entryPath === '/pets' && url.searchParams.has('foyerFrom')) ? '/pets-foyer.html' : PAGES[entryPath];
+    return NextResponse.rewrite(direct);
+  }
   const t = target(url);
   if (t) return NextResponse.rewrite(new URL(t, url));
   return NextResponse.next();
