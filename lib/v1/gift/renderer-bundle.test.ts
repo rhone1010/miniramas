@@ -37,7 +37,7 @@ describe('the renderer bundle is exactly what the manifest says', () => {
   })
   it('the serverless tracing list in next.config.js covers exactly the renderer files and the customer scene files, and only for the mockup route', () => {
     const cfg = createRequire(path.join(ROOT, 'package.json'))('./next.config.js')
-    const routes = Object.keys(cfg.outputFileTracingIncludes); expect(routes).toEqual(['/api/v1/gift/sessions/[id]/lines/[lineId]/mockup'])
+    const routes = Object.keys(cfg.outputFileTracingIncludes); expect(routes).toEqual(['/api/v1/gift/sessions/*/lines/*/mockup'])
     const traced = (cfg.outputFileTracingIncludes[routes[0]] as string[]).flatMap(g => {
       const p = g.replace(/^\.\//, '')
       return p.endsWith('/*') ? fs.readdirSync(path.join(ROOT, p.slice(0, -2))).map(f => p.slice(0, -2) + '/' + f) : [p]

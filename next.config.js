@@ -5,7 +5,7 @@ const nextConfig = {
   // them with hashes; lib/v1/gift/renderer-bundle.test.ts keeps this list, the manifest and the files identical). Scoped to the one route:
   // no other function carries them, and no development reports, screenshots or fixtures are bundled.
   outputFileTracingIncludes: {
-    '/api/v1/gift/sessions/[id]/lines/[lineId]/mockup': [
+    '/api/v1/gift/sessions/*/lines/*/mockup': [
       './tools/product-mockup/compositor.next.cjs',
       './public/gift-wizard/mockup-scenes/ceramic-mug/Mug - art bw.png',
       './public/gift-wizard/mockup-scenes/ceramic-mug/Mug - background bw.png',

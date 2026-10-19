@@ -15,6 +15,7 @@
 // calibrated renderer. A photographed product is never rotated, recoloured or stretched to fill a missing configuration.
 
 import { createHash } from 'node:crypto'
+import { sceneErrorDiagnostic, type SceneDiagnostic } from './scene-diagnostics'
 import sharp from 'sharp'
 import { aspectCompatibility, compositionPlan } from '../print/geometry'
 import { preparePanelComposition } from '../print/asset-pipeline'
@@ -96,7 +97,7 @@ const attributesMatch = (facts: SceneFacts, p: CanonicalProduct): boolean => {
  * The scene that truthfully shows this frozen configuration, or why there is none. Pure: the only outside fact is the renderer's own description of a
  * scene (its photographed plane). The caller keeps the existing calibrated renderer for every refusal.
  */
-export function resolveScene(product: CanonicalProduct, describe: (sceneId: string) => SceneDescription): SceneResolution {
+export function resolveScene(product: CanonicalProduct, describe: (sceneId: string) => SceneDescription, diagnostic?: (event: SceneDiagnostic) => void): SceneResolution {
   const candidates = Object.entries(SCENE_FACTS).filter(([, f]) => f.family === product.family)
   if (!candidates.length) return { scene: null, reason: 'no_scene_for_family' }
   const orientation = orientationOf(product)
@@ -106,8 +107,8 @@ export function resolveScene(product: CanonicalProduct, describe: (sceneId: stri
     if (!attributesMatch(facts, product)) continue
     if (facts.orientation !== orientation) { saw.orientation = true; continue }
     let d: SceneDescription
-    try { d = describe(sceneId) } catch { saw.unavailable = true; continue }
-    if (d.family !== product.family || d.productionGeometry !== false) { saw.unavailable = true; continue }
+    try { d = describe(sceneId) } catch (e) { diagnostic?.({ sceneId, stage: 'describe', reason: 'scene_dependency_unavailable', ...sceneErrorDiagnostic(e) }); saw.unavailable = true; continue }
+    if (d.family !== product.family || d.productionGeometry !== false) { diagnostic?.({ sceneId, stage: 'describe', reason: 'scene_descriptor_mismatch' }); saw.unavailable = true; continue }
     // The picture the renderer is given: the mug's wrap is built to its own exact ratio; every other family is shaped from the production picture.
     const extension = d.inputKind === 'rolled-full-wrap' ? 0 : aspectCompatibility(product.requirements.picturePx.w, product.requirements.picturePx.h, d.inputAspect * 1e6, 1e6).extension
     if (extension <= 0.02 + 1e-10) {

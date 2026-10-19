@@ -16,8 +16,8 @@ test('unknown scenes, family mismatches and incompatible production artwork fail
  await assert.rejects(a.renderScene({sceneId:'gallery-canvas-square',productFamily:'canvas',artworkId:'a',artwork}),/scene_composition_required/);
 });
 test('serverless trace (next.config.js) contains every hashed scene runtime dependency',()=>{
- const manifest=JSON.parse(fs.readFileSync('tools/product-scenes/bundle.next.json'));const cfg=require('../../next.config.js');const tracing=cfg.outputFileTracingIncludes['/api/v1/gift/sessions/[id]/lines/[lineId]/mockup'];
+ const manifest=JSON.parse(fs.readFileSync('tools/product-scenes/bundle.next.json'));const cfg=require('../../next.config.js');const tracing=cfg.outputFileTracingIncludes['/api/v1/gift/sessions/*/lines/*/mockup'];
  for(const f of manifest.files){const b=fs.readFileSync(f.path);assert.equal(b.length,f.bytes);assert.equal(crypto.createHash('sha256').update(b).digest('hex'),f.sha256);assert.ok(tracing.includes('./'+f.path),f.path);}
  assert.ok(!manifest.files.some(f=>/test|fixture|contact-sheet/.test(f.path)));
- assert.equal(require('../../next.config.js').outputFileTracingIncludes['/api/v1/gift/sessions/[id]/lines/[lineId]/mockup'].some(p=>p.includes('mockup-scenes')),true);
+ assert.equal(require('../../next.config.js').outputFileTracingIncludes['/api/v1/gift/sessions/*/lines/*/mockup'].some(p=>p.includes('mockup-scenes')),true);
 });

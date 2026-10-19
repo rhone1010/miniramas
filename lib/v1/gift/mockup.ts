@@ -22,6 +22,7 @@
 // identity that costs one storage signature, not a render.
 
 import { createHash } from 'node:crypto'
+import { logSceneDiagnostic, sceneErrorDiagnostic } from './scene-diagnostics'
 import sharp from 'sharp'
 import { GiftError, owned, type GiftDeps } from './service'
 import { compositionFitsProduct } from './frozen'
@@ -195,7 +196,8 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   // The two ways to picture this line. The photographic scene is preferred WHEN one truthfully shows the frozen configuration (scenes.ts); the calibrated
   // template renderer is the existing, approved fallback for every configuration no scene shows, and for a scene that cannot be rendered.
   const scenes = scenesEnabled() ? deps.mockup.scenes : undefined
-  const choice = scenes ? resolveScene(product, id => scenes.describe(id)) : null
+  const choice = scenes ? resolveScene(product, id => scenes.describe(id), event => logSceneDiagnostic(product.sku, event)) : null
+  if (!choice?.scene) logSceneDiagnostic(product.sku, { stage: 'selection', reason: choice?.reason ?? (scenesEnabled() ? 'scene_renderer_absent' : 'feature_disabled') })
   let sceneCand: { sceneId: string; revision: string; representationId: string; templateId: string; identityKey: string } | null = null
   if (scenes && choice?.scene) {
     try {
@@ -204,7 +206,7 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
       const sceneTemplateId = 'scene:' + choice.scene.sceneId
       sceneCand = { sceneId: choice.scene.sceneId, revision, representationId, templateId: sceneTemplateId,
         identityKey: mockupIdentityKey({ ...identityBase, templateId: sceneTemplateId, templateRevision: revision, scene: { sceneId: choice.scene.sceneId, revision, representationId } }) }
-    } catch (e) { console.error(`[gift/mockup] scene unavailable scene=${choice.scene.sceneId} sku=${product.sku} line=${line.line_id}: ${String((e as Error)?.message ?? e).slice(0, 300)} (calibrated renderer used)`) }
+    } catch (e) { logSceneDiagnostic(product.sku, { sceneId: choice.scene.sceneId, stage: 'revision', reason: 'scene_revision_unavailable', ...sceneErrorDiagnostic(e) }) }
   }
   const calibratedRevision = await deps.mockup.revision(templateId)
   const calibratedKey = mockupIdentityKey({ ...identityBase, templateId, templateRevision: calibratedRevision })
@@ -242,9 +244,12 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   let used!: { templateId: string; templateRevision: string; identityKey: string }
   let sceneRecord: (StoredScene & { sha256: string; artworkSha256: string; compositionId: string; attempt: number; favoriteId: string; source: { w: number; h: number }; prepared: { w: number; h: number }; addedPx: { w: number; h: number }; createdAt: string }) | null = null
   if (scenes && sceneCand) {
+    let sceneStage = 'artwork_preparation'
     try {
       const flat = await mockupArtwork(artwork, product)                                      // the production picture (the whole front, the rolled mug wrap): derived from, never replaced
+      sceneStage = 'scene_representation'
       const rep = await prepareSceneArtwork(flat, scenes.describe(sceneCand.sceneId))
+      sceneStage = 'scene_render'
       const out = await scenes.render({ sceneId: sceneCand.sceneId, productFamily: product.family, artworkId: comp.id, artwork: rep.bytes })
       // The scene renderer deliberately does not echo a physical configuration: the frozen purchase is validated here, independently, against the catalog's own entry for that SKU.
       if (!catalogEntry || !configurationMatches(catalogEntry.sku, catalogEntry.requirements.finalPx)) throw new GiftError('mockup_configuration_mismatch')
@@ -256,7 +261,7 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
         favoriteId: comp.preview_id, source: rep.source, prepared: rep.prepared, addedPx: rep.addedPx, createdAt: new Date((deps.clock ?? Date.now)()).toISOString() }
     } catch (e) {
       if (e instanceof GiftError) throw e
-      console.error(`[gift/mockup] scene failed scene=${sceneCand.sceneId} sku=${product.sku} line=${line.line_id}: ${(e as Error)?.name ?? 'Error'}: ${String((e as Error)?.message ?? e).slice(0, 300)} (calibrated renderer used)`)
+      logSceneDiagnostic(product.sku, { sceneId: sceneCand.sceneId, stage: sceneStage, reason: 'scene_render_failed', ...sceneErrorDiagnostic(e) })
     }
   }
   if (!sceneRecord) {

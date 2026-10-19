@@ -1,0 +1,21 @@
+Customer-scene fallback investigation — 2026-10-19
+Base: e4fc3dc (protected Preview). Local fix only; no deployment/push.
+
+Confirmed packaging defect
+Next 16.2 Turbopack does not apply the unescaped [id]/[lineId] tracing key to this route. The complete local build with that key emitted zero mockup-scenes paths, omitted tools/catalog-samples/scene-replacement-review.next.cjs, and retained only the scene adapter through automatic tracing. The calibrated dependencies remained automatically traced, explaining a successful calibrated HTTP 200.
+Changing only the include key to /api/v1/gift/sessions/*/lines/*/mockup emitted all 48 manifest dependencies (45 public scene files, three renderer modules). No dependency list or photography changes. The test now checks actual route.js.nft.json, not only configuration membership.
+Local builds used the existing linked dependencies, a temporary turbopack.root=E:/Dev to include their real location, and inert API credentials. The temporary root was restored byte-for-byte after every build. No live provider/database calls.
+The deployed Vercel function contents were not independently downloaded. Prior deployed evidence showed renderer=calibrated, scene=null, with no logged scene failure. The same-commit complete-build reproduction isolates the include-key defect; final live verification requires a reviewed deployment.
+
+Exact decision chain
+Canvas GLOBAL-CAN-8X8 / MirrorWrap / square passes public SKU/configuration/orientation criteria. Its 2400x2400 frozen front is within the unchanged 2% scene tolerance. resolveScene invokes realSceneRenderer.describe; loadSceneAdapter requires adapter.next.cjs, which requires the omitted replacement module before it can read the omitted inventory. resolveScene previously swallowed that exception and returned scene_unavailable. mockup.ts then used the calibrated identity and renderer. Scene representation and render were never reached in this failure mode.
+Safe diagnostics now report selection, describe, revision, artwork preparation, scene representation, and render phases; missing public dependencies and allowlisted error codes. No raw messages/stacks, customer/order/line IDs, private artwork paths, or signed URLs are logged by these diagnostics. Existing ownership, geometry checks, cache identity, watermark, approval, and manufacturing rules are unchanged.
+
+Fine Art line
+Existing composition 7834b6ad-6c7e-41b2-8573-803233755b64 is ready, deterministic/extend, 1575x1050 landscape; frozen GLOBAL-FAP-12X18 front/final is 3600x5400 portrait. Ratio mismatch is 125%, far beyond the 2% guard. It is rejected before scene selection. This is the previously generated invalid composition, not a new scene defect.
+The existing repairLine operator path can supersede this defective unapproved row with a new ready row at the same attempt and incremented repair_seq, preserving its audit files and correction count. It leaves the approved Canvas unchanged and requires new customer approval of the replacement. The targeted existing regression expects generated 2:3 with one NB2.1 call. No repair was executed because paid generation is forbidden in this task. No approved composition was changed.
+
+Validation
+140 focused Vitest cases pass after updating the logging assertion (scene routing, real renderers, ownership, fallback recovery, geometry and technical repair); four Node tests pass, including emitted trace verification. Final local Next build succeeds. Global TypeScript still reports 62 errors outside changed source files; none in the changed diagnostic/renderer files.
+The owner-checked offline 8x8 Canvas case returns renderer=scene, clean mockup, preserved composition identity; unrelated-owner access is refused. Evidence is a synthetic fixture, not a live customer screenshot: E:/Dev/_recovery-staging/frontend-deploy-review/scene-fallback-fixture-evidence/canvas-8x8__gallery-canvas-square__clean.jpg.
+Authenticated Preview success is pending deployment approval. It cannot honestly be demonstrated on unchanged e4fc3dc without deploying this fix. No fake live result or auth bypass was used.

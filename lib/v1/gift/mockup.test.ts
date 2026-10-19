@@ -651,7 +651,7 @@ describe('draft compositions (reviewed before payment, no order yet)', () => {
   })
 })
 
-// ── THE PHOTOGRAPHIC CUSTOMER SCENES (scenes.ts) behind the same boundary ─────────────────────────────────────────────────────────────────────────
+// â”€â”€ THE PHOTOGRAPHIC CUSTOMER SCENES (scenes.ts) behind the same boundary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // The scene renderer is a fake here (it records what it was given); its descriptions are the REAL scene manifests. Everything else is the real boundary.
 function sceneRig(over: Parameters<typeof rig>[0] = {}) {
   const state = { rev: 'scene-rev-1', fail: false }
@@ -742,9 +742,9 @@ describe('scene mockups (the photographic scene, with the calibrated renderer as
   })
 
   it('a scene that cannot be rendered falls back to the calibrated renderer (logged), is retried on the next call, and never stores a half result', async () => {
-    const r = sceneRig(); const { sid } = await ready(r, [CS]); const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const r = sceneRig(); const { sid } = await ready(r, [CS]); const log = vi.spyOn(console, 'warn').mockImplementation(() => {})
     r.sceneState.fail = true; const a = await getLineMockup(r.deps, U1, sid, 's')
-    expect(a).toMatchObject({ renderer: 'calibrated', scene: null }); expect(r.render).toHaveBeenCalledTimes(1); expect(log.mock.calls.some(c => String(c[0]).includes('scene failed'))).toBe(true)
+    expect(a).toMatchObject({ renderer: 'calibrated', scene: null }); expect(r.render).toHaveBeenCalledTimes(1); expect(log).toHaveBeenCalledWith('[gift/mockup] scene fallback', expect.objectContaining({ stage: 'scene_render', reason: 'scene_render_failed', code: 'scene_operation_failed' }))
     expect((r.store.compositions[0].plan as any).sceneRepresentation).toBeUndefined(); expect(mockupFiles(r).length).toBe(1)
     r.sceneState.fail = false; const b = await getLineMockup(r.deps, U1, sid, 's')
     expect(b).toMatchObject({ renderer: 'scene', cached: false }); expect(mockupFiles(r).length).toBe(1)                          // the scene is tried again; the fallback file is replaced
@@ -753,7 +753,7 @@ describe('scene mockups (the photographic scene, with the calibrated renderer as
   })
 
   it('a scene whose files changed during the render is never stored', async () => {
-    const r = sceneRig(); const { sid } = await ready(r, [CS]); const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const r = sceneRig(); const { sid } = await ready(r, [CS]); const log = vi.spyOn(console, 'warn').mockImplementation(() => {})
     r.sceneRender.mockImplementationOnce(async i => ({ png: await sharp({ create: { width: 1254, height: 1254, channels: 3, background: '#789' } }).png().toBuffer(), width: 1254, height: 1254, templateRevision: 'other-revision', visualizationKey: 'vk', metadata: {} }))
     expect(await getLineMockup(r.deps, U1, sid, 's')).toMatchObject({ renderer: 'calibrated' }); expect((r.store.compositions[0].plan as any).sceneRepresentation).toBeUndefined()
     log.mockRestore()

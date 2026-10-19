@@ -61,7 +61,7 @@ async function journey(W: W, productId: string) {
 beforeEach(() => { vi.resetModules() })
 afterEach(() => { vi.doUnmock('../print/gift-enablement'); vi.resetModules() })
 
-const SCENE_CASES: Array<[string, string]> = [['canvas:12x12', 'gallery-canvas-square'], ['mug:11oz', 'ceramic-mug'], ['card:7x5', 'greeting-card']]
+const SCENE_CASES: Array<[string, string]> = [['canvas:8x8', 'gallery-canvas-square'], ['canvas:12x12', 'gallery-canvas-square'], ['mug:11oz', 'ceramic-mug'], ['card:7x5', 'greeting-card']]
 const FALLBACK_CASES = ['fine_art:12x18', 'canvas:12x18', 'framed:12x18', 'fine_art:8x8']
 
 describe('customer scene mockups, end to end on safe fixtures (real renderers, real composition)', () => {
@@ -69,6 +69,7 @@ describe('customer scene mockups, end to end on safe fixtures (real renderers, r
     it(`${productId}: a paid line gets the clean photographic scene, built from its composition, signed and stored once`, async () => {
       const W = await world(); const J = await journey(W, productId)
       const comp = J.memory.compositions[0], production = J.files.get(comp.composed_path!)!, paidCalls = outpaintCalls.n, marks = J.watermark.mock.calls.length, approvalBefore = JSON.stringify({ s: comp.status, a: comp.attempt, p: comp.composed_path })
+      await expect(W.mockup.getLineMockup(J.deps, 'unrelated-owner', J.sid, 'a')).rejects.toThrow('session_not_found')
       const m = await W.mockup.getLineMockup(J.deps, U1, J.sid, 'a')
       expect(m).toMatchObject({ renderer: 'scene', templateId: 'scene:' + sceneId, watermarked: false, cached: false, productionPrintFile: false, purchaseAuthorization: false, compositionId: comp.id, sourceArtworkId: comp.preview_id })
       expect(m.url).toMatch(/^https:\/\/signed\.test\//); expect(m.scene!.revision).toMatch(/^[0-9a-f]{64}$/)
