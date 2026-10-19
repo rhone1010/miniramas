@@ -44,3 +44,12 @@ Returns `RestoreResponse` (`lib/v1/gift/types.ts`):
 ## Not covered
 * Selections not yet sent to the server (effects ticked before "request previews", filters) cannot be restored by the backend. Persisting them would need a new column; not added.
 * Whether the browser's abort of an in-flight `POST /batches` lets the Vercel function finish is platform behaviour and NOT verified here. If it does not, the batch is `stalled` and the steps above finish it on return. A server-side sweeper would remove the dependency; it was not added (it would generate for customers who have left, and cron is Production-only).
+
+## Spinning-gear results screen: what the server reports (added with the pipeline verification)
+
+While `POST /sessions/{id}/batches` is in flight (it returns only when the batch is done or partly failed, up to 300 s), the Wizard can poll `GET /api/v1/gift/sessions/{id}` (or `GET .../batches/{n}`) every ~3 to 5 s. Every poll is read-only and reflects the database:
+
+* `BatchView.progress`: `{ ready, generating, pending, failed }`, always summing to the six previews. Drive the counter ("3 of 6 ready") from `ready`; show the gear while `generating + pending > 0`.
+* Per preview, `status` is `pending` (waiting), `generating` (being made right now), `ready` (finished and stored, `url` is the signed watermarked preview), or `failed` (`retryable` says whether another attempt is allowed). Show each finished preview as soon as its `url` appears, without waiting for the batch.
+* `BatchView.generation`: `running` keep the gear; `stalled` call the retry route once; `failed` stop the gear and offer nothing automatic; `complete` done.
+* A preview's failure reason is recorded server-side only (`gift_previews.error`, e.g. `generate_failed:http_500:nb2_failed`); it is never in a view. Show the generic failed state.

@@ -91,6 +91,8 @@ export interface BatchView {
   complete: boolean                   // all six previews ready
   previews: PreviewView[]             // always six, in slot order
   generation: BatchGeneration
+  /** Live counts for a progress display (they always add up to previews.length): ready = finished and stored; generating = being made right now; pending = waiting to start; failed = failed (see retryable and generation). */
+  progress: { ready: number; generating: number; pending: number; failed: number }
 }
 
 /** What the customer's next batch would cost, decided by the server from verified records. */

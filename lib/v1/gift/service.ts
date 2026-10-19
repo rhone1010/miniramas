@@ -263,7 +263,9 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
       views.push({ previewId: p.id, slot: p.slot, effectId: p.effect_id, status: p.status, url, width: p.width, height: p.height, retryable: p.status === 'failed' && p.attempts < 3 })
     }
     const complete = views.length === BATCH_SIZE && views.every(v => v.status === 'ready')
-    batches.push({ batchIndex: batch.batch_index, kind: batch.kind, complete, previews: views, generation: generationOf(previews, complete, clockNow) })
+    const count = (s: PreviewRec['status']) => previews.filter(p => p.status === s).length
+    batches.push({ batchIndex: batch.batch_index, kind: batch.kind, complete, previews: views, generation: generationOf(previews, complete, clockNow),
+      progress: { ready: count('ready'), generating: count('generating'), pending: count('pending'), failed: count('failed') } })
   }
   const used = all.flatMap(b => b.previews.map(p => p.effect_id))
   const catalog = allProducts()
