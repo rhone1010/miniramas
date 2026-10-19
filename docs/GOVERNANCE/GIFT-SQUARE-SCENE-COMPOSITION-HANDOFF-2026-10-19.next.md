@@ -35,3 +35,20 @@ E:/Dev/_recovery-staging/frontend-deploy-review/four-products/exact-scene-202610
 The ten-slot contact sheet has FIVE completed existing-artwork tests and FIVE explicitly marked HOLD photographs, not ten completed personalized samples. Some review fixtures differ from catalog assignments solely for renderer validation; catalog assignments are unchanged.
 
 Browser: actual local Step 4 at 1660px and 390px, Groups Canvas selected, no mobile horizontal overflow (390px scrollWidth), loaded featured image. Existing remote paid session 7c63738b-ccfa-4d55-ba79-a4e1f3a27295 restored and showed two purchased products. Review action not invoked because its handler may generate missing compositions. No order, approval, generation or fulfillment writes.
+
+## Catalog completion and featured-image update — 2026-10-19
+
+Supersedes the catalog holds above. All 24 category/product assignments now have completed sceneArtwork and optimized desktop/mobile WebPs; the index has zero placeholders. The authoritative original artwork assignments and production prompts remain preserved. Generated scene-specific artwork and preparation history are separate manifest fields/files.
+
+Nine NB2.1 2K generations succeeded at $0.0504 each ($0.4536). Eighteen Stability outpaint calls succeeded at $0.04 each ($0.72), including nine corrective extensions after visual QA found excessive reflected margins from integer-ratio scaling. Total this pass: $1.1736, below the authorized $4. Provider pricing was verified on Replicate's model page and platform.stability.ai/pricing. Paid scripts now require --execute; no automatic retries. Detailed ledgers are copied into tools/catalog-samples/scene-completion-results.next.json.
+
+Catalog preparation uses minimal rounded pixel extents when invoking the existing preparePanelComposition pipeline. Input is normalized losslessly to PNG first to avoid JPEG re-encoding. Placement allows integer-pixel rounding only; incompatible artwork is still rejected. Tests verify ALL original artwork pixels survive preparation, with no cropping or distortion; protected photographic pixels and all34 original asset hashes remain unchanged. The Watercolor sample retains its original painted-paper background; the compositor does not add white padding.
+
+Only three CSS changes: featured column 550 -> 580px; featured image aspect-ratio 1264/848 -> 1/1 with contain retained; Step4 center mobile padding 16px. Product picker, prices, availability, CTA, favorite, checkout, and backend unchanged. Browser checked 1660,1300,768,390; image widths 580,580,550,343–358px (mobile scrollbar-dependent). No horizontal overflow; product picker and unavailable-product viewing verified.
+
+Tests: 8 scene/assets/composition tests, 35 Wizard interaction tests, 9 existing renderer-bundle tests, all passing. Contact sheets visually inspected for all24 products; screenshots saved for all four breakpoints.
+
+Authenticated customer mockup integration remains BLOCKED pending CC's scene-composition contract. No customer orders, production print files, deployments, pushes, or Prodigi calls were made.
+
+Evidence directory: E:/Dev/_recovery-staging/frontend-deploy-review/catalog-samples/scene-completion-2026-10-19/
+Browser screenshots: C:/Users/richh/.codex/visualizations/2026/10/14/01a13b7a-543e-7191-b334-430d0970ace5/catalog-complete-{1660,1300,768,390}.png

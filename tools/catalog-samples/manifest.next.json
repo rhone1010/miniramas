@@ -79,7 +79,37 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "ready-offline-render"
+      "status": "ready-offline-render",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-scene-composed.png",
+          "sha256": "c049a9796b2d23dfd49585759fb70d29d1f8f3ace514d66882005affea28f058",
+          "dimensions": [
+            2202,
+            2358
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-generated.png",
+          "sourceHash": "1c118338f4eb7047cdad5fac5fab5f0b09148a89508a7c32f1c5e467501b5a97",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "fine-art-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-scene-minimal.png",
+        "sha256": "67db1a25b60267397926d530762e415f83e8ad20fe5eb08becb42185e4a9e8a3",
+        "dimensions": [
+          2048,
+          2194
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-generated.png",
+        "sourceHash": "1c118338f4eb7047cdad5fac5fab5f0b09148a89508a7c32f1c5e467501b5a97",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "fine-art-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "77dacd0aca026c8add74d99015f8717a172294685d48428eb84f4914403d79d3"
+      }
     },
     {
       "id": "pets-premium",
@@ -139,7 +169,37 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-premium-scene-composed.png",
+          "sha256": "407d6fb35ca8c30f51a108102f1375d8f1fc93c18faa51e75f586df3d6743f1e",
+          "dimensions": [
+            2433,
+            3060
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-premium-generated.png",
+          "sourceHash": "b4a00ccd2708fb34d861ee156c6f2f5c290fec76594061fe1ba8c13cb4318d16",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "premium-fine-art",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-premium-scene-minimal.png",
+        "sha256": "46f430c0aa71f28546109433a673714cc247291935dd72bfb6c8b6cdb1e5a6ce",
+        "dimensions": [
+          2011,
+          2528
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-premium-generated.png",
+        "sourceHash": "b4a00ccd2708fb34d861ee156c6f2f5c290fec76594061fe1ba8c13cb4318d16",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "premium-fine-art",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "1502255a321eb3e9b1a33593032337eab2d052471c4a3ca895716b737c0b9e75"
+      }
     },
     {
       "id": "pets-framed",
@@ -197,7 +257,37 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "ready-offline-render"
+      "status": "ready-offline-render",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed-scene-composed.png",
+          "sha256": "ced34bc8619998d0e5658b961870909fe6f96ba165b03b29200c9ce5698f61d5",
+          "dimensions": [
+            3006,
+            2013
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed-generated.png",
+          "sourceHash": "f1e880e4d714a760f20dfe3a04aaad69d5b8f4a37e69f03d09093bf6fe7205e9",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "classic-framed",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed-scene-minimal.png",
+        "sha256": "483d7ca81f65b106820fe2ed78485a7852725d9d5ceb034e27b5798a822f7376",
+        "dimensions": [
+          2533,
+          1696
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed-generated.png",
+        "sourceHash": "f1e880e4d714a760f20dfe3a04aaad69d5b8f4a37e69f03d09093bf6fe7205e9",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "classic-framed",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "9140fc03990acd6aa01584c26880f077725f7f99de870ab528a760eef63ecbed"
+      }
     },
     {
       "id": "pets-matted",
@@ -257,7 +347,37 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-matted-scene-composed.png",
+          "sha256": "db8ebc226b8013416daa506b50ee23bd6504eb8f18712b93e9a6fe4a18fa8925",
+          "dimensions": [
+            2068,
+            2115
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-matted-generated.png",
+          "sourceHash": "89d0b0ebe2c89e366513ada81648b0fac5f2617de718cc5a037a37ec0342ec75",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "matted-frame-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-matted-scene-minimal.png",
+        "sha256": "39234332689f2cb881d1627c47dc413c53a0e6c2fcbc6523f540d95f9da18e12",
+        "dimensions": [
+          2048,
+          2095
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-matted-generated.png",
+        "sourceHash": "89d0b0ebe2c89e366513ada81648b0fac5f2617de718cc5a037a37ec0342ec75",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "matted-frame-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "123e727e660006c2bd2ed015349d3e4895b16a57d1c5a1badc6939de10ed96a1"
+      }
     },
     {
       "id": "pets-canvas",
@@ -315,7 +435,37 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "ready-offline-render"
+      "status": "ready-offline-render",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-canvas-scene-composed.png",
+          "sha256": "ae638ce61949d1941411353fd52e1fec9f3c361ea702cfcefa0b0d4bb29d2b21",
+          "dimensions": [
+            2568,
+            2523
+          ],
+          "sourcePath": "E:/Nb2.1 Output/pets/1x1/stained_glass__pet_05.jpg",
+          "sourceHash": "72407cb40cdc572cbd951136f095866f69c7b01203880b064310aefd3ef10875",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "gallery-canvas-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-canvas-scene-minimal.png",
+        "sha256": "8bad196a0be2cf287c3c1807d8c0e8b976a88d1a15916ae5dd70bf6529fbbb9b",
+        "dimensions": [
+          2085,
+          2048
+        ],
+        "sourcePath": "E:/Nb2.1 Output/pets/1x1/stained_glass__pet_05.jpg",
+        "sourceHash": "72407cb40cdc572cbd951136f095866f69c7b01203880b064310aefd3ef10875",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "gallery-canvas-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "f9835a46d65d6c0af1fc2c3fe4549a5e1d06760d16e1660c59ab0123120db807"
+      }
     },
     {
       "id": "pets-framed_canvas",
@@ -358,7 +508,37 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "template-blocked"
+      "status": "template-blocked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed_canvas-scene-composed.png",
+          "sha256": "8dee3402d5a485a1be9dc7d836edfb9b06ca4895961060c34bc9c461c2012c86",
+          "dimensions": [
+            2185,
+            2180
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed_canvas-generated.png",
+          "sourceHash": "6bdd7114e391047a79c0fc8b187f47a9f15f2c86589ce67987d59832ae486937",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "framed-canvas",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed_canvas-scene-minimal.png",
+        "sha256": "7e74d0e5b32aa69a234e430c36aa88c11b929b3f253c1dbeacbb19b0d28fa986",
+        "dimensions": [
+          2053,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-framed_canvas-generated.png",
+        "sourceHash": "6bdd7114e391047a79c0fc8b187f47a9f15f2c86589ce67987d59832ae486937",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "framed-canvas",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "ebd97b99cfd5bf3df8d722d10e121d20b1f676ce3ff0057685081bc284f30a74"
+      }
     },
     {
       "id": "pets-mug",
@@ -418,7 +598,37 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-mug-scene-composed.png",
+          "sha256": "b8967ed467003810f91cedc36e3f65a017d08c18dea04f867aa69af3ef4712f3",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-mug-generated.png",
+          "sourceHash": "a3848bd51255710c0f1c8d68bfb6f38afc49466e1b0ea5d15eea8a08f587456c",
+          "fit": "exact",
+          "outpainted": false,
+          "sceneId": "ceramic-mug",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-mug-scene-minimal.png",
+        "sha256": "b8967ed467003810f91cedc36e3f65a017d08c18dea04f867aa69af3ef4712f3",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-mug-generated.png",
+        "sourceHash": "a3848bd51255710c0f1c8d68bfb6f38afc49466e1b0ea5d15eea8a08f587456c",
+        "fit": "exact",
+        "outpainted": false,
+        "sceneId": "ceramic-mug",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "b8967ed467003810f91cedc36e3f65a017d08c18dea04f867aa69af3ef4712f3"
+      }
     },
     {
       "id": "pets-card",
@@ -492,7 +702,37 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-card-scene-composed.png",
+          "sha256": "60a9e2008f67d548b19197fb932391cd4a09362d30cc86906843f456801d8e34",
+          "dimensions": [
+            2093,
+            2933
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-card-front.png",
+          "sourceHash": "773d6653a9c5d2916f5217185cd8801d4729bd6f00f2902753d90ce82cf88392",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "greeting-card",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-card-scene-minimal.png",
+        "sha256": "0a301aac503aa6be1763231b04901489fe0f8877e71a88cba7533ea736453af0",
+        "dimensions": [
+          1795,
+          2516
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-card-front.png",
+        "sourceHash": "773d6653a9c5d2916f5217185cd8801d4729bd6f00f2902753d90ce82cf88392",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "greeting-card",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "773d6653a9c5d2916f5217185cd8801d4729bd6f00f2902753d90ce82cf88392"
+      }
     },
     {
       "id": "groups-fine_art",
@@ -548,7 +788,37 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-scene-composed.png",
+          "sha256": "047d45096b4154288b02621551d5c27bd33b4a24ec3cb9a7295ab86348fb1c86",
+          "dimensions": [
+            2202,
+            2358
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-generated.png",
+          "sourceHash": "df418cd216d5ce3223f6534211b074b45c3e9d3e29f9dcc8648a6547aab488b8",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "fine-art-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-scene-minimal.png",
+        "sha256": "1ece6a5e218bd426780e9ad654e9421db55f969c00265c85d68b217f21b04b1f",
+        "dimensions": [
+          2048,
+          2194
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-generated.png",
+        "sourceHash": "df418cd216d5ce3223f6534211b074b45c3e9d3e29f9dcc8648a6547aab488b8",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "fine-art-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "2eee75acfa095f34fc4c71eb8e26fee7f3b19f0433b827bcac670c019a64a01b"
+      }
     },
     {
       "id": "groups-premium",
@@ -604,7 +874,37 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-premium-scene-composed.png",
+          "sha256": "1ff538c53a3991ad34c244c33a2d66379700b4be7c304b448d7dcbdbcfdc5547",
+          "dimensions": [
+            2433,
+            3060
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-premium-generated.png",
+          "sourceHash": "3d8a19714db78e3b871057a8873711875acf154ddc3e3477131383e6739546b6",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "premium-fine-art",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-premium-scene-minimal.png",
+        "sha256": "b6f2240de9df0db4e064e34036e53159d6ba01bc523d18a6ccd182bbeb64e05c",
+        "dimensions": [
+          2011,
+          2528
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-premium-generated.png",
+        "sourceHash": "3d8a19714db78e3b871057a8873711875acf154ddc3e3477131383e6739546b6",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "premium-fine-art",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "dd61dbaef0bee2c45c393d7da1749cab16fd76e5b391fbf4589b2d56af033603"
+      }
     },
     {
       "id": "groups-framed",
@@ -660,7 +960,37 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed-scene-composed.png",
+          "sha256": "93f24ffa074fe1d1ac25c4e4c59e15df038098b2635fcb91f9155d3075caf1d7",
+          "dimensions": [
+            3006,
+            2013
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed-generated.png",
+          "sourceHash": "df8e70c8eecd38d5912f9bcbf72e9c989ffce39ad038d89420feb9f17768e4e7",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "classic-framed",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed-scene-minimal.png",
+        "sha256": "4f5fab79a7142a00d301ede7dc8d867c4fe6bd3856f3207e468d4e3ee2e1a2de",
+        "dimensions": [
+          2533,
+          1696
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed-generated.png",
+        "sourceHash": "df8e70c8eecd38d5912f9bcbf72e9c989ffce39ad038d89420feb9f17768e4e7",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "classic-framed",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "cce494852a98edbdaf80275641c8b311a33ab91bb7b8fbd27bcde7f33da95797"
+      }
     },
     {
       "id": "groups-matted",
@@ -716,7 +1046,37 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-matted-scene-composed.png",
+          "sha256": "6e8e0c2d4f90f8c2f0edae895b069af23e534949a5ad1f1f2163fce1fd104d45",
+          "dimensions": [
+            2068,
+            2115
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-matted-generated.png",
+          "sourceHash": "221ace899201092bc30d5aaccbd351bfdcb756edcbe068c90215d121309d3ae8",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "matted-frame-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-matted-scene-minimal.png",
+        "sha256": "14b8c4ae37789a247535fa49d4bec04d1601805e429cc435c1868fcf36f10318",
+        "dimensions": [
+          2048,
+          2095
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-matted-generated.png",
+        "sourceHash": "221ace899201092bc30d5aaccbd351bfdcb756edcbe068c90215d121309d3ae8",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "matted-frame-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "ee3c7f52007ef157c07cee891fa4ad6046d01ea64070d13d601bf7f6009f7738"
+      }
     },
     {
       "id": "groups-canvas",
@@ -772,7 +1132,37 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-canvas-scene-composed.png",
+          "sha256": "785c8da33e645752750ced9f14cba504b0465ed01c84f2ccdbda17ad626452fd",
+          "dimensions": [
+            2568,
+            2523
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-canvas-generated.png",
+          "sourceHash": "13e50715db9f55e1789b519956bb1611f4e96b48a5c446158e594b4d16386b25",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "gallery-canvas-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-canvas-scene-minimal.png",
+        "sha256": "ffe5f175a8e60e518e2bad78db6f83cb9b357ac3196a4fdb7e3cce99fb8b3bfe",
+        "dimensions": [
+          2085,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-canvas-generated.png",
+        "sourceHash": "13e50715db9f55e1789b519956bb1611f4e96b48a5c446158e594b4d16386b25",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "gallery-canvas-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "09df1758f989f7bd713a50c620fcb9774c07f3c1d616fc820e6cb4313089abb3"
+      }
     },
     {
       "id": "groups-framed_canvas",
@@ -811,7 +1201,37 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "template-blocked"
+      "status": "template-blocked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed_canvas-scene-composed.png",
+          "sha256": "f14ffbf923d3624274b388937c8f5ee6a5e322d3014bce98acbc357df5f8a183",
+          "dimensions": [
+            2185,
+            2180
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed_canvas-generated.png",
+          "sourceHash": "4398aeb3043f66668147fbe5e5c106d361b51bc680552a86d2420d84f828b0a7",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "framed-canvas",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed_canvas-scene-minimal.png",
+        "sha256": "7700737c9ef0e97b686adae97fc35eceb267c103e8ab9c7ef14bbc2246115153",
+        "dimensions": [
+          2053,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-framed_canvas-generated.png",
+        "sourceHash": "4398aeb3043f66668147fbe5e5c106d361b51bc680552a86d2420d84f828b0a7",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "framed-canvas",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "d2fab4baedc6b444871d2fcb60cd331cde08148eb3f57f38822d54a9166bd4f9"
+      }
     },
     {
       "id": "groups-mug",
@@ -867,7 +1287,37 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-mug-scene-composed.png",
+          "sha256": "ea1a6257b0a5f9b046d67751d6f5661736d4fe5fa9d12244c9bcea3fbe33ba3e",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-mug-generated.png",
+          "sourceHash": "e23852c988e7bb76f96333458f08890aedb7346213023f1681f1703487a91de6",
+          "fit": "exact",
+          "outpainted": false,
+          "sceneId": "ceramic-mug",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-mug-scene-minimal.png",
+        "sha256": "ea1a6257b0a5f9b046d67751d6f5661736d4fe5fa9d12244c9bcea3fbe33ba3e",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-mug-generated.png",
+        "sourceHash": "e23852c988e7bb76f96333458f08890aedb7346213023f1681f1703487a91de6",
+        "fit": "exact",
+        "outpainted": false,
+        "sceneId": "ceramic-mug",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "ea1a6257b0a5f9b046d67751d6f5661736d4fe5fa9d12244c9bcea3fbe33ba3e"
+      }
     },
     {
       "id": "groups-card",
@@ -937,7 +1387,37 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-card-scene-composed.png",
+          "sha256": "e3a0a628248a7c69e38cd041afcc2283c5c12cb61192f38180bd74da9382715c",
+          "dimensions": [
+            2093,
+            2933
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-card-front.png",
+          "sourceHash": "af23b5e0d03d86ecdfe82c0f2a4b41ea9b158f626531cb7c6e67622a492ad322",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "greeting-card",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-card-scene-minimal.png",
+        "sha256": "8be0e5a9b12a62d0da8073a158299b316461fa98010d73aecbf3b1221123a1df",
+        "dimensions": [
+          1810,
+          2537
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-card-front.png",
+        "sourceHash": "af23b5e0d03d86ecdfe82c0f2a4b41ea9b158f626531cb7c6e67622a492ad322",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "greeting-card",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "af23b5e0d03d86ecdfe82c0f2a4b41ea9b158f626531cb7c6e67622a492ad322"
+      }
     },
     {
       "id": "portraits-fine_art",
@@ -999,7 +1479,37 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "ready-offline-render"
+      "status": "ready-offline-render",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-scene-composed.png",
+          "sha256": "5b3ccd894012ad1681f16c1c72efa10c1f49a7833d8a469b646bd4b07daa1e21",
+          "dimensions": [
+            2202,
+            2358
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-generated.png",
+          "sourceHash": "462c5b2f075267095c0f348441fa8df01260eba0cb40b1fc8b0605bc0f0e8548",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "fine-art-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-scene-minimal.png",
+        "sha256": "78d3dcafb0238ee095616a603f7e1a9ec94b702538c6249b209df6f5b3576266",
+        "dimensions": [
+          2048,
+          2194
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-generated.png",
+        "sourceHash": "462c5b2f075267095c0f348441fa8df01260eba0cb40b1fc8b0605bc0f0e8548",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "fine-art-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "a92fdf82697ab44e251d9225ea6525b2ca2b37d5f350ef63f6c10fa44148f09a"
+      }
     },
     {
       "id": "portraits-premium",
@@ -1063,7 +1573,37 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-premium-scene-composed.png",
+          "sha256": "ddffb95c5ea8ef9be2fb7e778e6d296e734853e7779ebf351b4792ee4789fb52",
+          "dimensions": [
+            2433,
+            3060
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-premium-generated.png",
+          "sourceHash": "919de756037172d6b30a0932e4a97ef714a85f206ffaf8845c2a83f97768d1c6",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "premium-fine-art",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-premium-scene-minimal.png",
+        "sha256": "869499973c607af8930f83e8419f5017e9db197dcd7cf09374fa69c0c00b133d",
+        "dimensions": [
+          2011,
+          2528
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-premium-generated.png",
+        "sourceHash": "919de756037172d6b30a0932e4a97ef714a85f206ffaf8845c2a83f97768d1c6",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "premium-fine-art",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "b52ff620e6bfaa4d60a58ba34a83bd745477e9b6bef1a57f7d52965c8a228cce"
+      }
     },
     {
       "id": "portraits-framed",
@@ -1127,7 +1667,37 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed-scene-composed.png",
+          "sha256": "abb3403fdbb4344277e45812bae997a5b36de8de40facec20fb94d6a12057a01",
+          "dimensions": [
+            3006,
+            2013
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed-generated.png",
+          "sourceHash": "92281dc86ae5d826b0e5af1f1d7d782b1cf93cd65064a911eed84855d25a8f5e",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "classic-framed",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed-scene-minimal.png",
+        "sha256": "741cd7d9c1bb112c5f98a10f0833a90d51c264a4f07d25703d09b23eb49102f1",
+        "dimensions": [
+          2533,
+          1696
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed-generated.png",
+        "sourceHash": "92281dc86ae5d826b0e5af1f1d7d782b1cf93cd65064a911eed84855d25a8f5e",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "classic-framed",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "6c4093a4fee520ff7a69b2312e980f8c9f9b47d30460873991dbdfcb5a30878e"
+      }
     },
     {
       "id": "portraits-matted",
@@ -1191,7 +1761,37 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-matted-scene-composed.png",
+          "sha256": "ccc3ef009ef32e96b19fa59ebb18e0424ea38ecbe376eee5cff488e3d9c434da",
+          "dimensions": [
+            2068,
+            2115
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-matted-generated.png",
+          "sourceHash": "4efd8a67144bac1730d4dff449099b250546b3f1188303b21cd3c847183b35b6",
+          "fit": "extend",
+          "outpainted": true,
+          "sceneId": "matted-frame-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-matted-scene-minimal.png",
+        "sha256": "af01a39d0f3e7400d793720cf6af7b8122fac7feb81aeb6872db52f6ac509c4f",
+        "dimensions": [
+          2048,
+          2095
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-matted-generated.png",
+        "sourceHash": "4efd8a67144bac1730d4dff449099b250546b3f1188303b21cd3c847183b35b6",
+        "fit": "extend",
+        "outpainted": true,
+        "sceneId": "matted-frame-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "2ca84496ee524a7dab98901c16f2912b09020296f6490c12d1f77dc2ee239ba4"
+      }
     },
     {
       "id": "portraits-canvas",
@@ -1255,7 +1855,37 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-canvas-scene-composed.png",
+          "sha256": "7b6b5f47f3b1891e8a79923e0f22c5109be8305996731b36d40e31d6b82155af",
+          "dimensions": [
+            2568,
+            2523
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-canvas-generated.png",
+          "sourceHash": "789b0ad8c08f8fe06a94e036fd792c94dfa09ee10eb1488f14f3bcad86ecfc95",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "gallery-canvas-square",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-canvas-scene-minimal.png",
+        "sha256": "cb4ca0543ef0a60006acd9eb021aab786d8902cba89f3cb91cc7517ae44ae04a",
+        "dimensions": [
+          2085,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-canvas-generated.png",
+        "sourceHash": "789b0ad8c08f8fe06a94e036fd792c94dfa09ee10eb1488f14f3bcad86ecfc95",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "gallery-canvas-square",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "8ce7f759bb84ad8262b202199aa3b7162caef04a1d64f60d18ccb75e8c0b297a"
+      }
     },
     {
       "id": "portraits-framed_canvas",
@@ -1302,7 +1932,37 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "template-blocked"
+      "status": "template-blocked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed_canvas-scene-composed.png",
+          "sha256": "643af82d2c7fb46ac29c638c9d762d9a204424f2f9d956cd085ea7361bb28fc0",
+          "dimensions": [
+            2185,
+            2180
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed_canvas-generated.png",
+          "sourceHash": "d3158dfef97bd6ec1ec1427717ec4162944e02a6c9ca1a018c11bfb3e3914ced",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "framed-canvas",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed_canvas-scene-minimal.png",
+        "sha256": "0dc9d0883a3eea208c8c179bbbf0fd6b600cbdd8166d0f3cecbc46fc4d2f6de3",
+        "dimensions": [
+          2053,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-framed_canvas-generated.png",
+        "sourceHash": "d3158dfef97bd6ec1ec1427717ec4162944e02a6c9ca1a018c11bfb3e3914ced",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "framed-canvas",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "198e3889e4fe4b6979945339075805905755fbf9e3946ffa13a81c5676e5a681"
+      }
     },
     {
       "id": "portraits-mug",
@@ -1366,7 +2026,37 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-mug-scene-composed.png",
+          "sha256": "e091b32f7484aba8fc57e6e7ba6ee6ac457c5a48efc7f91ae2a7e0c5e2c1522b",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-mug-generated.png",
+          "sourceHash": "c0d470857c070a0a8d7f755a28288772e69b9c29a48f684c2ca84c617c331b5b",
+          "fit": "exact",
+          "outpainted": false,
+          "sceneId": "ceramic-mug",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-mug-scene-minimal.png",
+        "sha256": "e091b32f7484aba8fc57e6e7ba6ee6ac457c5a48efc7f91ae2a7e0c5e2c1522b",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-mug-generated.png",
+        "sourceHash": "c0d470857c070a0a8d7f755a28288772e69b9c29a48f684c2ca84c617c331b5b",
+        "fit": "exact",
+        "outpainted": false,
+        "sceneId": "ceramic-mug",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "e091b32f7484aba8fc57e6e7ba6ee6ac457c5a48efc7f91ae2a7e0c5e2c1522b"
+      }
     },
     {
       "id": "portraits-card",
@@ -1444,7 +2134,37 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "generated-visually-checked"
+      "status": "generated-visually-checked",
+      "sceneArtwork": {
+        "minimalPadding": true,
+        "previousPreparation": {
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-card-scene-composed.png",
+          "sha256": "3b6c6d66652b49896b7fbbd0f62e5de1c37a2d8a506e97da13fd1b0f0941b561",
+          "dimensions": [
+            2093,
+            2933
+          ],
+          "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-card-front.png",
+          "sourceHash": "55fbfadbddba85b23e65001f12d0a80775df93dd48cd4cc4b0c72584dbc3fff9",
+          "fit": "resample",
+          "outpainted": false,
+          "sceneId": "greeting-card",
+          "croppedPixels": 0
+        },
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-card-scene-minimal.png",
+        "sha256": "a596c7228a7aab7fcbdb4df470338c5871da965bbe086d4501ed2e252a30c473",
+        "dimensions": [
+          1795,
+          2516
+        ],
+        "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-card-front.png",
+        "sourceHash": "55fbfadbddba85b23e65001f12d0a80775df93dd48cd4cc4b0c72584dbc3fff9",
+        "fit": "resample",
+        "outpainted": false,
+        "sceneId": "greeting-card",
+        "croppedPixels": 0,
+        "normalizedSourceHash": "55fbfadbddba85b23e65001f12d0a80775df93dd48cd4cc4b0c72584dbc3fff9"
+      }
     }
   ],
   "executionSummary": {

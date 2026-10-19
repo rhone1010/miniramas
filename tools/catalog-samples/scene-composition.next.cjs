@@ -9,7 +9,9 @@ async function prepareSceneArtwork(sceneId,artwork){
  const b=m.maskBounds,panel=m.mapping?{w:1,h:1}:{w:b.x1-b.x0,h:b.y1-b.y0};
  const meta=await sharp(artwork).metadata();const plan=compositionPlan(meta.width,meta.height,panel.w,panel.h);
  if(plan.compatibility!=='recommended')throw Object.assign(Error(plan.compatibility==='extension'?'paid_extension_required':'product_regeneration_required'),{sceneId,source:[meta.width,meta.height],target:[panel.w,panel.h],extension:plan.extension});
- const prepared=await preparePanelComposition({imageB64:artwork.toString('base64'),panel});
+ const ratio=panel.w/panel.h;const minimal=meta.width/meta.height>ratio?{w:meta.width,h:Math.ceil(meta.width/ratio)}:{w:Math.ceil(meta.height*ratio),h:meta.height};
+ const exactWithinPixel=Math.abs(meta.width/meta.height/ratio-1)<=1/meta.width+1/meta.height;
+ const prepared=exactWithinPixel?{working:artwork,width:meta.width,height:meta.height,fit:'exact',outpainted:false}:await preparePanelComposition({imageB64:(await sharp(artwork).rotate().png().toBuffer()).toString('base64'),panel:minimal});
  const bytes=m.mapping?await mockupInputFor('mug',prepared.working):prepared.working;
  return {bytes,method:prepared.fit,source:[meta.width,meta.height],prepared:[prepared.width,prepared.height],outpainted:prepared.outpainted,paidCalls:0};
 }

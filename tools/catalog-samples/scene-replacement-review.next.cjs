@@ -10,7 +10,8 @@ async function replaceScene({sceneId,artwork}){
  const inverse=homography(m.cornersPixels,[[0,0],[1,0],[1,1],[0,1]]),b=m.maskBounds;
  const ratio=m.mapping?2670/1110:(b.x1-b.x0)/(b.y1-b.y0),ar=a.info.width/a.info.height;
  if(m.mapping&&Math.abs(ar/ratio-1)>.003)throw Error('mug_full_wrap_required');
- if(Math.abs(ar/ratio-1)>1e-6)throw Object.assign(Error('scene_composition_required'),{sceneId,sourceAspect:ar,targetAspect:ratio});
+ // Permit only integer-pixel rounding of the photographed plane, not an alternate composition.
+ if(Math.abs(ar/ratio-1)>1/a.info.width+1/a.info.height)throw Object.assign(Error('scene_composition_required'),{sceneId,sourceAspect:ar,targetAspect:ratio});
  const output=Buffer.from(base.data);
  function sample(ax,ay,c){const sx=ax*(a.info.width-1),sy=ay*(a.info.height-1),x=Math.floor(sx),y=Math.floor(sy),xx=Math.min(x+1,a.info.width-1),yy=Math.min(y+1,a.info.height-1),tx=sx-x,ty=sy-y;return (a.data[(y*a.info.width+x)*3+c]*(1-tx)+a.data[(y*a.info.width+xx)*3+c]*tx)*(1-ty)+(a.data[(yy*a.info.width+x)*3+c]*(1-tx)+a.data[(yy*a.info.width+xx)*3+c]*tx)*ty;}
  for(let y=0;y<1254;y++)for(let x=0;x<1254;x++){

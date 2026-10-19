@@ -1,0 +1,361 @@
+{
+  "capUSD": 4,
+  "nbCalls": 9,
+  "extensionCalls": 18,
+  "totalUSD": 1.1736,
+  "correctiveExtensionCalls": 9,
+  "reason": "Removed inflated integer-ratio padding; preserved original JPEG pixels through lossless normalization",
+  "ledgers": [
+    {
+      "file": "generation-ledger.json",
+      "capUSD": 4,
+      "unitUSD": 0.0504,
+      "model": "google/nano-banana-2.1",
+      "priceVerified": "2026-10-19",
+      "calls": [
+        {
+          "id": "pets-fine_art",
+          "started": "2026-10-19T19:18:52.432Z",
+          "reservedUSD": 0.0504,
+          "status": "succeeded",
+          "promptSha256": "500bbaf6760e1943ea2352af61c2dca94554dfcc02e8cf8869dec490c1f7ae53",
+          "sourceSha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+          "styleReferenceCount": 0,
+          "predictionId": "05n6g826rxrmr0d1apd9cmgfs4",
+          "metrics": {
+            "image_output_count": 1,
+            "predict_time": 22.388754151,
+            "resolution_target": "2K",
+            "total_time": 22.449550253
+          },
+          "completed": "2026-10-19T19:19:18.904550253Z",
+          "modelChargeUSD": 0.0504
+        },
+        {
+          "id": "pets-framed",
+          "started": "2026-10-19T19:19:16.518Z",
+          "reservedUSD": 0.0504,
+          "status": "succeeded",
+          "promptSha256": "bc97ed9c66745c3a822374ce6e7c29fcc06858ffa142bc8a0bd3d88fc39c425e",
+          "sourceSha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+          "styleReferenceCount": 0,
+          "predictionId": "236y11d4mhrmw0d1apd8w24sec",
+          "metrics": {
+            "image_output_count": 1,
+            "predict_time": 23.532762564,
+            "resolution_target": "2K",
+            "total_time": 23.578987927
+          },
+          "completed": "2026-10-19T19:19:44.062987927Z",
+          "modelChargeUSD": 0.0504
+        },
+        {
+          "id": "pets-framed_canvas",
+          "started": "2026-10-19T19:19:41.027Z",
+          "reservedUSD": 0.0504,
+          "status": "succeeded",
+          "promptSha256": "edf30ad74f887bd22d447c4dc6006f3873e8b5def39cf8ff60f4c6fed5bafbdb",
+          "sourceSha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+          "styleReferenceCount": 0,
+          "predictionId": "w5fev1842xrmy0d1apds1vaczm",
+          "metrics": {
+            "image_output_count": 1,
+            "predict_time": 20.448082711,
+            "resolution_target": "2K",
+            "total_time": 20.476802678
+          },
+          "completed": "2026-10-19T19:20:05.395802678Z",
+          "modelChargeUSD": 0.0504
+        },
+        {
+          "id": "groups-fine_art",
+          "started": "2026-10-19T19:20:02.379Z",
+          "reservedUSD": 0.0504,
+          "status": "succeeded",
+          "promptSha256": "523f5e5af1baaf2b4b439b6e641458e34630d672734d1e8afac231029596c88a",
+          "sourceSha256": "384f0d90ed2db527b4a0932c91888772102510a4f1cadf76700bf22214e6113a",
+          "styleReferenceCount": 0,
+          "predictionId": "v1pxdjtqj9rmy0d1apds8n3xe4",
+          "metrics": {
+            "image_output_count": 1,
+            "predict_time": 22.268154384,
+            "resolution_target": "2K",
+            "total_time": 22.28719406
+          },
+          "completed": "2026-10-19T19:20:28.57719406Z",
+          "modelChargeUSD": 0.0504
+        },
+        {
+          "id": "groups-framed",
+          "started": "2026-10-19T19:20:25.831Z",
+          "reservedUSD": 0.0504,
+          "status": "succeeded",
+          "promptSha256": "2d2031cf1770bf370fea6f5e7d5bde762b35ce7c74e24c668fb365074e4c16f6",
+          "sourceSha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+          "styleReferenceCount": 0,
+          "predictionId": "szqwsynjadrmr0d1apds8ybrmw",
+          "metrics": {
+            "image_output_count": 1,
+            "predict_time": 20.478640643,
+            "resolution_target": "2K",
+            "total_time": 20.495788815
+          },
+          "completed": "2026-10-19T19:20:50.018788815Z",
+          "modelChargeUSD": 0.0504
+        },
+        {
+          "id": "groups-framed_canvas",
+          "started": "2026-10-19T19:20:47.562Z",
+          "reservedUSD": 0.0504,
+          "status": "succeeded",
+          "promptSha256": "b0a24f5bb9b213b134d0c43250074a4fce1935a3a31c1e6e0a26bdd1b1dc2984",
+          "sourceSha256": "384f0d90ed2db527b4a0932c91888772102510a4f1cadf76700bf22214e6113a",
+          "styleReferenceCount": 0,
+          "predictionId": "84e8bcr89xrmr0d1apeac2bwzr",
+          "metrics": {
+            "image_output_count": 1,
+            "predict_time": 18.104644752,
+            "resolution_target": "2K",
+            "total_time": 18.122757603
+          },
+          "completed": "2026-10-19T19:21:09.657757603Z",
+          "modelChargeUSD": 0.0504
+        },
+        {
+          "id": "portraits-fine_art",
+          "started": "2026-10-19T19:21:06.627Z",
+          "reservedUSD": 0.0504,
+          "status": "succeeded",
+          "promptSha256": "f51a0dc95a9a24c331c02ea14a43dc2d3fabccd1096e9dbd7eb15a8c2e05f956",
+          "sourceSha256": "f661fb100f867d2a99d58a2efe67b221d6358d18612bd46f709dce4848e5e9bb",
+          "styleReferenceCount": 0,
+          "predictionId": "6t1s4hjkrxrmy0d1apeap3zxvw",
+          "metrics": {
+            "image_output_count": 1,
+            "predict_time": 26.751802633,
+            "resolution_target": "2K",
+            "total_time": 26.774615364
+          },
+          "completed": "2026-10-19T19:21:37.629615364Z",
+          "modelChargeUSD": 0.0504
+        },
+        {
+          "id": "portraits-framed",
+          "started": "2026-10-19T19:21:34.628Z",
+          "reservedUSD": 0.0504,
+          "status": "succeeded",
+          "promptSha256": "a7f33dee219bb9cabebd37f246dd11fa0b97f28e947c04013b12f777aa94e4f8",
+          "sourceSha256": "34f0591d130b5c54aca179e8ff6c0fce6b2f6ece5520bde7bc534492cdaa89b8",
+          "styleReferenceCount": 0,
+          "predictionId": "78yqqexzx1rmy0d1apeatvxcpm",
+          "metrics": {
+            "image_output_count": 1,
+            "predict_time": 41.270243197,
+            "resolution_target": "2K",
+            "total_time": 41.297025077
+          },
+          "completed": "2026-10-19T19:22:19.833025077Z",
+          "modelChargeUSD": 0.0504
+        },
+        {
+          "id": "portraits-framed_canvas",
+          "started": "2026-10-19T19:22:16.824Z",
+          "reservedUSD": 0.0504,
+          "status": "succeeded",
+          "promptSha256": "ae1778c74b3d4dbd8de2e70ffd547667b2b6df305b023ddf28bde5181f40901e",
+          "sourceSha256": "94641985e4b89c1e98c786329ecaf4be73cbe15aabdc27fe7f23a7451644a2f5",
+          "styleReferenceCount": 0,
+          "predictionId": "p8xfd0b7rdrmw0d1apeshgbq88",
+          "metrics": {
+            "image_output_count": 1,
+            "predict_time": 22.271440992,
+            "resolution_target": "2K",
+            "total_time": 22.523175619
+          },
+          "completed": "2026-10-19T19:22:44.030175619Z",
+          "modelChargeUSD": 0.0504
+        }
+      ]
+    },
+    {
+      "file": "extension-ledger.json",
+      "capUSD": 4,
+      "nbReservationUSD": 0.4536,
+      "unitUSD": 0.04,
+      "priceSource": "https://platform.stability.ai/pricing",
+      "calls": [
+        {
+          "id": "pets-fine_art",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "1c118338f4eb7047cdad5fac5fab5f0b09148a89508a7c32f1c5e467501b5a97",
+          "started": "2026-10-19T19:22:58.226Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:23:16.024Z"
+        },
+        {
+          "id": "pets-premium",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "b4a00ccd2708fb34d861ee156c6f2f5c290fec76594061fe1ba8c13cb4318d16",
+          "started": "2026-10-19T19:23:16.056Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:23:35.822Z"
+        },
+        {
+          "id": "pets-matted",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "89d0b0ebe2c89e366513ada81648b0fac5f2617de718cc5a037a37ec0342ec75",
+          "started": "2026-10-19T19:23:36.533Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:23:53.422Z"
+        },
+        {
+          "id": "groups-fine_art",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "df418cd216d5ce3223f6534211b074b45c3e9d3e29f9dcc8648a6547aab488b8",
+          "started": "2026-10-19T19:23:55.454Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:24:12.108Z"
+        },
+        {
+          "id": "groups-premium",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "3d8a19714db78e3b871057a8873711875acf154ddc3e3477131383e6739546b6",
+          "started": "2026-10-19T19:24:12.136Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:24:30.581Z"
+        },
+        {
+          "id": "groups-matted",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "221ace899201092bc30d5aaccbd351bfdcb756edcbe068c90215d121309d3ae8",
+          "started": "2026-10-19T19:24:31.296Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:24:47.874Z"
+        },
+        {
+          "id": "portraits-fine_art",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "462c5b2f075267095c0f348441fa8df01260eba0cb40b1fc8b0605bc0f0e8548",
+          "started": "2026-10-19T19:24:50.181Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:25:08.085Z"
+        },
+        {
+          "id": "portraits-premium",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "919de756037172d6b30a0932e4a97ef714a85f206ffaf8845c2a83f97768d1c6",
+          "started": "2026-10-19T19:25:08.113Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:25:30.332Z"
+        },
+        {
+          "id": "portraits-matted",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "4efd8a67144bac1730d4dff449099b250546b3f1188303b21cd3c847183b35b6",
+          "started": "2026-10-19T19:25:31.042Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:25:48.404Z"
+        }
+      ]
+    },
+    {
+      "file": "extension-minimal-ledger.json",
+      "capUSD": 4,
+      "nbReservationUSD": 0.8136,
+      "unitUSD": 0.04,
+      "priceSource": "https://platform.stability.ai/pricing",
+      "calls": [
+        {
+          "id": "pets-fine_art",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "77dacd0aca026c8add74d99015f8717a172294685d48428eb84f4914403d79d3",
+          "started": "2026-10-19T19:27:38.956Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:27:55.383Z"
+        },
+        {
+          "id": "pets-premium",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "1502255a321eb3e9b1a33593032337eab2d052471c4a3ca895716b737c0b9e75",
+          "started": "2026-10-19T19:27:55.679Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:28:12.370Z"
+        },
+        {
+          "id": "pets-matted",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "123e727e660006c2bd2ed015349d3e4895b16a57d1c5a1badc6939de10ed96a1",
+          "started": "2026-10-19T19:28:13.502Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:28:30.574Z"
+        },
+        {
+          "id": "groups-fine_art",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "2eee75acfa095f34fc4c71eb8e26fee7f3b19f0433b827bcac670c019a64a01b",
+          "started": "2026-10-19T19:28:33.745Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:28:50.040Z"
+        },
+        {
+          "id": "groups-premium",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "dd61dbaef0bee2c45c393d7da1749cab16fd76e5b391fbf4589b2d56af033603",
+          "started": "2026-10-19T19:28:50.343Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:29:07.436Z"
+        },
+        {
+          "id": "groups-matted",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "ee3c7f52007ef157c07cee891fa4ad6046d01ea64070d13d601bf7f6009f7738",
+          "started": "2026-10-19T19:29:08.538Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:29:26.216Z"
+        },
+        {
+          "id": "portraits-fine_art",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "a92fdf82697ab44e251d9225ea6525b2ca2b37d5f350ef63f6c10fa44148f09a",
+          "started": "2026-10-19T19:29:29.731Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:29:47.835Z"
+        },
+        {
+          "id": "portraits-premium",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "b52ff620e6bfaa4d60a58ba34a83bd745477e9b6bef1a57f7d52965c8a228cce",
+          "started": "2026-10-19T19:29:48.134Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:30:03.909Z"
+        },
+        {
+          "id": "portraits-matted",
+          "status": "succeeded",
+          "reservedUSD": 0.04,
+          "sourceHash": "2ca84496ee524a7dab98901c16f2912b09020296f6490c12d1f77dc2ee239ba4",
+          "started": "2026-10-19T19:30:05.034Z",
+          "modelChargeUSD": 0.04,
+          "completed": "2026-10-19T19:30:23.710Z"
+        }
+      ]
+    }
+  ]
+}

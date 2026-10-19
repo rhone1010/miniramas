@@ -146,9 +146,9 @@ body:has(#screen:is([data-view="products"],[data-view="configuration"])) .left-r
 body:has(#screen[data-view="configuration"]) #workspace{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
 body:has(#screen[data-view="products"]) .center,body:has(#screen[data-view="products"]) .right-rail{width:100%;max-width:1400px;margin:auto;min-width:0;overflow:visible}
 body:has(#screen[data-view="products"]) .right-rail{border-left:0;border-top:1px solid var(--line);flex-direction:row;align-items:center;justify-content:space-between}
-.gift-feature{display:grid;grid-template-columns:minmax(0,550px) minmax(0,1fr);gap:24px 32px;align-items:start}
+.gift-feature{display:grid;grid-template-columns:minmax(0,580px) minmax(0,1fr);gap:24px 32px;align-items:start}
 .gift-feature-media{grid-column:1;grid-row:1;min-width:0;touch-action:pan-y}
-.gift-feature-image{display:block;width:100%;aspect-ratio:1264/848;object-fit:contain}
+.gift-feature-image{display:block;width:100%;aspect-ratio:1/1;object-fit:contain}
 .gift-product-picker{grid-column:2;grid-row:1 / span 2;min-width:0}
 .gift-product-selectors{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .gift-product-selectors button{min-width:0;min-height:44px;padding:8px;font-size:20px;white-space:normal;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -164,6 +164,7 @@ body:has(#screen[data-view="products"]) .right-rail{border-left:0;border-top:1px
 @media(max-width:1000px){
 body:has(#screen[data-view="configuration"]) #workspace{grid-template-columns:minmax(0,1fr)}
 body:has(#screen[data-view="products"]) .right-rail{flex-wrap:wrap}
+body:has(#screen[data-view="products"]) .center{padding:16px}
 #open-product-picker{display:block;width:100%;font-size:22px;min-height:66px;margin-bottom:24px;text-align:left;border-color:var(--forest)}
 .gift-feature{display:block}.gift-feature-media{max-width:550px;margin:auto}.gift-feature-details{margin-top:24px}.gift-feature-details h2{font-size:32px}
 .gift-product-picker{display:none}.gift-product-picker.is-open{display:block;position:fixed;inset:12px;z-index:121;background:var(--ivory);padding:16px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:4px;box-shadow:0 0 0 100vmax #29261f99}
