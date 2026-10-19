@@ -1,0 +1,152 @@
+{
+  "date": "2026-10-19",
+  "base": "1f9f338",
+  "tests": "7 direct-navigation tests pass. Legacy Foyer suite:5 pass,2 pre-existing script-extraction failures; unchanged.",
+  "browser": "1660px and390px:Groups/Pets/Portraits direct entry;Back,refresh,query/hash verified. Local actual middleware/static pages; APIs blocked401.",
+  "ports": [
+    {
+      "path": "public/homepage.next.html",
+      "sourceLines": 130,
+      "destinationLines": 130,
+      "staged": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\direct-create-navigation\\public__homepage.next.next.html",
+      "sourceRange": [
+        1,
+        130
+      ],
+      "destinationRange": [
+        1,
+        130
+      ],
+      "deviation": "Only Create destination or active-section URL replacements. All other bytes unchanged."
+    },
+    {
+      "path": "public/shared-masthead.next.js",
+      "sourceLines": 29,
+      "destinationLines": 29,
+      "staged": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\direct-create-navigation\\public__shared-masthead.next.next.js",
+      "sourceRange": [
+        1,
+        29
+      ],
+      "destinationRange": [
+        1,
+        29
+      ],
+      "deviation": "Only Create destination or active-section URL replacements. All other bytes unchanged."
+    },
+    {
+      "path": "public/mobile-navigation.next.js",
+      "sourceLines": 19,
+      "destinationLines": 19,
+      "staged": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\direct-create-navigation\\public__mobile-navigation.next.next.js",
+      "sourceRange": [
+        1,
+        19
+      ],
+      "destinationRange": [
+        1,
+        19
+      ],
+      "deviation": "Only Create destination or active-section URL replacements. All other bytes unchanged."
+    },
+    {
+      "path": "public/groups.html",
+      "sourceLines": 14851,
+      "destinationLines": 14851,
+      "staged": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\direct-create-navigation\\public__groups.next.html",
+      "sourceRange": [
+        1,
+        14851
+      ],
+      "destinationRange": [
+        1,
+        14851
+      ],
+      "deviation": "Only Create destination or active-section URL replacements. All other bytes unchanged."
+    },
+    {
+      "path": "public/pets.html",
+      "sourceLines": 10463,
+      "destinationLines": 10463,
+      "staged": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\direct-create-navigation\\public__pets.next.html",
+      "sourceRange": [
+        1,
+        10463
+      ],
+      "destinationRange": [
+        1,
+        10463
+      ],
+      "deviation": "Only Create destination or active-section URL replacements. All other bytes unchanged."
+    },
+    {
+      "path": "public/portraits.html",
+      "sourceLines": 12770,
+      "destinationLines": 12770,
+      "staged": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\direct-create-navigation\\public__portraits.next.html",
+      "sourceRange": [
+        1,
+        12770
+      ],
+      "destinationRange": [
+        1,
+        12770
+      ],
+      "deviation": "Only Create destination or active-section URL replacements. All other bytes unchanged."
+    },
+    {
+      "path": "public/discovery-consolidated-draft.html",
+      "sourceLines": 10907,
+      "destinationLines": 10907,
+      "staged": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\direct-create-navigation\\public__discovery-consolidated-draft.next.html",
+      "sourceRange": [
+        1,
+        10907
+      ],
+      "destinationRange": [
+        1,
+        10907
+      ],
+      "deviation": "Only Create destination or active-section URL replacements. All other bytes unchanged."
+    },
+    {
+      "path": "public/masthead-menus.next.js",
+      "sourceLines": 108,
+      "destinationLines": 108,
+      "staged": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\direct-create-navigation\\public__masthead-menus.next.next.js",
+      "sourceRange": [
+        1,
+        108
+      ],
+      "destinationRange": [
+        1,
+        108
+      ],
+      "deviation": "Only Create destination or active-section URL replacements. All other bytes unchanged."
+    },
+    {
+      "path": "middleware.ts",
+      "sourceLines": 198,
+      "destinationLines": 206,
+      "staged": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\direct-create-navigation\\middleware.next.ts",
+      "sourceRange": [
+        1,
+        198
+      ],
+      "destinationRange": [
+        1,
+        206
+      ],
+      "deviation": "Two Pets targets and context-preserving series rewrite;explicit Foyer handoff retained."
+    }
+  ],
+  "unchanged": [
+    "Foyer components and assets",
+    "classification and generation",
+    "authentication",
+    "Gift Wizard files",
+    "Print Shop",
+    "checkout",
+    "backend services"
+  ]
+}

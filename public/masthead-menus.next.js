@@ -54,7 +54,7 @@ function init(){
     panel.appendChild(gift);
   });
   var path = location.pathname;
-  var here = path === '/groups' ? '/groups' : /^\/pets/.test(path) ? '/pets' : (path === '/' || path === '/discovery' || path === '/portraits') ? '/' : '';
+  var here = path === '/groups' ? '/groups' : /^\/pets/.test(path) ? '/pets' : (path === '/' || path === '/discovery' || path === '/portraits') ? '/portraits' : '';
   [].slice.call(document.querySelectorAll('.mh-fm .mh-series-btn')).forEach(function(btn){
     var panel = $(btn.getAttribute('aria-controls')); if (!panel) return;
     var m = { btn: btn, panel: panel };
