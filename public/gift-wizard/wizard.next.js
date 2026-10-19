@@ -247,10 +247,29 @@ function renderProductCarousel() {
     const index = Math.max(0, products.findIndex(p => p.id === (featuredProduct || activeProduct))), p = products[index];
     featuredProduct = p.id;
     const canChoose = p.available && p.options.length > 0;
-    $('screen').innerHTML = '<section class="gift-carousel" aria-roledescription="carousel" aria-label="Choose Your Gift"><div class="gift-product-selectors" aria-label="Products">' + products.map(item => '<button type="button" data-feature="' + esc(item.id) + '" aria-pressed="' + (item.id === p.id) + '">' + esc(item.label) + '</button>').join('') + '</div><div class="gift-feature"><div class="gift-feature-media" id="gift-swipe">' + photo(asset(p.image), p.label, 'gift-feature-image') + '<div class="gift-carousel-controls"><button type="button" id="gift-previous" aria-label="Previous product">← Previous</button><span aria-live="polite" aria-atomic="true">' + (index + 1) + ' / ' + products.length + '</span><button type="button" id="gift-next" aria-label="Next product">Next →</button></div></div><div class="gift-feature-details" aria-live="polite" aria-atomic="true"><h2>' + esc(p.label) + '</h2><p class="gift-feature-price">' + (canChoose ? 'From ' + money(Math.min(...p.options.map(o => o.retailCents))) : 'Not currently available') + '</p><button class="primary" id="choose-featured" data-product="' + esc(p.id) + '" ' + (!canChoose ? 'disabled' : '') + '>Choose This Gift</button></div></div></section>';
-    const show = (id, focus) => { featuredProduct = id; renderProductCarousel(); if (focus)
-        document.querySelector(focus)?.focus({ preventScroll: true }); const selected = document.querySelector('[data-feature="' + featuredProduct + '"]'); if (selected && typeof selected.scrollIntoView === 'function')
-        selected.scrollIntoView({ block: 'nearest', inline: 'nearest' }); };
+    $('screen').innerHTML = '<section class="gift-carousel" aria-roledescription="carousel" aria-label="Choose Your Gift"><button type="button" id="open-product-picker" aria-haspopup="dialog" aria-expanded="false" aria-controls="product-picker">Choose a Product<br><strong>' + esc(p.label) + '</strong></button><div class="gift-feature"><div id="product-picker" class="gift-product-picker" aria-label="Choose a Product"><div class="gift-picker-heading"><h2>Choose a Product</h2><button type="button" id="close-product-picker" aria-label="Close product picker">×</button></div><div class="gift-product-selectors" aria-label="Products">' + products.map(item => '<button type="button" data-feature="' + esc(item.id) + '" aria-pressed="' + (item.id === p.id) + '">' + photo(asset(item.image), '', 'gift-picker-thumb') + '<span>' + esc(item.label) + '</span><small>' + (item.available && item.options.length ? 'Available' : 'Not currently available') + '</small></button>').join('') + '</div></div><div class="gift-feature-media" id="gift-swipe">' + photo(asset(p.image), p.label, 'gift-feature-image') + '<div class="gift-carousel-controls"><button type="button" id="gift-previous" aria-label="Previous product">← Previous</button><span aria-live="polite" aria-atomic="true">' + (index + 1) + ' / ' + products.length + '</span><button type="button" id="gift-next" aria-label="Next product">Next →</button></div></div><div class="gift-feature-details" aria-live="polite" aria-atomic="true"><h2>' + esc(p.label) + '</h2><p class="gift-feature-price">' + (canChoose ? 'From ' + money(Math.min(...p.options.map(o => o.retailCents))) : 'Not currently available') + '</p><button class="primary" id="choose-featured" data-product="' + esc(p.id) + '" ' + (!canChoose ? 'disabled' : '') + '>Choose This Gift</button></div></div></section>';
+    const show = (id, focus) => { const wasOpen = $('product-picker').classList.contains('is-open'); if (wasOpen)
+        closePicker(); featuredProduct = id; renderProductCarousel(); document.querySelector(wasOpen ? '#open-product-picker' : focus || '#gift-next')?.focus({ preventScroll: true }); };
+    const inertPickerBackground = (value) => document.querySelectorAll('.gift-header,.progress,#right,#open-product-picker,.gift-feature-media,.gift-feature-details').forEach(el => el.inert = value);
+    const closePicker = () => { inertPickerBackground(false); const panel = $('product-picker'); panel.classList.remove('is-open'); panel.removeAttribute('role'); panel.removeAttribute('aria-modal'); $('open-product-picker').setAttribute('aria-expanded', 'false'); $('open-product-picker').focus(); };
+    $('open-product-picker').onclick = () => { const panel = $('product-picker'); inertPickerBackground(true); panel.classList.add('is-open'); panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); $('open-product-picker').setAttribute('aria-expanded', 'true'); $('close-product-picker').focus(); };
+    $('close-product-picker').onclick = closePicker;
+    $('product-picker').onkeydown = e => { if (!$('product-picker').classList.contains('is-open'))
+        return; if (e.key === 'Escape') {
+        e.preventDefault();
+        closePicker();
+    } if (e.key === 'Tab') {
+        const buttons = Array.from($('product-picker').querySelectorAll('button'));
+        const first = buttons[0], last = buttons[buttons.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        }
+        else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    } };
     const move = (delta, focus) => show(products[(index + delta + products.length) % products.length].id, focus);
     $('gift-previous').onclick = () => move(-1, '#gift-previous');
     $('gift-next').onclick = () => move(1, '#gift-next');
