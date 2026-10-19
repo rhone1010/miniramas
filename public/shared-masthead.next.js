@@ -3,7 +3,7 @@
 (function(){
 'use strict';
 var header=document.querySelector('.liten-masthead');if(!header)return;
-var data=[{label:'Create',items:[['Portraits','/portraits'],['Groups','/groups'],['Pets','/pets']]},{label:'Gifts',items:[['Gift Collection','/gifts.next.html'],['Print Shop','/discovery?print_pick=1']]},{label:'My Collection',href:'/collection?from=portraits'},{label:'More',items:[['Gallery','/gallery'],['Community','/community'],['Help','/help']]},{label:'Account',items:[['Account','/account'],['Orders','/account','orders'],['Sign in',null,'auth']]}];
+var data=[{label:'Create',items:[['Portraits','/portraits'],['Groups','/groups'],['Pets','/pets']]},{label:'Gifts',href:'/gift-wizard.next.html'},{label:'Print Shop',href:'/discovery?print_pick=1'},{label:'My Collection',href:'/collection?from=portraits'},{label:'More',items:[['Gallery','/gallery'],['Community','/community'],['Help','/help']]},{label:'Account',items:[['Account','/account'],['Orders','/account','orders'],['Sign in',null,'auth']]}];
 var caret='<svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 6.2 8 10.6l4.8-4.4"/></svg>';
 header.innerHTML='<a class="masthead__brand" href="/homepage.next.html" aria-label="LITEN &amp; Co homepage"><img class="mh-mark" src="/homepage/liten-and-co.png" alt="LITEN &amp; Co"></a><button class="mh-menu" id="mhMenuBtn" aria-label="Menu" aria-expanded="false" aria-controls="mhDrawer" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg></button><nav class="masthead__nav" id="mhDrawer" aria-label="LITEN &amp; Co">'+data.map(function(group,i){if(group.href)return '<a href="'+group.href+'">'+group.label+'</a>';return '<div class="mh-series"><button class="mh-series-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="liten-menu-'+i+'">'+group.label+' '+caret+'</button><div class="mh-series-menu" id="liten-menu-'+i+'" role="menu" hidden>'+group.items.map(function(item){return item[1]?'<a role="menuitem" href="'+item[1]+'"'+(item[2]?' data-action="'+item[2]+'"':'')+'>'+item[0]+'</a>':'<button type="button" role="menuitem" data-action="'+item[2]+'">'+item[0]+'</button>';}).join('')+'</div></div>';}).join('')+'</nav><span class="preview-note"></span>';
 var mobile=matchMedia('(max-width:1000px)'),toggle=header.querySelector('.mh-menu'),nav=header.querySelector('nav'),menus=[];
@@ -19,7 +19,7 @@ header.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefa
 document.addEventListener('click',function(e){if(!header.contains(e.target))drawerClose(false)});
 header.addEventListener('focusout',function(){setTimeout(function(){if(!header.contains(document.activeElement))drawerClose(false)},0)});
 mobile.addEventListener('change',function(){drawerClose(false)});
-var current=/gift/.test(location.pathname)?'/gifts.next.html':location.pathname;
+var current=/gift/.test(location.pathname)?'/gift-wizard.next.html':location.pathname;
 header.querySelectorAll('a[href]').forEach(function(a){if(a.getAttribute('href')===current)a.setAttribute('aria-current','page')});
 var auth=header.querySelector('[data-action="auth"]'),signedIn=false;
 fetch('/api/v1/auth/me',{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(v){signedIn=!!v?.user;auth.textContent=signedIn?'Sign out':'Sign in'}).catch(function(){});
