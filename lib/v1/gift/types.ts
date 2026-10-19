@@ -279,4 +279,8 @@ export interface MockupView {
   purchaseAuthorization: false
   /** Crop and calibration metadata from the compositor (never a browser crop control). */
   crop: Record<string, unknown> | null
+  /** Which renderer made the picture: the photographic customer scene, or the calibrated template renderer (the fallback for configurations no scene shows). Additive: older clients ignore it. */
+  renderer?: 'scene' | 'calibrated'
+  /** Present when renderer is 'scene': the scene, its renderer revision and how the scene-compatible picture relates to the production picture. Never a URL or a file. */
+  scene?: { sceneId: string; revision: string; fit: 'exact' | 'resample'; representationId: string } | null
 }

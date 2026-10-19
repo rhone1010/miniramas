@@ -228,8 +228,8 @@
     },
     {
       "path": "tools/catalog-samples/scene-replacement-review.next.cjs",
-      "bytes": 2620,
-      "sha256": "1f30b43a1902ab123f32101d5cf0575b8815d04c7cbf65f655bc6f3d4dd853cf"
+      "bytes": 2619,
+      "sha256": "bdab39bf7b2c363545f8979cb85be3469b42d9925c11470465b10a9e31ee597c"
     },
     {
       "path": "tools/product-mockup/compositor.next.cjs",

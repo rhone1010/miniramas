@@ -15,11 +15,13 @@ import { adaptationValidationFor } from './policy'
 import { correctionPlanFor, planFor } from './composition-plan'
 import { purchasedItems, purchasedLines } from './test-order'
 import { allProducts, getProduct } from '../print/catalog'
+import { realSceneRenderer } from './mockup-real'
+import type { SceneRenderer } from './scenes'
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '20000000-0000-4000-8000-000000000002'
 type Line = { lineId: string; productId: string; copies: number }
 
-function rig(over: { series?: 'portraits' | 'pets' | 'groups'; people?: number | null; noRenderer?: boolean } = {}) {
+function rig(over: { series?: 'portraits' | 'pets' | 'groups'; people?: number | null; noRenderer?: boolean; scenes?: SceneRenderer } = {}) {
   const store = memoryGiftStore(), files = new Map<string, Buffer>()
   const generate = vi.fn(async (i: { aspect: string }) => {
     const [w, h] = i.aspect.split(':').map(Number)
@@ -42,7 +44,7 @@ function rig(over: { series?: 'portraits' | 'pets' | 'groups'; people?: number |
       crop: { fit: 'cover', allowCrop: false },
     }
   })
-  const mockup: MockupRenderer = { revision: vi.fn(async () => state.revision), render }
+  const mockup: MockupRenderer = { revision: vi.fn(async () => state.revision), render, ...(over.scenes ? { scenes: over.scenes } : {}) }
   const watermark = vi.fn(async (b64: string) => sharp(Buffer.from(b64, 'base64')).jpeg().toBuffer())
   const deps: GiftDeps = {
     store, compose, generate, watermark, ...(over.noRenderer ? {} : { mockup }),
@@ -221,20 +223,26 @@ describe('what the renderer is shown', () => {
     expect(await meta(await pictureArea(art, p))).toEqual([3600, 5400])
   })
   it('a preview-scale canvas file has the margin scaled by the same factor; a product without wrap passes through byte for byte', async () => {
-    const c = getProduct('canvas:8x8')!, f = c.requirements.finalPx
+    const c = getProduct('canvas:12x18')!, f = c.requirements.finalPx
     const small = await sharp({ create: { width: f.w / 6, height: f.h / 6, channels: 3, background: '#789' } }).png().toBuffer()
-    expect(await meta(await pictureArea(small, c))).toEqual([400, 400])
+    expect(await meta(await pictureArea(small, c))).toEqual([600, 900])
     const flat = await sharp({ create: { width: 90, height: 60, channels: 3, background: '#789' } }).png().toBuffer()
     expect(await pictureArea(flat, getProduct('fine_art:12x18')!)).toBe(flat)
+  })
+  it('a front-only composed file (what the composition step produces) is the whole front: nothing is removed, and a square file is never trimmed on a guess', async () => {
+    const c = getProduct('canvas:12x18')!, front = await sharp({ create: { width: 1024, height: 1536, channels: 3, background: '#789' } }).png().toBuffer()
+    expect(await pictureArea(front, c)).toBe(front)                                                                  // 2:3, the picture's own shape: byte for byte
+    const sq = getProduct('canvas:8x8')!, f = sq.requirements.finalPx, square = await sharp({ create: { width: f.w / 6, height: f.h / 6, channels: 3, background: '#789' } }).png().toBuffer()
+    expect(await pictureArea(square, sq)).toBe(square)
   })
   it('a file of the wrong shape for a wrapped product is refused, never guessed', async () => {
     const wrong = await sharp({ create: { width: 300, height: 100, channels: 3, background: '#789' } }).png().toBuffer()
     await expect(pictureArea(wrong, getProduct('canvas:8x8')!)).rejects.toThrow('artwork_shape_mismatch')
   })
-  it('the bridge passes the renderer the picture area for a canvas line', async () => {
+  it('the bridge passes the renderer the whole front of a canvas line: a composed (front-only) file is not trimmed', async () => {
     const r = rig(); const { sid } = await ready(r, [C8]); await getLineMockup(r.deps, U1, sid, 'b')
-    const m = await sharp(r.render.mock.calls[0][0].artwork).metadata(); expect(m.width).toBe(m.height)
-    expect(m.width!).toBeLessThan((await sharp(r.files.get(r.store.compositions[0].composed_path!)!).metadata()).width!)
+    const given = r.render.mock.calls[0][0].artwork, composed = r.files.get(r.store.compositions[0].composed_path!)!
+    const m = await sharp(given).metadata(); expect(m.width).toBe(m.height); expect(given.equals(composed)).toBe(true)
   })
 })
 
@@ -640,5 +648,143 @@ describe('draft compositions (reviewed before payment, no order yet)', () => {
     expect(out).toMatchObject({ status: 'repaired', repairSeq: 1 }); expect((await getLineMockup(r.deps, U1, v.sessionId, 'a')).compositionId).toBe(out.compositionId)
     expect(r.store.compositions.map(c => [c.status, c.repair_seq ?? 0])).toEqual([['superseded', 0], ['ready', 1]])
     await expect(approveOrder(r.deps, U1, v.sessionId)).rejects.toMatchObject({ code: 'order_payment_required' })
+  })
+})
+
+// ── THE PHOTOGRAPHIC CUSTOMER SCENES (scenes.ts) behind the same boundary ─────────────────────────────────────────────────────────────────────────
+// The scene renderer is a fake here (it records what it was given); its descriptions are the REAL scene manifests. Everything else is the real boundary.
+function sceneRig(over: Parameters<typeof rig>[0] = {}) {
+  const state = { rev: 'scene-rev-1', fail: false }
+  const render = vi.fn(async (i: { sceneId: string; productFamily: string; artworkId: string; artwork: Buffer }) => {
+    if (state.fail) throw new Error('scene boom')
+    return { png: await sharp({ create: { width: 1254, height: 1254, channels: 3, background: '#789' } }).png().toBuffer(), width: 1254, height: 1254, templateRevision: state.rev, visualizationKey: 'svk-' + i.artworkId, metadata: { fit: 'exact-composition' } }
+  })
+  const revision = vi.fn(async () => state.rev)
+  const scenes: SceneRenderer = { describe: id => realSceneRenderer.describe(id), revision, render }
+  return { ...rig({ ...over, scenes }), sceneState: state, sceneRender: render, sceneRevision: revision, sceneRenderer: scenes }
+}
+const stripMockup = (plan: Record<string, unknown>) => { const { mockup: _m, sceneRepresentation: _s, artworkSha256: _a, ...rest } = plan; return rest }
+const CS = { lineId: 's', productId: 'canvas:12x12', copies: 1 }
+const correctionsRemaining = async (r: ReturnType<typeof rig>, sid: string, lineId: string) => (await getSessionView(r.deps, U1, sid)).compositions.find(c => c.lineId === lineId)!.correctionsRemaining
+
+describe('scene mockups (the photographic scene, with the calibrated renderer as the fallback)', () => {
+  it('shows a supported configuration in its scene: clean for a paid line, from the same composition, with the scene and its revision in the identity', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS])
+    const comp = r.store.compositions[0], marks = r.watermark.mock.calls.length
+    const m = await getLineMockup(r.deps, U1, sid, 's')
+    expect(m).toMatchObject({ renderer: 'scene', templateId: 'scene:gallery-canvas-square', templateRevision: 'scene-rev-1', compositionId: comp.id, attempt: 1, sourceArtworkId: comp.preview_id, watermarked: false, cached: false, productionPrintFile: false, purchaseAuthorization: false, width: 1254, height: 1254 })
+    expect(m.scene).toMatchObject({ sceneId: 'gallery-canvas-square', revision: 'scene-rev-1' }); expect(m.scene!.representationId).toMatch(/^[0-9a-f]{64}$/)
+    expect(r.watermark.mock.calls.length).toBe(marks); expect(r.render).not.toHaveBeenCalled()                                  // a paid mockup is not watermarked; the calibrated renderer was not used
+    expect(r.sceneRender).toHaveBeenCalledTimes(1); expect(r.sceneRender.mock.calls[0][0]).toMatchObject({ sceneId: 'gallery-canvas-square', productFamily: 'canvas', artworkId: comp.id })
+    const stored = r.files.get(`gift/${sid}/mockups/${m.identityKey}.jpg`)!; expect((await sharp(stored).metadata()).format).toBe('jpeg')
+  })
+
+  it('hands the scene renderer a picture shaped to the opening, derived from the production picture and never the production file itself', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS]); await getLineMockup(r.deps, U1, sid, 's')
+    const comp = r.store.compositions[0], given = r.sceneRender.mock.calls[0][0].artwork
+    const prod = r.files.get(comp.composed_path!)!, gm = await sharp(given).metadata()
+    expect(given.equals(prod)).toBe(false)
+    expect(Math.abs(gm.width! / gm.height! / realSceneRenderer.describe('gallery-canvas-square').inputAspect - 1)).toBeLessThanOrEqual(1 / gm.width! + 1 / gm.height!)
+    expect([...r.files.keys()].filter(k => k.includes('/mockups/'))).toHaveLength(1)                                              // only the mockup is stored: no scene picture file
+    for (const [path, bytes] of r.files) if (!path.includes('/mockups/')) expect(bytes.equals(given), path).toBe(false)
+  })
+
+  it('records the scene picture next to the mockup, linked to the same composition, attempt and favorite, and touches nothing else on the composition or the session', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS])
+    const before = structuredClone(r.store.compositions[0]), viewBefore = JSON.stringify(await getSessionView(r.deps, U1, sid))
+    const m = await getLineMockup(r.deps, U1, sid, 's')
+    const after = r.store.compositions[0], rec = (after.plan as any).sceneRepresentation
+    expect(rec).toMatchObject({ sceneId: 'gallery-canvas-square', revision: 'scene-rev-1', representationId: m.scene!.representationId, compositionId: after.id, attempt: 1, favoriteId: after.preview_id })
+    expect(rec.artworkSha256).toBe((after.plan as any).artworkSha256); expect(rec.sha256).toMatch(/^[0-9a-f]{64}$/); expect(['exact', 'resample']).toContain(rec.fit)
+    expect({ ...after, plan: stripMockup(after.plan) }).toEqual({ ...before, plan: stripMockup(before.plan) })                  // status, attempt, files, approval, corrections: unchanged
+    expect(JSON.stringify(await getSessionView(r.deps, U1, sid))).toBe(viewBefore)                                              // the session view (attempt, correctionsRemaining, approvals) is identical
+  })
+
+  it('an unchanged identity re-signs the stored scene mockup and renders nothing (and says it is a scene)', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS]); const a = await getLineMockup(r.deps, U1, sid, 's'); const b = await getLineMockup(r.deps, U1, sid, 's')
+    expect(b).toMatchObject({ cached: true, identityKey: a.identityKey, renderer: 'scene', scene: a.scene }); expect(r.sceneRender).toHaveBeenCalledTimes(1)
+  })
+
+  it('a revised scene renderer changes the identity and re-renders; the old file is removed and the approval history is untouched', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS]); const a = await getLineMockup(r.deps, U1, sid, 's')
+    await approveComposition(r.deps, U1, sid, a.compositionId)
+    r.sceneState.rev = 'scene-rev-2'; const b = await getLineMockup(r.deps, U1, sid, 's')
+    expect(b.identityKey).not.toBe(a.identityKey); expect(b.templateRevision).toBe('scene-rev-2'); expect(b.scene!.representationId).not.toBe(a.scene!.representationId); expect(b.compositionId).toBe(a.compositionId)
+    expect(b.compositionStatus).toBe('approved'); expect(r.sceneRender).toHaveBeenCalledTimes(2); expect(mockupFiles(r).length).toBe(1)
+  })
+
+  it('a correction (a new composition) is a new scene identity; the scene itself never consumes the correction', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS]); const a = await getLineMockup(r.deps, U1, sid, 's')
+    expect(await correctionsRemaining(r, sid, 's')).toBe(1)
+    await getLineMockup(r.deps, U1, sid, 's'); r.sceneState.rev = 'scene-rev-9'; await getLineMockup(r.deps, U1, sid, 's')
+    expect(await correctionsRemaining(r, sid, 's')).toBe(1)                                                                    // two more scene renders (one of them a revision change) later it is still 1
+    await correctLine(r.deps, U1, sid, 's'); const b = await getLineMockup(r.deps, U1, sid, 's')
+    expect(b.attempt).toBe(2); expect(b.identityKey).not.toBe(a.identityKey); expect(b.scene!.representationId).not.toBe(a.scene!.representationId)
+    await expect(getLineMockup(r.deps, U1, sid, 's', a.compositionId)).rejects.toMatchObject({ code: 'stale_composition' })     // stale-composition protection is unchanged
+  })
+
+  it('a configuration no scene shows keeps the calibrated renderer (no scene in its response)', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [L12, F12])
+    for (const lineId of ['a', 'c']) {
+      const m = await getLineMockup(r.deps, U1, sid, lineId)
+      expect(m).toMatchObject({ renderer: 'calibrated', scene: null }); expect(m.templateId).not.toMatch(/^scene:/)
+    }
+    expect(r.sceneRender).not.toHaveBeenCalled(); expect(r.render).toHaveBeenCalledTimes(2)
+  })
+
+  it('the identity of a calibrated mockup is exactly what it was before scenes existed; a scene adds to it, and each scene field matters', () => {
+    const product = getProduct('fine_art:12x18')!
+    const base = { orderId: 'o', lineId: 'a', lineIndex: 0, compositionId: 'c', attempt: 1, sourceArtworkId: 'p', artworkSha256: 'h', templateId: 'fine-art', templateRevision: 'r', product, geometrySource: 'frozen', frozenCatalogVersion: 'v', clean: true }
+    expect(mockupIdentityKey(base)).toBe(mockupIdentityKey({ ...base, scene: null }))
+    const s = { sceneId: 's', revision: 'x', representationId: 'y' }
+    expect(mockupIdentityKey({ ...base, scene: s })).not.toBe(mockupIdentityKey(base))
+    for (const change of [{ sceneId: 't' }, { revision: 'z' }, { representationId: 'w' }]) expect(mockupIdentityKey({ ...base, scene: { ...s, ...change } })).not.toBe(mockupIdentityKey({ ...base, scene: s }))
+  })
+
+  it('a scene that cannot be rendered falls back to the calibrated renderer (logged), is retried on the next call, and never stores a half result', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS]); const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    r.sceneState.fail = true; const a = await getLineMockup(r.deps, U1, sid, 's')
+    expect(a).toMatchObject({ renderer: 'calibrated', scene: null }); expect(r.render).toHaveBeenCalledTimes(1); expect(log.mock.calls.some(c => String(c[0]).includes('scene failed'))).toBe(true)
+    expect((r.store.compositions[0].plan as any).sceneRepresentation).toBeUndefined(); expect(mockupFiles(r).length).toBe(1)
+    r.sceneState.fail = false; const b = await getLineMockup(r.deps, U1, sid, 's')
+    expect(b).toMatchObject({ renderer: 'scene', cached: false }); expect(mockupFiles(r).length).toBe(1)                          // the scene is tried again; the fallback file is replaced
+    expect((r.store.compositions[0].plan as any).sceneRepresentation).toBeTruthy()
+    log.mockRestore()
+  })
+
+  it('a scene whose files changed during the render is never stored', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS]); const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    r.sceneRender.mockImplementationOnce(async i => ({ png: await sharp({ create: { width: 1254, height: 1254, channels: 3, background: '#789' } }).png().toBuffer(), width: 1254, height: 1254, templateRevision: 'other-revision', visualizationKey: 'vk', metadata: {} }))
+    expect(await getLineMockup(r.deps, U1, sid, 's')).toMatchObject({ renderer: 'calibrated' }); expect((r.store.compositions[0].plan as any).sceneRepresentation).toBeUndefined()
+    log.mockRestore()
+  })
+
+  it('GIFT_SCENE_MOCKUPS=0 switches every scene off', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS]); process.env.GIFT_SCENE_MOCKUPS = '0'
+    try { expect(await getLineMockup(r.deps, U1, sid, 's')).toMatchObject({ renderer: 'calibrated' }); expect(r.sceneRender).not.toHaveBeenCalled() } finally { delete process.env.GIFT_SCENE_MOCKUPS }
+  })
+
+  it('a renderer without scenes, or whose scene files are missing, serves the calibrated renderer exactly as before', async () => {
+    const r = rig(); const { sid } = await ready(r, [CS]); expect(await getLineMockup(r.deps, U1, sid, 's')).toMatchObject({ renderer: 'calibrated', scene: null })
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const q = sceneRig(); const { sid: sid2 } = await ready(q, [CS]); q.sceneRenderer.describe = () => { throw new Error('ENOENT') }
+    expect(await getLineMockup(q.deps, U1, sid2, 's')).toMatchObject({ renderer: 'calibrated' }); expect(q.sceneRender).not.toHaveBeenCalled()
+    log.mockRestore()
+  })
+
+  it('keeps ownership and line checks ahead of any scene work', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [CS])
+    await expect(getLineMockup(r.deps, U2, sid, 's')).rejects.toMatchObject({ code: 'session_not_found' }); await expect(getLineMockup(r.deps, U1, sid, 'nope')).rejects.toMatchObject({ code: 'line_not_found' })
+    expect(r.sceneRender).not.toHaveBeenCalled(); expect(r.sceneRevision).not.toHaveBeenCalled()
+  })
+
+  it('a scene mockup of a DRAFT (before payment) is watermarked after scene placement, never clean', async () => {
+    const r = sceneRig({ series: 'groups', people: 4 }); r.deps.draftCompositions = true; const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
+    const v = await createSession(r.deps, { userId: U1, imageB64: photo }); await setLines(r.deps, U1, v.sessionId, [CS])
+    const b = await startBatch(r.deps, U1, v.sessionId, { idempotencyKey: 'idem-key-1' }); await selectArtwork(r.deps, U1, v.sessionId, b.batch.previews[0].previewId); await ensureCompositions(r.deps, U1, v.sessionId)
+    const marks = r.watermark.mock.calls.length
+    const m = await getLineMockup(r.deps, U1, v.sessionId, 's')
+    expect(m).toMatchObject({ renderer: 'scene', watermarked: true, geometrySource: 'catalog' }); expect(r.watermark.mock.calls.length).toBe(marks + 1)
+    const sent = Buffer.from(r.watermark.mock.calls[marks][0] as string, 'base64'); expect((await sharp(sent).metadata()).width).toBe(1254)       // the scene picture, marked afterwards
   })
 })
