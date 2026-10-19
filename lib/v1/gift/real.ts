@@ -82,6 +82,19 @@ export function generateBody(i: GenerateInput, groupsReference: boolean = GROUPS
           ...(i.productComposition ? { output_aspect_ratio: i.aspect, product_composition: true } : {}), ...ref }
 }
 
+/**
+ * Why a series route said no, as one short string for the preview row (server-side: a preview's error is never shown to a customer). The three series routes all return the
+ * generator's result with a fatal_error and an error_code on failure (e.g. nb2_failed when Replicate refused or timed out); this used to be thrown away, so every failed
+ * preview just said generate_failed. Format: <route error or status>[:http_<n>][:<error_code>] (or the generator's own text when it gave no code).
+ */
+export function failureReason(out: any, httpStatus: number): string {
+  const r = out?.result
+  const code = typeof r?.error_code === 'string' && /^[\w.-]{1,60}$/.test(r.error_code) ? r.error_code : null
+  const fatal = typeof r?.fatal_error === 'string' && r.fatal_error.trim() ? r.fatal_error.trim().replace(/\s+/g, ' ') : null
+  const base = String(out?.error || out?.status || 'generate_failed')
+  return [base, httpStatus >= 400 ? 'http_' + httpStatus : null, code ?? fatal].filter(Boolean).join(':').slice(0, 160)
+}
+
 /** ONE render through the series' own generate route. Returns the CLEAN master; throws on any refusal or failure. */
 export async function generateMaster(i: GenerateInput): Promise<{ imageB64: string }> {
   const body = generateBody(i)
@@ -93,7 +106,7 @@ export async function generateMaster(i: GenerateInput): Promise<{ imageB64: stri
   const out: any = await res.json().catch(() => ({}))
   if (res.status === 403 && out?.code === 'age_restricted') throw new Error('age_restricted')
   const ok = res.ok && out?.result?.ok && !!out?.result?.image_b64 && out?.status !== 'redirected' && out?.status !== 'intake_rejected'
-  if (!ok) throw new Error(String(out?.error || out?.status || 'generate_failed').slice(0, 120))
+  if (!ok) throw new Error(failureReason(out, res.status))
   return { imageB64: out.result.image_b64 as string }
 }
 

@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
-import { createSession, deleteSessionNow, getBatchView, getSessionView, purgeExpired, retryBatch, setLines, startBatch, GiftError, type GiftDeps } from './service'
+import { createSession, deleteSessionNow, getBatchView, getSessionView, purgeExpired, restoreSession, retryBatch, setLines, startBatch, GiftError, type GiftDeps } from './service'
 import { PackError, createPackCheckout, fulfillPack, packReturnUrl } from './pack'
 import { PACK_PRICE_CENTS } from './policy'
 import { createGiftCheckout, confirmGiftOrder, type GiftOrderDeps } from './orders'
@@ -31,6 +31,9 @@ const body = async (req: Request) => { try { return await req.json() } catch { r
 export async function createSessionH(req: Request, user: Authed, deps: GiftDeps) {
   const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
   try { return json(await createSession(deps, { userId: user.id, imageB64: b.image_b64 }), 201) } catch (e) { return fail(e) }
+}
+export async function restoreSessionH(user: Authed, deps: GiftDeps) {
+  try { return json(await restoreSession(deps, user.id)) } catch (e) { return fail(e) }
 }
 export async function getSessionH(user: Authed, deps: GiftDeps, id: string) {
   try { return json(await getSessionView(deps, user.id, id)) } catch (e) { return fail(e) }

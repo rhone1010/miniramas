@@ -55,7 +55,7 @@ describe('sessions', () => {
     expect(view.entitlement).toEqual({ freeBatchesTotal: 2, freeBatchesUsed: 0, paidPacksAvailable: 0, freeAvailable: true, freeBlockedReason: null })       // previews first: free, no purchase
     expect(view.order).toMatchObject({ state: 'none', orderId: null, freeBatchesGranted: 2 })
     expect([...r.files.keys()]).toEqual([`gift/${view.sessionId}/source.jpg`])
-    expect(JSON.stringify(view)).not.toMatch(/source\.jpg|masters|storage/)
+    expect(JSON.stringify({ ...view, source: { ...view.source, photoUrl: undefined } })).not.toMatch(/source\.jpg|masters|storage/)       // the signed photoUrl is the one intended exposure of the customer's own photo; no raw path appears
   })
   it('strips EXIF from the stored source', async () => {
     const withExif = (await sharp({ create: { width: 300, height: 300, channels: 3, background: '#fff' } }).withExif({ IFD0: { Copyright: 'x' } }).jpeg().toBuffer()).toString('base64')
