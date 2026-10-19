@@ -1,6 +1,6 @@
 {
   "id": "matted-frame-landscape",
-  "family": "matted",
+  "family": "canvas",
   "dimensions": [
     1254,
     1254
@@ -48,8 +48,10 @@
       "bytes": 1859108
     }
   ],
-  "status": "blocked-wrong-product-master",
-  "lighting": "No separate illumination layer supplied; original painted pixels must not be multiplied into replacement artwork.",
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
   "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
-  "productionPrintFile": false
+  "productionPrintFile": false,
+  "productDescription": "Rectangular wrapped canvas (original filename mislabeled; owner confirmed)",
+  "catalogRole": "alternate-landscape-canvas"
 }

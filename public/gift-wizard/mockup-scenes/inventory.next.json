@@ -6,52 +6,52 @@
     {
       "id": "fine-art-square",
       "family": "fine_art",
-      "status": "replacement-review"
+      "status": "clean-replacement-review"
     },
     {
       "id": "premium-fine-art",
       "family": "premium",
-      "status": "replacement-review"
+      "status": "clean-replacement-review"
     },
     {
       "id": "classic-framed",
       "family": "framed",
-      "status": "replacement-review"
+      "status": "clean-replacement-review"
     },
     {
       "id": "matted-frame-square",
       "family": "matted",
-      "status": "replacement-review"
+      "status": "clean-replacement-review"
     },
     {
       "id": "matted-frame-landscape",
-      "family": "matted",
-      "status": "blocked-wrong-product-master"
+      "family": "canvas",
+      "status": "clean-replacement-review"
     },
     {
       "id": "gallery-canvas-square",
       "family": "canvas",
-      "status": "replacement-review"
+      "status": "clean-replacement-review"
     },
     {
       "id": "gallery-canvas-landscape",
       "family": "canvas",
-      "status": "replacement-review"
+      "status": "clean-replacement-review"
     },
     {
       "id": "framed-canvas",
       "family": "framed_canvas",
-      "status": "replacement-review"
+      "status": "clean-replacement-review"
     },
     {
       "id": "ceramic-mug",
       "family": "mug",
-      "status": "blocked-new-cylinder-calibration"
+      "status": "clean-replacement-review"
     },
     {
       "id": "greeting-card",
       "family": "card",
-      "status": "replacement-review"
+      "status": "clean-replacement-review"
     }
   ]
 }

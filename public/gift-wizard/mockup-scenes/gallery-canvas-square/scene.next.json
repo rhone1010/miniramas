@@ -48,8 +48,8 @@
       "bytes": 2116739
     }
   ],
-  "status": "replacement-review",
-  "lighting": "No separate illumination layer supplied; original painted pixels must not be multiplied into replacement artwork.",
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
   "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
   "productionPrintFile": false
 }

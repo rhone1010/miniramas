@@ -9,6 +9,10 @@
   "artworkMask": "Mug - art bw.png",
   "cornersPixels": [
     [
+      255,
+      729
+    ],
+    [
       414,
       314
     ],
@@ -19,10 +23,6 @@
     [
       717,
       914
-    ],
-    [
-      255,
-      729
     ]
   ],
   "maskBounds": {
@@ -48,8 +48,24 @@
       "bytes": 1277117
     }
   ],
-  "status": "blocked-new-cylinder-calibration",
-  "lighting": "No separate illumination layer supplied; original painted pixels must not be multiplied into replacement artwork.",
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
   "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
-  "productionPrintFile": false
+  "productionPrintFile": false,
+  "mapping": {
+    "type": "cylindrical",
+    "method": "existing cylindricalUV in local mug coordinates",
+    "centerX": 0.5,
+    "radiusX": 0.5,
+    "top": {
+      "edgeY": 0,
+      "ellipseDepth": 0
+    },
+    "bottom": {
+      "edgeY": 1,
+      "ellipseDepth": 0
+    },
+    "assumedWrapAngleRadians": 6.283185307179586
+  },
+  "calibrationNote": "New hanging-mug surface uses measured mask corners to orient the existing cylindrical projection. Inset excluded by original mask. Visual review pending."
 }
