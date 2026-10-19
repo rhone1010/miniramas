@@ -54,15 +54,15 @@
 }
 
 
-.liten-masthead{--mh-h:60px;--mark-h:44px;--masthead:#26201a;--serif:'Cormorant Garamond',Cormorant,Georgia,serif;--gold:#b68a53;--series:#d7bd89;font-size:16px;box-sizing:border-box;min-height:0;gap:0;border:0;z-index:120}
-.liten-masthead .masthead__nav{grid-column:2;flex-wrap:nowrap}
+.liten-masthead{--mh-h:88px;--mark-h:68px;--masthead:#26201a;--serif:'Cormorant Garamond',Cormorant,Georgia,serif;--gold:#b68a53;--series:#d7bd89;font-size:16px;box-sizing:border-box;min-height:0;gap:0;border:0;z-index:120}
+.liten-masthead .masthead__nav{grid-column:2;flex-wrap:nowrap;font-size:inherit}
 .liten-masthead .masthead__nav>a{border:0;border-radius:0;background:none;font-style:normal}
 .liten-masthead .mh-series-menu :is(a,button){border:0;background:none;text-align:left;cursor:pointer;min-height:44px}
 .liten-masthead .mh-series-menu[hidden],.liten-masthead .mh-menu{display:none}
 .liten-masthead [aria-current],.liten-masthead .mh-series:has([aria-current])>.mh-series-btn{color:var(--series)}
 .liten-masthead .mh-series:last-child .mh-series-menu{left:auto;right:0;transform:none}
 .liten-masthead .preview-note{display:none}
-@media(min-width:2200px){.liten-masthead{--mh-h:62px;--mark-h:46px}}
+
 @media(max-width:1000px){
 .liten-masthead{height:64px;min-height:64px;padding:8px 20px;display:flex;flex-direction:row;justify-content:space-between;position:relative;--mark-h:48px}
 .liten-masthead .mh-menu{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:8px;background:#332620;border:1px solid rgba(196,169,110,.28);color:#f8f4eb;cursor:pointer}
@@ -81,3 +81,7 @@
 .liten-masthead .mh-menu{padding:0;flex-shrink:0}
 .liten-masthead .mh-menu svg{flex-shrink:0}
 @media(max-width:1000px){.liten-masthead .masthead__nav{width:100%;margin:0;box-sizing:border-box;justify-self:stretch}}
+
+/* Approved Wizard logo dimensions: wizard.next.css lines 4 and 27. */
+.liten-masthead .masthead__brand img{height:68px;width:100px;object-fit:contain}
+@media(max-width:1000px){.liten-masthead .masthead__brand img{height:48px;width:80px}}

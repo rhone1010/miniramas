@@ -21,6 +21,7 @@ async function boot(query:string,response:any=project(),status=200){
  win.require=(name:string)=>name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
  win.fetch=async(url:string,init:any={})=>{calls.push(String(url));if(response.route&&String(url).includes('/api/v1/gift/')){const routed=await response.route(String(url),init);if(routed)return routed instanceof Response?routed:new Response(JSON.stringify(routed),{status:200})}const data=String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog-samples/index.next')?JSON.parse(fs.readFileSync('public/gift-wizard/catalog-samples/index.next.json','utf8')):String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?JSON.parse(fs.readFileSync('public/gift-wizard/fixtures.next.json','utf8')):{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
  let code=fs.readFileSync('public/gift-wizard/wizard.next.ts','utf8').replace('import.meta.url',"'https://liten.invalid/gift-wizard/wizard.next.js'").replace('await import(path);',"window.EFFECT_REGISTRY={silos:[{id:'first',label:'First'}],effects:[{id:'jade',label:'Jade',category:'first',body:'live'}]};").replace(/start\(\);\s*$/,"globalThis.started=start();globalThis.navigate=go;");
+ if(response.resume)win.sessionStorage.setItem("liten-gift-resume",JSON.stringify(response.resume));
  win.Error=Error;win.exports={};vm.runInContext(ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,dom.getInternalVMContext());
  await win.started;return {dom,win,calls};
 }
@@ -191,3 +192,62 @@ test('compact shopping favorite returns to gallery and configuration retains bac
 test('visual picker traps focus, closes with Escape and selection, and keeps unavailable gifts blocked',async()=>{const {win,dom}=await boot('layoutReview=products');const open=()=>win.document.getElementById('open-product-picker').click();open();assert.equal(win.document.getElementById('product-picker').getAttribute('aria-modal'),'true');const close=win.document.getElementById('close-product-picker');close.dispatchEvent(new win.KeyboardEvent('keydown',{key:'Tab',shiftKey:true,bubbles:true,cancelable:true}));assert.equal(win.document.activeElement.dataset.feature,'card');win.document.activeElement.dispatchEvent(new win.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(win.document.activeElement.id,'open-product-picker');open();win.document.querySelector('[data-feature="card"]').click();assert.equal(win.document.querySelector('.is-open'),null);assert.equal(win.document.getElementById('choose-featured').disabled,true);assert.equal(win.document.activeElement.id,'open-product-picker');assert.equal(win.document.getElementById('right').inert,false);dom.window.close()});
 
 test('catalog samples follow classification without changing favorite, prices, availability or making generation calls',async()=>{for(const series of ['pets','groups','portraits']){const {win,calls,dom}=await boot('layoutReview=products&fixtureSeries='+series);const favorite=win.document.querySelector('.gift-favorite-thumb').src;for(const p of local.products){win.document.querySelector('[data-feature="'+p.id+'"]').click();assert.ok(win.document.querySelector('.gift-feature-image').src.endsWith('/'+series+'-'+p.id+'-scene-desktop.webp'));assert.ok(win.document.querySelector('.gift-feature-media source').srcset.endsWith('/'+series+'-'+p.id+'-scene-mobile.webp'));assert.equal(win.document.getElementById('choose-featured').disabled,!p.available);assert.equal(win.document.querySelector('.gift-favorite-thumb').src,favorite);}assert.equal(calls.some(x=>x.includes('/api/v1/gift/')),false);dom.window.close();}});
+
+
+test('returning through the bare Wizard URL restores only server-owned artwork and navigation hints',async()=>{
+ const s:any=artworkProject();s.order.state='none';s.resume={sessionId:'project',view:'focus',effectIds:['jade','invented'],artFocus:s.batches[0].previews[0].previewId,recipient:contracts.recipientOptions[0]};
+ const {win,dom,calls}=await boot('',s);
+ assert.ok(calls.includes('/api/v1/gift/sessions/project'));
+ assert.equal(win.document.getElementById('screen').dataset.view,'focus');
+ assert.equal(new URL(win.location.href).searchParams.get('sessionId'),'project');
+ const hint=JSON.parse(win.sessionStorage.getItem('liten-gift-resume'));
+ assert.equal(hint.effectIds.includes('invented'),false);
+ assert.equal('batches' in hint,false);assert.equal('entitlement' in hint,false);assert.equal('source' in hint,false);
+ assert.equal(calls.some(x=>x.endsWith('/batches')),false);dom.window.close();
+});
+test('remembered paid-looking view cannot bypass authentication',async()=>{
+ const {win,dom}=await boot('',{error:'sign_in_required',resume:{sessionId:'project',view:'compositions'}},401);
+ assert.ok(win.document.getElementById('screen').textContent.includes('Sign in'));
+ assert.equal(win.document.querySelector('#screen img'),null);dom.window.close();
+});
+test('explicit different session ignores another project navigation hints',async()=>{
+ const s:any=project('none');s.resume={sessionId:'other-project',view:'checkout',effectIds:['jade']};
+ const {win,dom}=await boot('sessionId=project',s);
+ assert.equal(win.document.getElementById('screen').dataset.view,'effects');dom.window.close();
+});
+
+function workingProject(){const s:any=project('none');s.lines=[];s.geometries=[];s.batches=[{batchIndex:1,kind:'free',complete:false,previews:Array.from({length:6},(_,i)=>({previewId:'slot-'+i,slot:i+1,effectId:'jade',status:i===0?'ready':i===1?'generating':i===2?'failed':'pending',url:i===0?'https://liten.invalid/ready.jpg':null,width:i===0?768:null,height:i===0?768:null,retryable:i===2}))}];return s;}
+test('restoration shows gears only for server generating slots, ready artwork and stopped failures',async()=>{
+ const {win,dom,calls}=await boot('sessionId=project',workingProject());
+ assert.equal(win.document.getElementById('screen').dataset.view,'review');
+ assert.equal(win.document.querySelectorAll('#screen .mc-mark').length,1);
+ assert.equal(win.document.querySelectorAll('#screen img').length,1);
+ assert.ok(win.document.getElementById('screen').textContent.includes('Didn’t finish'));
+ assert.ok(win.document.getElementById('screen').textContent.includes('Waiting to start'));
+ assert.equal(calls.some(x=>x.endsWith('/batches')),false);dom.window.close();
+});
+test('Craft moves immediately to results without claiming that the unconfirmed request is generating',async()=>{
+ const s:any=project('none');s.lines=[];s.geometries=[];let finish:any;
+ s.route=(url:string,init:any)=>url.endsWith('/batches')&&init.method==='POST'?new Promise(resolve=>{finish=resolve}):null;
+ const {win,dom}=await boot('sessionId=project',s);win.document.getElementById('primary').click();
+ assert.equal(win.document.getElementById('screen').dataset.view,'review');
+ assert.equal(win.document.querySelectorAll('.mc-mark').length,0);
+ assert.ok(win.document.getElementById('screen').textContent.includes('Waiting to start'));
+ const done:any=workingProject();done.batches[0].complete=true;done.batches[0].previews.forEach((p:any)=>Object.assign(p,{status:'ready',url:'https://liten.invalid/done.jpg',width:768,height:768}));
+ finish({status:'ok',session:done,batch:done.batches[0]});await new Promise(r=>setTimeout(r,20));
+ assert.equal(win.document.querySelectorAll('#screen [data-art]').length,6);assert.equal(win.document.querySelectorAll('.mc-mark').length,0);dom.window.close();
+});
+test('read-only status refresh replaces a completed batch without generating or consuming a retry',async()=>{
+ const s=workingProject();const {win,dom,calls}=await boot('sessionId=project',s);
+ s.batches[0].complete=true;s.batches[0].previews.forEach((p:any)=>Object.assign(p,{status:'ready',url:'https://liten.invalid/done.jpg',width:768,height:768}));
+ win.document.getElementById('check-generation').click();await new Promise(r=>setTimeout(r,20));
+ assert.equal(win.document.querySelectorAll('#screen [data-art]').length,6);
+ assert.equal(calls.some(x=>x.endsWith('/retry')||x.endsWith('/batches')),false);dom.window.close();
+});
+
+test('generation SVG and animation/background remain exact Collection ports',()=>{
+ const donor=fs.readFileSync('public/discovery-consolidated-draft.html','utf8'),source=fs.readFileSync('public/gift-wizard/wizard.next.ts','utf8'),css=fs.readFileSync('public/gift-wizard/generation.next.css','utf8');
+ assert.ok(source.includes(donor.split(/\r?\n/).find(x=>x.startsWith('var MC_MARK_HTML ='))!));
+ const block=donor.slice(donor.indexOf('.card.is-crafting .card__art{'),donor.indexOf('/* The old ring is kept'));
+ assert.ok(css.replace(/\r/g,'').includes(block.replace(/\r/g,'')));
+});

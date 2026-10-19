@@ -3,7 +3,7 @@
 (function(){
 'use strict';
 var header=document.querySelector('.liten-masthead');if(!header)return;
-var data=[{label:'Create',items:[['Portraits','/portraits'],['Groups','/groups'],['Pets','/pets']]},{label:'Gifts',items:[['Gift Collection','/gift-wizard.next.html'],['Print Shop','/discovery?print_pick=1']]},{label:'My Collection',href:'/collection?from=portraits'},{label:'More',items:[['Gallery','/gallery'],['Community','/community'],['Help','/help']]},{label:'Account',items:[['Account','/account'],['Orders','/account','orders'],['Sign in',null,'auth']]}];
+var data=[{label:'Create',items:[['Portraits','/portraits'],['Groups','/groups'],['Pets','/pets']]},{label:'Gifts',items:[['Gift Collection','/gifts.next.html'],['Print Shop','/discovery?print_pick=1']]},{label:'My Collection',href:'/collection?from=portraits'},{label:'More',items:[['Gallery','/gallery'],['Community','/community'],['Help','/help']]},{label:'Account',items:[['Account','/account'],['Orders','/account','orders'],['Sign in',null,'auth']]}];
 var restoredSeries=new URLSearchParams(location.search).get('from');
 var series=/^\/groups/.test(location.pathname)?'groups':/^\/pets/.test(location.pathname)?'pets':'portraits';
 if(['groups','pets','portraits'].includes(restoredSeries))series=restoredSeries;
@@ -23,7 +23,7 @@ header.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefa
 document.addEventListener('click',function(e){if(!header.contains(e.target))drawerClose(false)});
 header.addEventListener('focusout',function(){setTimeout(function(){if(!header.contains(document.activeElement))drawerClose(false)},0)});
 mobile.addEventListener('change',function(){drawerClose(false)});
-var current=/gift/.test(location.pathname)?'/gift-wizard.next.html':location.pathname;
+var current=/gift/.test(location.pathname)?'/gifts.next.html':location.pathname;
 header.querySelectorAll('a[href]').forEach(function(a){if(a.getAttribute('href')===current)a.setAttribute('aria-current','page')});
 var auth=header.querySelector('[data-action="auth"]'),signedIn=false;
 fetch('/api/v1/auth/me',{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(v){signedIn=!!v?.user;auth.textContent=signedIn?'Sign out':'Sign in'}).catch(function(){});

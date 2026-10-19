@@ -1,0 +1,31 @@
+Gift Wizard restoration handoff — 2026-10-19
+Base: a6308b3. Local only; do not deploy until CC session integration is ready.
+
+Frontend complete:
+- Gifts > Gift Collection returns to /gifts.next.html. Both existing landing CTAs continue to /gift-wizard.next.html.
+- Shared nav inherits the 16px masthead base; dropdown computes 23.2px desktop /24px mobile instead of inheriting the Wizard's 24px nav base.
+- Logo/header restore existing Wizard dimensions (88px/68px desktop, 64px/48px mobile); no new photographic assets.
+- Craft immediately enters results. Unknown/pending slots remain static; only status=generating receives the exact My Collection gear. Ready slots display server-provided preview URLs; failures remain still. No percentages, automatic retry, or generated success flags.
+- GET session reads every 3 seconds while a batch is active. Check Again only reads. Explicit retry uses the existing retry endpoint and retryable flag. Completion requires server complete plus six ready image URLs.
+- Same-tab sessionStorage holds only session reference and validated navigation/effect IDs. All artwork, ownership, payment, and entitlement state is fetched from the authenticated server. Explicit URL session takes precedence.
+- The uploaded source Blob is cached in IndexedDB by session ID AFTER session creation succeeds. Reads occur only after authenticated restoration; generated masters and entitlement state are never cached there. Storage is best-effort. Object URLs survive browser Back cache.
+- Upload immediately displays approved 'Analyzing your photograph…' until create/classification resolves.
+
+CC integration dependencies (no backend files changed):
+1. lib/v1/gift/real.ts / current POST /api/v1/gift/sessions/[id]/batches implementation: confirm reservation and per-slot pending/generating/ready/failed transitions remain observable via GET session while POST is running. Ensure jobs continue/recover if the browser leaves and the POST connection closes. Frontend cannot guarantee background server execution.
+2. Existing GET /api/v1/gift/sessions/[id] is sufficient after a session ID is known. POST session creation returns the ID only after intake/classification. Leaving/refreshing before that response currently cannot restore the in-flight intake; CC needs a recoverable creation identity/contract. Frontend does not silently re-upload or re-analyze.
+3. Current SourceView has sourceRef but no authorized source-preview URL. Same-browser source restoration uses the customer's own cached upload. Cross-browser/new-device restoration needs a CC-provided signed source-preview contract; no private path or endpoint was invented.
+4. Coordinate source-cache retention/logout lifecycle and account-owned most-recent-session restoration with CC's session work. Navigation hints never prove ownership.
+
+Visual provenance (no redraw):
+Source E:\Dev\_recovery-staging\scene-deploy\public\discovery-consolidated-draft.html, 10916 lines, 2026-10-19:
+- SVG constant line 8429 -> E:\Dev\_recovery-staging\scene-deploy\public\gift-wizard\wizard.next.ts line 189: 1 line in / 1 out, byte-identical string.
+- card art rule line 856 -> E:\Dev\_recovery-staging\scene-deploy\public\gift-wizard\generation.next.css line 2: 1 / 1, unchanged.
+- gear/background/animation lines 914-929 -> E:\Dev\_recovery-staging\scene-deploy\public\gift-wizard\generation.next.css lines 3-18: 16 / 16, unchanged.
+Adaptations authorized by Rich: place existing gear/background in existing results grid; bind existing Collection oxblood/gold tokens; use existing Wizard square gallery slots; stop animation for reduced motion; only generating slots animate.
+Logo/header dimension source: public/gift-wizard/wizard.next.css line 4 (88px header,68px logo,100px width), mobile lines 25,27 (64px header,48px logo,80px width). Shared masthead receives those existing values; mobile dropdown remains 24px.
+
+Validation:
+42 mocked Gift UI tests; 28 navigation/exact-port tests; focused tsc; git diff --check.
+Actual browser at 1660x950 and390x844, using tools/gift-wizard/review-journey.next.cjs local-only simulated contracts: upload feedback; immediate results transition; mixed ready/generating/failed slots; leave via Gift Collection and return via Start Creating; refresh; all six completed images; no horizontal overflow. No live generation/purchases/customer mutations. No claim of live backend continuity validation.
+Screenshots: C:/Users/richh/.codex/visualizations/2026/10/14/01a13b7a-543e-7191-b334-430d0970ace5/gift-{generation-desktop,generation-mobile,restored-menu-desktop,restored-menu-mobile,results-complete-desktop,results-complete-mobile,analysis-desktop}.png

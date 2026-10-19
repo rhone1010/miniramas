@@ -1,0 +1,22 @@
+/* Exact Collection port: discovery-consolidated-draft.html:856,914-928. */
+.card__art{ position:relative; aspect-ratio:var(--card-ar); background:linear-gradient(150deg,#8a725d,#3a2b24); background-size:cover; background-position:center 30% }
+.card.is-crafting .card__art{
+  background:linear-gradient(160deg, #8c4c4c, var(--oxblood) 55%, #6a3737);
+}
+.mc-mark{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:46%; max-width:112px; height:auto; z-index:2; overflow:visible;
+}
+/* Refined linework, not a filled glyph: brass for the cog, gold for the
+   ring, the L in the same warm light. */
+.mc-mark circle, .mc-mark path{ fill:none; stroke:var(--gold-soft); vector-effect:non-scaling-stroke }
+.mc-mark__turn{ transform-origin:50px 50px; animation:mcMarkTurn 2s linear infinite }
+.mc-mark__turn circle{ stroke-width:2; opacity:.62 }
+.mc-mark__turn path{ stroke-width:2.4; stroke-linecap:round; opacity:.88 }
+.mc-mark__inner{ stroke-width:1; opacity:.38 }
+.mc-mark__l path{ fill:var(--gold-soft); stroke:none; opacity:.95 }
+@keyframes mcMarkTurn{ from{ transform:rotate(0deg) } to{ transform:rotate(360deg) } }
+
+/* Bind existing Collection tokens and gallery dimensions without changing the mark. */
+[data-view="review"] .card{--oxblood:#7d4242;--gold-soft:#d9b876;--card-ar:1}
+@media(prefers-reduced-motion:reduce){.mc-mark__turn{animation:none}}
