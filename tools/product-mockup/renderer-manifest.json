@@ -1,5 +1,5 @@
 {
-  "purpose": "The exact files the Gift Wizard mockup bridge needs at run time (traced by rendering the six purchasable templates). Nothing else is bundled.",
+  "purpose": "Exact runtime files for six unchanged approved templates, mug/card, and disabled derived frame candidates. Framed-canvas candidates failed visual review and must not be enabled.",
   "source": "Codex tree E:/Dev/liten-co (untracked working files at 7d3eb40), copied 2026-10-17 and hash-verified; awaiting Codex confirmation",
   "templates": [
     "classic-framed",
@@ -7,7 +7,13 @@
     "gallery-canvas",
     "gallery-canvas-square",
     "premium-fine-art",
-    "square-framed"
+    "square-framed",
+    "ceramic-mug",
+    "greeting-card",
+    "matted-frame",
+    "matted-frame-square",
+    "framed-canvas",
+    "framed-canvas-square"
   ],
   "interface": {
     "adapterExports": [
@@ -21,8 +27,8 @@
   "files": [
     {
       "path": "public/gift-wizard/catalog.next.json",
-      "bytes": 26199,
-      "sha256": "74b74f25d5ebde654aed447244067491ee4a177aff717f6fb282555e066005d6"
+      "bytes": 34830,
+      "sha256": "1d07a1af786960d0a5c77ee5b51ff8e93f6249cc22eb0141161f5f33e965d6af"
     },
     {
       "path": "public/gift-wizard/mockup-templates/classic-framed/artwork-mask.png",
@@ -186,13 +192,78 @@
     },
     {
       "path": "tools/product-mockup/gift-visualization-adapter.next.cjs",
-      "bytes": 5633,
-      "sha256": "87b67db77f619f617340bd9615239b19e87986ca7195516c31f55bb2ad027af8"
+      "bytes": 6217,
+      "sha256": "995057b1bde47c7ac771778bc5829dd2b520b7e32de6336c7f3c2c2babfc1264"
     },
     {
       "path": "tools/product-mockup/review/frame-finishes/references/finishes.next.json",
       "bytes": 3764,
       "sha256": "1886829cbe9e43c5d7097dcb355bc54400ecb5bfa9ebb3e6a307165853a8eee7"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/ceramic-mug/artwork-mask.png",
+      "bytes": 34506,
+      "sha256": "c761561b9c4fdb66f37feecbd3f44c5d6e8990fb1ba89876f9efac2792f85155"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/ceramic-mug/background-mask.png",
+      "bytes": 34399,
+      "sha256": "f576cf98c7619c6d644d6b9e06211b6e99373053fb7344813fc34726536d5b58"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/ceramic-mug/source.png",
+      "bytes": 418204,
+      "sha256": "61849b73a8f0c84b71a04c72e94b09f320f92fa5973f644e646868ea1e38f32a"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/ceramic-mug/template.next.json",
+      "bytes": 1945,
+      "sha256": "247e401e19f97dc746a940f61a928c3ab2e9bc9e150f93adcd4ebd55266e966c"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/greeting-card/artwork-mask.png",
+      "bytes": 30903,
+      "sha256": "d630f6909625193f8d893c8b22b1c0147f6fe0485f9d1c464caa8ab50a5043f4"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/greeting-card/background-mask.png",
+      "bytes": 35584,
+      "sha256": "a569b17a40d9c6950e7a7fe7361dfa4912cd70feb22792e1e83d002d12b45eea"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/greeting-card/source.png",
+      "bytes": 472788,
+      "sha256": "697ebb2b4b5021adbfe8c86f0fe285c4d0b207df828931687056f49e3e7c2f51"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/greeting-card/template.next.json",
+      "bytes": 3205,
+      "sha256": "86b4a56d3872668fc84eded405d8977713241c67b3609f417f64fd57c06a5fd3"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/matted-frame/template.next.json",
+      "bytes": 343,
+      "sha256": "1f3949bc9fc207a86e793f55b13edcdddb80315d4d2fc88acf0a06e711876f59"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/matted-frame-square/template.next.json",
+      "bytes": 348,
+      "sha256": "1358775a88d13717655806b4f1370438e8f8b0b5288a8e4ccfee997364437d12"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/framed-canvas/template.next.json",
+      "bytes": 755,
+      "sha256": "5bcdde93e699043ab98835cfcb94db436c44ce80551a7cba1385114ea0fcab5e"
+    },
+    {
+      "path": "public/gift-wizard/mockup-templates/framed-canvas-square/template.next.json",
+      "bytes": 761,
+      "sha256": "d977924336737bf94904dd69eab6487f016c0a988b825ae28fd2c409bb4245f1"
+    },
+    {
+      "path": "tools/product-mockup/derived-frame.next.cjs",
+      "bytes": 3384,
+      "sha256": "12feda792a7148ed294d63843f9e797b8c14cbdbb8688aef68cd691905501046"
     }
   ]
 }

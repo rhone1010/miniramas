@@ -1,0 +1,129 @@
+{
+  "id": "greeting-card",
+  "productId": "card",
+  "status": "visual-validated",
+  "dimensions": [
+    1264,
+    848
+  ],
+  "sourceImage": "source.png",
+  "artworkMask": "artwork-mask.png",
+  "backgroundMask": "background-mask.png",
+  "sources": {
+    "source.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium folded fine-art greeting card - image.png",
+      "sha256": "697ebb2b4b5021adbfe8c86f0fe285c4d0b207df828931687056f49e3e7c2f51"
+    },
+    "artwork-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium folded fine-art greeting card - print bw.png",
+      "sha256": "d630f6909625193f8d893c8b22b1c0147f6fe0485f9d1c464caa8ab50a5043f4"
+    },
+    "background-mask.png": {
+      "source": "H:\\liteneco art files\\litenco product image alphas-assets\\premium folded fine-art greeting card - background - bw.png",
+      "sha256": "a569b17a40d9c6950e7a7fe7361dfa4912cd70feb22792e1e83d002d12b45eea"
+    }
+  },
+  "cornersPixels": [
+    [
+      521.9971576157784,
+      764.8433885313742
+    ],
+    [
+      518.1306136199308,
+      177.91642438536041
+    ],
+    [
+      891.8856735887736,
+      132.1526924692639
+    ],
+    [
+      884.9817571605562,
+      698.0591170769917
+    ]
+  ],
+  "cornersNormalized": [
+    [
+      0.4132994122056836,
+      0.9030028199898161
+    ],
+    [
+      0.41023801553438705,
+      0.21005481037232634
+    ],
+    [
+      0.7061644288113805,
+      0.1560244303060967
+    ],
+    [
+      0.7006981450202345,
+      0.8241548017437919
+    ]
+  ],
+  "cornerOrder": [
+    "bottomLeft",
+    "topLeft",
+    "topRight",
+    "bottomRight"
+  ],
+  "calibration": {
+    "method": "Middle 60% of four mask boundaries; top/bottom y=ax+b, left/right x=ay+b; intersections",
+    "edgeFits": {
+      "top": [
+        -0.12244310998735777,
+        241.3579480966428,
+        0.29066959856986785
+      ],
+      "bottom": [
+        -0.1839865149599663,
+        860.8838263801096,
+        0.2893289353850656
+      ],
+      "left": [
+        0.006587777069457764,
+        516.958539879085,
+        0.2699283919394399
+      ],
+      "right": [
+        -0.012199749159948257,
+        893.4979032877104,
+        0.2770798631667391
+      ]
+    }
+  },
+  "frontGeometry": {
+    "widthIn": 5,
+    "heightIn": 7,
+    "status": "Verified portrait front panel: 1500 x 2100 px; important content inset 36 px"
+  },
+  "productionSpread": {
+    "widthPx": 6118,
+    "heightPx": 2161,
+    "source": "lib/v1/print/upscale/profiles.ts:12",
+    "panelBoundaries": "Backend cardLayout owns panel extraction; renderer receives only the 5:7 front picture."
+  },
+  "productionPrintFile": false,
+  "perspective": {
+    "unitToImage": [
+      -19.17583426727864,
+      397.9717552093988,
+      521.9971576157784,
+      -592.1838899353257,
+      -39.18697603595315,
+      764.8433885313742,
+      -0.0295471641107488,
+      0.0395343241615245,
+      1
+    ],
+    "imageToUnit": [
+      -0.00029364434395312875,
+      -0.0015960101424662746,
+      1.37397931838783,
+      0.0024091681283824485,
+      -0.000015871062552626003,
+      -1.245440037971819,
+      -0.00010392119136806126,
+      -0.00004653012187012723,
+      1
+    ]
+  }
+}

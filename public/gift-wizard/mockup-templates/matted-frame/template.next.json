@@ -1,0 +1,13 @@
+{
+  "id": "matted-frame",
+  "productId": "matted",
+  "baseTemplate": "classic-framed",
+  "status": "awaiting-visual-approval",
+  "calibration": "Inherited unchanged from classic-framed",
+  "layer": "size-dependent Snow white mount",
+  "safetyMargin": 0.03,
+  "unverified": [
+    "visible opening overlap"
+  ],
+  "productionPrintFile": false
+}

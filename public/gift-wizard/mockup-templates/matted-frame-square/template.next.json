@@ -1,0 +1,13 @@
+{
+  "id": "matted-frame-square",
+  "productId": "matted",
+  "baseTemplate": "square-framed",
+  "status": "awaiting-visual-approval",
+  "calibration": "Inherited unchanged from square-framed",
+  "layer": "size-dependent Snow white mount",
+  "safetyMargin": 0.03,
+  "unverified": [
+    "visible opening overlap"
+  ],
+  "productionPrintFile": false
+}

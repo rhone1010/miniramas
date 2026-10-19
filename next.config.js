@@ -1,12 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // GIFT WIZARD PRODUCT MOCKUP BRIDGE. The renderer (tools/product-mockup) reads its calibrated templates with fs at request time, which Next
-  // does not trace. These are EXACTLY the 35 files the six purchasable templates read (tools/product-mockup/renderer-manifest.json lists
+  // does not trace. These are the files the installed templates and disabled derived candidates read (tools/product-mockup/renderer-manifest.json lists
   // them with hashes; lib/v1/gift/renderer-bundle.test.ts keeps this list, the manifest and the files identical). Scoped to the one route:
-  // no other function carries them, and no development reports, screenshots, fixtures or mug/card templates are bundled.
+  // no other function carries them, and no development reports, screenshots or fixtures are bundled.
   outputFileTracingIncludes: {
     '/api/v1/gift/sessions/[id]/lines/[lineId]/mockup': [
       './tools/product-mockup/compositor.next.cjs',
+      './tools/product-mockup/derived-frame.next.cjs',
       './tools/product-mockup/frame-finish.next.cjs',
       './tools/product-mockup/gift-visualization-adapter.next.cjs',
       './tools/product-mockup/review/frame-finishes/references/finishes.next.json',
@@ -17,6 +18,12 @@ const nextConfig = {
       './public/gift-wizard/mockup-templates/gallery-canvas-square/*',
       './public/gift-wizard/mockup-templates/premium-fine-art/*',
       './public/gift-wizard/mockup-templates/square-framed/*',
+      './public/gift-wizard/mockup-templates/ceramic-mug/*',
+      './public/gift-wizard/mockup-templates/matted-frame/*',
+      './public/gift-wizard/mockup-templates/matted-frame-square/*',
+      './public/gift-wizard/mockup-templates/framed-canvas/*',
+      './public/gift-wizard/mockup-templates/framed-canvas-square/*',
+      './public/gift-wizard/mockup-templates/greeting-card/*',
     ],
   },
   experimental: {

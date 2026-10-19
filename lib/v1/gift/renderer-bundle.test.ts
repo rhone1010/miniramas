@@ -23,12 +23,12 @@ describe('the renderer bundle is exactly what the manifest says', () => {
   it('every file matches its recorded size and SHA-256', () => {
     for (const f of manifest.files) { expect(fs.statSync(path.join(ROOT, f.path)).size, f.path).toBe(f.bytes); expect(sha(f.path), f.path).toBe(f.sha256) }
   })
-  it('nothing else is in the renderer or template directories: no reports, screenshots, fixtures or mug/card templates', () => {
+  it('nothing else is in the renderer or template directories: no reports, screenshots or fixtures', () => {
     // public/gift-wizard also holds the wizard front end now, so only the renderer's own folders are checked: tools/product-mockup and the template directories.
     const onDisk = [...walk('tools/product-mockup'), ...walk('public/gift-wizard/mockup-templates'), 'public/gift-wizard/catalog.next.json'].filter(p => p !== 'tools/product-mockup/renderer-manifest.json')
     expect(onDisk.sort()).toEqual([...listed].sort())
-    expect(onDisk.some(p => /ceramic-mug|greeting-card|\.md$|review\/(?!frame-finishes\/references)/.test(p))).toBe(false)
-    expect(manifest.files.reduce((n, f) => n + f.bytes, 0)).toBeLessThan(5_000_000)
+    expect(onDisk.some(p => /\.md$|review\/(?!frame-finishes\/references)/.test(p))).toBe(false)
+    expect(manifest.files.reduce((n, f) => n + f.bytes, 0)).toBeLessThan(8_000_000)
   })
   it('the serverless tracing list in next.config.js covers exactly these files and only for the mockup route', () => {
     const cfg = createRequire(path.join(ROOT, 'package.json'))('./next.config.js')
@@ -45,7 +45,7 @@ describe('the renderer revision matches the interface the bridge was tested agai
   const adapter = createRequire(path.join(ROOT, 'package.json'))('./tools/product-mockup/gift-visualization-adapter.next.cjs')
   it('exports the functions the bridge calls and routes the six purchasable templates (plus the two disabled, test-only ones)', () => {
     expect(Object.keys(adapter).sort()).toEqual(['composeCatalogItem', 'composeTemplateVisualTest', 'registry', 'resolveCatalogTemplate'])
-    expect(Object.keys(adapter.registry).sort()).toEqual([...manifest.templates, 'ceramic-mug', 'greeting-card'].sort())
+    expect(Object.keys(adapter.registry).sort()).toEqual([...manifest.templates].sort())
     for (const t of ['ceramic-mug', 'greeting-card']) expect(adapter.registry[t].testOnly).toBe(true)
   })
   it("its catalog agrees with the canonical catalog on SKU and lab-file pixels for every purchasable product, so the bridge's per-render check never trips", () => {
