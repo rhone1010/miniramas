@@ -10917,7 +10917,7 @@ function reusableUnlocksAvailable(){
       if (p.failed){
         card.innerHTML = '<div class="mc-modern-art mc-modern-state"><strong>Didn’t finish</strong><span>This piece will be remade.</span></div>';
       } else if (p.crafting){
-        card.innerHTML = '<div class="mc-modern-art mc-modern-state"><strong>Crafting…</strong><span>On the bench</span></div>';
+        card.innerHTML = '<div class="mc-modern-art mc-modern-state"><strong>' + (p.queued ? 'Waiting to start…' : 'Crafting…') + '</strong><span>' + (p.queued ? 'In the queue' : 'On the bench') + '</span></div>';
       } else {
         var art = document.createElement('div');
         art.className = 'mc-modern-art';
@@ -11179,6 +11179,20 @@ function loadPortfolio(id){
        land() replaces on. Portfolio + slot is the same thing here: stable
        from the first waiting tile to the finished piece, where 'p'+n was a
        position that moved as rows arrived. */
+    /* __MC_ITEM_STATE__ ONE PLACE that says what a tile may claim, from what the server says. The server's item states are 'pending' (queued: no render has started),
+       'rendering' (a render holds it), 'done' and 'failed'; the portfolio is 'pending' (not activated: its items are never shown), 'generating', 'ready' or 'failed'.
+       A tile used to claim "Crafting..." for everything that was not done or failed, so a piece that had not started looked like one being made. Now:
+         done        finished (its picture, locked or not)
+         failed      the item failed, or its portfolio did and this item never finished
+         rendering   a render is working on it            -> "Crafting..."
+         queued      waiting for a render to start         -> "Waiting to start..."
+       Anything unrecognised is 'queued', never 'rendering': a new server state must not be drawn as work that is happening. */
+    function mcItemState(portfolioStatus, itemStatus){
+      if (itemStatus === 'done') return 'done';
+      if (itemStatus === 'failed' || portfolioStatus === 'failed') return 'failed';
+      if (itemStatus === 'rendering') return 'rendering';
+      return 'queued';
+    }
     return st.items.map(function(i){
       /* __M4_FAILED_IS_NOT_CRAFTING__ (runtime defect, BrowserStack
          2026-09-18: eight tiles turning for ever).
@@ -11195,11 +11209,13 @@ function loadPortfolio(id){
          counting it as on its way, and nothing pretends work is in progress
          that stopped. */
       var itemFailed = i.status === 'failed';
+      var tile = mcItemState(st.status, i.status);
       return { key:'pf' + id + ':' + i.slot, portfolioId: id,
                name:i.preset, siloName:'', series:canonicalSeries(st.series),
                locked: !unlockedBySlot[i.slot],
-               crafting: i.status !== 'done' && !itemFailed,
-               failed: itemFailed,
+               crafting: tile === 'rendering' || tile === 'queued',
+               queued: tile === 'queued',
+               failed: itemFailed || tile === 'failed',
                previewId: i.previewId, art: i.previewUrl || null,
                /* The canvas this master was rendered on. Portfolio-level, so
                   every item shares it. Null for a preview bundle and for

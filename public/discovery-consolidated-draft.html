@@ -8434,6 +8434,8 @@ function pieceLanded(piece){
 
   var was = PIECES[at];
   var moved = was.crafting  !== piece.crafting  ||
+              was.queued    !== piece.queued    ||
+              was.failed    !== piece.failed    ||
               was.locked    !== piece.locked    ||
               was.previewId !== piece.previewId ||
               was.num       !== piece.num;
@@ -8488,18 +8490,11 @@ function loadShelf(){
    caller in portraits.html:7387, for the same reason: a poller has to be able
    to tell "not yet" from "done". */
 /* ---- a paid portfolio that never started -------------------------------
-   Activation happens in one place: the Stripe webhook, one delivery to one
-   URL (webhooks/stripe/route.ts:71-78). On a preview deployment that POST
-   is answered with a 302 to Vercel's SSO page and the route never runs, and
-   even in production a throw inside activatePortfolio is caught and logged
-   rather than surfaced. Either way the customer has paid and the portfolio
-   sits at 'pending' with no jobs and no explanation.
-
-   So the page that is already polling asks for activation itself. Once per
-   portfolio per session — activatePortfolio is idempotent, but hammering it
-   every three seconds would be noise, not safety. The route refuses unless
-   our own purchase row says paid, so this cannot start unbought work. */
-var ACTIVATION_ASKED = {};
+   Activation happens in one place: the Stripe webhook (webhooks/stripe/route.ts: confirmPurchase, then activatePortfolio). This page never activates anything.
+   It used to POST /api/v1/portfolios/<id>/activate for every 'pending' portfolio on each load; no such route has ever existed (it answered 404 every time and
+   activated nothing), and had it existed it would have started paid generation for every historical pending portfolio the next time anyone opened the
+   Collection. That call is removed. A paid portfolio the webhook missed is reconciled by a person, on purpose, with the purchase in front of them: see
+   docs/GOVERNANCE/COLLECTION-RECOVERY-2026-10-18.md. What this page DOES do, once a portfolio is 'generating', is ask for dispatch (below), which is a real route. */
 
 /* ---- start the work, now ------------------------------------------------
    A paid portfolio is 'generating' the moment the webhook activates it, but
@@ -8532,34 +8527,6 @@ function dispatchIfGenerating(list){
         /* Cron picks up whatever this missed. */
         console.warn('[discovery] dispatch call failed:', e);
       });
-  });
-}
-
-function activateIfStalled(list){
-  (list || []).forEach(function(p){
-    if (!p || p.status !== 'pending' || ACTIVATION_ASKED[p.id]) return;
-    ACTIVATION_ASKED[p.id] = true;
-    fetch('/api/v1/portfolios/' + encodeURIComponent(p.id) + '/activate', {
-      method:'POST', credentials:'include'
-    }).then(function(r){ return r.json().then(function(d){ return { status:r.status, data:d }; }); })
-      .then(function(out){
-        if (out.status === 200){
-          console.log('[discovery] portfolio ' + p.id + ' activated -> ' + out.data.status);
-          return;
-        }
-        if (out.status === 402){
-          /* Genuinely not paid — mid-checkout, or abandoned. The route has
-             already asked Stripe directly, so this is not a webhook that is
-             merely running late. Ask again on a later tick anyway; a card
-             that is still being authorised resolves within seconds. */
-          ACTIVATION_ASKED[p.id] = false;
-          return;
-        }
-        /* The reason the webhook swallowed. */
-        console.error('[discovery] portfolio ' + p.id + ' could not be activated:',
-                      (out.data && (out.data.detail || out.data.error)) || out.status);
-      })
-      .catch(function(e){ console.warn('[discovery] activate call failed:', e); });
   });
 }
 
@@ -8664,7 +8631,6 @@ function renderCollection(){
            and the account owns none. Only the second is authoritative. */
         if (!d || !Array.isArray(d.portfolios)) return null;
         if (!d.portfolios.length) return [];
-        activateIfStalled(d.portfolios);
         dispatchIfGenerating(d.portfolios);
         /* __M1_PORTFOLIO_GROUPS__ The list route now returns created_at, so a
            group can be headed with the day it was made rather than a generic
@@ -8692,7 +8658,7 @@ function renderCollection(){
         items.forEach(function(item){
           n++;
           all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
-                      series:item.series, num:n, crafting:item.crafting, failed:item.failed,
+                      series:item.series, num:n, crafting:item.crafting, queued:item.queued, failed:item.failed,
                       locked:item.locked, previewId:item.previewId, art:item.art,
                       aspect:item.aspect });
         });
@@ -8700,7 +8666,7 @@ function renderCollection(){
       (shelf || []).forEach(function(item){
         n++;
         all.push({ key:item.key, portfolioId:item.portfolioId, name:item.name, siloName:item.siloName,
-                    series:item.series, num:n, crafting:item.crafting, failed:item.failed,
+                    series:item.series, num:n, crafting:item.crafting, queued:item.queued, failed:item.failed,
                     locked:item.locked, previewId:item.previewId, art:item.art,
                     aspect:item.aspect });
       });
@@ -8795,6 +8761,20 @@ function loadPortfolio(id){
        land() replaces on. Portfolio + slot is the same thing here: stable
        from the first waiting tile to the finished piece, where 'p'+n was a
        position that moved as rows arrived. */
+    /* __MC_ITEM_STATE__ ONE PLACE that says what a tile may claim, from what the server says. The server's item states are 'pending' (queued: no render has started),
+       'rendering' (a render holds it), 'done' and 'failed'; the portfolio is 'pending' (not activated: its items are never shown), 'generating', 'ready' or 'failed'.
+       A tile used to claim "Crafting..." for everything that was not done or failed, so a piece that had not started looked like one being made. Now:
+         done        finished (its picture, locked or not)
+         failed      the item failed, or its portfolio did and this item never finished
+         rendering   a render is working on it            -> "Crafting..."
+         queued      waiting for a render to start         -> "Waiting to start..."
+       Anything unrecognised is 'queued', never 'rendering': a new server state must not be drawn as work that is happening. */
+    function mcItemState(portfolioStatus, itemStatus){
+      if (itemStatus === 'done') return 'done';
+      if (itemStatus === 'failed' || portfolioStatus === 'failed') return 'failed';
+      if (itemStatus === 'rendering') return 'rendering';
+      return 'queued';
+    }
     return st.items.map(function(i){
       /* __M4_FAILED_IS_NOT_CRAFTING__ (runtime defect, BrowserStack
          2026-09-18: eight tiles turning for ever).
@@ -8811,11 +8791,13 @@ function loadPortfolio(id){
          counting it as on its way, and nothing pretends work is in progress
          that stopped. */
       var itemFailed = i.status === 'failed';
+      var tile = mcItemState(st.status, i.status);
       return { key:'pf' + id + ':' + i.slot, portfolioId: id,
                name:i.preset, siloName:'', series:canonicalSeries(st.series),
                locked: !unlockedBySlot[i.slot],
-               crafting: i.status !== 'done' && !itemFailed,
-               failed: itemFailed,
+               crafting: tile === 'rendering' || tile === 'queued',
+               queued: tile === 'queued',
+               failed: itemFailed || tile === 'failed',
                previewId: i.previewId, art: i.previewUrl || null,
                /* The canvas this master was rendered on. Portfolio-level, so
                   every item shares it. Null for a preview bundle and for
@@ -9837,7 +9819,7 @@ function renderMyCollectionGrid(){
     } else if (p.crafting){
       /* __MC_GEAR__ the house mark, turning, on oxblood */
       el.innerHTML = '<div class="card__art">' + MC_MARK_HTML +
-        '<div class="card__content"><strong>Crafting…</strong></div></div>';
+        '<div class="card__content"><strong>' + (p.queued ? 'Waiting to start…' : 'Crafting…') + '</strong></div></div>';
     } else {
       /* __MC_GEAR__ This piece finished since the last paint, so it turns
          over in place. The flag is spent here so a later repaint -- a filter
