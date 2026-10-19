@@ -15,7 +15,7 @@ import { decodeSource } from '../foyer/foyer-source'
 import { adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, MAX_PARALLEL_RENDERS, PACK_PRICE_CENTS, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
 import { StoreError, byNewest, correctionUsed, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
-import { GIFT_CONTRACT_VERSION, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
+import { GIFT_CONTRACT_VERSION, type BatchGeneration, type RestoreResponse, type RestoreStep, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
 
 export type GiftErrorCode =
   | 'image_b64_required' | 'image_too_large' | 'image_not_base64' | 'image_unreadable'
@@ -255,13 +255,15 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   const comps = await deps.store.listCompositions(rec.id)         // drafts (reviewed before payment) have compositions too
   const orderLines = rec.order_id ? await deps.store.orderLines(rec.order_id) : []
   const batches: BatchView[] = []
+  const clockNow = now(deps)
   for (const { batch, previews } of all) {
     const views: PreviewView[] = []
     for (const p of previews) {
       const url = p.status === 'ready' && p.preview_path ? await deps.storage.signedUrl(p.preview_path, 3600) : null
       views.push({ previewId: p.id, slot: p.slot, effectId: p.effect_id, status: p.status, url, width: p.width, height: p.height, retryable: p.status === 'failed' && p.attempts < 3 })
     }
-    batches.push({ batchIndex: batch.batch_index, kind: batch.kind, complete: views.length === BATCH_SIZE && views.every(v => v.status === 'ready'), previews: views })
+    const complete = views.length === BATCH_SIZE && views.every(v => v.status === 'ready')
+    batches.push({ batchIndex: batch.batch_index, kind: batch.kind, complete, previews: views, generation: generationOf(previews, complete, clockNow) })
   }
   const used = all.flatMap(b => b.previews.map(p => p.effect_id))
   const catalog = allProducts()
@@ -299,7 +301,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   else nextBatch = { kind: 'payment_required', amountCents: PACK_PRICE_CENTS as 299, currency: 'USD' }
   return {
     contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id,
-    source: { sourceRef: rec.id, width: rec.source_width, height: rec.source_height, series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null },
+    source: { sourceRef: rec.id, width: rec.source_width, height: rec.source_height, series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, photoUrl: rec.source_path ? await deps.storage.signedUrl(rec.source_path, 3600) : null },
     lines: rec.lines, geometries, masterAspect: rec.master_aspect ?? '', batches, usedEffectIds: used,
     entitlement: { freeBatchesTotal: FREE_BATCHES, freeBatchesUsed: free.used, paidPacksAvailable: packs, freeAvailable: free.available, freeBlockedReason: free.reason },
     nextBatch, expiresAt: rec.expires_at, catalogVersion: catalogVersion(catalog),
@@ -319,6 +321,58 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
         fit: ((mine?.plan as { fit?: string } | undefined)?.fit ?? null) as 'exact' | 'resample' | 'extend' | null,
       }
     })),
+  }
+}
+
+// ── restoring work after navigation, refresh or Back/Forward ───────────────────────────────────────────────────────────────────────────────────
+
+/** A preview may be claimed at most this many times (the same bound gift_claim_preview and the view's retryable flag use). */
+const PREVIEW_ATTEMPTS = 3
+
+/** A batch's generation state from the preview rows and the clock only. See BatchGeneration. */
+function generationOf(previews: PreviewRec[], complete: boolean, nowMs: number): BatchGeneration {
+  if (complete) return 'complete'
+  const live = (p: PreviewRec) => p.status === 'generating' && !!p.lease_until && Date.parse(p.lease_until) > nowMs
+  if (previews.some(live)) return 'running'
+  const claimable = (p: PreviewRec) => p.attempts < PREVIEW_ATTEMPTS && (p.status === 'pending' || p.status === 'failed' || p.status === 'generating')       // a generating row with a lapsed lease is claimable again
+  return previews.some(claimable) ? 'stalled' : 'failed'
+}
+
+function stepOf(v: SessionView): RestoreStep {
+  const o = v.order.state
+  if (o === 'checkout_open') return 'checkout'
+  if (o === 'awaiting_artwork') return 'compositions'
+  if (o !== 'none') return 'order'
+  if (!v.batches.length) return 'effects'
+  if (!v.artworkPreviewId) return 'previews'
+  return v.lines.length ? 'cart' : 'products'
+}
+
+/**
+ * The customer's current Gift session, so the Wizard can pick up exactly where it was: the uploaded photo, the batch of previews that was requested (with every
+ * preview that finished, kept in storage), whether generation is running, and how far they had got. READ-ONLY with respect to generation: it never starts,
+ * retries or reserves anything (the caller resumes a 'stalled' batch with the existing retry route). It only extends the session's idle expiry, like every other action does,
+ * so work in progress is not cleaned up while the customer is still coming back.
+ */
+export async function restoreSession(deps: GiftDeps, userId: string): Promise<RestoreResponse> {
+  const t = now(deps)
+  const live = (await deps.store.listSessions(userId, 5)).filter(s => s.status === 'active' && (!!s.pinned_at || Date.parse(s.expires_at) >= t))
+  const recent = live.map(s => ({ sessionId: s.id, createdAt: s.created_at, lastActivityAt: s.last_activity_at, expiresAt: s.expires_at, series: s.series, orderId: s.order_id }))
+  let rec = live[0]
+  if (!rec) return { contractVersion: GIFT_CONTRACT_VERSION, current: null, resume: null, recent: [] }
+  if (t - Date.parse(rec.last_activity_at) > 60 * 60 * 1000) {                  // at most one write an hour
+    const patch = { last_activity_at: iso(t), expires_at: extend(rec, t) }
+    await deps.store.patchSession(rec.id, userId, patch)
+    rec = { ...rec, ...patch }
+  }
+  const current = await buildView(deps, rec)
+  return {
+    contractVersion: GIFT_CONTRACT_VERSION, current, recent,
+    resume: {
+      sessionId: rec.id, suggestedStep: stepOf(current),
+      resumeBatches: current.batches.filter(b => b.generation === 'stalled').map(b => b.batchIndex),
+      runningBatches: current.batches.filter(b => b.generation === 'running').map(b => b.batchIndex),
+    },
   }
 }
 

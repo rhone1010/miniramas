@@ -754,7 +754,7 @@ describe('scene mockups (the photographic scene, with the calibrated renderer as
 
   it('a scene whose files changed during the render is never stored', async () => {
     const r = sceneRig(); const { sid } = await ready(r, [CS]); const log = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    r.sceneRender.mockImplementationOnce(async i => ({ png: await sharp({ create: { width: 1254, height: 1254, channels: 3, background: '#789' } }).png().toBuffer(), width: 1254, height: 1254, templateRevision: 'other-revision', visualizationKey: 'vk', metadata: {} }))
+    r.sceneRender.mockImplementationOnce(async i => ({ png: await sharp({ create: { width: 1254, height: 1254, channels: 3, background: '#789' } }).png().toBuffer(), width: 1254, height: 1254, templateRevision: 'other-revision', visualizationKey: 'vk', metadata: { fit: 'x' } }))
     expect(await getLineMockup(r.deps, U1, sid, 's')).toMatchObject({ renderer: 'calibrated' }); expect((r.store.compositions[0].plan as any).sceneRepresentation).toBeUndefined()
     log.mockRestore()
   })

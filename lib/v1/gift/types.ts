@@ -26,6 +26,8 @@ export interface SourceView {
   series: Series
   /** Groups only: how many people were counted. */
   peopleCount: number | null
+  /** The customer's own uploaded photo, as a signed URL that expires in an hour (re-read the session for a fresh one). Present so a restored session can show the photo; owner-checked like every route here. */
+  photoUrl?: string | null
 }
 
 /** A product the customer chose BEFORE art exists. productId and size come from the canonical catalog (/api/v1/print/catalog). */
@@ -74,11 +76,21 @@ export interface PreviewView {
   retryable: boolean                  // failed and attempts remain
 }
 
+/**
+ * Where a batch's generation stands, from the database alone (so it is right after a refresh, navigation or a dead request):
+ *   complete  all six previews are ready (kept forever; never regenerated)
+ *   running   a preview is being generated right now (a live lease): poll the session, do not start anything
+ *   stalled   unfinished and nothing is running (the request that was generating them ended): POST .../batches/{n}/retry resumes ONLY the unfinished previews
+ *   failed    unfinished and every unfinished preview has used its attempts: nothing more can be generated for it
+ * Resuming is safe to repeat and safe to run twice at once: each preview is claimed atomically, a ready preview is never touched, no new batch is reserved and nothing is charged.
+ */
+export type BatchGeneration = 'complete' | 'running' | 'stalled' | 'failed'
 export interface BatchView {
   batchIndex: number                  // 1-based within the session
   kind: BatchKind
   complete: boolean                   // all six previews ready
   previews: PreviewView[]             // always six, in slot order
+  generation: BatchGeneration
 }
 
 /** What the customer's next batch would cost, decided by the server from verified records. */
@@ -283,4 +295,36 @@ export interface MockupView {
   renderer?: 'scene' | 'calibrated'
   /** Present when renderer is 'scene': the scene, its renderer revision and how the scene-compatible picture relates to the production picture. Never a URL or a file. */
   scene?: { sceneId: string; revision: string; fit: 'exact' | 'resample'; representationId: string } | null
+}
+
+// ── RESTORING A SESSION (GET /api/v1/gift/sessions) ─────────────────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Where the customer was, derived from the server's records ONLY (the browser may remember more, e.g. effects ticked but not yet requested; the server cannot).
+ * Names are the server's; the Wizard maps them to its own views:
+ *   effects       the photo is accepted, no preview batch has been requested yet
+ *   previews      batches exist (generating, partly done or done) and no favorite is chosen
+ *   products      a favorite is chosen, no products yet
+ *   cart          products are chosen, no order yet
+ *   checkout      an order is open and unpaid
+ *   compositions  paid: compositions are being made, reviewed or approved one by one
+ *   order         approved, with the lab, refund requested, refunded, cancelled or needing attention: read order.state
+ */
+export type RestoreStep = 'effects' | 'previews' | 'products' | 'cart' | 'checkout' | 'compositions' | 'order'
+
+export interface RestoreResponse {
+  contractVersion: typeof GIFT_CONTRACT_VERSION
+  /** The customer's most recently used active session, in full (the same view GET /sessions/{id} returns), or null when there is none (start at the photo). */
+  current: SessionView | null
+  /** What to do next for the current session. null when there is no current session. */
+  resume: {
+    sessionId: string
+    suggestedStep: RestoreStep
+    /** Batch indexes that are 'stalled': POST /sessions/{id}/batches/{n}/retry for each (idempotent; resumes only unfinished previews; never reserves or charges). */
+    resumeBatches: number[]
+    /** Batch indexes that are 'running' right now: poll GET /sessions/{id}; start nothing. */
+    runningBatches: number[]
+  } | null
+  /** Other recent active sessions (newest first), for a "continue or start again" choice. The current session is the first of them. */
+  recent: Array<{ sessionId: string; createdAt: string; lastActivityAt: string; expiresAt: string; series: Series | null; orderId: string | null }>
 }

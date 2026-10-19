@@ -69,6 +69,8 @@ export class StoreError extends Error { constructor(public code: StoreErrorCode)
 export interface GiftStore {
   createSession(rec: SessionRec): Promise<void>
   getSession(id: string, userId: string): Promise<SessionRec | null>
+  /** The user's ACTIVE sessions, most recently used first (restoring work after navigation). Never another user's, never a deleted or expired-status one. */
+  listSessions(userId: string, limit: number): Promise<SessionRec[]>
   patchSession(id: string, userId: string, patch: Partial<Pick<SessionRec, 'lines' | 'master_aspect' | 'source_path' | 'expires_at' | 'last_activity_at'>>): Promise<void>
   listBatches(sessionId: string): Promise<Array<{ batch: BatchRec; previews: PreviewRec[] }>>
   reserveBatch(i: { sessionId: string; userId: string; key: string; effects: string[] }): Promise<{ batch: BatchRec; reused: boolean }>
@@ -124,6 +126,7 @@ export function supabaseGiftStore(db: any): GiftStore {
   return {
     async createSession(rec) { await one(db.from('gift_sessions').insert(rec)) },
     async getSession(id, userId) { return await one(db.from('gift_sessions').select('*').eq('id', id).eq('user_id', userId).neq('status', 'deleted').maybeSingle()) },
+    async listSessions(userId, limit) { return (await one(db.from('gift_sessions').select('*').eq('user_id', userId).eq('status', 'active').order('last_activity_at', { ascending: false }).limit(limit))) ?? [] },
     async patchSession(id, userId, patch) { await one(db.from('gift_sessions').update(patch).eq('id', id).eq('user_id', userId)) },
     async listBatches(sessionId) {
       const batches: BatchRec[] = (await one(db.from('gift_batches').select('*').eq('session_id', sessionId).order('batch_index'))) ?? []
@@ -239,6 +242,7 @@ export function memoryGiftStore(clock: () => number = Date.now) {
       attempts.push({ user_id: userId, sha, at: clock() })
     },
     async getSession(id, userId) { const s = sessions.get(id); return s && s.user_id === userId && s.status !== 'deleted' ? structuredClone(s) : null },
+    async listSessions(userId, limit) { return [...sessions.values()].filter(s => s.user_id === userId && s.status === 'active').sort((a, b) => Date.parse(b.last_activity_at) - Date.parse(a.last_activity_at)).slice(0, limit).map(s => structuredClone(s)) },
     async patchSession(id, userId, patch) { const s = sessions.get(id); if (s && s.user_id === userId) Object.assign(s, structuredClone(patch)) },
     async listBatches(sessionId) {
       return batches.filter(b => b.session_id === sessionId).sort((a, b) => a.batch_index - b.batch_index)
