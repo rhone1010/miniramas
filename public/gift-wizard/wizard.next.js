@@ -9,6 +9,9 @@ const asset = (s) => new URL(s, import.meta.url).href;
 let session = newSession(), view = 'photo', history = [], products = [], fixtures = [], registries = {}, manifest;
 let shoppingFavoriteId = null;
 let featuredProduct = '';
+let catalogSamples = {};
+function catalogPhoto(p, cls) { const sample = session.source?.series ? catalogSamples[session.source.series]?.[p.id] : undefined; if (!sample)
+    return photo(asset(p.image), p.label, cls); return '<picture><source media="(max-width:600px)" srcset="' + esc(sample.mobile) + '">' + photo(sample.desktop, p.label, cls) + '</picture>'; }
 // Exact approved disclosure from lib/v1/gift/orders.ts, version 2026-10-18-3.
 let disclosure = {
     version: '2026-10-18-3',
@@ -247,7 +250,7 @@ function renderProductCarousel() {
     const index = Math.max(0, products.findIndex(p => p.id === (featuredProduct || activeProduct))), p = products[index];
     featuredProduct = p.id;
     const canChoose = p.available && p.options.length > 0;
-    $('screen').innerHTML = '<section class="gift-carousel" aria-roledescription="carousel" aria-label="Choose Your Gift"><button type="button" id="open-product-picker" aria-haspopup="dialog" aria-expanded="false" aria-controls="product-picker">Choose a Product<br><strong>' + esc(p.label) + '</strong></button><div class="gift-feature"><div id="product-picker" class="gift-product-picker" aria-label="Choose a Product"><div class="gift-picker-heading"><h2>Choose a Product</h2><button type="button" id="close-product-picker" aria-label="Close product picker">×</button></div><div class="gift-product-selectors" aria-label="Products">' + products.map(item => '<button type="button" data-feature="' + esc(item.id) + '" aria-pressed="' + (item.id === p.id) + '">' + photo(asset(item.image), '', 'gift-picker-thumb') + '<span>' + esc(item.label) + '</span><small>' + (item.available && item.options.length ? 'Available' : 'Not currently available') + '</small></button>').join('') + '</div></div><div class="gift-feature-media" id="gift-swipe">' + photo(asset(p.image), p.label, 'gift-feature-image') + '<div class="gift-carousel-controls"><button type="button" id="gift-previous" aria-label="Previous product">← Previous</button><span aria-live="polite" aria-atomic="true">' + (index + 1) + ' / ' + products.length + '</span><button type="button" id="gift-next" aria-label="Next product">Next →</button></div></div><div class="gift-feature-details" aria-live="polite" aria-atomic="true"><h2>' + esc(p.label) + '</h2><p class="gift-feature-price">' + (canChoose ? 'From ' + money(Math.min(...p.options.map(o => o.retailCents))) : 'Not currently available') + '</p><button class="primary" id="choose-featured" data-product="' + esc(p.id) + '" ' + (!canChoose ? 'disabled' : '') + '>Choose This Gift</button></div></div></section>';
+    $('screen').innerHTML = '<section class="gift-carousel" aria-roledescription="carousel" aria-label="Choose Your Gift"><button type="button" id="open-product-picker" aria-haspopup="dialog" aria-expanded="false" aria-controls="product-picker">Choose a Product<br><strong>' + esc(p.label) + '</strong></button><div class="gift-feature"><div id="product-picker" class="gift-product-picker" aria-label="Choose a Product"><div class="gift-picker-heading"><h2>Choose a Product</h2><button type="button" id="close-product-picker" aria-label="Close product picker">×</button></div><div class="gift-product-selectors" aria-label="Products">' + products.map(item => '<button type="button" data-feature="' + esc(item.id) + '" aria-pressed="' + (item.id === p.id) + '">' + catalogPhoto(item, 'gift-picker-thumb') + '<span>' + esc(item.label) + '</span><small>' + (item.available && item.options.length ? 'Available' : 'Not currently available') + '</small></button>').join('') + '</div></div><div class="gift-feature-media" id="gift-swipe">' + catalogPhoto(p, 'gift-feature-image') + '<div class="gift-carousel-controls"><button type="button" id="gift-previous" aria-label="Previous product">← Previous</button><span aria-live="polite" aria-atomic="true">' + (index + 1) + ' / ' + products.length + '</span><button type="button" id="gift-next" aria-label="Next product">Next →</button></div></div><div class="gift-feature-details" aria-live="polite" aria-atomic="true"><h2>' + esc(p.label) + '</h2><p class="gift-feature-price">' + (canChoose ? 'From ' + money(Math.min(...p.options.map(o => o.retailCents))) : 'Not currently available') + '</p><button class="primary" id="choose-featured" data-product="' + esc(p.id) + '" ' + (!canChoose ? 'disabled' : '') + '>Choose This Gift</button></div></div></section>';
     const show = (id, focus) => { const wasOpen = $('product-picker').classList.contains('is-open'); if (wasOpen)
         closePicker(); featuredProduct = id; renderProductCarousel(); document.querySelector(wasOpen ? '#open-product-picker' : focus || '#gift-next')?.focus({ preventScroll: true }); };
     const inertPickerBackground = (value) => document.querySelectorAll('.gift-header,.progress,#right,#open-product-picker,.gift-feature-media,.gift-feature-details').forEach(el => el.inert = value);
@@ -671,7 +674,7 @@ window.addEventListener('pagehide', () => { if (sourceURL)
     URL.revokeObjectURL(sourceURL); });
 async function start() {
     try {
-        const [c, f, m] = await Promise.all([fetch(asset('./catalog.next.json')), serverMode ? Promise.resolve(new Response('[]', { status: 200 })) : fetch(asset('./fixtures.next.json')), fetch('/previews/effects-manifest.json')]);
+        const [c, f, m, samples] = await Promise.all([fetch(asset('./catalog.next.json')), serverMode ? Promise.resolve(new Response('[]', { status: 200 })) : fetch(asset('./fixtures.next.json')), fetch('/previews/effects-manifest.json'), fetch(asset('./catalog-samples/index.next.json')).catch(() => null)]);
         if (!c.ok || !f.ok || !m.ok)
             throw Error();
         const catalog = await c.json();
@@ -679,6 +682,11 @@ async function start() {
         limit = catalog.maxUploadBytes;
         fixtures = await f.json();
         manifest = await m.json();
+        if (samples?.ok) {
+            const sampleIndex = await samples.json();
+            if (sampleIndex.version === 1)
+                catalogSamples = sampleIndex.series || {};
+        }
         for (const [series, path] of [['portraits', '/effect-registry.js'], ['groups', '/groups-registry.js'], ['pets', '/pets-registry.js']]) {
             await import(path);
             registries[series] = window.EFFECT_REGISTRY;
