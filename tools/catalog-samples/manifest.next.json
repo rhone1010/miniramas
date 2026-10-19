@@ -20,7 +20,7 @@
     "unblockedNewArtworkCalls": 11,
     "modelOnlyEstimateUSD": 1.008,
     "unblockedModelOnlyEstimateUSD": 0.5544,
-    "additional": "Executed 11 authorized 2K calls; $0.5544 model charges. Card adaptations are local bounded mirror extension; no paid analysis or QA calls."
+    "additional": "17 successful authorized2K calls=$0.8568 cumulative.6 new calls this pass=$0.3024. No retries or auxiliary paid calls."
   },
   "rows": [
     {
@@ -224,8 +224,25 @@
       ],
       "generationAspect": "1:1",
       "geometryNote": null,
-      "templateHold": "mat-opening-visual-approval",
-      "artwork": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-matted-generated.png",
+        "sha256": "89d0b0ebe2c89e366513ada81648b0fac5f2617de718cc5a037a37ec0342ec75",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "gry4xmftg1rmy0d1ah589s12yg",
+          "promptSha256": "9b63a4d7d482f7fb0dda9a63d553ff3cfbeb617b60798e349f067e23ef71fe1d",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-matted-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
       "promptSources": [
         {
           "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
@@ -240,7 +257,7 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "template-blocked"
+      "status": "generated-visually-checked"
     },
     {
       "id": "pets-canvas",
@@ -368,8 +385,25 @@
       ],
       "generationAspect": "1:1",
       "geometryNote": "Generate square 910x910 visible picture; backend builds 2670x1110 full wrap, with 100px vertical margin. Do not stretch square picture to full wrap.",
-      "templateHold": "shared-wash-transition-approval",
-      "artwork": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-mug-generated.png",
+        "sha256": "a3848bd51255710c0f1c8d68bfb6f38afc49466e1b0ea5d15eea8a08f587456c",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "dy9pgys48drmr0d1ah7a9dq4tg",
+          "promptSha256": "958a4bc1964bb246ae06e6407d7088b5a075a6b0b2cf40e1d5639b56e9ff3eb1",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\pets-mug-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
       "promptSources": [
         {
           "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/pets/pets-catalog-35.ts",
@@ -384,7 +418,7 @@
           "sha256": "1d7d8a3a3696fca4fb163168920a3fe66d280a691e3f3a154359fbc172f47b3f"
         }
       ],
-      "status": "template-blocked"
+      "status": "generated-visually-checked"
     },
     {
       "id": "pets-card",
@@ -653,8 +687,25 @@
       ],
       "generationAspect": "1:1",
       "geometryNote": null,
-      "templateHold": "mat-opening-visual-approval",
-      "artwork": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-matted-generated.png",
+        "sha256": "221ace899201092bc30d5aaccbd351bfdcb756edcbe068c90215d121309d3ae8",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "ea8xwqjyj1rmt0d1ah5tx0drdm",
+          "promptSha256": "81549ab4cc37518959c36e3b93abdf49b10143c85e006f58f890c59bb6c4dd8f",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-matted-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
       "promptSources": [
         {
           "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
@@ -665,7 +716,7 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "template-blocked"
+      "status": "generated-visually-checked"
     },
     {
       "id": "groups-canvas",
@@ -787,8 +838,25 @@
       ],
       "generationAspect": "1:1",
       "geometryNote": "Generate square 910x910 visible picture; backend builds 2670x1110 full wrap, with 100px vertical margin. Do not stretch square picture to full wrap.",
-      "templateHold": "shared-wash-transition-approval",
-      "artwork": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-mug-generated.png",
+        "sha256": "e23852c988e7bb76f96333458f08890aedb7346213023f1681f1703487a91de6",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "gp57hg5xk1rmt0d1ah78ht0q4g",
+          "promptSha256": "0ee6144dc413ac2f17eaa819e0c3c6cda1d063092fafd12cdf86bd515c152ee3",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\groups-mug-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
       "promptSources": [
         {
           "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/groups/groups-effects.ts",
@@ -799,7 +867,7 @@
           "sha256": "bb5c3a5bb29c786f6a7e4239b64d2a86a73f41d1abc740b2caffdc7caf15e2bd"
         }
       ],
-      "status": "template-blocked"
+      "status": "generated-visually-checked"
     },
     {
       "id": "groups-card",
@@ -1086,8 +1154,25 @@
       ],
       "generationAspect": "1:1",
       "geometryNote": null,
-      "templateHold": "mat-opening-visual-approval",
-      "artwork": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-matted-generated.png",
+        "sha256": "4efd8a67144bac1730d4dff449099b250546b3f1188303b21cd3c847183b35b6",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "5hxzdxpgsxrmw0d1ah5t1e2bsm",
+          "promptSha256": "76ba2b275a3fe663534fa1ef33bc0e114a508f04bb159e1ba552cdd264d83a72",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-matted-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
       "promptSources": [
         {
           "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
@@ -1106,7 +1191,7 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "template-blocked"
+      "status": "generated-visually-checked"
     },
     {
       "id": "portraits-canvas",
@@ -1244,8 +1329,25 @@
       ],
       "generationAspect": "1:1",
       "geometryNote": "Generate square 910x910 visible picture; backend builds 2670x1110 full wrap, with 100px vertical margin. Do not stretch square picture to full wrap.",
-      "templateHold": "shared-wash-transition-approval",
-      "artwork": null,
+      "templateHold": null,
+      "artwork": {
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-mug-generated.png",
+        "sha256": "c0d470857c070a0a8d7f755a28288772e69b9c29a48f684c2ca84c617c331b5b",
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "provenance": {
+          "predictionId": "4dm124rws1rmy0d1ah7rt1r128",
+          "promptSha256": "39734721a7020176a7c6a4959c05a45f7991213b514e55c56601231cccdd27dd",
+          "model": "google/nano-banana-2.1",
+          "resolution": "2K",
+          "modelChargeUSD": 0.0504,
+          "originalPath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\authorized-2026-10-19\\portraits-mug-generated.png",
+          "adaptation": null
+        },
+        "visualReview": "2026-10-19: generated artwork and finished catalog mockup visually checked; whole subject retained, no crop"
+      },
       "promptSources": [
         {
           "path": "E:/Dev/_recovery-staging/vw-push/lib/v1/portraits/effect-registry.ts",
@@ -1264,7 +1366,7 @@
           "sha256": "45c5fc4ada060990ffc3d1dd10ea893a3c818b0d9d6344d987f8131ac4c0f7e7"
         }
       ],
-      "status": "template-blocked"
+      "status": "generated-visually-checked"
     },
     {
       "id": "portraits-card",
@@ -1347,11 +1449,11 @@
   ],
   "executionSummary": {
     "date": "2026-10-19",
-    "calls": 11,
-    "modelChargesUSD": 0.5544,
+    "calls": 17,
+    "modelChargesUSD": 0.8568,
     "budgetUSD": 2,
     "reusedArtwork": 4,
-    "renderedMockups": 15,
-    "templateHeld": 9
+    "renderedMockups": 21,
+    "templateHeld": 3
   }
 }

@@ -1,7 +1,7 @@
 {
   "id": "greeting-card",
   "productId": "card",
-  "status": "visual-validated",
+  "status": "visual-validation-ready",
   "dimensions": [
     1264,
     848
@@ -125,5 +125,6 @@
       -0.00004653012187012723,
       1
     ]
-  }
+  },
+  "visualReview": "Existing 7x5 portrait front mapping visually checked using three catalog artworks. Whole 5:7 front retained. Production builder owns fold, bleed and 36px safe area; purchasing remains server-disabled."
 }

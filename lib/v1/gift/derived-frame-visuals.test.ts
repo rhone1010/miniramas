@@ -4,9 +4,9 @@ import {createRequire} from 'node:module';
 import sharp from 'sharp';
 import {getProduct} from '../print/catalog';
 const adapter=createRequire(import.meta.url)('../../../tools/product-mockup/gift-visualization-adapter.next.cjs');
-it('derives mat and float-canvas layers for every supported size while retaining artwork',async()=>{
+it('derives mount layers for every supported size while retaining artwork',async()=>{
  const source=await sharp('public/previews/_flat/bronze_1.jpg').resize(600,600,{fit:'contain'}).png().toBuffer();
- for(const family of ['matted','framed_canvas'])for(const size of ['8x8','12x12','16x16','20x20','8x12','12x18','16x24','20x30']){
+ for(const family of ['matted'])for(const size of ['8x8','12x12','16x16','20x20','8x12','12x18','16x24','20x30']){
  if(family==='framed_canvas'&&size==='8x12')continue;
  const p=getProduct(family+':'+size)!,ratio=p.requirements.picturePx.w/p.requirements.picturePx.h;
  const h=Math.round(600/ratio),art=await sharp(source).extend({top:Math.floor((h-600)/2),bottom:Math.ceil((h-600)/2),extendWith:'mirror'}).png().toBuffer();
@@ -17,3 +17,5 @@ it('derives mat and float-canvas layers for every supported size while retaining
  }
 },120000);
 it('refuses held orientation and unspecified float gap',async()=>{const a=Buffer.from('unused');await expect(adapter.composeTemplateVisualTest({templateId:'framed-canvas',artwork:a,artworkId:'x',size:'8x12',floatGapIn:.125})).rejects.toThrow('unsupported_or_held_size');await expect(adapter.composeTemplateVisualTest({templateId:'framed-canvas-square',artwork:a,artworkId:'x',size:'8x8'})).rejects.toThrow('float_gap_unverified');});
+
+it('rejects the visually rejected float candidate even with a supplied gap',async()=>{await expect(adapter.composeTemplateVisualTest({templateId:'framed-canvas-square',artwork:Buffer.from('unused'),artworkId:'x',size:'8x8',floatGapIn:.125})).rejects.toThrow('float_side_plane_calibration_required');});

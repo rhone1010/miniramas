@@ -201,6 +201,114 @@
       },
       "completed": "2026-10-19T12:07:50.606776392Z",
       "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "pets-matted",
+      "started": "2026-10-19T13:12:41.528Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "9b63a4d7d482f7fb0dda9a63d553ff3cfbeb617b60798e349f067e23ef71fe1d",
+      "sourceSha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+      "styleReferenceCount": 0,
+      "predictionId": "gry4xmftg1rmy0d1ah589s12yg",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 24.532169773,
+        "resolution_target": "2K",
+        "total_time": 24.612272201
+      },
+      "completed": "2026-10-19T13:13:06.980272201Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "groups-matted",
+      "started": "2026-10-19T13:13:07.571Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "81549ab4cc37518959c36e3b93abdf49b10143c85e006f58f890c59bb6c4dd8f",
+      "sourceSha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+      "styleReferenceCount": 0,
+      "predictionId": "ea8xwqjyj1rmt0d1ah5tx0drdm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 28.421817719,
+        "resolution_target": "2K",
+        "total_time": 28.445251009
+      },
+      "completed": "2026-10-19T13:13:36.429251009Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "portraits-matted",
+      "started": "2026-10-19T13:13:36.931Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "76ba2b275a3fe663534fa1ef33bc0e114a508f04bb159e1ba552cdd264d83a72",
+      "sourceSha256": "40df58cb356cd6d912c25317e09c5dc7f43a9d9dfc7858b8fdb4be68d26ce95e",
+      "styleReferenceCount": 0,
+      "predictionId": "5hxzdxpgsxrmw0d1ah5t1e2bsm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 20.466457567,
+        "resolution_target": "2K",
+        "total_time": 20.496221631
+      },
+      "completed": "2026-10-19T13:13:57.727221631Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "pets-mug",
+      "started": "2026-10-19T13:16:08.897Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "958a4bc1964bb246ae06e6407d7088b5a075a6b0b2cf40e1d5639b56e9ff3eb1",
+      "sourceSha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+      "styleReferenceCount": 0,
+      "predictionId": "dy9pgys48drmr0d1ah7a9dq4tg",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 38.300240842,
+        "resolution_target": "2K",
+        "total_time": 38.371787421
+      },
+      "completed": "2026-10-19T13:16:48.038787421Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "groups-mug",
+      "started": "2026-10-19T13:16:48.542Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "0ee6144dc413ac2f17eaa819e0c3c6cda1d063092fafd12cdf86bd515c152ee3",
+      "sourceSha256": "74a6490b828ff15dcdffbfb340e582e4808ef87894ff6b7000d6d5b08ff5169b",
+      "styleReferenceCount": 0,
+      "predictionId": "gp57hg5xk1rmt0d1ah78ht0q4g",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 22.524133771,
+        "resolution_target": "2K",
+        "total_time": 22.551063036
+      },
+      "completed": "2026-10-19T13:17:11.471063036Z",
+      "modelChargeUSD": 0.0504
+    },
+    {
+      "id": "portraits-mug",
+      "started": "2026-10-19T13:17:12.107Z",
+      "reservedUSD": 0.0504,
+      "status": "succeeded",
+      "promptSha256": "39734721a7020176a7c6a4959c05a45f7991213b514e55c56601231cccdd27dd",
+      "sourceSha256": "94641985e4b89c1e98c786329ecaf4be73cbe15aabdc27fe7f23a7451644a2f5",
+      "styleReferenceCount": 0,
+      "predictionId": "4dm124rws1rmy0d1ah7rt1r128",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 21.995734165000002,
+        "resolution_target": "2K",
+        "total_time": 22.103714368
+      },
+      "completed": "2026-10-19T13:17:35.391714368Z",
+      "modelChargeUSD": 0.0504
     }
   ]
 }

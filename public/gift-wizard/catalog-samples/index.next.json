@@ -29,10 +29,10 @@
       "matted": {
         "desktop": "/gift-wizard/catalog-samples/pets-matted-desktop.webp",
         "mobile": "/gift-wizard/catalog-samples/pets-matted-mobile.webp",
-        "placeholder": true,
+        "placeholder": false,
         "templateId": "matted-frame-square",
-        "status": "gap",
-        "reason": "mat-opening-visual-approval"
+        "status": "rendered",
+        "reason": null
       },
       "canvas": {
         "desktop": "/gift-wizard/catalog-samples/pets-canvas-desktop.webp",
@@ -53,10 +53,10 @@
       "mug": {
         "desktop": "/gift-wizard/catalog-samples/pets-mug-desktop.webp",
         "mobile": "/gift-wizard/catalog-samples/pets-mug-mobile.webp",
-        "placeholder": true,
+        "placeholder": false,
         "templateId": "ceramic-mug",
-        "status": "gap",
-        "reason": "shared-wash-transition-approval"
+        "status": "rendered",
+        "reason": null
       },
       "card": {
         "desktop": "/gift-wizard/catalog-samples/pets-card-desktop.webp",
@@ -95,10 +95,10 @@
       "matted": {
         "desktop": "/gift-wizard/catalog-samples/groups-matted-desktop.webp",
         "mobile": "/gift-wizard/catalog-samples/groups-matted-mobile.webp",
-        "placeholder": true,
+        "placeholder": false,
         "templateId": "matted-frame-square",
-        "status": "gap",
-        "reason": "mat-opening-visual-approval"
+        "status": "rendered",
+        "reason": null
       },
       "canvas": {
         "desktop": "/gift-wizard/catalog-samples/groups-canvas-desktop.webp",
@@ -119,10 +119,10 @@
       "mug": {
         "desktop": "/gift-wizard/catalog-samples/groups-mug-desktop.webp",
         "mobile": "/gift-wizard/catalog-samples/groups-mug-mobile.webp",
-        "placeholder": true,
+        "placeholder": false,
         "templateId": "ceramic-mug",
-        "status": "gap",
-        "reason": "shared-wash-transition-approval"
+        "status": "rendered",
+        "reason": null
       },
       "card": {
         "desktop": "/gift-wizard/catalog-samples/groups-card-desktop.webp",
@@ -161,10 +161,10 @@
       "matted": {
         "desktop": "/gift-wizard/catalog-samples/portraits-matted-desktop.webp",
         "mobile": "/gift-wizard/catalog-samples/portraits-matted-mobile.webp",
-        "placeholder": true,
+        "placeholder": false,
         "templateId": "matted-frame-square",
-        "status": "gap",
-        "reason": "mat-opening-visual-approval"
+        "status": "rendered",
+        "reason": null
       },
       "canvas": {
         "desktop": "/gift-wizard/catalog-samples/portraits-canvas-desktop.webp",
@@ -185,10 +185,10 @@
       "mug": {
         "desktop": "/gift-wizard/catalog-samples/portraits-mug-desktop.webp",
         "mobile": "/gift-wizard/catalog-samples/portraits-mug-mobile.webp",
-        "placeholder": true,
+        "placeholder": false,
         "templateId": "ceramic-mug",
-        "status": "gap",
-        "reason": "shared-wash-transition-approval"
+        "status": "rendered",
+        "reason": null
       },
       "card": {
         "desktop": "/gift-wizard/catalog-samples/portraits-card-desktop.webp",

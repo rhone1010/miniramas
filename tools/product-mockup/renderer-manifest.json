@@ -217,8 +217,8 @@
     },
     {
       "path": "public/gift-wizard/mockup-templates/ceramic-mug/template.next.json",
-      "bytes": 1945,
-      "sha256": "247e401e19f97dc746a940f61a928c3ab2e9bc9e150f93adcd4ebd55266e966c"
+      "bytes": 2060,
+      "sha256": "30435eda952ea4e3e5643aafa62d49451004241f264a336decd0cae3b58dc8a8"
     },
     {
       "path": "public/gift-wizard/mockup-templates/greeting-card/artwork-mask.png",
@@ -237,18 +237,18 @@
     },
     {
       "path": "public/gift-wizard/mockup-templates/greeting-card/template.next.json",
-      "bytes": 3205,
-      "sha256": "86b4a56d3872668fc84eded405d8977713241c67b3609f417f64fd57c06a5fd3"
+      "bytes": 3434,
+      "sha256": "73fa2009fe8d3b32f8c5dc8cc38b8acb743912661a223cf619c033a54ae2beaf"
     },
     {
       "path": "public/gift-wizard/mockup-templates/matted-frame/template.next.json",
-      "bytes": 343,
-      "sha256": "1f3949bc9fc207a86e793f55b13edcdddb80315d4d2fc88acf0a06e711876f59"
+      "bytes": 525,
+      "sha256": "730dc2f770cfe3420c405502530ab930020c25808facfcd4cb813928ec7c2997"
     },
     {
       "path": "public/gift-wizard/mockup-templates/matted-frame-square/template.next.json",
-      "bytes": 348,
-      "sha256": "1358775a88d13717655806b4f1370438e8f8b0b5288a8e4ccfee997364437d12"
+      "bytes": 530,
+      "sha256": "260b75b019cce91fbbf6598dda6c44c307be5dd64df9b070015deb5eab4c8b69"
     },
     {
       "path": "public/gift-wizard/mockup-templates/framed-canvas/template.next.json",
@@ -262,8 +262,8 @@
     },
     {
       "path": "tools/product-mockup/derived-frame.next.cjs",
-      "bytes": 3384,
-      "sha256": "12feda792a7148ed294d63843f9e797b8c14cbdbb8688aef68cd691905501046"
+      "bytes": 3773,
+      "sha256": "27ebdb54ab62b39571171d701818547a6a9904d3671f51477a8d411c95f66fde"
     }
   ]
 }

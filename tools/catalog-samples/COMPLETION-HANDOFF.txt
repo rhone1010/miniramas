@@ -1,0 +1,29 @@
+PRODUCT VISUALIZATION HANDOFF — 2026-10-19
+Authoritative Preview1f9f338 merged into the local approved frontend. No push/deploy.
+21 completed catalog mockups;3 Framed Canvas placeholders. All48 desktop/mobile WebP paths exist.
+17 total successful catalog model calls=$0.8568 of$2. This pass6 calls=$0.3024. Existing generations retained.
+
+COMPLETED
+Matted Frame:8 supported sizes, unchanged Classic perspective, size-specific mount, soft2.4mm opening edge, provisional3% safety margin, no artwork crop. Visible mount overlap remains a documented approximation.
+Card: existing7x5 portrait front inspected with all3 category artworks. Fold/bleed remain production-builder owned.
+Mug: unchanged cylinder, right handle,2670x1110 wrap,100px margins. Outside-only cosine feather spans the existing safety margin; tests show both910px panels pixel-identical. Candidate is lib/v1/print/product-layout.visual.next.ts. CC must adopt its buildMugWrap change into the shared production builder for BOTH mockup and final file; do not enable a mismatched production path. Catalog sample images use this candidate.
+Six approved compositor templates, photographs, masks and shared compositor code unchanged.
+Step4 classification/static image integration retained; no layout changes, no availability changes.
+
+GENUINE BLOCKERS
+1. Framed Canvas: existing Classic photograph does not establish the float frame profile, overlap, cavity or side-plane masks. Contract explicitly leaves gap/overlap unverified. Rejected flat renderer now throws float_side_plane_calibration_required even if given a guessed gap. Need measured profile/side-plane reference and masks;8x12 stays held. No paid generation for these3 slots.
+2. Live provisional favorite placement: current getLineMockup requires a ready/approved composition with composed_path; scopeOf blocks unpaid access unless draftCompositions is enabled. Do NOT enable that obsolete flow. CC must provide an authenticated deterministic watermarked-preview contract resolving owned favorite + selected product geometry, returning provisional scene only with identity/expiry, no composition/approval/correction entitlement mutation. Never accept arbitrary master URLs. UI should keep paid final mockup separate.
+3. Product purchasing remains CC-controlled: pricing, enabled families and renderer mappings. Mat mapping to matted-frame or matted-frame-square must call derived adapter with exact size; card/mug template IDs unchanged.
+
+PROVISIONAL DEMONSTRATION
+Offline helper tools/catalog-samples/provisional.next.cjs uses watermarked preview bytes only, contain placement and existing calibrated adapter; no crop, no generation, no production authorization. It is not a live endpoint or a security boundary. Demonstration source and fine-art/square-canvas outputs are in the evidence directory. It intentionally leaves paper-white space when aspect ratios differ.
+
+VALIDATION
+35 Gift UI tests;7 batch/provisional tests;3 mug/card tests;12 mount/bundle tests. All pass with non-routable local test environment; no database calls. Serverless trace expansion, manifest hashes and real renderer execution verified. No deployment build claimed.
+Actual browser at1280,1660,1920,390,430: no overflow or missing images. Picker, mat/mug selection, previous/next and unavailable CTA intact.
+
+FILES / DEPLOYMENT
+Include entire public/gift-wizard/catalog-samples; updated mat/mug/card manifests; derived-frame.next.cjs; renderer-manifest.json. Tracing patterns already cover these assets. Backend production product-layout.ts was not edited. Candidate.next.ts is separate for CC review/adoption.
+Catalog/contact sheets:E:/Dev/_recovery-staging/frontend-deploy-review/catalog-samples/complete-2026-10-19
+Mockup/provisional evidence:E:/Dev/_recovery-staging/frontend-deploy-review/four-products/final-20261019
+No independent push/deploy or manufacturing. Earlier README counts are superseded by this handoff.

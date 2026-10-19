@@ -33,13 +33,13 @@ export async function buildMugWrap(picture: Buffer, scale = 1): Promise<Buffer> 
     .composite([{ input: left, left: 0, top: 0 }, { input: right, left: half, top: 0 }]).png().toBuffer()
   const soft = await sharp(wash).blur(Math.max(1, 45 * scale)).png().toBuffer()
   // Outside-only feather: the complete 910px picture panel is unchanged. Geometry and safety offsets are unchanged.
-  const halo = Math.max(1, Math.round(24 * scale))
+  const halo = Math.max(1, Math.min(...rects.map(r => r.y)))
   const blends = await Promise.all(panels.map(async (panel, i) => {
     const r = rects[i]
     const raw = await sharp(panel).extend({ left: halo, right: halo, top: halo, bottom: halo, extendWith: 'copy' }).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
     for (let y = 0; y < raw.info.height; y++) for (let x = 0; x < raw.info.width; x++) {
       const distance = Math.max(halo - x, halo - y, x - (halo + r.w - 1), y - (halo + r.h - 1), 0)
-      raw.data[(y * raw.info.width + x) * 4 + 3] = Math.round(255 * Math.max(0, 1 - distance / halo))
+      raw.data[(y * raw.info.width + x) * 4 + 3] = Math.round(255 * (1 + Math.cos(Math.PI * Math.min(1, distance / halo))) / 2)
     }
     return { input: await sharp(raw.data, { raw: raw.info }).png().toBuffer(), left: r.x - halo, top: r.y - halo }
   }))

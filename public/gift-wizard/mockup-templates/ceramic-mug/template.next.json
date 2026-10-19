@@ -1,7 +1,7 @@
 {
   "id": "ceramic-mug",
   "productId": "mug",
-  "status": "awaiting-visual-approval",
+  "status": "visual-ready-shared-builder-pending",
   "dimensions": [
     1264,
     848
@@ -46,5 +46,5 @@
     "source": "GIFT-FOUR-PRODUCTS-CODEX-CONTRACT-2026-10-18.md; verified Prodigi template"
   },
   "productionPrintFile": false,
-  "visualReview": "Calibrated mapping retained; sharp picture-to-wash boundary requires shared print-layout correction before visual approval."
+  "visualReview": "Cylindrical mapping unchanged; 100px outside-only cosine transition demonstrated in product-layout.visual.next.ts. Picture pixels and geometry unchanged. CC must adopt same builder for print and mockup before enabling purchase."
 }
