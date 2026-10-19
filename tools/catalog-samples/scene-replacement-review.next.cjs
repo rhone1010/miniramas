@@ -1,8 +1,9 @@
 // Clean masked replacement. Original selected artwork is never used as a lighting multiplier.
 const fs=require('fs'),path=require('path'),sharp=require('sharp');
 const {homography,project,cylindricalUV}=require('../product-mockup/compositor.next.cjs');
-async function replaceScene({sceneId,artwork}){
- const root=path.resolve('public/gift-wizard/mockup-scenes',sceneId),m=JSON.parse(fs.readFileSync(path.join(root,'scene.next.json')));
+async function replaceScene({sceneId,artwork,assetRoot=process.cwd()}){
+ if(!/^[a-z0-9-]+$/.test(sceneId))throw Error('bad_scene_id');
+ const root=path.resolve(assetRoot,'public/gift-wizard/mockup-scenes',sceneId),m=JSON.parse(fs.readFileSync(path.join(root,'scene.next.json')));
  if(m.status.startsWith('blocked'))throw Error(m.status);
  const base=await sharp(path.join(root,m.sourceImage)).removeAlpha().raw().toBuffer({resolveWithObject:true});
  const mask=await sharp(path.join(root,m.artworkMask)).flatten({background:'black'}).greyscale().raw().toBuffer();

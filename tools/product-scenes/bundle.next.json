@@ -1,0 +1,245 @@
+{
+  "purpose": "Dormant scene renderer. Backend scene composition and configuration mapping must be verified before live routing.",
+  "files": [
+    {
+      "path": "public/gift-wizard/mockup-scenes/ceramic-mug/Mug - art bw.png",
+      "bytes": 56181,
+      "sha256": "66a391928e65015da729b425b492567f208dfae4b3e434582337aa0df1129248"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/ceramic-mug/Mug - background bw.png",
+      "bytes": 56338,
+      "sha256": "e62ab6fedcfd1f1d05e216bae25bd435f9f30771b05f6744179accd9c73b3855"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/ceramic-mug/Mug.png",
+      "bytes": 1277117,
+      "sha256": "556d4260e370106cf67bafa1f8d1bfa451b9e7e6b87be3e57f062ba4abed8350"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/ceramic-mug/scene.next.json",
+      "bytes": 1691,
+      "sha256": "35b8a91d54d0d1ccc84168ada69523e7de883041b4ce78f8e6da1c0b22837d2f"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/classic-framed/Classic Framed Print - art bw.png",
+      "bytes": 36479,
+      "sha256": "3dfe055a0448c0818d59da5f1b10afccb04672d24f4bd0b7de760bb51d874455"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/classic-framed/Classic Framed Print - background bw.png",
+      "bytes": 36484,
+      "sha256": "8a6a0962be187ca5285684f231747bb3667bda0bf11468d6291c70736089b6b6"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/classic-framed/Classic Framed Print - frame bw.png",
+      "bytes": 36495,
+      "sha256": "f664512759830bf34339872913c135e01e519eb864cc0bf81e9f343720fe0b32"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/classic-framed/Classic Framed Print.png",
+      "bytes": 1911911,
+      "sha256": "c5785bc6ab5407e2bc552fb5cd3a4f882dac1593bbf0ad7db7735747d00fd7e6"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/classic-framed/scene.next.json",
+      "bytes": 1450,
+      "sha256": "dcfb0c70b3ee17e543f289d86eb80b579897c422bba9b8e58c760a40a8dc0777"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/fine-art-square/fine art print square - art bw.png",
+      "bytes": 63516,
+      "sha256": "db53fd4e70915e0e6d16f4b3febdd81d6769bf9130bf0198d45205ec1624eefa"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/fine-art-square/fine art print square - background bw.png",
+      "bytes": 63452,
+      "sha256": "08011029d87f373ce2f0c3fbe29988e4852697cd08cd51a1ef4201c2cd733273"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/fine-art-square/fine art print square.png",
+      "bytes": 1795381,
+      "sha256": "fcff637318f3bffc48179aeba5b5f341b52437cdca6f468e9f6077ed5ec585fe"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/fine-art-square/scene.next.json",
+      "bytes": 1284,
+      "sha256": "747798db4c7870fb9e400b7389076641abea0cd6d0f842088a6a1248b333b393"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/framed-canvas/framed canvas - art bw.png",
+      "bytes": 36490,
+      "sha256": "d98752ef5dc72f21c04530abeae34aef0b1a1f092c53d10555017c769d45240d"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/framed-canvas/framed canvas - background bw.png",
+      "bytes": 36575,
+      "sha256": "86f868dfc3327a02974f93996057f7485e5e4e65171a133a105e2846a3aa5f4d"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/framed-canvas/framed canvas - frame bw.png",
+      "bytes": 36506,
+      "sha256": "c72c30005cf20edb46ddad2b8cdcc3fa7649aa293b48ded52dd3fa2ae6447a63"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/framed-canvas/framed canvas.png",
+      "bytes": 2122975,
+      "sha256": "ae6279e69e643e389c6e1f2ae06f581a40b0cfebd6d4de9a5018c9c421d45885"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/framed-canvas/scene.next.json",
+      "bytes": 1417,
+      "sha256": "7e2bdb2a241233707624ba2675789ccf344ce6656597c42a2ea37ce646b592e1"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/gallery-canvas-landscape/scene.next.json",
+      "bytes": 1316,
+      "sha256": "3a40779032c2b36f8a86404e3e18910488cc2855ce3e3f4619bbc748133ab0b0"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/gallery-canvas-landscape/wrapped canvas landscape - artwork bw.png",
+      "bytes": 38100,
+      "sha256": "abce16a92bea1d834a9ea8c8fe0a6936a9c0dd2bd5908b1187672c291e91c8df"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/gallery-canvas-landscape/wrapped canvas landscape- background bw.png",
+      "bytes": 38103,
+      "sha256": "5ac180784f6733bb1a83caf3e51be95cfc5411314dabb3d498da086f6690c386"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/gallery-canvas-landscape/wrapped canvas landscape.png",
+      "bytes": 2112081,
+      "sha256": "a3ce4ec76b22c0c290975d0a3dceee801cc79576ec21afb44e6ea36c3139ce21"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/gallery-canvas-square/scene.next.json",
+      "bytes": 1291,
+      "sha256": "c80aace2e4f01dadae3eebe232281375932d241178c22a913326764ddcce04e5"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/gallery-canvas-square/wrapped canvas square - art bw.png",
+      "bytes": 36486,
+      "sha256": "3f7e924ba5318d4dc25a6e3b1590f00518229ec7165a32dcd672a28a785cbe97"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/gallery-canvas-square/wrapped canvas square - background bw.png",
+      "bytes": 36491,
+      "sha256": "1e0965573da655b579595a2a4e19517987c2b22e1f9aed046db7921b5bd35631"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/gallery-canvas-square/wrapped canvas square.png",
+      "bytes": 2116739,
+      "sha256": "6a52f68f93582cce3e48d1a7dc20a73c5ff68590490297bd9c6cdc21e43069bd"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/greeting-card/greeting card - ar bw.png",
+      "bytes": 36490,
+      "sha256": "f63c7a0409e64d5d50944ad8702b757c2870bcd08e85fdc4edd6f03bf6e10fce"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/greeting-card/greeting card - background bw.png",
+      "bytes": 36495,
+      "sha256": "4729549cf9fce2e78625b204a502a2ce52f1a1a6af612ec65a39a21228744986"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/greeting-card/greeting card.png",
+      "bytes": 1533188,
+      "sha256": "94139ee1ac747c6d40df02ccb9349a06867615c50a1086bc71e2d4c834f1f88d"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/greeting-card/scene.next.json",
+      "bytes": 1239,
+      "sha256": "acfd06806fb96e192f860abb7016ba72526f68dc1e91e087a86c43a95d136275"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/inventory.next.json",
+      "bytes": 1270,
+      "sha256": "5db5408c81f5452c7e6fca04b007a4e43b80c67b5a190539f57db728811b06e4"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - art bw.png",
+      "bytes": 36490,
+      "sha256": "b4360aa1c31a2e575d895804a571ab0d49e937d6b1c1bed501124d4448884e0d"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - background bw.png",
+      "bytes": 36496,
+      "sha256": "eea1879759ebf73e926a99746273d0bf9183e26f3f959da15673dc3eeb8e09ce"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape.png",
+      "bytes": 1859108,
+      "sha256": "17281c7f2a96157c015b6685accdb1e18ed7ed85858cf4fe67b0c32fb6edd899"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/scene.next.json",
+      "bytes": 1449,
+      "sha256": "4ce7fc82f00de062e2c44f67a854e12aa87b206c20243e847384f1f6e67000d9"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-square/matted frame square - art bw.png",
+      "bytes": 36481,
+      "sha256": "09a8da198d90e65985be1970427d3be0b2710f17aeea10b059ba4b5449079f4a"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-square/matted frame square - bagrkound bw.png",
+      "bytes": 36571,
+      "sha256": "91fef4519e2fb385cc4b9e1a4e78e5b030bd30cadcc141c980f306da51d46e53"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-square/matted frame square - frame bw .png",
+      "bytes": 36504,
+      "sha256": "aa89ff9833268f0fbc3efb85b2a9195a7a860bf21cc9aef718a5078835d9ea8f"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-square/matted frame square - matte bw.png",
+      "bytes": 36515,
+      "sha256": "97e515879293ce00f05c9342047ef790c2bed187dc73860c05b7978402ff53c1"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-square/matted frame square.png",
+      "bytes": 1351872,
+      "sha256": "a4e2128eb0a744d0239bf25cefeaa715756d1abb7287fc2c59f1d6a346d1169d"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-square/scene.next.json",
+      "bytes": 1616,
+      "sha256": "11ee26ab852a4284b534c802b4179c5ac341753a0a31eb96bfaebefaa65b14d5"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/premium-fine-art/premium fine art print - art bw.png",
+      "bytes": 40676,
+      "sha256": "37a66929b657b70ef5dd2d963ba1361e6156009b2d229315928f79dfe58148f1"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/premium-fine-art/premium fine art print - background bw.png",
+      "bytes": 40686,
+      "sha256": "4eb4806aedd1a5a177ff72a4d9085a1a81d91d3154f22714df61437a5c91c610"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/premium-fine-art/premium fine art print.png",
+      "bytes": 1780943,
+      "sha256": "b1f40212adb202388f21f6d2c0c5abd0283edc7490e02ff1e9e3eb9a39fcaa39"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/premium-fine-art/scene.next.json",
+      "bytes": 1295,
+      "sha256": "568a52b00e4606a03dd0f006e8200b3b36ca2b0604003a885b22ac449a28a276"
+    },
+    {
+      "path": "tools/catalog-samples/scene-replacement-review.next.cjs",
+      "bytes": 2620,
+      "sha256": "1f30b43a1902ab123f32101d5cf0575b8815d04c7cbf65f655bc6f3d4dd853cf"
+    },
+    {
+      "path": "tools/product-mockup/compositor.next.cjs",
+      "bytes": 13121,
+      "sha256": "253c87e7edd145880f296ff1601228b07bfd7088d76cd498e93b59967c884dfc"
+    },
+    {
+      "path": "tools/product-scenes/adapter.next.cjs",
+      "bytes": 2241,
+      "sha256": "3b8c7ec0e63aa1e9f32c77b6e159e03954573b5b7a2bd71409d5b6b2dc21a667"
+    }
+  ]
+}
