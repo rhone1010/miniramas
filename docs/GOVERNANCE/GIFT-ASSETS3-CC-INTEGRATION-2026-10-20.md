@@ -83,3 +83,15 @@ Fixed the local review server matching /mockup-scenes PNG requests as API mockup
 Current combined tests: asset 9/9, frontend 79/79, HTTP image regression 1/1, scene compatibility 17/17, renderer bundle 9/10 (only missing 45 tracing paths). Hash assertions pass. Existing artwork rendered into 16 scenes; unsupported geometry/finishes remain unrouted. No paid generation.
 
 Live authenticated Preview reload: existing Canvas 8x8 personalized mockup and approved state persist. Fine Art 12x18 still shows technical repair; combined review reached, Approve My Gifts disabled. No approval, order, correction, or generation writes performed. New local scene changes have not been deployed.
+
+## Customer walk after CC c010c16
+
+2026-10-20: CC committed the four scene mappings and tracing. Renderer-bundle and scenes suites now pass 27/27; the prior tracing blocker is resolved locally.
+
+Real authenticated paid session: reload retained the Canvas approval. Desktop individual and combined review reached; a new mobile tab at measured 390px restored payment confirmation, then Review Your Gifts -> Fine Art repair -> Next Gift -> actual personalized Canvas with approved status. No customer writes or new generation/purchases. Fine Art still awaits CC composition repair on deployed Preview.
+
+Local browser using simulated services and existing approved personalized Canvas image: restored favorite -> product selection -> Canvas 8x8 configuration -> Add to Cart -> refresh retained cart -> checkout -> Edit gifts returned to cart. Actual image loaded in configuration/cart/checkout; 390px cart had no broken images or horizontal overflow. This is not live checkout validation.
+
+Separate final-release boundary: public/gift-wizard/wizard.next.ts combined review always disables Approve My Gifts; public/gift-wizard/backend.next.ts approveOrder explicitly blocks sandbox_final_release. This was intentional under prior safeguards. It remains disconnected; CC must define the non-manufacturing final-approval/release contract before frontend wiring can safely change. Repairing Fine Art alone does not enable that action.
+
+No new frontend defect was reproduced in this walk. No UI or backend changes made. CC's concurrent orders.test.ts and .walk changes left untouched.
