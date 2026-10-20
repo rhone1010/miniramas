@@ -105,4 +105,6 @@ export const STORAGE = {
   source: (sessionId: string) => `gift/${sessionId}/source.jpg`,
   master: (sessionId: string, previewId: string, ext: 'png' | 'jpg' = 'png') => `gift/${sessionId}/masters/${previewId}.${ext}`,
   preview: (sessionId: string, previewId: string) => `gift/${sessionId}/previews/${previewId}.jpg`,
+  /** Pre-checkout personalized product previews (watermarked JPEGs only). One directory, so the session's cleanup can remove them all by listing it. */
+  productPreviewDir: (sessionId: string) => `gift/${sessionId}/product-previews/`,
 }

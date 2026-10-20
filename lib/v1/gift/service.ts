@@ -62,6 +62,8 @@ export interface GiftStorage {
   get(path: string): Promise<Buffer | null>
   remove(paths: string[]): Promise<void>
   signedUrl(path: string, seconds: number): Promise<string | null>
+  /** Object paths directly under a directory prefix (e.g. 'gift/<id>/product-previews/'). Optional: used by cleanup for files no row points at. */
+  list?(dirPrefix: string): Promise<string[]>
 }
 export type SourceAnalysis =
   | { status: 'supported'; series: Series; peopleCount: number | null }
@@ -414,6 +416,7 @@ async function removeObjects(deps: GiftDeps, rec: SessionRec): Promise<void> {
   const comps = await deps.store.listCompositions(rec.id)
   const paths = [rec.source_path, ...all.flatMap(b => b.previews.flatMap(p => [p.master_path, p.preview_path])), ...comps.flatMap(c => [c.composed_path, c.preview_path, (c.plan as { mockup?: { path?: string } }).mockup?.path])]
     .filter((x): x is string => !!x)
+  if (deps.storage.list) { try { paths.push(...await deps.storage.list(STORAGE.productPreviewDir(rec.id))) } catch { /* the preview files are a cache: a listing failure never blocks the session's removal */ } }
   if (paths.length) await deps.storage.remove([...new Set(paths)])         // shared compositions point at the same files: remove each once
 }
 

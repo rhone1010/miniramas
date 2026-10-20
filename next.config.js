@@ -96,4 +96,6 @@ const nextConfig = {
     ]
   },
 }
+// The pre-checkout product preview renders with the same scene and calibrated renderers, so it carries the same files (one list, two routes).
+nextConfig.outputFileTracingIncludes['/api/v1/gift/sessions/*/product-preview'] = nextConfig.outputFileTracingIncludes['/api/v1/gift/sessions/*/lines/*/mockup']
 module.exports = nextConfig

@@ -35,6 +35,7 @@ export function supabaseGiftStorage(db: any = supabaseAdmin): GiftStorage {
     async get(path) { const { data, error } = await bucket().download(path); return error || !data ? null : Buffer.from(await data.arrayBuffer()) },
     async remove(paths) { const { error } = await bucket().remove(paths); if (error) throw new Error('storage_remove_failed: ' + error.message) },
     async signedUrl(path, seconds) { const { data, error } = await bucket().createSignedUrl(path, seconds); return error || !data?.signedUrl ? null : data.signedUrl },
+    async list(dirPrefix) { const dir = dirPrefix.replace(/\/+$/, ''); const { data, error } = await bucket().list(dir, { limit: 200 }); if (error) throw new Error('storage_list_failed: ' + error.message); return (data ?? []).filter((o: { id?: string | null }) => o.id).map((o: { name: string }) => dir + '/' + o.name) },
   }
 }
 

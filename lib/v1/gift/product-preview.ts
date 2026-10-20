@@ -1,0 +1,131 @@
+// lib/v1/gift/product-preview.ts
+//
+// PRE-CHECKOUT PERSONALIZED PRODUCT PREVIEW: the customer's SELECTED FAVORITE shown inside a product they are considering, before any line, order, payment or composition exists.
+//
+//   GET /api/v1/gift/sessions/{id}/product-preview?productId=canvas:8x8   (authenticated, owner only)
+//
+// It answers with an explicit status, never an unrelated sample:
+//   ready                 a WATERMARKED mockup of the favorite in the product (scene renderer where a photograph truthfully shows the configuration, otherwise the calibrated renderer)
+//   adaptation_required   the favorite's shape is not the product's picture shape (beyond the free 2% band), so an accurate picture needs the real composition step (a bounded
+//                         extension or a new generation: paid, customer-initiated, approved by the customer). Nothing is rendered; the response carries the numbers.
+//   not_available         the product is not purchasable / has no mockup template: nothing to show
+//
+// What this is NOT: a composition (none is created or stored), a production file, an approval, a correction, an order or a purchase authorization. It reads the favorite's stored
+// master in memory, shapes it to the product's picture shape ONLY by mirror-extension inside the 2% band (no outpaint, no generation, no crop, no stretch), hands that to the SAME
+// renderers the purchased-line mockup uses, watermarks the result (always: nothing here is paid) and stores ONLY that watermarked JPEG under gift/{session}/product-previews/
+// (removed with the session). Scene projection stays separate from manufacturing geometry: the product's frozen-style geometry comes from the catalog, the scene only shows it.
+
+import { createHash } from 'node:crypto'
+import sharp from 'sharp'
+import { GiftError, owned, type GiftDeps } from './service'
+import { templateFor, mockupArtwork, MOCKUP_URL_SECONDS, MOCKUP_CONTRACT_VERSION } from './mockup'
+import { resolveScene, prepareSceneArtwork, SCENE_REPRESENTATION_VERSION, SCENE_MAX_EDGE } from './scenes'
+import { logSceneDiagnostic, sceneErrorDiagnostic } from './scene-diagnostics'
+import { planFor } from './composition-plan'
+import { allProducts, getProductBySku, type CanonicalProduct } from '../print/catalog'
+import { aspectCompatibility } from '../print/geometry'
+import { STORAGE } from './policy'
+import { GIFT_CONTRACT_VERSION, type ProductPreviewView } from './types'
+
+const sha = (b: string | Buffer) => createHash('sha256').update(b).digest('hex')
+const FREE_BAND = 0.02 + 1e-10
+const PRODUCT_ID = /^[a-z_]+:[\w-]{1,24}$/
+
+/** The favorite (a ready preview's stored master), reshaped to the product's picture shape by mirror-extension only, at mockup size. */
+export async function productShapedPicture(master: Buffer, product: CanonicalProduct): Promise<{ picture: Buffer; fit: 'exact' | 'resample' }> {
+  const meta = await sharp(master).metadata()
+  if (!meta.width || !meta.height) throw new Error('unreadable_artwork')
+  const k = Math.min(1, SCENE_MAX_EDGE / Math.max(meta.width, meta.height))
+  const rw = Math.round(meta.width * k), rh = Math.round(meta.height * k)
+  const reduced = await sharp(master).rotate().resize(rw, rh, { fit: 'fill', kernel: 'lanczos3' }).png().toBuffer()
+  const { w, h } = product.requirements.picturePx, pa = w / h
+  const wider = rw / rh > pa
+  const tw = wider ? rw : Math.ceil(rh * pa), th = wider ? Math.ceil(rw / pa) : rh
+  if (tw === rw && th === rh) return { picture: reduced, fit: 'exact' }
+  const dx = tw - rw, dy = th - rh
+  const picture = await sharp(reduced).extend({ left: Math.floor(dx / 2), right: dx - Math.floor(dx / 2), top: Math.floor(dy / 2), bottom: dy - Math.floor(dy / 2), extendWith: 'mirror' }).png().toBuffer()
+  return { picture, fit: 'resample' }
+}
+
+export async function getProductPreview(deps: GiftDeps, userId: string, sessionId: string, productIdRaw: unknown): Promise<ProductPreviewView> {
+  const rec = await owned(deps, userId, sessionId)
+  if (rec.refunded_at) throw new GiftError('order_refunded')
+  if (rec.refund_requested_at) throw new GiftError('refund_pending')
+  if (!deps.mockup) throw new GiftError('mockup_renderer_unavailable')
+  if (typeof productIdRaw !== 'string' || !PRODUCT_ID.test(productIdRaw)) throw new GiftError('product_not_available')
+  if (!rec.artwork_preview_id) throw new GiftError('artwork_not_selected')              // the favorite comes first: previews, then gifts
+  const base = { contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id, productId: productIdRaw, favoriteId: rec.artwork_preview_id } as const
+
+  const product = allProducts().find(p => p.productId === productIdRaw && p.status === 'launch')
+  const templateId = product ? templateFor(product) : null
+  if (!product || !templateId) return { ...base, status: 'not_available', reason: product ? 'no_mockup_template' : 'product_not_available', sku: product?.sku ?? null }
+
+  const batches = await deps.store.listBatches(rec.id)
+  const fav = batches.flatMap(b => b.previews).find(p => p.id === rec.artwork_preview_id)
+  if (!fav || fav.status !== 'ready' || !fav.master_path || !fav.width || !fav.height) throw new GiftError('artwork_not_selected')
+
+  const { w: pw, h: ph } = product.requirements.picturePx, pictureAspect = pw / ph, favoriteAspect = fav.width / fav.height
+  const { extension } = aspectCompatibility(fav.width, fav.height, pw, ph)
+  if (extension > FREE_BAND) {
+    const plan = rec.series ? planFor(product, { series: rec.series, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }) : null
+    return { ...base, status: 'adaptation_required', reason: 'shape_needs_composition', sku: product.sku, favoriteAspect: Math.round(favoriteAspect * 1e4) / 1e4, pictureAspect: Math.round(pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4, method: plan?.method ?? null }
+  }
+
+  // which renderer: the photographic scene when one truthfully shows this configuration, else the calibrated renderer (scenes.ts / mockup.ts decide, exactly as for a purchased line)
+  const scenes = process.env.GIFT_SCENE_MOCKUPS !== '0' ? deps.mockup.scenes : undefined
+  const choice = scenes ? resolveScene(product, id => scenes.describe(id)) : null
+  let sceneRevision: string | null = null
+  if (scenes && choice?.scene) { try { sceneRevision = await scenes.revision(choice.scene.sceneId) } catch (e) { logSceneDiagnostic(product.sku, { sceneId: choice.scene.sceneId, stage: 'revision', reason: 'scene_revision_unavailable', ...sceneErrorDiagnostic(e) }) } }
+  const calibratedRevision = await deps.mockup.revision(templateId)
+  const useScene = !!(scenes && choice?.scene && sceneRevision)
+  const identity = sha(JSON.stringify({
+    v: 1, contract: MOCKUP_CONTRACT_VERSION, sessionId: rec.id, favoriteId: fav.id, master: fav.master_path, sku: product.sku, productId: product.productId, finalPx: product.requirements.finalPx, picturePx: product.requirements.picturePx,
+    attributes: Object.fromEntries(Object.entries(product.attributes).sort()), renderer: useScene ? { scene: choice!.scene!.sceneId, revision: sceneRevision, representation: SCENE_REPRESENTATION_VERSION } : { template: templateId, revision: calibratedRevision }, variant: 'watermarked',
+  }))
+  const path = `${STORAGE.productPreviewDir(rec.id)}${product.productId.replace(/[^\w-]/g, '_')}-${identity.slice(0, 16)}.jpg`
+  const sign = async () => { const url = await deps.storage.signedUrl(path, MOCKUP_URL_SECONDS); return url ? { url, urlExpiresAt: new Date((deps.clock ?? Date.now)() + MOCKUP_URL_SECONDS * 1000).toISOString() } : null }
+  const meta = { watermarked: true as const, productionPrintFile: false as const, purchaseAuthorization: false as const }
+  const ready = (r: { renderer: 'scene' | 'calibrated'; sceneId: string | null; width: number; height: number; fit: 'exact' | 'resample'; cached: boolean }, s: { url: string; urlExpiresAt: string }): ProductPreviewView =>
+    ({ ...base, status: 'ready', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: r.fit, width: r.width, height: r.height, cached: r.cached, ...s, ...meta })
+
+  const hit = await sign()
+  if (hit) {                                                                              // an unchanged identity re-signs the stored file and renders nothing
+    const stored = await deps.storage.get(path)
+    const m = stored ? await sharp(stored).metadata() : null
+    if (m?.width && m.height) return ready({ renderer: useScene ? 'scene' : 'calibrated', sceneId: useScene ? choice!.scene!.sceneId : null, width: m.width, height: m.height, fit: useScene ? choice!.scene!.fit : 'exact', cached: true }, hit)
+  }
+
+  const masterBytes = await deps.storage.get(fav.master_path)                             // CLEAN master: memory only, never returned, never stored next to the preview
+  if (!masterBytes) throw new GiftError('generation_unavailable')
+  const shaped = await productShapedPicture(masterBytes, product)
+  const flat = await mockupArtwork(shaped.picture, product)
+  let png: Buffer | null = null, width = 0, height = 0, renderer: 'scene' | 'calibrated' = 'calibrated', sceneId: string | null = null
+  if (useScene) {
+    let stage = 'scene_representation'
+    try {
+      const rep = await prepareSceneArtwork(flat, scenes!.describe(choice!.scene!.sceneId))
+      stage = 'scene_render'
+      const out = await scenes!.render({ sceneId: choice!.scene!.sceneId, productFamily: product.family, artworkId: fav.id, artwork: rep.bytes })
+      const cat = getProductBySku(product.sku)
+      if (!cat || cat.requirements.finalPx.w !== product.requirements.finalPx.w || cat.requirements.finalPx.h !== product.requirements.finalPx.h) throw new GiftError('mockup_configuration_mismatch')
+      if (out.templateRevision !== sceneRevision) throw new Error('scene_revision_changed_during_render')
+      png = out.png; width = out.width; height = out.height; renderer = 'scene'; sceneId = choice!.scene!.sceneId
+    } catch (e) {
+      if (e instanceof GiftError) throw e
+      logSceneDiagnostic(product.sku, { sceneId: choice!.scene!.sceneId, stage, reason: 'scene_render_failed', ...sceneErrorDiagnostic(e) })
+    }
+  }
+  if (!png) {
+    let out: Awaited<ReturnType<NonNullable<GiftDeps['mockup']>['render']>>
+    try { out = await deps.mockup.render({ templateId, productFamily: product.family, size: product.size, sku: product.sku, artworkId: fav.id, artwork: flat }) }
+    catch (e) { console.error(`[gift/product-preview] renderer failed template=${templateId} sku=${product.sku}: ${String((e as Error)?.message ?? e).slice(0, 200)}`); throw new GiftError('mockup_failed') }
+    if (out.configuration.sku !== product.sku || out.configuration.requiredPx.w !== product.requirements.finalPx.w || out.configuration.requiredPx.h !== product.requirements.finalPx.h) throw new GiftError('mockup_configuration_mismatch')
+    png = out.png; width = out.width; height = out.height
+  }
+  let marked: Buffer
+  try { marked = await deps.watermark(png.toString('base64')) } catch { throw new GiftError('mockup_failed') }            // fails closed: nothing unmarked is ever stored or returned
+  await deps.storage.put(path, marked, 'image/jpeg')
+  const signed = await sign()
+  if (!signed) throw new GiftError('mockup_failed')
+  return ready({ renderer, sceneId, width, height, fit: shaped.fit, cached: false }, signed)
+}
