@@ -77,7 +77,9 @@ export interface SceneChoice {
   extension: number
   inputKind: SceneDescription['inputKind']
 }
-export type SceneResolution = { scene: SceneChoice; reason: null } | { scene: null; reason: SceneRefusal }
+/** The measured numbers behind a shape refusal: the photographed opening's width/height, the product's picture width/height and how far apart they are (0.0709 = 7.09%). */
+export interface SceneRefusalDetail { sceneId: string; openingAspect: number; productAspect: number; extension: number }
+export type SceneResolution = { scene: SceneChoice; reason: null } | { scene: null; reason: SceneRefusal; detail?: SceneRefusalDetail }
 
 /** The photographed orientation class of a purchased configuration. */
 export function orientationOf(p: CanonicalProduct): SceneOrientation {
@@ -102,6 +104,7 @@ export function resolveScene(product: CanonicalProduct, describe: (sceneId: stri
   if (!candidates.length) return { scene: null, reason: 'no_scene_for_family' }
   const orientation = orientationOf(product)
   const saw = { orientation: false, extension: false, shape: false, unavailable: false }
+  let nearest: SceneRefusalDetail | undefined                                           // the photographed opening closest to the product's shape, for the refusal
   let best: SceneChoice | null = null
   for (const [sceneId, facts] of candidates) {
     if (!attributesMatch(facts, product)) continue
@@ -114,11 +117,14 @@ export function resolveScene(product: CanonicalProduct, describe: (sceneId: stri
     if (extension <= 0.02 + 1e-10) {
       const choice: SceneChoice = { sceneId, fit: extension <= 5e-4 ? 'exact' : 'resample', extension: Math.round(extension * 1e6) / 1e6, inputKind: d.inputKind }
       if (!best || choice.extension < best.extension) best = choice
-    } else if (extension <= 0.20 + 1e-10) saw.extension = true
-    else saw.shape = true
+    } else {
+      if (extension <= 0.20 + 1e-10) saw.extension = true; else saw.shape = true
+      if (!nearest || extension < nearest.extension) nearest = { sceneId, openingAspect: Math.round(d.inputAspect * 1e4) / 1e4, productAspect: Math.round(product.requirements.pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4 }
+    }
   }
   if (best) return { scene: best, reason: null }
-  return { scene: null, reason: saw.extension ? 'shape_needs_extension' : saw.shape ? 'shape_incompatible' : saw.unavailable ? 'scene_unavailable' : saw.orientation ? 'orientation_not_photographed' : 'configuration_not_photographed' }
+  const reason: SceneRefusal = saw.extension ? 'shape_needs_extension' : saw.shape ? 'shape_incompatible' : saw.unavailable ? 'scene_unavailable' : saw.orientation ? 'orientation_not_photographed' : 'configuration_not_photographed'
+  return { scene: null, reason, ...((reason === 'shape_needs_extension' || reason === 'shape_incompatible') && nearest ? { detail: nearest } : {}) }
 }
 
 /** The longest edge of a scene picture. A mockup is 1254 px wide; the photographed plane is smaller still, so a 6000 px production file is never loaded whole into the renderer. */

@@ -131,3 +131,24 @@ describe('the scene-compatible picture', () => {
     expect(d).toMatchObject({ family: 'framed', inputKind: 'scene-composition', productionGeometry: false }); expect(d.inputAspect).toBeCloseTo(1002 / 671, 4)
   })
 })
+
+describe('why the Fine Art Print has no approved scene (measured, not guessed)', () => {
+  it('fine art 8x8..20x20: the photographed print is 734x786 (0.9338), the product is 1:1, so the opening is 7.08% off: beyond the free 2% band, not a tolerance or mapping slip', () => {
+    for (const id of ['fine_art:8x8', 'fine_art:12x12', 'fine_art:16x16', 'fine_art:20x20']) {
+      const r = resolveScene(product(id), describeReal)
+      expect(r, id).toMatchObject({ scene: null, reason: 'shape_needs_extension', detail: { sceneId: 'fine-art-square', openingAspect: 0.9338, productAspect: 1, extension: 0.0708 } })
+    }
+  })
+  it('premium portrait is 19.3% off 2:3 (opening 0.7951); the orientation refusals carry no numbers because no photograph of that orientation exists', () => {
+    expect(resolveScene(product('premium:12x18'), describeReal)).toMatchObject({ reason: 'shape_needs_extension', detail: { sceneId: 'premium-fine-art', openingAspect: 0.7951, productAspect: 0.6667, extension: 0.1926 } })
+    const portraitFineArt = resolveScene(product('fine_art:12x18'), describeReal); expect(portraitFineArt.reason).toBe('orientation_not_photographed'); expect((portraitFineArt as any).detail).toBeUndefined()
+  })
+  it('the opening geometry the manifest declares is the geometry of the mask itself (the measurement is not stale)', async () => {
+    const fs = await import('node:fs'), path = await import('node:path'), dir = 'public/gift-wizard/mockup-scenes/fine-art-square'
+    const m = JSON.parse(fs.readFileSync(path.join(dir, 'scene.next.json'), 'utf8')) as { artworkMask: string; maskBounds: { x0: number; y0: number; x1: number; y1: number } }
+    const { data, info } = await sharp(path.join(dir, m.artworkMask)).flatten({ background: 'black' }).greyscale().raw().toBuffer({ resolveWithObject: true })
+    let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1
+    for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) if (data[y * info.width + x] > 128) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y) }
+    expect(Math.abs((x1 - x0 + 1) - (m.maskBounds.x1 - m.maskBounds.x0))).toBeLessThanOrEqual(2); expect(Math.abs((y1 - y0 + 1) - (m.maskBounds.y1 - m.maskBounds.y0))).toBeLessThanOrEqual(2)
+  })
+})

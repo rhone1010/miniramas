@@ -31,7 +31,7 @@ import { mockupInputFor } from '../print/product-layout'
 import { getProductBySku, type CanonicalProduct } from '../print/catalog'
 import { resolveScene, prepareSceneArtwork, sceneRepresentationId, SCENE_REPRESENTATION_VERSION, type SceneRenderer } from './scenes'
 import { byNewest, type CompositionRec, type SessionRec } from './store'
-import type { MockupView } from './types'
+import type { MockupView, SceneRefusalView } from './types'
 
 export const MOCKUP_CONTRACT_VERSION = 1
 /** GIFT_SCENE_MOCKUPS=0 turns the photographic customer scenes off (every line then uses the calibrated renderer, exactly as before). */
@@ -197,7 +197,8 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   // template renderer is the existing, approved fallback for every configuration no scene shows, and for a scene that cannot be rendered.
   const scenes = scenesEnabled() ? deps.mockup.scenes : undefined
   const choice = scenes ? resolveScene(product, id => scenes.describe(id), event => logSceneDiagnostic(product.sku, event)) : null
-  if (!choice?.scene) logSceneDiagnostic(product.sku, { stage: 'selection', reason: choice?.reason ?? (scenesEnabled() ? 'scene_renderer_absent' : 'feature_disabled') })
+  const sceneRefusal: SceneRefusalView | null = choice?.scene ? null : { reason: choice?.reason ?? (scenesEnabled() ? 'scene_renderer_absent' : 'feature_disabled'), ...(choice && !choice.scene && choice.detail ? choice.detail : {}) }
+  if (sceneRefusal) logSceneDiagnostic(product.sku, { stage: 'selection', reason: sceneRefusal.reason, ...(sceneRefusal.sceneId ? { sceneId: sceneRefusal.sceneId, openingAspect: sceneRefusal.openingAspect, productAspect: sceneRefusal.productAspect, extension: sceneRefusal.extension } : {}) })
   let sceneCand: { sceneId: string; revision: string; representationId: string; templateId: string; identityKey: string } | null = null
   if (scenes && choice?.scene) {
     try {
@@ -224,7 +225,7 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   const hit = storedOf(comp)
   const viewOfHit = async (c: { templateId: string; templateRevision: string; identityKey: string }, h: StoredMockup): Promise<MockupView | null> => {
     const signed = await sign(h.path)
-    return signed ? { ...baseFor(c), ...signed, width: h.width, height: h.height, cached: true, crop: h.crop, renderer: h.renderer ?? 'calibrated', scene: h.scene ?? null } : null
+    return signed ? { ...baseFor(c), ...signed, width: h.width, height: h.height, cached: true, crop: h.crop, renderer: h.renderer ?? 'calibrated', scene: h.scene ?? null, sceneRefusal: h.renderer === 'scene' ? null : sceneRefusal } : null
   }
   const sceneCandView = sceneCand ? { templateId: sceneCand.templateId, templateRevision: sceneCand.revision, identityKey: sceneCand.identityKey } : null
   const calibratedView = { templateId, templateRevision: calibratedRevision, identityKey: calibratedKey }
@@ -286,5 +287,5 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   if (hit && hit.path !== path) { try { await deps.storage.remove([hit.path]) } catch { /* cleanup removes it with the session */ } }
   const signed = await sign(path)
   if (!signed) throw fail('sign', new Error('signed_url_unavailable'), { templateId: used.templateId, sku: product.sku, lineId: line.line_id })
-  return { ...baseFor(used), ...signed, width: image.width, height: image.height, cached: false, crop: image.crop, renderer: stored.renderer, scene: stored.scene ?? null }
+  return { ...baseFor(used), ...signed, width: image.width, height: image.height, cached: false, crop: image.crop, renderer: stored.renderer, scene: stored.scene ?? null, sceneRefusal: stored.renderer === 'scene' ? null : sceneRefusal }
 }

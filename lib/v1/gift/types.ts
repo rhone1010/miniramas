@@ -312,6 +312,8 @@ export interface MockupView {
   renderer?: 'scene' | 'calibrated'
   /** Present when renderer is 'scene': the scene, its renderer revision and how the scene-compatible picture relates to the production picture. Never a URL or a file. */
   scene?: { sceneId: string; revision: string; fit: 'exact' | 'resample'; representationId: string } | null
+  /** When renderer is 'calibrated' because no approved scene fits: why, with the measured numbers (null when a scene was used or no scene renderer ran). */
+  sceneRefusal?: SceneRefusalView | null
 }
 
 // ── RESTORING A SESSION (GET /api/v1/gift/sessions) ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -363,7 +365,7 @@ export interface RestoreResponse {
 export type ProductPreviewView =
   | {
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'ready'; sessionId: string; productId: string; sku: string; favoriteId: string
-      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'exact' | 'resample'
+      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'exact' | 'resample'; sceneRefusal?: SceneRefusalView | null
       url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
       watermarked: true; productionPrintFile: false; purchaseAuthorization: false
     }
@@ -377,7 +379,7 @@ export type ProductPreviewView =
   | {
       /** Only with ?provisional=1, in place of adaptation_required. The whole favorite inside the product on a neutral surround; NOT the final picture (see provisional.finalComposition). */
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'provisional'; sessionId: string; productId: string; sku: string; favoriteId: string
-      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'contain'
+      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'contain'; sceneRefusal?: SceneRefusalView | null
       url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
       watermarked: true; productionPrintFile: false; purchaseAuthorization: false
       provisional: {
@@ -390,3 +392,9 @@ export type ProductPreviewView =
       }
     }
   | { contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'not_available'; reason: 'product_not_available' | 'no_mockup_template'; sessionId: string; productId: string; sku: string | null; favoriteId: string }
+
+/** Why no approved photographic scene shows a configuration (scenes.ts). openingAspect/productAspect/extension are present for the two shape reasons: e.g. fine-art-square 0.9338 against a 1.0 product = 0.0709, beyond the free 2% band. */
+export interface SceneRefusalView {
+  reason: 'no_scene_for_family' | 'configuration_not_photographed' | 'orientation_not_photographed' | 'shape_needs_extension' | 'shape_incompatible' | 'scene_unavailable' | 'feature_disabled' | 'scene_renderer_absent'
+  sceneId?: string; openingAspect?: number; productAspect?: number; extension?: number
+}

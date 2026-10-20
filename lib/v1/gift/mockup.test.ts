@@ -788,3 +788,25 @@ describe('scene mockups (the photographic scene, with the calibrated renderer as
     const sent = Buffer.from(r.watermark.mock.calls[marks][0] as string, 'base64'); expect((await sharp(sent).metadata()).width).toBe(1254)       // the scene picture, marked afterwards
   })
 })
+
+describe('the refusal numbers travel with the mockup, and a compatible opening needs nothing more from the backend', () => {
+  const FA = { lineId: 'f', productId: 'fine_art:8x8', copies: 1 }
+  it('a fine art line carries sceneRefusal with the measured opening, product and extension; a scene-backed canvas carries null', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [FA, CS])
+    const log = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const f = await getLineMockup(r.deps, U1, sid, 'f'); expect(f).toMatchObject({ renderer: 'calibrated', sceneRefusal: { reason: 'shape_needs_extension', sceneId: 'fine-art-square', openingAspect: 0.9338, productAspect: 1, extension: 0.0708 } })
+    expect(log.mock.calls.some(c => JSON.stringify(c).includes('"extension":0.0708'))).toBe(true); log.mockRestore()
+    expect(await getLineMockup(r.deps, U1, sid, 's')).toMatchObject({ renderer: 'scene', sceneRefusal: null })
+  })
+  it('IF the photographed opening were square (within 2%), the EXISTING 1:1 composition is used as it is: no generation, no new composition, the correction entitlement and approval untouched', async () => {
+    const r = sceneRig(); const { sid } = await ready(r, [FA])
+    const real = realSceneRenderer.describe('fine-art-square'); r.sceneRenderer.describe = id => (id === 'fine-art-square' ? { ...real, inputAspect: 1.004 } : realSceneRenderer.describe(id))
+    const before = JSON.stringify(r.store.compositions[0]), view = JSON.stringify(await getSessionView(r.deps, U1, sid)), gens = r.generate.mock.calls.length
+    const m = await getLineMockup(r.deps, U1, sid, 'f')
+    expect(m).toMatchObject({ renderer: 'scene', templateId: 'scene:fine-art-square', scene: { sceneId: 'fine-art-square' }, sceneRefusal: null, watermarked: false })
+    expect(r.generate.mock.calls.length).toBe(gens); expect(r.store.compositions).toHaveLength(1)
+    const { mockup: _m, sceneRepresentation: _s, artworkSha256: _a, ...planAfter } = r.store.compositions[0].plan as any, { mockup: _m2, sceneRepresentation: _s2, artworkSha256: _a2, ...planBefore } = JSON.parse(before).plan
+    expect(planAfter).toEqual(planBefore); expect(JSON.stringify(await getSessionView(r.deps, U1, sid))).toBe(view)
+    expect((await getSessionView(r.deps, U1, sid)).compositions[0]).toMatchObject({ correctionsRemaining: 1, attempt: 1, status: 'ready' })
+  })
+})

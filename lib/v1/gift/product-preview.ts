@@ -28,7 +28,7 @@ import { planFor } from './composition-plan'
 import { allProducts, getProductBySku, type CanonicalProduct } from '../print/catalog'
 import { aspectCompatibility } from '../print/geometry'
 import { STORAGE } from './policy'
-import { GIFT_CONTRACT_VERSION, type ProductPreviewView } from './types'
+import { GIFT_CONTRACT_VERSION, type ProductPreviewView, type SceneRefusalView } from './types'
 
 const sha = (b: string | Buffer) => createHash('sha256').update(b).digest('hex')
 const FREE_BAND = 0.02 + 1e-10
@@ -100,6 +100,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   // which renderer: the photographic scene when one truthfully shows this configuration, else the calibrated renderer (scenes.ts / mockup.ts decide, exactly as for a purchased line)
   const scenes = process.env.GIFT_SCENE_MOCKUPS !== '0' ? deps.mockup.scenes : undefined
   const choice = scenes ? resolveScene(product, id => scenes.describe(id)) : null
+  const sceneRefusal: SceneRefusalView | null = choice?.scene ? null : { reason: choice?.reason ?? (scenes ? 'scene_renderer_absent' : 'feature_disabled'), ...(choice && !choice.scene && choice.detail ? choice.detail : {}) }
   let sceneRevision: string | null = null
   if (scenes && choice?.scene) { try { sceneRevision = await scenes.revision(choice.scene.sceneId) } catch (e) { logSceneDiagnostic(product.sku, { sceneId: choice.scene.sceneId, stage: 'revision', reason: 'scene_revision_unavailable', ...sceneErrorDiagnostic(e) }) } }
   const calibratedRevision = await deps.mockup.revision(templateId)
@@ -114,9 +115,9 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   const bars = provisional ? (favoriteAspect > pictureAspect ? { sides: 'top_bottom' as const, fractionPerSide: Math.round(((1 - pictureAspect / favoriteAspect) / 2) * 1e4) / 1e4 } : { sides: 'left_right' as const, fractionPerSide: Math.round(((1 - favoriteAspect / pictureAspect) / 2) * 1e4) / 1e4 }) : null
   const ready = (r: { renderer: 'scene' | 'calibrated'; sceneId: string | null; width: number; height: number; fit: 'exact' | 'resample'; cached: boolean }, s: { url: string; urlExpiresAt: string }): ProductPreviewView =>
     provisional
-      ? { ...base, status: 'provisional', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: 'contain', width: r.width, height: r.height, cached: r.cached, ...s, ...meta,
+      ? { ...base, status: 'provisional', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: 'contain', width: r.width, height: r.height, cached: r.cached, ...s, ...meta, sceneRefusal: r.renderer === 'scene' ? null : sceneRefusal,
           provisional: { exactArtworkShown: true, cropped: false, distorted: false, surround: 'neutral', bars: bars!, favoriteAspect: Math.round(favoriteAspect * 1e4) / 1e4, pictureAspect: Math.round(pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4, finalComposition: plan?.method ?? null } }
-      : { ...base, status: 'ready', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: r.fit, width: r.width, height: r.height, cached: r.cached, ...s, ...meta }
+      : { ...base, status: 'ready', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: r.fit, width: r.width, height: r.height, cached: r.cached, ...s, ...meta, sceneRefusal: r.renderer === 'scene' ? null : sceneRefusal }
 
   const hit = await sign()
   if (hit) {                                                                              // an unchanged identity re-signs the stored file and renders nothing

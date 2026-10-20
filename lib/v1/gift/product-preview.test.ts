@@ -233,3 +233,12 @@ describe('provisional preview for a favorite whose shape is not the product\'s (
     expect(r.sceneRender).not.toHaveBeenCalled()
   })
 })
+
+describe('the preview says why it is not scene-backed', () => {
+  it('fine art 8x8: ready through the calibrated renderer with the measured refusal; the square canvas has none', async () => {
+    const r = rig(); const { sid } = await withFavorite(r)
+    expect(await getProductPreview(r.deps, U1, sid, 'fine_art:8x8')).toMatchObject({ status: 'ready', renderer: 'calibrated', sceneRefusal: { reason: 'shape_needs_extension', sceneId: 'fine-art-square', openingAspect: 0.9338, extension: 0.0708 } })
+    expect(await getProductPreview(r.deps, U1, sid, 'canvas:8x8')).toMatchObject({ renderer: 'scene', sceneRefusal: null })
+    expect(await getProductPreview(r.deps, U1, sid, 'fine_art:12x18', { provisional: true })).toMatchObject({ status: 'provisional', sceneRefusal: { reason: 'orientation_not_photographed' } })
+  })
+})

@@ -9,7 +9,7 @@ export function sceneErrorDiagnostic(error: unknown): { code: string; dependency
   const dependency = bundle.files.find(f => message.includes(f.path))?.path
   return { code, ...(dependency ? { dependency } : {}) }
 }
-export type SceneDiagnostic = { sceneId?: string; stage: string; reason: string; code?: string; dependency?: string }
+export type SceneDiagnostic = { sceneId?: string; stage: string; reason: string; code?: string; dependency?: string; openingAspect?: number; productAspect?: number; extension?: number }
 export function logSceneDiagnostic(sku: string, event: SceneDiagnostic): void {
   console.warn('[gift/mockup] scene fallback', { sku, ...event })
 }

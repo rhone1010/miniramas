@@ -7,7 +7,7 @@ const tag = (product + '-' + size).replace(/\W+/g, '-')
 ;(async () => {
   await reset(); const { browser, page, problems } = await open()
   await toProducts(page, problems)
-  await page.locator('button', { hasText: product }).first().click(); await page.waitForTimeout(500)
+  if (product !== 'Fine Art Print') { await page.locator('button', { hasText: product }).first().click(); await page.waitForTimeout(500) }
   await page.getByRole('button', { name: 'Choose This Gift' }).first().click(); await page.waitForTimeout(2500)
   await page.locator('button', { hasText: new RegExp(size.split(' ').join('.{0,3}')) }).first().click(); await page.waitForTimeout(2500)
   console.log('CONFIG screen:', (await page.locator('#screen').innerText()).replace(/\s+/g, ' ').slice(0, 200)); await snap(page, `70-${tag}-config`)
