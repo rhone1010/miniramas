@@ -27,3 +27,11 @@ Fixed and seen working in the browser: "Choose One Artwork" with a disabled "Cho
 | F | Mobile CTA / nested scrolling | not re-run after fe8ab88 | Codex to re-run `w15.cjs mobile` |
 
 Not walked: Back / Change Product / Cancel inside configuration (punch 2), the analysis animation (punch 5), real Stripe checkout, approval click-through, Preview.
+
+## Re-walk 2026-10-20 (Codex 9123c06 merged; CC 1b2bc35)
+
+Backend walls closed over real HTTP on the real handlers (`tools/gift-walk/w21.cjs`):
+* Provisional preview (`product-preview?provisional=1`): for a square favorite, fine art 12x18, framed 16x24, canvas 12x18 and premium 8x12 answer `provisional` (whole favorite, neutral surround, `finalComposition: generated`, 0.5 to 1.2 s); fine art 8x8 stays `ready`; without the flag the answer is still `adaptation_required`. Images: `walk-20261019/60-provisional-*.jpg`.
+* Durable composition state: before start `not_started` + `resumeNeeded`; a refresh at +0.9 s says `preparing` (with `preparingSince`) and `resumeNeeded: false`; a second POST answered in 190 ms with no new generation; both gifts `ready` afterwards.
+
+The next actual wall (still standing in the browser, `w20.cjs`): returning to a paid session whose artwork has not been prepared lands on Final Approval with "This product preview could not load. Try again", Approve disabled and a disabled primary button; nothing starts it, and the customer is told it failed. Owner: Codex. The data it needs is now in `resume.compositions` and `CompositionView.state`; start with `POST /compositions` once when `resumeNeeded`, poll while `preparing`.
