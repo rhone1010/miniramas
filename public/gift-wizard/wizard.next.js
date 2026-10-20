@@ -327,14 +327,9 @@ function renderProducts() {
     primary(editId ? 'Update This Gift' : 'Add to Cart', () => { try {
         const line = { id: editId || crypto.randomUUID(), productId: p.id, size, copies };
         giftOption(line, products);
-        const n = session.lines.findIndex(l => l.id === line.id);
-        if (n >= 0)
-            session.lines[n] = line;
-        else
-            session.lines.push(line);
-        session.compositions = session.compositions.filter(c => c.lineId !== line.id);
+        const next = session.lines.some(l => l.id === line.id) ? session.lines.map(l => l.id === line.id ? line : l) : [...session.lines, line];
         editId = null;
-        go('cart');
+        void saveLines(next, 'cart', line.id);
     }
     catch {
         error('Choose a quantity from 1 to 20.');
@@ -342,11 +337,12 @@ function renderProducts() {
 }
 function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
 function bindCart() {
-    document.querySelectorAll('[data-qty]').forEach(b => b.onclick = () => { const l = session.lines.find(l => l.id === b.dataset.qty); l.copies += Number(b.dataset.delta); render(); });
+    document.querySelectorAll('[data-qty]').forEach(b => b.onclick = () => { const l = session.lines.find(l => l.id === b.dataset.qty), copies = l.copies + Number(b.dataset.delta); if (!Number.isInteger(copies) || copies < 1 || copies > 20)
+        return; void saveLines(session.lines.map(x => x.id === l.id ? { ...x, copies } : x), null); });
     document.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const l = session.lines.find(l => l.id === b.dataset.edit); activeProduct = l.productId; size = l.size; copies = l.copies; editId = l.id; go('configuration'); });
     document.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => { if (!confirm('Remove this gift from your order?'))
-        return; session.lines = session.lines.filter(l => l.id !== b.dataset.remove); session.compositions = session.compositions.filter(c => c.lineId !== b.dataset.remove); if (!session.lines.length)
-        history = history.filter(v => v === 'photo' || v === 'products'); render(); });
+        return; void saveLines(session.lines.filter(l => l.id !== b.dataset.remove), null, b.dataset.remove).then(() => { if (!session.lines.length)
+        history = history.filter(v => v === 'photo' || v === 'products'); render(); }); });
 }
 function renderCart() {
     rail('Choose<br>Your Gift', '<p>Bring your art to life in a format that fits your space and style.</p>');
@@ -953,6 +949,52 @@ function applyServer(s) {
     const selected = session.batches.findIndex(b => b.some(p => p.id === s.artworkPreviewId));
     batchIndex = retained >= 0 ? retained : selected >= 0 ? selected : Math.max(0, session.batches.length - 1);
     artFocus = session.batches[batchIndex]?.find(p => p.id === artFocus)?.id || session.batches[batchIndex]?.find(p => p.id === s.artworkPreviewId)?.id || session.batches[batchIndex]?.[0]?.id || '';
+}
+// THE CART IS THE SERVER'S. Every change to the gifts (add, edit, quantity, remove) is saved through the existing PUT /lines BEFORE it is shown, and the screen is rebuilt from the
+// server's answer. Before this, a gift lived only in the browser until "Next: Checkout"; any refresh of the session (the generation poll, a restore, pageshow) then replaced the
+// local list with the server's empty one and the item vanished. A rejected change leaves the cart exactly as it was.
+async function saveLines(next, to, changedId) {
+    const dropCompositions = () => { if (changedId)
+        session.compositions = session.compositions.filter(c => c.lineId !== changedId); };
+    if (!live) {
+        session.lines = next;
+        dropCompositions();
+        if (to)
+            go(to);
+        else
+            render();
+        return;
+    }
+    if (busy)
+        return;
+    busy = true;
+    render();
+    let failure = '';
+    let ok = false;
+    try {
+        const s = await live.api.setLines(live.id, { lines: next.map(l => ({ lineId: l.id, productId: l.productId + ':' + l.size, copies: l.copies })) });
+        live.accept(s);
+        applyServer(s);
+        dropCompositions();
+        ok = true;
+    }
+    catch (e) {
+        failure = e instanceof Error ? e.message : 'request_failed';
+        if (e instanceof GiftApiError && e.status === 401) {
+            live.clear();
+            paymentState = 'auth';
+            view = 'payment';
+        }
+    }
+    finally {
+        busy = false;
+    }
+    if (ok && to)
+        go(to);
+    else
+        render();
+    if (failure)
+        error(failure);
 }
 async function serverAction(action, next) {
     if (!live || busy)
