@@ -33,7 +33,19 @@ export const PACK_KIND = 'gift_preview_pack'
 export const MAX_PREVIEW_ATTEMPTS = 3
 /** A lease that is not finished within this long may be taken over by a retry. NB2 renders finish well inside this. */
 export const PREVIEW_LEASE_SECONDS = 300
-export const MAX_PARALLEL_RENDERS = 3
+/**
+ * All six previews of a batch are dispatched at once (they used to run in two waves of three), so the customer sees each one as soon as it finishes.
+ * GIFT_PARALLEL_RENDERS (1 to 6) lowers it if the provider or the platform needs it. Claims, attempts, idempotency and entitlement accounting are unchanged:
+ * every preview is still claimed atomically before it is rendered, so concurrency never adds a render, only starts the same ones sooner.
+ */
+export const MAX_PARALLEL_RENDERS = 6
+export const parallelRenders = (env: Record<string, string | undefined> = process.env): number => {
+  const n = Number(env.GIFT_PARALLEL_RENDERS)
+  return Number.isInteger(n) && n >= 1 && n <= MAX_PARALLEL_RENDERS ? n : MAX_PARALLEL_RENDERS
+}
+/** A preview refused by the provider for rate (never reached the model, nothing charged) is tried once more, gently, after this pause. */
+export const RATE_LIMIT_PAUSE_MS = 4000
+export const RATE_LIMIT_RETRY_WORKERS = 2
 
 /**
  * Paid calls are counted exactly; their cost is an ESTIMATE, and only when a unit price is configured (Replicate's price for NB2.1 is
@@ -93,4 +105,6 @@ export const STORAGE = {
   source: (sessionId: string) => `gift/${sessionId}/source.jpg`,
   master: (sessionId: string, previewId: string, ext: 'png' | 'jpg' = 'png') => `gift/${sessionId}/masters/${previewId}.${ext}`,
   preview: (sessionId: string, previewId: string) => `gift/${sessionId}/previews/${previewId}.jpg`,
+  /** Pre-checkout personalized product previews (watermarked JPEGs only). One directory, so the session's cleanup can remove them all by listing it. */
+  productPreviewDir: (sessionId: string) => `gift/${sessionId}/product-previews/`,
 }

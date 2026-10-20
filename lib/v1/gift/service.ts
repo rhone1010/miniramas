@@ -12,7 +12,7 @@ import { allProducts, catalogVersion } from '../print/catalog'
 import { planFor, type PlanContext } from './composition-plan'
 import { draftOrderLines, resolveFrozenProduct } from './frozen'
 import { decodeSource } from '../foyer/foyer-source'
-import { adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, MAX_PARALLEL_RENDERS, PACK_PRICE_CENTS, RETENTION, STORAGE } from './policy'
+import { adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
 import { StoreError, byNewest, correctionUsed, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
 import { GIFT_CONTRACT_VERSION, type BatchGeneration, type RestoreResponse, type RestoreStep, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
@@ -62,6 +62,8 @@ export interface GiftStorage {
   get(path: string): Promise<Buffer | null>
   remove(paths: string[]): Promise<void>
   signedUrl(path: string, seconds: number): Promise<string | null>
+  /** Object paths directly under a directory prefix (e.g. 'gift/<id>/product-previews/'). Optional: used by cleanup for files no row points at. */
+  list?(dirPrefix: string): Promise<string[]>
 }
 export type SourceAnalysis =
   | { status: 'supported'; series: Series; peopleCount: number | null }
@@ -86,6 +88,8 @@ export interface GiftDeps {
   kick?(orderId: string): Promise<unknown>
   clock?: () => number
   newId?: () => string
+  /** Pause between the main pass and the gentle retry of rate-limited previews (tests make it instant). */
+  pause?: (ms: number) => Promise<void>
 }
 const now = (d: GiftDeps) => (d.clock ?? Date.now)()
 const iso = (ms: number) => new Date(ms).toISOString()
@@ -207,20 +211,28 @@ export async function runBatch(deps: GiftDeps, userId: string, recIn: SessionRec
     const source = await deps.storage.get(rec.source_path)
     if (!source) throw new GiftError('generation_unavailable')
     const sourceB64 = source.toString('base64')
-    let next = 0
-    const worker = async () => {
-      while (next < todo.length) {
-        const p = todo[next++]
-        const claimed = await deps.store.claimPreview(p.id, userId)        // one worker per preview; a ready or capped one is refused
-        if (claimed) await renderOne(deps, rec, claimed, sourceB64)
+    const pass = async (list: PreviewRec[], workers: number) => {
+      let next = 0
+      const worker = async () => {
+        while (next < list.length) {
+          const p = list[next++]
+          const claimed = await deps.store.claimPreview(p.id, userId)        // one worker per preview; a ready or capped one is refused
+          if (claimed) await renderOne(deps, rec, claimed, sourceB64)
+        }
       }
+      await Promise.all(Array.from({ length: Math.min(workers, list.length) }, worker))
     }
-    await Promise.all(Array.from({ length: Math.min(MAX_PARALLEL_RENDERS, todo.length) }, worker))
+    await pass(todo, parallelRenders())                                      // every unfinished preview at once
+    // Previews the provider turned away for RATE (nothing was generated or charged) get one gentle second pass with fewer workers; anything else stays failed for the retry route.
+    const limited = (await deps.store.listBatches(rec.id)).find(b => b.batch.batch_index === batchIndex)!.previews.filter(p => p.status === 'failed' && p.attempts < 3 && isRateLimited(p.error))
+    if (limited.length) { await (deps.pause ?? (ms => new Promise<void>(r => setTimeout(r, ms))))(RATE_LIMIT_PAUSE_MS); await pass(limited, RATE_LIMIT_RETRY_WORKERS) }
   }
   const session = await getSessionView(deps, userId, rec.id)
   const batch = session.batches.find(b => b.batchIndex === batchIndex)!
   return { batch, session, complete: batch.complete }
 }
+
+const isRateLimited = (error: string | null) => !!error && /\b429\b|rate.?limit|too many requests|throttl/i.test(error)
 
 async function renderOne(deps: GiftDeps, rec: SessionRec, p: PreviewRec, sourceB64: string): Promise<void> {
   try {
@@ -404,6 +416,7 @@ async function removeObjects(deps: GiftDeps, rec: SessionRec): Promise<void> {
   const comps = await deps.store.listCompositions(rec.id)
   const paths = [rec.source_path, ...all.flatMap(b => b.previews.flatMap(p => [p.master_path, p.preview_path])), ...comps.flatMap(c => [c.composed_path, c.preview_path, (c.plan as { mockup?: { path?: string } }).mockup?.path])]
     .filter((x): x is string => !!x)
+  if (deps.storage.list) { try { paths.push(...await deps.storage.list(STORAGE.productPreviewDir(rec.id))) } catch { /* the preview files are a cache: a listing failure never blocks the session's removal */ } }
   if (paths.length) await deps.storage.remove([...new Set(paths)])         // shared compositions point at the same files: remove each once
 }
 

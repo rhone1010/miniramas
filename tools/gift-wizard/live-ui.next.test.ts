@@ -342,3 +342,28 @@ test('configuration restoration retains the selected product, size and quantity'
  const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:2,history:['products']};
  const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('screen').dataset.view,'configuration');assert.equal(win.document.querySelector('[data-size="12x18"]').getAttribute('aria-pressed'),'true');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
 });
+
+test('Add to Cart is saved on the server and the gift survives every session refresh (the cart no longer vanishes)',async()=>{
+ const s:any=artworkProject();s.order.state='none';s.order.orderId=null;s.compositions=[];s.mockup=null;s.lines=[];s.geometries=[];const geometry=project().geometries[0];const puts:any[]=[];
+ s.route=(url:string,init:any)=>{if(url.endsWith('/lines')&&init.method==='PUT'){const b=JSON.parse(init.body);puts.push(b);s.lines=b.lines.map((l:any)=>({lineId:l.lineId,productId:l.productId,size:l.productId.split(':')[1],copies:l.copies}));s.geometries=s.lines.map((l:any)=>{const [fam,size]=l.productId.split(':'),o=local.products.find((p:any)=>p.id===fam).options.find((x:any)=>x.size===size);return {...geometry,lineId:l.lineId,productId:l.productId,sku:o.sku,requiredPx:o.requiredPx}});return s}};
+ const {win,dom}=await boot('sessionId=project',s);const doc=win.document,tick=()=>new Promise(r=>setTimeout(r,30));
+ win.navigate('configuration');await tick();
+ const add=doc.getElementById('primary') as any;assert.match(add.textContent,/^Add to Cart/);
+ add.click();await tick();
+ assert.equal(puts.length,1);assert.equal(puts[0].lines.length,1);assert.match(puts[0].lines[0].productId,/^[a-z_]+:\d+x\d+$/);          // saved through the existing PUT /lines BEFORE it is shown
+ assert.equal(doc.getElementById('screen').dataset.view,'cart');assert.equal(doc.querySelectorAll('.cart-line').length,1);
+ // a refresh of the session from the server (what the generation poll, a restore or pageshow do) keeps the gift: the server now has it
+ await win.retryRestoration?.();await tick();await tick();
+ assert.equal(doc.querySelectorAll('.cart-line').length,1);assert.equal((doc.getElementById('primary') as any).disabled,false);
+ dom.window.close();
+});
+
+test('a rejected Add to Cart leaves the cart as it was and shows the reason (no ghost item)',async()=>{
+ const s:any=artworkProject();s.order.state='none';s.order.orderId=null;s.compositions=[];s.mockup=null;s.lines=[];s.geometries=[];
+ s.route=(url:string,init:any)=>url.endsWith('/lines')&&init.method==='PUT'?new Response(JSON.stringify({error:'product_not_available'}),{status:409}):null;
+ const {win,dom}=await boot('sessionId=project',s);const doc=win.document,tick=()=>new Promise(r=>setTimeout(r,30));
+ win.navigate('configuration');await tick();
+ (doc.getElementById('primary') as any).click();await tick();
+ assert.notEqual(doc.getElementById('screen').dataset.view,'cart');assert.equal(doc.querySelectorAll('.cart-line').length,0);assert.match(doc.getElementById('error').textContent,/product_not_available/);
+ dom.window.close();
+});
