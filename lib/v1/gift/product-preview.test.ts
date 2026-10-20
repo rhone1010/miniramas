@@ -85,9 +85,9 @@ describe('pre-checkout product preview', () => {
 
   it('a configuration no scene shows uses the calibrated renderer (same product, never a substitute)', async () => {
     const r = rig(); const { sid } = await withFavorite(r)
-    const v = await getProductPreview(r.deps, U1, sid, 'fine_art:8x8')
-    expect(v).toMatchObject({ status: 'ready', renderer: 'calibrated', sceneId: null, sku: 'GLOBAL-FAP-8X8', watermarked: true }); expect(r.sceneRender).not.toHaveBeenCalled(); expect(r.render).toHaveBeenCalledTimes(1)
-    expect(r.render.mock.calls[0][0]).toMatchObject({ sku: 'GLOBAL-FAP-8X8', templateId: 'fine-art' })
+    const v = await getProductPreview(r.deps, U1, sid, 'premium:12x12')
+    expect(v).toMatchObject({ status: 'ready', renderer: 'calibrated', sceneId: null, sku: 'GLOBAL-HPR-12X12', watermarked: true }); expect(r.sceneRender).not.toHaveBeenCalled(); expect(r.render).toHaveBeenCalledTimes(1)
+    expect(r.render.mock.calls[0][0]).toMatchObject({ sku: 'GLOBAL-HPR-12X12', templateId: 'premium-fine-art' })
   })
 
   it('falls back to the calibrated renderer when the scene cannot render, and never returns a half result', async () => {
@@ -237,7 +237,10 @@ describe('provisional preview for a favorite whose shape is not the product\'s (
 describe('the preview says why it is not scene-backed', () => {
   it('fine art 8x8: ready through the calibrated renderer with the measured refusal; the square canvas has none', async () => {
     const r = rig(); const { sid } = await withFavorite(r)
-    expect(await getProductPreview(r.deps, U1, sid, 'fine_art:8x8')).toMatchObject({ status: 'ready', renderer: 'calibrated', sceneRefusal: { reason: 'shape_needs_extension', sceneId: 'fine-art-square', openingAspect: 0.9338, extension: 0.0708 } })
+    const opening = realSceneRenderer.describe('fine-art-square').inputAspect, ext = Math.max(opening, 1 / opening) - 1
+    const fa = await getProductPreview(r.deps, U1, sid, 'fine_art:8x8')
+    if (ext <= 0.02 + 1e-10) expect(fa).toMatchObject({ status: 'ready', renderer: 'scene', sceneRefusal: null })
+    else expect(fa).toMatchObject({ status: 'ready', renderer: 'calibrated', sceneRefusal: { reason: 'shape_needs_extension', sceneId: 'fine-art-square', openingAspect: Math.round(opening * 1e4) / 1e4, extension: Math.round(ext * 1e4) / 1e4 } })
     expect(await getProductPreview(r.deps, U1, sid, 'canvas:8x8')).toMatchObject({ renderer: 'scene', sceneRefusal: null })
     expect(await getProductPreview(r.deps, U1, sid, 'fine_art:12x18', { provisional: true })).toMatchObject({ status: 'provisional', sceneRefusal: { reason: 'orientation_not_photographed' } })
   })

@@ -27,7 +27,7 @@ describe('pre-checkout preview, real renderers', () => {
     const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
     const v = await createSession(deps, { userId: U1, imageB64: photo }); const b = await startBatch(deps, U1, v.sessionId, { idempotencyKey: 'idem-key-1' })
     await selectArtwork(deps, U1, v.sessionId, b.batch.previews[0].previewId)
-    const canvas = await getProductPreview(deps, U1, v.sessionId, 'canvas:8x8'), fine = await getProductPreview(deps, U1, v.sessionId, 'fine_art:8x8'), portrait = await getProductPreview(deps, U1, v.sessionId, 'fine_art:12x18')
+    const canvas = await getProductPreview(deps, U1, v.sessionId, 'canvas:8x8'), fine = await getProductPreview(deps, U1, v.sessionId, 'premium:12x12'), portrait = await getProductPreview(deps, U1, v.sessionId, 'fine_art:12x18')
     expect(canvas).toMatchObject({ status: 'ready', renderer: 'scene', sceneId: 'gallery-canvas-square', watermarked: true })
     expect(fine).toMatchObject({ status: 'ready', renderer: 'calibrated', watermarked: true })
     expect(portrait).toMatchObject({ status: 'adaptation_required' })

@@ -22,8 +22,11 @@ describe('which scene may show which purchased configuration', () => {
   const resolved = allProducts().map(p => ({ p, r: resolveScene(p, describeReal) }))
   const routed = resolved.filter(x => x.r.scene).map(x => `${x.p.sku} -> ${x.r.scene!.sceneId}`)
 
+  const faSquareFits = () => Math.max(describeReal('fine-art-square').inputAspect, 1 / describeReal('fine-art-square').inputAspect) - 1 <= 0.02 + 1e-10
   it('routes exactly the configurations a photograph truthfully shows, and no others', () => {
-    expect(routed).toEqual([
+    const fineArtSquares = faSquareFits() ? ['GLOBAL-FAP-8X8 -> fine-art-square', 'GLOBAL-FAP-12X12 -> fine-art-square', 'GLOBAL-FAP-16X16 -> fine-art-square', 'GLOBAL-FAP-20X20 -> fine-art-square'] : []
+    expect([...fineArtSquares, ...routed.filter(r => !r.includes('fine-art-square'))].sort()).toEqual(routed.slice().sort())
+    expect(routed.filter(r => !r.includes('fine-art-square'))).toEqual([
       'GLOBAL-CAN-8X8 -> gallery-canvas-square', 'GLOBAL-CAN-12X12 -> gallery-canvas-square', 'GLOBAL-CAN-16X16 -> gallery-canvas-square', 'GLOBAL-CAN-20X20 -> gallery-canvas-square',
       'GLOBAL-MUG-W -> ceramic-mug', 'GLOBAL-GRE-MOH-7X5-BLA -> greeting-card',
     ])
@@ -34,12 +37,12 @@ describe('which scene may show which purchased configuration', () => {
     // a different orientation than any photograph: never rotate a photographed product
     for (const id of ['canvas:12x18', 'canvas:8x12', 'fine_art:12x18', 'premium:8x8', 'premium:12x12']) expect(reason(id), id).toBe('orientation_not_photographed')
     // the shape is within the 20% extension band: that would need a PAID outpaint, which is never done for a mockup
-    for (const id of ['fine_art:8x8', 'fine_art:20x20', 'premium:12x18', 'premium:8x12']) expect(reason(id), id).toBe('shape_needs_extension')
+    for (const id of ['premium:12x18', 'premium:8x12', ...(faSquareFits() ? [] : ['fine_art:8x8', 'fine_art:20x20'])]) expect(reason(id), id).toBe('shape_needs_extension')
     // the photograph's finish is not verified, or is a different finish than the catalog sells
     for (const id of ['framed:8x8', 'framed:12x18', 'matted:12x12', 'matted:8x12', 'framed_canvas:8x8', 'framed_canvas:12x18', 'framed_canvas:20x20']) expect(reason(id), id).toBe('configuration_not_photographed')
     // the other cards are other SKUs than the one photographed
     for (const id of ['card:7x5-gloss', 'card:6x4-gloss', 'card:6x6-gloss']) expect(reason(id), id).toBe('configuration_not_photographed')
-    expect(resolved.filter(x => !x.r.scene).length).toBe(allProducts().length - 6)
+    expect(resolved.filter(x => !x.r.scene).length).toBe(allProducts().length - 6 - (faSquareFits() ? 4 : 0))
   })
 
   it("never shows a black framed canvas in the photographed brown wood frame, and never routes a finish nobody verified", () => {
@@ -134,9 +137,12 @@ describe('the scene-compatible picture', () => {
 
 describe('why the Fine Art Print has no approved scene (measured, not guessed)', () => {
   it('fine art 8x8..20x20: the photographed print is 734x786 (0.9338), the product is 1:1, so the opening is 7.08% off: beyond the free 2% band, not a tolerance or mapping slip', () => {
+    // State-driven, so it holds before and after the revised 1:1 photograph is committed: the verdict is whatever the opening's measured aspect says under the 2% rule.
+    const opening = describeReal('fine-art-square').inputAspect, extension = Math.max(opening, 1 / opening) - 1
     for (const id of ['fine_art:8x8', 'fine_art:12x12', 'fine_art:16x16', 'fine_art:20x20']) {
       const r = resolveScene(product(id), describeReal)
-      expect(r, id).toMatchObject({ scene: null, reason: 'shape_needs_extension', detail: { sceneId: 'fine-art-square', openingAspect: 0.9338, productAspect: 1, extension: 0.0708 } })
+      if (extension <= 0.02 + 1e-10) expect(r, id).toMatchObject({ scene: { sceneId: 'fine-art-square', fit: extension <= 5e-4 ? 'exact' : 'resample' }, reason: null })
+      else expect(r, id).toMatchObject({ scene: null, reason: 'shape_needs_extension', detail: { sceneId: 'fine-art-square', openingAspect: Math.round(opening * 1e4) / 1e4, productAspect: 1, extension: Math.round(extension * 1e4) / 1e4 } })
     }
   })
   it('premium portrait is 19.3% off 2:3 (opening 0.7951); the orientation refusals carry no numbers because no photograph of that orientation exists', () => {

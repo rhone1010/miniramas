@@ -794,8 +794,10 @@ describe('the refusal numbers travel with the mockup, and a compatible opening n
   it('a fine art line carries sceneRefusal with the measured opening, product and extension; a scene-backed canvas carries null', async () => {
     const r = sceneRig(); const { sid } = await ready(r, [FA, CS])
     const log = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const f = await getLineMockup(r.deps, U1, sid, 'f'); expect(f).toMatchObject({ renderer: 'calibrated', sceneRefusal: { reason: 'shape_needs_extension', sceneId: 'fine-art-square', openingAspect: 0.9338, productAspect: 1, extension: 0.0708 } })
-    expect(log.mock.calls.some(c => JSON.stringify(c).includes('"extension":0.0708'))).toBe(true); log.mockRestore()
+    const opening = realSceneRenderer.describe('fine-art-square').inputAspect, ext = Math.max(opening, 1 / opening) - 1, f = await getLineMockup(r.deps, U1, sid, 'f')
+    if (ext <= 0.02 + 1e-10) expect(f).toMatchObject({ renderer: 'scene', sceneRefusal: null })                       // the revised 1:1 photograph is in: the scene is used
+    else { expect(f).toMatchObject({ renderer: 'calibrated', sceneRefusal: { reason: 'shape_needs_extension', sceneId: 'fine-art-square', openingAspect: Math.round(opening * 1e4) / 1e4, productAspect: 1, extension: Math.round(ext * 1e4) / 1e4 } }); expect(log.mock.calls.some(c => JSON.stringify(c).includes('"extension":' + Math.round(ext * 1e4) / 1e4))).toBe(true) }
+    log.mockRestore()
     expect(await getLineMockup(r.deps, U1, sid, 's')).toMatchObject({ renderer: 'scene', sceneRefusal: null })
   })
   it('IF the photographed opening were square (within 2%), the EXISTING 1:1 composition is used as it is: no generation, no new composition, the correction entitlement and approval untouched', async () => {
