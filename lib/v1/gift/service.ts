@@ -48,7 +48,8 @@ const STATUS: Partial<Record<GiftErrorCode, number>> = {
 }
 export class GiftError extends Error {
   readonly status: number
-  constructor(public code: GiftErrorCode) { super(code); this.status = STATUS[code] ?? 400 }
+  /** Extra, customer-safe facts the response may carry next to the code (e.g. where to continue). Never internal detail. */
+  constructor(public code: GiftErrorCode, public details?: Record<string, unknown>) { super(code); this.status = STATUS[code] ?? 400 }
 }
 
 /** Rules enforced in the database arrive as StoreError; the API speaks GiftError. */
@@ -107,7 +108,16 @@ export async function createSession(deps: GiftDeps, input: { userId: string; ima
   const src = await decodeSource(input.imageB64)
   if ('error' in src) throw new GiftError(src.error as GiftErrorCode)
   // Count this attempt BEFORE the paid analysis runs. The ledger has no link to sessions, so deleting or recreating sessions cannot reset it.
-  try { await deps.store.recordSessionAttempt(input.userId, createHash('sha256').update(src.bytes).digest('hex')) } catch (e) { fromStoreError(e) }
+  const photoHash = createHash('sha256').update(src.bytes).digest('hex')
+  try { await deps.store.recordSessionAttempt(input.userId, photoHash) } catch (e) {
+    if (e instanceof StoreError && e.code === 'rate_limited') {
+      // The limit is a reason to CONTINUE, not a dead end: point at this customer's own current session (the same photo's if there is one) so the Wizard can resume it.
+      const t = now(deps), mine = (await deps.store.listSessions(input.userId, 5).catch(() => [] as SessionRec[])).filter(s => s.status === 'active' && (!!s.pinned_at || Date.parse(s.expires_at) >= t))
+      const same = mine.find(s => s.source_sha256 === photoHash), pick = same ?? mine[0]
+      throw new GiftError('rate_limited', pick ? { resumeSessionId: pick.id, samePhoto: !!same } : undefined)
+    }
+    fromStoreError(e)
+  }
   let analysis: SourceAnalysis
   try { analysis = await deps.analyze({ b64: src.b64, bytes: src.bytes }) } catch { throw new GiftError('analysis_unavailable') }
   if (analysis.status === 'age_restricted') throw new GiftError('age_restricted')     // nothing has been stored

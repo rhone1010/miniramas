@@ -180,3 +180,22 @@ describe('no duplicate generation or charge when the Wizard comes back', () => {
     expect(b).toEqual(a); expect(a.freeBatchesUsed).toBe(1)
   })
 })
+
+describe('the upload limit points back to the customer\'s own session', () => {
+  it('a rate-limited re-upload of the same photo says where to continue, and only ever names the customer\'s own session', async () => {
+    const { fail } = await import('./handlers')
+    const r = rig(); const same = await photo(); let first = ''
+    for (let i = 0; i < 5; i++) { const v = await createSession(r.deps, { userId: U1, imageB64: same }); if (!first) first = v.sessionId; r.clock.t += 1000 }
+    const err: any = await createSession(r.deps, { userId: U1, imageB64: same }).catch(e => e)
+    expect(err).toMatchObject({ code: 'rate_limited', status: 429 }); expect(err.details).toMatchObject({ samePhoto: true }); expect(typeof err.details.resumeSessionId).toBe('string')
+    expect(r.store.sessions.get(err.details.resumeSessionId)!.user_id).toBe(U1)
+    const body = await fail(err).json(); expect(body).toEqual({ error: 'rate_limited', resumeSessionId: err.details.resumeSessionId, samePhoto: true })
+    expect((await restoreSession(r.deps, U1)).current!.sessionId).toBe(err.details.resumeSessionId)                 // and that is the session the restore route returns
+    const other: any = await createSession(r.deps, { userId: U2, imageB64: same }); expect(other.sessionId).toBeTruthy()      // another customer is not limited by this one
+  })
+  it('with no session to resume the limit carries no pointer', async () => {
+    const r = rig(); r.store.recordSessionAttempt = async () => { const { StoreError } = await import('./store'); throw new StoreError('rate_limited') }
+    const err: any = await createSession(r.deps, { userId: U1, imageB64: await photo() }).catch(e => e)
+    expect(err).toMatchObject({ code: 'rate_limited' }); expect(err.details).toBeUndefined()
+  })
+})
