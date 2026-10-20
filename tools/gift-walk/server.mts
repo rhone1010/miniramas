@@ -37,7 +37,7 @@ const watermark = async (b64: string) => {
 }
 const deps: any = {
   draftCompositions: process.env.GIFT_COMPOSITIONS_BEFORE_PAYMENT === '1', store, generate, watermark, compose: composeWithPrintShop, mockup: realMockupRenderer,
-  storage: { put: async (p: string, b: Buffer) => { files.set(p, b) }, get: async (p: string) => files.get(p) ?? null, remove: async (ps: string[]) => { for (const p of ps) files.delete(p) }, signedUrl: async (p: string) => (files.has(p) ? `${BASE}/__files/${p}` : null), list: async (x: string) => [...files.keys()].filter(k => k.startsWith(x)) },
+  storage: { put: async (p: string, b: Buffer) => { files.set(p, b) }, get: async (p: string) => files.get(p) ?? null, remove: async (ps: string[]) => { for (const p of ps) files.delete(p) }, signedUrl: async (p: string) => (files.has(p) ? `https://walk.supabase.co/__files/${p}` : null), list: async (x: string) => [...files.keys()].filter(k => k.startsWith(x)) },
   analyze: async () => ({ status: 'supported', series: 'portraits', peopleCount: null }), kick: async () => ({}),
 }
 
@@ -53,6 +53,12 @@ async function send(res: http.ServerResponse, r: Response) { res.writeHead(r.sta
 http.createServer(async (req, res) => {
   const url = new URL(req.url!, BASE), p = url.pathname, started = Date.now()
   try {
+    if (p === '/__walk/pay') { // simulate verified payment of the CURRENT session's cart (Stripe is not available here): same records a real confirmed order has
+      const { purchasedItems, purchasedLines } = await import('../../lib/v1/gift/test-order.ts'); const { randomUUID } = await import('node:crypto')
+      const rec = [...store.sessions.values()].at(-1)!; const lines = rec.lines.map((l: any) => ({ lineId: l.lineId, productId: l.productId, copies: l.copies })); const orderId = randomUUID(), cs = 'cs_test_' + orderId.slice(0, 12)
+      store.orders.set(orderId, { id: orderId, status: 'created', paid_at: null, stripe_session_id: cs, stripe_payment_intent: null, retail_total_cents: 9000, retail_shipping_cents: 700, items: purchasedItems(lines), prodigi_order_id: null, placed_at: null } as any)
+      await store.linkOrder(rec.id, USER.id, orderId, '2026-10-18-3'); await store.confirmOrder({ sessionId: rec.id, orderId, userId: USER.id, stripeSessionId: cs, paymentIntent: 'pi_walk', lines: purchasedLines(lines) })
+      res.writeHead(200, { 'content-type': 'application/json' }); return void res.end(JSON.stringify({ paid: true, orderId })) }
     if (p === '/__walk/state') { res.writeHead(200, { 'content-type': 'application/json' }); return void res.end(JSON.stringify({ genCalls, sessions: store.sessions.size, previews: store.previews.map(x => x.status), lines: store.sessions.size ? [...store.sessions.values()][0].lines : [], comps: store.compositions.length, orders: store.orders.size, log: log.slice(-40) })) }
     if (p.startsWith('/__files/')) { const b = files.get(decodeURIComponent(p.slice(9))); if (!b) { res.writeHead(404); return void res.end() } res.writeHead(200, { 'content-type': p.endsWith('.png') ? 'image/png' : 'image/jpeg', 'cache-control': 'no-store' }); return void res.end(b) }
     if (p.startsWith('/api/')) {

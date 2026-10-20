@@ -12,3 +12,18 @@ Real Chrome, real Wizard files, real backend handlers (harness: `tools/gift-walk
 | 6 | Nested scrolling panels | Left/center/right panels scroll internally at 1300x720. | Codex | open |
 
 Verified working in the same walk: upload; six effects; all six renders concurrent; leaving mid-generation and returning by Back and by URL restores the finished previews; Add to Cart survives 9 s and a refresh; all eight families visible with the four unlaunched ones disabled.
+
+## Re-walk after Codex fe8ab88 (same day)
+
+Fixed and seen working in the browser: "Choose One Artwork" with a disabled "Choose Your Gift →" until an artwork is chosen; the configuration screen shows ONE personalized preview from `/product-preview`; the cart and checkout copy; reaching Final Approval with the mockup after a verified payment (simulated: Stripe is not available in the harness).
+
+| # | Wall | Evidence | Owner |
+|---|---|---|---|
+| A | Finished previews are not shown as they finish | t+4.4 s: server 4 ready + 2 generating; screen "Crafting…" x6, no images. Images appear only at the end. | Codex |
+| B | "Craft My Six Previews" leaves the first viewport | 1660x900, six effects picked: the selected-effects grid pushes the button below the fold (not visible); Back / Start a New Gift are not visible either | Codex |
+| C | Adaptation-required product shows an empty page | Classic Framed 16x24: one sentence ("Product-specific artwork will be prepared after payment") and ~600 px of blank; no product, no artwork | Codex (the response carries favoriteAspect, pictureAspect, method) |
+| D | Returning to a paid session shows an error, not progress | Restore lands on Review with "This product preview could not load. Try again" and a disabled Approve button; composition starts only after the customer clicks Try again (3.6 to 5.7 s), then the preview appears | Codex (backend: per-line `compositions[].status` none -> ready is pollable; POST /compositions is idempotent) |
+| E | Final Approval for the black Classic Framed 16x24 is the calibrated lay-flat mockup | server log: `scene fallback ... GLOBAL-CFP-16X24 configuration_not_photographed`; an orientation probe shows portrait art drawn rotated 90 degrees on a gray surface (`walk-20261019/40-orientation-probe-framed-16x24.png`) | Photography (see GIFT-SCENE-COVERAGE-AND-PHOTOGRAPHY-BRIEF-2026-10-19.md) |
+| F | Mobile CTA / nested scrolling | not re-run after fe8ab88 | Codex to re-run `w15.cjs mobile` |
+
+Not walked: Back / Change Product / Cancel inside configuration (punch 2), the analysis animation (punch 5), real Stripe checkout, approval click-through, Preview.

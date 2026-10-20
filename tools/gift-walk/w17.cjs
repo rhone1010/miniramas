@@ -1,0 +1,20 @@
+const { open, snap, report, state, reset, BASE } = require('./lib.cjs')
+const { toProducts } = require('./w6.cjs')
+;(async () => {
+  await reset(); const { browser, page, problems } = await open()
+  await toProducts(page, problems); await report(page, problems, 'after toProducts')
+  await page.locator('button', { hasText: 'Classic Framed Print' }).first().click(); await page.waitForTimeout(600)
+  console.log('product shown:', await page.locator('#screen').innerText().then(t => t.replace(/\s+/g, ' ').slice(-120)))
+  await page.getByRole('button', { name: 'Choose This Gift' }).first().click(); await page.waitForTimeout(3000)
+  await page.getByRole('button', { name: /16 × 24/ }).click(); await page.waitForTimeout(3000)
+  await snap(page, '30-config-framed-16x24'); await report(page, problems, 'configuration Classic Framed 16x24')
+  console.log('preview call:', JSON.stringify((await state()).log.filter(l => l.includes('product-preview')).slice(-2)))
+  await page.locator('#primary').click(); await page.waitForTimeout(2500); await snap(page, '31-cart'); await report(page, problems, 'cart')
+  await page.locator('#primary').click(); await page.waitForTimeout(1500); await snap(page, '32-checkout'); await report(page, problems, 'checkout form')
+  // Stripe is not available here: record the payment the way a verified webhook would, then come back to the Wizard
+  console.log('PAY', JSON.stringify(await (await fetch(BASE + '/__walk/pay')).json()))
+  await page.goto(BASE + '/gift-wizard.next.html', { waitUntil: 'networkidle' })
+  for (const [i, ms] of [[1, 2500], [2, 6000], [3, 8000]]) { await page.waitForTimeout(ms); await snap(page, `33-after-payment-${i}`); await report(page, problems, `after payment +${i}`) }
+  const s = await state(); console.log('server comps', s.comps, 'LOG', JSON.stringify(s.log.slice(-8)))
+  await browser.close()
+})()

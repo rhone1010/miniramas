@@ -7,6 +7,8 @@ const BASE = 'http://localhost:3777'
 async function open(viewport = { width: 1660, height: 900 }, storage) {
   const browser = await chromium.launch({ headless: true, executablePath: 'C://Program Files//Google//Chrome//Application//chrome.exe' })
   const context = await browser.newContext({ viewport, storageState: storage })
+  // signed URLs are https in production (the Wizard requires it): serve them from the local server through a pretend https host
+  await context.route(u => u.hostname === 'walk.supabase.co', async r => { const resp = await r.fetch({ url: r.request().url().replace('https://walk.supabase.co', BASE) }); await r.fulfill({ response: resp }) })
   const page = await context.newPage()
   const problems = []
   page.on('console', m => { if (['error', 'warning'].includes(m.type())) problems.push('console.' + m.type() + ': ' + m.text().slice(0, 220)) })

@@ -5,9 +5,10 @@ exports.toProducts = async (page, problems) => {
   await page.getByText('Myself', { exact: false }).first().click(); await page.waitForFunction(() => !document.getElementById('primary').disabled); await page.locator('#primary').click(); await page.waitForFunction(() => document.getElementById('screen').dataset.view === 'effects'); await page.waitForTimeout(800)
   for (const name of ['Marionettes', 'Nesting Dolls', 'Tin Wind-Ups', 'Atomic Age Robot', 'Action Figure', 'Vinyl Figure']) { await page.getByRole('button', { name }).first().click(); await page.waitForTimeout(150) }
   await page.locator('#primary').click()
-  await page.waitForFunction(() => document.getElementById('primary')?.textContent.includes('Use This Artwork') && !document.getElementById('primary').disabled, null, { timeout: 60000 })
+  await page.waitForFunction(() => document.querySelectorAll('#screen img').length >= 6, null, { timeout: 60000 })
   await page.waitForTimeout(600)
-  await page.getByRole('button', { name: 'Tin Wind-Ups' }).first().click(); await page.waitForTimeout(400)
+  await page.getByRole('button', { name: 'Tin Wind-Ups' }).first().click(); await page.waitForTimeout(500)
+  await page.waitForFunction(() => !document.getElementById('primary').disabled, null, { timeout: 10000 }).catch(() => console.log('WALL: choosing an artwork did not enable the primary action'))
   await page.locator('#primary').click(); await page.waitForTimeout(2500)
 }
 if (require.main === module) (async () => {

@@ -11,3 +11,6 @@ Faked: sign-in, database, storage, generation (a sample painting, 2.5 to 7.5 s p
     node tools/gift-walk/w16.cjs                  # product-preview status for every product with the current favorite
 
 Screenshots go to E:/Dev/_recovery-staging/frontend-deploy-review/walk-20261019/. Set WALK_ARTWORK to use a different sample painting. Not part of the build.
+
+Post-purchase: `node tools/gift-walk/w17.cjs` adds a Classic Framed 16x24 to the cart, then records a verified payment through `/__walk/pay` (Stripe is not available here) and returns to the Wizard;
+`w18.cjs` / `w19.cjs` continue from the paid session (compositions, Final Approval). Signed URLs are served as https://walk.supabase.co/... (the page's CSP only allows *.supabase.co) through a Playwright route.
