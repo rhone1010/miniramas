@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { allProducts, catalogVersion } from '../print/catalog'
 import { createGiftCheckout, confirmGiftOrder, verifyGiftPayment, giftOrderRecheck, DISCLOSURE, GIFT_ORDER_KIND, type GiftOrderDeps, type PrintOrdersPort } from './orders'
 import { createSession, setLines, startBatch, getSessionView, type GiftDeps } from './service'
-import { selectArtwork, ensureCompositions, approveComposition, approveOrder, repairLine, correctLine } from './compose'
+import { selectArtwork, ensureCompositions, approveComposition, approveOrder, repairLine, correctLine, composeWithPrintShop } from './compose'
 import { memoryGiftStore } from './store'
 import { giftRenderId, isGiftOrder, parseGiftRenderId } from './order-kind'
 
@@ -383,6 +383,43 @@ describe('purchase disclosure 2026-10-18-3', () => {
     const rec = (await r.store.getSession(sid, U1))!; expect(rec.disclosure_version).toBe('2026-10-18-3'); expect(rec.disclosure_accepted_at).toBeTruthy()
     expect(out.totals.shippingCents).toBe(685); expect(out.totals.totalCents).toBe(out.totals.itemsCents + 685)
     r.pay(out.stripeSessionId); await confirmGiftOrder(r.deps, out.stripeSessionId, U1); expect((await r.store.getSession(sid, U1))!.free_batches_granted).toBe(2)
+  })
+})
+
+describe('the paid Fine Art Print 12 x 18 whose stored composition is landscape (the reported defect), repaired without touching anything else', () => {
+  it('dry run names the exact operation (one 2:3 generation, no outpaint); the repair replaces only that composition; the Canvas, payment, favorite and corrections are untouched; it persists', async () => {
+    const r = rig(); r.gift.analyze = async () => ({ status: 'supported', series: 'groups', peopleCount: 4 })
+    const gen = vi.fn(async (i: { aspect: string }) => { const [w, h] = i.aspect.split(':').map(Number); return { imageB64: (await sharp({ create: { width: 1000 * w, height: 1000 * h, channels: 3, background: '#7a5' } }).png().toBuffer()).toString('base64') } })
+    r.gift.generate = gen as any; r.gift.compose = composeWithPrintShop
+    const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 1 }])
+    // the historical state: the order was paid with the 12 x 18 composition stored as 1575 x 1050 and marked ready
+    const out = await checkout(r, sid); r.pay(out.stripeSessionId); await confirmGiftOrder({ stripe: r.stripe, store: r.store }, out.stripeSessionId, U1)
+    await ensureCompositions(r.gift, U1, sid)
+    const canvas = r.store.compositions.find(c => c.line_id === 'b')!; await approveComposition(r.gift, U1, sid, canvas.id)            // the approved control
+    const bad = r.store.compositions.find(c => c.line_id === 'a')!; Object.assign(bad, { width: 1575, height: 1050 })
+    // Final Approval cannot accept the wrong-shaped picture
+    await expect(approveComposition(r.gift, U1, sid, bad.id)).rejects.toMatchObject({ code: 'composition_geometry_mismatch' })
+
+    const snap = async () => JSON.stringify({ order: [...r.store.orders.values()].map(o => [o.id, o.status, o.paid_at, o.stripe_session_id, o.retail_total_cents, o.items]), canvas: r.store.compositions.find(c => c.id === canvas.id), session: (({ artwork_preview_id, approved_at, refunded_at }) => ({ artwork_preview_id, approved_at, refunded_at }))([...r.store.sessions.values()][0] as any) })
+    const before = await snap(), correctionsBefore = (await getSessionView(r.gift, U1, sid)).compositions.map(c => [c.lineId, c.correctionsRemaining])
+    gen.mockClear()
+    const dry = await repairLine(r.gift, { operator: 'ops@liten.test', userId: U1, sessionId: sid, lineId: 'a', dryRun: true }) as any
+    expect(dry).toMatchObject({ status: 'would_repair', plan: { method: 'generated', generationAspect: '2:3' }, nb21Calls: 1 }); expect(gen).not.toHaveBeenCalled(); expect(await snap()).toBe(before)
+
+    const done = await repairLine(r.gift, { operator: 'ops@liten.test', userId: U1, sessionId: sid, lineId: 'a' }) as any
+    expect(done.status).toBe('repaired'); expect(gen).toHaveBeenCalledTimes(1); expect(gen.mock.calls[0][0]).toMatchObject({ aspect: '2:3' })
+    const fresh = r.store.compositions.find(c => c.id === done.compositionId)!
+    expect(fresh.width! / fresh.height!).toBeCloseTo(2 / 3, 3); expect(fresh.status).toBe('ready'); expect(fresh.repair_seq).toBe(1)               // portrait, ready for the customer's own Final Approval
+    expect(r.store.compositions.find(c => c.id === bad.id)).toMatchObject({ status: 'superseded', plan: { supersededReason: 'geometry_defect' } })
+    expect(await snap()).toBe(before)                                                                                                     // payment, order lines, favorite and the approved Canvas are byte-identical
+    // it persists: a later view, a resumed session and the customer's own approval all see the repaired portrait
+    const view = await getSessionView(r.gift, U1, sid), line = view.compositions.find(c => c.lineId === 'a')!
+    expect(line).toMatchObject({ compositionId: fresh.id, status: 'ready', state: 'ready' }); expect(view.compositions.find(c => c.lineId === 'b')).toMatchObject({ compositionId: canvas.id, status: 'approved' })
+    expect(view.compositions.map(c => [c.lineId, c.correctionsRemaining])).toEqual(correctionsBefore)                                       // the repair did not spend the free correction
+    const { restoreSession } = await import('./service'); expect((await restoreSession(r.gift, U1)).resume!.compositions).toMatchObject({ resumeNeeded: false })
+    await approveComposition(r.gift, U1, sid, fresh.id)
+    expect((await approveOrder(r.gift, U1, sid)).order.state).toBe('approved')
+    expect((await repairLine(r.gift, { operator: 'ops@liten.test', userId: U1, sessionId: sid, lineId: 'a' }).catch(e => e)).code).toBe('order_not_awaiting_artwork')
   })
 })
 
