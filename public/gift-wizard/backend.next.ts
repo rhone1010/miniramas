@@ -6,6 +6,8 @@ export class GiftApiError extends Error {constructor(public code:string,public s
 const segment=(s:string)=>{if(!/^[\w-]{1,80}$/.test(s))throw new GiftApiError('invalid_reference',0);return encodeURIComponent(s)};
 const sessionPath=(id:string)=>'/api/v1/gift/sessions/'+segment(id);
 const record=(v:unknown):v is Record<string,any>=>!!v&&typeof v==='object'&&!Array.isArray(v);
+const previewURL=(url:string)=>/^https:\/\//.test(url)||(typeof location!=='undefined'&&['localhost','127.0.0.1'].includes(location.hostname)&&url.startsWith(location.origin+'/'));
+
 export function assertSession(v:unknown):asserts v is SessionView {
  if(!record(v)||v.contractVersion!==1||typeof v.sessionId!=='string'||!record(v.order)||!record(v.entitlement)||!record(v.nextBatch)||!Array.isArray(v.lines)||!Array.isArray(v.batches)||!Array.isArray(v.compositions))throw new GiftApiError('invalid_session_response',0);
  for(const n of [v.entitlement.freeBatchesTotal,v.entitlement.freeBatchesUsed,v.entitlement.paidPacksAvailable,v.order.freeBatchesGranted])if(!Number.isInteger(n)||n<0)throw new GiftApiError('invalid_entitlement_response',0);
@@ -74,7 +76,7 @@ export class GiftBackend {
  async productPreview(id:string,productId:string,favoriteId:string,signal?:AbortSignal):Promise<ProductPreviewView>{
   const v=await this.request<ProductPreviewView>('GET',sessionPath(id)+'/product-preview?productId='+encodeURIComponent(productId),undefined,signal);
   if(!v||v.contractVersion!==1||v.sessionId!==id||v.productId!==productId||v.favoriteId!==favoriteId||!['ready','adaptation_required','not_available'].includes(v.status))throw new GiftApiError('invalid_product_preview_response',0);
-  if(v.status==='ready'&&(v.watermarked!==true||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!/^https:\/\//.test(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['scene','calibrated'].includes(v.renderer)))throw new GiftApiError('invalid_product_preview_response',0);
+  if(v.status==='ready'&&(v.watermarked!==true||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!previewURL(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['scene','calibrated'].includes(v.renderer)))throw new GiftApiError('invalid_product_preview_response',0);
   return v;
  }
  private block<T>(reason:string):Promise<T>{return Promise.reject(new GiftApiError('integration_blocked',0,{reason}))}

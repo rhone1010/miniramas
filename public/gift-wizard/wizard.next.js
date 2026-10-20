@@ -99,6 +99,7 @@ function render() {
         renderPayment();
     if (serverMode)
         adaptServerView();
+    document.querySelectorAll('[data-product-preview]').forEach(b => b.onclick = () => { productPreviews.delete(b.dataset.productPreview); render(); });
     adaptMobileView();
     rememberView();
 }
@@ -110,7 +111,7 @@ mobileLayout.addEventListener('change', () => { if (products.length)
     render(); });
 function adaptMobileView() {
     mobileActionObserver?.disconnect();
-    if (!mobileLayout.matches || view === 'photo')
+    if (!mobileLayout.matches)
         return;
     if (view === 'effects') {
         document.querySelector('[data-silo="all"]')?.remove();
@@ -139,10 +140,15 @@ function adaptMobileView() {
         $('right').querySelector('h2')?.remove();
     }
     // Approval stays in document flow after configuration and status on mobile.
-    if (view === 'effects' || view === 'checkout') {
+    if (['photo', 'effects', 'configuration', 'cart', 'checkout'].includes(view)) {
         const slot = document.createElement('div'), bar = document.createElement('div');
         slot.className = 'mobile-action-slot';
         bar.className = 'mobile-bottom-action';
+        if (view === 'configuration') {
+            const price = $('right').querySelector('.context-body>p');
+            if (price)
+                bar.append(price.cloneNode(true));
+        }
         if (view === 'effects') {
             const count = document.createElement('p');
             count.className = 'small';
@@ -248,7 +254,14 @@ async function upload(file) {
         busy = false;
         analyzingSource = false;
         render();
-        error(e instanceof Error ? e.message : 'This photograph could not be opened.');
+        const recovery = e instanceof GiftApiError && e.code === 'rate_limited' ? e.details : null;
+        if (recovery?.resumeSessionId && /^[\w-]{1,80}$/.test(recovery.resumeSessionId)) {
+            $('right').insertAdjacentHTML('afterbegin', secondary('resume-upload', 'Return to Your Gift'));
+            $('resume-upload').onclick = () => location.assign('/gift-wizard.next.html?sessionId=' + encodeURIComponent(recovery.resumeSessionId));
+            error('Return to Your Gift');
+        }
+        else
+            error(e instanceof Error ? e.message : 'This photograph could not be opened.');
     }
     finally {
         if (candidate)
@@ -315,16 +328,16 @@ function configurationPreview(p, o) {
         entry = {};
         productPreviews.set(key, entry);
         void owner.api.productPreview(owner.id, productId, favoriteId).then(value => { if (value.sku !== o.sku && value.status !== 'not_available')
-            throw new GiftApiError('invalid_product_preview_response', 0); productPreviews.set(key, { value }); }).catch(() => productPreviews.set(key, { failed: true })).finally(() => { if (live === owner && owner.session?.artworkPreviewId === favoriteId && view === 'configuration' && activeProduct === p.id && size === o.size)
+            throw new GiftApiError('invalid_product_preview_response', 0); productPreviews.set(key, { value }); }).catch(() => productPreviews.set(key, { failed: true })).finally(() => { if (live === owner && owner.session?.artworkPreviewId === favoriteId && ((view === 'configuration' && activeProduct === p.id && size === o.size) || view === 'cart' || view === 'checkout'))
             render(); });
     }
     if (entry.failed)
-        return '<p role="alert">This product preview could not load.</p>' + secondary('check-product-preview', 'Check Again');
+        return '<p role="alert">This product preview could not load.</p><button class="secondary" data-product-preview="' + esc(key) + '">Check Again</button>';
     const v = entry.value;
     if (!v)
         return '<p role="status">Preparing product preview…</p>';
     if (v.status === 'ready')
-        return photo(v.url, p.label, 'gift-feature-image');
+        return photo(v.url, p.label, 'gift-feature-image') + '<p class="small">Product-specific artwork will be prepared after payment.</p>';
     if (v.status === 'adaptation_required')
         return '<p role="status">Product-specific artwork will be prepared after payment.</p>';
     return '<p role="status">Not currently available</p>';
@@ -347,15 +360,13 @@ function renderProducts() {
         return;
     }
     $('screen').innerHTML = '<h2>' + esc(p.label) + '</h2>' + configurationPreview(p, o);
-    if ($('check-product-preview'))
-        $('check-product-preview').onclick = () => { productPreviews.delete(live.id + ':' + live.session.artworkPreviewId + ':' + p.id + ':' + o.size); render(); };
     $('right').innerHTML = '<h2>' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><div class="product-config"><h2>2. Choose a Size</h2><div class="sizes">' + p.options.map(o => '<button ' + (o.compatible === false ? 'disabled ' : '') + 'data-size="' + o.size + '" aria-pressed="' + (size === o.size) + '">' + esc(o.label) + '</button>').join('') + '</div>' + field('copies', 'Quantity', String(copies), 'type="number" min="1" max="20" step="1"') + '<p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p></div>';
     if (session.lines.length)
         $('right').insertAdjacentHTML('beforeend', secondary('view-cart', 'Your gifts (' + session.lines.length + ')'));
     document.querySelectorAll('[data-product]').forEach(b => b.onclick = () => chooseProduct(b.dataset.product));
     document.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { size = b.dataset.size; render(); });
     $('screen').prepend($('back'));
-    $('copies').oninput = e => copies = Number(e.target.value);
+    $('copies').oninput = e => { copies = Number(e.target.value); rememberView(); };
     if ($('view-cart'))
         $('view-cart').onclick = () => go('cart');
     primary(editId ? 'Update This Gift' : 'Add to Cart', () => { try {
@@ -369,7 +380,7 @@ function renderProducts() {
         error('Choose a quantity from 1 to 20.');
     } }, o.compatible === false);
 }
-function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
+function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : live ? configurationPreview(p, o) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
 async function persistCart(lines) {
     if (busy)
         return;
@@ -455,7 +466,7 @@ async function generate() {
     generationBatch = live.session.batches.length + 1;
     generationRequestPending = true;
     generationReadError = '';
-    batchIntent || (batchIntent = { idempotencyKey: crypto.randomUUID(), effectIds: [...session.effectIds] });
+    batchIntent ||= { idempotencyKey: crypto.randomUUID(), effectIds: [...session.effectIds] };
     view = 'review';
     render();
     scheduleGenerationRead();
@@ -503,7 +514,7 @@ function scheduleGenerationRead() {
     const s = live?.session, b = s?.batches.find(b => b.batchIndex === generationBatch);
     if (!generationBatch || !s || generationReadError || b?.generation === 'failed' || b?.generation === 'stalled' || (!generationRequestPending && b && !b.previews.some(p => p.status === 'pending' || p.status === 'generating')))
         return;
-    generationTimer = setTimeout(() => void refreshGeneration().then(() => resumeStalledBatches()), 5000);
+    generationTimer = setTimeout(() => void refreshGeneration().then(() => resumeStalledBatches()), 1500);
 }
 const resumedBatches = new Set();
 async function resumeStalledBatches() {
@@ -724,7 +735,7 @@ function renderCheckout() {
     document.querySelectorAll('#screen .address input').forEach(input => { input.placeholder = input.closest('label').querySelector('span').textContent; if (input.id !== 'line2' && input.id !== 'state')
         input.required = true; });
     $('countryCode').setAttribute('aria-description', 'Two-letter country code');
-    $('right').innerHTML = '<div data-order-summary><h2>Order summary</h2>' + session.lines.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="summary-item">' + photo(asset(p.image), p.label) + '<div><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '<br>' + money(o.retailCents * l.copies) + '</p></div></div>'; }).join('') + '<dl><dt>Products</dt><dd>' + money(productSubtotal(session, products)) + '</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>' + secondary('edit-gifts', 'Edit gifts');
+    $('right').innerHTML = '<div data-order-summary><h2>Order summary</h2>' + session.lines.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="summary-item"><div>' + (live ? configurationPreview(p, o) : photo(asset(p.image), p.label)) + '</div><div><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '<br>' + money(o.retailCents * l.copies) + '</p></div></div>'; }).join('') + '<dl><dt>Products</dt><dd>' + money(productSubtotal(session, products)) + '</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>' + secondary('edit-gifts', 'Edit gifts');
     for (const key of ['email', ...Object.keys(session.address)])
         $(key).oninput = e => { const v = e.target.value; if (key === 'email')
             session.email = v;
