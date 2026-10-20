@@ -13,8 +13,12 @@ export function assertSession(v:unknown):asserts v is SessionView {
  for(const n of [v.entitlement.freeBatchesTotal,v.entitlement.freeBatchesUsed,v.entitlement.paidPacksAvailable,v.order.freeBatchesGranted])if(!Number.isInteger(n)||n<0)throw new GiftApiError('invalid_entitlement_response',0);
  if(typeof v.entitlement.freeAvailable!=='boolean'||![null,'session_limit','photo_limit','daily_limit','lifetime_limit'].includes(v.entitlement.freeBlockedReason))throw new GiftApiError('invalid_entitlement_response',0);
  if(!['free','paid','payment_required','blocked'].includes(v.nextBatch.kind)||!Array.isArray(v.geometries)||typeof v.expiresAt!=='string')throw new GiftApiError('invalid_session_response',0);
+ for(const c of v.compositions)if(c.state!==undefined&&(!['not_started','preparing','stalled','failed','ready','approved'].includes(c.state)||!Number.isInteger(c.attempts)||c.attempts<0||typeof c.retryable!=='boolean'||(c.preparingSince!==null&&!Number.isFinite(Date.parse(c.preparingSince)))||(c.failureCode!==null&&typeof c.failureCode!=='string')))throw new GiftApiError('invalid_composition_state',0);
  if(!['none','checkout_open','awaiting_artwork','approved','with_lab','refund_requested','refunded','cancelled','needs_attention'].includes(v.order.state))throw new GiftApiError('invalid_order_state',0);
 }
+// Only the replacement masters/masks from litenco product image alphas 2-assets.zip.
+const approvedSceneFamilies:Record<string,string>={'fine-art-square':'fine_art','premium-fine-art':'premium','classic-framed':'framed','matted-frame-square':'matted','gallery-canvas-square':'canvas','gallery-canvas-landscape':'canvas','matted-frame-landscape':'canvas','framed-canvas':'framed_canvas','ceramic-mug':'mug','greeting-card':'card'};
+export function isApprovedScene(productId:string,sceneId:unknown){return typeof sceneId==='string'&&approvedSceneFamilies[sceneId]===productId.split(':')[0]}
 export const integrationBlocks=Object.freeze(['sandbox_final_release','mug_card_profiles'] as const);
 export class GiftBackend {
  constructor(private readonly transport:Transport){}
@@ -34,6 +38,7 @@ export class GiftBackend {
   const v=await this.request<RestoreResponse>('GET','/api/v1/gift/sessions',undefined,signal);
   if(!v||v.contractVersion!==1||!Array.isArray(v.recent)||(v.current===null?v.resume!==null:!v.resume))throw new GiftApiError('invalid_restore_response',0);
   if(v.current){assertSession(v.current);const r=v.resume!;if(r.sessionId!==v.current.sessionId||!['effects','previews','products','cart','checkout','compositions','order'].includes(r.suggestedStep)||![r.resumeBatches,r.runningBatches].every(a=>Array.isArray(a)&&a.every(n=>Number.isInteger(n)&&n>0)))throw new GiftApiError('invalid_restore_response',0)}
+  const c=v.resume?.compositions;if(c!=null&&(!['not_started','preparing','stalled','failed','ready','approved'].includes(c.state)||typeof c.resumeNeeded!=='boolean'||![c.preparing,c.stalled,c.failed].every(a=>Array.isArray(a)&&a.every(x=>typeof x==='string'))))throw new GiftApiError('invalid_restore_response',0);
   return v;
  }
  async catalog(signal?:AbortSignal){const v=await this.request<CatalogResponse>('GET','/api/v1/print/catalog',undefined,signal);if(v.contractVersion!==1||!Array.isArray(v.products))throw new GiftApiError('invalid_catalog_response',0);return v}
@@ -70,13 +75,16 @@ export class GiftBackend {
  approveOrder(_id:string):Promise<SessionView>{return this.block('sandbox_final_release')}
  async mockup(id:string,lineId:string,compositionId:string,signal?:AbortSignal):Promise<MockupView>{
   const v=await this.request<MockupView>('GET',sessionPath(id)+'/lines/'+segment(lineId)+'/mockup?compositionId='+segment(compositionId),undefined,signal);
-  if(!v||v.contractVersion!==1||v.sessionId!==id||v.lineId!==lineId||v.compositionId!==compositionId||typeof v.watermarked!=='boolean'||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!/^https:\/\//.test(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['frozen','legacy_catalog'].includes(v.geometrySource))throw new GiftApiError('invalid_mockup_response',0);
+  if(!v||v.contractVersion!==1||v.sessionId!==id||v.lineId!==lineId||v.compositionId!==compositionId||typeof v.watermarked!=='boolean'||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!previewURL(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['frozen','legacy_catalog'].includes(v.geometrySource))throw new GiftApiError('invalid_mockup_response',0);
+  if(v.renderer!=='scene'||!isApprovedScene(v.productId,v.scene?.sceneId))throw new GiftApiError('approved_scene_required',0);
   return v;
  }
  async productPreview(id:string,productId:string,favoriteId:string,signal?:AbortSignal):Promise<ProductPreviewView>{
-  const v=await this.request<ProductPreviewView>('GET',sessionPath(id)+'/product-preview?productId='+encodeURIComponent(productId),undefined,signal);
-  if(!v||v.contractVersion!==1||v.sessionId!==id||v.productId!==productId||v.favoriteId!==favoriteId||!['ready','adaptation_required','not_available'].includes(v.status))throw new GiftApiError('invalid_product_preview_response',0);
-  if(v.status==='ready'&&(v.watermarked!==true||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!previewURL(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['scene','calibrated'].includes(v.renderer)))throw new GiftApiError('invalid_product_preview_response',0);
+  const v=await this.request<ProductPreviewView>('GET',sessionPath(id)+'/product-preview?productId='+encodeURIComponent(productId)+'&provisional=1',undefined,signal);
+  if(!v||v.contractVersion!==1||v.sessionId!==id||v.productId!==productId||v.favoriteId!==favoriteId||!['ready','provisional','adaptation_required','not_available'].includes(v.status))throw new GiftApiError('invalid_product_preview_response',0);
+  if((v.status==='ready'||v.status==='provisional')&&(v.watermarked!==true||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!previewURL(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['scene','calibrated'].includes(v.renderer)))throw new GiftApiError('invalid_product_preview_response',0);
+  if((v.status==='ready'||v.status==='provisional')&&(v.renderer!=='scene'||!isApprovedScene(productId,v.sceneId)))throw new GiftApiError('approved_scene_required',0);
+  if(v.status==='provisional'){const p=v.provisional;if(v.fit!=='contain'||!p||p.exactArtworkShown!==true||p.cropped!==false||p.distorted!==false||p.surround!=='neutral'||!p.bars||!['top_bottom','left_right'].includes(p.bars.sides)||!Number.isFinite(p.bars.fractionPerSide)||p.bars.fractionPerSide<0||p.bars.fractionPerSide>=0.5||!['generated','deterministic',null].includes(p.finalComposition))throw new GiftApiError('invalid_product_preview_response',0)}
   return v;
  }
  private block<T>(reason:string):Promise<T>{return Promise.reject(new GiftApiError('integration_blocked',0,{reason}))}

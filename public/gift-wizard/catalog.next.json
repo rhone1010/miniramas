@@ -6,7 +6,7 @@
     {
       "id": "fine_art",
       "label": "Fine Art Print",
-      "image": "./assets/product-fine_art.jpg",
+      "image": "./mockup-scenes/fine-art-square/fine art print square.png",
       "available": true,
       "options": [
         {
@@ -174,7 +174,7 @@
     {
       "id": "premium",
       "label": "Premium Fine Art Print",
-      "image": "./assets/product-premium.png",
+      "image": "./mockup-scenes/premium-fine-art/premium fine art print.png",
       "available": true,
       "options": [
         {
@@ -342,7 +342,7 @@
     {
       "id": "framed",
       "label": "Classic Framed Print",
-      "image": "./assets/product-framed.jpg",
+      "image": "./mockup-scenes/classic-framed/Classic Framed Print.png",
       "available": true,
       "options": [
         {
@@ -518,7 +518,7 @@
     {
       "id": "matted",
       "label": "Matted Frame",
-      "image": "./assets/product-matted.jpg",
+      "image": "./mockup-scenes/matted-frame-square/matted frame square.png",
       "available": false,
       "options": [
         {
@@ -706,7 +706,7 @@
     {
       "id": "canvas",
       "label": "Gallery Canvas",
-      "image": "./assets/product-canvas.jpg",
+      "image": "./mockup-scenes/gallery-canvas-square/wrapped canvas square.png",
       "available": true,
       "options": [
         {
@@ -882,7 +882,7 @@
     {
       "id": "framed_canvas",
       "label": "Framed Canvas",
-      "image": "./assets/product-framed_canvas.jpg",
+      "image": "./mockup-scenes/framed-canvas/framed canvas.png",
       "available": false,
       "options": [
         {
@@ -1078,7 +1078,7 @@
     {
       "id": "mug",
       "label": "11 oz Ceramic Mug",
-      "image": "./assets/product-mug.jpg",
+      "image": "./mockup-scenes/ceramic-mug/Mug.png",
       "available": false,
       "options": [
         {
@@ -1110,7 +1110,7 @@
     {
       "id": "card",
       "label": "Greeting Card",
-      "image": "./assets/product-card.jpg",
+      "image": "./mockup-scenes/greeting-card/greeting card.png",
       "available": false,
       "options": [
         {

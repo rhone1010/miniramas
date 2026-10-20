@@ -1,6 +1,6 @@
 import { LiveGift, purchased, canCraft } from './live.next.js';
 import { RequestSlot } from './backend-state.next.js';
-import { GiftBackend, GiftApiError } from './backend.next.js';
+import { GiftBackend, GiftApiError, isApprovedScene } from './backend.next.js';
 import { newSession, recipientOptions, liveEffects, giftOption, productSubtotal, deliveryValid } from './contracts.next.js';
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -11,7 +11,7 @@ let session = newSession(), view = 'photo', history = [], products = [], fixture
 let shoppingFavoriteId = null;
 let featuredProduct = '';
 let catalogSamples = {};
-function catalogPhoto(p, cls) { const sample = session.source?.series ? catalogSamples[session.source.series]?.[p.id] : undefined; if (!sample)
+function catalogPhoto(p, cls) { const sample = session.source?.series ? catalogSamples[session.source.series]?.[p.id] : undefined; if (!sample || !isApprovedScene(p.id, sample.templateId) || !sample.desktop.endsWith('-scene-desktop.webp') || !sample.mobile.endsWith('-scene-mobile.webp'))
     return photo(asset(p.image), p.label, cls); return '<picture><source media="(max-width:600px)" srcset="' + esc(sample.mobile) + '">' + photo(sample.desktop, p.label, cls) + '</picture>'; }
 // Exact approved disclosure from lib/v1/gift/orders.ts, version 2026-10-18-3.
 let disclosure = {
@@ -351,7 +351,7 @@ function configurationPreview(p, o, artworkReference = false) {
         return photo(asset(p.image), p.label, 'gift-feature-image') + '<p class="small">Product photograph. Product-specific artwork will be prepared after payment.</p>';
     const owner = live, favoriteId = owner.session.artworkPreviewId, productId = p.id + ':' + o.size, key = owner.id + ':' + favoriteId + ':' + productId;
     let entry = productPreviews.get(key);
-    if (entry?.value?.status === 'ready' && Date.parse(entry.value.urlExpiresAt) <= Date.now() + 30000) {
+    if (entry?.value && ['ready', 'provisional'].includes(entry.value.status) && 'urlExpiresAt' in entry.value && Date.parse(entry.value.urlExpiresAt) <= Date.now() + 30000) {
         productPreviews.delete(key);
         entry = undefined;
     }
@@ -359,9 +359,11 @@ function configurationPreview(p, o, artworkReference = false) {
         entry = {};
         productPreviews.set(key, entry);
         void owner.api.productPreview(owner.id, productId, favoriteId).then(value => { if (value.sku !== o.sku && value.status !== 'not_available')
-            throw new GiftApiError('invalid_product_preview_response', 0); productPreviews.set(key, { value }); }).catch(() => productPreviews.set(key, { failed: true })).finally(() => { if (live === owner && owner.session?.artworkPreviewId === favoriteId && ((view === 'configuration' && activeProduct === p.id && size === o.size) || view === 'cart' || view === 'checkout'))
+            throw new GiftApiError('invalid_product_preview_response', 0); productPreviews.set(key, { value }); }).catch(e => productPreviews.set(key, { failed: true, unavailable: e instanceof GiftApiError && e.code === 'approved_scene_required' })).finally(() => { if (live === owner && owner.session?.artworkPreviewId === favoriteId && ((view === 'configuration' && activeProduct === p.id && size === o.size) || view === 'cart' || view === 'checkout'))
             render(); });
     }
+    if (entry.unavailable)
+        return '<p role="status">Not currently available</p>';
     if (entry.failed)
         return '<p role="alert">This product preview could not load.</p><button class="secondary" data-product-preview="' + esc(key) + '">Check Again</button>';
     const v = entry.value;
@@ -369,6 +371,8 @@ function configurationPreview(p, o, artworkReference = false) {
         return '<p role="status">Preparing product preview…</p>';
     if (v.status === 'ready')
         return photo(v.url, p.label, 'gift-feature-image') + (artworkReference ? '' : '<p class="small">Product-specific artwork will be prepared after payment.</p>');
+    if (v.status === 'provisional')
+        return photo(v.url, p.label + ' provisional product preview', 'gift-feature-image') + '<p class="small">Provisional product preview. The neutral surround is not artwork.</p>' + (artworkReference ? '' : '<p class="small">' + (v.provisional.finalComposition === 'generated' ? 'After payment, a new composition of the same effect will be generated for this product. You will review it before approval.' : v.provisional.finalComposition === 'deterministic' ? 'After payment, your artwork will be extended to fit this product. You will review it before approval.' : 'Product-specific artwork will be prepared after payment.') + '</p>');
     if (v.status === 'adaptation_required')
         return artworkReference && favorite() ? photo(favorite().url, 'Selected artwork') + '<p class="small">Selected artwork</p>' : '<p role="status">Product-specific artwork will be prepared after payment.</p>';
     return '<p role="status">Not currently available</p>';
@@ -739,7 +743,7 @@ function renderCompositions() {
         return;
     }
     if (orderReviewExample) {
-        $('screen').innerHTML = '<h2>Review your gifts together</h2>' + exampleNote + samples.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line"><div class="cart-thumbnail">' + (live ? serverMockup(l) : photo(asset('./review/payment-first/' + template(l) + '.png'), p.label + ' example')) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '</p><p class="small">Approval awaiting server verification</p></div></div>'; }).join('');
+        $('screen').innerHTML = '<h2>Review your gifts together</h2>' + exampleNote + samples.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line"><div class="cart-thumbnail">' + (live ? serverMockup(l) : catalogPhoto(p, '')) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '</p><p class="small">Approval awaiting server verification</p></div></div>'; }).join('');
         $('right').innerHTML = '<h2>Final artwork approval</h2><p>Once every product is individually approved, review your gifts together before production.</p><p class="small">This is a layout example. All required approvals must be confirmed by the server before this action is available.</p>' + secondary('review-products', 'Review individual gifts');
         $('review-products').onclick = () => { orderReviewExample = false; render(); };
         primary('Approve My Gifts', () => { }, true);
@@ -747,7 +751,7 @@ function renderCompositions() {
     }
     productReviewIndex = Math.min(productReviewIndex, samples.length - 1);
     const l = samples[productReviewIndex], { product: p, option: o } = giftOption(l, products);
-    $('screen').innerHTML = '<p class="small" role="status">Gift ' + (productReviewIndex + 1) + ' of ' + samples.length + '</p><h2>' + esc(p.label) + '</h2>' + exampleNote + (state === 'loading' ? '<p role="status">Preparing product preview…</p>' : state === 'failed' ? '<p role="alert">This product preview could not load.</p>' + secondary('retry-composition', 'Try again') : (live ? serverMockup(l) : photo(asset('./review/payment-first/' + template(l) + '.png'), p.label + ' example mockup')));
+    $('screen').innerHTML = '<p class="small" role="status">Gift ' + (productReviewIndex + 1) + ' of ' + samples.length + '</p><h2>' + esc(p.label) + '</h2>' + exampleNote + (state === 'loading' ? '<p role="status">Preparing product preview…</p>' : state === 'failed' ? '<p role="alert">This product preview could not load.</p>' + secondary('retry-composition', 'Try again') : (live ? serverMockup(l) : catalogPhoto(p, '')));
     $('right').innerHTML = '<h2>Your selection</h2><p>' + esc(p.label) + '</p><p>' + esc(o.label) + ' · Quantity ' + l.copies + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><h3>Artwork approval</h3><p>Awaiting server verification</p><button disabled>Request a correction</button><p class="small">Correction availability and approval require the purchased product response.</p>';
     $('screen').insertAdjacentHTML('beforeend', '<nav class="sizes" aria-label="Gift review navigation"><button id="previous-product" style="color:var(--forest);border-color:var(--gold)" ' + (productReviewIndex ? '' : 'disabled') + '>← Previous Gift</button>' + (productReviewIndex < samples.length - 1 ? '<button id="next-product" style="color:var(--forest);border-color:var(--gold)">Next Gift →</button>' : '<button id="order-example" style="color:var(--forest);border-color:var(--gold)">View Order Review →</button>') + '</nav>');
     if ($('previous-product'))
@@ -802,6 +806,10 @@ catch {
     return null;
 } }
 let compositionRequestPending = false;
+let compositionTimer;
+let compositionReadPending = false;
+const compositionStarts = new Set();
+let compositionResume = null;
 let restorationComplete = false;
 function rememberView() {
     if (!serverMode || !restorationComplete || !live?.session)
@@ -920,6 +928,7 @@ async function retryRestoration() {
                 if (!latest.current)
                     return null;
                 live = new LiveGift(api, latest.current.sessionId);
+                compositionResume = latest.resume?.compositions || null;
                 const step = latest.resume.suggestedStep;
                 suggestedView = step === 'previews' ? 'review' : step === 'order' ? 'payment' : step;
             }
@@ -951,6 +960,7 @@ async function retryRestoration() {
             restoreView(state.value);
             render();
             void resumeStalledBatches();
+            await resumeCompositionWork(true);
         }
         catch (e) {
             live?.clear();
@@ -1124,27 +1134,115 @@ async function serverAction(action, next) {
             error(failure);
     }
 }
-async function composePurchasedArtwork() {
+function compositionStartKey() { const s = live?.session; return s ? 'liten-gift-compose:' + s.sessionId + ':' + s.artworkPreviewId + ':' + s.compositions.map(c => c.lineId + ':' + c.state + ':' + c.attempts).sort().join('|') : ''; }
+function scheduleCompositionRead() {
+    clearTimeout(compositionTimer);
+    if (live?.session?.order.state === 'awaiting_artwork' && (compositionRequestPending || live.session.compositions.some(c => c.state === 'preparing')))
+        compositionTimer = setTimeout(() => void readCompositionState(), 3000);
+}
+async function readCompositionState(resume = true) {
+    const owner = live;
+    if (!owner || compositionReadPending)
+        return;
+    compositionReadPending = true;
+    try {
+        const s = await owner.api.restore(owner.id);
+        if (live !== owner)
+            return;
+        owner.accept(s);
+        applyServer(s);
+        await loadMockups();
+        render();
+        if (!compositionRequestPending)
+            await resumeCompositionWork(true);
+    }
+    catch (e) {
+        error(e instanceof Error ? e.message : 'request_failed');
+    }
+    finally {
+        compositionReadPending = false;
+        scheduleCompositionRead();
+    }
+}
+async function resumeCompositionWork(openReview = false) {
+    const s = live?.session;
+    if (!s || s.order.state !== 'awaiting_artwork' || !s.artworkPreviewId || !s.compositions.length || layoutReview)
+        return;
+    if (!s.compositions.every(c => c.state))
+        return;
+    if (openReview) {
+        view = 'compositions';
+        render();
+    }
+    if (s.compositions.some(c => c.state === 'preparing') || compositionRequestPending) {
+        scheduleCompositionRead();
+        return;
+    }
+    if (s.compositions.some(c => c.state === 'failed'))
+        return;
+    const unfinished = s.compositions.some(c => c.state === 'not_started' || c.state === 'stalled');
+    const needed = unfinished && (compositionResume?.resumeNeeded || unfinished);
+    compositionResume = null;
+    if (!needed)
+        return;
+    await serverAction(() => composePurchasedArtwork(), 'compositions');
+}
+async function composePurchasedArtwork(explicitRetry = false) {
+    if (compositionRequestPending)
+        return live.session;
+    const s = live.session;
+    if (s.order.state !== 'awaiting_artwork')
+        throw new GiftApiError('order_payment_required', 409);
+    if (s.compositions.some(c => c.state === 'preparing')) {
+        scheduleCompositionRead();
+        return s;
+    }
+    const key = compositionStartKey();
+    if (!explicitRetry) {
+        if (compositionStarts.has(key))
+            return s;
+        try {
+            if (sessionStorage.getItem(key))
+                return s;
+        }
+        catch { }
+    }
+    compositionStarts.add(key);
+    try {
+        sessionStorage.setItem(key, 'requested');
+    }
+    catch { }
     compositionRequestPending = true;
     view = 'compositions';
     render();
+    scheduleCompositionRead();
     try {
         return await live.api.compose(live.id);
     }
     finally {
         compositionRequestPending = false;
+        scheduleCompositionRead();
     }
 }
 async function loadMockups() {
     if (!live?.session || !purchased(live.session))
         return;
-    await Promise.all(live.session.compositions.filter(c => c.compositionId && c.sourceArtworkId === live.session.artworkPreviewId).map(c => live.mockup(c.lineId).catch(() => null)));
+    await Promise.all(live.session.compositions.filter(c => (!c.state || ['ready', 'approved'].includes(c.state)) && c.compositionId && c.sourceArtworkId === live.session.artworkPreviewId).map(c => live.mockup(c.lineId).catch(() => null)));
 }
 function serverMockup(l) {
-    if (compositionRequestPending)
+    const c = live?.session?.compositions.find(c => c.lineId === l.id);
+    if (c?.state === 'failed')
+        return '<section role="alert"><h2>Didn’t finish</h2></section>' + secondary('retry-preparation-' + l.id, c.retryable ? 'Try again' : 'Concierge');
+    if (c?.state === 'not_started' && !compositionRequestPending)
+        return '<section role="status"><h2>Product artwork review</h2></section>' + secondary('retry-preparation-' + l.id, 'Try again');
+    if (c?.state === 'stalled')
+        return '<section role="status"><h2>Preparing Your Masterpiece</h2></section>' + secondary('check-composition-' + l.id, 'Check Again');
+    if (c?.state === 'preparing' || (compositionRequestPending && !c?.compositionId))
         return '<section role="status"><h2>Preparing Your Masterpiece</h2>' + (favorite() ? photo(favorite().url, 'Selected artwork') : '') + '</section>';
     if (live?.compositionIssues.has(l.id))
         return "<section role=\"status\" data-composition-state=\"repair-required\"><h3>We're preparing your artwork for this gift</h3><p>Your artwork needs a small adjustment to fit this product correctly. We're taking care of it.</p><p>Your selected artwork and purchase are safe. No action is needed right now.</p></section>" + secondary('check-composition-' + l.id, 'Check Again');
+    if (live?.unavailableScenes.has(l.id))
+        return '<p role="status">Not currently available</p>';
     const m = live?.mockups.get(l.id);
     return m && Date.parse(m.urlExpiresAt) > Date.now() ? photo(m.url, giftOption(l, products).product.label) : '<p role="status">This product preview could not load.</p>' + secondary('refresh-mockups', 'Try again');
 }
@@ -1251,11 +1349,15 @@ function adaptServerView() {
         }
     }
     if (view === 'compositions') {
-        document.querySelectorAll('[id^="check-composition-"]').forEach(b => { b.disabled = busy; b.onclick = () => void serverAction(() => live.api.restore(live.id), 'compositions'); });
+        document.querySelectorAll('[id^="retry-preparation-"]').forEach(b => { b.disabled = busy; b.onclick = () => { const c = s.compositions.find(c => c.lineId === b.id.slice('retry-preparation-'.length)); if (c?.state === 'not_started' || (c?.state === 'failed' && c.retryable))
+            void serverAction(() => composePurchasedArtwork(true), 'compositions');
+        else
+            location.assign('/help'); }; });
+        document.querySelectorAll('[id^="check-composition-"]').forEach(b => { b.disabled = busy; b.onclick = () => void readCompositionState(false); });
         if (orderReviewExample) {
             $('right').querySelectorAll('p.small').forEach(el => el.textContent = '');
             $('screen').querySelectorAll('.cart-line').forEach((el, i) => { const c = s.compositions.find(c => c.lineId === session.lines[i]?.id); const note = el.querySelector('.small'); if (note)
-                note.textContent = live.compositionIssues.has(session.lines[i]?.id) ? 'Awaiting server verification' : c?.status || ''; });
+                note.textContent = live.compositionIssues.has(session.lines[i]?.id) ? 'Awaiting server verification' : c?.state || c?.status || ''; });
         }
         if ($('refresh-mockups'))
             $('refresh-mockups').onclick = () => void serverAction(() => live.compositionIssues.size || s.compositions.some(c => c.lineId === session.lines[productReviewIndex]?.id && c.compositionId) ? live.api.restore(live.id) : composePurchasedArtwork(), 'compositions');
@@ -1263,10 +1365,10 @@ function adaptServerView() {
             const line = session.lines[productReviewIndex], c = s.compositions.find(c => c.lineId === line?.id);
             const label = $('right').querySelector('h3');
             if (label?.nextElementSibling)
-                label.nextElementSibling.textContent = live.compositionIssues.has(line.id) ? 'Awaiting server verification' : c?.status || '';
+                label.nextElementSibling.textContent = live.compositionIssues.has(line.id) ? 'Awaiting server verification' : c?.state || c?.status || '';
             const correction = $('right').querySelector('button');
             if (correction) {
-                correction.disabled = live.compositionIssues.has(line.id) || !c?.compositionId || !c.correctionsRemaining || s.order.state !== 'awaiting_artwork';
+                correction.disabled = busy || live.compositionIssues.has(line.id) || (!!c?.state && !['ready', 'approved'].includes(c.state)) || !c?.compositionId || !c.correctionsRemaining || s.order.state !== 'awaiting_artwork';
                 correction.onclick = () => void serverAction(() => live.api.correct(live.id, line.id), 'compositions');
             }
             const m = live.mockups.get(line.id);
@@ -1275,7 +1377,7 @@ function adaptServerView() {
                 if (img)
                     img.addEventListener('error', () => { live.mockups.delete(line.id); render(); }, { once: true });
             }
-            primaryLive(() => void serverAction(() => live.api.approveComposition(live.id, c.compositionId), 'compositions'), live.compositionIssues.has(line.id) || !c?.compositionId || c.status !== 'ready' || !m || !(Date.parse(m.urlExpiresAt) > Date.now()) || s.order.state !== 'awaiting_artwork');
+            primaryLive(() => void serverAction(() => live.api.approveComposition(live.id, c.compositionId), 'compositions'), live.compositionIssues.has(line.id) || !c?.compositionId || c.status !== 'ready' || (c.state !== undefined && c.state !== 'ready') || !m || !(Date.parse(m.urlExpiresAt) > Date.now()) || s.order.state !== 'awaiting_artwork');
         }
     }
 }
