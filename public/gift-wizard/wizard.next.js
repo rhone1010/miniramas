@@ -6,6 +6,7 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n / 100);
 const asset = (s) => new URL(s, import.meta.url).href;
+const productDrafts = {};
 let session = newSession(), view = 'photo', history = [], products = [], fixtures = [], registries = {}, manifest;
 let shoppingFavoriteId = null;
 let featuredProduct = '';
@@ -50,7 +51,7 @@ function go(v, record = true) { if (busy)
     history.push(view); view = v; render(); $('screen').scrollTop = 0; if (v === 'checkout')
     $('screen').parentElement.scrollTop = 0; $('workspace').focus({ preventScroll: true }); window.scrollTo(0, 0); }
 function back() { if (busy)
-    return; const v = history.pop(); if (v)
+    return; const v = history.pop() || { configuration: 'products', products: 'review', cart: 'products', checkout: 'cart', focus: 'review', compare: 'review', effects: 'photo' }[view]; if (v)
     go(v, false); }
 function primary(label, fn, disabled = false) { const body = document.createElement('div'); body.className = 'context-body'; while ($('right').firstChild)
     body.appendChild($('right').firstChild); $('right').appendChild(body); $('right').insertAdjacentHTML('beforeend', '<button id="primary" class="primary" ' + (busy || disabled ? 'disabled' : '') + '>' + label + ' →</button>'); $('primary').onclick = fn; }
@@ -60,7 +61,7 @@ function field(id, label, value, attrs = '') { return '<label class="field"><spa
 function thumb(id) { if (session.source?.series === 'pets')
     return '/previews/pets/pets_' + id + '.jpg'; if (session.source?.series === 'groups')
     return '/previews/groups/groups_' + id + '.jpg'; const x = manifest?.effects?.[id], f = x?.neutral || x?.woman || x?.man || x?.all?.[0]; return f ? manifest.base + id + '/' + f : ''; }
-function rail(title, copy) { $('left').innerHTML = (view === 'effects' ? '' : '<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>') + '<h1>' + title + '</h1>' + copy + '<div id="filters"></div>' + (view === 'effects' ? '' : '<p class="tagline">More than a gift.<br>A longer story.</p>') + '<button id="back" ' + (!history.length || busy ? 'disabled' : '') + '>← Back</button>'; $('back').onclick = back; if (serverMode && live?.session)
+function rail(title, copy) { $('left').innerHTML = (view === 'effects' ? '' : '<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>') + '<h1>' + title + '</h1>' + copy + '<div id="filters"></div>' + (view === 'effects' ? '' : '<p class="tagline">More than a gift.<br>A longer story.</p>') + '<button id="back" ' + ((!history.length && !['configuration', 'products', 'cart', 'checkout', 'focus', 'compare', 'effects'].includes(view)) || busy ? 'disabled' : '') + '>← Back</button>'; $('back').onclick = back; if (serverMode && live?.session)
     $('left').insertAdjacentHTML('beforeend', '<button id="new-gift" data-href="/gift-wizard.next.html?newGift=1&amp;resumeSessionId=' + encodeURIComponent(live.id) + '">Start a New Gift</button>');
 else if (serverMode && params.get('newGift') === '1' && params.get('resumeSessionId'))
     $('left').insertAdjacentHTML('beforeend', '<button id="resume-gift" data-href="/gift-wizard.next.html?sessionId=' + encodeURIComponent(params.get('resumeSessionId')) + '">Return to Your Gift</button>'); for (const id of ['new-gift', 'resume-gift'])
@@ -99,6 +100,25 @@ function render() {
         renderPayment();
     if (serverMode)
         adaptServerView();
+    const exits = document.createElement('div');
+    exits.className = 'actions';
+    if (['products', 'configuration', 'cart', 'checkout'].includes(view)) {
+        const b = $('back');
+        b.disabled = busy;
+        exits.append(b);
+    }
+    if (view === 'configuration') {
+        const change = document.createElement('button');
+        change.textContent = 'Change Product';
+        change.disabled = busy;
+        change.onclick = () => go('products');
+        exits.append(change);
+    }
+    const cancel = document.createElement('button');
+    cancel.textContent = 'Cancel';
+    cancel.onclick = () => { rememberView(); location.assign('/gifts.next.html'); };
+    exits.append(cancel);
+    $('screen').prepend(exits);
     document.querySelectorAll('[data-product-preview]').forEach(b => b.onclick = () => { productPreviews.delete(b.dataset.productPreview); render(); });
     adaptMobileView();
     rememberView();
@@ -268,7 +288,7 @@ async function upload(file) {
             URL.revokeObjectURL(candidate);
     }
 }
-function chooseProduct(id) { activeProduct = id; const p = products.find(p => p.id === id); size = p.options[0].size; copies = 1; editId = null; go('configuration'); }
+function chooseProduct(id) { activeProduct = id; const p = products.find(p => p.id === id), draft = productDrafts[id]; size = p.options.some(o => o.size === draft?.size) ? draft.size : p.options[0].size; copies = draft?.copies || 1; editId = null; go('configuration'); }
 function renderProductCarousel() {
     const index = Math.max(0, products.findIndex(p => p.id === (featuredProduct || activeProduct))), p = products[index];
     featuredProduct = p.id;
@@ -315,7 +335,7 @@ function renderProductCarousel() {
     swipe.addEventListener('touchcancel', () => { touch = null; }, { passive: true });
 }
 const productPreviews = new Map();
-function configurationPreview(p, o) {
+function configurationPreview(p, o, artworkReference = false) {
     if (!live?.session?.artworkPreviewId)
         return photo(asset(p.image), p.label, 'gift-feature-image') + '<p class="small">Product photograph. Product-specific artwork will be prepared after payment.</p>';
     const owner = live, favoriteId = owner.session.artworkPreviewId, productId = p.id + ':' + o.size, key = owner.id + ':' + favoriteId + ':' + productId;
@@ -337,9 +357,9 @@ function configurationPreview(p, o) {
     if (!v)
         return '<p role="status">Preparing product preview…</p>';
     if (v.status === 'ready')
-        return photo(v.url, p.label, 'gift-feature-image') + '<p class="small">Product-specific artwork will be prepared after payment.</p>';
+        return photo(v.url, p.label, 'gift-feature-image') + (artworkReference ? '' : '<p class="small">Product-specific artwork will be prepared after payment.</p>');
     if (v.status === 'adaptation_required')
-        return '<p role="status">Product-specific artwork will be prepared after payment.</p>';
+        return artworkReference && favorite() ? photo(favorite().url, 'Selected artwork') + '<p class="small">Selected artwork</p>' : '<p role="status">Product-specific artwork will be prepared after payment.</p>';
     return '<p role="status">Not currently available</p>';
 }
 function renderProducts() {
@@ -365,7 +385,6 @@ function renderProducts() {
         $('right').insertAdjacentHTML('beforeend', secondary('view-cart', 'Your gifts (' + session.lines.length + ')'));
     document.querySelectorAll('[data-product]').forEach(b => b.onclick = () => chooseProduct(b.dataset.product));
     document.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { size = b.dataset.size; render(); });
-    $('screen').prepend($('back'));
     $('copies').oninput = e => { copies = Number(e.target.value); rememberView(); };
     if ($('view-cart'))
         $('view-cart').onclick = () => go('cart');
@@ -380,7 +399,7 @@ function renderProducts() {
         error('Choose a quantity from 1 to 20.');
     } }, o.compatible === false);
 }
-function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : live ? configurationPreview(p, o) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
+function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>' + (live && !purchased(live.session) ? '<p class="small">Product-specific artwork will be prepared after payment.</p>' : '') + '<div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
 async function persistCart(lines) {
     if (busy)
         return;
@@ -735,7 +754,7 @@ function renderCheckout() {
     document.querySelectorAll('#screen .address input').forEach(input => { input.placeholder = input.closest('label').querySelector('span').textContent; if (input.id !== 'line2' && input.id !== 'state')
         input.required = true; });
     $('countryCode').setAttribute('aria-description', 'Two-letter country code');
-    $('right').innerHTML = '<div data-order-summary><h2>Order summary</h2>' + session.lines.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="summary-item"><div>' + (live ? configurationPreview(p, o) : photo(asset(p.image), p.label)) + '</div><div><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '<br>' + money(o.retailCents * l.copies) + '</p></div></div>'; }).join('') + '<dl><dt>Products</dt><dd>' + money(productSubtotal(session, products)) + '</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>' + secondary('edit-gifts', 'Edit gifts');
+    $('right').innerHTML = '<div data-order-summary><h2>Order summary</h2>' + session.lines.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="summary-item"><div>' + (live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '<br>' + money(o.retailCents * l.copies) + '</p></div></div>'; }).join('') + '<dl><dt>Products</dt><dd>' + money(productSubtotal(session, products)) + '</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>' + secondary('edit-gifts', 'Edit gifts');
     for (const key of ['email', ...Object.keys(session.address)])
         $(key).oninput = e => { const v = e.target.value; if (key === 'email')
             session.email = v;
@@ -773,8 +792,10 @@ let restorationComplete = false;
 function rememberView() {
     if (!serverMode || !restorationComplete || !live?.session)
         return;
+    if (activeProduct && Number.isInteger(copies) && copies >= 1 && copies <= 20)
+        productDrafts[activeProduct] = { size, copies };
     try {
-        sessionStorage.setItem(resumeKey, JSON.stringify({ sessionId: live.id, view, effectIds: session.effectIds, recipient: session.recipient, silo, mobileSilo, artFocus, batchIndex, featuredProduct, productReviewIndex, history, generationBatch, batchIntent, activeProduct, size, copies, editId }));
+        sessionStorage.setItem(resumeKey, JSON.stringify({ sessionId: live.id, view, productDrafts, effectIds: session.effectIds, recipient: session.recipient, silo, mobileSilo, artFocus, batchIndex, featuredProduct, productReviewIndex, history, generationBatch, batchIntent, activeProduct, size, copies, editId }));
     }
     catch { }
 }
@@ -809,6 +830,11 @@ function restoreView(s) {
         featuredProduct = hint.featuredProduct;
     if (Number.isInteger(hint.productReviewIndex) && hint.productReviewIndex >= 0 && hint.productReviewIndex < session.lines.length)
         productReviewIndex = hint.productReviewIndex;
+    for (const p of products) {
+        const d = hint.productDrafts?.[p.id];
+        if (d && p.options.some(o => o.size === d.size) && Number.isInteger(d.copies) && d.copies >= 1 && d.copies <= 20)
+            productDrafts[p.id] = { size: d.size, copies: d.copies };
+    }
     const configured = products.find(p => p.id === hint.activeProduct);
     if (configured?.available && configured.options.some(o => o.size === hint.size)) {
         activeProduct = configured.id;
@@ -861,12 +887,28 @@ async function retryRestoration() {
         if (!live) {
             if (params.get('newGift') === '1')
                 return null;
-            const api = new GiftBackend((url, init) => fetch(url, init)), latest = await api.restoreLatest(signal);
-            if (!latest.current)
-                return null;
-            live = new LiveGift(api, latest.current.sessionId);
-            const step = latest.resume.suggestedStep;
-            suggestedView = step === 'previews' ? 'review' : step === 'order' ? 'payment' : step;
+            const api = new GiftBackend((url, init) => fetch(url, init)), hint = readResume();
+            if (hint?.sessionId && /^[\w-]{1,80}$/.test(hint.sessionId)) {
+                try {
+                    const saved = await api.restore(hint.sessionId, signal);
+                    if (saved.sessionId !== hint.sessionId)
+                        throw new GiftApiError('session_identity_mismatch', 0);
+                    live = new LiveGift(api, saved.sessionId);
+                    live.accept(saved);
+                }
+                catch (e) {
+                    if (!(e instanceof GiftApiError && e.status === 404))
+                        throw e;
+                }
+            }
+            if (!live) {
+                const latest = await api.restoreLatest(signal);
+                if (!latest.current)
+                    return null;
+                live = new LiveGift(api, latest.current.sessionId);
+                const step = latest.resume.suggestedStep;
+                suggestedView = step === 'previews' ? 'review' : step === 'order' ? 'payment' : step;
+            }
         }
         await live.restore(signal);
         return live.session;

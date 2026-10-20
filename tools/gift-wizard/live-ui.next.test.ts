@@ -254,12 +254,12 @@ test('generation SVG and animation/background remain exact Collection ports',()=
 
 function latest(s:any,step='previews'){return {contractVersion:1,current:s,resume:s?{sessionId:s.sessionId,suggestedStep:step,resumeBatches:s.batches.filter((b:any)=>b.generation==='stalled').map((b:any)=>b.batchIndex),runningBatches:s.batches.filter((b:any)=>b.generation==='running').map((b:any)=>b.batchIndex)}:null,recent:[]}}
 test('server latest session overrides stale local identity and restores signed source without IndexedDB',async()=>{
- const s:any=project('none');s.source.photoUrl='https://liten.invalid/signed-source.jpg';s.resume={sessionId:'old-project',view:'checkout'};s.latestResponse=latest({...s},'effects');
- const {win,calls,dom}=await boot('',s);assert.ok(calls.includes('/api/v1/gift/sessions'));assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.some(x=>x.endsWith('/old-project')),false);assert.equal(win.document.getElementById('screen').dataset.view,'effects');win.navigate('photo');assert.ok([...win.document.images].some((i:any)=>i.src===s.source.photoUrl));dom.window.close();
+ const s:any=project('none');s.source.photoUrl='https://liten.invalid/signed-source.jpg';s.resume={sessionId:'old-project',view:'checkout'};s.latestResponse=latest({...s},'effects');s.route=(url:string)=>url.endsWith('/old-project')?new Response(JSON.stringify({error:'session_not_found'}),{status:404}):null;
+ const {win,calls,dom}=await boot('',s);assert.ok(calls.includes('/api/v1/gift/sessions'));assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.some(x=>x.endsWith('/old-project')),true);assert.equal(win.document.getElementById('screen').dataset.view,'effects');win.navigate('photo');assert.ok([...win.document.images].some((i:any)=>i.src===s.source.photoUrl));dom.window.close();
 });
 test('no active server session ignores remembered project and returns to Photo',async()=>{
- const s:any=project('none');s.resume={sessionId:'project',view:'focus'};s.latestResponse=latest(null);
- const {win,dom,calls}=await boot('',s);assert.equal(win.document.getElementById('screen').dataset.view,'photo');assert.equal(calls.includes('/api/v1/gift/sessions/project'),false);dom.window.close();
+ const s:any=project('none');s.resume={sessionId:'project',view:'focus'};s.latestResponse=latest(null);s.route=(url:string)=>url.endsWith('/sessions/project')?new Response(JSON.stringify({error:'session_not_found'}),{status:404}):null;
+ const {win,dom,calls}=await boot('',s);assert.equal(win.document.getElementById('screen').dataset.view,'photo');assert.equal(calls.includes('/api/v1/gift/sessions/project'),true);dom.window.close();
 });
 test('latest restoration validates response identity before using any artwork',async()=>{
  const s:any=project();s.latestResponse=latest({...s});s.latestResponse.resume.sessionId='wrong';
@@ -334,7 +334,7 @@ test('configuration consumes only the matching watermarked server product previe
 });
 test('adaptation and failed preview never substitute catalog photography',async()=>{
  for(const invalid of [false,true]){const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};s.route=async(url:string)=>{if(!url.includes('/product-preview?'))return;const productId=new URL(url,'https://test.invalid').searchParams.get('productId');const option=catalog.products.find((p:any)=>p.productId===productId)!;return {contractVersion:1,status:'adaptation_required',sessionId:s.sessionId,productId,sku:option.sku,favoriteId:invalid?'stale':s.artworkPreviewId,reason:'shape_needs_composition',favoriteAspect:1,pictureAspect:1.5,extension:0.5,method:'generated'}};
- const {win,dom}=await boot('sessionId=project',s);win.navigate('configuration');await new Promise(r=>setTimeout(r,25));assert.equal(win.document.querySelector('#screen img'),null);assert.ok(win.document.getElementById('screen').textContent.includes(invalid?'This product preview could not load.':'Product-specific artwork will be prepared after payment.'));dom.window.close();}
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('configuration');await new Promise(r=>setTimeout(r,25));assert.equal(win.document.querySelector('#screen img'),null);assert.ok(win.document.getElementById('screen').textContent.includes(invalid?'This product preview could not load.':'Product-specific artwork will be prepared after payment.'));if(!invalid){win.navigate('cart');await new Promise(r=>setTimeout(r,25));assert.ok(win.document.querySelector('.cart-thumbnail img[alt="Selected artwork"]'));win.navigate('checkout');await new Promise(r=>setTimeout(r,25));assert.ok(win.document.querySelector('[data-order-summary] img[alt="Selected artwork"]'));}dom.window.close();}
 });
 
 
@@ -376,4 +376,14 @@ test('generation reads progress while the batch POST remains in flight',async()=
 });
 test('mobile configuration keeps its price and primary action in the existing bottom bar',async()=>{
  const s:any=artworkProject();s.order.state='none';s.lines=[];s.geometries=[];const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('configuration');assert.ok(win.document.querySelector('.mobile-bottom-action #primary'));assert.match(win.document.querySelector('.mobile-bottom-action').textContent,/\$/);await new Promise(r=>setTimeout(r,25));dom.window.close();
+});
+
+
+test('product exits preserve artwork, cart and per-product configuration',async()=>{
+ const s:any=artworkProject();s.order.state='none';const {win,dom}=await boot('sessionId=project',s);win.navigate('products');win.document.getElementById('choose-featured').click();const original=win.document.querySelector('[data-size="12x18"]');original.click();const qty=win.document.getElementById('copies');qty.value='2';qty.dispatchEvent(new win.Event('input'));const favorite=s.artworkPreviewId,lines=JSON.stringify(s.lines);[...win.document.querySelectorAll('button')].find((b:any)=>b.textContent==='Change Product').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(win.document.getElementById('back').disabled,false);win.document.getElementById('choose-featured').click();assert.equal(win.document.querySelector('[data-size="12x18"]').getAttribute('aria-pressed'),'true');assert.equal(win.document.getElementById('copies').value,'2');assert.ok([...win.document.querySelectorAll('button')].some((b:any)=>b.textContent==='Cancel'));assert.equal(s.artworkPreviewId,favorite);assert.equal(JSON.stringify(s.lines),lines);await new Promise(r=>setTimeout(r,25));dom.window.close();
+});
+
+
+test('bare return restores the authenticated working gift instead of another latest gift',async()=>{
+ const s:any=artworkProject();s.order.state='none';s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:2};const {win,calls,dom}=await boot('',s);assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.includes('/api/v1/gift/sessions'),false);assert.equal(win.document.getElementById('screen').dataset.view,'configuration');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
 });

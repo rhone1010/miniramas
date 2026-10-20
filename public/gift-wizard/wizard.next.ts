@@ -10,6 +10,7 @@ const $=(id:string)=>document.getElementById(id)!;
 const esc=(s:unknown)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const money=(n:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n/100);
 const asset=(s:string)=>new URL(s,import.meta.url).href;
+const productDrafts:Record<string,{size:string;copies:number}>={};
 let session=newSession(),view:View='photo',history:View[]=[],products:Product[]=[],fixtures:Preview[]=[],registries={} as Record<Series,Registry>,manifest:any;
 let shoppingFavoriteId:string|null=null;
 let featuredProduct='';
@@ -35,18 +36,22 @@ function currentArt(){return session.batches.flat().find(p=>p.id===artFocus)||se
 function favorite(){return session.batches.flat().find(p=>p.id===(shoppingFavoriteId||session.favoriteId))}
 function stage(){return view==='photo'?0:view==='effects'?1:['review','focus','compare','more'].includes(view)?2:['products','configuration','cart'].includes(view)?3:view==='compositions'?5:4}
 function go(v:View,record=true){if(busy)return;if(live?.session&&purchased(live.session)&&['photo','products','configuration','cart','checkout'].includes(v)){view='payment';render();return}if(live?.session&&['needs_attention','refund_requested','refunded','cancelled'].includes(live.session.order.state)){view='payment';render();return}if(v==='compositions'&&!layoutReview&&!(live?.session&&purchased(live.session))){paymentState='pending';v='payment'}if(['effects','review','focus','compare','more'].includes(v)&&!layoutReview&&!session.source){v=live||params.has('gift_order_session')?'payment':'photo'}if(v==='checkout'&&serverMode&&!live?.session?.artworkPreviewId)v=session.batches.length?'review':'effects';if(['review','focus','compare'].includes(v)&&!session.batches.length&&!generationBatch)v='effects';if(record&&view!==v)history.push(view);view=v;render();$('screen').scrollTop=0;if(v==='checkout')$('screen').parentElement!.scrollTop=0;$('workspace').focus({preventScroll:true});window.scrollTo(0,0)}
-function back(){if(busy)return;const v=history.pop();if(v)go(v,false)}
+function back(){if(busy)return;const v=history.pop()||({configuration:'products',products:'review',cart:'products',checkout:'cart',focus:'review',compare:'review',effects:'photo'} as Partial<Record<View,View>>)[view];if(v)go(v,false)}
 function primary(label:string,fn:()=>void,disabled=false){const body=document.createElement('div');body.className='context-body';while($('right').firstChild)body.appendChild($('right').firstChild!);$('right').appendChild(body);$('right').insertAdjacentHTML('beforeend','<button id="primary" class="primary" '+(busy||disabled?'disabled':'')+'>'+label+' →</button>');$('primary').onclick=fn}
 function secondary(id:string,label:string){return '<button id="'+id+'" class="secondary">'+label+'</button>'}
 function photo(url:string,alt:string,cls='photo'){return '<img class="'+cls+'" src="'+esc(url)+'" alt="'+esc(alt)+'">'}
 function field(id:string,label:string,value:string,attrs=''){return '<label class="field"><span>'+label+'</span><input id="'+id+'" value="'+esc(value)+'" '+attrs+'></label>'}
 function thumb(id:string){if(session.source?.series==='pets')return '/previews/pets/pets_'+id+'.jpg';if(session.source?.series==='groups')return '/previews/groups/groups_'+id+'.jpg';const x=manifest?.effects?.[id],f=x?.neutral||x?.woman||x?.man||x?.all?.[0];return f?manifest.base+id+'/'+f:''}
-function rail(title:string,copy:string){$('left').innerHTML=(view==='effects'?'':'<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>')+'<h1>'+title+'</h1>'+copy+'<div id="filters"></div>'+(view==='effects'?'':'<p class="tagline">More than a gift.<br>A longer story.</p>')+'<button id="back" '+(!history.length||busy?'disabled':'')+'>← Back</button>';$('back').onclick=back;if(serverMode&&live?.session)$('left').insertAdjacentHTML('beforeend','<button id="new-gift" data-href="/gift-wizard.next.html?newGift=1&amp;resumeSessionId='+encodeURIComponent(live.id)+'">Start a New Gift</button>');else if(serverMode&&params.get('newGift')==='1'&&params.get('resumeSessionId'))$('left').insertAdjacentHTML('beforeend','<button id="resume-gift" data-href="/gift-wizard.next.html?sessionId='+encodeURIComponent(params.get('resumeSessionId')!)+'">Return to Your Gift</button>');for(const id of ['new-gift','resume-gift'])if($(id))$(id).onclick=()=>{rememberView();location.assign($(id).dataset.href!)}}
+function rail(title:string,copy:string){$('left').innerHTML=(view==='effects'?'':'<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>')+'<h1>'+title+'</h1>'+copy+'<div id="filters"></div>'+(view==='effects'?'':'<p class="tagline">More than a gift.<br>A longer story.</p>')+'<button id="back" '+((!history.length&&!['configuration','products','cart','checkout','focus','compare','effects'].includes(view))||busy?'disabled':'')+'>← Back</button>';$('back').onclick=back;if(serverMode&&live?.session)$('left').insertAdjacentHTML('beforeend','<button id="new-gift" data-href="/gift-wizard.next.html?newGift=1&amp;resumeSessionId='+encodeURIComponent(live.id)+'">Start a New Gift</button>');else if(serverMode&&params.get('newGift')==='1'&&params.get('resumeSessionId'))$('left').insertAdjacentHTML('beforeend','<button id="resume-gift" data-href="/gift-wizard.next.html?sessionId='+encodeURIComponent(params.get('resumeSessionId')!)+'">Return to Your Gift</button>');for(const id of ['new-gift','resume-gift'])if($(id))$(id).onclick=()=>{rememberView();location.assign($(id).dataset.href!)}}
 function render(){
  $('error').hidden=true;$('error').textContent='';$('status').textContent=analyzingSource?'Analyzing your photograph…':layoutReview?'Layout review · sample artwork · no payment or order':'';$('screen').dataset.view=view;$('left').classList.toggle('effects-rail',view==='effects');$('workspace').setAttribute('aria-busy',String(busy));$('screen').innerHTML='';$('right').innerHTML='';
  document.querySelectorAll('.progress li').forEach((el,i)=>{el.classList.toggle('done',i<stage());if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});
  if(view==='photo')renderPhoto();else if(view==='products'||view==='configuration')renderProducts();else if(view==='cart')renderCart();else if(view==='effects')renderEffects();else if(['review','focus','compare'].includes(view))renderArt();else if(view==='more')renderMore();else if(view==='compositions')renderCompositions();else if(view==='checkout')renderCheckout();else renderPayment();
  if(serverMode)adaptServerView();
+ const exits=document.createElement('div');exits.className='actions';
+ if(['products','configuration','cart','checkout'].includes(view)){const b=$('back') as HTMLButtonElement;b.disabled=busy;exits.append(b)}
+ if(view==='configuration'){const change=document.createElement('button');change.textContent='Change Product';change.disabled=busy;change.onclick=()=>go('products');exits.append(change)}
+ const cancel=document.createElement('button');cancel.textContent='Cancel';cancel.onclick=()=>{rememberView();location.assign('/gifts.next.html')};exits.append(cancel);$('screen').prepend(exits);
  document.querySelectorAll<HTMLButtonElement>('[data-product-preview]').forEach(b=>b.onclick=()=>{productPreviews.delete(b.dataset.productPreview!);render()});
  adaptMobileView();
  rememberView();
@@ -114,7 +119,7 @@ async function upload(file:File){
  if(sourceURL)URL.revokeObjectURL(sourceURL);sourceURL=candidate;candidate='';session=newSession();session.source={status:'supported',series:fixtureSeries,sourceRef:'local-photo-'+crypto.randomUUID(),fixture:true};history=[];silo='all';effectFocus='';busy=false;analyzingSource=false;render();
  }catch(e){busy=false;analyzingSource=false;render();const recovery=e instanceof GiftApiError&&e.code==='rate_limited'?e.details as {resumeSessionId?:string;samePhoto?:boolean}:null;if(recovery?.resumeSessionId&&/^[\w-]{1,80}$/.test(recovery.resumeSessionId)){$('right').insertAdjacentHTML('afterbegin',secondary('resume-upload','Return to Your Gift'));$('resume-upload').onclick=()=>location.assign('/gift-wizard.next.html?sessionId='+encodeURIComponent(recovery.resumeSessionId!));error('Return to Your Gift')}else error(e instanceof Error?e.message:'This photograph could not be opened.')}finally{if(candidate)URL.revokeObjectURL(candidate)}
 }
-function chooseProduct(id:string){activeProduct=id;const p=products.find(p=>p.id===id)!;size=p.options[0].size;copies=1;editId=null;go('configuration')}
+function chooseProduct(id:string){activeProduct=id;const p=products.find(p=>p.id===id)!,draft=productDrafts[id];size=p.options.some(o=>o.size===draft?.size)?draft.size:p.options[0].size;copies=draft?.copies||1;editId=null;go('configuration')}
 function renderProductCarousel(){
  const index=Math.max(0,products.findIndex(p=>p.id===(featuredProduct||activeProduct))),p=products[index];featuredProduct=p.id;
  const canChoose=p.available&&p.options.length>0;
@@ -135,7 +140,7 @@ function renderProductCarousel(){
  swipe.addEventListener('touchcancel',()=>{touch=null;},{passive:true});
 }
 const productPreviews=new Map<string,{value?:ProductPreviewView;failed?:boolean}>();
-function configurationPreview(p:Product,o:CatalogOption){
+function configurationPreview(p:Product,o:CatalogOption,artworkReference=false){
  if(!live?.session?.artworkPreviewId)return photo(asset(p.image),p.label,'gift-feature-image')+'<p class="small">Product photograph. Product-specific artwork will be prepared after payment.</p>';
  const owner=live,favoriteId=owner.session!.artworkPreviewId!,productId=p.id+':'+o.size,key=owner.id+':'+favoriteId+':'+productId;
  let entry=productPreviews.get(key);
@@ -144,8 +149,8 @@ function configurationPreview(p:Product,o:CatalogOption){
  if(entry.failed)return '<p role="alert">This product preview could not load.</p><button class="secondary" data-product-preview="'+esc(key)+'">Check Again</button>';
  const v=entry.value;
  if(!v)return '<p role="status">Preparing product preview…</p>';
- if(v.status==='ready')return photo(v.url,p.label,'gift-feature-image')+'<p class="small">Product-specific artwork will be prepared after payment.</p>';
- if(v.status==='adaptation_required')return '<p role="status">Product-specific artwork will be prepared after payment.</p>';
+ if(v.status==='ready')return photo(v.url,p.label,'gift-feature-image')+(artworkReference?'':'<p class="small">Product-specific artwork will be prepared after payment.</p>');
+ if(v.status==='adaptation_required')return artworkReference&&favorite()?photo(favorite()!.url,'Selected artwork')+'<p class="small">Selected artwork</p>':'<p role="status">Product-specific artwork will be prepared after payment.</p>';
  return '<p role="status">Not currently available</p>';
 }
 function renderProducts(){
@@ -166,12 +171,12 @@ function renderProducts(){
  if(session.lines.length)$('right').insertAdjacentHTML('beforeend',secondary('view-cart','Your gifts ('+session.lines.length+')'));
  document.querySelectorAll<HTMLButtonElement>('[data-product]').forEach(b=>b.onclick=()=>chooseProduct(b.dataset.product!));
  document.querySelectorAll<HTMLButtonElement>('[data-size]').forEach(b=>b.onclick=()=>{size=b.dataset.size!;render()});
- $('screen').prepend($('back'));
+
  $('copies').oninput=e=>{copies=Number((e.target as HTMLInputElement).value);rememberView()};
  if($('view-cart'))$('view-cart').onclick=()=>go('cart');
  primary(editId?'Update This Gift':'Add to Cart',()=>{try{const line={id:editId||crypto.randomUUID(),productId:p.id,size,copies};giftOption(line,products);const lines=session.lines.filter(l=>l.id!==line.id);lines.push(line);void persistCart(lines)}catch{error('Choose a quantity from 1 to 20.')}},o.compatible===false);
 }
-function lineMarkup(l:GiftLine,edit=true){const {product:p,option:o}=giftOption(l,products);return '<div class="cart-line">'+'<div class="cart-thumbnail">'+(live?.session&&purchased(live.session)?mockup(l):live?configurationPreview(p,o):photo(asset(p.image),p.label))+'</div><div class="cart-details"><h3>'+esc(p.label)+'</h3><p>'+esc(o.label)+' · '+money(o.retailCents*l.copies)+'</p><p class="small">'+esc(Object.entries(o.attributes||{}).map(([k,v])=>k+': '+v).join(' · '))+'</p><div class="row"><span>Quantity '+l.copies+'</span>'+(edit?'<button data-qty="'+l.id+'" data-delta="-1" aria-label="Decrease '+esc(p.label)+' quantity" '+(l.copies===1?'disabled':'')+'>−</button><button data-qty="'+l.id+'" data-delta="1" aria-label="Increase '+esc(p.label)+' quantity" '+(l.copies===20?'disabled':'')+'>+</button><button data-edit="'+l.id+'">Edit</button><button data-remove="'+l.id+'">Remove</button>':'')+'</div></div></div>'}
+function lineMarkup(l:GiftLine,edit=true){const {product:p,option:o}=giftOption(l,products);return '<div class="cart-line">'+'<div class="cart-thumbnail">'+(live?.session&&purchased(live.session)?mockup(l):live?configurationPreview(p,o,true):photo(asset(p.image),p.label))+'</div><div class="cart-details"><h3>'+esc(p.label)+'</h3><p>'+esc(o.label)+' · '+money(o.retailCents*l.copies)+'</p><p class="small">'+esc(Object.entries(o.attributes||{}).map(([k,v])=>k+': '+v).join(' · '))+'</p>'+(live&&!purchased(live.session!)?'<p class="small">Product-specific artwork will be prepared after payment.</p>':'')+'<div class="row"><span>Quantity '+l.copies+'</span>'+(edit?'<button data-qty="'+l.id+'" data-delta="-1" aria-label="Decrease '+esc(p.label)+' quantity" '+(l.copies===1?'disabled':'')+'>−</button><button data-qty="'+l.id+'" data-delta="1" aria-label="Increase '+esc(p.label)+' quantity" '+(l.copies===20?'disabled':'')+'>+</button><button data-edit="'+l.id+'">Edit</button><button data-remove="'+l.id+'">Remove</button>':'')+'</div></div></div>'}
 async function persistCart(lines:GiftLine[]){
  if(busy)return;
  lines.forEach(l=>{if(giftOption(l,products).option.compatible===false)throw new GiftApiError('product_not_available',409)});
@@ -329,7 +334,7 @@ function renderCheckout(){
  // Placeholders are visual labels; the wrapping label remains the accessible name.
  document.querySelectorAll<HTMLInputElement>('#screen .address input').forEach(input=>{input.placeholder=input.closest('label')!.querySelector('span')!.textContent!;if(input.id!=='line2'&&input.id!=='state')input.required=true});
  $('countryCode').setAttribute('aria-description','Two-letter country code');
- $('right').innerHTML='<div data-order-summary><h2>Order summary</h2>'+session.lines.map(l=>{const {product:p,option:o}=giftOption(l,products);return '<div class="summary-item"><div>'+(live?configurationPreview(p,o):photo(asset(p.image),p.label))+'</div><div><h3>'+esc(p.label)+'</h3><p>'+esc(o.label)+' · Quantity '+l.copies+'<br>'+money(o.retailCents*l.copies)+'</p></div></div>'}).join('')+'<dl><dt>Products</dt><dd>'+money(productSubtotal(session,products))+'</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>'+secondary('edit-gifts','Edit gifts');
+ $('right').innerHTML='<div data-order-summary><h2>Order summary</h2>'+session.lines.map(l=>{const {product:p,option:o}=giftOption(l,products);return '<div class="summary-item"><div>'+(live?configurationPreview(p,o,true):photo(asset(p.image),p.label))+'</div><div><h3>'+esc(p.label)+'</h3><p>'+esc(o.label)+' · Quantity '+l.copies+'<br>'+money(o.retailCents*l.copies)+'</p></div></div>'}).join('')+'<dl><dt>Products</dt><dd>'+money(productSubtotal(session,products))+'</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>'+secondary('edit-gifts','Edit gifts');
  for(const key of ['email',...Object.keys(session.address)])$(key).oninput=e=>{const v=(e.target as HTMLInputElement).value;if(key==='email')session.email=v;else session.address[key as keyof typeof session.address]=key==='countryCode'?v.toUpperCase():v;($('primary') as HTMLButtonElement).disabled=serverMode?!checkoutReady():!deliveryValid(session)||!disclosureAccepted};
  $('ship-self').onclick=()=>{session.shipTo='self';render()};$('ship-recipient').onclick=()=>{session.shipTo='recipient';render()};$('edit-gifts').onclick=()=>go('cart');
  // The exact server disclosure is displayed; acceptance stays beneath delivery.
@@ -354,7 +359,8 @@ function readResume(){try{return JSON.parse(sessionStorage.getItem(resumeKey)||'
 let restorationComplete=false;
 function rememberView(){
  if(!serverMode||!restorationComplete||!live?.session)return;
- try{sessionStorage.setItem(resumeKey,JSON.stringify({sessionId:live.id,view,effectIds:session.effectIds,recipient:session.recipient,silo,mobileSilo,artFocus,batchIndex,featuredProduct,productReviewIndex,history,generationBatch,batchIntent,activeProduct,size,copies,editId}))}catch{}
+ if(activeProduct&&Number.isInteger(copies)&&copies>=1&&copies<=20)productDrafts[activeProduct]={size,copies};
+ try{sessionStorage.setItem(resumeKey,JSON.stringify({sessionId:live.id,view,productDrafts,effectIds:session.effectIds,recipient:session.recipient,silo,mobileSilo,artFocus,batchIndex,featuredProduct,productReviewIndex,history,generationBatch,batchIntent,activeProduct,size,copies,editId}))}catch{}
 }
 function restoreView(s:SessionView){
  const savedResume=readResume(),hint=savedResume?.sessionId===s.sessionId?savedResume:null;
@@ -372,6 +378,7 @@ function restoreView(s:SessionView){
  if(Number.isInteger(hint.batchIndex)&&session.batches[hint.batchIndex])batchIndex=hint.batchIndex;
  if(products.some(p=>p.id===hint.featuredProduct))featuredProduct=hint.featuredProduct;
  if(Number.isInteger(hint.productReviewIndex)&&hint.productReviewIndex>=0&&hint.productReviewIndex<session.lines.length)productReviewIndex=hint.productReviewIndex;
+ for(const p of products){const d=hint.productDrafts?.[p.id];if(d&&p.options.some(o=>o.size===d.size)&&Number.isInteger(d.copies)&&d.copies>=1&&d.copies<=20)productDrafts[p.id]={size:d.size,copies:d.copies}}
  const configured=products.find(p=>p.id===hint.activeProduct);
  if(configured?.available&&configured.options.some(o=>o.size===hint.size)){activeProduct=configured.id;size=hint.size;copies=Number.isInteger(hint.copies)&&hint.copies>=1&&hint.copies<=20?hint.copies:1;editId=session.lines.some(l=>l.id===hint.editId)?hint.editId:null}
  const allowed:View[]=['photo','effects','review','focus','compare','more','products','configuration','cart','checkout','compositions'];
@@ -404,10 +411,11 @@ async function retryRestoration(){
   }
   if(!live){
    if(params.get('newGift')==='1')return null;
-   const api=new GiftBackend((url,init)=>fetch(url,init)),latest=await api.restoreLatest(signal);
-   if(!latest.current)return null;
-   live=new LiveGift(api,latest.current.sessionId);
-   const step=latest.resume!.suggestedStep;suggestedView=step==='previews'?'review':step==='order'?'payment':step;
+   const api=new GiftBackend((url,init)=>fetch(url,init)),hint=readResume();
+   if(hint?.sessionId&&/^[\w-]{1,80}$/.test(hint.sessionId)){
+    try{const saved=await api.restore(hint.sessionId,signal);if(saved.sessionId!==hint.sessionId)throw new GiftApiError('session_identity_mismatch',0);live=new LiveGift(api,saved.sessionId);live.accept(saved)}catch(e){if(!(e instanceof GiftApiError&&e.status===404))throw e}
+   }
+   if(!live){const latest=await api.restoreLatest(signal);if(!latest.current)return null;live=new LiveGift(api,latest.current.sessionId);const step=latest.resume!.suggestedStep;suggestedView=step==='previews'?'review':step==='order'?'payment':step;}
   }
   await live.restore(signal);return live.session!;
  });
