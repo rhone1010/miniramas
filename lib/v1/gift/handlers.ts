@@ -20,7 +20,7 @@ export type Authed = { id: string }
 
 export function fail(e: unknown): NextResponse {
   if (e instanceof GiftError) {
-    return json(e.code === 'payment_required' ? { error: e.code, amountCents: PACK_PRICE_CENTS, currency: 'USD' } : { error: e.code }, e.status)
+    return json(e.code === 'payment_required' ? { error: e.code, amountCents: PACK_PRICE_CENTS, currency: 'USD' } : { error: e.code, ...(e.details ?? {}) }, e.status)
   }
   if (e instanceof PackError) return json({ error: e.code }, e.code === 'invalid_return_path' ? 400 : e.code === 'pack_purchase_not_found' ? 404 : e.code === 'pack_payment_mismatch' ? 409 : 503)
   console.error('[gift] unexpected failure:', e instanceof Error ? e.message : e)
