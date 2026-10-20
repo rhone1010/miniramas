@@ -330,3 +330,31 @@ export interface RestoreResponse {
   /** Other recent active sessions (newest first), for a "continue or start again" choice. The current session is the first of them. */
   recent: Array<{ sessionId: string; createdAt: string; lastActivityAt: string; expiresAt: string; series: Series | null; orderId: string | null }>
 }
+
+// ── PRE-CHECKOUT PERSONALIZED PRODUCT PREVIEW (GET /api/v1/gift/sessions/{id}/product-preview?productId=family:size) ───────────────────────────────────────
+
+/**
+ * The selected favorite shown inside a product BEFORE any line, composition, order or payment exists. Always an explicit status, never an unrelated sample:
+ *   ready                a WATERMARKED mockup (url is a signed, 15-minute URL of a stored JPEG; renderer 'scene' = the approved photograph with its fixed detail inset, 'calibrated' = the
+ *                        calibrated template renderer; fit says whether a few pixels of mirror-extension reached the product's shape)
+ *   adaptation_required  the favorite's shape differs from the product's picture shape by more than the free 2% band: an accurate picture needs the real composition step (a bounded
+ *                        extension or a new generation, which is paid and customer-approved). Nothing was rendered; show the product's own state, not a sample.
+ *   not_available        the product is not purchasable or has no mockup template
+ * Errors (non-200): 404 session_not_found; 409 artwork_not_selected (choose a favorite first), order_refunded, refund_pending; 502 mockup_failed; 503 mockup_renderer_unavailable.
+ * Never a composition, a production file, an approval, a correction or an authorization to buy; no clean (unwatermarked) image is ever returned.
+ */
+export type ProductPreviewView =
+  | {
+      contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'ready'; sessionId: string; productId: string; sku: string; favoriteId: string
+      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'exact' | 'resample'
+      url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
+      watermarked: true; productionPrintFile: false; purchaseAuthorization: false
+    }
+  | {
+      contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'adaptation_required'; reason: 'shape_needs_composition'; sessionId: string; productId: string; sku: string; favoriteId: string
+      /** width / height of the favorite, of the product's picture, and how far apart they are (0.05 = 5%). */
+      favoriteAspect: number; pictureAspect: number; extension: number
+      /** How the real composition would adapt it: 'deterministic' (bounded extension) or 'generated' (a new generation), or null when unknown. */
+      method: 'deterministic' | 'generated' | null
+    }
+  | { contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'not_available'; reason: 'product_not_available' | 'no_mockup_template'; sessionId: string; productId: string; sku: string | null; favoriteId: string }

@@ -20,7 +20,7 @@ async function boot(query:string,response:any=project(),status=200){
  win.matchMedia=()=>({matches:query.includes('mobile=1'),addEventListener(){}});win.ResizeObserver=class{observe(){}disconnect(){}};win.scrollTo=()=>{};win.structuredClone=structuredClone;win.AbortController=AbortController;win.Response=Response;
  win.require=(name:string)=>name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
  win.fetch=async(url:string,init:any={})=>{calls.push(String(url));if(response.route&&String(url).includes('/api/v1/gift/')){const routed=await response.route(String(url),init);if(routed)return routed instanceof Response?routed:new Response(JSON.stringify(routed),{status:200})}const data=String(url)==='/api/v1/gift/sessions'&&init.method==='GET'?(response.latestResponse||{contractVersion:1,current:response.resume?response:null,resume:response.resume?{sessionId:response.sessionId,suggestedStep:'previews',resumeBatches:[],runningBatches:[]}:null,recent:[]}):String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog-samples/index.next')?JSON.parse(fs.readFileSync('public/gift-wizard/catalog-samples/index.next.json','utf8')):String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?JSON.parse(fs.readFileSync('public/gift-wizard/fixtures.next.json','utf8')):{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
- let code=fs.readFileSync('public/gift-wizard/wizard.next.ts','utf8').replace('import.meta.url',"'https://liten.invalid/gift-wizard/wizard.next.js'").replace('await import(path);',"window.EFFECT_REGISTRY={silos:[{id:'first',label:'First'}],effects:[{id:'jade',label:'Jade',category:'first',body:'live'}]};").replace(/start\(\);\s*$/,"globalThis.started=start();globalThis.navigate=go;");
+ let code=fs.readFileSync('public/gift-wizard/wizard.next.ts','utf8').replace('import.meta.url',"'https://liten.invalid/gift-wizard/wizard.next.js'").replace('await import(path);',"window.EFFECT_REGISTRY={silos:[{id:'first',label:'First'}],effects:[{id:'jade',label:'Jade',category:'first',body:'live'}]};").replace(/start\(\);\s*$/,"globalThis.started=start();globalThis.navigate=go;globalThis.refreshGift=refreshGeneration;");
  if(response.resume)win.sessionStorage.setItem("liten-gift-resume",JSON.stringify(response.resume));
  win.Error=Error;win.exports={};vm.runInContext(ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,dom.getInternalVMContext());
  await win.started;return {dom,win,calls};
@@ -45,7 +45,7 @@ test('product approval uses the authenticated mockup and final release stays dis
  win.document.getElementById('order-example').click();assert.equal(win.document.getElementById('primary').textContent,'Approve My Gifts →');assert.equal(win.document.getElementById('primary').disabled,true);
  assert.equal(calls.some(x=>x.endsWith('/approve')),false);dom.window.close();
 });
-test('checkout requires valid delivery and explicit acceptance with a saved favorite',async()=>{const s=artworkProject();s.order.state='checkout_open';const {win,dom}=await boot('sessionId=project',s);win.navigate('checkout');assert.equal(win.document.getElementById('primary').disabled,true);for(const [id,value] of Object.entries({email:'test@example.com',name:'Test Person',line1:'1 Test Street',city:'Test',state:'CA',postcode:'90001',countryCode:'US'})){const input=win.document.getElementById(id);input.value=value;input.dispatchEvent(new win.Event('input'))}assert.equal(win.document.getElementById('primary').disabled,true);const box=win.document.getElementById('disclosure');box.checked=true;box.dispatchEvent(new win.Event('change'));assert.equal(win.document.getElementById('primary').disabled,false);const authoritative=fs.readFileSync('lib/v1/gift/orders.ts','utf8').match(/text: "(.*)",/)[1].replace(/\\n/g,'\n');assert.equal([...win.document.querySelectorAll('#gift-disclosure p')].map((p:any)=>p.textContent).join('\n\n'),authoritative);dom.window.close()});
+test('checkout requires valid delivery and explicit acceptance with a saved favorite',async()=>{const s=artworkProject();s.order.state='checkout_open';const {win,dom}=await boot('sessionId=project',s);win.navigate('checkout');assert.equal(win.document.getElementById('primary').disabled,true);for(const [id,value] of Object.entries({email:'test@example.com',name:'Test Person',line1:'1 Test Street',city:'Test',state:'CA',postcode:'90001',countryCode:'US'})){const input=win.document.getElementById(id);input.value=value;input.dispatchEvent(new win.Event('input'))}assert.equal(win.document.getElementById('primary').disabled,true);const box=win.document.getElementById('disclosure');box.checked=true;box.dispatchEvent(new win.Event('change'));assert.equal(win.document.getElementById('primary').disabled,false);const authoritative=fs.readFileSync('lib/v1/gift/orders.ts','utf8').match(/text: "(.*)",/)[1].replace(/\\n/g,'\n');assert.equal([...win.document.querySelectorAll('#gift-disclosure p')].map((p:any)=>p.textContent).join('\n\n'),authoritative);await new Promise(r=>setTimeout(r,25));dom.window.close()});
 
 test('actual Stripe return parameter is verified by server before restoring its project',async()=>{const s:any=project();s.confirmation={confirmed:true,session:project()};const {win,calls,dom}=await boot('gift_order_session=cs_test',s);assert.ok(calls.includes('/api/v1/gift/orders/confirm'));assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(win.document.getElementById('primary').disabled,false);dom.window.close()});
 test('unconfirmed Stripe return stays pending and can retry without granting access',async()=>{const s:any=project();s.confirmation={confirmed:false};const {win,calls,dom}=await boot('gift_order_session=cs_test',s);assert.equal(calls.includes('/api/v1/gift/sessions/project'),false);assert.ok(win.document.getElementById('screen').textContent.includes('Checking your payment'));win.navigate('effects');assert.equal(win.document.getElementById('screen').dataset.view,'payment');dom.window.close()});
@@ -104,7 +104,7 @@ test('preview-first fixture journey keeps favorite separate from product photogr
  assert.equal(win.document.getElementById('screen').dataset.view,'products');
  assert.equal(win.document.querySelectorAll('[data-feature]').length,8);assert.equal(win.document.querySelectorAll('[data-product]').length,1);
  const reference=win.document.querySelector('#right img').src;assert.ok(reference.includes('preview-1.jpg'));
- win.document.querySelector('[data-product="fine_art"]').click();assert.ok(win.document.querySelector('#right img').src.includes('product-fine_art'));
+ win.document.querySelector('[data-product="fine_art"]').click();assert.ok(win.document.querySelector('#screen img').src.includes('product-fine_art'));assert.equal(win.document.querySelector('#right img'),null);
  win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'cart');
  assert.ok(win.document.querySelector('.cart-thumbnail img').src.includes('product-'));
  win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'checkout');
@@ -119,13 +119,13 @@ test('legacy allocation responses fail closed',async()=>{
 test('unpaid free batches use the server allocation and retain batch idempotency',async()=>{
  const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];const bodies:any[]=[];
  s.route=(url:string,init:any)=>{if(url.endsWith('/batches')){bodies.push(JSON.parse(init.body));s.entitlement.freeBatchesUsed++;s.entitlement.freeAvailable=s.entitlement.freeBatchesUsed<2;s.entitlement.freeBlockedReason=s.entitlement.freeAvailable?null:'session_limit';s.nextBatch=s.entitlement.freeAvailable?{kind:'free'}:{kind:'payment_required',amountCents:299,currency:'USD'};s.batches=artworkProject().batches.slice(0,s.entitlement.freeBatchesUsed);return {status:'ok',batch:s.batches.at(-1),session:s}}};
- const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.querySelectorAll('[data-art]').length,6);win.document.getElementById('another-batch').click();await new Promise(r=>setTimeout(r,20));assert.equal(bodies.length,2);assert.notEqual(bodies[0].idempotencyKey,bodies[1].idempotencyKey);assert.equal(win.document.getElementById('another-batch').textContent,'Six More · $2.99');assert.equal(s.order.orderId,null);dom.window.close();
+ const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.querySelectorAll('[data-art]').length,6);win.document.getElementById('another-batch').click();assert.equal(win.document.getElementById('screen').dataset.view,'effects');assert.equal(bodies.length,1);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(bodies.length,2);assert.notEqual(bodies[0].idempotencyKey,bodies[1].idempotencyKey);assert.equal(win.document.getElementById('another-batch').textContent,'Six More · $2.99');assert.equal(s.order.orderId,null);dom.window.close();
 });
 
 test('favorite persists before shopping without requesting a composition',async()=>{
  const s=artworkProject();s.order.state='none';s.order.orderId=null;s.artworkPreviewId=null;s.compositions=[];s.mockup=null;let saved='';
  s.route=(url:string,init:any)=>{if(url.endsWith('/artwork')){saved=JSON.parse(init.body).previewId;s.artworkPreviewId=saved;return s}};
- const {win,dom,calls}=await boot('sessionId=project',s);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.ok(saved);assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(calls.some(x=>x.endsWith('/compositions')),false);dom.window.close();
+ const {win,dom,calls}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('primary').disabled,true);win.document.querySelector('[data-art]').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.getElementById('screen').dataset.view,'focus');win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.ok(saved);assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(calls.some(x=>x.endsWith('/compositions')),false);dom.window.close();
 });
 
 test('checkout adapter sends current disclosure and delivery to test checkout only',async()=>{
@@ -285,6 +285,64 @@ test('failed stalled recovery exposes explicit retry without looping or changing
  const {win,dom}=await boot('sessionId=project',s);await new Promise(r=>setTimeout(r,20));assert.equal(attempts,1);assert.equal(win.document.querySelectorAll('#screen img').length,1);assert.ok(win.document.getElementById('retry-generation'));win.document.getElementById('retry-generation').click();await new Promise(r=>setTimeout(r,20));assert.equal(attempts,2);dom.window.close();
 });
 
+function shoppingProject(){const s:any=artworkProject();s.order.state='none';s.order.orderId=null;s.lines=[];s.geometries=[];s.compositions=[];s.mockup=null;return s}
+function acceptLines(s:any,init:any){const request=JSON.parse(init.body);s.lines=request.lines.map((l:any)=>({...l,size:l.productId.slice(l.productId.lastIndexOf(':')+1)}));s.geometries=s.lines.map((l:any)=>{const o=catalog.products.find((p:any)=>p.productId===l.productId);return {lineId:l.lineId,productId:l.productId,sku:o.sku,requiredPx:o.requirements.finalPx}});return s}
+test('completed preview can be selected and persisted while other slots generate without advancing to shopping',async()=>{
+ const s:any=workingProject();s.route=(url:string,init:any)=>{if(url.endsWith('/artwork')){s.artworkPreviewId=JSON.parse(init.body).previewId;return s}};
+ const {win,dom,calls}=await boot('sessionId=project',s);assert.ok(win.document.getElementById('screen').textContent.includes('Choose One Artwork'));assert.equal(win.document.getElementById('primary').disabled,true);win.document.querySelector('[data-art]').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.getElementById('screen').dataset.view,'focus');assert.equal(win.document.querySelectorAll('#screen img').length,1);assert.equal(win.document.querySelectorAll('#right img').length,0);assert.equal(win.document.getElementById('primary').textContent,'Choose Your Gift →');assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(calls.some(x=>x.endsWith('/compositions')),false);dom.window.close();
+});
+test('Add to Cart persists before displaying success and survives authenticated refresh, edit and removal',async()=>{
+ const s:any=shoppingProject();let writes=0;s.route=(url:string,init:any)=>{if(url.endsWith('/lines')&&init.method==='PUT'){writes++;return acceptLines(s,init)}};
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('products');win.document.getElementById('choose-featured').click();win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(writes,1);assert.equal(s.lines.length,1);assert.equal(win.document.getElementById('screen').dataset.view,'cart');assert.equal(win.document.querySelectorAll('.cart-line').length,1);assert.equal(win.document.getElementById('primary').disabled,false);
+ win.dispatchEvent(new win.PageTransitionEvent('pagehide'));win.dispatchEvent(new win.PageTransitionEvent('pageshow',{persisted:true}));await new Promise(r=>setTimeout(r,30));assert.equal(win.document.querySelectorAll('.cart-line').length,1);win.document.querySelector('[data-delta="1"]').click();await new Promise(r=>setTimeout(r,20));assert.equal(s.lines[0].copies,2);win.confirm=()=>true;win.document.querySelector('[data-remove]').click();await new Promise(r=>setTimeout(r,20));assert.equal(s.lines.length,0);assert.equal(win.document.getElementById('primary').disabled,true);assert.ok(win.document.getElementById('add-another'));assert.equal(writes,3);dom.window.close();
+});
+test('rejected cart write stays on configuration and never invents a line',async()=>{
+ const s:any=shoppingProject();s.route=(url:string)=>url.endsWith('/lines')?new Response(JSON.stringify({error:'product_not_available'}),{status:409}):null;
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('products');win.document.getElementById('choose-featured').click();win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.getElementById('screen').dataset.view,'configuration');assert.equal(win.document.getElementById('error').textContent,'product_not_available');win.navigate('cart');assert.equal(win.document.querySelectorAll('.cart-line').length,0);dom.window.close();
+});
+test('a pre-write generation read cannot erase a subsequently confirmed cart',async()=>{
+ const s:any=shoppingProject();s.batches[1].complete=false;s.batches[1].generation='running';s.batches[1].previews[5].status='generating';let release:any,hold=false;
+ s.route=(url:string,init:any)=>{if(url.endsWith('/lines'))return acceptLines(s,init);if(hold&&url.endsWith('/project')&&init.method==='GET'){hold=false;const old=JSON.parse(JSON.stringify(s));return new Promise(r=>{release=()=>r(old)})}};
+ const {win,dom}=await boot('sessionId=project',s);hold=true;const pending=win.refreshGift();win.navigate('products');win.document.getElementById('choose-featured').click();win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));release();await pending;assert.equal(win.document.querySelectorAll('.cart-line').length,1);assert.equal(s.lines.length,1);dom.window.close();
+});
+test('second-six action preserves favorite and makes no reservation until Craft is pressed',async()=>{
+ const s:any=shoppingProject();s.batches=s.batches.slice(0,1);s.nextBatch={kind:'free'};s.entitlement.freeAvailable=true;s.entitlement.freeBatchesUsed=1;
+ const {win,dom,calls}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('another-batch').textContent,'Create My Second Six Previews');win.document.getElementById('another-batch').click();assert.equal(win.document.getElementById('screen').dataset.view,'effects');assert.equal(s.artworkPreviewId,'favorite');assert.equal(calls.some(x=>x.endsWith('/batches')||x.endsWith('/artwork')),false);dom.window.close();
+});
+
+
+test('new gift opens intake without restoring or mutating the existing project',async()=>{
+ const s:any=project();s.resume={sessionId:'project',view:'compositions',effectIds:[]};
+ const {win,calls,dom}=await boot('newGift=1&resumeSessionId=project',s);
+ assert.equal(win.document.getElementById('screen').dataset.view,'photo');
+ assert.equal(win.document.getElementById('resume-gift').getAttribute('data-href'),'/gift-wizard.next.html?sessionId=project');
+ assert.equal(calls.some(x=>x.includes('/api/v1/gift/')),false);
+ assert.equal(JSON.parse(win.sessionStorage.getItem('liten-gift-resume')).sessionId,'project');dom.window.close();
+});
+test('existing project has a separate new-gift entry and explicit session still restores',async()=>{
+ const {win,calls,dom}=await boot('newGift=1&sessionId=project');
+ assert.ok(calls.includes('/api/v1/gift/sessions/project'));
+ assert.equal(win.document.getElementById('new-gift').getAttribute('data-href'),'/gift-wizard.next.html?newGift=1&resumeSessionId=project');dom.window.close();
+});
+
+
+test('configuration consumes only the matching watermarked server product preview',async()=>{
+ const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};
+ let previewCalls=0;s.route=async(url:string)=>{if(!url.includes('/product-preview?'))return;previewCalls++;const productId=new URL(url,'https://test.invalid').searchParams.get('productId');const option=catalog.products.find((p:any)=>p.productId===productId)!;return {contractVersion:1,status:'ready',sessionId:s.sessionId,productId,sku:option.sku,favoriteId:s.artworkPreviewId,renderer:'scene',sceneId:'test',fit:'exact',url:'https://test.invalid/personalized.jpg',urlExpiresAt:'2099-01-01',width:1254,height:1254,cached:false,watermarked:true,productionPrintFile:false,purchaseAuthorization:false}};
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('configuration');await new Promise(r=>setTimeout(r,25));
+ assert.equal(win.document.querySelector('#screen img')?.src,'https://test.invalid/personalized.jpg');assert.equal(previewCalls,1);dom.window.close();
+});
+test('adaptation and failed preview never substitute catalog photography',async()=>{
+ for(const invalid of [false,true]){const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};s.route=async(url:string)=>{if(!url.includes('/product-preview?'))return;const productId=new URL(url,'https://test.invalid').searchParams.get('productId');const option=catalog.products.find((p:any)=>p.productId===productId)!;return {contractVersion:1,status:'adaptation_required',sessionId:s.sessionId,productId,sku:option.sku,favoriteId:invalid?'stale':s.artworkPreviewId,reason:'shape_needs_composition',favoriteAspect:1,pictureAspect:1.5,extension:0.5,method:'generated'}};
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('configuration');await new Promise(r=>setTimeout(r,25));assert.equal(win.document.querySelector('#screen img'),null);assert.ok(win.document.getElementById('screen').textContent.includes(invalid?'This product preview could not load.':'Product-specific artwork will be prepared after payment.'));dom.window.close();}
+});
+
+
+test('configuration restoration retains the selected product, size and quantity',async()=>{
+ const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:2,history:['products']};
+ const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('screen').dataset.view,'configuration');assert.equal(win.document.querySelector('[data-size="12x18"]').getAttribute('aria-pressed'),'true');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
+});
+
 test('Add to Cart is saved on the server and the gift survives every session refresh (the cart no longer vanishes)',async()=>{
  const s:any=artworkProject();s.order.state='none';s.order.orderId=null;s.compositions=[];s.mockup=null;s.lines=[];s.geometries=[];const geometry=project().geometries[0];const puts:any[]=[];
  s.route=(url:string,init:any)=>{if(url.endsWith('/lines')&&init.method==='PUT'){const b=JSON.parse(init.body);puts.push(b);s.lines=b.lines.map((l:any)=>({lineId:l.lineId,productId:l.productId,size:l.productId.split(':')[1],copies:l.copies}));s.geometries=s.lines.map((l:any)=>{const [fam,size]=l.productId.split(':'),o=local.products.find((p:any)=>p.id===fam).options.find((x:any)=>x.size===size);return {...geometry,lineId:l.lineId,productId:l.productId,sku:o.sku,requiredPx:o.requiredPx}});return s}};
@@ -308,4 +366,14 @@ test('a rejected Add to Cart leaves the cart as it was and shows the reason (no 
  (doc.getElementById('primary') as any).click();await tick();
  assert.notEqual(doc.getElementById('screen').dataset.view,'cart');assert.equal(doc.querySelectorAll('.cart-line').length,0);assert.match(doc.getElementById('error').textContent,/product_not_available/);
  dom.window.close();
+});
+
+
+test('generation reads progress while the batch POST remains in flight',async()=>{
+ const s:any=project('none');s.lines=[];s.geometries=[];s.batches=[];s.artworkPreviewId=null;let resolvePost:any,reads=0;
+ s.route=async(url:string,init:any)=>{if(url.endsWith('/batches')&&init.method==='POST'){s.batches=workingProject().batches;s.batches[0].generation='running';return await new Promise(r=>resolvePost=r)}if(url.endsWith('/sessions/project')&&init.method==='GET')reads++;return null};
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('effects');win.document.getElementById('primary').click();const before=reads;await new Promise(r=>setTimeout(r,1750));assert.ok(reads>before);assert.equal(win.document.querySelectorAll('.is-crafting').length,1);assert.ok(win.document.querySelector('[data-art="slot-0"]'));assert.equal(win.document.getElementById('primary').textContent,'Choose Your Gift →');resolvePost({session:s,batch:s.batches[0],status:'partial'});await new Promise(r=>setTimeout(r,10));dom.window.close();
+});
+test('mobile configuration keeps its price and primary action in the existing bottom bar',async()=>{
+ const s:any=artworkProject();s.order.state='none';s.lines=[];s.geometries=[];const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('configuration');assert.ok(win.document.querySelector('.mobile-bottom-action #primary'));assert.match(win.document.querySelector('.mobile-bottom-action').textContent,/\$/);await new Promise(r=>setTimeout(r,25));dom.window.close();
 });

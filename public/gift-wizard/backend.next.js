@@ -1,4 +1,7 @@
 export class GiftApiError extends Error {
+    code;
+    status;
+    details;
     constructor(code, status, details = null) {
         super(code);
         this.code = code;
@@ -10,6 +13,7 @@ const segment = (s) => { if (!/^[\w-]{1,80}$/.test(s))
     throw new GiftApiError('invalid_reference', 0); return encodeURIComponent(s); };
 const sessionPath = (id) => '/api/v1/gift/sessions/' + segment(id);
 const record = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+const previewURL = (url) => /^https:\/\//.test(url) || (typeof location !== 'undefined' && ['localhost', '127.0.0.1'].includes(location.hostname) && url.startsWith(location.origin + '/'));
 export function assertSession(v) {
     if (!record(v) || v.contractVersion !== 1 || typeof v.sessionId !== 'string' || !record(v.order) || !record(v.entitlement) || !record(v.nextBatch) || !Array.isArray(v.lines) || !Array.isArray(v.batches) || !Array.isArray(v.compositions))
         throw new GiftApiError('invalid_session_response', 0);
@@ -25,6 +29,7 @@ export function assertSession(v) {
 }
 export const integrationBlocks = Object.freeze(['sandbox_final_release', 'mug_card_profiles']);
 export class GiftBackend {
+    transport;
     constructor(transport) {
         this.transport = transport;
     }
@@ -115,6 +120,14 @@ export class GiftBackend {
         const v = await this.request('GET', sessionPath(id) + '/lines/' + segment(lineId) + '/mockup?compositionId=' + segment(compositionId), undefined, signal);
         if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.lineId !== lineId || v.compositionId !== compositionId || typeof v.watermarked !== 'boolean' || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !/^https:\/\//.test(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['frozen', 'legacy_catalog'].includes(v.geometrySource))
             throw new GiftApiError('invalid_mockup_response', 0);
+        return v;
+    }
+    async productPreview(id, productId, favoriteId, signal) {
+        const v = await this.request('GET', sessionPath(id) + '/product-preview?productId=' + encodeURIComponent(productId), undefined, signal);
+        if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.productId !== productId || v.favoriteId !== favoriteId || !['ready', 'adaptation_required', 'not_available'].includes(v.status))
+            throw new GiftApiError('invalid_product_preview_response', 0);
+        if (v.status === 'ready' && (v.watermarked !== true || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !previewURL(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['scene', 'calibrated'].includes(v.renderer)))
+            throw new GiftApiError('invalid_product_preview_response', 0);
         return v;
     }
     block(reason) { return Promise.reject(new GiftApiError('integration_blocked', 0, { reason })); }
