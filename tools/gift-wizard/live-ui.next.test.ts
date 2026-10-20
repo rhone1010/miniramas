@@ -240,7 +240,7 @@ test('Craft moves immediately to results without claiming that the unconfirmed r
 test('read-only status refresh replaces a completed batch without generating or consuming a retry',async()=>{
  const s=workingProject();const {win,dom,calls}=await boot('sessionId=project',s);
  s.batches[0].complete=true;s.batches[0].previews.forEach((p:any)=>Object.assign(p,{status:'ready',url:'https://liten.invalid/done.jpg',width:768,height:768}));
- win.document.getElementById('check-generation').click();await new Promise(r=>setTimeout(r,20));
+ assert.equal(win.document.getElementById('check-generation'),null);await new Promise(r=>setTimeout(r,1800));
  assert.equal(win.document.querySelectorAll('#screen [data-art]').length,6);
  assert.equal(calls.some(x=>x.endsWith('/retry')||x.endsWith('/batches')),false);dom.window.close();
 });
@@ -265,10 +265,10 @@ test('latest restoration validates response identity before using any artwork',a
  const s:any=project();s.latestResponse=latest({...s});s.latestResponse.resume.sessionId='wrong';
  const {win,dom}=await boot('',s);assert.equal(win.document.getElementById('error').textContent,'invalid_restore_response');assert.equal(win.document.querySelector('#screen img'),null);dom.window.close();
 });
-test('stalled restoration resumes unfinished batch once, never reserves a batch, and Check Again only reads',async()=>{
+test('stalled restoration resumes unfinished batch once, never reserves a batch, and automatic polling only reads',async()=>{
  const s:any=workingProject();s.batches[0].generation='stalled';let retries=0;s.route=(url:string)=>{if(url.endsWith('/retry')){retries++;return {session:s,batch:s.batches[0],status:'partial'}}};
  const {win,calls,dom}=await boot('sessionId=project',s);await new Promise(r=>setTimeout(r,20));assert.equal(retries,1);assert.equal(win.document.querySelectorAll('.mc-mark').length,0);assert.equal(win.document.querySelectorAll('#screen img').length,1);
- win.document.getElementById('check-generation').click();await new Promise(r=>setTimeout(r,20));assert.equal(retries,1);assert.equal(calls.some(x=>x.endsWith('/batches')),false);dom.window.close();
+ assert.equal(win.document.getElementById('check-generation'),null);await new Promise(r=>setTimeout(r,1800));assert.equal(retries,1);assert.equal(calls.some(x=>x.endsWith('/batches')),false);dom.window.close();
 });
 test('running and exhausted batches never auto-retry; exhausted stale generating slots stop spinning',async()=>{
  for(const generation of ['running','failed']){const s:any=workingProject();s.batches[0].generation=generation;const {win,dom,calls}=await boot('sessionId=project',s);assert.equal(win.document.querySelectorAll('.mc-mark').length,generation==='running'?1:0);assert.equal(calls.some(x=>x.endsWith('/retry')),false);dom.window.close()}
@@ -386,4 +386,16 @@ test('product exits preserve artwork, cart and per-product configuration',async(
 
 test('bare return restores the authenticated working gift instead of another latest gift',async()=>{
  const s:any=artworkProject();s.order.state='none';s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:2};const {win,calls,dom}=await boot('',s);assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.includes('/api/v1/gift/sessions'),false);assert.equal(win.document.getElementById('screen').dataset.view,'configuration');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
+});
+
+
+test('generation title follows confirmed slots and has no manual status button',async()=>{
+ const s=workingProject();s.batches[0].previews[0].status='pending';s.batches[0].previews[0].url=null;
+ const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.querySelector('#screen h2').textContent,'Creating Your Previews');assert.equal(win.document.getElementById('check-generation'),null);
+ s.batches[0].previews[0].status='ready';s.batches[0].previews[0].url='https://liten.invalid/ready.jpg';await win.refreshGift();assert.equal(win.document.querySelector('#screen h2').textContent,'Choose One Artwork');dom.window.close();
+});
+test('paid composition preparation shows selected art only during the actual request',async()=>{
+ const s:any=artworkProject();s.compositions=[];let finish:any;s.route=(url:string,init:any)=>url.endsWith('/compositions')&&init.method==='POST'?new Promise(resolve=>{finish=resolve}):null;
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('focus');win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,10));assert.ok(win.document.getElementById('screen').textContent.includes('Preparing Your Masterpiece'));assert.equal(win.document.querySelector('#screen img').alt,'Selected artwork');assert.equal(win.document.getElementById('primary').disabled,true);
+ finish(artworkProject());await new Promise(r=>setTimeout(r,30));assert.equal(win.document.getElementById('screen').textContent.includes('Preparing Your Masterpiece'),false);assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/signed-product.png');dom.window.close();
 });
