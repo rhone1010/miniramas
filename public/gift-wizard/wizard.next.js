@@ -1,6 +1,6 @@
 import { LiveGift, purchased, canCraft } from './live.next.js';
 import { RequestSlot } from './backend-state.next.js';
-import { GiftBackend, GiftApiError } from './backend.next.js';
+import { GiftBackend, GiftApiError, isApprovedScene } from './backend.next.js';
 import { newSession, recipientOptions, liveEffects, giftOption, productSubtotal, deliveryValid } from './contracts.next.js';
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -11,7 +11,7 @@ let session = newSession(), view = 'photo', history = [], products = [], fixture
 let shoppingFavoriteId = null;
 let featuredProduct = '';
 let catalogSamples = {};
-function catalogPhoto(p, cls) { const sample = session.source?.series ? catalogSamples[session.source.series]?.[p.id] : undefined; if (!sample)
+function catalogPhoto(p, cls) { const sample = session.source?.series ? catalogSamples[session.source.series]?.[p.id] : undefined; if (!sample || !isApprovedScene(p.id, sample.templateId) || !sample.desktop.endsWith('-scene-desktop.webp') || !sample.mobile.endsWith('-scene-mobile.webp'))
     return photo(asset(p.image), p.label, cls); return '<picture><source media="(max-width:600px)" srcset="' + esc(sample.mobile) + '">' + photo(sample.desktop, p.label, cls) + '</picture>'; }
 // Exact approved disclosure from lib/v1/gift/orders.ts, version 2026-10-18-3.
 let disclosure = {
@@ -359,9 +359,11 @@ function configurationPreview(p, o, artworkReference = false) {
         entry = {};
         productPreviews.set(key, entry);
         void owner.api.productPreview(owner.id, productId, favoriteId).then(value => { if (value.sku !== o.sku && value.status !== 'not_available')
-            throw new GiftApiError('invalid_product_preview_response', 0); productPreviews.set(key, { value }); }).catch(() => productPreviews.set(key, { failed: true })).finally(() => { if (live === owner && owner.session?.artworkPreviewId === favoriteId && ((view === 'configuration' && activeProduct === p.id && size === o.size) || view === 'cart' || view === 'checkout'))
+            throw new GiftApiError('invalid_product_preview_response', 0); productPreviews.set(key, { value }); }).catch(e => productPreviews.set(key, { failed: true, unavailable: e instanceof GiftApiError && e.code === 'approved_scene_required' })).finally(() => { if (live === owner && owner.session?.artworkPreviewId === favoriteId && ((view === 'configuration' && activeProduct === p.id && size === o.size) || view === 'cart' || view === 'checkout'))
             render(); });
     }
+    if (entry.unavailable)
+        return '<p role="status">Not currently available</p>';
     if (entry.failed)
         return '<p role="alert">This product preview could not load.</p><button class="secondary" data-product-preview="' + esc(key) + '">Check Again</button>';
     const v = entry.value;
@@ -741,7 +743,7 @@ function renderCompositions() {
         return;
     }
     if (orderReviewExample) {
-        $('screen').innerHTML = '<h2>Review your gifts together</h2>' + exampleNote + samples.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line"><div class="cart-thumbnail">' + (live ? serverMockup(l) : photo(asset('./review/payment-first/' + template(l) + '.png'), p.label + ' example')) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '</p><p class="small">Approval awaiting server verification</p></div></div>'; }).join('');
+        $('screen').innerHTML = '<h2>Review your gifts together</h2>' + exampleNote + samples.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line"><div class="cart-thumbnail">' + (live ? serverMockup(l) : catalogPhoto(p, '')) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '</p><p class="small">Approval awaiting server verification</p></div></div>'; }).join('');
         $('right').innerHTML = '<h2>Final artwork approval</h2><p>Once every product is individually approved, review your gifts together before production.</p><p class="small">This is a layout example. All required approvals must be confirmed by the server before this action is available.</p>' + secondary('review-products', 'Review individual gifts');
         $('review-products').onclick = () => { orderReviewExample = false; render(); };
         primary('Approve My Gifts', () => { }, true);
@@ -749,7 +751,7 @@ function renderCompositions() {
     }
     productReviewIndex = Math.min(productReviewIndex, samples.length - 1);
     const l = samples[productReviewIndex], { product: p, option: o } = giftOption(l, products);
-    $('screen').innerHTML = '<p class="small" role="status">Gift ' + (productReviewIndex + 1) + ' of ' + samples.length + '</p><h2>' + esc(p.label) + '</h2>' + exampleNote + (state === 'loading' ? '<p role="status">Preparing product preview…</p>' : state === 'failed' ? '<p role="alert">This product preview could not load.</p>' + secondary('retry-composition', 'Try again') : (live ? serverMockup(l) : photo(asset('./review/payment-first/' + template(l) + '.png'), p.label + ' example mockup')));
+    $('screen').innerHTML = '<p class="small" role="status">Gift ' + (productReviewIndex + 1) + ' of ' + samples.length + '</p><h2>' + esc(p.label) + '</h2>' + exampleNote + (state === 'loading' ? '<p role="status">Preparing product preview…</p>' : state === 'failed' ? '<p role="alert">This product preview could not load.</p>' + secondary('retry-composition', 'Try again') : (live ? serverMockup(l) : catalogPhoto(p, '')));
     $('right').innerHTML = '<h2>Your selection</h2><p>' + esc(p.label) + '</p><p>' + esc(o.label) + ' · Quantity ' + l.copies + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><h3>Artwork approval</h3><p>Awaiting server verification</p><button disabled>Request a correction</button><p class="small">Correction availability and approval require the purchased product response.</p>';
     $('screen').insertAdjacentHTML('beforeend', '<nav class="sizes" aria-label="Gift review navigation"><button id="previous-product" style="color:var(--forest);border-color:var(--gold)" ' + (productReviewIndex ? '' : 'disabled') + '>← Previous Gift</button>' + (productReviewIndex < samples.length - 1 ? '<button id="next-product" style="color:var(--forest);border-color:var(--gold)">Next Gift →</button>' : '<button id="order-example" style="color:var(--forest);border-color:var(--gold)">View Order Review →</button>') + '</nav>');
     if ($('previous-product'))
@@ -1239,6 +1241,8 @@ function serverMockup(l) {
         return '<section role="status"><h2>Preparing Your Masterpiece</h2>' + (favorite() ? photo(favorite().url, 'Selected artwork') : '') + '</section>';
     if (live?.compositionIssues.has(l.id))
         return "<section role=\"status\" data-composition-state=\"repair-required\"><h3>We're preparing your artwork for this gift</h3><p>Your artwork needs a small adjustment to fit this product correctly. We're taking care of it.</p><p>Your selected artwork and purchase are safe. No action is needed right now.</p></section>" + secondary('check-composition-' + l.id, 'Check Again');
+    if (live?.unavailableScenes.has(l.id))
+        return '<p role="status">Not currently available</p>';
     const m = live?.mockups.get(l.id);
     return m && Date.parse(m.urlExpiresAt) > Date.now() ? photo(m.url, giftOption(l, products).product.label) : '<p role="status">This product preview could not load.</p>' + secondary('refresh-mockups', 'Try again');
 }
