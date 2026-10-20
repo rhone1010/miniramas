@@ -85,9 +85,9 @@ describe('pre-checkout product preview', () => {
 
   it('a configuration no scene shows uses the calibrated renderer (same product, never a substitute)', async () => {
     const r = rig(); const { sid } = await withFavorite(r)
-    const v = await getProductPreview(r.deps, U1, sid, 'premium:12x12')
-    expect(v).toMatchObject({ status: 'ready', renderer: 'calibrated', sceneId: null, sku: 'GLOBAL-HPR-12X12', watermarked: true }); expect(r.sceneRender).not.toHaveBeenCalled(); expect(r.render).toHaveBeenCalledTimes(1)
-    expect(r.render.mock.calls[0][0]).toMatchObject({ sku: 'GLOBAL-HPR-12X12', templateId: 'premium-fine-art' })
+    const v = await getProductPreview(r.deps, U1, sid, 'framed:12x12')           // the framed print's photograph is not approved (frame finish unverified): the calibrated renderer, as before
+    expect(v).toMatchObject({ status: 'ready', renderer: 'calibrated', sceneId: null, sku: 'GLOBAL-CFP-12X12', watermarked: true }); expect(r.sceneRender).not.toHaveBeenCalled(); expect(r.render).toHaveBeenCalledTimes(1)
+    expect(r.render.mock.calls[0][0]).toMatchObject({ sku: 'GLOBAL-CFP-12X12' })
   })
 
   it('falls back to the calibrated renderer when the scene cannot render, and never returns a half result', async () => {
@@ -192,14 +192,14 @@ describe('provisional preview for a favorite whose shape is not the product\'s (
     const r = rig(); const { sid, fav } = await withFavorite(r)
     const before = JSON.stringify(await getSessionView(r.deps, U1, sid)), compBefore = r.store.compositions.length, gens = r.generate.mock.calls.length
     const v: any = await getProductPreview(r.deps, U1, sid, 'fine_art:12x18', { provisional: true })
-    expect(v).toMatchObject({ status: 'provisional', productId: 'fine_art:12x18', sku: 'GLOBAL-FAP-12X18', favoriteId: fav, renderer: 'calibrated', fit: 'contain', watermarked: true, productionPrintFile: false, purchaseAuthorization: false, cached: false })
+    expect(v).toMatchObject({ status: 'provisional', productId: 'fine_art:12x18', sku: 'GLOBAL-FAP-12X18', favoriteId: fav, renderer: 'scene', sceneId: 'fine-art-portrait', sceneRefusal: null, fit: 'contain', watermarked: true, productionPrintFile: false, purchaseAuthorization: false, cached: false })
     expect(v.provisional).toMatchObject({ exactArtworkShown: true, cropped: false, distorted: false, surround: 'neutral', finalComposition: 'generated' })
     expect(v.provisional.bars.sides).toBe('top_bottom'); expect(v.provisional.bars.fractionPerSide).toBeCloseTo(1 / 6, 3)          // a square favorite in a 2:3 product: a sixth of the height above and below
     expect(v.provisional.extension).toBeCloseTo(0.5, 3); expect(v.url).toMatch(/\/product-previews\/fine_art_12x18-[0-9a-f]{16}\.jpg/)
-    expect(r.render).toHaveBeenCalledTimes(1); expect(previewFiles(r)).toHaveLength(1)
+    expect(r.sceneRender).toHaveBeenCalledTimes(1); expect(r.render).not.toHaveBeenCalled(); expect(previewFiles(r)).toHaveLength(1)
     expect(r.store.compositions.length).toBe(compBefore); expect(r.generate.mock.calls.length).toBe(gens)                          // no composition, no generation
     expect(JSON.stringify(await getSessionView(r.deps, U1, sid))).toBe(before)                                                      // approvals, corrections, entitlements untouched
-    const again: any = await getProductPreview(r.deps, U1, sid, 'fine_art:12x18', { provisional: true }); expect(again).toMatchObject({ status: 'provisional', cached: true }); expect(r.render).toHaveBeenCalledTimes(1)
+    const again: any = await getProductPreview(r.deps, U1, sid, 'fine_art:12x18', { provisional: true }); expect(again).toMatchObject({ status: 'provisional', cached: true }); expect(r.sceneRender).toHaveBeenCalledTimes(1)
   })
 
   it('the picture handed to the renderer is the favorite, undistorted and uncropped, centered, with only the surround added (never mirrored, never artwork-colored)', async () => {
@@ -242,6 +242,6 @@ describe('the preview says why it is not scene-backed', () => {
     if (ext <= 0.02 + 1e-10) expect(fa).toMatchObject({ status: 'ready', renderer: 'scene', sceneRefusal: null })
     else expect(fa).toMatchObject({ status: 'ready', renderer: 'calibrated', sceneRefusal: { reason: 'shape_needs_extension', sceneId: 'fine-art-square', openingAspect: Math.round(opening * 1e4) / 1e4, extension: Math.round(ext * 1e4) / 1e4 } })
     expect(await getProductPreview(r.deps, U1, sid, 'canvas:8x8')).toMatchObject({ renderer: 'scene', sceneRefusal: null })
-    expect(await getProductPreview(r.deps, U1, sid, 'fine_art:12x18', { provisional: true })).toMatchObject({ status: 'provisional', sceneRefusal: { reason: 'orientation_not_photographed' } })
+    expect(await getProductPreview(r.deps, U1, sid, 'canvas:12x18', { provisional: true })).toMatchObject({ status: 'provisional', sceneRefusal: { reason: 'orientation_not_photographed' } })
   })
 })

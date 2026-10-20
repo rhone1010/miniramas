@@ -61,8 +61,8 @@ async function journey(W: W, productId: string) {
 beforeEach(() => { vi.resetModules() })
 afterEach(() => { vi.doUnmock('../print/gift-enablement'); vi.resetModules() })
 
-const SCENE_CASES: Array<[string, string]> = [['canvas:8x8', 'gallery-canvas-square'], ['canvas:12x12', 'gallery-canvas-square'], ['mug:11oz', 'ceramic-mug'], ['card:7x5', 'greeting-card']]
-const FALLBACK_CASES = ['fine_art:12x18', 'canvas:12x18', 'framed:12x18', 'premium:12x12']
+const SCENE_CASES: Array<[string, string]> = [['canvas:8x8', 'gallery-canvas-square'], ['canvas:12x12', 'gallery-canvas-square'], ['mug:11oz', 'ceramic-mug'], ['card:7x5', 'greeting-card'], ['fine_art:12x18', 'fine-art-portrait'], ['premium:12x12', 'premium-square']]
+const FALLBACK_CASES = ['premium:12x18', 'canvas:12x18', 'framed:12x18']
 
 describe('customer scene mockups, end to end on safe fixtures (real renderers, real composition)', () => {
   for (const [productId, sceneId] of SCENE_CASES) {

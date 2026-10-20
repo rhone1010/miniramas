@@ -490,7 +490,7 @@ describe('GIFT_REQUIRE_APPROVED_SCENE: never take payment for a gift that cannot
     const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }]); expect((await checkout(r, sid)).totals.itemsCents).toBeGreaterThan(0)
   })
   it('on: a gift with no approved scene is refused at checkout before any quote or Stripe call, and a scene-backed one is not', async () => {
-    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 1 }])      // added while the flag was off
+    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'framed:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 1 }])      // added while the flag was off
     await withFlag(async () => {
       await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'product_not_available', status: 409 })
       expect(r.quote).not.toHaveBeenCalled(); expect(r.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(r.store.orders.size).toBe(0)
@@ -509,7 +509,7 @@ describe('GIFT_REQUIRE_APPROVED_SCENE: never take payment for a gift that cannot
   it('the coverage is the square gallery canvases, plus the square fine art prints once their photograph has a square opening (the owner decides what to do about the rest)', async () => {
     const { launchCoverage } = await import('./presentation'); const { realSceneRenderer } = await import('./mockup-real')
     const cov = launchCoverage(id => realSceneRenderer.describe(id)), opening = realSceneRenderer.describe('fine-art-square').inputAspect
-    const expected = ['canvas:8x8', 'canvas:12x12', 'canvas:16x16', 'canvas:20x20', ...(Math.max(opening, 1 / opening) - 1 <= 0.02 + 1e-10 ? ['fine_art:8x8', 'fine_art:12x12', 'fine_art:16x16', 'fine_art:20x20'] : [])]
+    const expected = ['canvas:8x8', 'canvas:12x12', 'canvas:16x16', 'canvas:20x20', 'premium:8x8', 'premium:12x12', 'premium:16x16', 'premium:20x20', 'fine_art:8x12', 'fine_art:12x18', 'fine_art:16x24', 'fine_art:20x30', ...(Math.max(opening, 1 / opening) - 1 <= 0.02 + 1e-10 ? ['fine_art:8x8', 'fine_art:12x12', 'fine_art:16x16', 'fine_art:20x20'] : [])]
     expect(cov.filter(c => c.scene).map(c => c.productId).sort()).toEqual(expected.sort()); expect(cov.filter(c => !c.scene).length).toBe(cov.length - expected.length)
   })
 })

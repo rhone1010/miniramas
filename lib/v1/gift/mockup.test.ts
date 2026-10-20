@@ -724,7 +724,7 @@ describe('scene mockups (the photographic scene, with the calibrated renderer as
   })
 
   it('a configuration no scene shows keeps the calibrated renderer (no scene in its response)', async () => {
-    const r = sceneRig(); const { sid } = await ready(r, [L12, F12])
+    const r = sceneRig(); const { sid } = await ready(r, [{ ...L12, productId: 'canvas:12x18' }, F12])      // neither a portrait canvas nor a framed print has an approved photograph
     for (const lineId of ['a', 'c']) {
       const m = await getLineMockup(r.deps, U1, sid, lineId)
       expect(m).toMatchObject({ renderer: 'calibrated', scene: null }); expect(m.templateId).not.toMatch(/^scene:/)

@@ -26,23 +26,25 @@ describe('which scene may show which purchased configuration', () => {
   it('routes exactly the configurations a photograph truthfully shows, and no others', () => {
     const fineArtSquares = faSquareFits() ? ['GLOBAL-FAP-8X8 -> fine-art-square', 'GLOBAL-FAP-12X12 -> fine-art-square', 'GLOBAL-FAP-16X16 -> fine-art-square', 'GLOBAL-FAP-20X20 -> fine-art-square'] : []
     expect([...fineArtSquares, ...routed.filter(r => !r.includes('fine-art-square'))].sort()).toEqual(routed.slice().sort())
-    expect(routed.filter(r => !r.includes('fine-art-square'))).toEqual([
+    expect(routed.filter(r => !r.includes('fine-art-square')).sort()).toEqual([
       'GLOBAL-CAN-8X8 -> gallery-canvas-square', 'GLOBAL-CAN-12X12 -> gallery-canvas-square', 'GLOBAL-CAN-16X16 -> gallery-canvas-square', 'GLOBAL-CAN-20X20 -> gallery-canvas-square',
+      'GLOBAL-HPR-8X8 -> premium-square', 'GLOBAL-HPR-12X12 -> premium-square', 'GLOBAL-HPR-16X16 -> premium-square', 'GLOBAL-HPR-20X20 -> premium-square',
+      'GLOBAL-FAP-8X12 -> fine-art-portrait', 'GLOBAL-FAP-12X18 -> fine-art-portrait', 'GLOBAL-FAP-16X24 -> fine-art-portrait', 'GLOBAL-FAP-20X30 -> fine-art-portrait',
       'GLOBAL-MUG-W -> ceramic-mug', 'GLOBAL-GRE-MOH-7X5-BLA -> greeting-card',
-    ])
+    ].sort())
   })
 
   it('names the reason for every configuration with no scene (those keep the calibrated renderer)', () => {
     const reason = (id: string) => resolveScene(product(id), describeReal).reason
     // a different orientation than any photograph: never rotate a photographed product
-    for (const id of ['canvas:12x18', 'canvas:8x12', 'fine_art:12x18', 'premium:8x8', 'premium:12x12']) expect(reason(id), id).toBe('orientation_not_photographed')
+    for (const id of ['canvas:12x18', 'canvas:8x12', 'canvas:20x30']) expect(reason(id), id).toBe('orientation_not_photographed')
     // the shape is within the 20% extension band: that would need a PAID outpaint, which is never done for a mockup
     for (const id of ['premium:12x18', 'premium:8x12', ...(faSquareFits() ? [] : ['fine_art:8x8', 'fine_art:20x20'])]) expect(reason(id), id).toBe('shape_needs_extension')
     // the photograph's finish is not verified, or is a different finish than the catalog sells
     for (const id of ['framed:8x8', 'framed:12x18', 'matted:12x12', 'matted:8x12', 'framed_canvas:8x8', 'framed_canvas:12x18', 'framed_canvas:20x20']) expect(reason(id), id).toBe('configuration_not_photographed')
     // the other cards are other SKUs than the one photographed
     for (const id of ['card:7x5-gloss', 'card:6x4-gloss', 'card:6x6-gloss']) expect(reason(id), id).toBe('configuration_not_photographed')
-    expect(resolved.filter(x => !x.r.scene).length).toBe(allProducts().length - 6 - (faSquareFits() ? 4 : 0))
+    expect(resolved.filter(x => !x.r.scene).length).toBe(allProducts().length - 14 - (faSquareFits() ? 4 : 0))
   })
 
   it("never shows a black framed canvas in the photographed brown wood frame, and never routes a finish nobody verified", () => {
@@ -147,7 +149,9 @@ describe('why the Fine Art Print has no approved scene (measured, not guessed)',
   })
   it('premium portrait is 19.3% off 2:3 (opening 0.7951); the orientation refusals carry no numbers because no photograph of that orientation exists', () => {
     expect(resolveScene(product('premium:12x18'), describeReal)).toMatchObject({ reason: 'shape_needs_extension', detail: { sceneId: 'premium-fine-art', openingAspect: 0.7951, productAspect: 0.6667, extension: 0.1926 } })
-    const portraitFineArt = resolveScene(product('fine_art:12x18'), describeReal); expect(portraitFineArt.reason).toBe('orientation_not_photographed'); expect((portraitFineArt as any).detail).toBeUndefined()
+    const canvasPortrait = resolveScene(product('canvas:12x18'), describeReal); expect(canvasPortrait.reason).toBe('orientation_not_photographed'); expect((canvasPortrait as any).detail).toBeUndefined()
+    // the Fine Art Print 12x18 (2:3) is shown by the portrait photograph, whose opening is 0.6681: 0.22% off, a few pixels of mirror, never a crop
+    expect(resolveScene(product('fine_art:12x18'), describeReal)).toMatchObject({ scene: { sceneId: 'fine-art-portrait', fit: 'resample', extension: 0.002176 }, reason: null })
   })
   it('the opening geometry the manifest declares is the geometry of the mask itself (the measurement is not stale)', async () => {
     const fs = await import('node:fs'), path = await import('node:path'), dir = 'public/gift-wizard/mockup-scenes/fine-art-square'
