@@ -117,6 +117,14 @@ export class GiftBackend {
             throw new GiftApiError('invalid_mockup_response', 0);
         return v;
     }
+    async productPreview(id, productId, favoriteId, signal) {
+        const v = await this.request('GET', sessionPath(id) + '/product-preview?productId=' + encodeURIComponent(productId), undefined, signal);
+        if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.productId !== productId || v.favoriteId !== favoriteId || !['ready', 'adaptation_required', 'not_available'].includes(v.status))
+            throw new GiftApiError('invalid_product_preview_response', 0);
+        if (v.status === 'ready' && (v.watermarked !== true || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !/^https:\/\//.test(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['scene', 'calibrated'].includes(v.renderer)))
+            throw new GiftApiError('invalid_product_preview_response', 0);
+        return v;
+    }
     block(reason) { return Promise.reject(new GiftApiError('integration_blocked', 0, { reason })); }
 }
 /** Carries the actual per-line server composition only; never falls back to the selected master. */
