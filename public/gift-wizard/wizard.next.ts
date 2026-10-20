@@ -146,12 +146,13 @@ function configurationPreview(p:Product,o:CatalogOption,artworkReference=false){
  if(!live?.session?.artworkPreviewId)return photo(asset(p.image),p.label,'gift-feature-image')+'<p class="small">Product photograph. Product-specific artwork will be prepared after payment.</p>';
  const owner=live,favoriteId=owner.session!.artworkPreviewId!,productId=p.id+':'+o.size,key=owner.id+':'+favoriteId+':'+productId;
  let entry=productPreviews.get(key);
- if(entry?.value?.status==='ready'&&Date.parse(entry.value.urlExpiresAt)<=Date.now()+30000){productPreviews.delete(key);entry=undefined}
+ if(entry?.value&&['ready','provisional'].includes(entry.value.status)&&'urlExpiresAt' in entry.value&&Date.parse(entry.value.urlExpiresAt)<=Date.now()+30000){productPreviews.delete(key);entry=undefined}
  if(!entry){entry={};productPreviews.set(key,entry);void owner.api.productPreview(owner.id,productId,favoriteId).then(value=>{if(value.sku!==o.sku&&value.status!=='not_available')throw new GiftApiError('invalid_product_preview_response',0);productPreviews.set(key,{value})}).catch(()=>productPreviews.set(key,{failed:true})).finally(()=>{if(live===owner&&owner.session?.artworkPreviewId===favoriteId&&((view==='configuration'&&activeProduct===p.id&&size===o.size)||view==='cart'||view==='checkout'))render()})}
  if(entry.failed)return '<p role="alert">This product preview could not load.</p><button class="secondary" data-product-preview="'+esc(key)+'">Check Again</button>';
  const v=entry.value;
  if(!v)return '<p role="status">Preparing product preview…</p>';
  if(v.status==='ready')return photo(v.url,p.label,'gift-feature-image')+(artworkReference?'':'<p class="small">Product-specific artwork will be prepared after payment.</p>');
+ if(v.status==='provisional')return photo(v.url,p.label+' provisional product preview','gift-feature-image')+'<p class="small">Provisional product preview. The neutral surround is not artwork.</p>'+(artworkReference?'':'<p class="small">'+(v.provisional.finalComposition==='generated'?'After payment, a new composition of the same effect will be generated for this product. You will review it before approval.':v.provisional.finalComposition==='deterministic'?'After payment, your artwork will be extended to fit this product. You will review it before approval.':'Product-specific artwork will be prepared after payment.')+'</p>');
  if(v.status==='adaptation_required')return artworkReference&&favorite()?photo(favorite()!.url,'Selected artwork')+'<p class="small">Selected artwork</p>':'<p role="status">Product-specific artwork will be prepared after payment.</p>';
  return '<p role="status">Not currently available</p>';
 }
@@ -359,6 +360,10 @@ const resumeKey='liten-gift-resume';
 function readResume(){try{return JSON.parse(sessionStorage.getItem(resumeKey)||'null')}catch{return null}}
 
 let compositionRequestPending=false;
+let compositionTimer:ReturnType<typeof setTimeout>|undefined;
+let compositionReadPending=false;
+const compositionStarts=new Set<string>();
+let compositionResume: {resumeNeeded:boolean;state:string}|null=null;
 let restorationComplete=false;
 function rememberView(){
  if(!serverMode||!restorationComplete||!live?.session)return;
@@ -418,14 +423,14 @@ async function retryRestoration(){
    if(hint?.sessionId&&/^[\w-]{1,80}$/.test(hint.sessionId)){
     try{const saved=await api.restore(hint.sessionId,signal);if(saved.sessionId!==hint.sessionId)throw new GiftApiError('session_identity_mismatch',0);live=new LiveGift(api,saved.sessionId);live.accept(saved)}catch(e){if(!(e instanceof GiftApiError&&e.status===404))throw e}
    }
-   if(!live){const latest=await api.restoreLatest(signal);if(!latest.current)return null;live=new LiveGift(api,latest.current.sessionId);const step=latest.resume!.suggestedStep;suggestedView=step==='previews'?'review':step==='order'?'payment':step;}
+   if(!live){const latest=await api.restoreLatest(signal);if(!latest.current)return null;live=new LiveGift(api,latest.current.sessionId);compositionResume=latest.resume?.compositions||null;const step=latest.resume!.suggestedStep;suggestedView=step==='previews'?'review':step==='order'?'payment':step;}
   }
   await live.restore(signal);return live.session!;
  });
  const state=restoration.state;
  if(state.status==='ready'){
   if(!state.value){live=null;session=newSession();sourceURL='';generationBatch=null;restorationComplete=false;view='photo';await syncCatalog();render();return}
-  try{await syncCatalog();applyServer(state.value);await loadMockups();paymentState=purchased(state.value)?'payment-verified':'pending';view=state.value.order.state==='none'?(session.batches.length?'review':'effects'):'payment';if(suggestedView)view=suggestedView;restoreView(state.value);render();void resumeStalledBatches()}
+  try{await syncCatalog();applyServer(state.value);await loadMockups();paymentState=purchased(state.value)?'payment-verified':'pending';view=state.value.order.state==='none'?(session.batches.length?'review':'effects'):'payment';if(suggestedView)view=suggestedView;restoreView(state.value);render();void resumeStalledBatches();await resumeCompositionWork(true)}
   catch(e){live?.clear();paymentState='restore-failed';render();error(e instanceof Error?e.message:'request_failed')}
  }else{restorationComplete=false;paymentState=state.status==='failed'&&state.httpStatus===401?'auth':state.status==='failed'&&state.code==='payment_pending'?'pending':'restore-failed';render();if(state.status==='failed')error(state.code)}
 
@@ -508,16 +513,47 @@ async function serverAction(action:()=>Promise<SessionView>,next:View){
  catch(e){failure=e instanceof Error?e.message:'request_failed';if(e instanceof GiftApiError&&e.status===401){live.clear();paymentState='auth';view='payment'}}
  finally{busy=false;render();if(failure)error(failure)}
 }
-async function composePurchasedArtwork(){
- compositionRequestPending=true;view='compositions';render();
- try{return await live!.api.compose(live!.id)}finally{compositionRequestPending=false}
+function compositionStartKey(){const s=live?.session;return s?'liten-gift-compose:'+s.sessionId+':'+s.artworkPreviewId+':'+s.compositions.map(c=>c.lineId+':'+c.state+':'+c.attempts).sort().join('|'):''}
+function scheduleCompositionRead(){
+ clearTimeout(compositionTimer);
+ if(live?.session?.order.state==='awaiting_artwork'&&(compositionRequestPending||live.session.compositions.some(c=>c.state==='preparing')))compositionTimer=setTimeout(()=>void readCompositionState(),3000);
+}
+async function readCompositionState(resume=true){
+ const owner=live;if(!owner||compositionReadPending)return;compositionReadPending=true;
+ try{const s=await owner.api.restore(owner.id);if(live!==owner)return;owner.accept(s);applyServer(s);await loadMockups();render();if(!compositionRequestPending)await resumeCompositionWork(true)}
+ catch(e){error(e instanceof Error?e.message:'request_failed')}
+ finally{compositionReadPending=false;scheduleCompositionRead()}
+}
+async function resumeCompositionWork(openReview=false){
+ const s=live?.session;if(!s||s.order.state!=='awaiting_artwork'||!s.artworkPreviewId||!s.compositions.length||layoutReview)return;
+ if(!s.compositions.every(c=>c.state))return;
+ if(openReview){view='compositions';render()}
+ if(s.compositions.some(c=>c.state==='preparing')||compositionRequestPending){scheduleCompositionRead();return}
+ if(s.compositions.some(c=>c.state==='failed'))return;
+ const unfinished=s.compositions.some(c=>c.state==='not_started'||c.state==='stalled');
+ const needed=unfinished&&(compositionResume?.resumeNeeded||unfinished);compositionResume=null;
+ if(!needed)return;await serverAction(()=>composePurchasedArtwork(),'compositions');
+}
+async function composePurchasedArtwork(explicitRetry=false){
+ if(compositionRequestPending)return live!.session!;
+ const s=live!.session!;if(s.order.state!=='awaiting_artwork')throw new GiftApiError('order_payment_required',409);
+ if(s.compositions.some(c=>c.state==='preparing')){scheduleCompositionRead();return s}
+ const key=compositionStartKey();
+ if(!explicitRetry){if(compositionStarts.has(key))return s;try{if(sessionStorage.getItem(key))return s}catch{}}
+ compositionStarts.add(key);try{sessionStorage.setItem(key,'requested')}catch{}
+ compositionRequestPending=true;view='compositions';render();scheduleCompositionRead();
+ try{return await live!.api.compose(live!.id)}finally{compositionRequestPending=false;scheduleCompositionRead()}
 }
 async function loadMockups(){
  if(!live?.session||!purchased(live.session))return;
- await Promise.all(live.session.compositions.filter(c=>c.compositionId&&c.sourceArtworkId===live.session!.artworkPreviewId).map(c=>live.mockup(c.lineId).catch(()=>null)));
+ await Promise.all(live.session.compositions.filter(c=>(!c.state||['ready','approved'].includes(c.state))&&c.compositionId&&c.sourceArtworkId===live.session!.artworkPreviewId).map(c=>live.mockup(c.lineId).catch(()=>null)));
 }
 function serverMockup(l:GiftLine){
- if(compositionRequestPending)return '<section role="status"><h2>Preparing Your Masterpiece</h2>'+ (favorite()?photo(favorite()!.url,'Selected artwork'):'')+'</section>';
+ const c=live?.session?.compositions.find(c=>c.lineId===l.id);
+ if(c?.state==='failed')return '<section role="alert"><h2>Didn’t finish</h2></section>'+secondary('retry-preparation-'+l.id,c.retryable?'Try again':'Concierge');
+ if(c?.state==='not_started'&&!compositionRequestPending)return '<section role="status"><h2>Product artwork review</h2></section>'+secondary('retry-preparation-'+l.id,'Try again');
+ if(c?.state==='stalled')return '<section role="status"><h2>Preparing Your Masterpiece</h2></section>'+secondary('check-composition-'+l.id,'Check Again');
+ if(c?.state==='preparing'||(compositionRequestPending&&!c?.compositionId))return '<section role="status"><h2>Preparing Your Masterpiece</h2>'+ (favorite()?photo(favorite()!.url,'Selected artwork'):'')+'</section>';
  if(live?.compositionIssues.has(l.id))return "<section role=\"status\" data-composition-state=\"repair-required\"><h3>We're preparing your artwork for this gift</h3><p>Your artwork needs a small adjustment to fit this product correctly. We're taking care of it.</p><p>Your selected artwork and purchase are safe. No action is needed right now.</p></section>"+secondary('check-composition-'+l.id,'Check Again');
  const m=live?.mockups.get(l.id);
  return m&&Date.parse(m.urlExpiresAt)>Date.now()?photo(m.url,giftOption(l,products).product.label):'<p role="status">This product preview could not load.</p>'+secondary('refresh-mockups','Try again');
@@ -586,21 +622,22 @@ function adaptServerView(){
   if(incomplete){$('right').insertAdjacentHTML('beforeend',secondary('retry-batch','Try again'));$('retry-batch').onclick=()=>void serverAction(async()=>{const r=await live!.api.retryBatch(live!.id,incomplete.batchIndex);return r.session},'review')}
  }
  if(view==='compositions'){
-  document.querySelectorAll<HTMLButtonElement>('[id^="check-composition-"]').forEach(b=>{b.disabled=busy;b.onclick=()=>void serverAction(()=>live!.api.restore(live!.id),'compositions')});
+  document.querySelectorAll<HTMLButtonElement>('[id^="retry-preparation-"]').forEach(b=>{b.disabled=busy;b.onclick=()=>{const c=s.compositions.find(c=>c.lineId===b.id.slice('retry-preparation-'.length));if(c?.state==='not_started'||(c?.state==='failed'&&c.retryable))void serverAction(()=>composePurchasedArtwork(true),'compositions');else location.assign('/help')}});
+  document.querySelectorAll<HTMLButtonElement>('[id^="check-composition-"]').forEach(b=>{b.disabled=busy;b.onclick=()=>void readCompositionState(false)});
   if(orderReviewExample){
    $('right').querySelectorAll('p.small').forEach(el=>el.textContent='');
-   $('screen').querySelectorAll('.cart-line').forEach((el,i)=>{const c=s.compositions.find(c=>c.lineId===session.lines[i]?.id);const note=el.querySelector('.small');if(note)note.textContent=live!.compositionIssues.has(session.lines[i]?.id)?'Awaiting server verification':c?.status||''});
+   $('screen').querySelectorAll('.cart-line').forEach((el,i)=>{const c=s.compositions.find(c=>c.lineId===session.lines[i]?.id);const note=el.querySelector('.small');if(note)note.textContent=live!.compositionIssues.has(session.lines[i]?.id)?'Awaiting server verification':c?.state||c?.status||''});
   }
   if($('refresh-mockups'))$('refresh-mockups').onclick=()=>void serverAction(()=>live!.compositionIssues.size||s.compositions.some(c=>c.lineId===session.lines[productReviewIndex]?.id&&c.compositionId)?live!.api.restore(live!.id):composePurchasedArtwork(),'compositions');
   if(!orderReviewExample&&session.lines.length){
    const line=session.lines[productReviewIndex],c=s.compositions.find(c=>c.lineId===line?.id);
    const label=$('right').querySelector('h3');
-   if(label?.nextElementSibling)label.nextElementSibling.textContent=live!.compositionIssues.has(line.id)?'Awaiting server verification':c?.status||'';
+   if(label?.nextElementSibling)label.nextElementSibling.textContent=live!.compositionIssues.has(line.id)?'Awaiting server verification':c?.state||c?.status||'';
    const correction=$('right').querySelector('button') as HTMLButtonElement|null;
-   if(correction){correction.disabled=live!.compositionIssues.has(line.id)||!c?.compositionId||!c.correctionsRemaining||s.order.state!=='awaiting_artwork';correction.onclick=()=>void serverAction(()=>live!.api.correct(live!.id,line.id),'compositions')}
+   if(correction){correction.disabled=busy||live!.compositionIssues.has(line.id)||(!!c?.state&&!['ready','approved'].includes(c.state))||!c?.compositionId||!c.correctionsRemaining||s.order.state!=='awaiting_artwork';correction.onclick=()=>void serverAction(()=>live!.api.correct(live!.id,line.id),'compositions')}
    const m=live!.mockups.get(line.id);
    if(m){const img=$('screen').querySelector('img');if(img)img.addEventListener('error',()=>{live!.mockups.delete(line.id);render()},{once:true})}
-   primaryLive(()=>void serverAction(()=>live!.api.approveComposition(live!.id,c!.compositionId!),'compositions'),live!.compositionIssues.has(line.id)||!c?.compositionId||c.status!=='ready'||!m||!(Date.parse(m.urlExpiresAt)>Date.now())||s.order.state!=='awaiting_artwork');
+   primaryLive(()=>void serverAction(()=>live!.api.approveComposition(live!.id,c!.compositionId!),'compositions'),live!.compositionIssues.has(line.id)||!c?.compositionId||c.status!=='ready'||(c.state!==undefined&&c.state!=='ready')||!m||!(Date.parse(m.urlExpiresAt)>Date.now())||s.order.state!=='awaiting_artwork');
   }
  }
 }
