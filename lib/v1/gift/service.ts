@@ -12,6 +12,8 @@ import { allProducts, catalogVersion } from '../print/catalog'
 import { planFor, type PlanContext } from './composition-plan'
 import { draftOrderLines, resolveFrozenProduct } from './frozen'
 import { decodeSource } from '../foyer/foyer-source'
+import { approvedSceneFor, requireApprovedScene } from './presentation'
+import { realSceneRenderer } from './mockup-real'
 import { COMPOSITION_MAX_ATTEMPTS, adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
 import { StoreError, byNewest, correctionUsed, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
@@ -151,6 +153,9 @@ export async function getSessionView(deps: GiftDeps, userId: string, sessionId: 
   return buildView(deps, await owned(deps, userId, sessionId))
 }
 
+/** The scene renderer's description function: the injected renderer's, else the real adapter's (the same manifests). */
+const sceneDescriber = (deps: GiftDeps) => (id: string) => (deps.mockup?.scenes ?? realSceneRenderer).describe(id)
+
 /** Replaces the product selection. Only launch products are accepted; geometry comes from the canonical catalog. */
 export async function setLines(deps: GiftDeps, userId: string, sessionId: string, lines: unknown): Promise<SessionView> {
   const rec = await owned(deps, userId, sessionId)
@@ -164,6 +169,7 @@ export async function setLines(deps: GiftDeps, userId: string, sessionId: string
     seen.add(l.lineId)
     const p = catalog.get(l.productId)
     if (!p || p.status !== 'launch') throw new GiftError('product_not_available')
+    if (requireApprovedScene() && !approvedSceneFor(p, sceneDescriber(deps))) throw new GiftError('product_not_available')       // no approved scene: it could not be shown or approved after payment (presentation.ts)
     if (!Number.isInteger(l.copies) || l.copies < 1 || l.copies > MAX_COPIES) throw new GiftError('invalid_quantity')
     out.push({ lineId: l.lineId, productId: p.productId, size: p.size, copies: l.copies })   // size is the catalog's, never the client's
   }

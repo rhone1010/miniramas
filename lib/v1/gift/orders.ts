@@ -15,6 +15,8 @@ import { createBrandedSession } from '@/lib/store/stripe-branding'
 import { allProducts, catalogVersion } from '../print/catalog'
 import { compositionFitsProduct, freezeLine, type CompositionPin } from './frozen'
 import { planFor } from './composition-plan'
+import { approvedSceneFor, requireApprovedScene } from './presentation'
+import { realSceneRenderer } from './mockup-real'
 import type { PrintOrderItem, ShippingAddress } from '../print/db'
 import type { QuoteRequest, QuoteResponse } from '../print/prodigi-client'
 import type { PrintFinish, PrintSize } from '../print/sku-map'
@@ -110,6 +112,7 @@ export async function createGiftCheckout(
   const lines = rec.lines.map(l => {
     const p = catalog.get(l.productId)
     if (!p || p.status !== 'launch' || p.retailCents === null) throw new GiftError('product_not_available')
+    if (requireApprovedScene() && !approvedSceneFor(p, id => (deps.gift.mockup?.scenes ?? realSceneRenderer).describe(id))) throw new GiftError('product_not_available')       // never take payment for a gift that cannot be shown and approved
     // Mixed shapes are normal (a 12 x 18 print with an 8 x 8 canvas). A product is refused only when NO bounded way exists to make
     // its shape: neither the artwork's own shape nor any aspect ratio the series can generate gets within the 20% extension limit.
     if (!planFor(p, planCtx)) throw new GiftError('product_not_available_for_artwork')

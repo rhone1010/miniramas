@@ -483,3 +483,32 @@ describe('compositions reviewed before payment (the approved journey)', () => {
     expect(await remaining('b')).toBe(1); await correctLine(r.gift, U1, sid, 'b'); expect(await remaining('b')).toBe(0)       // b's one correction is still available after the repair
   })
 })
+
+describe('GIFT_REQUIRE_APPROVED_SCENE: never take payment for a gift that cannot be shown and approved', () => {
+  const withFlag = async (fn: () => Promise<void>) => { process.env.GIFT_REQUIRE_APPROVED_SCENE = '1'; try { await fn() } finally { delete process.env.GIFT_REQUIRE_APPROVED_SCENE } }
+  it('off by default: checkout is unchanged for a configuration with no scene', async () => {
+    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }]); expect((await checkout(r, sid)).totals.itemsCents).toBeGreaterThan(0)
+  })
+  it('on: a gift with no approved scene is refused at checkout before any quote or Stripe call, and a scene-backed one is not', async () => {
+    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 1 }])      // added while the flag was off
+    await withFlag(async () => {
+      await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'product_not_available', status: 409 })
+      expect(r.quote).not.toHaveBeenCalled(); expect(r.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(r.store.orders.size).toBe(0)
+    })
+    const ok = rig(); const sid2 = await sessionWithLines(ok, [{ lineId: 'b', productId: 'canvas:12x12', copies: 1 }])
+    await withFlag(async () => { expect((await checkout(ok, sid2)).totals.itemsCents).toBe(6900) })
+  })
+  it('on: it is refused earlier still, when the gift is added to the cart, and the saved cart is unchanged', async () => {
+    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'b', productId: 'canvas:12x12', copies: 1 }])
+    await withFlag(async () => {
+      await expect(setLines(r.gift, U1, sid, [{ lineId: 'b', productId: 'canvas:12x12', copies: 1 }, { lineId: 'c', productId: 'framed:16x24', copies: 1 }])).rejects.toMatchObject({ code: 'product_not_available' })
+      expect((await getSessionView(r.gift, U1, sid)).lines.map(l => l.lineId)).toEqual(['b'])
+      for (const id of ['canvas:8x8', 'canvas:20x20']) await setLines(r.gift, U1, sid, [{ lineId: 'b', productId: id, copies: 1 }])
+    })
+  })
+  it('the coverage is exactly the square gallery canvases today (the owner decides what to do about the rest)', async () => {
+    const { launchCoverage } = await import('./presentation'); const { realSceneRenderer } = await import('./mockup-real')
+    const cov = launchCoverage(id => realSceneRenderer.describe(id))
+    expect(cov.filter(c => c.scene).map(c => c.productId)).toEqual(['canvas:8x8', 'canvas:12x12', 'canvas:16x16', 'canvas:20x20']); expect(cov.filter(c => !c.scene).length).toBe(cov.length - 4)
+  })
+})
