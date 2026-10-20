@@ -33,6 +33,11 @@
   },
   "assets": [
     {
+      "file": "framed canvas.png",
+      "sha256": "ae6279e69e643e389c6e1f2ae06f581a40b0cfebd6d4de9a5018c9c421d45885",
+      "bytes": 2122975
+    },
+    {
       "file": "framed canvas - art bw.png",
       "sha256": "d98752ef5dc72f21c04530abeae34aef0b1a1f092c53d10555017c769d45240d",
       "bytes": 36490
@@ -44,17 +49,14 @@
     },
     {
       "file": "framed canvas - frame bw.png",
-      "sha256": "c72c30005cf20edb46ddad2b8cdcc3fa7649aa293b48ded52dd3fa2ae6447a63",
-      "bytes": 36506
-    },
-    {
-      "file": "framed canvas.png",
-      "sha256": "ae6279e69e643e389c6e1f2ae06f581a40b0cfebd6d4de9a5018c9c421d45885",
-      "bytes": 2122975
+      "sha256": "ebc04908d7df412f543b3257d13b79da0d690b7cd23b4f5f9927479174e11c9b",
+      "bytes": 36543
     }
   ],
   "status": "clean-replacement-review",
   "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
   "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
-  "productionPrintFile": false
+  "productionPrintFile": false,
+  "backgroundMask": "framed canvas - background bw.png",
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
 }

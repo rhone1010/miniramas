@@ -17,7 +17,7 @@ export function assertSession(v:unknown):asserts v is SessionView {
  if(!['none','checkout_open','awaiting_artwork','approved','with_lab','refund_requested','refunded','cancelled','needs_attention'].includes(v.order.state))throw new GiftApiError('invalid_order_state',0);
 }
 // Only the replacement masters/masks from litenco product image alphas 2-assets.zip.
-const approvedSceneFamilies:Record<string,string>={'fine-art-square':'fine_art','premium-fine-art':'premium','classic-framed':'framed','matted-frame-square':'matted','gallery-canvas-square':'canvas','gallery-canvas-landscape':'canvas','matted-frame-landscape':'canvas','framed-canvas':'framed_canvas','ceramic-mug':'mug','greeting-card':'card'};
+const approvedSceneFamilies:Record<string,string>={'fine-art-portrait':'fine_art','fine-art-landscape':'fine_art','premium-square':'premium','premium-landscape':'premium','classic-framed-square':'framed','classic-framed-portrait':'framed','gallery-canvas-portrait':'canvas','framed-canvas-portrait':'framed_canvas','matted-frame-portrait':'matted','fine-art-square':'fine_art','premium-fine-art':'premium','classic-framed':'framed','matted-frame-square':'matted','gallery-canvas-square':'canvas','gallery-canvas-landscape':'canvas','matted-frame-landscape':'canvas','framed-canvas':'framed_canvas','ceramic-mug':'mug','greeting-card':'card'};
 export function isApprovedScene(productId:string,sceneId:unknown){return typeof sceneId==='string'&&approvedSceneFamilies[sceneId]===productId.split(':')[0]}
 export const integrationBlocks=Object.freeze(['sandbox_final_release','mug_card_profiles'] as const);
 export class GiftBackend {

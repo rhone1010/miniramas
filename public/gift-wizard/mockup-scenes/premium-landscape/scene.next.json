@@ -1,0 +1,57 @@
+{
+  "id": "premium-landscape",
+  "family": "premium",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "premium fine art print landscape.png",
+  "artworkMask": "premium fine art print landscape art.png",
+  "backgroundMask": "premium fine art print landscape background.png",
+  "cornersPixels": [
+    [
+      123,
+      272
+    ],
+    [
+      1125,
+      272
+    ],
+    [
+      1125,
+      939
+    ],
+    [
+      123,
+      939
+    ]
+  ],
+  "maskBounds": {
+    "x0": 123,
+    "y0": 272,
+    "x1": 1125,
+    "y1": 939
+  },
+  "assets": [
+    {
+      "file": "premium fine art print landscape.png",
+      "sha256": "fd7a228a104228cabf81da008948f688ced670c706b9a73fa506208e7f86f064",
+      "bytes": 1417527
+    },
+    {
+      "file": "premium fine art print landscape art.png",
+      "sha256": "9c6736e2520184777ea56bb721f698a1628f0355bf5c1990ab693a50fe2981f0",
+      "bytes": 36490
+    },
+    {
+      "file": "premium fine art print landscape background.png",
+      "sha256": "b6d20ff9030338465ce1e86a0190f03c4d1b993e1a1492d9af84ef76b4d86705",
+      "bytes": 36492
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false,
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+}

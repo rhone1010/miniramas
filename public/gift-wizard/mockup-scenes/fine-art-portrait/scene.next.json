@@ -1,0 +1,57 @@
+{
+  "id": "fine-art-portrait",
+  "family": "fine_art",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "fine art print portrait.png",
+  "artworkMask": "fine art print portrait art bw.png",
+  "backgroundMask": "fine art print portrait background bw.png",
+  "cornersPixels": [
+    [
+      317,
+      165
+    ],
+    [
+      931,
+      165
+    ],
+    [
+      931,
+      1084
+    ],
+    [
+      317,
+      1084
+    ]
+  ],
+  "maskBounds": {
+    "x0": 317,
+    "y0": 165,
+    "x1": 931,
+    "y1": 1084
+  },
+  "assets": [
+    {
+      "file": "fine art print portrait.png",
+      "sha256": "5a1d83073f3b5629780973c7544a0118c16812d89375a0b7b5ad06bce0e8f1f5",
+      "bytes": 1779406
+    },
+    {
+      "file": "fine art print portrait art bw.png",
+      "sha256": "6e889e1b363ee70b214b913b32bb55fbb1875ec260f2c5306c460212d2a2912d",
+      "bytes": 42014
+    },
+    {
+      "file": "fine art print portrait background bw.png",
+      "sha256": "4dd64cc0b7ec957ce999b82c062585b4bef72c46a100804e7ced5379a478fde0",
+      "bytes": 42015
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false,
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+}

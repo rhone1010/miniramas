@@ -33,6 +33,11 @@
   },
   "assets": [
     {
+      "file": "wrapped canvas square.png",
+      "sha256": "6a52f68f93582cce3e48d1a7dc20a73c5ff68590490297bd9c6cdc21e43069bd",
+      "bytes": 2116739
+    },
+    {
       "file": "wrapped canvas square - art bw.png",
       "sha256": "3f7e924ba5318d4dc25a6e3b1590f00518229ec7165a32dcd672a28a785cbe97",
       "bytes": 36486
@@ -41,15 +46,12 @@
       "file": "wrapped canvas square - background bw.png",
       "sha256": "1e0965573da655b579595a2a4e19517987c2b22e1f9aed046db7921b5bd35631",
       "bytes": 36491
-    },
-    {
-      "file": "wrapped canvas square.png",
-      "sha256": "6a52f68f93582cce3e48d1a7dc20a73c5ff68590490297bd9c6cdc21e43069bd",
-      "bytes": 2116739
     }
   ],
   "status": "clean-replacement-review",
   "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
   "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
-  "productionPrintFile": false
+  "productionPrintFile": false,
+  "backgroundMask": "wrapped canvas square - background bw.png",
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
 }

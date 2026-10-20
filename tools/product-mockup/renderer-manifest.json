@@ -27,8 +27,8 @@
   "files": [
     {
       "path": "public/gift-wizard/catalog.next.json",
-      "bytes": 34830,
-      "sha256": "1d07a1af786960d0a5c77ee5b51ff8e93f6249cc22eb0141161f5f33e965d6af"
+      "bytes": 35042,
+      "sha256": "5104149dd21f12103dcbfb5bf5a7e7308cafb20f71d8c6c94397b17ff7861c49"
     },
     {
       "path": "public/gift-wizard/mockup-templates/classic-framed/artwork-mask.png",

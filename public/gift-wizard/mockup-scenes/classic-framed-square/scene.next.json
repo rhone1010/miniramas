@@ -1,0 +1,62 @@
+{
+  "id": "classic-framed-square",
+  "family": "framed",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "classic framed print square.png",
+  "artworkMask": "classic framed print square art bw.png",
+  "backgroundMask": "classic framed print square background bw.png",
+  "cornersPixels": [
+    [
+      294,
+      178
+    ],
+    [
+      959,
+      178
+    ],
+    [
+      959,
+      840
+    ],
+    [
+      294,
+      840
+    ]
+  ],
+  "maskBounds": {
+    "x0": 294,
+    "y0": 178,
+    "x1": 959,
+    "y1": 840
+  },
+  "assets": [
+    {
+      "file": "classic framed print square.png",
+      "sha256": "0e2bd8adb95693ea90b5445bbbfd891312f079c1ef3c28cc264f6b316a80e90d",
+      "bytes": 1572356
+    },
+    {
+      "file": "classic framed print square art bw.png",
+      "sha256": "2f6f72634b0840a7dc782482e9e15b1b195a277d5a6a76bb14f2047237a13cb3",
+      "bytes": 36479
+    },
+    {
+      "file": "classic framed print square background bw.png",
+      "sha256": "fcbc6b6fc8fb4fa99ce1352b9d69ca191a7c000683395e8f4c8ff9098e965df1",
+      "bytes": 36483
+    },
+    {
+      "file": "classic framed print square frame bw.png",
+      "sha256": "24650db33f3f790ad088b3b6933e463d56bd6f00e2c7241ccc11906226f38bf7",
+      "bytes": 36504
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false,
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+}

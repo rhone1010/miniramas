@@ -1,0 +1,67 @@
+{
+  "id": "matted-frame-portrait",
+  "family": "matted",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "matted frame portrait.png",
+  "artworkMask": "matted frame portrait art bw.png",
+  "backgroundMask": "matted frame portrait background.png",
+  "cornersPixels": [
+    [
+      385,
+      224
+    ],
+    [
+      866,
+      224
+    ],
+    [
+      866,
+      918
+    ],
+    [
+      385,
+      918
+    ]
+  ],
+  "maskBounds": {
+    "x0": 385,
+    "y0": 224,
+    "x1": 866,
+    "y1": 918
+  },
+  "assets": [
+    {
+      "file": "matted frame portrait.png",
+      "sha256": "0de7676cd8209b0fb6e108347938c946246001687320582984c45ab252834d0d",
+      "bytes": 1141773
+    },
+    {
+      "file": "matted frame portrait art bw.png",
+      "sha256": "b681c904720db573ad2c94eba77fb6b6dbc8a8b0d887be4d2c2e3d431f2e21ab",
+      "bytes": 36489
+    },
+    {
+      "file": "matted frame portrait background.png",
+      "sha256": "8c266fa7140975ca74101ed184ca1dc5a670a67e098ec3d640ec44e4c6f648e4",
+      "bytes": 36496
+    },
+    {
+      "file": "matted frame portrait frame bw.png",
+      "sha256": "e85501bb6872598b1844d6649b8ee692dfdc2b7f70c1f1f23f376828b6bf422d",
+      "bytes": 36521
+    },
+    {
+      "file": "matted frame portrait matte bw.png",
+      "sha256": "a4fc3c74dafdac409cd07dcef8c543b77f5a87045b471148dd5c29f047780ec6",
+      "bytes": 36498
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false,
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+}

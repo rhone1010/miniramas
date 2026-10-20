@@ -83,29 +83,45 @@
       "sceneArtwork": {
         "minimalPadding": true,
         "previousPreparation": {
-          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-scene-composed.png",
-          "sha256": "c049a9796b2d23dfd49585759fb70d29d1f8f3ace514d66882005affea28f058",
+          "minimalPadding": true,
+          "previousPreparation": {
+            "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-scene-composed.png",
+            "sha256": "c049a9796b2d23dfd49585759fb70d29d1f8f3ace514d66882005affea28f058",
+            "dimensions": [
+              2202,
+              2358
+            ],
+            "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-generated.png",
+            "sourceHash": "1c118338f4eb7047cdad5fac5fab5f0b09148a89508a7c32f1c5e467501b5a97",
+            "fit": "extend",
+            "outpainted": true,
+            "sceneId": "fine-art-square",
+            "croppedPixels": 0
+          },
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-scene-minimal.png",
+          "sha256": "67db1a25b60267397926d530762e415f83e8ad20fe5eb08becb42185e4a9e8a3",
           "dimensions": [
-            2202,
-            2358
+            2048,
+            2194
           ],
           "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-generated.png",
           "sourceHash": "1c118338f4eb7047cdad5fac5fab5f0b09148a89508a7c32f1c5e467501b5a97",
           "fit": "extend",
           "outpainted": true,
           "sceneId": "fine-art-square",
-          "croppedPixels": 0
+          "croppedPixels": 0,
+          "normalizedSourceHash": "77dacd0aca026c8add74d99015f8717a172294685d48428eb84f4914403d79d3"
         },
-        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-scene-minimal.png",
-        "sha256": "67db1a25b60267397926d530762e415f83e8ad20fe5eb08becb42185e4a9e8a3",
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\fine-art-square-2026-10-20\\pets-fine_art-square.png",
+        "sha256": "1c118338f4eb7047cdad5fac5fab5f0b09148a89508a7c32f1c5e467501b5a97",
         "dimensions": [
           2048,
-          2194
+          2048
         ],
         "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\pets-fine_art-generated.png",
         "sourceHash": "1c118338f4eb7047cdad5fac5fab5f0b09148a89508a7c32f1c5e467501b5a97",
-        "fit": "extend",
-        "outpainted": true,
+        "fit": "exact",
+        "outpainted": false,
         "sceneId": "fine-art-square",
         "croppedPixels": 0,
         "normalizedSourceHash": "77dacd0aca026c8add74d99015f8717a172294685d48428eb84f4914403d79d3"
@@ -792,29 +808,45 @@
       "sceneArtwork": {
         "minimalPadding": true,
         "previousPreparation": {
-          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-scene-composed.png",
-          "sha256": "047d45096b4154288b02621551d5c27bd33b4a24ec3cb9a7295ab86348fb1c86",
+          "minimalPadding": true,
+          "previousPreparation": {
+            "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-scene-composed.png",
+            "sha256": "047d45096b4154288b02621551d5c27bd33b4a24ec3cb9a7295ab86348fb1c86",
+            "dimensions": [
+              2202,
+              2358
+            ],
+            "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-generated.png",
+            "sourceHash": "df418cd216d5ce3223f6534211b074b45c3e9d3e29f9dcc8648a6547aab488b8",
+            "fit": "extend",
+            "outpainted": true,
+            "sceneId": "fine-art-square",
+            "croppedPixels": 0
+          },
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-scene-minimal.png",
+          "sha256": "1ece6a5e218bd426780e9ad654e9421db55f969c00265c85d68b217f21b04b1f",
           "dimensions": [
-            2202,
-            2358
+            2048,
+            2194
           ],
           "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-generated.png",
           "sourceHash": "df418cd216d5ce3223f6534211b074b45c3e9d3e29f9dcc8648a6547aab488b8",
           "fit": "extend",
           "outpainted": true,
           "sceneId": "fine-art-square",
-          "croppedPixels": 0
+          "croppedPixels": 0,
+          "normalizedSourceHash": "2eee75acfa095f34fc4c71eb8e26fee7f3b19f0433b827bcac670c019a64a01b"
         },
-        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-scene-minimal.png",
-        "sha256": "1ece6a5e218bd426780e9ad654e9421db55f969c00265c85d68b217f21b04b1f",
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\fine-art-square-2026-10-20\\groups-fine_art-square.png",
+        "sha256": "df418cd216d5ce3223f6534211b074b45c3e9d3e29f9dcc8648a6547aab488b8",
         "dimensions": [
           2048,
-          2194
+          2048
         ],
         "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\groups-fine_art-generated.png",
         "sourceHash": "df418cd216d5ce3223f6534211b074b45c3e9d3e29f9dcc8648a6547aab488b8",
-        "fit": "extend",
-        "outpainted": true,
+        "fit": "exact",
+        "outpainted": false,
         "sceneId": "fine-art-square",
         "croppedPixels": 0,
         "normalizedSourceHash": "2eee75acfa095f34fc4c71eb8e26fee7f3b19f0433b827bcac670c019a64a01b"
@@ -1483,29 +1515,45 @@
       "sceneArtwork": {
         "minimalPadding": true,
         "previousPreparation": {
-          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-scene-composed.png",
-          "sha256": "5b3ccd894012ad1681f16c1c72efa10c1f49a7833d8a469b646bd4b07daa1e21",
+          "minimalPadding": true,
+          "previousPreparation": {
+            "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-scene-composed.png",
+            "sha256": "5b3ccd894012ad1681f16c1c72efa10c1f49a7833d8a469b646bd4b07daa1e21",
+            "dimensions": [
+              2202,
+              2358
+            ],
+            "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-generated.png",
+            "sourceHash": "462c5b2f075267095c0f348441fa8df01260eba0cb40b1fc8b0605bc0f0e8548",
+            "fit": "extend",
+            "outpainted": true,
+            "sceneId": "fine-art-square",
+            "croppedPixels": 0
+          },
+          "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-scene-minimal.png",
+          "sha256": "78d3dcafb0238ee095616a603f7e1a9ec94b702538c6249b209df6f5b3576266",
           "dimensions": [
-            2202,
-            2358
+            2048,
+            2194
           ],
           "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-generated.png",
           "sourceHash": "462c5b2f075267095c0f348441fa8df01260eba0cb40b1fc8b0605bc0f0e8548",
           "fit": "extend",
           "outpainted": true,
           "sceneId": "fine-art-square",
-          "croppedPixels": 0
+          "croppedPixels": 0,
+          "normalizedSourceHash": "a92fdf82697ab44e251d9225ea6525b2ca2b37d5f350ef63f6c10fa44148f09a"
         },
-        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-scene-minimal.png",
-        "sha256": "78d3dcafb0238ee095616a603f7e1a9ec94b702538c6249b209df6f5b3576266",
+        "path": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\fine-art-square-2026-10-20\\portraits-fine_art-square.png",
+        "sha256": "462c5b2f075267095c0f348441fa8df01260eba0cb40b1fc8b0605bc0f0e8548",
         "dimensions": [
           2048,
-          2194
+          2048
         ],
         "sourcePath": "E:\\Dev\\_recovery-staging\\frontend-deploy-review\\catalog-samples\\scene-completion-2026-10-19\\portraits-fine_art-generated.png",
         "sourceHash": "462c5b2f075267095c0f348441fa8df01260eba0cb40b1fc8b0605bc0f0e8548",
-        "fit": "extend",
-        "outpainted": true,
+        "fit": "exact",
+        "outpainted": false,
         "sceneId": "fine-art-square",
         "croppedPixels": 0,
         "normalizedSourceHash": "a92fdf82697ab44e251d9225ea6525b2ca2b37d5f350ef63f6c10fa44148f09a"

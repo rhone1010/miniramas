@@ -1,0 +1,62 @@
+{
+  "id": "framed-canvas-portrait",
+  "family": "framed_canvas",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "framed canvas portrait.png",
+  "artworkMask": "framed canvas portrait art bw.png",
+  "backgroundMask": "framed canvas portrait background bw.png",
+  "cornersPixels": [
+    [
+      339,
+      169
+    ],
+    [
+      914,
+      169
+    ],
+    [
+      914,
+      1035
+    ],
+    [
+      339,
+      1035
+    ]
+  ],
+  "maskBounds": {
+    "x0": 339,
+    "y0": 169,
+    "x1": 914,
+    "y1": 1035
+  },
+  "assets": [
+    {
+      "file": "framed canvas portrait.png",
+      "sha256": "edc8d49e4c3607b7f0628b2de79556c9ac6e92b1b656e694e2cfbbf9686876bd",
+      "bytes": 2026073
+    },
+    {
+      "file": "framed canvas portrait art bw.png",
+      "sha256": "8806458ba4a1ec1f8e353ed08b2225bcf1dcbe1068e0131ef25be030c92cd824",
+      "bytes": 36484
+    },
+    {
+      "file": "framed canvas portrait background bw.png",
+      "sha256": "9f85f669de90543ed4b62463febe03841a085745a2de321e30cd9083c4f05a1a",
+      "bytes": 36489
+    },
+    {
+      "file": "framed canvas portrait frame bw.png",
+      "sha256": "418cab72e950aa41c814a9b6207b0eed20abd555cbfd395c42dc5521749e7d27",
+      "bytes": 36513
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false,
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+}

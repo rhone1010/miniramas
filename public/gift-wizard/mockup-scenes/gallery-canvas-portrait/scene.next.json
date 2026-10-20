@@ -1,0 +1,57 @@
+{
+  "id": "gallery-canvas-portrait",
+  "family": "canvas",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "wrapped canvas portrait.png",
+  "artworkMask": "wrapped canvas portrait art.png",
+  "backgroundMask": "wrapped canvas portrait background bw.png",
+  "cornersPixels": [
+    [
+      292,
+      147
+    ],
+    [
+      962,
+      147
+    ],
+    [
+      962,
+      1105
+    ],
+    [
+      292,
+      1105
+    ]
+  ],
+  "maskBounds": {
+    "x0": 292,
+    "y0": 147,
+    "x1": 962,
+    "y1": 1105
+  },
+  "assets": [
+    {
+      "file": "wrapped canvas portrait.png",
+      "sha256": "e028bd203687e50921b2f333a60d96ad7054f1ed0b89ad5c8dead6cb2c522431",
+      "bytes": 1455469
+    },
+    {
+      "file": "wrapped canvas portrait art.png",
+      "sha256": "7cb9ea4329a97820e486b6c912baffc3a72b9b0e8a1eada90d6881ac7d393ad6",
+      "bytes": 36484
+    },
+    {
+      "file": "wrapped canvas portrait background bw.png",
+      "sha256": "bd913674931063bf7f02ab9a699b320ce68f9bb2593e4fe0bfcd8c3c67642afd",
+      "bytes": 36490
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false,
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "classic-framed-portrait",
+  "family": "framed",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "class framed print portrait.png",
+  "artworkMask": "class framed print portrait art bw.png",
+  "backgroundMask": "class framed print portrait background bw.png",
+  "cornersPixels": [
+    [
+      315,
+      146
+    ],
+    [
+      938,
+      146
+    ],
+    [
+      938,
+      1058
+    ],
+    [
+      315,
+      1058
+    ]
+  ],
+  "maskBounds": {
+    "x0": 315,
+    "y0": 146,
+    "x1": 938,
+    "y1": 1058
+  },
+  "assets": [
+    {
+      "file": "class framed print portrait.png",
+      "sha256": "e8223fc20ba79a854418ebb67ee98bf31e5e87f7353c8c9be4944213b6dcd73b",
+      "bytes": 2070189
+    },
+    {
+      "file": "class framed print portrait art bw.png",
+      "sha256": "0fdd651fdd11605e80a39e223edbba89c9961c3a7f865fd93130442df15b3565",
+      "bytes": 36504
+    },
+    {
+      "file": "class framed print portrait background bw.png",
+      "sha256": "25cf01b2b8284d68ecb5707b17725b838ade9447cc27147d108d836a9bfc6de7",
+      "bytes": 36492
+    },
+    {
+      "file": "class framed print portrait frame bw.png",
+      "sha256": "8e94bd34cc19c67c80367624bf6c08c0aaf63d4283a6ae66f1fc63c94bd4639d",
+      "bytes": 36515
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false,
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+}

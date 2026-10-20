@@ -5,8 +5,8 @@
     1254,
     1254
   ],
-  "sourceImage": "Classic Framed Print.png",
-  "artworkMask": "Classic Framed Print - art bw.png",
+  "sourceImage": "Classic Framed Print  landscape.png",
+  "artworkMask": "Classic Framed Print landscape - art bw.png",
   "cornersPixels": [
     [
       127,
@@ -33,28 +33,30 @@
   },
   "assets": [
     {
-      "file": "Classic Framed Print - art bw.png",
+      "file": "Classic Framed Print  landscape.png",
+      "sha256": "c5785bc6ab5407e2bc552fb5cd3a4f882dac1593bbf0ad7db7735747d00fd7e6",
+      "bytes": 1911911
+    },
+    {
+      "file": "Classic Framed Print landscape - art bw.png",
       "sha256": "3dfe055a0448c0818d59da5f1b10afccb04672d24f4bd0b7de760bb51d874455",
       "bytes": 36479
     },
     {
-      "file": "Classic Framed Print - background bw.png",
+      "file": "Classic Framed Print  landscape- background bw.png",
       "sha256": "8a6a0962be187ca5285684f231747bb3667bda0bf11468d6291c70736089b6b6",
       "bytes": 36484
     },
     {
-      "file": "Classic Framed Print - frame bw.png",
+      "file": "Classic Framed Print landscape - frame bw.png",
       "sha256": "f664512759830bf34339872913c135e01e519eb864cc0bf81e9f343720fe0b32",
       "bytes": 36495
-    },
-    {
-      "file": "Classic Framed Print.png",
-      "sha256": "c5785bc6ab5407e2bc552fb5cd3a4f882dac1593bbf0ad7db7735747d00fd7e6",
-      "bytes": 1911911
     }
   ],
   "status": "clean-replacement-review",
   "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
   "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
-  "productionPrintFile": false
+  "productionPrintFile": false,
+  "backgroundMask": "Classic Framed Print  landscape- background bw.png",
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
 }

@@ -1,0 +1,57 @@
+{
+  "id": "premium-square",
+  "family": "premium",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "sourceImage": "premium fine art print square.png",
+  "artworkMask": "premium fine art print square art bw.png",
+  "backgroundMask": "premium fine art print square background bw.png",
+  "cornersPixels": [
+    [
+      168,
+      155
+    ],
+    [
+      1084,
+      155
+    ],
+    [
+      1084,
+      1085
+    ],
+    [
+      168,
+      1085
+    ]
+  ],
+  "maskBounds": {
+    "x0": 168,
+    "y0": 155,
+    "x1": 1084,
+    "y1": 1085
+  },
+  "assets": [
+    {
+      "file": "premium fine art print square.png",
+      "sha256": "a2b998a15f0ed5fa2ac055fe177c5f5b37624e3be3888ab05da3fa7e13022a53",
+      "bytes": 1792532
+    },
+    {
+      "file": "premium fine art print square art bw.png",
+      "sha256": "e4eef73e3b8777b915b9e17dbb0e0031dad0916228c57e24926bf6208b8fedbb",
+      "bytes": 36485
+    },
+    {
+      "file": "premium fine art print square background bw.png",
+      "sha256": "1777ff2ba1b8c4a5ea79d58d9483a14e9944ea3fc005da0fbb2bfb82b7d678ce",
+      "bytes": 36492
+    }
+  ],
+  "status": "clean-replacement-review",
+  "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
+  "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
+  "productionPrintFile": false,
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+}

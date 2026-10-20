@@ -9,47 +9,49 @@
   "artworkMask": "wrapped canvas landscape - artwork bw.png",
   "cornersPixels": [
     [
-      139,
-      180
+      140,
+      235
     ],
     [
       1101,
-      180
+      235
     ],
     [
       1101,
-      913
+      869
     ],
     [
-      139,
-      913
+      140,
+      869
     ]
   ],
   "maskBounds": {
-    "x0": 139,
-    "y0": 180,
+    "x0": 140,
+    "y0": 235,
     "x1": 1101,
-    "y1": 913
+    "y1": 869
   },
   "assets": [
     {
+      "file": "wrapped canvas landscape.png",
+      "sha256": "44ac825dd3386e9a235e4e3e0716a50f58031179a37bf372b31c1adce97f70ef",
+      "bytes": 2045514
+    },
+    {
       "file": "wrapped canvas landscape - artwork bw.png",
-      "sha256": "abce16a92bea1d834a9ea8c8fe0a6936a9c0dd2bd5908b1187672c291e91c8df",
-      "bytes": 38100
+      "sha256": "d42ff1531d551a2558abf423432f7f71cde020cd5c9a3fb3a66a6900cfaa60d7",
+      "bytes": 36490
     },
     {
       "file": "wrapped canvas landscape- background bw.png",
-      "sha256": "5ac180784f6733bb1a83caf3e51be95cfc5411314dabb3d498da086f6690c386",
-      "bytes": 38103
-    },
-    {
-      "file": "wrapped canvas landscape.png",
-      "sha256": "a3ce4ec76b22c0c290975d0a3dceee801cc79576ec21afb44e6ea36c3139ce21",
-      "bytes": 2112081
+      "sha256": "d9af707ed3ea0e35d66d7007d32ec07ee383bbc6107cff4e6643efdab0950902",
+      "bytes": 36495
     }
   ],
   "status": "clean-replacement-review",
   "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
   "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
-  "productionPrintFile": false
+  "productionPrintFile": false,
+  "backgroundMask": "wrapped canvas landscape- background bw.png",
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
 }

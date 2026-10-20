@@ -33,6 +33,11 @@
   },
   "assets": [
     {
+      "file": "Mug.png",
+      "sha256": "556d4260e370106cf67bafa1f8d1bfa451b9e7e6b87be3e57f062ba4abed8350",
+      "bytes": 1277117
+    },
+    {
       "file": "Mug - art bw.png",
       "sha256": "66a391928e65015da729b425b492567f208dfae4b3e434582337aa0df1129248",
       "bytes": 56181
@@ -41,11 +46,6 @@
       "file": "Mug - background bw.png",
       "sha256": "e62ab6fedcfd1f1d05e216bae25bd435f9f30771b05f6744179accd9c73b3855",
       "bytes": 56338
-    },
-    {
-      "file": "Mug.png",
-      "sha256": "556d4260e370106cf67bafa1f8d1bfa451b9e7e6b87be3e57f062ba4abed8350",
-      "bytes": 1277117
     }
   ],
   "status": "clean-replacement-review",
@@ -67,5 +67,7 @@
     },
     "assumedWrapAngleRadians": 6.283185307179586
   },
-  "calibrationNote": "New hanging-mug surface uses measured mask corners to orient the existing cylindrical projection. Inset excluded by original mask. Visual review pending."
+  "calibrationNote": "New hanging-mug surface uses measured mask corners to orient the existing cylindrical projection. Inset excluded by original mask. Visual review pending.",
+  "backgroundMask": "Mug - background bw.png",
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
 }

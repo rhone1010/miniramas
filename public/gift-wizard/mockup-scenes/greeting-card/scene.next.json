@@ -33,6 +33,11 @@
   },
   "assets": [
     {
+      "file": "greeting card.png",
+      "sha256": "94139ee1ac747c6d40df02ccb9349a06867615c50a1086bc71e2d4c834f1f88d",
+      "bytes": 1533188
+    },
+    {
       "file": "greeting card - ar bw.png",
       "sha256": "f63c7a0409e64d5d50944ad8702b757c2870bcd08e85fdc4edd6f03bf6e10fce",
       "bytes": 36490
@@ -41,15 +46,12 @@
       "file": "greeting card - background bw.png",
       "sha256": "4729549cf9fce2e78625b204a502a2ce52f1a1a6af612ec65a39a21228744986",
       "bytes": 36495
-    },
-    {
-      "file": "greeting card.png",
-      "sha256": "94139ee1ac747c6d40df02ccb9349a06867615c50a1086bc71e2d4c834f1f88d",
-      "bytes": 1533188
     }
   ],
   "status": "clean-replacement-review",
   "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
   "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
-  "productionPrintFile": false
+  "productionPrintFile": false,
+  "backgroundMask": "greeting card - background bw.png",
+  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
 }
