@@ -74,7 +74,7 @@ describe('Craft my previews: each requested effect is submitted once and its res
     const out = await startBatch(r.deps, U1, v.sessionId, { idempotencyKey: 'idem-key-1', effectIds: effects })
     expect(out.complete).toBe(false)
     const failed = r.store.previews.find(p => p.effect_id === bad)!
-    expect(failed.status).toBe('failed'); expect(failed.error).toBe('generate_failed:http_500:nb2_failed')            // the cause is no longer discarded
+    expect(failed.status).toBe('failed'); expect(failed.error).toBe('generate_failed:http_500:nb2_failed:Replicate prediction failed: timeout')            // the cause is no longer discarded
     expect(out.batch.progress).toEqual({ ready: 5, generating: 0, pending: 0, failed: 1 }); expect(out.batch.generation).toBe('stalled')
     expect(out.batch.previews.find(p => p.effectId === bad)).toMatchObject({ status: 'failed', retryable: true, url: null })
     r.calls.length = 0; r.script.respond = async () => ({ status: 200, json: { result: { ok: true, image_b64: await png() } } })
@@ -91,31 +91,62 @@ describe('Craft my previews: each requested effect is submitted once and its res
 })
 
 describe('the results the Wizard can poll while generation runs', () => {
-  it('shows pending, generating and ready per preview as work proceeds, and the counts add up', async () => {
+  it('dispatches ALL SIX renders at once and shows each preview the moment it finishes', async () => {
     const r = rig(); vi.stubGlobal('fetch', r.fetchMock)
     const gates: Array<() => void> = []
     r.script.respond = () => new Promise(resolve => { gates.push(() => void png().then(b => resolve({ status: 200, json: { result: { ok: true, image_b64: b } } }))) })
     const v = await createSession(r.deps, { userId: U1, imageB64: await photo() })
     const run = startBatch(r.deps, U1, v.sessionId, { idempotencyKey: 'idem-key-1' })          // the POST is in flight; the Wizard polls the session meanwhile
-    await vi.waitFor(() => expect(gates.length).toBe(3))                                          // three workers hold the first three renders
+    await vi.waitFor(() => expect(gates.length).toBe(6))                                          // six requests are out together: no second wave
     let b = (await getSessionView(r.deps, U1, v.sessionId)).batches[0]
-    expect(b.generation).toBe('running'); expect(b.progress).toEqual({ ready: 0, generating: 3, pending: 3, failed: 0 })
-    expect(b.previews.map(p => p.status).sort()).toEqual(['generating', 'generating', 'generating', 'pending', 'pending', 'pending']); expect(b.previews.every(p => p.url === null)).toBe(true)
-    gates.splice(0).forEach(g => g()); await vi.waitFor(() => expect(gates.length).toBe(3))
-    b = (await getSessionView(r.deps, U1, v.sessionId)).batches[0]
-    expect(b.progress.ready).toBe(3); expect(b.previews.filter(p => p.status === 'ready').every(p => !!p.url)).toBe(true); expect(b.generation).toBe('running')
-    gates.splice(0).forEach(g => g()); const out = await run
+    expect(b.generation).toBe('running'); expect(b.progress).toEqual({ ready: 0, generating: 6, pending: 0, failed: 0 })
+    expect(b.previews.every(p => p.status === 'generating' && p.url === null)).toBe(true)
+    gates[0]!(); await vi.waitFor(async () => expect((await getSessionView(r.deps, U1, v.sessionId)).batches[0].progress.ready).toBe(1))
+    b = (await getSessionView(r.deps, U1, v.sessionId)).batches[0]                                // one finished: it is shown now, the other five are still running
+    expect(b.progress).toEqual({ ready: 1, generating: 5, pending: 0, failed: 0 }); expect(b.previews.filter(p => p.status === 'ready').every(p => !!p.url)).toBe(true); expect(b.generation).toBe('running')
+    gates.slice(1).forEach(g => g()); const out = await run
     expect(out.complete).toBe(true); expect((await getSessionView(r.deps, U1, v.sessionId)).batches[0].progress).toEqual({ ready: 6, generating: 0, pending: 0, failed: 0 })
+    expect(r.calls).toHaveLength(6)                                                               // concurrency started the same six renders sooner; it added none
+  })
+
+  it('GIFT_PARALLEL_RENDERS limits how many run at once', async () => {
+    const r = rig(); vi.stubGlobal('fetch', r.fetchMock); process.env.GIFT_PARALLEL_RENDERS = '2'
+    try {
+      const gates: Array<() => void> = []
+      r.script.respond = () => new Promise(resolve => { gates.push(() => void png().then(b => resolve({ status: 200, json: { result: { ok: true, image_b64: b } } }))) })
+      const v = await createSession(r.deps, { userId: U1, imageB64: await photo() })
+      const run = startBatch(r.deps, U1, v.sessionId, { idempotencyKey: 'idem-key-1' })
+      await vi.waitFor(() => expect(gates.length).toBe(2)); await new Promise(res => setTimeout(res, 20)); expect(gates.length).toBe(2)
+      while (r.calls.length < 6) { gates.splice(0).forEach(g => g()); await new Promise(res => setTimeout(res, 20)) }
+      gates.splice(0).forEach(g => g()); expect((await run).complete).toBe(true)
+    } finally { delete process.env.GIFT_PARALLEL_RENDERS }
+  })
+
+  it('a preview the provider turned away for rate is tried once more gently; a different failure is not retried in the same request', async () => {
+    const r = rig(); vi.stubGlobal('fetch', r.fetchMock); (r.deps as GiftDeps).pause = async () => {}
+    const effects = liveEffectIds('portraits').slice(0, 6), limited = effects[1], broken = effects[4]
+    let seen = 0
+    r.script.respond = async c => {
+      if (c.body.preset_id === limited && seen++ === 0) return { status: 500, json: { result: { ok: false, fatal_error: 'Replicate POST failed (429): throttled', error_code: 'nb2_failed' } } }
+      if (c.body.preset_id === broken) return { status: 500, json: { result: { ok: false, fatal_error: 'safety refusal', error_code: 'nb2_failed' } } }
+      return { status: 200, json: { result: { ok: true, image_b64: await png() } } }
+    }
+    const v = await createSession(r.deps, { userId: U1, imageB64: await photo() })
+    const out = await startBatch(r.deps, U1, v.sessionId, { idempotencyKey: 'idem-key-1', effectIds: effects })
+    expect(r.calls.filter(c => c.body.preset_id === limited)).toHaveLength(2)                    // second gentle pass
+    expect(r.calls.filter(c => c.body.preset_id === broken)).toHaveLength(1)                     // not retried here
+    expect(out.batch.progress).toEqual({ ready: 5, generating: 0, pending: 0, failed: 1 })
+    expect(r.store.previews.find(p => p.effect_id === limited)!.attempts).toBe(2)                // within the 3-attempt cap
   })
 })
 
 describe('failureReason', () => {
   it('keeps the series route\'s code or text, adds the http status, and stays short and safe', () => {
-    expect(failureReason({ result: { ok: false, error_code: 'nb2_failed', fatal_error: 'x' } }, 502)).toBe('generate_failed:http_502:nb2_failed')
+    expect(failureReason({ result: { ok: false, error_code: 'nb2_failed', fatal_error: 'x' } }, 502)).toBe('generate_failed:http_502:nb2_failed:x')
     expect(failureReason({ result: { ok: false, fatal_error: 'Replicate  said\nno' } }, 500)).toBe('generate_failed:http_500:Replicate said no')
     expect(failureReason({ error: 'rate_limited' }, 429)).toBe('rate_limited:http_429')
     expect(failureReason({}, 200)).toBe('generate_failed')
     expect(failureReason({ result: { error_code: 'bad code with spaces' } }, 500)).toBe('generate_failed:http_500')
-    expect(failureReason({ result: { fatal_error: 'z'.repeat(500) } }, 500).length).toBeLessThanOrEqual(160)
+    expect(failureReason({ result: { fatal_error: 'z'.repeat(500) } }, 500).length).toBeLessThanOrEqual(200)
   })
 })

@@ -92,7 +92,7 @@ export function failureReason(out: any, httpStatus: number): string {
   const code = typeof r?.error_code === 'string' && /^[\w.-]{1,60}$/.test(r.error_code) ? r.error_code : null
   const fatal = typeof r?.fatal_error === 'string' && r.fatal_error.trim() ? r.fatal_error.trim().replace(/\s+/g, ' ') : null
   const base = String(out?.error || out?.status || 'generate_failed')
-  return [base, httpStatus >= 400 ? 'http_' + httpStatus : null, code ?? fatal].filter(Boolean).join(':').slice(0, 160)
+  return [base, httpStatus >= 400 ? 'http_' + httpStatus : null, code, fatal ? fatal.slice(0, 80) : null].filter(Boolean).join(':').slice(0, 200)
 }
 
 /** ONE render through the series' own generate route. Returns the CLEAN master; throws on any refusal or failure. */
