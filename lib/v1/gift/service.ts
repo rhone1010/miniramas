@@ -12,10 +12,10 @@ import { allProducts, catalogVersion } from '../print/catalog'
 import { planFor, type PlanContext } from './composition-plan'
 import { draftOrderLines, resolveFrozenProduct } from './frozen'
 import { decodeSource } from '../foyer/foyer-source'
-import { adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE } from './policy'
+import { COMPOSITION_MAX_ATTEMPTS, adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
 import { StoreError, byNewest, correctionUsed, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
-import { GIFT_CONTRACT_VERSION, type BatchGeneration, type RestoreResponse, type RestoreStep, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
+import { GIFT_CONTRACT_VERSION, type CompositionView, type BatchGeneration, type RestoreResponse, type RestoreStep, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
 
 export type GiftErrorCode =
   | 'image_b64_required' | 'image_too_large' | 'image_not_base64' | 'image_unreadable'
@@ -275,6 +275,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   const packs = await deps.store.paidPackCount(rec.user_id)
   const order = rec.order_id ? await deps.store.getOrder(rec.order_id) : null
   const comps = await deps.store.listCompositions(rec.id)         // drafts (reviewed before payment) have compositions too
+  const jobs = await deps.store.listCompositionJobs(rec.id).catch(() => [])         // 055: what is being prepared, stalled or failed (empty until the migration is applied)
   const orderLines = rec.order_id ? await deps.store.orderLines(rec.order_id) : []
   const batches: BatchView[] = []
   const clockNow = now(deps)
@@ -335,7 +336,12 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
       const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort(byNewest)[0]
       const g = geometries.find(x => x.lineId === l.line_id)
       const gp = planned.find(x => x.l.lineId === l.line_id)
+      const job = !mine && rec.artwork_preview_id ? jobs.find(j => j.preview_id === rec.artwork_preview_id && j.geometry_key === (g?.geometryKey ?? '\u0000')) : undefined
+      const live = !!job && job.state === 'preparing' && Date.parse(job.expires_at) > clockNow
+      const state: CompositionView['state'] = mine ? (mine.status === 'approved' ? 'approved' : 'ready') : !job ? 'not_started' : live ? 'preparing' : job.state === 'failed' ? 'failed' : 'stalled'
       return {
+        state, preparingSince: live ? job!.claimed_at : null, failureCode: state === 'failed' ? job!.error_code : null, attempts: job?.attempts ?? 0,
+        retryable: state === 'failed' ? job!.attempts < COMPOSITION_MAX_ATTEMPTS : state === 'stalled' || state === 'not_started',
         lineId: l.line_id, productId: l.product_id, geometryKey: mine?.geometry_key ?? g?.geometryKey ?? null, method: (mine?.method ?? g?.method ?? null) as 'deterministic' | 'generated' | null,
         generationAspect: mine?.generation_aspect ?? g?.generationAspect ?? null, sharedWithLineIds: g?.sharedWithLineIds ?? [], picturePx: gp?.p.requirements.picturePx ?? null,
         sku: gp?.p.sku ?? null, geometrySource: gp?.source ?? 'catalog', adaptationValidation: adaptationValidationFor(rec.series, (mine?.method ?? g?.method ?? null) as 'deterministic' | 'generated' | null),
@@ -360,6 +366,15 @@ function generationOf(previews: PreviewRec[], complete: boolean, nowMs: number):
   if (previews.some(live)) return 'running'
   const claimable = (p: PreviewRec) => p.attempts < PREVIEW_ATTEMPTS && (p.status === 'pending' || p.status === 'failed' || p.status === 'generating')       // a generating row with a lapsed lease is claimable again
   return previews.some(claimable) ? 'stalled' : 'failed'
+}
+
+function compositionsResume(v: SessionView): NonNullable<RestoreResponse['resume']>['compositions'] {
+  if (!v.compositions.length) return null
+  const ids = (s: CompositionView['state']) => v.compositions.filter(c => c.state === s).map(c => c.lineId)
+  const preparing = ids('preparing'), stalled = ids('stalled'), failed = v.compositions.filter(c => c.state === 'failed').map(c => c.lineId), notStarted = ids('not_started')
+  const state = preparing.length ? 'preparing' : failed.length ? 'failed' : stalled.length ? 'stalled' : notStarted.length ? 'not_started' : 'ready'
+  const resumeNeeded = !preparing.length && (stalled.length > 0 || notStarted.length > 0 || v.compositions.some(c => c.state === 'failed' && c.retryable))
+  return { state, resumeNeeded, preparing, stalled, failed }
 }
 
 function stepOf(v: SessionView): RestoreStep {
@@ -396,6 +411,7 @@ export async function restoreSession(deps: GiftDeps, userId: string): Promise<Re
       sessionId: rec.id, suggestedStep: stepOf(current),
       resumeBatches: current.batches.filter(b => b.generation === 'stalled').map(b => b.batchIndex),
       runningBatches: current.batches.filter(b => b.generation === 'running').map(b => b.batchIndex),
+      compositions: compositionsResume(current),
     },
   }
 }

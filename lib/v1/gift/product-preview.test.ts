@@ -180,3 +180,56 @@ describe('the cart is the server\'s: PUT /lines persists and every later read re
     expect(saved.geometries[0].sku).toBe(getProduct('canvas:8x8')!.sku)
   })
 })
+
+describe('provisional preview for a favorite whose shape is not the product\'s (opt-in)', () => {
+  it('without the flag the answer is still adaptation_required (existing clients are not surprised)', async () => {
+    const r = rig(); const { sid } = await withFavorite(r)
+    expect(await getProductPreview(r.deps, U1, sid, 'fine_art:12x18')).toMatchObject({ status: 'adaptation_required' })
+    expect(r.render).not.toHaveBeenCalled(); expect(previewFiles(r)).toHaveLength(0)
+  })
+
+  it('with the flag it shows the WHOLE favorite in the product on a neutral surround, says it is provisional, and says what the real composition will do', async () => {
+    const r = rig(); const { sid, fav } = await withFavorite(r)
+    const before = JSON.stringify(await getSessionView(r.deps, U1, sid)), compBefore = r.store.compositions.length, gens = r.generate.mock.calls.length
+    const v: any = await getProductPreview(r.deps, U1, sid, 'fine_art:12x18', { provisional: true })
+    expect(v).toMatchObject({ status: 'provisional', productId: 'fine_art:12x18', sku: 'GLOBAL-FAP-12X18', favoriteId: fav, renderer: 'calibrated', fit: 'contain', watermarked: true, productionPrintFile: false, purchaseAuthorization: false, cached: false })
+    expect(v.provisional).toMatchObject({ exactArtworkShown: true, cropped: false, distorted: false, surround: 'neutral', finalComposition: 'generated' })
+    expect(v.provisional.bars.sides).toBe('top_bottom'); expect(v.provisional.bars.fractionPerSide).toBeCloseTo(1 / 6, 3)          // a square favorite in a 2:3 product: a sixth of the height above and below
+    expect(v.provisional.extension).toBeCloseTo(0.5, 3); expect(v.url).toMatch(/\/product-previews\/fine_art_12x18-[0-9a-f]{16}\.jpg/)
+    expect(r.render).toHaveBeenCalledTimes(1); expect(previewFiles(r)).toHaveLength(1)
+    expect(r.store.compositions.length).toBe(compBefore); expect(r.generate.mock.calls.length).toBe(gens)                          // no composition, no generation
+    expect(JSON.stringify(await getSessionView(r.deps, U1, sid))).toBe(before)                                                      // approvals, corrections, entitlements untouched
+    const again: any = await getProductPreview(r.deps, U1, sid, 'fine_art:12x18', { provisional: true }); expect(again).toMatchObject({ status: 'provisional', cached: true }); expect(r.render).toHaveBeenCalledTimes(1)
+  })
+
+  it('the picture handed to the renderer is the favorite, undistorted and uncropped, centered, with only the surround added (never mirrored, never artwork-colored)', async () => {
+    const { containedPicture, PROVISIONAL_SURROUND } = await import('./product-preview')
+    const art = await sharp({ create: { width: 800, height: 800, channels: 3, background: '#d02020' } }).composite([{ input: await sharp({ create: { width: 200, height: 200, channels: 3, background: '#2020d0' } }).png().toBuffer(), left: 0, top: 0 }]).png().toBuffer()
+    const out = await containedPicture(art, getProduct('fine_art:12x18')!)
+    const m = await sharp(out.picture).metadata(); expect(Math.abs(m.width! / m.height! - 2 / 3)).toBeLessThan(0.002)
+    expect(out.bars.sides).toBe('top_bottom')
+    const raw = await sharp(out.picture).removeAlpha().raw().toBuffer(), px = (x: number, y: number) => [...raw.subarray((y * m.width! + x) * 3, (y * m.width! + x) * 3 + 3)]
+    const hex = (c: number[]) => '#' + c.map(n => n.toString(16).padStart(2, '0')).join('')
+    expect(hex(px(5, 5))).toBe(PROVISIONAL_SURROUND); expect(hex(px(m.width! - 5, m.height! - 5))).toBe(PROVISIONAL_SURROUND)          // the bars are the neutral surround, not a reflection of the art
+    const top = Math.floor((m.height! - m.width!) / 2)                                                                              // the art is exactly square, full width, centered
+    expect(hex(px(5, top + 5))).toBe('#2020d0'); expect(hex(px(m.width! - 5, top + 5))).toBe('#d02020'); expect(hex(px(5, top + m.width! - 5))).toBe('#d02020')
+    expect(hex(px(5, top - 3))).toBe(PROVISIONAL_SURROUND)
+  })
+
+  it('a favorite already within 2% of the product is unaffected by the flag: an ordinary ready preview', async () => {
+    const r = rig(); const { sid } = await withFavorite(r)
+    expect(await getProductPreview(r.deps, U1, sid, 'canvas:8x8', { provisional: true })).toMatchObject({ status: 'ready', renderer: 'scene' })
+  })
+
+  it('unlaunched products stay not_available with the flag, and the owner check still applies', async () => {
+    const r = rig(); const { sid } = await withFavorite(r)
+    expect(await getProductPreview(r.deps, U1, sid, 'mug:11oz', { provisional: true })).toMatchObject({ status: 'not_available' })
+    await expect(getProductPreview(r.deps, U2, sid, 'fine_art:12x18', { provisional: true })).rejects.toMatchObject({ code: 'session_not_found' })
+  })
+
+  it('the provisional picture uses the scene renderer where a photograph truthfully shows the configuration, with the same fixed inset (canvas portrait has none: calibrated)', async () => {
+    const r = rig(); const { sid } = await withFavorite(r)
+    expect(await getProductPreview(r.deps, U1, sid, 'canvas:12x18', { provisional: true })).toMatchObject({ status: 'provisional', renderer: 'calibrated' })
+    expect(r.sceneRender).not.toHaveBeenCalled()
+  })
+})

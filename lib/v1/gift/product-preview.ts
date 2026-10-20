@@ -9,6 +9,9 @@
 //   adaptation_required   the favorite's shape is not the product's picture shape (beyond the free 2% band), so an accurate picture needs the real composition step (a bounded
 //                         extension or a new generation: paid, customer-initiated, approved by the customer). Nothing is rendered; the response carries the numbers.
 //   not_available         the product is not purchasable / has no mockup template: nothing to show
+//   provisional           (opt-in: ?provisional=1, and only where adaptation_required would have been returned) the favorite shown COMPLETE, in its own shape, inside the product, on a neutral
+//                         surround that is plainly not artwork: never cropped, stretched or extended, no generation. It is an honest stand-in for what the customer chose, NOT the final
+//                         picture: after purchase the real composition step makes the product-shaped artwork and the customer approves it. The response says so in data (finalComposition).
 //
 // What this is NOT: a composition (none is created or stored), a production file, an approval, a correction, an order or a purchase authorization. It reads the favorite's stored
 // master in memory, shapes it to the product's picture shape ONLY by mirror-extension inside the 2% band (no outpaint, no generation, no crop, no stretch), hands that to the SAME
@@ -31,6 +34,27 @@ const sha = (b: string | Buffer) => createHash('sha256').update(b).digest('hex')
 const FREE_BAND = 0.02 + 1e-10
 const PRODUCT_ID = /^[a-z_]+:[\w-]{1,24}$/
 
+/** Neutral paper tone for the surround of a provisional preview: not derived from the artwork, so it can never be mistaken for artwork content. */
+export const PROVISIONAL_SURROUND = '#efece6'
+
+/**
+ * PROVISIONAL picture: the WHOLE favorite, undistorted, centered on a canvas of the product's picture shape (only the missing axis is filled, with the neutral surround). Pure resize-inside and
+ * composite: no crop, no stretch, no mirror, no generation. Returns how much of the picture is surround, for the response.
+ */
+export async function containedPicture(master: Buffer, product: CanonicalProduct): Promise<{ picture: Buffer; bars: { sides: 'top_bottom' | 'left_right'; fractionPerSide: number }; favoriteAspect: number }> {
+  const meta = await sharp(master).metadata()
+  if (!meta.width || !meta.height) throw new Error('unreadable_artwork')
+  const k = Math.min(1, SCENE_MAX_EDGE / Math.max(meta.width, meta.height))
+  const rw = Math.round(meta.width * k), rh = Math.round(meta.height * k)
+  const art = await sharp(master).rotate().resize(rw, rh, { fit: 'fill', kernel: 'lanczos3' }).png().toBuffer()
+  const { w, h } = product.requirements.picturePx, pa = w / h, fa = rw / rh
+  const wider = fa > pa                                                                   // the favorite is wider than the product: the surround goes above and below
+  const tw = wider ? rw : Math.ceil(rh * pa), th = wider ? Math.ceil(rw / pa) : rh
+  const left = Math.floor((tw - rw) / 2), top = Math.floor((th - rh) / 2)
+  const picture = await sharp({ create: { width: tw, height: th, channels: 3, background: PROVISIONAL_SURROUND } }).composite([{ input: art, left, top }]).png().toBuffer()
+  return { picture, bars: wider ? { sides: 'top_bottom', fractionPerSide: Math.round(((th - rh) / 2 / th) * 1e4) / 1e4 } : { sides: 'left_right', fractionPerSide: Math.round(((tw - rw) / 2 / tw) * 1e4) / 1e4 }, favoriteAspect: fa }
+}
+
 /** The favorite (a ready preview's stored master), reshaped to the product's picture shape by mirror-extension only, at mockup size. */
 export async function productShapedPicture(master: Buffer, product: CanonicalProduct): Promise<{ picture: Buffer; fit: 'exact' | 'resample' }> {
   const meta = await sharp(master).metadata()
@@ -47,7 +71,7 @@ export async function productShapedPicture(master: Buffer, product: CanonicalPro
   return { picture, fit: 'resample' }
 }
 
-export async function getProductPreview(deps: GiftDeps, userId: string, sessionId: string, productIdRaw: unknown): Promise<ProductPreviewView> {
+export async function getProductPreview(deps: GiftDeps, userId: string, sessionId: string, productIdRaw: unknown, opts: { provisional?: boolean } = {}): Promise<ProductPreviewView> {
   const rec = await owned(deps, userId, sessionId)
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (rec.refund_requested_at) throw new GiftError('refund_pending')
@@ -66,8 +90,10 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
 
   const { w: pw, h: ph } = product.requirements.picturePx, pictureAspect = pw / ph, favoriteAspect = fav.width / fav.height
   const { extension } = aspectCompatibility(fav.width, fav.height, pw, ph)
-  if (extension > FREE_BAND) {
-    const plan = rec.series ? planFor(product, { series: rec.series, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }) : null
+  const far = extension > FREE_BAND
+  const plan = far && rec.series ? planFor(product, { series: rec.series, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }) : null
+  const provisional = far && opts.provisional === true
+  if (far && !provisional) {
     return { ...base, status: 'adaptation_required', reason: 'shape_needs_composition', sku: product.sku, favoriteAspect: Math.round(favoriteAspect * 1e4) / 1e4, pictureAspect: Math.round(pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4, method: plan?.method ?? null }
   }
 
@@ -80,13 +106,17 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   const useScene = !!(scenes && choice?.scene && sceneRevision)
   const identity = sha(JSON.stringify({
     v: 1, contract: MOCKUP_CONTRACT_VERSION, sessionId: rec.id, favoriteId: fav.id, master: fav.master_path, sku: product.sku, productId: product.productId, finalPx: product.requirements.finalPx, picturePx: product.requirements.picturePx,
-    attributes: Object.fromEntries(Object.entries(product.attributes).sort()), renderer: useScene ? { scene: choice!.scene!.sceneId, revision: sceneRevision, representation: SCENE_REPRESENTATION_VERSION } : { template: templateId, revision: calibratedRevision }, variant: 'watermarked',
+    attributes: Object.fromEntries(Object.entries(product.attributes).sort()), renderer: useScene ? { scene: choice!.scene!.sceneId, revision: sceneRevision, representation: SCENE_REPRESENTATION_VERSION } : { template: templateId, revision: calibratedRevision }, variant: provisional ? 'provisional-contain-1:' + PROVISIONAL_SURROUND : 'watermarked',
   }))
   const path = `${STORAGE.productPreviewDir(rec.id)}${product.productId.replace(/[^\w-]/g, '_')}-${identity.slice(0, 16)}.jpg`
   const sign = async () => { const url = await deps.storage.signedUrl(path, MOCKUP_URL_SECONDS); return url ? { url, urlExpiresAt: new Date((deps.clock ?? Date.now)() + MOCKUP_URL_SECONDS * 1000).toISOString() } : null }
   const meta = { watermarked: true as const, productionPrintFile: false as const, purchaseAuthorization: false as const }
+  const bars = provisional ? (favoriteAspect > pictureAspect ? { sides: 'top_bottom' as const, fractionPerSide: Math.round(((1 - pictureAspect / favoriteAspect) / 2) * 1e4) / 1e4 } : { sides: 'left_right' as const, fractionPerSide: Math.round(((1 - favoriteAspect / pictureAspect) / 2) * 1e4) / 1e4 }) : null
   const ready = (r: { renderer: 'scene' | 'calibrated'; sceneId: string | null; width: number; height: number; fit: 'exact' | 'resample'; cached: boolean }, s: { url: string; urlExpiresAt: string }): ProductPreviewView =>
-    ({ ...base, status: 'ready', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: r.fit, width: r.width, height: r.height, cached: r.cached, ...s, ...meta })
+    provisional
+      ? { ...base, status: 'provisional', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: 'contain', width: r.width, height: r.height, cached: r.cached, ...s, ...meta,
+          provisional: { exactArtworkShown: true, cropped: false, distorted: false, surround: 'neutral', bars: bars!, favoriteAspect: Math.round(favoriteAspect * 1e4) / 1e4, pictureAspect: Math.round(pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4, finalComposition: plan?.method ?? null } }
+      : { ...base, status: 'ready', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: r.fit, width: r.width, height: r.height, cached: r.cached, ...s, ...meta }
 
   const hit = await sign()
   if (hit) {                                                                              // an unchanged identity re-signs the stored file and renders nothing
@@ -97,7 +127,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
 
   const masterBytes = await deps.storage.get(fav.master_path)                             // CLEAN master: memory only, never returned, never stored next to the preview
   if (!masterBytes) throw new GiftError('generation_unavailable')
-  const shaped = await productShapedPicture(masterBytes, product)
+  const shaped = provisional ? { picture: (await containedPicture(masterBytes, product)).picture, fit: 'exact' as const } : await productShapedPicture(masterBytes, product)
   const flat = await mockupArtwork(shaped.picture, product)
   let png: Buffer | null = null, width = 0, height = 0, renderer: 'scene' | 'calibrated' = 'calibrated', sceneId: string | null = null
   if (useScene) {

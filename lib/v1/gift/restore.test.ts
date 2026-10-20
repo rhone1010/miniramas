@@ -51,7 +51,7 @@ describe('finding the customer\'s session again', () => {
     expect(out.current!.source.photoUrl).toMatch(/^https:\/\/signed\.test\//)
     expect(out.current!.batches).toHaveLength(1); expect(out.current!.batches[0]).toMatchObject({ batchIndex: 1, complete: true, generation: 'complete' })
     expect(out.current!.batches[0].previews.map(p => p.status)).toEqual(Array(6).fill('ready')); expect(out.current!.batches[0].previews.every(p => !!p.url)).toBe(true)
-    expect(out.resume).toEqual({ sessionId: sid, suggestedStep: 'previews', resumeBatches: [], runningBatches: [] })
+    expect(out.resume).toEqual({ sessionId: sid, suggestedStep: 'previews', resumeBatches: [], runningBatches: [], compositions: null })
     expect(r.generate.mock.calls.length).toBe(calls)                                              // returning generated nothing
     expect([...r.files.keys()].sort()).toEqual([...stored.keys()].sort())                         // and changed no file
     const again = await restoreSession(r.deps, U1); expect(again.current!.batches[0].previews.map(p => p.previewId)).toEqual(out.current!.batches[0].previews.map(p => p.previewId))

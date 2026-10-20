@@ -114,7 +114,7 @@ export async function refundRequestH(req: Request, user: Authed, deps: GiftDeps 
 
 // GET /api/v1/gift/sessions/{id}/lines/{lineId}/mockup?compositionId=...  (see MockupView in types.ts)
 export async function productPreviewH(req: Request, user: Authed, deps: GiftDeps, id: string) {
-  try { return json(await getProductPreview(deps, user.id, id, new URL(req.url).searchParams.get('productId'))) } catch (e) { return fail(e) }
+  try { return json(await getProductPreview(deps, user.id, id, new URL(req.url).searchParams.get('productId'), { provisional: new URL(req.url).searchParams.get('provisional') === '1' })) } catch (e) { return fail(e) }
 }
 export async function mockupH(req: Request, user: Authed, deps: GiftDeps, id: string, lineId: string) {
   try { return json(await getLineMockup(deps, user.id, id, lineId, new URL(req.url).searchParams.get('compositionId') ?? undefined)) } catch (e) { return fail(e) }

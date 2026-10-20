@@ -169,6 +169,21 @@ export interface CompositionView {
   width: number | null
   height: number | null
   fit: 'exact' | 'resample' | 'extend' | null
+  /**
+   * DURABLE PREPARATION STATE (migration 055), read from the database so it is right after a refresh, a navigation away or a dead request:
+   *   not_started  nothing has been prepared or claimed for this gift yet: POST /compositions starts it
+   *   preparing    a request holds the job right now (since preparingSince): poll the session, start nothing
+   *   stalled      the request that was preparing it ended: POST /compositions resumes it (idempotent; never prepares anything twice at once)
+   *   failed       the last attempt failed (failureCode); retryable says whether another attempt is allowed (3 in all), otherwise Concierge
+   *   ready        the product-shaped artwork exists and awaits approval (status 'ready')
+   *   approved     the customer approved it (status 'approved')
+   * Before 055 is applied the server cannot see a job: states are ready/approved or not_started, exactly as before.
+   */
+  state: 'not_started' | 'preparing' | 'stalled' | 'failed' | 'ready' | 'approved'
+  preparingSince: string | null
+  failureCode: string | null
+  attempts: number
+  retryable: boolean
 }
 
 // ── requests and responses ─────────────────────────────────────────────
@@ -326,6 +341,8 @@ export interface RestoreResponse {
     resumeBatches: number[]
     /** Batch indexes that are 'running' right now: poll GET /sessions/{id}; start nothing. */
     runningBatches: number[]
+    /** Where the gifts' product-shaped artwork stands, from the durable job state; null when there are no gifts to prepare. resumeNeeded: POST /sessions/{id}/compositions (idempotent) to start or resume. */
+    compositions: { state: 'not_started' | 'preparing' | 'stalled' | 'failed' | 'ready'; resumeNeeded: boolean; preparing: string[]; stalled: string[]; failed: string[] } | null
   } | null
   /** Other recent active sessions (newest first), for a "continue or start again" choice. The current session is the first of them. */
   recent: Array<{ sessionId: string; createdAt: string; lastActivityAt: string; expiresAt: string; series: Series | null; orderId: string | null }>
@@ -356,5 +373,20 @@ export type ProductPreviewView =
       favoriteAspect: number; pictureAspect: number; extension: number
       /** How the real composition would adapt it: 'deterministic' (bounded extension) or 'generated' (a new generation), or null when unknown. */
       method: 'deterministic' | 'generated' | null
+    }
+  | {
+      /** Only with ?provisional=1, in place of adaptation_required. The whole favorite inside the product on a neutral surround; NOT the final picture (see provisional.finalComposition). */
+      contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'provisional'; sessionId: string; productId: string; sku: string; favoriteId: string
+      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'contain'
+      url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
+      watermarked: true; productionPrintFile: false; purchaseAuthorization: false
+      provisional: {
+        exactArtworkShown: true; cropped: false; distorted: false; surround: 'neutral'
+        /** Where the neutral surround is and how much of the picture's height (top_bottom) or width (left_right) each side takes (0.17 = 17%). */
+        bars: { sides: 'top_bottom' | 'left_right'; fractionPerSide: number }
+        favoriteAspect: number; pictureAspect: number; extension: number
+        /** What the real composition after purchase will do: 'generated' (a new generation of the same effect from the customer's photograph at the product's shape, then the customer approves it), 'deterministic' (a bounded extension), or null. */
+        finalComposition: 'deterministic' | 'generated' | null
+      }
     }
   | { contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'not_available'; reason: 'product_not_available' | 'no_mockup_template'; sessionId: string; productId: string; sku: string | null; favoriteId: string }

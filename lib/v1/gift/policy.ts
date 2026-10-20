@@ -43,6 +43,10 @@ export const parallelRenders = (env: Record<string, string | undefined> = proces
   const n = Number(env.GIFT_PARALLEL_RENDERS)
   return Number.isInteger(n) && n >= 1 && n <= MAX_PARALLEL_RENDERS ? n : MAX_PARALLEL_RENDERS
 }
+/** Preparing one composition requirement (an NB2.1 generation plus bounded extension) holds its durable job this long; a request that dies leaves a job that lapses into 'stalled' and can be resumed. */
+export const COMPOSITION_LEASE_MS = 6 * 60 * 1000
+export const COMPOSITION_MAX_ATTEMPTS = 3
+
 /** A preview refused by the provider for rate (never reached the model, nothing charged) is tried once more, gently, after this pause. */
 export const RATE_LIMIT_PAUSE_MS = 4000
 export const RATE_LIMIT_RETRY_WORKERS = 2

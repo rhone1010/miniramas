@@ -29,6 +29,14 @@ export interface OrderInfo {
   shipping_address?: Record<string, unknown> | null; shipping_method?: string | null
 }
 export interface OrderLineRec { order_id: string; line_index: number; session_id: string; line_id: string; product_id: string; sku: string; copies: number; corrections_used: number }
+/** 055: a composition being prepared (or that failed) for one requirement of the selected artwork. A successful job is deleted: the gift_compositions rows are the record. */
+export interface CompositionJobRec {
+  session_id: string; preview_id: string; geometry_key: string; line_ids: string[]; method: 'deterministic' | 'generated' | null
+  state: 'preparing' | 'failed'; attempts: number; claimed_at: string; expires_at: string; error_code: string | null
+}
+export interface CompositionJobKey { sessionId: string; previewId: string; geometryKey: string; token: string }
+export interface CompositionClaim { token: string | null; reason: 'claimed' | 'in_progress' | 'attempts_exhausted' }
+
 export interface CompositionRec {
   id: string; session_id: string; line_id: string; preview_id: string; attempt: 1 | 2; status: 'ready' | 'approved' | 'failed' | 'superseded'
   composed_path: string | null; preview_path: string | null; width: number | null; height: number | null; plan: Record<string, unknown>
@@ -102,6 +110,11 @@ export interface GiftStore {
   /** 052, operator repair. The claim is database-atomic: one live claim per (session, line). Returns its token, or null when another holds an unexpired one. */
   claimRepair(i: { sessionId: string; lineId: string; compositionId: string; operator: string; ttlMs: number; nowMs: number }): Promise<string | null>
   releaseRepair(sessionId: string, lineId: string, token: string): Promise<void>
+  /** 055: take the preparation of one composition requirement atomically (the guard against paying for the same generation twice). token null = someone else is preparing it, or its attempts are used up. */
+  claimComposition(i: { sessionId: string; previewId: string; geometryKey: string; lineIds: string[]; method: 'deterministic' | 'generated'; ttlMs: number; maxAttempts: number; nowMs: number }): Promise<CompositionClaim>
+  finishComposition(i: CompositionJobKey): Promise<void>
+  failComposition(i: CompositionJobKey & { code: string }): Promise<void>
+  listCompositionJobs(sessionId: string): Promise<CompositionJobRec[]>
   /** One transaction: the claim must still be ours and the order must still await approval; the old composition is superseded (history kept) and the claim dropped. */
   completeRepair(i: { sessionId: string; lineId: string; token: string; oldId: string; newId: string; note: Record<string, unknown>; nowMs: number }): Promise<void>
   useCorrection(sessionId: string, userId: string, lineId: string): Promise<void>
@@ -113,6 +126,10 @@ export interface GiftStore {
 }
 
 // ── Supabase ────────────────────────────────────────────────────────────
+
+const VOLATILE = 'volatile'
+const JOBS_MISSING = /could not find the function|does not exist|schema cache|relation .* does not exist/i
+const jobsMissing = { v: false }              // module-wide: once the table is known to be absent, stop asking on every request
 
 export function supabaseGiftStore(db: any): GiftStore {
   const one = async (q: any) => { const { data, error } = await q; if (error) throw new Error(error.message); return data }
@@ -191,6 +208,22 @@ export function supabaseGiftStore(db: any): GiftStore {
     async patchComposition(id, patch) { await one(db.from('gift_compositions').update(patch).eq('id', id)) },
     async claimRepair(i) { const t = await rpc('gift_claim_repair', { p_session: i.sessionId, p_line: i.lineId, p_composition: i.compositionId, p_operator: i.operator, p_ttl_seconds: Math.round(i.ttlMs / 1000) }); return typeof t === 'string' ? t : null },
     async releaseRepair(sessionId, lineId, token) { await rpc('gift_release_repair', { p_session: sessionId, p_line: lineId, p_token: token }) },
+    // 055. Before the migration is applied the durable job table does not exist: everything below then degrades to today's behavior (no durable guard, nothing to list), never an error.
+    async claimComposition(i) {
+      if (jobsMissing.v) return { token: VOLATILE, reason: 'claimed' }
+      const { data, error } = await db.rpc('gift_claim_composition', { p_session: i.sessionId, p_preview: i.previewId, p_geometry: i.geometryKey, p_lines: i.lineIds, p_method: i.method, p_ttl_seconds: Math.round(i.ttlMs / 1000), p_max_attempts: i.maxAttempts })
+      if (error) { if (JOBS_MISSING.test(String(error.message))) { jobsMissing.v = true; console.warn('[gift] gift_composition_jobs is not applied (migration 055): compositions run without a durable guard'); return { token: VOLATILE, reason: 'claimed' } } fromRpc(error) }
+      const row = Array.isArray(data) ? data[0] : data
+      return { token: row?.o_token ?? null, reason: (row?.o_reason ?? 'in_progress') as CompositionClaim['reason'] }
+    },
+    async finishComposition(i) { if (jobsMissing.v || i.token === VOLATILE) return; const { error } = await db.rpc('gift_finish_composition', { p_session: i.sessionId, p_preview: i.previewId, p_geometry: i.geometryKey, p_token: i.token }); if (error && !JOBS_MISSING.test(String(error.message))) fromRpc(error) },
+    async failComposition(i) { if (jobsMissing.v || i.token === VOLATILE) return; const { error } = await db.rpc('gift_fail_composition', { p_session: i.sessionId, p_preview: i.previewId, p_geometry: i.geometryKey, p_token: i.token, p_code: i.code }); if (error && !JOBS_MISSING.test(String(error.message))) fromRpc(error) },
+    async listCompositionJobs(sessionId) {
+      if (jobsMissing.v) return []
+      const { data, error } = await db.from('gift_composition_jobs').select('*').eq('session_id', sessionId)
+      if (error) { if (JOBS_MISSING.test(String(error.message))) { jobsMissing.v = true; return [] } throw new Error(error.message) }
+      return (data ?? []) as CompositionJobRec[]
+    },
     async completeRepair(i) { await rpc('gift_complete_repair', { p_session: i.sessionId, p_line: i.lineId, p_token: i.token, p_old: i.oldId, p_new: i.newId, p_note: i.note }) },
     async useCorrection(sessionId, userId, lineId) { await rpc('gift_use_correction', { p_session: sessionId, p_user: userId, p_line: lineId }) },
     async approveOrder(i) {
@@ -220,6 +253,8 @@ export function memoryGiftStore(clock: () => number = Date.now) {
   const portfolios: MemoryPortfolio[] = [], refunds = new Map<string, { order_id: string; amount: number }>()
   const refundRequests = new Map<string, { id: string; session_id: string; status: 'requested' | 'refunded' | 'declined' }>()
   const repairClaims = new Map<string, { token: string; expiresAt: number }>()
+  const compositionJobs = new Map<string, CompositionJobRec & { token: string }>()
+  const jobKey = (s: string, p: string, g: string) => s + '|' + p + '|' + g
   const iso = (ms = clock()) => new Date(ms).toISOString()
   const orderOf = (s: SessionRec) => (s.order_id ? orders.get(s.order_id) ?? null : null)
   const owned = (id: string, userId: string) => { const s = sessions.get(id); if (!s || s.user_id !== userId) throw new StoreError('session_not_found'); return s }
@@ -344,6 +379,18 @@ export function memoryGiftStore(clock: () => number = Date.now) {
       const token = randomUUID(); repairClaims.set(key, { token, expiresAt: i.nowMs + Math.max(30_000, i.ttlMs) }); return token
     },
     async releaseRepair(sessionId, lineId, token) { const key = sessionId + ':' + lineId; if (repairClaims.get(key)?.token === token) repairClaims.delete(key) },
+    async claimComposition(i) {                                                   // synchronous check-and-set: atomic, like the database's single INSERT ... ON CONFLICT
+      const key = jobKey(i.sessionId, i.previewId, i.geometryKey), cur = compositionJobs.get(key)
+      const expired = !!cur && (Date.parse(cur.expires_at) <= i.nowMs || cur.state === 'failed')
+      if (cur && !(expired && cur.attempts < i.maxAttempts)) return { token: null, reason: expired ? 'attempts_exhausted' : 'in_progress' }
+      const token = randomUUID()
+      compositionJobs.set(key, { session_id: i.sessionId, preview_id: i.previewId, geometry_key: i.geometryKey, line_ids: [...i.lineIds], method: i.method, state: 'preparing', attempts: (cur?.attempts ?? 0) + 1,
+        claimed_at: new Date(i.nowMs).toISOString(), expires_at: new Date(i.nowMs + Math.max(30_000, i.ttlMs)).toISOString(), error_code: null, token })
+      return { token, reason: 'claimed' }
+    },
+    async finishComposition(i) { const key = jobKey(i.sessionId, i.previewId, i.geometryKey); if (compositionJobs.get(key)?.token === i.token) compositionJobs.delete(key) },
+    async failComposition(i) { const key = jobKey(i.sessionId, i.previewId, i.geometryKey), j = compositionJobs.get(key); if (j && j.token === i.token) Object.assign(j, { state: 'failed', error_code: i.code.slice(0, 60), expires_at: new Date(clock()).toISOString() }) },
+    async listCompositionJobs(sessionId) { return [...compositionJobs.values()].filter(j => j.session_id === sessionId).map(({ token: _t, ...j }) => structuredClone(j)) },
     async completeRepair(i) {
       const s = sessions.get(i.sessionId); if (!s) throw new StoreError('session_not_found')
       if (s.refunded_at) throw new StoreError('order_refunded'); if (s.refund_requested_at) throw new StoreError('refund_pending')
@@ -411,5 +458,5 @@ export function memoryGiftStore(clock: () => number = Date.now) {
     },
     async releaseSession(orderId) { const s = [...sessions.values()].find(x => x.order_id === orderId); if (s?.pinned_at) { s.pinned_at = null; s.expires_at = iso(clock() + 7 * 864e5) } },
   }
-  return Object.assign(store, { sessions, batches, previews, packs, orders, lines, compositions, portfolios, refunds, refundRequests })
+  return Object.assign(store, { sessions, batches, previews, packs, orders, lines, compositions, portfolios, refunds, refundRequests, compositionJobs })
 }

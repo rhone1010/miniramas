@@ -22,9 +22,9 @@ import { requireOpen, scopeOf } from './scope'
 import { removeMockupFile } from './mockup'
 import { correctionPlanFor, groupLines, planFor, type CompositionPlan, type PlanContext } from './composition-plan'
 import { supportsFavoriteReference } from './aspects'
-import { estimateCompositionCost } from './policy'
+import { COMPOSITION_LEASE_MS, COMPOSITION_MAX_ATTEMPTS, estimateCompositionCost } from './policy'
 import { GiftError, fromStoreError, getSessionView, owned, type GiftDeps } from './service'
-import { StoreError, byNewest, correctionUsed, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
+import { StoreError, byNewest, correctionUsed, type CompositionJobKey, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
 import type { SessionView } from './types'
 
 async function selectedPreview(deps: GiftDeps, rec: SessionRec): Promise<PreviewRec> {
@@ -150,8 +150,15 @@ export async function ensureCompositions(deps: GiftDeps, userId: string, session
     // Files already made for this requirement and this artwork (by another line, or an earlier call) are reused.
     const existing = comps.find(c => c.preview_id === preview.id && c.geometry_key === g.geometryKey && c.attempt === 1 && c.composed_path && c.preview_path && c.status !== 'failed' && compositionFitsProduct(c, g.items[0].product))
     let files: GroupFiles | null = existing ? { image: existing.composed_path!, preview: existing.preview_path!, width: existing.width ?? 0, height: existing.height ?? 0, fit: ((existing.plan as { fit?: GroupFiles['fit'] }).fit ?? 'exact'), outpainted: !!(existing.plan as { outpainted?: boolean }).outpainted, generationMode: existing.generation_mode, nb21Calls: 0, sha256: typeof (existing.plan as { artworkSha256?: unknown }).artworkSha256 === 'string' ? (existing.plan as { artworkSha256: string }).artworkSha256 : '' } : null
+    let claim: CompositionJobKey | null = null
     if (!files) {
-      try { files = await composeGroup(deps, rec, preview, g.items[0].product, g.plan, master, g.geometryKey) } catch { failed++; continue }
+      // THE DURABLE GUARD (055): one process prepares a requirement at a time. A second request, a second tab or a retry while it runs generates NOTHING and returns the current view
+      // (the line reads 'preparing'); a request that died leaves a lapsed job the next call takes over (the line read 'stalled'); a failure stays recorded with its code.
+      const c = await deps.store.claimComposition({ sessionId: rec.id, previewId: preview.id, geometryKey: g.geometryKey, lineIds: g.items.map(it => it.line.line_id), method: g.plan.method, ttlMs: COMPOSITION_LEASE_MS, maxAttempts: COMPOSITION_MAX_ATTEMPTS, nowMs: (deps.clock ?? Date.now)() })
+      if (!c.token) { if (c.reason !== 'in_progress') failed++; continue }
+      claim = { sessionId: rec.id, previewId: preview.id, geometryKey: g.geometryKey, token: c.token }
+      try { files = await composeGroup(deps, rec, preview, g.items[0].product, g.plan, master, g.geometryKey) }
+      catch (e) { await deps.store.failComposition({ ...claim, code: e instanceof GiftError ? e.code : 'composition_error' }).catch(() => {}); failed++; continue }
     }
     let creatorId: string | null = existing?.id ?? null
     for (const it of g.items) {
@@ -162,6 +169,7 @@ export async function ensureCompositions(deps: GiftDeps, userId: string, session
         creatorId ??= row.id
       } catch { /* a concurrent call already recorded this line: the unique key makes the repeat harmless */ }
     }
+    if (claim) await deps.store.finishComposition(claim).catch(() => {})            // the rows are the record now; the job is dropped
   }
   if (failed) throw new GiftError('composition_failed')                  // finished groups are kept; calling again fills only the rest
   return getSessionView(deps, userId, sessionId)
