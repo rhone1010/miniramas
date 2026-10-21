@@ -5,8 +5,8 @@ if(!document.documentElement.classList.contains('shared-collection-entry')||!win
 const grid=document.getElementById('mycollGrid'), root=document.getElementById('mycoll');
 let sort='newest',pendingKey=null,fullKey=null,fullSource=null,fullToken=0;
 let mobileView=null;
-if(matchMedia('(max-width:767px)').matches){try{mobileView=JSON.parse(sessionStorage.getItem('liten_collection_mobile_view')||'null');if(mobileView){if(['all','preview','purchased'].includes(mobileView.state))MC_STATE=mobileView.state;if(['all','Portraits','Groups','Pets'].includes(mobileView.series))MC_SERIES=mobileView.series;if(['newest','oldest'].includes(mobileView.sort))sort=mobileView.sort;}}catch(_){} }
-function retainMobileView(){if(!matchMedia('(max-width:767px)').matches)return;try{sessionStorage.setItem('liten_collection_mobile_view',JSON.stringify({state:MC_STATE,series:MC_SERIES,sort,scroll:grid.scrollTop}));}catch(_){} }
+{try{mobileView=JSON.parse(sessionStorage.getItem('liten_collection_mobile_view')||'null');if(mobileView){if(['all','preview','purchased'].includes(mobileView.state))MC_STATE=mobileView.state;if(['all','Portraits','Groups','Pets'].includes(mobileView.series))MC_SERIES=mobileView.series;if(['newest','oldest'].includes(mobileView.sort))sort=mobileView.sort;}}catch(_){} }
+function retainMobileView(){try{sessionStorage.setItem('liten_collection_mobile_view',JSON.stringify({state:MC_STATE,series:MC_SERIES,sort,scroll:grid.scrollTop}));}catch(_){} }
 addEventListener('pagehide',retainMobileView);
 
 const busy=new Set();
@@ -28,6 +28,7 @@ head.querySelector('button').onclick=()=>{draft={state:MC_STATE,series:MC_SERIES
 filters.querySelector('[data-apply]').onclick=()=>{MC_STATE=draft.state;MC_SERIES=draft.series;sort=draft.sort;const count=(MC_STATE!=='all'?1:0)+(MC_SERIES!=='all'?1:0)+(sort!=='newest'?1:0);head.querySelector('.mc-filter-open span').textContent='Filter'+(count?' · '+count:'');renderMyCollectionGrid();filters.close();};
 const oldVisible=window.mcVisible;
 window.mcVisible=function(){const list=oldVisible();const indexed=list.map((p,i)=>({p,i,date:Date.parse(p.createdAt||p.created_at||PORTFOLIO_MADE[p.portfolioId]||'')||0}));return indexed.sort((a,b)=>a.date&&b.date&&a.date!==b.date?(sort==='oldest'?a.date-b.date:b.date-a.date):(sort==='oldest'?b.i-a.i:a.i-b.i)).map(x=>x.p);};
+if(mobileView)renderMyCollectionGrid();
 function piece(key){return PIECES.find(p=>p.key===key);}
 function decorate(){if(mobileView&&grid.querySelector('.card')){grid.scrollTop=mobileView.scroll||0;mobileView=null;}grid.querySelectorAll('.card[data-piece]').forEach(card=>{const p=piece(card.dataset.piece);if(!p)return;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',(typeof pieceDisplayName==='function'?pieceDisplayName(p):p.name)+(p.locked?' — locked':' — unlocked'));});}
 new MutationObserver(decorate).observe(grid,{childList:true});decorate();

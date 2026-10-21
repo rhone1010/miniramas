@@ -1,2 +1,2 @@
 body #masthead.site-legacy-masthead,body header.site-legacy-masthead{display:none!important;}
-body .liten-masthead:has(.masthead__nav[data-open]){z-index:10000;}
+body .liten-masthead:has(.masthead__nav[data-open],.mh-series-menu:not([hidden])){z-index:10000;}
