@@ -98,8 +98,24 @@ export function failureReason(out: any, httpStatus: number): string {
 
 /** ONE render through the series' own generate route. Returns the CLEAN master; throws on any refusal or failure. */
 export async function generateMaster(i: GenerateInput): Promise<{ imageB64: string }> {
+  return generateVia(i, (url, init) => fetch(url, init))
+}
+/**
+ * The same call, made by invoking the series' route handler in this process instead of over HTTP. For the operator repair script only: it runs outside the app, where there is no
+ * server to call (a localhost APP_URL answers "fetch failed"). Same route, same body, same bearer check, so the generation is identical and billed once.
+ */
+export async function generateMasterInProcess(i: GenerateInput): Promise<{ imageB64: string }> {
+  const { NextRequest } = await import('next/server')
+  const handlers: Record<string, () => Promise<{ POST: (r: any) => Promise<Response> }>> = {
+    groups: () => import('@/app/api/v1/groups/generate/route'), pets: () => import('@/app/api/v1/pets/generate/route'), portraits: () => import('@/app/api/v1/portraits/generate/route'),
+  }
+  const load = handlers[i.series]; if (!load) throw new Error('generation_unavailable')
+  const { POST } = await load()
+  return generateVia(i, (url, init) => POST(new NextRequest(url, init as any)))
+}
+async function generateVia(i: GenerateInput, send: (url: string, init: { method: string; headers: Record<string, string>; body: string }) => Promise<Response>): Promise<{ imageB64: string }> {
   const body = generateBody(i)
-  const res = await fetch(`${internalBaseUrl()}/api/v1/${i.series}/generate`, {
+  const res = await send(`${internalBaseUrl()}/api/v1/${i.series}/generate`, {
     method: 'POST',
     headers: internalHeaders({ 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.CRON_SECRET ?? ''}` }),
     body: JSON.stringify(body),

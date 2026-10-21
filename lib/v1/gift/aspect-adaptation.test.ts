@@ -25,7 +25,7 @@ function rig() {
   const generate = vi.fn(async (i: { aspect: string }) => { const [w, h] = i.aspect.split(':').map(Number); return { imageB64: (await sharp({ create: { width: 512 * w, height: 512 * h, channels: 3, background: { r: 40 + w * 9, g: 90, b: 60 + h * 7 } } }).png().toBuffer()).toString('base64') } })
   const deps = {
     store, generate, compose: composeWithPrintShop, watermark: async (b64: string) => sharp(Buffer.from(b64, 'base64')).jpeg().toBuffer(), draftCompositions: true,
-    storage: { put: async (p: string, b: Buffer) => { files.set(p, b) }, get: async (p: string) => files.get(p) ?? null, remove: async () => {}, signedUrl: async (p: string) => (files.has(p) ? 'https://signed.test/' + p : null) },
+    storage: { put: async (p: string, b: Buffer) => { files.set(p, b) }, get: async (p: string) => files.get(p) ?? null, remove: async (ps: string[]) => { for (const p of ps) files.delete(p) }, signedUrl: async (p: string) => (files.has(p) ? 'https://signed.test/' + p : null) },
     analyze: async () => ({ status: 'supported', series: 'portraits', peopleCount: null }), kick: vi.fn(async () => ({})),
   } as unknown as GiftDeps
   return { deps, store, files, generate }

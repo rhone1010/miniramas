@@ -83,10 +83,18 @@ const planOf = (rec: SessionRec, product: CanonicalProduct): CompositionPlan => 
  * `slot` names the files: a shared group uses the key, a line's own correction uses its line id, so a correction can never
  * overwrite what other lines share.
  */
+/** Which step of a composition threw, kept on the error so an operator's log says "generate" or "upscale", never just "composition_failed". Messages only: no keys, no image data. */
+async function stage<T>(name: 'generate' | 'store_generation' | 'compose' | 'watermark' | 'store', fn: () => Promise<T>): Promise<T> {
+  try { return await fn() } catch (e) { if (e && typeof e === 'object' && !(e as { stage?: string }).stage) (e as { stage?: string }).stage = name; throw e }
+}
+/** The failing stage and message of an error from composeGroup, as one log line (no secrets: provider messages only). */
+export const composeFailure = (e: unknown) => ({ stage: (e as { stage?: string } | null)?.stage ?? 'unknown', code: e instanceof GiftError ? e.code : undefined, message: String(e instanceof Error ? e.message : e).slice(0, 300) })
+
 async function composeGroup(deps: GiftDeps, rec: SessionRec, preview: PreviewRec, product: CanonicalProduct, plan: CompositionPlan, master: Buffer, slot: string): Promise<GroupFiles> {
   if (!deps.compose) throw new GiftError('composition_failed')
   let source = master
   let generationMode: GroupFiles['generationMode'] = 'none'
+  const base = `gift/${rec.id}/compositions/${preview.id}-${slot}`
   if (plan.method === 'generated') {
     if (!rec.source_path || !rec.series) throw new GiftError('generation_unavailable')
     const photo = await deps.storage.get(rec.source_path)
@@ -94,19 +102,24 @@ async function composeGroup(deps: GiftDeps, rec: SessionRec, preview: PreviewRec
     // The customer's approved artwork goes along as a reference wherever the series' route can take one (Portraits, Pets); Groups
     // regenerates from the photograph alone. Either way the result is a NEW generation that the customer sees and approves.
     const useReference = supportsFavoriteReference(rec.series)
-    const out = await deps.generate({
-      series: rec.series, sourceB64: photo.toString('base64'), effectId: preview.effect_id, aspect: plan.generationAspect!, userId: rec.user_id,
-      peopleCount: rec.analysis.peopleCount ?? null, productComposition: true, ...(useReference ? { referenceB64: master.toString('base64') } : {}),
-    })
-    source = Buffer.from(out.imageB64, 'base64')
+    // A generation that was paid for and then lost to a later step is never paid for twice: the raw output is kept beside the composition and reused by the next attempt.
+    const kept = await deps.storage.get(`${base}.gen.png`).catch(() => null)
+    if (kept) source = kept
+    else {
+      const out = await stage('generate', () => deps.generate({
+        series: rec.series!, sourceB64: photo.toString('base64'), effectId: preview.effect_id, aspect: plan.generationAspect!, userId: rec.user_id,
+        peopleCount: rec.analysis.peopleCount ?? null, productComposition: true, ...(useReference ? { referenceB64: master.toString('base64') } : {}),
+      }))
+      source = Buffer.from(out.imageB64, 'base64')
+      await stage('store_generation', () => deps.storage.put(`${base}.gen.png`, source, 'image/png'))
+    }
     generationMode = useReference ? 'favorite_reference' : 'photo_regeneration'
   }
-  const made = await deps.compose({ masterB64: source.toString('base64'), size: product.size as PrintSize, finish: product.family as PrintFinish })
+  const made = await stage('compose', () => deps.compose!({ masterB64: source.toString('base64'), size: product.size as PrintSize, finish: product.family as PrintFinish }))
   if (!compositionFitsProduct(made, product)) throw new GiftError('composition_geometry_mismatch')      // never store a file of the wrong shape for what was bought
-  const marked = await deps.watermark(made.image.toString('base64'))              // the customer's view of a clean composition: watermarked, fails closed
-  const base = `gift/${rec.id}/compositions/${preview.id}-${slot}`
-  await deps.storage.put(`${base}.png`, made.image, 'image/png')
-  await deps.storage.put(`${base}.jpg`, marked, 'image/jpeg')
+  const marked = await stage('watermark', () => deps.watermark(made.image.toString('base64')))              // the customer's view of a clean composition: watermarked, fails closed
+  await stage('store', async () => { await deps.storage.put(`${base}.png`, made.image, 'image/png'); await deps.storage.put(`${base}.jpg`, marked, 'image/jpeg') })
+  if (generationMode !== 'none') await deps.storage.remove([`${base}.gen.png`]).catch(() => {})                 // the composition is stored: the kept raw generation has done its job
   return { image: `${base}.png`, preview: `${base}.jpg`, width: made.width, height: made.height, fit: made.fit, outpainted: made.outpainted, generationMode, nb21Calls: generationMode === 'none' ? 0 : 1, sha256: createHash('sha256').update(made.image).digest('hex') }
 }
 
@@ -358,7 +371,7 @@ export async function repairLine(deps: GiftDeps, input: { operator: string; user
     if (!files) {
       const master = await deps.storage.get(preview.master_path!)
       if (!master) throw new GiftError('generation_unavailable')
-      try { files = await composeGroup(deps, rec, preview, product, plan, master, slot) } catch (e) { if (e instanceof GiftError) throw e; throw new GiftError('composition_failed') }
+      try { files = await composeGroup(deps, rec, preview, product, plan, master, slot) } catch (e) { console.error('gift_repair_compose_failed', JSON.stringify({ sessionId: rec.id, lineId: line.line_id, ...composeFailure(e) })); if (e instanceof GiftError) throw e; throw new GiftError('composition_failed') }
     }
     const row = await deps.store.insertComposition({
       ...recordFor(rec, preview, line, current.attempt, plan, files, null, true, { sku: product.sku, repair: { of: current.id, seq, operator: input.operator, reason: 'geometry_mismatch', at: new Date(now()).toISOString(), ...(reusedFiles ? { reusedFiles: true } : {}) } }),

@@ -433,7 +433,7 @@ describe('the purchased orientation is fixed (landscape artwork, portrait produc
     const r = rig(); const p = await project(r, [L12]); await selectArtwork(r.deps, p.user, p.sid, p.previews[0].previewId)
     r.compose.mockImplementationOnce(async () => ({ image: await sharp({ create: { width: 300, height: 200, channels: 3, background: '#111' } }).png().toBuffer(), width: 300, height: 200, fit: 'extend' as const, outpainted: false }))
     await expect(ensureCompositions(r.deps, p.user, p.sid)).rejects.toMatchObject({ code: 'composition_failed' })
-    expect(r.store.compositions.length).toBe(0); expect([...r.files.keys()].some(k => k.includes('/compositions/'))).toBe(false)
+    expect(r.store.compositions.length).toBe(0); expect([...r.files.keys()].some(k => k.includes('/compositions/') && !k.endsWith('.gen.png'))).toBe(false)           // (a paid raw generation, if any, is kept for the retry)
   })
   it('compositionFitsProduct compares the stored shape with the frozen final or picture area, and does not guess for rows without dimensions', () => {
     const fa = getProduct('fine_art:12x18')!, canvas = getProduct('canvas:12x12')!
@@ -584,6 +584,15 @@ describe('repair under concurrency and interruption', () => {
     vi.spyOn(r.store, 'listCompositions').mockResolvedValueOnce(stale)                                      // the second process's first read is from before the repair
     const second = await run(r, sid)
     expect(second.status).toBe('not_needed'); expect(r.generate.mock.calls.length).toBe(gen); expect(r.store.compositions.length).toBe(n)
+  })
+  it('a failure AFTER the paid generation (the compose step) keeps the raw generation: the retry pays nothing more, the log names the stage, and the raw file is removed on success', async () => {
+    const { r, sid } = await defective(); const gen = r.generate.mock.calls.length, err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    r.compose.mockImplementationOnce(async () => { throw new Error('print_resolution_unavailable') })
+    await expect(run(r, sid)).rejects.toMatchObject({ code: 'composition_failed' }); expect(r.generate.mock.calls.length).toBe(gen + 1)
+    expect(String(err.mock.calls.at(-1)![1])).toContain('"stage":"compose"'); expect(String(err.mock.calls.at(-1)![1])).toContain('print_resolution_unavailable'); err.mockRestore()
+    expect([...r.files.keys()].filter(k => k.endsWith('.gen.png')).length).toBe(1)
+    expect((await run(r, sid)).status).toBe('repaired'); expect(r.generate.mock.calls.length).toBe(gen + 1)                    // no second generation
+    expect([...r.files.keys()].filter(k => k.endsWith('.gen.png')).length).toBe(0)
   })
   it('interrupted after the paid generation but before the row is stored: the retry reuses the stored files and pays nothing more', async () => {
     const { r, sid, orderId } = await defective(); const gen = r.generate.mock.calls.length, real = r.store.insertComposition.bind(r.store)

@@ -14,7 +14,7 @@
 
 import { repairLine } from '../lib/v1/gift/compose'
 import { parseRepairArgs as parseArgs } from '../lib/v1/gift/repair-args'
-import { giftDeps } from '../lib/v1/gift/real'
+import { giftDeps, generateMasterInProcess } from '../lib/v1/gift/real'
 import { supabaseAdmin } from '../lib/supabase'
 
 async function main() {
@@ -29,7 +29,7 @@ async function main() {
     if (probe.error || claims.error) throw new Error('migration 052 is not applied to this database: nothing was done')
   }
 
-  const result = await repairLine(giftDeps(), { operator: a.operator, userId: a.user, sessionId: a.session, lineId: a.line, dryRun: !a.execute })
+  const result = await repairLine({ ...giftDeps(), generate: generateMasterInProcess }, { operator: a.operator, userId: a.user, sessionId: a.session, lineId: a.line, dryRun: !a.execute })
   console.log(JSON.stringify(result, null, 2))
   if (!a.execute && result.status === 'would_repair') console.log('Dry run only. Add --execute to perform this repair (one generation at most).')
 }
