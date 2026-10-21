@@ -44,6 +44,7 @@ function field(id:string,label:string,value:string,attrs=''){return '<label clas
 function thumb(id:string){if(session.source?.series==='pets')return '/previews/pets/pets_'+id+'.jpg';if(session.source?.series==='groups')return '/previews/groups/groups_'+id+'.jpg';const x=manifest?.effects?.[id],f=x?.neutral||x?.woman||x?.man||x?.all?.[0];return f?manifest.base+id+'/'+f:''}
 function rail(title:string,copy:string){$('left').innerHTML=(view==='effects'?'':'<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>')+'<h1>'+title+'</h1>'+copy+'<div id="filters"></div>'+(view==='effects'?'':'<p class="tagline">More than a gift.<br>A longer story.</p>')+'<button id="back" '+((!history.length&&!['configuration','products','cart','checkout','focus','compare','effects'].includes(view))||busy?'disabled':'')+'>← Back</button>';$('back').onclick=back;if(serverMode&&live?.session)$('left').insertAdjacentHTML('beforeend','<button id="new-gift" data-href="/gift-wizard.next.html?newGift=1&amp;resumeSessionId='+encodeURIComponent(live.id)+'">Start a New Gift</button>');else if(serverMode&&params.get('newGift')==='1'&&params.get('resumeSessionId'))$('left').insertAdjacentHTML('beforeend','<button id="resume-gift" data-href="/gift-wizard.next.html?sessionId='+encodeURIComponent(params.get('resumeSessionId')!)+'">Return to Your Gift</button>');for(const id of ['new-gift','resume-gift'])if($(id))$(id).onclick=()=>{rememberView();location.assign($(id).dataset.href!)}}
 function render(){
+ $('left').hidden=false;
  $('error').hidden=true;$('error').textContent='';$('status').textContent=analyzingSource?'Analyzing your photo…':layoutReview?'Layout review · sample artwork · no payment or order':'';$('screen').dataset.view=view;$('left').classList.toggle('effects-rail',view==='effects');$('workspace').setAttribute('aria-busy',String(busy));$('screen').innerHTML='';$('right').innerHTML='';
  document.querySelectorAll('.progress li').forEach((el,i)=>{el.classList.toggle('done',i<stage());if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});
  if(view==='photo')renderPhoto();else if(view==='products'||view==='configuration')renderProducts();else if(view==='cart')renderCart();else if(view==='effects')renderEffects();else if(['review','focus','compare'].includes(view))renderArt();else if(view==='more')renderMore();else if(view==='compositions')renderCompositions();else if(view==='checkout')renderCheckout();else renderPayment();
@@ -57,6 +58,35 @@ function render(){
  adaptMobileView();
  rememberView();
 }
+
+function renderMobileProgress(){
+ const labels=Array.from(document.querySelectorAll('.progress li'),el=>el.textContent||'');
+ const paid=!!live?.session&&purchased(live.session),restricted=!!live?.session&&['needs_attention','refunded','refund_requested','cancelled'].includes(live.session.order.state);
+ const available=[!paid,!!session.source&&!paid,(!!session.batches.length||generationBatch!==null)&&!paid,!!favorite()&&!paid,paid||!!favorite()&&session.lines.length>0,paid];
+ const completed=[!!session.source,!!session.batches.length,!!favorite(),session.lines.length>0,paid,!!live?.session?.order.approvedAt];
+ const current=stage(),panel=document.createElement('details');panel.id='mobile-progress';
+ panel.innerHTML='<summary aria-label="Gift progress: '+esc(labels[current])+'"><span class="mobile-progress-pips" aria-hidden="true">'+labels.map((_,i)=>'<span class="'+(i===current?'current':completed[i]?'completed':'')+'">'+(i+1)+'</span>').join('')+'</span><span class="mobile-progress-name">'+esc(labels[current])+' ▾</span></summary><nav aria-label="Gift steps">'+labels.map((label,i)=>{const enabled=!busy&&!restricted&&available[i],state=i===current?'Current':completed[i]?(enabled?'Completed':'Completed · Locked'):enabled?'Available':'Locked';return '<button type="button" data-step="'+i+'" '+(!enabled?'disabled':'')+(i===current?' aria-current="step"':'')+'><span>'+(i+1)+'. '+esc(label)+'</span><small>'+state+'</small></button>'}).join('')+'</nav>';
+ document.querySelector('.progress')!.after(panel);
+ panel.onkeydown=e=>{if(e.key==='Escape'){panel.open=false;panel.querySelector('summary')!.focus()}};
+ panel.querySelectorAll<HTMLButtonElement>('[data-step]').forEach(b=>b.onclick=()=>{const i=Number(b.dataset.step);if(busy||restricted||!available[i])return;panel.open=false;go((['photo','effects','review','products',paid?'payment':'checkout','compositions'] as View[])[i])});
+}
+function adaptMobileApproval(){
+ $('left').hidden=true;
+ $('screen').querySelector('.actions')?.remove();
+ const body=$('right').querySelector('.context-body'),primaryButton=$('primary') as HTMLButtonElement;
+ if(!body)return;
+ if(orderReviewExample){if(primaryButton.disabled)primaryButton.hidden=true;return}
+ const nav=$('screen').querySelector('nav'),approval=document.createElement('section');approval.className='mobile-approval-actions';
+ const heading=body.querySelector('h3'),status=heading?.nextElementSibling,correction=body.querySelector('button');
+ if(heading)approval.append(heading);if(status){status.setAttribute('role','status');approval.append(status)}
+ if(!primaryButton.disabled)approval.append(primaryButton);else primaryButton.hidden=true;
+ if(correction){correction.classList.add('secondary');approval.append(correction)}
+ if(nav)nav.before(approval);else $('screen').append(approval);
+ if(session.lines.length<2)nav?.querySelector('#previous-product')?.remove();
+ if(!$('order-example')){const review=document.createElement('button');review.id='order-example';review.className='secondary';review.textContent='View Order Review →';review.onclick=()=>{orderReviewExample=true;render()};if(nav)nav.after(review);else approval.after(review)}
+ const utility=document.createElement('div');utility.className='actions review-utilities';const fresh=$('new-gift');if(fresh)utility.append(fresh);$('right').append(utility);
+}
+
 // Responsive presentation only: never changes purchases, entitlements or approval state.
 let mobileFiltersOpen=false,mobileSilo='';
 let mobileActionObserver:ResizeObserver|undefined;
@@ -64,7 +94,10 @@ const mobileLayout=matchMedia('(max-width:1000px)');
 mobileLayout.addEventListener('change',()=>{if(products.length)render()});
 function adaptMobileView(){
  mobileActionObserver?.disconnect();
+ document.getElementById('mobile-progress')?.remove();
  if(!mobileLayout.matches)return;
+ renderMobileProgress();
+ if(view==='compositions')adaptMobileApproval();
  if(view==='effects'){
   document.querySelector('[data-silo="all"]')?.remove();
   const filters=$('filters'),details=document.createElement('details'),summary=document.createElement('summary');

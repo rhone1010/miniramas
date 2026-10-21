@@ -176,7 +176,7 @@ test('changed server disclosure must be displayed and accepted again before moun
  let repaired=false;const writes:string[]=[];s.route=(url:string,init:any)=>{if(init.method!=='GET')writes.push(url);if(url.includes('/lines/line/mockup?')&&!repaired)return Response.json({error:'composition_geometry_mismatch'},{status:409});return null};
  const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('compositions');
  assert.ok(win.document.querySelector('[data-composition-state="repair-required"]'));assert.equal(win.document.querySelector('[data-composition-state] h3').textContent,"We're preparing your artwork for this gift");assert.deepEqual([...win.document.querySelectorAll('[data-composition-state] p')].map((p:any)=>p.textContent),["Your artwork needs a small adjustment to fit this product correctly. We're taking care of it.","Your selected artwork and purchase are safe. No action is needed right now."]);assert.equal(win.document.getElementById('check-composition-line').textContent,'Check Again');assert.equal(win.document.body.textContent.includes('composition_geometry_mismatch'),false);assert.equal(win.document.getElementById('primary').disabled,true);assert.equal(win.document.querySelector('#right button').disabled,true);
- win.document.getElementById('next-product').click();assert.equal(win.document.querySelector('#screen img').src,s.mockups.square.url);assert.ok(win.document.getElementById('right').textContent.includes('approved'));
+ win.document.getElementById('next-product').click();assert.equal(win.document.querySelector('#screen img').src,s.mockups.square.url);assert.ok(win.document.querySelector('.mobile-approval-actions').textContent.includes('approved'));
  win.document.getElementById('previous-product').click();win.document.getElementById('check-composition-line').click();await new Promise(r=>setTimeout(r,25));assert.ok(win.document.querySelector('[data-composition-state="repair-required"]'));assert.deepEqual(writes,[]);assert.equal(s.compositions[0].correctionsRemaining,1);
  // If technical repair temporarily removes the invalid composition, refresh still must not call compose.
  s.compositions[0].compositionId=null;win.document.getElementById('check-composition-line').click();await new Promise(r=>setTimeout(r,25));assert.ok(win.document.querySelector('[data-composition-state="repair-required"]'));assert.deepEqual(writes,[]);
@@ -436,4 +436,22 @@ test('retired product previews are rejected before an image is inserted',async()
 });
 test('offline approval examples use replacement scenes rather than retired payment-first mockups',async()=>{
  for(const mode of ['approval','approval-second','approval-final']){const {win,dom}=await boot('layoutReview='+mode);const images=[...win.document.querySelectorAll('#screen img')] as HTMLImageElement[];assert.ok(images.length>0);assert.ok(images.every(i=>i.src.includes('-scene-')||i.src.includes('/mockup-scenes/')));assert.ok(images.every(i=>!i.src.includes('/review/payment-first/')));dom.window.close();}
+});
+
+test('mobile progress is gated by prerequisites and does not mutate the session',async()=>{
+ const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];
+ const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('effects');
+ const menu=win.document.getElementById('mobile-progress');assert.equal(menu.querySelectorAll('.mobile-progress-pips span').length,6);
+ assert.equal(menu.querySelector('[data-step="3"]').disabled,true);assert.equal(menu.querySelector('[data-step="4"]').disabled,true);assert.equal(menu.querySelector('[data-step="5"]').disabled,true);
+ menu.querySelector('[data-step="0"]').click();assert.equal(win.document.getElementById('screen').dataset.view,'photo');dom.window.close();
+});
+test('mobile paid review keeps status by photograph and locks purchased editing',async()=>{
+ const s:any=project();s.artworkPreviewId='preview';s.compositions=[{lineId:'line',productId:'framed:12x18',sourceArtworkId:'preview',compositionId:'comp',attempt:1,status:'approved',sku:s.geometries[0].sku,correctionsRemaining:1}];
+ const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('compositions');
+ assert.ok(win.document.querySelector('#screen .mobile-approval-actions [role="status"]'));assert.equal(win.document.querySelector('#mobile-progress [data-step="3"]').disabled,true);
+ assert.equal(win.document.getElementById('previous-product'),null);assert.equal(win.document.querySelectorAll('#order-example').length,1);assert.equal(win.document.getElementById('primary').disabled,true);assert.equal(win.document.getElementById('primary').hidden,true);
+ win.document.getElementById('order-example').click();assert.equal(win.document.getElementById('primary').disabled,true);assert.equal(win.document.getElementById('primary').hidden,true);dom.window.close();
+});
+test('desktop retains original progress and review placement',async()=>{
+ const {win,dom}=await boot('layoutReview=approval');assert.equal(win.document.getElementById('mobile-progress'),null);assert.ok(win.document.querySelector('#right #primary'));assert.equal(win.document.getElementById('left').hidden,false);dom.window.close();
 });

@@ -139,7 +139,7 @@ body:has(#screen[data-view="effects"]) .right-rail .context-image,body:has(#scre
 body:has(#screen[data-view="checkout"]) .left-rail .tagline{padding-top:20px}
 
 /* Six-stage journey: reuse existing mobile spacing and controls in two rows. */
-@media(max-width:1000px){.progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));row-gap:12px}.progress li:nth-child(3):after{display:none}}
+
 /* Step 4 layout locked 2026-10-19: catalog artwork/product completion only. */
 body:has(#screen[data-view="products"]) #workspace{display:block;height:auto;min-width:0}
 body:has(#screen:is([data-view="products"],[data-view="configuration"])) .left-rail,body:has(#screen:is([data-view="products"],[data-view="configuration"])) #status,body:has(#screen:is([data-view="products"],[data-view="configuration"])) .preview-note{display:none}
@@ -189,3 +189,18 @@ body:has(#screen:is([data-view="configuration"],[data-view="cart"])) .right-rail
 .analysis-feedback:after{content:"";position:absolute;inset:0;border:3px solid var(--gold);animation:photoAnalysis 2s ease-in-out infinite;pointer-events:none}
 @keyframes photoAnalysis{0%,100%{opacity:.38}50%{opacity:.95}}
 @media(prefers-reduced-motion:reduce){.analysis-feedback:after{animation:none}}
+
+/* Authorized mobile progress and approval hierarchy; desktop presentation unchanged. */
+@media(max-width:1000px){
+.skip:not(:focus){clip-path:inset(50%);width:1px;height:1px;overflow:hidden;padding:0;white-space:nowrap}.skip:focus{z-index:200}
+.progress{display:none!important}
+#mobile-progress{padding:12px 24px;border-bottom:1px solid var(--line)}
+#mobile-progress summary{list-style:none;cursor:pointer;text-align:center;font:22px/1.15 Cormorant,serif;min-height:44px}#mobile-progress summary::-webkit-details-marker{display:none}
+.mobile-progress-pips{display:flex;justify-content:space-between;position:relative;margin-bottom:6px}.mobile-progress-pips:before{content:'';position:absolute;left:21px;right:21px;top:21px;height:1px;background:var(--line)}
+.mobile-progress-pips span{display:grid;place-items:center;position:relative;width:42px;height:42px;border:1px solid var(--line);border-radius:50%;background:var(--ivory)}.mobile-progress-pips .completed{border-color:var(--forest)}.mobile-progress-pips .current{background:var(--forest);border-color:var(--forest);color:var(--ivory)}
+#mobile-progress nav{display:grid;gap:8px;margin-top:12px}#mobile-progress nav button{display:flex;justify-content:space-between;align-items:center;text-align:left;gap:12px}#mobile-progress nav small{font:12px Manrope,sans-serif}#mobile-progress nav [aria-current]{border-color:var(--forest)}
+body:has(#screen[data-view="compositions"]) .center{padding:16px 24px}body:has(#screen[data-view="compositions"]) .photo{max-height:none;aspect-ratio:1;object-fit:contain}
+.mobile-approval-actions{display:grid;gap:12px;margin-top:16px}.mobile-approval-actions h3,.mobile-approval-actions p{margin:0}.mobile-approval-actions .primary{margin:0}.mobile-approval-actions button{width:100%}
+body:has(#screen[data-view="compositions"]) nav.sizes{display:flex;flex-wrap:nowrap;gap:8px}body:has(#screen[data-view="compositions"]) nav.sizes button{flex:1;min-width:0;padding:10px 12px}body:has(#screen[data-view="compositions"]) #order-example{width:100%}
+.review-utilities{border-top:1px solid var(--line);padding-top:12px}.review-utilities button{font-size:20px;background:transparent;color:var(--soft)}
+}
