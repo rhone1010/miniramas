@@ -1,5 +1,5 @@
 .lc-footer,.lc-consent,.lc-preferences{box-sizing:border-box;color:var(--ink,#29261f);background:var(--ivory,#f3ede1);font:400 16px/1.5 sans-serif}
-.lc-footer{position:static;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:12px 5%;border-top:1px solid var(--gold,#d7bd89)}
+.lc-footer{grid-column:1 / -1;position:static;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:12px 5%;border-top:1px solid var(--gold,#d7bd89)}
 .lc-footer nav,.lc-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px}.lc-footer nav{position:static;width:auto;min-height:0;margin:0;padding:0;border:0;background:transparent}
 .lc-footer a,.lc-footer button{font:400 18px/1.2 var(--serif,Georgia,serif);color:inherit;background:none;border:0;padding:10px 0;min-height:44px;text-decoration:none;cursor:pointer}
 .lc-footer small{font-size:12px}.lc-consent{position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 5%;border-bottom:1px solid var(--gold,#d7bd89)}

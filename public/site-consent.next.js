@@ -23,4 +23,7 @@ window.addEventListener('storage',function(e){if(e.key!==key)return;choice=read(
 var footer=document.createElement('footer');footer.className='lc-footer';var from=new URLSearchParams(location.search).get('from');var series=/^\/groups/.test(location.pathname)?'groups':/^\/pets/.test(location.pathname)?'pets':['groups','pets','portraits'].includes(from)?from:'portraits';
 footer.innerHTML='<small>© '+new Date().getFullYear()+' LITEN &amp; Co</small><nav aria-label="Footer"><a href="/information.next.html?page=privacy&from='+series+'">Privacy</a><a href="/information.next.html?page=terms&from='+series+'">Terms</a><button type="button" data-consent="manage">Cookie Preferences</button><a href="/help?from='+series+'">Support</a></nav>';
 var old=document.querySelector('.gift-footer');if(old)old.replaceWith(footer);else document.body.append(footer);
+var workshop=document.getElementById('workshop');
+function placeFooter(){if(!workshop)return;var floors=['effectFloor','siloFloor','poseFloor'].map(function(id){return document.getElementById(id)});var target=floors.find(function(f){return f&&getComputedStyle(f.parentElement).visibility==='visible'&&getComputedStyle(f.parentElement).display!=='none'});if(target&&footer.parentElement!==target)target.append(footer)}
+if(workshop){placeFooter();new MutationObserver(placeFooter).observe(workshop,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}
 })();
