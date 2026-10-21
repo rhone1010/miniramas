@@ -5,6 +5,7 @@ const dimensions = (o) => o.imageWidthIn + ':' + o.imageHeightIn;
 export function optionChoices(p, o) { return p.options.filter(x => dimensions(x) === dimensions(o)); }
 export function hasChoices(p, o) { return optionChoices(p, o).filter(x => x.compatible !== false).length > 1; }
 const photo = (url, label) => '<img src="' + esc(url) + '" alt="' + esc(label) + '">';
+export function unavailablePreview(p) { return photo(p.image, p.label) + '<p role="status">Not currently available</p>'; }
 export function mountStudio(host, a) {
     const s = a.state;
     if (!['product', 'size', 'options', 'review'].includes(s.step))

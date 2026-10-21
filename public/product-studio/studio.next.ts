@@ -16,6 +16,7 @@ const dimensions=(o:StudioOption)=>o.imageWidthIn+':'+o.imageHeightIn;
 export function optionChoices(p:StudioProduct,o:StudioOption){return p.options.filter(x=>dimensions(x)===dimensions(o));}
 export function hasChoices(p:StudioProduct,o:StudioOption){return optionChoices(p,o).filter(x=>x.compatible!==false).length>1;}
 const photo=(url:string,label:string)=>'<img src="'+esc(url)+'" alt="'+esc(label)+'">';
+export function unavailablePreview(p:StudioProduct){return photo(p.image,p.label)+'<p role="status">Not currently available</p>'}
 export function mountStudio(host:HTMLElement,a:StudioAdapter){
  const s=a.state;
  if(!['product','size','options','review'].includes(s.step))s.step='product';
