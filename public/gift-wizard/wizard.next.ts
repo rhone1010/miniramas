@@ -155,7 +155,7 @@ async function upload(file:File){
   if(sourceURL)URL.revokeObjectURL(sourceURL);sourceURL=candidate;candidate='';history=[];busy=false;analyzingSource=false;render();return;
  }
  if(sourceURL)URL.revokeObjectURL(sourceURL);sourceURL=candidate;candidate='';session=newSession();session.source={status:'supported',series:fixtureSeries,sourceRef:'local-photo-'+crypto.randomUUID(),fixture:true};history=[];silo='all';effectFocus='';busy=false;analyzingSource=false;render();
- }catch(e){busy=false;analyzingSource=false;render();const recovery=e instanceof GiftApiError&&e.code==='rate_limited'?e.details as {resumeSessionId?:string;samePhoto?:boolean}:null;if(recovery?.resumeSessionId&&/^[\w-]{1,80}$/.test(recovery.resumeSessionId)){$('right').insertAdjacentHTML('afterbegin',secondary('resume-upload','Return to Your Gift'));$('resume-upload').onclick=()=>location.assign('/gift-wizard.next.html?sessionId='+encodeURIComponent(recovery.resumeSessionId!));error('Return to Your Gift')}else error(e instanceof Error?e.message:'This photograph could not be opened.')}finally{if(candidate)URL.revokeObjectURL(candidate)}
+ }catch(e){busy=false;analyzingSource=false;if(e instanceof GiftApiError&&e.status===401){paymentState='auth';view='payment';render();return}render();const recovery=e instanceof GiftApiError&&e.code==='rate_limited'?e.details as {resumeSessionId?:string;samePhoto?:boolean}:null;if(recovery?.resumeSessionId&&/^[\w-]{1,80}$/.test(recovery.resumeSessionId)){$('right').insertAdjacentHTML('afterbegin',secondary('resume-upload','Return to Your Gift'));$('resume-upload').onclick=()=>location.assign('/gift-wizard.next.html?sessionId='+encodeURIComponent(recovery.resumeSessionId!));error('Return to Your Gift')}else error(e instanceof Error?e.message:'This photograph could not be opened.')}finally{if(candidate)URL.revokeObjectURL(candidate)}
 }
 const productPreviews=new Map<string,{value?:ProductPreviewView;failed?:boolean;unavailable?:boolean}>();
 function productPreviewReady(p:Product,o:CatalogOption){
@@ -441,7 +441,7 @@ async function retryRestoration(){
    params.delete('gift_order_session');
   }
   if(!live){
-   if(params.get('newGift')==='1')return null;
+   if(params.get('newGift')==='1'){const auth=await fetch('/api/v1/auth/me',{credentials:'same-origin',cache:'no-store',signal});if(!auth.ok)throw new GiftApiError(auth.status===401?'sign_in_required':'request_failed',auth.status);return null;}
    const api=new GiftBackend((url,init)=>fetch(url,init)),hint=readResume();
    if(hint?.sessionId&&/^[\w-]{1,80}$/.test(hint.sessionId)){
     try{const saved=await api.restore(hint.sessionId,signal);if(saved.sessionId!==hint.sessionId)throw new GiftApiError('session_identity_mismatch',0);live=new LiveGift(api,saved.sessionId);live.accept(saved)}catch(e){if(!(e instanceof GiftApiError&&e.status===404))throw e}

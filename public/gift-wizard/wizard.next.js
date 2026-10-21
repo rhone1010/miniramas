@@ -365,6 +365,12 @@ async function upload(file) {
     catch (e) {
         busy = false;
         analyzingSource = false;
+        if (e instanceof GiftApiError && e.status === 401) {
+            paymentState = 'auth';
+            view = 'payment';
+            render();
+            return;
+        }
         render();
         const recovery = e instanceof GiftApiError && e.code === 'rate_limited' ? e.details : null;
         if (recovery?.resumeSessionId && /^[\w-]{1,80}$/.test(recovery.resumeSessionId)) {
@@ -971,8 +977,12 @@ async function retryRestoration() {
             params.delete('gift_order_session');
         }
         if (!live) {
-            if (params.get('newGift') === '1')
+            if (params.get('newGift') === '1') {
+                const auth = await fetch('/api/v1/auth/me', { credentials: 'same-origin', cache: 'no-store', signal });
+                if (!auth.ok)
+                    throw new GiftApiError(auth.status === 401 ? 'sign_in_required' : 'request_failed', auth.status);
                 return null;
+            }
             const api = new GiftBackend((url, init) => fetch(url, init)), hint = readResume();
             if (hint?.sessionId && /^[\w-]{1,80}$/.test(hint.sessionId)) {
                 try {
