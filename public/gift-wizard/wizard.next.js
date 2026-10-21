@@ -128,7 +128,9 @@ function render() {
     }
     const cancel = document.createElement('button');
     cancel.textContent = 'Cancel';
-    cancel.onclick = () => { rememberView(); location.assign('/gifts.next.html'); };
+    const resumeId = live?.id || params.get('sessionId') || params.get('resumeSessionId');
+    cancel.dataset.href = '/gifts.next.html?newGift=1' + (resumeId ? '&resumeSessionId=' + encodeURIComponent(resumeId) : '');
+    cancel.onclick = () => { rememberView(); location.assign(cancel.dataset.href); };
     exits.append(cancel);
     $('screen').prepend(exits);
     document.querySelectorAll('[data-product-preview]').forEach(b => b.onclick = () => { productPreviews.delete(b.dataset.productPreview); render(); });

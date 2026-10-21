@@ -514,3 +514,20 @@ test('Studio review and quantity survive authenticated refresh',async()=>{
  const s:any=artworkProject();s.compositions[0].status='approved';s.mockup.compositionStatus='approved';s.route=(url:string)=>url.endsWith('/finalize')?new Response(JSON.stringify({error:'approval_unavailable'}),{status:503}):null;
  const {win,dom}=await boot('sessionId=project',s);win.navigate('compositions');win.document.getElementById('order-example').click();win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,40));assert.equal(s.order.state,'awaiting_artwork');assert.equal(win.document.getElementById('primary').disabled,false);assert.equal(win.document.getElementById('error').textContent,'approval_unavailable');dom.window.close();
  });
+
+ test('Cancel returns through fresh entry while preserving the old project reference',async()=>{
+ const {win,dom}=await boot('sessionId=project');
+ const cancel=Array.from(win.document.querySelectorAll('button')).find((b:any)=>b.textContent==='Cancel') as HTMLButtonElement;
+ assert.equal(cancel.dataset.href,'/gifts.next.html?newGift=1&resumeSessionId=project');
+ const landing=new JSDOM(fs.readFileSync('public/gifts.next.html','utf8'),{url:'https://liten.invalid'+cancel.dataset.href,runScripts:'outside-only'});
+ landing.window.eval(fs.readFileSync('public/gifts/entry.next.js','utf8'));
+ const links=Array.from(landing.window.document.querySelectorAll('a.hp-cta'));
+ assert.equal(links.length,2);for(const a of links)assert.equal(a.getAttribute('href'),'/gift-wizard.next.html?newGift=1&resumeSessionId=project');
+ dom.window.close();landing.window.close();
+ });
+
+ test('Cancel from a fresh gift retains Return to Your Gift',async()=>{
+ const {win,dom}=await boot('newGift=1&resumeSessionId=project');
+ const cancel=Array.from(win.document.querySelectorAll('button')).find((b:any)=>b.textContent==='Cancel') as HTMLButtonElement;
+ assert.equal(cancel.dataset.href,'/gifts.next.html?newGift=1&resumeSessionId=project');dom.window.close();
+ });

@@ -55,7 +55,7 @@ function render(){
  if(view==='effects'){const filters=$('filters');for(const id of ['back','new-gift'])if($(id))filters.before($(id))}
  const exits=document.createElement('div');exits.className='actions';
  if(['cart','checkout'].includes(view)){const b=$('back') as HTMLButtonElement;b.disabled=busy;exits.append(b)}
- const cancel=document.createElement('button');cancel.textContent='Cancel';cancel.onclick=()=>{rememberView();location.assign('/gifts.next.html')};exits.append(cancel);$('screen').prepend(exits);
+ const cancel=document.createElement('button');cancel.textContent='Cancel';const resumeId=live?.id||params.get('sessionId')||params.get('resumeSessionId');cancel.dataset.href='/gifts.next.html?newGift=1'+(resumeId?'&resumeSessionId='+encodeURIComponent(resumeId):'');cancel.onclick=()=>{rememberView();location.assign(cancel.dataset.href!)};exits.append(cancel);$('screen').prepend(exits);
  document.querySelectorAll<HTMLButtonElement>('[data-product-preview]').forEach(b=>b.onclick=()=>{productPreviews.delete(b.dataset.productPreview!);render()});
  adaptMobileView();
  rememberView();
