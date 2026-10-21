@@ -26,7 +26,7 @@
       var target=current && current.decision.redirectSeries;
       if(!paths[target] || !window.LitenHandoff)return;
       var info=Object.assign({},current.info,{routing:current.info.routing,routingAccepted:null,skipRedirect:false});
-      var destination=api.foyer && foyerPaths[target] ? foyerPaths[target]+'?foyerFrom='+current.series : paths[target] + (target==='groups' ? '?foyerFrom='+current.series : '');
+      var destination=paths[target]+'?foyerFrom='+current.series;
       transferring=true;
       LitenHandoff.put(current.photo,info).then(function(){window.location.assign(destination);}).catch(function(e){
         transferring=false;console.warn('[foyer] routing handoff not written',e);

@@ -48,8 +48,8 @@ const PAGES: Record<string, string> = {
      THE FOYER IS THE FRONT DOOR as of 2026-09-12 (Rich): the locked foyer
      glass, made real, replaces the old homepage at both. public/index.html
      is left in place, unrouted. */
-  '/': '/foyer.html',
-  '/home': '/foyer.html',
+  '/': '/homepage.next.html',
+  '/home': '/homepage.next.html',
   '/portraits': '/discovery-consolidated-draft.html',
   '/workshop': '/portraits.html',
   /* GROUPS. Same navigation model as Portraits - four rooms where that has
@@ -191,12 +191,18 @@ function target(url: URL) {
 }
 
 function route(req: NextRequest, url: URL) {
-  // Explicit Foyer photo handoffs keep their existing intake/reveal behavior.
+  // Approved Foyer bypass: retain photo handoffs while entering Discovery directly.
   // Ordinary series entry is direct, preserving query context without a redirect/history hop.
   const entryPath = url.pathname.replace(/\/+$/, '') || '/';
-  if (['/pets', '/pets/portraits', '/portraits', '/groups'].includes(entryPath)) {
+  const foyerReturns: Record<string, string> = { '/foyer.html':'/portraits', '/pets-foyer.html':'/pets/discovery', '/groups-foyer.html':'/groups', '/groups/foyer':'/groups' };
+  if (foyerReturns[entryPath]) {
+    const destination = new URL(url.toString());
+    destination.pathname = foyerReturns[entryPath];
+    return NextResponse.redirect(destination);
+  }
+  if (['/', '/home', '/discovery', '/pets', '/pets/discovery', '/pets/portraits', '/portraits', '/groups'].includes(entryPath)) {
     const direct = new URL(url.toString());
-    direct.pathname = (entryPath === '/pets' && url.searchParams.has('foyerFrom')) ? '/pets-foyer.html' : PAGES[entryPath];
+    direct.pathname = PAGES[entryPath];
     return NextResponse.rewrite(direct);
   }
   const t = target(url);

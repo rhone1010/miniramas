@@ -1,0 +1,202 @@
+[
+  {
+    "case": "desktop Groups refresh",
+    "url": "http://127.0.0.1:4318/groups",
+    "discovery": true
+  },
+  {
+    "case": "desktop Pets",
+    "url": "http://127.0.0.1:4318/pets",
+    "discovery": true
+  },
+  {
+    "case": "Pets refresh",
+    "url": "http://127.0.0.1:4318/pets",
+    "state": "- banner:\n  - link \"LITEN & Co homepage\":\n    - /url: /homepage.next.html\n    - img \"LITEN & Co\"\n  - navigatio"
+  },
+  {
+    "case": "Pets Back",
+    "url": "http://127.0.0.1:4318/",
+    "home": true
+  },
+  {
+    "case": "desktop Portraits",
+    "url": "http://127.0.0.1:4318/portraits",
+    "discovery": true
+  },
+  {
+    "case": "Portraits refresh",
+    "url": "http://127.0.0.1:4318/portraits",
+    "state": "- banner:\n  - link \"LITEN & Co homepage\":\n    - /url: /homepage.next.html\n    - img \"LITEN & Co\"\n  - navigatio"
+  },
+  {
+    "case": "Portraits Back",
+    "url": "http://127.0.0.1:4318/",
+    "home": true
+  },
+  {
+    "case": "390 Groups",
+    "url": "http://127.0.0.1:4318/groups",
+    "discovery": true
+  },
+  {
+    "case": "390 Groups refresh",
+    "url": "http://127.0.0.1:4318/groups",
+    "discovery": true
+  },
+  {
+    "case": "390 Groups Back",
+    "url": "http://127.0.0.1:4318/",
+    "home": true
+  },
+  {
+    "case": "390 Pets",
+    "url": "http://127.0.0.1:4318/pets",
+    "discovery": true
+  },
+  {
+    "case": "390 Pets refresh",
+    "url": "http://127.0.0.1:4318/pets",
+    "discovery": true
+  },
+  {
+    "case": "390 Pets Back",
+    "url": "http://127.0.0.1:4318/",
+    "home": true
+  },
+  {
+    "case": "390 Portraits",
+    "url": "http://127.0.0.1:4318/portraits",
+    "discovery": true
+  },
+  {
+    "case": "390 Portraits refresh",
+    "url": "http://127.0.0.1:4318/portraits",
+    "discovery": true
+  },
+  {
+    "case": "390 Portraits Back",
+    "url": "http://127.0.0.1:4318/",
+    "home": true
+  },
+  {
+    "case": "390 direct /foyer.html",
+    "url": "http://127.0.0.1:4318/portraits",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct refresh /foyer.html",
+    "url": "http://127.0.0.1:4318/portraits",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct /pets-foyer.html",
+    "url": "http://127.0.0.1:4318/pets/discovery",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct refresh /pets-foyer.html",
+    "url": "http://127.0.0.1:4318/pets/discovery",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct /groups-foyer.html",
+    "url": "http://127.0.0.1:4318/groups",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct refresh /groups-foyer.html",
+    "url": "http://127.0.0.1:4318/groups",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct /groups/foyer",
+    "url": "http://127.0.0.1:4318/groups",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct refresh /groups/foyer",
+    "url": "http://127.0.0.1:4318/groups",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct /pets?foyerFrom=portraits",
+    "url": "http://127.0.0.1:4318/pets?foyerFrom=portraits",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct refresh /pets?foyerFrom=portraits",
+    "url": "http://127.0.0.1:4318/pets?foyerFrom=portraits",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct /home",
+    "url": "http://127.0.0.1:4318/home",
+    "expectedPage": true
+  },
+  {
+    "case": "390 direct refresh /home",
+    "url": "http://127.0.0.1:4318/home",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct /foyer.html",
+    "url": "http://127.0.0.1:4318/portraits",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct refresh /foyer.html",
+    "url": "http://127.0.0.1:4318/portraits",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct /pets-foyer.html",
+    "url": "http://127.0.0.1:4318/pets/discovery",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct refresh /pets-foyer.html",
+    "url": "http://127.0.0.1:4318/pets/discovery",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct /groups-foyer.html",
+    "url": "http://127.0.0.1:4318/groups",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct refresh /groups-foyer.html",
+    "url": "http://127.0.0.1:4318/groups",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct /groups/foyer",
+    "url": "http://127.0.0.1:4318/groups",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct refresh /groups/foyer",
+    "url": "http://127.0.0.1:4318/groups",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct /pets?foyerFrom=portraits",
+    "url": "http://127.0.0.1:4318/pets?foyerFrom=portraits",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct refresh /pets?foyerFrom=portraits",
+    "url": "http://127.0.0.1:4318/pets?foyerFrom=portraits",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct /home",
+    "url": "http://127.0.0.1:4318/home",
+    "expectedPage": true
+  },
+  {
+    "case": "1280 direct refresh /home",
+    "url": "http://127.0.0.1:4318/home",
+    "expectedPage": true
+  }
+]
