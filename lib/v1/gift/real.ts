@@ -27,7 +27,8 @@ import { GROUPS_FAVORITE_REFERENCE_ENABLED } from './aspects'
 import type { GiftOrderDeps } from './orders'
 import type { ConciergePort } from './refund'
 import type { CollectionPort, GiftDeps, GiftStorage, SourceAnalysis } from './service'
-import type { Series } from './types'
+import type { GenerationRecord, Series } from './types'
+import { INITIAL_PREVIEW_MAX_ATTEMPTS } from './policy'
 
 export function supabaseGiftStorage(db: any = supabaseAdmin): GiftStorage {
   const bucket = () => db.storage.from(PREVIEW_BUCKET)
@@ -74,10 +75,12 @@ export function generateBody(i: GenerateInput, groupsReference: boolean = GROUPS
   const ref = i.referenceB64 && i.series !== 'groups' ? { additional_images_b64: [i.referenceB64], adaptation: 'favorite' as const } : {}
   return i.series === 'groups'
     ? { source_image_b64: i.sourceB64, effect_id: i.effectId, format: i.aspect, ...(i.peopleCount ? { subject_count: i.peopleCount } : {}),
+        // INITIAL previews only: no Stability margin outpaint (the stored original is what the model returned) and a lower cap on NB2 attempts. Compositions are unchanged.
+        ...(i.productComposition ? {} : { skip_outpaint: true, max_attempts: INITIAL_PREVIEW_MAX_ATTEMPTS }),
         ...(groupsReference && i.productComposition ? { product_composition: true } : {}),
         ...(groupsReference && i.referenceB64 ? { favorite_reference_b64: i.referenceB64, adaptation: 'favorite' as const } : {}) }
     : i.series === 'pets'
-      ? { source_image_b64: i.sourceB64, style_id: 'realistic', preset_id: i.effectId, action_id: 'as_photographed', aspect_ratio: i.aspect, scale: 'close_up', ...ref }
+      ? { source_image_b64: i.sourceB64, style_id: 'realistic', preset_id: i.effectId, action_id: 'as_photographed', aspect_ratio: i.aspect, scale: 'close_up', ...(i.productComposition ? {} : { skip_outpaint: true }), ...ref }
       : { source_image_b64: i.sourceB64, style_id: styleIdForPreset(i.effectId), preset_id: i.effectId, skip_redirect: true, framing: 'bust', scale: 'close_up',
           // Preview batches send none of this and keep the framing-derived square. A product composition names its ratio (the route
           // admits the extra ratios only from this internal call).
@@ -98,14 +101,35 @@ export function failureReason(out: any, httpStatus: number): string {
 }
 
 /** ONE render through the series' own generate route. Returns the CLEAN master; throws on any refusal or failure. */
-export async function generateMaster(i: GenerateInput): Promise<{ imageB64: string }> {
+export async function generateMaster(i: GenerateInput): Promise<{ imageB64: string; generation?: GenerationRecord }> {
   return generateVia(i, (url, init) => fetch(url, init))
+}
+
+/**
+ * The record kept with a preview, from the series route's own result. Pure. Portraits, Pets and Groups report `attempts[]` (each with passed, pass_reason and, when scored, per_figure_scores);
+ * Groups also `passed`, Pets and Portraits `final_pass`. A result with nothing to read is 'unscored', never 'passed'.
+ */
+export function generationRecordFrom(result: any, ctx: { series: Series; effectId: string; aspect: string; durationMs: number }): GenerationRecord {
+  const attempts: any[] = Array.isArray(result?.attempts) ? result.attempts : []
+  const last = attempts[attempts.length - 1]
+  const skipped = typeof last?.pass_reason === 'string' && /skipped|unavailable|not scored|no scor/i.test(last.pass_reason)
+  const flag = typeof result?.passed === 'boolean' ? result.passed : typeof result?.final_pass === 'boolean' ? result.final_pass : typeof last?.passed === 'boolean' ? last.passed : null
+  const passed = skipped || !attempts.length ? (skipped ? null : flag) : flag
+  const scores = Array.isArray(last?.per_figure_scores) ? last.per_figure_scores.map((s: any) => s?.score).filter((n: unknown) => typeof n === 'number') : []
+  return {
+    v: 1, series: ctx.series, effectId: ctx.effectId, aspect: ctx.aspect, attempts: attempts.length || 1, passed,
+    quality: passed === true ? 'passed' : passed === false ? 'below_bar' : 'unscored',
+    reason: typeof result?.final_reason === 'string' ? result.final_reason.slice(0, 200) : typeof last?.pass_reason === 'string' ? last.pass_reason.slice(0, 200) : result?.failure?.kind ? String(result.failure.kind).slice(0, 200) : null,
+    scores: scores.length ? scores : null,
+    postProcessing: { outpaint: !!(result?.outpainted || result?.expanded), skipped: typeof result?.outpaint_skip === 'string' ? result.outpaint_skip : typeof result?.expand_skip === 'string' ? result.expand_skip : null },
+    durationMs: ctx.durationMs,
+  }
 }
 /**
  * The same call, made by invoking the series' route handler in this process instead of over HTTP. For the operator repair script only: it runs outside the app, where there is no
  * server to call (a localhost APP_URL answers "fetch failed"). Same route, same body, same bearer check, so the generation is identical and billed once.
  */
-export async function generateMasterInProcess(i: GenerateInput): Promise<{ imageB64: string }> {
+export async function generateMasterInProcess(i: GenerateInput): Promise<{ imageB64: string; generation?: GenerationRecord }> {
   const { NextRequest } = await import('next/server')
   const handlers: Record<string, () => Promise<{ POST: (r: any) => Promise<Response> }>> = {
     groups: () => import('@/app/api/v1/groups/generate/route'), pets: () => import('@/app/api/v1/pets/generate/route'), portraits: () => import('@/app/api/v1/portraits/generate/route'),
@@ -114,7 +138,8 @@ export async function generateMasterInProcess(i: GenerateInput): Promise<{ image
   const { POST } = await load()
   return generateVia(i, (url, init) => POST(new NextRequest(url, init as any)))
 }
-async function generateVia(i: GenerateInput, send: (url: string, init: { method: string; headers: Record<string, string>; body: string }) => Promise<Response>): Promise<{ imageB64: string }> {
+async function generateVia(i: GenerateInput, send: (url: string, init: { method: string; headers: Record<string, string>; body: string }) => Promise<Response>): Promise<{ imageB64: string; generation?: GenerationRecord }> {
+  const t0 = Date.now()
   const body = generateBody(i)
   const res = await send(`${internalBaseUrl()}/api/v1/${i.series}/generate`, {
     method: 'POST',
@@ -125,7 +150,7 @@ async function generateVia(i: GenerateInput, send: (url: string, init: { method:
   if (res.status === 403 && out?.code === 'age_restricted') throw new Error('age_restricted')
   const ok = res.ok && out?.result?.ok && !!out?.result?.image_b64 && out?.status !== 'redirected' && out?.status !== 'intake_rejected'
   if (!ok) throw new Error(failureReason(out, res.status))
-  return { imageB64: out.result.image_b64 as string }
+  return { imageB64: out.result.image_b64 as string, generation: generationRecordFrom(out.result, { series: i.series, effectId: i.effectId, aspect: i.aspect, durationMs: Date.now() - t0 }) }
 }
 
 export async function watermarkPreview(masterB64: string): Promise<Buffer> {
