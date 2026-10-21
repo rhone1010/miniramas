@@ -51,7 +51,12 @@ function go(v, record = true) { if (busy)
     history.push(view); view = v; render(); $('screen').scrollTop = 0; if (v === 'checkout')
     $('screen').parentElement.scrollTop = 0; $('workspace').focus({ preventScroll: true }); window.scrollTo(0, 0); }
 function back() { if (busy)
-    return; const v = history.pop() || { configuration: 'products', products: 'review', cart: 'products', checkout: 'cart', focus: 'review', compare: 'review', effects: 'photo' }[view]; if (v)
+    return; if (view === 'configuration') {
+    while (history.at(-1) === 'products' || history.at(-1) === 'configuration')
+        history.pop();
+    go('products', false);
+    return;
+} const v = history.pop() || { configuration: 'products', products: 'review', cart: 'products', checkout: 'cart', focus: 'review', compare: 'review', effects: 'photo' }[view]; if (v)
     go(v, false); }
 function primary(label, fn, disabled = false) { const body = document.createElement('div'); body.className = 'context-body'; while ($('right').firstChild)
     body.appendChild($('right').firstChild); $('right').appendChild(body); $('right').insertAdjacentHTML('beforeend', '<button id="primary" class="primary" ' + (busy || disabled ? 'disabled' : '') + '>' + label + ' →</button>'); $('primary').onclick = fn; }
@@ -113,13 +118,6 @@ function render() {
         const b = $('back');
         b.disabled = busy;
         exits.append(b);
-    }
-    if (view === 'configuration') {
-        const change = document.createElement('button');
-        change.textContent = 'Change Product';
-        change.disabled = busy;
-        change.onclick = () => go('products');
-        exits.append(change);
     }
     const cancel = document.createElement('button');
     cancel.textContent = 'Cancel';
@@ -372,52 +370,14 @@ async function upload(file) {
             URL.revokeObjectURL(candidate);
     }
 }
-function chooseProduct(id) { activeProduct = id; const p = products.find(p => p.id === id), draft = productDrafts[id]; size = p.options.some(o => o.size === draft?.size) ? draft.size : p.options[0].size; copies = draft?.copies || 1; editId = null; go('configuration'); }
+function chooseProduct(id) { activeProduct = id; const p = products.find(p => p.id === id), draft = productDrafts[id]; size = p.options.some(o => o.size === draft?.size) ? draft.size : p.options[0]?.size || ''; copies = draft?.copies || 1; editId = null; go('configuration'); }
 function renderProductCarousel() {
-    const index = Math.max(0, products.findIndex(p => p.id === (featuredProduct || activeProduct))), p = products[index];
-    featuredProduct = p.id;
-    const canChoose = p.available && p.options.length > 0;
-    $('screen').innerHTML = '<section class="gift-carousel" aria-roledescription="carousel" aria-label="Choose Your Gift"><button type="button" id="open-product-picker" aria-haspopup="dialog" aria-expanded="false" aria-controls="product-picker">Choose a Product<br><strong>' + esc(p.label) + '</strong></button><div class="gift-feature"><div id="product-picker" class="gift-product-picker" aria-label="Choose a Product"><div class="gift-picker-heading"><h2>Choose a Product</h2><button type="button" id="close-product-picker" aria-label="Close product picker">×</button></div><div class="gift-product-selectors" aria-label="Products">' + products.map(item => '<button type="button" data-feature="' + esc(item.id) + '" aria-pressed="' + (item.id === p.id) + '">' + catalogPhoto(item, 'gift-picker-thumb') + '<span>' + esc(item.label) + '</span><small>' + (item.available && item.options.length ? 'Available' : 'Not currently available') + '</small></button>').join('') + '</div></div><div class="gift-feature-media" id="gift-swipe">' + catalogPhoto(p, 'gift-feature-image') + '<div class="gift-carousel-controls"><button type="button" id="gift-previous" aria-label="Previous product">← Previous</button><span aria-live="polite" aria-atomic="true">' + (index + 1) + ' / ' + products.length + '</span><button type="button" id="gift-next" aria-label="Next product">Next →</button></div></div><div class="gift-feature-details" aria-live="polite" aria-atomic="true"><h2>' + esc(p.label) + '</h2><p class="gift-feature-price">' + (canChoose ? 'From ' + money(Math.min(...p.options.map(o => o.retailCents))) : 'Not currently available') + '</p><button class="primary" id="choose-featured" data-product="' + esc(p.id) + '" ' + (!canChoose ? 'disabled' : '') + '>Choose This Gift</button></div></div></section>';
-    const show = (id, focus) => { const wasOpen = $('product-picker').classList.contains('is-open'); if (wasOpen)
-        closePicker(); featuredProduct = id; renderProductCarousel(); document.querySelector(wasOpen ? '#open-product-picker' : focus || '#gift-next')?.focus({ preventScroll: true }); };
-    const inertPickerBackground = (value) => document.querySelectorAll('.gift-header,.progress,#right,#open-product-picker,.gift-feature-media,.gift-feature-details').forEach(el => el.inert = value);
-    const closePicker = () => { inertPickerBackground(false); const panel = $('product-picker'); panel.classList.remove('is-open'); panel.removeAttribute('role'); panel.removeAttribute('aria-modal'); $('open-product-picker').setAttribute('aria-expanded', 'false'); $('open-product-picker').focus(); };
-    $('open-product-picker').onclick = () => { const panel = $('product-picker'); inertPickerBackground(true); panel.classList.add('is-open'); panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); $('open-product-picker').setAttribute('aria-expanded', 'true'); $('close-product-picker').focus(); };
-    $('close-product-picker').onclick = closePicker;
-    $('product-picker').onkeydown = e => { if (!$('product-picker').classList.contains('is-open'))
-        return; if (e.key === 'Escape') {
-        e.preventDefault();
-        closePicker();
-    } if (e.key === 'Tab') {
-        const buttons = Array.from($('product-picker').querySelectorAll('button'));
-        const first = buttons[0], last = buttons[buttons.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-        }
-        else if (!e.shiftKey && document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-        }
-    } };
-    const move = (delta, focus) => show(products[(index + delta + products.length) % products.length].id, focus);
-    $('gift-previous').onclick = () => move(-1, '#gift-previous');
-    $('gift-next').onclick = () => move(1, '#gift-next');
-    document.querySelectorAll('[data-feature]').forEach(b => { b.onclick = () => show(b.dataset.feature, '[data-feature="' + b.dataset.feature + '"]'); b.onkeydown = e => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const n = (index + (e.key === 'ArrowRight' ? 1 : -1) + products.length) % products.length;
-        show(products[n].id, '[data-feature="' + products[n].id + '"]');
-    } }; });
-    $('choose-featured').onclick = () => { if (canChoose)
-        chooseProduct(p.id); };
-    let touch = null;
-    const swipe = $('gift-swipe');
-    swipe.addEventListener('touchstart', e => { touch = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null; }, { passive: true });
-    swipe.addEventListener('touchend', e => { if (!touch || !e.changedTouches.length)
-        return; const dx = e.changedTouches[0].clientX - touch.x, dy = e.changedTouches[0].clientY - touch.y; touch = null; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5)
-        move(dx < 0 ? 1 : -1); }, { passive: true });
-    swipe.addEventListener('touchcancel', () => { touch = null; }, { passive: true });
+    const squareImages = { premium: './mockup-scenes/premium-square/premium fine art print square.png', framed: './mockup-scenes/classic-framed-square/classic framed print square.png' };
+    $('screen').innerHTML = '<section class="gift-product-picker" id="product-picker" aria-label="Choose a Product"><h2>Choose a Product</h2><div class="gift-product-selectors" aria-label="Products">' + products.map(p => '<button type="button" data-feature="' + esc(p.id) + '" aria-pressed="' + (activeProduct === p.id) + '">' + photo(asset(squareImages[p.id] || p.image), p.label, 'gift-picker-thumb') + '<span>' + esc(p.label) + '</span><small>' + (p.available && p.options.length ? 'From ' + money(Math.min(...p.options.map(o => o.retailCents))) : 'Not currently available') + '</small></button>').join('') + '</div></section>';
+    document.querySelectorAll('[data-feature]').forEach(b => b.onclick = () => chooseProduct(b.dataset.feature));
 }
+function optionRatio(o) { const w = Math.round(o.imageWidthIn * 100), h = Math.round(o.imageHeightIn * 100); const gcd = (a, b) => b ? gcd(b, a % b) : a; const n = gcd(w, h); return w / n + ':' + h / n; }
+function optionAspect(o) { const w = o.imageWidthIn, h = o.imageHeightIn; return w === h ? 'Square' : w > h ? 'Landscape' : 'Portrait'; }
 const productPreviews = new Map();
 function productPreviewReady(p, o) {
     if (!p.available || o.compatible === false)
@@ -468,7 +428,7 @@ function renderProducts() {
         activeProduct = products.find(p => p.available).id;
     const p = products.find(p => p.id === activeProduct);
     if (!p.options.some(o => o.size === size))
-        size = p.options[0].size;
+        size = p.options[0]?.size || '';
     const o = p.options.find(o => o.size === size);
     if (view === 'products') {
         renderProductCarousel();
@@ -479,8 +439,24 @@ function renderProducts() {
             $('view-cart').onclick = () => go('cart');
         return;
     }
+    if (!p.available || !o) {
+        $('screen').innerHTML = '<h2>' + esc(p.label) + '</h2>' + photo(asset(p.image), p.label, 'gift-feature-image');
+        $('right').innerHTML = '<h2>' + esc(p.label) + '</h2><p role="status">Not currently available</p>';
+        primary('Add to Cart', () => { }, true);
+        return;
+    }
     $('screen').innerHTML = '<h2>' + esc(p.label) + '</h2>' + configurationPreview(p, o);
-    $('right').innerHTML = '<h2>' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><div class="product-config"><h2>2. Choose a Size</h2><div class="sizes">' + p.options.map(o => '<button ' + (o.compatible === false ? 'disabled ' : '') + 'data-size="' + o.size + '" aria-pressed="' + (size === o.size) + '">' + esc(o.label) + '</button>').join('') + '</div>' + field('copies', 'Quantity', String(copies), 'type="number" min="1" max="20" step="1"') + '<p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p></div>';
+    const aspects = [...new Set(p.options.map(x => optionAspect(x)))];
+    const finishes = [...new Set(p.options.map(x => x.attributes?.color).filter(Boolean))];
+    $('right').innerHTML = '<h2>' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><p>' + esc(o.familyNote || '') + '</p><div class="product-config"><h3>Aspect ratio</h3><div class="sizes">' + aspects.map(a => '<button data-aspect="' + a + '" aria-pressed="' + (optionAspect(o) === a) + '">' + a + ' · ' + optionRatio(p.options.find(x => optionAspect(x) === a)) + '</button>').join('') + '</div><h3>Size</h3><div class="sizes">' + p.options.filter(x => optionAspect(x) === optionAspect(o)).map(x => '<button ' + (x.compatible === false ? 'disabled ' : '') + 'data-size="' + x.size + '" aria-pressed="' + (size === x.size) + '">' + esc(x.label) + '</button>').join('') + '</div>' + (finishes.length ? '<h3>Finish</h3><div class="sizes">' + finishes.map(f => '<button data-finish="' + esc(f) + '" aria-pressed="' + (o.attributes?.color === f) + '">' + esc(f) + '</button>').join('') + '</div>' : '') + field('copies', 'Quantity', String(copies), 'type="number" min="1" max="20" step="1"') + '<p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p></div>';
+    document.querySelectorAll('[data-aspect]').forEach(b => b.onclick = () => { const next = p.options.find(x => optionAspect(x) === b.dataset.aspect && x.compatible !== false) || p.options.find(x => optionAspect(x) === b.dataset.aspect); if (next) {
+        size = next.size;
+        render();
+    } });
+    document.querySelectorAll('[data-finish]').forEach(b => b.onclick = () => { const next = o.attributes?.color === b.dataset.finish ? o : p.options.find(x => x.attributes?.color === b.dataset.finish && optionAspect(x) === optionAspect(o) && x.compatible !== false); if (next) {
+        size = next.size;
+        render();
+    } });
     if (session.lines.length)
         $('right').insertAdjacentHTML('beforeend', secondary('view-cart', 'Your gifts (' + session.lines.length + ')'));
     document.querySelectorAll('[data-product]').forEach(b => b.onclick = () => chooseProduct(b.dataset.product));
@@ -1114,7 +1090,7 @@ function initializeLayoutReview() {
     session.source = { status: 'supported', series: fixtureSeries, sourceRef: 'layout-photo', fixture: true };
     session.recipient = recipientOptions[0];
     // Draft sample lines only. Never set purchased status, order identity or entitlements.
-    session.lines = (['photo', 'effects', 'gallery', 'gallery-second', 'products'].includes(layoutName) ? [] : ['framed', 'canvas']).map((id, i) => { const p = products.find(p => p.id === id); return { id: 'layout-' + i, productId: id, size: p.options.find(o => o.size === '12x18')?.size || p.options[0].size, copies: 1 }; });
+    session.lines = (['photo', 'effects', 'gallery', 'gallery-second', 'products'].includes(layoutName) ? [] : ['framed', 'canvas']).map((id, i) => { const p = products.find(p => p.id === id); return { id: 'layout-' + i, productId: id, size: p.options.find(o => o.size === '12x18')?.size || p.options[0]?.size || '', copies: 1 }; });
     if (['products', 'configuration', 'cart', 'checkout'].includes(layoutName)) {
         session.batches = [fixtures];
         artFocus = fixtures[0]?.id || '';
