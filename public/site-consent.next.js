@@ -1,0 +1,26 @@
+(function(){
+'use strict';
+if(window.LitenConsent)return;
+var key='liten_consent_v1',version=1,choice=null,returnFocus=null;
+function read(){try{var v=JSON.parse(localStorage.getItem(key));return v&&v.version===version&&typeof v.analytics==='boolean'&&typeof v.marketing==='boolean'?v:null}catch(_){return null}}
+choice=read();
+function allowed(category){return !!(choice&&choice[category]===true&&navigator.globalPrivacyControl!==true)}
+function clearOptional(){['liten_utm'].forEach(function(n){document.cookie=n+'=;Max-Age=0;Path=/;SameSite=Lax'});try{['liten_sess','liten_sess_ts'].forEach(function(n){sessionStorage.removeItem(n)})}catch(_){}}
+function set(analytics,marketing){choice={version:version,analytics:!!analytics,marketing:!!marketing,updatedAt:new Date().toISOString()};if(navigator.globalPrivacyControl===true){choice.analytics=false;choice.marketing=false}try{localStorage.setItem(key,JSON.stringify(choice))}catch(_){}if(!allowed('analytics'))clearOptional();window.dispatchEvent(new CustomEvent('liten:consentchange'));banner.hidden=true;close();}
+window.LitenConsent={allows:allowed,open:function(){open()},get:function(){return choice?Object.assign({},choice):null}};
+if(!allowed('analytics'))clearOptional();
+var css=document.createElement('link');css.rel='stylesheet';css.href='/site-consent.next.css';document.head.append(css);
+var banner=document.createElement('section');banner.className='lc-consent';banner.setAttribute('aria-label','Cookie preferences');banner.innerHTML='<div><strong>Cookie Preferences</strong><p>Essential technologies support sign-in, your artwork and your cart. Optional analytics measure site use. Choose whether to allow optional technologies.</p></div><div class="lc-actions"><button type="button" data-consent="all">Accept All</button><button type="button" data-consent="none">Reject Optional</button><button type="button" data-consent="manage">Manage Preferences</button></div>';
+banner.hidden=!!choice;document.body.prepend(banner);
+var dialog=document.createElement('dialog');dialog.className='lc-preferences';dialog.setAttribute('aria-labelledby','lc-preferences-title');dialog.innerHTML='<h2 id="lc-preferences-title">Cookie Preferences</h2><p>Essential technologies support authentication, artwork restoration and purchasing. They remain enabled.</p><label><input type="checkbox" checked disabled> Essential — always enabled</label><label><input type="checkbox" name="analytics"> Optional analytics</label><p>Measures visits and site use.</p><label><input type="checkbox" name="marketing"> Optional marketing</label><p>No optional marketing scripts are currently enabled.</p><p class="lc-gpc" hidden>Your browser privacy signal keeps optional technologies disabled.</p><div class="lc-actions"><button type="button" data-consent="apply">Apply Preferences</button><button type="button" data-consent="none">Reject Optional</button><button type="button" data-consent="close">Close</button></div>';
+document.body.append(dialog);
+function open(){returnFocus=document.activeElement;['analytics','marketing'].forEach(function(n){var input=dialog.querySelector('[name="'+n+'"]');input.checked=allowed(n);input.disabled=navigator.globalPrivacyControl===true});dialog.querySelector('.lc-gpc').hidden=navigator.globalPrivacyControl!==true;dialog.showModal();dialog.querySelector('button').focus()}
+function close(){if(dialog.open)dialog.close();if(returnFocus&&returnFocus.isConnected)returnFocus.focus();returnFocus=null}
+dialog.addEventListener('cancel',function(e){e.preventDefault();close()});
+document.addEventListener('click',function(e){var action=e.target.closest('[data-consent]');if(!action)return;e.preventDefault();switch(action.dataset.consent){case 'all':set(true,true);break;case 'none':set(false,false);break;case 'manage':open();break;case 'close':close();break;case 'apply':set(dialog.querySelector('[name="analytics"]').checked,dialog.querySelector('[name="marketing"]').checked);break;}});
+window.addEventListener('storage',function(e){if(e.key!==key)return;choice=read();banner.hidden=!!choice;if(!allowed('analytics'))clearOptional();window.dispatchEvent(new CustomEvent('liten:consentchange'))});
+// The footer remains in document flow; no fixed overlay or viewport-height changes.
+var footer=document.createElement('footer');footer.className='lc-footer';var from=new URLSearchParams(location.search).get('from');var series=/^\/groups/.test(location.pathname)?'groups':/^\/pets/.test(location.pathname)?'pets':['groups','pets','portraits'].includes(from)?from:'portraits';
+footer.innerHTML='<small>© '+new Date().getFullYear()+' LITEN &amp; Co</small><nav aria-label="Footer"><a href="/information.next.html?page=privacy&from='+series+'">Privacy</a><a href="/information.next.html?page=terms&from='+series+'">Terms</a><button type="button" data-consent="manage">Cookie Preferences</button><a href="/help?from='+series+'">Support</a></nav>';
+var old=document.querySelector('.gift-footer');if(old)old.replaceWith(footer);else document.body.append(footer);
+})();

@@ -1,0 +1,13 @@
+.lc-footer,.lc-consent,.lc-preferences{box-sizing:border-box;color:var(--ink,#29261f);background:var(--ivory,#f3ede1);font:400 16px/1.5 sans-serif}
+.lc-footer{position:static;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:12px 5%;border-top:1px solid var(--gold,#d7bd89)}
+.lc-footer nav,.lc-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px}.lc-footer nav{position:static;width:auto;min-height:0;margin:0;padding:0;border:0;background:transparent}
+.lc-footer a,.lc-footer button{font:400 18px/1.2 var(--serif,Georgia,serif);color:inherit;background:none;border:0;padding:10px 0;min-height:44px;text-decoration:none;cursor:pointer}
+.lc-footer small{font-size:12px}.lc-consent{position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 5%;border-bottom:1px solid var(--gold,#d7bd89)}
+.lc-consent p,.lc-preferences p{font:400 16px/1.5 sans-serif;margin:8px 0}.lc-consent>div:first-child{max-width:680px}
+.lc-actions button{font:400 18px/1.2 var(--serif,Georgia,serif);padding:10px 18px;min-height:44px;color:inherit;background:transparent;border:1px solid var(--gold,#d7bd89);border-radius:4px;cursor:pointer;width:auto}
+.lc-actions button:first-child{background:var(--forest,#304c40);color:var(--ivory,#f3ede1)}
+.lc-preferences{max-width:540px;width:calc(100% - 32px);max-height:calc(100dvh - 32px);overflow:auto;padding:24px;border:1px solid var(--gold,#d7bd89);border-radius:4px}
+.lc-preferences::backdrop{background:#0008}.lc-preferences h2{font:400 28px/1.2 var(--serif,Georgia,serif);margin:0 0 16px}.lc-preferences label{display:flex;gap:12px;align-items:center;min-height:44px}.lc-preferences input{width:20px;height:20px}
+.lc-footer :focus-visible,.lc-consent :focus-visible,.lc-preferences :focus-visible{outline:3px solid var(--gold,#d7bd89);outline-offset:3px}
+.lc-consent[hidden]{display:none!important}.lc-information{max-width:900px;margin:auto;padding:32px 5%;min-height:40vh}.lc-information h1{font:400 46px/1.12 var(--serif,Georgia,serif)}.lc-information p{font:400 22px/1.4 var(--serif,Georgia,serif)}
+@media(max-width:600px){.lc-consent{display:block;padding:12px 16px}.lc-actions{gap:8px}.lc-footer{padding:12px 16px}.lc-footer nav{gap:12px}.lc-preferences{padding:20px}}

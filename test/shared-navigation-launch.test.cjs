@@ -14,7 +14,7 @@ async function mount(path,user,mobile=false){
 for(const series of ['groups','pets','portraits'])test(series+' keeps series across Collection, Print Shop, Help and Account',async()=>{
  const dom=await mount('/'+series,{id:'fixture'}),d=dom.window.document;
  const links=Array.from(d.querySelectorAll('a'));
- for(const [label,path] of [['My Collection','collection'],['Print Shop','collection'],['Help','help'],['Account','account'],['Orders','account']])assert.equal(links.find(a=>a.textContent===label).getAttribute('href'),'/'+path+'?from='+series);
+ for(const [label,path] of [['My Collection','collection'],['Print Shop','collection'],['Help & Support','help'],['Account','account'],['Orders','account']])assert.equal(links.find(a=>a.textContent===label).getAttribute('href'),'/'+path+'?from='+series);
  for(const name of ['Portraits','Groups','Pets'])assert.equal(links.find(a=>a.textContent===name).getAttribute('href'),'/'+name.toLowerCase());
  assert.equal(links.find(a=>a.textContent==='Gift Collection').getAttribute('href'),'/gifts.next.html');dom.window.close();
 });
