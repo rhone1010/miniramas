@@ -17,6 +17,10 @@ const previewURL = (url) => /^https:\/\//.test(url) || (typeof location !== 'und
 export function assertSession(v) {
     if (!record(v) || v.contractVersion !== 1 || typeof v.sessionId !== 'string' || !record(v.order) || !record(v.entitlement) || !record(v.nextBatch) || !Array.isArray(v.lines) || !Array.isArray(v.batches) || !Array.isArray(v.compositions))
         throw new GiftApiError('invalid_session_response', 0);
+    if (v.entrance !== undefined && !['photo', 'collection'].includes(v.entrance))
+        throw new GiftApiError('invalid_session_response', 0);
+    if (v.entrance === 'collection' && (!record(v.collection) || typeof v.collection.previewId !== 'string' || typeof v.collection.portfolioId !== 'string' || !v.artworkPreviewId))
+        throw new GiftApiError('invalid_session_response', 0);
     for (const n of [v.entitlement.freeBatchesTotal, v.entitlement.freeBatchesUsed, v.entitlement.paidPacksAvailable, v.order.freeBatchesGranted])
         if (!Number.isInteger(n) || n < 0)
             throw new GiftApiError('invalid_entitlement_response', 0);
@@ -65,6 +69,7 @@ export class GiftBackend {
     prePurchaseBatch(id, b) { return this.startBatch(id, b); }
     prePurchaseFavorite(id, b) { return this.selectArtwork(id, b); }
     create(image_b64, signal) { return this.session('POST', '/api/v1/gift/sessions', { image_b64 }, signal); }
+    fromCollection(previewId) { return this.session('POST', '/api/v1/gift/sessions/from-collection', { previewId }); }
     restore(id, signal) { return this.session('GET', sessionPath(id), undefined, signal); }
     async restoreLatest(signal) {
         const v = await this.request('GET', '/api/v1/gift/sessions', undefined, signal);
@@ -124,7 +129,8 @@ export class GiftBackend {
     compose(id) { return this.session('POST', sessionPath(id) + '/compositions'); }
     correct(id, lineId) { return this.session('POST', sessionPath(id) + '/compositions/' + segment(lineId) + '/correct'); }
     approveComposition(id, compositionId) { return this.session('POST', sessionPath(id) + '/compositions/' + segment(compositionId) + '/approve'); }
-    approveOrder(_id) { return this.block('sandbox_final_release'); }
+    finalize(id) { return this.session('POST', sessionPath(id) + '/finalize'); }
+    approveOrder(id) { return this.finalize(id); }
     async mockup(id, lineId, compositionId, signal) {
         const v = await this.request('GET', sessionPath(id) + '/lines/' + segment(lineId) + '/mockup?compositionId=' + segment(compositionId), undefined, signal);
         if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.lineId !== lineId || v.compositionId !== compositionId || typeof v.watermarked !== 'boolean' || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !previewURL(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['frozen', 'legacy_catalog'].includes(v.geometrySource))

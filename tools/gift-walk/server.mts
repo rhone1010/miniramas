@@ -57,7 +57,7 @@ async function toWeb(req: http.IncomingMessage): Promise<Request> {
   const body = chunks.length ? Buffer.concat(chunks) : undefined
   return new Request(BASE + req.url, { method: req.method, headers: req.headers as any, body: req.method === 'GET' || req.method === 'HEAD' ? undefined : body })
 }
-async function send(res: http.ServerResponse, r: Response) { res.writeHead(r.status, Object.fromEntries(r.headers)); res.end(Buffer.from(await r.arrayBuffer())) }
+async function send(res: http.ServerResponse, r: Response) { res.writeHead(r.status, Object.fromEntries(r.headers)); res.end(r.headers.get('content-type')?.includes('application/json') ? (await r.text()).replaceAll('https://walk.supabase.co', BASE) : Buffer.from(await r.arrayBuffer())) }
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url!, BASE), p = url.pathname, started = Date.now()

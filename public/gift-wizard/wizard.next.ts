@@ -37,7 +37,7 @@ function effects(){return liveEffects(registry())}
 function currentArt(){return session.batches.flat().find(p=>p.id===artFocus)||session.batches[batchIndex]?.[0]}
 function favorite(){return session.batches.flat().find(p=>p.id===(shoppingFavoriteId||session.favoriteId))}
 function stage(){return view==='photo'?0:view==='effects'?1:['review','focus','compare','more'].includes(view)?2:['products','configuration','cart'].includes(view)?3:view==='compositions'?5:4}
-function go(v:View,record=true){if(busy)return;if(live?.session&&purchased(live.session)&&['photo','products','configuration','cart','checkout'].includes(v)){view='payment';render();return}if(live?.session&&['needs_attention','refund_requested','refunded','cancelled'].includes(live.session.order.state)){view='payment';render();return}if(v==='compositions'&&!layoutReview&&!(live?.session&&purchased(live.session))){paymentState='pending';v='payment'}if(['effects','review','focus','compare','more'].includes(v)&&!layoutReview&&!session.source){v=live||params.has('gift_order_session')?'payment':'photo'}if(v==='checkout'&&serverMode&&!live?.session?.artworkPreviewId)v=session.batches.length?'review':'effects';if(['review','focus','compare'].includes(v)&&!session.batches.length&&!generationBatch)v='effects';if(record&&view!==v)history.push(view);view=v;render();$('screen').scrollTop=0;if(v==='checkout')$('screen').parentElement!.scrollTop=0;$('workspace').focus({preventScroll:true});window.scrollTo(0,0)}
+function go(v:View,record=true){if(busy)return;if(live?.session?.entrance==='collection'&&['photo','effects','review','focus','compare','more'].includes(v))v=purchased(live.session)?'compositions':'products';if(live?.session&&purchased(live.session)&&['photo','products','configuration','cart','checkout'].includes(v)){view='payment';render();return}if(live?.session&&['needs_attention','refund_requested','refunded','cancelled'].includes(live.session.order.state)){view='payment';render();return}if(v==='compositions'&&!layoutReview&&!(live?.session&&purchased(live.session))){paymentState='pending';v='payment'}if(['effects','review','focus','compare','more'].includes(v)&&!layoutReview&&!session.source){v=live||params.has('gift_order_session')?'payment':'photo'}if(v==='checkout'&&serverMode&&!live?.session?.artworkPreviewId)v=session.batches.length?'review':'effects';if(['review','focus','compare'].includes(v)&&!session.batches.length&&!generationBatch)v='effects';if(record&&view!==v)history.push(view);view=v;render();$('screen').scrollTop=0;if(v==='checkout')$('screen').parentElement!.scrollTop=0;$('workspace').focus({preventScroll:true});window.scrollTo(0,0)}
 function back(){if(busy)return;if(view==='configuration'){while(history.at(-1)==='products'||history.at(-1)==='configuration')history.pop();go('products',false);return}const v=history.pop()||({configuration:'products',products:'review',cart:'products',checkout:'cart',focus:'review',compare:'review',effects:'photo'} as Partial<Record<View,View>>)[view];if(v)go(v,false)}
 function primary(label:string,fn:()=>void,disabled=false){const body=document.createElement('div');body.className='context-body';while($('right').firstChild)body.appendChild($('right').firstChild!);$('right').appendChild(body);$('right').insertAdjacentHTML('beforeend','<button id="primary" class="primary" '+(busy||disabled?'disabled':'')+'>'+label+' →</button>');$('primary').onclick=fn}
 function secondary(id:string,label:string){return '<button id="'+id+'" class="secondary">'+label+'</button>'}
@@ -46,6 +46,7 @@ function field(id:string,label:string,value:string,attrs=''){return '<label clas
 function thumb(id:string){if(session.source?.series==='pets')return '/previews/pets/pets_'+id+'.jpg';if(session.source?.series==='groups')return '/previews/groups/groups_'+id+'.jpg';const x=manifest?.effects?.[id],f=x?.neutral||x?.woman||x?.man||x?.all?.[0];return f?manifest.base+id+'/'+f:''}
 function rail(title:string,copy:string){$('left').innerHTML=(view==='effects'?'':'<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>')+'<h1>'+title+'</h1>'+copy+'<div id="filters"></div>'+(view==='effects'?'':'<p class="tagline">More than a gift.<br>A longer story.</p>')+'<button id="back" '+((!history.length&&!['configuration','products','cart','checkout','focus','compare','effects'].includes(view))||busy?'disabled':'')+'>← Back</button>';$('back').onclick=back;if(serverMode&&live?.session)$('left').insertAdjacentHTML('beforeend','<button id="new-gift" data-href="/gift-wizard.next.html?newGift=1&amp;resumeSessionId='+encodeURIComponent(live.id)+'">Start a New Gift</button>');else if(serverMode&&params.get('newGift')==='1'&&params.get('resumeSessionId'))$('left').insertAdjacentHTML('beforeend','<button id="resume-gift" data-href="/gift-wizard.next.html?sessionId='+encodeURIComponent(params.get('resumeSessionId')!)+'">Return to Your Gift</button>');for(const id of ['new-gift','resume-gift'])if($(id))$(id).onclick=()=>{rememberView();location.assign($(id).dataset.href!)}}
 function render(){
+ if(live?.session?.order.state==='approved'){view='compositions';orderReviewExample=true;}
  $('left').hidden=false;
  $('error').hidden=true;$('error').textContent='';$('status').textContent=analyzingSource?'Analyzing your photo…':layoutReview?'Layout review · sample artwork · no payment or order':'';$('screen').dataset.view=view;$('left').classList.toggle('effects-rail',view==='effects');$('workspace').setAttribute('aria-busy',String(busy));$('screen').innerHTML='';$('right').innerHTML='';
  document.querySelectorAll('.progress li').forEach((el,i)=>{el.classList.toggle('done',i<stage());if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});
@@ -63,7 +64,8 @@ function render(){
 function renderMobileProgress(){
  const labels=Array.from(document.querySelectorAll('.progress li'),el=>el.textContent||'');
  const paid=!!live?.session&&purchased(live.session),restricted=!!live?.session&&['needs_attention','refunded','refund_requested','cancelled'].includes(live.session.order.state);
- const available=[!paid,!!session.source&&!paid,(!!session.batches.length||generationBatch!==null)&&!paid,!!favorite()&&!paid,paid||!!favorite()&&session.lines.length>0,paid];
+ const collection=live?.session?.entrance==='collection';
+ const available=[!paid&&!collection,!!session.source&&!paid&&!collection,(!!session.batches.length||generationBatch!==null)&&!paid&&!collection,!!favorite()&&!paid,paid||!!favorite()&&session.lines.length>0,paid];
  const completed=[!!session.source,!!session.batches.length,!!favorite(),session.lines.length>0,paid,!!live?.session?.order.approvedAt];
  const current=stage(),panel=document.createElement('details');panel.id='mobile-progress';
  panel.innerHTML='<summary aria-label="Gift progress: '+esc(labels[current])+'"><span class="mobile-progress-pips" aria-hidden="true">'+labels.map((_,i)=>'<span class="'+(i===current?'current':completed[i]?'completed':'')+'">'+(i+1)+'</span>').join('')+'</span><span class="mobile-progress-name">'+esc(labels[current])+' ▾</span></summary><nav aria-label="Gift steps">'+labels.map((label,i)=>{const enabled=!busy&&!restricted&&available[i],state=i===current?'Current':completed[i]?(enabled?'Completed':'Completed · Locked'):enabled?'Available':'Locked';return '<button type="button" data-step="'+i+'" '+(!enabled?'disabled':'')+(i===current?' aria-current="step"':'')+'><span>'+(i+1)+'. '+esc(label)+'</span><small>'+state+'</small></button>'}).join('')+'</nav>';
@@ -189,10 +191,10 @@ function renderProducts(){
   canAdd:(p,o)=>productPreviewReady(products.find(x=>x.id===p.id)!,o as CatalogOption),
   onChange:s=>{studioState=s;activeProduct=s.productId;size=s.size;copies=s.copies;rememberView()},
   onAdd:(p,o,n)=>{try{const line={id:editId||crypto.randomUUID(),productId:p.id,size:o.size,copies:n};giftOption(line,products);void persistCart([...session.lines.filter(l=>l.id!==line.id),line])}catch{error('Choose a quantity from 1 to 20.')}},
-  onExit:()=>go('review'),busy,addLabel:editId?'Update This Gift':'Add to Cart'
+  onExit:()=>live?.session?.entrance==='collection'?location.assign('/collection?from='+live.session.source.series):go('review'),busy,addLabel:editId?'Update This Gift':'Add to Cart'
  });
  $('right').innerHTML=(favorite()?'<button type="button" id="shopping-favorite" class="gift-favorite">'+photo(asset(favorite()!.url),favorite()!.label,'gift-favorite-thumb')+'<span>Selected artwork<br>Change Artwork</span></button>':'')+(session.lines.length?secondary('view-cart','Your gifts ('+session.lines.length+')'):'');
- if($('shopping-favorite'))$('shopping-favorite').onclick=()=>go('review');
+ if($('shopping-favorite'))$('shopping-favorite').onclick=()=>live?.session?.entrance==='collection'?location.assign('/collection?from='+live.session.source.series):go('review');
  if($('view-cart'))$('view-cart').onclick=()=>go('cart');
 }
 function lineMarkup(l:GiftLine,edit=true){const {product:p,option:o}=giftOption(l,products);return '<div class="cart-line">'+'<div class="cart-thumbnail">'+(live?.session&&purchased(live.session)?mockup(l):live?configurationPreview(p,o,true):photo(asset(p.image),p.label))+'</div><div class="cart-details"><h3>'+esc(p.label)+'</h3><p>'+esc(o.label)+' · '+money(o.retailCents*l.copies)+'</p><p class="small">'+esc(Object.entries(o.attributes||{}).map(([k,v])=>k+': '+v).join(' · '))+'</p>'+(live&&!purchased(live.session!)?'<p class="small">Product-specific artwork will be prepared after payment.</p>':'')+'<div class="row"><span>Quantity '+l.copies+'</span>'+(edit?'<button data-qty="'+l.id+'" data-delta="-1" aria-label="Decrease '+esc(p.label)+' quantity" '+(l.copies===1?'disabled':'')+'>−</button><button data-qty="'+l.id+'" data-delta="1" aria-label="Increase '+esc(p.label)+' quantity" '+(l.copies===20?'disabled':'')+'>+</button><button data-edit="'+l.id+'">Edit</button><button data-remove="'+l.id+'">Remove</button>':'')+'</div></div></div>'}
@@ -395,6 +397,8 @@ function restoreView(s:SessionView){
  const incomplete=s.batches.find(b=>!b.complete);
  generationBatch=incomplete?.batchIndex??null;
  if(generationBatch){view='review';if(hint?.batchIntent&&typeof hint.batchIntent.idempotencyKey==='string'&&Array.isArray(hint.batchIntent.effectIds))batchIntent=hint.batchIntent;scheduleGenerationRead()}
+ if(s.order.state==='approved'){view='compositions';orderReviewExample=true;return;}
+ if(s.entrance==='collection'&&!purchased(s))view='products';
  if(!hint)return;
  session.effectIds=Array.isArray(hint.effectIds)?hint.effectIds.filter((id:unknown)=>typeof id==='string'&&effects().some(e=>e.id===id)&&!s.usedEffectIds.includes(id)).slice(0,6):[];
  if(recipientOptions.includes(hint.recipient))session.recipient=hint.recipient;
@@ -647,6 +651,17 @@ function adaptServerView(){
   if(orderReviewExample){
    $('right').querySelectorAll('p.small').forEach(el=>el.textContent='');
    $('screen').querySelectorAll('.cart-line').forEach((el,i)=>{const c=s.compositions.find(c=>c.lineId===session.lines[i]?.id);const note=el.querySelector('.small');if(note)note.textContent=live!.compositionIssues.has(session.lines[i]?.id)?'Awaiting server verification':c?.state||c?.status||''});
+   const complete=s.order.state==='approved';
+   if(complete){
+    $('screen').querySelector('h2')!.textContent='Your gifts are approved';
+    $('right').querySelector('h2')!.textContent='Final artwork approval complete';
+    $('right').querySelector('p')!.textContent='Your approval is recorded. Manufacturing is handled separately.';
+    $('review-products').hidden=true;
+    primaryLive(()=>location.assign('/collection?from='+s.source.series),false);$('primary').textContent='My Collection →';
+   }else{
+    const eligible=s.order.state==='awaiting_artwork'&&s.lines.length>0&&s.lines.every(l=>s.compositions.some(c=>c.lineId===l.lineId&&c.productId===l.productId&&c.sourceArtworkId===s.artworkPreviewId&&c.status==='approved'&&(!c.state||c.state==='approved'))&&!live!.compositionIssues.has(l.lineId)&&!!live!.mockups.get(l.lineId)&&Date.parse(live!.mockups.get(l.lineId)!.urlExpiresAt)>Date.now());
+    primaryLive(()=>void serverAction(()=>live!.api.finalize(live!.id),'compositions'),!eligible);
+   }
   }
   if($('refresh-mockups'))$('refresh-mockups').onclick=()=>void serverAction(()=>live!.compositionIssues.size||s.compositions.some(c=>c.lineId===session.lines[productReviewIndex]?.id&&c.compositionId)?live!.api.restore(live!.id):composePurchasedArtwork(),'compositions');
   if(!orderReviewExample&&session.lines.length){

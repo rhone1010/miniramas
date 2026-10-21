@@ -34,7 +34,8 @@ function currentArt() { return session.batches.flat().find(p => p.id === artFocu
 function favorite() { return session.batches.flat().find(p => p.id === (shoppingFavoriteId || session.favoriteId)); }
 function stage() { return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
 function go(v, record = true) { if (busy)
-    return; if (live?.session && purchased(live.session) && ['photo', 'products', 'configuration', 'cart', 'checkout'].includes(v)) {
+    return; if (live?.session?.entrance === 'collection' && ['photo', 'effects', 'review', 'focus', 'compare', 'more'].includes(v))
+    v = purchased(live.session) ? 'compositions' : 'products'; if (live?.session && purchased(live.session) && ['photo', 'products', 'configuration', 'cart', 'checkout'].includes(v)) {
     view = 'payment';
     render();
     return;
@@ -75,6 +76,10 @@ else if (serverMode && params.get('newGift') === '1' && params.get('resumeSessio
     if ($(id))
         $(id).onclick = () => { rememberView(); location.assign($(id).dataset.href); }; }
 function render() {
+    if (live?.session?.order.state === 'approved') {
+        view = 'compositions';
+        orderReviewExample = true;
+    }
     $('left').hidden = false;
     $('error').hidden = true;
     $('error').textContent = '';
@@ -133,7 +138,8 @@ function render() {
 function renderMobileProgress() {
     const labels = Array.from(document.querySelectorAll('.progress li'), el => el.textContent || '');
     const paid = !!live?.session && purchased(live.session), restricted = !!live?.session && ['needs_attention', 'refunded', 'refund_requested', 'cancelled'].includes(live.session.order.state);
-    const available = [!paid, !!session.source && !paid, (!!session.batches.length || generationBatch !== null) && !paid, !!favorite() && !paid, paid || !!favorite() && session.lines.length > 0, paid];
+    const collection = live?.session?.entrance === 'collection';
+    const available = [!paid && !collection, !!session.source && !paid && !collection, (!!session.batches.length || generationBatch !== null) && !paid && !collection, !!favorite() && !paid, paid || !!favorite() && session.lines.length > 0, paid];
     const completed = [!!session.source, !!session.batches.length, !!favorite(), session.lines.length > 0, paid, !!live?.session?.order.approvedAt];
     const current = stage(), panel = document.createElement('details');
     panel.id = 'mobile-progress';
@@ -437,11 +443,11 @@ function renderProducts() {
         catch {
             error('Choose a quantity from 1 to 20.');
         } },
-        onExit: () => go('review'), busy, addLabel: editId ? 'Update This Gift' : 'Add to Cart'
+        onExit: () => live?.session?.entrance === 'collection' ? location.assign('/collection?from=' + live.session.source.series) : go('review'), busy, addLabel: editId ? 'Update This Gift' : 'Add to Cart'
     });
     $('right').innerHTML = (favorite() ? '<button type="button" id="shopping-favorite" class="gift-favorite">' + photo(asset(favorite().url), favorite().label, 'gift-favorite-thumb') + '<span>Selected artwork<br>Change Artwork</span></button>' : '') + (session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '');
     if ($('shopping-favorite'))
-        $('shopping-favorite').onclick = () => go('review');
+        $('shopping-favorite').onclick = () => live?.session?.entrance === 'collection' ? location.assign('/collection?from=' + live.session.source.series) : go('review');
     if ($('view-cart'))
         $('view-cart').onclick = () => go('cart');
 }
@@ -881,6 +887,13 @@ function restoreView(s) {
             batchIntent = hint.batchIntent;
         scheduleGenerationRead();
     }
+    if (s.order.state === 'approved') {
+        view = 'compositions';
+        orderReviewExample = true;
+        return;
+    }
+    if (s.entrance === 'collection' && !purchased(s))
+        view = 'products';
     if (!hint)
         return;
     session.effectIds = Array.isArray(hint.effectIds) ? hint.effectIds.filter((id) => typeof id === 'string' && effects().some(e => e.id === id) && !s.usedEffectIds.includes(id)).slice(0, 6) : [];
@@ -1407,6 +1420,19 @@ function adaptServerView() {
             $('right').querySelectorAll('p.small').forEach(el => el.textContent = '');
             $('screen').querySelectorAll('.cart-line').forEach((el, i) => { const c = s.compositions.find(c => c.lineId === session.lines[i]?.id); const note = el.querySelector('.small'); if (note)
                 note.textContent = live.compositionIssues.has(session.lines[i]?.id) ? 'Awaiting server verification' : c?.state || c?.status || ''; });
+            const complete = s.order.state === 'approved';
+            if (complete) {
+                $('screen').querySelector('h2').textContent = 'Your gifts are approved';
+                $('right').querySelector('h2').textContent = 'Final artwork approval complete';
+                $('right').querySelector('p').textContent = 'Your approval is recorded. Manufacturing is handled separately.';
+                $('review-products').hidden = true;
+                primaryLive(() => location.assign('/collection?from=' + s.source.series), false);
+                $('primary').textContent = 'My Collection →';
+            }
+            else {
+                const eligible = s.order.state === 'awaiting_artwork' && s.lines.length > 0 && s.lines.every(l => s.compositions.some(c => c.lineId === l.lineId && c.productId === l.productId && c.sourceArtworkId === s.artworkPreviewId && c.status === 'approved' && (!c.state || c.state === 'approved')) && !live.compositionIssues.has(l.lineId) && !!live.mockups.get(l.lineId) && Date.parse(live.mockups.get(l.lineId).urlExpiresAt) > Date.now());
+                primaryLive(() => void serverAction(() => live.api.finalize(live.id), 'compositions'), !eligible);
+            }
         }
         if ($('refresh-mockups'))
             $('refresh-mockups').onclick = () => void serverAction(() => live.compositionIssues.size || s.compositions.some(c => c.lineId === session.lines[productReviewIndex]?.id && c.compositionId) ? live.api.restore(live.id) : composePurchasedArtwork(), 'compositions');

@@ -1,3 +1,4 @@
+import {GiftBackend} from '../gift-wizard/backend.next.js';
 import {mountStudio,unavailablePreview,unavailableStudio,familyPhoto,type StudioProduct,type StudioState} from './studio.next.js';
 import type {CatalogResponse} from '../../lib/v1/print/catalog-types.js';
 
@@ -48,14 +49,18 @@ export async function loadPrintStudioData(id:string,transport:typeof fetch=fetch
  });
  return {pieceId:id,products};
 }
-export async function connectPrintStudio(host:HTMLElement,url:URL,storage:StoragePort,transport:typeof fetch=fetch,onExit:()=>void=()=>location.assign(collectionReturn(url,storage))){
- // Receipt navigation and any existing checkout state belong to the existing flow.
+const entrances=new Map<string,Promise<string>>();
+export async function connectPrintStudio(host:HTMLElement,url:URL,storage:StoragePort,transport:typeof fetch=fetch,onExit:()=>void=()=>location.assign(collectionReturn(url,storage)),onOpen:(url:string)=>void=url=>location.replace(url)){
  if(url.searchParams.has('session'))return null;
- const id=url.searchParams.get('test_piece')||'';
- const data=await loadPrintStudioData(id,transport);
- const state=restorePrintState(id,data.products,storage);
- return mountStudio(host,{products:data.products,state,previewHtml:unavailablePreview,canAdd:()=>false,
-  onChange:s=>persistPrintState(id,s,storage),onAdd:()=>{},onExit});
+ const id=url.searchParams.get('test_piece')||'';if(!validId(id))throw Error('invalid_piece');
+ host.setAttribute('aria-busy','true');
+ let request=entrances.get(id);
+ if(!request){request=new GiftBackend((url,init)=>transport(url,init)).fromCollection(id).then(s=>{
+  if(s.entrance!=='collection'||s.collection?.previewId!==id)throw Error('owned_artwork_required');
+  return '/gift-wizard.next.html?sessionId='+encodeURIComponent(s.sessionId);
+ });entrances.set(id,request);}
+ try{const destination=await request;onOpen(destination);return destination;}
+ finally{entrances.delete(id);host.removeAttribute('aria-busy');}
 }
 if(typeof document!=='undefined'){
  const host=document.getElementById('screen');

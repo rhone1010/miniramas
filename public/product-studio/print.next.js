@@ -1,4 +1,5 @@
-import { mountStudio, unavailablePreview, unavailableStudio, familyPhoto } from './studio.next.js';
+import { GiftBackend } from '../gift-wizard/backend.next.js';
+import { unavailableStudio, familyPhoto } from './studio.next.js';
 const validId = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 const stateKey = (id) => 'liten_print_studio_view:' + id;
 const quantity = (n) => Number.isInteger(n) && Number(n) >= 1 && Number(n) <= 20 ? Number(n) : 1;
@@ -70,15 +71,32 @@ export async function loadPrintStudioData(id, transport = fetch) {
     });
     return { pieceId: id, products };
 }
-export async function connectPrintStudio(host, url, storage, transport = fetch, onExit = () => location.assign(collectionReturn(url, storage))) {
-    // Receipt navigation and any existing checkout state belong to the existing flow.
+const entrances = new Map();
+export async function connectPrintStudio(host, url, storage, transport = fetch, onExit = () => location.assign(collectionReturn(url, storage)), onOpen = url => location.replace(url)) {
     if (url.searchParams.has('session'))
         return null;
     const id = url.searchParams.get('test_piece') || '';
-    const data = await loadPrintStudioData(id, transport);
-    const state = restorePrintState(id, data.products, storage);
-    return mountStudio(host, { products: data.products, state, previewHtml: unavailablePreview, canAdd: () => false,
-        onChange: s => persistPrintState(id, s, storage), onAdd: () => { }, onExit });
+    if (!validId(id))
+        throw Error('invalid_piece');
+    host.setAttribute('aria-busy', 'true');
+    let request = entrances.get(id);
+    if (!request) {
+        request = new GiftBackend((url, init) => transport(url, init)).fromCollection(id).then(s => {
+            if (s.entrance !== 'collection' || s.collection?.previewId !== id)
+                throw Error('owned_artwork_required');
+            return '/gift-wizard.next.html?sessionId=' + encodeURIComponent(s.sessionId);
+        });
+        entrances.set(id, request);
+    }
+    try {
+        const destination = await request;
+        onOpen(destination);
+        return destination;
+    }
+    finally {
+        entrances.delete(id);
+        host.removeAttribute('aria-busy');
+    }
 }
 if (typeof document !== 'undefined') {
     const host = document.getElementById('screen');

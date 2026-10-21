@@ -10,6 +10,8 @@ const previewURL=(url:string)=>/^https:\/\//.test(url)||(typeof location!=='unde
 
 export function assertSession(v:unknown):asserts v is SessionView {
  if(!record(v)||v.contractVersion!==1||typeof v.sessionId!=='string'||!record(v.order)||!record(v.entitlement)||!record(v.nextBatch)||!Array.isArray(v.lines)||!Array.isArray(v.batches)||!Array.isArray(v.compositions))throw new GiftApiError('invalid_session_response',0);
+ if(v.entrance!==undefined&&!['photo','collection'].includes(v.entrance))throw new GiftApiError('invalid_session_response',0);
+ if(v.entrance==='collection'&&(!record(v.collection)||typeof v.collection.previewId!=='string'||typeof v.collection.portfolioId!=='string'||!v.artworkPreviewId))throw new GiftApiError('invalid_session_response',0);
  for(const n of [v.entitlement.freeBatchesTotal,v.entitlement.freeBatchesUsed,v.entitlement.paidPacksAvailable,v.order.freeBatchesGranted])if(!Number.isInteger(n)||n<0)throw new GiftApiError('invalid_entitlement_response',0);
  if(typeof v.entitlement.freeAvailable!=='boolean'||![null,'session_limit','photo_limit','daily_limit','lifetime_limit'].includes(v.entitlement.freeBlockedReason))throw new GiftApiError('invalid_entitlement_response',0);
  if(!['free','paid','payment_required','blocked'].includes(v.nextBatch.kind)||!Array.isArray(v.geometries)||typeof v.expiresAt!=='string')throw new GiftApiError('invalid_session_response',0);
@@ -33,6 +35,7 @@ export class GiftBackend {
  prePurchaseBatch(id:string,b:BatchRequest):Promise<BatchResponse>{return this.startBatch(id,b)}
  prePurchaseFavorite(id:string,b:SelectArtworkRequest):Promise<SessionView>{return this.selectArtwork(id,b)}
  create(image_b64:string,signal?:AbortSignal){return this.session('POST','/api/v1/gift/sessions',{image_b64},signal)}
+ fromCollection(previewId:string){return this.session('POST','/api/v1/gift/sessions/from-collection',{previewId})}
  restore(id:string,signal?:AbortSignal){return this.session('GET',sessionPath(id),undefined,signal)}
  async restoreLatest(signal?:AbortSignal):Promise<RestoreResponse>{
   const v=await this.request<RestoreResponse>('GET','/api/v1/gift/sessions',undefined,signal);
@@ -72,7 +75,8 @@ export class GiftBackend {
  compose(id:string):Promise<SessionView>{return this.session('POST',sessionPath(id)+'/compositions')}
  correct(id:string,lineId:string):Promise<SessionView>{return this.session('POST',sessionPath(id)+'/compositions/'+segment(lineId)+'/correct')}
  approveComposition(id:string,compositionId:string):Promise<SessionView>{return this.session('POST',sessionPath(id)+'/compositions/'+segment(compositionId)+'/approve')}
- approveOrder(_id:string):Promise<SessionView>{return this.block('sandbox_final_release')}
+ finalize(id:string):Promise<SessionView>{return this.session('POST',sessionPath(id)+'/finalize')}
+ approveOrder(id:string):Promise<SessionView>{return this.finalize(id)}
  async mockup(id:string,lineId:string,compositionId:string,signal?:AbortSignal):Promise<MockupView>{
   const v=await this.request<MockupView>('GET',sessionPath(id)+'/lines/'+segment(lineId)+'/mockup?compositionId='+segment(compositionId),undefined,signal);
   if(!v||v.contractVersion!==1||v.sessionId!==id||v.lineId!==lineId||v.compositionId!==compositionId||typeof v.watermarked!=='boolean'||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!previewURL(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['frozen','legacy_catalog'].includes(v.geometrySource))throw new GiftApiError('invalid_mockup_response',0);

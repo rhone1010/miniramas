@@ -29,14 +29,12 @@ test('state is artwork scoped, sanitized, and retains Collection return context'
  assert.equal(collectionReturn(new URL('https://example.test/print?from=pets'),store),'/collection?from=pets');
  state.copies=NaN;persistPrintState(id,state,store);assert.equal(restorePrintState(id,data.products,store).copies,1);
 });
-test('shared review remains blocked; receipt session is never consumed',async()=>{
- const dom=new JSDOM('<main id="screen"></main>'),store=storage(),api=transport();
- const products=(await loadPrintStudioData(id,api.fetch)).products;
- persistPrintState(id,{step:'review',productId:products[0].id,size:sample.size,copies:1,drafts:{}},store);
- const host=dom.window.document.getElementById('screen');
- await connectPrintStudio(host,new URL('https://example.test/print?test_piece='+id),store,api.fetch,()=>{});
- assert.equal(host.querySelector('#primary').disabled,true);assert.match(host.textContent,/Not currently available/);
- const count=api.calls.length;host.querySelector('#primary').click();assert.equal(api.calls.length,count);
- assert.equal(await connectPrintStudio(host,new URL('https://example.test/print?session=existing'),store,api.fetch),null);
- assert.equal(api.calls.length,count);dom.window.close();
+test('Collection entrance validates ownership and uses the same Gift session; receipt stays separate',async()=>{
+ const dom=new JSDOM('<main id="screen"></main>'),host=dom.window.document.getElementById('screen'),store=storage(),calls=[],opened=[];
+ const session={contractVersion:1,sessionId:'collection-session',entrance:'collection',collection:{previewId:id,portfolioId:'portfolio'},source:{sourceRef:'source',series:'portraits',width:1024,height:1024},lines:[],geometries:[],batches:[],usedEffectIds:[],entitlement:{freeBatchesTotal:2,freeBatchesUsed:0,paidPacksAvailable:0,freeAvailable:false,freeBlockedReason:null},nextBatch:{kind:'blocked',reason:'collection_session'},expiresAt:'2099-01-01',order:{state:'none',freeBatchesGranted:0},artworkPreviewId:'favorite',compositions:[]};
+ const fetch=async(url,options)=>{calls.push({url,options});return new Response(JSON.stringify(session),{status:201})};
+ await connectPrintStudio(host,new URL('https://example.test/print?test_piece='+id),store,fetch,()=>{},u=>opened.push(u));
+ assert.equal(calls[0].url,'/api/v1/gift/sessions/from-collection');assert.equal(calls[0].options.method,'POST');assert.deepEqual(JSON.parse(calls[0].options.body),{previewId:id});assert.equal(calls[0].options.credentials,'same-origin');assert.deepEqual(opened,['/gift-wizard.next.html?sessionId=collection-session']);assert.equal(host.hasAttribute('aria-busy'),false);
+ assert.equal(await connectPrintStudio(host,new URL('https://example.test/print?session=existing'),store,fetch),null);assert.equal(calls.length,1);
+ session.collection.previewId='wrong';await assert.rejects(connectPrintStudio(host,new URL('https://example.test/print?test_piece='+id),store,fetch,()=>{},()=>{}),/owned_artwork_required/);dom.window.close();
 });

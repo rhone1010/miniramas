@@ -137,7 +137,7 @@ test('favorite persists before shopping without requesting a composition',async(
 test('checkout adapter sends current disclosure and delivery to test checkout only',async()=>{
  const requests:any[]=[];const api=new backend.GiftBackend(async(url,init)=>{requests.push({url,body:JSON.parse(String(init.body))});return Response.json({clientSecret:'secret',stripeSessionId:'cs_test_1',publishableKey:'pk_test_1',totals:{itemsCents:100,shippingCents:20,totalCents:120},disclosure:{version:'2026-10-18-3',text:'authoritative'}})});
  const body:any={email:'test@example.com',shippingAddress:{name:'Test',line1:'1 Street',city:'City',postcode:'12345',countryCode:'US'},disclosureAccepted:true,disclosureVersion:'2026-10-18-3',returnPath:'/gift-wizard.next.html'};
- await api.checkout('project',body);assert.deepEqual(requests[0].body,body);await assert.rejects(api.checkout('project',{...body,disclosureAccepted:false}),/disclosure_required/);assert.equal(requests.length,1);await assert.rejects(api.approveOrder('project'),/integration_blocked/);
+ await api.checkout('project',body);assert.deepEqual(requests[0].body,body);await assert.rejects(api.checkout('project',{...body,disclosureAccepted:false}),/disclosure_required/);assert.equal(requests.length,1);await assert.rejects(api.checkout('project',{...body,disclosureVersion:''}),/disclosure_required/);
 });
 
 test('server allocation caps, refunds and manufacturing states prevent free generation',()=>{
@@ -494,3 +494,23 @@ test('Studio review and quantity survive authenticated refresh',async()=>{
  const s:any=shoppingProject();const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-aspect="Portrait"]').click();win.document.querySelector('[data-size="12x18"]').click();win.document.getElementById('copies').value='2';win.document.getElementById('copies').dispatchEvent(new win.Event('input'));await new Promise(r=>setTimeout(r,25));
  const hint=win.sessionStorage.getItem('liten-gift-resume');dom.window.close();s.storage={'liten-gift-resume':hint};const restored=await boot('sessionId=project&mobile=1',s);assert.equal(restored.win.document.getElementById('copies').value,'2');assert.match(restored.win.document.querySelector('.studio-panel').textContent,/12.*18/);await new Promise(r=>setTimeout(r,25));restored.dom.window.close();
 });
+
+ test('Collection restoration enters the shared Studio and cannot restart artwork generation',async()=>{
+ const s:any=shoppingProject();s.entrance='collection';s.collection={previewId:'owned',portfolioId:'portfolio'};
+ const {win,dom}=await boot('sessionId=project',s);
+ assert.equal(win.document.getElementById('screen').dataset.view,'products');
+ for(const step of ['photo','effects','review']){win.navigate(step);assert.equal(win.document.getElementById('screen').dataset.view,'products')}
+ dom.window.close();
+ });
+ test('final approval calls approval-only finalize and completed state survives restoration',async()=>{
+ const s:any=artworkProject();s.compositions[0].status='approved';s.mockup.compositionStatus='approved';let posted=0;
+ s.route=(url:string,init:any)=>{if(url.endsWith('/finalize')){assert.equal(init.method,'POST');posted++;s.order.state='approved';return s}};
+ const {win,dom,calls}=await boot('sessionId=project',s);win.navigate('compositions');win.document.getElementById('order-example').click();
+ assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();win.document.getElementById('primary').click();
+ await new Promise(r=>setTimeout(r,40));assert.equal(posted,1);assert.match(win.document.getElementById('screen').textContent,/Your gifts are approved/);assert(!calls.some(x=>x.includes('manufactur')));dom.window.close();
+ const restored=await boot('sessionId=project',s);assert.match(restored.win.document.getElementById('screen').textContent,/Your gifts are approved/);assert.equal(restored.win.document.getElementById('primary').textContent,'My Collection →');assert.equal(posted,1);restored.dom.window.close();
+ });
+ test('final approval failure retains the individual approvals and can retry',async()=>{
+ const s:any=artworkProject();s.compositions[0].status='approved';s.mockup.compositionStatus='approved';s.route=(url:string)=>url.endsWith('/finalize')?new Response(JSON.stringify({error:'approval_unavailable'}),{status:503}):null;
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('compositions');win.document.getElementById('order-example').click();win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,40));assert.equal(s.order.state,'awaiting_artwork');assert.equal(win.document.getElementById('primary').disabled,false);assert.equal(win.document.getElementById('error').textContent,'approval_unavailable');dom.window.close();
+ });

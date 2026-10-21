@@ -16,7 +16,8 @@ export const GIFT_CONTRACT_VERSION = 1
 
 export type Series = 'portraits' | 'pets' | 'groups'
 export type PreviewStatus = 'pending' | 'generating' | 'ready' | 'failed'
-export type BatchKind = 'free' | 'paid'
+/** 'collection': the one-preview batch of a session started from My Collection (057): the owned artwork, already finished, nothing to generate. */
+export type BatchKind = 'free' | 'paid' | 'collection'
 
 /** What the source photo was identified as. Never a customer question. */
 export interface SourceView {
@@ -100,7 +101,7 @@ export type NextBatch =
   | { kind: 'free' }
   | { kind: 'paid'; packAvailable: true }
   | { kind: 'payment_required'; amountCents: 299; currency: 'USD' }
-  | { kind: 'blocked'; reason: 'order_payment_required' | 'order_not_awaiting_artwork' | 'order_refunded' | 'refund_pending' | 'previous_batch_incomplete' | 'no_effects_remaining' | 'session_expired' }
+  | { kind: 'blocked'; reason: 'order_payment_required' | 'order_not_awaiting_artwork' | 'order_refunded' | 'refund_pending' | 'previous_batch_incomplete' | 'no_effects_remaining' | 'session_expired' | 'collection_session' }
 
 export interface SessionView {
   contractVersion: typeof GIFT_CONTRACT_VERSION
@@ -124,6 +125,10 @@ export interface SessionView {
   expiresAt: string
   catalogVersion: string
   order: OrderView
+  /** Where the session started: 'photo' (the customer uploaded a photo and generated previews) or 'collection' (an artwork the customer already owns, selected from My Collection; nothing to generate). */
+  entrance: 'photo' | 'collection'
+  /** For a 'collection' session: the owned artwork this session references (the owned piece itself is never modified). Null for photo sessions. */
+  collection: { previewId: string; portfolioId: string | null } | null
   /** The one selected artwork (a preview id), or null. */
   artworkPreviewId: string | null
   /** One entry per purchased line, once the order is paid. */
@@ -137,7 +142,14 @@ export interface OrderView {
   state: OrderState
   /** Always 2: the free previews are no longer granted by payment (see entitlement). Kept so existing readers keep working. */
   freeBatchesGranted: number
+  /** The customer's FINAL approval time (set by POST .../finalize; also reflects orders approved before the split). Null until then. */
   approvedAt: string | null
+  /** Same value as approvedAt, named for what it is. */
+  finalApprovedAt: string | null
+  /** When the order was released to manufacturing (an explicit operator step, never the customer's). Null until then. */
+  releasedAt: string | null
+  /** Whether anything has been handed to manufacturing. 'not_released' even after final approval. */
+  manufacturing: 'not_released' | 'released' | 'with_lab'
   /** The My Collection piece created at approval (the one digital unlock), or null. */
   unlockPortfolioId: string | null
   totalCents: number | null
@@ -312,6 +324,8 @@ export interface MockupView {
   renderer?: 'scene' | 'calibrated'
   /** Present when renderer is 'scene': the scene, its renderer revision and how the scene-compatible picture relates to the production picture. Never a URL or a file. */
   scene?: { sceneId: string; revision: string; fit: 'exact' | 'resample'; representationId: string } | null
+  /** When renderer is 'calibrated' because no approved scene fits: why, with the measured numbers (null when a scene was used or no scene renderer ran). */
+  sceneRefusal?: SceneRefusalView | null
 }
 
 // ── RESTORING A SESSION (GET /api/v1/gift/sessions) ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -363,7 +377,7 @@ export interface RestoreResponse {
 export type ProductPreviewView =
   | {
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'ready'; sessionId: string; productId: string; sku: string; favoriteId: string
-      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'exact' | 'resample'
+      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'exact' | 'resample'; sceneRefusal?: SceneRefusalView | null
       url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
       watermarked: true; productionPrintFile: false; purchaseAuthorization: false
     }
@@ -377,7 +391,7 @@ export type ProductPreviewView =
   | {
       /** Only with ?provisional=1, in place of adaptation_required. The whole favorite inside the product on a neutral surround; NOT the final picture (see provisional.finalComposition). */
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'provisional'; sessionId: string; productId: string; sku: string; favoriteId: string
-      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'contain'
+      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'contain'; sceneRefusal?: SceneRefusalView | null
       url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
       watermarked: true; productionPrintFile: false; purchaseAuthorization: false
       provisional: {
@@ -390,3 +404,9 @@ export type ProductPreviewView =
       }
     }
   | { contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'not_available'; reason: 'product_not_available' | 'no_mockup_template'; sessionId: string; productId: string; sku: string | null; favoriteId: string }
+
+/** Why no approved photographic scene shows a configuration (scenes.ts). openingAspect/productAspect/extension are present for the two shape reasons: e.g. fine-art-square 0.9338 against a 1.0 product = 0.0709, beyond the free 2% band. */
+export interface SceneRefusalView {
+  reason: 'no_scene_for_family' | 'configuration_not_photographed' | 'orientation_not_photographed' | 'shape_needs_extension' | 'shape_incompatible' | 'scene_unavailable' | 'feature_disabled' | 'scene_renderer_absent'
+  sceneId?: string; openingAspect?: number; productAspect?: number; extension?: number
+}
