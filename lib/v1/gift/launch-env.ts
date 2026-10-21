@@ -44,7 +44,7 @@ export function checkLaunchEnv(env: Record<string, string | undefined>, target: 
   if (!['sandbox', 'live'].includes(pe)) add('PRODIGI_ENV', 'error', "must be 'sandbox' or 'live'")
   else if (pe === 'live') add('PRODIGI_ENV', 'warn', "LIVE: real orders will be manufactured and billed; needs the owner's explicit authorization")
   else add('PRODIGI_ENV', 'info', 'sandbox: nothing is manufactured for real (correct for a controlled launch)')
-  if (pe === 'live') required('PRODIGI_KEY_LIVE', 'Prodigi live key'); else if (pe === 'sandbox') required('PRODIGI_KEY_SANDBOX', 'Prodigi sandbox key')
+  // (The Prodigi key names are checked by scripts/check-launch-env.ts: a structural test forbids every module under lib/ from naming them, so only prodigi-client.ts does.)
   if (target === 'preview' && pe === 'live') add('PRODIGI_ENV', 'error', 'live is blocked in Preview')
 
   // Mail and support
