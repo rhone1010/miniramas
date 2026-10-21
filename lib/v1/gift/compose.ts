@@ -24,7 +24,7 @@ import { correctionPlanFor, groupLines, planFor, type CompositionPlan, type Plan
 import { supportsFavoriteReference } from './aspects'
 import { COMPOSITION_LEASE_MS, COMPOSITION_MAX_ATTEMPTS, estimateCompositionCost } from './policy'
 import { GiftError, fromStoreError, getSessionView, owned, type GiftDeps } from './service'
-import { StoreError, byNewest, correctionUsed, type CompositionJobKey, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
+import { StoreError, byNewest, correctionUsed, finalizedAt, type CompositionJobKey, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
 import type { SessionView } from './types'
 
 async function selectedPreview(deps: GiftDeps, rec: SessionRec): Promise<PreviewRec> {
@@ -42,6 +42,7 @@ const active = (comps: CompositionRec[], lineId: string, previewId: string) =>
 export async function selectArtwork(deps: GiftDeps, userId: string, sessionId: string, previewId: unknown): Promise<SessionView> {
   const rec = await owned(deps, userId, sessionId)
   if (typeof previewId !== 'string' || !/^[0-9a-f-]{36}$/i.test(previewId)) throw new GiftError('preview_not_ready')
+  if (finalizedAt(rec)) throw new GiftError('order_not_awaiting_artwork')                   // the customer's final approval is recorded: the artwork is fixed
   try { await deps.store.selectArtwork(rec.id, userId, previewId) } catch (e) { fromStoreError(e) }
   return getSessionView(deps, userId, sessionId)
 }
@@ -233,14 +234,14 @@ export async function approveComposition(deps: GiftDeps, userId: string, session
 }
 
 /**
- * Approve the order. The artwork becomes the customer's unlocked My Collection piece (one per order, no credit consumed), and
- * the order is released to the existing fulfilment pipeline, which still runs its own account, payment, upscale, QA and
- * Prodigi safeguards. Idempotent.
+ * The customer's FINAL ORDER APPROVAL (POST /api/v1/gift/sessions/{id}/finalize). Requires a paid order, the selected artwork, and an APPROVED composition of the right shape for
+ * every purchased line. The artwork becomes the customer's unlocked My Collection piece (one per order, no credit consumed) and the approval is recorded durably. It does NOT release
+ * anything to manufacturing: see releaseOrder. Idempotent and safe to race (the database locks the session; a repeat returns the same state).
  */
-export async function approveOrder(deps: GiftDeps, userId: string, sessionId: string): Promise<SessionView> {
+export async function finalizeOrder(deps: GiftDeps, userId: string, sessionId: string): Promise<SessionView> {
   const rec = await owned(deps, userId, sessionId)
   if (!rec.order_id) throw new GiftError('order_payment_required')
-  if (rec.approved_at) return getSessionView(deps, userId, sessionId)
+  if (finalizedAt(rec)) return getSessionView(deps, userId, sessionId)             // idempotent: a repeat, a refresh and a second tab all get the same answer
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (rec.refund_requested_at) throw new GiftError('refund_pending')
   const preview = await selectedPreview(deps, rec)
@@ -249,7 +250,7 @@ export async function approveOrder(deps: GiftDeps, userId: string, sessionId: st
   const comps = await deps.store.listCompositions(rec.id)
   if (lines.some(l => active(comps, l.line_id, preview.id)?.status !== 'approved')) throw new GiftError('compositions_not_approved')
   const orderRow = await deps.store.getOrder(rec.order_id)
-  if (orderRow) for (const l of lines) {                          // nothing of the wrong shape for the purchased product is ever released to the lab
+  if (orderRow) for (const l of lines) {                          // nothing of the wrong shape for the purchased product is ever approved for the lab
     const r = resolveFrozenProduct(orderRow.items, l), c = active(comps, l.line_id, preview.id)
     if (r.ok && c && !compositionFitsProduct(c, r.product)) throw new GiftError('composition_geometry_mismatch')
   }   // checked again, atomically, in the database
@@ -264,11 +265,41 @@ export async function approveOrder(deps: GiftDeps, userId: string, sessionId: st
   await deps.storage.put(cleanPath, master, 'image/png')
   await deps.storage.put(lockedPreviewPath(series, preview.id), watermarked, 'image/jpeg')
 
-  let result: 'approved' | 'already'
-  try {
-    result = await deps.store.approveOrder({ sessionId: rec.id, userId, portfolioId: (deps.newId ?? randomUUID)(), cleanPath, sourceImage: source.toString('base64') })
-  } catch (e) { fromStoreError(e) }
-  if (result === 'approved' && deps.kick) await deps.kick(rec.order_id).catch(e => console.error('[gift/approve] release to fulfilment deferred:', e instanceof Error ? e.message : e))
+  // The customer's FINAL APPROVAL ONLY. Nothing below can reach manufacturing: the store records final_approved_at and does not touch the order's status
+  // (it stays 'awaiting_artwork', which the fulfilment pipeline cannot see), deps.kick is not called, and the Prodigi client is not imported here.
+  try { await deps.store.finalizeOrder({ sessionId: rec.id, userId, portfolioId: (deps.newId ?? randomUUID)(), cleanPath, sourceImage: source.toString('base64') }) } catch (e) { fromStoreError(e) }
+  return getSessionView(deps, userId, sessionId)
+}
+
+/**
+ * RELEASE TO MANUFACTURING: a separate, explicit, operator-only step (scripts/gift-release-order.ts). No customer route, handler or button calls it. It requires the
+ * customer's final approval (recorded by finalizeOrder), then moves the order from 'awaiting_artwork' to 'paid' (the state the existing fulfilment pipeline acts on, which
+ * still runs its own account, payment, refund, upscale, QA and Prodigi checks) and asks the pipeline to start now. Idempotent.
+ */
+export async function releaseOrder(deps: GiftDeps, input: { operator: string; userId: string; sessionId: string; dryRun?: boolean }): Promise<{ status: 'would_release' | 'released' | 'already'; orderId: string }> {
+  if (typeof input.operator !== 'string' || !input.operator.trim() || input.operator.length > 100) throw new Error('operator_required')
+  const rec = await owned(deps, input.userId, input.sessionId)
+  if (!rec.order_id) throw new GiftError('order_payment_required')
+  if (rec.refunded_at) throw new GiftError('order_refunded')
+  if (rec.refund_requested_at) throw new GiftError('refund_pending')
+  if (rec.approved_at) return { status: 'already', orderId: rec.order_id }
+  if (!finalizedAt(rec)) throw new GiftError('final_approval_required')
+  if (input.dryRun) return { status: 'would_release', orderId: rec.order_id }
+  let result: 'released' | 'already'
+  try { result = await deps.store.releaseOrder(rec.id) } catch (e) { fromStoreError(e) }
+  if (result === 'released' && deps.kick) await deps.kick(rec.order_id).catch(e => console.error('[gift/release] start deferred (the poller will pick it up):', e instanceof Error ? e.message : e))
+  return { status: result, orderId: rec.order_id }
+}
+
+/**
+ * @deprecated Legacy combined step (final approval AND release), kept so older tests and fixtures still read the same. No route, handler or script calls it: the customer's
+ * final button is finalizeOrder, and release is releaseOrder. A test pins that nothing outside tests imports it.
+ */
+export async function approveOrder(deps: GiftDeps, userId: string, sessionId: string): Promise<SessionView> {
+  const view = await finalizeOrder(deps, userId, sessionId)
+  const rec = await owned(deps, userId, sessionId)
+  if (!rec.approved_at) await releaseOrder(deps, { operator: 'legacy-approveOrder', userId, sessionId })
+  void view
   return getSessionView(deps, userId, sessionId)
 }
 
@@ -312,7 +343,7 @@ export async function repairLine(deps: GiftDeps, input: { operator: string; user
   const rec = await owned(deps, input.userId, input.sessionId)
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (rec.refund_requested_at) throw new GiftError('refund_pending')
-  if (rec.approved_at) throw new GiftError('order_not_awaiting_artwork')
+  if (finalizedAt(rec)) throw new GiftError('order_not_awaiting_artwork')
   const scope = await scopeOf(deps, rec); requireOpen(scope)                // a DRAFT composition (before payment) or a purchased one still awaiting approval
   const preview = await selectedPreview(deps, rec)
   const ls = scope.lines.find(x => x.line.line_id === input.lineId)

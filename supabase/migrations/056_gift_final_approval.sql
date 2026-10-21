@@ -1,0 +1,83 @@
+-- 056: Gift Wizard FINAL APPROVAL is separate from RELEASE TO MANUFACTURING.
+--
+-- NOT APPLIED. Requires 048 (and 052 only for the repair paths, which it does not touch). Additive and idempotent.
+--
+-- Until now gift_approve_order did both in one transaction: it recorded the customer's approval AND moved print_orders from 'awaiting_artwork'
+-- (invisible to fulfilment) to 'paid' (the one state the fulfilment poller, completePrintOrder and the retry paths act on). So the customer's final
+-- button was also the manufacturing trigger. This migration splits that:
+--
+--   gift_sessions.final_approved_at   the customer's final order approval, recorded durably. Nothing else changes when it is set.
+--   gift_finalize_order(...)          validates exactly what gift_approve_order validated (paid order, selected artwork, every purchased line has an
+--                                     APPROVED composition of that artwork, no refund or refund request), creates the one unlocked My Collection piece
+--                                     (idempotent), sets final_approved_at. It NEVER touches print_orders, so the order stays 'awaiting_artwork':
+--                                     invisible to fulfilment. Safe to repeat and to race: the session row is locked, a repeat returns 'already'.
+--   gift_release_order(session)       the separate, explicit step: requires final_approved_at, then 'awaiting_artwork' -> 'paid' and approved_at = now()
+--                                     (approved_at keeps its meaning for the fulfilment code: "released"). Service role only; no customer route calls it.
+--
+-- gift_approve_order (048) is left exactly as it was, for rows and tests that predate this; the application no longer calls it. A session that was
+-- approved and released before 056 has approved_at set and final_approved_at null; the application reads "final approval" as
+-- coalesce(final_approved_at, approved_at), so nothing that already happened changes meaning.
+
+alter table public.gift_sessions add column if not exists final_approved_at timestamptz;
+
+create or replace function public.gift_finalize_order(p_session uuid, p_user uuid, p_portfolio uuid, p_clean_path text, p_source_image text)
+returns text language plpgsql security definer set search_path = public as $$
+declare s public.gift_sessions; ost text; pv record; identity_key text;
+begin
+  select * into s from public.gift_sessions where id = p_session for update;
+  if not found or s.user_id <> p_user then raise exception 'session_not_found'; end if;
+  if s.order_id is null then raise exception 'order_payment_required'; end if;
+  if s.refunded_at is not null then raise exception 'order_refunded'; end if;
+  if s.refund_requested_at is not null then raise exception 'refund_pending'; end if;
+  if s.final_approved_at is not null or s.approved_at is not null then return 'already'; end if;
+  select status::text into ost from public.print_orders where id = s.order_id for update;
+  if ost <> 'awaiting_artwork' then raise exception 'order_not_awaiting_artwork'; end if;
+  if s.artwork_preview_id is null then raise exception 'artwork_not_selected'; end if;
+  if not exists (select 1 from public.gift_order_lines where order_id = s.order_id) then raise exception 'order_has_no_lines'; end if;
+  if exists (select 1 from public.gift_order_lines l where l.order_id = s.order_id and not exists (
+       select 1 from public.gift_compositions c where c.session_id = s.id and c.line_id = l.line_id
+          and c.preview_id = s.artwork_preview_id and c.status = 'approved')) then
+    raise exception 'compositions_not_approved';
+  end if;
+
+  if s.unlock_portfolio_id is null then
+    select g.effect_id into pv from public.gift_previews g where g.id = s.artwork_preview_id and g.session_id = s.id and g.status = 'ready';
+    if not found then raise exception 'preview_not_ready'; end if;
+    insert into public.portfolios(id, purchase_id, user_id, series, size, status, free_unlocks, source_image, composition, delivery, pose, framing, subject, aspect_ratio, origin)
+      values (p_portfolio, null, p_user, s.series, 1, 'ready', 0, p_source_image,
+              jsonb_build_object('gift', jsonb_build_object('session', s.id, 'order', s.order_id), 'skip_redirect', true),
+              'preview', 'as_photographed', 'bust', null, s.master_aspect, 'gift');
+    identity_key := 'portfolio:' || p_portfolio::text || ':0';
+    insert into public.preview_ledger(id, email, ip_hash, series, preset, resolution, storage_path, unlocked_at)
+      values (s.artwork_preview_id, identity_key, identity_key, s.series, pv.effect_id, '1k', p_clean_path, now());
+    insert into public.portfolio_items(portfolio_id, slot, preset, status, preview_id) values (p_portfolio, 0, pv.effect_id, 'done', s.artwork_preview_id);
+    update public.gift_sessions set unlock_portfolio_id = p_portfolio where id = s.id;
+  end if;
+
+  -- The ONLY write to the order's lifecycle: the customer's approval. print_orders is not touched.
+  update public.gift_sessions set final_approved_at = now(), last_activity_at = now() where id = s.id;
+  return 'approved';
+end $$;
+
+create or replace function public.gift_release_order(p_session uuid)
+returns text language plpgsql security definer set search_path = public as $$
+declare s public.gift_sessions; ost text;
+begin
+  select * into s from public.gift_sessions where id = p_session for update;
+  if not found then raise exception 'session_not_found'; end if;
+  if s.order_id is null then raise exception 'order_payment_required'; end if;
+  if s.refunded_at is not null then raise exception 'order_refunded'; end if;
+  if s.refund_requested_at is not null then raise exception 'refund_pending'; end if;
+  if s.approved_at is not null then return 'already'; end if;
+  if s.final_approved_at is null then raise exception 'final_approval_required'; end if;
+  select status::text into ost from public.print_orders where id = s.order_id for update;
+  if ost <> 'awaiting_artwork' then raise exception 'order_not_awaiting_artwork'; end if;
+  update public.print_orders set status = 'paid', updated_at = now() where id = s.order_id and status::text = 'awaiting_artwork';
+  update public.gift_sessions set approved_at = now(), last_activity_at = now() where id = s.id;
+  return 'released';
+end $$;
+
+revoke all on function public.gift_finalize_order(uuid, uuid, uuid, text, text) from public, anon, authenticated;
+revoke all on function public.gift_release_order(uuid)                          from public, anon, authenticated;
+grant execute on function public.gift_finalize_order(uuid, uuid, uuid, text, text) to service_role;
+grant execute on function public.gift_release_order(uuid)                          to service_role;

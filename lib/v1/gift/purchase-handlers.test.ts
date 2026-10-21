@@ -67,8 +67,8 @@ describe('purchase and approval endpoints', () => {
     expect(await read(await correctH({ id: U1 }, r.deps, x.sid, 'a'))).toMatchObject({ status: 409, body: { error: 'correction_limit' } })
     const id = (await read(await compositionsH({ id: U1 }, r.deps, x.sid))).body.compositions[0].compositionId
     expect((await read(await approveCompositionH({ id: U1 }, r.deps, x.sid, id))).body.compositions[0].status).toBe('approved')
-    const done = await read(await approveOrderH({ id: U1 }, r.deps, x.sid)); expect(done.status).toBe(200); expect(done.body.order).toMatchObject({ state: 'approved' })
-    expect(done.body.order.unlockPortfolioId).toBeTruthy(); expect(r.deps.kick).toHaveBeenCalledTimes(1)
+    const done = await read(await approveOrderH({ id: U1 }, r.deps, x.sid)); expect(done.status).toBe(200); expect(done.body.order).toMatchObject({ state: 'approved', manufacturing: 'not_released' })
+    expect(done.body.order.unlockPortfolioId).toBeTruthy(); expect(r.deps.kick).not.toHaveBeenCalled()          // approval-only: the customer's request never starts manufacturing
   })
   it('a refund request is a 201 with the Concierge message and the customer text; a second is the same request', async () => {
     const r = rig(); const x = await paidSession(r)

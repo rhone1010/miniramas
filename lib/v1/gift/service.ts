@@ -16,7 +16,7 @@ import { approvedSceneFor, requireApprovedScene } from './presentation'
 import { realSceneRenderer } from './mockup-real'
 import { COMPOSITION_MAX_ATTEMPTS, adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
-import { StoreError, byNewest, correctionUsed, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
+import { StoreError, byNewest, correctionUsed, finalizedAt, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
 import { GIFT_CONTRACT_VERSION, type CompositionView, type BatchGeneration, type RestoreResponse, type RestoreStep, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
 
 export type GiftErrorCode =
@@ -30,6 +30,7 @@ export type GiftErrorCode =
   | 'shipping_quote_failed' | 'order_already_paid' | 'order_persist_failed' | 'checkout_unavailable' | 'lines_locked'
   | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit'
   | 'compositions_not_approved' | 'artwork_not_selected' | 'refund_not_available_after_manufacturing' | 'order_not_paid' | 'line_not_found'
+  | 'final_approval_required' | 'finalization_unavailable'
   // product mockup and frozen geometry
   | 'disclosure_version_required' | 'disclosure_version_mismatch' | 'rate_limited'
   | 'geometry_snapshot_invalid' | 'geometry_snapshot_unavailable' | 'stale_composition' | 'mockup_failed' | 'mockup_renderer_unavailable' | 'mockup_configuration_mismatch'
@@ -41,7 +42,7 @@ const STATUS: Partial<Record<GiftErrorCode, number>> = {
   effect_already_used: 400, not_enough_effects: 409, session_not_found: 404, payment_required: 402, previous_batch_incomplete: 409, session_expired: 409, generation_unavailable: 503,
   disclosure_required: 400, no_lines: 400, invalid_address: 400, invalid_email: 400, product_not_available_for_artwork: 409, fulfilment_unavailable: 409,
   shipping_quote_failed: 502, order_already_paid: 409, order_persist_failed: 500, checkout_unavailable: 503, lines_locked: 409,
-  order_payment_required: 402, order_refunded: 409, refund_pending: 409, order_not_awaiting_artwork: 409, preview_not_ready: 409, correction_limit: 409,
+  final_approval_required: 409, finalization_unavailable: 503, order_payment_required: 402, order_refunded: 409, refund_pending: 409, order_not_awaiting_artwork: 409, preview_not_ready: 409, correction_limit: 409,
   compositions_not_approved: 409, artwork_not_selected: 409, refund_not_available_after_manufacturing: 409, order_not_paid: 409, line_not_found: 404,
   composition_failed: 502, composition_geometry_mismatch: 409, repair_claim_lost: 409, repair_not_consistent: 409, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
   order_session_mismatch: 409, invalid_refund_request: 400, payment_not_confirmed: 409, session_retained: 409,
@@ -136,7 +137,7 @@ export async function createSession(deps: GiftDeps, input: { userId: string; ima
     source_width: jpeg.info.width, source_height: jpeg.info.height, series: analysis.series, analysis: { peopleCount: analysis.peopleCount },
     lines: [], master_aspect: masterAspectFor(analysis.series, analysis.peopleCount),
     created_at: iso(t), last_activity_at: iso(t), expires_at: iso(t + RETENTION.sessionIdleDays * DAY), pinned_at: null,
-    order_id: null, free_batches_granted: 0, artwork_preview_id: null, approved_at: null, refund_requested_at: null, refunded_at: null,
+    order_id: null, free_batches_granted: 0, artwork_preview_id: null, approved_at: null, final_approved_at: null, refund_requested_at: null, refunded_at: null,
     unlock_portfolio_id: null, disclosure_version: null, disclosure_accepted_at: null,
   }
   try { await deps.store.createSession(rec) } catch (e) { await deps.storage.remove([path]).catch(() => {}); throw e }
@@ -201,6 +202,7 @@ export async function startBatch(deps: GiftDeps, userId: string, sessionId: stri
   if (req.effectIds !== undefined && !Array.isArray(req.effectIds)) throw new GiftError('invalid_effect_selection')
   const batches = await deps.store.listBatches(rec.id)
   const repeat = batches.find(b => b.batch.idempotency_key === req.idempotencyKey)
+  if (!repeat && finalizedAt(rec)) throw new GiftError('order_not_awaiting_artwork')       // final approval is recorded: no new generation (a repeat of an earlier request still answers)
   let batchRec: BatchRec
   if (repeat) {
     batchRec = repeat.batch                                  // same key: the same batch, nothing charged, nothing reselected
@@ -428,15 +430,17 @@ function orderView(rec: SessionRec, order: Awaited<ReturnType<GiftDeps['store'][
     : rec.refund_requested_at ? 'refund_requested'
     : !order ? 'none'
     : order.status === 'created' ? 'checkout_open'
-    : order.status === 'awaiting_artwork' ? 'awaiting_artwork'
+    : order.status === 'awaiting_artwork' ? (finalizedAt(rec) ? 'approved' : 'awaiting_artwork')          // approved by the customer, NOT released: the order row is still invisible to fulfilment
     : order.status === 'cancelled' ? 'cancelled'
     : ['placed', 'in_production', 'shipped', 'delivered'].includes(order.status) ? 'with_lab'
     // 'approved' means the customer approved the artwork and the order was released: paid (or held or errored afterwards) WITH an approval time.
     // Any other status, or one of those without an approval, is unexpected and is reported as such instead of being mistaken for approval.
-    : ['paid', 'withheld', 'error'].includes(order.status) && rec.approved_at ? 'approved'
+    : ['paid', 'withheld', 'error'].includes(order.status) && finalizedAt(rec) ? 'approved'
     : 'needs_attention'
   return {
-    orderId: rec.order_id, state, freeBatchesGranted: FREE_BATCHES, approvedAt: rec.approved_at, unlockPortfolioId: rec.unlock_portfolio_id,
+    orderId: rec.order_id, state, freeBatchesGranted: FREE_BATCHES, approvedAt: finalizedAt(rec), finalApprovedAt: finalizedAt(rec), releasedAt: rec.approved_at ?? null,
+    manufacturing: !order ? 'not_released' : ['placed', 'in_production', 'shipped', 'delivered'].includes(order.status) ? 'with_lab' : ['paid', 'withheld', 'error'].includes(order.status) && rec.approved_at ? 'released' : 'not_released',
+    unlockPortfolioId: rec.unlock_portfolio_id,
     totalCents: order?.retail_total_cents ?? null, disclosureVersion: rec.disclosure_version,
   }
 }
@@ -472,6 +476,7 @@ export async function purgeExpired(deps: GiftDeps, limit = 25): Promise<{ purged
 /** Resume a batch: only previews that are not ready run, and nothing is reserved or charged. */
 export async function retryBatch(deps: GiftDeps, userId: string, sessionId: string, batchIndex: number) {
   const rec = await owned(deps, userId, sessionId)
+  if (finalizedAt(rec)) throw new GiftError('order_not_awaiting_artwork')                   // final approval is recorded: no more generation
   if (!Number.isInteger(batchIndex) || batchIndex < 1) throw new GiftError('session_not_found')
   return runBatch(deps, userId, rec, batchIndex)
 }

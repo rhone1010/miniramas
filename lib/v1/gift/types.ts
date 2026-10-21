@@ -137,7 +137,14 @@ export interface OrderView {
   state: OrderState
   /** Always 2: the free previews are no longer granted by payment (see entitlement). Kept so existing readers keep working. */
   freeBatchesGranted: number
+  /** The customer's FINAL approval time (set by POST .../finalize; also reflects orders approved before the split). Null until then. */
   approvedAt: string | null
+  /** Same value as approvedAt, named for what it is. */
+  finalApprovedAt: string | null
+  /** When the order was released to manufacturing (an explicit operator step, never the customer's). Null until then. */
+  releasedAt: string | null
+  /** Whether anything has been handed to manufacturing. 'not_released' even after final approval. */
+  manufacturing: 'not_released' | 'released' | 'with_lab'
   /** The My Collection piece created at approval (the one digital unlock), or null. */
   unlockPortfolioId: string | null
   totalCents: number | null

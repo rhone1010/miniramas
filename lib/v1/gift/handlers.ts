@@ -9,7 +9,7 @@ import { createSession, deleteSessionNow, getBatchView, getSessionView, purgeExp
 import { PackError, createPackCheckout, fulfillPack, packReturnUrl } from './pack'
 import { PACK_PRICE_CENTS } from './policy'
 import { createGiftCheckout, confirmGiftOrder, type GiftOrderDeps } from './orders'
-import { approveComposition, approveOrder, correctLine, ensureCompositions, selectArtwork } from './compose'
+import { approveComposition, finalizeOrder, correctLine, ensureCompositions, selectArtwork } from './compose'
 import { requestRefund, type ConciergePort } from './refund'
 import { getLineMockup } from './mockup'
 import { getProductPreview } from './product-preview'
@@ -104,9 +104,12 @@ export async function correctH(user: Authed, deps: GiftDeps, id: string, lineId:
 export async function approveCompositionH(user: Authed, deps: GiftDeps, id: string, compositionId: string) {
   try { return json(await approveComposition(deps, user.id, id, compositionId)) } catch (e) { return fail(e) }
 }
-export async function approveOrderH(user: Authed, deps: GiftDeps, id: string) {
-  try { return json(await approveOrder(deps, user.id, id)) } catch (e) { return fail(e) }
+/** POST /api/v1/gift/sessions/{id}/finalize -> SessionView. The customer's final approval ONLY; never manufacturing (see finalizeOrder / releaseOrder in compose.ts). */
+export async function finalizeOrderH(user: Authed, deps: GiftDeps, id: string) {
+  try { return json(await finalizeOrder(deps, user.id, id)) } catch (e) { return fail(e) }
 }
+/** POST /api/v1/gift/sessions/{id}/approve: kept for clients written before the split. It is now the SAME approval-only operation as /finalize, so no customer request can release an order. */
+export const approveOrderH = finalizeOrderH
 export async function refundRequestH(req: Request, user: Authed, deps: GiftDeps & { concierge: ConciergePort }, id: string) {
   const b = (await body(req)) ?? {}
   try { return json(await requestRefund(deps, user.id, id, b.reason), 201) } catch (e) { return fail(e) }

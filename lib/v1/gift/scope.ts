@@ -18,7 +18,7 @@ import type { OrderInfo, OrderLineRec, SessionRec } from './store'
 
 export type Phase = 'draft' | 'purchased'
 export interface LineScope { line: OrderLineRec; product: CanonicalProduct; source: 'catalog' | 'frozen' | 'legacy_catalog'; catalogVersion: string | null }
-export interface Scope { phase: Phase; order: OrderInfo | null; lines: LineScope[] }
+export interface Scope { phase: Phase; order: OrderInfo | null; lines: LineScope[]; /** The customer's final approval is recorded: composition work is closed even though the order still awaits release (056). */ finalized?: boolean }
 
 export async function scopeOf(deps: GiftDeps, rec: SessionRec): Promise<Scope> {
   const order = rec.order_id ? await deps.store.getOrder(rec.order_id) : null
@@ -35,10 +35,10 @@ export async function scopeOf(deps: GiftDeps, rec: SessionRec): Promise<Scope> {
     if (!r.ok) throw new GiftError(r.reason)
     lines.push({ line, product: r.product, source: r.source, catalogVersion: r.catalogVersion })
   }
-  return { phase: 'purchased', order, lines }
+  return { phase: 'purchased', order, lines, finalized: !!(rec.final_approved_at ?? rec.approved_at) }
 }
 
 /** Composition work is open for a draft and for a paid order that still awaits artwork approval; never after approval or release. */
 export function requireOpen(scope: Scope): void {
-  if (scope.phase === 'purchased' && scope.order!.status !== 'awaiting_artwork') throw new GiftError('order_not_awaiting_artwork')
+  if (scope.phase === 'purchased' && (scope.order!.status !== 'awaiting_artwork' || scope.finalized)) throw new GiftError('order_not_awaiting_artwork')
 }

@@ -17,6 +17,8 @@ export interface SessionRec {
   created_at: string; last_activity_at: string; expires_at: string; pinned_at: string | null
   // 048: the purchase-before-generation flow
   order_id: string | null; free_batches_granted: number; artwork_preview_id: string | null; approved_at: string | null
+  /** 056: the customer's FINAL order approval. approved_at means "released to manufacturing" (it is what the fulfilment code checks); this does not. Absent before 056. */
+  final_approved_at?: string | null
   refund_requested_at: string | null; refunded_at: string | null; unlock_portfolio_id: string | null
   disclosure_version: string | null; disclosure_accepted_at: string | null
 }
@@ -71,7 +73,10 @@ export type StoreErrorCode =
   | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit' | 'line_not_found'
   | 'artwork_not_selected' | 'compositions_not_approved' | 'order_has_no_lines' | 'order_not_paid' | 'refund_not_available_after_manufacturing'
   | 'session_already_has_order' | 'order_not_found' | 'order_session_mismatch' | 'order_not_payable' | 'rate_limited'
-const STORE_ERROR = /repair_claim_lost|repair_not_consistent|composition_not_found|session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable|rate_limited/
+  | 'final_approval_required' | 'finalization_unavailable'
+const STORE_ERROR = /repair_claim_lost|repair_not_consistent|composition_not_found|session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable|rate_limited|final_approval_required|finalization_unavailable/
+/** The customer's final approval time, whichever way it was recorded: 056 sets final_approved_at; an order approved and released before 056 only has approved_at. */
+export const finalizedAt = (s: Pick<SessionRec, 'approved_at'> & { final_approved_at?: string | null }): string | null => s.final_approved_at ?? s.approved_at ?? null
 export class StoreError extends Error { constructor(public code: StoreErrorCode) { super(code) } }
 
 export interface GiftStore {
@@ -119,6 +124,10 @@ export interface GiftStore {
   completeRepair(i: { sessionId: string; lineId: string; token: string; oldId: string; newId: string; note: Record<string, unknown>; nowMs: number }): Promise<void>
   useCorrection(sessionId: string, userId: string, lineId: string): Promise<void>
   approveOrder(i: { sessionId: string; userId: string; portfolioId: string; cleanPath: string; sourceImage: string }): Promise<'approved' | 'already'>
+  /** 056. The customer's final approval ONLY: validates, creates the My Collection piece, records final_approved_at. Never touches the order's status, so fulfilment cannot see it. */
+  finalizeOrder(i: { sessionId: string; userId: string; portfolioId: string; cleanPath: string; sourceImage: string }): Promise<'approved' | 'already'>
+  /** 056. The separate, explicit release to manufacturing (service role, no customer route): needs final approval, then awaiting_artwork -> paid. */
+  releaseOrder(sessionId: string): Promise<'released' | 'already'>
   requestRefund(i: { sessionId: string; userId: string; reason: string }): Promise<string>
   declineRefund(orderId: string): Promise<void>
   applyRefund(i: { orderId: string; refundId: string; amountCents: number; full: boolean }): Promise<'cancelled' | 'recorded_partial' | 'already' | 'refunded_after_placement' | 'not_gift_order'>
@@ -134,6 +143,7 @@ const jobsMissing = { v: false }              // module-wide: once the table is 
 export function supabaseGiftStore(db: any): GiftStore {
   const one = async (q: any) => { const { data, error } = await q; if (error) throw new Error(error.message); return data }
   const fromRpc = (e: any): never => {
+    if (/gift_(finalize|release)_order/.test(String(e?.message ?? '')) && /could not find the function|does not exist|schema cache/i.test(String(e?.message ?? ''))) throw new StoreError('finalization_unavailable')      // 056 not applied
     const m = STORE_ERROR.exec(String(e?.message ?? ''))
     if (m) throw new StoreError(m[0] as StoreErrorCode)
     throw new Error(String(e?.message ?? 'gift_store_error'))
@@ -229,6 +239,10 @@ export function supabaseGiftStore(db: any): GiftStore {
     async approveOrder(i) {
       return (await rpc('gift_approve_order', { p_session: i.sessionId, p_user: i.userId, p_portfolio: i.portfolioId, p_clean_path: i.cleanPath, p_source_image: i.sourceImage })) as 'approved' | 'already'
     },
+    async finalizeOrder(i) {
+      return (await rpc('gift_finalize_order', { p_session: i.sessionId, p_user: i.userId, p_portfolio: i.portfolioId, p_clean_path: i.cleanPath, p_source_image: i.sourceImage })) as 'approved' | 'already'
+    },
+    async releaseOrder(sessionId) { return (await rpc('gift_release_order', { p_session: sessionId })) as 'released' | 'already' },
     async requestRefund(i) { return (await rpc('gift_request_refund', { p_session: i.sessionId, p_user: i.userId, p_reason: i.reason.slice(0, 1000), p_message: null })) as string },
     async declineRefund(orderId) { await rpc('gift_decline_refund', { p_order: orderId }) },
     async applyRefund(i) { return (await rpc('gift_apply_refund', { p_order: i.orderId, p_refund_id: i.refundId, p_amount: i.amountCents, p_full: i.full })) as any },
@@ -427,6 +441,36 @@ export function memoryGiftStore(clock: () => number = Date.now) {
       }
       o.status = 'paid'; s.approved_at = iso(); s.last_activity_at = iso()
       return 'approved'
+    },
+    async finalizeOrder(i) {
+      const s = owned(i.sessionId, i.userId)
+      if (!s.order_id) throw new StoreError('order_payment_required')
+      if (s.refunded_at) throw new StoreError('order_refunded')
+      if (s.refund_requested_at) throw new StoreError('refund_pending')
+      if (s.final_approved_at || s.approved_at) return 'already'
+      const o = orders.get(s.order_id)!
+      if (o.status !== 'awaiting_artwork') throw new StoreError('order_not_awaiting_artwork')
+      if (!s.artwork_preview_id) throw new StoreError('artwork_not_selected')
+      const ls = lines.filter(l => l.order_id === s.order_id)
+      if (!ls.length) throw new StoreError('order_has_no_lines')
+      if (ls.some(l => !compositions.some(c => c.session_id === s.id && c.line_id === l.line_id && c.preview_id === s.artwork_preview_id && c.status === 'approved'))) throw new StoreError('compositions_not_approved')
+      if (!s.unlock_portfolio_id) {
+        if (!previews.some(p => p.id === s.artwork_preview_id && p.session_id === s.id && p.status === 'ready')) throw new StoreError('preview_not_ready')
+        portfolios.push({ id: i.portfolioId, user_id: i.userId, series: s.series, origin: 'gift', preview_id: s.artwork_preview_id, clean_path: i.cleanPath, unlocked: true, source_image: i.sourceImage })
+        s.unlock_portfolio_id = i.portfolioId
+      }
+      s.final_approved_at = iso(); s.last_activity_at = iso()            // the order row is NOT touched
+      return 'approved'
+    },
+    async releaseOrder(sessionId) {
+      const s = sessions.get(sessionId); if (!s) throw new StoreError('session_not_found')
+      if (!s.order_id) throw new StoreError('order_payment_required')
+      if (s.refunded_at) throw new StoreError('order_refunded'); if (s.refund_requested_at) throw new StoreError('refund_pending')
+      if (s.approved_at) return 'already'
+      if (!s.final_approved_at) throw new StoreError('final_approval_required')
+      const o = orders.get(s.order_id)!; if (o.status !== 'awaiting_artwork') throw new StoreError('order_not_awaiting_artwork')
+      o.status = 'paid'; s.approved_at = iso(); s.last_activity_at = iso()
+      return 'released'
     },
     async requestRefund(i) {
       const s = owned(i.sessionId, i.userId); const o = orderOf(s)
