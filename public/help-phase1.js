@@ -13,7 +13,7 @@ function icon(name){return '<svg class="help-icon" viewBox="0 0 48 48" fill="non
 function artLabel(p){return typeof pieceDisplayName==='function'?pieceDisplayName({name:p.preset}):'Crafted Images'}
 function button(text,action,primary){return '<button class="'+(primary?'help-action':'ac-second')+'" type="button" data-help="'+esc(action)+'">'+esc(text)+'</button>'}
 function chat(topic,caseId){window.Concierge.openForHelp({topic:topic,caseId:caseId||null})}
-function close(){epoch++;clearTimeout(poll);stage.classList.remove('is-open');stage.setAttribute('aria-hidden','true');if(location.pathname==='/help')history.replaceState({},'','/discovery')}
+function close(returnToWorkshop){epoch++;clearTimeout(poll);stage.classList.remove('is-open');stage.setAttribute('aria-hidden','true');if(returnToWorkshop&&location.pathname==='/help'){var series=new URLSearchParams(location.search).get('from');location.assign('/'+(['groups','pets','portraits'].includes(series)?series:'discovery'))}}
 function open(){if(typeof closeMyCollection==='function')closeMyCollection();var acct=document.getElementById('acct');if(acct){acct.classList.remove('is-open');acct.setAttribute('aria-hidden','true')}window.Concierge.close();stage.classList.add('is-open');stage.setAttribute('aria-hidden','false');landing()}
 function navigation(section){helpSection=section||null;main.classList.remove('help-select-artwork');document.getElementById('helpClose').textContent=section?'← Back to Help':'← Back to the workshop';stage.querySelector('.mc-title').textContent=section?'HELP · '+section.toUpperCase():'HELP'}
 function header(title,copy){navigation(title);return '<div class="ac-head"><h2>'+esc(title)+'</h2></div>'+(copy?'<p class="help-subtitle">'+esc(copy)+'</p>':'')}
@@ -31,7 +31,7 @@ var guidance={
  'My Collection':'An unlocked piece is owned and its clean artwork is available to download. Already-owned pieces are excluded from Unlock All.',
  'Collection Unlocks':'Reusable unlocks are account-level credits used on locked eligible Collection pieces, one unlock per piece, and never expire. Packages: 1 for $2.99, 3 for $7.99, 5 for $12.99, 10 for $19.99. Included unlocks are usable across eligible artwork in your Collection.',
  'Unlock All':'10–19 locked pieces: $1.79 each. 20+ locked pieces: $1.59 each. This purchases the specific eligible locked set included at checkout and creates no reusable credits.',
- 'Printing':'Print Shop is not available yet.',
+ 'Printing':"After payment, we'll prepare your artwork for each product. You'll review a clean preview of how it looks on each gift and approve each one before production begins.\n\nNothing is printed or manufactured until you've approved your gifts and submitted your order.\n\nAfter purchasing physical gifts, you may request a full refund through Concierge until your order is submitted to our print partner. Once submitted, the order is no longer eligible for this refund.\n\nAdditional artwork preview packs are separate purchases and are not included in physical-product refunds.",
  'Your account':'Manage your unlocks, your work and your details. Sign in with Google or an email link. There is no password to remember or to lose. Support & Remedies shows your cases, requested resolution and status.',
  'Sign-in':'Sign in with Google or an email link. There is no password to remember.',
  "What if I don't like what I get?":'Select artwork → identify issue → select requested resolution. Every customer receives one Make It Right remedy with no questions asked. The customer may choose: Redo or Refund. Concierge may execute an eligible monetary refund up to $50, never exceeding the actual eligible amount paid. Redo is complimentary. After the first unconditional remedy, Concierge performs an evidence review. A complaint covering an entire 8- or 16-piece batch triggers Batch Review, not an automatic full refund.'
@@ -93,10 +93,10 @@ main.addEventListener('click',function(e){
  else if(a==='signin'){if(typeof openSignin==='function')openSignin()}
  else if(a==='bug'){close();if(window.LCFeedback)window.LCFeedback.open()}
 });
-document.getElementById('helpClose').addEventListener('click',function(){if(helpSection)landing();else close()});
+document.getElementById('helpClose').addEventListener('click',function(){if(helpSection)landing();else close(true)});
 var collectionStage=document.getElementById('mycoll');if(collectionStage)new MutationObserver(function(){if(stage.classList.contains('is-open')&&collectionStage.classList.contains('is-open'))closeMyCollection()}).observe(collectionStage,{attributes:true,attributeFilter:['class']});
 document.addEventListener('click',function(e){if(e.target.closest('#navMyCollection,a[href="/account"]'))close();var a=e.target.closest('a[href="/help"],a[href="/help#make-it-right"]');if(a){e.preventDefault();open();if(a.hash)remedy()}});
-addEventListener('keydown',function(e){if(e.key==='Escape'){var modal=document.getElementById('includedUnlockConfirm');if(includedResolve&&modal){modal.querySelector('[data-included="cancel"]').click();return}close()}});
+addEventListener('keydown',function(e){if(e.key==='Escape'){var modal=document.getElementById('includedUnlockConfirm');if(includedResolve&&modal){modal.querySelector('[data-included="cancel"]').click();return}close(true)}});
 function caseTitle(c){if(c.status==='resolved'&&c.authorized_remedy==='refund')return 'Refund issued · $'+(c.amountCents/100).toFixed(2);if(c.authorized_remedy==='redo'&&['executing','resolved'].includes(c.status))return 'Redo approved';if(c.status==='awaiting_photo')return 'New photo requested';if(c.status==='reviewing')return 'We’re reviewing your request';return 'We’ve got it.'}
 function refundExplanation(c){if(c.status!=='resolved'||c.authorized_remedy!=='refund'||!c.refundBreakdown||!c.refundBreakdown.length)return '';return '<dl class="help-refund-breakdown">'+c.refundBreakdown.map(function(part){return '<div><dt>'+esc(part.label)+':</dt><dd>$'+(part.amountCents/100).toFixed(2)+'</dd></div>'}).join('')+'<div class="help-refund-total"><dt>Total refunded:</dt><dd>$'+(c.amountCents/100).toFixed(2)+'</dd></div></dl>'}
 function showCase(c){
