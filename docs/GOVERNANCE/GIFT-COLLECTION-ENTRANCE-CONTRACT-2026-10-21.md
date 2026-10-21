@@ -1,6 +1,6 @@
 # My Collection -> shared Product Studio: backend contract for Codex 1 (Giftshop) and Codex 2 (Printshop), 2026-10-21
 
-Backend only, committed locally. Needs **migration 057** (`supabase/migrations/057_gift_collection_entrance.sql`, NOT applied to the live database): until it is applied the endpoint answers `503 collection_unavailable`.
+Backend only, committed locally. **Migration 057 is applied and verified on the live database (2026-10-21)**; the endpoint below was verified live (see "Verified live"). Before 057 the endpoint answered `503 collection_unavailable`.
 
 ## Endpoint
 `POST /api/v1/gift/sessions/from-collection`   body `{ "previewId": "<uuid>" }`   (signed in; `Cache-Control: no-store`)
@@ -38,7 +38,10 @@ Everything below is the existing photo-entrance contract, same endpoints and rul
 `collection-entrance.test.ts` (9, real service + handlers), `migration-057.test.ts` (real Postgres: ownership in the database, owned rows byte-identical, idempotent, refusals create nothing, no generation batches, finalize creates no second piece, closed to browser roles, re-runnable), `tools/gift-walk/w25.cjs` (HTTP walk: create, again, not mine, framed refused, product-preview scene, composition, finalize, restore). Walk server: `GET /__walk/owned` gives the seeded owned `previewId` for the signed-in walk user.
 Wall found and fixed in the walk: the Wizard's `assertSession` rejects unknown `entitlement.freeBlockedReason` values (so 'session_limit' is used). Still open on the frontend (Codex): the Wizard has no collection or approved screen yet; on a finalized collection session it opens "Your purchase is confirmed. Review your personalized gifts".
 
-## Applying 057 (SQL Editor; not applied)
+## Verified live (isolated fixture, 057 applied)
+Two throwaway accounts and one owned artwork built the way My Collection stores it, real handlers on the live store and storage, stand-in analyzer, throwing generator and release hook (no paid call, no manufacturing); 36 checks, all passed, fixture and accounts removed, the existing order/session and all print orders byte-identical: another customer's piece, an unknown id, a malformed and a missing id all 404 `artwork_not_found` and create nothing; create 201 with `entrance: 'collection'`, one `collection` batch with one ready preview (signed https `url`), favorite preselected, `unlockPortfolioId` = the owned portfolio; the session's master is the owned original byte for byte at its own `gift/<session>/` path; the owned portfolio, item, ledger row and stored original unchanged after creation and after deleting the session; again and five concurrent requests all return the SAME session (one session and one batch row); the stranger gets `session_not_found` for the session and an empty restore, the owner's restore returns it; generation refused `collection_session_no_generation`; framed and premium 12x18 refused by the sale gate; fine art 12x18 and canvas 12x12 accepted; `product-preview` for canvas 12x12 is `ready` / scene `gallery-canvas-square` and fine art 12x18 `provisional` / scene; an unfinished item is refused 404; after deletion the piece starts a fresh session. Not exercised live: the paid composition and the finalize (covered in the same-code photo-entrance live fixture and in the walk).
+
+## Applying 057 (done)
 1. `docs/GOVERNANCE/gift-057-preflight-and-verify.sql` (read-only): dependencies "present", new objects "not applied yet", no FAIL.
 2. Run `supabase/migrations/057_gift_collection_entrance.sql` once (idempotent; widens two CHECKs on gift_batches, adds a column, a partial unique index, a trigger and one function).
 3. Re-run the verify file: nothing FAIL, nothing "not applied yet". Then tell CC to repeat the isolated live fixture against a real owned piece.
