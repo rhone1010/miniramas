@@ -41,6 +41,15 @@ const deps: any = {
   analyze: async () => ({ status: 'supported', series: 'portraits', peopleCount: null }), kick: async () => ({}),
 }
 
+// My Collection stand-in: ONE owned artwork (WALK_OWNED_ARTWORK, default the sample) for the signed-in walk user, so the from-collection entrance can be walked in a browser.
+const WALK_OWNED = '30000000-0000-4000-8000-0000000000aa', WALK_PORTFOLIO = '40000000-0000-4000-8000-0000000000aa'
+store.ownedArtwork.set(WALK_OWNED, { userId: '10000000-0000-4000-8000-000000000001', portfolioId: WALK_PORTFOLIO, series: 'portraits', preset: effectIds[0] ?? 'bronze', unlocked: true, done: true })
+deps.collection = { resolve: async (u: string, id: string) => {
+  const o = store.ownedArtwork.get(id); if (!o || o.userId !== u) throw new Error('owned_artwork_required')
+  const bytes = await sharp(SAMPLE).resize(1024, 1024, { fit: 'cover' }).png().toBuffer()
+  return { previewId: id, portfolioId: o.portfolioId, series: o.series, preset: o.preset, bytes, width: 1024, height: 1024, sourcePhoto: await sharp(SAMPLE).resize(800, 800, { fit: 'cover' }).jpeg().toBuffer() }
+} }
+
 const mime: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' }
 const log: string[] = []
 async function toWeb(req: http.IncomingMessage): Promise<Request> {
@@ -59,6 +68,7 @@ http.createServer(async (req, res) => {
       store.orders.set(orderId, { id: orderId, status: 'created', paid_at: null, stripe_session_id: cs, stripe_payment_intent: null, retail_total_cents: 9000, retail_shipping_cents: 700, items: purchasedItems(lines), prodigi_order_id: null, placed_at: null } as any)
       await store.linkOrder(rec.id, USER.id, orderId, '2026-10-18-3'); await store.confirmOrder({ sessionId: rec.id, orderId, userId: USER.id, stripeSessionId: cs, paymentIntent: 'pi_walk', lines: purchasedLines(lines) })
       res.writeHead(200, { 'content-type': 'application/json' }); return void res.end(JSON.stringify({ paid: true, orderId })) }
+    if (p === '/__walk/owned') { res.writeHead(200, { 'content-type': 'application/json' }); return void res.end(JSON.stringify({ previewId: WALK_OWNED, portfolioId: WALK_PORTFOLIO })) }
     if (p === '/__walk/state') { res.writeHead(200, { 'content-type': 'application/json' }); return void res.end(JSON.stringify({ genCalls, sessions: store.sessions.size, previews: store.previews.map(x => x.status), lines: store.sessions.size ? [...store.sessions.values()][0].lines : [], comps: store.compositions.length, orders: store.orders.size, log: log.slice(-40) })) }
     if (p.startsWith('/__files/')) { const b = files.get(decodeURIComponent(p.slice(9))); if (!b) { res.writeHead(404); return void res.end() } res.writeHead(200, { 'content-type': p.endsWith('.png') ? 'image/png' : 'image/jpeg', 'cache-control': 'no-store' }); return void res.end(b) }
     if (p.startsWith('/api/')) {
@@ -67,6 +77,7 @@ http.createServer(async (req, res) => {
       else if (p === '/api/v1/print/catalog') r = Response.json(catalogResponse(null))
       else if (p === '/api/v1/gift/sessions' && req.method === 'POST') r = await H.createSessionH(web, USER, deps)
       else if (p === '/api/v1/gift/sessions' && req.method === 'GET') r = await H.restoreSessionH(USER, deps)
+      else if (p === '/api/v1/gift/sessions/from-collection' && req.method === 'POST') r = await H.createCollectionSessionH(web, USER, deps)
       else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)$/))) r = req.method === 'DELETE' ? await H.deleteSessionH(USER, deps, m[1]) : await H.getSessionH(USER, deps, m[1])
       else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/lines$/))) r = await H.setLinesH(web, USER, deps, m[1])
       else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/batches$/))) r = await H.startBatchH(web, USER, deps, m[1])

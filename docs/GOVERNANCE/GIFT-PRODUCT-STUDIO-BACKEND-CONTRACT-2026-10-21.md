@@ -6,7 +6,7 @@
 ## Entrance B: existing My Collection artwork, NOT supported by the Gift rules today (one genuine gap)
 What exists for owned artwork is the Print Shop path: `GET /api/v1/print/source?previewId=` (`ownedPrintSource`: the piece must belong to the user's portfolio, series portraits/pets/groups, a compatible aspect), `/api/v1/print/checkout`, `/api/v1/print/order`. That path is a different pipeline: no composition or aspect adaptation, no corrections, no per-line approval, no Final Approval, no `gift_order` lifecycle, no scene gate. So a Product Studio entered from My Collection cannot follow "the same backend rules" with the existing APIs.
 
-### Gap G1: there is no way to start a Gift session whose favorite is an existing owned piece
+### Gap G1: there was no way to start a Gift session whose favorite is an existing owned piece. BUILT (committed, 057 not yet applied): see GIFT-COLLECTION-ENTRANCE-CONTRACT-2026-10-21.md
 Why the existing API cannot do it:
 1. `POST /sessions` only accepts a photo and runs a fresh analysis; there is no "from collection" input.
 2. A selectable favorite is a `gift_previews` row, which must belong to a `gift_batches` row (`kind in ('free','paid')`, exactly six effect ids, migration 047), so a single imported piece cannot be inserted without a schema change.

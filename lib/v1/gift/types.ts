@@ -16,7 +16,8 @@ export const GIFT_CONTRACT_VERSION = 1
 
 export type Series = 'portraits' | 'pets' | 'groups'
 export type PreviewStatus = 'pending' | 'generating' | 'ready' | 'failed'
-export type BatchKind = 'free' | 'paid'
+/** 'collection': the one-preview batch of a session started from My Collection (057): the owned artwork, already finished, nothing to generate. */
+export type BatchKind = 'free' | 'paid' | 'collection'
 
 /** What the source photo was identified as. Never a customer question. */
 export interface SourceView {
@@ -100,7 +101,7 @@ export type NextBatch =
   | { kind: 'free' }
   | { kind: 'paid'; packAvailable: true }
   | { kind: 'payment_required'; amountCents: 299; currency: 'USD' }
-  | { kind: 'blocked'; reason: 'order_payment_required' | 'order_not_awaiting_artwork' | 'order_refunded' | 'refund_pending' | 'previous_batch_incomplete' | 'no_effects_remaining' | 'session_expired' }
+  | { kind: 'blocked'; reason: 'order_payment_required' | 'order_not_awaiting_artwork' | 'order_refunded' | 'refund_pending' | 'previous_batch_incomplete' | 'no_effects_remaining' | 'session_expired' | 'collection_session' }
 
 export interface SessionView {
   contractVersion: typeof GIFT_CONTRACT_VERSION
@@ -124,6 +125,10 @@ export interface SessionView {
   expiresAt: string
   catalogVersion: string
   order: OrderView
+  /** Where the session started: 'photo' (the customer uploaded a photo and generated previews) or 'collection' (an artwork the customer already owns, selected from My Collection; nothing to generate). */
+  entrance: 'photo' | 'collection'
+  /** For a 'collection' session: the owned artwork this session references (the owned piece itself is never modified). Null for photo sessions. */
+  collection: { previewId: string; portfolioId: string | null } | null
   /** The one selected artwork (a preview id), or null. */
   artworkPreviewId: string | null
   /** One entry per purchased line, once the order is paid. */

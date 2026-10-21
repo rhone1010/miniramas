@@ -30,7 +30,7 @@ export type GiftErrorCode =
   | 'shipping_quote_failed' | 'order_already_paid' | 'order_persist_failed' | 'checkout_unavailable' | 'lines_locked'
   | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit'
   | 'compositions_not_approved' | 'artwork_not_selected' | 'refund_not_available_after_manufacturing' | 'order_not_paid' | 'line_not_found'
-  | 'final_approval_required' | 'finalization_unavailable'
+  | 'final_approval_required' | 'finalization_unavailable' | 'artwork_not_found' | 'artwork_not_compatible' | 'artwork_unavailable' | 'collection_session_no_generation' | 'collection_unavailable'
   // product mockup and frozen geometry
   | 'disclosure_version_required' | 'disclosure_version_mismatch' | 'rate_limited'
   | 'geometry_snapshot_invalid' | 'geometry_snapshot_unavailable' | 'stale_composition' | 'mockup_failed' | 'mockup_renderer_unavailable' | 'mockup_configuration_mismatch'
@@ -42,7 +42,7 @@ const STATUS: Partial<Record<GiftErrorCode, number>> = {
   effect_already_used: 400, not_enough_effects: 409, session_not_found: 404, payment_required: 402, previous_batch_incomplete: 409, session_expired: 409, generation_unavailable: 503,
   disclosure_required: 400, no_lines: 400, invalid_address: 400, invalid_email: 400, product_not_available_for_artwork: 409, fulfilment_unavailable: 409,
   shipping_quote_failed: 502, order_already_paid: 409, order_persist_failed: 500, checkout_unavailable: 503, lines_locked: 409,
-  final_approval_required: 409, finalization_unavailable: 503, order_payment_required: 402, order_refunded: 409, refund_pending: 409, order_not_awaiting_artwork: 409, preview_not_ready: 409, correction_limit: 409,
+  final_approval_required: 409, finalization_unavailable: 503, artwork_not_found: 404, artwork_not_compatible: 409, artwork_unavailable: 503, collection_session_no_generation: 409, collection_unavailable: 503, order_payment_required: 402, order_refunded: 409, refund_pending: 409, order_not_awaiting_artwork: 409, preview_not_ready: 409, correction_limit: 409,
   compositions_not_approved: 409, artwork_not_selected: 409, refund_not_available_after_manufacturing: 409, order_not_paid: 409, line_not_found: 404,
   composition_failed: 502, composition_geometry_mismatch: 409, repair_claim_lost: 409, repair_not_consistent: 409, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
   order_session_mismatch: 409, invalid_refund_request: 400, payment_not_confirmed: 409, session_retained: 409,
@@ -88,6 +88,8 @@ export interface GiftDeps {
   compose?(input: { masterB64: string; size: import('../print/sku-map').PrintSize; finish: import('../print/sku-map').PrintFinish }): Promise<{ image: Buffer; width: number; height: number; fit: 'exact' | 'resample' | 'extend'; outpainted: boolean }>
   /** The existing Node/Sharp product-mockup compositor behind one server-owned boundary (mockup.ts). Absent: the mockup endpoint answers 503. */
   mockup?: import('./mockup').MockupRenderer
+  /** My Collection: resolves an artwork the customer owns (ownership checked again in the database). Absent: the from-collection entrance answers 503. */
+  collection?: CollectionPort
   /** Release an approved order to the existing fulfilment pipeline (completePrintOrder). Failure is deferred, never fatal. */
   kick?(orderId: string): Promise<unknown>
   clock?: () => number
@@ -95,6 +97,9 @@ export interface GiftDeps {
   /** Pause between the main pass and the gentle retry of rate-limited previews (tests make it instant). */
   pause?: (ms: number) => Promise<void>
 }
+/** An owned artwork as the Gift flow needs it. The clean original is read; nothing is ever written back to My Collection. */
+export interface CollectionArtwork { previewId: string; portfolioId: string; series: Series; preset: string; bytes: Buffer; width: number; height: number; /** the customer's own photograph the piece was made from (needed to regenerate for a corrected composition) */ sourcePhoto: Buffer | null }
+export interface CollectionPort { resolve(userId: string, previewId: string): Promise<CollectionArtwork> }
 const now = (d: GiftDeps) => (d.clock ?? Date.now)()
 const iso = (ms: number) => new Date(ms).toISOString()
 const DAY = 864e5
@@ -142,6 +147,64 @@ export async function createSession(deps: GiftDeps, input: { userId: string; ima
   }
   try { await deps.store.createSession(rec) } catch (e) { await deps.storage.remove([path]).catch(() => {}); throw e }
   return buildView(deps, rec)
+}
+
+/**
+ * MY COLLECTION ENTRANCE (POST /api/v1/gift/sessions/from-collection). Starts a Gift session whose favorite is an artwork the customer already owns. The owned piece (ledger row,
+ * portfolio, item, stored original) is only READ; the session gets its own copies of the files and its own records, so everything after this (product selection, adaptation,
+ * preview, cart, checkout, corrections, approval, finalize, release) is exactly the photo entrance's. Idempotent: the same piece again returns the same live session. Needs migration 057.
+ */
+export async function createSessionFromCollection(deps: GiftDeps, input: { userId: string; previewId: unknown }): Promise<{ view: SessionView; created: boolean }> {
+  if (!deps.collection) throw new GiftError('collection_unavailable')
+  if (typeof input.previewId !== 'string' || !/^[0-9a-f-]{36}$/i.test(input.previewId)) throw new GiftError('artwork_not_found')
+  const ownedId = input.previewId.toLowerCase()
+  const again = await deps.store.collectionSession(input.userId, ownedId)
+  if (again) return { view: await buildView(deps, again), created: false }
+  try { await deps.store.recordSessionAttempt(input.userId, createHash('sha256').update('collection:' + ownedId).digest('hex')) } catch (e) {        // the same limits as photo sessions, keyed by the piece
+    if (e instanceof StoreError && e.code === 'rate_limited') throw new GiftError('rate_limited')
+    fromStoreError(e)
+  }
+  let art: CollectionArtwork
+  try { art = await deps.collection.resolve(input.userId, ownedId) } catch (e) {
+    const m = e instanceof Error ? e.message : ''
+    if (e instanceof GiftError) throw e
+    if (/artwork_not_found|owned_artwork_required|portfolio_artwork_required/.test(m)) throw new GiftError('artwork_not_found')
+    if (/square_artwork_required|compatible_artwork_required|artwork_not_compatible/.test(m)) throw new GiftError('artwork_not_compatible')
+    throw new GiftError('artwork_unavailable')
+  }
+  if (!art.sourcePhoto) throw new GiftError('artwork_unavailable')                                                    // corrections regenerate from the customer's photograph
+  let analysis: SourceAnalysis
+  try { analysis = await deps.analyze({ b64: art.sourcePhoto.toString('base64'), bytes: art.sourcePhoto }) } catch { throw new GiftError('analysis_unavailable') }
+  if (analysis.status === 'age_restricted') throw new GiftError('age_restricted')
+  if (analysis.status !== 'supported') throw new GiftError('unsupported_subject')
+  const jpeg = await sharp(art.sourcePhoto).rotate().jpeg({ quality: 92 }).toBuffer({ resolveWithObject: true })
+  const id = (deps.newId ?? randomUUID)(), batchId = (deps.newId ?? randomUUID)(), previewId = (deps.newId ?? randomUUID)()
+  const masterPath = STORAGE.master(id, previewId, 'png'), previewPath = STORAGE.preview(id, previewId), sourcePath = STORAGE.source(id)
+  const marked = await deps.watermark(art.bytes.toString('base64'))                                                    // fails closed: never an unmarked customer view
+  const peopleCount = art.series === 'groups' && analysis.series === 'groups' ? analysis.peopleCount : null
+  const t = now(deps)
+  const rec: SessionRec = {
+    id, user_id: input.userId, status: 'active', source_path: sourcePath, source_sha256: createHash('sha256').update(art.sourcePhoto).digest('hex'),
+    source_width: jpeg.info.width, source_height: jpeg.info.height, series: art.series, analysis: { peopleCount },
+    lines: [], master_aspect: collectionMasterAspect(art.width, art.height),
+    created_at: iso(t), last_activity_at: iso(t), expires_at: iso(t + RETENTION.sessionIdleDays * DAY), pinned_at: null,
+    order_id: null, free_batches_granted: 0, artwork_preview_id: null, approved_at: null, final_approved_at: null, refund_requested_at: null, refunded_at: null,
+    unlock_portfolio_id: art.portfolioId, disclosure_version: null, disclosure_accepted_at: null, collection_preview_id: ownedId,
+  }
+  const files = [sourcePath, masterPath, previewPath]
+  try {
+    await deps.storage.put(sourcePath, jpeg.data, 'image/jpeg'); await deps.storage.put(masterPath, art.bytes, 'image/png'); await deps.storage.put(previewPath, marked, 'image/jpeg')
+    const out = await deps.store.createCollectionSession({ userId: input.userId, ownedPreviewId: ownedId, rec, batchId, previewId, master_path: masterPath, preview_path: previewPath, width: art.width, height: art.height })
+    if (!out.created) { await deps.storage.remove(files).catch(() => {}); const existing = await deps.store.collectionSession(input.userId, ownedId); return { view: await buildView(deps, existing ?? rec), created: false } }      // lost a race: the winner's session
+    return { view: await buildView(deps, { ...rec, artwork_preview_id: previewId }), created: true }
+  } catch (e) { await deps.storage.remove(files).catch(() => {}); fromStoreError(e) }
+}
+/** The aspect the session works at for an owned piece: its own shape (the nearest standard ratio), never a regeneration ratio chosen from a series default. */
+function collectionMasterAspect(w: number, h: number): string {
+  const r = w / h
+  if (Math.abs(r - 1) <= 0.02) return '1:1'
+  const std: Array<[string, number]> = [['3:2', 1.5], ['2:3', 2 / 3], ['4:3', 4 / 3], ['3:4', 3 / 4], ['5:4', 1.25], ['4:5', 0.8], ['16:9', 16 / 9], ['9:16', 9 / 16]]
+  return std.reduce((b, c) => Math.abs(c[1] - r) < Math.abs(b[1] - r) ? c : b)[0]
 }
 
 export async function owned(deps: GiftDeps, userId: string, sessionId: string): Promise<SessionRec> {
@@ -202,6 +265,7 @@ export async function startBatch(deps: GiftDeps, userId: string, sessionId: stri
   if (req.effectIds !== undefined && !Array.isArray(req.effectIds)) throw new GiftError('invalid_effect_selection')
   const batches = await deps.store.listBatches(rec.id)
   const repeat = batches.find(b => b.batch.idempotency_key === req.idempotencyKey)
+  if (rec.collection_preview_id) throw new GiftError('collection_session_no_generation')           // an owned artwork has nothing to generate
   if (!repeat && finalizedAt(rec)) throw new GiftError('order_not_awaiting_artwork')       // final approval is recorded: no new generation (a repeat of an earlier request still answers)
   let batchRec: BatchRec
   if (repeat) {
@@ -293,7 +357,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
       const url = p.status === 'ready' && p.preview_path ? await deps.storage.signedUrl(p.preview_path, 3600) : null
       views.push({ previewId: p.id, slot: p.slot, effectId: p.effect_id, status: p.status, url, width: p.width, height: p.height, retryable: p.status === 'failed' && p.attempts < 3 })
     }
-    const complete = views.length === BATCH_SIZE && views.every(v => v.status === 'ready')
+    const complete = views.length === (batch.kind === 'collection' ? 1 : BATCH_SIZE) && views.every(v => v.status === 'ready')          // a collection batch is the one owned artwork
     const count = (s: PreviewRec['status']) => previews.filter(p => p.status === s).length
     batches.push({ batchIndex: batch.batch_index, kind: batch.kind, complete, previews: views, generation: generationOf(previews, complete, clockNow),
       progress: { ready: count('ready'), generating: count('generating'), pending: count('pending'), failed: count('failed') } })
@@ -324,6 +388,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   const paid = !!order?.paid_at && !['created', 'cancelled'].includes(order.status)
   let nextBatch: NextBatch
   if (expired) nextBatch = { kind: 'blocked', reason: 'session_expired' }
+  else if (rec.collection_preview_id) nextBatch = { kind: 'blocked', reason: 'collection_session' }
   else if (rec.refunded_at) nextBatch = { kind: 'blocked', reason: 'order_refunded' }
   else if (rec.refund_requested_at) nextBatch = { kind: 'blocked', reason: 'refund_pending' }
   else if (order && !['created', 'awaiting_artwork', 'cancelled'].includes(order.status)) nextBatch = { kind: 'blocked', reason: 'order_not_awaiting_artwork' }     // generation needs no purchase, but ends at approval
@@ -336,9 +401,10 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id,
     source: { sourceRef: rec.id, width: rec.source_width, height: rec.source_height, series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, photoUrl: rec.source_path ? await deps.storage.signedUrl(rec.source_path, 3600) : null },
     lines: rec.lines, geometries, masterAspect: rec.master_aspect ?? '', batches, usedEffectIds: used,
-    entitlement: { freeBatchesTotal: FREE_BATCHES, freeBatchesUsed: free.used, paidPacksAvailable: packs, freeAvailable: free.available, freeBlockedReason: free.reason },
+    entitlement: { freeBatchesTotal: FREE_BATCHES, freeBatchesUsed: free.used, paidPacksAvailable: packs, freeAvailable: rec.collection_preview_id ? false : free.available, freeBlockedReason: rec.collection_preview_id ? 'session_limit' : free.reason },          // 'session_limit' is an existing value, so older readers still validate: this session takes no free batch
     nextBatch, expiresAt: rec.expires_at, catalogVersion: catalogVersion(catalog),
     order: orderView(rec, order),
+    entrance: rec.collection_preview_id ? 'collection' : 'photo', collection: rec.collection_preview_id ? { previewId: rec.collection_preview_id, portfolioId: rec.unlock_portfolio_id } : null,
     artworkPreviewId: rec.artwork_preview_id,
     compositions: await Promise.all((orderLines.length || !deps.draftCompositions ? orderLines : draftOrderLines(rec, catalog)).map(async l => {
       const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort(byNewest)[0]
@@ -476,6 +542,7 @@ export async function purgeExpired(deps: GiftDeps, limit = 25): Promise<{ purged
 /** Resume a batch: only previews that are not ready run, and nothing is reserved or charged. */
 export async function retryBatch(deps: GiftDeps, userId: string, sessionId: string, batchIndex: number) {
   const rec = await owned(deps, userId, sessionId)
+  if (rec.collection_preview_id) throw new GiftError('collection_session_no_generation')
   if (finalizedAt(rec)) throw new GiftError('order_not_awaiting_artwork')                   // final approval is recorded: no more generation
   if (!Number.isInteger(batchIndex) || batchIndex < 1) throw new GiftError('session_not_found')
   return runBatch(deps, userId, rec, batchIndex)

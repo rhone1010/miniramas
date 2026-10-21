@@ -262,8 +262,11 @@ export async function finalizeOrder(deps: GiftDeps, userId: string, sessionId: s
   const source = rec.source_path ? await deps.storage.get(rec.source_path) : null
   if (!master || !watermarked || !source) throw new GiftError('generation_unavailable')
   const cleanPath = `${series}/${preview.id}.png`
-  await deps.storage.put(cleanPath, master, 'image/png')
-  await deps.storage.put(lockedPreviewPath(series, preview.id), watermarked, 'image/jpeg')
+  // A My Collection session already owns its piece (unlock_portfolio_id was set when it started, so the database creates no second one): nothing is copied into My Collection.
+  if (!rec.collection_preview_id) {
+    await deps.storage.put(cleanPath, master, 'image/png')
+    await deps.storage.put(lockedPreviewPath(series, preview.id), watermarked, 'image/jpeg')
+  }
 
   // The customer's FINAL APPROVAL ONLY. Nothing below can reach manufacturing: the store records final_approved_at and does not touch the order's status
   // (it stays 'awaiting_artwork', which the fulfilment pipeline cannot see), deps.kick is not called, and the Prodigi client is not imported here.

@@ -26,7 +26,8 @@ import { realMockupRenderer } from './mockup-real'
 import { GROUPS_FAVORITE_REFERENCE_ENABLED } from './aspects'
 import type { GiftOrderDeps } from './orders'
 import type { ConciergePort } from './refund'
-import type { GiftDeps, GiftStorage, SourceAnalysis } from './service'
+import type { CollectionPort, GiftDeps, GiftStorage, SourceAnalysis } from './service'
+import type { Series } from './types'
 
 export function supabaseGiftStorage(db: any = supabaseAdmin): GiftStorage {
   const bucket = () => db.storage.from(PREVIEW_BUCKET)
@@ -132,12 +133,30 @@ export async function watermarkPreview(masterB64: string): Promise<Buffer> {
     .jpeg({ quality: LOCKED_PREVIEW_QUALITY, progressive: true, mozjpeg: true }).toBuffer()
 }
 
+/**
+ * My Collection, read-only: the owned artwork's clean original (through the same ownership check the Print Shop uses: the piece must be the user's, finished, a portraits / pets / groups piece
+ * of a compatible shape) and the customer's own photograph it was made from. Nothing here writes to My Collection. The database checks ownership again when the session is created (057).
+ */
+export const realCollectionPort: CollectionPort = {
+  async resolve(userId, previewId) {
+    const { ownedPrintSource } = await import('@/lib/v1/print/owned-source')
+    const s = await ownedPrintSource(userId, previewId)
+    const { data } = await supabaseAdmin.from('portfolios').select('source_image').eq('id', s.portfolioId).eq('user_id', userId).maybeSingle()
+    const raw = typeof data?.source_image === 'string' ? data.source_image.replace(/^data:[^,]+,/, '') : ''
+    return {
+      previewId, portfolioId: s.portfolioId, series: s.series as Series, preset: s.preset, bytes: await sharp(s.bytes).png().toBuffer(), width: s.width, height: s.height,
+      sourcePhoto: raw ? Buffer.from(raw, 'base64') : null,
+    }
+  },
+}
+
 export function giftDeps(): GiftDeps {
   return {
     draftCompositions: process.env.GIFT_COMPOSITIONS_BEFORE_PAYMENT === '1',
     store: supabaseGiftStore(supabaseAdmin), storage: supabaseGiftStorage(), analyze: analyzeSource, generate: generateMaster, watermark: watermarkPreview,
     compose: composeWithPrintShop,
     mockup: realMockupRenderer,
+    collection: realCollectionPort,
     // Release an approved order to the existing fulfilment pipeline now rather than waiting for the poller (crons run on Production only).
     kick: async orderId => (await import('@/lib/v1/print/complete')).completePrintOrder(orderId),
   }

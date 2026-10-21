@@ -19,6 +19,8 @@ export interface SessionRec {
   order_id: string | null; free_batches_granted: number; artwork_preview_id: string | null; approved_at: string | null
   /** 056: the customer's FINAL order approval. approved_at means "released to manufacturing" (it is what the fulfilment code checks); this does not. Absent before 056. */
   final_approved_at?: string | null
+  /** 057: the owned preview_ledger id a My Collection session was started from; null/absent for photo sessions. */
+  collection_preview_id?: string | null
   refund_requested_at: string | null; refunded_at: string | null; unlock_portfolio_id: string | null
   disclosure_version: string | null; disclosure_accepted_at: string | null
 }
@@ -73,8 +75,8 @@ export type StoreErrorCode =
   | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit' | 'line_not_found'
   | 'artwork_not_selected' | 'compositions_not_approved' | 'order_has_no_lines' | 'order_not_paid' | 'refund_not_available_after_manufacturing'
   | 'session_already_has_order' | 'order_not_found' | 'order_session_mismatch' | 'order_not_payable' | 'rate_limited'
-  | 'final_approval_required' | 'finalization_unavailable'
-const STORE_ERROR = /repair_claim_lost|repair_not_consistent|composition_not_found|session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable|rate_limited|final_approval_required|finalization_unavailable/
+  | 'final_approval_required' | 'finalization_unavailable' | 'artwork_not_found' | 'artwork_not_compatible' | 'collection_session_no_generation' | 'collection_unavailable'
+const STORE_ERROR = /repair_claim_lost|repair_not_consistent|composition_not_found|session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable|rate_limited|final_approval_required|finalization_unavailable|artwork_not_found|artwork_not_compatible|collection_session_no_generation/
 /** The customer's final approval time, whichever way it was recorded: 056 sets final_approved_at; an order approved and released before 056 only has approved_at. */
 export const finalizedAt = (s: Pick<SessionRec, 'approved_at'> & { final_approved_at?: string | null }): string | null => s.final_approved_at ?? s.approved_at ?? null
 export class StoreError extends Error { constructor(public code: StoreErrorCode) { super(code) } }
@@ -126,6 +128,9 @@ export interface GiftStore {
   approveOrder(i: { sessionId: string; userId: string; portfolioId: string; cleanPath: string; sourceImage: string }): Promise<'approved' | 'already'>
   /** 056. The customer's final approval ONLY: validates, creates the My Collection piece, records final_approved_at. Never touches the order's status, so fulfilment cannot see it. */
   finalizeOrder(i: { sessionId: string; userId: string; portfolioId: string; cleanPath: string; sourceImage: string }): Promise<'approved' | 'already'>
+  /** 057. Starts a session whose favorite is an artwork the customer already owns. The database decides ownership; the owned records are never written. Idempotent per (user, owned artwork). */
+  createCollectionSession(i: { userId: string; ownedPreviewId: string; rec: SessionRec; batchId: string; previewId: string; master_path: string; preview_path: string; width: number; height: number }): Promise<{ sessionId: string; created: boolean }>
+  collectionSession(userId: string, ownedPreviewId: string): Promise<SessionRec | null>
   /** 056. The separate, explicit release to manufacturing (service role, no customer route): needs final approval, then awaiting_artwork -> paid. */
   releaseOrder(sessionId: string): Promise<'released' | 'already'>
   requestRefund(i: { sessionId: string; userId: string; reason: string }): Promise<string>
@@ -144,6 +149,7 @@ export function supabaseGiftStore(db: any): GiftStore {
   const one = async (q: any) => { const { data, error } = await q; if (error) throw new Error(error.message); return data }
   const fromRpc = (e: any): never => {
     if (/gift_(finalize|release)_order/.test(String(e?.message ?? '')) && /could not find the function|does not exist|schema cache/i.test(String(e?.message ?? ''))) throw new StoreError('finalization_unavailable')      // 056 not applied
+    if (/gift_create_collection_session/.test(String(e?.message ?? '')) && /could not find the function|does not exist|schema cache/i.test(String(e?.message ?? ''))) throw new StoreError('collection_unavailable')        // 057 not applied
     const m = STORE_ERROR.exec(String(e?.message ?? ''))
     if (m) throw new StoreError(m[0] as StoreErrorCode)
     throw new Error(String(e?.message ?? 'gift_store_error'))
@@ -239,6 +245,17 @@ export function supabaseGiftStore(db: any): GiftStore {
     async approveOrder(i) {
       return (await rpc('gift_approve_order', { p_session: i.sessionId, p_user: i.userId, p_portfolio: i.portfolioId, p_clean_path: i.cleanPath, p_source_image: i.sourceImage })) as 'approved' | 'already'
     },
+    async createCollectionSession(i) {
+      const r = i.rec
+      const data = await rpc('gift_create_collection_session', { p_user: i.userId, p_owned_preview: i.ownedPreviewId, p_session: r.id, p_batch: i.batchId, p_gpreview: i.previewId, p_source_path: r.source_path, p_source_sha: r.source_sha256, p_source_w: r.source_width, p_source_h: r.source_height, p_analysis: r.analysis, p_master_aspect: r.master_aspect, p_expires: r.expires_at, p_master_path: i.master_path, p_preview_path: i.preview_path, p_w: i.width, p_h: i.height })
+      const row = Array.isArray(data) ? data[0] : data
+      return { sessionId: row.o_session as string, created: !!row.o_created }
+    },
+    async collectionSession(userId, ownedPreviewId) {
+      const { data, error } = await db.from('gift_sessions').select('*').eq('user_id', userId).eq('collection_preview_id', ownedPreviewId).eq('status', 'active').maybeSingle()
+      if (error) { if (/collection_preview_id|does not exist|schema cache/i.test(String(error.message))) return null; throw new Error(error.message) }
+      return (data as SessionRec | null) ?? null
+    },
     async finalizeOrder(i) {
       return (await rpc('gift_finalize_order', { p_session: i.sessionId, p_user: i.userId, p_portfolio: i.portfolioId, p_clean_path: i.cleanPath, p_source_image: i.sourceImage })) as 'approved' | 'already'
     },
@@ -261,6 +278,8 @@ const FREE_ARGS = { p_session_cap: FREE_PREVIEWS.perSession, p_photo_cap: FREE_P
 
 export function memoryGiftStore(clock: () => number = Date.now) {
   const sessions = new Map<string, SessionRec>(), batches: BatchRec[] = [], previews: PreviewRec[] = []
+  /** Tests seed this with the owned artwork a My Collection session may start from (the memory stand-in for preview_ledger + portfolios + portfolio_items). */
+  const ownedArtwork = new Map<string, { userId: string; portfolioId: string; series: string; preset: string; unlocked: boolean; done: boolean }>()
   const packs: MemoryPack[] = [], orders = new Map<string, OrderInfo>(), lines: OrderLineRec[] = [], compositions: CompositionRec[] = []
   const attempts: Array<{ user_id: string; sha: string; at: number }> = []
   const freeGrants: Array<{ user_id: string; source_sha256: string; session_id: string | null; batch_id: string; at: number }> = []     // the free-batch ledger: survives session deletion
@@ -442,6 +461,18 @@ export function memoryGiftStore(clock: () => number = Date.now) {
       o.status = 'paid'; s.approved_at = iso(); s.last_activity_at = iso()
       return 'approved'
     },
+    async createCollectionSession(i) {
+      const art = ownedArtwork.get(i.ownedPreviewId)                                                           // mirrors gift_create_collection_session: the owned record decides, and a refusal does not say why
+      if (!art || art.userId !== i.userId || !art.unlocked || !art.done) throw new StoreError('artwork_not_found')
+      if (!['portraits', 'pets', 'groups'].includes(art.series)) throw new StoreError('artwork_not_compatible')
+      const existing = [...sessions.values()].find(x => x.user_id === i.userId && x.collection_preview_id === i.ownedPreviewId && x.status === 'active')
+      if (existing) return { sessionId: existing.id, created: false }
+      sessions.set(i.rec.id, structuredClone({ ...i.rec, series: art.series as Series, unlock_portfolio_id: art.portfolioId, collection_preview_id: i.ownedPreviewId, artwork_preview_id: i.previewId }))
+      batches.push({ id: i.batchId, session_id: i.rec.id, user_id: i.userId, batch_index: 1, kind: 'collection', pack_id: null, idempotency_key: 'collection:' + i.ownedPreviewId, effect_ids: [art.preset], created_at: iso() })
+      previews.push({ id: i.previewId, batch_id: i.batchId, session_id: i.rec.id, slot: 1, effect_id: art.preset, status: 'ready', attempts: 0, lease_until: null, master_path: i.master_path, preview_path: i.preview_path, width: i.width, height: i.height, error: null })
+      return { sessionId: i.rec.id, created: true }
+    },
+    async collectionSession(userId, ownedPreviewId) { const s = [...sessions.values()].find(x => x.user_id === userId && x.collection_preview_id === ownedPreviewId && x.status === 'active'); return s ? structuredClone(s) : null },
     async finalizeOrder(i) {
       const s = owned(i.sessionId, i.userId)
       if (!s.order_id) throw new StoreError('order_payment_required')
@@ -502,5 +533,5 @@ export function memoryGiftStore(clock: () => number = Date.now) {
     },
     async releaseSession(orderId) { const s = [...sessions.values()].find(x => x.order_id === orderId); if (s?.pinned_at) { s.pinned_at = null; s.expires_at = iso(clock() + 7 * 864e5) } },
   }
-  return Object.assign(store, { sessions, batches, previews, packs, orders, lines, compositions, portfolios, refunds, refundRequests, compositionJobs })
+  return Object.assign(store, { ownedArtwork, sessions, batches, previews, packs, orders, lines, compositions, portfolios, refunds, refundRequests, compositionJobs })
 }
