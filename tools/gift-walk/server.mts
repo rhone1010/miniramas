@@ -75,6 +75,8 @@ http.createServer(async (req, res) => {
       else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/artwork$/))) r = await H.selectArtworkH(web, USER, deps, m[1])
       else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/compositions$/))) r = await H.compositionsH(USER, deps, m[1])
       else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/compositions\/([^/]+)\/approve$/))) r = await H.approveCompositionH(USER, deps, m[1], m[2])
+      else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/finalize$/))) r = await H.finalizeOrderH(USER, deps, m[1])
+      else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/approve$/))) r = await H.approveOrderH(USER, deps, m[1])
       else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/compositions\/([^/]+)\/correct$/))) r = await H.correctH(USER, deps, m[1], m[2])
       else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/product-preview$/))) r = await H.productPreviewH(web, USER, deps, m[1])
       else if ((m = p.match(/^\/api\/v1\/gift\/sessions\/([^/]+)\/lines\/([^/]+)\/mockup$/))) r = await H.mockupH(web, USER, deps, m[1], m[2])
