@@ -1,3 +1,7 @@
+/* Product Studio owns new Print configurations; Stripe receipt URLs retain their existing handler. */
+if(location.pathname==='/print'&&!new URLSearchParams(location.search).has('session')){
+ location.replace('/print-studio.next.html'+location.search+location.hash);
+}
 /* Rich's Print Shop phone flow. This adapter uses the existing print state and operations. */
 window.initPrintPhone = function(api){
   if(location.pathname!=='/print'||new URLSearchParams(location.search).has('session'))return;

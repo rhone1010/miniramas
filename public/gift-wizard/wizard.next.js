@@ -1,3 +1,4 @@
+import { mountStudio, familyPhoto } from '../product-studio/studio.next.js';
 import { LiveGift, purchased, canCraft } from './live.next.js';
 import { RequestSlot } from './backend-state.next.js';
 import { GiftBackend, GiftApiError, isApprovedScene } from './backend.next.js';
@@ -7,6 +8,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<'
 const money = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n / 100);
 const asset = (s) => new URL(s, import.meta.url).href;
 const productDrafts = {};
+let studioState = { step: 'product', productId: '', size: '', copies: 1, drafts: productDrafts };
 let session = newSession(), view = 'photo', history = [], products = [], fixtures = [], registries = {}, manifest;
 let shoppingFavoriteId = null;
 let featuredProduct = '';
@@ -114,7 +116,7 @@ function render() {
     }
     const exits = document.createElement('div');
     exits.className = 'actions';
-    if (['products', 'configuration', 'cart', 'checkout'].includes(view)) {
+    if (['cart', 'checkout'].includes(view)) {
         const b = $('back');
         b.disabled = busy;
         exits.append(b);
@@ -370,14 +372,6 @@ async function upload(file) {
             URL.revokeObjectURL(candidate);
     }
 }
-function chooseProduct(id) { activeProduct = id; const p = products.find(p => p.id === id), draft = productDrafts[id]; size = p.options.some(o => o.size === draft?.size) ? draft.size : p.options[0]?.size || ''; copies = draft?.copies || 1; editId = null; go('configuration'); }
-function renderProductCarousel() {
-    const squareImages = { premium: './mockup-scenes/premium-square/premium fine art print square.png', framed: './mockup-scenes/classic-framed-square/classic framed print square.png' };
-    $('screen').innerHTML = '<section class="gift-product-picker" id="product-picker" aria-label="Choose a Product"><h2>Choose a Product</h2><div class="gift-product-selectors" aria-label="Products">' + products.map(p => '<button type="button" data-feature="' + esc(p.id) + '" aria-pressed="' + (activeProduct === p.id) + '">' + photo(asset(squareImages[p.id] || p.image), p.label, 'gift-picker-thumb') + '<span>' + esc(p.label) + '</span><small>' + (p.available && p.options.length ? 'From ' + money(Math.min(...p.options.map(o => o.retailCents))) : 'Not currently available') + '</small></button>').join('') + '</div></section>';
-    document.querySelectorAll('[data-feature]').forEach(b => b.onclick = () => chooseProduct(b.dataset.feature));
-}
-function optionRatio(o) { const w = Math.round(o.imageWidthIn * 100), h = Math.round(o.imageHeightIn * 100); const gcd = (a, b) => b ? gcd(b, a % b) : a; const n = gcd(w, h); return w / n + ':' + h / n; }
-function optionAspect(o) { const w = o.imageWidthIn, h = o.imageHeightIn; return w === h ? 'Square' : w > h ? 'Landscape' : 'Portrait'; }
 const productPreviews = new Map();
 function productPreviewReady(p, o) {
     if (!p.available || o.compatible === false)
@@ -404,7 +398,7 @@ function configurationPreview(p, o, artworkReference = false) {
         entry = {};
         productPreviews.set(key, entry);
         void owner.api.productPreview(owner.id, productId, favoriteId).then(value => { if (value.sku !== o.sku && value.status !== 'not_available')
-            throw new GiftApiError('invalid_product_preview_response', 0); productPreviews.set(key, { value }); }).catch(e => productPreviews.set(key, { failed: true, unavailable: e instanceof GiftApiError && e.code === 'approved_scene_required' })).finally(() => { if (live === owner && owner.session?.artworkPreviewId === favoriteId && ((view === 'configuration' && activeProduct === p.id && size === o.size) || view === 'cart' || view === 'checkout'))
+            throw new GiftApiError('invalid_product_preview_response', 0); productPreviews.set(key, { value }); }).catch(e => productPreviews.set(key, { failed: true, unavailable: e instanceof GiftApiError && e.code === 'approved_scene_required' })).finally(() => { if (live === owner && owner.session?.artworkPreviewId === favoriteId && ((['products', 'configuration'].includes(view) && studioState.step === 'review' && studioState.productId === p.id && studioState.size === o.size) || view === 'cart' || view === 'checkout'))
             render(); });
     }
     if (entry.unavailable)
@@ -424,56 +418,32 @@ function configurationPreview(p, o, artworkReference = false) {
 }
 function renderProducts() {
     rail('Choose<br>Your Gift', '<p>Bring your art to life in a format that fits your space and style.</p>');
-    if (!activeProduct)
-        activeProduct = products.find(p => p.available).id;
-    const p = products.find(p => p.id === activeProduct);
-    if (!p.options.some(o => o.size === size))
-        size = p.options[0]?.size || '';
-    const o = p.options.find(o => o.size === size);
-    if (view === 'products') {
-        renderProductCarousel();
-        $('right').innerHTML = (favorite() ? '<button type="button" id="shopping-favorite" class="gift-favorite">' + photo(asset(favorite().url), favorite().label, 'gift-favorite-thumb') + '<span>Selected artwork<br>Change Artwork</span></button>' : '') + (session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '');
-        if ($('shopping-favorite'))
-            $('shopping-favorite').onclick = () => go('review');
-        if ($('view-cart'))
-            $('view-cart').onclick = () => go('cart');
-        return;
+    if (view === 'configuration') {
+        studioState = { ...studioState, step: 'review', productId: activeProduct || products.find(p => p.available).id, size, copies };
+        view = 'products';
+        $('screen').dataset.view = 'products';
     }
-    if (!p.available || !o) {
-        $('screen').innerHTML = '<h2>' + esc(p.label) + '</h2>' + photo(asset(p.image), p.label, 'gift-feature-image');
-        $('right').innerHTML = '<h2>' + esc(p.label) + '</h2><p role="status">Not currently available</p>';
-        primary('Add to Cart', () => { }, true);
-        return;
-    }
-    $('screen').innerHTML = '<h2>' + esc(p.label) + '</h2>' + configurationPreview(p, o);
-    const aspects = [...new Set(p.options.map(x => optionAspect(x)))];
-    const finishes = [...new Set(p.options.map(x => x.attributes?.color).filter(Boolean))];
-    $('right').innerHTML = '<h2>' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><p>' + esc(o.familyNote || '') + '</p><div class="product-config"><h3>Aspect ratio</h3><div class="sizes">' + aspects.map(a => '<button data-aspect="' + a + '" aria-pressed="' + (optionAspect(o) === a) + '">' + a + ' · ' + optionRatio(p.options.find(x => optionAspect(x) === a)) + '</button>').join('') + '</div><h3>Size</h3><div class="sizes">' + p.options.filter(x => optionAspect(x) === optionAspect(o)).map(x => '<button ' + (x.compatible === false ? 'disabled ' : '') + 'data-size="' + x.size + '" aria-pressed="' + (size === x.size) + '">' + esc(x.label) + '</button>').join('') + '</div>' + (finishes.length ? '<h3>Finish</h3><div class="sizes">' + finishes.map(f => '<button data-finish="' + esc(f) + '" aria-pressed="' + (o.attributes?.color === f) + '">' + esc(f) + '</button>').join('') + '</div>' : '') + field('copies', 'Quantity', String(copies), 'type="number" min="1" max="20" step="1"') + '<p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p></div>';
-    document.querySelectorAll('[data-aspect]').forEach(b => b.onclick = () => { const next = p.options.find(x => optionAspect(x) === b.dataset.aspect && x.compatible !== false) || p.options.find(x => optionAspect(x) === b.dataset.aspect); if (next) {
-        size = next.size;
-        render();
-    } });
-    document.querySelectorAll('[data-finish]').forEach(b => b.onclick = () => { const next = o.attributes?.color === b.dataset.finish ? o : p.options.find(x => x.attributes?.color === b.dataset.finish && optionAspect(x) === optionAspect(o) && x.compatible !== false); if (next) {
-        size = next.size;
-        render();
-    } });
-    if (session.lines.length)
-        $('right').insertAdjacentHTML('beforeend', secondary('view-cart', 'Your gifts (' + session.lines.length + ')'));
-    document.querySelectorAll('[data-product]').forEach(b => b.onclick = () => chooseProduct(b.dataset.product));
-    document.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { size = b.dataset.size; render(); });
-    $('copies').oninput = e => { copies = Number(e.target.value); rememberView(); };
+    const studioProducts = products.map(p => ({ ...p, image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options }));
+    mountStudio($('screen'), {
+        products: studioProducts, state: studioState,
+        previewHtml: (p, o) => configurationPreview(products.find(x => x.id === p.id), o),
+        canAdd: (p, o) => productPreviewReady(products.find(x => x.id === p.id), o),
+        onChange: s => { studioState = s; activeProduct = s.productId; size = s.size; copies = s.copies; rememberView(); },
+        onAdd: (p, o, n) => { try {
+            const line = { id: editId || crypto.randomUUID(), productId: p.id, size: o.size, copies: n };
+            giftOption(line, products);
+            void persistCart([...session.lines.filter(l => l.id !== line.id), line]);
+        }
+        catch {
+            error('Choose a quantity from 1 to 20.');
+        } },
+        onExit: () => go('review'), busy, addLabel: editId ? 'Update This Gift' : 'Add to Cart'
+    });
+    $('right').innerHTML = (favorite() ? '<button type="button" id="shopping-favorite" class="gift-favorite">' + photo(asset(favorite().url), favorite().label, 'gift-favorite-thumb') + '<span>Selected artwork<br>Change Artwork</span></button>' : '') + (session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '');
+    if ($('shopping-favorite'))
+        $('shopping-favorite').onclick = () => go('review');
     if ($('view-cart'))
         $('view-cart').onclick = () => go('cart');
-    primary(editId ? 'Update This Gift' : 'Add to Cart', () => { try {
-        const line = { id: editId || crypto.randomUUID(), productId: p.id, size, copies };
-        giftOption(line, products);
-        const lines = session.lines.filter(l => l.id !== line.id);
-        lines.push(line);
-        void persistCart(lines);
-    }
-    catch {
-        error('Choose a quantity from 1 to 20.');
-    } }, !productPreviewReady(p, o));
 }
 function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>' + (live && !purchased(live.session) ? '<p class="small">Product-specific artwork will be prepared after payment.</p>' : '') + '<div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
 async function persistCart(lines) {
@@ -510,7 +480,7 @@ function renderCart() {
     rail('Choose<br>Your Gift', '<p>Bring your art to life in a format that fits your space and style.</p>');
     $('screen').innerHTML = '<h2>Your gifts</h2>' + (session.lines.length ? session.lines.map(l => lineMarkup(l)).join('') : '<p>Choose Your Gift</p>') + secondary('add-another', 'Add Another Gift');
     bindCart();
-    $('add-another').onclick = () => { editId = null; go('products'); };
+    $('add-another').onclick = () => { editId = null; studioState.step = 'product'; go('products'); };
     $('right').innerHTML = (session.lines.length ? '<div data-order-summary><h2>Order summary</h2><p>Product subtotal<br>' + money(productSubtotal(session, products)) + '</p><p class="small">Shipping and tax calculated before payment.</p></div>' : '');
     primary('Next: Checkout', () => go('checkout'), !session.lines.length || !cartPreviewsReady());
 }
@@ -893,7 +863,7 @@ function rememberView() {
     if (activeProduct && Number.isInteger(copies) && copies >= 1 && copies <= 20)
         productDrafts[activeProduct] = { size, copies };
     try {
-        sessionStorage.setItem(resumeKey, JSON.stringify({ sessionId: live.id, view, productDrafts, effectIds: session.effectIds, recipient: session.recipient, silo, mobileSilo, artFocus, batchIndex, featuredProduct, productReviewIndex, history, generationBatch, batchIntent, activeProduct, size, copies, editId }));
+        sessionStorage.setItem(resumeKey, JSON.stringify({ sessionId: live.id, view, studioState, productDrafts, effectIds: session.effectIds, recipient: session.recipient, silo, mobileSilo, artFocus, batchIndex, featuredProduct, productReviewIndex, history, generationBatch, batchIntent, activeProduct, size, copies, editId }));
     }
     catch { }
 }
@@ -932,6 +902,9 @@ function restoreView(s) {
         const d = hint.productDrafts?.[p.id];
         if (d && p.options.some(o => o.size === d.size) && Number.isInteger(d.copies) && d.copies >= 1 && d.copies <= 20)
             productDrafts[p.id] = { size: d.size, copies: d.copies };
+    }
+    if (hint.studioState && ['product', 'size', 'options', 'review'].includes(hint.studioState.step) && products.some(p => p.id === hint.studioState.productId)) {
+        studioState = { ...hint.studioState, drafts: productDrafts };
     }
     const configured = products.find(p => p.id === hint.activeProduct);
     if (configured?.available && configured.options.some(o => o.size === hint.size)) {

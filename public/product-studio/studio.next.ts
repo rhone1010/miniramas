@@ -16,6 +16,8 @@ const dimensions=(o:StudioOption)=>o.imageWidthIn+':'+o.imageHeightIn;
 export function optionChoices(p:StudioProduct,o:StudioOption){return p.options.filter(x=>dimensions(x)===dimensions(o));}
 export function hasChoices(p:StudioProduct,o:StudioOption){return optionChoices(p,o).filter(x=>x.compatible!==false).length>1;}
 const photo=(url:string,label:string)=>'<img src="'+esc(url)+'" alt="'+esc(label)+'">';
+export function familyPhoto(p:{id:string;image:string}){return ({premium:'/gift-wizard/mockup-scenes/premium-square/premium fine art print square.png',framed:'/gift-wizard/mockup-scenes/classic-framed-square/classic framed print square.png'} as Record<string,string>)[p.id]||p.image}
+export function unavailableStudio(host:HTMLElement,onExit:()=>void){host.innerHTML='<section class="studio-panel"><button type="button">← Back</button><p role="status">Not currently available</p></section>';host.querySelector('button')!.onclick=onExit}
 export function unavailablePreview(p:StudioProduct){return photo(p.image,p.label)+'<p role="status">Not currently available</p>'}
 export function mountStudio(host:HTMLElement,a:StudioAdapter){
  const s=a.state;

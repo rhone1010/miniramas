@@ -7,6 +7,7 @@ import {JSDOM} from 'jsdom';
 import * as contracts from '../../public/gift-wizard/contracts.next';
 import * as backend from '../../public/gift-wizard/backend.next';
 import * as state from '../../public/gift-wizard/backend-state.next';
+import * as studio from '../../public/product-studio/studio.next';
 import * as live from '../../public/gift-wizard/live.next';
 const local=JSON.parse(fs.readFileSync('public/gift-wizard/catalog.next.json','utf8'));
 function project(orderState='awaiting_artwork'){
@@ -22,7 +23,7 @@ async function boot(query:string,response:any=project(),status=200){
  const dom=new JSDOM(fs.readFileSync('public/gift-wizard.next.html','utf8'),{url:'https://liten.invalid/gift-wizard.next.html?'+query,runScripts:'outside-only'});
  const win=dom.window as any,calls:string[]=[];
  win.matchMedia=()=>({matches:query.includes('mobile=1'),addEventListener(){}});win.ResizeObserver=class{observe(){}disconnect(){}};win.scrollTo=()=>{};win.structuredClone=structuredClone;win.AbortController=AbortController;win.Response=Response;
- win.require=(name:string)=>name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
+ win.require=(name:string)=>name.includes('studio.next')?studio:name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
  win.fetch=async(url:string,init:any={})=>{calls.push(String(url));if(response.route&&String(url).includes('/api/v1/gift/')){const routed=await response.route(String(url),init);if(routed)return routed instanceof Response?routed:new Response(JSON.stringify(routed),{status:200})}const data=String(url)==='/api/v1/gift/sessions'&&init.method==='GET'?(response.latestResponse||{contractVersion:1,current:response.resume?response:null,resume:response.resume?{sessionId:response.sessionId,suggestedStep:'previews',resumeBatches:[],runningBatches:[]}:null,recent:[]}):String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/product-preview?')?fixtureProductPreview(response,String(url)):String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog-samples/index.next')?JSON.parse(fs.readFileSync('public/gift-wizard/catalog-samples/index.next.json','utf8')):String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?JSON.parse(fs.readFileSync('public/gift-wizard/fixtures.next.json','utf8')):{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
  let code=fs.readFileSync('public/gift-wizard/wizard.next.ts','utf8').replace('import.meta.url',"'https://liten.invalid/gift-wizard/wizard.next.js'").replace('await import(path);',"window.EFFECT_REGISTRY={silos:[{id:'first',label:'First'}],effects:[{id:'jade',label:'Jade',category:'first',body:'live'}]};").replace(/start\(\);\s*$/,"globalThis.started=start();globalThis.navigate=go;globalThis.refreshGift=refreshGeneration;globalThis.refreshComposition=readCompositionState;");
  if(response.storage)for(const [k,v] of Object.entries(response.storage))win.sessionStorage.setItem(k,v);
@@ -109,7 +110,7 @@ test('preview-first fixture journey keeps favorite separate from product photogr
  assert.equal(win.document.getElementById('screen').dataset.view,'products');
  assert.equal(win.document.querySelectorAll('[data-feature]').length,8);assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
  const reference=win.document.querySelector('#right img').src;assert.ok(reference.includes('preview-1.jpg'));
- win.document.querySelector('[data-feature="fine_art"]').click();assert.ok(win.document.querySelector('#screen img').src.includes('mockup-scenes/fine-art-square/'));assert.equal(win.document.querySelector('#right img'),null);
+ win.document.querySelector('[data-feature="fine_art"]').click();assert.ok(win.document.querySelector('#screen img').src.includes('mockup-scenes/fine-art-square/'));assert.equal(win.document.querySelector('#right img').src,reference);win.document.querySelector('[data-size]').click();
  win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'cart');
  assert.ok(win.document.querySelector('.cart-thumbnail img').src.includes('/mockup-scenes/'));
  win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'checkout');
@@ -189,7 +190,7 @@ test('changed server disclosure must be displayed and accepted again before moun
 
 
 
-test('compact shopping favorite returns to gallery and configuration retains back navigation',async()=>{const {win,dom}=await boot('layoutReview=products');assert.equal(win.document.querySelectorAll('#right .context-image').length,0);assert.ok(win.document.querySelector('.gift-favorite-thumb'));win.document.querySelector('[data-feature="fine_art"]').click();assert.ok(win.document.querySelector('#screen #back'));win.document.getElementById('back').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');win.document.getElementById('shopping-favorite').click();assert.equal(win.document.getElementById('screen').dataset.view,'review');dom.window.close()});
+test('compact shopping favorite returns to gallery and configuration retains back navigation',async()=>{const {win,dom}=await boot('layoutReview=products');assert.equal(win.document.querySelectorAll('#right .context-image').length,0);assert.ok(win.document.querySelector('.gift-favorite-thumb'));win.document.querySelector('[data-feature="fine_art"]').click();assert.ok(win.document.querySelector('#screen #studio-back'));win.document.getElementById('studio-back').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');win.document.getElementById('shopping-favorite').click();assert.equal(win.document.getElementById('screen').dataset.view,'review');dom.window.close()});
 
 
 
@@ -293,17 +294,17 @@ test('completed preview can be selected and persisted while other slots generate
 });
 test('Add to Cart persists before displaying success and survives authenticated refresh, edit and removal',async()=>{
  const s:any=shoppingProject();let writes=0;s.route=(url:string,init:any)=>{if(url.endsWith('/lines')&&init.method==='PUT'){writes++;return acceptLines(s,init)}};
- const {win,dom}=await boot('sessionId=project',s);win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();await new Promise(r=>setTimeout(r,20));win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(writes,1);assert.equal(s.lines.length,1);assert.equal(win.document.getElementById('screen').dataset.view,'cart');assert.equal(win.document.querySelectorAll('.cart-line').length,1);assert.equal(win.document.getElementById('primary').disabled,false);
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-size]').click();await new Promise(r=>setTimeout(r,20));win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(writes,1);assert.equal(s.lines.length,1);assert.equal(win.document.getElementById('screen').dataset.view,'cart');assert.equal(win.document.querySelectorAll('.cart-line').length,1);assert.equal(win.document.getElementById('primary').disabled,false);
  win.dispatchEvent(new win.PageTransitionEvent('pagehide'));win.dispatchEvent(new win.PageTransitionEvent('pageshow',{persisted:true}));await new Promise(r=>setTimeout(r,30));assert.equal(win.document.querySelectorAll('.cart-line').length,1);win.document.querySelector('[data-delta="1"]').click();await new Promise(r=>setTimeout(r,20));assert.equal(s.lines[0].copies,2);win.confirm=()=>true;win.document.querySelector('[data-remove]').click();await new Promise(r=>setTimeout(r,20));assert.equal(s.lines.length,0);assert.equal(win.document.getElementById('primary').disabled,true);assert.ok(win.document.getElementById('add-another'));assert.equal(writes,3);dom.window.close();
 });
 test('rejected cart write stays on configuration and never invents a line',async()=>{
  const s:any=shoppingProject();s.route=(url:string)=>url.endsWith('/lines')?new Response(JSON.stringify({error:'product_not_available'}),{status:409}):null;
- const {win,dom}=await boot('sessionId=project',s);win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();await new Promise(r=>setTimeout(r,20));win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.getElementById('screen').dataset.view,'configuration');assert.equal(win.document.getElementById('error').textContent,'product_not_available');win.navigate('cart');assert.equal(win.document.querySelectorAll('.cart-line').length,0);dom.window.close();
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-size]').click();await new Promise(r=>setTimeout(r,20));win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(win.document.getElementById('error').textContent,'product_not_available');win.navigate('cart');assert.equal(win.document.querySelectorAll('.cart-line').length,0);dom.window.close();
 });
 test('a pre-write generation read cannot erase a subsequently confirmed cart',async()=>{
  const s:any=shoppingProject();s.batches[1].complete=false;s.batches[1].generation='running';s.batches[1].previews[5].status='generating';let release:any,hold=false;
  s.route=(url:string,init:any)=>{if(url.endsWith('/lines'))return acceptLines(s,init);if(hold&&url.endsWith('/project')&&init.method==='GET'){hold=false;const old=JSON.parse(JSON.stringify(s));return new Promise(r=>{release=()=>r(old)})}};
- const {win,dom}=await boot('sessionId=project',s);hold=true;const pending=win.refreshGift();win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();await new Promise(r=>setTimeout(r,20));win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));release();await pending;assert.equal(win.document.querySelectorAll('.cart-line').length,1);assert.equal(s.lines.length,1);dom.window.close();
+ const {win,dom}=await boot('sessionId=project',s);hold=true;const pending=win.refreshGift();win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-size]').click();await new Promise(r=>setTimeout(r,20));win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));release();await pending;assert.equal(win.document.querySelectorAll('.cart-line').length,1);assert.equal(s.lines.length,1);dom.window.close();
 });
 test('second-six action preserves favorite and makes no reservation until Craft is pressed',async()=>{
  const s:any=shoppingProject();s.batches=s.batches.slice(0,1);s.nextBatch={kind:'free'};s.entitlement.freeAvailable=true;s.entitlement.freeBatchesUsed=1;
@@ -340,7 +341,7 @@ test('adaptation and failed preview never substitute catalog photography',async(
 
 test('configuration restoration retains the selected product, size and quantity',async()=>{
  const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:2,history:['products']};
- const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('screen').dataset.view,'configuration');assert.equal(win.document.querySelector('[data-size="12x18"]').getAttribute('aria-pressed'),'true');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
+ const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.match(win.document.querySelector('.studio-panel').textContent,/12.*18/);assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
 });
 
 test('Add to Cart is saved on the server and the gift survives every session refresh (the cart no longer vanishes)',async()=>{
@@ -374,18 +375,24 @@ test('generation reads progress while the batch POST remains in flight',async()=
  s.route=async(url:string,init:any)=>{if(url.endsWith('/batches')&&init.method==='POST'){s.batches=workingProject().batches;s.batches[0].generation='running';return await new Promise(r=>resolvePost=r)}if(url.endsWith('/sessions/project')&&init.method==='GET')reads++;return null};
  const {win,dom}=await boot('sessionId=project',s);win.navigate('effects');win.document.getElementById('primary').click();const before=reads;await new Promise(r=>setTimeout(r,1750));assert.ok(reads>before);assert.equal(win.document.querySelectorAll('.is-crafting').length,1);assert.ok(win.document.querySelector('[data-art="slot-0"]'));assert.equal(win.document.getElementById('primary').textContent,'Choose Your Gift →');resolvePost({session:s,batch:s.batches[0],status:'partial'});await new Promise(r=>setTimeout(r,10));dom.window.close();
 });
-test('mobile configuration keeps its price and primary action in the existing bottom bar',async()=>{
- const s:any=artworkProject();s.order.state='none';s.lines=[];s.geometries=[];const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('configuration');assert.ok(win.document.querySelector('.mobile-bottom-action #primary'));assert.match(win.document.querySelector('.mobile-bottom-action').textContent,/\$/);await new Promise(r=>setTimeout(r,25));dom.window.close();
+test('mobile Studio review keeps price and primary action together in its panel',async()=>{
+ const s:any=artworkProject();s.order.state='none';s.lines=[];s.geometries=[];const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('configuration');assert.ok(win.document.querySelector('.studio-panel #primary'));assert.match(win.document.querySelector('.studio-panel').textContent,/\$/);await new Promise(r=>setTimeout(r,25));dom.window.close();
 });
 
 
-test('product exits preserve artwork, cart and per-product configuration',async()=>{
- const s:any=artworkProject();s.order.state='none';const {win,dom}=await boot('sessionId=project',s);win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-aspect="Portrait"]').click();const original=win.document.querySelector('[data-size="12x18"]');original.click();const qty=win.document.getElementById('copies');qty.value='2';qty.dispatchEvent(new win.Event('input'));const favorite=s.artworkPreviewId,lines=JSON.stringify(s.lines);win.document.getElementById('back').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(win.document.getElementById('back').disabled,false);win.document.querySelector('[data-feature="fine_art"]').click();assert.equal(win.document.querySelector('[data-size="12x18"]').getAttribute('aria-pressed'),'true');assert.equal(win.document.getElementById('copies').value,'2');assert.ok([...win.document.querySelectorAll('button')].some((b:any)=>b.textContent==='Cancel'));assert.equal(s.artworkPreviewId,favorite);assert.equal(JSON.stringify(s.lines),lines);await new Promise(r=>setTimeout(r,25));dom.window.close();
+test('Studio Back preserves artwork, cart and per-product choices',async()=>{
+ const s:any=shoppingProject();const {win,dom}=await boot('sessionId=project',s);win.navigate('products');
+ win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-aspect="Portrait"]').click();win.document.querySelector('[data-size="12x18"]').click();
+ win.document.getElementById('copies').value='2';win.document.getElementById('copies').dispatchEvent(new win.Event('input'));const favorite=s.artworkPreviewId,lines=JSON.stringify(s.lines);
+ win.document.getElementById('studio-back').click();assert.equal(win.document.querySelector('[data-aspect="Portrait"]').getAttribute('aria-pressed'),'true');
+ win.document.getElementById('studio-back').click();assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
+ win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-size="12x18"]').click();assert.equal(win.document.getElementById('copies').value,'2');assert.equal(s.artworkPreviewId,favorite);assert.equal(JSON.stringify(s.lines),lines);
+ await new Promise(r=>setTimeout(r,25));dom.window.close();
 });
 
 
 test('bare return restores the authenticated working gift instead of another latest gift',async()=>{
- const s:any=artworkProject();s.order.state='none';s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:2};const {win,calls,dom}=await boot('',s);assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.includes('/api/v1/gift/sessions'),false);assert.equal(win.document.getElementById('screen').dataset.view,'configuration');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
+ const s:any=artworkProject();s.order.state='none';s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:2};const {win,calls,dom}=await boot('',s);assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.includes('/api/v1/gift/sessions'),false);assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
 });
 
 
@@ -477,13 +484,13 @@ test('restored unavailable cart cannot checkout but permits removal',async()=>{
  win.navigate('cart');win.confirm=()=>true;win.document.querySelector('[data-remove]').click();await new Promise(r=>setTimeout(r,25));assert.equal(s.lines.length,0);dom.window.close();
 });
 
-test('family selection has exactly eight square photos and opens details directly on desktop and mobile',async()=>{
- for(const mobile of ['', '&mobile=1']){const {win,dom,calls}=await boot('layoutReview=products'+mobile);const reference=win.document.querySelector('.gift-favorite-thumb').src;
- assert.equal(win.document.querySelectorAll('[data-feature]').length,8);assert.equal(win.document.querySelector('[data-size]'),null);
- for(const p of local.products){win.document.querySelector('[data-feature="'+p.id+'"]').click();assert.equal(win.document.getElementById('screen').dataset.view,'configuration');assert.equal(win.document.querySelector('#screen h2').textContent,p.label);assert.equal(win.document.getElementById('primary').disabled,!p.available);win.document.getElementById('back').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');}
- assert.equal(win.document.querySelector('.gift-favorite-thumb').src,reference);assert.equal(calls.some(x=>x.includes('/api/v1/gift/')),false);dom.window.close();}
+test('Studio uses one persistent host and eight families on desktop and mobile',async()=>{
+ for(const mobile of ['', '&mobile=1']){const {win,dom,calls}=await boot('layoutReview=products'+mobile);const host=win.document.querySelector('.product-studio'),panel=host.querySelector('.studio-panel');
+ assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
+ for(const p of local.products){win.document.querySelector('[data-feature="'+p.id+'"]').click();assert.equal(win.document.querySelector('.product-studio'),host);assert.equal(win.document.querySelector('.studio-panel'),panel);assert.equal(panel.querySelector('h2').textContent,p.label);assert.equal(panel.querySelector('#primary'),null);if(p.available)assert.ok(panel.querySelector('[data-size]'));else assert.match(panel.textContent,/Not currently available/);panel.querySelector('#studio-back').click();}
+ assert.equal(calls.some(x=>x.includes('/api/v1/gift/')),false);dom.window.close();}
 });
-test('aspect configuration survives returning to family sheet and refresh',async()=>{
- const s:any=shoppingProject();const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-aspect="Portrait"]').click();win.document.querySelector('[data-size="12x18"]').click();win.document.getElementById('copies').value='2';win.document.getElementById('copies').dispatchEvent(new win.Event('input'));win.document.getElementById('back').click();win.document.querySelector('[data-feature="canvas"]').click();win.document.getElementById('back').click();win.document.querySelector('[data-feature="fine_art"]').click();assert.equal(win.document.querySelector('[data-size="12x18"]').getAttribute('aria-pressed'),'true');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));
- const hint=win.sessionStorage.getItem('liten-gift-resume');dom.window.close();s.storage={'liten-gift-resume':hint};const restored=await boot('sessionId=project&mobile=1',s);assert.equal(restored.win.document.getElementById('copies').value,'2');assert.equal(restored.win.document.querySelector('[data-aspect="Portrait"]').getAttribute('aria-pressed'),'true');await new Promise(r=>setTimeout(r,25));restored.dom.window.close();
+test('Studio review and quantity survive authenticated refresh',async()=>{
+ const s:any=shoppingProject();const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('products');win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-aspect="Portrait"]').click();win.document.querySelector('[data-size="12x18"]').click();win.document.getElementById('copies').value='2';win.document.getElementById('copies').dispatchEvent(new win.Event('input'));await new Promise(r=>setTimeout(r,25));
+ const hint=win.sessionStorage.getItem('liten-gift-resume');dom.window.close();s.storage={'liten-gift-resume':hint};const restored=await boot('sessionId=project&mobile=1',s);assert.equal(restored.win.document.getElementById('copies').value,'2');assert.match(restored.win.document.querySelector('.studio-panel').textContent,/12.*18/);await new Promise(r=>setTimeout(r,25));restored.dom.window.close();
 });

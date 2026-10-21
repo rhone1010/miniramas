@@ -7,4 +7,4 @@
 .studio-products button{padding:8px;text-align:center;min-width:0;font-size:22px}.studio-products button[aria-pressed=true]{border-color:var(--forest)}
 .studio-products img{display:block;width:100%;aspect-ratio:1;object-fit:contain}.studio-products span,.studio-products small{display:block}
 .studio-products small{font:12px/1.5 Manrope,sans-serif;margin-top:8px}
-@media(max-width:1000px){.product-studio{grid-template-columns:minmax(0,1fr);gap:16px}.studio-media{position:static}.studio-panel{min-height:0}.studio-products{row-gap:4px}.studio-products button{font-size:20px}.product-studio:has(.studio-products) .studio-media{display:none}}
+@media(max-width:1000px){.product-studio{grid-template-columns:minmax(0,1fr);gap:16px}.studio-media{position:static}.studio-panel{min-height:0}.studio-products{row-gap:4px}.studio-products button{font-size:20px}}

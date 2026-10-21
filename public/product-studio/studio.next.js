@@ -5,6 +5,8 @@ const dimensions = (o) => o.imageWidthIn + ':' + o.imageHeightIn;
 export function optionChoices(p, o) { return p.options.filter(x => dimensions(x) === dimensions(o)); }
 export function hasChoices(p, o) { return optionChoices(p, o).filter(x => x.compatible !== false).length > 1; }
 const photo = (url, label) => '<img src="' + esc(url) + '" alt="' + esc(label) + '">';
+export function familyPhoto(p) { return { premium: '/gift-wizard/mockup-scenes/premium-square/premium fine art print square.png', framed: '/gift-wizard/mockup-scenes/classic-framed-square/classic framed print square.png' }[p.id] || p.image; }
+export function unavailableStudio(host, onExit) { host.innerHTML = '<section class="studio-panel"><button type="button">← Back</button><p role="status">Not currently available</p></section>'; host.querySelector('button').onclick = onExit; }
 export function unavailablePreview(p) { return photo(p.image, p.label) + '<p role="status">Not currently available</p>'; }
 export function mountStudio(host, a) {
     const s = a.state;

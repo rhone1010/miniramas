@@ -1,4 +1,4 @@
-import {mountStudio,unavailablePreview,type StudioProduct,type StudioState} from './studio.next.js';
+import {mountStudio,unavailablePreview,unavailableStudio,familyPhoto,type StudioProduct,type StudioState} from './studio.next.js';
 import type {CatalogResponse} from '../../lib/v1/print/catalog-types.js';
 
 type StoragePort=Pick<Storage,'getItem'|'setItem'>;
@@ -44,7 +44,7 @@ export async function loadPrintStudioData(id:string,transport:typeof fetch=fetch
    const r=c.requirements;if(!r||![r.ppi,r.picturePx?.w,r.picturePx?.h].every(n=>Number.isFinite(n)&&n>0))throw Error('invalid_product_geometry');
    return {size:c.size,label:c.label,retailCents:c.retailCents!,attributes:c.attributes,compatible:c.selectable===true,imageWidthIn:r.picturePx.w/r.ppi,imageHeightIn:r.picturePx.h/r.ppi,sku:c.sku};
   });
-  return {id:p.id,label:p.label,image:'/gift-wizard/'+p.image.slice(2),available:options.some(o=>o.compatible),options};
+  return {id:p.id,label:p.label,image:familyPhoto({id:p.id,image:'/gift-wizard/'+p.image.slice(2)}),available:options.some(o=>o.compatible),options};
  });
  return {pieceId:id,products};
 }
@@ -61,6 +61,6 @@ if(typeof document!=='undefined'){
  const host=document.getElementById('screen');
  if(host){
   let storage:StoragePort;try{storage=sessionStorage;}catch{storage={getItem:()=>null,setItem:()=>{}};}
-  connectPrintStudio(host,new URL(location.href),storage).catch(()=>{const error=document.getElementById('error');if(error){error.textContent='Not currently available';error.hidden=false;}});
+  connectPrintStudio(host,new URL(location.href),storage).catch(()=>{unavailableStudio(host,()=>location.assign(collectionReturn(new URL(location.href),storage)));});
  }
 }

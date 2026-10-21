@@ -1,4 +1,4 @@
-import { mountStudio, unavailablePreview } from './studio.next.js';
+import { mountStudio, unavailablePreview, unavailableStudio, familyPhoto } from './studio.next.js';
 const validId = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 const stateKey = (id) => 'liten_print_studio_view:' + id;
 const quantity = (n) => Number.isInteger(n) && Number(n) >= 1 && Number(n) <= 20 ? Number(n) : 1;
@@ -66,7 +66,7 @@ export async function loadPrintStudioData(id, transport = fetch) {
                 throw Error('invalid_product_geometry');
             return { size: c.size, label: c.label, retailCents: c.retailCents, attributes: c.attributes, compatible: c.selectable === true, imageWidthIn: r.picturePx.w / r.ppi, imageHeightIn: r.picturePx.h / r.ppi, sku: c.sku };
         });
-        return { id: p.id, label: p.label, image: '/gift-wizard/' + p.image.slice(2), available: options.some(o => o.compatible), options };
+        return { id: p.id, label: p.label, image: familyPhoto({ id: p.id, image: '/gift-wizard/' + p.image.slice(2) }), available: options.some(o => o.compatible), options };
     });
     return { pieceId: id, products };
 }
@@ -90,9 +90,6 @@ if (typeof document !== 'undefined') {
         catch {
             storage = { getItem: () => null, setItem: () => { } };
         }
-        connectPrintStudio(host, new URL(location.href), storage).catch(() => { const error = document.getElementById('error'); if (error) {
-            error.textContent = 'Not currently available';
-            error.hidden = false;
-        } });
+        connectPrintStudio(host, new URL(location.href), storage).catch(() => { unavailableStudio(host, () => location.assign(collectionReturn(new URL(location.href), storage))); });
     }
 }
