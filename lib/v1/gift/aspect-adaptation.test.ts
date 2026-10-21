@@ -16,6 +16,7 @@ import { memoryGiftStore } from './store'
 import { selectArtwork, ensureCompositions, composeWithPrintShop } from './compose'
 import { planFor } from './composition-plan'
 import { getProduct } from '../print/catalog'
+process.env.GIFT_REQUIRE_APPROVED_SCENE = '0'   // these tests cover behaviour independent of the sale gate (default ON); the gate has its own tests in orders.test.ts
 
 const U1 = '10000000-0000-4000-8000-000000000001'
 const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex')

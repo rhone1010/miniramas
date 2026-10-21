@@ -3,6 +3,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
+process.env.GIFT_REQUIRE_APPROVED_SCENE = '0'   // these tests cover behaviour independent of the sale gate (default ON); the gate has its own tests in orders.test.ts
 
 vi.mock('../shared/outpaint', () => ({
   // a stand-in for the paid extension: adds the requested sides in mid grey so the test can tell original pixels from generated ones

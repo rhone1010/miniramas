@@ -12,6 +12,7 @@ import { realSceneRenderer } from './mockup-real'
 import { allProducts, getProduct } from '../print/catalog'
 import type { SceneRenderer } from './scenes'
 import type { MockupRenderer } from './mockup'
+process.env.GIFT_REQUIRE_APPROVED_SCENE = '0'   // these tests cover behaviour independent of the sale gate (default ON); the gate has its own tests in orders.test.ts
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '20000000-0000-4000-8000-000000000002'
 

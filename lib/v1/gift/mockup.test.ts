@@ -17,6 +17,7 @@ import { purchasedItems, purchasedLines } from './test-order'
 import { allProducts, getProduct } from '../print/catalog'
 import { realSceneRenderer } from './mockup-real'
 import type { SceneRenderer } from './scenes'
+process.env.GIFT_REQUIRE_APPROVED_SCENE = '0'   // these tests cover behaviour independent of the sale gate (default ON); the gate has its own tests in orders.test.ts
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '20000000-0000-4000-8000-000000000002'
 type Line = { lineId: string; productId: string; copies: number }

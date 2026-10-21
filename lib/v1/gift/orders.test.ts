@@ -7,6 +7,7 @@ import { createSession, setLines, startBatch, getSessionView, type GiftDeps } fr
 import { selectArtwork, ensureCompositions, approveComposition, approveOrder, repairLine, correctLine, composeWithPrintShop } from './compose'
 import { memoryGiftStore } from './store'
 import { giftRenderId, isGiftOrder, parseGiftRenderId } from './order-kind'
+process.env.GIFT_REQUIRE_APPROVED_SCENE = '0'   // these tests cover behaviour independent of the sale gate (default ON); the gate has its own tests in orders.test.ts
 
 const U1 = '10000000-0000-4000-8000-000000000001', U2 = '10000000-0000-4000-8000-000000000002'
 const ADDRESS = { name: 'Ada Lovelace', line1: '1 Main St', city: 'Sonoma', state: 'CA', postcode: '95476', countryCode: 'us' }
@@ -521,26 +522,31 @@ describe('compositions reviewed before payment (the approved journey)', () => {
   })
 })
 
-describe('GIFT_REQUIRE_APPROVED_SCENE: never take payment for a gift that cannot be shown and approved', () => {
-  const withFlag = async (fn: () => Promise<void>) => { process.env.GIFT_REQUIRE_APPROVED_SCENE = '1'; try { await fn() } finally { delete process.env.GIFT_REQUIRE_APPROVED_SCENE } }
-  it('off by default: checkout is unchanged for a configuration with no scene', async () => {
-    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'fine_art:12x18', copies: 1 }]); expect((await checkout(r, sid)).totals.itemsCents).toBeGreaterThan(0)
+describe('GIFT_REQUIRE_APPROVED_SCENE (default ON): never take payment for a gift that cannot be shown and approved', () => {
+  // the rest of this file runs with the gate opted out ('0'); here the variable is UNSET (the real default), '1' (explicit on) or '0' (explicit opt-out)
+  const withGate = async (v: string | undefined, fn: () => Promise<void>) => { const was = process.env.GIFT_REQUIRE_APPROVED_SCENE; if (v === undefined) delete process.env.GIFT_REQUIRE_APPROVED_SCENE; else process.env.GIFT_REQUIRE_APPROVED_SCENE = v; try { await fn() } finally { process.env.GIFT_REQUIRE_APPROVED_SCENE = was } }
+  it('the default is ON: with the variable unset, the gate decision is "required"; only an explicit 0 opts out', async () => {
+    const { requireApprovedScene } = await import('./presentation')
+    expect(requireApprovedScene({})).toBe(true); expect(requireApprovedScene({ GIFT_REQUIRE_APPROVED_SCENE: '1' })).toBe(true); expect(requireApprovedScene({ GIFT_REQUIRE_APPROVED_SCENE: '0' })).toBe(false)
   })
-  it('on: a gift with no approved scene is refused at checkout before any quote or Stripe call, and a scene-backed one is not', async () => {
-    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'framed:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 1 }])      // added while the flag was off
-    await withFlag(async () => {
+  it('opted out (0): checkout is unchanged for a configuration with no scene', async () => {
+    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'framed:12x18', copies: 1 }]); await withGate('0', async () => { expect((await checkout(r, sid)).totals.itemsCents).toBeGreaterThan(0) })
+  })
+  it('default: a gift with no approved scene is refused at checkout before any quote or Stripe call, whatever the frontend did; a scene-backed one is not', async () => {
+    const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'framed:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 1 }])      // saved while the gate was opted out (an old cart)
+    await withGate(undefined, async () => {
       await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'product_not_available', status: 409 })
       expect(r.quote).not.toHaveBeenCalled(); expect(r.stripe.checkout.sessions.create).not.toHaveBeenCalled(); expect(r.store.orders.size).toBe(0)
     })
-    const ok = rig(); const sid2 = await sessionWithLines(ok, [{ lineId: 'b', productId: 'canvas:12x12', copies: 1 }])
-    await withFlag(async () => { expect((await checkout(ok, sid2)).totals.itemsCents).toBe(6900) })
+    const ok = rig(); const sid2 = await sessionWithLines(ok, [{ lineId: 'b', productId: 'canvas:12x12', copies: 1 }, { lineId: 'f', productId: 'fine_art:12x18', copies: 1 }, { lineId: 'p', productId: 'premium:12x12', copies: 1 }])
+    await withGate(undefined, async () => { expect((await checkout(ok, sid2)).totals.itemsCents).toBeGreaterThan(0) })
   })
-  it('on: it is refused earlier still, when the gift is added to the cart, and the saved cart is unchanged', async () => {
+  it('default: every launch configuration without an approved scene is refused when it is added to the cart (framed, premium and canvas portraits), and the saved cart is unchanged', async () => {
     const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'b', productId: 'canvas:12x12', copies: 1 }])
-    await withFlag(async () => {
-      await expect(setLines(r.gift, U1, sid, [{ lineId: 'b', productId: 'canvas:12x12', copies: 1 }, { lineId: 'c', productId: 'framed:16x24', copies: 1 }])).rejects.toMatchObject({ code: 'product_not_available' })
+    await withGate(undefined, async () => {
+      for (const id of ['framed:8x8', 'framed:16x24', 'premium:12x18', 'canvas:12x18', 'canvas:8x12']) await expect(setLines(r.gift, U1, sid, [{ lineId: 'b', productId: 'canvas:12x12', copies: 1 }, { lineId: 'c', productId: id, copies: 1 }]), id).rejects.toMatchObject({ code: 'product_not_available' })
       expect((await getSessionView(r.gift, U1, sid)).lines.map(l => l.lineId)).toEqual(['b'])
-      for (const id of ['canvas:8x8', 'canvas:20x20']) await setLines(r.gift, U1, sid, [{ lineId: 'b', productId: id, copies: 1 }])
+      for (const id of ['canvas:8x8', 'canvas:20x20', 'fine_art:8x12', 'fine_art:20x30', 'premium:20x20']) await setLines(r.gift, U1, sid, [{ lineId: 'b', productId: id, copies: 1 }])
     })
   })
   it('the coverage is the square gallery canvases, plus the square fine art prints once their photograph has a square opening (the owner decides what to do about the rest)', async () => {

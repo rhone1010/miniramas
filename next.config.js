@@ -143,4 +143,16 @@ const nextConfig = {
 }
 // The pre-checkout product preview renders with the same scene and calibrated renderers, so it carries the same files (one list, two routes).
 nextConfig.outputFileTracingIncludes['/api/v1/gift/sessions/*/product-preview'] = nextConfig.outputFileTracingIncludes['/api/v1/gift/sessions/*/lines/*/mockup']
+// The server-side sale gate (lib/v1/gift/presentation.ts, ON by default) asks the scene manifests which configurations have an approved photograph, when a gift is added to the cart and at checkout.
+// Those two routes read ONLY the manifests (no pictures): without these files every product would look unavailable. lib/v1/gift/scene-gate-trace.test.ts runs the gate against a copy holding exactly
+// this list.
+const sceneGateFiles = [
+  './tools/product-scenes/adapter.next.cjs',
+  './tools/catalog-samples/scene-replacement-review.next.cjs',
+  './tools/product-mockup/compositor.next.cjs',
+  './public/gift-wizard/mockup-scenes/inventory.next.json',
+  './public/gift-wizard/mockup-scenes/*/scene.next.json',
+]
+nextConfig.outputFileTracingIncludes['/api/v1/gift/sessions/*/lines'] = sceneGateFiles
+nextConfig.outputFileTracingIncludes['/api/v1/gift/sessions/*/checkout'] = sceneGateFiles
 module.exports = nextConfig
