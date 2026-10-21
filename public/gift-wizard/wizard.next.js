@@ -18,7 +18,7 @@ let disclosure = {
     version: '2026-10-18-3',
     text: "Your first twelve personalized artwork previews are free, provided in two sets of six. Additional sets of six are available for $2.99.\n\nOnce you've chosen your favorite artwork, you can select and purchase the gifts you'd like us to create.\n\nAfter payment, we'll prepare your artwork for each product. You'll review a clean preview of how it looks on each gift and approve each one before production begins.\n\nNothing is printed or manufactured until you've approved your gifts and submitted your order.\n\nAfter purchasing physical gifts, you may request a full refund through Concierge until your order is submitted to our print partner. Once submitted, the order is no longer eligible for this refund.\n\nAdditional artwork preview packs are separate purchases and are not included in physical-product refunds.",
 };
-function checkoutReady() { return !!live?.session?.artworkPreviewId && ['none', 'checkout_open'].includes(live.session.order.state) && deliveryValid(session) && disclosureAccepted && session.lines.length > 0 && !busy; }
+function checkoutReady() { return !!live?.session?.artworkPreviewId && ['none', 'checkout_open'].includes(live.session.order.state) && deliveryValid(session) && disclosureAccepted && session.lines.length > 0 && cartPreviewsReady() && !busy; }
 let analyzingSource = false, serverMutation = 0;
 let sourceURL = '', busy = false, limit = 0, silo = 'all', effectFocus = '', artFocus = '', compareId = '', activeProduct = '', size = '', copies = 1, editId = null, batchIndex = 0;
 const params = new URLSearchParams(location.search), fixtureSeries = ['portraits', 'groups', 'pets'].includes(params.get('fixtureSeries') || '') ? params.get('fixtureSeries') : 'portraits';
@@ -419,6 +419,18 @@ function renderProductCarousel() {
     swipe.addEventListener('touchcancel', () => { touch = null; }, { passive: true });
 }
 const productPreviews = new Map();
+function productPreviewReady(p, o) {
+    if (!p.available || o.compatible === false)
+        return false;
+    if (!live)
+        return true;
+    const favoriteId = live.session?.artworkPreviewId;
+    if (!favoriteId)
+        return false;
+    const entry = productPreviews.get(live.id + ':' + favoriteId + ':' + p.id + ':' + o.size), v = entry?.value;
+    return !!v && !entry?.failed && (v.status === 'ready' || v.status === 'provisional') && Date.parse(v.urlExpiresAt) > Date.now() + 30000;
+}
+function cartPreviewsReady() { return session.lines.every(l => { const { product, option } = giftOption(l, products); return productPreviewReady(product, option); }); }
 function configurationPreview(p, o, artworkReference = false) {
     if (!live?.session?.artworkPreviewId)
         return photo(asset(p.image), p.label, 'gift-feature-image') + '<p class="small">Product photograph. Product-specific artwork will be prepared after payment.</p>';
@@ -485,14 +497,19 @@ function renderProducts() {
     }
     catch {
         error('Choose a quantity from 1 to 20.');
-    } }, o.compatible === false);
+    } }, !productPreviewReady(p, o));
 }
 function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>' + (live && !purchased(live.session) ? '<p class="small">Product-specific artwork will be prepared after payment.</p>' : '') + '<div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
 async function persistCart(lines) {
     if (busy)
         return;
-    lines.forEach(l => { if (giftOption(l, products).option.compatible === false)
-        throw new GiftApiError('product_not_available', 409); });
+    for (const l of lines) {
+        const old = session.lines.find(x => x.id === l.id), { product, option } = giftOption(l, products);
+        if ((!old || old.productId !== l.productId || old.size !== l.size || l.copies > old.copies) && !productPreviewReady(product, option)) {
+            render();
+            return;
+        }
+    }
     if (!live) {
         session.lines = lines;
         editId = null;
@@ -519,7 +536,7 @@ function renderCart() {
     bindCart();
     $('add-another').onclick = () => { editId = null; go('products'); };
     $('right').innerHTML = (session.lines.length ? '<div data-order-summary><h2>Order summary</h2><p>Product subtotal<br>' + money(productSubtotal(session, products)) + '</p><p class="small">Shipping and tax calculated before payment.</p></div>' : '');
-    primary('Next: Checkout', () => go('checkout'), !session.lines.length);
+    primary('Next: Checkout', () => go('checkout'), !session.lines.length || !cartPreviewsReady());
 }
 function renderEffects() {
     rail('Choose<br>an Effect', "<p>Choose up to six effects. We'll complete your set.</p>");
