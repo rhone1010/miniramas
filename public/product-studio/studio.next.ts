@@ -8,6 +8,7 @@ export interface StudioAdapter {
  canAdd:(product:StudioProduct,option:StudioOption)=>boolean;
  onChange:(state:StudioState)=>void;onAdd:(product:StudioProduct,option:StudioOption,copies:number)=>void;onExit:()=>void;
  utilityHtml?:string;addLabel?:string;busy?:boolean;
+ navigationHost?:HTMLElement;configurationHost?:HTMLElement;
 }
 const esc=(s:unknown)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const money=(n:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n/100);
@@ -53,8 +54,12 @@ export function mountStudio(host:HTMLElement,a:StudioAdapter){
   }else{
    body='<h2 tabindex="-1">'+esc(p.label)+'</h2><p>'+esc(o.label)+' · '+money(o.retailCents)+'</p><p>'+esc(Object.entries(o.attributes||{}).map(([k,v])=>k+': '+v).join(' · '))+'</p><label class="field"><span>Quantity</span><input id="copies" type="number" min="1" max="20" step="1" value="'+s.copies+'"></label><button id="primary" class="primary" '+(a.busy||!a.canAdd(p,o)?'disabled':'')+'>'+esc(a.addLabel||'Add to Cart')+' →</button>';
   }
+  a.navigationHost?.querySelector('#studio-back')?.remove();
   panel.innerHTML='<div class="actions"><button type="button" id="studio-back">← Back</button></div>'+body+(a.utilityHtml||'');
-  panel.querySelector<HTMLButtonElement>('#studio-back')!.onclick=back;
+  const backButton=panel.querySelector<HTMLButtonElement>('#studio-back')!;backButton.onclick=back;
+  if(a.navigationHost)a.navigationHost.insertBefore(backButton,a.navigationHost.querySelector('#new-gift'))
+  host.querySelector<HTMLElement>('.product-studio')!.dataset.step=s.step;
+  if(a.configurationHost){if(s.step==='product')host.querySelector('.product-studio')!.append(panel);else a.configurationHost.append(panel)}
   panel.querySelectorAll<HTMLButtonElement>('[data-feature]').forEach(b=>b.onclick=()=>{commit();s.productId=b.dataset.feature!;const d=s.drafts[s.productId];s.size=d?.size||'';s.copies=d?.copies||1;advance('size')});
   panel.querySelectorAll<HTMLButtonElement>('[data-aspect]').forEach(b=>b.onclick=()=>{const next=p.options.find(x=>aspect(x)===b.dataset.aspect&&x.compatible!==false)||p.options.find(x=>aspect(x)===b.dataset.aspect);if(next){s.size=next.size;commit();draw()}});
   panel.querySelectorAll<HTMLButtonElement>('[data-size]').forEach(b=>b.onclick=()=>{const selected=p.options.find(x=>x.size===b.dataset.size)!;s.size=optionChoices(p,selected).find(x=>x.compatible!==false)!.size;advance(hasChoices(p,selected)?'options':'review')});

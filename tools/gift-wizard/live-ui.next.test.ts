@@ -190,7 +190,7 @@ test('changed server disclosure must be displayed and accepted again before moun
 
 
 
-test('compact shopping favorite returns to gallery and configuration retains back navigation',async()=>{const {win,dom}=await boot('layoutReview=products');assert.equal(win.document.querySelectorAll('#right .context-image').length,0);assert.ok(win.document.querySelector('.gift-favorite-thumb'));win.document.querySelector('[data-feature="fine_art"]').click();assert.ok(win.document.querySelector('#screen #studio-back'));win.document.getElementById('studio-back').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');win.document.getElementById('shopping-favorite').click();assert.equal(win.document.getElementById('screen').dataset.view,'review');dom.window.close()});
+test('compact shopping favorite returns to gallery and configuration retains back navigation',async()=>{const {win,dom}=await boot('layoutReview=products');assert.equal(win.document.querySelectorAll('#right .context-image').length,0);assert.ok(win.document.querySelector('.gift-favorite-thumb'));win.document.querySelector('[data-feature="fine_art"]').click();assert.ok(win.document.querySelector('#left #studio-back'));win.document.getElementById('studio-back').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');win.document.getElementById('shopping-favorite').click();assert.equal(win.document.getElementById('screen').dataset.view,'review');dom.window.close()});
 
 
 
@@ -487,7 +487,7 @@ test('restored unavailable cart cannot checkout but permits removal',async()=>{
 test('Studio uses one persistent host and eight families on desktop and mobile',async()=>{
  for(const mobile of ['', '&mobile=1']){const {win,dom,calls}=await boot('layoutReview=products'+mobile);const host=win.document.querySelector('.product-studio'),panel=host.querySelector('.studio-panel');
  assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
- for(const p of local.products){win.document.querySelector('[data-feature="'+p.id+'"]').click();assert.equal(win.document.querySelector('.product-studio'),host);assert.equal(win.document.querySelector('.studio-panel'),panel);assert.equal(panel.querySelector('h2').textContent,p.label);assert.equal(panel.querySelector('#primary'),null);if(p.available)assert.ok(panel.querySelector('[data-size]'));else assert.match(panel.textContent,/Not currently available/);panel.querySelector('#studio-back').click();}
+ for(const p of local.products){win.document.querySelector('[data-feature="'+p.id+'"]').click();assert.equal(win.document.querySelector('.product-studio'),host);assert.equal(win.document.querySelector('.studio-panel'),panel);assert.equal(panel.querySelector('h2').textContent,p.label);assert.equal(panel.querySelector('#primary'),null);if(p.available)assert.ok(panel.querySelector('[data-size]'));else assert.match(panel.textContent,/Not currently available/);win.document.querySelector('#left #studio-back').click();}
  assert.equal(calls.some(x=>x.includes('/api/v1/gift/')),false);dom.window.close();}
 });
 test('Studio review and quantity survive authenticated refresh',async()=>{
@@ -544,3 +544,12 @@ test('Studio review and quantity survive authenticated refresh',async()=>{
  test('analysis has exactly one visible loading announcement',async()=>{
  const {win,dom}=await boot('newGift=1');let finish:any;win.MS_UPLOADER={readFileAsBase64:()=>new Promise(r=>finish=r)};const pending=win.uploadPhoto(new win.File(['x'],'photo.jpg',{type:'image/jpeg'}));assert.equal((win.document.body.textContent.match(/Analyzing your photo/g)||[]).length,1);finish({b64:''});await pending;dom.window.close();
  });
+
+test('artwork selection has one stage title, left navigation and a distinct action card',async()=>{
+ const {win,dom}=await boot('layoutReview=gallery');
+ assert.equal(win.document.querySelector('#left h1').textContent,'Choose Your Artwork');
+ assert.equal(win.document.querySelector('#screen h2'),null);
+ assert(win.document.querySelector('#right.artwork-actions #primary'));
+ assert(!Array.from(win.document.querySelectorAll('#screen button')).some((b:any)=>/^(Cancel|← Back)$/.test(b.textContent)));
+ dom.window.close();
+});

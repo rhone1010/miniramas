@@ -141,11 +141,11 @@ body:has(#screen[data-view="checkout"]) .left-rail .tagline{padding-top:20px}
 /* Six-stage journey: reuse existing mobile spacing and controls in two rows. */
 
 /* Approved product-family selection and separate configuration, 2026-10-21. */
-body:has(#screen[data-view="products"]) #workspace{display:block;height:auto;min-width:0}
-body:has(#screen:is([data-view="products"],[data-view="configuration"])) .left-rail,body:has(#screen:is([data-view="products"],[data-view="configuration"])) #status,body:has(#screen:is([data-view="products"],[data-view="configuration"])) .preview-note{display:none}
+body:has(#screen[data-view="products"]) #workspace{height:auto;min-width:0}
+body:has(#screen:is([data-view="products"],[data-view="configuration"])) #status,body:has(#screen:is([data-view="products"],[data-view="configuration"])) .preview-note{display:none}
 body:has(#screen[data-view="configuration"]) #workspace{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
-body:has(#screen[data-view="products"]) .center,body:has(#screen[data-view="products"]) .right-rail{width:100%;max-width:1400px;margin:auto;min-width:0;overflow:visible}
-body:has(#screen[data-view="products"]) .right-rail{border-left:0;border-top:1px solid var(--line);flex-direction:row;align-items:center;justify-content:space-between}
+body:has(#screen[data-view="products"]) .center,body:has(#screen[data-view="products"]) .right-rail{width:100%;max-width:1400px;margin:0;min-width:0;overflow:visible}
+
 .gift-feature{display:grid;grid-template-columns:minmax(0,580px) minmax(0,1fr);gap:24px 32px;align-items:start}
 .gift-feature-media{grid-column:1;grid-row:1;min-width:0;touch-action:pan-y}
 .gift-feature-image{display:block;width:100%;aspect-ratio:1/1;object-fit:contain}
@@ -226,3 +226,41 @@ body:has(#screen[data-view="review"]) .left-rail{padding:24px}
 @media(min-width:1001px){body:has(#screen[data-view="effects"]) .context-image{max-height:100px}body:has(#screen[data-view="effects"]) .tray{max-width:240px}body:has(#screen[data-view="effects"]) .right-rail h2{font-size:32px;margin-bottom:12px}body:has(#screen[data-view="effects"]) .right-rail .context-body>p{margin-bottom:12px}body:has(#screen[data-view="effects"]) .left-rail h1{font-size:46px}body:has(#screen[data-view="effects"]) .left-rail #back,body:has(#screen[data-view="effects"]) .left-rail #new-gift{margin-top:12px}}
 
 @media(max-width:1000px){body:has(#screen[data-view="effects"]) .left-rail{padding:16px 24px;display:block}body:has(#screen[data-view="effects"]) .left-rail h1{font-size:32px;margin-bottom:8px}body:has(#screen[data-view="effects"]) .left-rail h1 br{display:inline-block;width:.2em}body:has(#screen[data-view="effects"]) .left-rail>p{margin-bottom:8px}body:has(#screen[data-view="effects"]) .left-rail #back,body:has(#screen[data-view="effects"]) .left-rail #new-gift{display:inline-block;min-width:0;margin:4px 8px 8px 0;padding:10px 16px;font-size:22px}body:has(#screen[data-view="effects"]) .tray-slot:empty{display:none}body:has(#screen[data-view="effects"]) .center{padding-top:16px}body:has(#screen[data-view="effects"]) .center>p.small{margin-bottom:8px}}
+
+/* October 22: consistent stage rails; artwork keeps its intrinsic proportions. */
+#left #back:disabled{display:none}
+#left #studio-back,#left>.actions button{background:var(--ivory);color:var(--ink);margin-top:12px}
+#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"]) img{aspect-ratio:auto;height:auto;max-height:none;background:transparent}
+#screen:is([data-view="review"],[data-view="compare"]) .tile{align-self:start;background:transparent}
+#screen[data-view="focus"]>.photo{max-height:calc(100dvh - 300px);object-fit:contain}
+.right-rail.artwork-actions{background:var(--forest);color:var(--ivory);border:1px solid var(--gold);margin:24px;align-self:start;padding:24px;border-radius:4px}
+.artwork-actions h2{font-size:32px;margin-bottom:16px}.artwork-actions .actions{display:grid;gap:12px}
+.artwork-actions button.secondary{color:var(--ivory);border-color:var(--gold);text-align:left}
+#workspace .artwork-actions>.primary{background:var(--ivory);color:var(--forest);font-size:24px;min-height:52px;padding:12px 16px;order:-1;margin:0;clip-path:none}
+.artwork-actions .small{color:var(--ivory)}
+body:has(#screen[data-view="products"]) .product-studio{display:block;max-width:none;margin:0;padding:0}
+body:has(#screen[data-view="products"]) .product-studio[data-step="product"]>.studio-media{display:none}
+body:has(#screen[data-view="products"]) .studio-products{grid-template-columns:repeat(3,minmax(0,1fr))}
+body:has(#screen[data-view="products"]) .studio-panel{padding:0;min-width:0}
+body:has(#screen[data-view="products"]) .studio-media img{width:100%;height:auto;aspect-ratio:auto;object-fit:contain}
+body:has(#screen[data-view="products"]) .right-rail{display:flex;flex-direction:column;align-items:stretch}
+@media(min-width:1001px){
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"],[data-view="products"])) #workspace{grid-template-columns:minmax(220px,2fr) minmax(0,6fr) minmax(300px,3fr);align-items:start}
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"],[data-view="products"])) .left-rail{padding:24px;align-self:stretch}
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"],[data-view="products"])) .left-rail h1{font-size:38px;margin:0 0 20px}
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"],[data-view="products"])) .left-rail :is(.eyebrow,.rule,.tagline){display:none}
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"])) .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:1000px){
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"],[data-view="products"])) .left-rail{padding:16px 24px;display:block}
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"],[data-view="products"])) .left-rail h1{font-size:32px;margin:0 0 12px}
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"],[data-view="products"])) .left-rail :is(.eyebrow,.rule,.tagline){display:none}
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"],[data-view="products"])) .left-rail button{margin:4px 8px 4px 0;min-width:0;font-size:20px;padding:10px 16px}
+body:has(#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"],[data-view="products"])) .left-rail>.actions{display:inline-flex;margin:0}
+.right-rail.artwork-actions{margin:16px;padding:20px}.artwork-actions .actions{grid-template-columns:1fr 1fr}.artwork-actions .actions button{font-size:20px;padding:10px;min-width:0}
+body:has(#screen[data-view="products"]) .studio-products{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+.artwork-actions>.context-body{display:contents}.artwork-actions h2{order:-2}
+
+.artwork-actions p:empty{display:none}

@@ -59,7 +59,7 @@ function back() { if (busy)
         history.pop();
     go('products', false);
     return;
-} const v = history.pop() || { configuration: 'products', products: 'review', cart: 'products', checkout: 'cart', focus: 'review', compare: 'review', effects: 'photo' }[view]; if (v)
+} const v = history.pop() || { configuration: 'products', products: 'review', cart: 'products', checkout: 'cart', focus: 'review', compare: 'review', review: 'effects', effects: 'photo' }[view]; if (v)
     go(v, false); }
 function primary(label, fn, disabled = false) { const body = document.createElement('div'); body.className = 'context-body'; while ($('right').firstChild)
     body.appendChild($('right').firstChild); $('right').appendChild(body); $('right').insertAdjacentHTML('beforeend', '<button id="primary" class="primary" ' + (busy || disabled ? 'disabled' : '') + '>' + label + ' →</button>'); $('primary').onclick = fn; }
@@ -69,7 +69,7 @@ function field(id, label, value, attrs = '') { return '<label class="field"><spa
 function thumb(id) { if (session.source?.series === 'pets')
     return '/previews/pets/pets_' + id + '.jpg'; if (session.source?.series === 'groups')
     return '/previews/groups/groups_' + id + '.jpg'; const x = manifest?.effects?.[id], f = x?.neutral || x?.woman || x?.man || x?.all?.[0]; return f ? manifest.base + id + '/' + f : ''; }
-function rail(title, copy) { $('left').innerHTML = (view === 'effects' ? '' : '<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>') + '<h1>' + title + '</h1>' + copy + '<div id="filters"></div>' + (view === 'effects' ? '' : '<p class="tagline">More than a gift.<br>A longer story.</p>') + '<button id="back" ' + ((!history.length && !['configuration', 'products', 'cart', 'checkout', 'focus', 'compare', 'effects'].includes(view)) || busy ? 'disabled' : '') + '>← Back</button>'; $('back').onclick = back; if (serverMode && live?.session)
+function rail(title, copy) { $('left').innerHTML = (view === 'effects' ? '' : '<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>') + '<h1>' + title + '</h1>' + copy + '<div id="filters"></div>' + (view === 'effects' ? '' : '<p class="tagline">More than a gift.<br>A longer story.</p>') + '<button id="back" ' + ((!history.length && !['configuration', 'products', 'cart', 'checkout', 'focus', 'compare', 'review', 'effects'].includes(view)) || busy ? 'disabled' : '') + '>← Back</button>'; $('back').onclick = back; if (serverMode && live?.session)
     $('left').insertAdjacentHTML('beforeend', '<button id="new-gift" data-href="/gift-wizard.next.html?newGift=1&amp;resumeSessionId=' + encodeURIComponent(live.id) + '">Start a New Gift</button>');
 else if (serverMode && params.get('newGift') === '1' && params.get('resumeSessionId'))
     $('left').insertAdjacentHTML('beforeend', '<button id="resume-gift" data-href="/gift-wizard.next.html?sessionId=' + encodeURIComponent(params.get('resumeSessionId')) + '">Return to Your Gift</button>'); for (const id of ['new-gift', 'resume-gift'])
@@ -99,6 +99,7 @@ function render() {
     $('error').textContent = '';
     $('status').textContent = layoutReview ? 'Layout review · sample artwork · no payment or order' : '';
     $('screen').dataset.view = view;
+    $('right').classList.toggle('artwork-actions', ['review', 'focus', 'compare'].includes(view));
     $('left').classList.toggle('effects-rail', view === 'effects');
     $('workspace').setAttribute('aria-busy', String(busy));
     $('screen').innerHTML = '';
@@ -135,20 +136,17 @@ function render() {
     }
     const exits = document.createElement('div');
     exits.className = 'actions';
-    if (['cart', 'checkout'].includes(view)) {
-        const b = $('back');
-        b.disabled = busy;
-        exits.append(b);
-    }
+    if (['cart', 'checkout'].includes(view))
+        $('back').disabled = busy;
     const cancel = document.createElement('button');
     cancel.textContent = 'Cancel';
     const resumeId = live?.id || params.get('sessionId') || params.get('resumeSessionId');
     cancel.dataset.href = '/gifts.next.html?newGift=1' + (resumeId ? '&resumeSessionId=' + encodeURIComponent(resumeId) : '');
     cancel.onclick = () => confirmGiftExit(cancel.dataset.href);
-    if (view !== 'photo' || !!live?.session || !!sourceURL)
+    if ((view !== 'photo' || !!live?.session || !!sourceURL) && !['review', 'focus', 'compare', 'products', 'configuration'].includes(view))
         exits.append(cancel);
     if (exits.childElementCount)
-        $('screen').prepend(exits);
+        $('left').append(exits);
     if (view === 'photo' && !history.length)
         $('back').hidden = true;
     document.querySelectorAll('[data-product-preview]').forEach(b => b.onclick = () => { productPreviews.delete(b.dataset.productPreview); render(); });
@@ -259,10 +257,6 @@ function adaptMobileView() {
                 $('screen').insertBefore(count, palette);
             $('screen').insertBefore(tray, palette);
         }
-    }
-    if (['review', 'focus', 'compare'].includes(view)) {
-        $('right').querySelector('.context-image')?.remove();
-        $('right').querySelector('h2')?.remove();
     }
     // Approval stays in document flow after configuration and status on mobile.
     if (['photo', 'effects', 'configuration', 'cart', 'checkout'].includes(view)) {
@@ -458,8 +452,12 @@ function renderProducts() {
         $('screen').dataset.view = 'products';
     }
     const studioProducts = products.map(p => ({ ...p, image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options }));
+    $('right').innerHTML = (favorite() ? '<button type="button" id="shopping-favorite" class="gift-favorite">' + photo(asset(favorite().url), favorite().label, 'gift-favorite-thumb') + '<span>Selected artwork<br>Change Artwork</span></button>' : '') + (session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '');
+    if ($('shopping-favorite'))
+        $('shopping-favorite').onclick = () => live?.session?.entrance === 'collection' ? location.assign('/collection?from=' + live.session.source.series) : go('review');
+    $('back').hidden = true;
     mountStudio($('screen'), {
-        products: studioProducts, state: studioState,
+        products: studioProducts, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
         previewHtml: (p, o) => configurationPreview(products.find(x => x.id === p.id), o),
         canAdd: (p, o) => productPreviewReady(products.find(x => x.id === p.id), o),
         onChange: s => { studioState = s; activeProduct = s.productId; size = s.size; copies = s.copies; rememberView(); },
@@ -473,11 +471,6 @@ function renderProducts() {
         } },
         onExit: () => live?.session?.entrance === 'collection' ? location.assign('/collection?from=' + live.session.source.series) : go('review'), busy, addLabel: editId ? 'Update This Gift' : 'Add to Cart'
     });
-    $('right').innerHTML = (favorite() ? '<button type="button" id="shopping-favorite" class="gift-favorite">' + photo(asset(favorite().url), favorite().label, 'gift-favorite-thumb') + '<span>Selected artwork<br>Change Artwork</span></button>' : '') + (session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '');
-    if ($('shopping-favorite'))
-        $('screen').prepend($('shopping-favorite'));
-    if ($('shopping-favorite'))
-        $('shopping-favorite').onclick = () => live?.session?.entrance === 'collection' ? location.assign('/collection?from=' + live.session.source.series) : go('review');
     if ($('view-cart'))
         $('view-cart').onclick = () => go('cart');
 }
@@ -743,14 +736,14 @@ function renderArt() {
         renderGeneration();
         return;
     }
-    rail('Your Previews<br>Are Ready', '<p>You can favorite the ones you love, request variations, or try again with different effects.</p>');
+    rail('Choose Your Artwork', '');
     const art = currentArt(), batch = session.batches[batchIndex];
     if (!compareId || !batch.some(p => p.id === compareId) || compareId === art.id)
         compareId = (batch.find(p => p.id !== art.id) || art).id;
     if (view === 'review')
-        $('screen').innerHTML = '<h2>Choose One Artwork</h2><div class="grid">' + batch.map(p => '<button class="tile" data-art="' + p.id + '" aria-pressed="' + ((shoppingFavoriteId || session.favoriteId) === p.id) + '">' + photo(asset(p.url), p.label + ' watermarked artwork') + '<span>' + esc(p.label) + '</span></button>').join('') + '</div>';
+        $('screen').innerHTML = '<div class="grid artwork-gallery">' + batch.map(p => '<button class="tile" data-art="' + p.id + '" aria-pressed="' + ((shoppingFavoriteId || session.favoriteId) === p.id) + '">' + photo(asset(p.url), p.label + ' watermarked artwork') + '<span>' + esc(p.label) + '</span></button>').join('') + '</div>';
     else if (view === 'focus')
-        $('screen').innerHTML = '<h2>' + esc(art.label) + '</h2>' + photo(asset(art.url), art.label + ' watermarked artwork') + '<div class="row">' + secondary('prev-art', '← Previous') + secondary('next-art', 'Next →') + '</div>';
+        $('screen').innerHTML = photo(asset(art.url), art.label + ' watermarked artwork') + '<div class="row">' + secondary('prev-art', '← Previous') + secondary('next-art', 'Next →') + '</div>';
     else
         $('screen').innerHTML = '<h2>Compare Artwork</h2><div class="compare">' + [art, batch.find(p => p.id === compareId)].map(p => '<button class="tile" data-art="' + p.id + '" aria-pressed="' + (p.id === art.id) + '">' + photo(asset(p.url), p.label + ' watermarked artwork') + '<span>' + esc(p.label) + '</span></button>').join('') + '</div><label class="field"><span>Compare with</span><select id="compare-choice">' + batch.filter(p => p.id !== art.id).map(p => '<option value="' + p.id + '" ' + (p.id === compareId ? 'selected' : '') + '>' + esc(p.label) + '</option>').join('') + '</select></label>';
     $('right').innerHTML = '<h2>' + esc(art.label) + '</h2>' + '<p class="small">Sample artwork shown. Your photo is not transformed in this preview.</p><div class="actions">' + secondary('gallery', 'Return to gallery') + secondary('compare', 'Compare Artwork') + secondary('chooser', 'Adjust my selections') + (layoutName !== 'gallery-second' ? secondary('another-batch', 'Create My Second Six Previews') : secondary('more', 'Six More · $2.99')) + '</div>';

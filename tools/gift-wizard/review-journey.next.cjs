@@ -6,6 +6,7 @@ function snapshot(){if(s&&started){const age=Date.now()-started;s.batches[0].pre
 function fresh(){return {contractVersion:1,sessionId:'browser-review',source:{photoUrl:'/gift-wizard/assets/preview-1.jpg',sourceRef:'fixture-source',series:'portraits',width:768,height:768,peopleCount:1},lines:[],geometries:[],batches:[],usedEffectIds:[],entitlement:{freeBatchesTotal:2,freeBatchesUsed:0,paidPacksAvailable:0,freeAvailable:true,freeBlockedReason:null},nextBatch:{kind:'free'},expiresAt:'2099-01-01',catalogVersion:'fixture',order:{orderId:null,state:'none',freeBatchesGranted:2,approvedAt:null,unlockPortfolioId:null,totalCents:null,disclosureVersion:null},artworkPreviewId:null,compositions:[]}}
 if(process.env.GIFT_REVIEW_SOURCE==='1')s=fresh();
 if(process.env.GIFT_REVIEW_READY==='1'){s=fresh();s.artworkPreviewId='slot-0';s.batches=[{batchIndex:1,kind:'free',complete:true,previews:Array.from({length:6},(_,i)=>({previewId:'slot-'+i,slot:i+1,effectId:'jade',status:'ready',url:'/gift-wizard/assets/preview-'+(i+1)+'.jpg',width:768,height:768,retryable:false}))}]}
+if(process.env.GIFT_REVIEW_GROUPS_IMAGE&&s){s.source.series='groups';s.source.peopleCount=5;s.batches.forEach(b=>b.previews.forEach(p=>{p.url='/__review/groups.jpg';p.effectId='art_deco';p.width=2400;p.height=1792}));}
 // Optional durable-composition browser scenarios. In-memory contracts only; no paid services.
 let compositionPosts=0,compositionStarted=0;
 const reviewMode=process.env.GIFT_REVIEW_COMPOSITIONS;
@@ -22,6 +23,7 @@ if(reviewMode)compositionScenario(reviewMode);
 function updateComposition(){if(compositionStarted&&Date.now()-compositionStarted>45000){Object.assign(s.compositions[0],{state:'ready',status:'ready',compositionId:'fixture-composition',preparingSince:null});compositionStarted=0}}
 const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ttf':'font/ttf'};
 http.createServer(async(req,res)=>{let chunks=[];for await(const c of req)chunks.push(c);let body={};try{body=JSON.parse(Buffer.concat(chunks).toString()||'{}')}catch{}const u=new URL(req.url,'http://localhost');const json=v=>{res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');res.end(JSON.stringify(v))};
+ if(u.pathname==='/__review/groups.jpg'&&process.env.GIFT_REVIEW_GROUPS_IMAGE){res.setHeader('Content-Type','image/jpeg');return fs.createReadStream(process.env.GIFT_REVIEW_GROUPS_IMAGE).pipe(res)}
  if(reviewMode&&u.pathname==='/__review/scenario'&&req.method==='POST'){compositionScenario(body.state);return json({offline:true,state:body.state})}
  if(reviewMode&&u.pathname==='/__review/status')return json({offline:true,compositionPosts,state:s.compositions[0]?.state||'unpaid'});
  if(reviewMode){updateComposition();

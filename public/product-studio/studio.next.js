@@ -56,8 +56,19 @@ export function mountStudio(host, a) {
         else {
             body = '<h2 tabindex="-1">' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><p>' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><label class="field"><span>Quantity</span><input id="copies" type="number" min="1" max="20" step="1" value="' + s.copies + '"></label><button id="primary" class="primary" ' + (a.busy || !a.canAdd(p, o) ? 'disabled' : '') + '>' + esc(a.addLabel || 'Add to Cart') + ' →</button>';
         }
+        a.navigationHost?.querySelector('#studio-back')?.remove();
         panel.innerHTML = '<div class="actions"><button type="button" id="studio-back">← Back</button></div>' + body + (a.utilityHtml || '');
-        panel.querySelector('#studio-back').onclick = back;
+        const backButton = panel.querySelector('#studio-back');
+        backButton.onclick = back;
+        if (a.navigationHost)
+            a.navigationHost.insertBefore(backButton, a.navigationHost.querySelector('#new-gift'));
+        host.querySelector('.product-studio').dataset.step = s.step;
+        if (a.configurationHost) {
+            if (s.step === 'product')
+                host.querySelector('.product-studio').append(panel);
+            else
+                a.configurationHost.append(panel);
+        }
         panel.querySelectorAll('[data-feature]').forEach(b => b.onclick = () => { commit(); s.productId = b.dataset.feature; const d = s.drafts[s.productId]; s.size = d?.size || ''; s.copies = d?.copies || 1; advance('size'); });
         panel.querySelectorAll('[data-aspect]').forEach(b => b.onclick = () => { const next = p.options.find(x => aspect(x) === b.dataset.aspect && x.compatible !== false) || p.options.find(x => aspect(x) === b.dataset.aspect); if (next) {
             s.size = next.size;
