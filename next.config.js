@@ -155,4 +155,5 @@ const sceneGateFiles = [
 ]
 nextConfig.outputFileTracingIncludes['/api/v1/gift/sessions/*/lines'] = sceneGateFiles
 nextConfig.outputFileTracingIncludes['/api/v1/gift/sessions/*/checkout'] = sceneGateFiles
+nextConfig.outputFileTracingIncludes['/api/v1/gift/sessions/*/availability'] = sceneGateFiles          // reads the scene manifests to say which products have an approved scene
 module.exports = nextConfig

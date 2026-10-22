@@ -30,12 +30,14 @@ import { scopeOf } from './scope'
 import { mockupInputFor } from '../print/product-layout'
 import { getProductBySku, type CanonicalProduct } from '../print/catalog'
 import { resolveScene, prepareSceneArtwork, sceneRepresentationId, SCENE_REPRESENTATION_VERSION, type SceneRenderer } from './scenes'
+import { noScenePresentation, representationFields } from './presentation'
 import { byNewest, type CompositionRec, type SessionRec } from './store'
 import type { MockupView, SceneRefusalView } from './types'
 
 export const MOCKUP_CONTRACT_VERSION = 1
 /** GIFT_SCENE_MOCKUPS=0 turns the photographic customer scenes off (every line then uses the calibrated renderer, exactly as before). */
 const scenesEnabled = () => process.env.GIFT_SCENE_MOCKUPS !== '0'
+export const scenesEnabledNow = scenesEnabled
 export const MOCKUP_URL_SECONDS = 900
 /** The longest edge of a delivered mockup. A mockup is a picture of the product in a scene, never the production file; this keeps it so. */
 export const MOCKUP_MAX_EDGE = 1800
@@ -132,7 +134,7 @@ export function mockupIdentityKey(i: MockupIdentityInput): string {
 }
 
 interface StoredScene { sceneId: string; revision: string; fit: 'exact' | 'resample'; representationId: string }
-interface StoredMockup { identityKey: string; path: string; templateId: string; templateRevision: string; visualizationKey: string; width: number; height: number; crop: Record<string, unknown> | null; createdAt: string; renderer?: 'scene' | 'calibrated'; scene?: StoredScene | null }
+interface StoredMockup { identityKey: string; path: string; templateId: string; templateRevision: string; visualizationKey: string; width: number; height: number; crop: Record<string, unknown> | null; createdAt: string; renderer?: 'scene' | 'artwork' | 'calibrated'; scene?: StoredScene | null }
 const storedOf = (c: CompositionRec): StoredMockup | null => {
   const m = (c.plan as { mockup?: StoredMockup }).mockup
   return m && typeof m.identityKey === 'string' && typeof m.path === 'string' ? m : null
@@ -182,8 +184,9 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
 
   const resolved = { source: ls.source, catalogVersion: ls.catalogVersion }
   const product = ls.product
-  const templateId = templateFor(product)
-  if (!templateId) throw new GiftError('product_not_available')                               // availability is unchanged: a scene never makes a product reviewable by itself
+  const legacyCalibrated = noScenePresentation() === 'calibrated'                              // the retired template renderer for products without a scene: off by default
+  const templateId = templateFor(product)                                                       // only the legacy renderer needs one: a missing template never makes a product unavailable
+  if (legacyCalibrated && !templateId) throw new GiftError('product_not_available')
   if (!compositionFitsProduct(comp, product)) throw new GiftError('composition_geometry_mismatch')       // e.g. a landscape file for a portrait product: refused before any rendering
 
   const paid = scope.phase === 'purchased' && !!scope.order!.paid_at && scope.order!.status !== 'cancelled'        // verified payment: a draft (no paid order) is watermarked; a purchased line gets the clean mockup
@@ -209,8 +212,9 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
         identityKey: mockupIdentityKey({ ...identityBase, templateId: sceneTemplateId, templateRevision: revision, scene: { sceneId: choice.scene.sceneId, revision, representationId } }) }
     } catch (e) { logSceneDiagnostic(product.sku, { sceneId: choice.scene.sceneId, stage: 'revision', reason: 'scene_revision_unavailable', ...sceneErrorDiagnostic(e) }) }
   }
-  const calibratedRevision = await deps.mockup.revision(templateId)
-  const calibratedKey = mockupIdentityKey({ ...identityBase, templateId, templateRevision: calibratedRevision })
+  const noSceneTemplateId = legacyCalibrated ? templateId! : 'artwork:' + product.productId
+  const calibratedRevision = legacyCalibrated ? await deps.mockup.revision(templateId!) : 'artwork-v1'
+  const calibratedKey = mockupIdentityKey({ ...identityBase, templateId: noSceneTemplateId, templateRevision: calibratedRevision })
 
   const baseFor = (c: { templateId: string; templateRevision: string; identityKey: string }) => ({
     contractVersion: MOCKUP_CONTRACT_VERSION as typeof MOCKUP_CONTRACT_VERSION, sessionId: rec.id, lineId: line.line_id, productId: product.productId, sku: product.sku,
@@ -225,10 +229,10 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   const hit = storedOf(comp)
   const viewOfHit = async (c: { templateId: string; templateRevision: string; identityKey: string }, h: StoredMockup): Promise<MockupView | null> => {
     const signed = await sign(h.path)
-    return signed ? { ...baseFor(c), ...signed, width: h.width, height: h.height, cached: true, crop: h.crop, renderer: h.renderer ?? 'calibrated', scene: h.scene ?? null, sceneRefusal: h.renderer === 'scene' ? null : sceneRefusal } : null
+    return signed ? { ...baseFor(c), ...signed, width: h.width, height: h.height, cached: true, crop: h.crop, renderer: h.renderer ?? (legacyCalibrated ? 'calibrated' : 'artwork'), ...representationFields(h.renderer ?? (legacyCalibrated ? 'calibrated' : 'artwork')), scene: h.scene ?? null, sceneRefusal: h.renderer === 'scene' ? null : sceneRefusal } : null
   }
   const sceneCandView = sceneCand ? { templateId: sceneCand.templateId, templateRevision: sceneCand.revision, identityKey: sceneCand.identityKey } : null
-  const calibratedView = { templateId, templateRevision: calibratedRevision, identityKey: calibratedKey }
+  const calibratedView = { templateId: noSceneTemplateId, templateRevision: calibratedRevision, identityKey: calibratedKey }
 
   // An unchanged identity re-signs the stored file and renders nothing. With a scene available only the scene's own identity counts: a calibrated file left by an earlier
   // scene failure is not served while the scene can be tried again.
@@ -267,12 +271,19 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   }
   if (!sceneRecord) {
     if (hit && hit.identityKey === calibratedKey) { const v = await viewOfHit(calibratedView, hit); if (v) return v }
+    if (!legacyCalibrated) {
+      // No photograph truthfully shows this configuration: the composed artwork EXACTLY as it will be printed, in the product's shape, with no product imagery (reduced for display only).
+      const flatPic = await mockupArtwork(artwork, product), png = await sharp(flatPic).resize(1254, 1254, { fit: 'inside', withoutEnlargement: true }).png().toBuffer(), pm = await sharp(png).metadata()
+      image = { png, width: pm.width!, height: pm.height!, visualizationKey: 'artwork-v1', crop: null }
+      used = calibratedView
+    } else {
     let out: Awaited<ReturnType<MockupRenderer['render']>>
-    try { out = await deps.mockup.render({ templateId, productFamily: product.family, size: product.size, sku: product.sku, artworkId: comp.id, artwork: await mockupArtwork(artwork, product) }) }
-    catch (e) { throw fail('renderer', e, { templateId, sku: product.sku, lineId: line.line_id }) }
+    try { out = await deps.mockup.render({ templateId: templateId!, productFamily: product.family, size: product.size, sku: product.sku, artworkId: comp.id, artwork: await mockupArtwork(artwork, product) }) }
+    catch (e) { throw fail('renderer', e, { templateId: templateId ?? undefined, sku: product.sku, lineId: line.line_id }) }
     if (!configurationMatches(out.configuration.sku, out.configuration.requiredPx)) throw new GiftError('mockup_configuration_mismatch')
     image = { png: out.png, width: out.width, height: out.height, visualizationKey: out.visualizationKey, crop: out.crop }
     used = calibratedView
+    }
   }
 
   let marked: Buffer
@@ -280,12 +291,12 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   const path = mockupPath(rec.id, used.identityKey)
   await deps.storage.put(path, marked, 'image/jpeg')
   const stored: StoredMockup = { identityKey: used.identityKey, path, templateId: used.templateId, templateRevision: used.templateRevision, visualizationKey: image.visualizationKey, width: image.width, height: image.height, crop: image.crop,
-    createdAt: new Date((deps.clock ?? Date.now)()).toISOString(), renderer: sceneRecord ? 'scene' : 'calibrated', scene: sceneRecord ? { sceneId: sceneRecord.sceneId, revision: sceneRecord.revision, fit: sceneRecord.fit, representationId: sceneRecord.representationId } : null }
+    createdAt: new Date((deps.clock ?? Date.now)()).toISOString(), renderer: sceneRecord ? 'scene' : legacyCalibrated ? 'calibrated' : 'artwork', scene: sceneRecord ? { sceneId: sceneRecord.sceneId, revision: sceneRecord.revision, fit: sceneRecord.fit, representationId: sceneRecord.representationId } : null }
   // Only plan.mockup, plan.sceneRepresentation and the artwork hash are written: the composition's status, attempt, file, approval and corrections are never touched (a scene is technical, not a correction).
   const { sceneRepresentation: _previous, ...planRest } = comp.plan as Record<string, unknown>
   await deps.store.patchComposition(comp.id, { plan: { ...planRest, artworkSha256: sourceHash, mockup: stored, ...(sceneRecord ? { sceneRepresentation: sceneRecord } : {}) } })
   if (hit && hit.path !== path) { try { await deps.storage.remove([hit.path]) } catch { /* cleanup removes it with the session */ } }
   const signed = await sign(path)
   if (!signed) throw fail('sign', new Error('signed_url_unavailable'), { templateId: used.templateId, sku: product.sku, lineId: line.line_id })
-  return { ...baseFor(used), ...signed, width: image.width, height: image.height, cached: false, crop: image.crop, renderer: stored.renderer, scene: stored.scene ?? null, sceneRefusal: stored.renderer === 'scene' ? null : sceneRefusal }
+  return { ...baseFor(used), ...signed, width: image.width, height: image.height, cached: false, crop: image.crop, renderer: stored.renderer, ...representationFields(stored.renderer ?? 'artwork'), scene: stored.scene ?? null, sceneRefusal: stored.renderer === 'scene' ? null : sceneRefusal }
 }

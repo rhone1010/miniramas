@@ -28,8 +28,10 @@ import { planFor } from './composition-plan'
 import { allProducts, getProductBySku, type CanonicalProduct } from '../print/catalog'
 import { aspectCompatibility } from '../print/geometry'
 import { STORAGE } from './policy'
+import { noScenePresentation, representationFields } from './presentation'
 import { GIFT_CONTRACT_VERSION, type ProductPreviewView, type SceneRefusalView } from './types'
 
+const pick = <T extends Record<string, unknown>>(f: T) => ({ representation: f.representation, physicalProductShown: f.physicalProductShown, previewBasis: f.previewBasis, disclosureCode: f.disclosureCode, disclosure: f.disclosure }) as any
 const sha = (b: string | Buffer) => createHash('sha256').update(b).digest('hex')
 const FREE_BAND = 0.02 + 1e-10
 const PRODUCT_ID = /^[a-z_]+:[\w-]{1,24}$/
@@ -81,8 +83,9 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   const base = { contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id, productId: productIdRaw, favoriteId: rec.artwork_preview_id } as const
 
   const product = allProducts().find(p => p.productId === productIdRaw && p.status === 'launch')
-  const templateId = product ? templateFor(product) : null
-  if (!product || !templateId) return { ...base, status: 'not_available', reason: product ? 'no_mockup_template' : 'product_not_available', sku: product?.sku ?? null }
+  const legacyCalibrated = noScenePresentation() === 'calibrated'                       // legacy template renderer for products without a scene; off by default
+  const templateId = product ? templateFor(product) : null                             // only the legacy renderer needs one: a missing template never makes a product unavailable
+  if (!product || (legacyCalibrated && !templateId)) return { ...base, status: 'not_available', reason: product ? 'no_mockup_template' : 'product_not_available', sku: product?.sku ?? null }
 
   const batches = await deps.store.listBatches(rec.id)
   const fav = batches.flatMap(b => b.previews).find(p => p.id === rec.artwork_preview_id)
@@ -103,34 +106,34 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   const sceneRefusal: SceneRefusalView | null = choice?.scene ? null : { reason: choice?.reason ?? (scenes ? 'scene_renderer_absent' : 'feature_disabled'), ...(choice && !choice.scene && choice.detail ? choice.detail : {}) }
   let sceneRevision: string | null = null
   if (scenes && choice?.scene) { try { sceneRevision = await scenes.revision(choice.scene.sceneId) } catch (e) { logSceneDiagnostic(product.sku, { sceneId: choice.scene.sceneId, stage: 'revision', reason: 'scene_revision_unavailable', ...sceneErrorDiagnostic(e) }) } }
-  const calibratedRevision = await deps.mockup.revision(templateId)
+  const calibratedRevision = legacyCalibrated && templateId ? await deps.mockup.revision(templateId) : 'artwork-v1'
   const useScene = !!(scenes && choice?.scene && sceneRevision)
   const identity = sha(JSON.stringify({
     v: 1, contract: MOCKUP_CONTRACT_VERSION, sessionId: rec.id, favoriteId: fav.id, master: fav.master_path, sku: product.sku, productId: product.productId, finalPx: product.requirements.finalPx, picturePx: product.requirements.picturePx,
-    attributes: Object.fromEntries(Object.entries(product.attributes).sort()), renderer: useScene ? { scene: choice!.scene!.sceneId, revision: sceneRevision, representation: SCENE_REPRESENTATION_VERSION } : { template: templateId, revision: calibratedRevision }, variant: provisional ? 'provisional-contain-1:' + PROVISIONAL_SURROUND : 'watermarked',
+    attributes: Object.fromEntries(Object.entries(product.attributes).sort()), renderer: useScene ? { scene: choice!.scene!.sceneId, revision: sceneRevision, representation: SCENE_REPRESENTATION_VERSION } : legacyCalibrated ? { template: templateId, revision: calibratedRevision } : { artwork: 'v1' }, variant: provisional ? 'provisional-contain-1:' + PROVISIONAL_SURROUND : 'watermarked',
   }))
   const path = `${STORAGE.productPreviewDir(rec.id)}${product.productId.replace(/[^\w-]/g, '_')}-${identity.slice(0, 16)}.jpg`
   const sign = async () => { const url = await deps.storage.signedUrl(path, MOCKUP_URL_SECONDS); return url ? { url, urlExpiresAt: new Date((deps.clock ?? Date.now)() + MOCKUP_URL_SECONDS * 1000).toISOString() } : null }
   const meta = { watermarked: true as const, productionPrintFile: false as const, purchaseAuthorization: false as const }
   const bars = provisional ? (favoriteAspect > pictureAspect ? { sides: 'top_bottom' as const, fractionPerSide: Math.round(((1 - pictureAspect / favoriteAspect) / 2) * 1e4) / 1e4 } : { sides: 'left_right' as const, fractionPerSide: Math.round(((1 - favoriteAspect / pictureAspect) / 2) * 1e4) / 1e4 }) : null
-  const ready = (r: { renderer: 'scene' | 'calibrated'; sceneId: string | null; width: number; height: number; fit: 'exact' | 'resample'; cached: boolean }, s: { url: string; urlExpiresAt: string }): ProductPreviewView =>
+  const ready = (r: { renderer: 'scene' | 'artwork' | 'calibrated'; sceneId: string | null; width: number; height: number; fit: 'exact' | 'resample'; cached: boolean }, s: { url: string; urlExpiresAt: string }): ProductPreviewView =>
     provisional
-      ? { ...base, status: 'provisional', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: 'contain', width: r.width, height: r.height, cached: r.cached, ...s, ...meta, sceneRefusal: r.renderer === 'scene' ? null : sceneRefusal,
-          provisional: { exactArtworkShown: true, cropped: false, distorted: false, surround: 'neutral', bars: bars!, favoriteAspect: Math.round(favoriteAspect * 1e4) / 1e4, pictureAspect: Math.round(pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4, finalComposition: plan?.method ?? null } }
-      : { ...base, status: 'ready', sku: product.sku, renderer: r.renderer, sceneId: r.sceneId, fit: r.fit, width: r.width, height: r.height, cached: r.cached, ...s, ...meta, sceneRefusal: r.renderer === 'scene' ? null : sceneRefusal }
+      ? { ...base, status: 'provisional', sku: product.sku, renderer: r.renderer, ...representationFields(r.renderer), sceneId: r.sceneId, fit: 'contain', width: r.width, height: r.height, cached: r.cached, ...s, ...meta, sceneRefusal: r.renderer === 'scene' ? null : sceneRefusal,
+          provisional: { ...pick(representationFields(r.renderer)), exactArtworkShown: true, cropped: false, distorted: false, surround: 'neutral', bars: bars!, favoriteAspect: Math.round(favoriteAspect * 1e4) / 1e4, pictureAspect: Math.round(pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4, finalComposition: plan?.method ?? null } }
+      : { ...base, status: 'ready', sku: product.sku, renderer: r.renderer, ...representationFields(r.renderer), sceneId: r.sceneId, fit: r.fit, width: r.width, height: r.height, cached: r.cached, ...s, ...meta, sceneRefusal: r.renderer === 'scene' ? null : sceneRefusal }
 
   const hit = await sign()
   if (hit) {                                                                              // an unchanged identity re-signs the stored file and renders nothing
     const stored = await deps.storage.get(path)
     const m = stored ? await sharp(stored).metadata() : null
-    if (m?.width && m.height) return ready({ renderer: useScene ? 'scene' : 'calibrated', sceneId: useScene ? choice!.scene!.sceneId : null, width: m.width, height: m.height, fit: useScene ? choice!.scene!.fit : 'exact', cached: true }, hit)
+    if (m?.width && m.height) return ready({ renderer: useScene ? 'scene' : legacyCalibrated ? 'calibrated' : 'artwork', sceneId: useScene ? choice!.scene!.sceneId : null, width: m.width, height: m.height, fit: useScene ? choice!.scene!.fit : 'exact', cached: true }, hit)
   }
 
   const masterBytes = await deps.storage.get(fav.master_path)                             // CLEAN master: memory only, never returned, never stored next to the preview
   if (!masterBytes) throw new GiftError('generation_unavailable')
   const shaped = provisional ? { picture: (await containedPicture(masterBytes, product)).picture, fit: 'exact' as const } : await productShapedPicture(masterBytes, product)
   const flat = await mockupArtwork(shaped.picture, product)
-  let png: Buffer | null = null, width = 0, height = 0, renderer: 'scene' | 'calibrated' = 'calibrated', sceneId: string | null = null
+  let png: Buffer | null = null, width = 0, height = 0, renderer: 'scene' | 'calibrated' | 'artwork' = legacyCalibrated ? 'calibrated' : 'artwork', sceneId: string | null = null
   if (useScene) {
     let stage = 'scene_representation'
     try {
@@ -146,9 +149,13 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
       logSceneDiagnostic(product.sku, { sceneId: choice!.scene!.sceneId, stage, reason: 'scene_render_failed', ...sceneErrorDiagnostic(e) })
     }
   }
+  if (!png && !legacyCalibrated) {
+    // No photograph truthfully shows this configuration: the artwork EXACTLY as it will be printed, in the product's shape, with no product imagery. Reduced for display only.
+    png = await sharp(flat).resize(1254, 1254, { fit: 'inside', withoutEnlargement: true }).png().toBuffer(); const m = await sharp(png).metadata(); width = m.width!; height = m.height!
+  }
   if (!png) {
     let out: Awaited<ReturnType<NonNullable<GiftDeps['mockup']>['render']>>
-    try { out = await deps.mockup.render({ templateId, productFamily: product.family, size: product.size, sku: product.sku, artworkId: fav.id, artwork: flat }) }
+    try { out = await deps.mockup.render({ templateId: templateId!, productFamily: product.family, size: product.size, sku: product.sku, artworkId: fav.id, artwork: flat }) }
     catch (e) { console.error(`[gift/product-preview] renderer failed template=${templateId} sku=${product.sku}: ${String((e as Error)?.message ?? e).slice(0, 200)}`); throw new GiftError('mockup_failed') }
     if (out.configuration.sku !== product.sku || out.configuration.requiredPx.w !== product.requirements.finalPx.w || out.configuration.requiredPx.h !== product.requirements.finalPx.h) throw new GiftError('mockup_configuration_mismatch')
     png = out.png; width = out.width; height = out.height

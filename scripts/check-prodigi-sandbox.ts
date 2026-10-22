@@ -1,19 +1,17 @@
 // scripts/check-prodigi-sandbox.ts
 //
-// READ-ONLY readiness check of the Prodigi SANDBOX for every configuration Gift Wizard may sell (an approved scene exists): GET /Products/{sku} and POST /Quotes for a US delivery.
+// READ-ONLY readiness check of the Prodigi SANDBOX for every configuration Gift Wizard may sell (every launch product: purchasability no longer depends on mockup photography): GET /Products/{sku} and POST /Quotes for a US delivery.
 // It never calls POST /Orders and refuses to run unless PRODIGI_ENV is 'sandbox'. Output: SKU, product found, quote outcome, shipping. No keys are printed.
 //
 //   npx tsx --env-file=.env.local scripts/check-prodigi-sandbox.ts
 
 import { allProducts } from '../lib/v1/print/catalog'
-import { launchCoverage } from '../lib/v1/gift/presentation'
-import { realSceneRenderer } from '../lib/v1/gift/mockup-real'
 import { getProduct, getQuote, getEnv } from '../lib/v1/print/prodigi-client'
 
 async function main() {
   if ((process.env.PRODIGI_ENV || 'sandbox').toLowerCase() !== 'sandbox') throw new Error('refused: PRODIGI_ENV is not sandbox')
   console.log(JSON.stringify({ prodigiEnv: getEnv() }))
-  const sellable = new Set(launchCoverage(id => realSceneRenderer.describe(id)).filter(c => c.scene).map(c => c.productId))
+  const sellable = new Set(allProducts().filter(p => p.status === 'launch').map(p => p.productId))
   let bad = 0
   for (const p of allProducts().filter(x => sellable.has(x.productId))) {
     let product = 'missing', quote = 'n/a', shipping = ''

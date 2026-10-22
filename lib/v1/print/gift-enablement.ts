@@ -6,7 +6,7 @@
 //   1. no hold below                                   (a verified Prodigi fact is still open for that product)
 //   2. an approved retail price                        (SkuEntry.retailApproved is not false)
 //   3. its family is in GIFT_ENABLED_FAMILIES          (the owner's decision to launch)
-//   4. an approved mockup template                     (GIFT_MOCKUP_READY: the renderer can show the customer the product before they approve it)
+// Mockup photography is NOT a condition (2026-10-22): a product without an approved in-situ scene is reviewed through the exact product-shaped artwork (presentation.ts).
 // Nothing here changes the four launch families or the Print Shop.
 
 import type { DisabledReason, ProductFamily } from './catalog-types'
@@ -18,6 +18,7 @@ export const GIFT_ENABLED_FAMILIES: ProductFamily[] = []
  * Families whose product mockup (the clean paid review image) is calibrated and approved. The mug and card templates exist as visual tests
  * ('awaiting-visual-approval'); matted frame and framed canvas have none yet. Codex adds a family here when its template is approved.
  */
+/** @deprecated No longer an eligibility condition (see above). Kept only as the record of which families have a calibrated legacy template. */
 export const GIFT_MOCKUP_READY: ProductFamily[] = []
 
 /** Product-level holds: a verified Prodigi fact that is still open for one product (the rest of its family is unaffected). */

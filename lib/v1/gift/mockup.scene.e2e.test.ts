@@ -9,7 +9,7 @@ import sharp from 'sharp'
 import fs from 'node:fs'
 import path from 'node:path'
 import { randomUUID } from 'node:crypto'
-process.env.GIFT_REQUIRE_APPROVED_SCENE = '0'   // these tests cover behaviour independent of the sale gate (default ON); the gate has its own tests in orders.test.ts
+process.env.GIFT_NO_SCENE_PRESENTATION = 'calibrated'   // these tests cover the LEGACY template renderer for products without a scene (off by default); the default artwork-only presentation has its own tests in no-scene-presentation.test.ts
 
 // The composition step may extend a picture by outpaint for the shapes that need it (the card's 5:7 from a square master); here that paid call is a free grey stand-in, counted,
 // so the test can prove the SCENE step never makes one.

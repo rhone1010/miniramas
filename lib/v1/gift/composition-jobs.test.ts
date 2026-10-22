@@ -12,7 +12,6 @@ import { createSession, startBatch, setLines, getSessionView, restoreSession, ty
 import { memoryGiftStore, supabaseGiftStore } from './store'
 import { selectArtwork, ensureCompositions, composeWithPrintShop } from './compose'
 import { COMPOSITION_LEASE_MS } from './policy'
-process.env.GIFT_REQUIRE_APPROVED_SCENE = '0'   // these tests cover behaviour independent of the sale gate (default ON); the gate has its own tests in orders.test.ts
 
 const U1 = '10000000-0000-4000-8000-000000000001'
 

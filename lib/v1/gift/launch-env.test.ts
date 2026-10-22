@@ -18,7 +18,8 @@ describe('the launch environment check', () => {
     expect(names({ ...GOOD, STRIPE_WEBHOOK_SECRET: 'sk_oops' })).toEqual(['STRIPE_WEBHOOK_SECRET']); expect(names({ ...GOOD, SUPPORT_TO_EMAIL: 'nobody' })).toEqual(['SUPPORT_TO_EMAIL'])
   })
   it('the gate and scene switches, the test-only tools directory and live manufacturing are called out', () => {
-    expect(names({ ...GOOD, GIFT_REQUIRE_APPROVED_SCENE: '0' })).toEqual(['GIFT_REQUIRE_APPROVED_SCENE']); expect(names({ ...GOOD, GIFT_REQUIRE_APPROVED_SCENE: '1' })).toEqual([])
+    expect(names({ ...GOOD, GIFT_REQUIRE_APPROVED_SCENE: '1' }, 'warn')).toEqual(['GIFT_REQUIRE_APPROVED_SCENE']); expect(names({ ...GOOD, GIFT_REQUIRE_APPROVED_SCENE: '1' })).toEqual([]); expect(names({ ...GOOD, GIFT_REQUIRE_APPROVED_SCENE: '0' })).toEqual([])
+    expect(names({ ...GOOD, GIFT_NO_SCENE_PRESENTATION: 'calibrated' })).toEqual(['GIFT_NO_SCENE_PRESENTATION'])
     expect(names({ ...GOOD, GIFT_SCENE_MOCKUPS: '0' })).toEqual(['GIFT_SCENE_MOCKUPS']); expect(names({ ...GOOD, GIFT_MOCKUP_TOOLS_DIR: '/tmp/x' })).toEqual(['GIFT_MOCKUP_TOOLS_DIR'])
     expect(names({ ...GOOD, PRODIGI_ENV: 'live' }, 'warn')).toEqual(['PRODIGI_ENV'])
     expect(names({ ...GOOD, PRODIGI_ENV: 'bogus' })).toContain('PRODIGI_ENV'); expect(names({ ...GOOD, GIFT_COMPOSITIONS_BEFORE_PAYMENT: '1' }, 'warn')).toEqual(['GIFT_COMPOSITIONS_BEFORE_PAYMENT'])

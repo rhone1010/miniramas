@@ -13,6 +13,7 @@ import { approveComposition, finalizeOrder, correctLine, ensureCompositions, sel
 import { requestRefund, type ConciergePort } from './refund'
 import { getLineMockup } from './mockup'
 import { getProductPreview } from './product-preview'
+import { getProductAvailability } from './availability'
 
 const NO_STORE = { 'Cache-Control': 'no-store' }
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: NO_STORE })
@@ -121,6 +122,10 @@ export async function refundRequestH(req: Request, user: Authed, deps: GiftDeps 
 }
 
 // GET /api/v1/gift/sessions/{id}/lines/{lineId}/mockup?compositionId=...  (see MockupView in types.ts)
+/** GET /api/v1/gift/sessions/{id}/availability -> AvailabilityView: per product, purchasable / adaptation / preview / approval basis for this session's artwork (lib/v1/gift/availability.ts). */
+export async function availabilityH(user: Authed, deps: GiftDeps, id: string) {
+  try { return json(await getProductAvailability(deps, user.id, id)) } catch (e) { return fail(e) }
+}
 export async function productPreviewH(req: Request, user: Authed, deps: GiftDeps, id: string) {
   try { return json(await getProductPreview(deps, user.id, id, new URL(req.url).searchParams.get('productId'), { provisional: new URL(req.url).searchParams.get('provisional') === '1' })) } catch (e) { return fail(e) }
 }
