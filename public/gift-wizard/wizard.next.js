@@ -552,6 +552,11 @@ function restorePivotReview() {
         if (saved.studioState && products.some(p => p.id === saved.studioState.productId)) {
             const old = saved.studioState;
             studioState = { step: ['product', 'size', 'options', 'review'].includes(old.step) ? old.step : 'product', productId: old.productId, size: typeof old.size === 'string' ? old.size : '', copies: 1, drafts: {} };
+            for (const p of products) {
+                const draft = old.drafts?.[p.id];
+                if (draft && p.options.some(o => o.size === draft.size))
+                    studioState.drafts[p.id] = { size: draft.size, copies: 1 };
+            }
         }
     }
     catch { }

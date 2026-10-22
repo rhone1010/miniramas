@@ -239,7 +239,7 @@ function restorePivotReview(){
  try{const saved=JSON.parse(sessionStorage.getItem(pivotKey)||'null');if(!saved)return;
   const id=saved.effectIds?.[0];session.effectIds=effects().some(e=>e.id===id)?[id]:[];effectFocus=session.effectIds[0]||'';
   if(['photo','effects','products'].includes(saved.view))view=saved.view;
-  if(saved.studioState&&products.some(p=>p.id===saved.studioState.productId)){const old=saved.studioState;studioState={step:['product','size','options','review'].includes(old.step)?old.step:'product',productId:old.productId,size:typeof old.size==='string'?old.size:'',copies:1,drafts:{}};}
+  if(saved.studioState&&products.some(p=>p.id===saved.studioState.productId)){const old=saved.studioState;studioState={step:['product','size','options','review'].includes(old.step)?old.step:'product',productId:old.productId,size:typeof old.size==='string'?old.size:'',copies:1,drafts:{}};for(const p of products){const draft=old.drafts?.[p.id];if(draft&&p.options.some(o=>o.size===draft.size))studioState.drafts[p.id]={size:draft.size,copies:1};}}
  }catch{}
 }
 function pivotRail(title:string){

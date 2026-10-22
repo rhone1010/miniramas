@@ -296,3 +296,14 @@ body.gift-pivot:has(#screen) #workspace{grid-template-columns:minmax(220px,21fr)
  .gift-pivot #screen .palette{max-height:440px}.gift-pivot .right-rail{padding:24px}.gift-pivot .primary{width:100%}
  .gift-pivot .upload{margin:24px auto;padding:24px}.gift-pivot .progress{display:none}
 }
+/* Product Choice / Product Details supplied mockups: the Studio panel is in the right rail. */
+body.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product"]) #workspace{grid-template-columns:minmax(220px,21fr) minmax(0,51fr) minmax(280px,28fr)}
+.gift-pivot:has(#screen[data-view="products"]) .product-studio{display:block}
+.gift-pivot[data-pivot-step="product"] .studio-panel>h2{display:none}
+.gift-pivot:has(#screen[data-view="products"]) .studio-panel .sizes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.gift-pivot:has(#screen[data-view="products"]) .studio-panel .sizes button{width:100%;min-width:0}
+@media(max-width:1000px){
+ body.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product"]) #workspace{grid-template-columns:minmax(0,1fr)}
+}
+.gift-pivot #workspace .studio-panel .sizes button{width:100%;font-size:28px;min-height:64px}
+@media(min-width:1001px){.gift-pivot .studio-media img{max-height:calc(100dvh - 300px);width:auto;max-width:100%}}
