@@ -53,6 +53,24 @@ describe('general Groups generation is unchanged', () => {
   })
 })
 
+describe('initial previews (Gift Wizard): no Stability margin outpaint and a lower attempt cap', () => {
+  it('skip_outpaint keeps the model output as it came back: the outpaint is never called and the result says why', async () => {
+    const { r } = await call({ skip_outpaint: true })
+    expect(h.outpaint).not.toHaveBeenCalled(); expect(r.outpainted).toBe(false); expect(r.outpaint_skip).toBe('initial_preview')
+  })
+  it('max_attempts caps the NB2 attempts (a failed score still returns the best attempt, passed false, with the scores)', async () => {
+    h.score.mockResolvedValue([{ figure_index: 1, score: 5, reason: 'x' }, { figure_index: 2, score: 5, reason: 'x' }, { figure_index: 3, score: 5, reason: 'x' }])
+    const capped = await call({ skip_outpaint: true, max_attempts: 2 }); expect(capped.r.attempts).toHaveLength(2); expect(capped.r.passed).toBe(false); expect(capped.r.ok).toBe(true); expect(capped.r.image_b64).toBeTruthy()
+    expect(capped.r.attempts.every((a: any) => a.per_figure_scores.length === 3)).toBe(true)
+    h.score.mockClear(); const one = await call({ max_attempts: 1 }); expect(one.r.attempts).toHaveLength(1)
+    const dflt = await call({}); expect(dflt.r.attempts).toHaveLength(4)                                   // unchanged without the field
+    const higher = await call({ max_attempts: 9 }); expect(higher.r.attempts).toHaveLength(4)              // a caller can only lower the cap
+  })
+  it('the internal-only Groups route reads both fields', () => {
+    const route = fs.readFileSync('app/api/v1/groups/generate/route.ts', 'utf8'); expect(route).toContain('skip_outpaint'); expect(route).toContain('max_attempts')
+  })
+})
+
 describe('internal product composition', () => {
   it('sends the favorite AFTER the photograph with the shared clause, while detection, age check and scoring see only the photograph', async () => {
     const fav = 'F'.repeat(200)
@@ -75,7 +93,7 @@ describe('what the Gift flow sends (Groups reference is OFF until calibration cl
   })
   it('when switched on, carries the favorite, the adaptation flag and product_composition through the internal fields only', () => {
     expect(generateBody(base, true)).toEqual({ source_image_b64: 'PHOTO', effect_id: 'bronze', format: '2:3', subject_count: 3, product_composition: true, favorite_reference_b64: 'FAV', adaptation: 'favorite' })
-    expect(generateBody({ ...base, referenceB64: undefined, productComposition: false }, true)).toEqual({ source_image_b64: 'PHOTO', effect_id: 'bronze', format: '2:3', subject_count: 3 })
+    expect(generateBody({ ...base, referenceB64: undefined, productComposition: false }, true)).toEqual({ source_image_b64: 'PHOTO', effect_id: 'bronze', format: '2:3', subject_count: 3, skip_outpaint: true, max_attempts: 2 })      // an INITIAL preview: no margin outpaint, at most 2 attempts
   })
   it('Groups adaptation remains labeled unvalidated regardless', async () => {
     const { adaptationValidationFor } = await import('../gift/policy'); expect(adaptationValidationFor('groups', 'generated')).toBe('unvalidated')

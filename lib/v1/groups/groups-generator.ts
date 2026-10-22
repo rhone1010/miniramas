@@ -258,7 +258,7 @@ export async function generateGroupsRender(
   let best:      { b64: string; scores: PerFigureScore[]; failed: number } | null = null
   let passedB64: string | null = null
 
-  const maxAttempts = req.skip_scoring ? 1 : MAX_ATTEMPTS_GROUPS
+  const maxAttempts = req.skip_scoring ? 1 : Math.max(1, Math.min(MAX_ATTEMPTS_GROUPS, Math.floor(Number(req.max_attempts)) || MAX_ATTEMPTS_GROUPS))      // a caller may only LOWER the cap
 
   for (let n = 1; n <= maxAttempts; n++) {
     const aT0 = Date.now()
@@ -387,6 +387,8 @@ export async function generateGroupsRender(
 
   if (req.product_composition) {
     outpaintSkip = 'product_composition'                 // the Gift composer does bounded extension; no margin is invented here
+  } else if (req.skip_outpaint) {
+    outpaintSkip = 'initial_preview'                     // Gift Wizard initial previews keep the model's output as it came back
   } else if (input.stabilityApiKey) {
     try {
       const buf  = Buffer.from(finalB64, 'base64')

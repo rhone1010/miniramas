@@ -38,6 +38,8 @@ export const PREVIEW_LEASE_SECONDS = 300
  * GIFT_PARALLEL_RENDERS (1 to 6) lowers it if the provider or the platform needs it. Claims, attempts, idempotency and entitlement accounting are unchanged:
  * every preview is still claimed atomically before it is rendered, so concurrency never adds a render, only starts the same ones sooner.
  */
+/** The most NB2 attempts the Groups route may make for ONE initial preview (its own default is 4, each followed by a vision scoring call). Portraits and Pets already stop at 2. The best attempt is kept and its quality recorded. */
+export const INITIAL_PREVIEW_MAX_ATTEMPTS = 2
 export const MAX_PARALLEL_RENDERS = 6
 export const parallelRenders = (env: Record<string, string | undefined> = process.env): number => {
   const n = Number(env.GIFT_PARALLEL_RENDERS)

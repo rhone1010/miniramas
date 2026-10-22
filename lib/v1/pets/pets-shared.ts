@@ -249,6 +249,8 @@ export interface PetsGenerateRequest {
   aspect_ratio?:          string
   /** Server-internal (Gift Wizard): additional_images_b64[0] is the customer's approved artwork to adapt to this frame. */
   adaptation?:            'favorite'
+  /** Server-internal (Gift Wizard INITIAL previews): skip the Stage 3 Stability outpaint, so the stored original is exactly what the model returned. Absent: unchanged. */
+  skip_outpaint?:         boolean
   refinements?:           PetsRefinements
   notes?:                 string
   refinement_tweak?:      string

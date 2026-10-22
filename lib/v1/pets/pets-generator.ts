@@ -356,7 +356,9 @@ export async function generatePetsRender(
   // the style's pipeline.expandEnabled is true. Non-fatal: if Stability
   // fails, the original final image is kept.
   const expandPercent = pipeline.expandPercent
-  if (pipeline.expandEnabled && req.scale !== 'fill' && finalImageB64) {
+  if (req.skip_outpaint) {
+    lastExpandSkip = 'initial_preview'                   // Gift Wizard initial previews keep the model's output as it came back
+  } else if (pipeline.expandEnabled && req.scale !== 'fill' && finalImageB64) {
     if (input.stabilityApiKey) {
       try {
         const r = await expandPetImage({

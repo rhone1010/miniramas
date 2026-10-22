@@ -65,6 +65,27 @@ export interface LineGeometry {
   adaptationValidation: 'not_applicable' | 'provisional' | 'unvalidated'
 }
 
+/**
+ * How an initial preview was generated, recorded with it (migration 058; absent before it). Truthful, never a block: a preview that did not reach the generator's likeness bar is still delivered,
+ * marked 'below_bar'; one the generator could not score is 'unscored'. The customer's original (the file the model returned) is stored untouched.
+ */
+export interface GenerationRecord {
+  v: 1
+  series: Series
+  effectId: string
+  aspect: string
+  /** NB2 attempts made for this preview (each may be followed by a scoring call). */
+  attempts: number
+  passed: boolean | null
+  quality: 'passed' | 'below_bar' | 'unscored'
+  reason: string | null
+  /** Per-figure likeness scores of the kept attempt, when the generator scored them. */
+  scores: number[] | null
+  /** Whether anything was done to the picture after the model returned it. For initial previews this is always outpaint false. */
+  postProcessing: { outpaint: boolean; skipped: string | null }
+  durationMs: number
+}
+export interface PreviewQuality { status: GenerationRecord['quality']; attempts: number }
 export interface PreviewView {
   previewId: string
   slot: number                        // 1..6 within its batch
@@ -74,7 +95,9 @@ export interface PreviewView {
   url: string | null
   width: number | null
   height: number | null
-  retryable: boolean                  // failed and attempts remain
+  retryable: boolean
+  /** Present once the preview is ready and was generated after migration 058; null otherwise. 'below_bar' is information, not a failure: the preview is complete and usable. */
+  quality: PreviewQuality | null                  // failed and attempts remain
 }
 
 /**

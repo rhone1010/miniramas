@@ -7,7 +7,7 @@
 
 import { randomUUID } from 'node:crypto'
 import { FREE_PREVIEWS, SESSION_ATTEMPTS, type FreeBlockReason } from './policy'
-import type { BatchKind, GiftLine, PreviewStatus, Series } from './types'
+import type { BatchKind, GenerationRecord, GiftLine, PreviewStatus, Series } from './types'
 
 export interface SessionRec {
   id: string; user_id: string; status: 'active' | 'expired' | 'deleted'
@@ -68,6 +68,8 @@ export interface BatchRec { id: string; session_id: string; user_id: string; bat
 export interface PreviewRec {
   id: string; batch_id: string; session_id: string; slot: number; effect_id: string; status: PreviewStatus; attempts: number
   lease_until: string | null; master_path: string | null; preview_path: string | null; width: number | null; height: number | null; error: string | null
+  /** 058: how it was generated (attempts, quality, post-processing); null/absent before. */
+  generation?: GenerationRecord | null
 }
 export type StoreErrorCode =
   | 'repair_claim_lost' | 'repair_not_consistent' | 'composition_not_found'
@@ -94,7 +96,8 @@ export interface GiftStore {
   /** Whether this session may take another FREE batch and, if not, why (migration 050). Read-only. */
   freeStatus(sessionId: string, userId: string): Promise<{ available: boolean; used: number; reason: FreeBlockReason | null }>
   claimPreview(previewId: string, userId: string): Promise<PreviewRec | null>
-  markReady(previewId: string, r: { master_path: string; preview_path: string; width: number; height: number }): Promise<void>
+  /** Returns false when the preview no longer exists (the project was cancelled while the model worked): the caller then discards what it stored. */
+  markReady(previewId: string, r: { master_path: string; preview_path: string; width: number; height: number; generation?: GenerationRecord }): Promise<boolean>
   markFailed(previewId: string, error: string): Promise<void>
   paidPackCount(userId: string): Promise<number>
   fulfillPack(userId: string, stripeSessionId: string, amountCents: number): Promise<string>
@@ -189,7 +192,12 @@ export function supabaseGiftStore(db: any): GiftStore {
       return row?.id ? (row as PreviewRec) : null
     },
     async markReady(previewId, r) {
-      await one(db.from('gift_previews').update({ ...r, status: 'ready', lease_until: null, error: null, updated_at: new Date().toISOString() }).eq('id', previewId))
+      const base = { status: 'ready', lease_until: null, error: null, updated_at: new Date().toISOString() }
+      const run = (fields: Record<string, unknown>) => db.from('gift_previews').update({ ...fields, ...base }).eq('id', previewId).select('id')
+      let res = await run(r)
+      if (res.error && r.generation && /generation/i.test(String(res.error.message))) { const { generation: _g, ...rest } = r; res = await run(rest) }          // 058 not applied: the preview is stored without its record
+      if (res.error) throw new Error(res.error.message)
+      return (res.data ?? []).length > 0
     },
     async markFailed(previewId, error) {
       await one(db.from('gift_previews').update({ status: 'failed', lease_until: null, error: error.slice(0, 200), updated_at: new Date().toISOString() }).eq('id', previewId).neq('status', 'ready'))
@@ -351,7 +359,7 @@ export function memoryGiftStore(clock: () => number = Date.now) {
       p.status = 'generating'; p.attempts += 1; p.lease_until = iso(clock() + 300_000); p.error = null
       return structuredClone(p)
     },
-    async markReady(previewId, r) { const p = previews.find(x => x.id === previewId)!; Object.assign(p, r, { status: 'ready', lease_until: null, error: null }) },
+    async markReady(previewId, r) { const p = previews.find(x => x.id === previewId); if (!p || !sessions.has(p.session_id)) return false; Object.assign(p, r, { status: 'ready', lease_until: null, error: null }); return true },
     async markFailed(previewId, error) { const p = previews.find(x => x.id === previewId)!; if (p.status !== 'ready') Object.assign(p, { status: 'failed', lease_until: null, error }) },
     async paidPackCount(userId) { return packs.filter(p => p.user_id === userId && p.status === 'paid').length },
     async fulfillPack(userId, stripeSessionId, amountCents) {

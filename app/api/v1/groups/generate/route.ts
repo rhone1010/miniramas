@@ -201,6 +201,9 @@ export async function POST(req: NextRequest) {
       ...(typeof body.favorite_reference_b64 === 'string' && body.favorite_reference_b64.length > 100 ? { favorite_reference_b64: body.favorite_reference_b64 } : {}),
       ...(body.adaptation === 'favorite' ? { adaptation: 'favorite' as const } : {}),
       ...(body.product_composition === true ? { product_composition: true } : {}),
+      // Gift Wizard INITIAL previews (this whole route is internal): no margin outpaint, and a lower cap on NB2 attempts.
+      ...(body.skip_outpaint === true ? { skip_outpaint: true } : {}),
+      ...(Number.isInteger(body.max_attempts) && body.max_attempts >= 1 && body.max_attempts <= 4 ? { max_attempts: body.max_attempts } : {}),
     }
 
     console.log(

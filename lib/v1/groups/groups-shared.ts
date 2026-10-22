@@ -162,6 +162,10 @@ export interface GroupsGenerateRequest {
   adaptation?:       'favorite'
   /** Server-internal: this render is a product composition, so the Stage 3 margin outpaint is skipped (the Gift composer does bounded extension). */
   product_composition?: boolean
+  /** Server-internal (Gift Wizard INITIAL previews): skip the Stage 3 margin outpaint, so the stored original is exactly what the model returned. Absent: unchanged behavior. */
+  skip_outpaint?: boolean
+  /** Server-internal: cap on NB2 attempts (1 to MAX_ATTEMPTS_GROUPS). Absent: MAX_ATTEMPTS_GROUPS. */
+  max_attempts?: number
 }
 
 /**

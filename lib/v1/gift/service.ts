@@ -81,7 +81,7 @@ export interface GiftDeps {
   /** Existing classifier, face/age check and (Groups) people count; see real.ts. */
   analyze(input: { b64: string; bytes: Buffer }): Promise<SourceAnalysis>
   /** ONE NB2.1 render of the selected effect through the existing series generate route; returns the CLEAN master. */
-  generate(input: { series: Series; sourceB64: string; effectId: string; aspect: string; userId: string; peopleCount: number | null; productComposition?: boolean; referenceB64?: string }): Promise<{ imageB64: string }>
+  generate(input: { series: Series; sourceB64: string; effectId: string; aspect: string; userId: string; peopleCount: number | null; productComposition?: boolean; referenceB64?: string }): Promise<{ imageB64: string; generation?: import('./types').GenerationRecord }>
   /** Baked-watermark customer preview (JPEG) from the clean master. Must fail rather than return an unmarked image. */
   watermark(masterB64: string): Promise<Buffer>
   /** One product composition of the selected master: background extension only, never a crop (compose.ts). */
@@ -318,7 +318,10 @@ const isRateLimited = (error: string | null) => !!error && /\b429\b|rate.?limit|
 
 async function renderOne(deps: GiftDeps, rec: SessionRec, p: PreviewRec, sourceB64: string): Promise<void> {
   try {
-    const { imageB64 } = await deps.generate({ series: rec.series!, sourceB64, effectId: p.effect_id, aspect: rec.master_aspect ?? masterAspectFor(rec.series!, null), userId: rec.user_id, peopleCount: rec.analysis.peopleCount ?? null })
+    const { imageB64, generation } = await deps.generate({ series: rec.series!, sourceB64, effectId: p.effect_id, aspect: rec.master_aspect ?? masterAspectFor(rec.series!, null), userId: rec.user_id, peopleCount: rec.analysis.peopleCount ?? null })
+    // The customer may have cancelled (deleted the project) or it may have expired while the provider worked: the paid result is then discarded and nothing is stored.
+    const live = await deps.store.getSession(rec.id, rec.user_id).catch(() => rec)
+    if (!live || live.status !== 'active') return
     const bytes = Buffer.from(imageB64, 'base64')
     const md = await sharp(bytes).metadata()
     if (!md.width || !md.height) throw new Error('master_unreadable')
@@ -327,7 +330,8 @@ async function renderOne(deps: GiftDeps, rec: SessionRec, p: PreviewRec, sourceB
     const marked = await deps.watermark(imageB64)                             // throws rather than return an unmarked image
     await deps.storage.put(masterPath, bytes, ext === 'jpg' ? 'image/jpeg' : 'image/png')
     await deps.storage.put(previewPath, marked, 'image/jpeg')
-    await deps.store.markReady(p.id, { master_path: masterPath, preview_path: previewPath, width: md.width, height: md.height })
+    const stored = await deps.store.markReady(p.id, { master_path: masterPath, preview_path: previewPath, width: md.width, height: md.height, ...(generation ? { generation } : {}) })
+    if (!stored) await deps.storage.remove([masterPath, previewPath]).catch(() => {})                 // the project was deleted between the check and now: leave nothing behind
   } catch (e: any) {
     await deps.store.markFailed(p.id, String(e?.message ?? 'generation_failed')).catch(() => {})
   }
@@ -355,7 +359,8 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     const views: PreviewView[] = []
     for (const p of previews) {
       const url = p.status === 'ready' && p.preview_path ? await deps.storage.signedUrl(p.preview_path, 3600) : null
-      views.push({ previewId: p.id, slot: p.slot, effectId: p.effect_id, status: p.status, url, width: p.width, height: p.height, retryable: p.status === 'failed' && p.attempts < 3 })
+      views.push({ previewId: p.id, slot: p.slot, effectId: p.effect_id, status: p.status, url, width: p.width, height: p.height, retryable: p.status === 'failed' && p.attempts < 3,
+        quality: p.status === 'ready' && p.generation ? { status: p.generation.quality, attempts: p.generation.attempts } : null })
     }
     const complete = views.length === (batch.kind === 'collection' ? 1 : BATCH_SIZE) && views.every(v => v.status === 'ready')          // a collection batch is the one owned artwork
     const count = (s: PreviewRec['status']) => previews.filter(p => p.status === s).length
@@ -528,6 +533,15 @@ export async function deleteSessionNow(deps: GiftDeps, userId: string, sessionId
   if (rec.pinned_at) throw new GiftError('session_retained')     // a paid order is waiting on this session: retained until resolved
   await removeObjects(deps, rec)
   await deps.store.deleteSession(rec.id)
+  await sweepLateFiles(deps, rec.id)                      // a preview that finished between the object removal and the row deletion must not leave its files behind
+}
+
+/** Files a still-running generation stored after removeObjects looked: list the session's own directories and remove whatever is there. Best effort; the rows are already gone. */
+async function sweepLateFiles(deps: GiftDeps, sessionId: string): Promise<void> {
+  if (!deps.storage.list) return
+  for (const dir of ['masters', 'previews', 'compositions', 'mockups']) {
+    try { const left = await deps.storage.list(`gift/${sessionId}/${dir}/`); if (left.length) await deps.storage.remove(left) } catch { /* a listing failure never fails the deletion */ }
+  }
 }
 
 /** Sweep: expired, unpinned sessions lose their source photo, masters, previews and rows. Paid packs are never touched. */
