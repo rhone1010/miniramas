@@ -327,6 +327,16 @@ test('existing project has a separate new-gift entry and explicit session still 
 });
 
 
+test('personalized preview waits for favorite, product and size selection',async()=>{
+ const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};s.lines=[];
+ const {win,dom,calls}=await boot('sessionId=project',s);
+ try {
+  for(const view of ['effects','review','focus','compare']){win.navigate(view);await new Promise(r=>setTimeout(r,20));assert.equal(calls.some(x=>x.includes('/product-preview')),false);assert.equal(win.document.querySelector('.studio-media'),null)}
+  win.navigate('products');assert.equal(calls.some(x=>x.includes('/product-preview')),false);
+  win.document.querySelector('[data-feature="fine_art"]').click();assert.equal(calls.some(x=>x.includes('/product-preview')),false);
+  win.document.querySelector('[data-size]').click();await new Promise(r=>setTimeout(r,25));assert.equal(calls.filter(x=>x.includes('/product-preview')).length,1);
+ } finally {dom.window.close()}
+});
 test('configuration consumes only the matching watermarked server product preview',async()=>{
  const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};
  let previewCalls=0;s.route=async(url:string)=>{if(!url.includes('/product-preview?'))return;previewCalls++;const productId=new URL(url,'https://test.invalid').searchParams.get('productId');const option=catalog.products.find((p:any)=>p.productId===productId)!;return {contractVersion:1,status:'ready',sessionId:s.sessionId,productId,sku:option.sku,favoriteId:s.artworkPreviewId,renderer:'scene',sceneId:({fine_art:'fine-art-square',framed:'classic-framed',canvas:'gallery-canvas-square'} as any)[productId.split(':')[0]],fit:'exact',url:'https://test.invalid/personalized.jpg',urlExpiresAt:'2099-01-01',width:1254,height:1254,cached:false,watermarked:true,productionPrintFile:false,purchaseAuthorization:false}};

@@ -230,7 +230,7 @@ body:has(#screen[data-view="review"]) .left-rail{padding:24px}
 /* October 22: consistent stage rails; artwork keeps its intrinsic proportions. */
 #left #back:disabled{display:none}
 #left #studio-back,#left>.actions button{background:var(--ivory);color:var(--ink);margin-top:12px}
-#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"]) img{aspect-ratio:auto;height:auto;max-height:none;background:transparent}
+#screen:is([data-view="review"],[data-view="focus"],[data-view="compare"]) img{aspect-ratio:1;object-fit:contain;height:auto;max-height:none;background:transparent}
 #screen:is([data-view="review"],[data-view="compare"]) .tile{align-self:start;background:transparent}
 #screen[data-view="focus"]>.photo{max-height:calc(100dvh - 300px);object-fit:contain}
 .right-rail.artwork-actions{background:var(--forest);color:var(--ivory);border:1px solid var(--gold);margin:24px;align-self:start;padding:24px;border-radius:4px}
