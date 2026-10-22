@@ -75,6 +75,20 @@ else if (serverMode && params.get('newGift') === '1' && params.get('resumeSessio
     $('left').insertAdjacentHTML('beforeend', '<button id="resume-gift" data-href="/gift-wizard.next.html?sessionId=' + encodeURIComponent(params.get('resumeSessionId')) + '">Return to Your Gift</button>'); for (const id of ['new-gift', 'resume-gift'])
     if ($(id))
         $(id).onclick = () => { rememberView(); location.assign($(id).dataset.href); }; }
+function confirmGiftExit(destination) {
+    const opener = document.activeElement;
+    document.getElementById('cancel-gift-dialog')?.remove();
+    const dialog = document.createElement('dialog');
+    dialog.id = 'cancel-gift-dialog';
+    dialog.setAttribute('aria-labelledby', 'cancel-gift-heading');
+    dialog.innerHTML = '<h2 id="cancel-gift-heading">Cancel This Gift</h2><p>Your saved gift will remain available. Cancel returns you to the Gift Collection; it does not delete your artwork or cancel a paid order.</p><div class="actions"><button type="button" class="primary" id="keep-creating">Keep Creating</button><button type="button" id="confirm-cancel-gift">Cancel This Gift</button></div>';
+    document.body.append(dialog);
+    dialog.addEventListener('close', () => { dialog.remove(); opener?.focus(); }, { once: true });
+    dialog.querySelector('#keep-creating').onclick = () => dialog.close();
+    dialog.querySelector('#confirm-cancel-gift').onclick = () => { rememberView(); location.assign(destination); };
+    dialog.showModal();
+    dialog.querySelector('#keep-creating').focus();
+}
 function render() {
     if (live?.session?.order.state === 'approved') {
         view = 'compositions';
@@ -83,7 +97,7 @@ function render() {
     $('left').hidden = false;
     $('error').hidden = true;
     $('error').textContent = '';
-    $('status').textContent = analyzingSource ? 'Analyzing your photo…' : layoutReview ? 'Layout review · sample artwork · no payment or order' : '';
+    $('status').textContent = layoutReview ? 'Layout review · sample artwork · no payment or order' : '';
     $('screen').dataset.view = view;
     $('left').classList.toggle('effects-rail', view === 'effects');
     $('workspace').setAttribute('aria-busy', String(busy));
@@ -130,9 +144,13 @@ function render() {
     cancel.textContent = 'Cancel';
     const resumeId = live?.id || params.get('sessionId') || params.get('resumeSessionId');
     cancel.dataset.href = '/gifts.next.html?newGift=1' + (resumeId ? '&resumeSessionId=' + encodeURIComponent(resumeId) : '');
-    cancel.onclick = () => { rememberView(); location.assign(cancel.dataset.href); };
-    exits.append(cancel);
-    $('screen').prepend(exits);
+    cancel.onclick = () => confirmGiftExit(cancel.dataset.href);
+    if (view !== 'photo' || !!live?.session || !!sourceURL)
+        exits.append(cancel);
+    if (exits.childElementCount)
+        $('screen').prepend(exits);
+    if (view === 'photo' && !history.length)
+        $('back').hidden = true;
     document.querySelectorAll('[data-product-preview]').forEach(b => b.onclick = () => { productPreviews.delete(b.dataset.productPreview); render(); });
     adaptMobileView();
     rememberView();
@@ -286,6 +304,8 @@ function renderPhoto() {
         $('choose-photo').onclick = choose;
     if ($('change-photo'))
         $('change-photo').onclick = choose;
+    if ($('choose-photo'))
+        $('choose-photo').disabled = busy;
     if ($('drop')) {
         const drop = $('drop');
         drop.ondragover = e => { e.preventDefault(); drop.classList.add('drag'); };
@@ -454,6 +474,8 @@ function renderProducts() {
         onExit: () => live?.session?.entrance === 'collection' ? location.assign('/collection?from=' + live.session.source.series) : go('review'), busy, addLabel: editId ? 'Update This Gift' : 'Add to Cart'
     });
     $('right').innerHTML = (favorite() ? '<button type="button" id="shopping-favorite" class="gift-favorite">' + photo(asset(favorite().url), favorite().label, 'gift-favorite-thumb') + '<span>Selected artwork<br>Change Artwork</span></button>' : '') + (session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '');
+    if ($('shopping-favorite'))
+        $('screen').prepend($('shopping-favorite'));
     if ($('shopping-favorite'))
         $('shopping-favorite').onclick = () => live?.session?.entrance === 'collection' ? location.assign('/collection?from=' + live.session.source.series) : go('review');
     if ($('view-cart'))
@@ -671,9 +693,9 @@ function renderGeneration() {
         if (p?.status === 'ready' && p.url)
             return '<button class="tile" data-art="' + p.previewId + '" aria-pressed="' + (session.favoriteId === p.previewId) + '">' + photo(p.url, label + ' watermarked artwork') + '<span>' + esc(label) + '</span></button>';
         const working = p?.status === 'generating' && (!b?.generation || b.generation === 'running'), failed = p?.status === 'failed' || b?.generation === 'failed';
-        return '<div class="tile card ' + (working ? 'is-crafting' : failed ? 'is-failed' : '') + '"><div class="card__art">' + (working ? MC_MARK_HTML : '') + '</div><span role="status">' + (working ? 'Crafting…' : failed ? 'Didn’t finish' : 'Waiting to start…') + '</span></div>';
+        return '<div class="tile card ' + (working ? 'is-crafting' : failed ? 'is-failed' : '') + '"><div class="card__art">' + (working ? MC_MARK_HTML : '') + '</div><span role="status">' + (working ? 'Crafting…' : failed ? 'Didn’t finish' : '') + '</span></div>';
     }).join('') + '</div>';
-    $('right').innerHTML = '<h2>' + esc(favorite()?.label || heading) + '</h2>' + (generationReadError ? '<p role="alert">' + esc(generationReadError) + '</p>' : '');
+    $('right').innerHTML = (favorite() ? '<h2>' + esc(favorite().label) + '</h2>' : '') + (generationReadError ? '<p role="alert">' + esc(generationReadError) + '</p>' : '');
     if (b?.generation === 'stalled' || (b?.generation !== 'failed' && b?.previews.some(p => p.status === 'failed' && p.retryable) && !b.previews.some(p => p.status === 'pending' || p.status === 'generating'))) {
         $('right').insertAdjacentHTML('beforeend', secondary('retry-generation', 'Try again'));
         $('retry-generation').onclick = async () => { if (generationRequestPending || !live)
@@ -695,6 +717,7 @@ function renderGeneration() {
     }
     document.querySelectorAll('[data-art]').forEach(b => b.onclick = () => void selectPreview(b.dataset.art));
     primary('Choose Your Gift', () => go('products'), !favorite());
+    $('primary').hidden = !favorite();
 }
 async function selectPreview(id) {
     if (busy || !session.batches.flat().some(p => p.id === id))
@@ -951,6 +974,8 @@ async function retryRestoration() {
     restorationComplete = false;
     clearTimeout(generationTimer);
     paymentState = 'restoring';
+    view = live?.session ? 'payment' : 'photo';
+    busy = true;
     render();
     let suggestedView = null;
     await restoration.run(async (signal) => {
@@ -991,6 +1016,8 @@ async function retryRestoration() {
                         throw new GiftApiError('session_identity_mismatch', 0);
                     live = new LiveGift(api, saved.sessionId);
                     live.accept(saved);
+                    view = 'payment';
+                    render();
                 }
                 catch (e) {
                     if (!(e instanceof GiftApiError && e.status === 404))
@@ -1002,6 +1029,9 @@ async function retryRestoration() {
                 if (!latest.current)
                     return null;
                 live = new LiveGift(api, latest.current.sessionId);
+                live.accept(latest.current);
+                view = 'payment';
+                render();
                 compositionResume = latest.resume?.compositions || null;
                 const step = latest.resume.suggestedStep;
                 suggestedView = step === 'previews' ? 'review' : step === 'order' ? 'payment' : step;
@@ -1011,6 +1041,7 @@ async function retryRestoration() {
         return live.session;
     });
     const state = restoration.state;
+    busy = false;
     if (state.status === 'ready') {
         if (!state.value) {
             live = null;
@@ -1044,6 +1075,7 @@ async function retryRestoration() {
         }
     }
     else {
+        view = 'payment';
         restorationComplete = false;
         paymentState = state.status === 'failed' && state.httpStatus === 401 ? 'auth' : state.status === 'failed' && state.code === 'payment_pending' ? 'pending' : 'restore-failed';
         render();

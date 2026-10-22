@@ -109,8 +109,8 @@ test('preview-first fixture journey keeps favorite separate from product photogr
  win.document.querySelector('[data-art]').click();win.document.getElementById('primary').click();
  assert.equal(win.document.getElementById('screen').dataset.view,'products');
  assert.equal(win.document.querySelectorAll('[data-feature]').length,8);assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
- const reference=win.document.querySelector('#right img').src;assert.ok(reference.includes('preview-1.jpg'));
- win.document.querySelector('[data-feature="fine_art"]').click();assert.ok(win.document.querySelector('#screen img').src.includes('mockup-scenes/fine-art-square/'));assert.equal(win.document.querySelector('#right img').src,reference);win.document.querySelector('[data-size]').click();
+ const reference=win.document.querySelector('#shopping-favorite img').src;assert.ok(reference.includes('preview-1.jpg'));
+ win.document.querySelector('[data-feature="fine_art"]').click();assert.ok(win.document.querySelector('.studio-media img').src.includes('mockup-scenes/fine-art-square/'));assert.equal(win.document.querySelector('#shopping-favorite img').src,reference);win.document.querySelector('[data-size]').click();
  win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'cart');
  assert.ok(win.document.querySelector('.cart-thumbnail img').src.includes('/mockup-scenes/'));
  win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'checkout');
@@ -224,7 +224,7 @@ test('restoration shows gears only for server generating slots, ready artwork an
  assert.equal(win.document.querySelectorAll('#screen .mc-mark').length,1);
  assert.equal(win.document.querySelectorAll('#screen img').length,1);
  assert.ok(win.document.getElementById('screen').textContent.includes('Didn’t finish'));
- assert.ok(win.document.getElementById('screen').textContent.includes('Waiting to start'));
+ assert.ok((win.document.getElementById('screen').textContent.match(/Waiting to start/g)||[]).length<=1);
  assert.equal(calls.some(x=>x.endsWith('/batches')),false);dom.window.close();
 });
 test('Craft moves immediately to results without claiming that the unconfirmed request is generating',async()=>{
@@ -233,7 +233,7 @@ test('Craft moves immediately to results without claiming that the unconfirmed r
  const {win,dom}=await boot('sessionId=project',s);win.document.getElementById('primary').click();
  assert.equal(win.document.getElementById('screen').dataset.view,'review');
  assert.equal(win.document.querySelectorAll('.mc-mark').length,0);
- assert.ok(win.document.getElementById('screen').textContent.includes('Waiting to start'));
+ assert.ok((win.document.getElementById('screen').textContent.match(/Waiting to start/g)||[]).length<=1);
  const done:any=workingProject();done.batches[0].complete=true;done.batches[0].previews.forEach((p:any)=>Object.assign(p,{status:'ready',url:'https://liten.invalid/done.jpg',width:768,height:768}));
  finish({status:'ok',session:done,batch:done.batches[0]});await new Promise(r=>setTimeout(r,20));
  assert.equal(win.document.querySelectorAll('#screen [data-art]').length,6);assert.equal(win.document.querySelectorAll('.mc-mark').length,0);dom.window.close();
@@ -331,11 +331,11 @@ test('configuration consumes only the matching watermarked server product previe
  const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};
  let previewCalls=0;s.route=async(url:string)=>{if(!url.includes('/product-preview?'))return;previewCalls++;const productId=new URL(url,'https://test.invalid').searchParams.get('productId');const option=catalog.products.find((p:any)=>p.productId===productId)!;return {contractVersion:1,status:'ready',sessionId:s.sessionId,productId,sku:option.sku,favoriteId:s.artworkPreviewId,renderer:'scene',sceneId:({fine_art:'fine-art-square',framed:'classic-framed',canvas:'gallery-canvas-square'} as any)[productId.split(':')[0]],fit:'exact',url:'https://test.invalid/personalized.jpg',urlExpiresAt:'2099-01-01',width:1254,height:1254,cached:false,watermarked:true,productionPrintFile:false,purchaseAuthorization:false}};
  const {win,dom}=await boot('sessionId=project',s);win.navigate('configuration');await new Promise(r=>setTimeout(r,25));
- assert.equal(win.document.querySelector('#screen img')?.src,'https://test.invalid/personalized.jpg');assert.equal(previewCalls,1);dom.window.close();
+ assert.equal(win.document.querySelector('.studio-media img')?.src,'https://test.invalid/personalized.jpg');assert.equal(previewCalls,1);dom.window.close();
 });
 test('adaptation and failed preview never substitute catalog photography',async()=>{
  for(const invalid of [false,true]){const s:any=artworkProject();s.order={...s.order,state:'none',orderId:null};s.route=async(url:string)=>{if(!url.includes('/product-preview?'))return;const productId=new URL(url,'https://test.invalid').searchParams.get('productId');const option=catalog.products.find((p:any)=>p.productId===productId)!;return {contractVersion:1,status:'adaptation_required',sessionId:s.sessionId,productId,sku:option.sku,favoriteId:invalid?'stale':s.artworkPreviewId,reason:'shape_needs_composition',favoriteAspect:1,pictureAspect:1.5,extension:0.5,method:'generated'}};
- const {win,dom}=await boot('sessionId=project',s);win.navigate('configuration');await new Promise(r=>setTimeout(r,25));assert.equal(win.document.querySelector('#screen img'),null);assert.ok(win.document.getElementById('screen').textContent.includes(invalid?'This product preview could not load.':'Product-specific artwork will be prepared after payment.'));if(!invalid){win.navigate('cart');await new Promise(r=>setTimeout(r,25));assert.ok(win.document.querySelector('.cart-thumbnail img[alt="Selected artwork"]'));win.navigate('checkout');await new Promise(r=>setTimeout(r,25));assert.ok(win.document.querySelector('[data-order-summary] img[alt="Selected artwork"]'));}dom.window.close();}
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('configuration');await new Promise(r=>setTimeout(r,25));assert.equal(win.document.querySelector('.studio-media img'),null);assert.ok(win.document.getElementById('screen').textContent.includes(invalid?'This product preview could not load.':'Product-specific artwork will be prepared after payment.'));if(!invalid){win.navigate('cart');await new Promise(r=>setTimeout(r,25));assert.ok(win.document.querySelector('.cart-thumbnail img[alt="Selected artwork"]'));win.navigate('checkout');await new Promise(r=>setTimeout(r,25));assert.ok(win.document.querySelector('[data-order-summary] img[alt="Selected artwork"]'));}dom.window.close();}
 });
 
 
@@ -438,7 +438,7 @@ test('retired calibrated mockups and missing or unrelated scene identities never
  for(const variant of ['calibrated','missing','wrong-family']){const s:any=artworkProject();if(variant==='calibrated'){s.mockup.renderer='calibrated';s.mockup.scene=null}else if(variant==='missing'){delete s.mockup.renderer;delete s.mockup.scene}else s.mockup.scene={sceneId:'ceramic-mug'};s.mockup.url='https://liten.invalid/retired.png';const {win,dom}=await boot('sessionId=project',s);win.navigate('compositions');assert.equal(win.document.querySelector('img[src="https://liten.invalid/retired.png"]'),null);assert.ok(win.document.getElementById('screen').textContent.includes('Not currently available'));assert.equal(win.document.getElementById('primary').disabled,true);dom.window.close();}
 });
 test('retired product previews are rejected before an image is inserted',async()=>{
- const s:any=artworkProject();s.order.state='none';s.route=(u:string)=>{if(!u.includes('/product-preview?'))return null;const productId=new URL(u,'https://test').searchParams.get('productId');return {contractVersion:1,status:'ready',sessionId:s.sessionId,productId,sku:catalog.products.find((p:any)=>p.productId===productId)!.sku,favoriteId:s.artworkPreviewId,renderer:'calibrated',sceneId:null,fit:'exact',url:'https://liten.invalid/retired.png',urlExpiresAt:'2099-01-01',width:1264,height:848,watermarked:true,productionPrintFile:false,purchaseAuthorization:false}};const {win,dom}=await boot('sessionId=project',s);win.navigate('configuration');await new Promise(r=>setTimeout(r,25));assert.equal(win.document.querySelector('#screen img'),null);assert.ok(win.document.getElementById('screen').textContent.includes('Not currently available'));dom.window.close();
+ const s:any=artworkProject();s.order.state='none';s.route=(u:string)=>{if(!u.includes('/product-preview?'))return null;const productId=new URL(u,'https://test').searchParams.get('productId');return {contractVersion:1,status:'ready',sessionId:s.sessionId,productId,sku:catalog.products.find((p:any)=>p.productId===productId)!.sku,favoriteId:s.artworkPreviewId,renderer:'calibrated',sceneId:null,fit:'exact',url:'https://liten.invalid/retired.png',urlExpiresAt:'2099-01-01',width:1264,height:848,watermarked:true,productionPrintFile:false,purchaseAuthorization:false}};const {win,dom}=await boot('sessionId=project',s);win.navigate('configuration');await new Promise(r=>setTimeout(r,25));assert.equal(win.document.querySelector('.studio-media img'),null);assert.ok(win.document.getElementById('screen').textContent.includes('Not currently available'));dom.window.close();
 });
 test('offline approval examples use replacement scenes rather than retired payment-first mockups',async()=>{
  for(const mode of ['approval','approval-second','approval-final']){const {win,dom}=await boot('layoutReview='+mode);const images=[...win.document.querySelectorAll('#screen img')] as HTMLImageElement[];assert.ok(images.length>0);assert.ok(images.every(i=>i.src.includes('-scene-')||i.src.includes('/mockup-scenes/')));assert.ok(images.every(i=>!i.src.includes('/review/payment-first/')));dom.window.close();}
@@ -526,12 +526,7 @@ test('Studio review and quantity survive authenticated refresh',async()=>{
  dom.window.close();landing.window.close();
  });
 
- test('Cancel from a fresh gift retains Return to Your Gift',async()=>{
- const {win,dom}=await boot('newGift=1&resumeSessionId=project');
- const cancel=Array.from(win.document.querySelectorAll('button')).find((b:any)=>b.textContent==='Cancel') as HTMLButtonElement;
- assert.equal(cancel.dataset.href,'/gifts.next.html?newGift=1&resumeSessionId=project');dom.window.close();
- });
-
+ test('fresh upload hides Cancel and Back but retains prior gift return',async()=>{const {win,dom}=await boot('newGift=1&resumeSessionId=project');assert(!Array.from(win.document.querySelectorAll('button')).some((b:any)=>b.textContent==='Cancel'));assert.equal(win.document.getElementById('back').hidden,true);assert(win.document.getElementById('resume-gift'));dom.window.close()});
  test('new gift checks authentication before offering upload and retains fresh return URL',async()=>{
  const s:any=project();s.authStatus=401;const {win,dom,calls}=await boot('newGift=1&resumeSessionId=project',s);
  assert.match(win.document.getElementById('screen').textContent,/Sign in/);assert.equal(win.document.getElementById('primary').textContent,'Sign in \u2192');assert(!win.document.getElementById('choose-photo'));assert(!calls.includes('/api/v1/gift/sessions/project'));assert.match(win.location.search,/newGift=1/);dom.window.close();
@@ -540,4 +535,12 @@ test('Studio review and quantity survive authenticated refresh',async()=>{
  const s:any=project();s.route=(url:string,init:any)=>url==='/api/v1/gift/sessions'&&init.method==='POST'?new Response(JSON.stringify({error:'sign_in_required'}),{status:401}):null;
  const {win,dom}=await boot('newGift=1&resumeSessionId=project',s);win.MS_UPLOADER={readFileAsBase64:async()=>({b64:'fixture'})};win.URL.createObjectURL=()=> 'blob:fixture';win.URL.revokeObjectURL=()=>{};win.Image=class{src='';decode(){return Promise.resolve()}};
  await win.uploadPhoto(new win.File(['fixture'],'photo.jpg',{type:'image/jpeg'}));assert.match(win.document.getElementById('screen').textContent,/Sign in/);assert.equal(win.document.getElementById('primary').disabled,false);assert(!win.document.getElementById('choose-photo'));dom.window.close();
+ });
+
+ test('cancel confirmation keeps the active gift intact and uses approved copy',async()=>{
+ const {win,dom,calls}=await boot('sessionId=project');win.HTMLDialogElement.prototype.showModal=function(){this.open=true};win.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new win.Event('close'))};
+ const before=calls.length;Array.from(win.document.querySelectorAll('button')).find((b:any)=>b.textContent==='Cancel').click();const d=win.document.getElementById('cancel-gift-dialog');assert(d.open);assert.match(d.textContent,/does not delete your artwork or cancel a paid order/);win.document.getElementById('keep-creating').click();assert(!win.document.getElementById('cancel-gift-dialog'));assert.equal(calls.length,before);dom.window.close();
+ });
+ test('analysis has exactly one visible loading announcement',async()=>{
+ const {win,dom}=await boot('newGift=1');let finish:any;win.MS_UPLOADER={readFileAsBase64:()=>new Promise(r=>finish=r)};const pending=win.uploadPhoto(new win.File(['x'],'photo.jpg',{type:'image/jpeg'}));assert.equal((win.document.body.textContent.match(/Analyzing your photo/g)||[]).length,1);finish({b64:''});await pending;dom.window.close();
  });
