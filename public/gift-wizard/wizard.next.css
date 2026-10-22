@@ -123,7 +123,7 @@ body:has(#screen[data-view="configuration"]) .right-rail .context-image{display:
 body:has(#screen:not([data-view="photo"])) .mobile-bottom-action .primary{margin:0;min-height:56px}
 .mobile-action-slot{flex-shrink:0}
 body:has(.mobile-bottom-action){scroll-padding-bottom:120px}
-body:has(#screen[data-view="effects"]) .right-rail .context-image,body:has(#screen[data-view="effects"]) .right-rail .context-body>h2{display:none}
+body:not(.gift-pivot):has(#screen[data-view="effects"]) .right-rail .context-image,body:not(.gift-pivot):has(#screen[data-view="effects"]) .right-rail .context-body>h2{display:none}
 }
 
 /* Checkout refinement: existing three-column grid and payment gates are unchanged. */
@@ -221,7 +221,7 @@ body:has(#screen[data-view="effects"]) .palette{max-height:calc(100dvh - 320px);
 body:has(#screen[data-view="review"]) #workspace{grid-template-columns:minmax(220px,2fr) minmax(0,7fr) minmax(240px,3fr);align-items:start}
 body:has(#screen[data-view="review"]) .left-rail{padding:24px}
 }
-@media(max-width:1000px){#cancel-gift-dialog .actions{display:grid;grid-template-columns:1fr}#cancel-gift-dialog .actions button{width:100%}body:has(#screen[data-view="effects"]) .right-rail>.context-body>.context-image,body:has(#screen[data-view="effects"]) .right-rail>.context-body>h2{display:none}}
+@media(max-width:1000px){#cancel-gift-dialog .actions{display:grid;grid-template-columns:1fr}#cancel-gift-dialog .actions button{width:100%}body:not(.gift-pivot):has(#screen[data-view="effects"]) .right-rail>.context-body>.context-image,body:not(.gift-pivot):has(#screen[data-view="effects"]) .right-rail>.context-body>h2{display:none}}
 
 @media(min-width:1001px){body:has(#screen[data-view="effects"]) .context-image{max-height:100px}body:has(#screen[data-view="effects"]) .tray{max-width:240px}body:has(#screen[data-view="effects"]) .right-rail h2{font-size:32px;margin-bottom:12px}body:has(#screen[data-view="effects"]) .right-rail .context-body>p{margin-bottom:12px}body:has(#screen[data-view="effects"]) .left-rail h1{font-size:46px}body:has(#screen[data-view="effects"]) .left-rail #back,body:has(#screen[data-view="effects"]) .left-rail #new-gift{margin-top:12px}}
 
@@ -264,3 +264,35 @@ body:has(#screen[data-view="products"]) .studio-products{grid-template-columns:r
 .artwork-actions>.context-body{display:contents}.artwork-actions h2{order:-2}
 
 .artwork-actions p:empty{display:none}
+/* Approved Gift Shop Mockups, October 22: isolated pivot review only. */
+body.gift-pivot:has(#screen) #workspace{grid-template-columns:minmax(220px,21fr) minmax(0,41fr) minmax(280px,38fr)}
+.gift-pivot .left-rail{padding:32px 24px;display:flex;flex-direction:column;align-items:flex-start}
+.gift-pivot .left-rail h1{font-size:56px;margin-bottom:32px}
+.gift-pivot #filters{width:100%;margin-top:24px;margin-bottom:auto}
+.gift-pivot #filters h2{font-size:32px;color:var(--ivory)}
+.gift-pivot .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gift-pivot .filters button{background:var(--ivory);color:var(--forest);font-size:20px;padding:8px;min-height:48px}
+.gift-pivot .filters button[aria-pressed=true]{background:var(--wine);color:var(--ivory);border:1px solid var(--gold)}
+.gift-pivot #pivot-start,.gift-pivot #back,.gift-pivot #studio-back{margin-top:24px;min-width:160px;background:var(--ivory);color:var(--forest)}
+.gift-pivot #screen .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.gift-pivot #screen .palette{max-height:calc(100dvh - 260px);overflow:auto}
+.gift-pivot:has(#screen[data-view="effects"]) .right-rail{background:var(--line);padding:32px;display:flex;flex-direction:column;align-items:center}
+.gift-pivot:has(#screen[data-view="effects"]) .right-rail h2{font-size:40px;color:var(--wine);align-self:stretch}
+.gift-pivot:has(#screen[data-view="effects"]) .context-image{max-height:none;width:100%;aspect-ratio:1;object-fit:contain;border:2px solid var(--gold)}
+.gift-pivot .primary{clip-path:none;width:fit-content;min-width:0;margin-top:24px}
+.gift-pivot:has(#screen[data-view="products"])[data-pivot-step="product"] #workspace{grid-template-columns:minmax(220px,21fr) minmax(0,79fr)}
+.gift-pivot[data-pivot-step="product"]:has(#screen[data-view="products"]) #right{display:none}
+.gift-pivot:has(#screen[data-view="products"]) .studio-products{grid-template-columns:repeat(4,minmax(0,1fr))}
+.gift-pivot .studio-media{position:static}.gift-pivot .studio-media img{max-width:none;width:100%;aspect-ratio:1;object-fit:contain}
+.gift-pivot:has(#screen[data-view="photo"]) #workspace{grid-template-columns:minmax(220px,21fr) minmax(0,54fr) minmax(260px,25fr)}
+.gift-pivot:has(#screen[data-view="photo"]) #screen>h2{text-align:center}
+.gift-pivot .upload{margin:64px auto;max-width:720px;background:var(--line);border:1px solid var(--gold);padding:48px 24px}
+.gift-pivot #choose-photo{background:var(--wine);color:var(--ivory)}
+@media(max-width:1000px){
+ body.gift-pivot:has(#screen) #workspace,.gift-pivot:has(#screen[data-view="photo"]) #workspace,.gift-pivot:has(#screen[data-view="products"])[data-pivot-step="product"] #workspace{grid-template-columns:minmax(0,1fr)}
+ .gift-pivot .left-rail{padding:16px 24px}.gift-pivot .left-rail h1{font-size:32px;margin-bottom:8px}
+ .gift-pivot #filters{margin-top:8px}.gift-pivot #pivot-start,.gift-pivot #back,.gift-pivot #studio-back{margin-top:8px;min-width:0}
+ .gift-pivot #screen .grid,.gift-pivot:has(#screen[data-view="products"]) .studio-products{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .gift-pivot #screen .palette{max-height:440px}.gift-pivot .right-rail{padding:24px}.gift-pivot .primary{width:100%}
+ .gift-pivot .upload{margin:24px auto;padding:24px}.gift-pivot .progress{display:none}
+}

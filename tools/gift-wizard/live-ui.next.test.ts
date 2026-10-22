@@ -7,6 +7,7 @@ import {JSDOM} from 'jsdom';
 import * as contracts from '../../public/gift-wizard/contracts.next';
 import * as backend from '../../public/gift-wizard/backend.next';
 import * as state from '../../public/gift-wizard/backend-state.next';
+import * as compositionPolicy from '../../public/product-studio/gift-composition-policy.next';
 import * as studio from '../../public/product-studio/studio.next';
 import * as live from '../../public/gift-wizard/live.next';
 const local=JSON.parse(fs.readFileSync('public/gift-wizard/catalog.next.json','utf8'));
@@ -23,7 +24,7 @@ async function boot(query:string,response:any=project(),status=200){
  const dom=new JSDOM(fs.readFileSync('public/gift-wizard.next.html','utf8'),{url:'https://liten.invalid/gift-wizard.next.html?'+query,runScripts:'outside-only'});
  const win=dom.window as any,calls:string[]=[];
  win.matchMedia=()=>({matches:query.includes('mobile=1'),addEventListener(){}});win.ResizeObserver=class{observe(){}disconnect(){}};win.scrollTo=()=>{};win.structuredClone=structuredClone;win.AbortController=AbortController;win.Response=Response;
- win.require=(name:string)=>name.includes('studio.next')?studio:name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
+ win.require=(name:string)=>name.includes('gift-composition-policy')?compositionPolicy:name.includes('studio.next')?studio:name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
  win.fetch=async(url:string,init:any={})=>{calls.push(String(url));if(String(url).endsWith('/auth/me')&&response.authStatus===401)return new Response(JSON.stringify({error:'sign_in_required'}),{status:401});if(response.route&&String(url).includes('/api/v1/gift/')){const routed=await response.route(String(url),init);if(routed)return routed instanceof Response?routed:new Response(JSON.stringify(routed),{status:200})}const data=String(url)==='/api/v1/gift/sessions'&&init.method==='GET'?(response.latestResponse||{contractVersion:1,current:response.resume?response:null,resume:response.resume?{sessionId:response.sessionId,suggestedStep:'previews',resumeBatches:[],runningBatches:[]}:null,recent:[]}):String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/product-preview?')?fixtureProductPreview(response,String(url)):String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog-samples/index.next')?JSON.parse(fs.readFileSync('public/gift-wizard/catalog-samples/index.next.json','utf8')):String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?JSON.parse(fs.readFileSync('public/gift-wizard/fixtures.next.json','utf8')):{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
  let code=fs.readFileSync('public/gift-wizard/wizard.next.ts','utf8').replace('import.meta.url',"'https://liten.invalid/gift-wizard/wizard.next.js'").replace('await import(path);',"window.EFFECT_REGISTRY={silos:[{id:'first',label:'First'}],effects:[{id:'jade',label:'Jade',category:'first',body:'live'}]};").replace(/start\(\);\s*$/,"globalThis.started=start();globalThis.navigate=go;globalThis.uploadPhoto=upload;globalThis.refreshGift=refreshGeneration;globalThis.refreshComposition=readCompositionState;");
  if(response.storage)for(const [k,v] of Object.entries(response.storage))win.sessionStorage.setItem(k,v);
@@ -562,4 +563,17 @@ test('artwork selection has one stage title, left navigation and a distinct acti
  assert(win.document.querySelector('#right.artwork-actions #primary'));
  assert(!Array.from(win.document.querySelectorAll('#screen button')).some((b:any)=>/^(Cancel|← Back)$/.test(b.textContent)));
  dom.window.close();
+});
+
+test('pivot review chooses one static effect before shared Product Studio with no generation requests',async()=>{
+ const {win,dom,calls}=await boot('layoutReview=effects&pivot=1&subjects=5');
+ try{const buttons=win.document.querySelectorAll('[data-effect]');buttons[0].click();win.document.querySelector('[data-effect]').click();assert.equal(win.document.querySelectorAll('[data-effect][aria-pressed="true"]').length,1);assert.equal(win.document.querySelector('.tray'),null);assert.equal(win.document.getElementById('primary').textContent,'Choose This Effect →');win.document.getElementById('primary').click();assert.equal(win.document.querySelectorAll('[data-feature]').length,8);win.document.querySelector('[data-feature="canvas"]').click();assert.equal(win.document.querySelector('[data-aspect="Portrait"]'),null);assert.ok(win.document.querySelector('[data-aspect="Square"]'));win.document.querySelector('[data-size]').click();assert.equal(win.document.getElementById('primary').disabled,true);assert.equal(calls.some(x=>/product-preview|batches|generations|compositions/.test(x)),false);}finally{dom.window.close()}
+});
+
+test('pivot simulated intake bypasses recipient and preserves one effect and details on refresh',async()=>{
+ const {win,dom,calls}=await boot('layoutReview=photo&pivot=1');
+ win.MS_UPLOADER={readFileAsBase64:async()=>({b64:'fixture-only'})};win.URL.createObjectURL=()=> 'blob:fixture';win.URL.revokeObjectURL=()=>{};win.Image=class{decode(){return Promise.resolve()}};
+ await win.uploadPhoto(new win.File(['fixture'],'fixture.jpg',{type:'image/jpeg'}));assert.equal(win.document.getElementById('screen').dataset.view,'effects');assert.equal(win.document.querySelector('[name=recipient]'),null);win.document.getElementById('primary').click();win.document.querySelector('[data-feature="canvas"]').click();win.document.querySelector('[data-size="12x12"]').click();
+ const storage=Object.fromEntries(Object.keys(win.sessionStorage).map(k=>[k,win.sessionStorage.getItem(k)]));assert.equal(calls.some(x=>x.includes('/api/')),false);dom.window.close();
+ const restored=await boot('layoutReview=effects&pivot=1',{...project(),storage});assert.equal(restored.win.document.getElementById('screen').dataset.view,'products');assert.ok(restored.win.document.body.textContent.includes('12 × 12'));assert.equal(restored.win.document.getElementById('primary').disabled,true);restored.dom.window.close();
 });

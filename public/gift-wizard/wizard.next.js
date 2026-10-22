@@ -1,3 +1,4 @@
+import { giftCompositionEligibility } from '../product-studio/gift-composition-policy.next.js';
 import { mountStudio, familyPhoto } from '../product-studio/studio.next.js';
 import { LiveGift, purchased, canCraft } from './live.next.js';
 import { RequestSlot } from './backend-state.next.js';
@@ -32,7 +33,8 @@ function registry() { return registries[session.source?.series || fixtureSeries]
 function effects() { return liveEffects(registry()); }
 function currentArt() { return session.batches.flat().find(p => p.id === artFocus) || session.batches[batchIndex]?.[0]; }
 function favorite() { return session.batches.flat().find(p => p.id === (shoppingFavoriteId || session.favoriteId)); }
-function stage() { return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
+function stage() { if (pivotMode)
+    return view === 'photo' ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
 function go(v, record = true) { if (busy)
     return; if (live?.session?.entrance === 'collection' && ['photo', 'effects', 'review', 'focus', 'compare', 'more'].includes(v))
     v = purchased(live.session) ? 'compositions' : 'products'; if (live?.session && purchased(live.session) && ['photo', 'products', 'configuration', 'cart', 'checkout'].includes(v)) {
@@ -90,6 +92,9 @@ function confirmGiftExit(destination) {
     dialog.querySelector('#keep-creating').focus();
 }
 function render() {
+    document.body.classList.toggle('gift-pivot', pivotMode);
+    if (pivotMode)
+        rememberPivotReview();
     if (live?.session?.order.state === 'approved') {
         view = 'compositions';
         orderReviewExample = true;
@@ -128,7 +133,7 @@ function render() {
         renderPayment();
     if (serverMode)
         adaptServerView();
-    if (view === 'effects') {
+    if (view === 'effects' && !pivotMode) {
         const filters = $('filters');
         for (const id of ['back', 'new-gift'])
             if ($(id))
@@ -143,7 +148,7 @@ function render() {
     const resumeId = live?.id || params.get('sessionId') || params.get('resumeSessionId');
     cancel.dataset.href = '/gifts.next.html?newGift=1' + (resumeId ? '&resumeSessionId=' + encodeURIComponent(resumeId) : '');
     cancel.onclick = () => confirmGiftExit(cancel.dataset.href);
-    if ((view !== 'photo' || !!live?.session || !!sourceURL) && !['review', 'focus', 'compare', 'products', 'configuration'].includes(view))
+    if (!pivotMode && (view !== 'photo' || !!live?.session || !!sourceURL) && !['review', 'focus', 'compare', 'products', 'configuration'].includes(view))
         exits.append(cancel);
     if (exits.childElementCount)
         $('left').append(exits);
@@ -157,7 +162,7 @@ function renderMobileProgress() {
     const labels = Array.from(document.querySelectorAll('.progress li'), el => el.textContent || '');
     const paid = !!live?.session && purchased(live.session), restricted = !!live?.session && ['needs_attention', 'refunded', 'refund_requested', 'cancelled'].includes(live.session.order.state);
     const collection = live?.session?.entrance === 'collection';
-    const available = [!paid && !collection, !!session.source && !paid && !collection, (!!session.batches.length || generationBatch !== null) && !paid && !collection, !!favorite() && !paid, paid || !!favorite() && session.lines.length > 0, paid];
+    const available = pivotMode ? [true, !!session.source, session.effectIds.length === 1, session.effectIds.length === 1 && !!studioState.size, false, false, false] : [!paid && !collection, !!session.source && !paid && !collection, (!!session.batches.length || generationBatch !== null) && !paid && !collection, !!favorite() && !paid, paid || !!favorite() && session.lines.length > 0, paid];
     const completed = [!!session.source, !!session.batches.length, !!favorite(), session.lines.length > 0, paid, !!live?.session?.order.approvedAt];
     const current = stage(), panel = document.createElement('details');
     panel.id = 'mobile-progress';
@@ -168,7 +173,12 @@ function renderMobileProgress() {
         panel.querySelector('summary').focus();
     } };
     panel.querySelectorAll('[data-step]').forEach(b => b.onclick = () => { const i = Number(b.dataset.step); if (busy || restricted || !available[i])
-        return; panel.open = false; go(['photo', 'effects', 'review', 'products', paid ? 'payment' : 'checkout', 'compositions'][i]); });
+        return; panel.open = false; if (pivotMode) {
+        if (i === 2)
+            studioState.step = 'product';
+        go(['photo', 'effects', 'products', 'products'][i]);
+        return;
+    } go(['photo', 'effects', 'review', 'products', paid ? 'payment' : 'checkout', 'compositions'][i]); });
 }
 function adaptMobileApproval() {
     $('left').hidden = true;
@@ -236,7 +246,7 @@ function adaptMobileView() {
     renderMobileProgress();
     if (view === 'compositions')
         adaptMobileApproval();
-    if (view === 'effects') {
+    if (view === 'effects' && !pivotMode) {
         document.querySelector('[data-silo="all"]')?.remove();
         const filters = $('filters'), details = document.createElement('details'), summary = document.createElement('summary');
         details.open = mobileFiltersOpen;
@@ -259,7 +269,7 @@ function adaptMobileView() {
         }
     }
     // Approval stays in document flow after configuration and status on mobile.
-    if (['photo', 'effects', 'configuration', 'cart', 'checkout'].includes(view)) {
+    if (!pivotMode && ['photo', 'effects', 'configuration', 'cart', 'checkout'].includes(view)) {
         const slot = document.createElement('div'), bar = document.createElement('div');
         slot.className = 'mobile-action-slot';
         bar.className = 'mobile-bottom-action';
@@ -284,6 +294,10 @@ function adaptMobileView() {
     }
 }
 function renderPhoto() {
+    if (pivotMode && sourceURL) {
+        go('effects', false);
+        return;
+    }
     rail('Your<br>Photo', '<p>Let’s start with a photo and some details.</p><p>A great photo helps us create art you’ll be proud to give — and one they’ll treasure for years to come.</p>');
     $('right').innerHTML = sourceURL ? '<div class="source-holder">' + photo(sourceURL, 'Your uploaded photograph') + '</div>' + '<p>Photo uploaded.</p><p class="small">Sample analysis and artwork only. Your photo is not transformed in this preview.</p>' + secondary('change-photo', 'Change photo') : '<h2>Photo tips</h2><ul class="tips"><li>Use a clear, well-lit photo</li><li>A close-up works best</li><li>Natural lighting looks great</li><li>Avoid heavy filters</li></ul>';
     $('screen').innerHTML = '<input id="photo" type="file" accept="image/jpeg,image/png,image/webp" hidden>' + (sourceURL ? '<h2>Who is this gift for?</h2><fieldset class="radios"><legend hidden>Who is this gift for?</legend>' + recipientOptions.map(x => '<label class="radio"><input type="radio" name="recipient" value="' + esc(x) + '" ' + (session.recipient === x ? 'checked' : '') + '><span>' + x + '</span></label>').join('') + '</fieldset>' : '<h2>Upload your photo</h2><div class="upload" id="drop"><div class="upload-icon" aria-hidden="true">↑</div><p>Drag and drop your photo here<br>or</p><button id="choose-photo">Choose a Photo</button><p class="small">JPEG, PNG or WebP · up to ' + (limit / 1000000).toFixed(2) + ' MB</p></div>');
@@ -445,6 +459,10 @@ function configurationPreview(p, o, artworkReference = false) {
     return '<p role="status">Not currently available</p>';
 }
 function renderProducts() {
+    if (pivotMode) {
+        renderPivotProducts();
+        return;
+    }
     rail('Choose<br>Your Gift', '<p>Bring your art to life in a format that fits your space and style.</p>');
     if (view === 'configuration') {
         studioState = { ...studioState, step: 'review', productId: activeProduct || products.find(p => p.available).id, size, copies };
@@ -513,7 +531,84 @@ function renderCart() {
     $('right').innerHTML = (session.lines.length ? '<div data-order-summary><h2>Order summary</h2><p>Product subtotal<br>' + money(productSubtotal(session, products)) + '</p><p class="small">Shipping and tax calculated before payment.</p></div>' : '');
     primary('Next: Checkout', () => go('checkout'), !session.lines.length || !cartPreviewsReady());
 }
+// Isolated review adapter for the approved migration-059 screens. No generation API is invented.
+let pivotRestored = false;
+function rememberPivotReview() { if (!pivotRestored)
+    return; try {
+    sessionStorage.setItem(pivotKey, JSON.stringify({ view, effectIds: session.effectIds, studioState }));
+}
+catch { } }
+function restorePivotReview() {
+    document.querySelector('.progress').innerHTML = ['Upload Photo', 'Choose One Effect', 'Choose Gift', 'Gift Details', 'Personalized Review', 'Approve Composition', 'Checkout'].map(x => '<li>' + x + '</li>').join('');
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(pivotKey) || 'null');
+        if (!saved)
+            return;
+        const id = saved.effectIds?.[0];
+        session.effectIds = effects().some(e => e.id === id) ? [id] : [];
+        effectFocus = session.effectIds[0] || '';
+        if (['photo', 'effects', 'products'].includes(saved.view))
+            view = saved.view;
+        if (saved.studioState && products.some(p => p.id === saved.studioState.productId)) {
+            const old = saved.studioState;
+            studioState = { step: ['product', 'size', 'options', 'review'].includes(old.step) ? old.step : 'product', productId: old.productId, size: typeof old.size === 'string' ? old.size : '', copies: 1, drafts: {} };
+        }
+    }
+    catch { }
+}
+function pivotRail(title) {
+    rail(title, '');
+    $('left').querySelector('.eyebrow')?.remove();
+    $('left').querySelector('.rule')?.remove();
+    $('left').querySelector('.tagline')?.remove();
+    const start = document.createElement('button');
+    start.id = 'pivot-start';
+    start.textContent = 'Start Over';
+    start.onclick = () => { try {
+        sessionStorage.removeItem(pivotKey);
+    }
+    catch { } session.effectIds = []; studioState = { step: 'product', productId: '', size: '', copies: 1, drafts: {} }; sourceURL = ''; history = []; go('photo', false); };
+    $('left').insertBefore(start, $('back'));
+}
+function renderPivotEffects() {
+    pivotRail('Choose<br>an Effect');
+    const all = effects(), silos = registry().silos.filter(x => all.some(e => e.category === x.id));
+    if (!effectFocus || !all.some(e => e.id === effectFocus))
+        effectFocus = session.effectIds[0] || all[0]?.id || '';
+    if (silo === 'all' || !silos.some(x => x.id === silo))
+        silo = silos[0]?.id || '';
+    const focused = all.find(e => e.id === effectFocus);
+    if (!focused)
+        return;
+    $('filters').innerHTML = '<h2>' + esc(fixtureSeries === 'groups' ? 'Groups' : fixtureSeries === 'pets' ? 'Pets' : 'Portraits') + '</h2><div class="filters">' + silos.map(x => '<button data-silo="' + x.id + '" aria-pressed="' + (silo === x.id) + '">' + esc(x.label) + '</button>').join('') + '</div>';
+    $('screen').innerHTML = '<div class="palette"><div class="grid">' + all.filter(e => e.category === silo).map(e => '<button class="tile" data-effect="' + e.id + '" aria-pressed="' + (effectFocus === e.id) + '">' + photo(thumb(e.id), e.label) + '<span>' + esc(e.label) + '</span></button>').join('') + '</div></div>';
+    $('right').innerHTML = '<h2>' + esc(focused.label) + '</h2>' + photo(thumb(focused.id), focused.label, 'context-image');
+    document.querySelectorAll('[data-silo]').forEach(b => b.onclick = () => { silo = b.dataset.silo; render(); });
+    document.querySelectorAll('[data-effect]').forEach(b => b.onclick = () => { effectFocus = b.dataset.effect; session.effectIds = [effectFocus]; render(); });
+    primary('Choose This Effect', () => { session.effectIds = [effectFocus]; studioState.step = 'product'; go('products'); });
+}
+function renderPivotProducts() {
+    pivotRail(studioState.step === 'product' ? 'Choose<br>your Gift' : 'Choose<br>your Size');
+    $('right').innerHTML = '';
+    $('back').hidden = true;
+    const choices = products.map(p => ({ ...p, image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => giftCompositionEligibility(p, o, pivotSubjectCount).allowed) }));
+    mountStudio($('screen'), { products: choices, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
+        previewHtml: p => photo(p.image, p.label), canAdd: () => false, onAdd: () => { }, addLabel: 'Craft',
+        onChange: s => { studioState = s; rememberPivotReview(); $('left').querySelector('h1').innerHTML = s.step === 'product' ? 'Choose<br>your Gift' : 'Choose<br>your Size'; document.body.dataset.pivotStep = s.step; document.querySelectorAll('.progress li').forEach((el, i) => { if (i === stage())
+            el.setAttribute('aria-current', 'step');
+        else
+            el.removeAttribute('aria-current'); }); if (mobileLayout.matches) {
+            $('mobile-progress')?.remove();
+            renderMobileProgress();
+        } },
+        onExit: () => go('effects'), utilityHtml: '<p class="small">' + (pivotSubjectCount >= 2 ? 'Landscape: unavailable manufacturing SKU' : '') + '</p>' });
+    document.body.dataset.pivotStep = studioState.step;
+}
 function renderEffects() {
+    if (pivotMode) {
+        renderPivotEffects();
+        return;
+    }
     rail('Choose<br>an Effect', "<p>Choose up to six effects. We'll complete your set.</p>");
     const all = effects();
     const availableSilos = registry().silos.filter(s => all.some(e => e.category === s.id));
@@ -870,6 +965,9 @@ function renderCheckout() {
 const layoutViews = ['photo', 'products', 'configuration', 'cart', 'checkout', 'payment-loading', 'payment-pending', 'payment-failed', 'payment-verified', 'auth', 'restoring', 'restore-failed', 'effects', 'gallery', 'gallery-second', 'approval', 'approval-second', 'approval-final', 'approval-loading', 'approval-failed'];
 const layoutName = params.get('layoutReview') || '';
 const layoutReview = layoutViews.some(v => v === layoutName);
+const pivotMode = layoutReview && params.get('pivot') === '1';
+const pivotSubjectCount = Number(params.get('subjects') || '1');
+const pivotKey = 'gift-pivot-review:' + fixtureSeries + ':' + pivotSubjectCount;
 let disclosureAccepted = false, paymentState = 'blocked';
 const restoration = new RequestSlot();
 const serverMode = !layoutReview && params.get('fixture') !== '1';
@@ -1166,6 +1264,10 @@ async function start() {
             registries[series] = window.EFFECT_REGISTRY;
         }
         initializeLayoutReview();
+        if (pivotMode) {
+            restorePivotReview();
+            pivotRestored = true;
+        }
         render();
         if (serverMode) {
             view = 'payment';
