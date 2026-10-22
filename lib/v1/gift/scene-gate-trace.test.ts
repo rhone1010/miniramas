@@ -9,7 +9,7 @@ import os from 'node:os'
 import path from 'node:path'
 
 const ROOT = process.cwd(), cfg = createRequire(path.join(ROOT, 'package.json'))('./next.config.js')
-const ROUTES = ['/api/v1/gift/sessions/*/lines', '/api/v1/gift/sessions/*/checkout']
+const ROUTES = ['/api/v1/gift/sessions/*/lines', '/api/v1/gift/sessions/*/checkout', '/api/v1/gift/sessions/*/availability']
 const expand = (g: string): string[] => { const p = g.replace(/^\.\//, ''); if (!p.includes('*')) return [p]; const [pre, post] = p.split('*'); return fs.readdirSync(path.join(ROOT, pre)).map(d => pre + d + post).filter(f => fs.existsSync(path.join(ROOT, f))) }
 const files = [...new Set((cfg.outputFileTracingIncludes[ROUTES[0]] as string[]).flatMap(expand))]
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-trace-'))
@@ -17,7 +17,7 @@ afterAll(() => { try { fs.rmdirSync(path.join(tmp, 'node_modules')) } catch { /*
 
 describe('the add-to-cart and checkout functions carry what the sale gate needs', () => {
   it('both routes list the same files, none missing from disk, and no picture among them', () => {
-    expect(cfg.outputFileTracingIncludes[ROUTES[1]]).toEqual(cfg.outputFileTracingIncludes[ROUTES[0]])
+    for (const r of ROUTES.slice(1)) expect(cfg.outputFileTracingIncludes[r]).toEqual(cfg.outputFileTracingIncludes[ROUTES[0]])
     for (const f of files) expect(fs.existsSync(path.join(ROOT, f)), f).toBe(true)
     expect(files.some(f => /\.(png|jpe?g|webp)$/i.test(f))).toBe(false)
     expect(files.length).toBeLessThan(40)

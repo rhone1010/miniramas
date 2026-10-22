@@ -11,7 +11,7 @@
 
 import { createHash } from 'node:crypto'
 import { SKU_MAP, LAUNCH_FAMILIES, GIFT_PRODUCT_FAMILIES, type PrintFinish, type PrintSize, type SkuEntry } from './sku-map'
-import { GIFT_ENABLED_FAMILIES, GIFT_MOCKUP_READY, GIFT_PRODUCT_HOLDS } from './gift-enablement'
+import { GIFT_ENABLED_FAMILIES, GIFT_PRODUCT_HOLDS } from './gift-enablement'
 import { CARD, MUG, PRODUCTION_SPECS } from './production-profiles'
 import { aspectCompatibility } from './geometry'
 import {
@@ -80,7 +80,6 @@ function giftState(family: ProductFamily, productId: string, e: SkuEntry): Disab
   if (hold) return { status: 'disabled', reason: hold }
   if (e.retailApproved === false) return { status: 'disabled', reason: 'retail_price_pending' }
   if (!GIFT_ENABLED_FAMILIES.includes(family)) return { status: 'disabled', reason: 'not_launched' }
-  if (!GIFT_MOCKUP_READY.includes(family)) return { status: 'disabled', reason: 'mockup_template_pending' }
   return LAUNCH
 }
 

@@ -53,7 +53,8 @@ export function checkLaunchEnv(env: Record<string, string | undefined>, target: 
   else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(env.SUPPORT_TO_EMAIL!)) add('SUPPORT_TO_EMAIL', 'error', 'not an email address')
 
   // Gift behavior flags
-  if (env.GIFT_REQUIRE_APPROVED_SCENE === '0') add('GIFT_REQUIRE_APPROVED_SCENE', 'error', "'0' switches OFF the approved-scene payment gate: unsupported configurations could be paid for; remove it")
+  if (env.GIFT_REQUIRE_APPROVED_SCENE === '1') add('GIFT_REQUIRE_APPROVED_SCENE', 'warn', "'1' is the optional strict mode: products without an approved scene (framed, premium and canvas portraits) are refused at the cart and at checkout; the default is purchase by eligibility with an artwork-only preview")
+  if (env.GIFT_NO_SCENE_PRESENTATION === 'calibrated') add('GIFT_NO_SCENE_PRESENTATION', 'error', "'calibrated' restores the retired template renderer for products without a scene (physically inaccurate); remove it so they are shown as the exact product-shaped artwork")
   if (env.GIFT_SCENE_MOCKUPS === '0') add('GIFT_SCENE_MOCKUPS', 'error', "'0' is the scene kill switch: no product could be shown or approved; remove it")
   if (has(env.GIFT_MOCKUP_TOOLS_DIR)) add('GIFT_MOCKUP_TOOLS_DIR', 'error', 'a test-only override of the scene files; must be unset')
   if (env.GIFT_COMPOSITIONS_BEFORE_PAYMENT === '1') add('GIFT_COMPOSITIONS_BEFORE_PAYMENT', 'warn', "'1' composes before payment (an optional draft flow); the approved journey composes after checkout")

@@ -97,9 +97,10 @@ describe('after it starts, it is the shared Product Studio flow', () => {
     await r.store.linkOrder(sid, U1, orderId, 'v1'); await r.store.confirmOrder({ sessionId: sid, orderId, userId: U1, stripeSessionId: cs, paymentIntent: 'pi_1', lines: purchasedLines(LINES) })
     return { sid, orderId }
   }
-  it('product selection obeys the sale gate, generation is closed, and the owned artwork is the favorite for the whole journey', async () => {
+  it('product selection is by eligibility only (no photograph needed), generation is closed, and the owned artwork is the favorite for the whole journey', async () => {
     const r = await rig(); const sid = (await createSessionFromCollection(r.deps, { userId: U1, previewId: OWNED })).view.sessionId
-    for (const id of ['framed:12x18', 'premium:12x18', 'canvas:12x18']) await expect(setLines(r.deps, U1, sid, [{ lineId: 'x', productId: id, copies: 1 }]), id).rejects.toMatchObject({ code: 'product_not_available' })
+    for (const id of ['framed:12x18', 'premium:12x18', 'canvas:12x18']) expect((await setLines(r.deps, U1, sid, [{ lineId: 'x', productId: id, copies: 1 }])).geometries[0].productId, id).toBe(id)
+    await expect(setLines(r.deps, U1, sid, [{ lineId: 'x', productId: 'mug:11oz', copies: 1 }])).rejects.toMatchObject({ code: 'product_not_available' })
     expect((await setLines(r.deps, U1, sid, LINES)).geometries.map(g => g.productId)).toEqual(['fine_art:8x8', 'canvas:12x12'])
     await expect(startBatch(r.deps, U1, sid, { idempotencyKey: 'idem-key-new' })).rejects.toMatchObject({ code: 'collection_session_no_generation' })
     await expect(retryBatch(r.deps, U1, sid, 1)).rejects.toMatchObject({ code: 'collection_session_no_generation' }); expect(r.generate).not.toHaveBeenCalled()

@@ -344,7 +344,13 @@ export interface MockupView {
   /** Crop and calibration metadata from the compositor (never a browser crop control). */
   crop: Record<string, unknown> | null
   /** Which renderer made the picture: the photographic customer scene, or the calibrated template renderer (the fallback for configurations no scene shows). Additive: older clients ignore it. */
-  renderer?: 'scene' | 'calibrated'
+  renderer?: 'scene' | 'artwork' | 'calibrated'
+  /** What this picture IS (see PreviewRepresentation): a photograph of the product with the artwork in it, or the artwork exactly as printed in the product's shape with a disclosure. Additive. */
+  representation?: PreviewRepresentation['representation']
+  physicalProductShown?: boolean
+  previewBasis?: PreviewRepresentation['previewBasis']
+  disclosureCode?: PreviewRepresentation['disclosureCode']
+  disclosure?: string | null
   /** Present when renderer is 'scene': the scene, its renderer revision and how the scene-compatible picture relates to the production picture. Never a URL or a file. */
   scene?: { sceneId: string; revision: string; fit: 'exact' | 'resample'; representationId: string } | null
   /** When renderer is 'calibrated' because no approved scene fits: why, with the measured numbers (null when a scene was used or no scene renderer ran). */
@@ -397,13 +403,26 @@ export interface RestoreResponse {
  * Errors (non-200): 404 session_not_found; 409 artwork_not_selected (choose a favorite first), order_refunded, refund_pending; 502 mockup_failed; 503 mockup_renderer_unavailable.
  * Never a composition, a production file, an approval, a correction or an authorization to buy; no clean (unwatermarked) image is ever returned.
  */
+/**
+ * What a preview IS, in data. 'scene': a photograph of the product with the customer's artwork in it (physicalProductShown true). 'artwork_only': where no photograph truthfully shows this exact
+ * configuration, the customer's artwork exactly as it will be printed, in the product's shape, with NO product imagery (physicalProductShown false); it carries disclosureCode
+ * 'artwork_only_preview' and a default English disclosure the client may replace with its own copy. Both are valid bases for informed approval; neither authorizes a purchase or is a production file.
+ */
+export interface PreviewRepresentation {
+  representation: 'scene' | 'artwork_only' | 'calibrated_template'
+  physicalProductShown: boolean
+  previewBasis: 'in_situ_mockup' | 'product_shaped_artwork'
+  disclosureCode: 'artwork_only_preview' | null
+  disclosure: string | null
+}
 export type ProductPreviewView =
   | {
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'ready'; sessionId: string; productId: string; sku: string; favoriteId: string
-      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'exact' | 'resample'; sceneRefusal?: SceneRefusalView | null
+      /** 'scene': a photograph of the product with the artwork in it. 'artwork': the artwork exactly as printed, in the product's shape, no product imagery (see PreviewRepresentation). 'calibrated': legacy, off by default. */
+      renderer: 'scene' | 'artwork' | 'calibrated'; sceneId: string | null; fit: 'exact' | 'resample'; sceneRefusal?: SceneRefusalView | null
       url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
       watermarked: true; productionPrintFile: false; purchaseAuthorization: false
-    }
+    } & PreviewRepresentation
   | {
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'adaptation_required'; reason: 'shape_needs_composition'; sessionId: string; productId: string; sku: string; favoriteId: string
       /** width / height of the favorite, of the product's picture, and how far apart they are (0.05 = 5%). */
@@ -414,10 +433,11 @@ export type ProductPreviewView =
   | {
       /** Only with ?provisional=1, in place of adaptation_required. The whole favorite inside the product on a neutral surround; NOT the final picture (see provisional.finalComposition). */
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'provisional'; sessionId: string; productId: string; sku: string; favoriteId: string
-      renderer: 'scene' | 'calibrated'; sceneId: string | null; fit: 'contain'; sceneRefusal?: SceneRefusalView | null
+      renderer: 'scene' | 'artwork' | 'calibrated'; sceneId: string | null; fit: 'contain'; sceneRefusal?: SceneRefusalView | null
       url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
       watermarked: true; productionPrintFile: false; purchaseAuthorization: false
       provisional: {
+        representation: PreviewRepresentation['representation']; physicalProductShown: boolean; previewBasis: PreviewRepresentation['previewBasis']; disclosureCode: PreviewRepresentation['disclosureCode']; disclosure: string | null
         exactArtworkShown: true; cropped: false; distorted: false; surround: 'neutral'
         /** Where the neutral surround is and how much of the picture's height (top_bottom) or width (left_right) each side takes (0.17 = 17%). */
         bars: { sides: 'top_bottom' | 'left_right'; fractionPerSide: number }
