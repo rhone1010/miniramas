@@ -436,3 +436,5 @@ body.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product
 
 /* Match My Collection action-control radius; image tiles remain square. */
 body #workspace button:not(.tile):not([data-feature]),body #cancel-gift-dialog button,body #mobile-step-menu button{border-radius:8px;clip-path:none}
+body #workspace .tile,body #workspace .product,body #workspace .studio-products button,body #workspace .product-guidance,body #workspace .artwork-actions{border-radius:5px}
+body #workspace #screen .tile img,body #workspace .studio-products img{border-radius:5px}
