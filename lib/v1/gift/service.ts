@@ -14,10 +14,11 @@ import { draftOrderLines, resolveFrozenProduct } from './frozen'
 import { decodeSource } from '../foyer/foyer-source'
 import { approvedSceneFor, requireApprovedScene } from './presentation'
 import { realSceneRenderer } from './mockup-real'
-import { COMPOSITION_MAX_ATTEMPTS, adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE } from './policy'
+import { COMPOSITION_MAX_ATTEMPTS, adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE, FREE_GENERATIONS, GENERATIONS_PER_PACK, GENERATION_MAX_ATTEMPTS, MAX_INFLIGHT_GENERATIONS, newSessionFlow } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
+import type { GenerationAllowance, GenerationRec } from './generation-store'
 import { StoreError, byNewest, correctionUsed, finalizedAt, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
-import { GIFT_CONTRACT_VERSION, type CompositionView, type BatchGeneration, type RestoreResponse, type RestoreStep, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView, type SubjectGender } from './types'
+import { GIFT_CONTRACT_VERSION, type CompositionView, type BatchGeneration, type RestoreResponse, type RestoreStep, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView, type SubjectGender, type GenerationView, type GenerationsView } from './types'
 
 export type GiftErrorCode =
   | 'image_b64_required' | 'image_too_large' | 'image_not_base64' | 'image_unreadable'
@@ -35,6 +36,7 @@ export type GiftErrorCode =
   | 'disclosure_version_required' | 'disclosure_version_mismatch' | 'rate_limited'
   | 'geometry_snapshot_invalid' | 'geometry_snapshot_unavailable' | 'stale_composition' | 'mockup_failed' | 'mockup_renderer_unavailable' | 'mockup_configuration_mismatch'
   | 'composition_failed' | 'composition_geometry_mismatch' | 'repair_claim_lost' | 'repair_not_consistent' | 'composition_not_found' | 'order_has_no_lines' | 'order_not_found' | 'order_not_payable' | 'session_already_has_order'
+  | 'generations_unavailable' | 'effect_not_chosen' | 'effect_fixed' | 'flow_not_generations' | 'legacy_batches_closed' | 'generation_in_progress' | 'generation_not_found' | 'generation_not_ready' | 'product_aspect_unsupported'
   | 'order_session_mismatch' | 'invalid_refund_request' | 'payment_not_confirmed' | 'session_retained'
 const STATUS: Partial<Record<GiftErrorCode, number>> = {
   image_b64_required: 400, image_too_large: 400, image_not_base64: 400, image_unreadable: 400, age_restricted: 403, unsupported_subject: 422, analysis_unavailable: 503,
@@ -46,6 +48,7 @@ const STATUS: Partial<Record<GiftErrorCode, number>> = {
   compositions_not_approved: 409, artwork_not_selected: 409, refund_not_available_after_manufacturing: 409, order_not_paid: 409, line_not_found: 404,
   composition_failed: 502, composition_geometry_mismatch: 409, repair_claim_lost: 409, repair_not_consistent: 409, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
   order_session_mismatch: 409, invalid_refund_request: 400, payment_not_confirmed: 409, session_retained: 409,
+  generations_unavailable: 503, effect_not_chosen: 409, effect_fixed: 409, flow_not_generations: 409, legacy_batches_closed: 409, generation_in_progress: 429, generation_not_found: 404, generation_not_ready: 409, product_aspect_unsupported: 409,
   disclosure_version_required: 400, disclosure_version_mismatch: 409, rate_limited: 429,
   geometry_snapshot_invalid: 409, geometry_snapshot_unavailable: 409, stale_composition: 409, mockup_failed: 502, mockup_renderer_unavailable: 503, mockup_configuration_mismatch: 409,
 }
@@ -87,7 +90,7 @@ export interface GiftDeps {
   /** Existing classifier, face/age check and (Groups) people count; see real.ts. */
   analyze(input: { b64: string; bytes: Buffer }): Promise<SourceAnalysis>
   /** ONE NB2.1 render of the selected effect through the existing series generate route; returns the CLEAN master. */
-  generate(input: { series: Series; sourceB64: string; effectId: string; aspect: string; userId: string; peopleCount: number | null; productComposition?: boolean; referenceB64?: string }): Promise<{ imageB64: string; generation?: import('./types').GenerationRecord }>
+  generate(input: { series: Series; sourceB64: string; effectId: string; aspect: string; userId: string; peopleCount: number | null; productComposition?: boolean; exactAspect?: boolean; referenceB64?: string }): Promise<{ imageB64: string; generation?: import('./types').GenerationRecord }>
   /** Baked-watermark customer preview (JPEG) from the clean master. Must fail rather than return an unmarked image. */
   watermark(masterB64: string): Promise<Buffer>
   /** One product composition of the selected master: background extension only, never a crop (compose.ts). */
@@ -150,8 +153,9 @@ export async function createSession(deps: GiftDeps, input: { userId: string; ima
     created_at: iso(t), last_activity_at: iso(t), expires_at: iso(t + RETENTION.sessionIdleDays * DAY), pinned_at: null,
     order_id: null, free_batches_granted: 0, artwork_preview_id: null, approved_at: null, final_approved_at: null, refund_requested_at: null, refunded_at: null,
     unlock_portfolio_id: null, disclosure_version: null, disclosure_accepted_at: null,
+    ...(newSessionFlow() === 'generations' ? { flow: 'generations' as const } : {}),
   }
-  try { await deps.store.createSession(rec) } catch (e) { await deps.storage.remove([path]).catch(() => {}); throw e }
+  try { await deps.store.createSession(rec) } catch (e) { await deps.storage.remove([path]).catch(() => {}); fromStoreError(e) }
   return buildView(deps, rec)
 }
 
@@ -272,6 +276,7 @@ export async function startBatch(deps: GiftDeps, userId: string, sessionId: stri
   const batches = await deps.store.listBatches(rec.id)
   const repeat = batches.find(b => b.batch.idempotency_key === req.idempotencyKey)
   if (rec.collection_preview_id) throw new GiftError('collection_session_no_generation')           // an owned artwork has nothing to generate
+  if (rec.flow === 'generations') throw new GiftError('legacy_batches_closed')                       // the product-first journey has no six-preview batches
   if (!repeat && finalizedAt(rec)) throw new GiftError('order_not_awaiting_artwork')       // final approval is recorded: no new generation (a repeat of an earlier request still answers)
   let batchRec: BatchRec
   if (repeat) {
@@ -352,8 +357,50 @@ export async function getBatchView(deps: GiftDeps, userId: string, sessionId: st
 
 // ── views ───────────────────────────────────────────────────────────────
 
+async function generationsViewOf(deps: GiftDeps, rec: SessionRec, allRaw: Array<{ batch: BatchRec; previews: PreviewRec[] }>, expired: boolean, order: { status: string } | null): Promise<GenerationsView | null> {
+  if (rec.flow !== 'generations' && !rec.collection_preview_id) return null
+  let items: GenerationRec[] = [], allowance: GenerationAllowance = { freeUsed: 0, freeAvailable: true, reason: null, paidUnits: 0 }
+  try { items = await deps.store.listGenerations(rec.id); allowance = await deps.store.generationAllowance(rec.id, rec.user_id) }
+  catch (e) { if (!(e instanceof StoreError && e.code === 'generations_unavailable')) throw e; if (rec.flow === 'generations') throw e; return null }          // 059 not applied: a collection session simply has no generations yet
+  const anchor = rec.artwork_preview_id ? allRaw.flatMap(b => b.previews).find(p => p.id === rec.artwork_preview_id) ?? null : null
+  const clock = now(deps)
+  const live = (g: GenerationRec) => g.status === 'pending' || (g.status === 'generating' && !!g.lease_until && Date.parse(g.lease_until) > clock)
+  const inFlight = items.filter(live).length
+  let blockedReason: GenerationsView['allowance']['blockedReason'] = null
+  if (expired) blockedReason = 'session_expired'
+  else if (rec.refunded_at) blockedReason = 'order_refunded'
+  else if (rec.refund_requested_at) blockedReason = 'refund_pending'
+  else if (order && !['created', 'awaiting_artwork', 'cancelled'].includes(order.status)) blockedReason = 'order_not_awaiting_artwork'
+  else if (!anchor) blockedReason = 'effect_not_chosen'
+  else if (inFlight >= MAX_INFLIGHT_GENERATIONS) blockedReason = 'generation_in_progress'
+  const next: GenerationsView['allowance']['next'] = blockedReason ? 'blocked' : allowance.freeAvailable ? 'free' : allowance.paidUnits > 0 ? 'paid' : 'payment_required'
+  const views: GenerationView[] = []
+  for (const g of items) views.push(await generationViewOf(deps, g, clock))
+  return {
+    effectId: anchor?.effect_id ?? null, anchorPreviewId: anchor?.id ?? null, items: views,
+    allowance: { freeTotal: FREE_GENERATIONS.perSession, freeUsed: allowance.freeUsed, freeRemaining: Math.max(0, FREE_GENERATIONS.perSession - allowance.freeUsed), freeAvailable: allowance.freeAvailable, freeBlockedReason: allowance.reason, paidUnits: allowance.paidUnits,
+      next, blockedReason, packPriceCents: PACK_PRICE_CENTS as 299, generationsPerPack: GENERATIONS_PER_PACK, currency: 'USD' },
+    inFlight, maxInFlight: MAX_INFLIGHT_GENERATIONS,
+  }
+}
+
+export async function generationViewOf(deps: GiftDeps, g: GenerationRec, clock: number = now(deps)): Promise<GenerationView> {
+  const ready = g.status === 'ready'
+  const conform = (g.generation as { conform?: { method?: string; trimFraction?: number } } | null)?.conform
+  const q = g.generation as { quality?: 'passed' | 'below_bar' | 'unscored'; attempts?: number } | null
+  return {
+    generationId: g.id, status: g.status === 'generating' && (!g.lease_until || Date.parse(g.lease_until) < clock) ? 'pending' : g.status, productId: g.product_id, geometryKey: g.geometry_key,
+    width: ready ? g.width : null, height: ready ? g.height : null, url: ready && g.preview_path ? await deps.storage.signedUrl(g.preview_path, 3600) : null,
+    kind: g.kind, accepted: !!g.accepted_at, acceptedAt: g.accepted_at, sha256: ready ? g.sha256 : null,
+    quality: ready && q?.quality ? { status: q.quality, attempts: q.attempts ?? 1 } : null,
+    conform: ready && conform ? { method: conform.method === 'trim' ? 'trim' : 'native', trimFraction: Number(conform.trimFraction ?? 0) } : null,
+    retryable: g.status === 'failed' && g.attempts < GENERATION_MAX_ATTEMPTS, createdAt: g.created_at,
+  }
+}
+
 async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> {
-  const all = await deps.store.listBatches(rec.id)
+  const allRaw = await deps.store.listBatches(rec.id)
+  const all = allRaw.filter(b => b.batch.kind !== 'generation')          // the generation anchor is internal: the view exposes it as generations.anchorPreviewId
   const packs = await deps.store.paidPackCount(rec.user_id)
   const order = rec.order_id ? await deps.store.getOrder(rec.order_id) : null
   const comps = await deps.store.listCompositions(rec.id)         // drafts (reviewed before payment) have compositions too
@@ -400,6 +447,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   let nextBatch: NextBatch
   if (expired) nextBatch = { kind: 'blocked', reason: 'session_expired' }
   else if (rec.collection_preview_id) nextBatch = { kind: 'blocked', reason: 'collection_session' }
+  else if (rec.flow === 'generations') nextBatch = { kind: 'blocked', reason: 'generations_flow' }
   else if (rec.refunded_at) nextBatch = { kind: 'blocked', reason: 'order_refunded' }
   else if (rec.refund_requested_at) nextBatch = { kind: 'blocked', reason: 'refund_pending' }
   else if (order && !['created', 'awaiting_artwork', 'cancelled'].includes(order.status)) nextBatch = { kind: 'blocked', reason: 'order_not_awaiting_artwork' }     // generation needs no purchase, but ends at approval
@@ -409,7 +457,8 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   else if (packs > 0) nextBatch = { kind: 'paid', packAvailable: true }
   else nextBatch = { kind: 'payment_required', amountCents: PACK_PRICE_CENTS as 299, currency: 'USD' }
   return {
-    contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id,
+    contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id, flow: rec.flow === 'generations' ? 'generations' : 'previews',
+    generations: await generationsViewOf(deps, rec, allRaw, expired, order),
     source: { sourceRef: rec.id, width: rec.source_width, height: rec.source_height, series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, subjectGender: genderFor(rec.series!, rec.analysis.subjectGender), photoUrl: rec.source_path ? await deps.storage.signedUrl(rec.source_path, 3600) : null },
     lines: rec.lines, geometries, masterAspect: rec.master_aspect ?? '', batches, usedEffectIds: used,
     entitlement: { freeBatchesTotal: FREE_BATCHES, freeBatchesUsed: free.used, paidPacksAvailable: packs, freeAvailable: rec.collection_preview_id ? false : free.available, freeBlockedReason: rec.collection_preview_id ? 'session_limit' : free.reason },          // 'session_limit' is an existing value, so older readers still validate: this session takes no free batch

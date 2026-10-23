@@ -70,7 +70,7 @@ export async function analyzeSource({ b64 }: { b64: string; bytes: Buffer }): Pr
   }
 }
 
-export interface GenerateInput { series: 'portraits' | 'pets' | 'groups'; sourceB64: string; effectId: string; aspect: string; peopleCount: number | null; productComposition?: boolean; referenceB64?: string }
+export interface GenerateInput { series: 'portraits' | 'pets' | 'groups'; sourceB64: string; effectId: string; aspect: string; peopleCount: number | null; productComposition?: boolean; exactAspect?: boolean; referenceB64?: string }
 
 /** The request body for the series' generate route. Pure, so tests pin exactly what is sent. */
 export function generateBody(i: GenerateInput, groupsReference: boolean = GROUPS_FAVORITE_REFERENCE_ENABLED): Record<string, unknown> {
@@ -79,15 +79,15 @@ export function generateBody(i: GenerateInput, groupsReference: boolean = GROUPS
   return i.series === 'groups'
     ? { source_image_b64: i.sourceB64, effect_id: i.effectId, format: i.aspect, ...(i.peopleCount ? { subject_count: i.peopleCount } : {}),
         // INITIAL previews only: no Stability margin outpaint (the stored original is what the model returned) and a lower cap on NB2 attempts. Compositions are unchanged.
-        ...(i.productComposition ? {} : { skip_outpaint: true, max_attempts: INITIAL_PREVIEW_MAX_ATTEMPTS }),
+        ...(i.productComposition && !i.exactAspect ? {} : { skip_outpaint: true, max_attempts: INITIAL_PREVIEW_MAX_ATTEMPTS }),
         ...(groupsReference && i.productComposition ? { product_composition: true } : {}),
         ...(groupsReference && i.referenceB64 ? { favorite_reference_b64: i.referenceB64, adaptation: 'favorite' as const } : {}) }
     : i.series === 'pets'
-      ? { source_image_b64: i.sourceB64, style_id: 'realistic', preset_id: i.effectId, action_id: 'as_photographed', aspect_ratio: i.aspect, scale: 'close_up', ...(i.productComposition ? {} : { skip_outpaint: true }), ...ref }
+      ? { source_image_b64: i.sourceB64, style_id: 'realistic', preset_id: i.effectId, action_id: 'as_photographed', aspect_ratio: i.aspect, scale: 'close_up', ...(i.productComposition && !i.exactAspect ? {} : { skip_outpaint: true }), ...ref }
       : { source_image_b64: i.sourceB64, style_id: styleIdForPreset(i.effectId), preset_id: i.effectId, skip_redirect: true, framing: 'bust', scale: 'close_up',
           // Preview batches send none of this and keep the framing-derived square. A product composition names its ratio (the route
           // admits the extra ratios only from this internal call).
-          ...(i.productComposition ? { output_aspect_ratio: i.aspect, product_composition: true } : {}), ...ref }
+          ...(i.productComposition || i.exactAspect ? { output_aspect_ratio: i.aspect, product_composition: true } : {}), ...ref }
 }
 
 /**

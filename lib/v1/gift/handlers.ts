@@ -14,6 +14,7 @@ import { requestRefund, type ConciergePort } from './refund'
 import { getLineMockup } from './mockup'
 import { getProductPreview } from './product-preview'
 import { getProductAvailability } from './availability'
+import { acceptGeneration, chooseEffect, getGeneration, listGenerations, startGeneration } from './generations'
 
 const NO_STORE = { 'Cache-Control': 'no-store' }
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: NO_STORE })
@@ -131,4 +132,26 @@ export async function productPreviewH(req: Request, user: Authed, deps: GiftDeps
 }
 export async function mockupH(req: Request, user: Authed, deps: GiftDeps, id: string, lineId: string) {
   try { return json(await getLineMockup(deps, user.id, id, lineId, new URL(req.url).searchParams.get('compositionId') ?? undefined)) } catch (e) { return fail(e) }
+}
+
+// ── product-first generations (migration 059). Contract: lib/v1/gift/types.ts (GenerationView, GenerationsView) and docs/GOVERNANCE/GIFT-GENERATION-CONTRACT-*.md ──
+/** POST /api/v1/gift/sessions/{id}/effect { effectId } -> SessionView. Chooses (or changes) the ONE effect. */
+export async function chooseEffectH(req: Request, user: Authed, deps: GiftDeps, id: string) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try { return json(await chooseEffect(deps, user.id, id, b.effectId)) } catch (e) { return fail(e) }
+}
+/** POST /api/v1/gift/sessions/{id}/generations { productId, idempotencyKey, mode? } -> 200 { status:'ok' } when delivered, 202 { status:'partial' } while in progress (poll or repeat the same key). */
+export async function startGenerationH(req: Request, user: Authed, deps: GiftDeps, id: string) {
+  const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
+  try { const out = await startGeneration(deps, user.id, id, { productId: b.productId, idempotencyKey: b.idempotencyKey, mode: b.mode }); return json(out, out.status === 'ok' ? 200 : 202) } catch (e) { return fail(e) }
+}
+export async function listGenerationsH(user: Authed, deps: GiftDeps, id: string) {
+  try { return json(await listGenerations(deps, user.id, id)) } catch (e) { return fail(e) }
+}
+export async function getGenerationH(user: Authed, deps: GiftDeps, id: string, gid: string) {
+  try { return json(await getGeneration(deps, user.id, id, gid)) } catch (e) { return fail(e) }
+}
+/** POST /api/v1/gift/sessions/{id}/generations/{gid}/accept -> { generation, session }. Accepting is the pre-checkout approval of that exact picture. */
+export async function acceptGenerationH(user: Authed, deps: GiftDeps, id: string, gid: string) {
+  try { return json(await acceptGeneration(deps, user.id, id, gid)) } catch (e) { return fail(e) }
 }

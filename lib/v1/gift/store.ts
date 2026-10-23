@@ -8,6 +8,7 @@
 import { randomUUID } from 'node:crypto'
 import { FREE_PREVIEWS, SESSION_ATTEMPTS, type FreeBlockReason } from './policy'
 import type { BatchKind, GenerationRecord, GiftLine, PreviewStatus, Series } from './types'
+import { memoryGenerationStore, supabaseGenerationStore, type GenerationStore } from './generation-store'
 
 export interface SessionRec {
   id: string; user_id: string; status: 'active' | 'expired' | 'deleted'
@@ -21,6 +22,8 @@ export interface SessionRec {
   final_approved_at?: string | null
   /** 057: the owned preview_ledger id a My Collection session was started from; null/absent for photo sessions. */
   collection_preview_id?: string | null
+  /** 059: 'generations' = the product-first journey; absent or 'previews' = the six-preview journey. Only ever written when 'generations'. */
+  flow?: 'previews' | 'generations'
   refund_requested_at: string | null; refunded_at: string | null; unlock_portfolio_id: string | null
   disclosure_version: string | null; disclosure_accepted_at: string | null
 }
@@ -77,13 +80,14 @@ export type StoreErrorCode =
   | 'order_payment_required' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | 'preview_not_ready' | 'correction_limit' | 'line_not_found'
   | 'artwork_not_selected' | 'compositions_not_approved' | 'order_has_no_lines' | 'order_not_paid' | 'refund_not_available_after_manufacturing'
   | 'session_already_has_order' | 'order_not_found' | 'order_session_mismatch' | 'order_not_payable' | 'rate_limited'
+  | 'generations_unavailable' | 'effect_not_chosen' | 'effect_fixed' | 'flow_not_generations' | 'legacy_batches_closed' | 'generation_in_progress' | 'generation_not_found' | 'generation_not_ready' | 'invalid_idempotency_key' | 'invalid_effect_selection'
   | 'final_approval_required' | 'finalization_unavailable' | 'artwork_not_found' | 'artwork_not_compatible' | 'collection_session_no_generation' | 'collection_unavailable'
-const STORE_ERROR = /repair_claim_lost|repair_not_consistent|composition_not_found|session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable|rate_limited|final_approval_required|finalization_unavailable|artwork_not_found|artwork_not_compatible|collection_session_no_generation/
+const STORE_ERROR = /generations_unavailable|effect_not_chosen|effect_fixed|flow_not_generations|legacy_batches_closed|generation_in_progress|generation_not_found|generation_not_ready|repair_claim_lost|repair_not_consistent|composition_not_found|session_not_found|session_expired|payment_required|previous_batch_incomplete|effect_already_used|six_distinct_effects_required|order_payment_required|order_refunded|refund_pending|order_not_awaiting_artwork|preview_not_ready|correction_limit|line_not_found|artwork_not_selected|compositions_not_approved|order_has_no_lines|order_not_paid|refund_not_available_after_manufacturing|session_already_has_order|order_not_found|order_session_mismatch|order_not_payable|rate_limited|final_approval_required|finalization_unavailable|artwork_not_found|artwork_not_compatible|collection_session_no_generation/
 /** The customer's final approval time, whichever way it was recorded: 056 sets final_approved_at; an order approved and released before 056 only has approved_at. */
 export const finalizedAt = (s: Pick<SessionRec, 'approved_at'> & { final_approved_at?: string | null }): string | null => s.final_approved_at ?? s.approved_at ?? null
 export class StoreError extends Error { constructor(public code: StoreErrorCode) { super(code) } }
 
-export interface GiftStore {
+export interface GiftStore extends GenerationStore {
   createSession(rec: SessionRec): Promise<void>
   getSession(id: string, userId: string): Promise<SessionRec | null>
   /** The user's ACTIVE sessions, most recently used first (restoring work after navigation). Never another user's, never a deleted or expired-status one. */
@@ -160,7 +164,11 @@ export function supabaseGiftStore(db: any): GiftStore {
   const rpc = async (fn: string, args: Record<string, unknown>) => { const { data, error } = await db.rpc(fn, args); if (error) fromRpc(error); return data }
   const ORDER_COLS = 'id,status,paid_at,stripe_session_id,stripe_payment_intent,retail_total_cents,retail_shipping_cents,items,prodigi_order_id,placed_at,customer_email,prodigi_merchant_ref,shipping_address,shipping_method'
   return {
-    async createSession(rec) { await one(db.from('gift_sessions').insert(rec)) },
+    ...supabaseGenerationStore(db),
+    async createSession(rec) {
+      const { error } = await db.from('gift_sessions').insert(rec)
+      if (error) { if (rec.flow && /flow/i.test(String(error.message))) throw new StoreError('generations_unavailable'); throw new Error(error.message) }          // 059 not applied: a generations session cannot be stored
+    },
     async getSession(id, userId) { return await one(db.from('gift_sessions').select('*').eq('id', id).eq('user_id', userId).neq('status', 'deleted').maybeSingle()) },
     async listSessions(userId, limit) { return (await one(db.from('gift_sessions').select('*').eq('user_id', userId).eq('status', 'active').order('last_activity_at', { ascending: false }).limit(limit))) ?? [] },
     async patchSession(id, userId, patch) { await one(db.from('gift_sessions').update(patch).eq('id', id).eq('user_id', userId)) },
@@ -279,7 +287,7 @@ export function supabaseGiftStore(db: any): GiftStore {
 // Mirrors the rules of migrations 047 and 048 (which migration-047/048.test.ts run against real Postgres) so the service
 // is tested without a database. `orders` stands in for print_orders.
 
-export type MemoryPack = { id: string; user_id: string; stripe_session_id: string; amount_cents: number; status: 'paid' | 'consumed' }
+export type MemoryPack = { id: string; user_id: string; stripe_session_id: string; amount_cents: number; status: 'paid' | 'consumed'; units?: number }
 export type MemoryPortfolio = { id: string; user_id: string; series: string | null; origin: 'gift'; preview_id: string; clean_path: string; unlocked: boolean; source_image: string }
 
 const FREE_ARGS = { p_session_cap: FREE_PREVIEWS.perSession, p_photo_cap: FREE_PREVIEWS.perAccountPhoto, p_24h_cap: FREE_PREVIEWS.perAccount24h, p_total_cap: FREE_PREVIEWS.perAccountLifetime }
@@ -290,7 +298,7 @@ export function memoryGiftStore(clock: () => number = Date.now) {
   const ownedArtwork = new Map<string, { userId: string; portfolioId: string; series: string; preset: string; unlocked: boolean; done: boolean }>()
   const packs: MemoryPack[] = [], orders = new Map<string, OrderInfo>(), lines: OrderLineRec[] = [], compositions: CompositionRec[] = []
   const attempts: Array<{ user_id: string; sha: string; at: number }> = []
-  const freeGrants: Array<{ user_id: string; source_sha256: string; session_id: string | null; batch_id: string; at: number }> = []     // the free-batch ledger: survives session deletion
+  const freeGrants: Array<{ user_id: string; source_sha256: string; session_id: string | null; batch_id?: string; generation_id?: string; at: number }> = []     // the free-batch ledger: survives session deletion
   const portfolios: MemoryPortfolio[] = [], refunds = new Map<string, { order_id: string; amount: number }>()
   const refundRequests = new Map<string, { id: string; session_id: string; status: 'requested' | 'refunded' | 'declined' }>()
   const repairClaims = new Map<string, { token: string; expiresAt: number }>()
@@ -308,7 +316,9 @@ export function memoryGiftStore(clock: () => number = Date.now) {
     if (mine.length >= FREE_PREVIEWS.perAccountLifetime) return { available: false, used, reason: 'lifetime_limit' }
     return { available: true, used, reason: null }
   }
+  const gen = memoryGenerationStore({ clock, sessions, previews, batches, packs, compositions, freeGrants, owned, orderOf })
   const store: GiftStore = {
+    ...gen,
     async createSession(rec) { sessions.set(rec.id, structuredClone(rec)) },
     async freeStatus(sessionId, userId) { return freeOf(owned(sessionId, userId)) },
     async recordSessionAttempt(userId, sha) {                                       // the ledger survives session deletion
@@ -541,5 +551,5 @@ export function memoryGiftStore(clock: () => number = Date.now) {
     },
     async releaseSession(orderId) { const s = [...sessions.values()].find(x => x.order_id === orderId); if (s?.pinned_at) { s.pinned_at = null; s.expires_at = iso(clock() + 7 * 864e5) } },
   }
-  return Object.assign(store, { ownedArtwork, sessions, batches, previews, packs, orders, lines, compositions, portfolios, refunds, refundRequests, compositionJobs })
+  return Object.assign(store, { ownedArtwork, sessions, batches, previews, packs, orders, lines, compositions, portfolios, refunds, refundRequests, compositionJobs, generations: gen.generations })
 }
