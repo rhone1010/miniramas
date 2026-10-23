@@ -1,3 +1,4 @@
+import type {AvailabilityView} from './backend-contracts/gift/availability';
 /** Prepared frontend transport only. Authenticated calls only. Final manufacturing release remains blocked. */
 import type {ProductPreviewView,RestoreResponse,SessionView,BatchView,BatchRequest,BatchResponse,SetLinesRequest,GiftCheckoutRequest,GiftCheckoutResponse,OrderConfirmRequest,OrderConfirmResponse,PackCheckoutRequest,PackCheckoutResponse,PackConfirmRequest,PackConfirmResponse,SelectArtworkRequest,RefundRequestBody,RefundRequestResponse,MockupView} from './backend-contracts/gift/types';
 import type {CatalogResponse} from './backend-contracts/print/catalog-types';
@@ -45,6 +46,7 @@ export class GiftBackend {
   return v;
  }
  async catalog(signal?:AbortSignal){const v=await this.request<CatalogResponse>('GET','/api/v1/print/catalog',undefined,signal);if(v.contractVersion!==1||!Array.isArray(v.products))throw new GiftApiError('invalid_catalog_response',0);return v}
+ async availability(id:string,signal?:AbortSignal){const v=await this.request<AvailabilityView>('GET',sessionPath(id)+'/availability',undefined,signal);if(v.contractVersion!==1||v.sessionId!==id||!Array.isArray(v.products)||v.products.some(p=>typeof p.purchasable!=='boolean'||typeof p.productId!=='string'))throw new GiftApiError('invalid_availability_response',0);return v}
  setLines(id:string,b:SetLinesRequest,signal?:AbortSignal){return this.session('PUT',sessionPath(id)+'/lines',{lines:b.lines.map(l=>({lineId:l.lineId,productId:l.productId,copies:l.copies}))},signal)}
  async confirmOrder(b:OrderConfirmRequest,signal?:AbortSignal){const v=await this.request<OrderConfirmResponse>('POST','/api/v1/gift/orders/confirm',{stripeSessionId:b.stripeSessionId},signal);if(typeof v.confirmed!=='boolean'||(v.confirmed&&!v.session))throw new GiftApiError('invalid_confirmation_response',0);if(v.session)assertSession(v.session);return v}
  async batch(id:string,n:number,signal?:AbortSignal){if(!Number.isInteger(n)||n<1)throw new GiftApiError('invalid_batch_index',0);return this.request<BatchView>('GET',sessionPath(id)+'/batches/'+n,undefined,signal)}
@@ -80,14 +82,14 @@ export class GiftBackend {
  async mockup(id:string,lineId:string,compositionId:string,signal?:AbortSignal):Promise<MockupView>{
   const v=await this.request<MockupView>('GET',sessionPath(id)+'/lines/'+segment(lineId)+'/mockup?compositionId='+segment(compositionId),undefined,signal);
   if(!v||v.contractVersion!==1||v.sessionId!==id||v.lineId!==lineId||v.compositionId!==compositionId||typeof v.watermarked!=='boolean'||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!previewURL(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['frozen','legacy_catalog'].includes(v.geometrySource))throw new GiftApiError('invalid_mockup_response',0);
-  if(v.renderer!=='scene'||!isApprovedScene(v.productId,v.scene?.sceneId))throw new GiftApiError('approved_scene_required',0);
+  if(!isProductRepresentation(v,v.productId,v.scene?.sceneId))throw new GiftApiError('approved_scene_required',0);
   return v;
  }
  async productPreview(id:string,productId:string,favoriteId:string,signal?:AbortSignal):Promise<ProductPreviewView>{
   const v=await this.request<ProductPreviewView>('GET',sessionPath(id)+'/product-preview?productId='+encodeURIComponent(productId)+'&provisional=1',undefined,signal);
   if(!v||v.contractVersion!==1||v.sessionId!==id||v.productId!==productId||v.favoriteId!==favoriteId||!['ready','provisional','adaptation_required','not_available'].includes(v.status))throw new GiftApiError('invalid_product_preview_response',0);
-  if((v.status==='ready'||v.status==='provisional')&&(v.watermarked!==true||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!previewURL(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['scene','calibrated'].includes(v.renderer)))throw new GiftApiError('invalid_product_preview_response',0);
-  if((v.status==='ready'||v.status==='provisional')&&(v.renderer!=='scene'||!isApprovedScene(productId,v.sceneId)))throw new GiftApiError('approved_scene_required',0);
+  if((v.status==='ready'||v.status==='provisional')&&(v.watermarked!==true||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!previewURL(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['scene','artwork','calibrated'].includes(v.renderer)))throw new GiftApiError('invalid_product_preview_response',0);
+  if((v.status==='ready'||v.status==='provisional')&&!isProductRepresentation(v.status==='provisional'?{...v,...v.provisional}:v,productId,v.sceneId))throw new GiftApiError('approved_scene_required',0);
   if(v.status==='provisional'){const p=v.provisional;if(v.fit!=='contain'||!p||p.exactArtworkShown!==true||p.cropped!==false||p.distorted!==false||p.surround!=='neutral'||!p.bars||!['top_bottom','left_right'].includes(p.bars.sides)||!Number.isFinite(p.bars.fractionPerSide)||p.bars.fractionPerSide<0||p.bars.fractionPerSide>=0.5||!['generated','deterministic',null].includes(p.finalComposition))throw new GiftApiError('invalid_product_preview_response',0)}
   return v;
  }
@@ -103,3 +105,5 @@ export function compositionReferences(session:SessionView){
   if(c.sourceArtworkId!==session.artworkPreviewId||!/^https:\/\//.test(c.previewUrl)||!c.width||!c.height)return false;seen.add(c.lineId);return true;
  }).map(c=>({lineId:c.lineId,productId:c.productId,compositionId:c.compositionId!,previewUrl:c.previewUrl!,width:c.width!,height:c.height!,status:c.status,fit:c.fit}));
 }
+
+function isProductRepresentation(v:{renderer?:string;representation?:string;physicalProductShown?:boolean;previewBasis?:string;disclosureCode?:string|null;disclosure?:string|null},productId:string,sceneId?:string|null){return v.renderer==='scene'?isApprovedScene(productId,sceneId):v.renderer==='artwork'&&v.representation==='artwork_only'&&v.physicalProductShown===false&&v.previewBasis==='product_shaped_artwork'&&v.disclosureCode==='artwork_only_preview'&&typeof v.disclosure==='string'&&v.disclosure.trim().length>0}

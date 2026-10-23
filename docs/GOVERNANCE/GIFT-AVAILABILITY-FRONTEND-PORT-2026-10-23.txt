@@ -1,0 +1,3 @@
+lib/v1/gift/types.ts:327-382 -> public/gift-wizard/backend-contracts/gift/types.ts:304-359; 56 lines in/out; byte-identical; no deviations.
+lib/v1/gift/types.ts:419-459 -> public/gift-wizard/backend-contracts/gift/types.ts:391-431; 41 lines in/out; byte-identical; no deviations.
+lib/v1/gift/availability.ts:18-63 -> public/gift-wizard/backend-contracts/gift/availability.ts:4-49; 46 lines in/out; byte-identical; no deviations.

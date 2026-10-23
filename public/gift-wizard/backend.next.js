@@ -88,6 +88,8 @@ export class GiftBackend {
     }
     async catalog(signal) { const v = await this.request('GET', '/api/v1/print/catalog', undefined, signal); if (v.contractVersion !== 1 || !Array.isArray(v.products))
         throw new GiftApiError('invalid_catalog_response', 0); return v; }
+    async availability(id, signal) { const v = await this.request('GET', sessionPath(id) + '/availability', undefined, signal); if (v.contractVersion !== 1 || v.sessionId !== id || !Array.isArray(v.products) || v.products.some(p => typeof p.purchasable !== 'boolean' || typeof p.productId !== 'string'))
+        throw new GiftApiError('invalid_availability_response', 0); return v; }
     setLines(id, b, signal) { return this.session('PUT', sessionPath(id) + '/lines', { lines: b.lines.map(l => ({ lineId: l.lineId, productId: l.productId, copies: l.copies })) }, signal); }
     async confirmOrder(b, signal) { const v = await this.request('POST', '/api/v1/gift/orders/confirm', { stripeSessionId: b.stripeSessionId }, signal); if (typeof v.confirmed !== 'boolean' || (v.confirmed && !v.session))
         throw new GiftApiError('invalid_confirmation_response', 0); if (v.session)
@@ -135,7 +137,7 @@ export class GiftBackend {
         const v = await this.request('GET', sessionPath(id) + '/lines/' + segment(lineId) + '/mockup?compositionId=' + segment(compositionId), undefined, signal);
         if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.lineId !== lineId || v.compositionId !== compositionId || typeof v.watermarked !== 'boolean' || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !previewURL(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['frozen', 'legacy_catalog'].includes(v.geometrySource))
             throw new GiftApiError('invalid_mockup_response', 0);
-        if (v.renderer !== 'scene' || !isApprovedScene(v.productId, v.scene?.sceneId))
+        if (!isProductRepresentation(v, v.productId, v.scene?.sceneId))
             throw new GiftApiError('approved_scene_required', 0);
         return v;
     }
@@ -143,9 +145,9 @@ export class GiftBackend {
         const v = await this.request('GET', sessionPath(id) + '/product-preview?productId=' + encodeURIComponent(productId) + '&provisional=1', undefined, signal);
         if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.productId !== productId || v.favoriteId !== favoriteId || !['ready', 'provisional', 'adaptation_required', 'not_available'].includes(v.status))
             throw new GiftApiError('invalid_product_preview_response', 0);
-        if ((v.status === 'ready' || v.status === 'provisional') && (v.watermarked !== true || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !previewURL(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['scene', 'calibrated'].includes(v.renderer)))
+        if ((v.status === 'ready' || v.status === 'provisional') && (v.watermarked !== true || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !previewURL(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['scene', 'artwork', 'calibrated'].includes(v.renderer)))
             throw new GiftApiError('invalid_product_preview_response', 0);
-        if ((v.status === 'ready' || v.status === 'provisional') && (v.renderer !== 'scene' || !isApprovedScene(productId, v.sceneId)))
+        if ((v.status === 'ready' || v.status === 'provisional') && !isProductRepresentation(v.status === 'provisional' ? { ...v, ...v.provisional } : v, productId, v.sceneId))
             throw new GiftApiError('approved_scene_required', 0);
         if (v.status === 'provisional') {
             const p = v.provisional;
@@ -173,3 +175,4 @@ export function compositionReferences(session) {
         return true;
     }).map(c => ({ lineId: c.lineId, productId: c.productId, compositionId: c.compositionId, previewUrl: c.previewUrl, width: c.width, height: c.height, status: c.status, fit: c.fit }));
 }
+function isProductRepresentation(v, productId, sceneId) { return v.renderer === 'scene' ? isApprovedScene(productId, sceneId) : v.renderer === 'artwork' && v.representation === 'artwork_only' && v.physicalProductShown === false && v.previewBasis === 'product_shaped_artwork' && v.disclosureCode === 'artwork_only_preview' && typeof v.disclosure === 'string' && v.disclosure.trim().length > 0; }

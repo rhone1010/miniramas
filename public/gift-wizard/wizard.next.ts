@@ -193,8 +193,8 @@ function configurationPreview(p:Product,o:CatalogOption,artworkReference=false){
  if(entry.failed)return '<p role="alert">This product preview could not load.</p><button class="secondary" data-product-preview="'+esc(key)+'">Check Again</button>';
  const v=entry.value;
  if(!v)return '<p role="status">Preparing product preview…</p>';
- if(v.status==='ready')return photo(v.url,p.label,'gift-feature-image')+(artworkReference?'':'<p class="small">Product-specific artwork will be prepared after payment.</p>');
- if(v.status==='provisional')return photo(v.url,p.label+' provisional product preview','gift-feature-image')+'<p class="small">Provisional product preview. The neutral surround is not artwork.</p>'+(artworkReference?'':'<p class="small">'+(v.provisional.finalComposition==='generated'?'After payment, a new composition of the same effect will be generated for this product. You will review it before approval.':v.provisional.finalComposition==='deterministic'?'After payment, your artwork will be extended to fit this product. You will review it before approval.':'Product-specific artwork will be prepared after payment.')+'</p>');
+ if(v.status==='ready')return photo(v.url,p.label,'gift-feature-image')+(v.renderer==='artwork'?'<p class="small">'+esc(v.disclosure)+'</p>':'')+(artworkReference?'':'<p class="small">Product-specific artwork will be prepared after payment.</p>');
+ if(v.status==='provisional')return photo(v.url,p.label+' provisional product preview','gift-feature-image')+(v.renderer==='artwork'?'<p class="small">'+esc(v.provisional.disclosure)+'</p>':'')+'<p class="small">Provisional product preview. The neutral surround is not artwork.</p>'+(artworkReference?'':'<p class="small">'+(v.provisional.finalComposition==='generated'?'After payment, a new composition of the same effect will be generated for this product. You will review it before approval.':v.provisional.finalComposition==='deterministic'?'After payment, your artwork will be extended to fit this product. You will review it before approval.':'Product-specific artwork will be prepared after payment.')+'</p>');
  if(v.status==='adaptation_required')return artworkReference&&favorite()?photo(favorite()!.url,'Selected artwork')+'<p class="small">Selected artwork</p>':'<p role="status">Product-specific artwork will be prepared after payment.</p>';
  return '<p role="status">Not currently available</p>';
 }
@@ -274,7 +274,7 @@ function renderPivotEffects(){
 }
 function renderPivotProducts(){
  pivotRail(studioState.step==='product'?'Choose<br>your Gift':'Choose<br>your Size');$('right').innerHTML='';$('back').hidden=true;
- const choices=products.map(p=>({...p,image:familyPhoto({id:p.id,image:asset(p.image)}),options:p.options.filter(o=>giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
+ const choices=products.map(p=>({...p,image:familyPhoto({id:p.id,image:asset(p.image)}),options:(p.options as CatalogOption[]).filter(o=>giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
  mountStudio($('screen'),{products:choices,state:studioState,navigationHost:$('left'),configurationHost:$('right'),
   previewHtml:p=>photo(p.image,p.label),canAdd:()=>false,onAdd:()=>{},addLabel:'Craft',
   onChange:s=>{studioState=s;if(layoutReview)rememberPivotReview();else rememberView();$('left').querySelector('h1')!.innerHTML=s.step==='product'?'Choose<br>your Gift':'Choose<br>your Size';document.body.dataset.pivotStep=s.step;document.querySelectorAll('.progress li').forEach((el,i)=>{if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});if(mobileLayout.matches){$('mobile-progress')?.remove();renderMobileProgress()}},
@@ -574,7 +574,9 @@ let batchIntent:{idempotencyKey:string;effectIds:string[]}|null=null;
 async function syncCatalog(){
  const api=live?.api||new GiftBackend((url,init)=>fetch(url,init));
  const catalog=await api.catalog();
- products=products.map(p=>({...p,available:!['mug','card'].includes(p.id)&&catalog.products.some(c=>c.family===p.id&&c.selectable),options:catalog.products.filter(c=>c.family===p.id&&c.status==='launch'&&c.retailCents!==null).map(c=>({sku:c.sku,size:c.size,family:c.family,label:c.label,retailCents:c.retailCents!,attributes:c.attributes,compatible:c.selectable,imageWidthIn:c.requirements.picturePx.w/c.requirements.ppi,imageHeightIn:c.requirements.picturePx.h/c.requirements.ppi,requiredPx:c.requirements.finalPx,familyNote:c.note}))}));
+ const availability=live?await api.availability(live.id):null;
+ const allowed=(id:string,fallback:boolean)=>availability?availability.products.find(p=>p.productId===id)?.purchasable===true:fallback;
+ products=products.map(p=>({...p,available:catalog.products.some(c=>c.family===p.id&&allowed(c.productId,c.selectable)),options:catalog.products.filter(c=>c.family===p.id&&c.status==='launch'&&c.retailCents!==null).map(c=>({sku:c.sku,size:c.size,family:c.family,label:c.label,retailCents:c.retailCents!,attributes:c.attributes,compatible:allowed(c.productId,c.selectable),imageWidthIn:c.requirements.picturePx.w/c.requirements.ppi,imageHeightIn:c.requirements.picturePx.h/c.requirements.ppi,requiredPx:c.requirements.finalPx,familyNote:c.note}))}));
 }
 
 function applyServer(s:SessionView){
@@ -646,7 +648,7 @@ function serverMockup(l:GiftLine){
  if(live?.compositionIssues.has(l.id))return "<section role=\"status\" data-composition-state=\"repair-required\"><h3>We're preparing your artwork for this gift</h3><p>Your artwork needs a small adjustment to fit this product correctly. We're taking care of it.</p><p>Your selected artwork and purchase are safe. No action is needed right now.</p></section>"+secondary('check-composition-'+l.id,'Check Again');
  if(live?.unavailableScenes.has(l.id))return '<p role="status">Not currently available</p>';
  const m=live?.mockups.get(l.id);
- return m&&Date.parse(m.urlExpiresAt)>Date.now()?photo(m.url,giftOption(l,products).product.label):'<p role="status">This product preview could not load.</p>'+secondary('refresh-mockups','Try again');
+ return m&&Date.parse(m.urlExpiresAt)>Date.now()?photo(m.url,giftOption(l,products).product.label)+(m.renderer==='artwork'?'<p class="small">'+esc(m.disclosure)+'</p>':''):'<p role="status">This product preview could not load.</p>'+secondary('refresh-mockups','Try again');
 }
 function adaptServerView(){
  if(view==='payment'){
@@ -716,7 +718,7 @@ function adaptServerView(){
   document.querySelectorAll<HTMLButtonElement>('[id^="check-composition-"]').forEach(b=>{b.disabled=busy;b.onclick=()=>void readCompositionState(false)});
   if(orderReviewExample){
    $('right').querySelectorAll('p.small').forEach(el=>el.textContent='');
-   $('screen').querySelectorAll('.cart-line').forEach((el,i)=>{const c=s.compositions.find(c=>c.lineId===session.lines[i]?.id);const note=el.querySelector('.small');if(note)note.textContent=live!.compositionIssues.has(session.lines[i]?.id)?'Awaiting server verification':c?.state||c?.status||''});
+   $('screen').querySelectorAll('.cart-line').forEach((el,i)=>{const c=s.compositions.find(c=>c.lineId===session.lines[i]?.id);const note=el.querySelector('.cart-details .small');const disclosure=el.querySelector('.cart-thumbnail .small');if(disclosure)el.querySelector('.cart-details')?.append(disclosure);if(note)note.textContent=live!.compositionIssues.has(session.lines[i]?.id)?'Awaiting server verification':c?.state||c?.status||''});
    const complete=s.order.state==='approved';
    if(complete){
     $('screen').querySelector('h2')!.textContent='Your gifts are approved';

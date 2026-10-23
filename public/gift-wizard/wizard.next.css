@@ -210,7 +210,8 @@ body:has(#screen[data-view="compositions"]) nav.sizes{display:flex;flex-wrap:now
 #cancel-gift-dialog::backdrop{background:#29261f80}#cancel-gift-dialog p{font:24px/1.3 Cormorant,serif}#cancel-gift-dialog .primary{width:auto;margin:0;clip-path:none;font-size:22px;min-height:44px;padding:10px 16px}
 #screen>.gift-favorite{width:fit-content;max-width:100%;margin:0 0 16px;min-height:44px}
 @media(min-width:1001px){
-#workspace button:not(.tile):not([data-feature]):not([data-product-select]):not([data-silo]):not([data-step]){width:fit-content;min-width:0;max-width:100%;padding-left:16px;padding-right:16px;align-self:flex-start}
+#workspace button:not(.tile):not([data-feature]):not([data-product-select]):not([data-silo]):not([data-step]){width:fit-content;min-width:0;max-width:100%;padding-left:16px;padding-right:16px}
+#workspace button:not(.tile):not([data-feature]):not([data-product-select]):not([data-silo]):not([data-step]):not(#choose-photo){align-self:flex-start}
 #workspace .primary{clip-path:none}#workspace .context-body{flex:none}
 body:has(#screen[data-view="effects"]) #workspace{grid-template-columns:minmax(220px,2fr) minmax(0,6fr) minmax(280px,3fr);align-items:start}
 body:has(#screen[data-view="effects"]) .left-rail{padding:24px;max-height:calc(100dvh - 24px)}
