@@ -1,0 +1,33 @@
+Gift normal-entry integration — 2026-10-22
+
+Implemented:
+- Normal new/unstarted Gift sessions use the approved single-effect, product-family and details components formerly limited to layoutReview.
+- Existing sessions with batches, configured lines, collection entrance or a non-none order state retain their legacy flow. Server state decides this, never URL payment claims.
+- Gift landing Start Creating starts a new gift and retains the prior session reference.
+- Existing authenticated resume hints preserve effect and Studio state; review fixture hints never establish live state.
+- CC c0e5802f source.subjectGender is consumed: female -> woman, male -> man. No guessed gender.
+- The old six-batch action adapter no longer overwrites Choose This Effect in the pivot.
+- Start Over preserves the prior project; duplicate Start a New Gift removed from pivot rail.
+
+Actual browser evidence BEFORE deployment:
+Protected Preview normal Gift Collection -> Start Creating -> sign in restored an existing real authenticated Portrait session (no layoutReview or fixture URL).
+Temporary browser-local override supplied only the changed Wizard JavaScript. Authentication, catalog and session responses were real deployed handlers; no API response was simulated.
+That session reached Choose This Effect -> eight product families -> Gallery Canvas -> 12x12 MirrorWrap, $69.00. Refresh restored that configuration. 390px Back returned to size then product families with the selection retained. Desktop 1660px and mobile screenshots saved in the task visualization folder, normal-live-products-desktop.png, normal-live-products-mobile.png, normal-live-details-mobile.png.
+No upload, generation, order mutation or approval was performed. This does not verify post-analysis male/female against a deployed c0e5802f handler, because that commit is not deployed and old sessions have no subjectGender.
+Paid-session browser check subsequently succeeded using the changed frontend: existing Classic Framed Print 16x24 black retained approved status and legacy six-step review. Its pre-existing missing scene remains Not currently available; no correction or approval clicked. Gift Collection then exposed Start Creating with newGift=1 and a return reference to that paid session.
+All local browser overrides removed after verification.
+
+Remaining walls:
+1. Unknown Portrait subject: CC specifies original neutral previews, but Codex2 confirmed neither original nor Gift-specific manifest has a single neutral mapping/asset. Historical resolver defaults male. Unknown cannot be silently gendered under Rich's instruction. Requested explicit fallback to display both approved examples. No fallback invented.
+2. Product-selected single-generation/pre-checkout approval contract is not present in the integrated API. Craft remains disabled. CC owns the endpoint, idempotency, generation history/balance and approval/checkout contract. No legacy six-generation call substituted.
+3. Live catalog does not provide eligible landscape SKUs. Existing catalog availability and physical geometry remain unchanged.
+
+Checks:
+104 Wizard/composition-policy tests passed, simulated services.
+11 CC subject-gender tests passed with in-memory storage and mocked analysis, isolated unit config and nonfunctional test credentials. Initial runner environment failures were corrected without contacting Supabase.
+161 approved assets verified native1024x1024, identical approved bytes, original series unchanged.
+No deployment while missing-preview fallback remains unresolved.
+
+Port record:
+No markup/CSS block recreated or newly ported: existing approved pivot components activated in normal runtime.
+SubjectGender type and SourceView comment/property copied from lib/v1/gift/types.ts into public/gift-wizard/backend-contracts/gift/types.ts; 8 source lines / 8 destination lines, no semantic deviations. Generated wizard.next.js compiled from TypeScript.

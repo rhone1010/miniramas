@@ -124,9 +124,9 @@ test('legacy allocation responses fail closed',async()=>{
 });
 
 test('unpaid free batches use the server allocation and retain batch idempotency',async()=>{
- const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];const bodies:any[]=[];
+ const s:any=project('checkout_open');s.order.orderId=null;s.lines=[];s.geometries=[];const bodies:any[]=[];
  s.route=(url:string,init:any)=>{if(url.endsWith('/batches')){bodies.push(JSON.parse(init.body));s.entitlement.freeBatchesUsed++;s.entitlement.freeAvailable=s.entitlement.freeBatchesUsed<2;s.entitlement.freeBlockedReason=s.entitlement.freeAvailable?null:'session_limit';s.nextBatch=s.entitlement.freeAvailable?{kind:'free'}:{kind:'payment_required',amountCents:299,currency:'USD'};s.batches=artworkProject().batches.slice(0,s.entitlement.freeBatchesUsed);return {status:'ok',batch:s.batches.at(-1),session:s}}};
- const {win,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.querySelectorAll('[data-art]').length,6);win.document.getElementById('another-batch').click();assert.equal(win.document.getElementById('screen').dataset.view,'effects');assert.equal(bodies.length,1);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(bodies.length,2);assert.notEqual(bodies[0].idempotencyKey,bodies[1].idempotencyKey);assert.equal(win.document.getElementById('another-batch').textContent,'Six More · $2.99');assert.equal(s.order.orderId,null);dom.window.close();
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('effects');assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(win.document.querySelectorAll('[data-art]').length,6);win.document.getElementById('another-batch').click();assert.equal(win.document.getElementById('screen').dataset.view,'effects');assert.equal(bodies.length,1);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,20));assert.equal(bodies.length,2);assert.notEqual(bodies[0].idempotencyKey,bodies[1].idempotencyKey);assert.equal(win.document.getElementById('another-batch').textContent,'Six More · $2.99');assert.equal(s.order.orderId,null);dom.window.close();
 });
 
 test('favorite persists before shopping without requesting a composition',async()=>{
@@ -229,9 +229,9 @@ test('restoration shows gears only for server generating slots, ready artwork an
  assert.equal(calls.some(x=>x.endsWith('/batches')),false);dom.window.close();
 });
 test('Craft moves immediately to results without claiming that the unconfirmed request is generating',async()=>{
- const s:any=project('none');s.lines=[];s.geometries=[];let finish:any;
+ const s:any=project('awaiting_artwork');s.lines=[];s.geometries=[];let finish:any;
  s.route=(url:string,init:any)=>url.endsWith('/batches')&&init.method==='POST'?new Promise(resolve=>{finish=resolve}):null;
- const {win,dom}=await boot('sessionId=project',s);win.document.getElementById('primary').click();
+ const {win,dom}=await boot('sessionId=project',s);win.navigate('effects');win.document.getElementById('primary').click();
  assert.equal(win.document.getElementById('screen').dataset.view,'review');
  assert.equal(win.document.querySelectorAll('.mc-mark').length,0);
  assert.ok((win.document.getElementById('screen').textContent.match(/Waiting to start/g)||[]).length<=1);
@@ -382,7 +382,7 @@ test('a rejected Add to Cart leaves the cart as it was and shows the reason (no 
 
 
 test('generation reads progress while the batch POST remains in flight',async()=>{
- const s:any=project('none');s.lines=[];s.geometries=[];s.batches=[];s.artworkPreviewId=null;let resolvePost:any,reads=0;
+ const s:any=project('awaiting_artwork');s.lines=[];s.geometries=[];s.batches=[];s.artworkPreviewId=null;let resolvePost:any,reads=0;
  s.route=async(url:string,init:any)=>{if(url.endsWith('/batches')&&init.method==='POST'){s.batches=workingProject().batches;s.batches[0].generation='running';return await new Promise(r=>resolvePost=r)}if(url.endsWith('/sessions/project')&&init.method==='GET')reads++;return null};
  const {win,dom}=await boot('sessionId=project',s);win.navigate('effects');win.document.getElementById('primary').click();const before=reads;await new Promise(r=>setTimeout(r,1750));assert.ok(reads>before);assert.equal(win.document.querySelectorAll('.is-crafting').length,1);assert.ok(win.document.querySelector('[data-art="slot-0"]'));assert.equal(win.document.getElementById('primary').textContent,'Choose Your Gift →');resolvePost({session:s,batch:s.batches[0],status:'partial'});await new Promise(r=>setTimeout(r,10));dom.window.close();
 });
@@ -455,10 +455,10 @@ test('offline approval examples use replacement scenes rather than retired payme
  for(const mode of ['approval','approval-second','approval-final']){const {win,dom}=await boot('layoutReview='+mode);const images=[...win.document.querySelectorAll('#screen img')] as HTMLImageElement[];assert.ok(images.length>0);assert.ok(images.every(i=>i.src.includes('-scene-')||i.src.includes('/mockup-scenes/')));assert.ok(images.every(i=>!i.src.includes('/review/payment-first/')));dom.window.close();}
 });
 
-test('mobile progress is gated by prerequisites and does not mutate the session',async()=>{
+test('new-gift mobile progress is gated by prerequisites and does not mutate the session',async()=>{
  const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];
  const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('effects');
- const menu=win.document.getElementById('mobile-progress');assert.equal(menu.querySelectorAll('.mobile-progress-pips span').length,6);
+ const menu=win.document.getElementById('mobile-progress');assert.equal(menu.querySelectorAll('.mobile-progress-pips span').length,7);
  assert.equal(menu.querySelector('[data-step="3"]').disabled,true);assert.equal(menu.querySelector('[data-step="4"]').disabled,true);assert.equal(menu.querySelector('[data-step="5"]').disabled,true);
  menu.querySelector('[data-step="0"]').click();assert.equal(win.document.getElementById('screen').dataset.view,'photo');dom.window.close();
 });
@@ -597,4 +597,16 @@ test('live Portrait samples never infer gender from fixture parameters or silent
  assert.equal(win.document.querySelectorAll('#screen img,#right .context-image').length,0);
  assert.ok(win.document.getElementById('screen').textContent.includes('Not currently available'));
  dom.window.close();
+});
+
+for(const gender of ['female','male'])test('normal new-gift session uses approved single effect flow: '+gender,async()=>{
+ const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];s.source.subjectGender=gender;
+ const {win,dom,calls}=await boot('sessionId=project',s);
+ assert.equal(win.document.getElementById('primary').textContent,'Choose This Effect →');
+ assert.equal(win.document.querySelector('#screen img').getAttribute('src'),'/gift-wizard/effect-previews/portraits/jade/'+(gender==='female'?'woman':'man')+'.jpg');
+ win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
+ win.document.querySelector('[data-feature="canvas"]').click();win.document.querySelector('[data-size]').click();
+ assert.equal(win.document.getElementById('primary').disabled,true);assert(!calls.some(x=>/batches|compositions|product-preview/.test(x)));
+ const storage=Object.fromEntries(Object.keys(win.sessionStorage).map(k=>[k,win.sessionStorage.getItem(k)]));dom.window.close();
+ const restored=await boot('sessionId=project',{...s,storage});assert.equal(restored.win.document.getElementById('screen').dataset.view,'products');assert(restored.win.document.querySelector('.studio-media img'));restored.dom.window.close();
 });

@@ -17,6 +17,7 @@ export const GIFT_CONTRACT_VERSION = 1
 export type Series = 'portraits' | 'pets' | 'groups'
 export type PreviewStatus = 'pending' | 'generating' | 'ready' | 'failed'
 /** 'collection': the one-preview batch of a session started from My Collection (057): the owned artwork, already finished, nothing to generate. */
+export type SubjectGender = 'female' | 'male' | 'unknown'
 export type BatchKind = 'free' | 'paid' | 'collection'
 
 /** What the source photo was identified as. Never a customer question. */
@@ -27,6 +28,13 @@ export interface SourceView {
   series: Series
   /** Groups only: how many people were counted. */
   peopleCount: number | null
+  /**
+   * PORTRAITS ONLY: the apparent gender presentation of the one subject, from the same photo-analysis pass that checks age (no extra AI call).
+   * 'female' | 'male' only when that pass reported one for a single subject. 'unknown' when it reported none, when more than one subject was seen
+   * (mixed), when the check could not run, and for every session created before this field existed. null for pets and groups (not applicable).
+   * Never guessed: on 'unknown' show the neutral/original Portraits previews and do not pick a gendered set silently.
+   */
+  subjectGender: SubjectGender | null
   /** The customer's own uploaded photo, as a signed URL that expires in an hour (re-read the session for a fresh one). Present so a restored session can show the photo; owner-checked like every route here. */
   photoUrl?: string | null
 }

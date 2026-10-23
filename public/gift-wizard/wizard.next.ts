@@ -37,7 +37,7 @@ function registry(){return registries[session.source?.series||fixtureSeries]}
 function effects(){return liveEffects(registry())}
 function currentArt(){return session.batches.flat().find(p=>p.id===artFocus)||session.batches[batchIndex]?.[0]}
 function favorite(){return session.batches.flat().find(p=>p.id===(shoppingFavoriteId||session.favoriteId))}
-function stage(){if(pivotMode)return view==='photo'?0:view==='effects'?1:studioState.step==='product'?2:3;return view==='photo'?0:view==='effects'?1:['review','focus','compare','more'].includes(view)?2:['products','configuration','cart'].includes(view)?3:view==='compositions'?5:4}
+function stage(){if(pivotMode)return view==='photo'||view==='payment'?0:view==='effects'?1:studioState.step==='product'?2:3;return view==='photo'?0:view==='effects'?1:['review','focus','compare','more'].includes(view)?2:['products','configuration','cart'].includes(view)?3:view==='compositions'?5:4}
 function go(v:View,record=true){if(busy)return;if(live?.session?.entrance==='collection'&&['photo','effects','review','focus','compare','more'].includes(v))v=purchased(live.session)?'compositions':'products';if(live?.session&&purchased(live.session)&&['photo','products','configuration','cart','checkout'].includes(v)){view='payment';render();return}if(live?.session&&['needs_attention','refund_requested','refunded','cancelled'].includes(live.session.order.state)){view='payment';render();return}if(v==='compositions'&&!layoutReview&&!(live?.session&&purchased(live.session))){paymentState='pending';v='payment'}if(['effects','review','focus','compare','more'].includes(v)&&!layoutReview&&!session.source){v=live||params.has('gift_order_session')?'payment':'photo'}if(v==='checkout'&&serverMode&&!live?.session?.artworkPreviewId)v=session.batches.length?'review':'effects';if(['review','focus','compare'].includes(v)&&!session.batches.length&&!generationBatch)v='effects';if(record&&view!==v)history.push(view);view=v;render();$('screen').scrollTop=0;if(v==='checkout')$('screen').parentElement!.scrollTop=0;$('workspace').focus({preventScroll:true});window.scrollTo(0,0)}
 function back(){if(busy)return;if(view==='configuration'){while(history.at(-1)==='products'||history.at(-1)==='configuration')history.pop();go('products',false);return}const v=history.pop()||({configuration:'products',products:'review',cart:'products',checkout:'cart',focus:'review',compare:'review',review:'effects',effects:'photo'} as Partial<Record<View,View>>)[view];if(v)go(v,false)}
 function primary(label:string,fn:()=>void,disabled=false){const body=document.createElement('div');body.className='context-body';while($('right').firstChild)body.appendChild($('right').firstChild!);$('right').appendChild(body);$('right').insertAdjacentHTML('beforeend','<button id="primary" class="primary" '+(busy||disabled?'disabled':'')+'>'+label+' →</button>');$('primary').onclick=fn}
@@ -48,9 +48,9 @@ function thumb(id:string){
  const series=session.source?.series||fixtureSeries;
  if(series==='groups')return '/previews/groups/groups_'+id+'.jpg';
  const library=manifest?.[series],x=library?.effects?.[id];
- // Same subject-first ordering as Discovery previewUrlFor. Gift SourceView does
- // not expose the analyzed subject yet; fixture overrides never affect live sessions.
- const subject=layoutReview?(params.get('fixtureSubject')==='woman'?'woman':'man'):null;
+ // Only CC's authenticated subject analysis selects a live gender variant.
+ const gender=live?.session?.source.subjectGender;
+ const subject=layoutReview?(params.get('fixtureSubject')==='woman'?'woman':'man'):gender==='female'?'woman':gender==='male'?'man':null;
  if(series==='portraits'&&!subject)return '';
  const f=(series==='portraits'?x?.[subject!]:x?.neutral)||x?.neutral||x?.man||x?.woman||x?.all?.[0];
  return f?library.base+id+'/'+f:'';
@@ -64,7 +64,7 @@ function confirmGiftExit(destination:string){
  document.body.append(dialog);dialog.addEventListener('close',()=>{dialog.remove();opener?.focus()},{once:true});dialog.querySelector<HTMLButtonElement>('#keep-creating')!.onclick=()=>dialog.close();dialog.querySelector<HTMLButtonElement>('#confirm-cancel-gift')!.onclick=()=>{rememberView();location.assign(destination)};dialog.showModal();dialog.querySelector<HTMLButtonElement>('#keep-creating')!.focus();
 }
 function render(){
- document.body.classList.toggle('gift-pivot',pivotMode);if(pivotMode)rememberPivotReview();
+ document.body.classList.toggle('gift-pivot',pivotMode);if(pivotMode){if(layoutReview)rememberPivotReview();setPivotProgress()}else document.querySelector('.progress')!.innerHTML=legacyProgress;
  if(live?.session?.order.state==='approved'){view='compositions';orderReviewExample=true;}
  $('left').hidden=false;
  $('error').hidden=true;$('error').textContent='';$('status').textContent=layoutReview?'Layout review · sample artwork · no payment or order':'';$('screen').dataset.view=view;$('right').classList.toggle('artwork-actions',['review','focus','compare'].includes(view));$('left').classList.toggle('effects-rail',view==='effects');$('workspace').setAttribute('aria-busy',String(busy));$('screen').innerHTML='';$('right').innerHTML='';
@@ -144,7 +144,6 @@ function adaptMobileView(){
 
 }
 function renderPhoto(){
- if(pivotMode&&sourceURL){go('effects',false);return}
  rail('Your<br>Photo','<p>Let’s start with a photo and some details.</p><p>A great photo helps us create art you’ll be proud to give — and one they’ll treasure for years to come.</p>');
  $('right').innerHTML=sourceURL?'<div class="source-holder">'+photo(sourceURL,'Your uploaded photograph')+'</div>'+'<p>Photo uploaded.</p><p class="small">Sample analysis and artwork only. Your photo is not transformed in this preview.</p>'+secondary('change-photo','Change photo'):'<h2>Photo tips</h2><ul class="tips"><li>Use a clear, well-lit photo</li><li>A close-up works best</li><li>Natural lighting looks great</li><li>Avoid heavy filters</li></ul>';
  $('screen').innerHTML='<input id="photo" type="file" accept="image/jpeg,image/png,image/webp" hidden>'+(sourceURL?'<h2>Who is this gift for?</h2><fieldset class="radios"><legend hidden>Who is this gift for?</legend>'+recipientOptions.map(x=>'<label class="radio"><input type="radio" name="recipient" value="'+esc(x)+'" '+(session.recipient===x?'checked':'')+'><span>'+x+'</span></label>').join('')+'</fieldset>':'<h2>Upload your photo</h2><div class="upload" id="drop"><div class="upload-icon" aria-hidden="true">↑</div><p>Drag and drop your photo here<br>or</p><button id="choose-photo">Choose a Photo</button><p class="small">JPEG, PNG or WebP · up to '+(limit/1000000).toFixed(2)+' MB</p></div>');
@@ -155,7 +154,8 @@ function renderPhoto(){
  if($('choose-photo'))($('choose-photo') as HTMLButtonElement).disabled=busy;if($('drop')){const drop=$('drop');drop.ondragover=e=>{e.preventDefault();drop.classList.add('drag')};drop.ondragleave=()=>drop.classList.remove('drag');drop.ondrop=e=>{e.preventDefault();drop.classList.remove('drag');const f=e.dataTransfer?.files[0];if(f)upload(f)}}
  $('photo').onchange=e=>{const el=e.target as HTMLInputElement,f=el.files?.[0];el.value='';if(f)upload(f)};
  document.querySelectorAll<HTMLInputElement>('[name=recipient]').forEach(el=>el.onchange=()=>{session.recipient=el.value;render()});
- primary('Choose Effects',()=>go('effects'),!session.recipient||session.source?.status!=='supported');
+ if(pivotMode&&sourceURL){$('screen').querySelector('fieldset')?.remove();$('screen').querySelector('h2')!.textContent='Your Photo';$('screen').insertAdjacentHTML('beforeend',photo(sourceURL,'Your uploaded photograph'));}
+ primary('Choose Effects',()=>go('effects'),(!pivotMode&&!session.recipient)||session.source?.status!=='supported');if(pivotMode&&!sourceURL)$('primary').hidden=true;
 }
 async function upload(file:File){
  if(live?.session&&purchased(live.session))return;
@@ -169,9 +169,9 @@ async function upload(file:File){
   const api=new GiftBackend((url,init)=>fetch(url,init)),created=await api.create(read.b64);
   live=new LiveGift(api,created.sessionId);live.accept(created);session=newSession();await syncCatalog();applyServer(created);restorationComplete=true;
   const u=new URL(location.href);u.searchParams.delete('newGift');u.searchParams.delete('resumeSessionId');u.searchParams.set('sessionId',created.sessionId);params.delete('newGift');params.delete('resumeSessionId');params.set('sessionId',created.sessionId);window.history.replaceState(null,'',u);
-  if(sourceURL)URL.revokeObjectURL(sourceURL);sourceURL=candidate;candidate='';history=[];busy=false;analyzingSource=false;render();return;
+  if(sourceURL)URL.revokeObjectURL(sourceURL);sourceURL=candidate;candidate='';history=[];busy=false;analyzingSource=false;if(pivotMode)view='effects';render();return;
  }
- if(sourceURL)URL.revokeObjectURL(sourceURL);sourceURL=candidate;candidate='';session=newSession();session.source={status:'supported',series:fixtureSeries,sourceRef:'local-photo-'+crypto.randomUUID(),fixture:true};history=[];silo='all';effectFocus='';busy=false;analyzingSource=false;render();
+ if(sourceURL)URL.revokeObjectURL(sourceURL);sourceURL=candidate;candidate='';session=newSession();session.source={status:'supported',series:fixtureSeries,sourceRef:'local-photo-'+crypto.randomUUID(),fixture:true};history=[];silo='all';effectFocus='';busy=false;analyzingSource=false;if(pivotMode)view='effects';render();
  }catch(e){busy=false;analyzingSource=false;if(e instanceof GiftApiError&&e.status===401){paymentState='auth';view='payment';render();return}render();const recovery=e instanceof GiftApiError&&e.code==='rate_limited'?e.details as {resumeSessionId?:string;samePhoto?:boolean}:null;if(recovery?.resumeSessionId&&/^[\w-]{1,80}$/.test(recovery.resumeSessionId)){$('right').insertAdjacentHTML('afterbegin',secondary('resume-upload','Return to Your Gift'));$('resume-upload').onclick=()=>location.assign('/gift-wizard.next.html?sessionId='+encodeURIComponent(recovery.resumeSessionId!));error('Return to Your Gift')}else error(e instanceof Error?e.message:'This photograph could not be opened.')}finally{if(candidate)URL.revokeObjectURL(candidate)}
 }
 const productPreviews=new Map<string,{value?:ProductPreviewView;failed?:boolean;unavailable?:boolean}>();
@@ -242,11 +242,14 @@ function renderCart(){
 }
 
 // Isolated review adapter for the approved migration-059 screens. No generation API is invented.
+const legacyProgress=document.querySelector('.progress')!.innerHTML;
 let pivotRestored=false;
 function rememberPivotReview(){if(!pivotRestored)return;try{sessionStorage.setItem(pivotKey,JSON.stringify({view,effectIds:session.effectIds,studioState}))}catch{}}
-function restorePivotReview(){
+function setPivotProgress(){
  document.querySelector('.progress')!.innerHTML=['Upload Photo','Choose One Effect','Choose Gift','Gift Details','Personalized Review','Approve Composition','Checkout'].map(x=>'<li>'+x+'</li>').join('');
-
+}
+function restorePivotReview(){
+ setPivotProgress();
  try{const saved=JSON.parse(sessionStorage.getItem(pivotKey)||'null');if(!saved)return;
   const id=saved.effectIds?.[0];session.effectIds=effects().some(e=>e.id===id)?[id]:[];effectFocus=session.effectIds[0]||'';
   if(['photo','effects','products'].includes(saved.view))view=saved.view;
@@ -254,15 +257,15 @@ function restorePivotReview(){
  }catch{}
 }
 function pivotRail(title:string){
- rail(title,'');$('left').querySelector('.eyebrow')?.remove();$('left').querySelector('.rule')?.remove();$('left').querySelector('.tagline')?.remove();
- const start=document.createElement('button');start.id='pivot-start';start.textContent='Start Over';start.onclick=()=>{try{sessionStorage.removeItem(pivotKey)}catch{}session.effectIds=[];studioState={step:'product',productId:'',size:'',copies:1,drafts:{}};sourceURL='';history=[];go('photo',false)};$('left').insertBefore(start,$('back'));
+ rail(title,'');$('new-gift')?.remove();$('left').querySelector('.eyebrow')?.remove();$('left').querySelector('.rule')?.remove();$('left').querySelector('.tagline')?.remove();
+ const start=document.createElement('button');start.id='pivot-start';start.textContent='Start Over';start.onclick=()=>{if(serverMode){rememberView();location.assign('/gift-wizard.next.html?newGift=1'+(live?'&resumeSessionId='+encodeURIComponent(live.id):''));return}try{sessionStorage.removeItem(pivotKey)}catch{}session.effectIds=[];studioState={step:'product',productId:'',size:'',copies:1,drafts:{}};sourceURL='';history=[];go('photo',false)};$('left').insertBefore(start,$('back'));
 }
 function renderPivotEffects(){
  pivotRail('Choose<br>an Effect');const all=effects(),silos=registry().silos.filter(x=>all.some(e=>e.category===x.id));
  if(!effectFocus||!all.some(e=>e.id===effectFocus))effectFocus=session.effectIds[0]||all[0]?.id||'';
  if(silo==='all'||!silos.some(x=>x.id===silo))silo=silos[0]?.id||'';
  const focused=all.find(e=>e.id===effectFocus);if(!focused)return;
- $('filters').innerHTML='<h2>'+esc(fixtureSeries==='groups'?'Groups':fixtureSeries==='pets'?'Pets':'Portraits')+'</h2><div class="filters">'+silos.map(x=>'<button data-silo="'+x.id+'" aria-pressed="'+(silo===x.id)+'">'+esc(x.label)+'</button>').join('')+'</div>';
+ $('filters').innerHTML='<h2>'+esc((session.source?.series||fixtureSeries)==='groups'?'Groups':(session.source?.series||fixtureSeries)==='pets'?'Pets':'Portraits')+'</h2><div class="filters">'+silos.map(x=>'<button data-silo="'+x.id+'" aria-pressed="'+(silo===x.id)+'">'+esc(x.label)+'</button>').join('')+'</div>';
  $('screen').innerHTML='<div class="palette"><div class="grid">'+all.filter(e=>e.category===silo).map(e=>'<button class="tile" data-effect="'+e.id+'" aria-pressed="'+(effectFocus===e.id)+'">'+effectPhoto(e.id,e.label)+'<span>'+esc(e.label)+'</span></button>').join('')+'</div></div>';
  $('right').innerHTML='<h2>'+esc(focused.label)+'</h2>'+effectPhoto(focused.id,focused.label,'context-image');
  document.querySelectorAll<HTMLButtonElement>('[data-silo]').forEach(b=>b.onclick=()=>{silo=b.dataset.silo!;render()});
@@ -271,11 +274,11 @@ function renderPivotEffects(){
 }
 function renderPivotProducts(){
  pivotRail(studioState.step==='product'?'Choose<br>your Gift':'Choose<br>your Size');$('right').innerHTML='';$('back').hidden=true;
- const choices=products.map(p=>({...p,image:familyPhoto({id:p.id,image:asset(p.image)}),options:p.options.filter(o=>giftCompositionEligibility(p,o,pivotSubjectCount).allowed)}));
+ const choices=products.map(p=>({...p,image:familyPhoto({id:p.id,image:asset(p.image)}),options:p.options.filter(o=>giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
  mountStudio($('screen'),{products:choices,state:studioState,navigationHost:$('left'),configurationHost:$('right'),
   previewHtml:p=>photo(p.image,p.label),canAdd:()=>false,onAdd:()=>{},addLabel:'Craft',
-  onChange:s=>{studioState=s;rememberPivotReview();$('left').querySelector('h1')!.innerHTML=s.step==='product'?'Choose<br>your Gift':'Choose<br>your Size';document.body.dataset.pivotStep=s.step;document.querySelectorAll('.progress li').forEach((el,i)=>{if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});if(mobileLayout.matches){$('mobile-progress')?.remove();renderMobileProgress()}},
-  onExit:()=>go('effects'),utilityHtml:'<p class="small">'+(pivotSubjectCount>=2?'Landscape: unavailable manufacturing SKU':'')+'</p>'});
+  onChange:s=>{studioState=s;if(layoutReview)rememberPivotReview();else rememberView();$('left').querySelector('h1')!.innerHTML=s.step==='product'?'Choose<br>your Gift':'Choose<br>your Size';document.body.dataset.pivotStep=s.step;document.querySelectorAll('.progress li').forEach((el,i)=>{if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});if(mobileLayout.matches){$('mobile-progress')?.remove();renderMobileProgress()}},
+  onExit:()=>go('effects'),utilityHtml:'<p class="small">'+(pivotSubjectCount()>=2?'Landscape: unavailable manufacturing SKU':'')+'</p>'});
  document.body.dataset.pivotStep=studioState.step;
 }
 
@@ -431,9 +434,9 @@ function renderCheckout(){
 const layoutViews=['photo','products','configuration','cart','checkout','payment-loading','payment-pending','payment-failed','payment-verified','auth','restoring','restore-failed','effects','gallery','gallery-second','approval','approval-second','approval-final','approval-loading','approval-failed'] as const;
 const layoutName=params.get('layoutReview')||'';
 const layoutReview=layoutViews.some(v=>v===layoutName);
-const pivotMode=layoutReview&&params.get('pivot')==='1';
-const pivotSubjectCount=Number(params.get('subjects')||'1');
-const pivotKey='gift-pivot-review:'+fixtureSeries+':'+pivotSubjectCount;
+let pivotMode=layoutReview?params.get('pivot')==='1':params.get('fixture')!=='1';
+function pivotSubjectCount(){return layoutReview?Number(params.get('subjects')||'1'):live?.session?.source.series==='groups'?live.session.source.peopleCount||0:1}
+const pivotKey='gift-pivot-review:'+fixtureSeries+':'+params.get('subjects');
 let disclosureAccepted=false,paymentState='blocked';
 const restoration=new RequestSlot<SessionView|null>();
 const serverMode=!layoutReview&&params.get('fixture')!=='1';
@@ -476,7 +479,7 @@ function restoreView(s:SessionView){
  if(configured?.available&&configured.options.some(o=>o.size===hint.size)){activeProduct=configured.id;size=hint.size;copies=Number.isInteger(hint.copies)&&hint.copies>=1&&hint.copies<=20?hint.copies:1;editId=session.lines.some(l=>l.id===hint.editId)?hint.editId:null}
  const allowed:View[]=['photo','effects','review','focus','compare','more','products','configuration','cart','checkout','compositions'];
  history=Array.isArray(hint.history)?hint.history.filter((v:View)=>allowed.includes(v)):[];
- if(generationBatch)view='review';else if(allowed.includes(hint.view))go(hint.view,false);
+ if(generationBatch)view='review';else if(allowed.includes(hint.view)&&(!pivotMode||['photo','effects','products'].includes(hint.view)))go(hint.view,false);
 }
 window.addEventListener('pagehide',()=>{rememberView();clearTimeout(generationTimer)});
 window.addEventListener('pageshow',e=>{if(e.persisted&&serverMode){view='payment';void retryRestoration()}});
@@ -514,7 +517,7 @@ async function retryRestoration(){
  });
  const state=restoration.state;busy=false;
  if(state.status==='ready'){
-  if(!state.value){live=null;session=newSession();sourceURL='';generationBatch=null;restorationComplete=false;view='photo';await syncCatalog();render();return}
+  if(!state.value){pivotMode=true;live=null;session=newSession();sourceURL='';generationBatch=null;restorationComplete=false;view='photo';await syncCatalog();render();return}
   try{await syncCatalog();applyServer(state.value);await loadMockups();paymentState=purchased(state.value)?'payment-verified':'pending';view=state.value.order.state==='none'?(session.batches.length?'review':'effects'):'payment';if(suggestedView)view=suggestedView;restoreView(state.value);render();void resumeStalledBatches();await resumeCompositionWork(true)}
   catch(e){live?.clear();paymentState='restore-failed';render();error(e instanceof Error?e.message:'request_failed')}
  }else{view='payment';restorationComplete=false;paymentState=state.status==='failed'&&state.httpStatus===401?'auth':state.status==='failed'&&state.code==='payment_pending'?'pending':'restore-failed';render();if(state.status==='failed')error(state.code)}
@@ -561,7 +564,7 @@ function initializeLayoutReview(){
 async function start(){try{
  const [c,f,m,samples]=await Promise.all([fetch(asset('./catalog.next.json')),serverMode?Promise.resolve(new Response('[]',{status:200})):fetch(asset('./fixtures.next.json')),fetch(asset('./effect-previews/index.next.json')),fetch(asset('./catalog-samples/index.next.json')).catch(()=>null)]);if(!c.ok||!f.ok||!m.ok)throw Error();const catalog=await c.json();products=catalog.products;limit=catalog.maxUploadBytes;fixtures=await f.json();manifest=await m.json();if(samples?.ok){const sampleIndex=await samples.json();if(sampleIndex.version===1)catalogSamples=sampleIndex.series||{};}
  for(const [series,path] of [['portraits','/effect-registry.js'],['groups','/groups-registry.js'],['pets','/pets-registry.js']] as const){await import(path);registries[series]=window.EFFECT_REGISTRY}
- initializeLayoutReview();if(pivotMode){restorePivotReview();pivotRestored=true;}render();
+ initializeLayoutReview();if(pivotMode&&layoutReview){restorePivotReview();pivotRestored=true;}render();
  if(serverMode){
   view='payment';await retryRestoration();
  }
@@ -575,6 +578,7 @@ async function syncCatalog(){
 }
 
 function applyServer(s:SessionView){
+ pivotMode=s.entrance!=='collection'&&s.order.state==='none'&&!s.batches.length&&!s.lines.length&&!s.artworkPreviewId;
  sourceURL=s.source.photoUrl||(session.sessionId===s.sessionId?sourceURL:'');
  const lines=s.lines.map(l=>{
   const split=l.productId.lastIndexOf(':'),family=l.productId.slice(0,split);
@@ -685,7 +689,7 @@ function adaptServerView(){
    primaryLive(()=>location.assign('/help'),false);$('primary').textContent='Concierge';
   }
  }
- if(view==='effects'){
+ if(view==='effects'&&!pivotMode){
   $('right').insertAdjacentHTML('beforeend','<p class="small" role="status">'+esc(s.nextBatch.kind==='free'?'Free · Six Previews':s.nextBatch.kind==='paid'?'Six previews available':s.nextBatch.kind==='payment_required'?'Six More · $2.99':s.nextBatch.reason)+'</p>');
   document.querySelectorAll<HTMLButtonElement>('[data-effect]').forEach(b=>{b.disabled=s.usedEffectIds.includes(b.dataset.effect!)});
   primaryLive(()=>s.nextBatch.kind==='payment_required'?go('more'):void generate(),!canCraft(s)&&s.nextBatch.kind!=='payment_required');
@@ -703,7 +707,7 @@ function adaptServerView(){
   }
   if($('compare'))($('compare') as HTMLButtonElement).disabled=session.batches[batchIndex].length<2;
  }
- if(['effects','review','focus','compare'].includes(view)&&!generationBatch){
+ if(!pivotMode&&['effects','review','focus','compare'].includes(view)&&!generationBatch){
   const incomplete=s.batches.find(b=>!b.complete);
   if(incomplete){$('right').insertAdjacentHTML('beforeend',secondary('retry-batch','Try again'));$('retry-batch').onclick=()=>void serverAction(async()=>{const r=await live!.api.retryBatch(live!.id,incomplete.batchIndex);return r.session},'review')}
  }

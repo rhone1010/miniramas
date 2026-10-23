@@ -34,7 +34,7 @@ function effects() { return liveEffects(registry()); }
 function currentArt() { return session.batches.flat().find(p => p.id === artFocus) || session.batches[batchIndex]?.[0]; }
 function favorite() { return session.batches.flat().find(p => p.id === (shoppingFavoriteId || session.favoriteId)); }
 function stage() { if (pivotMode)
-    return view === 'photo' ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
+    return view === 'photo' || view === 'payment' ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
 function go(v, record = true) { if (busy)
     return; if (live?.session?.entrance === 'collection' && ['photo', 'effects', 'review', 'focus', 'compare', 'more'].includes(v))
     v = purchased(live.session) ? 'compositions' : 'products'; if (live?.session && purchased(live.session) && ['photo', 'products', 'configuration', 'cart', 'checkout'].includes(v)) {
@@ -73,9 +73,9 @@ function thumb(id) {
     if (series === 'groups')
         return '/previews/groups/groups_' + id + '.jpg';
     const library = manifest?.[series], x = library?.effects?.[id];
-    // Same subject-first ordering as Discovery previewUrlFor. Gift SourceView does
-    // not expose the analyzed subject yet; fixture overrides never affect live sessions.
-    const subject = layoutReview ? (params.get('fixtureSubject') === 'woman' ? 'woman' : 'man') : null;
+    // Only CC's authenticated subject analysis selects a live gender variant.
+    const gender = live?.session?.source.subjectGender;
+    const subject = layoutReview ? (params.get('fixtureSubject') === 'woman' ? 'woman' : 'man') : gender === 'female' ? 'woman' : gender === 'male' ? 'man' : null;
     if (series === 'portraits' && !subject)
         return '';
     const f = (series === 'portraits' ? x?.[subject] : x?.neutral) || x?.neutral || x?.man || x?.woman || x?.all?.[0];
@@ -104,8 +104,13 @@ function confirmGiftExit(destination) {
 }
 function render() {
     document.body.classList.toggle('gift-pivot', pivotMode);
-    if (pivotMode)
-        rememberPivotReview();
+    if (pivotMode) {
+        if (layoutReview)
+            rememberPivotReview();
+        setPivotProgress();
+    }
+    else
+        document.querySelector('.progress').innerHTML = legacyProgress;
     if (live?.session?.order.state === 'approved') {
         view = 'compositions';
         orderReviewExample = true;
@@ -305,10 +310,6 @@ function adaptMobileView() {
     }
 }
 function renderPhoto() {
-    if (pivotMode && sourceURL) {
-        go('effects', false);
-        return;
-    }
     rail('Your<br>Photo', '<p>Let’s start with a photo and some details.</p><p>A great photo helps us create art you’ll be proud to give — and one they’ll treasure for years to come.</p>');
     $('right').innerHTML = sourceURL ? '<div class="source-holder">' + photo(sourceURL, 'Your uploaded photograph') + '</div>' + '<p>Photo uploaded.</p><p class="small">Sample analysis and artwork only. Your photo is not transformed in this preview.</p>' + secondary('change-photo', 'Change photo') : '<h2>Photo tips</h2><ul class="tips"><li>Use a clear, well-lit photo</li><li>A close-up works best</li><li>Natural lighting looks great</li><li>Avoid heavy filters</li></ul>';
     $('screen').innerHTML = '<input id="photo" type="file" accept="image/jpeg,image/png,image/webp" hidden>' + (sourceURL ? '<h2>Who is this gift for?</h2><fieldset class="radios"><legend hidden>Who is this gift for?</legend>' + recipientOptions.map(x => '<label class="radio"><input type="radio" name="recipient" value="' + esc(x) + '" ' + (session.recipient === x ? 'checked' : '') + '><span>' + x + '</span></label>').join('') + '</fieldset>' : '<h2>Upload your photo</h2><div class="upload" id="drop"><div class="upload-icon" aria-hidden="true">↑</div><p>Drag and drop your photo here<br>or</p><button id="choose-photo">Choose a Photo</button><p class="small">JPEG, PNG or WebP · up to ' + (limit / 1000000).toFixed(2) + ' MB</p></div>');
@@ -335,7 +336,14 @@ function renderPhoto() {
     $('photo').onchange = e => { const el = e.target, f = el.files?.[0]; el.value = ''; if (f)
         upload(f); };
     document.querySelectorAll('[name=recipient]').forEach(el => el.onchange = () => { session.recipient = el.value; render(); });
-    primary('Choose Effects', () => go('effects'), !session.recipient || session.source?.status !== 'supported');
+    if (pivotMode && sourceURL) {
+        $('screen').querySelector('fieldset')?.remove();
+        $('screen').querySelector('h2').textContent = 'Your Photo';
+        $('screen').insertAdjacentHTML('beforeend', photo(sourceURL, 'Your uploaded photograph'));
+    }
+    primary('Choose Effects', () => go('effects'), (!pivotMode && !session.recipient) || session.source?.status !== 'supported');
+    if (pivotMode && !sourceURL)
+        $('primary').hidden = true;
 }
 async function upload(file) {
     if (live?.session && purchased(live.session))
@@ -385,6 +393,8 @@ async function upload(file) {
             history = [];
             busy = false;
             analyzingSource = false;
+            if (pivotMode)
+                view = 'effects';
             render();
             return;
         }
@@ -399,6 +409,8 @@ async function upload(file) {
         effectFocus = '';
         busy = false;
         analyzingSource = false;
+        if (pivotMode)
+            view = 'effects';
         render();
     }
     catch (e) {
@@ -543,14 +555,18 @@ function renderCart() {
     primary('Next: Checkout', () => go('checkout'), !session.lines.length || !cartPreviewsReady());
 }
 // Isolated review adapter for the approved migration-059 screens. No generation API is invented.
+const legacyProgress = document.querySelector('.progress').innerHTML;
 let pivotRestored = false;
 function rememberPivotReview() { if (!pivotRestored)
     return; try {
     sessionStorage.setItem(pivotKey, JSON.stringify({ view, effectIds: session.effectIds, studioState }));
 }
 catch { } }
-function restorePivotReview() {
+function setPivotProgress() {
     document.querySelector('.progress').innerHTML = ['Upload Photo', 'Choose One Effect', 'Choose Gift', 'Gift Details', 'Personalized Review', 'Approve Composition', 'Checkout'].map(x => '<li>' + x + '</li>').join('');
+}
+function restorePivotReview() {
+    setPivotProgress();
     try {
         const saved = JSON.parse(sessionStorage.getItem(pivotKey) || 'null');
         if (!saved)
@@ -574,13 +590,18 @@ function restorePivotReview() {
 }
 function pivotRail(title) {
     rail(title, '');
+    $('new-gift')?.remove();
     $('left').querySelector('.eyebrow')?.remove();
     $('left').querySelector('.rule')?.remove();
     $('left').querySelector('.tagline')?.remove();
     const start = document.createElement('button');
     start.id = 'pivot-start';
     start.textContent = 'Start Over';
-    start.onclick = () => { try {
+    start.onclick = () => { if (serverMode) {
+        rememberView();
+        location.assign('/gift-wizard.next.html?newGift=1' + (live ? '&resumeSessionId=' + encodeURIComponent(live.id) : ''));
+        return;
+    } try {
         sessionStorage.removeItem(pivotKey);
     }
     catch { } session.effectIds = []; studioState = { step: 'product', productId: '', size: '', copies: 1, drafts: {} }; sourceURL = ''; history = []; go('photo', false); };
@@ -596,7 +617,7 @@ function renderPivotEffects() {
     const focused = all.find(e => e.id === effectFocus);
     if (!focused)
         return;
-    $('filters').innerHTML = '<h2>' + esc(fixtureSeries === 'groups' ? 'Groups' : fixtureSeries === 'pets' ? 'Pets' : 'Portraits') + '</h2><div class="filters">' + silos.map(x => '<button data-silo="' + x.id + '" aria-pressed="' + (silo === x.id) + '">' + esc(x.label) + '</button>').join('') + '</div>';
+    $('filters').innerHTML = '<h2>' + esc((session.source?.series || fixtureSeries) === 'groups' ? 'Groups' : (session.source?.series || fixtureSeries) === 'pets' ? 'Pets' : 'Portraits') + '</h2><div class="filters">' + silos.map(x => '<button data-silo="' + x.id + '" aria-pressed="' + (silo === x.id) + '">' + esc(x.label) + '</button>').join('') + '</div>';
     $('screen').innerHTML = '<div class="palette"><div class="grid">' + all.filter(e => e.category === silo).map(e => '<button class="tile" data-effect="' + e.id + '" aria-pressed="' + (effectFocus === e.id) + '">' + effectPhoto(e.id, e.label) + '<span>' + esc(e.label) + '</span></button>').join('') + '</div></div>';
     $('right').innerHTML = '<h2>' + esc(focused.label) + '</h2>' + effectPhoto(focused.id, focused.label, 'context-image');
     document.querySelectorAll('[data-silo]').forEach(b => b.onclick = () => { silo = b.dataset.silo; render(); });
@@ -607,17 +628,20 @@ function renderPivotProducts() {
     pivotRail(studioState.step === 'product' ? 'Choose<br>your Gift' : 'Choose<br>your Size');
     $('right').innerHTML = '';
     $('back').hidden = true;
-    const choices = products.map(p => ({ ...p, image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => giftCompositionEligibility(p, o, pivotSubjectCount).allowed) }));
+    const choices = products.map(p => ({ ...p, image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => giftCompositionEligibility(p, o, pivotSubjectCount()).allowed) }));
     mountStudio($('screen'), { products: choices, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
         previewHtml: p => photo(p.image, p.label), canAdd: () => false, onAdd: () => { }, addLabel: 'Craft',
-        onChange: s => { studioState = s; rememberPivotReview(); $('left').querySelector('h1').innerHTML = s.step === 'product' ? 'Choose<br>your Gift' : 'Choose<br>your Size'; document.body.dataset.pivotStep = s.step; document.querySelectorAll('.progress li').forEach((el, i) => { if (i === stage())
+        onChange: s => { studioState = s; if (layoutReview)
+            rememberPivotReview();
+        else
+            rememberView(); $('left').querySelector('h1').innerHTML = s.step === 'product' ? 'Choose<br>your Gift' : 'Choose<br>your Size'; document.body.dataset.pivotStep = s.step; document.querySelectorAll('.progress li').forEach((el, i) => { if (i === stage())
             el.setAttribute('aria-current', 'step');
         else
             el.removeAttribute('aria-current'); }); if (mobileLayout.matches) {
             $('mobile-progress')?.remove();
             renderMobileProgress();
         } },
-        onExit: () => go('effects'), utilityHtml: '<p class="small">' + (pivotSubjectCount >= 2 ? 'Landscape: unavailable manufacturing SKU' : '') + '</p>' });
+        onExit: () => go('effects'), utilityHtml: '<p class="small">' + (pivotSubjectCount() >= 2 ? 'Landscape: unavailable manufacturing SKU' : '') + '</p>' });
     document.body.dataset.pivotStep = studioState.step;
 }
 function renderEffects() {
@@ -981,9 +1005,9 @@ function renderCheckout() {
 const layoutViews = ['photo', 'products', 'configuration', 'cart', 'checkout', 'payment-loading', 'payment-pending', 'payment-failed', 'payment-verified', 'auth', 'restoring', 'restore-failed', 'effects', 'gallery', 'gallery-second', 'approval', 'approval-second', 'approval-final', 'approval-loading', 'approval-failed'];
 const layoutName = params.get('layoutReview') || '';
 const layoutReview = layoutViews.some(v => v === layoutName);
-const pivotMode = layoutReview && params.get('pivot') === '1';
-const pivotSubjectCount = Number(params.get('subjects') || '1');
-const pivotKey = 'gift-pivot-review:' + fixtureSeries + ':' + pivotSubjectCount;
+let pivotMode = layoutReview ? params.get('pivot') === '1' : params.get('fixture') !== '1';
+function pivotSubjectCount() { return layoutReview ? Number(params.get('subjects') || '1') : live?.session?.source.series === 'groups' ? live.session.source.peopleCount || 0 : 1; }
+const pivotKey = 'gift-pivot-review:' + fixtureSeries + ':' + params.get('subjects');
 let disclosureAccepted = false, paymentState = 'blocked';
 const restoration = new RequestSlot();
 const serverMode = !layoutReview && params.get('fixture') !== '1';
@@ -1068,7 +1092,7 @@ function restoreView(s) {
     history = Array.isArray(hint.history) ? hint.history.filter((v) => allowed.includes(v)) : [];
     if (generationBatch)
         view = 'review';
-    else if (allowed.includes(hint.view))
+    else if (allowed.includes(hint.view) && (!pivotMode || ['photo', 'effects', 'products'].includes(hint.view)))
         go(hint.view, false);
 }
 window.addEventListener('pagehide', () => { rememberView(); clearTimeout(generationTimer); });
@@ -1151,6 +1175,7 @@ async function retryRestoration() {
     busy = false;
     if (state.status === 'ready') {
         if (!state.value) {
+            pivotMode = true;
             live = null;
             session = newSession();
             sourceURL = '';
@@ -1280,7 +1305,7 @@ async function start() {
             registries[series] = window.EFFECT_REGISTRY;
         }
         initializeLayoutReview();
-        if (pivotMode) {
+        if (pivotMode && layoutReview) {
             restorePivotReview();
             pivotRestored = true;
         }
@@ -1301,6 +1326,7 @@ async function syncCatalog() {
     products = products.map(p => ({ ...p, available: !['mug', 'card'].includes(p.id) && catalog.products.some(c => c.family === p.id && c.selectable), options: catalog.products.filter(c => c.family === p.id && c.status === 'launch' && c.retailCents !== null).map(c => ({ sku: c.sku, size: c.size, family: c.family, label: c.label, retailCents: c.retailCents, attributes: c.attributes, compatible: c.selectable, imageWidthIn: c.requirements.picturePx.w / c.requirements.ppi, imageHeightIn: c.requirements.picturePx.h / c.requirements.ppi, requiredPx: c.requirements.finalPx, familyNote: c.note })) }));
 }
 function applyServer(s) {
+    pivotMode = s.entrance !== 'collection' && s.order.state === 'none' && !s.batches.length && !s.lines.length && !s.artworkPreviewId;
     sourceURL = s.source.photoUrl || (session.sessionId === s.sessionId ? sourceURL : '');
     const lines = s.lines.map(l => {
         const split = l.productId.lastIndexOf(':'), family = l.productId.slice(0, split);
@@ -1535,7 +1561,7 @@ function adaptServerView() {
             $('primary').textContent = 'Concierge';
         }
     }
-    if (view === 'effects') {
+    if (view === 'effects' && !pivotMode) {
         $('right').insertAdjacentHTML('beforeend', '<p class="small" role="status">' + esc(s.nextBatch.kind === 'free' ? 'Free · Six Previews' : s.nextBatch.kind === 'paid' ? 'Six previews available' : s.nextBatch.kind === 'payment_required' ? 'Six More · $2.99' : s.nextBatch.reason) + '</p>');
         document.querySelectorAll('[data-effect]').forEach(b => { b.disabled = s.usedEffectIds.includes(b.dataset.effect); });
         primaryLive(() => s.nextBatch.kind === 'payment_required' ? go('more') : void generate(), !canCraft(s) && s.nextBatch.kind !== 'payment_required');
@@ -1558,7 +1584,7 @@ function adaptServerView() {
         if ($('compare'))
             $('compare').disabled = session.batches[batchIndex].length < 2;
     }
-    if (['effects', 'review', 'focus', 'compare'].includes(view) && !generationBatch) {
+    if (!pivotMode && ['effects', 'review', 'focus', 'compare'].includes(view) && !generationBatch) {
         const incomplete = s.batches.find(b => !b.complete);
         if (incomplete) {
             $('right').insertAdjacentHTML('beforeend', secondary('retry-batch', 'Try again'));
