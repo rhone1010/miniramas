@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the subject into a premium limited-edition designer vinyl art figure. The result is a real manufactured collectible toy, photographed as a physical object.\n\nPreserve an unmistakable likeness through intelligent simplification and gentle caricature. Give the figure a moderately oversized sculpted head, compact body, short simplified limbs and confident toy-like proportions. Emphasize the distinctive face shape, hairstyle, expression, asymmetries and features that make this particular person recognizable rather than creating a generic cute character.\n\nThe entire figure is beautifully molded vinyl with smooth sculptural geometry and subtle seams. Translate the face into clean dimensional forms: sculpted brow, nose, cheeks, jaw, ears and mouth, with inset glossy eyes. Hair becomes a single beautifully sculpted mass broken into broad graphic locks and planes. Skin is painted matte vinyl, not human skin.\n\nTranslate the subject's clothing into simplified molded forms while preserving its recognizable colors, shapes and character. Small details can be sharply painted or molded into the surface.\n\nShow the complete figure standing on a simple collectible display base on a designer toy shop countertop. Behind it is a sophisticated contemporary art-toy boutique with shelves of colorful collectible figures, softly blurred into the background.\n\nUse beautiful high-end product photography, shallow depth of field and soft directional light that reveals the curves, molded geometry and subtle sheen of the vinyl. Leave generous space around the figure and make its small physical scale immediately apparent.\n\nThe result should feel like an expensive numbered art toy created by an accomplished character designer and sculptor, playful, beautifully made and unmistakably the subject. NO TEXT.\n\nAvoid Funko-style extreme proportions, giant square heads, bobbleheads, plush materials, realistic human skin, realistic hair, dolls, action-figure joints, superhero bodies, cheap plastic, generic cartoon faces, text, logos or packaging.",
+  "style": "realistic",
+  "preset": "designer_vinyl",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the subject into a premium limited-edition designer vinyl art figure. The result is a real manufactured collectible toy, photographed as a physical object.\n\nPreserve an unmistakable likeness through intelligent simplification and gentle caricature. Give the figure a moderately oversized sculpted head, compact body, short simplified limbs and confident toy-like proportions. Emphasize the distinctive face shape, hairstyle, expression, asymmetries and features that make this particular person recognizable rather than creating a generic cute character.\n\nThe entire figure is beautifully molded vinyl with smooth sculptural geometry and subtle seams. Translate the face into clean dimensional forms: sculpted brow, nose, cheeks, jaw, ears and mouth, with inset glossy eyes. Hair becomes a single beautifully sculpted mass broken into broad graphic locks and planes. Skin is painted matte vinyl, not human skin.\n\nTranslate the subject's clothing into simplified molded forms while preserving its recognizable colors, shapes and character. Small details can be sharply painted or molded into the surface.\n\nShow the complete figure standing on a simple collectible display base on a designer toy shop countertop. Behind it is a sophisticated contemporary art-toy boutique with shelves of colorful collectible figures, softly blurred into the background.\n\nUse beautiful high-end product photography, shallow depth of field and soft directional light that reveals the curves, molded geometry and subtle sheen of the vinyl. Leave generous space around the figure and make its small physical scale immediately apparent.\n\nThe result should feel like an expensive numbered art toy created by an accomplished character designer and sculptor, playful, beautifully made and unmistakably the subject. NO TEXT.\n\nAvoid Funko-style extreme proportions, giant square heads, bobbleheads, plush materials, realistic human skin, realistic hair, dolls, action-figure joints, superhero bodies, cheap plastic, generic cartoon faces, text, logos or packaging.",
+      "duration_ms": 24587,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "Good likeness, recognizable, but the eyes and mouth proportions differ slightly from the source."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 25788
+}

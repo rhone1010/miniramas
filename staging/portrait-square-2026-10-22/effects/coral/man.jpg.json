@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Make the subject a bust built entirely from hard calcareous coral — rich colours and the whole surface a porous mesh of small cups. The coral is grown into THIS person's own structure. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression. Do not add weight and do not age him. NO human hair.\n\nBranching staghorn forms mass out where the hair should be, following his real hairline, hairstyle, length and direction — do not invent hair he does not have. Thin brain-coral ridges run across the shoulders. The face is the smoothest passage, worked in fine plating coral so the features stay clean while the porous texture still reads across it. Lips are coral. No skin, no real hair. Eyes are real, with a clear catchlight.\n\nFrame from the stomach to the top of the head. He faces us naturally with both eyes clearly visible. The scene is undersea: streams of volumetric light falling from above, schools of fish swimming around the bust and one or two crossing in front of it, the water deepening into blue behind. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+  "style": "realistic",
+  "preset": "coral",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Make the subject a bust built entirely from hard calcareous coral — rich colours and the whole surface a porous mesh of small cups. The coral is grown into THIS person's own structure. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression. Do not add weight and do not age him. NO human hair.\n\nBranching staghorn forms mass out where the hair should be, following his real hairline, hairstyle, length and direction — do not invent hair he does not have. Thin brain-coral ridges run across the shoulders. The face is the smoothest passage, worked in fine plating coral so the features stay clean while the porous texture still reads across it. Lips are coral. No skin, no real hair. Eyes are real, with a clear catchlight.\n\nFrame from the stomach to the top of the head. He faces us naturally with both eyes clearly visible. The scene is undersea: streams of volumetric light falling from above, schools of fish swimming around the bust and one or two crossing in front of it, the water deepening into blue behind. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 22250,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The facial structure is recognizable, but there is noticeable drift in eye shape and hair texture that might make identification less immediate."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The facial structure is recognizable, but there is noticeable drift in eye shape and hair texture that might make identification less immediate.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Make the subject a bust built entirely from hard calcareous coral — rich colours and the whole surface a porous mesh of small cups. The coral is grown into THIS person's own structure. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression. Do not add weight and do not age him. NO human hair.\n\nBranching staghorn forms mass out where the hair should be, following his real hairline, hairstyle, length and direction — do not invent hair he does not have. Thin brain-coral ridges run across the shoulders. The face is the smoothest passage, worked in fine plating coral so the features stay clean while the porous texture still reads across it. Lips are coral. No skin, no real hair. Eyes are real, with a clear catchlight.\n\nFrame from the stomach to the top of the head. He faces us naturally with both eyes clearly visible. The scene is undersea: streams of volumetric light falling from above, schools of fish swimming around the bust and one or two crossing in front of it, the water deepening into blue behind. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 32232,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "Good likeness, recognizable features like facial hair and smile are preserved, but certain details such as the hair texture and overall age expression have minor drifts."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"Good likeness, recognizable features like facial hair and smile are preserved, but certain details such as the hair texture and overall age expression have minor drifts.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"Good likeness, recognizable features like facial hair and smile are preserved, but certain details such as the hair texture and overall age expression have minor drifts.\"",
+  "fatal_error": null,
+  "duration_ms": 56153
+}

@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the subject into an extraordinary dimensional mosaic portrait. Preserve a strong recognizable likeness, expression and natural proportions.\n\nConstruct the portrait from thousands of irregular pieces of colored glass, glazed ceramic and stone. Use larger expressive fragments through the clothing and surrounding areas, becoming much finer and more intricate across the face, eyes and mouth to preserve likeness.\n\nLet the colors originate from the source photograph and expand into a rich artistic palette. Use translucent jewel-like glass, varied ceramic surfaces, occasional gold tesserae and beautiful irregular grout lines.\n\nFrame from the upper chest through the complete head with generous space around the subject. Grazing gallery light reveals the physical depth, uneven surfaces, glass reflections and handcrafted character of the mosaic.\n\nThe result is a sophisticated one-of-a-kind mosaic artwork, richly detailed, tactile and unmistakably the source person. NO TEXT.\n\nAvoid flat printed mosaic, regular square tiles, pixel art, uniform tile sizes, thick grout, generic face or loss of likeness.",
+  "style": "realistic",
+  "preset": "mosaic_portrait",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the subject into an extraordinary dimensional mosaic portrait. Preserve a strong recognizable likeness, expression and natural proportions.\n\nConstruct the portrait from thousands of irregular pieces of colored glass, glazed ceramic and stone. Use larger expressive fragments through the clothing and surrounding areas, becoming much finer and more intricate across the face, eyes and mouth to preserve likeness.\n\nLet the colors originate from the source photograph and expand into a rich artistic palette. Use translucent jewel-like glass, varied ceramic surfaces, occasional gold tesserae and beautiful irregular grout lines.\n\nFrame from the upper chest through the complete head with generous space around the subject. Grazing gallery light reveals the physical depth, uneven surfaces, glass reflections and handcrafted character of the mosaic.\n\nThe result is a sophisticated one-of-a-kind mosaic artwork, richly detailed, tactile and unmistakably the source person. NO TEXT.\n\nAvoid flat printed mosaic, regular square tiles, pixel art, uniform tile sizes, thick grout, generic face or loss of likeness.",
+      "duration_ms": 37347,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The rendered figure closely matches the source in eye shape and color, hair texture, and overall facial structure, with only minor differences in detail."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 38420
+}

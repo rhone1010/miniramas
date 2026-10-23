@@ -1,0 +1,53 @@
+Staged collection visual review
+
+2026-10-22 local review:
+Toys: all 14 outputs inspected together. Distinct toy treatments are present and square
+compositions contain their subjects. Marionette material realism remains a designer review
+point. Male Tin Wind-Ups and both Atomic Age Robot outputs carry production likeness flags.
+Female Marionettes was recovered from an interrupted request; its second permitted attempt
+passed and was inspected at full size. The first attempt is retained separately for traceability.
+
+Another Age: all 14 outputs inspected together. Clothing and environments differ by effect.
+The female Elizabethan, Samurai, and Wild West images retain production likeness flags.
+The female Samurai face is small and partly obscured by the action pose. No prompts or
+source assignments were changed to conceal these results.
+
+Browser checks: local gallery opens; male and female outputs appear side by side. Collection
+filter and failed/missing/review filter operate. Original-source link opens the original
+896x1200 image; generated full-size link opens a 1024x1024 image. Pending outputs are explicit.
+
+Automated gate pass is not designer approval. All assets remain staged.
+
+Earth & Ore: all 14 outputs inspected. Metallic, stone, green jade, dark wood, reclaimed
+patina, and crystal treatments are visibly distinct. Female Jade and both Crystallized
+variants remain flagged by the production likeness gate; the faceted crystal treatment
+strongly changes facial surfaces. Native compositions are square without post-cropping.
+
+Light & Glass: all 14 outputs inspected. Glass fragments, ice, flowing metal, neon lines,
+sea glass, polished gold and mosaic have distinct visual treatments. Female Frost & Ice,
+male Liquid Mercury, and both Sea Glass variants retain production likeness flags.
+No blank images or simulated-square padding observed in this collection.
+
+Living World: all 14 outputs inspected. The reef, wood, lichen, petals, sand and ember
+treatments are distinct. Male Living Reef, Tidewood and Lichen Granite, female Sand Form,
+and both Fire & Ember outputs remain flagged. Fire & Ember strongly obscures facial details;
+its low production likeness scores are consistent with the visual review. No edits made.
+
+Made by Hand: all 12 outputs inspected; all passed the production likeness gate. Chocolate,
+fabric, folded paper, porcelain and paper-scene treatments are evident. Balloon material
+is subtler on the male example than the female example and merits designer review.
+
+Artists' Gallery: all 14 outputs inspected. The existing prompts produce workshop displays,
+including dimensional paint/pencil subjects and flat oil/linocut work within native square
+scenes. These compositions were preserved. Both Sheet Music outputs retain likeness flags;
+the other 12 passed the production gate. No blank output or post-generation framing added.
+
+Ink & Paper: all 14 outputs inspected. Folded pages, luminous illustration, woodblock,
+cubist facets, geometric deco, decorative line art and period photography are distinct.
+Both Folded Book previews retain likeness flags; the other 12 passed. Ukiyo E seals are
+present in its approved production prompt. Printed borders and period frames are native
+generated scene content, not padding added by this batch.
+
+Fantasy & Future: all 8 outputs inspected. Scales, living wood, clock mechanisms and starfields
+are visibly distinct. Female Dragon Skin retains a likeness flag; the other 7 passed.
+All 118 planned outputs have now been visually inspected across the nine collections.

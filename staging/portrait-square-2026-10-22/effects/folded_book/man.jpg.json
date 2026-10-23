@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the entire figure — face included — into a fine-art sculpture assembled from folded and layered book pages, Every surface is paper: the face, hair, neck, shoulders, chest, garment, and arms are all built from curled paper ribbons, folded pages, and layered printed sheets. The paper layers across the face follow the person's real facial structure — overlapping pages shape the planes of the forehead, brow, nose, cheeks, and lips so the likeness stays clearly recognizable, while the surface reads unmistakably as layered paper rather than skin. Hair is formed from paper ribbons that follow the source subject's actual hairstyle exactly — same length, direction, volume, and character; the paper interprets the real hair and never invents wild curls, paper spirals, or fantasy hair shapes. Broad sweeping ribbons define the major forms; individual printed pages stay visible throughout. Elegant paper architecture. No letters legible, no plaque. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The figure faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: an old library reading room — shelves and low lamps, heavily out of focus. The sculpture rests on a wooden lectern, only a suggestion of it visible; the figure, not the room, dominates the photograph. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a photo-realistic or smooth lifelike face — the face is built from layered paper like the rest of the figure, not left as skin. Avoid carved relief, engraved surfaces, stacked page-edge carving, paper-cut or woodcut techniques, and topographic page slicing. Avoid chaotic paper strips that destroy the likeness, and avoid generic wild paper curls or spirals replacing the real hairstyle.",
+  "style": "realistic",
+  "preset": "folded_book",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the entire figure — face included — into a fine-art sculpture assembled from folded and layered book pages, Every surface is paper: the face, hair, neck, shoulders, chest, garment, and arms are all built from curled paper ribbons, folded pages, and layered printed sheets. The paper layers across the face follow the person's real facial structure — overlapping pages shape the planes of the forehead, brow, nose, cheeks, and lips so the likeness stays clearly recognizable, while the surface reads unmistakably as layered paper rather than skin. Hair is formed from paper ribbons that follow the source subject's actual hairstyle exactly — same length, direction, volume, and character; the paper interprets the real hair and never invents wild curls, paper spirals, or fantasy hair shapes. Broad sweeping ribbons define the major forms; individual printed pages stay visible throughout. Elegant paper architecture. No letters legible, no plaque. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The figure faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: an old library reading room — shelves and low lamps, heavily out of focus. The sculpture rests on a wooden lectern, only a suggestion of it visible; the figure, not the room, dominates the photograph. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a photo-realistic or smooth lifelike face — the face is built from layered paper like the rest of the figure, not left as skin. Avoid carved relief, engraved surfaces, stacked page-edge carving, paper-cut or woodcut techniques, and topographic page slicing. Avoid chaotic paper strips that destroy the likeness, and avoid generic wild paper curls or spirals replacing the real hairstyle.",
+      "duration_ms": 15993,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The facial structure and features are recognizable, but there are notable differences in the hair texture and overall detail that result in a minor drift."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The facial structure and features are recognizable, but there are notable differences in the hair texture and overall detail that result in a minor drift.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Transform the entire figure — face included — into a fine-art sculpture assembled from folded and layered book pages, Every surface is paper: the face, hair, neck, shoulders, chest, garment, and arms are all built from curled paper ribbons, folded pages, and layered printed sheets. The paper layers across the face follow the person's real facial structure — overlapping pages shape the planes of the forehead, brow, nose, cheeks, and lips so the likeness stays clearly recognizable, while the surface reads unmistakably as layered paper rather than skin. Hair is formed from paper ribbons that follow the source subject's actual hairstyle exactly — same length, direction, volume, and character; the paper interprets the real hair and never invents wild curls, paper spirals, or fantasy hair shapes. Broad sweeping ribbons define the major forms; individual printed pages stay visible throughout. Elegant paper architecture. No letters legible, no plaque. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The figure faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: an old library reading room — shelves and low lamps, heavily out of focus. The sculpture rests on a wooden lectern, only a suggestion of it visible; the figure, not the room, dominates the photograph. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a photo-realistic or smooth lifelike face — the face is built from layered paper like the rest of the figure, not left as skin. Avoid carved relief, engraved surfaces, stacked page-edge carving, paper-cut or woodcut techniques, and topographic page slicing. Avoid chaotic paper strips that destroy the likeness, and avoid generic wild paper curls or spirals replacing the real hairstyle.",
+      "duration_ms": 29150,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The rendered face retains recognizable features such as the eyes and beard, but the overall facial structure and expression differ slightly, resulting in minor drift."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The rendered face retains recognizable features such as the eyes and beard, but the overall facial structure and expression differ slightly, resulting in minor drift.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"The rendered face retains recognizable features such as the eyes and beard, but the overall facial structure and expression differ slightly, resulting in minor drift.\"",
+  "fatal_error": null,
+  "duration_ms": 46179
+}

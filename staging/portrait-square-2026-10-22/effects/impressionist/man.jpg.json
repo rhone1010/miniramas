@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Rebuild the subject as a **three-dimensional sculptural bust made entirely from thick Impressionist oil paint**, standing physically in the room. Face, hair, neck, clothing and shoulders are formed from heavy palette-knife impasto: broad slabs, ridges and lifted strokes with real depth, hard edges and tiny cast shadows.\n**Preserve the subject's likeness, face shape, skin tone, distinctive features, and exact hairstyle, length and color.** The face remains clearly recognizable despite the expressive construction. Hair is especially sculptural, formed from bold ropes, sweeps and ridges of paint following the original hair's direction and volume. Use broken natural color, with violet, blue and green worked into shadows instead of grey or black.\nFrame the sculptural bust closely from the upper chest to the top of the head. She faces us naturally with her head upright and both eyes clearly visible, her head occupying roughly 30% of the image height. The sculpture is the dominant subject; only enough of its base is visible to establish that it physically exists in the atelier. Excess paint running over the shoulders.\nPlace it in a romantic, generations-old artist's atelier: aged timber, worn plaster, antique easels, stacked canvases, portfolios, drawing tools and pinned studies. A huge ribbed iron-and-glass industrial skylight fills the studio with soft directional daylight, atmospheric dust and long shadows. Shallow depth of field.\nNo held objects, eyewear or watches. Worn necklaces, earrings and piercings are fine. Show hands or arms only when touching the body.\n\n**Avoid:** flat paintings, canvas portraits, smooth or photorealistic skin, thin or blended paint, uniform brushwork, grey or black shadows. The subject must read unmistakably as a **solid sculptural object physically built from thick oil paint**.",
+  "style": "artists_gallery",
+  "preset": "impressionist",
+  "location": "pedestal",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=artists_gallery, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=artists_gallery",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Rebuild the subject as a **three-dimensional sculptural bust made entirely from thick Impressionist oil paint**, standing physically in the room. Face, hair, neck, clothing and shoulders are formed from heavy palette-knife impasto: broad slabs, ridges and lifted strokes with real depth, hard edges and tiny cast shadows.\n**Preserve the subject's likeness, face shape, skin tone, distinctive features, and exact hairstyle, length and color.** The face remains clearly recognizable despite the expressive construction. Hair is especially sculptural, formed from bold ropes, sweeps and ridges of paint following the original hair's direction and volume. Use broken natural color, with violet, blue and green worked into shadows instead of grey or black.\nFrame the sculptural bust closely from the upper chest to the top of the head. She faces us naturally with her head upright and both eyes clearly visible, her head occupying roughly 30% of the image height. The sculpture is the dominant subject; only enough of its base is visible to establish that it physically exists in the atelier. Excess paint running over the shoulders.\nPlace it in a romantic, generations-old artist's atelier: aged timber, worn plaster, antique easels, stacked canvases, portfolios, drawing tools and pinned studies. A huge ribbed iron-and-glass industrial skylight fills the studio with soft directional daylight, atmospheric dust and long shadows. Shallow depth of field.\nNo held objects, eyewear or watches. Worn necklaces, earrings and piercings are fine. Show hands or arms only when touching the body.\n\n**Avoid:** flat paintings, canvas portraits, smooth or photorealistic skin, thin or blended paint, uniform brushwork, grey or black shadows. The subject must read unmistakably as a **solid sculptural object physically built from thick oil paint**.",
+      "duration_ms": 21518,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The likeness is good, with preserved facial features and expressions, but there is some drift in the overall volume and texture of the face."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 23577
+}

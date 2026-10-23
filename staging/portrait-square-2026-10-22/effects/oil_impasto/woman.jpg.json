@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Repaint the subject in thick oil applied entirely with a palette knife on canvas — broad flat slabs of colour laid edge to edge, each stroke a single confident pass with a hard ridge where the knife lifted. No blending anywhere, no brushwork. The face is built from maybe forty knife strokes, the planes reading through colour temperature rather than line, and the likeness carried by where the warm and cool slabs meet. A rich restrained palette — the subject's own colours pushed, umber and ochre against slate and near-black. The garment in wider, looser slabs, and the background in the broadest of all, blocked in around the head. Likeness is critical; the person reads clearly at a distance. The painting itself fills almost the entire image, seen nearly straight-on. Within the painting, she faces us with her head upright and both eyes clearly visible, framed from upper chest to top of head, her head roughly 30% of the painting height. Only a narrow suggestion of the canvas edge and easel remains visible. Raking light across the surface so the paint's thickness casts its own small shadows. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. Preserve natural facial character, asymmetry and expression. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a three-dimensional sculpture or a bust — this is flat paint on a canvas. Avoid brushwork or blended gradients. Avoid a smooth photographic face. Avoid broken dabs and short strokes; every mark is a wide knife slab.",
+  "style": "artists_gallery",
+  "preset": "oil_impasto",
+  "location": "pedestal",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=artists_gallery, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=artists_gallery",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Repaint the subject in thick oil applied entirely with a palette knife on canvas — broad flat slabs of colour laid edge to edge, each stroke a single confident pass with a hard ridge where the knife lifted. No blending anywhere, no brushwork. The face is built from maybe forty knife strokes, the planes reading through colour temperature rather than line, and the likeness carried by where the warm and cool slabs meet. A rich restrained palette — the subject's own colours pushed, umber and ochre against slate and near-black. The garment in wider, looser slabs, and the background in the broadest of all, blocked in around the head. Likeness is critical; the person reads clearly at a distance. The painting itself fills almost the entire image, seen nearly straight-on. Within the painting, she faces us with her head upright and both eyes clearly visible, framed from upper chest to top of head, her head roughly 30% of the painting height. Only a narrow suggestion of the canvas edge and easel remains visible. Raking light across the surface so the paint's thickness casts its own small shadows. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. Preserve natural facial character, asymmetry and expression. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a three-dimensional sculpture or a bust — this is flat paint on a canvas. Avoid brushwork or blended gradients. Avoid a smooth photographic face. Avoid broken dabs and short strokes; every mark is a wide knife slab.",
+      "duration_ms": 15825,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The rendered face closely captures the essential features and expressions, with excellent preservation of the eye shape, hair color, and overall likeness."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 17170
+}

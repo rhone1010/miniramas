@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the subject into a sumptuous romantic portrait of an aristocratic gentleman of the Elizabethan court, preserving his facial likeness and ethnicity. Dress him in richly woven velvet, silk and brocade in deep wine, aged black, muted emerald and tarnished gold, with an elaborate period lace ruff and restrained antique jewelry. Likeness is important. show subject from thighs to top of head. \nAge image with filters and reduce saturation of the subjects skin\nHe belongs completely to the period rather than appearing as a modern person in historical costume. Give him a natural, reserved courtly posture, shoulders slightly turned, head upright and facing us directly with both eyes clearly visible. His presence is noble, composed and self-possessed. Avoid modern portrait poses and contemporary fashion or glamour styling.\nPhotograph him deep inside an intimate Elizabethan manor chamber by dim firelight and candlelight, with dark carved oak, faded tapestries, aged plaster, heavy textiles and glimpses of leaded-glass windows disappearing into shadow. The room should feel inhabited, old and atmospheric rather than staged.\nGive the entire photograph a softly aged, time-worn color character: faded wine red, aged black, tarnished gold, tobacco brown, warm umber and muted forest green. Slightly desaturated colors, lifted warm blacks, gentle amber haze, restrained contrast, subtle grain and softened highlights, as though the image itself has acquired centuries of patina. Deep velvety shadows and the uneven falloff of candlelight.\nRomantic and intimate rather than theatrical or glamorous, like an old Elizabethan oil portrait somehow captured through a camera, imperfect, atmospheric and quietly luxurious.\nNo held objects. Worn jewelry is fine.",
+  "style": "realistic",
+  "preset": "elizabethan",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the subject into a sumptuous romantic portrait of an aristocratic gentleman of the Elizabethan court, preserving his facial likeness and ethnicity. Dress him in richly woven velvet, silk and brocade in deep wine, aged black, muted emerald and tarnished gold, with an elaborate period lace ruff and restrained antique jewelry. Likeness is important. show subject from thighs to top of head. \nAge image with filters and reduce saturation of the subjects skin\nHe belongs completely to the period rather than appearing as a modern person in historical costume. Give him a natural, reserved courtly posture, shoulders slightly turned, head upright and facing us directly with both eyes clearly visible. His presence is noble, composed and self-possessed. Avoid modern portrait poses and contemporary fashion or glamour styling.\nPhotograph him deep inside an intimate Elizabethan manor chamber by dim firelight and candlelight, with dark carved oak, faded tapestries, aged plaster, heavy textiles and glimpses of leaded-glass windows disappearing into shadow. The room should feel inhabited, old and atmospheric rather than staged.\nGive the entire photograph a softly aged, time-worn color character: faded wine red, aged black, tarnished gold, tobacco brown, warm umber and muted forest green. Slightly desaturated colors, lifted warm blacks, gentle amber haze, restrained contrast, subtle grain and softened highlights, as though the image itself has acquired centuries of patina. Deep velvety shadows and the uneven falloff of candlelight.\nRomantic and intimate rather than theatrical or glamorous, like an old Elizabethan oil portrait somehow captured through a camera, imperfect, atmospheric and quietly luxurious.\nNo held objects. Worn jewelry is fine.",
+      "duration_ms": 18881,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The facial structure, including the eye spacing and jawline, is well preserved, making the figure easily recognizable as the same person despite the period costume."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 20867
+}

@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "The subject is modelled in glazed porcelain — fine white clay, hand-thrown and kiln-fired, with a soft glassy glaze pooling in the hollows and thinning to near-white on the raised planes. Hand-painted cobalt blue decoration runs across the garment and shoulders in small repeating floral motifs, the brushwork slightly uneven as a real hand leaves it. Fine crazing across the glaze, a chip at one edge, the unglazed foot showing raw biscuit. The face is porcelain throughout, glaze catching a single soft highlight on the cheek and brow. Hair keeps its real texture, length and shape, modelled in the same clay. Likeness is critical and comes before the material. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally, head upright, with both eyes clearly visible. Photographic and highly idealized — a real fired object in real light, beautifully made. Background: a potter's shelf, other pieces out of focus behind, north light. Preserve natural facial character, asymmetry, lines and scars. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid changing the hair. Avoid a plastic or resin look — this is fired clay under glaze. Avoid decoration crossing the face. Avoid real skin or hair.",
+  "style": "realistic",
+  "preset": "porcelain",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject is modelled in glazed porcelain — fine white clay, hand-thrown and kiln-fired, with a soft glassy glaze pooling in the hollows and thinning to near-white on the raised planes. Hand-painted cobalt blue decoration runs across the garment and shoulders in small repeating floral motifs, the brushwork slightly uneven as a real hand leaves it. Fine crazing across the glaze, a chip at one edge, the unglazed foot showing raw biscuit. The face is porcelain throughout, glaze catching a single soft highlight on the cheek and brow. Hair keeps its real texture, length and shape, modelled in the same clay. Likeness is critical and comes before the material. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally, head upright, with both eyes clearly visible. Photographic and highly idealized — a real fired object in real light, beautifully made. Background: a potter's shelf, other pieces out of focus behind, north light. Preserve natural facial character, asymmetry, lines and scars. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid changing the hair. Avoid a plastic or resin look — this is fired clay under glaze. Avoid decoration crossing the face. Avoid real skin or hair.",
+      "duration_ms": 20958,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The facial features are recognizable, especially the hair and beard, but the eye shape and overall expression deviate slightly from the source."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 23143
+}

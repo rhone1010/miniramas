@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Render the subject in liquid mercury caught in dynamic transformation — a mirror-perfect chrome figure in the act of dissolving and re-forming. the clothed figure is hyper-reflective polished liquid metal, but alive with motion: ribbons and sheets of mercury peel and fling outward, droplets break away and hang suspended in the air, and parts of the form stretch into liquid tendrils mid-splash, like the surface of mercury disturbed and frozen at its most dramatic instant. Strong directional gallery light rakes across the chrome so reflections and droplets blaze. Surreal, kinetic, and impossibly fluid — a body in liquid-metal flux, not a static statue. Frame her closely from the upper chest to the top of the head, facing us naturally with both eyes clearly visible and her head roughly 30% of the image height. Let the mercury ribbons, droplets and tendrils break outward around this close portrait rather than pulling the camera away to show the entire sculpture. A suggestion of the brushed-steel base may remain below. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a dark room scattered with coloured lights, heavily out of focus. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a still, solid, symmetric chrome figure — the drama is in the motion, the breaking droplets, and the peeling ribbons of metal. Avoid reflections so chaotic the face is lost; the likeness reads clearly in the mirrored surface. Avoid any non-silver color. Avoid photorealistic skin on the face; it is liquid chrome like the rest.",
+  "style": "realistic",
+  "preset": "mercury",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Render the subject in liquid mercury caught in dynamic transformation — a mirror-perfect chrome figure in the act of dissolving and re-forming. the clothed figure is hyper-reflective polished liquid metal, but alive with motion: ribbons and sheets of mercury peel and fling outward, droplets break away and hang suspended in the air, and parts of the form stretch into liquid tendrils mid-splash, like the surface of mercury disturbed and frozen at its most dramatic instant. Strong directional gallery light rakes across the chrome so reflections and droplets blaze. Surreal, kinetic, and impossibly fluid — a body in liquid-metal flux, not a static statue. Frame her closely from the upper chest to the top of the head, facing us naturally with both eyes clearly visible and her head roughly 30% of the image height. Let the mercury ribbons, droplets and tendrils break outward around this close portrait rather than pulling the camera away to show the entire sculpture. A suggestion of the brushed-steel base may remain below. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a dark room scattered with coloured lights, heavily out of focus. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a still, solid, symmetric chrome figure — the drama is in the motion, the breaking droplets, and the peeling ribbons of metal. Avoid reflections so chaotic the face is lost; the likeness reads clearly in the mirrored surface. Avoid any non-silver color. Avoid photorealistic skin on the face; it is liquid chrome like the rest.",
+      "duration_ms": 17985,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The likeness is recognizable, with preserved facial structures and features, but the style and material choices introduce enough deviation to separate the identities slightly."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The likeness is recognizable, with preserved facial structures and features, but the style and material choices introduce enough deviation to separate the identities slightly.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Render the subject in liquid mercury caught in dynamic transformation — a mirror-perfect chrome figure in the act of dissolving and re-forming. the clothed figure is hyper-reflective polished liquid metal, but alive with motion: ribbons and sheets of mercury peel and fling outward, droplets break away and hang suspended in the air, and parts of the form stretch into liquid tendrils mid-splash, like the surface of mercury disturbed and frozen at its most dramatic instant. Strong directional gallery light rakes across the chrome so reflections and droplets blaze. Surreal, kinetic, and impossibly fluid — a body in liquid-metal flux, not a static statue. Frame her closely from the upper chest to the top of the head, facing us naturally with both eyes clearly visible and her head roughly 30% of the image height. Let the mercury ribbons, droplets and tendrils break outward around this close portrait rather than pulling the camera away to show the entire sculpture. A suggestion of the brushed-steel base may remain below. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a dark room scattered with coloured lights, heavily out of focus. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a still, solid, symmetric chrome figure — the drama is in the motion, the breaking droplets, and the peeling ribbons of metal. Avoid reflections so chaotic the face is lost; the likeness reads clearly in the mirrored surface. Avoid any non-silver color. Avoid photorealistic skin on the face; it is liquid chrome like the rest.",
+      "duration_ms": 15297,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The facial structure and overall features suggest some resemblance, but the dramatic transformation to a metallic form leads to noticeable alterations in the jawline and eye shape."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The facial structure and overall features suggest some resemblance, but the dramatic transformation to a metallic form leads to noticeable alterations in the jawline and eye shape.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 6/10 < 8/10 — \"The facial structure and overall features suggest some resemblance, but the dramatic transformation to a metallic form leads to noticeable alterations in the jawline and eye shape.\"",
+  "fatal_error": null,
+  "duration_ms": 34418
+}

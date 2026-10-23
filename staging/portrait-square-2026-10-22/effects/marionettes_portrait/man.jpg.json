@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the person into an exquisite handcrafted wooden marionette, preserving recognizable facial likeness, age, hairstyle, clothing, and proportions. NO TEXT.\n\nRender the person as a masterfully carved and hand-painted wooden puppet with an expressive sculpted face, articulated wooden limbs, delicate joints, and fine strings extending upward to a traditional wooden control bar. Recreate the clothing in beautifully tailored miniature fabrics with authentic folds and textures.\n\nArrange the character in a lively, natural pose within an enchanting vintage puppet theater. Create a richly detailed theatrical backdrop with layered painted scenery, ornate curtains, and handcrafted stage elements.\n\nShow the character full-body, occupying roughly 75% of the image height. Fill the frame with the theatrical world, emphasizing physical depth and craftsmanship.\n\nMuseum-quality marionette artistry, warm theatrical lighting, rich colors, intricate wood grain, and exceptional tactile detail.\n\nAvoid cartoon faces, plastic dolls, realistic human skin, tangled strings, exaggerated proportions, cropped figures, distorted likeness, modern stages, or text.",
+  "style": "realistic",
+  "preset": "marionettes_portrait",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the person into an exquisite handcrafted wooden marionette, preserving recognizable facial likeness, age, hairstyle, clothing, and proportions. NO TEXT.\n\nRender the person as a masterfully carved and hand-painted wooden puppet with an expressive sculpted face, articulated wooden limbs, delicate joints, and fine strings extending upward to a traditional wooden control bar. Recreate the clothing in beautifully tailored miniature fabrics with authentic folds and textures.\n\nArrange the character in a lively, natural pose within an enchanting vintage puppet theater. Create a richly detailed theatrical backdrop with layered painted scenery, ornate curtains, and handcrafted stage elements.\n\nShow the character full-body, occupying roughly 75% of the image height. Fill the frame with the theatrical world, emphasizing physical depth and craftsmanship.\n\nMuseum-quality marionette artistry, warm theatrical lighting, rich colors, intricate wood grain, and exceptional tactile detail.\n\nAvoid cartoon faces, plastic dolls, realistic human skin, tangled strings, exaggerated proportions, cropped figures, distorted likeness, modern stages, or text.",
+      "duration_ms": 21223,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered figure is recognizable and retains key features like eye shape and facial hair, but the mouth and general facial structure show minor drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 24433
+}

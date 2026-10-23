@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "The subject is carved directly from a massive ancient granite monolith rising from the forest floor, preserving the subject's likeness while remaining unmistakably part of the original boulder. The stone surface is weathered by centuries of moss, colorful lichens, delicate ferns, creeping vines, and tiny woodland plants that naturally reclaim cracks and ledges, while the subject's existing hair becomes moss, roots, and woodland growth that preserve its original silhouette. Warm shafts of sunlight filter through towering trees, illuminating damp stone and drifting forest particles. Preserve existing clothing naturally carved into the stone, no human skin. Existing clothing remains, carved from the same weathered granite and integrated seamlessly into the monolith. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. Only the carved face and shoulders read close in this photograph; the rest of the monolith remains implied by the frame, not shown. The figure faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+  "style": "realistic",
+  "preset": "lichen_granite",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject is carved directly from a massive ancient granite monolith rising from the forest floor, preserving the subject's likeness while remaining unmistakably part of the original boulder. The stone surface is weathered by centuries of moss, colorful lichens, delicate ferns, creeping vines, and tiny woodland plants that naturally reclaim cracks and ledges, while the subject's existing hair becomes moss, roots, and woodland growth that preserve its original silhouette. Warm shafts of sunlight filter through towering trees, illuminating damp stone and drifting forest particles. Preserve existing clothing naturally carved into the stone, no human skin. Existing clothing remains, carved from the same weathered granite and integrated seamlessly into the monolith. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. Only the carved face and shoulders read close in this photograph; the rest of the monolith remains implied by the frame, not shown. The figure faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 22485,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The likeness is good with recognizable features such as the smile and facial hair, but there is noticeable drift in the overall facial structure and detail."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The likeness is good with recognizable features such as the smile and facial hair, but there is noticeable drift in the overall facial structure and detail.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "The subject is carved directly from a massive ancient granite monolith rising from the forest floor, preserving the subject's likeness while remaining unmistakably part of the original boulder. The stone surface is weathered by centuries of moss, colorful lichens, delicate ferns, creeping vines, and tiny woodland plants that naturally reclaim cracks and ledges, while the subject's existing hair becomes moss, roots, and woodland growth that preserve its original silhouette. Warm shafts of sunlight filter through towering trees, illuminating damp stone and drifting forest particles. Preserve existing clothing naturally carved into the stone, no human skin. Existing clothing remains, carved from the same weathered granite and integrated seamlessly into the monolith. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. Only the carved face and shoulders read close in this photograph; the rest of the monolith remains implied by the frame, not shown. The figure faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 18382,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The rendered face has notable drift in details like eye shape and jawline, but retains a general resemblance."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The rendered face has notable drift in details like eye shape and jawline, but retains a general resemblance.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 6/10 < 8/10 — \"The rendered face has notable drift in details like eye shape and jawline, but retains a general resemblance.\"",
+  "fatal_error": null,
+  "duration_ms": 42922
+}

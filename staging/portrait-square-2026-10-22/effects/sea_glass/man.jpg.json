@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "The subject is sculpted from a single continuous form of weathered translucent beach glass, with flowing strands of individually worn sea glass preserving the original hairstyle. Frosted seafoam, aqua, emerald, turquoise and cobalt glass glow with brilliant internal caustics and refracted sunlight, while tiny amber fragments appear only as subtle accents. Ocean foam, spray and flowing water wrap naturally around the sculpture as it emerges from the surf. Dramatic backlighting through sea spray. Turn clothing into sea glass and very translucent. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Bright catchlight in both eyes. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a rocky shoreline in low sun, surf breaking behind, heavily out of focus. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nMaintain: hair length, style and hairline. Do not invent hair\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.\n\nNo skin, ceramic, mosaic or tiled appearance.",
+  "style": "realistic",
+  "preset": "sea_glass",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject is sculpted from a single continuous form of weathered translucent beach glass, with flowing strands of individually worn sea glass preserving the original hairstyle. Frosted seafoam, aqua, emerald, turquoise and cobalt glass glow with brilliant internal caustics and refracted sunlight, while tiny amber fragments appear only as subtle accents. Ocean foam, spray and flowing water wrap naturally around the sculpture as it emerges from the surf. Dramatic backlighting through sea spray. Turn clothing into sea glass and very translucent. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Bright catchlight in both eyes. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a rocky shoreline in low sun, surf breaking behind, heavily out of focus. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nMaintain: hair length, style and hairline. Do not invent hair\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.\n\nNo skin, ceramic, mosaic or tiled appearance.",
+      "duration_ms": 22739,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The facial features are somewhat recognizable, but the transformation alters significant aspects like skin tone and texture, leading to a noticeable drift."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The facial features are somewhat recognizable, but the transformation alters significant aspects like skin tone and texture, leading to a noticeable drift.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "The subject is sculpted from a single continuous form of weathered translucent beach glass, with flowing strands of individually worn sea glass preserving the original hairstyle. Frosted seafoam, aqua, emerald, turquoise and cobalt glass glow with brilliant internal caustics and refracted sunlight, while tiny amber fragments appear only as subtle accents. Ocean foam, spray and flowing water wrap naturally around the sculpture as it emerges from the surf. Dramatic backlighting through sea spray. Turn clothing into sea glass and very translucent. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Bright catchlight in both eyes. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a rocky shoreline in low sun, surf breaking behind, heavily out of focus. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nMaintain: hair length, style and hairline. Do not invent hair\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.\n\nNo skin, ceramic, mosaic or tiled appearance.",
+      "duration_ms": 28326,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The rendered face retains the eye shape and spacing but has noticeable alterations to skin tone and hair texture, which may affect overall recognition."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The rendered face retains the eye shape and spacing but has noticeable alterations to skin tone and hair texture, which may affect overall recognition.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"The rendered face retains the eye shape and spacing but has noticeable alterations to skin tone and hair texture, which may affect overall recognition.\"",
+  "fatal_error": null,
+  "duration_ms": 52333
+}

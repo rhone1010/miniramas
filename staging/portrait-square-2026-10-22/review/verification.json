@@ -1,0 +1,14 @@
+{
+  "effects": 59,
+  "images": 118,
+  "planned": 118,
+  "sources_used": 27,
+  "sources_supplied": 27,
+  "counts": {
+    "complete": 94,
+    "review_required": 24
+  },
+  "estimated_cost_with_reserves_usd": 7.5174184499999885,
+  "actual_cost_usd": null,
+  "problems": []
+}

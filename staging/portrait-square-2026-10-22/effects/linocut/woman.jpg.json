@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Redraw the subject as a hand-cut linocut print — bold black ink on cream paper, the image built entirely from carved marks. Broad cleared areas of pure white, dense black masses, and the form described by parallel gouge strokes that swell and taper. Visible slips of the blade and small imperfect edges where the lino chipped. The hair is a solid black shape cut with a few sweeping white gouges. One second colour, a flat overprinted ochre or red, slightly out of register. Likeness is critical. No lettering. The finished linocut print fills almost the entire image and is viewed nearly straight-on, with only a narrow irregular paper edge visible. Within the print, she faces us directly with both eyes clearly visible, framed from upper chest to top of head, her head roughly 30% of the print height. Allow only a soft suggestion of the atelier beyond the paper. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid grey tones or shading — the image is black, white and one flat colour. Avoid photographic rendering. Avoid a sculpture.",
+  "style": "artists_gallery",
+  "preset": "linocut",
+  "location": "pedestal",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=artists_gallery, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=artists_gallery",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Redraw the subject as a hand-cut linocut print — bold black ink on cream paper, the image built entirely from carved marks. Broad cleared areas of pure white, dense black masses, and the form described by parallel gouge strokes that swell and taper. Visible slips of the blade and small imperfect edges where the lino chipped. The hair is a solid black shape cut with a few sweeping white gouges. One second colour, a flat overprinted ochre or red, slightly out of register. Likeness is critical. No lettering. The finished linocut print fills almost the entire image and is viewed nearly straight-on, with only a narrow irregular paper edge visible. Within the print, she faces us directly with both eyes clearly visible, framed from upper chest to top of head, her head roughly 30% of the print height. Allow only a soft suggestion of the atelier beyond the paper. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid grey tones or shading — the image is black, white and one flat colour. Avoid photographic rendering. Avoid a sculpture.",
+      "duration_ms": 21268,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The rendered face closely resembles the source subject with preserved eye shape, jawline, and freckles, though there is slight stylistic drift in hair rendering."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 22397
+}

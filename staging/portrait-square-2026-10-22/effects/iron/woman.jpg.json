@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Rebuild the subject as a **hand-forged iron sculpture**. Deep charcoal-black iron with subtle warm gunmetal sheen. Every surface shows **irregular hammer facets, forge marks and hand-worked texture**, with burnished gunmetal catching raised planes of the brow, cheekbones, nose, lips and hair. Dark oxide patina settles naturally into creases, recesses and undercuts. **No bronze tones and no orange rust.**\nPreserve the subject's **exact likeness, facial structure, age, asymmetry, scars, lines and distinctive features.** Do not beautify, de-age, enlarge the eyes or correct asymmetry. Maintain the **exact hairstyle, length, direction and volume**, translated into individually forged ridges and masses of iron. The original garment is faithfully retained and forged in the same iron.\nFrame closely from the upper chest to the top of the head, facing us naturally with both eyes clearly visible. Her head occupies roughly 30% of the image height. Only a suggestion of the walnut plinth is visible below; the sculpture, not the room, dominates the photograph. Soft directional key light creates burnished highlights and clean separation beneath the jaw.\nSet the sculpture in an **opulent two-story great room**, heavily blurred behind it: open timber beams, tall windows and skylights, a wooden spiral staircase rising to a balcony. Golden-hour side light creates subtle volumetric rays through atmospheric dust. Shallow depth of field keeps the iron sculpture dominant.\nNo added objects. No held objects, eyewear or watches. Worn necklaces, earrings and piercings are fine. Show a hand or arm only when touching the body.\n\n**Avoid:** bronze, polished cast metal, smooth surfaces, chrome, silver, orange rust, generic statue features, altered hairstyle or facial idealization.",
+  "style": "realistic",
+  "preset": "iron",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Rebuild the subject as a **hand-forged iron sculpture**. Deep charcoal-black iron with subtle warm gunmetal sheen. Every surface shows **irregular hammer facets, forge marks and hand-worked texture**, with burnished gunmetal catching raised planes of the brow, cheekbones, nose, lips and hair. Dark oxide patina settles naturally into creases, recesses and undercuts. **No bronze tones and no orange rust.**\nPreserve the subject's **exact likeness, facial structure, age, asymmetry, scars, lines and distinctive features.** Do not beautify, de-age, enlarge the eyes or correct asymmetry. Maintain the **exact hairstyle, length, direction and volume**, translated into individually forged ridges and masses of iron. The original garment is faithfully retained and forged in the same iron.\nFrame closely from the upper chest to the top of the head, facing us naturally with both eyes clearly visible. Her head occupies roughly 30% of the image height. Only a suggestion of the walnut plinth is visible below; the sculpture, not the room, dominates the photograph. Soft directional key light creates burnished highlights and clean separation beneath the jaw.\nSet the sculpture in an **opulent two-story great room**, heavily blurred behind it: open timber beams, tall windows and skylights, a wooden spiral staircase rising to a balcony. Golden-hour side light creates subtle volumetric rays through atmospheric dust. Shallow depth of field keeps the iron sculpture dominant.\nNo added objects. No held objects, eyewear or watches. Worn necklaces, earrings and piercings are fine. Show a hand or arm only when touching the body.\n\n**Avoid:** bronze, polished cast metal, smooth surfaces, chrome, silver, orange rust, generic statue features, altered hairstyle or facial idealization.",
+      "duration_ms": 17607,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The rendered figure maintains excellent facial likeness with preserved eye shape, mouth, and the presence of glasses, though the texture and material differ slightly."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 19425
+}

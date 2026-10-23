@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Render the subject as an 1840s daguerreotype on a polished silvered copper plate — delicate silvery monochrome, ghostly and precise, tones shifting toward negative where the mirror surface catches light. The sitter is THIS man. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the small particulars of his expression.\n\nDO NOT MIRROR, FLIP OR LATERALLY REVERSE THE FACE. A real daguerreotype plate reverses its sitter; this one must not. Every feature stays on the side it is on in the photograph — the same eye higher, the same side of the mouth lifted, the same parting in the hair. This is the single most important instruction here.\n\nKeep his hairline, hairstyle, length and direction, dressed to the period but not replaced by it, and do not prematurely grey him. Do not add weight and do not age him.\n\nFine sharpness across the face, faint tarnish bloom creeping in from the edges, a hairline scratch or two in the silver. Period dress: a dark coat and high collar. Behind the sitter, a painted studio backdrop of the era — a soft-focus classical column, a swagged drape, a distant painted landscape, all pale and slightly out of register. Still, formal, unsmiling — the long exposure holds him. The plate fills the frame with only a narrow brass mat at its edge.\n\nFrame the sitter from the stomach to the top of the head, facing the camera directly with both eyes clearly visible. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid modern colour, clean digital sharpness without the silver's tonal shift, a flat paper print, a smile, or a thick decorative case. Avoid a mirrored or laterally reversed face.",
+  "style": "realistic",
+  "preset": "daguerreotype",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Render the subject as an 1840s daguerreotype on a polished silvered copper plate — delicate silvery monochrome, ghostly and precise, tones shifting toward negative where the mirror surface catches light. The sitter is THIS man. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the small particulars of his expression.\n\nDO NOT MIRROR, FLIP OR LATERALLY REVERSE THE FACE. A real daguerreotype plate reverses its sitter; this one must not. Every feature stays on the side it is on in the photograph — the same eye higher, the same side of the mouth lifted, the same parting in the hair. This is the single most important instruction here.\n\nKeep his hairline, hairstyle, length and direction, dressed to the period but not replaced by it, and do not prematurely grey him. Do not add weight and do not age him.\n\nFine sharpness across the face, faint tarnish bloom creeping in from the edges, a hairline scratch or two in the silver. Period dress: a dark coat and high collar. Behind the sitter, a painted studio backdrop of the era — a soft-focus classical column, a swagged drape, a distant painted landscape, all pale and slightly out of register. Still, formal, unsmiling — the long exposure holds him. The plate fills the frame with only a narrow brass mat at its edge.\n\nFrame the sitter from the stomach to the top of the head, facing the camera directly with both eyes clearly visible. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid modern colour, clean digital sharpness without the silver's tonal shift, a flat paper print, a smile, or a thick decorative case. Avoid a mirrored or laterally reversed face.",
+      "duration_ms": 19962,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "Good likeness with recognizable features, but noticeable drift in facial expression and age perception."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"Good likeness with recognizable features, but noticeable drift in facial expression and age perception.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Render the subject as an 1840s daguerreotype on a polished silvered copper plate — delicate silvery monochrome, ghostly and precise, tones shifting toward negative where the mirror surface catches light. The sitter is THIS man. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the small particulars of his expression.\n\nDO NOT MIRROR, FLIP OR LATERALLY REVERSE THE FACE. A real daguerreotype plate reverses its sitter; this one must not. Every feature stays on the side it is on in the photograph — the same eye higher, the same side of the mouth lifted, the same parting in the hair. This is the single most important instruction here.\n\nKeep his hairline, hairstyle, length and direction, dressed to the period but not replaced by it, and do not prematurely grey him. Do not add weight and do not age him.\n\nFine sharpness across the face, faint tarnish bloom creeping in from the edges, a hairline scratch or two in the silver. Period dress: a dark coat and high collar. Behind the sitter, a painted studio backdrop of the era — a soft-focus classical column, a swagged drape, a distant painted landscape, all pale and slightly out of register. Still, formal, unsmiling — the long exposure holds him. The plate fills the frame with only a narrow brass mat at its edge.\n\nFrame the sitter from the stomach to the top of the head, facing the camera directly with both eyes clearly visible. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid modern colour, clean digital sharpness without the silver's tonal shift, a flat paper print, a smile, or a thick decorative case. Avoid a mirrored or laterally reversed face.",
+      "duration_ms": 22578,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The facial features are recognizable with good preservation of the subject's age and distinguishing marks, but the expression and styling create a minor drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 44393
+}

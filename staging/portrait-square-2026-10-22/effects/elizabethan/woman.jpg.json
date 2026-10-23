@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the subject into a lavish Elizabethan court portrait, preserving her facial likeness precisely. Dress her in an extravagant deep sapphire velvet court gown with elaborate antique-gold embroidery, pearl-strung bodice, cream lace cuffs and a magnificent sculptural lace ruff. Crown the silhouette with an ornate pearl-and-gold jewelled headdress, feathers and richly dressed period hair. Pose her facing us in a stately, reserved court portrait, head upright and both eyes clearly visible. Frame her closely while keeping the complete sculptural ruff and jeweled headdress visible. Her face remains large and central rather than being diminished by the costume. With the serene, self-possessed expression of a royal court portrait. Deep saturated sapphire, peacock blue, crimson accents, luminous pearl, ivory and antique gold dominate the image. Romantic painterly photography with luminous skin, rich directional candlelight, glowing golden highlights, deep velvety shadows and jewel-like color. An opulent Elizabethan great hall dissolves behind her into dark tapestries, carved wood, distant candlelight and warm amber bokeh. make the skin slightly pale Make the portrait sumptuous, theatrical and highly idealized, like an Elizabethan royal panel portrait brought vividly to life. Subtle aged photographic finish with softened blacks, warm highlights and gentle painterly grain while retaining saturated color and exquisite detail. Preserve the subject's face, age, ethnicity, proportions and natural asymmetry. age the photo with filters so it feels more like a painterly photo and older No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings. expression to be more in period, stately, reserved",
+  "style": "realistic",
+  "preset": "elizabethan_woman",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the subject into a lavish Elizabethan court portrait, preserving her facial likeness precisely. Dress her in an extravagant deep sapphire velvet court gown with elaborate antique-gold embroidery, pearl-strung bodice, cream lace cuffs and a magnificent sculptural lace ruff. Crown the silhouette with an ornate pearl-and-gold jewelled headdress, feathers and richly dressed period hair. Pose her facing us in a stately, reserved court portrait, head upright and both eyes clearly visible. Frame her closely while keeping the complete sculptural ruff and jeweled headdress visible. Her face remains large and central rather than being diminished by the costume. With the serene, self-possessed expression of a royal court portrait. Deep saturated sapphire, peacock blue, crimson accents, luminous pearl, ivory and antique gold dominate the image. Romantic painterly photography with luminous skin, rich directional candlelight, glowing golden highlights, deep velvety shadows and jewel-like color. An opulent Elizabethan great hall dissolves behind her into dark tapestries, carved wood, distant candlelight and warm amber bokeh. make the skin slightly pale Make the portrait sumptuous, theatrical and highly idealized, like an Elizabethan royal panel portrait brought vividly to life. Subtle aged photographic finish with softened blacks, warm highlights and gentle painterly grain while retaining saturated color and exquisite detail. Preserve the subject's face, age, ethnicity, proportions and natural asymmetry. age the photo with filters so it feels more like a painterly photo and older No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings. expression to be more in period, stately, reserved",
+      "duration_ms": 20620,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 4,
+          "reason": "Significant drift in features, particularly the jawline and overall age appearance, making the likeness compromised."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 4/10 < 8/10 — \"Significant drift in features, particularly the jawline and overall age appearance, making the likeness compromised.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Transform the subject into a lavish Elizabethan court portrait, preserving her facial likeness precisely. Dress her in an extravagant deep sapphire velvet court gown with elaborate antique-gold embroidery, pearl-strung bodice, cream lace cuffs and a magnificent sculptural lace ruff. Crown the silhouette with an ornate pearl-and-gold jewelled headdress, feathers and richly dressed period hair. Pose her facing us in a stately, reserved court portrait, head upright and both eyes clearly visible. Frame her closely while keeping the complete sculptural ruff and jeweled headdress visible. Her face remains large and central rather than being diminished by the costume. With the serene, self-possessed expression of a royal court portrait. Deep saturated sapphire, peacock blue, crimson accents, luminous pearl, ivory and antique gold dominate the image. Romantic painterly photography with luminous skin, rich directional candlelight, glowing golden highlights, deep velvety shadows and jewel-like color. An opulent Elizabethan great hall dissolves behind her into dark tapestries, carved wood, distant candlelight and warm amber bokeh. make the skin slightly pale Make the portrait sumptuous, theatrical and highly idealized, like an Elizabethan royal panel portrait brought vividly to life. Subtle aged photographic finish with softened blacks, warm highlights and gentle painterly grain while retaining saturated color and exquisite detail. Preserve the subject's face, age, ethnicity, proportions and natural asymmetry. age the photo with filters so it feels more like a painterly photo and older No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings. expression to be more in period, stately, reserved",
+      "duration_ms": 19008,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 3,
+          "reason": "The rendered face considerably diverges in features, with a different jawline and notable changes in hair and facial expression, making it difficult to recognize the source subject."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 3/10 < 8/10 — \"The rendered face considerably diverges in features, with a different jawline and notable changes in hair and facial expression, making it difficult to recognize the source subject.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 3/10 < 8/10 — \"The rendered face considerably diverges in features, with a different jawline and notable changes in hair and facial expression, making it difficult to recognize the source subject.\"",
+  "fatal_error": null,
+  "duration_ms": 41928
+}

@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "make the subject a realistic photo of a Renaissance noblewoman. warm earth palette of umber, ochre, deep red and black. velvet gown with a squared low neckline over a fine linen chemise, full sleeves tied at the shoulder with the chemise puffing through the lacing, hair parted at the centre and dressed with a fine pearl net, a single gold chain. no ruff. Woman facing forward, head upright and both eyes clearly visible, with the shoulders only gently relaxed rather than strongly turned. Zoom in for an upper-torso portrait. Her head should occupy roughly 30% of the image height. calm, settled expression. do not modify ethnicity. Background: a Renaissance interior — a plastered wall in warm ochre, a carved walnut chest, a heavy tapestry with faded figures, a leaded window off to the left throwing one shaft of light. deep shadow, warm dim air, slightly out of focus. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\ndesaturate skin colors 15% and add a filter to age the image slightly\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+  "style": "realistic",
+  "preset": "renaissance_woman",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "make the subject a realistic photo of a Renaissance noblewoman. warm earth palette of umber, ochre, deep red and black. velvet gown with a squared low neckline over a fine linen chemise, full sleeves tied at the shoulder with the chemise puffing through the lacing, hair parted at the centre and dressed with a fine pearl net, a single gold chain. no ruff. Woman facing forward, head upright and both eyes clearly visible, with the shoulders only gently relaxed rather than strongly turned. Zoom in for an upper-torso portrait. Her head should occupy roughly 30% of the image height. calm, settled expression. do not modify ethnicity. Background: a Renaissance interior — a plastered wall in warm ochre, a carved walnut chest, a heavy tapestry with faded figures, a leaded window off to the left throwing one shaft of light. deep shadow, warm dim air, slightly out of focus. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\ndesaturate skin colors 15% and add a filter to age the image slightly\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+      "duration_ms": 17120,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered face is recognizable with good preservation of facial features, but the overall expression and period costume introduce minor deviations."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 18203
+}

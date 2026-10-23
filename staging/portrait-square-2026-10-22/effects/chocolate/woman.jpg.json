@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "convert the subject into a rich chocolate sculpture. smooth brown milk chocolate with highly detailed features. do not crop subject. head and shoulders should be visible. satin sheen on entire sculpture Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin - blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects - no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nmake the subject out of multiple types of chocolate tones, dark, mocha, latte, milk. and seperate them by skin, hair, clothes.\nbackground: a 1920's european chocolate shop. ornate and fancy. brass, glass and wood.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+  "style": "realistic",
+  "preset": "chocolate",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "convert the subject into a rich chocolate sculpture. smooth brown milk chocolate with highly detailed features. do not crop subject. head and shoulders should be visible. satin sheen on entire sculpture Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin - blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects - no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nmake the subject out of multiple types of chocolate tones, dark, mocha, latte, milk. and seperate them by skin, hair, clothes.\nbackground: a 1920's european chocolate shop. ornate and fancy. brass, glass and wood.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+      "duration_ms": 19751,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The facial likeness is excellent, with well-preserved features like the smile, eye shape, and hair texture, making it easily recognizable as the same person."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 20986
+}

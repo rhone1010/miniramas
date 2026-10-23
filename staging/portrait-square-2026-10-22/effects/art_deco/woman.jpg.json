@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Redraw the subject as a 1920s Art Deco  3D sculpture with strong bilateral symmetry, crisp geometry and hard-edged colour. The face is simplified into clean planes with a single sharp shadow edge, but those planes follow THIS person's brow, cheekbones, nose and jaw - the simplification is in the rendering, never in the underlying face. Likeness is essential: keep the shape and character of the subject's face, their micro gestures and the set of their mouth. Keep the subject's hairline, hairstyle, length and direction exactly as photographed and do not invent hair they do not have; the hair becomes a bold sculptural shape in flat black or gold, but it is their hair, stylised. Do not add weight and do not age the subject.\nTHE SYMMETRY IS A STYLE OF DRAWING, NOT A CHANGE TO THE SUBJECT'S FACE. Art Deco's bilateral symmetry applies to the panel, the motifs and the framing. Their own natural asymmetry stays.\nStepped chevron and sunburst motifs radiate behind the head; fluted vertical lines frame the panel. A luxe restrained palette - black, cream, deep jade and gold leaf, with chrome accents tracing the key lines. Elegant, confident, machine-age. Frame the subject as a close upper-body portrait, facing us directly, with their head roughly 30% of the image height and the eyes around the upper third. No lettering or text. No held objects - no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid photographic rendering, organic curves, three-dimensional shading, a relief or sculpture, or garish colour. Avoid a symmetrical generic Deco face - the symmetry belongs to the panel, not to the subject.",
+  "style": "realistic",
+  "preset": "art_deco",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Redraw the subject as a 1920s Art Deco  3D sculpture with strong bilateral symmetry, crisp geometry and hard-edged colour. The face is simplified into clean planes with a single sharp shadow edge, but those planes follow THIS person's brow, cheekbones, nose and jaw - the simplification is in the rendering, never in the underlying face. Likeness is essential: keep the shape and character of the subject's face, their micro gestures and the set of their mouth. Keep the subject's hairline, hairstyle, length and direction exactly as photographed and do not invent hair they do not have; the hair becomes a bold sculptural shape in flat black or gold, but it is their hair, stylised. Do not add weight and do not age the subject.\nTHE SYMMETRY IS A STYLE OF DRAWING, NOT A CHANGE TO THE SUBJECT'S FACE. Art Deco's bilateral symmetry applies to the panel, the motifs and the framing. Their own natural asymmetry stays.\nStepped chevron and sunburst motifs radiate behind the head; fluted vertical lines frame the panel. A luxe restrained palette - black, cream, deep jade and gold leaf, with chrome accents tracing the key lines. Elegant, confident, machine-age. Frame the subject as a close upper-body portrait, facing us directly, with their head roughly 30% of the image height and the eyes around the upper third. No lettering or text. No held objects - no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid photographic rendering, organic curves, three-dimensional shading, a relief or sculpture, or garish colour. Avoid a symmetrical generic Deco face - the symmetry belongs to the panel, not to the subject.",
+      "duration_ms": 21372,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The likeness is recognizable with good preservation of facial features, but there's a slight drift in the shape of the jawline and hair texture."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 23431
+}

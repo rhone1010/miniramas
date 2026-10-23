@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "make the subject a realistic photo of a frontier man of the American West, 1880s. muted palette of dust, tobacco brown, faded indigo and oxblood — low in contrast, no clean whites, everything worn and sun-faded. a wool waistcoat over a collarless shirt, a knotted neckerchief, a broad felt hat creased and stained with wear. man facing front, both eyes clearly visible, three-quarter turn of the shoulders. framed from mid-chest to the top of the hat. face should be 20% of image. do not crop the hat. calm, settled expression, weathered skin. do not modify ethnicity. likeness is important. Background: a saloon back room — plank walls, a stove, bottles on a shelf, one dirty window off to the left. deep shadow, warm dim light falling off fast. heavily out of focus, only shapes and glow readable. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+  "style": "realistic",
+  "preset": "wild_west",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "make the subject a realistic photo of a frontier man of the American West, 1880s. muted palette of dust, tobacco brown, faded indigo and oxblood — low in contrast, no clean whites, everything worn and sun-faded. a wool waistcoat over a collarless shirt, a knotted neckerchief, a broad felt hat creased and stained with wear. man facing front, both eyes clearly visible, three-quarter turn of the shoulders. framed from mid-chest to the top of the hat. face should be 20% of image. do not crop the hat. calm, settled expression, weathered skin. do not modify ethnicity. likeness is important. Background: a saloon back room — plank walls, a stove, bottles on a shelf, one dirty window off to the left. deep shadow, warm dim light falling off fast. heavily out of focus, only shapes and glow readable. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 20713,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The facial structure, hair color, and facial hair are preserved well, but the eye shape and expression show minor drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 22549
+}

@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the subject into a premium highly detailed collectible action figure, clearly a manufactured physical toy while preserving an immediately recognizable likeness. put the figure in a dramatic pose. NO TEXT. camera foreshortening, kinetic energy captured as physical 3d materials\n\nUse the subtle eye of a skilled character sculptor: preserve the distinctive proportions, expression, age, asymmetries and features that make this person recognizable. Slightly simplify and stylize the anatomy into a high-end 1:6 scale figure without becoming cartoonish.\n\nShow realistic molded and painted materials: finely sculpted face and hair, subtle paint variation, articulated neck, shoulders, elbows and wrists, with discreet visible joints. Recreate the subject's clothing as miniature fabric or finely molded costume materials appropriate to the original garment.\n\nPhotograph the figure standing in a premium collector display setting, from head to pants, with enough surrounding space to clearly establish its small physical scale. Include a tasteful display base and heavily blurred hints of a collectible shop.\n\nUse beautiful product photography with soft directional light, realistic reflections and shallow depth of field. The figure should feel tangible enough to pick up: exquisitely manufactured, slightly stylized, and unmistakably this person.\n\nAvoid Funko proportions, giant heads, cartoon faces, dolls, mannequins or human-looking skin. Avoid turning the result into a normal photograph of the person. Avoid extreme muscularity or superhero styling unless present in the source. Avoid text, logos, weapons or invented accessories. Preserve age and likeness.",
+  "style": "realistic",
+  "preset": "action_figure",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the subject into a premium highly detailed collectible action figure, clearly a manufactured physical toy while preserving an immediately recognizable likeness. put the figure in a dramatic pose. NO TEXT. camera foreshortening, kinetic energy captured as physical 3d materials\n\nUse the subtle eye of a skilled character sculptor: preserve the distinctive proportions, expression, age, asymmetries and features that make this person recognizable. Slightly simplify and stylize the anatomy into a high-end 1:6 scale figure without becoming cartoonish.\n\nShow realistic molded and painted materials: finely sculpted face and hair, subtle paint variation, articulated neck, shoulders, elbows and wrists, with discreet visible joints. Recreate the subject's clothing as miniature fabric or finely molded costume materials appropriate to the original garment.\n\nPhotograph the figure standing in a premium collector display setting, from head to pants, with enough surrounding space to clearly establish its small physical scale. Include a tasteful display base and heavily blurred hints of a collectible shop.\n\nUse beautiful product photography with soft directional light, realistic reflections and shallow depth of field. The figure should feel tangible enough to pick up: exquisitely manufactured, slightly stylized, and unmistakably this person.\n\nAvoid Funko proportions, giant heads, cartoon faces, dolls, mannequins or human-looking skin. Avoid turning the result into a normal photograph of the person. Avoid extreme muscularity or superhero styling unless present in the source. Avoid text, logos, weapons or invented accessories. Preserve age and likeness.",
+      "duration_ms": 29190,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The facial features, including eye shape and jawline, are very well preserved, making the likeness highly recognizable, though the overall expression is slightly altered."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 30424
+}
