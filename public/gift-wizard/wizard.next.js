@@ -10,7 +10,7 @@ const money = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currenc
 const asset = (s) => new URL(s, import.meta.url).href;
 const productDrafts = {};
 let studioState = { step: 'product', productId: '', size: '', copies: 1, drafts: productDrafts };
-let session = newSession(), view = 'photo', history = [], products = [], fixtures = [], registries = {}, manifest;
+let session = newSession(), view = 'photo', history = [], products = [], fixtures = [], registries = {}, manifest, originalPortraitManifest;
 let shoppingFavoriteId = null;
 let featuredProduct = '';
 let catalogSamples = {};
@@ -76,8 +76,10 @@ function thumb(id) {
     // Only CC's authenticated subject analysis selects a live gender variant.
     const gender = live?.session?.source.subjectGender;
     const subject = layoutReview ? (params.get('fixtureSubject') === 'woman' ? 'woman' : 'man') : gender === 'female' ? 'woman' : gender === 'male' ? 'man' : null;
-    if (series === 'portraits' && !subject)
-        return '';
+    if (series === 'portraits' && !subject) {
+        const neutral = originalPortraitManifest?.effects?.[id]?.neutral;
+        return neutral ? originalPortraitManifest.base + id + '/' + neutral : '';
+    }
     const f = (series === 'portraits' ? x?.[subject] : x?.neutral) || x?.neutral || x?.man || x?.woman || x?.all?.[0];
     return f ? library.base + id + '/' + f : '';
 }
@@ -1287,7 +1289,7 @@ function initializeLayoutReview() {
 // Keep the source object URL valid for browser Back/forward cache restoration.
 async function start() {
     try {
-        const [c, f, m, samples] = await Promise.all([fetch(asset('./catalog.next.json')), serverMode ? Promise.resolve(new Response('[]', { status: 200 })) : fetch(asset('./fixtures.next.json')), fetch(asset('./effect-previews/index.next.json')), fetch(asset('./catalog-samples/index.next.json')).catch(() => null)]);
+        const [c, f, m, samples, original] = await Promise.all([fetch(asset('./catalog.next.json')), serverMode ? Promise.resolve(new Response('[]', { status: 200 })) : fetch(asset('./fixtures.next.json')), fetch(asset('./effect-previews/index.next.json')), fetch(asset('./catalog-samples/index.next.json')).catch(() => null), fetch('/previews/effects-manifest.json').catch(() => null)]);
         if (!c.ok || !f.ok || !m.ok)
             throw Error();
         const catalog = await c.json();
@@ -1295,6 +1297,8 @@ async function start() {
         limit = catalog.maxUploadBytes;
         fixtures = await f.json();
         manifest = await m.json();
+        if (original?.ok)
+            originalPortraitManifest = await original.json();
         if (samples?.ok) {
             const sampleIndex = await samples.json();
             if (sampleIndex.version === 1)

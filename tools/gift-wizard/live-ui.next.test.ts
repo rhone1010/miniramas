@@ -25,7 +25,7 @@ async function boot(query:string,response:any=project(),status=200){
  const win=dom.window as any,calls:string[]=[];
  win.matchMedia=()=>({matches:query.includes('mobile=1'),addEventListener(){}});win.ResizeObserver=class{observe(){}disconnect(){}};win.scrollTo=()=>{};win.structuredClone=structuredClone;win.AbortController=AbortController;win.Response=Response;
  win.require=(name:string)=>name.includes('gift-composition-policy')?compositionPolicy:name.includes('studio.next')?studio:name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
- win.fetch=async(url:string,init:any={})=>{calls.push(String(url));if(String(url).endsWith('/auth/me')&&response.authStatus===401)return new Response(JSON.stringify({error:'sign_in_required'}),{status:401});if(response.route&&String(url).includes('/api/v1/gift/')){const routed=await response.route(String(url),init);if(routed)return routed instanceof Response?routed:new Response(JSON.stringify(routed),{status:200})}const data=String(url).endsWith('/effect-previews/index.next.json')?JSON.parse(fs.readFileSync('public/gift-wizard/effect-previews/index.next.json','utf8')):String(url)==='/api/v1/gift/sessions'&&init.method==='GET'?(response.latestResponse||{contractVersion:1,current:response.resume?response:null,resume:response.resume?{sessionId:response.sessionId,suggestedStep:'previews',resumeBatches:[],runningBatches:[]}:null,recent:[]}):String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/product-preview?')?fixtureProductPreview(response,String(url)):String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog-samples/index.next')?JSON.parse(fs.readFileSync('public/gift-wizard/catalog-samples/index.next.json','utf8')):String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?JSON.parse(fs.readFileSync('public/gift-wizard/fixtures.next.json','utf8')):{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
+ win.fetch=async(url:string,init:any={})=>{calls.push(String(url));if(String(url).endsWith('/auth/me')&&response.authStatus===401)return new Response(JSON.stringify({error:'sign_in_required'}),{status:401});if(response.route&&String(url).includes('/api/v1/gift/')){const routed=await response.route(String(url),init);if(routed)return routed instanceof Response?routed:new Response(JSON.stringify(routed),{status:200})}const data=String(url).endsWith('/previews/effects-manifest.json')?(response.originalPortraitManifest||JSON.parse(fs.readFileSync('public/previews/effects-manifest.json','utf8'))):String(url).endsWith('/effect-previews/index.next.json')?JSON.parse(fs.readFileSync('public/gift-wizard/effect-previews/index.next.json','utf8')):String(url)==='/api/v1/gift/sessions'&&init.method==='GET'?(response.latestResponse||{contractVersion:1,current:response.resume?response:null,resume:response.resume?{sessionId:response.sessionId,suggestedStep:'previews',resumeBatches:[],runningBatches:[]}:null,recent:[]}):String(url).endsWith('/auth/me')?{user:{id:'test-account'}}:String(url).endsWith('/orders/confirm')?response.confirmation:String(url).includes('/product-preview?')?fixtureProductPreview(response,String(url)):String(url).includes('/mockup?')?(response.mockups?.[String(url).split('/lines/')[1]?.split('/')[0]]||response.mockup):String(url).includes('/api/v1/print/catalog')?catalog:String(url).includes('/api/v1/gift/')?response:String(url).includes('catalog-samples/index.next')?JSON.parse(fs.readFileSync('public/gift-wizard/catalog-samples/index.next.json','utf8')):String(url).includes('catalog.next')?local:String(url).includes('fixtures.next')?JSON.parse(fs.readFileSync('public/gift-wizard/fixtures.next.json','utf8')):{effects:{},base:'/previews/'};return new Response(JSON.stringify(data),{status:String(url).includes('/api/v1/gift/')?status:200})};
  let code=fs.readFileSync('public/gift-wizard/wizard.next.ts','utf8').replace('import.meta.url',"'https://liten.invalid/gift-wizard/wizard.next.js'").replace('await import(path);',"window.EFFECT_REGISTRY={silos:[{id:'first',label:'First'}],effects:[{id:'jade',label:'Jade',category:'first',body:'live'}]};").replace(/start\(\);\s*$/,"globalThis.started=start();globalThis.navigate=go;globalThis.uploadPhoto=upload;globalThis.refreshGift=refreshGeneration;globalThis.refreshComposition=readCompositionState;");
  if(response.storage)for(const [k,v] of Object.entries(response.storage))win.sessionStorage.setItem(k,v);
  if(response.resume)win.sessionStorage.setItem("liten-gift-resume",JSON.stringify(response.resume));
@@ -583,7 +583,7 @@ test('Gift Shop uses its isolated square Portrait variants and keeps Groups look
   const src=win.document.querySelector('#screen img').getAttribute('src');
   assert.equal(src,'/gift-wizard/effect-previews/portraits/jade/'+subject+'.jpg');
   assert.ok(calls.some(x=>x.endsWith('/effect-previews/index.next.json')));
-  assert.equal(calls.some(x=>x.endsWith('/previews/effects-manifest.json')),false);
+  assert.ok(!src.startsWith('/previews/effects/'));
   win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');
   dom.window.close();
  }
@@ -609,4 +609,22 @@ for(const gender of ['female','male'])test('normal new-gift session uses approve
  assert.equal(win.document.getElementById('primary').disabled,true);assert(!calls.some(x=>/batches|compositions|product-preview/.test(x)));
  const storage=Object.fromEntries(Object.keys(win.sessionStorage).map(k=>[k,win.sessionStorage.getItem(k)]));dom.window.close();
  const restored=await boot('sessionId=project',{...s,storage});assert.equal(restored.win.document.getElementById('screen').dataset.view,'products');assert(restored.win.document.querySelector('.studio-media img'));restored.dom.window.close();
+});
+
+for(const gender of ['unknown',null])test('unclassified Portrait uses only explicit original neutral mapping: '+gender,async()=>{
+ const s:any=project('none');s.lines=[];s.geometries=[];s.source.subjectGender=gender;
+ s.originalPortraitManifest={base:'/previews/effects/',effects:{jade:{neutral:'neutral.jpg',man:'man.jpg',woman:'woman.jpg'}}};
+ const {win,dom}=await boot('sessionId=project',s);
+ assert.equal(win.document.querySelector('#screen img').getAttribute('src'),'/previews/effects/jade/neutral.jpg');
+ dom.window.close();
+ const restored=await boot('',{...s,resume:{sessionId:'project',view:'effects'}});
+ assert.equal(restored.win.document.querySelector('#screen img').getAttribute('src'),'/previews/effects/jade/neutral.jpg');restored.dom.window.close();
+});
+
+for(const series of ['pets','groups'])test('live '+series+' ignores null subjectGender',async()=>{
+ const s:any=project('none');s.lines=[];s.geometries=[];s.source.series=series;s.source.subjectGender=null;s.source.peopleCount=series==='groups'?3:null;
+ const {win,dom}=await boot('sessionId=project',s);
+ const src=win.document.querySelector('#screen img').getAttribute('src');
+ if(series==='pets')assert.match(src,/^\/gift-wizard\/effect-previews\/pets\/jade\//);else assert.equal(src,'/previews/groups/groups_jade.jpg');
+ dom.window.close();
 });

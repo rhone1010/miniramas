@@ -14,7 +14,7 @@ const money=(n:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency
 const asset=(s:string)=>new URL(s,import.meta.url).href;
 const productDrafts:Record<string,{size:string;copies:number}>={};
 let studioState:StudioState={step:'product',productId:'',size:'',copies:1,drafts:productDrafts};
-let session=newSession(),view:View='photo',history:View[]=[],products:Product[]=[],fixtures:Preview[]=[],registries={} as Record<Series,Registry>,manifest:any;
+let session=newSession(),view:View='photo',history:View[]=[],products:Product[]=[],fixtures:Preview[]=[],registries={} as Record<Series,Registry>,manifest:any,originalPortraitManifest:any;
 let shoppingFavoriteId:string|null=null;
 let featuredProduct='';
 let catalogSamples:Partial<Record<Series,Record<string,{desktop:string;mobile:string;placeholder:boolean;templateId?:string}>>>={};
@@ -51,7 +51,7 @@ function thumb(id:string){
  // Only CC's authenticated subject analysis selects a live gender variant.
  const gender=live?.session?.source.subjectGender;
  const subject=layoutReview?(params.get('fixtureSubject')==='woman'?'woman':'man'):gender==='female'?'woman':gender==='male'?'man':null;
- if(series==='portraits'&&!subject)return '';
+ if(series==='portraits'&&!subject){const neutral=originalPortraitManifest?.effects?.[id]?.neutral;return neutral?originalPortraitManifest.base+id+'/'+neutral:'';}
  const f=(series==='portraits'?x?.[subject!]:x?.neutral)||x?.neutral||x?.man||x?.woman||x?.all?.[0];
  return f?library.base+id+'/'+f:'';
 }
@@ -562,7 +562,7 @@ function initializeLayoutReview(){
 }
 // Keep the source object URL valid for browser Back/forward cache restoration.
 async function start(){try{
- const [c,f,m,samples]=await Promise.all([fetch(asset('./catalog.next.json')),serverMode?Promise.resolve(new Response('[]',{status:200})):fetch(asset('./fixtures.next.json')),fetch(asset('./effect-previews/index.next.json')),fetch(asset('./catalog-samples/index.next.json')).catch(()=>null)]);if(!c.ok||!f.ok||!m.ok)throw Error();const catalog=await c.json();products=catalog.products;limit=catalog.maxUploadBytes;fixtures=await f.json();manifest=await m.json();if(samples?.ok){const sampleIndex=await samples.json();if(sampleIndex.version===1)catalogSamples=sampleIndex.series||{};}
+ const [c,f,m,samples,original]=await Promise.all([fetch(asset('./catalog.next.json')),serverMode?Promise.resolve(new Response('[]',{status:200})):fetch(asset('./fixtures.next.json')),fetch(asset('./effect-previews/index.next.json')),fetch(asset('./catalog-samples/index.next.json')).catch(()=>null),fetch('/previews/effects-manifest.json').catch(()=>null)]);if(!c.ok||!f.ok||!m.ok)throw Error();const catalog=await c.json();products=catalog.products;limit=catalog.maxUploadBytes;fixtures=await f.json();manifest=await m.json();if(original?.ok)originalPortraitManifest=await original.json();if(samples?.ok){const sampleIndex=await samples.json();if(sampleIndex.version===1)catalogSamples=sampleIndex.series||{};}
  for(const [series,path] of [['portraits','/effect-registry.js'],['groups','/groups-registry.js'],['pets','/pets-registry.js']] as const){await import(path);registries[series]=window.EFFECT_REGISTRY}
  initializeLayoutReview();if(pivotMode&&layoutReview){restorePivotReview();pivotRestored=true;}render();
  if(serverMode){

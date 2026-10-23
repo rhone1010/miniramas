@@ -1,0 +1,11 @@
+Gift Shop subject contract integration — 2026-10-23
+
+CC c0e5802f is an ancestor of authoritative 1ac8d1f1; no backend edits.
+Female and male use Gift-only woman/man square previews. Unknown reads only the explicit neutral entry in the original Portrait manifest; it never selects an arbitrary man/woman fallback. Pets and Groups ignore null.
+The shared thumb path consumes the current authenticated SessionView for session creation and all restoration/refresh paths.
+
+Actual browser check: existing authenticated Portrait GET session returned HTTP 200, source.subjectGender unknown. With only the local Wizard JavaScript substituted, the original manifest was fetched with HTTP 200. No API responses were mocked. The screen still correctly reports unavailable because all 59 original effect neutral entries are null. Local script override removed afterward.
+This is an asset/mapping discrepancy in the completed contract, not an unfinished backend subject field. No neutral photograph was invented or gendered image relabeled. Live female/male creation was not exercised: no new uploads, analysis or paid generation were initiated.
+
+Unit verification covers female/male square mappings, explicit neutral mapping on direct restore and latest-session restore, missing neutral fail-closed, and null Pets/Groups behavior. Neutral fixture is synthetic and is not an approved asset.
+Original series files and Gift-only preview library unchanged. No UI markup/CSS port, no customer copy changes, no backend edits, no deployment.
