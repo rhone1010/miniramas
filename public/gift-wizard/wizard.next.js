@@ -873,7 +873,8 @@ function renderCompositionAcceptance() {
             render();
             return;
         }
-        session.lines = [{ id: 'development-gift', productId: studioState.productId, size: studioState.size, copies: studioState.copies, generationId: g.generationId }];
+        session.lines = [...session.lines.filter(l => l.id !== editId), { id: editId || crypto.randomUUID(), productId: studioState.productId, size: studioState.size, copies: studioState.copies, generationId: g.generationId }];
+        editId = null;
         go('cart');
         return;
     } void acceptProductGeneration(); }, !g || g.status !== 'ready');

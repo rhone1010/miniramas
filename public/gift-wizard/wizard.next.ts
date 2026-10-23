@@ -343,7 +343,7 @@ function renderCompositionAcceptance(){
  const g=selectedGeneration();pivotRail('Approve<br>Composition');
  $('screen').innerHTML=g?generationPicture(g):'';
  $('right').innerHTML=generationDetails()+'<p>Review the people, details and arrangement in your artwork. Accept this exact composition to continue.</p>'+(g?.accepted?'<p role="status">Composition accepted. Payment and manufacturing release are separate.</p>':'')+secondary('review-again','Back to Image');
- primary(g?.accepted?'Add to Cart':'Accept Composition',()=>{if(journeyDemo){if(!g)return;if(!g.accepted){g.accepted=true;demoAccepted=true;render();return}session.lines=[{id:'development-gift',productId:studioState.productId,size:studioState.size,copies:studioState.copies,generationId:g.generationId}];go('cart');return}void acceptProductGeneration()},!g||g.status!=='ready');
+ primary(g?.accepted?'Add to Cart':'Accept Composition',()=>{if(journeyDemo){if(!g)return;if(!g.accepted){g.accepted=true;demoAccepted=true;render();return}session.lines=[...session.lines.filter(l=>l.id!==editId),{id:editId||crypto.randomUUID(),productId:studioState.productId,size:studioState.size,copies:studioState.copies,generationId:g.generationId}];editId=null;go('cart');return}void acceptProductGeneration()},!g||g.status!=='ready');
  $('review-again').onclick=()=>go('generation');($('back') as HTMLButtonElement).disabled=false;$('back').onclick=()=>go('generation');
 }
 function demoCraft(){
