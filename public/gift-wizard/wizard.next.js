@@ -1,3 +1,4 @@
+import { productScene } from './product-scene.next.js';
 import { giftCompositionEligibility } from '../product-studio/gift-composition-policy.next.js';
 import { mountStudio, familyPhoto } from '../product-studio/studio.next.js';
 import { LiveGift, purchased, canCraft } from './live.next.js';
@@ -36,7 +37,7 @@ function effects() { return liveEffects(registry()); }
 function currentArt() { return session.batches.flat().find(p => p.id === artFocus) || session.batches[batchIndex]?.[0]; }
 function favorite() { return session.batches.flat().find(p => p.id === (shoppingFavoriteId || session.favoriteId)); }
 function stage() { if (pivotMode)
-    return view === 'generation' ? 4 : ['cart', 'checkout', 'compositions'].includes(view) ? 6 : view === 'photo' || view === 'payment' ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
+    return view === 'acceptance' ? 5 : view === 'generation' ? 4 : ['cart', 'checkout', 'compositions', 'payment', 'complete'].includes(view) ? 6 : view === 'photo' ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
 function go(v, record = true) { if (busy)
     return; if (live?.session?.entrance === 'collection' && ['photo', 'effects', 'review', 'focus', 'compare', 'more'].includes(v))
     v = purchased(live.session) ? 'compositions' : 'products'; if (live?.session && purchased(live.session) && ['photo', 'products', 'configuration', 'cart', 'checkout'].includes(v)) {
@@ -133,7 +134,11 @@ function render() {
         el.setAttribute('aria-current', 'step');
     else
         el.removeAttribute('aria-current'); });
-    if (view === 'generation')
+    if (view === 'complete')
+        renderJourneyComplete();
+    else if (view === 'acceptance')
+        renderCompositionAcceptance();
+    else if (view === 'generation')
         renderProductGeneration();
     else if (view === 'photo')
         renderPhoto();
@@ -184,7 +189,7 @@ function renderMobileProgress() {
     const labels = Array.from(document.querySelectorAll('.progress li'), el => el.textContent || '');
     const paid = !!live?.session && purchased(live.session), restricted = !!live?.session && ['needs_attention', 'refunded', 'refund_requested', 'cancelled'].includes(live.session.order.state);
     const collection = live?.session?.entrance === 'collection';
-    const available = pivotMode ? [true, !!session.source, session.effectIds.length === 1, session.effectIds.length === 1 && !!studioState.size, false, false, false] : [!paid && !collection, !!session.source && !paid && !collection, (!!session.batches.length || generationBatch !== null) && !paid && !collection, !!favorite() && !paid, paid || !!favorite() && session.lines.length > 0, paid];
+    const available = pivotMode ? [true, !!session.source, session.effectIds.length === 1, session.effectIds.length === 1 && !!studioState.size, !!selectedGeneration(), selectedGeneration()?.status === 'ready', session.lines.length > 0] : [!paid && !collection, !!session.source && !paid && !collection, (!!session.batches.length || generationBatch !== null) && !paid && !collection, !!favorite() && !paid, paid || !!favorite() && session.lines.length > 0, paid];
     const completed = [!!session.source, !!session.batches.length, !!favorite(), session.lines.length > 0, paid, !!live?.session?.order.approvedAt];
     const current = stage(), panel = document.createElement('details');
     panel.id = 'mobile-progress';
@@ -198,7 +203,7 @@ function renderMobileProgress() {
         return; panel.open = false; if (pivotMode) {
         if (i === 2)
             studioState.step = 'product';
-        go(['photo', 'effects', 'products', 'products'][i]);
+        go(['photo', 'effects', 'products', 'products', 'generation', 'acceptance', 'checkout'][i]);
         return;
     } go(['photo', 'effects', 'review', 'products', paid ? 'payment' : 'checkout', 'compositions'][i]); });
 }
@@ -366,6 +371,10 @@ function renderPhoto() {
     $('photo').onchange = e => { const el = e.target, f = el.files?.[0]; el.value = ''; if (f)
         upload(f); };
     document.querySelectorAll('[name=recipient]').forEach(el => el.onchange = () => { session.recipient = el.value; render(); });
+    if (journeyDemo && !sourceURL) {
+        $('screen').insertAdjacentHTML('beforeend', secondary('demo-photo', 'Use Development Photo'));
+        $('demo-photo').onclick = () => { sourceURL = thumb(effects()[0].id); go('effects'); };
+    }
     if (pivotMode && sourceURL) {
         $('screen').querySelector('fieldset')?.remove();
         $('screen').querySelector('h2').textContent = 'Your Photo';
@@ -479,7 +488,8 @@ function productPreviewReady(p, o) {
     const entry = productPreviews.get(live.id + ':' + favoriteId + ':' + p.id + ':' + o.size), v = entry?.value;
     return !!v && !entry?.failed && (v.status === 'ready' || v.status === 'provisional') && Date.parse(v.urlExpiresAt) > Date.now() + 30000;
 }
-function cartPreviewsReady() { if (live?.session?.flow === 'generations')
+function cartPreviewsReady() { if (journeyDemo)
+    return session.lines.length > 0 && demoAccepted; if (live?.session?.flow === 'generations')
     return session.lines.every(l => live.session.generations?.items.some(g => g.generationId === l.generationId && g.status === 'ready' && g.accepted)); return session.lines.every(l => { const { product, option } = giftOption(l, products); return productPreviewReady(product, option); }); }
 function configurationPreview(p, o, artworkReference = false) {
     if (!live?.session?.artworkPreviewId)
@@ -546,7 +556,7 @@ function renderProducts() {
     if ($('view-cart'))
         $('view-cart').onclick = () => go('cart');
 }
-function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : live?.session?.flow === 'generations' ? generationLineImage(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>' + (live && live.session?.flow !== 'generations' && !purchased(live.session) ? '<p class="small">Product-specific artwork will be prepared after payment.</p>' : '') + '<div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
+function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : (journeyDemo || live?.session?.flow === 'generations') ? generationLineImage(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>' + (live && live.session?.flow !== 'generations' && !purchased(live.session) ? '<p class="small">Product-specific artwork will be prepared after payment.</p>' : '') + '<div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
 async function persistCart(lines) {
     if (busy)
         return;
@@ -573,7 +583,12 @@ async function persistCart(lines) {
 }
 function bindCart() {
     document.querySelectorAll('[data-qty]').forEach(b => b.onclick = () => void persistCart(session.lines.map(l => l.id === b.dataset.qty ? { ...l, copies: l.copies + Number(b.dataset.delta) } : l)));
-    document.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const l = session.lines.find(l => l.id === b.dataset.edit); activeProduct = l.productId; size = l.size; copies = l.copies; editId = l.id; go('configuration'); });
+    document.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const l = session.lines.find(l => l.id === b.dataset.edit); activeProduct = l.productId; size = l.size; copies = l.copies; editId = l.id; if (pivotMode) {
+        studioState = { ...studioState, step: 'size', productId: l.productId, size: l.size, copies: l.copies };
+        go('products');
+    }
+    else
+        go('configuration'); });
     document.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => { if (!confirm('Remove this gift from your order?'))
         return; void persistCart(session.lines.filter(l => l.id !== b.dataset.remove)); });
 }
@@ -590,11 +605,11 @@ const legacyProgress = document.querySelector('.progress').innerHTML;
 let pivotRestored = false;
 function rememberPivotReview() { if (!pivotRestored)
     return; try {
-    sessionStorage.setItem(pivotKey, JSON.stringify({ view, effectIds: session.effectIds, studioState }));
+    sessionStorage.setItem(pivotKey, JSON.stringify({ view, effectIds: session.effectIds, studioState, ...(journeyDemo ? { demoItems, demoAccepted, lines: session.lines, sourceURL: selectedGeneration()?.url || sourceURL, selectedGenerationId, email: session.email, address: session.address, disclosureAccepted } : {}) }));
 }
 catch { } }
 function setPivotProgress() {
-    document.querySelector('.progress').innerHTML = ['Upload Photo', 'Choose One Effect', 'Choose Gift', 'Gift Details', 'Personalized Review', 'Approve Composition', 'Checkout'].map(x => '<li>' + x + '</li>').join('');
+    document.querySelector('.progress').innerHTML = ['Upload Photo', 'Choose One Effect', 'Choose Gift', 'Gift Details', 'Personalized Review', 'Approve', 'Checkout'].map(x => '<li>' + x + '</li>').join('');
 }
 function restorePivotReview() {
     setPivotProgress();
@@ -605,8 +620,23 @@ function restorePivotReview() {
         const id = saved.effectIds?.[0];
         session.effectIds = effects().some(e => e.id === id) ? [id] : [];
         effectFocus = session.effectIds[0] || '';
-        if (['photo', 'effects', 'products'].includes(saved.view))
+        if (['photo', 'effects', 'products', ...(journeyDemo ? ['generation', 'acceptance', 'cart', 'checkout', 'payment', 'complete'] : [])].includes(saved.view))
             view = saved.view;
+        if (journeyDemo) {
+            demoItems = Array.isArray(saved.demoItems) ? saved.demoItems : [];
+            for (const item of demoItems) {
+                if (item.status === 'generating' || item.status === 'pending')
+                    item.status = 'failed';
+            }
+            demoAccepted = saved.demoAccepted === true;
+            session.lines = saved.lines || [];
+            sourceURL = saved.sourceURL || '';
+            selectedGenerationId = saved.selectedGenerationId || '';
+            session.email = saved.email || '';
+            if (saved.address)
+                session.address = saved.address;
+            disclosureAccepted = saved.disclosureAccepted === true;
+        }
         if (saved.studioState && products.some(p => p.id === saved.studioState.productId)) {
             const old = saved.studioState;
             studioState = { step: ['product', 'size', 'options', 'review'].includes(old.step) ? old.step : 'product', productId: old.productId, size: typeof old.size === 'string' ? old.size : '', copies: 1, drafts: {} };
@@ -635,13 +665,18 @@ function pivotRail(title) {
     } try {
         sessionStorage.removeItem(pivotKey);
     }
-    catch { } session.effectIds = []; studioState = { step: 'product', productId: '', size: '', copies: 1, drafts: {} }; sourceURL = ''; history = []; go('photo', false); };
+    catch { } session.effectIds = []; studioState = { step: 'product', productId: '', size: '', copies: 1, drafts: {} }; sourceURL = ''; history = []; if (journeyDemo) {
+        demoItems = [];
+        demoAccepted = false;
+        session.lines = [];
+    } go('photo', false); };
     $('left').insertBefore(start, $('back'));
 }
 let selectedGenerationId = '';
 let productGenerationPending = false, productGenerationTimer;
-function selectedGeneration() { return live?.session?.generations?.items.find(g => g.generationId === selectedGenerationId) || live?.session?.generations?.items.at(-1); }
-function generationLineImage(l) { const g = live?.session?.generations?.items.find(g => g.generationId === l.generationId); return g?.url ? photo(g.url, 'Personalized artwork') : '<p role="status">This product preview could not load.</p>'; }
+function selectedGeneration() { if (journeyDemo)
+    return demoItems.find(g => g.generationId === selectedGenerationId) || demoItems.at(-1); return live?.session?.generations?.items.find(g => g.generationId === selectedGenerationId) || live?.session?.generations?.items.at(-1); }
+function generationLineImage(l) { const g = (journeyDemo ? demoItems : live?.session?.generations?.items)?.find(g => g.generationId === l.generationId); return g?.url ? generationPicture(g, l.productId, l.size) : '<p role="status">This product preview could not load.</p>'; }
 function productIntentKey() { return 'liten-gift-generation:' + live.id + ':' + live.session.generations.effectId + ':' + studioState.productId + ':' + studioState.size; }
 async function craftProduct(retry = false) {
     if (!live || busy || productGenerationPending || live.session?.flow !== 'generations')
@@ -699,31 +734,90 @@ catch (e) {
 finally {
     scheduleProductGenerationRead();
 } }
+function selectedProduct() { const p = products.find(p => p.id === studioState.productId); return { p, o: p?.options.find(o => o.size === studioState.size) }; }
+function generationPicture(g, productId = studioState.productId, size = studioState.size) {
+    const p = products.find(p => p.id === productId), o = p?.options.find(o => o.size === size);
+    if (!p || !o || !g.url)
+        return '';
+    const source = productPhotography.get(p.id + ':' + o.size) || (journeyDemo ? asset(familyPhoto(p)) : null), key = g.generationId + ':' + p.id + ':' + o.size;
+    if (scenePictures.has(key))
+        return photo(scenePictures.get(key), p.label + ' · ' + o.label + ' · personalized composition', 'gift-feature-image');
+    if (source && !scenePending.has(key) && !sceneFailures.has(key)) {
+        scenePending.add(key);
+        void productScene(source, g.url, o.imageWidthIn / o.imageHeightIn).then((url) => { scenePictures.set(key, url); }).catch(() => sceneFailures.add(key)).finally(() => { scenePending.delete(key); if (['generation', 'acceptance', 'cart', 'checkout', 'complete', 'payment'].includes(view))
+            render(); });
+    }
+    return photo(g.url, 'Your exact composition', 'gift-feature-image') + '<p class="small" role="status">' + (!source || sceneFailures.has(key) ? 'Product photography is not available for this configuration. Your exact artwork is shown.' : 'Preparing your product photograph…') + '</p>';
+}
+function generationDetails() { const { p, o } = selectedProduct(); return '<h2>' + esc(p?.label || 'Your Gift') + '</h2><p>' + esc(o?.label || '') + '</p><p>' + esc(Object.entries(o?.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><p>' + esc(effects().find(e => e.id === session.effectIds[0])?.label || '') + '</p>'; }
+function changeGenerationSelection() { studioState.step = 'size'; go('products'); }
 function renderProductGeneration() {
     const g = selectedGeneration(), a = live?.session?.generations?.allowance;
-    rail('Personalized<br>Review', '');
-    $('screen').innerHTML = g?.url ? photo(g.url, 'Personalized artwork', 'gift-feature-image') : '<section role="status"><h2>' + ((productGenerationPending || g?.status === 'generating' || g?.status === 'pending') ? 'Preparing Your Masterpiece' : 'Didn’t finish') + '</h2></section>';
-    $('right').innerHTML = '<h2>Approve Composition</h2>' + (a ? '<p>' + a.freeRemaining + ' / ' + a.freeTotal + ' free generations remaining</p>' : '') + secondary('generation-retry', 'Try again') + (g?.accepted ? '<p>Approved</p>' : '');
-    primary(g?.accepted ? 'Add to Cart' : 'Accept', () => void acceptProductGeneration(), !g || g.status !== 'ready' || !g.url || !g.sha256);
-    $('generation-retry').onclick = () => void craftProduct(g?.status === 'ready');
+    pivotRail('Your<br>Crafted Images');
+    $('screen').innerHTML = g?.url ? generationPicture(g) : '<section class="craft-progress" role="status"><div class="craft-gears" aria-hidden="true">⚙<span>⚙</span></div><h2>' + (g?.status === 'failed' ? 'Crafting did not finish' : 'Crafting Your Image') + '</h2><p>' + (journeyDemo ? 'Development demonstration · no generation request.' : g?.status === 'failed' ? 'Your selections are here. Retry when you are ready.' : 'Your selected effect is being prepared for your gift. This may take a little time.') + '</p></section>';
+    $('right').innerHTML = generationDetails() + (a ? '<p class="small">' + a.freeRemaining + ' / ' + a.freeTotal + ' free generations remaining</p>' : '') + '<div class="actions">' + secondary('generation-retry', 'Retry') + secondary('change-generation', 'Change Selection') + '</div>';
+    primary('Review Composition', () => go('acceptance'), !g || g.status !== 'ready' || !g.url || !g.sha256);
+    $('generation-retry').onclick = () => journeyDemo ? demoCraft() : void craftProduct(g?.status === 'ready');
     $('generation-retry').disabled = busy || g?.status === 'generating';
-    const items = live?.session?.generations?.items.filter(x => x.status === 'ready') || [];
+    $('change-generation').onclick = changeGenerationSelection;
+    const items = journeyDemo ? demoItems : live?.session?.generations?.items.filter(x => x.status === 'ready') || [];
     if (items.length)
-        $('right').insertAdjacentHTML('beforeend', '<div class="actions">' + items.map((x, i) => '<button data-generation="' + esc(x.generationId) + '" aria-pressed="' + (g?.generationId === x.generationId) + '">' + (i + 1) + '</button>').join('') + '</div>');
+        $('right').insertAdjacentHTML('beforeend', '<section class="saved-compositions"><h3>Saved compositions</h3><div class="composition-history">' + items.filter(x => x.url).map((x, i) => '<button data-generation="' + esc(x.generationId) + '" aria-label="View composition ' + (i + 1) + '" aria-pressed="' + (g?.generationId === x.generationId) + '">' + photo(x.url, 'Composition ' + (i + 1)) + '</button>').join('') + '</div></section>');
     document.querySelectorAll('[data-generation]').forEach(b => b.onclick = () => { selectedGenerationId = b.dataset.generation; render(); });
     $('back').disabled = busy;
-    $('back').onclick = () => go('products');
+    $('back').onclick = changeGenerationSelection;
+}
+function renderCompositionAcceptance() {
+    const g = selectedGeneration();
+    pivotRail('Approve<br>Composition');
+    $('screen').innerHTML = g ? generationPicture(g) : '';
+    $('right').innerHTML = generationDetails() + '<p>Review the people, details and arrangement in your artwork. Accept this exact composition to continue.</p>' + (g?.accepted ? '<p role="status">Composition accepted. Payment and manufacturing release are separate.</p>' : '') + secondary('review-again', 'Back to Image');
+    primary(g?.accepted ? 'Add to Cart' : 'Accept Composition', () => { if (journeyDemo) {
+        if (!g)
+            return;
+        if (!g.accepted) {
+            g.accepted = true;
+            demoAccepted = true;
+            render();
+            return;
+        }
+        session.lines = [{ id: 'development-gift', productId: studioState.productId, size: studioState.size, copies: studioState.copies, generationId: g.generationId }];
+        go('cart');
+        return;
+    } void acceptProductGeneration(); }, !g || g.status !== 'ready');
+    $('review-again').onclick = () => go('generation');
+    $('back').disabled = false;
+    $('back').onclick = () => go('generation');
+}
+function demoCraft() {
+    const { p, o } = selectedProduct();
+    if (!p || !o)
+        return;
+    const id = 'development-' + crypto.randomUUID();
+    selectedGenerationId = id;
+    demoItems.push({ generationId: id, productId: p.id + ':' + o.size, status: 'generating', url: null, width: null, height: null, sha256: null, accepted: false });
+    go('generation');
+    setTimeout(() => { const g = demoItems.find(x => x.generationId === id); g.status = 'ready'; g.url = thumb(session.effectIds[0]); g.width = 1024; g.height = 1024; g.sha256 = 'development-sample-not-production'; if (view === 'generation')
+        render(); }, 1200);
+}
+function renderJourneyComplete() {
+    pivotRail('Your<br>Gift');
+    $('screen').innerHTML = '<h2>Checkout demonstration complete</h2>' + session.lines.map(l => lineMarkup(l, false)).join('') + '<p role="status">Development demonstration only. No payment, customer approval, order or manufacturing request was submitted.</p>';
+    $('right').innerHTML = '<h2>What happens next</h2><p>In the live journey, payment confirmation comes from the payment provider. Manufacturing remains separately controlled.</p>';
+    primary('Return to Your Gift', () => go('cart'));
+    $('back').disabled = false;
+    $('back').onclick = () => go('checkout');
 }
 async function acceptProductGeneration() {
     const g = selectedGeneration();
     if (!live || busy || g?.status !== 'ready' || !g.url || !g.sha256)
         return;
     if (!g.accepted) {
-        await serverAction(async () => { const r = await live.api.acceptGeneration(live.id, g.generationId); return r.session; }, 'generation');
+        await serverAction(async () => { const r = await live.api.acceptGeneration(live.id, g.generationId); return r.session; }, 'acceptance');
         return;
     }
     const productId = studioState.productId + ':' + studioState.size;
-    await persistCart([...session.lines, { id: crypto.randomUUID(), productId: studioState.productId, size: studioState.size, copies: studioState.copies, generationId: g.generationId }]);
+    await persistCart([...session.lines.filter(l => l.id !== editId), { id: editId || crypto.randomUUID(), productId: studioState.productId, size: studioState.size, copies: studioState.copies, generationId: g.generationId }]);
 }
 function renderPivotEffects() {
     pivotRail('Choose<br>an Effect');
@@ -753,7 +847,7 @@ function renderPivotProducts() {
     const choices = [...products].sort((a, b) => familyOrder.indexOf(a.id) - familyOrder.indexOf(b.id)).map(p => ({ ...p, unavailableOptions: unavailableCatalogOptions.get(p.id), image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => giftCompositionEligibility(p, o, pivotSubjectCount()).allowed) }));
     mountStudio($('screen'), { products: choices, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
         sizeHeading: 'Available Sizes', detailsIntroHtml: (p, o) => '<h3>Your Product</h3>' + (o.familyNote ? '<div class="product-guidance"><p>' + esc(o.familyNote) + '</p></div>' : ''), detailsHtml: (p, o) => { if (!o)
-            return photo(p.image, p.label); const url = o ? productPhotography.get(p.id + ':' + o.size) : null; return url ? photo(url, p.label) : '<p role="status">Product photography unavailable.</p>'; }, previewHtml: p => photo(p.image, p.label), canAdd: (p, o) => p.available && o.compatible !== false && !!live?.session?.generations?.effectId && ['free', 'paid'].includes(live.session.generations.allowance.next), onAdd: () => void craftProduct(), busy, addLabel: 'Craft',
+            return photo(p.image, p.label); const url = o ? productPhotography.get(p.id + ':' + o.size) || (journeyDemo && o.imageWidthIn === o.imageHeightIn ? asset(familyPhoto(p)) : null) : null; return url ? photo(url, p.label) : '<p role="status">Product photography unavailable.</p>'; }, previewHtml: p => photo(p.image, p.label), canAdd: (p, o) => p.available && o.compatible !== false && (journeyDemo || !!live?.session?.generations?.effectId && ['free', 'paid'].includes(live.session.generations.allowance.next)), onAdd: () => journeyDemo ? demoCraft() : void craftProduct(), busy, addLabel: 'Craft',
         onChange: s => { studioState = s; if (layoutReview)
             rememberPivotReview();
         else
@@ -764,7 +858,7 @@ function renderPivotProducts() {
             $('mobile-progress')?.remove();
             renderMobileProgress();
         } },
-        onExit: () => go('effects'), utilityHtml: '<p class="small">' + (pivotSubjectCount() >= 2 ? 'Landscape: unavailable manufacturing SKU' : '') + '</p>' });
+        onExit: () => go('effects'), utilityHtml: '' });
     document.body.dataset.pivotStep = studioState.step;
 }
 function renderEffects() {
@@ -1105,32 +1199,39 @@ function renderCheckout() {
     document.querySelectorAll('#screen .address input').forEach(input => { input.placeholder = input.closest('label').querySelector('span').textContent; if (input.id !== 'line2' && input.id !== 'state')
         input.required = true; });
     $('countryCode').setAttribute('aria-description', 'Two-letter country code');
-    $('right').innerHTML = '<div data-order-summary><h2>Order summary</h2>' + session.lines.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="summary-item"><div>' + (live?.session?.flow === 'generations' ? generationLineImage(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '<br>' + money(o.retailCents * l.copies) + '</p></div></div>'; }).join('') + '<dl><dt>Products</dt><dd>' + money(productSubtotal(session, products)) + '</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>' + secondary('edit-gifts', 'Edit gifts');
+    $('right').innerHTML = '<div data-order-summary><h2>Order summary</h2>' + session.lines.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="summary-item"><div>' + ((journeyDemo || live?.session?.flow === 'generations') ? generationLineImage(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '<br>' + money(o.retailCents * l.copies) + '</p></div></div>'; }).join('') + '<dl><dt>Products</dt><dd>' + money(productSubtotal(session, products)) + '</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>' + secondary('edit-gifts', 'Edit gifts');
     for (const key of ['email', ...Object.keys(session.address)])
         $(key).oninput = e => { const v = e.target.value; if (key === 'email')
             session.email = v;
         else
-            session.address[key] = key === 'countryCode' ? v.toUpperCase() : v; $('primary').disabled = serverMode ? !checkoutReady() : !deliveryValid(session) || !disclosureAccepted; };
+            session.address[key] = key === 'countryCode' ? v.toUpperCase() : v; $('primary').disabled = serverMode ? !checkoutReady() : !deliveryValid(session) || !disclosureAccepted; if (journeyDemo)
+            rememberPivotReview(); };
     $('ship-self').onclick = () => { session.shipTo = 'self'; render(); };
     $('ship-recipient').onclick = () => { session.shipTo = 'recipient'; render(); };
     $('edit-gifts').onclick = () => go('cart');
     // The exact server disclosure is displayed; acceptance stays beneath delivery.
-    $('screen').insertAdjacentHTML('beforeend', '<section id="gift-disclosure"><h3>Your gift, made just for you</h3>' + disclosure.text.split('\n\n').map(p => '<p>' + esc(p) + '</p>').join('') + '<label class="radio"><input id="disclosure" type="checkbox" ' + (disclosureAccepted ? 'checked' : '') + '><span>I understand that product-specific compositions are prepared after payment and that I must approve them before production.</span></label></section>');
+    $('screen').insertAdjacentHTML('beforeend', '<section id="gift-disclosure"><h3>Your gift, made just for you</h3>' + (pivotMode ? 'Your accepted composition stays attached to this gift. Review your delivery details and order summary before payment.\n\nArtwork acceptance, payment and manufacturing release are separate steps.' : disclosure.text).split('\n\n').map(p => '<p>' + esc(p) + '</p>').join('') + '<label class="radio"><input id="disclosure" type="checkbox" ' + (disclosureAccepted ? 'checked' : '') + '><span>' + (pivotMode ? 'I have reviewed my composition and delivery details.' : 'I understand that product-specific compositions are prepared after payment and that I must approve them before production.') + '</span></label></section>');
     // Keep the explanation intact in the left rail and acceptance beneath delivery.
     const explanation = $('gift-disclosure'), acceptance = $('disclosure').closest('label');
     $('screen').append(acceptance);
     $('filters').before(explanation);
     $('disclosure').setAttribute('required', '');
     $('disclosure').setAttribute('aria-describedby', 'gift-disclosure');
-    $('disclosure').onchange = e => { disclosureAccepted = e.target.checked; $('primary').disabled = serverMode ? !checkoutReady() : !deliveryValid(session) || !disclosureAccepted; };
-    primary('Continue to Payment', () => { paymentState = 'blocked'; go('payment'); }, !deliveryValid(session) || !disclosureAccepted || !session.lines.length);
+    $('disclosure').onchange = e => { disclosureAccepted = e.target.checked; $('primary').disabled = serverMode ? !checkoutReady() : !deliveryValid(session) || !disclosureAccepted; if (journeyDemo)
+        rememberPivotReview(); };
+    primary(journeyDemo ? 'Preview Payment' : 'Continue to Payment', () => { paymentState = 'blocked'; go('payment'); }, !deliveryValid(session) || !disclosureAccepted || !session.lines.length);
 }
 const layoutViews = ['photo', 'products', 'configuration', 'cart', 'checkout', 'payment-loading', 'payment-pending', 'payment-failed', 'payment-verified', 'auth', 'restoring', 'restore-failed', 'effects', 'gallery', 'gallery-second', 'approval', 'approval-second', 'approval-final', 'approval-loading', 'approval-failed'];
 const layoutName = params.get('layoutReview') || '';
 const layoutReview = layoutViews.some(v => v === layoutName);
+const journeyDemo = layoutReview && params.get('journey') === '1';
+let demoItems = [], demoAccepted = false;
+const scenePictures = new Map();
+const scenePending = new Set();
+const sceneFailures = new Set();
 let pivotMode = layoutReview ? params.get('pivot') === '1' : params.get('fixture') !== '1';
 function pivotSubjectCount() { return layoutReview ? Number(params.get('subjects') || '1') : live?.session?.source.series === 'groups' ? live.session.source.peopleCount || 0 : 1; }
-const pivotKey = 'gift-pivot-review:' + fixtureSeries + ':' + params.get('subjects');
+const pivotKey = 'gift-pivot-review:' + fixtureSeries + ':' + params.get('subjects') + (journeyDemo ? ':journey' : '');
 let disclosureAccepted = false, paymentState = 'blocked';
 const restoration = new RequestSlot();
 const serverMode = !layoutReview && params.get('fixture') !== '1';
@@ -1225,11 +1326,11 @@ function restoreView(s) {
         copies = Number.isInteger(hint.copies) && hint.copies >= 1 && hint.copies <= 20 ? hint.copies : 1;
         editId = session.lines.some(l => l.id === hint.editId) ? hint.editId : null;
     }
-    const allowed = ['generation', 'photo', 'effects', 'review', 'focus', 'compare', 'more', 'products', 'configuration', 'cart', 'checkout', 'compositions'];
+    const allowed = ['acceptance', 'generation', 'photo', 'effects', 'review', 'focus', 'compare', 'more', 'products', 'configuration', 'cart', 'checkout', 'compositions'];
     history = Array.isArray(hint.history) ? hint.history.filter((v) => allowed.includes(v)) : [];
     if (generationBatch)
         view = 'review';
-    else if (allowed.includes(hint.view) && (!pivotMode || ['photo', 'effects', 'products', 'generation', 'cart', 'checkout'].includes(hint.view)))
+    else if (allowed.includes(hint.view) && (!pivotMode || ['photo', 'effects', 'products', 'generation', 'acceptance', 'cart', 'checkout'].includes(hint.view)))
         go(hint.view, false);
 }
 window.addEventListener('pagehide', () => { rememberView(); clearTimeout(generationTimer); clearTimeout(productGenerationTimer); });
@@ -1352,7 +1453,19 @@ async function retryRestoration() {
             error(state.code);
     }
 }
+function renderDemoPayment() {
+    pivotRail('Checkout');
+    $('screen').innerHTML = '<h2>Payment</h2><p class="development-note">Development demonstration — payment fields below do not submit a charge. Do not enter real card details.</p><div class="address">' + field('demo-card', 'Test card number', '4242 4242 4242 4242', 'readonly') + field('demo-expiry', 'Expiry', '12 / 30', 'readonly') + field('demo-cvc', 'Security code', '123', 'readonly') + '</div>';
+    $('right').innerHTML = '<h2>Order summary</h2>' + session.lines.map(l => lineMarkup(l, false)).join('') + '<p>Products ' + money(productSubtotal(session, products)) + '</p><p class="small">Shipping and tax are quoted by the live checkout.</p>';
+    primary('View Completion Example', () => go('complete'));
+    $('back').disabled = false;
+    $('back').onclick = () => go('checkout');
+}
 function renderPayment() {
+    if (journeyDemo) {
+        renderDemoPayment();
+        return;
+    }
     if (paymentState === 'payment-verified') {
         rail('Your<br>Gift', '<p>Now comes the creative part.</p>');
         $('screen').innerHTML = '<h2>Your gift is on its way to becoming something special.</h2><p class="small">LAYOUT REVIEW — the confirmation copy below is a presentation example. No payment or preview entitlement has been verified.</p><p>Your purchase is confirmed. Review your personalized gifts before production.</p><p>Your selected artwork will be prepared for each purchased product. Review each composition before final approval.</p><div class="grid product-grid">' + session.lines.map(l => { const { product: p } = giftOption(l, products); return '<article class="product">' + photo(asset(p.image), p.label + ' example product') + '<h3>' + esc(p.label) + '</h3></article>'; }).join('') + '</div>';
