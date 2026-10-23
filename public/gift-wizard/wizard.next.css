@@ -265,46 +265,88 @@ body:has(#screen[data-view="products"]) .studio-products{grid-template-columns:r
 .artwork-actions>.context-body{display:contents}.artwork-actions h2{order:-2}
 
 .artwork-actions p:empty{display:none}
-/* Approved Gift Shop Mockups, October 22: isolated pivot review only. */
-body.gift-pivot:has(#screen) #workspace{grid-template-columns:minmax(220px,21fr) minmax(0,41fr) minmax(280px,38fr)}
-.gift-pivot .left-rail{padding:32px 24px;display:flex;flex-direction:column;align-items:flex-start}
-.gift-pivot .left-rail h1{font-size:56px;margin-bottom:32px}
-.gift-pivot #filters{width:100%;margin-top:24px;margin-bottom:auto}
-.gift-pivot #filters h2{font-size:32px;color:var(--ivory)}
-.gift-pivot .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.gift-pivot .filters button{background:var(--ivory);color:var(--forest);font-size:20px;padding:8px;min-height:48px}
+/* Approved Gift Shop screens: Upload, Choose Effect, Product Choice, Product Details. */
+body.gift-pivot:has(#screen) #workspace{grid-template-columns:21fr minmax(0,41fr) minmax(0,38fr);align-items:stretch;min-height:calc(100dvh - 220px)}
+.gift-pivot .left-rail{padding:32px 40px;display:flex;flex-direction:column;align-items:flex-start;max-height:none!important}
+.gift-pivot .left-rail h1{font-size:56px!important;line-height:1.3;margin:0 0 48px!important}
+.gift-pivot .left-rail p{font-size:24px;line-height:1.25}
+.gift-pivot .left-rail .tagline{display:none}
+.gift-pivot #filters{width:100%;margin-top:auto;margin-bottom:40px;overflow:visible;flex:none}
+.gift-pivot #filters h2{font-size:32px;color:var(--ivory);margin-bottom:24px}
+.gift-pivot #workspace #filters .filters{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0}
+.gift-pivot .filters button{background:var(--ivory);color:var(--forest);font-size:20px;padding:8px;min-height:48px;border:1px solid var(--line);justify-content:flex-start}
 .gift-pivot .filters button[aria-pressed=true]{background:var(--wine);color:var(--ivory);border:1px solid var(--gold)}
-.gift-pivot #pivot-start,.gift-pivot #back,.gift-pivot #studio-back{margin-top:24px;min-width:160px;background:var(--ivory);color:var(--forest)}
-.gift-pivot #screen .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-.gift-pivot #screen .palette{max-height:calc(100dvh - 260px);overflow:auto}
-.gift-pivot:has(#screen[data-view="effects"]) .right-rail{background:var(--line);padding:32px;display:flex;flex-direction:column;align-items:center}
-.gift-pivot:has(#screen[data-view="effects"]) .right-rail h2{font-size:40px;color:var(--wine);align-self:stretch}
-.gift-pivot:has(#screen[data-view="effects"]) .context-image{max-height:none;width:100%;aspect-ratio:1;object-fit:contain;border:2px solid var(--gold)}
-.gift-pivot .primary{clip-path:none;width:fit-content;min-width:0;margin-top:24px}
-.gift-pivot:has(#screen[data-view="products"])[data-pivot-step="product"] #workspace{grid-template-columns:minmax(220px,21fr) minmax(0,79fr)}
+.gift-pivot #pivot-start,.gift-pivot #back,.gift-pivot #studio-back{border:1px solid var(--gold);border-radius:4px;min-width:194px;margin-top:24px;background:var(--ivory);color:var(--forest);font-size:28px}
+.gift-pivot #pivot-start{margin-top:auto}
+.gift-pivot #back:disabled{display:none}
+.gift-pivot .center{padding:20px 40px 0}
+.gift-pivot #screen{min-width:0}
+.gift-pivot:has(#screen:is([data-view="photo"],[data-view="effects"])) #screen,.gift-pivot[data-pivot-step="product"] #screen{border:4px dotted var(--gold);padding:32px 40px;min-height:calc(100dvh - 244px)}
+.gift-pivot #screen .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 32px}
+.gift-pivot #screen .palette{max-height:calc(100dvh - 320px);overflow:auto;padding:4px}
+.gift-pivot #screen .tile img{background:transparent;border-radius:0;aspect-ratio:1;object-fit:contain}
+.gift-pivot #screen .tile[aria-pressed=true]:after{display:none}
+.gift-pivot #screen .tile span{font-size:20px}
+.gift-pivot:has(#screen[data-view="effects"]) .right-rail{background:#b1ac9f;padding:24px 40px;display:flex;flex-direction:column;align-items:center;gap:24px}
+.gift-pivot:has(#screen[data-view="effects"]) .right-rail h2{font-size:44px;color:var(--wine);border-bottom:1px solid var(--gold);margin-bottom:24px;align-self:stretch}
+.gift-pivot:has(#screen[data-view="effects"]) .context-image{max-height:none!important;width:100%;aspect-ratio:1;object-fit:contain;border:4px solid var(--gold);border-radius:4px}
+.gift-pivot .context-body{width:100%}
+.gift-pivot #workspace .primary{clip-path:none;width:fit-content;min-width:0;margin:8px auto 0;align-self:center;font-size:28px;min-height:56px}
+.gift-pivot:has(#screen[data-view="products"])[data-pivot-step="product"] #workspace{grid-template-columns:21fr minmax(0,79fr)}
 .gift-pivot[data-pivot-step="product"]:has(#screen[data-view="products"]) #right{display:none}
-.gift-pivot:has(#screen[data-view="products"]) .studio-products{grid-template-columns:repeat(4,minmax(0,1fr))}
-.gift-pivot .studio-media{position:static}.gift-pivot .studio-media img{max-width:none;width:100%;aspect-ratio:1;object-fit:contain}
-.gift-pivot:has(#screen[data-view="photo"]) #workspace{grid-template-columns:minmax(220px,21fr) minmax(0,54fr) minmax(260px,25fr)}
-.gift-pivot:has(#screen[data-view="photo"]) #screen>h2{text-align:center}
-.gift-pivot .upload{margin:64px auto;max-width:720px;background:var(--line);border:1px solid var(--gold);padding:48px 24px}
-.gift-pivot #choose-photo{background:var(--wine);color:var(--ivory)}
+.gift-pivot[data-pivot-step="product"] .center{padding:20px 8% 0 5%}
+.gift-pivot[data-pivot-step="product"] #screen{padding:64px 56px}
+.gift-pivot:has(#screen[data-view="products"]) .studio-products{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.gift-pivot .studio-products button{padding:8px;min-width:0;justify-content:flex-start}
+.gift-pivot .studio-products img{aspect-ratio:1;width:100%;object-fit:contain}
+.gift-pivot .studio-products span{font-size:24px;flex:none}
+.gift-pivot .studio-products small{margin:8px 0}
+.gift-pivot .studio-media{position:static}
+.gift-pivot .studio-media img{width:100%;max-width:none;max-height:none;aspect-ratio:1;object-fit:contain}
+.gift-pivot:has(#screen[data-view="photo"]) #workspace{grid-template-columns:21fr minmax(0,54fr) minmax(0,25fr)}
+.gift-pivot:has(#screen[data-view="photo"]) #screen>h2{text-align:center;font-size:46px;margin:0}
+.gift-pivot:has(#screen[data-view="photo"]) .left-rail h1{margin-bottom:0!important}
+.gift-pivot:has(#screen[data-view="photo"]) .left-rail .eyebrow{font-size:14px;margin-bottom:30px}
+.gift-pivot .upload{margin:100px auto 0;max-width:720px;min-height:400px;background:#ded8cd;border:1px solid var(--gold);border-radius:8px;padding:48px 24px;gap:24px}
+.gift-pivot .upload .upload-icon{width:100px;height:100px;margin:0;color:var(--sage)}
+.gift-pivot .upload-icon svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.gift-pivot .upload p{margin:0;font-size:26px}
+.gift-pivot #workspace #choose-photo{background:var(--wine);color:var(--ivory);margin:8px auto 0;align-self:center}
+.gift-pivot .upload p.small{font:14px/1.5 Manrope,sans-serif}
+.gift-pivot:has(#screen[data-view="photo"]) .right-rail{padding:40px}
+.gift-pivot:has(#screen[data-view="photo"]) .tips li{margin:18px 0}
+body.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product"]) #workspace{grid-template-columns:21fr minmax(0,48fr) minmax(0,31fr)}
+.gift-pivot:has(#screen[data-view="products"]) .product-studio{display:block;padding:0}
+.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product"]) .center{padding:32px 48px}
+.gift-pivot[data-pivot-step="product"] .studio-panel>h2,.gift-pivot .studio-panel>.actions:empty{display:none}
+.gift-pivot:has(#screen[data-view="products"]) .right-rail{padding:32px 40px}
+.gift-pivot .studio-panel h2{color:var(--wine);font-size:44px;margin-bottom:24px}
+.gift-pivot .studio-panel .sizes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.gift-pivot #workspace .studio-panel .sizes button{width:100%;min-width:0;font-size:28px;min-height:64px}
 @media(max-width:1000px){
- body.gift-pivot:has(#screen) #workspace,.gift-pivot:has(#screen[data-view="photo"]) #workspace,.gift-pivot:has(#screen[data-view="products"])[data-pivot-step="product"] #workspace{grid-template-columns:minmax(0,1fr)}
- .gift-pivot .left-rail{padding:16px 24px}.gift-pivot .left-rail h1{font-size:32px;margin-bottom:8px}
- .gift-pivot #filters{margin-top:8px}.gift-pivot #pivot-start,.gift-pivot #back,.gift-pivot #studio-back{margin-top:8px;min-width:0}
- .gift-pivot #screen .grid,.gift-pivot:has(#screen[data-view="products"]) .studio-products{grid-template-columns:repeat(2,minmax(0,1fr))}
- .gift-pivot #screen .palette{max-height:440px}.gift-pivot .right-rail{padding:24px}.gift-pivot .primary{width:100%}
- .gift-pivot .upload{margin:24px auto;padding:24px}.gift-pivot .progress{display:none}
+ body.gift-pivot:has(#screen) #workspace,.gift-pivot:has(#screen[data-view="photo"]) #workspace,.gift-pivot:has(#screen[data-view="products"])[data-pivot-step="product"] #workspace,body.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product"]) #workspace{grid-template-columns:minmax(0,1fr);min-height:0}
+ .gift-pivot .left-rail{padding:16px 24px!important;display:block!important}
+ .gift-pivot .left-rail h1{font-size:32px!important;line-height:1.1;margin:0 0 12px!important}
+ .gift-pivot .left-rail h1 br{display:inline-block;width:.2em}
+ .gift-pivot #filters{margin:16px 0}
+ .gift-pivot #filters h2{font-size:26px;margin:0 0 12px}
+ .gift-pivot #pivot-start,.gift-pivot #back,.gift-pivot #studio-back{margin:8px 8px 0 0;min-width:0;font-size:22px;display:inline-block}
+ .gift-pivot .center,.gift-pivot[data-pivot-step="product"] .center,.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product"]) .center{padding:16px}
+ .gift-pivot:has(#screen:is([data-view="photo"],[data-view="effects"])) #screen,.gift-pivot[data-pivot-step="product"] #screen{padding:16px;border-width:2px;min-height:0}
+ .gift-pivot #screen .grid,.gift-pivot:has(#screen[data-view="products"]) .studio-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .gift-pivot #screen .palette{max-height:440px;padding:4px}
+ .gift-pivot:has(#screen[data-view="effects"]) .right-rail,.gift-pivot:has(#screen[data-view="photo"]) .right-rail,.gift-pivot:has(#screen[data-view="products"]) .right-rail{padding:24px}
+ .gift-pivot:has(#screen[data-view="effects"]) .right-rail h2,.gift-pivot .studio-panel h2{font-size:32px}
+ .gift-pivot #workspace .primary{width:100%;font-size:26px}
+ .gift-pivot .upload{margin:24px auto 0!important;min-height:0;padding:24px 16px!important;gap:16px}
+ .gift-pivot .upload .upload-icon{width:72px;height:72px}
+ .gift-pivot:has(#screen[data-view="photo"]) #screen>h2{font-size:32px}
+ .gift-pivot .upload p{font-size:22px}
+ .gift-pivot .studio-products span{font-size:22px}
+ .gift-pivot .progress{display:none}
 }
-/* Product Choice / Product Details supplied mockups: the Studio panel is in the right rail. */
-body.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product"]) #workspace{grid-template-columns:minmax(220px,21fr) minmax(0,51fr) minmax(280px,28fr)}
-.gift-pivot:has(#screen[data-view="products"]) .product-studio{display:block}
-.gift-pivot[data-pivot-step="product"] .studio-panel>h2{display:none}
-.gift-pivot:has(#screen[data-view="products"]) .studio-panel .sizes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.gift-pivot:has(#screen[data-view="products"]) .studio-panel .sizes button{width:100%;min-width:0}
-@media(max-width:1000px){
- body.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product"]) #workspace{grid-template-columns:minmax(0,1fr)}
-}
-.gift-pivot #workspace .studio-panel .sizes button{width:100%;font-size:28px;min-height:64px}
-@media(min-width:1001px){.gift-pivot .studio-media img{max-height:calc(100dvh - 300px);width:auto;max-width:100%}}
+
+@media(min-width:1001px){.gift-pivot #workspace #left #pivot-start,.gift-pivot #workspace #left #back,.gift-pivot #workspace #left #studio-back{min-width:194px}.gift-pivot #workspace #right .studio-panel .sizes button{width:100%;min-width:0;font-size:28px}}
+.gift-pivot .product-guidance{background:var(--sage);color:var(--ivory);padding:24px;margin:32px 0}.gift-pivot .product-guidance p{font:28px/1.4 Cormorant,serif;margin:0}
+
+@media(min-width:1001px){.gift-pivot .studio-media img{max-height:calc(100dvh - 300px);width:auto;max-width:100%;margin:auto}}

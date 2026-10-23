@@ -36,17 +36,17 @@ export function mountStudio(host, a) {
         if (!p.options.some(o => o.size === s.size))
             s.size = p.options.find(o => o.compatible !== false)?.size || p.options[0]?.size || '';
         const o = p.options.find(o => o.size === s.size);
-        media.innerHTML = s.step === 'review' && p.available && o ? a.previewHtml(p, o) : photo(p.image, p.label);
+        media.innerHTML = a.detailsHtml && s.step !== 'product' ? a.detailsHtml(p, o) : s.step === 'review' && p.available && o ? a.previewHtml(p, o) : photo(p.image, p.label);
         let body = '';
         if (s.step === 'product') {
             body = '<h2 tabindex="-1">Choose a Product</h2><div class="studio-products">' + a.products.map(x => '<button type="button" data-feature="' + esc(x.id) + '" aria-pressed="' + (x.id === s.productId) + '">' + photo(x.image, x.label) + '<span>' + esc(x.label) + '</span><small>' + (x.available && x.options.length ? 'From ' + money(Math.min(...x.options.map(o => o.retailCents))) : 'Not currently available') + '</small></button>').join('') + '</div>';
         }
         else if (!p.available || !o) {
-            body = '<h2 tabindex="-1">' + esc(p.label) + '</h2><p role="status">Not currently available</p>';
+            body = '<h2 tabindex="-1">' + esc(p.label) + '</h2><p role="status">Not currently available</p>' + (p.unavailableOptions || []).map(x => '<p class="small">' + esc(x.label) + ' · ' + esc(x.reason) + '</p>').join('');
         }
         else if (s.step === 'size') {
             const sizes = p.options.filter((x, i, all) => aspect(x) === aspect(o) && all.findIndex(y => dimensions(y) === dimensions(x)) === i);
-            body = '<h2 tabindex="-1">' + esc(p.label) + '</h2><h3>Aspect ratio</h3><div class="sizes">' + [...new Set(p.options.map(aspect))].map(x => '<button data-aspect="' + x + '" aria-pressed="' + (aspect(o) === x) + '">' + x + '</button>').join('') + '</div><h3>Size</h3><div class="sizes">' + sizes.map(x => '<button data-size="' + esc(x.size) + '" ' + (!optionChoices(p, x).some(y => y.compatible !== false) ? 'disabled ' : '') + 'aria-pressed="' + (dimensions(o) === dimensions(x)) + '">' + esc(x.label) + '</button>').join('') + '</div>';
+            body = '<h2 tabindex="-1">' + esc(p.label) + '</h2>' + (a.detailsIntroHtml ? a.detailsIntroHtml(p, o) : '') + '<h3>Aspect ratio</h3><div class="sizes">' + [...new Set(p.options.map(aspect))].map(x => '<button data-aspect="' + x + '" aria-pressed="' + (aspect(o) === x) + '">' + x + '</button>').join('') + '</div><h3>' + esc(a.sizeHeading || 'Size') + '</h3><div class="sizes">' + sizes.map(x => '<button data-size="' + esc(x.size) + '" ' + (!optionChoices(p, x).some(y => y.compatible !== false) ? 'disabled ' : '') + 'aria-pressed="' + (dimensions(o) === dimensions(x)) + '">' + esc(x.label) + '</button>').join('') + '</div>';
         }
         else if (s.step === 'options') {
             const choices = optionChoices(p, o);
