@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Redraw the subject as a Japanese ukiyo-e woodblock as a sculpture, fully 3D as if the surfaces of paper were turned into solid shape with volume - confident dark key-block outlines, the faint woodgrain of the block pressed into the ink. Build the print from many separate blocks: fine carved line describes the folds and pattern of the garment, the individual strands at the hairline, the shape of the ear, the crease of the eyelid. The garment carries a printed textile pattern - small repeating motif in a second colour, seams and folds drawn in line. A restrained palette of soft indigo, ochre, rose and cream paper showing through, with visible registration where colours meet. Behind, a graded bokashi sky, a stylised cloud band, a blossoming branch reaching in from one edge, distant hills in flat blue. A small red seal at a corner.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.\n\nAvoid photographic rendering, gradients within colour areas, Western shading, or a sculpture. This is a flat printed sheet.",
+  "style": "realistic",
+  "preset": "ukiyo_e",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Redraw the subject as a Japanese ukiyo-e woodblock as a sculpture, fully 3D as if the surfaces of paper were turned into solid shape with volume - confident dark key-block outlines, the faint woodgrain of the block pressed into the ink. Build the print from many separate blocks: fine carved line describes the folds and pattern of the garment, the individual strands at the hairline, the shape of the ear, the crease of the eyelid. The garment carries a printed textile pattern - small repeating motif in a second colour, seams and folds drawn in line. A restrained palette of soft indigo, ochre, rose and cream paper showing through, with visible registration where colours meet. Behind, a graded bokashi sky, a stylised cloud band, a blossoming branch reaching in from one edge, distant hills in flat blue. A small red seal at a corner.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.\n\nAvoid photographic rendering, gradients within colour areas, Western shading, or a sculpture. This is a flat printed sheet.",
+      "duration_ms": 34505,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The facial features are mostly preserved, with recognizable elements like the smile and hair texture, but the eye shape and details show some drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 36307
+}

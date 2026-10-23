@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Frame from the stomach to the top of the head. Transform the subject into a dragon-human hybrid - the entire head and figure surfaced in fine iridescent dragon scale, deep emerald and oil-slick violet shifting through bronze and gold. The scale is laid over THIS person's own structure. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression - the face is turned to the camera and lit, clearly this person. Do not add weight and do not age him.\nThe face is flatter lighter scales all the way through, including the mouth - scaled lips, no human teeth or gums. Larger armoured scale across the shoulders and chest, finer across the face. Keep the hairline, hairstyle, length and direction, rendered as scaled tendrils, and do not prematurely grey them.\nKeep the eyes human skin blended from the scales, as if the humanity is still mournfully present.\nA full dragon's body grows from the back - spined neck, ridged spine, a serpentine body curving down and away. Horns rise from the crown. Rebuild the garment in overlapping scale plate. Remove glasses and worn accessories. Powerful, mythic, jewel-like. Photographic.\nKeep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a rock ledge at dusk, a cliff falling into haze behind, cold light from the left and warm firelight from the right, heavily out of focus. No held objects - no cups, glasses, phones, books, tools, watches or eyewear.\n\nAVOID: Avoid human lips or teeth. Avoid glasses and worn accessories. Avoid the source fabric showing through the scale. Avoid an illustrated look.",
+  "style": "realistic",
+  "preset": "dragon_skin",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Frame from the stomach to the top of the head. Transform the subject into a dragon-human hybrid - the entire head and figure surfaced in fine iridescent dragon scale, deep emerald and oil-slick violet shifting through bronze and gold. The scale is laid over THIS person's own structure. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression - the face is turned to the camera and lit, clearly this person. Do not add weight and do not age him.\nThe face is flatter lighter scales all the way through, including the mouth - scaled lips, no human teeth or gums. Larger armoured scale across the shoulders and chest, finer across the face. Keep the hairline, hairstyle, length and direction, rendered as scaled tendrils, and do not prematurely grey them.\nKeep the eyes human skin blended from the scales, as if the humanity is still mournfully present.\nA full dragon's body grows from the back - spined neck, ridged spine, a serpentine body curving down and away. Horns rise from the crown. Rebuild the garment in overlapping scale plate. Remove glasses and worn accessories. Powerful, mythic, jewel-like. Photographic.\nKeep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a rock ledge at dusk, a cliff falling into haze behind, cold light from the left and warm firelight from the right, heavily out of focus. No held objects - no cups, glasses, phones, books, tools, watches or eyewear.\n\nAVOID: Avoid human lips or teeth. Avoid glasses and worn accessories. Avoid the source fabric showing through the scale. Avoid an illustrated look.",
+      "duration_ms": 18122,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The facial features are recognizable, but the transformation alters key elements like skin texture and facial proportions."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The facial features are recognizable, but the transformation alters key elements like skin texture and facial proportions.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Frame from the stomach to the top of the head. Transform the subject into a dragon-human hybrid - the entire head and figure surfaced in fine iridescent dragon scale, deep emerald and oil-slick violet shifting through bronze and gold. The scale is laid over THIS person's own structure. Likeness is essential: keep the shape and character of his face, his natural asymmetry, and the micro gestures of his expression - the face is turned to the camera and lit, clearly this person. Do not add weight and do not age him.\nThe face is flatter lighter scales all the way through, including the mouth - scaled lips, no human teeth or gums. Larger armoured scale across the shoulders and chest, finer across the face. Keep the hairline, hairstyle, length and direction, rendered as scaled tendrils, and do not prematurely grey them.\nKeep the eyes human skin blended from the scales, as if the humanity is still mournfully present.\nA full dragon's body grows from the back - spined neck, ridged spine, a serpentine body curving down and away. Horns rise from the crown. Rebuild the garment in overlapping scale plate. Remove glasses and worn accessories. Powerful, mythic, jewel-like. Photographic.\nKeep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a rock ledge at dusk, a cliff falling into haze behind, cold light from the left and warm firelight from the right, heavily out of focus. No held objects - no cups, glasses, phones, books, tools, watches or eyewear.\n\nAVOID: Avoid human lips or teeth. Avoid glasses and worn accessories. Avoid the source fabric showing through the scale. Avoid an illustrated look.",
+      "duration_ms": 19609,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The render maintains recognizable features like the eye shape and hair texture, but the facial structure and skin detail differ significantly, affecting overall likeness."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The render maintains recognizable features like the eye shape and hair texture, but the facial structure and skin detail differ significantly, affecting overall likeness.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"The render maintains recognizable features like the eye shape and hair texture, but the facial structure and skin detail differ significantly, affecting overall likeness.\"",
+  "fatal_error": null,
+  "duration_ms": 38802
+}

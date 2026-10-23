@@ -11,6 +11,10 @@ Approved batch (paid; fixed USD20 cap):
 Read-only verification:
   node tools/portrait-square-previews/verify.cjs
 
+After all paid work has exited, require full coverage and finalize the review manifest:
+  node tools/portrait-square-previews/verify.cjs --complete
+  node tools/portrait-square-previews/finalize.cjs
+
 Local review gallery:
   node tools/portrait-square-previews/gallery.cjs
   http://127.0.0.1:4318

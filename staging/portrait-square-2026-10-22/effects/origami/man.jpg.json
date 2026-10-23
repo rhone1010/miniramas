@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "The subject is folded from paper — a single continuous sheet worked into the whole figure, every plane a crisp fold with a visible crease line, the paper's own grain and slight thickness reading at each edge. The face is built from a few confident planes: the brow, the bridge of the nose, the cheeks, the jaw, each a flat facet meeting at a sharp crease. Warm cream and soft indigo paper. Hair keeps its real shape and volume, folded in tighter pleats. The garment folds through in the same paper. Likeness is critical — the person reads clearly through the faceting. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally with her head upright and both eyes clearly visible. Photographic and highly idealized — a real folded object in real light. Background: a bare table under one soft lamp, deep shadow, heavily out of focus. Preserve natural facial character and asymmetry. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid curved or moulded surfaces — every form is a flat fold. Avoid a paper crane or novelty shape. Avoid torn or crumpled paper. Avoid real skin or hair.",
+  "style": "realistic",
+  "preset": "origami",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject is folded from paper — a single continuous sheet worked into the whole figure, every plane a crisp fold with a visible crease line, the paper's own grain and slight thickness reading at each edge. The face is built from a few confident planes: the brow, the bridge of the nose, the cheeks, the jaw, each a flat facet meeting at a sharp crease. Warm cream and soft indigo paper. Hair keeps its real shape and volume, folded in tighter pleats. The garment folds through in the same paper. Likeness is critical — the person reads clearly through the faceting. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally with her head upright and both eyes clearly visible. Photographic and highly idealized — a real folded object in real light. Background: a bare table under one soft lamp, deep shadow, heavily out of focus. Preserve natural facial character and asymmetry. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid curved or moulded surfaces — every form is a flat fold. Avoid a paper crane or novelty shape. Avoid torn or crumpled paper. Avoid real skin or hair.",
+      "duration_ms": 16533,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The facial structure and hair are preserved, but minor differences in the mouth and overall geometric abstraction lead to a slightly less recognizable likeness."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The facial structure and hair are preserved, but minor differences in the mouth and overall geometric abstraction lead to a slightly less recognizable likeness.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "The subject is folded from paper — a single continuous sheet worked into the whole figure, every plane a crisp fold with a visible crease line, the paper's own grain and slight thickness reading at each edge. The face is built from a few confident planes: the brow, the bridge of the nose, the cheeks, the jaw, each a flat facet meeting at a sharp crease. Warm cream and soft indigo paper. Hair keeps its real shape and volume, folded in tighter pleats. The garment folds through in the same paper. Likeness is critical — the person reads clearly through the faceting. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally with her head upright and both eyes clearly visible. Photographic and highly idealized — a real folded object in real light. Background: a bare table under one soft lamp, deep shadow, heavily out of focus. Preserve natural facial character and asymmetry. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid curved or moulded surfaces — every form is a flat fold. Avoid a paper crane or novelty shape. Avoid torn or crumpled paper. Avoid real skin or hair.",
+      "duration_ms": 19655,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered figure retains a good likeness with recognizable facial features and hair texture, though there is a slight drift in the jawline and overall shape."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 37614
+}

@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Rebuild the subject as a three-dimensional bust painted in watercolour — a solid object with real volume, not a picture on paper. The subject faces us naturally, head upright, with both eyes clearly visible. The whole form is soft transparent washes: the face, hair, shoulders and garment modelled in light and shade, with hard edges where a wash dried against itself and the white of the surface left bare at the brightest points. The paint is still wet. Colour runs down the shoulders and the front of the garment in fine coloured rivulets and drips, gathering in bright pools of red, ochre and violet on the round white board the bust stands on. Colours natural to this person's complexion and clothing, transparent and luminous, granulating in the low spots. Likeness is critical. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. Keep permanent structure: lines, scars and the natural asymmetry of the face. Never reshape, enlarge eyes, correct asymmetry or de-age. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a flat painting or anything on paper — this is a solid object standing on a board. Avoid opaque or body colour. Avoid a photographic face. Avoid a bright white modern gallery; the room is an old cluttered atelier.",
+  "style": "artists_gallery",
+  "preset": "watercolour",
+  "location": "pedestal",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=artists_gallery, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=artists_gallery",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Rebuild the subject as a three-dimensional bust painted in watercolour — a solid object with real volume, not a picture on paper. The subject faces us naturally, head upright, with both eyes clearly visible. The whole form is soft transparent washes: the face, hair, shoulders and garment modelled in light and shade, with hard edges where a wash dried against itself and the white of the surface left bare at the brightest points. The paint is still wet. Colour runs down the shoulders and the front of the garment in fine coloured rivulets and drips, gathering in bright pools of red, ochre and violet on the round white board the bust stands on. Colours natural to this person's complexion and clothing, transparent and luminous, granulating in the low spots. Likeness is critical. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. Keep permanent structure: lines, scars and the natural asymmetry of the face. Never reshape, enlarge eyes, correct asymmetry or de-age. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid a flat painting or anything on paper — this is a solid object standing on a board. Avoid opaque or body colour. Avoid a photographic face. Avoid a bright white modern gallery; the room is an old cluttered atelier.",
+      "duration_ms": 32450,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The facial features are largely recognizable, but the nose and jawline show noticeable differences compared to the source."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 33910
+}

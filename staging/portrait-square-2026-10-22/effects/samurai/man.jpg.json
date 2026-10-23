@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Professional cinematic portrait of a male samurai in authentic Edo-period armor, layered red lacquered lamellar plates and thick silk lacing, with the convincing weight, wear and imperfection of real historical armor. Hair naturally arranged beneath the helmet.\nuse foreshortening and strong dynamic lighting. age the photo with filters. reduce saturation on skin tones.\nStrong late-afternoon sunlight sweeps across him from the side, sculpting the face and armor with luminous highlights and deep expressive shadows.\nPhotographic realism with the richness and visual poetry of a great painted portrait — atmospheric, tactile and subtly painterly without becoming an illustration. Rich restrained color, beautiful falloff, shallow depth of field, softly impressionistic Japanese setting. Idealized and striking while remaining completely believable as a photograph. Preserve facial likeness and permanent features. Frame from mid-chest to the top of the head, facing us directly with both eyes clearly visible, the armor and expression dominant against the softly blurred setting. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+  "style": "realistic",
+  "preset": "samurai",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Professional cinematic portrait of a male samurai in authentic Edo-period armor, layered red lacquered lamellar plates and thick silk lacing, with the convincing weight, wear and imperfection of real historical armor. Hair naturally arranged beneath the helmet.\nuse foreshortening and strong dynamic lighting. age the photo with filters. reduce saturation on skin tones.\nStrong late-afternoon sunlight sweeps across him from the side, sculpting the face and armor with luminous highlights and deep expressive shadows.\nPhotographic realism with the richness and visual poetry of a great painted portrait — atmospheric, tactile and subtly painterly without becoming an illustration. Rich restrained color, beautiful falloff, shallow depth of field, softly impressionistic Japanese setting. Idealized and striking while remaining completely believable as a photograph. Preserve facial likeness and permanent features. Frame from mid-chest to the top of the head, facing us directly with both eyes clearly visible, the armor and expression dominant against the softly blurred setting. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 16696,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "Good likeness with recognizable facial features, though the hair and facial expression show some drift from the source."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 18595
+}

@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "The subject is sewn from quilted fabric — panels of patterned cotton pieced together and stitched, with visible seams, running stitch lines and the soft puff of batting between the layers. The face is quilted cloth throughout: pieced panels shaped to the brow, cheeks and jaw, the stitching following the planes rather than the features. Eyes and mouth are embroidered in thread. Hair is cut and layered fabric in the real style and length. A folk palette of faded indigo, madder red, ochre and cream, prints small and repeating, the cloth softly worn. The garment carries through in pieced quilt. Likeness is critical. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally, head upright, with both eyes clearly visible. Idealized and beautiful. Photographic — a real object photographed in real light, not an illustration. Background: a quilter's room — a frame, folded bolts, a window with soft daylight, heavily out of focus. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid real skin or hair. Avoid a flat printed quilt or wall hanging — this is dimensional and sewn. Avoid a rag doll or novelty toy. Avoid stitching that traces the wrinkles of the face.",
+  "style": "realistic",
+  "preset": "quilted",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject is sewn from quilted fabric — panels of patterned cotton pieced together and stitched, with visible seams, running stitch lines and the soft puff of batting between the layers. The face is quilted cloth throughout: pieced panels shaped to the brow, cheeks and jaw, the stitching following the planes rather than the features. Eyes and mouth are embroidered in thread. Hair is cut and layered fabric in the real style and length. A folk palette of faded indigo, madder red, ochre and cream, prints small and repeating, the cloth softly worn. The garment carries through in pieced quilt. Likeness is critical. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally, head upright, with both eyes clearly visible. Idealized and beautiful. Photographic — a real object photographed in real light, not an illustration. Background: a quilter's room — a frame, folded bolts, a window with soft daylight, heavily out of focus. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid real skin or hair. Avoid a flat printed quilt or wall hanging — this is dimensional and sewn. Avoid a rag doll or novelty toy. Avoid stitching that traces the wrinkles of the face.",
+      "duration_ms": 22244,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The rendered face preserves the overall likeness and key features, but the facial geometry and texture create a distinct appearance that may not be easily recognized by someone familiar with the sourc"
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The rendered face preserves the overall likeness and key features, but the facial geometry and texture create a distinct appearance that may not be easily recognized by someone familiar with the sourc\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "The subject is sewn from quilted fabric — panels of patterned cotton pieced together and stitched, with visible seams, running stitch lines and the soft puff of batting between the layers. The face is quilted cloth throughout: pieced panels shaped to the brow, cheeks and jaw, the stitching following the planes rather than the features. Eyes and mouth are embroidered in thread. Hair is cut and layered fabric in the real style and length. A folk palette of faded indigo, madder red, ochre and cream, prints small and repeating, the cloth softly worn. The garment carries through in pieced quilt. Likeness is critical. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally, head upright, with both eyes clearly visible. Idealized and beautiful. Photographic — a real object photographed in real light, not an illustration. Background: a quilter's room — a frame, folded bolts, a window with soft daylight, heavily out of focus. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid real skin or hair. Avoid a flat printed quilt or wall hanging — this is dimensional and sewn. Avoid a rag doll or novelty toy. Avoid stitching that traces the wrinkles of the face.",
+      "duration_ms": 20542,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered face maintains a good likeness with preserved eye shape and smile, though details like facial texture and overall form show noticeable drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 44680
+}

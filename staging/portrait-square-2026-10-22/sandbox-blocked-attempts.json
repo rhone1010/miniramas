@@ -1,0 +1,74 @@
+[
+  {
+    "job": "marionettes_portrait/man",
+    "provider": "replicate",
+    "started_at": "2026-10-23T00:18:38.720Z",
+    "reserved_usd": 0.0336,
+    "actual_cost_usd": null,
+    "model": "google/nano-banana-2.1",
+    "status": "submitted"
+  },
+  {
+    "job": "marionettes_portrait/woman",
+    "provider": "replicate",
+    "started_at": "2026-10-23T00:18:40.155Z",
+    "reserved_usd": 0.0336,
+    "actual_cost_usd": null,
+    "model": "google/nano-banana-2.1",
+    "status": "submitted"
+  },
+  {
+    "job": "nesting_dolls_portrait/man",
+    "provider": "replicate",
+    "started_at": "2026-10-23T00:18:41.608Z",
+    "reserved_usd": 0.0336,
+    "actual_cost_usd": null,
+    "model": "google/nano-banana-2.1",
+    "status": "submitted"
+  },
+  {
+    "job": "nesting_dolls_portrait/woman",
+    "provider": "replicate",
+    "started_at": "2026-10-23T00:18:42.901Z",
+    "reserved_usd": 0.0336,
+    "actual_cost_usd": null,
+    "model": "google/nano-banana-2.1",
+    "status": "submitted"
+  },
+  {
+    "job": "tin_windup_portrait/man",
+    "provider": "replicate",
+    "started_at": "2026-10-23T00:18:44.246Z",
+    "reserved_usd": 0.0336,
+    "actual_cost_usd": null,
+    "model": "google/nano-banana-2.1",
+    "status": "submitted"
+  },
+  {
+    "job": "tin_windup_portrait/woman",
+    "provider": "replicate",
+    "started_at": "2026-10-23T00:18:45.601Z",
+    "reserved_usd": 0.0336,
+    "actual_cost_usd": null,
+    "model": "google/nano-banana-2.1",
+    "status": "submitted"
+  },
+  {
+    "job": "retro_robot/man",
+    "provider": "replicate",
+    "started_at": "2026-10-23T00:18:46.806Z",
+    "reserved_usd": 0.0336,
+    "actual_cost_usd": null,
+    "model": "google/nano-banana-2.1",
+    "status": "submitted"
+  },
+  {
+    "job": "retro_robot/woman",
+    "provider": "replicate",
+    "started_at": "2026-10-23T00:18:48.197Z",
+    "reserved_usd": 0.0336,
+    "actual_cost_usd": null,
+    "model": "google/nano-banana-2.1",
+    "status": "submitted"
+  }
+]

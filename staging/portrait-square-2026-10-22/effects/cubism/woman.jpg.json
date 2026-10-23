@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Redraw the subject as an analytical cubist portrait — the head and shoulders fractured into faceted planes showing the face from several viewpoints at once, profile and full-face folded into one shifting surface. Every feature still appears somewhere: both eyes, the nose, the mouth, the jawline, the hair — recombined across the planes rather than erased. Confident charcoal edges outline each facet. A restrained Braque palette of warm ochre, muted grey-green, umber and soft tan, light and shadow shifting independently across the planes. Likeness survives in the features and their character, not in a single viewpoint. Frame from mid-chest to the top of the head. No lettering. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid dropping any feature, a single photorealistic viewpoint, garish colour, or smooth untextured surfaces.",
+  "style": "realistic",
+  "preset": "cubism",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Redraw the subject as an analytical cubist portrait — the head and shoulders fractured into faceted planes showing the face from several viewpoints at once, profile and full-face folded into one shifting surface. Every feature still appears somewhere: both eyes, the nose, the mouth, the jawline, the hair — recombined across the planes rather than erased. Confident charcoal edges outline each facet. A restrained Braque palette of warm ochre, muted grey-green, umber and soft tan, light and shadow shifting independently across the planes. Likeness survives in the features and their character, not in a single viewpoint. Frame from mid-chest to the top of the head. No lettering. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid dropping any feature, a single photorealistic viewpoint, garish colour, or smooth untextured surfaces.",
+      "duration_ms": 17153,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The eye shape and smile are preserved well, but the jawline and hair texture show noticeable differences."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The eye shape and smile are preserved well, but the jawline and hair texture show noticeable differences.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Redraw the subject as an analytical cubist portrait — the head and shoulders fractured into faceted planes showing the face from several viewpoints at once, profile and full-face folded into one shifting surface. Every feature still appears somewhere: both eyes, the nose, the mouth, the jawline, the hair — recombined across the planes rather than erased. Confident charcoal edges outline each facet. A restrained Braque palette of warm ochre, muted grey-green, umber and soft tan, light and shadow shifting independently across the planes. Likeness survives in the features and their character, not in a single viewpoint. Frame from mid-chest to the top of the head. No lettering. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\n\nAvoid dropping any feature, a single photorealistic viewpoint, garish colour, or smooth untextured surfaces.",
+      "duration_ms": 18245,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered face closely resembles the subject's features, but the geometry of the eyes and overall simplification of the nose and jawline introduces minor drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 36555
+}

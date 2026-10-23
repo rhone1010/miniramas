@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Rebuild the subject as a **solid three-dimensional sculpture made entirely from compressed charcoal, broken charcoal sticks and white Conté chalk, not a drawing.** Face, hair, neck, garment and shoulders have real sculptural mass, formed from dense fractured charcoal with carved facets, broken edges, embedded sticks and visible tool marks. Raised Conté chalk creates dimensional white highlights across the dark charcoal.\n**Preserve the subject's likeness, face shape, age, skin tone relationships, natural asymmetry, scars, and exact hairstyle, length and direction.** Keep the person clearly recognizable despite the fractured material. Hair becomes sweeping charcoal ribbons, splines and layered shards. Retain the original garment, reconstructed in the same charcoal material.\nFrame mid-chest to top of head, face prominent, camera at eye level, eyes toward viewer, natural warm smile. Both shoulders fully rendered. Sculpture stands on a simple base, only a suggestion of it visible below the figure. Fine charcoal dust, chalk powder and a few fragments hang subtly in the air.\nSet in a **beautiful old-world artist's atelier**, heavily blurred: aged timber, plaster walls, antique easels, stacked canvases, pinned charcoal studies and drawing tools beneath a huge ribbed iron-and-glass skylight. Soft directional daylight reveals charcoal texture, chalk buildup and airborne dust. Atmospheric, romantic, shallow depth of field.\nClear temporary blemishes and blotchiness, but **do not reshape, de-age, enlarge eyes, correct asymmetry or alter permanent facial structure.** No held objects, eyewear, watches, plaques or legible text. Worn jewellery is fine.\n\n**Avoid:** 2D charcoal drawings, paper texture, blended shading, smooth surfaces, painted skin, or losing sculptural mass and likeness.",
+  "style": "artists_gallery",
+  "preset": "charcoal_chalk",
+  "location": "pedestal",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=artists_gallery, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=artists_gallery",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Rebuild the subject as a **solid three-dimensional sculpture made entirely from compressed charcoal, broken charcoal sticks and white Conté chalk, not a drawing.** Face, hair, neck, garment and shoulders have real sculptural mass, formed from dense fractured charcoal with carved facets, broken edges, embedded sticks and visible tool marks. Raised Conté chalk creates dimensional white highlights across the dark charcoal.\n**Preserve the subject's likeness, face shape, age, skin tone relationships, natural asymmetry, scars, and exact hairstyle, length and direction.** Keep the person clearly recognizable despite the fractured material. Hair becomes sweeping charcoal ribbons, splines and layered shards. Retain the original garment, reconstructed in the same charcoal material.\nFrame mid-chest to top of head, face prominent, camera at eye level, eyes toward viewer, natural warm smile. Both shoulders fully rendered. Sculpture stands on a simple base, only a suggestion of it visible below the figure. Fine charcoal dust, chalk powder and a few fragments hang subtly in the air.\nSet in a **beautiful old-world artist's atelier**, heavily blurred: aged timber, plaster walls, antique easels, stacked canvases, pinned charcoal studies and drawing tools beneath a huge ribbed iron-and-glass skylight. Soft directional daylight reveals charcoal texture, chalk buildup and airborne dust. Atmospheric, romantic, shallow depth of field.\nClear temporary blemishes and blotchiness, but **do not reshape, de-age, enlarge eyes, correct asymmetry or alter permanent facial structure.** No held objects, eyewear, watches, plaques or legible text. Worn jewellery is fine.\n\n**Avoid:** 2D charcoal drawings, paper texture, blended shading, smooth surfaces, painted skin, or losing sculptural mass and likeness.",
+      "duration_ms": 19551,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered figure retains a good likeness with preserved facial hair and smile, though there are slight variations in facial geometry and texture."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 20562
+}

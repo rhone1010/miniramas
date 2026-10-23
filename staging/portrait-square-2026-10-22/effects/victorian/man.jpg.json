@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the subject into a lavish Victorian aristocratic portrait, preserving his facial likeness precisely. Dress him in a dramatic deep teal velvet frock coat, richly patterned jewel-toned silk waistcoat, cream silk cravat with an ornate turquoise and gold pin, gold watch chain, and an elegant tall silk top hat. Subtle gold embroidery and luxurious period detailing.\nHe faces us in a graceful formal portrait, head upright and both eyes clearly visible, with a calm, composed expression. Frame generously enough to preserve the tall silk top hat while keeping his face large and dominant in the image. Deep saturated teal, peacock blue, burgundy, turquoise and antique gold dominate the portrait. Romantic painterly photography with luminous warm skin, rich directional light, glowing gold highlights, deep velvety shadows and jewel-like color. An opulent Victorian interior dissolves behind him into dark teal, warm amber and golden bokeh.\nMake the portrait sumptuous, theatrical and slightly idealized, like a richly painted Victorian society portrait brought to life. Give the image a subtle aged photographic finish with softened blacks, warm highlights and gentle painterly grain, while retaining saturated color and luminous detail.\nPreserve the subject's face, age, proportions and natural asymmetry. Refine temporary skin imperfections without changing his identity. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+  "style": "realistic",
+  "preset": "victorian",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the subject into a lavish Victorian aristocratic portrait, preserving his facial likeness precisely. Dress him in a dramatic deep teal velvet frock coat, richly patterned jewel-toned silk waistcoat, cream silk cravat with an ornate turquoise and gold pin, gold watch chain, and an elegant tall silk top hat. Subtle gold embroidery and luxurious period detailing.\nHe faces us in a graceful formal portrait, head upright and both eyes clearly visible, with a calm, composed expression. Frame generously enough to preserve the tall silk top hat while keeping his face large and dominant in the image. Deep saturated teal, peacock blue, burgundy, turquoise and antique gold dominate the portrait. Romantic painterly photography with luminous warm skin, rich directional light, glowing gold highlights, deep velvety shadows and jewel-like color. An opulent Victorian interior dissolves behind him into dark teal, warm amber and golden bokeh.\nMake the portrait sumptuous, theatrical and slightly idealized, like a richly painted Victorian society portrait brought to life. Give the image a subtle aged photographic finish with softened blacks, warm highlights and gentle painterly grain, while retaining saturated color and luminous detail.\nPreserve the subject's face, age, proportions and natural asymmetry. Refine temporary skin imperfections without changing his identity. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 20822,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The facial features and expression are largely preserved, but minor differences in hair and costume details create a slight drift in likeness."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 22889
+}

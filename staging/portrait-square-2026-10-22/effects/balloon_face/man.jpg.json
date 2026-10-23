@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Rebuild the subject as a **3D sculpture made entirely from inflated latex. Likeness is critical.** Preserve exact head shape, facial proportions, brow, eye spacing, nose, cheekbones, mouth, jaw, chin, natural asymmetry and subtle expression.\nForm the face from **only three broad, partially inflated pieces of thin translucent balloon latex**, stretched and tensioned over the facial structure. The latex closely follows the underlying facial planes rather than becoming round or puffy. Preserve fine contours around the eyes, nose, mouth and cheeks through tension in the thin rubber, **not additional balloons**.\nRecreate the exact hairline, hairstyle, length, color, direction and natural irregularity with layered balloon forms. Facial-hair density stays exact: **stubble remains stubble; never invent a beard or moustache.**\nColors follow the subject. Face latex derives from the real complexion; hair matches the actual hair color; garment retains its original colors. Keep the material unmistakably balloon latex: thin, slightly translucent, taut and glossy, with subtle stretching, seams and occasional pinches.\nFrame her from the upper chest to the top of the head, facing us naturally, with her head roughly 30% of the image height and both eyes clearly visible. Real physical sculpture photographed in real light, with a heavily blurred upscale adult club party behind.\n\n**Avoid:** segmented or patchwork faces, puffy cheeks, rounded generic features, altered facial structure, real skin or hair, painted-on features, children's colors, or sacrificing likeness for balloon-animal construction.",
+  "style": "realistic",
+  "preset": "balloon_face",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Rebuild the subject as a **3D sculpture made entirely from inflated latex. Likeness is critical.** Preserve exact head shape, facial proportions, brow, eye spacing, nose, cheekbones, mouth, jaw, chin, natural asymmetry and subtle expression.\nForm the face from **only three broad, partially inflated pieces of thin translucent balloon latex**, stretched and tensioned over the facial structure. The latex closely follows the underlying facial planes rather than becoming round or puffy. Preserve fine contours around the eyes, nose, mouth and cheeks through tension in the thin rubber, **not additional balloons**.\nRecreate the exact hairline, hairstyle, length, color, direction and natural irregularity with layered balloon forms. Facial-hair density stays exact: **stubble remains stubble; never invent a beard or moustache.**\nColors follow the subject. Face latex derives from the real complexion; hair matches the actual hair color; garment retains its original colors. Keep the material unmistakably balloon latex: thin, slightly translucent, taut and glossy, with subtle stretching, seams and occasional pinches.\nFrame her from the upper chest to the top of the head, facing us naturally, with her head roughly 30% of the image height and both eyes clearly visible. Real physical sculpture photographed in real light, with a heavily blurred upscale adult club party behind.\n\n**Avoid:** segmented or patchwork faces, puffy cheeks, rounded generic features, altered facial structure, real skin or hair, painted-on features, children's colors, or sacrificing likeness for balloon-animal construction.",
+      "duration_ms": 20744,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The likeness is good, with maintained eye shape and jawline, but there's noticeable drift in hair texture and the overall expression."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 22535
+}

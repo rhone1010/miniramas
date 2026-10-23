@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "make the subject into a realistic carved jade statue, dramatic lighting, sub-surface scattering, highly polished. professional grade photography for a magazine cover. No letters, no plaque. The background should be a japanese temple in a cherry blossom park at night (slightly blurred). The eyes are carved jade like the rest of the piece, holding the subject's own eye shape and gaze — never photoreal, amber, or glass eyes. Light transmits through the thinnest sections; the light originates outside the piece and the jade transmits it, never emits. Do not over illuminate facial features internally. Polished but not glassy — a soft waxy lustre. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+  "style": "realistic",
+  "preset": "jade",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "make the subject into a realistic carved jade statue, dramatic lighting, sub-surface scattering, highly polished. professional grade photography for a magazine cover. No letters, no plaque. The background should be a japanese temple in a cherry blossom park at night (slightly blurred). The eyes are carved jade like the rest of the piece, holding the subject's own eye shape and gaze — never photoreal, amber, or glass eyes. Light transmits through the thinnest sections; the light originates outside the piece and the jade transmits it, never emits. Do not over illuminate facial features internally. Polished but not glassy — a soft waxy lustre. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+      "duration_ms": 17901,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The rendered figure maintains a recognizable structure and features, but the facial details and texture have drifted enough to reduce immediate recognition."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The rendered figure maintains a recognizable structure and features, but the facial details and texture have drifted enough to reduce immediate recognition.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "make the subject into a realistic carved jade statue, dramatic lighting, sub-surface scattering, highly polished. professional grade photography for a magazine cover. No letters, no plaque. The background should be a japanese temple in a cherry blossom park at night (slightly blurred). The eyes are carved jade like the rest of the piece, holding the subject's own eye shape and gaze — never photoreal, amber, or glass eyes. Light transmits through the thinnest sections; the light originates outside the piece and the jade transmits it, never emits. Do not over illuminate facial features internally. Polished but not glassy — a soft waxy lustre. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The subject faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+      "duration_ms": 20051,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The rendered figure retains recognizable features such as overall face shape and hair texture, but the eyes and mouth appear to be slightly altered, leading to a minor drift in likeness."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The rendered figure retains recognizable features such as overall face shape and hair texture, but the eyes and mouth appear to be slightly altered, leading to a minor drift in likeness.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"The rendered figure retains recognizable features such as overall face shape and hair texture, but the eyes and mouth appear to be slightly altered, leading to a minor drift in likeness.\"",
+  "fatal_error": null,
+  "duration_ms": 38901
+}

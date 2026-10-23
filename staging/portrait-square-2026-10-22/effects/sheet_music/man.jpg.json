@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the entire figure into a museum-quality sculpture constructed from sheet music, musical notation, manuscript pages, and flowing musical scores. The complete sculpture—including head, hair, shoulders, chest, garment fabric, and arms—emerges from thousands of folded, curled, layered, and suspended pages. No conventional human surfaces remain anywhere on the form. Musical staffs sweep across the face, neck, shoulders, chest, garment, and arms like topographic contours. Notes, rests, clefs, and dynamic markings become structural elements that define the nose, lips, cheeks, hair, collar, shoulder line, and arm contours. Hair is formed from cascading ribbons of sheet music twisting through space like melodies frozen in motion. Portions of the sculpture appear to unravel into floating pages and drifting notes, creating a sense of music escaping the form. No human skin anywhere — the face, neck, forehead and ears are all built from layered notation pages, not skin. The staffs and notation continue across the entire face. Avoid flat printed surfaces, 2D sheet music collage, or pages without dimensional architecture. Avoid losing the likeness — the notation follows the person's true facial structure so they remain clearly recognizable. Sculpture on a base on the stage of an empty symphony hall — music stands and chairs in rows behind, a cello and timpani left where the players finished, tiered seating receding into the dark, one warm working light overhead. Keep her large and dominant in the image, facing us naturally with both eyes clearly visible. Frame from the upper chest to the top of the head, with her head roughly 30% of the image height. The symphony hall remains atmospheric and heavily out of focus behind her.  No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+  "style": "artists_gallery",
+  "preset": "sheet_music",
+  "location": "pedestal",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=artists_gallery, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=artists_gallery",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the entire figure into a museum-quality sculpture constructed from sheet music, musical notation, manuscript pages, and flowing musical scores. The complete sculpture—including head, hair, shoulders, chest, garment fabric, and arms—emerges from thousands of folded, curled, layered, and suspended pages. No conventional human surfaces remain anywhere on the form. Musical staffs sweep across the face, neck, shoulders, chest, garment, and arms like topographic contours. Notes, rests, clefs, and dynamic markings become structural elements that define the nose, lips, cheeks, hair, collar, shoulder line, and arm contours. Hair is formed from cascading ribbons of sheet music twisting through space like melodies frozen in motion. Portions of the sculpture appear to unravel into floating pages and drifting notes, creating a sense of music escaping the form. No human skin anywhere — the face, neck, forehead and ears are all built from layered notation pages, not skin. The staffs and notation continue across the entire face. Avoid flat printed surfaces, 2D sheet music collage, or pages without dimensional architecture. Avoid losing the likeness — the notation follows the person's true facial structure so they remain clearly recognizable. Sculpture on a base on the stage of an empty symphony hall — music stands and chairs in rows behind, a cello and timpani left where the players finished, tiered seating receding into the dark, one warm working light overhead. Keep her large and dominant in the image, facing us naturally with both eyes clearly visible. Frame from the upper chest to the top of the head, with her head roughly 30% of the image height. The symphony hall remains atmospheric and heavily out of focus behind her.  No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 20806,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "Good likeness with recognizable facial features, but the hair and texture transformation noticeably alters overall appearance."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"Good likeness with recognizable facial features, but the hair and texture transformation noticeably alters overall appearance.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Transform the entire figure into a museum-quality sculpture constructed from sheet music, musical notation, manuscript pages, and flowing musical scores. The complete sculpture—including head, hair, shoulders, chest, garment fabric, and arms—emerges from thousands of folded, curled, layered, and suspended pages. No conventional human surfaces remain anywhere on the form. Musical staffs sweep across the face, neck, shoulders, chest, garment, and arms like topographic contours. Notes, rests, clefs, and dynamic markings become structural elements that define the nose, lips, cheeks, hair, collar, shoulder line, and arm contours. Hair is formed from cascading ribbons of sheet music twisting through space like melodies frozen in motion. Portions of the sculpture appear to unravel into floating pages and drifting notes, creating a sense of music escaping the form. No human skin anywhere — the face, neck, forehead and ears are all built from layered notation pages, not skin. The staffs and notation continue across the entire face. Avoid flat printed surfaces, 2D sheet music collage, or pages without dimensional architecture. Avoid losing the likeness — the notation follows the person's true facial structure so they remain clearly recognizable. Sculpture on a base on the stage of an empty symphony hall — music stands and chairs in rows behind, a cello and timpani left where the players finished, tiered seating receding into the dark, one warm working light overhead. Keep her large and dominant in the image, facing us naturally with both eyes clearly visible. Frame from the upper chest to the top of the head, with her head roughly 30% of the image height. The symphony hall remains atmospheric and heavily out of focus behind her.  No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 22338,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The likeness is recognizable, but the details of facial features such as the jawline and hair texture show some drift from the source image."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The likeness is recognizable, but the details of facial features such as the jawline and hair texture show some drift from the source image.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"The likeness is recognizable, but the details of facial features such as the jawline and hair texture show some drift from the source image.\"",
+  "fatal_error": null,
+  "duration_ms": 45184
+}

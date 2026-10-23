@@ -23,6 +23,10 @@ async function main(){
  const estimated=ledger.reduce((n,r)=>n+(r.estimated_cost_usd??r.reserved_usd),0);
  if(estimated>20)problems.push('Budget exceeded');
  for(const j of m.jobs)if(ledger.filter(r=>r.job===j.effect_id+'/'+j.variant&&r.provider==='replicate').length>2)problems.push('Attempt limit: '+j.effect_id+'/'+j.variant);
+ if(process.argv.includes('--complete')){
+  if(images!==m.planned_images)problems.push('Incomplete image coverage');
+  if(used.size!==m.sources.length)problems.push('Not every source has a generated preview');
+ }
  console.log(JSON.stringify({effects:new Set(m.jobs.map(j=>j.effect_id)).size,images,planned:m.jobs.length,sources_used:used.size,sources_supplied:m.sources.length,counts,estimated_cost_with_reserves_usd:estimated,actual_cost_usd:null,problems},null,2));
  if(problems.length)process.exitCode=1;
 }

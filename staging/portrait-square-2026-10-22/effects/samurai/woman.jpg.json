@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Professional cinematic portrait of a female samurai in authentic Edo-period blue lacquered armor, layered lamellar plates and thick silk lacing, with the convincing weight, wear and imperfection of real historical armor. frame subject from thighs to top of helmet. Subject is drawing a period bow and has quiver on back with beautiful white fletched feathers. Hair tied beneath the helmet with a few loose strands escaping. use foreshortening and strong dynamic lighting. age the photo with filters Strong late-afternoon sunlight sweeps across her from the side, sculpting the face and armor with luminous highlights and deep expressive shadows. Photographic realism with the richness and visual poetry of a great painted portrait — atmospheric, tactile and subtly painterly without becoming an illustration. Rich restrained color, beautiful falloff, shallow depth of field, softly impressionistic background. Idealized and striking while remaining completely believable as a photograph. Preserve facial likeness and permanent features. Worn jewellery is fine: necklaces, earrings, piercings. subject has a strong focused expression. Use high constrast dramatic lighting. Show strain in the arms and face from drawing the bow.\ndesaturate the subjects skin tone by 15%. run a filter to antique the photo by 10%",
+  "style": "realistic",
+  "preset": "samurai_woman",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Professional cinematic portrait of a female samurai in authentic Edo-period blue lacquered armor, layered lamellar plates and thick silk lacing, with the convincing weight, wear and imperfection of real historical armor. frame subject from thighs to top of helmet. Subject is drawing a period bow and has quiver on back with beautiful white fletched feathers. Hair tied beneath the helmet with a few loose strands escaping. use foreshortening and strong dynamic lighting. age the photo with filters Strong late-afternoon sunlight sweeps across her from the side, sculpting the face and armor with luminous highlights and deep expressive shadows. Photographic realism with the richness and visual poetry of a great painted portrait — atmospheric, tactile and subtly painterly without becoming an illustration. Rich restrained color, beautiful falloff, shallow depth of field, softly impressionistic background. Idealized and striking while remaining completely believable as a photograph. Preserve facial likeness and permanent features. Worn jewellery is fine: necklaces, earrings, piercings. subject has a strong focused expression. Use high constrast dramatic lighting. Show strain in the arms and face from drawing the bow.\ndesaturate the subjects skin tone by 15%. run a filter to antique the photo by 10%",
+      "duration_ms": 21113,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The facial features and expression are somewhat recognizable, but there is noticeable drift in eye shape and overall age appearance."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The facial features and expression are somewhat recognizable, but there is noticeable drift in eye shape and overall age appearance.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Professional cinematic portrait of a female samurai in authentic Edo-period blue lacquered armor, layered lamellar plates and thick silk lacing, with the convincing weight, wear and imperfection of real historical armor. frame subject from thighs to top of helmet. Subject is drawing a period bow and has quiver on back with beautiful white fletched feathers. Hair tied beneath the helmet with a few loose strands escaping. use foreshortening and strong dynamic lighting. age the photo with filters Strong late-afternoon sunlight sweeps across her from the side, sculpting the face and armor with luminous highlights and deep expressive shadows. Photographic realism with the richness and visual poetry of a great painted portrait — atmospheric, tactile and subtly painterly without becoming an illustration. Rich restrained color, beautiful falloff, shallow depth of field, softly impressionistic background. Idealized and striking while remaining completely believable as a photograph. Preserve facial likeness and permanent features. Worn jewellery is fine: necklaces, earrings, piercings. subject has a strong focused expression. Use high constrast dramatic lighting. Show strain in the arms and face from drawing the bow.\ndesaturate the subjects skin tone by 15%. run a filter to antique the photo by 10%",
+      "duration_ms": 21130,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The rendered face retains recognizable features, particularly the eye shape and hair color, but there is significant drift in the mouth and overall expression."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The rendered face retains recognizable features, particularly the eye shape and hair color, but there is significant drift in the mouth and overall expression.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"The rendered face retains recognizable features, particularly the eye shape and hair color, but there is significant drift in the mouth and overall expression.\"",
+  "fatal_error": null,
+  "duration_ms": 43488
+}

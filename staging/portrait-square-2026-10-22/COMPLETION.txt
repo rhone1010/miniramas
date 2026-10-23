@@ -1,0 +1,35 @@
+Portrait preview staging — completed 2026-10-22 (local date)
+
+59 active customer-facing effects; 118 male/female previews across 9 collections.
+All 27 supplied source photographs used and unchanged by SHA-256 verification.
+Every output is a native 1024x1024 JPEG. No crop, stretch, padding, outpaint or upscale step.
+94 previews passed the unchanged production likeness gate; 24 remain flagged for review.
+No missing previews or fatal generation failures remain. Every flagged result exhausted its
+two permitted generation attempts. No effect or source substitution was made.
+
+152 NB2.1 generation calls. Estimated total including conservative reserves: USD7.51741845,
+below the approved USD20 cap. This includes USD0.80 reserved for early QA calls whose token
+usage was not captured. Actual provider billing totals were unavailable and remain null.
+Detailed provider receipts and token usage are in cost-ledger.json.
+
+Production engine/prompt snapshot: e804892bf2fd550bdbbcc060189f75175c15fa65.
+Production source hashes are recorded in manifest.json and verified unchanged.
+Existing man.jpg/woman.jpg naming is preserved, with 7 byte-identical female lookup aliases.
+effects-manifest.staged.json remains separate from the deployed lookup manifest.
+
+Browser results:
+- Local gallery loaded all 118 images with natural dimensions 1024x1024 and no broken images.
+- All 9 collection filters displayed the correct image totals (14 each, except Made by Hand
+  with 12 and Fantasy & Future with 8).
+- Review filter showed 18 effects containing the 24 flagged variants.
+- Original source and full-size generated-image links opened correctly.
+- Male/female comparisons render side by side; refresh loads current staged results.
+- All 118 outputs were visually inspected using collection contact sheets; the final
+  recovered-image retry was additionally inspected at full size.
+
+Gallery: http://127.0.0.1:4318
+Restart from the isolated worktree with: node tools/portrait-square-previews/gallery.cjs
+Read visual-review.txt in review/ for collection-specific observations.
+
+All files remain staged for user review. No live previews, production prompts, backend,
+customer records, or shared Product Studio files were modified. No deployment or activation.

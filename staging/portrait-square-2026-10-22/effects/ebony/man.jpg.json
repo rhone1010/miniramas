@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "The subject is carved from a single slab of ebony — dense black heartwood, polished to a deep lustre where the figure is cut, with fine grain running through it. Along one shoulder and down one side the slab keeps its natural live edge: rough pale bark and raw sapwood, unhewn, exactly as the tree grew. The transition is abrupt, a chisel line between polished black and raw edge. The figure and the live edge are one continuous piece of timber — not a carving standing on a separate log, block or plinth. The face and figure are carved smooth and clean; the grain runs in its own natural pattern across broad planes and does not follow the face's own lines. Hair keeps its real length and silhouette, carved in flowing ebony with deep separations catching light. The garment carries through in the same wood. No skin, no real hair. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally, head upright, with both eyes clearly visible. Idealized and beautiful. Photographic — a real object photographed in real light, not an illustration. Background: a woodworker's shop at dusk — a bench, hand planes, curls of shaving, warm low light, heavily out of focus. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. \nDo not over smooth the hair. keep the hair organic and alive. represent the hairline, style and shape accurately. The likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.\n\nAvoid a finished bust set on top of a log or stump base. Avoid a uniform polished block with no raw edge. Avoid brown or grey wood — the heartwood is deep black. Avoid grain crossing the eyes, nose or mouth.",
+  "style": "realistic",
+  "preset": "ebony",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject is carved from a single slab of ebony — dense black heartwood, polished to a deep lustre where the figure is cut, with fine grain running through it. Along one shoulder and down one side the slab keeps its natural live edge: rough pale bark and raw sapwood, unhewn, exactly as the tree grew. The transition is abrupt, a chisel line between polished black and raw edge. The figure and the live edge are one continuous piece of timber — not a carving standing on a separate log, block or plinth. The face and figure are carved smooth and clean; the grain runs in its own natural pattern across broad planes and does not follow the face's own lines. Hair keeps its real length and silhouette, carved in flowing ebony with deep separations catching light. The garment carries through in the same wood. No skin, no real hair. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. She faces us naturally, head upright, with both eyes clearly visible. Idealized and beautiful. Photographic — a real object photographed in real light, not an illustration. Background: a woodworker's shop at dusk — a bench, hand planes, curls of shaving, warm low light, heavily out of focus. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. \nDo not over smooth the hair. keep the hair organic and alive. represent the hairline, style and shape accurately. The likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.\n\nAvoid a finished bust set on top of a log or stump base. Avoid a uniform polished block with no raw edge. Avoid brown or grey wood — the heartwood is deep black. Avoid grain crossing the eyes, nose or mouth.",
+      "duration_ms": 17008,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendering captures the facial features and overall likeness well, but there is a slight drift in the jawline and hair details that may affect immediate recognition."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 18098
+}

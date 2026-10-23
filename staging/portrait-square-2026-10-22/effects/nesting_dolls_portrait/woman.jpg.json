@@ -1,0 +1,13 @@
+{
+  "recovered_prediction_id": "964j99et9xrmw0d1crgs2vefy8",
+  "prompt_used": "Transform the person into an exquisite handcrafted Russian nesting doll, preserving recognizable facial likeness, age, hairstyle, expression, and clothing. NO TEXT.\n\nRender the person as a beautifully turned wooden matryoshka doll with a traditional rounded silhouette, delicately hand-painted portrait, intricate decorative patterns, glossy lacquer, and subtle natural wood grain. Adapt the original clothing into richly detailed painted designs following the doll's curved surface.\n\nPresent a single complete nesting doll with its upper shell lifted slightly to reveal the hollow wooden interior and authentic nesting construction.\n\nCreate a charming setting inspired by traditional Russian folk art, with layered floral ornamentation, carved wooden surfaces, and warm decorative details.\n\nPremium artisan craftsmanship, sophisticated colors, delicate brushwork, beautiful directional lighting, and exceptional tactile realism.\n\nAvoid cartoon faces, plastic materials, realistic human bodies, generic facial features, additional people or dolls, distorted likeness, packaging, or text.",
+  "score": {
+    "figure_index": 0,
+    "score": 9,
+    "reason": "The rendered figure closely resembles the source subject with accurate facial features and expressions, although the hair texture is slightly altered."
+  },
+  "evaluation": {
+    "passed": true,
+    "reason": "pass: 9/10 ≥ 8/10"
+  }
+}

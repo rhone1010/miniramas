@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the person into an exquisite early 1900s lithographed tin wind-up toy, preserving recognizable facial likeness, age, hairstyle, clothing, and proportions. NO TEXT.\n\nRender the person as a beautifully manufactured antique mechanical toy with a stamped sheet-metal body, colorful lithographed surfaces, folded seams, tiny rivets, articulated limbs, and a visible brass winding key. Capture the charm of rare Edwardian-era clockwork collectibles with an expressive pose and authentic period craftsmanship.\n\nCreate a whimsical turn-of-the-century streetscape behind the figure, constructed entirely from dimensional cutout tin buildings, storefronts, streetlamps, trees, and decorative architectural details. Layer the metal scenery to create convincing theatrical depth.\n\nArrange the figure prominently in the foreground, full-body and occupying roughly 75% of the image height. Fill the frame edge to edge, viewed straight on.\n\nMuseum-quality antique toy craftsmanship, rich enamel colors, subtle patina, intricate lithographic detailing, beautiful directional lighting, and tangible metallic surfaces.\n\nAvoid modern robots, plastic toys, cartoon faces, oversized heads, excessive rust, realistic human skin, display cases, frames, cropped figures, distorted likeness, or text.",
+  "style": "realistic",
+  "preset": "tin_windup_portrait",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the person into an exquisite early 1900s lithographed tin wind-up toy, preserving recognizable facial likeness, age, hairstyle, clothing, and proportions. NO TEXT.\n\nRender the person as a beautifully manufactured antique mechanical toy with a stamped sheet-metal body, colorful lithographed surfaces, folded seams, tiny rivets, articulated limbs, and a visible brass winding key. Capture the charm of rare Edwardian-era clockwork collectibles with an expressive pose and authentic period craftsmanship.\n\nCreate a whimsical turn-of-the-century streetscape behind the figure, constructed entirely from dimensional cutout tin buildings, storefronts, streetlamps, trees, and decorative architectural details. Layer the metal scenery to create convincing theatrical depth.\n\nArrange the figure prominently in the foreground, full-body and occupying roughly 75% of the image height. Fill the frame edge to edge, viewed straight on.\n\nMuseum-quality antique toy craftsmanship, rich enamel colors, subtle patina, intricate lithographic detailing, beautiful directional lighting, and tangible metallic surfaces.\n\nAvoid modern robots, plastic toys, cartoon faces, oversized heads, excessive rust, realistic human skin, display cases, frames, cropped figures, distorted likeness, or text.",
+      "duration_ms": 19780,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The rendered figure closely resembles the source in facial structure and features, with only minor differences in detail."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 22105
+}

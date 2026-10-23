@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the subject into a realistic romantic photograph of an aristocratic woman at an elegant 1926 hotel party, preserving facial likeness and ethnicity. Dress her in an elegant beaded silk evening gown with restrained Art Deco jewelry. Hair styled in authentic 1920s finger waves or a softly sculpted bob. Likeness is essential.\nFrame her from the upper chest to the top of the head. She faces us naturally with her head upright and both eyes clearly visible; her shoulders may relax slightly away from square. Her head occupies roughly 30% of the image height. A calm, self-possessed expression and faint smile. She should belong completely to the period, never appearing modern in vintage costume.\nBehind her, an opulent 1920s ballroom dissolves into mirrored panels, muted gold ornament, low amber lamps and cigarette haze, heavily out of focus with no other people visible.\nGive the photograph a gently aged 1920s character: muted warm color, restrained sepia-amber cast, slightly desaturated ivory skin, softened blacks, subtle grain, highlight bloom and gentle corner falloff. Retain subdued gold, tobacco and warm skin tones. It should feel like a beautifully preserved early color photograph, not monochrome or a modern vintage filter.\nPreserve natural facial structure, lines, scars and asymmetry. Remove temporary blemishes only. Never reshape, enlarge eyes or de-age. No held objects.",
+  "style": "realistic",
+  "preset": "deco_twenties_woman",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the subject into a realistic romantic photograph of an aristocratic woman at an elegant 1926 hotel party, preserving facial likeness and ethnicity. Dress her in an elegant beaded silk evening gown with restrained Art Deco jewelry. Hair styled in authentic 1920s finger waves or a softly sculpted bob. Likeness is essential.\nFrame her from the upper chest to the top of the head. She faces us naturally with her head upright and both eyes clearly visible; her shoulders may relax slightly away from square. Her head occupies roughly 30% of the image height. A calm, self-possessed expression and faint smile. She should belong completely to the period, never appearing modern in vintage costume.\nBehind her, an opulent 1920s ballroom dissolves into mirrored panels, muted gold ornament, low amber lamps and cigarette haze, heavily out of focus with no other people visible.\nGive the photograph a gently aged 1920s character: muted warm color, restrained sepia-amber cast, slightly desaturated ivory skin, softened blacks, subtle grain, highlight bloom and gentle corner falloff. Retain subdued gold, tobacco and warm skin tones. It should feel like a beautifully preserved early color photograph, not monochrome or a modern vintage filter.\nPreserve natural facial structure, lines, scars and asymmetry. Remove temporary blemishes only. Never reshape, enlarge eyes or de-age. No held objects.",
+      "duration_ms": 21287,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "Strong facial features like the eye shape, freckles, and overall structure are preserved, only slightly altered by the different hairstyle and costume."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 23562
+}

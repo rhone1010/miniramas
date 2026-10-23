@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the subject into a sumptuous Victorian aristocratic portrait, preserving her facial likeness precisely. Dress her in an extravagant jewel-toned silk gown with elaborate gold embroidery, cream lace, turquoise gemstones and an ornate wide-brimmed hat overflowing with flowers, lace and sweeping feathers. Hair elegantly pinned with soft curls framing the face.\nShe faces us in a graceful formal portrait, head upright and both eyes clearly visible, with a soft, composed expression. Frame generously enough to preserve the extraordinary hat and feathers while keeping her face large and dominant in the image, her head and hat together filling the upper portion of the composition. Rich teal, turquoise, ivory and antique gold throughout. Romantic painterly photography with luminous warm skin, soft directional window light, glowing highlights, deep velvety shadows and shallow depth of field. An opulent Victorian interior dissolves softly behind her into jewel-toned color and golden bokeh. Luxurious, romantic and idealized, like a Victorian oil portrait brought vividly to life.\nuse a color palette and filter to age the photograph slightly so it doesnt feel brand new\nPreserve the subject's face, age, proportions and natural asymmetry. Refine temporary skin imperfections without changing her identity. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+  "style": "realistic",
+  "preset": "victorian_woman",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the subject into a sumptuous Victorian aristocratic portrait, preserving her facial likeness precisely. Dress her in an extravagant jewel-toned silk gown with elaborate gold embroidery, cream lace, turquoise gemstones and an ornate wide-brimmed hat overflowing with flowers, lace and sweeping feathers. Hair elegantly pinned with soft curls framing the face.\nShe faces us in a graceful formal portrait, head upright and both eyes clearly visible, with a soft, composed expression. Frame generously enough to preserve the extraordinary hat and feathers while keeping her face large and dominant in the image, her head and hat together filling the upper portion of the composition. Rich teal, turquoise, ivory and antique gold throughout. Romantic painterly photography with luminous warm skin, soft directional window light, glowing highlights, deep velvety shadows and shallow depth of field. An opulent Victorian interior dissolves softly behind her into jewel-toned color and golden bokeh. Luxurious, romantic and idealized, like a Victorian oil portrait brought vividly to life.\nuse a color palette and filter to age the photograph slightly so it doesnt feel brand new\nPreserve the subject's face, age, proportions and natural asymmetry. Refine temporary skin imperfections without changing her identity. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 22921,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The facial features are somewhat recognizable, but there are noticeable differences in age portrayal and details like eye shape and hair texture."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The facial features are somewhat recognizable, but there are noticeable differences in age portrayal and details like eye shape and hair texture.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Transform the subject into a sumptuous Victorian aristocratic portrait, preserving her facial likeness precisely. Dress her in an extravagant jewel-toned silk gown with elaborate gold embroidery, cream lace, turquoise gemstones and an ornate wide-brimmed hat overflowing with flowers, lace and sweeping feathers. Hair elegantly pinned with soft curls framing the face.\nShe faces us in a graceful formal portrait, head upright and both eyes clearly visible, with a soft, composed expression. Frame generously enough to preserve the extraordinary hat and feathers while keeping her face large and dominant in the image, her head and hat together filling the upper portion of the composition. Rich teal, turquoise, ivory and antique gold throughout. Romantic painterly photography with luminous warm skin, soft directional window light, glowing highlights, deep velvety shadows and shallow depth of field. An opulent Victorian interior dissolves softly behind her into jewel-toned color and golden bokeh. Luxurious, romantic and idealized, like a Victorian oil portrait brought vividly to life.\nuse a color palette and filter to age the photograph slightly so it doesnt feel brand new\nPreserve the subject's face, age, proportions and natural asymmetry. Refine temporary skin imperfections without changing her identity. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 21381,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered face is recognizable as the same person, but there is minor drift in features such as the nose and overall facial shape."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 46164
+}

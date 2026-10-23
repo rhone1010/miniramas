@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the entire subject into an adorable, soft, slightly overstuffed handmade plush toy, preserving strong facial likeness while gently idealizing the subject's attractiveness and warmth. Give the face a sweet, lovable expression, softly flattering proportions and a subtle friendly smile without becoming cartoonish. Very soft fabric, visible hand stitching, gently uneven seams and cuddly compression. Clothing carries through entirely in soft knitted and stuffed materials.\nCapture the micro gestures in the face, any turned up eyebrows, subtle smirks, dimples. bring out the subjects character.\nDouble check hair color and maintain. do not prematurely gray or embellish. \nmake eye color standout in doll. dont change face shape, accentuate it for the doll.\nMake her the unmistakable center of the portrait, facing us naturally with her head upright and both eyes clearly visible. Frame her closely from the upper chest to the top of the head, with her head occupying roughly 30% of the image height. Place only one or two smaller companion plushies beside her, close enough to create the feeling of plush friends without competing with her or making her small in the scene.\n\nKeep the setting cozy and simple, with warm bedside light, soft creamy bedding and generous soft fill. Lovable, cuddly and deeply comforting, like a treasured handmade plush with one or two favorite companions.\nNo letters or held objects.",
+  "style": "realistic",
+  "preset": "plushy",
+  "location": "plushy_shelf",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the entire subject into an adorable, soft, slightly overstuffed handmade plush toy, preserving strong facial likeness while gently idealizing the subject's attractiveness and warmth. Give the face a sweet, lovable expression, softly flattering proportions and a subtle friendly smile without becoming cartoonish. Very soft fabric, visible hand stitching, gently uneven seams and cuddly compression. Clothing carries through entirely in soft knitted and stuffed materials.\nCapture the micro gestures in the face, any turned up eyebrows, subtle smirks, dimples. bring out the subjects character.\nDouble check hair color and maintain. do not prematurely gray or embellish. \nmake eye color standout in doll. dont change face shape, accentuate it for the doll.\nMake her the unmistakable center of the portrait, facing us naturally with her head upright and both eyes clearly visible. Frame her closely from the upper chest to the top of the head, with her head occupying roughly 30% of the image height. Place only one or two smaller companion plushies beside her, close enough to create the feeling of plush friends without competing with her or making her small in the scene.\n\nKeep the setting cozy and simple, with warm bedside light, soft creamy bedding and generous soft fill. Lovable, cuddly and deeply comforting, like a treasured handmade plush with one or two favorite companions.\nNo letters or held objects.",
+      "duration_ms": 22628,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered figure has good resemblance, particularly in facial hair and expression, but the overall facial proportions and eye shape differ slightly."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 23896
+}

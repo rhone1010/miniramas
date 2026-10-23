@@ -1,0 +1,26 @@
+{
+  "prompt_used": "Transform the person into an exquisite handcrafted wooden marionette, preserving recognizable facial likeness, age, hairstyle, clothing, and proportions. NO TEXT.\n\nRender the person as a masterfully carved and hand-painted wooden puppet with an expressive sculpted face, articulated wooden limbs, delicate joints, and fine strings extending upward to a traditional wooden control bar. Recreate the clothing in beautifully tailored miniature fabrics with authentic folds and textures.\n\nArrange the character in a lively, natural pose within an enchanting vintage puppet theater. Create a richly detailed theatrical backdrop with layered painted scenery, ornate curtains, and handcrafted stage elements.\n\nShow the character full-body, occupying roughly 75% of the image height. Fill the frame with the theatrical world, emphasizing physical depth and craftsmanship.\n\nMuseum-quality marionette artistry, warm theatrical lighting, rich colors, intricate wood grain, and exceptional tactile detail.\n\nAvoid cartoon faces, plastic dolls, realistic human skin, tangled strings, exaggerated proportions, cropped figures, distorted likeness, modern stages, or text.",
+  "prior_attempt": {
+    "recovered_prediction_id": "khbwpxzpc5rmw0d1crg8t1k9wc",
+    "prompt_used": "Transform the person into an exquisite handcrafted wooden marionette, preserving recognizable facial likeness, age, hairstyle, clothing, and proportions. NO TEXT.\n\nRender the person as a masterfully carved and hand-painted wooden puppet with an expressive sculpted face, articulated wooden limbs, delicate joints, and fine strings extending upward to a traditional wooden control bar. Recreate the clothing in beautifully tailored miniature fabrics with authentic folds and textures.\n\nArrange the character in a lively, natural pose within an enchanting vintage puppet theater. Create a richly detailed theatrical backdrop with layered painted scenery, ornate curtains, and handcrafted stage elements.\n\nShow the character full-body, occupying roughly 75% of the image height. Fill the frame with the theatrical world, emphasizing physical depth and craftsmanship.\n\nMuseum-quality marionette artistry, warm theatrical lighting, rich colors, intricate wood grain, and exceptional tactile detail.\n\nAvoid cartoon faces, plastic dolls, realistic human skin, tangled strings, exaggerated proportions, cropped figures, distorted likeness, modern stages, or text.",
+    "score": {
+      "figure_index": 0,
+      "score": 6,
+      "reason": "The facial features are similar, but there are noticeable differences in proportions and hair texture that compromise the likeness."
+    },
+    "evaluation": {
+      "passed": false,
+      "reason": "fail: 6/10 < 8/10 — \"The facial features are similar, but there are noticeable differences in proportions and hair texture that compromise the likeness.\""
+    }
+  },
+  "score": {
+    "figure_index": 0,
+    "score": 9,
+    "reason": "The facial features, including eye shape and hair, are well-preserved, making the figure easily recognizable as the same person."
+  },
+  "evaluation": {
+    "passed": true,
+    "reason": "pass: 9/10 ≥ 8/10"
+  },
+  "attempt": 2
+}

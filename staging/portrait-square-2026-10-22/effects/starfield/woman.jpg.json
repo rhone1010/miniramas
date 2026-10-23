@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "The subject is formed from deep space — the body a volume of dark nebula gas, dust lanes and scattered stars that coalesce into the shape of a person. Denser and brighter through the head and shoulders, thinning to loose star fields at the edges. Cool indigo, teal and violet with a few warm gold stars threaded through. The face is clearly defined and unmistakably this person, formed from cloud and light, never from skin. Fully 2d idealized illustration. Frame from mid-chest to the top of the head. The subject faces us naturally, head upright, with both eyes clearly visible. Deep black background falling off from the figure's own glow. Keep permanent structure: lines, scars and the natural asymmetry of the face. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.\n\nAvoid a solid body with stars painted on top. Avoid photographic rendering. Avoid real skin.",
+  "style": "realistic",
+  "preset": "starfield",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject is formed from deep space — the body a volume of dark nebula gas, dust lanes and scattered stars that coalesce into the shape of a person. Denser and brighter through the head and shoulders, thinning to loose star fields at the edges. Cool indigo, teal and violet with a few warm gold stars threaded through. The face is clearly defined and unmistakably this person, formed from cloud and light, never from skin. Fully 2d idealized illustration. Frame from mid-chest to the top of the head. The subject faces us naturally, head upright, with both eyes clearly visible. Deep black background falling off from the figure's own glow. Keep permanent structure: lines, scars and the natural asymmetry of the face. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.\n\nAvoid a solid body with stars painted on top. Avoid photographic rendering. Avoid real skin.",
+      "duration_ms": 17626,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The resemblance is good, with preserved hair color and facial structure, but the overall facial expression and some details of the features show minor drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 18901
+}

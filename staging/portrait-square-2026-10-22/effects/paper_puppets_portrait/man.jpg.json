@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the person into an exquisite articulated paper puppet within a richly layered 3D paper-cut landscape, crafted by a master paper artist. NO TEXT.\n\nPreserve recognizable facial likeness, age, expression, hairstyle, clothing, and proportions. Render a full-body character with overlapping paper limbs connected by small antique brass rivets at shoulders, elbows, hips, and knees. Face and hair feature delicate layered paper construction, visible cut edges, and subtle dimensional contours.\n\nCreate a charming outdoor scene with a house, leafy tree, hedges, mailbox, and sculpted clouds against a blue sky. Every element is handcrafted from premium textured papers with intricate cutwork, embossed details, dimensional layering, and natural shadows.\n\nThe character dominates the foreground, occupying roughly 75% of the image height. The composition fills the frame edge to edge, viewed straight on with convincing physical depth.\n\nMuseum-quality craftsmanship, sophisticated colors, beautiful directional lighting, and exceptional tactile detail.\n\nAvoid cartoon styling, flat illustration, sculpted figurine faces, plastic materials, shadow boxes, frames, cropped figures, distorted likeness, or text.",
+  "style": "realistic",
+  "preset": "paper_puppets_portrait",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the person into an exquisite articulated paper puppet within a richly layered 3D paper-cut landscape, crafted by a master paper artist. NO TEXT.\n\nPreserve recognizable facial likeness, age, expression, hairstyle, clothing, and proportions. Render a full-body character with overlapping paper limbs connected by small antique brass rivets at shoulders, elbows, hips, and knees. Face and hair feature delicate layered paper construction, visible cut edges, and subtle dimensional contours.\n\nCreate a charming outdoor scene with a house, leafy tree, hedges, mailbox, and sculpted clouds against a blue sky. Every element is handcrafted from premium textured papers with intricate cutwork, embossed details, dimensional layering, and natural shadows.\n\nThe character dominates the foreground, occupying roughly 75% of the image height. The composition fills the frame edge to edge, viewed straight on with convincing physical depth.\n\nMuseum-quality craftsmanship, sophisticated colors, beautiful directional lighting, and exceptional tactile detail.\n\nAvoid cartoon styling, flat illustration, sculpted figurine faces, plastic materials, shadow boxes, frames, cropped figures, distorted likeness, or text.",
+      "duration_ms": 22948,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered figure maintains a good likeness with preserved facial hair and hair color, but the jawline and nose shape exhibit slight differences."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 25156
+}

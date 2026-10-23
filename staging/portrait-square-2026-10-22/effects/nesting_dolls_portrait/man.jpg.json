@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the person into an exquisite handcrafted Russian nesting doll, preserving recognizable facial likeness, age, hairstyle, expression, and clothing. NO TEXT.\n\nRender the person as a beautifully turned wooden matryoshka doll with a traditional rounded silhouette, delicately hand-painted portrait, intricate decorative patterns, glossy lacquer, and subtle natural wood grain. Adapt the original clothing into richly detailed painted designs following the doll's curved surface.\n\nPresent a single complete nesting doll with its upper shell lifted slightly to reveal the hollow wooden interior and authentic nesting construction.\n\nCreate a charming setting inspired by traditional Russian folk art, with layered floral ornamentation, carved wooden surfaces, and warm decorative details.\n\nPremium artisan craftsmanship, sophisticated colors, delicate brushwork, beautiful directional lighting, and exceptional tactile realism.\n\nAvoid cartoon faces, plastic materials, realistic human bodies, generic facial features, additional people or dolls, distorted likeness, packaging, or text.",
+  "style": "realistic",
+  "preset": "nesting_dolls_portrait",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the person into an exquisite handcrafted Russian nesting doll, preserving recognizable facial likeness, age, hairstyle, expression, and clothing. NO TEXT.\n\nRender the person as a beautifully turned wooden matryoshka doll with a traditional rounded silhouette, delicately hand-painted portrait, intricate decorative patterns, glossy lacquer, and subtle natural wood grain. Adapt the original clothing into richly detailed painted designs following the doll's curved surface.\n\nPresent a single complete nesting doll with its upper shell lifted slightly to reveal the hollow wooden interior and authentic nesting construction.\n\nCreate a charming setting inspired by traditional Russian folk art, with layered floral ornamentation, carved wooden surfaces, and warm decorative details.\n\nPremium artisan craftsmanship, sophisticated colors, delicate brushwork, beautiful directional lighting, and exceptional tactile realism.\n\nAvoid cartoon faces, plastic materials, realistic human bodies, generic facial features, additional people or dolls, distorted likeness, packaging, or text.",
+      "duration_ms": 18896,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The likeness is recognizable and well-preserved, with good facial structure and features, though the hairstyle and costume introduce minor drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 21187
+}

@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the figure into a weathered bronze statue long reclaimed by nature. The metal is deep verdigris — green-blue patina over warm bronze — and across it grows a living layer of soft moss, pale lichen, and a few small ferns sprouting from crevices at the shoulders and base. Some bronze still gleams where rain has worn it smooth; elsewhere nature has taken hold. A romantic image of time passing and beauty in gentle decay. Do not remove clothes or adjust gender. Background: an overgrown formal garden — a hedge gone wild, a stone balustrade, ivy across old brick. green filtered daylight, deep shade, heavily out of focus. Frame her from the upper chest to the top of the head, facing us naturally with her head upright and both eyes clearly visible. Her head occupies roughly 30% of the image height, with her eyes around the upper third of the image. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+  "style": "realistic",
+  "preset": "reclaimed_bronze",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the figure into a weathered bronze statue long reclaimed by nature. The metal is deep verdigris — green-blue patina over warm bronze — and across it grows a living layer of soft moss, pale lichen, and a few small ferns sprouting from crevices at the shoulders and base. Some bronze still gleams where rain has worn it smooth; elsewhere nature has taken hold. A romantic image of time passing and beauty in gentle decay. Do not remove clothes or adjust gender. Background: an overgrown formal garden — a hedge gone wild, a stone balustrade, ivy across old brick. green filtered daylight, deep shade, heavily out of focus. Frame her from the upper chest to the top of the head, facing us naturally with her head upright and both eyes clearly visible. Her head occupies roughly 30% of the image height, with her eyes around the upper third of the image. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+      "duration_ms": 18131,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The face is generally recognizable with preserved features like the smile and hair, but there are some minor deviations in the nose and overall proportions."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 20744
+}

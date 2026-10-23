@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "The subject is sculpted from weathered driftwood shaped by decades of wind, waves, and saltwater, with deeply textured grain flowing naturally through the face and body while preserving the subject's likeness. Brilliant translucent blue-green resin fills natural cracks and knots, glowing from within with ocean caustics, tiny trapped bubbles, and refracted light. preserve the original hairstyle as flowing driftwood and resin, no human skin. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The figure faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a timber boathouse deck, grey sea light, heavily out of focus. The sculpture rests on a raw driftwood block, only a suggestion of it visible below the figure. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+  "style": "realistic",
+  "preset": "tidewood",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject is sculpted from weathered driftwood shaped by decades of wind, waves, and saltwater, with deeply textured grain flowing naturally through the face and body while preserving the subject's likeness. Brilliant translucent blue-green resin fills natural cracks and knots, glowing from within with ocean caustics, tiny trapped bubbles, and refracted light. preserve the original hairstyle as flowing driftwood and resin, no human skin. Framed from mid-chest to the top of the head, both shoulders and upper arms fully rendered. The figure faces us naturally, head upright, with both eyes clearly visible. The subject's own garment carries through in the same material. Flattering soft key light, shadow separating jaw from neck. Clear the skin — blemishes, spots and blotchiness go. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: a timber boathouse deck, grey sea light, heavily out of focus. The sculpture rests on a raw driftwood block, only a suggestion of it visible below the figure. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.",
+      "duration_ms": 20655,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The facial features like the smile and hair texture are preserved well, but there is a noticeable drift in the overall facial structure making it slightly less recognizable."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 22572
+}

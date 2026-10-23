@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "The subject has become an ancient forest guardian, the entire head and figure carved from a single piece of deeply weathered oak heartwood — bark and grain are the substance, not a surface laid over skin. The whole face is wood: brow, cheeks, nose, lips and eyelids all carved, with no patch, seam or window of real skin anywhere. The hair becomes living roots, vines, moss and trailing ivy, keeping its original length, silhouette and movement. Tiny mushrooms, lichen and fresh growth emerge from the wood. The grain and fissures run in their own natural pattern across broad smooth planes — they do not follow or deepen the face's own lines and folds. Keep the grain coarser on hair, garment and edges; the central face stays finer. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. The subject faces us naturally, head upright, with both eyes clearly visible. Warm shafts of sunlight through the forest canopy. Flattering soft key light, shadow separating jaw from neck. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: deep forest, warm shafts of light through the canopy, heavily out of focus. The form rises from a mossy fallen trunk. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+  "style": "realistic",
+  "preset": "forest_guardian",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject has become an ancient forest guardian, the entire head and figure carved from a single piece of deeply weathered oak heartwood — bark and grain are the substance, not a surface laid over skin. The whole face is wood: brow, cheeks, nose, lips and eyelids all carved, with no patch, seam or window of real skin anywhere. The hair becomes living roots, vines, moss and trailing ivy, keeping its original length, silhouette and movement. Tiny mushrooms, lichen and fresh growth emerge from the wood. The grain and fissures run in their own natural pattern across broad smooth planes — they do not follow or deepen the face's own lines and folds. Keep the grain coarser on hair, garment and edges; the central face stays finer. Frame from mid-chest to the top of the head. Face should occupy 30% of the image. The subject faces us naturally, head upright, with both eyes clearly visible. Warm shafts of sunlight through the forest canopy. Flattering soft key light, shadow separating jaw from neck. Keep permanent structure: lines, scars and the natural asymmetry of the face. Add nothing that is not in the source. Never reshape, enlarge eyes, correct asymmetry or de-age. Background: deep forest, warm shafts of light through the canopy, heavily out of focus. The form rises from a mossy fallen trunk. No held objects — no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nThe likeness is essential. Maintain micro facial gestures, imperfections, changes in symmetry. all the characteristics that make this person this person. The hair should be organically faithful in messy or organized condition.",
+      "duration_ms": 19209,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The facial structure and features are mostly preserved with good resemblance, but the transformation into a naturalistic form introduces some drift in details like texture and overall proportions."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 21361
+}

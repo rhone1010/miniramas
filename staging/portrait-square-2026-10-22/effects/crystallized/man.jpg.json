@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "The subject has crystallized out of solution - the whole figure grown as a single mineral formation, blue-green copper sulfate and alum crystals packed dense and interlocking, the entire mass crystal all the way through with no skin beneath. Sharp faceted blocks build the broad planes of the brow, cheek and jaw; finer needle growth crowds the hollows and the edges. The eyes are smooth polished crystal - clean rounded facets, calm and legible, holding a single bright specular point each. No needles, spines or fine growth anywhere near the eyes, and no lashes, whites or wet surface. Deep vitriol blue shading to pale aqua and clear, each facet catching a hard specular point. Hair keeps its real length and silhouette, grown as long bladed crystal. The garment carries through in the same growth. Likeness is critical and comes before the material. Frame her from the upper chest to the top of the head, facing us naturally with both eyes clearly visible. Her head occupies roughly 30% of the image height. Photographic and highly idealized - a real specimen in real light, strange and beautiful. Background: a crystal cave of deep organic rock with tunnels leading away, ethereal light from a hole above in the background, crystal formations in the walls. No held objects - no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nuse only 20 facets on the face skin.\ndo not turn stubble into a beard.\n\nAvoid needle or spiked crystal around the eyes. Avoid real eyes, lashes or eye whites. Avoid crystals growing on a real person - the figure is crystal throughout. Avoid changing the hair. Avoid real skin or hair. Avoid a warm palette.",
+  "style": "realistic",
+  "preset": "crystallized",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The subject has crystallized out of solution - the whole figure grown as a single mineral formation, blue-green copper sulfate and alum crystals packed dense and interlocking, the entire mass crystal all the way through with no skin beneath. Sharp faceted blocks build the broad planes of the brow, cheek and jaw; finer needle growth crowds the hollows and the edges. The eyes are smooth polished crystal - clean rounded facets, calm and legible, holding a single bright specular point each. No needles, spines or fine growth anywhere near the eyes, and no lashes, whites or wet surface. Deep vitriol blue shading to pale aqua and clear, each facet catching a hard specular point. Hair keeps its real length and silhouette, grown as long bladed crystal. The garment carries through in the same growth. Likeness is critical and comes before the material. Frame her from the upper chest to the top of the head, facing us naturally with both eyes clearly visible. Her head occupies roughly 30% of the image height. Photographic and highly idealized - a real specimen in real light, strange and beautiful. Background: a crystal cave of deep organic rock with tunnels leading away, ethereal light from a hole above in the background, crystal formations in the walls. No held objects - no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nuse only 20 facets on the face skin.\ndo not turn stubble into a beard.\n\nAvoid needle or spiked crystal around the eyes. Avoid real eyes, lashes or eye whites. Avoid crystals growing on a real person - the figure is crystal throughout. Avoid changing the hair. Avoid real skin or hair. Avoid a warm palette.",
+      "duration_ms": 35869,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The face is recognizable but shows noticeable alterations in the shape and texture, particularly in the jawline and hair detail."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The face is recognizable but shows noticeable alterations in the shape and texture, particularly in the jawline and hair detail.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "The subject has crystallized out of solution - the whole figure grown as a single mineral formation, blue-green copper sulfate and alum crystals packed dense and interlocking, the entire mass crystal all the way through with no skin beneath. Sharp faceted blocks build the broad planes of the brow, cheek and jaw; finer needle growth crowds the hollows and the edges. The eyes are smooth polished crystal - clean rounded facets, calm and legible, holding a single bright specular point each. No needles, spines or fine growth anywhere near the eyes, and no lashes, whites or wet surface. Deep vitriol blue shading to pale aqua and clear, each facet catching a hard specular point. Hair keeps its real length and silhouette, grown as long bladed crystal. The garment carries through in the same growth. Likeness is critical and comes before the material. Frame her from the upper chest to the top of the head, facing us naturally with both eyes clearly visible. Her head occupies roughly 30% of the image height. Photographic and highly idealized - a real specimen in real light, strange and beautiful. Background: a crystal cave of deep organic rock with tunnels leading away, ethereal light from a hole above in the background, crystal formations in the walls. No held objects - no cups, glasses, phones, books, tools, watches or eyewear. Worn jewellery is fine: necklaces, earrings, piercings.\nuse only 20 facets on the face skin.\ndo not turn stubble into a beard.\n\nAvoid needle or spiked crystal around the eyes. Avoid real eyes, lashes or eye whites. Avoid crystals growing on a real person - the figure is crystal throughout. Avoid changing the hair. Avoid real skin or hair. Avoid a warm palette.",
+      "duration_ms": 19113,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The facial structure and features are notably altered with the crystal transformation, making the likeness close but noticeably off."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The facial structure and features are notably altered with the crystal transformation, making the likeness close but noticeably off.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 6/10 < 8/10 — \"The facial structure and features are notably altered with the crystal transformation, making the likeness close but noticeably off.\"",
+  "fatal_error": null,
+  "duration_ms": 56554
+}

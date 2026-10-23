@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Rebuild the subject as a **clockwork automaton of shaped brass and steel, precisely fitted to THIS person's face.\nThe face is thin shaped brass plate following the subject's real facial planes, with hairline-fine panel joints. Human-sized eyes. Tiny gears, jewelled bearings and springs visible only through select openings at the temple, throat and shoulders.\nNO real hair, skin, lips. Hair should always be  thick wires flowing in exactly the same organic pattern of the subects hair. no stubble.\nGarment becomes engraved plate. Warm brass, blued steel and restrained verdigris. Frame stomach to top of head, facing us directly with both eyes clearly visible. Photographic, a real handcrafted object in real light.\nMaintain likeness as much as possible. keep micro facial gestures and represent imperfections and imbalances in symmetry\nlikeness is essential. use real irises but metal whites of eyes. Do not accentuate eyes with diffrerent metals.\nSet in a warm, cluttered old Swiss watchmaker's workshop overlooking a narrow cobbled European street. Antique tools, tiny drawers, clocks and brass instruments heavily blurred behind. Warm workshop light mixed with cool window daylight.\nNo held objects, eyewear or watches. Worn jewellery is fine.",
+  "style": "realistic",
+  "preset": "clockwork",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Rebuild the subject as a **clockwork automaton of shaped brass and steel, precisely fitted to THIS person's face.\nThe face is thin shaped brass plate following the subject's real facial planes, with hairline-fine panel joints. Human-sized eyes. Tiny gears, jewelled bearings and springs visible only through select openings at the temple, throat and shoulders.\nNO real hair, skin, lips. Hair should always be  thick wires flowing in exactly the same organic pattern of the subects hair. no stubble.\nGarment becomes engraved plate. Warm brass, blued steel and restrained verdigris. Frame stomach to top of head, facing us directly with both eyes clearly visible. Photographic, a real handcrafted object in real light.\nMaintain likeness as much as possible. keep micro facial gestures and represent imperfections and imbalances in symmetry\nlikeness is essential. use real irises but metal whites of eyes. Do not accentuate eyes with diffrerent metals.\nSet in a warm, cluttered old Swiss watchmaker's workshop overlooking a narrow cobbled European street. Antique tools, tiny drawers, clocks and brass instruments heavily blurred behind. Warm workshop light mixed with cool window daylight.\nNo held objects, eyewear or watches. Worn jewellery is fine.",
+      "duration_ms": 24161,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered figure is recognizable with good preservation of facial features, but the transformation alters some details like the hair texture and the overall skin appearance."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 26003
+}

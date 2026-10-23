@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the subject into a realistic romantic photograph of an aristocratic gentleman at an elegant 1926 hotel party. This is a photograph of THIS man in 1926 dress, not a period gentleman who resembles him. Likeness is essential: keep the shape and character of his face, his natural asymmetry, his real weight and build, and the micro gestures of his expression. Do not add weight and do not age him.\n\nDress him in a black dinner jacket with satin lapels, white wing-collar shirt, black bow tie and white silk pocket square. His hair is dressed to the period — worn back with a side part and a light pomade sheen — but it is HIS hairline, HIS hairstyle, HIS length and HIS colour underneath. Do not give him more hair than he has, do not lower his hairline, and do not prematurely grey him.\n\nFrame from the stomach to the top of the head, shoulders three-quarter turned, facing camera with a calm expression and faint smile. He should belong completely to the period, never appearing modern in vintage costume.\n\nBehind him, an opulent 1920s ballroom dissolves into mirrored panels, muted gold ornament, low amber lamps and cigarette haze, heavily out of focus with no other people visible.\n\nGive the photograph a gently aged 1920s character: muted warm colour, restrained sepia-amber cast, slightly desaturated ivory skin, softened blacks, subtle grain, highlight bloom and gentle corner falloff. Retain subdued gold, tobacco and warm skin tones. It should feel like a beautifully preserved early colour photograph, not monochrome or a modern vintage filter.\n\nPreserve natural facial structure, lines, scars and asymmetry. Remove temporary blemishes only. Never reshape, enlarge eyes or de-age. No held objects.",
+  "style": "realistic",
+  "preset": "deco_twenties",
+  "location": "mantel",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "pipeline: style=realistic, passTwoEnabled=false, refine=false",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "stage removed 2026-08-01",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "pipeline: faceSwapEnabled=false for style=realistic",
+  "faces_detected_source": 1,
+  "faces_detected_render": 1,
+  "face_match_strategy": "fallback",
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the subject into a realistic romantic photograph of an aristocratic gentleman at an elegant 1926 hotel party. This is a photograph of THIS man in 1926 dress, not a period gentleman who resembles him. Likeness is essential: keep the shape and character of his face, his natural asymmetry, his real weight and build, and the micro gestures of his expression. Do not add weight and do not age him.\n\nDress him in a black dinner jacket with satin lapels, white wing-collar shirt, black bow tie and white silk pocket square. His hair is dressed to the period — worn back with a side part and a light pomade sheen — but it is HIS hairline, HIS hairstyle, HIS length and HIS colour underneath. Do not give him more hair than he has, do not lower his hairline, and do not prematurely grey him.\n\nFrame from the stomach to the top of the head, shoulders three-quarter turned, facing camera with a calm expression and faint smile. He should belong completely to the period, never appearing modern in vintage costume.\n\nBehind him, an opulent 1920s ballroom dissolves into mirrored panels, muted gold ornament, low amber lamps and cigarette haze, heavily out of focus with no other people visible.\n\nGive the photograph a gently aged 1920s character: muted warm colour, restrained sepia-amber cast, slightly desaturated ivory skin, softened blacks, subtle grain, highlight bloom and gentle corner falloff. Retain subdued gold, tobacco and warm skin tones. It should feel like a beautifully preserved early colour photograph, not monochrome or a modern vintage filter.\n\nPreserve natural facial structure, lines, scars and asymmetry. Remove temporary blemishes only. Never reshape, enlarge eyes or de-age. No held objects.",
+      "duration_ms": 19606,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered figure closely resembles the source subject with preserved eye spacing and jawline, but the hair styling and age features reflect a minor drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 20858
+}
