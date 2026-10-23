@@ -20,7 +20,9 @@ import type { OrderLineRec, SessionRec } from './store'
 export const FROZEN_SNAPSHOT_VERSION = 1
 
 /** The customer-reviewed composition a line was sold with (recorded at checkout when compositions are reviewed before payment). Audit and identity: after a repair the live composition may be a successor. */
-export interface CompositionPin { compositionId: string; previewId: string; attempt: number; repairSeq: number; artworkSha256: string | null; width: number | null; height: number | null; sku: string | null; approvedAt: string | null }
+export interface CompositionPin { compositionId: string; previewId: string; attempt: number; repairSeq: number; artworkSha256: string | null; width: number | null; height: number | null; sku: string | null; approvedAt: string | null
+  /** Generations flow: the accepted generation this composition IS; artworkSha256 is then the sha256 of its stored picture, re-checked at Final Approval and before print preparation. */
+  generationId?: string | null }
 
 export interface FrozenLine {
   /** Present only on orders sold after compositions were reviewed before payment. */

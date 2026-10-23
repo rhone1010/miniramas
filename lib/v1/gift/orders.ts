@@ -14,6 +14,7 @@ import type Stripe from 'stripe'
 import { createBrandedSession } from '@/lib/store/stripe-branding'
 import { allProducts, catalogVersion } from '../print/catalog'
 import { compositionFitsProduct, freezeLine, type CompositionPin } from './frozen'
+import { generationTargetFor } from './generations'
 import { planFor } from './composition-plan'
 import { approvedSceneFor, requireApprovedScene } from './presentation'
 import { realSceneRenderer } from './mockup-real'
@@ -115,19 +116,24 @@ export async function createGiftCheckout(
     if (requireApprovedScene() && !approvedSceneFor(p, id => (deps.gift.mockup?.scenes ?? realSceneRenderer).describe(id))) throw new GiftError('product_not_available')       // never take payment for a gift that cannot be shown and approved
     // Mixed shapes are normal (a 12 x 18 print with an 8 x 8 canvas). A product is refused only when NO bounded way exists to make
     // its shape: neither the artwork's own shape nor any aspect ratio the series can generate gets within the 20% extension limit.
-    if (!planFor(p, planCtx)) throw new GiftError('product_not_available_for_artwork')
+    if (rec.flow === 'generations' ? !generationTargetFor(p, rec.series, rec.analysis.peopleCount ?? null) : !planFor(p, planCtx)) throw new GiftError('product_not_available_for_artwork')
     return { line: l, product: p }
   })
   // Reviewed compositions: the exact approved composition of each line is what the customer pays for. A line whose composition is missing, not approved (a repair
   // makes the replacement 'ready' until re-approved), of another artwork, or the wrong shape or SKU for the product being frozen, stops checkout before any quote or Stripe session.
   const pins = new Map<string, CompositionPin>()
-  if (deps.requireReviewedCompositions) {
+  if (deps.requireReviewedCompositions || rec.flow === 'generations') {           // the product-first journey always sells exactly the pictures the customer accepted
     const comps = await deps.gift.store.listCompositions(rec.id)
     for (const x of lines) {
       const c = comps.filter(k => k.line_id === x.line.lineId && k.preview_id === rec.artwork_preview_id && k.status === 'approved').sort(byNewest)[0]
       if (!c || !compositionFitsProduct(c, x.product)) throw new GiftError('compositions_not_approved')
+      if (rec.flow === 'generations') {
+        if (!c.generation_id) throw new GiftError('compositions_not_approved')
+        const g = await deps.gift.store.getGeneration(rec.id, c.generation_id).catch(() => null)
+        if (!g || g.status !== 'ready' || !g.accepted_at || !g.sha256 || g.sha256 !== (c.plan as { artworkSha256?: string }).artworkSha256) throw new GiftError('compositions_not_approved')
+      }
       pins.set(x.line.lineId, { compositionId: c.id, previewId: c.preview_id, attempt: c.attempt, repairSeq: c.repair_seq ?? 0, artworkSha256: typeof c.plan.artworkSha256 === 'string' ? c.plan.artworkSha256 : null,
-        width: c.width, height: c.height, sku: x.product.sku, approvedAt: c.approved_at })
+        width: c.width, height: c.height, sku: x.product.sku, approvedAt: c.approved_at, ...(c.generation_id ? { generationId: c.generation_id } : {}) })
     }
   }
   const itemsCents = lines.reduce((n, x) => n + x.product.retailCents! * x.line.copies, 0)

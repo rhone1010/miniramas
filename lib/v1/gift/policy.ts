@@ -80,6 +80,21 @@ export function adaptationValidationFor(series: 'portraits' | 'pets' | 'groups' 
   return series === 'groups' ? 'unvalidated' : 'provisional'
 }
 
+/**
+ * PERSONALIZED PRODUCT GENERATIONS (migration 059; APPROVED 2026-10-22). Six free generations per session; each further six is the $2.99 pack (PACK_PRICE_CENTS; a pack is worth
+ * GENERATIONS_PER_PACK generations). Account abuse limits are per GENERATION and live in a ledger that deleting sessions cannot reset. A generation that is not delivered does not count.
+ */
+export const FREE_GENERATIONS = { perSession: 6, perAccountPhoto: 6, perAccount24h: 18, perAccountLifetime: 60 } as const
+export const GENERATIONS_PER_PACK = 6
+/** At most this many generations of one session may be in flight at once. */
+export const MAX_INFLIGHT_GENERATIONS = 2
+export const GENERATION_LEASE_SECONDS = 300
+export const GENERATION_MAX_ATTEMPTS = 3
+/** The most a generated picture may be cropped (per axis, fraction of its size) to reach the product's EXACT aspect. Anything further off is refused: nothing is extended or invented after approval. */
+export const MAX_CONFORM_CROP = 0.03
+/** Which flow NEW sessions start in. 'previews' (default) is the six-preview journey, unchanged; 'generations' is the product-first journey. Existing sessions keep their own flow. */
+export const newSessionFlow = (env: Record<string, string | undefined> = process.env): 'previews' | 'generations' => env.GIFT_NEW_SESSION_FLOW === 'generations' ? 'generations' : 'previews'
+
 /** Per-line quantity limit, shared with the Print Shop checkout. */
 export const MAX_COPIES = 20
 

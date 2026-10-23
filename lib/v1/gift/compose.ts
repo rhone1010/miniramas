@@ -26,6 +26,7 @@ import { COMPOSITION_LEASE_MS, COMPOSITION_MAX_ATTEMPTS, estimateCompositionCost
 import { GiftError, fromStoreError, getSessionView, owned, type GiftDeps } from './service'
 import { StoreError, byNewest, correctionUsed, finalizedAt, type CompositionJobKey, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
 import type { SessionView } from './types'
+import { correctGenerationLine } from './generations'
 
 async function selectedPreview(deps: GiftDeps, rec: SessionRec): Promise<PreviewRec> {
   if (!rec.artwork_preview_id) throw new GiftError('artwork_not_selected')
@@ -154,6 +155,7 @@ export async function ensureCompositions(deps: GiftDeps, userId: string, session
   const comps = await deps.store.listCompositions(rec.id)
   const missing = lines.filter(l => !active(comps, l.line_id, preview.id))
   if (!missing.length) return getSessionView(deps, userId, sessionId)
+  if (rec.flow === 'generations') throw new GiftError('compositions_not_approved')          // the product-first journey never composes after payment: every line is an accepted generation, bound before checkout
 
   const products = new Map(scope.lines.map(x => [x.line.line_id, x.product]))
   const groups = groupLines(missing.map(l => ({ line: l, product: products.get(l.line_id)! })), ctxOf(rec))
@@ -203,6 +205,14 @@ export async function correctLine(deps: GiftDeps, userId: string, sessionId: str
   const current = active(comps, lineId, preview.id)
   if (!current) throw new GiftError('composition_not_found')
   if (correctionUsed(comps, line) || current.attempt >= 2) throw new GiftError('correction_limit')       // ONE per product, counted across the purchase boundary; the rest goes to Concierge
+  if (current.generation_id || rec.flow === 'generations') {
+    // Product-first: the correction is a new generation of the same shape (outside the allowance), never a composition with extension.
+    await correctGenerationLine(deps, userId, rec, ls.line, current, scope.phase === 'purchased' ? 'purchased' : 'draft')
+    if (scope.phase === 'purchased') { try { await deps.store.useCorrection(rec.id, userId, lineId) } catch (e) { fromStoreError(e) } }
+    await deps.store.patchComposition(current.id, { status: 'superseded' })
+    await removeMockupFile(deps, current)
+    return getSessionView(deps, userId, sessionId)
+  }
   const master = await deps.storage.get(preview.master_path!)
   if (!master) throw new GiftError('generation_unavailable')
   const product = ls.product
@@ -229,6 +239,7 @@ export async function approveComposition(deps: GiftDeps, userId: string, session
   const ls = scope.lines.find(x => x.line.line_id === comp.line_id)
   if (!ls) throw new GiftError('line_not_found')
   if (!compositionFitsProduct(comp, ls.product)) throw new GiftError('composition_geometry_mismatch')
+  if (comp.generation_id) { try { await deps.store.acceptGeneration(rec.id, userId, comp.generation_id) } catch (e) { fromStoreError(e) } }       // approving the picture is accepting it
   if (comp.status === 'ready') await deps.store.patchComposition(comp.id, { status: 'approved', approved_at: new Date((deps.clock ?? Date.now)()).toISOString() })
   return getSessionView(deps, userId, sessionId)
 }
@@ -255,10 +266,13 @@ export async function finalizeOrder(deps: GiftDeps, userId: string, sessionId: s
     if (r.ok && c && !compositionFitsProduct(c, r.product)) throw new GiftError('composition_geometry_mismatch')
   }   // checked again, atomically, in the database
 
-  // The piece must outlive the session, so the clean master and its watermarked view are copied to where My Collection reads them.
+  // Generations flow: every line must still be exactly the picture the customer accepted and paid for (same sha256 as accepted, as pinned at checkout, as stored now).
+  const genComps = lines.map(l => active(comps, l.line_id, preview.id)).filter((c): c is CompositionRec => !!c && !!c.generation_id)
+  for (const c of genComps) await verifyGenerationComposition(deps, rec, c, orderRow)
+  // The piece must outlive the session, so the clean master and its watermarked view are copied to where My Collection reads them. In the generations flow it is the first line's accepted picture.
   const series = rec.series!
-  const master = await deps.storage.get(preview.master_path!)
-  const watermarked = preview.preview_path ? await deps.storage.get(preview.preview_path) : null
+  const master = await deps.storage.get(genComps[0]?.composed_path ?? preview.master_path!)
+  const watermarked = genComps[0]?.preview_path ? await deps.storage.get(genComps[0].preview_path) : preview.preview_path ? await deps.storage.get(preview.preview_path) : null
   const source = rec.source_path ? await deps.storage.get(rec.source_path) : null
   if (!master || !watermarked || !source) throw new GiftError('generation_unavailable')
   const cleanPath = `${series}/${preview.id}.png`
@@ -431,4 +445,18 @@ async function composePanelWithPrintShop(i: { masterB64: string; size: PrintSize
   const panel = i.finish === 'mug' ? { w: MUG.panel.w, h: MUG.panel.h } : { w: CARD.frontTrim.w, h: CARD.frontTrim.h }
   const c = await preparePanelComposition({ imageB64: i.masterB64, panel })
   return { image: await sharp(c.working).png().toBuffer(), width: c.width, height: c.height, fit: c.fit, outpainted: c.outpainted }
+}
+
+/**
+ * IDENTITY CHECK for a composition that is an accepted generation: the generation is delivered and accepted, its recorded sha256 is the composition's pinned artwork sha256 and the checkout pin, and the
+ * stored file still hashes to it. Anything else means the picture is not the one the customer approved: refused (generation_changed), never printed.
+ */
+export async function verifyGenerationComposition(deps: GiftDeps, rec: SessionRec, c: CompositionRec, order?: { items: Array<{ frozen?: unknown }> } | null): Promise<void> {
+  const g = c.generation_id ? await deps.store.getGeneration(rec.id, c.generation_id).catch(() => null) : null
+  const pinned = (c.plan as { artworkSha256?: string }).artworkSha256
+  if (!g || g.status !== 'ready' || !g.accepted_at || !g.sha256 || !pinned || g.sha256 !== pinned || !c.composed_path || c.composed_path !== g.master_path) throw new GiftError('generation_changed')
+  const frozen = order?.items.map(i => (i.frozen as { composition?: { compositionId?: string; artworkSha256?: string | null } } | undefined)?.composition).find(p => p?.compositionId === c.id)
+  if (frozen && frozen.artworkSha256 && frozen.artworkSha256 !== g.sha256) throw new GiftError('generation_changed')
+  const bytes = await deps.storage.get(c.composed_path)
+  if (!bytes || createHash('sha256').update(bytes).digest('hex') !== g.sha256) throw new GiftError('generation_changed')
 }

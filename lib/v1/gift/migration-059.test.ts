@@ -33,6 +33,8 @@ it.skipIf(!PGlite)('migration 059: one effect, six free then packs of six, failu
     expect((await q(`select * from gift_reserve_batch($1,$2,$3,$4)`, [legacy, U1, 'legacy-key-1', ['e1', 'e2', 'e3', 'e4', 'e5', 'e6']]))[0].o_kind).toBe('free')
     const oldPack = (await q(`insert into gift_preview_packs(user_id, stripe_session_id, amount_cents) values ($1,'cs_old_pack',299) returning id`, [U1]))[0].id as string
     const snap = async () => JSON.parse(JSON.stringify([await q('select * from gift_batches'), await q('select * from gift_previews'), await q('select * from gift_free_grants')]), (k, v) => (k === 'generation_id' && v === null ? undefined : v))
+    const pf = fs.readFileSync('docs/GOVERNANCE/gift-059-preflight-and-verify.sql', 'utf8')
+    const pre = await q(pf); expect(pre.filter((r: any) => /^FAIL/.test(r.result)), JSON.stringify(pre)).toEqual([]); expect(pre.find((r: any) => /gift_generations table/.test(r.check_name)).result).toBe('not applied yet')
     const before = JSON.stringify(await snap()), sessBefore = (await q('select * from gift_sessions where id=$1', [legacy]))[0]
     await db.exec(fs.readFileSync('supabase/migrations/059_gift_generation_ledger.sql', 'utf8'))
     { const after = JSON.stringify(await snap()); if (after !== before) { let i = 0; while (after[i] === before[i]) i++; throw new Error('snapshot differs near: ' + before.slice(Math.max(0, i - 80), i + 120) + ' || ' + after.slice(Math.max(0, i - 80), i + 120)) } } expect((await q('select * from gift_sessions where id=$1', [legacy]))[0]).toEqual({ ...sessBefore, flow: 'previews' })     // every existing row keeps its meaning
@@ -43,6 +45,8 @@ it.skipIf(!PGlite)('migration 059: one effect, six free then packs of six, failu
     const fail = (gid: string, user: string) => q('select gift_fail_generation($1,$2,$3)', [gid, user, 'nb2_failed'])
     const status = async (s: string, user: string, over: any[] = []) => (await q('select * from gift_generation_status($1,$2' + over.map((_, i) => `,$${3 + i}`).join('') + ')', [s, user, ...over]))[0]
 
+    const post = await q(pf); expect(post.filter((r: any) => /^FAIL/.test(r.result)), JSON.stringify(post)).toEqual([]); expect(post.find((r: any) => /functions: choose_effect/.test(r.check_name)).result).toBe('9 of 9 present')
+    expect(post.find((r: any) => /browser roles/.test(r.check_name)).result).toBe('ok'); expect(post.find((r: any) => /gift_generations table/.test(r.check_name)).result).toBe('present')
     // ── the flows cannot mix
     const S = await mk(U2)
     expect(await bad(`select * from gift_reserve_batch($1,$2,$3,$4)`, [S, U2, 'legacy-key-2', ['a1', 'a2', 'a3', 'a4', 'a5', 'a6']])).toMatch(/legacy_batches_closed/)
@@ -112,6 +116,23 @@ it.skipIf(!PGlite)('migration 059: one effect, six free then packs of six, failu
     expect((await q('select status from gift_compositions where session_id=$1', [E]))[0].status).toBe('superseded')
     const o = (await q(`insert into print_orders(stripe_session_id, status) values ('cs_059','awaiting_artwork') returning id`))[0].id; await q('update gift_sessions set order_id=$2 where id=$1', [E, o])
     expect(await bad(`select gift_choose_effect($1,$2,$3)`, [E, U3, 'bronze'])).toMatch(/order_not_awaiting_artwork/)
+
+    // ── the one free post-purchase correction: a generation outside the allowance, idempotent per key, only while the order awaits approval
+    const mkCorr = await mk(U3, 'photo-K'); await q('select gift_choose_effect($1,$2,$3)', [mkCorr, U3, 'bronze'])
+    const cUsed = (await status(E, U3)).o_free_used
+    expect(await bad('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [mkCorr, U3, 'correction-a', 'x', 'y', 'z'])).toMatch(/order_payment_required/)
+    const c1 = (await q('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, 'correction-a', 'fine_art:12x18', 'a667', '2:3']))[0]; expect(c1).toMatchObject({ o_reused: false, o_status: 'pending' })
+    expect((await q('select kind, pack_id from gift_generations where id=$1', [c1.o_generation_id]))[0]).toEqual({ kind: 'correction', pack_id: null })
+    expect((await q('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, 'correction-a', 'fine_art:12x18', 'a667', '2:3']))[0]).toMatchObject({ o_generation_id: c1.o_generation_id, o_reused: true })
+    expect((await status(E, U3)).o_free_used).toBe(cUsed); expect((await q('select count(*)::int n from gift_free_grants where generation_id=$1', [c1.o_generation_id]))[0].n).toBe(0)
+    await fail(c1.o_generation_id, U3); expect((await q('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, 'correction-a', 'fine_art:12x18', 'a667', '2:3']))[0]).toMatchObject({ o_status: 'pending', o_reused: true })
+    expect(await bad('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, key(1), 'fine_art:12x18', 'a667', '2:3'])).toMatch(/invalid_idempotency_key/)       // an ordinary generation's key is not a correction's
+    expect(await bad('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U1, 'correction-b', 'x', 'y', 'z'])).toMatch(/session_not_found/)
+    await finish(c1.o_generation_id, U3)
+    // an accepted generation becomes a line's approved composition (the column and the shared files)
+    await q(`insert into gift_compositions(session_id,line_id,preview_id,attempt,status,composed_path,preview_path,generation_id,approved_at) values ($1,'g',$2,1,'approved','c','p',$3,now())`, [E, A2, c1.o_generation_id])
+    expect((await q('select generation_id from gift_compositions where session_id=$1 and line_id=$2', [E, 'g']))[0].generation_id).toBe(c1.o_generation_id)
+    await q('update gift_sessions set final_approved_at = now() where id=$1', [E]); expect(await bad('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, 'correction-c', 'x', 'y', 'z'])).toMatch(/order_not_awaiting_artwork/)
 
     // ── collection sessions: the effect is fixed to the owned artwork's
     const L = (await q(`insert into gift_sessions(user_id, source_sha256, source_width, source_height, series, master_aspect, expires_at) values ($1,'photo-C',1,1,'portraits','1:1', now() + interval '7 days') returning id`, [U3]))[0].id
